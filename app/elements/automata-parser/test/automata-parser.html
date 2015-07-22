@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+<head>
+  <title>automata-parser</title>
+
+  <script src="../../../../bower_components/webcomponentsjs/webcomponents.js"></script>
+  <script src="../../../../bower_components/web-component-tester/browser.js"></script>
+  <script src="../../../../bower_components/test-fixture/test-fixture-mocha.js"></script>
+
+  <link rel="import" href="../../../../bower_components/polymer/polymer.html">
+  <link rel="import" href="../../../../bower_components/promise-polyfill/promise-polyfill-lite.html">
+  <link rel="import" href="../../../../bower_components/test-fixture/test-fixture.html">
+
+  <link rel="import" href="../automata-parser.html">
+</head>
+<body>
+  <test-fixture id="parser">
+    <template>
+      <automata-parser></automata-parser>
+    </template>
+  </test-fixture>
+
+  <script>
+    suite('<automata-parser>', function () {
+      suite('Sequences', function() {
+        var parser;
+
+        setup(function() {
+          parser = fixture('parser');
+        });
+
+        test('simple (single character)', function() {
+          parser.code='a->b';
+          var result = parser.parse();
+          assert.deepEqual(result, ['a', '->', 'b']);
+        });
+
+        test('simple (multiple characters)', function() {
+          parser.code='abc->def';
+          var result = parser.parse();
+          assert.deepEqual(result, ['abc', '->', 'def']);
+        });
+
+        test('simple with spaces (single character)', function() {
+          parser.code='a -> b';
+          var result = parser.parse();
+          assert.deepEqual(result, ['a', '->', 'b']);
+        });
+
+        test('simple with spaces (multiple characters)', function() {
+          parser.code='abc -> def';
+          var result = parser.parse();
+          assert.deepEqual(result, ['abc', '->', 'def']);
+        });
+      });
+    });
+  </script>
+
+</body>
+</html>

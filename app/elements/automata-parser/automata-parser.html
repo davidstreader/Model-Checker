@@ -1,0 +1,81 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+
+<script>
+  (function() {
+    Polymer({
+      is: 'automata-parser',
+
+      properties: {
+        
+        /**
+         * The code to be parsed
+         */
+         code: {
+           type: String,
+           value: ''
+         },
+
+         /**
+          * The index we are up to
+          * Used in the parsing process
+          */
+         _index: {
+           type: Number,
+           value: 0
+         }
+      },
+
+      /**
+       * Parse the code
+       *
+       * @return {array} a token array on success or null on error
+       */
+      parse: function(){
+        this._index = 0;
+        var result = [];
+
+        try{
+          //while(this._index < code.length){
+            result.push(this._automataParseNode());
+            result.push(this._automataParseOperation());
+            result.push(this._automataParseNode());
+          //}
+        }
+        catch(errorMsg){
+          console.error(errorMsg);
+          return null;
+        }
+
+        return result;
+      },
+
+      /**
+       * Parse a node
+       *
+       * @return {string} The node's name
+       */
+      _automataParseNode: function(){
+        var initIndex = this._index;
+        var reg = /[a-zA-Z]+/g;
+        var node, nextNode;
+        while(reg.test(nextNode = this.code.substring(initIndex, this._index + 1))){
+          node = nextNode;
+          this._index++;
+        }
+        return node;
+      },
+
+      /**
+       * Parse an operation
+       */
+      _automataParseOperation: function(){
+        var op;
+        if((op = '->') == this.code.substring(this._index, this._index+2)){
+          this._index += op.length;
+          return op;
+        }
+        throw 'Parse Error at char '+this._index+': couldn\'t parse operation.';
+      }
+    });
+  })();
+</script>
