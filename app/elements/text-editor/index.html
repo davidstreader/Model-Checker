@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+
+  <title>text-editor</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <script src="../../../bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+  <link rel="import" href="../../../bower_components/iron-component-page/iron-component-page.html">
+
+  <link rel="import" href="text-editor.html">
+
+  <style>
+  body{
+    position: relative
+  }
+  .frame{
+    width: 80%;
+    height: 80%;
+    top: 10%;
+    right: 10%;
+    bottom: 10%;
+    left: 10%;
+    position: absolute;
+    border: solid 1px red;
+  }
+  </style>
+</head>
+<body class="fullbleed">
+  <div class="frame">
+    <text-editor></text-editor>
+  </div>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+
+<dom-module id="text-editor">
+  <style>
+    :host {
+      display: block;
+      @apply(--layout-fit);
+    }
+    #code{
+      box-sizing: border-box;
+      width: 100%;
+      height: 100%;
+      resize: none;
+    }
+  </style>
+  <template>
+    <textarea id="code" value="{{code::input}}"></textarea>
+  </template>
+</dom-module>
+<script>
+  (function() {
+    Polymer({
+      is: 'text-editor',
+
+      properties: {
+        /**
+         * the text in the editor
+         */
+         code: {
+           type: String,
+           value: '',
+           notify: true
+         }
+      },
+
+      /**
+       * JS Doc
+       */
+      ready: function(){
+
+      }
+    });
+  })();
+</script>
