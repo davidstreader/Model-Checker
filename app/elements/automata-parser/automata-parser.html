@@ -29,25 +29,27 @@
       /**
        * Parse the code
        *
-       * @return {array} a token array on success or null on error
+       * @return {array} a token array
+       * @throws {this.SyntaxError} Code must be valid
        */
       parse: function(){
+        var lexer = new Lexer(this.code);
+
         this._index = 0;
-        var result = [];
+        var nodes = [];
+        var edges = [];
 
-        try{
-          //while(this._index < code.length){
-            result.push(this._automataParseNode());
-            result.push(this._automataParseOperation());
-            result.push(this._automataParseNode());
-          //}
-        }
-        catch(errorMsg){
-          console.error(errorMsg);
-          return null;
-        }
+        while(lexer.hasNext()){
+          var token = lexer.next();
+          if(token.type == 'LABEL'){
 
-        return result;
+          }
+        }
+        //result.push(this._automataParseNode());
+        //result.push(this._automataParseOperation());
+        //result.push(this._automataParseNode());
+
+        //return result;
       },
 
       /**
@@ -57,7 +59,7 @@
        */
       _automataParseNode: function(){
         var initIndex = this._index;
-        var reg = /[a-zA-Z]+/g;
+        var reg = /[a-zA-Z][a-zA-Z0-9]*/g;
         var node, nextNode;
         while(reg.test(nextNode = this.code.substring(initIndex, this._index + 1))){
           node = nextNode;
@@ -68,6 +70,8 @@
 
       /**
        * Parse an operation
+       *
+       * @return {string} The operation
        */
       _automataParseOperation: function(){
         var op;
@@ -75,8 +79,44 @@
           this._index += op.length;
           return op;
         }
-        throw 'Parse Error at char '+this._index+': couldn\'t parse operation.';
+        throw new this.SyntaxError('Syntax Error at char '+this._index+': couldn\'t parse operation.');
+      },
+
+      /**
+       * The Node class
+       */
+      _Node: function(label){
+        this.label = label;
+      },
+
+      /**
+       * The Edge class
+       */
+      _Edge: function(from, to, label){
+        this.from = from;
+        this.to = to;
+        this.label = label;
+      },
+
+      /**
+       * An object to be thrown
+       */
+      SyntaxError: function(msg){
+        this.message = msg;
+      },
+
+      /**
+       * Called when element is created
+       */
+      created: function(){
+        /**
+         * Create the methods for the _Node class
+         */
+        this._Node.prototype.foo = function(){
+          return 'bar';
+        }
       }
+
     });
   })();
 </script>
