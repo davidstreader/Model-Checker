@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <title>lexer test</title>
+
+  <script src="../../bower_components/webcomponentsjs/webcomponents.min.js"></script>
+  <link rel="import" href="../../bower_components/polymer/polymer.html">
+  <script src="../../bower_components/web-component-tester/browser.js"></script>
+  <script src="../../bower_components/test-fixture/test-fixture-mocha.js"></script>
+  <link rel="import" href="../../bower_components/test-fixture/test-fixture.html">
+
+</head>
+<body>
+
+  <script src="../scripts/lexer.js"></script>
+  <script>
+
+    suite('lexer tests', function() {
+
+      test('test 1', function() {
+        var code = "replace me"
+        var lexer = new Lexer(code);
+
+        assert.equal(lexer.hasNext(), true);
+
+        var token = lexer.nextToken();
+        assert.equal(token.type, "LABEL");
+      });
+
+    });
+  </script>
+
+</body>
+</html>
