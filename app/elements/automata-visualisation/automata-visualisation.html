@@ -7,6 +7,8 @@
 :host {
   display: block;
   @apply(--layout-fit);
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serf;
+  color: #6C7A89;
 }
 #svg{
   width: 100%;
@@ -53,18 +55,34 @@
 
       // Create a new directed graph
       var automata = new dagreD3.graphlib.Graph().setGraph({});
+      automata.setGraph({
+        // nodesep: 70,
+        // ranksep: 50,
+        rankdir: "LR",
+        marginx: 20,
+        marginy: 20
+      });
 
       // Automatically label each of the nodes
       this.nodes.forEach(function(node) {
-        automata.setNode(node, { label: node });
+        automata.setNode(node, { label: node, shape: "circle" });
       });
 
-      // Set edges
+      // Default to assigning a new object as a label for each new edge.
+      automata.setDefaultEdgeLabel(function() { return {}; });
+
+      // Automatically set each of the edges, with:
+      //  - the from node's label
+      //  - the to node's label
+      //  - the edge's extra data (could be label, width, height, etc.)
       this.edges.forEach(function(edge) {
         automata.setEdge(edge.from, edge.to, edge.data);
       });
 
-      var svg = d3.select(this.$.svg),//svgNode);
+      // Add some custom colors based on state
+      automata.node('0').style = "fill: #F5B0B0";
+
+      var svg = d3.select(this.$.svg),
           g = svg.append('g'),
           inner = svg.select('g');
 
