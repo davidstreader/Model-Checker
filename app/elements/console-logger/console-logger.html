@@ -1,0 +1,58 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+
+<dom-module id="console-logger">
+  <style>
+    :host {
+      display: block;
+      @apply(--layout-fit);
+    }
+    #console{
+      box-sizing: border-box;
+      width: 100%;
+      height: 100%;
+    }
+    .log{
+      color: var(--log-text-color, blue);
+    }
+    .error{
+      color: var(--error-text-color, red);
+    }
+  </style>
+  <template>
+    <code id="console"></code>
+  </template>
+</dom-module>
+<script>
+  (function() {
+    Polymer({
+      is: 'console-logger',
+
+      log: function(msg){
+        this._addMessage(msg).classList.add('log');
+      },
+
+      error: function(msg){
+        this._addMessage('Error: ' + msg).classList.add('error');
+      },
+
+      _addMessage: function(msg){
+        var text = document.createTextNode(msg);
+        var node = document.createElement('SPAN');
+        node.appendChild(text);
+
+        Polymer.dom(this.$.console).appendChild(node);
+        Polymer.dom(this.$.console).appendChild(document.createElement('BR'));
+
+        return node;
+      },
+
+      ready: function(){
+        this.log('test');
+        this.log('test 123');
+        this.error('something when wrong');
+        this.log('test 123');
+      }
+    });
+  })();
+</script>
