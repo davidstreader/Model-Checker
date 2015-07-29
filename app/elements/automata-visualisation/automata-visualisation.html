@@ -52,30 +52,27 @@
     ready: function(){
 
       // Create a new directed graph
-      var g = new dagreD3.graphlib.Graph().setGraph({});
+      var automata = new dagreD3.graphlib.Graph().setGraph({});
 
       // Automatically label each of the nodes
       this.nodes.forEach(function(node) {
-        g.setNode(node, { label: node });
+        automata.setNode(node, { label: node });
       });
 
       // Set edges
       this.edges.forEach(function(edge) {
-        g.setEdge(edge.from, edge.to, edge.data);
+        automata.setEdge(edge.from, edge.to, edge.data);
       });
 
-      //var svgNode = document.createElement("svg");
-      //Polymer.dom(this.root).appendChild(svgNode);
-
-      var svg = d3.select(this.$.svg);//svgNode);
-      //svg.append('g');
-      //var inner = svg.select("g");
+      var svg = d3.select(this.$.svg),//svgNode);
+          g = svg.append('g'),
+          inner = svg.select('g');
 
       // Create the renderer
       var render = new dagreD3.render();
 
       // Run the renderer. This is what draws the final graph.
-      render(svg, g);
+      render(inner, automata);
 
     }
   });
