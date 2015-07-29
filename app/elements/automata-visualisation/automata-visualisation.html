@@ -1,0 +1,83 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../imports/dagre-d3.html">
+
+<dom-module id="automata-visualisation">
+<style>
+:host {
+  display: block;
+  @apply(--layout-fit);
+}
+#svg{
+  width: 100%;
+  height: 100%;
+}
+.edge{
+
+}
+.node{
+
+}
+</style>
+<template>
+  <svg id="svg"></svg>
+</template>
+</dom-module>
+<script>
+(function() {
+  Polymer({
+    is: 'automata-visualisation',
+
+    properties: {
+      /**
+      * JS Doc
+      */
+      nodes: {
+        type: Array,
+        value: [ "0", "1", "2" ]
+      },
+
+      edges: {
+        type: Array,
+        value: [
+          {from: "0", to: "1", data: { label: "A" }},
+          {from: "1", to: "2", data: { label: "B" }}
+        ]
+      }
+    },
+
+    /**
+    * JS Doc
+    */
+    ready: function(){
+
+      // Create a new directed graph
+      var g = new dagreD3.graphlib.Graph().setGraph({});
+
+      // Automatically label each of the nodes
+      this.nodes.forEach(function(node) {
+        g.setNode(node, { label: node });
+      });
+
+      // Set edges
+      this.edges.forEach(function(edge) {
+        g.setEdge(edge.from, edge.to, edge.data);
+      });
+
+      //var svgNode = document.createElement("svg");
+      //Polymer.dom(this.root).appendChild(svgNode);
+
+      var svg = d3.select(this.$.svg);//svgNode);
+      //svg.append('g');
+      //var inner = svg.select("g");
+
+      // Create the renderer
+      var render = new dagreD3.render();
+
+      // Run the renderer. This is what draws the final graph.
+      render(svg, g);
+
+    }
+  });
+})();
+</script>
