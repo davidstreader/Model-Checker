@@ -1,5 +1,6 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../imports/ace.html">
 
 <dom-module id="text-editor">
   <style>
@@ -7,15 +8,14 @@
       display: block;
       @apply(--layout-fit);
     }
-    #code{
+    #editor{
       box-sizing: border-box;
       width: 100%;
       height: 100%;
-      resize: none;
     }
   </style>
   <template>
-    <textarea id="code" value="{{code::input}}"></textarea>
+    <div id="editor"></div>
   </template>
 </dom-module>
 <script>
@@ -25,20 +25,25 @@
 
       properties: {
         /**
-         * the text in the editor
+         * the text editor
          */
-         code: {
-           type: String,
-           value: '',
-           notify: true
-         }
+        _editor: {
+          type: Object,
+          value: function(){
+            var editor = ace.edit(this.$.editor);
+            editor.setTheme("ace/theme/github");
+            editor.getSession().setMode("ace/mode/plain_text"); // syntax highlighting
+            return editor;
+          }
+        }
       },
 
       /**
-       * JS Doc
+       * Get the code the user has provided
+       * @return {string} The code
        */
-      ready: function(){
-
+      getCode: function(){
+        return this._editor.getValue();
       }
     });
   })();

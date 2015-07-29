@@ -1,0 +1,188 @@
+<!doctype html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <title>lexer test</title>
+
+  <script src="../../bower_components/webcomponentsjs/webcomponents.min.js"></script>
+  <link rel="import" href="../../bower_components/polymer/polymer.html">
+  <script src="../../bower_components/web-component-tester/browser.js"></script>
+  <script src="../../bower_components/test-fixture/test-fixture-mocha.js"></script>
+  <link rel="import" href="../../bower_components/test-fixture/test-fixture.html">
+
+</head>
+<body>
+
+  <script src="../scripts/lexer.js"></script>
+  <script>
+
+    suite('lexer tests', function() {
+
+      test('valid alphabet', function() {
+        var code = "= ( ) [ ] -> * + | || ? EOF . ε unknown test"
+        var lexer = new Lexer(code);
+
+        assert.equal(lexer.hasNext(), true);
+
+        var token = lexer.nextToken();
+        //should be parsing =
+        assert.equal(token.type, "DEFINE");
+
+        //should be parsing (
+        token = lexer.nextToken();
+        assert.equal(token.type, "LBRACK");
+
+        //should be parsing )
+        token = lexer.nextToken();
+        assert.equal(token.type, "RBRACK");
+
+        //should be parsing [
+        token = lexer.nextToken();
+        assert.equal(token.type, "LSQBRACK");
+
+        //should be parsing ]
+        token = lexer.nextToken();
+        assert.equal(token.type, "RSQBRACK");
+
+        //should be parsing ->
+        token = lexer.nextToken();
+        assert.equal(token.type, "SEQUENCE");
+
+        //should be parsing *
+        token = lexer.nextToken();
+        assert.equal(token.type, "ZERO_MANY");
+
+        //should be parsing +
+        token = lexer.nextToken();
+        assert.equal(token.type, "ONE_MANY");
+
+        //should be parsing |
+        token = lexer.nextToken();
+        assert.equal(token.type, "OR");
+
+        //should be parsing ||
+        token = lexer.nextToken();
+        assert.equal(token.type, "PARALLEL");
+
+        //should be parsing ?
+        token = lexer.nextToken();
+        assert.equal(token.type, "OPTIONAL");
+
+        //should be parsing EOF
+        token = lexer.nextToken();
+        assert.equal(token.type, "ENDFILE");
+
+        //should be parsing .
+        token = lexer.nextToken();
+        assert.equal(token.type, "END");
+
+        //should be parsing ε
+        token = lexer.nextToken();
+        assert.equal(token.type, "EMPTY");
+
+        //should be parsing unknown
+        token = lexer.nextToken();
+        assert.equal(token.type, "UNKNOWN");
+
+        //should be parsing test
+        token = lexer.nextToken();
+        assert.equal(token.type, "LABEL");
+
+        //should be parsing end of code
+        token = lexer.nextToken();
+        assert.equal(token.type, "ENDFILE");
+
+      });
+
+      test('valid two label test', function() {
+        var code = "a b"
+        var lexer = new Lexer(code);
+
+        assert.equal(lexer.hasNext(), true);
+
+        var token = lexer.nextToken();
+        //should be parsing a
+        assert.equal(token.type, "LABEL");
+
+        //should be parsing b
+        token = lexer.nextToken();
+        assert.equal(token.type, "LABEL");
+
+        //should find we're at the EOF
+        token = lexer.nextToken();
+        assert.equal(token.type, "ENDFILE");
+      });
+
+      test('valid two label sequence test', function() {
+        var code = "a -> b"
+        var lexer = new Lexer(code);
+
+        assert.equal(lexer.hasNext(), true);
+
+        var token = lexer.nextToken();
+        //should be parsing a
+        assert.equal(token.type, "LABEL");
+
+        //should be parsing ->
+        token = lexer.nextToken();
+        assert.equal(token.type, "SEQUENCE");
+
+        //should be parsing b
+        token = lexer.nextToken();
+        assert.equal(token.type, "LABEL");
+
+        //should find we're at the EOF
+        token = lexer.nextToken();
+        assert.equal(token.type, "ENDFILE");
+      });
+
+      test('valid assignment test', function() {
+
+        var code = "CLOCK = (tick->CLOCK)."
+
+        var lexer = new Lexer(code);
+
+        assert.equal(lexer.hasNext(), true);
+
+        var token = lexer.nextToken();
+        //should be parsing CLOCK
+        assert.equal(token.type, "LABEL");
+
+        //should be parsing =
+        token = lexer.nextToken();
+        assert.equal(token.type, "DEFINE");
+
+        //should be parsing (
+        token = lexer.nextToken();
+        assert.equal(token.type, "LBRACK");
+
+        //should be parsing tick
+        token = lexer.nextToken();
+        assert.equal(token.type, "LABEL");
+
+        //should be parsing ->
+        token = lexer.nextToken();
+        assert.equal(token.type, "SEQUENCE");
+
+        //should be parsing CLOCK
+        token = lexer.nextToken();
+        assert.equal(token.type, "LABEL");
+
+        //should be parsing )
+        token = lexer.nextToken();
+        assert.equal(token.type, "RBRACK");
+
+        //should be parsing .
+        token = lexer.nextToken();
+        assert.equal(token.type, "END");
+
+        //should find we're at the EOF
+        token = lexer.nextToken();
+        assert.equal(token.type, "ENDFILE");
+      });
+
+    });
+  </script>
+
+</body>
+</html>

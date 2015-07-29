@@ -2,7 +2,7 @@
 function Lexer(ltsString) {
 
     // the labeled transfer string we will be parsing
-    this.ltsString = ltsString.replace(/\s+/g, ''); //remove all whitespace
+    this.ltsString = ltsString;
     //initialise the index at 0
     this.index = 0;
     //initialise the token types the lexer understands
@@ -12,14 +12,14 @@ function Lexer(ltsString) {
         RBRACK: '\\)',
         LSQBRACK: '\\[',
         RSQBRACK: '\\]',
-        SEQUENCE: '->', 
+        SEQUENCE: '->',
         ZERO_MANY: '\\*',
         ONE_MANY: '\\+',
         OR: '\\|',
         PARALLEL: '\\|\\|',
         OPTIONAL: '\\?',
         ENDFILE: 'EOF',
-        END: '\\.', 
+        END: '\\.',
         EMPTY: 'ε',
         UNKNOWN: 'unknown',
         LABEL: '[a-zA-Z]+'
@@ -49,6 +49,16 @@ Lexer.prototype.nextToken = function () {
 
         //initialise the token to be returned with null
         var currentToken = null;
+
+        // if the character at the start of the string is matched as whitespace
+        if(/^\s/.test(ltsStringAtIndex)){
+          // consume the character at the beginning of the string
+          var ltsStringStart = ltsStringAtIndex.substring(0, 1);
+          this._consume(ltsStringStart);
+
+          //go to the beginning of the loop
+          continue;
+        }
 
         //for each token type defined, check for matches and return the match whose token type is the longest
         for (type in this.TOKEN_TYPE) {
@@ -101,7 +111,7 @@ Lexer.prototype.nextToken = function () {
     }
 
     //no more content to parse, so we are at the end
-    return new this._Token(this.TOKEN_TYPE.END, 'EOF');
+    return new this._Token('ENDFILE', this.TOKEN_TYPE.ENDFILE);
 }
 
 // class Token
@@ -120,7 +130,7 @@ Lexer.prototype._isLetterOrDigit = function (regChar) {
 }
 
 Lexer.prototype._newRegex = function (regexContent) {
-    //create a regex that checks for the content from the beginning 
+    //create a regex that checks for the content from the beginning
     return new RegExp('^' + regexContent, 'g');
 }
 
