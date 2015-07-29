@@ -29,29 +29,71 @@
           parser = fixture('parser');
         });
 
+        var doTest = function(result, exp){
+          assert.equal(result.nodes.length, exp.nodes.length, "Nodes Lengths are not equal");
+          for(var i = 0; i < result.nodes.length; i++){
+            assert.equal(result.nodes[i].label, exp.nodes[i].label, "Node label is not equal");  
+          }
+          assert.equal(result.edges.length, exp.edges.length, "Edges lengths are not equal");
+          for(var i = 0; i < result.edges.length; i++){
+            assert(exp.edges[i].label, result.edges[i].label, "At index: " + i + " edges labels do not match");
+            assert(exp.edges[i].from, result.edges[i].from, "At index: " + i + " from's do not match");
+            assert(exp.edges[i].to, result.edges[i].to, "At index: " + i + " to's do not match");
+          }
+        };
+
         test('simple (single character)', function() {
           parser.code='a->b';
           var result = parser.parse();
-          assert.deepEqual(result, ['a', '->', 'b']);
+
+          var exp = {
+            nodes: [{label: 0}, {label: 1}, {label: 2}],
+            edges: [
+              { from: '0', to: '1', label: 'a' },
+              { from: '1', to: '2', label: 'b' }
+            ]};
+          doTest(result, exp);
+          
+
         });
 
         test('simple (multiple characters)', function() {
           parser.code='abc->def';
           var result = parser.parse();
-          assert.deepEqual(result, ['abc', '->', 'def']);
+          var exp = {
+            nodes: [{label: 0}, {label: 1}, {label: 2}],
+            edges: [
+              { from: '0', to: '1', label: 'abc' },
+              { from: '1', to: '2', label: 'def' }
+            ]};
+          doTest(result, exp);
         });
 
         test('simple with spaces (single character)', function() {
           parser.code='a -> b';
           var result = parser.parse();
-          assert.deepEqual(result, ['a', '->', 'b']);
+          var exp = {
+            nodes: [{label: 0}, {label: 1}, {label: 2}],
+            edges: [
+              { from: '0', to: '1', label: 'a' },
+              { from: '1', to: '2', label: 'b' }
+            ]};
+          doTest(result, exp);
         });
 
         test('simple with spaces (multiple characters)', function() {
           parser.code='abc -> def';
           var result = parser.parse();
-          assert.deepEqual(result, ['abc', '->', 'def']);
+          var exp = {
+            nodes: [{label: 0}, {label: 1}, {label: 2}],
+            edges: [
+              { from: '0', to: '1', label: 'abc' },
+              { from: '1', to: '2', label: 'def' }
+            ]};
+          doTest(result, exp);
         });
+
+
       });
     });
   </script>

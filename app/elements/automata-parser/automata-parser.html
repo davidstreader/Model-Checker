@@ -11,19 +11,50 @@
         /**
          * The code to be parsed
          */
-         code: {
+        code: {
            type: String,
            value: ''
-         },
+        },
 
          /**
           * The index we are up to
           * Used in the parsing process
           */
-         _index: {
+        _index: {
            type: Number,
            value: 0
-         }
+         },
+
+        _nodes: {
+          type: Array,
+          value: []
+         },
+
+        _edges: {
+          type: Array,
+          value: []
+         },
+
+         _currentEdge: {
+          type: Object,
+          value: null
+         },
+
+         _currentState: {
+          type: String,
+          value: ''
+         },
+
+        _state: {
+          type: Object,
+          value: function(){
+            return {
+              ready: 'ready',       //First case.
+              hasEdge: 'hasEdge', //Has an edge saved, if another label comes in prior to a transition, throws error.
+              inSequence: 'inSequence', //The user has specified an edge followed by a sequence token, awaiting another edge.
+            }
+          }
+        }
       },
 
       /**
@@ -33,30 +64,108 @@
        * @throws {this.SyntaxError} Code must be valid
        */
       parse: function(){
+
         var lexer = new Lexer(this.code);
 
-        this._index = 0;
-        var nodes = [];
-        var edges = [];
+        //Is this what node we are entering in to our sequence????
+        this._index = 0; 
+        this._nodes=[];
+        this._edges=[];
+        this._currentEdge = null;
+
+
+        //Maybe we should just have an array of edges seeing as node information is stored in an edge?
+     
+        this._currentState = this._state.ready;            
 
         while(lexer.hasNext()){
-          var token = lexer.next();
-          if(token.type == 'LABEL'){
 
+          var token = lexer.nextToken();
+        
+          if(token.type == 'LABEL'){         
+            this._parseLabel(token.text);
+          }else if(token.type == 'SEQUENCE'){
+            this._parseSequence();
+          }else if(token.type == 'DEFINE'){
+            this._parseDefine();
+          }else if(token.type == 'LBRACK'){
+            this._parseLbrack();
+          }else if(token.type == 'RBRACK'){
+            this._parseRbrack();
+          }else if(token.type == 'LSQBRACK'){
+            this._parseLsqbrack();
+          }else if(token.type == 'RSQBRACK'){
+            this._parseRsqbrack();
+          }else if(token.type == 'ZERO_MANY'){
+            this._parseZero_many();
+          }else if(token.type == 'ONE_MANY'){
+            this._parseOne_many();
+          }else if(token.type == 'OR'){
+            this._parseOr();
+          }else if(token.type == 'PARALLEL'){
+            this._parseParallel();
+          }else if(token.type == 'OPTIONAL'){
+            this._parseOptional();
+          }else if(token.type == 'ENDFILE'){
+            this._parseEndfile();
+          }else if(token.type == 'END'){
+            this._parseEnd();
+          }else if(token.type == 'EMPTY'){
+            this._parseEmpty();
+          }else if(token.type == 'UNKNOWN'){
+            this._parseUnkown();
           }
+
         }
+        
         //result.push(this._automataParseNode());
         //result.push(this._automataParseOperation());
         //result.push(this._automataParseNode());
 
         //return result;
+
+        return {nodes: this._nodes, edges: this._edges};
+      },
+
+
+      _parseLabel: function(text){
+        if(this._currentState == this._state.ready){
+          var e = new this._Edge(this._createNode(), this._createNode(), text);
+          this._currentEdge = e;
+          this._edges.push(e);
+          this._currentState = this._state.hasEdge;
+        }else if(this._currentState == this._state.inSequence){
+          var from = this._currentEdge.to;
+          //WE NEED TO CHECK TEXT FOR A POTENTIAL REPEAT OF LABEL
+          var e = new this._Edge(from, this._createNode(), text);
+          this._currentEdge = e;
+          this._edges.push(e);
+
+        //This shit is annoying
+        }else if(this._currentState == this._state.hasLabel){
+          throw new this.SyntaxError('Syntax Error at char '+this._index+': multiple states without a transition.'); //Bad error message?
+        }
+        else{
+              throw new this.SyntaxError('Syntax Error at char '+this._index+': Parsing a Label but in an unknown state: '+this._currentState+'. See admininistrator for help.');
+        }
+      },
+
+      _parseSequence: function(){
+        if(this._currentState == this._state.hasEdge){
+              this._currentState = this._state.inSequence;
+            }else{
+              throw new this.SyntaxError('Syntax Error at char '+this._index+': Specified a sequence without a prior Label.');
+            }
+          
       },
 
       /**
        * Parse a node
        *
-       * @return {string} The node's name
+       * @return {string} The node's nametoke
        */
+
+       //Are we going to use this
       _automataParseNode: function(){
         var initIndex = this._index;
         var reg = /[a-zA-Z][a-zA-Z0-9]*/g;
@@ -82,11 +191,27 @@
         throw new this.SyntaxError('Syntax Error at char '+this._index+': couldn\'t parse operation.');
       },
 
+      _createNode: function(){
+        var n = new this._Node(this._index++);
+        this._nodes.push(n);
+        return n;
+      },
+
+      _checkLabels: function(label){
+        var present = false;
+        for(var i = 0; i < this._index; i++){
+          if(_nodes[i].label == label){
+            present = true;
+            break;
+          }
+        }
+        return present;
+      },
       /**
        * The Node class
        */
-      _Node: function(label){
-        this.label = label;
+      _Node: function(i){
+        this.label = i;
       },
 
       /**
@@ -103,18 +228,6 @@
        */
       SyntaxError: function(msg){
         this.message = msg;
-      },
-
-      /**
-       * Called when element is created
-       */
-      created: function(){
-        /**
-         * Create the methods for the _Node class
-         */
-        this._Node.prototype.foo = function(){
-          return 'bar';
-        }
       }
 
     });
