@@ -25,6 +25,15 @@
 
       properties: {
         /**
+         * If true the editor will be brought into focus automatically when the elements is added to the dom
+         * @default false
+         */
+        autofocus: {
+          type: Boolean,
+          value: false
+        },
+
+        /**
          * the text editor
          */
         _editor: {
@@ -44,6 +53,12 @@
        */
       getCode: function(){
         return this._editor.getValue();
+      },
+
+      ready: function(){
+        if(this.autofocus){
+          this._editor.focus();
+        }
       }
     });
   })();
