@@ -9,17 +9,43 @@
   @apply(--layout-fit);
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serf;
   color: #6C7A89;
+  overflow: hidden;
 }
 #svg{
   width: 100%;
   height: 100%;
+  overflow: visible;
 }
-.edge{
-
+.node circle,
+.node rect {
+  fill: var(--automata-node-fill, #E2E6E7);
+  stroke: var(--automata-node-stroke, #8F939E);
+  stroke-width: var(--automata-node-stroke-width, 2px);
 }
-.node{
-
+.node:first-of-type circle,
+.node:first-of-type rect{
+  fill: var(--automata-start-node-fill, #F5B0B0);
+  stroke: var(--automata-start-node-stroke);
+  stroke-width: var(--automata-start-node-stroke-width);
 }
+.node .label {
+  fill: var(--automata-node-label-color, #000000);
+}
+.node:first-of-type .label {
+  fill: var(--automata-start-node-label-color, #000000);
+}
+.edgePath path {
+  fill: var(--automata-edge-fill, #8F939E);
+  stroke: var(--automata-edge-stroke, #8F939E);
+  stroke-width: var(--automata-edge-stroke-width, 2px);
+}
+.edgeLabel {
+  fill: var(--automata-edge-label-color, #000000);
+}
+/*
+.edgePath defs marker path{
+  fill: #8F939E;
+}*/
 </style>
 <template>
   <svg id="svg"></svg>
@@ -32,66 +58,84 @@
 
     properties: {
       /**
-      * JS Doc
+      * The array of nodes to draw.
+      * A node is a Object with a unquie 'id' field and a 'label' field
       */
       nodes: {
         type: Array,
-        value: [ "0", "1", "2" ]
+        value: []
       },
 
+      /**
+      * The array of edges to draw.
+      * An edge is a Object that has a 'from' and a 'to' field specifying the nodes it connects.
+      * It may also have a 'label' field (if no label is given, epsilon (ε) will be used)
+      */
       edges: {
         type: Array,
-        value: [
-          {from: "0", to: "1", data: { label: "A" }},
-          {from: "1", to: "2", data: { label: "B" }}
-        ]
+        value: []
       }
     },
 
-    /**
-    * JS Doc
-    */
     ready: function(){
+      this.transform('translate(50%, 50%)', this.$.svg);
+      this.redraw();
+    },
+
+    /**
+    * Redraw the automata.
+    */
+    redraw: function(){
+      // remove the child nodes (the old graph) from the svg element
+      for(var i=0; i<this.$.svg.childNodes.length; i++){
+        Polymer.dom(this.$.svg).removeChild(this.$.svg.childNodes[i]);
+      }
 
       // Create a new directed graph
-      var automata = new dagreD3.graphlib.Graph().setGraph({});
+      var automata = new dagreD3.graphlib.Graph();
       automata.setGraph({
         // nodesep: 70,
         // ranksep: 50,
-        rankdir: "LR",
-        marginx: 20,
-        marginy: 20
+        rankdir: 'LR',
+        marginx: 0,
+        marginy: 0
       });
 
       // Automatically label each of the nodes
       this.nodes.forEach(function(node) {
-        automata.setNode(node, { label: node, shape: "circle" });
+        automata.setNode(node.id, { label: node.label, shape: 'circle' });
       });
 
       // Default to assigning a new object as a label for each new edge.
-      automata.setDefaultEdgeLabel(function() { return {}; });
+      automata.setDefaultEdgeLabel(function() {
+        return {};
+      });
 
       // Automatically set each of the edges, with:
       //  - the from node's label
       //  - the to node's label
       //  - the edge's extra data (could be label, width, height, etc.)
       this.edges.forEach(function(edge) {
-        automata.setEdge(edge.from, edge.to, edge.data);
+        automata.setEdge(edge.from, edge.to, { label: edge.label || 'ε' });
       });
 
-      // Add some custom colors based on state
-      automata.node('0').style = "fill: #F5B0B0";
+      // add a new group node to the svg element for the new graph
+      var svgGroup = d3.select(this.$.svg).append('g');
 
-      var svg = d3.select(this.$.svg),
-          g = svg.append('g'),
-          inner = svg.select('g');
-
-      // Create the renderer
+      // create the renderer,
+      // then run the renderer, which will draw the graph and insert it into the svgGroup.
+      // Note: trying call render method with a node (first arg) that is not yet in the Dom will cause an error
       var render = new dagreD3.render();
+      render(svgGroup, automata);
 
-      // Run the renderer. This is what draws the final graph.
-      render(inner, automata);
+      // remove the svg element and then put it back in properly
+      // (otherwise thing like shady dom css cannot be applied)
+      Polymer.dom(this.root).appendChild(Polymer.dom(this.root).removeChild(this.$.svg));
 
+      // center the graph
+      var xCenterOffset = -automata.graph().width / 2;
+      var yCenterOffset = -automata.graph().height / 2;
+      svgGroup.select('.output').attr('transform', 'translate(' + xCenterOffset + ', ' + yCenterOffset + ')');
     }
   });
 })();

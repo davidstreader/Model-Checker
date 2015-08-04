@@ -2,7 +2,7 @@
 <html>
 <head>
 
-  <title>_template-element</title>
+  <title>automata-visualisation</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -11,26 +11,70 @@
 
   <link rel="import" href="automata-visualisation.html">
 
-  <style>
-  .style-scope.automata-visualisation .node circle,
-  .style-scope.automata-visualisation .node rect {
-    stroke: #8F939E;
-    fill: #E2E6E7;
-  }
-  .style-scope.automata-visualisation .edgePath path {
-    stroke: #8F939E;
-    fill: #333;
-    stroke-width: 1.5px;
-  }
-  .style-scope.automata-visualisation .edgePath defs marker path{
-    fill: #8F939E;
-  }
+  <style is="custom-style">
+    #automata{
+      --automata-node-fill: blue;
+      --automata-node-stroke: orange;
+      --automata-node-stroke-width: 2px;
+      --automata-start-node-fill: red;
+      --automata-start-node-stroke: yellow;
+      --automata-start-node-stroke-width: 2px;
+      --automata-node-label-color: white;
+      --automata-start-node-label-color: orange;
+      --automata-edge-fill: purple;
+      --automata-edge-stroke: pink;
+      --automata-edge-stroke-width: 3px;
+      --automata-edge-label-color: grey;
+    }
+    body{
+      position: relative
+    }
+    .frame{
+      width: 80%;
+      height: 80%;
+      top: 10%;
+      right: 10%;
+      bottom: 10%;
+      left: 10%;
+      position: absolute;
+      border: solid 1px red;
+    }
   </style>
-
 </head>
-<body>
+<body class="fullbleed">
+  <template is="dom-bind" id="app">
+    <div class="frame">
+      <automata-visualisation id="automata" nodes="[[nodes]]" edges="[[edges]]"></automata-visualisation>
+    </div>
+  </template>
+  <script>
+  (function(document) {
+    'use strict';
 
-  <automata-visualisation></automata-visualisation>
+    var app = document.querySelector('#app');
 
+    app.nodes = [
+      {id: 0, label: 'a'},
+      {id: 1, label: 'b'},
+      {id: 2, label: 'c'},
+      {id: 3, label: 'd'},
+      {id: 4, label: 'e'}
+    ];
+
+    app.edges = [
+      {from: 0, to: 1, label: 'A'},
+      {from: 1, to: 2, label: 'B'},
+      {from: 2, to: 3},
+      {from: 1, to: 3, label: 'D'},
+      {from: 0, to: 3, label: 'E'},
+      {from: 0, to: 4, label: 'F'},
+      {from: 4, to: 1, label: 'G'}
+    ];
+
+    window.addEventListener('WebComponentsReady', function() {
+      app.$.automata.redraw();
+    });
+  })(document);
+  </script>
 </body>
 </html>
