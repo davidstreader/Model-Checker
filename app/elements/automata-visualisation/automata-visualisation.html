@@ -79,7 +79,10 @@
 
     ready: function(){
       this.transform('translate(50%, 50%)', this.$.svg);
-      this.redraw();
+      var $this = this;
+      setTimeout(function(){
+        $this.redraw();
+      }, 0);
     },
 
     /**
