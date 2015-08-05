@@ -19,7 +19,7 @@
     suite('lexer tests', function() {
 
       test('valid alphabet', function() {
-        var code = "= ( ) [ ] -> * + | || ? . ε unknown test"
+        var code = "= ( ) [ ] -> * + | || ? . test"
         var lexer = new Lexer(code);
 
         assert.equal(lexer.hasNext(), true);
@@ -72,14 +72,6 @@
         token = lexer.next();
         assert.equal(token.type, "END");
 
-        //should be parsing ε
-        token = lexer.next();
-        assert.equal(token.type, "EMPTY");
-
-        //should be parsing unknown
-        token = lexer.next();
-        assert.equal(token.type, "UNKNOWN");
-
         //should be parsing test
         token = lexer.next();
         assert.equal(token.type, "LABEL");
@@ -88,6 +80,21 @@
         token = lexer.next();
         assert.equal(token.type, "ENDFILE");
 
+      });
+
+      test('valid constants test', function() {
+        var code = "EOF unknown"
+        var lexer = new Lexer(code);
+
+        assert.equal(lexer.hasNext(), true);
+
+        var token = lexer.next();
+        //should be parsing EOF which is interpreted as a label
+        assert.equal(token.type, "LABEL");
+
+        //should find we're at the unknown which is interpreted as a label
+        token = lexer.next();
+        assert.equal(token.type, "LABEL");
       });
 
       test('valid two label test', function() {
@@ -129,6 +136,41 @@
 
         //should find we're at the EOF
         token = lexer.next();
+        assert.equal(token.type, "ENDFILE");
+      });
+
+      test('valid peek test', function() {
+        var code = "a -> b "
+        var lexer = new Lexer(code);
+
+        assert.equal(lexer.hasNext(), true);
+
+        //should be peeking a
+        var token = lexer.peek();
+        assert.equal(token.type, "LABEL");
+        assert.equal(token.text, "a");
+
+        //should be parsing a
+        lexer.next();
+
+        //should be peeking ->
+        token = lexer.peek();
+        assert.equal(token.type, "SEQUENCE");
+        assert.equal(token.text, "->");
+
+        //should be parsing ->
+        lexer.next();
+
+        //should be peeking b
+        token = lexer.peek();
+        assert.equal(token.type, "LABEL");
+        assert.equal(token.text, "b");
+
+        //should be parsing b
+        lexer.next();
+
+        //should find we're at the EOF
+        token = lexer.peek();
         assert.equal(token.type, "ENDFILE");
       });
 
