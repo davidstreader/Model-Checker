@@ -68,8 +68,7 @@
               ready: 'ready',       //First case. Must be a define first.
               hasEdge: 'hasEdge', //Has an edge saved, if another label comes in prior to a transition, throws error.
               inSequence: 'inSequence', //The user has specified an edge followed by a sequence token, awaiting another label.
-              firstLabel: 'firstLabel', //The first label has been declared the next token should be a define.
-              waiting: 'waiting'
+              waiting: 'waiting',        //Parsed a define now awaiting label input to start the model.
             }
           }
         }
@@ -82,18 +81,13 @@
        * @throws {this.SyntaxError} Code must be valid
        */
       parse: function(){
+        //Initialising all variables to start parsing. May seem unneccessary but tests were failing due to some weird overlap.
         this.variableList = [];
         this._lexer = new Lexer(this.code);
-
-        //Is this what node we are entering in to our sequence????
         this._index = 0;
         this._nodes=[];
         this._edges=[];
         this._currentEdge = null;
-
-
-        //Maybe we should just have an array of edges seeing as node information is stored in an edge?
-
         this._currentState = this._state.ready;
 
         while(this._lexer.hasNext()){
@@ -136,21 +130,30 @@
 
         }
 
-        //result.push(this._automataParseNode());
-        //result.push(this._automataParseOperation());
-        //result.push(this._automataParseNode());
-
-        //return result;
-
-        //var returnObj = {};
-
-        //returnObj.varname = {nodes: this._nodes, edges: this._edges};
-        //returnObj.varname2 = {nodes: this._nodes, edges: this._edges};
-
-        //return returnObj;
         return this.variableList;
       },
 
+      /**
+       *This function parses an optional type of token, '?'.
+       *if it has already parsed a '?' it doesn't add another edge.
+       */
+      _parseOptional: function(){
+        if(this._expectState(this._state.hasEdge)){
+          if(this._currentEdge.text == 'ε'){
+
+          }else{
+            var e = new this._Edge(this._currentEdge.from, this._currentEdge.to, 'ε');
+            this._currentEdge = e;
+            this._edges.push(e);
+            this._currentState = this._state.hasEdge;
+          }
+        }
+      }
+      /**
+       *This helper function takes a state and compares it to the 
+       *current state, returns true if the same, throws an error and
+       *returns false if different.
+       */
       _expectState: function(state){
         if(this._currentState != state){
           throw new this.SyntaxError('State Error: Expected state(' + state + '), differed from current state,(' + this._currentState + ').');
@@ -159,6 +162,12 @@
         return true;
       },
 
+      /**
+       *This helper method checks the next token out of the lexer
+       *and compares it with the given parameter, if they are the same 
+       *it consumes it and returns true, returns false and throws an error
+       *if they are different.
+       */
       _gobble: function(token){
         if(this._lexer.peek().text == token){
           this._lexer.next();
@@ -191,7 +200,7 @@
           var e = new this._Edge(from, this._createNode(), text);
           this._currentEdge = e;
           this._edges.push(e);
-          this._currentState = this._state.waiting;
+          this._currentState = this._state.hasEdge;
         }else if(this._currentState == this._state.waiting){
           var e = new this._Edge(this._createNode(), this._createNode(), text);
           this._currentEdge = e;
@@ -247,12 +256,20 @@
         throw new this.SyntaxError('Syntax Error at char '+this._index+': couldn\'t parse operation.');
       },
 
+      /**
+       *This function creates a node labelling it
+       *with the current index and increments the index
+       *then returns the node.
+       */
       _createNode: function(){
         var n = new this._Node(this._index++);
         this._nodes.push(n);
         return n;
       },
 
+      /**
+        *Old helper function? neccessary?
+        */
       _checkLabels: function(label){
         var present = false;
         for(var i = 0; i < this._index; i++){
