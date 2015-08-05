@@ -185,7 +185,8 @@
           this.variableList.push(tempVariable);
           this._nodes = [];
           this._edges = [];
-          this._currentState = this._state.ready;          
+          this._currentState = this._state.ready; 
+          this._index = 0;         
         }
       },
 
@@ -199,6 +200,7 @@
         }else if(this._currentState == this._state.inSequence){
           //var from = this._currentEdge.to;
           var from = this._nodes[this._currentEdge.to];
+          console.log(from);
           var to = this._createNode();
           var e = new this._Edge(from.id, to.id, text);
           this._currentEdge = e;
