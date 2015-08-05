@@ -15,18 +15,19 @@
   <style is="custom-style">
     automata-visualisation{
       @apply(--layout-fit);
-      --automata-node-fill: blue;
-      --automata-node-stroke: orange;
-      --automata-node-stroke-width: 2px;
-      --automata-start-node-fill: red;
-      --automata-start-node-stroke: yellow;
-      --automata-start-node-stroke-width: 2px;
-      --automata-node-label-color: white;
-      --automata-start-node-label-color: orange;
-      --automata-edge-fill: purple;
-      --automata-edge-stroke: pink;
-      --automata-edge-stroke-width: 3px;
-      --automata-edge-label-color: grey;
+      --node-fill: blue;
+      --node-stroke: orange;
+      --node-stroke-width: 2px;
+      --start-node-fill: red;
+      --start-node-stroke: yellow;
+      --start-node-stroke-width: 2px;
+      --node-label-color: white;
+      --start-node-label-color: orange;
+      --edge-fill: purple;
+      --edge-stroke: pink;
+      --edge-stroke-width: 3px;
+      --edge-label-color: grey;
+      --label-font-size: 16pt;
     }
     body{
       position: relative
@@ -46,7 +47,7 @@
 <body class="fullbleed">
   <template is="dom-bind" id="app">
     <div class="frame">
-      <automata-visualisation nodes="[[nodes]]" edges="[[edges]]"></automata-visualisation>
+      <automata-visualisation name="My Automata" nodes="[[nodes]]" edges="[[edges]]"></automata-visualisation>
     </div>
   </template>
   <script>

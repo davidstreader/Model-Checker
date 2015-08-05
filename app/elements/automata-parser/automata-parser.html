@@ -45,13 +45,31 @@
           value: ''
          },
 
+        _variableName: {
+          type: String,
+          value: ''
+        },
+
+        _lexer: {
+          type: Object,
+          value: null
+        },
+
+        //[{Label, Nodes, Edges}]
+        variableList: {
+          type: Array,
+          value: []
+        },
+
         _state: {
           type: Object,
           value: function(){
             return {
-              ready: 'ready',       //First case.
+              ready: 'ready',       //First case. Must be a define first.
               hasEdge: 'hasEdge', //Has an edge saved, if another label comes in prior to a transition, throws error.
-              inSequence: 'inSequence', //The user has specified an edge followed by a sequence token, awaiting another edge.
+              inSequence: 'inSequence', //The user has specified an edge followed by a sequence token, awaiting another label.
+              firstLabel: 'firstLabel', //The first label has been declared the next token should be a define.
+              waiting: 'waiting'
             }
           }
         }
@@ -64,8 +82,8 @@
        * @throws {this.SyntaxError} Code must be valid
        */
       parse: function(){
-
-        var lexer = new Lexer(this.code);
+        this.variableList = [];
+        this._lexer = new Lexer(this.code);
 
         //Is this what node we are entering in to our sequence????
         this._index = 0;
@@ -78,16 +96,16 @@
 
         this._currentState = this._state.ready;
 
-        while(lexer.hasNext()){
+        while(this._lexer.hasNext()){
 
-          var token = lexer.next();
+          var token = this._lexer.next();
 
           if(token.type == 'LABEL'){
             this._parseLabel(token.text);
           }else if(token.type == 'SEQUENCE'){
             this._parseSequence();
           }else if(token.type == 'DEFINE'){
-            this._parseDefine();
+              this._parseDefine();
           }else if(token.type == 'LBRACK'){
             this._parseLbrack();
           }else if(token.type == 'RBRACK'){
@@ -124,29 +142,66 @@
 
         //return result;
 
-        return {nodes: this._nodes, edges: this._edges};
+        //var returnObj = {};
+
+        //returnObj.varname = {nodes: this._nodes, edges: this._edges};
+        //returnObj.varname2 = {nodes: this._nodes, edges: this._edges};
+
+        //return returnObj;
+        return this.variableList;
+      },
+
+      _expectState: function(state){
+        if(this._currentState != state){
+          throw new this.SyntaxError('State Error: Expected state(' + state + '), differed from current state,(' + this._currentState + ').');
+          return false;
+        }
+        return true;
+      },
+
+      _gobble: function(token){
+        if(this._lexer.peek().text == token){
+          this._lexer.next();
+          return true;
+        }else{
+          throw new this.SyntaxError('Syntax Error: Expected: (' + token + '), found: (' + this._lexer.peek().text + ').');
+          return false;
+        }
+      },
+
+      _parseEnd: function(){        
+        if(this._expectState(this._state.waiting)){
+          var tempVariable = {label: this._variableName, nodes: this._nodes, edges: this._edges};
+          this.variableList.push(tempVariable);
+          this._nodes = [];
+          this._edges = [];
+          this._currentState = this._state.ready;          
+        }
       },
 
 
       _parseLabel: function(text){
         if(this._currentState == this._state.ready){
+          this._variableName = text;
+          if(this._gobble('=')){
+            this._currentState = this._state.waiting;
+          }
+        }else if(this._currentState == this._state.inSequence){
+          var from = this._currentEdge.to;
+          var e = new this._Edge(from, this._createNode(), text);
+          this._currentEdge = e;
+          this._edges.push(e);
+          this._currentState = this._state.waiting;
+        }else if(this._currentState == this._state.waiting){
           var e = new this._Edge(this._createNode(), this._createNode(), text);
           this._currentEdge = e;
           this._edges.push(e);
           this._currentState = this._state.hasEdge;
-        }else if(this._currentState == this._state.inSequence){
-          var from = this._currentEdge.to;
-          //WE NEED TO CHECK TEXT FOR A POTENTIAL REPEAT OF LABEL
-          var e = new this._Edge(from, this._createNode(), text);
-          this._currentEdge = e;
-          this._edges.push(e);
-
-        //This shit is annoying
         }else if(this._currentState == this._state.hasLabel){
           throw new this.SyntaxError('Syntax Error at char '+this._index+': multiple states without a transition.'); //Bad error message?
         }
         else{
-              throw new this.SyntaxError('Syntax Error at char '+this._index+': Parsing a Label but in an unknown state: '+this._currentState+'. See admininistrator for help.');
+          throw new this.SyntaxError('Syntax Error at char '+this._index+': Parsing a Label but in an unknown state: '+this._currentState+'. See admininistrator for help.');
         }
       },
 
@@ -159,6 +214,7 @@
 
       },
 
+  
       /**
        * Parse a node
        *
@@ -211,7 +267,8 @@
        * The Node class
        */
       _Node: function(i){
-        this.label = i;
+        this.label = i + '';
+        this.id = i;
       },
 
       /**
