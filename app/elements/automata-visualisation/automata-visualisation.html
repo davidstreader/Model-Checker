@@ -170,7 +170,9 @@
       var defaultInitialScale = 1.5;
 
       // Compute the scale where the automata will fit
-      var computedInitialScale = svgWidth / automataWidth;
+      var computedInitialScaleForWitdth = svgWidth / (automataWidth * 1.1),
+          computedInitialScaleForHeight = svgHeight / (automataHeight * 1.1),
+          computedInitialScale = Math.min(computedInitialScaleForHeight, computedInitialScaleForWitdth);
 
       // Choose the scale which is smaller, such that we ensure the entire automata is viewable
       var initialScale = Math.min(defaultInitialScale, computedInitialScale);
