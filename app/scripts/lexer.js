@@ -25,6 +25,10 @@ function Lexer(ltsString) {
         LABEL: '[a-zA-Z]+'
     };
 
+    //these are the tokens which should not be parsed as input, only ouput
+    // i.e. "EOF" should be parsed as label, not endfile
+    this.PRIVATE_TOKENS = ["ENDFILE", "EMPTY", "UNKNOWN"];
+
 };
 
 
@@ -93,6 +97,14 @@ Lexer.prototype._nextToken = function () {
 
         //for each token type defined, check for matches and return the match whose token type is the longest
         for (type in this.TOKEN_TYPE) {
+
+            //constant tokens should not be evaluated
+            if(_.contains(this.PRIVATE_TOKENS, type)){
+              console.log("Skipping private type: " + type);
+              continue;
+            }
+
+            console.log("Evaluating type: " + type);
 
             //get the token e.g. '+'
             var token = this.TOKEN_TYPE[type];
