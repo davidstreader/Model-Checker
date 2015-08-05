@@ -140,10 +140,10 @@
        */
       _parseOptional: function(){
         if(this._expectState(this._state.hasEdge)){
-          if(this._currentEdge.text == undefined){
+          if(this._currentEdge.label == undefined){
 
           }else{
-            var e = new this._Edge(this._currentEdge.from.id, this._currentEdge.to.id, undefined);
+            var e = new this._Edge(this._currentEdge.from, this._currentEdge.to, undefined);
             this._currentEdge = e;
             this._edges.push(e);
             this._currentState = this._state.hasEdge;
