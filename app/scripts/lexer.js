@@ -38,8 +38,38 @@ Lexer.prototype.hasNext = function () {
     return false;
 }
 
-//Return the next token and move the index if found, else return error
-Lexer.prototype.nextToken = function () {
+//Return the next token and do not move the index if found, return an error if not valid
+Lexer.prototype.peek = function () {
+
+    //get the next token
+    var token = this._nextToken();
+
+    //simply return the token do not consume
+    return token;
+}
+
+//Return the next token and move the index if found, return an error if not valid
+Lexer.prototype.next = function () {
+
+    //get the next token
+    var token = this._nextToken();
+
+    //check that we have found a valid token
+    if (token.type == 'ENDFILE') {
+      //simply return the token do not consume
+      return token;
+    } else {
+        //consume the token text, moving the index
+        this._consume(token.text);
+        //return the token we found
+        return token;
+    }
+}
+
+//Return the next token (only consuming whitespace) or return error
+Lexer.prototype._nextToken = function () {
+
+    // var temporaryIndex = this.index;
 
     // while there is stuff to parse, keep looking to return the next token
     while (this.hasNext()) {
@@ -54,6 +84,7 @@ Lexer.prototype.nextToken = function () {
         if(/^\s/.test(ltsStringAtIndex)){
           // consume the character at the beginning of the string
           var ltsStringStart = ltsStringAtIndex.substring(0, 1);
+          //temporaryIndex = temporaryIndex + ltsStringStart.length;
           this._consume(ltsStringStart);
 
           //go to the beginning of the loop
@@ -102,8 +133,6 @@ Lexer.prototype.nextToken = function () {
             //no matches found
             throw new Error('Unknown type of ' + ltsStringAtIndex);
         } else {
-            //consume the token text, moving the index
-            this._consume(currentToken.text);
             //return the token we found
             return currentToken;
         }

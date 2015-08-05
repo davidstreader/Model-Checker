@@ -19,77 +19,73 @@
     suite('lexer tests', function() {
 
       test('valid alphabet', function() {
-        var code = "= ( ) [ ] -> * + | || ? EOF . ε unknown test"
+        var code = "= ( ) [ ] -> * + | || ? . ε unknown test"
         var lexer = new Lexer(code);
 
         assert.equal(lexer.hasNext(), true);
 
-        var token = lexer.nextToken();
+        var token = lexer.next();
         //should be parsing =
         assert.equal(token.type, "DEFINE");
 
         //should be parsing (
-        token = lexer.nextToken();
+        token = lexer.next();
         assert.equal(token.type, "LBRACK");
 
         //should be parsing )
-        token = lexer.nextToken();
+        token = lexer.next();
         assert.equal(token.type, "RBRACK");
 
         //should be parsing [
-        token = lexer.nextToken();
+        token = lexer.next();
         assert.equal(token.type, "LSQBRACK");
 
         //should be parsing ]
-        token = lexer.nextToken();
+        token = lexer.next();
         assert.equal(token.type, "RSQBRACK");
 
         //should be parsing ->
-        token = lexer.nextToken();
+        token = lexer.next();
         assert.equal(token.type, "SEQUENCE");
 
         //should be parsing *
-        token = lexer.nextToken();
+        token = lexer.next();
         assert.equal(token.type, "ZERO_MANY");
 
         //should be parsing +
-        token = lexer.nextToken();
+        token = lexer.next();
         assert.equal(token.type, "ONE_MANY");
 
         //should be parsing |
-        token = lexer.nextToken();
+        token = lexer.next();
         assert.equal(token.type, "OR");
 
         //should be parsing ||
-        token = lexer.nextToken();
+        token = lexer.next();
         assert.equal(token.type, "PARALLEL");
 
         //should be parsing ?
-        token = lexer.nextToken();
+        token = lexer.next();
         assert.equal(token.type, "OPTIONAL");
 
-        //should be parsing EOF
-        token = lexer.nextToken();
-        assert.equal(token.type, "ENDFILE");
-
         //should be parsing .
-        token = lexer.nextToken();
+        token = lexer.next();
         assert.equal(token.type, "END");
 
         //should be parsing ε
-        token = lexer.nextToken();
+        token = lexer.next();
         assert.equal(token.type, "EMPTY");
 
         //should be parsing unknown
-        token = lexer.nextToken();
+        token = lexer.next();
         assert.equal(token.type, "UNKNOWN");
 
         //should be parsing test
-        token = lexer.nextToken();
+        token = lexer.next();
         assert.equal(token.type, "LABEL");
 
         //should be parsing end of code
-        token = lexer.nextToken();
+        token = lexer.next();
         assert.equal(token.type, "ENDFILE");
 
       });
@@ -100,16 +96,16 @@
 
         assert.equal(lexer.hasNext(), true);
 
-        var token = lexer.nextToken();
+        var token = lexer.next();
         //should be parsing a
         assert.equal(token.type, "LABEL");
 
         //should be parsing b
-        token = lexer.nextToken();
+        token = lexer.next();
         assert.equal(token.type, "LABEL");
 
         //should find we're at the EOF
-        token = lexer.nextToken();
+        token = lexer.next();
         assert.equal(token.type, "ENDFILE");
       });
 
@@ -119,20 +115,20 @@
 
         assert.equal(lexer.hasNext(), true);
 
-        var token = lexer.nextToken();
+        var token = lexer.next();
         //should be parsing a
         assert.equal(token.type, "LABEL");
 
         //should be parsing ->
-        token = lexer.nextToken();
+        token = lexer.next();
         assert.equal(token.type, "SEQUENCE");
 
         //should be parsing b
-        token = lexer.nextToken();
+        token = lexer.next();
         assert.equal(token.type, "LABEL");
 
         //should find we're at the EOF
-        token = lexer.nextToken();
+        token = lexer.next();
         assert.equal(token.type, "ENDFILE");
       });
 
@@ -144,40 +140,40 @@
 
         assert.equal(lexer.hasNext(), true);
 
-        var token = lexer.nextToken();
+        var token = lexer.next();
         //should be parsing CLOCK
         assert.equal(token.type, "LABEL");
 
         //should be parsing =
-        token = lexer.nextToken();
+        token = lexer.next();
         assert.equal(token.type, "DEFINE");
 
         //should be parsing (
-        token = lexer.nextToken();
+        token = lexer.next();
         assert.equal(token.type, "LBRACK");
 
         //should be parsing tick
-        token = lexer.nextToken();
+        token = lexer.next();
         assert.equal(token.type, "LABEL");
 
         //should be parsing ->
-        token = lexer.nextToken();
+        token = lexer.next();
         assert.equal(token.type, "SEQUENCE");
 
         //should be parsing CLOCK
-        token = lexer.nextToken();
+        token = lexer.next();
         assert.equal(token.type, "LABEL");
 
         //should be parsing )
-        token = lexer.nextToken();
+        token = lexer.next();
         assert.equal(token.type, "RBRACK");
 
         //should be parsing .
-        token = lexer.nextToken();
+        token = lexer.next();
         assert.equal(token.type, "END");
 
         //should find we're at the EOF
-        token = lexer.nextToken();
+        token = lexer.next();
         assert.equal(token.type, "ENDFILE");
       });
 
