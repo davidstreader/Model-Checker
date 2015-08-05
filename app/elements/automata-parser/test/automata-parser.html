@@ -30,6 +30,9 @@
         });
 
         var doTest = function(result, exp){
+          console.log('exp length: ' + exp.length);
+          console.log('result length: ' + result.length);
+          assert.equal(result.length, exp.length, "The number of variables in the results does not match the number in the expected.");
 
           for(var i = 0; i < result.length; i++){
             assert.equal(result[i].label, exp[i].label, "Labels are not equivalent");
@@ -47,16 +50,35 @@
 
         };
 
-        test('Simple variable and sequence', function(){
-
-          parser.code = 'test = a->b';
+         test('Muli-character labels, with spaces', function(){
+          parser.code = 'test=asc->bsdd.';
           var result = parser.parse();
 
           var exp = [
             {
               label: 'test', 
               nodes: [
-                {label: 'a'}, {label:'b'}
+                {label: '0'}, {label:'1'}, {label: '2'}
+              ], 
+              edges: [
+                { from: '0', to: '1', label: 'asc' },
+                { from: '1', to: '2', label: 'bsdd' }
+              ]
+            }
+          ];
+          doTest(result, exp);
+        });
+
+        test('Simple variable and sequence', function(){
+
+          parser.code = 'test = a->b.';
+          var result = parser.parse();
+
+          var exp = [
+            {
+              label: 'test', 
+              nodes: [
+                {label: '0'}, {label:'1'}, {label: '2'}
               ], 
               edges: [
                 { from: '0', to: '1', label: 'a' },
@@ -64,8 +86,40 @@
               ]
             }
           ];
-
+          doTest(result, exp);
         });
+
+        test('Multiple Variables with multiple sequences', function(){
+
+          parser.code = 'test = a->b. hello = c->d.';
+          var result = parser.parse();
+
+          var exp = [
+            {
+              label: 'test', 
+              nodes: [
+                {label: '0'}, {label:'1'}, {label: '2'}
+              ], 
+              edges: [
+                { from: '0', to: '1', label: 'a' },
+                { from: '1', to: '2', label: 'b' }
+              ]
+            },
+            {
+              label: 'hello', 
+              nodes: [
+                {label: '3'}, {label:'4'}, {label: '5'}
+              ], 
+              edges: [
+                { from: '3', to: '4', label: 'c' },
+                { from: '4', to: '5', label: 'd' }
+              ]
+            }
+          ];
+          doTest(result, exp);
+        });
+
+       
 
       });
     });

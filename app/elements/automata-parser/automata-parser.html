@@ -82,7 +82,7 @@
        * @throws {this.SyntaxError} Code must be valid
        */
       parse: function(){
-
+        this.variableList = [];
         this._lexer = new Lexer(this.code);
 
         //Is this what node we are entering in to our sequence????
@@ -170,7 +170,7 @@
       },
 
       _parseEnd: function(){        
-        if(_expectState(this._state.waiting)){
+        if(this._expectState(this._state.waiting)){
           var tempVariable = {label: this._variableName, nodes: this._nodes, edges: this._edges};
           this.variableList.push(tempVariable);
           this._nodes = [];
@@ -191,6 +191,7 @@
           var e = new this._Edge(from, this._createNode(), text);
           this._currentEdge = e;
           this._edges.push(e);
+          this._currentState = this._state.waiting;
         }else if(this._currentState == this._state.waiting){
           var e = new this._Edge(this._createNode(), this._createNode(), text);
           this._currentEdge = e;
