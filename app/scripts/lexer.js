@@ -100,11 +100,8 @@ Lexer.prototype._nextToken = function () {
 
             //constant tokens should not be evaluated
             if(_.contains(this.PRIVATE_TOKENS, type)){
-              console.log("Skipping private type: " + type);
               continue;
             }
-
-            console.log("Evaluating type: " + type);
 
             //get the token e.g. '+'
             var token = this.TOKEN_TYPE[type];
