@@ -5,44 +5,19 @@
 
   window.addEventListener('WebComponentsReady', function() {
 
-    app.automatas = [
-      {
-        name: 'cheese',
-        automata: {
-          nodes: [
-            {id: 0, label: 'a'},
-            {id: 1, label: 'b'},
-            {id: 2, label: 'c'},
-            {id: 3, label: 'd'},
-            {id: 4, label: 'e'}
-          ],
-          edges: [
-            {from: 0, to: 1, label: 'A'},
-            {from: 1, to: 2, label: 'B'},
-            {from: 2, to: 3},
-            {from: 1, to: 3, label: 'D'},
-            {from: 0, to: 3, label: 'E'},
-            {from: 0, to: 4, label: 'F'},
-            {from: 4, to: 1, label: 'G'}
-          ]
-        }
-      },
-      {
-        name: 'dog',
-        automata: {
-          nodes: [
-            {id: 0, label: 'a'},
-            {id: 1, label: 'b'},
-            {id: 2, label: 'c'}
-          ],
-          edges: [
-            {from: 0, to: 1, label: 'A'},
-            {from: 1, to: 2, label: 'B'},
-            {from: 0, to: 2, label: 'C'}
-          ]
-        }
-      }
-    ];
+    app.data = { automatas: [] };
+
+    app.compile = function(){
+      app.$.parser.code = app.$['text-editor'].getCode();
+      var automatas = app.$.parser.parse();
+
+      app.data = { automatas: [] };
+
+      setTimeout(function(){
+        app.data.automatas = automatas;
+        app.notifyPath('data.automatas', app.data.automatas);
+      }, 0);
+    };
 
   });
 })(document);

@@ -77,14 +77,14 @@
   .frame > *:last-child{
     margin-top: 4px;
   }
-  text-editor{
+  #text-editor{
     position:absolute;
     top: 0;
     bottom: 150px;
     left: 0;
     right: 0;
   }
-  console-logger{
+  #console{
     position: absolute;
     top: calc(100% - 150px);
     bottom: 0;
@@ -101,16 +101,17 @@
 <body unresolved class="fullbleed layout vertical">
   <span id="browser-sync-binding"></span>
   <template is="dom-bind" id="app">
+    <automata-parser id="parser"></automata-parser>
     <paper-toolbar id="main-toolbar">
-      <paper-icon-button icon="extension" title="Compile"></paper-icon-button>
+      <paper-icon-button icon="extension" title="Compile" on-tap="compile"></paper-icon-button>
     </paper-toolbar>
     <div class="left frame">
-      <text-editor autofocus></text-editor>
-      <console-logger></console-logger>
+      <text-editor autofocus id="text-editor"></text-editor>
+      <console-logger id="console"></console-logger>
     </div>
     <div class="right frame">
-      <template is="dom-repeat" items="[[automatas]]">
-        <automata-visualisation name="[[item.name]]" nodes="[[item.automata.nodes]]" edges="[[item.automata.edges]]"></automata-visualisation>
+      <template is="dom-repeat" items="[[data.automatas]]">
+        <automata-visualisation name="[[item.label]]" nodes="[[item.nodes]]" edges="[[item.edges]]"></automata-visualisation>
       </template>
     </div>
   </template>
