@@ -8,10 +8,11 @@
 
   <script src="../../../bower_components/webcomponentsjs/webcomponents-lite.js"></script>
   <link rel="import" href="../../../bower_components/iron-component-page/iron-component-page.html">
+  <link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
 
   <link rel="import" href="console-logger.html">
 
-  <style>
+  <style is="custom-style">
   body{
     position: relative;
   }
@@ -25,26 +26,31 @@
     position: absolute;
     border: solid 1px red;
   }
+  #console {
+    @apply(--layout-fit);
+    --log-text-color: green;
+    --error-text-color: yellow;
+    background-color: darkgrey;
+  }
   </style>
 </head>
 <body class="fullbleed">
-  <dom-module id="app-element">
-    <style>
-      #console {
-        --log-text-color: green;
-        --error-text-color: yellow;
-        background-color: darkgrey;
-      }
-    </style>
-    <template>
-      <console-logger id="console"></console-logger>
-    </template>
-    <script>
-      Polymer({ is: 'app-element'});
-    </script>
-  </dom-module>
   <div class="frame">
-    <app-element></app-element>
+    <console-logger id="console"></console-logger>
   </div>
+  <script>
+  (function(document) {
+    'use strict';
+
+    var console = document.querySelector('#console');
+
+    window.addEventListener('WebComponentsReady', function() {
+      console.log('test');
+      console.log('test 123');
+      console.error('something when wrong');
+      console.log('test 123');
+    });
+  })(document);
+  </script>
 </body>
 </html>

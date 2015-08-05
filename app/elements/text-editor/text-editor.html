@@ -1,12 +1,10 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
-<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../imports/ace.html">
 
 <dom-module id="text-editor">
   <style>
     :host {
       display: block;
-      @apply(--layout-fit);
     }
     #editor{
       box-sizing: border-box;
@@ -24,6 +22,15 @@
       is: 'text-editor',
 
       properties: {
+        /**
+         * If true the editor will be brought into focus automatically when the elements is added to the dom
+         * @default false
+         */
+        autofocus: {
+          type: Boolean,
+          value: false
+        },
+
         /**
          * the text editor
          */
@@ -44,6 +51,12 @@
        */
       getCode: function(){
         return this._editor.getValue();
+      },
+
+      ready: function(){
+        if(this.autofocus){
+          this._editor.focus();
+        }
       }
     });
   })();

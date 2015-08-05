@@ -86,21 +86,21 @@
         this._lexer = new Lexer(this.code);
 
         //Is this what node we are entering in to our sequence????
-        this._index = 0; 
+        this._index = 0;
         this._nodes=[];
         this._edges=[];
         this._currentEdge = null;
 
 
         //Maybe we should just have an array of edges seeing as node information is stored in an edge?
-     
-        this._currentState = this._state.ready;            
+
+        this._currentState = this._state.ready;
 
         while(this._lexer.hasNext()){
 
-          var token = lexer.nextToken();
-        
-          if(token.type == 'LABEL'){         
+          var token = lexer.next();
+
+          if(token.type == 'LABEL'){
             this._parseLabel(token.text);
           }else if(token.type == 'SEQUENCE'){
             this._parseSequence();
@@ -135,7 +135,7 @@
           }
 
         }
-        
+
         //result.push(this._automataParseNode());
         //result.push(this._automataParseOperation());
         //result.push(this._automataParseNode());
@@ -210,7 +210,7 @@
             }else{
               throw new this.SyntaxError('Syntax Error at char '+this._index+': Specified a sequence without a prior Label.');
             }
-          
+
       },
 
   

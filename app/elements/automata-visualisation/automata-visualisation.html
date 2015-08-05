@@ -1,20 +1,16 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
-<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../imports/dagre-d3.html">
 
 <dom-module id="automata-visualisation">
 <style>
 :host {
   display: block;
-  @apply(--layout-fit);
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serf;
   color: #6C7A89;
-  overflow: hidden;
 }
 #svg{
   width: 100%;
   height: 100%;
-  overflow: visible;
 }
 .node circle,
 .node rect {
@@ -42,8 +38,7 @@
 .edgeLabel {
   fill: var(--automata-edge-label-color, #000000);
 }
-/*
-.edgePath defs marker path{
+/*.edgePath defs marker path{
   fill: #8F939E;
 }*/
 </style>
@@ -52,6 +47,7 @@
 </template>
 </dom-module>
 <script>
+"use strict";
 (function() {
   Polymer({
     is: 'automata-visualisation',
@@ -78,8 +74,10 @@
     },
 
     ready: function(){
-      this.transform('translate(50%, 50%)', this.$.svg);
-      this.redraw();
+      var $this = this;
+      setTimeout(function(){
+        $this.redraw();
+      }, 0);
     },
 
     /**
@@ -120,7 +118,8 @@
       });
 
       // add a new group node to the svg element for the new graph
-      var svgGroup = d3.select(this.$.svg).append('g');
+      var svg = d3.select(this.$.svg),
+      svgGroup = svg.append('g');
 
       // create the renderer,
       // then run the renderer, which will draw the graph and insert it into the svgGroup.
@@ -132,11 +131,65 @@
       // (otherwise thing like shady dom css cannot be applied)
       Polymer.dom(this.root).appendChild(Polymer.dom(this.root).removeChild(this.$.svg));
 
-      // center the graph
-      var xCenterOffset = -automata.graph().width / 2;
-      var yCenterOffset = -automata.graph().height / 2;
-      svgGroup.select('.output').attr('transform', 'translate(' + xCenterOffset + ', ' + yCenterOffset + ')');
+      // Do zoom - center
+
+      // Get the SVG's attrs as well as the automata's attrs
+      var svgStyle = window.getComputedStyle(svg[0][0]),
+          svgWidth = parseFloat(svgStyle.getPropertyValue('width')),
+          svgHeight = parseFloat(svgStyle.getPropertyValue('height')),
+          automataWidth = automata.graph().width,
+          automataHeight = automata.graph().height;
+
+      //  By default, set the scale to this value
+      var defaultInitialScale = 1.5;
+
+      // Compute the scale where the automata will fit
+      var computedInitialScale = svgWidth / automataWidth;
+
+      // Choose the scale which is smaller, such that we ensure the entire automata is viewable
+      var initialScale = Math.min(defaultInitialScale, computedInitialScale);
+
+      // limit the zoom and pan behaviour
+      var zoom = d3.behavior.zoom().scaleExtent([0.5, 5]).on("zoom", function() {
+
+          // the raw translate value [x, y] from the mouse coords
+          var t = d3.event.translate;
+          // set our modified scale to reflect the initial scale in addition to the user's scale changes
+          var s = initialScale + d3.event.scale - 1;
+
+          // the maximum left value
+          var txl = Math.max(0, Math.min(svgWidth - automata.graph().width * s, t[0]));
+          // the maximum right value
+          var txr = Math.min(svgWidth - automata.graph().width * s , Math.max(0, t[0]));
+          // the ultimate x value, souch that it is bounded to txl and txr
+          var tx = Math.min(txl, Math.max(txr, t[0]));
+
+          // the maximum top value
+          var tyl = Math.max(0, Math.min(svgHeight - automata.graph().height * s, t[1]));
+          // the maximum bottom value
+          var tyr = Math.min(svgHeight - automata.graph().height * s , Math.max(0, t[1]));
+          // the ultimate y value, souch that it is bounded to txl and txr
+          var ty = Math.min(tyl, Math.max(tyr, t[1]));
+
+          // the ultimate translation array, bounded
+          var boundedTranslate = [tx, ty];
+
+          //scale and translate
+          svgGroup.attr("transform", "translate(" + boundedTranslate[0] + "," + boundedTranslate[1] + ")" +
+                                      "scale(" + s + ")");
+        });
+      // Update the svg such that it's events call our bounding function
+      svg.call(zoom);
+
+      // Calculate the offsets required to be in center
+      var xCenterOffset = (svgWidth - automata.graph().width * initialScale) / 2;
+      var yCenterOffset = (svgHeight - automata.graph().height * initialScale) / 2;
+
+      // Center the graph
+      zoom.translate([ xCenterOffset, yCenterOffset]).event(svg);
+
     }
+
   });
 })();
 </script>
