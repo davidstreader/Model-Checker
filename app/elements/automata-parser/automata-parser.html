@@ -139,16 +139,16 @@
        */
       _parseOptional: function(){
         if(this._expectState(this._state.hasEdge)){
-          if(this._currentEdge.text == 'ε'){
+          if(this._currentEdge.text == undefined){
 
           }else{
-            var e = new this._Edge(this._currentEdge.from, this._currentEdge.to, 'ε');
+            var e = new this._Edge(this._currentEdge.from.id, this._currentEdge.to.id, undefined);
             this._currentEdge = e;
             this._edges.push(e);
             this._currentState = this._state.hasEdge;
           }
         }
-      }
+      },
       /**
        *This helper function takes a state and compares it to the 
        *current state, returns true if the same, throws an error and
@@ -179,7 +179,7 @@
       },
 
       _parseEnd: function(){        
-        if(this._expectState(this._state.waiting)){
+        if(this._expectState(this._state.hasEdge)){
           var tempVariable = {label: this._variableName, nodes: this._nodes, edges: this._edges};
           this.variableList.push(tempVariable);
           this._nodes = [];
@@ -196,13 +196,17 @@
             this._currentState = this._state.waiting;
           }
         }else if(this._currentState == this._state.inSequence){
-          var from = this._currentEdge.to;
-          var e = new this._Edge(from, this._createNode(), text);
+          //var from = this._currentEdge.to;
+          var from = this._nodes[this._currentEdge.to];
+          var to = this._createNode();
+          var e = new this._Edge(from.id, to.id, text);
           this._currentEdge = e;
           this._edges.push(e);
           this._currentState = this._state.hasEdge;
         }else if(this._currentState == this._state.waiting){
-          var e = new this._Edge(this._createNode(), this._createNode(), text);
+          var from = this._createNode();
+          var to = this._createNode();
+          var e = new this._Edge(from.id, to.id, text);
           this._currentEdge = e;
           this._edges.push(e);
           this._currentState = this._state.hasEdge;
