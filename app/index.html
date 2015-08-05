@@ -39,14 +39,74 @@
   <!-- will be replaced with elements/elements.vulcanized.html -->
   <link rel="import" href="elements/elements.html">
   <!-- endreplace-->
+
+  <style>
+  .frame{
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    overflow: auto;
+  }
+  .left.frame{
+    left: 0;
+    right: 50%;
+  }
+  .right.frame{
+    left: 50%;
+    right: 0;
+  }
+  .frame > *{
+    margin-top: 8px;
+    margin-right: 8px;
+    margin-bottom: 8px;
+    margin-left: 8px;
+    border: solid 1px blue;
+  }
+  .left.frame > *{
+    margin-right: 4px;
+  }
+  .right.frame > *{
+    margin-left: 4px;
+  }
+  .frame > *:first-child{
+    margin-bottom: 4px;
+  }
+  .frame > *:last-child{
+    margin-top: 4px;
+  }
+  text-editor{
+    position:absolute;
+    top: 0;
+    bottom: 150px;
+    left: 0;
+    right: 0;
+  }
+  console-logger{
+    position: absolute;
+    top: calc(100% - 150px);
+    bottom: 0;
+    left: 0;
+    right: 0;
+  }
+  automata-visualisation{
+    position: relative;
+    height: 250px;
+  }
+  </style>
 </head>
 
 <body unresolved class="fullbleed layout vertical">
   <span id="browser-sync-binding"></span>
   <template is="dom-bind" id="app">
-
-
-
+    <div class="left frame">
+      <text-editor autofocus></text-editor>
+      <console-logger></console-logger>
+    </div>
+    <div class="right frame">
+      <template is="dom-repeat" items="[[automatas]]">
+        <automata-visualisation name="[[item.name]]" nodes="[[item.automata.nodes]]" edges="[[item.automata.edges]]"></automata-visualisation>
+      </template>
+    </div>
   </template>
 
   <!-- build:js scripts/app.js -->
