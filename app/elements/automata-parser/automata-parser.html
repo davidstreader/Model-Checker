@@ -51,7 +51,7 @@
         },
 
         _lexer: {
-          type: Object.
+          type: Object,
           value: null
         },
 
@@ -98,7 +98,7 @@
 
         while(this._lexer.hasNext()){
 
-          var token = lexer.next();
+          var token = this._lexer.next();
 
           if(token.type == 'LABEL'){
             this._parseLabel(token.text);
@@ -160,11 +160,11 @@
       },
 
       _gobble: function(token){
-        if(this._lexer.peek() == token){
+        if(this._lexer.peek().text == token){
           this._lexer.next();
           return true;
         }else{
-          throw new this.SyntaxError('Syntax Error: Expected: (' + token + '), found: (' + this._lexer.peek() ').');
+          throw new this.SyntaxError('Syntax Error: Expected: (' + token + '), found: (' + this._lexer.peek().text + ').');
           return false;
         }
       },
@@ -183,7 +183,7 @@
       _parseLabel: function(text){
         if(this._currentState == this._state.ready){
           this._variableName = text;
-          if(_gobble('=')){
+          if(this._gobble('=')){
             this._currentState = this._state.waiting;
           }
         }else if(this._currentState == this._state.inSequence){
