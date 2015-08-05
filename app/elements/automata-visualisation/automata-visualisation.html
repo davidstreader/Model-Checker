@@ -139,7 +139,7 @@
       //  - the to node's label
       //  - the edge's extra data (could be label, width, height, etc.)
       this.edges.forEach(function(edge) {
-        automata.setEdge(edge.from, edge.to, { label: edge.label || 'ε' });
+        automata.setEdge(edge.from, edge.to, { label: (edge.label || 'ε'), lineInterpolate: 'basis' });
       });
 
       // add a new group node to the svg element for the new graph
