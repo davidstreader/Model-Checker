@@ -30,8 +30,6 @@
         });
 
         var doTest = function(result, exp){
-          console.log(result.length);
-          console.log(exp.length);
           assert.equal(result.length, exp.length, "The number of variables in the results does not match the number in the expected.");
 
           for(var i = 0; i < result.length; i++){
@@ -47,8 +45,6 @@
             for(var j =0; j < result[i].edges.length; j++){
               assert.equal(result[i].edges[j].label, exp[i].edges[j].label, "Edge label at index "+j+" not equal");
               assert.strictEqual(result[i].edges[j].from, parseInt(result[i].edges[j].from), "Edge from at index "+j+" must be an integer");
-              console.log(result[i].edges[j].from);
-              console.log(parseInt(result[i].edges[j].from));
               assert.strictEqual(result[i].edges[j].to, parseInt(result[i].edges[j].to), "Edge to at index "+j+" must be an integer");
             }
         }
@@ -255,6 +251,87 @@
                 { from: 0, to: 1, label: 'a' },
                 { from: 1, to: 2, label: 'b' },
                 { from: 1, to: 2, label: 'c' }
+
+              ]
+            }
+          ];
+          doTest(result, exp);
+        });
+
+          test('Simple optional operation', function(){
+
+          parser.code = 'Test = a?.';
+          var result = parser.parse();
+
+          var exp = [
+            {
+              label: 'Test', 
+              nodes: [
+                {id: 0, label: '0'}, {id: 1,label:'1'}
+              ], 
+              edges: [
+                { from: 0, to: 1, label: 'a' },
+                { from: 0, to: 1 }
+              ]
+            }
+          ];
+          doTest(result, exp);
+        });
+
+           test('Multiple Variable test with or, sequence and optional, all in different orders.', function(){
+
+          parser.code = 'Test = a->b|c?. Testt = a|b->c?. Testtt = a?->b|c. Testttt = a?|b->c.';
+          var result = parser.parse();
+
+          var exp = [
+            {
+              label: 'Test', 
+              nodes: [
+                {id: 0, label: '0'}, {id: 1,label:'1'}, {id: 2, label: '2'}
+              ], 
+              edges: [
+                { from: 0, to: 1, label: 'a' },
+                { from: 1, to: 2, label: 'b' },
+                { from: 1, to: 2, label: 'c' },
+                { from: 1, to: 2 }
+              ]
+            },
+            {
+              label: 'Testt', 
+              nodes: [
+                {id: 0, label: '0'}, {id: 1,label:'1'}, {id: 2, label: '2'}
+              ], 
+              edges: [
+                { from: 0, to: 1, label: 'a' },
+                { from: 1, to: 2, label: 'b' },
+                { from: 1, to: 2, label: 'c' },
+                { from: 1, to: 2 }
+              ]
+            },
+            {
+              label: 'Testtt', 
+              nodes: [
+                {id: 0, label: '0'}, {id: 1,label:'1'}, {id: 2, label: '2'}
+              ], 
+              edges: [
+                { from: 0, to: 1, label: 'a' },
+                { from: 0, to: 1 },
+                { from: 1, to: 2, label: 'b' },
+                { from: 1, to: 2, label: 'c' }
+
+              ]
+            },
+            {
+              label: 'Testttt', 
+              nodes: [
+                {id: 0, label: '0'}, {id: 1,label:'1'}, {id: 2, label: '2'}
+              ], 
+              edges: [
+                { from: 0, to: 1, label: 'a' },
+                { from: 0, to: 1 },
+                { from: 0, to: 1, label: 'b' },
+                { from: 1, to: 2, label: 'c' }
+
 
               ]
             }
