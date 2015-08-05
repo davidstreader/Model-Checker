@@ -216,6 +216,13 @@
       // Center the graph
       zoom.translate([ xCenterOffset, yCenterOffset]).event(svg);
 
+      // Center the labels in the nodes
+      var nodeLabels = svg[0][0].querySelectorAll('g.node g.label g text tspan');
+      for(var i=0; i < nodeLabels.length; i++){
+        nodeLabels[i].setAttribute("x", "0");
+        nodeLabels[i].setAttribute("dy", "0.9em");
+      }
+
     }
 
   });
