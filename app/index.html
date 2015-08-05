@@ -41,9 +41,12 @@
   <!-- endreplace-->
 
   <style>
+  #main-toolbar{
+    height: 64px
+  }
   .frame{
     position: absolute;
-    top: 0;
+    top: 64px;
     bottom: 0;
     overflow: auto;
   }
@@ -98,6 +101,9 @@
 <body unresolved class="fullbleed layout vertical">
   <span id="browser-sync-binding"></span>
   <template is="dom-bind" id="app">
+    <paper-toolbar id="main-toolbar">
+      <paper-icon-button icon="extension" title="Compile"></paper-icon-button>
+    </paper-toolbar>
     <div class="left frame">
       <text-editor autofocus></text-editor>
       <console-logger></console-logger>
