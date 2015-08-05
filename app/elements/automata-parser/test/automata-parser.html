@@ -120,7 +120,55 @@
           doTest(result, exp);
         });
 
+        test('Simple OR operation', function(){
 
+          parser.code = 'Test=a|b.';
+          var result = parser.parse();
+
+          var exp = [
+            {
+              label: 'Test', 
+              nodes: [
+                {id: 0, label: '0'}, {id: 1,label:'1'}
+              ], 
+              edges: [
+                { from: '0', to: '1', label: 'a' },
+                { from: '0', to: '1', label: 'b' }
+              ]
+            }
+          ];
+          doTest(result, exp);
+        });
+
+          test('Multi-variable simple OR operations (with whitespace)', function(){
+
+          parser.code = 'Test = a|b. foo   = c|d';
+          var result = parser.parse();
+
+          var exp = [
+            {
+              label: 'Test', 
+              nodes: [
+                {id: 0,label: '0'}, {id: 1,label:'1'}
+              ], 
+              edges: [
+                { from: '0', to: '1', label: 'a' },
+                { from: '0', to: '1', label: 'b' }
+              ]
+            },
+            {
+              label: 'foo', 
+              nodes: [
+                {id: 2 ,label: '2'}, {id: 3,label:'3'}
+              ], 
+              edges: [
+                { from: '2', to: '3', label: 'c' },
+                { from: '2', to: '3', label: 'd' }
+              ]
+            }
+          ];
+          doTest(result, exp);
+        });
 
        
 
