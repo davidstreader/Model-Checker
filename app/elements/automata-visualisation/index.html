@@ -8,11 +8,13 @@
 
   <script src="../../../bower_components/webcomponentsjs/webcomponents-lite.js"></script>
   <link rel="import" href="../../../bower_components/iron-component-page/iron-component-page.html">
+  <link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
 
   <link rel="import" href="automata-visualisation.html">
 
   <style is="custom-style">
-    #automata{
+    automata-visualisation{
+      @apply(--layout-fit);
       --automata-node-fill: blue;
       --automata-node-stroke: orange;
       --automata-node-stroke-width: 2px;
@@ -44,7 +46,7 @@
 <body class="fullbleed">
   <template is="dom-bind" id="app">
     <div class="frame">
-      <automata-visualisation id="automata" nodes="[[nodes]]" edges="[[edges]]"></automata-visualisation>
+      <automata-visualisation nodes="[[nodes]]" edges="[[edges]]"></automata-visualisation>
     </div>
   </template>
   <script>
