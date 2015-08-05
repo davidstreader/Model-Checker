@@ -90,7 +90,7 @@
   }
   automata-visualisation{
     position: relative;
-    height: 200px;
+    height: 250px;
   }
   </style>
 </head>
@@ -104,7 +104,7 @@
     </div>
     <div class="right frame">
       <template is="dom-repeat" items="[[automatas]]">
-        <automata-visualisation nodes="[[item.automata.nodes]]" edges="[[item.automata.edges]]"></automata-visualisation>
+        <automata-visualisation name="[[item.name]]" nodes="[[item.automata.nodes]]" edges="[[item.automata.edges]]"></automata-visualisation>
       </template>
     </div>
   </template>
