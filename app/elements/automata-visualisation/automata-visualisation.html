@@ -1,20 +1,16 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
-<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../imports/dagre-d3.html">
 
 <dom-module id="automata-visualisation">
 <style>
 :host {
   display: block;
-  @apply(--layout-fit);
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serf;
   color: #6C7A89;
-  overflow: hidden;
 }
 #svg{
   width: 100%;
   height: 100%;
-  overflow: visible;
 }
 .node circle,
 .node rect {
