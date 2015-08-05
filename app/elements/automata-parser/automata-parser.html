@@ -68,8 +68,8 @@
               ready: 'ready',       //First case. Must be a define first.
               hasEdge: 'hasEdge', //Has an edge saved, if another label comes in prior to a transition, throws error.
               inSequence: 'inSequence', //The user has specified an edge followed by a sequence token, awaiting another label.
-              firstLabel: 'firstLabel', //The first label has been declared the next token should be a define.
-              waiting: 'waiting'
+              waiting: 'waiting',       //previous token was label waiting on operation
+              or: 'or'
             }
           }
         }
@@ -197,8 +197,16 @@
           this._currentEdge = e;
           this._edges.push(e);
           this._currentState = this._state.hasEdge;
-        }else if(this._currentState == this._state.hasLabel){
+        }else if(this._currentState == this._state.hasEdge){
           throw new this.SyntaxError('Syntax Error at char '+this._index+': multiple states without a transition.'); //Bad error message?
+        }
+        else if(this._currentState == this._state.or){
+          var from = this._currentEdge.from;
+          var to = this._currentEdge.to;
+          var e = new this._Edge(from, to, text);
+          this._edges.push(e);
+          this._currentEdge = e;
+          this._currentState = this._state.hasEdge;
         }
         else{
           throw new this.SyntaxError('Syntax Error at char '+this._index+': Parsing a Label but in an unknown state: '+this._currentState+'. See admininistrator for help.');
@@ -213,6 +221,18 @@
             }
 
       },
+
+      _parseOr: function(){
+        if(this._currentState == this._state.hasEdge){
+          this._currentState = this._state.or;
+        }
+        else if(this._currentState == this._state.or){
+          throw new this.SyntaxError('Syntax Error at char '+this._index+': Followed an or operation with another or operation');
+        }
+        else{
+          throw new this.SyntaxError('Syntax Error at char '+this._index+': Specified an or operation without a prior label');
+        }
+      }
 
   
       /**
