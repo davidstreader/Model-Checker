@@ -1,4 +1,5 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../imports/dagre-d3.html">
 
 <dom-module id="automata-visualisation">
@@ -8,51 +9,75 @@
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serf;
   color: #6C7A89;
 }
+#svg-parent{
+  @apply(--layout-fit);
+  margin: calc(8px + var(--label-font-size, 12pt)) 4px 4px 4px;
+}
 #svg{
   width: 100%;
   height: 100%;
 }
+#label{
+  position: absolute;
+  top: 4px;
+  left: 8px;
+  color: red;
+  font-size: var(--label-font-size, 12pt);
+}
 .node circle,
 .node rect {
-  fill: var(--automata-node-fill, #E2E6E7);
-  stroke: var(--automata-node-stroke, #8F939E);
-  stroke-width: var(--automata-node-stroke-width, 2px);
+  fill: var(--node-fill, #E2E6E7);
+  stroke: var(--node-stroke, #8F939E);
+  stroke-width: var(--node-stroke-width, 2px);
 }
 .node:first-of-type circle,
 .node:first-of-type rect{
-  fill: var(--automata-start-node-fill, #F5B0B0);
-  stroke: var(--automata-start-node-stroke);
-  stroke-width: var(--automata-start-node-stroke-width);
+  fill: var(--start-node-fill, #F5B0B0);
+  stroke: var(--start-node-stroke);
+  stroke-width: var(--start-node-stroke-width);
 }
 .node .label {
-  fill: var(--automata-node-label-color, #000000);
+  fill: var(--node-label-color, #000000);
 }
 .node:first-of-type .label {
-  fill: var(--automata-start-node-label-color, #000000);
+  fill: var(--start-node-label-color, #000000);
 }
 .edgePath path {
-  fill: var(--automata-edge-fill, #8F939E);
-  stroke: var(--automata-edge-stroke, #8F939E);
-  stroke-width: var(--automata-edge-stroke-width, 2px);
+  fill: var(--edge-fill, #8F939E);
+  stroke: var(--edge-stroke, #8F939E);
+  stroke-width: var(--edge-stroke-width, 2px);
 }
 .edgeLabel {
-  fill: var(--automata-edge-label-color, #000000);
+  fill: var(--edge-label-color, #000000);
 }
 /*.edgePath defs marker path{
   fill: #8F939E;
 }*/
 </style>
 <template>
-  <svg id="svg"></svg>
+  <div id="svg-parent">
+    <svg id="svg"></svg>
+  </div>
+  <div id="label">[[name]]</div>
 </template>
 </dom-module>
 <script>
-"use strict";
 (function() {
+  "use strict";
+
   Polymer({
     is: 'automata-visualisation',
 
     properties: {
+
+      /**
+      * The name of the automata.
+      */
+      name: {
+        type: String,
+        value: 'Unnamed Automata'
+      },
+
       /**
       * The array of nodes to draw.
       * A node is a Object with a unquie 'id' field and a 'label' field
@@ -129,7 +154,8 @@
 
       // remove the svg element and then put it back in properly
       // (otherwise thing like shady dom css cannot be applied)
-      Polymer.dom(this.root).appendChild(Polymer.dom(this.root).removeChild(this.$.svg));
+      var svgParent = Polymer.dom(this.$.svg).parentNode;
+      Polymer.dom(svgParent).appendChild(Polymer.dom(svgParent).removeChild(this.$.svg));
 
       // Do zoom - center
 
