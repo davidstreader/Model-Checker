@@ -25,7 +25,7 @@
            value: 0
          },
 
-         _edgeIndex: {
+         _nextEdgeId: {
           type: Number,
           value: 0
          },
@@ -91,6 +91,7 @@
         this.variableList = [];
         this._lexer = new Lexer(this.code);
         this._index = 0;
+        this._nextEdgeId = 0;
         this._nodes=[];
         this._edges=[];
         this._currentEdge = null;
@@ -146,15 +147,13 @@
           if(this._currentEdge.label == undefined){
 
           }else{
-            var e = new this._Edge(this._currentEdge.from, this._currentEdge.to, undefined);
-            this._currentEdge = e;
-            this._edges.push(e);
+            var e = this._createEdge(this._currentEdge.from, this._currentEdge.to, undefined);
             this._currentState = this._state.hasEdge;
           }
         }
       },
       /**
-       *This helper function takes a state and compares it to the 
+       *This helper function takes a state and compares it to the
        *current state, returns true if the same, throws an error and
        *returns false if different.
        */
@@ -168,7 +167,7 @@
 
       /**
        *This helper method checks the next token out of the lexer
-       *and compares it with the given parameter, if they are the same 
+       *and compares it with the given parameter, if they are the same
        *it consumes it and returns true, returns false and throws an error
        *if they are different.
        */
@@ -185,14 +184,14 @@
       /**
       *This function parses the end symbol given the state.
       */
-      _parseEnd: function(){        
+      _parseEnd: function(){
         if(this._expectState(this._state.hasEdge)){
           var tempVariable = {label: this._variableName, nodes: this._nodes, edges: this._edges};
           this.variableList.push(tempVariable);
           this._nodes = [];
           this._edges = [];
-          this._currentState = this._state.ready; 
-          this._index = 0;         
+          this._currentState = this._state.ready;
+          this._index = 0;
         }
       },
 
@@ -209,16 +208,12 @@
           //var from = this._currentEdge.to;
           var from = this._nodes[this._currentEdge.to];
           var to = this._createNode();
-          var e = new this._Edge(from.id, to.id, text);
-          this._currentEdge = e;
-          this._edges.push(e);
+          var e = this._createEdge(from.id, to.id, text);
           this._currentState = this._state.hasEdge;
         }else if(this._currentState == this._state.waiting){
           var from = this._createNode();
           var to = this._createNode();
-          var e = new this._Edge(from.id, to.id, text);
-          this._currentEdge = e;
-          this._edges.push(e);
+          var e = this._createEdge(from.id, to.id, text);
           this._currentState = this._state.hasEdge;
         }else if(this._currentState == this._state.hasEdge){
           throw new this.SyntaxError('Syntax Error at char '+this._index+': multiple states without a transition.'); //Bad error message?
@@ -226,9 +221,7 @@
         else if(this._currentState == this._state.or){
           var from = this._currentEdge.from;
           var to = this._currentEdge.to;
-          var e = new this._Edge(from, to, text);
-          this._edges.push(e);
-          this._currentEdge = e;
+          var e = this._createEdge(from, to, text);
           this._currentState = this._state.hasEdge;
         }
         else{
@@ -263,7 +256,7 @@
         }
       },
 
-  
+
       /**
        * Parse a node
        *
@@ -307,6 +300,13 @@
         return n;
       },
 
+      _createEdge: function(from, to, label){
+        var e = new this._Edge(this._nextEdgeId++, from, to, label);
+        this._currentEdge = e;
+        this._edges.push(e);
+        return e;
+      },
+
       /**
         *Old helper function? neccessary?
         */
@@ -331,11 +331,11 @@
       /**
        * The Edge class
        */
-      _Edge: function(from, to, label){
+      _Edge: function(id, from, to, label){
+        this.id = id;
         this.from = from;
         this.to = to;
         this.label = label;
-        this.id = this._edgeIndex++;
       },
 
       /**
