@@ -45,6 +45,11 @@
             assert.equal(result[i].edges[j].label, exp[i].edges[j].label, "Edge label at index "+j+" not equal");
             assert.strictEqual(result[i].edges[j].from, parseInt(result[i].edges[j].from), "Edge from at index "+j+" must be an integer");
             assert.strictEqual(result[i].edges[j].to, parseInt(result[i].edges[j].to), "Edge to at index "+j+" must be an integer");
+
+            for(var k =0; k < result[i].edges.length; k++){
+              if(j==k){ continue; }
+              assert.notEqual(result[i].edges[j].label, result[i].edges[k].label, "Two edges cannot have the same label (edge "+j+" and edge "+k+")");
+            }
           }
         }
       };
