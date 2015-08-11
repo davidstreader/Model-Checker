@@ -115,7 +115,7 @@
       }
 
       // Create a new directed graph
-      var automata = new dagreD3.graphlib.Graph();
+      var automata = new dagreD3.graphlib.Graph({ multigraph: true });
       automata.setGraph({
         // nodesep: 70,
         // ranksep: 50,
@@ -139,7 +139,7 @@
       //  - the to node's label
       //  - the edge's extra data (could be label, width, height, etc.)
       this.edges.forEach(function(edge) {
-        automata.setEdge(edge.from, edge.to, { label: edge.label || 'ε' });
+        automata.setEdge(edge.from, edge.to, { label: edge.label || 'ε' }, edge.id);
       });
 
       // add a new group node to the svg element for the new graph
