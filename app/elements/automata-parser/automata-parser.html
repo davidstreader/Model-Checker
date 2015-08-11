@@ -179,6 +179,9 @@
         }
       },
 
+      /**
+      *This function parses the end symbol given the state.
+      */
       _parseEnd: function(){        
         if(this._expectState(this._state.hasEdge)){
           var tempVariable = {label: this._variableName, nodes: this._nodes, edges: this._edges};
@@ -190,7 +193,9 @@
         }
       },
 
-
+      /**
+      *This function parses any text entered given the state.
+      */
       _parseLabel: function(text){
         if(this._currentState == this._state.ready){
           this._variableName = text;
@@ -229,6 +234,9 @@
         }
       },
 
+      /**
+      *This function parses the sequence symbol given the state.
+      */
       _parseSequence: function(){
         if(this._currentState == this._state.hasEdge){
               this._currentState = this._state.inSequence;
@@ -238,6 +246,9 @@
 
       },
 
+      /**
+      *This function parses the or symbol given the state.
+      */
       _parseOr: function(){
         if(this._currentState == this._state.hasEdge){
           this._currentState = this._state.or;
