@@ -25,6 +25,11 @@
            value: 0
          },
 
+         _edgeIndex: {
+          type: Number,
+          value: 0
+         },
+
         _nodes: {
           type: Array,
           value: []
@@ -128,9 +133,7 @@
           }else if(token.type == 'UNKNOWN'){
             this._parseUnkown();
           }
-
         }
-
         return this.variableList;
       },
 
@@ -205,7 +208,6 @@
         }else if(this._currentState == this._state.inSequence){
           //var from = this._currentEdge.to;
           var from = this._nodes[this._currentEdge.to];
-          console.log(from);
           var to = this._createNode();
           var e = new this._Edge(from.id, to.id, text);
           this._currentEdge = e;
@@ -333,6 +335,7 @@
         this.from = from;
         this.to = to;
         this.label = label;
+        this.id = _edgeIndex++;
       },
 
       /**
