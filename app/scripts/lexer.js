@@ -15,14 +15,17 @@ function Lexer(ltsString) {
         SEQUENCE: '->',
         ZERO_MANY: '\\*',
         ONE_MANY: '\\+',
-        OR: '\\|',
+        CHOICE: '\\|',
         PARALLEL: '\\|\\|',
         OPTIONAL: '\\?',
         ENDFILE: 'EOF',
         END: '\\.',
+        COMMA: ',',
         EMPTY: 'ε',
         UNKNOWN: 'unknown',
-        LABEL: '[a-zA-Z]+'
+        ACTION: '[a..z][A..Za..z0..9]*',
+        STOP: 'STOP',
+        NAME: '[A..Z][A..Za..z0..9]*'
     };
 
     //these are the tokens which should not be parsed as input, only ouput

@@ -7,13 +7,145 @@
       is: 'recursive-decent-parser',
 
       properties: {
-        /**
-         * JS Doc
-         */
-         field: {
-           type: String,
-           value: ''
-         }
+        
+        _lexer: {
+          type: Object,
+          value: null
+        }
+
+      },
+
+      parse: function(code){
+        //Initialising all variables to start parsing. May seem unneccessary but tests were failing due to some weird overlap.
+        this._lexer = new Lexer(code);
+        var nextToken = this._lexer.next();
+        return this._parseGlobals(nextToken);
+      },
+
+      _parseGlobals: function(token){
+        var m = this._parseModel(token);
+        var g;
+        if(!this._gobble('ENDFILE')){
+          g = this._parseGlobals();
+        }
+        return true;
+      },
+
+      _parseModel: function(token){
+        var d = this._parseDef(token);
+        if(this._gobble('END')){
+          return true;
+        }
+        else if(this._gobble('COMMA')){
+          var nextToken = this._lexer.next();
+          var m = this._parseModel(nextToken);
+          return true;
+        }
+        throw new this.SyntaxError('Expecting \'.\' or \',\'');
+      },
+
+      _parseDef: function(token){
+        var n = this._parseName(token);
+        if(this._gobble('=')){
+          var nextToken = this._lexer.next();
+          var p = _parseProcess(nextToken);
+          return true;
+        }
+        throw new this.SyntaxError('Expecting \'=\'');
+      },
+
+      _parseProcess: function(token){
+        if(token.text == 'LBRACK'){
+          var nextToken = this._lexer.next();
+          var p = this._parseProcess(nextToken);
+          if(!this._gobble('RBRACK')){throw new this.SyntaxError('Expecting \')\'');}
+          return true;
+        }
+        var r;
+        if(r = this._parseStop(token)){return true;}
+        if(r = this._parseSequence(token)){return true;}
+        if(r = this._parseChoice(token)){return true;}
+        if(r = this._parseParallel(token)){return true;}
+        if(r = this._parseName(token)){return true;}
+        throw new this.SyntaxError('Unexpected Token ('+token+')');}
+      },
+
+      _parseSequence: function(token){
+        if(!this._parseLabel(token)){
+          return false;
+        }       
+        if(!this._gobble('SEQUENCE')){
+          this._ungobble();
+          return false;
+        } 
+        var p = this._parseProcess();
+        return true;
+      },
+
+      _parseChoice: function(token){
+        if(!this._parseProcess(token)){
+          return false;
+        }       
+        if(!this._gobble('CHOICE')){
+          this._ungobble();
+          return false;
+        } 
+        var p = this._parseProcess();
+        return true;
+      },
+
+      _parseParallel: function(token){
+        if(!this._parseProcess(token)){
+          return false;
+        }       
+        if(!this._gobble('PARALLEL')){
+          this._ungobble();
+          return false;
+        } 
+        var p = this._parseProcess();
+        return true;
+      },
+
+      _parseLabel: function(token){
+        var r;
+        if(r = this._parseName()){return true;}
+        if(r = this._parseAction()){return true;}
+        throw new this.SyntaxError('Inavlid label');
+      },
+
+      _parseName: function(token){
+        if(token.text == 'NAME'){
+          return true;
+        }
+        return false;
+      },
+
+      _parseAction: function(token){
+        if(token.text == 'ACTION'){
+          return true;
+        }
+        return false;
+      },
+
+      _parseStop: function(token){
+        if(token.text == 'STOP'){
+          return true;
+        }
+        return false;
+      },
+
+      /**
+       *This helper method checks the next token out of the lexer
+       *and compares it with the given parameter, if they are the same
+       *it consumes it and returns true, returns false.
+       */
+      _gobble: function(token){
+        if(this._lexer.peek().text == token){
+          this._lexer.next();
+          return true;
+        }else{
+          return false;
+        }
       },
 
       /**
@@ -21,7 +153,16 @@
        */
       ready: function(){
 
+      },
+
+       /**
+       * An object to be thrown
+       */
+      SyntaxError: function(msg){
+        this.message = msg;
       }
+
+
     });
   })();
 </script>

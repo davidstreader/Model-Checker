@@ -58,7 +58,7 @@
 
         //should be parsing |
         token = lexer.next();
-        assert.equal(token.type, "OR");
+        assert.equal(token.type, "CHOICE");
 
         //should be parsing ||
         token = lexer.next();
@@ -74,7 +74,7 @@
 
         //should be parsing test
         token = lexer.next();
-        assert.equal(token.type, "LABEL");
+        assert.equal(token.type, "ACTION");
 
         //should be parsing end of code
         token = lexer.next();
@@ -90,11 +90,11 @@
 
         var token = lexer.next();
         //should be parsing EOF which is interpreted as a label
-        assert.equal(token.type, "LABEL");
+        assert.equal(token.type, "ACTION");
 
         //should find we're at the unknown which is interpreted as a label
         token = lexer.next();
-        assert.equal(token.type, "LABEL");
+        assert.equal(token.type, "ACTION");
       });
 
       test('valid two label test', function() {
@@ -105,11 +105,11 @@
 
         var token = lexer.next();
         //should be parsing a
-        assert.equal(token.type, "LABEL");
+        assert.equal(token.type, "ACTION");
 
         //should be parsing b
         token = lexer.next();
-        assert.equal(token.type, "LABEL");
+        assert.equal(token.type, "ACTION");
 
         //should find we're at the EOF
         token = lexer.next();
@@ -124,7 +124,7 @@
 
         var token = lexer.next();
         //should be parsing a
-        assert.equal(token.type, "LABEL");
+        assert.equal(token.type, "ACTION");
 
         //should be parsing ->
         token = lexer.next();
@@ -132,7 +132,7 @@
 
         //should be parsing b
         token = lexer.next();
-        assert.equal(token.type, "LABEL");
+        assert.equal(token.type, "ACTION");
 
         //should find we're at the EOF
         token = lexer.next();
@@ -147,7 +147,7 @@
 
         //should be peeking a
         var token = lexer.peek();
-        assert.equal(token.type, "LABEL");
+        assert.equal(token.type, "ACTION");
         assert.equal(token.text, "a");
 
         //should be parsing a
@@ -163,7 +163,7 @@
 
         //should be peeking b
         token = lexer.peek();
-        assert.equal(token.type, "LABEL");
+        assert.equal(token.type, "ACTION");
         assert.equal(token.text, "b");
 
         //should be parsing b
@@ -184,7 +184,7 @@
 
         var token = lexer.next();
         //should be parsing CLOCK
-        assert.equal(token.type, "LABEL");
+        assert.equal(token.type, "ACTION");
 
         //should be parsing =
         token = lexer.next();
@@ -196,7 +196,7 @@
 
         //should be parsing tick
         token = lexer.next();
-        assert.equal(token.type, "LABEL");
+        assert.equal(token.type, "ACTION");
 
         //should be parsing ->
         token = lexer.next();
@@ -204,7 +204,7 @@
 
         //should be parsing CLOCK
         token = lexer.next();
-        assert.equal(token.type, "LABEL");
+        assert.equal(token.type, "ACTION");
 
         //should be parsing )
         token = lexer.next();

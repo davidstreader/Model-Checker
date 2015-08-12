@@ -215,7 +215,10 @@
         test('sequence and or', function(){
 
           parser.code = 'test = a|b->c. foo = a->b|c.';
-          var result = parser.parse();
+          var result = parser.parse();_parseModel();
+  if(!gobble('EOF')){
+    _parseGlobals();
+  }
 
           var exp = [
             {
