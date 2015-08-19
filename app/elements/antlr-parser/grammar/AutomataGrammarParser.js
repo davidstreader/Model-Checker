@@ -1,7 +1,7 @@
 // Generated from AutomataGrammar.g4 by ANTLR 4.5
 // jshint ignore: start
-var antlr4 = require('antlr4/index');
-var AutomataGrammarListener = require('./AutomataGrammarListener').AutomataGrammarListener;
+//var antlr4 = require('antlr4/index');
+var AutomataGrammarListener = require3('../grammar/AutomataGrammarListener').AutomataGrammarListener;
 var grammarFileName = "AutomataGrammar.g4";
 
 var serializedATN = ["\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd",
@@ -31,13 +31,13 @@ var decisionsToDFA = atn.decisionToState.map( function(ds, index) { return new a
 
 var sharedContextCache = new antlr4.PredictionContextCache();
 
-var literalNames = [ 'null', "'.'", "','", "'='", "'('", "')'", "'->'", 
+var literalNames = [ 'null', "'.'", "','", "'='", "'('", "')'", "'->'",
                      "'|'", "'||'", 'null', 'null', "'STOP'" ];
 
-var symbolicNames = [ 'null', 'null', 'null', 'null', 'null', 'null', 'null', 
+var symbolicNames = [ 'null', 'null', 'null', 'null', 'null', 'null', 'null',
                       'null', 'null', "Name", "Action", "Stop", "WS" ];
 
-var ruleNames =  [ "file", "globals", "model", "def", "process", "sequence", 
+var ruleNames =  [ "file", "globals", "model", "def", "process", "sequence",
                    "choice", "parallel", "label" ];
 
 function AutomataGrammarParser (input) {
@@ -780,4 +780,4 @@ AutomataGrammarParser.prototype.label = function() {
 };
 
 
-exports.AutomataGrammarParser = AutomataGrammarParser;
+//exports.AutomataGrammarParser = AutomataGrammarParser;

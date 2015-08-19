@@ -1,6 +1,6 @@
 // Generated from AutomataGrammar.g4 by ANTLR 4.5
 // jshint ignore: start
-var antlr4 = require('antlr4/index');
+//var antlr4 = require('antlr4/index');
 
 
 var serializedATN = ["\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd",
@@ -56,21 +56,20 @@ AutomataGrammarLexer.WS = 12;
 
 AutomataGrammarLexer.modeNames = [ "DEFAULT_MODE" ];
 
-AutomataGrammarLexer.literalNames = [ 'null', "'.'", "','", "'='", "'('", 
-                                      "')'", "'->'", "'|'", "'||'", 'null', 
+AutomataGrammarLexer.literalNames = [ 'null', "'.'", "','", "'='", "'('",
+                                      "')'", "'->'", "'|'", "'||'", 'null',
                                       'null', "'STOP'" ];
 
-AutomataGrammarLexer.symbolicNames = [ 'null', 'null', 'null', 'null', 'null', 
-                                       'null', 'null', 'null', 'null', "Name", 
+AutomataGrammarLexer.symbolicNames = [ 'null', 'null', 'null', 'null', 'null',
+                                       'null', 'null', 'null', 'null', "Name",
                                        "Action", "Stop", "WS" ];
 
-AutomataGrammarLexer.ruleNames = [ "T__0", "T__1", "T__2", "T__3", "T__4", 
-                                   "T__5", "T__6", "T__7", "Name", "Action", 
+AutomataGrammarLexer.ruleNames = [ "T__0", "T__1", "T__2", "T__3", "T__4",
+                                   "T__5", "T__6", "T__7", "Name", "Action",
                                    "Stop", "WS" ];
 
 AutomataGrammarLexer.grammarFileName = "AutomataGrammar.g4";
 
 
 
-exports.AutomataGrammarLexer = AutomataGrammarLexer;
-
+//exports.AutomataGrammarLexer = AutomataGrammarLexer;

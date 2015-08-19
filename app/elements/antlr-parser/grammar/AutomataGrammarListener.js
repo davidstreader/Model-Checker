@@ -1,6 +1,6 @@
 // Generated from AutomataGrammar.g4 by ANTLR 4.5
 // jshint ignore: start
-var antlr4 = require('antlr4/index');
+//var antlr4 = require('antlr4/index');
 
 // This class defines a complete listener for a parse tree produced by AutomataGrammarParser.
 function AutomataGrammarListener() {
@@ -93,4 +93,4 @@ AutomataGrammarListener.prototype.exitLabel = function(ctx) {
 
 
 
-exports.AutomataGrammarListener = AutomataGrammarListener;
+//exports.AutomataGrammarListener = AutomataGrammarListener;

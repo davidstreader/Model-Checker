@@ -21,7 +21,31 @@
   </test-fixture>
 
   <script>
+  suite('<antlr-parser>', function () {
+    var parser;
 
+    setup(function() {
+      parser = fixture('parser');
+    });
+
+
+    suite('Basic', function() {
+      test('test 1', function() {
+        var input = "A = b -> c -> STOP.";
+        var chars = new antlr4.InputStream(input);
+        var lexer = new AutomataGrammarLexer(chars);
+        var tokens  = new antlr4.CommonTokenStream(lexer);
+        var parser = new AutomataGrammarParser(tokens);
+        parser.buildParseTrees = true;
+        var tree = parser.FileRule();
+        console.log(tree);
+      });
+
+      test('test 2 name', function() {
+        // do test
+      });
+    });
+  });
   </script>
 
 </body>
