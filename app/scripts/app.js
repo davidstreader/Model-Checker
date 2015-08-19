@@ -19,5 +19,9 @@
       }, 0);
     };
 
+    app.save = function(){
+      alert("SAVED");
+    };
+
   });
 })(document);
