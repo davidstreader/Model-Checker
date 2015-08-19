@@ -9,7 +9,7 @@
     "page": "visionmedia/page.js#~1.6.3",
     "ace-builds": "~1.2.0",
     "dagre-d3": "~0.4.10",
-    "antlr4": "antlr/antlr4-javascript"
+    "fs": "matthewp/fs"
   },
   "devDependencies": {
     "web-component-tester": "*",

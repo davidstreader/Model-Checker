@@ -1,0 +1,14 @@
+{
+  "name": "antlr4",
+  "homepage": "https://github.com/antlr/antlr4-javascript",
+  "version": "4.5.1",
+  "_release": "4.5.1",
+  "_resolution": {
+    "type": "version",
+    "tag": "4.5.1",
+    "commit": "f0edad9a5492cc76166707304adc417b58aa1527"
+  },
+  "_source": "git://github.com/antlr/antlr4-javascript.git",
+  "_target": "*",
+  "_originalSource": "antlr/antlr4-javascript"
+}

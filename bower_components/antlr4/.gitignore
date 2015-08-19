@@ -1,0 +1,15 @@
+/.DS_Store
+/.settings/
+/.jshintrc
+/tmp/
+/.idea
+/target
+
+.pydevproject
+/tmp-failed/
+
+*.log
+
+*.zip
+
+src/test/*
