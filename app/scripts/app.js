@@ -19,8 +19,8 @@
       }, 0);
     };
 
-    app.save = function(){
-      alert("SAVED");
+    app.setupDownloadLink = function(){
+      alert(app.$['text-editor'].getCode());
     };
 
   });
