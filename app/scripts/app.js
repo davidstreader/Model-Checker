@@ -19,5 +19,9 @@
       }, 0);
     };
 
+    app.setupDownloadLink = function(){
+      alert(app.$['text-editor'].getCode());
+    };
+
   });
 })(document);
