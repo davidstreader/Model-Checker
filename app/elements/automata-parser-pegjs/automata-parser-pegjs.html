@@ -164,8 +164,37 @@
        * @returns {_Graph} A subgraph of the overall automata
        */
       _interpretChoice: function(choice){
-        var graph = new this._Graph();
-        return graph;
+
+        var previousNodeId = this._previousNode.id;
+
+        var g1, g2, g1Label, g2Label;
+
+        if(choice.option1.type === "action" ){
+  
+          g1Label = this._interpretAction(choice.option1);
+          var n = new this._Node(this);
+          g1 = new this._Graph([n], []);
+  
+        }else{
+          g1 = this._interpretProcess(choice.option1);
+        }
+
+
+        if(choice.option2.type === "action" ){
+  
+          g2Label = this._interpretAction(choice.option2);
+          var n = new this._Node(this);
+          g2 = new this._Graph([n], []);
+  
+        }else{
+          g2 = this._interpretProcess(choice.option2);
+        }
+
+        var e1 = new this._Edge(this, previousNodeId, g1.nodes[0].id, g1Label);
+        var e2 = new this._Edge(this, previousNodeId, g2.nodes[0].id, g2Label);
+        var g0 = new this._Graph([], [e1, e2]);
+
+        return this._combineGraphs(g0, g1, g2);
       },
 
       /**
@@ -232,14 +261,26 @@
       },
 
       /**
-       * Combine two graphs into one.
-       * This functions assumes the two graphs do not share any nodes or edges
-       * @param {_Graph} g1
-       * @param {_Graph} g2
+       * Combine two or more graphs into one.
+       * This functions assumes the graphs do not share any nodes or edges
+       * @param {..._Graph} g A variable number of graphs to be combined
        * @return {_Graph} the combined graph
        */
-      _combineGraphs: function(g1, g2){
-        return new this._Graph(g1.nodes.concat(g2.nodes), g1.edges.concat(g2.edges));
+      _combineGraphs: function(g){
+
+        if(arguments.length < 2){ console.log("Why combining, when passing less than two graphs, man!");}
+
+        var nodes = g.nodes,
+            edges = g.edges;
+
+        for(var i=1; i<arguments.length; i++){
+  
+          nodes = nodes.concat(arguments[i].nodes);
+          edges = edges.concat(arguments[i].edges);
+
+        }
+
+        return new this._Graph(nodes, edges);
       },
 
       /**
