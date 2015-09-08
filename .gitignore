@@ -1,9 +1,7 @@
 node_modules
 dist
 test/temp
-!bower_components/
-bower_components/*
-!bower_components/antlr4/
-
+bower_components/
 .tmp
 test/bower_components/
+.project
