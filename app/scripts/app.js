@@ -8,8 +8,7 @@
     app.data = { automatas: [] };
 
     app.compile = function(){
-      app.$.parser.code = app.$['text-editor'].getCode();
-      var automatas = app.$.parser.parse();
+      var automatas = app.$.parser.parse(app.$['text-editor'].getCode());
 
       app.data = { automatas: [] };
 
