@@ -16,11 +16,11 @@ File
   =  Model*
 
 Model
-  =  _ definition:Definition _ '.' _ { return new Node.ModelNode(definition); }
-  /  _ definition:Definition _ ',' _ model:Model _  { return new Node.ModelNode(definition, model.definitions); }
+  =  _ definition:Definition _ EndFileSymbol _ { return new Node.ModelNode(definition); }
+  /  _ definition:Definition _ EndModelSymbol _ model:Model _  { return new Node.ModelNode(definition, model.definitions); }
 
 Definition
-  =  name:Name _ '=' _ process:Process { return new Node.DefinitionNode(name, process); }
+  =  name:Name _ DefinitionSymbol _ process:Process { return new Node.DefinitionNode(name, process); }
 
 Process
   =  '(' _ process:Process _ ')' { return process; }
@@ -31,16 +31,16 @@ Process
   /  r:Name     { return r; }
 
 Sequence
-  =  from:Label _ '->' _ to:Process { return new Node.SequenceNode(from, to); }
+  =  from:Label _ SequenceSymbol _ to:Process { return new Node.SequenceNode(from, to); }
 
 Choice
-  =  '(' _ a:Process _ '|' _ b:Process _ ')' { return new Node.ChoiceNode(a, b); }
-  /  '(' _ a:Process _ '|' _ b:Action _ ')'  { return new Node.ChoiceNode(a, b); }
-  /  a:Action   _ '|' _ b:Process            { return new Node.ChoiceNode(a, b); }
-  /  a:Action   _ '|' _ b:Action             { return new Node.ChoiceNode(a, b); }
+  =  '(' _ a:Process _ ChoiceSymbol _ b:Process _ ')' { return new Node.ChoiceNode(a, b); }
+  /  '(' _ a:Process _ ChoiceSymbol _ b:Action _ ')'  { return new Node.ChoiceNode(a, b); }
+  /  a:Action   _ ChoiceSymbol _ b:Process            { return new Node.ChoiceNode(a, b); }
+  /  a:Action   _ ChoiceSymbol _ b:Action             { return new Node.ChoiceNode(a, b); }
 
 Parallel
-  =  a:Name _ '||' _ b:Name { return new Node.ParallelNode(a, b); }
+  =  a:Name _ ParallelSymbol _ b:Name { return new Node.ParallelNode(a, b); }
 
 Label
   =  Name
@@ -64,3 +64,21 @@ Error
 
 _ 'optional whitespace'
   =  [ \t\n\r]*
+
+SequenceSymbol
+  = '->'
+
+EndFileSymbol
+  = '.'
+
+EndModelSymbol
+  = ','
+
+DefinitionSymbol
+  = '='
+
+ChoiceSymbol
+  = '|'
+
+ParallelSymbol
+  = '||'
