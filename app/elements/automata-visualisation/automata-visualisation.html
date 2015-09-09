@@ -30,8 +30,8 @@
   stroke: var(--node-stroke, #8F939E);
   stroke-width: var(--node-stroke-width, 2px);
 }
-.node:first-of-type circle,
-.node:first-of-type rect{
+.node.start circle,
+.node.start rect{
   fill: var(--start-node-fill, #F5B0B0);
   stroke: var(--start-node-stroke);
   stroke-width: var(--start-node-stroke-width);
@@ -39,7 +39,7 @@
 .node .label {
   fill: var(--node-label-color, #000000);
 }
-.node:first-of-type .label {
+.node.start .label {
   fill: var(--start-node-label-color, #000000);
 }
 .edgePath path {
@@ -126,7 +126,14 @@
 
       // Automatically label each of the nodes
       this.nodes.forEach(function(node) {
-        automata.setNode(node.id, { label: node.label, shape: 'circle' });
+
+        var styleClasses = ""
+
+        if(node.extras.startNode){
+          styleClasses += " start";
+        }
+
+        automata.setNode(node.id, { label: node.label, shape: 'circle', class: styleClasses.trim() });
       });
 
       // Default to assigning a new object as a label for each new edge.
