@@ -33,5 +33,10 @@
       };
     };
 
+    app.save = function(){
+      var blob = new Blob([app.$['text-editor'].getCode()], {type: "text/plain;charset=utf-8"});
+      saveAs(blob, "untitled.txt");
+    };
+
   });
 })(document);
