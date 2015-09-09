@@ -62,9 +62,10 @@
       /**
        * @class
        */
-      _Node: function($this){
+      _Node: function($this, extras){
         this.id = $this._useNextNodeId();
         this.label = this.id + '';
+        this.extras = extras || {};
         $this._previousNode = this;
       },
 
@@ -143,7 +144,7 @@
 
         var $this = this;
         definitions.forEach(function(definition, index){
-          graph.nodes.push(new $this._Node($this));
+          graph.nodes.push(new $this._Node($this, {startNode: true}));
 
           var name = $this._getNameFromNode(definition.name);
           if(index == 0){
@@ -153,14 +154,10 @@
           var subgraph = $this._interpretProcess(definition.process);
           graph = $this._combineGraphs(graph, subgraph);
 
-          console.log(graph);
-
           while($this._nodeMap.length > 0){
             var nodes = $this._nodeMap.pop();
             $this._mergeNodes(graph, nodes[0], nodes[1]);
           }
-
-          console.log(graph);
 
           $this._definitionsMap[name] = graph;
         });
@@ -382,6 +379,10 @@
         });
 
         return g;
+
+      },
+
+      _relabelNodes: function(g){
 
       },
 
