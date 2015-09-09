@@ -176,8 +176,14 @@
           g1 = new this._Graph([n], []);
   
         }else{
-          g1 = this._interpretProcess(choice.option1);
+          var n = new this._Node(this);
+          var g1A = new this._Graph([n], []);
+          var g1B = this._interpretProcess(choice.option1);
+
+          g1 = this._combineGraphs(g1A, g1B); 
         }
+
+        console.log(g1);
 
 
         if(choice.option2.type === "action" ){
@@ -187,7 +193,11 @@
           g2 = new this._Graph([n], []);
   
         }else{
-          g2 = this._interpretProcess(choice.option2);
+          var n = new this._Node(this);
+          var g2A = new this._Graph([n], []);
+          var g2B = this._interpretProcess(choice.option2);
+
+          g2 = this._combineGraphs(g2A, g2B); 
         }
 
         var e1 = new this._Edge(this, previousNodeId, g1.nodes[0].id, g1Label);
