@@ -10,10 +10,26 @@
         /**
          * The PEGjs parser
          */
-        parser: {
+        _parser: {
           type: Object,
           value: PEG_automataParser, // created in parser.js
           readOnly: true
+        },
+
+        /**
+         * The Definitions map
+         */
+        _definitionsMap: {
+          type: Object,
+          value: {}
+        },
+
+        /**
+         * The node map
+         */
+        _nodeMap: {
+          type: Array,
+          value: []
         },
 
         /**
@@ -68,7 +84,7 @@
        * @returns {Array} An array of automatas
        */
       parse: function(code){
-        var pt = this.parser.parse(code);
+        var pt = this._parser.parse(code);
         return this._interpretParseTree(pt);
       },
 
@@ -78,14 +94,42 @@
        * @returns {Array} An array of automatas
        */
       _interpretParseTree: function(parseTree){
+        this._definitionsMap = {};
+        this._nextNodeId = 0;
+        this._nextEdgeId = 0;
+        this._nodeMap = [];
         var automatas = [];
 
         var $this = this;
+
+        parseTree.forEach(function(model){
+          $this._buildDefinitions(model.definitions);
+        });
+
         parseTree.forEach(function(model){
           automatas.push($this._interpretDefinitions(model.definitions));
         });
 
         return automatas;
+      },
+
+      _buildDefinitions: function(definitions){
+        var $this = this;
+        definitions.forEach(function(definition, index){
+
+          var name = $this._getNameFromNode(definition.name);
+          // if(index == 0){
+          //   label = name;
+          // }
+
+          if($this._definitionsMap[name]){
+            console.error("Error: defined twice");
+            return;
+          }
+
+          $this._definitionsMap[name] = true;
+
+        });
       },
 
       /**
@@ -94,8 +138,6 @@
        * @returns {Automata}
        */
       _interpretDefinitions: function(definitions){
-        this._nextNodeId = 0;
-        this._nextEdgeId = 0;
         var label;
         var graph = new this._Graph();
 
@@ -103,13 +145,24 @@
         definitions.forEach(function(definition, index){
           graph.nodes.push(new $this._Node($this));
 
-          var name = $this._interpretName(definition.name);
+          var name = $this._getNameFromNode(definition.name);
           if(index == 0){
             label = name;
           }
 
           var subgraph = $this._interpretProcess(definition.process);
           graph = $this._combineGraphs(graph, subgraph);
+
+          console.log(graph);
+
+          while($this._nodeMap.length > 0){
+            var nodes = $this._nodeMap.pop();
+            $this._mergeNodes(graph, nodes[0], nodes[1]);
+          }
+
+          console.log(graph);
+
+          $this._definitionsMap[name] = graph;
         });
 
         return {label: label, nodes: graph.nodes, edges: graph.edges};
@@ -131,6 +184,9 @@
           case 'parallel':
             return this._interpretParallel(process);
             break;
+          case 'name':
+            return this._interpretName(process);
+            break;
           case 'stop':
             return this._interpretStop();
             break;
@@ -146,12 +202,26 @@
        * @returns {_Graph} A subgraph of the overall automata
        */
       _interpretSequence: function(sequence){
-        var from = this._interpretLabel(sequence.from);
 
-        var previousNodeId = this._previousNode.id;
-        var n = new this._Node(this);
-        var e = new this._Edge(this, previousNodeId, n.id, from);
-        var subgraph1 = new this._Graph([n], [e]);
+        var subgraph1;
+
+        switch (sequence.from.type) {
+          case 'name':
+
+            var name = this._getNameFromNode(label);
+            subgraph1 = this._definitionsMap[name];
+
+            break;
+          case 'action':
+
+            var from = this._getActionFromNode(sequence.from);
+            var previousNodeId = this._previousNode.id;
+            var n = new this._Node(this);
+            var e = new this._Edge(this, previousNodeId, n.id, from);
+            subgraph1 = new this._Graph([n], [e]);
+
+            break;
+        }
 
         var subgraph2 = this._interpretProcess(sequence.to);
 
@@ -170,34 +240,32 @@
         var g1, g2, g1Label, g2Label;
 
         if(choice.option1.type === "action" ){
-  
-          g1Label = this._interpretAction(choice.option1);
+
+          g1Label = this._getActionFromNode(choice.option1);
           var n = new this._Node(this);
           g1 = new this._Graph([n], []);
-  
+
         }else{
+
           var n = new this._Node(this);
           var g1A = new this._Graph([n], []);
           var g1B = this._interpretProcess(choice.option1);
 
-          g1 = this._combineGraphs(g1A, g1B); 
+          g1 = this._combineGraphs(g1A, g1B);
         }
 
-        console.log(g1);
-
-
         if(choice.option2.type === "action" ){
-  
-          g2Label = this._interpretAction(choice.option2);
+
+          g2Label = this._getActionFromNode(choice.option2);
           var n = new this._Node(this);
           g2 = new this._Graph([n], []);
-  
+
         }else{
           var n = new this._Node(this);
           var g2A = new this._Graph([n], []);
           var g2B = this._interpretProcess(choice.option2);
 
-          g2 = this._combineGraphs(g2A, g2B); 
+          g2 = this._combineGraphs(g2A, g2B);
         }
 
         var e1 = new this._Edge(this, previousNodeId, g1.nodes[0].id, g1Label);
@@ -218,19 +286,18 @@
       },
 
       /**
-       * Interpret a label node
-       * @param {Object} label A label node (label nodes are abstract)
+       * Interpret a name node
+       * @param {Object} node A name node
        * @returns {string}
        */
-      _interpretLabel: function(label){
-        switch (label.type) {
-          case 'name':
-            return this._interpretName(label);
-            break;
-          case 'action':
-            return this._interpretAction(label);
-            break;
-        }
+      _interpretName: function(node){
+        var graph = this._definitionsMap[this._getNameFromNode(node)];
+        var previousNodeId = this._previousNode.id;
+        var graphStartNodeId = graph.nodes[0].id;
+
+        this._nodeMap.push([previousNodeId, graphStartNodeId]);
+
+        return graph;
       },
 
       /**
@@ -238,7 +305,7 @@
        * @param {Object} node A name node
        * @returns {string}
        */
-      _interpretName: function(node){
+      _getNameFromNode: function(node){
         return node.name;
       },
 
@@ -247,7 +314,7 @@
        * @param {Object} node A action node
        * @returns {string}
        */
-      _interpretAction: function(node){
+      _getActionFromNode: function(node){
         return node.action;
       },
 
@@ -284,13 +351,38 @@
             edges = g.edges;
 
         for(var i=1; i<arguments.length; i++){
-  
+
           nodes = nodes.concat(arguments[i].nodes);
           edges = edges.concat(arguments[i].edges);
 
         }
 
         return new this._Graph(nodes, edges);
+      },
+
+      /**
+       * Merge a node in place of another node within a graph.
+       * Given a graph change all references of node1Id to node2Id and delete node2Id
+       * @param {_Graph} g The graph to conduct the merge on
+       * @param {Number} node1Id The node to be replaced
+       * @param {Number} node2Id The node to replace with
+       * @return {_Graph} the merged graph
+       */
+      _mergeNodes: function(g, node1Id, node2Id){
+
+        g.nodes = g.nodes.filter(function(node){ return node.id != node1Id});
+
+        g.edges.forEach(function(edge){
+          if(edge.from === node1Id){
+            edge.from = node2Id;
+          }
+          if(edge.to === node1Id){
+            edge.to = node2Id;
+          }
+        });
+
+        return g;
+
       },
 
       /**
