@@ -95,6 +95,9 @@
     position: relative;
     height: 250px;
   }
+  #open-file{
+    display: none;
+  }
   </style>
 </head>
 
@@ -104,7 +107,8 @@
     <automata-parser-pegjs id="parser"></automata-parser-pegjs>
     <paper-toolbar id="main-toolbar">
       <paper-icon-button icon="extension" title="Compile" on-tap="compile"></paper-icon-button>
-      <paper-icon-button icon="save" title="Save" on-tap="save"></paper-icon-button>
+      <paper-icon-button icon="open" title="Open" on-tap="open"></paper-icon-button>
+      <input id="open-file" type='file' accept='text/plain'><br>
     </paper-toolbar>
     <div class="left frame">
       <text-editor autofocus id="text-editor"></text-editor>

@@ -53,6 +53,14 @@
         return this._editor.getValue();
       },
 
+      /**
+       * Set the code
+       * @param {string} code The code
+       */
+      setCode: function(code){
+        this._editor.setValue(code, 0);
+      },
+
       ready: function(){
         if(this.autofocus){
           this._editor.focus();
