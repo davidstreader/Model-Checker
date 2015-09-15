@@ -99,10 +99,9 @@
     },
 
     ready: function(){
-      var $this = this;
-      setTimeout(function(){
-        $this.redraw();
-      }, 0);
+      this.async(function(){
+        this.redraw();
+      });
     },
 
     /**
