@@ -5,19 +5,29 @@
 
   window.addEventListener('WebComponentsReady', function() {
 
+    /**
+     * The data to use.
+     */
     app.data = { automatas: [] };
 
+    /**
+     * Compile the code in the text editor.
+     * Create and display the new automatas.
+     */
     app.compile = function(){
-      var automatas = app.$.parser.parse(app.$['text-editor'].getCode());
+      var automatas = app.$.parser.parse(app.$.editor.getCode());
 
-      app.data = { automatas: [] };
-
-      setTimeout(function(){
-        app.data.automatas = automatas;
-        app.notifyPath('data.automatas', app.data.automatas);
-      }, 0);
+      // Can't simply assign app.data.automatas to the new array as data bindings will not update.
+      // Creating a new data oject then setting the automatas value slighly later will work (for some reason).
+      app.data = {};
+      this.async(function(){
+        app.set('data.automatas', automatas);
+      });
     };
 
+    /**
+     * Open a text file from the user's computer and use its contents as the code
+     */
     app.open = function(){
       var opener = app.$['open-file'];
       opener.click();
@@ -27,14 +37,17 @@
         var reader = new FileReader();
         reader.onload = function(){
           var text = reader.result;
-          app.$['text-editor'].setCode(text);
+          app.$.editor.setCode(text);
         };
         reader.readAsText(input.files[0]);
       };
     };
 
+    /**
+     * Save to code the user has written to there computer (as a download).
+     */
     app.save = function(){
-      var blob = new Blob([app.$['text-editor'].getCode()], {type: "text/plain;charset=utf-8"});
+      var blob = new Blob([app.$.editor.getCode()], {type: "text/plain;charset=utf-8"});
       saveAs(blob, "untitled.txt");
     };
 

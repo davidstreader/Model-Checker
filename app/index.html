@@ -77,7 +77,7 @@
   .frame > *:last-child{
     margin-top: 4px;
   }
-  #text-editor{
+  #editor{
     position:absolute;
     top: 0;
     bottom: 150px;
@@ -106,13 +106,13 @@
   <template is="dom-bind" id="app">
     <automata-parser-pegjs id="parser"></automata-parser-pegjs>
     <paper-toolbar id="main-toolbar">
-      <paper-icon-button icon="extension" title="Compile" on-tap="compile"></paper-icon-button>
-      <paper-icon-button icon="open" title="Open" on-tap="open"></paper-icon-button>
-      <paper-icon-button icon="save" title="Save" on-tap="save"></paper-icon-button>
+      <paper-icon-button icon="icons:extension" title="Compile" on-tap="compile"></paper-icon-button>
+      <paper-icon-button icon="icons:folder-open" title="Open" on-tap="open"></paper-icon-button>
+      <paper-icon-button icon="icons:save" title="Save" on-tap="save"></paper-icon-button>
       <input id="open-file" type='file' accept='text/plain'><br>
     </paper-toolbar>
     <div class="left frame">
-      <text-editor autofocus id="text-editor"></text-editor>
+      <text-editor autofocus id="editor"></text-editor>
       <console-logger id="console"></console-logger>
     </div>
     <div class="right frame">
