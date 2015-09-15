@@ -16,41 +16,32 @@ File
   =  Model*
 
 Model
-  =  _ definition:Definition _ EndFileSymbol _ { return new Node.ModelNode(definition); }
-  /  _ definition:Definition _ EndModelSymbol _ model:Model _  { return new Node.ModelNode(definition, model.definitions); }
+  =  _ definition:Definition _ symbol_DefinitionListEnd _ { return new Node.ModelNode(definition); }
+  /  _ definition:Definition _ symbol_DefinitionListSeparator _ model:Model _  { return new Node.ModelNode(definition, model.definitions); }
 
 Definition
-  =  name:Name _ DefinitionSymbol _ process:Process { return new Node.DefinitionNode(name, process); }
+  =  name:Name _ symbol_DefinitionAssignment _ process:Process_A { return new Node.DefinitionNode(name, process); }
 
-Process
-  =  '(' _ process:Process _ ')' { return process; }
-  /  r:Parallel { return r; }
-  /  r:Sequence { return r; }
-  /  r:Choice   { return r; }
-  /  r:Terminal { return r; }
-  /  r:Name     { return r; }
+// Parallel
+Process_A
+  =  a:Process_B _ symbol_Parallel _ b:Process_A { return new Node.ParallelNode(a, b); }
+  /  Process_B
 
-Sequence
-  =  from:Label _ SequenceSymbol _ to:Process { return new Node.SequenceNode(from, to); }
+// Choice
+Process_B
+  =  a:Process_C _ symbol_Choice _ b:Process_B { return new Node.ChoiceNode(a, b); }
+  /  Process_C
 
-Choice
-  =  '(' _ a:Process _ ChoiceSymbol _ b:Process _ ')' { return new Node.ChoiceNode(a, b); }
-  /  '(' _ a:Process _ ChoiceSymbol _ b:Action _ ')'  { return new Node.ChoiceNode(a, b); }
-  /  a:Action   _ ChoiceSymbol _ b:Process            { return new Node.ChoiceNode(a, b); }
-  /  a:Action   _ ChoiceSymbol _ b:Action             { return new Node.ChoiceNode(a, b); }
+// Sequence
+Process_C
+  =  from:Action _ symbol_Sequence _ to:Process_C { return new Node.SequenceNode(from, to); }
+  /  Process_D
 
-Parallel
-  =  a:Name _ ParallelSymbol _ b:Name { return new Node.ParallelNode(a, b); }
-
-Label
-  =  Name
-  /  Action
-
-Name
-  =  name:$([A-Z][A-Za-z0-9_]*) { return new Node.NameNode(name); }
-
-Action
-  =  action:$([a-z][A-Za-z0-9_]*) { return new Node.ActionNode(action); }
+Process_D
+  =  Stop
+  /  Error
+  /  Name
+  /  symbol_BracketLeft _ process:Process_A _ symbol_BracketRight { return process; }
 
 Terminal
   =  Stop
@@ -62,23 +53,20 @@ Stop
 Error
   =  'ERROR' { return new Node.ErrorNode(); }
 
+Name
+  =  name:$([A-Z][A-Za-z0-9_]*) { return new Node.NameNode(name); }
+
+Action
+  =  action:$([a-z][A-Za-z0-9_]*) { return new Node.ActionNode(action); }
+
+symbol_BracketLeft             = '('
+symbol_BracketRight            = ')'
+symbol_DefinitionListEnd       = '.'
+symbol_DefinitionListSeparator = ','
+symbol_DefinitionAssignment    = '='
+symbol_Parallel                = '||'
+symbol_Choice                  = '|'
+symbol_Sequence                = '->'
+
 _ 'optional whitespace'
   =  [ \t\n\r]*
-
-SequenceSymbol
-  = '->'
-
-EndFileSymbol
-  = '.'
-
-EndModelSymbol
-  = ','
-
-DefinitionSymbol
-  = '='
-
-ChoiceSymbol
-  = '|'
-
-ParallelSymbol
-  = '||'
