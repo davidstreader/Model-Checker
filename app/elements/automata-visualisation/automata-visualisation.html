@@ -1,6 +1,6 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
-<link rel="import" href="../../imports/dagre-d3.html">
+<link rel="import" href="../imports/dagre-d3.html">
 
 <dom-module id="automata-visualisation">
 <style>
@@ -11,41 +11,80 @@
 }
 #svg-parent{
   @apply(--layout-fit);
-  margin: calc(8px + var(--label-font-size, 12pt)) 4px 4px 4px;
+  margin: 4px 4px 4px 4px;
 }
 #svg{
   width: 100%;
   height: 100%;
 }
-#label{
+#name{
   position: absolute;
   top: 4px;
   left: 8px;
   color: red;
-  font-size: var(--label-font-size, 12pt);
+  font-size: 12pt;
+  @apply(--automata-visualisation-name-style);
 }
-.node circle,
-.node rect {
-  fill: var(--node-fill, #E2E6E7);
-  stroke: var(--node-stroke, #8F939E);
+.node circle.outer{
+  fill: var(--node-fill, #DADEDF);
+  stroke: var(--node-stroke, #000000);
   stroke-width: var(--node-stroke-width, 2px);
 }
-.node.start circle,
-.node.start rect{
-  fill: var(--start-node-fill, #F5B0B0);
-  stroke: var(--start-node-stroke);
-  stroke-width: var(--start-node-stroke-width);
+.node circle.inner{
+  fill: transparent;
+  stroke: transparent;
 }
 .node .label {
-  fill: var(--node-label-color, #000000);
+  color: var(--node-label-color, #000000);
+}
+.node.start{
+  transform: scale(0);
+  display: none;
 }
 .node.start .label {
-  fill: var(--start-node-label-color, #000000);
+  color: var(--start-node-label-color, #000000);
+}
+.node.terminal circle.inner{
+  stroke: var(--node-stroke, #000000);
+  stroke-width: var(--terminal-node-outer-stroke-width, 2px);
+  stroke-width: var(--terminal-node-inner-stroke-width, 1.5px);
+}
+.node.terminal .label {
+
+}
+.node.stop circle.outer{
+  fill: var(--stop-node-fill);
+  stroke: var(--stop-node-stroke, #00FF00);
+  stroke-width: var(--stop-node-stroke-width);
+}
+.node.stop circle.inner{
+  stroke: var(--stop-node-stroke, #00BB00);
+  stroke-width: var(--stop-node-stroke-width);
+}
+.node.stop .label {
+  color: var(--stop-node-label-color, #000000);
+}
+.node.error circle.outer{
+  fill: var(--error-node-fill);
+  stroke: var(--error-node-stroke, #FF0000);
+  stroke-width: var(--error-node-stroke-width);
+}
+.node.error circle.inner{
+  stroke: var(--error-node-stroke, #FF0000);
+  stroke-width: var(--error-node-stroke-width);
+}
+.node.error .label {
+  color: var(--error-node-label-color, #000000);
+}
+.node.reference circle.outer{
+  fill: var(--reference-node-fill, #FFFF66);
+  stroke: var(--reference-node-stroke);
+  stroke-width: var(--reference-node-stroke-width);
 }
 .edgePath path {
-  fill: var(--edge-fill, #8F939E);
-  stroke: var(--edge-stroke, #8F939E);
-  stroke-width: var(--edge-stroke-width, 2px);
+  fill: var(--edge-fill, #000000);
+  stroke: var(--edge-stroke, #000000);
+  stroke-width: var(--edge-stroke-width, 1.5px);
 }
 .edgeLabel {
   fill: var(--edge-label-color, #000000);
@@ -58,12 +97,12 @@
   <div id="svg-parent">
     <svg id="svg"></svg>
   </div>
-  <div id="label">[[name]]</div>
+  <div id="name">[[name]]</div>
 </template>
 </dom-module>
 <script>
 (function() {
-  "use strict";
+  'use strict';
 
   Polymer({
     is: 'automata-visualisation',
@@ -123,22 +162,35 @@
         marginy: 0
       });
 
+
+      var actualStartNode;
+      automata.setNode('invisibleStartNode', { label: '', shape: 'circle', class: 'start' });
+
       // Automatically label each of the nodes
       this.nodes.forEach(function(node) {
 
-        var styleClasses = ""
+        var styleClasses = '';
 
         if(node.extras.startNode){
-          styleClasses += " start";
+          actualStartNode = node.id;
+        }
+        if(node.extras.isTerminal){
+          styleClasses += ' terminal ' + node.extras.isTerminal;
+        }
+        var ref = node.extras.references;
+        if(node.extras.references){
+          styleClasses += ' reference';
         }
 
-        automata.setNode(node.id, { label: node.label, shape: 'circle', class: styleClasses.trim() });
+        automata.setNode(node.id, { label: node.label + (ref ? ':'+ref : ''), shape: 'automatanode', class: styleClasses.trim() });
       });
 
       // Default to assigning a new object as a label for each new edge.
       automata.setDefaultEdgeLabel(function() {
         return {};
       });
+
+      automata.setEdge('invisibleStartNode', actualStartNode, { label: '', lineInterpolate: 'basis' }, 'startEdge');
 
       // Automatically set each of the edges, with:
       //  - the from node's label
@@ -152,10 +204,32 @@
       var svg = d3.select(this.$.svg),
       svgGroup = svg.append('g');
 
-      // create the renderer,
-      // then run the renderer, which will draw the graph and insert it into the svgGroup.
-      // Note: trying call render method with a node (first arg) that is not yet in the Dom will cause an error
+      // create the renderer
       var render = new dagreD3.render();
+
+      // define the automatanode shape
+      render.shapes().automatanode = function(parent, bbox, node) {
+        var r = 22.5;
+
+        parent.insert('circle', ':first-child')
+          .attr('r', r * 0.80)
+          .attr('class', 'inner')
+          .attr('transform', 'translate(0,0)');
+
+        var shapeSvg = parent.insert('circle', ':first-child')
+          .attr('r', r)
+          .attr('class', 'outer')
+          .attr('transform', 'translate(0,0)');
+
+        node.intersect = function(point) {
+          return dagreD3.intersect.circle(node, r, point);
+        };
+
+        return shapeSvg;
+      };
+
+      // run the renderer, which will draw the graph and insert it into the svgGroup.
+      // Note: trying call render method with a node (first arg) that is not yet in the Dom will cause an error
       render(svgGroup, automata);
 
       // remove the svg element and then put it back in properly
@@ -184,7 +258,7 @@
       var initialScale = Math.min(defaultInitialScale, computedInitialScale);
 
       // limit the zoom and pan behaviour
-      var zoom = d3.behavior.zoom().scaleExtent([0.5, 5]).on("zoom", function() {
+      var zoom = d3.behavior.zoom().scaleExtent([0.5, 5]).on('zoom', function() {
 
           // the raw translate value [x, y] from the mouse coords
           var t = d3.event.translate;
@@ -209,8 +283,8 @@
           var boundedTranslate = [tx, ty];
 
           //scale and translate
-          svgGroup.attr("transform", "translate(" + boundedTranslate[0] + "," + boundedTranslate[1] + ")" +
-                                      "scale(" + s + ")");
+          svgGroup.attr('transform', 'translate(' + boundedTranslate[0] + ',' + boundedTranslate[1] + ')' +
+                                      'scale(' + s + ')');
         });
       // Update the svg such that it's events call our bounding function
       svg.call(zoom);
@@ -224,9 +298,9 @@
 
       // Center the labels in the nodes
       var nodeLabels = svg[0][0].querySelectorAll('g.node g.label g text tspan');
-      for(var i=0; i < nodeLabels.length; i++){
-        nodeLabels[i].setAttribute("x", "0");
-        nodeLabels[i].setAttribute("dy", "0.9em");
+      for(var j=0; j<nodeLabels.length; j++){
+        nodeLabels[j].setAttribute('x', '0');
+        nodeLabels[j].setAttribute('dy', '0.9em');
       }
 
     }

@@ -1,5 +1,5 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
-<link rel="import" href="../../imports/ace.html">
+<link rel="import" href="../imports/ace.html">
 
 <dom-module id="text-editor">
   <style>
@@ -38,8 +38,8 @@
           type: Object,
           value: function(){
             var editor = ace.edit(this.$.editor);
-            editor.setTheme("ace/theme/github");
-            editor.getSession().setMode("ace/mode/plain_text"); // syntax highlighting
+            editor.setTheme('ace/theme/github');
+            editor.getSession().setMode('ace/mode/plain_text'); // syntax highlighting
             return editor;
           }
         }

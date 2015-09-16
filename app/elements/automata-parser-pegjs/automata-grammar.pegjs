@@ -20,28 +20,31 @@ Model
   /  _ definition:Definition _ symbol_DefinitionListSeparator _ model:Model _  { return new Node.ModelNode(definition, model.definitions); }
 
 Definition
-  =  name:Name _ symbol_DefinitionAssignment _ process:Process_A { return new Node.DefinitionNode(name, process); }
+  =  name:Name _ symbol_DefinitionAssignment _ process:Process_Parallel { return new Node.DefinitionNode(name, process); }
 
-// Parallel
-Process_A
-  =  a:Process_B _ symbol_Parallel _ b:Process_A { return new Node.ParallelNode(a, b); }
-  /  Process_B
+Process_Parallel
+  =  a:Name_OR_Choice _ symbol_Parallel _ b:Process_Parallel { return new Node.ParallelNode(a, b); }
+  /  Name_OR_Choice
 
-// Choice
-Process_B
-  =  a:Process_C _ symbol_Choice _ b:Process_B { return new Node.ChoiceNode(a, b); }
-  /  Process_C
+Process_Choice
+  =  a:Process_Sequence _ symbol_Choice _ b:Process_Choice { return new Node.ChoiceNode(a, b); }
+  /  Process_Sequence
 
-// Sequence
-Process_C
-  =  from:Action _ symbol_Sequence _ to:Process_C { return new Node.SequenceNode(from, to); }
-  /  Process_D
+Process_Sequence
+  =  from:Action _ symbol_Sequence _ to:Name_OR_Sequence { return new Node.SequenceNode(from, to); }
+  /  Terminal_OR_Brackets
 
-Process_D
-  =  Stop
-  /  Error
+Name_OR_Choice
+  = Name
+  / Process_Choice
+
+Name_OR_Sequence
+  =  Process_Sequence
   /  Name
-  /  symbol_BracketLeft _ process:Process_A _ symbol_BracketRight { return process; }
+
+Terminal_OR_Brackets
+  =  Terminal
+  /  symbol_BracketLeft _ process:Process_Parallel _ symbol_BracketRight { return process; }
 
 Terminal
   =  Stop

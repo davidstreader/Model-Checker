@@ -1,0 +1,381 @@
+<!doctype html>
+<html>
+<head>
+  <title>automata-parser-pegjs</title>
+
+  <script src='../../../../bower_components/webcomponentsjs/webcomponents.js'></script>
+  <script src='../../../../bower_components/web-component-tester/browser.js'></script>
+  <script src='../../../../bower_components/test-fixture/test-fixture-mocha.js'></script>
+
+  <link rel='import' href='../../../../bower_components/polymer/polymer.html'>
+  <link rel='import' href='../../../../bower_components/promise-polyfill/promise-polyfill-lite.html'>
+  <link rel='import' href='../../../../bower_components/test-fixture/test-fixture.html'>
+
+  <link rel='import' href='../automata-parser-pegjs.html'>
+</head>
+<body>
+  <test-fixture id='parser'>
+    <template>
+      <automata-parser-pegjs></automata-parser-pegjs>
+    </template>
+  </test-fixture>
+
+  <script>
+  suite('<automata-parser-pegj>', function () {
+    var parser;
+
+    setup(function() {
+      parser = fixture('parser');
+    });
+
+
+    var doTest = function(result, exp){
+      expect(result).to.be.an('array');
+      expect(result.length).to.be.equal(exp.length, 'Incorrect number of automatas return.');
+
+      for(var i=0; i<result.length; i++){
+        var rAutomata = result[i];
+        var aAutomata = exp[i];
+
+        expect(rAutomata).to.be.an('object');
+        expect(rAutomata).to.have.all.keys('name', 'graph');
+        expect(rAutomata.name).to.be.a('string');
+        expect(rAutomata.graph).to.be.an('object');
+        expect(rAutomata.graph).to.have.all.keys('nodes', 'edges', 'rootId');
+        expect(rAutomata.graph.nodes).to.be.an('array');
+        expect(rAutomata.graph.edges).to.be.an('array');
+        expect(rAutomata.graph.rootId).to.be.a('number');
+
+        expect(rAutomata.name).to.be.equal(aAutomata.name, 'Incorrect automata name.');
+        expect(rAutomata.graph.nodes.length).to.be.equal(aAutomata.graph.nodes.length, 'Incorrect number of nodes.');
+        expect(rAutomata.graph.edges.length).to.be.equal(aAutomata.graph.edges.length, 'Incorrect number of edges.');
+
+        var resultNodeIdsToExpNodeIdsMap = {};
+
+        for(var j=0; j<rAutomata.graph.nodes.length; j++){
+          var rNode = rAutomata.graph.nodes[j];
+          var eNode = aAutomata.graph.nodes[j];
+
+          expect(rNode).to.be.an('object');
+          expect(rNode).to.contain.all.keys('id', 'label', 'extras');
+          expect(rNode.id).to.be.a('number');
+          expect(rNode.label).to.be.a('string');
+          expect(rNode.extras).to.be.a('object');
+
+          expect(rNode.label).to.be.equal(eNode.label, 'Incorrect node label.');
+          expect(rNode.extras).to.be.deep.equal(eNode.extras, 'Incorrect node extras.');
+
+          // node ids must be unique
+          // (result ids and exp ids don't have to be equal as long as the graphs they create are)
+          expect(resultNodeIdsToExpNodeIdsMap[rNode.id]).to.not.exist();
+          resultNodeIdsToExpNodeIdsMap[rNode.id] = eNode.id;
+        }
+
+        var eEdges = [];
+        var k;
+        for(k=0; k<rAutomata.graph.edges.length; k++){
+          eEdges.push(aAutomata.graph.edges[k]);
+        }
+
+        var edgeIds = {};
+
+        for(k=0; k<rAutomata.graph.edges.length; k++){
+          var rEdge = rAutomata.graph.edges[k];
+
+          expect(rEdge).to.be.an('object');
+          expect(rEdge).to.contain.all.keys('id', 'from', 'to', 'label');
+          expect(rEdge.id).to.be.a('number');
+          expect(rEdge.from).to.be.a('number');
+          expect(rEdge.to).to.be.a('number');
+          expect(rEdge.label).to.be.a('string');
+
+          var eEdge;
+          for(var l=0; l<eEdges.length; l++){
+            if(resultNodeIdsToExpNodeIdsMap[rEdge.from] === eEdges[l].from &&
+               resultNodeIdsToExpNodeIdsMap[rEdge.to]   === eEdges[l].to   &&
+                rEdge.label === eEdges[l].label){
+              eEdge = eEdges[l];
+              eEdges.splice(l, 1);
+              break;
+            }
+          }
+          expect(eEdge).to.exist();
+
+          // edge ids must be unique
+          expect(edgeIds[rEdge.id]).to.not.exist();
+          edgeIds[rEdge.id] = eEdge.id;
+        }
+
+        expect(resultNodeIdsToExpNodeIdsMap[rAutomata.graph.rootId]).to.exist();
+      }
+    };
+
+    suite('Basics', function() {
+      // this suite (String Tweeks) may not be need as grammar-test.html may already be testing these cases
+      suite('String Tweeks', function() {
+        suite('Single Charcter Names and Action', function() {
+          suite('Whitespace', function() {
+            var exp = [{
+              name: 'A',
+              graph: {
+                nodes: [
+                  {id: 0, label: '0', extras: {startNode: true}},
+                  {id: 1, label: '1', extras: {isTerminal: 'stop'}}],
+                edges: [
+                  {from: 0, to: 1, label: 'x'}],
+                rootId: 0}
+              }];
+
+            test('No whitespace', function(){
+              var result = parser.parse('A=x->STOP.');
+              doTest(result, exp);
+            });
+            test('Spaces', function(){
+              var result = parser.parse(' A = x -> STOP. ');
+              doTest(result, exp);
+            });
+            test('Spaces, tabs, line returns, new lines', function(){
+              var result = parser.parse(' \nA \r\n =     x   \t ->\t\tSTOP.\t\r\n ');
+              doTest(result, exp);
+            });
+          });
+        });
+        suite('Mutli-Charcter Names', function() {
+          test('Uppercase', function(){
+            var result = parser.parse('ABC=x->STOP.');
+            var exp = [{
+              name: 'ABC',
+              graph: {
+                nodes: [
+                  {id: 0, label: '0', extras: {startNode: true}},
+                  {id: 1, label: '1', extras: {isTerminal: 'stop'}}],
+                edges: [
+                  {from: 0, to: 1, label: 'x'}],
+                rootId: 0}
+              }];
+            doTest(result, exp);
+          });
+          test('Mixed-case', function(){
+            var result = parser.parse('QbcXYx=x->STOP.');
+            var exp = [{
+              name: 'QbcXYx',
+              graph: {
+                nodes: [
+                  {id: 0, label: '0', extras: {startNode: true}},
+                  {id: 1, label: '1', extras: {isTerminal: 'stop'}}],
+                edges: [
+                  {from: 0, to: 1, label: 'x'}],
+                rootId: 0}
+              }];
+            doTest(result, exp);
+          });
+          test('Mixed-case, numbers, underscores', function(){
+            var result = parser.parse('Tb0cX_92Y0x_=x->STOP.');
+            var exp = [{
+              name: 'Tb0cX_92Y0x_',
+              graph: {
+                nodes: [
+                  {id: 0, label: '0', extras: {startNode: true}},
+                  {id: 1, label: '1', extras: {isTerminal: 'stop'}}],
+                edges: [
+                  {from: 0, to: 1, label: 'x'}],
+                rootId: 0}
+              }];
+            doTest(result, exp);
+          });
+        });
+        suite('Mutli-Charcter Action', function() {
+          test('Lowercase', function(){
+            var result = parser.parse('A=xyz->STOP.');
+            var exp = [{
+              name: 'A',
+              graph: {
+                nodes: [
+                  {id: 0, label: '0', extras: {startNode: true}},
+                  {id: 1, label: '1', extras: {isTerminal: 'stop'}}],
+                edges: [
+                  {from: 0, to: 1, label: 'xyz'}],
+                rootId: 0}
+              }];
+            doTest(result, exp);
+          });
+          test('Mixed-case', function(){
+            var result = parser.parse('A=sYZabC->STOP.');
+            var exp = [{
+              name: 'A',
+              graph: {
+                nodes: [
+                  {id: 0, label: '0', extras: {startNode: true}},
+                  {id: 1, label: '1', extras: {isTerminal: 'stop'}}],
+                edges: [
+                  {from: 0, to: 1, label: 'sYZabC'}],
+                rootId: 0}
+              }];
+            doTest(result, exp);
+          });
+          test('Mixed-case, numbers, underscores', function(){
+            var result = parser.parse('A=hYZ_12_a5bC->STOP.');
+            var exp = [{
+              name: 'A',
+              graph: {
+                nodes: [
+                  {id: 0, label: '0', extras: {startNode: true}},
+                  {id: 1, label: '1', extras: {isTerminal: 'stop'}}],
+                edges: [
+                  {from: 0, to: 1, label: 'hYZ_12_a5bC'}],
+                rootId: 0}
+              }];
+            doTest(result, exp);
+          });
+        });
+      });
+    });
+    suite('Operations', function() {
+      suite('Sequence', function() {
+        test('simple', function(){
+          var result = parser.parse('A=x->STOP.');
+          var exp = [{
+            name: 'A',
+            graph: {
+              nodes: [
+                {id: 0, label: '0', extras: {startNode: true}},
+                {id: 1, label: '1', extras: {isTerminal: 'stop'}}],
+              edges: [
+                {from: 0, to: 1, label: 'x'}],
+              rootId: 0}
+            }];
+          doTest(result, exp);
+        });
+        test('chained sequence (1)', function(){
+          var result = parser.parse('A=x->y->STOP.');
+          var exp = [{
+            name: 'A',
+            graph: {
+              nodes: [
+                {id: 0, label: '0', extras: {startNode: true}},
+                {id: 1, label: '1', extras: {}},
+                {id: 2, label: '2', extras: {isTerminal: 'stop'}}],
+              edges: [
+                {from: 0, to: 1, label: 'x'},
+                {from: 1, to: 2, label: 'y'}],
+              rootId: 0}
+            }];
+          doTest(result, exp);
+        });
+        test('chained sequence (2)', function(){
+          var result = parser.parse('A=x->y->z->STOP.');
+          var exp = [{
+            name: 'A',
+            graph: {
+              nodes: [
+                {id: 0, label: '0', extras: {startNode: true}},
+                {id: 1, label: '1', extras: {}},
+                {id: 2, label: '2', extras: {}},
+                {id: 3, label: '3', extras: {isTerminal: 'stop'}}],
+              edges: [
+                {from: 0, to: 1, label: 'x'},
+                {from: 1, to: 2, label: 'y'},
+                {from: 2, to: 3, label: 'z'}],
+              rootId: 0}
+            }];
+          doTest(result, exp);
+        });
+      });
+      suite('Choice (OR)', function() {
+        test('simple', function(){
+          var result = parser.parse('A=x->STOP|y->STOP.');
+          var exp = [{
+            name: 'A',
+            graph: {
+              nodes: [
+                {id: 0, label: '0', extras: {startNode: true}},
+                {id: 1, label: '1', extras: {isTerminal: 'stop'}},
+                {id: 2, label: '2', extras: {isTerminal: 'stop'}}],
+              edges: [
+                {from: 0, to: 1, label: 'x'},
+                {from: 0, to: 2, label: 'y'}],
+              rootId: 0}
+            }];
+          doTest(result, exp);
+        });
+        test('chained sequence (1)', function(){
+          var result = parser.parse('A=x->STOP|y->STOP|z->STOP.');
+          var exp = [{
+            name: 'A',
+            graph: {
+              nodes: [
+                {id: 0, label: '0', extras: {startNode: true}},
+                {id: 1, label: '1', extras: {isTerminal: 'stop'}},
+                {id: 2, label: '2', extras: {isTerminal: 'stop'}},
+                {id: 3, label: '3', extras: {isTerminal: 'stop'}}],
+              edges: [
+                {from: 0, to: 1, label: 'x'},
+                {from: 0, to: 2, label: 'y'},
+                {from: 0, to: 3, label: 'z'}],
+              rootId: 0}
+            }];
+          doTest(result, exp);
+        });
+        test('chained sequence (2)', function(){
+          var result = parser.parse('A=w->STOP|x->STOP|y->STOP|z->STOP.');
+          var exp = [{
+            name: 'A',
+            graph: {
+              nodes: [
+                {id: 0, label: '0', extras: {startNode: true}},
+                {id: 1, label: '1', extras: {isTerminal: 'stop'}},
+                {id: 2, label: '2', extras: {isTerminal: 'stop'}},
+                {id: 3, label: '3', extras: {isTerminal: 'stop'}},
+                {id: 4, label: '4', extras: {isTerminal: 'stop'}}],
+              edges: [
+                {from: 0, to: 1, label: 'w'},
+                {from: 0, to: 2, label: 'x'},
+                {from: 0, to: 3, label: 'y'},
+                {from: 0, to: 4, label: 'z'}],
+              rootId: 0}
+            }];
+          doTest(result, exp);
+        });
+      });
+      suite('Parallel', function() {
+        test('simple', function(){
+          assert.fail(undefined, undefined, 'test not written.');
+        });
+        test('chained sequence (1)', function(){
+          assert.fail(undefined, undefined, 'test not written.');
+        });
+        test('chained sequence (2)', function(){
+          assert.fail(undefined, undefined, 'test not written.');
+        });
+      });
+    });
+    suite('Cycles', function() {
+      test('single cycles', function(){
+        assert.fail(undefined, undefined, 'test not written.');
+      });
+      test('multiple cycles (1)', function(){
+        assert.fail(undefined, undefined, 'test not written.');
+      });
+      test('multiple cycles (2)', function(){
+        assert.fail(undefined, undefined, 'test not written.');
+      });
+    });
+    suite('References', function() {
+      test('single reference', function(){
+        assert.fail(undefined, undefined, 'test not written.');
+      });
+      test('multiple difference references', function(){
+        assert.fail(undefined, undefined, 'test not written.');
+      });
+      test('multiple identical references', function(){
+        assert.fail(undefined, undefined, 'test not written.');
+      });
+      test('reference with references', function(){
+        assert.fail(undefined, undefined, 'test not written.');
+      });
+    });
+  });
+  </script>
+
+</body>
+</html>
