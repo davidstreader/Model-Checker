@@ -1,5 +1,5 @@
 {
   "preset": "google",
   "disallowSpacesInAnonymousFunctionExpression": null,
-  "excludeFiles": ["node_modules/**"]
+  "excludeFiles": ["node_modules/**", "app/elements/automata-parser-pegjs/parser.js"]
 }

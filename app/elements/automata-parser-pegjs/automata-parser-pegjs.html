@@ -14,37 +14,34 @@
          */
         _parser: {
           type: Object,
-          value: PEG_automataParser, // created in parser.js
+          value: PEG.automataParser, // created in parser.js
           readOnly: true
         },
 
         /**
-         * The Definitions map.
+         * A Map of automata names to their definitions.
          */
-        _definitionsMap: {
-          type: Object,
-          value: {}
-        },
-
-        /**
-         * An array of arrays of nodes that need to be merged.
-         */
-        _nodesToMerge: {
-          type: Array,
-          value: []
-        },
+        _definitionsMap:  Object,
 
         /**
          * The next node ID to use.
-         * Do not modify this field directly, instead use this._useNextNodeId()
+         * Used by the _Node class.
          */
         _nextNodeId: Number,
 
         /**
          * The next edge ID to use.
-         * Do not modify this field directly, instead use this._useNextEdgeId()
+         * Used by the _Edge class.
          */
         _nextEdgeId: Number
+      },
+
+      /**
+       * @class
+       */
+      _Automata: function(name, graph){
+        this.name = name;
+        this.graph = graph;
       },
 
       /**
@@ -92,7 +89,7 @@
       _resetInterpreter: function(){
         this._nextNodeId = 0;
         this._nextEdgeId = 0;
-        this._nodesToMerge = [];
+        this._definitionsMap = {};
       },
 
       /**
@@ -102,75 +99,107 @@
        */
       _interpretParseTree: function(parseTree){
         this._resetInterpreter();
-        var automatas = [];
-
-        parseTree.forEach(function(model){
-          this._initialiseDefinitionMap(model.definitions);
-        }.bind(this));
 
         // _interpretModel
         parseTree.forEach(function(model){
-          automatas.push(this._interpretDefinitions(model.definitions));
+          this._interpretDefinitions(model.definitions);
         }.bind(this));
 
-        return automatas;
+        // returns whether or not there are still unprocessed references in any of the automata definitions.
+        var unprocessedReferences = function(){
+          for(var key in this._definitionsMap){
+            for(var i=0; i<this._definitionsMap[key].nodes.length; i++){
+              if(this._definitionsMap[key].nodes[i].extras.referenceUnprocessed){
+                return true;
+              }
+            }
+          }
+          return false;
+        }.bind(this);
+
+        do{
+          this._processSelfReferences();
+          this._processNonselfReferences();
+        } while(unprocessedReferences());
+
+        this._relabelNodes();
+
+        return this._buildAutomataArray();
       },
 
       /**
-       * Initialise the definitions map with keys.
-       * Each key is a name of a definition.
+       * Process any reference an automata definition make to itself by creating a cycle.
        */
-      _initialiseDefinitionMap: function(definitions){
-        this._definitionsMap = {};
-        definitions.forEach(function(definition, index){
-          var name = this._getNameFromNode(definition.name);
-          // if(index == 0){
-          //   label = name;
-          // }
-
-          if(this._definitionsMap[name]){
-            console.error('Error: defined twice');
-            return;
+      _processSelfReferences: function(){
+        var findAndProcess = function(node){
+          if(node.extras.references === key){
+            delete node.extras.references; // not much point in a node keeping a references to itself
+            this._mergeNodes(this._definitionsMap[key], [this._definitionsMap[key].rootId, node.id]);
           }
+        }.bind(this);
 
-          this._definitionsMap[name] = true;
-        }.bind(this));
+        for(var key in this._definitionsMap){
+          this._definitionsMap[key].nodes.forEach(findAndProcess);
+        }
+      },
+
+      /**
+       * Process any reference an automata definition make to definition by extending one onto the other.
+       */
+      _processNonselfReferences: function(){
+        var findAndProcess = function(node){
+          if(node.extras.referenceUnprocessed){
+            var subgraph = this._cloneGraph(this._definitionsMap[node.extras.references]);
+            var combined = this._combineGraphs(this._definitionsMap[key].rootId, this._definitionsMap[key], subgraph);
+            this._mergeNodes(combined, [node.id, subgraph.rootId]);
+            this._definitionsMap[key] = combined;
+          }
+        }.bind(this);
+
+        for(var key in this._definitionsMap){
+          this._definitionsMap[key].nodes.forEach(findAndProcess);
+        }
+      },
+
+      /**
+       * Takes all the automata definitions and construct an array of Automata.
+       * @returns {Array} An array of automatas
+       */
+      _buildAutomataArray: function(){
+        var automatas = [];
+        for(var key in this._definitionsMap){
+          automatas.push(new this._Automata(key, this._definitionsMap[key]));
+        }
+        return automatas;
       },
 
       /**
        * Interpret the definitions defined in a parse tree.
        * @param {Array} definitions An array of definitions
-       * @returns {Automata}
        */
       _interpretDefinitions: function(definitions){
         var label;
-        var root = new this._Node(this, {startNode: true});
+        var root = new this._Node(this);
         var graph = new this._Graph([root], [], root.id);
 
         definitions.forEach(function(definition, index){
           var name = this._getNameFromNode(definition.name);
-          if(index == 0){
+          if(index === 0){
             label = name;
           }
 
           var subgraph = this._interpretProcess(definition.process, root);
           graph = this._combineGraphs(root.id, graph, subgraph);
-
-          while(this._nodesToMerge.length > 0){
-            this._mergeNodes(graph, this._nodesToMerge.pop());
-          }
-
-          this._definitionsMap[name] = graph;
         }.bind(this));
 
-        return {label: label, nodes: graph.nodes, edges: graph.edges};
+        this._definitionsMap[label] = graph;
       },
 
       /**
        * Interpret a process node.
        * @param {Object} process A process node (process nodes are abstract)
        * @param {_Node} root The node to treat as the root in the subgraph being created
-       * @returns {_Graph} A subgraph of the overall automata
+       * @returns {_Graph} A subgraph of the overall automata definition
        */
       _interpretProcess: function(process, root){
         switch (process.type) {
@@ -190,27 +219,16 @@
        * Interpret a sequence node.
        * @param {Object} sequence A sequence node
        * @param {_Node} root The node to treat as the root in the subgraph being created
-       * @returns {_Graph} A subgraph of the overall automata
+       * @returns {_Graph} A subgraph of the overall automata definition
        */
       _interpretSequence: function(sequence, root){
         var subgraph1;
         var fromNode;
 
-        switch (sequence.from.type) {
-          case 'name':
-            var name = this._getNameFromNode(sequence.from);
-            subgraph1 = this._definitionsMap[name];
-            break;
-          case 'action':
-            var from = this._getActionFromNode(sequence.from);
-            fromNode = new this._Node(this);
-            var e = new this._Edge(this, root.id, fromNode.id, from);
-            subgraph1 = new this._Graph([fromNode], [e], root.id);
-            break;
-          default:
-            console.error('Trying to interpret invalid sequence from type "'+sequence.type+'"');
-            break;
-        }
+        var from = this._getActionFromNode(sequence.from);
+        fromNode = new this._Node(this);
+        var e = new this._Edge(this, root.id, fromNode.id, from);
+        subgraph1 = new this._Graph([fromNode], [e], root.id);
 
         var subgraph2 = this._interpretProcess(sequence.to, fromNode);
         return this._combineGraphs(subgraph1.rootId, subgraph1, subgraph2);
@@ -220,27 +238,19 @@
        * Interpret a choice node.
        * @param {Object} choice A choice node
        * @param {_Node} root The node to treat as the root in the subgraph being created
-       * @returns {_Graph} A subgraph of the overall automata
+       * @returns {_Graph} A subgraph of the overall automata definition
        */
       _interpretChoice: function(choice, root){
-        var g1root = new this._Node(this);
-        var g1 = this._interpretProcess(choice.option1, g1root);
-
-        var g2root = new this._Node(this);
-        var g2 = this._interpretProcess(choice.option2, g2root);
-
-        var g0 = new this._Graph([g1root, g2root], [
-            new this._Edge(this, root.id, g1root.id, undefined),
-            new this._Edge(this, root.id, g2root.id, undefined)], root.id);
-
-        return this._combineGraphs(g0.rootId, g0, g1, g2);
+        var g1 = this._interpretProcess(choice.option1, root);
+        var g2 = this._interpretProcess(choice.option2, root);
+        return this._combineGraphs(root.id, g1, g2);
       },
 
       /**
        * Interpret a parallel node.
        * @param {Object} parallel A parallel node
        * @param {_Node} root The node to treat as the root in the subgraph being created
-       * @returns {_Graph} A subgraph of the overall automata
+       * @returns {_Graph} A subgraph of the overall automata definition
        */
       _interpretParallel: function(parallel, root){
         var graph = new this._Graph();
@@ -251,34 +261,34 @@
        * Interpret a name node.
        * @param {Object} node A name node
        * @param {_Node} root The node to treat as the root in the subgraph being created
-       * @returns {string}
+       * @returns {_Graph} A subgraph of the overall automata definition
        */
       _interpretName: function(node, root){
-        var graph = this._definitionsMap[this._getNameFromNode(node)];
-        this._markNodesToMerge(root.id, graph.rootId);
-        return graph;
+        root.extras.references = this._getNameFromNode(node);
+        root.extras.referenceUnprocessed = true;
+        return new this._Graph();
       },
 
       /**
        * Interpret a stop node.
        * @param {Object} node A stop node
        * @param {_Node} root The node to treat as the root in the subgraph being created
-       * @returns {_Graph} A subgraph of the overall automata
+       * @returns {_Graph} A subgraph of the overall automata definition
        */
       _interpretStop: function(node, root){
-        var n = new this._Node(this);
-        var e = new this._Edge(this, root.id, n.id, undefined);
-        return new this._Graph([n], [e], root.id);
+        root.extras.isTerminal = 'stop';
+        return new this._Graph();
       },
 
       /**
        * Interpret an error node.
        * @param {Object} node A error node
        * @param {_Node} root The node to treat as the root in the subgraph being created
-       * @returns {_Graph} A subgraph of the overall automata
+       * @returns {_Graph} A subgraph of the overall automata definition
        */
       _interpretError: function(node, root){
-        return this._interpretStop(node, root);
+        root.extras.isTerminal = 'error';
+        return new this._Graph();
       },
 
       /**
@@ -304,7 +314,7 @@
        * This functions assumes the graphs do not share any nodes or edges.
        * @param {Number} rootId The ID of the node to use as the root of the combined graph
        * @param {..._Graph} g A variable number of graphs to be combined
-       * @return {_Graph} the combined graph
+       * @returns {_Graph} the combined graph
        */
       _combineGraphs: function(rootId, g){
         if(arguments.length < 3){ console.error('Not enough graphs given to combine');}
@@ -321,13 +331,27 @@
       },
 
       /**
-       * Mark the given nodes as needing to be merged into one at a later point.
-       * This method may be useful if some nodes need to be merge but they are currently in different graphs.
-       * @param {...Number} nodeId A variable number of node ID to mark as needing to be merged later
+       * Create a deep clone of the given graph.
+       * The clone will contain new nodes and edges that have difference ids from the original.
+       * @param {_Graph} g The graph to clone
+       * @returns {_Graph} The clone
        */
-      _markNodesToMerge: function(nodeId){
-        if(arguments.length < 2){ console.error('Not enough nodes given to mark');}
-        this._nodesToMerge.push(arguments);
+      _cloneGraph: function(g){
+        var nodes = [];
+        var edges = [];
+        var nodeIdMapping = {};
+
+        g.nodes.forEach(function(node){
+          var n = new this._Node(this, node.extras);
+          nodes.push(n);
+          nodeIdMapping[node.id] = n.id;
+        }.bind(this));
+
+        g.edges.forEach(function(edge){
+          edges.push(new this._Edge(this, nodeIdMapping[edge.from], nodeIdMapping[edge.to], edge.label));
+        }.bind(this));
+
+        return new this._Graph(nodes, edges, nodeIdMapping[g.rootId]);
       },
 
       /**
@@ -338,23 +362,37 @@
       _mergeNodes: function(g, nodeIds){
         if(nodeIds.length < 2){ console.error('Not enough nodes given to merge');}
 
+        var extras = {};
+        var mergedNode;
+
         // delete all the extra nodes (keep the first one)
         g.nodes = g.nodes.filter(function(node){
-          for(var i=1; i<nodeIds.length; i++){
-            if(node.id == nodeIds[i]){
+          for(var i=0; i<nodeIds.length; i++){
+            if(node.id === nodeIds[i]){
+              for(var key in node.extras){
+                if(key !== 'referenceUnprocessed'){
+                  extras[key] = node.extras[key];
+                }
+              }
+              if(i===0){
+                mergedNode = node;
+                return true;
+              }
               return false;
             }
           }
           return true;
         });
 
+        mergedNode.extras = extras;
+
         // change all the edges the refer to a delete node to refer to the merge one
         g.edges.forEach(function(edge){
           for(var i=1; i<nodeIds.length; i++){
-            if(edge.from == nodeIds[i]){
+            if(edge.from === nodeIds[i]){
               edge.from = nodeIds[0];
             }
-            if(edge.to == nodeIds[i]){
+            if(edge.to === nodeIds[i]){
               edge.to = nodeIds[0];
             }
           }
@@ -362,10 +400,21 @@
       },
 
       /**
-       *
+       * Relabel the nodes in each automata definition.
        */
-      _relabelNodes: function(g){
+      _relabelNodes: function(){
+        var label = 0;
+        var findAndRelabel = function(node){
+          node.label = (label++) + '';
+          if(this._definitionsMap[key].rootId === node.id){
+            node.extras.startNode = true;
+          }
+        }.bind(this);
 
+        for(var key in this._definitionsMap){
+          label = 0;
+          this._definitionsMap[key].nodes.forEach(findAndRelabel);
+        }
       },
 
       /**

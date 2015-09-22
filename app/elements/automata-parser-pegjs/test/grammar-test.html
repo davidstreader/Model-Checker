@@ -1,0 +1,392 @@
+<!doctype html>
+<html>
+<head>
+  <title>automata-parser-pegjs</title>
+
+  <script src="../../../../bower_components/webcomponentsjs/webcomponents.js"></script>
+  <script src="../../../../bower_components/web-component-tester/browser.js"></script>
+  <script src="../../../../bower_components/test-fixture/test-fixture-mocha.js"></script>
+
+  <link rel="import" href="../../../../bower_components/polymer/polymer.html">
+  <link rel="import" href="../../../../bower_components/promise-polyfill/promise-polyfill-lite.html">
+  <link rel="import" href="../../../../bower_components/test-fixture/test-fixture.html">
+
+  <link rel="import" href="../../../../bower_components/iron-ajax/iron-ajax.html">
+  <script src="../../../../bower_components/pegjs/peg-0.9.0.js"></script>
+</head>
+<body>
+  <test-fixture id="grammar-loader">
+    <template>
+      <iron-ajax handle-as="text" url="../automata-grammar.pegjs"></iron-ajax>
+    </template>
+  </test-fixture>
+
+  <script>
+  suite('Grammar Parsing Tests', function () {
+    var parser;
+
+    var grammarLoader = fixture('grammar-loader');
+    grammarLoader.addEventListener('response', function(e){
+      parser = PEG.buildParser(e.detail.response);
+    });
+    grammarLoader.generateRequest();
+
+    setup(function(){
+      if(!parser){
+        console.eror('parser not loaded yet.');
+      }
+    });
+
+    suite('Positves', function() {
+      suite('Basics', function() {
+        test('single character name', function() {
+          parser.parse('N=x->STOP.');
+        });
+        test('multi-character name', function() {
+          parser.parse('Name=x->STOP.');
+        });
+      });
+      suite('Sequences', function() {
+        suite('To Terminal', function() {
+          test('simple sequence', function() {
+            var tree = parser.parse('A=x->STOP.');
+            assert.deepEqual(tree, [{type:"model",definitions:[{type:"definition",name:{type:"name",name:"A"},process:{
+              type:"sequence",
+              from:{type:"action",action:"x"},
+              to:{type:"stop"}
+            }}]}]);
+          });
+          test('sequence chain', function() {
+            var tree = parser.parse('A=x->y->STOP.');
+            assert.deepEqual(tree, [{type:"model",definitions:[{type:"definition",name:{type:"name",name:"A"},process:{
+              type:"sequence",
+              from:{type:"action",action:"x"},
+              to:{
+                type:"sequence",
+                from:{type:"action",action:"y"},
+                to:{"type":"stop"}
+              }
+            }}]}]);
+          });
+          test('sequence chain x2', function() {
+            var tree = parser.parse('A=x->y->z->STOP.');
+            assert.deepEqual(tree, [{type:"model",definitions:[{type:"definition",name:{type:"name",name:"A"},process:{
+              type:"sequence",
+              from:{type:"action",action:"x"},
+              to:{
+                type:"sequence",
+                from:{type:"action",action:"y"},
+                to:{
+                  type:"sequence",
+                  from:{type:"action",action:"z"},
+                  to:{"type":"stop"}
+                }
+              }
+            }}]}]);
+          });
+        });
+        suite('To Name', function() {
+          test('simple sequence', function() {
+            var tree = parser.parse('A=x->B.');
+            assert.deepEqual(tree, [{type:"model",definitions:[{type:"definition",name:{type:"name",name:"A"},process:{
+              type:"sequence",
+              from:{type:"action",action:"x"},
+              to:{type:"name",name:"B"}
+            }}]}]);
+          });
+          test('sequence chain', function() {
+            var tree = parser.parse('A=x->y->B.');
+            assert.deepEqual(tree, [{type:"model",definitions:[{type:"definition",name:{type:"name",name:"A"},process:{
+              type:"sequence",
+              from:{type:"action",action:"x"},
+              to:{
+                type:"sequence",
+                from:{type:"action",action:"y"},
+                to:{type:"name",name:"B"}
+              }
+            }}]}]);
+          });
+          test('sequence chain x2', function() {
+            var tree = parser.parse('A=x->y->z->B.');
+            assert.deepEqual(tree, [{type:"model",definitions:[{type:"definition",name:{type:"name",name:"A"},process:{
+              type:"sequence",
+              from:{type:"action",action:"x"},
+              to:{
+                type:"sequence",
+                from:{type:"action",action:"y"},
+                to:{
+                  type:"sequence",
+                  from:{type:"action",action:"z"},
+                  to:{type:"name",name:"B"}
+                }
+              }
+            }}]}]);
+          });
+        });
+      });
+      suite('Choices', function() {
+        test('simple choice', function() {
+          var tree = parser.parse('A=x->STOP|y->STOP.');
+          assert.deepEqual(tree, [{type:"model",definitions:[{type:"definition",name:{type:"name",name:"A"},process:{
+            type:"choice",
+            option1:{
+              type:"sequence",
+              from:{type:"action",action:"x"},
+              to:{type:"stop"}},
+            option2:{
+              type:"sequence",
+              from:{type:"action",action:"y"},
+              to:{type:"stop"}}
+          }}]}]);
+        });
+        test('choice chain', function() {
+          var tree = parser.parse('A=x->STOP|y->STOP|z->STOP.');
+          assert.deepEqual(tree, [{type:"model",definitions:[{type:"definition",name:{type:"name",name:"A"},process:{
+            type:"choice",
+            option1:{
+              type:"sequence",
+              from:{type:"action",action:"x"},
+              to:{type:"stop"}},
+            option2:{
+              type:"choice",
+              option1:{
+                type:"sequence",
+                from:{type:"action",action:"y"},
+                to:{type:"stop"}},
+              option2:{
+                type:"sequence",
+                from:{type:"action",action:"z"},
+                to:{type:"stop"}}}
+          }}]}]);
+        });
+        test('choice chain x2', function() {
+          var tree = parser.parse('A=v->STOP|x->STOP|y->STOP|z->STOP.');
+          assert.deepEqual(tree, [{type:"model",definitions:[{type:"definition",name:{type:"name",name:"A"},process:{
+            type:"choice",
+            option1:{
+              type:"sequence",
+              from:{type:"action",action:"v"},
+              to:{type:"stop"}},
+            option2:{
+              type:"choice",
+              option1:{
+                type:"sequence",
+                from:{type:"action",action:"x"},
+                to:{type:"stop"}},
+              option2:{
+                type:"choice",
+                option1:{
+                  type:"sequence",
+                  from:{type:"action",action:"y"},
+                  to:{type:"stop"}},
+                option2:{
+                  type:"sequence",
+                  from:{type:"action",action:"z"},
+                  to:{type:"stop"}}}}
+          }}]}]);
+        });
+      });
+      suite('Parallel', function() {
+        suite('Single Parallel', function() {
+          test('name || name', function() {
+            var tree = parser.parse('A=B||C.');
+            assert.deepEqual(tree, [{type:"model",definitions:[{type:"definition",name:{type:"name",name:"A"},process:{
+              type:"parallel",
+              definition1:{type:"name",name:"B"},
+              definition2:{type:"name",name:"C"}
+            }}]}]);
+          });
+          test('name || process', function() {
+            var tree = parser.parse('A=B||x->STOP.');
+            assert.deepEqual(tree, [{type:"model",definitions:[{type:"definition",name:{type:"name",name:"A"},process:{
+              type:"parallel",
+              definition1:{type:"name",name:"B"},
+              definition2:{
+                type:"sequence",
+                from:{type:"action",action:"x"},
+                to:{type:"stop"}}
+            }}]}]);
+          });
+          test('process || name', function() {
+            var tree = parser.parse('A=x->STOP||B.');
+            assert.deepEqual(tree, [{type:"model",definitions:[{type:"definition",name:{type:"name",name:"A"},process:{
+              type:"parallel",
+              definition1:{
+                type:"sequence",
+                from:{type:"action",action:"x"},
+                to:{type:"stop"}},
+              definition2:{type:"name",name:"B"}
+            }}]}]);
+          });
+          test('process || process', function() {
+            var tree = parser.parse('A=x->STOP||y->STOP.');
+            assert.deepEqual(tree, [{type:"model",definitions:[{type:"definition",name:{type:"name",name:"A"},process:{
+              type:"parallel",
+              definition1:{
+                type:"sequence",
+                from:{type:"action",action:"x"},
+                to:{type:"stop"}},
+              definition2:{
+                type:"sequence",
+                from:{type:"action",action:"y"},
+                to:{type:"stop"}}
+            }}]}]);
+          });
+        });
+        suite('Multiple Parallel', function() {
+          test('name || name || name', function() {
+            var tree = parser.parse('A=B||C||D.');
+            assert.deepEqual(tree, [{type:"model",definitions:[{type:"definition",name:{type:"name",name:"A"},process:{
+              type:"parallel",
+              definition1:{type:"name",name:"B"},
+              definition2:{
+                type:"parallel",
+                definition1:{type:"name",name:"C"},
+                definition2:{type:"name",name:"D"}
+              }
+            }}]}]);
+          });
+        });
+      });
+    });
+    suite('Negitives', function() {
+      suite('Basics', function() {
+        test('incomplete (missing definition name)', function() {
+          try{
+            parser.parse('=x->STOP.');
+            assert.fail();
+          }catch(e){}
+        });
+        test('incomplete (missing definition name and assertion)', function() {
+          try{
+            parser.parse('x->STOP.');
+            assert.fail();
+          }catch(e){}
+        });
+        test('incomplete (missing definition value)', function() {
+          try{
+            parser.parse('A=.');
+            assert.fail();
+          }catch(e){}
+        });
+        test('incomplete (missing ".")', function() {
+          try{
+            parser.parse('A=x->STOP');
+            assert.fail();
+          }catch(e){}
+        });
+        test('names can\'t start with a lowercase letter', function() {
+          try{
+            parser.parse('a=x->STOP.');
+            assert.fail();
+          }catch(e){}
+        });
+      });
+      suite('Sequences', function() {
+        suite('Trival', function() {
+          test('incomplete (missing to)', function() {
+            try{
+              parser.parse('A=x->.');
+              assert.fail();
+            }catch(e){}
+          });
+          test('incomplete (missing from)', function() {
+            try{
+              parser.parse('A=->STOP.');
+              assert.fail();
+            }catch(e){}
+          });
+        });
+        suite('To Non-Terminal', function() {
+          test('simple sequence', function() {
+            try{
+              parser.parse('A=x->y.');
+              assert.fail();
+            }catch(e){}
+          });
+          test('sequence chain', function() {
+            try{
+              parser.parse('A=x->y->z.');
+              assert.fail();
+            }catch(e){}
+          });
+          test('sequence chain x2', function() {
+            try{
+              parser.parse('A=v->x->y->z.');
+              assert.fail();
+            }catch(e){}
+          });
+        });
+        suite('From Terminal', function() {
+          test('from name', function() {
+            try{
+              parser.parse('A=x->B->y.');
+              assert.fail();
+            }catch(e){}
+          });
+          test('from STOP', function() {
+            try{
+              parser.parse('A=x->STOP->y.');
+              assert.fail();
+            }catch(e){}
+          });
+        });
+      });
+      suite('Choices', function() {
+        suite('Trival', function() {
+          test('incomplete (missing option 1)', function() {
+            try{
+              parser.parse('A=|x->STOP.');
+              assert.fail();
+            }catch(e){}
+          });
+          test('incomplete (missing option 2)', function() {
+            try{
+              parser.parse('A=x->STOP|.');
+              assert.fail();
+            }catch(e){}
+          });
+        });
+      });
+      suite('Parallel', function() {
+        suite('Trival', function() {
+          test('incomplete (missing option 1)', function() {
+            try{
+              parser.parse('A=||x->STOP.');
+              assert.fail();
+            }catch(e){}
+          });
+          test('incomplete (missing option 2)', function() {
+            try{
+              parser.parse('A=x->STOP||.');
+              assert.fail();
+            }catch(e){}
+          });
+        });
+      });
+      suite('Unguarded Names', function() {
+        test('direct use', function() {
+          try{
+            parser.parse('A=B.');
+            assert.fail();
+          }catch(e){}
+        });
+        test('as choice (option 1)', function() {
+          try{
+            parser.parse('A=A|x->STOP.');
+            assert.fail();
+          }catch(e){}
+        });
+        test('as choice (option 2)', function() {
+          try{
+            parser.parse('A=x->STOP|A.');
+            assert.fail();
+          }catch(e){}
+        });
+      });
+    });
+  });
+  </script>
+
+</body>
+</html>

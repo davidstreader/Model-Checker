@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
 <head>
-  <title>_template-element</title>
+  <title>automata-visualisation</title>
 
   <script src="../../../../bower_components/webcomponentsjs/webcomponents.js"></script>
   <script src="../../../../bower_components/web-component-tester/browser.js"></script>
@@ -11,17 +11,17 @@
   <link rel="import" href="../../../../bower_components/promise-polyfill/promise-polyfill-lite.html">
   <link rel="import" href="../../../../bower_components/test-fixture/test-fixture.html">
 
-  <link rel="import" href="../_template-element.html">
+  <link rel="import" href="../automata-visualisation.html">
 </head>
 <body>
   <test-fixture id="test1">
     <template>
-      <_template-element></_template-element>
+      <automata-visualisation></automata-visualisation>
     </template>
   </test-fixture>
 
   <script>
-    suite('<_template-element>', function () {
+    suite('<automata-visualisation>', function () {
 
       setup(function() {
 
@@ -33,11 +33,11 @@
 
       suite('Test Group Name', function() {
         test('test 1 name', function() {
-          // do test
+          assert.fail(undefined, undefined, 'test not written.'); // do test
         });
 
         test('test 2 name', function() {
-          // do test
+          assert.fail(undefined, undefined, 'test not written.'); // do test
         });
       });
     });

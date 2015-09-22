@@ -33,14 +33,14 @@
   <!-- endbuild-->
 
   <!-- build:js bower_components/webcomponentsjs/webcomponents-lite.min.js -->
-  <script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+  <script async src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
   <!-- endbuild -->
 
   <!-- will be replaced with elements/elements.vulcanized.html -->
   <link rel="import" href="elements/elements.html">
   <!-- endreplace-->
 
-  <style>
+  <style is="custom-style" include="shared-styles">
   #main-toolbar{
     height: 64px
   }
@@ -119,7 +119,7 @@
     </div>
     <div class="right frame">
       <template is="dom-repeat" items="[[data.automatas]]">
-        <automata-visualisation name="[[item.label]]" nodes="[[item.nodes]]" edges="[[item.edges]]"></automata-visualisation>
+        <automata-visualisation name="[[item.name]]" nodes="[[item.graph.nodes]]" edges="[[item.graph.edges]]"></automata-visualisation>
       </template>
     </div>
   </template>
