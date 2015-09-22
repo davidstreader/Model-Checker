@@ -18,8 +18,14 @@
     "unwrap": true,
     "Polymer": true,
     "Platform": true,
-    "page": true,
     "app": true,
-    "PEG": true
+    "PEG": true,
+    "fixture": true,
+    "setup": true,
+    "suite": true,
+    "expect": true,
+    "assert": true,
+    "test": true,
+    "saveAs": true
   }
 }
