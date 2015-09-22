@@ -1,0 +1,90 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../../../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../../../bower_components/paper-item/paper-item.html">
+
+<dom-module id="walkergui-element">
+  <style>
+    :host {
+      display: block;
+    }
+  </style>
+  <template>
+  
+    <!-- <paper-icon-button icon="menu" id="stop"></paper-icon-button> -->
+
+
+    <paper-dropdown-menu id="dropMenu" label="Select Path">
+      <paper-menu>
+        <template is="dom-repeat" items="{{edgelist}}">
+          <paper-item>{{item.label}}</paper-item>
+        </template> 
+      </paper-menu>
+    </paper-dropdown-menu>
+  </template>
+
+</dom-module>
+<script>
+  (function() {
+    Polymer({
+      is: 'walkergui-element',
+
+      properties: {
+
+        edgelist: {
+          type: Array,
+          value: function(){ return [
+            'A',
+            'B',
+            'C'
+          ];}
+        },
+
+        /**
+         * ID of currently highlighted node
+         */
+         _currentNode: {
+           type: Object,
+           value: {}
+         },
+
+         /**
+         * ID of currently highlighted edge
+         */
+         _currentEdge: {
+           type: Object,
+           value: {}
+         },
+
+         _Edges:{
+          type: Array,
+          value: []
+         },
+
+      },
+
+      /**
+       * JS Doc
+       */
+      ready: function(){
+        var ar = [{label: 'one'}, {label: 'two'}, {label: 'three'}];
+        this._Edges = ar;        
+        this._setupList();        
+      },
+
+     _setupList: function(){
+        for(var i = 0; i < this._Edges.length; ++i){
+          if(/*_currentEdge.from == _Edges[i].from && _currentEdge.to != _Edges[i].to*/true){
+            var item = document.createElement("paper-item");
+            item.setAttribute("label", this._Edges[i].label);
+            document.getElementsByTagName("dropMenu");
+
+          }
+        }
+      }
+
+    });
+  })();
+</script>
