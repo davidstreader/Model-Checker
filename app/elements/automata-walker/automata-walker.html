@@ -1,0 +1,63 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../../../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../../../bower_components/paper-item/paper-item.html">
+
+<dom-module id="automata-walker">
+  <style>
+    :host {
+      display: block;
+    }
+  </style>
+  <template>
+
+    <paper-dropdown-menu id="automata-selector" label="Select Automata">
+      <paper-menu class="dropdown-content">
+        <template is="dom-repeat" items="{{automatas}}">
+          <paper-item>{{item.name}}</paper-item>
+        </template>
+      </paper-menu>
+    </paper-dropdown-menu>
+
+    <paper-dropdown-menu id="edge-selector" label="Select Path">
+      <paper-menu class="dropdown-content">
+        <template is="dom-repeat" items="{{_availableEdges}}">
+          <paper-item>{{item.name}}</paper-item>
+        </template>
+      </paper-menu>
+    </paper-dropdown-menu>
+
+    <paper-button id="go">Go</paper-button>
+
+  </template>
+
+</dom-module>
+<script>
+  (function() {
+    Polymer({
+      is: 'automata-walker',
+
+      properties: {
+
+        automatas: Array,
+
+        _availableEdges: {
+          type: Array,
+          value: function(){
+            return [];
+          }
+        }
+
+      },
+
+      /**
+       * JS Doc
+       */
+      ready: function(){
+         
+      }  
+
+    });
+  })();
+</script>
