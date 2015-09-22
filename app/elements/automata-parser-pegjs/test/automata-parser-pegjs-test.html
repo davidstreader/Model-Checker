@@ -67,7 +67,7 @@
 
           // node ids must be unique
           // (result ids and exp ids don't have to be equal as long as the graphs they create are)
-          expect(resultNodeIdsToExpNodeIdsMap[rNode.id]).to.not.exist();
+          expect(resultNodeIdsToExpNodeIdsMap[rNode.id]).to.not.exist;
           resultNodeIdsToExpNodeIdsMap[rNode.id] = eNode.id;
         }
 
@@ -99,14 +99,14 @@
               break;
             }
           }
-          expect(eEdge).to.exist();
+          expect(eEdge).to.exist;
 
           // edge ids must be unique
-          expect(edgeIds[rEdge.id]).to.not.exist();
+          expect(edgeIds[rEdge.id]).to.not.exist;
           edgeIds[rEdge.id] = eEdge.id;
         }
 
-        expect(resultNodeIdsToExpNodeIdsMap[rAutomata.graph.rootId]).to.exist();
+        expect(resultNodeIdsToExpNodeIdsMap[rAutomata.graph.rootId]).to.exist;
       }
     };
 
