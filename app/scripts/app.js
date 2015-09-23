@@ -14,6 +14,7 @@
      * Compile the code in the text editor.
      * Create and display the new automatas.
      */
+
     app.compile = function() {
       var automatas = app.$.parser.parse(app.$.editor.getCode());
 
@@ -55,3 +56,4 @@
 
   });
 })(document);
+
