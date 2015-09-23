@@ -425,18 +425,56 @@
        */
       _relabelNodes: function(){
         var label = 0;
-        var findAndRelabel = function(node){
-          node.label = (label++) + '';
-          if(this._definitionsMap[key].rootId === node.id){
-            node.extras.startNode = true;
-          }
-        }.bind(this);
-
         for(var key in this._definitionsMap){
           label = 0;
-          this._definitionsMap[key].nodes.forEach(findAndRelabel);
+          var graph = this._definitionsMap[key]
+          var nodes = graph.nodes;
+          var edges = graph.edges;
+
+          var nodeMap = {};
+          var queue = [];
+          var root;
+
+
+          for(var node in nodes){
+            if(node.id === graph.rootId){
+              root = node;
+              break;
+            }
+
+            nodeMap[node.id] = {node: node, distance: undefined};
+          }
+
+          queue.push(root);
+
+          while (queue.length > 0){
+            var u = queue.shift();
+
+            for(var edge in edges){
+              if(u.id === edge.from && !nodeMap[edge.to].distance){
+                queue.push(nodeMap[edge.to].node);
+                nodeMap[edge.to].distance++;
+                node.label = (label++) + '';
+              }
+            }
+          }
         }
       },
+
+
+        //var label = 0;
+        // var findAndRelabel = function(node){
+        //   node.label = (label++) + '';
+        //   if(this._definitionsMap[key].rootId === node.id){
+        //     node.extras.startNode = true;
+        //   }
+        // }.bind(this);
+
+        // for(var key in this._definitionsMap){
+        //   label = 0;
+        //   this._definitionsMap[key].nodes.forEach(findAndRelabel);
+        // }
+
 
       /**
        * Create the next unique node ID and return the previous one.
