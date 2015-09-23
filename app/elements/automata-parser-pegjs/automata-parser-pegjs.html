@@ -133,7 +133,7 @@
       _processSelfReferences: function(){
         var findAndProcess = function(node){
           if(node.extras.references === key){
-            delete node.extras.references; // not much point in a node keeping a references to itself
+            // delete node.extras.references; // not much point in a node keeping a references to itself
             this._mergeNodes(this._definitionsMap[key], [this._definitionsMap[key].rootId, node.id]);
           }
         }.bind(this);
@@ -144,19 +144,27 @@
       },
 
       /**
-       * Process any reference an automata definition make to definition by extending one onto the other.
+       * Process any reference an automata definition makes to another definition by extending one onto the other.
        */
       _processNonselfReferences: function(){
+        var originalDefinitionsMap = {};
+
         var findAndProcess = function(node){
           if(node.extras.referenceUnprocessed){
-            var subgraph = this._cloneGraph(this._definitionsMap[node.extras.references]);
+            var g = originalDefinitionsMap[node.extras.references];
+            var subgraph = this._cloneGraph(g);
             var combined = this._combineGraphs(this._definitionsMap[key].rootId, this._definitionsMap[key], subgraph);
             this._mergeNodes(combined, [node.id, subgraph.rootId]);
             this._definitionsMap[key] = combined;
           }
         }.bind(this);
 
-        for(var key in this._definitionsMap){
+        var key;
+        for(key in this._definitionsMap){
+          originalDefinitionsMap[key] = this._definitionsMap[key];
+        }
+
+        for(key in this._definitionsMap){
           this._definitionsMap[key].nodes.forEach(findAndProcess);
         }
       },
@@ -365,25 +373,38 @@
         var extras = {};
         var mergedNode;
 
-        // delete all the extra nodes (keep the first one)
+        //for every node in the graph
         g.nodes = g.nodes.filter(function(node){
+          //check the node against each id marked to be merged
           for(var i=0; i<nodeIds.length; i++){
+            //check if the current node needs to be merged
             if(node.id === nodeIds[i]){
+              //check if the node has extras not to do with being unprocessed
               for(var key in node.extras){
                 if(key !== 'referenceUnprocessed'){
+                  //if it it doesn't save the key for the merged node
                   extras[key] = node.extras[key];
                 }
               }
+
+              //if it's the first node
               if(i===0){
+                //save it is as the mergedNode
                 mergedNode = node;
+                //save the node
                 return true;
               }
+
+              //the id matches, and it's not the first node so get rid of the node
               return false;
             }
           }
+
+          //the node isn't identified to be merged so save it
           return true;
         });
 
+        //pass the saved extras to the merged node
         mergedNode.extras = extras;
 
         // change all the edges the refer to a delete node to refer to the merge one

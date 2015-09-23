@@ -178,12 +178,12 @@
           styleClasses += ' terminal ' + node.extras.isTerminal;
         }
         var ref = node.extras.references;
-        if(node.extras.references){
+        if(node.extras.references && node.extras.references !== this.name){
           styleClasses += ' reference';
         }
 
-        automata.setNode(node.id, { label: node.label + (ref ? ':'+ref : ''), shape: 'automatanode', class: styleClasses.trim() });
-      });
+        automata.setNode(node.id, { label: node.label + (ref && node.extras.references !== this.name ? ':'+ref : ''), shape: 'automatanode', class: styleClasses.trim() });
+      }.bind(this));
 
       // Default to assigning a new object as a label for each new edge.
       automata.setDefaultEdgeLabel(function() {
