@@ -452,54 +452,39 @@
         var label = 0;
         for(var key in this._definitionsMap){
           label = 0;
-          var graph = this._definitionsMap[key]
+          var graph = this._definitionsMap[key];
           var nodes = graph.nodes;
           var edges = graph.edges;
-
+          var root;
           var nodeMap = {};
           var queue = [];
-          var root;
 
-
-          for(var node in nodes){
-            if(node.id === graph.rootId){
-              root = node;
-              break;
+          for(var i in nodes){
+            if(nodes[i].id === graph.rootId){
+              root = nodes[i];
+              root.extras.startNode = true;
+              nodeMap[root.id] = {node: nodes[i], distance: 0};
             }
-
-            nodeMap[node.id] = {node: node, distance: undefined};
+            else{
+              nodeMap[nodes[i].id] = {node: nodes[i], distance: undefined};
+            }
           }
-
           queue.push(root);
 
           while (queue.length > 0){
             var u = queue.shift();
-
-            for(var edge in edges){
-              if(u.id === edge.from && !nodeMap[edge.to].distance){
-                queue.push(nodeMap[edge.to].node);
-                nodeMap[edge.to].distance++;
-                node.label = (label++) + '';
+            u.label = (label++) + '';
+            for(var j in edges){
+              if(u.id === edges[j].from &&
+              !nodeMap[edges[j].to].distance &&
+              u !== nodeMap[edges[j].to].node){
+                queue.push(nodeMap[edges[j].to].node);
+                nodeMap[edges[j].to].distance = nodeMap[u.id].distance + 1;
               }
             }
           }
         }
       },
-
-
-        //var label = 0;
-        // var findAndRelabel = function(node){
-        //   node.label = (label++) + '';
-        //   if(this._definitionsMap[key].rootId === node.id){
-        //     node.extras.startNode = true;
-        //   }
-        // }.bind(this);
-
-        // for(var key in this._definitionsMap){
-        //   label = 0;
-        //   this._definitionsMap[key].nodes.forEach(findAndRelabel);
-        // }
-
 
       /**
        * Create the next unique node ID and return the previous one.
