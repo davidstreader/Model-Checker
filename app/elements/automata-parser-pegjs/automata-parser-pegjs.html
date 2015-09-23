@@ -73,14 +73,18 @@
         this.label = label;
       },
 
+      _InterpreterError: function(m) {
+        this.message = m;
+      },
+
       /**
        * Parse the code and return the automatas it defines.
        * @param {string} code The code to parse
        * @returns {Array} An array of automatas
        */
       parse: function(code){
-        var pt = this._parser.parse(code);
-        return this._interpretParseTree(pt);
+          var pt = this._parser.parse(code);
+          return this._interpretParseTree(pt);
       },
 
       /**
@@ -104,6 +108,22 @@
         parseTree.forEach(function(model){
           this._interpretDefinitions(model.definitions);
         }.bind(this));
+
+        // check that each reference noted references an actual definition
+        var validateDefinitions = function(){
+          for(var key in this._definitionsMap){
+            for(var i=0; i<this._definitionsMap[key].nodes.length; i++){
+              if(this._definitionsMap[key].nodes[i].extras.references){
+                var ref = this._definitionsMap[key].nodes[i].extras.references;
+                if(this._definitionsMap[ref] === undefined){
+                  throw new this._InterpreterError('process "' + ref + '" referenced in "' + key + '" does not exist.');
+                }
+              }
+            }
+          }
+          return false;
+        }.bind(this);
+        validateDefinitions();
 
         // returns whether or not there are still unprocessed references in any of the automata definitions.
         var unprocessedReferences = function(){
@@ -194,6 +214,11 @@
           var name = this._getNameFromNode(definition.name);
           if(index === 0){
             label = name;
+          }
+
+          //Check that the definition is not already recorded
+          if(this._definitionsMap[label]){
+            throw new this._InterpreterError('process "' + label + '" already defined.');
           }
 
           var subgraph = this._interpretProcess(definition.process, root);
