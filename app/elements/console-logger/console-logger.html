@@ -5,6 +5,7 @@
   <style>
     :host {
       display: block;
+      overflow: auto;
     }
     #console{
       box-sizing: border-box;
@@ -42,6 +43,9 @@
 
         Polymer.dom(this.$.console).appendChild(node);
         Polymer.dom(this.$.console).appendChild(document.createElement('BR'));
+
+        var c = document.getElementById('console');
+        c.scrollTop = c.scrollHeight;
 
         return node;
       }
