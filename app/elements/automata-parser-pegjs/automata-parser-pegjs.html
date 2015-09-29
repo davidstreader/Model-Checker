@@ -59,7 +59,7 @@
        */
       _Node: function($this, extras){
         this.id = $this._useNextNodeId();
-        this.label = this.id + '';
+        this.label = undefined;
         this.extras = extras || {};
       },
 
@@ -473,7 +473,9 @@
 
           while (queue.length > 0){
             var u = queue.shift();
-            u.label = (label++) + '';
+            if(nodeMap[u.id].node.label === undefined){
+              u.label = (label++) + '';
+            }
             for(var j in edges){
               if(u.id === edges[j].from &&
               !nodeMap[edges[j].to].distance &&
