@@ -6,11 +6,10 @@
     :host {
       display: block;
       overflow: auto;
+      padding: 0 8px;
     }
     #console{
       box-sizing: border-box;
-      width: 100%;
-      height: 100%;
     }
     .log{
       color: var(--log-text-color, blue);
@@ -41,10 +40,9 @@
         var node = document.createElement('SPAN');
         node.appendChild(text);
 
-        Polymer.dom(this.$.console).appendChild(node);
-        Polymer.dom(this.$.console).appendChild(document.createElement('BR'));
-
-        var c = document.getElementById('console');
+        var c = Polymer.dom(this.$.console);
+        c.appendChild(node);
+        c.appendChild(document.createElement('BR'));
         c.scrollTop = c.scrollHeight;
 
         return node;
