@@ -116,10 +116,10 @@
       <console-logger id="console"></console-logger>
     </div>
     <div class="right frame">
+      <automata-walker automata="{{data.automatas}}"></automata-walker>
       <template is="dom-repeat" items="[[data.automatas]]">
         <automata-visualisation name="[[item.name]]" nodes="[[item.graph.nodes]]" edges="[[item.graph.edges]]"></automata-visualisation>
       </template>
-      <automata-walker automatas="{{data.automatas}}"></automata-walker>
     </div>
   </template>
 
