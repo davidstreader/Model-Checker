@@ -9,26 +9,41 @@
     :host {
       display: block;
     }
+    paper-dropdown-menu{
+      --paper-dropdown-menu: {
+        width: var(--dropdown-menu-width, 200px);
+      };
+    }
+    paper-dropdown-menu .dropdown-content{
+      --paper-menu: {
+        width: var(--dropdown-menu-width, 200px);
+      };
+    }
+    paper-item.automaton:hover{
+      background: var(--primary-background-color);
+    }
   </style>
   <template>
 
-    <paper-dropdown-menu id="automata-selector" label="Select Automata">
+    <paper-dropdown-menu id="automata-selector" label="Automaton" on-iron-select="_onAutomatonSelection" disabled$="{{!_hasAutomata}}">
       <paper-menu class="dropdown-content">
-        <template is="dom-repeat" items="{{automatas}}">
-          <paper-item>{{item.name}}</paper-item>
+        <template is="dom-repeat" items="{{automata}}">
+          <paper-item data-automata-name="{{item.name}}">{{item.name}}</paper-item>
         </template>
+        <paper-item disabled hidden$="{{_hasAutomata}}">No Automata Defined</paper-item>
       </paper-menu>
     </paper-dropdown-menu>
 
-    <paper-dropdown-menu id="edge-selector" label="Select Path">
-      <paper-menu class="dropdown-content">
+    <paper-dropdown-menu id="edge-selector" label="Edge to Walk" on-iron-select="_onEdgeSelection" disabled$="{{!_hasEdges}}">
+      <paper-menu class="dropdown-content" id="edge-selector-menu" selectedItem="{{_selectedEdgeItem}}">
         <template is="dom-repeat" items="{{_availableEdges}}">
-          <paper-item>{{item.name}}</paper-item>
+          <paper-item data-edge-name="{{item.label}}">{{item.label}}</paper-item>
         </template>
+        <paper-item disabled hidden$="{{_hasEdges}}">No Edges to Walk</paper-item>
       </paper-menu>
     </paper-dropdown-menu>
 
-    <paper-button id="go">Go</paper-button>
+    <paper-button raised on-tap="_walk">Walk</paper-button>
 
   </template>
 
@@ -40,24 +55,146 @@
 
       properties: {
 
-        automatas: Array,
+        /**
+         * JS Doc
+         */
+        automata: {
+          tpye: Array,
+          notify: true
+        },
 
+        /**
+         * JS Doc
+         */
         _availableEdges: {
           type: Array,
           value: function(){
             return [];
           }
-        }
+        },
 
+        /**
+         * JS Doc
+         */
+        _currentGraph: Object,
+
+        /**
+         * JS Doc
+         */
+        _currentEdge: Object,
+
+        /**
+         * JS Doc
+         */
+        _hasAutomata: {
+          type: Boolean,
+          computed: '_computeHasAutomata(automata.length)'
+        },
+
+        /**
+         * JS Doc
+         */
+        _hasEdges: {
+          type: Boolean,
+          computed: '_computeHasEdges(_availableEdges.length)'
+        }
       },
 
       /**
        * JS Doc
        */
-      ready: function(){
-         
-      }  
+      _computeHasAutomata: function(len){
+        return len > 0;
+      },
 
+      /**
+       * JS Doc
+       */
+      _computeHasEdges: function(len){
+        return len > 0;
+      },
+
+      /**
+       * JS Doc
+       */
+      _walk: function(){
+        if(this._currentEdge === undefined || this._currentGraph === undefined){
+          console.error('nothing selected to walk');
+        }else{
+          this._repopulatePathList();
+          this.fire('automata-walker-walk', {edge: this._currentEdge});
+        }
+      },
+
+      /**
+       * JS Doc
+       */
+      _onAutomatonSelection: function(e, detail){
+        this._populatePathList(detail.item.dataAutomataName);
+        this.fire('automata-walker-start', {node: this._currentGraph.rootId});
+      },
+
+      /**
+       * JS Doc
+       */
+      _onEdgeSelection: function(e, detail){
+        var label = detail.item.dataEdgeName;
+        for(var i in this._availableEdges){
+          if(this._availableEdges[i].label === label){
+            this._currentEdge = this._availableEdges[i];
+            break;
+          }
+        }
+      },
+
+      /**
+       * JS Doc
+       */
+      _populatePathList: function(item){
+        this._currentEdge = undefined;
+        var i;
+        for(i in this.automata){
+          if(this.automata[i].name === item){
+            this._currentGraph = this.automata[i].graph;
+            break;
+          }
+        }
+        var newAE = [];
+        for(i in this._currentGraph.edges){
+          if(this._currentGraph.edges[i].from === this._currentGraph.rootId){
+            newAE.push(this._currentGraph.edges[i]);
+          }
+        }
+        this._setAvailableEdges(newAE);
+      },
+
+      /**
+       * JS Doc
+       */
+      _repopulatePathList: function(){
+        var newAE = [];
+        var nodeId = this._currentEdge.to;
+
+        for(var i in this._currentGraph.edges){
+          if(this._currentGraph.edges[i].from === nodeId){
+            newAE.push(this._currentGraph.edges[i]);
+          }
+        }
+
+        this._setAvailableEdges(newAE);
+        this.$['edge-selector-menu'].select(0);
+      },
+
+      /**
+       * JS splice
+       */
+      _setAvailableEdges: function(values){
+        var oldLen = this._availableEdges.length;
+        for(var i=0; i<values.length; i++){
+          this.push('_availableEdges', values[i]);
+        }
+        this.splice('_availableEdges', 0, oldLen);
+      }
     });
   })();
 </script>
