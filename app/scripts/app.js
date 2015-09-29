@@ -62,8 +62,8 @@
     app.open = function() {
       var opener = app.$['open-file'];
       opener.click();
-      opener.onchange = function() {
-        var input = event.target;
+      opener.onchange = function(e) {
+        var input = e.target;
 
         var reader = new FileReader();
         reader.onload = function() {
