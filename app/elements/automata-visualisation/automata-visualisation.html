@@ -81,8 +81,8 @@
   stroke: var(--reference-node-stroke);
   stroke-width: var(--reference-node-stroke-width);
 }
-.node.selected circle.outer{
-  fill: var(--node-selected-fill, #4488FF);
+.node.highlighted circle.outer{
+  fill: var(--node-highlighted-fill, #4488FF);
 }
 .edgePath path {
   fill: var(--edge-fill, #000000);
@@ -111,7 +111,6 @@
     is: 'automata-visualisation',
 
     properties: {
-
       /**
       * The name of the automata.
       */
@@ -137,13 +136,19 @@
       edges: {
         type: Array,
         value: []
-      }
+      },
+
+      _highlightedNodeId: Number
     },
 
     ready: function(){
       this.async(function(){
         this.redraw();
       });
+    },
+
+    setHighlightNodeId: function(id) {
+      this._highlightedNodeId = id;
     },
 
     /**
@@ -183,6 +188,10 @@
         var ref = node.extras.references;
         if(node.extras.references && node.extras.references !== this.name){
           styleClasses += ' reference';
+        }
+
+        if(node.id === this._highlightedNodeId){
+          styleClasses += ' highlighted';
         }
 
         automata.setNode(node.id, { label: node.label + (ref && node.extras.references !== this.name ? ':'+ref : ''), shape: 'automatanode', class: styleClasses.trim() });
