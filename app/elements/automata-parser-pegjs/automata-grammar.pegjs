@@ -23,7 +23,11 @@ Definition
   =  name:Name _ symbol_DefinitionAssignment _ process:Process_Parallel { return new Node.DefinitionNode(name, process); }
 
 Process_Parallel
-  =  a:Name_OR_Choice _ symbol_Parallel _ b:Process_Parallel { return new Node.ParallelNode(a, b); }
+  =  a:Name_OR_Choice _ symbol_Parallel _ b:Process_Parallel_Nested { return new Node.ParallelNode(a, b); }
+  /  Process_Choice
+
+Process_Parallel_Nested
+  =  a:Name_OR_Choice _ symbol_Parallel _ b:Process_Parallel_Nested { return new Node.ParallelNode(a, b); }
   /  Name_OR_Choice
 
 Process_Choice
