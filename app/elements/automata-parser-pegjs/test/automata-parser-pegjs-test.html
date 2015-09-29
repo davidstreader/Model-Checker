@@ -3,24 +3,25 @@
 <head>
   <title>automata-parser-pegjs</title>
 
-  <script src='../../../../bower_components/webcomponentsjs/webcomponents.js'></script>
-  <script src='../../../../bower_components/web-component-tester/browser.js'></script>
-  <script src='../../../../bower_components/test-fixture/test-fixture-mocha.js'></script>
+  <script src="../../../../bower_components/webcomponentsjs/webcomponents.js"></script>
+  <script src="../../../../bower_components/web-component-tester/browser.js"></script>
+  <script src="../../../../bower_components/test-fixture/test-fixture-mocha.js"></script>
 
-  <link rel='import' href='../../../../bower_components/polymer/polymer.html'>
-  <link rel='import' href='../../../../bower_components/promise-polyfill/promise-polyfill-lite.html'>
-  <link rel='import' href='../../../../bower_components/test-fixture/test-fixture.html'>
+  <link rel="import" href="../../../../bower_components/polymer/polymer.html">
+  <link rel="import" href="../../../../bower_components/promise-polyfill/promise-polyfill-lite.html">
+  <link rel="import" href="../../../../bower_components/test-fixture/test-fixture.html">
 
-  <link rel='import' href='../automata-parser-pegjs.html'>
+  <link rel="import" href="../automata-parser-pegjs.html">
 </head>
 <body>
-  <test-fixture id='parser'>
+  <test-fixture id="parser">
     <template>
       <automata-parser-pegjs></automata-parser-pegjs>
     </template>
   </test-fixture>
 
   <script>
+  // jshint -W030
   suite('<automata-parser-pegj>', function () {
     var parser;
 
@@ -110,126 +111,6 @@
       }
     };
 
-    suite('Basics', function() {
-      // this suite (String Tweeks) may not be need as grammar-test.html may already be testing these cases
-      suite('String Tweeks', function() {
-        suite('Single Charcter Names and Action', function() {
-          suite('Whitespace', function() {
-            var exp = [{
-              name: 'A',
-              graph: {
-                nodes: [
-                  {id: 0, label: '0', extras: {startNode: true}},
-                  {id: 1, label: '1', extras: {isTerminal: 'stop'}}],
-                edges: [
-                  {from: 0, to: 1, label: 'x'}],
-                rootId: 0}
-              }];
-
-            test('No whitespace', function(){
-              var result = parser.parse('A=x->STOP.');
-              doTest(result, exp);
-            });
-            test('Spaces', function(){
-              var result = parser.parse(' A = x -> STOP. ');
-              doTest(result, exp);
-            });
-            test('Spaces, tabs, line returns, new lines', function(){
-              var result = parser.parse(' \nA \r\n =     x   \t ->\t\tSTOP.\t\r\n ');
-              doTest(result, exp);
-            });
-          });
-        });
-        suite('Mutli-Charcter Names', function() {
-          test('Uppercase', function(){
-            var result = parser.parse('ABC=x->STOP.');
-            var exp = [{
-              name: 'ABC',
-              graph: {
-                nodes: [
-                  {id: 0, label: '0', extras: {startNode: true}},
-                  {id: 1, label: '1', extras: {isTerminal: 'stop'}}],
-                edges: [
-                  {from: 0, to: 1, label: 'x'}],
-                rootId: 0}
-              }];
-            doTest(result, exp);
-          });
-          test('Mixed-case', function(){
-            var result = parser.parse('QbcXYx=x->STOP.');
-            var exp = [{
-              name: 'QbcXYx',
-              graph: {
-                nodes: [
-                  {id: 0, label: '0', extras: {startNode: true}},
-                  {id: 1, label: '1', extras: {isTerminal: 'stop'}}],
-                edges: [
-                  {from: 0, to: 1, label: 'x'}],
-                rootId: 0}
-              }];
-            doTest(result, exp);
-          });
-          test('Mixed-case, numbers, underscores', function(){
-            var result = parser.parse('Tb0cX_92Y0x_=x->STOP.');
-            var exp = [{
-              name: 'Tb0cX_92Y0x_',
-              graph: {
-                nodes: [
-                  {id: 0, label: '0', extras: {startNode: true}},
-                  {id: 1, label: '1', extras: {isTerminal: 'stop'}}],
-                edges: [
-                  {from: 0, to: 1, label: 'x'}],
-                rootId: 0}
-              }];
-            doTest(result, exp);
-          });
-        });
-        suite('Mutli-Charcter Action', function() {
-          test('Lowercase', function(){
-            var result = parser.parse('A=xyz->STOP.');
-            var exp = [{
-              name: 'A',
-              graph: {
-                nodes: [
-                  {id: 0, label: '0', extras: {startNode: true}},
-                  {id: 1, label: '1', extras: {isTerminal: 'stop'}}],
-                edges: [
-                  {from: 0, to: 1, label: 'xyz'}],
-                rootId: 0}
-              }];
-            doTest(result, exp);
-          });
-          test('Mixed-case', function(){
-            var result = parser.parse('A=sYZabC->STOP.');
-            var exp = [{
-              name: 'A',
-              graph: {
-                nodes: [
-                  {id: 0, label: '0', extras: {startNode: true}},
-                  {id: 1, label: '1', extras: {isTerminal: 'stop'}}],
-                edges: [
-                  {from: 0, to: 1, label: 'sYZabC'}],
-                rootId: 0}
-              }];
-            doTest(result, exp);
-          });
-          test('Mixed-case, numbers, underscores', function(){
-            var result = parser.parse('A=hYZ_12_a5bC->STOP.');
-            var exp = [{
-              name: 'A',
-              graph: {
-                nodes: [
-                  {id: 0, label: '0', extras: {startNode: true}},
-                  {id: 1, label: '1', extras: {isTerminal: 'stop'}}],
-                edges: [
-                  {from: 0, to: 1, label: 'hYZ_12_a5bC'}],
-                rootId: 0}
-              }];
-            doTest(result, exp);
-          });
-        });
-      });
-    });
     suite('Operations', function() {
       suite('Sequence', function() {
         test('simple', function(){
@@ -337,32 +218,77 @@
           doTest(result, exp);
         });
       });
-      suite('Parallel', function() {
-        test('simple', function(){
-          assert.fail(undefined, undefined, 'test not written.');
-        });
-        test('chained sequence (1)', function(){
-          assert.fail(undefined, undefined, 'test not written.');
-        });
-        test('chained sequence (2)', function(){
-          assert.fail(undefined, undefined, 'test not written.');
-        });
-      });
-    });
-    suite('Cycles', function() {
-      test('single cycles', function(){
-        assert.fail(undefined, undefined, 'test not written.');
-      });
-      test('multiple cycles (1)', function(){
-        assert.fail(undefined, undefined, 'test not written.');
-      });
-      test('multiple cycles (2)', function(){
-        assert.fail(undefined, undefined, 'test not written.');
-      });
-    });
-    suite('References', function() {
+    suite('Self References', function() {
       test('single reference', function(){
-        assert.fail(undefined, undefined, 'test not written.');
+        var result = parser.parse('A=x->A.');
+        var exp = [{
+          name: 'A',
+          graph: {
+            nodes: [
+              {id: 0, label: '0', extras: {startNode: true, references: 'A'}}],
+            edges: [
+              {from: 0, to: 0, label: 'x'}],
+            rootId: 0}
+          }];
+        doTest(result, exp);
+      });
+      test('multiple references (1)', function(){
+        var result = parser.parse('A=x->A|y->A.');
+        var exp = [{
+          name: 'A',
+          graph: {
+            nodes: [
+              {id: 0, label: '0', extras: {startNode: true, references: 'A'}}],
+            edges: [
+              {from: 0, to: 0, label: 'x'},
+              {from: 0, to: 0, label: 'y'}],
+            rootId: 0}
+          }];
+        doTest(result, exp);
+      });
+      test('multiple references (2)', function(){
+        var result = parser.parse('A=x->(y->z->A|STOP).');
+        var exp = [{
+          name: 'A',
+          graph: {
+            nodes: [
+              {id: 0, label: '0', extras: {startNode: true, references: 'A'}},
+              {id: 1, label: '1', extras: {isTerminal: 'stop'}},
+              {id: 2, label: '2', extras: {}}],
+            edges: [
+              {from: 0, to: 1, label: 'x'},
+              {from: 1, to: 2, label: 'y'},
+              {from: 2, to: 0, label: 'z'}],
+            rootId: 0}
+          }];
+        doTest(result, exp);
+      });
+    });
+    suite('Non-Self References', function() {
+      test('single reference', function(){
+        var result = parser.parse('A=x->B.B=y->STOP.');
+        var exp = [{
+          name: 'A',
+          graph: {
+            nodes: [
+              {id: 0, label: '0', extras: {startNode: true}},
+              {id: 1, label: '1', extras: {references: 'B'}},
+              {id: 2, label: '2', extras: {isTerminal: 'stop'}}],
+            edges: [
+              {from: 0, to: 1, label: 'x'},
+              {from: 1, to: 2, label: 'y'}],
+            rootId: 0}
+        },{
+          name: 'B',
+          graph: {
+            nodes: [
+              {id: 1, label: '1', extras: {references: 'B'}},
+              {id: 2, label: '2', extras: {isTerminal: 'stop'}}],
+            edges: [
+              {from: 1, to: 2, label: 'y'}],
+            rootId: 0}
+        }];
+        doTest(result, exp);
       });
       test('multiple difference references', function(){
         assert.fail(undefined, undefined, 'test not written.');
@@ -374,6 +300,12 @@
         assert.fail(undefined, undefined, 'test not written.');
       });
     });
+    suite('Parallel', function() {
+      test('test', function(){
+        assert.fail(undefined, undefined, 'test not written.');
+      });
+    });
+  });
   });
   </script>
 

@@ -22,6 +22,12 @@
   </test-fixture>
 
   <script>
+  /**
+   * This test suite is designed to test the automata grammar.
+   * It makes sure that the correct parse tree is returned from the PEGjs parser
+   * for positive input and that negitive inputs fail.
+   * It does NOT test the interpreter.
+   */
   suite('Grammar Parsing Tests', function () {
     var parser;
 
@@ -39,47 +45,86 @@
 
     suite('Positves', function() {
       suite('Basics', function() {
-        test('single character name', function() {
-          parser.parse('N=x->STOP.');
+        suite('Simple', function() {
+          test('single character name', function() {
+            parser.parse('N=x->STOP.');
+          });
+          test('multi-character name', function() {
+            parser.parse('Name=x->STOP.');
+          });
         });
-        test('multi-character name', function() {
-          parser.parse('Name=x->STOP.');
+        suite('String Tweeks', function() {
+          suite('Single Charcter Names and Action', function() {
+            suite('Whitespace', function() {
+              test('No whitespace', function(){
+                parser.parse('A=x->STOP.');
+              });
+              test('Spaces', function(){
+                 parser.parse(' A = x -> STOP. ');
+              });
+              test('Spaces, tabs, line returns, new lines', function(){
+                parser.parse(' \nA \r\n =     x   \t ->\t\tSTOP.\t\r\n ');
+              });
+            });
+          });
+          suite('Mutli-Charcter Names', function() {
+            test('Uppercase', function(){
+              parser.parse('ABC=x->STOP.');
+            });
+            test('Mixed-case', function(){
+              parser.parse('QbcXYx=x->STOP.');
+            });
+            test('Mixed-case, numbers, underscores', function(){
+              parser.parse('Tb0cX_92Y0x_=x->STOP.');
+            });
+          });
+          suite('Mutli-Charcter Action', function() {
+            test('Lowercase', function(){
+              parser.parse('A=xyz->STOP.');
+            });
+            test('Mixed-case', function(){
+              parser.parse('A=sYZabC->STOP.');
+            });
+            test('Mixed-case, numbers, underscores', function(){
+              parser.parse('A=hYZ_12_a5bC->STOP.');
+            });
+          });
         });
       });
       suite('Sequences', function() {
         suite('To Terminal', function() {
           test('simple sequence', function() {
             var tree = parser.parse('A=x->STOP.');
-            assert.deepEqual(tree, [{type:"model",definitions:[{type:"definition",name:{type:"name",name:"A"},process:{
-              type:"sequence",
-              from:{type:"action",action:"x"},
-              to:{type:"stop"}
+            assert.deepEqual(tree, [{type:'model',definitions:[{type:'definition',name:{type:'name',name:'A'},process:{
+              type:'sequence',
+              from:{type:'action',action:'x'},
+              to:{type:'stop'}
             }}]}]);
           });
           test('sequence chain', function() {
             var tree = parser.parse('A=x->y->STOP.');
-            assert.deepEqual(tree, [{type:"model",definitions:[{type:"definition",name:{type:"name",name:"A"},process:{
-              type:"sequence",
-              from:{type:"action",action:"x"},
+            assert.deepEqual(tree, [{type:'model',definitions:[{type:'definition',name:{type:'name',name:'A'},process:{
+              type:'sequence',
+              from:{type:'action',action:'x'},
               to:{
-                type:"sequence",
-                from:{type:"action",action:"y"},
-                to:{"type":"stop"}
+                type:'sequence',
+                from:{type:'action',action:'y'},
+                to:{'type':'stop'}
               }
             }}]}]);
           });
           test('sequence chain x2', function() {
             var tree = parser.parse('A=x->y->z->STOP.');
-            assert.deepEqual(tree, [{type:"model",definitions:[{type:"definition",name:{type:"name",name:"A"},process:{
-              type:"sequence",
-              from:{type:"action",action:"x"},
+            assert.deepEqual(tree, [{type:'model',definitions:[{type:'definition',name:{type:'name',name:'A'},process:{
+              type:'sequence',
+              from:{type:'action',action:'x'},
               to:{
-                type:"sequence",
-                from:{type:"action",action:"y"},
+                type:'sequence',
+                from:{type:'action',action:'y'},
                 to:{
-                  type:"sequence",
-                  from:{type:"action",action:"z"},
-                  to:{"type":"stop"}
+                  type:'sequence',
+                  from:{type:'action',action:'z'},
+                  to:{'type':'stop'}
                 }
               }
             }}]}]);
@@ -88,36 +133,36 @@
         suite('To Name', function() {
           test('simple sequence', function() {
             var tree = parser.parse('A=x->B.');
-            assert.deepEqual(tree, [{type:"model",definitions:[{type:"definition",name:{type:"name",name:"A"},process:{
-              type:"sequence",
-              from:{type:"action",action:"x"},
-              to:{type:"name",name:"B"}
+            assert.deepEqual(tree, [{type:'model',definitions:[{type:'definition',name:{type:'name',name:'A'},process:{
+              type:'sequence',
+              from:{type:'action',action:'x'},
+              to:{type:'name',name:'B'}
             }}]}]);
           });
           test('sequence chain', function() {
             var tree = parser.parse('A=x->y->B.');
-            assert.deepEqual(tree, [{type:"model",definitions:[{type:"definition",name:{type:"name",name:"A"},process:{
-              type:"sequence",
-              from:{type:"action",action:"x"},
+            assert.deepEqual(tree, [{type:'model',definitions:[{type:'definition',name:{type:'name',name:'A'},process:{
+              type:'sequence',
+              from:{type:'action',action:'x'},
               to:{
-                type:"sequence",
-                from:{type:"action",action:"y"},
-                to:{type:"name",name:"B"}
+                type:'sequence',
+                from:{type:'action',action:'y'},
+                to:{type:'name',name:'B'}
               }
             }}]}]);
           });
           test('sequence chain x2', function() {
             var tree = parser.parse('A=x->y->z->B.');
-            assert.deepEqual(tree, [{type:"model",definitions:[{type:"definition",name:{type:"name",name:"A"},process:{
-              type:"sequence",
-              from:{type:"action",action:"x"},
+            assert.deepEqual(tree, [{type:'model',definitions:[{type:'definition',name:{type:'name',name:'A'},process:{
+              type:'sequence',
+              from:{type:'action',action:'x'},
               to:{
-                type:"sequence",
-                from:{type:"action",action:"y"},
+                type:'sequence',
+                from:{type:'action',action:'y'},
                 to:{
-                  type:"sequence",
-                  from:{type:"action",action:"z"},
-                  to:{type:"name",name:"B"}
+                  type:'sequence',
+                  from:{type:'action',action:'z'},
+                  to:{type:'name',name:'B'}
                 }
               }
             }}]}]);
@@ -127,62 +172,62 @@
       suite('Choices', function() {
         test('simple choice', function() {
           var tree = parser.parse('A=x->STOP|y->STOP.');
-          assert.deepEqual(tree, [{type:"model",definitions:[{type:"definition",name:{type:"name",name:"A"},process:{
-            type:"choice",
+          assert.deepEqual(tree, [{type:'model',definitions:[{type:'definition',name:{type:'name',name:'A'},process:{
+            type:'choice',
             option1:{
-              type:"sequence",
-              from:{type:"action",action:"x"},
-              to:{type:"stop"}},
+              type:'sequence',
+              from:{type:'action',action:'x'},
+              to:{type:'stop'}},
             option2:{
-              type:"sequence",
-              from:{type:"action",action:"y"},
-              to:{type:"stop"}}
+              type:'sequence',
+              from:{type:'action',action:'y'},
+              to:{type:'stop'}}
           }}]}]);
         });
         test('choice chain', function() {
           var tree = parser.parse('A=x->STOP|y->STOP|z->STOP.');
-          assert.deepEqual(tree, [{type:"model",definitions:[{type:"definition",name:{type:"name",name:"A"},process:{
-            type:"choice",
+          assert.deepEqual(tree, [{type:'model',definitions:[{type:'definition',name:{type:'name',name:'A'},process:{
+            type:'choice',
             option1:{
-              type:"sequence",
-              from:{type:"action",action:"x"},
-              to:{type:"stop"}},
+              type:'sequence',
+              from:{type:'action',action:'x'},
+              to:{type:'stop'}},
             option2:{
-              type:"choice",
+              type:'choice',
               option1:{
-                type:"sequence",
-                from:{type:"action",action:"y"},
-                to:{type:"stop"}},
+                type:'sequence',
+                from:{type:'action',action:'y'},
+                to:{type:'stop'}},
               option2:{
-                type:"sequence",
-                from:{type:"action",action:"z"},
-                to:{type:"stop"}}}
+                type:'sequence',
+                from:{type:'action',action:'z'},
+                to:{type:'stop'}}}
           }}]}]);
         });
         test('choice chain x2', function() {
           var tree = parser.parse('A=v->STOP|x->STOP|y->STOP|z->STOP.');
-          assert.deepEqual(tree, [{type:"model",definitions:[{type:"definition",name:{type:"name",name:"A"},process:{
-            type:"choice",
+          assert.deepEqual(tree, [{type:'model',definitions:[{type:'definition',name:{type:'name',name:'A'},process:{
+            type:'choice',
             option1:{
-              type:"sequence",
-              from:{type:"action",action:"v"},
-              to:{type:"stop"}},
+              type:'sequence',
+              from:{type:'action',action:'v'},
+              to:{type:'stop'}},
             option2:{
-              type:"choice",
+              type:'choice',
               option1:{
-                type:"sequence",
-                from:{type:"action",action:"x"},
-                to:{type:"stop"}},
+                type:'sequence',
+                from:{type:'action',action:'x'},
+                to:{type:'stop'}},
               option2:{
-                type:"choice",
+                type:'choice',
                 option1:{
-                  type:"sequence",
-                  from:{type:"action",action:"y"},
-                  to:{type:"stop"}},
+                  type:'sequence',
+                  from:{type:'action',action:'y'},
+                  to:{type:'stop'}},
                 option2:{
-                  type:"sequence",
-                  from:{type:"action",action:"z"},
-                  to:{type:"stop"}}}}
+                  type:'sequence',
+                  from:{type:'action',action:'z'},
+                  to:{type:'stop'}}}}
           }}]}]);
         });
       });
@@ -190,59 +235,59 @@
         suite('Single Parallel', function() {
           test('name || name', function() {
             var tree = parser.parse('A=B||C.');
-            assert.deepEqual(tree, [{type:"model",definitions:[{type:"definition",name:{type:"name",name:"A"},process:{
-              type:"parallel",
-              definition1:{type:"name",name:"B"},
-              definition2:{type:"name",name:"C"}
+            assert.deepEqual(tree, [{type:'model',definitions:[{type:'definition',name:{type:'name',name:'A'},process:{
+              type:'parallel',
+              definition1:{type:'name',name:'B'},
+              definition2:{type:'name',name:'C'}
             }}]}]);
           });
           test('name || process', function() {
             var tree = parser.parse('A=B||x->STOP.');
-            assert.deepEqual(tree, [{type:"model",definitions:[{type:"definition",name:{type:"name",name:"A"},process:{
-              type:"parallel",
-              definition1:{type:"name",name:"B"},
+            assert.deepEqual(tree, [{type:'model',definitions:[{type:'definition',name:{type:'name',name:'A'},process:{
+              type:'parallel',
+              definition1:{type:'name',name:'B'},
               definition2:{
-                type:"sequence",
-                from:{type:"action",action:"x"},
-                to:{type:"stop"}}
+                type:'sequence',
+                from:{type:'action',action:'x'},
+                to:{type:'stop'}}
             }}]}]);
           });
           test('process || name', function() {
             var tree = parser.parse('A=x->STOP||B.');
-            assert.deepEqual(tree, [{type:"model",definitions:[{type:"definition",name:{type:"name",name:"A"},process:{
-              type:"parallel",
+            assert.deepEqual(tree, [{type:'model',definitions:[{type:'definition',name:{type:'name',name:'A'},process:{
+              type:'parallel',
               definition1:{
-                type:"sequence",
-                from:{type:"action",action:"x"},
-                to:{type:"stop"}},
-              definition2:{type:"name",name:"B"}
+                type:'sequence',
+                from:{type:'action',action:'x'},
+                to:{type:'stop'}},
+              definition2:{type:'name',name:'B'}
             }}]}]);
           });
           test('process || process', function() {
             var tree = parser.parse('A=x->STOP||y->STOP.');
-            assert.deepEqual(tree, [{type:"model",definitions:[{type:"definition",name:{type:"name",name:"A"},process:{
-              type:"parallel",
+            assert.deepEqual(tree, [{type:'model',definitions:[{type:'definition',name:{type:'name',name:'A'},process:{
+              type:'parallel',
               definition1:{
-                type:"sequence",
-                from:{type:"action",action:"x"},
-                to:{type:"stop"}},
+                type:'sequence',
+                from:{type:'action',action:'x'},
+                to:{type:'stop'}},
               definition2:{
-                type:"sequence",
-                from:{type:"action",action:"y"},
-                to:{type:"stop"}}
+                type:'sequence',
+                from:{type:'action',action:'y'},
+                to:{type:'stop'}}
             }}]}]);
           });
         });
         suite('Multiple Parallel', function() {
           test('name || name || name', function() {
             var tree = parser.parse('A=B||C||D.');
-            assert.deepEqual(tree, [{type:"model",definitions:[{type:"definition",name:{type:"name",name:"A"},process:{
-              type:"parallel",
-              definition1:{type:"name",name:"B"},
+            assert.deepEqual(tree, [{type:'model',definitions:[{type:'definition',name:{type:'name',name:'A'},process:{
+              type:'parallel',
+              definition1:{type:'name',name:'B'},
               definition2:{
-                type:"parallel",
-                definition1:{type:"name",name:"C"},
-                definition2:{type:"name",name:"D"}
+                type:'parallel',
+                definition1:{type:'name',name:'C'},
+                definition2:{type:'name',name:'D'}
               }
             }}]}]);
           });
@@ -252,136 +297,117 @@
     suite('Negitives', function() {
       suite('Basics', function() {
         test('incomplete (missing definition name)', function() {
-          try{
+          assert.throws(function(){
             parser.parse('=x->STOP.');
-            assert.fail();
-          }catch(e){}
+          });
         });
         test('incomplete (missing definition name and assertion)', function() {
-          try{
+          assert.throws(function(){
             parser.parse('x->STOP.');
-            assert.fail();
-          }catch(e){}
+          });
         });
         test('incomplete (missing definition value)', function() {
-          try{
+          assert.throws(function(){
             parser.parse('A=.');
-            assert.fail();
-          }catch(e){}
+          });
         });
         test('incomplete (missing ".")', function() {
-          try{
+          assert.throws(function(){
             parser.parse('A=x->STOP');
-            assert.fail();
-          }catch(e){}
+          });
         });
         test('names can\'t start with a lowercase letter', function() {
-          try{
+          assert.throws(function(){
             parser.parse('a=x->STOP.');
-            assert.fail();
-          }catch(e){}
+          });
         });
       });
       suite('Sequences', function() {
         suite('Trival', function() {
           test('incomplete (missing to)', function() {
-            try{
+            assert.throws(function(){
               parser.parse('A=x->.');
-              assert.fail();
-            }catch(e){}
+            });
           });
           test('incomplete (missing from)', function() {
-            try{
+            assert.throws(function(){
               parser.parse('A=->STOP.');
-              assert.fail();
-            }catch(e){}
+            });
           });
         });
         suite('To Non-Terminal', function() {
           test('simple sequence', function() {
-            try{
+            assert.throws(function(){
               parser.parse('A=x->y.');
-              assert.fail();
-            }catch(e){}
+            });
           });
           test('sequence chain', function() {
-            try{
+            assert.throws(function(){
               parser.parse('A=x->y->z.');
-              assert.fail();
-            }catch(e){}
+            });
           });
           test('sequence chain x2', function() {
-            try{
+            assert.throws(function(){
               parser.parse('A=v->x->y->z.');
-              assert.fail();
-            }catch(e){}
+            });
           });
         });
         suite('From Terminal', function() {
           test('from name', function() {
-            try{
+            assert.throws(function(){
               parser.parse('A=x->B->y.');
-              assert.fail();
-            }catch(e){}
+            });
           });
           test('from STOP', function() {
-            try{
+            assert.throws(function(){
               parser.parse('A=x->STOP->y.');
-              assert.fail();
-            }catch(e){}
+            });
           });
         });
       });
       suite('Choices', function() {
         suite('Trival', function() {
           test('incomplete (missing option 1)', function() {
-            try{
+            assert.throws(function(){
               parser.parse('A=|x->STOP.');
-              assert.fail();
-            }catch(e){}
+            });
           });
           test('incomplete (missing option 2)', function() {
-            try{
+            assert.throws(function(){
               parser.parse('A=x->STOP|.');
-              assert.fail();
-            }catch(e){}
+            });
           });
         });
       });
       suite('Parallel', function() {
         suite('Trival', function() {
           test('incomplete (missing option 1)', function() {
-            try{
+            assert.throws(function(){
               parser.parse('A=||x->STOP.');
-              assert.fail();
-            }catch(e){}
+            });
           });
           test('incomplete (missing option 2)', function() {
-            try{
+            assert.throws(function(){
               parser.parse('A=x->STOP||.');
-              assert.fail();
-            }catch(e){}
+            });
           });
         });
       });
       suite('Unguarded Names', function() {
         test('direct use', function() {
-          try{
+          assert.throws(function(){
             parser.parse('A=B.');
-            assert.fail();
-          }catch(e){}
+          });
         });
         test('as choice (option 1)', function() {
-          try{
+          assert.throws(function(){
             parser.parse('A=A|x->STOP.');
-            assert.fail();
-          }catch(e){}
+          });
         });
         test('as choice (option 2)', function() {
-          try{
+          assert.throws(function(){
             parser.parse('A=x->STOP|A.');
-            assert.fail();
-          }catch(e){}
+          });
         });
       });
     });
