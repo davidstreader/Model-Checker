@@ -16,6 +16,7 @@
      */
 
     app.compile = function() {
+      app.$.console.clear();
       if (app.$.editor.getCode().trim().length === 0) {
         app.$.console.log('No input.');
         return;
@@ -26,19 +27,24 @@
         var automatas = app.$.parser.parse(app.$.editor.getCode());
         var timeAfter = (new Date()).getTime();
         success = true;
-        var timeTaken = timeAfter - timeBefore;
-        var suffix = timeTaken === 1 ? 'second' : 'seconds';
-        app.$.console.log('Compiled successfully - ' + timeTaken.toString() +
+        var timeTaken = Math.max(1, (timeAfter - timeBefore)) / 1000;
+        var suffix = timeTaken === 1000 ? 'second' : 'seconds';
+        app.$.console.log('Compiled successfully - ' + timeTaken.toFixed(3) +
           ' ' + suffix + '.');
       } catch (e) {
         var buildErrorMessage = function(e) {
           return e.location !== undefined ?
-          'Line ' + e.location.start.line +
-          ', column ' + e.location.start.column +
-          ': ' + e.message
+          'on line ' + e.location.start.line +
+          ':' + e.location.start.column +
+          ' - ' + e.message
           : e.message;
         };
-        app.$.console.error(buildErrorMessage(e));
+
+        var isInterpreterError = e.constructor ===
+                                 app.$.parser.InterpreterError;
+        var prefix = isInterpreterError ? 'Error: ' : 'Syntax error ';
+
+        app.$.console.error(prefix + buildErrorMessage(e));
       }
       if (success) {
         // Can't simply assign app.data.automatas to the new array as data bindings will not update.

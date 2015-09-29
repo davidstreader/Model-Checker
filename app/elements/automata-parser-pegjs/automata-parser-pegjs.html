@@ -73,8 +73,9 @@
         this.label = label;
       },
 
-      _InterpreterError: function(m) {
+      InterpreterError: function(m) {
         this.message = m;
+        this.source = "ModelChecker";
       },
 
       /**
@@ -116,7 +117,7 @@
               if(this._definitionsMap[key].nodes[i].extras.references){
                 var ref = this._definitionsMap[key].nodes[i].extras.references;
                 if(this._definitionsMap[ref] === undefined){
-                  throw new this._InterpreterError('process "' + ref + '" referenced in "' + key + '" does not exist.');
+                  throw new this.InterpreterError('process "' + ref + '" referenced in "' + key + '" does not exist.');
                 }
               }
             }
@@ -218,7 +219,7 @@
 
           //Check that the definition is not already recorded
           if(this._definitionsMap[label]){
-            throw new this._InterpreterError('process "' + label + '" already defined.');
+            throw new this.InterpreterError('process "' + label + '" already defined.');
           }
 
           var subgraph = this._interpretProcess(definition.process, root);

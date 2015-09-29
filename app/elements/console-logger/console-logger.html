@@ -27,12 +27,17 @@
     Polymer({
       is: 'console-logger',
 
+      clear: function(){
+        var c = Polymer.dom(this.$.console);
+        c.innerHTML = '';
+      },
+
       log: function(msg){
         this._addMessage(msg).classList.add('log');
       },
 
       error: function(msg){
-        this._addMessage('Error: ' + msg).classList.add('error');
+        this._addMessage(msg).classList.add('error');
       },
 
       _addMessage: function(msg){
