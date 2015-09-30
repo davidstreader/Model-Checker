@@ -294,7 +294,30 @@
         assert.fail(undefined, undefined, 'test not written.');
       });
       test('multiple identical references', function(){
-        assert.fail(undefined, undefined, 'test not written.');
+        var result = parser.parse('A=x->B|y->B.B=z->STOP.');
+        var exp = [{
+          name: 'A',
+          graph: {
+            nodes: [
+              {id: 0, label: '0', extras: {startNode: true}},
+              {id: 1, label: '1', extras: {references: 'B'}},
+              {id: 2, label: '2', extras: {isTerminal: 'stop'}}],
+            edges: [
+              {from: 0, to: 1, label: 'x'},
+              {from: 0, to: 1, label: 'y'},
+              {from: 1, to: 2, label: 'z'}],
+            rootId: 0}
+        },{
+          name: 'B',
+          graph: {
+            nodes: [
+              {id: 1, label: '0', extras: {startNode: true}},
+              {id: 2, label: '1', extras: {isTerminal: 'stop'}}],
+            edges: [
+              {from: 1, to: 2, label: 'y'}],
+            rootId: 0}
+        }];
+        doTest(result, exp);
       });
       test('reference with references', function(){
         assert.fail(undefined, undefined, 'test not written.');
