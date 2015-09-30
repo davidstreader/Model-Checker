@@ -100,5 +100,18 @@
       }
     });
 
+
+    document.addEventListener('keydown',function(e) {
+      if(e.ctrlKey && e.keyCode === 13){
+        alert("CTRL + ENTER");
+      }
+      else if(e.ctrlKey && e.keyCode === 79){
+        alert("CTRL + O");
+      }
+      else if(e.ctrlKey && e.keyCode === 83){
+        alert("CTRL + S");
+      }
+    });
+
   });
 })(document);
