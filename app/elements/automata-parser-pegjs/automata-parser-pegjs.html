@@ -57,8 +57,8 @@
       /**
        * @class
        */
-      _Node: function($this, extras){
-        this.id = $this._useNextNodeId();
+      _Node: function($this, extras, id){
+        this.id = id || $this._useNextNodeId();
         this.label = undefined;
         this.extras = extras || {};
       },
@@ -66,8 +66,8 @@
       /**
        * @class
        */
-      _Edge: function($this, from, to, label){
-        this.id = $this._useNextEdgeId();
+      _Edge: function($this, from, to, label, id){
+        this.id = id || $this._useNextEdgeId();
         this.from = from;
         this.to = to;
         this.label = label;
@@ -153,8 +153,8 @@
        */
       _processSelfReferences: function(){
         var findAndProcess = function(node){
-          if(node.extras.references === key){
-            // delete node.extras.references; // not much point in a node keeping a references to itself
+          if(node.extras.referenceUnprocessed && node.extras.references === key){
+            delete node.extras.referenceUnprocessed;
             this._mergeNodes(this._definitionsMap[key], [this._definitionsMap[key].rootId, node.id]);
           }
         }.bind(this);
@@ -169,23 +169,36 @@
        */
       _processNonselfReferences: function(){
         var originalDefinitionsMap = {};
+        var referenceMap;
+        var key;
 
         var findAndProcess = function(node){
           if(node.extras.referenceUnprocessed){
-            var g = originalDefinitionsMap[node.extras.references];
-            var subgraph = this._cloneGraph(g);
-            var combined = this._combineGraphs(this._definitionsMap[key].rootId, this._definitionsMap[key], subgraph);
-            this._mergeNodes(combined, [node.id, subgraph.rootId]);
-            this._definitionsMap[key] = combined;
+            var proccedReference = referenceMap[node.extras.references];
+            if(proccedReference){
+              delete node.extras.referenceUnprocessed;
+              var g = this._cloneGraph(this._definitionsMap[key]);
+              this._mergeNodes(g, [node.id, proccedReference.id]);
+              this._definitionsMap[key] = g;
+            }
+            else{
+              var g = originalDefinitionsMap[node.extras.references];
+              var subgraph = this._cloneGraph(g);
+              var combined = this._combineGraphs(this._definitionsMap[key].rootId, this._definitionsMap[key], subgraph);
+              delete node.extras.referenceUnprocessed;
+              this._mergeNodes(combined, [node.id, subgraph.rootId]);
+              this._definitionsMap[key] = combined;
+              referenceMap[node.extras.references] = node;
+            }
           }
         }.bind(this);
 
-        var key;
         for(key in this._definitionsMap){
-          originalDefinitionsMap[key] = this._definitionsMap[key];
+          originalDefinitionsMap[key] = this._cloneGraph(this._definitionsMap[key]);
         }
 
         for(key in this._definitionsMap){
+          referenceMap = {};
           this._definitionsMap[key].nodes.forEach(findAndProcess);
         }
       },
@@ -376,13 +389,17 @@
         var nodeIdMapping = {};
 
         g.nodes.forEach(function(node){
-          var n = new this._Node(this, node.extras);
+          var newExtra = {};
+          for(var key in node.extras){
+            newExtra[key] = node.extras[key];
+          }
+          var n = new this._Node(this, newExtra, node.id);
           nodes.push(n);
           nodeIdMapping[node.id] = n.id;
         }.bind(this));
 
         g.edges.forEach(function(edge){
-          edges.push(new this._Edge(this, nodeIdMapping[edge.from], nodeIdMapping[edge.to], edge.label));
+          edges.push(new this._Edge(this, nodeIdMapping[edge.from], nodeIdMapping[edge.to], edge.label, edge.id));
         }.bind(this));
 
         return new this._Graph(nodes, edges, nodeIdMapping[g.rootId]);
@@ -405,12 +422,10 @@
           for(var i=0; i<nodeIds.length; i++){
             //check if the current node needs to be merged
             if(node.id === nodeIds[i]){
-              //check if the node has extras not to do with being unprocessed
+              //check if the node has extras
               for(var key in node.extras){
-                if(key !== 'referenceUnprocessed'){
-                  //if it it doesn't save the key for the merged node
-                  extras[key] = node.extras[key];
-                }
+                //if it it doesn't save the key for the merged node
+                extras[key] = node.extras[key];
               }
 
               //if it's the first node
