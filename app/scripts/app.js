@@ -63,14 +63,17 @@
       var opener = app.$['open-file'];
       opener.click();
       opener.onchange = function(e) {
+        if (opener.value === '') {
+          return;
+        }
         var input = e.target;
-
         var reader = new FileReader();
         reader.onload = function() {
           var text = reader.result;
           app.$.editor.setCode(text);
         };
         reader.readAsText(input.files[0]);
+        opener.value = '';
       };
     };
 
@@ -85,7 +88,8 @@
     };
 
     document.addEventListener('automata-walker-start', function(e) {
-      var visualisations = Polymer.dom(this).querySelectorAll('automata-visualisation');
+      var visualisations =
+        Polymer.dom(this).querySelectorAll('automata-visualisation');
       for (var i in visualisations) {
         visualisations[i].setHighlightNodeId(e.detail.node);
         visualisations[i].redraw();
@@ -93,10 +97,27 @@
     });
 
     document.addEventListener('automata-walker-walk', function(e) {
-      var visualisations = Polymer.dom(this).querySelectorAll('automata-visualisation');
+      var visualisations =
+        Polymer.dom(this).querySelectorAll('automata-visualisation');
       for (var i in visualisations) {
         visualisations[i].setHighlightNodeId(e.detail.edge.to);
         visualisations[i].redraw();
+      }
+    });
+
+    /**
+    *EventListener function that allows the use of keybindings.
+    */
+    document.addEventListener('keydown',function(e) {
+      //CTRL + ENTER
+      if (e.ctrlKey && e.keyCode === 13) {
+        app.compile();
+      //CTRL + O
+      } else if (e.ctrlKey && e.keyCode === 79) {
+        app.open();
+      //CTRL + S
+      } else if (e.ctrlKey && e.keyCode === 83) {
+        app.save();
       }
     });
 
