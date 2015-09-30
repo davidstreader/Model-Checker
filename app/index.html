@@ -71,6 +71,14 @@
   .right.frame > *{
     margin-left: 4px;
   }
+  .compile-button {
+    iron-icon-height: 40px;
+    iron-icon-width: 40px;
+    height: 40px;
+    width: 40px;
+    color: orange;
+  }
+
   .frame > *:first-child{
     margin-bottom: 4px;
   }
@@ -104,11 +112,21 @@
 <body unresolved class="fullbleed layout vertical">
   <span id="browser-sync-binding"></span>
   <template is="dom-bind" id="app">
+
+    <paper-dialog id="help-dialog">
+      <h2>Help</h2>
+      <paper-dialog-scrollable>
+        CONTENT!!!!
+      </paper-dialog-scrollable>
+      <paper-icon-button="icons:cancel" title="Exit" on-tap="closehelp"></paper-icon-button>
+    <paper-dialog>
+
     <automata-parser-pegjs id="parser"></automata-parser-pegjs>
     <paper-toolbar id="main-toolbar">
-      <paper-icon-button icon="icons:send" title="Compile" on-tap="compile"></paper-icon-button>
+      <paper-icon-button icon="icons:send" title="Compile" on-tap="compile" class="compile-button"></paper-icon-button>
       <paper-icon-button icon="icons:folder-open" title="Open" on-tap="open"></paper-icon-button>
       <paper-icon-button icon="icons:save" title="Save" on-tap="save"></paper-icon-button>
+      <paper-icon-button icon="icons:help" title="Help" on-tap="help"></paper-icon-button>
       <input id="open-file" type='file' accept='text/plain'><br>
     </paper-toolbar>
     <div class="left frame">
@@ -121,6 +139,7 @@
         <automata-visualisation name="[[item.name]]" nodes="[[item.graph.nodes]]" edges="[[item.graph.edges]]"></automata-visualisation>
       </template>
     </div>
+
   </template>
 
   <!-- build:js scripts/app.js -->
