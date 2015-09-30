@@ -104,19 +104,6 @@
         visualisations[i].redraw();
       }
     });
-
-<<<<<<< HEAD
-
-    document.addEventListener('keydown',function(e) {
-      if(e.ctrlKey && e.keyCode === 13){
-        alert("CTRL + ENTER");
-      }
-      else if(e.ctrlKey && e.keyCode === 79){
-        alert("CTRL + O");
-      }
-      else if(e.ctrlKey && e.keyCode === 83){
-        alert("CTRL + S");
-=======
     /**
     *EventListener function that allows the use of keybindings.
     */
@@ -130,7 +117,6 @@
       //CTRL + S
       } else if (e.ctrlKey && e.keyCode === 83) {
         app.save();
->>>>>>> 2255fd0df3cc6208e82ff3cb5e4112d2e6af2e3d
       }
     });
 
