@@ -98,6 +98,21 @@
   #open-file{
     display: none;
   }
+  #btn-compile{
+    background: var(--accent-color);
+    height: 24px;
+    box-sizing: content-box;
+    position: relative;
+  }
+  #btn-compile iron-icon{
+    --iron-icon-height: 32px;
+    --iron-icon-width: 32px;
+    position: absolute;
+    left: calc(50% - 16px);
+    right: 0;
+    top: calc(50% - 16px);
+    bottom: 0;
+  }
   </style>
 </head>
 
@@ -106,7 +121,7 @@
   <template is="dom-bind" id="app">
     <automata-parser-pegjs id="parser"></automata-parser-pegjs>
     <paper-toolbar id="main-toolbar">
-      <paper-icon-button icon="icons:send" title="Compile" on-tap="compile"></paper-icon-button>
+      <paper-button id="btn-compile" title="Compile" raised on-tap="compile"><iron-icon icon="av:play-arrow"></iron-icon></paper-button>
       <paper-icon-button icon="icons:folder-open" title="Open" on-tap="open"></paper-icon-button>
       <paper-icon-button icon="icons:save" title="Save" on-tap="save"></paper-icon-button>
       <input id="open-file" type='file' accept='text/plain'><br>
