@@ -30,7 +30,7 @@
         <template is="dom-repeat" items="{{automata}}">
           <paper-item data-automata-name="{{item.name}}">{{item.name}}</paper-item>
         </template>
-        <paper-item disabled hidden$="{{_hasAutomata}}">No Automata Defined</paper-item>
+        <paper-item disabled hidden$="{{_hasAutomata}}">No Automaton Defined</paper-item>
       </paper-menu>
     </paper-dropdown-menu>
 
@@ -131,7 +131,7 @@
        */
       _onAutomatonSelection: function(e, detail){
         this._populatePathList(detail.item.dataAutomataName);
-        this.fire('automata-walker-start', {node: this._currentGraph.rootId});
+        this.fire('automata-walker-start', {node: this._currentGraph.rootNode.id});
       },
 
       /**
@@ -161,7 +161,7 @@
         }
         var newAE = [];
         for(i in this._currentGraph.edges){
-          if(this._currentGraph.edges[i].from === this._currentGraph.rootId){
+          if(this._currentGraph.edges[i].from === this._currentGraph.rootNode.id){
             newAE.push(this._currentGraph.edges[i]);
           }
         }

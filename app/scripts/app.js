@@ -28,9 +28,8 @@
         var timeAfter = (new Date()).getTime();
         success = true;
         var timeTaken = Math.max(1, (timeAfter - timeBefore)) / 1000;
-        var suffix = timeTaken === 1000 ? 'second' : 'seconds';
         app.$.console.log('Compiled successfully - ' + timeTaken.toFixed(3) +
-          ' ' + suffix + '.');
+          ' seconds.');
       } catch (e) {
         var buildErrorMessage = function(e) {
           return e.location !== undefined ?
@@ -40,9 +39,9 @@
           : e.message;
         };
 
-        var isInterpreterError = e.constructor ===
-                                 app.$.parser.InterpreterError;
-        var prefix = isInterpreterError ? 'Error: ' : 'Syntax error ';
+        var isInterpreterException = e.constructor ===
+                                 app.$.parser.InterpreterException;
+        var prefix = isInterpreterException ? 'Error: ' : 'Syntax error ';
 
         app.$.console.error(prefix + buildErrorMessage(e));
       }
@@ -87,6 +86,16 @@
       saveAs(blob, 'untitled.txt');
     };
 
+    app.help = function() {
+      var helptext = app.$['help-dialog'];
+      helptext.open();
+    };
+
+    app.closehelp = function() {
+      var helptext = app.$['help-dialog'];
+      helptext.close();
+    };
+
     document.addEventListener('automata-walker-start', function(e) {
       var visualisations =
         Polymer.dom(this).querySelectorAll('automata-visualisation');
@@ -104,20 +113,37 @@
         visualisations[i].redraw();
       }
     });
+
     /**
     *EventListener function that allows the use of keybindings.
     */
-    document.addEventListener('keydown',function(e) {
-      //CTRL + ENTER
-      if (e.ctrlKey && e.keyCode === 13) {
-        app.compile();
-      //CTRL + O
-      } else if (e.ctrlKey && e.keyCode === 79) {
-        app.open();
-      //CTRL + S
-      } else if (e.ctrlKey && e.keyCode === 83) {
-        app.save();
+    document.addEventListener('keyup',function(e) {
+      if (app.$['help-dialog'].opened) {
+        return;
       }
+
+      switch (e.keyCode){
+        case 13:
+          // CTRL + ENTER
+          if (e.ctrlKey) {
+            app.compile();
+          }
+          break;
+        case 79:
+          // CTRL + O
+          if (e.ctrlKey) {
+            app.open();
+          }
+          break;
+        case 83:
+          // CTRL + S
+          if (e.ctrlKey) {
+            app.save();
+          }
+          break;
+        default: return;
+      }
+      e.preventDefault();
     });
 
   });

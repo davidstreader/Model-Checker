@@ -63,7 +63,7 @@
     margin-right: 8px;
     margin-bottom: 8px;
     margin-left: 8px;
-    border: solid 1px blue;
+    border: solid 1px var(--dark-primary-color);
   }
   .left.frame > *{
     margin-right: 4px;
@@ -83,6 +83,7 @@
     bottom: 150px;
     left: 0;
     right: 0;
+    min-height: 200px;
   }
   #console{
     position: absolute;
@@ -113,6 +114,11 @@
     top: calc(50% - 16px);
     bottom: 0;
   }
+  #help-dialog{
+    width: 80%;
+    height: 80%;
+    max-width: 1200px;
+  }
   </style>
 </head>
 
@@ -124,6 +130,7 @@
       <paper-button id="btn-compile" title="Compile" raised on-tap="compile"><iron-icon icon="av:play-arrow"></iron-icon></paper-button>
       <paper-icon-button icon="icons:folder-open" title="Open" on-tap="open"></paper-icon-button>
       <paper-icon-button icon="icons:save" title="Save" on-tap="save"></paper-icon-button>
+      <paper-icon-button icon="icons:help" title="Help" on-tap="help"></paper-icon-button>
       <input id="open-file" type='file' accept='text/plain'><br>
     </paper-toolbar>
     <div class="left frame">
@@ -136,6 +143,14 @@
         <automata-visualisation name="[[item.name]]" nodes="[[item.graph.nodes]]" edges="[[item.graph.edges]]"></automata-visualisation>
       </template>
     </div>
+    <paper-dialog id="help-dialog" with-backdrop>
+      <h2>Help</h2>
+      <paper-dialog-scrollable>
+        CONTENT!!!!
+      </paper-dialog-scrollable>
+      <paper-icon-button="icons:cancel" title="Exit" on-tap="closehelp"></paper-icon-button>
+    <paper-dialog>
+
   </template>
 
   <!-- build:js scripts/app.js -->
