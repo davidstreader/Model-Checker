@@ -1,0 +1,176 @@
+<!doctype html>
+<html>
+<head>
+  <title>graph data structure</title>
+
+  <script src="../../../../bower_components/web-component-tester/browser.js"></script>
+  <script src="../scripts/graph.es5.js"></script>
+
+</head>
+<body>
+
+  <script>
+  suite('Graph Data Structure', function () {
+    suite('Positves', function() {
+      suite('Adding Nodes', function () {
+        test('single node - no extras', function() {
+          var g = new Graph();
+          g.addNode(0, 'label');
+
+          expect(g.nodeCount).to.equal(1);
+          console.log(g.nodes);
+          // expect(g.nodes).to.deep.equal([
+          //   {graph: g, id: 0, label: 'label', extras: {}}
+          // ]);
+
+          expect(g.edgeCount).to.equal(0);
+          // expect(g.edges).to.deep.equal([]);
+
+          var node = g.getNode(0);
+          var root = g.rootNode;
+
+          assert.strictEqual(node, root);
+          expect(node).to.exist;
+          expect(node.id).to.equal(0);
+          expect(node.label).to.equal('label');
+          expect(node.extras).to.deep.equal({});
+        });
+
+        test('single node - extras', function() {
+          var g = new Graph();
+          var extras = {abc: 123, def: {x: 10, y: 50}};
+          g.addNode(0, 'label', extras);
+
+          expect(g.nodeCount).to.equal(1);
+          // expect(g.nodes).to.deep.equal([
+          //   {graph: g, id: 0, label: 'label', extras: {abc: 123, def: {x: 10, y: 50}}}
+          // ]);
+
+          expect(g.edgeCount).to.equal(0);
+          // expect(g.edges).to.deep.equal([]);
+
+          var node = g.getNode(0);
+          var root = g.rootNode;
+
+          expect(node).to.exist;
+          expect(node).to.equal(root);
+          expect(node.id).to.equal(0);
+          expect(node.label).to.equal('label');
+          expect(node.extras).to.deep.equal(extras);  // deeply equal but
+          expect(node.extras).to.not.equal(extras);   // not strickly equal
+        });
+
+        test('multiple nodes', function() {
+          var g = new Graph();
+          g.addNode(0, 'x');
+          g.addNode(1, 'y', {abc:123});
+
+          expect(g.nodeCount).to.equal(2);
+          // expect(g.nodes).to.deep.equal([
+          //   {graph: g, id: 0, label: 'x', extras: {}},
+          //   {graph: g, id: 1, label: 'y', extras: {abc:123}}
+          // ]);
+
+          expect(g.edgeCount).to.equal(0);
+          // expect(g.edges).to.deep.equal([]);
+
+          var node0 = g.getNode(0);
+          var node1 = g.getNode(1);
+          var root = g.rootNode;
+
+          expect(node0).to.exist;
+          expect(node0).to.equal(root);
+          expect(node0.id).to.equal(0);
+          expect(node0.label).to.equal('x');
+
+          expect(node1).to.exist;
+          expect(node1).to.not.equal(root);
+          expect(node1.id).to.equal(1);
+          expect(node1.label).to.equal('y');
+        });
+      });
+      suite('Adding Edges', function () {
+        test('single edge - no nodes', function() {
+          var g = new Graph();
+          g.addEdge(0, 1, 2, 'label');
+
+          expect(g.nodeCount).to.equal(0);
+          // expect(g.nodes).to.deep.equal([]);
+
+          expect(g.edgeCount).to.equal(1);
+          // expect(g.edges).to.deep.equal([
+          //   {graph: g, id: 0, from: 1, to: 2, label: 'label'}
+          // ]);
+
+          var root = g.rootNode;
+          expect(root).to.not.exist;
+
+          var edge = g.getEdge(0);
+          expect(edge.id).to.equal(0);
+          expect(edge.from).to.equal(undefined); // the node this edge referencs is not in the graph
+          expect(edge.to).to.equal(undefined);
+          expect(edge.label).to.equal('label');
+        });
+      });
+      suite('Adding Nodes and Edges', function () {
+        test('test 1', function() {
+          var g = new Graph();
+          g.addNode(0, 'x');
+          g.addNode(1, 'y');
+          g.addEdge(0, 0, 1, 'e');
+
+          var nodes = g.nodes;
+          var edges = g.edges;
+          var node0 = g.getNode(0);
+          var node1 = g.getNode(1);
+          var edge = g.getEdge(0);
+          var root = g.rootNode;
+
+          expect(g.nodeCount).to.equal(2);
+          expect(nodes.length).to.equal(2);
+          expect(g.edgeCount).to.equal(1);
+          expect(edges.length).to.equal(1);
+
+          expect(node0).to.exist;
+          expect(node0).to.equal(nodes[0]);
+          expect(node0).to.equal(root);
+          expect(node0.graph).to.equal(g);
+          expect(node0.id).to.equal(0);
+          expect(node0.label).to.equal('x');
+          expect(node0.extras).to.deep.equal({});
+
+          expect(node1).to.exist;
+          expect(node1).to.not.equal(root);
+          expect(node1).to.equal(nodes[1]);
+          expect(node1.graph).to.equal(g);
+          expect(node1.id).to.equal(1);
+          expect(node1.label).to.equal('y');
+          expect(node1.extras).to.deep.equal({});
+
+          expect(edge).to.exist;
+          expect(edge).to.equal(edges[0]);
+          expect(edge.graph).to.equal(g);
+          expect(edge.id).to.equal(0);
+          expect(edge.from).to.equal(node0);
+          expect(edge.to).to.equal(node1);
+          expect(edge.label).to.equal('e');
+        });
+      });
+      suite('Removing Nodes', function () {
+
+      });
+      suite('Removing Edges', function () {
+
+      });
+      suite('Cloning', function () {
+
+      });
+    });
+    suite('Negitives', function() {
+
+    });
+  });
+  </script>
+
+</body>
+</html>
