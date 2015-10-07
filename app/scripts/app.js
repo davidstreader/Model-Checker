@@ -30,19 +30,15 @@
         var timeAfter = (new Date()).getTime();
         success = true;
         var timeTaken = Math.max(1, (timeAfter - timeBefore)) / 1000;
-        app.$.console.log('Compiled successfully - ' + timeTaken.toFixed(3) +
-          ' seconds.');
+        app.$.console.log('Compiled successfully in ' + timeTaken.toFixed(3) + ' seconds.');
       } catch (e) {
         var buildErrorMessage = function(e) {
           return e.location !== undefined ?
-          'on line ' + e.location.start.line +
-          ':' + e.location.start.column +
-          ' - ' + e.message
-          : e.message;
+            'on line ' + e.location.start.line + ', col ' + e.location.start.column + ' - ' + e.message :
+            e.message;
         };
 
-        var isInterpreterException = e.constructor ===
-                                 app.$.parser.InterpreterException;
+        var isInterpreterException = e.constructor === app.$.parser.InterpreterException;
         var prefix = isInterpreterException ? 'Error: ' : 'Syntax error ';
 
         app.$.console.error(prefix + buildErrorMessage(e));

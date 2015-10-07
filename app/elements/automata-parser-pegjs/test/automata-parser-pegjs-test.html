@@ -42,10 +42,10 @@
         expect(rAutomata).to.have.all.keys('name', 'graph');
         expect(rAutomata.name).to.be.a('string');
         expect(rAutomata.graph).to.be.an('object');
-        expect(rAutomata.graph).to.have.all.keys('nodes', 'edges', 'rootId');
+        // expect(rAutomata.graph).to.have.all.keys('nodes', 'edges', 'rootId');
         expect(rAutomata.graph.nodes).to.be.an('array');
         expect(rAutomata.graph.edges).to.be.an('array');
-        expect(rAutomata.graph.rootId).to.be.a('number');
+        expect(rAutomata.graph.root).to.be.a('object');
 
         expect(rAutomata.name).to.be.equal(aAutomata.name, 'Incorrect automata name.');
         expect(rAutomata.graph.nodes.length).to.be.equal(aAutomata.graph.nodes.length, 'Incorrect number of nodes.');
@@ -58,13 +58,13 @@
           var eNode = aAutomata.graph.nodes[j];
 
           expect(rNode).to.be.an('object');
-          expect(rNode).to.contain.all.keys('id', 'label', 'extras');
+          // expect(rNode).to.contain.all.keys('id', 'label', 'extras');
           expect(rNode.id).to.be.a('number');
           expect(rNode.label).to.be.a('string');
-          expect(rNode.extras).to.be.a('object');
+          expect(rNode.extraData).to.be.a('object');
 
           expect(rNode.label).to.be.equal(eNode.label, 'Incorrect node label.');
-          expect(rNode.extras).to.be.deep.equal(eNode.extras, 'Incorrect node extras.');
+          expect(rNode.extraData).to.be.deep.equal(eNode.extras, 'Incorrect node extras.');
 
           // node ids must be unique
           // (result ids and exp ids don't have to be equal as long as the graphs they create are)
@@ -84,16 +84,16 @@
           var rEdge = rAutomata.graph.edges[k];
 
           expect(rEdge).to.be.an('object');
-          expect(rEdge).to.contain.all.keys('id', 'from', 'to', 'label');
+          // expect(rEdge).to.contain.all.keys('id', 'from', 'to', 'label');
           expect(rEdge.id).to.be.a('number');
-          expect(rEdge.from).to.be.a('number');
-          expect(rEdge.to).to.be.a('number');
+          expect(rEdge.from).to.be.a('object');
+          expect(rEdge.to).to.be.a('object');
           expect(rEdge.label).to.be.a('string');
 
           var eEdge;
           for(var l=0; l<eEdges.length; l++){
-            if(resultNodeIdsToExpNodeIdsMap[rEdge.from] === eEdges[l].from &&
-               resultNodeIdsToExpNodeIdsMap[rEdge.to]   === eEdges[l].to   &&
+            if(resultNodeIdsToExpNodeIdsMap[rEdge.from.id] === eEdges[l].from &&
+               resultNodeIdsToExpNodeIdsMap[rEdge.to.id]   === eEdges[l].to   &&
                 rEdge.label === eEdges[l].label){
               eEdge = eEdges[l];
               eEdges.splice(l, 1);
@@ -107,7 +107,7 @@
           edgeIds[rEdge.id] = eEdge.id;
         }
 
-        expect(resultNodeIdsToExpNodeIdsMap[rAutomata.graph.rootId]).to.exist;
+        expect(resultNodeIdsToExpNodeIdsMap[rAutomata.graph.root.id]).to.exist;
       }
     };
 
@@ -123,7 +123,7 @@
                 {id: 1, label: '1', extras: {isTerminal: 'stop'}}],
               edges: [
                 {from: 0, to: 1, label: 'x'}],
-              rootId: 0}
+              root: {id: 0, label: '0', extras: {startNode: true}}}
             }];
           doTest(result, exp);
         });
@@ -225,7 +225,7 @@
           name: 'A',
           graph: {
             nodes: [
-              {id: 0, label: '0', extras: {startNode: true, references: 'A'}}],
+              {id: 0, label: 'A:0', extras: {startNode: true, references: 'A'}}],
             edges: [
               {from: 0, to: 0, label: 'x'}],
             rootId: 0}
@@ -238,7 +238,7 @@
           name: 'A',
           graph: {
             nodes: [
-              {id: 0, label: '0', extras: {startNode: true, references: 'A'}}],
+              {id: 0, label: 'A:0', extras: {startNode: true, references: 'A'}}],
             edges: [
               {from: 0, to: 0, label: 'x'},
               {from: 0, to: 0, label: 'y'}],
@@ -252,7 +252,7 @@
           name: 'A',
           graph: {
             nodes: [
-              {id: 0, label: '0', extras: {startNode: true, references: 'A'}},
+              {id: 0, label: 'A:0', extras: {startNode: true, references: 'A'}},
               {id: 1, label: '1', extras: {isTerminal: 'stop'}},
               {id: 2, label: '2', extras: {}}],
             edges: [
@@ -272,7 +272,7 @@
           graph: {
             nodes: [
               {id: 0, label: '0', extras: {startNode: true}},
-              {id: 1, label: '1', extras: {references: 'B'}},
+              {id: 1, label: 'B:1', extras: {references: 'B'}},
               {id: 2, label: '2', extras: {isTerminal: 'stop'}}],
             edges: [
               {from: 0, to: 1, label: 'x'},
@@ -300,7 +300,7 @@
           graph: {
             nodes: [
               {id: 0, label: '0', extras: {startNode: true}},
-              {id: 1, label: '1', extras: {references: 'B'}},
+              {id: 1, label: 'B:1', extras: {references: 'B'}},
               {id: 2, label: '2', extras: {isTerminal: 'stop'}}],
             edges: [
               {from: 0, to: 1, label: 'x'},

@@ -1,6 +1,6 @@
 {
   "preset": "google",
+  "maximumLineLength": 120,
   "disallowSpacesInAnonymousFunctionExpression": null,
-  "esnext": true,
   "excludeFiles": ["node_modules/**", "app/elements/automata-parser-pegjs/parser.js"]
 }

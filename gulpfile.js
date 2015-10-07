@@ -25,6 +25,7 @@ var packageJson = require('./package.json');
 var crypto = require('crypto');
 var polybuild = require('polybuild');
 var dom = require('gulp-dom');
+var babel = require('gulp-babel');
 
 var AUTOPREFIXER_BROWSERS = [
   'ie >= 10',
@@ -57,6 +58,13 @@ gulp.task('styles', function() {
 
 gulp.task('elements', function() {
   return styleTask('elements', ['**/*.css']);
+});
+
+gulp.task('scripts:es6', function() {
+  return gulp.src('app/**/*.es6.js')
+    .pipe(babel())
+    .pipe(gulp.dest('.tmp'))
+    .pipe(gulp.dest('dist'));
 });
 
 // Lint JavaScript
@@ -222,7 +230,7 @@ gulp.task('clean', function(cb) {
 });
 
 // Watch files for changes & reload
-gulp.task('serve', ['styles', 'elements', 'images'], function() {
+gulp.task('serve', ['styles', 'elements', 'scripts:es6', 'images'], function() {
   browserSync({
     port: 5000,
     notify: false,
@@ -240,7 +248,8 @@ gulp.task('serve', ['styles', 'elements', 'images'], function() {
       baseDir: ['.tmp', 'app'],
       middleware: [historyApiFallback()],
       routes: {
-        '/bower_components': 'bower_components'
+        '/bower_components': 'bower_components',
+        '**/*.es6.js': 'dist/**/*.es6.js'
       }
     }
   });
@@ -248,6 +257,7 @@ gulp.task('serve', ['styles', 'elements', 'images'], function() {
   gulp.watch(['app/**/*.html'], reload);
   gulp.watch(['app/styles/**/*.css'], ['styles', reload]);
   gulp.watch(['app/elements/**/*.css'], ['elements', reload]);
+  gulp.watch(['app/**/*.es6.js'], ['scripts:es6', reload]);
   gulp.watch(['app/{scripts,elements}/**/{*.js,*.html}'], ['jshint']);
   gulp.watch(['app/images/**/*'], reload);
 });

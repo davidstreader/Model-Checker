@@ -179,14 +179,17 @@
 
         var styleClasses = '';
 
-        if(node.extras.startNode){
+        if(node.getExtraData('startNode')){
           actualStartNode = node.id;
         }
-        if(node.extras.isTerminal){
-          styleClasses += ' terminal ' + node.extras.isTerminal;
+
+        var terminal = node.getExtraData('isTerminal');
+        if(terminal){
+          styleClasses += ' terminal ' + terminal;
         }
-        var ref = node.extras.references;
-        if(node.extras.references && node.extras.references !== this.name){
+
+        var ref = node.getExtraData('references');
+        if(ref && ref !== this.name){
           styleClasses += ' reference';
         }
 
@@ -194,7 +197,7 @@
           styleClasses += ' highlighted';
         }
 
-        automata.setNode(node.id, { label: node.label + (ref && node.extras.references !== this.name ? ':'+ref : ''), shape: 'automatanode', class: styleClasses.trim() });
+        automata.setNode(node.id, { label: node.label, shape: 'automatanode', class: styleClasses.trim() });
       }.bind(this));
 
       // Default to assigning a new object as a label for each new edge.
@@ -209,7 +212,7 @@
       //  - the to node's label
       //  - the edge's extra data (could be label, width, height, etc.)
       this.edges.forEach(function(edge) {
-        automata.setEdge(edge.from, edge.to, { label: (edge.label || 'ε'), lineInterpolate: 'basis' }, edge.id);
+        automata.setEdge(edge.from.id, edge.to.id, { label: (edge.label || 'ε'), lineInterpolate: 'basis' }, edge.id);
       });
 
       // add a new group node to the svg element for the new graph

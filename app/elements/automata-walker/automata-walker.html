@@ -131,7 +131,7 @@
        */
       _onAutomatonSelection: function(e, detail){
         this._populatePathList(detail.item.dataAutomataName);
-        this.fire('automata-walker-start', {node: this._currentGraph.rootNode.id});
+        this.fire('automata-walker-start', {node: this._currentGraph.root.id});
       },
 
       /**
@@ -161,7 +161,7 @@
         }
         var newAE = [];
         for(i in this._currentGraph.edges){
-          if(this._currentGraph.edges[i].from === this._currentGraph.rootNode.id){
+          if(this._currentGraph.edges[i].from === this._currentGraph.root.id){
             newAE.push(this._currentGraph.edges[i]);
           }
         }

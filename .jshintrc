@@ -13,20 +13,23 @@
   "undef": true,
   "unused": true,
   "newcap": false,
-  "esnext": true,
   "globals": {
     "wrap": true,
     "unwrap": true,
+    // polymer and its libraries' globals
     "Polymer": true,
     "Platform": true,
-    "app": true,
-    "PEG": true,
     "fixture": true,
     "setup": true,
     "suite": true,
     "expect": true,
     "assert": true,
     "test": true,
-    "saveAs": true
+    // our globals
+    "app": true,
+    "PEG": true,
+    "saveAs": true,
+    "Automaton": true,
+    "Graph": true
   }
 }
