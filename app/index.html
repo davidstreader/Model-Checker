@@ -131,6 +131,7 @@
       <paper-icon-button icon="icons:folder-open" title="Open" on-tap="open"></paper-icon-button>
       <paper-icon-button icon="icons:save" title="Save" on-tap="save"></paper-icon-button>
       <paper-icon-button icon="icons:help" title="Help" on-tap="help"></paper-icon-button>
+      <paper-checkbox id="live-compiling-check" checked="{{liveCompiling}}">Live Compiling</paper-checkbox> 
       <input id="open-file" type='file' accept='text/plain'><br>
     </paper-toolbar>
     <div class="left frame">
@@ -143,14 +144,7 @@
         <automata-visualisation name="[[item.name]]" nodes="[[item.graph.nodes]]" edges="[[item.graph.edges]]"></automata-visualisation>
       </template>
     </div>
-    <paper-dialog id="help-dialog" with-backdrop>
-      <h2>Help</h2>
-      <paper-dialog-scrollable>
-        CONTENT!!!!
-      </paper-dialog-scrollable>
-      <paper-icon-button="icons:cancel" title="Exit" on-tap="closehelp"></paper-icon-button>
-    <paper-dialog>
-
+    <help-dialog id="help"></help-dialog>
   </template>
 
   <!-- build:js scripts/app.js -->

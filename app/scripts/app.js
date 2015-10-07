@@ -9,6 +9,8 @@
      * The data to use.
      */
     app.data = {automatas: []};
+    
+    app.liveCompiling = true;
 
     /**
      * Compile the code in the text editor.
@@ -87,14 +89,21 @@
     };
 
     app.help = function() {
-      var helptext = app.$['help-dialog'];
+      var helptext = app.$['help'];
       helptext.open();
     };
 
     app.closehelp = function() {
-      var helptext = app.$['help-dialog'];
+      var helptext = app.$['help'];
       helptext.close();
     };
+
+    app.$['live-compiling-check'].addEventListener('iron-change', function(e){
+      app.$['editor'].focus();
+      if(app.liveCompiling){
+        app.compile();
+      }
+    });
 
     document.addEventListener('automata-walker-start', function(e) {
       var visualisations =
@@ -111,6 +120,12 @@
       for (var i in visualisations) {
         visualisations[i].setHighlightNodeId(e.detail.edge.to);
         visualisations[i].redraw();
+      }
+    });
+
+    document.addEventListener('text-editor-change', function(e){
+      if(app.liveCompiling){
+        app.compile();
       }
     });
 

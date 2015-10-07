@@ -32,6 +32,24 @@
         },
 
         /**
+         * The amount of time for a text-editor-change event to fire after the content changes.
+         * @default 1000
+         */
+        changeDebounceTime: {
+          type: Number,
+          value: 1000,
+          notify: true
+        },
+
+        /**
+         * Previous time field required to ensure timeout remains consistent.
+         */
+        _previousTime: {
+          type: Number,
+          value: 0
+        },
+
+        /**
          * the text editor
          */
         _editor: {
@@ -61,10 +79,25 @@
         this._editor.setValue(code, 0);
       },
 
+      focus: function(){
+        this._editor.focus();
+      },
+
       ready: function(){
         if(this.autofocus){
           this._editor.focus();
         }
+
+        this._editor.on('change', function(e){
+          var d = new Date();
+          this._previousTime = d.getTime();
+          setTimeout(function(){
+            var d = new Date();
+            if(d.getTime()-this._previousTime>=this.changeDebounceTime){
+              this.fire('text-editor-change');
+            }
+          }.bind(this), this.changeDebounceTime);
+        }.bind(this));
       }
     });
   })();
