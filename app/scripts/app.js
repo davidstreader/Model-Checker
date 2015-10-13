@@ -75,7 +75,8 @@
     };
 
     /**
-     * Open a text file from the user's computer and use its contents as the code
+     * Open a text file from the user's computer and set the text-area to
+     * the text parsed from the file.
      */
     app.openFile = function() {
       var opener = app.$['open-file'];
@@ -106,11 +107,18 @@
       saveAs(blob, 'untitled.txt');
     };
 
+    /**
+     * Opens the help-dialog.
+     */
     app.showHelp = function() {
       var help = app.$['help-dialog'];
       help.open();
     };
 
+    /**
+     * Simple event listener for when the checkbox in ticked.
+     * Compile is called if it is.
+     */
     app.$['chbx-live-compiling'].addEventListener('iron-change', function() {
       if (app.liveCompiling) {
         app.compile();
@@ -118,6 +126,11 @@
       app.$.editor.focus();
     });
 
+    /**
+     * This is the event which triggers when the user selects an automata from the
+     * list to walk down. It sets the root node of this automata, and all automata
+     * with this automata as a sub-graph, blue.
+     */
     document.addEventListener('automata-walker-start', function(e) {
       var visualisations = Polymer.dom(this).querySelectorAll('automata-visualisation');
       for (var i in visualisations) {
@@ -125,7 +138,12 @@
         visualisations[i].redraw();
       }
     });
-
+    /**
+     * This is the event which triggers when the user presses the walk 
+     * button on the walker element. The walker has already checked for the valid 
+     * edge and thrown any errors. The edge to walk is given in the event argument
+     * 'e.detail.edge'.
+     */
     document.addEventListener('automata-walker-walk', function(e) {
       var visualisations = Polymer.dom(this).querySelectorAll('automata-visualisation');
       for (var i in visualisations) {
@@ -134,6 +152,10 @@
       }
     });
 
+    /**
+     * This is the event which triggers when the text in the text area is changed.
+     * Only care about this if the live-compiling check-box is ticked.
+     */
     document.addEventListener('text-editor-change', function() {
       if (app.liveCompiling) {
         app.compile();
