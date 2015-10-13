@@ -184,16 +184,16 @@
 
         var styleClasses = '';
 
-        if(node.getExtraData('startNode')){
+        if(node.getMetaData ('startNode')){
           actualStartNode = node;
         }
 
-        var terminal = node.getExtraData('isTerminal');
+        var terminal = node.getMetaData ('isTerminal');
         if(terminal){
           styleClasses += ' terminal ' + terminal;
         }
 
-        var ref = node.getExtraData('references');
+        var ref = node.getMetaData ('references');
         if(ref && ref !== this.name){
           styleClasses += ' reference';
         }

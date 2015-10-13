@@ -58,13 +58,13 @@
           var eNode = aAutomata.graph.nodes[j];
 
           expect(rNode).to.be.an('object');
-          // expect(rNode).to.contain.all.keys('id', 'label', 'extras');
+          // expect(rNode).to.contain.all.keys('id', 'label', 'meta');
           expect(rNode.id).to.be.a('number');
           expect(rNode.label).to.be.a('string');
-          expect(rNode.extraData).to.be.a('object');
+          expect(rNode.metaData).to.be.a('object');
 
           expect(rNode.label).to.be.equal(eNode.label, 'Incorrect node label.');
-          expect(rNode.extraData).to.be.deep.equal(eNode.extras, 'Incorrect node extras.');
+          expect(rNode.metaData).to.be.deep.equal(eNode.meta, 'Incorrect node meta.');
 
           // node ids must be unique
           // (result ids and exp ids don't have to be equal as long as the graphs they create are)
@@ -119,11 +119,11 @@
             name: 'A',
             graph: {
               nodes: [
-                {id: 0, label: '0', extras: {startNode: true}},
-                {id: 1, label: '1', extras: {isTerminal: 'stop'}}],
+                {id: 0, label: '0', meta: {startNode: true}},
+                {id: 1, label: '1', meta: {isTerminal: 'stop'}}],
               edges: [
                 {from: 0, to: 1, label: 'x'}],
-              root: {id: 0, label: '0', extras: {startNode: true}}}
+              root: {id: 0, label: '0', meta: {startNode: true}}}
             }];
           doTest(result, exp);
         });
@@ -133,9 +133,9 @@
             name: 'A',
             graph: {
               nodes: [
-                {id: 0, label: '0', extras: {startNode: true}},
-                {id: 1, label: '1', extras: {}},
-                {id: 2, label: '2', extras: {isTerminal: 'stop'}}],
+                {id: 0, label: '0', meta: {startNode: true}},
+                {id: 1, label: '1', meta: {}},
+                {id: 2, label: '2', meta: {isTerminal: 'stop'}}],
               edges: [
                 {from: 0, to: 1, label: 'x'},
                 {from: 1, to: 2, label: 'y'}],
@@ -149,10 +149,10 @@
             name: 'A',
             graph: {
               nodes: [
-                {id: 0, label: '0', extras: {startNode: true}},
-                {id: 1, label: '1', extras: {}},
-                {id: 2, label: '2', extras: {}},
-                {id: 3, label: '3', extras: {isTerminal: 'stop'}}],
+                {id: 0, label: '0', meta: {startNode: true}},
+                {id: 1, label: '1', meta: {}},
+                {id: 2, label: '2', meta: {}},
+                {id: 3, label: '3', meta: {isTerminal: 'stop'}}],
               edges: [
                 {from: 0, to: 1, label: 'x'},
                 {from: 1, to: 2, label: 'y'},
@@ -169,9 +169,9 @@
             name: 'A',
             graph: {
               nodes: [
-                {id: 0, label: '0', extras: {startNode: true}},
-                {id: 1, label: '1', extras: {isTerminal: 'stop'}},
-                {id: 2, label: '2', extras: {isTerminal: 'stop'}}],
+                {id: 0, label: '0', meta: {startNode: true}},
+                {id: 1, label: '1', meta: {isTerminal: 'stop'}},
+                {id: 2, label: '2', meta: {isTerminal: 'stop'}}],
               edges: [
                 {from: 0, to: 1, label: 'x'},
                 {from: 0, to: 2, label: 'y'}],
@@ -185,10 +185,10 @@
             name: 'A',
             graph: {
               nodes: [
-                {id: 0, label: '0', extras: {startNode: true}},
-                {id: 1, label: '1', extras: {isTerminal: 'stop'}},
-                {id: 2, label: '2', extras: {isTerminal: 'stop'}},
-                {id: 3, label: '3', extras: {isTerminal: 'stop'}}],
+                {id: 0, label: '0', meta: {startNode: true}},
+                {id: 1, label: '1', meta: {isTerminal: 'stop'}},
+                {id: 2, label: '2', meta: {isTerminal: 'stop'}},
+                {id: 3, label: '3', meta: {isTerminal: 'stop'}}],
               edges: [
                 {from: 0, to: 1, label: 'x'},
                 {from: 0, to: 2, label: 'y'},
@@ -203,11 +203,11 @@
             name: 'A',
             graph: {
               nodes: [
-                {id: 0, label: '0', extras: {startNode: true}},
-                {id: 1, label: '1', extras: {isTerminal: 'stop'}},
-                {id: 2, label: '2', extras: {isTerminal: 'stop'}},
-                {id: 3, label: '3', extras: {isTerminal: 'stop'}},
-                {id: 4, label: '4', extras: {isTerminal: 'stop'}}],
+                {id: 0, label: '0', meta: {startNode: true}},
+                {id: 1, label: '1', meta: {isTerminal: 'stop'}},
+                {id: 2, label: '2', meta: {isTerminal: 'stop'}},
+                {id: 3, label: '3', meta: {isTerminal: 'stop'}},
+                {id: 4, label: '4', meta: {isTerminal: 'stop'}}],
               edges: [
                 {from: 0, to: 1, label: 'w'},
                 {from: 0, to: 2, label: 'x'},
@@ -225,7 +225,7 @@
           name: 'A',
           graph: {
             nodes: [
-              {id: 0, label: 'A:0', extras: {startNode: true, references: 'A'}}],
+              {id: 0, label: 'A:0', meta: {startNode: true, references: 'A'}}],
             edges: [
               {from: 0, to: 0, label: 'x'}],
             rootId: 0}
@@ -238,7 +238,7 @@
           name: 'A',
           graph: {
             nodes: [
-              {id: 0, label: 'A:0', extras: {startNode: true, references: 'A'}}],
+              {id: 0, label: 'A:0', meta: {startNode: true, references: 'A'}}],
             edges: [
               {from: 0, to: 0, label: 'x'},
               {from: 0, to: 0, label: 'y'}],
@@ -252,9 +252,9 @@
           name: 'A',
           graph: {
             nodes: [
-              {id: 0, label: 'A:0', extras: {startNode: true, references: 'A'}},
-              {id: 1, label: '1', extras: {isTerminal: 'stop'}},
-              {id: 2, label: '2', extras: {}}],
+              {id: 0, label: 'A:0', meta: {startNode: true, references: 'A'}},
+              {id: 1, label: '1', meta: {isTerminal: 'stop'}},
+              {id: 2, label: '2', meta: {}}],
             edges: [
               {from: 0, to: 1, label: 'x'},
               {from: 1, to: 2, label: 'y'},
@@ -271,9 +271,9 @@
           name: 'A',
           graph: {
             nodes: [
-              {id: 0, label: '0', extras: {startNode: true}},
-              {id: 1, label: 'B:1', extras: {references: 'B'}},
-              {id: 2, label: '2', extras: {isTerminal: 'stop'}}],
+              {id: 0, label: '0', meta: {startNode: true}},
+              {id: 1, label: 'B:1', meta: {references: 'B'}},
+              {id: 2, label: '2', meta: {isTerminal: 'stop'}}],
             edges: [
               {from: 0, to: 1, label: 'x'},
               {from: 1, to: 2, label: 'y'}],
@@ -282,8 +282,8 @@
           name: 'B',
           graph: {
             nodes: [
-              {id: 1, label: '0', extras: {startNode: true}},
-              {id: 2, label: '1', extras: {isTerminal: 'stop'}}],
+              {id: 1, label: '0', meta: {startNode: true}},
+              {id: 2, label: '1', meta: {isTerminal: 'stop'}}],
             edges: [
               {from: 1, to: 2, label: 'y'}],
             rootId: 1}
@@ -296,11 +296,11 @@
           name: 'A',
           graph: {
             nodes: [
-              {id: 0, label: '0', extras: {startNode: true}},
-              {id: 1, label: 'B:1', extras: {references: 'B'}},
-              {id: 2, label: 'C:2', extras: {references: 'C'}},
-              {id: 3, label: '3', extras: {isTerminal: 'stop'}},
-              {id: 4, label: '4', extras: {isTerminal: 'stop'}}],
+              {id: 0, label: '0', meta: {startNode: true}},
+              {id: 1, label: 'B:1', meta: {references: 'B'}},
+              {id: 2, label: 'C:2', meta: {references: 'C'}},
+              {id: 3, label: '3', meta: {isTerminal: 'stop'}},
+              {id: 4, label: '4', meta: {isTerminal: 'stop'}}],
             edges: [
               {from: 0, to: 1, label: 'w'},
               {from: 0, to: 2, label: 'x'},
@@ -311,8 +311,8 @@
           name: 'B',
           graph: {
             nodes: [
-              {id: 1, label: '0', extras: {startNode: true}},
-              {id: 3, label: '1', extras: {isTerminal: 'stop'}}],
+              {id: 1, label: '0', meta: {startNode: true}},
+              {id: 3, label: '1', meta: {isTerminal: 'stop'}}],
             edges: [
               {from: 1, to: 3, label: 'y'}],
             rootId: 1}
@@ -320,8 +320,8 @@
           name: 'C',
           graph: {
             nodes: [
-              {id: 2, label: '0', extras: {startNode: true}},
-              {id: 4, label: '1', extras: {isTerminal: 'stop'}}],
+              {id: 2, label: '0', meta: {startNode: true}},
+              {id: 4, label: '1', meta: {isTerminal: 'stop'}}],
             edges: [
               {from: 2, to: 4, label: 'z'}],
             rootId: 2}
@@ -334,9 +334,9 @@
           name: 'A',
           graph: {
             nodes: [
-              {id: 0, label: '0', extras: {startNode: true}},
-              {id: 1, label: 'B:1', extras: {references: 'B'}},
-              {id: 2, label: '2', extras: {isTerminal: 'stop'}}],
+              {id: 0, label: '0', meta: {startNode: true}},
+              {id: 1, label: 'B:1', meta: {references: 'B'}},
+              {id: 2, label: '2', meta: {isTerminal: 'stop'}}],
             edges: [
               {from: 0, to: 1, label: 'x'},
               {from: 0, to: 1, label: 'y'},
@@ -346,8 +346,8 @@
           name: 'B',
           graph: {
             nodes: [
-              {id: 1, label: '0', extras: {startNode: true}},
-              {id: 2, label: '1', extras: {isTerminal: 'stop'}}],
+              {id: 1, label: '0', meta: {startNode: true}},
+              {id: 2, label: '1', meta: {isTerminal: 'stop'}}],
             edges: [
               {from: 1, to: 2, label: 'y'}],
             rootId: 0}
@@ -360,8 +360,8 @@
           name: 'A',
           graph: {
             nodes: [
-              {id: 0, label: '0', extras: {startNode: true}},
-              {id: 1, label: 'B:1', extras: {references: 'B'}}],
+              {id: 0, label: '0', meta: {startNode: true}},
+              {id: 1, label: 'B:1', meta: {references: 'B'}}],
             edges: [
               {from: 0, to: 1, label: 'x'},
               {from: 1, to: 0, label: 'y'}],
@@ -370,8 +370,8 @@
           name: 'B',
           graph: {
             nodes: [
-              {id: 1, label: '0', extras: {startNode: true}},
-              {id: 0, label: 'A:1', extras: {references: 'A'}}],
+              {id: 1, label: '0', meta: {startNode: true}},
+              {id: 0, label: 'A:1', meta: {references: 'A'}}],
             edges: [
               {from: 0, to: 1, label: 'x'},
               {from: 1, to: 0, label: 'y'}],

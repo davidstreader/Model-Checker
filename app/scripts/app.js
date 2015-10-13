@@ -134,7 +134,7 @@
     document.addEventListener('automata-walker-start', function(e) {
       var visualisations = Polymer.dom(this).querySelectorAll('automata-visualisation');
       for (var i in visualisations) {
-        visualisations[i].setHighlightNodeId(e.detail.node);
+        visualisations[i].setHighlightNodeId(e.detail.node.id);
         visualisations[i].redraw();
       }
     });
@@ -147,7 +147,7 @@
     document.addEventListener('automata-walker-walk', function(e) {
       var visualisations = Polymer.dom(this).querySelectorAll('automata-visualisation');
       for (var i in visualisations) {
-        visualisations[i].setHighlightNodeId(e.detail.edge.to);
+        visualisations[i].setHighlightNodeId(e.detail.edge.to.id);
         visualisations[i].redraw();
       }
     });
