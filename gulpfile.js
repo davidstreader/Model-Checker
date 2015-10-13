@@ -74,7 +74,7 @@ gulp.task('jshint', function() {
       'app/elements/**/*.js',
       'app/elements/**/*.html',
       '!app/elements/_template-element',
-      '!app/elements/automata-parser-pegjs/parser.js',
+      '!app/elements/automata-parser/parser.js',
       '!app/elements/**/test/**/*'
     ])
     .pipe(reload({stream: true, once: true}))

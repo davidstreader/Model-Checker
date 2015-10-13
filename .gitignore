@@ -1,7 +1,5 @@
-node_modules
-dist
-test/temp
+node_modules/
 bower_components/
+dist
 .tmp
-test/bower_components/
 .project

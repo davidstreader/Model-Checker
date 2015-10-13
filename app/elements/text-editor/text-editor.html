@@ -1,15 +1,19 @@
-<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../imports/ace.html">
 
 <dom-module id="text-editor">
   <style>
     :host {
       display: block;
+      position: relative;
     }
     #editor{
       box-sizing: border-box;
-      width: 100%;
-      height: 100%;
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
     }
   </style>
   <template>
@@ -17,6 +21,7 @@
   </template>
 </dom-module>
 <script>
+  // jshint -W106
   (function() {
     Polymer({
       is: 'text-editor',
@@ -24,6 +29,7 @@
       properties: {
         /**
          * If true the editor will be brought into focus automatically when the elements is added to the dom
+         *
          * @default false
          */
         autofocus: {
@@ -32,21 +38,14 @@
         },
 
         /**
-         * The amount of time for a text-editor-change event to fire after the content changes.
+         * The amount of time before a text-editor-change event is fired after the editor's content changes.
+         *
          * @default 1000
          */
-        changeDebounceTime: {
+        changeEventDebounceTime: {
           type: Number,
           value: 1000,
           notify: true
-        },
-
-        /**
-         * Previous time field required to ensure timeout remains consistent.
-         */
-        _previousTime: {
-          type: Number,
-          value: 0
         },
 
         /**
@@ -59,7 +58,17 @@
             editor.setTheme('ace/theme/github');
             editor.getSession().setMode('ace/mode/plain_text'); // syntax highlighting
             return editor;
-          }
+          },
+          readOnly: true
+        },
+
+        /**
+         * don't fire a 'text-editor-change' event the next time the editor's content changes
+         */
+        _skipNextCodeChangeEvent: {
+          type: Boolean,
+          value: false,
+          readOnly: true
         }
       },
 
@@ -76,27 +85,34 @@
        * @param {string} code The code
        */
       setCode: function(code){
-        this._editor.setValue(code, 0);
+        this._editor.setValue(code, 1);
+        this._set_skipNextCodeChangeEvent(true);
+        this.fire('text-editor-change');
       },
 
+      /**
+       * Bring this element into focus
+       */
       focus: function(){
         this._editor.focus();
       },
 
       ready: function(){
         if(this.autofocus){
-          this._editor.focus();
+          this.focus();
         }
 
-        this._editor.on('change', function(e){
-          var d = new Date();
-          this._previousTime = d.getTime();
-          setTimeout(function(){
-            var d = new Date();
-            if(d.getTime()-this._previousTime>=this.changeDebounceTime){
-              this.fire('text-editor-change');
-            }
-          }.bind(this), this.changeDebounceTime);
+        // fire a 'text-editor-change' event when the text editor's content changes
+        this._editor.on('change', function() {
+          if (this._skipNextCodeChangeEvent){
+            this._set_skipNextCodeChangeEvent(false);
+            return;
+          }
+
+          // merge multiple events into one (debounce them)
+          this.debounce('text-editor-change', function() {
+            this.fire('text-editor-change');
+          }, this.changeEventDebounceTime);
         }.bind(this));
       }
     });

@@ -1,5 +1,5 @@
-<link rel="import" href="../../../bower_components/polymer/polymer.html">
-<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../imports/dagre-d3.html">
 
 <dom-module id="automata-visualisation">
@@ -170,9 +170,14 @@
         marginy: 0
       });
 
+      /*
+       * Note:
+       * dagreD3 sorts the nodes given to it alphabetically then
+       * the root node is concider to be first node after this sorting.
+       */
 
       var actualStartNode;
-      automata.setNode('invisibleStartNode', { label: '', shape: 'circle', class: 'start' });
+      automata.setNode('0', { label: '', shape: 'circle', class: 'start' });
 
       // Automatically label each of the nodes
       this.nodes.forEach(function(node) {
@@ -180,7 +185,7 @@
         var styleClasses = '';
 
         if(node.getExtraData('startNode')){
-          actualStartNode = node.id;
+          actualStartNode = node;
         }
 
         var terminal = node.getExtraData('isTerminal');
@@ -197,7 +202,7 @@
           styleClasses += ' highlighted';
         }
 
-        automata.setNode(node.id, { label: node.label, shape: 'automatanode', class: styleClasses.trim() });
+        automata.setNode('n'+node.id, { label: node.label, shape: 'automatanode', class: styleClasses.trim() });
       }.bind(this));
 
       // Default to assigning a new object as a label for each new edge.
@@ -205,14 +210,14 @@
         return {};
       });
 
-      automata.setEdge('invisibleStartNode', actualStartNode, { label: '', lineInterpolate: 'basis' }, 'startEdge');
+      automata.setEdge('0', 'n'+actualStartNode.id, { label: '', lineInterpolate: 'basis' }, 'startEdge');
 
       // Automatically set each of the edges, with:
       //  - the from node's label
       //  - the to node's label
       //  - the edge's extra data (could be label, width, height, etc.)
       this.edges.forEach(function(edge) {
-        automata.setEdge(edge.from.id, edge.to.id, { label: (edge.label || 'ε'), lineInterpolate: 'basis' }, edge.id);
+        automata.setEdge('n'+edge.from.id, 'n'+edge.to.id, { label: (edge.label || 'ε'), lineInterpolate: 'basis' }, edge.id);
       });
 
       // add a new group node to the svg element for the new graph

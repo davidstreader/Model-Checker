@@ -1,0 +1,63 @@
+#help-dialog {
+  width: 80%;
+  height: 80%;
+  max-width: 1200px;
+}
+
+#help-dialog .title-bar {
+  height: 76px;
+}
+
+#help-dialog .btn-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}
+
+#help-dialog paper-dialog-scrollable {
+  top: 76px;
+}
+
+#help-dialog .page {
+  padding: 16px;
+}
+
+#help-dialog table.t1 {
+  width: 100%;
+  border: solid 2px #000000;
+  border-spacing: 0;
+  border-collapse: collapse;
+}
+
+#help-dialog table.t1 thead tr {
+  border-bottom: solid 2px #000000;
+}
+
+#help-dialog table.t1 th,
+#help-dialog table.t1 td {
+  border: solid 1px #000000;
+  padding: 1px 4px;
+}
+
+#help-dialog table.t1 td.name{
+  text-align: center;
+  width: 180px;
+}
+
+#help-dialog table.t1 td.use {
+  text-align: center;
+  width: 260px;
+}
+
+#help-dialog table.t1 td.decription {
+  text-align: left;
+}
+
+#help-dialog table.t1 .symbol{
+  color: #0000ff;
+}
+
+#help-dialog table.t1 .note{
+  font-size: 10px;
+  color: #ff0000;
+}

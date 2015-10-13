@@ -29,6 +29,7 @@
     "app": true,
     "PEG": true,
     "saveAs": true,
+    "ace": true,
     "Automaton": true,
     "Graph": true
   }

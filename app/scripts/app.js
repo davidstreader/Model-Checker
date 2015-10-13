@@ -8,55 +8,76 @@
     /**
      * The data to use.
      */
-    app.data = {automatas: []};
-    
+    app.automata = {values: []};
+
     app.liveCompiling = true;
+
+    app.helpDialogSelectedTab = 0;
 
     /**
      * Compile the code in the text editor.
-     * Create and display the new automatas.
+     * Create and display the new automata.
      */
-
     app.compile = function() {
       app.$.console.clear();
-      if (app.$.editor.getCode().trim().length === 0) {
-        app.$.console.log('No input.');
-        return;
-      }
-      var success = false;
-      try {
-        var timeBefore = (new Date()).getTime();
-        var automatas = app.$.parser.parse(app.$.editor.getCode());
-        var timeAfter = (new Date()).getTime();
-        success = true;
-        var timeTaken = Math.max(1, (timeAfter - timeBefore)) / 1000;
-        app.$.console.log('Compiled successfully in ' + timeTaken.toFixed(3) + ' seconds.');
-      } catch (e) {
-        var buildErrorMessage = function(e) {
-          return e.location !== undefined ?
-            'on line ' + e.location.start.line + ', col ' + e.location.start.column + ' - ' + e.message :
-            e.message;
-        };
+      app.$.console.log('Compiling...');
+      var compileStartTime = (new Date()).getTime();
+      var compileTime;
 
-        var isInterpreterException = e.constructor === app.$.parser.InterpreterException;
-        var prefix = isInterpreterException ? 'Error: ' : 'Syntax error ';
+      setTimeout(function() {
+        var code = app.$.editor.getCode();
+        if (code.trim().length === 0) {
+          app.$.console.clear();
+          app.$.console.log('No input.');
+          return;
+        }
 
-        app.$.console.error(prefix + buildErrorMessage(e));
-      }
-      if (success) {
-        // Can't simply assign app.data.automatas to the new array as data bindings will not update.
-        // Creating a new data oject then setting the automatas value slighly later will work (for some reason).
-        app.data = {};
-        this.async(function() {
-          app.set('data.automatas', automatas);
-        });
-      }
+        var automata = [];
+        try {
+          automata = app.$.parser.parse(code);
+        } catch (e) {
+          var buildErrorMessage = function(e) {
+            return e.location !== undefined ?
+              'on line ' + e.location.start.line + ', col ' + e.location.start.column + ' - ' + e.message :
+              e.message;
+          };
+
+          var isInterpreterException = e.constructor === app.$.parser.InterpreterException;
+          var prefix = isInterpreterException ? 'Error: ' : 'Syntax error ';
+
+          compileTime = Math.max(1, ((new Date()).getTime() - compileStartTime)) / 1000;
+          app.$.console.clear(1);
+          app.$.console.log('Compulation failed after ' + compileTime.toFixed(3) + ' seconds.');
+          app.$.console.error(prefix + buildErrorMessage(e));
+          return;
+        }
+
+        compileTime = Math.max(1, ((new Date()).getTime() - compileStartTime)) / 1000;
+        app.$.console.clear(1);
+        app.$.console.log('Compiled successfully in ' + compileTime.toFixed(3) + ' seconds.');
+        app.$.console.log('Rendering...');
+
+        var renderStartTime = (new Date()).getTime();
+        var renderTime;
+
+        // Can't simply assign app.automata.values to the new array as data bindings will not update.
+        // Creating a new automata oject then setting the its values slightly later will work (for some reason).
+        app.automata = {};
+        setTimeout(function() {
+          app.set('automata.values', automata);
+
+          renderTime = Math.max(1, ((new Date()).getTime() - renderStartTime)) / 1000;
+          app.$.console.clear(1);
+          app.$.console.log('Rendered successfully in ' + renderTime.toFixed(3) + ' seconds.');
+          app.$.console.log('Total time: ' + (compileTime + renderTime).toFixed(3) + ' seconds.');
+        }, 0);
+      }.bind(this), 0);
     };
 
     /**
      * Open a text file from the user's computer and use its contents as the code
      */
-    app.open = function() {
+    app.openFile = function() {
       var opener = app.$['open-file'];
       opener.click();
       opener.onchange = function(e) {
@@ -68,6 +89,7 @@
         reader.onload = function() {
           var text = reader.result;
           app.$.editor.setCode(text);
+          app.$.editor.focus();
         };
         reader.readAsText(input.files[0]);
         opener.value = '';
@@ -77,33 +99,27 @@
     /**
      * Save to code the user has written to their computer (as a download).
      */
-    app.save = function() {
+    app.downloadFile = function() {
       var blob = new Blob(
         [app.$.editor.getCode()],
         {type: 'text/plain;charset=utf-8'});
       saveAs(blob, 'untitled.txt');
     };
 
-    app.help = function() {
-      var helptext = app.$['help'];
-      helptext.open();
+    app.showHelp = function() {
+      var help = app.$['help-dialog'];
+      help.open();
     };
 
-    app.closehelp = function() {
-      var helptext = app.$['help'];
-      helptext.close();
-    };
-
-    app.$['live-compiling-check'].addEventListener('iron-change', function(e){
-      app.$['editor'].focus();
-      if(app.liveCompiling){
+    app.$['chbx-live-compiling'].addEventListener('iron-change', function() {
+      if (app.liveCompiling) {
         app.compile();
       }
+      app.$.editor.focus();
     });
 
     document.addEventListener('automata-walker-start', function(e) {
-      var visualisations =
-        Polymer.dom(this).querySelectorAll('automata-visualisation');
+      var visualisations = Polymer.dom(this).querySelectorAll('automata-visualisation');
       for (var i in visualisations) {
         visualisations[i].setHighlightNodeId(e.detail.node);
         visualisations[i].redraw();
@@ -111,50 +127,57 @@
     });
 
     document.addEventListener('automata-walker-walk', function(e) {
-      var visualisations =
-        Polymer.dom(this).querySelectorAll('automata-visualisation');
+      var visualisations = Polymer.dom(this).querySelectorAll('automata-visualisation');
       for (var i in visualisations) {
         visualisations[i].setHighlightNodeId(e.detail.edge.to);
         visualisations[i].redraw();
       }
     });
 
-    document.addEventListener('text-editor-change', function(e){
-      if(app.liveCompiling){
+    document.addEventListener('text-editor-change', function() {
+      if (app.liveCompiling) {
         app.compile();
       }
     });
 
     /**
-    *EventListener function that allows the use of keybindings.
-    */
-    document.addEventListener('keyup',function(e) {
+     * Listen for key presses.
+     * Note: Needs to listen for keydown (not keyup) in order to prevent browser default action
+     */
+    document.addEventListener('keydown',function(e) {
       if (app.$['help-dialog'].opened) {
         return;
       }
 
-      switch (e.keyCode){
+      switch (e.keyCode) {
         case 13:
           // CTRL + ENTER
           if (e.ctrlKey) {
             app.compile();
+            e.preventDefault();
           }
           break;
         case 79:
           // CTRL + O
           if (e.ctrlKey) {
-            app.open();
+            app.openFile();
+            e.preventDefault();
           }
           break;
         case 83:
           // CTRL + S
           if (e.ctrlKey) {
-            app.save();
+            app.downloadFile();
+            e.preventDefault();
           }
+          break;
+        case 112:
+          // F1
+          app.$['help-dialog'].open();
+          e.preventDefault();
           break;
         default: return;
       }
-      e.preventDefault();
     });
 
   });

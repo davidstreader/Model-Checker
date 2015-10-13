@@ -28,84 +28,63 @@
   <!-- Tile icon for Win8 (144x144) -->
   <meta name="msapplication-TileImage" content="images/touch/ms-touch-icon-144x144-precomposed.png">
 
-  <!-- build:css styles/main.css -->
   <link rel="stylesheet" href="styles/main.css">
-  <!-- endbuild-->
+  <link rel="stylesheet" href="styles/help-dialog.css">
 
-  <!-- build:js bower_components/webcomponentsjs/webcomponents-lite.min.js -->
   <script async src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
-  <!-- endbuild -->
 
-  <!-- will be replaced with elements/elements.vulcanized.html -->
   <link rel="import" href="elements/elements.html">
-  <!-- endreplace-->
 
   <style is="custom-style" include="shared-styles">
-  #main-toolbar{
-    height: 64px
-  }
-  .frame{
+  .frame {
     position: absolute;
     top: 64px;
     bottom: 0;
-    overflow: auto;
-  }
-  .left.frame{
     left: 0;
-    right: 50%;
-  }
-  .right.frame{
-    left: 50%;
     right: 0;
+    overflow: auto;
+    @apply(--layout-horizontal);
   }
-  .frame > *{
-    margin-top: 8px;
+  .frame > * > * {
+    margin-top: 4px;
     margin-right: 8px;
-    margin-bottom: 8px;
+    margin-bottom: 4px;
     margin-left: 8px;
     border: solid 1px var(--dark-primary-color);
   }
-  .left.frame > *{
+  .frame > :first-child > * {
     margin-right: 4px;
   }
-  .right.frame > *{
+  .frame > :last-child > * {
     margin-left: 4px;
   }
-  .frame > *:first-child{
-    margin-bottom: 4px;
+  .frame > * > :first-child {
+    margin-top: 8px;
   }
-  .frame > *:last-child{
-    margin-top: 4px;
+  .frame > * > :last-child {
+    margin-bottom: 8px;
   }
-  #editor{
-    position:absolute;
-    top: 0;
-    bottom: 150px;
-    left: 0;
-    right: 0;
-    min-height: 200px;
+  .centerer {
+    text-align: center;
   }
-  #console{
-    position: absolute;
-    top: calc(100% - 150px);
-    bottom: 0;
-    left: 0;
-    right: 0;
+  #console {
+    height: 150px;
   }
-  automata-visualisation{
+  automata-visualisation {
     position: relative;
     height: 250px;
   }
-  #open-file{
-    display: none;
+  #main-toolbar span.spacer{
+    margin-right: 16px;
+    width: 0;
   }
-  #btn-compile{
+  #btn-compile {
     background: var(--accent-color);
     height: 24px;
     box-sizing: content-box;
     position: relative;
   }
-  #btn-compile iron-icon{
+  #btn-compile iron-icon {
     --iron-icon-height: 32px;
     --iron-icon-width: 32px;
     position: absolute;
@@ -114,10 +93,54 @@
     top: calc(50% - 16px);
     bottom: 0;
   }
-  #help-dialog{
-    width: 80%;
-    height: 80%;
-    max-width: 1200px;
+  #chbx-live-compiling {
+    margin: 0 12px;
+    --paper-checkbox-unchecked-color: #ffffff;
+    --paper-checkbox-label-color: #ffffff;
+  }
+  @media all and (max-width: 959px) {
+    .frame{
+      @apply(--layout-vertical);
+    }
+    .frame > * > *,
+    .frame > :first-child > *,
+    .frame > :last-child > * {
+      margin-top: 2px;
+      margin-right: 4px;
+      margin-bottom: 2px;
+      margin-left: 4px;
+    }
+    .frame > :first-child > :first-child{
+      margin-top: 4px;
+    }
+    .frame > :last-child > :last-child{
+      margin-bottom: 4px;
+    }
+    paper-toolbar span.spacer{
+      margin-right: 0;
+      width: 0;
+      @apply(--layout-flex);
+    }
+    #editor{
+      min-height: 200px;
+      height: calc(95vh - 64px - 100px);
+    }
+    #console{
+      height: 100px;
+    }
+    #btn-compile {
+    }
+    #chbx-live-compiling {
+      margin: 0 6px;
+    }
+  }
+  @media all and (max-width: 639px) {
+    .frame{
+      top: 56px;
+    }
+    #editor{
+      height: calc(95vh - 56px - 100px);
+    }
   }
   </style>
 </head>
@@ -125,26 +148,146 @@
 <body unresolved class="fullbleed layout vertical">
   <span id="browser-sync-binding"></span>
   <template is="dom-bind" id="app">
-    <automata-parser-pegjs id="parser"></automata-parser-pegjs>
+    <iron-media-query query="(max-width: 959px)" query-matches="{{smallScreen}}"></iron-media-query>
+
+    <automata-parser id="parser"></automata-parser>
+
+    <!-- start toolbar -->
     <paper-toolbar id="main-toolbar">
-      <paper-button id="btn-compile" title="Compile" raised on-tap="compile"><iron-icon icon="av:play-arrow"></iron-icon></paper-button>
-      <paper-icon-button icon="icons:folder-open" title="Open" on-tap="open"></paper-icon-button>
-      <paper-icon-button icon="icons:save" title="Save" on-tap="save"></paper-icon-button>
-      <paper-icon-button icon="icons:help" title="Help" on-tap="help"></paper-icon-button>
-      <paper-checkbox id="live-compiling-check" checked="{{liveCompiling}}">Live Compiling</paper-checkbox> 
-      <input id="open-file" type='file' accept='text/plain'><br>
+      <paper-button id="btn-compile" title="Compile" raised on-tap="compile" class="middle"><iron-icon icon="av:play-arrow"></iron-icon></paper-button>
+      <paper-checkbox id="chbx-live-compiling" checked="{{liveCompiling}}" class="middle" title="Automatically compile the automata as you defined it.">
+        <span hidden$="{{smallScreen}}">Live Compiling</span>
+        <span hidden$="{{!smallScreen}}">Live</span>
+      </paper-checkbox>
+      <span class="spacer middle"></span>
+      <paper-icon-button icon="icons:folder-open" class="middle" title="Open" on-tap="openFile"></paper-icon-button>
+      <input id="open-file" type="file" accept="text/plain" class="middle" style="display: none;"></input>
+      <paper-icon-button icon="icons:file-download" class="middle" title="Download" on-tap="downloadFile"></paper-icon-button>
+      <span class="flex middle"></span>
+      <paper-icon-button icon="icons:help" class="middle" title="Help" on-tap="showHelp"></paper-icon-button>
     </paper-toolbar>
-    <div class="left frame">
-      <text-editor autofocus id="editor"></text-editor>
-      <console-logger id="console"></console-logger>
+    <!-- end toolbar -->
+
+    <!-- start content -->
+    <div class="frame">
+      <div class="layout vertical flex">
+        <text-editor autofocus id="editor" class="flex"></text-editor>
+        <console-logger id="console"></console-logger>
+      </div>
+      <div class="layout vertical flex">
+        <automata-walker automata="{{automata.values}}"></automata-walker>
+        <template is="dom-repeat" items="[[automata.values]]">
+          <automata-visualisation name="[[item.name]]" nodes="[[item.graph.nodes]]" edges="[[item.graph.edges]]"></automata-visualisation>
+        </template>
+      </div>
     </div>
-    <div class="right frame">
-      <automata-walker automata="{{data.automatas}}"></automata-walker>
-      <template is="dom-repeat" items="[[data.automatas]]">
-        <automata-visualisation name="[[item.name]]" nodes="[[item.graph.nodes]]" edges="[[item.graph.edges]]"></automata-visualisation>
-      </template>
-    </div>
-    <help-dialog id="help"></help-dialog>
+    <!-- end content -->
+
+    <!-- start help-dialog -->
+    <paper-dialog id="help-dialog" with-backdrop>
+      <div class="title-bar">
+        <h2>Help</h2>
+        <paper-icon-button class="btn-close" icon="icons:cancel" title="Exit" dialog-dismiss></paper-icon-button>
+        <paper-tabs selected="{{helpDialogSelectedTab}}">
+          <paper-tab>Creating Automata</paper-tab>
+          <paper-tab>UI Overview</paper-tab>
+          <paper-tab>Automata Definition Syntax</paper-tab>
+        </paper-tabs>
+      </div>
+      <paper-dialog-scrollable class="fit">
+        <neon-animated-pages selected="{{helpDialogSelectedTab}}" class="fit">
+          <section class="page">
+            <h3>Examples:</h3>
+            <h4>Example 1: Sequence</h4>
+            <code>Example1 = action -> STOP.</code><br>
+            <img src="images/help-dialog/_____________"></img>
+
+            <h4>Example 2: Choice</h4>
+            <code>Example2 = x -> STOP | y -> ERROR.</code><br>
+            <img src="images/help-dialog/_____________"></img>
+
+            <h4>Example 3: Simple Referencing</h4>
+            <code>A = x -> B.<br>B = y -> STOP.</code><br>
+            <img src="images/help-dialog/_____________"></img>
+
+            <h4>Example 4: Referencing</h4>
+            <code>A = u -> (w -> A | x -> B).<br>B = y -> A | z -> STOP.</code><br>
+            <img src="images/help-dialog/_____________"></img>
+
+            <h3>Operations:</h3>
+            <table class="t1">
+              <thead>
+                <tr>
+                  <th class="name">Name</th>
+                  <th class="use">Use</th>
+                  <th class="description">Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="name">Sequence</td>
+                  <td class="use">[label] <span class="symbol">&dash;&gt;</span> [next state]</td>
+                  <td class="description">Create a transition path from the current state to the next state with the specified label.</td>
+                </tr><tr>
+                  <td class="name">Choice</td>
+                  <td class="use">[label A] &dash;&gt; [state A] <span class="symbol">|</span> [label B] &dash;&gt; [state B]</td>
+                  <td class="description">Create a transition path from the current state to each of the specified states with the respective label.</td>
+                </tr><tr>
+                  <td class="name">Parallel <span class="note">(Not yet supported)</span></td>
+                  <td class="use">[state A] <span class="symbol">||</span> [state B]</td>
+                  <td class="description"></td>
+                </tr>
+              </tbody>
+            </table>
+
+            <h3>Terminals:</h3>
+            <table class="t1">
+              <thead>
+                <tr>
+                  <th class="name">Name</th>
+                  <th class="description">Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="name">STOP</td>
+                  <td class="description">A successful termination.</td>
+                </tr><tr>
+                  <td class="name">ERROR</td>
+                  <td class="description">An unsuccessful termination.</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <h3>Grammar:</h3>
+            <span class="title">Automata Name:</span> First character must be an uppercase alphabet character. Following can be any alpha-numeric characters (excluding all whitespace).
+            <span class="title">Edge Label:</span> First character must be a lowercase alphabet character. Following can be any alpha-numeric characters (excluding all whitespace).
+            <span class="title">Definition End:</span> '.' <br></br><span class="title">Definition Assignment:</span> '=' <br></br><span class="title">Choice Operation:</span> '|'
+            <span class="title">Sequence Operation:</span> '->' <br></br><span class="title">Sequence Stop:</span> 'STOP'
+          </section>
+          <section class="page">
+            <p>Starting from the toolbar from the top left, the pink compile button is used to compile your defined automata and display your automata.
+            You use the save and open buttons alongside this to open and save predifined automata.
+            The definition frame on the left below the main tool buttons is the input area for defining automata.
+            Refer to 'Automata Definition' for more information on how to define your automata.</p>
+            <div class="centerer"><img src="images/help-dialog/ui.png"></img></div>
+            <p>On the right is the automata frame and displays your automata outlined in the definition frame, once the compile button is used.
+              If their is an error in the definition, an alert will be shown on the console which can be found right beneath the text frame, outlining the error.
+              Just above the automata frame where the defined automata are pictured, is the walker tool.
+              The walker tool allows the navigation of the currently displayed automata by first selecting the automata you want to navigate, then selecting the edge to navigate down.
+              Clicking the walk button will confirm the selected options and walk through the automata one step.
+              The blue coloured node as shown below shows the current node that is being visited.</p>
+            <div class="centerer"><img src="images/help-dialog/walker.png"></img></div>
+          </section>
+          <section class="page">
+            This is content 3
+          </section>
+        </neon-animated-pages>
+      </paper-dialog-scrollable>
+      <paper-icon-button="icons:cancel" title="Exit" on-tap="closehelp"></paper-icon-button>
+    </paper-dialog>
+    <!-- end help-dialog -->
+
   </template>
 
   <!-- build:js scripts/app.js -->

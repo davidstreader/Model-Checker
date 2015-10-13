@@ -1,22 +1,22 @@
 <!doctype html>
 <html>
 <head>
-  <title>automata-parser-pegjs</title>
+  <title>automata-parser</title>
 
-  <script src="../../../../bower_components/webcomponentsjs/webcomponents.js"></script>
-  <script src="../../../../bower_components/web-component-tester/browser.js"></script>
-  <script src="../../../../bower_components/test-fixture/test-fixture-mocha.js"></script>
+  <script src="../../../bower_components/webcomponentsjs/webcomponents.js"></script>
+  <script src="../../../bower_components/web-component-tester/browser.js"></script>
+  <script src="../../../bower_components/test-fixture/test-fixture-mocha.js"></script>
 
-  <link rel="import" href="../../../../bower_components/polymer/polymer.html">
-  <link rel="import" href="../../../../bower_components/promise-polyfill/promise-polyfill-lite.html">
-  <link rel="import" href="../../../../bower_components/test-fixture/test-fixture.html">
+  <link rel="import" href="../../../bower_components/polymer/polymer.html">
+  <link rel="import" href="../../../bower_components/promise-polyfill/promise-polyfill-lite.html">
+  <link rel="import" href="../../../bower_components/test-fixture/test-fixture.html">
 
-  <link rel="import" href="../automata-parser-pegjs.html">
+  <link rel="import" href="../automata-parser.html">
 </head>
 <body>
   <test-fixture id="parser">
     <template>
-      <automata-parser-pegjs></automata-parser-pegjs>
+      <automata-parser></automata-parser>
     </template>
   </test-fixture>
 
@@ -32,7 +32,7 @@
 
     var doTest = function(result, exp){
       expect(result).to.be.an('array');
-      expect(result.length).to.be.equal(exp.length, 'Incorrect number of automatas return.');
+      expect(result.length).to.be.equal(exp.length, 'Incorrect number of automata return.');
 
       for(var i=0; i<result.length; i++){
         var rAutomata = result[i];
@@ -286,12 +286,47 @@
               {id: 2, label: '1', extras: {isTerminal: 'stop'}}],
             edges: [
               {from: 1, to: 2, label: 'y'}],
-            rootId: 0}
+            rootId: 1}
         }];
         doTest(result, exp);
       });
       test('multiple difference references', function(){
-        assert.fail(undefined, undefined, 'test not written.');
+        var result = parser.parse('A=w->B|x->C.B=y->STOP.C=z->STOP.');
+        var exp = [{
+          name: 'A',
+          graph: {
+            nodes: [
+              {id: 0, label: '0', extras: {startNode: true}},
+              {id: 1, label: 'B:1', extras: {references: 'B'}},
+              {id: 2, label: 'C:2', extras: {references: 'C'}},
+              {id: 3, label: '3', extras: {isTerminal: 'stop'}},
+              {id: 4, label: '4', extras: {isTerminal: 'stop'}}],
+            edges: [
+              {from: 0, to: 1, label: 'w'},
+              {from: 0, to: 2, label: 'x'},
+              {from: 1, to: 3, label: 'y'},
+              {from: 2, to: 4, label: 'z'}],
+            rootId: 0}
+        },{
+          name: 'B',
+          graph: {
+            nodes: [
+              {id: 1, label: '0', extras: {startNode: true}},
+              {id: 3, label: '1', extras: {isTerminal: 'stop'}}],
+            edges: [
+              {from: 1, to: 3, label: 'y'}],
+            rootId: 1}
+        },{
+          name: 'C',
+          graph: {
+            nodes: [
+              {id: 2, label: '0', extras: {startNode: true}},
+              {id: 4, label: '1', extras: {isTerminal: 'stop'}}],
+            edges: [
+              {from: 2, to: 4, label: 'z'}],
+            rootId: 2}
+        }];
+        doTest(result, exp);
       });
       test('multiple identical references', function(){
         var result = parser.parse('A=x->B|y->B.B=z->STOP.');
@@ -320,12 +355,39 @@
         doTest(result, exp);
       });
       test('reference with references', function(){
-        assert.fail(undefined, undefined, 'test not written.');
+        var result = parser.parse('A=x->B.B=y->A.');
+        var exp = [{
+          name: 'A',
+          graph: {
+            nodes: [
+              {id: 0, label: '0', extras: {startNode: true}},
+              {id: 1, label: 'B:1', extras: {references: 'B'}}],
+            edges: [
+              {from: 0, to: 1, label: 'x'},
+              {from: 1, to: 0, label: 'y'}],
+            rootId: 0}
+        },{
+          name: 'B',
+          graph: {
+            nodes: [
+              {id: 1, label: '0', extras: {startNode: true}},
+              {id: 0, label: 'A:1', extras: {references: 'A'}}],
+            edges: [
+              {from: 0, to: 1, label: 'x'},
+              {from: 1, to: 0, label: 'y'}],
+            rootId: 1}
+        }];
+        doTest(result, exp);
       });
     });
     suite('Parallel', function() {
-      test('test', function(){
-        assert.fail(undefined, undefined, 'test not written.');
+      // test('test', function(){
+      //   assert.fail(undefined, undefined, 'test not written.');
+      // });
+      test('unimplemented', function(){
+        assert.throws(function(){
+          parser.parse('A = x -> STOP || y -> STOP.');
+        });
       });
     });
   });

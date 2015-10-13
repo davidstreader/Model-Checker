@@ -182,7 +182,7 @@ class Graph {
    * @param {Graph.Node} node - The node to remove
    */
   removeNode(node) {
-    if (!node || node.graph !== this) {
+    if (!node || node.graph !== this || this._nodeMap[node.id] !== node) {
       return;
     }
 
@@ -205,10 +205,16 @@ class Graph {
   /**
    * Remove an edge from the graph.
    *
-   * @param {!number} id - The id of the edge to remove
+   * @param {Graph.Edge} edge - The edge to remove
    */
-  removeEdge(id) {
-    delete this._edgeMap[id];
+  removeEdge(edge) {
+    if (!edge || edge.graph !== this || this._edgeMap[edge.id] !== edge) {
+      return;
+    }
+
+    delete this._edgeMap[edge.id].to._edgesToMe[edge.id];
+    delete this._edgeMap[edge.id].from._edgesFromMe[edge.id];
+    delete this._edgeMap[edge.id];
     this._edgeCount -= 1;
   }
 
@@ -432,6 +438,11 @@ Graph.Node = class {
     this._graph._nodeMap[newId] = this._graph._nodeMap[oldId];
     delete this._graph._nodeMap[oldId];
     this._id = newId;
+
+    // if we are changing the root's id
+    if (this.graph._rootId === oldId) {
+      this.graph._rootId = newId;   // make sure the graph gets the update
+    }
 
     // update all the edges that refer to this node
     for (let edgeId in this._graph._edgeMap) {
