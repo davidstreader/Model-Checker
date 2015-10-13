@@ -1,1 +1,756 @@
-<script src="../../scripts/graph.es6.js"></script>
+<script>
+// Samual
+// Today
+// M
+// Michael Stevensuploaded an item
+// 10:26 AM
+// Javascript
+// graph.es6.js
+// No recorded activity before October 14, 2015
+
+// jscs:enable esnext
+// jshint esnext:true
+'use strict';
+
+/**
+ * A graph data structure (a collections of nodes and edges).
+ *
+ * @public
+ * @class
+ * @property {!array} nodes      - The nodes of the graph (readOnly)
+ * @property {!array} edges      - The edges of the graph (readOnly)
+ * @property {!Graph.Node} root  - The root node of this graph
+ * @property {!number} nodeCount - The number of nodes in the graph (readOnly)
+ * @property {!number} edgeCount - The number of edges in the graph (readOnly)
+ */
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+var Graph = (function () {
+  function Graph() {
+    _classCallCheck(this, Graph);
+
+    this._nodeCount = 0;
+    this._edgeCount = 0;
+    this._nodeMap = {};
+    this._edgeMap = {};
+    this._rootId = undefined;
+  }
+
+  /**
+   * A Graph Node.
+   *
+   * @protected
+   * @class
+   * @property {!Graph} graph      - The Graph this node is apart of (readOnly)
+   * @property {!number} id        - The node's id
+   * @property {!string} label     - The node's label
+   * @property {!object} extraData - Any extra data that should be stored (readOnly)
+   * @property {!array} neighbors  - The neighboring nodes of this node (readOnly)
+   */
+
+  /**
+   * Get an array of the nodes in this graph where the root node is be the first element.
+   *
+   * @returns {!array} An array of the nodes in this graph
+   */
+
+  _createClass(Graph, [{
+    key: 'addNode',
+
+    /**
+     * Add a node to this graph.
+     * If this graph doesn't already have a root node, this node will be set as the root node.
+     *
+     * @param {!number} uid            - The node's id (must be unquie)
+     * @param {!string} [label='']     - The node's label
+     * @param {!object} [extraData={}] - Any extra data about this node that should be stored
+     * @throws {Graph.Exception} uid must be unquie
+     * @returns {!Graph.Node} The node added to the graph
+     */
+    value: function addNode(uid) {
+      var label = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
+      var extraData = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+
+      if (this._nodeMap[uid] !== undefined) {
+        throw new Graph.Exception('This graph already contains a node with the id "' + uid + '".');
+      }
+
+      var node = new Graph.Node(this, uid, label, Graph._deepCloneObject(extraData));
+
+      this._nodeMap[uid] = node;
+      this._nodeCount += 1;
+
+      if (this.root === undefined) {
+        this.root = node;
+      }
+
+      return node;
+    }
+
+    /**
+     * Add an edge to the graph.
+     *
+     * @param {!number} uid        - The edge's id (must be unquie)
+     * @param {!Graph.Node} from   - The node this edges comes from
+     * @param {!Graph.Node} to     - The node this edges goes to
+     * @param {!string} [label=''] - The edge's label
+     * @throws {Graph.Exception} uid must be unquie
+     * @returns {!Graph.Edge} The edge added to the graph
+     */
+  }, {
+    key: 'addEdge',
+    value: function addEdge(uid, from, to) {
+      var label = arguments.length <= 3 || arguments[3] === undefined ? '' : arguments[3];
+
+      if (this._edgeMap[uid] !== undefined) {
+        throw new Graph.Exception('This graph already contains a edge with id "' + uid + '".');
+      }
+
+      var edge = new Graph.Edge(this, uid, from, to, label);
+
+      this._edgeMap[uid] = edge;
+      this._edgeCount += 1;
+
+      from._addEdgeFromMe(edge);
+      to._addEdgeToMe(edge);
+
+      return edge;
+    }
+
+    /**
+     * Get a node in the graph.
+     *
+     * @param {!number} id - The id of the node to get
+     * @returns {Graph.Node} The node
+     */
+  }, {
+    key: 'getNode',
+    value: function getNode(id) {
+      return this._nodeMap[id];
+    }
+
+    /**
+     * Get an edge in the graph.
+     *
+     * @param {!number} id - The id of the edge to get
+     * @returns {Graph.Edge} The edge
+     */
+  }, {
+    key: 'getEdge',
+    value: function getEdge(id) {
+      return this._edgeMap[id];
+    }
+
+    /**
+     * Remove a node from the graph.
+     * Any edges connected to this node will also be deleted.
+     *
+     * @param {Graph.Node} node - The node to remove
+     */
+  }, {
+    key: 'removeNode',
+    value: function removeNode(node) {
+      if (!node || node.graph !== this || this._nodeMap[node.id] !== node) {
+        return;
+      }
+
+      for (var i in node._edgesToMe) {
+        this.removeEdge(node._edgesToMe[i]);
+      }
+
+      for (var i in node._edgesFromMe) {
+        this.removeEdge(node._edgesFromMe[i]);
+      }
+
+      delete this._nodeMap[node.id];
+      this._nodeCount -= 1;
+
+      if (this._rootId === node.id) {
+        this.root = undefined;
+      }
+    }
+
+    /**
+     * Remove an edge from the graph.
+     *
+     * @param {Graph.Edge} edge - The edge to remove
+     */
+  }, {
+    key: 'removeEdge',
+    value: function removeEdge(edge) {
+      if (!edge || edge.graph !== this || this._edgeMap[edge.id] !== edge) {
+        return;
+      }
+
+      delete this._edgeMap[edge.id].to._edgesToMe[edge.id];
+      delete this._edgeMap[edge.id].from._edgesFromMe[edge.id];
+      delete this._edgeMap[edge.id];
+      this._edgeCount -= 1;
+    }
+
+    /**
+     * Set the root node of this graph by specifying its id.
+     *
+     * @private
+     * @param {!number} id - The id of the node to set as the root
+     * @returns {Graph.Node} The new root node
+     */
+  }, {
+    key: '_setRootNodeById',
+    value: function _setRootNodeById(id) {
+      this._rootId = id;
+      return this.root;
+    }
+
+    /**
+     * Create a deep clone of this graph.
+     * The clone's new nodes and edges will have the same ids as this graph.
+     *
+     * @returns {!Graph} The clone
+     */
+  }, {
+    key: 'deepClone',
+    value: function deepClone() {
+      var clone = new Graph();
+
+      // copy all the nodes
+      for (var key in this._nodeMap) {
+        clone.addNode(this._nodeMap[key].id, this._nodeMap[key].label, this._nodeMap[key].extraData);
+      }
+
+      // copy all the edges
+      for (var key in this._edgeMap) {
+        clone.addEdge(this._edgeMap[key].id, clone.getNode(this._edgeMap[key].from.id), // make sure to use the copied node, not the original
+        clone.getNode(this._edgeMap[key].to.id), this._edgeMap[key].label);
+      }
+
+      // set the root
+      clone._setRootNodeById(this._rootId);
+
+      return clone;
+    }
+
+    /**
+     * Combine this graph with one or more other graphs.
+     * If the given graph(s) contains nodes/edges with the same id as this graph,
+     * they will will not be added.
+     *
+     * @param {...!Graph} graphs - The graphs to be combined with this one
+     * @returns {!Graph} this
+     */
+  }, {
+    key: 'combineWith',
+    value: function combineWith() {
+      for (var _len = arguments.length, graphs = Array(_len), _key = 0; _key < _len; _key++) {
+        graphs[_key] = arguments[_key];
+      }
+
+      // for each graph given
+      for (var i = 0; i < graphs.length; i++) {
+        // for each node in that graph
+        for (var key in graphs[i]._nodeMap) {
+          // if this graph doesn't already have a node with this id
+          if (this._nodeMap[graphs[i]._nodeMap[key].id] === undefined) {
+            // add the node
+            this.addNode(graphs[i]._nodeMap[key].id, graphs[i]._nodeMap[key].label, graphs[i]._nodeMap[key].extraData);
+          }
+        }
+
+        // for each edge in that graph
+        for (var key in graphs[i]._edgeMap) {
+          // if this graph doesn't already have an edge with this id
+          if (this._edgeMap[graphs[i]._edgeMap[key].id] === undefined) {
+            // add the edge
+            this.addEdge(graphs[i]._edgeMap[key].id, this.getNode(graphs[i]._edgeMap[key].from.id), // use the node in this graph, not the one in the other graph
+            this.getNode(graphs[i]._edgeMap[key].to.id), graphs[i]._edgeMap[key].label);
+          }
+        }
+      }
+
+      return this;
+    }
+
+    /**
+     * Merge the specified nodes in this graph into a single node.
+     * At least two nodes must be specified in order to merge them.
+     * The merged node's id will be nodeIds[0].
+     *
+     * @param {!array} nodeIds - An array of nodes to merge (specified by their IDs)
+     * @returns {Node} The merged node
+     */
+  }, {
+    key: 'mergeNodes',
+    value: function mergeNodes(nodeIds) {
+      var mergedNode = undefined;
+      var mergedExtraData = {};
+
+      // for each node id specified to merge
+      for (var i = 0; i < nodeIds.length; i++) {
+        var node = this.getNode(nodeIds[i]); // get the node
+
+        // save all the extra data in this node
+        var extras = node.extraData;
+        for (var key in extras) {
+          mergedExtraData[key] = extras[key];
+        }
+
+        // if this is the first node we are dealing with (i === 0)
+        if (mergedNode === undefined) {
+          mergedNode = node; // save it
+          continue; // and move on to the next node
+        }
+
+        // update the edges from this node to be from the merged node
+        for (var key in node._edgesFromMe) {
+          var edge = node._edgesFromMe[key];
+          edge._from = mergedNode;
+          mergedNode._addEdgeFromMe(edge);
+        }
+        node._edgesFromMe = {};
+
+        // update the edges to this node to be to the merged node
+        for (var key in node._edgesToMe) {
+          var edge = node._edgesToMe[key];
+          edge._to = mergedNode;
+          mergedNode._addEdgeToMe(edge);
+        }
+        node._edgesToMe = {};
+
+        // remove the node from the graph
+        this.removeNode(node);
+      }
+
+      mergedNode._extras = mergedExtraData; // set the merged node's extra data
+
+      return mergedNode;
+    }
+
+    /**
+     * Create a deep clone of an object or array.
+     *
+     * @protected
+     * @param {!object|!array} obj - An object or array to clone
+     * @returns {!object|!array} The cloned object/array
+     */
+  }, {
+    key: 'nodes',
+    get: function get() {
+      var nodes = [this.root];
+      for (var id in this._nodeMap) {
+        if (Number.parseInt(id, 10) !== this._rootId) {
+          nodes.push(this._nodeMap[id]);
+        }
+      }
+      return nodes;
+    }
+
+    /**
+     * Get an array of the edges in this graph.
+     *
+     * @returns {!array} An array of the edges in this graph
+     */
+  }, {
+    key: 'edges',
+    get: function get() {
+      var edges = [];
+      for (var key in this._edgeMap) {
+        edges.push(this._edgeMap[key]);
+      }
+      return edges;
+    }
+
+    /**
+     * Get the root node of this graph.
+     *
+     * @returns {!Graph.Node} The root.
+     */
+  }, {
+    key: 'root',
+    get: function get() {
+      return this._nodeMap[this._rootId];
+    },
+
+    /**
+     * Set the node that should be used as the graphs root.
+     *
+     * @param {!Graph.Node} node - The node to use as the root node
+     * @returns {Graph.Node} The new root node
+     */
+    set: function set(node) {
+      if (node === this.root) {
+        return node;
+      }
+      if (node) {
+        if (node.graph === this) {
+          return this._setRootNodeById(node.id);
+        }
+        throw new Graph.Exception('cannot set the root of this graph to a node that is not in it.');
+      }
+      this._rootId = undefined;
+      return undefined;
+    }
+
+    /**
+     * The number of nodes in this graph.
+     *
+     * @returns {!number} The number of nodes in this graph
+     */
+  }, {
+    key: 'nodeCount',
+    get: function get() {
+      return this._nodeCount;
+    }
+
+    /**
+     * The number of edges in this graph.
+     *
+     * @returns {!number} The number of edges in this graph
+     */
+  }, {
+    key: 'edgeCount',
+    get: function get() {
+      return this._edgeCount;
+    }
+  }], [{
+    key: '_deepCloneObject',
+    value: function _deepCloneObject(obj) {
+      return JSON.parse(JSON.stringify(obj));
+    }
+  }]);
+
+  return Graph;
+})();
+
+Graph.Node = (function () {
+
+  /**
+   * Graph Node object should only be contructed by the Graph class.
+   *
+   * @protected
+   * @param {!Graph} graph      - The Graph this node is apart of
+   * @param {!number} uid       - The node's id (must be unquie)
+   * @param {!string} label     - The node's label
+   * @param {!object} extraData - Any extra data that should be stored
+   */
+
+  function _class(graph, uid, label, extraData) {
+    _classCallCheck(this, _class);
+
+    this._graph = graph;
+    this._id = uid;
+    this._label = label;
+    this._extras = extraData;
+    this._edgesFromMe = {};
+    this._edgesToMe = {};
+  }
+
+  /**
+   * Get the graph this node is apart of.
+   *
+   * @returns {Graph} The graph
+   */
+
+  _createClass(_class, [{
+    key: '_addEdgeFromMe',
+
+    /**
+     * Remember that the given edge comes from this node.
+     * Assumes edge.from === this
+     *
+     * @param {!Graph.Edge} edge - An edge that comes from this node
+     */
+    value: function _addEdgeFromMe(edge) {
+      this._edgesFromMe[edge.id] = edge;
+    }
+
+    /**
+     * Remember that the given edge goes to this node.
+     * Assumes edge.to === this
+     *
+     * @param {!Graph.Edge} edge - An edge that goes to this node
+     */
+  }, {
+    key: '_addEdgeToMe',
+    value: function _addEdgeToMe(edge) {
+      this._edgesToMe[edge.id] = edge;
+    }
+
+    /**
+     * Add some extra data to this node.
+     *
+     * @param {!string} key - The key to save the data under
+     * @param {*} value - The data to save
+     */
+  }, {
+    key: 'addExtraData',
+    value: function addExtraData(key, value) {
+      this._extras[key] = value;
+    }
+
+    /**
+     * Get a copy of a bit of extra data in this node.
+     *
+     * @param {!string} key - The key to get the data from
+     * @returns {*} The data
+     */
+  }, {
+    key: 'getExtraData',
+    value: function getExtraData(key) {
+      if (typeof obj === 'object') {
+        return Graph._deepCloneObject(this._extras[key]);
+      }
+      return this._extras[key];
+    }
+
+    /**
+     * Delete some extra data in this node.
+     *
+     * @param {!string} key - The key the data is saved under
+     */
+  }, {
+    key: 'deleteExtraData',
+    value: function deleteExtraData(key) {
+      delete this._extras[key];
+    }
+  }, {
+    key: 'graph',
+    get: function get() {
+      return this._graph;
+    }
+
+    /**
+     * Get this node's id.
+     *
+     * @returns {!number} This node's id
+     */
+  }, {
+    key: 'id',
+    get: function get() {
+      return this._id;
+    },
+
+    /**
+     * Set this node's id.
+     *
+     * @param {!number} newId - What to change this node's id to
+     * @returns {!number} The new id of this node
+     */
+    set: function set(newId) {
+      var oldId = this._id;
+      // dirty check
+      if (newId === oldId) {
+        return newId;
+      }
+
+      // check that the new id isn't already being used
+      if (this._graph._nodeMap[newId] !== undefined) {
+        throw new Graph.Exception('Cannot set this node\'s id to an id of another node in the graph.');
+      }
+
+      // move the node to it's new index
+      this._graph._nodeMap[newId] = this._graph._nodeMap[oldId];
+      delete this._graph._nodeMap[oldId];
+      this._id = newId;
+
+      // if we are changing the root's id
+      if (this.graph._rootId === oldId) {
+        this.graph._rootId = newId; // make sure the graph gets the update
+      }
+
+      // update all the edges that refer to this node
+      for (var edgeId in this._graph._edgeMap) {
+        // update edges from this node
+        if (this._graph._edgeMap[edgeId].from === oldId) {
+          this._graph._edgeMap[edgeId].from = newId;
+        }
+        // update edges to this node
+        if (this._graph._edgeMap[edgeId].to === oldId) {
+          this._graph._edgeMap[edgeId].to = newId;
+        }
+      }
+
+      return newId;
+    }
+
+    /**
+     * Get this node's label.
+     *
+     * @returns {!string} This node's label
+     */
+  }, {
+    key: 'label',
+    get: function get() {
+      return this._label;
+    },
+
+    /**
+     * Set this node's label.
+     *
+     * @param {string} lbl - The new label for this node
+     * @returns {!string} The new label for this node
+     */
+    set: function set(lbl) {
+      this._label = lbl + ''; // convert lbl to a string then set the label
+      return this._label;
+    }
+
+    /**
+     * Get a copy of this node's extra data.
+     *
+     * @returns {!object} The extra data.
+     */
+  }, {
+    key: 'extraData',
+    get: function get() {
+      return Graph._deepCloneObject(this._extras);
+    }
+
+    /**
+     * Get an array of all the neighboring nodes of this node.
+     *
+     * @returns {!array} An array of neighboring nodes.
+     */
+  }, {
+    key: 'neighbors',
+    get: function get() {
+      var nodes = [];
+      for (var i in this._edgesFromMe) {
+        nodes.push(this._edgesFromMe[i].to);
+      }
+      return nodes;
+    }
+  }]);
+
+  return _class;
+})();
+
+/**
+ * A Graph Edge.
+ *
+ * @protected
+ * @class
+ * @property {!Graph} graph  - The Graph this node is apart of (readOnly)
+ * @property {!number} id    - The node's id (readOnly)
+ * @property {!object} from  - The id of the node this edges comes from (readOnly)
+ * @property {!object} to    - The id of the node this edges goes to (readOnly)
+ * @property {!string} label - The node's label
+ */
+Graph.Edge = (function () {
+
+  /**
+   * Graph Edge object should only be contructed by the Graph class.
+   *
+   * @protected
+   * @param {!Graph} graph  - The Graph this edges is apart of
+   * @param {!number} uid   - The edge's id (must be unquie)
+   * @param {!number} from  - The id of the node this edges comes from
+   * @param {!number} to    - The id of the node this edges goes to
+   * @param {!string} label - The edge's label
+   */
+
+  function _class2(graph, uid, from, to, label) {
+    _classCallCheck(this, _class2);
+
+    this._graph = graph;
+    this._id = uid;
+    this._from = from;
+    this._to = to;
+    this._label = label;
+  }
+
+  /**
+   * Get the graph this edges is apart of.
+   *
+   * @returns {!Graph} The graph
+   */
+
+  _createClass(_class2, [{
+    key: 'graph',
+    get: function get() {
+      return this._graph;
+    }
+
+    /**
+     * Get this edge's id.
+     *
+     * @returns {!number} This edge's id
+     */
+  }, {
+    key: 'id',
+    get: function get() {
+      return this._id;
+    }
+
+    /**
+     * Get the node this edge connects from.
+     *
+     * @returns {!Graph.Node} The node
+     */
+  }, {
+    key: 'from',
+    get: function get() {
+      return this._graph._nodeMap[this._from.id];
+    }
+
+    /**
+     * Get the node this edge connects to.
+     *
+     * @returns {!Graph.Node} The node
+     */
+  }, {
+    key: 'to',
+    get: function get() {
+      return this._graph._nodeMap[this._to.id];
+    }
+
+    /**
+     * Get this edge's label.
+     *
+     * @returns {!string} The label
+     */
+  }, {
+    key: 'label',
+    get: function get() {
+      return this._label;
+    },
+
+    /**
+     * Set this edge's label.
+     *
+     * @returns {!string} The new label
+     */
+    set: function set(lbl) {
+      this._label = lbl + ''; // convert lbl to a string then set the label
+      return this._label;
+    }
+  }]);
+
+  return _class2;
+})();
+
+/**
+ * A Graph Exception.
+ *
+ * @class
+ * @property {!string} message - The message
+ */
+Graph.Exception = (function () {
+
+  /**
+   * @param {!string} msg - The message
+   */
+
+  function _class3(msg) {
+    _classCallCheck(this, _class3);
+
+    this.message = msg;
+  }
+
+  return _class3;
+})();
+</script>
+<!-- <script src="../../scripts/graph.es6.js"></script> -->
+<!-- Be sure to change this back to Version 6 before committing. -->

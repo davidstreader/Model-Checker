@@ -81,13 +81,17 @@
       },
 
       /**
-       * Set the code
-       * @param {string} code The code
+       * Set the code.
+       * 
+       * @param {!string} code - The code
+       * @param {!boolean} [dontFireChangeEvent=false] - If true then doesn't fire the 'text-editor-change' event
        */
-      setCode: function(code){
+      setCode: function(code, dontFireChangeEvent){
         this._editor.setValue(code, 1);
         this._set_skipNextCodeChangeEvent(true);
-        this.fire('text-editor-change');
+        if(!dontFireChangeEvent){
+          this.fire('text-editor-change');
+        }
       },
 
       /**

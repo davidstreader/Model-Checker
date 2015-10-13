@@ -88,7 +88,7 @@
         var reader = new FileReader();
         reader.onload = function() {
           var text = reader.result;
-          app.$.editor.setCode(text);
+          app.$.editor.setCode(text, app.liveCompiling);
           app.$.editor.focus();
         };
         reader.readAsText(input.files[0]);
