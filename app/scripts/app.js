@@ -63,14 +63,25 @@
         // Can't simply assign app.automata.values to the new array as data bindings will not update.
         // Creating a new automata oject then setting the its values slightly later will work (for some reason).
         app.automata = {};
-        setTimeout(function() {
+        app.async(function() {
           app.set('automata.values', automata);
 
-          renderTime = Math.max(1, ((new Date()).getTime() - renderStartTime)) / 1000;
-          app.$.console.clear(1);
-          app.$.console.log('Rendered successfully in ' + renderTime.toFixed(3) + ' seconds.');
-          app.$.console.log('Total time: ' + (compileTime + renderTime).toFixed(3) + ' seconds.');
-        }, 0);
+          // listen for each rendered event.
+          // once all automata have been rendered, log the results and stop listening.
+          var automataRendered = 0;
+          var renderComplete = function() {
+            automataRendered++;
+            if (automataRendered === app.automata.values.length) {
+              renderTime = Math.max(1, ((new Date()).getTime() - renderStartTime)) / 1000;
+              app.$.console.clear(1);
+              app.$.console.log('Rendered successfully after ' + renderTime.toFixed(3) + ' seconds.');
+              app.$.console.log('Total time: ' + (compileTime + renderTime).toFixed(3) + ' seconds.');
+              document.removeEventListener('automata-visualisation-rendered', renderComplete);
+            }
+          };
+
+          document.addEventListener('automata-visualisation-rendered', renderComplete);
+        });
       }.bind(this), 0);
     };
 

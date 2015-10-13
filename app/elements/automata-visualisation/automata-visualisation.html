@@ -154,7 +154,7 @@
     /**
     * Redraw the automata.
     */
-    redraw: function(){
+    redraw: function() {
       // remove the child nodes (the old graph) from the svg element
       for(var i=0; i<this.$.svg.childNodes.length; i++){
         Polymer.dom(this.$.svg).removeChild(this.$.svg.childNodes[i]);
@@ -323,6 +323,7 @@
         nodeLabels[j].setAttribute('dy', '0.9em');
       }
 
+      this.fire('automata-visualisation-rendered');
     }
 
   });
