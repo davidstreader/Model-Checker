@@ -103,20 +103,20 @@ class Graph {
    * Add a node to this graph.
    * If this graph doesn't already have a root node, this node will be set as the root node.
    *
-   * @param {!number} uid            - The node's id (must be unquie)
-   * @param {!string} [label='']     - The node's label
-   * @param {!object} [extraData={}] - Any extra data about this node that should be stored
+   * @param {!number} uid           - The node's id (must be unquie)
+   * @param {!string} [label='']    - The node's label
+   * @param {!object} [metaData={}] - Any meta data about this node that should be stored
    * @throws {Graph.Exception} uid must be unquie
    * @returns {!Graph.Node} The node added to the graph
    */
-  addNode(uid, label='', extraData={}) {
+  addNode(uid, label='', metaData={}) {
     if (this._nodeMap[uid] !== undefined) {
       throw new Graph.Exception(
         'This graph already contains a node with the id "' + uid + '".');
     }
 
     let node = new Graph.Node(this, uid, label,
-      Graph._deepCloneObject(extraData));
+      Graph._deepCloneObject(metaData));
 
     this._nodeMap[uid] = node;
     this._nodeCount += 1;
@@ -244,7 +244,7 @@ class Graph {
       clone.addNode(
         this._nodeMap[key].id,
         this._nodeMap[key].label,
-        this._nodeMap[key].extraData);
+        this._nodeMap[key].metaData);
     }
 
     // copy all the edges
@@ -281,7 +281,7 @@ class Graph {
           this.addNode(
             graphs[i]._nodeMap[key].id,
             graphs[i]._nodeMap[key].label,
-            graphs[i]._nodeMap[key].extraData);
+            graphs[i]._nodeMap[key].metaData);
         }
       }
 
@@ -312,16 +312,16 @@ class Graph {
    */
   mergeNodes(nodeIds) {
     let mergedNode;
-    let mergedExtraData = {};
+    let mergedMetaData  = {};
 
     // for each node id specified to merge
     for (let i = 0; i < nodeIds.length; i++) {
       let node = this.getNode(nodeIds[i]);  // get the node
 
-      // save all the extra data in this node
-      let extras = node.extraData;
-      for (let key in extras) {
-        mergedExtraData[key] = extras[key];
+      // save all the meta data in this node
+      let meta = node.metaData;
+      for (let key in meta) {
+        mergedMetaData[key] = meta[key];
       }
 
       // if this is the first node we are dealing with (i === 0)
@@ -350,7 +350,7 @@ class Graph {
       this.removeNode(node);
     }
 
-    mergedNode._extras = mergedExtraData;   // set the merged node's extra data
+    mergedNode._meta = mergedMetaData;    // set the merged node's meta data
 
     return mergedNode;
   }
@@ -372,11 +372,11 @@ class Graph {
  *
  * @protected
  * @class
- * @property {!Graph} graph      - The Graph this node is apart of (readOnly)
- * @property {!number} id        - The node's id
- * @property {!string} label     - The node's label
- * @property {!object} extraData - Any extra data that should be stored (readOnly)
- * @property {!array} neighbors  - The neighboring nodes of this node (readOnly)
+ * @property {!Graph} graph     - The Graph this node is apart of (readOnly)
+ * @property {!number} id       - The node's id
+ * @property {!string} label    - The node's label
+ * @property {!object} metaData - Any meta data that should be stored (readOnly)
+ * @property {!array} neighbors - The neighboring nodes of this node (readOnly)
  */
 Graph.Node = class {
 
@@ -384,16 +384,16 @@ Graph.Node = class {
    * Graph Node object should only be contructed by the Graph class.
    *
    * @protected
-   * @param {!Graph} graph      - The Graph this node is apart of
-   * @param {!number} uid       - The node's id (must be unquie)
-   * @param {!string} label     - The node's label
-   * @param {!object} extraData - Any extra data that should be stored
+   * @param {!Graph} graph     - The Graph this node is apart of
+   * @param {!number} uid      - The node's id (must be unquie)
+   * @param {!string} label    - The node's label
+   * @param {!object} metaData - Any meta data that should be stored
    */
-  constructor(graph, uid, label, extraData) {
+  constructor(graph, uid, label, metaData) {
     this._graph = graph;
     this._id = uid;
     this._label = label;
-    this._extras = extraData;
+    this._meta = metaData;
     this._edgesFromMe = {};
     this._edgesToMe = {};
   }
@@ -480,12 +480,12 @@ Graph.Node = class {
   }
 
   /**
-   * Get a copy of this node's extra data.
+   * Get a copy of this node's meta data.
    *
-   * @returns {!object} The extra data
+   * @returns {!object} The meta data
    */
-  get extraData() {
-    return Graph._deepCloneObject(this._extras);
+  get metaData() {
+    return Graph._deepCloneObject(this._meta);
   }
 
   /**
@@ -548,35 +548,35 @@ Graph.Node = class {
   }
 
   /**
-   * Add some extra data to this node.
+   * Add some meta data to this node.
    *
    * @param {!string} key - The key to save the data under
    * @param {*} value - The data to save
    */
-  addExtraData(key, value) {
-    this._extras[key] = value;
+  addMetaData(key, value) {
+    this._meta[key] = value;
   }
 
   /**
-   * Get a copy of a bit of extra data in this node.
+   * Get a copy of a bit of meta data in this node.
    *
    * @param {!string} key - The key to get the data from
    * @returns {*} The data
    */
-  getExtraData(key) {
+  getMetaData(key) {
     if (typeof obj === 'object') {
-      return Graph._deepCloneObject(this._extras[key]);
+      return Graph._deepCloneObject(this._meta[key]);
     }
-    return this._extras[key];
+    return this._meta[key];
   }
 
   /**
-   * Delete some extra data in this node.
+   * Delete some meta data in this node.
    *
    * @param {!string} key - The key the data is saved under
    */
-  deleteExtraData(key) {
-    delete this._extras[key];
+  deleteMetaData(key) {
+    delete this._meta[key];
   }
 
 };

@@ -205,7 +205,7 @@
         var root = definitionMap[name].graph.addNode(
           rootId === undefined ? this._useNextNodeUid() : rootId
         );
-        root.addExtraData('startNode', true); // mark the root as the starting node (for the visualizer)
+        root.addMetaData ('startNode', true); // mark the root as the starting node (for the visualizer)
 
         var referenceMap = {};      // create the reference map
         referenceMap[name] = root;  // we already know that the root of this definition is root
@@ -299,12 +299,12 @@
      */
     _interpretName: function(ptNode, extendtionNode, definitionMap, defName, referenceMap) {
       var references = this._getNameFromPTNode(ptNode);        // get what the extendtionNode should be referencing
-      extendtionNode.addExtraData('references', references);   // mark what the extendtionNode as referencing it
+      extendtionNode.addMetaData ('references', references);   // mark what the extendtionNode as referencing it
 
       // if there is no record of this reference yet
       if (referenceMap[references] === undefined) {
         referenceMap[references] = extendtionNode;                       // create a reference
-        extendtionNode.addExtraData('referenceUnprocessed', true);      // mark this reference as unprocessed
+        extendtionNode.addMetaData ('referenceUnprocessed', true);      // mark this reference as unprocessed
         definitionMap[defName].unprocessedNodes.push(extendtionNode);   // put it in the array of unprocessed references
 
         // if there is no definition for this reference
@@ -334,7 +334,7 @@
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
     _interpretStop: function(ptNode, extendtionNode, definitionMap, defName, referenceMap) {
-      extendtionNode.addExtraData('isTerminal', 'stop');
+      extendtionNode.addMetaData ('isTerminal', 'stop');
     },
 
     /**
@@ -348,7 +348,7 @@
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
     _interpretError: function(ptNode, extendtionNode, definitionMap, defName, referenceMap) {
-      extendtionNode.addExtraData('isTerminal', 'error');
+      extendtionNode.addMetaData ('isTerminal', 'error');
     },
 
     /**
@@ -394,7 +394,7 @@
           // not any new unprocessed nodes that were added)
           for (var i = 0; i < len; i++) {
             var node = definition.unprocessedNodes[i];
-            references = node.getExtraData('references');
+            references = node.getMetaData ('references');
 
             // check whether or not the automaton that this node is referencing actual exist.
             if (this._definitionsMap[references] === undefined ||
@@ -412,12 +412,12 @@
             // and add them to the array of unprocessed nodes
             for (var j = 0; j < refNodes.length; j++) {
               var gRefNode = definition.graph.getNode(refNodes[j].id);
-              if (gRefNode.getExtraData('referenceUnprocessed')) {
+              if (gRefNode.getMetaData ('referenceUnprocessed')) {
                 definition.unprocessedNodes.push(gRefNode);
               }
             }
 
-            node.deleteExtraData('referenceUnprocessed'); // this node has now been processed
+            node.deleteMetaData ('referenceUnprocessed'); // this node has now been processed
           }
 
           // remove all the nodes we just processed from the unprocessed nodes array
@@ -454,7 +454,7 @@
           visitedNodes[node.id] = node;   // mark as visited
 
           // label the node
-          var ref = node.getExtraData('references');
+          var ref = node.getMetaData ('references');
           if (showRefs && ref && ref !== this.name) {
             node.label = ref + ':';
           } else {
