@@ -63,7 +63,7 @@
         // Can't simply assign app.automata.values to the new array as data bindings will not update.
         // Creating a new automata oject then setting the its values slightly later will work (for some reason).
         app.automata = {};
-        app.async(function() {
+        setTimeout(function() {
           app.set('automata.values', automata);
 
           // listen for each rendered event.
@@ -81,7 +81,7 @@
           };
 
           document.addEventListener('automata-visualisation-rendered', renderComplete);
-        });
+        }.bind(this), 0);
       }.bind(this), 0);
     };
 
@@ -150,8 +150,8 @@
       }
     });
     /**
-     * This is the event which triggers when the user presses the walk 
-     * button on the walker element. The walker has already checked for the valid 
+     * This is the event which triggers when the user presses the walk
+     * button on the walker element. The walker has already checked for the valid
      * edge and thrown any errors. The edge to walk is given in the event argument
      * 'e.detail.edge'.
      */
