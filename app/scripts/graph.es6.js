@@ -482,7 +482,7 @@ Graph.Node = class {
   /**
    * Get a copy of this node's extra data.
    *
-   * @returns {!object} The extra data.
+   * @returns {!object} The extra data
    */
   get extraData() {
     return Graph._deepCloneObject(this._extras);
@@ -491,7 +491,7 @@ Graph.Node = class {
   /**
    * Get an array of all the neighboring nodes of this node.
    *
-   * @returns {!array} An array of neighboring nodes.
+   * @returns {!array} An array of neighboring nodes
    */
   get neighbors() {
     let nodes = [];
@@ -499,6 +499,32 @@ Graph.Node = class {
       nodes.push(this._edgesFromMe[i].to);
     }
     return nodes;
+  }
+
+  /**
+   * Get an array of all the edges from this node.
+   *
+   * @returns {!array} An array of edges
+   */
+  get edgesFromMe() {
+    let edge = [];
+    for (let i in this._edgesFromMe) {
+      edge.push(this._edgesFromMe[i]);
+    }
+    return edge;
+  }
+
+  /**
+   * Get an array of all the edges to this node.
+   *
+   * @returns {!array} An array of edges
+   */
+  get edgesToMe() {
+    let edge = [];
+    for (let i in this._edgesToMe) {
+      edge.push(this._edgesToMe[i]);
+    }
+    return edge;
   }
 
   /**
