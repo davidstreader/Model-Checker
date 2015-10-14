@@ -140,7 +140,6 @@
       },
 
       automata: '',
-
       _highlightedNodeId: Number
     },
 
@@ -153,7 +152,14 @@
 
       addResizeListener(resizeElement, function() {
         this.debounce('automata-visualisation-resizer', function() {
-          this.redraw();
+
+          var svg = d3.select(this.$.svg),
+              svgGroup = svg.select('g'),
+              automata = this.automata;
+
+          // Do zoom - center
+          this._center(svg, automata, svgGroup);
+
         }, 300);
       });
     },
@@ -269,6 +275,14 @@
       Polymer.dom(svgParent).appendChild(Polymer.dom(svgParent).removeChild(this.$.svg));
 
       // Do zoom - center
+      this._center(svg, automata, svgGroup);
+
+      this.automata = automata;
+
+      this.fire('automata-visualisation-rendered');
+    },
+
+    _center: function(svg, automata, svgGroup) {
 
       // Get the SVG's attrs as well as the automata's attrs
       var svgStyle = window.getComputedStyle(svg[0][0]),
@@ -334,7 +348,6 @@
         nodeLabels[j].setAttribute('dy', '0.9em');
       }
 
-      this.fire('automata-visualisation-rendered');
     }
 
   });
