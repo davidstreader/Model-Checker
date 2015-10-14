@@ -4,15 +4,17 @@ NB: URL may change and this link will be useless.
 Streader's Raiders SWEN302 Group Project
 
 ## Overview
-The Automata Concocter is a web based application that constructs finite state automata based on text input of the user
-and was designed as an educational tool for students.
-The user is able to define multiple automata and navigate through diffirent edges to reach different states within the user 
-defined state machines. The user can load and save automata that they have defined locally.
+The Automata Concocter is a web based application that constructs finite state automata based on text input of the
+user and was designed as an educational tool for students studying software engineering. The AC allows the user to
+define multiple automata and navigate through diffirent edges to reach different states within the user defined state
+machines. The user can save defined automata as a txt file and can upload a previously saved txt file with defined
+state machines. The AC uses a static predefined grammar found in  (Model-Checker/app/elements/automata-parser/automata-grammar.pegjs)
 
-Automata Concocter is developed using the [Polymer 1.0](https://www.polymer-project.org/1.0/) framework. Polymer uses predefined elements in a composite pattern 
-to create web based applications in HTML, CSS and Javascript. All elements used to create this application can be found on
-the Polymer website in the element catalogue. The Polymer framework requires Bower to manage third party libraries. 
-Information on Bower and Bower installation can be found at their website.
+Automata Concocter is developed using the [Polymer 1.0](https://www.polymer-project.org/1.0/) framework. Polymer uses
+predefined elements in a composite pattern to create web based applications in HTML, CSS and Javascript. All elements
+used to create this application can be found on the Polymer website in the element catalogue. The Polymer framework
+requires Bower to manage third party libraries. Information on Bower and Bower installation can be found at their
+website.
 
 Bower Home:		http://bower.io/  
 Bower Install:		http://bower.io/#install-bower  
@@ -20,21 +22,15 @@ Polymer 1.0 Home:	https://www.polymer-project.org/1.0/
 Polymer 1.0 Catalogue:	https://elements.polymer-project.org/   
 Polymer 1.0 Dev Guide:	https://www.polymer-project.org/1.0/docs/devguide/feature-overview.html   
 
------------------------
 ###MAIN
 -----------------------
-
-Note: The root directory of Automata Concocter is 'Model-Checker' and for the remainder of this document will be referred
-to as the root directory.
-
-The main index.html file is located in 'Model-Checker/app/index.html'. Within this file all elements which are used are
-shown including all the styling of the given elements.
+The main index.html file is located in 'Model-Checker/app/index.html'. Within this file all elements which are used
+are shown including all the styling of the given elements.
 
 To do...
 
 ###CUSTOM ELEMENTS
 -----------------------
-
 All custom elements are located within there corresponding directories in 'Model-Checker/elements/' and include the index
 file and corresponding html file of the same name as the given directory that includes the script utilizied by the element. 
 
