@@ -4,15 +4,17 @@ NB: URL may change and this link will be useless.
 Streader's Raiders SWEN302 Group Project
 
 ## Overview
-The Automata Concocter is a web based application that constructs finite state automata based on text input of the user
-and was designed as an educational tool for students.
-The user is able to define multiple automata and navigate through diffirent edges to reach different states within the user 
-defined state machines. The user can load and save automata that they have defined locally.
+The Automata Concocter is a web based application that constructs finite state automata based on text input of the
+user and was designed as an educational tool for students studying software engineering. The AC allows the user to
+define multiple automata and navigate through diffirent edges to reach different states within the user defined state
+machines. The user can save defined automata as a txt file and can upload a previously saved txt file with defined
+state machines. The AC uses a static predefined grammar found in  (Model-Checker/app/elements/automata-parser/automata-grammar.pegjs)
 
-Automata Concocter is developed using the [Polymer 1.0](https://www.polymer-project.org/1.0/) framework. Polymer uses predefined elements in a composite pattern 
-to create web based applications in HTML, CSS and Javascript. All elements used to create this application can be found on
-the Polymer website in the element catalogue. The Polymer framework requires Bower to manage third party libraries. 
-Information on Bower and Bower installation can be found at their website.
+Automata Concocter is developed using the [Polymer 1.0](https://www.polymer-project.org/1.0/) framework. Polymer uses
+predefined elements in a composite pattern to create web based applications in HTML, CSS and Javascript. All elements
+used to create this application can be found on the Polymer website in the element catalogue. The Polymer framework
+requires Bower to manage third party libraries. Information on Bower and Bower installation can be found at their
+website.
 
 Bower Home:		http://bower.io/  
 Bower Install:		http://bower.io/#install-bower  
