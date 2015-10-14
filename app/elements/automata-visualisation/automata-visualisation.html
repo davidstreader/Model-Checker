@@ -1,6 +1,7 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../imports/dagre-d3.html">
+<script src="../../bower_components/javascript-detect-element-resize/detect-element-resize.js"></script>
 
 <dom-module id="automata-visualisation">
 <style>
@@ -138,6 +139,7 @@
         value: []
       },
 
+      automata: '',
       _highlightedNodeId: Number
     },
 
@@ -145,10 +147,29 @@
       this.async(function(){
         this.redraw();
       });
+
+      var resizeElement = this;
+
+      addResizeListener(resizeElement, function() {
+        this.debounce('automata-visualisation-resizer', function() {
+
+          var svg = d3.select(this.$.svg),
+              svgGroup = svg.select('g'),
+              automata = this.automata;
+
+          // Do zoom - center
+          this._center(svg, automata, svgGroup);
+
+        }, 300);
+      });
     },
 
     setHighlightNodeId: function(id) {
       this._highlightedNodeId = id;
+      Polymer.dom(this.$.svg).querySelectorAll('.highlighted').forEach(function(n){
+        n.classList.remove('highlighted');
+      });
+      Polymer.dom(this.$.svg).querySelector('.n'+id).classList.add('highlighted');
     },
 
     /**
@@ -182,7 +203,7 @@
       // Automatically label each of the nodes
       this.nodes.forEach(function(node) {
 
-        var styleClasses = '';
+        var styleClasses = 'n' + node.id;
 
         if(node.getMetaData ('startNode')){
           actualStartNode = node;
@@ -196,10 +217,6 @@
         var ref = node.getMetaData ('references');
         if(ref && ref !== this.name){
           styleClasses += ' reference';
-        }
-
-        if(node.id === this._highlightedNodeId){
-          styleClasses += ' highlighted';
         }
 
         automata.setNode('n'+node.id, { label: node.label, shape: 'automatanode', class: styleClasses.trim() });
@@ -258,6 +275,14 @@
       Polymer.dom(svgParent).appendChild(Polymer.dom(svgParent).removeChild(this.$.svg));
 
       // Do zoom - center
+      this._center(svg, automata, svgGroup);
+
+      this.automata = automata;
+
+      this.fire('automata-visualisation-rendered');
+    },
+
+    _center: function(svg, automata, svgGroup) {
 
       // Get the SVG's attrs as well as the automata's attrs
       var svgStyle = window.getComputedStyle(svg[0][0]),
@@ -323,7 +348,6 @@
         nodeLabels[j].setAttribute('dy', '0.9em');
       }
 
-      this.fire('automata-visualisation-rendered');
     }
 
   });
