@@ -149,6 +149,10 @@
 
     setHighlightNodeId: function(id) {
       this._highlightedNodeId = id;
+      Polymer.dom(this.$.svg).querySelectorAll('.highlighted').forEach(function(n){
+        n.classList.remove('highlighted');
+      });
+      Polymer.dom(this.$.svg).querySelector('.n'+id).classList.add('highlighted');
     },
 
     /**
@@ -182,7 +186,7 @@
       // Automatically label each of the nodes
       this.nodes.forEach(function(node) {
 
-        var styleClasses = '';
+        var styleClasses = 'n' + node.id;
 
         if(node.getMetaData ('startNode')){
           actualStartNode = node;
@@ -196,10 +200,6 @@
         var ref = node.getMetaData ('references');
         if(ref && ref !== this.name){
           styleClasses += ' reference';
-        }
-
-        if(node.id === this._highlightedNodeId){
-          styleClasses += ' highlighted';
         }
 
         automata.setNode('n'+node.id, { label: node.label, shape: 'automatanode', class: styleClasses.trim() });
