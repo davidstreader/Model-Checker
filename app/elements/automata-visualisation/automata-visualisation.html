@@ -1,6 +1,7 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../imports/dagre-d3.html">
+<script src="../../bower_components/javascript-detect-element-resize/detect-element-resize.js"></script>
 
 <dom-module id="automata-visualisation">
 <style>
@@ -138,12 +139,22 @@
         value: []
       },
 
+      automata: '',
+
       _highlightedNodeId: Number
     },
 
     ready: function(){
       this.async(function(){
         this.redraw();
+      });
+
+      var resizeElement = this;
+
+      addResizeListener(resizeElement, function() {
+        this.debounce('automata-visualisation-resizer', function() {
+          this.redraw();
+        }, 300);
       });
     },
 
