@@ -22,15 +22,10 @@ Polymer 1.0 Home:	https://www.polymer-project.org/1.0/
 Polymer 1.0 Catalogue:	https://elements.polymer-project.org/   
 Polymer 1.0 Dev Guide:	https://www.polymer-project.org/1.0/docs/devguide/feature-overview.html   
 
------------------------
 ###MAIN
------------------------
 
-Note: The root directory of Automata Concocter is 'Model-Checker' and for the remainder of this document will be referred
-to as the root directory.
-
-The main index.html file is located in 'Model-Checker/app/index.html'. Within this file all elements which are used are
-shown including all the styling of the given elements.
+The main index.html file is located in 'Model-Checker/app/index.html'. Within this file all elements which are used
+are shown including all the styling of the given elements.
 
 To do...
 
