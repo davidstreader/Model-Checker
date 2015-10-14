@@ -15,7 +15,9 @@
 }
 
 #help-dialog paper-dialog-scrollable {
-  top: 76px;
+  top: 100px;
+  margin: 0;
+  overflow: auto;
 }
 
 #help-dialog .page {
@@ -60,4 +62,9 @@
 #help-dialog table.t1 .note{
   font-size: 10px;
   color: #ff0000;
+}
+#help-dialog .fwidth {
+  text-align: left;
+  width: 468px;
+  display: inline-block;
 }
