@@ -64,7 +64,14 @@ gulp.task('scripts:es6', function() {
   return gulp.src('app/**/*.es6.js')
     .pipe(babel())
     .pipe(gulp.dest('.tmp'))
+    .pipe($.uglify({preserveComments: 'some'}))
     .pipe(gulp.dest('dist'));
+});
+
+gulp.task('scripts', function() {
+  return gulp.src(['app/scripts/*.js', '!app/**/*.es6.js'])
+    .pipe($.uglify({preserveComments: 'some'}))
+    .pipe(gulp.dest('dist/scripts'));
 });
 
 // Lint JavaScript
@@ -177,6 +184,7 @@ gulp.task('html', function() {
 gulp.task('vulcanize', function() {
   return gulp.src('dist/index.html')
     .pipe(polybuild({maximumCrush: true}))
+    .pipe($.uglify({preserveComments: 'some'}))
     .pipe(gulp.dest('dist/'));
 });
 
@@ -248,8 +256,7 @@ gulp.task('serve', ['styles', 'elements', 'scripts:es6', 'images'], function() {
       baseDir: ['.tmp', 'app'],
       middleware: [historyApiFallback()],
       routes: {
-        '/bower_components': 'bower_components',
-        '**/*.es6.js': 'dist/**/*.es6.js'
+        '/bower_components': 'bower_components'
       }
     }
   });
@@ -279,7 +286,7 @@ gulp.task('default', ['clean'], function(cb) {
   runSequence(
     ['copy', 'styles'],
     'elements',
-    ['jshint', 'images', 'fonts', 'html'],
+    ['scripts', 'scripts:es6', 'images', 'fonts', 'html'],
     'vulcanize','rename-index', // 'cache-config',
     cb);
 });
