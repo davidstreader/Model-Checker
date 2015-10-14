@@ -4,6 +4,11 @@ NB: URL may change and this link will be useless.
 Streader's Raiders SWEN302 Group Project
 
 ## Overview
+The Automata Concocter is a web based application that constructs finite state automata based on text input of the user
+and was designed as an educational tool for students.
+The user is able to define multiple automata and navigate through diffirent edges to reach different states within the user 
+defined state machines. The user can load and save automata that they have defined locally.
+
 Automata Concocter is developed using the [Polymer 1.0](https://www.polymer-project.org/1.0/) framework. Polymer uses predefined elements in a composite pattern 
 to create web based applications in HTML, CSS and Javascript. All elements used to create this application can be found on
 the Polymer website in the element catalogue. The Polymer framework requires Bower to manage third party libraries. 
