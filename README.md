@@ -1,5 +1,5 @@
 # Model-Checker
-[Currently hosted application](http://obscure-everglades-2950.herokuapp.com/).    
+[Currently hosted application](http://modelchecker-swen302.herokuapp.com/).    
 NB: URL may change and this link will be useless.   
 Streader's Raiders SWEN302 Group Project
 
@@ -65,4 +65,13 @@ be set
 ###Styles
 -----------------------
 
-Main application css files can be found in the styles directory (Model-Checker/app/styles/). Styling in relation to custom elements can be altered from a custom elements corosponding html file.
+Main application css files can be found in the styles directory (Model-Checker/app/styles/). Styling in relation to custom elements can be altered from a custom elements corosponding html file. 
+
+####Where to from here...
+
+So you're a SWEN302 student and you want to further enchance the Automata Concocter... These are some tasks which we did no have the time to complete:   
+- [ ] Hiding.
+- [ ] Remove unimplemented grammar errors.
+- [ ] Parallelisation.
+- [ ] Fix Walker drop-down-box bug. Get ECS dept. to update Chrome! Currently: 40.0.2214.91
+- 
