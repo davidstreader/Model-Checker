@@ -1,6 +1,6 @@
 # Model-Checker
 [Currently hosted application](http://obscure-everglades-2950.herokuapp.com/).    
-NB: URL may change and this link will be useless.
+NB: URL may change and this link will be useless.   
 Streader's Raiders SWEN302 Group Project
 
 ## Overview
