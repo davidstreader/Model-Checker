@@ -23,7 +23,7 @@ Polymer 1.0 Catalogue:	https://elements.polymer-project.org/
 Polymer 1.0 Dev Guide:	https://www.polymer-project.org/1.0/docs/devguide/feature-overview.html   
 
 ###MAIN
-
+-----------------------
 The main index.html file is located in 'Model-Checker/app/index.html'. Within this file all elements which are used
 are shown including all the styling of the given elements.
 
@@ -31,7 +31,6 @@ To do...
 
 ###CUSTOM ELEMENTS
 -----------------------
-
 All custom elements are located within there corresponding directories in 'Model-Checker/elements/' and include the index
 file and corresponding html file of the same name as the given directory that includes the script utilizied by the element. 
 
