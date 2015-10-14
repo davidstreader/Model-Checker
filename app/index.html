@@ -174,7 +174,7 @@
         <text-editor autofocus id="editor" class="flex"></text-editor>
         <console-logger id="console"></console-logger>
       </div>
-      <div class="layout vertical flex">
+      <div class="flex">
         <automata-walker automata="{{automata.values}}"></automata-walker>
         <template is="dom-repeat" items="[[automata.values]]">
           <automata-visualisation name="[[item.name]]" nodes="[[item.graph.nodes]]" edges="[[item.graph.edges]]"></automata-visualisation>
