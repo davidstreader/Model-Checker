@@ -118,11 +118,6 @@
     .frame > :last-child > :last-child{
       margin-bottom: 4px;
     }
-    paper-toolbar span.spacer{
-      margin-right: 0;
-      width: 0;
-      @apply(--layout-flex);
-    }
     #editor{
       min-height: 200px;
       height: calc(95vh - 64px - 100px);
@@ -139,6 +134,11 @@
   @media all and (max-width: 639px) {
     .frame{
       top: 56px;
+    }
+    paper-toolbar span.spacer{
+      margin-right: 0;
+      width: 0;
+      @apply(--layout-flex);
     }
     #editor{
       height: calc(95vh - 56px - 100px);
@@ -176,7 +176,7 @@
         <text-editor autofocus id="editor" class="flex"></text-editor>
         <console-logger id="console"></console-logger>
       </div>
-      <div class="layout vertical flex">
+      <div class="flex">
         <automata-walker automata="{{automata.values}}"></automata-walker>
         <template is="dom-repeat" items="[[automata.values]]">
           <automata-visualisation name="[[item.name]]" nodes="[[item.graph.nodes]]" edges="[[item.graph.edges]]"></automata-visualisation>
