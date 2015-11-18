@@ -1154,7 +1154,7 @@ PEG.automataParser = (function() {
         ParallelNode:   function(def1, def2)         { this.type = 'parallel';    this.definition1 = def1;     this.definition2 = def2;  },
         NameNode:       function(name)               { this.type = 'name';        this.name = name;                                      },
         ActionNode:     function(action)             { this.type = 'action';      this.action = action;                                  },
-        HideNode:       function(hidden)             { this.type = 'hide';        this.hidden = hidden;                                                             },
+        HideNode:       function(hidden)             { this.type = 'hide';        this.hidden = hidden;                                  },
         StopNode:       function()                   { this.type = 'stop';                                                               },
         ErrorNode:      function()                   { this.type = 'error';                                                              }
       };
