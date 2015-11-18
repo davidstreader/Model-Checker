@@ -47,7 +47,7 @@ PEG.automataParser = (function() {
         peg$c7 = function(hide) { return new Node.HideNode(hide); },
         peg$c8 = function(a) { return new Node.HideNode(a.action); },
         peg$c9 = function(a, b) {
-          		return new Node.HideNode([a].concat(b));
+              return new Node.HideNode([a].concat(b));
           },
         peg$c10 = function(process) { return process; },
         peg$c11 = "STOP",
@@ -1143,8 +1143,8 @@ PEG.automataParser = (function() {
 
       var Node = {
         ModelNode:function(def, defs, relabel, hidden){
-        	this.type = 'model';
-        	this.definitions = defs ? [def].concat(defs) : [def];
+          this.type = 'model';
+          this.definitions = defs ? [def].concat(defs) : [def];
             this.relabel = relabel;
             this.hidden = hidden;
         },
@@ -1154,7 +1154,7 @@ PEG.automataParser = (function() {
         ParallelNode:   function(def1, def2)         { this.type = 'parallel';    this.definition1 = def1;     this.definition2 = def2;  },
         NameNode:       function(name)               { this.type = 'name';        this.name = name;                                      },
         ActionNode:     function(action)             { this.type = 'action';      this.action = action;                                  },
-        HideNode:       function(hidden)             { this.hidden = hidden;                                                             },
+        HideNode:       function(hidden)             { this.type = 'hide';        this.hidden = hidden;                                                             },
         StopNode:       function()                   { this.type = 'stop';                                                               },
         ErrorNode:      function()                   { this.type = 'error';                                                              }
       };
