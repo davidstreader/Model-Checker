@@ -24,6 +24,7 @@ File
 
 Model
   =  _ definition:Definition _ symbol_DefinitionListEnd _ { return new Node.ModelNode(definition); }
+  /  _ definition:Definition _ relabel:Process_Relabel _ hide:Process_Hide _ symbol_DefinitionListEnd _ { return new Node.ModelNode(definition, undefined, relabel, hide); }
   /  _ definition:Definition _ relabel:Process_Relabel _ symbol_DefinitionListEnd _ { return new Node.ModelNode(definition, undefined, relabel, undefined); }
   /  _ definition:Definition _ symbol_DefinitionListSeparator _ model:Model _  { return new Node.ModelNode(definition, model.definitions); }
   /  _ definition:Definition _ hide:Process_Hide _ symbol_DefinitionListEnd _ { return new Node.ModelNode(definition, undefined, undefined, hide); }
