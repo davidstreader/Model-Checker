@@ -12,7 +12,7 @@
     ParallelNode:   function(def1, def2)         { this.type = 'parallel';    this.definition1 = def1;     this.definition2 = def2;  },
     NameNode:       function(name)               { this.type = 'name';        this.name = name;                                      },
     ActionNode:     function(action)             { this.type = 'action';      this.action = action;                                  },
-    RelabelNode:      function(relabels)         { this.type = 'relabel';     this.relabels = relabels;                              },
+    RelabelNode:    function(relabels)           { this.type = 'relabel';     this.relabels = relabels;                              },
     HideNode:       function(hidden)             { this.type = 'hide';        this.hidden = hidden;                                  },
     StopNode:       function()                   { this.type = 'stop';                                                               },
     ErrorNode:      function()                   { this.type = 'error';                                                              }
@@ -95,7 +95,7 @@ Action
   
 Relabel
   =  a:Action _ symbol_Relabel _ b:Action {
-          var relabel = {"old-label":a.action, "new-label": b.action};
+          var relabel = {"new-label":a.action, "old-label": b.action};
           return new Node.RelabelNode(relabel);
      }
 
