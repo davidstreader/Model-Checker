@@ -1,4 +1,4 @@
-var PEG = PEG || {}; 
+var PEG = PEG || {};
 PEG.automataParser = (function() {
   "use strict";
 
@@ -47,7 +47,7 @@ PEG.automataParser = (function() {
         peg$c7 = function(hide) { return new Node.HideNode(hide); },
         peg$c8 = function(a) { return new Node.HideNode(a.action); },
         peg$c9 = function(a, b) {
-              return new Node.HideNode([a].concat(b));
+              return new Node.HideNode([a.action].concat(b.hidden));
           },
         peg$c10 = function(process) { return process; },
         peg$c11 = "STOP",
