@@ -59,7 +59,7 @@ Process_Parallel
   / Name_OR_Label
   
 Process_Parallel_Nested
-  =  a:Name_OR_Label _ symbol_Parallel _ b:Process_Parallel_Nested { return new Node.ParallelNode(a, b); }
+  =  a:Name_OR_Label _ symbol_Parallel _ b:Process_Parallel_Nested { return new Node.ParallelNode(a, new Node.NameNode(b.name)); }
   /  Name_OR_Label _ symbol_BracketRight
 
 Process_Choice
