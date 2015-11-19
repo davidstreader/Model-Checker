@@ -274,6 +274,10 @@
     _interpretSequence: function(sequence, extendtionNode, definitionMap, defName, referenceMap) {
       var graph = definitionMap[defName].graph;         // get the graph
       var node = graph.addNode(this._useNextNodeUid());  // add a new node to the graph
+      // check if edge being added is not a tau
+      if(this._getActionFromNode(sequence.from) === 'tau'){
+        throw new this.InterpreterException("\'tau\' is not a valid name for an action label.");
+      }
       // add an edge connect the new node to the rest of the graph
       graph.addEdge(this._useNextEdgeUid(), extendtionNode, node, this._getActionFromNode(sequence.from));
       this._interpretProcess(sequence.to, node, definitionMap, defName, referenceMap);
