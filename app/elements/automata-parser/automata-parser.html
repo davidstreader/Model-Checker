@@ -145,6 +145,7 @@
       parseTree.forEach(function(model) {
         this._interpretDefinitions(model.definitions);
         var defName = model.definitions[0].name.name;
+        this._interpretRelabelling(model.relabel, defName);
         this._interpretHiddenActions(model.hidden, defName);
       }.bind(this));
       this._processReferences();
@@ -188,6 +189,24 @@
         referenceMap[name] = root;  // we already know that the root of this definition is root
         this._interpretProcess(definition.process, root, definitionMap, name, referenceMap);
       }.bind(this));
+    },
+    /**
+     *
+     */
+    _interpretRelabelling: function(relabel, defName){
+      if(relabel !== undefined){
+        var relabelledActions = this._processRelabelledActions(relabel);
+        var edges = this._definitionsMap[defName].graph.edges;
+        edges.forEach(function(edge){
+          for(var i = 0; i < relabelledActions.length; i++){
+            if(relabelledActions[i]['old-label'] === edge.label){
+              edge.label = relabelledActions[i]['new-label'];
+            }
+          }
+        }.bind(this));
+
+        //throw new this.InterpreterException("Relabelling actions is not yet implemented.");
+      }
     },
     /**
      * Hides the edges defined as hidden in a parse tree.
@@ -403,6 +422,20 @@
           prevReferences = references;
         }
       }
+    },
+    /**
+     *
+     */
+    _processRelabelledActions: function(relabel){
+      var relabels = relabel.relabels.relabels;
+      if(relabels instanceof Array){
+        var temp = [];
+        for(var i = 0; i < relabels.length; i++){
+          temp[i] = relabels[i].relabels;
+        }
+        return temp;
+      }
+      return [relabels];
     },
     /**
      * Returns an array of actions that are defined as hidden.
