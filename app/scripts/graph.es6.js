@@ -60,6 +60,10 @@ class Graph {
     return this._nodeMap[this._rootId];
   }
 
+  get rootId() {
+    return this._rootId;
+  }
+
   /**
    * Set the node that should be used as the graphs root.
    *
@@ -145,7 +149,7 @@ class Graph {
     }
 
     let edge = new Graph.Edge(this, uid, from, to, label);
-
+    console.log(edge);
     this._edgeMap[uid] = edge;
     this._edgeCount += 1;
 
@@ -173,6 +177,20 @@ class Graph {
    */
   getEdge(id) {
     return this._edgeMap[id];
+  }
+
+  /**
+   * Returns true if the specified edge is contained in this graph's alphabet,
+   * otherwise returns false.
+   *
+   * @returns {boolean} Whether the edge is contained in the graph's alphabet or not
+   */
+  containsEdge(edge) {
+    var result = this.constructAlphabet()[edge];
+    if(result === true){
+      return true;
+    }
+    return false;
   }
 
   /**
@@ -216,6 +234,16 @@ class Graph {
     delete this._edgeMap[edge.id].from._edgesFromMe[edge.id];
     delete this._edgeMap[edge.id];
     this._edgeCount -= 1;
+  }
+
+  constructAlphabet() {
+    var alphabet = {};
+    for(let i in this._edgeMap){
+      var label = this._edgeMap[i].label;
+      alphabet[label] = true;
+    }
+
+    return alphabet;
   }
 
   /**
@@ -317,7 +345,7 @@ class Graph {
     // for each node id specified to merge
     for (let i = 0; i < nodeIds.length; i++) {
       let node = this.getNode(nodeIds[i]);  // get the node
-
+      console.log(node);
       // save all the meta data in this node
       let meta = node.metaData;
       for (let key in meta) {
@@ -527,6 +555,16 @@ Graph.Node = class {
     return edge;
   }
 
+  coaccessible(edge){
+    for(let e in this._edgesFromMe) {
+      if(this._edgesFromMe[e].label === edge){
+        return this._edgesFromMe[e]._to._id;
+      }
+    }
+
+    return -1;
+  }
+
   /**
    * Remember that the given edge comes from this node.
    * Assumes edge.from === this
@@ -681,5 +719,81 @@ Graph.Exception = class {
    */
   constructor(msg) {
     this.message = msg;
+  }
+};
+
+Graph.Operations = class {
+
+  parallelComposition(graph1, graph2) {
+    var graph = new Graph();
+    var alphabet = this._alphabetUnion(graph1, graph2);
+    console.log(alphabet);
+    var uid = 0;
+    var edgeId = 0;
+
+    // combine states
+    for(var i = 0; i < graph1.nodeCount; i++){
+      for(var j = 0; j < graph2.nodeCount; j++){
+        graph.addNode(uid++, (i + "." + j));
+      }
+    }
+
+    // add edges
+    for(var i = 0; i < graph1.nodeCount; i++){
+      var node1 = graph1.getNode(i + graph1.rootId);
+      
+      for(var j = 0; j < graph2.nodeCount; j++){
+        var node2 = graph2.getNode(j + graph2.rootId);
+        var fromId = (i * graph2.nodeCount) + j;
+
+        for(let a in alphabet){
+          var b = node1.coaccessible(a); // either -1 or the node it transitions to
+          var c = node2.coaccessible(a); // either -1 or the node it transitions to
+
+          //console.log(a + ": (" + b + ", " + c + ")");
+
+          //console.log("\tb !== -1: " + (b !== -1));
+          //console.log("\t!B.containsEdge(" + a + "): " + (!graph2.containsEdge(a)));
+          //console.log("\tc !== -1: " + (c !== -1));
+          //console.log("\t!A.containsEdge(" + a + "): " + (!graph1.containsEdge(a)));
+          
+          console.log(i + ", " + j + ", " + a);
+
+          if(b !== -1 && c !== -1) {
+            console.log("shouldn't get here currently");
+          }
+          else if(b !== -1 && !graph2.containsEdge(a)) {
+            var toId = (b * graph2.nodeCount) + j;
+            console.log("to: " + toId);
+            console.log("first:(from: " + fromId + ", to: " + toId + ")");
+            console.log("to: " + toId + " (i = " + i +", nc = " + graph2.nodeCount + ", b = " + b + ")");
+          }
+          else if(c !== -1 && !graph1.containsEdge(a)) {
+            var toId = (i * graph2.nodeCount) + c;
+            console.log("to: " + toId + " (i = " + i +", nc = " + graph2.nodeCount + ", c = " + c + ")");
+            graph.addEdge(edgeId++, graph.getNode(fromId), graph.getNode(toId), a);
+            console.log("second:(from: " + fromId + ", to: " + toId + ")");
+          }
+        }
+      }
+    }
+
+    return graph;
+  }
+
+  _alphabetUnion(graph1, graph2) {
+    var alphabet = graph1.constructAlphabet();
+    
+    console.log(alphabet);
+
+    var temp = graph2.constructAlphabet();
+    console.log(temp);
+
+    for(let a in temp){
+      console.log(a);
+      alphabet[a] = true;
+    }
+
+    return alphabet;
   }
 };

@@ -307,7 +307,23 @@
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
     _interpretParallel: function(parallel, extendtionNode, definitionMap, defName, referenceMap) {
-      throw new this.InterpreterException('Parallel computation is not yet supported.');
+      var parallelDefName1 = parallel['definition1'].name;
+      var parallelDefName2 = parallel['definition2'][0].name;
+
+      console.log(this._definitionsMap);
+
+      var graph1 = this._definitionsMap[parallelDefName1].graph;
+      var graph2 = this._definitionsMap[parallelDefName2].graph;
+
+      //console.log(graph1);
+      //console.log(graph2);
+
+      var op = new Graph.Operations();
+
+      var graph = op.parallelComposition(graph1, graph2);
+      console.log(graph);
+
+      //throw new this.InterpreterException('Parallel computation is not yet supported.');
     },
     /**
      * Interpret a parse tree name node.
