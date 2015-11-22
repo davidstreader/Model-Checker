@@ -745,10 +745,10 @@ Graph.Operations = class {
    * @param {!Graph} graph1 - First graph
    * @param {!Graph} graph2 - Second graph
    */
-  parallelComposition(graph1, graph2) {
+  parallelComposition(graph1, graph2, uid) {
     var graph = new Graph();
     var alphabet = this._alphabetUnion(graph1, graph2);
-    var uid = 0;
+    var rootId = uid;
     var edgeId = 0;
 
     // combine states
@@ -766,23 +766,22 @@ Graph.Operations = class {
       
       for(var j = 0; j < graph2.nodeCount; j++){
         var node2 = graph2.getNode(j + graph2.rootId);
-        var fromId = (i * graph2.nodeCount) + j;
+        var fromId = (i * graph2.nodeCount) + j + rootId;
 
         for(let action in alphabet){
           var coaccessible1 = node1.coaccessible(action); // either -1 or the node it transitions to
           var coaccessible2 = node2.coaccessible(action); // either -1 or the node it transitions to
-
 
           // check if an edge is needed from the current combined states
           if(coaccessible1 !== -1 && coaccessible2 !== -1) {
             console.log("shouldn't get here currently");
           }
           else if(coaccessible1 !== -1 && !graph2.containsEdge(action)) {
-            var toId = (coaccessible1 * graph2.nodeCount) + j;
+            var toId = (coaccessible1 * graph2.nodeCount) + j + rootId;
             graph.addEdge(edgeId++, graph.getNode(fromId), graph.getNode(toId), a);
           }
           else if(coaccessible2 !== -1 && !graph1.containsEdge(action)) {
-            var toId = (i * graph2.nodeCount) + (coaccessible2 - graph2.rootId);
+            var toId = (i * graph2.nodeCount) + (coaccessible2 - graph2.rootId) + rootId;
             graph.addEdge(edgeId++, graph.getNode(fromId), graph.getNode(toId), a);
           }
         }
