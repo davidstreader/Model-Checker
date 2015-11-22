@@ -162,7 +162,6 @@
       var definitionMap;
       // for each definition in the model
       definitions.forEach(function(definition, index) {
-        console.log(definition);
         // first definition in the model? (eg A not B "A=x->B, B=y->STOP.")
         if (index === 0) {
           definitionMap = this._definitionsMap;  // use the global definition map
@@ -261,6 +260,7 @@
         case 'sequence': this._interpretSequence(process, extendtionNode, definitionMap, defName, referenceMap);  break;
         case 'choice':   this._interpretChoice(process, extendtionNode, definitionMap, defName, referenceMap);    break;
         //case 'parallel': this._interpretParallel(process, extendtionNode, definitionMap, defName, referenceMap);  break;
+        case 'parallel': break;
         case 'name':     this._interpretName(process, extendtionNode, definitionMap, defName, referenceMap);      break;
         case 'stop':     this._interpretStop(process, extendtionNode, definitionMap, defName, referenceMap);      break;
         case 'error':    this._interpretError(process, extendtionNode, definitionMap, defName, referenceMap);     break;
@@ -315,14 +315,54 @@
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
     //_interpretParallel: function(parallel, extendtionNode, definitionMap, defName, referenceMap) {
-      _interpretParallel: function(parallel) {
+    _interpretParallel: function(parallel) {
       var parallelDefName1 = parallel['definition1'].name;
       var parallelDefName2 = parallel['definition2'][0].name;
 
+      var graph = new Graph();
       var graph1 = this._definitionsMap[parallelDefName1].graph;
       var graph2 = this._definitionsMap[parallelDefName2].graph;
+      var alphabet = graph1.alphabetUnion(graph2);
+      
+      // combine states
+      for(var i = 0; i < graph1.nodeCount; i++){
+        for(var j = 0; j < graph2.nodeCount; j++){
+          var a = graph1.getNode(i + graph1.rootId) - graph1.rootId;
+          var b = graph2.getNode(j + graph2.rootId) - graph2.rootId;
+          graph.addNode(this._useNextNodeUid(), (i + "." + j));
+        }
+      }
 
-      return new Graph.Operations().parallelComposition(graph1, graph2, this._useNextNodeUid());
+      // add edges
+      for(var i = 0; i < graph1.nodeCount; i++){
+        var node1 = graph1.getNode(i + graph1.rootId);
+          
+        for(var j = 0; j < graph2.nodeCount; j++){
+          var node2 = graph2.getNode(j + graph2.rootId);
+          var fromId = (i * graph2.nodeCount) + j + graph.rootId;
+
+          for(var action in alphabet){
+
+            var coaccessible1 = node1.coaccessible(action); // either -1 or the node it transitions to
+            var coaccessible2 = node2.coaccessible(action); // either -1 or the node it transitions to
+
+            // check if an edge is needed from the current combined states
+            if(coaccessible1 !== -1 && coaccessible2 !== -1) {
+              console.log("shouldn't get here currently");
+            }
+            else if(coaccessible1 !== -1 && !graph2.containsEdge(action)) {
+              var toId = (coaccessible1 * graph2.nodeCount) + j + graph.rootId;
+              graph.addEdge(this._useNextEdgeUid(), graph.getNode(fromId), graph.getNode(toId), a);
+            }
+            else if(coaccessible2 !== -1 && !graph1.containsEdge(action)) {
+              var toId = (i * graph2.nodeCount) + (coaccessible2 - graph2.rootId) + graph.rootId;
+              graph.addEdge(this._useNextEdgeUid(), graph.getNode(fromId), graph.getNode(toId), a);
+            }
+          }
+        }
+      }
+
+      return graph;
     },
     /**
      * Interpret a parse tree name node.

@@ -251,6 +251,23 @@ class Graph {
   }
 
   /**
+   *  Constructs and returns a set of the the union of the two alphabets for the specified graphs.
+   *
+   *  @param {!Graph} graph1 - First graph to get alphabet of
+   *  @param {!Graph} graph2 - Second graph to get alphabet of
+   */
+  alphabetUnion(otherGraph) {
+    var alphabet = this.constructAlphabet();
+    var temp = otherGraph.constructAlphabet();
+
+    for(let a in temp){
+      alphabet[a] = true;
+    }
+
+    return alphabet;
+  }
+
+  /**
    * Set the root node of this graph by specifying its id.
    *
    * @private
@@ -729,82 +746,5 @@ Graph.Exception = class {
    */
   constructor(msg) {
     this.message = msg;
-  }
-};
-
-/**
- * Class for dealing with operations done on multiple graphs.
- *
- * @class
- */
-Graph.Operations = class {
-
-  /**
-   * Constructs and returns a parallel composition of the specifed graphs.
-   *
-   * @param {!Graph} graph1 - First graph
-   * @param {!Graph} graph2 - Second graph
-   */
-  parallelComposition(graph1, graph2, uid) {
-    var graph = new Graph();
-    var alphabet = this._alphabetUnion(graph1, graph2);
-    var rootId = uid;
-    var edgeId = 0;
-
-    // combine states
-    for(var i = 0; i < graph1.nodeCount; i++){
-      for(var j = 0; j < graph2.nodeCount; j++){
-        var a = graph1.getNode(i + graph1.rootId) - graph1.rootId;
-        var b = graph2.getNode(j + graph2.rootId) - graph2.rootId;
-        graph.addNode(uid++, (i + "." + j));
-      }
-    }
-
-    // add edges
-    for(var i = 0; i < graph1.nodeCount; i++){
-      var node1 = graph1.getNode(i + graph1.rootId);
-      
-      for(var j = 0; j < graph2.nodeCount; j++){
-        var node2 = graph2.getNode(j + graph2.rootId);
-        var fromId = (i * graph2.nodeCount) + j + rootId;
-
-        for(let action in alphabet){
-          var coaccessible1 = node1.coaccessible(action); // either -1 or the node it transitions to
-          var coaccessible2 = node2.coaccessible(action); // either -1 or the node it transitions to
-
-          // check if an edge is needed from the current combined states
-          if(coaccessible1 !== -1 && coaccessible2 !== -1) {
-            console.log("shouldn't get here currently");
-          }
-          else if(coaccessible1 !== -1 && !graph2.containsEdge(action)) {
-            var toId = (coaccessible1 * graph2.nodeCount) + j + rootId;
-            graph.addEdge(edgeId++, graph.getNode(fromId), graph.getNode(toId), a);
-          }
-          else if(coaccessible2 !== -1 && !graph1.containsEdge(action)) {
-            var toId = (i * graph2.nodeCount) + (coaccessible2 - graph2.rootId) + rootId;
-            graph.addEdge(edgeId++, graph.getNode(fromId), graph.getNode(toId), a);
-          }
-        }
-      }
-    }
-
-    return graph;
-  }
-
-  /**
-   *  Constructs and returns a set of the the union of the two alphabets for the specified graphs.
-   *
-   *  @param {!Graph} graph1 - First graph to get alphabet of
-   *  @param {!Graph} graph2 - Second graph to get alphabet of
-   */
-  _alphabetUnion(graph1, graph2) {
-    var alphabet = graph1.constructAlphabet();
-    var temp = graph2.constructAlphabet();
-
-    for(let a in temp){
-      alphabet[a] = true;
-    }
-
-    return alphabet;
   }
 };
