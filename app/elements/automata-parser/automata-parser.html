@@ -326,10 +326,16 @@
       
       // combine states
       for(var i = 0; i < graph1.nodeCount; i++){
-        //var a = graph1.getNode(i + graph1.rootId) - graph1.rootId;
+        var terminalState1 = graph1.getNode(i + graph1.rootId)._meta['isTerminal'] === 'stop';
+        
         for(var j = 0; j < graph2.nodeCount; j++){
-          //var b = graph2.getNode(j + graph2.rootId) - graph2.rootId;
-          graph.addNode(this._useNextNodeUid(), (i + "." + j));
+          var terminalState2 = graph2.getNode(j + graph2.rootId)._meta['isTerminal'] === 'stop';
+          var node = graph.addNode(this._useNextNodeUid(), (i + "." + j));
+
+          // if both states are terminal make new node terminal
+          if(terminalState1 && terminalState2){
+            node.addMetaData('isTerminal', 'stop');
+          }
         }
       }
 
