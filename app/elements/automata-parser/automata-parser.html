@@ -162,6 +162,7 @@
       var definitionMap;
       // for each definition in the model
       definitions.forEach(function(definition, index) {
+        console.log(definition);
         // first definition in the model? (eg A not B "A=x->B, B=y->STOP.")
         if (index === 0) {
           definitionMap = this._definitionsMap;  // use the global definition map
@@ -177,13 +178,20 @@
           throw new this.InterpreterException('process "' + name + '" defined more that once.');
         }
         // create the graph for this definition
-        definitionMap[name].graph = new Graph();
+        definitionMap[name].graph = (definition.isParallel) ? this._interpretParallel(definition.process) : new Graph();
         // add the root node of the graph
         // if an id to use for the root has hasn't been specified, generate one, otherwise use it
         var rootId = definitionMap[name].rootId;
-        var root = definitionMap[name].graph.addNode(
-          rootId === undefined ? this._useNextNodeUid() : rootId
-        );
+
+        var root = undefined;
+        if(!definition.isParallel){
+          root = definitionMap[name].graph.addNode(
+            rootId === undefined ? this._useNextNodeUid() : rootId
+          );
+        }
+        else{
+          root = definitionMap[name].graph.root;
+        }
         root.addMetaData ('startNode', true); // mark the root as the starting node (for the visualizer)
         var referenceMap = {};      // create the reference map
         referenceMap[name] = root;  // we already know that the root of this definition is root
@@ -252,7 +260,7 @@
       switch (process.type) {
         case 'sequence': this._interpretSequence(process, extendtionNode, definitionMap, defName, referenceMap);  break;
         case 'choice':   this._interpretChoice(process, extendtionNode, definitionMap, defName, referenceMap);    break;
-        case 'parallel': this._interpretParallel(process, extendtionNode, definitionMap, defName, referenceMap);  break;
+        //case 'parallel': this._interpretParallel(process, extendtionNode, definitionMap, defName, referenceMap);  break;
         case 'name':     this._interpretName(process, extendtionNode, definitionMap, defName, referenceMap);      break;
         case 'stop':     this._interpretStop(process, extendtionNode, definitionMap, defName, referenceMap);      break;
         case 'error':    this._interpretError(process, extendtionNode, definitionMap, defName, referenceMap);     break;
@@ -306,24 +314,15 @@
      * @param {!string} defName            - The name of the current definition
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
-    _interpretParallel: function(parallel, extendtionNode, definitionMap, defName, referenceMap) {
+    //_interpretParallel: function(parallel, extendtionNode, definitionMap, defName, referenceMap) {
+      _interpretParallel: function(parallel) {
       var parallelDefName1 = parallel['definition1'].name;
       var parallelDefName2 = parallel['definition2'][0].name;
-
-      console.log(this._definitionsMap);
 
       var graph1 = this._definitionsMap[parallelDefName1].graph;
       var graph2 = this._definitionsMap[parallelDefName2].graph;
 
-      //console.log(graph1);
-      //console.log(graph2);
-
-      var op = new Graph.Operations();
-
-      var graph = op.parallelComposition(graph1, graph2);
-      console.log(graph);
-
-      //throw new this.InterpreterException('Parallel computation is not yet supported.');
+      return new Graph.Operations().parallelComposition(graph1, graph2, this._useNextNodeUid());
     },
     /**
      * Interpret a parse tree name node.
