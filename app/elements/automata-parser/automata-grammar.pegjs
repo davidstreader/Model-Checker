@@ -12,7 +12,7 @@
       this.relabel = relabel;
       this.hidden = hidden;
     },
-    DefinitionNode: function(name, process)      { this.type = 'definition';  this.name = name;            this.process = process;   },
+    DefinitionNode: function(name, process, isParallel)      { this.type = 'definition';  this.name = name;            this.process = process;   this.isParallel = isParallel;},
     SequenceNode:   function(from, to)           { this.type = 'sequence';    this.from = from;            this.to = to;             },
     ChoiceNode:     function(option1, option2)   { this.type = 'choice';      this.option1 = option1;      this.option2 = option2;   },
     ParallelNode:   function(def1, def2)         { this.type = 'parallel';    this.definition1 = def1;     this.definition2 = def2;  },
@@ -41,10 +41,10 @@ ParallelModel
   /  symbol_Parallel _ definition:Parallel_Definition _ hide:Process_Hide _ symbol_DefinitionListEnd _ { return new Node.ParallelModelNode(definition, undefined, undefined, hide); }
 
 Definition
-  =  name:Name _ symbol_DefinitionAssignment _ process:Process_Standard { return new Node.DefinitionNode(name, process); }
+  =  name:Name _ symbol_DefinitionAssignment _ process:Process_Standard { return new Node.DefinitionNode(name, process, false); }
 
 Parallel_Definition
-  =  name:Name _ symbol_DefinitionAssignment _ process:Process_Parallel { return new Node.DefinitionNode("||" + name.name, process); }
+  =  name:Name _ symbol_DefinitionAssignment _ process:Process_Parallel { var n = new Node.NameNode("||" + name.name); return new Node.DefinitionNode(n, process, true); }
 
 Process_Standard
   =  a:Name_OR_Choice _ b:Process_Standard_Nested { return new Node.ParallelNode(a, b); }

@@ -45,8 +45,8 @@ PEG.automataParser = (function() {
         peg$c5 = function(definition) { return new Node.ParallelModelNode(definition); },
         peg$c6 = function(definition, relabel) { return new Node.ParallelModelNode(definition, undefined, relabel, undefined); },
         peg$c7 = function(definition, hide) { return new Node.ParallelModelNode(definition, undefined, undefined, hide); },
-        peg$c8 = function(name, process) { return new Node.DefinitionNode(name, process); },
-        peg$c9 = function(name, process) { return new Node.DefinitionNode("||" + name.name, process); },
+        peg$c8 = function(name, process) { return new Node.DefinitionNode(name, process, false); },
+        peg$c9 = function(name, process) { var n = new Node.NameNode("||" + name.name); return new Node.DefinitionNode(n, process, true); },
         peg$c10 = function(a, b) { return new Node.ParallelNode(a, b); },
         peg$c11 = function(a, b) { return new Node.ParallelNode(a, new Node.NameNode(b.name)); },
         peg$c12 = function(a, b) { return new Node.ChoiceNode(a, b); },
@@ -1848,7 +1848,7 @@ PEG.automataParser = (function() {
           this.relabel = relabel;
           this.hidden = hidden;
         },
-        DefinitionNode: function(name, process)      { this.type = 'definition';  this.name = name;            this.process = process;   },
+        DefinitionNode: function(name, process, isParallel)      { this.type = 'definition';  this.name = name;            this.process = process;   this.isParallel = isParallel;},
         SequenceNode:   function(from, to)           { this.type = 'sequence';    this.from = from;            this.to = to;             },
         ChoiceNode:     function(option1, option2)   { this.type = 'choice';      this.option1 = option1;      this.option2 = option2;   },
         ParallelNode:   function(def1, def2)         { this.type = 'parallel';    this.definition1 = def1;     this.definition2 = def2;  },
