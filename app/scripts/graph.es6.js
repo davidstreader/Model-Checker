@@ -149,7 +149,6 @@ class Graph {
     }
 
     let edge = new Graph.Edge(this, uid, from, to, label);
-    console.log(edge);
     this._edgeMap[uid] = edge;
     this._edgeCount += 1;
 
@@ -236,6 +235,11 @@ class Graph {
     this._edgeCount -= 1;
   }
 
+  /**
+   * Constructs and returns a set containing the alphabet for this graph.
+   * The alphabet is a collection of the actions that transition nodes from
+   * one state to another.
+   */
   constructAlphabet() {
     var alphabet = {};
     for(let i in this._edgeMap){
@@ -345,7 +349,6 @@ class Graph {
     // for each node id specified to merge
     for (let i = 0; i < nodeIds.length; i++) {
       let node = this.getNode(nodeIds[i]);  // get the node
-      console.log(node);
       // save all the meta data in this node
       let meta = node.metaData;
       for (let key in meta) {
@@ -555,6 +558,13 @@ Graph.Node = class {
     return edge;
   }
 
+  /**
+   * Determines if the specified edge transitions this node to a valid state.
+   * Returns the nodeId of the node if there is a valid transition, otherwise
+   * returns -1.
+   *
+   * @param {!Edge} edge - The edge to check if there is a valid transition
+   */
   coaccessible(edge){
     for(let e in this._edgesFromMe) {
       if(this._edgesFromMe[e].label === edge){
@@ -722,18 +732,30 @@ Graph.Exception = class {
   }
 };
 
+/**
+ * Class for dealing with operations done on multiple graphs.
+ *
+ * @class
+ */
 Graph.Operations = class {
 
+  /**
+   * Constructs and returns a parallel composition of the specifed graphs.
+   *
+   * @param {!Graph} graph1 - First graph
+   * @param {!Graph} graph2 - Second graph
+   */
   parallelComposition(graph1, graph2) {
     var graph = new Graph();
     var alphabet = this._alphabetUnion(graph1, graph2);
-    console.log(alphabet);
     var uid = 0;
     var edgeId = 0;
 
     // combine states
     for(var i = 0; i < graph1.nodeCount; i++){
       for(var j = 0; j < graph2.nodeCount; j++){
+        var a = graph1.getNode(i + graph1.rootId) - graph1.rootId;
+        var b = graph2.getNode(j + graph2.rootId) - graph2.rootId;
         graph.addNode(uid++, (i + "." + j));
       }
     }
@@ -746,33 +768,22 @@ Graph.Operations = class {
         var node2 = graph2.getNode(j + graph2.rootId);
         var fromId = (i * graph2.nodeCount) + j;
 
-        for(let a in alphabet){
-          var b = node1.coaccessible(a); // either -1 or the node it transitions to
-          var c = node2.coaccessible(a); // either -1 or the node it transitions to
+        for(let action in alphabet){
+          var coaccessible1 = node1.coaccessible(action); // either -1 or the node it transitions to
+          var coaccessible2 = node2.coaccessible(action); // either -1 or the node it transitions to
 
-          //console.log(a + ": (" + b + ", " + c + ")");
 
-          //console.log("\tb !== -1: " + (b !== -1));
-          //console.log("\t!B.containsEdge(" + a + "): " + (!graph2.containsEdge(a)));
-          //console.log("\tc !== -1: " + (c !== -1));
-          //console.log("\t!A.containsEdge(" + a + "): " + (!graph1.containsEdge(a)));
-          
-          console.log(i + ", " + j + ", " + a);
-
-          if(b !== -1 && c !== -1) {
+          // check if an edge is needed from the current combined states
+          if(coaccessible1 !== -1 && coaccessible2 !== -1) {
             console.log("shouldn't get here currently");
           }
-          else if(b !== -1 && !graph2.containsEdge(a)) {
-            var toId = (b * graph2.nodeCount) + j;
-            console.log("to: " + toId);
-            console.log("first:(from: " + fromId + ", to: " + toId + ")");
-            console.log("to: " + toId + " (i = " + i +", nc = " + graph2.nodeCount + ", b = " + b + ")");
-          }
-          else if(c !== -1 && !graph1.containsEdge(a)) {
-            var toId = (i * graph2.nodeCount) + c;
-            console.log("to: " + toId + " (i = " + i +", nc = " + graph2.nodeCount + ", c = " + c + ")");
+          else if(coaccessible1 !== -1 && !graph2.containsEdge(action)) {
+            var toId = (coaccessible1 * graph2.nodeCount) + j;
             graph.addEdge(edgeId++, graph.getNode(fromId), graph.getNode(toId), a);
-            console.log("second:(from: " + fromId + ", to: " + toId + ")");
+          }
+          else if(coaccessible2 !== -1 && !graph1.containsEdge(action)) {
+            var toId = (i * graph2.nodeCount) + (coaccessible2 - graph2.rootId);
+            graph.addEdge(edgeId++, graph.getNode(fromId), graph.getNode(toId), a);
           }
         }
       }
@@ -781,16 +792,17 @@ Graph.Operations = class {
     return graph;
   }
 
+  /**
+   *  Constructs and returns a set of the the union of the two alphabets for the specified graphs.
+   *
+   *  @param {!Graph} graph1 - First graph to get alphabet of
+   *  @param {!Graph} graph2 - Second graph to get alphabet of
+   */
   _alphabetUnion(graph1, graph2) {
     var alphabet = graph1.constructAlphabet();
-    
-    console.log(alphabet);
-
     var temp = graph2.constructAlphabet();
-    console.log(temp);
 
     for(let a in temp){
-      console.log(a);
       alphabet[a] = true;
     }
 
