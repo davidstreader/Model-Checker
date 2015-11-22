@@ -326,9 +326,9 @@
       
       // combine states
       for(var i = 0; i < graph1.nodeCount; i++){
+        //var a = graph1.getNode(i + graph1.rootId) - graph1.rootId;
         for(var j = 0; j < graph2.nodeCount; j++){
-          var a = graph1.getNode(i + graph1.rootId) - graph1.rootId;
-          var b = graph2.getNode(j + graph2.rootId) - graph2.rootId;
+          //var b = graph2.getNode(j + graph2.rootId) - graph2.rootId;
           graph.addNode(this._useNextNodeUid(), (i + "." + j));
         }
       }
@@ -352,11 +352,11 @@
             }
             else if(coaccessible1 !== -1 && !graph2.containsEdge(action)) {
               var toId = (coaccessible1 * graph2.nodeCount) + j + graph.rootId;
-              graph.addEdge(this._useNextEdgeUid(), graph.getNode(fromId), graph.getNode(toId), a);
+              graph.addEdge(this._useNextEdgeUid(), graph.getNode(fromId), graph.getNode(toId), action);
             }
             else if(coaccessible2 !== -1 && !graph1.containsEdge(action)) {
               var toId = (i * graph2.nodeCount) + (coaccessible2 - graph2.rootId) + graph.rootId;
-              graph.addEdge(this._useNextEdgeUid(), graph.getNode(fromId), graph.getNode(toId), a);
+              graph.addEdge(this._useNextEdgeUid(), graph.getNode(fromId), graph.getNode(toId), action);
             }
           }
         }
