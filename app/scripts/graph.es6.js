@@ -404,6 +404,19 @@ class Graph {
   }
 
   /**
+   *
+   */
+  trimGraph() {
+    console.log("trim graph");
+      for(let node in this._nodeMap){
+        console.log("\tin loop");
+        if(!this._nodeMap[node].isAccessible()){
+          this.removeNode(this._nodeMap[node]);
+        }
+      }
+  }
+
+  /**
    * Create a deep clone of an object or array.
    *
    * @protected
@@ -576,23 +589,6 @@ Graph.Node = class {
   }
 
   /**
-   * Determines if the specified edge transitions this node to a valid state.
-   * Returns the nodeId of the node if there is a valid transition, otherwise
-   * returns -1.
-   *
-   * @param {!Edge} edge - The edge to check if there is a valid transition
-   */
-  coaccessible(edge){
-    for(let e in this._edgesFromMe) {
-      if(this._edgesFromMe[e].label === edge){
-        return this._edgesFromMe[e]._to._id;
-      }
-    }
-
-    return -1;
-  }
-
-  /**
    * Remember that the given edge comes from this node.
    * Assumes edge.from === this
    *
@@ -610,6 +606,31 @@ Graph.Node = class {
    */
   _addEdgeToMe(edge) {
     this._edgesToMe[edge.id] = edge;
+  }
+
+  /**
+   * Determines if the specified edge transitions this node to a valid state.
+   * Returns the nodeId of the node if there is a valid transition, otherwise
+   * returns -1.
+   *
+   * @param {!Edge} edge - The edge to check if there is a valid transition
+   */
+  coaccessible(edge){
+    for(let e in this._edgesFromMe) {
+      if(this._edgesFromMe[e].label === edge){
+        return this._edgesFromMe[e]._to._id;
+      }
+    }
+
+    return -1;
+  }
+
+  /**
+   * Returns true if this node is accessible within a graph,
+   * otherwise returns false.
+   */
+  isAccessible(){
+    return this.edgesToMe.length === 0;
   }
 
   /**

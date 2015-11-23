@@ -354,7 +354,8 @@
 
             // check if an edge is needed from the current combined states
             if(coaccessible1 !== -1 && coaccessible2 !== -1) {
-              var toId = (coaccessible1 * graph2.nodeCount) + i + j + graph.rootId;
+              var toId = ((coaccessible1 - graph1.rootId) * graph2.nodeCount) + (coaccessible2 - graph2.rootId) + graph.rootId;
+              console.log(toId);
               graph.addEdge(this._useNextEdgeUid(), graph.getNode(fromId), graph.getNode(toId), action);
             }
             else if(coaccessible1 !== -1 && !graph2.containsEdge(action)) {
@@ -369,6 +370,7 @@
         }
       }
 
+      //graph.trimGraph();
       return graph;
     },
     /**
