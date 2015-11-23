@@ -445,6 +445,31 @@ class Graph {
   }
 
   /**
+   * Returns a new graph which has the hidden tau actions removed.
+   *
+   * @returns {!Graph} Graph with tau actions removed
+   */
+  abstraction() {
+    // clone graph
+    var clone = this.deepClone();
+    var edges = clone.edges;
+    
+    // find any tau edges
+    for(let key in edges){
+      var edge = edges[key];
+
+      // remove tau edge and merge nodes together
+      if(edge.label === "tau"){
+        var nodes = [edge.to.id, edge.from.id];
+        clone.removeEdge(edge);
+        clone.mergeNodes(nodes);
+      }
+    }
+
+    return clone;
+  }
+
+  /**
    * Create a deep clone of an object or array.
    *
    * @protected
