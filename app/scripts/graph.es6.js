@@ -776,7 +776,7 @@ Graph.Edge = class {
    *
    * @returns {!string} The new label
    */
-  set label(lbl) {
+  setLabel(lbl) {
     this._label = lbl + ''; // convert lbl to a string then set the label
     return this._label;
   }

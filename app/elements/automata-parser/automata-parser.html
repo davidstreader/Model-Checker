@@ -319,6 +319,20 @@
       var parallelDefName1 = parallel['definition1'].name;
       var parallelDefName2 = parallel['definition2'][0].name;
 
+      // check if definitions have been labelled
+      var label1 = parallel['definition1'].label;
+      var label2 = parallel['definition2'][0].label;
+
+      if(label1 !== undefined){
+        this._interpretLabel(label1, parallelDefName1);
+        parallelDefName1 = label1 + ":" + parallelDefName1;
+      }
+
+      if(label2 !== undefined){
+        this._interpretLabel(label2, parallelDefName2);
+        parallelDefName2 = label2 + ":" + parallelDefName2;
+      }
+
       var graph = new Graph();
       var graph1 = this._definitionsMap[parallelDefName1].graph;
       var graph2 = this._definitionsMap[parallelDefName2].graph;
@@ -404,6 +418,26 @@
       else {
         definitionMap[defName].graph.mergeNodes([referenceMap[references].id, extendtionNode.id]);
       }
+    },
+    /**
+     *
+     */
+    _interpretLabel: function(label, defName) {
+      // clone the definition defined by defName
+      var definition = this._definitionsMap[defName];
+      var temp = new this._Definition();
+      temp.graph = definition.graph.deepClone();
+      temp.unprocessedNodes = definition.unprocessedNodes;
+      temp._rootId = temp.graph.rootId;
+      // relabel the edges in the new definition
+      for(var i in temp.graph.edges){
+        var edge = temp.graph.getEdge(i);
+        var newLabel = label + ":" + edge.label;
+        edge.setLabel(newLabel);
+      }
+      // add new definition to definitions map
+      this._definitionsMap[label + ":" + defName] = temp;
+      definition.isHidden = true;
     },
     /**
      * Interpret a parse tree stop node.
