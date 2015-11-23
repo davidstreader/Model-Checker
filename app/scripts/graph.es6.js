@@ -169,6 +169,32 @@ class Graph {
   }
 
   /**
+   * Returns a set of the reachable nodes in this graph from the root node.
+   *
+   * @returns {!Set} Set of node ids
+   */
+  get reachableNodes() {
+    var nodes = [];
+    var stack = [this.rootId];
+    
+    // perfrom depth first search of graph
+    while(stack.length !== 0){
+      var id = stack.pop();
+      // add current node id to the set
+      nodes[id] = true;
+      var node = this.getNode(id);
+
+      // add neighbours of current node to stack
+      var neighbors = node.neighbors;
+      for(var i = 0; i < neighbors.length; i++){
+        stack.push(neighbors[i].id);
+      }
+    }
+
+    return nodes;
+  }
+
+  /**
    * Get an edge in the graph.
    *
    * @param {!number} id - The id of the edge to get
@@ -404,16 +430,18 @@ class Graph {
   }
 
   /**
-   *
+   * Trims any nodes from the graph that are not reachable from the root node.
    */
-  trimGraph() {
-    console.log("trim graph");
-      for(let node in this._nodeMap){
-        console.log("\tin loop");
-        if(!this._nodeMap[node].isAccessible()){
-          this.removeNode(this._nodeMap[node]);
-        }
+  trim() {
+    // get the reachable nodes from the root
+    var reachable = this.reachableNodes;
+
+    // remove any nodes that are not reachable from the root
+    for(let node in this._nodeMap){
+      if(reachable[node] !== true){
+        this.removeNode(this._nodeMap[node]);
       }
+    }
   }
 
   /**
