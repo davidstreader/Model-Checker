@@ -433,7 +433,7 @@
       for(var i in temp.graph.edges){
         var edge = temp.graph.getEdge(i);
         var newLabel = label + ":" + edge.label;
-        edge.setLabel(newLabel);
+        edge.label = newLabel;
       }
       // add new definition to definitions map
       this._definitionsMap[label + ":" + defName] = temp;
