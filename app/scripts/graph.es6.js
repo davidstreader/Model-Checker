@@ -142,13 +142,13 @@ class Graph {
    * @throws {Graph.Exception} uid must be unquie
    * @returns {!Graph.Edge} The edge added to the graph
    */
-  addEdge(uid, from, to, label='') {
+  addEdge(uid, from, to, label='', isHidden = false) {
     if (this._edgeMap[uid] !== undefined) {
       throw new Graph.Exception(
         'This graph already contains a edge with id "' + uid + '".');
     }
 
-    let edge = new Graph.Edge(this, uid, from, to, label);
+    let edge = new Graph.Edge(this, uid, from, to, label, isHidden);
     this._edgeMap[uid] = edge;
     this._edgeCount += 1;
 
@@ -219,12 +219,20 @@ class Graph {
   }
 
   /**
+   * Returns true if the specified edge in this graph is hidden, otherwise
+   * returns false.
    *
+   * @param {!number} edge - The id of the edge to check
+   * @returns {!boolean} Whether the specified edge is hidden or not
    */
-  isEdgeHidden(edge) {
-    for(let i in this.edges){
-
+  isHiddenEdge(edge) {
+    for(let i in this._edgeMap){
+      if(this._edgeMap[i].label === edge && this._edgeMap[i].isHidden){
+        return true;
+      }
     }
+
+    return false;
   }
   /**
    * Remove a node from the graph.

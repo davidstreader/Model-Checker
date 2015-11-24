@@ -369,15 +369,21 @@
             // check if an edge is needed from the current combined states
             if(coaccessible1 !== -1 && coaccessible2 !== -1) {
               var toId = ((coaccessible1 - graph1.rootId) * graph2.nodeCount) + (coaccessible2 - graph2.rootId) + graph.rootId;
-              graph.addEdge(this._useNextEdgeUid(), graph.getNode(fromId), graph.getNode(toId), action);
+              var isHidden = graph1.isHiddenEdge(action);
+              console.log(isHidden);
+              graph.addEdge(this._useNextEdgeUid(), graph.getNode(fromId), graph.getNode(toId), action, isHidden);
             }
             else if(coaccessible1 !== -1 && !graph2.containsEdge(action)) {
               var toId = (coaccessible1 * graph2.nodeCount) + j + graph.rootId;
-              graph.addEdge(this._useNextEdgeUid(), graph.getNode(fromId), graph.getNode(toId), action);
+              var isHidden = graph1.isHiddenEdge(action);
+              console.log(isHidden);
+              graph.addEdge(this._useNextEdgeUid(), graph.getNode(fromId), graph.getNode(toId), action, isHidden);
             }
             else if(coaccessible2 !== -1 && !graph1.containsEdge(action)) {
               var toId = (i * graph2.nodeCount) + (coaccessible2 - graph2.rootId) + graph.rootId;
-              graph.addEdge(this._useNextEdgeUid(), graph.getNode(fromId), graph.getNode(toId), action);
+              var isHidden = graph2.isHiddenEdge(action);
+              console.log(isHidden);
+              graph.addEdge(this._useNextEdgeUid(), graph.getNode(fromId), graph.getNode(toId), action, isHidden);
             }
           }
         }
