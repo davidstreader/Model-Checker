@@ -138,9 +138,10 @@ Process_Standard_Nested
  */
 Process_Parallel
   =  symbol_BracketLeft _ a:Name_OR_Label _ symbol_Parallel _ b:Process_Parallel_Nested {
+      console.log("parsing process parallel");
       return new Node.ParallelNode(a, b);
      }
-  / Name_OR_Label
+  / Process_Parallel_Composition
 
 /**
  * Processes the definition of a parallel composition of two automata
@@ -148,9 +149,12 @@ Process_Parallel
  */
 Process_Parallel_Nested
   =  a:Name_OR_Label _ symbol_Parallel _ b:Process_Parallel_Nested {
-      return new Node.ParallelNode(a, new Node.NameNode(b.name));
+      console.log("process parallel nested");
+      console.log(a);
+      console.log(b);
+      return new Node.ParallelNode(a, b);
      }
-  /  Name_OR_Label _ symbol_BracketRight
+  /  Process_Parallel_Composition
 
 /**
  * Processes a definition which has a choice within it.
@@ -169,6 +173,15 @@ Process_Sequence
       return new Node.SequenceNode(from, to);
      }
   /  Terminal_OR_Brackets
+
+/**
+ * Processes a single parallel composition.
+ */
+Process_Parallel_Composition
+  =  a:Name_OR_Label _ symbol_Parallel _ b:Name_OR_Label {
+      return new Node.ParallelNode(a, b);
+     }
+  /  Brackets
 
 /**
  * Processes the defining of a new label for an action.
@@ -243,11 +256,19 @@ Action_OR_Brace
      }
 
 /**
- * Attempts to parse either a Terminal or Brackets.
+ * Attempts to parse either a Terminal or Brackets for a standard definition.
  */
 Terminal_OR_Brackets
   =  Terminal
   /  symbol_BracketLeft _ process:Process_Standard _ symbol_BracketRight {
+      return process;
+     }
+
+/**
+ * Attempts to parse a parallel composition within brackets.
+ */
+Brackets
+  =  symbol_BracketLeft _ process:Process_Parallel _ symbol_BracketRight {
       return process;
      }
 
