@@ -240,7 +240,7 @@
         edges.forEach(function(edge, index){
           if(_.contains(hiddenActions, edge.label)){
             // only updates the edge if it needs to be hidden
-            edge.label = 'tau';
+            edge.isHidden = true;
           }
         }.bind(this));
       }
