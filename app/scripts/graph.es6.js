@@ -739,12 +739,13 @@ Graph.Edge = class {
    * @param {!number} to    - The id of the node this edges goes to
    * @param {!string} label - The edge's label
    */
-  constructor(graph, uid, from, to, label) {
+  constructor(graph, uid, from, to, label, isHidden = false) {
     this._graph = graph;
     this._id = uid;
     this._from = from;
     this._to = to;
     this._label = label;
+    this._isHidden = isHidden;
   }
 
   /**
@@ -800,6 +801,27 @@ Graph.Edge = class {
   set label(lbl) {
     this._label = lbl + ''; // convert lbl to a string then set the label
     return this._label;
+  }
+
+  /**
+   * Get a boolean determining whether this edge is hidden or not.
+   */
+  get isHidden() {
+    return this._isHidden;
+  }
+
+  /**
+   * Sets isHidden to the specified boolean.
+   *
+   * @returns {!boolean} The new isHidden value
+   */
+  set isHidden(isHidden) {
+    // make sure that parameter is a boolean
+    if(isHidden !== true && isHidden !== false){
+      throw new Graph.Exception("Expecting a boolean value but received " + isHidden + "\n");
+    }
+    this._isHidden = isHidden;
+    return this._isHidden;
   }
 };
 
