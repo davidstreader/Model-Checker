@@ -147,7 +147,7 @@
      * Simple event listener for listening when the minimisation checkbox is ticked.
      * Calls compile if the live-compiling check-box is checked.
      */
-    app.$['chbx-minimistation'].addEventListener('iron-change', function() {
+    app.$['chbx-minimisation'].addEventListener('iron-change', function() {
       if(app.liveCompiling) {
         app.compile();
       }
