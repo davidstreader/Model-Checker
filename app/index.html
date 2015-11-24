@@ -165,6 +165,11 @@
       <paper-icon-button icon="icons:folder-open" class="middle" title="Open" on-tap="openFile"></paper-icon-button>
       <input id="open-file" type="file" accept="text/plain" class="middle" style="display: none;"></input>
       <paper-icon-button icon="icons:file-download" class="middle" title="Download" on-tap="downloadFile"></paper-icon-button>
+      <span class="spacer middle"></span>
+      <paper-checkbox id="chbx-minimistation" checked="{{minimisation}}" class="middle" title="Remove hidden actions from graphs.">
+        <span hidden$="{{smallScreen}}">Minimisation</span>
+        <span hidden$="{{!smallScreen}}">Min</span>
+      </paper-checkbox>
       <span class="flex middle"></span>
       <paper-icon-button icon="icons:help" class="middle" title="Help" on-tap="showHelp"></paper-icon-button>
     </paper-toolbar>
