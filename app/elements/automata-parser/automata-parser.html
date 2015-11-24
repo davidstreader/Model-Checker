@@ -317,11 +317,11 @@
     //_interpretParallel: function(parallel, extendtionNode, definitionMap, defName, referenceMap) {
     _interpretParallel: function(parallel) {
       var parallelDefName1 = parallel['definition1'].name;
-      var parallelDefName2 = parallel['definition2'][0].name;
+      var parallelDefName2 = parallel['definition2'].name;
 
       // check if definitions have been labelled
       var label1 = parallel['definition1'].label;
-      var label2 = parallel['definition2'][0].label;
+      var label2 = parallel['definition2'].label;
 
       if(label1 !== undefined){
         this._interpretLabel(label1, parallelDefName1);
