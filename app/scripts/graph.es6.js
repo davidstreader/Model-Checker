@@ -450,9 +450,7 @@ class Graph {
    * @returns {!Graph} Graph with tau actions removed
    */
   abstraction() {
-    // clone graph
-    var clone = this.deepClone();
-    var edges = clone.edges;
+    var edges = this.edges;
     
     // find any tau edges
     for(let key in edges){
@@ -461,12 +459,10 @@ class Graph {
       // remove tau edge and merge nodes together
       if(edge.label === "tau"){
         var nodes = [edge.to.id, edge.from.id];
-        clone.removeEdge(edge);
-        clone.mergeNodes(nodes);
+        this.removeEdge(edge);
+        this.mergeNodes(nodes);
       }
     }
-
-    return clone;
   }
 
   /**

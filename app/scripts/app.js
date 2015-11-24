@@ -9,9 +9,8 @@
      * The data to use.
      */
     app.automata = {values: []};
-
     app.liveCompiling = true;
-
+    app.minimising = false;
     app.helpDialogSelectedTab = 0;
 
     /**
@@ -52,6 +51,13 @@
           return;
         }
 
+        // if minimisation has been select then perform abstraction on all automata
+        if(app.minimising) {
+          for(let a in automata){
+            automata[a].graph.abstraction();
+          }
+        }
+
         compileTime = Math.max(1, ((new Date()).getTime() - compileStartTime)) / 1000;
         app.$.console.clear(1);
         app.$.console.log('Compiled successfully in ' + compileTime.toFixed(3) + ' seconds.');
@@ -61,7 +67,7 @@
         var renderTime;
 
         // Can't simply assign app.automata.values to the new array as data bindings will not update.
-        // Creating a new automata oject then setting the its values slightly later will work (for some reason).
+        // Creating a new automata object then setting the its values slightly later will work (for some reason).
         app.automata = {};
         setTimeout(function() {
           app.set('automata.values', automata);
@@ -132,6 +138,17 @@
      */
     app.$['chbx-live-compiling'].addEventListener('iron-change', function() {
       if (app.liveCompiling) {
+        app.compile();
+      }
+      app.$.editor.focus();
+    });
+
+    /**
+     * Simple event listener for listening when the minimisation checkbox is ticked.
+     * Calls compile if the live-compiling check-box is checked.
+     */
+    app.$['chbx-minimistation'].addEventListener('iron-change', function() {
+      if(app.liveCompiling) {
         app.compile();
       }
       app.$.editor.focus();
