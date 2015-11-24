@@ -219,6 +219,14 @@ class Graph {
   }
 
   /**
+   *
+   */
+  isEdgeHidden(edge) {
+    for(let i in this.edges){
+
+    }
+  }
+  /**
    * Remove a node from the graph.
    * Any edges connected to this node will also be deleted.
    *
@@ -457,7 +465,7 @@ class Graph {
       var edge = edges[key];
 
       // remove tau edge and merge nodes together
-      if(edge.label === "tau"){
+      if(edge.isHidden){
         var nodes = [edge.to.id, edge.from.id];
         this.removeEdge(edge);
         this.mergeNodes(nodes);
