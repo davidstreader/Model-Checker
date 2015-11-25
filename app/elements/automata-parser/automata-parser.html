@@ -177,13 +177,13 @@
           throw new this.InterpreterException('process "' + name + '" defined more that once.');
         }
         // create the graph for this definition
-        definitionMap[name].graph = (definition.isParallel) ? this._interpretParallel(definition.process) : new Graph();
+        definitionMap[name].graph = (definition.type === 'parallel-definition') ? this._interpretParallel(definition.process) : new Graph();
         // add the root node of the graph
         // if an id to use for the root has hasn't been specified, generate one, otherwise use it
         var rootId = definitionMap[name].rootId;
 
         var root = undefined;
-        if(!definition.isParallel){
+        if(definition.type === 'definition'){
           root = definitionMap[name].graph.addNode(
             rootId === undefined ? this._useNextNodeUid() : rootId
           );
