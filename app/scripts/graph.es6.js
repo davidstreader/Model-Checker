@@ -466,43 +466,14 @@ class Graph {
    * Performs the abstraction function on this graph, which removes the hidden 
    * tau actions and adds the observable transitions.
    */
-  /*abstraction() {
-    var uid = 100;
-    var edges = this.edges;
-    
-    // find any tau edges
-    for(let key in edges){
-      var edge = edges[key];
-
-      // remove tau edge and merge nodes together
-      if(edge.isHidden){
-        var to = this._nodeMap[edge.to.id];
-        var from = this._nodeMap[edge.from.id];
-
-        var fromEdges = to.edgesFromMe;
-        for(var i in fromEdges){
-          var current = fromEdges[i];
-          this.addEdge(uid++, from, current.to, current.label);
-        }
-
-        var toEdges = from.edgesToMe;
-        for(var i in toEdges){
-          var current = toEdges[i];
-          this.addEdge(uid++, current.from, to, current.label);
-        }
-
-        // remove the hidden edge from the graph
-        this.removeEdge(edge);
-      }
-    }
-  }*/
-
   abstraction() {
     for(var i in this.nodes){
       var node = this.getNode(i);
       // add observable edges between current node and its neighbours
-      for(var j in node.edgesFromMe){
-        var edge = this.getEdge(i);
+      var edges = node.edgesFromMe;
+      for(var j in edges){
+        var edge = edges[j];
+        console.log("main = " + node.id + ", sub = " + edge.to.id + "\n");
         // only add observable edges if current edge is not hidden
         if(!edge.isHidden){
           this._addObservableEdgesFromCurrentNode(node, edge.to, edge.label);
@@ -520,9 +491,6 @@ class Graph {
     }
   }
 
-  /**
-   *
-   */
   _addObservableEdgesFromCurrentNode(previous, current, label) {
     var stack = [current];
     while(stack.length !== 0){
@@ -538,9 +506,6 @@ class Graph {
     }
   }
 
-  /**
-   *
-   */
   _addObservableEdgesToCurrentNode(next, current, label) {
     var stack = [current];
     while(stack.length !== 0){
