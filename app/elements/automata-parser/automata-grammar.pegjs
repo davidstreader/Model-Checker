@@ -45,13 +45,6 @@
       this.type = 'action';
       this.action = action;
     },
-    RelabelNode: function(relabels){
-      this.type = 'relabel';
-      this.relabels = relabels;
-    },
-    HideNode: function(hidden){
-      this.hidden = hidden;
-    },
     StopNode: function(){
       this.type = 'stop';
     },
@@ -191,7 +184,7 @@ Process_Parallel_Composition
  */
 Process_Relabel
   =  symbol_Relabel _ symbol_BraceLeft _ relabel:Relabel_OR_Brace {
-      return new Node.RelabelNode(relabel);
+      return relabel;
      }
 
 /**
@@ -241,9 +234,9 @@ Name_OR_Label
  * Attempts to continue parsing a relabelling or the end of the relabelling.
  */
 Relabel_OR_Brace
-  =  relabel:Relabel _ symbol_BraceRight { return relabel; }
+  =  relabel:Relabel _ symbol_BraceRight { return [relabel]; }
   /  a:Relabel _ symbol_DefinitionListSeparator _ b:Relabel_OR_Brace {
-      return new Node.RelabelNode([a].concat(b));
+      return b.concat(a);
   }
 
 /**
@@ -328,8 +321,8 @@ Label
  */
 Relabel
   =  a:Action _ symbol_Relabel _ b:Action {
-      var relabel = {"new-label":a.action, "old-label": b.action};
-        return new Node.RelabelNode(relabel);
+      return {"new-label":a.action, "old-label": b.action};
+        //return new Node.RelabelNode(relabel);
      }
 
 /**
