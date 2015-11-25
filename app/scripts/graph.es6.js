@@ -2,6 +2,8 @@
 // jshint esnext:true
 'use strict';
 
+var tempUID = 100;
+
 /**
  * A graph data structure (a collections of nodes and edges).
  *
@@ -461,11 +463,11 @@ class Graph {
   }
 
   /**
-   * Returns a new graph which has the hidden tau actions removed.
-   *
-   * @returns {!Graph} Graph with tau actions removed
+   * Performs the abstraction function on this graph, which removes the hidden 
+   * tau actions and adds the observable transitions.
    */
-  abstraction() {
+  /*abstraction() {
+    var uid = 100;
     var edges = this.edges;
     
     // find any tau edges
@@ -474,9 +476,82 @@ class Graph {
 
       // remove tau edge and merge nodes together
       if(edge.isHidden){
-        var nodes = [edge.to.id, edge.from.id];
+        var to = this._nodeMap[edge.to.id];
+        var from = this._nodeMap[edge.from.id];
+
+        var fromEdges = to.edgesFromMe;
+        for(var i in fromEdges){
+          var current = fromEdges[i];
+          this.addEdge(uid++, from, current.to, current.label);
+        }
+
+        var toEdges = from.edgesToMe;
+        for(var i in toEdges){
+          var current = toEdges[i];
+          this.addEdge(uid++, current.from, to, current.label);
+        }
+
+        // remove the hidden edge from the graph
         this.removeEdge(edge);
-        this.mergeNodes(nodes);
+      }
+    }
+  }*/
+
+  abstraction() {
+    for(var i in this.nodes){
+      var node = this.getNode(i);
+      // add observable edges between current node and its neighbours
+      for(var j in node.edgesFromMe){
+        var edge = this.getEdge(i);
+        // only add observable edges if current edge is not hidden
+        if(!edge.isHidden){
+          this._addObservableEdgesFromCurrentNode(node, edge.to, edge.label);
+          this._addObservableEdgesToCurrentNode(edge.to, node, edge.label);
+        }
+      }
+    }
+
+    // remove the hidden edges
+    for(var i in this._edgeMap){
+      var edge = this.getEdge(i);
+      if(edge.isHidden){
+        this.removeEdge(edge);
+      }
+    }
+  }
+
+  /**
+   *
+   */
+  _addObservableEdgesFromCurrentNode(previous, current, label) {
+    var stack = [current];
+    while(stack.length !== 0){
+      var node = stack.pop();
+      var edges = node.edgesFromMe;
+      for(var i in edges){
+        var edge = edges[i];
+        if(edge.isHidden){
+          this.addEdge(tempUID++, previous, edge.to, label);
+          stack.push(edge.to);
+        }
+      }
+    }
+  }
+
+  /**
+   *
+   */
+  _addObservableEdgesToCurrentNode(next, current, label) {
+    var stack = [current];
+    while(stack.length !== 0){
+      var node = stack.pop();
+      var edges = node.edgesToMe;
+      for(var i in edges){
+        var edge = edges[i];
+        if(edge.isHidden){
+          this.addEdge(tempUID++, edge.from, next, label);
+          stack.push(edge.from);
+        }
       }
     }
   }
