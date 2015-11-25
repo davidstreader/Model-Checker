@@ -12,11 +12,15 @@
         this.relabel = relabel;
         this.hidden = hidden;
     },
-    DefinitionNode: function(name, process, isParallel){
+    DefinitionNode: function(name, process){
       this.type = 'definition';
       this.name = name;
       this.process = process;
-      this.isParallel = isParallel;
+    },
+    ParallelDefinitionNode: function(name, process){
+      this.type = 'parallel-definition';
+      this.name = name;
+      this.process = process;
     },
     SequenceNode: function(from, to){
       this.type = 'sequence';
@@ -103,7 +107,7 @@ ParallelModel
  */
 Definition
   =  name:Name _ symbol_DefinitionAssignment _ process:Process_Standard {
-      return new Node.DefinitionNode(name, process, false);
+      return new Node.DefinitionNode(name, process);
      }
 
 /**
@@ -112,7 +116,7 @@ Definition
 Parallel_Definition
   =  name:Name _ symbol_DefinitionAssignment _ process:Process_Parallel {
       var n = new Node.NameNode("||" + name.name);
-        return new Node.DefinitionNode(n, process, true);
+      return new Node.ParallelDefinitionNode(n, process);
      }
 
 /**
