@@ -473,7 +473,6 @@ class Graph {
       var edges = node.edgesFromMe;
       for(var j in edges){
         var edge = edges[j];
-        console.log("main = " + node.id + ", sub = " + edge.to.id + "\n");
         // only add observable edges if current edge is not hidden
         if(!edge.isHidden){
           this._addObservableEdgesFromCurrentNode(node, edge.to, edge.label);
@@ -519,6 +518,31 @@ class Graph {
         }
       }
     }
+  }
+
+  bisimulation() {
+    // construct map of nodes and give them all the same color
+    var coloredNodes = {};
+    for(let n in this.nodes){
+      coloredNodes[n] = new Graph.ColoredNode(this.getNode(n));
+    }
+
+    var nextColor = 1;
+    var colorMap = {};
+    var alphabet = this.constructAlphabet();
+    for(let a in alphabet){
+      colorMap[nextColor++] = new Graph.Color(0, 0, a);
+    }
+
+    for(let n in coloredNodes){
+      var node = coloredNodes[n];
+      
+      for(let c in colorMap){
+        var color = colorMap[c];
+      }
+
+    }
+
   }
 
   /**
@@ -771,6 +795,44 @@ Graph.Node = class {
   }
 
 };
+
+Graph.Color = class {
+
+  constructor(from, to, label){
+    this._from = from;
+    this._to = to;
+    this._label = label;
+  }
+
+  get from(){
+    return this._from;
+  }
+
+  get to(){
+    return this._to;
+  }
+
+  get label(){
+    return this._label;
+  }
+}
+
+Graph.ColoredNode = class {
+
+  constructor(node, color = 0) {
+    this._node = node;
+    this._color = color;
+  }
+
+  get color() {
+    return this._color;
+  }
+
+  set color(color) {
+    this._color = color;
+    return this._color;
+  }
+}
 
 /**
  * A Graph Edge.

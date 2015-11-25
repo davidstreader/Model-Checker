@@ -105,6 +105,11 @@
     --paper-checkbox-unchecked-color: #ffffff;
     --paper-checkbox-label-color: #ffffff;
   }
+  #chbx-bisimulation {
+    margin: 0 12px;
+    --paper-checkbox-unchecked-color: #ffffff;
+    --paper-checkbox-label-color: #ffffff;
+  }
   @media all and (max-width: 959px) {
     .frame{
       @apply(--layout-vertical);
@@ -178,6 +183,10 @@
         <span hidden$="{{smallScreen}}">Minimisation</span>
         <span hidden$="{{!smallScreen}}">Min</span>
       </paper-checkbox>
+      <paper-checkbox id="chbx-bisimulation" checked="{{bisimulation}}" class="middle" title="Perform bisimulation on graphs.">
+        <span hidden$="{{smallScreen}}">Bisimulation</span>
+        <span hidden$="{{!smallScreen}}">Bisim</span>
+      </paper-checkbox>  
       <span class="flex middle"></span>
       <paper-icon-button icon="icons:help" class="middle" title="Help" on-tap="showHelp"></paper-icon-button>
     </paper-toolbar>

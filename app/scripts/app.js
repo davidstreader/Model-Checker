@@ -11,6 +11,7 @@
     app.automata = {values: []};
     app.liveCompiling = true;
     app.minimising = false;
+    app.bisimulation = false;
     app.helpDialogSelectedTab = 0;
 
     /**
@@ -55,6 +56,11 @@
         if(app.minimising) {
           for(let a in automata){
             automata[a].graph.abstraction();
+            automata[a].graph.bisimulation();
+          }
+          // only run bisimulation
+          if(app.bisimulation){
+
           }
         }
 
@@ -148,6 +154,17 @@
      * Calls compile if the live-compiling check-box is checked.
      */
     app.$['chbx-minimisation'].addEventListener('iron-change', function() {
+      if(app.liveCompiling) {
+        app.compile();
+      }
+      app.$.editor.focus();
+    });
+
+    /**
+     * Simple event listener for listening when the bisimulation checkbox is ticked.
+     * Calls compile if the live-compiling check-box is checked.
+     */
+    app.$['chbx-bisimulation'].addEventListener('iron-change', function() {
       if(app.liveCompiling) {
         app.compile();
       }
