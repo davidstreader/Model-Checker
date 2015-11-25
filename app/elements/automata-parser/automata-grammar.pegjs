@@ -50,7 +50,6 @@
       this.relabels = relabels;
     },
     HideNode: function(hidden){
-      this.type = 'hide';
       this.hidden = hidden;
     },
     StopNode: function(){
@@ -200,7 +199,7 @@ Process_Relabel
  */
 Process_Hide
   =  symbol_Hide _ symbol_BraceLeft _ hide:Action_OR_Brace {
-      return new Node.HideNode(hide);
+      return hide;
      }
 
 /**
@@ -253,10 +252,10 @@ Relabel_OR_Brace
  */
 Action_OR_Brace
   =  a:Action _ symbol_BraceRight {
-      return new Node.HideNode(a.action);
+      return [a.action];
      }
   / a:Action _ symbol_DefinitionListSeparator _ b:Action_OR_Brace {
-        return new Node.HideNode([a.action].concat(b.hidden));
+        return b.concat(a.action);
      }
 
 /**
