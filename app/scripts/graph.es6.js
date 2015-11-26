@@ -207,12 +207,32 @@ class Graph {
   }
 
   /**
+   * Returns true if there is an edge between the specified nodes with the
+   * specified label. Otherwise returns false.
+   *
+   * @param {!Node} from - The start node
+   * @param {!Node} to - The end node
+   * @param {!string} label - the type of action
+   * @returns {boolean} Whether that edge exists or not
+   */
+  containsEdge(from, to, label){
+    for(let i in this._edgeMap){
+      var edge = this._edgeMap[i];
+      if(edge.from === from && edge.to === to && edge.label === label){
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
    * Returns true if the specified edge is contained in this graph's alphabet,
    * otherwise returns false.
    *
    * @returns {boolean} Whether the edge is contained in the graph's alphabet or not
    */
-  containsEdge(edge) {
+  containsEdgeInAlphabet(edge) {
     var result = this.constructAlphabet()[edge];
     if(result === true){
       return true;
@@ -469,6 +489,10 @@ class Graph {
   abstraction() {
     for(var i in this.nodes){
       var node = this.getNode(i);
+
+      if(node === undefined){
+        continue;
+      }
       // add observable edges between current node and its neighbours
       var edges = node.edgesFromMe;
       for(var j in edges){
@@ -492,13 +516,18 @@ class Graph {
 
   _addObservableEdgesFromCurrentNode(previous, current, label) {
     var stack = [current];
+    var visited = [];
     while(stack.length !== 0){
       var node = stack.pop();
+      visited.push(node);
       var edges = node.edgesFromMe;
+      
       for(var i in edges){
         var edge = edges[i];
-        if(edge.isHidden){
-          this.addEdge(tempUID++, previous, edge.to, label);
+        if(edge.isHidden && !_.contains(visited, edge.to)){
+          if(!this.containsEdge(previous, edge.to, label)){
+            this.addEdge(tempUID++, previous, edge.to, label);
+          }
           stack.push(edge.to);
         }
       }
@@ -507,13 +536,18 @@ class Graph {
 
   _addObservableEdgesToCurrentNode(next, current, label) {
     var stack = [current];
+    var visited = [];
     while(stack.length !== 0){
       var node = stack.pop();
+      visited.push(node);
       var edges = node.edgesToMe;
+
       for(var i in edges){
         var edge = edges[i];
-        if(edge.isHidden){
-          this.addEdge(tempUID++, edge.from, next, label);
+        if(edge.isHidden && !_.contains(visited, edge.from)){
+          if(!this.containsEdge(edge.from, next, label)){
+            this.addEdge(tempUID++, edge.from, next, label);
+          }
           stack.push(edge.from);
         }
       }

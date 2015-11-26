@@ -56,7 +56,7 @@
         if(app.minimising) {
           for(let a in automata){
             automata[a].graph.abstraction();
-            automata[a].graph.bisimulation();
+            //automata[a].graph.bisimulation();
           }
           // only run bisimulation
           if(app.bisimulation){
