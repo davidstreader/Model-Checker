@@ -197,6 +197,26 @@ class Graph {
   }
 
   /**
+   * Returns a set of the final nodes in this graph.
+   *
+   * @returns {!Set} Set of node ids
+   */
+  get finalNodes() {
+    var nodes = [];
+    
+    // check each node to see if they are a final node
+    for(let n in this._nodeMap){
+      var node = this._nodeMap[n];
+      // add node to array if it is a final node
+      if(node.getMetaData('isTerminal') === 'stop'){
+        nodes.push(n);
+      }
+    }
+
+    return nodes;
+  }
+
+  /**
    * Get an edge in the graph.
    *
    * @param {!number} id - The id of the edge to get
@@ -289,6 +309,7 @@ class Graph {
    * @param {Graph.Edge} edge - The edge to remove
    */
   removeEdge(edge) {
+    console.log("remove edge");
     if (!edge || edge.graph !== this || this._edgeMap[edge.id] !== edge) {
       return;
     }
@@ -297,6 +318,35 @@ class Graph {
     delete this._edgeMap[edge.id].from._edgesFromMe[edge.id];
     delete this._edgeMap[edge.id];
     this._edgeCount -= 1;
+  }
+
+  /**
+   * Removes duplicate edges from this graph. An edge is determined to be a duplicate
+   * if a node has two or more edges from it that transition to the same node with the
+   * same label.
+   */
+  removeDuplicateEdges(){
+    // search all nodes for duplicate edges
+    var nodes = this._nodeMap;
+    for(var i in nodes){
+      var node = nodes[i];
+
+      // compare each edge from this node with all other edges from this node
+      var edges = node.edgesFromMe;
+      for(let j in edges){
+        var edge1 = edges[j];
+
+        for(let k in edges){
+          var edge2 = edges[k];
+
+          // remove edge if it is deemed to be a duplicate
+          if(j != k && edge1.to.id === edge2.to.id && edge1.label === edge2.label){
+            this.removeEdge(edge2);
+            delete edges[k];
+          }
+        }
+      }
+    }
   }
 
   /**
@@ -514,6 +564,9 @@ class Graph {
     }
   }
 
+  /**
+   *
+   */
   _addObservableEdgesFromCurrentNode(previous, current, label) {
     var stack = [current];
     var visited = [];
@@ -534,6 +587,9 @@ class Graph {
     }
   }
 
+  /**
+   *
+   */
   _addObservableEdgesToCurrentNode(next, current, label) {
     var stack = [current];
     var visited = [];
@@ -554,6 +610,9 @@ class Graph {
     }
   }
 
+  /**
+   *
+   */
   bisimulation() {
     // construct map of nodes and give them all the same color
     var coloredNodes = {};
@@ -561,22 +620,133 @@ class Graph {
       coloredNodes[n] = new Graph.ColoredNode(this.getNode(n));
     }
 
-    var nextColor = 1;
-    var colorMap = {};
-    var alphabet = this.constructAlphabet();
-    for(let a in alphabet){
-      colorMap[nextColor++] = new Graph.Color(0, 0, a);
+    var previousLength = 0;
+    var colorMap = this._constructColoring(coloredNodes);
+    coloredNodes = this._applyColoring(coloredNodes, colorMap);
+
+    // continue process until color map does not increase in size
+    while(previousLength < colorMap.length){
+      previousLength = colorMap.length;
+      colorMap = this._constructColoring(coloredNodes);
+      coloredNodes = this._applyColoring(coloredNodes, colorMap);
     }
 
-    for(let n in coloredNodes){
-      var node = coloredNodes[n];
-      
-      for(let c in colorMap){
-        var color = colorMap[c];
+    console.log(colorMap);
+    console.log(coloredNodes);
+
+    // merge nodes together that have the same colors
+    for(let i in colorMap){
+      var nodeIds = [];
+      for(let j in coloredNodes){
+        var node = coloredNodes[j];
+        if(node.color === i){
+          nodeIds.push(node.node.id);
+        }
       }
-
+      if(nodeIds.length > 1){
+        this.mergeNodes(nodeIds);
+      }
     }
 
+    this.removeDuplicateEdges();
+  }
+
+  /**
+   *
+   */
+  _constructColoring(coloredNodes) {
+    var colorMap = [[{from: 0, to: undefined, label: undefined}]];
+
+    // construct a coloring for all the nodes in this graph
+    for(let n in coloredNodes){
+        var node = coloredNodes[n];
+        var edges = node.node.edgesFromMe;
+        var colors = [];
+
+        // construct colorings based on the edges from each node
+        for(let e in edges){
+          var edge = edges[e];
+          var color = {from: node.color, to: coloredNodes[edge.to.id].color, label: edge.label};
+          // only add the color if it has not already been constructed
+          if(!this._containsColor(colors, [color])){
+            colors.push(color);
+          }
+        }
+
+        // check if the current color(s) are already in the color map
+        var contains = false
+        for(let i in colorMap){
+          contains = this._containsColor(colorMap[i], colors);
+          if(contains){
+            break;
+          }
+        }
+        if(!contains && colors.length !== 0){
+          colorMap.push(colors);
+        }
+    }
+
+    return colorMap;
+  }  
+
+  /**
+   *
+   */
+  _applyColoring(coloredNodes, colorMap) {
+    var index = 0;
+    var queue = [];
+    var finalNodes = this.finalNodes;
+
+    for(let i in finalNodes){
+      queue.push(coloredNodes[finalNodes[i]]);
+    }
+
+    while(index < queue.length){
+      var current = queue[index++];
+
+      var fromEdges = current.node.edgesFromMe;
+      for(let e in fromEdges){
+        var edge = fromEdges[e];
+
+        for(let i in colorMap){
+          var colors = colorMap[i];
+
+          for(let j in colors){
+            var color = colors[j];
+            if(current.color === color.from && edge.label === color.label){
+              current.color = i;
+            }
+          }
+        }
+      }
+      
+      var toEdges = current.node.edgesToMe;
+      for(var n in toEdges){
+        var edge = toEdges[n];
+        queue.push(coloredNodes[edge.from.id]);
+      }
+    }
+    
+    return coloredNodes;
+  }
+
+  /**
+   *
+   */
+  _containsColor(colors1, colors2){
+    for(let i in colors1){
+      var col1 = colors1[i];
+
+      for(let j in colors2){
+        var col2 = colors2[j];
+
+        if(col1.from === col2.from && col1.to === col2.to && col1.label === col2.label){
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 
   /**
@@ -830,38 +1000,36 @@ Graph.Node = class {
 
 };
 
-Graph.Color = class {
-
-  constructor(from, to, label){
-    this._from = from;
-    this._to = to;
-    this._label = label;
-  }
-
-  get from(){
-    return this._from;
-  }
-
-  get to(){
-    return this._to;
-  }
-
-  get label(){
-    return this._label;
-  }
-}
-
+/**
+ *
+ */
 Graph.ColoredNode = class {
 
+  /**
+   *
+   */
   constructor(node, color = 0) {
     this._node = node;
     this._color = color;
   }
 
+  /**
+   *
+   */
+  get node() {
+    return this._node;
+  }
+
+  /**
+   *
+   */
   get color() {
     return this._color;
   }
 
+  /**
+   *
+   */
   set color(color) {
     this._color = color;
     return this._color;

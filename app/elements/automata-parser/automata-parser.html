@@ -232,7 +232,6 @@
       if(hidden !== undefined){
         // get an array of edges in the current graph
         var edges = this._definitionsMap[defName].graph.edges;
-        console.log(edges);
         // check each edge to see if it needs to be updated
         edges.forEach(function(edge, index){
           if(_.contains(hidden, edge.label)){
