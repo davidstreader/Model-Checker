@@ -88,20 +88,20 @@ PEG.automataParser = (function() {
               return new Node.SequenceNode(from, to);
              },
         peg$c15 = function(relabel) {
-              return new Node.RelabelNode(relabel);
+              return relabel;
              },
         peg$c16 = function(hide) {
-              return new Node.HideNode(hide);
+              return hide;
              },
-        peg$c17 = function(relabel) { return relabel; },
+        peg$c17 = function(relabel) { return [relabel]; },
         peg$c18 = function(a, b) {
-              return new Node.RelabelNode([a].concat(b));
+              return b.concat(a);
           },
         peg$c19 = function(a) {
-              return new Node.HideNode(a.action);
+              return [a.action];
              },
         peg$c20 = function(a, b) {
-                return new Node.HideNode([a.action].concat(b.hidden));
+                return b.concat(a.action);
              },
         peg$c21 = function(process) {
               return process;
@@ -133,8 +133,8 @@ PEG.automataParser = (function() {
                 return temp;
              },
         peg$c37 = function(a, b) {
-              var relabel = {"new-label":a.action, "old-label": b.action};
-                return new Node.RelabelNode(relabel);
+              return {"new-label":a.action, "old-label": b.action};
+                //return new Node.RelabelNode(relabel);
              },
         peg$c38 = "(",
         peg$c39 = { type: "literal", value: "(", description: "\"(\"" },
@@ -2000,14 +2000,6 @@ PEG.automataParser = (function() {
         ActionNode: function(action){
           this.type = 'action';
           this.action = action;
-        },
-        RelabelNode: function(relabels){
-          this.type = 'relabel';
-          this.relabels = relabels;
-        },
-        HideNode: function(hidden){
-          this.type = 'hide';
-          this.hidden = hidden;
         },
         StopNode: function(){
           this.type = 'stop';

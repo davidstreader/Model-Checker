@@ -207,16 +207,14 @@
     _interpretRelabelling: function(relabel, defName){
       // if relabel is undefined there are no edges to be relabelled
       if(relabel !== undefined){
-        // get an array of edges to be relabelled and what they are to be relabelled to
-        var relabelledActions = this._processRelabelledActions(relabel);
         // get an array of edges in the current graph
         var edges = this._definitionsMap[defName].graph.edges;
         // check each edge to see if it needs to be updated
         edges.forEach(function(edge){
-          for(var i = 0; i < relabelledActions.length; i++){
+          for(var i = 0; i < relabel.length; i++){
             // only update the edge if it needs to be relabelled
-            if(relabelledActions[i]['old-label'] === edge.label){
-              edge.label = relabelledActions[i]['new-label'];
+            if(relabel[i]['old-label'] === edge.label){
+              edge.label = relabel[i]['new-label'];
             }
           }
         }.bind(this));
@@ -230,15 +228,14 @@
      * @param {string} defName - name of the definition currently getting parsed in the parse tree
      */
     _interpretHiddenActions: function(hidden, defName){
+      console.log(hidden);
       // if hidden is undefined there are no edges to change
       if(hidden !== undefined){
-        // get an array of the edges to be hidden
-        var hiddenActions = this._processHiddenActions(hidden);
         // get an array of edges in the current graph
         var edges = this._definitionsMap[defName].graph.edges;
         // check each edge to see if it needs to be updated
         edges.forEach(function(edge, index){
-          if(_.contains(hiddenActions, edge.label)){
+          if(_.contains(hidden, edge.label)){
             // only updates the edge if it needs to be hidden
             edge.isHidden = true;
           }
