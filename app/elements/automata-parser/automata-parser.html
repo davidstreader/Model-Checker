@@ -185,7 +185,7 @@
         var root = undefined;
         if(definition.type === 'definition'){
           root = definitionMap[name].graph.addNode(
-            rootId === undefined ? this._useNextNodeUid() : rootId
+            rootId === undefined ? NodeUid.nextNodeUid : rootId
           );
         }
         else{
@@ -277,13 +277,13 @@
      */
     _interpretSequence: function(sequence, extendtionNode, definitionMap, defName, referenceMap) {
       var graph = definitionMap[defName].graph;         // get the graph
-      var node = graph.addNode(this._useNextNodeUid());  // add a new node to the graph
+      var node = graph.addNode(NodeUid.nextNodeUid);  // add a new node to the graph
       // check if edge being added is not a tau
       if(this._getActionFromNode(sequence.from) === 'tau'){
         throw new this.InterpreterException("\'tau\' is not a valid name for an action label.");
       }
       // add an edge connect the new node to the rest of the graph
-      graph.addEdge(this._useNextEdgeUid(), extendtionNode, node, this._getActionFromNode(sequence.from));
+      graph.addEdge(EdgeUid.nextEdgeUid, extendtionNode, node, this._getActionFromNode(sequence.from));
       this._interpretProcess(sequence.to, node, definitionMap, defName, referenceMap);
     },
     /**
@@ -340,7 +340,7 @@
         
         for(var j = 0; j < graph2.nodeCount; j++){
           var terminalState2 = graph2.getNode(j + graph2.rootId)._meta['isTerminal'] === 'stop';
-          var node = graph.addNode(this._useNextNodeUid(), (i + "." + j));
+          var node = graph.addNode(NodeUid.nextNodeUid, (i + "." + j));
 
           // if both states are terminal make new node terminal
           if(terminalState1 && terminalState2){
@@ -366,17 +366,17 @@
             if(coaccessible1 !== -1 && coaccessible2 !== -1) {
               var toId = ((coaccessible1 - graph1.rootId) * graph2.nodeCount) + (coaccessible2 - graph2.rootId) + graph.rootId;
               var isHidden = graph1.isHiddenEdge(action);
-              graph.addEdge(this._useNextEdgeUid(), graph.getNode(fromId), graph.getNode(toId), action, isHidden);
+              graph.addEdge(EdgeUid.nextEdgeUid, graph.getNode(fromId), graph.getNode(toId), action, isHidden);
             }
             else if(coaccessible1 !== -1 && !graph2.containsEdgeInAlphabet(action)) {
               var toId = (coaccessible1 * graph2.nodeCount) + j + graph.rootId;
               var isHidden = graph1.isHiddenEdge(action);
-              graph.addEdge(this._useNextEdgeUid(), graph.getNode(fromId), graph.getNode(toId), action, isHidden);
+              graph.addEdge(EdgeUid.nextEdgeUid, graph.getNode(fromId), graph.getNode(toId), action, isHidden);
             }
             else if(coaccessible2 !== -1 && !graph1.containsEdgeInAlphabet(action)) {
               var toId = (i * graph2.nodeCount) + (coaccessible2 - graph2.rootId) + graph.rootId;
               var isHidden = graph2.isHiddenEdge(action);
-              graph.addEdge(this._useNextEdgeUid(), graph.getNode(fromId), graph.getNode(toId), action, isHidden);
+              graph.addEdge(EdgeUid.nextEdgeUid, graph.getNode(fromId), graph.getNode(toId), action, isHidden);
             }
           }
         }

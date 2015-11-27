@@ -2,7 +2,25 @@
 // jshint esnext:true
 'use strict';
 
-var tempUID = 100;
+var nodeUid = 0;
+var edgeUid = 0;
+
+class NodeUid {
+
+  static get nextNodeUid() {
+    console.log("Node UID = " + nodeUid + "\n");
+    return nodeUid++;
+  }
+
+}
+
+class EdgeUid {
+
+  static get nextEdgeUid() {
+    console.log("Edge UID = " + edgeUid + "\n");
+    return edgeUid++;
+  }
+}
 
 /**
  * A graph data structure (a collections of nodes and edges).
@@ -536,8 +554,9 @@ class Graph {
    * tau actions and adds the observable transitions.
    */
   abstraction() {
-    for(var i in this.nodes){
-      var node = this.getNode(i);
+    var nodes = this.nodes;
+    for(var i in nodes){
+      var node = nodes[i];
 
       if(node === undefined){
         continue;
@@ -578,7 +597,7 @@ class Graph {
         var edge = edges[i];
         if(edge.isHidden && !_.contains(visited, edge.to)){
           if(!this.containsEdge(previous, edge.to, label)){
-            this.addEdge(tempUID++, previous, edge.to, label);
+            this.addEdge(EdgeUid.nextEdgeUid, previous, edge.to, label);
           }
           stack.push(edge.to);
         }
@@ -601,7 +620,7 @@ class Graph {
         var edge = edges[i];
         if(edge.isHidden && !_.contains(visited, edge.from)){
           if(!this.containsEdge(edge.from, next, label)){
-            this.addEdge(tempUID++, edge.from, next, label);
+            this.addEdge(EdgeUid.nextEdgeUid, edge.from, next, label);
           }
           stack.push(edge.from);
         }
