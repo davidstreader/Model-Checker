@@ -649,44 +649,6 @@ class Graph {
   }
 
   /**
-   *
-   */
-  _constructColoring2(coloredNodes) {
-    var colorMap = [[{from: 0, to: undefined, label: undefined}]];
-
-    // construct a coloring for all the nodes in this graph
-    for(let n in coloredNodes){
-        var node = coloredNodes[n];
-        var edges = node.node.edgesFromMe;
-        var colors = [];
-
-        // construct colorings based on the edges from each node
-        for(let e in edges){
-          var edge = edges[e];
-          var color = {from: node.color, to: coloredNodes[edge.to.id].color, label: edge.label};
-          // only add the color if it has not already been constructed
-          if(!this._containsColor(colors, [color])){
-            colors.push(color);
-          }
-        }
-
-        // check if the current color(s) are already in the color map
-        var equals = false
-        for(let i in colorMap){
-          equals = this._equalsColor(colorMap[i], colors);
-          if(equals){
-            break;
-          }
-        }
-        if(!equals && colors.length !== 0){
-          colorMap.push(colors);
-        }
-    }
-
-    return colorMap;
-  }
-
-  /**
    * Helper function for the bisimulation function which constructs and returns
    * a color map for the specified colored nodes.
    *
