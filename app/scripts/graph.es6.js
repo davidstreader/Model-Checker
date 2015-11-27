@@ -309,7 +309,6 @@ class Graph {
    * @param {Graph.Edge} edge - The edge to remove
    */
   removeEdge(edge) {
-    console.log("remove edge");
     if (!edge || edge.graph !== this || this._edgeMap[edge.id] !== edge) {
       return;
     }
@@ -611,28 +610,25 @@ class Graph {
   }
 
   /**
-   *
+   * Performs a bisimulation coloring on this graph, which gives each node in the graph a colouring
+   * based on transitions it makes to neighbouring nodes. Once the colouring is completed any nodes
+   * with the same colour are considered equivalent and are merged together.
    */
   bisimulation() {
     // construct map of nodes and give them all the same color
-    var coloredNodes = {};
+    var coloredNodes = [];
     for(let n in this.nodes){
       coloredNodes[n] = new Graph.ColoredNode(this.getNode(n));
     }
 
-    var previousLength = 0;
-    var colorMap = this._constructColoring(coloredNodes);
-    coloredNodes = this._applyColoring(coloredNodes, colorMap);
-
     // continue process until color map does not increase in size
+    var previousLength = -1;
+    var colorMap = []
     while(previousLength < colorMap.length){
       previousLength = colorMap.length;
       colorMap = this._constructColoring(coloredNodes);
       coloredNodes = this._applyColoring(coloredNodes, colorMap);
     }
-
-    console.log(colorMap);
-    console.log(coloredNodes);
 
     // merge nodes together that have the same colors
     for(let i in colorMap){
@@ -648,13 +644,14 @@ class Graph {
       }
     }
 
+    // remove duplicate edges
     this.removeDuplicateEdges();
   }
 
   /**
    *
    */
-  _constructColoring(coloredNodes) {
+  _constructColoring2(coloredNodes) {
     var colorMap = [[{from: 0, to: undefined, label: undefined}]];
 
     // construct a coloring for all the nodes in this graph
@@ -674,73 +671,126 @@ class Graph {
         }
 
         // check if the current color(s) are already in the color map
-        var contains = false
+        var equals = false
         for(let i in colorMap){
-          contains = this._containsColor(colorMap[i], colors);
-          if(contains){
+          equals = this._equalsColor(colorMap[i], colors);
+          if(equals){
             break;
           }
         }
-        if(!contains && colors.length !== 0){
+        if(!equals && colors.length !== 0){
           colorMap.push(colors);
         }
     }
 
     return colorMap;
-  }  
+  }
 
   /**
+   * Helper function for the bisimulation function which constructs and returns
+   * a color map for the specified colored nodes.
    *
+   * @param {!Array} coloredNodes - The nodes to construct a color map for
+   * @returns {!Array} A color map to color the specified nodes with
    */
-  _applyColoring(coloredNodes, colorMap) {
-    var index = 0;
-    var queue = [];
-    var finalNodes = this.finalNodes;
+  _constructColoring(coloredNodes){
+    var colorMap = [];
+    // get coloring for each node in the graph
+    for(let n in coloredNodes){
+      var node = coloredNodes[n];
+      var coloring = this._constructNodeColoring(node, coloredNodes);
 
-    for(let i in finalNodes){
-      queue.push(coloredNodes[finalNodes[i]]);
-    }
-
-    while(index < queue.length){
-      var current = queue[index++];
-
-      var fromEdges = current.node.edgesFromMe;
-      for(let e in fromEdges){
-        var edge = fromEdges[e];
-
-        for(let i in colorMap){
-          var colors = colorMap[i];
-
-          for(let j in colors){
-            var color = colors[j];
-            if(current.color === color.from && edge.label === color.label){
-              current.color = i;
-            }
-          }
+      // only add coloring if it is not a duplicate
+      var equals = false;
+      for(let c in colorMap){
+        equals = _.isEqual(colorMap[c], coloring);
+        if(equals){
+          break;
         }
       }
-      
-      var toEdges = current.node.edgesToMe;
-      for(var n in toEdges){
-        var edge = toEdges[n];
-        queue.push(coloredNodes[edge.from.id]);
+      if(!equals){
+        colorMap.push(coloring);
       }
     }
-    
+
+    return colorMap;
+  }
+
+  /**
+   * Helper function for the construct coloring function which constructs a coloring
+   * for a single colored node.
+   *
+   * @param {!Graph.ColoredNode} coloredNode - The node to construct coloring for
+   * @param {!Array} coloredNodes - Array of colored nodes
+   * @returns {!Array} The coloring for the specified colored node
+   */
+  _constructNodeColoring(coloredNode, coloredNodes) {
+    var colors = [];
+
+    // construct coloring for the specified node
+    var edges = coloredNode.node.edgesFromMe;
+    for(let e in edges){
+      var edge = edges[e];
+      var color = {from: coloredNode.color, to: coloredNodes[edge.to.id].color, label: edge.label}
+      
+      // only add color if it is not a duplicate
+      if(!this._containsColor(colors, [color])){
+        colors.push(color);
+      }
+    }
+
+    // if current node is a stop node then give it the empty coloring
+    if(colors.length === 0){
+      colors.push({from: 0, to: undefined, label: undefined});
+    }
+
+    return colors;
+  }
+
+  /**
+   * Helper function for the bisimulation function which applies a coloring to
+   * the specified colored nodes based on the specified color map.
+   *
+   * @param {!Array} coloredNodes - Array of colored nodes
+   * @param {!Array} colorMap - map of colors
+   * @returns {!Array} The new coloring of the colored nodes
+   */
+  _applyColoring(coloredNodes, colorMap) {
+    var newColors = []
+    // get new color for each node in the graph
+    for(let n in coloredNodes){
+      var node = coloredNodes[n];
+
+      // work out new color for the current node
+      var coloring = this._constructNodeColoring(node, coloredNodes);
+      for(let c in colorMap){
+        if(_.isEqual(colorMap[c], coloring)){
+          newColors[n] = c;
+          break;
+        }
+      }
+    }
+
+    // apply new color to each node
+    for(let i in newColors){
+      coloredNodes[i].color = newColors[i];
+    }
+
     return coloredNodes;
   }
 
   /**
+   * Returns true if any of the colors in the second colors array are also in
+   * the first. Otherwise returns false.
    *
+   * @param {!Array} colors1 - First array of colors
+   * @param {!Array} colors2 - Second array of colors
+   * @returns {!boolean} True if same color is in both arrays, otherwise false
    */
   _containsColor(colors1, colors2){
     for(let i in colors1){
-      var col1 = colors1[i];
-
       for(let j in colors2){
-        var col2 = colors2[j];
-
-        if(col1.from === col2.from && col1.to === col2.to && col1.label === col2.label){
+        if(_.isEqual(colors1[i], colors2[j])){
           return true;
         }
       }
@@ -1008,7 +1058,7 @@ Graph.ColoredNode = class {
   /**
    *
    */
-  constructor(node, color = 0) {
+  constructor(node, color = '0') {
     this._node = node;
     this._color = color;
   }
