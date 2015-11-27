@@ -8,8 +8,11 @@ var edgeUid = 0;
 class NodeUid {
 
   static get nextNodeUid() {
-    console.log("Node UID = " + nodeUid + "\n");
     return nodeUid++;
+  }
+
+  static reset(){
+    nodeUid = 0;
   }
 
 }
@@ -17,8 +20,11 @@ class NodeUid {
 class EdgeUid {
 
   static get nextEdgeUid() {
-    console.log("Edge UID = " + edgeUid + "\n");
     return edgeUid++;
+  }
+
+  static reset() {
+    edgeUid = 0;
   }
 }
 
@@ -636,8 +642,10 @@ class Graph {
   bisimulation() {
     // construct map of nodes and give them all the same color
     var coloredNodes = [];
-    for(let n in this.nodes){
-      coloredNodes[n] = new Graph.ColoredNode(this.getNode(n));
+    var nodes = this.nodes;
+    for(let n in nodes){
+      var node = nodes[n];
+      coloredNodes[node.id] = new Graph.ColoredNode(node);
     }
 
     // continue process until color map does not increase in size

@@ -141,6 +141,8 @@
      */
     _interpretParseTree: function(parseTree) {
       this._resetInterpreter();
+      NodeUid.reset();
+      EdgeUid.reset();
       // _interpretModel
       parseTree.forEach(function(model) {
         this._interpretDefinitions(model.definitions);
