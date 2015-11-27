@@ -52,15 +52,17 @@
           return;
         }
 
-        // if minimisation has been select then perform abstraction on all automata
+        // if minimisation has been selected then perform abstraction on all automata
         if(app.minimising) {
           for(let a in automata){
             automata[a].graph.abstraction();
-            automata[a].graph.bisimulation();
           }
-          // only run bisimulation
-          if(app.bisimulation){
+        }
 
+        // if bisimulation has been selected then perform bisimulation on all automata
+        if(app.bisimulation){
+          for(let a in automata){
+            automata[a].graph.bisimulation();
           }
         }
 
