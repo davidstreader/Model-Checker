@@ -211,12 +211,12 @@ Process_Hide
      }
 
 Process_Abstraction
-  =  symbol_Abstraction _ symbol_BracketLeft _ name:Define_Name _ symbol_BracketRight {
+  =  symbol_Abstraction _ symbol_BracketLeft _ name:Process_Name _ symbol_BracketRight {
       return new Node.AbstractionNode(name);
      }
   
 Process_Simplification
-  =  symbol_Simplification _ symbol_BracketLeft _ name:Define_Name _ symbol_BracketRight {
+  =  symbol_Simplification _ symbol_BracketLeft _ name:Process_Name _ symbol_BracketRight {
       return new Node.SimplificationNode(name);
      }
 
