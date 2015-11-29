@@ -439,7 +439,8 @@ class Graph {
         this._edgeMap[key].id,
         clone.getNode(this._edgeMap[key].from.id),  // make sure to use the copied node, not the original
         clone.getNode(this._edgeMap[key].to.id),
-        this._edgeMap[key].label);
+        this._edgeMap[key].label,
+        this._edgeMap[key].isHidden);
     }
 
     // set the root
