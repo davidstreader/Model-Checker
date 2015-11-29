@@ -41,6 +41,14 @@
       this.type = 'name';
       this.name = name;
     },
+    AbstractionNode: function(name){
+      this.type = 'abstraction';
+      this.name = name;
+    },
+    SimplificationNode: function(name){
+      this.type = 'simplification';
+      this.name = name;
+    },
     ActionNode: function(action){
       this.type = 'action';
       this.action = action;
@@ -98,15 +106,22 @@ ParallelModel
  * Constructs a standard definition of an automaton.
  */
 Definition
-  =  name:Name _ symbol_DefinitionAssignment _ process:Process_Standard {
+  =  name:Define_Name _ symbol_DefinitionAssignment _ process:Process_Standard {
       return new Node.DefinitionNode(name, process);
      }
+  /  name:Define_Name _ symbol_DefinitionAssignment _ abstract:Process_Abstraction {
+      return new Node.DefinitionNode(name, abstract);
+     }
+  /  name:Define_Name _ symbol_DefinitionAssignment _ simplify:Process_Simplification {
+      return new Node.DefinitionNode(name, simplify);
+     }
+  
 
 /**
  * Constructs a definition of a parallel composition of two automata.
  */
 Parallel_Definition
-  =  name:Name _ symbol_DefinitionAssignment _ process:Process_Parallel {
+  =  name:Define_Name _ symbol_DefinitionAssignment _ process:Process_Parallel {
       var n = new Node.NameNode("||" + name.name);
       return new Node.ParallelDefinitionNode(n, process);
      }
@@ -195,6 +210,16 @@ Process_Hide
       return hide;
      }
 
+Process_Abstraction
+  =  symbol_Abstraction _ symbol_BracketLeft _ name:Define_Name _ symbol_BracketRight {
+      return new Node.AbstractionNode(name);
+     }
+  
+Process_Simplification
+  =  symbol_Simplification _ symbol_BracketLeft _ name:Define_Name _ symbol_BracketRight {
+      return new Node.SimplificationNode(name);
+     }
+
 /**
  * Attempts to parse either a Model or a ParallelModel.
  */
@@ -213,7 +238,7 @@ Label_OR_Process_Parallel
  * Attempts to parse either a Name or a Choice.
  */
 Name_OR_Choice
-  = Name
+  = Process_Name
   / Process_Choice
 
 /**
@@ -221,13 +246,13 @@ Name_OR_Choice
  */
 Name_OR_Sequence
   =  Process_Sequence
-  /  Name
+  /  Process_Name
 
 /**
  * Attempts to parse either a Name or a Label.
  */
 Name_OR_Label
-  =  Name
+  =  Process_Name
   /  Label
 
 /**
@@ -294,10 +319,15 @@ Error
 /**
  * The name given to a definition of an automaton.
  */
-Name
+Define_Name
   =  name:$([A-Z][A-Za-z0-9_]*) {
       return new Node.NameNode(name);
      }
+
+Process_Name
+  =  Define_Name
+  /  Process_Abstraction
+  /  Process_Simplification
 
 /**
  * A process which takes an automaton from one state to another.
@@ -311,9 +341,9 @@ Action
  * A new label to be given to the definition of an automaton.
  */
 Label
-  =  label:Action _ symbol_Label _ name:Name {
+  =  label:Action _ symbol_Label _ name:Define_Name {
       var temp = {"label":label.action, "name":name.name}; 
-        return temp;
+      return temp;
      }
 
 /**
@@ -322,7 +352,6 @@ Label
 Relabel
   =  a:Action _ symbol_Relabel _ b:Action {
       return {"new-label":a.action, "old-label": b.action};
-        //return new Node.RelabelNode(relabel);
      }
 
 /**
@@ -341,6 +370,8 @@ symbol_Sequence = '->'
 symbol_Label = ':'
 symbol_Relabel = '/'
 symbol_Hide = '\\'
+symbol_Abstraction = 'abs'
+symbol_Simplification = 'simp'
 
 _ 'optional whitespace'
   =  [ \t\n\r]*
