@@ -440,28 +440,58 @@
       }
     },
     /**
+     * Interprets a parse tree abstraction node.
      *
+     * @private
+     * @param {!object} ptNode             - A parse tree abstraction node
+     * @param {!Graph.Node} extendtionNode - The node in the graph to build on from
+     * @param {!object} definitionMap      - The definition map being used
+     * @param {!string} defName            - The name of the current definition
+     * @param {!object} referenceMap       - The reference map that store references already known about
      */
     _interpretAbstraction: function(ptNode, extendtionNode, definitionMap, defName, referenceMap) {
-      var reference = this._getNameFromPTNode(ptNode).name;
+      var isNested = false;
+      var name = this._getNameFromPTNode(ptNode).name;
+      // check if there are any nested functions within this process
+      if(typeof(name) === 'object'){
+        this._interpretProcess(ptNode.name, extendtionNode, definitionMap, defName, referenceMap);
+        isNested = true;
+      }
+      var reference = this._getNameFromFunctionNode(ptNode);
       // throw an error if the definition to be abstracted has not been defined
       if(definitionMap[reference] === undefined){
         throw new this.InterpreterException('\'' + reference + '\' has not been defined.');
       }
-      var graph = definitionMap[reference].graph;
+      // perfrom the abstraction function on the required graph
+      var graph = (isNested) ? definitionMap[defName].graph : definitionMap[reference].graph;
       definitionMap[defName].graph = graph.deepClone();
       definitionMap[defName].graph.abstraction();
     },
     /**
+     * Interprets a parse tree simplification node.
      *
+     * @private
+     * @param {!object} ptNode             - A parse tree simplification node
+     * @param {!Graph.Node} extendtionNode - The node in the graph to build on from
+     * @param {!object} definitionMap      - The definition map being used
+     * @param {!string} defName            - The name of the current definition
+     * @param {!object} referenceMap       - The reference map that store references already known about
      */
     _interpretSimplification: function(ptNode, extendtionNode, definitionMap, defName, referenceMap) {
-      var reference = this._getNameFromPTNode(ptNode).name;
+      var isNested = false;
+      var name = this._getNameFromPTNode(ptNode).name;
+      // check if there are any nested functions within this process
+      if(typeof(name) === 'object'){
+        this._interpretProcess(ptNode.name, extendtionNode, definitionMap, defName, referenceMap);
+        isNested = true;
+      }
+      var reference = this._getNameFromFunctionNode(ptNode);
       // throw an error if the definition to be simplified has not been defined
       if(definitionMap[reference] === undefined){
         throw new this.InterpreterException('\'' + reference + '\' has not been defined.');
       }
-      var graph = definitionMap[reference].graph;
+      // perform the bisimulation function on the required graph
+      var graph = (isNested) ? definitionMap[defName].graph : definitionMap[reference].graph;
       definitionMap[defName].graph = graph.deepClone();
       definitionMap[defName].graph.bisimulation();
     },
@@ -520,6 +550,16 @@
      */
     _getNameFromPTNode: function(ptNode) {
       return ptNode.name;
+    },
+    /**
+     *
+     */
+    _getNameFromFunctionNode: function(functionNode) {
+      var name = functionNode.name;
+      while(typeof(name) !== 'string'){
+        name = name.name;
+      }
+      return name;
     },
     /**
      * Get the action from a parse tree action node.
