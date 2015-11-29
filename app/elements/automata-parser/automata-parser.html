@@ -272,7 +272,9 @@
         case 'abstraction':
           this._interpretAbstraction(process, extendtionNode, definitionMap, defName, referenceMap);
           break;
-        // add simplification
+        case 'simplification':
+          this._interpretSimplification(process, extendtionNode, definitionMap, defName, referenceMap);
+          break;
         case 'stop':
           this._interpretStop(process, extendtionNode, definitionMap, defName, referenceMap);
           break;
@@ -454,7 +456,14 @@
      *
      */
     _interpretSimplification: function(ptNode, extendtionNode, definitionMap, defName, referenceMap) {
-
+      var reference = this._getNameFromPTNode(ptNode).name;
+      // throw an error if the definition to be simplified has not been defined
+      if(definitionMap[reference] === undefined){
+        throw new this.InterpreterException('\'' + reference + '\' has not been defined.');
+      }
+      var graph = definitionMap[reference].graph;
+      definitionMap[defName].graph = graph.deepClone();
+      definitionMap[defName].graph.bisimulation();
     },
     /**
      *
