@@ -255,13 +255,30 @@
      */
     _interpretProcess: function(process, extendtionNode, definitionMap, defName, referenceMap) {
       switch (process.type) {
-        case 'sequence': this._interpretSequence(process, extendtionNode, definitionMap, defName, referenceMap);  break;
-        case 'choice':   this._interpretChoice(process, extendtionNode, definitionMap, defName, referenceMap);    break;
-        //case 'parallel': this._interpretParallel(process, extendtionNode, definitionMap, defName, referenceMap);  break;
-        case 'parallel': break;
-        case 'name':     this._interpretName(process, extendtionNode, definitionMap, defName, referenceMap);      break;
-        case 'stop':     this._interpretStop(process, extendtionNode, definitionMap, defName, referenceMap);      break;
-        case 'error':    this._interpretError(process, extendtionNode, definitionMap, defName, referenceMap);     break;
+        case 'sequence':
+          this._interpretSequence(process, extendtionNode, definitionMap, defName, referenceMap);
+          break;
+        case 'choice':
+          this._interpretChoice(process, extendtionNode, definitionMap, defName, referenceMap);
+          break;
+        //case 'parallel':
+          //this._interpretParallel(process, extendtionNode, definitionMap, defName, referenceMap);
+          //break;
+        case 'parallel':
+          break;
+        case 'name':
+          this._interpretName(process, extendtionNode, definitionMap, defName, referenceMap);
+          break;
+        case 'abstraction':
+          this._interpretAbstraction(process, extendtionNode, definitionMap, defName, referenceMap);
+          break;
+        // add simplification
+        case 'stop':
+          this._interpretStop(process, extendtionNode, definitionMap, defName, referenceMap);
+          break;
+        case 'error':
+          this._interpretError(process, extendtionNode, definitionMap, defName, referenceMap);
+          break;
         default:
           console.error('Trying to interpret invalid process type "' + process.type + '"');
           break;
@@ -419,6 +436,25 @@
       else {
         definitionMap[defName].graph.mergeNodes([referenceMap[references].id, extendtionNode.id]);
       }
+    },
+    /**
+     *
+     */
+    _interpretAbstraction: function(ptNode, extendtionNode, definitionMap, defName, referenceMap) {
+      var reference = this._getNameFromPTNode(ptNode).name;
+      // throw an error if the definition to be abstracted has not been defined
+      if(definitionMap[reference] === undefined){
+        throw new this.InterpreterException('\'' + reference + '\' has not been defined.');
+      }
+      var graph = definitionMap[reference].graph;
+      definitionMap[defName].graph = graph.deepClone();
+      definitionMap[defName].graph.abstraction();
+    },
+    /**
+     *
+     */
+    _interpretSimplification: function(ptNode, extendtionNode, definitionMap, defName, referenceMap) {
+
     },
     /**
      *
