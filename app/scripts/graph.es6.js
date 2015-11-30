@@ -775,26 +775,6 @@ class Graph {
   }
 
   /**
-   * Returns true if any of the colors in the second colors array are also in
-   * the first. Otherwise returns false.
-   *
-   * @param {!Array} colors1 - First array of colors
-   * @param {!Array} colors2 - Second array of colors
-   * @returns {!boolean} True if same color is in both arrays, otherwise false
-   */
-  _containsColor(colors1, colors2){
-    for(let i in colors1){
-      for(let j in colors2){
-        if(_.isEqual(colors1[i], colors2[j])){
-          return true;
-        }
-      }
-    }
-
-    return false;
-  }
-
-  /**
    * Create a deep clone of an object or array.
    *
    * @protected
