@@ -688,7 +688,7 @@ class Graph {
     // get coloring for each node in the graph
     for(let n in coloredNodes){
       var node = coloredNodes[n];
-      var coloring = this._constructNodeColoring(node, coloredNodes);
+      var coloring = node.constructNodeColoring(coloredNodes);
 
       // only add coloring if it is not a duplicate
       var equals = false;
@@ -707,42 +707,6 @@ class Graph {
   }
 
   /**
-   * Helper function for the construct coloring function which constructs a coloring
-   * for a single colored node.
-   *
-   * @param {!Graph.ColoredNode} coloredNode - The node to construct coloring for
-   * @param {!Array} coloredNodes - Array of colored nodes
-   * @returns {!Array} The coloring for the specified colored node
-   */
-  _constructNodeColoring(coloredNode, coloredNodes) {
-    var colors = new Graph.NodeColoring();
-
-    // construct coloring for the specified node
-    var edges = coloredNode.node.edgesFromMe;
-    for(let e in edges){
-      var edge = edges[e];
-      var from = coloredNode.color;
-      var to = coloredNodes[edge.to.id].color;
-      var label = edge.label;
-      var color = Graph.NodeColoring.constructColor(from, to, label);
-      //{from: coloredNode.color, to: coloredNodes[edge.to.id].color, label: edge.label}
-      
-      // only add color if it is not a duplicate
-      if(!colors.contains(color)){
-        colors.add(color);
-      }
-    }
-
-    // if current node is a stop node then give it the empty coloring
-    if(colors.length === 0){
-      colors.add(Graph.NodeColoring.constructColor(0, undefined, undefined));
-      //colors.push({from: 0, to: undefined, label: undefined});
-    }
-
-    return colors;
-  }
-
-  /**
    * Helper function for the bisimulation function which applies a coloring to
    * the specified colored nodes based on the specified color map.
    *
@@ -757,7 +721,7 @@ class Graph {
       var node = coloredNodes[n];
 
       // work out new color for the current node
-      var coloring = this._constructNodeColoring(node, coloredNodes);
+      var coloring = node.constructNodeColoring(coloredNodes);
       for(let c in colorMap){
         if(colorMap[c].equals(coloring.coloring)){
           newColors[n] = c;
@@ -1167,6 +1131,38 @@ Graph.ColoredNode = class {
   set color(color) {
     this._color = color;
     return this._color;
+  }
+
+  /**
+   * Constructs a node coloring for this node.
+   *
+   * @param {!Array} coloredNodes - Array of colored nodes
+   * @returns {!Array} The coloring for the specified colored node
+   */
+  constructNodeColoring(coloredNodes) {
+    var colors = new Graph.NodeColoring();
+
+    // construct coloring for the specified node
+    var edges = this._node.edgesFromMe;
+    for(let e in edges){
+      var edge = edges[e];
+      var from = this._color;
+      var to = coloredNodes[edge.to.id].color;
+      var label = edge.label;
+      var color = Graph.NodeColoring.constructColor(from, to, label);
+      
+      // only add color if it is not a duplicate
+      if(!colors.contains(color)){
+        colors.add(color);
+      }
+    }
+
+    // if current node is a stop node then give it the empty coloring
+    if(colors.length === 0){
+      colors.add(Graph.NodeColoring.constructColor(0, undefined, undefined));
+    }
+
+    return colors;
   }
 };
 
