@@ -146,11 +146,11 @@
       // _interpretModel
       parseTree.forEach(function(model) {
         this._interpretDefinitions(model.definitions);
+        this._processReferences();
         var defName = model.definitions[0].name.name;
         this._interpretRelabelling(model.relabel, defName);
         this._interpretHiddenActions(model.hidden, defName);
       }.bind(this));
-      this._processReferences();
       this._relabelNodes(true);
       return this._buildAutomataArray();
     },
