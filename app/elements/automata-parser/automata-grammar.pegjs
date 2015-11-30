@@ -82,7 +82,7 @@ Model
       return new Node.ModelNode(definition, undefined, relabel, undefined);
      }
   /  _ definition:Definition _ symbol_DefinitionListSeparator _ model:Model _  {
-      return new Node.ModelNode(definition, model.definitions);
+      return new Node.ModelNode(definition, model.definitions, model.relabel, model.hidden);
      }
   /  _ definition:Definition _ hide:Process_Hide _ symbol_DefinitionListEnd _ {
       return new Node.ModelNode(definition, undefined, undefined, hide);
