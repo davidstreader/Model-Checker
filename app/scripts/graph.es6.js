@@ -357,12 +357,20 @@ class Graph {
    */
   removeHiddenEdges() {
     for(var i in this._edgeMap){
-      var edge = this.getEdge(i);
+      var edge = this._edgeMap[i];
       // remove edge if it is hidden
       if(edge.isHidden){
         this.removeEdge(edge);
       }
     }
+
+    for(var i in this._nodeMap){
+      var node = this._nodeMap[i];
+      if(node.edgesToMe.length === 0){
+        node.addMetaData('startNode', true);
+      }
+    }
+    console.log(this._nodeMap);
   }
 
   /**
@@ -1150,6 +1158,7 @@ Graph.Operations = class {
     }
 
     clone.removeHiddenEdges();
+    console.log(clone);
     return clone;
   }
 
@@ -1316,6 +1325,94 @@ Graph.Operations = class {
     }
 
     return coloredNodes;
+  }
+
+  /**
+   * Constructs and returns a parallel composition of the two specified graphs.
+   *
+   * @class
+   * @param {!Object} graph1 - the first graph
+   * @param {!Object} graph2 - the second graph
+   * @returns - parallel composition of the two graphs
+   */
+  static parallelComposition(graph1, graph2) {
+    var graph = this._combineStates(graph1, graph2);
+    var alphabet = graph1.alphabetUnion(graph2);
+
+    // add edges
+    for(var i = 0; i < graph1.nodeCount; i++){
+      var node1 = graph1.getNode(i + graph1.rootId);
+          
+      for(var j = 0; j < graph2.nodeCount; j++){
+        var node2 = graph2.getNode(j + graph2.rootId);
+        var fromId = (i * graph2.nodeCount) + j + graph.rootId;
+
+        for(let action in alphabet){
+
+          var coaccessible1 = node1.coaccessible(action); // either -1 or the node id it transitions to
+          var coaccessible2 = node2.coaccessible(action); // either -1 or the node id it transitions to
+
+          // check if an edge is needed from the current combined states
+
+          // check if the current action is performed by both the current nodes
+          if(coaccessible1 !== -1 && coaccessible2 !== -1) {
+            // calculate the id of the node the new edge is transitioning to
+            var toId = ((coaccessible1 - graph1.rootId) * graph2.nodeCount) + (coaccessible2 - graph2.rootId) + graph.rootId;
+            var isHidden = graph1.isHiddenEdge(action);
+            graph.addEdge(EdgeUid.nextEdgeUid, graph.getNode(fromId), graph.getNode(toId), action, isHidden);
+          }
+
+          // check if the current action is done by the outer node and is never performed in the second graph
+          else if(coaccessible1 !== -1 && !graph2.containsEdgeInAlphabet(action)) {
+            // calculate the id of the node the new edge is transitioning to
+            var toId = (coaccessible1 * graph2.nodeCount) + j + graph.rootId;
+            var isHidden = graph1.isHiddenEdge(action);
+            graph.addEdge(EdgeUid.nextEdgeUid, graph.getNode(fromId), graph.getNode(toId), action, isHidden);
+          }
+
+          // check if the current action is done by the inner node and is never performed in the first graph
+          else if(coaccessible2 !== -1 && !graph1.containsEdgeInAlphabet(action)) {
+            // calculate the id of the node the new edge is transitioning to
+            var toId = (i * graph2.nodeCount) + (coaccessible2 - graph2.rootId) + graph.rootId;
+            var isHidden = graph2.isHiddenEdge(action);
+            graph.addEdge(EdgeUid.nextEdgeUid, graph.getNode(fromId), graph.getNode(toId), action, isHidden);
+          }
+        }
+      }
+    }
+
+    graph.trim();
+    return graph;
+  }
+
+  /**
+   * Helper function for the parallel composition function which combines the states of
+   * the two specified graphs into a single graph.
+   *
+   * @param {!Object} graph1 - the first graph
+   * @param {!Object} graph2 - the second graph
+   * @returns {!Object} - a graph containing the combined states of the two specified graphs
+   */
+  static _combineStates(graph1, graph2) {
+    var graph = new Graph();
+    // combine states
+    for(var i = 0; i < graph1.nodeCount; i++){
+      // determine if current node is a final node in the first graph
+      var terminalState1 = graph1.getNode(i + graph1.rootId)._meta['isTerminal'] === 'stop';
+        
+      for(var j = 0; j < graph2.nodeCount; j++){
+        // determine if the current node is a final node in the second graph
+        var terminalState2 = graph2.getNode(j + graph2.rootId)._meta['isTerminal'] === 'stop';
+        var node = graph.addNode(NodeUid.nextNodeUid, (i + "." + j));
+
+        // if both states are terminal make new node terminal
+        if(terminalState1 && terminalState2){
+          node.addMetaData('isTerminal', 'stop');
+        }
+      }
+    }
+
+    return graph;
   }
 };
 

@@ -350,61 +350,11 @@
         parallelDefName2 = label2 + ":" + parallelDefName2;
       }
 
-      var graph = new Graph();
       var graph1 = this._definitionsMap[parallelDefName1].graph;
       var graph2 = this._definitionsMap[parallelDefName2].graph;
       var alphabet = graph1.alphabetUnion(graph2);
-      
-      // combine states
-      for(var i = 0; i < graph1.nodeCount; i++){
-        var terminalState1 = graph1.getNode(i + graph1.rootId)._meta['isTerminal'] === 'stop';
-        
-        for(var j = 0; j < graph2.nodeCount; j++){
-          var terminalState2 = graph2.getNode(j + graph2.rootId)._meta['isTerminal'] === 'stop';
-          var node = graph.addNode(NodeUid.nextNodeUid, (i + "." + j));
 
-          // if both states are terminal make new node terminal
-          if(terminalState1 && terminalState2){
-            node.addMetaData('isTerminal', 'stop');
-          }
-        }
-      }
-
-      // add edges
-      for(var i = 0; i < graph1.nodeCount; i++){
-        var node1 = graph1.getNode(i + graph1.rootId);
-          
-        for(var j = 0; j < graph2.nodeCount; j++){
-          var node2 = graph2.getNode(j + graph2.rootId);
-          var fromId = (i * graph2.nodeCount) + j + graph.rootId;
-
-          for(var action in alphabet){
-
-            var coaccessible1 = node1.coaccessible(action); // either -1 or the node it transitions to
-            var coaccessible2 = node2.coaccessible(action); // either -1 or the node it transitions to
-
-            // check if an edge is needed from the current combined states
-            if(coaccessible1 !== -1 && coaccessible2 !== -1) {
-              var toId = ((coaccessible1 - graph1.rootId) * graph2.nodeCount) + (coaccessible2 - graph2.rootId) + graph.rootId;
-              var isHidden = graph1.isHiddenEdge(action);
-              graph.addEdge(EdgeUid.nextEdgeUid, graph.getNode(fromId), graph.getNode(toId), action, isHidden);
-            }
-            else if(coaccessible1 !== -1 && !graph2.containsEdgeInAlphabet(action)) {
-              var toId = (coaccessible1 * graph2.nodeCount) + j + graph.rootId;
-              var isHidden = graph1.isHiddenEdge(action);
-              graph.addEdge(EdgeUid.nextEdgeUid, graph.getNode(fromId), graph.getNode(toId), action, isHidden);
-            }
-            else if(coaccessible2 !== -1 && !graph1.containsEdgeInAlphabet(action)) {
-              var toId = (i * graph2.nodeCount) + (coaccessible2 - graph2.rootId) + graph.rootId;
-              var isHidden = graph2.isHiddenEdge(action);
-              graph.addEdge(EdgeUid.nextEdgeUid, graph.getNode(fromId), graph.getNode(toId), action, isHidden);
-            }
-          }
-        }
-      }
-
-      graph.trim();
-      return graph;
+      return Graph.Operations.parallelComposition(graph1, graph2);
     },
     /**
      * Interpret a parse tree name node.
