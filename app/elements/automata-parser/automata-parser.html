@@ -491,8 +491,7 @@
       }
       // perform the bisimulation function on the required graph
       var graph = (isNested) ? definitionMap[defName].graph : definitionMap[reference].graph;
-      definitionMap[defName].graph = graph.deepClone();
-      definitionMap[defName].graph.bisimulation();
+      definitionMap[defName].graph = Graph.Operations.bisimulation(graph);
     },
     /**
      *

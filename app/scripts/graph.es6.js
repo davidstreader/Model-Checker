@@ -550,109 +550,6 @@ class Graph {
   }
 
   /**
-   * Performs a bisimulation coloring on this graph, which gives each node in the graph a colouring
-   * based on transitions it makes to neighbouring nodes. Once the colouring is completed any nodes
-   * with the same colour are considered equivalent and are merged together.
-   */
-  bisimulation() {
-    // construct map of nodes and give them all the same color
-    var coloredNodes = [];
-    var nodes = this.nodes;
-    for(let n in nodes){
-      var node = nodes[n];
-      coloredNodes[node.id] = new Graph.ColoredNode(node);
-    }
-
-    // continue process until color map does not increase in size
-    var previousLength = -1;
-    var colorMap = []
-    while(previousLength < colorMap.length){
-      previousLength = colorMap.length;
-      colorMap = this._constructColoring(coloredNodes);
-      coloredNodes = this._applyColoring(coloredNodes, colorMap);
-    }
-
-    // merge nodes together that have the same colors
-    for(let i in colorMap){
-      var nodeIds = [];
-      for(let j in coloredNodes){
-        var node = coloredNodes[j];
-        if(node.color === i){
-          nodeIds.push(node.node.id);
-        }
-      }
-      if(nodeIds.length > 1){
-        this.mergeNodes(nodeIds);
-      }
-    }
-
-    // remove duplicate edges
-    this.removeDuplicateEdges();
-  }
-
-  /**
-   * Helper function for the bisimulation function which constructs and returns
-   * a color map for the specified colored nodes.
-   *
-   * @param {!Array} coloredNodes - The nodes to construct a color map for
-   * @returns {!Array} A color map to color the specified nodes with
-   */
-  _constructColoring(coloredNodes){
-    var colorMap = [];
-    // get coloring for each node in the graph
-    for(let n in coloredNodes){
-      var node = coloredNodes[n];
-      var coloring = node.constructNodeColoring(coloredNodes);
-
-      // only add coloring if it is not a duplicate
-      var equals = false;
-      for(let c in colorMap){
-        equals = colorMap[c].equals(coloring.coloring);//_.isEqual(colorMap[c], coloring);
-        if(equals){
-          break;
-        }
-      }
-      if(!equals){
-        colorMap.push(coloring);
-      }
-    }
-
-    return colorMap;
-  }
-
-  /**
-   * Helper function for the bisimulation function which applies a coloring to
-   * the specified colored nodes based on the specified color map.
-   *
-   * @param {!Array} coloredNodes - Array of colored nodes
-   * @param {!Array} colorMap - map of colors
-   * @returns {!Array} The new coloring of the colored nodes
-   */
-  _applyColoring(coloredNodes, colorMap) {
-    var newColors = []
-    // get new color for each node in the graph
-    for(let n in coloredNodes){
-      var node = coloredNodes[n];
-
-      // work out new color for the current node
-      var coloring = node.constructNodeColoring(coloredNodes);
-      for(let c in colorMap){
-        if(colorMap[c].equals(coloring.coloring)){
-          newColors[n] = c;
-          break;
-        }
-      }
-    }
-
-    // apply new color to each node
-    for(let i in newColors){
-      coloredNodes[i].color = newColors[i];
-    }
-
-    return coloredNodes;
-  }
-
-  /**
    * Create a deep clone of an object or array.
    *
    * @protected
@@ -1222,7 +1119,7 @@ Graph.NodeColoring = class {
 };
 
 /**
- *
+ * Class containing static functions that can be used to alter graphs.
  */
 Graph.Operations = class {
 
@@ -1315,6 +1212,111 @@ Graph.Operations = class {
     }
   }
 
+  /**
+   * Performs a bisimulation coloring on the specified graph, which gives each node in the graph a colouring
+   * based on transitions it makes to neighbouring nodes. Once the colouring is completed any nodes
+   * with the same colour are considered equivalent and are merged together.
+   */
+  static bisimulation(graph) {
+    var clone = graph.deepClone();
+    // construct map of nodes and give them all the same color
+    var coloredNodes = [];
+    var nodes = clone.nodes;
+    for(let n in nodes){
+      var node = nodes[n];
+      coloredNodes[node.id] = new Graph.ColoredNode(node);
+    }
+
+    // continue process until color map does not increase in size
+    var previousLength = -1;
+    var colorMap = []
+    while(previousLength < colorMap.length){
+      previousLength = colorMap.length;
+      colorMap = this._constructColoring(coloredNodes);
+      coloredNodes = this._applyColoring(coloredNodes, colorMap);
+    }
+
+    // merge nodes together that have the same colors
+    for(let i in colorMap){
+      var nodeIds = [];
+      for(let j in coloredNodes){
+        var node = coloredNodes[j];
+        if(node.color === i){
+          nodeIds.push(node.node.id);
+        }
+      }
+      if(nodeIds.length > 1){
+        clone.mergeNodes(nodeIds);
+      }
+    }
+
+    // remove duplicate edges
+    clone.removeDuplicateEdges();
+
+    return clone;
+  }
+
+  /**
+   * Helper function for the bisimulation function which constructs and returns
+   * a color map for the specified colored nodes.
+   *
+   * @param {!Array} coloredNodes - The nodes to construct a color map for
+   * @returns {!Array} A color map to color the specified nodes with
+   */
+  static _constructColoring(coloredNodes){
+    var colorMap = [];
+    // get coloring for each node in the graph
+    for(let n in coloredNodes){
+      var node = coloredNodes[n];
+      var coloring = node.constructNodeColoring(coloredNodes);
+
+      // only add coloring if it is not a duplicate
+      var equals = false;
+      for(let c in colorMap){
+        equals = colorMap[c].equals(coloring.coloring);//_.isEqual(colorMap[c], coloring);
+        if(equals){
+          break;
+        }
+      }
+      if(!equals){
+        colorMap.push(coloring);
+      }
+    }
+
+    return colorMap;
+  }
+
+  /**
+   * Helper function for the bisimulation function which applies a coloring to
+   * the specified colored nodes based on the specified color map.
+   *
+   * @param {!Array} coloredNodes - Array of colored nodes
+   * @param {!Array} colorMap - map of colors
+   * @returns {!Array} The new coloring of the colored nodes
+   */
+  static _applyColoring(coloredNodes, colorMap) {
+    var newColors = []
+    // get new color for each node in the graph
+    for(let n in coloredNodes){
+      var node = coloredNodes[n];
+
+      // work out new color for the current node
+      var coloring = node.constructNodeColoring(coloredNodes);
+      for(let c in colorMap){
+        if(colorMap[c].equals(coloring.coloring)){
+          newColors[n] = c;
+          break;
+        }
+      }
+    }
+
+    // apply new color to each node
+    for(let i in newColors){
+      coloredNodes[i].color = newColors[i];
+    }
+
+    return coloredNodes;
+  }
 };
 
 /**
