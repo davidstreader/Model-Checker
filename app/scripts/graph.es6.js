@@ -693,7 +693,7 @@ class Graph {
       // only add coloring if it is not a duplicate
       var equals = false;
       for(let c in colorMap){
-        equals = _.isEqual(colorMap[c], coloring);
+        equals = colorMap[c].equals(coloring.coloring);//_.isEqual(colorMap[c], coloring);
         if(equals){
           break;
         }
@@ -715,23 +715,28 @@ class Graph {
    * @returns {!Array} The coloring for the specified colored node
    */
   _constructNodeColoring(coloredNode, coloredNodes) {
-    var colors = [];
+    var colors = new Graph.NodeColoring();
 
     // construct coloring for the specified node
     var edges = coloredNode.node.edgesFromMe;
     for(let e in edges){
       var edge = edges[e];
-      var color = {from: coloredNode.color, to: coloredNodes[edge.to.id].color, label: edge.label}
+      var from = coloredNode.color;
+      var to = coloredNodes[edge.to.id].color;
+      var label = edge.label;
+      var color = Graph.NodeColoring.constructColor(from, to, label);
+      //{from: coloredNode.color, to: coloredNodes[edge.to.id].color, label: edge.label}
       
       // only add color if it is not a duplicate
-      if(!this._containsColor(colors, [color])){
-        colors.push(color);
+      if(!colors.contains(color)){
+        colors.add(color);
       }
     }
 
     // if current node is a stop node then give it the empty coloring
     if(colors.length === 0){
-      colors.push({from: 0, to: undefined, label: undefined});
+      colors.add(Graph.NodeColoring.constructColor(0, undefined, undefined));
+      //colors.push({from: 0, to: undefined, label: undefined});
     }
 
     return colors;
@@ -754,7 +759,7 @@ class Graph {
       // work out new color for the current node
       var coloring = this._constructNodeColoring(node, coloredNodes);
       for(let c in colorMap){
-        if(_.isEqual(colorMap[c], coloring)){
+        if(colorMap[c].equals(coloring.coloring)){
           newColors[n] = c;
           break;
         }
@@ -1041,42 +1046,6 @@ Graph.Node = class {
 };
 
 /**
- *
- */
-Graph.ColoredNode = class {
-
-  /**
-   *
-   */
-  constructor(node, color = '0') {
-    this._node = node;
-    this._color = color;
-  }
-
-  /**
-   *
-   */
-  get node() {
-    return this._node;
-  }
-
-  /**
-   *
-   */
-  get color() {
-    return this._color;
-  }
-
-  /**
-   *
-   */
-  set color(color) {
-    this._color = color;
-    return this._color;
-  }
-}
-
-/**
  * A Graph Edge.
  *
  * @protected
@@ -1182,6 +1151,165 @@ Graph.Edge = class {
     }
     this._isHidden = isHidden;
     return this._isHidden;
+  }
+};
+
+/**
+ *
+ */
+Graph.ColoredNode = class {
+
+  /**
+   *
+   */
+  constructor(node, color = '0') {
+    this._node = node;
+    this._color = color;
+  }
+
+  /**
+   *
+   */
+  get node() {
+    return this._node;
+  }
+
+  /**
+   *
+   */
+  get color() {
+    return this._color;
+  }
+
+  /**
+   *
+   */
+  set color(color) {
+    this._color = color;
+    return this._color;
+  }
+};
+
+/**
+ * Represents the coloring of a node in a graph. A coloring is an array containing
+ * individual colors. A color consists of:
+ *   from  - the id of the node an edge is transitioning from
+ *   to    - the id of the node an edge is transitioning to
+ *   label - the label of the edge
+ *
+ * @class
+ * @property {!Object[]} - array of colors
+ */
+Graph.NodeColoring = class {
+
+  /**
+   * Constructs an instance of a node coloring.
+   *
+   * @protected
+   * @param coloring - array of colors
+   */
+  constructor(coloring = []){
+    this._coloring = coloring;
+  }
+
+  /**
+   * Gets the array of colors associated with this node coloring.
+   *
+   * @public
+   * @returns {!Object[]} - array of colors
+   */
+  get coloring(){
+    return this._coloring;
+  }
+
+  /**
+   * Gets the number of individual colors within this coloring.
+   *
+   * @public
+   * @returns {int} - number of colors present in this coloring
+   */
+  get length() {
+    return this._coloring.length;
+  }
+
+  /**
+   * Adds the specified color to this coloring. Duplicate colors will not
+   * be added.
+   *
+   * @public
+   * @param color - the color to be added
+   */
+  add(color) {
+    if(!this.contains(color)){
+      this._coloring.push(color);
+    }
+  }
+
+  /**
+   * Returns true if the specified color is contained in this node coloring,
+   * otherwise returns false.
+   *
+   * @public
+   * @param color - the color to be checked
+   * @returns {boolean} - true if color present, otherwise false
+   */
+  contains(color) {
+    for(let i in this._coloring){
+      var current = this._coloring[i];
+      if(_.isEqual(current, color)){
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Returns true if both this coloring and the specified coloring are considered equal.
+   * To be considered equal, all the colors contained in this coloring must be contained
+   * in the specified coloring and vice versa.
+   */
+  equals(coloring) {
+    // check that coloring is defined
+    if(coloring === undefined || coloring === null){
+      return false;
+    }
+
+    // check that both colors are the same length;
+
+    // check all the colors in this coloring for a match
+    for(let i in this._coloring){
+      var col1 = this._coloring[i];
+      
+      // check that there is a match for col1 in the secondary coloring
+      var match = false;
+      for(let j in coloring){
+        var col2 = coloring[j];
+        if(_.isEqual(col1, col2)){
+          match = true;
+          break;
+        }
+      }
+
+      // if there was not a match then return false
+      if(!match){
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  /**
+   * Constructs a single color based on the specified from, to and label.
+   *
+   * @public
+   * @param {int} from - id of the node that the specified edge label leaves from
+   * @param {int} to - id of the node that the specified edge label transitions to
+   * @param {string} label - label given to the edge transition between from and to
+   */
+  static constructColor(from, to, label) {
+    return {from: from, to: to, label: label};
   }
 };
 
