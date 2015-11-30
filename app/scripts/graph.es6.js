@@ -221,26 +221,6 @@ class Graph {
   }
 
   /**
-   * Returns a set of the final nodes in this graph.
-   *
-   * @returns {!Set} Set of node ids
-   */
-  get finalNodes() {
-    var nodes = [];
-    
-    // check each node to see if they are a final node
-    for(let n in this._nodeMap){
-      var node = this._nodeMap[n];
-      // add node to array if it is a final node
-      if(node.getMetaData('isTerminal') === 'stop'){
-        nodes.push(n);
-      }
-    }
-
-    return nodes;
-  }
-
-  /**
    * Get an edge in the graph.
    *
    * @param {!number} id - The id of the edge to get
@@ -348,7 +328,7 @@ class Graph {
    * if a node has two or more edges from it that transition to the same node with the
    * same label.
    */
-  removeDuplicateEdges(){
+  removeDuplicateEdges() {
     // search all nodes for duplicate edges
     var nodes = this._nodeMap;
     for(var i in nodes){
@@ -368,6 +348,19 @@ class Graph {
             delete edges[k];
           }
         }
+      }
+    }
+  }
+
+  /**
+   * Removes the hidden edges from this graph.
+   */
+  removeHiddenEdges() {
+    for(var i in this._edgeMap){
+      var edge = this.getEdge(i);
+      // remove edge if it is hidden
+      if(edge.isHidden){
+        this.removeEdge(edge);
       }
     }
   }
@@ -552,85 +545,6 @@ class Graph {
     for(let node in this._nodeMap){
       if(reachable[node] !== true){
         this.removeNode(this._nodeMap[node]);
-      }
-    }
-  }
-
-  /**
-   * Performs the abstraction function on this graph, which removes the hidden 
-   * tau actions and adds the observable transitions.
-   */
-  abstraction() {
-    var nodes = this.nodes;
-    for(var i in nodes){
-      var node = nodes[i];
-
-      if(node === undefined){
-        continue;
-      }
-      // add observable edges between current node and its neighbours
-      var edges = node.edgesFromMe;
-      for(var j in edges){
-        var edge = edges[j];
-        // only add observable edges if current edge is not hidden
-        if(!edge.isHidden){
-          this._addObservableEdgesFromCurrentNode(node, edge.to, edge.label);
-          this._addObservableEdgesToCurrentNode(edge.to, node, edge.label);
-        }
-      }
-    }
-
-    // remove the hidden edges
-    for(var i in this._edgeMap){
-      var edge = this.getEdge(i);
-      if(edge.isHidden){
-        this.removeEdge(edge);
-      }
-    }
-  }
-
-  /**
-   *
-   */
-  _addObservableEdgesFromCurrentNode(previous, current, label) {
-    var stack = [current];
-    var visited = [];
-    while(stack.length !== 0){
-      var node = stack.pop();
-      visited.push(node);
-      var edges = node.edgesFromMe;
-      
-      for(var i in edges){
-        var edge = edges[i];
-        if(edge.isHidden && !_.contains(visited, edge.to)){
-          if(!this.containsEdge(previous, edge.to, label)){
-            this.addEdge(EdgeUid.nextEdgeUid, previous, edge.to, label);
-          }
-          stack.push(edge.to);
-        }
-      }
-    }
-  }
-
-  /**
-   *
-   */
-  _addObservableEdgesToCurrentNode(next, current, label) {
-    var stack = [current];
-    var visited = [];
-    while(stack.length !== 0){
-      var node = stack.pop();
-      visited.push(node);
-      var edges = node.edgesToMe;
-
-      for(var i in edges){
-        var edge = edges[i];
-        if(edge.isHidden && !_.contains(visited, edge.from)){
-          if(!this.containsEdge(edge.from, next, label)){
-            this.addEdge(EdgeUid.nextEdgeUid, edge.from, next, label);
-          }
-          stack.push(edge.from);
-        }
       }
     }
   }
@@ -1099,12 +1013,21 @@ Graph.Edge = class {
 };
 
 /**
+ * A wrapper class for Graph.Node which also holds a color. Used for performing
+ * bisimulation.
  *
+ * @class
+ * @property {!Object} node - the node this class represents
+ * @property {string} color - the color of the node property
  */
 Graph.ColoredNode = class {
 
   /**
+   * Constructs an instance of ColoredNode.
    *
+   * @protected
+   * @param {!Object} node - the node to be colored
+   * @param {string} color - color of the node
    */
   constructor(node, color = '0') {
     this._node = node;
@@ -1112,21 +1035,30 @@ Graph.ColoredNode = class {
   }
 
   /**
+   * Returns the node associated with this ColoredNode.
    *
+   * @public
+   * @returns {!Object} - Node
    */
   get node() {
     return this._node;
   }
 
   /**
+   * Returns the color associated with this ColoredNode.
    *
+   * @public
+   * @returns {string} - Color
    */
   get color() {
     return this._color;
   }
 
   /**
+   * Sets the color associated with this ColoredNode to the specified color.
    *
+   * @public
+   * @param color - the color to be set
    */
   set color(color) {
     this._color = color;
@@ -1287,6 +1219,102 @@ Graph.NodeColoring = class {
   static constructColor(from, to, label) {
     return {from: from, to: to, label: label};
   }
+};
+
+/**
+ *
+ */
+Graph.Operations = class {
+
+  /**
+   * Performs the abstraction function on the specified graph, which removes the hidden 
+   * tau actions and adds the observable transitions.
+   */
+  static abstraction(graph) {
+    var clone = graph.deepClone();
+
+    var nodes = clone.nodes;
+    for(var i in nodes){
+      var node = nodes[i];
+
+      if(node === undefined){
+        continue;
+      }
+      // add observable edges between current node and its neighbours
+      var edges = node.edgesFromMe;
+      for(var j in edges){
+        var edge = edges[j];
+        // only add observable edges if current edge is not hidden
+        if(!edge.isHidden){
+          this._addObservableEdgesFromCurrentNode(clone, node, edge.to, edge.label);
+          this._addObservableEdgesToCurrentNode(clone, edge.to, node, edge.label);
+        }
+      }
+    }
+
+    clone.removeHiddenEdges();
+    return clone;
+  }
+
+  /**
+   * Helper function for the abstraction function which adds an edge from the specified
+   * previous node to all nodes from the current node that have a hidden edge transitioning from
+   * it.
+   */
+  static _addObservableEdgesFromCurrentNode(graph, previous, current, label) {
+    var stack = [current];
+    var visited = [];
+
+    // process while there are still nodes to visit
+    while(stack.length !== 0){
+      var node = stack.pop();
+      visited.push(node);
+      var edges = node.edgesFromMe;
+      
+      // check for hidden edges from the current node
+      for(var i in edges){
+        var edge = edges[i];
+        // add edge between previous and current if the current edge is hidden
+        if(edge.isHidden && !_.contains(visited, edge.to)){
+          // only add edge if the same edge is not already present in graph
+          if(!graph.containsEdge(previous, edge.to, label)){
+            graph.addEdge(EdgeUid.nextEdgeUid, previous, edge.to, label);
+          }
+          stack.push(edge.to);
+        }
+      }
+    }
+  }
+
+  /**
+   * Helper function for the abstraction function which adds an edge from the specified
+   * next node to all nodes to the current node that have a hidden edge transitioning to it.
+   */
+  static _addObservableEdgesToCurrentNode(graph, next, current, label) {
+    var stack = [current];
+    var visited = [];
+
+    // process while there are still nodes to visit
+    while(stack.length !== 0){
+      var node = stack.pop();
+      visited.push(node);
+      var edges = node.edgesToMe;
+
+      // check for hidden edges to the current node
+      for(var i in edges){
+        var edge = edges[i];
+        // add edge between next and current if the current edge is hidden
+        if(edge.isHidden && !_.contains(visited, edge.from)){
+          // only add edge if the same edge is not already present in graph
+          if(!graph.containsEdge(edge.from, next, label)){
+            graph.addEdge(EdgeUid.nextEdgeUid, edge.from, next, label);
+          }
+          stack.push(edge.from);
+        }
+      }
+    }
+  }
+
 };
 
 /**
