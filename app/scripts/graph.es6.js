@@ -202,18 +202,21 @@ class Graph {
   get reachableNodes() {
     var nodes = [];
     var stack = [this.rootId];
-    
+    var visited = [];
     // perfrom depth first search of graph
     while(stack.length !== 0){
       var id = stack.pop();
-      // add current node id to the set
-      nodes[id] = true;
-      var node = this.getNode(id);
+      if(!_.contains(visited, id)){
+        visited.push(id);
+        // add current node id to the set
+        nodes[id] = true;
+        var node = this.getNode(id);
 
-      // add neighbours of current node to stack
-      var neighbors = node.neighbors;
-      for(var i = 0; i < neighbors.length; i++){
-        stack.push(neighbors[i].id);
+        // add neighbours of current node to stack
+        var neighbors = node.neighbors;
+        for(var i = 0; i < neighbors.length; i++){
+          stack.push(neighbors[i].id);
+        }
       }
     }
 
@@ -548,7 +551,7 @@ class Graph {
   trim() {
     // get the reachable nodes from the root
     var reachable = this.reachableNodes;
-
+    var visited = [];
     // remove any nodes that are not reachable from the root
     for(let node in this._nodeMap){
       if(reachable[node] !== true){
@@ -785,6 +788,17 @@ Graph.Node = class {
   }
 
   /**
+   * Add the metaData from the specified array to this node
+   *
+   * @param {!Array} metaDataArray - an array of meta data
+   */
+  combineMetaData(metaDataArray) {
+    for(let key in metaDataArray){
+      this.addMetaData(key, metaDataArray[key]);
+    }
+  }
+
+  /**
    * Get a copy of a bit of meta data in this node.
    *
    * @param {!string} key - The key to get the data from
@@ -805,7 +819,6 @@ Graph.Node = class {
   deleteMetaData(key) {
     delete this._meta[key];
   }
-
 };
 
 /**
@@ -1422,6 +1435,7 @@ Graph.Operations = class {
       }
     }
 
+    graph.root.addMetaData('parallel', true);
     return graph;
   }
 };
