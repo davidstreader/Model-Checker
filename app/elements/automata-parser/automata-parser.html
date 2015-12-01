@@ -146,11 +146,12 @@
       // _interpretModel
       parseTree.forEach(function(model) {
         this._interpretDefinitions(model.definitions);
-        this._processReferences();
+        this._processReferences(); // TODO: move this line back above this._relabelNodes(true);
         var defName = model.definitions[0].name.name;
         this._interpretRelabelling(model.relabel, defName);
         this._interpretHiddenActions(model.hidden, defName);
       }.bind(this));
+      this._processParallelComposition();
       this._relabelNodes(true);
       return this._buildAutomataArray();
     },
@@ -179,21 +180,16 @@
           throw new this.InterpreterException('process "' + name + '" defined more that once.');
         }
         // create the graph for this definition
-        definitionMap[name].graph = (definition.type === 'parallel-definition') ? this._interpretParallel(definition.process) : new Graph();
+        definitionMap[name].graph = new Graph();
+
         // add the root node of the graph
         // if an id to use for the root has hasn't been specified, generate one, otherwise use it
         var rootId = definitionMap[name].rootId;
-
-        var root = undefined;
-        if(definition.type === 'definition'){
-          root = definitionMap[name].graph.addNode(
-            rootId === undefined ? NodeUid.nextNodeUid : rootId
-          );
-        }
-        else{
-          root = definitionMap[name].graph.root;
-        }
+        var root = definitionMap[name].graph.addNode(
+          rootId === undefined ? NodeUid.nextNodeUid : rootId
+        );
         root.addMetaData ('startNode', true); // mark the root as the starting node (for the visualizer)
+        
         var referenceMap = {};      // create the reference map
         referenceMap[name] = root;  // we already know that the root of this definition is root
         this._interpretProcess(definition.process, root, definitionMap, name, referenceMap);
@@ -261,13 +257,14 @@
         case 'choice':
           this._interpretChoice(process, extendtionNode, definitionMap, defName, referenceMap);
           break;
-        //case 'parallel':
-          //this._interpretParallel(process, extendtionNode, definitionMap, defName, referenceMap);
-          //break;
         case 'parallel':
+          this._interpretParallel(process, extendtionNode, definitionMap, defName, referenceMap);
           break;
         case 'name':
           this._interpretName(process, extendtionNode, definitionMap, defName, referenceMap);
+          break;
+        case 'parallel-name':
+          this._interpretParallelName(process, extendtionNode, definitionMap, defName, referenceMap);
           break;
         case 'abstraction':
           this._interpretAbstraction(process, extendtionNode, definitionMap, defName, referenceMap);
@@ -331,30 +328,9 @@
      * @param {!string} defName            - The name of the current definition
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
-    //_interpretParallel: function(parallel, extendtionNode, definitionMap, defName, referenceMap) {
-    _interpretParallel: function(parallel) {
-      var parallelDefName1 = parallel['definition1'].name;
-      var parallelDefName2 = parallel['definition2'].name;
-
-      // check if definitions have been labelled
-      var label1 = parallel['definition1'].label;
-      var label2 = parallel['definition2'].label;
-
-      if(label1 !== undefined){
-        this._interpretLabel(label1, parallelDefName1);
-        parallelDefName1 = label1 + ":" + parallelDefName1;
-      }
-
-      if(label2 !== undefined){
-        this._interpretLabel(label2, parallelDefName2);
-        parallelDefName2 = label2 + ":" + parallelDefName2;
-      }
-
-      var graph1 = this._definitionsMap[parallelDefName1].graph;
-      var graph2 = this._definitionsMap[parallelDefName2].graph;
-      var alphabet = graph1.alphabetUnion(graph2);
-
-      return Graph.Operations.parallelComposition(graph1, graph2);
+    _interpretParallel: function(parallel, extendtionNode, definitionMap, defName, referenceMap) {
+     this._interpretProcess(parallel.definition1, extendtionNode, definitionMap, defName, referenceMap);
+     this._interpretProcess(parallel.definition2, extendtionNode, definitionMap, defName, referenceMap);
     },
     /**
      * Interpret a parse tree name node.
@@ -388,6 +364,21 @@
       else {
         definitionMap[defName].graph.mergeNodes([referenceMap[references].id, extendtionNode.id]);
       }
+    },
+    /**
+     *
+     */
+    _interpretParallelName: function(ptNode, extendtionNode, definitionMap, defName, referenceMap) {
+      var references = this._getNameFromPTNode(ptNode);
+      var label = this._getLabelFromPTNode(ptNode); // TODO
+
+      var parallelComposition = extendtionNode.getMetaData('parallelComposition')
+      if(parallelComposition === undefined){
+        parallelComposition = [];
+      }
+      parallelComposition.push(references);
+      extendtionNode.addMetaData('parallelComposition', parallelComposition);
+      this._interpretName(ptNode, extendtionNode, definitionMap, defName, referenceMap);
     },
     /**
      * Interprets a parse tree abstraction node.
@@ -500,6 +491,16 @@
       return ptNode.name;
     },
     /**
+     * Get the label from a parse tree parallel-name node
+     *
+     * @private
+     * @param {!object} ptNode - A parse tree parallel-name node
+     * @returns {string | undefined}
+     */
+    _getLabelFromPTNode: function(ptNode) {
+      return ptNode.label;
+    },
+    /**
      *
      */
     _getNameFromFunctionNode: function(functionNode) {
@@ -561,6 +562,25 @@
           // remove all the nodes we just processed from the unprocessed nodes array
           definition.unprocessedNodes.splice(0, len);
           prevReferences = references;
+        }
+      }
+    },
+    /**
+     *
+     */
+    _processParallelComposition: function() {
+      for(var key in this._definitionsMap){
+        // check if this definition has parallel compositions to process
+        var root = this._definitionsMap[key].graph.root;
+        var parallelComposition = root.getMetaData('parallelComposition');
+        if(parallelComposition !== undefined){
+          var graph1 = this._definitionsMap[parallelComposition[0]].graph;
+          for(var i = 1; i < parallelComposition.length; i++){
+            var graph2 = this._definitionsMap[parallelComposition[i]].graph;
+            graph1 = Graph.Operations.parallelComposition(graph1, graph2);
+          }
+          root.deleteMetaData('parallelComposition');
+          this._definitionsMap[key].graph = graph1;
         }
       }
     },

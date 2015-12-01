@@ -1365,7 +1365,7 @@ Graph.Operations = class {
           // check if the current action is done by the outer node and is never performed in the second graph
           else if(coaccessible1 !== -1 && !graph2.containsEdgeInAlphabet(action)) {
             // calculate the id of the node the new edge is transitioning to
-            var toId = (coaccessible1 * graph2.nodeCount) + j + graph.rootId;
+            var toId = ((coaccessible1 - graph1.rootId) * graph2.nodeCount) + j + graph.rootId;
             var isHidden = graph1.isHiddenEdge(action);
             graph.addEdge(EdgeUid.nextEdgeUid, graph.getNode(fromId), graph.getNode(toId), action, isHidden);
           }
@@ -1397,13 +1397,23 @@ Graph.Operations = class {
     var graph = new Graph();
     // combine states
     for(var i = 0; i < graph1.nodeCount; i++){
+      var node1 = graph1.getNode(i + graph1.rootId);
       // determine if current node is a final node in the first graph
-      var terminalState1 = graph1.getNode(i + graph1.rootId)._meta['isTerminal'] === 'stop';
-        
+      var startState1 = node1._meta['startNode'] === true;
+      var terminalState1 = node1._meta['isTerminal'] === 'stop';
+      var label1 = (node1.label !== '') ? node1.label : i;   
       for(var j = 0; j < graph2.nodeCount; j++){
+        var node2 = graph2.getNode(j + graph2.rootId);
         // determine if the current node is a final node in the second graph
-        var terminalState2 = graph2.getNode(j + graph2.rootId)._meta['isTerminal'] === 'stop';
-        var node = graph.addNode(NodeUid.nextNodeUid, (i + "." + j));
+        var startState2 = node2._meta['startNode'] === true;
+        var terminalState2 = node2._meta['isTerminal'] === 'stop';
+        var label2 = (node2.label !== '') ? node2.label : j;
+        var node = graph.addNode(NodeUid.nextNodeUid, (label1 + "." + label2));
+
+        // if both states are a starting state make new node start state
+        if(startState1 && startState2){
+          node.addMetaData('startNode', true);
+        }
 
         // if both states are terminal make new node terminal
         if(terminalState1 && terminalState2){
