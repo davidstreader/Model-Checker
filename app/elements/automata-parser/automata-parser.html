@@ -372,13 +372,18 @@
       var references = this._getNameFromPTNode(ptNode);
       var label = this._getLabelFromPTNode(ptNode); // TODO
 
+      if(label !== undefined){
+        this._interpretLabel(label, references);
+        references = label + ':' + references;
+      }
+
       var parallelComposition = extendtionNode.getMetaData('parallelComposition')
       if(parallelComposition === undefined){
         parallelComposition = [];
       }
       parallelComposition.push(references);
       extendtionNode.addMetaData('parallelComposition', parallelComposition);
-      this._interpretName(ptNode, extendtionNode, definitionMap, defName, referenceMap);
+      //this._interpretName(ptNode, extendtionNode, definitionMap, defName, referenceMap);
     },
     /**
      * Interprets a parse tree abstraction node.
@@ -575,10 +580,12 @@
         var parallelComposition = root.getMetaData('parallelComposition');
         if(parallelComposition !== undefined){
           var graph1 = this._definitionsMap[parallelComposition[0]].graph;
+          
           for(var i = 1; i < parallelComposition.length; i++){
             var graph2 = this._definitionsMap[parallelComposition[i]].graph;
             graph1 = Graph.Operations.parallelComposition(graph1, graph2);
           }
+
           root.deleteMetaData('parallelComposition');
           this._definitionsMap[key].graph = graph1;
         }
