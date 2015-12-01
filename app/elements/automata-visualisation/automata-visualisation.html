@@ -234,7 +234,7 @@
       //  - the to node's label
       //  - the edge's extra data (could be label, width, height, etc.)
       this.edges.forEach(function(edge) {
-        var label = edge.isHidden ? 'tau' : edge.label;
+        var label = edge.isHidden ? '𝜏' : edge.label;
         automata.setEdge('n'+edge.from.id, 'n'+edge.to.id, { label: (label || 'ε'), lineInterpolate: 'basis' }, edge.id);
       });
 
