@@ -43,8 +43,6 @@
     _Definition: function() {
       this.graph = undefined;
       this.type = undefined;
-      this.relabel = undefined;
-      this.hidden = undefined;
       this.unprocessedNodes = [];
       this._rootId = undefined;
       // define the getter and setter for rootId
@@ -133,8 +131,8 @@
       parseTree.forEach(function(model) {
         this._interpretDefinitions(model.definitions);
         var defName = model.definitions[0].name.name;
-        this._interpretRelabelling(model.relabel, defName);
-        this._interpretHiddenActions(model.hidden, defName);
+        this._processRelabelling(defName, model.relabel);
+        this._processHiding(defName, model.hidden);
       }.bind(this));
       this._processReferences();
       this._processParallelComposition();
@@ -186,32 +184,6 @@
         referenceMap[name] = root;  // we already know that the root of this definition is root
         this._interpretProcess(definition.process, root, definitionMap, name, referenceMap);
       }.bind(this));
-    },
-    /**
-     * Relabels edges defined as being relabelled in a parse tree.
-     * 
-     * @private
-     * @param {!object[]} relabel - an object containing edges to be relabelled
-     * @param {string} defName - name of the definition currently getting parsed in the parse tree
-     */
-    _interpretRelabelling: function(relabel, defName){
-      if(relabel !== undefined){
-        this._definitionsMap[defName].relabel = relabel;
-        this._processRelabelling(defName);
-      }
-    },
-    /**
-     * Hides the edges defined as hidden in a parse tree.
-     *
-     * @private
-     * @param {!object[]} hidden - an object containing edges to be hidden
-     * @param {string} defName - name of the definition currently getting parsed in the parse tree
-     */
-    _interpretHiddenActions: function(hidden, defName){
-      if(hidden !== undefined){
-        this._definitionsMap[defName].hidden = hidden;
-        this._processHiding(defName);
-      }
     },
     /**
      * Interpret a parse tree process node.
@@ -582,26 +554,6 @@
     /**
      *
      */
-    _processOperations: function() {
-      var length = this._operationsQueue.length;
-      for(var i = length - 1; i >= 0; i--){
-        var current = this._operationsQueue[i];
-        switch(current.type){
-          case 'abstraction':
-            this._processAbstraction(current.definition);
-            break;
-          case 'simplification':
-            this._processSimplification(current.definition);
-            break;
-          default:
-            console.error('Trying to interpret invalid operation type "' + current.type + '"');
-            break;
-        }
-      }
-    },
-    /**
-     *
-     */
     _processParallelComposition: function(defName) {
       for(var key in this._definitionsMap){
         // check if this definition has parallel compositions to process
@@ -634,42 +586,7 @@
     /**
      *
      */
-    _processAbstraction: function(defName) {
-      var root = this._definitionsMap[defName].graph.root;
-      var abstraction = root.getMetaData('abstraction');
-      
-      // throw an error if there is no abstraction meta data for this definition
-      if(abstraction === undefined){
-        throw new this.InterpreterException('Expecting to perform abstraction for \'' + defName + '\'.');
-      }
-
-      // perform abstraction on the required graph
-      var graph = Graph.Operations.abstraction(this._definitionsMap[abstraction].graph);
-      // combine meta data of definition with new graph
-      graph.root.combineMetaData(root.metaData);
-      this._definitionsMap[defName].graph = graph;
-    },
-    /**
-     *
-     */
-    _processSimplification: function(defName) {
-      var root = this._definitionsMap[defName].graph.root;
-      var simplification = root.getMetaData('simplification');
-
-      // throw an error if there is not simplification meta data for this definition
-      if(simplification === undefined){
-        throw new this.InterpreterException('Expecting to perform simplificiation for \'' + defName + '\'.');
-      }
-
-      var graph = this._definitionsMap[simplification].graph;
-      this._definitionsMap[defName].graph = Graph.Operations.bisimulation(graph);
-    },
-    /**
-     *
-     */
-    _processRelabelling: function(defName) {
-      // check if this definition has relabelling to be process
-      var relabel = this._definitionsMap[defName].relabel;
+    _processRelabelling: function(defName, relabel) {
       if(relabel !== undefined){
         // get an array of edges in the current graph
         var edges = this._definitionsMap[defName].graph.edges;
@@ -687,9 +604,7 @@
     /**
      *
      */
-    _processHiding: function(defName) {
-      // check if this definition has hidden actions to be processed
-      var hidden = this._definitionsMap[defName].hidden;
+    _processHiding: function(defName, hidden) {
       if(hidden !== undefined){
         // get an array of edges in the current graph
         var edges = this._definitionsMap[defName].graph.edges;
