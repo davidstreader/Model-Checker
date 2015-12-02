@@ -45,11 +45,13 @@
      * @private
      * @class
      * @property {!Graph} graph            - The definition's graph
+     * @property {!string} type            - The type of this definition
      * @property {!array} unprocessedNodes - An array of nodes that haven't been processed
      * @property {!number} rootId          - The id to use for the root node of this definition's graph
      */
     _Definition: function() {
       this.graph = undefined;
+      this.type = undefined;
       this.unprocessedNodes = [];
       this._rootId = undefined;
       // define the getter and setter for rootId
@@ -138,14 +140,14 @@
       // _interpretModel
       parseTree.forEach(function(model) {
         this._interpretDefinitions(model.definitions);
-        this._processReferences(); // TODO: move this line back above this._relabelNodes(true);
         var defName = model.definitions[0].name.name;
         this._interpretRelabelling(model.relabel, defName);
         this._interpretHiddenActions(model.hidden, defName);
       }.bind(this));
-      this._processParallelComposition();
+      this._processReferences();
       this._processRelabelling();
       this._processHiding();
+      this._processParallelComposition();
       this._processOperations();
       this._relabelNodes(true);
       return this._buildAutomataArray();
@@ -176,6 +178,8 @@
         }
         // create the graph for this definition
         definitionMap[name].graph = new Graph();
+        // set the type for this definition
+        definitionMap[name].type = definition.type;
 
         // add the root node of the graph
         // if an id to use for the root has hasn't been specified, generate one, otherwise use it
@@ -244,8 +248,8 @@
         case 'name':
           this._interpretName(process, extendtionNode, definitionMap, defName, referenceMap);
           break;
-        case 'parallel-name':
-          this._interpretParallelName(process, extendtionNode, definitionMap, defName, referenceMap);
+        case 'labelled-name':
+          this._interpretLabelledName(process, extendtionNode, definitionMap, defName, referenceMap);
           break;
         case 'abstraction':
           this._interpretAbstraction(process, extendtionNode, definitionMap, defName, referenceMap);
@@ -325,6 +329,12 @@
      */
     _interpretName: function(ptNode, extendtionNode, definitionMap, defName, referenceMap) {
       var references = this._getNameFromPTNode(ptNode);        // get what the extendtionNode should be referencing
+      var label = this._getLabelFromPTNode(ptNode); 
+      if(label !== undefined){
+        this._interpretLabel(label, references);
+        references = label + ':' + references;
+      }
+
       extendtionNode.addMetaData ('references', references);   // mark what the extendtionNode as referencing it
       // if there is no record of this reference yet
       if (referenceMap[references] === undefined) {
@@ -349,7 +359,7 @@
     /**
      *
      */
-    _interpretParallelName: function(ptNode, extendtionNode, definitionMap, defName, referenceMap) {
+    _interpretLabelledName: function(ptNode, extendtionNode, definitionMap, defName, referenceMap) {
       var references = this._getNameFromPTNode(ptNode);
       var label = this._getLabelFromPTNode(ptNode); // TODO
 
@@ -358,12 +368,19 @@
         references = label + ':' + references;
       }
 
-      var parallelComposition = extendtionNode.getMetaData('parallelComposition')
-      if(parallelComposition === undefined){
-        parallelComposition = [];
+      if(definitionMap[defName].type === 'parallel-definition'){
+        var parallelComposition = extendtionNode.getMetaData('parallelComposition')
+        if(parallelComposition === undefined){
+          parallelComposition = [];
+        }
+        parallelComposition.push(references);
+        extendtionNode.addMetaData('parallelComposition', parallelComposition);
+        this._interpretName(ptNode, extendtionNode, definitionMap, defName, referenceMap);
       }
-      parallelComposition.push(references);
-      extendtionNode.addMetaData('parallelComposition', parallelComposition);
+
+      else if(definitionMap[defName].type === 'reference-definition'){
+        this._interpretName(ptNode, extendtionNode, definitionMap, defName, referenceMap);
+      }
     },
     /**
      * Interprets a parse tree abstraction node.
@@ -441,7 +458,6 @@
       }
       // add new definition to definitions map
       this._definitionsMap[label + ":" + defName] = temp;
-      definition.isHidden = true;
     },
     /**
      * Interpret a parse tree stop node.
@@ -551,6 +567,26 @@
           // remove all the nodes we just processed from the unprocessed nodes array
           definition.unprocessedNodes.splice(0, len);
           prevReferences = references;
+        }
+      }
+    },
+    /**
+     *
+     */
+    _processReferenceDefinitions: function() {
+      for(var key in this._definitionsMap){
+        if(this._definitionsMap[key].type === 'reference-definition'){
+          var root = this._definitionsMap[key].graph.root;
+          var references = root.getMetaData('references');
+
+          if(references === undefined){
+            throw new this.InterpreterException('Invalid reference for \'' + defName + '\' has been defined.');
+          }
+
+          var graph = this._definitionsMap[references].graph;
+          graph.root.combineMetaData(root.metaData);
+          this._definitionsMap[key].graph = graph.deepClone();
+          root.deleteMetaData('references');
         }
       }
     },
