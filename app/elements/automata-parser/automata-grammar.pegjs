@@ -48,12 +48,8 @@
         this.definition1 = def1;
         this.definition2 = def2;
     },
-    NameNode: function(name){
+    NameNode: function(name, label){
         this.type = 'name';
-        this.name = name;
-    },
-    LabelledNameNode: function(name, label){
-      this.type = 'labelled-name';
         this.name = name;
         this.label = label;
     },
@@ -290,7 +286,7 @@ Name_OR_Parallel_Composition
  */
 Name_OR_Label
   =  name:Define_Name {
-      return new Node.LabelledNameNode(name.name, undefined);
+      return new Node.NameNode(name.name, undefined);
      }
   /  Label
 
@@ -381,7 +377,7 @@ Action
  */
 Label
   =  label:Action _ symbol_Label _ name:Define_Name {
-      return new Node.LabelledNameNode(name.name, label.action);
+      return new Node.NameNode(name.name, label.action);
      }
 
 /**

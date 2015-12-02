@@ -118,7 +118,7 @@ PEG.automataParser = (function() {
             return new Node.AbstractionNode(new Node.NameNode('||' + name.name));
              },
         peg$c26 = function(name) {
-              return new Node.LabelledNameNode(name.name, undefined);
+              return new Node.NameNode(name.name, undefined);
              },
         peg$c27 = function(relabel) { return [relabel]; },
         peg$c28 = function(a, b) {
@@ -156,7 +156,7 @@ PEG.automataParser = (function() {
               return new Node.ActionNode(action);
              },
         peg$c46 = function(label, name) {
-              return new Node.LabelledNameNode(name.name, label.action);
+              return new Node.NameNode(name.name, label.action);
              },
         peg$c47 = function(label, a, b) {
               var oldLabel = a.action + "." + b.action;
@@ -2580,12 +2580,8 @@ PEG.automataParser = (function() {
             this.definition1 = def1;
             this.definition2 = def2;
         },
-        NameNode: function(name){
+        NameNode: function(name, label){
             this.type = 'name';
-            this.name = name;
-        },
-        LabelledNameNode: function(name, label){
-          this.type = 'labelled-name';
             this.name = name;
             this.label = label;
         },
