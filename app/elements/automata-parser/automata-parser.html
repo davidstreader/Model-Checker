@@ -29,15 +29,6 @@
         type: Object,
         readOnly: true
       },
-      /**
-       * A queue of operations to be done on definitions.
-       *
-       * @private
-       */
-       _operationsQueue: {
-        type: Object,
-        readOnly: true
-       }
     },
     /**
      * Stores definition data.
@@ -52,6 +43,8 @@
     _Definition: function() {
       this.graph = undefined;
       this.type = undefined;
+      this.relabel = undefined;
+      this.hidden = undefined;
       this.unprocessedNodes = [];
       this._rootId = undefined;
       // define the getter and setter for rootId
@@ -121,7 +114,6 @@
       // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
       // jshint -W106
       this._set_definitionsMap({});
-      this._set_operationsQueue([]);
       // jscs:enable requireCamelCaseOrUpperCaseIdentifiers
 
       // reset the node and edge uids in graph class
@@ -145,10 +137,7 @@
         this._interpretHiddenActions(model.hidden, defName);
       }.bind(this));
       this._processReferences();
-      this._processRelabelling();
-      this._processHiding();
       this._processParallelComposition();
-      this._processOperations();
       this._relabelNodes(true);
       return this._buildAutomataArray();
     },
@@ -207,8 +196,8 @@
      */
     _interpretRelabelling: function(relabel, defName){
       if(relabel !== undefined){
-        var root = this._definitionsMap[defName].graph.root;
-        root.addMetaData('relabel', relabel);
+        this._definitionsMap[defName].relabel = relabel;
+        this._processRelabelling(defName);
       }
     },
     /**
@@ -220,8 +209,8 @@
      */
     _interpretHiddenActions: function(hidden, defName){
       if(hidden !== undefined){
-        var root = this._definitionsMap[defName].graph.root;
-        root.addMetaData('hidden', hidden);
+        this._definitionsMap[defName].hidden = hidden;
+        this._processHiding(defName);
       }
     },
     /**
@@ -394,22 +383,22 @@
      */
     _interpretAbstraction: function(ptNode, extendtionNode, definitionMap, defName, referenceMap) {
       var name = this._getNameFromPTNode(ptNode).name;
+      var references = this._getNameFromOperationNode(ptNode);
+      
       // check if there are any nested functions within this process
-      if(typeof(name) === 'object'){
-        extendtionNode.addMetaData('abstraction', defName);
-        this._pushToOperationsQueue(defName, 'abstraction');
+      if(typeof(references) === 'object'){
         this._interpretProcess(ptNode.name, extendtionNode, definitionMap, defName, referenceMap);
+        references = defName;
       }
-      else{
-        var reference = this._getNameFromFunctionNode(ptNode);
-        // throw an error if the definition to be abstracted has not been defined
-        if(definitionMap[reference] === undefined){
-          throw new this.InterpreterException('\'' + reference + '\' has not been defined.');
-        }
 
-        extendtionNode.addMetaData('abstraction', reference);
-        this._pushToOperationsQueue(defName, 'abstraction');
+      // throw an error if the definition to be abstracted has not been defined
+      if(definitionMap[references] === undefined){
+        throw new this.InterpreterException('\'' + reference + '\' has not been defined.');
       }
+
+      var graph = definitionMap[references].graph;
+      definitionMap[defName].graph = Graph.Operations.abstraction(graph);
+      extendtionNode.id = definitionMap[defName].graph.root.id;
     },
     /**
      * Interprets a parse tree simplification node.
@@ -423,22 +412,22 @@
      */
     _interpretSimplification: function(ptNode, extendtionNode, definitionMap, defName, referenceMap) {
       var name = this._getNameFromPTNode(ptNode).name;
+      var references = this._getNameFromOperationNode(ptNode);
+
       // check if there are any nested functions within this process
       if(typeof(name) === 'object'){
-        extendtionNode.addMetaData('simplification', defName);
-        this._pushToOperationsQueue(defName, 'simplification');
         this._interpretProcess(ptNode.name, extendtionNode, definitionMap, defName, referenceMap);
+        references = defName;
       }
-      else{
-        var reference = this._getNameFromFunctionNode(ptNode);
-        // throw an error if the definition to be simplified has not been defined
-        if(definitionMap[reference] === undefined){
-          throw new this.InterpreterException('\'' + reference + '\' has not been defined.');
-        }
 
-        extendtionNode.addMetaData('simplification', reference);
-        this._pushToOperationsQueue(defName, 'simplification');
+      // throw an error if the definition to be simplified has not been defined
+      if(definitionMap[references] === undefined){
+        throw new this.InterpreterException('\'' + reference + '\' has not been defined.');
       }
+
+      var graph = definitionMap[references].graph;
+      definitionMap[defName].graph = Graph.Operations.bisimulation(graph);
+      extendtionNode.id = definitionMap[defName].graph.root.id;
     },
     /**
      *
@@ -508,8 +497,8 @@
     /**
      *
      */
-    _getNameFromFunctionNode: function(functionNode) {
-      var name = functionNode.name;
+    _getNameFromOperationNode: function(operationNode) {
+      var name = operationNode.name;
       while(typeof(name) !== 'string'){
         name = name.name;
       }
@@ -678,49 +667,39 @@
     /**
      *
      */
-    _processRelabelling: function() {
-      for(var key in this._definitionsMap){
-        // check if this definition has relabelling to be processed
-        var root = this._definitionsMap[key].graph.root;
-        var relabel = root.getMetaData('relabel');
-        if(relabel !== undefined){
-          // get an array of edges in the current graph
-          var edges = this._definitionsMap[key].graph.edges;
-          // check each edge to see if it needs to be updated
-          edges.forEach(function(edge){
-            for(var i = 0; i < relabel.length; i++){
-              // only update the edge if it needs to be relabelled
-              if(relabel[i]['old-label'] === edge.label){
-                edge.label = relabel[i]['new-label'];
-              }
+    _processRelabelling: function(defName) {
+      // check if this definition has relabelling to be process
+      var relabel = this._definitionsMap[defName].relabel;
+      if(relabel !== undefined){
+        // get an array of edges in the current graph
+        var edges = this._definitionsMap[defName].graph.edges;
+        // check each edge to see if it needs to be updated
+        edges.forEach(function(edge){
+          for(var i = 0; i < relabel.length; i++){
+            // only update the edge if it needs to be relabelled
+            if(relabel[i]['old-label'] === edge.label){
+              edge.label = relabel[i]['new-label'];
             }
-          }.bind(this));
-
-          root.deleteMetaData('relabel');
-        }
+          }
+        }.bind(this));
       }
     },
     /**
      *
      */
-    _processHiding: function() {
-      for(var key in this._definitionsMap){
-        // check if this definition has hidden actions to be processed
-        var root = this._definitionsMap[key].graph.root;
-        var hidden = root.getMetaData('hidden');
-        if(hidden !== undefined){
-          // get an array of edges in the current graph
-          var edges = this._definitionsMap[key].graph.edges;
-          // check each edge to see if it needs to be updated
-          edges.forEach(function(edge, index){
-            if(_.contains(hidden, edge.label)){
-              // only updates the edge if it needs to be hidden
-              edge.isHidden = true;
-            }
-          }.bind(this));
-
-          root.deleteMetaData('hidden');
-        }
+    _processHiding: function(defName) {
+      // check if this definition has hidden actions to be processed
+      var hidden = this._definitionsMap[defName].hidden;
+      if(hidden !== undefined){
+        // get an array of edges in the current graph
+        var edges = this._definitionsMap[defName].graph.edges;
+        // check each edge to see if it needs to be updated
+        edges.forEach(function(edge, index){
+          if(_.contains(hidden, edge.label)){
+            // only updates the edge if it needs to be hidden
+            edge.isHidden = true;
+          }
+        }.bind(this));
       }
     },
     /**
@@ -775,18 +754,6 @@
         automata.push(new Automaton(key, this._definitionsMap[key].graph));
       }
       return automata;
-    },
-    /**
-     * Pushs the specified operation to be performed for the specified definition
-     * to the operations queue.
-     *
-     * @private
-     * @param {!string} defName - the name of the definition
-     * @param {!string} operation - the operation required for the definition
-     */
-    _pushToOperationsQueue: function(defName, operation) {
-      var toPush = {definition: defName, type: operation};
-      this._operationsQueue.push(toPush);
     }
   });
 })();
