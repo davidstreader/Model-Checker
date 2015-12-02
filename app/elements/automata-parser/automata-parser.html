@@ -130,12 +130,12 @@
       // _interpretModel
       parseTree.forEach(function(model) {
         this._interpretDefinitions(model.definitions);
+        this._processReferences();
         var defName = model.definitions[0].name.name;
         this._processRelabelling(defName, model.relabel);
         this._processHiding(defName, model.hidden);
       }.bind(this));
-      this._processReferences();
-      this._processParallelComposition();
+      //this._processParallelComposition();
       this._relabelNodes(true);
       return this._buildAutomataArray();
     },
@@ -207,10 +207,7 @@
           this._interpretParallel(process, extendtionNode, definitionMap, defName, referenceMap);
           break;
         case 'name':
-          this._interpretName(process, extendtionNode, definitionMap, defName, referenceMap);
-          break;
-        case 'labelled-name':
-          this._interpretLabelledName(process, extendtionNode, definitionMap, defName, referenceMap);
+          return this._interpretName(process, extendtionNode, definitionMap, defName, referenceMap);
           break;
         case 'abstraction':
           this._interpretAbstraction(process, extendtionNode, definitionMap, defName, referenceMap);
@@ -275,8 +272,12 @@
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
     _interpretParallel: function(parallel, extendtionNode, definitionMap, defName, referenceMap) {
-     this._interpretProcess(parallel.definition1, extendtionNode, definitionMap, defName, referenceMap);
-     this._interpretProcess(parallel.definition2, extendtionNode, definitionMap, defName, referenceMap);
+     var graph1 = this._interpretProcess(parallel.definition1, extendtionNode, definitionMap, defName, referenceMap);
+     var graph2 = this._interpretProcess(parallel.definition2, extendtionNode, definitionMap, defName, referenceMap);
+     definitionMap[defName].graph = Graph.Operations.parallelComposition(graph1, graph2);
+     extendtionNode = definitionMap[defName].graph.root;
+     definitionMap[defName].unprocessedNodes = [];
+     console.log(extendtionNode);
     },
     /**
      * Interpret a parse tree name node.
@@ -291,8 +292,9 @@
     _interpretName: function(ptNode, extendtionNode, definitionMap, defName, referenceMap) {
       var references = this._getNameFromPTNode(ptNode);        // get what the extendtionNode should be referencing
       var label = this._getLabelFromPTNode(ptNode); 
+      
       if(label !== undefined){
-        this._interpretLabel(label, references);
+        this._interpretLabel(label, references, referenceMap);
         references = label + ':' + references;
       }
 
@@ -316,32 +318,8 @@
       else {
         definitionMap[defName].graph.mergeNodes([referenceMap[references].id, extendtionNode.id]);
       }
-    },
-    /**
-     *
-     */
-    _interpretLabelledName: function(ptNode, extendtionNode, definitionMap, defName, referenceMap) {
-      var references = this._getNameFromPTNode(ptNode);
-      var label = this._getLabelFromPTNode(ptNode); // TODO
 
-      if(label !== undefined){
-        this._interpretLabel(label, references);
-        references = label + ':' + references;
-      }
-
-      if(definitionMap[defName].type === 'parallel-definition'){
-        var parallelComposition = extendtionNode.getMetaData('parallelComposition')
-        if(parallelComposition === undefined){
-          parallelComposition = [];
-        }
-        parallelComposition.push(references);
-        extendtionNode.addMetaData('parallelComposition', parallelComposition);
-        this._interpretName(ptNode, extendtionNode, definitionMap, defName, referenceMap);
-      }
-
-      else if(definitionMap[defName].type === 'reference-definition'){
-        this._interpretName(ptNode, extendtionNode, definitionMap, defName, referenceMap);
-      }
+      return definitionMap[references].graph;
     },
     /**
      * Interprets a parse tree abstraction node.
@@ -404,7 +382,7 @@
     /**
      *
      */
-    _interpretLabel: function(label, defName) {
+    _interpretLabel: function(label, defName, referenceMap) {
       // clone the definition defined by defName
       var definition = this._definitionsMap[defName];
       var temp = new this._Definition();
@@ -417,8 +395,10 @@
         var newLabel = label + "." + edge.label;
         edge.label = newLabel;
       }
+
+      var references = label + ':' + defName;
       // add new definition to definitions map
-      this._definitionsMap[label + ":" + defName] = temp;
+      this._definitionsMap[references] = temp; 
     },
     /**
      * Interpret a parse tree stop node.
