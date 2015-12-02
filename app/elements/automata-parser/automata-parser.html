@@ -185,7 +185,7 @@
         // if an id to use for the root has hasn't been specified, generate one, otherwise use it
         var rootId = definitionMap[name].rootId;
         var root = definitionMap[name].graph.addNode(
-          rootId === undefined ? NodeUid.nextNodeUid : rootId
+          rootId === undefined ? NodeUid.next : rootId
         );
         root.addMetaData ('startNode', true); // mark the root as the starting node (for the visualizer)
         
@@ -280,13 +280,13 @@
      */
     _interpretSequence: function(sequence, extendtionNode, definitionMap, defName, referenceMap) {
       var graph = definitionMap[defName].graph;         // get the graph
-      var node = graph.addNode(NodeUid.nextNodeUid);  // add a new node to the graph
+      var node = graph.addNode(NodeUid.next);  // add a new node to the graph
       // check if edge being added is not a tau
       if(this._getActionFromNode(sequence.from) === 'tau'){
         throw new this.InterpreterException("\'tau\' is not a valid name for an action label.");
       }
       // add an edge connect the new node to the rest of the graph
-      graph.addEdge(EdgeUid.nextEdgeUid, extendtionNode, node, this._getActionFromNode(sequence.from));
+      graph.addEdge(EdgeUid.next, extendtionNode, node, this._getActionFromNode(sequence.from));
       this._interpretProcess(sequence.to, node, definitionMap, defName, referenceMap);
     },
     /**

@@ -2,29 +2,61 @@
 // jshint esnext:true
 'use strict';
 
-var nodeUid = 0;
-var edgeUid = 0;
+var _NODE_UID = 0; // used to return unique node id for NodeUid class
+var _EDGE_UID = 0; // used to return unique edge id for EdgeUid class
 
+/**
+ * Helper class for Graph which generates unique node identifiers.
+ *
+ * @static
+ */
 class NodeUid {
 
-  static get nextNodeUid() {
-    return nodeUid++;
+  /**
+   * Returns the next unique node indentifier.
+   *
+   * @static
+   * @returns {!integer} - next node uid
+   */
+  static get next() {
+    return _NODE_UID++;
   }
 
+  /**
+   * Resets the node identifier to zero.
+   *
+   * @static
+   */
   static reset(){
-    nodeUid = 0;
+    _NODE_UID = 0;
   }
 
 }
 
+/**
+ * Helper class for Graph which generates unique edge identifiers
+ *
+ * @static
+ */
 class EdgeUid {
 
-  static get nextEdgeUid() {
-    return edgeUid++;
+  /**
+   * Returns the next unique edge indentifier.
+   *
+   * @static
+   * @returns {!integer} - next edge uid
+   */
+  static get next() {
+    return _EDGE_UID++;
   }
 
+  /**
+   * Resets the edge identifier to zero.
+   *
+   * @static
+   */
   static reset() {
-    edgeUid = 0;
+    _EDGE_UID = 0;
   }
 }
 
@@ -1197,7 +1229,7 @@ Graph.Operations = class {
         if(edge.isHidden && !_.contains(visited, edge.to)){
           // only add edge if the same edge is not already present in graph
           if(!graph.containsEdge(previous, edge.to, label)){
-            graph.addEdge(EdgeUid.nextEdgeUid, previous, edge.to, label);
+            graph.addEdge(EdgeUid.next, previous, edge.to, label);
           }
           stack.push(edge.to);
         }
@@ -1226,7 +1258,7 @@ Graph.Operations = class {
         if(edge.isHidden && !_.contains(visited, edge.from)){
           // only add edge if the same edge is not already present in graph
           if(!graph.containsEdge(edge.from, next, label)){
-            graph.addEdge(EdgeUid.nextEdgeUid, edge.from, next, label);
+            graph.addEdge(EdgeUid.next, edge.from, next, label);
           }
           stack.push(edge.from);
         }
@@ -1372,7 +1404,7 @@ Graph.Operations = class {
             // calculate the id of the node the new edge is transitioning to
             var toId = ((coaccessible1 - graph1.rootId) * graph2.nodeCount) + (coaccessible2 - graph2.rootId) + graph.rootId;
             var isHidden = graph1.isHiddenEdge(action);
-            graph.addEdge(EdgeUid.nextEdgeUid, graph.getNode(fromId), graph.getNode(toId), action, isHidden);
+            graph.addEdge(EdgeUid.next, graph.getNode(fromId), graph.getNode(toId), action, isHidden);
           }
 
           // check if the current action is done by the outer node and is never performed in the second graph
@@ -1380,7 +1412,7 @@ Graph.Operations = class {
             // calculate the id of the node the new edge is transitioning to
             var toId = ((coaccessible1 - graph1.rootId) * graph2.nodeCount) + j + graph.rootId;
             var isHidden = graph1.isHiddenEdge(action);
-            graph.addEdge(EdgeUid.nextEdgeUid, graph.getNode(fromId), graph.getNode(toId), action, isHidden);
+            graph.addEdge(EdgeUid.next, graph.getNode(fromId), graph.getNode(toId), action, isHidden);
           }
 
           // check if the current action is done by the inner node and is never performed in the first graph
@@ -1388,7 +1420,7 @@ Graph.Operations = class {
             // calculate the id of the node the new edge is transitioning to
             var toId = (i * graph2.nodeCount) + (coaccessible2 - graph2.rootId) + graph.rootId;
             var isHidden = graph2.isHiddenEdge(action);
-            graph.addEdge(EdgeUid.nextEdgeUid, graph.getNode(fromId), graph.getNode(toId), action, isHidden);
+            graph.addEdge(EdgeUid.next, graph.getNode(fromId), graph.getNode(toId), action, isHidden);
           }
         }
       }
@@ -1421,7 +1453,7 @@ Graph.Operations = class {
         var startState2 = node2._meta['startNode'] === true;
         var terminalState2 = node2._meta['isTerminal'] === 'stop';
         var label2 = (node2.label !== '') ? node2.label : j;
-        var node = graph.addNode(NodeUid.nextNodeUid, (label1 + "." + label2));
+        var node = graph.addNode(NodeUid.next, (label1 + "." + label2));
 
         // if both states are a starting state make new node start state
         if(startState1 && startState2){
