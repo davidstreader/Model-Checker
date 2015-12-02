@@ -130,8 +130,18 @@
       // _interpretModel
       parseTree.forEach(function(model) {
         this._interpretDefinitions(model.definitions);
-        this._processReferences();
+        // get the name for the current definition
         var defName = model.definitions[0].name.name;
+        
+        // check if the current definition is a parallel definition
+        if(this._definitionsMap[defName].type !== 'parallel-definition'){
+          this._processReferences(defName);
+        }
+        else{
+          this._processParallelComposition(defName);
+        }
+        
+        // process relabelling and hiding
         this._processRelabelling(defName, model.relabel);
         this._processHiding(defName, model.hidden);
       }.bind(this));
@@ -207,7 +217,7 @@
           this._interpretParallel(process, extendtionNode, definitionMap, defName, referenceMap);
           break;
         case 'name':
-          return this._interpretName(process, extendtionNode, definitionMap, defName, referenceMap);
+          this._interpretName(process, extendtionNode, definitionMap, defName, referenceMap);
           break;
         case 'abstraction':
           this._interpretAbstraction(process, extendtionNode, definitionMap, defName, referenceMap);
@@ -272,12 +282,19 @@
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
     _interpretParallel: function(parallel, extendtionNode, definitionMap, defName, referenceMap) {
-     var graph1 = this._interpretProcess(parallel.definition1, extendtionNode, definitionMap, defName, referenceMap);
-     var graph2 = this._interpretProcess(parallel.definition2, extendtionNode, definitionMap, defName, referenceMap);
-     definitionMap[defName].graph = Graph.Operations.parallelComposition(graph1, graph2);
-     extendtionNode = definitionMap[defName].graph.root;
-     definitionMap[defName].unprocessedNodes = [];
-     console.log(extendtionNode);
+     this._interpretProcess(parallel.definition1, extendtionNode, definitionMap, defName, referenceMap);
+     this._interpretProcess(parallel.definition2, extendtionNode, definitionMap, defName, referenceMap);
+    },
+    /**
+     *
+     */
+    _interpretName: function(ptNode, extendtionNode, definitionMap, defName, referenceMap) {
+      if(definitionMap[defName].type === 'parallel-definition'){
+        this._interpretParallelName(ptNode, extendtionNode, definitionMap, defName, referenceMap);
+      }
+      else{
+        this._interpretStandardName(ptNode, extendtionNode, definitionMap, defName, referenceMap);
+      }
     },
     /**
      * Interpret a parse tree name node.
@@ -289,13 +306,11 @@
      * @param {!string} defName            - The name of the current definition
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
-    _interpretName: function(ptNode, extendtionNode, definitionMap, defName, referenceMap) {
+    _interpretStandardName: function(ptNode, extendtionNode, definitionMap, defName, referenceMap) {
       var references = this._getNameFromPTNode(ptNode);        // get what the extendtionNode should be referencing
-      var label = this._getLabelFromPTNode(ptNode); 
       
-      if(label !== undefined){
-        this._interpretLabel(label, references, referenceMap);
-        references = label + ':' + references;
+      if(ptNode.label !== undefined){
+        this._interpretLabel(ptNode.label, ptNode.name, referenceMap);
       }
 
       extendtionNode.addMetaData ('references', references);   // mark what the extendtionNode as referencing it
@@ -318,8 +333,13 @@
       else {
         definitionMap[defName].graph.mergeNodes([referenceMap[references].id, extendtionNode.id]);
       }
-
-      return definitionMap[references].graph;
+    },
+    /**
+     *
+     */
+    _interpretParallelName: function(ptNode, extendtionNode, definitionMap, defName, referenceMap) {
+      var references = this._getNameFromPTNode(ptNode);
+      definitionMap[defName].unprocessedNodes.push(definitionMap[references].graph.root);
     },
     /**
      * Interprets a parse tree abstraction node.
@@ -434,17 +454,11 @@
      * @returns {string}
      */
     _getNameFromPTNode: function(ptNode) {
-      return ptNode.name;
-    },
-    /**
-     * Get the label from a parse tree parallel-name node
-     *
-     * @private
-     * @param {!object} ptNode - A parse tree parallel-name node
-     * @returns {string | undefined}
-     */
-    _getLabelFromPTNode: function(ptNode) {
-      return ptNode.label;
+      var name = ptNode.name;
+      if(ptNode.label !== undefined){
+        name = ptNode.label + ':' + name;
+      }
+      return name;
     },
     /**
      *
@@ -471,96 +485,57 @@
      *
      * @private
      */
-    _processReferences: function() {
-      // for each definitions
-      for (var key in this._definitionsMap) {
-        var prevReferences = key;   // for correct error messages
-        // while it has un processed nodes
-        while (this._definitionsMap[key].unprocessedNodes.length > 0) {
-          var definition = this._definitionsMap[key];
-          var len = this._definitionsMap[key].unprocessedNodes.length;
-          var references;
-          // loop through all the unprocessed nodes
-          // (only the ones that were marked as un processed when the while loop started,
-          // not any new unprocessed nodes that were added)
-          for (var i = 0; i < len; i++) {
-            var node = definition.unprocessedNodes[i];
-            references = node.getMetaData ('references');
-            // check whether or not the automaton that this node is referencing actual exist.
-            if (this._definitionsMap[references] === undefined ||
-                this._definitionsMap[references].graph === undefined) {
-              throw new this.InterpreterException('unknown automaton "' + references + '" referenced in "' + prevReferences + '".');
-            }
-            var refGraph = this._definitionsMap[references].graph;
-            var refNodes = refGraph.nodes;
-            // add the nodes and edge from the referenced graph in to this one
-            definition.graph.combineWith(refGraph);
-            // find all the unprocessed nodes that we are adding to this graph
-            // and add them to the array of unprocessed nodes
-            for (var j = 0; j < refNodes.length; j++) {
-              var gRefNode = definition.graph.getNode(refNodes[j].id);
-              if (gRefNode.getMetaData ('referenceUnprocessed')) {
-                definition.unprocessedNodes.push(gRefNode);
-              }
-            }
-            node.deleteMetaData ('referenceUnprocessed'); // this node has now been processed
+    _processReferences: function(defName) {
+      var prevReferences = defName;   // for correct error messages
+      // while it has un processed nodes
+      while (this._definitionsMap[defName].unprocessedNodes.length > 0) {
+        var definition = this._definitionsMap[defName];
+        var len = this._definitionsMap[defName].unprocessedNodes.length;
+        var references;
+        // loop through all the unprocessed nodes
+        // (only the ones that were marked as un processed when the while loop started,
+        // not any new unprocessed nodes that were added)
+        for (var i = 0; i < len; i++) {
+          var node = definition.unprocessedNodes[i];
+          references = node.getMetaData ('references');
+          // check whether or not the automaton that this node is referencing actual exist.
+          if (this._definitionsMap[references] === undefined ||
+            this._definitionsMap[references].graph === undefined) {
+            throw new this.InterpreterException('unknown automaton "' + references + '" referenced in "' + prevReferences + '".');
           }
-          // remove all the nodes we just processed from the unprocessed nodes array
-          definition.unprocessedNodes.splice(0, len);
-          prevReferences = references;
-        }
-      }
-    },
-    /**
-     *
-     */
-    _processReferenceDefinitions: function() {
-      for(var key in this._definitionsMap){
-        if(this._definitionsMap[key].type === 'reference-definition'){
-          var root = this._definitionsMap[key].graph.root;
-          var references = root.getMetaData('references');
-
-          if(references === undefined){
-            throw new this.InterpreterException('Invalid reference for \'' + defName + '\' has been defined.');
+          var refGraph = this._definitionsMap[references].graph;
+          var refNodes = refGraph.nodes;
+          // add the nodes and edge from the referenced graph in to this one
+          definition.graph.combineWith(refGraph);
+          // find all the unprocessed nodes that we are adding to this graph
+          // and add them to the array of unprocessed nodes
+          for (var j = 0; j < refNodes.length; j++) {
+            var gRefNode = definition.graph.getNode(refNodes[j].id);
+            if (gRefNode.getMetaData ('referenceUnprocessed')) {
+              definition.unprocessedNodes.push(gRefNode);
+            }
           }
-
-          var graph = this._definitionsMap[references].graph;
-          graph.root.combineMetaData(root.metaData);
-          this._definitionsMap[key].graph = graph.deepClone();
-          root.deleteMetaData('references');
+          node.deleteMetaData ('referenceUnprocessed'); // this node has now been processed
         }
+        // remove all the nodes we just processed from the unprocessed nodes array
+        definition.unprocessedNodes.splice(0, len);
+        prevReferences = references;
       }
     },
     /**
      *
      */
     _processParallelComposition: function(defName) {
-      for(var key in this._definitionsMap){
-        // check if this definition has parallel compositions to process
-        var root = this._definitionsMap[key].graph.root;
-        var parallelComposition = root.getMetaData('parallelComposition');
-        if(parallelComposition !== undefined){
-          var graph1 = this._definitionsMap[parallelComposition[0]].graph;
-          
-          for(var i = 1; i < parallelComposition.length; i++){
-            var graph2 = this._definitionsMap[parallelComposition[i]].graph;
-            graph1 = Graph.Operations.parallelComposition(graph1, graph2);
-          }
-
-          root.deleteMetaData('parallelComposition');
-          // check if the parallel composition has any relabels or hidden actions
-          var relabel = root.getMetaData('relabel');
-          if(relabel !== undefined){
-            graph1.root.addMetaData('relabel', relabel);
-          }
-
-          var hidden = root.getMetaData('hidden');
-          if(hidden !== undefined){
-            graph1.root.addMetaData('hidden', hidden);
-          }
-
-          this._definitionsMap[key].graph = graph1;
+      var unprocessedNodes = this._definitionsMap[defName].unprocessedNodes;
+      if(unprocessedNodes.length > 1){
+        
+        var graph1 = unprocessedNodes[0].graph;         
+        for(var i = 1; i < unprocessedNodes.length; i++){
+          var graph2 = unprocessedNodes[i].graph;
+          graph1 = Graph.Operations.parallelComposition(graph1, graph2);
         }
+
+        this._definitionsMap[defName].graph = graph1;
       }
     },
     /**
