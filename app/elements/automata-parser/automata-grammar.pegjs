@@ -70,6 +70,10 @@
     },
     ErrorNode: function(){
         this.type = 'error';
+    },
+    CommentNode: function(comment){
+      this.type = 'comment';
+        this.comment = comment;
     }
   };
 }
@@ -248,6 +252,9 @@ Process_Simplification
     return new Node.AbstractionNode(new Node.NameNode('||' + name.name));
      }
 
+Process_Comment
+  =  SingleLineComment
+
 /**
  * Attempts to parse either a Model or a ParallelModel.
  */
@@ -255,6 +262,7 @@ Model_OR_ParallelModel
   =  Model
   /  ParallelModel
   /  ReferenceModel
+  /  Process_Comment
 
 /**
  * Attempts to parse either a Label or a parallel process.
@@ -392,6 +400,34 @@ Relabel
       return {"new-label":a.action, "old-label": b.action};
      }
 
+SingleLineComment
+  =  symbol_SingleLineComment c:Comment [\n] {
+    var comment = '';
+      for(var i = 0; i < c.length; i++){
+        comment += c[i];
+      }
+      return new Node.CommentNode(comment);
+     }
+  /  symbol_SingleLineComment c:Comment {
+      var comment = '';
+        for(var i = 0; i < c.length; i++){
+          comment += c[i]
+        }
+        return new Node.CommentNode(comment);
+     }
+  
+MultiLineComment
+  =  symbol_MultiLineCommentStart c:Comment symbol_MultiLineCommentEnd {
+      var comment = '';
+        for(var i = 0; i < c.length; i++){
+          comment += c[i];
+        }
+        return new Node.CommentNode(comment);
+     }
+
+Comment
+  =  ([\x20-\x7F]*)
+
 /**
  * Symbols used in parsing.
  */
@@ -410,6 +446,9 @@ symbol_Relabel = '/'
 symbol_Hide = '\\'
 symbol_Abstraction = 'abs'
 symbol_Simplification = 'simp'
+symbol_SingleLineComment = '//'
+symbol_MultiLineCommentStart = '/*'
+symbol_MultiLineCommentEnd = '*/'
 
 _ 'optional whitespace'
   =  [ \t\n\r]*
