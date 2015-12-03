@@ -1203,7 +1203,7 @@ Graph.Operations = class {
     }
 
     clone.removeHiddenEdges();
-    console.log(clone);
+    clone.trim();
     return clone;
   }
 
