@@ -138,8 +138,6 @@
      */
     _interpretParseTree: function(parseTree) {
       this._resetInterpreter();
-      // _interpretModel
-      console.log(parseTree);
       parseTree.forEach(function(model) {
         // ignore comments
         if(model.type !== 'comment'){

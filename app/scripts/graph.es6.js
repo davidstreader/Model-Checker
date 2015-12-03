@@ -1004,7 +1004,6 @@ Graph.ColoredNode = class {
         break;
       }
     }
-    console.log("node coloring = " + this._color + ".\n");
   }
 
   /**
