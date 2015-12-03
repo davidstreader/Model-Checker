@@ -10,6 +10,7 @@
      */
     app.automata = {values: []};
     app.liveCompiling = true;
+    app.fairAbstraction = true;
     app.helpDialogSelectedTab = 0;
 
     /**
@@ -32,7 +33,7 @@
 
         var automata = [];
         try {
-          automata = app.$.parser.parse(code);
+          automata = app.$.parser.parse(code, app.fairAbstraction);
         } catch (e) {
           var buildErrorMessage = function(e) {
             return e.location !== undefined ?
@@ -134,7 +135,16 @@
       }
       app.$.editor.focus();
     });
-
+    /**
+     * Simple event listener for when the fair abstraction checkbox is ticked.
+     * Compile is called if live compiling is active.
+     */
+    app.$['chbx-fair-abstraction'].addEventListener('iron-change', function() {
+      if(app.liveCompiling){
+        app.compile();
+      }
+      app.$.editor.focus();
+    });
     /**
      * This is the event which triggers when the user selects an automata from the
      * list to walk down. It sets the root node of this automata, and all automata

@@ -29,6 +29,15 @@
         type: Object,
         readOnly: true
       },
+      /**
+       * Determines whether fair or unfair abstraction is performed.
+       *
+       * @private
+       */
+      _isFairAbstraction: {
+        type: Boolean,
+        readOnly: true
+      }
     },
     /**
      * Stores definition data.
@@ -95,9 +104,11 @@
      * Parse the code and return the automata it defines.
      *
      * @param {!string} code - The code to parse
+     * @param {!boolean} isFair - Determines whether fair or unfair abstraction is performed
      * @returns {!Automaton[]} Automata
      */
-    parse: function(code) {
+    parse: function(code, isFair) {
+      this._set_isFairAbstraction(isFair);
       var pt = this._parser.parse(code);
       return this._interpretParseTree(pt);
     },
@@ -130,7 +141,7 @@
       // _interpretModel
       console.log(parseTree);
       parseTree.forEach(function(model) {
-        // if entry is comment then continue
+        // ignore comments
         if(model.type !== 'comment'){
           this._interpretDefinitions(model.definitions);
           // get the name for the current definition
@@ -371,7 +382,7 @@
       }
 
       var graph = definitionMap[references].graph;
-      definitionMap[defName].graph = Graph.Operations.abstraction(graph);
+      definitionMap[defName].graph = Graph.Operations.abstraction(graph, this._isFairAbstraction);
       extendtionNode.id = definitionMap[defName].graph.root.id;
     },
     /**
