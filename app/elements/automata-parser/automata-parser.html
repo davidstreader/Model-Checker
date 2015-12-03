@@ -128,22 +128,26 @@
     _interpretParseTree: function(parseTree) {
       this._resetInterpreter();
       // _interpretModel
+      console.log(parseTree);
       parseTree.forEach(function(model) {
-        this._interpretDefinitions(model.definitions);
-        // get the name for the current definition
-        var defName = model.definitions[0].name.name;
-        
-        // check if the current definition is a parallel definition
-        if(this._definitionsMap[defName].type !== 'parallel-definition'){
-          this._processReferences(defName);
+        // if entry is comment then continue
+        if(model.type !== 'comment'){
+          this._interpretDefinitions(model.definitions);
+          // get the name for the current definition
+          var defName = model.definitions[0].name.name;
+          
+          // check if the current definition is a parallel definition
+          if(this._definitionsMap[defName].type !== 'parallel-definition'){
+            this._processReferences(defName);
+          }
+          else{
+            this._processParallelComposition(defName);
+          }
+          
+          // process relabelling and hiding
+          this._processRelabelling(defName, model.relabel);
+          this._processHiding(defName, model.hidden);
         }
-        else{
-          this._processParallelComposition(defName);
-        }
-        
-        // process relabelling and hiding
-        this._processRelabelling(defName, model.relabel);
-        this._processHiding(defName, model.hidden);
       }.bind(this));
       //this._processParallelComposition();
       this._relabelNodes(true);
