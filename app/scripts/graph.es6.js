@@ -4,6 +4,8 @@
 
 var _NODE_UID = 0; // used to return unique node id for NodeUid class
 var _EDGE_UID = 0; // used to return unique edge id for EdgeUid class
+var TAU = '𝜏';
+var DELTA = '𝛿';
 
 /**
  * Helper class for Graph which generates unique node identifiers.
@@ -200,13 +202,13 @@ class Graph {
    * @throws {Graph.Exception} uid must be unquie
    * @returns {!Graph.Edge} The edge added to the graph
    */
-  addEdge(uid, from, to, label='', isHidden = false) {
+  addEdge(uid, from, to, label='', isHidden = false, isDeadlock = false) {
     if (this._edgeMap[uid] !== undefined) {
       throw new Graph.Exception(
         'This graph already contains a edge with id "' + uid + '".');
     }
 
-    let edge = new Graph.Edge(this, uid, from, to, label, isHidden);
+    let edge = new Graph.Edge(this, uid, from, to, label, isHidden, isDeadlock);
     this._edgeMap[uid] = edge;
     this._edgeCount += 1;
 
@@ -416,7 +418,7 @@ class Graph {
   constructAlphabet() {
     var alphabet = {};
     for(let i in this._edgeMap){
-      var label = this._edgeMap[i].label;
+      var label = this._edgeMap[i].isDeadlock ? DELTA : this._edgeMap[i].label;
       alphabet[label] = true;
     }
 
@@ -476,7 +478,8 @@ class Graph {
         clone.getNode(this._edgeMap[key].from.id),  // make sure to use the copied node, not the original
         clone.getNode(this._edgeMap[key].to.id),
         this._edgeMap[key].label,
-        this._edgeMap[key].isHidden);
+        this._edgeMap[key].isHidden,
+        this._edgeMap[key].isDeadlock);
     }
 
     // set the root
@@ -981,7 +984,8 @@ Graph.Edge = class {
 Graph.ColoredNode = class {
 
   /**
-   * Constructs an instance of ColoredNode.
+   * Constructs an instance of ColoredNode. If node has no deadlock transitions to it
+   * then it is colored as 0, otherwise it is colored -1.
    *
    * @protected
    * @param {!Object} node - the node to be colored
@@ -989,7 +993,18 @@ Graph.ColoredNode = class {
    */
   constructor(node, color = '0') {
     this._node = node;
-    this._color = color;
+    this._color = color;;
+
+    // check for deadlocks
+    var edges = node.edgesToMe;
+    for(let e in edges){
+      var edge = edges[e];
+      if(edge.isDeadlock){
+        this._color = '-1';
+        break;
+      }
+    }
+    console.log("node coloring = " + this._color + ".\n");
   }
 
   /**
@@ -1037,8 +1052,8 @@ Graph.ColoredNode = class {
     for(let e in edges){
       var edge = edges[e];
       var from = this._color;
-      var to = coloredNodes[edge.to.id].color;
-      var label = edge.label;
+      var to = edge.isDeadlock ? '-1' : coloredNodes[edge.to.id].color;
+      var label = edge.isDeadlock ? DELTA : edge.label;
       var color = Graph.NodeColoring.constructColor(from, to, label);
       
       // only add color if it is not a duplicate
@@ -1047,9 +1062,18 @@ Graph.ColoredNode = class {
       }
     }
 
+    // check if current node has any deadlock transitions to it
+    edges = this._node.edgesToMe;
+    for(let e in edges){
+      var edge = edges[e];
+      if(edge.isDeadlock){
+        colors.add(Graph.NodeColoring.constructColor('-1', undefined, undefined));
+      }
+    }
+
     // if current node is a stop node then give it the empty coloring
     if(colors.length === 0){
-      colors.add(Graph.NodeColoring.constructColor(0, undefined, undefined));
+      colors.add(Graph.NodeColoring.constructColor('0', undefined, undefined));
     }
 
     return colors;
@@ -1217,8 +1241,8 @@ Graph.Operations = class {
         var edge = edges[j];
         // only add observable edges if current edge is not hidden
         if(!edge.isHidden){
-          this._addObservableEdgesFromCurrentNode(clone, node, edge.to, edge.label, isFair);
-          this._addObservableEdgesToCurrentNode(clone, edge.to, node, edge.label, isFair);
+          this._addObservableEdgesFromCurrentNode(clone, node, edge.to, edge.label);
+          this._addObservableEdgesToCurrentNode(clone, edge.to, node, edge.label);
         }
       }
     }
@@ -1394,7 +1418,7 @@ Graph.Operations = class {
       // only add coloring if it is not a duplicate
       var equals = false;
       for(let c in colorMap){
-        equals = colorMap[c].equals(coloring.coloring);//_.isEqual(colorMap[c], coloring);
+        equals = colorMap[c].equals(coloring.coloring);
         if(equals){
           break;
         }
