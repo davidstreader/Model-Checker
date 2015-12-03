@@ -1180,7 +1180,7 @@ Graph.Operations = class {
    * Performs the abstraction function on the specified graph, which removes the hidden 
    * tau actions and adds the observable transitions.
    */
-  static abstraction(graph) {
+  static abstraction(graph, isFair = false) {
     var clone = graph.deepClone();
 
     var nodes = clone.nodes;
@@ -1196,8 +1196,8 @@ Graph.Operations = class {
         var edge = edges[j];
         // only add observable edges if current edge is not hidden
         if(!edge.isHidden){
-          this._addObservableEdgesFromCurrentNode(clone, node, edge.to, edge.label);
-          this._addObservableEdgesToCurrentNode(clone, edge.to, node, edge.label);
+          this._addObservableEdgesFromCurrentNode(clone, node, edge.to, edge.label, isFair);
+          this._addObservableEdgesToCurrentNode(clone, edge.to, node, edge.label, isFair);
         }
       }
     }
@@ -1212,7 +1212,7 @@ Graph.Operations = class {
    * previous node to all nodes from the current node that have a hidden edge transitioning from
    * it.
    */
-  static _addObservableEdgesFromCurrentNode(graph, previous, current, label) {
+  static _addObservableEdgesFromCurrentNode(graph, previous, current, label, isFair) {
     var stack = [current];
     var visited = [];
 
@@ -1225,6 +1225,11 @@ Graph.Operations = class {
       // check for hidden edges from the current node
       for(var i in edges){
         var edge = edges[i];
+        // check if there is a tau loop
+        if(!isFair && node.id === edge.to.id){
+          var temp = graph.addNode(NodeUid.next);
+          graph.addEdge(EdgeUid.next, previous, temp, '𝛿');
+        }
         // add edge between previous and current if the current edge is hidden
         if(edge.isHidden && !_.contains(visited, edge.to)){
           // only add edge if the same edge is not already present in graph
@@ -1241,7 +1246,7 @@ Graph.Operations = class {
    * Helper function for the abstraction function which adds an edge from the specified
    * next node to all nodes to the current node that have a hidden edge transitioning to it.
    */
-  static _addObservableEdgesToCurrentNode(graph, next, current, label) {
+  static _addObservableEdgesToCurrentNode(graph, next, current, label, isFair) {
     var stack = [current];
     var visited = [];
 
