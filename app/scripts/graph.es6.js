@@ -876,13 +876,14 @@ Graph.Edge = class {
    * @param {!number} to    - The id of the node this edges goes to
    * @param {!string} label - The edge's label
    */
-  constructor(graph, uid, from, to, label, isHidden = false) {
+  constructor(graph, uid, from, to, label, isHidden = false, isDeadlock = false) {
     this._graph = graph;
     this._id = uid;
     this._from = from;
     this._to = to;
     this._label = label;
     this._isHidden = isHidden;
+    this._isDeadlock = isDeadlock;
   }
 
   /**
@@ -945,6 +946,13 @@ Graph.Edge = class {
    */
   get isHidden() {
     return this._isHidden;
+  }
+
+  /**
+   * Get a boolean determining whether this edge leads to a deadlock or not.
+   */
+  get isDeadlock() {
+    return this._isDeadlock;
   }
 
   /**
@@ -1183,6 +1191,19 @@ Graph.Operations = class {
   static abstraction(graph, isFair = false) {
     var clone = graph.deepClone();
 
+    // find out the hidden edges in the graph beforehand to remove at the end
+    // if an unfair abstraction is taking place
+    var hiddenEdges = [];
+    if(!isFair){
+      var edges = clone.edges;
+      for(let e in edges){
+        if(edges[e].isHidden){
+          hiddenEdges.push(edges[e]);
+        }
+      }
+    }
+
+    // 
     var nodes = clone.nodes;
     for(var i in nodes){
       var node = nodes[i];
@@ -1202,7 +1223,18 @@ Graph.Operations = class {
       }
     }
 
-    clone.removeHiddenEdges();
+    // if fair abstraction remove all the hidden edges
+    if(isFair){
+      clone.removeHiddenEdges();
+    }
+    // otherwise if unfair only remove the hidden edges present before abstraction
+    else{
+      for(let e in hiddenEdges){
+        clone.removeEdge(hiddenEdges[e]);
+      }
+      clone = this._constructDeadlocks(clone);
+    }
+
     clone.trim();
     return clone;
   }
@@ -1212,7 +1244,7 @@ Graph.Operations = class {
    * previous node to all nodes from the current node that have a hidden edge transitioning from
    * it.
    */
-  static _addObservableEdgesFromCurrentNode(graph, previous, current, label, isFair) {
+  static _addObservableEdgesFromCurrentNode(graph, previous, current, label) {
     var stack = [current];
     var visited = [];
 
@@ -1225,11 +1257,6 @@ Graph.Operations = class {
       // check for hidden edges from the current node
       for(var i in edges){
         var edge = edges[i];
-        // check if there is a tau loop
-        if(!isFair && node.id === edge.to.id){
-          var temp = graph.addNode(NodeUid.next);
-          graph.addEdge(EdgeUid.next, previous, temp, '𝛿');
-        }
         // add edge between previous and current if the current edge is hidden
         if(edge.isHidden && !_.contains(visited, edge.to)){
           // only add edge if the same edge is not already present in graph
@@ -1237,6 +1264,11 @@ Graph.Operations = class {
             graph.addEdge(EdgeUid.next, previous, edge.to, label);
           }
           stack.push(edge.to);
+        }
+        else if(edge.isHidden && _.contains(visited, edge.to)){
+          if(!graph.containsEdge(edge.to, edge.to, edge.label)){
+            graph.addEdge(EdgeUid.next, edge.to, edge.to, edge.label, true);
+          }
         }
       }
     }
@@ -1246,7 +1278,7 @@ Graph.Operations = class {
    * Helper function for the abstraction function which adds an edge from the specified
    * next node to all nodes to the current node that have a hidden edge transitioning to it.
    */
-  static _addObservableEdgesToCurrentNode(graph, next, current, label, isFair) {
+  static _addObservableEdgesToCurrentNode(graph, next, current, label) {
     var stack = [current];
     var visited = [];
 
@@ -1267,8 +1299,38 @@ Graph.Operations = class {
           }
           stack.push(edge.from);
         }
+        else if(edge.isHidden && _.contains(visited, edge.from)){
+          if(!graph.containsEdge(edge.from, edge.from, edge.label)){
+            graph.addEdge(EdgeUid.next, edge.from, edge.from, edge.label, true);
+          }
+        }
       }
     }
+  }
+
+  /**
+   * Constructs a deadlock for each hidden edge in the specified graph that transitions
+   * back to the node it started from.
+   *
+   * @private
+   * @param {!Object} graph - the graph to construct deadlocks for
+   * @returns {!object} - the graph with deadlocks included
+   */
+  static _constructDeadlocks(graph){
+    var clone = graph.deepClone();
+    var edges = clone.edges;
+    for(let e in edges){
+      var edge = edges[e];
+
+      // if hidden edge links back to itself add a dead lock
+      if(edge.isHidden && edge.from.id === edge.to.id){
+        var temp = clone.addNode(NodeUid.next);
+        clone.addEdge(EdgeUid.next, edge.from, temp, '', false, true);
+        clone.removeEdge(edge);       
+      }
+    }
+
+    return clone;
   }
 
   /**
