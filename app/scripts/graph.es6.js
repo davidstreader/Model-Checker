@@ -390,6 +390,22 @@ class Graph {
   }
 
   /**
+   * Retrieves the hidden edges from this graph
+   *
+   * @returns {!Array} - the hidden edges in this graph
+   */
+  get hiddenEdges(){
+    var hiddenEdges = [];
+    for(let i in this._edgeMap){
+      var edge = this._edgeMap[i];
+      if(edge.isHidden){
+        hiddenEdges.push(edge);
+      }
+    }
+    return hiddenEdges;
+  }
+
+  /**
    * Removes the hidden edges from this graph.
    */
   removeHiddenEdges() {
@@ -1213,20 +1229,7 @@ Graph.Operations = class {
    */
   static abstraction(graph, isFair = false) {
     var clone = graph.deepClone();
-
-    // find out the hidden edges in the graph beforehand to remove at the end
-    // if an unfair abstraction is taking place
-    var hiddenEdges = [];
-    if(!isFair){
-      var edges = clone.edges;
-      for(let e in edges){
-        if(edges[e].isHidden){
-          hiddenEdges.push(edges[e]);
-        }
-      }
-    }
-
-    // 
+    
     var nodes = clone.nodes;
     for(var i in nodes){
       var node = nodes[i];
@@ -1234,6 +1237,7 @@ Graph.Operations = class {
       if(node === undefined){
         continue;
       }
+
       // add observable edges between current node and its neighbours
       var edges = node.edgesFromMe;
       for(var j in edges){
@@ -1246,16 +1250,16 @@ Graph.Operations = class {
       }
     }
 
-    // if fair abstraction remove all the hidden edges
-    if(isFair){
+    if(!isFair){
+      var loops = this._constructTauLoops(clone);
       clone.removeHiddenEdges();
-    }
-    // otherwise if unfair only remove the hidden edges present before abstraction
-    else{
-      for(let e in hiddenEdges){
-        clone.removeEdge(hiddenEdges[e]);
+      for(var e in loops){
+        var edge = loops[e];
+        clone.addEdge(edge.uid, edge.from, edge.to, edge.label, edge.isHidden);
       }
-      clone = this._constructDeadlocks(clone);
+    }
+    else{
+      clone.removeHiddenEdges();
     }
 
     clone.trim();
@@ -1267,10 +1271,10 @@ Graph.Operations = class {
    * previous node to all nodes from the current node that have a hidden edge transitioning from
    * it.
    */
-  static _addObservableEdgesFromCurrentNode(graph, previous, current, label) {
+  static _addObservableEdgesFromCurrentNode(graph, previous, current, obsLabel, hideLabel) {
     var stack = [current];
     var visited = [];
-
+    var newEdges = [];
     // process while there are still nodes to visit
     while(stack.length !== 0){
       var node = stack.pop();
@@ -1283,28 +1287,25 @@ Graph.Operations = class {
         // add edge between previous and current if the current edge is hidden
         if(edge.isHidden && !_.contains(visited, edge.to)){
           // only add edge if the same edge is not already present in graph
-          if(!graph.containsEdge(previous, edge.to, label)){
-            graph.addEdge(EdgeUid.next, previous, edge.to, label);
+          if(!graph.containsEdge(previous, edge.to, obsLabel)){
+            graph.addEdge(EdgeUid.next, previous, edge.to, obsLabel);
           }
           stack.push(edge.to);
         }
-        else if(edge.isHidden && _.contains(visited, edge.to)){
-          if(!graph.containsEdge(edge.to, edge.to, edge.label)){
-            graph.addEdge(EdgeUid.next, edge.to, edge.to, edge.label, true);
-          }
-        }
       }
     }
+
+    return newEdges;
   }
 
   /**
    * Helper function for the abstraction function which adds an edge from the specified
    * next node to all nodes to the current node that have a hidden edge transitioning to it.
    */
-  static _addObservableEdgesToCurrentNode(graph, next, current, label) {
+  static _addObservableEdgesToCurrentNode(graph, next, current, obsLabel) {
     var stack = [current];
     var visited = [];
-
+    var newEdges = [];
     // process while there are still nodes to visit
     while(stack.length !== 0){
       var node = stack.pop();
@@ -1317,18 +1318,53 @@ Graph.Operations = class {
         // add edge between next and current if the current edge is hidden
         if(edge.isHidden && !_.contains(visited, edge.from)){
           // only add edge if the same edge is not already present in graph
-          if(!graph.containsEdge(edge.from, next, label)){
-            graph.addEdge(EdgeUid.next, edge.from, next, label);
+          if(!graph.containsEdge(edge.from, next, obsLabel)){
+            graph.addEdge(EdgeUid.next, edge.from, next, obsLabel);
           }
           stack.push(edge.from);
         }
-        else if(edge.isHidden && _.contains(visited, edge.from)){
-          if(!graph.containsEdge(edge.from, edge.from, edge.label)){
-            graph.addEdge(EdgeUid.next, edge.from, edge.from, edge.label, true);
+      }
+    }
+
+    return newEdges;
+  }
+
+  static _constructEdge(uid, from, to, label, isHidden = false){
+    return {uid: uid, from:from, to:to, label:label, isHidden:isHidden};
+  }
+
+  /**
+   * Constructs a set of hidden tau loops to be added to the specified graph. Tau loops
+   * are added when there are a series of hidden tau transitions end in a loop.
+   */
+  static _constructTauLoops(graph){
+    var loops = [];
+    var edges = graph.hiddenEdges;
+    
+    for(let e in edges){
+      var edge = edges[e];
+      var stack = [edge.from];
+      var visited = [];
+      
+      while(stack.length !== 0){
+        var node = stack.pop();
+        visited.push(node);
+        var fromEdges = node.edgesFromMe;
+        
+        for(var i in fromEdges){
+          var fromEdge = fromEdges[i];
+          
+          if(fromEdge.isHidden && !_.contains(visited, fromEdge.from)){
+            stack.push(edge.from);
+          }
+          else if(fromEdge.isHidden &&_.contains(visited, edge.from)){
+            loops.push(this._constructEdge(EdgeUid.next, edge.from, edge.from, '', true));
           }
         }
       }
     }
+
+    return loops;
   }
 
   /**
