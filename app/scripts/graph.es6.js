@@ -806,9 +806,10 @@ Graph.Node = class {
   /**
    * Determines if the specified edge transitions this node to a valid state.
    * Returns the nodeId of the node if there is a valid transition, otherwise
-   * returns -1.
+   * returns undefined.
    *
    * @param {!Edge} edge - The edge to check if there is a valid transition
+   * @returns {integer | undefined} node id if valid, otherwise undefined
    */
   coaccessible(edge){
     for(let e in this._edgesFromMe) {
@@ -817,7 +818,7 @@ Graph.Node = class {
       }
     }
 
-    return -1;
+    return undefined;
   }
 
   /**
@@ -1526,7 +1527,7 @@ Graph.Operations = class {
           // check if an edge is needed from the current combined states
 
           // check if the current action is performed by both the current nodes
-          if(coaccessible1 !== -1 && coaccessible2 !== -1) {
+          if(coaccessible1 !== undefined && coaccessible2 !== undefined) {
             // calculate the id of the node the new edge is transitioning to
             var toId = ((coaccessible1 - graph1.rootId) * graph2.nodeCount) + (coaccessible2 - graph2.rootId) + graph.rootId;
             var isHidden = graph1.isHiddenEdge(action);
@@ -1534,7 +1535,7 @@ Graph.Operations = class {
           }
 
           // check if the current action is done by the outer node and is never performed in the second graph
-          else if(coaccessible1 !== -1 && !graph2.containsEdgeInAlphabet(action)) {
+          else if(coaccessible1 !== undefined && !graph2.containsEdgeInAlphabet(action)) {
             // calculate the id of the node the new edge is transitioning to
             var toId = ((coaccessible1 - graph1.rootId) * graph2.nodeCount) + j + graph.rootId;
             var isHidden = graph1.isHiddenEdge(action);
@@ -1542,7 +1543,7 @@ Graph.Operations = class {
           }
 
           // check if the current action is done by the inner node and is never performed in the first graph
-          else if(coaccessible2 !== -1 && !graph1.containsEdgeInAlphabet(action)) {
+          else if(coaccessible2 !== undefined && !graph1.containsEdgeInAlphabet(action)) {
             // calculate the id of the node the new edge is transitioning to
             var toId = (i * graph2.nodeCount) + (coaccessible2 - graph2.rootId) + graph.rootId;
             var isHidden = graph2.isHiddenEdge(action);
