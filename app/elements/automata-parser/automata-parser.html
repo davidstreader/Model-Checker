@@ -120,10 +120,7 @@
     _resetInterpreter: function() {
       // call the private setters for these fields
       // (they're readOnly so they can't simply be set with '=')
-      // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
-      // jshint -W106
       this._set_definitionsMap({});
-      // jscs:enable requireCamelCaseOrUpperCaseIdentifiers
 
       // reset the node and edge uids in graph class
       NodeUid.reset();
@@ -170,14 +167,19 @@
      */
     _interpretDefinitions: function(definitions) {
       var definitionMap;
+      var referenceMap = {};
+      var globalName;
       // for each definition in the model
       definitions.forEach(function(definition, index) {
-        // first definition in the model? (eg A not B "A=x->B, B=y->STOP.")
-        if (index === 0) {
-          definitionMap = this._definitionsMap;  // use the global definition map
-        }
         // get the name of this definition
         var name = this._getNameFromPTNode(definition.name);
+        if (index === 0) {
+          definitionMap = this._definitionsMap;  // use the global definition map
+          globalName = name;
+        }
+        else{
+          name = globalName + '.' + name;
+        }
         // if the definition does not exist, create it
         if (definitionMap[name] === undefined) {
           definitionMap[name] = new this._Definition();
@@ -203,9 +205,8 @@
           root.addMetaData ('parallel', true);
         }
 
-        var referenceMap = {};      // create the reference map
         referenceMap[name] = root;  // we already know that the root of this definition is root
-        this._interpretProcess(definition.process, root, definitionMap, name, referenceMap);
+        this._interpretProcess(definition.process, root, definitionMap, name, globalName, referenceMap);
       }.bind(this));
     },
     /**
@@ -218,31 +219,31 @@
      * @param {!string} defName            - The name of the current definition
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
-    _interpretProcess: function(process, extendtionNode, definitionMap, defName, referenceMap) {
+    _interpretProcess: function(process, extendtionNode, definitionMap, defName, globalName, referenceMap) {
       switch (process.type) {
         case 'sequence':
-          this._interpretSequence(process, extendtionNode, definitionMap, defName, referenceMap);
+          this._interpretSequence(process, extendtionNode, definitionMap, defName, globalName, referenceMap);
           break;
         case 'choice':
-          this._interpretChoice(process, extendtionNode, definitionMap, defName, referenceMap);
+          this._interpretChoice(process, extendtionNode, definitionMap, defName, globalName, referenceMap);
           break;
         case 'parallel':
-          this._interpretParallel(process, extendtionNode, definitionMap, defName, referenceMap);
+          this._interpretParallel(process, extendtionNode, definitionMap, defName, globalName, referenceMap);
           break;
         case 'name':
-          this._interpretName(process, extendtionNode, definitionMap, defName, referenceMap);
+          this._interpretName(process, extendtionNode, definitionMap, defName, globalName, referenceMap);
           break;
         case 'abstraction':
-          this._interpretAbstraction(process, extendtionNode, definitionMap, defName, referenceMap);
+          this._interpretAbstraction(process, extendtionNode, definitionMap, defName, globalName, referenceMap);
           break;
         case 'simplification':
-          this._interpretSimplification(process, extendtionNode, definitionMap, defName, referenceMap);
+          this._interpretSimplification(process, extendtionNode, definitionMap, defName, globalName, referenceMap);
           break;
         case 'stop':
-          this._interpretStop(process, extendtionNode, definitionMap, defName, referenceMap);
+          this._interpretStop(process, extendtionNode, definitionMap, defName, globalName, referenceMap);
           break;
         case 'error':
-          this._interpretError(process, extendtionNode, definitionMap, defName, referenceMap);
+          this._interpretError(process, extendtionNode, definitionMap, defName, globalName, referenceMap);
           break;
         default:
           console.error('Trying to interpret invalid process type "' + process.type + '"');
@@ -259,7 +260,7 @@
      * @param {!string} defName            - The name of the current definition
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
-    _interpretSequence: function(sequence, extendtionNode, definitionMap, defName, referenceMap) {
+    _interpretSequence: function(sequence, extendtionNode, definitionMap, defName, globalName, referenceMap) {
       var graph = definitionMap[defName].graph;         // get the graph
       var node = graph.addNode(NodeUid.next);  // add a new node to the graph
       // check if edge being added is not a tau
@@ -268,7 +269,7 @@
       }
       // add an edge connect the new node to the rest of the graph
       graph.addEdge(EdgeUid.next, extendtionNode, node, this._getActionFromNode(sequence.from));
-      this._interpretProcess(sequence.to, node, definitionMap, defName, referenceMap);
+      this._interpretProcess(sequence.to, node, definitionMap, defName, globalName, referenceMap);
     },
     /**
      * Interpret a parse tree choice node.
@@ -280,9 +281,9 @@
      * @param {!string} defName            - The name of the current definition
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
-    _interpretChoice: function(choice, extendtionNode, definitionMap, defName, referenceMap) {
-      this._interpretProcess(choice.option1, extendtionNode, definitionMap, defName, referenceMap);
-      this._interpretProcess(choice.option2, extendtionNode, definitionMap, defName, referenceMap);
+    _interpretChoice: function(choice, extendtionNode, definitionMap, defName, globalName, referenceMap) {
+      this._interpretProcess(choice.option1, extendtionNode, definitionMap, defName, globalName, referenceMap);
+      this._interpretProcess(choice.option2, extendtionNode, definitionMap, defName, globalName, referenceMap);
     },
     /**
      * Interpret a parse tree parallel node.
@@ -294,19 +295,19 @@
      * @param {!string} defName            - The name of the current definition
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
-    _interpretParallel: function(parallel, extendtionNode, definitionMap, defName, referenceMap) {
-     this._interpretProcess(parallel.definition1, extendtionNode, definitionMap, defName, referenceMap);
-     this._interpretProcess(parallel.definition2, extendtionNode, definitionMap, defName, referenceMap);
+    _interpretParallel: function(parallel, extendtionNode, definitionMap, defName, globalName, referenceMap) {
+     this._interpretProcess(parallel.definition1, extendtionNode, definitionMap, defName, globalName, referenceMap);
+     this._interpretProcess(parallel.definition2, extendtionNode, definitionMap, defName, globalName, referenceMap);
     },
     /**
      *
      */
-    _interpretName: function(ptNode, extendtionNode, definitionMap, defName, referenceMap) {
+    _interpretName: function(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap) {
       if(definitionMap[defName].type === 'parallel-definition'){
-        this._interpretParallelName(ptNode, extendtionNode, definitionMap, defName, referenceMap);
+        this._interpretParallelName(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap);
       }
       else{
-        this._interpretStandardName(ptNode, extendtionNode, definitionMap, defName, referenceMap);
+        this._interpretStandardName(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap);
       }
     },
     /**
@@ -319,16 +320,17 @@
      * @param {!string} defName            - The name of the current definition
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
-    _interpretStandardName: function(ptNode, extendtionNode, definitionMap, defName, referenceMap) {
+    _interpretStandardName: function(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap) {
       var references = this._getNameFromPTNode(ptNode);        // get what the extendtionNode should be referencing
       
       if(ptNode.label !== undefined){
         this._interpretLabel(ptNode.label, ptNode.name, referenceMap);
       }
 
-      extendtionNode.addMetaData ('references', references);   // mark what the extendtionNode as referencing it
       // if there is no record of this reference yet
       if (referenceMap[references] === undefined) {
+        references = globalName + '.' + references;
+        extendtionNode.addMetaData ('references', references);   // mark what the extendtionNode as referencing it
         referenceMap[references] = extendtionNode;                       // create a reference
         extendtionNode.addMetaData ('referenceUnprocessed', true);      // mark this reference as unprocessed
         definitionMap[defName].unprocessedNodes.push(extendtionNode);   // put it in the array of unprocessed references
@@ -350,7 +352,7 @@
     /**
      *
      */
-    _interpretParallelName: function(ptNode, extendtionNode, definitionMap, defName, referenceMap) {
+    _interpretParallelName: function(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap) {
       var references = this._getNameFromPTNode(ptNode);
       definitionMap[defName].unprocessedNodes.push(definitionMap[references].graph.root);
     },
@@ -364,13 +366,13 @@
      * @param {!string} defName            - The name of the current definition
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
-    _interpretAbstraction: function(ptNode, extendtionNode, definitionMap, defName, referenceMap) {
+    _interpretAbstraction: function(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap) {
       var name = this._getNameFromPTNode(ptNode).name;
       var references = this._getNameFromOperationNode(ptNode);
       
       // check if there are any nested functions within this process
       if(typeof(references) === 'object'){
-        this._interpretProcess(ptNode.name, extendtionNode, definitionMap, defName, referenceMap);
+        this._interpretProcess(ptNode.name, extendtionNode, definitionMap, defName, globalName, referenceMap);
         references = defName;
       }
 
@@ -393,13 +395,13 @@
      * @param {!string} defName            - The name of the current definition
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
-    _interpretSimplification: function(ptNode, extendtionNode, definitionMap, defName, referenceMap) {
+    _interpretSimplification: function(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap) {
       var name = this._getNameFromPTNode(ptNode).name;
       var references = this._getNameFromOperationNode(ptNode);
 
       // check if there are any nested functions within this process
       if(typeof(name) === 'object'){
-        this._interpretProcess(ptNode.name, extendtionNode, definitionMap, defName, referenceMap);
+        this._interpretProcess(ptNode.name, extendtionNode, definitionMap, defName, globalName, referenceMap);
         references = defName;
       }
 
@@ -415,7 +417,7 @@
     /**
      *
      */
-    _interpretLabel: function(label, defName, referenceMap) {
+    _interpretLabel: function(label, defName, globalName, referenceMap) {
       // clone the definition defined by defName
       var definition = this._definitionsMap[defName];
       var temp = new this._Definition();
@@ -443,7 +445,7 @@
      * @param {!string} defName            - The name of the current definition
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
-    _interpretStop: function(ptNode, extendtionNode, definitionMap, defName, referenceMap) {
+    _interpretStop: function(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap) {
       extendtionNode.addMetaData ('isTerminal', 'stop');
     },
     /**
@@ -456,7 +458,7 @@
      * @param {!string} defName            - The name of the current definition
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
-    _interpretError: function(ptNode, extendtionNode, definitionMap, defName, referenceMap) {
+    _interpretError: function(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap) {
       extendtionNode.addMetaData ('isTerminal', 'error');
     },
     /**
@@ -511,11 +513,17 @@
         for (var i = 0; i < len; i++) {
           var node = definition.unprocessedNodes[i];
           references = node.getMetaData ('references');
+          var localReference = defName + '.' + references;
           // check whether or not the automaton that this node is referencing actual exist.
-          if (this._definitionsMap[references] === undefined ||
-            this._definitionsMap[references].graph === undefined) {
-            throw new this.InterpreterException('unknown automaton "' + references + '" referenced in "' + prevReferences + '".');
+          if(this._definitionsMap[localReference] === undefined || this._definitionsMap[localReference].graph === undefined){
+            if(this._definitionsMap[references] === undefined || this._definitionsMap[references].graph === undefined) {
+              throw new this.InterpreterException('unknown automaton "' + references + '" referenced in "' + prevReferences + '".');
+            }
           }
+          else{
+            references = localReference;
+          }
+          
           var refGraph = this._definitionsMap[references].graph;
           var refNodes = refGraph.nodes;
           // add the nodes and edge from the referenced graph in to this one
