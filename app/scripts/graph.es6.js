@@ -805,20 +805,25 @@ Graph.Node = class {
 
   /**
    * Determines if the specified edge transitions this node to a valid state.
-   * Returns the nodeId of the node if there is a valid transition, otherwise
-   * returns undefined.
+   * Returns an array of the node ids this edge can transition to. Returns an
+   * empty array if there are no valid transitions.
    *
    * @param {!Edge} edge - The edge to check if there is a valid transition
-   * @returns {integer | undefined} node id if valid, otherwise undefined
+   * @returns {!Array} array of node ids this edge transitions to
    */
   coaccessible(edge){
+    var temp = [];
     for(let e in this._edgesFromMe) {
       if(this._edgesFromMe[e].label === edge){
-        return this._edgesFromMe[e]._to._id;
+        temp.push(this._edgesFromMe[e]._to._id);
       }
     }
 
-    return undefined;
+    if(temp.length === 0){
+      temp.push(undefined);
+    }
+
+    return temp;
   }
 
   /**
@@ -1508,46 +1513,55 @@ Graph.Operations = class {
    * @returns - parallel composition of the two graphs
    */
   static parallelComposition(graph1, graph2) {
-    var graph = this._combineStates(graph1, graph2);
+    var nodes1 = graph1.nodes;
+    var nodes2 = graph2.nodes;
+    var graph = this._combineStates(nodes1, nodes2);
     var alphabet = graph1.alphabetUnion(graph2);
 
     // add edges
-    for(var i = 0; i < graph1.nodeCount; i++){
-      var node1 = graph1.getNode(i + graph1.rootId);
+    for(var i = 0; i < nodes1.length; i++){
+      var node1 = nodes1[i];
           
-      for(var j = 0; j < graph2.nodeCount; j++){
-        var node2 = graph2.getNode(j + graph2.rootId);
-        var fromId = (i * graph2.nodeCount) + j + graph.rootId;
+      for(var j = 0; j < nodes2.length; j++){
+        var node2 = nodes2[j];
+        var fromId = this._getId(graph, node1.id, node2.id);
 
         for(let action in alphabet){
 
-          var coaccessible1 = node1.coaccessible(action); // either -1 or the node id it transitions to
-          var coaccessible2 = node2.coaccessible(action); // either -1 or the node id it transitions to
+          var c1 = node1.coaccessible(action);
+          var c2 = node2.coaccessible(action);
 
-          // check if an edge is needed from the current combined states
+          for(let x in c1){
+            var coaccessible1 = c1[x];
+            for(let y in c2){
+              var coaccessible2 = c2[y];
 
-          // check if the current action is performed by both the current nodes
-          if(coaccessible1 !== undefined && coaccessible2 !== undefined) {
-            // calculate the id of the node the new edge is transitioning to
-            var toId = ((coaccessible1 - graph1.rootId) * graph2.nodeCount) + (coaccessible2 - graph2.rootId) + graph.rootId;
-            var isHidden = graph1.isHiddenEdge(action);
-            graph.addEdge(EdgeUid.next, graph.getNode(fromId), graph.getNode(toId), action, isHidden);
-          }
+              // check if an edge is needed from the current combined states
 
-          // check if the current action is done by the outer node and is never performed in the second graph
-          else if(coaccessible1 !== undefined && !graph2.containsEdgeInAlphabet(action)) {
-            // calculate the id of the node the new edge is transitioning to
-            var toId = ((coaccessible1 - graph1.rootId) * graph2.nodeCount) + j + graph.rootId;
-            var isHidden = graph1.isHiddenEdge(action);
-            graph.addEdge(EdgeUid.next, graph.getNode(fromId), graph.getNode(toId), action, isHidden);
-          }
+              // check if the current action is performed by both the current nodes
+              if(coaccessible1 !== undefined && coaccessible2 !== undefined) {
+                // calculate the id of the node the new edge is transitioning to
+                var toId = this._getId(graph, coaccessible1, coaccessible2);
+                var isHidden = graph1.isHiddenEdge(action);
+                graph.addEdge(EdgeUid.next, graph.getNode(fromId), graph.getNode(toId), action, isHidden);
+              }
 
-          // check if the current action is done by the inner node and is never performed in the first graph
-          else if(coaccessible2 !== undefined && !graph1.containsEdgeInAlphabet(action)) {
-            // calculate the id of the node the new edge is transitioning to
-            var toId = (i * graph2.nodeCount) + (coaccessible2 - graph2.rootId) + graph.rootId;
-            var isHidden = graph2.isHiddenEdge(action);
-            graph.addEdge(EdgeUid.next, graph.getNode(fromId), graph.getNode(toId), action, isHidden);
+              // check if the current action is done by the outer node and is never performed in the second graph
+              else if(coaccessible1 !== undefined && !graph2.containsEdgeInAlphabet(action)) {
+                // calculate the id of the node the new edge is transitioning to
+                var toId = this._getId(graph, coaccessible1, node2.id);
+                var isHidden = graph1.isHiddenEdge(action);
+                graph.addEdge(EdgeUid.next, graph.getNode(fromId), graph.getNode(toId), action, isHidden);
+              }
+
+              // check if the current action is done by the inner node and is never performed in the first graph
+              else if(coaccessible2 !== undefined && !graph1.containsEdgeInAlphabet(action)) {
+                // calculate the id of the node the new edge is transitioning to
+                var toId = this._getId(graph, node1.id, coaccessible2);
+                var isHidden = graph2.isHiddenEdge(action);
+                graph.addEdge(EdgeUid.next, graph.getNode(fromId), graph.getNode(toId), action, isHidden);
+              }
+            }
           }
         }
       }
@@ -1558,28 +1572,30 @@ Graph.Operations = class {
   }
 
   /**
-   * Helper function for the parallel composition function which combines the states of
-   * the two specified graphs into a single graph.
+   * Helper function for the parallel composition function which combines both sets of specified
+   * nodes into a single graph.
    *
-   * @param {!Object} graph1 - the first graph
-   * @param {!Object} graph2 - the second graph
-   * @returns {!Object} - a graph containing the combined states of the two specified graphs
+   * @param {!Object} nodes1 - the first set of nodes
+   * @param {!Object} nodes2 - the second set of nodes
+   * @returns {!Object} - a graph containing the combined states of the two specified node sets
    */
-  static _combineStates(graph1, graph2) {
+  static _combineStates(nodes1, nodes2) {
     var graph = new Graph();
+    
     // combine states
-    for(var i = 0; i < graph1.nodeCount; i++){
-      var node1 = graph1.getNode(i + graph1.rootId);
+    for(let i in nodes1){
+      var node1 = nodes1[i];
       // determine if current node is a final node in the first graph
       var startState1 = node1._meta['startNode'] === true;
       var terminalState1 = node1._meta['isTerminal'] === 'stop';
-      var label1 = (node1.label !== '') ? node1.label : i;   
-      for(var j = 0; j < graph2.nodeCount; j++){
-        var node2 = graph2.getNode(j + graph2.rootId);
+      var label1 = (node1.label !== '') ? node1.label : node1.id;   
+      
+      for(let j in nodes2){
+        var node2 = nodes2[j];
         // determine if the current node is a final node in the second graph
         var startState2 = node2._meta['startNode'] === true;
         var terminalState2 = node2._meta['isTerminal'] === 'stop';
-        var label2 = (node2.label !== '') ? node2.label : j;
+        var label2 = (node2.label !== '') ? node2.label : node2.id;
         var node = graph.addNode(NodeUid.next, (label1 + "." + label2));
 
         // if both states are a starting state make new node start state
@@ -1596,6 +1612,22 @@ Graph.Operations = class {
 
     graph.root.addMetaData('parallel', true);
     return graph;
+  }
+
+  /**
+   * 
+   */
+  static _getId(graph, i, j) {
+    var label = i + '.' + j;
+    var nodes = graph.nodes;
+    for(let i in nodes){
+      var node = nodes[i];
+      if(node.label === label){
+        return node.id;
+      }
+    }
+
+    return undefined;
   }
 };
 
