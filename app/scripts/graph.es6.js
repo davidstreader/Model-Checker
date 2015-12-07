@@ -555,7 +555,7 @@ class Graph {
   mergeNodes(nodeIds) {
     let mergedNode;
     let mergedMetaData  = {};
-
+    let isRoot = false;
     // for each node id specified to merge
     for (let i = 0; i < nodeIds.length; i++) {
       let node = this.getNode(nodeIds[i]);  // get the node
@@ -563,6 +563,11 @@ class Graph {
       let meta = node.metaData;
       for (let key in meta) {
         mergedMetaData[key] = meta[key];
+      }
+
+      // check if this node is the root of the graph
+      if(node.id === this.rootId){
+        isRoot = true;
       }
 
       // if this is the first node we are dealing with (i === 0)
@@ -592,6 +597,10 @@ class Graph {
     }
 
     mergedNode._meta = mergedMetaData;    // set the merged node's meta data
+
+    if(isRoot){
+      this.root = mergedNode;
+    }
 
     return mergedNode;
   }
