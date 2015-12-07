@@ -167,15 +167,14 @@
      */
     _interpretDefinitions: function(definitions) {
       var definitionMap;
-      var referenceMap = {};
-      var globalName;
+      var globalName = this._getNameFromPTNode(definitions[0].name);
+      this._getLocalReferencesFromDefinition(definitions, globalName);
       // for each definition in the model
       definitions.forEach(function(definition, index) {
         // get the name of this definition
         var name = this._getNameFromPTNode(definition.name);
         if (index === 0) {
           definitionMap = this._definitionsMap;  // use the global definition map
-          globalName = name;
         }
         else{
           name = globalName + '.' + name;
@@ -205,6 +204,7 @@
           root.addMetaData ('parallel', true);
         }
 
+        var referenceMap = {};
         referenceMap[name] = root;  // we already know that the root of this definition is root
         this._interpretProcess(definition.process, root, definitionMap, name, globalName, referenceMap);
       }.bind(this));
@@ -327,15 +327,20 @@
         this._interpretLabel(ptNode.label, ptNode.name, referenceMap);
       }
 
+      // check if this is a local reference
+      var localReference = globalName + '.' + references;
+      if(definitionMap[localReference] !== undefined){
+        references = localReference;
+      }
+
       // if there is no record of this reference yet
       if (referenceMap[references] === undefined) {
-        references = globalName + '.' + references;
         extendtionNode.addMetaData ('references', references);   // mark what the extendtionNode as referencing it
         referenceMap[references] = extendtionNode;                       // create a reference
         extendtionNode.addMetaData ('referenceUnprocessed', true);      // mark this reference as unprocessed
         definitionMap[defName].unprocessedNodes.push(extendtionNode);   // put it in the array of unprocessed references
         // if there is no definition for this reference
-        if (definitionMap[references] === undefined) {
+        if (definitionMap[references] === undefined || definitionMap[references].graph === undefined) {
           definitionMap[references] = new this._Definition();    // create one
           definitionMap[references].rootId = extendtionNode.id;  // set what the root id should be for its graph
         }
@@ -412,7 +417,7 @@
 
       var graph = definitionMap[references].graph;
       definitionMap[defName].graph = Graph.Operations.bisimulation(graph);
-      extendtionNode.id = definitionMap[defName].graph.root.id;
+      extendtionNode.id = definitionMap[defName].graph.rootId;
     },
     /**
      *
@@ -494,6 +499,17 @@
      */
     _getActionFromNode: function(ptNode) {
       return ptNode.action;
+    },
+    /**
+     *
+     */
+    _getLocalReferencesFromDefinition: function(definitions, globalName) {
+      for(var i = 1; i < definitions.length; i++){
+        var name = this._getNameFromPTNode(definitions[i].name);
+        name = globalName + '.' + name;
+        this._definitionsMap[name] = new this._Definition();
+      }
+      this._definitionsMap[globalName] = new this._Definition();
     },
     /**
      * Process all the unprocessed references.
