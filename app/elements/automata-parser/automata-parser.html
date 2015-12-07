@@ -46,12 +46,14 @@
      * @class
      * @property {!Graph} graph            - The definition's graph
      * @property {!string} type            - The type of this definition
+     * @property {!boolean} isVisible      - Determines whether or not the graph is visualised
      * @property {!array} unprocessedNodes - An array of nodes that haven't been processed
      * @property {!number} rootId          - The id to use for the root node of this definition's graph
      */
     _Definition: function() {
       this.graph = undefined;
       this.type = undefined;
+      this.isVisible =true;
       this.unprocessedNodes = [];
       this._rootId = undefined;
       // define the getter and setter for rootId
@@ -202,6 +204,11 @@
         
         if(definition.type === 'parallel-definition'){
           root.addMetaData ('parallel', true);
+        }
+
+        // if this is a local definition set it to be invisible
+        if(index > 0){
+          definitionMap[name].isVisible = false;
         }
 
         var referenceMap = {};
@@ -417,7 +424,7 @@
 
       var graph = definitionMap[references].graph;
       definitionMap[defName].graph = Graph.Operations.bisimulation(graph);
-      extendtionNode.id = definitionMap[defName].graph.rootId;
+      extendtionNode.id = definitionMap[defName].graph.root.id;
     },
     /**
      *
@@ -658,7 +665,9 @@
     _buildAutomataArray: function() {
       var automata = [];
       for (var key in this._definitionsMap) {
-        automata.push(new Automaton(key, this._definitionsMap[key].graph));
+        if(this._definitionsMap[key].isVisible){
+          automata.push(new Automaton(key, this._definitionsMap[key].graph));
+        }
       }
       return automata;
     }
