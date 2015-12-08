@@ -48,6 +48,7 @@
      * @property {!string} type            - The type of this definition
      * @property {!boolean} isVisible      - Determines whether or not the graph is visualised
      * @property {!array} unprocessedNodes - An array of nodes that haven't been processed
+     * @property {!array} unprocessedGraphs- An array of graphs that haven't been processed (for parallel composition) 
      * @property {!number} rootId          - The id to use for the root node of this definition's graph
      */
     _Definition: function() {
@@ -55,6 +56,7 @@
       this.type = undefined;
       this.isVisible =true;
       this.unprocessedNodes = [];
+      this.unprocessedGraphs = [];
       this._rootId = undefined;
       // define the getter and setter for rootId
       // (ideally this should be done outside of this class definition)
@@ -170,7 +172,7 @@
     _interpretDefinitions: function(definitions) {
       var definitionMap;
       var globalName = this._getNameFromPTNode(definitions[0].name);
-      this._getLocalReferencesFromDefinition(definitions, globalName);
+      this._constructDefinitions(definitions, globalName);
       // for each definition in the model
       definitions.forEach(function(definition, index) {
         // get the name of this definition
@@ -202,9 +204,9 @@
         );
         root.addMetaData ('startNode', true); // mark the root as the starting node (for the visualizer)
         
-        if(definition.type === 'parallel-definition'){
-          root.addMetaData ('parallel', true);
-        }
+        //if(definition.type === 'parallel-definition'){
+        //  root.addMetaData ('parallel', true);
+        //}
 
         // if this is a local definition set it to be invisible
         if(index > 0){
@@ -239,6 +241,9 @@
           break;
         case 'name':
           this._interpretName(process, extendtionNode, definitionMap, defName, globalName, referenceMap);
+          break;
+        case 'labelled-name':
+          this._interpretLabel(process, extendtionNode, definitionMap, defName, globalName, referenceMap);
           break;
         case 'abstraction':
           this._interpretAbstraction(process, extendtionNode, definitionMap, defName, globalName, referenceMap);
@@ -307,17 +312,6 @@
      this._interpretProcess(parallel.definition2, extendtionNode, definitionMap, defName, globalName, referenceMap);
     },
     /**
-     *
-     */
-    _interpretName: function(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap) {
-      if(definitionMap[defName].type === 'parallel-definition'){
-        this._interpretParallelName(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap);
-      }
-      else{
-        this._interpretStandardName(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap);
-      }
-    },
-    /**
      * Interpret a parse tree name node.
      *
      * @private
@@ -327,12 +321,8 @@
      * @param {!string} defName            - The name of the current definition
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
-    _interpretStandardName: function(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap) {
+    _interpretName: function(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap) {
       var references = this._getNameFromPTNode(ptNode);        // get what the extendtionNode should be referencing
-      
-      if(ptNode.label !== undefined){
-        this._interpretLabel(ptNode.label, ptNode.name, referenceMap);
-      }
 
       // check if this is a local reference
       var localReference = globalName + '.' + references;
@@ -340,6 +330,61 @@
         references = localReference;
       }
 
+      this._interpretReference(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap, references);
+    },
+    /**
+     * Interprets a parse tree labelled name node.
+     *
+     * @private
+     * @param {!object} ptNode             - A parse tree name node
+     * @param {!Graph.Node} extendtionNode - The node in the graph to build on from
+     * @param {!object} definitionMap      - The definition map being used
+     * @param {!string} defName            - The name of the current definition
+     * @param {!object} referenceMap       - The reference map that store references already known about
+     */
+    _interpretLabel: function(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap) {
+      var name = this._getNameFromPTNode(ptNode);
+      var label = this._getLabelFromPTNode(ptNode);
+
+      // clone the definition defined by defName
+      var definition = this._definitionsMap[name];
+      
+      // throw error if definition is undefined
+      if(definition === undefined){
+        throw new this.InterpreterException('Unknown automaton \'' + name + '\' attempted to be referenced.');
+      }
+
+      var temp = new this._Definition();
+      temp.graph = definition.graph.deepClone();
+      temp.unprocessedNodes = definition.unprocessedNodes;
+      temp._rootId = temp.graph.rootId;
+      temp.isVisible = false;
+
+      // relabel the edges in the new definition
+      for(var i in temp.graph.edges){
+        var edge = temp.graph.getEdge(i);
+        var newLabel = label + "." + edge.label;
+        edge.label = newLabel;
+      }
+
+      var references = label + ':' + name;
+      // add new definition to definitions map
+      this._definitionsMap[references] = temp;
+
+      this._interpretReference(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap, references);       
+    },
+    /**
+     * Interprets a reference for either a name or labelled name node.
+     *
+     * @private
+     * @param {!object} ptNode             - A parse tree name node
+     * @param {!Graph.Node} extendtionNode - The node in the graph to build on from
+     * @param {!object} definitionMap      - The definition map being used
+     * @param {!string} defName            - The name of the current definition
+     * @param {!object} referenceMap       - The reference map that store references already known about
+     * @param {!string} references         - The reference to interpret
+     */
+    _interpretReference: function(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap, references) {
       // if there is no record of this reference yet
       if (referenceMap[references] === undefined) {
         extendtionNode.addMetaData ('references', references);   // mark what the extendtionNode as referencing it
@@ -360,13 +405,8 @@
       else {
         definitionMap[defName].graph.mergeNodes([referenceMap[references].id, extendtionNode.id]);
       }
-    },
-    /**
-     *
-     */
-    _interpretParallelName: function(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap) {
-      var references = this._getNameFromPTNode(ptNode);
-      definitionMap[defName].unprocessedNodes.push(definitionMap[references].graph.root);
+      // add reference to the graph in case a parallel composition is being done
+      definitionMap[defName].unprocessedGraphs.push(definitionMap[references].graph);
     },
     /**
      * Interprets a parse tree abstraction node.
@@ -427,27 +467,6 @@
       extendtionNode.id = definitionMap[defName].graph.root.id;
     },
     /**
-     *
-     */
-    _interpretLabel: function(label, defName, globalName, referenceMap) {
-      // clone the definition defined by defName
-      var definition = this._definitionsMap[defName];
-      var temp = new this._Definition();
-      temp.graph = definition.graph.deepClone();
-      temp.unprocessedNodes = definition.unprocessedNodes;
-      temp._rootId = temp.graph.rootId;
-      // relabel the edges in the new definition
-      for(var i in temp.graph.edges){
-        var edge = temp.graph.getEdge(i);
-        var newLabel = label + "." + edge.label;
-        edge.label = newLabel;
-      }
-
-      var references = label + ':' + defName;
-      // add new definition to definitions map
-      this._definitionsMap[references] = temp; 
-    },
-    /**
      * Interpret a parse tree stop node.
      *
      * @private
@@ -481,14 +500,24 @@
      * @returns {string}
      */
     _getNameFromPTNode: function(ptNode) {
-      var name = ptNode.name;
-      if(ptNode.label !== undefined){
-        name = ptNode.label + ':' + name;
-      }
-      return name;
+      return ptNode.name;
     },
     /**
+     * Get the label from a parse tree labelled name node
      *
+     * @private
+     * @param {!object} ptNode - A parse tree labelled name node
+     * @returns {string}  
+     */
+    _getLabelFromPTNode: function(ptNode) {
+      return ptNode.label;
+    },
+    /**
+     * Recurses through an operation node to get the name of the definition
+     * that the operation is referencing.
+     *
+     * @private
+     * @param {!object} operationNode - A parse tree operation node
      */
     _getNameFromOperationNode: function(operationNode) {
       var name = operationNode.name;
@@ -508,9 +537,15 @@
       return ptNode.action;
     },
     /**
+     * Adds all of the definitions defined within the specified definition to the 
+     * definitions map. This is to help in determining whether a reference is either
+     * global or local.
      *
+     * @private
+     * @param {!array} definitions - array of definitions
+     * @param {!string} globalName - the global name for the specified definitions
      */
-    _getLocalReferencesFromDefinition: function(definitions, globalName) {
+    _constructDefinitions: function(definitions, globalName) {
       for(var i = 1; i < definitions.length; i++){
         var name = this._getNameFromPTNode(definitions[i].name);
         name = globalName + '.' + name;
@@ -519,7 +554,7 @@
       this._definitionsMap[globalName] = new this._Definition();
     },
     /**
-     * Process all the unprocessed references.
+     * Process all the unprocessed references for the specified definition.
      *
      * @private
      */
@@ -567,15 +602,18 @@
       }
     },
     /**
+     * Processes parallel composition for all the graphs referenced by the specified definition.
      *
+     * @private
+     * @param {!string} defName - the name of defintion to perform parallel composition for
      */
     _processParallelComposition: function(defName) {
-      var unprocessedNodes = this._definitionsMap[defName].unprocessedNodes;
-      if(unprocessedNodes.length > 1){
+      var unprocessedGraphs = this._definitionsMap[defName].unprocessedGraphs;
+      if(unprocessedGraphs.length > 1){
         
-        var graph1 = unprocessedNodes[0].graph;         
-        for(var i = 1; i < unprocessedNodes.length; i++){
-          var graph2 = unprocessedNodes[i].graph;
+        var graph1 = unprocessedGraphs[0];         
+        for(var i = 1; i < unprocessedGraphs.length; i++){
+          var graph2 = unprocessedGraphs[i];
           graph1 = Graph.Operations.parallelComposition(graph1, graph2);
         }
 
@@ -583,7 +621,11 @@
       }
     },
     /**
+     * Process the relabelling of transitions for the specified definition.
      *
+     * @private
+     * @param {!string} defName - the definition to perform relabelling for
+     * @param {!array} relabel - an array of relabelling objects
      */
     _processRelabelling: function(defName, relabel) {
       if(relabel !== undefined){
@@ -601,7 +643,11 @@
       }
     },
     /**
+     * Process the hiding of transitions for the specified definition.
      *
+     * @private
+     * @param {!string} defName - the definition to perform relabelling for
+     * @param {!array} relabel - an array of transitions to be hidden
      */
     _processHiding: function(defName, hidden) {
       if(hidden !== undefined){
@@ -657,7 +703,8 @@
       }
     },
     /**
-     * Takes all the automaton definitions and construct an array of automata.
+     * Takes all the automaton definitions that are defined as visible
+     * and construct an array of automata.
      *
      * @private
      * @returns {!Automaton[]} Automata
@@ -665,6 +712,7 @@
     _buildAutomataArray: function() {
       var automata = [];
       for (var key in this._definitionsMap) {
+        // only display automata which are defined as visible
         if(this._definitionsMap[key].isVisible){
           automata.push(new Automaton(key, this._definitionsMap[key].graph));
         }
