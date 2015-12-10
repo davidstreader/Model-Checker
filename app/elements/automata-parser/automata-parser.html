@@ -405,7 +405,13 @@
     _interpretReference: function(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap, references) {
       // if there is no record of this reference yet
       if (referenceMap[references] === undefined) {
-        extendtionNode.addMetaData ('references', references);   // mark what the extendtionNode as referencing it
+        var metaData = extendtionNode.getMetaData('references');
+        if(metaData === undefined){
+          extendtionNode.addMetaData ('references', [references]);
+        }
+        else{
+          extendtionNode.addMetaData('references', metaData.concat(references));
+        }
         referenceMap[references] = extendtionNode;                       // create a reference
         extendtionNode.addMetaData ('referenceUnprocessed', true);      // mark this reference as unprocessed
         definitionMap[defName].unprocessedNodes.push(extendtionNode);   // put it in the array of unprocessed references
@@ -648,31 +654,36 @@
         // not any new unprocessed nodes that were added)
         for (var i = 0; i < len; i++) {
           var node = definition.unprocessedNodes[i];
-          references = node.getMetaData ('references');
-          var localReference = defName + '.' + references;
-          // check whether or not the automaton that this node is referencing actual exist.
-          if(this._definitionsMap[localReference] === undefined || this._definitionsMap[localReference].graph === undefined){
-            if(this._definitionsMap[references] === undefined || this._definitionsMap[references].graph === undefined) {
-              throw new this.InterpreterException('unknown automaton "' + references + '" referenced in "' + prevReferences + '".');
+          refs = node.getMetaData ('references');
+          for(var j = 0; j < refs.length; j++){
+            references = refs[j];
+            var localReference = defName + '.' + references;
+            // check whether or not the automaton that this node is referencing actual exist.
+            if(this._definitionsMap[localReference] === undefined || this._definitionsMap[localReference].graph === undefined){
+              if(this._definitionsMap[references] === undefined || this._definitionsMap[references].graph === undefined) {
+                throw new this.InterpreterException('unknown automaton "' + references + '" referenced in "' + prevReferences + '".');
+              }
             }
-          }
-          else{
-            references = localReference;
-          }
-          
-          var refGraph = this._definitionsMap[references].graph;
-          var refNodes = refGraph.nodes;
-          // add the nodes and edge from the referenced graph in to this one
-          definition.graph.combineWith(refGraph);
-          // find all the unprocessed nodes that we are adding to this graph
-          // and add them to the array of unprocessed nodes
-          for (var j = 0; j < refNodes.length; j++) {
-            var gRefNode = definition.graph.getNode(refNodes[j].id);
-            if (gRefNode.getMetaData ('referenceUnprocessed')) {
-              definition.unprocessedNodes.push(gRefNode);
+            else{
+              references = localReference;
             }
+            
+            var refGraph = this._definitionsMap[references].graph;
+            var refNodes = refGraph.nodes;
+            // set the current nodes id to the root of the reference graph
+            node.id = refGraph.root.id;
+            // add the nodes and edge from the referenced graph in to this one
+            definition.graph.combineWith(refGraph);
+            // find all the unprocessed nodes that we are adding to this graph
+            // and add them to the array of unprocessed nodes
+            for (var k = 0; k < refNodes.length; k++) {
+              var gRefNode = definition.graph.getNode(refNodes[k].id);
+              if (gRefNode.getMetaData ('referenceUnprocessed')) {
+                definition.unprocessedNodes.push(gRefNode);
+              }
+            }
+            node.deleteMetaData ('referenceUnprocessed'); // this node has now been processed
           }
-          node.deleteMetaData ('referenceUnprocessed'); // this node has now been processed
         }
         // remove all the nodes we just processed from the unprocessed nodes array
         definition.unprocessedNodes.splice(0, len);
