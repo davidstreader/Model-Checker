@@ -37,6 +37,15 @@
       _isFairAbstraction: {
         type: Boolean,
         readOnly: true
+      },
+      /**
+       * Unique identifier for operations definitions.
+       *
+       * @private
+       */
+      _operationUid: {
+        type: Number,
+        readOnly: true
       }
     },
     /**
@@ -125,7 +134,7 @@
       // call the private setters for these fields
       // (they're readOnly so they can't simply be set with '=')
       this._set_definitionsMap({});
-
+      this._set_operationUid(0);
       // reset the node and edge uids in graph class
       NodeUid.reset();
       EdgeUid.reset();
@@ -142,60 +151,46 @@
       parseTree.forEach(function(model) {
         // ignore comments
         if(model.type !== 'comment'){
-          this._interpretDefinitions(model.definitions);
-          // get the name for the current definition
-          var defName = model.definitions[0].name.name;
-          
-          // check if the current definition is a parallel definition
-          if(this._definitionsMap[defName].type !== 'parallel-definition'){
-            this._processReferences(defName);
+          if(model.type === 'model'){
+            this._interpretDefinitions(model);
           }
-          else{
-            this._processParallelComposition(defName);
+          else if(model.type === 'operation'){
+            this._interpretOperation(model);
           }
-          
-          // process relabelling and hiding
-          this._processRelabelling(defName, model.relabel);
-          this._processHiding(defName, model.hidden);
         }
       }.bind(this));
-      //this._processParallelComposition();
       this._relabelNodes(true);
+
       return this._buildAutomataArray();
     },
     /**
-     * Interpret the definitions defined in a parse tree.
+     * Interpret the definitions defined in the specified model.
      *
      * @private
-     * @param {!object[]} definitions - An array of parse tree definitions
+     * @param {!object[]} model - contains an array of definitions as well as any relabelling and hiding defined
      */
-    _interpretDefinitions: function(definitions) {
-      var definitionMap;
-      var globalName = this._getNameFromPTNode(definitions[0].name);
-      this._constructDefinitions(definitions, globalName);
-      // for each definition in the model
-      definitions.forEach(function(definition, index) {
+    _interpretDefinitions: function(model) {
+      var definitionMap = this._definitionsMap;
+      var globalName = this._getNameFromPTNode(model.definitions[0].name);
+      this._initialiseDefinitions(model.definitions, globalName);
+      
+      model.definitions.forEach(function(definition, index) {
         // get the name of this definition
         var name = this._getNameFromPTNode(definition.name);
-        if (index === 0) {
-          definitionMap = this._definitionsMap;  // use the global definition map
-        }
-        else{
+        if (index !== 0) {
           name = globalName + '.' + name;
         }
-        // if the definition does not exist, create it
-        if (definitionMap[name] === undefined) {
-          definitionMap[name] = new this._Definition();
-        }
+
         // check if we have already processed a definition with this name
         if (definitionMap[name].graph !== undefined) {
           throw new this.InterpreterException('process "' + name + '" defined more that once.');
         }
+      
         // create the graph for this definition
         definitionMap[name].graph = new Graph();
         // set the type for this definition
         definitionMap[name].type = definition.type;
-
+        
         // add the root node of the graph
         // if an id to use for the root has hasn't been specified, generate one, otherwise use it
         var rootId = definitionMap[name].rootId;
@@ -204,10 +199,6 @@
         );
         root.addMetaData ('startNode', true); // mark the root as the starting node (for the visualizer)
         
-        //if(definition.type === 'parallel-definition'){
-        //  root.addMetaData ('parallel', true);
-        //}
-
         // if this is a local definition set it to be invisible
         if(index > 0){
           definitionMap[name].isVisible = false;
@@ -217,6 +208,33 @@
         referenceMap[name] = root;  // we already know that the root of this definition is root
         this._interpretProcess(definition.process, root, definitionMap, name, globalName, referenceMap);
       }.bind(this));
+      
+      // process the global definition
+      this._processDefinition(globalName, model.relabel, model.hidden);
+    },
+    /**
+     * Interprets the operation defined in the specified model.
+     *
+     * @private
+     * @param {!object} model - contains the operation along with the definitions to perform the operation on
+     */
+    _interpretOperation: function(model) {
+      // construct definitions for this operation
+      var defNames = [];
+      var process = model.process;
+      var definitionMap = this._definitionsMap;
+      var definitions = [process.definition1, process.definition2];
+      
+      for(var i = 0; i < 2; i++){
+        var name = this._nextOperationUid();
+        this._constructDefinition(name, definitions[i].type, false);
+        defNames.push(name);
+
+        this._interpretProcess(definitions[i].process, definitionMap[defNames[i]].graph.root, definitionMap, defNames[i], defNames[i], {});
+        this._processDefinition(defNames[i]);
+      }
+
+      this._processOperation(model.process.type, this._definitionsMap, defNames[0], defNames[1]);
     },
     /**
      * Interpret a parse tree process node.
@@ -463,7 +481,7 @@
       }
 
       var graph = definitionMap[references].graph;
-      definitionMap[defName].graph = Graph.Operations.bisimulation(graph);
+      definitionMap[defName].graph = Graph.Operations.simplification(graph);
       extendtionNode.id = definitionMap[defName].graph.root.id;
     },
     /**
@@ -491,6 +509,28 @@
      */
     _interpretError: function(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap) {
       extendtionNode.addMetaData ('isTerminal', 'error');
+    },
+    /**
+     *
+     */
+    _processOperation: function(process, definitionMap, defName1, defName2) {
+      switch(process){
+        case 'bisimulation':
+          this._processBisimulation(definitionMap, defName1, defName2);
+          break;
+        default:
+          console.error('Trying to interpret invalid process type "' + process + '"');
+          break;
+      }
+    },
+    /**
+     *
+     */
+    _processBisimulation: function(definitionMap, defName1, defName2) {
+      var graph1 = definitionMap[defName1].graph;
+      var graph2 = definitionMap[defName2].graph;
+      var isEquivalent = Graph.Operations.isEquivalent(graph1, graph2);
+      console.log('is equivalent : ' + isEquivalent + '\n');
     },
     /**
      * Get the name from a parse tree name node.
@@ -537,7 +577,23 @@
       return ptNode.action;
     },
     /**
-     * Adds all of the definitions defined within the specified definition to the 
+     * Constructs and returns an empty definition.
+     *
+     * @private
+     */
+    _constructDefinition: function(defName, type, isVisible) {
+      this._definitionsMap[defName] = new this._Definition();
+      this._definitionsMap[defName].graph = new Graph();
+      var rootId = this._definitionsMap[defName].rootId;
+      var root = this._definitionsMap[defName].graph.addNode(
+        rootId === undefined ? NodeUid.next : rootId
+      );
+      root.addMetaData('startNode', true);
+      this._definitionsMap[defName].type = type;
+      this._definitionsMap[defName].isVisible = isVisible;
+    },
+    /**
+     * Initialises all of the definitions defined within the specified definition to the 
      * definitions map. This is to help in determining whether a reference is either
      * global or local.
      *
@@ -545,13 +601,35 @@
      * @param {!array} definitions - array of definitions
      * @param {!string} globalName - the global name for the specified definitions
      */
-    _constructDefinitions: function(definitions, globalName) {
+    _initialiseDefinitions: function(definitions, globalName) {
       for(var i = 1; i < definitions.length; i++){
         var name = this._getNameFromPTNode(definitions[i].name);
         name = globalName + '.' + name;
         this._definitionsMap[name] = new this._Definition();
       }
       this._definitionsMap[globalName] = new this._Definition();
+    },
+    /**
+     * Runs the processing of references, parallel composition, relabelling and hiding for
+     * the specified definition. 
+     *
+     * @private
+     * @param {!string} defName - the definition to process
+     * @param {!array} relabel - an array of relabelling objects (can be undefined)
+     * @param {!array} hidden - an array of transitions to hide (can be undefined)
+     */
+    _processDefinition: function(defName, relabel, hidden) {
+      // check whether processing referenes or parallel composition should be perfomed
+      if(this._definitionsMap[defName].type !== 'parallel-definition'){
+        this._processReferences(defName);
+      }
+      else{
+        this._processParallelComposition(defName);
+      }
+
+      // process relabelling and hiding
+      this._processRelabelling(defName, relabel);
+      this._processHiding(defName, hidden);
     },
     /**
      * Process all the unprocessed references for the specified definition.
@@ -701,6 +779,17 @@
           }
         }
       }
+    },
+    /**
+     * Returns the next unique operation uid.
+     *
+     * @private
+     * @returns {!string} - next operation uid
+     */
+    _nextOperationUid: function() {
+      var next = this._operationUid;
+      this._set_operationUid(next + 1);
+      return '' + next;
     },
     /**
      * Takes all the automaton definitions that are defined as visible
