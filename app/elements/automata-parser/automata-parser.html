@@ -326,8 +326,18 @@
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
     _interpretParallel: function(parallel, extendtionNode, definitionMap, defName, globalName, referenceMap) {
-     this._interpretProcess(parallel.definition1, extendtionNode, definitionMap, defName, globalName, referenceMap);
-     this._interpretProcess(parallel.definition2, extendtionNode, definitionMap, defName, globalName, referenceMap);
+      var defs = [parallel.definition1, parallel.definition2];
+      for(var i = 0; i < defs.length; i++){
+        if(defs[i].type !== 'standard-definition'){
+          this._interpretProcess(defs[i], extendtionNode, definitionMap, defName, globalName, referenceMap);
+        }
+        else{
+          var name = defName + '.' + i;
+          this._constructDefinition(name, 'standard-definition', false);
+          this._interpretProcess(defs[i].process, definitionMap[name].graph.root, definitionMap, name, globalName, referenceMap);
+          this._interpretReference(defs[i].process, extendtionNode, definitionMap, defName, globalName, referenceMap, name);
+        }
+      }
     },
     /**
      * Interpret a parse tree name node.
