@@ -39,6 +39,16 @@
         readOnly: true
       },
       /**
+       * A Map of operations to boolean which determines whether the
+       * operation passed or failed.
+       *
+       * @private
+       */
+      _operationsMap: {
+        type: Object,
+        readOnly: true
+      },
+      /**
        * Unique identifier for operations definitions.
        *
        * @private
@@ -134,6 +144,7 @@
       // call the private setters for these fields
       // (they're readOnly so they can't simply be set with '=')
       this._set_definitionsMap({});
+      this._set_operationsMap({});
       this._set_operationUid(0);
       // reset the node and edge uids in graph class
       NodeUid.reset();
@@ -161,7 +172,7 @@
       }.bind(this));
       this._relabelNodes(true);
 
-      return this._buildAutomataArray();
+      return this._buildParsingResults();
     },
     /**
      * Interpret the definitions defined in the specified model.
@@ -210,7 +221,7 @@
       }.bind(this));
       
       // process the global definition
-      this._processDefinition(globalName, model.relabel, model.hidden);
+      this._processDefinition(globalName, model.relabel, model.hidden, model);
     },
     /**
      * Interprets the operation defined in the specified model.
@@ -234,7 +245,7 @@
         this._processDefinition(defNames[i]);
       }
 
-      this._processOperation(model.process.type, this._definitionsMap, defNames[0], defNames[1]);
+      this._processOperation(model.process.type, this._definitionsMap, defNames[0], defNames[1], model.input);
     },
     /**
      * Interpret a parse tree process node.
@@ -529,10 +540,10 @@
     /**
      *
      */
-    _processOperation: function(process, definitionMap, defName1, defName2) {
+    _processOperation: function(process, definitionMap, defName1, defName2, input) {
       switch(process){
         case 'bisimulation':
-          this._processBisimulation(definitionMap, defName1, defName2);
+          this._processBisimulation(definitionMap, defName1, defName2, input);
           break;
         default:
           console.error('Trying to interpret invalid process type "' + process + '"');
@@ -542,11 +553,11 @@
     /**
      *
      */
-    _processBisimulation: function(definitionMap, defName1, defName2) {
+    _processBisimulation: function(definitionMap, defName1, defName2, input) {
       var graph1 = definitionMap[defName1].graph;
       var graph2 = definitionMap[defName2].graph;
       var isEquivalent = Graph.Operations.isEquivalent(graph1, graph2);
-      console.log('is equivalent : ' + isEquivalent + '\n');
+      this._operationsMap[input] = isEquivalent;
     },
     /**
      * Get the name from a parse tree name node.
@@ -813,13 +824,16 @@
       return '' + next;
     },
     /**
-     * Takes all the automaton definitions that are defined as visible
-     * and construct an array of automata.
+     * Builds an object containing the results of the parsing. This includes taking 
+     * all the automaton definitions that are defined as visible and construct an 
+     * array of automata, as well as taking all the operations parsed and constructing
+     * an array of the outcomes.
      *
      * @private
      * @returns {!Automaton[]} Automata
      */
-    _buildAutomataArray: function() {
+    _buildParsingResults: function() {
+      // build automata array
       var automata = [];
       for (var key in this._definitionsMap) {
         // only display automata which are defined as visible
@@ -827,7 +841,14 @@
           automata.push(new Automaton(key, this._definitionsMap[key].graph));
         }
       }
-      return automata;
+
+      // build operations array
+      var operations = [];
+      for(var key in this._operationsMap){
+        operations.push(key + ' = ' + this._operationsMap[key] + '.');
+      }
+
+      return {automata: automata, operations: operations};
     }
   });
 })();

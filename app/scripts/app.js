@@ -32,8 +32,11 @@
         }
 
         var automata = [];
+        var operations = '';
         try {
-          automata = app.$.parser.parse(code, app.fairAbstraction);
+          var result = app.$.parser.parse(code, app.fairAbstraction);
+          automata = result.automata;
+          operations = result.operations;
         } catch (e) {
           var buildErrorMessage = function(e) {
             return e.location !== undefined ?
@@ -75,6 +78,16 @@
               app.$.console.clear(1);
               app.$.console.log('Rendered successfully after ' + renderTime.toFixed(3) + ' seconds.');
               app.$.console.log('Total time: ' + (compileTime + renderTime).toFixed(3) + ' seconds.');
+              
+              // only print out operations results if the were any operations performed
+              if(operations.length !== 0){
+                app.$.console.log(' ');
+                app.$.console.log('Operations:');
+                for(var i = 0; i < operations.length; i++){
+                  app.$.console.log(operations[i]);
+                }
+              }
+              
               document.removeEventListener('automata-visualisation-rendered', renderComplete);
             }
           };

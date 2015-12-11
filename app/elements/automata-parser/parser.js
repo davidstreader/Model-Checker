@@ -44,7 +44,14 @@ PEG.automataParser = (function() {
           return new Node.ModelNode(definition, model.definitions, model.relabel, model.hidden);
         },
         peg$c2 = function(operation) {
-          return new Node.OperationNode(operation);
+          var t = text();
+          var temp = '';
+          for(var i = 0; i < t.length; i++){
+            if(t[i] !== '\n'){
+              temp += t[i];
+            }
+          }
+          return new Node.OperationNode(operation, temp);
         },
         peg$c3 = function(name, process) {
           return new Node.DefinitionNode(process.type, name, process.process);
@@ -2185,9 +2192,10 @@ PEG.automataParser = (function() {
               this.name = name;
               this.process = process;
           },
-            OperationNode: function(operation){
+            OperationNode: function(operation, input){
               this.type = 'operation'
-                this.process = operation;
+              this.process = operation;
+              this.input = input;
             },
         SequenceNode: function(from, to){
               this.type = 'sequence';
