@@ -1273,6 +1273,8 @@ Graph.Operations = class {
       for(let i in hiddenEdges){
         clone.removeEdge(hiddenEdges[i]);
       }
+      // construct deadlocks
+      clone = this._constructDeadlocks(clone);
     }
 
     clone.trim();
