@@ -982,9 +982,31 @@ Graph.Edge = class {
   }
 
   /**
+   * Sets the value of isHidden to the specified boolean.
+   *
+   * @param {!boolean} isHidden - whether or not this edge is hidden
+   * @param {!boolean} - the new value of isHidden
+   */
+   set isHidden(isHidden) {
+      this._isHidden = isHidden;
+      return this._isHidden;
+   }
+
+  /**
    * Get a boolean determining whether this edge leads to a deadlock or not.
    */
   get isDeadlock() {
+    return this._isDeadlock;
+  }
+
+  /**
+   * Sets the value of isDeadlock to the specified boolean.
+   *
+   * @param {!boolean} isDeadlock - whether or not this edge is a deadlock
+   * @returns {!boolean} - the new value of isDeadlock
+   */
+  set isDeadlock(isDeadlock) {
+    this._isDeadlock = isDeadlock;
     return this._isDeadlock;
   }
 
@@ -1194,7 +1216,10 @@ Graph.NodeColoring = class {
       return false;
     }
 
-    // check that both colors are the same length;
+    // check that both colors are the same length
+    if(this._coloring.length != coloring.length){
+      return false;
+    }
 
     // check all the colors in this coloring for a match
     for(let i in this._coloring){
@@ -1376,8 +1401,11 @@ Graph.Operations = class {
       // if hidden edge links back to itself add a dead lock
       if(edge.isHidden && edge.from.id === edge.to.id){
         var temp = clone.addNode(NodeUid.next);
+        // add a new deadlock edge and remove the tau loop
         clone.addEdge(EdgeUid.next, edge.from, temp, '', false, true);
-        clone.removeEdge(edge);       
+        clone.removeEdge(edge);
+        // set metadata of node to show it is an error node
+        temp.addMetaData('isTerminal', 'error');
       }
     }
 
