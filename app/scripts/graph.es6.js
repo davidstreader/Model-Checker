@@ -813,17 +813,18 @@ Graph.Node = class {
 
   /**
    * Determines if the specified edge transitions this node to a valid state.
-   * Returns an array of the node ids this edge can transition to. Returns an
-   * empty array if there are no valid transitions.
+   * Returns an array of the nodes this edge can transition to. Returns an
+   * an array containing undefined if there are no valid transitions.
    *
    * @param {!Edge} edge - The edge to check if there is a valid transition
-   * @returns {!Array} array of node ids this edge transitions to
+   * @returns {!Array} array of nodes this edge transitions to
    */
   coaccessible(edge){
     var temp = [];
-    for(let e in this._edgesFromMe) {
-      if(this._edgesFromMe[e].label === edge){
-        temp.push(this._edgesFromMe[e]._to._id);
+    var edges = this.edgesFromMe;
+    for(let e in edges) {
+      if(edges[e].label === edge){
+        temp.push(edges[e].to);
       }
     }
 
@@ -1598,7 +1599,7 @@ Graph.Operations = class {
           
       for(var j = 0; j < nodes2.length; j++){
         var node2 = nodes2[j];
-        var fromId = this._getId(graph, node1.id, node2.id);
+        var fromId = this._getId(graph, node1, node2);
 
         for(let action in alphabet){
 
@@ -1623,7 +1624,7 @@ Graph.Operations = class {
               // check if the current action is done by the outer node and is never performed in the second graph
               else if(coaccessible1 !== undefined && !graph2.containsEdgeInAlphabet(action)) {
                 // calculate the id of the node the new edge is transitioning to
-                var toId = this._getId(graph, coaccessible1, node2.id);
+                var toId = this._getId(graph, coaccessible1, node2);
                 var isHidden = graph1.isHiddenEdge(action);
                 graph.addEdge(EdgeUid.next, graph.getNode(fromId), graph.getNode(toId), action, isHidden);
               }
@@ -1631,7 +1632,7 @@ Graph.Operations = class {
               // check if the current action is done by the inner node and is never performed in the first graph
               else if(coaccessible2 !== undefined && !graph1.containsEdgeInAlphabet(action)) {
                 // calculate the id of the node the new edge is transitioning to
-                var toId = this._getId(graph, node1.id, coaccessible2);
+                var toId = this._getId(graph, node1, coaccessible2);
                 var isHidden = graph2.isHiddenEdge(action);
                 graph.addEdge(EdgeUid.next, graph.getNode(fromId), graph.getNode(toId), action, isHidden);
               }
@@ -1696,11 +1697,13 @@ Graph.Operations = class {
    *
    * @private
    * @param {!Graph} graph - the graph to search for node in
-   * @param {!string} label1 - label of the first node in the combined state
-   * @param {!string} label2 - label of the second node in the combined state
+   * @param {!string} node1 - the first node in the combined state
+   * @param {!string} node2 - the second node in the combined state
    * @returns {!integer | undefined} the node id or undefined
    */
-  static _getId(graph, label1, label2) {
+  static _getId(graph, node1, node2) {
+    var label1 = (node1.label === '') ? node1.id : node1.label;
+    var label2 = (node2.label === '') ? node2.id : node2.label;
     var label = label1 + '.' + label2;
     var nodes = graph.nodes;
     for(let i in nodes){
