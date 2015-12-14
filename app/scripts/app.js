@@ -10,6 +10,7 @@
      */
     app.automata = {values: []};
     app.liveCompiling = true;
+    app.liveBuilding = true;
     app.fairAbstraction = true;
     app.helpDialogSelectedTab = 0;
 
@@ -17,7 +18,7 @@
      * Compile the code in the text editor.
      * Create and display the new automata.
      */
-    app.compile = function() {
+    app.compile = function(overrideBuild) {
       app.$.console.clear();
       app.$.console.log('Compiling...');
       var compileStartTime = (new Date()).getTime();
@@ -57,44 +58,56 @@
         compileTime = Math.max(1, ((new Date()).getTime() - compileStartTime)) / 1000;
         app.$.console.clear(1);
         app.$.console.log('Compiled successfully in ' + compileTime.toFixed(3) + ' seconds.');
-        app.$.console.log('Rendering...');
+        
+        // only render if live building is checked
+        if(app.liveBuilding || overrideBuild){
+          app.$.console.log('Rendering...');
 
-        var renderStartTime = (new Date()).getTime();
-        var renderTime;
+          var renderStartTime = (new Date()).getTime();
+          var renderTime;
 
-        // Can't simply assign app.automata.values to the new array as data bindings will not update.
-        // Creating a new automata object then setting the its values slightly later will work (for some reason).
-        app.automata = {};
-        setTimeout(function() {
-          app.set('automata.values', automata);
+          // Can't simply assign app.automata.values to the new array as data bindings will not update.
+          // Creating a new automata object then setting the its values slightly later will work (for some reason).
+          app.automata = {};
+          setTimeout(function() {
+            app.set('automata.values', automata);
 
-          // listen for each rendered event.
-          // once all automata have been rendered, log the results and stop listening.
-          var automataRendered = 0;
-          var renderComplete = function() {
-            automataRendered++;
-            if (automataRendered === app.automata.values.length) {
-              renderTime = Math.max(1, ((new Date()).getTime() - renderStartTime)) / 1000;
-              app.$.console.clear(1);
-              app.$.console.log('Rendered successfully after ' + renderTime.toFixed(3) + ' seconds.');
-              app.$.console.log('Total time: ' + (compileTime + renderTime).toFixed(3) + ' seconds.');
-              
-              // only print out operations results if the were any operations performed
-              if(operations.length !== 0){
-                app.$.console.log(' ');
-                app.$.console.log('Operations:');
-                for(var i = 0; i < operations.length; i++){
-                  app.$.console.log(operations[i]);
+            // listen for each rendered event.
+            // once all automata have been rendered, log the results and stop listening.
+            var automataRendered = 0;
+            var renderComplete = function() {
+              automataRendered++;
+              if (automataRendered === app.automata.values.length) {
+                renderTime = Math.max(1, ((new Date()).getTime() - renderStartTime)) / 1000;
+                app.$.console.clear(1);
+                app.$.console.log('Rendered successfully after ' + renderTime.toFixed(3) + ' seconds.');
+                app.$.console.log('Total time: ' + (compileTime + renderTime).toFixed(3) + ' seconds.');
+                
+                // only print out operations results if the were any operations performed
+                if(operations.length !== 0){
+                  app.$.console.log(' ');
+                  app.$.console.log('Operations:');
+                  for(var i = 0; i < operations.length; i++){
+                    app.$.console.log(operations[i]);
+                  }
                 }
+                
+                document.removeEventListener('automata-visualisation-rendered', renderComplete);
               }
-              
-              document.removeEventListener('automata-visualisation-rendered', renderComplete);
-            }
-          };
+            };
 
-          document.addEventListener('automata-visualisation-rendered', renderComplete);
-        }.bind(this), 0);
+            document.addEventListener('automata-visualisation-rendered', renderComplete);
+          }.bind(this), 0);
+        }
       }.bind(this), 0);
+    };
+
+    /**
+     * Compiles and builds what has currenty been entered into the text-area.
+     * Ignores whether or not live compile and build are currently set.
+     */
+    app.compileAndBuild = function() {
+      app.compile(true);
     };
 
     /**
@@ -144,20 +157,33 @@
      */
     app.$['chbx-live-compiling'].addEventListener('iron-change', function() {
       if (app.liveCompiling) {
-        app.compile();
+        app.compile(false);
       }
       app.$.editor.focus();
     });
+
+    /**
+     * Simple event listener for when the live building checkbox is ticked.
+     * Compile is called if live compiling is active.
+     */
+    app.$['chbx-live-building'].addEventListener('iron-change', function() {
+      if(app.liveCompiling){
+        app.compile(false);
+      }
+      app.$.editor.focus();
+    });
+
     /**
      * Simple event listener for when the fair abstraction checkbox is ticked.
      * Compile is called if live compiling is active.
      */
     app.$['chbx-fair-abstraction'].addEventListener('iron-change', function() {
       if(app.liveCompiling){
-        app.compile();
+        app.compile(false);
       }
       app.$.editor.focus();
     });
+
     /**
      * This is the event which triggers when the user selects an automata from the
      * list to walk down. It sets the root node of this automata, and all automata

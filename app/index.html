@@ -175,7 +175,7 @@
 
     <!-- start toolbar -->
     <paper-toolbar id="main-toolbar">
-      <paper-button id="btn-compile" title="Compile" raised on-tap="compile" class="middle"><iron-icon icon="av:play-arrow"></iron-icon></paper-button>
+      <paper-button id="btn-compile" title="Compile and Build" raised on-tap="compileAndBuild" class="middle"><iron-icon icon="av:play-arrow"></iron-icon></paper-button>
       <paper-checkbox id="chbx-live-compiling" checked="{{liveCompiling}}" class="middle" title="Automatically compile the automata as you define them.">
         <span hidden$="{{smallScreen}}">Live Compiling</span>
         <span hidden$="{{!smallScreen}}">Live</span>
