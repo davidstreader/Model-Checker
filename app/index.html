@@ -100,9 +100,21 @@
     --paper-checkbox-unchecked-color: #ffffff;
     --paper-checkbox-label-color: #ffffff;
   }
+  #chbx-live-building {
+    margin: 0 12px;
+    --paper-checkbox-unchecked-color: #ffffff;
+    --paper-checkbox-label-color: #ffffff;
+  }
   #chbx-fair-abstraction {
+    margin: 0 12px;
     --paper-checkbox-uncheckd-color: #ffffff;
     --paper-checkbox-label-color: #ffffff;
+  }
+  #filename {
+    --paper-input-container-color: #ffffff;
+    --paper-input-container-input-color: #ffffff;
+    position: relative;
+    bottom: calc(50% - 24px);
   }
   @media all and (max-width: 959px) {
     .frame{
@@ -164,13 +176,20 @@
     <!-- start toolbar -->
     <paper-toolbar id="main-toolbar">
       <paper-button id="btn-compile" title="Compile" raised on-tap="compile" class="middle"><iron-icon icon="av:play-arrow"></iron-icon></paper-button>
-      <paper-checkbox id="chbx-live-compiling" checked="{{liveCompiling}}" class="middle" title="Automatically compile the automata as you defined it.">
+      <paper-checkbox id="chbx-live-compiling" checked="{{liveCompiling}}" class="middle" title="Automatically compile the automata as you define them.">
         <span hidden$="{{smallScreen}}">Live Compiling</span>
+        <span hidden$="{{!smallScreen}}">Live</span>
+      </paper-checkbox>
+      <span class="spacer middle"></span>
+      <paper-checkbox id="chbx-live-building" checked="{{liveBuilding}}" class="middle" title="Automatically build the automata as you define them.">
+        <span hidden$="{{smallScreen}}">Live Building</span>
         <span hidden$="{{!smallScreen}}">Live</span>
       </paper-checkbox>
       <span class="spacer middle"></span>
       <paper-icon-button icon="icons:folder-open" class="middle" title="Open" on-tap="openFile"></paper-icon-button>
       <input id="open-file" type="file" accept="text/plain" class="middle" style="display: none;"></input>
+      <span class="spacer middle"></span>
+      <paper-input id="filename" label="untitled" class="middle" title="File Name"></paper-input>
       <paper-icon-button icon="icons:file-download" class="middle" title="Download" on-tap="downloadFile"></paper-icon-button>
       
       <span class="flex middle"></span>
