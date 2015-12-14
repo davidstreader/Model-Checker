@@ -65,6 +65,8 @@
      * @class
      * @property {!Graph} graph            - The definition's graph
      * @property {!string} type            - The type of this definition
+     * @property {!array} relabel          - An array of javascript objects containing relabelling data
+     * @property {!array} hidden           - An array containing actions to be hidden
      * @property {!boolean} isVisible      - Determines whether or not the graph is visualised
      * @property {!array} unprocessedNodes - An array of nodes that haven't been processed
      * @property {!array} unprocessedGraphs- An array of graphs that haven't been processed (for parallel composition) 
@@ -73,6 +75,8 @@
     _Definition: function() {
       this.graph = undefined;
       this.type = undefined;
+      this.relabel = undefined;
+      this.hidden = undefined;
       this.isVisible =true;
       this.unprocessedNodes = [];
       this.unprocessedGraphs = [];
@@ -201,7 +205,9 @@
         definitionMap[name].graph = new Graph();
         // set the type for this definition
         definitionMap[name].type = definition.type;
-        
+        definitionMap[name].relabel = definition.relabel;
+        definitionMap[name].hidden = definition.hidden;
+
         // add the root node of the graph
         // if an id to use for the root has hasn't been specified, generate one, otherwise use it
         var rootId = definitionMap[name].rootId;
@@ -221,7 +227,7 @@
       }.bind(this));
       
       // process the global definition
-      this._processDefinition(globalName, model.relabel, model.hidden, model);
+      this._processDefinition(globalName, model);
     },
     /**
      * Interprets the operation defined in the specified model.
@@ -230,6 +236,7 @@
      * @param {!object} model - contains the operation along with the definitions to perform the operation on
      */
     _interpretOperation: function(model) {
+      console.log(model);
       // construct definitions for this operation
       var defNames = [];
       var process = model.process;
@@ -344,8 +351,8 @@
         }
         else{
           var name = defName + '.' + i;
-          this._constructDefinition(name, 'standard-definition', false);
-          this._interpretProcess(defs[i].process, definitionMap[name].graph.root, definitionMap, name, globalName, referenceMap);
+          this._constructDefinition(name, 'standard-definition', defs[i].relabel, defs[i].hidden, false);
+          this._interpretProcess(defs[i].process, definitionMap[name].graph.root, definitionMap, name, name, referenceMap);
           this._interpretReference(defs[i].process, extendtionNode, definitionMap, defName, globalName, referenceMap, name);
         }
       }
@@ -464,14 +471,7 @@
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
     _interpretAbstraction: function(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap) {
-      var name = this._getNameFromPTNode(ptNode).name;
-      var references = this._getNameFromOperationNode(ptNode);
-      
-      // check if there are any nested functions within this process
-      if(typeof(references) === 'object'){
-        this._interpretProcess(ptNode.name, extendtionNode, definitionMap, defName, globalName, referenceMap);
-        references = defName;
-      }
+      var references = this._interpretFunction(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap);
 
       // throw an error if the definition to be abstracted has not been defined
       if(definitionMap[references] === undefined){
@@ -493,14 +493,7 @@
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
     _interpretSimplification: function(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap) {
-      var name = this._getNameFromPTNode(ptNode).name;
-      var references = this._getNameFromOperationNode(ptNode);
-
-      // check if there are any nested functions within this process
-      if(typeof(name) === 'object'){
-        this._interpretProcess(ptNode.name, extendtionNode, definitionMap, defName, globalName, referenceMap);
-        references = defName;
-      }
+      var references = this._interpretFunction(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap);
 
       // throw an error if the definition to be simplified has not been defined
       if(definitionMap[references] === undefined){
@@ -510,6 +503,43 @@
       var graph = definitionMap[references].graph;
       definitionMap[defName].graph = Graph.Operations.simplification(graph);
       extendtionNode.id = definitionMap[defName].graph.root.id;
+    },
+    /**
+     * Helper function for function definitions which interprets the contents within the function
+     * before the function is applied to the contents.
+     *
+     * @private
+     * @param {!object} ptNode             - A parse tree simplification node
+     * @param {!Graph.Node} extendtionNode - The node in the graph to build on from
+     * @param {!object} definitionMap      - The definition map being used
+     * @param {!string} defName            - The name of the current definition
+     * @param {!object} referenceMap       - The reference map that store references already known about
+     * @returns {!string}                  - A reference to the definition containing the contents of the function 
+     */
+    _interpretFunction: function(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap) {
+      var name;
+      var references;
+      var process = ptNode.process;
+      
+      if(this._isDefinition(process)){
+        name = defName + '.0';
+        references = name;
+        this._constructDefinition(name, 'standard-definition', process.relabel, process.hidden, false);
+        this._interpretProcess(process.process, definitionMap[name].graph.root, definitionMap, name, globalName, referenceMap);
+        this._processDefinition(name);
+      }
+      else{
+        var name = this._getNameFromPTNode(process).name;
+        var references = this._getNameFromOperationNode(process);
+      }
+
+      // check if there are any nested functions within this process
+      if(typeof(references) === 'object'){
+        this._interpretProcess(ptNode.name, extendtionNode, definitionMap, defName, globalName, referenceMap);
+        references = defName;
+      }
+
+      return references;
     },
     /**
      * Interpret a parse tree stop node.
@@ -536,6 +566,12 @@
      */
     _interpretError: function(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap) {
       extendtionNode.addMetaData ('isTerminal', 'error');
+      // set all edges leading to this node to be deadlocks
+      var edges = extendtionNode.edgesToMe;
+      for(var i = 0; i < edges.length; i++){
+        var edge = edges[i];
+        edge.isDeadlock = true;
+      }
     },
     /**
      *
@@ -608,7 +644,7 @@
      *
      * @private
      */
-    _constructDefinition: function(defName, type, isVisible) {
+    _constructDefinition: function(defName, type, relabel, hidden, isVisible) {
       this._definitionsMap[defName] = new this._Definition();
       this._definitionsMap[defName].graph = new Graph();
       var rootId = this._definitionsMap[defName].rootId;
@@ -617,6 +653,8 @@
       );
       root.addMetaData('startNode', true);
       this._definitionsMap[defName].type = type;
+      this._definitionsMap[defName].relabel = relabel;
+      this._definitionsMap[defName].hidden = hidden;
       this._definitionsMap[defName].isVisible = isVisible;
     },
     /**
@@ -642,10 +680,8 @@
      *
      * @private
      * @param {!string} defName - the definition to process
-     * @param {!array} relabel - an array of relabelling objects (can be undefined)
-     * @param {!array} hidden - an array of transitions to hide (can be undefined)
      */
-    _processDefinition: function(defName, relabel, hidden) {
+    _processDefinition: function(defName) {
       // check whether processing referenes or parallel composition should be perfomed
       if(this._definitionsMap[defName].type !== 'parallel-definition'){
         this._processReferences(defName);
@@ -653,10 +689,8 @@
       else{
         this._processParallelComposition(defName);
       }
-
-      // process relabelling and hiding
-      this._processRelabelling(defName, relabel);
-      this._processHiding(defName, hidden);
+      this._processRelabelling(defName);
+      this._processHiding(defName);
     },
     /**
      * Process all the unprocessed references for the specified definition.
@@ -735,9 +769,9 @@
      *
      * @private
      * @param {!string} defName - the definition to perform relabelling for
-     * @param {!array} relabel - an array of relabelling objects
      */
-    _processRelabelling: function(defName, relabel) {
+    _processRelabelling: function(defName) {
+      var relabel = this._definitionsMap[defName].relabel;
       if(relabel !== undefined){
         // get an array of edges in the current graph
         var edges = this._definitionsMap[defName].graph.edges;
@@ -759,7 +793,8 @@
      * @param {!string} defName - the definition to perform relabelling for
      * @param {!array} relabel - an array of transitions to be hidden
      */
-    _processHiding: function(defName, hidden) {
+    _processHiding: function(defName) {
+      var hidden = this._definitionsMap[defName].hidden;
       if(hidden !== undefined){
         // get an array of edges in the current graph
         var edges = this._definitionsMap[defName].graph.edges;
@@ -811,6 +846,27 @@
           }
         }
       }
+    },
+    /**
+     * Returns true if the specified process is a definition, otherwise
+     * returns false.
+     *
+     * @private
+     * @param {!object} process - the process to check
+     * @returns {!boolean} true if process is definition, otherwise false
+     */
+    _isDefinition: function(process) {
+      var definitions = ['standard', 'parallel', 'reference', 'function'];
+      // check if the process type is any of the defintitions
+      for(var i = 0; i < definitions.length; i++){
+        var definition = definitions[i] + '-definition';
+        if(process.type === definition){
+          return true;
+        }
+      }
+
+      // no matches found
+      return false;
     },
     /**
      * Returns the next unique operation uid.
