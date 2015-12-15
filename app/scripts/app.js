@@ -137,10 +137,16 @@
      * Save to code the user has written to their computer (as a download).
      */
     app.downloadFile = function() {
+      var filename = app.$['filename'].inputElement.bindValue;
+      // if filename has not been defined set to untitled
+      if(filename === ''){
+        filename = 'untitled';
+      }
+
       var blob = new Blob(
         [app.$.editor.getCode()],
         {type: 'text/plain;charset=utf-8'});
-      saveAs(blob, 'untitled.txt');
+      saveAs(blob, filename + '.txt');
     };
 
     /**
