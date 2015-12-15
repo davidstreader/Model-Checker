@@ -1,335 +1,499 @@
 {
-  var Node = {
-    ModelNode: function(def, defs, relabel, hidden){
-          this.type = 'model';
-          this.definitions = defs ? [def].concat(defs) : [def];
-          this.relabel = relabel;
-          this.hidden = hidden;
-      },
-      DefinitionNode: function(type, name, process){
-          this.type = type;
-          this.name = name;
-          this.process = process;
-      },
-        OperationNode: function(operation){
-          this.type = 'operation'
-            this.process = operation;
+    /**
+     * Javascript objects which are used to form a parse tree in the JSON format.
+     */
+    var Node = {
+        ModelNode: function(def, defs){
+            this.type = 'model';
+            this.definitions = defs ? [def].concat(defs) : [def];
         },
-    SequenceNode: function(from, to){
-          this.type = 'sequence';
-          this.from = from;
-          this.to = to;
-      },
-      ChoiceNode: function(option1, option2){
-          this.type = 'choice';
-          this.option1 = option1;
-          this.option2 = option2;
-      },
-      ParallelNode: function(def1, def2){
-          this.type = 'parallel';
-          this.definition1 = def1;
-          this.definition2 = def2;
-      },
-      NameNode: function(name){
-          this.type = 'name';
-          this.name = name;
-      },
-        LabelledNameNode: function(name, label){
-          this.type = 'labelled-name';
+        DefinitionNode: function(type, name, process, relabel, hidden){
+            this.type = type;
+            this.name = name;
+            this.process = process;
+            this.relabel = relabel;
+            this.hidden = hidden;
+        },
+        SequenceNode: function(from, to){
+            this.type = 'sequence';
+            this.from = from;
+            this.to = to;
+        },
+        ChoiceNode: function(def1, def2){
+            this.type = 'choice';
+            this.option1 = def1;
+            this.option2 = def2;
+        },
+        NameNode: function(name, label){
+            this.type = 'name'
             this.name = name;
             this.label = label;
         },
         ActionNode: function(action){
-          this.type = 'action';
-          this.action = action;
-      },
-      AbstractionNode: function(name){
-          this.type = 'abstraction';
-          this.name = name;
-      },
-      SimplificationNode: function(name){
-          this.type = 'simplification';
-          this.name = name;
-      },
-        BisimulationNode: function(def1, def2){
-          this.type = 'bisimulation';
+            this.type = 'action';
+            this.action = action;
+        },
+        IndexedActionNode: function(varible, range, action){
+            this.type = 'indexed-action';
+            this.variable = variable;
+            this.range = range;
+            this.action = action;
+        },
+        StopNode: function(){
+            this.type = 'stop';
+        },
+        ErrorNode: function(){
+            this.type = 'error';
+        },
+        ParallelNode: function(def1, def2){
+            this.type = 'parallel';
             this.definition1 = def1;
             this.definition2 = def2;
         },
-      StopNode: function(){
-          this.type = 'stop';
-      },
-      ErrorNode: function(){
-          this.type = 'error';
-      },
-      CommentNode: function(comment){
-          this.type = 'comment';
-          this.comment = comment;
-      }
+        FunctionNode: function(type, process){
+            this.type = type;
+            this.process = process;
+        },
+        ConstantNode: function(name, value){
+            this.type = 'constant';
+            this.name = name;
+            this.value = value;
+        },
+        RangeNode: function(name, range){
+            this.type = 'range';
+            this.range = range;
+        },
+        OperationNode: function(input, process){
+            this.type = 'operation';
+            this.input = input;
+            this.process = process;
+        },
+        CommentNode: function(comment){
+            this.type = 'comment';
+            this.comment = comment;
+        }
+    };
+    
+    /**
+     * Functions used by parsing functions.
+     */
+    
+    /* Constructs a javascript object which can be used to construct a name node. */
+    function constructName(name, label){
+        return {name: name, label: label};
+    };
+    
+    /* Constructs a javascript object which can be used to constract a defintion node. */
+    function constructDefinition(type, process, relabel, hidden){
+        return {type: type, process: process, relabel: relabel, hidden: hidden};
+    };
+    
+    function constructOperationProcess(type, isNegated, def1, def2){
+        return {type: type, isNegated: isNegated, definition1: def1, definition2: def2};
+    };
+    
+    function constructOperator(type, isNegated){
+        return {type: type, isNegated: isNegated};
+    };
+    
+    function constructRelabellingAndHiding(relabel, hidden){
+        return {relabel: relabel, hidden: hidden};
     };
 }
 
-File = Model*
+File = (Model / Operation / Declare_Constant / Declare_Range / Comment)*
 
-Model = _ definition:Definition _ process:Relabelling_AND_Hiding _ {
-  return new Node.ModelNode(definition, undefined, process.relabel, process.hide);
-}
-/ _ definition:Definition _ symbol_DefinitionListSeparator _ model:Model _ {
-  return new Node.ModelNode(definition, model.definitions, model.relabel, model.hidden);
-}
-/ _ operation:Operation _ symbol_DefinitionListEnd {
-  return new Node.OperationNode(operation);
-}
-/ _ Process_Comment
+Model = Single_Model / Multiple_Model
 
-Definition = name:Name _ symbol_DefinitionAssignment _ process:Process_Definition {
-  return new Node.DefinitionNode(process.type, name, process.process);
+Single_Model = _ definition:Nested_Definition _ DEF_END _ {
+    return new Node.ModelNode(definition);
 }
 
-Process_Definition = Standard_Definition
-           / Parallel_Definition
-                   / Reference_Definition
-                   / Function_Definition
-
-/**
- * STANDARD DEFINITION
- */
-  
-Standard_Definition = process:Process_Standard {
-  return {type: 'standard-definition', process: process};
+Multiple_Model = _ definition:Definition _ DEF_SEPARATOR _ model:Model _ {
+    var length = model.definitions.length;
+    definition.relabel = model.definitions[length - 1].relabel;
+    definition.hidden = model.definitions[length - 1].hidden;
+    model.definitions[length - 1].relabel = undefined;
+    model.definitions[length - 1].hidden = undefined;
+    return new Node.ModelNode(definition, model.definitions);
 }
 
-Process_Standard = a:Name_OR_Choice _ b:Process_Standard {
-  return new Node.ParallelNode(a, b);
+Definition = _ name:Name _ DEF_ASSIGNMENT _ def:Parse_Definition _ {
+    return new Node.DefinitionNode(def.type, name, def.process, def.relabel, def.hidden);
 }
-/ Process_Choice
 
-Process_Choice = a:Process_Sequence _ symbol_Choice _ b:Process_Choice {
-  return new Node.ChoiceNode(a, b);
+Nested_Definition = _ name:Name _ DEF_ASSIGNMENT _ def:Parse_Nested_Definition _ {
+  return new Node.DefinitionNode(def.type, name, def.process, def.relabel, def.hidden);
 }
-/ Process_Sequence
 
-Process_Sequence = from:Action _ symbol_Sequence _ to:Name_OR_Sequence {
-  return new Node.SequenceNode(from, to);
-}
-/ Terminal_OR_Brackets
+/* Parses and returns either a standard, parallel, reference or function definition. */
+Parse_Definition 'parse definition' = Standard_Definition / Parallel_Definition / Reference_Definition / Function_Definition
+
+Parse_Nested_Definition = Nested_Standard_Definition / Nested_Parallel_Definition / Nested_Reference_Definition / Nested_Function_Definition
 
 /**
- * PARALLEL DEFINITION
- */
- 
-Parallel_Definition = process:Process_Parallel {
-  return {type: 'parallel-definition', process: process};
-}
-
-Process_Parallel = a:Name_OR_Label _ symbol_Parallel _ b:Process_Parallel{
-  return new Node.ParallelNode(a, b);
-}
-/ Process_Parallel_Composition
-     
-
-Process_Parallel_Composition = a:Name_OR_Label _ symbol_Parallel _ b:Name_OR_Parallel_Composition {
-  return new Node.ParallelNode(a, b);
-}
-/ Parallel_Brackets
-
-/**
- * REFERENCE DEFINITION
- */
- 
-Reference_Definition = process:Name_OR_Label {
-  return {type: 'reference-definition', process: process};
-}
-
-/**
- * FUNCTION DEFINITION
+ * Standard Definition
  */
 
-Function_Definition = process:Process_Name {
-  return {type: 'function-definition', process: process};
+/* Parses and returns a standard definition. */
+Standard_Definition 'parse standard definition' = process:Parse_Standard_Definition {
+    return constructDefinition('standard-definition', process, undefined, undefined);
 }
 
-Process_Abstraction = symbol_Abstraction _ symbol_BracketLeft _ name:Process_Name _ symbol_BracketRight {
-  return new Node.AbstractionNode(name);
+Nested_Standard_Definition = process:Parse_Standard_Definition _ rah:(Parse_Relabelling_And_Hiding ?) {
+    if(rah !== null){
+      return constructDefinition('standard-definition', process, rah.relabel, rah.hidden);
+    }
+    return constructDefinition('standard-definition', process, undefined, undefined);
 }
 
-Process_Simplification = symbol_Simplification _ symbol_BracketLeft _ name:Process_Name _ symbol_BracketRight {
-  return new Node.SimplificationNode(name);
+/* Attempts to parse and return a standard definition. */
+Parse_Standard_Definition = Parse_Choice / Parse_Sequence / Parse_Bracketed_Standard_Definition
+
+/* Attempts to parse and return a bracketed standard definition. */
+Parse_Bracketed_Standard_Definition 'parse standard definition' = BRACKET_LEFT _ process:Parse_Standard_Definition _ BRACKET_RIGHT {
+    return process;
+}
+
+/* Attempts to parse and return a choice for a standard definition. */
+Parse_Choice 'parse choice' = a:(Parse_Sequence / Name) _ CHOICE _ b:(Terminal / Name / Parse_Standard_Definition) {
+    return new Node.ChoiceNode(a, b);
+}
+
+/* Attempts to parse and return a sequence for a standard definition */
+Parse_Sequence 'parse sequence' = from:Action _ SEQUENCE _ to:(Terminal / Name / Parse_Sequence) {
+    return new Node.SequenceNode(from, to);
 }
 
 /**
- * RELABELLING AND HIDING
+ * Parallel Definition
  */
 
-Relabelling_AND_Hiding = relabel:Process_Relabel _ hide:Process_Hide _ symbol_DefinitionListEnd _ {
-  return {relabel:relabel, hide:hide};
-}
-/ relabel:Process_Relabel _ symbol_DefinitionListEnd _ {
-  return {relabel:relabel, hide:undefined};
-}
-/ hide:Process_Hide _ symbol_DefinitionListEnd _ {
-  return {relabel:undefined, hide:hide};
-}
-/ symbol_DefinitionListEnd _ {
-  return {relabel:undefined, hide:undefined};
+/* Parses and returns a parallel definition. */
+Parallel_Definition 'parse parallel definition' = process:Parse_Parallel_Definition {
+    return constructDefinition('parallel-definition', process, undefined, undefined);
 }
 
-Process_Relabel = symbol_Relabel _ symbol_BraceLeft _ relabel:Relabel_OR_Brace {
-  return relabel;
+Nested_Parallel_Definition = process:Parse_Parallel_Definition _ rah:(Parse_Relabelling_And_Hiding ?) {
+  if(rah !== null){
+      return constructDefinition('parallel-definition', process, rah.relabel, rah.hidden);
+    }
+    return constructDefinition('parallel-definition', process, undefined, undefined);
 }
 
-Process_Hide = symbol_Hide _ symbol_BraceLeft _ hide:Action_OR_Brace {
-  return hide;
+/* Attempts to parse and return a parallel definition. */
+Parse_Parallel_Definition = Parse_Parallel_Composition / Parse_Bracketed_Parallel_Definition
+
+/* Attempts to parse and return a bracketed parallel definition. */
+Parse_Bracketed_Parallel_Definition = BRACKET_LEFT _ process:Parse_Parallel_Definition _ BRACKET_RIGHT {
+    return process;
 }
 
-/**
- * OPERATIONS
- */
-
-Operation = a:Process_Definition _ symbol_Bisimulation _ b:Process_Definition {
-  return new Node.BisimulationNode(a, b);
+/* Attempts to parse and return a parallel composition. */
+Parse_Parallel_Composition = a:(Name / Nested_Standard_Definition / Nested_Function_Definition / Parse_Bracketed_Parallel_Definition) _ PARALLEL _ b:(Name / Nested_Standard_Definition / Nested_Function_Definition / Parse_Parallel_Definition) {
+    return new Node.ParallelNode(a, b);
 }
 
 /**
- * COMMENTs
+ * Reference Definition
  */
  
-Process_Comment = SingleLineComment
-
-SingleLineComment = symbol_SingleLineComment c:Comment [\n] {
-  var comment = '';
-  for(var i = 0; i < c.length; i++){
-    comment += c[i];
-  }
-  return new Node.CommentNode(comment);
+/* Parses and returns a reference definition. */
+Reference_Definition 'parse reference definition' = process:Labelled_Name {
+    return constructDefinition('reference-definition', process, undefined, undefined);
 }
-/ symbol_SingleLineComment c:Comment {
-  var comment = '';
-  for(var i = 0; i < c.length; i++){
-    comment += c[i]
-  }
-  return new Node.CommentNode(comment);
+
+Nested_Reference_Definition = process:Labelled_Name _ rah:(Parse_Relabelling_And_Hiding ?) {
+  if(rah !== null){
+      return constructDefinition('reference-definition', process, rah.relabel, rah.hidden);
+    }
+    return constructDefinition('reference-definition', process, undefined, undefined);
 }
 
 /**
- * HELPER FUNCTIONS
+ * Function Definition
  */
 
-Label_OR_Process_Parallel = Label
-/ Process_Parallel
-
-Name_OR_Choice = Process_Name
-/ Process_Choice
-
-Name_OR_Sequence = Process_Sequence
-/ Process_Name
-
-Name_OR_Parallel_Composition = Process_Parallel_Composition
-/ Name_OR_Label
-
-Name_OR_Label = Name
-/ Label
-
-Relabel_OR_Brace = relabel:Relabel _ symbol_BraceRight {
-  return [relabel];
-}
-/ a:Relabel _ symbol_DefinitionListSeparator _ b:Relabel_OR_Brace {
-  return b.concat(a);
+/* Parses and returns a function definition. */
+Function_Definition = process:Parse_Function {
+    return constructDefinition('function-definition', process, undefined, undefined);
 }
 
-Action_OR_Brace = a:Action _ symbol_BraceRight {
-  return [a.action];
-}
-/ a:Action _ symbol_DefinitionListSeparator _ b:Action_OR_Brace {
-  return b.concat(a.action);
-}
-
-Terminal_OR_Brackets = Terminal
-/ symbol_BracketLeft _ process:Process_Standard _ symbol_BracketRight {
-  return process;
+Nested_Function_Definition = process:Parse_Function _ rah:(Parse_Relabelling_And_Hiding ?) {
+  if(rah !== null){
+      return constructDefinition('function-definition', process, rah.relabel, rah.hidden);
+    }
+  return constructDefinition('function-definition', process, undefined, undefined); 
 }
 
-Parallel_Brackets = symbol_BracketLeft _ process:Process_Parallel _ symbol_BracketRight {
-  return process;
+Parse_Function = Parse_Abstraction / Parse_Simplification
+
+/* Attempts to parse and return an abstraction function. */
+Parse_Abstraction = ABS _ BRACKET_LEFT _ process:Parse_Nested_Definition _ BRACKET_RIGHT {
+    return new Node.FunctionNode('abstraction', process);
 }
 
-Terminal = Stop
-/  Error
+/* Attempts to parse and return a simplification function. */
+Parse_Simplification = SIMP _ BRACKET_LEFT _ process:Parse_Nested_Definition _ BRACKET_RIGHT {
+    return new Node.FunctionNode('simplification', process);
+}
 
 /**
- * Signifies the end of a sequence.
+ * Relabelling and Hiding
  */
+
+/* Parses and returns the relabelling and hiding for a definition if there is any. */
+Parse_Relabelling_And_Hiding = Relabelling_And_Hiding / Relabelling / Hiding
+
+/* Attempts to parse and return a relabelling and hiding. */
+Relabelling_And_Hiding = relabel:Parse_Relabelling _ hide:Parse_Hiding {
+    return constructRelabellingAndHiding(relabel, hide);
+}
+
+/* Parses and returns a relabelling. */
+Relabelling = relabel:Parse_Relabelling {
+    return constructRelabellingAndHiding(relabel, undefined);
+}
+
+/* Attempts to parse and return a relabelling. */
+Parse_Relabelling = RELABEL _ BRACE_LEFT _ relabel:Parse_Relabel _ BRACE_RIGHT {
+    return relabel;
+}
+
+/* Parses the contents within relabelling braces. */
+Parse_Relabel = a:Relabel _ DEF_SEPARATOR _ b:Parse_Relabel { return a.concat(b); } / Relabel
+
+/* Parses and returns a single relabelling. */
+Relabel = a:Action _ RELABEL _ b:Action {
+    return [{'new-label': a.action, 'old-label': b.action}];
+}
+
+/* Parses and returns a hiding. */
+Hiding = hide:Parse_Hiding {
+    return constructRelabellingAndHiding(undefined, hide);
+}
+
+/* Attempts to parse and return a hiding. */
+Parse_Hiding = HIDE _ BRACE_LEFT _ hidden:Parse_Hidden_Action _ BRACE_RIGHT {
+    return hidden;
+}
+
+/* Parses and returns the contents within hiding braces. */
+Parse_Hidden_Action = a:Hidden_Action _ DEF_SEPARATOR _ b:Parse_Hidden_Action { return a.concat(b); } / Hidden_Action
+
+/* Parses and returns a single hidden action. */
+Hidden_Action = action:Action {
+    return [action.action];
+}
+
+/**
+ * Operations
+ */
+
+/* Parses and returns an operation. */
+Operation 'parse operation' = process:Parse_Operation {
+    var input = text();
+    return new Node.OperationNode(input, process);
+}
+
+/* Attempts to parse and return an operation. */
+Parse_Operation = a:Parse_Definition _ type:Parse_Operator _ b:Parse_Definition _ DEF_END _ {
+    return constructOperationProcess(type.type, type.isNegated, a, b); 
+}
+
+/* Parses an returns an operator for an operation and determines whether the
+operator is to be negated or not. */
+Parse_Operator = operator:(NOT Operator / Operator) {
+    var isNegated = false;
+    var op = '';
+    var start = 0;
+    
+    // if operator is a string
+    if(typeof(operator) === 'string'){
+        op = operator;
+    }
+    // check if the operator is negated
+    else if(typeof(operator) === 'object' && operator[0] === '!'){
+        isNegated = true;
+        start = 1;
+    }
+    
+    // construct operator from array
+    if(typeof(operator) === 'object'){
+      for(var i = start; i < operator.length; i++){
+          op += operator[i];
+      }
+    }
+    
+    // determine what type of operation this operator represents
+    var type;
+    switch(op){
+        case '~':
+            type = 'bisimulation';
+            break;
+        default:
+            // throw an error as an unexpected operator was found
+            expected(op + 'is not a valid operator.');
+    }
+    
+    return constructOperator(type, isNegated);
+}
+
+/* Parses an returns an operator. */
+Operator = BISIMULATION
+
+Declare_Constant = _ CONST _ name:PascalCase _ DEF_ASSIGNMENT _ value:Integer _ {
+    return new Node.ConstantNode(name, value);
+}
+
+Declare_Range = RANGE _ name:PascalCase _ DEF_ASSIGNMENT _ range:Parse_Range _ {
+    return new Node.RangeNode(name, range);
+}
+
+Parse_Range = start:(CamelCase / PascalCase / Integer) _ RANGE_SEPARATOR _ end:(CamelCase / PascalCase / Integer) {
+    return {start: start, end: end};
+}
+
+/**
+ * Comments
+ */
+
+/* Parses and returns a comment */
+Comment 'parse comment' = _ comment:(Single_Lined_Comment / Multi_Lined_Comment) _ {
+    return new Node.CommentNode(comment);
+}
+
+/* Helper function for 'Comment' which parses and returns a single lined comment. */
+Single_Lined_Comment = SINGLE_LINE_COMMENT (!LineTerminator SourceCharacter)* {
+    return text();
+}
+
+/* Helper function for 'Comment' which parses and returns a multi lined comment. */
+Multi_Lined_Comment = MULTI_LINE_COMMENT_START (!MULTI_LINE_COMMENT_END SourceCharacter)* MULTI_LINE_COMMENT_END {
+    return text();
+}
+
+/**
+ * Non Terminals
+ */
+
+/* Parses and returns a name node with no label. */
+Name 'parse name' = name:(Parse_Indexed_Name / Parse_Name) {
+    return new Node.NameNode(name.name, name.label);
+}
+
+/* Parses and returns a name node with a label. */
+Labelled_Name 'name or labelled-name' = name:(Parse_Labelled_Name / Parse_Name) {
+    return new Node.NameNode(name.name, name.label);
+}
+
+/* Helper function for 'Name' and 'Labelled_Name' which parses and returns a standard name. */
+Parse_Name = name:PascalCase {
+    return new constructName(name);
+}
+
+/* Helper function for 'Name' which parses and returns an indexed name. */
+Parse_Indexed_Name = name:PascalCase SQUARE_BRACKET_LEFT _ index:Parse_Index _ SQUARE_BRACKET_RIGHT {
+    return new constructName(name + '[' + index + ']');
+}
+
+/* Helper function for 'Name' and 'Labelled_Name' which parses and returns a labelled name. */
+Parse_Labelled_Name = label:CamelCase LABEL name:PascalCase {
+    return new constructName(name, label);
+}
+
+Action = Indexed_Action / Single_Action
+
+/* Parses and returns an action node. */
+Single_Action = action:(Parse_Indexed_Action / Parse_Labelled_Action / Parse_Action) {
+    return new Node.ActionNode(action);
+}
+
+Indexed_Action = SQUARE_BRACKET_LEFT _ variable:Integer _ LABEL _ range:(Parse_Range / PascalCase) _ SQUARE_BRACKET_RIGHT _ DEF_END _ action:CamelCase {
+    return new Node.IndexedActionNode(variable, range, action);
+}
+
+/* Helper function for 'Action' which parses and returns a standard action. */
+Parse_Action = action:CamelCase {
+    return action;
+}
+
+/* Helper function for 'Action' which parses and returns a labelled action. */
+Parse_Labelled_Action = label:CamelCase DEF_END action:CamelCase {
+    return label + '.' + action;
+}
+
+/* Helper function for 'Action' which parses and returns an indexed action. */
+Parse_Indexed_Action = SQUARE_BRACKET_LEFT _ index:Parse_Index _ SQUARE_BRACKET_RIGHT action:CamelCase {
+    return '[' + index + ']' + action;
+}
+
+/* Parses and returns an index which can be either an integer or a string of text in the camel case format. */
+Parse_Index = Integer / CamelCase
+
+/* Parses and returns a string of text that begins with a lower case letter. */
+CamelCase 'camel case' = $([a-z][A-Za-z0-9_]*) { return text(); }
+
+/* Parses and returns a string of text that begins with an upper case letter. */
+PascalCase 'pascal case' = $([A-Z][A-Za-z0-9_]*) { return text(); }
+
+/* Parses and returns an integer. */
+Integer 'integer' = [-]?[0-9]+ { return parseInt(text(), 10); }
+
+/* Parses the termination of a line. */
+LineTerminator 'line terminator' = [\n\r\u2028\u2029]
+
+/* Parses a source character for a comment. */
+SourceCharacter 'source character' = .
+
+/**
+ * Terminals
+ */
+
+/* Parses and returns a terminal. */
+Terminal = Stop / Error
+
+/* Parses and returns a stop node. */
 Stop = 'STOP' {
-  return new Node.StopNode();
+    return new Node.StopNode();
 }
 
-/**
- * Signifies an error in the parsing of a definition.
- */
+/* Parses and returns an error node. */
 Error = 'ERROR' {
-  return new Node.ErrorNode();
+    return new Node.ErrorNode();
 }
 
-/**
- * The name given to a definition of an automaton.
- */
-Name = name:$([A-Z][A-Za-z0-9_]*) {
-  return new Node.NameNode(name);
-}
+DEF_END 'end of definition' = '.'
+DEF_SEPARATOR 'definition separator' = ','
+DEF_ASSIGNMENT 'definition assignment' = '='
 
-Process_Name
-  =  Name
-  /  Process_Abstraction
-  /  Process_Simplification
+BRACKET_LEFT 'rounded left bracket' = '('
+BRACKET_RIGHT 'rounded right bracket' = ')'
+SQUARE_BRACKET_LEFT 'square left bracket' = '['
+SQUARE_BRACKET_RIGHT 'square right bracket' = ']'
+BRACE_LEFT 'left brace' = '{'
+BRACE_RIGHT 'right brace' = '}'
 
-/**
- * A process which takes an automaton from one state to another.
- */
-Action = action:$([a-z][A-Za-z0-9_]*) {
-  return new Node.ActionNode(action);
-}
+SEQUENCE 'sequence' = '->'
+CHOICE 'choice' = '|'
+PARALLEL 'parallel' = '||'
+LABEL 'label' = ':'
+RELABEL 'relabel' = '/'
+HIDE 'hide' = '\\'
 
-/**
- * A new label to be given to the definition of an automaton.
- */
-Label = label:Action _ symbol_Label _ name:Name {
-  return new Node.LabelledNameNode(name.name, label.action);
-}
+ABS 'abstraction' = 'abs'
+SIMP 'simplficiation' = 'simp'
 
-/**
- * 
- */
-Relabel = label:Action _ symbol_Relabel _ a:Action symbol_DefinitionListEnd b:Action {
-  var oldLabel = a.action + "." + b.action;
-  return {"new-label":label.action, "old-label":oldLabel};
-}
-/ a:Action _ symbol_Relabel _ b:Action {
-  return {"new-label":a.action, "old-label": b.action};
-}
+BISIMULATION 'bisimulation' = '~'
+NOT 'negation' = '!'
 
-Comment = ([\x20-\x7F]*)
+CONST 'constant declaration' = 'const'
+RANGE 'range declaration' = 'range'
+RANGE_SEPARATOR = '..'
 
-/**
- * TERMINALS
- */
-symbol_BracketLeft = '('
-symbol_BracketRight = ')'
-symbol_BraceLeft = '{'
-symbol_BraceRight = '}'
-symbol_DefinitionListEnd = '.'
-symbol_DefinitionListSeparator = ','
-symbol_DefinitionAssignment = '='
-symbol_Parallel = '||'
-symbol_Choice = '|'
-symbol_Sequence = '->'
-symbol_Label = ':'
-symbol_Relabel = '/'
-symbol_Hide = '\\'
-symbol_Abstraction = 'abs'
-symbol_Simplification = 'simp'
-symbol_Bisimulation = '~'
-symbol_SingleLineComment = '//'
-symbol_MultiLineCommentStart = '/*'
-symbol_MultiLineCommentEnd = '*/'
+SINGLE_LINE_COMMENT = '//'
+MULTI_LINE_COMMENT_START = '/*'
+MULTI_LINE_COMMENT_END = '*/'
 
-_ 'optional whitespace' = [ \t\n\r]*
+/* Parses whitespace */
+_ 'whitespace' = [ \t\n\r]*
