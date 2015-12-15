@@ -276,7 +276,13 @@
           this._interpretParallel(process, extendtionNode, definitionMap, defName, globalName, referenceMap);
           break;
         case 'name':
-          this._interpretName(process, extendtionNode, definitionMap, defName, globalName, referenceMap);
+          // check if this is a labelled name
+          if(process.label === undefined){
+            this._interpretName(process, extendtionNode, definitionMap, defName, globalName, referenceMap);
+          }
+          else{
+            this._interpretLabel(process, extendtionNode, definitionMap, defName, globalName, referenceMap);
+          }
           break;
         case 'labelled-name':
           this._interpretLabel(process, extendtionNode, definitionMap, defName, globalName, referenceMap);
