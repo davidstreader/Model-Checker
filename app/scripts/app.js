@@ -23,6 +23,7 @@
       app.$.console.log('Compiling...');
       var compileStartTime = (new Date()).getTime();
       var compileTime;
+      var operations = '';
 
       setTimeout(function() {
         var code = app.$.editor.getCode();
@@ -33,7 +34,6 @@
         }
 
         var automata = [];
-        var operations = '';
         try {
           var result = app.$.parser.parse(code, app.fairAbstraction);
           automata = result.automata;
@@ -59,8 +59,8 @@
         app.$.console.clear(1);
         app.$.console.log('Compiled successfully in ' + compileTime.toFixed(3) + ' seconds.');
         
-        // only render if live building is checked
-        if(app.liveBuilding || overrideBuild){
+        // only render if live building is checked or the compile and build button was pressed
+        if((app.liveBuilding || overrideBuild) && automata.length > 0){
           app.$.console.log('Rendering...');
 
           var renderStartTime = (new Date()).getTime();
@@ -82,16 +82,7 @@
                 app.$.console.clear(1);
                 app.$.console.log('Rendered successfully after ' + renderTime.toFixed(3) + ' seconds.');
                 app.$.console.log('Total time: ' + (compileTime + renderTime).toFixed(3) + ' seconds.');
-                
-                // only print out operations results if the were any operations performed
-                if(operations.length !== 0){
-                  app.$.console.log(' ');
-                  app.$.console.log('Operations:');
-                  for(var i = 0; i < operations.length; i++){
-                    app.$.console.log(operations[i]);
-                  }
-                }
-                
+
                 document.removeEventListener('automata-visualisation-rendered', renderComplete);
               }
             };
@@ -99,6 +90,17 @@
             document.addEventListener('automata-visualisation-rendered', renderComplete);
           }.bind(this), 0);
         }
+
+        setTimeout(function() {
+          // only print out operations results if the were any operations performed
+          if(operations.length !== 0){
+            app.$.console.log(' ');
+            app.$.console.log('Operations:');
+            for(var i = 0; i < operations.length; i++){
+              app.$.console.log(operations[i]);
+            }
+          }
+        }.bind(this), 0)
       }.bind(this), 0);
     };
 
