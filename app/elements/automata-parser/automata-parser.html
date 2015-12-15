@@ -252,7 +252,7 @@
         this._processDefinition(defNames[i]);
       }
 
-      this._processOperation(model.process.type, this._definitionsMap, defNames[0], defNames[1], model.input);
+      this._processOperation(model.process.type, this._definitionsMap, defNames[0], defNames[1], model.input, model.process.isNegated);
     },
     /**
      * Interpret a parse tree process node.
@@ -576,15 +576,23 @@
     /**
      *
      */
-    _processOperation: function(process, definitionMap, defName1, defName2, input) {
+    _processOperation: function(process, definitionMap, defName1, defName2, input, isNegated) {
+      var result = false;
       switch(process){
         case 'bisimulation':
-          this._processBisimulation(definitionMap, defName1, defName2, input);
+          result = this._processBisimulation(definitionMap, defName1, defName2, input);
           break;
         default:
           console.error('Trying to interpret invalid process type "' + process + '"');
           break;
       }
+
+      // negate the result if the not operator was used
+      if(isNegated){
+        result = !result;
+      }
+
+      this._operationsMap[input] = result;
     },
     /**
      *
@@ -592,8 +600,7 @@
     _processBisimulation: function(definitionMap, defName1, defName2, input) {
       var graph1 = definitionMap[defName1].graph;
       var graph2 = definitionMap[defName2].graph;
-      var isEquivalent = Graph.Operations.isEquivalent(graph1, graph2);
-      this._operationsMap[input] = isEquivalent;
+      return Graph.Operations.isEquivalent(graph1, graph2);
     },
     /**
      * Get the name from a parse tree name node.
