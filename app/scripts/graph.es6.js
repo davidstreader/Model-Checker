@@ -535,7 +535,9 @@ class Graph {
             graphs[i]._edgeMap[key].id,
             this.getNode(graphs[i]._edgeMap[key].from.id), // use the node in this graph, not the one in the other graph
             this.getNode(graphs[i]._edgeMap[key].to.id),
-            graphs[i]._edgeMap[key].label);
+            graphs[i]._edgeMap[key].label,
+            graphs[i]._edgeMap[key].isHidden,
+            graphs[i]._edgeMap[key].isDeadlock);
         }
       }
     }
