@@ -357,9 +357,10 @@
         }
         else{
           var name = defName + '.' + i;
-          this._constructDefinition(name, 'standard-definition', defs[i].relabel, defs[i].hidden, false);
+          this._constructDefinition(name, defs[i].type, defs[i].relabel, defs[i].hidden, false);
           this._interpretProcess(defs[i].process, definitionMap[name].graph.root, definitionMap, name, name, referenceMap);
           this._interpretReference(defs[i].process, extendtionNode, definitionMap, defName, globalName, referenceMap, name);
+          this._processDefinition(name);
         }
       }
     },

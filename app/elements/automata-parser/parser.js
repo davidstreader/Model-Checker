@@ -1134,9 +1134,9 @@ PEG.automataParser = (function() {
       s0 = peg$currPos;
       s1 = peg$parseName();
       if (s1 === peg$FAILED) {
-        s1 = peg$parseStandard_Definition();
+        s1 = peg$parseNested_Standard_Definition();
         if (s1 === peg$FAILED) {
-          s1 = peg$parseFunction_Definition();
+          s1 = peg$parseNested_Function_Definition();
           if (s1 === peg$FAILED) {
             s1 = peg$parseParse_Bracketed_Parallel_Definition();
           }
@@ -1151,9 +1151,9 @@ PEG.automataParser = (function() {
             if (s4 !== peg$FAILED) {
               s5 = peg$parseName();
               if (s5 === peg$FAILED) {
-                s5 = peg$parseStandard_Definition();
+                s5 = peg$parseNested_Standard_Definition();
                 if (s5 === peg$FAILED) {
-                  s5 = peg$parseFunction_Definition();
+                  s5 = peg$parseNested_Function_Definition();
                   if (s5 === peg$FAILED) {
                     s5 = peg$parseParse_Parallel_Definition();
                   }
