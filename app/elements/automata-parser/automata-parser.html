@@ -531,7 +531,7 @@
       if(this._isDefinition(process)){
         name = defName + '.0';
         references = name;
-        this._constructDefinition(name, 'standard-definition', process.relabel, process.hidden, false);
+        this._constructDefinition(name, process.type, process.relabel, process.hidden, false);
         this._interpretProcess(process.process, definitionMap[name].graph.root, definitionMap, name, globalName, referenceMap);
         this._processDefinition(name);
       }
