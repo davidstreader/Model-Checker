@@ -2392,7 +2392,7 @@ PEG.automataParser = (function() {
     function peg$parseAction() {
       var s0;
 
-      s0 = peg$parseIndexed_Action();
+      s0 = peg$parseDefine_Indexed_Action();
       if (s0 === peg$FAILED) {
         s0 = peg$parseSingle_Action();
       }
@@ -2420,7 +2420,7 @@ PEG.automataParser = (function() {
       return s0;
     }
 
-    function peg$parseIndexed_Action() {
+    function peg$parseDefine_Indexed_Action() {
       var s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13;
 
       s0 = peg$currPos;
@@ -2428,7 +2428,7 @@ PEG.automataParser = (function() {
       if (s1 !== peg$FAILED) {
         s2 = peg$parse_();
         if (s2 !== peg$FAILED) {
-          s3 = peg$parseInteger();
+          s3 = peg$parseCamelCase();
           if (s3 !== peg$FAILED) {
             s4 = peg$parse_();
             if (s4 !== peg$FAILED) {
@@ -3431,7 +3431,7 @@ PEG.automataParser = (function() {
                 this.type = 'action';
                 this.action = action;
             },
-            IndexedActionNode: function(varible, range, action){
+            IndexedActionNode: function(variable, range, action){
                 this.type = 'indexed-action';
                 this.variable = variable;
                 this.range = range;
