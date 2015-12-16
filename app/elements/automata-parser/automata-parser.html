@@ -56,6 +56,24 @@
       _operationUid: {
         type: Number,
         readOnly: true
+      },
+      /**
+       * A map of constant variable names to their values.
+       *
+       * @private
+       */
+      _constantsMap: {
+        type: Object,
+        readOnly: true
+      },
+      /**
+       * A map of ranges to their start and end points.
+       *
+       * @private
+       */
+      _rangesMap: {
+        type: Object,
+        readOnly: true
       }
     },
     /**
@@ -150,6 +168,8 @@
       this._set_definitionsMap({});
       this._set_operationsMap({});
       this._set_operationUid(0);
+      this._set_constantsMap({});
+      this._set_rangesMap({});
       // reset the node and edge uids in graph class
       NodeUid.reset();
       EdgeUid.reset();
@@ -165,13 +185,24 @@
       this._resetInterpreter();
       parseTree.forEach(function(model) {
         // ignore comments
-        if(model.type !== 'comment'){
-          if(model.type === 'model'){
+        switch(model.type){
+          case 'model':
             this._interpretDefinitions(model);
-          }
-          else if(model.type === 'operation'){
+            break;
+          case 'operation':
             this._interpretOperation(model);
-          }
+            break;
+          case 'constant':
+            this._interpretConstant(model);
+            break;
+          case 'range':
+            this._interpretRange(model);
+            break;
+          case 'comment':
+            break; // ignore comments
+          default:
+            console.error('Trying to interpret invalid model type "' + model.type + '"');
+            break;
         }
       }.bind(this));
       this._relabelNodes(true);
@@ -197,7 +228,7 @@
         }
 
         // check if we have already processed a definition with this name
-        if (definitionMap[name].graph !== undefined) {
+        if (!this._isValidName(name)) {
           throw new this.InterpreterException('process "' + name + '" defined more that once.');
         }
       
@@ -236,7 +267,6 @@
      * @param {!object} model - contains the operation along with the definitions to perform the operation on
      */
     _interpretOperation: function(model) {
-      console.log(model);
       // construct definitions for this operation
       var defNames = [];
       var process = model.process;
@@ -253,6 +283,64 @@
       }
 
       this._processOperation(model.process.type, this._definitionsMap, defNames[0], defNames[1], model.input, model.process.isNegated);
+    },
+    /**
+     * Interprets the constant defined in the specified model.
+     *
+     * @private
+     * @param {!object} model - contains the constants name and the value to be assigned to it
+     */
+    _interpretConstant: function(model) {
+      // check if the name is valid
+      if(!this._isValidName(model.name)){
+        throw new this.InterpreterException('The name "' + model.name + '" has been defined already.');
+      }
+      // add constant to constants map
+      this._constantsMap[model.name] = model.value;
+    },
+    /**
+     * Interprets the range defined in the specified model.
+     *
+     * @private
+     * @param {!object} model - contains the ranges name and the range to be assigned to it
+     */
+    _interpretRange: function(model) {
+      // check if the name is valid
+      if(!this._isValidName(model.name)){
+        throw new this.InterpreterException('The name "' + model.name + '" has been defined already.');
+      }
+      // assign constant values to start or end points if necessary
+      var start = model.range.start;
+      var end = model.range.end;
+      
+      if(typeof(start) === 'string'){
+        var value = this._constantsMap[start];
+        if(value !== undefined){
+          model.range.start = value;
+        }
+        else{
+          throw new this.InterpreterException('Range "' + model.name + '" is refererencing undefined constant "' + start + '".');
+        }
+      }
+
+      if(typeof(end) === 'string'){
+        var value = this._constantsMap[end];
+        if(value !== undefined){
+          model.range.end = value;
+        }
+        else{
+          throw new this.InterpreterException('Range "' + model.name + '" is refererencing undefined constant "' + end + '".');
+        }
+      }
+
+      // make sure that start of range is less than then end
+      if(model.range.start >= model.range.end){
+        throw new this.InterpreterException('Start of range greater than or equal to end of range for range "' + model.name + '".');
+      }
+
+      // add constant to constants map
+      this._rangesMap[model.name] = model.range;
+      console.log(this._rangesMap);
     },
     /**
      * Interpret a parse tree process node.
@@ -888,6 +976,27 @@
 
       // no matches found
       return false;
+    },
+    /**
+     * Returns true if the specified name is valid, otherwise returns false.
+     * A valid name is one that has not been previously defined.
+     *
+     * @private
+     * @param {!string} name - the name to be checked
+     * @returns {!boolean} true if name is valid, otherwise false
+     */
+    _isValidName: function(name) {
+      var maps = [{name: 'definition', map: this._definitionsMap}, 
+                  {name: 'constant', map: this._constantsMap}, 
+                  {name: 'range', map: this._rangesMap}]
+      // check all maps to see if name has been defined in any of them
+      for(var i = 0; i < maps.length; i++){
+        if(maps[i].map[name] !== undefined){
+          return false;
+        }
+      }
+
+      return true;
     },
     /**
      * Returns the next unique operation uid.
