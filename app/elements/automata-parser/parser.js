@@ -989,6 +989,9 @@ PEG.automataParser = (function() {
                 s5 = peg$parseName();
                 if (s5 === peg$FAILED) {
                   s5 = peg$parseParse_Sequence();
+                  if (s5 === peg$FAILED) {
+                    s5 = peg$parseParse_Standard_Definition();
+                  }
                 }
               }
               if (s5 !== peg$FAILED) {
