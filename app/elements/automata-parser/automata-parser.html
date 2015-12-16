@@ -572,13 +572,11 @@
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
     _interpretError: function(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap) {
-      extendtionNode.addMetaData ('isTerminal', 'error');
-      // set all edges leading to this node to be deadlocks
-      var edges = extendtionNode.edgesToMe;
-      for(var i = 0; i < edges.length; i++){
-        var edge = edges[i];
-        edge.isDeadlock = true;
-      }
+      // add a deadlock edge from extendtion node
+      var graph = definitionMap[defName].graph;
+      var node = graph.addNode(NodeUid.next);
+      graph.addEdge(graph, extendtionNode, node, '', false, true);
+      node.addMetaData ('isTerminal', 'error');
     },
     /**
      *
