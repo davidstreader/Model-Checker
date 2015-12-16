@@ -764,10 +764,20 @@
      * @param {!string} defName - the name of defintion to perform parallel composition for
      */
     _processParallelComposition: function(defName) {
+
       var unprocessedGraphs = this._definitionsMap[defName].unprocessedGraphs;
       if(unprocessedGraphs.length > 1){
-        
-        var graph1 = unprocessedGraphs[0];         
+        // apply relabelling and hiding for all graphs referenced by the specified definition
+        var unprocessedNodes = this._definitionsMap[defName].unprocessedNodes;
+        var defs = unprocessedNodes[0].getMetaData('references');
+        for(var i = 0; i < defs.length; i++){
+          this._definitionsMap[defs[i]].relabel = this._definitionsMap[defName].relabel;
+          this._definitionsMap[defs[i]].hidden = this._definitionsMap[defName].hidden;
+          this._processDefinition(defs[i]);
+        }
+
+        var graph1 = unprocessedGraphs[0];
+
         for(var i = 1; i < unprocessedGraphs.length; i++){
           var graph2 = unprocessedGraphs[i];
           graph1 = Graph.Operations.parallelComposition(graph1, graph2);
@@ -803,7 +813,6 @@
      *
      * @private
      * @param {!string} defName - the definition to perform relabelling for
-     * @param {!array} relabel - an array of transitions to be hidden
      */
     _processHiding: function(defName) {
       var hidden = this._definitionsMap[defName].hidden;
