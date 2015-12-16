@@ -394,7 +394,7 @@ class Graph {
    *
    * @returns {!Array} - the hidden edges in this graph
    */
-  get hiddenEdges(){
+  get hiddenEdges() {
     var hiddenEdges = [];
     for(let i in this._edgeMap){
       var edge = this._edgeMap[i];
@@ -403,6 +403,22 @@ class Graph {
       }
     }
     return hiddenEdges;
+  }
+
+  /**
+   * Retrieves the deadlock edges from this graph
+   *
+   * @returns {!Array} - the deadlock edges in this graph
+   */
+  get deadlockEdges() {
+    var deadlockEdges = [];
+    for(let i in this._edgeMap){
+      var edge = this._edgeMap[i];
+      if(edge.isDeadlock){
+        deadlockEdges.push(edge);
+      }
+    }
+    return deadlockEdges;
   }
 
   /**
@@ -1304,7 +1320,8 @@ Graph.Operations = class {
       // construct deadlocks
       clone = this._constructDeadlocks(clone);
     }
-
+    clone = this.hideDeadlocks(clone);
+    clone = this._constructStopNodes(clone);
     clone.trim();
     return clone;
   }
@@ -1320,6 +1337,43 @@ Graph.Operations = class {
     }
 
     return transitions;
+  }
+
+  static hideDeadlocks(graph) {
+    var clone = graph.deepClone();
+    var edgesToAdd = [];
+    var deadlockEdges = clone.deadlockEdges;
+
+    for(let i in deadlockEdges){
+      var edge = deadlockEdges[i];
+      var from = this._getTransitions(edge.from.edgesToMe, false);
+      var to = this._getTransitions(edge.to.edgesFromMe, true);
+
+        edgesToAdd = edgesToAdd.concat(this._addObservableEdges(edge.from, edge.to, from, true));
+        edgesToAdd = edgesToAdd.concat(this._addObservableEdges(edge.to, edge.from, to, false));
+    }
+
+    // add the edges constructed by the abstraction
+    for(let i in edgesToAdd){
+      var edge = edgesToAdd[i];
+      if(!clone.containsEdge(edge.from, edge.to, edge.label)){
+        clone.addEdge(edge.uid, edge.from, edge.to, edge.label, edge.isHidden);
+      }
+    }
+
+    for(let i in deadlockEdges){
+      clone.removeEdge(deadlockEdges[i]);
+    }
+
+    // add the edges constructed by the abstraction
+    for(let i in edgesToAdd){
+      var edge = edgesToAdd[i];
+      if(!clone.containsEdge(edge.from, edge.to, edge.label)){
+        clone.addEdge(edge.uid, edge.from, edge.to, edge.label, edge.isHidden, true);
+      }
+    }
+
+    return clone;
   }
 
   /**
@@ -1409,6 +1463,43 @@ Graph.Operations = class {
         clone.removeEdge(edge);
         // set metadata of node to show it is an error node
         temp.addMetaData('isTerminal', 'error');
+      }
+    }
+
+    return clone;
+  }
+
+  /**
+   * Helper function for the abstraction function which searches the specified graph
+   * for any nodes which have become stop nodes due to hidden actions being removed. These
+   * nodes have their meta data updated to show they are stop nodes.
+   *
+   * @private
+   * @param {!graph} graph - the graph to process
+   * @returns {!graph} the processed graph
+   */
+  static _constructStopNodes(graph){
+    var clone = graph.deepClone();
+    var stack = [clone.root];
+    var visited = [];
+    while(stack.length !== 0){
+      var node = stack.pop();
+      visited.push(node);
+      
+      // add neighbours to stack
+      var neighbors = node.neighbors;
+      for(let i in neighbors){
+        // only add neighbour if it has not been visited
+        if(!_.contains(visited, neighbors[i])){
+          stack.push(neighbors[i]);
+        }
+      }
+
+      // if this is a final node set its meta data to reflect this
+      if(neighbors.length === 0){
+        if(node.getMetaData('isTerminal') === undefined){
+          node.addMetaData('isTerminal', 'stop');
+        }
       }
     }
 
