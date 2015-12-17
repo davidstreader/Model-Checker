@@ -252,7 +252,6 @@ PEG.automataParser = (function() {
         peg$c73 = { type: "other", description: "source character" },
         peg$c74 = { type: "any", description: "any character" },
         peg$c75 = function(terminal) {
-            console.log('parsing terminal');
             return terminal;
         },
         peg$c76 = "STOP",
@@ -836,59 +835,40 @@ PEG.automataParser = (function() {
     }
 
     function peg$parseParse_Nested_Definition() {
-      var s0, s1, s2, s3, s4, s5;
+      var s0;
 
-      s0 = peg$currPos;
-      s1 = peg$parseBRACKET_LEFT();
-      if (s1 === peg$FAILED) {
-        s1 = null;
-      }
-      if (s1 !== peg$FAILED) {
-        s2 = peg$parse_();
-        if (s2 !== peg$FAILED) {
-          s3 = peg$parseTerminal_Definition();
-          if (s3 === peg$FAILED) {
-            s3 = peg$parseNested_Standard_Definition();
-            if (s3 === peg$FAILED) {
-              s3 = peg$parseNested_Parallel_Definition();
-              if (s3 === peg$FAILED) {
-                s3 = peg$parseNested_Reference_Definition();
-                if (s3 === peg$FAILED) {
-                  s3 = peg$parseNested_Function_Definition();
-                }
-              }
+      s0 = peg$parseTerminal_Definition();
+      if (s0 === peg$FAILED) {
+        s0 = peg$parseNested_Standard_Definition();
+        if (s0 === peg$FAILED) {
+          s0 = peg$parseNested_Parallel_Definition();
+          if (s0 === peg$FAILED) {
+            s0 = peg$parseNested_Reference_Definition();
+            if (s0 === peg$FAILED) {
+              s0 = peg$parseNested_Function_Definition();
             }
           }
-          if (s3 !== peg$FAILED) {
-            s4 = peg$parse_();
-            if (s4 !== peg$FAILED) {
-              s5 = peg$parseBRACKET_RIGHT();
-              if (s5 === peg$FAILED) {
-                s5 = null;
-              }
-              if (s5 !== peg$FAILED) {
-                peg$savedPos = s0;
-                s1 = peg$c4(s1, s3, s5);
-                s0 = s1;
-              } else {
-                peg$currPos = s0;
-                s0 = peg$FAILED;
-              }
-            } else {
-              peg$currPos = s0;
-              s0 = peg$FAILED;
-            }
-          } else {
-            peg$currPos = s0;
-            s0 = peg$FAILED;
-          }
-        } else {
-          peg$currPos = s0;
-          s0 = peg$FAILED;
         }
-      } else {
-        peg$currPos = s0;
-        s0 = peg$FAILED;
+      }
+
+      return s0;
+    }
+
+    function peg$parseParse_Nested_Definition_2() {
+      var s0;
+
+      s0 = peg$parseTerminal_Definition();
+      if (s0 === peg$FAILED) {
+        s0 = peg$parseNested_Standard_Definition();
+        if (s0 === peg$FAILED) {
+          s0 = peg$parseNested_Parallel_Definition();
+          if (s0 === peg$FAILED) {
+            s0 = peg$parseNested_Reference_Definition();
+            if (s0 === peg$FAILED) {
+              s0 = peg$parseNested_Function_Definition();
+            }
+          }
+        }
       }
 
       return s0;
@@ -1228,15 +1208,6 @@ PEG.automataParser = (function() {
 
       s0 = peg$currPos;
       s1 = peg$parseLabelled_Name();
-      if (s1 === peg$FAILED) {
-        s1 = peg$parseNested_Standard_Definition();
-        if (s1 === peg$FAILED) {
-          s1 = peg$parseNested_Function_Definition();
-          if (s1 === peg$FAILED) {
-            s1 = peg$parseParse_Bracketed_Parallel_Definition();
-          }
-        }
-      }
       if (s1 !== peg$FAILED) {
         s2 = peg$parse_();
         if (s2 !== peg$FAILED) {
@@ -1244,13 +1215,13 @@ PEG.automataParser = (function() {
           if (s3 !== peg$FAILED) {
             s4 = peg$parse_();
             if (s4 !== peg$FAILED) {
-              s5 = peg$parseLabelled_Name();
+              s5 = peg$parseNested_Standard_Definition();
               if (s5 === peg$FAILED) {
-                s5 = peg$parseNested_Standard_Definition();
+                s5 = peg$parseNested_Function_Definition();
                 if (s5 === peg$FAILED) {
-                  s5 = peg$parseNested_Function_Definition();
+                  s5 = peg$parseParse_Parallel_Definition();
                   if (s5 === peg$FAILED) {
-                    s5 = peg$parseParse_Parallel_Definition();
+                    s5 = peg$parseLabelled_Name();
                   }
                 }
               }
@@ -1904,7 +1875,7 @@ PEG.automataParser = (function() {
       var s0, s1, s2, s3, s4, s5, s6, s7, s8;
 
       s0 = peg$currPos;
-      s1 = peg$parseParse_Definition();
+      s1 = peg$parseParse_Nested_Definition();
       if (s1 !== peg$FAILED) {
         s2 = peg$parse_();
         if (s2 !== peg$FAILED) {
@@ -1912,7 +1883,7 @@ PEG.automataParser = (function() {
           if (s3 !== peg$FAILED) {
             s4 = peg$parse_();
             if (s4 !== peg$FAILED) {
-              s5 = peg$parseParse_Definition();
+              s5 = peg$parseParse_Nested_Definition();
               if (s5 !== peg$FAILED) {
                 s6 = peg$parse_();
                 if (s6 !== peg$FAILED) {
@@ -3613,9 +3584,11 @@ PEG.automataParser = (function() {
         
         function checkMatchingParentheses(open, close){
             if(open !== null && close === null){
+                console.log('about to throw error');
                 error('no open parenthesis to match close parenthesis.');
             }
             else if(open === null && close !== null){
+                console.log('about to throw error');
                 error('no close parenthesis to match open parenthesis.');
             }
         };
