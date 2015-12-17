@@ -1320,7 +1320,7 @@ Graph.Operations = class {
       // construct deadlocks
       clone = this._constructDeadlocks(clone);
     }
-    clone = this.hideDeadlocks(clone);
+    //clone = this.hideDeadlocks(clone);
     clone = this._constructStopNodes(clone);
     clone.trim();
     return clone;
