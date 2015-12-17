@@ -33,7 +33,7 @@
             this.type = 'action';
             this.action = action;
         },
-        IndexedActionNode: function(varible, range, action){
+        IndexedActionNode: function(variable, range, action){
             this.type = 'indexed-action';
             this.variable = variable;
             this.range = range;
@@ -61,6 +61,7 @@
         },
         RangeNode: function(name, range){
             this.type = 'range';
+            this.name = name;
             this.range = range;
         },
         OperationNode: function(input, process){
@@ -99,6 +100,15 @@
     function constructRelabellingAndHiding(relabel, hidden){
         return {relabel: relabel, hidden: hidden};
     };
+    
+    function checkMatchingParentheses(open, close){
+        if(open !== null && close === null){
+            error('no open parenthesis to match close parenthesis.');
+        }
+        else if(open === null && close !== null){
+            error('no close parenthesis to match open parenthesis.');
+        }
+    };
 }
 
 File = (Model / Operation / Declare_Constant / Declare_Range / Comment)*
@@ -123,13 +133,19 @@ Definition = _ name:Name _ DEF_ASSIGNMENT _ def:Parse_Definition _ {
 }
 
 Nested_Definition = _ name:Name _ DEF_ASSIGNMENT _ def:Parse_Nested_Definition _ {
-  return new Node.DefinitionNode(def.type, name, def.process, def.relabel, def.hidden);
+    return new Node.DefinitionNode(def.type, name, def.process, def.relabel, def.hidden);
 }
 
 /* Parses and returns either a standard, parallel, reference or function definition. */
-Parse_Definition 'parse definition' = Standard_Definition / Parallel_Definition / Reference_Definition / Function_Definition
+Parse_Definition 'parse definition' = open:(BRACKET_LEFT ?) _ def:(Standard_Definition / Parallel_Definition / Reference_Definition / Function_Definition) _ close:(BRACKET_RIGHT ?) {
+    checkMatchingParentheses(open, close);
+    return def;
+}
 
-Parse_Nested_Definition = Nested_Standard_Definition / Nested_Parallel_Definition / Nested_Reference_Definition / Nested_Function_Definition
+Parse_Nested_Definition = open:(BRACKET_LEFT ?) _ def:(Terminal_Definition / Nested_Standard_Definition / Nested_Parallel_Definition / Nested_Reference_Definition / Nested_Function_Definition) _ close:(BRACKET_RIGHT ?) {
+    checkMatchingParentheses(open, close);
+    return def;
+}
 
 /**
  * Standard Definition
@@ -142,7 +158,7 @@ Standard_Definition 'parse standard definition' = process:Parse_Standard_Definit
 
 Nested_Standard_Definition = process:Parse_Standard_Definition _ rah:(Parse_Relabelling_And_Hiding ?) {
     if(rah !== null){
-      return constructDefinition('standard-definition', process, rah.relabel, rah.hidden);
+        return constructDefinition('standard-definition', process, rah.relabel, rah.hidden);
     }
     return constructDefinition('standard-definition', process, undefined, undefined);
 }
@@ -161,7 +177,7 @@ Parse_Choice 'parse choice' = a:(Parse_Sequence / Name) _ CHOICE _ b:(Terminal /
 }
 
 /* Attempts to parse and return a sequence for a standard definition */
-Parse_Sequence 'parse sequence' = from:Action _ SEQUENCE _ to:(Terminal / Name / Parse_Sequence) {
+Parse_Sequence 'parse sequence' = from:Action _ SEQUENCE _ to:(Terminal / Name / Parse_Sequence / Parse_Standard_Definition) {
     return new Node.SequenceNode(from, to);
 }
 
@@ -175,8 +191,8 @@ Parallel_Definition 'parse parallel definition' = process:Parse_Parallel_Definit
 }
 
 Nested_Parallel_Definition = process:Parse_Parallel_Definition _ rah:(Parse_Relabelling_And_Hiding ?) {
-  if(rah !== null){
-      return constructDefinition('parallel-definition', process, rah.relabel, rah.hidden);
+    if(rah !== null){
+        return constructDefinition('parallel-definition', process, rah.relabel, rah.hidden);
     }
     return constructDefinition('parallel-definition', process, undefined, undefined);
 }
@@ -190,7 +206,7 @@ Parse_Bracketed_Parallel_Definition = BRACKET_LEFT _ process:Parse_Parallel_Defi
 }
 
 /* Attempts to parse and return a parallel composition. */
-Parse_Parallel_Composition = a:(Name / Nested_Standard_Definition / Nested_Function_Definition / Parse_Bracketed_Parallel_Definition) _ PARALLEL _ b:(Name / Nested_Standard_Definition / Nested_Function_Definition / Parse_Parallel_Definition) {
+Parse_Parallel_Composition = a:(Labelled_Name / Nested_Standard_Definition / Nested_Function_Definition / Parse_Bracketed_Parallel_Definition) _ PARALLEL _ b:(Labelled_Name / Nested_Standard_Definition / Nested_Function_Definition / Parse_Parallel_Definition) {
     return new Node.ParallelNode(a, b);
 }
 
@@ -199,13 +215,19 @@ Parse_Parallel_Composition = a:(Name / Nested_Standard_Definition / Nested_Funct
  */
  
 /* Parses and returns a reference definition. */
-Reference_Definition 'parse reference definition' = process:Labelled_Name {
-    return constructDefinition('reference-definition', process, undefined, undefined);
+Reference_Definition 'parse reference definition' = Parse_Bracketed_Reference_Definition
+
+Parse_Reference_Definition = process:Labelled_Name{
+        return constructDefinition('reference-definition', process, undefined, undefined);
+}
+
+Parse_Bracketed_Reference_Definition = BRACKET_LEFT _ process:Parse_Reference_Definition _ BRACKET_RIGHT {
+    return process
 }
 
 Nested_Reference_Definition = process:Labelled_Name _ rah:(Parse_Relabelling_And_Hiding ?) {
-  if(rah !== null){
-      return constructDefinition('reference-definition', process, rah.relabel, rah.hidden);
+    if(rah !== null){
+        return constructDefinition('reference-definition', process, rah.relabel, rah.hidden);
     }
     return constructDefinition('reference-definition', process, undefined, undefined);
 }
@@ -220,10 +242,10 @@ Function_Definition = process:Parse_Function {
 }
 
 Nested_Function_Definition = process:Parse_Function _ rah:(Parse_Relabelling_And_Hiding ?) {
-  if(rah !== null){
-      return constructDefinition('function-definition', process, rah.relabel, rah.hidden);
+    if(rah !== null){
+        return constructDefinition('function-definition', process, rah.relabel, rah.hidden);
     }
-  return constructDefinition('function-definition', process, undefined, undefined); 
+    return constructDefinition('function-definition', process, undefined, undefined);   
 }
 
 Parse_Function = Parse_Abstraction / Parse_Simplification
@@ -236,6 +258,14 @@ Parse_Abstraction = ABS _ BRACKET_LEFT _ process:Parse_Nested_Definition _ BRACK
 /* Attempts to parse and return a simplification function. */
 Parse_Simplification = SIMP _ BRACKET_LEFT _ process:Parse_Nested_Definition _ BRACKET_RIGHT {
     return new Node.FunctionNode('simplification', process);
+}
+
+/**
+ * Terminal Definition
+ */
+
+Terminal_Definition = terminal:Terminal {
+    return constructDefinition('standard-definition', terminal, undefined, undefined);
 }
 
 /**
@@ -402,14 +432,14 @@ Parse_Labelled_Name = label:CamelCase LABEL name:PascalCase {
     return new constructName(name, label);
 }
 
-Action = Indexed_Action / Single_Action
+Action = Define_Indexed_Action / Single_Action
 
 /* Parses and returns an action node. */
 Single_Action = action:(Parse_Indexed_Action / Parse_Labelled_Action / Parse_Action) {
     return new Node.ActionNode(action);
 }
 
-Indexed_Action = SQUARE_BRACKET_LEFT _ variable:Integer _ LABEL _ range:(Parse_Range / PascalCase) _ SQUARE_BRACKET_RIGHT _ DEF_END _ action:CamelCase {
+Define_Indexed_Action = SQUARE_BRACKET_LEFT _ variable:CamelCase _ LABEL _ range:(Parse_Range / PascalCase) _ SQUARE_BRACKET_RIGHT _ DEF_END _ action:CamelCase {
     return new Node.IndexedActionNode(variable, range, action);
 }
 
@@ -451,7 +481,10 @@ SourceCharacter 'source character' = .
  */
 
 /* Parses and returns a terminal. */
-Terminal = Stop / Error
+Terminal = terminal:(Stop / Error) {
+    console.log('parsing terminal');
+    return terminal;
+}
 
 /* Parses and returns a stop node. */
 Stop = 'STOP' {
