@@ -1,0 +1,53 @@
+﻿/*You fixed some things but broke others. Need to set up automatic tests - 
+will save you a lot of time in the long run.
+*/
+
+
+/*Note I and F are not the same
+ This File Was working but now NOT working
+F = abs((a->STOP)\{a}).
+I = abs((a->ERROR)\{a}).
+F!~I.
+
+H = (b->(a->STOP|a->ERROR))\{a}.
+Hb = abs(H).
+J= (b->STOP|b->ERROR).
+J~Hb.
+
+*/
+/* ERROR+STOP SYNTAX
+ I~ ERROR.  
+  F~(STOP).
+*/
+
+
+
+Buf = (in -> out -> Buf).
+Bufo = one:Buf.
+B2 = (one:Buf || two:Buf).
+B3 = B2/{m/one.out,m/two.in}\{m}.
+
+ /* labeling SYNTAX! 
+B2 = (one:Buf || two:Buf)/{m/one.out,m/two.in}\{m}.
+Q = (one:Xab||(two:Xab/{one.b/two.b})).
+*/
+
+
+/*  Was working now NOT
+Xab = (a->b->STOP).
+Xba= (b->a->STOP).
+Xca= (c->a->STOP).
+
+
+P = abs((Xca||Xba)\{a}).
+Pbc = simp(P).
+Pbc ~(c->STOP||b->STOP).
+
+Xd = (Xab||Xba).
+Xab ~ (Xab||Xab).
+
+*/
+
+
+
+

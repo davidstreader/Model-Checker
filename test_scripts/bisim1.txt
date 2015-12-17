@@ -1,0 +1,18 @@
+﻿C= (a->b->C| a->(a->STOP|b->STOP)).
+D = (a->b->D| a->(a->STOP|b->STOP|b->D)).
+C!~D.
+E = (a->b->D| a->(a->STOP|b->STOP|b->D)).
+D~E.
+
+
+A = (s->a->STOP | s->(a->STOP|b->STOP)).
+B = simp(A).
+
+A~B.
+
+
+
+
+
+
+
