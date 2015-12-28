@@ -137,7 +137,8 @@ PEG.automataParser = (function() {
             return new Node.ParallelNode(body, comp);
         },
         peg$c73 = function(name, type, body, relabel, hide) {
-          return new Node.DefinitionNode(name, body, relabel, hide);
+          var process = new Node.FunctionNode(type, body);
+          return new Node.DefinitionNode(name, process, relabel, hide);
         },
         peg$c74 = "abs",
         peg$c75 = { type: "literal", value: "abs", description: "\"abs\"" },
@@ -145,7 +146,7 @@ PEG.automataParser = (function() {
         peg$c77 = "simp",
         peg$c78 = { type: "literal", value: "simp", description: "\"simp\"" },
         peg$c79 = function() { return 'simplification'; },
-        peg$c80 = function(type, body, relabel, hide) { return new Node.DefinitionNode(undefined, body, relabel, hide); },
+        peg$c80 = function(type, body, relabel, hide) { return new Node.DefinitionNode(undefined, new Node.FunctionNode(type, body), relabel, hide); },
         peg$c81 = function(body, relabel, hide) { return new Node.DefinitionNode(undefined, body, relabel, hide); },
         peg$c82 = function(body, relabel) { return new Node.DefinitionNode(undefined, body, relabel, undefined); },
         peg$c83 = "/",

@@ -238,13 +238,14 @@ _ParallelComposition = '||' _ body:CompositeBody _ comp:(_ParallelComposition ?)
  */
 
 FunctionDefinition = name:Name _ '=' _ type:FunctionType _ '(' _ body:FunctionBody _ ')' _ relabel:(Relabel ?) _ hide:(Hiding ?) _ '.' {
-  return new Node.DefinitionNode(name, body, relabel, hide);
+  var process = new Node.FunctionNode(type, body);
+  return new Node.DefinitionNode(name, process, relabel, hide);
 }
 
 FunctionType = 'abs' { return 'abstraction'; }
              / 'simp' { return 'simplification'; }
 
-FunctionBody = type:FunctionType _ '(' body:FunctionBody ')' _ relabel:(Relabel ?) _ hide:(Hiding ?) _ { return new Node.DefinitionNode(undefined, body, relabel, hide); }
+FunctionBody = type:FunctionType _ '(' body:FunctionBody ')' _ relabel:(Relabel ?) _ hide:(Hiding ?) _ { return new Node.DefinitionNode(undefined, new Node.FunctionNode(type, body), relabel, hide); }
              / _ body:ProcessBody _ relabel:(Relabel ?) _ hide:(Hiding ?) _ { return new Node.DefinitionNode(undefined, body, relabel, hide); }
              / _ body:CompositeBody _ relabel:(Relabel ?) { return new Node.DefinitionNode(undefined, body, relabel, undefined); }
 /**

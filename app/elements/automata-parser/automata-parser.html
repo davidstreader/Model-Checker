@@ -329,6 +329,9 @@
      */
     _interpretProcess: function(process, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
       switch (process.type) {
+        case 'definition':
+          this._interpretDefinition(process, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
+          break;
         case 'sequence':
           this._interpretSequence(process, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
           break;
@@ -366,6 +369,12 @@
           console.error('Trying to interpret invalid process type "' + process.type + '"');
           break;
       }
+    },
+    /**
+     *
+     */
+    _interpretDefinition: function(definition, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
+      this._interpretProcess(definition.process, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
     },
     /**
      * Interpret a parse tree sequence node.
@@ -606,7 +615,8 @@
       var references;
       var process = ptNode.process;
       
-      if(this._isDefinition(process)){
+      if(process.type === 'definition'){
+        console.log('this is a definiition');
         name = defName + '.0';
         references = name;
         this._constructDefinition(name, process.type, process.relabel, process.hidden, false);
@@ -614,16 +624,18 @@
         this._processDefinition(name);
       }
       else{
+        console.log(process);
         var name = this._getNameFromPTNode(process).name;
         var references = this._getNameFromOperationNode(process);
       }
 
       // check if there are any nested functions within this process
       if(typeof(references) === 'object'){
+        console.log("nested functions");
         this._interpretProcess(ptNode.name, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
         references = defName;
       }
-
+      console.log(references);
       return references;
     },
     /**
