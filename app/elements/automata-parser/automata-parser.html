@@ -895,11 +895,14 @@
     _processHiding: function(defName) {
       var hidden = this._definitionsMap[defName].hidden;
       if(hidden !== undefined){
+        var type = hidden.type;
+        var set = hidden.set;
         // get an array of edges in the current graph
         var edges = this._definitionsMap[defName].graph.edges;
         // check each edge to see if it needs to be updated
         edges.forEach(function(edge, index){
-          if(_.contains(hidden, edge.label)){
+          var contains = _.contains(set, edge.label);
+          if((type === 'includes' && contains) || (type === 'excludes' && !contains)){
             // only updates the edge if it needs to be hidden
             edge.isHidden = true;
           }

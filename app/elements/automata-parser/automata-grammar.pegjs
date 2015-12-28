@@ -23,7 +23,7 @@
             this.hidden = (hidden === null) ? undefined : hidden;
         },
         OperationNode: function(type, operation1, operation2, isNegated){
-        	this.type = type;
+          this.type = type;
             this.operation1 = operation1;
             this.operation2 = operation2;
             this.isNegated = isNegated;
@@ -32,7 +32,7 @@
           this.type = 'relabel';
             this.relabel = relabel;
         },
-      	NameNode: function(name, label){
+        NameNode: function(name, label){
           this.type = 'name';
             this.name = name;
         },
@@ -48,10 +48,11 @@
           this.type = 'set';
             this.set = set;
         },
-        SequenceNode: function(sequence){
+        SequenceNode: function(from, to){
           this.type = 'sequence';
             //TODO: this.guard = guard;
-            this.sequence = sequence;
+            this.from = from;
+            this.to = to;
         },
         ChoiceNode: function(option1, option2){
           this.type = 'choice';
@@ -59,21 +60,21 @@
             this.option2 = option2;
         },
         ParallelNode: function(definition1, definition2){
-        	this.type = 'parallel';
+          this.type = 'parallel';
             this.definition1 = definition1;
             this.definition2 = definition2;
         },
         ReferenceNode: function(name, label){
-        	this.type = 'reference';
+          this.type = 'reference';
             this.name = name;
             this.label = (label === null) ? undefined : label;
         },
         FunctionNode: function(type, process){
-        	this.type = type;
+          this.type = type;
             this.process = process;
         },
         CompositeNode: function(label, composite, relabel){
-        	this.type = 'composite';
+          this.type = 'composite';
             this.label = (label === null) ? undefined : label;
             this.composite = composite;
             this.relabel = (relabel === null) ? undefined : relabel;
@@ -86,12 +87,25 @@
         }
     };
     
+    function constructSequence(sequence){
+      var to = sequence.pop();
+        var from = sequence.pop();
+        var node = new Node.SequenceNode(from, to);
+        
+        while(sequence.length !== 0){
+          from = sequence.pop();
+            node = new Node.SequenceNode(from, node);
+        }
+        
+        return node;
+    };
+    
     function getOperation(operation){
-    	switch(operation){
-        	case '~':
-            	return 'bisimulation';
+      switch(operation){
+          case '~':
+              return 'bisimulation';
             default:
-            	return undefined;
+              return undefined;
         }
     };
 }
@@ -165,13 +179,13 @@ Choice = a:ActionPrefix _ b:_Choice { return new Node.ChoiceNode(a, b); }
        / ActionPrefix
        
 /* Used to remove left recursion from 'Choice' */       
-_Choice = _ '|' _ a:ActionPrefix _ b:(_Choice ?) { if(b === null){ return [a];} return new Node.ChoiceNode(a, b); }
+_Choice = _ '|' _ a:ActionPrefix _ b:(_Choice ?) { if(b === null){ return a;} return new Node.ChoiceNode(a, b); }
 
 ActionPrefix = a:PrefixActions _ '->' _ b:LocalProcess {
-	if(a.constructor !== Array){
-    	return new Node.SequenceNode([a].concat(b));
+  if(a.constructor !== Array){
+      return constructSequence([a].concat(b));
     }
-    return new Node.SequenceNode(a.concat(b));
+    return constructSequence(a.concat(b));
 }
 
 PrefixActions = a:ActionLabels _ b:_PrefixActions _ { return [a].concat(b); }
@@ -190,7 +204,7 @@ _PrefixActions = _ '->' _ a:ActionLabels _ b:(_PrefixActions ?) {
  */
 
 ReferenceDefinition = name:Name _ '=' _ label:(PrefixLabel ?) _ ref:Name _ relabel:(Relabel ?) _ hide:(Hiding ?) _ '.' {
-	return new Node.DefinitionNode(name, new Node.ReferenceNode(ref, label), relabel, hide);
+  return new Node.DefinitionNode(name, new Node.ReferenceNode(ref, label), relabel, hide);
 }
 
 ReferenceBody = label:(PrefixLabel ?) _ ref:Name { return new Node.ReferenceNode(ref, label); }
@@ -200,7 +214,7 @@ ReferenceBody = label:(PrefixLabel ?) _ ref:Name { return new Node.ReferenceNode
  */
  
 CompositeDefinition = ('||' ?) _ name:Name _ '=' _ body:CompositeBody _ hide:(Hiding ?) _ '.' {
-	return new Node.DefinitionNode(name, body, undefined, hide);
+  return new Node.DefinitionNode(name, body, undefined, hide);
 }
 
 CompositeBody = label:(PrefixLabel ?) _ name:Name _ relabel:(Relabel ?) { return new Node.CompositeNode(label, new Node.NameNode(name), relabel); }
@@ -213,8 +227,8 @@ PrefixLabel = label:ActionLabels _ '::' { return label; }
 ParallelComposition = body:CompositeBody _ comp:_ParallelComposition { return new Node.ParallelNode(body, comp); }
 
 _ParallelComposition = '||' _ body:CompositeBody _ comp:(_ParallelComposition ?) {
-	if(comp === null){
-    	return body;
+  if(comp === null){
+      return body;
     }
     return new Node.ParallelNode(body, comp);
 }
@@ -224,7 +238,7 @@ _ParallelComposition = '||' _ body:CompositeBody _ comp:(_ParallelComposition ?)
  */
 
 FunctionDefinition = name:Name _ '=' _ type:FunctionType _ '(' _ body:FunctionBody _ ')' _ relabel:(Relabel ?) _ hide:(Hiding ?) _ '.' {
-	return new Node.DefinitionNode(name, body, relabel, hide);
+  return new Node.DefinitionNode(name, body, relabel, hide);
 }
 
 FunctionType = 'abs' { return 'abstraction'; }
