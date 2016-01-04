@@ -272,18 +272,18 @@
       var defNames = [];
       var process = model.process;
       var definitionMap = this._definitionsMap;
-      var definitions = [process.definition1, process.definition2];
+      var definitions = [model.definition1, model.definition2];
       
       for(var i = 0; i < 2; i++){
         var name = this._nextOperationUid();
         this._constructDefinition(name, definitions[i].type, false);
         defNames.push(name);
 
-        this._interpretProcess(definitions[i].process, definitionMap[defNames[i]].graph.root, definitionMap, defNames[i], defNames[i], {}, {});
+        this._interpretProcess(definitions[i], definitionMap[defNames[i]].graph.root, definitionMap, defNames[i], defNames[i], {}, {});
         this._processDefinition(defNames[i]);
       }
 
-      this._processOperation(model.process.type, this._definitionsMap, defNames[0], defNames[1], model.input, model.process.isNegated);
+      this._processOperation(process, this._definitionsMap, defNames[0], defNames[1], model.input, model.isNegated);
     },
     /**
      * Interprets the constant defined in the specified model.

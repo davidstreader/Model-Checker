@@ -22,10 +22,11 @@
         this.relabel = (relabel === null) ? undefined : relabel;
         this.hidden = (hidden === null) ? undefined : hidden;
       },
-      OperationNode: function(type, operation1, operation2, isNegated){
-        this.type = type;
-        this.operation1 = operation1;
-        this.operation2 = operation2;
+      OperationNode: function(process, definition1, definition2, isNegated){
+        this.type = 'operation';
+        this.process = process;
+        this.definition1 = definition1;
+        this.definition2 = definition2;
         this.isNegated = isNegated;
       },
       RelabelNode: function(relabel){
