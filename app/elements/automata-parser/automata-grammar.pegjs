@@ -86,6 +86,10 @@
       },
       ErrorNode: function(){
         this.type = 'error';
+      },
+      CommentNode: function(comment){
+        this.type = 'comment';
+        this.comment = comment;
       }
     };
     
@@ -132,7 +136,7 @@
     };
 }
 
-ParseTree = (FSP / ConstantDefinition / RangeDefinition / OperationDefinition)*
+ParseTree = (FSP / ConstantDefinition / RangeDefinition / OperationDefinition / Comment)*
 
 FSP = _ definition:(ProcessDefinition / ReferenceDefinition / FunctionDefinition / CompositeDefinition) _ {
   return new Node.ModelNode(definition);
@@ -311,7 +315,7 @@ Hiding = '\\' _ a:Set { return {type: 'includes', set:a.set}; }
  * OPERATIONS
  */
  
-OperationDefinition = a:OperationProcess _ negate:('!' ?) _ op:Operation _ b:OperationProcess _ '.' {
+OperationDefinition = _ a:OperationProcess _ negate:('!' ?) _ op:Operation _ b:OperationProcess _ '.' _ {
     var isNegated = (negate === null) ? false : true;
     return new Node.OperationNode(op, text(), a, b, isNegated);
 }
@@ -340,6 +344,31 @@ UnaryExpression = _ '+' _ base:BaseExpression { return ' + ' + base; }
                 / BaseExpression
 
 BaseExpression = IntegerLiteral / LowerCaseIdentifier / UpperCaseIdentifier
+
+/**
+ * COMMENTS
+ */
+
+/* Parses and returns a comment */
+Comment = _ comment:(Single_Lined_Comment / Multi_Lined_Comment) _ {
+    return new Node.CommentNode(comment);
+}
+
+/* Helper function for 'Comment' which parses and returns a single lined comment. */
+Single_Lined_Comment = '//' (!LineTerminator SourceCharacter)* {
+    return text();
+}
+
+/* Helper function for 'Comment' which parses and returns a multi lined comment. */
+Multi_Lined_Comment = '/*' (!'*/' SourceCharacter)* '*/' {
+    return text();
+}
+
+/* Parses the termination of a line. */
+LineTerminator 'line terminator' = [\n\r\u2028\u2029]
+
+/* Parses a source character for a comment. */
+SourceCharacter 'source character' = .
 
 /* Parses whitespace */
 _ 'whitespace' = [ \t\n\r]*
