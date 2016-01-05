@@ -1088,8 +1088,11 @@
         }
       }
 
-      var results = 'Total Operations: ' + (pass + fail) +' (Pass: ' + pass + ', Fail: ' + fail + ')';
-      operations.unshift(results);
+      // if there are no operations do not print the total numbe of operations
+      if(operations.length > 0){
+        var results = 'Total Operations: ' + (pass + fail) +' (Pass: ' + pass + ', Fail: ' + fail + ')';
+        operations.unshift(results);
+      }
       return {automata: automata, operations: operations};
     }
   });
