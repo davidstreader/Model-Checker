@@ -110,11 +110,9 @@
         var local = undefined;
     do{
           local = definition.process.local;
-            console.log('local');
-            console.log(local);
-            delete definition.process['local'];
-            definitions.push(definition);
-            definition = local;
+          delete definition.process['local'];
+          definitions.push(definition);
+          definition = local;
     }while(local !== undefined);
         
         return definitions;
@@ -258,7 +256,7 @@ CompositeDefinition = ('||' ?) _ name:Name _ '=' _ body:CompositeBody _ hide:(Hi
   return new Node.DefinitionNode(name, body, undefined, hide);
 }
 
-CompositeBody = label:(PrefixLabel ?) _ name:Name _ relabel:(Relabel ?) { return new Node.CompositeNode(label, new Node.NameNode(name), relabel); }
+CompositeBody = label:(PrefixLabel ?) _ name:Name _ relabel:(Relabel ?) { return new Node.CompositeNode(label, name, relabel); }
               / label:(PrefixLabel ?) _ '(' _ comp:ParallelComposition _ ')' _ relabel:(Relabel ?) { return new Node.CompositeNode(label, comp, relabel); }
               
 PrefixLabel = label:ActionLabels _ '::' { return label; }

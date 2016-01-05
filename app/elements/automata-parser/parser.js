@@ -3322,11 +3322,9 @@ PEG.automataParser = (function() {
             var local = undefined;
         do{
               local = definition.process.local;
-                console.log('local');
-                console.log(local);
-                delete definition.process['local'];
-                definitions.push(definition);
-                definition = local;
+              delete definition.process['local'];
+              definitions.push(definition);
+              definition = local;
         }while(local !== undefined);
             
             return definitions;

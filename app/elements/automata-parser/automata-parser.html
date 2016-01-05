@@ -87,7 +87,6 @@
      * @property {!array} hidden           - An array containing actions to be hidden
      * @property {!boolean} isVisible      - Determines whether or not the graph is visualised
      * @property {!array} unprocessedNodes - An array of nodes that haven't been processed
-     * @property {!array} unprocessedGraphs- An array of graphs that haven't been processed (for parallel composition) 
      * @property {!number} rootId          - The id to use for the root node of this definition's graph
      */
     _Definition: function() {
@@ -97,7 +96,6 @@
       this.hidden = undefined;
       this.isVisible =true;
       this.unprocessedNodes = [];
-      this.unprocessedGraphs = [];
       this._rootId = undefined;
       // define the getter and setter for rootId
       // (ideally this should be done outside of this class definition)
@@ -341,6 +339,9 @@
         case 'parallel':
           this._interpretParallel(process, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
           break;
+        case 'composite':
+          this._interpretComposite(process, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
+          break;
         case 'name':
           // check if this is a labelled name
           if(process.label === undefined){
@@ -438,18 +439,26 @@
      */
     _interpretParallel: function(parallel, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
       var defs = [parallel.definition1, parallel.definition2];
+      
       for(var i = 0; i < defs.length; i++){
-        if(defs[i].type !== 'standard-definition'){
-          this._interpretProcess(defs[i], extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
-        }
-        else{
-          var name = defName + '.' + i;
-          this._constructDefinition(name, defs[i].type, defs[i].relabel, defs[i].hidden, false);
-          this._interpretProcess(defs[i].process, definitionMap[name].graph.root, definitionMap, name, name, referenceMap);
-          this._interpretReference(defs[i].process, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap, name);
-          this._processDefinition(name);
-        }
+        var name = defName + '.' + i;
+        this._constructDefinition(name, defs[i].type, defs[i].relabel, defs[i].hidden, false);
+        var process = (defs[i].process === undefined) ? defs[i] : defs[i].process;
+        this._interpretProcess(process, definitionMap[name].graph.root, definitionMap, name, name, referenceMap);
+        this._processDefinition(name);
       }
+
+      var graph1 = definitionMap[defName + '.0'].graph;
+      var graph2 = definitionMap[defName + '.1'].graph;
+      var graph = Graph.Operations.parallelComposition(graph1, graph2);
+      definitionMap[defName].graph = graph;
+      definitionMap[defName].graph.root = graph.root;
+    },
+    /**
+     *
+     */
+    _interpretComposite(composite, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap){
+      this._interpretProcess(composite.composite, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
     },
     /**
      * Interpret a parse tree name node.
@@ -551,8 +560,6 @@
       else {
         definitionMap[defName].graph.mergeNodes([referenceMap[references].id, extendtionNode.id]);
       }
-      // add reference to the graph in case a parallel composition is being done
-      definitionMap[defName].unprocessedGraphs.push(definitionMap[references].graph);
     },
     /**
      * Interprets a parse tree abstraction node.
@@ -705,7 +712,15 @@
      * @returns {string}
      */
     _getNameFromPTNode: function(ptNode) {
-      return ptNode.name;
+      var name = ptNode.name;
+      if(name === undefined){
+        throw this.InterpreterException('Failed to parse a name from ' + ptNode);
+      }
+
+      while(name.name !== undefined){
+        name = name.name;
+      }
+      return name;
     },
     /**
      * Get the label from a parse tree labelled name node
@@ -784,13 +799,7 @@
      * @param {!string} defName - the definition to process
      */
     _processDefinition: function(defName) {
-      // check whether processing referenes or parallel composition should be perfomed
-      if(this._definitionsMap[defName].type !== 'parallel-definition'){
-        this._processReferences(defName);
-      }
-      else{
-        this._processParallelComposition(defName);
-      }
+      this._processReferences(defName);
       this._processRelabelling(defName);
       this._processHiding(defName);
     },
@@ -845,35 +854,6 @@
         // remove all the nodes we just processed from the unprocessed nodes array
         definition.unprocessedNodes.splice(0, len);
         prevReferences = references;
-      }
-    },
-    /**
-     * Processes parallel composition for all the graphs referenced by the specified definition.
-     *
-     * @private
-     * @param {!string} defName - the name of defintion to perform parallel composition for
-     */
-    _processParallelComposition: function(defName) {
-
-      var unprocessedGraphs = this._definitionsMap[defName].unprocessedGraphs;
-      if(unprocessedGraphs.length > 1){
-        // apply relabelling and hiding for all graphs referenced by the specified definition
-        var unprocessedNodes = this._definitionsMap[defName].unprocessedNodes;
-        var defs = unprocessedNodes[0].getMetaData('references');
-        for(var i = 0; i < defs.length; i++){
-          this._definitionsMap[defs[i]].relabel = this._definitionsMap[defName].relabel;
-          this._definitionsMap[defs[i]].hidden = this._definitionsMap[defName].hidden;
-          this._processDefinition(defs[i]);
-        }
-
-        var graph1 = unprocessedGraphs[0];
-
-        for(var i = 1; i < unprocessedGraphs.length; i++){
-          var graph2 = unprocessedGraphs[i];
-          graph1 = Graph.Operations.parallelComposition(graph1, graph2);
-        }
-
-        this._definitionsMap[defName].graph = graph1;
       }
     },
     /**
