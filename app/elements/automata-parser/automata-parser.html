@@ -474,7 +474,7 @@
      *
      */
     _interpretComposite: function(composite, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
-      this._interpretProcess(composite.composite, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
+      this._interpretProcess(composite.composite, extendtionNode, definitionMap, defName, globalName, {}, variableMap);
       var name = this._popFromCompositeStack();
       // update the label for the defintion if necessary
       if(composite.label !== undefined){

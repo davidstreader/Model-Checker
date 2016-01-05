@@ -217,6 +217,8 @@ LocalProcess = '(' _ choice:Choice _ ')' { return choice; }
 
 BaseLocalProcess = 'STOP' { return new Node.StopNode(); }
                  / 'ERROR' { return new Node.ErrorNode(); }
+                 / '(' _ 'STOP' _ ')' { return new Node.StopNode(); }
+                 / '(' _ 'ERROR' _ ')' { return new Node.ErrorNode(); }
                  / Name
 
 Choice = a:ActionPrefix _ b:_Choice { return new Node.ChoiceNode(a, b); }
@@ -321,7 +323,7 @@ OperationDefinition = _ a:OperationProcess _ negate:('!' ?) _ op:Operation _ b:O
     return new Node.OperationNode(op, text(), a, b, isNegated);
 }
 
-OperationProcess = Name / ProcessBody / FunctionBody / CompositeBody / ReferenceBody
+OperationProcess = BaseLocalProcess / ProcessBody / FunctionBody / CompositeBody / ReferenceBody
 
 Operation = '~' { return 'bisimulation'; }
 
