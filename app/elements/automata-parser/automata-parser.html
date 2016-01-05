@@ -65,6 +65,15 @@
         readOnly: true
       },
       /**
+       * A stack of the current composite interpretations in progress.
+       *
+       * @private
+       */
+      _compositeStack: {
+        type: Array,
+        readOnly: true
+      },
+      /**
        * A map of constant variable names to their values.
        *
        * @private
@@ -98,7 +107,7 @@
      */
     _Definition: function() {
       this.graph = undefined;
-      this.type = undefined;
+      this.label = undefined;
       this.relabel = undefined;
       this.hidden = undefined;
       this.isVisible =true;
@@ -174,6 +183,7 @@
       this._set_operationsMap({});
       this._set_operationsIndex(0);
       this._set_operationUid(0);
+      this._set_compositeStack([]);
       this._set_constantsMap({});
       this._set_rangesMap({});
       // reset the node and edge uids in graph class
@@ -444,6 +454,8 @@
       
       for(var i = 0; i < defs.length; i++){
         var name = defName + '.' + i;
+        // push name to composite stack
+        this._pushToCompositeStack(name);
         this._constructDefinition(name, defs[i].type, defs[i].relabel, defs[i].hidden, false);
         var process = (defs[i].process === undefined) ? defs[i] : defs[i].process;
         this._interpretProcess(process, definitionMap[name].graph.root, definitionMap, name, name, referenceMap);
@@ -455,12 +467,20 @@
       var graph = Graph.Operations.parallelComposition(graph1, graph2);
       definitionMap[defName].graph = graph;
       definitionMap[defName].graph.root = graph.root;
+
+      this._pushToCompositeStack(defName);
     },
     /**
      *
      */
     _interpretComposite: function(composite, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
       this._interpretProcess(composite.composite, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
+      var name = this._popFromCompositeStack();
+      // update the label for the defintion if necessary
+      if(composite.label !== undefined){
+        var label = composite.label.action;
+        definitionMap[name].label = label;
+      }
     },
     /**
      * Interpret a parse tree name node.
@@ -629,7 +649,6 @@
       var process = ptNode.process;
       
       if(process.type === 'definition'){
-        console.log('this is a definiition');
         name = defName + '.0';
         references = name;
         this._constructDefinition(name, process.type, process.relabel, process.hidden, false);
@@ -637,18 +656,15 @@
         this._processDefinition(name);
       }
       else{
-        console.log(process);
         var name = this._getNameFromPTNode(process).name;
         var references = this._getNameFromOperationNode(process);
       }
 
       // check if there are any nested functions within this process
       if(typeof(references) === 'object'){
-        console.log("nested functions");
         this._interpretProcess(ptNode.name, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
         references = defName;
       }
-      console.log(references);
       return references;
     },
     /**
@@ -806,6 +822,7 @@
      */
     _processDefinition: function(defName) {
       this._processReferences(defName);
+      this._processLabelling(defName);
       this._processRelabelling(defName);
       this._processHiding(defName);
     },
@@ -860,6 +877,20 @@
         // remove all the nodes we just processed from the unprocessed nodes array
         definition.unprocessedNodes.splice(0, len);
         prevReferences = references;
+      }
+    },
+    /**
+     *
+     */
+    _processLabelling: function(defName) {
+      var label = this._definitionsMap[defName].label;
+      if(label !== undefined){
+        var edges = this._definitionsMap[defName].graph.edges;
+        // relabel all the edges in the definition
+        edges.forEach(function(edge){
+          var newLabel = label + "." + edge.label;
+          edge.label = newLabel;
+        }.bind(this));
       }
     },
     /**
@@ -1052,6 +1083,29 @@
       var next = this._operationUid;
       this._set_operationUid(next + 1);
       return '' + next;
+    },
+    /**
+     * Pushes the specified definition name to the composite stack.
+     *
+     * @private
+     * @param {!string} name - definition name
+     */
+    _pushToCompositeStack: function(name) {
+      var stack = this._compositeStack;
+      stack.push(name);
+      this._set_compositeStack(stack);
+    },
+    /**
+     * Pops the next definition name from composite stack.
+     *
+     * @private
+     * @returns {!string} the last definition name added to the composite stack
+     */
+    _popFromCompositeStack: function() {
+      var stack = this._compositeStack;
+      var name = stack.pop();
+      this._set_compositeStack(stack);
+      return name;
     },
     /**
      * Builds an object containing the results of the parsing. This includes taking 
