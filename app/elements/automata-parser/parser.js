@@ -2098,6 +2098,9 @@ PEG.automataParser = (function() {
         peg$currPos = s0;
         s0 = peg$FAILED;
       }
+      if (s0 === peg$FAILED) {
+        s0 = peg$parseCompositeBody();
+      }
 
       return s0;
     }

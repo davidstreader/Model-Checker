@@ -269,6 +269,7 @@ PrefixLabel = label:ActionLabels _ '::' { return label; }
             /// a:ActionLabels _ '::' _ b:ActionLabel _ ':' // TODO
 
 ParallelComposition = body:CompositeBody _ comp:_ParallelComposition { return new Node.ParallelNode(body, comp); }
+                    / CompositeBody
 
 _ParallelComposition = '||' _ body:CompositeBody _ comp:(_ParallelComposition ?) {
   if(comp === null){
