@@ -457,8 +457,15 @@
     /**
      *
      */
-    _interpretComposite(composite, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap){
+    _interpretComposite: function(composite, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap){
       this._interpretProcess(composite.composite, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
+      // relabel if necessary
+      if(composite.label !== undefined){
+        var name = (composite.composite === 'parallel') ? defName : this._getNameFromPTNode(composite);
+        definitionMap[name].relabel = composite.relabel;
+        this._processRelabelling(name);
+        definitionMap[name].relabel = undefined;
+      }
     },
     /**
      * Interpret a parse tree name node.
@@ -871,8 +878,10 @@
         edges.forEach(function(edge){
           for(var i = 0; i < relabel.length; i++){
             // only update the edge if it needs to be relabelled
-            if(relabel[i]['old-label'] === edge.label){
-              edge.label = relabel[i]['new-label'];
+            var oldLabel = this._getActionFromNode(relabel[i]['old']);
+            var newLabel = this._getActionFromNode(relabel[i]['new']);
+            if(oldLabel === edge.label){
+              edge.label = newLabel;
             }
           }
         }.bind(this));
