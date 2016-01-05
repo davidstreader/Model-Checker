@@ -122,15 +122,15 @@ PEG.automataParser = (function() {
           return [a].concat(b);
         },
         peg$c61 = function(name, label, ref, relabel, hide) {
-          return new Node.DefinitionNode(name, new Node.ReferenceNode(ref, label), relabel, hide);
+          return new Node.DefinitionNode(name, new Node.LabelNode(ref, label), relabel, hide);
         },
-        peg$c62 = function(label, ref) { return new Node.ReferenceNode(ref, label); },
+        peg$c62 = function(label, ref) { return new Node.LabelNode(ref, label); },
         peg$c63 = "||",
         peg$c64 = { type: "literal", value: "||", description: "\"||\"" },
         peg$c65 = function(name, body, hide) {
           return new Node.DefinitionNode(name, body, undefined, hide);
         },
-        peg$c66 = function(label, name, relabel) { return new Node.CompositeNode(label, new Node.NameNode(name), relabel); },
+        peg$c66 = function(label, name, relabel) { return new Node.CompositeNode(label, name, relabel); },
         peg$c67 = function(label, comp, relabel) { return new Node.CompositeNode(label, comp, relabel); },
         peg$c68 = "::",
         peg$c69 = { type: "literal", value: "::", description: "\"::\"" },
@@ -176,7 +176,7 @@ PEG.automataParser = (function() {
         peg$c98 = { type: "literal", value: "!", description: "\"!\"" },
         peg$c99 = function(a, negate, op, b) {
             var isNegated = (negate === null) ? false : true;
-            return new Node.OperationNode(op, a, b, isNegated);
+            return new Node.OperationNode(op, text(), a, b, isNegated);
         },
         peg$c100 = "~",
         peg$c101 = { type: "literal", value: "~", description: "\"~\"" },
@@ -2825,13 +2825,16 @@ PEG.automataParser = (function() {
     function peg$parseOperationProcess() {
       var s0;
 
-      s0 = peg$parseProcessBody();
+      s0 = peg$parseName();
       if (s0 === peg$FAILED) {
-        s0 = peg$parseReferenceBody();
+        s0 = peg$parseProcessBody();
         if (s0 === peg$FAILED) {
           s0 = peg$parseFunctionBody();
           if (s0 === peg$FAILED) {
             s0 = peg$parseCompositeBody();
+            if (s0 === peg$FAILED) {
+              s0 = peg$parseReferenceBody();
+            }
           }
         }
       }
@@ -3234,9 +3237,10 @@ PEG.automataParser = (function() {
             this.relabel = (relabel === null) ? undefined : relabel;
             this.hidden = (hidden === null) ? undefined : hidden;
           },
-          OperationNode: function(process, definition1, definition2, isNegated){
+          OperationNode: function(process, input, definition1, definition2, isNegated){
             this.type = 'operation';
             this.process = process;
+            this.input = input;
             this.definition1 = definition1;
             this.definition2 = definition2;
             this.isNegated = isNegated;
@@ -3277,8 +3281,8 @@ PEG.automataParser = (function() {
             this.definition1 = definition1;
             this.definition2 = definition2;
           },
-          ReferenceNode: function(name, label){
-            this.type = 'reference';
+          LabelNode: function(name, label){
+            this.type = 'label';
             this.name = name;
             this.label = (label === null) ? undefined : label;
           },

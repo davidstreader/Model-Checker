@@ -22,9 +22,10 @@
         this.relabel = (relabel === null) ? undefined : relabel;
         this.hidden = (hidden === null) ? undefined : hidden;
       },
-      OperationNode: function(process, definition1, definition2, isNegated){
+      OperationNode: function(process, input, definition1, definition2, isNegated){
         this.type = 'operation';
         this.process = process;
+        this.input = input;
         this.definition1 = definition1;
         this.definition2 = definition2;
         this.isNegated = isNegated;
@@ -65,8 +66,8 @@
         this.definition1 = definition1;
         this.definition2 = definition2;
       },
-      ReferenceNode: function(name, label){
-        this.type = 'reference';
+      LabelNode: function(name, label){
+        this.type = 'label';
         this.name = name;
         this.label = (label === null) ? undefined : label;
       },
@@ -243,10 +244,10 @@ _PrefixActions = _ '->' _ a:ActionLabels _ b:(_PrefixActions ?) {
  */
 
 ReferenceDefinition = name:Name _ '=' _ label:(PrefixLabel ?) _ ref:Name _ relabel:(Relabel ?) _ hide:(Hiding ?) _ '.' {
-  return new Node.DefinitionNode(name, new Node.ReferenceNode(ref, label), relabel, hide);
+  return new Node.DefinitionNode(name, new Node.LabelNode(ref, label), relabel, hide);
 }
 
-ReferenceBody = label:(PrefixLabel ?) _ ref:Name { return new Node.ReferenceNode(ref, label); }
+ReferenceBody = label:(PrefixLabel ?) _ ref:Name { return new Node.LabelNode(ref, label); }
 
 /**
  * PARALLEL COMPOSITION DEFINITONS
@@ -312,10 +313,10 @@ Hiding = '\\' _ a:Set { return {type: 'includes', set:a.set}; }
  
 OperationDefinition = a:OperationProcess _ negate:('!' ?) _ op:Operation _ b:OperationProcess _ '.' {
     var isNegated = (negate === null) ? false : true;
-    return new Node.OperationNode(op, a, b, isNegated);
+    return new Node.OperationNode(op, text(), a, b, isNegated);
 }
 
-OperationProcess = ProcessBody / ReferenceBody / FunctionBody / CompositeBody
+OperationProcess = Name / ProcessBody / FunctionBody / CompositeBody / ReferenceBody
 
 Operation = '~' { return 'bisimulation'; }
 

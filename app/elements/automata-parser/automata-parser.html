@@ -49,6 +49,13 @@
         readOnly: true
       },
       /**
+       * Current index for operations map.
+       */
+      _operationsIndex: {
+        type: Number,
+        readOnly: true
+      },
+      /**
        * Unique identifier for operations definitions.
        *
        * @private
@@ -165,6 +172,7 @@
       // (they're readOnly so they can't simply be set with '=')
       this._set_definitionsMap({});
       this._set_operationsMap({});
+      this._set_operationsIndex(0);
       this._set_operationUid(0);
       this._set_constantsMap({});
       this._set_rangesMap({});
@@ -343,15 +351,9 @@
           this._interpretComposite(process, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
           break;
         case 'name':
-          // check if this is a labelled name
-          if(process.label === undefined){
-            this._interpretName(process, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
-          }
-          else{
-            this._interpretLabel(process, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
-          }
+          this._interpretName(process, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
           break;
-        case 'labelled-name':
+        case 'label':
           this._interpretLabel(process, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
           break;
         case 'abstraction':
@@ -457,15 +459,8 @@
     /**
      *
      */
-    _interpretComposite: function(composite, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap){
+    _interpretComposite: function(composite, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
       this._interpretProcess(composite.composite, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
-      // relabel if necessary
-      if(composite.label !== undefined){
-        var name = (composite.composite === 'parallel') ? defName : this._getNameFromPTNode(composite);
-        definitionMap[name].relabel = composite.relabel;
-        this._processRelabelling(name);
-        definitionMap[name].relabel = undefined;
-      }
     },
     /**
      * Interpret a parse tree name node.
@@ -501,6 +496,10 @@
     _interpretLabel: function(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
       var name = this._getNameFromPTNode(ptNode);
       var label = this._getLabelFromPTNode(ptNode);
+
+      if(label === undefined){
+        return;
+      }
 
       // clone the definition defined by defName
       var definition = this._definitionsMap[name];
@@ -700,8 +699,8 @@
       if(isNegated){
         result = !result;
       }
-
-      this._operationsMap[input] = result;
+      var i = this._nextOperationsIndex();
+      this._operationsMap[i] = {input: input, result: result};
     },
     /**
      *
@@ -719,13 +718,13 @@
      * @returns {string}
      */
     _getNameFromPTNode: function(ptNode) {
-      var name = ptNode.name;
+      var name = ptNode.name || ptNode.composite;
       if(name === undefined){
         throw this.InterpreterException('Failed to parse a name from ' + ptNode);
       }
 
-      while(name.name !== undefined){
-        name = name.name;
+      while(name.name !== undefined || name.composite !== undefined){
+        name = name.name || ptNode.composite;
       }
       return name;
     },
@@ -1033,6 +1032,17 @@
       return true;
     },
     /**
+     * Returns the next free index in the operations map.
+     *
+     * @private
+     * @returns {!integer} - next available index
+     */
+    _nextOperationsIndex: function() {
+      var index = this._operationsIndex;
+      this._set_operationsIndex(index + 1);
+      return index;
+    },
+    /**
      * Returns the next unique operation uid.
      *
      * @private
@@ -1064,10 +1074,22 @@
 
       // build operations array
       var operations = [];
-      for(var key in this._operationsMap){
-        operations.push(key + ' = ' + this._operationsMap[key] + '.');
+      var pass = 0;
+      var fail = 0;
+      for(var i in this._operationsMap){
+        var input = this._operationsMap[i].input;
+        var result = this._operationsMap[i].result;
+        operations.push(input + ' = ' + result + '.');
+        if(result){
+          pass++;
+        }
+        else{
+          fail++;
+        }
       }
 
+      var results = 'Total Operations: ' + (pass + fail) +' (Pass: ' + pass + ', Fail: ' + fail + ')';
+      operations.unshift(results);
       return {automata: automata, operations: operations};
     }
   });
