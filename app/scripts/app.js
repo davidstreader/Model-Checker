@@ -35,7 +35,7 @@
 
         var automata = [];
         try {
-          var result = app.$.parser.parse(code, app.fairAbstraction);
+          var result = app.$.parser.parse(code, app.liveBuilding, app.fairAbstraction);
           automata = result.automata;
           operations = result.operations;
         } catch (e) {

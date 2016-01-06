@@ -30,6 +30,15 @@
         readOnly: true
       },
       /**
+       * Determines whether automata are built or not.
+       *
+       * @private
+       */
+      _buildAutomata: {
+        type: Boolean,
+        readOnly: true
+      },
+      /**
        * Determines whether fair or unfair abstraction is performed.
        *
        * @private
@@ -166,7 +175,8 @@
      * @param {!boolean} isFair - Determines whether fair or unfair abstraction is performed
      * @returns {!Automaton[]} Automata
      */
-    parse: function(code, isFair) {
+    parse: function(code, build, isFair) {
+      this._set_buildAutomata(build);
       this._set_isFairAbstraction(isFair);
       var pt = this._parser.parse(code);
       return this._interpretParseTree(pt);
@@ -1118,35 +1128,38 @@
      * @returns {!Automaton[]} Automata
      */
     _buildParsingResults: function() {
-      // build automata array
       var automata = [];
-      for (var key in this._definitionsMap) {
-        // only display automata which are defined as visible
-        if(this._definitionsMap[key].isVisible){
-          automata.push(new Automaton(key, this._definitionsMap[key].graph));
-        }
-      }
-
-      // build operations array
       var operations = [];
-      var pass = 0;
-      var fail = 0;
-      for(var i in this._operationsMap){
-        var input = this._operationsMap[i].input;
-        var result = this._operationsMap[i].result;
-        operations.push(input + ' = ' + result + '.');
-        if(result){
-          pass++;
+      // only build parsing results if live build has been selected
+      if(this._buildAutomata){
+        // build automata array
+        for (var key in this._definitionsMap) {
+          // only display automata which are defined as visible
+          if(this._definitionsMap[key].isVisible){
+            automata.push(new Automaton(key, this._definitionsMap[key].graph));
+          }
         }
-        else{
-          fail++;
-        }
-      }
 
-      // if there are no operations do not print the total numbe of operations
-      if(operations.length > 0){
-        var results = 'Total Operations: ' + (pass + fail) +' (Pass: ' + pass + ', Fail: ' + fail + ')';
-        operations.unshift(results);
+        // build operations array
+        var pass = 0;
+        var fail = 0;
+        for(var i in this._operationsMap){
+          var input = this._operationsMap[i].input;
+          var result = this._operationsMap[i].result;
+          operations.push(input + ' = ' + result + '.');
+          if(result){
+            pass++;
+          }
+          else{
+            fail++;
+          }
+        }
+
+        // if there are no operations do not print the total numbe of operations
+        if(operations.length > 0){
+          var results = 'Total Operations: ' + (pass + fail) +' (Pass: ' + pass + ', Fail: ' + fail + ')';
+          operations.unshift(results);
+        }
       }
       return {automata: automata, operations: operations};
     }
