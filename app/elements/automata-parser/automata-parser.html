@@ -110,7 +110,7 @@
       this.label = undefined;
       this.relabel = undefined;
       this.hidden = undefined;
-      this.isVisible =true;
+      this.isVisible = undefined;
       this.unprocessedNodes = [];
       this._rootId = undefined;
       // define the getter and setter for rootId
@@ -254,6 +254,7 @@
         definitionMap[name].type = definition.type;
         definitionMap[name].relabel = definition.relabel;
         definitionMap[name].hidden = definition.hidden;
+        definitionMap[name].isVisible = definition.isVisible;
 
         // add the root node of the graph
         // if an id to use for the root has hasn't been specified, generate one, otherwise use it

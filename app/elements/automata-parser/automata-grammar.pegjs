@@ -15,12 +15,13 @@
         this.start = start;
         this.end = end;
       },
-      DefinitionNode: function(name, process, relabel, hidden){
+      DefinitionNode: function(name, process, relabel, hidden, isVisible){
         this.type = 'definition'; // needs to be changed later on
         this.name = name;
         this.process = process;
         this.relabel = (relabel === null) ? undefined : relabel;
         this.hidden = (hidden === null) ? undefined : hidden;
+        this.isVisible = (isVisible === null) ? true : false;
       },
       OperationNode: function(process, input, definition1, definition2, isNegated){
         this.type = 'operation';
@@ -188,7 +189,7 @@ RangeDefinition = 'range' _ name:Name _ '=' _ start:SimpleExpression _ '..' _ en
  * PROCESS DEFINITIONS
  */
 
-ProcessDefinition = _ name:Name _ '=' _ process:ProcessBody _ relabel:(Relabel ?) _ hiding:(Hiding ?) _ '.' _ { return new Node.DefinitionNode(name, process, relabel, hiding); }
+ProcessDefinition = _ name:Name _ isVisible:('*' ?) _ '=' _ process:ProcessBody _ relabel:(Relabel ?) _ hiding:(Hiding ?) _ '.' _ { return new Node.DefinitionNode(name, process, relabel, hiding, isVisible); }
 
 ProcessBody = a:LocalProcess _ ',' _ b:LocalProcessDefinitions { a.local = b; return a; }
             / LocalProcess
@@ -249,18 +250,18 @@ _PrefixActions = _ '->' _ a:ActionLabels _ b:(_PrefixActions ?) {
  * REFERENCE DEFINITIONS
  */
 
-ReferenceDefinition = name:Name _ '=' _ label:(PrefixLabel ?) _ ref:Name _ relabel:(Relabel ?) _ hide:(Hiding ?) _ '.' {
-  return new Node.DefinitionNode(name, new Node.LabelNode(ref, label), relabel, hide);
+ReferenceDefinition = name:Name _ isVisible:('*' ?) _ '=' _ label:(PrefixLabel ?) _ ref:Name _ relabel:(Relabel ?) _ hide:(Hiding ?) _ '.' {
+  return new Node.DefinitionNode(name, new Node.CompositeNode(label, ref), relabel, hide, isVisible);
 }
 
-ReferenceBody = label:(PrefixLabel ?) _ ref:Name { return new Node.LabelNode(ref, label); }
+ReferenceBody = label:(PrefixLabel ?) _ ref:Name { return new Node.CompositeNode(label, ref); }
 
 /**
  * PARALLEL COMPOSITION DEFINITONS
  */
  
-CompositeDefinition = ('||' ?) _ name:Name _ '=' _ body:CompositeBody _ hide:(Hiding ?) _ '.' {
-  return new Node.DefinitionNode(name, body, undefined, hide);
+CompositeDefinition = ('||' ?) _ name:Name _ isVisible:('*' ?) _ '=' _ body:CompositeBody _ hide:(Hiding ?) _ '.' {
+  return new Node.DefinitionNode(name, body, undefined, hide, isVisible);
 }
 
 CompositeBody = label:(PrefixLabel ?) _ name:Name _ relabel:(Relabel ?) { return new Node.CompositeNode(label, name, relabel); }
@@ -284,9 +285,9 @@ _ParallelComposition = '||' _ body:CompositeBody _ comp:(_ParallelComposition ?)
  * FUNCTION DEFINITONS
  */
 
-FunctionDefinition = name:Name _ '=' _ type:FunctionType _ '(' _ body:FunctionBody _ ')' _ relabel:(Relabel ?) _ hide:(Hiding ?) _ '.' {
+FunctionDefinition = name:Name _ isVisible:('*' ?) _ '=' _ type:FunctionType _ '(' _ body:FunctionBody _ ')' _ relabel:(Relabel ?) _ hide:(Hiding ?) _ '.' {
   var process = new Node.FunctionNode(type, body);
-  return new Node.DefinitionNode(name, process, relabel, hide);
+  return new Node.DefinitionNode(name, process, relabel, hide, isVisible);
 }
 
 FunctionType = 'abs' { return 'abstraction'; }
