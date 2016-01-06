@@ -1136,7 +1136,7 @@
         for (var key in this._definitionsMap) {
           // only display automata which are defined as visible
           if(this._definitionsMap[key].isVisible){
-            automata.push(new Automaton(key, this._definitionsMap[key].graph));
+            automata.unshift(new Automaton(key, this._definitionsMap[key].graph));
           }
         }
 
