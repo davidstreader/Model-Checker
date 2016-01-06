@@ -694,7 +694,7 @@
       // add a deadlock edge from extendtion node
       var graph = definitionMap[defName].graph;
       var node = graph.addNode(NodeUid.next);
-      graph.addEdge(graph, extendtionNode, node, '', false, true);
+      graph.addEdge(EdgeUid.next, extendtionNode, node, '', false, true);
       node.addMetaData ('isTerminal', 'error');
     },
     /**

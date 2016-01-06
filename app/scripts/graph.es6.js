@@ -1330,9 +1330,9 @@ Graph.Operations = class {
     var transitions = [];
     for(let i in edges){
       var edge = edges[i];
-      if(!edge.isHidden && !edge.isDeadlock){
+      if(!edge.isHidden){
         var node = isFrom ? edge.to : edge.from;
-        transitions.push({node: node, label: edge.label});
+        transitions.push({node: node, label: edge.label, isDeadlock: edge.isDeadlock});
       }
     }
 
@@ -1357,7 +1357,7 @@ Graph.Operations = class {
     for(let i in edgesToAdd){
       var edge = edgesToAdd[i];
       if(!clone.containsEdge(edge.from, edge.to, edge.label)){
-        clone.addEdge(edge.uid, edge.from, edge.to, edge.label, edge.isHidden);
+        clone.addEdge(edge.uid, edge.from, edge.to, edge.label, edge.isHidden, edge.isDeadlock);
       }
     }
 
@@ -1396,14 +1396,14 @@ Graph.Operations = class {
       var current = stack.pop();
       visited.push(current);
 
-      // add edges to the current node
+      // add edges to/from the current node
       for(let i in transitions){
         var transition = transitions[i];
         if(isFrom){
-          edgesToAdd.push(this._constructEdge(EdgeUid.next, transition.node, current, transition.label));
+          edgesToAdd.push(this._constructEdge(EdgeUid.next, transition.node, current, transition.label, false, transition.isDeadlock));
         }
         else{
-          edgesToAdd.push(this._constructEdge(EdgeUid.next, current, transition.node, transition.label));
+          edgesToAdd.push(this._constructEdge(EdgeUid.next, current, transition.node, transition.label, false, transition.isDeadlock));
         }
       }
 
@@ -1437,8 +1437,8 @@ Graph.Operations = class {
    * @param {!boolean} isHidden - true if the edge is hidden, otherwise false
    * @returns {!Object} object containing data to construct an edge
    */
-  static _constructEdge(uid, from, to, label, isHidden = false){
-    return {uid: uid, from:from, to:to, label:label, isHidden:isHidden};
+  static _constructEdge(uid, from, to, label, isHidden, isDeadlock){
+    return {uid: uid, from:from, to:to, label:label, isHidden:isHidden, isDeadlock:isDeadlock};
   }
 
   /**
