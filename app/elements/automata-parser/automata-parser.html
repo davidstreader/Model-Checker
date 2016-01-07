@@ -795,6 +795,11 @@
      * @private
      */
     _constructDefinition: function(defName, type, relabel, hidden, isVisible) {
+      // check that there is not already a definition with the specified name
+      if(this._definitionsMap[defName] !== undefined){
+        throw new this.InterpreterException('process \'' + defName + '\' defined more that once.');
+      }
+
       this._definitionsMap[defName] = new this._Definition();
       this._definitionsMap[defName].graph = new Graph();
       var rootId = this._definitionsMap[defName].rootId;
@@ -817,11 +822,18 @@
      * @param {!string} globalName - the global name for the specified definitions
      */
     _initialiseDefinitions: function(definitions, globalName) {
+      // check that there is not already a definition with the specified name
+      if(this._definitionsMap[globalName] !== undefined){
+        throw new this.InterpreterException('process \'' + globalName + '\' defined more that once.');
+      }
+
+      // process local definitions
       for(var i = 1; i < definitions.length; i++){
         var name = this._getNameFromPTNode(definitions[i].name);
         name = globalName + '.' + name;
         this._definitionsMap[name] = new this._Definition();
       }
+
       this._definitionsMap[globalName] = new this._Definition();
     },
     /**
