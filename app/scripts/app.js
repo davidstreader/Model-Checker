@@ -27,19 +27,21 @@
       setTimeout(function() {
         var code = app.getCode();
 
-        // if there is nothing to parse then do not continue
-        if (code.length === 0){
-          app.$.console.clear();
-          app.automata = {};
-          app.previousCode = '';
-          return;
-        }
+        if(!overrideBuild){
+          // if there is nothing to parse then do not continue
+          if (code.length === 0){
+            app.$.console.clear();
+            app.automata = {};
+            app.previousCode = '';
+            return;
+          }
 
-        // if the code has not changed then do not continue
-        if(code === app.previousCode){
-          return;
+          // if the code has not changed then do not continue
+          if(code === app.previousCode){
+            return;
+          }
         }
-
+        
         app.$.console.clear();
         app.$.console.log('Compiling...');
         app.previousCode = code;
