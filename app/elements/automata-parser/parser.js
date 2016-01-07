@@ -167,7 +167,7 @@ PEG.automataParser = (function() {
           if(b === null){ return a; }
             return a.concat(b);
         },
-        peg$c92 = function(a, b) { return [{old: a, new: b}]; },
+        peg$c92 = function(a, b) { return [{new: a, old: b}]; },
         peg$c93 = "\\",
         peg$c94 = { type: "literal", value: "\\", description: "\"\\\\\"" },
         peg$c95 = function(a) { return {type: 'includes', set:a.set}; },

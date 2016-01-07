@@ -310,7 +310,7 @@ _RelabelDefinitions = ',' _ a:RelabelDefinition _ b:(_RelabelDefinitions ?) {
     return a.concat(b);
 }
 
-RelabelDefinition = a:ActionLabels _ '/' _ b:ActionLabels { return [{old: a, new: b}]; }
+RelabelDefinition = a:ActionLabels _ '/' _ b:ActionLabels { return [{new: a, old: b}]; }
 
 Hiding = '\\' _ a:Set { return {type: 'includes', set:a.set}; }
        / '@' _ a:Set { return {type: 'excludes', set:a.set}; }
