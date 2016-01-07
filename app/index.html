@@ -70,9 +70,18 @@
   #console {
     height: 150px;
   }
+  .automata-display {
+    position: relative;
+    overflow: auto;    
+  }
   automata-visualisation {
     position: relative;
     height: 250px;
+    margin-top: 2px;
+    margin-right: 2px;
+    margin-bottom: 2px;
+    margin-left: 2px;
+    border: solid 1px var(--dark-primary-color);
     resize: vertical;
     overflow: hidden;
   }
@@ -209,11 +218,13 @@
         <text-editor autofocus id="editor" class="flex"></text-editor>
         <console-logger id="console"></console-logger>
       </div>
-      <div class="flex">
+      <div class="layout vertical flex">
         <automata-walker automata="{{automata.values}}"></automata-walker>
+        <div class="automata-display">
         <template is="dom-repeat" items="[[automata.values]]">
           <automata-visualisation name="[[item.name]]" nodes="[[item.graph.nodes]]" edges="[[item.graph.edges]]"></automata-visualisation>
         </template>
+        </div>
       </div>
     </div>
     <!-- end content -->
