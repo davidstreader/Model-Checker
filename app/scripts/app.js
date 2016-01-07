@@ -25,11 +25,8 @@
       var operations = '';
 
       setTimeout(function() {
-        var code = app.$.editor.getCode();
-        // remove white space and line breaks
-        code = code.replace(/ /g, '');
-        code = code.replace(/(\r\n|\n|\r)/gm, '');
-        
+        var code = app.getCode();
+
         // if there is nothing to parse then do not continue
         if (code.length === 0){
           app.$.console.clear();
@@ -124,6 +121,28 @@
      */
     app.compileAndBuild = function() {
       app.compile(true);
+    };
+
+    /**
+     * Gets and returns the code from the editor. Strips the code of all whitespace
+     * and unnecessary line breaks.
+     */
+    app.getCode = function() {
+      var code = '';
+      var temp = app.$.editor.getCode();
+      
+      // remove white space and line breaks
+      temp = temp.replace(/ /g, '');
+      
+      // remove unnecessary whitespace
+      var split = temp.split('\n');
+      for(var i = 0; i < split.length; i++){
+        if(split[i] !== ''){
+          code += split[i] + '\n';
+        }
+      }
+
+      return code;
     };
 
     /**
