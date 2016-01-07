@@ -30,6 +30,7 @@
         
         // if there is nothing to parse then do not continue
         if (code.length === 0){
+          app.$.console.clear();
           app.automata = {};
           return;
         }
