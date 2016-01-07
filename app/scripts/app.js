@@ -13,7 +13,7 @@
     app.liveBuilding = true;
     app.fairAbstraction = true;
     app.helpDialogSelectedTab = 0;
-    app.previousCode = "";
+    app.previousCode = '';
 
     /**
      * Compile the code in the text editor.
@@ -32,6 +32,7 @@
         if (code.length === 0){
           app.$.console.clear();
           app.automata = {};
+          app.previousCode = '';
           return;
         }
 
