@@ -26,7 +26,9 @@
 
       setTimeout(function() {
         var code = app.$.editor.getCode();
-        code = code.trim();
+        // remove white space and line breaks
+        code = code.replace(/ /g, '');
+        code = code.replace(/(\r\n|\n|\r)/gm, '');
         
         // if there is nothing to parse then do not continue
         if (code.length === 0){
