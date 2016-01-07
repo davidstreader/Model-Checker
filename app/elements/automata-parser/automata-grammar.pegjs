@@ -3,17 +3,20 @@
       ModelNode: function(definition){
         this.type = 'model';
         this.definitions = processLocalDefinitions(definition);
+        this.position = location();
       },
       ConstantNode: function(name, expression){
         this.type = 'constant';
         this.name = name;
         this.expression = expression;
+        this.position = location();
       },
       RangeNode: function(name, start, end){
         this.type = 'range';
         this.name = name;
         this.start = start;
         this.end = end;
+        this.position = location();
       },
       DefinitionNode: function(name, process, relabel, hidden, isVisible){
         this.type = 'definition'; // needs to be changed later on
@@ -22,6 +25,7 @@
         this.relabel = (relabel === null) ? undefined : relabel;
         this.hidden = (hidden === null) ? undefined : hidden;
         this.isVisible = (isVisible === null) ? true : false;
+        this.position = location();
       },
       OperationNode: function(process, input, definition1, definition2, isNegated){
         this.type = 'operation';
@@ -30,67 +34,82 @@
         this.definition1 = definition1;
         this.definition2 = definition2;
         this.isNegated = isNegated;
+        this.position = location();
       },
       RelabelNode: function(relabel){
         this.type = 'relabel';
         this.relabel = relabel;
+        this.position = location();
       },
       NameNode: function(name, label){
         this.type = 'name';
         this.name = name;
+        this.position = location();
       },
       VariableNode: function(name){
         this.type = 'variable'
         this.name = name;
+        this.position = location();
       },
       ActionNode: function(action){
         this.type = 'action';
         this.action = action;
+        this.position = location();
       },
       SetNode: function(set){
         this.type = 'set';
         this.set = set;
+        this.position = location();
       },
       SequenceNode: function(from, to){
         this.type = 'sequence';
         //TODO: this.guard = guard;
         this.from = from;
         this.to = to;
+        this.position = location();
       },
       ChoiceNode: function(option1, option2){
         this.type = 'choice';
         this.option1 = option1;
         this.option2 = option2;
+        this.position = location();
       },
       ParallelNode: function(definition1, definition2){
         this.type = 'parallel';
         this.definition1 = definition1;
         this.definition2 = definition2;
+        this.position = location();
       },
       LabelNode: function(name, label){
         this.type = 'label';
         this.name = name;
         this.label = (label === null) ? undefined : label;
+        this.position = location();
       },
       FunctionNode: function(type, process){
         this.type = type;
         this.process = process;
+        this.position = location();
       },
       CompositeNode: function(label, composite, relabel){
         this.type = 'composite';
         this.label = (label === null) ? undefined : label;
         this.composite = composite;
         this.relabel = (relabel === null) ? undefined : relabel;
+        this.position = location();
       },
       StopNode: function(){
         this.type = 'stop';
+        this.position = location();
       },
       ErrorNode: function(){
         this.type = 'error';
+        this.position = location();
       },
       CommentNode: function(comment){
         this.type = 'comment';
         this.comment = comment;
+        this.position = location();
       }
     };
     
