@@ -13,25 +13,35 @@
     app.liveBuilding = true;
     app.fairAbstraction = true;
     app.helpDialogSelectedTab = 0;
+    app.previousCode = "";
 
     /**
      * Compile the code in the text editor.
      * Create and display the new automata.
      */
     app.compile = function(overrideBuild) {
-      app.$.console.clear();
-      app.$.console.log('Compiling...');
       var compileStartTime = (new Date()).getTime();
       var compileTime;
       var operations = '';
 
       setTimeout(function() {
         var code = app.$.editor.getCode();
-        if (code.trim().length === 0) {
-          app.$.console.clear();
-          app.$.console.log('No input.');
+        code = code.trim();
+        
+        // if there is nothing to parse then do not continue
+        if (code.length === 0){
+          app.automata = {};
           return;
         }
+
+        // if the code has not changed then do not continue
+        if(code === app.previousCode){
+          return;
+        }
+
+        app.$.console.clear();
+        app.$.console.log('Compiling...');
+        app.previousCode = code;
 
         var automata = [];
         try {
