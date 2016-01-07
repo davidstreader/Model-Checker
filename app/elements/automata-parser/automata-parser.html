@@ -231,7 +231,11 @@
             break;
         }
       }.bind(this));
-      this._relabelNodes(true);
+
+      // only relabel nodes if live building is active
+      if(this._buildAutomata){
+        this._relabelNodes(true);
+      }
 
       return this._buildParsingResults();
     },
@@ -246,47 +250,50 @@
       var globalName = this._getNameFromPTNode(model.definitions[0].name);
       this._initialiseDefinitions(model.definitions, globalName);
       
-      model.definitions.forEach(function(definition, index) {
-        // get the name of this definition
-        var name = this._getNameFromPTNode(definition.name);
-        if (index !== 0) {
-          name = globalName + '.' + name;
-        }
+      // only interpret definitions if live build is active
+      if(this._buildAutomata){
+        model.definitions.forEach(function(definition, index) {
+          // get the name of this definition
+          var name = this._getNameFromPTNode(definition.name);
+          if (index !== 0) {
+            name = globalName + '.' + name;
+          }
 
-        // check if we have already processed a definition with this name
-        if (definitionMap[name].graph !== undefined) {
-          throw new this.InterpreterException('process "' + name + '" defined more that once.');
-        }
-      
-        // create the graph for this definition
-        definitionMap[name].graph = new Graph();
-        // set the type for this definition
-        definitionMap[name].type = definition.type;
-        definitionMap[name].relabel = definition.relabel;
-        definitionMap[name].hidden = definition.hidden;
-        definitionMap[name].isVisible = definition.isVisible;
-
-        // add the root node of the graph
-        // if an id to use for the root has hasn't been specified, generate one, otherwise use it
-        var rootId = definitionMap[name].rootId;
-        var root = definitionMap[name].graph.addNode(
-          rootId === undefined ? NodeUid.next : rootId
-        );
-        root.addMetaData ('startNode', true); // mark the root as the starting node (for the visualizer)
+          // check if we have already processed a definition with this name
+          if (definitionMap[name].graph !== undefined) {
+            throw new this.InterpreterException('process "' + name + '" defined more that once.');
+          }
         
-        // if this is a local definition set it to be invisible
-        if(index > 0){
-          definitionMap[name].isVisible = false;
-        }
+          // create the graph for this definition
+          definitionMap[name].graph = new Graph();
+          // set the type for this definition
+          definitionMap[name].type = definition.type;
+          definitionMap[name].relabel = definition.relabel;
+          definitionMap[name].hidden = definition.hidden;
+          definitionMap[name].isVisible = definition.isVisible;
 
-        var referenceMap = {};
-        var variableMap = {};
-        referenceMap[name] = root;  // we already know that the root of this definition is root
-        this._interpretProcess(definition.process, root, definitionMap, name, globalName, referenceMap, variableMap);
-      }.bind(this));
-      
-      // process the global definition
-      this._processDefinition(globalName, model);
+          // add the root node of the graph
+          // if an id to use for the root has hasn't been specified, generate one, otherwise use it
+          var rootId = definitionMap[name].rootId;
+          var root = definitionMap[name].graph.addNode(
+            rootId === undefined ? NodeUid.next : rootId
+          );
+          root.addMetaData ('startNode', true); // mark the root as the starting node (for the visualizer)
+          
+          // if this is a local definition set it to be invisible
+          if(index > 0){
+            definitionMap[name].isVisible = false;
+          }
+
+          var referenceMap = {};
+          var variableMap = {};
+          referenceMap[name] = root;  // we already know that the root of this definition is root
+          this._interpretProcess(definition.process, root, definitionMap, name, globalName, referenceMap, variableMap);
+        }.bind(this));
+        
+        // process the global definition
+        this._processDefinition(globalName, model);
+      }
     },
     /**
      * Interprets the operation defined in the specified model.
