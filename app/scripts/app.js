@@ -41,7 +41,7 @@
             return;
           }
         }
-        
+
         app.$.console.clear();
         app.$.console.log('Compiling...');
         app.previousCode = code;
@@ -218,12 +218,10 @@
 
     /**
      * Simple event listener for when the fair abstraction checkbox is ticked.
-     * Compile is called if live compiling is active.
+     * Compile is called every time the checkbox is ticked or unticked.
      */
     app.$['chbx-fair-abstraction'].addEventListener('iron-change', function() {
-      if(app.liveCompiling){
-        app.compile(false);
-      }
+      app.compile(true);
       app.$.editor.focus();
     });
 
