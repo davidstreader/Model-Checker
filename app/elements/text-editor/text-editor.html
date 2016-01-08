@@ -90,6 +90,33 @@
         this._editor.setValue(code, 1);
         this.fire('text-editor-change');
       },
+      /**
+       * constructs and returns an annotation.
+       *
+       * @param {!integer} line - the line number to put annotation on
+       * @param {!string} text - the text to put in the annotation
+       * @oaram {!string} type - the type of annotation to place
+       * @returns {!object} - an annotation object
+       */
+      constructAnnotation: function(line, text, type) {
+        var annotation = {
+          row: line,
+          column: 2,
+          text: text,
+          type: type         
+        }
+
+        return annotation;
+      },
+
+      /**
+       * Sets the annotations of the editor to those specified in the array.
+       *
+       * @param {!array} annotations - an array of annotations
+       */
+      setAnnotations: function(annotations) {
+        this._editor.session.setAnnotations(annotations);
+      },
 
       /**
        * Bring this element into focus

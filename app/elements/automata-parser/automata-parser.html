@@ -317,7 +317,7 @@
         this._processDefinition(defNames[i]);
       }
 
-      this._processOperation(process, this._definitionsMap, defNames[0], defNames[1], model.input, model.isNegated);
+      this._processOperation(process, this._definitionsMap, defNames[0], defNames[1], model.input, model.isNegated, model.position);
     },
     /**
      * Interprets the constant defined in the specified model.
@@ -718,7 +718,7 @@
     /**
      *
      */
-    _processOperation: function(process, definitionMap, defName1, defName2, input, isNegated) {
+    _processOperation: function(process, definitionMap, defName1, defName2, input, isNegated, position) {
       var result = false;
       switch(process){
         case 'bisimulation':
@@ -734,7 +734,7 @@
         result = !result;
       }
       var i = this._nextOperationsIndex();
-      this._operationsMap[i] = {input: input, result: result};
+      this._operationsMap[i] = {input: input, result: result, position: position};
     },
     /**
      *
@@ -1148,7 +1148,7 @@
      */
     _buildParsingResults: function() {
       var automata = [];
-      var operations = [];
+      var operations = {operations: [], positions: []};
       // only build parsing results if live build has been selected
       if(this._buildAutomata){
         // build automata array
@@ -1164,8 +1164,24 @@
         var fail = 0;
         for(var i in this._operationsMap){
           var input = this._operationsMap[i].input;
+
+          // remove unnecessary line breaks and whitespace from input
+          input = input.replace(/ /g, '\n');
+          var split = input.split('\n');
+          input = '';
+          for(var j = 0; j < split.length; j++){
+            if(split[j] !== ''){
+              input += split[j];
+            }
+          }
+          // remove the dot from input
+          input = input.slice(0, input.length - 1);
+
           var result = this._operationsMap[i].result;
-          operations.push(input + ' = ' + result + '.');
+          var position = this._operationsMap[i].position;
+          
+          operations.operations.push(input + ' = ' + result);
+          operations.positions.push(position);
           if(result){
             pass++;
           }
@@ -1175,9 +1191,9 @@
         }
 
         // if there are no operations do not print the total numbe of operations
-        if(operations.length > 0){
+        if(operations.operations.length > 0){
           var results = 'Total Operations: ' + (pass + fail) +' (Pass: ' + pass + ', Fail: ' + fail + ')';
-          operations.unshift(results);
+          operations.operations.unshift(results);
         }
       }
       return {automata: automata, operations: operations};

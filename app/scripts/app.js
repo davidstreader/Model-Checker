@@ -23,6 +23,7 @@
       var compileStartTime = (new Date()).getTime();
       var compileTime;
       var operations = '';
+      var positions;
 
       setTimeout(function() {
         var code = app.getCode();
@@ -45,12 +46,16 @@
         app.$.console.clear();
         app.$.console.log('Compiling...');
         app.previousCode = code;
+        
+        // re-get code to ensure correct line positions for annotations and error highlighting
+        code = app.$.editor.getCode();
 
         var automata = [];
         try {
           var result = app.$.parser.parse(code, app.liveBuilding, app.fairAbstraction);
           automata = result.automata;
-          operations = result.operations;
+          operations = result.operations.operations;
+          positions = result.operations.positions;
         } catch (e) {
           var buildErrorMessage = function(e) {
             return e.location !== undefined ?
@@ -109,8 +114,19 @@
           if(operations.length !== 0){
             app.$.console.log(' ');
             app.$.console.log('Operations:');
+            var annotations = [];
             for(var i = 0; i < operations.length; i++){
               app.$.console.log(operations[i]);
+              // skip over the display of totals
+              if(i !== 0){
+                var pos = positions[i - 1];
+                console.log(pos);
+                var line = pos.start.line - 1;
+                var annotation = app.$.editor.constructAnnotation(line, operations[i], 'info');
+                annotations.push(annotation);
+              }
+              // set annotations on the ace editor
+              app.$.editor.setAnnotations(annotations);
             }
           }
         }.bind(this), 0)
