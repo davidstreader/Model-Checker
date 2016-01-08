@@ -348,7 +348,9 @@
         throw new this.InterpreterException('The name "' + model.name + '" has been defined already.');
       }
       // add constant to constants map
-      this._constantsMap[model.name] = model.value;
+      var value = this._interpretSimpleExpression(model.expression);
+      this._constantsMap[model.name] = value;
+      console.log(model.name.name +' = '+value);
     },
 
     /**
@@ -807,6 +809,44 @@
       var graph1 = definitionMap[defName1].graph;
       var graph2 = definitionMap[defName2].graph;
       return Graph.Operations.isEquivalent(graph1, graph2);
+    },
+
+    /**
+     * Uses reverse polish notation to interpret and evaluate a simple expression
+     */
+    _interpretSimpleExpression: function(expression) {
+      // check first if expression is just a single value
+      if(typeof(expression.expression) === 'number'){
+        return expression.expression;
+      }
+
+      // otherwise calculate result
+      var data = expression.expression.split(' ');
+      var stack = [];
+      for(var i = 0; i < data.length; i ++){
+        switch(data[i]){
+        case '+':
+          stack.push(stack.pop() + stack.pop());
+          break;
+        case '-':
+          stack.push(stack.pop() - stack.pop());
+          break;
+        case '*':
+          stack.push(stack.pop() * stack.pop());
+          break;
+        case '/':
+          stack.push(stack.pop() / stack.pop());
+          break;
+        case '%':
+          stack.push(stack.pop() % stack.pop());
+          break;
+        default:
+          stack.push(parseInt(data[i]));
+          break;
+        }
+      }
+
+      return stack.pop();
     },
 
     /**

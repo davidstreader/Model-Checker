@@ -110,6 +110,10 @@
         this.type = 'comment';
         this.comment = comment;
         this.position = location();
+      },
+      SimpleExpressionNode: function(expression){
+        this.type = 'simple-expression';
+        this.expression = expression;
       }
     };
     
@@ -351,19 +355,29 @@ Operation = '~' { return 'bisimulation'; }
  * EXPRESSIONS
  */
 
-SimpleExpression = AdditiveExpression
+SimpleExpression = expr:AdditiveExpression { return new Node.SimpleExpressionNode(expr); }
 
-AdditiveExpression = a:MultiplicativeExpression _ '+' _ b:AdditiveExpression { return a + ' + ' + b; }
-                   / a:MultiplicativeExpression _ '-' _ b:AdditiveExpression { return a + ' - ' + b; }
+AdditiveExpression = base:BaseExpression _ add:(_AdditiveExpression) { return base + ' ' + add; }
                    / MultiplicativeExpression
 
-MultiplicativeExpression = a:UnaryExpression _ '*' _ b:MultiplicativeExpression { return a + ' * ' + b; }
-                         / a:UnaryExpression _ '/' _ b:MultiplicativeExpression { return a + ' / ' + b; }
-                         / a:UnaryExpression _ '%' _ b:MultiplicativeExpression { return a + ' % ' + b; } 
+_AdditiveExpression = operator:('+' / '-')  _ multi:MultiplicativeExpression _ add:(_AdditiveExpression ?) {
+  if(add !== null){
+      return multi + ' ' + add + ' ' + operator;
+    }
+      return multi + ' ' + operator;
+}
+
+MultiplicativeExpression = base:BaseExpression _ multi:_MultiplicativeExpression { return base + ' ' + multi; }
                          / UnaryExpression
 
-UnaryExpression = _ '+' _ base:BaseExpression { return ' + ' + base; }
-                / _ '-' _ base:BaseExpression { return ' - ' + base; }
+_MultiplicativeExpression = operator:('*' / '/' / '%') _ unary:UnaryExpression _ multi:(_MultiplicativeExpression ?) {
+  if(multi !== null){
+      return multi;
+    }
+    return unary + ' ' + operator;
+}
+
+UnaryExpression = operator:('+' / '-')  _ base:BaseExpression { return base + ' 0 ' + operator; }
                 / BaseExpression
 
 BaseExpression = IntegerLiteral / LowerCaseIdentifier / UpperCaseIdentifier
