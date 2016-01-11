@@ -3,20 +3,26 @@
       ModelNode: function(definition){
         this.type = 'model';
         this.definitions = processLocalDefinitions(definition);
-        this.position = location();
+        //this.position = location();
       },
       ConstantNode: function(name, expression){
         this.type = 'constant';
         this.name = name;
         this.expression = expression;
-        this.position = location();
+        //this.position = location();
       },
       RangeNode: function(name, start, end){
         this.type = 'range';
         this.name = name;
         this.start = start;
         this.end = end;
-        this.position = location();
+        //this.position = location();
+      },
+      SetNode: function(name, set){
+        this.type = 'set';
+        this.name = name;
+        this.set = set;
+        //this.position = location();
       },
       DefinitionNode: function(name, process, relabel, hidden, isVisible){
         this.type = 'definition'; // needs to be changed later on
@@ -25,7 +31,7 @@
         this.relabel = (relabel === null) ? undefined : relabel;
         this.hidden = (hidden === null) ? undefined : hidden;
         this.isVisible = (isVisible === null) ? true : false;
-        this.position = location();
+        //this.position = location();
       },
       OperationNode: function(process, input, definition1, definition2, isNegated){
         this.type = 'operation';
@@ -39,77 +45,84 @@
       RelabelNode: function(relabel){
         this.type = 'relabel';
         this.relabel = relabel;
-        this.position = location();
+        //this.position = location();
       },
-      NameNode: function(name, label){
+      NameNode: function(name){
         this.type = 'name';
         this.name = name;
-        this.position = location();
+        //this.position = location();
+      },
+      LabelNode: function(name, label){
+        this.type = 'label';
+        this.name = name;
+        this.label = (label === null) ? undefined : label;
+        //this.position = location();
       },
       VariableNode: function(name){
         this.type = 'variable'
         this.name = name;
-        this.position = location();
+        //this.position = location();
       },
       ActionNode: function(action){
         this.type = 'action';
         this.action = action;
-        this.position = location();
-      },
-      SetNode: function(set){
-        this.type = 'set';
-        this.set = set;
-        this.position = location();
+        //this.position = location();
       },
       SequenceNode: function(from, to){
         this.type = 'sequence';
         //TODO: this.guard = guard;
         this.from = from;
         this.to = to;
-        this.position = location();
+        //this.position = location();
       },
       ChoiceNode: function(option1, option2){
         this.type = 'choice';
         this.option1 = option1;
         this.option2 = option2;
-        this.position = location();
+        //this.position = location();
       },
       ParallelNode: function(definition1, definition2){
         this.type = 'parallel';
         this.definition1 = definition1;
         this.definition2 = definition2;
-        this.position = location();
-      },
-      LabelNode: function(name, label){
-        this.type = 'label';
-        this.name = name;
-        this.label = (label === null) ? undefined : label;
-        this.position = location();
+        //this.position = location();
       },
       FunctionNode: function(type, process){
         this.type = type;
         this.process = process;
-        this.position = location();
+        //this.position = location();
       },
       CompositeNode: function(label, composite, relabel){
         this.type = 'composite';
         this.label = (label === null) ? undefined : label;
         this.composite = composite;
         this.relabel = (relabel === null) ? undefined : relabel;
-        this.position = location();
+        //this.position = location();
       },
       StopNode: function(){
         this.type = 'stop';
-        this.position = location();
+        //this.position = location();
       },
       ErrorNode: function(){
         this.type = 'error';
-        this.position = location();
+        //this.position = location();
       },
       CommentNode: function(comment){
         this.type = 'comment';
         this.comment = comment;
-        this.position = location();
+        //this.position = location();
+      },
+      ExpressionNode: function(operator, operand1, operand2){
+        this.type = 'expression';
+        this.operator = operator;
+        this.operand1 = operand1;
+        this.operand2 = operand2;
+        //this.position = location();
+      },
+      SimpleExpressionNode: function(expression){
+        this.type = 'simple-expression';
+        this.expression = expression;
+        //this.position = location();
       }
     };
     
@@ -130,6 +143,25 @@
       return node;
     };
     
+    function constructJoinedActionNode(action1, action2){
+      console.log(action1);
+        console.log(action2);
+        var node = new Node.ActionNode();
+        delete node.action;
+        node.subtype = 'joined';
+        node.actions = [action1, action2];
+        return node;
+    };
+    
+    function constructExpressionActionNode(action, expressions){
+      var node = new Node.ActionNode();
+        delete node.action;
+        node.subtype = 'expression';
+        node.action = action;
+        node.expressions = expressions;
+        return node;
+    };
+    
     function processLocalDefinitions(definition){
       var definitions = [];
         var local = undefined;
@@ -138,9 +170,9 @@
           delete definition.process['local'];
           definitions.push(definition);
           definition = local;
-    }while(local !== undefined);
-        
-        return definitions;
+    }while(local !== undefined);       
+    
+    return definitions;
     };
     
     /**
@@ -177,16 +209,39 @@ IntegerLiteral = [-]?[0-9]+ { return parseInt(text(), 10); }
  * ACTION LABELS
  */
 
-ActionLabel = action:(DottedAction / LowerCaseIdentifier) {
-  return new Node.ActionNode(action);
+ActionLabel = a:LowerCaseIdentifier _ b:JoinedAction { return constructJoinedActionNode(new Node.ActionNode(a), b); }
+            / a:LowerCaseIdentifier _ b:ExpressionAction { return constructExpressionActionNode(a, b); }
+            / action:LowerCaseIdentifier { return new Node.ActionNode(action); }
+            / '[' _ exp:Expression _ ']' { return constructExpressionActionNode('', [exp]); }
+
+_ActionLabel = JoinedAction 
+             / ExpressionAction
+
+JoinedAction = '.' _ action:ActionLabel { return action; }
+
+ExpressionAction = '[' _ exp:Expression _ ']' _ action:(_ActionLabel ?) {
+  if(action === null){
+        var result = (exp.length !== undefined) ? exp : [exp];
+        return result;
+    }
+  
+    return [exp].concat(action);
 }
 
 ActionLabels = ActionLabel
 
 DottedAction = a:LowerCaseIdentifier '.' b:LowerCaseIdentifier { return a + '.' + b; }
 
+ActionRange = Range
+            / Set
+            / variable:Variable _ ':' _ range:Range {}
+            / variable:Variable _ ':' _ set:Set {}
+
+Range = Name
+      / start:SimpleExpression _ '..' _ end:SimpleExpression {}
+
 Set = Name
-    / '{' _ a:SetElements _ '}' { return new Node.SetNode(a); }
+    / '{' _ a:SetElements _ '}' { return new Node.SetNode(undefined, a); }
 
 SetElements = a:ActionLabels _ b:_SetElements { return [a].concat(b); }
             / ActionLabels
@@ -203,6 +258,8 @@ _SetElements = ',' _ a:ActionLabels _ b:(_SetElements ?) {
 ConstantDefinition = 'const' _ name:Name _ '=' _ exp:SimpleExpression { return new Node.ConstantNode(name, exp); }
 
 RangeDefinition = 'range' _ name:Name _ '=' _ start:SimpleExpression _ '..' _ end:SimpleExpression { return new Node.RangeNode(name, start, end); }
+
+SetDefinition = 'set' _ name:Name _ '=' _ '{' _ set:SetElements _ '}' { return new Node.SetNode(name, set); }
 
 /**
  * PROCESS DEFINITIONS
@@ -351,22 +408,178 @@ Operation = '~' { return 'bisimulation'; }
  * EXPRESSIONS
  */
 
-SimpleExpression = AdditiveExpression
+SimpleExpression = expr:AdditiveExpression { return new Node.SimpleExpressionNode(expr); }
 
-AdditiveExpression = a:MultiplicativeExpression _ '+' _ b:AdditiveExpression { return a + ' + ' + b; }
-                   / a:MultiplicativeExpression _ '-' _ b:AdditiveExpression { return a + ' - ' + b; }
-                   / MultiplicativeExpression
+Expression = OrExpression
 
-MultiplicativeExpression = a:UnaryExpression _ '*' _ b:MultiplicativeExpression { return a + ' * ' + b; }
-                         / a:UnaryExpression _ '/' _ b:MultiplicativeExpression { return a + ' / ' + b; }
-                         / a:UnaryExpression _ '%' _ b:MultiplicativeExpression { return a + ' % ' + b; } 
+OrExpression = base:BaseExpression _ or:(_OrExpression) { return new Node.ExpressionNode('||', base, or); }
+             / AndExpression
+
+_OrExpression = '||' _ and:AndExpression _ or:(_OrExpression ?) {
+  if(or === null){
+    return and;
+  }
+
+  return new Node.ExpressionNode('||', and, or);
+}
+
+AndExpression = base:BaseExpression _ and:(_AndExpression) { return new Node.ExpressionNode('&&', base, and); }
+              / BitOrExpression
+
+_AndExpression = '&&' _ or:BitOrExpression _ and:(_AndExpression ?) {
+  if(and === null){
+      return or;
+    }
+    
+    return new Node.ExpressionNode('&&', or, and);
+}
+
+BitOrExpression = base:BaseExpression _ or:(_BitOrExpression) {return new Node.ExpressionNode('|', base, or); }
+                / BitExclOrExpression
+
+_BitOrExpression = '|' _ excl:BitExclOrExpression _ or:(_BitOrExpression ?) {
+  if(or === null){
+      return excl;
+    }
+    
+    return new Node.ExpressionNode('|', excl, or);
+} 
+
+BitExclOrExpression = base:BaseExpression _ excl:(_BitExclOrExpression) { return new Node.ExpressionNode('^', base, excl); }
+                    / BitAndExpression
+                    
+_BitExclOrExpression = '^' _ and:BitAndExpression _ excl:(_BitExclOrExpression ?) {
+  if(excl === null){
+      return and;
+    }
+    
+    return new Node.ExpressionNode('^', and, excl);
+}
+
+BitAndExpression = base:BaseExpression _ and:(_BitAndExpression) { return new Node.ExpressionNode('&', base, and); }
+                 / EqualityExpression
+
+_BitAndExpression = '&' _ equal:EqualityExpression _ and:(_BitAndExpression ?) {
+  if(and === null){
+      return equal;
+    }
+    
+    return new Node.ExpressionNode('&', equal, and);
+}
+
+EqualityExpression = EqualExpression / NotEqualExpression
+                   / RelationalExpression
+
+EqualExpression = base:BaseExpression  _ equal:_EqualExpression { return new Node.ExpressionNode('==', base, equal); }
+                   
+_EqualExpression = op:'==' _ rel:RelationalExpression _ equal:(_EqualExpression ?) {
+  if(equal === null){
+      return rel;
+    }
+    
+    return new Node.ExpressionNode('==', rel, equal);
+}
+
+NotEqualExpression = base:BaseExpression  _ not:_NotEqualExpression { return new Node.ExpressionNode('!=', base, not); }
+                   
+_NotEqualExpression = op:'!=' _ rel:RelationalExpression _ not:(_NotEqualExpression ?) {
+  if(not === null){
+      return rel;
+    }
+    
+    return new Node.ExpressionNode('!=', rel, not);
+}
+
+RelationalExpression = LessThanExpression / LessThanEqualExpression / GreatThanExpression / GreatThanEqualExpression
+                     / ShiftExpression
+
+LessThanExpression = base:BaseExpression _ less:(_LessThanExpression) { return new Node.ExpressionNode('<', base, less); }
+
+_LessThanExpression = '<' _ shift:ShiftExpression _ less:(_LessThanExpression ?) {
+  if(less === null){
+      return shift;
+    }
+    
+    return new Node.ExpressionNode('<', shift, less);
+}
+
+LessThanEqualExpression = base:BaseExpression _ less:(_LessThanEqualExpression) { return new Node.ExpressionNode('<=', base, less); }
+
+_LessThanEqualExpression = '<=' _ shift:ShiftExpression _ less:(_LessThanEqualExpression ?) {
+  if(less === null){
+      return shift
+    }
+    
+    return new Node.ExpressionNode('<=', shift, less);
+}
+
+GreatThanExpression = base:BaseExpression _ great:(_GreatThanExpression) { return new Node.ExpressionNode('>', base, great); }
+
+_GreatThanExpression = '>' _ shift:ShiftExpression _ great:(_GreatThanExpression ?) {
+  if(great === null){
+      return shift;
+    }
+    
+    return new Node.ExpressionNode('>', shift, great);
+}
+
+GreatThanEqualExpression = base:BaseExpression _ great:(_GreatThanEqualExpression) { return new Node.ExpressionNode('>=', base, great); }
+
+_GreatThanEqualExpression = '>=' _ shift:ShiftExpression _ great:(_GreatThanEqualExpression ?) {
+  if(great === null){
+      return shift;
+    }
+    
+    return new Node.ExpressionNode('>=', shift, great);
+}
+
+ShiftExpression = RightShiftExpression / LeftShiftExpression
+                / AdditiveExpression
+
+RightShiftExpression = base:BaseExpression _ shift:_RightShiftExpression { return new Node.ExpressionNode('>>', base, shift); }
+
+_RightShiftExpression = '>>' _ add:AdditiveExpression _ shift:(_RightShiftExpression ?) {
+  if(shift === null){
+      return add;
+    }
+    
+    return new Node.ExpressionNode('>>', add, shift);
+}
+
+LeftShiftExpression = base:BaseExpression _ shift:_LeftShiftExpression { return new Node.ExpressionNode('<<', base, shift); }
+
+_LeftShiftExpression = '<<' _ add:AdditiveExpression _ shift:(_LeftShiftExpression ?) {
+  if(shift === null){
+      return add;
+    }
+    
+    return new Node.ExpressionNode('<<', add, shift);
+}
+
+AdditiveExpression = base:BaseExpression _ add:(_AdditiveExpression) { return new Node.SimpleExpressionNod(base + ' ' + add); }
+                   / exp:MultiplicativeExpression { return new Node.SimpleExpressionNode(exp); }
+
+_AdditiveExpression = operator:('+' / '-')  _ multi:MultiplicativeExpression _ add:(_AdditiveExpression ?) {
+  if(add !== null){
+      return multi + ' ' + add + ' ' + operator;
+    }
+    return multi + ' ' + operator;
+}
+
+MultiplicativeExpression = base:BaseExpression _ multi:_MultiplicativeExpression { return base + ' ' + multi; }
                          / UnaryExpression
 
-UnaryExpression = _ '+' _ base:BaseExpression { return ' + ' + base; }
-                / _ '-' _ base:BaseExpression { return ' - ' + base; }
+_MultiplicativeExpression = operator:('*' / '/' / '%') _ unary:UnaryExpression _ multi:(_MultiplicativeExpression ?) {
+  if(multi !== null){
+      return multi + ' ' + unary + ' ' + operator;
+    }
+    return unary + ' ' + operator;
+}
+
+UnaryExpression = operator:('+' / '-')  _ base:BaseExpression { return base + ' 0 ' + operator; }
                 / BaseExpression
 
-BaseExpression = IntegerLiteral / LowerCaseIdentifier / UpperCaseIdentifier
+BaseExpression = IntegerLiteral / LowerCaseIdentifier / UpperCaseIdentifier / '(' _ exp:Expression _ ')' { return exp; }
 
 /**
  * COMMENTS

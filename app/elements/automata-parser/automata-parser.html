@@ -439,7 +439,8 @@
       else{
         // add an edge connect the new node to the rest of the graph
         var node = graph.addNode(NodeUid.next);
-        graph.addEdge(EdgeUid.next, extendtionNode, node, this._getActionFromNode(sequence.from));
+        var action = this._processActionNode(sequence.from, variableMap);
+        graph.addEdge(EdgeUid.next, extendtionNode, node, action);
         this._interpretProcess(sequence.to, node, definitionMap, defName, globalName, referenceMap, variableMap);
       }
     },
@@ -714,6 +715,47 @@
       var node = graph.addNode(NodeUid.next);
       graph.addEdge(EdgeUid.next, extendtionNode, node, '', false, true);
       node.addMetaData ('isTerminal', 'error');
+    },
+
+    /**
+     *
+     */
+    _processActionNode: function(ptNode, variableMap) {
+      // check if node is a simple expression
+      if(ptNode.type === 'simple-expression'){
+        return ptNode.expression;
+      }
+
+      var subtype = ptNode.subtype;
+      // if action does not have a subtype it is a standard action
+      if(subtype === undefined){
+        return this._getActionFromNode(ptNode);
+      }
+
+      else if(subtype === 'expression'){
+        var action = this._getActionFromNode(ptNode);
+        var expressions = ptNode.expressions;
+        
+        for(var i = 0; i < expressions.length; i++){
+          var temp = this._processActionNode(expressions[i]);
+          action += '[' + temp + ']';
+        }
+
+        return action;
+      }
+
+      else if(subtype === 'joined'){
+        var actions = ptNode.actions;
+        var action = '';
+        
+        for(var i = 0; i < actions.length; i++){
+          var temp = this._processActionNode(actions[i]);
+          var result = (i == 0) ? '' : '.';
+          action += (result + temp);
+        }
+
+        return action;        
+      }
     },
 
     /**
@@ -1013,14 +1055,15 @@
     _processRelabelling: function(defName) {
       var relabel = this._definitionsMap[defName].relabel;
       if(relabel !== undefined){
+        relabel = this._processRelabellingSet(relabel);
         // get an array of edges in the current graph
         var edges = this._definitionsMap[defName].graph.edges;
         // check each edge to see if it needs to be updated
         edges.forEach(function(edge){
           for(var i = 0; i < relabel.length; i++){
             // only update the edge if it needs to be relabelled
-            var oldLabel = this._getActionFromNode(relabel[i]['old']);
-            var newLabel = this._getActionFromNode(relabel[i]['new']);
+            var oldLabel = relabel[i]['old'];
+            var newLabel = relabel[i]['new'];
             if(oldLabel === edge.label){
               edge.label = newLabel;
             }
@@ -1028,6 +1071,25 @@
         }.bind(this));
       }
     },
+
+    /**
+     * Processes and returns the set of relabelling objects.
+     *
+     * @private
+     * @param {!object} set - the set of relabelling objects to process
+     * @returns {!object} processed set
+     */
+    _processRelabellingSet: function(set) {
+      var result = [];
+      for(var i = 0; i < set.length; i++){
+        var newLabel = this._processActionNode(set[i]['new']);
+        var oldLabel = this._processActionNode(set[i]['old']);
+        result.push({new: newLabel, old: oldLabel});
+      }
+
+      return result;
+    },
+
     /**
      * Process the hiding of transitions for the specified definition.
      *
@@ -1038,7 +1100,7 @@
       var hidden = this._definitionsMap[defName].hidden;
       if(hidden !== undefined){
         var type = hidden.type;
-        var set = hidden.set;
+        var set = this._processSet(hidden.set);
         // get an array of edges in the current graph
         var edges = this._definitionsMap[defName].graph.edges;
         // check each edge to see if it needs to be updated
@@ -1051,6 +1113,31 @@
         }.bind(this));
       }
     },
+
+    /**
+     * Processes and returns the set of hiding objects.
+     *
+     * @private
+     * @param {!object} set - the set of hiding objects to process
+     * @returns {!object} processed set
+     */
+    _processSet: function(set) {
+      var result = [];
+      // check if set is not array
+      if(set.length === undefined){
+        result.push(this._processActionNode(set));
+      }
+
+      // otherwise process all the elements in the set
+      else{
+        for(var i = 0; i < set.length; i++){
+          result.push(this._processActionNode(set[i]));
+        }
+      }
+
+      return result;
+    },
+
     /**
      *
      */
