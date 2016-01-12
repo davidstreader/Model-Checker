@@ -215,29 +215,25 @@ ActionLabel = a:LowerCaseIdentifier _ b:JoinedAction { return constructJoinedAct
             / action:LowerCaseIdentifier { return new Node.ActionNode(action); }
             / '[' _ exp:Expression _ ']' { return constructExpressionActionNode('', [exp]); }
 
-_ActionLabel = JoinedAction 
-             / ExpressionAction
-
-JoinedAction = '.' _ action:ActionLabel { return action; }
-
-ExpressionAction = '[' _ exp:Expression _ ']' _ action:(_ActionLabel ?) {
-  if(action === null){
-        var result = (exp.length !== undefined) ? exp : [exp];
-        return result;
+JoinedAction = '.' _ action:LowerCaseIdentifier _ exp:(ExpressionAction ?) {
+    if(exp === null){
+      return new Node.ActionNode(action);
     }
-  
-    return [exp].concat(action);
+    
+  return constructExpressionActionNode(action, exp);
 }
+ExpressionAction = a:BracketedExpression _ b:(ExpressionAction ?) {if(b === null){ return [a]; } return [a].concat(b); }
+BracketedExpression = '[' _ exp:Expression _ ']' { return exp; }
 
-ActionLabels = a:ActionLabel _ b:_ActionLabels {
-          a.subtype = 'index';
-                    a.variable = b.variable; 
-                    a.index = b.index;
-                    return a;
-             }
+ActionLabels = a:ActionLabel _ b:JoinedActionLabel { return constructJoinedActionNode(a, b); }
+             / a:ActionLabel _ b:JoinedSet { return constructJoinedActionNode(a, b); }
              / ActionLabel
              / Set
              / '[' _ range:ActionRange _ ']' { return range; }
+
+JoinedActionLabel = '.' _ action:ActionLabel { return action; }
+JoinedSet = '.' _ set:Set { return set; }
+
 
 _ActionLabels = '.' _ action:ActionLabel { return action; }
               / '.' _ set:Set { return set; }
@@ -255,7 +251,8 @@ Range = start:SimpleExpression _ '..' _ end:SimpleExpression { return new Node.R
       / Terminal _ Identifier
       
 Set = '{' _ a:SetElements _ '}' { return new Node.SetNode(undefined, a); }
-    / Terminal _ Identifier
+    / a:(Terminal ?) _ b:Identifier { if(a !== null) { error("NO TERMINAL"); } return b; }
+    
 
 SetElements = a:ActionLabels _ b:_SetElements { return [a].concat(b); }
             / ActionLabels

@@ -186,8 +186,6 @@
       this._set_operationUid(0);
       this._set_compositeStack([]);
       this._set_constantsMap({});
-      this._set_rangesMap({});
-      this._set_setsMap({});
       // reset the node and edge uids in graph class
       NodeUid.reset();
       EdgeUid.reset();
@@ -326,7 +324,7 @@
         throw new this.InterpreterException('The name "' + model.name + '" has been defined already.');
       }
       // add constant to constants map
-      this._constantsMap[model.name] = model.value;
+      this._constantsMap[model.name] = {type: 'constant', value: model.value};
     },
     /**
      * Interprets the range defined in the specified model.
@@ -749,7 +747,7 @@
      *
      */
     _processActionNode: function(ptNode, variableMap) {
-
+      // process types which are not action nodes
       switch(ptNode.type){
         case 'simple-expression':
           return ptNode.expression;
@@ -757,8 +755,11 @@
           return this._processSet(ptNode.set);
         case 'range':
           return this._processRange(ptNode);
+        case 'name':
+          return this._getFromConstantStack(this._getNameFromPTNode(ptNode));
       }
 
+      // process the subtypes of action nodes
       switch(ptNode.subtype){
         case undefined:
           return this._getActionFromNode(ptNode);
@@ -1354,6 +1355,23 @@
       this._set_compositeStack(stack);
       return name;
     },
+    /**
+     * Returns the value corresponding the the specified variable name in the constants stack.
+     * Throws an error if a constant has not been defined with the specified variable name.
+     *
+     * @private
+     * @param {!string} variable - name of constant to retrieve
+     * @returns {!object} - the object corresponding to the variable name
+     */
+    _getFromConstantStack: function(variable) {
+      // check if this is a valid variable name
+      var constant = this._constantsMap[variable];
+      if(constant === undefined){
+        throw new this.InterpreterException('\'' + variable + '\' is not a defined constant.');
+      }
+
+      return constant;
+    } ,
     /**
      * Builds an object containing the results of the parsing. This includes taking 
      * all the automaton definitions that are defined as visible and construct an 
