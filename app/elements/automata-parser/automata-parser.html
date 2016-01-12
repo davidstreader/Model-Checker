@@ -90,25 +90,7 @@
       _constantsMap: {
         type: Object,
         readOnly: true
-      },
-      /**
-       * A map of ranges to their start and end points.
-       *
-       * @private
-       */
-      _rangesMap: {
-        type: Object,
-        readOnly: true
-      },
-      /**
-       * A map of set variable names to their sets.
-       *
-       * @private
-       */
-       _setsMap: {
-        type: Object,
-        readOnly: true
-       }
+      }
     },
     /**
      * Stores definition data.
@@ -362,7 +344,7 @@
       var range = this._processRange(model.range, model.name);
 
       // add constant to constants map
-      this._rangesMap[model.name] = range;
+      this._constantsMap[model.name] = range;
     },
     /**
      *
@@ -377,7 +359,7 @@
       var set = this._processSet(model.set);
 
       // add set to sets map
-      this._setsMap[model.name] = set;
+      this._constantsMap[model.name] = set;
     },
     /**
      * Interpret a parse tree process node.
