@@ -144,8 +144,6 @@
     };
     
     function constructJoinedActionNode(action1, action2){
-      console.log(action1);
-        console.log(action2);
         var node = new Node.ActionNode();
         delete node.action;
         node.subtype = 'joined';
@@ -199,11 +197,14 @@ FSP = _ definition:(ProcessDefinition / ReferenceDefinition / FunctionDefinition
  */
 
 Name = name:UpperCaseIdentifier { return new Node.NameNode(name); }
+Identifier = name:UpperCaseIdentifier { return new Node.NameNode(name); }
+
 Variable = variable:LowerCaseIdentifier { return new Node.VariableNode(variable); }
 
 UpperCaseIdentifier = $([A-Z][A-Za-z0-9_]*) { return text(); }
 LowerCaseIdentifier = $([a-z][A-Za-z0-9_]*) { return text(); }
 IntegerLiteral = [-]?[0-9]+ { return parseInt(text(), 10); }
+Terminal = 'STOP' / '(' _ 'STOP' _ ')' / 'ERROR' / '(' _ 'ERROR' _ ')'
 
 /**
  * ACTION LABELS
@@ -228,20 +229,33 @@ ExpressionAction = '[' _ exp:Expression _ ']' _ action:(_ActionLabel ?) {
     return [exp].concat(action);
 }
 
-ActionLabels = ActionLabel
+ActionLabels = a:ActionLabel _ b:_ActionLabels {
+          a.subtype = 'index';
+                    a.variable = b.variable; 
+                    a.index = b.index;
+                    return a;
+             }
+             / ActionLabel
+             / Set
+             / '[' _ range:ActionRange _ ']' { return range; }
+
+_ActionLabels = '.' _ action:ActionLabel { return action; }
+              / '.' _ set:Set { return set; }
+              / '[' _ range:ActionRange _ ']' { return range; }
+              / '[' _ exp:Expression _ ']' { return exp; }
 
 DottedAction = a:LowerCaseIdentifier '.' b:LowerCaseIdentifier { return a + '.' + b; }
 
 ActionRange = Range
             / Set
-            / variable:Variable _ ':' _ range:Range {}
-            / variable:Variable _ ':' _ set:Set {}
+            / variable:Variable _ ':' _ range:Range { return {variable:variable, index: range}; }
+            / variable:Variable _ ':' _ set:Set { return {variable:variable, index: set}; }
 
-Range = Name
-      / start:SimpleExpression _ '..' _ end:SimpleExpression {}
-
-Set = Name
-    / '{' _ a:SetElements _ '}' { return new Node.SetNode(undefined, a); }
+Range = start:SimpleExpression _ '..' _ end:SimpleExpression { return new Node.RangeNode(undefined, start, end); }
+      / Terminal _ Identifier
+      
+Set = '{' _ a:SetElements _ '}' { return new Node.SetNode(undefined, a); }
+    / Terminal _ Identifier
 
 SetElements = a:ActionLabels _ b:_SetElements { return [a].concat(b); }
             / ActionLabels
@@ -292,10 +306,8 @@ LocalProcess = '(' _ choice:Choice _ ')' { return choice; }
              / Choice
              / BaseLocalProcess
 
-BaseLocalProcess = 'STOP' { return new Node.StopNode(); }
-                 / 'ERROR' { return new Node.ErrorNode(); }
-                 / '(' _ 'STOP' _ ')' { return new Node.StopNode(); }
-                 / '(' _ 'ERROR' _ ')' { return new Node.ErrorNode(); }
+BaseLocalProcess = ('STOP' / '(' _ 'STOP' _ ')') { return new Node.StopNode(); }
+                 / ('ERROR' / '(' _ 'ERROR' _ ')') { return new Node.ErrorNode(); }
                  / Name
 
 Choice = a:ActionPrefix _ b:_Choice { return new Node.ChoiceNode(a, b); }
@@ -556,7 +568,7 @@ _LeftShiftExpression = '<<' _ add:AdditiveExpression _ shift:(_LeftShiftExpressi
     return new Node.ExpressionNode('<<', add, shift);
 }
 
-AdditiveExpression = base:BaseExpression _ add:(_AdditiveExpression) { return new Node.SimpleExpressionNod(base + ' ' + add); }
+AdditiveExpression = base:BaseExpression _ add:(_AdditiveExpression) { return new Node.SimpleExpressionNode(base + ' ' + add); }
                    / exp:MultiplicativeExpression { return new Node.SimpleExpressionNode(exp); }
 
 _AdditiveExpression = operator:('+' / '-')  _ multi:MultiplicativeExpression _ add:(_AdditiveExpression ?) {

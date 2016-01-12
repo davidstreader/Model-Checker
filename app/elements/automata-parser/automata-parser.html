@@ -419,30 +419,48 @@
      */
     _interpretSequence: function(sequence, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
       var graph = definitionMap[defName].graph;         // get the graph
+      var node = graph.addNode(NodeUid.next);
+      var action = this._processActionNode(sequence.from, variableMap);
 
-      // check if the sequence begins with an indexed action
-      if(sequence.from.type === 'indexed-action'){
-        var from = sequence.from;
-        // process the range of the variable
-        var range = this._processRange(from.range, 'defined in ' + defName);
-        for(var i = range.start; i < range.end; i++){
-          var node = graph.addNode(NodeUid.next);
-          // update the value of variable in the variable map
-          variableMap[from.variable] = i;
-          // construct indexed action name
-          var action = '[' + i + '].' + from.action;
-          // add an edge to connect the new node to the rest of the graph
-          graph.addEdge(EdgeUid.next, extendtionNode, node, action);
-          this._interpretProcess(sequence.to, node, definitionMap, defName, globalName, referenceMap, variableMap);
+      if(typeof(action) === 'object'){
+        var prefix = undefined;
+        var variable = undefined;
+
+        // define variable if this is an indexed action
+        if(action.type === 'index'){
+          variable = action.variable.name;
+          prefix = action.action;
+          action = action.index;
+        }
+        
+        if(action.type === 'set'){
+          for(var i = 0; i < action.set.length; i++){
+            // update variable reference if variable is defined
+            if(variable !== undefined){
+              variableMap[variable] = action.set[i];
+            }
+
+            var label = (prefix === undefined) ? action.set[i] : (prefix + '.' + action.set[i]);
+            graph.addEdge(EdgeUid.next, extendtionNode, node, label);
+          }
+        }
+        else if(action.type === 'range'){
+          for(var i = action.start; i < action.end; i++){
+            // update variable reference if variable is defined
+            if(variable !== undefined){
+              variableMap[variable] = i;
+            }
+
+            var label = (prefix === undefined) ? '[' + i + ']' : prefix + '[' + i + ']';
+            graph.addEdge(EdgeUid.next, extendtionNode, node, label);
+          }          
         }
       }
       else{
-        // add an edge connect the new node to the rest of the graph
-        var node = graph.addNode(NodeUid.next);
-        var action = this._processActionNode(sequence.from, variableMap);
         graph.addEdge(EdgeUid.next, extendtionNode, node, action);
-        this._interpretProcess(sequence.to, node, definitionMap, defName, globalName, referenceMap, variableMap);
       }
+
+      this._interpretProcess(sequence.to, node, definitionMap, defName, globalName, referenceMap, variableMap);
     },
     /**
      * Interpret a parse tree choice node.
@@ -721,18 +739,29 @@
      *
      */
     _processActionNode: function(ptNode, variableMap) {
-      // check if node is a simple expression
-      if(ptNode.type === 'simple-expression'){
-        return ptNode.expression;
+
+      switch(ptNode.type){
+        case 'simple-expression':
+          return ptNode.expression;
+        case 'set':
+          return this._processSet(ptNode.set);
+        case 'range':
+          return this._processRange(ptNode);
       }
 
-      var subtype = ptNode.subtype;
-      // if action does not have a subtype it is a standard action
-      if(subtype === undefined){
-        return this._getActionFromNode(ptNode);
+      switch(ptNode.subtype){
+        case undefined:
+          return this._getActionFromNode(ptNode);
+        case 'expression':
+          return this._processExpressionActionNode(ptNode, variableMap);
+        case 'joined':
+          return this._processJoinedActionNode(ptNode, variableMap);
+        case 'index':
+          return this._processIndexActionNode(ptNode, variableMap);
       }
+    },
 
-      else if(subtype === 'expression'){
+    _processExpressionActionNode: function(ptNode, variableMap) {
         var action = this._getActionFromNode(ptNode);
         var expressions = ptNode.expressions;
         
@@ -742,9 +771,9 @@
         }
 
         return action;
-      }
+    },
 
-      else if(subtype === 'joined'){
+    _processJoinedActionNode: function(ptNode, variableMap) {
         var actions = ptNode.actions;
         var action = '';
         
@@ -754,8 +783,12 @@
           action += (result + temp);
         }
 
-        return action;        
-      }
+        return action; 
+    },
+
+    _processIndexActionNode: function(ptNode, variableMap) {
+      var index = this._processActionNode(ptNode.index);
+      return {type: 'index', variable: ptNode.variable, action: ptNode.action, index: index}
     },
 
     /**
@@ -1105,7 +1138,7 @@
         var edges = this._definitionsMap[defName].graph.edges;
         // check each edge to see if it needs to be updated
         edges.forEach(function(edge, index){
-          var contains = _.contains(set, edge.label);
+          var contains = _.contains(set.set, edge.label);
           if((type === 'includes' && contains) || (type === 'excludes' && !contains)){
             // only updates the edge if it needs to be hidden
             edge.isHidden = true;
@@ -1135,7 +1168,7 @@
         }
       }
 
-      return result;
+      return {type:"set", set:result};
     },
 
     /**
@@ -1165,6 +1198,11 @@
             throw new this.InterpreterException('Range "' + defName + '" is refererencing undefined constant "' + value + '".');
           }
         }
+
+        // check if simple expression
+        if(points[i].type === 'simple-expression'){
+          points[i] = points[i].expression.expression;
+        }
       }
 
       // update the range
@@ -1176,6 +1214,7 @@
         throw new this.InterpreterException('Start of range greater than or equal to end of range for range "' + defName + '".');
       }
 
+      range.type = 'range';
       return range;
     },
     /**
