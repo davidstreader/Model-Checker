@@ -186,7 +186,7 @@
     };
 }
 
-ParseTree = (FSP / ConstantDefinition / RangeDefinition / OperationDefinition / Comment)*
+ParseTree = (FSP / ConstantDefinition / RangeDefinition / SetDefinition / OperationDefinition / Comment)*
 
 FSP = _ definition:(ProcessDefinition / ReferenceDefinition / FunctionDefinition / CompositeDefinition) _ {
   return new Node.ModelNode(definition);

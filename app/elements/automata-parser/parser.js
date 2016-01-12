@@ -577,9 +577,12 @@ PEG.automataParser = (function() {
         if (s1 === peg$FAILED) {
           s1 = peg$parseRangeDefinition();
           if (s1 === peg$FAILED) {
-            s1 = peg$parseOperationDefinition();
+            s1 = peg$parseSetDefinition();
             if (s1 === peg$FAILED) {
-              s1 = peg$parseComment();
+              s1 = peg$parseOperationDefinition();
+              if (s1 === peg$FAILED) {
+                s1 = peg$parseComment();
+              }
             }
           }
         }
@@ -592,9 +595,12 @@ PEG.automataParser = (function() {
           if (s1 === peg$FAILED) {
             s1 = peg$parseRangeDefinition();
             if (s1 === peg$FAILED) {
-              s1 = peg$parseOperationDefinition();
+              s1 = peg$parseSetDefinition();
               if (s1 === peg$FAILED) {
-                s1 = peg$parseComment();
+                s1 = peg$parseOperationDefinition();
+                if (s1 === peg$FAILED) {
+                  s1 = peg$parseComment();
+                }
               }
             }
           }

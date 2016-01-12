@@ -99,7 +99,16 @@
       _rangesMap: {
         type: Object,
         readOnly: true
-      }
+      },
+      /**
+       * A map of set variable names to their sets.
+       *
+       * @private
+       */
+       _setsMap: {
+        type: Object,
+        readOnly: true
+       }
     },
     /**
      * Stores definition data.
@@ -196,6 +205,7 @@
       this._set_compositeStack([]);
       this._set_constantsMap({});
       this._set_rangesMap({});
+      this._set_setsMap({});
       // reset the node and edge uids in graph class
       NodeUid.reset();
       EdgeUid.reset();
@@ -223,6 +233,9 @@
             break;
           case 'range':
             this._interpretRange(model);
+            break;
+          case 'set':
+            this._interpretSet(model);
             break;
           case 'comment':
             break; // ignore comments
@@ -350,6 +363,21 @@
 
       // add constant to constants map
       this._rangesMap[model.name] = range;
+    },
+    /**
+     *
+     */
+    _interpretSet: function(model) {
+      // check if the name is valid
+      if(!this._isValidName(model.name)){
+        throw new this.InterpreterException('The name "' + model.name + '" has been defined already.');
+      }
+
+      // process the set
+      var set = this._processSet(model.set);
+
+      // add set to sets map
+      this._setsMap[model.name] = set;
     },
     /**
      * Interpret a parse tree process node.
