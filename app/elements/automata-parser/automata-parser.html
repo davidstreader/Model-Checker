@@ -98,7 +98,6 @@
       _constantsMap: {
         type: Object,
         readOnly: true
-<<<<<<< HEAD
       },
 
       /**
@@ -109,8 +108,6 @@
       _rangesMap: {
         type: Object,
         readOnly: true
-=======
->>>>>>> parser
       }
     },
 
@@ -353,13 +350,10 @@
         throw new this.InterpreterException('The name "' + model.name + '" has been defined already.');
       }
       // add constant to constants map
-<<<<<<< HEAD
       var value = this._interpretSimpleExpression(model.expression);
       this._constantsMap[model.name] = value;
       console.log(model.name.name +' = '+value);
-=======
       this._constantsMap[model.name] = {type: 'constant', value: model.value};
->>>>>>> parser
     },
 
     /**
@@ -807,8 +801,6 @@
       node.addMetaData ('isTerminal', 'error');
     },
 
-<<<<<<< HEAD
-=======
     /**
      *
      */
@@ -948,7 +940,6 @@
       // process expression
       return this._processExpression(operand, variableMap);
     },
->>>>>>> parser
     /**
      * Interpret a parse tree operation node.
      *
@@ -1259,8 +1250,6 @@
       }
     },
 
-<<<<<<< HEAD
-=======
     /**
      * Processes and returns the set of relabelling objects.
      *
@@ -1279,7 +1268,6 @@
       return result;
     },
 
->>>>>>> parser
     /**
      * Process the hiding of transitions for the specified definition.
      *
@@ -1304,8 +1292,6 @@
       }
     },
 
-<<<<<<< HEAD
-=======
     /**
      * Processes and returns the set of hiding objects.
      *
@@ -1330,7 +1316,6 @@
       return {type:"set", set:result};
     },
 
->>>>>>> parser
     /**
      * Processes and returns the specified range value. Checks to see if the range
      * has been previously defined, references valid constants and that it is not
