@@ -453,7 +453,7 @@
           }
         }
         else if(action.type === 'range'){
-          for(var i = action.start; i < action.end; i++){
+          for(var i = action.start; i <= action.end; i++){
             // update variable reference if variable is defined
             if(variable !== undefined){
               variableMap[variable] = i;

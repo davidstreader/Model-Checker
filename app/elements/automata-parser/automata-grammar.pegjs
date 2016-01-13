@@ -68,6 +68,13 @@
         this.action = action;
         //this.position = location();
       },
+      IndexNode: function(variable, index){
+        this.type = 'action';
+        this.subtype = 'index';
+        this.action = '';
+        this.variable = variable;
+        this.index = index;
+      },
       SequenceNode: function(from, to){
         this.type = 'sequence';
         //TODO: this.guard = guard;
@@ -133,6 +140,10 @@
     function constructSequence(sequence){
       var to = sequence.pop();
       var from = sequence.pop();
+      
+      // if only one node was popped then only return the first on
+      if(from === undefined){ return to; }
+      
       var node = new Node.SequenceNode(from, to);
         
       while(sequence.length !== 0){
@@ -158,6 +169,11 @@
         node.action = action;
         node.expressions = expressions;
         return node;
+    };
+    
+    function constructIndexActionNode(action, index){
+      index.action = action.action;
+        return index;
     };
     
     function processLocalDefinitions(definition){
@@ -188,7 +204,7 @@
 
 ParseTree = (FSP / ConstantDefinition / RangeDefinition / SetDefinition / OperationDefinition / Comment)*
 
-FSP = _ definition:(ProcessDefinition / ReferenceDefinition / FunctionDefinition / CompositeDefinition) _ {
+FSP = _ definition:(FunctionDefinition / ReferenceDefinition / CompositeDefinition / ProcessDefinition) _ {
   return new Node.ModelNode(definition);
 }
 
@@ -196,15 +212,15 @@ FSP = _ definition:(ProcessDefinition / ReferenceDefinition / FunctionDefinition
  * IDENTIFIERS
  */
 
-Name = name:UpperCaseIdentifier { return new Node.NameNode(name); }
-Identifier = name:UpperCaseIdentifier { return new Node.NameNode(name); }
+Name = ('STOP' / '(' _ 'STOP' _ ')') { return new Node.StopNode(); }
+     / ('ERROR' / '(' _ 'ERROR' _ ')') { return new Node.ErrorNode(); }
+     / name:UpperCaseIdentifier { return new Node.NameNode(name); }
 
 Variable = variable:LowerCaseIdentifier { return new Node.VariableNode(variable); }
 
 UpperCaseIdentifier = $([A-Z][A-Za-z0-9_]*) { return text(); }
 LowerCaseIdentifier = $([a-z][A-Za-z0-9_]*) { return text(); }
 IntegerLiteral = [-]?[0-9]+ { return parseInt(text(), 10); }
-Terminal = 'STOP' / '(' _ 'STOP' _ ')' / 'ERROR' / '(' _ 'ERROR' _ ')'
 
 /**
  * ACTION LABELS
@@ -227,12 +243,14 @@ BracketedExpression = '[' _ exp:Expression _ ']' { return exp; }
 
 ActionLabels = a:ActionLabel _ b:JoinedActionLabel { return constructJoinedActionNode(a, b); }
              / a:ActionLabel _ b:JoinedSet { return constructJoinedActionNode(a, b); }
+             / a:ActionLabel _ b:BracketedActionRange { return constructIndexActionNode(a, b); }
              / ActionLabel
              / Set
-             / '[' _ range:ActionRange _ ']' { return range; }
+             / BracketedActionRange
 
 JoinedActionLabel = '.' _ action:ActionLabel { return action; }
 JoinedSet = '.' _ set:Set { return set; }
+BracketedActionRange = '[' _ range:ActionRange _ ']' { return range; }
 
 
 _ActionLabels = '.' _ action:ActionLabel { return action; }
@@ -240,18 +258,16 @@ _ActionLabels = '.' _ action:ActionLabel { return action; }
               / '[' _ range:ActionRange _ ']' { return range; }
               / '[' _ exp:Expression _ ']' { return exp; }
 
-DottedAction = a:LowerCaseIdentifier '.' b:LowerCaseIdentifier { return a + '.' + b; }
-
 ActionRange = Range
             / Set
-            / variable:Variable _ ':' _ range:Range { return {variable:variable, index: range}; }
-            / variable:Variable _ ':' _ set:Set { return {variable:variable, index: set}; }
+            / variable:Variable _ ':' _ range:Range { return new Node.IndexNode(variable, range); }
+            / variable:Variable _ ':' _ set:Set { return new Node.IndexNode(variable, range); }
 
 Range = start:SimpleExpression _ '..' _ end:SimpleExpression { return new Node.RangeNode(undefined, start, end); }
-      / Terminal _ Identifier
+      / Name
       
 Set = '{' _ a:SetElements _ '}' { return new Node.SetNode(undefined, a); }
-    / a:(Terminal ?) _ b:Identifier { if(a !== null) { error("NO TERMINAL"); } return b; }
+    / Name
     
 
 SetElements = a:ActionLabels _ b:_SetElements { return [a].concat(b); }
@@ -303,9 +319,7 @@ LocalProcess = '(' _ choice:Choice _ ')' { return choice; }
              / Choice
              / BaseLocalProcess
 
-BaseLocalProcess = ('STOP' / '(' _ 'STOP' _ ')') { return new Node.StopNode(); }
-                 / ('ERROR' / '(' _ 'ERROR' _ ')') { return new Node.ErrorNode(); }
-                 / Name
+BaseLocalProcess = Name
 
 Choice = a:ActionPrefix _ b:_Choice { return new Node.ChoiceNode(a, b); }
        / ActionPrefix
@@ -313,18 +327,17 @@ Choice = a:ActionPrefix _ b:_Choice { return new Node.ChoiceNode(a, b); }
 /* Used to remove left recursion from 'Choice' */       
 _Choice = _ '|' _ a:ActionPrefix _ b:(_Choice ?) { if(b === null){ return a; } return new Node.ChoiceNode(a, b); }
 
-ActionPrefix = a:PrefixActions _ '->' _ b:LocalProcess {
-  if(a.constructor !== Array){
-      return constructSequence([a].concat(b));
-    }
-    return constructSequence(a.concat(b));
+ActionPrefix = a:PrefixActions _ b:(LocalProcess ?) {
+  if(a.constructor !== Array){ a = [a]; }
+  if(b !== null){ a = a.concat(b); }
+  return constructSequence(a);
 }
 
 PrefixActions = a:ActionLabels _ b:_PrefixActions _ { return [a].concat(b); }
               / ActionLabels
 
 /* Used to remove left recursion from 'PrefixActions' */
-_PrefixActions = _ '->' _ a:ActionLabels _ b:(_PrefixActions ?) {
+_PrefixActions = _ '->' _ a:(ActionLabels / LocalProcess) _ b:(_PrefixActions ?) {
   // return the action label if parser failed to parse another prefix action
     if(b === null){ return [a]; }
     // otherwise return new sequence node
@@ -409,7 +422,7 @@ OperationDefinition = _ a:OperationProcess _ negate:('!' ?) _ op:Operation _ b:O
     return new Node.OperationNode(op, text(), a, b, isNegated);
 }
 
-OperationProcess = BaseLocalProcess / ProcessBody / FunctionBody / CompositeBody / ReferenceBody
+OperationProcess = FunctionBody / CompositeBody / ReferenceBody / BaseLocalProcess / ProcessBody
 
 Operation = '~' { return 'bisimulation'; }
 
