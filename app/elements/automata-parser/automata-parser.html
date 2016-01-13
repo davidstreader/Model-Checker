@@ -98,6 +98,7 @@
       _constantsMap: {
         type: Object,
         readOnly: true
+<<<<<<< HEAD
       },
 
       /**
@@ -108,6 +109,8 @@
       _rangesMap: {
         type: Object,
         readOnly: true
+=======
+>>>>>>> parser
       }
     },
 
@@ -208,7 +211,6 @@
       this._set_operationUid(0);
       this._set_compositeStack([]);
       this._set_constantsMap({});
-      this._set_rangesMap({});
       // reset the node and edge uids in graph class
       NodeUid.reset();
       EdgeUid.reset();
@@ -237,6 +239,9 @@
             break;
           case 'range':
             this._interpretRange(model);
+            break;
+          case 'set':
+            this._interpretSet(model);
             break;
           case 'comment':
             break; // ignore comments
@@ -348,9 +353,13 @@
         throw new this.InterpreterException('The name "' + model.name + '" has been defined already.');
       }
       // add constant to constants map
+<<<<<<< HEAD
       var value = this._interpretSimpleExpression(model.expression);
       this._constantsMap[model.name] = value;
       console.log(model.name.name +' = '+value);
+=======
+      this._constantsMap[model.name] = {type: 'constant', value: model.value};
+>>>>>>> parser
     },
 
     /**
@@ -369,7 +378,22 @@
       var range = this._processRange(model.range, model.name);
 
       // add constant to constants map
-      this._rangesMap[model.name] = range;
+      this._constantsMap[model.name] = range;
+    },
+    /**
+     *
+     */
+    _interpretSet: function(model) {
+      // check if the name is valid
+      if(!this._isValidName(model.name)){
+        throw new this.InterpreterException('The name "' + model.name + '" has been defined already.');
+      }
+
+      // process the set
+      var set = this._processSet(model.set);
+
+      // add set to sets map
+      this._constantsMap[model.name] = set;
     },
 
     /**
@@ -449,29 +473,48 @@
      */
     _interpretSequence: function(sequence, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
       var graph = definitionMap[defName].graph;         // get the graph
+      var node = graph.addNode(NodeUid.next);
+      var action = this._processActionNode(sequence.from, variableMap);
 
-      // check if the sequence begins with an indexed action
-      if(sequence.from.type === 'indexed-action'){
-        var from = sequence.from;
-        // process the range of the variable
-        var range = this._processRange(from.range, 'defined in ' + defName);
-        for(var i = range.start; i < range.end; i++){
-          var node = graph.addNode(NodeUid.next);
-          // update the value of variable in the variable map
-          variableMap[from.variable] = i;
-          // construct indexed action name
-          var action = '[' + i + '].' + from.action;
-          // add an edge to connect the new node to the rest of the graph
-          graph.addEdge(EdgeUid.next, extendtionNode, node, action);
-          this._interpretProcess(sequence.to, node, definitionMap, defName, globalName, referenceMap, variableMap);
+      if(typeof(action) === 'object'){
+        var prefix = undefined;
+        var variable = undefined;
+
+        // define variable if this is an indexed action
+        if(action.type === 'index'){
+          variable = action.variable.name;
+          prefix = action.action;
+          action = action.index;
+        }
+        
+        if(action.type === 'set'){
+          for(var i = 0; i < action.set.length; i++){
+            // update variable reference if variable is defined
+            if(variable !== undefined){
+              variableMap[variable] = action.set[i];
+            }
+
+            var label = (prefix === undefined) ? action.set[i] : (prefix + '.' + action.set[i]);
+            graph.addEdge(EdgeUid.next, extendtionNode, node, label);
+          }
+        }
+        else if(action.type === 'range'){
+          for(var i = action.start; i <= action.end; i++){
+            // update variable reference if variable is defined
+            if(variable !== undefined){
+              variableMap[variable] = i;
+            }
+
+            var label = (prefix === undefined) ? '[' + i + ']' : prefix + '[' + i + ']';
+            graph.addEdge(EdgeUid.next, extendtionNode, node, label);
+          }          
         }
       }
       else{
-        // add an edge connect the new node to the rest of the graph
-        var node = graph.addNode(NodeUid.next);
-        graph.addEdge(EdgeUid.next, extendtionNode, node, this._getActionFromNode(sequence.from));
-        this._interpretProcess(sequence.to, node, definitionMap, defName, globalName, referenceMap, variableMap);
+        graph.addEdge(EdgeUid.next, extendtionNode, node, action);
       }
+
+      this._interpretProcess(sequence.to, node, definitionMap, defName, globalName, referenceMap, variableMap);
     },
 
     /**
@@ -764,6 +807,148 @@
       node.addMetaData ('isTerminal', 'error');
     },
 
+<<<<<<< HEAD
+=======
+    /**
+     *
+     */
+    _processActionNode: function(ptNode, variableMap) {
+      // process types which are not action nodes
+      switch(ptNode.type){
+        case 'simple-expression':
+          return ptNode.expression;
+        case 'set':
+          return this._processSet(ptNode.set);
+        case 'range':
+          return this._processRange(ptNode);
+        case 'name':
+          return this._getFromConstantStack(this._getNameFromPTNode(ptNode));
+      }
+
+      // process the subtypes of action nodes
+      switch(ptNode.subtype){
+        case undefined:
+          return this._getActionFromNode(ptNode);
+        case 'expression':
+          return this._processExpressionActionNode(ptNode, variableMap);
+        case 'joined':
+          return this._processJoinedActionNode(ptNode, variableMap);
+        case 'index':
+          return this._processIndexActionNode(ptNode, variableMap);
+      }
+    },
+
+    _processExpressionActionNode: function(ptNode, variableMap) {
+        var action = this._getActionFromNode(ptNode);
+        var expressions = ptNode.expressions;
+        
+        for(var i = 0; i < expressions.length; i++){
+          var temp = this._processActionNode(expressions[i]);
+          action += '[' + temp + ']';
+        }
+
+        return action;
+    },
+
+    _processJoinedActionNode: function(ptNode, variableMap) {
+        var actions = ptNode.actions;
+        var action = '';
+        
+        for(var i = 0; i < actions.length; i++){
+          var temp = this._processActionNode(actions[i]);
+          var result = (i == 0) ? '' : '.';
+          action += (result + temp);
+        }
+
+        return action; 
+    },
+
+    _processIndexActionNode: function(ptNode, variableMap) {
+      var index = this._processActionNode(ptNode.index);
+      return {type: 'index', variable: ptNode.variable, action: ptNode.action, index: index}
+    },
+
+    /**
+     *
+     */
+    _processExpression: function(ptNode, variableMap) {
+      var result;
+      var operand1 = this._processOperand(ptNode.operand1, variableMap);
+      var operand2 = this._processOperand(ptNode.operand2, variableMap);
+
+      switch(ptNode.operator){
+        case '||': // or
+          result = (Boolean(operand1) || Boolean(operand2));
+          break;
+        case '&&': // and
+          result = (Boolean(operand1) && Boolean(operand2));
+          break;
+        case '|': // bitwise or
+          result = Boolean(operand1 | operand2);
+          break;
+        case '^': // bitwise exclusive or
+          result = Boolean(operand1 ^ operand2);
+          break;
+        case '&':// bitwise and
+          result = Boolean(operand1 & operand2);
+          break;
+        case '==': // equal
+          result = Boolean(operand1 == operand2);
+          break;
+        case '!=': // not equal
+          result = Boolean(operand1 != operand2);
+          break;
+        case '<': // les than
+          result = Boolean(operand1 < operand2);
+          break;
+        case '<=': // lest than or equal
+          result = Boolean(operand1 <= operand2);
+          break;
+        case '>': // greater than
+          result = Boolean(operand1 > operand2);
+          break;
+        case '>=': // greater than or equal
+          result = Boolean(operand1 >= operand2);
+          break;
+        case '<<': // shift left
+          result = operand1 << operand2;
+          break;
+        case '>>': // shift right
+          result = operand1 >> operand2;
+          break;
+      }
+
+      return result;
+    },
+
+    /**
+     *
+     */
+    _processOperand: function(operand, variableMap) {
+      // check if operand is a number
+      var type = typeof(operand);
+      if(type === 'number'){
+        return operand;
+      }
+
+      // check if operand is a variable name
+      if(type === 'string'){
+        // check if variable is locally defined or a constant
+        if(variableMap[operand] !== undefined){
+          return variableMap[operand];
+        }
+        else if(this._constantsMap[operand] !== undefined){
+          return this._constantsMap[operand];
+        }
+
+        // throw expression if variable cannot be located
+        throw new this.InterpreterException('\'' + operand + '\' has not been defined.');
+      }
+
+      // process expression
+      return this._processExpression(operand, variableMap);
+    },
+>>>>>>> parser
     /**
      * Interpret a parse tree operation node.
      *
@@ -1057,14 +1242,15 @@
     _processRelabelling: function(defName) {
       var relabel = this._definitionsMap[defName].relabel;
       if(relabel !== undefined){
+        relabel = this._processRelabellingSet(relabel);
         // get an array of edges in the current graph
         var edges = this._definitionsMap[defName].graph.edges;
         // check each edge to see if it needs to be updated
         edges.forEach(function(edge){
           for(var i = 0; i < relabel.length; i++){
             // only update the edge if it needs to be relabelled
-            var oldLabel = this._getActionFromNode(relabel[i]['old']);
-            var newLabel = this._getActionFromNode(relabel[i]['new']);
+            var oldLabel = relabel[i]['old'];
+            var newLabel = relabel[i]['new'];
             if(oldLabel === edge.label){
               edge.label = newLabel;
             }
@@ -1073,6 +1259,27 @@
       }
     },
 
+<<<<<<< HEAD
+=======
+    /**
+     * Processes and returns the set of relabelling objects.
+     *
+     * @private
+     * @param {!object} set - the set of relabelling objects to process
+     * @returns {!object} processed set
+     */
+    _processRelabellingSet: function(set) {
+      var result = [];
+      for(var i = 0; i < set.length; i++){
+        var newLabel = this._processActionNode(set[i]['new']);
+        var oldLabel = this._processActionNode(set[i]['old']);
+        result.push({new: newLabel, old: oldLabel});
+      }
+
+      return result;
+    },
+
+>>>>>>> parser
     /**
      * Process the hiding of transitions for the specified definition.
      *
@@ -1083,12 +1290,12 @@
       var hidden = this._definitionsMap[defName].hidden;
       if(hidden !== undefined){
         var type = hidden.type;
-        var set = hidden.set;
+        var set = this._processSet(hidden.set);
         // get an array of edges in the current graph
         var edges = this._definitionsMap[defName].graph.edges;
         // check each edge to see if it needs to be updated
         edges.forEach(function(edge, index){
-          var contains = _.contains(set, edge.label);
+          var contains = _.contains(set.set, edge.label);
           if((type === 'includes' && contains) || (type === 'excludes' && !contains)){
             // only updates the edge if it needs to be hidden
             edge.isHidden = true;
@@ -1097,6 +1304,33 @@
       }
     },
 
+<<<<<<< HEAD
+=======
+    /**
+     * Processes and returns the set of hiding objects.
+     *
+     * @private
+     * @param {!object} set - the set of hiding objects to process
+     * @returns {!object} processed set
+     */
+    _processSet: function(set) {
+      var result = [];
+      // check if set is not array
+      if(set.length === undefined){
+        result.push(this._processActionNode(set));
+      }
+
+      // otherwise process all the elements in the set
+      else{
+        for(var i = 0; i < set.length; i++){
+          result.push(this._processActionNode(set[i]));
+        }
+      }
+
+      return {type:"set", set:result};
+    },
+
+>>>>>>> parser
     /**
      * Processes and returns the specified range value. Checks to see if the range
      * has been previously defined, references valid constants and that it is not
@@ -1131,6 +1365,11 @@
             throw new this.InterpreterException('Range "' + defName + '" is refererencing undefined constant "' + value + '".');
           }
         }
+
+        // check if simple expression
+        if(points[i].type === 'simple-expression'){
+          points[i] = points[i].expression.expression;
+        }
       }
 
       // update the range
@@ -1142,6 +1381,7 @@
         throw new this.InterpreterException('Start of range greater than or equal to end of range for range "' + defName + '".');
       }
 
+      range.type = 'range';
       return range;
     },
 
@@ -1257,6 +1497,23 @@
       return name;
     },
 
+    /**
+     * Returns the value corresponding the the specified variable name in the constants stack.
+     * Throws an error if a constant has not been defined with the specified variable name.
+     *
+     * @private
+     * @param {!string} variable - name of constant to retrieve
+     * @returns {!object} - the object corresponding to the variable name
+     */
+    _getFromConstantStack: function(variable) {
+      // check if this is a valid variable name
+      var constant = this._constantsMap[variable];
+      if(constant === undefined){
+        throw new this.InterpreterException('\'' + variable + '\' is not a defined constant.');
+      }
+
+      return constant;
+    } ,
     /**
      * Builds an object containing the results of the parsing. This includes taking 
      * all the automaton definitions that are defined as visible and construct an 
