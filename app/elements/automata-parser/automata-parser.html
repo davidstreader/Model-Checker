@@ -297,20 +297,20 @@
     _interpretOperation: function(model) {
       // construct definitions for this operation
       var defNames = [];
-      var process = model.process;
+      var operation = model.operation;
       var definitionMap = this._definitionsMap;
-      var definitions = [model.definition1, model.definition2];
+      var processes = [model.process1, model.process2];
       
       for(var i = 0; i < 2; i++){
         var name = this._nextOperationUid();
-        this._constructDefinition(name, definitions[i].type, false);
+        this._constructDefinition(name, processes[i].type, false);
         defNames.push(name);
 
-        this._interpretProcess(definitions[i], definitionMap[defNames[i]].graph.root, definitionMap, defNames[i], defNames[i], {}, {});
+        this._interpretProcess(processes[i], definitionMap[defNames[i]].graph.root, definitionMap, defNames[i], defNames[i], {}, {});
         this._processDefinition(defNames[i]);
       }
 
-      this._processOperation(process, this._definitionsMap, defNames[0], defNames[1], model.input, model.isNegated, model.position);
+      this._processOperation(operation, this._definitionsMap, defNames[0], defNames[1], model.input, model.isNegated, model.position);
     },
     /**
      * Interprets the constant defined in the specified model.
@@ -495,14 +495,14 @@
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
     _interpretParallel: function(parallel, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
-      var defs = [parallel.definition1, parallel.definition2];
+      var processes = [parallel.process1, parallel.process2];
       
-      for(var i = 0; i < defs.length; i++){
+      for(var i = 0; i < processes.length; i++){
         var name = defName + '.' + i;
         // push name to composite stack
         this._pushToCompositeStack(name);
-        this._constructDefinition(name, defs[i].type, defs[i].relabel, defs[i].hidden, false);
-        var process = (defs[i].process === undefined) ? defs[i] : defs[i].process;
+        this._constructDefinition(name, processes[i].type, processes[i].relabel, processes[i].hidden, false);
+        var process = (processes[i].process === undefined) ? processes[i] : processes[i].process;
         this._interpretProcess(process, definitionMap[name].graph.root, definitionMap, name, name, referenceMap);
         this._processDefinition(name);
       }
@@ -773,7 +773,11 @@
     },
 
     _processExpressionActionNode: function(ptNode, variableMap) {
-        var action = this._getActionFromNode(ptNode);
+        var action = undefined;
+        if(ptNode.action != undefined){
+          action = this._processActionNode(ptNode.action);
+        }
+        action = (action == undefined) ? '' : action;
         var expressions = ptNode.expressions;
         
         for(var i = 0; i < expressions.length; i++){
@@ -885,9 +889,9 @@
     /**
      *
      */
-    _processOperation: function(process, definitionMap, defName1, defName2, input, isNegated, position) {
+    _processOperation: function(operation, definitionMap, defName1, defName2, input, isNegated, position) {
       var result = false;
-      switch(process){
+      switch(operation){
         case 'bisimulation':
           result = this._processBisimulation(definitionMap, defName1, defName2, input);
           break;
@@ -1399,19 +1403,6 @@
         var fail = 0;
         for(var i in this._operationsMap){
           var input = this._operationsMap[i].input;
-
-          // remove unnecessary line breaks and whitespace from input
-          input = input.replace(/ /g, '\n');
-          var split = input.split('\n');
-          input = '';
-          for(var j = 0; j < split.length; j++){
-            if(split[j] !== ''){
-              input += split[j];
-            }
-          }
-          // remove the dot from input
-          input = input.slice(0, input.length - 1);
-
           var result = this._operationsMap[i].result;
           var position = this._operationsMap[i].position;
           
