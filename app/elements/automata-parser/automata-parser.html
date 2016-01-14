@@ -190,30 +190,26 @@
     _interpretParseTree: function(parseTree) {
       this._resetInterpreter();
       parseTree.forEach(function(model) {
-        switch(model.type){
-          case 'model':
-            this._interpretDefinitions(model);
-            break;
-          case 'operation':
-            this._interpretOperation(model);
-            break;
-          case 'comment':
-            break; // ignore comments
+        if(model.type == 'model'){
+          this._interpretDefinitions(model);
         }
-
-        switch(model.subtype){
-          case 'constant':
-            this._interpretConstant(model);
-            break;
-          case 'range':
-            this._interpretRange(model);
-            break;
-          case 'set':
-            this._interpretSet(model);
-            break;
-          default:
-            console.error('Trying to interpret invalid model type "' + model.type + '"');
-            break;
+        else if(model.type == 'operation'){
+          this._interpretOperation(model);
+        }
+        else if(model.type == 'comment'){
+          // ignore comments
+        }
+        else if(model.subtype == 'constant'){
+          this._interpretConstant(model);
+        }
+        else if(model.subtype == 'range'){
+          this._interpretRange(model);
+        }
+        else if(model.subtype == 'set'){
+          this._interpretSet(model);
+        }
+        else{
+          console.error('Trying to interpret invalid model type "' + model.type + '"');
         }
       }.bind(this));
 
@@ -352,7 +348,7 @@
       var set = this._processSet(model.set);
 
       // add set to sets map
-      this._definitionsMap[name] = set;
+      this._definitionsMap[nameset] = set;
     },
     /**
      * Interpret a parse tree process node.
@@ -1238,6 +1234,7 @@
     _relabelNodes: function(showRefs, useIds) {
       var automata = this._getAutomataFromDefinitionsMap();
       for (var key in automata) {
+        key = automata[key];
         var label = 0;
         var visitedNodes = {};
         var fringe = [];
@@ -1361,7 +1358,9 @@
       // only build parsing results if live build has been selected
       if(this._buildAutomata){
         // build automata array
-        for (var key in this._getAutomataFromDefinitionsMap()) {
+        var definitions = this._getAutomataFromDefinitionsMap();
+        for (var key in definitions){
+          key = definitions[key];
           // only display automata which are defined as visible
           if(this._definitionsMap[key].isVisible){
             automata.unshift(new Automaton(key, this._definitionsMap[key].graph));
