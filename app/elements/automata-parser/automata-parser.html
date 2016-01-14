@@ -766,7 +766,7 @@
     _processExpressionActionNode: function(ptNode, variableMap) {
         var action = undefined;
         if(ptNode.action != undefined){
-          action = this._processActionNode(ptNode.action);
+          action = (typeof(ptNode.action) == 'string') ? ptNode.action : this._processActionNode(ptNode.action);
         }
         action = (action == undefined) ? '' : action;
         var expressions = ptNode.expressions;
