@@ -4197,7 +4197,7 @@ PEG.automataParser = (function() {
                 if(subtype != undefined){ this.subtype = subtype; }
             },
             IndexNode: function(index, variable){
-              console.log('constructing index');
+                console.log('constructing index');
                 this.type = 'index';
                 if(variable != undefined){ this.variable = variable; }
                 this.index = index;
@@ -4285,7 +4285,7 @@ PEG.automataParser = (function() {
         /* constructs a set definition node for the parse tree */
         function constructSetDefinitionNode(name, set){
             var node = new Node.DefinitionNode('set', name);
-            node.set = set;
+            node.set = set.set;
             return node;
         }
         

@@ -81,15 +81,6 @@
       _compositeStack: {
         type: Array,
         readOnly: true
-      },
-      /**
-       * A map of constant variable names to their values.
-       *
-       * @private
-       */
-      _constantsMap: {
-        type: Object,
-        readOnly: true
       }
     },
     /**
@@ -185,7 +176,6 @@
       this._set_operationsIndex(0);
       this._set_operationUid(0);
       this._set_compositeStack([]);
-      this._set_constantsMap({});
       // reset the node and edge uids in graph class
       NodeUid.reset();
       EdgeUid.reset();
@@ -200,7 +190,6 @@
     _interpretParseTree: function(parseTree) {
       this._resetInterpreter();
       parseTree.forEach(function(model) {
-        // ignore comments
         switch(model.type){
           case 'model':
             this._interpretDefinitions(model);
@@ -208,6 +197,11 @@
           case 'operation':
             this._interpretOperation(model);
             break;
+          case 'comment':
+            break; // ignore comments
+        }
+
+        switch(model.subtype){
           case 'constant':
             this._interpretConstant(model);
             break;
@@ -217,8 +211,6 @@
           case 'set':
             this._interpretSet(model);
             break;
-          case 'comment':
-            break; // ignore comments
           default:
             console.error('Trying to interpret invalid model type "' + model.type + '"');
             break;
@@ -229,7 +221,7 @@
       if(this._buildAutomata){
         this._relabelNodes(true);
       }
-
+      console.log(this._definitionsMap);
       return this._buildParsingResults();
     },
     /**
@@ -319,12 +311,13 @@
      * @param {!object} model - contains the constants name and the value to be assigned to it
      */
     _interpretConstant: function(model) {
+      var name = this._getNameFromPTNode(model.name);
       // check if the name is valid
-      if(!this._isValidName(model.name)){
+      if(this._definitionsMap[name] != undefined){
         throw new this.InterpreterException('The name "' + model.name + '" has been defined already.');
       }
       // add constant to constants map
-      this._constantsMap[model.name] = {type: 'constant', value: model.value};
+      this._definitionsMap[name] = {type: 'constant', value: model.value};
     },
     /**
      * Interprets the range defined in the specified model.
@@ -333,23 +326,25 @@
      * @param {!object} model - contains the ranges name and the range to be assigned to it
      */
     _interpretRange: function(model) {
+      var name = this._getNameFromPTNode(model.name);
       // check if the name is valid
-      if(!this._isValidName(model.name)){
+      if(this._definitionsMap[name] != undefined){
         throw new this.InterpreterException('The name "' + model.name + '" has been defined already.');
       }
 
       // process the range
-      var range = this._processRange(model.range, model.name);
+      var range = this._processRange(model.range, name);
 
       // add constant to constants map
-      this._constantsMap[model.name] = range;
+      this._definitionsMap[name] = range;
     },
     /**
      *
      */
     _interpretSet: function(model) {
+      var name = this._getNameFromPTNode(model.name);
       // check if the name is valid
-      if(!this._isValidName(model.name)){
+      if(this._definitionsMap[name] != undefined){
         throw new this.InterpreterException('The name "' + model.name + '" has been defined already.');
       }
 
@@ -357,7 +352,7 @@
       var set = this._processSet(model.set);
 
       // add set to sets map
-      this._constantsMap[model.name] = set;
+      this._definitionsMap[name] = set;
     },
     /**
      * Interpret a parse tree process node.
@@ -1241,7 +1236,8 @@
      * @param {boolean} useIds   - If set will use the nodes' id as the label
      */
     _relabelNodes: function(showRefs, useIds) {
-      for (var key in this._definitionsMap) {
+      var automata = this._getAutomataFromDefinitionsMap();
+      for (var key in automata) {
         var label = 0;
         var visitedNodes = {};
         var fringe = [];
@@ -1273,46 +1269,20 @@
       }
     },
     /**
-     * Returns true if the specified process is a definition, otherwise
-     * returns false.
+     * Returns the keys for all the automata defined in the definitions map.
      *
      * @private
-     * @param {!object} process - the process to check
-     * @returns {!boolean} true if process is definition, otherwise false
+     * @returns {!array} - an array of keys
      */
-    _isDefinition: function(process) {
-      var definitions = ['standard', 'parallel', 'reference', 'function'];
-      // check if the process type is any of the defintitions
-      for(var i = 0; i < definitions.length; i++){
-        var definition = definitions[i] + '-definition';
-        if(process.type === definition){
-          return true;
+    _getAutomataFromDefinitionsMap: function(){
+      var automata = [];
+      for(key in this._definitionsMap){
+        if(this._definitionsMap[key].graph != undefined){
+          automata.push(key);
         }
       }
 
-      // no matches found
-      return false;
-    },
-    /**
-     * Returns true if the specified name is valid, otherwise returns false.
-     * A valid name is one that has not been previously defined.
-     *
-     * @private
-     * @param {!string} name - the name to be checked
-     * @returns {!boolean} true if name is valid, otherwise false
-     */
-    _isValidName: function(name) {
-      var maps = [{name: 'definition', map: this._definitionsMap}, 
-                  {name: 'constant', map: this._constantsMap}, 
-                  {name: 'range', map: this._rangesMap}]
-      // check all maps to see if name has been defined in any of them
-      for(var i = 0; i < maps.length; i++){
-        if(maps[i].map[name] !== undefined){
-          return false;
-        }
-      }
-
-      return true;
+      return automata;
     },
     /**
      * Returns the next free index in the operations map.
@@ -1391,7 +1361,7 @@
       // only build parsing results if live build has been selected
       if(this._buildAutomata){
         // build automata array
-        for (var key in this._definitionsMap) {
+        for (var key in this._getAutomataFromDefinitionsMap()) {
           // only display automata which are defined as visible
           if(this._definitionsMap[key].isVisible){
             automata.unshift(new Automaton(key, this._definitionsMap[key].graph));
