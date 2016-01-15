@@ -218,7 +218,7 @@
       if(this._buildAutomata){
         this._relabelNodes(true);
       }
-      console.log(this._definitionsMap);
+
       return this._buildParsingResults();
     },
     /**
@@ -495,7 +495,7 @@
      */
     _interpretIndexedSequence: function(sequence, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap, action) {
       var graph = definitionMap[defName].graph;
-      var prefix = action.action;
+      var prefix = (action.action != undefined) ? action.action : '';
       var variable = undefined;
 
       // define variable if this is an indexed action
