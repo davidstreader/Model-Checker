@@ -1570,28 +1570,22 @@ PEG.automataParser = (function() {
     function peg$parseRange() {
       var s0, s1, s2, s3;
 
-      s0 = peg$parseIdentifier();
-      if (s0 === peg$FAILED) {
-        s0 = peg$currPos;
-        s1 = peg$parseExpression();
-        if (s1 !== peg$FAILED) {
-          if (input.substr(peg$currPos, 2) === peg$c50) {
-            s2 = peg$c50;
-            peg$currPos += 2;
-          } else {
-            s2 = peg$FAILED;
-            if (peg$silentFails === 0) { peg$fail(peg$c51); }
-          }
-          if (s2 !== peg$FAILED) {
-            s3 = peg$parseExpression();
-            if (s3 !== peg$FAILED) {
-              peg$savedPos = s0;
-              s1 = peg$c52(s1, s3);
-              s0 = s1;
-            } else {
-              peg$currPos = s0;
-              s0 = peg$FAILED;
-            }
+      s0 = peg$currPos;
+      s1 = peg$parseExpression();
+      if (s1 !== peg$FAILED) {
+        if (input.substr(peg$currPos, 2) === peg$c50) {
+          s2 = peg$c50;
+          peg$currPos += 2;
+        } else {
+          s2 = peg$FAILED;
+          if (peg$silentFails === 0) { peg$fail(peg$c51); }
+        }
+        if (s2 !== peg$FAILED) {
+          s3 = peg$parseExpression();
+          if (s3 !== peg$FAILED) {
+            peg$savedPos = s0;
+            s1 = peg$c52(s1, s3);
+            s0 = s1;
           } else {
             peg$currPos = s0;
             s0 = peg$FAILED;
@@ -1600,6 +1594,12 @@ PEG.automataParser = (function() {
           peg$currPos = s0;
           s0 = peg$FAILED;
         }
+      } else {
+        peg$currPos = s0;
+        s0 = peg$FAILED;
+      }
+      if (s0 === peg$FAILED) {
+        s0 = peg$parseIdentifier();
       }
 
       return s0;
@@ -4184,6 +4184,9 @@ PEG.automataParser = (function() {
       s1 = peg$parseIntegerLiteral();
       if (s1 === peg$FAILED) {
         s1 = peg$parseLowerCaseIdentifier();
+        if (s1 === peg$FAILED) {
+          s1 = peg$parseIdentifier();
+        }
       }
       if (s1 !== peg$FAILED) {
         peg$savedPos = s0;

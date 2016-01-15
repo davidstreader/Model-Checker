@@ -1252,10 +1252,10 @@
       var points = [range.start, range.end]; 
 
       for(var i = 0; i < points.length; i++){
-        if(typeof(points[i]) === 'string'){
-          var value = this._constantsMap[points[i]];
+        if(points[i].expression.type == 'name'){
+          var value = this._definitionsMap[points[i].expression.name];
           if(value !== undefined){
-            points[i] = value;
+            points[i] = value.value;
           }
           else{
             throw new this.InterpreterException('Range "' + defName + '" is refererencing undefined constant "' + value + '".');
