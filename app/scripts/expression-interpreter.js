@@ -61,7 +61,7 @@ function interpretExpression(expTree){
 			return processBitwiseOrExpression(expression.operand1, expression.operand2);
 		}
 		else if(operator == BIT_EXCL_OR){
-			return processBitwiseExclOrExpression(expression.operand1, expression.operand2);
+			return processBitwiseExclusiveOrExpression(expression.operand1, expression.operand2);
 		}
 		else if(operator == BIT_AND){
 			return processBitwiseAndExpression(expression.operand1, expression.operand2);
@@ -140,8 +140,8 @@ function interpretExpression(expTree){
 	 * @returns {!boolean} - the result of the expression
 	 */
 	function processOrExpression(operand1, operand2){
-		var operand1 = processExpression(expression.operand1, AS_BOOLEAN);
-		var operand2 = processExpression(expression.operand2, AS_BOOLEAN);
+		var operand1 = processOperand(operand1, AS_BOOLEAN);
+		var operand2 = processOperand(operand2, AS_BOOLEAN);
 		return (operand1 || operand2);
 	}
 
@@ -155,8 +155,8 @@ function interpretExpression(expTree){
 	 * @returns {!boolean} - the result of the expression
 	 */
 	function processAndExpression(operand1, operand2){
-		var operand1 = processExpression(expression.operand1, AS_BOOLEAN);
-		var operand2 = processExpression(expression.operand2, AS_BOOLEAN);
+		var operand1 = processOperand(operand1, AS_BOOLEAN);
+		var operand2 = processOperand(operand2, AS_BOOLEAN);
 		return (operand1 && operand2);
 	}
 
@@ -170,8 +170,8 @@ function interpretExpression(expTree){
 	 * @returns {!boolean} - the result of the expression
 	 */
 	function processBitwiseOrExpression(operand1, operand2){
-		var operand1 = processExpression(expression.operand1, !AS_BOOLEAN);
-		var operand2 = processExpression(expression.operand2, !AS_BOOLEAN);
+		var operand1 = processOperand(operand1, !AS_BOOLEAN);
+		var operand2 = processOperand(operand2, !AS_BOOLEAN);
 		return (operand1 | operand2);
 	}
 
@@ -184,9 +184,9 @@ function interpretExpression(expTree){
 	 * @param {!object|number} operand2 - the second operand
 	 * @returns {!boolean} - the result of the expression
 	 */
-	function processBitwiseExlusiveOrExpression(operand1, operand2){
-		var operand1 = processExpression(expression.operand1, !AS_BOOLEAN);
-		var operand2 = processExpression(expression.operand2, !AS_BOOLEAN);
+	function processBitwiseExclusiveOrExpression(operand1, operand2){
+		var operand1 = processOperand(operand1, !AS_BOOLEAN);
+		var operand2 = processOperand(operand2, !AS_BOOLEAN);
 		return (operand1 ^ operand2);
 	}
 
@@ -200,8 +200,8 @@ function interpretExpression(expTree){
 	 * @returns {!boolean} - the result of the expression
 	 */
 	function processBitwiseAndExpression(operand1, operand2){
-		var operand1 = processExpression(expression.operand1, !AS_BOOLEAN);
-		var operand2 = processExpression(expression.operand2, !AS_BOOLEAN);
+		var operand1 = processOperand(operand1, !AS_BOOLEAN);
+		var operand2 = processOperand(operand2, !AS_BOOLEAN);
 		return (operand1 & operand2);
 	}
 
@@ -215,8 +215,8 @@ function interpretExpression(expTree){
 	 * @returns {!boolean} - the result of the expression
 	 */
 	function processEquivalentExpression(operand1, operand2){
-		var operand1 = processExpression(expression.operand1, AS_BOOLEAN);
-		var operand2 = processExpression(expression.operand2, AS_BOOLEAN);
+		var operand1 = processOperand(operand1, AS_BOOLEAN);
+		var operand2 = processOperand(operand2, AS_BOOLEAN);
 		return (operand1 == operand2);
 	}
 
@@ -230,8 +230,8 @@ function interpretExpression(expTree){
 	 * @returns {!boolean} - the result of the expression
 	 */
 	function processNotEquivalentExpression(operand1, operand2){
-		var operand1 = processExpression(expression.operand1, AS_BOOLEAN);
-		var operand2 = processExpression(expression.operand2, AS_BOOLEAN);
+		var operand1 = processOperand(operand1, AS_BOOLEAN);
+		var operand2 = processOperand(operand2, AS_BOOLEAN);
 		return (operand1 != operand2);
 	}
 
@@ -245,8 +245,8 @@ function interpretExpression(expTree){
 	 * @returns {!boolean} - the result of the expression
 	 */
 	function processLessThanExpression(operand1, operand2){
-		var operand1 = processExpression(expression.operand1, AS_BOOLEAN);
-		var operand2 = processExpression(expression.operand2, AS_BOOLEAN);
+		var operand1 = processOperand(operand1, AS_BOOLEAN);
+		var operand2 = processOperand(operand2, AS_BOOLEAN);
 		return (operand1 < operand2);
 	}
 
@@ -260,8 +260,8 @@ function interpretExpression(expTree){
 	 * @returns {!boolean} - the result of the expression
 	 */
 	function processLessThanOrEqualExpression(operand1, operand2){
-		var operand1 = processExpression(expression.operand1, AS_BOOLEAN);
-		var operand2 = processExpression(expression.operand2, AS_BOOLEAN);
+		var operand1 = processOperand(operand1, AS_BOOLEAN);
+		var operand2 = processOperand(operand2, AS_BOOLEAN);
 		return (operand1 <= operand2);
 	}
 
@@ -275,8 +275,8 @@ function interpretExpression(expTree){
 	 * @returns {!boolean} - the result of the expression
 	 */
 	function processGreaterThanExpression(operand1, operand2){
-		var operand1 = processExpression(expression.operand1, AS_BOOLEAN);
-		var operand2 = processExpression(expression.operand2, AS_BOOLEAN);
+		var operand1 = processOperand(operand1, AS_BOOLEAN);
+		var operand2 = processOperand(operand2, AS_BOOLEAN);
 		return (operand1 > operand2);
 	}
 
@@ -290,8 +290,8 @@ function interpretExpression(expTree){
 	 * @returns {!boolean} - the result of the expression
 	 */
 	function processGreaterThanOrEqualExpression(operand1, operand2){
-		var operand1 = processExpression(expression.operand1, AS_BOOLEAN);
-		var operand2 = processExpression(expression.operand2, AS_BOOLEAN);
+		var operand1 = processOperand(operand1, AS_BOOLEAN);
+		var operand2 = processOperand(operand2, AS_BOOLEAN);
 		return (operand1 >= operand2);
 	}
 
@@ -305,8 +305,8 @@ function interpretExpression(expTree){
 	 * @returns {!number} - the result of the operation
 	 */
 	function processRightShiftExpression(operand1, operand2){
-		var operand1 = processExpression(expression.operand1, !AS_BOOLEAN);
-		var operand2 = processExpression(expression.operand2, !AS_BOOLEAN);
+		var operand1 = processOperand(operand1, !AS_BOOLEAN);
+		var operand2 = processOperand(operand2, !AS_BOOLEAN);
 		return (operand1 >> operand2);
 	}
 
@@ -320,8 +320,8 @@ function interpretExpression(expTree){
 	 * @returns {!number} - the result of the operation
 	 */
 	function processLeftShiftExpression(operand1, operand2){
-		var operand1 = processExpression(expression.operand1, !AS_BOOLEAN);
-		var operand2 = processExpression(expression.operand2, !AS_BOOLEAN);
+		var operand1 = processOperand(operand1, !AS_BOOLEAN);
+		var operand2 = processOperand(operand2, !AS_BOOLEAN);
 		return (operand1 << operand2);
 	}
 
@@ -335,8 +335,8 @@ function interpretExpression(expTree){
 	 * @returns {!number} - the result of the operation
 	 */
 	function processAddExpression(operand1, operand2){
-		var operand1 = processExpression(expression.operand1, !AS_BOOLEAN);
-		var operand2 = processExpression(expression.operand2, !AS_BOOLEAN);
+		var operand1 = processOperand(operand1, !AS_BOOLEAN);
+		var operand2 = processOperand(operand2, !AS_BOOLEAN);
 		return (operand1 + operand2);
 	}
 
@@ -350,8 +350,8 @@ function interpretExpression(expTree){
 	 * @returns {!number} - the result of the operation
 	 */
 	function processSubtractExpression(operand1, operand2){
-		var operand1 = processExpression(expression.operand1, !AS_BOOLEAN);
-		var operand2 = processExpression(expression.operand2, !AS_BOOLEAN);
+		var operand1 = processOperand(operand1, !AS_BOOLEAN);
+		var operand2 = processOperand(operand2, !AS_BOOLEAN);
 		return (operand1 - operand2);
 	}
 
@@ -365,8 +365,8 @@ function interpretExpression(expTree){
 	 * @returns {!number} - the result of the operation
 	 */
 	function processMultiplyExpression(operand1, operand2){
-		var operand1 = processExpression(expression.operand1, !AS_BOOLEAN);
-		var operand2 = processExpression(expression.operand2, !AS_BOOLEAN);
+		var operand1 = processOperand(operand1, !AS_BOOLEAN);
+		var operand2 = processOperand(operand2, !AS_BOOLEAN);
 		return (operand1 * operand2);
 	}
 
@@ -380,8 +380,8 @@ function interpretExpression(expTree){
 	 * @returns {!number} - the result of the operation
 	 */
 	function processDivideExpression(operand1, operand2){
-		var operand1 = processExpression(expression.operand1, !AS_BOOLEAN);
-		var operand2 = processExpression(expression.operand2, !AS_BOOLEAN);
+		var operand1 = processOperand(operand1, !AS_BOOLEAN);
+		var operand2 = processOperand(operand2, !AS_BOOLEAN);
 		return (operand1 / operand2);
 	}
 
@@ -395,8 +395,8 @@ function interpretExpression(expTree){
 	 * @returns {!number} - the result of the operation
 	 */
 	function processModuloExpression(operand1, operand2){
-		var operand1 = processExpression(expression.operand1, !AS_BOOLEAN);
-		var operand2 = processExpression(expression.operand2, !AS_BOOLEAN);
+		var operand1 = processOperand(operand1, !AS_BOOLEAN);
+		var operand2 = processOperand(operand2, !AS_BOOLEAN);
 		return (operand1 % operand2);
 	}
 }
