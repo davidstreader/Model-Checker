@@ -243,7 +243,7 @@
           // check if this definition is indexed
           var index = definition.name.name.index;
           if(index != undefined){
-            if(index.index.type == 'range'){ index.index = this._processRange(index.index); }
+            if(index.type == 'range'){ index = this._processRange(index.index); }
             var variable = undefined;
             if(index.variable != undefined){
               variable = index.variable;
