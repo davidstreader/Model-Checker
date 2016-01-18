@@ -31,10 +31,11 @@ var AS_BOOLEAN = true;
  *
  * @public
  * @param {!object} expTree - the expression tree to interpret
+ * @param {!object} - variiableMap - a map of variable names to their values
  * returns {!boolean|number} - overall result of expression tree
  */
-function interpretExpression(expTree){
-	var result = processExpression(expTree);
+function interpretExpression(expTree, variableMap){
+	var result = processExpression(expTree, variableMap);
 	return result;
 
 	/**
@@ -43,13 +44,14 @@ function interpretExpression(expTree){
 	 *
 	 * @private
 	 * @param {!object} expression - the expression to process
+	 * @param {!object} - variiableMap - a map of variable names to their values
 	 * @returns {!boolean|number} - result of the expression
 	 */
-	function processExpression(expression){
+	function processExpression(expression, variableMap){
 		var operator = expression.operator;
 
 		if(operator == undefined){
-			return expression;
+			return processBaseExpression(expression, variableMap);
 		}
 		else if(operator == OR){
 			return processOrExpression(expression.operand1, expression.operand2);
@@ -128,6 +130,30 @@ function interpretExpression(expTree){
 		}
 
 		return result;
+	}
+
+	/**
+	 * Processes the specified bases expression and returns the value.
+	 *
+	 * @private
+	 * @param {!number|string} expression - the base expression to process
+	 * @param {!object} variableMap - a map of variable names to their values
+	 * @returns {!number} - the value of the expression
+	 */
+	function processBaseExpression(expression, variableMap){
+		// check if expression is a number
+		if(typeof(expression) == 'number'){
+			return expression;
+		}
+
+		// otherwise check if it is a valid variable
+		var value = variableMap[expression];
+		if(value == undefined){
+			var error = '\'' + expression + '\' is not a valid variable name.'
+			throw error;
+		}
+
+		return value;
 	}
 
 	/**

@@ -807,7 +807,7 @@
       // process types which are not action nodes
       if(ptNode.type == 'expression'){
         var expression = ptNode.expression;
-        return interpretExpression(expression);
+        return interpretExpression(expression, variableMap);
       }
       else if(ptNode.type == 'set'){
         return this._processSet(ptNode.set);
@@ -1181,8 +1181,8 @@
         }
 
         // check if simple expression
-        if(points[i].type === 'simple-expression'){
-          points[i] = points[i].expression;
+        if(points[i].type === 'expression'){
+          points[i] = this._processActionNode(points[i]);
         }
       }
 
