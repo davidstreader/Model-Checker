@@ -76,7 +76,7 @@ function interpretExpression(expTree){
 			return processLessThanExpression(expression.operand1, expression.operand2);
 		}
 		else if(operator == LESS_THAN_OR_EQUAL){
-			return processLessThanorEqualExpression(expression.operand1, expression.operand2);
+			return processLessThanOrEqualExpression(expression.operand1, expression.operand2);
 		}
 		else if(operator == GREATER_THAN){
 			return processGreaterThanExpression(expression.operand1, expression.operand2);
