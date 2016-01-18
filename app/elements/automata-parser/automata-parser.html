@@ -2,6 +2,7 @@
 <link rel="import" href="parser.html">
 <link rel="import" href="../imports/graph.html">
 <link rel="import" href="../imports/index-iterator.html">
+<link rel="import" href="../imports/expression-interpreter.html">
 <link rel="import" href="../imports/automaton.html">
 
 <script>
@@ -804,12 +805,9 @@
      */
     _processActionNode: function(ptNode, variableMap) {
       // process types which are not action nodes
-      if(ptNode.type == 'simple-expression'){
+      if(ptNode.type == 'expression'){
         var expression = ptNode.expression;
-        if(typeof(expression) == 'string'){
-          return variableMap[expression];
-        }
-        return expression;
+        return interpretExpression(expression);
       }
       else if(ptNode.type == 'set'){
         return this._processSet(ptNode.set);
@@ -878,86 +876,6 @@
       return {type: 'index', variable: ptNode.variable, action: ptNode.action, index: index}
     },
 
-    /**
-     *
-     */
-    _processExpression: function(ptNode, variableMap) {
-      var result;
-      var operand1 = this._processOperand(ptNode.operand1, variableMap);
-      var operand2 = this._processOperand(ptNode.operand2, variableMap);
-
-      switch(ptNode.operator){
-        case '||': // or
-          result = (Boolean(operand1) || Boolean(operand2));
-          break;
-        case '&&': // and
-          result = (Boolean(operand1) && Boolean(operand2));
-          break;
-        case '|': // bitwise or
-          result = Boolean(operand1 | operand2);
-          break;
-        case '^': // bitwise exclusive or
-          result = Boolean(operand1 ^ operand2);
-          break;
-        case '&':// bitwise and
-          result = Boolean(operand1 & operand2);
-          break;
-        case '==': // equal
-          result = Boolean(operand1 == operand2);
-          break;
-        case '!=': // not equal
-          result = Boolean(operand1 != operand2);
-          break;
-        case '<': // les than
-          result = Boolean(operand1 < operand2);
-          break;
-        case '<=': // lest than or equal
-          result = Boolean(operand1 <= operand2);
-          break;
-        case '>': // greater than
-          result = Boolean(operand1 > operand2);
-          break;
-        case '>=': // greater than or equal
-          result = Boolean(operand1 >= operand2);
-          break;
-        case '<<': // shift left
-          result = operand1 << operand2;
-          break;
-        case '>>': // shift right
-          result = operand1 >> operand2;
-          break;
-      }
-
-      return result;
-    },
-
-    /**
-     *
-     */
-    _processOperand: function(operand, variableMap) {
-      // check if operand is a number
-      var type = typeof(operand);
-      if(type === 'number'){
-        return operand;
-      }
-
-      // check if operand is a variable name
-      if(type === 'string'){
-        // check if variable is locally defined or a constant
-        if(variableMap[operand] !== undefined){
-          return variableMap[operand];
-        }
-        else if(this._constantsMap[operand] !== undefined){
-          return this._constantsMap[operand];
-        }
-
-        // throw expression if variable cannot be located
-        throw new this.InterpreterException('\'' + operand + '\' has not been defined.');
-      }
-
-      // process expression
-      return this._processExpression(operand, variableMap);
-    },
     /**
      *
      */
