@@ -1,24 +1,24 @@
 'use-strict';
 
 // operator types
-var OR = 'or'; // ||
-var AND = 'and'; // &&
-var BIT_OR = 'bitwise-or'; // |
-var BIT_EXCL_OR = 'bitwise-exclusive-or'; // ^
-var BIT_AND = 'bitwise-and'; // &
-var EQUIVALENT = 'equivalent'; // ==
-var NOT_EQUIVALENT = 'not-equivalent'; // !=
-var LESS_THAN = 'less-than'; // <
-var LESS_THAN_OR_EQUAL = 'less-than-or-equal'; // <=
-var GREATER_THAN = 'greater-than'; // >
-var GREATER_THAN_OR_EQUAL = 'greater-than-or-equal'; // >=
-var RIGHT_SHIFT = 'right-shift'; // >>
-var LEFT_SHIFT = 'left-shift'; // <<
-var ADD = 'add'; // +
-var SUBTRACT = 'subtract'; // -
-var MULTIPLY = 'multiply'; // *
-var DIVIDE = 'divide'; // /
-var MODULO = 'modulo'; // %
+var OR = '||';
+var AND = '&&';
+var BIT_OR = '|';
+var BIT_EXCL_OR = '^';
+var BIT_AND = '&';
+var EQUIVALENT = '==';
+var NOT_EQUIVALENT = '!=';
+var LESS_THAN = '<';
+var LESS_THAN_OR_EQUAL = '<=';
+var GREATER_THAN = '>';
+var GREATER_THAN_OR_EQUAL = '>=';
+var RIGHT_SHIFT = '>>';
+var LEFT_SHIFT = '<<';
+var ADD = '+';
+var SUBTRACT = '-';
+var MULTIPLY = '*';
+var DIVIDE = '/';
+var MODULO = '%';
 
 /**
  * Determines whether to process an expression as a boolean.
