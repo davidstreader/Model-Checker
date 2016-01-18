@@ -31,7 +31,7 @@ var AS_BOOLEAN = true;
  *
  * @public
  * @param {!object} expTree - the expression tree to interpret
- * @param {!object} - variiableMap - a map of variable names to their values
+ * @param {!object} variableMap - a map of variable names to their values
  * returns {!boolean|number} - overall result of expression tree
  */
 function interpretExpression(expTree, variableMap){
@@ -44,7 +44,7 @@ function interpretExpression(expTree, variableMap){
 	 *
 	 * @private
 	 * @param {!object} expression - the expression to process
-	 * @param {!object} - variiableMap - a map of variable names to their values
+	 * @param {!object} - variableMap - a map of variable names to their values
 	 * @returns {!boolean|number} - result of the expression
 	 */
 	function processExpression(expression, variableMap){
@@ -54,58 +54,58 @@ function interpretExpression(expTree, variableMap){
 			return processBaseExpression(expression, variableMap);
 		}
 		else if(operator == OR){
-			return processOrExpression(expression.operand1, expression.operand2);
+			return processOrExpression(expression.operand1, expression.operand2, variableMap);
 		}
 		else if(operator == AND){
-			return processAndExpression(expression.operand1, expression.operand2);
+			return processAndExpression(expression.operand1, expression.operand2, variableMap);
 		}
 		else if(operator == BIT_OR){
-			return processBitwiseOrExpression(expression.operand1, expression.operand2);
+			return processBitwiseOrExpression(expression.operand1, expression.operand2, variableMap);
 		}
 		else if(operator == BIT_EXCL_OR){
-			return processBitwiseExclusiveOrExpression(expression.operand1, expression.operand2);
+			return processBitwiseExclusiveOrExpression(expression.operand1, expression.operand2, variableMap);
 		}
 		else if(operator == BIT_AND){
-			return processBitwiseAndExpression(expression.operand1, expression.operand2);
+			return processBitwiseAndExpression(expression.operand1, expression.operand2, variableMap);
 		}
 		else if(operator == EQUIVALENT){
-			return processEquivalentExpression(expression.operand1, expression.operand2);
+			return processEquivalentExpression(expression.operand1, expression.operand2, variableMap);
 		}
 		else if(operator == NOT_EQUIVALENT){
-			return processNotEquivalentExpression(expression.operand1, expression.operand2);
+			return processNotEquivalentExpression(expression.operand1, expression.operand2, variableMap);
 		}
 		else if(operator == LESS_THAN){
-			return processLessThanExpression(expression.operand1, expression.operand2);
+			return processLessThanExpression(expression.operand1, expression.operand2, variableMap);
 		}
 		else if(operator == LESS_THAN_OR_EQUAL){
-			return processLessThanOrEqualExpression(expression.operand1, expression.operand2);
+			return processLessThanOrEqualExpression(expression.operand1, expression.operand2, variableMap);
 		}
 		else if(operator == GREATER_THAN){
-			return processGreaterThanExpression(expression.operand1, expression.operand2);
+			return processGreaterThanExpression(expression.operand1, expression.operand2, variableMap);
 		}
 		else if(operator == GREATER_THAN_OR_EQUAL){
-			return processGreaterThanOrEqualExpression(expression.operand1, expression.operand2);
+			return processGreaterThanOrEqualExpression(expression.operand1, expression.operand2, variableMap);
 		}
 		else if(operator == RIGHT_SHIFT){
-			return processRightShiftExpression(expression.operand1, expression.operand2);
+			return processRightShiftExpression(expression.operand1, expression.operand2, variableMap);
 		}
 		else if(operator == LEFT_SHIFT){
-			return processLeftShiftExpression(expression.operand1, expression.operand2);
+			return processLeftShiftExpression(expression.operand1, expression.operand2, variableMap);
 		}
 		else if(operator == ADD){
-			return processAddExpression(expression.operand1, expression.operand2);
+			return processAddExpression(expression.operand1, expression.operand2, variableMap);
 		}
 		else if(operator == SUBTRACT){
-			return processSubtractExpression(expression.operand1, expression.operand2);
+			return processSubtractExpression(expression.operand1, expression.operand2, variableMap);
 		}
 		else if(operator == MULTIPLY){
-			return processMultiplyExpression(expression.operand1, expression.operand2);
+			return processMultiplyExpression(expression.operand1, expression.operand2, variableMap);
 		}
 		else if(operator == DIVIDE){
-			return processDivideExpression(expression.operand1, expression.operand2);
+			return processDivideExpression(expression.operand1, expression.operand2, variableMap);
 		}
 		else if(operator == MODULO){
-			return processModuloExpression(expression.operand1, expression.operand2);
+			return processModuloExpression(expression.operand1, expression.operand2, variableMap);
 		}
 		else{
 			var error = 'Attempting to process invalid operator \'' + operator +'\'';
@@ -121,9 +121,11 @@ function interpretExpression(expTree, variableMap){
 	 * @private
 	 * @param {!object|number} operand - the operand to process
 	 * @param {!boolean} asBoolean - whether operand is to be processed as boolean or not
+	 * @param {!object} variableMap - a map of variable names to their values
+	 * @returns {!number|boolean} - the result
 	 */
-	function processOperand(operand, asBoolean){
-		var result = processExpression(operand);
+	function processOperand(operand, asBoolean, variableMap){
+		var result = processExpression(operand, variableMap);
 		// process as boolean if specified
 		if(asBoolean){
 			return result != 0;
@@ -163,11 +165,12 @@ function interpretExpression(expTree, variableMap){
 	 * @private
 	 * @param {!object|number} operand1 - the first operand
 	 * @param {!object|number} operand2 - the second operand
+	 * @param {!object} variableMap - a map of variable names to their values
 	 * @returns {!boolean} - the result of the expression
 	 */
-	function processOrExpression(operand1, operand2){
-		var operand1 = processOperand(operand1, AS_BOOLEAN);
-		var operand2 = processOperand(operand2, AS_BOOLEAN);
+	function processOrExpression(operand1, operand2, variableMap){
+		var operand1 = processOperand(operand1, AS_BOOLEAN, variableMap);
+		var operand2 = processOperand(operand2, AS_BOOLEAN, variableMap);
 		return (operand1 || operand2);
 	}
 
@@ -178,11 +181,12 @@ function interpretExpression(expTree, variableMap){
 	 * @private
 	 * @param {!object|number} operand1 - the first operand
 	 * @param {!object|number} operand2 - the second operand
+	 * @param {!object} variableMap - a map of variable names to their values
 	 * @returns {!boolean} - the result of the expression
 	 */
-	function processAndExpression(operand1, operand2){
-		var operand1 = processOperand(operand1, AS_BOOLEAN);
-		var operand2 = processOperand(operand2, AS_BOOLEAN);
+	function processAndExpression(operand1, operand2, variableMap){
+		var operand1 = processOperand(operand1, AS_BOOLEAN, variableMap);
+		var operand2 = processOperand(operand2, AS_BOOLEAN, variableMap);
 		return (operand1 && operand2);
 	}
 
@@ -193,11 +197,12 @@ function interpretExpression(expTree, variableMap){
 	 * @private
 	 * @param {!object|number} operand1 - the first operand
 	 * @param {!object|number} operand2 - the second operand
+	 * @param {!object} variableMap - a map of variable names to their values
 	 * @returns {!boolean} - the result of the expression
 	 */
-	function processBitwiseOrExpression(operand1, operand2){
-		var operand1 = processOperand(operand1, !AS_BOOLEAN);
-		var operand2 = processOperand(operand2, !AS_BOOLEAN);
+	function processBitwiseOrExpression(operand1, operand2, variableMap){
+		var operand1 = processOperand(operand1, !AS_BOOLEAN, variableMap);
+		var operand2 = processOperand(operand2, !AS_BOOLEAN, variableMap);
 		return (operand1 | operand2);
 	}
 
@@ -208,11 +213,12 @@ function interpretExpression(expTree, variableMap){
 	 * @private
 	 * @param {!object|number} operand1 - the first operand
 	 * @param {!object|number} operand2 - the second operand
+	 * @param {!object} variableMap - a map of variable names to their values
 	 * @returns {!boolean} - the result of the expression
 	 */
-	function processBitwiseExclusiveOrExpression(operand1, operand2){
-		var operand1 = processOperand(operand1, !AS_BOOLEAN);
-		var operand2 = processOperand(operand2, !AS_BOOLEAN);
+	function processBitwiseExclusiveOrExpression(operand1, operand2, variableMap){
+		var operand1 = processOperand(operand1, !AS_BOOLEAN, variableMap);
+		var operand2 = processOperand(operand2, !AS_BOOLEAN, variableMap);
 		return (operand1 ^ operand2);
 	}
 
@@ -223,11 +229,12 @@ function interpretExpression(expTree, variableMap){
 	 * @private
 	 * @param {!object|number} operand1 - the first operand
 	 * @param {!object|number} operand2 - the second operand
+	 * @param {!object} variableMap - a map of variable names to their values
 	 * @returns {!boolean} - the result of the expression
 	 */
-	function processBitwiseAndExpression(operand1, operand2){
-		var operand1 = processOperand(operand1, !AS_BOOLEAN);
-		var operand2 = processOperand(operand2, !AS_BOOLEAN);
+	function processBitwiseAndExpression(operand1, operand2, variableMap){
+		var operand1 = processOperand(operand1, !AS_BOOLEAN, variableMap);
+		var operand2 = processOperand(operand2, !AS_BOOLEAN, variableMap);
 		return (operand1 & operand2);
 	}
 
@@ -238,11 +245,12 @@ function interpretExpression(expTree, variableMap){
 	 * @private
 	 * @param {!object|number} operand1 - the first operand
 	 * @param {!object|number} operand2 - the second operand
+	 * @param {!object} variableMap - a map of variable names to their values
 	 * @returns {!boolean} - the result of the expression
 	 */
-	function processEquivalentExpression(operand1, operand2){
-		var operand1 = processOperand(operand1, AS_BOOLEAN);
-		var operand2 = processOperand(operand2, AS_BOOLEAN);
+	function processEquivalentExpression(operand1, operand2, variableMap){
+		var operand1 = processOperand(operand1, !AS_BOOLEAN, variableMap);
+		var operand2 = processOperand(operand2, !AS_BOOLEAN, variableMap);
 		return (operand1 == operand2);
 	}
 
@@ -253,11 +261,12 @@ function interpretExpression(expTree, variableMap){
 	 * @private
 	 * @param {!object|number} operand1 - the first operand
 	 * @param {!object|number} operand2 - the second operand
+	 * @param {!object} variableMap - a map of variable names to their values
 	 * @returns {!boolean} - the result of the expression
 	 */
-	function processNotEquivalentExpression(operand1, operand2){
-		var operand1 = processOperand(operand1, AS_BOOLEAN);
-		var operand2 = processOperand(operand2, AS_BOOLEAN);
+	function processNotEquivalentExpression(operand1, operand2, variableMap){
+		var operand1 = processOperand(operand1, !AS_BOOLEAN, variableMap);
+		var operand2 = processOperand(operand2, !AS_BOOLEAN, variableMap);
 		return (operand1 != operand2);
 	}
 
@@ -268,11 +277,12 @@ function interpretExpression(expTree, variableMap){
 	 * @private
 	 * @param {!object|number} operand1 - the first operand
 	 * @param {!object|number} operand2 - the second operand
+	 * @param {!object} variableMap - a map of variable names to their values
 	 * @returns {!boolean} - the result of the expression
 	 */
-	function processLessThanExpression(operand1, operand2){
-		var operand1 = processOperand(operand1, AS_BOOLEAN);
-		var operand2 = processOperand(operand2, AS_BOOLEAN);
+	function processLessThanExpression(operand1, operand2, variableMap){
+		var operand1 = processOperand(operand1, !AS_BOOLEAN, variableMap);
+		var operand2 = processOperand(operand2, !AS_BOOLEAN, variableMap);
 		return (operand1 < operand2);
 	}
 
@@ -283,11 +293,12 @@ function interpretExpression(expTree, variableMap){
 	 * @private
 	 * @param {!object|number} operand1 - the first operand
 	 * @param {!object|number} operand2 - the second operand
+	 * @param {!object} variableMap - a map of variable names to their values
 	 * @returns {!boolean} - the result of the expression
 	 */
-	function processLessThanOrEqualExpression(operand1, operand2){
-		var operand1 = processOperand(operand1, AS_BOOLEAN);
-		var operand2 = processOperand(operand2, AS_BOOLEAN);
+	function processLessThanOrEqualExpression(operand1, operand2, variableMap){
+		var operand1 = processOperand(operand1, !AS_BOOLEAN, variableMap);
+		var operand2 = processOperand(operand2, !AS_BOOLEAN, variableMap);
 		return (operand1 <= operand2);
 	}
 
@@ -298,11 +309,12 @@ function interpretExpression(expTree, variableMap){
 	 * @private
 	 * @param {!object|number} operand1 - the first operand
 	 * @param {!object|number} operand2 - the second operand
+	 * @param {!object} variableMap - a map of variable names to their values
 	 * @returns {!boolean} - the result of the expression
 	 */
-	function processGreaterThanExpression(operand1, operand2){
-		var operand1 = processOperand(operand1, AS_BOOLEAN);
-		var operand2 = processOperand(operand2, AS_BOOLEAN);
+	function processGreaterThanExpression(operand1, operand2, variableMap){
+		var operand1 = processOperand(operand1, !AS_BOOLEAN, variableMap);
+		var operand2 = processOperand(operand2, !AS_BOOLEAN, variableMap);
 		return (operand1 > operand2);
 	}
 
@@ -313,11 +325,12 @@ function interpretExpression(expTree, variableMap){
 	 * @private
 	 * @param {!object|number} operand1 - the first operand
 	 * @param {!object|number} operand2 - the second operand
+	 * @param {!object} variableMap - a map of variable names to their values
 	 * @returns {!boolean} - the result of the expression
 	 */
-	function processGreaterThanOrEqualExpression(operand1, operand2){
-		var operand1 = processOperand(operand1, AS_BOOLEAN);
-		var operand2 = processOperand(operand2, AS_BOOLEAN);
+	function processGreaterThanOrEqualExpression(operand1, operand2, variableMap){
+		var operand1 = processOperand(operand1, !AS_BOOLEAN, variableMap);
+		var operand2 = processOperand(operand2, !AS_BOOLEAN, variableMap);
 		return (operand1 >= operand2);
 	}
 
@@ -328,11 +341,12 @@ function interpretExpression(expTree, variableMap){
 	 * @private
 	 * @param {!object|number} operand1 - the first operand
 	 * @param {!object|number} operand2 - the second operand
+	 * @param {!object} variableMap - a map of variable names to their values
 	 * @returns {!number} - the result of the operation
 	 */
-	function processRightShiftExpression(operand1, operand2){
-		var operand1 = processOperand(operand1, !AS_BOOLEAN);
-		var operand2 = processOperand(operand2, !AS_BOOLEAN);
+	function processRightShiftExpression(operand1, operand2, variableMap){
+		var operand1 = processOperand(operand1, !AS_BOOLEAN, variableMap);
+		var operand2 = processOperand(operand2, !AS_BOOLEAN, variableMap);
 		return (operand1 >> operand2);
 	}
 
@@ -343,11 +357,12 @@ function interpretExpression(expTree, variableMap){
 	 * @private
 	 * @param {!object|number} operand1 - the first operand
 	 * @param {!object|number} operand2 - the second operand
+	 * @param {!object} variableMap - a map of variable names to their values
 	 * @returns {!number} - the result of the operation
 	 */
-	function processLeftShiftExpression(operand1, operand2){
-		var operand1 = processOperand(operand1, !AS_BOOLEAN);
-		var operand2 = processOperand(operand2, !AS_BOOLEAN);
+	function processLeftShiftExpression(operand1, operand2, variableMap){
+		var operand1 = processOperand(operand1, !AS_BOOLEAN, variableMap);
+		var operand2 = processOperand(operand2, !AS_BOOLEAN, variableMap);
 		return (operand1 << operand2);
 	}
 
@@ -358,11 +373,12 @@ function interpretExpression(expTree, variableMap){
 	 * @private
 	 * @param {!object|number} operand1 - the first operand
 	 * @param {!object|number} operand2 - the second operand
+	 * @param {!object} variableMap - a map of variable names to their values
 	 * @returns {!number} - the result of the operation
 	 */
-	function processAddExpression(operand1, operand2){
-		var operand1 = processOperand(operand1, !AS_BOOLEAN);
-		var operand2 = processOperand(operand2, !AS_BOOLEAN);
+	function processAddExpression(operand1, operand2, variableMap){
+		var operand1 = processOperand(operand1, !AS_BOOLEAN, variableMap);
+		var operand2 = processOperand(operand2, !AS_BOOLEAN, variableMap);
 		return (operand1 + operand2);
 	}
 
@@ -373,11 +389,12 @@ function interpretExpression(expTree, variableMap){
 	 * @private
 	 * @param {!object|number} operand1 - the first operand
 	 * @param {!object|number} operand2 - the second operand
+	 * @param {!object} variableMap - a map of variable names to their values
 	 * @returns {!number} - the result of the operation
 	 */
-	function processSubtractExpression(operand1, operand2){
-		var operand1 = processOperand(operand1, !AS_BOOLEAN);
-		var operand2 = processOperand(operand2, !AS_BOOLEAN);
+	function processSubtractExpression(operand1, operand2, variableMap){
+		var operand1 = processOperand(operand1, !AS_BOOLEAN, variableMap);
+		var operand2 = processOperand(operand2, !AS_BOOLEAN, variableMap);
 		return (operand1 - operand2);
 	}
 
@@ -388,11 +405,12 @@ function interpretExpression(expTree, variableMap){
 	 * @private
 	 * @param {!object|number} operand1 - the first operand
 	 * @param {!object|number} operand2 - the second operand
+	 * @param {!object} variableMap - a map of variable names to their values
 	 * @returns {!number} - the result of the operation
 	 */
-	function processMultiplyExpression(operand1, operand2){
-		var operand1 = processOperand(operand1, !AS_BOOLEAN);
-		var operand2 = processOperand(operand2, !AS_BOOLEAN);
+	function processMultiplyExpression(operand1, operand2, variableMap){
+		var operand1 = processOperand(operand1, !AS_BOOLEAN, variableMap);
+		var operand2 = processOperand(operand2, !AS_BOOLEAN, variableMap);
 		return (operand1 * operand2);
 	}
 
@@ -403,11 +421,12 @@ function interpretExpression(expTree, variableMap){
 	 * @private
 	 * @param {!object|number} operand1 - the first operand
 	 * @param {!object|number} operand2 - the second operand
+	 * @param {!object} variableMap - a map of variable names to their values
 	 * @returns {!number} - the result of the operation
 	 */
-	function processDivideExpression(operand1, operand2){
-		var operand1 = processOperand(operand1, !AS_BOOLEAN);
-		var operand2 = processOperand(operand2, !AS_BOOLEAN);
+	function processDivideExpression(operand1, operand2, variableMap){
+		var operand1 = processOperand(operand1, !AS_BOOLEAN, variableMap);
+		var operand2 = processOperand(operand2, !AS_BOOLEAN, variableMap);
 		return (operand1 / operand2);
 	}
 
@@ -418,11 +437,12 @@ function interpretExpression(expTree, variableMap){
 	 * @private
 	 * @param {!object|number} operand1 - the first operand
 	 * @param {!object|number} operand2 - the second operand
+	 * @param {!object} variableMap - a map of variable names to their values
 	 * @returns {!number} - the result of the operation
 	 */
-	function processModuloExpression(operand1, operand2){
-		var operand1 = processOperand(operand1, !AS_BOOLEAN);
-		var operand2 = processOperand(operand2, !AS_BOOLEAN);
+	function processModuloExpression(operand1, operand2, variableMap){
+		var operand1 = processOperand(operand1, !AS_BOOLEAN, variableMap);
+		var operand2 = processOperand(operand2, !AS_BOOLEAN, variableMap);
 		return (operand1 % operand2);
 	}
 }

@@ -253,7 +253,7 @@ PEG.automataParser = (function() {
         peg$c97 = "when",
         peg$c98 = { type: "literal", value: "when", description: "\"when\"" },
         peg$c99 = function(exp) {
-         
+          return exp;
          },
         peg$c100 = function(exp, indices) {
             return exp;
@@ -5433,6 +5433,8 @@ PEG.automataParser = (function() {
                 from = sequence.pop();
                 node = new Node.SequenceNode(from, node);
             }
+            
+            if(guard != null){ node.guard = guard; }
             
             return node;
         }

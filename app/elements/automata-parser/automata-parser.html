@@ -424,6 +424,9 @@
         case 'choice':
           this._interpretChoice(process, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
           break;
+        case 'if-statement':
+          this._interpretIfStatement(process, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
+          break;
         case 'parallel':
           this._interpretParallel(process, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
           break;
@@ -470,6 +473,17 @@
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
     _interpretSequence: function(sequence, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
+      // check if this sequence is guarded
+      var guard = sequence.guard;
+      if(guard != undefined){
+        var result = this._processActionNode(guard, variableMap);
+        
+        // do not progress with the sequence if the guard is not met
+        if(!result){
+          return;
+        }
+      }
+
       var action = this._processActionNode(sequence.from, variableMap);
 
       if(typeof(action) === 'object'){
@@ -535,6 +549,27 @@
     _interpretChoice: function(choice, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
       this._interpretProcess(choice.option1, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
       this._interpretProcess(choice.option2, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
+    },
+    /**
+     * Interpret a parse tree if statement node.
+     *
+     * @private
+     * @param {!object} ifNode             - A parse tree if statement node
+     * @param {!Graph.Node} extendtionNode - The node in the graph to build on from
+     * @param {!object} definitionMap      - The definition map being used
+     * @param {!string} defName            - The name of the current definition
+     * @param {!object} referenceMap       - The reference map that store references already known about
+     */
+    _interpretIfStatement: function(ifNode, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
+      var guard = this._processActionNode(ifNode.guard, variableMap);
+      // if the guard is valid then process the then statement
+      if(guard){
+        this._interpretProcess(ifNode.thenProcess, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
+      }
+      // otherwise check if an else statement was declared
+      else if(ifNode.elseProcess != undefined){
+        this._interpretProcess(ifNode.elseProcess, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
+      }
     },
     /**
      * Interpret a parse tree parallel node.
@@ -807,6 +842,7 @@
       // process types which are not action nodes
       if(ptNode.type == 'expression'){
         var expression = ptNode.expression;
+        expression = (expression.expression != undefined) ? expression.expression : expression;
         return interpretExpression(expression, variableMap);
       }
       else if(ptNode.type == 'set'){
