@@ -90,29 +90,6 @@
       _compositeStack: {
         type: Array,
         readOnly: true
-<<<<<<< HEAD
-      },
-
-      /**
-       * A map of constant variable names to their values.
-       *
-       * @private
-       */
-      _constantsMap: {
-        type: Object,
-        readOnly: true
-      },
-
-      /**
-       * A map of ranges to their start and end points.
-       *
-       * @private
-       */
-      _rangesMap: {
-        type: Object,
-        readOnly: true
-=======
->>>>>>> parser
       }
     },
 
@@ -404,14 +381,7 @@
         throw new this.InterpreterException('The name "' + model.name + '" has been defined already.');
       }
       // add constant to constants map
-<<<<<<< HEAD
-      var value = this._interpretSimpleExpression(model.expression);
-      this._constantsMap[model.name] = value;
-      console.log(model.name.name +' = '+value);
-      this._constantsMap[model.name] = {type: 'constant', value: model.value};
-=======
       this._definitionsMap[name] = {type: 'constant', value: model.value};
->>>>>>> parser
     },
 
     /**
@@ -989,60 +959,6 @@
     /**
      *
      */
-<<<<<<< HEAD
-    _processExpression: function(ptNode, variableMap) {
-      var result;
-      var operand1 = this._processOperand(ptNode.operand1, variableMap);
-      var operand2 = this._processOperand(ptNode.operand2, variableMap);
-
-      switch(ptNode.operator){
-        case '||': // or
-          result = (Boolean(operand1) || Boolean(operand2));
-          break;
-        case '&&': // and
-          result = (Boolean(operand1) && Boolean(operand2));
-          break;
-        case '|': // bitwise or
-          result = Boolean(operand1 | operand2);
-          break;
-        case '^': // bitwise exclusive or
-          result = Boolean(operand1 ^ operand2);
-          break;
-        case '&':// bitwise and
-          result = Boolean(operand1 & operand2);
-          break;
-        case '==': // equal
-          result = Boolean(operand1 == operand2);
-          break;
-        case '!=': // not equal
-          result = Boolean(operand1 != operand2);
-          break;
-        case '<': // les than
-          result = Boolean(operand1 < operand2);
-          break;
-        case '<=': // lest than or equal
-          result = Boolean(operand1 <= operand2);
-          break;
-        case '>': // greater than
-          result = Boolean(operand1 > operand2);
-          break;
-        case '>=': // greater than or equal
-          result = Boolean(operand1 >= operand2);
-          break;
-        case '<<': // shift left
-          result = operand1 << operand2;
-          break;
-        case '>>': // shift right
-          result = operand1 >> operand2;
-          break;
-      }
-
-      return result;
-    },
-
-    /**
-     *
-     */
     _processOperand: function(operand, variableMap) {
       // check if operand is a number
       var type = typeof(operand);
@@ -1079,10 +995,7 @@
      * @param {!boolean} isNegated - whether or not this operation is negated
      * @param {!object} position - the position of the operation in the code
      */
-    _processOperation: function(process, definitionMap, defName1, defName2, input, isNegated, position) {
-=======
     _processOperation: function(operation, definitionMap, defName1, defName2, input, isNegated, position) {
->>>>>>> parser
       var result = false;
       switch(operation){
         case 'bisimulation':
@@ -1239,36 +1152,7 @@
       this._definitionsMap[defName].hidden = hidden;
       this._definitionsMap[defName].isVisible = isVisible;
     },
-
     /**
-<<<<<<< HEAD
-     * Initialises all of the definitions defined within the specified definition to the 
-     * definitions map. This is to help in determining whether a reference is either
-     * global or local.
-     *
-     * @private
-     * @param {!array} definitions - array of definitions
-     * @param {!string} globalName - the global name for the specified definitions
-     */
-    _initialiseDefinitions: function(definitions, globalName) {
-      // check that there is not already a definition with the specified name
-      if(this._definitionsMap[globalName] !== undefined){
-        throw new this.InterpreterException('process \'' + globalName + '\' defined more that once.');
-      }
-
-      // process local definitions
-      for(var i = 1; i < definitions.length; i++){
-        var name = this._getNameFromPTNode(definitions[i].name);
-        name = globalName + '.' + name;
-        this._definitionsMap[name] = new this._Definition();
-      }
-
-      this._definitionsMap[globalName] = new this._Definition();
-    },
-
-    /**
-=======
->>>>>>> parser
      * Runs the processing of references, parallel composition, relabelling and hiding for
      * the specified definition. 
      *
@@ -1551,25 +1435,6 @@
         }
       }
     },
-<<<<<<< HEAD
-
-    /**
-     * Returns true if the specified name is valid, otherwise returns false.
-     * A valid name is one that has not been previously defined.
-     *
-     * @private
-     * @param {!string} name - the name to be checked
-     * @returns {!boolean} true if name is valid, otherwise false
-     */
-    _isValidName: function(name) {
-      var maps = [{name: 'definition', map: this._definitionsMap}, 
-                  {name: 'constant', map: this._constantsMap}, 
-                  {name: 'range', map: this._rangesMap}]
-      // check all maps to see if name has been defined in any of them
-      for(var i = 0; i < maps.length; i++){
-        if(maps[i].map[name] !== undefined){
-          return false;
-=======
     /**
      * Returns the keys for all the automata defined in the definitions map.
      *
@@ -1581,7 +1446,6 @@
       for(key in this._definitionsMap){
         if(this._definitionsMap[key].graph != undefined){
           automata.push(key);
->>>>>>> parser
         }
       }
 
@@ -1683,23 +1547,6 @@
         var fail = 0;
         for(var i in this._operationsMap){
           var input = this._operationsMap[i].input;
-<<<<<<< HEAD
-
-          // remove unnecessary line breaks and whitespace from input
-          input = input.replace(/ /g, '\n');
-          var split = input.split('\n');
-          input = '';
-          for(var j = 0; j < split.length; j++){
-            if(split[j] !== ''){
-              input += split[j];
-            }
-          }
-          // remove the dot from input
-          input = input.slice(0, input.length - 1);
-
-          // construct string representation of operation and its result
-=======
->>>>>>> parser
           var result = this._operationsMap[i].result;
           var position = this._operationsMap[i].position;
           operations.operations.push(input + ' = ' + result);
