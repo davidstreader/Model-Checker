@@ -433,6 +433,9 @@
         case 'composite':
           this._interpretComposite(process, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
           break;
+        case 'forall':
+          this._interpretForAll(process, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
+          break;
         case 'name':
           this._interpretName(process, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
           break;
@@ -612,6 +615,33 @@
       if(composite.label !== undefined){
         var label = composite.label.action;
         definitionMap[name].label = label;
+      }
+    },
+    /**
+     * Interpret a parse tree forall node.
+     *
+     * @private
+     * @param {!object} ptNode             - A parse tree forall node
+     * @param {!Graph.Node} extendtionNode - The node in the graph to build on from
+     * @param {!object} definitionMap      - The definition map being used
+     * @param {!string} defName            - The name of the current definition
+     * @param {!object} referenceMap       - The reference map that store references already known about
+     */
+    _interpretForAll: function(forall, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
+      var range = this._processActionNode(forall.range);
+      var variable = range.variable;
+      
+      // iterate over the range or set  
+      var iterator = new IndexIterator(range.index);
+      while(iterator.hasNext){
+        var element = iterator.next;
+          
+        // update variable reference if variable is defined
+        if(variable !== undefined){
+          variableMap[variable] = element;
+        }
+
+        this._interpretProcess(forall.process, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
       }
     },
     /**
@@ -843,7 +873,7 @@
       if(ptNode.type == 'expression'){
         var expression = ptNode.expression;
         expression = (expression.expression != undefined) ? expression.expression : expression;
-        return interpretExpression(expression, variableMap);
+        return processReversePolishNotation(expression, variableMap);
       }
       else if(ptNode.type == 'set'){
         return this._processSet(ptNode.set);
