@@ -36,18 +36,18 @@ function processReversePolishNotation(input, variableMap){
 			var result = processOperation(current, stack.pop(), stack.pop());
 			stack.push(result);
 		}
-		// check if current element is a number
-		else if(typeof(current) == 'number'){
-			stack.push(current);
-		}
-		// check if current element is a variable
+		// check if current element is either a number or a variable
 		else{
-			var variable = variableMap[current];
-			if(variable == undefined){
-				throw new ExpressionInterpreterException('Trying to process invalid variable name \'' + current + '\'.');
+			// check if current is a number
+			var value = parseInt(current);
+			if(isNaN(value)){
+				value = variableMap[current];
+				if(value == undefined){
+					throw new ExpressionInterpreterException('Trying to process invalid variable name \'' + current + '\'.');
+				}
 			}
 
-			stack.push(variable);
+			stack.push(value);
 		}
 	}
 
