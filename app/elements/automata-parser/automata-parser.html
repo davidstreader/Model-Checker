@@ -553,7 +553,7 @@
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
     _interpretIfStatement: function(ifNode, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
-      var guard = this._processActionNode(ifNode.guard, variableMap);
+      var guard = processReversePolishNotation(ifNode.guard.expression, variableMap, true);
       // if the guard is valid then process the then statement
       if(guard){
         this._interpretProcess(ifNode.thenProcess, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);

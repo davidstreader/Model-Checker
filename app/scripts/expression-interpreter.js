@@ -20,7 +20,19 @@ var MULTIPLY = '*';
 var DIVIDE = '/';
 var MODULO = '%';
 
-function processReversePolishNotation(input, variableMap){
+/**
+ * Proceesses the given in put as reverse polish notation, returning the
+ * result of the process.
+ *
+ * @param {string} input - the expression to process
+ * @param {object} variableMap - map of variables
+ * @param {boolean} asBoolean - determines whether result is returned as a boolean or not
+ * @returns {number|boolean} - result of process
+ */
+function processReversePolishNotation(input, variableMap, asBoolean){
+	// check if 'asBoolean' has been defined
+	asBoolean = (asBoolean == undefined) ? false : asBoolean;
+
 	// check if input is a number
 	if(typeof(input) == 'number'){
 		return input;
@@ -33,7 +45,9 @@ function processReversePolishNotation(input, variableMap){
 		var current = input[i];
 		// check if the current element is an operator
 		if(isOperator(current)){
-			var result = processOperation(current, stack.pop(), stack.pop());
+			var operand2 = stack.pop();
+			var operand1 = stack.pop();
+			var result = processOperation(current, operand1, operand2);
 			stack.push(result);
 		}
 		// check if current element is either a number or a variable
@@ -51,12 +65,21 @@ function processReversePolishNotation(input, variableMap){
 		}
 	}
 
+	// if there are still elements to process on stack then throw error
 	if(stack.length > 1){
 		throw new ExpressionInterpreterException('Invalid operation processed.');	
 	}
 
-	return stack[0];
+	// return result
+	return (asBoolean) ? stack[0] != 0 : stack[0];
 
+	/**
+	 * Determines whether the specified input is an operator. Returns
+	 * true if it is an operator, otherwise returns false.
+	 * 
+	 * @param {string} input - string to check
+	 * @param {boolean} - true if input is operator, otherwise false
+	 */
 	function isOperator(input){
 		switch(input){
 			case OR:
@@ -83,6 +106,15 @@ function processReversePolishNotation(input, variableMap){
 		}
 	}
 
+	/**
+	 * Processes the two specified operands by the operation defined by the operator
+	 * and returns the result. Throws an error if the operator given is invalid.
+	 *
+	 * @oaram {string} operator - the operation to perfrom
+	 * @param {number} operand1 - the first operand
+	 * @param {number} operand2 - the second operand
+	 * @returns {number} - the result of the operation
+	 */
 	function processOperation(operator, operand1, operand2){
 		if(operand1 == undefined || operand2 == undefined){
 			throw new ExpressionInterpreterException('Not enough elements on the stack to process expression.');
@@ -90,9 +122,9 @@ function processReversePolishNotation(input, variableMap){
 
 		switch(operator){
 			case OR:
-				return ((operand1 != 0) || (operand2 != 0));
+				return ((operand1 != 0) || (operand2 != 0)) ? 1 : 0;
 			case AND:
-				return ((operand1 != 0) && (operand2 != 0));
+				return ((operand1 != 0) && (operand2 != 0)) ? 1 : 0;
 			case BIT_OR:
 				return (operand1 | operand2);
 			case BIT_EXCL_OR:
@@ -100,17 +132,17 @@ function processReversePolishNotation(input, variableMap){
 			case BIT_AND:
 				return (operand1 & operand2);
 			case EQUIVALENT:
-				return (operand1 == operand2);
+				return (operand1 == operand2) ? 1 : 0;
 			case NOT_EQUIVALENT:
-				return (operand1 != operand2);
+				return (operand1 != operand2) ? 1 : 0;
 			case LESS_THAN:
-				return (operand1 < operand2);
+				return (operand1 < operand2) ? 1 : 0;
 			case LESS_THAN_OR_EQUAL:
-				return (operand1 <= operand2);
+				return (operand1 <= operand2) ? 1 : 0;
 			case GREATER_THAN:
-				return (operand1 > operand2);
+				return (operand1 > operand2) ? 1 : 0;
 			case GREATER_THAN_OR_EQUAL:
-				return (operand1 >= operand2);
+				return (operand1 >= operand2) ? 1 : 0;
 			case RIGHT_SHIFT:
 				return (operand1 >> operand2);
 			case LEFT_SHIFT:
@@ -131,6 +163,12 @@ function processReversePolishNotation(input, variableMap){
 		}
 	}
 
+/**
+ * Constructs and returns an 'ExpressionInterpreterException' message based
+ * off of the specified message.
+ *
+ * @param {string} message - the message to be constructed 
+ */
 	function ExpressionInterpreterException(message){
 		this.message = message;
 		this.toString = function(){

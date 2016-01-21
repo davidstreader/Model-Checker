@@ -221,10 +221,10 @@ PEG.automataParser = (function() {
         peg$c85 = "else",
         peg$c86 = { type: "literal", value: "else", description: "\"else\"" },
         peg$c87 = function(exp, process1, process2) {
-            return new Node.IfNode(exp, process1, process2);
+            return new Node.IfNode(exp.expression, process1, process2);
          },
         peg$c88 = function(exp, process) {
-            return new Node.IfNode(exp, process);
+            return new Node.IfNode(exp.expression, process);
          },
         peg$c89 = function(prefix, choice) {
             if(choice != null){
@@ -238,7 +238,7 @@ PEG.automataParser = (function() {
         peg$c92 = function(guard, action) {
             var node = new constructSequenceNode(action);
             if(guard != null){
-                node = new Node.IfNode(guard, node);
+                node = new Node.IfNode(guard.expression, node);
             }
             return node;
          },
