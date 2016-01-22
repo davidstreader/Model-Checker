@@ -292,6 +292,9 @@ PEG.automataParser = (function() {
             return new Node.ParallelNode(body, parallel);
          },
         peg$c113 = function(parallel) {
+            if(parallel.type == 'composite'){
+              return parallel.composite;
+            }
             return parallel;
          },
         peg$c114 = function(range, ranges) {
