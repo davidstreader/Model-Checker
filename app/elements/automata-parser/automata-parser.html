@@ -32,6 +32,15 @@
         readOnly: true
       },
       /**
+       * A map of constant names to their values.
+       *
+       * @private
+       */
+      _constantsMap: {
+        type:Object,
+        readOnly: true
+      },
+      /**
        * Determines whether automata are built or not.
        *
        * @private
@@ -174,6 +183,7 @@
       // call the private setters for these fields
       // (they're readOnly so they can't simply be set with '=')
       this._set_definitionsMap({});
+      this._set_constantsMap({});
       this._set_operationsMap({});
       this._set_operationsIndex(0);
       this._set_operationUid(0);
@@ -239,7 +249,7 @@
             name = globalName + '.' + name;
           }
 
-          var variableMap = {};
+          var variableMap = this._constantsMap;
 
           // check if this definition is indexed
           var index = definition.name.name.index;
@@ -367,6 +377,7 @@
       }
       // add constant to constants map
       this._definitionsMap[name] = {type: 'constant', value: model.value};
+      this._constantsMap[name] = processReversePolishNotation(model.value.expression, this._constantsMap);
     },
     /**
      * Interprets the range defined in the specified model.
@@ -891,7 +902,7 @@
         return this._processSet(ptNode.set);
       }
       else if(ptNode.type == 'range'){
-        return this._processRange(ptNode);
+        return this._processRange(ptNode, undefined, variableMap);
       }
       else if(ptNode.type == 'name'){
         return this._getFromConstantStack(this._getNameFromPTNode(ptNode));   
@@ -1153,7 +1164,6 @@
         // check each edge to see if it needs to be updated
         edges.forEach(function(edge){
           for(var i = 0; i < relabel.length; i++){
-            console.log(edge.label);
             // only update the edge if it needs to be relabelled
             var oldLabel = relabel[i]['old'];
             var newLabel = relabel[i]['new'];
@@ -1234,7 +1244,8 @@
     /**
      *
      */
-    _processRange: function(range, defName) {
+    _processRange: function(range, defName, variableMap) {
+      variableMap = (variableMap == undefined) ? this._constantsMap : variableMap;
       // check if range is globally defined
       if(typeof(range) === 'string'){
         if(this._rangesMap[range] !== undefined){
@@ -1266,7 +1277,7 @@
 
         // check if simple expression
         if(points[i].type === 'expression'){
-          points[i] = this._processActionNode(points[i]);
+          points[i] = this._processActionNode(points[i], variableMap);
         }
       }
 
