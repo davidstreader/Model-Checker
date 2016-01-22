@@ -586,7 +586,7 @@
         this._pushToCompositeStack(name);
         this._constructDefinition(name, processes[i].type, processes[i].relabel, processes[i].hidden, false);
         var process = (processes[i].process === undefined) ? processes[i] : processes[i].process;
-        this._interpretProcess(process, definitionMap[name].graph.root, definitionMap, name, name, referenceMap);
+        this._interpretProcess(process, definitionMap[name].graph.root, definitionMap, name, name, referenceMap, variableMap);
         this._processDefinition(name);
       }
 
@@ -606,7 +606,7 @@
       var name = this._popFromCompositeStack();
       // update the label for the defintion if necessary
       if(composite.label !== undefined){
-        var label = composite.label.action;
+        var label = this._processActionNode(composite.label, variableMap);
         definitionMap[name].label = label;
       }
     },
@@ -626,6 +626,7 @@
       
       // iterate over the range or set  
       var iterator = new IndexIterator(range.index);
+      var first = true;
       while(iterator.hasNext){
         var element = iterator.next;
           
@@ -633,8 +634,26 @@
         if(variable !== undefined){
           variableMap[variable] = element;
         }
+        var name = defName + '<parallel-process-' + element + '>';
+        // push name to composite stack
+        this._pushToCompositeStack(name);
+        var process = (forall.process.process === undefined) ? forall.process : forall.process.process;
+        this._constructDefinition(name, process.type, process.relabel, process.hidden, false);
+        this._interpretProcess(process, definitionMap[name].graph.root, definitionMap, name, name, referenceMap, variableMap);
+        this._processDefinition(name);
 
-        this._interpretProcess(forall.process, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
+        if(first){
+          definitionMap[defName].graph = definitionMap[name].graph;
+          definitionMap[defName].graph.root = definitionMap[name].graph.root;
+          first = false;
+        }
+        else{
+          var graph1 = definitionMap[defName].graph;
+          var graph2 = definitionMap[name].graph;
+          var graph = Graph.Operations.parallelComposition(graph1, graph2);
+          definitionMap[defName].graph = graph;
+          definitionMap[defName].graph.root = graph.root; 
+        }
       }
     },
     /**
