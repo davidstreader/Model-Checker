@@ -79,11 +79,6 @@
             this.thenProcess = thenProcess;
             if(elseProcess != undefined){ this.elseProcess = elseProcess; }
         },
-        ForAllNode: function(range, process){
-            this.type = 'forall';
-            this.range = range;
-            this.process = process;
-        },
         CompositeNode: function(label, composite, relabel){
             this.type = 'composite';
             if(label != null){ this.label = label; };
@@ -187,7 +182,7 @@
           variable = '$v<' + expressionCount++ + '>';
           range.variable = variable;
       }
-
+      
       indexArray.push(range);
       return '[' + variable + ']';    
     }
@@ -338,12 +333,18 @@ ActionLabels
  / set:Set {
     return set;
  }
- / '[' _ range:ActionRange _ ']' {
-    var action = processActionRange(range);
-    return new Node.ActionNode(action);
+ / '[' _ range:ActionRange _ ']'  _ action:(_ActionLabels ?) {
+    var label = processActionRange(range);
+    if(action == null){
+        return new Node.ActionNode(action);
+    }
+    return new Node.ActionNode(label + action);
  }
- / '[' _ exp:Expression _ ']' {
-    return new Node.ActionNode('[' + exp + ']');
+ / '[' _ exp:Expression _ ']' _ action:(_ActionLabels ?) {
+    if(action == null){
+        return new Node.ActionNode('[' + exp + ']');
+    }
+    return new Node.ActionNode('[' + exp + ']' + action);
  }
 
 /* Used to avoid left hand recursion in ActionLabels */
@@ -391,7 +392,7 @@ ActionRange
 
 /* Attempts to parse and return a range */
 Range
- = start:Expression  '..' end:Expression {
+ = start:Expression '..' end:Expression {
     return new Node.RangeNode(start, end);
  }
  / Identifier
@@ -504,9 +505,7 @@ BaseLocalProcess
  / error:('ERROR' / '(' _ 'ERROR' _')') {
     return new Node.TerminalNode(ERROR);
  }
- / ident:Identifier _ indices:(Indices ?){
-    return constructNameNode(ident, indices);
- }
+ / Identifier
 
 IfStatement
  = 'if' _ exp:Expression _ 'then' _ process1:_LocalProcess _ 'else' _ process2:_LocalProcess {
@@ -580,14 +579,14 @@ CompositeDefinition
  }
  
 CompositeBody
- = label:(PrefixLabel ?) _ ident:Identifier _ relabel:(Relabel ?) {
+ = 'forall' _ range:Ranges _ body:CompositeBody {
+    return constructLocalProcess(body);
+ }
+ / label:(PrefixLabel ?) _ ident:Identifier _ relabel:(Relabel ?) {
     return new Node.CompositeNode(label, ident, relabel);
  }
  / label:(PrefixLabel ?) _ '(' _ comp:ParallelComposition _ ')' _ relabel:(Relabel ?) {
     return new Node.CompositeNode(label, comp, relabel);
- }
- / 'forall' _ range:Ranges _ body:CompositeBody {
-    return new Node.ForAllNode(range, body);
  }
 
 PrefixLabel
@@ -616,7 +615,7 @@ _ParallelComposition
 
 Ranges
  = '[' _ range:ActionRange _ ']' _ ranges:(Ranges ?) {
-    return range;
+    processActionRange(range);
  }
 
 /**

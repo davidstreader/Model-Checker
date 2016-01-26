@@ -661,6 +661,9 @@
       var suffix = '';
       // check if name is indexed
       if(ptNode.index != undefined){
+        if(typeof(ptNode.index) == 'object'){
+          throw new this.InterpreterException('Cannot define a range within a process reference in process \'' + globalName + '\'.');
+        }
         var index = processReversePolishNotation(ptNode.index, variableMap);
         suffix = '[' + index + ']';
       }
@@ -1170,7 +1173,7 @@
      *
      */
     _processRange: function(range, defName, variableMap) {
-      variableMap = (variableMap == undefined) ? this._constantsMap : variableMap;
+      variableMap = (variableMap == undefined) ? this._variableMap : variableMap;
       // check if range is globally defined
       if(typeof(range) === 'string'){
         if(this._rangesMap[range] !== undefined){
@@ -1189,20 +1192,8 @@
         if(typeof(points[i]) == 'number'){
           continue;
         }
-
-        if(points[i].expression.type == 'name'){
-          var value = this._definitionsMap[points[i].expression.name];
-          if(value !== undefined){
-            points[i] = value.value;
-          }
-          else{
-            throw new this.InterpreterException('Range "' + defName + '" is refererencing undefined constant "' + value + '".');
-          }
-        }
-
-        // check if simple expression
-        if(points[i].type === 'expression'){
-          points[i] = processReversePolishNotation(points[i].expression, variableMap);
+        else{
+          points[i] = processReversePolishNotation(points[i], variableMap);
         }
       }
 
