@@ -283,7 +283,7 @@ PEG.automataParser = (function() {
         peg$c99 = function(guard, action) {
             var node = new constructSequenceNode(action);
             if(guard != null){
-                node = new Node.IfNode(guard.expression, node);
+                node = new Node.IfNode(guard, node);
             }
             return node;
          },

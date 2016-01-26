@@ -535,7 +535,7 @@ ActionPrefix
  = guard:(Guard ?) _ action:PrefixActions {
     var node = new constructSequenceNode(action);
     if(guard != null){
-        node = new Node.IfNode(guard.expression, node);
+        node = new Node.IfNode(guard, node);
     }
     return node;
  }
