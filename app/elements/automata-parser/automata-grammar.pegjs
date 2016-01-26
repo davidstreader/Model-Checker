@@ -79,9 +79,8 @@
             this.thenProcess = thenProcess;
             if(elseProcess != undefined){ this.elseProcess = elseProcess; }
         },
-        CompositeNode: function(label, composite, relabel){
+        CompositeNode: function(composite, relabel){
             this.type = 'composite';
-            if(label != null){ this.label = label; };
             this.composite = composite;
             if(relabel != null){ this.relabel = relabel; }
         },
@@ -89,6 +88,11 @@
             this.type = 'parallel';
             this.process1 = process1;
             this.process2 = process2;
+        },
+        LabelNode: function(name, label){
+            this.type = 'label';
+            if(label != null){ this.label = label; };
+            this.name = name;
         },
         FunctionNode: function(type, process){
             this.type = type;
@@ -130,6 +134,7 @@
     function constructConstantDefinitionNode(name, value){
         var node = new Node.DefinitionNode('constant', name);
         node.value = value;
+        variableMap[name.name] = value;
         return node;
     }
 
@@ -187,13 +192,23 @@
       return '[' + variable + ']';    
     }
     
+    function processExpression(exp){
+        if(typeof(exp) == 'number' || exp.split(' ').length == 1){
+            return exp;
+        }
+        
+        var variable = '$v<' + expressionCount++ + '>';
+        variableMap[variable] = exp;
+        return variable;
+    }
+    
     function constructLocalProcess(process){
         for(var i = 0; i < indexArray.length; i++){
             var index = indexArray[i];
             process = new Node.IndexNode(index.variable, index.index, process);
         }
-        
         indexArray = [];
+        console.log(process);
         return process;
     }
     
@@ -257,10 +272,11 @@ Identifier
     return new Node.TerminalNode(ERROR);
  }
  / ident:UpperCaseIdentifier _ index:Indices {
-    return constructNameNode(ident, index);
+    return constructNameNode(ident + index);
  }
  / ident:UpperCaseIdentifier _ index:IndexRanges {
-    return constructNameNode(ident, index);
+    var node = constructNameNode(ident + index);
+    return constructLocalProcess(node);
  }
  / ident:UpperCaseIdentifier {
     return constructNameNode(ident);
@@ -479,9 +495,8 @@ _LocalProcessDefinitions
 
 /* Attempts to parse and return a singular locally defined process definition */
 LocalProcessDefinition
- = ident:Identifier _ index:(IndexRanges ?) _ '=' _ process:LocalProcess {
-    var name = constructNameNode(ident, index);
-    return constructModelDefinitionNode('process', name, process, NO_RELABEL, NO_HIDE, NOT_VISIBLE);
+ = ident:Identifier _ '=' _ process:LocalProcess {
+    return constructModelDefinitionNode('process', ident, process, NO_RELABEL, NO_HIDE, NOT_VISIBLE);
  }
 
 /* Attempts to parse and return a local process */
@@ -561,12 +576,25 @@ Guard
 
 Indices
  = '[' _ exp:Expression _ ']' _ indices:(Indices ?) {
-    return exp;
+    if(indices == null){
+        return '[' + processExpression(exp) + ']';
+    }
+    return  '[' + processExpression(exp) + ']' + indices;
  }
 
 IndexRanges
- = '[' _ index:(ActionRange / Expression) _ ']' _ indices:(IndexRanges ?) {
-    return index;
+ = '[' _ range:ActionRange _ ']' _ indices:(IndexRanges ?) {
+    var label = processActionRange(range);
+    if(indices == null){
+        return label;
+    }
+    return label + indices;
+ }
+ / '[' _ exp:Expression _ ']' _ indices:(IndexRanges ?) {
+    if(indices == null){
+        return '[' + procesExpression(exp) + ']';
+    }
+    return '[' + processExpression(exp) + ']' + indices;
  }
 
 /**
@@ -582,8 +610,10 @@ CompositeBody
  = 'forall' _ range:Ranges _ body:CompositeBody {
     return constructLocalProcess(body);
  }
- / label:(PrefixLabel ?) _ ident:Identifier _ relabel:(Relabel ?) {
-    return new Node.CompositeNode(label, ident, relabel);
+ / lbl:(PrefixLabel ?) _ ident:Identifier _ relabel:(Relabel ?) {
+    var label = new Node.LabelNode(ident.name, lbl.action);
+    var node = new Node.CompositeNode(label, relabel);
+    return constructLocalProcess(node);
  }
  / label:(PrefixLabel ?) _ '(' _ comp:ParallelComposition _ ')' _ relabel:(Relabel ?) {
     return new Node.CompositeNode(label, comp, relabel);
@@ -821,7 +851,7 @@ BaseExpression
  = IntegerLiteral
  / Variable
  / variable:UpperCaseIdentifier {
-    return '$' + variable;
+    return variableMap[variable];
  }
  / '(' _ exp:Expression _ ')'{
     return exp;

@@ -227,7 +227,7 @@
 
       // only relabel nodes if live building is active
       if(this._buildAutomata){
-        this._relabelNodes(true);
+        this._relabelNodes();
       }
 
       return this._buildParsingResults();
@@ -241,43 +241,21 @@
     _interpretDefinitions: function(model) {
       var globalName = this._getNameFromPTNode(model.definitions[0].name);
       this._initialiseDefinitions(model.definitions, globalName);
+      
       // only interpret definitions if live build is active
       if(this._buildAutomata){
         model.definitions.forEach(function(definition, i) {
-          var name = this._getNameFromPTNode(definition.name);
-          if(i != 0){
-            name = globalName + '.' + name;
-          }
-
           var variableMap = this._variableMap;
 
           // check if this definition is indexed
-          var index = definition.name.name.index;
-          if(index != undefined){
-            if(index.type == 'range'){ index = this._processRange(index.index); }
-            var variable = undefined;
-            if(index.variable != undefined){
-              variable = index.variable;
-
-            }
-
-            var iterator = new IndexIterator(index.index);
-            while(iterator.hasNext){
-              var element = iterator.next;
-              
-              // update variable if necessary
-              if(variable != undefined){
-                variableMap[variable] = element;
-              }
-
-              var suffix = '[' + element + ']';
-              this._interpretDefinition(name + suffix, globalName, definition, variableMap);
-            }
+          if(definition.name.type == 'index'){
+            this._interpretIndexedDefinition(definition.name , globalName, definition, variableMap)
           }
           else{
+            var name = this._getNameFromPTNode(definition.name);
+            name = (i != 0) ? globalName + '.' + name : name;
             this._interpretDefinition(name, globalName, definition, variableMap);
           }
-
         }.bind(this));
         
         // process the global definition
@@ -300,27 +278,38 @@
       }
 
       for(var i = 1; i < definitions.length; i++){
-        var name = this._getNameFromPTNode(definitions[i].name);
-        name = globalName + '.' + name;
-
-        // check if this definition is indexed
-        var index = definitions[i].name.name.index;
-        if(index != undefined){
-          if(index.index.type == 'range'){ index.index = this._processRange(index.index); }
-          
-          var iterator = new IndexIterator(index.index);
-          while(iterator.hasNext){
-            var suffix = '[' + iterator.next + ']';
-            this._definitionsMap[name + suffix] = new this._Definition();
-          }
+        if(definitions[i].name.type == 'index'){
+          this._initialiseIndexedDefinitions(definitions[i].name, globalName, {});
         }
         else{
+          var name = this._getNameFromPTNode(definitions[i].name);
+          name = globalName + '.' + name;
           this._definitionsMap[name] = new this._Definition();
         }
       }
 
       this._definitionsMap[globalName] = new this._Definition();
     },
+    /**
+     *
+     */
+    _initialiseIndexedDefinitions: function(ptNode, globalName, variableMap) {
+       if(ptNode.type == 'name'){
+        var name = globalName + '.' + this._processVariables(ptNode.name, variableMap);
+        this._definitionsMap[name] = new this._Definition();
+      }
+      else{
+        var iterator = new IndexIterator(ptNode.index);
+        while(iterator.hasNext){
+          var element = iterator.next;
+          variableMap[ptNode.variable] = element;
+          this._initialiseIndexedDefinitions(ptNode.process, globalName, variableMap);
+        }
+      }     
+    },
+    /**
+     *
+     */
     _interpretDefinition: function(name, globalName, definition, variableMap) {
       var definitionMap = this._definitionsMap;
       definitionMap[name] = new this._Definition();
@@ -337,7 +326,23 @@
       var referenceMap = {};
       referenceMap[name] = root;
       this._interpretProcess(definition.process, root, definitionMap, name, globalName, referenceMap, variableMap);
-
+    },
+    /**
+     *
+     */
+    _interpretIndexedDefinition: function(ptNode, globalName, definition, variableMap) {
+      if(ptNode.type == 'name'){
+        var name = globalName + '.' + this._processVariables(ptNode.name, variableMap);
+        this._interpretDefinition(name, globalName, definition, variableMap);
+      }
+      else{
+        var iterator = new IndexIterator(ptNode.index);
+        while(iterator.hasNext){
+          var element = iterator.next;
+          variableMap[ptNode.variable] = element;
+          this._interpretIndexedDefinition(ptNode.process, globalName, definition, variableMap);
+        }
+      }
     },
     /**
      * Interprets the operation defined in the specified model.
@@ -594,11 +599,9 @@
     _interpretComposite: function(composite, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
       this._interpretProcess(composite.composite, extendtionNode, definitionMap, defName, globalName, {}, variableMap);
       var name = this._popFromCompositeStack();
-      // update the label for the defintion if necessary
-      if(composite.label !== undefined){
-        var label = this._processVariables(composite.label.action, variableMap);
-        definitionMap[name].label = label;
-      }
+      var graph = Graph.Operations.parallelComposition(definitionMap[name].graph, definitionMap[defName].graph);
+      definitionMap[defName].graph = graph;
+      definitionMap[defName].graph.root = graph.root;
     },
     /**
      * Interpret a parse tree forall node.
@@ -658,17 +661,10 @@
      */
     _interpretName: function(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
       var references = this._getNameFromPTNode(ptNode);        // get what the extendtionNode should be referencing
-      var suffix = '';
-      // check if name is indexed
-      if(ptNode.index != undefined){
-        if(typeof(ptNode.index) == 'object'){
-          throw new this.InterpreterException('Cannot define a range within a process reference in process \'' + globalName + '\'.');
-        }
-        var index = processReversePolishNotation(ptNode.index, variableMap);
-        suffix = '[' + index + ']';
-      }
+      references = this._processVariables(references, variableMap);
+
       // check if this is a local reference
-      var localReference = globalName + '.' + references + suffix;
+      var localReference = globalName + '.' + references;
       if(definitionMap[localReference] !== undefined){
         references = localReference;
       }
@@ -676,49 +672,39 @@
       this._interpretReference(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap, references);    
     },
     /**
-     * Interprets a parse tree labelled name node.
+     * Interprets a parse tree label node.
      *
      * @private
-     * @param {!object} ptNode             - A parse tree name node
+     * @param {!object} ptNode             - A parse tree label node
      * @param {!Graph.Node} extendtionNode - The node in the graph to build on from
      * @param {!object} definitionMap      - The definition map being used
      * @param {!string} defName            - The name of the current definition
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
     _interpretLabel: function(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
-      var name = this._getNameFromPTNode(ptNode);
-      var label = this._getLabelFromPTNode(ptNode);
+      var name = defName;
+      if(ptNode.label != undefined){
+        var label = this._processVariables(ptNode.label, variableMap);
+        name = label + ':' + ptNode.name;
 
-      if(label === undefined){
-        return;
+        // check if this labelling has already been defined
+        if(definitionMap[name] != undefined){
+          this._pushToCompositeStack(name);
+          return;
+        }
+
+        this._constructDefinition(name);
+        var graph = definitionMap[ptNode.name].graph.deepClone();
+        definitionMap[name].graph = graph;
+        definitionMap[name].rootId = graph.rootId;
+
+        // relabel all the edges in the graph
+        graph.edges.forEach(function(edge){
+          edge.label = label + '.' + edge.label;
+        });
       }
 
-      // clone the definition defined by defName
-      var definition = this._definitionsMap[name];
-      
-      // throw error if definition is undefined
-      if(definition === undefined){
-        throw new this.InterpreterException('Unknown automaton \'' + name + '\' attempted to be referenced.');
-      }
-
-      var temp = new this._Definition();
-      temp.graph = definition.graph.deepClone();
-      temp.unprocessedNodes = definition.unprocessedNodes;
-      temp._rootId = temp.graph.rootId;
-      temp.isVisible = false;
-
-      // relabel the edges in the new definition
-      for(var i in temp.graph.edges){
-        var edge = temp.graph.getEdge(i);
-        var newLabel = label + "." + edge.label;
-        edge.label = newLabel;
-      }
-
-      var references = label + ':' + name;
-      // add new definition to definitions map
-      this._definitionsMap[references] = temp;
-
-      this._interpretReference(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap, references);       
+      this._pushToCompositeStack(name);
     },
     /**
      * Interprets a reference for either a name or labelled name node.
@@ -884,8 +870,9 @@
       var regex = '[\$][v<]*[a-zA-Z0-9]*[>]*';
       var match = action.match(regex);
       
+      // continue to process while matches can still be found
       while(match != undefined){
-        var expression = processReversePolishNotation(variableMap[match[0]]);
+        var expression = processReversePolishNotation(variableMap[match[0]], variableMap);
         action = action.replace(match[0], expression);
         match = action.match(regex);
       }
