@@ -590,10 +590,17 @@
     _interpretComposite: function(composite, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
       this._interpretProcess(composite.composite, extendtionNode, definitionMap, defName, globalName, {}, variableMap);
       var name = this._popFromCompositeStack();
-      
+
+      if(composite.label != undefined){
+        // relabel all the edges in the graph
+        definitionMap[name].graph.edges.forEach(function(edge){
+          edge.label = label + '.' + edge.label;
+        });
+      }
+
       if(composite.relabel != undefined){
         definitionMap[name].relabel = composite.relabel;
-        this._processRelabelling(name);
+        this._processRelabelling(name, variableMap);
       }
 
       if(name !== undefined && name != defName){
@@ -636,18 +643,12 @@
      */
     _interpretLabel: function(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
       // construct name
-      var name;
+      var name = '';
       if(ptNode.label != undefined){
         var label = this._processVariables(ptNode.label, variableMap);
         name = label + ':';
       }
       name += globalName + '.' + ptNode.name;
-
-      // check if this labelling has already been defined
-      if(definitionMap[name] != undefined){
-        this._pushToCompositeStack(name);
-        return;
-      }
 
       // construct a new definition
       this._constructDefinition(name);
@@ -661,6 +662,12 @@
         graph.edges.forEach(function(edge){
           edge.label = label + '.' + edge.label;
         });
+      }
+
+      // relabel the edges in the graph if necessary
+      if(ptNode.relabel != undefined){
+        definitionMap[name].relabel = ptNode.relabel;
+        this._processRelabelling(name, variableMap);
       }
 
       this._pushToCompositeStack(name);
@@ -926,11 +933,6 @@
      * @private
      */
     _constructDefinition: function(defName, type, relabel, hidden, isVisible) {
-      // check that there is not already a definition with the specified name
-      if(this._definitionsMap[defName] !== undefined){
-        throw new this.InterpreterException('process \'' + defName + '\' defined more that once.');
-      }
-
       this._definitionsMap[defName] = new this._Definition();
       this._definitionsMap[defName].graph = new Graph();
       var rootId = this._definitionsMap[defName].rootId;
@@ -976,17 +978,12 @@
           refs = node.getMetaData ('references');
           for(var j = 0; j < refs.length; j++){
             references = refs[j];
-            var localReference = defName + '.' + references;
+
             // check whether or not the automaton that this node is referencing actual exist.
-            if(this._definitionsMap[localReference] === undefined || this._definitionsMap[localReference].graph === undefined){
-              if(this._definitionsMap[references] === undefined || this._definitionsMap[references].graph === undefined) {
-                throw new this.InterpreterException('unknown automaton "' + references + '" referenced in "' + prevReferences + '".');
-              }
+            if(this._definitionsMap[references] === undefined || this._definitionsMap[references].graph === undefined) {
+              throw new this.InterpreterException('unknown automaton "' + references + '" referenced in "' + prevReferences + '".');
             }
-            else{
-              references = localReference;
-            }
-            
+
             var refGraph = this._definitionsMap[references].graph;
             var refNodes = refGraph.nodes;
             // set the current nodes id to the root of the reference graph
@@ -1008,6 +1005,9 @@
         definition.unprocessedNodes.splice(0, len);
         prevReferences = references;
       }
+
+      // make sure that the root of the graph is the start node
+      this._definitionsMap[defName].graph.root.addMetaData('startNode', true);
     },
     /**
      *
@@ -1029,10 +1029,10 @@
      * @private
      * @param {!string} defName - the definition to perform relabelling for
      */
-    _processRelabelling: function(defName) {
+    _processRelabelling: function(defName, variableMap) {
       var relabel = this._definitionsMap[defName].relabel;
       if(relabel !== undefined){
-        relabel = this._processRelabellingSet(relabel);
+        relabel = this._processRelabellingSet(relabel, variableMap);
         // get an array of edges in the current graph
         var edges = this._definitionsMap[defName].graph.edges;
         // check each edge to see if it needs to be updated
@@ -1056,11 +1056,11 @@
      * @param {!object} set - the set of relabelling objects to process
      * @returns {!object} processed set
      */
-    _processRelabellingSet: function(set) {
+    _processRelabellingSet: function(set, variableMap) {
       var result = [];
       for(var i = 0; i < set.length; i++){
-        var newLabel = this._processVariables(set[i]['new'].action);
-        var oldLabel = this._processVariables(set[i]['old'].action);
+        var newLabel = this._processVariables(set[i]['new'].action, variableMap);
+        var oldLabel = this._processVariables(set[i]['old'].action, variableMap);
         result.push({new: newLabel, old: oldLabel});
       }
 
