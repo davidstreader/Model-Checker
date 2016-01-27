@@ -91,7 +91,7 @@
         },
         LabelNode: function(name, label){
             this.type = 'label';
-            if(label != null){ this.label = label; };
+            if(label != null){ this.label = label.action; };
             this.name = name;
         },
         FunctionNode: function(type, process){
@@ -187,7 +187,7 @@
           variable = '$v<' + expressionCount++ + '>';
           range.variable = variable;
       }
-      
+
       indexArray.push(range);
       return '[' + variable + ']';    
     }
@@ -208,7 +208,6 @@
             process = new Node.IndexNode(index.variable, index.index, process);
         }
         indexArray = [];
-        console.log(process);
         return process;
     }
     
@@ -611,12 +610,12 @@ CompositeBody
     return constructLocalProcess(body);
  }
  / lbl:(PrefixLabel ?) _ ident:Identifier _ relabel:(Relabel ?) {
-    var label = new Node.LabelNode(ident.name, lbl.action);
+    var label = new Node.LabelNode(ident.name, lbl);
     var node = new Node.CompositeNode(label, relabel);
     return constructLocalProcess(node);
  }
  / label:(PrefixLabel ?) _ '(' _ comp:ParallelComposition _ ')' _ relabel:(Relabel ?) {
-    return new Node.CompositeNode(label, comp, relabel);
+    return new Node.CompositeNode(comp, label, relabel);
  }
 
 PrefixLabel

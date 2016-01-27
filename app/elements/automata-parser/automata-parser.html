@@ -573,80 +573,33 @@
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
     _interpretParallel: function(parallel, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
-      var processes = [parallel.process1, parallel.process2];
-      
-      for(var i = 0; i < processes.length; i++){
-        var name = defName + '.' + i;
-        // push name to composite stack
-        this._pushToCompositeStack(name);
-        this._constructDefinition(name, processes[i].type, processes[i].relabel, processes[i].hidden, false);
-        var process = (processes[i].process === undefined) ? processes[i] : processes[i].process;
-        this._interpretProcess(process, definitionMap[name].graph.root, definitionMap, name, name, referenceMap, variableMap);
-        this._processDefinition(name);
-      }
-
-      var graph1 = definitionMap[defName + '.0'].graph;
-      var graph2 = definitionMap[defName + '.1'].graph;
-      var graph = Graph.Operations.parallelComposition(graph1, graph2);
-      definitionMap[defName].graph = graph;
-      definitionMap[defName].graph.root = graph.root;
-
+      this._interpretProcess(parallel.process1, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
+      this._interpretProcess(parallel.process2, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
       this._pushToCompositeStack(defName);
     },
     /**
-     *
-     */
-    _interpretComposite: function(composite, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
-      this._interpretProcess(composite.composite, extendtionNode, definitionMap, defName, globalName, {}, variableMap);
-      var name = this._popFromCompositeStack();
-      var graph = Graph.Operations.parallelComposition(definitionMap[name].graph, definitionMap[defName].graph);
-      definitionMap[defName].graph = graph;
-      definitionMap[defName].graph.root = graph.root;
-    },
-    /**
-     * Interpret a parse tree forall node.
+     * Interpret a parse tree composite node.
      *
      * @private
-     * @param {!object} ptNode             - A parse tree forall node
+     * @param {!object} ptNode             - A parse tree composite node
      * @param {!Graph.Node} extendtionNode - The node in the graph to build on from
      * @param {!object} definitionMap      - The definition map being used
      * @param {!string} defName            - The name of the current definition
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
-    _interpretForAll: function(forall, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
-      var range = this._processActionNode(forall.range);
-      var variable = range.variable;
+    _interpretComposite: function(composite, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
+      this._interpretProcess(composite.composite, extendtionNode, definitionMap, defName, globalName, {}, variableMap);
+      var name = this._popFromCompositeStack();
       
-      // iterate over the range or set  
-      var iterator = new IndexIterator(range.index);
-      var first = true;
-      while(iterator.hasNext){
-        var element = iterator.next;
-          
-        // update variable reference if variable is defined
-        if(variable !== undefined){
-          variableMap[variable] = element;
-        }
-        var name = defName + '<parallel-process-' + element + '>';
-        // push name to composite stack
-        this._pushToCompositeStack(name);
-        var process = (forall.process.process === undefined) ? forall.process : forall.process.process;
-        this._constructDefinition(name, process.type, process.relabel, process.hidden, false);
-        this._interpretProcess(process, definitionMap[name].graph.root, definitionMap, name, name, referenceMap, variableMap);
-        this._processDefinition(name);
+      if(composite.relabel != undefined){
+        definitionMap[name].relabel = composite.relabel;
+        this._processRelabelling(name);
+      }
 
-        if(first){
-          definitionMap[defName].graph = definitionMap[name].graph;
-          definitionMap[defName].graph.root = definitionMap[name].graph.root;
-          first = false;
-        }
-        else{
-          var graph1 = definitionMap[defName].graph;
-          var graph2 = definitionMap[name].graph;
-          var graph = Graph.Operations.parallelComposition(graph1, graph2);
-          definitionMap[defName].graph = graph;
-          definitionMap[defName].graph.root = graph.root; 
-        }
+      if(name !== undefined && name != defName){
+        var graph = Graph.Operations.parallelComposition(definitionMap[name].graph, definitionMap[defName].graph);
+        definitionMap[defName].graph = graph;
+        definitionMap[defName].graph.root = graph.root;
       }
     },
     /**
@@ -682,22 +635,28 @@
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
     _interpretLabel: function(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
-      var name = defName;
+      // construct name
+      var name;
       if(ptNode.label != undefined){
         var label = this._processVariables(ptNode.label, variableMap);
-        name = label + ':' + ptNode.name;
+        name = label + ':';
+      }
+      name += globalName + '.' + ptNode.name;
 
-        // check if this labelling has already been defined
-        if(definitionMap[name] != undefined){
-          this._pushToCompositeStack(name);
-          return;
-        }
+      // check if this labelling has already been defined
+      if(definitionMap[name] != undefined){
+        this._pushToCompositeStack(name);
+        return;
+      }
 
-        this._constructDefinition(name);
-        var graph = definitionMap[ptNode.name].graph.deepClone();
-        definitionMap[name].graph = graph;
-        definitionMap[name].rootId = graph.rootId;
+      // construct a new definition
+      this._constructDefinition(name);
+      var graph = definitionMap[ptNode.name].graph.deepClone();
+      definitionMap[name].graph = graph;
+      definitionMap[name].rootId = graph.rootId;
 
+      // label the edges in the graph if necessary
+      if(ptNode.label != undefined){
         // relabel all the edges in the graph
         graph.edges.forEach(function(edge){
           edge.label = label + '.' + edge.label;

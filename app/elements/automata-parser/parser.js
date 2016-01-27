@@ -337,12 +337,12 @@ PEG.automataParser = (function() {
             return constructLocalProcess(body);
          },
         peg$c117 = function(lbl, ident, relabel) {
-          var label = new Node.LabelNode(ident.name, lbl.action);
+            var label = new Node.LabelNode(ident.name, lbl);
             var node = new Node.CompositeNode(label, relabel);
             return constructLocalProcess(node);
          },
         peg$c118 = function(label, comp, relabel) {
-            return new Node.CompositeNode(label, comp, relabel);
+            return new Node.CompositeNode(comp, label, relabel);
          },
         peg$c119 = "::",
         peg$c120 = { type: "literal", value: "::", description: "\"::\"" },
@@ -5399,8 +5399,8 @@ PEG.automataParser = (function() {
                 this.process2 = process2;
             },
             LabelNode: function(name, label){
-              this.type = 'label';
-                if(label != null){ this.label = label; };
+                this.type = 'label';
+                if(label != null){ this.label = label.action; };
                 this.name = name;
             },
             FunctionNode: function(type, process){
@@ -5496,7 +5496,7 @@ PEG.automataParser = (function() {
               variable = '$v<' + expressionCount++ + '>';
               range.variable = variable;
           }
-          
+
           indexArray.push(range);
           return '[' + variable + ']';    
         }
@@ -5517,7 +5517,6 @@ PEG.automataParser = (function() {
                 process = new Node.IndexNode(index.variable, index.index, process);
             }
             indexArray = [];
-            console.log(process);
             return process;
         }
         
