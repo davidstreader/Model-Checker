@@ -55,7 +55,7 @@ function processReversePolishNotation(input, variableMap, asBoolean){
 			// check if current is a number
 			var value = parseInt(current);
 			if(isNaN(value)){
-				value = variableMap[current];
+				value = processReversePolishNotation(variableMap[current], variableMap);
 				if(value == undefined){
 					throw new ExpressionInterpreterException('Trying to process invalid variable name \'' + current + '\'.');
 				}
