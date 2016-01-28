@@ -20,148 +20,98 @@ var MULTIPLY = '*';
 var DIVIDE = '/';
 var MODULO = '%';
 
+// precedence map
+var precedenceMap = constructPrecedenceMap();
+
 /**
- * Proceesses the given in put as reverse polish notation, returning the
- * result of the process.
+ * Interprets the specified input and returns the result.
  *
- * @param {string} input - the expression to process
- * @param {object} variableMap - map of variables
- * @param {boolean} asBoolean - determines whether result is returned as a boolean or not
- * @returns {number|boolean} - result of process
+ * @param {string} input - the expression to interpret
+ * @param {object} variableMap - mapping of variables to their values
+ * @param {boolean} asBoolean - determines whether a boolean result is returned.
  */
-function processReversePolishNotation(input, variableMap, asBoolean){
+function interpretExpression(input, variableMap, asBoolean){
 	// check if 'asBoolean' has been defined
 	asBoolean = (asBoolean == undefined) ? false : asBoolean;
-
-	// check if input is a number
+	
+	// if input is a number then return
 	if(typeof(input) == 'number'){
 		return input;
 	}
 
-	input = input.split(' ');
-	var stack = [];
+	// interpret the expression
+	var result = processShuntingYardAlgorithm(input, precedenceMap);
+	result = processReversePolishNotation(result, variableMap, precedenceMap, asBoolean);
+
+	// return the result
+	return (asBoolean) ? result != 0 : result;
+}
+
+/**
+ * Constructs and returns a precedence map which maps an operator to
+ * its precedence level.
+ *
+ * @returns {object} - map of operators to their precedence levels
+ */
+function constructPrecedenceMap(){
+	var precedenceMap = {};
 	
-	for(var i = 0; i < input.length; i++){
-		var current = input[i];
-		// check if the current element is an operator
-		if(isOperator(current)){
-			var operand2 = stack.pop();
-			var operand1 = stack.pop();
-			var result = processOperation(current, operand1, operand2);
-			stack.push(result);
-		}
-		// check if current element is either a number or a variable
-		else{
-			// check if current is a number
-			var value = parseInt(current);
-			if(isNaN(value)){
-				value = processReversePolishNotation(variableMap[current], variableMap);
-				if(value == undefined){
-					throw new ExpressionInterpreterException('Trying to process invalid variable name \'' + current + '\'.');
-				}
-			}
+	precedenceMap[OR] = 10;
+	precedenceMap[AND] = 9;
+	precedenceMap[BIT_OR] = 8;
+	precedenceMap[BIT_EXCL_OR] = 7;
+	precedenceMap[BIT_AND] = 6;
+	precedenceMap[EQUIVALENT] = 5;
+	precedenceMap[NOT_EQUIVALENT] = 5;
+	precedenceMap[LESS_THAN] = 4;
+	precedenceMap[LESS_THAN_OR_EQUAL] = 4;
+	precedenceMap[GREATER_THAN] = 4;
+	precedenceMap[GREATER_THAN_OR_EQUAL] = 4;
+	precedenceMap[RIGHT_SHIFT] = 3;
+	precedenceMap[LEFT_SHIFT] = 3;
+	precedenceMap[ADD] = 2;
+	precedenceMap[SUBTRACT] = 2;
+	precedenceMap[MULTIPLY] = 1;
+	precedenceMap[DIVIDE] = 1;
+	precedenceMap[MODULO] = 1;
+	precedenceMap['('] = 0;
+	precedenceMap[')'] = 0;
 
-			stack.push(value);
-		}
+	return precedenceMap;
+}
+
+/**
+ * Determines whether the specified input is an operator. Returns
+ * true if it is an operator, otherwise returns false.
+ * 
+ * @param {string} input - string to check
+ * @returns {boolean} - true if input is operator, otherwise false
+ */
+function isOperator(input){
+	switch(input){
+		case OR:
+		case AND:
+		case BIT_OR:
+		case BIT_EXCL_OR:
+		case BIT_AND:
+		case EQUIVALENT:
+		case NOT_EQUIVALENT:
+		case LESS_THAN:
+		case LESS_THAN_OR_EQUAL:
+		case GREATER_THAN:
+		case GREATER_THAN_OR_EQUAL:
+		case RIGHT_SHIFT:
+		case LEFT_SHIFT:
+		case ADD:
+		case SUBTRACT:
+		case MULTIPLY:
+		case DIVIDE:
+		case MODULO:
+			return true;
+		default:
+			return false;
 	}
-
-	// if there are still elements to process on stack then throw error
-	if(stack.length > 1){
-		throw new ExpressionInterpreterException('Invalid operation processed.');	
-	}
-
-	// return result
-	return (asBoolean) ? stack[0] != 0 : stack[0];
-
-	/**
-	 * Determines whether the specified input is an operator. Returns
-	 * true if it is an operator, otherwise returns false.
-	 * 
-	 * @param {string} input - string to check
-	 * @param {boolean} - true if input is operator, otherwise false
-	 */
-	function isOperator(input){
-		switch(input){
-			case OR:
-			case AND:
-			case BIT_OR:
-			case BIT_EXCL_OR:
-			case BIT_AND:
-			case EQUIVALENT:
-			case NOT_EQUIVALENT:
-			case LESS_THAN:
-			case LESS_THAN_OR_EQUAL:
-			case GREATER_THAN:
-			case GREATER_THAN_OR_EQUAL:
-			case RIGHT_SHIFT:
-			case LEFT_SHIFT:
-			case ADD:
-			case SUBTRACT:
-			case MULTIPLY:
-			case DIVIDE:
-			case MODULO:
-				return true;
-			default:
-				return false;
-		}
-	}
-
-	/**
-	 * Processes the two specified operands by the operation defined by the operator
-	 * and returns the result. Throws an error if the operator given is invalid.
-	 *
-	 * @oaram {string} operator - the operation to perfrom
-	 * @param {number} operand1 - the first operand
-	 * @param {number} operand2 - the second operand
-	 * @returns {number} - the result of the operation
-	 */
-	function processOperation(operator, operand1, operand2){
-		if(operand1 == undefined || operand2 == undefined){
-			throw new ExpressionInterpreterException('Not enough elements on the stack to process expression.');
-		}
-
-		switch(operator){
-			case OR:
-				return ((operand1 != 0) || (operand2 != 0)) ? 1 : 0;
-			case AND:
-				return ((operand1 != 0) && (operand2 != 0)) ? 1 : 0;
-			case BIT_OR:
-				return (operand1 | operand2);
-			case BIT_EXCL_OR:
-				return (operand1 ^ operand2);
-			case BIT_AND:
-				return (operand1 & operand2);
-			case EQUIVALENT:
-				return (operand1 == operand2) ? 1 : 0;
-			case NOT_EQUIVALENT:
-				return (operand1 != operand2) ? 1 : 0;
-			case LESS_THAN:
-				return (operand1 < operand2) ? 1 : 0;
-			case LESS_THAN_OR_EQUAL:
-				return (operand1 <= operand2) ? 1 : 0;
-			case GREATER_THAN:
-				return (operand1 > operand2) ? 1 : 0;
-			case GREATER_THAN_OR_EQUAL:
-				return (operand1 >= operand2) ? 1 : 0;
-			case RIGHT_SHIFT:
-				return (operand1 >> operand2);
-			case LEFT_SHIFT:
-				return (operand1 << operand2);
-			case ADD:
-				return (operand1 + operand2);
-			case SUBTRACT:
-				return (operand1 - operand2);
-			case MULTIPLY:
-				return (operand1 * operand2);
-			case DIVIDE:
-				return (operand1 / operand2);
-			case MODULO:
-				return (operand1 % operand2);
-				return true;
-			default:
-				throw new ExpressionInterpreterException('Invalid operator \'' + operator + '\' used.');
-		}
-	}
+}
 
 /**
  * Constructs and returns an 'ExpressionInterpreterException' message based
@@ -169,10 +119,9 @@ function processReversePolishNotation(input, variableMap, asBoolean){
  *
  * @param {string} message - the message to be constructed 
  */
-	function ExpressionInterpreterException(message){
-		this.message = message;
-		this.toString = function(){
-			return ('ExpressionInterpreterException: ' + message);
-		};
-	}
+function ExpressionInterpreterException(message){
+	this.message = message;
+	this.toString = function(){
+		return ('ExpressionInterpreterException: ' + message);
+	};
 }

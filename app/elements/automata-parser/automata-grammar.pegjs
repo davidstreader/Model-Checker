@@ -79,8 +79,9 @@
             this.thenProcess = thenProcess;
             if(elseProcess != undefined){ this.elseProcess = elseProcess; }
         },
-        CompositeNode: function(composite, relabel){
+        CompositeNode: function(composite, label, relabel){
             this.type = 'composite';
+            if(label != null){ this.label = label.action; };
             this.composite = composite;
             if(relabel != null){ this.relabel = relabel; }
         },
@@ -89,10 +90,11 @@
             this.process1 = process1;
             this.process2 = process2;
         },
-        LabelNode: function(name, label){
+        LabelNode: function(name, label, relabel){
             this.type = 'label';
             if(label != null){ this.label = label.action; };
             this.name = name;
+            if(relabel != null){ this.relabel = relabel; };
         },
         FunctionNode: function(type, process){
             this.type = type;
@@ -610,8 +612,8 @@ CompositeBody
     return constructLocalProcess(body);
  }
  / lbl:(PrefixLabel ?) _ ident:Identifier _ relabel:(Relabel ?) {
-    var label = new Node.LabelNode(ident.name, lbl);
-    var node = new Node.CompositeNode(label, relabel);
+    var label = new Node.LabelNode(ident.name, lbl, relabel);
+    var node = new Node.CompositeNode(label);
     return constructLocalProcess(node);
  }
  / label:(PrefixLabel ?) _ '(' _ comp:ParallelComposition _ ')' _ relabel:(Relabel ?) {
@@ -766,7 +768,7 @@ SourceCharacter 'source character' = .
  */
 
 Expression
- = exp:RPNExpression {
+ = exp:_Expression {
     // if expression is a single number then return value
     if(typeof(exp) == 'number'){
         return exp;
@@ -783,20 +785,18 @@ Expression
     return variable;
  }
 
-RPNExpression
- = operand1:BaseExpression _ remaining:((operator:ExpressionOperators _ operand2:RPNExpression {
-    return { operator: operator, operand2: operand2 };
+_Expression
+ = operand1:BaseExpression _ remaining:((operator:ExpressionOperators _ operand2:_Expression {
+    return operator + ' ' + operand2;
  }) ?) {
-    if(remaining == null){
-        return operand1;
+    if(remaining != null){
+        operand1 = operand1 + ' ' + remaining;
     }
-    else{
-        return (operand1 + ' ' + remaining.operand2 + ' ' + remaining.operator);
-    }
+    return operand1;
  }
 
 SimpleExpression
- = exp:RPNExpression {
+ = exp:_SimpleExpression {
     // if expression is a single number then return value
     if(typeof(exp) == 'number'){
         return exp;
@@ -813,14 +813,14 @@ SimpleExpression
     return variable;
  }
 
-RPNSimpleExpression
- = operand1:SimpleBaseExpression _ remaining:((operator:SimpleExpressionOperators _ operand2:RPNSimpleExpression ? {
-    return { operator: operator, operand2: operand2 };
+_SimpleExpression
+ = operand1:SimpleBaseExpression _ remaining:((operator:SimpleExpressionOperators _ operand2:_SimpleExpression ? {
+    return remaining;
  }) ?) {
     if(remaining != null){
-        return operand1;
+        operand1 = operand1 + ' ' + remaining;
     }
-    else return (operand1 + ' ' + remaining.operand2 + ' ' + remaining.operator);
+    return operand1;
  }
 
 ExpressionOperators 'an expression operator'
@@ -852,8 +852,8 @@ BaseExpression
  / variable:UpperCaseIdentifier {
     return variableMap[variable];
  }
- / '(' _ exp:Expression _ ')'{
-    return exp;
+ / '(' _ exp:_Expression _ ')'{
+    return  '( ' + exp + ' )'
  }
   
 SimpleBaseExpression
@@ -861,5 +861,5 @@ SimpleBaseExpression
  / Variable
  / UpperCaseIdentifier
  / '(' _ exp:SimpleExpression _ ')'{
-    return exp;
+    return  '( ' + exp + ' )'
  }

@@ -337,8 +337,8 @@ PEG.automataParser = (function() {
             return constructLocalProcess(body);
          },
         peg$c117 = function(lbl, ident, relabel) {
-            var label = new Node.LabelNode(ident.name, lbl);
-            var node = new Node.CompositeNode(label, relabel);
+            var label = new Node.LabelNode(ident.name, lbl, relabel);
+            var node = new Node.CompositeNode(label);
             return constructLocalProcess(node);
          },
         peg$c118 = function(label, comp, relabel) {
@@ -455,21 +455,16 @@ PEG.automataParser = (function() {
             return variable;
          },
         peg$c165 = function(operand1, operator, operand2) {
-            return { operator: operator, operand2: operand2 };
+            return operator + ' ' + operand2;
          },
         peg$c166 = function(operand1, remaining) {
-            if(remaining == null){
-                return operand1;
-            }
-            else{
-                return (operand1 + ' ' + remaining.operand2 + ' ' + remaining.operator);
-            }
-         },
-        peg$c167 = function(operand1, remaining) {
             if(remaining != null){
-                return operand1;
+                operand1 = operand1 + ' ' + remaining;
             }
-            else return (operand1 + ' ' + remaining.operand2 + ' ' + remaining.operator);
+            return operand1;
+         },
+        peg$c167 = function(operand1, operator, operand2) {
+            return remaining;
          },
         peg$c168 = { type: "other", description: "an expression operator" },
         peg$c169 = "&&",
@@ -502,6 +497,9 @@ PEG.automataParser = (function() {
         peg$c196 = { type: "literal", value: "%", description: "\"%\"" },
         peg$c197 = function(variable) {
             return variableMap[variable];
+         },
+        peg$c198 = function(exp) {
+            return  '( ' + exp + ' )'
          },
 
         peg$currPos          = 0,
@@ -4863,7 +4861,7 @@ PEG.automataParser = (function() {
       var s0, s1;
 
       s0 = peg$currPos;
-      s1 = peg$parseRPNExpression();
+      s1 = peg$parse_Expression();
       if (s1 !== peg$FAILED) {
         peg$savedPos = s0;
         s1 = peg$c164(s1);
@@ -4873,7 +4871,7 @@ PEG.automataParser = (function() {
       return s0;
     }
 
-    function peg$parseRPNExpression() {
+    function peg$parse_Expression() {
       var s0, s1, s2, s3, s4, s5, s6;
 
       s0 = peg$currPos;
@@ -4886,7 +4884,7 @@ PEG.automataParser = (function() {
           if (s4 !== peg$FAILED) {
             s5 = peg$parse_();
             if (s5 !== peg$FAILED) {
-              s6 = peg$parseRPNExpression();
+              s6 = peg$parse_Expression();
               if (s6 !== peg$FAILED) {
                 peg$savedPos = s3;
                 s4 = peg$c165(s1, s4, s6);
@@ -4930,7 +4928,7 @@ PEG.automataParser = (function() {
       var s0, s1;
 
       s0 = peg$currPos;
-      s1 = peg$parseRPNExpression();
+      s1 = peg$parse_SimpleExpression();
       if (s1 !== peg$FAILED) {
         peg$savedPos = s0;
         s1 = peg$c164(s1);
@@ -4940,7 +4938,7 @@ PEG.automataParser = (function() {
       return s0;
     }
 
-    function peg$parseRPNSimpleExpression() {
+    function peg$parse_SimpleExpression() {
       var s0, s1, s2, s3, s4, s5, s6;
 
       s0 = peg$currPos;
@@ -4953,13 +4951,13 @@ PEG.automataParser = (function() {
           if (s4 !== peg$FAILED) {
             s5 = peg$parse_();
             if (s5 !== peg$FAILED) {
-              s6 = peg$parseRPNSimpleExpression();
+              s6 = peg$parse_SimpleExpression();
               if (s6 === peg$FAILED) {
                 s6 = null;
               }
               if (s6 !== peg$FAILED) {
                 peg$savedPos = s3;
-                s4 = peg$c165(s1, s4, s6);
+                s4 = peg$c167(s1, s4, s6);
                 s3 = s4;
               } else {
                 peg$currPos = s3;
@@ -4978,7 +4976,7 @@ PEG.automataParser = (function() {
           }
           if (s3 !== peg$FAILED) {
             peg$savedPos = s0;
-            s1 = peg$c167(s1, s3);
+            s1 = peg$c166(s1, s3);
             s0 = s1;
           } else {
             peg$currPos = s0;
@@ -5203,7 +5201,7 @@ PEG.automataParser = (function() {
             if (s1 !== peg$FAILED) {
               s2 = peg$parse_();
               if (s2 !== peg$FAILED) {
-                s3 = peg$parseExpression();
+                s3 = peg$parse_Expression();
                 if (s3 !== peg$FAILED) {
                   s4 = peg$parse_();
                   if (s4 !== peg$FAILED) {
@@ -5216,7 +5214,7 @@ PEG.automataParser = (function() {
                     }
                     if (s5 !== peg$FAILED) {
                       peg$savedPos = s0;
-                      s1 = peg$c107(s3);
+                      s1 = peg$c198(s3);
                       s0 = s1;
                     } else {
                       peg$currPos = s0;
@@ -5278,7 +5276,7 @@ PEG.automataParser = (function() {
                     }
                     if (s5 !== peg$FAILED) {
                       peg$savedPos = s0;
-                      s1 = peg$c107(s3);
+                      s1 = peg$c198(s3);
                       s0 = s1;
                     } else {
                       peg$currPos = s0;
@@ -5388,8 +5386,9 @@ PEG.automataParser = (function() {
                 this.thenProcess = thenProcess;
                 if(elseProcess != undefined){ this.elseProcess = elseProcess; }
             },
-            CompositeNode: function(composite, relabel){
+            CompositeNode: function(composite, label, relabel){
                 this.type = 'composite';
+                if(label != null){ this.label = label.action; };
                 this.composite = composite;
                 if(relabel != null){ this.relabel = relabel; }
             },
@@ -5398,10 +5397,11 @@ PEG.automataParser = (function() {
                 this.process1 = process1;
                 this.process2 = process2;
             },
-            LabelNode: function(name, label){
+            LabelNode: function(name, label, relabel){
                 this.type = 'label';
                 if(label != null){ this.label = label.action; };
                 this.name = name;
+                if(relabel != null){ this.relabel = relabel; };
             },
             FunctionNode: function(type, process){
                 this.type = type;

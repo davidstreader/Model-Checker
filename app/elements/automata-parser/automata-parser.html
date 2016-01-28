@@ -385,7 +385,7 @@
         this._variableMap[name] = model.value;
       }
       else{
-        this._variableMap[name] = processReversePolishNotation(model.value.expression, this._variableMap);
+        this._variableMap[name] = interpretExpression(model.value.expression, this._variableMap);
       }
     },
     /**
@@ -530,7 +530,7 @@
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
     _interpretIfStatement: function(ifNode, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
-      var guard = processReversePolishNotation(ifNode.guard, variableMap, true);
+      var guard = interpretExpression(ifNode.guard, variableMap, true);
       // if the guard is valid then process the then statement
       if(guard){
         this._interpretProcess(ifNode.thenProcess, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
@@ -591,13 +591,17 @@
       this._interpretProcess(composite.composite, extendtionNode, definitionMap, defName, globalName, {}, variableMap);
       var name = this._popFromCompositeStack();
 
+      // check if a label has been defined
       if(composite.label != undefined){
+        var label = this._processVariables(composite.label, variableMap);
+
         // relabel all the edges in the graph
         definitionMap[name].graph.edges.forEach(function(edge){
-          edge.label = label + '.' + edge.label;
+           edge.label = label + '.' + edge.label;
         });
       }
 
+      // check if a relabelling has been defined
       if(composite.relabel != undefined){
         definitionMap[name].relabel = composite.relabel;
         this._processRelabelling(name, variableMap);
@@ -656,15 +660,17 @@
       definitionMap[name].graph = graph;
       definitionMap[name].rootId = graph.rootId;
 
-      // label the edges in the graph if necessary
+      // check if a label has been defined
       if(ptNode.label != undefined){
+        var label = this._processVariables(ptNode.label, variableMap);
+
         // relabel all the edges in the graph
-        graph.edges.forEach(function(edge){
-          edge.label = label + '.' + edge.label;
+        definitionMap[name].graph.edges.forEach(function(edge){
+           edge.label = label + '.' + edge.label;
         });
       }
 
-      // relabel the edges in the graph if necessary
+      // check if a relabelling has been defined
       if(ptNode.relabel != undefined){
         definitionMap[name].relabel = ptNode.relabel;
         this._processRelabelling(name, variableMap);
@@ -838,7 +844,7 @@
       
       // continue to process while matches can still be found
       while(match != undefined){
-        var expression = processReversePolishNotation(variableMap[match[0]], variableMap);
+        var expression = interpretExpression(variableMap[match[0]], variableMap);
         action = action.replace(match[0], expression);
         match = action.match(regex);
       }
@@ -1139,7 +1145,7 @@
           continue;
         }
         else{
-          points[i] = processReversePolishNotation(points[i], variableMap);
+          points[i] = interpretExpression(points[i], variableMap);
         }
       }
 
