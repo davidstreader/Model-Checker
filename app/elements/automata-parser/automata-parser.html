@@ -13,6 +13,18 @@
     properties: {
       /**
        * The PEGjs parser.
+       * Used to create an object containing the idividually defined
+       * definitions, constants and operations.
+       *
+       * @private
+       */
+      _initialParser: {
+        type: Object,
+        value: InitialPEG.initialParser, // created in initial-parser.js
+        readOnly: true
+      },
+      /**
+       * The PEGjs parser.
        * Used to create a parse tree that we can the interpret.
        *
        * @private
@@ -170,7 +182,12 @@
         return 'InterpreterException: ' + this.message;
       };
     },
-
+    /**
+     *
+     */
+    initialParse: function(code) {
+      return this._initialParser.parse(code);
+    },
     /**
      * Parse the code and return the automata it defines.
      *
