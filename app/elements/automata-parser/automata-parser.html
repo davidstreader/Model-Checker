@@ -34,6 +34,15 @@
       },
 
       /**
+       * A map of variable names to their values
+       *
+       * @private
+       */
+      _variableMap: {
+        type: Object,
+        readOnly: true
+      },
+      /**
        * Determines whether automata are built or not.
        *
        * @private
@@ -203,7 +212,8 @@
      */
     _interpretParseTree: function(parseTree) {
       this._resetInterpreter();
-      parseTree.forEach(function(model) {
+      this._set_variableMap(parseTree.variableMap);
+      parseTree.processes.forEach(function(model) {
         if(model.type == 'model'){
           this._interpretDefinitions(model);
         }
@@ -229,7 +239,7 @@
 
       // only relabel nodes if live building is active
       if(this._buildAutomata){
-        this._relabelNodes(true);
+        this._relabelNodes();
       }
 
       return this._buildParsingResults();
@@ -244,43 +254,21 @@
     _interpretDefinitions: function(model) {
       var globalName = this._getNameFromPTNode(model.definitions[0].name);
       this._initialiseDefinitions(model.definitions, globalName);
+      
       // only interpret definitions if live build is active
       if(this._buildAutomata){
         model.definitions.forEach(function(definition, i) {
-          var name = this._getNameFromPTNode(definition.name);
-          if(i != 0){
-            name = globalName + '.' + name;
-          }
-
-          var variableMap = {};
+          var variableMap = this._variableMap;
 
           // check if this definition is indexed
-          var index = definition.name.name.index;
-          if(index != undefined){
-            if(index.type == 'range'){ index = this._processRange(index.index); }
-            var variable = undefined;
-            if(index.variable != undefined){
-              variable = index.variable;
-
-            }
-
-            var iterator = new IndexIterator(index.index);
-            while(iterator.hasNext){
-              var element = iterator.next;
-              
-              // update variable if necessary
-              if(variable != undefined){
-                variableMap[variable] = element;
-              }
-
-              var suffix = '[' + element + ']';
-              this._interpretDefinition(name + suffix, globalName, definition, variableMap);
-            }
+          if(definition.name.type == 'index'){
+            this._interpretIndexedDefinition(definition.name , globalName, definition, variableMap)
           }
           else{
+            var name = this._getNameFromPTNode(definition.name);
+            name = (i != 0) ? globalName + '.' + name : name;
             this._interpretDefinition(name, globalName, definition, variableMap);
           }
-
         }.bind(this));
         
         // process the global definition
@@ -304,27 +292,38 @@
       }
 
       for(var i = 1; i < definitions.length; i++){
-        var name = this._getNameFromPTNode(definitions[i].name);
-        name = globalName + '.' + name;
-
-        // check if this definition is indexed
-        var index = definitions[i].name.name.index;
-        if(index != undefined){
-          if(index.index.type == 'range'){ index.index = this._processRange(index.index); }
-          
-          var iterator = new IndexIterator(index.index);
-          while(iterator.hasNext){
-            var suffix = '[' + iterator.next + ']';
-            this._definitionsMap[name + suffix] = new this._Definition();
-          }
+        if(definitions[i].name.type == 'index'){
+          this._initialiseIndexedDefinitions(definitions[i].name, globalName, {});
         }
         else{
+          var name = this._getNameFromPTNode(definitions[i].name);
+          name = globalName + '.' + name;
           this._definitionsMap[name] = new this._Definition();
         }
       }
 
       this._definitionsMap[globalName] = new this._Definition();
     },
+    /**
+     *
+     */
+    _initialiseIndexedDefinitions: function(ptNode, globalName, variableMap) {
+       if(ptNode.type == 'name'){
+        var name = globalName + '.' + this._processVariables(ptNode.name, variableMap);
+        this._definitionsMap[name] = new this._Definition();
+      }
+      else{
+        var iterator = new IndexIterator(ptNode.index);
+        while(iterator.hasNext){
+          var element = iterator.next;
+          variableMap[ptNode.variable] = element;
+          this._initialiseIndexedDefinitions(ptNode.process, globalName, variableMap);
+        }
+      }     
+    },
+    /**
+     *
+     */
     _interpretDefinition: function(name, globalName, definition, variableMap) {
       var definitionMap = this._definitionsMap;
       definitionMap[name] = new this._Definition();
@@ -341,7 +340,23 @@
       var referenceMap = {};
       referenceMap[name] = root;
       this._interpretProcess(definition.process, root, definitionMap, name, globalName, referenceMap, variableMap);
-
+    },
+    /**
+     *
+     */
+    _interpretIndexedDefinition: function(ptNode, globalName, definition, variableMap) {
+      if(ptNode.type == 'name'){
+        var name = globalName + '.' + this._processVariables(ptNode.name, variableMap);
+        this._interpretDefinition(name, globalName, definition, variableMap);
+      }
+      else{
+        var iterator = new IndexIterator(ptNode.index);
+        while(iterator.hasNext){
+          var element = iterator.next;
+          variableMap[ptNode.variable] = element;
+          this._interpretIndexedDefinition(ptNode.process, globalName, definition, variableMap);
+        }
+      }
     },
     /**
      * Interprets the operation defined in the specified model.
@@ -375,13 +390,18 @@
      * @param {!object} model - contains the constants name and the value to be assigned to it
      */
     _interpretConstant: function(model) {
-      var name = this._getNameFromPTNode(model.name);
+      var name = '$' + this._getNameFromPTNode(model.name);
       // check if the name is valid
       if(this._definitionsMap[name] != undefined){
         throw new this.InterpreterException('The name "' + model.name + '" has been defined already.');
       }
-      // add constant to constants map
-      this._definitionsMap[name] = {type: 'constant', value: model.value};
+      // add constant to variable map
+      if(typeof(model.value) == 'number'){
+        this._variableMap[name] = model.value;
+      }
+      else{
+        this._variableMap[name] = interpretExpression(model.value.expression, this._variableMap);
+      }
     },
 
     /**
@@ -444,11 +464,17 @@
         case 'if-statement':
           this._interpretIfStatement(process, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
           break;
+        case 'index':
+          this._processIndex(process, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
+          break;
         case 'parallel':
           this._interpretParallel(process, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
           break;
         case 'composite':
           this._interpretComposite(process, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
+          break;
+        case 'forall':
+          this._interpretForAll(process, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
           break;
         case 'name':
           this._interpretName(process, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
@@ -499,68 +525,11 @@
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
     _interpretSequence: function(sequence, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
-      // check if this sequence is guarded
-      var guard = sequence.guard;
-      if(guard != undefined){
-        var result = this._processActionNode(guard, variableMap);
-        
-        // do not progress with the sequence if the guard is not met
-        if(!result){
-          return;
-        }
-      }
-
-      var action = this._processActionNode(sequence.from, variableMap);
-
-      if(typeof(action) === 'object'){
-        this._interpretIndexedSequence(sequence, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap, action);
-      }
-      else{
-        var graph = definitionMap[defName].graph;
-        var node = graph.addNode(NodeUid.next);
-        graph.addEdge(EdgeUid.next, extendtionNode, node, action);
-        this._interpretProcess(sequence.to, node, definitionMap, defName, globalName, referenceMap, variableMap);
-      }
-    },
-    /**
-     * Helper function for '_interpretSequence' which interprets a parse tree sequence node
-     * that has an indexed component to it.
-     *
-     * @private
-     * @param {!object} sequence           - A parse tree sequence node
-     * @param {!Graph.Node} extendtionNode - The node in the graph to build on from
-     * @param {!object} definitionMap      - The definition map being used
-     * @param {!string} defName            - The name of the current definition
-     * @param {!object} referenceMap       - The reference map that store references already known about
-     * @param {!object} action             - The action index to iterate over
-     */
-    _interpretIndexedSequence: function(sequence, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap, action) {
+      var action = this._processVariables(sequence.from.action, variableMap);
       var graph = definitionMap[defName].graph;
-      var prefix = (action.action != undefined) ? action.action : '';
-      var variable = undefined;
-
-      // define variable if this is an indexed action
-      if(action.type == 'index'){
-        variable = action.variable;
-      }
-      
-      // iterate over the range or set  
-      var iterator = new IndexIterator(action.index);
-      while(iterator.hasNext){
-        var element = iterator.next;
-          
-        // update variable reference if variable is defined
-        if(variable !== undefined){
-          variableMap[variable] = element;
-        }
-
-        // format index depending on whether iterating over range or set
-        var index = (iterator.type == 'range') ? '[' + element + ']' : '.' + element
-
-        var node = graph.addNode(NodeUid.next);
-        graph.addEdge(EdgeUid.next, extendtionNode, node, prefix + index);
-        this._interpretProcess(sequence.to, node, definitionMap, defName, globalName, referenceMap, variableMap);
-      }
+      var node = graph.addNode(NodeUid.next);
+      graph.addEdge(EdgeUid.next, extendtionNode, node, action);
+      this._interpretProcess(sequence.to, node, definitionMap, defName, globalName, referenceMap, variableMap);
     },
 
     /**
@@ -589,7 +558,7 @@
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
     _interpretIfStatement: function(ifNode, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
-      var guard = this._processActionNode(ifNode.guard, variableMap);
+      var guard = interpretExpression(ifNode.guard, variableMap, true);
       // if the guard is valid then process the then statement
       if(guard){
         this._interpretProcess(ifNode.thenProcess, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
@@ -597,6 +566,28 @@
       // otherwise check if an else statement was declared
       else if(ifNode.elseProcess != undefined){
         this._interpretProcess(ifNode.elseProcess, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
+      }
+      else{
+        // otherwise set extendtionNode as a terminal
+        extendtionNode.addMetaData('isTerminal', 'stop');
+      }
+    },
+    /**
+     * Interpret a parse tree index node.
+     *
+     * @private
+     * @param {!object} index              - A parse tree index node
+     * @param {!Graph.Node} extendtionNode - The node in the graph to build on from
+     * @param {!object} definitionMap      - The definition map being used
+     * @param {!string} defName            - The name of the current definition
+     * @param {!object} referenceMap       - The reference map that store references already known about
+     */
+    _processIndex: function(index, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
+      var iterator = new IndexIterator(index.index);
+      while(iterator.hasNext){
+        var element = iterator.next;
+        variableMap[index.variable] = element;
+        this._interpretProcess(index.process, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
       }
     },
     /**
@@ -610,24 +601,8 @@
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
     _interpretParallel: function(parallel, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
-      var processes = [parallel.process1, parallel.process2];
-      
-      for(var i = 0; i < processes.length; i++){
-        var name = defName + '.' + i;
-        // push name to composite stack
-        this._pushToCompositeStack(name);
-        this._constructDefinition(name, processes[i].type, processes[i].relabel, processes[i].hidden, false);
-        var process = (processes[i].process === undefined) ? processes[i] : processes[i].process;
-        this._interpretProcess(process, definitionMap[name].graph.root, definitionMap, name, name, referenceMap);
-        this._processDefinition(name);
-      }
-
-      var graph1 = definitionMap[defName + '.0'].graph;
-      var graph2 = definitionMap[defName + '.1'].graph;
-      var graph = Graph.Operations.parallelComposition(graph1, graph2);
-      definitionMap[defName].graph = graph;
-      definitionMap[defName].graph.root = graph.root;
-
+      this._interpretProcess(parallel.process1, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
+      this._interpretProcess(parallel.process2, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
       this._pushToCompositeStack(defName);
     },
 
@@ -635,7 +610,7 @@
      * Interpret a parse tree composite node.
      *
      * @private
-     * @param {!object} sequence           - A parse tree sequence node
+     * @param {!object} ptNode             - A parse tree composite node
      * @param {!Graph.Node} extendtionNode - The node in the graph to build on from
      * @param {!object} definitionMap      - The definition map being used
      * @param {!string} defName            - The name of the current definition
@@ -644,10 +619,27 @@
     _interpretComposite: function(composite, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
       this._interpretProcess(composite.composite, extendtionNode, definitionMap, defName, globalName, {}, variableMap);
       var name = this._popFromCompositeStack();
-      // update the label for the defintion if necessary
-      if(composite.label !== undefined){
-        var label = composite.label.action;
-        definitionMap[name].label = label;
+
+      // check if a label has been defined
+      if(composite.label != undefined){
+        var label = this._processVariables(composite.label, variableMap);
+
+        // relabel all the edges in the graph
+        definitionMap[name].graph.edges.forEach(function(edge){
+           edge.label = label + '.' + edge.label;
+        });
+      }
+
+      // check if a relabelling has been defined
+      if(composite.relabel != undefined){
+        definitionMap[name].relabel = composite.relabel;
+        this._processRelabelling(name, variableMap);
+      }
+
+      if(name !== undefined && name != defName){
+        var graph = Graph.Operations.parallelComposition(definitionMap[name].graph, definitionMap[defName].graph);
+        definitionMap[defName].graph = graph;
+        definitionMap[defName].graph.root = graph.root;
       }
     },
 
@@ -663,14 +655,10 @@
      */
     _interpretName: function(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
       var references = this._getNameFromPTNode(ptNode);        // get what the extendtionNode should be referencing
-      var suffix = '';
-      // check if name is indexed
-      if(ptNode.index != undefined){
-        var index = this._processActionNode(ptNode.index, variableMap);
-        suffix = '[' + index + ']';
-      }
+      references = this._processVariables(references, variableMap);
+
       // check if this is a local reference
-      var localReference = globalName + '.' + references + suffix;
+      var localReference = globalName + '.' + references;
       if(definitionMap[localReference] !== undefined){
         references = localReference;
       }
@@ -679,49 +667,47 @@
     },
 
     /**
-     * Interprets a parse tree labelled name node.
+     * Interprets a parse tree label node.
      *
      * @private
-     * @param {!object} ptNode             - A parse tree name node
+     * @param {!object} ptNode             - A parse tree label node
      * @param {!Graph.Node} extendtionNode - The node in the graph to build on from
      * @param {!object} definitionMap      - The definition map being used
      * @param {!string} defName            - The name of the current definition
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
     _interpretLabel: function(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
-      var name = this._getNameFromPTNode(ptNode);
-      var label = this._getLabelFromPTNode(ptNode);
+      // construct name
+      var name = '';
+      if(ptNode.label != undefined){
+        var label = this._processVariables(ptNode.label, variableMap);
+        name = label + ':';
+      }
+      name += globalName + '.' + ptNode.name;
 
-      if(label === undefined){
-        return;
+      // construct a new definition
+      this._constructDefinition(name);
+      var graph = definitionMap[ptNode.name].graph.deepClone();
+      definitionMap[name].graph = graph;
+      definitionMap[name].rootId = graph.rootId;
+
+      // check if a label has been defined
+      if(ptNode.label != undefined){
+        var label = this._processVariables(ptNode.label, variableMap);
+
+        // relabel all the edges in the graph
+        definitionMap[name].graph.edges.forEach(function(edge){
+           edge.label = label + '.' + edge.label;
+        });
       }
 
-      // clone the definition defined by defName
-      var definition = this._definitionsMap[name];
-      
-      // throw error if definition is undefined
-      if(definition === undefined){
-        throw new this.InterpreterException('Unknown automaton \'' + name + '\' attempted to be referenced.');
+      // check if a relabelling has been defined
+      if(ptNode.relabel != undefined){
+        definitionMap[name].relabel = ptNode.relabel;
+        this._processRelabelling(name, variableMap);
       }
 
-      var temp = new this._Definition();
-      temp.graph = definition.graph.deepClone();
-      temp.unprocessedNodes = definition.unprocessedNodes;
-      temp._rootId = temp.graph.rootId;
-      temp.isVisible = false;
-
-      // relabel the edges in the new definition
-      for(var i in temp.graph.edges){
-        var edge = temp.graph.getEdge(i);
-        var newLabel = label + "." + edge.label;
-        edge.label = newLabel;
-      }
-
-      var references = label + ':' + name;
-      // add new definition to definitions map
-      this._definitionsMap[references] = temp;
-
-      this._interpretReference(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap, references);       
+      this._pushToCompositeStack(name);
     },
 
     /**
@@ -880,80 +866,27 @@
     },
 
     /**
+     * Checks the specified aciton to see if any variables or expressions are referenced
+     * in it and replaces these references with their corresponding values from the
+     * variable map.
      *
+     * @private
+     * @param {string} action - the action to process
+     * @param {object} variableMap - a map of variable names to their values
+     * @returns {string} - the processed action
      */
-    _processActionNode: function(ptNode, variableMap) {
-      // process types which are not action nodes
-      if(ptNode.type == 'expression'){
-        var expression = ptNode.expression;
-        expression = (expression.expression != undefined) ? expression.expression : expression;
-        return interpretExpression(expression, variableMap);
+    _processVariables: function(action, variableMap) {
+      var regex = '[\$][v<]*[a-zA-Z0-9]*[>]*';
+      var match = action.match(regex);
+      
+      // continue to process while matches can still be found
+      while(match != undefined){
+        var expression = interpretExpression(variableMap[match[0]], variableMap);
+        action = action.replace(match[0], expression);
+        match = action.match(regex);
       }
-      else if(ptNode.type == 'set'){
-        return this._processSet(ptNode.set);
-      }
-      else if(ptNode.type == 'range'){
-        return this._processRange(ptNode);
-      }
-      else if(ptNode.type == 'name'){
-        return this._getFromConstantStack(this._getNameFromPTNode(ptNode));   
-      }
-      else if(ptNode.type == 'index'){
-        return this._processIndexActionNode(ptNode, variableMap);
-      }
-      // process the subtypes of action nodes
-      else if(ptNode.subtype == undefined){
-        return this._getActionFromNode(ptNode);
-      }
-      else if(ptNode.subtype == 'expression'){
-        return this._processExpressionActionNode(ptNode, variableMap);
-      }
-      else if(ptNode.subtype == 'joined'){
-        return this._processJoinedActionNode(ptNode, variableMap);
-      }
-      else if(ptNode.subType == 'index'){
-        return this._processIndexActionNode(ptNode, variableMap);
-      }
-    },
 
-    _processExpressionActionNode: function(ptNode, variableMap) {
-        var action = undefined;
-        if(ptNode.action != undefined){
-          action = (typeof(ptNode.action) == 'string') ? ptNode.action : this._processActionNode(ptNode.action, variableMap);
-        }
-        action = (action == undefined) ? '' : action;
-        var expressions = ptNode.expressions;
-        
-        for(var i = 0; i < expressions.length; i++){
-          var temp = this._processActionNode(expressions[i], variableMap);
-          if(temp.type == 'index'){
-            temp.action = action;
-            action = temp;
-          }
-          else{
-            action += '[' + temp + ']';
-          }
-        }
-
-        return action;
-    },
-
-    _processJoinedActionNode: function(ptNode, variableMap) {
-        var actions = ptNode.actions;
-        var action = '';
-        
-        for(var i = 0; i < actions.length; i++){
-          var temp = this._processActionNode(actions[i], variableMap);
-          var result = (i == 0) ? '' : '.';
-          action += (result + temp);
-        }
-
-        return action; 
-    },
-
-    _processIndexActionNode: function(ptNode, variableMap) {
-      var index = this._processActionNode(ptNode.index, variableMap);
-      return {type: 'index', variable: ptNode.variable, action: ptNode.action, index: index}
+      return action;
     },
 
     /**
@@ -1135,11 +1068,6 @@
      * @param {!boolean} isVisible - whether or not this definition is to be visualised
      */
     _constructDefinition: function(defName, type, relabel, hidden, isVisible) {
-      // check that there is not already a definition with the specified name
-      if(this._definitionsMap[defName] !== undefined){
-        throw new this.InterpreterException('process \'' + defName + '\' defined more that once.');
-      }
-
       this._definitionsMap[defName] = new this._Definition();
       this._definitionsMap[defName].graph = new Graph();
       var rootId = this._definitionsMap[defName].rootId;
@@ -1187,17 +1115,12 @@
           refs = node.getMetaData ('references');
           for(var j = 0; j < refs.length; j++){
             references = refs[j];
-            var localReference = defName + '.' + references;
+
             // check whether or not the automaton that this node is referencing actual exist.
-            if(this._definitionsMap[localReference] === undefined || this._definitionsMap[localReference].graph === undefined){
-              if(this._definitionsMap[references] === undefined || this._definitionsMap[references].graph === undefined) {
-                throw new this.InterpreterException('unknown automaton "' + references + '" referenced in "' + prevReferences + '".');
-              }
+            if(this._definitionsMap[references] === undefined || this._definitionsMap[references].graph === undefined) {
+              throw new this.InterpreterException('unknown automaton "' + references + '" referenced in "' + prevReferences + '".');
             }
-            else{
-              references = localReference;
-            }
-            
+
             var refGraph = this._definitionsMap[references].graph;
             var refNodes = refGraph.nodes;
             // set the current nodes id to the root of the reference graph
@@ -1219,6 +1142,9 @@
         definition.unprocessedNodes.splice(0, len);
         prevReferences = references;
       }
+
+      // make sure that the root of the graph is the start node
+      this._definitionsMap[defName].graph.root.addMetaData('startNode', true);
     },
 
     /**
@@ -1247,16 +1173,15 @@
      * @private
      * @param {!string} defName - the definition to perform relabelling for
      */
-    _processRelabelling: function(defName) {
+    _processRelabelling: function(defName, variableMap) {
       var relabel = this._definitionsMap[defName].relabel;
       if(relabel !== undefined){
-        relabel = this._processRelabellingSet(relabel);
+        relabel = this._processRelabellingSet(relabel, variableMap);
         // get an array of edges in the current graph
         var edges = this._definitionsMap[defName].graph.edges;
         // check each edge to see if it needs to be updated
         edges.forEach(function(edge){
           for(var i = 0; i < relabel.length; i++){
-            console.log(edge.label);
             // only update the edge if it needs to be relabelled
             var oldLabel = relabel[i]['old'];
             var newLabel = relabel[i]['new'];
@@ -1275,11 +1200,11 @@
      * @param {!object} set - the set of relabelling objects to process
      * @returns {!object} processed set
      */
-    _processRelabellingSet: function(set) {
+    _processRelabellingSet: function(set, variableMap) {
       var result = [];
       for(var i = 0; i < set.length; i++){
-        var newLabel = this._processActionNode(set[i]['new']);
-        var oldLabel = this._processActionNode(set[i]['old']);
+        var newLabel = this._processVariables(set[i]['new'].action, variableMap);
+        var oldLabel = this._processVariables(set[i]['old'].action, variableMap);
         result.push({new: newLabel, old: oldLabel});
       }
 
@@ -1321,13 +1246,13 @@
       var result = [];
       // check if set is not array
       if(set.length === undefined){
-        result.push(this._processActionNode(set));
+        result.push(this._processVariables(set.action));
       }
 
       // otherwise process all the elements in the set
       else{
         for(var i = 0; i < set.length; i++){
-          result.push(this._processActionNode(set[i]));
+          result.push(this._processVariables(set[i].action));
         }
       }
 
@@ -1344,7 +1269,8 @@
      * @param {!string} defName - the name of the range 
      * @returns {!object} - the processed range
      */
-    _processRange: function(range, defName) {
+    _processRange: function(range, defName, variableMap) {
+      variableMap = (variableMap == undefined) ? this._variableMap : variableMap;
       // check if range is globally defined
       if(typeof(range) === 'string'){
         if(this._rangesMap[range] !== undefined){
@@ -1363,20 +1289,8 @@
         if(typeof(points[i]) == 'number'){
           continue;
         }
-
-        if(points[i].expression.type == 'name'){
-          var value = this._definitionsMap[points[i].expression.name];
-          if(value !== undefined){
-            points[i] = value.value;
-          }
-          else{
-            throw new this.InterpreterException('Range "' + defName + '" is refererencing undefined constant "' + value + '".');
-          }
-        }
-
-        // check if simple expression
-        if(points[i].type === 'expression'){
-          points[i] = this._processActionNode(points[i]);
+        else{
+          points[i] = interpretExpression(points[i], variableMap);
         }
       }
 
