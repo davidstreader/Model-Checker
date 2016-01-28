@@ -313,18 +313,14 @@ IntegerLiteral
 /* Attempts to parse and return an action label */
 ActionLabel
  = action1:LowerCaseIdentifier _ action2:(_ActionLabel ?) {
-    // if unable to parse a more complex action node, just return a stardard action node
-    if(action2 == null){
-        return action1;
-    }
-    // otherwise construct a more complex action node
-    return action1 + action2;
+    var label = action1;
+    if(action2 != null){ label += action2; }
+    return label;
  }
  / '[' _ exp:Expression _ ']' _ action:(_ActionLabel ?) {
-    if(action == null){
-        return '[' + exp + ']';
-    }
-    return '[' + exp + ']' + action;
+    var label = '[' + exp + ']';
+    if(action != null){ label += action; }
+    return label;
  }
 
 /* Used to avoid left hand recursion in ActionLabel */
@@ -339,39 +335,30 @@ _ActionLabel
 /* Attempts to parse and return multiple action labels */
 ActionLabels
  = action1:ActionLabel _ action2:(_ActionLabels ?) {
-    // if unable to parse further action labels then return current action label
-    if(action2 == null){
-        return new Node.ActionNode(action1);
-    }
-    
-    // otherwise construct and return new action node
-    return new Node.ActionNode(action1 + action2);
+    var label = action1;
+    if(action2 != null){ label += action2; }
+    return new Node.ActionNode(label);
  }
  / set:Set {
     return set;
  }
  / '[' _ range:ActionRange _ ']'  _ action:(_ActionLabels ?) {
     var label = processActionRange(range);
-    if(action == null){
-        return new Node.ActionNode(action);
-    }
-    return new Node.ActionNode(label + action);
+    if(action != null){ label += action; }
+    return new Node.ActionNode(label);
  }
  / '[' _ exp:Expression _ ']' _ action:(_ActionLabels ?) {
-    if(action == null){
-        return new Node.ActionNode('[' + exp + ']');
-    }
-    return new Node.ActionNode('[' + exp + ']' + action);
+    var label = '[' + exp + ']';
+    if(action != null){ label += action; }
+    return new Node.ActionNode(label);
  }
 
 /* Used to avoid left hand recursion in ActionLabels */
 _ActionLabels
  = '.' _ action1:ActionLabel _ action2:(_ActionLabels ?) {
-    if(action2 == null){
-        return '.' + action1;
-    }
-    
-    return ',' + action1 + action2;
+    var label = '.' + action1;
+    if(action2 != null){ label += action2; }
+    return label;
  }
  / '.' _ set:Set _ action:(_ActionLabels ?) {
     var variable = '$v<' + expressionCount++ + '>';
@@ -384,18 +371,13 @@ _ActionLabels
  }
  / '[' _ range:ActionRange _ ']' _ action:(_ActionLabels ?) {
     var label = processActionRange(range);
-    if(action != null){
-        label = label + action;
-    }
-    
+    if(action != null){ label += action; }
     return label;
  }
-  / '[' _ exp:Expression _ ']' _ action:(_ActionLabels ?) {
-    if(action == null){
-        return '[' + exp + ']';
-    }
-    
-    return '[' + exp + ']' + action;
+ / '[' _ exp:Expression _ ']' _ action:(_ActionLabels ?) {
+    var label = '[' + exp + ']';
+    if(action != null){ label += action; }
+    return label;
  }
 
 /* Attempts to parse and return an action range */
@@ -413,12 +395,13 @@ Range
     return new Node.RangeNode(start, end);
  }
  / Identifier
+
 /* Attempts to parse and return a set */
 Set
- = Identifier
- / '{' _ elements:SetElements _ '}' {
+ = '{' _ elements:SetElements _ '}' {
     return new Node.SetNode(elements);
  }
+ / Identifier
 
 /** Parse and return an array of set elements */
 SetElements
