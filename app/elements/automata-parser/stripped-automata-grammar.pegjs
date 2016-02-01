@@ -19,6 +19,14 @@
         return false;
     }
     
+    function isValidProcess(ident){
+        if(processes[ident] == undefined){
+            error('The process \'' + ident + '\' has not been defined.');
+        }
+        
+        return processes[ident]
+    }
+    
     function isValidConstant(constant){
         if(variableMap[constant] == undefined){
                 
@@ -350,6 +358,7 @@ CompositeBody
  / prefix:(PrefixLabel ?) _ ident:Identifier _ relabel:(Relabel ?) {
     prefix = (prefix != null) ? prefix : '';
     relabel = (relabel != null) ? relabel : '';
+    ident = isValidProcess(ident);
     return prefix + ident + relabel;
  }
  / prefix:(PrefixLabel ?) _ '(' _ parallel:ParallelComposition _ ')' _ relabel:(Relabel ?) {
@@ -405,10 +414,11 @@ FunctionBody
     hide = (hide != null) ? hide : '';
     return type + '(' + body + ')' + relabel + hide;
  }
- / body:ProcessBody _ relabel:(Relabel ?) _ hide:(Hiding ?) {
+ / ident:Identifier _ relabel:(Relabel ?) _ hide:(Hiding ?) {
     relabel = (relabel != null) ? relabel : '';
     hide = (hide != null) ? hide : '';
-    return body + relabel + hide;
+    ident = isValidProcess(ident);
+    return ident + relabel + hide;
  }
  / body:CompositeBody _ relabel:(Relabel ?) {
     relabel = (relabel != null) ? relabel : '';

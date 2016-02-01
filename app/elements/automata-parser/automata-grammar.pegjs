@@ -79,22 +79,16 @@
             this.thenProcess = thenProcess;
             if(elseProcess != undefined){ this.elseProcess = elseProcess; }
         },
-        CompositeNode: function(composite, label, relabel){
+        CompositeNode: function(process, label, relabel){
             this.type = 'composite';
             if(label != null){ this.label = label.action; };
-            this.composite = composite;
+            this.process = process;
             if(relabel != null){ this.relabel = relabel; }
         },
         ParallelNode: function(process1, process2){
             this.type = 'parallel';
             this.process1 = process1;
             this.process2 = process2;
-        },
-        LabelNode: function(name, label, relabel){
-            this.type = 'label';
-            if(label != null){ this.label = label.action; };
-            this.name = name;
-            if(relabel != null){ this.relabel = relabel; };
         },
         FunctionNode: function(type, process){
             this.type = type;
@@ -594,9 +588,8 @@ CompositeBody
  = 'forall' _ range:Ranges _ body:CompositeBody {
     return constructLocalProcess(body);
  }
- / lbl:(PrefixLabel ?) _ ident:Identifier _ relabel:(Relabel ?) {
-    var label = new Node.LabelNode(ident.name, lbl, relabel);
-    var node = new Node.CompositeNode(label);
+ / label:(PrefixLabel ?) _ process:ProcessDefinition _ relabel:(Relabel ?) {
+    var node = new Node.CompositeNode(process, label, relabel);
     return constructLocalProcess(node);
  }
  / label:(PrefixLabel ?) _ '(' _ comp:ParallelComposition _ ')' _ relabel:(Relabel ?) {
@@ -652,14 +645,13 @@ FunctionType
 
 FunctionBody
  = type:FunctionType _ '(' _ body:FunctionBody _ ')' _ relabel:(Relabel ?) _ hide:(Hiding ?) {
-    var node = new Node.FunctionNode(type, body);
-    return constructModelDefinitionNode('function', NO_IDENTIFIER, node, relabel, hide, NOT_VISIBLE);
+    return new Node.FunctionNode(type, body);
  }
- / body:ProcessBody _ relabel:(Relabel ?) _ hide:(Hiding ?) {
-    return constructModelDefinitionNode('process', NO_IDENTIFIER, body, relabel, hide, NOT_VISIBLE);
+ / process:ProcessDefinition {
+    return process;
  }
- / body:CompositeBody _ relabel:(Relabel ?) {
-    return constructModelDefinitionNode('composite', NO_IDENTIFIER, body, relabel, NO_HIDE, NOT_VISIBLE);
+ / process:CompositeDefinition {
+    return process;
  }
 
 /**

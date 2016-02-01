@@ -476,7 +476,10 @@
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
     _interpretInternalDefinition: function(definition, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
-      this._interpretProcess(definition.process, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
+      var name = defName + '.' +this._getNameFromPTNode(definition);
+      this._interpretDefinition(name, defName, definition, variableMap);
+      this._processDefinition(name);
+      this._pushToCompositeStack(name);
     },
 
     /**
@@ -582,7 +585,7 @@
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
     _interpretComposite: function(composite, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
-      this._interpretProcess(composite.composite, extendtionNode, definitionMap, defName, globalName, {}, variableMap);
+      this._interpretProcess(composite.process, extendtionNode, definitionMap, defName, globalName, {}, variableMap);
       var name = this._popFromCompositeStack();
 
       // check if a label has been defined
@@ -726,16 +729,12 @@
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
     _interpretAbstraction: function(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
-      var references = this._interpretFunction(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
-
-      // throw an error if the definition to be abstracted has not been defined
-      if(definitionMap[references] === undefined){
-        throw new this.InterpreterException('\'' + reference + '\' has not been defined.');
-      }
-
-      var graph = definitionMap[references].graph;
+      this._interpretProcess(ptNode.process, extendtionNode, definitionMap, defName, defName, referenceMap, variableMap);
+      var name = this._popFromCompositeStack();
+      var graph = definitionMap[name].graph;
       definitionMap[defName].graph = Graph.Operations.abstraction(graph, this._isFairAbstraction);
       extendtionNode.id = definitionMap[defName].graph.root.id;
+      this._pushToCompositeStack(defName);
     },
 
     /**
@@ -749,16 +748,12 @@
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
     _interpretSimplification: function(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
-      var references = this._interpretFunction(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
-
-      // throw an error if the definition to be simplified has not been defined
-      if(definitionMap[references] === undefined){
-        throw new this.InterpreterException('\'' + reference + '\' has not been defined.');
-      }
-
-      var graph = definitionMap[references].graph;
+      this._interpretProcess(ptNode.process, extendtionNode, definitionMap, defName, defName, referenceMap, variableMap);
+      var name = this._popFromCompositeStack();
+      var graph = definitionMap[name].graph;
       definitionMap[defName].graph = Graph.Operations.simplification(graph);
       extendtionNode.id = definitionMap[defName].graph.root.id;
+      this._pushToCompositeStack(defName);
     },
 
     /**
@@ -774,16 +769,12 @@
      * @returns {!string}                  - A reference to the definition containing the contents of the function 
      */
     _interpretFunction: function(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
-      var name;
-      var references;
-      var process = ptNode.process;
+      var name = defName + '<internal-definition>';
+      this._constructDefinition(name, undefined, undefined, false);
       
       if(process.type === 'definition'){
-        name = defName + '.0';
-        references = name;
-        this._constructDefinition(name, process.type, process.relabel, process.hidden, false);
-        this._interpretProcess(process.process, definitionMap[name].graph.root, definitionMap, name, globalName, referenceMap, variableMap);
-        this._processDefinition(name);
+        name = defName + '.' + this._getNameFromPTNode(ptNode);
+        this._interpretProcess(process, extendtionNode, definitionMap, name, globalName, referenceMap, variableMap);
       }
       else{
         var name = this._getNameFromPTNode(process).name;

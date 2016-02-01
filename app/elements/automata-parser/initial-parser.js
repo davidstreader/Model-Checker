@@ -251,6 +251,7 @@ InitialPEG.initialParser = (function() {
         peg$c109 = function(prefix, ident, relabel) {
             prefix = (prefix != null) ? prefix : '';
             relabel = (relabel != null) ? relabel : '';
+            ident = isValidProcess(ident);
             return prefix + ident + relabel;
          },
         peg$c110 = function(prefix, parallel, relabel) {
@@ -293,10 +294,11 @@ InitialPEG.initialParser = (function() {
             hide = (hide != null) ? hide : '';
             return type + '(' + body + ')' + relabel + hide;
          },
-        peg$c126 = function(body, relabel, hide) {
+        peg$c126 = function(ident, relabel, hide) {
             relabel = (relabel != null) ? relabel : '';
             hide = (hide != null) ? hide : '';
-            return body + relabel + hide;
+            ident = isValidProcess(ident);
+            return ident + relabel + hide;
          },
         peg$c127 = function(body, relabel) {
             relabel = (relabel != null) ? relabel : '';
@@ -4008,7 +4010,7 @@ InitialPEG.initialParser = (function() {
       }
       if (s0 === peg$FAILED) {
         s0 = peg$currPos;
-        s1 = peg$parseProcessBody();
+        s1 = peg$parseIdentifier();
         if (s1 !== peg$FAILED) {
           s2 = peg$parse_();
           if (s2 !== peg$FAILED) {
@@ -5163,6 +5165,14 @@ InitialPEG.initialParser = (function() {
                 return true;
             }
             return false;
+        }
+        
+        function isValidProcess(ident){
+            if(processes[ident] == undefined){
+                error('The process \'' + ident + '\' has not been defined.');
+            }
+            
+            return processes[ident]
         }
         
         function isValidConstant(constant){
