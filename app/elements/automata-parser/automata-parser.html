@@ -186,6 +186,7 @@
      *
      */
     initialParse: function(code) {
+      this._resetInterpreter();
       return this._initialParser.parse(code);
     },
     /**
@@ -200,6 +201,21 @@
       this._set_isFairAbstraction(isFair);
       var pt = this._parser.parse(code);
       return this._interpretParseTree(pt);
+    },
+
+    parseDefinition: function(code, definitionMap, build, isFair) {
+      this._set_definitionsMap(definitionMap);
+      this._set_buildAutomata(build);
+      this._set_isFairAbstraction(isFair);
+      var parseTree = this._parser.parse(code);
+      return this._interpretParseTree(parseTree).definitions;
+    },
+
+    parseOperations: function(code, definitionMap, isFair) {
+      this._set_definitionsMap(definitionMap);
+      this._set_isFairAbstraction(isFair);
+      var parseTree = this._parser.parse(code);
+      return this._interpretParseTree(parseTree).operations;
     },
 
     /**
@@ -228,7 +244,7 @@
      * @returns {!Automaton[]} Automata
      */
     _interpretParseTree: function(parseTree) {
-      this._resetInterpreter();
+      //this._resetInterpreter();
       this._set_variableMap(parseTree.variableMap);
       parseTree.processes.forEach(function(model) {
         if(model.type == 'model'){
@@ -259,7 +275,8 @@
         this._relabelNodes();
       }
 
-      return this._buildParsingResults();
+      return { definitions: this._definitionsMap, operations: this._operationsMap };
+      //return this._buildParsingResults();
     },
 
     /**

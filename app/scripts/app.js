@@ -13,23 +13,16 @@
     app.liveBuilding = true;
     app.fairAbstraction = true;
     app.helpDialogSelectedTab = 0;
+    app.currentBuild = {};
+    app.previousBuild = {};
     app.previousCode = '';
 
-    /**
-     * Compile the code in the text editor.
-     * Create and display the new automata.
-     */
     app.compile = function(overrideBuild) {
-      var compileStartTime = (new Date()).getTime();
-      var compileTime;
-      var operations = '';
-      var positions;
-
       var code = app.getCode();
 
       if(!overrideBuild){
         // if there is nothing to parse then do not continue
-        if (code.length === 0){
+        if(code.length === 0){
           app.$.console.clear();
           app.automata = {};
           app.previousCode = '';
@@ -42,19 +35,49 @@
         }
       }
 
-      app.$.console.clear();
-      app.$.console.log('Compiling...');
-      app.previousCode = code;
-        
-      // re-get code to ensure correct line positions for annotations and error highlighting
-      code = app.$.editor.getCode();
+      app.build();
+    };
 
-      var automata = [];
+    app.build = function() {
+      app.$.console.clear();
+      // parse the code
+      setTimeout(function() {
+        var compileStartTime = (new Date()).getTime();
+        var results = app.parse();
+        // check if parsing failed
+        if(results == undefined){
+          return;
+        }
+
+        // interpret the results of parse
+        try{
+          results = app.interpret(results);
+        }catch(e){
+          app.$.console.clear(1);
+          app.$.console.log(e);
+          return;
+        }
+
+        // render the automata
+        app.render(results.automata);
+
+        // print the operations
+        app.operations(results.operations);
+      }.bind(this), 0); 
+    }
+
+    /**
+     * Compile the code in the text editor.
+     * Create and display the new automata.
+     */
+    app.parse = function(overrideBuild) {
+      app.$.console.log('Parsing...');
+      var compileStartTime = (new Date()).getTime();
+      var code = app.$.editor.getCode();
+
+      var result;
       try {
-        var result = app.$.parser.parse(code, app.liveBuilding, app.fairAbstraction);
-        automata = result.automata;
-        operations = result.operations.operations;
-        positions = result.operations.positions;
+        result = app.$.parser.initialParse(code);
       } catch (e) {
         var buildErrorMessage = function(e) {
           return e.location !== undefined ?
@@ -65,33 +88,103 @@
         var isInterpreterException = e.constructor === app.$.parser.InterpreterException;
         var prefix = isInterpreterException ? 'Error: ' : 'Syntax error ';
 
-        compileTime = Math.max(1, ((new Date()).getTime() - compileStartTime)) / 1000;
+        var compileTime = Math.max(1, ((new Date()).getTime() - compileStartTime)) / 1000;
         app.$.console.clear(1);
         app.$.console.log('Compulation failed after ' + compileTime.toFixed(3) + ' seconds.');
         app.$.console.error(prefix + buildErrorMessage(e));
         return;
       }
 
-      compileTime = Math.max(1, ((new Date()).getTime() - compileStartTime)) / 1000;
+      var compileTime = Math.max(1, ((new Date()).getTime() - compileStartTime)) / 1000;
       app.$.console.clear(1);
-      app.$.console.log('Compiled successfully in ' + compileTime.toFixed(3) + ' seconds.');
+      app.$.console.log('Parsed successfully in ' + compileTime.toFixed(3) + ' seconds.');
       
-      // only render if live building is checked or the compile and build button was pressed
-      if((app.liveBuilding || overrideBuild) && automata.length > 0){
-        var renderStartTime = (new Date()).getTime();
-        app.render(automata);
-        var renderTime = Math.max(1, ((new Date()).getTime() - renderStartTime)) / 1000;
-        app.$.console.clear(1);
-        app.$.console.log('Rendered successfully after ' + renderTime.toFixed(3) + ' seconds.');
-      }
-      app.$.console.log('Total time: ' + (compileTime + renderTime).toFixed(3) + ' seconds.');
-
-      app.operations(operations, positions);
+      return result;
     };
+
+    app.interpret = function(results) {
+      app.$.console.log('Interpreting...')
+      var interpretStartTime = (new Date()).getTime();
+
+      app.previousBuild = app.currentBuild;
+      app.currentBuild = {};
+      
+      // interpret constants if there are any
+      var constants = '';
+      for(var key in results.constants){
+        constants += results.constants[key] + ' ';
+      }
+
+      // interpret definitions
+      var definitionMap = {};
+      for(var key in results.processes){
+        var code = results.processes[key].replace(/ /g, ' ');
+        if(app.previousBuild[key] != undefined){
+          if(app.previousBuild[key].code != code){
+            definitionMap = app.$.parser.parseDefinition(constants + code, definitionMap, app.liveBuilding, app.fairAbstraction);
+            app.currentBuild[key] = { code: code, definition: definitionMap[key] };
+            //console.log('constructing new automaton "' + key + '"');
+          }
+          else{
+            app.currentBuild[key] = app.previousBuild[key];
+            definitionMap[key] = app.previousBuild[key].definition;
+            //console.log('no changes made to automaton "' + key + '"');
+          }
+        }
+        else{
+          definitionMap = app.$.parser.parseDefinition(constants + code, definitionMap, app.liveBuilding, app.fairAbstraction);
+          app.currentBuild[key] = { code: code, definition: definitionMap[key] };
+          //console.log('constructing new automaton "' + key + '"');
+        }
+      }
+
+      var automata = [];
+      for(var key in app.currentBuild){
+        if(app.currentBuild[key].definition.graph.nodeCount < 100){
+          automata.unshift(new Automaton(key, app.currentBuild[key].definition.graph));
+        }
+      }
+
+      // interpret operations if there are any
+      var operations = '';
+      for(var key in results.operations){
+        operations += results.operations[key] + ' ';
+      }
+      operations = app.$.parser.parseOperations(operations, definitionMap, app.fairAbstraction);
+
+      var pass = 0;
+      var fail = 0;
+      var operationsArray = [];
+      for(var i in operations){
+        var input = operations[i].input;
+        var result = operations[i].result;
+        operationsArray.push(input + ' = ' + result);
+          
+        // increment the tally of results
+        if(result){
+          pass++;
+        }
+        else{
+          fail++;
+        }
+      }
+
+      // if there are no operations do not print the total numbe of operations
+      if(operationsArray.length > 0){
+        var results = 'Total Operations: ' + (pass + fail) +' (Pass: ' + pass + ', Fail: ' + fail + ')';
+        operationsArray.unshift(results);
+      }
+
+      var interpretTime = Math.max(1, ((new Date()).getTime() - interpretStartTime)) / 1000;
+      app.$.console.clear(1);
+      app.$.console.log('Interpreted successfully after ' + interpretTime.toFixed(3) + ' seconds.');
+
+      return { automata: automata, operations: operationsArray };
+    }
 
     app.render = function(automata) {
       app.$.console.log('Rendering...');
-
+      var renderStartTime = (new Date()).getTime();
       // Can't simply assign app.automata.values to the new array as data bindings will not update.
       // Creating a new automata object then setting the its values slightly later will work (for some reason).
       app.automata = {};
@@ -104,6 +197,10 @@
         var renderComplete = function() {
           automataRendered++;
           if (automataRendered === app.automata.values.length) {
+            var renderTime = Math.max(1, ((new Date()).getTime() - renderStartTime)) / 1000;
+            app.$.console.clear(1);
+            app.$.console.log('Rendered successfully after ' + renderTime.toFixed(3) + ' seconds.');
+
             document.removeEventListener('automata-visualisation-rendered', renderComplete);
           }
         };
@@ -112,25 +209,18 @@
       }.bind(this), 0)
     };
 
-    app.operations = function(operations, positions) {
-      // only print out operations results if the were any operations performed
-      if(operations.length !== 0){
-        app.$.console.log(' ');
-        app.$.console.log('Operations:');
-        var annotations = [];
-        for(var i = 0; i < operations.length; i++){
-          app.$.console.log(operations[i]);
-          // skip over the display of totals
-          if(i !== 0){
-            var pos = positions[i - 1];
-            var line = pos.start.line - 1;
-            var annotation = app.$.editor.constructAnnotation(line, operations[i], 'info');
-            annotations.push(annotation);
+    app.operations = function(operations) {
+      setTimeout(function (){
+        // only print out operations results if the were any operations performed
+        if(operations.length !== 0){
+          app.$.console.log(' ');
+          app.$.console.log('Operations:');
+          var annotations = [];
+          for(var i = 0; i < operations.length; i++){
+            app.$.console.log(operations[i]);
           }
-          // set annotations on the ace editor
-          app.$.editor.setAnnotations(annotations);
         }
-      }
+      }.bind(this), 0);
     };
 
     /**
