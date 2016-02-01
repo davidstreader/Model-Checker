@@ -253,18 +253,6 @@
         else if(model.type == 'operation'){
           this._interpretOperation(model);
         }
-        else if(model.type == 'comment'){
-          // ignore comments
-        }
-        else if(model.subtype == 'constant'){
-          this._interpretConstant(model);
-        }
-        else if(model.subtype == 'range'){
-          this._interpretRange(model);
-        }
-        else if(model.subtype == 'set'){
-          this._interpretSet(model);
-        }
         else{
           console.error('Trying to interpret invalid model type "' + model.type + '"');
         }
@@ -415,63 +403,6 @@
       }
 
       this._processOperation(operation, this._definitionsMap, defNames[0], defNames[1], model.input, model.isNegated, model.position);
-    },
-
-    /**
-     * Interprets the constant defined in the specified model.
-     *
-     * @private
-     * @param {!object} model - contains the constants name and the value to be assigned to it
-     */
-    _interpretConstant: function(model) {
-      var name = '$' + this._getNameFromPTNode(model.name);
-      // check if the name is valid
-      if(this._definitionsMap[name] != undefined){
-        throw new this.InterpreterException('The name "' + model.name + '" has been defined already.');
-      }
-      // add constant to variable map
-      if(typeof(model.value) == 'number'){
-        this._variableMap[name] = model.value;
-      }
-      else{
-        this._variableMap[name] = interpretExpression(model.value.expression, this._variableMap);
-      }
-    },
-
-    /**
-     * Interprets the range defined in the specified model.
-     *
-     * @private
-     * @param {!object} model - contains the ranges name and the range to be assigned to it
-     */
-    _interpretRange: function(model) {
-      var name = this._getNameFromPTNode(model.name);
-      // check if the name is valid
-      if(this._definitionsMap[name] != undefined){
-        throw new this.InterpreterException('The name "' + model.name + '" has been defined already.');
-      }
-
-      // process the range
-      var range = this._processRange(model.range, name);
-
-      // add constant to constants map
-      this._definitionsMap[name] = range;
-    },
-    /**
-     *
-     */
-    _interpretSet: function(model) {
-      var name = this._getNameFromPTNode(model.name);
-      // check if the name is valid
-      if(this._definitionsMap[name] != undefined){
-        throw new this.InterpreterException('The name "' + model.name + '" has been defined already.');
-      }
-
-      // process the set
-      var set = this._processSet(model.set);
-
-      // add set to sets map
-      this._definitionsMap[nameset] = set;
     },
 
     /**
@@ -1305,25 +1236,12 @@
      */
     _processRange: function(range, defName, variableMap) {
       variableMap = (variableMap == undefined) ? this._variableMap : variableMap;
-      // check if range is globally defined
-      if(typeof(range) === 'string'){
-        if(this._rangesMap[range] !== undefined){
-          return this._rangesMap[range];
-        }
-        else{
-          throw new this.InterpreterException('');
-        }
-      }
 
       // assign constant values to start or end points if necessary
       var points = [range.start, range.end]; 
 
       for(var i = 0; i < points.length; i++){
-        // do not continue if this value has been processed already
-        if(typeof(points[i]) == 'number'){
-          continue;
-        }
-        else{
+        if(typeof(points[i]) != 'number'){
           points[i] = interpretExpression(points[i], variableMap);
         }
       }
@@ -1449,23 +1367,6 @@
       return name;
     },
 
-    /**
-     * Returns the value corresponding the the specified variable name in the constants stack.
-     * Throws an error if a constant has not been defined with the specified variable name.
-     *
-     * @private
-     * @param {!string} variable - name of constant to retrieve
-     * @returns {!object} - the object corresponding to the variable name
-     */
-    _getFromConstantStack: function(variable) {
-      // check if this is a valid variable name
-      var constant = this._constantsMap[variable];
-      if(constant === undefined){
-        throw new this.InterpreterException('\'' + variable + '\' is not a defined constant.');
-      }
-
-      return constant;
-    } ,
     /**
      * Builds an object containing the results of the parsing. This includes taking 
      * all the automaton definitions that are defined as visible and construct an 

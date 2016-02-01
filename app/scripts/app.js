@@ -108,12 +108,6 @@
 
       app.previousBuild = app.currentBuild;
       app.currentBuild = {};
-      
-      // interpret constants if there are any
-      var constants = '';
-      for(var key in results.constants){
-        constants += results.constants[key] + ' ';
-      }
 
       // interpret definitions
       var definitionMap = {};
@@ -121,7 +115,7 @@
         var code = results.processes[key].replace(/ /g, ' ');
         if(app.previousBuild[key] != undefined){
           if(app.previousBuild[key].code != code){
-            definitionMap = app.$.parser.parseDefinition(constants + code, definitionMap, app.liveBuilding, app.fairAbstraction);
+            definitionMap = app.$.parser.parseDefinition(code, definitionMap, app.liveBuilding, app.fairAbstraction);
             app.currentBuild[key] = { code: code, definition: definitionMap[key] };
             //console.log('constructing new automaton "' + key + '"');
           }
@@ -132,7 +126,7 @@
           }
         }
         else{
-          definitionMap = app.$.parser.parseDefinition(constants + code, definitionMap, app.liveBuilding, app.fairAbstraction);
+          definitionMap = app.$.parser.parseDefinition(code, definitionMap, app.liveBuilding, app.fairAbstraction);
           app.currentBuild[key] = { code: code, definition: definitionMap[key] };
           //console.log('constructing new automaton "' + key + '"');
         }
@@ -140,6 +134,7 @@
 
       var automata = [];
       for(var key in app.currentBuild){
+        // make sure no graphs over specified amount are rendered
         if(app.currentBuild[key].definition.graph.nodeCount < 100){
           automata.unshift(new Automaton(key, app.currentBuild[key].definition.graph));
         }
