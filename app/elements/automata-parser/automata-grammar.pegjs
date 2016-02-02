@@ -316,21 +316,24 @@ _ActionLabel
 
 /* Attempts to parse and return multiple action labels */
 ActionLabels
- = action1:ActionLabel _ action2:(_ActionLabels ?) {
+ = prefix:(('!' / '?') ?) _ action1:ActionLabel _ action2:(_ActionLabels ?) {
     var label = action1;
+    if(prefix != null){ label = prefix + label; }
     if(action2 != null){ label += action2; }
     return new Node.ActionNode(label);
  }
  / set:Set {
     return set;
  }
- / '[' _ range:ActionRange _ ']'  _ action:(_ActionLabels ?) {
+ / prefix:(('!' / '?') ?) _ '[' _ range:ActionRange _ ']'  _ action:(_ActionLabels ?) {
     var label = processActionRange(range);
+    if(prefix != null){ label = prefix + label; }
     if(action != null){ label += action; }
     return new Node.ActionNode(label);
  }
- / '[' _ exp:Expression _ ']' _ action:(_ActionLabels ?) {
+ / prefix:(('!' / '?') ?) _ '[' _ exp:Expression _ ']' _ action:(_ActionLabels ?) {
     var label = '[' + exp + ']';
+    if(prefix != null){ label = prefix + label; }
     if(action != null){ label += action; }
     return new Node.ActionNode(label);
  }

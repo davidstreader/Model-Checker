@@ -136,16 +136,19 @@ _ActionLabel
 
 /* Attempts to parse and return multiple action labels */
 ActionLabels
- = action1:ActionLabel _ action2:(_ActionLabels ?) {
+ = prefix:(('!' / '?') ?) _ action1:ActionLabel _ action2:(_ActionLabels ?) {
+    action1 = (prefix != null) ? prefix + action1 : action1;
     return (action2 != null) ? action1 + action2 : action1;
  }
  / Set
- / '[' _ range:ActionRange _ ']'  _ action:(_ActionLabels ?) {
+ / prefix:(('!' / '?') ?) _ '[' _ range:ActionRange _ ']'  _ action:(_ActionLabels ?) {
     range = '[' + range + ']';
+    range = (prefix != null) ? prefix + range : range;
     return (action != null) ? range + action : range;
  }
- / '[' _ exp:Expression _ ']' _ action:(_ActionLabels ?) {
+ / prefix:(('!' / '?') ?) _ '[' _ exp:Expression _ ']' _ action:(_ActionLabels ?) {
     exp = '[' + exp + ']';
+    exp = (prefix != null) ? prefix + exp : exp;
     return (action != null) ? exp + action : exp;   
  }
 
