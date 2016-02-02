@@ -140,6 +140,7 @@
         }
       }
 
+      /*
       // interpret operations if there are any
       var operations = '';
       for(var key in results.operations){
@@ -168,13 +169,13 @@
       if(operationsArray.length > 0){
         var results = 'Total Operations: ' + (pass + fail) +' (Pass: ' + pass + ', Fail: ' + fail + ')';
         operationsArray.unshift(results);
-      }
+      }*/
 
       var interpretTime = Math.max(1, ((new Date()).getTime() - interpretStartTime)) / 1000;
       app.$.console.clear(1);
       app.$.console.log('Interpreted successfully after ' + interpretTime.toFixed(3) + ' seconds.');
 
-      return { automata: automata, operations: operationsArray };
+      return { automata: automata, operations: [] };
     }
 
     app.render = function(automata) {

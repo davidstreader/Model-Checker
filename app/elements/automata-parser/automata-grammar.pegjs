@@ -230,14 +230,8 @@ ParseTree = processes:FiniteStateProcess* {
 
 /* Attempts to parse and return a finite state process */
 FiniteStateProcess
- =  _ definition:ConstantDefinition _ {
-    return definition;
- }
- / _ definition:RangeDefinition _ {
-    return definition;
- }
- / _ definition:SetDefinition _ {
-    return definition;
+ = _ operation:OperationDefinition _ {
+    return operation;
  }
  / _ definitions:ProcessDefinition _ {
     return constructModelNode(definitions);
@@ -247,12 +241,6 @@ FiniteStateProcess
  }
  / _ definition:FunctionDefinition _ {
     return constructModelNode(definition);
- }
- / _ operation:OperationDefinition _ {
-    return operation;
- }
- / _ comment:Comment _ {
-    return comment;
  }
 
 /* Parses whitespace */
@@ -647,11 +635,18 @@ FunctionBody
  = type:FunctionType _ '(' _ body:FunctionBody _ ')' _ relabel:(Relabel ?) _ hide:(Hiding ?) {
     return new Node.FunctionNode(type, body);
  }
- / process:ProcessDefinition {
+ / process:ProcessDefinition _ relabel:(Relabel ?) _ hide:(Hiding ?) {
+    if(relabel != null){ process.relabel = relabel; }
+    if(hide != null){ process.hidden = hide; }
     return process;
  }
- / process:CompositeDefinition {
+ / process:CompositeDefinition _ relabel:(Relabel ?) _ hide:(Hiding ?) {
+    if(relabel != null){ process.relabel = relabel; }
+    if(hide != null){ process.hidden = hide; }
     return process;
+ }
+ / process:LocalProcess _ relabel:(Relabel ?) _ hide:(Hiding ?) {
+    return constructModelDefinitionNode('local', undefined, process, relabel, hide, NOT_VISIBLE);
  }
 
 /**
@@ -666,10 +661,9 @@ OperationDefinition
  }
  
 OperationProcess
- = BaseLocalProcess
- / FunctionBody
- / ProcessBody
- / CompositeBody
+ = ProcessDefinition
+ / CompositeDefinition
+ / FunctionDefinition
 
 Operation
  = '~' {

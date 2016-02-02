@@ -388,18 +388,16 @@
      */
     _interpretOperation: function(model) {
       // construct definitions for this operation
-      var defNames = [];
       var operation = model.operation;
       var definitionMap = this._definitionsMap;
       var processes = [model.process1, model.process2];
-      
-      for(var i = 0; i < 2; i++){
-        var name = this._nextOperationUid();
-        this._constructDefinition(name, processes[i].type, false);
-        defNames.push(name);
+      var defNames = [];
+      var defName = 'op' + this._nextOperationUid();
 
-        this._interpretProcess(processes[i], definitionMap[defNames[i]].graph.root, definitionMap, defNames[i], defNames[i], {}, {});
-        this._processDefinition(defNames[i]);
+      for(var i = 0; i < 2; i++){
+        this._interpretProcess(processes[i], undefined, definitionMap, defName, defName, {}, {});
+        var name = this._popFromCompositeStack();
+        defNames.push(name);
       }
 
       this._processOperation(operation, this._definitionsMap, defNames[0], defNames[1], model.input, model.isNegated, model.position);
@@ -476,7 +474,8 @@
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
     _interpretInternalDefinition: function(definition, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
-      var name = defName + '.' +this._getNameFromPTNode(definition);
+      var name = this._getNameFromPTNode(definition);
+      name = (name != undefined) ? defName + '.' + name : defName + '<internal-process>';
       this._interpretDefinition(name, defName, definition, variableMap);
       this._processDefinition(name);
       this._pushToCompositeStack(name);
@@ -965,13 +964,13 @@
      * @returns {string}
      */
     _getNameFromPTNode: function(ptNode) {
-      var name = ptNode.name || ptNode.composite;
-      if(name === undefined){
-        throw this.InterpreterException('Failed to parse a name from ' + ptNode);
+      if(ptNode == undefined){
+        return undefined;
       }
 
-      while(name.name !== undefined || name.composite !== undefined){
-        name = name.name || ptNode.composite;
+      var name = this._getNameFromPTNode(ptNode.name);
+      if(name == undefined){
+        return ptNode.name;
       }
       return name;
     },

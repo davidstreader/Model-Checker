@@ -420,6 +420,11 @@ FunctionBody
     ident = isValidProcess(ident);
     return ident + relabel + hide;
  }
+ / process:LocalProcess _ relabel:(Relabel ?) _ hide:(Hiding ?) {
+    relabel = (relabel != null) ? relabel : '';
+    hide = (hide != null) ? hide : '';
+    return process + relabel + hide;
+ }
  / body:CompositeBody _ relabel:(Relabel ?) {
     relabel = (relabel != null) ? relabel : '';
     return body + relabel;
@@ -436,7 +441,12 @@ OperationDefinition
  }
  
 OperationProcess
- = BaseLocalProcess
+ = ident:BaseLocalProcess {
+    if(ident == 'STOP' || ident == 'ERROR'){
+        return ident;
+    }
+    return isValidProcess(ident);
+ }
  / FunctionBody
  / ProcessBody
  / CompositeBody
