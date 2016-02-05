@@ -232,8 +232,8 @@
       this._set_operationUid(0);
       this._set_compositeStack([]);
       // reset the node and edge uids in graph class
-      NodeUid.reset();
-      EdgeUid.reset();
+      //NodeUid.reset();
+      //EdgeUid.reset();
     },
 
     /**
@@ -244,7 +244,6 @@
      * @returns {!Automaton[]} Automata
      */
     _interpretParseTree: function(parseTree) {
-      //this._resetInterpreter();
       this._set_variableMap(parseTree.variableMap);
       parseTree.processes.forEach(function(model) {
         if(model.type == 'model'){
@@ -445,11 +444,8 @@
         case 'label':
           this._interpretLabel(process, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
           break;
-        case 'abstraction':
-          this._interpretAbstraction(process, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
-          break;
-        case 'simplification':
-          this._interpretSimplification(process, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
+        case 'function':
+          this._interpretFunction(process, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
           break;
         case 'stop':
           this._interpretStop(process, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
@@ -584,8 +580,11 @@
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
     _interpretComposite: function(composite, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
-      this._interpretProcess(composite.process, extendtionNode, definitionMap, defName, globalName, {}, variableMap);
+      this._interpretProcess(composite.composite, extendtionNode, definitionMap, defName, globalName, {}, variableMap);
       var name = this._popFromCompositeStack();
+      if(name == undefined){
+        name = defName;
+      }
 
       // check if a label has been defined
       if(composite.label != undefined){
@@ -630,7 +629,8 @@
         references = localReference;
       }
 
-      this._interpretReference(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap, references);    
+      this._interpretReference(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap, references);
+      this._pushToCompositeStack(references);
     },
 
     /**
@@ -727,65 +727,38 @@
      * @param {!string} defName            - The name of the current definition
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
-    _interpretAbstraction: function(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
-      this._interpretProcess(ptNode.process, extendtionNode, definitionMap, defName, defName, referenceMap, variableMap);
-      var name = this._popFromCompositeStack();
-      var graph = definitionMap[name].graph;
-      definitionMap[defName].graph = Graph.Operations.abstraction(graph, this._isFairAbstraction);
-      extendtionNode.id = definitionMap[defName].graph.root.id;
-      this._pushToCompositeStack(defName);
-    },
-
-    /**
-     * Interprets a parse tree simplification node.
-     *
-     * @private
-     * @param {!object} ptNode             - A parse tree simplification node
-     * @param {!Graph.Node} extendtionNode - The node in the graph to build on from
-     * @param {!object} definitionMap      - The definition map being used
-     * @param {!string} defName            - The name of the current definition
-     * @param {!object} referenceMap       - The reference map that store references already known about
-     */
-    _interpretSimplification: function(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
-      this._interpretProcess(ptNode.process, extendtionNode, definitionMap, defName, defName, referenceMap, variableMap);
-      var name = this._popFromCompositeStack();
-      var graph = definitionMap[name].graph;
-      definitionMap[defName].graph = Graph.Operations.simplification(graph);
-      extendtionNode.id = definitionMap[defName].graph.root.id;
-      this._pushToCompositeStack(defName);
-    },
-
-    /**
-     * Helper function for function definitions which interprets the contents within the function
-     * before the function is applied to the contents.
-     *
-     * @private
-     * @param {!object} ptNode             - A parse tree simplification node
-     * @param {!Graph.Node} extendtionNode - The node in the graph to build on from
-     * @param {!object} definitionMap      - The definition map being used
-     * @param {!string} defName            - The name of the current definition
-     * @param {!object} referenceMap       - The reference map that store references already known about
-     * @returns {!string}                  - A reference to the definition containing the contents of the function 
-     */
     _interpretFunction: function(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
-      var name = defName + '<internal-definition>';
-      this._constructDefinition(name, undefined, undefined, false);
-      
-      if(process.type === 'definition'){
-        name = defName + '.' + this._getNameFromPTNode(ptNode);
-        this._interpretProcess(process, extendtionNode, definitionMap, name, globalName, referenceMap, variableMap);
+      this._interpretProcess(ptNode.process, extendtionNode, definitionMap, defName, defName, referenceMap, variableMap);
+
+      var name = this._popFromCompositeStack();
+      if(name == undefined){
+        name = defName;
       }
       else{
-        var name = this._getNameFromPTNode(process).name;
-        var references = this._getNameFromOperationNode(process);
+        this._processReferences(defName);
       }
 
-      // check if there are any nested functions within this process
-      if(typeof(references) === 'object'){
-        this._interpretProcess(ptNode.name, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
-        references = defName;
+      // check if there is any edges to relabel
+      if(ptNode.relabel != undefined){
+        this._processRelabelling(name, ptNode.relabel);
       }
-      return references;
+
+      // check if there is any edges to hide
+      if(ptNode.hidden != undefined){
+        this._processHiding(name, ptNode.hidden);
+      }
+
+      var graph = definitionMap[name].graph; 
+      var type = ptNode.func;
+      if(type == 'abstraction'){
+        definitionMap[defName].graph = Graph.Operations.abstraction(graph, this._isFairAbstraction);
+      }
+      else if(type == 'simplification'){
+        definitionMap[defName].graph = Graph.Operations.simplification(graph);
+      }      
+
+      extendtionNode.id = definitionMap[defName].graph.root.id;
+      this._pushToCompositeStack(defName);
     },
 
     /**
@@ -1128,10 +1101,10 @@
      * @private
      * @param {!string} defName - the definition to perform relabelling for
      */
-    _processRelabelling: function(defName, variableMap) {
-      var relabel = this._definitionsMap[defName].relabel;
+    _processRelabelling: function(defName, relabel) {
+      relabel = (relabel == undefined) ? this._definitionsMap[defName].relabel : relabel;
       if(relabel !== undefined){
-        relabel = this._processRelabellingSet(relabel, variableMap);
+        relabel = this._processRelabellingSet(relabel, this._variableMap);
         // get an array of edges in the current graph
         var edges = this._definitionsMap[defName].graph.edges;
         // check each edge to see if it needs to be updated
@@ -1155,11 +1128,11 @@
      * @param {!object} set - the set of relabelling objects to process
      * @returns {!object} processed set
      */
-    _processRelabellingSet: function(set, variableMap) {
+    _processRelabellingSet: function(set) {
       var result = [];
       for(var i = 0; i < set.length; i++){
-        var newLabel = this._processVariables(set[i]['new'].action, variableMap);
-        var oldLabel = this._processVariables(set[i]['old'].action, variableMap);
+        var newLabel = this._processVariables(set[i]['newLabel'], this._variableMap);
+        var oldLabel = this._processVariables(set[i]['oldLabel'], this._variableMap);
         result.push({new: newLabel, old: oldLabel});
       }
 
@@ -1172,8 +1145,8 @@
      * @private
      * @param {!string} defName - the definition to perform relabelling for
      */
-    _processHiding: function(defName) {
-      var hidden = this._definitionsMap[defName].hidden;
+    _processHiding: function(defName, hidden) {
+      hidden = (hidden == undefined) ? this._definitionsMap[defName].hidden : hidden;
       if(hidden !== undefined){
         var type = hidden.type;
         var set = this._processSet(hidden.set);
@@ -1181,7 +1154,7 @@
         var edges = this._definitionsMap[defName].graph.edges;
         // check each edge to see if it needs to be updated
         edges.forEach(function(edge, index){
-          var contains = _.contains(set.set, edge.label);
+          var contains = _.contains(set, edge.label);
           if((type === 'includes' && contains) || (type === 'excludes' && !contains)){
             // only updates the edge if it needs to be hidden
             edge.isHidden = true;
@@ -1198,20 +1171,11 @@
      * @returns {!object} processed set
      */
     _processSet: function(set) {
-      var result = [];
-      // check if set is not array
-      if(set.length === undefined){
-        result.push(this._processVariables(set.action));
+      for(var i = 0; i < set.length; i++){
+        set[i] = this._processVariables(set[i]);
       }
 
-      // otherwise process all the elements in the set
-      else{
-        for(var i = 0; i < set.length; i++){
-          result.push(this._processVariables(set[i].action));
-        }
-      }
-
-      return {type:"set", set:result};
+      return set;
     },
 
     /**

@@ -54,7 +54,7 @@
           results = app.interpret(results);
         }catch(e){
           app.$.console.clear(1);
-          app.$.console.log(e);
+          app.$.console.error(e);
           return;
         }
 
@@ -112,7 +112,7 @@
       // interpret definitions
       var definitionMap = {};
       for(var key in results.processes){
-        var code = results.processes[key].replace(/ /g, ' ');
+        var code = results.processes[key].process.replace(/ /g, ' ');
         if(app.previousBuild[key] != undefined){
           if(app.previousBuild[key].code != code){
             definitionMap = app.$.parser.parseDefinition(code, definitionMap, app.liveBuilding, app.fairAbstraction);
