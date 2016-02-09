@@ -5,10 +5,9 @@
  * result of the process.
  *
  * @param {string} input - the expression to process
- * @param {object} variableMap - map of variables
  * @returns {number} - result of process
  */
-function processReversePolishNotation(input, variableMap, precedenceMap){
+function processReversePolishNotation(input){
 	var input = input.split(' ');
 	var stack = [];
 	
@@ -25,10 +24,6 @@ function processReversePolishNotation(input, variableMap, precedenceMap){
 		else{
 			// check if current is a number
 			var value = parseInt(current);
-			if(isNaN(value)){
-				value = processVariable(current, variableMap, precedenceMap);
-			}
-
 			stack.push(value);
 		}
 	}
@@ -95,37 +90,6 @@ function processReversePolishNotation(input, variableMap, precedenceMap){
 				return true;
 			default:
 				throw new ExpressionInterpreterException('Invalid operator \'' + operator + '\' used.');
-		}
-	}
-
-	/**
-	 * Processes and returns the value which the specified variable is
-	 * referencing.
-	 *
-	 * @param {string} variable - the variable to process
-	 * @param {object} variableMap - mapping of variables to their values
-	 * @param {object} precedenceMap - mapping of operators to their precedences
-	 * @param {number} - the value referenced by the variable
-	 */
-	function processVariable(variable, variableMap, precedenceMap){
-		// check if variable is a number
-		if(typeof(variable) == 'number'){
-			return variable;
-		}
-		// check if this variable references another, singular variable
-		if(variable.split(' ').length == 1){
-			return processVariable(variableMap[variable], variableMap, precedenceMap);
-		}
-		// otherwise process the expression that this variable references
-		else{
-			variable = processShuntingYardAlgorithm(variable, precedenceMap);
-			variable = processReversePolishNotation(variable, variableMap, precedenceMap);
-			
-			if(variable == undefined){
-				throw new ExpressionInterpreterException('Trying to process invalid variable name \'' + variable + '\'.');
-			}
-
-			return variable;
 		}
 	}
 }

@@ -23,6 +23,9 @@ var MODULO = '%';
 // precedence map
 var precedenceMap = constructPrecedenceMap();
 
+// regex for finding variables in a given input
+var regex = '[\$][v<]*[a-zA-Z0-9]*[>]*';
+
 /**
  * Interprets the specified input and returns the result.
  *
@@ -39,9 +42,18 @@ function interpretExpression(input, variableMap, asBoolean){
 		return input;
 	}
 
+  var match = input.match(regex);
+      
+  // continue to process while matches can still be found
+  while(match != undefined){
+  	var expression = match[0];
+    input = input.replace(expression, variableMap[expression]);
+    match = input.match(regex);
+  }
+
 	// interpret the expression
 	var result = processShuntingYardAlgorithm(input, precedenceMap);
-	result = processReversePolishNotation(result, variableMap, precedenceMap, asBoolean);
+	result = processReversePolishNotation(result);
 
 	// return the result
 	return (asBoolean) ? result != 0 : result;
