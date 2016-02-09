@@ -387,16 +387,18 @@
      */
     _interpretOperation: function(model) {
       // construct definitions for this operation
-      var operation = model.operation;
+      var operation = model.operator;
       var definitionMap = this._definitionsMap;
       var processes = [model.process1, model.process2];
       var defNames = [];
       var defName = 'op' + this._nextOperationUid();
 
       for(var i = 0; i < 2; i++){
-        this._interpretProcess(processes[i], undefined, definitionMap, defName, defName, {}, {});
-        var name = this._popFromCompositeStack();
-        defNames.push(name);
+        var name = defName + '<process-' + i + '>';
+        this._constructDefinition(name);
+        this._interpretProcess(processes[i], definitionMap[name].graph.root, definitionMap, name, name, {}, {});
+        defNames.push(this._popFromCompositeStack());
+        this._processDefinition(name);
       }
 
       this._processOperation(operation, this._definitionsMap, defNames[0], defNames[1], model.input, model.isNegated, model.position);
@@ -412,7 +414,22 @@
      * @param {!string} defName            - The name of the current definition
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
-    _interpretProcess: function(process, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
+    _interpretProcess: function(process, extendtionNode, definitionNode, defName, globalName, referenceMap, variableMap) {
+      this._interpretLocalProcess(process, extendtionNode, definitionNode, defName, globalName, referenceMap, variableMap);
+      this._pushToCompositeStack(defName);
+    },
+
+    /**
+     * Helper function for interpretProcess which interprets a local process.
+     *
+     * @private
+     * @param {!object} process            - A parse tree process node
+     * @param {!Graph.Node} extendtionNode - The node in the graph to build on from
+     * @param {!object} definitionMap      - The definition map being used
+     * @param {!string} defName            - The name of the current definition
+     * @param {!object} referenceMap       - The reference map that store references already known about
+     */
+    _interpretLocalProcess: function(process, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
       switch (process.type) {
         case 'definition':
           this._interpretInternalDefinition(process, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
@@ -474,7 +491,6 @@
       name = (name != undefined) ? defName + '.' + name : defName + '<internal-process>';
       this._interpretDefinition(name, defName, definition, variableMap);
       this._processDefinition(name);
-      this._pushToCompositeStack(name);
     },
 
     /**
@@ -492,7 +508,7 @@
       var graph = definitionMap[defName].graph;
       var node = graph.addNode(NodeUid.next);
       graph.addEdge(EdgeUid.next, extendtionNode, node, action);
-      this._interpretProcess(sequence.to, node, definitionMap, defName, globalName, referenceMap, variableMap);
+      this._interpretLocalProcess(sequence.to, node, definitionMap, defName, globalName, referenceMap, variableMap);
     },
 
     /**
@@ -506,8 +522,8 @@
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
     _interpretChoice: function(choice, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
-      this._interpretProcess(choice.option1, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
-      this._interpretProcess(choice.option2, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
+      this._interpretLocalProcess(choice.option1, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
+      this._interpretLocalProcess(choice.option2, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
     },
 
     /**
@@ -524,11 +540,11 @@
       var guard = interpretExpression(ifNode.guard, variableMap, true);
       // if the guard is valid then process the then statement
       if(guard){
-        this._interpretProcess(ifNode.thenProcess, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
+        this._interpretLocalProcess(ifNode.thenProcess, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
       }
       // otherwise check if an else statement was declared
       else if(ifNode.elseProcess != undefined){
-        this._interpretProcess(ifNode.elseProcess, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
+        this._interpretLocalProcess(ifNode.elseProcess, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
       }
       else{
         // otherwise set extendtionNode as a terminal
@@ -550,7 +566,7 @@
       while(iterator.hasNext){
         var element = iterator.next;
         variableMap[index.variable] = element;
-        this._interpretProcess(index.process, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
+        this._interpretLocalProcess(index.process, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
       }
     },
     /**
@@ -564,9 +580,21 @@
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
     _interpretParallel: function(parallel, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
-      this._interpretProcess(parallel.process1, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
-      this._interpretProcess(parallel.process2, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
-      this._pushToCompositeStack(defName);
+      var processes = [parallel.process1, parallel.process2];
+      var graphs = [];
+      for(var i = 0; i < processes.length; i++){
+        var name = defName + '<local-process-' + i + '>';
+        this._constructDefinition(name);
+        this._interpretProcess(processes[i], definitionMap[name].graph.root, definitionMap, name, globalName, referenceMap, variableMap);
+        name = this._popFromCompositeStack();
+        this._processDefinition(name);
+        graphs.push(definitionMap[name].graph);
+        delete definitionMap[name];
+      }
+
+      var graph = Graph.Operations.parallelComposition(graphs[0], graphs[1]);
+      definitionMap[defName].graph = graph;
+      definitionMap[defName].graph.root = graph.root;     
     },
 
     /**
@@ -582,13 +610,14 @@
     _interpretComposite: function(composite, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
       this._interpretProcess(composite.composite, extendtionNode, definitionMap, defName, globalName, {}, variableMap);
       var name = this._popFromCompositeStack();
+      this._processReferences(name);
       if(name == undefined){
         name = defName;
       }
 
       // check if a label has been defined
       if(composite.label != undefined){
-        var label = this._processVariables(composite.label, variableMap);
+        var label = this._processVariables(composite.label.action, variableMap);
 
         // relabel all the edges in the graph
         definitionMap[name].graph.edges.forEach(function(edge){
@@ -598,8 +627,7 @@
 
       // check if a relabelling has been defined
       if(composite.relabel != undefined){
-        definitionMap[name].relabel = composite.relabel;
-        this._processRelabelling(name, variableMap);
+        this._processRelabelling(name, composite.relabel, variableMap);
       }
 
       if(name !== undefined && name != defName){
@@ -630,7 +658,6 @@
       }
 
       this._interpretReference(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap, references);
-      this._pushToCompositeStack(references);
     },
 
     /**
@@ -673,8 +700,6 @@
         definitionMap[name].relabel = ptNode.relabel;
         this._processRelabelling(name, variableMap);
       }
-
-      this._pushToCompositeStack(name);
     },
 
     /**
@@ -758,7 +783,6 @@
       }      
 
       extendtionNode.id = definitionMap[defName].graph.root.id;
-      this._pushToCompositeStack(defName);
     },
 
     /**
