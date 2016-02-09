@@ -192,7 +192,7 @@ _ActionLabel
  }
  / '[' _ exp:Expression _ ']' _ label:(_ActionLabel ?) {
     exp = '[' + exp + ']'
-    return (label != null) ? exp + label : label;
+    return (label != null) ? exp + label : exp;
  }
 
 ActionLabels

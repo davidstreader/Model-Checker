@@ -4522,7 +4522,7 @@ InitialPEG.initialParser = (function() {
     }
 
 
-        var keywords = ['const', 'range', 'set', 'if', 'then', 'else', 'forall', 'abs', 'simp'];
+        var keywords = ['const', 'range', 'set', 'if', 'then', 'else', 'when', 'forall', 'abs', 'simp'];
         
         var variableMap = {};
         var processes = {};
