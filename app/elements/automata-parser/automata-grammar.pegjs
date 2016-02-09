@@ -124,7 +124,8 @@
         if(typeof(exp) == 'number'){
             return exp;
         }
-        if(exp[0] == '$'){
+        console.log(exp);
+        if(!exp.includes(' ')){
             return exp;
         }
         var variable = getNextVariable();
@@ -300,6 +301,15 @@ LocalProcessDefinition
  }
 
 LocalProcess
+ = prefix:(PrefixLabel ?) _ process:_LocalProcess _ relabel:(Relabel ?) {
+    if(prefix == null && relabel == null){
+        return process;
+    }
+    
+    return new Node.CompositeNode(prefix, process, relabel);
+ }
+
+_LocalProcess
  = BaseLocalProcess
  / 'if' _ exp:Expression _ 'then' _ thenProcess:LocalProcess _ 'else' _ elseProcess:LocalProcess {
     return new Node.IfNode(exp, thenProcess, elseProcess);
@@ -342,10 +352,7 @@ FunctionType
  }
 
 Composite
- = prefix:(PrefixLabel ?) _ ident:Identifier _ relabel:(Relabel ?) {
-    return constructCompositeNode(prefix, ident, relabel);
- }
- / prefix:(PrefixLabel ?) _ parallel:ParallelComposition _ relabel:(Relabel ?) {
+ = prefix:(PrefixLabel ?) _ parallel:ParallelComposition _ relabel:(Relabel ?) {
     if(prefix == null && relabel == null){
         return parallel;
     }

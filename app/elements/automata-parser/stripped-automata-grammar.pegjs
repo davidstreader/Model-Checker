@@ -63,7 +63,7 @@ UpperCaseIdentifier
     
 LowerCaseIdentifier
  = label:$([a-z][a-zA-Z0-9_]*) {
-    isValidActionLabel(label);
+    //isValidActionLabel(label);
     return label;
  }
 
@@ -249,6 +249,18 @@ LocalProcessDefinition
  }
 
 LocalProcess
+ = prefix:(PrefixLabel ?) _ process:_LocalProcess _ relabel:(Relabel ?) {
+    if(prefix == null && relabel == null){
+        return process;
+    }
+    
+    prefix = (prefix != null) ? prefix : '';
+    relabel = (relabel != null) ? relabel : '';
+    
+    return prefix + process + relabel;
+ }
+
+_LocalProcess
  = BaseLocalProcess
  / 'if' _ exp:Expression _ 'then' _ thenProcess:LocalProcess _ 'else' _ elseProcess:LocalProcess {
     return 'if ' + exp + ' then ' + thenProcess + ' else ' + elseProcess;
@@ -287,13 +299,7 @@ FunctionType
  / 'simp'
 
 Composite
- = prefix:(PrefixLabel ?) _ composite:Identifier _ relabel:(Relabel ?) {
-    prefix = (prefix != null) ? prefix : '';
-    relabel = (relabel != null) ? relabel : '';
-    dependencies[composite] = true;
-    return prefix + composite + relabel;
- }
- / prefix:(PrefixLabel ?) _ composite:ParallelComposition _ relabel:(Relabel ?) {
+ = prefix:(PrefixLabel ?) _ composite:ParallelComposition _ relabel:(Relabel ?) {
     prefix = (prefix != null) ? prefix : '';
     relabel = (relabel != null) ? relabel : '';
     return prefix + '(' + composite + ')' + relabel;
