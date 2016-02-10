@@ -59,7 +59,15 @@
         }
 
         // render the automata
-        app.render(results.automata);
+        app.render(results.automata.graphs);
+
+        setTimeout(function() {
+          app.$.console.log('');
+          app.$.console.log('Automata:');
+          for(var i = 0; i < results.automata.log.length; i++){
+            app.$.console.log(results.automata.log[i]);
+          }
+        }.bind(this), 0);
 
         // print the operations
         app.operations(results.operations);
@@ -117,28 +125,32 @@
           if(app.previousBuild[key].code != code){
             definitionMap = app.$.parser.parseDefinition(code, definitionMap, app.liveBuilding, app.fairAbstraction);
             app.currentBuild[key] = { code: code, definition: definitionMap[key] };
-            //console.log('constructing new automaton "' + key + '"');
           }
           else{
             app.currentBuild[key] = app.previousBuild[key];
             definitionMap[key] = app.previousBuild[key].definition;
-            //console.log('no changes made to automaton "' + key + '"');
           }
         }
         else{
           definitionMap = app.$.parser.parseDefinition(code, definitionMap, app.liveBuilding, app.fairAbstraction);
           app.currentBuild[key] = { code: code, definition: definitionMap[key] };
-          //console.log('constructing new automaton "' + key + '"');
         }
       }
 
       var automata = [];
+      var automataLog = [];
       for(var key in app.currentBuild){
         // make sure no graphs over specified amount are rendered
-        if(app.currentBuild[key].definition.graph.nodeCount < 100){
-          app.currentBuild[key].definition.graph.processStopNodes();
-          automata.unshift(new Automaton(key, app.currentBuild[key].definition.graph));
+        var graph = app.currentBuild[key].definition.graph;
+        var text = '\n' + key + ': States - ' + graph.nodeCount + ', Transitions - ' + graph.edgeCount;
+        if(graph.nodeCount < 100){
+          graph.processStopNodes();
+          automata.unshift(new Automaton(key, graph));
         }
+        else{
+          text += ' (Too large to render)';
+        }
+        automataLog.push(text);
       }
 
       // interpret operations if there are any
@@ -175,7 +187,7 @@
       app.$.console.clear(1);
       app.$.console.log('Interpreted successfully after ' + interpretTime.toFixed(3) + ' seconds.');
 
-      return { automata: automata, operations: operationsArray };
+      return { automata: { graphs: automata, log: automataLog }, operations: operationsArray };
     }
 
     app.render = function(automata) {
