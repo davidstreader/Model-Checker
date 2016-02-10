@@ -146,6 +146,20 @@
     function getNextVariable(){
         return '$v<' + variableCount++ + '>';
     }
+    
+    function processSetElements(label, elements){
+      var indices = label.indices;
+
+      // if no index is defined just return the actino label
+      if(indices == undefined){
+          return (elements != null) ? [label.action].concat(elements) : [label.action];
+      }
+
+      // otherwise construct and return an index node
+      delete label.indices;
+      var node = constructIndexNode(indices, label.action);
+      return (elements != null) ? [node].concat(elements) : [node];
+    }
 }
 
 ParseTree = processes:ParseTreeProcesses* {
@@ -271,12 +285,12 @@ Set
 
 SetElements
  = label:ActionLabels _ elements:(_SetElements ?) {
-    return (elements != null) ? [label.action].concat(elements) : [label.action];
+    return processSetElements(label, elements);
  }
  
 _SetElements
  = ',' _ label:ActionLabels _ elements:(_SetElements ?) {
-    return (elements != null) ? [label.action].concat(elements) : label.action;
+    return processSetElements(label, elements);
  }
 
 /* 3. Process Definition */

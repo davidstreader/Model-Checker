@@ -1155,11 +1155,24 @@
      * @returns {!object} processed set
      */
     _processSet: function(set) {
+      var tempSet = [];
       for(var i = 0; i < set.length; i++){
-        set[i] = this._processVariables(set[i]);
+        // check whether this element is either a string or an index object
+        if(typeof(set[i]) === 'string'){
+          tempSet.push(this._processVariables(set[i]));
+        }
+        else{
+          var iterator = new IndexIterator(set[i].index);
+          var variableMap = {};
+          while(iterator.hasNext){
+            var element = iterator.next;
+            variableMap[set[i].variable] = element;
+            tempSet.push(this._processVariables(set[i].process, variableMap));
+          }
+        }
       }
 
-      return set;
+      return tempSet;
     },
 
     /**
