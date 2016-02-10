@@ -136,6 +136,7 @@
       for(var key in app.currentBuild){
         // make sure no graphs over specified amount are rendered
         if(app.currentBuild[key].definition.graph.nodeCount < 100){
+          app.currentBuild[key].definition.graph.processStopNodes();
           automata.unshift(new Automaton(key, app.currentBuild[key].definition.graph));
         }
       }

@@ -840,7 +840,6 @@
         match = action.match(regex);
       }
 
-      console.log(action);
       return action;
     },
 
@@ -1368,6 +1367,7 @@
           key = definitions[key];
           // only display automata which are defined as visible
           if(this._definitionsMap[key].isVisible){
+            this._definitionsMap[key].graph.processStopNodes();
             automata.unshift(new Automaton(key, this._definitionsMap[key].graph));
           }
         }

@@ -637,6 +637,20 @@ class Graph {
     }
   }
 
+  processStopNodes() {
+    for(let i in this._nodeMap){
+      var node = this.getNode(i);
+      if(node.edgesFromMe.length != 0){
+        if(node.getMetaData('isTerminal') == 'stop'){
+          node.deleteMetaData('isTerminal');
+        }
+      }
+      else if(node.getMetaData('isTerminal') != 'error'){
+        node.addMetaData('isTerminal', 'stop');
+      }
+    }
+  }
+
   /**
    * Create a deep clone of an object or array.
    *
