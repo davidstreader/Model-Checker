@@ -263,7 +263,6 @@
       }
 
       return { definitions: this._definitionsMap, operations: this._operationsMap };
-      //return this._buildParsingResults();
     },
 
     /**
@@ -452,14 +451,8 @@
         case 'composite':
           this._interpretComposite(process, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
           break;
-        case 'forall':
-          this._interpretForAll(process, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
-          break;
         case 'name':
           this._interpretName(process, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
-          break;
-        case 'label':
-          this._interpretLabel(process, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
           break;
         case 'function':
           this._interpretFunction(process, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
@@ -802,33 +795,6 @@
     },
 
     /**
-     *
-     */
-    _processOperand: function(operand, variableMap) {
-      // check if operand is a number
-      var type = typeof(operand);
-      if(type === 'number'){
-        return operand;
-      }
-
-      // check if operand is a variable name
-      if(type === 'string'){
-        // check if variable is locally defined or a constant
-        if(variableMap[operand] !== undefined){
-          return variableMap[operand];
-        }
-        else if(this._constantsMap[operand] !== undefined){
-          return this._constantsMap[operand];
-        }
-
-        // throw expression if variable cannot be located
-        throw new this.InterpreterException('\'' + operand + '\' has not been defined.');
-      }
-
-      // process expression
-      return this._processExpression(operand, variableMap);
-    },
-    /**
      * Interpret a parse tree operation node.
      *
      * @private
@@ -873,100 +839,6 @@
       var graph1 = definitionMap[defName1].graph;
       var graph2 = definitionMap[defName2].graph;
       return Graph.Operations.isEquivalent(graph1, graph2);
-    },
-
-    /**
-     * Uses reverse polish notation to interpret and evaluate a simple expression
-     */
-    _interpretSimpleExpression: function(expression) {
-      // check first if expression is just a single value
-      if(typeof(expression.expression) === 'number'){
-        return expression.expression;
-      }
-
-      // otherwise calculate result
-      var data = expression.expression.split(' ');
-      var stack = [];
-      for(var i = 0; i < data.length; i ++){
-        switch(data[i]){
-        case '+':
-          stack.push(stack.pop() + stack.pop());
-          break;
-        case '-':
-          stack.push(stack.pop() - stack.pop());
-          break;
-        case '*':
-          stack.push(stack.pop() * stack.pop());
-          break;
-        case '/':
-          stack.push(stack.pop() / stack.pop());
-          break;
-        case '%':
-          stack.push(stack.pop() % stack.pop());
-          break;
-        default:
-          stack.push(parseInt(data[i]));
-          break;
-        }
-      }
-
-      return stack.pop();
-    },
-
-    /**
-     * Get the name from a parse tree name node.
-     *
-     * @private
-     * @param {!object} ptNode - A parse tree name node
-     * @returns {string}
-     */
-    _getNameFromPTNode: function(ptNode) {
-      if(ptNode === undefined){
-        return undefined;
-      }
-
-      var name = this._getNameFromPTNode(ptNode.name);
-      if(name === undefined){
-        return ptNode.name;
-      }
-      return name;
-    },
-
-    /**
-     * Get the label from a parse tree labelled name node
-     *
-     * @private
-     * @param {!object} ptNode - A parse tree labelled name node
-     * @returns {string}  
-     */
-    _getLabelFromPTNode: function(ptNode) {
-      return ptNode.label.action;
-    },
-
-    /**
-     * Recurses through an operation node to get the name of the definition
-     * that the operation is referencing.
-     *
-     * @private
-     * @param {!object} operationNode - A parse tree operation node
-     */
-    _getNameFromOperationNode: function(operationNode) {
-      var name = operationNode.name;
-      while(typeof(name) !== 'string'){
-        name = name.name;
-      }
-      return name;
-    },
-
-    /**
-     * Get the action from a parse tree action node.
-     *
-     * @private
-     * @param {!object} ptNode - A parse tree action node
-     * @returns {string}
-     */
-    _getActionFromNode: function(ptNode) {
-      return ptNode.action;
     },
 
     /**
@@ -1252,21 +1124,24 @@
         }
       }
     },
+
     /**
-     * Returns the keys for all the automata defined in the definitions map.
+     * Get the name from a parse tree name node.
      *
      * @private
-     * @returns {!array} - an array of keys
+     * @param {!object} ptNode - A parse tree name node
+     * @returns {string}
      */
-    _getAutomataFromDefinitionsMap: function(){
-      var automata = [];
-      for(var key in this._definitionsMap){
-        if(this._definitionsMap[key].graph !== undefined){
-          automata.push(key);
-        }
+    _getNameFromPTNode: function(ptNode) {
+      if(ptNode === undefined){
+        return undefined;
       }
 
-      return automata;
+      var name = this._getNameFromPTNode(ptNode.name);
+      if(name === undefined){
+        return ptNode.name;
+      }
+      return name;
     },
 
     /**
@@ -1319,56 +1194,20 @@
     },
 
     /**
-     * Builds an object containing the results of the parsing. This includes taking 
-     * all the automaton definitions that are defined as visible and construct an 
-     * array of automata, as well as taking all the operations parsed and constructing
-     * an array of the outcomes.
+     * Returns the keys for all the automata defined in the definitions map.
      *
      * @private
-     * @returns {!Automaton[]} Automata
+     * @returns {!array} - an array of keys
      */
-    _buildParsingResults: function() {
+    _getAutomataFromDefinitionsMap: function(){
       var automata = [];
-      var operations = {operations: [], positions: []};
-      // only build parsing results if live build has been selected
-      if(this._buildAutomata){
-        // build automata array
-        var definitions = this._getAutomataFromDefinitionsMap();
-        for (var key in definitions){
-          key = definitions[key];
-          // only display automata which are defined as visible
-          if(this._definitionsMap[key].isVisible){
-            this._definitionsMap[key].graph.processStopNodes();
-            automata.unshift(new Automaton(key, this._definitionsMap[key].graph));
-          }
-        }
-
-        // build operations array
-        var pass = 0;
-        var fail = 0;
-        for(var i in this._operationsMap){
-          var input = this._operationsMap[i].input;
-          var result = this._operationsMap[i].result;
-          var position = this._operationsMap[i].position;
-          operations.operations.push(input + ' = ' + result);
-          operations.positions.push(position);
-          
-          // increment the tally of results
-          if(result){
-            pass++;
-          }
-          else{
-            fail++;
-          }
-        }
-
-        // if there are no operations do not print the total numbe of operations
-        if(operations.operations.length > 0){
-          var results = 'Total Operations: ' + (pass + fail) +' (Pass: ' + pass + ', Fail: ' + fail + ')';
-          operations.operations.unshift(results);
+      for(var key in this._definitionsMap){
+        if(this._definitionsMap[key].graph !== undefined){
+          automata.push(key);
         }
       }
-      return {automata: automata, operations: operations};
+
+      return automata;
     }
   });
 })();
