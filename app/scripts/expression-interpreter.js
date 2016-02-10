@@ -53,7 +53,9 @@ function interpretExpression(input, variableMap, asBoolean){
 
 	// interpret the expression
 	var result = processShuntingYardAlgorithm(input, precedenceMap);
-	result = processReversePolishNotation(result);
+	if(result.includes(' ')){
+		result = processReversePolishNotation(result);
+	}
 
 	// return the result
 	return (asBoolean) ? result != 0 : result;

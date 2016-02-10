@@ -562,12 +562,17 @@
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
     _processIndex: function(index, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
+      var name = defName + '<index>';
+      this._constructDefinition(name);
+
       var iterator = new IndexIterator(index.index);
       while(iterator.hasNext){
         var element = iterator.next;
         variableMap[index.variable] = element;
-        this._interpretLocalProcess(index.process, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap);
+        this._interpretLocalProcess(index.process, definitionMap[name].graph.root, definitionMap, name, globalName, referenceMap, variableMap);
       }
+
+      this._interpretReference(index, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap, name);
     },
     /**
      * Interpret a parse tree parallel node.
@@ -717,7 +722,7 @@
      */
     _interpretReference: function(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap, references) {
       // if there is no record of this reference yet
-      if (referenceMap[references] === undefined) {
+      if (referenceMap[references] === undefined || references === globalName) {
         var metaData = extendtionNode.getMetaData('references');
         if(metaData === undefined){
           extendtionNode.addMetaData ('references', [references]);
