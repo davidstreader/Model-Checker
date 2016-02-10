@@ -5,6 +5,7 @@
     var processes = {};
     var operations = [];
     
+    var localDependencies = {};
     var dependencies = {};
     
     function getConstant(ident){
@@ -208,8 +209,10 @@ ProcessDefinition
     
     var process = ident + '=' + body + relabel + hide + '.'
     var dependentOn = [];
+    
     for(var i in dependencies){
-        if(i != ident){
+        var prefix = i.split('[')[0];
+        if(i != ident && localDependencies[prefix] != prefix){
             dependentOn.push(i);
         }
     }
@@ -221,6 +224,7 @@ ProcessDefinition
     }
     
     dependencies = {};
+    localDependencies = {};
  }
 
 ProcessBody
@@ -242,6 +246,7 @@ _LocalProcessDefinitions
 LocalProcessDefinition
  = ident:Identifier _  ranges:(IndexRanges ?) _ '=' _  process:LocalProcess {
     ranges = (ranges != null) ? ranges : '';
+    localDependencies[ident] = ident;
     return ident + ranges + '=' + process;
  }
 

@@ -121,19 +121,31 @@
       var definitionMap = {};
       for(var key in results.processes){
         var code = results.processes[key].process.replace(/ /g, ' ');
-        if(app.previousBuild[key] != undefined){
-          if(app.previousBuild[key].code != code){
-            definitionMap = app.$.parser.parseDefinition(code, definitionMap, app.liveBuilding, app.fairAbstraction);
-            app.currentBuild[key] = { code: code, definition: definitionMap[key] };
-          }
-          else{
-            app.currentBuild[key] = app.previousBuild[key];
-            definitionMap[key] = app.previousBuild[key].definition;
+        var build = false;
+
+        if(app.previousBuild[key] === undefined){
+          build = true;
+        }
+        else if(app.previousBuild[key].code !== code){
+          build = true;
+        }
+
+        var dependencies = results.processes[key].dependencies;
+        for(var i in dependencies){
+          if(app.currentBuild[dependencies[i]].built === true){
+            build = true;
+            break;
           }
         }
-        else{
+
+        if(build){
           definitionMap = app.$.parser.parseDefinition(code, definitionMap, app.liveBuilding, app.fairAbstraction);
-          app.currentBuild[key] = { code: code, definition: definitionMap[key] };
+          app.currentBuild[key] = { code: code, definition: definitionMap[key], built: true };
+        }
+        else{
+          app.currentBuild[key] = app.previousBuild[key];
+          app.currentBuild[key].built = false;
+          definitionMap[key] = app.previousBuild[key].definition;
         }
       }
 

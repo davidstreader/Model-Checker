@@ -164,8 +164,10 @@ InitialPEG.initialParser = (function() {
             
             var process = ident + '=' + body + relabel + hide + '.'
             var dependentOn = [];
+            
             for(var i in dependencies){
-                if(i != ident){
+                var prefix = i.split('[')[0];
+                if(i != ident && localDependencies[prefix] != prefix){
                     dependentOn.push(i);
                 }
             }
@@ -177,6 +179,7 @@ InitialPEG.initialParser = (function() {
             }
             
             dependencies = {};
+            localDependencies = {};
          },
         peg$c68 = function(process, definitions) {
             return process + ',' + definitions;
@@ -189,6 +192,7 @@ InitialPEG.initialParser = (function() {
          },
         peg$c71 = function(ident, ranges, process) {
             ranges = (ranges != null) ? ranges : '';
+            localDependencies[ident] = ident;
             return ident + ranges + '=' + process;
          },
         peg$c72 = function(prefix, process, relabel) {
@@ -4495,6 +4499,7 @@ InitialPEG.initialParser = (function() {
         var processes = {};
         var operations = [];
         
+        var localDependencies = {};
         var dependencies = {};
         
         function getConstant(ident){
