@@ -88,13 +88,23 @@
     var variableCount = 0;
     var actionIndices = [];
     var identifierIndices = [];
+    var forallIndices = [];
     
     function processIndex(index, type){
         if(index.variable == undefined){
             index.variable = getNextVariable();
         }
         
-        (type == 'action') ? actionIndices.push(index) : identifierIndices.push(index);
+        if(type == 'action'){
+            actionIndices.push(index);
+        }
+        else if(type == 'identifier'){
+            identifierIndices.push(index);
+        }
+        else if(type == 'forall'){
+            forallIndices.push(index);
+        }
+   
         return index.variable;
     }
     
@@ -124,7 +134,7 @@
         if(typeof(exp) == 'number'){
             return exp;
         }
-        console.log(exp);
+
         if(!exp.includes(' ')){
             return exp;
         }
@@ -203,7 +213,7 @@ ActionLabels
     actionIndices = [];
     return new Node.ActionNode(label, indices);
  }
- / set:Set _ label:(_ActionLabels ?) {
+ / set:ActionSet _ label:(_ActionLabels ?) {
     set = processIndex(set, 'action');
     set = (label != null) ? set + label : set;
     var indices = actionIndices;
@@ -223,7 +233,7 @@ _ActionLabels
     label = '.' + label;
     return (label2 != null) ? label + label2 : label;
  }
- / '.' _ set:Set _ label:(_ActionLabels ?) {
+ / '.' _ set:ActionSet _ label:(_ActionLabels ?) {
     set = '.' + processIndex(set, 'action');
     return (label != null) ? set + label : set;
  }
@@ -234,6 +244,11 @@ _ActionLabels
  / '[' _ exp:Expression _ ']' _ label:(_ActionLabels ?) {
     exp = '[' + exp + ']';
     return (label != null) ? exp + label : exp;
+ }
+
+ActionSet
+ = index:Set {
+    return { index: index };
  }
 
 ActionRange
@@ -317,6 +332,11 @@ _LocalProcess
  / 'if' _ exp:Expression _ 'then' _ thenProcess:LocalProcess {
     return new Node.IfNode(exp, thenProcess);
  }
+ / 'forall' _ ranges:Ranges _ composite:LocalProcess {
+    var indices = forallIndices;
+    forallIndices = [];
+    return constructIndexNode(indices, composite);
+ }
  / process:(Function / Composite / Choice) {
     return process;
  }
@@ -357,9 +377,6 @@ Composite
         return parallel;
     }
     return constructCompositeNode(prefix, parallel, relabel);
- }
- / 'forall' _ ranges:Ranges _ composite:Composite {
-    return 'forall ' + ranges + ' ' + composite;
  }
 
 PrefixLabel
@@ -424,7 +441,7 @@ IndexRanges
 
 Ranges
  = '[' _ range:ActionRange _ ']' _ ranges:(Ranges ?) {
-    range = processIndex(range);
+    range = processIndex(range, 'forall');
     range = '[' + range + ']';
     return (ranges != null) ? range + ranges : range;
  }

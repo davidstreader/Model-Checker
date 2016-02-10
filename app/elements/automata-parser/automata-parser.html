@@ -608,8 +608,10 @@
      * @param {!object} referenceMap       - The reference map that store references already known about
      */
     _interpretComposite: function(composite, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap) {
-      this._interpretProcess(composite.composite, extendtionNode, definitionMap, defName, globalName, {}, variableMap);
-      var name = this._popFromCompositeStack();
+      var name = defName + '<composite>'
+      this._constructDefinition(name);
+      this._interpretProcess(composite.composite, definitionMap[name].graph.root, definitionMap, name, globalName, {}, variableMap);
+      name = this._popFromCompositeStack();
       this._processReferences(name);
       if(name == undefined){
         name = defName;

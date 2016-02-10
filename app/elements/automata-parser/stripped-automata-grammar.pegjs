@@ -147,11 +147,8 @@ _ActionLabels
 ActionRange
  = Range
  / Set
- / variable:Variable _ ':' _ range:Range {
-    return variable + ':' + range;
- }
- / variable:Variable _ ':' _ set:Set {
-    return variable + ':' + set;
+ / variable:Variable _ ':' _ index:(Range / Set) {
+    return variable + ':' + index;
  }
 
 Range
@@ -243,7 +240,7 @@ _LocalProcessDefinitions
  }
 
 LocalProcessDefinition
- = ident:Identifier _  ranges:(IndexRanges ?) _  '=' _  process:LocalProcess {
+ = ident:Identifier _  ranges:(IndexRanges ?) _ '=' _  process:LocalProcess {
     ranges = (ranges != null) ? ranges : '';
     return ident + ranges + '=' + process;
  }
@@ -304,7 +301,7 @@ Composite
     relabel = (relabel != null) ? relabel : '';
     return prefix + '(' + composite + ')' + relabel;
  }
- / 'forall' _ ranges:Ranges _ composite:Composite {
+ / 'forall' _ ranges:Ranges _ composite:LocalProcess {
     return 'forall ' + ranges + ' ' + composite;
  }
 
