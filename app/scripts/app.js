@@ -123,6 +123,7 @@
         var code = results.processes[key].process.replace(/ /g, ' ');
         var build = false;
 
+        // determine whether this definition needs to be reinterpreted or not
         if(app.previousBuild[key] === undefined){
           build = true;
         }
@@ -130,14 +131,23 @@
           build = true;
         }
 
+        // if any dependencies have been updated this definition must be updated too
         var dependencies = results.processes[key].dependencies;
         for(var i in dependencies){
-          if(app.currentBuild[dependencies[i]].built === true){
-            build = true;
-            break;
+          try{
+            if(app.currentBuild[dependencies[i]].built === true){
+              build = true;
+              break;
+            }
+          }catch(e){
+            var interpretTime = Math.max(1, ((new Date()).getTime() - interpretStartTime)) / 1000;
+            app.$.console.clear(1);
+            app.$.console.log('Interpretation failed after ' + interpretTime.toFixed(3) + ' seconds.');
+            // error message is thrown by the interpreter
           }
         }
 
+        // either build the automata or use automata built in the previous build
         if(build){
           definitionMap = app.$.parser.parseDefinition(code, definitionMap, app.liveBuilding, app.fairAbstraction);
           app.currentBuild[key] = { code: code, definition: definitionMap[key], built: true };
