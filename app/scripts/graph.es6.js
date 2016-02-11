@@ -4,8 +4,8 @@
 
 var _NODE_UID = 0; // used to return unique node id for NodeUid class
 var _EDGE_UID = 0; // used to return unique edge id for EdgeUid class
-var TAU = '𝜏';
-var DELTA = '𝛿';
+var TAU = '\u03C4';
+var DELTA = '\u03B4';
 
 /**
  * Helper class for Graph which generates unique node identifiers.
@@ -942,14 +942,12 @@ Graph.Edge = class {
    * @param {!number} to    - The id of the node this edges goes to
    * @param {!string} label - The edge's label
    */
-  constructor(graph, uid, from, to, label, isHidden = false, isDeadlock = false) {
+  constructor(graph, uid, from, to, label) {
     this._graph = graph;
     this._id = uid;
     this._from = from;
     this._to = to;
     this._label = label;
-    this._isHidden = isHidden;
-    this._isDeadlock = isDeadlock;
   }
 
   /**
@@ -1007,54 +1005,28 @@ Graph.Edge = class {
     return this._label;
   }
 
+  hideEdge() {
+    this._label = TAU;
+    return this._label;
+  }
+
   /**
    * Get a boolean determining whether this edge is hidden or not.
    */
   get isHidden() {
-    return this._isHidden;
+    return this._label === TAU;
+  }
+
+  deadlockEdge() {
+    this._label = DELTA;
+    return this._label;
   }
 
   /**
-   * Sets the value of isHidden to the specified boolean.
-   *
-   * @param {!boolean} isHidden - whether or not this edge is hidden
-   * @param {!boolean} - the new value of isHidden
-   */
-   set isHidden(isHidden) {
-      this._isHidden = isHidden;
-      return this._isHidden;
-   }
-
-  /**
-   * Get a boolean determining whether this edge leads to a deadlock or not.
+   * Get a boolean determining whether this edge is hidden or not.
    */
   get isDeadlock() {
-    return this._isDeadlock;
-  }
-
-  /**
-   * Sets the value of isDeadlock to the specified boolean.
-   *
-   * @param {!boolean} isDeadlock - whether or not this edge is a deadlock
-   * @returns {!boolean} - the new value of isDeadlock
-   */
-  set isDeadlock(isDeadlock) {
-    this._isDeadlock = isDeadlock;
-    return this._isDeadlock;
-  }
-
-  /**
-   * Sets isHidden to the specified boolean.
-   *
-   * @returns {!boolean} The new isHidden value
-   */
-  set isHidden(isHidden) {
-    // make sure that parameter is a boolean
-    if(isHidden !== true && isHidden !== false){
-      throw new Graph.Exception("Expecting a boolean value but received " + isHidden + "\n");
-    }
-    this._isHidden = isHidden;
-    return this._isHidden;
+    return this._label === DELTA;
   }
 };
 
@@ -1346,7 +1318,7 @@ Graph.Operations = class {
       var edge = edges[i];
       if(!edge.isHidden){
         var node = isFrom ? edge.to : edge.from;
-        transitions.push({node: node, label: edge.label, isDeadlock: edge.isDeadlock});
+        transitions.push({node: node, label: edge.label});
       }
     }
 
@@ -1371,7 +1343,7 @@ Graph.Operations = class {
     for(let i in edgesToAdd){
       var edge = edgesToAdd[i];
       if(!clone.containsEdge(edge.from, edge.to, edge.label)){
-        clone.addEdge(edge.uid, edge.from, edge.to, edge.label, edge.isHidden, edge.isDeadlock);
+        clone.addEdge(edge.uid, edge.from, edge.to, edge.label);
       }
     }
 
@@ -1383,7 +1355,7 @@ Graph.Operations = class {
     for(let i in edgesToAdd){
       var edge = edgesToAdd[i];
       if(!clone.containsEdge(edge.from, edge.to, edge.label)){
-        clone.addEdge(edge.uid, edge.from, edge.to, edge.label, edge.isHidden, true);
+        clone.addEdge(edge.uid, edge.from, edge.to, edge.label);
       }
     }
 
@@ -1414,10 +1386,10 @@ Graph.Operations = class {
       for(let i in transitions){
         var transition = transitions[i];
         if(isFrom){
-          edgesToAdd.push(this._constructEdge(EdgeUid.next, transition.node, current, transition.label, false, transition.isDeadlock));
+          edgesToAdd.push(this._constructEdge(EdgeUid.next, transition.node, current, transition.label));
         }
         else{
-          edgesToAdd.push(this._constructEdge(EdgeUid.next, current, transition.node, transition.label, false, transition.isDeadlock));
+          edgesToAdd.push(this._constructEdge(EdgeUid.next, current, transition.node, transition.label));
         }
       }
 
@@ -1431,7 +1403,7 @@ Graph.Operations = class {
         }
         // if next node has already been visited add a tau loop
         else if(edge.isHidden && _.contains(visited, node)){
-          edgesToAdd.push(this._constructEdge(EdgeUid.next, node, node, '', true));
+          edgesToAdd.push(this._constructEdge(EdgeUid.next, node, node, TAU));
         }
       }
     }
@@ -1473,7 +1445,7 @@ Graph.Operations = class {
       if(edge.isHidden && edge.from.id === edge.to.id){
         var temp = clone.addNode(NodeUid.next);
         // add a new deadlock edge and remove the tau loop
-        clone.addEdge(EdgeUid.next, edge.from, temp, '', false, true);
+        clone.addEdge(EdgeUid.next, edge.from, temp, DELTA);
         clone.removeEdge(edge);
         // set metadata of node to show it is an error node
         temp.addMetaData('isTerminal', 'error');
@@ -1725,7 +1697,7 @@ Graph.Operations = class {
                 // calculate the id of the node the new edge is transitioning to
                 var toId = this._getId(graph, coaccessible1, coaccessible2);
                 var isHidden = graph1.isHiddenEdge(action);
-                graph.addEdge(EdgeUid.next, graph.getNode(fromId), graph.getNode(toId), action, isHidden);
+                graph.addEdge(EdgeUid.next, graph.getNode(fromId), graph.getNode(toId), action);
               }
 
               // check if the current action is done by the outer node and is never performed in the second graph
@@ -1733,7 +1705,7 @@ Graph.Operations = class {
                 // calculate the id of the node the new edge is transitioning to
                 var toId = this._getId(graph, coaccessible1, node2);
                 var isHidden = graph1.isHiddenEdge(action);
-                graph.addEdge(EdgeUid.next, graph.getNode(fromId), graph.getNode(toId), action, isHidden);
+                graph.addEdge(EdgeUid.next, graph.getNode(fromId), graph.getNode(toId), action);
               }
 
               // check if the current action is done by the inner node and is never performed in the first graph
@@ -1741,7 +1713,7 @@ Graph.Operations = class {
                 // calculate the id of the node the new edge is transitioning to
                 var toId = this._getId(graph, node1, coaccessible2);
                 var isHidden = graph2.isHiddenEdge(action);
-                graph.addEdge(EdgeUid.next, graph.getNode(fromId), graph.getNode(toId), action, isHidden);
+                graph.addEdge(EdgeUid.next, graph.getNode(fromId), graph.getNode(toId), action);
               }
             }
           }
