@@ -116,14 +116,17 @@ _ActionLabel
  }
 
 ActionLabels 'action label'
- = label:ActionLabel _ label2:(_ActionLabels ?) {
+ = type:(ActionLabelType ?) _ label:ActionLabel _ label2:(_ActionLabels ?) {
+    label = (type != null) ? type + label : label;
     return (label2 != null) ? label + label2 : label;
  }
- / set:Set _ label:(_ActionLabels ?) {
+ / type:(ActionLabelType ?) _ set:Set _ label:(_ActionLabels ?) {
+    set = (type != null) ? type + set : set;
     return (label != null) ? set + label : set;
  }
- / '[' _ range:ActionRange _ ']' _ label:(_ActionLabels ?) {
+ / type:(ActionLabelType ?) _ '[' _ range:ActionRange _ ']' _ label:(_ActionLabels ?) {
     range = '[' + range + ']';
+    range = (type != null) ? type + range : range;
     return (label != null) ? range + label : range;
  }
  
@@ -144,6 +147,10 @@ _ActionLabels
     exp = '[' + exp + ']';
     return (label != null) ? exp + label : exp;
  }
+
+ActionLabelType
+ = '!'
+ / '?'
 
 ActionRange
  = Range
