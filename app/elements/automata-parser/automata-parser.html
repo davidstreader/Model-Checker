@@ -584,7 +584,8 @@
         graphs.push(definitionMap[name].graph);
       }
 
-      var graph = Graph.Operations.parallelComposition(graphs[0], graphs[1]);
+      // parallel composition function is defined in 'parallel-composition.js' in the scripts folder
+      var graph = parallelComposition(graphs[0], graphs[1]);
       definitionMap[defName].graph = graph;
       definitionMap[defName].graph.root = graph.root;     
     },
@@ -625,7 +626,8 @@
       }
 
       if(name !== undefined && name !== defName){
-        var graph = Graph.Operations.parallelComposition(definitionMap[name].graph, definitionMap[defName].graph);
+        // parallel composition function is defined in 'parallel-composition.js' in the scripts folder
+        var graph = parallelComposition(definitionMap[name].graph, definitionMap[defName].graph);
         definitionMap[defName].graph = graph;
         definitionMap[defName].graph.root = graph.root;
       }
@@ -729,11 +731,14 @@
       var graph = definitionMap[name].graph; 
       var type = ptNode.func;
       if(type === 'abstraction'){
-        definitionMap[defName].graph = Graph.Operations.abstraction(graph, this._isFairAbstraction);
+        // abstraction function defined in 'abstraction.js' in scripts folder
+        definitionMap[defName].graph = abstraction(graph, this._isFairAbstraction);
       }
       else if(type === 'simplification'){
-        definitionMap[defName].graph = Graph.Operations.simplification(graph);
-      }      
+        // simplification function is defined in 'bisimulation.js' in scripts folder
+        definitionMap[defName].graph = simplification(graph);
+      }
+      // if any other functions are required, add another else if statement to this one      
 
       extendtionNode.id = definitionMap[defName].graph.root.id;
     },
