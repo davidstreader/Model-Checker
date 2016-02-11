@@ -200,14 +200,11 @@
       <span class="spacer middle"></span>
       <paper-input id="filename" is="iron-input" label="Insert Filename Here" placeholder="untitled" bind-value="{{inputValue}}" class="middle" title="The name given to the file when it is downloaded."></paper-input>
       <paper-icon-button icon="icons:file-download" class="middle" title="Download" on-tap="downloadFile"></paper-icon-button>
-      
       <span class="flex middle"></span>
-
       <paper-checkbox id="chbx-fair-abstraction" checked="{{fairAbstraction}}" class="middle" title="Visualise abstracted automata fairly.">
         <span hidden$="{{smallScreen}}">Fair Abstraction</span>
         <span hidden$="{{!smallScreen}}">FAbs</span>
       </paper-checkbox>
-      <span class="flex middle"></span>
       <paper-icon-button icon="icons:help" class="middle" title="Help" on-tap="showHelp"></paper-icon-button>
     </paper-toolbar>
     <!-- end toolbar -->
