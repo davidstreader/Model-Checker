@@ -234,14 +234,7 @@
       //  - the to node's label
       //  - the edge's extra data (could be label, width, height, etc.)
       this.edges.forEach(function(edge) {
-        var label = edge.label;
-        if(edge.isHidden){
-          label = '𝜏';
-        }
-        if(edge.isDeadlock){
-          label = '𝛿';
-        }
-        automata.setEdge('n'+edge.from.id, 'n'+edge.to.id, { label: (label || 'ε'), lineInterpolate: 'basis' }, edge.id);
+        automata.setEdge('n'+ edge.from.id, 'n'+edge.to.id, { label: (edge.label || 'ε'), lineInterpolate: 'basis' }, edge.id);
       });
 
       // add a new group node to the svg element for the new graph
