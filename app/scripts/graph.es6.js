@@ -918,7 +918,7 @@ Graph.Edge = class {
     this._id = uid;
     this._from = from;
     this._to = to;
-    this._label = label;
+    this.label = label;
   }
 
   /**
@@ -973,6 +973,24 @@ Graph.Edge = class {
    * @returns {!string} The new label
    */
   set label(lbl) {
+    // check if this label is broadcasting
+    if(lbl[0] === '!'){
+      this._isBroadcasting = true;
+      lbl = lbl.slice(1, lbl.length);
+    }
+    else{
+      delete this._isBroadcasting;
+    }
+
+    // check if this label is listening
+    if(lbl[0] === '?'){
+      this._isListening = true;
+      lbl = lbl.slice(1, lbl.length);
+    }
+    else{
+      delete this._isListening;
+    }
+
     delete this._graph.alphabet[this._label];
     this._label = lbl + ''; // convert lbl to a string then set the label
     this._graph.alphabet[this._label] = true;
@@ -1009,7 +1027,7 @@ Graph.Edge = class {
    * @returns {boolean} - whether or not this edge is broadcasting
    */
   get isBroadcasting() {
-    return this._label[0] === '!';
+    return (this._isBroadcasting) ? true : false;
   }
 
   /**
@@ -1018,7 +1036,7 @@ Graph.Edge = class {
    * @returns {boolean} - whether or not this edge is listening
    */
   get isListening() {
-    return this._label[0] === '?';
+    return (this._isListening) ? true : false;
   }
 };
 
