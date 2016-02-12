@@ -12,7 +12,7 @@ function parallelComposition(graph1, graph2) {
   var nodes1 = graph1.nodes;
   var nodes2 = graph2.nodes;
   var graph = _combineStates(nodes1, nodes2);
-  var alphabet = graph1.alphabetUnion(graph2);
+  var alphabet = _alphabetUnion(graph1.alphabet, graph2.alphabet);
 
   // add edges
   for(var i = 0; i < nodes1.length; i++){
@@ -38,7 +38,6 @@ function parallelComposition(graph1, graph2) {
             if(coaccessible1 !== undefined && coaccessible2 !== undefined) {
               // calculate the id of the node the new edge is transitioning to
               var toId = _getId(graph, coaccessible1, coaccessible2);
-              var isHidden = graph1.isHiddenEdge(action);
               graph.addEdge(EdgeUid.next, graph.getNode(fromId), graph.getNode(toId), action);
             }
 
@@ -46,7 +45,6 @@ function parallelComposition(graph1, graph2) {
             else if(coaccessible1 !== undefined && !graph2.containsEdgeInAlphabet(action)) {
               // calculate the id of the node the new edge is transitioning to
               var toId = _getId(graph, coaccessible1, node2);
-              var isHidden = graph1.isHiddenEdge(action);
               graph.addEdge(EdgeUid.next, graph.getNode(fromId), graph.getNode(toId), action);
             }
 
@@ -54,7 +52,6 @@ function parallelComposition(graph1, graph2) {
             else if(coaccessible2 !== undefined && !graph1.containsEdgeInAlphabet(action)) {
               // calculate the id of the node the new edge is transitioning to
               var toId = _getId(graph, node1, coaccessible2);
-              var isHidden = graph2.isHiddenEdge(action);
               graph.addEdge(EdgeUid.next, graph.getNode(fromId), graph.getNode(toId), action);
             }
           }
@@ -82,14 +79,12 @@ function parallelComposition(graph1, graph2) {
       var node1 = nodes1[i];
       // determine if current node is a final node in the first graph
       var startState1 = node1._meta['startNode'] === true;
-      var terminalState1 = node1._meta['isTerminal'] === 'stop';
       var label1 = (node1.label !== '') ? node1.label : node1.id;   
       
       for(let j in nodes2){
         var node2 = nodes2[j];
         // determine if the current node is a final node in the second graph
         var startState2 = node2._meta['startNode'] === true;
-        var terminalState2 = node2._meta['isTerminal'] === 'stop';
         var label2 = (node2.label !== '') ? node2.label : node2.id;
         var node = graph.addNode(NodeUid.next, (label1 + "." + label2));
 
@@ -97,16 +92,32 @@ function parallelComposition(graph1, graph2) {
         if(startState1 && startState2){
           node.addMetaData('startNode', true);
         }
-
-        // if both states are terminal make new node terminal
-        if(terminalState1 && terminalState2){
-          node.addMetaData('isTerminal', 'stop');
-        }
       }
     }
 
-    graph.root.addMetaData('parallel', true);
     return graph;
+  }
+
+  /**
+   * Helper function for parallel composition which returns a union of the
+   * two specified sets of alphabet.
+   *
+   * @private
+   * @param {object} alphabet1 - the first alphabet
+   * @parma {object} alphabet2 - the second alphabet
+   * @returns {object} - the union of the two alphabet sets
+   */
+  function _alphabetUnion(alphabet1, alphabet2){
+    var alphabet = {};
+    for(var label in alphabet1){
+      alphabet[label] = true;
+    }
+
+    for(var label in alphabet2){
+      alphabet[label] = true;
+    }
+
+    return alphabet;
   }
 
   /**

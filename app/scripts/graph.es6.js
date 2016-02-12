@@ -80,6 +80,7 @@ class Graph {
     this._edgeCount = 0;
     this._nodeMap = {};
     this._edgeMap = {};
+    this._alphabet = {};
     this._rootId = undefined;
   }
 
@@ -202,18 +203,20 @@ class Graph {
    * @throws {Graph.Exception} uid must be unquie
    * @returns {!Graph.Edge} The edge added to the graph
    */
-  addEdge(uid, from, to, label='', isHidden = false, isDeadlock = false) {
+  addEdge(uid, from, to, label='') {
     if (this._edgeMap[uid] !== undefined) {
       throw new Graph.Exception(
         'This graph already contains a edge with id "' + uid + '".');
     }
 
-    let edge = new Graph.Edge(this, uid, from, to, label, isHidden, isDeadlock);
+    let edge = new Graph.Edge(this, uid, from, to, label);
     this._edgeMap[uid] = edge;
     this._edgeCount += 1;
 
     from._addEdgeFromMe(edge);
     to._addEdgeToMe(edge);
+
+    this._alphabet[label] = true;
 
     return edge;
   }
@@ -294,11 +297,7 @@ class Graph {
    * @returns {boolean} Whether the edge is contained in the graph's alphabet or not
    */
   containsEdgeInAlphabet(edge) {
-    var result = this.constructAlphabet()[edge];
-    if(result === true){
-      return true;
-    }
-    return false;
+    return (this._alphabet[edge]) ? true : false;
   }
 
   /**
@@ -441,36 +440,8 @@ class Graph {
     }
   }
 
-  /**
-   * Constructs and returns a set containing the alphabet for this graph.
-   * The alphabet is a collection of the actions that transition nodes from
-   * one state to another.
-   */
-  constructAlphabet() {
-    var alphabet = {};
-    for(let i in this._edgeMap){
-      var label = this._edgeMap[i].isDeadlock ? DELTA : this._edgeMap[i].label;
-      alphabet[label] = true;
-    }
-
-    return alphabet;
-  }
-
-  /**
-   *  Constructs and returns a set of the the union of the two alphabets for the specified graphs.
-   *
-   *  @param {!Graph} graph1 - First graph to get alphabet of
-   *  @param {!Graph} graph2 - Second graph to get alphabet of
-   */
-  alphabetUnion(otherGraph) {
-    var alphabet = this.constructAlphabet();
-    var temp = otherGraph.constructAlphabet();
-
-    for(let a in temp){
-      alphabet[a] = true;
-    }
-
-    return alphabet;
+  get alphabet() {
+    return this._alphabet;
   }
 
   /**
@@ -996,12 +967,15 @@ Graph.Edge = class {
   }
 
   /**
-   * Set this edge's label.
+   * Set this edge's label, removing the old label from the graph's
+   * alphabet and replacing it with the specified label.
    *
    * @returns {!string} The new label
    */
   set label(lbl) {
+    delete this._graph.alphabet[this._label];
     this._label = lbl + ''; // convert lbl to a string then set the label
+    this._graph.alphabet[this._label] = true;
     return this._label;
   }
 
@@ -1277,149 +1251,6 @@ Graph.NodeColoring = class {
    */
   static constructColor(from, to, label) {
     return {from: from, to: to, label: label};
-  }
-};
-
-/**
- * Class containing static functions that can be used to alter graphs.
- */
-Graph.Operations = class {
-
-  /**
-   * Constructs and returns a parallel composition of the two specified graphs.
-   *
-   * @class
-   * @param {!Object} graph1 - the first graph
-   * @param {!Object} graph2 - the second graph
-   * @returns - parallel composition of the two graphs
-   */
-  static parallelComposition(graph1, graph2) {
-    var nodes1 = graph1.nodes;
-    var nodes2 = graph2.nodes;
-    var graph = this._combineStates(nodes1, nodes2);
-    var alphabet = graph1.alphabetUnion(graph2);
-
-    // add edges
-    for(var i = 0; i < nodes1.length; i++){
-      var node1 = nodes1[i];
-          
-      for(var j = 0; j < nodes2.length; j++){
-        var node2 = nodes2[j];
-        var fromId = this._getId(graph, node1, node2);
-
-        for(let action in alphabet){
-
-          var c1 = node1.coaccessible(action);
-          var c2 = node2.coaccessible(action);
-
-          for(let x in c1){
-            var coaccessible1 = c1[x];
-            for(let y in c2){
-              var coaccessible2 = c2[y];
-
-              // check if an edge is needed from the current combined states
-
-              // check if the current action is performed by both the current nodes
-              if(coaccessible1 !== undefined && coaccessible2 !== undefined) {
-                // calculate the id of the node the new edge is transitioning to
-                var toId = this._getId(graph, coaccessible1, coaccessible2);
-                var isHidden = graph1.isHiddenEdge(action);
-                graph.addEdge(EdgeUid.next, graph.getNode(fromId), graph.getNode(toId), action);
-              }
-
-              // check if the current action is done by the outer node and is never performed in the second graph
-              else if(coaccessible1 !== undefined && !graph2.containsEdgeInAlphabet(action)) {
-                // calculate the id of the node the new edge is transitioning to
-                var toId = this._getId(graph, coaccessible1, node2);
-                var isHidden = graph1.isHiddenEdge(action);
-                graph.addEdge(EdgeUid.next, graph.getNode(fromId), graph.getNode(toId), action);
-              }
-
-              // check if the current action is done by the inner node and is never performed in the first graph
-              else if(coaccessible2 !== undefined && !graph1.containsEdgeInAlphabet(action)) {
-                // calculate the id of the node the new edge is transitioning to
-                var toId = this._getId(graph, node1, coaccessible2);
-                var isHidden = graph2.isHiddenEdge(action);
-                graph.addEdge(EdgeUid.next, graph.getNode(fromId), graph.getNode(toId), action);
-              }
-            }
-          }
-        }
-      }
-    }
-
-    graph.trim();
-    return graph;
-  }
-
-  /**
-   * Helper function for the parallel composition function which combines both sets of specified
-   * nodes into a single graph.
-   *
-   * @param {!Object} nodes1 - the first set of nodes
-   * @param {!Object} nodes2 - the second set of nodes
-   * @returns {!Object} - a graph containing the combined states of the two specified node sets
-   */
-  static _combineStates(nodes1, nodes2) {
-    var graph = new Graph();
-    
-    // combine states
-    for(let i in nodes1){
-      var node1 = nodes1[i];
-      // determine if current node is a final node in the first graph
-      var startState1 = node1._meta['startNode'] === true;
-      var terminalState1 = node1._meta['isTerminal'] === 'stop';
-      var label1 = (node1.label !== '') ? node1.label : node1.id;   
-      
-      for(let j in nodes2){
-        var node2 = nodes2[j];
-        // determine if the current node is a final node in the second graph
-        var startState2 = node2._meta['startNode'] === true;
-        var terminalState2 = node2._meta['isTerminal'] === 'stop';
-        var label2 = (node2.label !== '') ? node2.label : node2.id;
-        var node = graph.addNode(NodeUid.next, (label1 + "." + label2));
-
-        // if both states are a starting state make new node start state
-        if(startState1 && startState2){
-          node.addMetaData('startNode', true);
-        }
-
-        // if both states are terminal make new node terminal
-        if(terminalState1 && terminalState2){
-          node.addMetaData('isTerminal', 'stop');
-        }
-      }
-    }
-
-    graph.root.addMetaData('parallel', true);
-    return graph;
-  }
-
-  /**
-   * Helper function for the parallel composition function which returns
-   * the node id for the node matching the combined state of the two
-   * specified labels. If a state cannot be found based on these labels then
-   * undefined is returned.
-   *
-   * @private
-   * @param {!Graph} graph - the graph to search for node in
-   * @param {!string} node1 - the first node in the combined state
-   * @param {!string} node2 - the second node in the combined state
-   * @returns {!integer | undefined} the node id or undefined
-   */
-  static _getId(graph, node1, node2) {
-    var label1 = (node1.label === '') ? node1.id : node1.label;
-    var label2 = (node2.label === '') ? node2.id : node2.label;
-    var label = label1 + '.' + label2;
-    var nodes = graph.nodes;
-    for(let i in nodes){
-      var node = nodes[i];
-      if(node.label === label){
-        return node.id;
-      }
-    }
-
-    return undefined;
   }
 };
 

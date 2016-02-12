@@ -669,7 +669,7 @@
      */
     _interpretReference: function(ptNode, extendtionNode, definitionMap, defName, globalName, referenceMap, variableMap, references) {
       // if there is no record of this reference yet
-      if (referenceMap[references] === undefined || references === globalName) {
+      if (referenceMap[references] === undefined) {
         var metaData = extendtionNode.getMetaData('references');
         if(metaData === undefined){
           extendtionNode.addMetaData ('references', [references]);
@@ -844,7 +844,8 @@
     _processBisimulation: function(definitionMap, defName1, defName2) {
       var graph1 = definitionMap[defName1].graph;
       var graph2 = definitionMap[defName2].graph;
-      return Graph.Operations.isEquivalent(graph1, graph2);
+      // isEquivalent function is defined in 'bisimulation.js' in scripts folder
+      return isEquivalent([graph1, graph2]);
     },
 
     /**
