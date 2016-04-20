@@ -1,5 +1,6 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="parser.html">
+<link rel="import" href="parseTreeInterpreter.html">
 <link rel="import" href="../imports/graph.html">
 <link rel="import" href="../imports/index-iterator.html">
 <link rel="import" href="../imports/expression-interpreter.html">
@@ -33,6 +34,7 @@
         type: Object,
         value: PEG.automataParser, // created in parser.js
         readOnly: true
+<<<<<<< HEAD
       },
 
       /**
@@ -1185,32 +1187,61 @@
       var stack = this._compositeStack;
       stack.push(name);
       this._set_compositeStack(stack);
+=======
+      }
+>>>>>>> cf43b16bb2f32c9ff171d81bb75a8fd688540c42
     },
 
     /**
-     * Pops the next definition name from composite stack.
+     * Parse the code and return the automata it defines.
      *
-     * @private
-     * @returns {!string} the last definition name added to the composite stack
+     * @param {!string} code - The code to parse
+     * @param {!boolean} isFair - Determines whether fair or unfair abstraction is performed
+     * @returns {!Automaton[]} Automata
      */
-    _popFromCompositeStack: function() {
-      var stack = this._compositeStack;
-      var name = stack.pop();
-      this._set_compositeStack(stack);
-      return name;
+    parse: function(code) {
+      var pt = this._parser.parse(code);
+      var definitionsMap = interpretParseTree(pt);
+      return this._buildParsingResults(definitionsMap);
     },
 
     /**
+<<<<<<< HEAD
      * Returns the keys for all the automata defined in the definitions map.
+=======
+     * Builds an object containing the results of the parsing. This includes taking 
+     * all the automaton definitions that are defined as visible and construct an 
+     * array of automata, as well as taking all the operations parsed and constructing
+     * an array of the outcomes.
+>>>>>>> cf43b16bb2f32c9ff171d81bb75a8fd688540c42
      *
      * @private
      * @returns {!array} - an array of keys
      */
+<<<<<<< HEAD
     _getAutomataFromDefinitionsMap: function(){
       var automata = [];
       for(var key in this._definitionsMap){
         if(this._definitionsMap[key].graph !== undefined){
           automata.push(key);
+=======
+    _buildParsingResults: function(definitionsMap) {
+      var automata = [];
+      var operations = {operations: [], positions: []};
+      if(true){
+        // build automata array
+        for (var key in definitionsMap){
+          // only display automata which are defined as visible
+          if(definitionsMap[key].isVisible){
+            automata.unshift(new Automaton(key, definitionsMap[key].graph));
+          }
+        }
+
+        // if there are no operations do not print the total numbe of operations
+        if(operations.operations.length > 0){
+          var results = 'Total Operations: ' + (pass + fail) +' (Pass: ' + pass + ', Fail: ' + fail + ')';
+          operations.operations.unshift(results);
+>>>>>>> cf43b16bb2f32c9ff171d81bb75a8fd688540c42
         }
       }
 
