@@ -7,7 +7,7 @@
  * @param {object[]|undefined} hidden - a set of hidden actions
  * @param {boolean|undefined} isVisible - whether or not this automaton is visible 
  */
-function Definition(relabel, hidden, isVisible){
+function Process(relabel, hidden, isVisible){
 	// fields
 	this.graph = undefined;
 	this.label = undefined;
