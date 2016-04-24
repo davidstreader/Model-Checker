@@ -2,6 +2,9 @@
 
 var processesMap;
 
+var nodeCount = 0;
+var edgeCount = 0;
+
 function interpret(processes){
 
 	while(processes.length !== 0){
@@ -18,8 +21,12 @@ function interpret(processes){
 		}
 	}
 
+	return constructAutomataArray();
+
 	function interpretProcess(process){
 		var graph = new Graph();
+		graph.root = graph.addNode(nodeCount++);
+		graph.root.addMetaData('startNode', true);
 		processesMap[process.ident] = graph;
 		interpretNode(process.process, graph.root, process.ident);
 	}
@@ -51,11 +58,11 @@ function interpret(processes){
 	}
 
 	function interpretLocalProcess(astNode, currentNode, ident){
-
+		throw new InterpreterException('Functionality for interpreting a local process is currently not implemented');
 	}
 
 	function interpretRange(astNode, currentNode, ident){
-
+		throw new InterpreterException('Functionality for interpreting a range is currently not implemented');
 	}
 
 	function interpretSequence(astNode, currentNode, ident){
@@ -73,37 +80,62 @@ function interpret(processes){
 			// throw error
 		}
 
-		var next = processesMap[ident].addNode();
-		processesMap[ident].addEdge(currentNode, next, astNode.from.action);
+		var next = processesMap[ident].addNode(nodeCount++);
+		processesMap[ident].addEdge(edgeCount++, currentNode, next, astNode.from.action);
 		interpretNode(astNode.to, next, ident);
 	}
 
 	function interpretChoice(astNode, currentNode, ident){
-		interpretProcess(astNode.option1, currentNode, ident);
-		interpretProcess(astNode.option2, currentNode, ident);
+		interpretProcess(astNode.process1, currentNode, ident);
+		interpretProcess(astNode.process2, currentNode, ident);
 	}
 
 	function interpretFunction(astNode, currentNode, ident){
-
+		throw new InterpreterException('Functionality for interpreting functions is currently not implemented');
 	}
 
 	function interpretIdentifier(astNode, currentNode, ident){
-
+		throw new InterpreterException('Functionality for interpreting identifiers is currently not implemented');
 	}
 
 	function interpretTerminal(astNode, currentNode, ident){
 		if(astNode.terminal === 'STOP'){
-			currentNode.metaData['isTerminal'] = 'stop';
+			currentNode.addMetaData('isTerminal', 'stop');
 		}
 		else if(astNode.terminal === 'ERROR'){
-
+			throw new InterpreterException('Functionality for interpreting error terminals is currently not implemented');
 		}
 		else{
 			// throw error
 		}
 	}
 
+	function constructAutomataArray(){
+		var automata = [];
+		for(var ident in processesMap){
+			automata.push(new Automaton(ident, processesMap[ident]));
+		}
+
+		return { automata:automata };
+	}
+
 	function reset(){
 		processesMap = {};
+	}
+
+	/**
+	 * Constructs and returns a 'ParserException' based off of the
+	 * specified message. Also contains the location in the code being parsed
+	 * where the error occured.
+	 *
+	 * @param {string} message - the cause of the exception
+	 * @param {object} location - the location where the exception occured
+	 */
+	function InterpreterException(message, location){
+		this.message = message;
+		this.location = location;
+		this.toString = function(){
+			return 'ParserException: ' + message;
+		};	
 	}
 }

@@ -50,12 +50,11 @@ function compile(code){
 	//
 	var output = parse(tokens); // parse function in 'parser.js'
 	//
-	var automata = interpret(output.processes);
+	var results = interpret(output.processes);
 
-	console.log('successfully compiled!')
-	console.log(output);
+	return results;
 	}catch(error){
-		console.log('caught error :(')
-		console.log(error.toString());
+		error.type = 'error';
+		return error;
 	}
 }

@@ -43,72 +43,20 @@
       // parse the code
       setTimeout(function() {
         var compileStartTime = (new Date()).getTime();
-        var results = app.parse();
-        // check if parsing failed
-        if(results == undefined){
-          return;
+        var code = app.$.editor.getCode();
+        var results = app.$.parser.compile(code);
+
+        // check if an error was thrown by the compiler
+        if(results.type === 'error'){
+          app.$.console.log(results.toString());
         }
-
-        // interpret the results of parse
-        try{
-          results = app.interpret(results);
-        }catch(e){
-          app.$.console.clear(1);
-          app.$.console.error(e);
-          return;
+        else{
+          // otherwise render the automata
+          console.log(results.automata);
+          app.render(results.automata);
         }
-
-        // render the automata
-        app.render(results.automata.graphs);
-
-        setTimeout(function() {
-          app.$.console.log('');
-          app.$.console.log('Automata:');
-          for(var i = 0; i < results.automata.log.length; i++){
-            app.$.console.log(results.automata.log[i]);
-          }
-        }.bind(this), 0);
-
-        // print the operations
-        app.operations(results.operations);
       }.bind(this), 0); 
     }
-
-    /**
-     * Compile the code in the text editor.
-     * Create and display the new automata.
-     */
-    app.parse = function(overrideBuild) {
-      app.$.console.log('Parsing...');
-      var compileStartTime = (new Date()).getTime();
-      var code = app.$.editor.getCode();
-
-      var result;
-      try {
-        result = app.$.parser.initialParse(code);
-      } catch (e) {
-        var buildErrorMessage = function(e) {
-          return e.location !== undefined ?
-            'on line ' + e.location.start.line + ', col ' + e.location.start.column + ' - ' + e.message :
-            e.message;
-        };
-
-        var isInterpreterException = e.constructor === app.$.parser.InterpreterException;
-        var prefix = isInterpreterException ? 'Error: ' : 'Syntax error ';
-
-        var compileTime = Math.max(1, ((new Date()).getTime() - compileStartTime)) / 1000;
-        app.$.console.clear(1);
-        app.$.console.log('Compulation failed after ' + compileTime.toFixed(3) + ' seconds.');
-        app.$.console.error(prefix + buildErrorMessage(e));
-        return;
-      }
-
-      var compileTime = Math.max(1, ((new Date()).getTime() - compileStartTime)) / 1000;
-      app.$.console.clear(1);
-      app.$.console.log('Parsed successfully in ' + compileTime.toFixed(3) + ' seconds.');
-      
-      return result;
-    };
 
     app.interpret = function(results) {
       app.$.console.log('Interpreting...')

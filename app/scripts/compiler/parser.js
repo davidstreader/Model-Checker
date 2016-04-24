@@ -1076,8 +1076,14 @@ function parse(tokens){
 
 		// find which function got the furtherest
 		var pos = 0;
+		var error = errors[0];
 	 	for(var i = 1; i < errors.length; i++){
-	 		// TODO
+	 		if(errors[i].start.line > error.start.line){
+	 			error = errors[i];
+	 		}
+	 		else if(errors[i].start.line == error.start.line && errors[i].start.column > error.start.column){
+	 			error = errors[i];
+	 		}
 	 	}
 
 	 	return errors[pos];
