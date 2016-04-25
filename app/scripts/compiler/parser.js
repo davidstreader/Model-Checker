@@ -1025,6 +1025,13 @@ function parse(tokens){
 
 	}
 
+	/**
+	 * Processes and returns the specified value as an unary operation.
+	 *
+	 * @param {token} operator - the unary operator
+	 * @param {int} value - the value to treat as an unary operation
+	 * @return {int} - the unary operation
+	 */
 	function processUnaryOperator(operator, value){
 		if(operator.value === '+'){
 			return value;
@@ -1041,9 +1048,9 @@ function parse(tokens){
 	 * === HELPER FUNCTIONS ===
 	 */
 
-	 /**
-	  * Resets the parser's fields to their initial state.
-		*/
+	/**
+	 * Resets the parser's fields to their initial state.
+	 */
 	function reset(){
 		 index = 0;
 		 constantsMap = {};
@@ -1053,11 +1060,27 @@ function parse(tokens){
 		 variableCount = 0;
 	}
 
+	/**
+	 * Parses and returns the value from the speicfied token. Increments
+	 * the current position in the tokens array.
+	 *
+	 * @param {token} token - the token to parse a value from
+	 */
 	function parseValue(token){
 		index++;
 		return token.value;
 	}
 
+	/**
+	 * Attempts to successfully parse one of the parsing options specified
+	 * in the parsing functions array. Returns the ast node for the first
+	 * function that is successfully parsed. If no function is successfully
+	 * parsed then the ParserException from the function that was most successful
+	 * is thrown.
+	 *
+	 * @param {token[]} tokens - the array of tokens to parse
+	 * @param {function[]} functions - the array of parsing functions to attempt
+	 */
 	function parseMultiple(tokens, functions){
 		var errors = [];
 		var start = index;
@@ -1065,17 +1088,20 @@ function parse(tokens){
 	 	
 	 	// attempt to parse the specified functions
 	 	for(var i = 0; i < functions.length; i++){
+	 		// reset variables
 	 		index = start;
 	 		variableCount = varCount;
+	 		
 	 		try{
+	 			// attempt function
 	 			return functions[i](tokens);
 	 		}catch(error){
+	 			// save error
 	 			errors.push(error);
 	 		}
 	 	}
 
 		// find which function got the furtherest
-		var pos = 0;
 		var error = errors[0];
 	 	for(var i = 1; i < errors.length; i++){
 	 		if(errors[i].start.line > error.start.line){
@@ -1086,7 +1112,7 @@ function parse(tokens){
 	 		}
 	 	}
 
-	 	return errors[pos];
+	 	return error;
 	}
 
 	/**
