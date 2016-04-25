@@ -1,51 +1,5 @@
 'use strict';
 
-var CONST = 'const';
-var SET = 'set';
-var RANGE = 'range';
-
-var IDENTIFIER = 'identifier';
-var ACTION = 'action';
-var INTEGER = 'integer';
-var VARIABLE = 'action';
-var OPERATOR = 'operator';
-var COMMENT = 'comment';
-var SYMBOL = 'symbol';
-var OPERATOR = 'operator';
-var OPERATION = 'operation';
-var KEYWORD = 'keyword';
-var TERMINAL = 'terminal';
-var RELABEL_SYMBOL = '/';
-var RELABEL = 'relabel';
-var INCL_HIDING = '\\';
-var EXCL_HIDING = '@';
-var HIDING = 'hiding';
-
-var PROCESS = 'process';
-var ACTION_LABEL = 'action-label';
-var IF_STATEMENT = 'if-statement';
-var FUNCTION = 'function';
-var CHOICE = 'choice';
-var SEQUENCE = 'sequence';
-var IF = 'if';
-var ELSE = 'else';
-var EXPR = 'expression';
-
-var ASSIGN = '=';
-var DOT = '.';
-var COMMA = ',';
-var COLON = ':';
-var BAR = '|';
-
-var LEFT_PAREN = '(';
-var RIGHT_PAREN = ')';
-var LEFT_BRACE = '{';
-var RIGHT_BRACE = '}';
-var LEFT_SQ_BRACE = '[';
-var RIGHT_SQ_BRACE = ']';
-var RANGE_SEP = '..';
-var TRANSITION = '->';
-
 var index;
 
 var constantsMap;
@@ -63,16 +17,16 @@ function parse(tokens){
 	reset();
 	while(index < tokens.length){
 		var token = tokens[index];
-		if(token.value === CONST){
+		if(token.value === 'const'){
 			parseConstDefinition(tokens);
 		}
-		else if(token.value === RANGE){
+		else if(token.value === 'range'){
 			parseRangeDefinition(tokens);
 		}
-		else if(token.value === SET){
+		else if(token.value === 'set'){
 			parseSetDefinition(tokens);
 		}
-		else if(token.type === IDENTIFIER){
+		else if(token.type === 'identifier'){
 			parseProcessDefinition(tokens);
 		}
 		else{
@@ -83,7 +37,7 @@ function parse(tokens){
 	return { processes:processes, constantsMap:constantsMap, variableMap:variableMap };
 
 	function parseIdentifier(tokens){
-		if(tokens[index].type === IDENTIFIER){
+		if(tokens[index].type === 'identifier'){
 			return parseValue(tokens[index]);
 		}
 		var token = tokens[index];
@@ -144,31 +98,31 @@ function parse(tokens){
 		var action = '';
 
 		while(index < tokens.length){
-			if(tokens[index].type === ACTION){
+			if(tokens[index].type === 'action'){
 				action += parseValue(tokens[index]);
 			}
-			else if(tokens[index].value === LEFT_SQ_BRACE){
+			else if(tokens[index].value === '['){
 				// can either parse an expression or an action range at this point
-				gobble(tokens[index], LEFT_SQ_BRACE);
+				gobble(tokens[index], '[');
 				var functions = [parseActionRange, parseExpression];
 				action += '[' + parseMultiple(tokens, functions) + ']';
-				gobble(tokens[index], RIGHT_SQ_BRACE);
+				gobble(tokens[index], ']');
 			}
 			else{
 				var token = tokens[index];
 				throw new ParserException('Received unexpected ' + token.type + '\' ' + token.value + '\' while attempting to parse an action label');
 			}
 
-			if(tokens[index].value === DOT){
+			if(tokens[index].value === '.'){
 				action += parseValue(tokens[index]);
 			}
-			else if(tokens[index].value != LEFT_SQ_BRACE && tokens[index].type !== ACTION){
+			else if(tokens[index].value != '[' && tokens[index].type !== 'action'){
 				// cannot parse anymore action labels
 				break;
 			}
 		}
 
-		return { type:ACTION_LABEL, action: action };
+		return { type:'action-label', action: action };
 	}
 
 	/**
@@ -183,9 +137,9 @@ function parse(tokens){
 	 */
 	function parseActionRange(tokens){
 		var variable = '';
-		if(tokens[index].type === ACTION){
+		if(tokens[index].type === 'action'){
 			variable = '$' + parseValue(tokens[index]);
-			gobble(tokens[index], COLON);
+			gobble(tokens[index], ':');
 		}
 		else{
 			variable = generateVariableName();
@@ -194,7 +148,7 @@ function parse(tokens){
 		// attempt to parse identifier, range or set
 		var range;
 		// check that identifier is not part of a range definition
-		if(tokens[index].type === IDENTIFIER && tokens[index + 1].value !== '..'){
+		if(tokens[index].type === 'identifier' && tokens[index + 1].value !== '..'){
 			var ident = parseIdentifier(tokens);
 			range = constantsMap[ident];
 			
@@ -209,7 +163,7 @@ function parse(tokens){
 			}
 
 		}
-		else if(tokens[index].value !== LEFT_BRACE){
+		else if(tokens[index].value !== '{'){
 			range = parseRange(tokens);
 		}
 		else{
@@ -232,10 +186,10 @@ function parse(tokens){
 	 */
 	function parseRange(tokens){
 		var start = parseExpression(tokens);
-		gobble(tokens[index], RANGE_SEP);
+		gobble(tokens[index], '..');
 		var end = parseExpression(tokens);
 
-		return { type:RANGE, start:start, end: end};
+		return { type:'range', start:start, end: end};
 	}
 
 	/**
@@ -248,7 +202,7 @@ function parse(tokens){
 	 * @return {node} - a set node for the ast
 	 */
 	function parseSet(tokens){
-		gobble(tokens[index], LEFT_BRACE);
+		gobble(tokens[index], '{');
 		var currentRanges = actionRanges.length;
 		var set = [];
 		
@@ -266,16 +220,16 @@ function parse(tokens){
 			}
 
 			// check if there are anymore elements to parse
-			if(tokens[index].value !== COMMA){
+			if(tokens[index].value !== ','){
 				break;
 			}
 
-			gobble(tokens[index], COMMA);
+			gobble(tokens[index], ',');
 		}
 
-		gobble(tokens[index], RIGHT_BRACE);
+		gobble(tokens[index], '}');
 
-		return { type:SET, set:set };
+		return { type:'set', set:set };
 
 		function processIndexedElement(start, variableMap){
 			if(start === actionRanges.length){
@@ -331,7 +285,7 @@ function parse(tokens){
 		}
 
 		var ident = parseIdentifier(tokens);
-		gobble(tokens[index], ASSIGN);
+		gobble(tokens[index], '=');
 
 		return ident;
 	}
@@ -351,11 +305,11 @@ function parse(tokens){
 	 * @param {token[]} tokens - the array of tokens to parse
 	 */
 	function parseConstDefinition(tokens){
-		var ident = parseAssignment(tokens, CONST);
+		var ident = parseAssignment(tokens, 'const');
 		var value = parseSimpleExpression(tokens).expr;
 		checkValidIdentifier(ident);
 
-		constantsMap[ident] = { type:CONST, value:value };
+		constantsMap[ident] = { type:'const', value:value };
 	}
 
 	/**
@@ -381,7 +335,7 @@ function parse(tokens){
 		}
 		else{
 			start = parseSimpleExpression(tokens).expr;
-			gobble(tokens[index],'..');
+			gobble(tokens[index], '..');
 			end = parseSimpleExpression(tokens).expr;
 		}
 
@@ -397,7 +351,7 @@ function parse(tokens){
 	 * @param {token[]} tokens - the array of tokens to parse
 	 */
 	function parseSetDefinition(tokens){
-		var ident = parseAssignment(tokens, SET);
+		var ident = parseAssignment(tokens, 'set');
 		checkValidIdentifier(ident);
 		
 		// check if this set is referencing another set
@@ -445,33 +399,33 @@ function parse(tokens){
 
 		// check if any local processes have been defined
 		var localProcesses = [];
-		while(tokens[index].value === COMMA){
+		while(tokens[index].value === ','){
 			var localIdent = parseIdentifier(tokens[index]);
 
 			// check if any ranges have been defined
 			var ranges;
-			if(tokens[index].value === LEFT_SQ_BRACE){
+			if(tokens[index].value === '['){
 				ranges = parseRanges(tokens);
 			}
 
 			var process = parseLocalProcess(tokens);
-			var localDefinition = { type:PROCESS, ident:localIdent, ranges:ranges, process:process };
+			var localDefinition = { type:'process', ident:localIdent, ranges:ranges, process:process };
 			localProcesses.push(localDefinition);
 		}
 
 		// check if a relabelling set has been defined
 		var relabel;
-		if(tokens[index].value === RELABEL_SYMBOL){
+		if(tokens[index].value === '/'){
 			relabel = parseRelabel(tokens);
 		}
 
 		// check if a hidden set has been defined
 		var hiding;
-		if(tokens[index].value === INCL_HIDING | tokens[index] === EXCL_HIDING){
+		if(tokens[index].value === '\\' | tokens[index] === '@'){
 			hiding = parseHiding(tokens);
 		}
 
-		gobble(tokens[index], DOT);
+		gobble(tokens[index], '.');
 
 		// construct index nodes for any ranges defined
 		while(actionRanges.length !== 0){
@@ -480,7 +434,7 @@ function parse(tokens){
 			process = range;
 		}
 
-		var definition = { type:PROCESS, ident:ident, process:process, local:localProcesses };
+		var definition = { type:'process', ident:ident, process:process, local:localProcesses };
 		processes.push(definition);
 	}
 
@@ -488,17 +442,17 @@ function parse(tokens){
 	 * LOCAL_PROCESS := '(' LOCAL_PROCESS ')' | BASE_LOCAL_PROCESS | IF_STATEMENT | FUNCTION | COMPOSITE | CHOICE
 	 */
 	function parseLocalProcess(tokens){
-		if(tokens[index].value === LEFT_PAREN){
-			gobble(tokens[index], LEFT_PAREN);
+		if(tokens[index].value === '('){
+			gobble(tokens[index], '(');
 			var process = parseLocalProcess(tokens);
-			gobble(tokens[index], RIGHT_PAREN);
+			gobble(tokens[index], ')');
 
 			return process;
 		}
-		else if(tokens[index].type === TERMINAL || tokens[index].type === IDENTIFIER){
+		else if(tokens[index].type === 'terminal' || tokens[index].type === 'identifier'){
 			return parseBaseLocalProcess(tokens);
 		}
-		else if(tokens[index].value === IF){
+		else if(tokens[index].value === 'if'){
 			return parseIfStatement(tokens);
 		}
 		else if(tokens[index].value === 'abs' || tokens[index].value === 'simp'){
@@ -520,15 +474,15 @@ function parse(tokens){
 	 * @return {node} - either a terminal or identifier node for the ast
 	 */
 	function parseBaseLocalProcess(tokens){
-		if(tokens[index].type === TERMINAL){
+		if(tokens[index].type === 'terminal'){
 				var terminal = parseValue(tokens[index]);
-				return { type:TERMINAL, terminal:terminal };
+				return { type:'terminal', terminal:terminal };
 		}
-		else if(tokens[index].type === IDENTIFIER){
+		else if(tokens[index].type === 'identifier'){
 			var ident = parseIdentifier(tokens);
 
 			// check if any indices have been declared
-			if(tokens[index].value === LEFT_SQ_BRACE){
+			if(tokens[index].value === '['){
 				var indices = parseIndices(tokens);
 				ident.indices = indices;
 				return ident;
@@ -547,7 +501,7 @@ function parse(tokens){
 	 */
 	function parseTerminal(tokens){
 		// check that a terminal node is next
-		if(tokens[index].type !== TERMINAL){
+		if(tokens[index].type !== 'terminal'){
 			var token = tokens[index];
 			throw new ParserException('Expecting to parse a terminal, received the ' + token.type + '\'' + token.value + '\'');
 		}
@@ -566,19 +520,19 @@ function parse(tokens){
 	 * @return {node} - an if statement node for the ast
 	 */
 	function parseIfStatement(tokens){
-		gobble(tokens[index], IF);
+		gobble(tokens[index], 'if');
 		var guard = parseExpression(tokens);
-		gobble(tokens[index], THEN);
+		gobble(tokens[index], 'then');
 		var trueBranch = parseLocalProcess(tokens);
 
 		// check if a false branch has been specified
-		if(tokens[index].value === ELSE){
-			gobble(tokens[index], ELSE);
+		if(tokens[index].value === 'else'){
+			gobble(tokens[index], 'else');
 			var falseBranch = parseLocalProcess(tokens);
-			return { type:IF_STATEMENT, guard:guard, trueBranch:trueBranch, falseBranch:falseBranch };
+			return { type:'if-statement', guard:guard, trueBranch:trueBranch, falseBranch:falseBranch };
 		}
 
-		return { type:IF_STATEMENT, guard:guard, trueBranch:trueBranch };
+		return { type:'if-statment', guard:guard, trueBranch:trueBranch };
 	}
 
 	/**
@@ -593,11 +547,11 @@ function parse(tokens){
 	 */
 	function parseFunction(tokens){
 		var func = parseFunctionType(tokens);
-		gobble(tokens[index], LEFT_PAREN);
+		gobble(tokens[index], '(');
 		var process = parseLocalProcess(tokens);
-		gobble(tokens[index], RIGHT_PAREN);
+		gobble(tokens[index], ')');
 
-		return { type:FUNCTION, func:func, process:process };
+		return { type:'function', func:func, process:process };
 	}
 
 	/**
@@ -612,7 +566,7 @@ function parse(tokens){
 	 */
 	function parseFunctionType(tokens){
 		// check that function token is next
-		if(tokens[index].type !== FUNCTION){
+		if(tokens[index].type !== 'function'){
 			var token = tokens[index];
 			throw new ParserException('Expecting to parse a function type, received the ' + token.type + '\'' + token.value + '\'');
 		}
@@ -638,11 +592,11 @@ function parse(tokens){
 		var process1 = parseSequence(tokens);
 
 		// check if there is a choice available
-		if(tokens[index].value === BAR){
-			gobble(tokens[index], BAR);
+		if(tokens[index].value === '|'){
+			gobble(tokens[index], '|');
 			var process2 = parseSequence(tokens);
 
-			return { type:CHOICE, process1:process1, process2:process2 };
+			return { type:'choice', process1:process1, process2:process2 };
 		}
 
 		return process1;
@@ -662,14 +616,14 @@ function parse(tokens){
 		var functions = [parseActionLabel, parseLocalProcess];
 		var from = parseMultiple(tokens, functions);
 		// finish now if the parsed process is a base local process
-		if(from.type === TERMINAL || from.type === IDENTIFIER){
+		if(from.type === 'terminal' || from.type === 'identifier'){
 			return from;
 		}
 
-		gobble(tokens[index], TRANSITION);
+		gobble(tokens[index], '->');
 		var to = parseSequence(tokens);
 
-		return { type:SEQUENCE, from:from, to:to };
+		return { type:'sequence', from:from, to:to };
 	}
 
 	/**
@@ -685,14 +639,14 @@ function parse(tokens){
 	function parseIndices(tokens){
 		var indices = [];
 		do{
-			gobble(tokens[index], LEFT_SQ_BRACE);
+			gobble(tokens[index], '[');
 			var expr = parseExpression(tokens);
-			gobble(tokens[index], RIGHT_SQ_BRACE);
+			gobble(tokens[index], ']');
 
 			indices.push(expr);
-		}while(tokens[index] === LEFT_SQ_BRACE);
+		}while(tokens[index] === '[');
 
-		return { type:INDICES, indices:indices };
+		return { type:'indices', indices:indices };
 	}
 
 	/**
@@ -708,14 +662,14 @@ function parse(tokens){
 	function parseRanges(tokens){
 		var ranges = [];
 		do{
-			gobble(tokens[index], LEFT_SQ_BRACE);
+			gobble(tokens[index], '[');
 			var range = parseActionRange(tokens);
-			gobble(tokens[index], RIGHT_SQ_BRACE);
+			gobble(tokens[index], ']');
 
 			range.push(range);
-		}while(tokens[index].value === LEFT_SQ_BRACE);
+		}while(tokens[index].value === '[');
 
-		return { type:RANGES, ranges:ranges };
+		return { type:'ranges', ranges:ranges };
 	}
 
 	/**
@@ -733,8 +687,8 @@ function parse(tokens){
 	 * @return {node} - a relabel set node for the ast
 	 */
 	function parseRelabel(tokens){
-		gobble(tokens[index], RELABEL_SYMBOL);
-		gobble(tokens[index], LEFT_BRACE);
+		gobble(tokens[index], '/');
+		gobble(tokens[index], '{');
 
 		var relabels = []
 
@@ -742,16 +696,16 @@ function parse(tokens){
 			var relabel = parseRelabelElement(tokens);
 
 			// check if relabelling set is completed
-			if(tokens[index] !== COMMA){
+			if(tokens[index] !== ','){
 				break;
 			}
 
-			gobble(tokens[index], COMMA);
+			gobble(tokens[index], ',');
 		}
 
-		gobble(tokens[index], RIGHT_BRACE);
+		gobble(tokens[index], '}');
 
-		return { type:RELABEL, set:relabels };
+		return { type:'relabel', set:relabels };
 	}
 
 	/**
@@ -759,14 +713,14 @@ function parse(tokens){
 	 * specified array of tokens starting at the current index position. A
 	 * relabel set element is of the form:
 	 *
-	 *
+	 * RELABEL_ELEMENT := ACTION_LABEL '/' ACTION_LABEL
 	 *
 	 * @param {token[]} tokens - the array of tokens to parse
 	 * @return {node} - a relabel element node for the ast
 	 */
 	function parseRelabelElement(tokens){
 		var newLabel = parseActionLabel(tokens);
-		gobble(tokens[index], RELABEL_SYMBOL);
+		gobble(tokens[index], '/');
 		var oldLabel = parseActionLabel(tokens);
 
 		return { newLabel:newLabel, oldLabel:oldLabel };
@@ -784,13 +738,13 @@ function parse(tokens){
 	 */
 	function parseHiding(tokens){
 		var type;
-		if(tokens[index].value === INCL_HIDING){
+		if(tokens[index].value === '\\'){
 			type = 'incudes';
-			gobble(tokens[index], INCL_HIDING);
+			gobble(tokens[index], '\\');
 		}
-		else if(tokens[index].value === EXCL_HIDING){
+		else if(tokens[index].value === '@'){
 			type = 'excludes';
-			gobble(tokens[index], EXCL_HIDING);
+			gobble(tokens[index], '@');
 		}
 		else{
 			var token = tokens[index];
@@ -827,7 +781,7 @@ function parse(tokens){
 			expr = parseBaseExpression(tokens);
 		}
 
-		if(tokens[index].type === OPERATOR){
+		if(tokens[index].type === 'operator'){
 			expr += parseOperator(tokens);
 			expr += parseExpression(tokens);
 			
@@ -851,13 +805,13 @@ function parse(tokens){
 	 * @return {string} - the base expression
 	 */
 	function parseBaseExpression(tokens){
-			if(tokens[index].type === INTEGER){
+			if(tokens[index].type === 'integer'){
 				return parseValue(tokens[index]);
 			}
-			else if(tokens[index].type === VARIABLE){
+			else if(tokens[index].type === 'action'){
 				return '$' + parseValue(tokens[index]);
 			}
-			else if(tokens[index].type === IDENTIFIER){
+			else if(tokens[index].type === 'identifier'){
 				var ident = parseIdentifier(tokens);
 
 				// check if constant has been defined
@@ -867,16 +821,16 @@ function parse(tokens){
 				}
 
 				// check that constant is an integer
-				if(constant.type !== CONST){
+				if(constant.type !== 'const'){
 					throw new ParserException('Expecting a constant of type const, received a constant of type ' + constant.type);
 				}
 
 				return constant.value;
 			}
-			else if(tokens[index].value = LEFT_PAREN){
-				gobble(tokens[index], LEFT_PAREN);
+			else if(tokens[index].value = '('){
+				gobble(tokens[index], '(');
 				var expr = parseExpression(tokens);
-				gobble(tokens[index], RIGHT_PAREN);
+				gobble(tokens[index], ')');
 
 				return expr.expr;
 			}
@@ -907,12 +861,12 @@ function parse(tokens){
 			expr = parseBaseSimpleExpression(tokens);
 		}
 
-		if(index < tokens.length && tokens[index].type === OPERATOR){
+		if(index < tokens.length && tokens[index].type === 'operator'){
 			expr += parseSimpleOperator(tokens);
 			expr += parseSimpleExpression(tokens);
 		}
 
-		return { type:EXPR, expr:expr };
+		return { type:'expression', expr:expr };
 	}
 
 	/**
@@ -926,10 +880,10 @@ function parse(tokens){
 	 * @return {string} - the base expression
 	 */
 	function parseBaseSimpleExpression(tokens){
-		if(tokens[index].type === INTEGER){
+		if(tokens[index].type === 'integer'){
 			return parseValue(tokens[index]);
 		}
-		else if(tokens[index].type === IDENTIFIER){
+		else if(tokens[index].type === 'identifier'){
 			var ident = parseIdentifier(tokens);
 
 			// check if constant has been defined
@@ -939,16 +893,16 @@ function parse(tokens){
 			}
 
 			// check that constant is an integer
-			if(constant.type !== CONST){
+			if(constant.type !== 'const'){
 				throw new ParserException('Expecting a constant of type const, received a constant of type ' + constant.type);
 			}
 
 			return constant.value;
 		}
-		else if(tokens[index].value = LEFT_PAREN){
-			gobble(tokens[index], LEFT_PAREN);
+		else if(tokens[index].value = '('){
+			gobble(tokens[index], '(');
 			var expr = parseSimpleExpression(tokens);
-			gobble(tokens[index], RIGHT_PAREN);
+			gobble(tokens[index], ')');
 
 			return expr.expr;
 		}
@@ -970,7 +924,7 @@ function parse(tokens){
 	 */
 	function parseOperator(tokens){
 		// check that current token is an operator
-		if(tokens[index].type !== OPERATOR){
+		if(tokens[index].type !== 'operator'){
 			throw new ParserException('Expecting to parse an operator, received the ' + token.type + '\' ' + token.value + '\'');
 		}
 
@@ -1006,7 +960,7 @@ function parse(tokens){
 	 */
 	function parseSimpleOperator(tokens){
 		// check that current token is an operator
-		if(tokens[index].type !== OPERATOR){
+		if(tokens[index].type !== 'operator'){
 			var token = tokens[index];
 			throw new ParserException('Expecting to parse an operator, received the ' + token.type + '\' ' + token.value + '\'');
 		}
