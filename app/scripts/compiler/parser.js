@@ -231,6 +231,14 @@ function parse(tokens){
 
 		return { type:'set', set:set };
 
+		/**
+		 * Helper function for parsing sets which handles action ranges declared within
+		 * a set. Generates an element for each iteration of the action range and adds
+		 * it to the set.
+		 *
+		 * @param {int} start - position in action ranges array where relevant ranges start
+		 * @param {string -> int} variableMap - a mapping of variable names to values
+		 */
 		function processIndexedElement(start, variableMap){
 			if(start === actionRanges.length){
 				processVariables(variableMap);
@@ -245,6 +253,12 @@ function parse(tokens){
 
 		}
 
+		/**
+		 * Helper function for parsing action ranges within sets which replaces the variable 
+		 * references within an action label with their value from the specified variable map.
+		 *
+		 * @param {string -> int} variableMap - a mapping of variable names to values
+		 */
 		function processVariables(variableMap){
 			var regex = '[\$][v<]*[a-zA-Z0-9]*[>]*';
 			var result = action;
