@@ -53,7 +53,7 @@ function interpret(processes){
 			interpretTerminal(astNode, currentNode, ident);
 		}
 		else{
-			// throw error
+			throw new InterpreterException('Invalid type \'' + type + '\' received');
 		}
 	}
 
@@ -86,8 +86,8 @@ function interpret(processes){
 	}
 
 	function interpretChoice(astNode, currentNode, ident){
-		interpretProcess(astNode.process1, currentNode, ident);
-		interpretProcess(astNode.process2, currentNode, ident);
+		interpretNode(astNode.process1, currentNode, ident);
+		interpretNode(astNode.process2, currentNode, ident);
 	}
 
 	function interpretFunction(astNode, currentNode, ident){
