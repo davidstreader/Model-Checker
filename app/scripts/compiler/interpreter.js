@@ -49,6 +49,9 @@ function interpret(processes){
 		else if(type === 'identifier'){
 			interpretIdentifier(astNode, currentNode, ident);
 		}
+		else if(type === 'label'){
+			interpretLabel(astNode, currentNode, ident);
+		}
 		else if(type === 'terminal'){
 			interpretTerminal(astNode, currentNode, ident);
 		}
@@ -96,6 +99,16 @@ function interpret(processes){
 
 	function interpretIdentifier(astNode, currentNode, ident){
 		throw new InterpreterException('Functionality for interpreting identifiers is currently not implemented');
+	}
+
+	function interpretLabel(astNode, currentNode, ident){
+		interpretNode(astNode.process, currentNode, ident);
+		
+		// add the label associated with this node to each edge in the automaton
+		var edges = processesMap[ident].edges;
+		for(var i = 0; i < edges.length; i++){
+			edges[i].label = astNode.label.action + ':' + edges[i].label;
+		}
 	}
 
 	function interpretTerminal(astNode, currentNode, ident){
