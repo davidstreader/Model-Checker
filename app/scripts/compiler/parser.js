@@ -45,6 +45,36 @@ function parse(tokens){
 	}
 
 	/**
+	 * Generates a variable name that can be used internally in places
+	 * where the user has not defined a variable.
+	 *
+	 * @returns {string} - name of variable
+	 */
+	 function generateVariableName(){
+	 	return '$<v' + variableCount++ +'>';
+	 }
+
+	/**
+	 * Attempts to parse the specified value. Throws an error if the
+	 * specified token's value does not match the specified value.
+	 * Increments the index by one.
+	 *
+	 * @param {object} token - token to parse
+	 * @param {string} value - value to parse from token
+	 *
+	 * @throws {ParserException} - if specifed value cannot be parsed
+	 */
+	function gobble(token, value){
+		if(token.value !== value){
+			throw new ParserException(
+				'Expecting to parse \'' + value + '\' but received the ' + token.type + ' \'' + token.value + '\'.'
+			);
+		}
+
+		index++;
+	}
+
+	/**
 	 * === ACTION LABELS ===
 	 *
 	 * Functions for parsing action labels and returning a node representing the
@@ -379,7 +409,7 @@ function parse(tokens){
 	 */
 	function parseProcessDefinition(tokens){
 		var ident = parseAssignment(tokens);
-		var process = parseLocalProcess(tokens);
+		var process = parseComposite(tokens);
 
 		// check if any local processes have been defined
 		var localProcesses = [];
@@ -392,7 +422,7 @@ function parse(tokens){
 				ranges = parseRanges(tokens);
 			}
 
-			var process = parseLocalProcess(tokens);
+			var process = parseComposite(tokens);
 			var localDefinition = { type:'process', ident:localIdent, ranges:ranges, process:process };
 			localProcesses.push(localDefinition);
 		}
@@ -422,66 +452,56 @@ function parse(tokens){
 		processes.push(definition);
 	}
 
+	function parseComposite(tokens){
+		// check if a label has been defined
+		var label = parseMultiple(tokens, [parseLabel]);
+
+		var process = parseLocalProcess(tokens);
+
+		// check if a relabelling set has been defined
+		var relabel;
+		if(tokens[index].value === '/'){
+			relabel = parseRelabel(tokens);
+		}
+
+		// add label and relabel to process if necessary
+		if(label !== undefined && label.type === 'action-label'){
+			process.label = label;
+		}
+		if(relabel !== undefined){
+			process.relabel = relabel;
+		}
+
+		// check if a composition can be parsed
+		if(tokens[index].value === '||'){
+			gobble(tokens[index], '||');
+			process =  { type:'composite', process1:process, process2:parseComposite(tokens) };
+		}
+
+		return process;
+	}
+
 	/**
 	 * LOCAL_PROCESS := '(' LOCAL_PROCESS ')' | BASE_LOCAL_PROCESS | IF_STATEMENT | FUNCTION | COMPOSITE | CHOICE
 	 */
 	function parseLocalProcess(tokens){
-		var processArray = [];
-
-		// attempt to parse a label for this process
-		var label = parseLabel(tokens);
-
-		// keep attempting to parse local processes while possible
-		while(index < tokens.length){
-			var functions = [parseBaseLocalProcess, parseSequence];
-			processArray.push(parseMultiple(tokens, functions));
-
-			// check if a composite or choice has been declared
-			if(tokens[index].value === '|' || tokens[index].value === '||'){
-				processArray.push(tokens[index++]);
-			}
-			else{
-				break;
-			}
+		var process;
+		if(tokens[index].value === '('){
+			gobble(tokens[index], '(');
+			process = parseLocalProcess(tokens);
+			gobble(tokens[index], ')');
+		}
+		else{
+			var functions = [parseBaseLocalProcess, parseChoice];
+			process = parseMultiple(tokens, functions);
 		}
 
-		var process = (processArray.length === 0) ? processArray.pop() : processLocalProcessArray(processArray);
-
-		// construct label ast node if necessary
-		if(label !== undefined){
-			process = { type:'label', label:label, process:process };
+		if(tokens[index].value === '|'){
+			gobble(tokens[index], '|');
+			return { type:'choice', process1:process, process2:parseLocalProcess(tokens) };
 		}
 
 		return process;
-
-		function processLocalProcessArray(processArray){
-			var stack = [processArray[0]];
-			var i = 1;
-
-			// form all the choice ast nodes
-			while(i < processArray.length){
-				// check if current element is choice operator
-				if(processArray[i].value === '|'){
-					var process1 = stack.pop();
-					var process2 = processArray[++i];
-					stack.push({ type:'choice', process1:process1, process2:process2 });
-				}
-				// otherwise is the composition operator
-				else{
-					stack.push(processArray[++i]);
-				}
-
-				i++;
-			}
-
-			// form all the composite ast nodes
-			var composite = stack.pop();
-			while(stack.length !== 0){
-				composite = {type:'composite', process1:stack.pop(), process2:composite };
-			}
-
-			return composite;
-		}
 	}
 
 	/**
@@ -611,10 +631,6 @@ function parse(tokens){
 		return parseValue(tokens[index]);
 	}
 
-	function parseComposite(tokens){
-
-	}
-
 	/**
 	 * Attempts to parse and return a choice process from the specified
 	 * array of tokens starting at the current index position. A choice process
@@ -653,7 +669,7 @@ function parse(tokens){
 		var functions = [parseActionLabel, parseBaseLocalProcess];
 		var from = parseMultiple(tokens, functions);
 		// finish now if the parsed process is a base local process
-		if(from.type !== 'action-label'){
+		if(from.type != 'action-label'){
 			return from;
 		}
 
@@ -707,6 +723,25 @@ function parse(tokens){
 		}while(tokens[index].value === '[');
 
 		return { type:'ranges', ranges:ranges };
+	}
+
+	/**
+	 * Attempts to parse and return a label for a local process from the specified
+	 * array of tokens starting at the current index position. A label is of the form:
+	 *
+	 * LABEL = ACTION_LABEL ':'
+	 *
+	 * @param {token[]} tokens - the array of tokens to parse
+	 * @return {node} - an action label ast node
+	 */
+	function parseLabel(tokens){
+		var label = parseActionLabel(tokens);
+		// check that a colon is next
+		if(tokens[index].value !== ':'){
+			throw new ParserException('Expecting to parse \':\', recieved ' + tokens[index].value);
+		}
+
+		return label;
 	}
 
 	/**
@@ -1052,36 +1087,6 @@ function parse(tokens){
 	}
 
 	/**
-	 * Generates a variable name that can be used internally in places
-	 * where the user has not defined a variable.
-	 *
-	 * @returns {string} - name of variable
-	 */
-	 function generateVariableName(){
-	 	return '$<v' + variableCount++ +'>';
-	 }
-
-	/**
-	 * Attempts to parse the specified value. Throws an error if the
-	 * specified token's value does not match the specified value.
-	 * Increments the index by one.
-	 *
-	 * @param {object} token - token to parse
-	 * @param {string} value - value to parse from token
-	 *
-	 * @throws {ParserException} - if specifed value cannot be parsed
-	 */
-	function gobble(token, value){
-		if(token.value !== value){
-			throw new ParserException(
-				'Expecting to parse \'' + value + '\' but received the ' + token.type + ' \'' + token.value + '\'.'
-			);
-		}
-
-		index++;
-	}
-
-	/**
 	 * Parses and returns the value from the speicfied token. Increments
 	 * the current position in the tokens array.
 	 *
@@ -1090,31 +1095,6 @@ function parse(tokens){
 	function parseValue(token){
 		index++;
 		return token.value;
-	}
-
-	/**
-	 * Helper function which attempts to parse and return a label for a local
-	 * process. If the parsing is unsuccessful then the parser returns to the
-	 * state before this parsing was attempted.
-	 *
-	 * @param {token[]} tokens - the array of tokens to parse
-	 * @return {node|undefined} - ast node if successful, otherwise undefined
-	 */
-	function parseLabel(tokens){
-		var start = index;
-		var varCount = variableCount;
-		
-		// attempt to parse a label
-		try{
-			var label = parseActionLabel(tokens);
-			gobble(tokens[index], ':');
-			return label;
-		}catch(error){
-			// reset variable if error is caught
-			index = start;
-			variableCount = varCount;
-			return undefined;
-		}
 	}
 
 	/**
@@ -1131,19 +1111,23 @@ function parse(tokens){
 		var errors = [];
 		var start = index;
 		var varCount = variableCount;
+		var ranges = [];
+		for(var i = 0; i < actionRanges.length; i++){
+			ranges[i] = actionRanges[i];
+		}
 	 	
 	 	// attempt to parse the specified functions
 	 	for(var i = 0; i < functions.length; i++){
-	 		// reset variables
-	 		index = start;
-	 		variableCount = varCount;
-	 		
 	 		try{
 	 			// attempt function
 	 			return functions[i](tokens);
 	 		}catch(error){
 	 			// save error
 	 			errors.push(error);
+	 			// reset variables
+	 			index = start;
+	 			variableCount = varCount;
+	 			actionRanges = ranges;
 	 		}
 	 	}
 
