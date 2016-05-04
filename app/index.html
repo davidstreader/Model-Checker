@@ -216,10 +216,9 @@
         <console-logger id="console"></console-logger>
       </div>
       <div class="layout vertical flex">
-        <automata-walker automata="{{automata.values}}"></automata-walker>
         <div class="automata-display">
         <template is="dom-repeat" items="[[automata.values]]">
-          <automata-visualisation name="[[item.name]]" nodes="[[item.graph.nodes]]" edges="[[item.graph.edges]]"></automata-visualisation>
+          <automata-visualisation name="[[item.name]]" places="[[item.net.places]]" transitions="[[item.net.transitions]]"></automata-visualisation>
         </template>
         </div>
       </div>

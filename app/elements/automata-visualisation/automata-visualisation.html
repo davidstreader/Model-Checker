@@ -35,6 +35,15 @@
   fill: transparent;
   stroke: transparent;
 }
+.node rect.outer{
+  fill: var(--node-fill, #DADEDF);
+  stroke: var(--node-stroke, #000000);
+  stroke-width: var(--node-stroke-width, 2px);
+}
+.node rect.inner{
+  fill: transparent;
+  stroke: transparent;
+}
 .node .label {
   color: var(--node-label-color, #000000);
 }
@@ -117,30 +126,18 @@
       */
       name: {
         type: String,
-        value: 'Unnamed Automata'
+        value: 'Unnamed Petri Net'
       },
 
-      /**
-      * The array of nodes to draw.
-      * A node is a Object with a unquie 'id' field and a 'label' field
-      */
-      nodes: {
+      places: {
         type: Array,
         value: []
       },
 
-      /**
-      * The array of edges to draw.
-      * An edge is a Object that has a 'from' and a 'to' field specifying the nodes it connects.
-      * It may also have a 'label' field (if no label is given, epsilon (ε) will be used)
-      */
-      edges: {
+      transitions: {
         type: Array,
         value: []
-      },
-
-      automata: '',
-      _highlightedNodeId: Number
+      }
     },
 
     ready: function(){
@@ -151,7 +148,7 @@
       var resizeElement = this;
 
       addResizeListener(resizeElement, function() {
-        this.debounce('automata-visualisation-resizer', function() {
+        this.debounce('petrinet-visualisation-resizer', function() {
 
           var svg = d3.select(this.$.svg),
               svgGroup = svg.select('g'),
@@ -182,8 +179,8 @@
       }
 
       // Create a new directed graph
-      var automata = new dagreD3.graphlib.Graph({ multigraph: true });
-      automata.setGraph({
+      var net = new dagreD3.graphlib.Graph({ multigraph: true });
+      net.setGraph({
         // nodesep: 70,
         // ranksep: 50,
         rankdir: 'LR',
@@ -197,48 +194,58 @@
        * the root node is concider to be first node after this sorting.
        */
 
-      var actualStartNode;
-      automata.setNode('0', { label: '', shape: 'circle', class: 'start' });
+      var actualStartPlace;
+      net.setNode('0', { label: '', shape: 'circle', class: 'start' });
 
-      // Automatically label each of the nodes
-      this.nodes.forEach(function(node) {
+      // Automatically label each of the places
+      this.places.forEach(function(place) {
+        var styleClasses = 'p' + place.id;
 
-        var styleClasses = 'n' + node.id;
-
-        if(node.getMetaData ('startNode')){
-          actualStartNode = node;
+        if(place.getMetaData('startPlace')){
+          actualStartPlace = place;
         }
 
-        var terminal = node.getMetaData ('isTerminal');
+        var terminal = place.getMetaData ('isTerminal');
         if(terminal){
           styleClasses += ' terminal ' + terminal;
         }
 
-        var ref = node.getMetaData ('references');
-        if(ref && ref !== this.name){
-          styleClasses += ' reference';
-        }
+        net.setNode('p'+place.id, { label: '', shape: 'placeNode', class: styleClasses.trim() });
+      }.bind(this));
 
-        automata.setNode('n'+node.id, { label: node.label, shape: 'automatanode', class: styleClasses.trim() });
+      this.transitions.forEach(function(transition){
+        var styleClasses = 't' + transition.id;
+        net.setNode('t' + transition.id, { label: transition.label, shape: 'transitionNode', class:styleClasses.trim() });
       }.bind(this));
 
       // Default to assigning a new object as a label for each new edge.
-      automata.setDefaultEdgeLabel(function() {
+      net.setDefaultEdgeLabel(function() {
         return {};
       });
 
-      automata.setEdge('0', 'n'+actualStartNode.id, { label: '', lineInterpolate: 'basis' }, 'startEdge');
+      net.setEdge('0', 'p'+actualStartPlace.id, { label: '', lineInterpolate: 'basis' }, 'startEdge');
 
-      // Automatically set each of the edges, with:
-      //  - the from node's label
-      //  - the to node's label
-      //  - the edge's extra data (could be label, width, height, etc.)
-      this.edges.forEach(function(edge) {
-        var label = edge.label;
-        label = (edge.isBroadcasting)? '!' + label : label;
-        label = (edge.isListening) ? '?' + label : label;
-        automata.setEdge('n'+ edge.from.id, 'n'+edge.to.id, { label: (label || 'ε'), lineInterpolate: 'basis' }, edge.id);
-      });
+
+      // add edges from places to transitions
+      var edgeId = 0;
+      this.places.forEach(function(place) {
+        var transitions = place.transitionsFromMe;
+        for(var i = 0; i < transitions.length; i++){
+          var from = 'p' + place.id;
+          var to = 't' + transitions[i].id;
+          net.setEdge(from, to, { label:'', lineInterpolate:'basis' }, edgeId++);
+        }
+      }.bind(this));
+
+      // add edges from transitions to places
+      this.transitions.forEach(function(transition) {
+        var places = transition.placesFromMe;
+        for(var i = 0; i < places.length; i++){
+          var from = 't' + transition.id;
+          var to = 'p' + places[i].id;
+          net.setEdge(from, to, { label:'', lineInterpolate:'basis' }, edgeId++);
+        }
+      }.bind(this));
 
       // add a new group node to the svg element for the new graph
       var svg = d3.select(this.$.svg),
@@ -247,8 +254,8 @@
       // create the renderer
       var render = new dagreD3.render();
 
-      // define the automatanode shape
-      render.shapes().automatanode = function(parent, bbox, node) {
+      // define the placeNode shape
+      render.shapes().placeNode = function(parent, bbox, node) {
         var r = 22.5;
 
         parent.insert('circle', ':first-child')
@@ -268,9 +275,29 @@
         return shapeSvg;
       };
 
+      render.shapes().transitionNode = function(parent, bbox, node) {
+        parent.insert('rect', ':first-child')
+          .attr('width', 40)
+          .attr('height', 40)
+          .attr('class', 'inner')
+          .attr('transform', 'translate(-20,-20)');
+
+        var shapeSvg = parent.insert('rect', ':first-child')
+          .attr('width', 40)
+          .attr('height', 40)
+          .attr('class', 'outer')
+          .attr('transform', 'translate(-20,-20)');
+
+        node.intersect = function(point) {
+          return dagreD3.intersect.rect(node, point);
+        };
+
+        return shapeSvg;
+      };
+
       // run the renderer, which will draw the graph and insert it into the svgGroup.
       // Note: trying call render method with a node (first arg) that is not yet in the Dom will cause an error
-      render(svgGroup, automata);
+      render(svgGroup, net);
 
       // remove the svg element and then put it back in properly
       // (otherwise thing like shady dom css cannot be applied)
@@ -278,11 +305,11 @@
       Polymer.dom(svgParent).appendChild(Polymer.dom(svgParent).removeChild(this.$.svg));
 
       // Do zoom - center
-      this._center(svg, automata, svgGroup);
+      this._center(svg, net, svgGroup);
 
-      this.automata = automata;
+      this.automata = net;
 
-      this.fire('automata-visualisation-rendered');
+      this.fire('petrinet-visualisation-rendered');
     },
 
     _center: function(svg, automata, svgGroup) {

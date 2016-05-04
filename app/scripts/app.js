@@ -179,11 +179,11 @@
             app.$.console.clear(1);
             app.$.console.log('Rendered successfully after ' + renderTime.toFixed(3) + ' seconds.');
 
-            document.removeEventListener('automata-visualisation-rendered', renderComplete);
+            document.removeEventListener('petrinet-visualisation-rendered', renderComplete);
           }
         };
 
-        document.addEventListener('automata-visualisation-rendered', renderComplete);
+        document.addEventListener('petrinet-visualisation-rendered', renderComplete);
       }.bind(this), 0)
     };
 
