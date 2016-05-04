@@ -17,10 +17,8 @@ function interpretPetriNet(processes){
 			// throw error
 		}
 	}
-
-	console.log(processesMap);
-	return processesMap;
-	//return constructAutomataArray();
+	
+	return constructPetriNetsArray();
 
 	function interpretProcess(process){
 		var net = new PetriNet();
@@ -87,8 +85,8 @@ function interpretPetriNet(processes){
 	}
 
 	function interpretChoice(astNode, currentPlace, ident){
-		interpretNode(astNode.process1, currentNode, ident);
-		interpretNode(astNode.process2, currentNode, ident);
+		interpretNode(astNode.process1, currentPlace, ident);
+		interpretNode(astNode.process2, currentPlace, ident);
 	}
 
 	function interpretFunction(astNode, currentPlace, ident){
@@ -124,7 +122,7 @@ function interpretPetriNet(processes){
 	function constructPetriNetsArray(){
 		var nets = [];
 		for(var ident in processesMap){
-			nets.push(new PetriNet(ident, processesMap[ident]));
+			nets.push(new Net(ident, processesMap[ident]));
 		}
 
 		return { automata:nets };
