@@ -3,9 +3,8 @@
 var processesMap;
 
 function interpretPetriNet(processes){
-
+	reset();
 	while(processes.length !== 0){
-		reset();
 		var process = processes.pop();
 		if(process.type === 'process'){
 			interpretProcess(process);
