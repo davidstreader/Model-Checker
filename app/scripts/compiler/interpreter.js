@@ -6,9 +6,8 @@ var nodeCount = 0;
 var edgeCount = 0;
 
 function interpret(processes){
-
+	reset();
 	while(processes.length !== 0){
-		reset();
 		var process = processes.pop();
 		if(process.type === 'process'){
 			interpretProcess(process);
@@ -99,6 +98,9 @@ function interpret(processes){
 
 	function interpretIdentifier(astNode, currentNode, ident){
 		throw new InterpreterException('Functionality for interpreting identifiers is currently not implemented');
+
+		// check whether this is a locally or globally defined reference
+
 	}
 
 	function interpretLabel(astNode, currentNode, ident){
