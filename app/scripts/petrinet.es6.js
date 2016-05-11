@@ -74,6 +74,11 @@ class PetriNet{
 		return places;
 	}
 
+	/**
+	 * Adds a new place to this petri net and returns it.
+	 *
+	 * @return {place} - the constructed place
+	 */
 	addPlace(){
 		let id = this._nextPlaceId++;
 		let place = new PetriNet.Place(id);
@@ -107,6 +112,15 @@ class PetriNet{
 		return transitions;
 	}
 
+	/**
+	 * Adds a new transition to this petri net with the specified label from the specified place.
+	 * Constructs a new place that the new transition will transition to afterwards
+	 * and returns that new place.
+	 *
+	 * @param {string} label - label that represents the transition
+	 * @param {place} from - the place this transition will transition from
+	 * @return {place} - the place that this transition will transition to
+	 */
 	addTransition(label, from){
 		let id = this._nextTransitionId++;
 		let transition = new PetriNet.Transition(id, label);
