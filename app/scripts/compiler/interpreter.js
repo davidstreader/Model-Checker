@@ -97,10 +97,19 @@ function interpret(processes){
 	}
 
 	function interpretIdentifier(astNode, currentNode, ident){
-		throw new InterpreterException('Functionality for interpreting identifiers is currently not implemented');
+		//throw new InterpreterException('Functionality for interpreting identifiers is currently not implemented');
 
-		// check whether this is a locally or globally defined reference
+		// check whether this is a locally or globally defined reference, or a reference to the current process
+		if(astNode.ident === ident){
+			var root = processesMap[ident].root;
+			processesMap[ident].mergeNodes([root.id, currentNode.id]);
+		}
+		else if(processesMap[astNode.ident] !== undefined){
 
+		}
+		else{
+			throw new InterpreterException('The identifier \'' + astNode.ident + '\' has not been defined');
+		}
 	}
 
 	function interpretLabel(astNode, currentNode, ident){
