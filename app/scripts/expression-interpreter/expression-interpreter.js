@@ -20,45 +20,25 @@ var MULTIPLY = '*';
 var DIVIDE = '/';
 var MODULO = '%';
 
-// precedence map
+/**
+ * A mapping of operators to precedences (string -> int)
+ */
 var precedenceMap = constructPrecedenceMap();
 
-// regex for finding variables in a given input
-var regex = '[\$][v<]*[a-zA-Z0-9]*[>]*';
-
 /**
- * Interprets the specified input and returns the result.
+ * Evaluates the specified expression and returns the result.
  *
- * @param {string} input - the expression to interpret
- * @param {object} variableMap - mapping of variables to their values
- * @param {boolean} asBoolean - determines whether a boolean result is returned.
+ * @param {string} expr - the expression to evaluate
  */
-function interpretExpression(input, variableMap, asBoolean){
-	// check if 'asBoolean' has been defined
-	asBoolean = (asBoolean == undefined) ? false : asBoolean;
-	
+function evaluate(expr){
 	// if input is a number then return
 	if(typeof(input) == 'number'){
 		return input;
 	}
 
-  var match = input.match(regex);
-      
-  // continue to process while matches can still be found
-  while(match != undefined){
-  	var expression = match[0];
-    input = input.replace(expression, variableMap[expression]);
-    match = input.match(regex);
-  }
-
 	// interpret the expression
-	var result = processShuntingYardAlgorithm(input, precedenceMap);
-	if(result.includes(' ')){
-		result = processReversePolishNotation(result);
-	}
-
-	// return the result
-	return (asBoolean) ? result != 0 : result;
+	var rpn = processShuntingYardAlgorithm(expr, precedenceMap);
+	return evaluateReversePolishNotation(rpn);
 }
 
 /**

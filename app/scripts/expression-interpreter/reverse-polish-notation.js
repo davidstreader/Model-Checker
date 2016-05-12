@@ -7,7 +7,7 @@
  * @param {string} input - the expression to process
  * @returns {number} - result of process
  */
-function processReversePolishNotation(input){
+function evaluateReversePolishNotation(input){
 	var input = input.split(' ');
 	var stack = [];
 	
@@ -87,7 +87,6 @@ function processReversePolishNotation(input){
 				return (operand1 / operand2);
 			case MODULO:
 				return (operand1 % operand2);
-				return true;
 			default:
 				throw new ExpressionInterpreterException('Invalid operator \'' + operator + '\' used.');
 		}
