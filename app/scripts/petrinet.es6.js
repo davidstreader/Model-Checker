@@ -157,15 +157,45 @@ class PetriNet{
 		// merge remaining places to place
 		for(let i = 1; i < places.length; i++){
 			let current = places[i];
-			let transitions = current.transitionsToMe;
+			let transitions = current.transitionsFromMe;
 
 			for(let j = 0; j < transitions.length; j++){
-				delete transitions[j]._placesFromMe[current.id];
-				transitions[j].addPlacesFromMe(place);
+				delete transitions[j]._placesToMe[current.id];
+				transitions[j].addPlaceToMe(place);
+				place.addTransitionFromMe(transitions[j]);
 				delete this._placeMap[current.id];
 				this._placeCount--;
 			}
+
+			/*transitions = current.transitionsFromMe;
+			for(let j = 0; j < transitions.length; j++){
+				delete transitions[j]._placesFromMe[current.id];
+				transitions[j].addPlaceToMe(place);
+			}*/
 		}
+	}
+
+	addPetriNet(net, place){
+		// add nodes to this petri net
+		let places = net.places;
+		for(let i = 0; i < places.length; i++){
+			let id = this._nextPlaceId++;
+			places[i].id = id;
+			this._placeMap[id] = places[i];
+			this._placeCount++;
+		}
+
+		// add transitions to this petri net
+		let transitions = net.transitions;
+		for(let i = 0; i < transitions.length; i++){
+			let id = this._nextTransitionId++;
+			transitions[i].id = id;
+			this._transitionMap[id] = transitions[i];
+			this._transitionCount++;
+		}
+
+		// merge on the specified place
+		this.mergePlaces([place, net.root]);
 	}
 }
 
@@ -186,6 +216,15 @@ PetriNet.Place = class {
 	get id(){
 		return this._id;
 	}
+
+	/**
+	 * Sets the unique identifier of this place to the specified id
+	 *
+	 * @param {int} id - the new id value
+	 */
+	 set id(id){
+	 	this._id = id;
+	 }
 
 	/**
 	 * Returns an array of the transitions from this place.
@@ -281,13 +320,22 @@ PetriNet.Transition = class {
 	}
 
 	/**
-	 * Returns the unique identifier for this place.
+	 * Returns the unique identifier for this transition.
 	 *
 	 * @return {int} - place id
 	 */
 	get id(){
 		return this._id;
 	}
+
+	/**
+	 * Sets the unique identifier of this transition to the specified id
+	 *
+	 * @param {int} id - the new id value
+	 */
+	 set id(id){
+	 	this._id = id;
+	 }
 
 	/**
 	 * Returns the label associated with this transition.
