@@ -143,6 +143,30 @@ class PetriNet{
 	get transitionCount(){
 		return this._transitionCount;
 	}
+
+	/**
+	 * Merges the places in the specified array into a single
+	 * place. The first element of the array is the place which the
+	 * remaining elements will be merged with.
+	 *
+	 * @param {place[]} places - the array of places
+	 */
+	mergePlaces(places){
+		let place = places[0];
+
+		// merge remaining places to place
+		for(let i = 1; i < places.length; i++){
+			let current = places[i];
+			let transitions = current.transitionsToMe;
+
+			for(let j = 0; j < transitions.length; j++){
+				delete transitions[j]._placesFromMe[current.id];
+				transitions[j].addPlacesFromMe(place);
+				delete this._placeMap[current.id];
+				this._placeCount--;
+			}
+		}
+	}
 }
 
 PetriNet.Place = class {
@@ -194,7 +218,7 @@ PetriNet.Place = class {
 	 */
 	get transitionsToMe(){
 		let transitions = [];
-		for(let i in transitionsToMe){
+		for(let i in this._transitionsToMe){
 			transitions.push(this._transitionsToMe[i]);
 		}
 
