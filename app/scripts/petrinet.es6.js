@@ -130,7 +130,7 @@ class PetriNet{
 		transition.addPlaceToMe(transition);
 		let to = this.addPlace();
 		to.addTransitionToMe(transition);
-		transition.addPlacesFromMe(to);
+		transition.addPlaceFromMe(to);
 
 		return to;
 	}
@@ -163,15 +163,17 @@ class PetriNet{
 				delete transitions[j]._placesToMe[current.id];
 				transitions[j].addPlaceToMe(place);
 				place.addTransitionFromMe(transitions[j]);
-				delete this._placeMap[current.id];
-				this._placeCount--;
 			}
 
-			/*transitions = current.transitionsFromMe;
+			transitions = current.transitionsToMe;
 			for(let j = 0; j < transitions.length; j++){
 				delete transitions[j]._placesFromMe[current.id];
-				transitions[j].addPlaceToMe(place);
-			}*/
+				transitions[j].addPlaceFromMe(place);
+				place.addTransitionFromMe(transitions[j]);
+			}
+
+			delete this._placeMap[current.id];
+			this._placeCount--;
 		}
 	}
 
@@ -378,7 +380,7 @@ PetriNet.Transition = class {
 	 *
 	 * @param {place} place - the place to add
 	 */
-	addPlacesFromMe(place){
+	addPlaceFromMe(place){
 		this._placesFromMe[place.id] = place;
 	}
 
