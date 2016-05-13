@@ -67,7 +67,7 @@ function processShuntingYardAlgorithm(tokens, precedenceMap){
 			var next = operatorStack[operatorStack.length - 1];
 			
 			// break if the next operator has less precedence
-			if(precedenceMap[tokens[i]] < precedenceMap[next] || next.value === '('){
+			if(precedenceMap[tokens[i].value] < precedenceMap[next.value] || next.value === '('){
 				break;
 			}
 
