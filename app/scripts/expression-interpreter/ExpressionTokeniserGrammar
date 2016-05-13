@@ -1,0 +1,58 @@
+/**
+ * EXPRESSION TOKENISER
+ */
+
+{
+	function constructToken(type, value){
+    	return { type:type, value:value };
+    }
+}
+
+/**
+ * Attempts to parse as many tokens as possible before
+ * returning a tokens array.
+ */
+TokenArray
+ = TokenArrayElement*
+
+/**
+ * Attempts to parse and return a token
+ */
+TokenArrayElement
+ = _ value:Operand _ { return constructToken('operand', value); }
+ / _ value:Operator _ { return constructToken('operator', value); }
+ 
+/**
+ * Attempts to parse and return an integer
+ */
+Operand "integer"
+ = [0-9]+ { return parseInt(text(), 10); }
+ 
+/**
+ * Attempts to parse and return an operator
+ */
+Operator "operator"
+ = '('
+ / ')'
+ / '||'
+ / '|'
+ / '^'
+ / '&&'
+ / '&'
+ / '=='
+ / '!='
+ / '<<'
+ / '>>'
+ / '<='
+ / '<'
+ / '>='
+ / '>'
+ / '+'
+ / '-'
+ / '*'
+ / '/'
+ / '%'
+ / '!'
+ 
+/* Gobbles whitespace */
+_ 'whitespace' = [ \t\n\r]*
