@@ -32,12 +32,14 @@ var precedenceMap = constructPrecedenceMap();
  */
 function evaluate(expr){
 	// if input is a number then return
-	if(typeof(input) == 'number'){
-		return input;
+	if(typeof(expr) === 'number'){
+		return expr;
 	}
 
+	var tokens = EXPR.parse(expr);
+
 	// interpret the expression
-	var rpn = processShuntingYardAlgorithm(expr, precedenceMap);
+	var rpn = processShuntingYardAlgorithm(tokens, precedenceMap);
 	return evaluateReversePolishNotation(rpn);
 }
 

@@ -1,4 +1,4 @@
-expr.tokenise = (function() {
+EXPR = (function() {
   "use strict";
 
   /*

@@ -4,27 +4,22 @@
  * Proceesses the given in put as reverse polish notation, returning the
  * result of the process.
  *
- * @param {string} input - the expression to process
+ * @param {token[]} tokens - the expression to process
  * @returns {number} - result of process
  */
-function evaluateReversePolishNotation(input){
-	var input = input.split(' ');
+function evaluateReversePolishNotation(tokens){
 	var stack = [];
 	
-	for(var i = 0; i < input.length; i++){
-		var current = input[i];
+	for(var i = 0; i < tokens.length; i++){
 		// check if the current element is an operator
-		if(isOperator(current)){
+		if(tokens[i].type === 'operator'){
 			var operand2 = stack.pop();
 			var operand1 = stack.pop();
-			var result = processOperation(current, operand1, operand2);
+			var result = processOperation(tokens[i].value, operand1, operand2);
 			stack.push(result);
 		}
-		// check if current element is either a number or a variable
 		else{
-			// check if current is a number
-			var value = parseInt(current);
-			stack.push(value);
+			stack.push(tokens[i].value);
 		}
 	}
 
