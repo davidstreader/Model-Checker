@@ -7,8 +7,8 @@ var edgeCount = 0;
 
 function interpret(processes){
 	reset();
-	while(processes.length !== 0){
-		var process = processes.pop();
+	for(var i = 0; i < processes.length; i++){
+		var process = processes[i];
 		if(process.type === 'process'){
 			interpretProcess(process);
 		}
@@ -24,7 +24,7 @@ function interpret(processes){
 
 	function interpretProcess(process){
 		var graph = new Graph();
-		graph.root = graph.addNode(nodeCount++);
+		graph.root = graph.addNode();
 		graph.root.addMetaData('startNode', true);
 		processesMap[process.ident] = graph;
 		interpretNode(process.process, graph.root, process.ident);
@@ -82,8 +82,8 @@ function interpret(processes){
 			// throw error
 		}
 
-		var next = processesMap[ident].addNode(nodeCount++);
-		processesMap[ident].addEdge(edgeCount++, currentNode, next, astNode.from.action);
+		var next = processesMap[ident].addNode();
+		processesMap[ident].addEdge(astNode.from.action, currentNode.id, next.id);
 		interpretNode(astNode.to, next, ident);
 	}
 
@@ -105,7 +105,7 @@ function interpret(processes){
 			processesMap[ident].mergeNodes([root.id, currentNode.id]);
 		}
 		else if(processesMap[astNode.ident] !== undefined){
-
+			processesMap[ident].combineWith(processesMap[astNode.ident]);
 		}
 		else{
 			throw new InterpreterException('The identifier \'' + astNode.ident + '\' has not been defined');
@@ -132,6 +132,10 @@ function interpret(processes){
 		else{
 			// throw error
 		}
+	}
+
+	function relabelNodes(graph){
+		
 	}
 
 	function constructAutomataArray(){
