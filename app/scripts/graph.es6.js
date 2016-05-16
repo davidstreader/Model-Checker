@@ -210,6 +210,40 @@ class Graph{
     // merge on specified node
     this.mergeNodes([node, graph.root]);
   }
+
+  /**
+   * Returns a clone of this graph.
+   *
+   * @return {graph} - clone of graph
+   */
+  get clone(){
+    let clone = new Graph();
+
+    // add edges to clone
+    var edges = this.edges;
+    for(let i = 0; i < edges.length; i++){
+      var edge = new Graph.Edge(edges[i].id, edges[i].label, edges[i].from, edges[i].to);
+      clone._edgeMap[edge.id] = edge;
+      clone._edgeCount++;
+    }
+  
+    // add nodes to clone
+    var nodes = this.nodes;
+    for(var i = 0; i < nodes.length; i++){
+      var node = new Graph.Node(nodes[i].id);
+      node._metaData = nodes[i].cloneMetaData
+      clone._nodeMap[node.id] = node;
+      clone._nodeCount++;
+    
+    // add edges to and from node
+    edges = 
+    for(let j = 0; j < edges.length; j++){
+      
+    }
+    }
+
+    return clone;
+  }
 }
 
 Graph.Node = class{
@@ -368,6 +402,15 @@ Graph.Node = class{
    */
   deleteMetaData(key){
     delete this._metaData[key];
+  }
+
+  /**
+   * Returns a clone of the meta data associated with this node.
+   *
+   * @return {object} - cloned meta data
+   */
+  get cloneMetaData(){
+    return JSON.parse(JSON.stringify(this._metaData));
   }
 }
 
