@@ -76,10 +76,10 @@ class Graph{
    * Constructs and adds a new node to this graph. Returns the
    * constructed node.
    *
+   * @param {int} id - unqiue identifier for the new node
    * @return {node} - the new node
    */
-  addNode(){
-    let id = this._nextNodeId++;
+  addNode(id){
     let node = new Graph.Node(id);
     this._nodeMap[id] = node;
     this._nodeCount++;
@@ -93,6 +93,15 @@ class Graph{
    */
   get nodeCount(){
     return this._nodeCount;
+  }
+
+  /**
+   * Returns the next unique identifier for a node.
+   *
+   * @return {int} - next node id
+   */
+  get nextNodeId(){
+    return this._nextNodeId++;
   }
 
   /**
@@ -114,12 +123,13 @@ class Graph{
    * label and the node ids that the new edge transitions to and from.
    * Returns the new edge.
    *
+   * @param {int} id - the id for the new edge
    * @param {string} label - the action label the new edge represents
    * @param {int} from - the id of the node the new edge transitions from
    * @param {int} to - the id of the node the new edge transitions to
    * @return {edge} - the new edge
    */
-  addEdge(label, from, to){
+  addEdge(id, label, from, to){
     // check that ids recieved are valid
     if(this._nodeMap[from] === undefined){
       // throw error: from not defined
@@ -128,7 +138,6 @@ class Graph{
       // throw error: to not defined
     }
 
-    let id = this._nextEdgeId++;
     let edge = new Graph.Edge(id, label, from, to);
     this._nodeMap[from].addEdgeFromMe(edge);
     this._nodeMap[to].addEdgeToMe(edge);
@@ -146,6 +155,15 @@ class Graph{
     return this._edgeCount;
   }
   
+  /**
+   * Returns the next unique identifier for an edge.
+   *
+   * @return {int} - next edge id
+   */
+  get nextEdgeId(){
+    return this._nextEdgeId++;
+  }
+
   /**
    * Merges the nodes in the specified array into a single node.
    * The first element of the array is the plce which the remaining
