@@ -105,7 +105,7 @@ function interpret(processes){
 			processesMap[ident].mergeNodes([root, currentNode]);
 		}
 		else if(processesMap[astNode.ident] !== undefined){
-			processesMap[ident].addGraph(processesMap[astNode.ident], currentNode);
+			processesMap[ident].addGraph(processesMap[astNode.ident].clone, currentNode);
 		}
 		else{
 			throw new InterpreterException('The identifier \'' + astNode.ident + '\' has not been defined');
