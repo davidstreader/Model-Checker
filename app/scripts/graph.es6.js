@@ -145,6 +145,71 @@ class Graph{
   get edgeCount(){
     return this._edgeCount;
   }
+  
+  /**
+   * Merges the nodes in the specified array into a single node.
+   * The first element of the array is the plce which the remaining
+   * elements will be merged with.
+   *
+   * @param {node[]} - an array of nodes
+   */
+  mergeNodes(nodes){
+    let node = nodes[0];
+    
+    // merge remaining nodes to this to node
+    for(let i = 1; i < nodes.length; i++){
+      let current = nodes[i];
+      
+      let edges = current.edgesFromMe;
+      for(let j = 0; j < edges.length; j++){
+        edges[j].from = node.id;
+        node.addEdgeFromMe(edges[j]);
+      }
+      
+      edges = current.edgesToMe;
+      for(let j = 0; j < edges.length; j++){
+        edges[j].to = node.id;
+        node.addEdgeToMe(edges[j]);
+      }
+      
+      delete this._nodeMap[current.id];
+      this._nodeCount--;
+    }
+  }
+  
+  addGraph(graph, node){
+    // add nodes to this graph
+    let nodes = graph.nodes;
+    for(let i = 0; i < nodes.length; i++){
+      let id = this._nextNodeId++;
+      nodes[i].id = id;
+      
+      let edges = nodes[i].edgesFromMe;
+      for(let j = 0; j < edges.length; j++){
+        edges[i].from = id;
+      }
+      
+      edges = nodes[i].edgesToMe;
+      for(let j = 0; j < edges.length; j++){
+        edges[j].to = id;
+      }
+      
+      this._nodeMap[id] = nodes[i];
+      this._nodeCount++;
+    }
+    
+    // add edges to this graph
+    let edges = graph.edges;
+    for(let i = 0; i < edges.length; i++){
+      let id = this._nextEdgeId++;
+      edges[i].id = id;
+      this._edgeMap[id] = edges[i];
+      this._edgeCount++;
+    }
+    
+    // merge on specified node
+    this.mergeNodes([node, graph.root]);
+  }
 }
 
 Graph.Node = class{
@@ -323,7 +388,19 @@ Graph.Edge = class{
   get id(){
     return this._id;
   }
-
+  
+  /**
+   * Sets the unique identifier for this edge to the specified
+   * id.
+   *
+   * @param {int} id - the new id
+   * @return {int} - the new id
+   */
+  set id(id){
+    this._id = id;
+    return this._id;
+  }
+  
   /**
    * Returns the action label associated with this edge.
    *

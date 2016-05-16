@@ -102,10 +102,10 @@ function interpret(processes){
 		// check whether this is a locally or globally defined reference, or a reference to the current process
 		if(astNode.ident === ident){
 			var root = processesMap[ident].root;
-			processesMap[ident].mergeNodes([root.id, currentNode.id]);
+			processesMap[ident].mergeNodes([root, currentNode]);
 		}
 		else if(processesMap[astNode.ident] !== undefined){
-			processesMap[ident].combineWith(processesMap[astNode.ident]);
+			processesMap[ident].addGraph(processesMap[astNode.ident], currentNode);
 		}
 		else{
 			throw new InterpreterException('The identifier \'' + astNode.ident + '\' has not been defined');
