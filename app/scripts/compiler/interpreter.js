@@ -24,7 +24,7 @@ function interpret(processes){
 
 	function interpretProcess(process){
 		var graph = new Graph();
-		graph.root = graph.addNode();
+		graph.root = graph.addNode(graph.nextNodeId);
 		graph.root.addMetaData('startNode', true);
 		processesMap[process.ident] = graph;
 		interpretNode(process.process, graph.root, process.ident);
@@ -82,8 +82,9 @@ function interpret(processes){
 			// throw error
 		}
 
-		var next = processesMap[ident].addNode();
-		processesMap[ident].addEdge(astNode.from.action, currentNode.id, next.id);
+		var graph = processesMap[ident];
+		var next = graph.addNode(graph.nextNodeId);
+		processesMap[ident].addEdge(graph.nextEdgeId, astNode.from.action, currentNode.id, next.id);
 		interpretNode(astNode.to, next, ident);
 	}
 
