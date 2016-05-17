@@ -54,6 +54,21 @@ class Graph{
   }
   
   /**
+   * Sets the root's id for this graph to the specified id.
+   *
+   * @param {int} id - the new root id
+   * @param {int} - the new root id
+   */
+  set rootId(id){
+    if(this._nodeMap[id] !== undefined){
+      this._rootId = id;
+      return this._rootId;
+    }
+
+    // throw error: id is not a valid node id
+  }
+
+  /**
    * Returns an array of the nodes associated with this graph.
    * The root node is guarenteed to be the first node in the
    * the array.
@@ -73,14 +88,34 @@ class Graph{
   }
 
   /**
+   * Returns the node specified by the given unique identifier.
+   *
+   * @param {int} id - the node id
+   * @return {node} - node with the given id
+   */
+  getNode(id){
+    if(this._nodeMap[id] !== undefined){
+      return this._nodeMap[id];
+    }
+
+    // throw error: not valid id
+  }
+
+  /**
    * Constructs and adds a new node to this graph. Returns the
    * constructed node.
    *
    * @param {int} id - unqiue identifier for the new node
+   * @param {string} label - the label for the new node
+   * @param {map} metaData - meta data for new node
    * @return {node} - the new node
    */
-  addNode(id){
-    let node = new Graph.Node(id);
+  addNode(id, label, metaData){
+    // determine if paramaters have been defined
+    id = (id === undefined) ? this.nextNodeId : id;
+    label = (label === undefined) ? '' : label;
+    metaData = (metaData === undefined) ? {} : metaData;
+    let node = new Graph.Node(id, label, metaData);
     this._nodeMap[id] = node;
     this._nodeCount++;
     return node;
@@ -237,28 +272,25 @@ class Graph{
   get clone(){
     let clone = new Graph();
 
-    // add edges to clone
-    var edges = this.edges;
-    for(let i = 0; i < edges.length; i++){
-      var edge = new Graph.Edge(edges[i].id, edges[i].label, edges[i].from, edges[i].to);
-      clone._edgeMap[edge.id] = edge;
-      clone._edgeCount++;
-    }
-  
     // add nodes to clone
-    var nodes = this.nodes;
-    for(var i = 0; i < nodes.length; i++){
-      var node = new Graph.Node(nodes[i].id);
-      node._metaData = nodes[i].cloneMetaData
-      clone._nodeMap[node.id] = node;
-      clone._nodeCount++;
-    
-    // add edges to and from node
-    edges = 
-    for(let j = 0; j < edges.length; j++){
-      
+    let nodes = this.nodes;
+    for(let i = 0; i < nodes.length; i++){
+      clone.addNode(nodes[i].id, nodes[i].label, nodes[i].cloneMetaData);
     }
+
+    // add edges to clone
+    let edges = this.edges;
+    for(let i = 0; i < edges.length; i++){
+      clone.addEdge(edges[i].id, edges[i].label, edges[i].from, edges[i].to);
+
+      // add edges to the nodes they transition between
+      this.getNode(edges[i].from).addEdgeFromMe(edges[i]);
+      this.getNode(edges[i].to).addEdgeToMe(edges[i]);
     }
+
+    clone.rootId = this._rootId;
+    clone._nextNodeId = clone.nodeCount;
+    clone._nextEdgeId = clone.edgeCount;
 
     return clone;
   }
@@ -266,12 +298,12 @@ class Graph{
 
 Graph.Node = class{
 
-  constructor(id){
+  constructor(id, label, metaData){
     this._id = id;
-    this._label = '';
+    this._label = label;
     this._edgesFromMe = {};
     this._edgesToMe = {};
-    this._metaData = {};
+    this._metaData = metaData;
   }
 
   /**
