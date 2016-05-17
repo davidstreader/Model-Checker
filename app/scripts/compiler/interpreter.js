@@ -66,7 +66,14 @@ function interpret(processes, variables){
 	}
 
 	function interpretIndex(astNode, currentNode, ident){
-		throw new InterpreterException('Functionality for interpreting a range is currently not implemented');
+		var iterator = new IndexIterator(astNode.range);
+		while(iterator.hasNext){
+			var element = iterator.next;
+			variableMap[astNode.variable] = element;
+			interpretNode(astNode.process, currentNode, ident);
+		}
+
+		//throw new InterpreterException('Functionality for interpreting a range is currently not implemented');
 	}
 
 	function interpretSequence(astNode, currentNode, ident){
@@ -86,7 +93,8 @@ function interpret(processes, variables){
 
 		var graph = processesMap[ident];
 		var next = graph.addNode(graph.nextNodeId);
-		processesMap[ident].addEdge(graph.nextEdgeId, astNode.from.action, currentNode.id, next.id);
+		var action = processActionLabel(astNode.from.action);
+		processesMap[ident].addEdge(graph.nextEdgeId, action, currentNode.id, next.id);
 		interpretNode(astNode.to, next, ident);
 	}
 
@@ -142,26 +150,19 @@ function interpret(processes, variables){
 	 * specified, otherwise returns the result as a number.
 	 *
 	 * @param {string} - the expression to evaluate
-	 * @return {number|boolean} - the evaluated expression
+	 * @return {string} - the processed action label
 	 */
-	function evaluateExpression(expr, asBoolean){
+	function processActionLabel(action){
 		// replace any variables declared in the expression with its value
-		var regex = '[\$][v<]*[a-zA-Z0-9]*[>]*';
-		var match = expr.match(regex);
+		var regex = '[\$][<]*[a-zA-Z0-9]*[>]*';
+		var match = action.match(regex);
 		while(match !== null){
-			expr = expr.replace(match[0], expr);
-			match = expr.match(regex);
+			var expr = evaluate(variableMap[match[0]]);
+			action = action.replace(match[0], expr);
+			match = action.match(regex);
 		}
 
-		// process the expression
-		expr = evaluate(expr);
-
-		// return expression as a boolean if necessary
-		if(asBoolean){
-			return (expr === 0) ? false: true;
-		}
-
-		return expr;
+		return action;
 
 	}
 

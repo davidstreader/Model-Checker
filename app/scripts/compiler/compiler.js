@@ -50,7 +50,7 @@ function compile(code){
 	//
 	var output = parse(tokens); // parse function in 'parser.js'
 	//
-	var results = interpret(output.processes);
+	var results = interpret(output.processes, output.variableMap);
 
 	return results;
 	}catch(error){
