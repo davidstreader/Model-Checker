@@ -1,12 +1,11 @@
 'use strict';
 
 var processesMap;
+var variableMap;
 
-var nodeCount = 0;
-var edgeCount = 0;
-
-function interpret(processes){
+function interpret(processes, variables){
 	reset();
+	variableMap = variables;
 	for(var i = 0; i < processes.length; i++){
 		var process = processes[i];
 		if(process.type === 'process'){
@@ -36,6 +35,9 @@ function interpret(processes){
 		if(type === 'process'){
 			interpretLocalProcess(astNode, currentNode, ident);
 		}
+		else if(type === 'index'){
+			interpretIndex(astNode, currentNode, ident);
+		}
 		else if(type === 'sequence'){
 			interpretSequence(astNode, currentNode, ident);
 		}
@@ -63,7 +65,7 @@ function interpret(processes){
 		throw new InterpreterException('Functionality for interpreting a local process is currently not implemented');
 	}
 
-	function interpretRange(astNode, currentNode, ident){
+	function interpretIndex(astNode, currentNode, ident){
 		throw new InterpreterException('Functionality for interpreting a range is currently not implemented');
 	}
 
@@ -135,6 +137,34 @@ function interpret(processes){
 		}
 	}
 
+	/**
+	 * Evaluates and returns the specified expression. Returns the result as a boolean if
+	 * specified, otherwise returns the result as a number.
+	 *
+	 * @param {string} - the expression to evaluate
+	 * @return {number|boolean} - the evaluated expression
+	 */
+	function evaluateExpression(expr, asBoolean){
+		// replace any variables declared in the expression with its value
+		var regex = '[\$][v<]*[a-zA-Z0-9]*[>]*';
+		var match = expr.match(regex);
+		while(match !== null){
+			expr = expr.replace(match[0], expr);
+			match = expr.match(regex);
+		}
+
+		// process the expression
+		expr = evaluate(expr);
+
+		// return expression as a boolean if necessary
+		if(asBoolean){
+			return (expr === 0) ? false: true;
+		}
+
+		return expr;
+
+	}
+
 	function relabelNodes(graph){
 		
 	}
@@ -150,6 +180,7 @@ function interpret(processes){
 
 	function reset(){
 		processesMap = {};
+		variableMap = {};
 	}
 
 	/**
