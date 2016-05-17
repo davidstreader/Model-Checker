@@ -252,7 +252,7 @@ class Graph{
       // updated references for the current node
       let edges = nodes[i].edgesFromMe;
       for(let j = 0; j < edges.length; j++){
-        edges[i].from = n.id;
+        edges[j].from = n.id;
       }
       
       edges = nodes[i].edgesToMe;
