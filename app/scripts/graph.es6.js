@@ -230,38 +230,45 @@ class Graph{
     }
   }
   
+  /**
+   * Adds the specified graph to this graph. Merges the root node of the specified
+   * graph with the given node from this graph.
+   *
+   * @param {graph} graph - the graph to add
+   * @param {node} node - the node to merge on
+   */
   addGraph(graph, node){
+    let rootId;
     // add nodes to this graph
     let nodes = graph.nodes;
     for(let i = 0; i < nodes.length; i++){
-      let id = this._nextNodeId++;
-      nodes[i].id = id;
+      let n = this.addNode(this.nextNodeId, nodes[i].label, nodes[i].cloneMetaData);
       
+      // update root on first pass through the loop
+      if(i === 0){
+        rootId = n.id;
+      }
+
+      // updated references for the current node
       let edges = nodes[i].edgesFromMe;
       for(let j = 0; j < edges.length; j++){
-        edges[i].from = id;
+        edges[i].from = n.id;
       }
       
       edges = nodes[i].edgesToMe;
       for(let j = 0; j < edges.length; j++){
-        edges[j].to = id;
+        edges[j].to = n.id;
       }
-      
-      this._nodeMap[id] = nodes[i];
-      this._nodeCount++;
     }
     
     // add edges to this graph
     let edges = graph.edges;
     for(let i = 0; i < edges.length; i++){
-      let id = this._nextEdgeId++;
-      edges[i].id = id;
-      this._edgeMap[id] = edges[i];
-      this._edgeCount++;
+      this.addEdge(this.nextEdgeId, edges[i].label, edges[i].from, edges[i].to);
     }
     
     // merge on specified node
-    this.mergeNodes([node, graph.root]);
+    this.mergeNodes([node, this._nodeMap[rootId]]);
   }
 
   /**
