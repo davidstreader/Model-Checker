@@ -1,9 +1,11 @@
 'use strict';
 
 var processesMap;
+var variableMap;
 
-function interpretPetriNet(processes){
+function interpretPetriNet(processes, variables){
 	reset();
+	variableMap = variables;
 	while(processes.length !== 0){
 		var process = processes.pop();
 		if(process.type === 'process'){
@@ -33,6 +35,9 @@ function interpretPetriNet(processes){
 		if(type === 'process'){
 			interpretLocalProcess(astNode, currentNode, ident);
 		}
+		else if(type === 'index'){
+			interpretIndex(astNode, currentNode, ident);
+		}
 		else if(type === 'sequence'){
 			interpretSequence(astNode, currentNode, ident);
 		}
@@ -60,8 +65,15 @@ function interpretPetriNet(processes){
 		throw new InterpreterException('Functionality for interpreting a local process is currently not implemented');
 	}
 
-	function interpretRange(astNode, currentNode, ident){
-		throw new InterpreterException('Functionality for interpreting a range is currently not implemented');
+	function interpretIndex(astNode, currentNode, ident){
+		var iterator = new IndexIterator(astNode.range);
+		while(iterator.hasNext){
+			var element = iterator.next;
+			variableMap[astNode.variable] = element;
+			interpretNode(astNode.process, currentNode, ident);
+		}
+
+		//throw new InterpreterException('Functionality for interpreting a range is currently not implemented');
 	}
 
 	function interpretSequence(astNode, currentNode, ident){
@@ -79,7 +91,8 @@ function interpretPetriNet(processes){
 			// throw error
 		}
 
-		var next = processesMap[ident].addTransition(astNode.from.action, currentNode);
+		var action = processActionLabel(astNode.from.action);
+		var next = processesMap[ident].addTransition(action, currentNode);
 		interpretNode(astNode.to, next, ident);
 	}
 
@@ -116,6 +129,26 @@ function interpretPetriNet(processes){
 		else{
 			// throw error
 		}
+	}
+
+	/**
+	 * Evaluates and returns the specified expression. Returns the result as a boolean if
+	 * specified, otherwise returns the result as a number.
+	 *
+	 * @param {string} - the expression to evaluate
+	 * @return {string} - the processed action label
+	 */
+	function processActionLabel(action){
+		// replace any variables declared in the expression with its value
+		var regex = '[\$][<]*[a-zA-Z0-9]*[>]*';
+		var match = action.match(regex);
+		while(match !== null){
+			var expr = evaluate(variableMap[match[0]]);
+			action = action.replace(match[0], expr);
+			match = action.match(regex);
+		}
+
+		return action;
 	}
 
 	function constructPetriNetsArray(){
