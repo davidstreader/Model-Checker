@@ -442,11 +442,13 @@ function parse(tokens){
 		gobble(tokens[index], '.');
 
 		// construct index nodes for any ranges defined
-		while(actionRanges.length !== 0){
-			var range = actionRanges.pop();
+		/*for(var i = actionRanges.length - 1; i >= 0; i--){
+			var range = actionRanges[i];
 			range.process = process;
 			process = range;
 		}
+		// reset action ranges
+		actionRanges = [];*/
 
 		var definition = { type:'process', ident:ident, process:process, local:localProcesses };
 		processes.push(definition);
@@ -667,16 +669,21 @@ function parse(tokens){
 	 */
 	function parseSequence(tokens){
 		var functions = [parseActionLabel, parseBaseLocalProcess];
+		var fromIndex = actionRanges.length;
 		var from = parseMultiple(tokens, functions);
 		// finish now if the parsed process is a base local process
 		if(from.type != 'action-label'){
-			return from;
+			return processActionRanges(from, fromIndex);
 		}
 
 		gobble(tokens[index], '->');
+		var toIndex = actionRanges.length;
 		var to = parseSequence(tokens);
+		to = processActionRanges(to, toIndex);
 
-		return { type:'sequence', from:from, to:to };
+
+		var sequence = { type:'sequence', from:from, to:to };
+		return processActionRanges(sequence, fromIndex);
 	}
 
 	/**
@@ -1143,6 +1150,16 @@ function parse(tokens){
 	 	}
 
 	 	return error;
+	}
+
+	function processActionRanges(astNode, start){
+		while(start < actionRanges.length){
+			var range = actionRanges.pop();
+			range.process = astNode;
+			astNode = range;
+		}
+
+		return astNode;
 	}
 
 	/**
