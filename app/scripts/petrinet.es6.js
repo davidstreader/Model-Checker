@@ -74,6 +74,11 @@ class PetriNet{
 		return places;
 	}
 
+	/**
+	 * Adds a new place to this petri net and returns it.
+	 *
+	 * @return {place} - the constructed place
+	 */
 	addPlace(){
 		let id = this._nextPlaceId++;
 		let place = new PetriNet.Place(id);
@@ -107,6 +112,15 @@ class PetriNet{
 		return transitions;
 	}
 
+	/**
+	 * Adds a new transition to this petri net with the specified label from the specified place.
+	 * Constructs a new place that the new transition will transition to afterwards
+	 * and returns that new place.
+	 *
+	 * @param {string} label - label that represents the transition
+	 * @param {place} from - the place this transition will transition from
+	 * @return {place} - the place that this transition will transition to
+	 */
 	addTransition(label, from){
 		let id = this._nextTransitionId++;
 		let transition = new PetriNet.Transition(id, label);
@@ -116,7 +130,7 @@ class PetriNet{
 		transition.addPlaceToMe(transition);
 		let to = this.addPlace();
 		to.addTransitionToMe(transition);
-		transition.addPlacesFromMe(to);
+		transition.addPlaceFromMe(to);
 
 		return to;
 	}
@@ -128,6 +142,62 @@ class PetriNet{
 	 */
 	get transitionCount(){
 		return this._transitionCount;
+	}
+
+	/**
+	 * Merges the places in the specified array into a single
+	 * place. The first element of the array is the place which the
+	 * remaining elements will be merged with.
+	 *
+	 * @param {place[]} places - the array of places
+	 */
+	mergePlaces(places){
+		let place = places[0];
+
+		// merge remaining places to place
+		for(let i = 1; i < places.length; i++){
+			let current = places[i];
+			let transitions = current.transitionsFromMe;
+
+			for(let j = 0; j < transitions.length; j++){
+				delete transitions[j]._placesToMe[current.id];
+				transitions[j].addPlaceToMe(place);
+				place.addTransitionFromMe(transitions[j]);
+			}
+
+			transitions = current.transitionsToMe;
+			for(let j = 0; j < transitions.length; j++){
+				delete transitions[j]._placesFromMe[current.id];
+				transitions[j].addPlaceFromMe(place);
+				place.addTransitionFromMe(transitions[j]);
+			}
+
+			delete this._placeMap[current.id];
+			this._placeCount--;
+		}
+	}
+
+	addPetriNet(net, place){
+		// add nodes to this petri net
+		let places = net.places;
+		for(let i = 0; i < places.length; i++){
+			let id = this._nextPlaceId++;
+			places[i].id = id;
+			this._placeMap[id] = places[i];
+			this._placeCount++;
+		}
+
+		// add transitions to this petri net
+		let transitions = net.transitions;
+		for(let i = 0; i < transitions.length; i++){
+			let id = this._nextTransitionId++;
+			transitions[i].id = id;
+			this._transitionMap[id] = transitions[i];
+			this._transitionCount++;
+		}
+
+		// merge on the specified place
+		this.mergePlaces([place, net.root]);
 	}
 }
 
@@ -148,6 +218,15 @@ PetriNet.Place = class {
 	get id(){
 		return this._id;
 	}
+
+	/**
+	 * Sets the unique identifier of this place to the specified id
+	 *
+	 * @param {int} id - the new id value
+	 */
+	 set id(id){
+	 	this._id = id;
+	 }
 
 	/**
 	 * Returns an array of the transitions from this place.
@@ -180,7 +259,7 @@ PetriNet.Place = class {
 	 */
 	get transitionsToMe(){
 		let transitions = [];
-		for(let i in transitionsToMe){
+		for(let i in this._transitionsToMe){
 			transitions.push(this._transitionsToMe[i]);
 		}
 
@@ -243,13 +322,22 @@ PetriNet.Transition = class {
 	}
 
 	/**
-	 * Returns the unique identifier for this place.
+	 * Returns the unique identifier for this transition.
 	 *
 	 * @return {int} - place id
 	 */
 	get id(){
 		return this._id;
 	}
+
+	/**
+	 * Sets the unique identifier of this transition to the specified id
+	 *
+	 * @param {int} id - the new id value
+	 */
+	 set id(id){
+	 	this._id = id;
+	 }
 
 	/**
 	 * Returns the label associated with this transition.
@@ -292,7 +380,7 @@ PetriNet.Transition = class {
 	 *
 	 * @param {place} place - the place to add
 	 */
-	addPlacesFromMe(place){
+	addPlaceFromMe(place){
 		this._placesFromMe[place.id] = place;
 	}
 

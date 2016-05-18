@@ -5,9 +5,8 @@ var variableMap;
 
 function interpretPetriNet(processes, variables){
 	reset();
-	variableMap = variables;
-	while(processes.length !== 0){
-		var process = processes.pop();
+	for(var i = 0; i < processes.length; i++){
+		var process = processes[i];
 		if(process.type === 'process'){
 			interpretProcess(process);
 		}
@@ -106,7 +105,17 @@ function interpretPetriNet(processes, variables){
 	}
 
 	function interpretIdentifier(astNode, currentPlace, ident){
-		throw new InterpreterException('Functionality for interpreting identifiers is currently not implemented');
+		//throw new InterpreterException('Functionality for interpreting identifiers is currently not implemented');
+		
+		if(astNode.ident === ident){
+			processesMap[ident].mergePlaces([processesMap[ident].root, currentPlace]);
+		}
+		else if(processesMap[astNode.ident] !== undefined){
+			processesMap[ident].addPetriNet(processesMap[astNode.ident], currentPlace);
+		}
+		else{
+			throw new InterpreterException('The identifier \'' + astNode.ident + '\' has not been defined');
+		}
 	}
 
 	function interpretLabel(astNode, currentPlace, ident){
