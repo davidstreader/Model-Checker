@@ -6,9 +6,8 @@ var nodeCount = 0;
 var edgeCount = 0;
 
 function interpret(processes){
-
+	reset();
 	while(processes.length !== 0){
-		reset();
 		var process = processes.pop();
 		if(process.type === 'process'){
 			interpretProcess(process);

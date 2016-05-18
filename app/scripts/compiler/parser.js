@@ -516,11 +516,11 @@ function parse(tokens){
 	 */
 	function parseBaseLocalProcess(tokens){
 		if(tokens[index].type === 'terminal'){
-				var terminal = parseValue(tokens[index]);
-				return { type:'terminal', terminal:terminal };
+			var terminal = parseValue(tokens[index]);
+			return { type:'terminal', terminal:terminal };
 		}
 		else if(tokens[index].type === 'identifier'){
-			var ident = parseIdentifier(tokens);
+			var ident = { type:'identifier', ident:parseIdentifier(tokens) };
 
 			// check if any indices have been declared
 			if(tokens[index].value === '['){
