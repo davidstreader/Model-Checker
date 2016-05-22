@@ -127,8 +127,7 @@ SourceCharacter
 
 /* Attempts to parse and return a symbol */
 Symbol
- = '='
- / '..'
+ = '..'
  / '.'
  / ','
  / ':'
@@ -139,7 +138,6 @@ Symbol
  / '{'
  / '}'
  / '->'
- 
 
 /* Attempts to parse and return an operator */
 Operator
@@ -150,6 +148,7 @@ Operator
  / '&'
  / '=='
  / '!='
+ / '=' // should be a symbol
  / '<<'
  / '>>'
  / '<='
