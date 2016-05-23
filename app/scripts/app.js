@@ -38,128 +38,31 @@
       app.build();
     };
 
+    /**
+     * Runs the compiler converting the code in the editor into visualisable
+     * graphs and calls the renderer.
+     */
     app.build = function() {
       app.$.console.clear();
-      // parse the code
       setTimeout(function() {
         var compileStartTime = (new Date()).getTime();
         var code = app.$.editor.getCode();
-        var results = app.$.parser.compile(code);
+        var graphs = app.$.parser.compile(code);
 
         // check if an error was thrown by the compiler
-        if(results.type === 'error'){
-          app.$.console.log(results.toString());
+        if(graphs.type === 'error'){
+          app.$.console.log(graphs.toString());
         }
         else{
           // otherwise render the automata
-          console.log(results);
-          app.render(results);
+          app.render(graphs);
         }
       }.bind(this), 0); 
     }
 
-    app.interpret = function(results) {
-      app.$.console.log('Interpreting...')
-      var interpretStartTime = (new Date()).getTime();
-
-      app.previousBuild = app.currentBuild;
-      app.currentBuild = {};
-
-      // interpret definitions
-      var definitionMap = {};
-      for(var key in results.processes){
-        var code = results.processes[key].process.replace(/ /g, ' ');
-        var build = false;
-
-        // determine whether this definition needs to be reinterpreted or not
-        if(app.previousBuild[key] === undefined){
-          build = true;
-        }
-        else if(app.previousBuild[key].code !== code){
-          build = true;
-        }
-
-        // if any dependencies have been updated this definition must be updated too
-        var dependencies = results.processes[key].dependencies;
-        for(var i in dependencies){
-          try{
-            if(app.currentBuild[dependencies[i]].built === true){
-              build = true;
-              break;
-            }
-          }catch(e){
-            var interpretTime = Math.max(1, ((new Date()).getTime() - interpretStartTime)) / 1000;
-            app.$.console.clear(1);
-            app.$.console.log('Interpretation failed after ' + interpretTime.toFixed(3) + ' seconds.');
-            // error message is thrown by the interpreter
-          }
-        }
-
-        // either build the automata or use automata built in the previous build
-        if(build){
-          definitionMap = app.$.parser.parseDefinition(code, definitionMap, app.liveBuilding, app.fairAbstraction);
-          app.currentBuild[key] = { code: code, definition: definitionMap[key], built: true };
-        }
-        else{
-          app.currentBuild[key] = app.previousBuild[key];
-          app.currentBuild[key].built = false;
-          definitionMap[key] = app.previousBuild[key].definition;
-        }
-      }
-
-      var automata = [];
-      var automataLog = [];
-      for(var key in app.currentBuild){
-        // make sure no graphs over specified amount are rendered
-        var graph = app.currentBuild[key].definition.graph;
-        var text = '\n' + key + ': States - ' + graph.nodeCount + ', Transitions - ' + graph.edgeCount;
-        if(graph.nodeCount < 100){
-          graph.processStopNodes();
-          automata.unshift(new Automaton(key, graph));
-        }
-        else{
-          text += ' (Too large to render)';
-        }
-        automataLog.push(text);
-      }
-
-      // interpret operations if there are any
-      var operations = '';
-      for(var i = 0; i < results.operations.length; i++){
-        operations += results.operations[i].operation;
-      }
-      operations = app.$.parser.parseOperations(operations, definitionMap, app.fairAbstraction);
-
-      var pass = 0;
-      var fail = 0;
-      var operationsArray = [];
-      for(var i in operations){
-        var input = operations[i].input;
-        var result = operations[i].result;
-        operationsArray.push(input + ' = ' + result);
-          
-        // increment the tally of results
-        if(result){
-          pass++;
-        }
-        else{
-          fail++;
-        }
-      }
-
-      // if there are no operations do not print the total numbe of operations
-      if(operationsArray.length > 0){
-        var results = 'Total Operations: ' + (pass + fail) +' (Pass: ' + pass + ', Fail: ' + fail + ')';
-        operationsArray.unshift(results);
-      }
-
-      var interpretTime = Math.max(1, ((new Date()).getTime() - interpretStartTime)) / 1000;
-      app.$.console.clear(1);
-      app.$.console.log('Interpreted successfully after ' + interpretTime.toFixed(3) + ' seconds.');
-
-      return { automata: { graphs: automata, log: automataLog }, operations: operationsArray };
-    }
-
+    /**
+     * Renders the specified graphs to the UI.
+     */
     app.render = function(graphs) {
       app.$.console.log('Rendering...');
       var renderStartTime = (new Date()).getTime();
