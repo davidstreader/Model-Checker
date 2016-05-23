@@ -2,7 +2,6 @@
 
 function interpretAutomaton(process, processesMap, variableMap){
 	var graph = new Graph();
-	graph.type = 'automata';
 	graph.root = graph.addNode(graph.nextNodeId);
 	graph.root.addMetaData('startNode', true);
 	processesMap[process.ident] = graph;

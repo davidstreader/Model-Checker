@@ -2,7 +2,6 @@
 
 function interpretPetriNet(process, processesMap, variableMap){
 	var net = new PetriNet();
-	net.type = 'petrinet';
 	net.root = net.addPlace();
 	net.root.addMetaData('startPlace', true);
 	processesMap[process.ident] = net;

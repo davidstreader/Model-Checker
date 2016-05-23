@@ -1,6 +1,7 @@
 class Graph{
 
   constructor(id){
+    this._type = 'automata';
     this._id = id;
     this._rootId = undefined;
     this._nodeMap = {};
@@ -9,6 +10,16 @@ class Graph{
     this._edgeCount = 0;
     this._nextNodeId = 0;
     this._nextEdgeId = 0;
+  }
+
+  /**
+   * Returns the fact that this data structure represents
+   * an automaton.
+   *
+   * @return {string} - automata
+   */
+  get type(){
+    return this._type;
   }
 
   /**

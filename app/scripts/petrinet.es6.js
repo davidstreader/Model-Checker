@@ -3,6 +3,7 @@
 class PetriNet{
 
 	constructor(){
+		this._type = 'petrinet';
 		this._placeMap = {};
 		this._placeCount = 0;
 		this._transitionMap = {};
@@ -10,6 +11,15 @@ class PetriNet{
 		this._rootId = undefined;
 		this._nextPlaceId = 0;
 		this._nextTransitionId = 0;
+	}
+
+	/**
+	 * Returns the fact that this data structure represents a petri net.
+	 *
+	 * @return {string} - petrinet
+	 */
+	get type(){
+		return this._type;
 	}
 
 	/**
