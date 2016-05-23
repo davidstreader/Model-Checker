@@ -169,7 +169,7 @@
     */
     redraw: function() {
       // remove the child nodes (the old graph) from the svg element
-      for(var i=0; i<this.$.svg.childNodes.length; i++){
+      for(var i = 0; i < this.$.svg.childNodes.length; i++){
         Polymer.dom(this.$.svg).removeChild(this.$.svg.childNodes[i]);
       }
 
@@ -179,6 +179,28 @@
 
       // create the renderer
       var render = new dagreD3.render();
+
+
+      // define the automataNode shape
+      render.shapes().automataNode = function(parent, bbox, node) {
+        var r = 22.5;
+
+        parent.insert('circle', ':first-child')
+          .attr('r', r * 0.80)
+          .attr('class', 'inner')
+          .attr('transform', 'translate(0,0)');
+
+        var shapeSvg = parent.insert('circle', ':first-child')
+          .attr('r', r)
+          .attr('class', 'outer')
+          .attr('transform', 'translate(0,0)');
+
+        node.intersect = function(point) {
+          return dagreD3.intersect.circle(node, r, point);
+        };
+
+        return shapeSvg;
+      }
 
       // define the placeNode shape
       render.shapes().placeNode = function(parent, bbox, node) {
@@ -201,6 +223,7 @@
         return shapeSvg;
       };
 
+      // define the transitionNode
       render.shapes().transitionNode = function(parent, bbox, node) {
         parent.insert('rect', ':first-child')
           .attr('width', 40)
