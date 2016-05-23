@@ -50,7 +50,7 @@ function compile(code){
 	//
 	var output = parse(tokens); // parse function in 'parser.js'
 	//
-	var results = interpretPetriNet(output.processes, output.variableMap);
+	var results = interpret(output.processes, output.variableMap);
 
 	return results;
 	}catch(error){

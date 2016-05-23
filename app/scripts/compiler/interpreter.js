@@ -1,14 +1,13 @@
 'use strict';
 
 var processesMap;
+var variableMap;
 
-var nodeCount = 0;
-var edgeCount = 0;
-
-function interpret(processes){
+function interpret(processes, variables){
 	reset();
-	while(processes.length !== 0){
-		var process = processes.pop();
+	variableMap = variables;
+	for(var i = 0; i < processes.length; i++){
+		var process = processes[i];
 		if(process.type === 'process'){
 			interpretProcess(process);
 		}
@@ -24,7 +23,7 @@ function interpret(processes){
 
 	function interpretProcess(process){
 		var graph = new Graph();
-		graph.root = graph.addNode(nodeCount++);
+		graph.root = graph.addNode(graph.nextNodeId);
 		graph.root.addMetaData('startNode', true);
 		processesMap[process.ident] = graph;
 		interpretNode(process.process, graph.root, process.ident);
@@ -35,6 +34,9 @@ function interpret(processes){
 		// determine the type of node to process
 		if(type === 'process'){
 			interpretLocalProcess(astNode, currentNode, ident);
+		}
+		else if(type === 'index'){
+			interpretIndex(astNode, currentNode, ident);
 		}
 		else if(type === 'sequence'){
 			interpretSequence(astNode, currentNode, ident);
@@ -63,8 +65,15 @@ function interpret(processes){
 		throw new InterpreterException('Functionality for interpreting a local process is currently not implemented');
 	}
 
-	function interpretRange(astNode, currentNode, ident){
-		throw new InterpreterException('Functionality for interpreting a range is currently not implemented');
+	function interpretIndex(astNode, currentNode, ident){
+		var iterator = new IndexIterator(astNode.range);
+		while(iterator.hasNext){
+			var element = iterator.next;
+			variableMap[astNode.variable] = element;
+			interpretNode(astNode.process, currentNode, ident);
+		}
+
+		//throw new InterpreterException('Functionality for interpreting a range is currently not implemented');
 	}
 
 	function interpretSequence(astNode, currentNode, ident){
@@ -82,8 +91,10 @@ function interpret(processes){
 			// throw error
 		}
 
-		var next = processesMap[ident].addNode(nodeCount++);
-		processesMap[ident].addEdge(edgeCount++, currentNode, next, astNode.from.action);
+		var graph = processesMap[ident];
+		var next = graph.addNode(graph.nextNodeId);
+		var action = processActionLabel(astNode.from.action);
+		processesMap[ident].addEdge(graph.nextEdgeId, action, currentNode.id, next.id);
 		interpretNode(astNode.to, next, ident);
 	}
 
@@ -97,7 +108,19 @@ function interpret(processes){
 	}
 
 	function interpretIdentifier(astNode, currentNode, ident){
-		throw new InterpreterException('Functionality for interpreting identifiers is currently not implemented');
+		//throw new InterpreterException('Functionality for interpreting identifiers is currently not implemented');
+
+		// check whether this is a locally or globally defined reference, or a reference to the current process
+		if(astNode.ident === ident){
+			var root = processesMap[ident].root;
+			processesMap[ident].mergeNodes([root, currentNode]);
+		}
+		else if(processesMap[astNode.ident] !== undefined){
+			processesMap[ident].addGraph(processesMap[astNode.ident].clone, currentNode);
+		}
+		else{
+			throw new InterpreterException('The identifier \'' + astNode.ident + '\' has not been defined');
+		}
 	}
 
 	function interpretLabel(astNode, currentNode, ident){
@@ -122,6 +145,31 @@ function interpret(processes){
 		}
 	}
 
+	/**
+	 * Evaluates and returns the specified expression. Returns the result as a boolean if
+	 * specified, otherwise returns the result as a number.
+	 *
+	 * @param {string} - the expression to evaluate
+	 * @return {string} - the processed action label
+	 */
+	function processActionLabel(action){
+		// replace any variables declared in the expression with its value
+		var regex = '[\$][<]*[a-zA-Z0-9]*[>]*';
+		var match = action.match(regex);
+		while(match !== null){
+			var expr = evaluate(variableMap[match[0]]);
+			action = action.replace(match[0], expr);
+			match = action.match(regex);
+		}
+
+		return action;
+
+	}
+
+	function relabelNodes(graph){
+		
+	}
+
 	function constructAutomataArray(){
 		var automata = [];
 		for(var ident in processesMap){
@@ -133,6 +181,7 @@ function interpret(processes){
 
 	function reset(){
 		processesMap = {};
+		variableMap = {};
 	}
 
 	/**
