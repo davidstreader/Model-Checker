@@ -100,13 +100,24 @@ function interpretPetriNet(process, processesMap, variableMap){
 	}
 
 	function interpretIdentifier(astNode, currentPlace, ident){
-		//throw new InterpreterException('Functionality for interpreting identifiers is currently not implemented');
-		
 		if(astNode.ident === ident){
 			processesMap[ident].mergePlaces([processesMap[ident].root, currentPlace]);
+			// check that referenced process is of the same type
+			if(processesMap[ident].type === processesMap[astNode.ident].type){
+				processesMap[ident].addPetriNet(processesMap[astNode.ident], currentPlace);
+			}
+			else{
+				throw new InterpreterException('Cannot reference type \'' + processesMap[astNode.ident].type + '\' from type \'petrinet\'');
+			}
 		}
 		else if(processesMap[astNode.ident] !== undefined){
-			processesMap[ident].addPetriNet(processesMap[astNode.ident], currentPlace);
+			// check that referenced process is of the same type
+			if(processesMap[ident].type === processesMap[astNode.ident].type){
+				processesMap[ident].addPetriNet(processesMap[astNode.ident], currentPlace);
+			}
+			else{
+				throw new InterpreterException('Cannot reference type \'' + processesMap[astNode.ident].type + '\' from type \'petrinet\'');
+			}
 		}
 		else{
 			throw new InterpreterException('The identifier \'' + astNode.ident + '\' has not been defined');
@@ -184,7 +195,7 @@ function interpretPetriNet(process, processesMap, variableMap){
 		this.message = message;
 		this.location = location;
 		this.toString = function(){
-			return 'ParserException: ' + message;
+			return 'InterpreterException: ' + message;
 		};	
 	}
 }

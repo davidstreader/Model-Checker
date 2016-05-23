@@ -86,15 +86,19 @@ function interpretAutomaton(process, processesMap, variableMap){
 	}
 
 	function interpretIdentifier(astNode, currentNode, ident){
-		//throw new InterpreterException('Functionality for interpreting identifiers is currently not implemented');
-
 		// check whether this is a locally or globally defined reference, or a reference to the current process
 		if(astNode.ident === ident){
 			var root = processesMap[ident].root;
 			processesMap[ident].mergeNodes([root, currentNode]);
 		}
 		else if(processesMap[astNode.ident] !== undefined){
-			processesMap[ident].addGraph(processesMap[astNode.ident].clone, currentNode);
+			// check that referenced process is of the same type
+			if(processesMap[ident].type === processesMap[astNode.ident].type){
+				processesMap[ident].addGraph(processesMap[astNode.ident].clone, currentNode);
+			}
+			else{
+				throw new InterpreterException('Cannot reference type \'' + processesMap[astNode.ident].type + '\' from type \'automata\'');
+			}
 		}
 		else{
 			throw new InterpreterException('The identifier \'' + astNode.ident + '\' has not been defined');
@@ -165,7 +169,7 @@ function interpretAutomaton(process, processesMap, variableMap){
 		this.message = message;
 		this.location = location;
 		this.toString = function(){
-			return 'ParserException: ' + message;
+			return 'InterpreterException: ' + message;
 		};	
 	}
 }
