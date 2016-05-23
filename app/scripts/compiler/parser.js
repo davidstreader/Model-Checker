@@ -17,7 +17,13 @@ function parse(tokens){
 	reset();
 	while(index < tokens.length){
 		var token = tokens[index];
-		if(token.value === 'const'){
+		if(token.value === 'automata'){
+			parseProcessDefinition(tokens);
+		}
+		else if(token.value === 'petrinet'){
+			parseProcessDefinition(tokens);
+		}
+		else if(token.value === 'const'){
 			parseConstDefinition(tokens);
 		}
 		else if(token.value === 'range'){
@@ -26,11 +32,8 @@ function parse(tokens){
 		else if(token.value === 'set'){
 			parseSetDefinition(tokens);
 		}
-		else if(token.type === 'identifier'){
-			parseProcessDefinition(tokens);
-		}
 		else{
-			throw new ParserException('Expecting to parse a either a constant or process definition, received the ' + token.type + '\' ' + token.value + '\'');
+			throw new ParserException('Expecting to parse a either a process definition or a constant, received the ' + token.type + '\' ' + token.value + '\'');
 		}
 	}
 
@@ -403,12 +406,14 @@ function parse(tokens){
 	 * starting at the current index position. A process definition is of the
 	 * form:
 	 *
-	 * PROCESS_DEFINITION := IDENTIFIER '=' LOCAL_PROCESS (',' LOCAL_PROCESS_DEFINITION)* [RELABEL] [HIDING] '.'
+	 * PROCESS_DEFINITION := PROCESS_TYPE IDENTIFIER '=' LOCAL_PROCESS (',' LOCAL_PROCESS_DEFINITION)* [RELABEL] [HIDING] '.'
 	 *
 	 * @param {token[]} tokens - the array of tokens to parse
 	 */
 	function parseProcessDefinition(tokens){
-		var ident = parseAssignment(tokens);
+		var processType = parseProcessType(tokens);
+		var ident = parseIdentifier(tokens);
+		gobble(tokens[index], '=');
 		var process = parseComposite(tokens);
 
 		// check if any local processes have been defined
@@ -441,17 +446,28 @@ function parse(tokens){
 
 		gobble(tokens[index], '.');
 
-		// construct index nodes for any ranges defined
-		/*for(var i = actionRanges.length - 1; i >= 0; i--){
-			var range = actionRanges[i];
-			range.process = process;
-			process = range;
-		}
-		// reset action ranges
-		actionRanges = [];*/
-
-		var definition = { type:'process', ident:ident, process:process, local:localProcesses };
+		var definition = { type:'process', processType:processType, ident:ident, process:process, local:localProcesses };
 		processes.push(definition);
+	}
+
+	/**
+	 * Attempts to parse and return a process type from the specified array of tokens
+	 * starting at the index position. A process type is of the form:
+	 *
+	 * PROCESS_TYPE := 'automata' | 'petrinet'
+	 */
+	function parseProcessType(tokens){
+		if(tokens[index].value === 'automata'){
+			return parseValue(tokens[index]);
+		}
+		else if(tokens[index].value === 'petrinet'){
+			return parseValue(tokens[index]);
+		}
+		else{
+			var type = tokens[index].type;
+			var value = tokens[index.value];
+			throw new ParserException('Expecting to parse a process type, received the ' + type + ' \'' + value + '\'');
+		}
 	}
 
 	function parseComposite(tokens){

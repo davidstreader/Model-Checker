@@ -8,7 +8,7 @@ function interpret(processes, variables){
 	variableMap = variables;
 
 	for(var i = 0; i < processes.length; i++){
-		var type = processes[i].type;
+		var type = processes[i].processType;
 		if(type === 'automata'){
 			interpretAutomaton(processes[i], processesMap, variableMap);
 		}
