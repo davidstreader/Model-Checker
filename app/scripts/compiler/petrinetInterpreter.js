@@ -22,6 +22,7 @@ function interpretPetriNet(processes, variables){
 
 	function interpretProcess(process){
 		var net = new PetriNet();
+		net.type = 'petrinet';
 		net.root = net.addPlace();
 		net.root.addMetaData('startPlace', true);
 		processesMap[process.ident] = net;
@@ -42,6 +43,9 @@ function interpretPetriNet(processes, variables){
 		}
 		else if(type === 'choice'){
 			interpretChoice(astNode, currentNode, ident);
+		}
+		else if(type === 'if-statement'){
+			interpretIfStatement(astNode, currentNode, ident);
 		}
 		else if(type === 'function'){
 			interpretFunction(astNode, currentNode, ident);
@@ -98,6 +102,19 @@ function interpretPetriNet(processes, variables){
 	function interpretChoice(astNode, currentPlace, ident){
 		interpretNode(astNode.process1, currentPlace, ident);
 		interpretNode(astNode.process2, currentPlace, ident);
+	}
+
+	function interpretIfStatement(astNode, currentPlace, ident){
+		var guard = processGuardExpression(astNode.guard);
+		if(guard){
+			interpretNode(astNode.trueBranch, currentPlace, ident);
+		}
+		else if(astNode.falseBranch !== undefined){
+			interpretNode(astNode.falseBranch, currentPlace, ident);
+		}
+		else{
+			currentPlace.addMetaData('isTerminal', 'stop');
+		}
 	}
 
 	function interpretFunction(astNode, currentPlace, ident){
@@ -158,6 +175,19 @@ function interpretPetriNet(processes, variables){
 		}
 
 		return action;
+	}
+
+	function processGuardExpression(expr){
+		// replace any variables declared in the expression with its value
+		var regex = '[\$][<]*[a-zA-Z0-9]*[>]*';
+		var match = expr.match(regex);
+		while(match !== null){
+			expr = expr.replace(match[0], variableMap[match[0]]);
+			match = expr.match(regex);
+		}
+
+		expr = evaluate(expr);
+		return (expr === 0) ? false : true;
 	}
 
 	function constructPetriNetsArray(){
