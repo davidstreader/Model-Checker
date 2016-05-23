@@ -1218,7 +1218,7 @@ lexer = (function() {
 
         
         /* Keywords found in the modelling grammar */
-        var KEYWORDS = ['const', 'range', 'set', 'if', 'then', 'else', 'when', 'forall'];
+        var KEYWORDS = ['automata', 'petrinet', 'const', 'range', 'set', 'if', 'then', 'else', 'when', 'forall'];
         
         /* Function processes that can be declared in the modelling grammar */
         var FUNCTIONS = ['abs', 'simp'];
