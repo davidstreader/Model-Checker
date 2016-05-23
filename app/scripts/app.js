@@ -52,8 +52,8 @@
         }
         else{
           // otherwise render the automata
-          console.log(results.automata);
-          app.render(results.automata);
+          console.log(results);
+          app.render(results);
         }
       }.bind(this), 0); 
     }
@@ -160,14 +160,14 @@
       return { automata: { graphs: automata, log: automataLog }, operations: operationsArray };
     }
 
-    app.render = function(automata) {
+    app.render = function(graphs) {
       app.$.console.log('Rendering...');
       var renderStartTime = (new Date()).getTime();
       // Can't simply assign app.automata.values to the new array as data bindings will not update.
       // Creating a new automata object then setting the its values slightly later will work (for some reason).
       app.automata = {};
       setTimeout(function() {
-        app.set('automata.values', automata);
+        app.set('automata.values', graphs);
         
         // listen for each rendered event.
         // once all automata have been rendered, log the results and stop listening.
@@ -179,11 +179,11 @@
             app.$.console.clear(1);
             app.$.console.log('Rendered successfully after ' + renderTime.toFixed(3) + ' seconds.');
 
-            document.removeEventListener('petrinet-visualisation-rendered', renderComplete);
+            document.removeEventListener('process-visualisation-rendered', renderComplete);
           }
         };
 
-        document.addEventListener('petrinet-visualisation-rendered', renderComplete);
+        document.addEventListener('process-visualisation-rendered', renderComplete);
       }.bind(this), 0)
     };
 

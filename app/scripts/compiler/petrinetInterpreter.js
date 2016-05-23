@@ -18,7 +18,7 @@ function interpretPetriNet(processes, variables){
 		}
 	}
 	
-	return constructPetriNetsArray();
+	return processesMap;
 
 	function interpretProcess(process){
 		var net = new PetriNet();

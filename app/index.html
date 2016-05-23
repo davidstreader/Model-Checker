@@ -70,11 +70,11 @@
   #console {
     height: 150px;
   }
-  .petrinet-display {
+  .process-display {
     position: relative;
     overflow: auto;    
   }
-  petrinet-visualisation {
+  process-visualisation {
     position: relative;
     height: 250px;
     margin-top: 2px;
@@ -216,9 +216,9 @@
         <console-logger id="console"></console-logger>
       </div>
       <div class="layout vertical flex">
-        <div class="petrinet-display">
+        <div class="process-display">
         <template is="dom-repeat" items="[[automata.values]]">
-          <petrinet-visualisation name="[[item.name]]" places="[[item.net.places]]" transitions="[[item.net.transitions]]"></petrinet-visualisation>
+          <process-visualisation name="[[item.name]]" graph="[[item.graph]]"></process-visualisation>
         </template>
         </div>
       </div>
