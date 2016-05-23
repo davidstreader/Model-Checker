@@ -13,7 +13,7 @@ function constructGraphs(processesMap){
 		var process = processesMap[ident];
 		var graph;
 		if(process.type === 'automata'){
-			// TODO
+			graph = automataConstructor(process);
 		}
 		else if(process.type === 'petrinet'){
 			graph = petriNetConstructor(process);		
@@ -27,6 +27,53 @@ function constructGraphs(processesMap){
 
 	return processes;
 
+	function automataConstructor(process){
+		// construct a graph to represent automata
+		var graph = initialiseGraph();
+
+		// set the default to assigning a new object as a label for each new edge
+		graph.setDefaultEdgeLabel( function(){
+			return {};
+		});
+
+		// add nodes in automaton to the graph
+		var startNode;
+		var nodes = process.nodes;
+		for(var i = 0; i < nodes.length; i++){
+			var styleClasses = 'n' + nodes[i].id;
+
+			// check if current node is the root node
+			if(nodes[i].getMetaData('startNode')){
+				startNode = nodes[i];
+			}
+
+			// check if this node is a terminal
+			var terminal = nodes[i].getMetaData('isTerminal');
+			if(terminal !== undefined){
+				styleClasses += ' terminal ' + terminal;
+			}
+
+			// add node to graph
+			graph.setNode('n' + nodes[i].id, { label:'', shape:'automataNode', class:styleClasses.trim() });
+		}
+
+		// setup pointer to the start node
+		graph.setNode('0', { label:'', shape:'circle', class:'start' });
+		graph.setEdge('0', 'n' + startNode.id, {label:'', lineInterpolate:'basis' }, 'startEdge');
+
+		// add the edges between the nodes in the automaton to the graph
+		var edges = process.edges;
+		for(var i = 0; i < edges.length; i++){
+			var label = edges[i].label;
+			var from = 'n' + edges[i].from;
+			var to = 'n' + edges[i].to;
+			graph.setEdge(from, to, { label:label, lineInterpolate:'basis' }, edges[i].id);
+		}
+
+		// return contructed graph
+		return graph;
+	}
+
 	/**
 	 * Constructs and returns a graphlib graph representing the specified
 	 * process. This graph can be used to visualise the process through dagreD3.
@@ -36,17 +83,7 @@ function constructGraphs(processesMap){
 	 */
 	function petriNetConstructor(process){
 		// construct a graph to represet petri net
-		var graph = new dagreD3.graphlib.Graph({ multigraph: true });
-		graph.setGraph({
-			rankdir: 'LR',
-			marginx: 0,
-			marginy: 0
-		});
-
-		// set the default to assigning a new object as a label for each new edge
-		graph.setDefaultEdgeLabel( function(){
-			return {};
-		});
+		var graph = initialiseGraph();
 
 		// add places in petri net to the graph
 		var startPlaces = [];
@@ -112,6 +149,28 @@ function constructGraphs(processesMap){
 		}
 
 		// return contructed graph
+		return graph;
+	}
+
+	/**
+	 * Helper function which initialises and returns a blank
+	 * graph to build from.
+	 *
+	 * @return {graph} - blank graph
+	 */
+	function initialiseGraph(){
+		var graph = new dagreD3.graphlib.Graph({ multigraph: true });
+		graph.setGraph({
+			rankdir: 'LR',
+			marginx: 0,
+			marginy: 0
+		});
+
+		// set the default to assigning a new object as a label for each new edge
+		graph.setDefaultEdgeLabel( function(){
+			return {};
+		});
+
 		return graph;
 	}
 }
