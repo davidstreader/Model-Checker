@@ -1,12 +1,12 @@
 'use strict';
 
-function interpretPetriNet(process, processesMap, variableMap){
-	var net = new PetriNet();
-	net.type = 'petrinet';
-	net.root = net.addPlace();
-	net.root.addMetaData('startPlace', true);
-	processesMap[process.ident] = net;
-	interpretNode(process.process, net.root, process.ident);
+function interpretAutomaton(process, processesMap, variableMap){
+	var graph = new Graph();
+	graph.type = 'automata';
+	graph.root = graph.addNode(graph.nextNodeId);
+	graph.root.addMetaData('startNode', true);
+	processesMap[process.ident] = graph;
+	interpretNode(process.process, graph.root, process.ident);
 
 	function interpretNode(astNode, currentNode, ident){
 		var type = astNode.type;
@@ -22,9 +22,6 @@ function interpretPetriNet(process, processesMap, variableMap){
 		}
 		else if(type === 'choice'){
 			interpretChoice(astNode, currentNode, ident);
-		}
-		else if(type === 'if-statement'){
-			interpretIfStatement(astNode, currentNode, ident);
 		}
 		else if(type === 'function'){
 			interpretFunction(astNode, currentNode, ident);
@@ -73,60 +70,51 @@ function interpretPetriNet(process, processesMap, variableMap){
 			// throw error
 		}
 
+		var graph = processesMap[ident];
+		var next = graph.addNode(graph.nextNodeId);
 		var action = processActionLabel(astNode.from.action);
-		var next = processesMap[ident].addTransition(action, currentNode);
+		processesMap[ident].addEdge(graph.nextEdgeId, action, currentNode.id, next.id);
 		interpretNode(astNode.to, next, ident);
 	}
 
-	function interpretChoice(astNode, currentPlace, ident){
-		interpretNode(astNode.process1, currentPlace, ident);
-		interpretNode(astNode.process2, currentPlace, ident);
+	function interpretChoice(astNode, currentNode, ident){
+		interpretNode(astNode.process1, currentNode, ident);
+		interpretNode(astNode.process2, currentNode, ident);
 	}
 
-	function interpretIfStatement(astNode, currentPlace, ident){
-		var guard = processGuardExpression(astNode.guard);
-		if(guard){
-			interpretNode(astNode.trueBranch, currentPlace, ident);
-		}
-		else if(astNode.falseBranch !== undefined){
-			interpretNode(astNode.falseBranch, currentPlace, ident);
-		}
-		else{
-			currentPlace.addMetaData('isTerminal', 'stop');
-		}
-	}
-
-	function interpretFunction(astNode, currentPlace, ident){
+	function interpretFunction(astNode, currentNode, ident){
 		throw new InterpreterException('Functionality for interpreting functions is currently not implemented');
 	}
 
-	function interpretIdentifier(astNode, currentPlace, ident){
+	function interpretIdentifier(astNode, currentNode, ident){
 		//throw new InterpreterException('Functionality for interpreting identifiers is currently not implemented');
-		
+
+		// check whether this is a locally or globally defined reference, or a reference to the current process
 		if(astNode.ident === ident){
-			processesMap[ident].mergePlaces([processesMap[ident].root, currentPlace]);
+			var root = processesMap[ident].root;
+			processesMap[ident].mergeNodes([root, currentNode]);
 		}
 		else if(processesMap[astNode.ident] !== undefined){
-			processesMap[ident].addPetriNet(processesMap[astNode.ident], currentPlace);
+			processesMap[ident].addGraph(processesMap[astNode.ident].clone, currentNode);
 		}
 		else{
 			throw new InterpreterException('The identifier \'' + astNode.ident + '\' has not been defined');
 		}
 	}
 
-	function interpretLabel(astNode, currentPlace, ident){
-		interpretNode(astNode.process, currentPlace, ident);
+	function interpretLabel(astNode, currentNode, ident){
+		interpretNode(astNode.process, currentNode, ident);
 		
-		// add the label associated with this ast node to each transition in the petri net
-		var transitions = processesMap[ident].transitions;
-		for(var i = 0; i < transitions.length; i++){
-			transitions[i].label = astNode.label.action + ':' + transitions[i].label;
+		// add the label associated with this node to each edge in the automaton
+		var edges = processesMap[ident].edges;
+		for(var i = 0; i < edges.length; i++){
+			edges[i].label = astNode.label.action + ':' + edges[i].label;
 		}
 	}
 
-	function interpretTerminal(astNode, currentPlace, ident){
+	function interpretTerminal(astNode, currentNode, ident){
 		if(astNode.terminal === 'STOP'){
-			currentPlace.addMetaData('isTerminal', 'stop');
+			currentNode.addMetaData('isTerminal', 'stop');
 		}
 		else if(astNode.terminal === 'ERROR'){
 			throw new InterpreterException('Functionality for interpreting error terminals is currently not implemented');
@@ -154,36 +142,29 @@ function interpretPetriNet(process, processesMap, variableMap){
 		}
 
 		return action;
+
 	}
 
-	function processGuardExpression(expr){
-		// replace any variables declared in the expression with its value
-		var regex = '[\$][<]*[a-zA-Z0-9]*[>]*';
-		var match = expr.match(regex);
-		while(match !== null){
-			expr = expr.replace(match[0], variableMap[match[0]]);
-			match = expr.match(regex);
-		}
-
-		expr = evaluate(expr);
-		return (expr === 0) ? false : true;
+	function relabelNodes(graph){
+		
 	}
 
-	function constructPetriNetsArray(){
-		var nets = [];
+	function constructAutomataArray(){
+		var automata = [];
 		for(var ident in processesMap){
-			nets.push(new Net(ident, processesMap[ident]));
+			automata.push(new Automaton(ident, processesMap[ident]));
 		}
 
-		return { automata:nets };
+		return { automata:automata };
 	}
 
 	function reset(){
 		processesMap = {};
+		variableMap = {};
 	}
 
 	/**
-	 * Constructs and returns an 'InterpreterException' based off of the
+	 * Constructs and returns a 'ParserException' based off of the
 	 * specified message. Also contains the location in the code being parsed
 	 * where the error occured.
 	 *

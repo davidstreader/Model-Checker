@@ -10,7 +10,7 @@ function compile(code){
 	//
 	var ast = parse(tokens); // parse function in 'parser.js'
 	//
-	var processes = interpretPetriNet(ast.processes, ast.variableMap);
+	var processes = interpret(ast.processes, ast.variableMap);
 	//
 	var graphs = constructGraphs(processes);
 
