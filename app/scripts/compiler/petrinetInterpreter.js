@@ -169,15 +169,6 @@ function interpretPetriNet(process, processesMap, variableMap){
 		return (expr === 0) ? false : true;
 	}
 
-	function constructPetriNetsArray(){
-		var nets = [];
-		for(var ident in processesMap){
-			nets.push(new Net(ident, processesMap[ident]));
-		}
-
-		return { automata:nets };
-	}
-
 	function reset(){
 		processesMap = {};
 	}

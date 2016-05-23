@@ -149,15 +149,6 @@ function interpretAutomaton(process, processesMap, variableMap){
 		
 	}
 
-	function constructAutomataArray(){
-		var automata = [];
-		for(var ident in processesMap){
-			automata.push(new Automaton(ident, processesMap[ident]));
-		}
-
-		return { automata:automata };
-	}
-
 	function reset(){
 		processesMap = {};
 		variableMap = {};
