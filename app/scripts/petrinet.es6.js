@@ -1,9 +1,29 @@
 'use strict'
 
+/**
+ * This class represents a petri net internally in the program.
+ *
+ * @property {string} type - the type of model
+ * @property {int} id - the unique identifier for this petri net
+ * @property {int -> place} placeMap - a mapping of place id to place
+ * @property {int} placeCount - the number of places in this petri net
+ * @property {int -> transition} transitionMap - a mapping of transition id to transition
+ * @property {int} transitionCount - the number of transitions in this petri net
+ * @property {int} rootId - the id for the root place of this petri net
+ * @property {int} nextPlaceId - the next place id
+ * @property {int} nextTransitionId - the next transition id
+ */
 class PetriNet{
 
-	constructor(){
+	/**
+	 * Constructs a new instance of a PetriNet with the specified
+	 * unique identifier.
+	 *
+	 * @param {int} id - the id for this petri net
+	 */
+	constructor(id){
 		this._type = 'petrinet';
+		this._id = id;
 		this._placeMap = {};
 		this._placeCount = 0;
 		this._transitionMap = {};
@@ -52,7 +72,7 @@ class PetriNet{
 			}
 		}
 
-		// root was not found, throw exception
+		throw new PetriNet.Exception('cannot set the root of this petri net to a place that is not in it');
 	}
 
 	/**
@@ -92,7 +112,7 @@ class PetriNet{
 			return this._placeMap[id];
 		}
 
-		// place not found, throw exception
+		throw new PetriNet.Exception('cannot find a place with the id \'' + id + '\'');
 	}
 
 	/**
@@ -138,7 +158,7 @@ class PetriNet{
 			return this._transitionsMap[id];
 		}
 
-		// transition not found, throw exception
+		throw new PetriNet.Exception('cannot find a transition with the id \'' + id + '\'');
 	}
 
 	/**
