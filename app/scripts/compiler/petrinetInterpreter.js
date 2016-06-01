@@ -1,7 +1,10 @@
 'use strict';
 
+var nextPetriNetId;
+
 function interpretPetriNet(process, processesMap, variableMap){
-	var net = new PetriNet();
+	reset();
+	var net = new PetriNet(nextPetriNetId++);
 	net.root = net.addPlace();
 	net.root.addMetaData('startPlace', true);
 	processesMap[process.ident] = net;
@@ -180,7 +183,7 @@ function interpretPetriNet(process, processesMap, variableMap){
 	}
 
 	function reset(){
-		processesMap = {};
+		nextPetriNetId = 0;
 	}
 
 	/**
