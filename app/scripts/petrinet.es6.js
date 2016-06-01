@@ -85,6 +85,17 @@ class PetriNet{
 	}
 
 	/**
+	 * 
+	 */
+	getPlace(id){
+		if(this._placeMap[id] !== undefined){
+			return this._placeMap[id];
+		}
+
+		// place not found, throw exception
+	}
+
+	/**
 	 * Adds a new place to this petri net and returns it.
 	 *
 	 * @return {place} - the constructed place
@@ -120,6 +131,14 @@ class PetriNet{
 		}
 
 		return transitions;
+	}
+
+	getTransition(id){
+		if(this._transitionsMap[id] !== undefined){
+			return this._transitionsMap[id];
+		}
+
+		// transition not found, throw exception
 	}
 
 	/**
@@ -215,8 +234,8 @@ PetriNet.Place = class {
 
 	constructor(id){
 		this._id = id;
-		this._transitionsToMe = {};
-		this._transitionsFromMe = {}; 
+		this._transitionsToMe = [];
+		this._transitionsFromMe = []; 
 		this._metaData = {};
 	}
 
@@ -239,51 +258,63 @@ PetriNet.Place = class {
 	 }
 
 	/**
-	 * Returns an array of the transitions from this place.
+	 * Returns an array of the ids of the transitions from this place.
 	 *
-	 * @return {transition[]} - transitions from this place
+	 * @return {int[]} - array of the ids for transitions from this place
 	 */
 	get transitionsFromMe(){
-		let transitions = [];
-		for(let i in this._transitionsFromMe){
-			transitions.push(this._transitionsFromMe[i]);
+		return this._transitionsFromMe;
+	}
+
+	/**
+	 * Adds the specified transition id to the the array of transition ids
+	 * from this place. Only adds the id if the id is not already in the array
+	 * of transitions.
+	 *
+	 * @param {id} transition - id of the transition to add
+	 * @return {boolean} - true if the id was added, otherwise returns false
+	 */
+	addTransitionFromMe(id){
+		// check if the id is alread in the array of transitions
+		for(var i = 0; i < this._transitionsFromMe; i++){
+			if(id = this._transitionsFromMe[i]){
+				return false;
+			}
 		}
 
-		return transitions;
+		// add id to array of transitions
+		this._transitionsFromMe.push(id);
+		return true;
 	}
 
 	/**
-	 * Adds the specified transition to the map of transitions that this
-	 * place can move to.
+	 * Returns an array of the ids of the transitions that can move to this place.
 	 *
-	 * @param {transition} transition - the transition to add
-	 */
-	addTransitionFromMe(transition){
-		this._transitionsFromMe[transition.id] = transition;
-	}
-
-	/**
-	 * Returns an array of the transitions that can move to this place.
-	 *
-	 * @return {transition[]} - transitions to this place
+	 * @return {int[]} - array of the ids for transitions to this place
 	 */
 	get transitionsToMe(){
-		let transitions = [];
-		for(let i in this._transitionsToMe){
-			transitions.push(this._transitionsToMe[i]);
-		}
-
-		return transitions;
+		return this._transitionsToMe;
 	}
 
 	/**
-	 * Adds the specified transition to the map of transitions that move to
-	 * this place.
+	 * Adds the specified transition id to the the array of transition ids
+	 * to this place. Only adds the id if the id is not already in the array
+	 * of transition ids.
 	 *
-	 * @param {transition} transition - the transition to add
+	 * @param {id} transition - id of the transition to add
+	 * @return {boolean} - true if the id was added, otherwise returns false
 	 */
-	addTransitionToMe(transition){
-		this._transitionsToMe[transition.id] = transition;
+	addTransitionToMe(id){
+		// check if the id is alread in the array of transitions
+		for(var i = 0; i < this._transitionsToMe; i++){
+			if(id = this._transitionsToMe[i]){
+				return false;
+			}
+		}
+
+		// add id to array of transitions
+		this._transitionsToMe.push(id);
+		return true;		
 	}
 
 	/**
@@ -326,8 +357,8 @@ PetriNet.Transition = class {
 	constructor(id, label){
 		this._id = id;
 		this._label = label;
-		this._placesToMe = {};
-		this._placesFromMe = {}; 
+		this._placesToMe = [];
+		this._placesFromMe = []; 
 		this._metaData = {};
 	}
 
@@ -371,51 +402,77 @@ PetriNet.Transition = class {
 	}
 
 	/**
-	 * Returns an array of the places from this transition.
+	 * Returns an array of the ids for places from this transition.
 	 *
-	 * @return {place[]} - place from this place
+	 * @return {int[]} - place from this place
 	 */
 	get placesFromMe(){
-		let places = [];
-		for(let i in this._placesFromMe){
-			places.push(this._placesFromMe[i]);
-		}
-
-		return places;
+		return this._placesFromMe;
 	}
 
 	/**
-	 * Adds the specified place to the map of places that this transition
-	 * can move to.
+	 * Adds the specified id of the place to the array of places that move from this 
+	 * transition. Only adds the id if it is not already located in the array of 
+	 * place ids. 
 	 *
-	 * @param {place} place - the place to add
+	 * @param {place} place - id of the place to add
+	 * @return {boolean} - returns true if the id is added, otherwise returns false
 	 */
-	addPlaceFromMe(place){
-		this._placesFromMe[place.id] = place;
+	addPlaceFromMe(id){
+		// check if the id is alread in the array of places
+		for(var i = 0; i < this._placesFromMe; i++){
+			if(id = this._placesFromMe[i]){
+				return false;
+			}
+		}
+
+		// add id to array of transitions
+		this._placesFromMe.push(id);
+		return true;
 	}
 
 	/**
 	 * Returns an array of the places that can move to this transition.
 	 *
-	 * @return {place[]} - places to this transition
+	 * @return {int[]} - places to this transition
 	 */
 	get placesToMe(){
-		let places = [];
-		for(let i in placesToMe){
-			places.push(this._placesToMe[i]);
-		}
-
-		return places;
+		return this._placesToMe;
 	}
 
 	/**
-	 * Adds the specified place to the map of places that move to this
-	 * transition.
+	 * Adds the specified id of the place to the array of places that move to this 
+	 * transition. Only adds the id if it is not already located in the array of 
+	 * place ids. 
 	 *
-	 * @param {place} place - the place to add
+	 * @param {int} id - id of the place to add
+	 * @return {boolean} - returns true if the id is added, otherwise returns false
 	 */
-	addPlaceToMe(place){
-		this._placesToMe[place.id] = place;
+	addPlaceToMe(id){
+		// check if the id is alread in the array of places
+		for(var i = 0; i < this._placesToMe; i++){
+			if(id = this._placesToMe[i]){
+				return false;
+			}
+		}
+
+		// add id to array of transitions
+		this._placesToMe.push(id);
+		return true;
 	}
- 
+}
+
+/**
+ * Represents an exception that can be raised while processing a petri net.
+ */
+PetriNet.Exception = class {
+
+	/**
+	 * Constructs a new PetriNetException with the specified message.
+	 *
+	 * @oaram {string} message - the error message
+	 */
+	constructor(message){
+		this.message = "PetriNetException: " + message;
+	}
 }
