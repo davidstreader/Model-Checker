@@ -74,7 +74,7 @@ class Identifier {
 	 */
 	addGlobalId(id){
 		// check that id is not already a global id
-		for(var i = 0; i < this._glogalIds.length; i++){
+		for(var i = 0; i < this._globalIds.length; i++){
 			if(id === this._globalIds[i]){
 				return false;
 			}
@@ -94,7 +94,7 @@ class Identifier {
 	 * @param {int} id - the global id to delete
 	 * @return {boolean} - true if id was deleted, otherwise false
 	 */
-	deleteGolbalid(id){
+	deleteGlobalid(id){
 		// check if id is in global ids
 		for(var i = 0; i < this._globalIds.length; i++){
 			if(id === this._globalIds[i]){
