@@ -79,14 +79,14 @@ class PetriNet{
 	addRoot(place){
 		// check if this place is already a root
 		for(var id in this._rootIds){
-			if(place.id === id){
+			if(place.id.equals(id)){
 				return place;
 			}
 		}
 
 		// find new root
 		for(let id in this._placeMap){
-			if(place.id === id){
+			if(place.id.equals(id)){
 				this._rootIds.push(place.id);
 				return place;
 			}
@@ -105,20 +105,14 @@ class PetriNet{
 	}
 
 	/**
-	 * Returns an array of the current places in this petri net. The root place
-	 * is the first element in the array.
-	 *
+	 * Returns an array of the current places in this petri net.
+
 	 * @return {place[]} - the array of places
 	 */
 	get places(){
-		let places = [this.root];
-		
-		// add the remaining places
-		for(let i in this._placeMap){
-			// only add place if it is not the root
-			if(parseInt(i, 10) !== this._rootId){
-				places.push(this._placeMap[i]);
-			}
+		var places = [];
+		for(var id in this._placeMap){
+			places.push(this._placeMap[id]);
 		}
 
 		return places;
@@ -141,7 +135,7 @@ class PetriNet{
 	 * @return {place} - the constructed place
 	 */
 	addPlace(){
-		let id = { id:this._nextPlaceId++, processes:[this._id] };
+		let id = new Identifier(this._nextPlaceId++, [this._id]);
 		let place = new PetriNet.Place(id);
 		this._placeMap[id] = place;
 		this._placeCount++;
@@ -191,7 +185,7 @@ class PetriNet{
 	 * @return {place} - the place that this transition will transition to
 	 */
 	addTransition(label, from){
-		let id = { id:this._nextTransitionId++, processes:[this._id] };
+		let id = new Identifier(this._nextTransitionId++, [this._id]);
 		let transition = new PetriNet.Transition(id, label);
 		this._transitionMap[id] = transition;
 
@@ -250,8 +244,7 @@ class PetriNet{
 		// add nodes to this petri net
 		let places = net.places;
 		for(let i = 0; i < places.length; i++){
-			let id = this._nextPlaceId++;
-			places[i].id = id;
+			places[i].id.localId = this._nextPlaceId++;
 			this._placeMap[id] = places[i];
 			this._placeCount++;
 		}
@@ -259,8 +252,7 @@ class PetriNet{
 		// add transitions to this petri net
 		let transitions = net.transitions;
 		for(let i = 0; i < transitions.length; i++){
-			let id = this._nextTransitionId++;
-			transitions[i].id = id;
+			transitions[i].id.localId = this._nextTransitionId++;
 			this._transitionMap[id] = transitions[i];
 			this._transitionCount++;
 		}
@@ -282,7 +274,7 @@ PetriNet.Place = class {
 	/**
 	 * Returns the unique identifier for this place.
 	 *
-	 * @return {int} - place id
+	 * @return {identifier} - place id
 	 */
 	get id(){
 		return this._id;
@@ -294,7 +286,7 @@ PetriNet.Place = class {
 	 * @param {int} id - the new id value
 	 */
 	 set id(id){
-	 	this._id.id = id;
+	 	this._id.localId = id;
 	 	return this._id;
 	 }
 
@@ -318,7 +310,7 @@ PetriNet.Place = class {
 	addTransitionFromMe(id){
 		// check if the id is alread in the array of transitions
 		for(var i = 0; i < this._transitionsFromMe; i++){
-			if(id = this._transitionsFromMe[i]){
+			if(id.equals(this._transitionsFromMe[i])){
 				return false;
 			}
 		}
@@ -348,7 +340,7 @@ PetriNet.Place = class {
 	addTransitionToMe(id){
 		// check if the id is alread in the array of transitions
 		for(var i = 0; i < this._transitionsToMe; i++){
-			if(id = this._transitionsToMe[i]){
+			if(id.equals(this._transitionsToMe[i])){
 				return false;
 			}
 		}
@@ -418,7 +410,7 @@ PetriNet.Transition = class {
 	 * @param {int} id - the new id value
 	 */
 	 set id(id){
-	 	this._id.id = id;
+	 	this._id.localId = id;
 	 	return this._id;
 	 }
 
@@ -463,7 +455,7 @@ PetriNet.Transition = class {
 	addPlaceFromMe(id){
 		// check if the id is alread in the array of places
 		for(var i = 0; i < this._placesFromMe; i++){
-			if(id = this._placesFromMe[i]){
+			if(id.equals(this._placesFromMe[i])){
 				return false;
 			}
 		}
@@ -493,7 +485,7 @@ PetriNet.Transition = class {
 	addPlaceToMe(id){
 		// check if the id is alread in the array of places
 		for(var i = 0; i < this._placesToMe; i++){
-			if(id = this._placesToMe[i]){
+			if(id,equals(this._placesToMe[i])){
 				return false;
 			}
 		}
