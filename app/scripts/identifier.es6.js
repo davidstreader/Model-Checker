@@ -9,7 +9,7 @@
  * a process. These are unqiue within a process, however there may be components
  * c1 and c2 within process p1 and p2 respectively such that c1.local === c2.local
  *
- * Global - A global identifier is a set of identifiers which the procss component
+ * Global - A global identifier is a set of identifiers which the process component
  * can belong to. A component can belong to more than one process in cases where two
  * processes are parallely composed.
  */
@@ -20,10 +20,10 @@ class Identifier {
 	 */
 	constructor(localId, globalIds){
 		// check that parameters have been defined
-		if(local === undefined){
+		if(localId === undefined){
 			// throw error
 		}
-		if(global === undefined){
+		if(globalIds === undefined){
 			// throw error
 		}
 
