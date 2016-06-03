@@ -27,9 +27,19 @@ class Identifier {
 			// throw error
 		}
 
+		this._type = 'identifier';
 		this._localId = localId;
 		this._globalIds = globalIds;
 	}
+
+	/**
+	 * Returns the fact that this object is an Identifier
+	 *
+	 * @return {string} - the type of object
+	 */
+	 get type(){
+	 	return this._type;
+	 }
 
 	/**
 	 * Returns the local id associated with this Identifier.
