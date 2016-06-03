@@ -9,7 +9,7 @@ function interpretPetriNet(process, processesMap, variableMap){
 	root.addMetaData('startPlace', true);
 	net.addRoot(root);
 	processesMap[process.ident] = net;
-	interpretNode(process.process, net.root, process.ident);
+	interpretNode(process.process, root, process.ident);
 
 	function interpretNode(astNode, currentNode, ident){
 		var type = astNode.type;

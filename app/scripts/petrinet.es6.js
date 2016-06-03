@@ -79,14 +79,14 @@ class PetriNet{
 	addRoot(place){
 		// check if this place is already a root
 		for(var id in this._rootIds){
-			if(place.id.equals(id)){
+			if(place.id.equals(this._placeMap[id].id)){
 				return place;
 			}
 		}
 
 		// find new root
 		for(let id in this._placeMap){
-			if(place.id.equals(id)){
+			if(place.id.equals(this._placeMap[id].id)){
 				this._rootIds.push(place.id);
 				return place;
 			}
