@@ -16,19 +16,31 @@
 class PetriNet{
 
 	/**
-	 * Constructs a new instance of a PetriNet with the specified
-	 * unique identifier.
+	 * Constructs a new instance of a PetriNet. Can be used to either initialise an empty PetriNet
+	 * or to create a constructed instance of a petri net. A constructed instance of a petri net would
+	 * arise when a petri net is constructed through the use of algorithm, for example parallel composition.
+	 * In either case a unique identifier for the PetriNet must be defined. 
 	 *
 	 * @param {int} id - the id for this petri net
+	 * @param {id -> place} placeMap - a mapping of string to place (can be undefined)
+	 * @param {int} placeCount - the number of places in this petri net (can be undefined)
+	 * @param {id -> transition} transitionMap - a mapping of id to transition (can be undefined)
+	 * @param {int} transitionCount - the number of transitions in this petri net (can be undefined)
+	 * @param {id[]} roots - an array of root places for this petri net (can be undefined)
 	 */
-	constructor(id){
+	constructor(id, placeMap, placeCount, transitionMap, transitionCount, rootIds){
+		// make sure that id is defined
+		if(id === undefined){
+			throw new PetriNet.Exception('Cannot initialise a petri net without an id');
+		}
+
 		this._type = 'petrinet';
 		this._id = id;
-		this._placeMap = {};
-		this._placeCount = 0;
-		this._transitionMap = {};
-		this._transitionCount = 0;
-		this._rootId = undefined;
+		this._placeMap = (placeMap !== undefined) ? placeMap : {};
+		this._placeCount = (placeCount !== undefined) ? placeCount : 0;
+		this._transitionMap = (transitionMap !== undefined) ? transitionMap : {};
+		this._transitionCount = (transitionCount !== undefined) ? transitionCount : 0;
+		this._rootIds = (rootIds !== undefined) ? rootIds : [];
 		this._nextPlaceId = 0;
 		this._nextTransitionId = 0;
 	}
@@ -43,12 +55,17 @@ class PetriNet{
 	}
 
 	/**
-	 * Returns the root place for this petri net.
+	 * Returns the root places for this petri net.
 	 *
-	 * @return {place} - the root
+	 * @return {place[]} - the roots
 	 */
-	get root(){
-		return this._placeMap[this._rootId];
+	get roots(){
+		var roots = [];
+		for(var i = 0; i < this._rootIds.length; i++){
+			roots.push(this._placeMap[this._rootIds[i]]);
+		}
+
+		return roots;
 	}
 
 	/**
@@ -59,16 +76,19 @@ class PetriNet{
 	 * @param {place} place - the new root id
 	 * @return {place} - the new root place
 	 */
-	set root(place){
-		if(place === this.root){
-			return place;
+	addRoot(place){
+		// check if this place is already a root
+		for(var id in this._rootIds){
+			if(place.id === id){
+				return place;
+			}
 		}
 
 		// find new root
-		for(let i in this._placeMap){
-			if(place === this._placeMap[i]){
-				this._rootId = parseInt(i, 10);
-				return this._placeMap[i];
+		for(let id in this._placeMap){
+			if(place.id === id){
+				this._rootIds.push(place.id);
+				return place;
 			}
 		}
 
@@ -76,12 +96,12 @@ class PetriNet{
 	}
 
 	/**
-	 * Returns the unique identifier for the root place of this petri net.
+	 * Returns the unique identifiers for the root places of this petri net.
 	 *
-	 * @return {int} - the root id
+	 * @return {int[]} - the root ids
 	 */
-	get rootId(){
-		return this._rootId;
+	get rootIds(){
+		return this._rootIds;
 	}
 
 	/**
@@ -121,7 +141,7 @@ class PetriNet{
 	 * @return {place} - the constructed place
 	 */
 	addPlace(){
-		let id = this._nextPlaceId++;
+		let id = { id:this._nextPlaceId++, processes:[this._id] };
 		let place = new PetriNet.Place(id);
 		this._placeMap[id] = place;
 		this._placeCount++;
@@ -171,7 +191,7 @@ class PetriNet{
 	 * @return {place} - the place that this transition will transition to
 	 */
 	addTransition(label, from){
-		let id = this._nextTransitionId++;
+		let id = { id:this._nextTransitionId++, processes:[this._id] };
 		let transition = new PetriNet.Transition(id, label);
 		this._transitionMap[id] = transition;
 
@@ -274,7 +294,8 @@ PetriNet.Place = class {
 	 * @param {int} id - the new id value
 	 */
 	 set id(id){
-	 	this._id = id;
+	 	this._id.id = id;
+	 	return this._id;
 	 }
 
 	/**
@@ -397,7 +418,8 @@ PetriNet.Transition = class {
 	 * @param {int} id - the new id value
 	 */
 	 set id(id){
-	 	this._id = id;
+	 	this._id.id = id;
+	 	return this._id;
 	 }
 
 	/**
