@@ -156,4 +156,20 @@ class Identifier {
 
 		return true;
 	}
+
+	/**
+	 * Returns a string representation of this Identifier.
+	 *
+	 * @return {string} - string representation
+	 */
+	toString(){
+		var str = '{localId:' + this._localId + ',globalIds[';
+		var ids = this.globalIds;
+		for(var i = 0; i < ids.length; i++){
+			str += (i === ids.length - 1) ? ids[i] : ids[i] + ',';
+		}
+		str += ']}';
+
+		return str;
+	}
 }
