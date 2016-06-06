@@ -506,7 +506,7 @@ function parse(tokens){
 		var process;
 		if(tokens[index].value === '('){
 			gobble(tokens[index], '(');
-			process = parseLocalProcess(tokens);
+			process = parseComposite(tokens);
 			gobble(tokens[index], ')');
 		}
 		else{
