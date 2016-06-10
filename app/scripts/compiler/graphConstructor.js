@@ -29,7 +29,7 @@ function constructGraphs(processesMap){
 
 	function automataConstructor(process){
 		// construct a graph to represent automata
-		var graph = initialiseGraph();
+		var graph = initialiseGraph('LR');
 
 		// set the default to assigning a new object as a label for each new edge
 		graph.setDefaultEdgeLabel( function(){
@@ -83,7 +83,7 @@ function constructGraphs(processesMap){
 	 */
 	function petriNetConstructor(process){
 		// construct a graph to represet petri net
-		var graph = initialiseGraph();
+		var graph = initialiseGraph('TD');
 
 		// add places in petri net to the graph
 		var startPlaces = [];
@@ -114,37 +114,29 @@ function constructGraphs(processesMap){
 		}
 
 		// add transitions to the graph
-		var transitions = process.transitions;
-		for(var i = 0; i < transitions.length; i++){
-			var styleClasses = 't' + transitions[i].id;
-
-			// add transition to graph
-			graph.setNode('t' + transitions[i].id, { label:transitions[i].label, shape:'transitionNode', class:styleClasses.trim() });
-		}
-
 		var edgeId = 0;
-
-		// add edges from places to transitions
-		places = process.places;
-		for(var i = 0; i < places.length; i++){
-			var transitions = places[i].transitionsFromMe;
-			
+		var labelSets = process.labelSets;
+		for(var i = 0; i < labelSets.length; i++){
+			var label = labelSets[i].label;
+			var transitions = labelSets[i].transitions;
 			for(var j = 0; j < transitions.length; j++){
-				var from = 'p' + places[i].id;
-				var to = 't' + transitions[j].id;
-				graph.setEdge(from, to, { label:'', lineInterpolate:'basis' }, edgeId++);
-			}
-		}
+				var styleClasses = 't' + transitions[j].id;
+				graph.setNode('t' + transitions[j].id, { label:label, shape:'transitionNode', class:styleClasses.trim() });
 
-		// add edges from transitions to places
-		transitions = process.transitions;
-		for(var i = 0; i < transitions.length; i++){
-			var places = transitions[i].placesFromMe;
+				//
+				var outgoing = transitions[j].outgoingPlaces;
+				for(var k = 0; k < outgoing.length; k++){
+					var from = 't' + transitions[j].id;
+					var to = 'p' + outgoing[k].id;
+					graph.setEdge(from, to, { label:'', lineInterpolate:'basis' }, edgeId++);
+				}
 
-			for(var j = 0; j < places.length; j++){
-				var from = 't' + transitions[i].id;
-				var to = 'p' + places[j].id;
-				graph.setEdge(from, to, { label:'', lineInterpolate:'basis' }, edgeId++);
+				var incoming = transitions[j].incomingPlaces;
+				for(var k = 0; k < incoming.length; k++){
+					var from = 'p' + incoming[k].id;
+					var to = 't' + transitions[j].id;
+					graph.setEdge(from, to, { label:'', lineInterpolate:'basis' }, edgeId++);
+				}
 			}
 		}
 
@@ -158,10 +150,10 @@ function constructGraphs(processesMap){
 	 *
 	 * @return {graph} - blank graph
 	 */
-	function initialiseGraph(){
+	function initialiseGraph(rankdir){
 		var graph = new dagreD3.graphlib.Graph({ multigraph: true });
 		graph.setGraph({
-			rankdir: 'LR',
+			rankdir: rankdir,
 			marginx: 0,
 			marginy: 0
 		});
