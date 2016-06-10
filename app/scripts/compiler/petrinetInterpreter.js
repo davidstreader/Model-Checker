@@ -1,15 +1,17 @@
 'use strict';
 
-var nextPetriNetId;
-
-function interpretPetriNet(process, processesMap, variableMap){
-	reset();
-	var net = new PetriNet(nextPetriNetId++);
-	var root = net.addPlace();
-	root.addMetaData('startPlace', true);
-	net.addRoot(root);
-	processesMap[process.ident] = net;
+function interpretPetriNet(process, processesMap, variableMap, processId){
+	var root = constructPetriNet(processId, process.ident);
 	interpretNode(process.process, root, process.ident);
+
+	function constructPetriNet(id, ident){
+		var net = new PetriNet(id);
+		var root = net.addPlace();
+		root.addMetaData('startPlace', true);
+		net.addRoot(root.id);
+		processesMap[ident] = net;
+		return root;	
+	}
 
 	function interpretNode(astNode, currentNode, ident){
 		var type = astNode.type;
@@ -25,6 +27,9 @@ function interpretPetriNet(process, processesMap, variableMap){
 		}
 		else if(type === 'choice'){
 			interpretChoice(astNode, currentNode, ident);
+		}
+		else if(type === 'composite'){
+			interpretComposite(astNode, currentNode, ident);
 		}
 		else if(type === 'if-statement'){
 			interpretIfStatement(astNode, currentNode, ident);
@@ -86,6 +91,21 @@ function interpretPetriNet(process, processesMap, variableMap){
 		interpretNode(astNode.process2, currentPlace, ident);
 	}
 
+	function interpretComposite(astNode, currentPlace, ident){
+		var process1 = ident + '.process1';
+		var root1 = constructPetriNet(processesMap[ident].id + 'a', process1);
+		interpretNode(astNode.process1, root1, process1);
+
+		var process2 = ident + '.process2';
+		var root2 = constructPetriNet(processesMap[ident].id + 'b', process2);
+		interpretNode(astNode.process2, root2, process2);
+		
+		processesMap[ident] = parallelComposition(processesMap[ident].id, processesMap[process1], processesMap[process2]);
+
+		delete processesMap[process1];
+		delete processesMap[process2];
+	}
+
 	function interpretIfStatement(astNode, currentPlace, ident){
 		var guard = processGuardExpression(astNode.guard);
 		if(guard){
@@ -105,19 +125,12 @@ function interpretPetriNet(process, processesMap, variableMap){
 
 	function interpretIdentifier(astNode, currentPlace, ident){
 		if(astNode.ident === ident){
-			processesMap[ident].mergePlaces([processesMap[ident].root, currentPlace]);
-			// check that referenced process is of the same type
-			if(processesMap[ident].type === processesMap[astNode.ident].type){
-				processesMap[ident].addPetriNet(processesMap[astNode.ident], currentPlace);
-			}
-			else{
-				throw new InterpreterException('Cannot reference type \'' + processesMap[astNode.ident].type + '\' from type \'petrinet\'');
-			}
+			processesMap[ident].mergePlaces(processesMap[ident].roots, [currentPlace]);
 		}
 		else if(processesMap[astNode.ident] !== undefined){
 			// check that referenced process is of the same type
 			if(processesMap[ident].type === processesMap[astNode.ident].type){
-				processesMap[ident].addPetriNet(processesMap[astNode.ident], currentPlace);
+				processesMap[ident].addPetriNet(processesMap[astNode.ident].clone, [currentPlace]);
 			}
 			else{
 				throw new InterpreterException('Cannot reference type \'' + processesMap[astNode.ident].type + '\' from type \'petrinet\'');
@@ -184,7 +197,7 @@ function interpretPetriNet(process, processesMap, variableMap){
 	}
 
 	function reset(){
-		nextPetriNetId = 0;
+		processesMap = {};
 	}
 
 	/**
