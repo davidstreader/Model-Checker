@@ -2,6 +2,7 @@
 
 var processesMap;
 var variableMap;
+var nextProcessId;
 
 function interpret(processes, variables){
 	reset();
@@ -10,19 +11,13 @@ function interpret(processes, variables){
 	for(var i = 0; i < processes.length; i++){
 		var type = processes[i].processType;
 		if(type === 'automata'){
-			interpretAutomaton(processes[i], processesMap, variableMap);
+			interpretAutomaton(processes[i], processesMap, variableMap, nextProcessId++);
 		}
 		else if(type === 'petrinet'){
-			interpretPetriNet(processes[i], processesMap, variableMap);
+			interpretPetriNet(processes[i], processesMap, variableMap, nextProcessId++);
 		}
 		else{
 			// throw error
-			if(i % 2 === 0){
-				interpretAutomaton(processes[i], processesMap, variableMap);
-			}
-			else{
-				interpretPetriNet(processes[i], processesMap, variableMap);
-			}
 		}
 	}
 
@@ -31,5 +26,6 @@ function interpret(processes, variables){
 	function reset(){
 		processesMap = {};
 		variableMap = {};
+		nextProcessId = 0;
 	}
 }

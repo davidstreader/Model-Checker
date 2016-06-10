@@ -1,421 +1,666 @@
 'use strict'
 
-class PetriNet{
+class PetriNet {
 
-	constructor(){
-		this._type = 'petrinet';
-		this._placeMap = {};
-		this._placeCount = 0;
-		this._transitionMap = {};
-		this._transitionCount = 0;
-		this._rootId = undefined;
-		this._nextPlaceId = 0;
-		this._nextTransitionId = 0;
+	constructor(id, placeMap, placeCount, transitionMap, labelSets, transitionCount, rootIds, nextPlaceId, nextTransitionId){
+		// check that id has been defined
+		if(id === undefined){
+			// throw error
+		}
+
+		this._id = id;
+		this._placeMap = (placeMap !== undefined) ? placeMap : {};
+		this._placeCount = (placeCount !== undefined) ? placeCount : 0;
+		this._transitionMap = (transitionMap !== undefined) ? transitionMap : {};
+		this._labelSets = (labelSets !== undefined) ? labelSets : {};
+		this._transitionCount = (transitionCount !== undefined) ? transitionCount : 0;
+		this._rootIds = (rootIds !== undefined) ? rootIds : [];
+		this._nextPlaceId = (nextPlaceId !== undefined) ? nextPlaceId : 0;
+		this._nextTransitionId = (nextTransitionId !== undefined) ? nextTransitionId : 0;
 	}
 
 	/**
-	 * Returns the fact that this data structure represents a petri net.
+	 * Returns the type of this process. Always going to be 'petrinet'.
 	 *
-	 * @return {string} - petrinet
+	 * @return {string} - type
 	 */
 	get type(){
-		return this._type;
+		return 'petrinet';
 	}
 
 	/**
-	 * Returns the root place for this petri net.
+	 * Returns the unqiue identifier for this petri net.
 	 *
-	 * @return {place} - the root
-	 */
-	get root(){
-		return this._placeMap[this._rootId];
-	}
-
-	/**
-	 * Sets the specified place as the new root of this petri net.
-	 * If the specified place is not in this petri net then an
-	 * exception is thrown.
-	 *
-	 * @param {place} place - the new root id
-	 * @return {place} - the new root place
-	 */
-	set root(place){
-		if(place === this.root){
-			return place;
-		}
-
-		// find new root
-		for(let i in this._placeMap){
-			if(place === this._placeMap[i]){
-				this._rootId = parseInt(i, 10);
-				return this._placeMap[i];
-			}
-		}
-
-		// root was not found, throw exception
-	}
-
-	/**
-	 * Returns the unique identifier for the root place of this petri net.
-	 *
-	 * @return {int} - the root id
-	 */
-	get rootId(){
-		return this._rootId;
-	}
-
-	/**
-	 * Returns an array of the current places in this petri net. The root place
-	 * is the first element in the array.
-	 *
-	 * @return {place[]} - the array of places
-	 */
-	get places(){
-		let places = [this.root];
-		
-		// add the remaining places
-		for(let i in this._placeMap){
-			// only add place if it is not the root
-			if(parseInt(i, 10) !== this._rootId){
-				places.push(this._placeMap[i]);
-			}
-		}
-
-		return places;
-	}
-
-	/**
-	 * Adds a new place to this petri net and returns it.
-	 *
-	 * @return {place} - the constructed place
-	 */
-	addPlace(){
-		let id = this._nextPlaceId++;
-		let place = new PetriNet.Place(id);
-		this._placeMap[id] = place;
-		this._placeCount++;
-		return place;
-	}
-
-	/**
-	 * Returns the number of places currently in this petri net.
-	 *
-	 * @return {int} - count of places
-	 */
-	get placeCount(){
-		return this._placeCount;
-	}
-
-	/**
-	 * Returns an array of the current transitions in this petri net.
-	 *
-	 * @return {transition[]} - the array of transitions
-	 */
-	get transitions(){
-		let transitions = [];
-		
-		// add the remaining places
-		for(let i in this._transitionMap){
-			transitions.push(this._transitionMap[i]);
-		}
-
-		return transitions;
-	}
-
-	/**
-	 * Adds a new transition to this petri net with the specified label from the specified place.
-	 * Constructs a new place that the new transition will transition to afterwards
-	 * and returns that new place.
-	 *
-	 * @param {string} label - label that represents the transition
-	 * @param {place} from - the place this transition will transition from
-	 * @return {place} - the place that this transition will transition to
-	 */
-	addTransition(label, from){
-		let id = this._nextTransitionId++;
-		let transition = new PetriNet.Transition(id, label);
-		this._transitionMap[id] = transition;
-
-		from.addTransitionFromMe(transition);
-		transition.addPlaceToMe(transition);
-		let to = this.addPlace();
-		to.addTransitionToMe(transition);
-		transition.addPlaceFromMe(to);
-
-		return to;
-	}
-
-	/**
-	 * Returns the number of transitions currently in this petri net.
-	 *
-	 * @return {int} - count of transitions
-	 */
-	get transitionCount(){
-		return this._transitionCount;
-	}
-
-	/**
-	 * Merges the places in the specified array into a single
-	 * place. The first element of the array is the place which the
-	 * remaining elements will be merged with.
-	 *
-	 * @param {place[]} places - the array of places
-	 */
-	mergePlaces(places){
-		let place = places[0];
-
-		// merge remaining places to place
-		for(let i = 1; i < places.length; i++){
-			let current = places[i];
-			let transitions = current.transitionsFromMe;
-
-			for(let j = 0; j < transitions.length; j++){
-				delete transitions[j]._placesToMe[current.id];
-				transitions[j].addPlaceToMe(place);
-				place.addTransitionFromMe(transitions[j]);
-			}
-
-			transitions = current.transitionsToMe;
-			for(let j = 0; j < transitions.length; j++){
-				delete transitions[j]._placesFromMe[current.id];
-				transitions[j].addPlaceFromMe(place);
-				place.addTransitionFromMe(transitions[j]);
-			}
-
-			delete this._placeMap[current.id];
-			this._placeCount--;
-		}
-	}
-
-	addPetriNet(net, place){
-		// add nodes to this petri net
-		let places = net.places;
-		for(let i = 0; i < places.length; i++){
-			let id = this._nextPlaceId++;
-			places[i].id = id;
-			this._placeMap[id] = places[i];
-			this._placeCount++;
-		}
-
-		// add transitions to this petri net
-		let transitions = net.transitions;
-		for(let i = 0; i < transitions.length; i++){
-			let id = this._nextTransitionId++;
-			transitions[i].id = id;
-			this._transitionMap[id] = transitions[i];
-			this._transitionCount++;
-		}
-
-		// merge on the specified place
-		this.mergePlaces([place, net.root]);
-	}
-}
-
-PetriNet.Place = class {
-
-	constructor(id){
-		this._id = id;
-		this._transitionsToMe = {};
-		this._transitionsFromMe = {}; 
-		this._metaData = {};
-	}
-
-	/**
-	 * Returns the unique identifier for this place.
-	 *
-	 * @return {int} - place id
+	 * @ return {int} - id
 	 */
 	get id(){
 		return this._id;
 	}
 
 	/**
-	 * Sets the unique identifier of this place to the specified id
+	 * Returns an array of the root places for this petri net
 	 *
-	 * @param {int} id - the new id value
+	 * @ return {place[]} - array of places
 	 */
-	 set id(id){
-	 	this._id = id;
-	 }
+	get roots(){
+		var roots = [];
+		for(var i = 0; i < this._rootIds.length; i++){
+			roots.push(this._placeMap[this._rootIds[i]]);
+		}
+
+		return roots;
+	}
 
 	/**
-	 * Returns an array of the transitions from this place.
+	 * Adds the specified place id to the array of roots for this
+	 * petri net. Only adds the id if it not already located in the
+	 * array of root ids.
 	 *
-	 * @return {transition[]} - transitions from this place
+	 * @param {int} id - the place id to add
+	 * @return {boolean} - true if id added, otherwise false
 	 */
-	get transitionsFromMe(){
-		let transitions = [];
-		for(let i in this._transitionsFromMe){
-			transitions.push(this._transitionsFromMe[i]);
+	addRoot(id){
+		// check if root is already in roots array
+		for(var i = 0; i < this._rootIds; i++){
+			if(id === this._rootIds[i]){
+				return false;
+			}
+		}
+
+		// add id to roots array
+		this._rootIds.push(id);
+		return true;
+	}
+
+	/**
+	 * Returns an array of the places associated with this petri net.
+	 *
+	 * @param {place[]} - an array of places
+	 */
+	get places(){
+		var places = [];
+		for(var id in this._placeMap){
+			places.push(this._placeMap[id]);
+		}
+
+		return places;
+	}
+
+	/**
+	 * Constructs an adds a new place to this petri net. The place is guaranteed
+	 * to have a unique identifier. Returns the constructed place.
+	 *
+	 * @return {place} - the constructed place
+	 */
+	addPlace(){
+		var id = this._id + '.' + this._nextPlaceId++;
+		var place = new PetriNet.Place(id);
+		this._placeMap[id] = place;
+		return place;
+	}
+
+	/**
+	 * Returns an array of the transitions associated with this petri net.
+	 *
+	 * @return {transition[]} - an array of transitions
+	 */
+	get transitions(){
+		var transitions = [];
+		for(var id in this._transitionMap){
+			transitions.push(this._transitionMap[id]);
 		}
 
 		return transitions;
 	}
-
+	
 	/**
-	 * Adds the specified transition to the map of transitions that this
-	 * place can move to.
+	 * Returns a list of label set objects that are associated with this
+	 * petri net.
 	 *
-	 * @param {transition} transition - the transition to add
+	 * @return {labelset[]} - an array of label sets
 	 */
-	addTransitionFromMe(transition){
-		this._transitionsFromMe[transition.id] = transition;
-	}
-
-	/**
-	 * Returns an array of the transitions that can move to this place.
-	 *
-	 * @return {transition[]} - transitions to this place
-	 */
-	get transitionsToMe(){
-		let transitions = [];
-		for(let i in this._transitionsToMe){
-			transitions.push(this._transitionsToMe[i]);
+	get labelSets(){
+		var labelSets = [];
+		for(var label in this._labelSets){
+			labelSets.push({ label:label, transitions:this._labelSets[label] });
 		}
 
-		return transitions;
+		return labelSets;
+	}
+ 	
+ 	/**
+ 	 * Constructs and adds a new transition to this petri net, transitioning from
+ 	 * the specified place to a newly constructed place proceeding the new transition.
+ 	 * The transition is guaranteed to have a unique identifier. Returns the newly 
+ 	 * constructed place that the new transition transitions to.
+ 	 *
+ 	 * @param {string} label - the label the transition represents
+ 	 * @param {place} from - the place the transition transitions from
+ 	 * @return {place} - the place the transition transitions to
+ 	 */
+	addTransition(label, from){
+		var id = this._id + '.' + this._nextTransitionId++;
+		var transition = new PetriNet.Transition(id, [this._id]);
+		transition.addIncomingPlace(from);
+		from.addOutgoingTransition(id);
+		var to = this.addPlace();
+		transition.addOutgoingPlace(to);
+		to.addIncomingTransition(id);
+		this._addTransition(label, transition);
+		return to;
 	}
 
 	/**
-	 * Adds the specified transition to the map of transitions that move to
-	 * this place.
+	 * Private helper function for functions that add a transition to this
+	 * petri net. Handles adding the specified transition to the transition map
+	 * as well as adding it to the correct labels set. Should not be called
+	 * from outside this class.
 	 *
+	 * @param {string} label - the label the transition represents
 	 * @param {transition} transition - the transition to add
 	 */
-	addTransitionToMe(transition){
-		this._transitionsToMe[transition.id] = transition;
+	_addTransition(label, transition){
+		// add transition to transition map
+		this._transitionMap[transition.id] = transition;
+
+		// check if label already exists in label sets
+		if(this._labelSets[label] !== undefined){
+			this._labelSets[label].push(transition);
+		}
+		else{
+			this._labelSets[label] = [transition];
+		}		
 	}
 
 	/**
-	 * Returns the meta data for this place associated with the specified
-	 * key. If no meta data is available for this key then undefined is
-	 * returned.
+	 * Merges the specified array of places into each place specified in
+	 * the mergeTo array.
 	 *
-	 * @param {string} key - the key to get meta data for
-	 * @return {?} - the value associated to the specified key
+	 * @param {place[]} mergeTo - array of places to merge to
+	 * @param {place[]} places - array of places to merge
+	 */
+	mergePlaces(mergeTo, places){
+		for(var i = 0; i < mergeTo.length; i++){
+			var place = mergeTo[i];
+			for(var j = 0; j < places.length; j++){
+				var current = places[j];
+
+				// check that current place is in this petri net
+				if(this._placeMap[current.id] === undefined){
+					// throw error
+				}
+				// update references to outgoing transitions
+				var outgoing = current.outgoingTransitions;
+				for(var k = 0; k < outgoing.length; k++){
+					var transition = this._transitionMap[outgoing[k]];
+					transition.deleteIncomingPlace(current);
+					transition.addIncomingPlace(place);
+					place.addOutgoingTransition(transition.id);
+				}
+
+				// update references to incoming transitions
+				var incoming = current.incomingTransitions;
+				for(var k = 0; k < incoming.length; k++){
+					var transition = this._transitionMap[incoming[k]];
+					transition.deleteOutgoingPlace(current);
+					transition.addOutgoingPlace(place);
+					place.addIncomingTransition(transition.id);
+				}
+			}
+		}
+
+		// delete merged place from petri net
+		for(var i = 0; i < places.length; i++){
+			delete this._placeMap[places[i].id];
+			this._placeCount--;
+		}
+	}
+
+	/**
+	 * Adds the places and transitions from the specified petri net into
+	 * this petri net. The petri net to add is assumed to be a clone. If
+	 * an array of merge places is specified then the roots of the specified
+	 * graph will be merged with those places.
+	 *
+	 * @param {petrinet} net - the petri net to add
+	 * @param {place[]} mergeTo - places to merge to (optional)
+	 */
+	addPetriNet(net, mergeTo){
+		// add places from net into this petri net
+		var places = net.places;
+		for(var i = 0; i < places.length; i++){
+			this._placeMap[places[i].id] = places[i];
+			this._placeCount++;
+		}
+
+		// add transitions from net into this petri net
+		var labelSets = net.labelSets;
+		for(var i = 0; i < labelSets.length; i++){
+			var label = labelSets[i].label;
+			var transitions = labelSets[i].transitions;
+			for(var j = 0; j < transitions.length; j++){
+				this._addTransition(label, transitions[j]);
+				this._transitionCount++;
+			}
+		}
+
+		// merge added petri net to the specified place if necessary
+		if(mergeTo !== undefined){
+			this.mergePlaces(mergeTo, net.roots);
+		}
+	}
+
+	get clone(){
+		// clone the places in this petri net
+		var placeMap = {};
+		for(var id in this._placeMap){
+			var place = this._placeMap[id];
+			var clone = new PetriNet.Place(
+				place.id,
+				place.outgoingTransitions,
+				place.incomingTransitions,
+				place.metaData
+			);
+			placeMap[place.id] = place;
+		}
+
+		// clone the transitions in this petrinet
+		var labelSets = {};
+		var transitionMap = {};
+		for(var label in this._labelSets){
+			var transitions = this._labelSets[label];
+			for(var i = 0; i < transitions.length; i++){
+				var transition = transitions[i];
+				var outgoingPlaces = {};
+				var outgoing = transition.outgoingPlaces;
+				for(var j = 0; j < outgoing.length; j++){
+					var id = outgoing[j].id;
+					outgoingPlaces[id] = placeMap[id];
+				}
+
+				var incomingPlaces = {};
+				var incoming = transition.incomingPlaces;
+				for(var j = 0; j < incoming.length; j++){
+					var id = incoming[j].id;
+					incomingPlaces[id] = placeMap[id];
+				}
+
+				var clone = new PetriNet.Transition(
+					transition.id, 
+					transition.processIds,
+					outgoingPlaces,
+					incomingPlaces,
+					transition.metaData
+				);
+
+				transitionMap[clone.id] = clone;
+				if(labelSets[label] !== undefined){
+					labelSets[label].push(clone);
+				}
+				else{
+					labelSets[label] = [clone];
+				}
+			}
+		}
+
+		return new PetriNet(
+			this._id,
+			placeMap,
+			this._placeCount,
+			transitionMap,
+			labelSets,
+			this._transitionCount,
+			this._rootIds,
+			this._nextPlaceId,
+			this._nextTransitionId
+		);
+	}
+}
+
+PetriNet.Place = class {
+
+	/**
+	 * Constructs a new instance of a place within a PetriNet.
+	 */
+	constructor(id, outgoingTransitions, incomingTransitions, metaData){
+		// check that id has been defined
+		if(id === undefined){
+			// throw error
+		}
+
+		this._id = id;
+		this._outgoingTransitions = (outgoingTransitions !== undefined) ? outgoingTransitions : [];
+		this._incomingTransitions = (incomingTransitions !== undefined) ? incomingTransitions : [];
+		this._metaData = (metaData !== undefined) ? metaData : {};
+	}
+
+	/**
+	 * Returns the unique identifier for this place.
+	 *
+	 * @return {string} - place id
+	 */
+	get id(){
+		return this._id;
+	}
+
+	/**
+	 * Returns an array of unique identifiers for the transitions that
+	 * this place transitions to.
+	 *
+	 * @return {int[]} - array of transition ids
+	 */
+	get outgoingTransitions(){
+		return this._outgoingTransitions;
+	}
+
+	/**
+	 * Adds the specified transition id to the array of unique identifiers
+	 * for the transitions that this place transitions to. Only successfully
+	 * adds the id if the id is not already located in the array.
+	 *
+	 * @param {int} id - the transition id to add
+	 * @return {boolean} - true if id added, otherwise false
+	 */
+	addOutgoingTransition(id){
+		// check if transition id is already located in the array
+		for(var i = 0; i < this._outgoingTransitions.length; i++){
+			if(id === this._outgoingTransitions[i]){
+				return false;
+			}
+		}
+
+		// add id to array
+		this._outgoingTransitions.push(id);
+		return true;
+	}
+
+	/**
+	 * Deletes the specified transition id to the array of unique identifiers
+	 * for the transitions that this place transitions to. Only successfully
+	 * deletes the id if the id is not already located in the array.
+	 *
+	 * @param {int} id - the transition id to add
+	 * @return {boolean} - true if id added, otherwise false
+	 */
+	deleteOutgoingTransitions(id){
+		// check if transition id is located in the array
+		for(var i = 0; i < this._outgoingTransitions.length; i++){
+			if(id === this._outgoingTransitions[i]){
+				this._outgoingTransitions = this._outgoingTransitions.splice(i, 1);
+				return true;
+			}
+		}
+
+		// id not found in array
+		return false;
+	}
+
+	/**
+	 * Returns an array of unique identifiers for the transitions that
+	 * transition to this place.
+	 *
+	 * @return {int[]} - array of transition ids
+	 */
+	get incomingTransitions(){
+		return this._incomingTransitions;
+	}
+
+	/**
+	 * Adds the specified transition id to the array of unique identifiers
+	 * for the transitions that transition to this place. Only successfully
+	 * adds the id if the id is not already located in the array.
+	 *
+	 * @param {int} id - the transition id to add
+	 * @return {boolean} - true if id added, otherwise false
+	 */
+	addIncomingTransition(id){
+		// check if transition id is already located in the array
+		for(var i = 0; i < this._incomingTransitions.length; i++){
+			if(id === this._incomingTransitions[i]){
+				return false;
+			}
+		}
+
+		// add id to array
+		this._incomingTransitions.push(id);
+		return true;
+	}
+
+	/**
+	 * Deletes the specified transition id to the array of unique identifiers
+	 * for the transitions that transition to this place. Only successfully
+	 * deletes the id if the id is not already located in the array.
+	 *
+	 * @param {int} id - the transition id to add
+	 * @return {boolean} - true if id added, otherwise false
+	 */
+	deleteIncomingTransitions(id){
+		// check if transition id is located in the array
+		for(var i = 0; i < this._incomngTransitions.length; i++){
+			if(id === this._incomingTransitions[i]){
+				this._incomingTransitions = this._incomingTransitions.splice(i, 1);
+				return true;
+			}
+		}
+
+		// id not found in array
+		return false;
+	}
+
+	get metaData(){
+		return JSON.parse(JSON.stringify(this._metaData));
+	}
+
+	/**
+	 * Returns the value associated with the specified key in the meta data
+	 * for this place or undefined if no value is stored with that key.
+	 *
+	 * @param {string} key - the key
+	 * @return {value} - the value to return (potentially undefined)
 	 */
 	getMetaData(key){
 		return this._metaData[key];
 	}
 
 	/**
-	 * Adds the specified key-value pair to the meta data of this place.
-	 * If the key already exists in the meta data then that data is overridden.
+	 * Adds the specified key-value mapping to the meta data for this place.
 	 *
 	 * @param {string} key - the key to add
-	 * @param {?} value - the value to add
+	 * @param {value} value - the value to add
 	 */
 	addMetaData(key, value){
 		this._metaData[key] = value;
 	}
 
 	/**
-	 * Deletes the meta data associated with this key from the meta data
-	 * of this place.
+	 * Deletes the key-value mapping for the specified key from the meta data
+	 * for this place.
 	 *
-	 * @param {string} key - the key to delete data for
+	 * @param {string} key - the key to delete
 	 */
 	deleteMetaData(key){
 		delete this._metaData[key];
 	}
-
 }
 
 PetriNet.Transition = class {
 
-	constructor(id, label){
+	constructor(id, processIds, outgoingPlaces, incomingPlaces, metaData){
+		// check that global ids array is defined
+		if(id === undefined){
+			// throw error
+		}
+		if(processIds === undefined){
+			// throw error
+		}
+
 		this._id = id;
-		this._label = label;
-		this._placesToMe = {};
-		this._placesFromMe = {}; 
-		this._metaData = {};
+		this._processIds = processIds;
+		this._outgoingPlaces = (outgoingPlaces !== undefined) ? outgoingPlaces : {};
+		this._incomingPlaces = (incomingPlaces !== undefined) ? incomingPlaces : {};
+		this._metaData = (metaData !== undefined) ? metaData : {}; 
 	}
 
 	/**
 	 * Returns the unique identifier for this transition.
 	 *
-	 * @return {int} - place id
+	 * @return {string} - id
 	 */
 	get id(){
 		return this._id;
 	}
 
 	/**
-	 * Sets the unique identifier of this transition to the specified id
+	 * Returns the array of global ids associated with this transition.
 	 *
-	 * @param {int} id - the new id value
+	 * @return {int[]} - array of process ids
 	 */
-	 set id(id){
-	 	this._id = id;
-	 }
-
-	/**
-	 * Returns the label associated with this transition.
-	 *
-	 * @return {string} label - the label for this transition
-	 */
-	get label(){
-		return this._label;
+	get processIds(){
+		return this._processIds.sort();
 	}
 
 	/**
-	 * Sets the label associated with this transition to the specified
-	 * label.
+	 * Adds the specified process id to the array of process ids associated
+	 * with this transition. Will not add the process id if it is a
+	 * duplicate.
 	 *
-	 * @param {string} label - the new label
-	 * @return {string} - the new label
+	 * @param {int} id - the process id
+	 * @return {boolean} - true if id is added, otherwise false
 	 */
-	set label(label){
-		this._label = label;
-		return this._label;
+	addProcessId(id){
+		// check that process is not already present in array
+		for(var i = 0; i < this._processIds.length; i++){
+			if(id === this._processIds[i]){
+				return false;
+			}
+		}
+
+		// add id to array of process ids
+		this._processIds.push(id);
+		return true;
 	}
 
 	/**
-	 * Returns an array of the places from this transition.
+	 * Deletes the specified id from the array of process ids associated with
+	 * this transition. The array of process ids remains unchanged if the
+	 * specified id is not located in the array.
 	 *
-	 * @return {place[]} - place from this place
+	 * @param {int} id - the process id
+	 * @return {boolean} - true if id is deleted, otherwise false
 	 */
-	get placesFromMe(){
-		let places = [];
-		for(let i in this._placesFromMe){
-			places.push(this._placesFromMe[i]);
+	deleteProcessId(id){
+		// chek that global id is present in array
+		for(var i = 0; i < this._processIds.length; i++){
+			if(id === this._processIds[i]){
+				this._processIds = processIds.splice(i, 1);
+				return true;
+			}
+		}
+
+		// id not located
+		return false;
+	}
+
+	/**
+	 * Returns an array of the places that this transition transitions to.
+	 *
+	 * @return {place[]} - array of places
+	 */
+	get outgoingPlaces(){
+		var places = [];
+		for(var id in this._outgoingPlaces){
+			places.push(this._outgoingPlaces[id]);
 		}
 
 		return places;
 	}
 
 	/**
-	 * Adds the specified place to the map of places that this transition
-	 * can move to.
+	 * Adds the specifed place to the set of places that this transition
+	 * transitions to.
 	 *
 	 * @param {place} place - the place to add
 	 */
-	addPlaceFromMe(place){
-		this._placesFromMe[place.id] = place;
+	addOutgoingPlace(place){
+		this._outgoingPlaces[place.id] = place;
 	}
 
 	/**
-	 * Returns an array of the places that can move to this transition.
+	 * Deletes the specifed place from the set of places that this transition
+	 * transitions to.
 	 *
-	 * @return {place[]} - places to this transition
+	 * @param {place} place - the place to delete
 	 */
-	get placesToMe(){
-		let places = [];
-		for(let i in placesToMe){
-			places.push(this._placesToMe[i]);
+	deleteOutgoingPlace(place){
+		delete this._outgoingPlaces[place.id];
+	}
+
+	/**
+	 * Returns an array of the places that transition to this transition.
+	 *
+	 * @return {place[]} - array of places
+	 */
+	get incomingPlaces(){
+		var places = [];
+		for(var id in this._incomingPlaces){
+			places.push(this._incomingPlaces[id]);
 		}
 
 		return places;
 	}
 
 	/**
-	 * Adds the specified place to the map of places that move to this
+	 * Adds the specified place to the set of places that transition to this
 	 * transition.
 	 *
 	 * @param {place} place - the place to add
 	 */
-	addPlaceToMe(place){
-		this._placesToMe[place.id] = place;
+	addIncomingPlace(place){
+		this._incomingPlaces[place.id] = place;
 	}
- 
+
+	/**
+	 * Deletes the specifed place from the set of places that transition to
+	 * this transition.
+	 *
+	 * @param {place} place - the place to delete
+	 */
+	deleteIncomingPlace(place){
+		delete this._incomingPlaces[place.id];
+	}
+
+	get metaData(){
+		return JSON.parse(JSON.stringify(this._metaData));
+	}
+
+	/**
+	 * Returns the value associated with the specified key in the meta data
+	 * for this place or undefined if no value is stored with that key.
+	 *
+	 * @param {string} key - the key
+	 * @return {value} - the value to return (potentially undefined)
+	 */
+	getMetaData(key){
+		return this._metaData[key];
+	}
+
+	/**
+	 * Adds the specified key-value mapping to the meta data for this place.
+	 *
+	 * @param {string} key - the key to add
+	 * @param {value} value - the value to add
+	 */
+	addMetaData(key, value){
+		this._metaData[key] = value;
+	}
+
+	/**
+	 * Deletes the key-value mapping for the specified key from the meta data
+	 * for this place.
+	 *
+	 * @param {string} key - the key to delete
+	 */
+	deleteMetaData(key){
+		delete this._metaData[key];
+	}
 }
