@@ -6,6 +6,9 @@
  * the tests.
  */
 
+// define shorthand for chai.expect
+var expect = chai.expect;
+
 /**
  * PARSING HELPER FUNCTIONS
  *
@@ -153,7 +156,7 @@ function testIfStatementNode(node, condition, hasFalseBranch){
 	expect(node).to.have.property('type', 'if-statement');
 	expect(node).to.have.property('guard', condition);
 	expect(node).to.have.property('trueBranch');
-	
+
 	// test for false branch based on the specified boolean
 	if(hasFalseBranch){
 		expect(node).to.have.property('falseBranch');
