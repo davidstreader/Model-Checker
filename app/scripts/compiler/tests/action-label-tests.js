@@ -24,107 +24,107 @@ describe('Grammar to AST Action Label Tests', function(){
 
 		it('[' + processType + ' test] - Should parse the action label \'a\' successfully', function() {
 			processes = constructProcesses(processType + ' A = (a -> STOP).');
-			hasActionLabel(processes[0], 'a');
+			testActionLabelNode(processes[0].process.from, 'a');
 		});
 
 		it('[' + processType + ' test] - Should parse the action label \'a\' successfully', function() {
 			processes = constructProcesses(processType + ' A = (abc -> STOP).');
-			hasActionLabel(processes[0], 'abc');
+			testActionLabelNode(processes[0].process.from, 'abc');
 		});
 
 		it('[' + processType + ' test] - Should parse the action label \'aBc\' successfully', function() {
 			processes = constructProcesses(processType + ' A = (aBc -> STOP).');
-			hasActionLabel(processes[0], 'aBc');
+			testActionLabelNode(processes[0].process.from, 'aBc');
 		});		
 
 		it('[' + processType + ' test] - Should parse the action label \'aB_C\' successfully', function() {
 			processes = constructProcesses(processType + ' A = (aB_C -> STOP).');
-			hasActionLabel(processes[0], 'aB_C');
+			testActionLabelNode(processes[0].process.from, 'aB_C');
 		});
 
 		it('[' + processType + ' test] - Should parse the action label \'a\' successfully', function() {
 			processes = constructProcesses(processType + ' A = (ab_C12_3 -> STOP).');
-			hasActionLabel(processes[0], 'ab_C12_3');
+			testActionLabelNode(processes[0].process.from, 'ab_C12_3');
 		});
 
 		it('[' + processType + ' test] - Should parse the action label \'a.b_C12_3\' successfully', function() {
 			processes = constructProcesses(processType + ' A = (a.b_C12_3 -> STOP).');
-			hasActionLabel(processes[0], 'a.b_C12_3');
+			testActionLabelNode(processes[0].process.from, 'a.b_C12_3');
 		});				
 
 		it('[' + processType + ' test] - Should parse the action label \'[1]\' successfully', function() {
 			processes = constructProcesses(processType + ' A = ([1] -> STOP).');
-			hasActionLabel(processes[0], '[1]');
+			testActionLabelNode(processes[0].process.from, '[1]');
 		});
 
 		it('[' + processType + ' test] - Should parse the action label \'a\' 1][2]uccessfully', function() {
 			processes = constructProcesses(processType + ' A = ([1][2] -> STOP).');
-			hasActionLabel(processes[0], '[1][2]');
+			testActionLabelNode(processes[0].process.from, '[1][2]');
 		});	
 
 		it('[' + processType + ' test] - Should parse the action label \'[1][2][4 - 1]\' successfully', function() {
 			processes = constructProcesses(processType + ' A = ([1][2][4 - 1] -> STOP).');
-			hasActionLabel(processes[0], '[1][2][$<v0>]');
+			testActionLabelNode(processes[0].process.from, '[1][2][$<v0>]');
 		});	
 
 		it('[' + processType + ' test] - Should parse the action label \'[1].[2]\' successfully', function() {
 			processes = constructProcesses(processType + ' A = ([1].[2] -> STOP).');
-			hasActionLabel(processes[0], '[1].[2]');
+			testActionLabelNode(processes[0].process.from, '[1].[2]');
 		});	
 
 		it('[' + processType + ' test] - Should parse the action label \'[1].[2].[4 - 1]\' successfully', function() {
 			processes = constructProcesses(processType + ' A = ([1].[2].[4 - 1] -> STOP).');
-			hasActionLabel(processes[0], '[1].[2].[$<v0>]');
+			testActionLabelNode(processes[0].process.from, '[1].[2].[$<v0>]');
 		});	
 
 		it('[' + processType + ' test] - Should parse the action label \'a[1]\' successfully', function() {
 			processes = constructProcesses(processType + ' A = (a[1] -> STOP).');
-			hasActionLabel(processes[0], 'a[1]');
+			testActionLabelNode(processes[0].process.from, 'a[1]');
 		});
 
 		it('[' + processType + ' test] - Should parse the action label \'a[1]b[2]c[3] \' successfully', function() {
 			processes = constructProcesses(processType + ' A = (a[1]b[2]c[3] -> STOP).');
-			hasActionLabel(processes[0], 'a[1]b[2]c[3]');
+			testActionLabelNode(processes[0].process.from, 'a[1]b[2]c[3]');
 		});
 
 		it('[' + processType + ' test] - Should parse the action label \'aB[1][3-2]c[4]\' successfully', function() {
 			processes = constructProcesses(processType + ' A = (aB[1][3-2]c[4] -> STOP).');
-			hasActionLabel(processes[0], 'aB[1][$<v0>]c[4]');
+			testActionLabelNode(processes[0].process.from, 'aB[1][$<v0>]c[4]');
 		});		
 
 		it('[' + processType + ' test] - Should parse the action label \'aB_[1][5-2]cC[8]\' successfully', function() {
 			processes = constructProcesses(processType + ' A = (aB_[1][5-2]cC[8] -> STOP).');
-			hasActionLabel(processes[0], 'aB_[1][$<v0>]cC[8]');
+			testActionLabelNode(processes[0].process.from, 'aB_[1][$<v0>]cC[8]');
 		});
 
 		it('[' + processType + ' test] - Should parse the action label \'a[1]b_C[2][3-2]c12_[5][3]\' successfully', function() {
 			processes = constructProcesses(processType + ' A = (a[1]b_C[2][3-2]c12_[5][3] -> STOP).');
-			hasActionLabel(processes[0], 'a[1]b_C[2][$<v0>]c12_[5][3]');
+			testActionLabelNode(processes[0].process.from, 'a[1]b_C[2][$<v0>]c12_[5][3]');
 		});
 
 		it('[' + processType + ' test] - Should parse the action label \'a.[1]\' successfully', function() {
 			processes = constructProcesses(processType + ' A = (a.[1] -> STOP).');
-			hasActionLabel(processes[0], 'a.[1]');
+			testActionLabelNode(processes[0].process.from, 'a.[1]');
 		});
 
 		it('[' + processType + ' test] - Should parse the action label \'a.[1].b.[2].c.[3]\' successfully', function() {
 			processes = constructProcesses(processType + ' A = (a.[1].b.[2].c.[3] -> STOP).');
-			hasActionLabel(processes[0], 'a.[1].b.[2].c.[3]');
+			testActionLabelNode(processes[0].process.from, 'a.[1].b.[2].c.[3]');
 		});
 
 		it('[' + processType + ' test] - Should parse the action label \'aB.[1].[3-2].c.[4]\' successfully', function() {
 			processes = constructProcesses(processType + ' A = (aB.[1].[3-2].c.[4] -> STOP).');
-			hasActionLabel(processes[0], 'aB.[1].[$<v0>].c.[4]');
+			testActionLabelNode(processes[0].process.from, 'aB.[1].[$<v0>].c.[4]');
 		});		
 
 		it('[' + processType + ' test] - Should parse the action label \'aB_.[1].[5-2].cC.[8] \' successfully', function() {
 			processes = constructProcesses(processType + ' A = (aB_.[1].[5-2].cC.[8] -> STOP).');
-			hasActionLabel(processes[0], 'aB_.[1].[$<v0>].cC.[8]');
+			testActionLabelNode(processes[0].process.from, 'aB_.[1].[$<v0>].cC.[8]');
 		});
 
 		it('[' + processType + ' test] - Should parse the action label \'a.[1].b_C[2].[3-2].a12_[5].c3\' successfully', function() {
 			processes = constructProcesses(processType + ' A = (a.[1].b_C[2].[3-2].a12_[5].c3 -> STOP).');
-			hasActionLabel(processes[0], 'a.[1].b_C[2].[$<v0>].a12_[5].c3');
+			testActionLabelNode(processes[0].process.from, 'a.[1].b_C[2].[$<v0>].a12_[5].c3');
 		});
 
 		/**
@@ -133,33 +133,9 @@ describe('Grammar to AST Action Label Tests', function(){
 		 */
 		after(function(){
 			expect(processes).to.have.lengthOf(1);
-			expect(processes[0]).to.have.property('type', 'process');
-			expect(processes[0]).to.have.property('processType', processType);
-			expect(processes[0]).to.have.property('ident', 'A');
-			expect(processes[0]).to.have.property('local');
-			expect(processes[0].local).to.eql([]);
+			testProcessNode(processes[0], processType, 'A', false);
 		});
-
-		/**
-		 * Helper function for tests that eliminates dulpicate code. The specified
-		 * process is expected to be a sequence ast node, with the from property of the
-		 * sequence node being an action label and the to property being a terminal
-		 * node.
-		 *
-		 * @param {sequence node} process - the sequence ast node to process
-		 */
-		function hasActionLabel(process, actionLabel){
-			expect(process).to.have.property('process');
-			expect(process.process).to.have.property('type', 'sequence');
-			expect(process.process).to.have.property('from');
-			expect(process.process.from).to.have.property('type', 'action-label');
-			expect(process.process.from).to.have.property('action', actionLabel);
-			expect(process.process).to.have.property('to');
-			expect(process.process.to).to.have.property('type', 'terminal');
-			expect(process.process.to).to.have.property('terminal', 'STOP');
-		}
 	}
-
 });
 
 describe('Grammar to AST Action Range Tests', function(){
@@ -272,11 +248,7 @@ describe('Grammar to AST Action Range Tests', function(){
 		 */
 		after(function(){
 			expect(processes).to.have.lengthOf(1);
-			expect(processes[0]).to.have.property('type', 'process');
-			expect(processes[0]).to.have.property('processType', processType);
-			expect(processes[0]).to.have.property('ident', 'A');
-			expect(processes[0]).to.have.property('local');
-			expect(processes[0].local).to.eql([]);
+			testProcessNode(processes[0], processType, 'A', false);
 		});
 
 		/**
