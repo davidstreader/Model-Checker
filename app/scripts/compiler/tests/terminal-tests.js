@@ -26,7 +26,7 @@ describe('Grammar to AST Stop Terminal Tests', function(){
 		 */
 		it('[' + processType + ' test] - Should parse a process containing a single stop terminal within parentheses successfully', function(){
 			processes = constructProcesses(processType + ' A = (STOP).');
-			testTerminalNode(processes[0], 'STOP');
+			testTerminalNode(processes[0].process, 'STOP');
 		});
 
 		/**
@@ -35,7 +35,7 @@ describe('Grammar to AST Stop Terminal Tests', function(){
 		 */
 		it('[' + processType + ' test] - Should parse a process containing a single stop terminal without parentheses successfully', function(){
 			processes = constructProcesses(processType + ' A = STOP.');
-			testTerminalNode(processes[0], 'STOP');
+			testTerminalNode(processes[0].process, 'STOP');
 		});
 
 		/**
@@ -77,7 +77,7 @@ describe('Grammar to AST Error Terminal Tests', function(){
 		 */
 		it('[' + processType + ' test] - Should parse a process containing a single error terminal within parentheses successfully', function(){
 			processes = constructProcesses(processType + ' A = (ERROR).');
-			testTerminalNode(processes[0], 'ERROR');
+			testTerminalNode(processes[0].process, 'ERROR');
 		});
 
 		/**
@@ -86,7 +86,7 @@ describe('Grammar to AST Error Terminal Tests', function(){
 		 */
 		it('[' + processType + ' test] - Should parse a process containing a single error terminal without parentheses successfully', function(){
 			processes = constructProcesses(processType + ' A = ERROR.');
-			testTerminalNode(processes[0], 'ERROR');
+			testTerminalNode(processes[0].process, 'ERROR');
 		});
 
 		/**
