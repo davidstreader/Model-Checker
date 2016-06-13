@@ -506,7 +506,7 @@ function parse(tokens){
 		// check if a composition can be parsed
 		if(tokensIterator.peek().value === '||'){
 			gobble(tokensIterator.next(), '||');
-			process =  { type:'composite', process1:process, process2:parseComposite(tokens) };
+			process =  { type:'composite', process1:process, process2:parseComposite(tokensIterator) };
 		}
 
 		return process;
@@ -517,7 +517,6 @@ function parse(tokens){
 	 */
 	function parseLocalProcess(tokensIterator){
 		var process;
-		console.log(tokensIterator.peek());
 		if(tokensIterator.peek().value === '('){
 			gobble(tokensIterator.next(), '(');
 			process = parseComposite(tokensIterator);
