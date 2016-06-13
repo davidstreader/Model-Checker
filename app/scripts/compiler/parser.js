@@ -15,22 +15,28 @@ var actionRanges;
 function parse(tokens){
 
 	reset();
-	while(index < tokens.length){
-		var token = tokens[index];
+	var tokensIterator = constructTokensIterator();
+
+	while(tokensIterator.hasNext()){
+		var token = tokensIterator.peek();
+
 		if(token.value === 'automata'){
 			parseProcessDefinition(tokens);
 		}
 		else if(token.value === 'petrinet'){
-			parseProcessDefinition(tokens);
+			parseProcessDefinition(tokensIterator);
 		}
 		else if(token.value === 'const'){
-			parseConstDefinition(tokens);
+			parseConstDefinition(tokensIterator);
 		}
 		else if(token.value === 'range'){
-			parseRangeDefinition(tokens);
+			parseRangeDefinition(tokensIterator);
 		}
 		else if(token.value === 'set'){
-			parseSetDefinition(tokens);
+			parseSetDefinition(tokensIterator);
+		}
+		else if(token.value === 'EOF'){
+			// special case, do nothing
 		}
 		else{
 			throw new ParserException('Expecting to parse a either a process definition or a constant, received the ' + token.type + '\' ' + token.value + '\'');
@@ -39,11 +45,12 @@ function parse(tokens){
 
 	return { processes:processes, constantsMap:constantsMap, variableMap:variableMap };
 
-	function parseIdentifier(tokens){
-		if(tokens[index].type === 'identifier'){
-			return parseValue(tokens[index]);
+	function parseIdentifier(tokensIterator){
+		var token = tokensIterator.next();
+		if(token.type === 'identifier'){
+			return parseValue(token);
 		}
-		var token = tokens[index];
+
 		throw new ParserException('Expecting to parse an identifier, received the ' + token.type + '\' ' + token.value + '\'');
 	}
 
@@ -73,8 +80,6 @@ function parse(tokens){
 				'Expecting to parse \'' + value + '\' but received the ' + token.type + ' \'' + token.value + '\'.'
 			);
 		}
-
-		index++;
 	}
 
 	/**
@@ -97,29 +102,33 @@ function parse(tokens){
 	 * @param {token[]} tokens - the array of tokens to parse
 	 * @return {node} - an action label node for the ast
 	 */
-	function parseActionLabel(tokens){
+	function parseActionLabel(tokensIterator){
 		var action = '';
 
-		while(index < tokens.length){
-			if(tokens[index].type === 'action'){
-				action += parseValue(tokens[index]);
+		while(tokensIterator.hasNext()){
+			var token = tokensIterator.next();
+			if(token.type === 'action'){
+				action += parseValue(token);
 			}
-			else if(tokens[index].value === '['){
+			else if(token.value === '['){
 				// can either parse an expression or an action range at this point
-				gobble(tokens[index], '[');
+				gobble(token, '[');
 				var functions = [parseActionRange, parseExpression];
-				action += '[' + parseMultiple(tokens, functions) + ']';
-				gobble(tokens[index], ']');
+				action += '[' + parseMultiple(tokensIterator, functions) + ']';
+				gobble(tokensIterator.next(), ']');
 			}
 			else{
-				var token = tokens[index];
-				throw new ParserException('Received unexpected ' + token.type + '\' ' + token.value + '\' while attempting to parse an action label');
+				throw new ParserException(
+					'Received unexpected ' + token.type + '\' ' + token.value + '\' while attempting to parse an action label',
+					token.position
+				);
 			}
 
-			if(tokens[index].value === '.'){
-				action += parseValue(tokens[index]);
+			token = tokensIterator.peek();
+			if(token.value === '.'){
+				action += parseValue(tokensIterator.next());
 			}
-			else if(tokens[index].value != '[' && tokens[index].type !== 'action'){
+			else if(token.value != '[' && token.type !== 'action'){
 				// cannot parse anymore action labels
 				break;
 			}
@@ -138,21 +147,22 @@ function parse(tokens){
 	 * @param {token[]} tokens - the array of tokens to parse
 	 * @return {node} - an action range node for the ast
 	 */
-	function parseActionRange(tokens){
+	function parseActionRange(tokensIterator){
 		var variable = '';
-		if(tokens[index].type === 'action'){
-			variable = '$' + parseValue(tokens[index]);
-			gobble(tokens[index], ':');
+		if(tokensIterator.peek().type === 'action'){
+			variable = '$' + parseValue(tokensIterator.next());
+			gobble(tokensIterator.next(), ':');
 		}
 		else{
 			variable = generateVariableName();
 		}
 
 		// attempt to parse identifier, range or set
+		var token = tokensIterator.peek();
 		var range;
 		// check that identifier is not part of a range definition
-		if(tokens[index].type === 'identifier' && tokens[index + 1].value !== '..'){
-			var ident = parseIdentifier(tokens);
+		if(token.type === 'identifier' && tokens[index + 1].value !== '..'){
+			var ident = parseIdentifier(tokensIterator);
 			range = constantsMap[ident];
 			
 			// check if constant has been defined
@@ -166,11 +176,11 @@ function parse(tokens){
 			}
 
 		}
-		else if(tokens[index].value !== '{'){
-			range = parseRange(tokens);
+		else if(token.value !== '{'){
+			range = parseRange(tokensIterator);
 		}
 		else{
-			range = parseSet(tokens);
+			range = parseSet(tokensIterator);
 		}
 
 		actionRanges.push({ type:'index', variable:variable, range:range });
@@ -187,10 +197,10 @@ function parse(tokens){
 	 * @param {token[]} tokens - the array of tokens to parse
 	 * @return {node} - a range node for the ast
 	 */
-	function parseRange(tokens){
-		var start = parseExpression(tokens);
-		gobble(tokens[index], '..');
-		var end = parseExpression(tokens);
+	function parseRange(tokensIterator){
+		var start = parseExpression(tokensIterator);
+		gobble(tokensIterator.next(), '..');
+		var end = parseExpression(tokensIterator);
 
 		return { type:'range', start:start, end: end};
 	}
@@ -204,14 +214,14 @@ function parse(tokens){
 	 * @param {token[]} tokens - the array of tokens to parse
 	 * @return {node} - a set node for the ast
 	 */
-	function parseSet(tokens){
-		gobble(tokens[index], '{');
+	function parseSet(tokensIterator){
+		gobble(tokensIterator.next(), '{');
 		var currentRanges = actionRanges.length;
 		var set = [];
 		
 		// parse all the elements within the set
-		while(index < tokens.length){
-			var action = parseActionLabel(tokens).action;
+		while(tokensIterator.hasNext()){
+			var action = parseActionLabel(tokensIterator).action;
 			
 			// check if a range has been parsed
 			if(currentRanges < actionRanges.length){
@@ -223,14 +233,14 @@ function parse(tokens){
 			}
 
 			// check if there are anymore elements to parse
-			if(tokens[index].value !== ','){
+			if(tokensIterator.peek().value !== ','){
 				break;
 			}
 
-			gobble(tokens[index], ',');
+			gobble(tokensIterator.next(), ',');
 		}
 
-		gobble(tokens[index], '}');
+		gobble(tokensIterator.next(), '}');
 
 		return { type:'set', set:set };
 
@@ -295,14 +305,14 @@ function parse(tokens){
 	  * @param {string|undefined} type - the type to be parsed (can be undefined)
 	  * @return {string} - the parsed identifier
 	  */
-	function parseAssignment(tokens, type){
+	function parseAssignment(tokensIterator, type){
 		// ensure that the correct type is parsed
 	 	if(type !== undefined){
-	 		gobble(tokens[index], type);
+	 		gobble(tokensIterator.next(), type);
 		}
 
-		var ident = parseIdentifier(tokens);
-		gobble(tokens[index], '=');
+		var ident = parseIdentifier(tokensIterator);
+		gobble(tokensIterator.next(), '=');
 
 		return ident;
 	}
@@ -321,9 +331,9 @@ function parse(tokens){
 	 *
 	 * @param {token[]} tokens - the array of tokens to parse
 	 */
-	function parseConstDefinition(tokens){
-		var ident = parseAssignment(tokens, 'const');
-		var value = parseSimpleExpression(tokens).expr;
+	function parseConstDefinition(tokensIterator){
+		var ident = parseAssignment(tokensIterator, 'const');
+		var value = parseSimpleExpression(tokensIterator).expr;
 		checkValidIdentifier(ident);
 
 		constantsMap[ident] = { type:'const', value:value };
@@ -337,23 +347,24 @@ function parse(tokens){
 	 *
 	 * @param {token[]} tokens - the array of tokens to parse
 	 */
-	function parseRangeDefinition(tokens){
-		var ident = parseAssignment(tokens, 'range');
+	function parseRangeDefinition(tokensIterator){
+		var ident = parseAssignment(tokensIterator, 'range');
 		checkValidIdentifier(ident);
 
 		// check if this range is referencing another range
+		var token = tokensIterator.peek();
 		var start;
 		var end;
-		if(tokens[index].type === 'identifier' && constantsMap[tokens[index].value].type === 'range'){
-			var reference = parseValue(tokens[index]);
+		if(token.type === 'identifier' && constantsMap[token.value].type === 'range'){
+			var reference = parseValue(tokensIterator.next());
 			var constant = constantsMap[reference];
 			start = constant.start;
 			end = constant.end;
 		}
 		else{
-			start = parseSimpleExpression(tokens).expr;
-			gobble(tokens[index], '..');
-			end = parseSimpleExpression(tokens).expr;
+			start = parseSimpleExpression(tokensIterator).expr;
+			gobble(tokensIterator.next(), '..');
+			end = parseSimpleExpression(tokensIterator).expr;
 		}
 
 		constantsMap[ident] = { type:'range', start:start, end:end };
@@ -367,14 +378,14 @@ function parse(tokens){
 	 *
 	 * @param {token[]} tokens - the array of tokens to parse
 	 */
-	function parseSetDefinition(tokens){
-		var ident = parseAssignment(tokens, 'set');
+	function parseSetDefinition(tokensIterator){
+		var ident = parseAssignment(tokensIterator, 'set');
 		checkValidIdentifier(ident);
 		
 		// check if this set is referencing another set
 		var set;
-		if(tokens[index].type === 'identifier'){
-			var reference = parseValue(tokens[index]);
+		if(tokensIterator.peek().type === 'identifier'){
+			var reference = parseValue(tokensIterator.next());
 			var constant = constantsMap[reference];
 
 			//check if constant is defined
@@ -391,7 +402,7 @@ function parse(tokens){
 
 		}
 		else{
-			set = parseSet(tokens);			
+			set = parseSet(tokensIterator);			
 		}
 
 		constantsMap[ident] = set;
@@ -410,41 +421,42 @@ function parse(tokens){
 	 *
 	 * @param {token[]} tokens - the array of tokens to parse
 	 */
-	function parseProcessDefinition(tokens){
-		var processType = parseProcessType(tokens);
-		var ident = parseIdentifier(tokens);
-		gobble(tokens[index], '=');
-		var process = parseComposite(tokens);
+	function parseProcessDefinition(tokensIterator){
+		var processType = parseProcessType(tokensIterator);
+		var ident = parseIdentifier(tokensIterator);
+		gobble(tokensIterator.next(), '=');
+		var process = parseComposite(tokensIterator);
 
 		// check if any local processes have been defined
 		var localProcesses = [];
 		while(tokens[index].value === ','){
-			var localIdent = parseIdentifier(tokens[index]);
+			var localIdent = parseIdentifier(tokensIterator.next());
 
 			// check if any ranges have been defined
 			var ranges;
 			if(tokens[index].value === '['){
-				ranges = parseRanges(tokens);
+				ranges = parseRanges(tokensIterator);
 			}
 
-			var process = parseComposite(tokens);
+			var process = parseComposite(tokensIterator);
 			var localDefinition = { type:'process', ident:localIdent, ranges:ranges, process:process };
 			localProcesses.push(localDefinition);
 		}
 
 		// check if a relabelling set has been defined
 		var relabel;
-		if(tokens[index].value === '/'){
-			relabel = parseRelabel(tokens);
+		if(tokensIterator.peek().value === '/'){
+			relabel = parseRelabel(tokensIterator);
 		}
 
 		// check if a hidden set has been defined
 		var hiding;
-		if(tokens[index].value === '\\' | tokens[index] === '@'){
-			hiding = parseHiding(tokens);
+		var token = tokensIterator.peek();
+		if(token.value === '\\' | token.value === '@'){
+			hiding = parseHiding(tokensIterator);
 		}
 
-		gobble(tokens[index], '.');
+		gobble(tokensIterator.next(), '.');
 
 		var definition = { type:'process', processType:processType, ident:ident, process:process, local:localProcesses };
 		processes.push(definition);
@@ -456,30 +468,31 @@ function parse(tokens){
 	 *
 	 * PROCESS_TYPE := 'automata' | 'petrinet'
 	 */
-	function parseProcessType(tokens){
-		if(tokens[index].value === 'automata'){
-			return parseValue(tokens[index]);
+	function parseProcessType(tokensIterator){
+		var token = tokensIterator.peek();
+		if(token.value === 'automata'){
+			return parseValue(tokensIterator.next());
 		}
-		else if(tokens[index].value === 'petrinet'){
-			return parseValue(tokens[index]);
+		else if(token.value === 'petrinet'){
+			return parseValue(tokensIterator.next());
 		}
 		else{
-			var type = tokens[index].type;
-			var value = tokens[index.value];
+			var type = token.type;
+			var value = token.value;
 			throw new ParserException('Expecting to parse a process type, received the ' + type + ' \'' + value + '\'');
 		}
 	}
 
-	function parseComposite(tokens){
+	function parseComposite(tokensIterator){
 		// check if a label has been defined
-		var label = parseMultiple(tokens, [parseLabel]);
+		var label = parseMultiple(tokensIterator, [parseLabel]);
 
-		var process = parseLocalProcess(tokens);
+		var process = parseLocalProcess(tokensIterator);
 
 		// check if a relabelling set has been defined
 		var relabel;
-		if(tokens[index].value === '/'){
-			relabel = parseRelabel(tokens);
+		if(tokensIterator.peek().value === '/'){
+			relabel = parseRelabel(tokensIterator);
 		}
 
 		// add label and relabel to process if necessary
@@ -491,8 +504,8 @@ function parse(tokens){
 		}
 
 		// check if a composition can be parsed
-		if(tokens[index].value === '||'){
-			gobble(tokens[index], '||');
+		if(tokensIterator.peek().value === '||'){
+			gobble(tokensIterator.next(), '||');
 			process =  { type:'composite', process1:process, process2:parseComposite(tokens) };
 		}
 
@@ -502,21 +515,22 @@ function parse(tokens){
 	/**
 	 * LOCAL_PROCESS := '(' LOCAL_PROCESS ')' | BASE_LOCAL_PROCESS | IF_STATEMENT | FUNCTION | COMPOSITE | CHOICE
 	 */
-	function parseLocalProcess(tokens){
+	function parseLocalProcess(tokensIterator){
 		var process;
-		if(tokens[index].value === '('){
-			gobble(tokens[index], '(');
-			process = parseComposite(tokens);
-			gobble(tokens[index], ')');
+		console.log(tokensIterator.peek());
+		if(tokensIterator.peek().value === '('){
+			gobble(tokensIterator.next(), '(');
+			process = parseComposite(tokensIterator);
+			gobble(tokensIterator.next(), ')');
 		}
 		else{
 			var functions = [parseBaseLocalProcess, parseChoice];
-			process = parseMultiple(tokens, functions);
+			process = parseMultiple(tokensIterator, functions);
 		}
 
-		if(tokens[index].value === '|'){
-			gobble(tokens[index], '|');
-			return { type:'choice', process1:process, process2:parseLocalProcess(tokens) };
+		if(tokensIterator.peek().value === '|'){
+			gobble(tokensIterator.next(), '|');
+			return { type:'choice', process1:process, process2:parseLocalProcess(tokensIterator) };
 		}
 
 		return process;
@@ -532,33 +546,34 @@ function parse(tokens){
 	 * @param {token[]} tokens - the array of tokens to parse
 	 * @return {node} - either a terminal or identifier node for the ast
 	 */
-	function parseBaseLocalProcess(tokens){
-		if(tokens[index].type === 'terminal'){
-			var terminal = parseValue(tokens[index]);
+	function parseBaseLocalProcess(tokensIterator){
+		var token = tokensIterator.peek();
+		if(token.type === 'terminal'){
+			var terminal = parseValue(tokensIterator.next());
 			return { type:'terminal', terminal:terminal };
 		}
-		else if(tokens[index].type === 'identifier'){
-			var ident = { type:'identifier', ident:parseIdentifier(tokens) };
+		else if(token.type === 'identifier'){
+			var ident = { type:'identifier', ident:parseIdentifier(tokensIterator) };
 
 			// check if any indices have been declared
 			if(tokens[index].value === '['){
-				var indices = parseIndices(tokens);
+				var indices = parseIndices(tokensIterator);
 				ident.indices = indices;
 				return ident;
 			}
 
 			return ident;
 		}
-		else if(tokens[index].value === 'if'){
-			return parseIfStatement(tokens);
+		else if(token.value === 'if'){
+			return parseIfStatement(tokensIterator);
 		}
-		else if(tokens[index].value === 'abs' || tokens[index].value === 'simp'){
-			return parseFunction(tokens);
+		else if(token.value === 'abs' || token.value === 'simp'){
+			return parseFunction(tokensIterator);
 		}
-		else if(tokens[index].value === '('){
-			gobble(tokens[index], '(');
-			var process = parseLocalProcess(tokens);
-			gobble(tokens[index], ')');
+		else if(token.value === '('){
+			gobble(tokensIterator.next(), '(');
+			var process = parseLocalProcess(tokensIterator);
+			gobble(tokensIterator.next(), ')');
 
 			return process;
 		}
@@ -574,14 +589,14 @@ function parse(tokens){
 	 *
 	 * TERMINAL := 'STOP' | 'ERROR'
 	 */
-	function parseTerminal(tokens){
+	function parseTerminal(tokensIterator){
 		// check that a terminal node is next
-		if(tokens[index].type !== 'terminal'){
-			var token = tokens[index];
+		var token = tokensIterator.next();
+		if(token.type !== 'terminal'){
 			throw new ParserException('Expecting to parse a terminal, received the ' + token.type + '\'' + token.value + '\'');
 		}
 
-		return parseValue(tokens[index]);
+		return parseValue(token);
 	}
 
 	/**
@@ -595,15 +610,15 @@ function parse(tokens){
 	 * @return {node} - an if statement node for the ast
 	 */
 	function parseIfStatement(tokens){
-		gobble(tokens[index], 'if');
-		var guard = parseExpression(tokens);
-		gobble(tokens[index], 'then');
-		var trueBranch = parseLocalProcess(tokens);
+		gobble(tokensIterator.next(), 'if');
+		var guard = parseExpression(tokensIterator);
+		gobble(tokensIterator.next(), 'then');
+		var trueBranch = parseLocalProcess(tokensIterator);
 
 		// check if a false branch has been specified
-		if(tokens[index].value === 'else'){
-			gobble(tokens[index], 'else');
-			var falseBranch = parseLocalProcess(tokens);
+		if(tokensIterator.peek().value === 'else'){
+			gobble(tokensIterator.next(), 'else');
+			var falseBranch = parseLocalProcess(tokensIterator);
 			return { type:'if-statement', guard:guard, trueBranch:trueBranch, falseBranch:falseBranch };
 		}
 
@@ -620,11 +635,11 @@ function parse(tokens){
 	 * @param {token[]} tokens - the array of tokens to parse
 	 * @return {node} a function node for the ast
 	 */
-	function parseFunction(tokens){
-		var func = parseFunctionType(tokens);
-		gobble(tokens[index], '(');
-		var process = parseLocalProcess(tokens);
-		gobble(tokens[index], ')');
+	function parseFunction(tokensIterator){
+		var func = parseFunctionType(tokensIterator);
+		gobble(tokensIterator.next(), '(');
+		var process = parseLocalProcess(tokensIterator);
+		gobble(tokensIterator.next(), ')');
 
 		return { type:'function', func:func, process:process };
 	}
@@ -639,14 +654,14 @@ function parse(tokens){
 	 * @param {token[]} tokens - the array of tokens to parse
 	 * @return {string} - the function type
 	 */
-	function parseFunctionType(tokens){
+	function parseFunctionType(tokensIterator){
 		// check that function token is next
-		if(tokens[index].type !== 'function'){
-			var token = tokens[index];
+		var token = tokensIterator.next();
+		if(token.type !== 'function'){
 			throw new ParserException('Expecting to parse a function type, received the ' + token.type + '\'' + token.value + '\'');
 		}
 
-		return parseValue(tokens[index]);
+		return parseValue(token);
 	}
 
 	/**
@@ -659,13 +674,13 @@ function parse(tokens){
 	 * @param {token[]} tokens - the array of tokens to parse
 	 * @return {node} - a choice node for the ast
 	 */
-	function parseChoice(tokens){
-		var process1 = parseSequence(tokens);
+	function parseChoice(tokensIterator){
+		var process1 = parseSequence(tokensIterator);
 
 		// check if there is a choice available
-		if(tokens[index].value === '|'){
-			gobble(tokens[index], '|');
-			var process2 = parseSequence(tokens);
+		if(tokensIterator.peek().value === '|'){
+			gobble(tokensIterator.next(), '|');
+			var process2 = parseSequence(tokensIterator);
 
 			return { type:'choice', process1:process1, process2:process2 };
 		}
@@ -683,18 +698,18 @@ function parse(tokens){
 	 * @param {token[]} tokens - the array of tokens to parse
 	 * @return {node} - a sequence node for the ast
 	 */
-	function parseSequence(tokens){
+	function parseSequence(tokensIterator){
 		var functions = [parseActionLabel, parseBaseLocalProcess];
 		var fromIndex = actionRanges.length;
-		var from = parseMultiple(tokens, functions);
+		var from = parseMultiple(tokensIterator, functions);
 		// finish now if the parsed process is a base local process
 		if(from.type != 'action-label'){
 			return processActionRanges(from, fromIndex);
 		}
 
-		gobble(tokens[index], '->');
+		gobble(tokensIterator.next(), '->');
 		var toIndex = actionRanges.length;
-		var to = parseSequence(tokens);
+		var to = parseSequence(tokensIterator);
 		to = processActionRanges(to, toIndex);
 
 
@@ -712,15 +727,15 @@ function parse(tokens){
 	 * @param {token[]} tokens - the array of tokens to parse
 	 * @return {node} - an indices node for the ast
 	 */
-	function parseIndices(tokens){
+	function parseIndices(tokensIterator){
 		var indices = [];
 		do{
-			gobble(tokens[index], '[');
-			var expr = parseExpression(tokens);
-			gobble(tokens[index], ']');
+			gobble(tokensIterator.next(), '[');
+			var expr = parseExpression(tokensIterator);
+			gobble(tokensIterator.next(), ']');
 
 			indices.push(expr);
-		}while(tokens[index] === '[');
+		}while(tokensIterator.peek().value === '[');
 
 		return { type:'indices', indices:indices };
 	}
@@ -735,15 +750,15 @@ function parse(tokens){
 	 * @param {token[]} tokens - the array of tokens to parse
 	 * @return {node} - a ranges node for the ast
 	 */
-	function parseRanges(tokens){
+	function parseRanges(tokensIterator){
 		var ranges = [];
 		do{
-			gobble(tokens[index], '[');
-			var range = parseActionRange(tokens);
-			gobble(tokens[index], ']');
+			gobble(tokensIterator.next(), '[');
+			var range = parseActionRange(tokensIterator);
+			gobble(tokensIterator.next(), ']');
 
 			range.push(range);
-		}while(tokens[index].value === '[');
+		}while(tokensIterator.peek().value === '[');
 
 		return { type:'ranges', ranges:ranges };
 	}
@@ -757,11 +772,12 @@ function parse(tokens){
 	 * @param {token[]} tokens - the array of tokens to parse
 	 * @return {node} - an action label ast node
 	 */
-	function parseLabel(tokens){
-		var label = parseActionLabel(tokens);
+	function parseLabel(tokensIterator){
+		var label = parseActionLabel(tokensIterator);
 		// check that a colon is next
-		if(tokens[index].value !== ':'){
-			throw new ParserException('Expecting to parse \':\', recieved ' + tokens[index].value);
+		var token = tokensIterator.next();
+		if(token.value !== ':'){
+			throw new ParserException('Expecting to parse \':\', recieved ' + token.value);
 		}
 
 		return label;
@@ -781,24 +797,24 @@ function parse(tokens){
 	 * @param {token[]} tokens - the array of tokens to parse
 	 * @return {node} - a relabel set node for the ast
 	 */
-	function parseRelabel(tokens){
-		gobble(tokens[index], '/');
-		gobble(tokens[index], '{');
+	function parseRelabel(tokensIterator){
+		gobble(tokensIterator.next(), '/');
+		gobble(tokensIterator.next(), '{');
 
 		var relabels = []
 
-		while(index < tokens.length){
-			var relabel = parseRelabelElement(tokens);
+		while(tokensIterator.hasNext()){
+			var relabel = parseRelabelElement(tokensIterator);
 
 			// check if relabelling set is completed
-			if(tokens[index] !== ','){
+			if(tokensIterator.peek() !== ','){
 				break;
 			}
 
-			gobble(tokens[index], ',');
+			gobble(tokensIterator.next(), ',');
 		}
 
-		gobble(tokens[index], '}');
+		gobble(tokensIterator.next(), '}');
 
 		return { type:'relabel', set:relabels };
 	}
@@ -813,10 +829,10 @@ function parse(tokens){
 	 * @param {token[]} tokens - the array of tokens to parse
 	 * @return {node} - a relabel element node for the ast
 	 */
-	function parseRelabelElement(tokens){
-		var newLabel = parseActionLabel(tokens);
-		gobble(tokens[index], '/');
-		var oldLabel = parseActionLabel(tokens);
+	function parseRelabelElement(tokensIterator){
+		var newLabel = parseActionLabel(tokensIterator);
+		gobble(tokensIterator.next(), '/');
+		var oldLabel = parseActionLabel(tokensIterator);
 
 		return { newLabel:newLabel, oldLabel:oldLabel };
 	}
@@ -831,22 +847,22 @@ function parse(tokens){
 	 * @param {token[]} tokens - the array of tokens to parse
 	 * @return {node} - a hidden set node for the ast
 	 */
-	function parseHiding(tokens){
+	function parseHiding(tokensIterator){
 		var type;
-		if(tokens[index].value === '\\'){
+		var token = tokensIterator.peek();
+		if(token.value === '\\'){
 			type = 'incudes';
-			gobble(tokens[index], '\\');
+			gobble(tokensIterator.next(), '\\');
 		}
-		else if(tokens[index].value === '@'){
+		else if(token.value === '@'){
 			type = 'excludes';
-			gobble(tokens[index], '@');
+			gobble(tokensIterator.next(), '@');
 		}
 		else{
-			var token = tokens[index];
 			throw new ParserException('Received unexpected ' + token.type + '\'' + token.value + '\' while attempting to parse a hiding set');
 		}
 
-		var set = parseSet(tokens[index]).set;
+		var set = parseSet(tokensIterator).set;
 
 		return { type:type, set:set };
 	}
@@ -865,20 +881,20 @@ function parse(tokens){
 	 * @param {token[]} tokens - the array of tokens to parse
 	 * @return {node} - an expression node for the ast
 	 */
-	function parseExpression(tokens){
+	function parseExpression(tokensIterator){
 		var expr;
 		// check if this is an unary expression
-		if(tokens[index].type === 'operator'){
-			var operator = tokens[index++];
-			expr = processUnaryOperator(operator, parseBaseExpression(tokens));
+		if(tokensIterator.peek().type === 'operator'){
+			var operator = tokensIterator.next();
+			expr = processUnaryOperator(operator, parseBaseExpression(tokensIterator));
 		}
 		else{
-			expr = parseBaseExpression(tokens);
+			expr = parseBaseExpression(tokensIterator);
 		}
 
-		if(tokens[index].type === 'operator'){
-			expr += parseOperator(tokens);
-			expr += parseExpression(tokens);
+		if(tokensIterator.peek().type === 'operator'){
+			expr += parseOperator(tokensIterator);
+			expr += parseExpression(tokensIterator);
 			
 			var variable = generateVariableName();
 			variableMap[variable] = expr;
@@ -899,40 +915,40 @@ function parse(tokens){
 	 * @param {token[]} tokens - the array of tokens to parse
 	 * @return {string} - the base expression
 	 */
-	function parseBaseExpression(tokens){
-			if(tokens[index].type === 'integer'){
-				return parseValue(tokens[index]);
-			}
-			else if(tokens[index].type === 'action'){
-				return '$' + parseValue(tokens[index]);
-			}
-			else if(tokens[index].type === 'identifier'){
-				var ident = parseIdentifier(tokens);
+	function parseBaseExpression(tokensIterator){
+		var token = tokensIterator.peek();
+		if(token.type === 'integer'){
+			return parseValue(tokensIterator.next());
+		}
+		else if(token.type === 'action'){
+			return '$' + parseValue(tokensIterator.next());
+		}
+		else if(token.type === 'identifier'){
+			var ident = parseIdentifier(tokensIterator);
 
-				// check if constant has been defined
-				var constant = constantsMap[ident];
-				if(constant === undefined){
-					throw new ParserException('The constant \'' + ident + '\' has not been defined');
-				}
-
-				// check that constant is an integer
-				if(constant.type !== 'const'){
-					throw new ParserException('Expecting a constant of type const, received a constant of type ' + constant.type);
-				}
-
-				return constant.value;
+			// check if constant has been defined
+			var constant = constantsMap[ident];
+			if(constant === undefined){
+				throw new ParserException('The constant \'' + ident + '\' has not been defined');
 			}
-			else if(tokens[index].value = '('){
-				gobble(tokens[index], '(');
-				var expr = parseExpression(tokens);
-				gobble(tokens[index], ')');
 
-				return expr.expr;
+			// check that constant is an integer
+			if(constant.type !== 'const'){
+				throw new ParserException('Expecting a constant of type const, received a constant of type ' + constant.type);
 			}
-			else{
-				var token = tokens[index];
-				throw new ParserException('Invalid ' + token.type + '\'' + token.value + '\' found while attempting to parse a base expression');
-			}
+
+			return constant.value;
+		}
+		else if(token.value = '('){
+			gobble(tokensIterator.next(), '(');
+			var expr = parseExpression(tokensIterator);
+			gobble(tokensIterator.next(), ')');
+
+			return expr.expr;
+		}
+		else{
+			throw new ParserException('Invalid ' + token.type + '\'' + token.value + '\' found while attempting to parse a base expression');
+		}
 	}
 
 	/**
@@ -945,20 +961,20 @@ function parse(tokens){
 	 * @param {token[]} tokens - the array of tokens to parse
 	 * @return {node} - an expression node for the ast
 	 */
-	function parseSimpleExpression(tokens){
+	function parseSimpleExpression(tokensIterator){
 		var expr;
 		// check if this is an unary expression
-		if(tokens[index].type === 'operator'){
-			var operator = tokens[index++];
-			expr = processUnaryOperator(operator, parseBaseSimpleExpression(tokens));
+		if(tokensIterator.peek().type === 'operator'){
+			var operator = tokensIterator.next();
+			expr = processUnaryOperator(operator, parseBaseSimpleExpression(tokensIterator));
 		}
 		else{
-			expr = parseBaseSimpleExpression(tokens);
+			expr = parseBaseSimpleExpression(tokensIterator);
 		}
 
-		if(index < tokens.length && tokens[index].type === 'operator'){
-			expr += parseSimpleOperator(tokens);
-			expr += parseSimpleExpression(tokens);
+		if(tokensIterator.peek().type === 'operator'){
+			expr += parseSimpleOperator(tokensIterator);
+			expr += parseSimpleExpression(tokensIterator);
 		}
 
 		return { type:'expression', expr:expr };
@@ -974,12 +990,13 @@ function parse(tokens){
 	 * @param {token[]} tokens - the array of tokens to parse
 	 * @return {string} - the base expression
 	 */
-	function parseBaseSimpleExpression(tokens){
-		if(tokens[index].type === 'integer'){
-			return parseValue(tokens[index]);
+	function parseBaseSimpleExpression(tokensIterator){
+		var token = tokensIterator.peek();
+		if(token.type === 'integer'){
+			return parseValue(tokensIterator.next());
 		}
-		else if(tokens[index].type === 'identifier'){
-			var ident = parseIdentifier(tokens);
+		else if(token.type === 'identifier'){
+			var ident = parseIdentifier(tokensIterator);
 
 			// check if constant has been defined
 			var constant = constantsMap[ident];
@@ -994,15 +1011,14 @@ function parse(tokens){
 
 			return constant.value;
 		}
-		else if(tokens[index].value = '('){
-			gobble(tokens[index], '(');
-			var expr = parseSimpleExpression(tokens);
-			gobble(tokens[index], ')');
+		else if(tokensIterator.peek().value = '('){
+			gobble(tokensIterator.next(), '(');
+			var expr = parseSimpleExpression(tokensIterator);
+			gobble(tokensIterator.next(), ')');
 
 			return expr.expr;
 		}
 		else{
-			var token = tokens[index];
 			throw new ParserException('Invalid ' + token.type + '\'' + token.value + '\' found while attempting to parse a base expression');
 		}
 	}
@@ -1017,13 +1033,14 @@ function parse(tokens){
 	 * @param {token[]} tokens - the array of tokens to parse
 	 * @return {string} - the parsed operator
 	 */
-	function parseOperator(tokens){
+	function parseOperator(tokensIterator){
 		// check that current token is an operator
-		if(tokens[index].type !== 'operator'){
+		var token = tokensIterator.peek();
+		if(token.type !== 'operator'){
 			throw new ParserException('Expecting to parse an operator, received the ' + token.type + '\' ' + token.value + '\'');
 		}
 
-		switch(tokens[index].value){
+		switch(token.value){
 			case '||':
 			case '&&':
 			case '|':
@@ -1037,9 +1054,9 @@ function parse(tokens){
 			case '<':
 			case '>=':
 			case '>':
-				return parseValue(tokens[index]);
+				return parseValue(tokensIterator.next());
 			default:
-				return parseSimpleOperator(tokens);
+				return parseSimpleOperator(tokensIterator);
 		}
 	}
 
@@ -1055,20 +1072,19 @@ function parse(tokens){
 	 */
 	function parseSimpleOperator(tokens){
 		// check that current token is an operator
-		if(tokens[index].type !== 'operator'){
-			var token = tokens[index];
+		var token = tokensIterator.peek();
+		if(token.type !== 'operator'){
 			throw new ParserException('Expecting to parse an operator, received the ' + token.type + '\' ' + token.value + '\'');
 		}
 
-		switch(tokens[index].value){
+		switch(token.value){
 			case '+':
 			case '-':
 			case '*':
 			case '/':
 			case '%':
-				return parseValue(tokens[index]);
+				return parseValue(tokensIterator.next());
 			default:
-				var token = tokens[index];
 				throw new ParseException('Received an invalid operator \'' + token.value + '\'');
 		}
 
@@ -1110,13 +1126,11 @@ function parse(tokens){
 	}
 
 	/**
-	 * Parses and returns the value from the speicfied token. Increments
-	 * the current position in the tokens array.
+	 * Parses and returns the value from the speicfied token.
 	 *
 	 * @param {token} token - the token to parse a value from
 	 */
 	function parseValue(token){
-		index++;
 		return token.value;
 	}
 
@@ -1130,7 +1144,7 @@ function parse(tokens){
 	 * @param {token[]} tokens - the array of tokens to parse
 	 * @param {function[]} functions - the array of parsing functions to attempt
 	 */
-	function parseMultiple(tokens, functions){
+	function parseMultiple(tokensIterator, functions){
 		var errors = [];
 		var start = index;
 		var varCount = variableCount;
@@ -1143,7 +1157,7 @@ function parse(tokens){
 	 	for(var i = 0; i < functions.length; i++){
 	 		try{
 	 			// attempt function
-	 			return functions[i](tokens);
+	 			return functions[i](tokensIterator);
 	 		}catch(error){
 	 			// save error
 	 			errors.push(error);
@@ -1176,6 +1190,70 @@ function parse(tokens){
 		}
 
 		return astNode;
+	}
+
+	/**
+	 * Constructs and returns an iterator object for iterating over the tokens
+	 * array. Skips over unnecessary tokens (comments) and returns a special
+	 * EOF token when the end of file has been reached.
+	 */
+	function constructTokensIterator(){
+		return {
+			/**
+			 * Returns true if there are still tokens to iterate over,
+			 * otherwise returns false.
+			 *
+			 * @return {boolean} - whether there are any tokens left or not
+			 */
+			hasNext: function(){
+				return index < tokens.length;
+			},
+
+			/**
+			 * Returns the next token from the tokens array and increments the
+			 * index to point to the next token. Throws a parser exception if the
+			 * end of the file has been reached unexpectedly.
+			 *
+			 * @param {boolean} ignoreEOF - whether or not to ignore the eof
+			 * @return {token} - the next token
+			 */
+			next: function(ignoreEOF){
+				while(index < tokens.length){
+					if(tokens[index].type !== 'comment'){
+						return tokens[index++];
+					}
+
+					index++;
+				}
+
+				// throw an error if not expecting the eof
+				if(ignoreEOF === false || ignoreEOF === undefined){
+					throw new ParserException('EOF Reached')
+				}
+
+				// otherwise return an eof token
+				return { type:'symbol', value:'EOF' };
+			},
+
+			/**
+			 * Returns the next token from the tokens array but does not increment the
+			 * index to point to the next token.
+			 *
+			 * @return {token} - the next token
+			 */
+			peek: function(){
+				while(index < tokens.length){
+					if(tokens[index].type !== 'comment'){
+						return tokens[index];
+					}
+
+					index++;
+				}
+
+				// otherwise return an eof token
+				return { type:'symbol', value:'EOF' };
+			}
+		};
 	}
 
 	/**
