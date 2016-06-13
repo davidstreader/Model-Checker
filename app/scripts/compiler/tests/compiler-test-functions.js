@@ -6,8 +6,9 @@
  * the tests.
  */
 
-// define shorthand for chai.expect
+// define shorthands for chai.expect and chai.assert
 var expect = chai.expect;
+var assert = chai.assertl
 
 /**
  * PARSING HELPER FUNCTIONS
@@ -88,7 +89,7 @@ function testSetNode(node, set){
  */
 function testActionLabelNode(node, action){
 	expect(node).to.have.property('type', 'action-label');
-	expect(node).to.habe.property('action', action);
+	expect(node).to.have.property('action', action);
 }
 
 /**
