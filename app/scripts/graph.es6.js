@@ -234,7 +234,7 @@ class Graph{
   relabelEdges(label){
     var edges = this.edges;
     for(var i = 0; i < edges.length; i++){
-      edges[i].label = label + '.' edges[i].label;
+      edges[i].label = label + '.' + edges[i].label;
     }
   }
 
