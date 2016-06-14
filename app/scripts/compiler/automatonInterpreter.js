@@ -16,7 +16,7 @@ function interpretAutomaton(process, processesMap, variableMap, processId){
 
 	function constructAutomaton(id, ident){
 		var graph = new Graph(id);
-		graph.root = graph.addNode(graph.nextNodeId);
+		graph.root = graph.addNode();
 		graph.root.addMetaData('startNode', true);
 		processesMap[process.ident] = graph;
 		return graph.root;
@@ -25,7 +25,7 @@ function interpretAutomaton(process, processesMap, variableMap, processId){
 	function constructLocalProcesses(ident, localProcesses){
 		var processes = {};
 		for(var i = 0; i < localProcesses.length; i++){
-			var node = processesMap[ident].addNode(processesMap[ident].nextNodeId);
+			var node = processesMap[ident].addNode();
 			processes[localProcesses[i].ident] = node;
 		}
 
@@ -95,7 +95,7 @@ function interpretAutomaton(process, processesMap, variableMap, processId){
 		}
 
 		var graph = processesMap[ident];
-		var next = graph.addNode(graph.nextNodeId);
+		var next = graph.addNode();
 		var action = processActionLabel(astNode.from.action);
 		processesMap[ident].addEdge(graph.nextEdgeId, action, currentNode.id, next.id);
 		interpretNode(astNode.to, next, ident);
