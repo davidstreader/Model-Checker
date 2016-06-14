@@ -110,6 +110,13 @@ function interpretPetriNet(process, processesMap, variableMap, processId){
 			processLabelling(processesMap[ident], astNode.label.action);
 		}
 
+		// check if a relabelling has been defined
+		if(astNode.relabel !== undefined){
+			console.log('processing relabel');
+			console.log(astNode);
+			processRelabelling(processesMap[ident], astNode.relabel.set);
+		}
+
 		// delete unneeded processes
 		delete processesMap[process1];
 		delete processesMap[process2];
@@ -181,9 +188,25 @@ function interpretPetriNet(process, processesMap, variableMap, processId){
 	 */
 	function processLabelling(net, label){
 		var labelSets = net.labelSets;
+		// give every transition in the petri net the new label
 		for(var i = 0; i < labelSets.length; i++){
 			var oldLabel = labelSets[i].label;
-			net.relabelTransition(oldLabel, label + ':' + oldLabel);
+			net.relabelTransition(oldLabel, label + '.' + oldLabel);
+		}
+	}
+
+	/** 
+	 * Relabels transtions in the specified petri net base on the contents of
+	 * the specified relabel set. The relabel set is made up of objects containing
+	 * the old transition label and the new transition label.
+	 *
+	 * @param {petrinet} net - the petrinet to relabel
+	 * @param {object[]} relabelSet - an array of objects { oldLabel, newLabel }
+	 */
+	function processRelabelling(net, relabelSet){
+		for(var i = 0; i < relabelSet.length; i++){
+			// labels are defined as action label nodes
+			net.relabelTransition(relabelSet[i].oldLabel.action, relabelSet[i].newLabel.action);
 		}
 	}
 
