@@ -92,6 +92,7 @@ function interpretPetriNet(process, processesMap, variableMap, processId){
 	}
 
 	function interpretComposite(astNode, currentPlace, ident){
+		// interpret the two processes to be composed together
 		var process1 = ident + '.process1';
 		var root1 = constructPetriNet(processesMap[ident].id + 'a', process1);
 		interpretNode(astNode.process1, root1, process1);
@@ -100,8 +101,16 @@ function interpretPetriNet(process, processesMap, variableMap, processId){
 		var root2 = constructPetriNet(processesMap[ident].id + 'b', process2);
 		interpretNode(astNode.process2, root2, process2);
 		
+		// compose processes together
 		processesMap[ident] = parallelComposition(processesMap[ident].id, processesMap[process1], processesMap[process2]);
 
+		// check if a labelling has been defined
+		if(astNode.label !== undefined){
+			// label is an action label node
+			processLabelling(processesMap[ident], astNode.label.action);
+		}
+
+		// delete unneeded processes
 		delete processesMap[process1];
 		delete processesMap[process2];
 	}
@@ -160,6 +169,21 @@ function interpretPetriNet(process, processesMap, variableMap, processId){
 		}
 		else{
 			// throw error
+		}
+	}
+
+	/**
+	 * Labels each of the transitions in the specified petri net with
+	 * the specified label.
+	 *
+	 * @param {petrinet} net - the petri net to label
+	 * @param {string} label - the new label;
+	 */
+	function processLabelling(net, label){
+		var labelSets = net.labelSets;
+		for(var i = 0; i < labelSets.length; i++){
+			var oldLabel = labelSets[i].label;
+			net.relabelTransition(oldLabel, label + ':' + oldLabel);
 		}
 	}
 

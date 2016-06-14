@@ -172,6 +172,28 @@ class PetriNet {
 		}		
 	}
 
+	/** 
+	 * Relabels the specified transition label with a new label.
+	 *
+	 * @param {string} oldLabel - the old transition label
+	 * @param {string} newLabel - the new transition label
+	 */
+	relabelTransition(oldLabel, newLabel){
+		// check any transitions have the specified label
+		if(this._labelSets[oldLabel] !== undefined){
+			// check if the new label is already defined in this petri net
+			if(this._labelSets[newLabel] !== undefined){
+				this._labelSets[newLabel].concat(this._labelSets[oldLabel]);
+			}
+			else{
+				this._labelSets[newLabel] = this._labelSets[oldLabel];
+			}
+
+			// remove the old label from the petri net
+			delete this._labelSets[oldLabel];
+		}
+	}
+
 	/**
 	 * Merges the specified array of places into each place specified in
 	 * the mergeTo array.
