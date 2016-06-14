@@ -21,7 +21,7 @@ function parse(tokens){
 		var token = tokensIterator.peek();
 
 		if(token.value === 'automata'){
-			parseProcessDefinition(tokens);
+			parseProcessDefinition(tokensIterator);
 		}
 		else if(token.value === 'petrinet'){
 			parseProcessDefinition(tokensIterator);
@@ -555,7 +555,7 @@ function parse(tokens){
 			var ident = { type:'identifier', ident:parseIdentifier(tokensIterator) };
 
 			// check if any indices have been declared
-			if(tokens[index].value === '['){
+			if(token.value === '['){
 				var indices = parseIndices(tokensIterator);
 				ident.indices = indices;
 				return ident;
@@ -566,7 +566,7 @@ function parse(tokens){
 		else if(token.value === 'if'){
 			return parseIfStatement(tokensIterator);
 		}
-		else if(token.value === 'abs' || token.value === 'simp'){
+		else if(token.type === 'function'){
 			return parseFunction(tokensIterator);
 		}
 		else if(token.value === '('){
@@ -577,7 +577,7 @@ function parse(tokens){
 			return process;
 		}
 		else{
-			throw new ParserException('Expecting to parse a base local process, received the ' + tokens[index].type + '\'' + tokens[index].value + '\'');
+			throw new ParserException('Expecting to parse a base local process, received the ' + token.type + '\'' + token.value + '\'');
 		}
 	}
 
