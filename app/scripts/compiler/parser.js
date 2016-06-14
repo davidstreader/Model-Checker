@@ -803,7 +803,7 @@ function parse(tokens){
 		var relabels = []
 
 		while(tokensIterator.hasNext()){
-			var relabel = parseRelabelElement(tokensIterator);
+			relabels.push(parseRelabelElement(tokensIterator));
 
 			// check if relabelling set is completed
 			if(tokensIterator.peek() !== ','){
