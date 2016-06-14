@@ -429,8 +429,9 @@ function parse(tokens){
 
 		// check if any local processes have been defined
 		var localProcesses = [];
-		while(tokens[index].value === ','){
-			var localIdent = parseIdentifier(tokensIterator.next());
+		while(tokensIterator.peek().value === ','){
+			gobble(tokensIterator.next(), ',');
+			var localIdent = parseIdentifier(tokensIterator);
 
 			// check if any ranges have been defined
 			var ranges;
@@ -438,8 +439,10 @@ function parse(tokens){
 				ranges = parseRanges(tokensIterator);
 			}
 
-			var process = parseComposite(tokensIterator);
-			var localDefinition = { type:'process', ident:localIdent, ranges:ranges, process:process };
+			gobble(tokensIterator.next(), '=');
+
+			var localProcess = parseComposite(tokensIterator);
+			var localDefinition = { type:'process', ident:localIdent, ranges:ranges, process:localProcess };
 			localProcesses.push(localDefinition);
 		}
 
