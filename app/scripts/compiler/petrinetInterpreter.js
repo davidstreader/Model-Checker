@@ -69,6 +69,17 @@ function interpretPetriNet(process, processesMap, variableMap, processId){
 		else{
 			throw new InterpreterException('Invalid type \'' + type + '\' received');
 		}
+
+		// check if a labelling has been defined
+		if(astNode.label !== undefined){
+			// label is an action label node
+			processLabelling(processesMap[ident], astNode.label.action);
+		}
+
+		// check if a relabelling has been defined
+		if(astNode.relabel !== undefined){
+			processRelabelling(processesMap[ident], astNode.relabel.set);
+		}
 	}
 
 	function interpretLocalProcess(astNode, currentNode, ident){
@@ -123,17 +134,6 @@ function interpretPetriNet(process, processesMap, variableMap, processId){
 		
 		// compose processes together
 		processesMap[ident] = parallelComposition(processesMap[ident].id, processesMap[process1], processesMap[process2]);
-
-		// check if a labelling has been defined
-		if(astNode.label !== undefined){
-			// label is an action label node
-			processLabelling(processesMap[ident], astNode.label.action);
-		}
-
-		// check if a relabelling has been defined
-		if(astNode.relabel !== undefined){
-			processRelabelling(processesMap[ident], astNode.relabel.set);
-		}
 
 		// delete unneeded processes
 		delete processesMap[process1];
