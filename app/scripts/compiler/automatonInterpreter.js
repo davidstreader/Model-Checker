@@ -1,11 +1,36 @@
 'use strict';
 
-function interpretAutomaton(process, processesMap, variableMap){
-	var graph = new Graph();
-	graph.root = graph.addNode(graph.nextNodeId);
-	graph.root.addMetaData('startNode', true);
-	processesMap[process.ident] = graph;
-	interpretNode(process.process, graph.root, process.ident);
+function interpretAutomaton(process, processesMap, variableMap, processId){
+	var root = constructAutomaton(processId, process.ident);
+	var localProcessesMap = constructLocalProcesses(process.ident, process.local);
+
+	// interpret the main process
+	interpretNode(process.process, root, process.ident);
+
+	// interpret the locally defined processes
+	var local = process.local;
+	for(var i = 0; i < local.length; i++){
+		var localProcess = local[i];
+		interpretNode(localProcess.process, localProcessesMap[localProcess.ident], process.ident);
+	}
+
+	function constructAutomaton(id, ident){
+		var graph = new Graph(id);
+		graph.root = graph.addNode(graph.nextNodeId);
+		graph.root.addMetaData('startNode', true);
+		processesMap[process.ident] = graph;
+		return graph.root;
+	}
+
+	function constructLocalProcesses(ident, localProcesses){
+		var processes = {};
+		for(var i = 0; i < localProcesses.length; i++){
+			var node = processesMap[ident].addNode(processesMap[ident].nextNodeId);
+			processes[localProcesses[i].ident] = node;
+		}
+
+		return processes;
+	}
 
 	function interpretNode(astNode, currentNode, ident){
 		var type = astNode.type;
@@ -86,11 +111,16 @@ function interpretAutomaton(process, processesMap, variableMap){
 	}
 
 	function interpretIdentifier(astNode, currentNode, ident){
-		// check whether this is a locally or globally defined reference, or a reference to the current process
+		// check if this process is referencing itself
 		if(astNode.ident === ident){
 			var root = processesMap[ident].root;
 			processesMap[ident].mergeNodes([root, currentNode]);
 		}
+		// check if the process is referencing a locally defined process
+		else if(localProcessesMap[astNode.ident] !== undefined){
+			processesMap[ident].mergeNodes([localProcessesMap[astNode.ident], currentNode]);
+		}
+		// check if the process is referencing a globally defined process
 		else if(processesMap[astNode.ident] !== undefined){
 			// check that referenced process is of the same type
 			if(processesMap[ident].type === processesMap[astNode.ident].type){
@@ -102,16 +132,6 @@ function interpretAutomaton(process, processesMap, variableMap){
 		}
 		else{
 			throw new InterpreterException('The identifier \'' + astNode.ident + '\' has not been defined');
-		}
-	}
-
-	function interpretLabel(astNode, currentNode, ident){
-		interpretNode(astNode.process, currentNode, ident);
-		
-		// add the label associated with this node to each edge in the automaton
-		var edges = processesMap[ident].edges;
-		for(var i = 0; i < edges.length; i++){
-			edges[i].label = astNode.label.action + ':' + edges[i].label;
 		}
 	}
 
@@ -146,10 +166,6 @@ function interpretAutomaton(process, processesMap, variableMap){
 
 		return action;
 
-	}
-
-	function relabelNodes(graph){
-		
 	}
 
 	function reset(){
