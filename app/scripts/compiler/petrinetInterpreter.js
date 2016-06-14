@@ -181,16 +181,6 @@ function interpretPetriNet(process, processesMap, variableMap, processId){
 		}
 	}
 
-	function interpretLabel(astNode, currentPlace, ident){
-		interpretNode(astNode.process, currentPlace, ident);
-		
-		// add the label associated with this ast node to each transition in the petri net
-		var transitions = processesMap[ident].transitions;
-		for(var i = 0; i < transitions.length; i++){
-			transitions[i].label = astNode.label.action + ':' + transitions[i].label;
-		}
-	}
-
 	function interpretTerminal(astNode, currentPlace, ident){
 		if(astNode.terminal === 'STOP'){
 			currentPlace.addMetaData('isTerminal', 'stop');
