@@ -203,3 +203,16 @@ function testChoiceNode(node){
 	expect(node).to.have.property('process1');
 	expect(node).to.have.property('process2');
 }
+
+/**
+ * Tests that the shallow components in the specified function node were
+ * constructed correctly.
+ *
+ * @param {astNode} node - the function node
+ * @param {string} functionType - the function type
+ */
+function testFunctionNode(node, functionType){
+	expect(node).to.have.property('type', 'function');
+	expect(node).to.have.property('func', functionType);
+	expect(node).to.have.property('process');
+}
