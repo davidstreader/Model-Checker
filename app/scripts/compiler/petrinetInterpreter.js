@@ -2,7 +2,17 @@
 
 function interpretPetriNet(process, processesMap, variableMap, processId){
 	var root = constructPetriNet(processId, process.ident);
+	var localProcessesMap = setupLocalProcesses(process.ident, process.local);
+	console.log(localProcessesMap);
+	// interpret the main process
 	interpretNode(process.process, root, process.ident);
+
+	// process locally defined processes
+	var local = process.local;
+	for(var i = 0; i < local.length; i++){
+		var localProcess = local[i];
+		interpretNode(localProcess.process, localProcessesMap[localProcess.ident], process.ident);
+	}
 
 	function constructPetriNet(id, ident){
 		var net = new PetriNet(id);
@@ -11,6 +21,16 @@ function interpretPetriNet(process, processesMap, variableMap, processId){
 		net.addRoot(root.id);
 		processesMap[ident] = net;
 		return root;	
+	}
+
+	function setupLocalProcesses(ident, localProcesses){
+		var processes = {};
+		for(var i = 0; i < localProcesses.length; i++){
+			var place = processesMap[ident].addPlace();
+			processes[localProcesses[i].ident] = place;
+		}
+
+		return processes;
 	}
 
 	function interpretNode(astNode, currentNode, ident){
@@ -112,8 +132,6 @@ function interpretPetriNet(process, processesMap, variableMap, processId){
 
 		// check if a relabelling has been defined
 		if(astNode.relabel !== undefined){
-			console.log('processing relabel');
-			console.log(astNode);
 			processRelabelling(processesMap[ident], astNode.relabel.set);
 		}
 
@@ -140,9 +158,15 @@ function interpretPetriNet(process, processesMap, variableMap, processId){
 	}
 
 	function interpretIdentifier(astNode, currentPlace, ident){
+		// check if the process is referencing itself
 		if(astNode.ident === ident){
 			processesMap[ident].mergePlaces(processesMap[ident].roots, [currentPlace]);
 		}
+		// check if the process is referencing a locally defined process
+		else if(localProcessesMap[astNode.ident] !== undefined){
+			processesMap[ident].mergePlaces([localProcessesMap[astNode.ident]], [currentPlace]);
+		}
+		// check if the process is referencing a globally defined process
 		else if(processesMap[astNode.ident] !== undefined){
 			// check that referenced process is of the same type
 			if(processesMap[ident].type === processesMap[astNode.ident].type){
