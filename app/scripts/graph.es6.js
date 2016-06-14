@@ -1,7 +1,6 @@
 class Graph{
 
   constructor(id){
-    this._type = 'automata';
     this._id = id;
     this._rootId = undefined;
     this._nodeMap = {};
@@ -19,7 +18,7 @@ class Graph{
    * @return {string} - automata
    */
   get type(){
-    return this._type;
+    return 'automata';
   }
 
   /**
@@ -208,6 +207,35 @@ class Graph{
    */
   get nextEdgeId(){
     return this._nextEdgeId++;
+  }
+
+  /**
+   * Relabels the edges in this automaton with the specified label
+   * with the specified new label.
+   *
+   * @param {string} oldLabel - the old label
+   * @param {string} newLabel - the new label
+   */
+  relabelEdge(oldLabel, newLabel){
+    var edges = this.edges;
+    for(var i = 0; i  < edges.length; i++){
+      if(edges[i].label === oldLabel){
+        edges[i].label = newLabel;
+      }
+    }
+  }
+
+  /**
+   * Relabels all the edges in this automaton with the specified
+   * label.
+   *
+   * @param {string} label - the new label
+   */
+  relabelEdges(label){
+    var edges = this.edges;
+    for(var i = 0; i < edges.length; i++){
+      edges[i].label = label + '.' edges[i].label;
+    }
   }
 
   /**
