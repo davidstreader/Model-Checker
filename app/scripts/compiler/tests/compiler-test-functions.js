@@ -166,3 +166,40 @@ function testIfStatementNode(node, condition, hasFalseBranch){
 		expect(node).to.not.have.property('falseBranch');
 	}
 }
+
+/**
+ * Tests that a sequence node was constructed correctly. Checks that the
+ * known elements of a sequence (the action labels) are correct and returns
+ * the final base process of the sequence to be tested by the unit test
+ * calling this function.
+ *
+ * @param {astNode} node - the sequence node
+ * @param {string[]} sequence - an array of action labels
+ * @return {astNode} - the base process of the sequence
+ */
+function testSequenceNode(node, sequence){
+	for(var i = 0; i < sequence.length; i++){
+		expect(node).to.have.property('type', 'sequence');
+		expect(node).to.have.property('from');
+		testActionLabelNode(node.from, sequence[i]);
+		expect(node).to.have.property('to');
+		// sequence nodes are nested, get the next sequence node
+		node = node.to;
+	}
+
+	// return the final node in the sequence
+	return node;
+}
+
+/**
+ * Tests that a choice node has been constructed correctly. Only shallowly tests
+ * the node, the processes in the choice node are left to be tested by the unit
+ * tests that call this function.
+ *
+ * @param {astNode} node - the choice node
+ */
+function testChoiceNode(node){
+	expect(node).to.have.property('type', 'choice');
+	expect(node).to.have.property('process1');
+	expect(node).to.have.property('process2');
+}
