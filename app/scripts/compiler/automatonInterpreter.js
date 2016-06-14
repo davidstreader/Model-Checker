@@ -62,6 +62,17 @@ function interpretAutomaton(process, processesMap, variableMap, processId){
 		else{
 			throw new InterpreterException('Invalid type \'' + type + '\' received');
 		}
+
+		// check if a labelling has been defined
+		if(astNode.label !== undefined){
+			// label is an action label node
+			processLabelling(processesMap[ident], astNode.label.action);
+		}
+
+		// check if a relabelling has been defined
+		if(astNode.relabel !== undefined){
+			processRelabelling(processesMap[ident], astNode.relabel.set);
+		}
 	}
 
 	function interpretLocalProcess(astNode, currentNode, ident){
@@ -144,6 +155,30 @@ function interpretAutomaton(process, processesMap, variableMap, processId){
 		}
 		else{
 			// throw error
+		}
+	}
+
+	/**
+	 * Labels each of the edges in the specified graph with the specified label.
+	 *
+	 * @param {graph} graph - the graph to label
+	 * @param {string} label - the new label;
+	 */
+	function processLabelling(graph, label){
+		graph.labelEdges(label);
+	}
+
+	/** 
+	 * Relabels edges in the specified graph base on the contents of the specified 
+	 * relabel set. The relabel set is made up of objects containing the old transition
+	 * label and the new transition label.
+	 *
+	 * @param {graph} graph - the graph to relabel
+	 * @param {object[]} relabelSet - an array of objects { oldLabel, newLabel }
+	 */
+	function processRelabelling(graph, relabelSet){
+		for(var i = 0; i < relabelSet.length; i++){
+			graph.relabelEdge(relabelSet[i].oldLabel.action, relabelSet[i].newLabel.action);
 		}
 	}
 

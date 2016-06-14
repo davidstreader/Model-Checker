@@ -231,7 +231,7 @@ class Graph{
    *
    * @param {string} label - the new label
    */
-  relabelEdges(label){
+  labelEdges(label){
     var edges = this.edges;
     for(var i = 0; i < edges.length; i++){
       edges[i].label = label + '.' + edges[i].label;
