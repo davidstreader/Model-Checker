@@ -2,18 +2,22 @@
  * === PROCESS LEXER ===
  * The first section of the compiler pipeline for converting the modelling grammar
  * into a particular model data structure. This process takes a string representing
- *
+ * the modelling grammar and converts it into an array of tokens that can be
+ * interpreted by the parser.
  */
  
 {    
-    /* Keywords found in the modelling grammar */
-    var KEYWORDS = ['automata', 'petrinet', 'const', 'range', 'set', 'if', 'then', 'else', 'when', 'forall'];
+    /* Modelling processes that can be declared in the modelling grammar */
+    var PROCESS_TYPES = ['automata', 'petrinet']
     
     /* Function processes that can be declared in the modelling grammar */
     var FUNCTIONS = ['abs', 'simp'];
     
     /* Keywords that terminate a process sequence */
     var TERMINALS = ['STOP', 'ERROR'];
+    
+    /* Keywords found in the modelling grammar */
+    var KEYWORDS = ['const', 'range', 'set', 'if', 'then', 'else', 'when', 'forall'];
     
     /**
      * Constructs and returns a token object with the specified type
@@ -35,17 +39,24 @@
      * @return {token} - a token object
      */
     function processAction(action){
-      // check if parsed action is a keyword
-      for(var i = 0; i < KEYWORDS.length; i++){
-          if(action == KEYWORDS[i]){
-              return constructToken('keyword', action);
-          }
+      // check if parsed action is a process type
+      for(var i = 0; i < PROCESS_TYPES.length; i++){
+        if(action == PROCESS_TYPES[i]){
+          return constructToken('process-type', action);
+        }
       }
-
+      
       // check if parsed action is a function process
       for(var i = 0; i < FUNCTIONS.length; i++){
           if(action == FUNCTIONS[i]){
               return constructToken('function', action);
+          }
+      }
+      
+      // check if parsed action is a keyword
+      for(var i = 0; i < KEYWORDS.length; i++){
+          if(action == KEYWORDS[i]){
+              return constructToken('keyword', action);
           }
       }
 
@@ -77,7 +88,19 @@
  * parsed and returns an array of the tokens parsed.
  */
 TokenArray
- = TokenArrayElement*
+ = tokens:TokenArrayElement* {
+  // remove the comments from the tokens array
+    var temp = [];
+    for(var i = 0; i < tokens.length; i++){
+      if(tokens[i].type != 'comment'){
+          temp.push(tokens[i]);
+        }
+    }
+    
+    // add a special EOF token
+    temp.push(constructToken('EOF', 'end of file'));
+    return temp;
+ }
 
 /**
  * Attempts to parse a single token from the current position in the string.
@@ -127,8 +150,7 @@ SourceCharacter
 
 /* Attempts to parse and return a symbol */
 Symbol
- = '..'
- / '.'
+ = '.' ('.'?)
  / ','
  / ':'
  / '['
@@ -141,26 +163,18 @@ Symbol
 
 /* Attempts to parse and return an operator */
 Operator
- = '||'
- / '|'
+ = '|' ('|'?)
  / '^'
- / '&&'
- / '&'
- / '=='
- / '!='
- / '=' // should be a symbol
- / '<<'
- / '>>'
- / '<='
- / '<'
- / '>='
- / '>'
+ / '&' ('&'?)
+ / '=' ('='?)
+ / '!' ('='?)
+ / '<' (('<'/'=')?)
+ / '>' (('>'/'=')?)
  / '+'
  / '-'
  / '*'
  / '/'
  / '%'
- / '!'
 
 /* Attempts to parse and return an operation */
 Operation
