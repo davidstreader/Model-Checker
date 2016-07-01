@@ -1,35 +1,57 @@
 'use strict';
 
 function interpretAutomaton(process, processesMap, variableMap, processId){
-	var root = constructAutomaton(processId, process.ident);
-	var localProcessesMap = constructLocalProcesses(process.ident, process.local);
+	var root = constructAutomaton(processId, process.ident.ident);
+	var localProcessesMap = constructLocalProcesses(process.ident.ident, process.local);
 
 	// interpret the main process
-	interpretNode(process.process, root, process.ident);
+	console.log(process.process);
+	interpretNode(process.process, root, process.ident.ident);
 
 	// interpret the locally defined processes
 	var local = process.local;
-	for(var i = 0; i < local.length; i++){
-		var localProcess = local[i];
-		interpretNode(localProcess.process, localProcessesMap[localProcess.ident], process.ident);
+	for(var ident in localProcessesMap){
+		var localProcess = localProcessesMap[ident];
+		interpretNode(localProcess.process, localProcess.node, process.ident.ident);
 	}
 
 	function constructAutomaton(id, ident){
 		var graph = new Graph(id);
 		graph.root = graph.addNode();
 		graph.root.addMetaData('startNode', true);
-		processesMap[process.ident] = graph;
+		processesMap[ident] = graph;
 		return graph.root;
 	}
 
 	function constructLocalProcesses(ident, localProcesses){
 		var processes = {};
 		for(var i = 0; i < localProcesses.length; i++){
-			var node = processesMap[ident].addNode();
-			processes[localProcesses[i].ident] = node;
+			var astNode = localProcesses[i].ident;
+			// check if process has indices defined
+			if(astNode.ranges !== undefined){
+				constructIndexedLocalProcess(astNode.ident, ident, astNode.ranges.ranges, localProcesses[i].process);
+			}
+			else{
+				processes[astNode.ident] = { node:processMap[ident].addNode(), process:process };
+			}
 		}
 
 		return processes;
+
+		function constructIndexedLocalProcess(ident, globalIdent, ranges, process){
+			if(ranges.length !== 0){
+				var iterator = new IndexIterator(ranges[0]);
+				while(iterator.hasNext){
+					var element = iterator.next;
+					var newIdent = ident + '[' + element + ']';
+					ranges = (ranges.length > 1) ? ranges.slice(1) : [];
+					constructIndexedLocalProcess(newIdent, globalIdent, ranges.slice(1), process);
+				}
+			}
+			else{
+				processes[ident] = { node:processesMap[globalIdent].addNode(), process:process };
+			}
+		}
 	}
 
 	function interpretNode(astNode, currentNode, ident){
@@ -122,27 +144,29 @@ function interpretAutomaton(process, processesMap, variableMap, processId){
 	}
 
 	function interpretIdentifier(astNode, currentNode, ident){
+		var current = astNode.ident;
+		current = processActionLabel(current);
 		// check if this process is referencing itself
-		if(astNode.ident === ident){
+		if(current === ident){
 			var root = processesMap[ident].root;
 			processesMap[ident].mergeNodes([root, currentNode]);
 		}
 		// check if the process is referencing a locally defined process
-		else if(localProcessesMap[astNode.ident] !== undefined){
-			processesMap[ident].mergeNodes([localProcessesMap[astNode.ident], currentNode]);
+		else if(localProcessesMap[current] !== undefined){
+			processesMap[ident].mergeNodes([localProcessesMap[current].node, currentNode]);
 		}
 		// check if the process is referencing a globally defined process
-		else if(processesMap[astNode.ident] !== undefined){
+		else if(processesMap[current] !== undefined){
 			// check that referenced process is of the same type
-			if(processesMap[ident].type === processesMap[astNode.ident].type){
-				processesMap[ident].addGraph(processesMap[astNode.ident].clone, currentNode);
+			if(processesMap[ident].type === processesMap[current].type){
+				processesMap[ident].addGraph(processesMap[current].clone, currentNode);
 			}
 			else{
-				throw new InterpreterException('Cannot reference type \'' + processesMap[astNode.ident].type + '\' from type \'automata\'');
+				throw new InterpreterException('Cannot reference type \'' + processesMap[current].type + '\' from type \'automata\'');
 			}
 		}
 		else{
-			throw new InterpreterException('The identifier \'' + astNode.ident + '\' has not been defined');
+			throw new InterpreterException('The identifier \'' + current + '\' has not been defined');
 		}
 	}
 

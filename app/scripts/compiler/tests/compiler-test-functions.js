@@ -135,7 +135,9 @@ function testIdentifierNode(node, ident){
 function testProcessNode(node, processType, ident, hasLocalProcesses){
 	expect(node).to.have.property('type', 'process');
 	expect(node).to.have.property('processType', processType);
-	expect(node).to.have.property('ident', ident);
+	expect(node).to.have.property('ident');
+	expect(node.ident).to.have.property('type', 'identifier');
+	expect(node.ident).to.have.property('ident', ident);
 	expect(node).to.have.property('process');
 
 	// if the process node has local processes they will be tested by the unit test

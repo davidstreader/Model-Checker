@@ -43,42 +43,22 @@ function parse(tokens){
 
 	return { processes:processes, constantsMap:constantsMap, variableMap:variableMap };
 
+	/**
+	 * Attempts to parse and return an identifier from the specified array of
+	 * tokens starting at the current index position. An identifier is of the
+	 * form:
+	 *
+	 * IDENTIFIER := IDENTIFIER
+	 *
+	 * where the identifier on the left hand side is the ast identifier node and the
+	 * identifier on the right is an identifier token.
+	 */
 	function parseIdentifier(tokens){
 		if(tokens[index].type === 'identifier'){
-			return parseValue(tokens[index]);
+			return { type:'identifier', ident:parseValue(tokens[index]) };
 		}
 		var token = tokens[index];
 		throw new ParserException('Expecting to parse an identifier, received the ' + token.type + '\' ' + token.value + '\'');
-	}
-
-	/**
-	 * Generates a variable name that can be used internally in places
-	 * where the user has not defined a variable.
-	 *
-	 * @returns {string} - name of variable
-	 */
-	 function generateVariableName(){
-	 	return '$<v' + variableCount++ +'>';
-	 }
-
-	/**
-	 * Attempts to parse the specified value. Throws an error if the
-	 * specified token's value does not match the specified value.
-	 * Increments the index by one.
-	 *
-	 * @param {object} token - token to parse
-	 * @param {string} value - value to parse from token
-	 *
-	 * @throws {ParserException} - if specifed value cannot be parsed
-	 */
-	function gobble(token, value){
-		if(token.value !== value){
-			throw new ParserException(
-				'Expecting to parse \'' + value + '\' but received the ' + token.type + ' \'' + token.value + '\'.'
-			);
-		}
-
-		index++;
 	}
 
 	/**
@@ -156,7 +136,7 @@ function parse(tokens){
 		var range;
 		// check that identifier is not part of a range definition
 		if(tokens[index].type === 'identifier' && tokens[index + 1].value !== '..'){
-			var ident = parseIdentifier(tokens);
+			var ident = parseIdentifier(tokens).ident;
 			range = constantsMap[ident];
 			
 			// check if constant has been defined
@@ -305,7 +285,7 @@ function parse(tokens){
 	 		gobble(tokens[index], type);
 		}
 
-		var ident = parseIdentifier(tokens);
+		var ident = parseIdentifier(tokens).ident;
 		gobble(tokens[index], '=');
 
 		return ident;
@@ -424,19 +404,7 @@ function parse(tokens){
 		var localProcesses = [];
 		while(tokens[index].value === ','){
 			gobble(tokens[index], ',');
-			var localIdent = parseIdentifier(tokens);
-
-			// check if any ranges have been defined
-			var ranges;
-			if(tokens[index].value === '['){
-				ranges = parseRanges(tokens);
-			}
-
-			gobble(tokens[index], '=');
-
-			var localProcess = parseComposite(tokens);
-			var localDefinition = { type:'process', ident:localIdent, ranges:ranges, process:localProcess };
-			localProcesses.push(localDefinition);
+			localProcesses.push(parseLocalProcessDefinition(tokens));
 		}
 
 		// check if a relabelling set has been defined
@@ -455,6 +423,31 @@ function parse(tokens){
 
 		var definition = { type:'process', processType:processType, ident:ident, process:process, local:localProcesses };
 		processes.push(definition);
+	}
+
+	/**
+	 * Attempts to parse and return a local process definition from the specified array
+	 * of tokens starting at the index position. A local process definition is of the
+	 * form:
+	 */
+	function parseLocalProcessDefinition(tokens){
+		var ident = parseIdentifier(tokens);
+
+		// check if any ranges have been defined
+		var ranges;
+		if(tokens[index].value === '['){
+			ranges = parseRanges(tokens);
+		}
+
+		// add ranges to the identifier if necessary
+		if(ranges !== undefined){
+			ident.ranges = ranges;
+		}
+
+		gobble(tokens[index], '=');
+
+		var process = parseComposite(tokens);
+		return { type:'process', ident:ident, ranges:ranges, process:process };
 	}
 
 	/**
@@ -545,13 +538,11 @@ function parse(tokens){
 			return { type:'terminal', terminal:terminal };
 		}
 		else if(tokens[index].type === 'identifier'){
-			var ident = { type:'identifier', ident:parseIdentifier(tokens) };
+			var ident = parseIdentifier(tokens);
 
 			// check if any indices have been declared
 			if(tokens[index].value === '['){
-				var indices = parseIndices(tokens);
-				ident.indices = indices;
-				return ident;
+				ident.ident += parseIndices(tokens);
 			}
 
 			return ident;
@@ -720,16 +711,14 @@ function parse(tokens){
 	 * @return {node} - an indices node for the ast
 	 */
 	function parseIndices(tokens){
-		var indices = [];
+		var indices = '';
 		do{
 			gobble(tokens[index], '[');
-			var expr = parseExpression(tokens);
+			indices += '[' + parseExpression(tokens) + ']';
 			gobble(tokens[index], ']');
-
-			indices.push(expr);
 		}while(tokens[index] === '[');
 
-		return { type:'indices', indices:indices };
+		return indices;
 	}
 
 	/**
@@ -743,15 +732,21 @@ function parse(tokens){
 	 * @return {node} - a ranges node for the ast
 	 */
 	function parseRanges(tokens){
-		var ranges = [];
+		var start = actionRanges.length;
 		do{
 			gobble(tokens[index], '[');
-			var range = parseActionRange(tokens);
+			parseActionRange(tokens); // gets added to action ranges
 			gobble(tokens[index], ']');
-
-			range.push(range);
 		}while(tokens[index].value === '[');
 
+		// get the parsed ranges from action ranges
+		var ranges = [];
+		for(var i = start; i < actionRanges.length; i++){
+			ranges.push(actionRanges[i].range);
+		}
+
+		// removed the parsed action ranges
+		actionRanges = actionRanges.slice(0, start);
 		return { type:'ranges', ranges:ranges };
 	}
 
@@ -862,6 +857,48 @@ function parse(tokens){
 	 * === EXPRESSIONS ===
 	 */
 
+	function parseExpression(tokens, exprType){
+
+	} 
+
+	/**
+	 * Attempts to parse and return a base expression from the specified array
+	 * of tokens starting at the current index position. A base expression is
+	 * of the form:
+	 *
+	 * BASE_EXPR := INTEGER | VARIABLE | IDENTIFIER
+	 *
+	 * @param {token[] tokens} - the array of tokens to parse
+	 * @return {string} - the base expression 
+	 */
+	function parseBaseExpression(tokens){
+		if(tokens[index].type === 'integer'){
+			return parseValue(tokens[index]);
+		}
+		else if(tokens[index].type === 'variable'){
+			return '$' + parseValue(tokens[index]);
+		}
+		else if(tokens[index].type === 'identifier'){
+			var ident = parseIdentifier(tokens).ident;
+
+			// check if constant has been defined
+			var constant = constantsMap[ident];
+			if(constant === undefined){
+				throw new ParserException('The constant \'' + ident + '\' has not been defined');
+			}
+
+			// check that constant is an integer
+			if(constant.type !== 'const'){
+				throw new ParserException('Expecting a constant of type const, received a constant of type ' + constant.type);
+			}
+
+			return constant.value;
+		}
+
+		var token = tokens[index];
+		throw new ParserException('Expecting to parse a base expression, received the ' + token.type + ' \'' + token.value + '\'');
+	}
+
 	/**
 	 * Attempts to parse and return an expression from the specified array of
 	 * tokens starting at the current index position. An expression is of the
@@ -907,39 +944,38 @@ function parse(tokens){
 	 * @return {string} - the base expression
 	 */
 	function parseBaseExpression(tokens){
-			if(tokens[index].type === 'integer'){
-				return parseValue(tokens[index]);
+		if(tokens[index].type === 'integer'){
+			return parseValue(tokens[index]);
+		}
+		else if(tokens[index].type === 'action'){
+			return '$' + parseValue(tokens[index]);
+		}
+		else if(tokens[index].type === 'identifier'){
+			var ident = parseIdentifier(tokens).ident;
+			// check if constant has been defined
+			var constant = constantsMap[ident];
+			if(constant === undefined){
+				throw new ParserException('The constant \'' + ident + '\' has not been defined');
 			}
-			else if(tokens[index].type === 'action'){
-				return '$' + parseValue(tokens[index]);
-			}
-			else if(tokens[index].type === 'identifier'){
-				var ident = parseIdentifier(tokens);
 
-				// check if constant has been defined
-				var constant = constantsMap[ident];
-				if(constant === undefined){
-					throw new ParserException('The constant \'' + ident + '\' has not been defined');
-				}
-
-				// check that constant is an integer
-				if(constant.type !== 'const'){
-					throw new ParserException('Expecting a constant of type const, received a constant of type ' + constant.type);
-				}
-
-				return constant.value;
+			// check that constant is an integer
+			if(constant.type !== 'const'){
+				throw new ParserException('Expecting a constant of type const, received a constant of type ' + constant.type);
 			}
-			else if(tokens[index].value = '('){
-				gobble(tokens[index], '(');
-				var expr = parseExpression(tokens);
-				gobble(tokens[index], ')');
 
-				return expr.expr;
-			}
-			else{
-				var token = tokens[index];
-				throw new ParserException('Invalid ' + token.type + '\'' + token.value + '\' found while attempting to parse a base expression');
-			}
+			return constant.value;
+		}
+		else if(tokens[index].value = '('){
+			gobble(tokens[index], '(');
+			var expr = parseExpression(tokens);
+			gobble(tokens[index], ')');
+		
+			return expr.expr;
+		}
+		else{
+			var token = tokens[index];
+			throw new ParserException('Invalid ' + token.type + '\'' + token.value + '\' found while attempting to parse a base expression');
+		}
 	}
 
 	/**
@@ -986,7 +1022,7 @@ function parse(tokens){
 			return parseValue(tokens[index]);
 		}
 		else if(tokens[index].type === 'identifier'){
-			var ident = parseIdentifier(tokens);
+			var ident = parseIdentifier(tokens).ident;
 
 			// check if constant has been defined
 			var constant = constantsMap[ident];
@@ -1076,9 +1112,8 @@ function parse(tokens){
 				return parseValue(tokens[index]);
 			default:
 				var token = tokens[index];
-				throw new ParseException('Received an invalid operator \'' + token.value + '\'');
+				throw new ParserException('Received an invalid operator \'' + token.value + '\'');
 		}
-
 	}
 
 	/**
@@ -1096,7 +1131,10 @@ function parse(tokens){
 			return 0 - value;
 		}
 		else if(operator.value === '!'){
-			return value === 0;
+			return (value === 0) ? 1 : 0;
+		}
+		else{
+			throw new ParserException('Expecting to parse an unary operator, received the operator \'' + operator + '\'');
 		}
 	}
 
@@ -1114,6 +1152,36 @@ function parse(tokens){
 		 variableMap = {};
 		 actionRanges = [];
 		 variableCount = 0;
+	}
+
+	/**
+	 * Generates a variable name that can be used internally in places
+	 * where the user has not defined a variable.
+	 *
+	 * @returns {string} - name of variable
+	 */
+	function generateVariableName(){
+		return '$<v' + variableCount++ +'>';
+	}
+
+	/**
+	 * Attempts to parse the specified value. Throws an error if the
+	 * specified token's value does not match the specified value.
+	 * Increments the index by one.
+	 *
+	 * @param {object} token - token to parse
+	 * @param {string} value - value to parse from token
+	 *
+	 * @throws {ParserException} - if specifed value cannot be parsed
+	 */
+	function gobble(token, value){
+		if(token.value !== value){
+			throw new ParserException(
+				'Expecting to parse \'' + value + '\' but received the ' + token.type + ' \'' + token.value + '\'.'
+			);
+		}
+
+		index++;
 	}
 
 	/**
