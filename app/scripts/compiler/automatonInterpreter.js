@@ -8,7 +8,6 @@ function interpretAutomaton(process, processesMap, variableMap, processId){
 	interpretNode(process.process, root, process.ident.ident);
 
 	// interpret the locally defined processes
-	var local = process.local;
 	for(var ident in localProcessesMap){
 		var localProcess = localProcessesMap[ident];
 		interpretNode(localProcess.process, localProcess.node, process.ident.ident);

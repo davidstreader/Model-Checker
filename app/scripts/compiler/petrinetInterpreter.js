@@ -1,17 +1,16 @@
 'use strict';
 
 function interpretPetriNet(process, processesMap, variableMap, processId){
-	var root = constructPetriNet(processId, process.ident);
-	var localProcessesMap = setupLocalProcesses(process.ident, process.local);
-	console.log(localProcessesMap);
+	var root = constructPetriNet(processId, process.ident.ident);
+	var localProcessesMap = constructLocalProcesses(process.ident.ident , process.local);
+	console.log(localProcessesMap)
 	// interpret the main process
-	interpretNode(process.process, root, process.ident);
+	interpretNode(process.process, root, process.ident.ident);
 
-	// process locally defined processes
-	var local = process.local;
-	for(var i = 0; i < local.length; i++){
-		var localProcess = local[i];
-		interpretNode(localProcess.process, localProcessesMap[localProcess.ident], process.ident);
+	// interpret locally defined processes
+	for(var ident in localProcessesMap){
+		var localProcess = localProcessesMap[ident];
+		interpretNode(localProcess.process, localProcess.place, process.ident.ident);
 	}
 
 	function constructPetriNet(id, ident){
@@ -23,14 +22,35 @@ function interpretPetriNet(process, processesMap, variableMap, processId){
 		return root;	
 	}
 
-	function setupLocalProcesses(ident, localProcesses){
+	function constructLocalProcesses(ident, localProcesses){
 		var processes = {};
 		for(var i = 0; i < localProcesses.length; i++){
-			var place = processesMap[ident].addPlace();
-			processes[localProcesses[i].ident] = place;
+			var astNode = localProcesses[i].ident;
+			// check if process has indices defined
+			if(astNode.ranges !== undefined){
+				constructIndexedLocalProcess(astNode.ident, ident, astNode.ranges.ranges, localProcesses[i].process);
+			}
+			else{
+				processes[astNode.ident] = { place:processesMap[ident].addPlace(), process:localProcesses[i].process };
+			}
 		}
 
 		return processes;
+
+		function constructIndexedLocalProcess(ident, globalIdent, ranges, process){
+			if(ranges.length !== 0){
+				var iterator = new IndexIterator(ranges[0]);
+				while(iterator.hasNext){
+					var element = iterator.next;
+					var newIdent = ident + '[' + element + ']';
+					ranges = (ranges.length > 1) ? ranges.slice(1) : [];
+					constructIndexedLocalProcess(newIdent, globalIdent, ranges, process);
+				}
+			}
+			else{
+				processes[ident] = { place:processesMap[globalIdent].addPlace(), process:process };
+			}
+		}
 	}
 
 	function interpretNode(astNode, currentNode, ident){
@@ -158,26 +178,28 @@ function interpretPetriNet(process, processesMap, variableMap, processId){
 	}
 
 	function interpretIdentifier(astNode, currentPlace, ident){
+		var current = astNode.ident;
+		current = processActionLabel(current);
 		// check if the process is referencing itself
-		if(astNode.ident === ident){
+		if(current === ident){
 			processesMap[ident].mergePlaces(processesMap[ident].roots, [currentPlace]);
 		}
 		// check if the process is referencing a locally defined process
-		else if(localProcessesMap[astNode.ident] !== undefined){
-			processesMap[ident].mergePlaces([localProcessesMap[astNode.ident]], [currentPlace]);
+		else if(localProcessesMap[current] !== undefined){
+			processesMap[ident].mergePlaces([localProcessesMap[current].place], [currentPlace]);
 		}
 		// check if the process is referencing a globally defined process
-		else if(processesMap[astNode.ident] !== undefined){
+		else if(processesMap[current] !== undefined){
 			// check that referenced process is of the same type
-			if(processesMap[ident].type === processesMap[astNode.ident].type){
-				processesMap[ident].addPetriNet(processesMap[astNode.ident].clone, [currentPlace]);
+			if(processesMap[ident].type === processesMap[current].type){
+				processesMap[ident].addPetriNet(processesMap[current].clone, [currentPlace]);
 			}
 			else{
-				throw new InterpreterException('Cannot reference type \'' + processesMap[astNode.ident].type + '\' from type \'petrinet\'');
+				throw new InterpreterException('Cannot reference type \'' + processesMap[current].type + '\' from type \'petrinet\'');
 			}
 		}
 		else{
-			throw new InterpreterException('The identifier \'' + astNode.ident + '\' has not been defined');
+			throw new InterpreterException('The identifier \'' + current + '\' has not been defined');
 		}
 	}
 
