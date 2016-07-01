@@ -5,7 +5,6 @@ function interpretAutomaton(process, processesMap, variableMap, processId){
 	var localProcessesMap = constructLocalProcesses(process.ident.ident, process.local);
 
 	// interpret the main process
-	console.log(process.process);
 	interpretNode(process.process, root, process.ident.ident);
 
 	// interpret the locally defined processes
@@ -32,7 +31,7 @@ function interpretAutomaton(process, processesMap, variableMap, processId){
 				constructIndexedLocalProcess(astNode.ident, ident, astNode.ranges.ranges, localProcesses[i].process);
 			}
 			else{
-				processes[astNode.ident] = { node:processMap[ident].addNode(), process:process };
+				processes[astNode.ident] = { node:processesMap[ident].addNode(), process:localProcesses[i].process };
 			}
 		}
 
