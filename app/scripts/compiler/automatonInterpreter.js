@@ -13,6 +13,9 @@ function interpretAutomaton(process, processesMap, variableMap, processId){
 		interpretNode(localProcess.process, localProcess.node, process.ident.ident);
 	}
 
+	// label the nodes in the automaton
+	labelNodes(processesMap[process.ident.ident]);
+
 	function constructAutomaton(id, ident){
 		var graph = new Graph(id);
 		graph.root = graph.addNode();
@@ -223,6 +226,33 @@ function interpretAutomaton(process, processesMap, variableMap, processId){
 
 		return action;
 
+	}
+
+	/**
+	 * Traverses depth first through the specified graph and labels
+	 * each node in the graph in the order they are visited.
+	 *
+	 * @param {graph} graph - the graph to label
+	 */
+	function labelNodes(graph){
+		var fringe = [graph.root];
+		var id = 0;
+		var visited = {};
+
+		// traverse depth first through the graph
+		while(fringe.length !== 0){
+			var node = fringe.shift();
+			// check if this node has already been visited
+			if(!visited[node.id]){
+				node.label = '' + id++;
+				visited[node.id] = true;
+				// add neighbours of this node to the fringe
+				var neighbours = node.neighbours;
+				for(var i = 0; i < neighbours.length; i++){
+					fringe.push(graph.getNode(neighbours[i]));
+				}
+			}
+		}
 	}
 
 	function reset(){
