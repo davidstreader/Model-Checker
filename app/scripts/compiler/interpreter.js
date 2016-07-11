@@ -8,6 +8,14 @@ function interpret(processes, variables, analysis, lastProcessesMap){
 	reset();
 	variableMap = variables;
 
+	// build up a set of id numbers that cannot be used
+	var usedIds = {};
+	for(var ident in lastProcessesMap){
+		if(!analysis[ident].isUpdated){
+			usedIds[lastProcessesMap[ident].id] = true;
+		}
+	}
+
 	for(var i = 0; i < processes.length; i++){
 		// check if the current process has been updated since last compilation
 		var ident = processes[i].ident.ident;
@@ -15,10 +23,10 @@ function interpret(processes, variables, analysis, lastProcessesMap){
 			// interpret the process
 			var type = processes[i].processType;
 			if(type === 'automata'){
-				interpretAutomaton(processes[i], processesMap, variableMap, nextProcessId++);
+				interpretAutomaton(processes[i], processesMap, variableMap, getNextProcessId());
 			}
 			else if(type === 'petrinet'){
-				interpretPetriNet(processes[i], processesMap, variableMap, nextProcessId++);
+				interpretPetriNet(processes[i], processesMap, variableMap, getNextProcessId());
 			}
 			else{
 				// throw error
@@ -31,6 +39,20 @@ function interpret(processes, variables, analysis, lastProcessesMap){
 	}
 
 	return processesMap;
+
+	/**
+	 * Returns the next unique process id
+	 *
+	 * @return {int} - the next process id
+	 */
+	function getNextProcessId(){
+		while(usedIds[nextProcessId] !== undefined){
+			nextProcessId++;
+		}
+
+		usedIds[nextProcessId] = true;
+		return nextProcessId;
+	}
 
 	function reset(){
 		processesMap = {};
