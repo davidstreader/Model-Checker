@@ -140,7 +140,7 @@ class PetriNet {
  	 */
 	addTransition(label, from){
 		var id = this._id + '.' + this._nextTransitionId++;
-		var transition = new PetriNet.Transition(id, [this._id]);
+		var transition = new PetriNet.Transition(id, [this._id], label);
 		transition.addIncomingPlace(from);
 		from.addOutgoingTransition(id);
 		var to = this.addPlace();
@@ -507,7 +507,7 @@ PetriNet.Place = class {
 
 PetriNet.Transition = class {
 
-	constructor(id, processIds, outgoingPlaces, incomingPlaces, metaData){
+	constructor(id, processIds, label, outgoingPlaces, incomingPlaces, metaData){
 		// check that global ids array is defined
 		if(id === undefined){
 			// throw error
@@ -516,8 +516,13 @@ PetriNet.Transition = class {
 			// throw error
 		}
 
+		if(label === undefined){
+			// throw error
+		}
+
 		this._id = id;
 		this._processIds = processIds;
+		this._label = label;
 		this._outgoingPlaces = (outgoingPlaces !== undefined) ? outgoingPlaces : {};
 		this._incomingPlaces = (incomingPlaces !== undefined) ? incomingPlaces : {};
 		this._metaData = (metaData !== undefined) ? metaData : {}; 
@@ -581,6 +586,27 @@ PetriNet.Transition = class {
 
 		// id not located
 		return false;
+	}
+
+	/**
+	 * Returns the label associated with this transition.
+	 *
+	 * @return {string} - transition label
+	 */
+	get label(){
+		return this._label;
+	}
+
+	/**
+	 * Sets the label associated with this transition to the specified
+	 * label.
+	 *
+	 * @param {string} label - the new label
+	 * @return {string} - the new label
+	 */
+	set label(label){
+		this._label = label;
+		return this._label;
 	}
 
 	/**
