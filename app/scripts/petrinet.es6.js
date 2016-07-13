@@ -357,6 +357,15 @@ PetriNet.Place = class {
 	}
 
 	/**
+	 * Returns the fact that this object is a place.
+	 *
+	 * @return {string} - type
+	 */
+	get type(){
+		return 'place';
+	}
+
+	/**
 	 * Returns the unique identifier for this place.
 	 *
 	 * @return {string} - place id
@@ -526,6 +535,15 @@ PetriNet.Transition = class {
 		this._outgoingPlaces = (outgoingPlaces !== undefined) ? outgoingPlaces : {};
 		this._incomingPlaces = (incomingPlaces !== undefined) ? incomingPlaces : {};
 		this._metaData = (metaData !== undefined) ? metaData : {}; 
+	}
+
+	/**
+	 * Returns the fact that this object is a transition.
+	 *
+	 * @return {string} - type
+	 */
+	get type(){
+		return 'transition';
 	}
 
 	/**
