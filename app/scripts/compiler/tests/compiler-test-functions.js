@@ -218,3 +218,61 @@ function testFunctionNode(node, functionType){
 	expect(node).to.have.property('func', functionType);
 	expect(node).to.have.property('process');
 }
+
+/**
+ * INTERPRETING PETRI NET HELPER FUNCTIONS
+ *
+ * The following functions are use to help test the interpretation of
+ * abstract syntax trees.
+ */
+
+/**
+ * Constructs and returns a place map containing the specified
+ * number of places.
+ *
+ * @param {int} amount - the number of places to generate
+ * @return {string -> place} - a mapping from id to place
+ */
+function generatePlaceMap(amount){
+	var placeMap = {};
+	for(var i = 0; i < amount; i++){
+		var id = 'test.' + i;
+		placeMap[id] = new PetriNet.Place(id);
+	}
+
+	return placeMap;
+}
+
+/**
+ * Constructs and returns a transition map containing a transition for
+ * each label in the specified labels array.
+ *
+ * @param {string[]} labels - the labels to generate transitions for
+ * @return {string -> transition} - a mapping from id to transition
+ */
+function generateTransitionMap(labels){
+	var transitionMap = {};
+	for(var i = 0; i < labels.length; i++){
+		var id = 'test.' + i;
+		transitionMap[id] = new PetriNet.Transition(id, ['test'], labels[i]);
+	}
+
+	return transitionMap;
+}
+
+/**
+ * Sets up a connection between the two specified place or transition
+ * objects.
+ */
+function setupConnection(from, to){
+	if(from.type !== to.type){
+		if(from.type === 'place'){
+			from.addOutgoingTransition(to);
+			to.addIncomingPlace(from);
+		}
+		else if(from.type === 'transition'){
+			from.addOutgoingPlace(to);
+			to.addIncomingTransition(from);
+		}
+	}
+}
