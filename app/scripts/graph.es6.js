@@ -1,12 +1,12 @@
 class Graph{
 
-  constructor(id){
+  constructor(id, rootId, nodeMap, nodeCount, edgeMap, edgeCount){
     this._id = id;
-    this._rootId = undefined;
-    this._nodeMap = {};
-    this._nodeCount = 0;
-    this._edgeMap = {};
-    this._edgeCount = 0;
+    this._rootId = (rootId !== undefined) ? rootId : undefined;
+    this._nodeMap = (nodeMap !== undefined) ? nodeMap : {};
+    this._nodeCount = (nodeCount !== undefined) ? nodeCount : 0;
+    this._edgeMap = (edgeMap !== undefined) ? edgeMap : {};
+    this._edgeCount = (edgeCount !== undefined) ? edgeCount : 0;
     this._nextNodeId = 0;
     this._nextEdgeId = 0;
   }
@@ -88,7 +88,6 @@ class Graph{
   get nodes(){
     var nodes = [this._nodeMap[this._rootId]];
     for(var i in this._nodeMap){
-      i = parseInt(i, 10);
       if(i !== this._rootId){
         nodes.push(this._nodeMap[i]);
       }
@@ -236,6 +235,22 @@ class Graph{
     for(var i = 0; i < edges.length; i++){
       edges[i].label = label + '.' + edges[i].label;
     }
+  }
+
+  /**
+   * Returns the alphabet of actions that are associated with this
+   * automaton.
+   *
+   * @ return{string{}} - a set of actions
+   */
+  get alphabet(){
+    var alphabet = {};
+    var edges = this.edges;
+    for(var i = 0; i < edges.length; i++){
+      alphabet[edges[i].label] = true;
+    }
+
+    return alphabet;
   }
 
   /**
@@ -466,6 +481,45 @@ Graph.Node = class{
    */
   get isAccessible(){
     return this._edgesToMe.length === 0;
+  }
+
+  /**
+   * Returns the nodes ids that this node can transition to via the
+   * specified action.
+   *
+   * @param {string} action - the action to check for
+   * @return {int[]} - an array of node ids 
+   */
+  coaccessible(action){
+    var nodes = [];
+    for(var i in this._edgesFromMe){
+      if(this._edgesFromMe[i].label === action){
+        nodes.push(this._edgesFromMe[i].to);
+      }
+    }
+
+    return nodes;
+  }
+
+  /**
+   * Returns the meta data object associated with this node.
+   *
+   * @return {object} - meta data
+   */
+  get metaData(){
+    return this._metaData;
+  }
+
+  /**
+   * Sets the meta data object of this node to the specified
+   * meta data.
+   *
+   * @param {object} metaData - the new meta data object
+   * @return {object} - the new metaData object
+   */
+  set metaData(metaData){
+    this._metaData = metaData;
+    return metaData;
   }
 
   /**
