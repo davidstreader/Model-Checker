@@ -231,9 +231,9 @@ function parse(tokens){
 				processVariables(variableMap);
 			}
 			else{
-				var range = new IndexIterator(actionRanges[start]);
-				while(range.hasNext()){
-					variableMap[range.variable] = range.next();
+				var range = new IndexIterator(actionRanges[start].range);
+				while(range.hasNext){
+					variableMap[actionRanges[start].variable] = range.next;
 					processIndexedElement(start + 1, variableMap);
 				}
 			}
