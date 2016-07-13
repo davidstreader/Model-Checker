@@ -70,6 +70,9 @@ function interpretAutomaton(process, processesMap, variableMap, processId){
 		else if(type === 'choice'){
 			interpretChoice(astNode, currentNode, ident);
 		}
+		else if(type === 'composite'){
+			interpretComposite(astNode, currentNode, ident);
+		}
 		else if(type === 'function'){
 			interpretFunction(astNode, currentNode, ident);
 		}
@@ -138,6 +141,26 @@ function interpretAutomaton(process, processesMap, variableMap, processId){
 	function interpretChoice(astNode, currentNode, ident){
 		interpretNode(astNode.process1, currentNode, ident);
 		interpretNode(astNode.process2, currentNode, ident);
+	}
+
+	function interpretComposite(astNode, currentNode, ident){
+		// interpret the two processes to be composed together
+		var process1 = ident + '.process1';
+		var root1 = constructAutomaton(processesMap[ident].id + 'a', process1);
+		interpretNode(astNode.process1, root1, process1);
+		labelNodes(processesMap[process1]);
+
+		var process2 = ident + '.process2';
+		var root2 = constructAutomaton(processesMap[ident].id + 'b', process2);
+		interpretNode(astNode.process2, root2, process2);
+		labelNodes(processesMap[process2]);
+		
+		// compose processes together
+		processesMap[ident] = parallelComposition(processesMap[ident].id, processesMap[process1], processesMap[process2]);
+
+		// delete unneeded processes
+		delete processesMap[process1];
+		delete processesMap[process2];
 	}
 
 	function interpretFunction(astNode, currentNode, ident){
