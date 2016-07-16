@@ -310,6 +310,7 @@ class PetriNet {
 				var clone = new PetriNet.Transition(
 					transition.id, 
 					transition.processIds,
+					transition.label,
 					outgoingPlaces,
 					incomingPlaces,
 					transition.metaData
