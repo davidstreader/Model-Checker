@@ -227,37 +227,39 @@ function testFunctionNode(node, functionType){
  */
 
 /**
- * Constructs and returns a place map containing the specified
+ * Constructs and returns an array of places containing the specified
  * number of places.
  *
  * @param {int} amount - the number of places to generate
- * @return {string -> place} - a mapping from id to place
+ * @param {int} idStart - the id number to start from
+ * @return {place[]) - an array of places
  */
-function generatePlaceMap(amount){
-	var placeMap = {};
+function generatePlaces(amount, idStart){
+	var places = [];
 	for(var i = 0; i < amount; i++){
-		var id = 'test.' + i;
-		placeMap[id] = new PetriNet.Place(id);
+		var id = 'test.' + (i + idStart);
+		places.push(new PetriNet.Place(id));
 	}
 
-	return placeMap;
+	return places;
 }
 
 /**
- * Constructs and returns a transition map containing a transition for
+ * Constructs and returns an array of transitions containing a transition for
  * each label in the specified labels array.
  *
  * @param {string[]} labels - the labels to generate transitions for
- * @return {string -> transition} - a mapping from id to transition
+ * @param {int} idStart - the id number to start from
+ * @return {transition[]} - an array of transitions
  */
-function generateTransitionMap(labels){
-	var transitionMap = {};
+function generateTransitions(labels, idStart){
+	var transitions = [];
 	for(var i = 0; i < labels.length; i++){
-		var id = 'test.' + i;
-		transitionMap[id] = new PetriNet.Transition(id, ['test'], labels[i]);
+		var id = 'test.' + (i + idStart);
+		transitions.push(new PetriNet.Transition(id, ['test'], labels[i]));
 	}
 
-	return transitionMap;
+	return transitions;
 }
 
 /**
@@ -267,12 +269,44 @@ function generateTransitionMap(labels){
 function setupConnection(from, to){
 	if(from.type !== to.type){
 		if(from.type === 'place'){
-			from.addOutgoingTransition(to);
+			from.addOutgoingTransition(to.id);
 			to.addIncomingPlace(from);
 		}
 		else if(from.type === 'transition'){
 			from.addOutgoingPlace(to);
-			to.addIncomingTransition(from);
+			to.addIncomingTransition(from.id);
 		}
 	}
+}
+
+/**
+ * Constructs a sequential connection between the specified places and transitions,
+ * such that the sequence goes:
+ *
+ * p[0] -> t[0] -> p[1] -> t[1] -> ... -> p[n-1] -> t[n-1] -> p[n]
+ *
+ * @param {place[]} places - an array of places
+ * @param {transition[]} transitions - an array of transitions 
+ */
+function constructSequentialPetriNet(places, transitions){
+	for(var i = 0; i < transitions.length; i++){
+		setupConnection(places[i], transitions[i]);
+		setupConnection(transitions[i], places[i + 1])
+	}
+}
+
+/**
+ * Converts an array of process objects into a mapping from the object's id
+ * to the object.
+ *
+ * @param {object[]} objects - an array of objects
+ * @param {string -> object} - an object map from id to object
+ */
+function convertArrayToMap(objects){
+	var objectMap = {};
+	for(var i = 0; i < objects.length; i++){
+		objectMap[objects[i].id] = objects[i];
+	}
+
+	return objectMap;
 }
