@@ -266,10 +266,6 @@ describe('Grammar to AST Action Range Tests', function(){
 			expect(process.process).to.have.property('type', 'index');
 			expect(process.process).to.have.property('variable', variable);
 			expect(process.process).to.have.property('range');
-			console.log('received:');
-			console.log(process.range);
-			console.log('expected:');
-			console.log(range);
 			expect(process.process.range).to.eql(range);
 			hasActionLabel(process.process, actionLabel);
 		}
