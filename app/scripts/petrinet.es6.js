@@ -87,6 +87,20 @@ class PetriNet {
 	}
 
 	/**
+	 * Returns the place in this Petri net with the specified id.
+	 *
+	 * @param {string} id - the place id
+	 * @return {place} - place
+	 */
+	getPlace(id){
+		if(this._placeMap[id] !== undefined){
+			return this._placeMap[id];
+		}
+
+		// throw error
+	}
+
+	/**
 	 * Constructs an adds a new place to this petri net. The place is guaranteed
 	 * to have a unique identifier. Returns the constructed place.
 	 *
@@ -112,7 +126,21 @@ class PetriNet {
 
 		return transitions;
 	}
-	
+
+	/**
+	 * Returns the transition in this Petri net with the specified id.
+	 *
+	 * @param {string} id - the transition id
+	 * @return {transition} - transition
+	 */
+	getTransition(id){
+		if(this._transitionMap[id] !== undefined){
+			return this._transitionMap[id];
+		}
+
+		// throw error
+	}
+
 	/**
 	 * Returns a list of label set objects that are associated with this
 	 * petri net.
