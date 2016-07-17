@@ -36,6 +36,21 @@ function constructProcesses(code){
 }
 
 /**
+ * Parses the specified code, converts it into an abstract syntax tree and
+ * interprets it into a process map containing data structures of the defined
+ * processes.
+ *
+ * @param {string} code - the process grammar
+ * @return {string -> object} - mapping from identifier to process data structure
+ */
+function constructProcessesMap(code){
+	var tokens = lexer.parse(code);
+	var ast = parse(tokens);
+	var analysis = performAnalysis(ast.processes, {});
+	return interpret(ast.processes, ast.variableMap, analysis, {});
+}
+
+/**
  * The following functions test explicitly if an ast node was constructed
  * correctly.
  */
@@ -292,6 +307,69 @@ function constructSequentialPetriNet(places, transitions){
 	for(var i = 0; i < transitions.length; i++){
 		setupConnection(places[i], transitions[i]);
 		setupConnection(transitions[i], places[i + 1])
+	}
+}
+
+function compareBFTGraphs(graph1, graph2){
+	// compare node counts for both graphs
+	if(graph1.nodeCount !== graph2.nodeCount){
+		return false;
+	}
+
+	// compare alphabets from both graphs
+	if(!compareAlphabets(graph1.alphabet, graph2.alphabet)){
+		return false;
+	}
+
+	// traverse through both graphs
+	var visited = {};
+	var fringe = [graph1.root, graph2.root];
+	var index = 0;
+	while(index < fringe.length){
+		var current1 = fringe[index++];
+		var current2 = fringe[index++];
+
+		// check if nodes have either not or both been visited
+		if(visited[current1.id] !== visited[current2.id]){
+			return false;
+		}
+
+		var children1 = current1.children;
+		var children2 = current2.children;
+		for(var i = 0; i < children1.length; i++){
+			// children are ordered so each child should match
+			if(children1[i] !== children2[i]){
+				return false;
+			}
+
+			// push current children to fringe
+			fringe.push(graph1.getNode(children1[i]), graph2.getNode(children2[i]));
+		}
+
+		// mark current nodes as visited
+		visited[current1.id] = true;
+		visited[current2.id] = true;
+	}
+
+	// if algorithm has gotten this far then the graphs are equivalent
+	return true;
+
+	function compareAlphabets(alpahbet1, alphabet2){
+		for(var i in alphabet1){
+			var match = false;
+			for(var j in alphabet2){
+				if(i === j){
+					match = true;
+					break;
+				}
+			}
+
+			if(!match){
+				return false;
+			}
+		}
+
+		return true;
 	}
 }
 

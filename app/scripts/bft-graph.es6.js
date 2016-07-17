@@ -10,8 +10,9 @@ class BFTGraph {
 	 * Constructs an empty breadth first traversal graph.
 	 */
 	constructor(){
-		this._nodeMap = {};
 		this._rootIds = [];
+		this._nodeMap = {};
+		this._nodeCount = 0;
 	}
 
 	/**
@@ -71,6 +72,30 @@ class BFTGraph {
 		}
 
 		// throw error
+	}
+
+	/**
+	 * Returns the number of nodes in this breadth first traversal graph.
+	 *
+	 * @return {int} - node count
+	 */
+	get nodeCount(){
+		return this._nodeCount;
+	}
+
+	/**
+	 * Returns the alphabet of actions from this breadth first traversal graph.
+	 *
+	 * @return {string{}} - set of actions
+	 */
+	get alphabet(){
+		var alphabet = {};
+		for(var id in this._nodeMap){
+			var label = this._nodeMap[id].label;
+			alphabet[label] = true;
+		}
+
+		return alphabet;
 	}
 }
 
