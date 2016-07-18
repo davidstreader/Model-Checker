@@ -19,21 +19,31 @@ describe('Sequential Petri Net Interpretation Tests', function(){
 		var processesMap = constructProcessesMap('petrinet A = (a -> STOP).');
 
 		// compare the received petri net with the expected petri net
-		var graph1 = breadthFirstTraversal(expected);
-		var graph2 = breadthFirstTraversal(processesMap['A']);
+		var id = 0;
+		var graph1 = breadthFirstTraversal(id++, expected);
+		var graph2 = breadthFirstTraversal(id, processesMap['A']);
 		var result = compareBFTGraphs(graph1, graph2);
 		assert(result, 'processes should be identical');
 	});
 
 	it('Should interpret petrinet A = (a -> b -> c -> STOP). correctly', function(){
+		// construct expected petri net
 		var places = generatePlaces(4, 0);
 		var transitions = generateTransitions(['a', 'b', 'c'], 0);
 		constructSequentialPetriNet(places, transitions);
-
 		var placeMap = convertArrayToMap(places);
 		var transitionMap = convertArrayToMap(transitions);
 		var expected = new PetriNet('test', placeMap, 4, transitionMap, {}, 3, ['test.0']);
-		var graph = breadthFirstTraversal(expected);
+		
+		// construct received petri net
+		var processesMap = constructProcessesMap('petrinet A = (a -> b -> c -> STOP).');
+
+		// compare the received petri net with the expected petri net
+		var id = 0;
+		var graph1 = breadthFirstTraversal(id++, expected);
+		var graph2 = breadthFirstTraversal(id, processesMap['A']);
+		var result = compareBFTGraphs(graph1, graph2);
+		assert(result, 'processes should be identical');
 	});
 
 });
