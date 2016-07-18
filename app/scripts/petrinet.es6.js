@@ -217,6 +217,11 @@ class PetriNet {
 				this._labelSets[newLabel] = this._labelSets[oldLabel];
 			}
 
+			// update transition labels
+			for(var i = 0; i < this._labelSets[oldLabel].length; i++){
+				this._labelSets[oldLabel][i].label = newLabel;
+			}
+
 			// remove the old label from the petri net
 			delete this._labelSets[oldLabel];
 		}
