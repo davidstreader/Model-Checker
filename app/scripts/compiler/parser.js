@@ -848,7 +848,7 @@ function parse(tokens){
 			throw new ParserException('Received unexpected ' + token.type + '\'' + token.value + '\' while attempting to parse a hiding set');
 		}
 
-		var set = parseSet(tokens[index]).set;
+		var set = parseSet(tokens).set;
 
 		return { type:type, set:set };
 	}
