@@ -237,7 +237,7 @@ function interpretPetriNet(process, processesMap, variableMap, processId){
 	}
 
 	/** 
-	 * Relabels transtions in the specified petri net base on the contents of
+	 * Relabels transtions in the specified Petri net based on the contents of
 	 * the specified relabel set. The relabel set is made up of objects containing
 	 * the old transition label and the new transition label.
 	 *
@@ -252,12 +252,28 @@ function interpretPetriNet(process, processesMap, variableMap, processId){
 	}
 
 	/**
-	 * 
+	 * Relabels transitions in the specified Petri net based on the contents of the
+	 * specified hiding set. Depending on the type of the hiding set, all the transitions
+	 * with labels in the hiding set are marked as hidden or all the transitions with labels
+	 * not in the hiding set are marked as hidden.
+	 *
+	 * @param {petrinet} net - the petri net to process
+	 * @param {object} hidingSet - an object containing a hiding type and an array of actions
 	 */
 	function processHiding(net, hidingSet){
 		var labelSets = net.labelSets;
 		var set = hidingSet.set;
 		if(hidingSet.type === 'includes'){
+			processInclusionHiding(labelSets, set);
+		}
+		else if(hidingSet.type === 'excludes'){
+			processExclusionHiding(labelSets, set);
+		}
+
+		/**
+		 * Sets all the transitions with labels in the specified set to be hidden.
+		 */
+		function processInclusionHiding(labelSets, set){
 			for(var i = 0; i < labelSets.length; i++){
 				for(var j = 0; j < set.length; j++){
 					// check if the labels match
@@ -265,10 +281,28 @@ function interpretPetriNet(process, processesMap, variableMap, processId){
 						net.relabelTransition(set[j], TAU);
 					}
 				}
-			}
+			}	
 		}
-		else if(hidingSet.type === 'excludes'){
 
+		/**
+		 * Sets all the transitions with labels not in the specified set to be hidden.
+		 */
+		function processExclusionHiding(labelSets, set){
+			for(var i = 0; i < labelSets.length; i++){
+				var match = false;
+				for(var j = 0; j < set.length; j++){
+					// check if the labels match
+					if(labelSets[i].label === set[j]){
+						match = true;
+						break;
+					}
+				}
+
+				// relabel if the current label did not match any labels in the set
+				if(!match){
+					net.relabelTransition(labelSets[i].label, TAU);
+				}
+			}	
 		}
 	}
 
