@@ -131,6 +131,20 @@ function testIdentifierNode(node, ident){
 	expect(node).to.have.property('ident', ident);
 }
 
+/**
+ * Tests that the specified hiding node was constructed correctly by the
+ * parser.
+ *
+ * @param {astNode} node - the hiding node
+ * @param {string} type - the type of hiding operation
+ * @param {string[]} - an array of actions
+ */
+function testHidingNode(node, type, set){
+	expect(node).to.have.property('type', type);
+	// have to use deep equals to test the set as they are defined as arrays
+	expect(node.set).to.eql(set);
+}
+
 /** 
  * The following functions do not test explicitly that the ast nodes were
  * constructed correctly. This is because they have nested ast nodes within
