@@ -9,36 +9,21 @@ class BFTGraph {
 	/**
 	 * Constructs an empty breadth first traversal graph.
 	 */
-	constructor(){
-		this._rootIds = [];
+	constructor(id){
+		this._id = id;
+		this._rootId = id + '.<root>';
 		this._nodeMap = {};
 		this._nodeCount = 0;
+		this.addNode(this._id + '<root>', '<root>');
 	}
 
 	/**
-	 * Returns the root nodes of this breadth first traversal graph.
+	 * Returns the root node of this breadth first traversal graph.
 	 *
-	 * @return {node[]} - array of root nodes
+	 * @return {node} - the root node
 	 */
-	get roots(){
-		var roots = [];
-		for(var i = 0; i < this._rootIds.length; i++){
-			roots.push(this._nodeMap[this._rootsIds[i]])
-		}
-
-		return roots;
-	}
-
-	/**
-	 * Adds the specified node id to the root ids for this breadth first
-	 * traversal graph. The ids are guaranteed to be sorted after the id
-	 * is added.
-	 *
-	 * @param {string} id - the root id
-	 */
-	addRootId(id){
-		this._rootIds.push(id);
-		this._rootIds.sort();
+	get root(){
+		return this._nodeMap[this._id + '<root>'];
 	}
 
 	/**
@@ -56,6 +41,7 @@ class BFTGraph {
 
 		var node = new BFTGraph.Node(id, label);
 		this._nodeMap[id] = node;
+		this._nodeCount++;
 		return node;
 	}
 

@@ -4,16 +4,17 @@
  * Performs a breadth first traversal of the specified process and returns the resulting 
  * breadth first traversal graph.
  *
+ * @param {int} id - the id for the breadth first traversal graph
  * @param {object} process - the process to traverse
  * @return {bft graph} - the breadth first traversal graph
  */
-function breadthFirstTraversal(process){
+function breadthFirstTraversal(id, process){
 	var type = process.type;
 	if(type === 'automata'){
-		return automataBFT(process);
+		return automataBFT(id, process);
 	}
 	else if(type === 'petrinet'){
-		return petriNetBFT(process);
+		return petriNetBFT(id, process);
 	}
 	else{
 		// throw error
@@ -23,10 +24,11 @@ function breadthFirstTraversal(process){
 	 * Performs a breadth first traversal of the specified automaton and returns the resulting
 	 * breadth first traversal graph.
 	 *
+	 * @param {int} id - the id for the breadth first traversal graph
 	 * @param {automaton} process - the auomtaton to traverse
 	 * @return {bft graph} - the breadth first traversal graph
 	 */
-	function automataBFT(process){
+	function automataBFT(id, process){
 		// TODO
 	}
 
@@ -34,11 +36,12 @@ function breadthFirstTraversal(process){
 	 * Performs a breadth first traversal of the specified Petri net and returns the resulting
 	 * breadth first traversal graph.
 	 *
-	 * @param {automaton} process - the petri net to traverse
+	 * @param {int} id - the id for the breadth first traversal graph
+	 * @param {petrinet} process - the petri net to traverse
 	 * @return {bft graph} - the breadth first traversal graph
 	 */
-	function petriNetBFT(process){
-		var graph = new BFTGraph();
+	function petriNetBFT(id, process){
+		var graph = new BFTGraph(id);
 		var transitionToNode = constructTransitionToNodeMap(graph, process.transitions);
 
 		var visitedPlaces = {};
@@ -54,7 +57,7 @@ function breadthFirstTraversal(process){
 			var neighbours = roots[i].outgoingTransitions;
 			for(var j = 0; j < neighbours.length; j++){
 				fringe.push(neighbours[j]);
-				graph.addRootId(transitionToNode[neighbours[j]]);
+				graph.root.addChild(transitionToNode[neighbours[j]]);
 			}
 
 			// continue traversal while there are still transitions to process
