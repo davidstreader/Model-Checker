@@ -5,5 +5,6 @@
  * within the application.
  */
 
+var PROCESS_TYPES = ['automata', 'petrinet'];
 var TAU = '\u03C4';
 var DELTA = '\u03B4';

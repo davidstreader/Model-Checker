@@ -2,8 +2,8 @@ var processTypes = ['automata', 'petrinet'];
 
 describe('Grammar to AST Choice Tests', function(){
 
-	for(var i = 0; i < processTypes.length; i++){
-		var processType = processTypes[i];
+	for(var i = 0; i < PROCESS_TYPES.length; i++){
+		var processType = PROCESS_TYPES[i];
 		var processes;
 
 		it('[' + processType + ' test] - Should parse A = STOP | STOP. correctly', function(){

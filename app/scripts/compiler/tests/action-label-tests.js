@@ -2,8 +2,6 @@ var assert = chai.assert;
 
 function runActionLabelTests(){
 
-var processTypes = ['automata', 'petrinet'];
-
 /**
  * Helper function for tests which constructs and returns an ast
  * from the specified code.
@@ -18,8 +16,8 @@ function constructProcesses(code){
 
 describe('Grammar to AST Action Label Tests', function(){
 
-	for(var i = 0; i < processTypes.length; i++){
-		var processType = processTypes[i];
+	for(var i = 0; i < PROCESS_TYPES.length; i++){
+		var processType = PROCESS_TYPES[i];
 		var processes;
 
 		it('[' + processType + ' test] - Should parse the action label \'a\' successfully', function() {
@@ -140,8 +138,8 @@ describe('Grammar to AST Action Label Tests', function(){
 
 describe('Grammar to AST Action Range Tests', function(){
 
-	for(var i = 0; i < processTypes.length; i++){
-		var processType = processTypes[i];
+	for(var i = 0; i < PROCESS_TYPES.length; i++){
+		var processType = PROCESS_TYPES[i];
 		var processes;
 
 		it('[' + processType + ' test] - Should parse the action range \'[0..2]\' successfully', function(){

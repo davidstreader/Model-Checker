@@ -1,4 +1,4 @@
-var processTypes = ['automata', 'petrinet'];
+'use strict';
 
 describe('Grammar to AST Function Tests', function(){
 
@@ -7,8 +7,8 @@ describe('Grammar to AST Function Tests', function(){
 			baseProcess = baseProcess[0].process;
 		});
 
-	for(var i = 0; i < processTypes.length; i++){
-		var processType = processTypes[i];
+	for(var i = 0; i < PROCESS_TYPES.length; i++){
+		var processType = PROCESS_TYPES[i];
 		var process;
 		var baseProcess;
 

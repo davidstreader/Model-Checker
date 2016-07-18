@@ -5,9 +5,6 @@
  * syntax trees.
  */
 
-// fields
-var processTypes = ['automata', 'petrinet'];
-
 /**
  * Test that the parsing of a stop terminal produces the correct abstract syntax tree.
  */
@@ -16,8 +13,8 @@ describe('Grammar to AST Stop Terminal Tests', function(){
 	/**
 	 * Run tests for all process types
 	 */
-	for(var i = 0; i < processTypes.length; i++){
-		var processType = processTypes[i];
+	for(var i = 0; i < PROCESS_TYPES.length; i++){
+		var processType = PROCESS_TYPES[i];
 		var processes;
 
 		/**
@@ -67,8 +64,8 @@ describe('Grammar to AST Error Terminal Tests', function(){
 	/**
 	 * Run tests for all process types
 	 */
-	for(var i = 0; i < processTypes.length; i++){
-		var processType = processTypes[i];
+	for(var i = 0; i < PROCESS_TYPES.length; i++){
+		var processType = PROCESS_TYPES[i];
 		var processes;
 
 		/**

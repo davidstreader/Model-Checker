@@ -4,12 +4,10 @@
  * Unit tests to ensure that comments are ignored when parsing.
  */
 
-var processTypes = ['automata', 'petrinet'];
-
 describe('Grammar to AST Single Lined Comments Tests', function(){
 	
-	for(var i = 0; i < processTypes.length; i++){
-		var processType = processTypes[i];
+	for(var i = 0; i < PROCESS_TYPES.length; i++){
+		var processType = PROCESS_TYPES[i];
 
 		// the expected abstract syntax tree
 		var expected;
@@ -80,8 +78,8 @@ describe('Grammar to AST Single Lined Comments Tests', function(){
 
 describe('Grammar to AST Multi Lined Comments Tests', function(){
 	
-	for(var i = 0; i < processTypes.length; i++){
-		var processType = processTypes[i];
+	for(var i = 0; i < PROCESS_TYPES.length; i++){
+		var processType = PROCESS_TYPES[i];
 
 		// the expected abstract syntax tree
 		var expected;
