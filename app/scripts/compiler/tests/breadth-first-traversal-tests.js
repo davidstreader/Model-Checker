@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * Unit tests to ensure that the breadth first traversal algorithm works correctly.
  */
