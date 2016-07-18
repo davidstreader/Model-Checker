@@ -354,7 +354,7 @@ function compareBFTGraphs(graph1, graph2){
 	// if algorithm has gotten this far then the graphs are equivalent
 	return true;
 
-	function compareAlphabets(alpahbet1, alphabet2){
+	function compareAlphabets(alphabet1, alphabet2){
 		for(var i in alphabet1){
 			var match = false;
 			for(var j in alphabet2){
