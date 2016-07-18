@@ -422,6 +422,10 @@ function parse(tokens){
 		gobble(tokens[index], '.');
 
 		var definition = { type:'process', processType:processType, ident:ident, process:process, local:localProcesses };
+		// add hiding set to definition if it was defined
+		if(hiding !== undefined){
+			definition.hiding = hiding;
+		}
 		processes.push(definition);
 	}
 
@@ -836,7 +840,7 @@ function parse(tokens){
 	function parseHiding(tokens){
 		var type;
 		if(tokens[index].value === '\\'){
-			type = 'incudes';
+			type = 'includes';
 			gobble(tokens[index], '\\');
 		}
 		else if(tokens[index].value === '@'){
