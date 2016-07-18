@@ -3,7 +3,7 @@
 function interpretPetriNet(process, processesMap, variableMap, processId){
 	var root = constructPetriNet(processId, process.ident.ident);
 	var localProcessesMap = constructLocalProcesses(process.ident.ident , process.local);
-	console.log(localProcessesMap)
+
 	// interpret the main process
 	interpretNode(process.process, root, process.ident.ident);
 
@@ -11,6 +11,11 @@ function interpretPetriNet(process, processesMap, variableMap, processId){
 	for(var ident in localProcessesMap){
 		var localProcess = localProcessesMap[ident];
 		interpretNode(localProcess.process, localProcess.place, process.ident.ident);
+	}
+
+	// interpret hiding set if one was defined
+	if(process.hiding !== undefined){
+		processHiding(processesMap[process.ident.ident], process.hiding);
 	}
 
 	function constructPetriNet(id, ident){
@@ -243,6 +248,27 @@ function interpretPetriNet(process, processesMap, variableMap, processId){
 		for(var i = 0; i < relabelSet.length; i++){
 			// labels are defined as action label nodes
 			net.relabelTransition(relabelSet[i].oldLabel.action, relabelSet[i].newLabel.action);
+		}
+	}
+
+	/**
+	 * 
+	 */
+	function processHiding(net, hidingSet){
+		var labelSets = net.labelSets;
+		var set = hidingSet.set;
+		if(hidingSet.type === 'includes'){
+			for(var i = 0; i < labelSets.length; i++){
+				for(var j = 0; j < set.length; j++){
+					// check if the labels match
+					if(labelSets[i].label === set[j]){
+						net.relabelTransition(set[j], TAU);
+					}
+				}
+			}
+		}
+		else if(hidingSet.type === 'excludes'){
+
 		}
 	}
 
