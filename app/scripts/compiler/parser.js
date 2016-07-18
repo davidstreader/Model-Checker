@@ -415,7 +415,7 @@ function parse(tokens){
 
 		// check if a hidden set has been defined
 		var hiding;
-		if(tokens[index].value === '\\' | tokens[index] === '@'){
+		if(tokens[index].value === '\\' || tokens[index].value === '@'){
 			hiding = parseHiding(tokens);
 		}
 
