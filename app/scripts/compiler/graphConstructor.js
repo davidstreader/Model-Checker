@@ -95,7 +95,7 @@ function constructGraphs(processesMap, analysis, lastGraphs){
 	 */
 	function petriNetConstructor(process){
 		// construct a graph to represet petri net
-		var graph = initialiseGraph('TD');
+		var graph = initialiseGraph('LR');
 
 		// add places in petri net to the graph
 		var startPlaces = [];
@@ -127,28 +127,24 @@ function constructGraphs(processesMap, analysis, lastGraphs){
 
 		// add transitions to the graph
 		var edgeId = 0;
-		var labelSets = process.labelSets;
-		for(var i = 0; i < labelSets.length; i++){
-			var label = labelSets[i].label;
-			var transitions = labelSets[i].transitions;
-			for(var j = 0; j < transitions.length; j++){
-				var styleClasses = 't' + transitions[j].id;
-				graph.setNode('t' + transitions[j].id, { label:label, shape:'transitionNode', class:styleClasses.trim() });
+		var transitions = process.transitions;
+		for(var i = 0; i < transitions.length; i++){
+			var styleClasses = 't' + transitions[i].id;
+			graph.setNode('t' + transitions[i].id, { label:transitions[i].label, shape:'transitionNode', class:styleClasses.trim() });
 
-				//
-				var outgoing = transitions[j].outgoingPlaces;
-				for(var k = 0; k < outgoing.length; k++){
-					var from = 't' + transitions[j].id;
-					var to = 'p' + outgoing[k].id;
-					graph.setEdge(from, to, { label:'', lineInterpolate:'basis' }, edgeId++);
-				}
+			//
+			var outgoing = transitions[i].outgoingPlaces;
+			for(var j = 0; j < outgoing.length; j++){
+				var from = 't' + transitions[i].id;
+				var to = 'p' + outgoing[j].id;
+				graph.setEdge(from, to, { label:'', lineInterpolate:'basis' }, edgeId++);
+			}
 
-				var incoming = transitions[j].incomingPlaces;
-				for(var k = 0; k < incoming.length; k++){
-					var from = 'p' + incoming[k].id;
-					var to = 't' + transitions[j].id;
-					graph.setEdge(from, to, { label:'', lineInterpolate:'basis' }, edgeId++);
-				}
+			var incoming = transitions[i].incomingPlaces;
+			for(var j = 0; j < incoming.length; j++){
+				var from = 'p' + incoming[j].id;
+				var to = 't' + transitions[i].id;
+				graph.setEdge(from, to, { label:'', lineInterpolate:'basis' }, edgeId++);
 			}
 		}
 
