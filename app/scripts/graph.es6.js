@@ -142,10 +142,10 @@ class Graph{
   /**
    * Returns the next unique identifier for a node.
    *
-   * @return {int} - next node id
+   * @return {string} - next node id
    */
   get nextNodeId(){
-    return this._nextNodeId++;
+    return this._id + '.' + this._nextNodeId++;
   }
 
   /**
@@ -202,10 +202,10 @@ class Graph{
   /**
    * Returns the next unique identifier for an edge.
    *
-   * @return {int} - next edge id
+   * @return {string} - next edge id
    */
   get nextEdgeId(){
-    return this._nextEdgeId++;
+    return this._id + '.' + this._nextEdgeId++;
   }
 
   /**
@@ -354,6 +354,46 @@ class Graph{
     clone._nextEdgeId = clone.edgeCount;
 
     return clone;
+  }
+
+  /**
+   * Removes all the unreachable components of this automaton.
+   */
+  trim(){
+    var visited = {};
+    var fringe = [this.root];
+    while(fringe.length !== 0){
+      var current = fringe.pop();
+      // chcek if the current node has already been visited
+      if(visited[current.id] === undefined){
+        // push neighbours to fringe
+        var neighbours = current.neighbours;
+        for(var i = 0; i < neighbours.length; i++){
+          fringe.push(this._nodeMap[neighbours[i]]);
+        }
+
+        // mark current node as visited
+        visited[current.id] = true;
+      }
+    }
+
+    // build up a list of nodes to delete
+    var toDelete = [];
+    for(var id in this._nodeMap){
+      if(visited[id] === undefined){
+        toDelete.push(this._nodeMap[id]);
+      }
+    }
+
+    // delete unvisited nodes
+    for(var i = 0; i < toDelete.length; i++){
+      // get edges from the current node
+      var edges = toDelete[i].edgesFromMe;
+      delete this._nodeMap[toDelete[i].id];
+      for(var j = 0; j < edges.length; j++){
+        delete this._edgeMap[edges[j].id];
+      }
+    }
   }
 }
 
