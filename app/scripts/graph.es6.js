@@ -38,7 +38,7 @@ class Graph{
   get root(){
     return this._nodeMap[this._rootId];
   }
-  
+
   set root(node){
     if(node === this.root){
       return node;
@@ -53,7 +53,23 @@ class Graph{
     
     // node not in graph, throw error
   }
-  
+
+  /**
+   * Returns an array of the terminal nodes in this automaton.
+   *
+   * @return {node[]} - an array of terminal nodes
+   */
+  get terminals(){
+    var terminals = [];
+    for(var id in this._nodeMap){
+      if(this._nodeMap[id].getMetaData('isTerminal') !== undefined){
+        terminals.push(this._nodeMap[id]);
+      }
+    }
+
+    return terminals;
+  }
+
   /**
    * Returns the unique identifier for the root node of this graph.
    *
