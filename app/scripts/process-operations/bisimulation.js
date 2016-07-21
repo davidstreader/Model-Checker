@@ -16,13 +16,14 @@ function bisimulation(process){
 		// construct a coloured node map
 		var nodeMap = constructColouredNodeMap(process.nodes);
 		var colourMap = constructColourMap();
-		var visited = {};
 		var lastColourCount = 0;
 		var colourCount = 1; // colour map is initialised with one colour
+		
 		while(lastColourCount <= colourCount){
 			var fringe = process.terminals;
-			
+			var visited = {};
 			var index = 0;
+			
 			while(index < fringe.length){
 				var current = fringe[index++];
 				// check if the current node has already been visited
@@ -71,7 +72,24 @@ function bisimulation(process){
 			lastColourCount = colourCount;
 		}
 
-		console.log(nodeMap);
+		// group nodes by colour
+		var colourGroups = {};
+		for(var id in nodeMap){
+			var colour = nodeMap[id].colour;
+			if(colourGroups[colour] !== undefined){
+				colourGroups[colour].push(nodeMap[id].node);
+			}
+			else{
+				colourGroups[colour] = [nodeMap[id].node];
+			}
+		}
+
+		// merge nodes with the same colour
+		for(var colour in colourGroups){
+			process.mergeNodes(colourGroups[colour]);
+		}
+
+		return process;
 
 		function constructColouredNodeMap(nodes){
 			var nodeMap = {};

@@ -173,7 +173,8 @@ function interpretAutomaton(process, processesMap, variableMap, processId){
 			var root1 = constructAutomaton(processesMap[ident].id + 'simp', process1);
 			interpretNode(astNode.process, root1, process1);
 			labelNodes(processesMap[process1]);
-			bisimulation(processesMap[process1]);
+			processesMap[ident] = bisimulation(processesMap[process1].clone);
+			delete processesMap[process1];
 		}
 		else{
 			throw new InterpreterException('\'' + type + '\' is not a valid function type');
