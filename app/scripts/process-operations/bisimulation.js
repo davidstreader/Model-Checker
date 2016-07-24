@@ -89,8 +89,17 @@ function bisimulation(process){
 			process.mergeNodes(colourGroups[colour]);
 		}
 
+		process.removeDuplicateEdges();
 		return process;
 
+		/**
+		 * Constructs a colour map from the specified array of nodes. The mapping is
+		 * from the node id to a coloured node object, which is an object containing a
+		 * colour id and a node.
+		 *
+		 * @param {node[]} nodes - an array of nodes
+		 * @return {id -> colouredNode} - a mapping from node id to coloured node
+		 */
 		function constructColouredNodeMap(nodes){
 			var nodeMap = {};
 			for(var i = 0; i < nodes.length; i++){
@@ -100,12 +109,25 @@ function bisimulation(process){
 			return nodeMap;
 		}
 
+		/**
+		 * Constructs and returns an initial colour map for the
+		 * bisimulation function.
+		 *
+		 * @return {id -> colour} - a colour map
+		 */
 		function constructColourMap(){
 			var colourMap = {};
 			colourMap[0] = [constructColour(0, undefined, [])];
 			return colourMap;
 		}
 
+		/**
+		 * Constructs and returns a colouring for the specified node. Does
+		 * not consider duplicate edges in the colouring.
+		 *
+		 * @param {node} node - the node to colour
+		 * @return {colour} - the node colouring
+		 */
 		function constructColouring(node){
 			var colouring = [];
 			var edges = node.edgesFromMe;
@@ -138,20 +160,34 @@ function bisimulation(process){
 			return colouring;
 		}
 
+		/**
+		 * Constructs and returns a colour object with the specified values.
+		 *
+		 * @param {string} from - id for the node where the edge starts
+		 * @param {string} to - id for the node where the edge ends
+		 * @param {string} label - the label for the edge
+		 * @return {colour} - a colour object
+		 */
 		function constructColour(from, to, label){
 			return { from:from, to:to, label:label };
 		}
 
+		/**
+		 * Compares the specified colours together and determines if they are
+		 * equivalent. Returns true if the colours match, otherwise returns false.
+		 * This function does not take into account the id for the node where each
+		 * colour starts.
+		 *
+		 * @param {colour} colour1 - the first colour to compare
+		 * @param {colour} colour2 - the second colour to compare
+		 * @return {boolean} - whether or not the colours match
+		 */
 		function compareColours(colour1, colour2){
 			if(colour1.length !== colour2.length){
 				return false;
 			}
 
 			for(var i = 0; i < colour1.length; i++){
-				/*if(colour1[i].from !== colour2[i].from){
-					return false;
-				}*/
-
 				if(colour1[i].to !== colour2[i].to){
 					return false;
 				}
