@@ -411,6 +411,37 @@ class Graph{
       }
     }
   }
+
+  /**
+   * Removes all the duplicate edges from this automaton
+   */
+  removeDuplicateEdges(){
+    var toDelete = [];
+    var edges = this.edges;
+    for(var i = 0; i < edges.length; i++){
+      for(var j = i + 1; j < edges.length; j++){
+        if(edges[i].from !== edges[j].from){
+          continue;
+        }
+
+        if(edges[i].to !== edges[j].to){
+          continue;
+        }
+
+        if(edges[i].label !== edges[j].label){
+          continue;
+        }
+
+        toDelete.push(edges[j].id);
+      }
+    }
+
+    // delete duplicate edges
+    for(var i = 0; i < toDelete.length; i++){
+      delete this._edgeMap[toDelete[i]];
+      this._edgeCount--;
+    }
+  }
 }
 
 Graph.Node = class{
