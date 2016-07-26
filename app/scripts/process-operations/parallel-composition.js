@@ -113,6 +113,14 @@ function parallelComposition(id, process1, process2){
 			placeCount++;
 		}
 
+		var rootIds = net1.roots.concat(net2.roots).filter(function(place){
+			return place.getMetaData('startPlace') !== undefined;
+		})
+
+		rootIds = rootIds.map(function(place){
+			return place.id;
+		})
+
 		// construct transition map and label sets for the composed net
 		var transitionMap = {};
 		var labelSets = {};
@@ -162,7 +170,7 @@ function parallelComposition(id, process1, process2){
 		}
 
 		// return composed net
-		return new PetriNet(id, placeMap, placeCount, transitionMap, labelSets, transitionCount);
+		return new PetriNet(id, placeMap, placeCount, transitionMap, labelSets, transitionCount, rootIds);
 
 		/**
 		 * Helper function for processing the parallel composition of petri nets
@@ -173,19 +181,23 @@ function parallelComposition(id, process1, process2){
 			var places = transition1.outgoingPlaces;
 			for(var i = 0; i < places.length; i++){
 				transition2.addOutgoingPlace(places[i]);
+				places[i].addIncomingTransition(transition2.id);
 			}
 			places = transition2.outgoingPlaces;
 			for(var i = 0; i < places.length; i++){
 				transition1.addOutgoingPlace(places[i]);
+				places[i].addIncomingTransition(transition1.id);
 			}
 
 			places = transition1.incomingPlaces;
 			for(var i = 0; i < places.length; i++){
 				transition2.addIncomingPlace(places[i]);
+				places[i].addOutgoingTransition(transition2.id);
 			}
 			places = transition2.incomingPlaces;
 			for(var i = 0; i < places.length; i++){
 				transition1.addIncomingPlace(places[i]);
+				places[i].addOutgoingTransition(transition1.id);
 			}
 		}
 	}
