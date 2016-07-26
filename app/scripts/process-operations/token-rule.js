@@ -24,6 +24,7 @@ function tokenRule(process, type){
 		var transitionMap = constructTransitionMap(process.transitions);
 		var graph = new Graph(process.id);
 		var root = graph.addNode();
+		root.addMetaData('startNode', true);
 		graph.root = root;
 		var visitedPlaces = {};
 		var visitedTransitions = {};
@@ -42,12 +43,12 @@ function tokenRule(process, type){
 				var place = places[i];
 				
 				// iterate over transitions for the current place
-				var transitions = place.outgoingTransitions;
+				var transitions = place.place.outgoingTransitions;
 				for(var j = 0; j < transitions.length; j++){
 					var transition = transitionMap[transitions[j]];
 					
 					// check if this transition already has a token from the current place
-					if(transition.tokenMap[place.place.id] !== undefined){
+					if(transition.tokenMap[place.place.id] === undefined){
 						transition.tokenMap[place.place.id] = true;
 						transition.tokenCount++;
 
@@ -58,22 +59,33 @@ function tokenRule(process, type){
 
 							// add to the fringe
 							var outgoing = transition.transition.outgoingPlaces;
-							if(outgoingPlaces.length !== 0){
-								fringe.push(constructFringeElement(current, i, outgoing, nextNode));
+							if(outgoing.length !== 0){
+								fringe.push(constructFringeElement(places, i, outgoing, nextNode));
 							}
+
+							// reset the transition
+							transitionMap[transition.transition.id].tokenMap = {};
+							transitionMap[transition.transition.id].tokenCount = 0;
 						}
 					}
 				}
 			}
 		}
 
-		return graph;
+		var nodes = graph.nodes;
+		for(var i = 0; i < nodes.length; i++){
+			if(nodes[i].edgesFromMe.length === 0){
+				nodes[i].addMetaData('isTerminal', 'stop');
+			}
+		}
+
+		return bisimulation(graph);
 
 		function constructTransitionMap(transitions){
 			var transitionMap = {};
 			for(var i = 0; i < transitions.length; i++){
 				var required = transitions[i].outgoingPlaces.length;
-				transitionMap[transition.id] = { tokenMap:{}, tokenCount:0, requiredTokens:required, transition:transitions[i] };
+				transitionMap[transitions[i].id] = { tokenMap:{}, tokenCount:0, requiredTokens:required, transition:transitions[i] };
 			}
 
 			return transitionMap;
@@ -88,7 +100,7 @@ function tokenRule(process, type){
 					}
 				}
 				else{
-					element.push(current[i]);
+					element.push({ node:node, place:current[i].place });
 				}
 			}
 
