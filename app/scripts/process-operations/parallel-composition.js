@@ -104,73 +104,70 @@ function parallelComposition(id, process1, process2){
 	 * @return {petrinet} - the petri net formed by the composition
 	 */
 	function petriNetParallelComposition(id, net1, net2){
-		// construct place map for the composed net
-		var placeMap = {};
-		var placeCount = 0;
+		var net = new PetriNet(id);
+
+		// add places to the composed net
 		var places = net1.places.concat(net2.places);
 		for(var i = 0; i < places.length; i++){
-			placeMap[places[i].id] = places[i];
-			placeCount++;
-		}
-
-		var rootIds = net1.roots.concat(net2.roots).filter(function(place){
-			return place.getMetaData('startPlace') !== undefined;
-		})
-
-		rootIds = rootIds.map(function(place){
-			return place.id;
-		})
-
-		// construct transition map and label sets for the composed net
-		var transitionMap = {};
-		var labelSets = {};
-		var transitionCount = 0;
-
-		// add the transitions from the first petri net
-		var labelSets1 = net1.labelSets;
-		for(var i = 0; i < labelSets1.length; i++){
-			var label = labelSets1[i].label;
-			var transitions = labelSets1[i].transitions;
-			for(var j = 0; j < transitions.length; j++){
-				transitionMap[transitions[j].id] = transitions[j];
-				transitionCount++;
+			net.addPlace(places[i].id, places[i].metaData);
+			// check if this place is a start or terminal place
+			if(places[i].getMetaData('startPlace') !== undefined){
+				net.addRoot(places[i].id);
 			}
-			labelSets[label] = transitions;
+			if(places[i].getMetaData('isTerminal') !== undefined){
+				net.addTerminal(places[i].id);
+			}
 		}
 
-		// add transitions from the second petri net and check for duplicate labels
+		var labelSets1 = net1.labelSets;
 		var labelSets2 = net2.labelSets;
-		for(var i = 0; i < labelSets2.length; i++){
-			var label = labelSets2[i].label;
-			var transitions = labelSets2[i].transitions;
 
-			// check if this is a duplicate label
-			if(labelSets[label] !== undefined){
-				// sync actions that occur in both petri nets
-				var set = labelSets[label];
-				for(j = 0; j < set.length; j++){
-					for(var k = 0; k < transitions.length; k++){
-						transitionMap[transitions[k].id] = transitions[k];
-						transitionCount++;
-						syncTransitions(set[j], transitions[k]);
+		for(var action in labelSets1){
+			var transitions = labelSets1[action];
+			for(var i = 0; i < transitions.length; i++){
+				var incoming = transitions[i].incomingPlaces;
+				var outgoing = transitions[i].outgoingPlaces;
+				// check if the actions are synced
+				if(labelSets2[action] !== undefined){
+					var synced = labelSets2[action];
+					for(var j = 0; j < synced.length; j++){
+						incoming = incoming.concat(synced[j].incomingPlaces);
+						outgoing = outgoing.concat(synced[j].outgoingPlaces);
 					}
 				}
 
-				labelSets[label] = labelSets[label].concat(transitions);
-			}
-			else{
-				// proceed as normal
-				for(var j = 0; j < transitions.length; j++){
-					transitionMap[transitions[j].id] = transitions[j];
-					transitionCount++;
+				// update references to incoming and outgoing places
+				for(var j = 0; j < incoming.length; j++){
+					incoming[j] = net.getPlace(incoming[j].id);
+				}
+				for(var j = 0; j < outgoing.length; j++){
+					outgoing[j] = net.getPlace(outgoing[j].id);
 				}
 
-				labelSets[label] = transitions;
+				net.addTransition(transitions[i].id, action, incoming, outgoing);
 			}
 		}
 
-		// return composed net
-		return new PetriNet(id, placeMap, placeCount, transitionMap, labelSets, transitionCount, rootIds);
+		for(var action in labelSets2){
+			if(labelSets1[action] === undefined){
+				var transitions = labelSets2[action];
+				for(var i = 0; i < transitions.length; i++){
+					// update references to incoming and outgoing places
+					var incoming = transitions[i].incomingPlaces;
+					for(var j = 0; j < incoming.length; j++){
+						incoming[j] = net.getPlace(incoming[j].id);
+					}
+					var outgoing = transitions[i].outgoingPlaces;
+					for(var j = 0; j < outgoing.length; j++){
+						outgoing[j] = net.getPlace(outgoing[j].id);
+					}
+
+					net.addTransition(transitions[i].id, action, incoming, outgoing);
+				}
+			}
+		}
+
+		return net;
 
 		/**
 		 * Helper function for processing the parallel composition of petri nets
