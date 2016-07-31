@@ -137,8 +137,10 @@ function interpretPetriNet(process, processesMap, variableMap, processId){
 			// throw error
 		}
 
+		var id = processesMap[ident].nextTransitionId;
 		var action = processActionLabel(astNode.from.action);
-		var next = processesMap[ident].addTransition(action, currentNode);
+		var next = processesMap[ident].addPlace();
+		processesMap[ident].addTransition(id, action, [currentNode], [next]);
 		interpretNode(astNode.to, next, ident);
 	}
 

@@ -2,7 +2,7 @@
 
 class PetriNet {
 
-	constructor(id, placeMap, placeCount, transitionMap, labelSets, transitionCount, rootIds, nextPlaceId, nextTransitionId){
+	constructor(id, placeMap, placeCount, transitionMap, labelSets, transitionCount, rootIds, terminalIds, alphabet, nextPlaceId, nextTransitionId){
 		// check that id has been defined
 		if(id === undefined){
 			// throw error
@@ -15,6 +15,8 @@ class PetriNet {
 		this._labelSets = (labelSets !== undefined) ? labelSets : {};
 		this._transitionCount = (transitionCount !== undefined) ? transitionCount : 0;
 		this._rootIds = (rootIds !== undefined) ? rootIds : [];
+		this._terminalIds = (terminalIds !== undefined) ? terminalIds : [];
+		this._alphabet = (alphabet !== undefined) ? alphabet : {};
 		this._nextPlaceId = (nextPlaceId !== undefined) ? nextPlaceId : 0;
 		this._nextTransitionId = (nextTransitionId !== undefined) ? nextTransitionId : 0;
 	}
@@ -40,7 +42,7 @@ class PetriNet {
 	/**
 	 * Returns an array of the root places for this petri net
 	 *
-	 * @ return {place[]} - array of places
+	 * @return {place[]} - an array of places
 	 */
 	get roots(){
 		var roots = [];
@@ -56,7 +58,7 @@ class PetriNet {
 	 * petri net. Only adds the id if it not already located in the
 	 * array of root ids.
 	 *
-	 * @param {int} id - the place id to add
+	 * @param {string} id - the place id to add
 	 * @return {boolean} - true if id added, otherwise false
 	 */
 	addRoot(id){
@@ -69,6 +71,41 @@ class PetriNet {
 
 		// add id to roots array
 		this._rootIds.push(id);
+		return true;
+	}
+
+	/**
+	 * Returns an array of the terminal places for this petri net
+	 *
+	 * @return {place[]} - an array of places
+	 */
+	get terminals(){
+		var terminals = [];
+		for(var i = 0; i < this._terminalIds.length; i++){
+			terminals.push(this._terminalIds[i]);
+		}
+
+		return terminals;
+	}
+
+	/**
+	 * Adds the specified place id to the array of terminals for this
+	 * Petri net. Only adds the id if it is not already located in the
+	 * array of terminal ids.
+	 *
+	 * @param {string} id - the place id to add
+	 * @return {boolean} - true if id added, otherwise false
+	 */
+	addTerminal(id){
+		// check if terminal is already in roots array
+		for(var i = 0; i < this._terminalIds; i++){
+			if(id === this._terminalIds[i]){
+				return false;
+			}
+		}
+
+		// add id to terminals array
+		this._terminalIds.push(id);
 		return true;
 	}
 
@@ -104,11 +141,13 @@ class PetriNet {
 	 * Constructs an adds a new place to this petri net. The place is guaranteed
 	 * to have a unique identifier. Returns the constructed place.
 	 *
+	 * @param {string} id - the id for the constructed place
 	 * @return {place} - the constructed place
 	 */
-	addPlace(){
-		var id = this._id + '.' + this._nextPlaceId++;
-		var place = new PetriNet.Place(id);
+	addPlace(id, metaData){
+		var id = (id !== undefined) ? id : this.nextPlaceId;
+		var metaData = (metaData !== undefined) ? metaData : {};
+		var place = new PetriNet.Place(id, metaData);
 		this._placeMap[id] = place;
 		return place;
 	}
@@ -166,38 +205,39 @@ class PetriNet {
  	 * @param {place} from - the place the transition transitions from
  	 * @return {place} - the place the transition transitions to
  	 */
-	addTransition(label, from){
-		var id = this._id + '.' + this._nextTransitionId++;
+	addTransition(id, label, incoming, outgoing, metaData){
+		var metaData = (metaData !== undefined) ? metaData : {};
+
 		var transition = new PetriNet.Transition(id, [this._id], label);
-		transition.addIncomingPlace(from);
-		from.addOutgoingTransition(id);
-		var to = this.addPlace();
-		transition.addOutgoingPlace(to);
-		to.addIncomingTransition(id);
-		this._addTransition(label, transition);
-		return to;
-	}
+		
+		// add outgoing and incoming places to the transition
+		for(var i = 0; i < incoming.length; i++){
+			transition.addIncomingPlace(incoming[i]);
+			incoming[i].addOutgoingTransition(id);
+		}
 
-	/**
-	 * Private helper function for functions that add a transition to this
-	 * petri net. Handles adding the specified transition to the transition map
-	 * as well as adding it to the correct labels set. Should not be called
-	 * from outside this class.
-	 *
-	 * @param {string} label - the label the transition represents
-	 * @param {transition} transition - the transition to add
-	 */
-	_addTransition(label, transition){
-		// add transition to transition map
-		this._transitionMap[transition.id] = transition;
+		for(var i = 0; i < outgoing.length; i++){
+			transition.addOutgoingPlace(outgoing[i]);
+			outgoing[i].addIncomingTransition(id);
+		}
 
-		// check if label already exists in label sets
+		// add transition to transition map and label sets
+		this._transitionMap[id] = transition;
+
 		if(this._labelSets[label] !== undefined){
 			this._labelSets[label].push(transition);
+			this._alphabet[label]++;
 		}
 		else{
 			this._labelSets[label] = [transition];
-		}		
+			this._alphabet[label] = 1;
+		}
+
+		return transition;
+	}
+
+	get alphabet(){
+		return JSON.parse(JSON.stringify(this._alphabet));
 	}
 
 	/** 
@@ -284,19 +324,33 @@ class PetriNet {
 		// add places from net into this petri net
 		var places = net.places;
 		for(var i = 0; i < places.length; i++){
-			this._placeMap[places[i].id] = places[i];
+			var place = places[i];
+			this._placeMap[place.id] = place;
+			
+			// check if this place is a terminal
+			if(place.getMetaData('isTerminal') !== undefined){
+				this.addTerminal(place);
+			}
+
 			this._placeCount++;
 		}
 
 		// add transitions from net into this petri net
-		var labelSets = net.labelSets;
-		for(var i = 0; i < labelSets.length; i++){
-			var label = labelSets[i].label;
-			var transitions = labelSets[i].transitions;
-			for(var j = 0; j < transitions.length; j++){
-				this._addTransition(label, transitions[j]);
-				this._transitionCount++;
+		var transitions = net.transitions;
+		for(var i = 0; i < transitions.length; i++){
+			var transition = transitions[i];
+			this._transitionMap[transition.id] = transition;
+
+			if(this._labelSets[transition.label] !== undefined){
+				this._labelSets[transition.label].push(transition);
+				this._alphabet[transition.label]++;
 			}
+			else{
+				this._labelSets[transition.label] = [transition];
+				this._alphabet[transition.label] = 1;
+			}
+
+			this._transitionCount++;
 		}
 
 		// merge added petri net to the specified place if necessary
@@ -306,70 +360,56 @@ class PetriNet {
 	}
 
 	get clone(){
-		// clone the places in this petri net
-		var placeMap = {};
-		for(var id in this._placeMap){
-			var place = this._placeMap[id];
-			var clone = new PetriNet.Place(
-				place.id,
-				place.outgoingTransitions,
-				place.incomingTransitions,
-				place.metaData
-			);
-			placeMap[place.id] = place;
-		}
-
-		// clone the transitions in this petrinet
-		var labelSets = {};
-		var transitionMap = {};
-		for(var label in this._labelSets){
-			var transitions = this._labelSets[label];
-			for(var i = 0; i < transitions.length; i++){
-				var transition = transitions[i];
-				var outgoingPlaces = {};
-				var outgoing = transition.outgoingPlaces;
-				for(var j = 0; j < outgoing.length; j++){
-					var id = outgoing[j].id;
-					outgoingPlaces[id] = placeMap[id];
-				}
-
-				var incomingPlaces = {};
-				var incoming = transition.incomingPlaces;
-				for(var j = 0; j < incoming.length; j++){
-					var id = incoming[j].id;
-					incomingPlaces[id] = placeMap[id];
-				}
-
-				var clone = new PetriNet.Transition(
-					transition.id, 
-					transition.processIds,
-					transition.label,
-					outgoingPlaces,
-					incomingPlaces,
-					transition.metaData
-				);
-
-				transitionMap[clone.id] = clone;
-				if(labelSets[label] !== undefined){
-					labelSets[label].push(clone);
-				}
-				else{
-					labelSets[label] = [clone];
-				}
+		var clone = new PetriNet(this._id);
+		
+		// add places to the clone
+		var places = this.places;
+		for(var i = 0; i < places.length; i++){
+			var place = clone.addPlace(places[i].id, places[i].metaData);
+			// check if this place is either a start place or terminal
+			if(places[i].getMetaData('startPlace') !== undefined){
+				clone.addRoot(place.id);
+			}
+			if(places[i].getMetaData('isTerminal') !== undefined){
+				clone.addTerminal(place.id);
 			}
 		}
 
-		return new PetriNet(
-			this._id,
-			placeMap,
-			this._placeCount,
-			transitionMap,
-			labelSets,
-			this._transitionCount,
-			this._rootIds,
-			this._nextPlaceId,
-			this._nextTransitionId
-		);
+		// add transitions to clone
+		var transitions = this.transitions;
+		for(var i = 0; i < transitions.length; i++){
+			// update the references to the incoming and outgoing places
+			var incoming = transitions[i].incomingPlaces;
+			for(var j = 0; j < incoming.length; j++){
+				incoming[j] = clone.getPlace(incoming[j].id);
+			}
+			var outgoing = transitions[i].outgoingPlaces;
+			for(var j = 0; j < outgoing.length; j++){
+				outgoing[j] = clone.getPlace(outgoing[j].id);
+			}
+
+			clone.addTransition(transitions[i].id, transitions[i].label, incoming, outgoing, transitions[i].metaData);
+		}
+
+		return clone;
+	}
+
+	/**
+	 * Returns the next place id for this Petri net.
+	 *
+	 * @return {string} - the next place id
+	 */
+	get nextPlaceId(){
+		return this._id + '.p' + this._nextPlaceId++;
+	}
+
+	/**
+	 * Returns the next transition id for this Petri net.
+	 *
+	 * @return {string} - the next place id
+	 */
+	get nextTransitionId(){
+		return this._id + '.t' + this._nextTransitionId++;
 	}
 }
 
@@ -378,15 +418,15 @@ PetriNet.Place = class {
 	/**
 	 * Constructs a new instance of a place within a PetriNet.
 	 */
-	constructor(id, outgoingTransitions, incomingTransitions, metaData){
+	constructor(id, metaData){
 		// check that id has been defined
 		if(id === undefined){
 			// throw error
 		}
 
 		this._id = id;
-		this._outgoingTransitions = (outgoingTransitions !== undefined) ? outgoingTransitions : [];
-		this._incomingTransitions = (incomingTransitions !== undefined) ? incomingTransitions : [];
+		this._outgoingTransitions = [];
+		this._incomingTransitions = [];
 		this._metaData = (metaData !== undefined) ? metaData : {};
 	}
 
@@ -415,7 +455,7 @@ PetriNet.Place = class {
 	 * @return {int[]} - array of transition ids
 	 */
 	get outgoingTransitions(){
-		return this._outgoingTransitions;
+		return this._outgoingTransitions.slice(0);
 	}
 
 	/**
@@ -467,7 +507,7 @@ PetriNet.Place = class {
 	 * @return {int[]} - array of transition ids
 	 */
 	get incomingTransitions(){
-		return this._incomingTransitions;
+		return this._incomingTransitions.slice(0);
 	}
 
 	/**
@@ -550,7 +590,7 @@ PetriNet.Place = class {
 
 PetriNet.Transition = class {
 
-	constructor(id, processIds, label, outgoingPlaces, incomingPlaces, metaData){
+	constructor(id, processIds, label, metaData){
 		// check that global ids array is defined
 		if(id === undefined){
 			// throw error
@@ -566,8 +606,8 @@ PetriNet.Transition = class {
 		this._id = id;
 		this._processIds = processIds;
 		this._label = label;
-		this._outgoingPlaces = (outgoingPlaces !== undefined) ? outgoingPlaces : {};
-		this._incomingPlaces = (incomingPlaces !== undefined) ? incomingPlaces : {};
+		this._outgoingPlaces = {};
+		this._incomingPlaces = {};
 		this._metaData = (metaData !== undefined) ? metaData : {}; 
 	}
 
