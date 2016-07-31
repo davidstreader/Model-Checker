@@ -1393,7 +1393,7 @@ lexer = (function() {
         var PROCESS_TYPES = ['automata', 'petrinet']
         
         /* Function processes that can be declared in the modelling grammar */
-        var FUNCTIONS = ['abs', 'simp'];
+        var FUNCTIONS = ['abs', 'simp', 'tokenRule'];
         
         /* Keywords that terminate a process sequence */
         var TERMINALS = ['STOP', 'ERROR'];
