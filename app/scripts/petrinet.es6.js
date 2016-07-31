@@ -181,18 +181,13 @@ class PetriNet {
 	}
 
 	/**
-	 * Returns a list of label set objects that are associated with this
-	 * petri net.
+	 * Returns the label sets stored in this Petri net. A label set is a mapping from
+	 * a label to a set of transitions which contain that label.
 	 *
-	 * @return {labelset[]} - an array of label sets
+	 * @return{string -> transition{}} - the label sets
 	 */
 	get labelSets(){
-		var labelSets = [];
-		for(var label in this._labelSets){
-			labelSets.push({ label:label, transitions:this._labelSets[label] });
-		}
-
-		return labelSets;
+		return this._labelSets;
 	}
  	
  	/**
