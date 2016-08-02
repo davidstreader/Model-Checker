@@ -13,6 +13,11 @@ function interpretAutomaton(process, processesMap, variableMap, processId){
 		interpretNode(localProcess.process, localProcess.node, process.ident.ident);
 	}
 
+	// interpret hiding if a hiding set was defined
+	if(process.hiding !== undefined){
+		processHiding(processesMap[process.ident.ident], process.hiding);
+	}
+
 	// label the nodes in the automaton
 	labelNodes(processesMap[process.ident.ident]);
 
@@ -166,7 +171,13 @@ function interpretAutomaton(process, processesMap, variableMap, processId){
 	function interpretFunction(astNode, currentNode, ident){
 		var type = astNode.func;
 		if(type === 'abs'){
-			throw new InterpreterException('abstraction function is currently not implemented');
+			//throw new InterpreterException('abstraction function is currently not implemented');
+			var process1 = ident + '.abs';
+			var root1 = constructAutomaton(processesMap[ident].id + 'abs', process1);
+			interpretNode(astNode.process, root1, process1);
+			labelNodes(processesMap[process1]);
+			processesMap[ident] = abstraction(processesMap[process1].clone);
+			delete processesMap[process1];
 		}
 		else if(type === 'simp'){
 			var process1 = ident + '.simp';
@@ -241,6 +252,35 @@ function interpretAutomaton(process, processesMap, variableMap, processId){
 	function processRelabelling(graph, relabelSet){
 		for(var i = 0; i < relabelSet.length; i++){
 			graph.relabelEdge(relabelSet[i].oldLabel.action, relabelSet[i].newLabel.action);
+		}
+	}
+
+	function processHiding(graph, hidingSet){
+		var edges = graph.edges;
+		var set = hidingSet.set;
+		if(hidingSet.type = 'includes'){
+			for(var i = 0; i < set.length; i++){
+				for(var j = 0; j < edges.length; j++){
+					if(edges[j].label === set[i]){
+						edges[j].label = TAU;
+					}
+				}
+			}
+		}
+		else{
+			for(var i = 0; i < edges.length; j++){
+				var match = false;
+				for(var j = 0; j < set.length; j++){
+					if(edges[i].label === set[j]){
+						match = true;
+						break;
+					}
+
+					if(!match){
+						edges[i].label = TAU;
+					}
+				}
+			}
 		}
 	}
 

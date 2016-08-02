@@ -146,6 +146,18 @@ class Graph{
     return node;
   }
 
+  removeNode(id){
+    var node = this._nodeMap[id];
+    // remove edges that reference this node
+    var edges = node.edgesToMe.concat(node.edgesFromMe);
+    for(var i = 0; i < edges.length; i++){
+      this.removeEdge(edges[i].id);
+    }
+
+    delete this._nodeMap[id];
+    this._nodeCount--;
+  }
+
   /**
    * Returns the number of nodes currently in this graph.
    *
@@ -238,6 +250,16 @@ class Graph{
         edges[i].label = newLabel;
       }
     }
+  }
+
+  /**
+   * Removes the specified edge from this automaton.
+   *
+   * @param {string} id - the id of the edge to remove
+   */
+  removeEdge(id){
+    delete this._edgeMap[id];
+    this._edgeCount--;
   }
 
   /**
@@ -520,6 +542,16 @@ Graph.Node = class{
   }
 
   /**
+   * Deletes the reference to the specified outgoing edge
+   * from this node.
+   *
+   * @param {edge} edge - the edge to delete
+   */
+  deleteEdgeFromMe(edge){
+    delete this._edgesFromMe[edge.id];
+  }
+
+  /**
    * Returns an array of edges that transition to this node.
    *
    * @return {edge[]} - array of edges
@@ -541,6 +573,16 @@ Graph.Node = class{
    */
   addEdgeToMe(edge){
     this._edgesToMe[edge.id] = edge;
+  }
+
+  /**
+   * Deletes the reference to the specified incoming edge from
+   * this node.
+   *
+   * @param {edge} edge - the edge to delete
+   */
+  deleteEdgeToMe(edge){
+    delete this._edgesToMe[edge.id];
   }
 
   /**
@@ -586,6 +628,38 @@ Graph.Node = class{
     }
 
     return nodes;
+  }
+
+  /**
+   * Returns true if this node is unreachable, otherwise returns false.
+   *
+   * @return {boolean} - whether or not this node is unreachable
+   */
+  get isUnreachable(){
+    for(var id in this._edgesToMe){
+      // if there is an edge to this node, which means it is reachable
+      return false;
+    }
+
+    // if it reaches this point there are no edges to this node
+    return true;
+  }
+
+  /**
+   * Returns true if this node has no edges from it, otherwise returns false.
+   * Note this is not related to the 'isTerminal' value in the meta data for
+   * this node.
+   *
+   * @return {boolean} - whether or not this node is terminal
+   */
+  get isTerminal(){
+    for(var id in this._edgesFromMe){
+      // if there are edges from this node it is not a terminal
+      return false;
+    }
+
+    // if it reaches this point there are no edges from this node
+    return true;
   }
 
   /**
