@@ -50,7 +50,8 @@ class PetriNet {
 			roots.push(this._placeMap[this._rootIds[i]]);
 		}
 
-		return roots;
+		return roots;				//outgoing[i].addIncomingPlace(paths[i].start);
+				//paths[i].end.addOutgoingTransition(outgoing[i].id);
 	}
 
 	/**
@@ -58,7 +59,8 @@ class PetriNet {
 	 * petri net. Only adds the id if it not already located in the
 	 * array of root ids.
 	 *
-	 * @param {string} id - the place id to add
+	 * @param {string} id - the place id to add				//outgoing[i].addIncomingPlace(paths[i].start);
+				//paths[i].end.addOutgoingTransition(outgoing[i].id);
 	 * @return {boolean} - true if id added, otherwise false
 	 */
 	addRoot(id){
@@ -152,6 +154,16 @@ class PetriNet {
 		return place;
 	}
 
+	removePlace(id){
+		var transitions = this._placeMap[id].outgoingTransitions;
+		for(var i = 0; i < transitions.length; i++){
+			this.removeTransition(transitions[i]);
+		}
+
+		delete this._placeMap[id];
+		this._placeCount--;
+	}
+
 	/**
 	 * Returns an array of the transitions associated with this petri net.
 	 *
@@ -187,7 +199,12 @@ class PetriNet {
 	 * @return{string -> transition{}} - the label sets
 	 */
 	get labelSets(){
-		return this._labelSets;
+		var labelSets = {};
+		for(var label in this._labelSets){
+			labelSets[label] = this._labelSets[label];
+		}
+
+		return labelSets;
 	}
  	
  	/**
@@ -231,6 +248,25 @@ class PetriNet {
 		return transition;
 	}
 
+	/**
+	 * Removes the transition with the specified id from this Petri net.
+	 *
+	 * @param {string} id - the id of the transition to be removed
+	 */
+	removeTransition(id){
+		// remove from labelSets
+		var transitions = this._labelSets[this._transitionMap[id].label];
+		for(var i = 0; i < transitions.length; i++){
+			if(transitions[i].id === id){
+				this._labelSets[transitions[i].label].splice(i, 1);
+			}
+		}
+
+		// remove from transition map
+		delete this._transitionMap[id];
+		this._transitionCount--;
+	}
+
 	get alphabet(){
 		return JSON.parse(JSON.stringify(this._alphabet));
 	}
@@ -244,6 +280,12 @@ class PetriNet {
 	relabelTransition(oldLabel, newLabel){
 		// check any transitions have the specified label
 		if(this._labelSets[oldLabel] !== undefined){
+			// relabel the individual transitions
+			var transitions = this._labelSets[oldLabel];
+			for(var i = 0; i < transitions.length; i++){
+				transitions[i].label = newLabel;
+			}
+
 			// check if the new label is already defined in this petri net
 			if(this._labelSets[newLabel] !== undefined){
 				this._labelSets[newLabel].concat(this._labelSets[oldLabel]);
@@ -536,7 +578,7 @@ PetriNet.Place = class {
 	 */
 	deleteIncomingTransitions(id){
 		// check if transition id is located in the array
-		for(var i = 0; i < this._incomngTransitions.length; i++){
+		for(var i = 0; i < this._incomingTransitions.length; i++){
 			if(id === this._incomingTransitions[i]){
 				this._incomingTransitions = this._incomingTransitions.splice(i, 1);
 				return true;
@@ -545,6 +587,25 @@ PetriNet.Place = class {
 
 		// id not found in array
 		return false;
+	}
+
+	/**
+	 * Returns true if this place is unreachable, otherwise returns false.
+	 *
+	 * @return {boolean} - whether or not this place is unreachable
+	 */
+	get isUnreachable(){
+		return this._incomingTransitions.length === 0 && !this._metaData['startPlace']
+	}
+
+	/**
+	 * Returns true if this place has no transitions from it, otherwise returns false. Note
+	 * that this is different to the 'isTerminal' value stored in this place's meta data.
+	 *
+	 * @return {boolean} - whether or not this place is terminal
+	 */
+	get isTerminal(){
+		return this._outgoingTransitions.length === 0;
 	}
 
 	get metaData(){

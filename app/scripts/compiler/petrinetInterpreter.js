@@ -181,7 +181,20 @@ function interpretPetriNet(process, processesMap, variableMap, processId){
 	}
 
 	function interpretFunction(astNode, currentPlace, ident){
-		throw new InterpreterException('Functionality for interpreting functions is currently not implemented');
+		var type = astNode.func;
+		if(type === 'abs'){
+			var process1 = ident + '.abs';
+			var root1 = constructPetriNet(processesMap[ident].id + 'abs', process1);
+			interpretNode(astNode.process, root1, process1);
+			processesMap[ident] = abstraction(processesMap[process1].clone);
+			delete processesMap[process1];
+		}
+		else if(type === 'simp'){
+			throw new InterpreterException('the simplification function for Petri nets has not been implemented yet');
+		}
+		else{
+			throw new InterpreterException('\'' + type + '\' is not a valid function type');
+		}
 	}
 
 	function interpretIdentifier(astNode, currentPlace, ident){
@@ -276,10 +289,10 @@ function interpretPetriNet(process, processesMap, variableMap, processId){
 		 * Sets all the transitions with labels in the specified set to be hidden.
 		 */
 		function processInclusionHiding(labelSets, set){
-			for(var i = 0; i < labelSets.length; i++){
+			for(var label in labelSets){
 				for(var j = 0; j < set.length; j++){
 					// check if the labels match
-					if(labelSets[i].label === set[j]){
+					if(label === set[j]){
 						net.relabelTransition(set[j], TAU);
 					}
 				}
@@ -290,11 +303,11 @@ function interpretPetriNet(process, processesMap, variableMap, processId){
 		 * Sets all the transitions with labels not in the specified set to be hidden.
 		 */
 		function processExclusionHiding(labelSets, set){
-			for(var i = 0; i < labelSets.length; i++){
+			for(var label in labelSets){
 				var match = false;
 				for(var j = 0; j < set.length; j++){
 					// check if the labels match
-					if(labelSets[i].label === set[j]){
+					if(label === set[j]){
 						match = true;
 						break;
 					}
