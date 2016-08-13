@@ -11,7 +11,7 @@ function interpret(processes, variables, analysis, lastProcessesMap){
 	// build up a set of id numbers that cannot be used
 	var usedIds = {};
 	for(var ident in lastProcessesMap){
-		if(!analysis[ident].isUpdated){
+		if(analysis[ident] !== undefined && !analysis[ident].isUpdated){
 			usedIds[lastProcessesMap[ident].id] = true;
 		}
 	}
@@ -19,7 +19,7 @@ function interpret(processes, variables, analysis, lastProcessesMap){
 	for(var i = 0; i < processes.length; i++){
 		// check if the current process has been updated since last compilation
 		var ident = processes[i].ident.ident;
-		if(analysis[ident].isUpdated){
+		if(analysis[ident] !== undefined && analysis[ident].isUpdated){
 			// interpret the process
 			var type = processes[i].processType;
 			if(type === 'automata'){
