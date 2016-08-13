@@ -769,6 +769,7 @@ function parse(tokens){
 		if(tokens[index].value !== ':'){
 			throw new ParserException('Expecting to parse \':\', recieved ' + tokens[index].value);
 		}
+		gobble(tokens[index], ':');
 
 		return label;
 	}
