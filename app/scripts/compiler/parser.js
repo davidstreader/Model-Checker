@@ -396,6 +396,28 @@ function parse(tokens){
 	 */
 	function parseProcessDefinition(tokens){
 		var processType = parseProcessType(tokens);
+		if(tokens[index].type === 'identifier'){
+			parseSingleProcessDefinition(tokens, processType);
+		}
+		else if(tokens[index].value === '{'){
+			parseProcessDefinitionBlock(tokens, processType);
+		}
+		else{
+			throw new ParserException('Expecting to parse a process definition, received the ' + tokens[index].type + '\'' + tokens[index].value + '\'');
+		}
+	}
+
+	/**
+	 * Attempts to parse a single process definition from the specified array of tokens
+	 * starting at the current index position. A single process definition is of the
+	 * form:
+	 *
+	 * SINGLE_PROCESS_DEFINITION := IDENTIFIER '=' LOCAL_PROCESS (',' LOCAL_PROCESS_DEFINITION)* [RELABEL] [HIDING] '.'
+	 *
+	 * @param {token[]} tokens - the array of tokens to parse
+	 * @param {string} processType - the type of process being parsed
+	 */
+	function parseSingleProcessDefinition(tokens, processType){
 		var ident = parseIdentifier(tokens);
 		gobble(tokens[index], '=');
 		var process = parseComposite(tokens);
@@ -426,7 +448,33 @@ function parse(tokens){
 		if(hiding !== undefined){
 			definition.hiding = hiding;
 		}
+
 		processes.push(definition);
+	}
+
+	/**
+	 * Attempts to parse and return a block of process definitions from the specified
+	 * array of tokens starting at the current index position. Multiple process definitions are of
+	 * the form:
+	 *
+	 * PROCESS_DEFINITION_BLOCK := '{' SINGLE_PROCESS_DEFINITION '}'
+	 *
+	 * @param {token[]} tokens - the array of tokens to parse
+	 * @param {string} processType - the type of process being parsed
+	 */
+	function parseProcessDefinitionBlock(tokens, processType){
+		gobble(tokens[index], '{');
+
+		// check that empty block has not been specified
+		if(tokens[index].value === '}'){
+			throw new ParserException('Cannot define an empty process definition block');
+		}
+
+		while(tokens[index].value !== '}'){
+			parseSingleProcessDefinition(tokens, processType);
+		}
+
+		gobble(tokens[index], '}');
 	}
 
 	/**
