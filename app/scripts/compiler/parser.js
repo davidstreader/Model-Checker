@@ -602,6 +602,9 @@ function parse(tokens){
 		else if(tokens[index].value === 'if'){
 			return parseIfStatement(tokens);
 		}
+		else if(tokens[index].value === 'when'){
+			return parseWhenStatement(tokens);
+		}
 		else if(tokens[index].value === 'abs' || tokens[index].value === 'simp'){
 			return parseFunction(tokens);
 		}
@@ -657,7 +660,25 @@ function parse(tokens){
 			return { type:'if-statement', guard:guard, trueBranch:trueBranch, falseBranch:falseBranch };
 		}
 
-		return { type:'if-statment', guard:guard, trueBranch:trueBranch };
+		return { type:'if-statement', guard:guard, trueBranch:trueBranch };
+	}
+
+	/**
+	 * Attempts to parse and return a when statement process from the specified
+	 * array of tokens starting at the current index posiiton. A when statement
+	 * is of the form:
+	 *
+	 * WHEN_STATEMENT := 'when' EXPR LOCAL_PROCOCESS
+	 *
+	 * @param {token[]} tokens - the array of tokens to parse
+	 * @return {node} - an if statement node for the ast (when statements represented as if statements)
+	 */
+	function parseWhenStatement(tokens){
+		gobble(tokens[index], 'when');
+		var guard = parseExpression(tokens);
+		var trueBranch = parseLocalProcess(tokens);
+
+		return { type:'if-statement', guard:guard, trueBranch:trueBranch };
 	}
 
 	/**
