@@ -5,12 +5,10 @@
  * prematurely while parsing.
  */
 
-var processTypes = ['automata', 'petrinet'];
-
 describe('Grammar to AST EOF Tests', function(){
 	
-	for(var i = 0; i < processTypes.length; i++){
-		var processType = processTypes[i];
+	for(var i = 0; i < PROCESS_TYPES.length; i++){
+		var processType = PROCESS_TYPES[i];
 
 		it('[' + processType + ' test] - Should throw an EOF error (1)', function(){
 			try{
