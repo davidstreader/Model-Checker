@@ -17,13 +17,16 @@ var lastGraphs = [];
  *		- Takes the specified code and constructs an array of tokens
  * 2. Parsing
  *		- Parses the tokens to form an abstract syntax tree
- * 3. Analysis
+ * 3. Expanding
+ *    - Expands shorthand syntax used in the abstract syntax tree to be represented 
+ *      as longhand syntax
+ * 4. Analysis
  *		- Determines what processes need to be re-interpreted and eliminates
  *		  redundant code
- * 4. Interpeting
+ * 5. Interpeting
  *		- Interprets the abstract syntax tree into data structures representing
  *		  the processes that are being modelled
- * 5. Graph Construction
+ * 6. Graph Construction
  *		- Converts the data structures into a graph structure defined by dagre
  *		  which can be rendered by dagreD3
  *
@@ -39,6 +42,9 @@ function compile(code){
 		// convert code into an abstract syntax tree of the defined processes  
 		var ast = parse(tokens); // parse function in 'parser.js'
 		
+		// expand out indexed processes within the abstract syntax tree
+		ast = expand(ast); // expand function defined in 'expander.js'
+
 		// perform analysis to see which processes need to be re-interpreted
 		var analysis = performAnalysis(ast.processes, lastAnalysis); // performAnalysis function in 'analyser.js'
 		
