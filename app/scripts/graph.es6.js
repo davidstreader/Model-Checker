@@ -293,30 +293,41 @@ class Graph{
 
   /**
    * Merges the nodes in the specified array into a single node.
-   * The first element of the array is the plce which the remaining
+   * The first element of the array is the place which the remaining
    * elements will be merged with.
    *
    * @param {node[]} - an array of nodes
    */
   mergeNodes(nodes){
-    let node = nodes[0];
-    
+    var node = nodes[0];
+
     // merge remaining nodes to this to node
-    for(let i = 1; i < nodes.length; i++){
-      let current = nodes[i];
-      
-      let edges = current.edgesFromMe;
-      for(let j = 0; j < edges.length; j++){
+    for (var i = 1; i < nodes.length; i++) {
+      var current = nodes[i];
+
+      var edges = current.edgesFromMe;
+      for (var j = 0; j < edges.length; j++) {
         edges[j].from = node.id;
         node.addEdgeFromMe(edges[j]);
       }
-      
+
       edges = current.edgesToMe;
-      for(let j = 0; j < edges.length; j++){
-        edges[j].to = node.id;
-        node.addEdgeToMe(edges[j]);
+      for (var _j = 0; _j < edges.length; _j++) {
+        edges[_j].to = node.id;
+        node.addEdgeToMe(edges[_j]);
       }
-      
+
+      // check if the current node is either a start node or terminal
+      if (current.getMetaData('startNode')) {
+        node.addMetaData('startNode', true);
+        this.rootId = node.id;
+      }
+
+      var terminal = current.getMetaData('isTerminal');
+      if (terminal !== undefined) {
+        node.addMetaData('isTerminal', terminal);
+      }
+
       delete this._nodeMap[current.id];
       this._nodeCount--;
     }
