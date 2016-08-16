@@ -62,7 +62,7 @@ function performAnalysis(processes, lastAnalysis){
 		if(!analysis[ident].isUpdated){
 			// check if references have been updated
 			for(var reference in analysis[ident].references){
-				if(analysis[reference].isUpdated){
+				if(analysis[reference] !== undefined && analysis[reference].isUpdated){
 					analysis[ident].isUpdated = true;
 					break;
 				}
