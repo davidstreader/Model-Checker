@@ -526,7 +526,7 @@ function parse(tokens){
 		// check if a label has been defined
 		var label = parseMultiple(tokens, [parseLabel]);
 
-		var process = parseLocalProcess(tokens);
+		var process = parseChoice(tokens);
 
 		// check if a relabelling set has been defined
 		var relabel;
@@ -551,27 +551,53 @@ function parse(tokens){
 		return process;
 	}
 
+	function parseChoice(tokens){
+		var process = parseLocalProcess(tokens);
+		if(tokens[index].value == '|'){
+			gobble(tokens[index], '|');
+			process = { type:'choice', process1:process, process2:parseChoice(tokens) };
+		}
+
+		return process;
+	}
+
 	/**
 	 * LOCAL_PROCESS := '(' LOCAL_PROCESS ')' | BASE_LOCAL_PROCESS | IF_STATEMENT | FUNCTION | COMPOSITE | CHOICE
 	 */
 	function parseLocalProcess(tokens){
-		var process;
 		if(tokens[index].value === '('){
 			gobble(tokens[index], '(');
-			process = parseComposite(tokens);
+			var process = parseComposite(tokens);
 			gobble(tokens[index], ')');
+			return process;
+		}
+		else if(isBaseLocalProcess(tokens[index])){
+			return parseBaseLocalProcess(tokens);
 		}
 		else{
-			var functions = [parseBaseLocalProcess, parseChoice];
-			process = parseMultiple(tokens, functions);
+			return parseSequence(tokens);
+		}
+	}
+
+	function parseSequence(tokens){
+		var start = actionRanges.length;
+		var from = parseActionLabel(tokens);
+		var end = actionRanges.length;
+		var ranges = actionRanges.splice(start, end - start);
+
+		gobble(tokens[index], '->');
+
+		var to = parseLocalProcess(tokens);
+
+		var node = { type:'sequence', from:from, to:to };
+		
+		while(ranges.length !== 0){
+			var next = ranges.pop();
+			next.process = node;
+			node = next;
 		}
 
-		if(tokens[index].value === '|'){
-			gobble(tokens[index], '|');
-			return { type:'choice', process1:process, process2:parseLocalProcess(tokens) };
-		}
-
-		return process;
+		return node;
 	}
 
 	/**
@@ -721,59 +747,6 @@ function parse(tokens){
 	}
 
 	/**
-	 * Attempts to parse and return a choice process from the specified
-	 * array of tokens starting at the current index position. A choice process
-	 * is of the form:
-	 *
-	 * CHOICE := SEQUENCE ('|' SEQUENCE)*
-	 *
-	 * @param {token[]} tokens - the array of tokens to parse
-	 * @return {node} - a choice node for the ast
-	 */
-	function parseChoice(tokens){
-		var process1 = parseSequence(tokens);
-
-		// check if there is a choice available
-		if(tokens[index].value === '|'){
-			gobble(tokens[index], '|');
-			var process2 = parseSequence(tokens);
-
-			return { type:'choice', process1:process1, process2:process2 };
-		}
-
-		return process1;
-	}
-
-	/**
-	 * Attempts to parse and return a sequnce from the specified array
-	 * of tokens starting at the current index position. A sequence is of
-	 * the form:
-	 *
-	 * SEQUENCE := (ACTION_LABEL | LOCAL_PROCESS) ('->' ACTION_LABEL _ LOCAL_PROCESS)* '->' BASE_LOCAL_PROCESS
-	 *
-	 * @param {token[]} tokens - the array of tokens to parse
-	 * @return {node} - a sequence node for the ast
-	 */
-	function parseSequence(tokens){
-		var functions = [parseActionLabel, parseBaseLocalProcess];
-		var fromIndex = actionRanges.length;
-		var from = parseMultiple(tokens, functions);
-		// finish now if the parsed process is a base local process
-		if(from.type != 'action-label'){
-			return processActionRanges(from, fromIndex);
-		}
-
-		gobble(tokens[index], '->');
-		var toIndex = actionRanges.length;
-		var to = parseSequence(tokens);
-		to = processActionRanges(to, toIndex);
-
-
-		var sequence = { type:'sequence', from:from, to:to };
-		return processActionRanges(sequence, fromIndex);
-	}
-
-	/**
 	 * Attmepts to parse and return a sequence of indices from the specified
 	 * array of tokens starting from the current index position. A sequence of
 	 * indices is of the form:
@@ -815,7 +788,7 @@ function parse(tokens){
 		// get the parsed ranges from action ranges
 		var ranges = [];
 		for(var i = start; i < actionRanges.length; i++){
-			ranges.push(actionRanges[i].range);
+			ranges.push(actionRanges[i]);
 		}
 
 		// removed the parsed action ranges
@@ -1044,7 +1017,7 @@ function parse(tokens){
 			var expr = parseExpression(tokens);
 			gobble(tokens[index], ')');
 		
-			return expr.expr;
+			return expr;
 		}
 		else{
 			var token = tokens[index];
@@ -1317,14 +1290,27 @@ function parse(tokens){
 	 	return error;
 	}
 
-	function processActionRanges(astNode, start){
-		while(start < actionRanges.length){
-			var range = actionRanges.pop();
-			range.process = astNode;
-			astNode = range;
+	function isBaseLocalProcess(token){
+		if(tokens[index].type === 'terminal'){
+			return true;
+		}
+		else if(tokens[index].type === 'identifier'){
+			return true;
+		}
+		else if(tokens[index].value === 'if'){
+			return true;
+		}
+		else if(tokens[index].value === 'when'){
+			return true;
+		}
+		else if(tokens[index].value === 'abs' || tokens[index].value === 'simp'){
+			return true;
+		}
+		else if(tokens[index].value === '('){
+			return true;
 		}
 
-		return astNode;
+		return false;
 	}
 
 	/**
