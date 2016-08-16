@@ -42,7 +42,8 @@ function expand(ast){
 		var newProcesses = [];
 		for(var j = 0; j < localProcesses.length; j++){
 			if(localProcesses[j].ident.ranges === undefined){
-				newProcesses.push(expandNode(localProcesses[j].process, variableMap));
+				localProcesses[j].process = expandNode(localProcesses[j].process, variableMap);
+				newProcesses.push(localProcesses[j]);
 			}
 			else{
 				var ident = localProcesses[j].ident.ident;
