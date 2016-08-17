@@ -55,7 +55,19 @@ function abstraction(process, isFair){
 				// check if the current path has completed
 				else if(edges[i].label !== TAU && current.start !== undefined){
 					fringe.push({ start:undefined, node:to });
-					paths.push({ start:current.start, end:current.node });
+
+					// check if the path is a duplicate
+					var match = false;
+					for(var j = 0; j < paths.length; j++){
+						if(paths[j].start === current.start && paths[j].end === current.node){
+							match = true;
+							break;
+						}
+					}
+
+					if(!match){
+						paths.push({ start:current.start, end:current.node });
+					}
 				}
 				// push next node to the fringe
 				else{
