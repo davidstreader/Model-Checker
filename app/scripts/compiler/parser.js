@@ -247,7 +247,7 @@ function parse(tokens){
 		 * @param {string -> int} variableMap - a mapping of variable names to values
 		 */
 		function processVariables(variableMap){
-			var regex = '[\$][v<]*[a-zA-Z0-9]*[>]*';
+			var regex = '[\$][v][a-zA-Z0-9]*';
 			var result = action;
 			var match = result.match(regex);
 			
@@ -1225,7 +1225,7 @@ function parse(tokens){
 	 * @returns {string} - name of variable
 	 */
 	function generateVariableName(){
-		return '$<v' + variableCount++ +'>';
+		return '$v' + variableCount++;
 	}
 
 	/**

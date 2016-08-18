@@ -344,7 +344,7 @@ function expand(ast){
 	 */
 	function processLabel(label, variableMap){
 		// replace any variables declared in the label with its value
-		var regex = '[\$][<]*[a-zA-Z0-9]*[>]*';
+		var regex = '[\$][a-zA-Z0-9]*';
 		var match = label.match(regex);
 		
 		// if no variable was found then return
@@ -381,7 +381,7 @@ function expand(ast){
 	 */
 	function processGuardExpression(expr, variableMap){
 		// replace any variables declared in the expression with its value
-		var regex = '[\$][<]*[a-zA-Z0-9]*[>]*';
+		var regex = '[\$][a-zA-Z0-9]*';
 		var match = expr.match(regex);
 		while(match !== null){
 			// check if the variable has been defined
