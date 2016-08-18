@@ -36,7 +36,7 @@ function abstraction(process, isFair){
 			if(visited[current.node.id] !== undefined){
 				// check if there is a path
 				if(current.start !== undefined){
-					paths.push({ start:current.start, end:current.start });
+					paths.push({ start:current.start, end:current.node });
 				}
 
 				continue;
@@ -78,7 +78,8 @@ function abstraction(process, isFair){
 			}
 		}
 
-		// add the observable edges
+		// construct the observable edges
+		var observableEdges = [];
 		for(var i = 0; i < paths.length; i++){
 			//check if this tau path is a loop
 			if(paths[i].start.id === paths[i].end.id){
@@ -96,15 +97,21 @@ function abstraction(process, isFair){
 			var incoming = paths[i].start.edgesToMe;
 			for(var j = 0; j < incoming.length; j++){
 				var from = process.getNode(incoming[j].from);
-				process.addEdge(process.nextEdgeId, incoming[j].label, from.id, paths[i].end.id);
+				observableEdges.push({ label:incoming[j].label, from:from.id, to:paths[i].end.id });
 			}
 
 			// add observable edges to the nodes that transition from the start of the path
 			var outgoing = paths[i].end.edgesFromMe;
 			for(var j = 0; j < outgoing.length; j++){
 				var to = process.getNode(outgoing[j].to);
-				process.addEdge(process.nextEdgeId, outgoing[j].label, paths[i].start.id, to.id);
+				observableEdges.push({ label:outgoing[j].label, from:paths[i].start.id, to:to.id });
 			}
+		}
+
+		// add observable edges
+		for(var i = 0; i < observableEdges.length; i++){
+			var edge = observableEdges[i];
+			process.addEdge(process.nextEdgeId, edge.label, edge.from, edge.to);
 		}
 
 		// remove hidden edges from the automaton
