@@ -35,7 +35,7 @@ function expand(ast){
 	 * Expands and returns the local processes defined within a process.
 	 *
 	 * @param {astNode[]} localProcesses - an array of locally defined references
-	 * @param {string -> string} - a mapping from variable name to value
+	 * @param {string -> string} variableMap - a mapping from variable name to value
 	 * @return {astNode[]} - the expanded local processes
 	 */
 	function expandLocalProcessDefinitions(localProcesses, variableMap){
@@ -70,8 +70,8 @@ function expand(ast){
    *
 	 * @param {astNode} localProcess - the defined local process
 	 * @param {string} ident - current identifier name
-	 * @param {rangeNode[]} - the remaining ranges
-	 * @param {string -> string} - a mapping from variable name to value
+	 * @param {rangeNode[]} ranges - the remaining ranges
+	 * @param {string -> string} variableMap - a mapping from variable name to value
 	 * @return {astNode[]} - the expanded local processes
 	 */
 	function expandIndexedDefinition(localProcess, ident, ranges, variableMap){
@@ -109,8 +109,8 @@ function expand(ast){
 	 * it based on its type. Not all types need to get processes, such as terminals.
 	 * These are simply returned at the end of the function.
 	 *
-	 * @param {astNode} - the astNode to expand
-	 * @param {string -> string} - a mapping from variable name to value
+	 * @param {astNode} astNode - the astNode to expand
+	 * @param {string -> string} variableMap - a mapping from variable name to value
 	 * @return {astNode} - the expanded ast node
 	 */
 	function expandNode(astNode, variableMap){
@@ -158,16 +158,12 @@ function expand(ast){
 		return node;
 	}
 
-	function expandProcessNode(astNode, variableMap){
-
-	}
-
 	/**
 	 * Processes the specified action label ast node so that any variable references
 	 * made by the action are replaced with their actual values.
 	 *
-	 * @param {astNode} - the action label node to process
-	 * @param {string -> string} - a mapping from variable name to value
+	 * @param {astNode} astNode - the action label node to process
+	 * @param {string -> string} variableMap - a mapping from variable name to value
 	 * @return {astNode} - the expanded ast node
 	 */
 	function expandActionLabelNode(astNode, variableMap){
@@ -178,8 +174,8 @@ function expand(ast){
 	/**
 	 * Expands the specified index astNode into a series of choice ast nodes.
 	 *
-	 * @param {astNode} - the index ast node to expand
-	 * @param {string -> string} - a mapping from variable name to value
+	 * @param {astNode} astNode - the index ast node to expand
+	 * @param {string -> string} variableMap - a mapping from variable name to value
 	 * @return {astNode} - the expanded ast node
 	 */
 	function expandIndexNode(astNode, variableMap){
@@ -205,8 +201,8 @@ function expand(ast){
 	/**
 	 * Expands the specified sequence ast node.
 	 *
-	 * @param {astNode} - the sequence ast node to expand
-	 * @param {string -> string} - a mapping from variable name to value
+	 * @param {astNode} astNode - the sequence ast node to expand
+	 * @param {string -> string} variableMap - a mapping from variable name to value
 	 * @return {astNode} - the expanded ast node
 	 */
 	function expandSequenceNode(astNode, variableMap){
@@ -218,8 +214,8 @@ function expand(ast){
 	/**
 	 * Expands the specified choice or composite ast node.
 	 *
-	 * @param {astNode} - the choice or composite ast node to expand
-	 * @param {string -> string} - a mapping from variable name to value
+	 * @param {astNode} astNode - the choice or composite ast node to expand
+	 * @param {string -> string} variableMap - a mapping from variable name to value
 	 * @return {astNode} - the expanded ast node
 	 */
 	function expandChoiceOrCompositeNode(astNode, variableMap){
@@ -244,8 +240,8 @@ function expand(ast){
 	 * it is possible for no paths to be executed. When this happens a special
 	 * empty ast node is returned.
 	 *
-	 * @param {astNode} - the if statement ast node to expand
-	 * @param {string -> string} - a mapping from variable name to value
+	 * @param {astNode} astNode - the if statement ast node to expand
+	 * @param {string -> string} variableMap - a mapping from variable name to value
 	 * @return {astNode} - the expanded ast node
 	 */
 	function expandIfStatementNode(astNode, variableMap){
@@ -263,8 +259,8 @@ function expand(ast){
 	/**
 	 * Expands the specified function ast node.
 	 *
-	 * @param {astNode} - the function ast node to expand
-	 * @param {string -> string} - a mapping from variable name to value
+	 * @param {astNode} astNode - the function ast node to expand
+	 * @param {string -> string} variableMap - a mapping from variable name to value
 	 * @return {astNode} - the expanded ast node
 	 */
 	function expandFunctionNode(astNode, variableMap){
@@ -275,8 +271,8 @@ function expand(ast){
 	/**
 	 * Expands the specified identifier ast node.
 	 *
-	 * @param {astNode} - the index ast node to expand
-	 * @param {string -> string} - a mapping from variable name to value
+	 * @param {astNode} astNode - the index ast node to expand
+	 * @param {string -> string} variableMap - a mapping from variable name to value
 	 * @return {astNode} - the expanded ast node
 	 */
 	function expandIdentiferNode(astNode, variableMap){
@@ -309,7 +305,7 @@ function expand(ast){
 		 * in the forall ast node.
 		 *
 		 * @param {astNode} process - the defined process
-		 * @param {range[]} - the remaining ranges 
+		 * @param {range[]} ranges - the remaining ranges 
 		 * @param {string -> string} variableMap - a mapping from variable name to value
 		 * @param {astNode[]} - the processed ast nodes
 		 */
@@ -343,7 +339,7 @@ function expand(ast){
 	 * is found to be undefined.
 	 *
 	 * @param {string} label - the label to process
-	 * @param {string -> string} - a mapping from variable name to value
+	 * @param {string -> string} variableMap - a mapping from variable name to value
 	 * @return {string} - the processed label
 	 */
 	function processLabel(label, variableMap){
@@ -380,7 +376,7 @@ function expand(ast){
 	 * an error if a variable is found to be undefined.
 	 *
 	 * @param {string} expr - the expr to evaluate
-	 * @param {string -> string} - a mapping from variable name to value
+	 * @param {string -> string} variableMap - a mapping from variable name to value
 	 * @return {boolean} - result of the evaluation
 	 */
 	function processGuardExpression(expr, variableMap){
