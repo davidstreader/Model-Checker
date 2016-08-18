@@ -634,6 +634,9 @@ function parse(tokens){
 		else if(tokens[index].value === 'abs' || tokens[index].value === 'simp'){
 			return parseFunction(tokens);
 		}
+		else if(tokens[index].value === 'forall'){
+			return parseForall(tokens);
+		}
 		else if(tokens[index].value === '('){
 			gobble(tokens[index], '(');
 			var process = parseLocalProcess(tokens);
@@ -747,6 +750,20 @@ function parse(tokens){
 	}
 
 	/**
+	 * Attempts to parse and return a forall process from the specified array of
+	 * tokens starting at the current index position. A forall process is of the form:
+	 *
+	 * FORALL := 'forall' RANGES COMPOSITE
+	 */
+	function parseForall(tokens){
+		gobble(tokens[index], 'forall');
+		var ranges = parseRanges(tokens);
+		var process = parseComposite(tokens);
+
+		return { type:'forall', ranges:ranges, process:process };
+	}
+
+	/**
 	 * Attmepts to parse and return a sequence of indices from the specified
 	 * array of tokens starting from the current index position. A sequence of
 	 * indices is of the form:
@@ -840,7 +857,7 @@ function parse(tokens){
 			relabels.push(parseRelabelElement(tokens));
 
 			// check if relabelling set is completed
-			if(tokens[index] !== ','){
+			if(tokens[index].value !== ','){
 				break;
 			}
 
@@ -1304,6 +1321,9 @@ function parse(tokens){
 			return true;
 		}
 		else if(tokens[index].value === 'abs' || tokens[index].value === 'simp'){
+			return true;
+		}
+		else if(tokens[index].value === 'forall'){
 			return true;
 		}
 		else if(tokens[index].value === '('){

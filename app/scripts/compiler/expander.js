@@ -141,6 +141,9 @@ function expand(ast){
 		else if(type === 'identifier'){
 			node = expandIdentiferNode(astNode, variableMap);
 		}
+		else if(type === 'forall'){
+			node = expandForallNode(astNode, variableMap);
+		}
 
 		// check if the ast node did not got processed
 		if(node === undefined){
@@ -278,7 +281,60 @@ function expand(ast){
 	 */
 	function expandIdentiferNode(astNode, variableMap){
 		astNode.ident = processLabel(astNode.ident, variableMap);
+		if(astNode.label !== undefined){
+			astNode.label = expandNode(astNode.label, variableMap);
+		}
 		return astNode;
+	}
+
+	/**
+	 * Expans the specified forall ast node into a series of composite ast nodes.
+	 *
+	 * @param {astNode} astNode - the forall ast node to expand
+	 * @param {string -> string} variableMap - a mapping from variable name to value
+	 * @return {astNode} - the expanded astNode
+	 */
+	function expandForallNode(astNode, variableMap){
+		var nodes = _expandForallNode(astNode.process, astNode.ranges.ranges, variableMap);
+		astNode = nodes.pop();
+		while(nodes.length !== 0){
+			var next = nodes.pop();
+			astNode = { type:'composite', process1:next, process2:astNode };
+		}
+
+		return astNode;
+
+		/**
+		 * A helper function for expandForallNode that processes the ranges defined
+		 * in the forall ast node.
+		 *
+		 * @param {astNode} process - the defined process
+		 * @param {range[]} - the remaining ranges 
+		 * @param {string -> string} variableMap - a mapping from variable name to value
+		 * @param {astNode[]} - the processed ast nodes
+		 */
+		function _expandForallNode(process, ranges, variableMap){
+			var newNodes = [];
+			// recursive case
+			if(ranges.length !== 0){
+				var iterator = new IndexIterator(ranges[0].range);
+				var variable = ranges[0].variable;
+				ranges = (ranges.length > 1) ? ranges.slice(1) : [];
+
+				while(iterator.hasNext){
+					variableMap[variable] = iterator.next;
+					newNodes = newNodes.concat(_expandForallNode(process, ranges, variableMap));
+				}
+			}
+			// base case
+			else{
+				var clone = JSON.parse(JSON.stringify(process));
+				clone = expandNode(clone, variableMap);
+				newNodes.push(clone);
+			}
+
+			return newNodes;
+		}
 	}
 
 	/**
