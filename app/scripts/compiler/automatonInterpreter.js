@@ -194,7 +194,6 @@ function interpretAutomaton(process, processesMap, variableMap, processId){
 
 	function interpretIdentifier(astNode, currentNode, ident){
 		var current = astNode.ident;
-		current = processActionLabel(current);
 		// check if this process is referencing itself
 		if(current === ident){
 			var root = processesMap[ident].root;

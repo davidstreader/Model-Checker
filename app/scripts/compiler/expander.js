@@ -334,6 +334,32 @@ function expand(ast){
 	}
 
 	/**
+	 * Processes the specified expression by replacing any variable references
+	 * with the value that variable represents and evaluating the result. Throws 
+	 * an error if a variable is found to be undefined.
+	 *
+	 * @param {string} expr - the expr to evaluate
+	 * @param {string -> string} variableMap - a mapping from variable name to value
+	 * @return {int} - result of the evaluation
+	 */
+	function processExpression(expr, variableMap){
+		// replace any variables declared in the expression with its value
+		var regex = '[\$][a-zA-Z0-9]*';
+		var match = expr.match(regex);
+		while(match !== null){
+			// check if the variable has been defined
+			if(variableMap[match[0]] === undefined){
+				throw new VariableDeclarationException('the variable \'' + match[0].substring(1) + '\' has not been defined');
+			}
+
+			expr = expr.replace(match[0], variableMap[match[0]]);
+			match = expr.match(regex);
+		}
+
+		return evaluate(expr);		
+	}
+
+	/**
 	 * Processes the specified label by replacing any variable references
 	 * with the value that variable represents. Throws an error if a variable
 	 * is found to be undefined.
@@ -351,22 +377,13 @@ function expand(ast){
 		if(match === null){
 			return label;
 		}
-
-		var firstMatch = match[0];
-		var expr = match[0];
 		
 		while(match !== null){
-			// check if the variable has been defined
-			if(variableMap[match[0]] === undefined){
-				throw new VariableDeclarationException('the variable \'' + match[0].substring(1) + '\' has not been defined');
-			}
-
-			expr = expr.replace(match[0], variableMap[match[0]]);
-			match = expr.match(regex);
+			var expr = processExpression(match[0], variableMap);
+			label = label.replace(match[0], expr);
+			match = label.match(regex);
 		}
 
-		expr = evaluate(expr);
-		label = label.replace(firstMatch, expr);
 		return label;
 	}
 
@@ -380,20 +397,7 @@ function expand(ast){
 	 * @return {boolean} - result of the evaluation
 	 */
 	function processGuardExpression(expr, variableMap){
-		// replace any variables declared in the expression with its value
-		var regex = '[\$][a-zA-Z0-9]*';
-		var match = expr.match(regex);
-		while(match !== null){
-			// check if the variable has been defined
-			if(variableMap[match[0]] === undefined){
-				throw new VariableDeclarationException('the variable \'' + match[0].substring(1) + '\' has not been defined');
-			}
-
-			expr = expr.replace(match[0], variableMap[match[0]]);
-			match = expr.match(regex);
-		}
-
-		expr = evaluate(expr);
+		expr = processExpression(expr, variableMap);
 		return (expr === 0) ? false : true;
 	}
 
@@ -409,7 +413,7 @@ function expand(ast){
 		this.message = message;
 		this.location = location;
 		this.toString = function(){
-			return 'ParserException: ' + message;
+			return 'VariableDeclarationException: ' + message;
 		};	
 	}
 }
