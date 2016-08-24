@@ -18,6 +18,9 @@ function interpretAutomaton(process, processesMap, variableMap, processId){
 		processHiding(processesMap[process.ident.ident], process.hiding);
 	}
 
+	// remove unreachable nodes from the process
+	processesMap[process.ident.ident].trim();
+
 	// label the nodes in the automaton
 	labelNodes(processesMap[process.ident.ident]);
 
