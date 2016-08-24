@@ -779,7 +779,7 @@ function parse(tokens){
 			gobble(tokens[index], '[');
 			indices += '[' + parseExpression(tokens) + ']';
 			gobble(tokens[index], ']');
-		}while(tokens[index] === '[');
+		}while(tokens[index].value === '[');
 
 		return indices;
 	}
@@ -1136,6 +1136,7 @@ function parse(tokens){
 			case '|':
 			case '^':
 			case '|':
+			case '&':
 			case '==':
 			case '!=':
 			case '<<':
