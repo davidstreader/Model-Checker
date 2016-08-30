@@ -55,7 +55,7 @@
         }
         else{
           // otherwise render the automata
-          app.render(graphs);
+          app.render(graphs.reverse());
         }
       }.bind(this), 0); 
     }
