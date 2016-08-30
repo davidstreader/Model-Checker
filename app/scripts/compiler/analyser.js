@@ -21,7 +21,7 @@
  * @param {astNode[]} lastAnalysis - the analysis from the last compilation
  * @return {string -> analysis} - a mapping from identifier to analysis object
  */
-function performAnalysis(processes, lastAnalysis){
+function performAnalysis(processes, lastAnalysis, abstractionChanged){
 	var analysis = {};
 
 	for(var i = 0; i < processes.length; i++){
@@ -46,7 +46,7 @@ function performAnalysis(processes, lastAnalysis){
 
 	// check if any updates have happened since the last compilation
 	for(var ident in analysis){
-		if(lastAnalysis[ident] !== undefined){
+		if(lastAnalysis[ident] !== undefined && !abstractionChanged){
 			var current = JSON.stringify(analysis[ident].process);
 			var previous = JSON.stringify(lastAnalysis[ident].process);
 			analysis[ident].isUpdated = (current === previous) ? false : true;

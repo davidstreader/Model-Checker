@@ -1,6 +1,6 @@
 'use strict';
 
-function interpretPetriNet(process, processesMap, variableMap, processId){
+function interpretPetriNet(process, processesMap, variableMap, processId, isFairAbstraction){
 	var root = constructPetriNet(processId, process.ident.ident);
 	var localProcessesMap = constructLocalProcesses(process.ident.ident , process.local);
 
@@ -186,7 +186,7 @@ function interpretPetriNet(process, processesMap, variableMap, processId){
 			var process1 = ident + '.abs';
 			var root1 = constructPetriNet(processesMap[ident].id + 'abs', process1);
 			interpretNode(astNode.process, root1, process1);
-			processesMap[ident] = abstraction(processesMap[process1].clone);
+			processesMap[ident] = abstraction(processesMap[process1].clone, isFairAbstraction);
 			delete processesMap[process1];
 		}
 		else if(type === 'simp'){

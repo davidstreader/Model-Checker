@@ -47,7 +47,7 @@
       setTimeout(function() {
         var compileStartTime = (new Date()).getTime();
         var code = app.$.editor.getCode();
-        var graphs = app.$.parser.compile(code);
+        var graphs = app.$.parser.compile(code, app.fairAbstraction);
 
         // check if an error was thrown by the compiler
         if(graphs.type === 'error'){

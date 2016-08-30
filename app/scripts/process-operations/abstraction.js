@@ -5,10 +5,10 @@ function abstraction(process, isFair){
 	isFair = (isFair !== undefined) ? isFair : true;
 	var type = process.type;
 	if(type === 'automata'){
-		return automataAbstraction(process);
+		return automataAbstraction(process, isFair);
 	}
 	else if(type === 'petrinet'){
-		return petriNetAbstraction(process);
+		return petriNetAbstraction(process, isFair);
 	}
 	else{
 		// throw error

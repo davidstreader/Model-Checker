@@ -8,6 +8,7 @@ var lastAst = {};
 var lastAnalysis = {};
 var lastProcesses = [];
 var lastGraphs = [];
+var lastAbstraction = true;
 
 /**
  * Runs the compilation process for the model checker. This process is broken
@@ -34,7 +35,7 @@ var lastGraphs = [];
  * @throws {exception} - throws an exception specific to the stage where the error
  *						 took place
  */
-function compile(code){
+function compile(code, isFairAbstraction){
 	try{
 		// convert code into an array of tokens
 		var tokens = lexer.parse(code); // lexer.parse function in 'lexer.js'
@@ -46,10 +47,11 @@ function compile(code){
 		ast = expand(ast); // expand function defined in 'expander.js'
 
 		// perform analysis to see which processes need to be re-interpreted
-		var analysis = performAnalysis(ast.processes, lastAnalysis); // performAnalysis function in 'analyser.js'
+		var abstractionChanged = isFairAbstraction !== lastAbstraction;
+		var analysis = performAnalysis(ast.processes, lastAnalysis, abstractionChanged); // performAnalysis function in 'analyser.js'
 		
 		// convert the processes from the ast into their appropriate data structures
-		var processes = interpret(ast.processes, ast.variableMap, analysis, lastProcesses); // interpret function in 'interpreter.js'
+		var processes = interpret(ast.processes, ast.variableMap, analysis, lastProcesses, isFairAbstraction); // interpret function in 'interpreter.js'
 		
 		// convert the process data structures into dagre graphs that can
 		// be rendered by dagreD3
@@ -61,6 +63,7 @@ function compile(code){
 		lastAnalysis = analysis;
 		lastProcesses = processes;
 		lastGraphs = graphs;
+		lastAbstraction = isFairAbstraction;
 
 		return graphs;
 	}catch(error){

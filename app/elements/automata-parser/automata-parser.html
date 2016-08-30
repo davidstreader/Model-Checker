@@ -22,8 +22,8 @@
      * @param {boolean} isFair - determines whether fair or unfair abstraction is performed
      * @return {Automaton[]} - the interpreted automata
      */
-    compile: function(code, build, isFair) {
-      return compile(code); // defined in compiler.js
+    compile: function(code, isFair) {
+      return compile(code, isFair); // defined in compiler.js
     }
 
   });

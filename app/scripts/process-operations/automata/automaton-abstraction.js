@@ -9,8 +9,7 @@
  * @return {automaton} - the abstracted processs
  */
 function automataAbstraction(process, isFair){
-	isFair = true; // REMOVE THIS LINE
-	var observableEdgeMap = { _count_: 0 };
+	var observableEdgeMap = {};
 
 	// get all nodes that have at least one hidden tau event traversing from it
 	var nodes = process.edges.filter(edge => edge.label === TAU).map(edge => edge.from);
@@ -21,7 +20,6 @@ function automataAbstraction(process, isFair){
 	}
 
 	// add the observable edges to the process
-	delete observableEdgeMap._count_;
 	for(var key in observableEdgeMap){
 		var edge = observableEdgeMap[key];
 		process.addEdge(process.nextEdgeId, edge.label, edge.from, edge.to);
@@ -67,7 +65,14 @@ function automataAbstraction(process, isFair){
 
 				// check if the current node has been visited
 				if(visited[neighbour.id] !== undefined){
-					// TODO: IMPLEMENT UNFAIR ABSTRACTION
+					// check if a tau loop has been found
+					if(neighbour.id === node.id && !isFair){
+						// add dead locked state if the abstraction is defined as unfair
+						var deadState = process.addNode(process.nextNodeId);
+						deadState.addMetaData('isTerminal', 'error');
+						process.addEdge(process.nextEdgeId, DELTA, node.id, deadState.id);
+					}
+
 					continue;
 				}
 
@@ -104,7 +109,6 @@ function automataAbstraction(process, isFair){
 		var key = constructEdgeKey(from, to, label);
 		if(observableEdgeMap[key] === undefined){
 			observableEdgeMap[key] = new ObservableEdge(from, to, label);
-			observableEdgeMap._count_++;
 		}
 	}
 

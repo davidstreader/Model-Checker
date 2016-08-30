@@ -1,6 +1,6 @@
 'use strict';
 
-function interpretAutomaton(process, processesMap, variableMap, processId){
+function interpretAutomaton(process, processesMap, variableMap, processId, isFairAbstraction){
 	var root = constructAutomaton(processId, process.ident.ident);
 	var localProcessesMap = constructLocalProcesses(process.ident.ident, process.local);
 
@@ -179,7 +179,7 @@ function interpretAutomaton(process, processesMap, variableMap, processId){
 			var root1 = constructAutomaton(processesMap[ident].id + 'abs', process1);
 			interpretNode(astNode.process, root1, process1);
 			labelNodes(processesMap[process1]);
-			processesMap[ident] = abstraction(processesMap[process1].clone);
+			processesMap[ident] = abstraction(processesMap[process1].clone, isFairAbstraction);
 			delete processesMap[process1];
 		}
 		else if(type === 'simp'){
