@@ -63,16 +63,19 @@ function automataAbstraction(process, isFair){
 			for(var i = 0; i < neighbours.length; i++){
 				var neighbour = neighbours[i];
 
-				// check if the current node has been visited
-				if(visited[neighbour.id] !== undefined){
-					// check if a tau loop has been found
-					if(neighbour.id === node.id && !isFair){
-						// add dead locked state if the abstraction is defined as unfair
+				// add dead locked state if the abstraction is defined as unfair
+				if(neighbour.id === node.id){
+					if(!isFair){
 						var deadState = process.addNode(process.nextNodeId);
 						deadState.addMetaData('isTerminal', 'error');
 						process.addEdge(process.nextEdgeId, DELTA, node.id, deadState.id);
 					}
+					
+					continue;
+				}
 
+				// check if the current node has been visited
+				if(visited[neighbour.id] !== undefined){
 					continue;
 				}
 
