@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 
 /**
  * Performs the abstraction process on the specified automaton. This process
@@ -9,126 +9,132 @@
  * @return {automaton} - the abstracted processs
  */
 function automataAbstraction(process, isFair){
-	// find all the hidden paths in the graph
-	var paths = [];
-	var visited = {};
-		
-	// descend through the automaton finding tau paths
-	var fringe = [{ start:undefined, node:process.root }];
-	while(fringe.length !== 0){
-		var current = fringe.pop();
+	isFair = true; // REMOVE THIS LINE
+	var observableEdgeMap = { _count_: 0 };
 
-		// check if this node has been visited
-		if(visited[current.node.id] !== undefined){
-			// check if there is a path
-			if(current.start !== undefined){
-				paths.push({ start:current.start, end:current.node });
-			}
+	// get all nodes that have at least one hidden tau event traversing from it
+	var nodes = process.edges.filter(edge => edge.label === TAU).map(edge => edge.from);
 
-			continue;
-		}
-
-		// push the next nodes to the fringe
-		var edges = current.node.edgesFromMe;
-		for(var i = 0; i < edges.length; i++){
-			var to = process.getNode(edges[i].to);
-			// check if the current edge represents a hidden event
-			if(edges[i].label === TAU){
-				// either continue an existing path or start a new one
-				var start = (current.start !== undefined) ? current.start : current.node;
-				fringe.push({ start:start, node:to });
-			}
-			// check if the current path has completed
-			else if(edges[i].label !== TAU && current.start !== undefined){
-				fringe.push({ start:undefined, node:to });
-
-				// check if the path is a duplicate
-				var match = false;
-				for(var j = 0; j < paths.length; j++){
-					if(paths[j].start === current.start && paths[j].end === current.node){
-						match = true;
-						break;
-					}
-				}
-
-				if(!match){
-					paths.push({ start:current.start, end:current.node });
-				}
-			}
-			// push next node to the fringe
-			else{
-				fringe.push({ start:undefined, node:to });
-			}
-
-			visited[current.node.id] = true;
-		}
+	// populate the obvservable edge map
+	for(var id = 0; id < nodes.length; id++){
+		constructObservableEdges(process.getNode(nodes[id]));
 	}
 
-	// construct the observable edges
-	var observableEdges = [];
-	for(var i = 0; i < paths.length; i++){
-		//check if this tau path is a loop
-		if(paths[i].start.id === paths[i].end.id){
-			// add a deadlocked state if this abstraction is not fair
-			if(!isFair){
-				var deadlock = process.addNode(process.nextNodeId);
-				deadlock.addMetaData('isTerminal', 'error');
-				process.addEdge(process.nextEdgeId, DELTA, paths[i].end.id, deadlock.id);
-			}
-
-			continue;
-		}
-
-		// add observable edges from nodes that transition to the start of the path
-		var incoming = paths[i].start.edgesToMe;
-		for(var j = 0; j < incoming.length; j++){
-			var from = process.getNode(incoming[j].from);
-			observableEdges.push({ label:incoming[j].label, from:from.id, to:paths[i].end.id });
-		}
-
-		// add observable edges to the nodes that transition from the start of the path
-		var outgoing = paths[i].end.edgesFromMe;
-		for(var j = 0; j < outgoing.length; j++){
-			var to = process.getNode(outgoing[j].to);
-			observableEdges.push({ label:outgoing[j].label, from:paths[i].start.id, to:to.id });
-		}
-	}
-
-	// add observable edges
-	for(var i = 0; i < observableEdges.length; i++){
-		var edge = observableEdges[i];
+	// add the observable edges to the process
+	delete observableEdgeMap._count_;
+	for(var key in observableEdgeMap){
+		var edge = observableEdgeMap[key];
 		process.addEdge(process.nextEdgeId, edge.label, edge.from, edge.to);
 	}
 
-	// remove hidden edges from the automaton
-	var edges = process.edges;
-	var nodes = [];
-	for(var i = 0; i < edges.length; i++){
-		if(edges[i].label === TAU){
-			// remove references to this edge
-			var from = process.getNode(edges[i].from);
-			from.deleteEdgeFromMe(edges[i]);
-			var to = process.getNode(edges[i].to);
-			to.deleteEdgeToMe(edges[i]);
+	// delete the hidden tau events from the process
+	var tauEdges = process.edges.filter(edge => edge.label === TAU);
+	for (var i = 0; i < tauEdges.length; i++){
+		var from = process.getNode(tauEdges[i].from);
+		from.deleteEdgeFromMe(tauEdges[i]);
+		var to = process.getNode(tauEdges[i].to);
+		from.deleteEdgeToMe(tauEdges[i]);
+		process.removeEdge(tauEdges[i].id);
+	}
 
-			process.removeEdge(edges[i].id);
-
-			// make from a terminal if there are no edges from it
-			if(from.isTerminal){
-				from.addMetaData('isTerminal', 'stop');
-			}
-
-			// delete to if it is now unreachable
-			if(to.isUnreachable){
-				nodes.push(to.id);
-			}
+	nodes = process.nodes;
+	for(var i = 0; i < nodes.length; i++){
+		var current = nodes[i];
+		if(current.edgesToMe.length === 0 && current.getMetaData('startNode') === undefined){
+			process.removeNode(current.id);
+		}
+		else if(current.edgesFromMe.length === 0 && current.getMetaData('isTerminal') === undefined){
+			current.addMetaData('isTerminal', 'stop');
 		}
 	}
 
-	// remove unreachable nodes from the automaton
-	for(var i = 0; i < nodes.length; i++){
-		process.removeNode(nodes[i]);
+	return process;
+
+	function constructObservableEdges(node){
+		// get observable events (edges) that transition to the specified node
+		var incomingObservableEdges = node.edgesToMe.filter(edge => edge.label !== TAU);
+
+		var visited = {};
+		var fringe = [node];
+		while(fringe.length !== 0){
+			var current = fringe.pop();
+			// get neighbouring nodes from the current node that are transitionable to via a hidden tau event
+			var neighbours = current.edgesFromMe.filter(edge => edge.label === TAU).map(edge => process.getNode(edge.to));
+
+			// iterate over the neigbouring nodes and add observable edges if possible
+			for(var i = 0; i < neighbours.length; i++){
+				var neighbour = neighbours[i];
+
+				// check if the current node has been visited
+				if(visited[neighbour.id] !== undefined){
+					// TODO: IMPLEMENT UNFAIR ABSTRACTION
+					continue;
+				}
+
+				// push the neighbour to the fringe
+				fringe.push(neighbour);
+
+				var outgoingObservableEdges = neighbours[i].edgesFromMe.filter(edge => edge.label !== TAU);
+
+				for(var j = 0; j < incomingObservableEdges.length; j++){
+					var edge = incomingObservableEdges[j];
+					constructObservableEdge(edge.from, neighbour.id, edge.label);
+				}
+
+				for(var j = 0; j < outgoingObservableEdges.length; j++){
+					var edge = outgoingObservableEdges[j];
+					constructObservableEdge(node.id, edge.to, edge.label);
+				}
+			}
+
+			// mark the current node as visited
+			visited[current.id] = true;
+		}
 	}
 
-	return process;
+	/**
+	 * Constructs an observable edge object and adds it to the
+	 * observable edge map.
+	 *
+	 * @param {string} from - the node id the edge transitions from
+	 * @param {string} to - the node id the edge transitions to
+	 * @param {string} label - the action the edge represents
+	 */
+	function constructObservableEdge(from, to, label){
+		var key = constructEdgeKey(from, to, label);
+		if(observableEdgeMap[key] === undefined){
+			observableEdgeMap[key] = new ObservableEdge(from, to, label);
+			observableEdgeMap._count_++;
+		}
+	}
+
+	/**
+	 * Constructs and returns key that refers to an observable edge.
+	 *
+	 * @param {string} from - the node id the edge transitions from
+	 * @param {string} to - the node id the edge transitions to
+	 * @param {string} label - the action the edge represents
+	 * @return {string} - the key for the edge
+	 */
+	function constructEdgeKey(from, to, label){
+		return from + ' -' + label + '> ' + to;
+	}
+
+	/**
+	 * Constructs and returns an observable edge object.
+	 *
+	 * @param {string} from - the node id the edge transitions from
+	 * @param {string} to - the node id the edge transitions to
+	 * @param {string} label - the action the edge represents
+	 * @return {object} - object representing an observable edge
+	 */
+	function ObservableEdge(from, to, label){
+		var edge = {
+			from : from,
+			to : to,
+			label : label
+		}
+
+		return edge;
+	}
 }
