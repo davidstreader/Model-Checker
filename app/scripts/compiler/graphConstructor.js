@@ -15,6 +15,9 @@ function constructGraphs(processesMap, analysis, lastGraphs){
 		if(analysis[ident].isUpdated){
 			var process = processesMap[ident];
 			if(process.type === 'automata'){
+				if(process.nodeCount > 100){
+					continue;
+				}
 				graph = automataConstructor(process);
 			}
 			else if(process.type === 'petrinet'){
