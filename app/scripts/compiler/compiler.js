@@ -53,6 +53,8 @@ function compile(code, isFairAbstraction){
 		// convert the processes from the ast into their appropriate data structures
 		var processes = interpret(ast.processes, ast.variableMap, analysis, lastProcesses, isFairAbstraction); // interpret function in 'interpreter.js'
 		
+		var operations = evaluateOperations(ast.operations, processes, ast.variableMap);
+
 		// convert the process data structures into dagre graphs that can
 		// be rendered by dagreD3
 		var graphs = constructGraphs(processes, analysis, lastGraphs); // construct graph function in 'graphConstructor.js'
@@ -65,7 +67,7 @@ function compile(code, isFairAbstraction){
 		lastGraphs = graphs;
 		lastAbstraction = isFairAbstraction;
 
-		return graphs;
+		return {graphs:graphs, operations:operations };
 	}catch(error){
 		error.type = 'error';
 		return error;

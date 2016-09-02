@@ -60,3 +60,43 @@ function interpret(processes, variables, analysis, lastProcessesMap, isFairAbstr
 		nextProcessId = 0;
 	}
 }
+
+function interpretOneOff(ident, process, processType, processes, variables){
+	reset();
+
+	var process = new ProcessNode(ident, process, processType);
+	process = expand({ processes:[process], variableMap:variables });
+
+	if(processType === 'automata'){
+		interpretAutomaton(process.processes[0], processes, variableMap, ident, true);
+	}
+	else if(processType === 'petrinet'){
+		interpretPetriNet(process.processes[0], processes, variableMap, ident, true);
+	}
+	else{
+		// throw error
+	}
+
+	return processes[ident];
+
+	function ProcessNode(ident, process, type){
+		var node = {
+			type:'process',
+			processType:type,
+			ident:{
+				type:'identifier',
+				ident:ident
+			},
+			process:process,
+			local:[]
+		};
+
+		return node;
+	}
+
+	function reset(){
+		processesMap = {};
+		variableMap = {};
+		nextProcessId = 0;
+	}
+}

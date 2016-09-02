@@ -6,6 +6,8 @@ var constantsMap;
 
 var processes;
 
+var operations;
+
 var variableMap;
 
 var variableCount;
@@ -37,11 +39,11 @@ function parse(tokens){
 			index++;
 		}
 		else{
-			throw new ParserException('Expecting to parse a either a process definition or a constant, received the ' + token.type + '\' ' + token.value + '\'');
+			parseOperation(tokens);
 		}
 	}
 
-	return { processes:processes, constantsMap:constantsMap, variableMap:variableMap };
+	return { processes:processes, operations:operations, constantsMap:constantsMap, variableMap:variableMap };
 
 	/**
 	 * Attempts to parse and return an identifier from the specified array of
@@ -631,7 +633,7 @@ function parse(tokens){
 		else if(tokens[index].value === 'when'){
 			return parseWhenStatement(tokens);
 		}
-		else if(tokens[index].value === 'abs' || tokens[index].value === 'simp'){
+		else if(tokens[index].type === 'function'){
 			return parseFunction(tokens);
 		}
 		else if(tokens[index].value === 'forall'){
@@ -915,6 +917,39 @@ function parse(tokens){
 		var set = parseSet(tokens).set;
 
 		return { type:type, set:set };
+	}
+
+	/**
+	 * === OPERATIONS ===
+	 */
+
+	function parseOperation(tokens){
+		var process1 = parseComposite(tokens);
+		// check if the operation has been negated
+		var isNegated = false;
+		if(tokens[index].value === '!'){
+			gobble(tokens[index], '!');
+			isNegated = true;
+		}
+		var operation = parseOperationType(tokens);
+		var process2 = parseComposite(tokens);
+		gobble(tokens[index], '.');
+
+		operations.push({ type:'operation', process1:process1, process2:process2, operation:operation, isNegated:isNegated });
+	}
+
+	function parseOperationType(tokens){
+		if(tokens[index].type !== 'operation'){
+			throw new ParserException('Expecting to parse an operation, received the ' + tokens[index].type + ' \'' + tokens[index].value + '\'');
+		}
+
+		var type = parseValue(tokens[index]);
+		if(type === '~'){
+			return 'bisimulation';
+		}
+		else{
+			throw new ParserException('Receieved invalid operation type \'' + type + '\'');
+		}
 	}
 
 	/**
@@ -1214,6 +1249,7 @@ function parse(tokens){
 		 index = 0;
 		 constantsMap = {};
 		 processes = [];
+		 operations = [];
 		 variableMap = {};
 		 actionRanges = [];
 		 variableCount = 0;
@@ -1321,7 +1357,7 @@ function parse(tokens){
 		else if(tokens[index].value === 'when'){
 			return true;
 		}
-		else if(tokens[index].value === 'abs' || tokens[index].value === 'simp'){
+		else if(tokens[index].type === 'function'){
 			return true;
 		}
 		else if(tokens[index].value === 'forall'){

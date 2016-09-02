@@ -47,15 +47,22 @@
       setTimeout(function() {
         var compileStartTime = (new Date()).getTime();
         var code = app.$.editor.getCode();
-        var graphs = app.$.parser.compile(code, app.fairAbstraction);
+        var results = app.$.parser.compile(code, app.fairAbstraction);
 
         // check if an error was thrown by the compiler
-        if(graphs.type === 'error'){
-          app.$.console.log(graphs.toString());
+        if(results.type === 'error'){
+          app.$.console.log(results.toString());
         }
         else{
           // otherwise render the automata
-          app.render(graphs.reverse());
+          app.render(results.graphs.reverse());
+        }
+
+        if(results.operations.length !== 0){
+          app.$.console.log('Operations:');
+          for(var i = 0; i < results.operations.length; i++){
+            app.$.console.log(results.operations[i]);
+          }
         }
       }.bind(this), 0); 
     }
