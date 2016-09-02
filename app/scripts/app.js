@@ -35,33 +35,37 @@
         }
       }
 
-      app.build();
+      app.build(overrideBuild);
     };
 
     /**
      * Runs the compiler converting the code in the editor into visualisable
      * graphs and calls the renderer.
      */
-    app.build = function() {
+    app.build = function(override) {
       app.$.console.clear();
       setTimeout(function() {
-        var compileStartTime = (new Date()).getTime();
-        var code = app.$.editor.getCode();
-        var results = app.$.parser.compile(code, app.fairAbstraction);
+        if(app.liveCompiling === true || override){
+          var compileStartTime = (new Date()).getTime();
+          var code = app.$.editor.getCode();
+          var results = app.$.parser.compile(code, app.fairAbstraction);
 
-        // check if an error was thrown by the compiler
-        if(results.type === 'error'){
-          app.$.console.log(results.toString());
-        }
-        else{
-          // otherwise render the automata
-          app.render(results.graphs.reverse());
-        }
+          // check if an error was thrown by the compiler
+          if(results.type === 'error'){
+            app.$.console.log(results.toString());
+          }
+          else{
+            if(app.liveBuilding === true || override){
+              // otherwise render the automata
+              app.render(results.graphs.reverse());
 
-        if(results.operations.length !== 0){
-          app.$.console.log('Operations:');
-          for(var i = 0; i < results.operations.length; i++){
-            app.$.console.log(results.operations[i]);
+              if(results.operations.length !== 0){
+                app.$.console.log('Operations:');
+                for(var i = 0; i < results.operations.length; i++){
+                  app.$.console.log(results.operations[i]);
+                }
+              }
+            }
           }
         }
       }.bind(this), 0); 
