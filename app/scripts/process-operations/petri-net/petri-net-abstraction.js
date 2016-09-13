@@ -1,110 +1,169 @@
 'use strict';
 
 function petriNetAbstraction(process, isFair){
-	var paths = [];
-	var visited = {};
+	var observableTransitionMap = {};
 
-	var fringe = [];
-	var roots = process.roots;
-	for(var i = 0; i < roots.length; i++){
-		fringe.push({ start:undefined, place:roots[i] });
-	}
-
-	while(fringe.length !== 0){
-		var current = fringe.pop();
-
-		// check if this place has been visited
-		if(visited[current.place.id] !== undefined){
-			continue;
-		}
-
-		// push the next places to the fringe
-		var transitions = getTransitions(process, current.place.outgoingTransitions);
-		for(var i = 0; i < transitions.length; i++){
-			var places = transitions[i].outgoingPlaces;
-			// check if the current transition represents a hidden event
-			if(transitions[i].label === TAU){
-				for(var j = 0; j < places.length; j ++){
-					// either continue an existing path or start a new one
-					var start = (current.start !== undefined) ? current.start : current.place;
-					fringe.push({ start:start, place:places[i] });
-				}
-			}
-			// check if the current path has completed
-			else if(transitions[i].label !== TAU && current.start !== undefined){
-				for(var j = 0; j < places.length; j++){
-					fringe.push({ start:undefined, place:places[i] });
-					paths.push({ start:current.start, end:current.place });
-				}
-			}
-			// push the next places to the fringe
-			else{
-				for(var j = 0; j < places.length; j++){
-					fringe.push({ start:undefined, place:places[j] });
-				}
-			}
+	// get all places that have at least one hidden tau event that it transitions to
+	var tauTransitions = process.transitions.filter(transition => transition.label === TAU);
+	for(var id = 0; id < tauTransitions.length; id++){
+		var places = tauTransitions[id].incomingPlaces;
+		for(var p = 0; p < places.length; p++){
+			constructObservableTransitions(places[p]);
 		}
 	}
 
-	// add observable actions
-	for(var i = 0; i < paths.length; i++){
-		// add observable actions from transitions that lead to the start place
-		var incoming = getTransitions(process, paths[i].start.incomingTransitions);
+	// add the observable transitions to the process
+	for(var key in observableTransitionMap){
+		var transition = observableTransitionMap[key];
+		var from = process.getPlace(transition.from);
+		var to = process.getPlace(transition.to);
+		process.addTransition(process.nextPlaceId, transition.label, [from], [to]);
+	}
+
+	// delete the hidden tau events from the process
+	for(var i = 0; i < tauTransitions.length; i++){
+		var incoming = tauTransitions[i].incomingPlaces;
 		for(var j = 0; j < incoming.length; j++){
-			var id = process.nextTransitionId;
-			process.addTransition(id, incoming[j].label, incoming[j].incomingPlaces, [paths[i].end]);
+			incoming[i].deleteOutgoingTransitions(tauTransitions[i].id);
 		}
-
-		// add observable actions from the start place to outgoing transitions from the end place
-		var outgoing = getTransitions(process, paths[i].end.outgoingTransitions);
+		var outgoing = tauTransitions[i].outgoingPlaces;
 		for(var j = 0; j < outgoing.length; j++){
-			var id = process.nextTransitionId;
-			process.addTransition(id, outgoing[j].label, [paths[i].start], outgoing[j].outgoingPlaces);
+			outgoing[j].deleteIncomingTransitions(tauTransitions[i].id);
 		}
+		process.removeTransition(tauTransitions[i].id);
 	}
 
-	// remove hidden transitions
-	var transitions = process.transitions;
-	var places = [];
-	for(var i = 0; i < transitions.length; i++){
-		if(transitions[i].label === TAU){
-			// remove references to this transition
-			var incoming = transitions[i].incomingPlaces;
-			for(var j = 0; j < incoming.length; j++){
-				incoming[j].deleteOutgoingTransitions(transitions[i].id);
-				// delete this place if it is now unreachable
-				if(incoming[j].isUnreachable){
-					places.push(incoing[j].id);
-				}
-			}
-
-			var outgoing  = transitions[i].outgoingPlaces;
-			for(var j = 0; j < outgoing.length; j++){
-				outgoing[j].deleteIncomingTransitions(transitions[i].id);
-				// make this place a terminal if there are no transitions from it
-				if(outgoing[j].isTerminal){
-					outgoing[j].addMetaData('isTerminal', 'stop');
-				}
-			}
-
-			process.removeTransition(transitions[i].id);
-		}
-	}
-
-	// remove unreachable places from the petri net
+	// remove any places that are not transitionable to
+	var places = process.places.filter(place => place.incomingTransitions.length === 0);
 	for(var i = 0; i < places.length; i++){
-		process.removePlace(places[i]);
+		var transitions = places[i].outgoingTransitions.map(id => process.getTransition(id));
+		process.removePlace(places[i].id);
+		for(var j = 0; j < transitions.length; j++){
+			var outgoing = transitions[j].outgoingPlaces;
+			if(outgoing.length === 1){
+				places.push(outgoing[0]);
+			}
+
+			process.removeTransition(transitions[j].id);
+		}
 	}
 
 	return process;
 
-	function getTransitions(process, ids){
-		var transitions = [];
-		for(var i = 0; i < ids.length; i++){
-			transitions[i] = process.getTransition(ids[i]);
-		}
+	function constructObservableTransitions(place){
+		// get observable events (transitions) that transition to the specified place
+		var incomingObservableTransitions = place.incomingTransitions
+			.map(id => process.getTransition(id))
+			.filter(transition => transition.label !== TAU);
 
-		return transitions;
+		var visited = {};
+		var fringe = [place];
+		while(fringe.length !== 0){
+			var current = fringe.pop();
+			// get neighbouring places that are transitionable to via a hidden tau event
+			var unobservableTransitions = current.outgoingTransitions
+				.map(id => process.getTransition(id))
+				.filter(transition => transition.label === TAU);
+
+			var neighbours = [];
+			for(var i = 0; i < unobservableTransitions.length; i++){
+				var outgoingPlaces = unobservableTransitions[i].outgoingPlaces;
+				for(var j = 0; j < outgoingPlaces.length; j++){
+					neighbours.push(outgoingPlaces[j]);
+				}
+			}
+
+			for(var i = 0; i < neighbours.length; i++){
+				var neighbour = neighbours[i];
+
+				// check if there is a loop in the tau path
+				if(neighbour.id === place.id){
+					// add a deadlocked state if the abstraction is defined as unfair
+					if(!isFair){
+						// TODO
+					}
+
+					continue;
+				}
+
+				// check if the current place has been visited
+				if(visited[neighbour.id] !== undefined){
+					continue;
+				}
+
+				// push the neighbour to the fringe
+				fringe.push(neighbour);
+
+				var outgoingObservableTransitions = neighbour.outgoingTransitions
+					.map(id => process.getTransition(id))
+					.filter(transition => transition.label !== TAU);
+
+				for(var j = 0; j < incomingObservableTransitions.length; j++){
+					var transition = incomingObservableTransitions[j];
+					var places = transition.incomingPlaces;
+					if(places !== undefined){
+						for(var k = 0; k < places.length; k++){
+							constructObservableTransition(places[k].id, neighbour.id, transition.label);	
+						}
+					}
+				}
+
+				for(var j = 0; j < outgoingObservableTransitions.length; j++){
+					var transition = outgoingObservableTransitions[j];
+					var places = transition.outgoingPlaces;
+					if(places !== undefined){
+						for(var k = 0; k < places.length; k++){
+							constructObservableTransition(place.id, places[k].id, transition.label);
+						}
+					}
+				}
+			}
+
+			// mark the current place as visited
+			visited[current.id] = true;
+		}
 	}
 
+	/**
+	 * Constructs an observable transition object and adds it to the
+	 * observable transition map.
+	 *
+	 * @param {string} from - the place id the transition transitions from
+	 * @param {string} to - the place id the transition transitions to
+	 * @param {string} label - the action the transition represents
+	 */
+	function constructObservableTransition(from, to, label){
+		var key = constructTransitionKey(from, to, label);
+		if (observableTransitionMap[key] === undefined){
+			observableTransitionMap[key] = new ObservableTransition(from, to, label);
+		}
+	}
+
+	/**
+	 * Constructs and returns a key that refers to an observable transition.
+	 *
+	 * @param {string} from - the place id the transition transitions from
+	 * @param {string} to - the place id the transition transitions to
+	 * @param {string} label - the action the transition represents
+	 * @return {string} - the key for the transition
+	 */
+	function constructTransitionKey(from, to, label){
+		return from + ' -|' + label + '|- ' + to; 
+	}
+
+	/**
+	 * Constructs and returns an observable transition object.
+	 *
+	 * @param {string} from - the place id the transition transitions from
+	 * @param {string} to - the place id the transition transitions to
+	 * @param {string} label - the action the transition represents
+	 * @return {object} - object representing an ovservable transition
+	 */
+	function ObservableTransition(from, to, label){
+		return {
+			from : from,
+			to : to,
+			label : label
+		};
+	}
 }
