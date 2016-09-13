@@ -226,7 +226,9 @@ function interpretAutomaton(process, processesMap, variableMap, processId, isFai
 			currentNode.addMetaData('isTerminal', 'stop');
 		}
 		else if(astNode.terminal === 'ERROR'){
-			throw new InterpreterException('Functionality for interpreting error terminals is currently not implemented');
+			var deadlock = processesMap[ident].addNode();
+			deadlock.addMetaData('isTerminal', 'error');
+			processesMap[ident].addEdge(process.nextEdgeId, DELTA, currentNode.id, deadlock.id);
 		}
 		else{
 			// throw error
