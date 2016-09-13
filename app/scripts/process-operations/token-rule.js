@@ -1,110 +1,98 @@
 'use strict';
 
-function tokenRule(process, type){
-	// check that the process is a petri net
-	if(process.type !== 'petrinet'){
-		// throw error
+function tokenRule(process, operation){
+	if(operation === 'unreachableStates'){
+
 	}
-
-	if(type === 'unreachable'){
-		// TODO
+	else if(operation === 'toAutomaton'){
+		return petrinetToAutomaton(process);
 	}
-	else if(type === 'toAutomaton'){
-		return convertPetriNetToAutomaton(process);
-	}
-	else{
-		// throw error
-	}
+}
 
-	function findUnreachableStates(process){
-		// TODO
-	}
+function petrinetToAutomaton(process){
+	// setup the automaton to construct
+	var graph = new Graph(process.id);
+	var root = graph.addNode();
+	root.addMetaData('startNode', true);
+	graph.root = root;
 
-	function convertPetriNetToAutomaton(process){
-		var transitionMap = constructTransitionMap(process.transitions);
-		var graph = new Graph(process.id);
-		var root = graph.addNode();
-		root.addMetaData('startNode', true);
-		graph.root = root;
-		var visitedPlaces = {};
-		var visitedTransitions = {};
-		var fringe = [[]];
+	// setup transitions
+	var transitionMap = new TransitionMap(process.transitions);
+	var visitedStates = {};
 
-		var roots = process.roots;
-		for(var i = 0; i < roots.length; i++){
-			fringe[0].push({ node:root, place:roots[i] });
-		}
+	// setup the fringe
+	var fringe = [];
+	var rootIds = process.roots.map(place => place.id);
+	fringe.push(new FringeElement(rootIds, root));
 
-		var index = 0;
-		while(index < fringe.length){
-			var places = fringe[index++];
-			// iterate over places in the current position
-			for(var i = 0; i < places.length; i++){
-				var place = places[i];
-				
-				// iterate over transitions for the current place
-				var transitions = place.place.outgoingTransitions;
-				for(var j = 0; j < transitions.length; j++){
-					var transition = transitionMap[transitions[j]];
-					
-					// check if this transition already has a token from the current place
-					if(transition.tokenMap[place.place.id] === undefined){
-						transition.tokenMap[place.place.id] = true;
-						transition.tokenCount++;
+	while(fringe.length !== 0){
+		var current = fringe.pop();
+		var {places, node} = current; // deconstruct the fringe element
+		var tokenCount = {};
 
-						// check if the total number of tokens has been acquired
-						if(transition.tokenCount === transition.requiredTokens){
-							var nextNode = graph.addNode();
-							graph.addEdge(graph.nextEdgeId, transition.transition.label, place.node.id, nextNode.id);
+		for(var i = 0; i < places.length; i++){
+			var place = process.getPlace(places[i]);
+			var outgoingTransitions = place.outgoingTransitions;
 
-							// add to the fringe
-							var outgoing = transition.transition.outgoingPlaces;
-							if(outgoing.length !== 0){
-								fringe.push(constructFringeElement(places, i, outgoing, nextNode));
-							}
+			for(var j = 0; j < outgoingTransitions.length; j++){
+				var transition = transitionMap[outgoingTransitions[j]];
 
-							// reset the transition
-							transitionMap[transition.transition.id].tokenMap = {};
-							transitionMap[transition.transition.id].tokenCount = 0;
-						}
-					}
-				}
-			}
-		}
-
-		var nodes = graph.nodes;
-		for(var i = 0; i < nodes.length; i++){
-			if(nodes[i].edgesFromMe.length === 0){
-				nodes[i].addMetaData('isTerminal', 'stop');
-			}
-		}
-
-		return bisimulation(graph);
-
-		function constructTransitionMap(transitions){
-			var transitionMap = {};
-			for(var i = 0; i < transitions.length; i++){
-				var required = transitions[i].outgoingPlaces.length;
-				transitionMap[transitions[i].id] = { tokenMap:{}, tokenCount:0, requiredTokens:required, transition:transitions[i] };
-			}
-
-			return transitionMap;
-		}
-
-		function constructFringeElement(current, index, places, node){
-			var element = [];
-			for(var i = 0; i < current.length; i++){
-				if(i === index){
-					for(var j = 0; j < places.length; j++){
-						element.push({ node:node, place:places[j] });
-					}
+				// pass a token from the current place to the transition
+				if(tokenCount[transition.id] === undefined){
+					tokenCount[transition.id] = 1;
 				}
 				else{
-					element.push({ node:node, place:current[i].place });
+					tokenCount[transition.id]++;
+				}
+
+				// check if the transition is executable
+				if(isExecutable(transition, tokenCount[transition.id])){
+					var action = transition.label;
+					var outgoingPlaces = transition.outgoingPlaces.map(place => place.id);
+
+					// add the places that can be traversed to from this transition
+					var start = places.slice(0, i);
+					var end = places.slice(i + 1, places.length);
+					var newPlaces = start.concat(outgoingPlaces, end);
+					var key = JSON.stringify(newPlaces);
+
+					// check if this state configuration has been executed
+					if(visitedStates[key] === undefined){
+						var nextNode = graph.addNode();
+						graph.addEdge(graph.nextEdgeId, action, node.id, nextNode.id);
+
+						// add current state to visited states
+						visitedStates[key] = nextNode;
+
+						// push state to fringe
+						fringe.push(new FringeElement(newPlaces, nextNode));
+					}
+					else{
+						var nextNode = visitedStates[key];
+						graph.addEdge(graph.nextEdgeId, action, node.id, nextNode.id);
+					}
 				}
 			}
-
-			return element;
 		}
 	}
+
+	return graph;
+}
+
+function TransitionMap(transitions){
+	var transitionMap = {};
+	for(var i = 0; i < transitions.length; i++){
+		transitionMap[transitions[i].id] = transitions[i];
+	}
+
+	return transitionMap;
+}
+
+function FringeElement(places, node){
+	return { places:places, node:node };
+}
+
+function isExecutable(transition, tokens){
+	var requiredTokens = transition.incomingPlaces.length;
+	return requiredTokens === tokens;
 }
