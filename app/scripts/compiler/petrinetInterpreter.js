@@ -239,7 +239,23 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 		else if(processesMap[current] !== undefined){
 			// check that referenced process is of the same type
 			if(processesMap[ident].type === processesMap[current].type){
-				processesMap[ident].addPetriNet(processesMap[current].clone, [currentPlace]);
+				var referencedNet = processesMap[current].clone;
+				processesMap[ident].addPetriNet(referencedNet);
+				// check if the current place is a start place
+				if(currentPlace.getMetaData('startPlace') !== undefined){
+					processesMap[ident].removePlace(currentPlace.id);
+				}
+				else{
+					var transitions = currentPlace.incomingTransitions.map(t => processesMap[ident].getTransition(t));
+					var roots = clone.roots.map(p => processesMap[ident].getPlace(p.id));
+					for(var i = 0; i < transitions.length; i++){
+						for(var j = 0; j < roots.length; j++){
+							transitions[i].addOutgoingPlace(roots[j]);
+							roots[j].addIncomingTransition(transitions[i].id);
+						}
+						transitions[i].deleteIncomingPlace(currentPlace);
+					}
+				}
 			}
 			else{
 				throw new InterpreterException('Cannot reference type \'' + processesMap[current].type + '\' from type \'petrinet\'');

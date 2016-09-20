@@ -14,7 +14,7 @@ class PetriNet {
 		this._transitionMap = (transitionMap !== undefined) ? transitionMap : {};
 		this._labelSets = (labelSets !== undefined) ? labelSets : {};
 		this._transitionCount = (transitionCount !== undefined) ? transitionCount : 0;
-		this._rootIds = (rootIds !== undefined) ? rootIds : [];
+		this._rootIds = (rootIds !== undefined) ? rootIds : {};
 		this._terminalIds = (terminalIds !== undefined) ? terminalIds : [];
 		this._alphabet = (alphabet !== undefined) ? alphabet : {};
 		this._nextPlaceId = (nextPlaceId !== undefined) ? nextPlaceId : 0;
@@ -46,12 +46,11 @@ class PetriNet {
 	 */
 	get roots(){
 		var roots = [];
-		for(var i = 0; i < this._rootIds.length; i++){
-			roots.push(this._placeMap[this._rootIds[i]]);
+		for(var i in this._rootIds){
+			roots.push(this._placeMap[i]);
 		}
 
-		return roots;				//outgoing[i].addIncomingPlace(paths[i].start);
-				//paths[i].end.addOutgoingTransition(outgoing[i].id);
+		return roots;
 	}
 
 	/**
@@ -59,20 +58,16 @@ class PetriNet {
 	 * petri net. Only adds the id if it not already located in the
 	 * array of root ids.
 	 *
-	 * @param {string} id - the place id to add				//outgoing[i].addIncomingPlace(paths[i].start);
-				//paths[i].end.addOutgoingTransition(outgoing[i].id);
+	 * @param {string} id - the place id to add
 	 * @return {boolean} - true if id added, otherwise false
 	 */
 	addRoot(id){
 		// check if root is already in roots array
-		for(var i = 0; i < this._rootIds; i++){
-			if(id === this._rootIds[i]){
-				return false;
-			}
+		if(this._rootIds[id] !== undefined){
+			return false;
 		}
 
-		// add id to roots array
-		this._rootIds.push(id);
+		this._rootIds[id] = true;
 		return true;
 	}
 
@@ -166,6 +161,7 @@ class PetriNet {
 			}
 		}
 
+		delete this._rootIds[id];
 		delete this._placeMap[id];
 		this._placeCount--;
 	}
@@ -384,6 +380,11 @@ class PetriNet {
 			var place = places[i];
 			this._placeMap[place.id] = place;
 			
+			// check if this place is a start place
+			if(place.getMetaData('startPlace') !== undefined){
+				this.addRoot(place.id);
+			}
+
 			// check if this place is a terminal
 			if(place.getMetaData('isTerminal') !== undefined){
 				this.addTerminal(place);
