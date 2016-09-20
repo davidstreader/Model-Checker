@@ -145,8 +145,35 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 	}
 
 	function interpretChoice(astNode, currentPlace, ident){
-		interpretNode(astNode.process1, currentPlace, ident);
-		interpretNode(astNode.process2, currentPlace, ident);
+		//interpretNode(astNode.process1, currentPlace, ident);
+		//interpretNode(astNode.process2, currentPlace, ident);
+		var process1 = ident + '.process1';
+		var root1 = constructPetriNet(processesMap[ident].id + 'a', process1);
+		interpretNode(astNode.process1, root1, process1);
+
+		var process2 = ident + '.process2';
+		var root2 = constructPetriNet(processesMap[ident].id + 'b', process2);
+		interpretNode(astNode.process2, root2, process2);
+
+		processesMap[ident].addPetriNet(processesMap[process1]);
+		processesMap[ident].addPetriNet(processesMap[process2]);
+
+		var roots1 = processesMap[process1].roots.map(p => processesMap[ident].getPlace(p.id));
+		var roots2 = processesMap[process2].roots.map(p => processesMap[ident].getPlace(p.id));
+
+		for(var i = 0; i < roots1.length; i++){
+			for(var j = 0; j < roots2.length; j++){
+				processesMap[ident].combinePlaces(roots1[i], roots2[j]);
+			}
+			processesMap[ident].removePlace(roots1[i].id);
+		}
+
+		for(var i = 0; i < roots2.length; i++){
+			processesMap[ident].removePlace(roots2[i].id);
+		}
+
+		delete processesMap[process1];
+		delete processesMap[process2];
 	}
 
 	function interpretComposite(astNode, currentPlace, ident){

@@ -157,11 +157,31 @@ class PetriNet {
 	removePlace(id){
 		var transitions = this._placeMap[id].outgoingTransitions;
 		for(var i = 0; i < transitions.length; i++){
-			this.removeTransition(transitions[i]);
+			var incoming = this.getTransition(transitions[i]).incomingPlaces;
+			if(incoming.length === 1){
+				this.removeTransition(transitions[0]);
+			}
+			else{
+				this.getTransition(transitions[i]).deleteIncomingPlace(this._placeMap[id]);
+			}
 		}
 
 		delete this._placeMap[id];
 		this._placeCount--;
+	}
+
+	combinePlaces(place1, place2){
+		var place = this.addPlace();
+		var transitions1 = place1.outgoingTransitions.map(x => this.getTransition(x));
+		var transitions2 = place2.outgoingTransitions.map(x => this.getTransition(x));
+		for(var i = 0; i < transitions1.length; i++){
+			place.addOutgoingTransition(transitions1[i].id);
+			transitions1[i].addIncomingPlace(place);
+		}
+		for(var i = 0; i < transitions2.length; i++){
+			place.addOutgoingTransition(transitions2[i].id);
+			transitions2[i].addIncomingPlace(place);
+		}
 	}
 
 	/**
