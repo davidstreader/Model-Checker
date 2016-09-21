@@ -68,7 +68,13 @@ class PetriNet {
 		}
 
 		this._rootIds[id] = true;
+		this._placeMap[id].addMetaData('startPlace', true);
 		return true;
+	}
+
+	removeRoot(id){
+		delete this._rootIds[id];
+		this._placeMap[id].deleteMetaData('startPlace');
 	}
 
 	/**
@@ -178,6 +184,8 @@ class PetriNet {
 			place.addOutgoingTransition(transitions2[i].id);
 			transitions2[i].addIncomingPlace(place);
 		}
+
+		return place;
 	}
 
 	/**
@@ -244,9 +252,11 @@ class PetriNet {
 			incoming[i].addOutgoingTransition(id);
 		}
 
-		for(var i = 0; i < outgoing.length; i++){
-			transition.addOutgoingPlace(outgoing[i]);
-			outgoing[i].addIncomingTransition(id);
+		if(outgoing !== undefined){
+			for(var i = 0; i < outgoing.length; i++){
+				transition.addOutgoingPlace(outgoing[i]);
+				outgoing[i].addIncomingTransition(id);
+			}
 		}
 
 		// add transition to transition map and label sets
