@@ -298,8 +298,7 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 	function processLabelling(net, label){
 		var labelSets = net.labelSets;
 		// give every transition in the petri net the new label
-		for(var i = 0; i < labelSets.length; i++){
-			var oldLabel = labelSets[i].label;
+		for(var oldLabel in labelSets){
 			net.relabelTransition(oldLabel, label + '.' + oldLabel);
 		}
 	}
