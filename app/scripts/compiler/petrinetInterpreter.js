@@ -72,7 +72,9 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 		// check if a labelling has been defined
 		if(astNode.label !== undefined){
 			// label is an action label node
-			processLabelling(processesMap[ident], astNode.label.action);
+			var net = processesMap[ident].clone(astNode.label.action);
+			processLabelling(net, astNode.label.action);
+			processesMap[ident] = net;
 		}
 
 		// check if a relabelling has been defined
@@ -249,7 +251,7 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 		}
 		// check if the process is referencing a globally defined process
 		else if(processesMap[current] !== undefined){
-			var referencedNet = processesMap[current].clone;
+			var referencedNet = processesMap[current].clone();
 			// make sure the referenced process is a petri net
 			if(processesMap[current].type !== 'petrinet'){
 				// throw error

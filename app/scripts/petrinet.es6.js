@@ -427,13 +427,14 @@ class PetriNet {
 		}
 	}
 
-	get clone(){
-		var clone = new PetriNet(this._id);
+	clone(label){
+		label = (label === undefined) ? '' : label + ':';
+		var clone = new PetriNet(label + this._id);
 		
 		// add places to the clone
 		var places = this.places;
 		for(var i = 0; i < places.length; i++){
-			var place = clone.addPlace(places[i].id, places[i].metaData);
+			var place = clone.addPlace(label + places[i].id, places[i].metaData);
 			// check if this place is either a start place or terminal
 			if(places[i].getMetaData('startPlace') !== undefined){
 				clone.addRoot(place.id);
@@ -449,14 +450,14 @@ class PetriNet {
 			// update the references to the incoming and outgoing places
 			var incoming = transitions[i].incomingPlaces;
 			for(var j = 0; j < incoming.length; j++){
-				incoming[j] = clone.getPlace(incoming[j].id);
+				incoming[j] = clone.getPlace(label + incoming[j].id);
 			}
 			var outgoing = transitions[i].outgoingPlaces;
 			for(var j = 0; j < outgoing.length; j++){
-				outgoing[j] = clone.getPlace(outgoing[j].id);
+				outgoing[j] = clone.getPlace(label + outgoing[j].id);
 			}
 
-			clone.addTransition(transitions[i].id, transitions[i].label, incoming, outgoing, transitions[i].metaData);
+			clone.addTransition(label + transitions[i].id, transitions[i].label, incoming, outgoing, transitions[i].metaData);
 		}
 
 		return clone;
