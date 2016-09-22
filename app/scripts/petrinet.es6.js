@@ -152,6 +152,7 @@ class PetriNet {
 		var metaData = (metaData !== undefined) ? metaData : {};
 		var place = new PetriNet.Place(id, metaData);
 		this._placeMap[id] = place;
+		this._placeCount++;
 		return place;
 	}
 
@@ -271,6 +272,7 @@ class PetriNet {
 			this._alphabet[label] = 1;
 		}
 
+		this._transitionCount++;
 		return transition;
 	}
 
