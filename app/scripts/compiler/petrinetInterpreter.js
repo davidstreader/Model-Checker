@@ -133,11 +133,21 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 		}
 		else{
 			// remove the root and make the cross product places roots
-			net.removePlace(root.id);
-			for(var i = 0; i < crossProducts.length; i++){
-				crossProducts[i].addMetaData('startPlace', true);
-				net.addRoot(crossProducts[i].id);
+			var transitions = root.incomingTransitions.map(t => net.getTransition(t));
+			if(transitions.length !== 0){
+				for(var i = 0; i < transitions.length; i++){
+					constructConnection(transitions[i], crossProducts, ident);
+					transitions[i].deleteOutgoingPlace(root);
+				}
 			}
+			else{
+				for(var i = 0; i < crossProducts.length; i++){
+					crossProducts[i].addMetaData('startPlace', true);
+					net.addRoot(crossProducts[i].id);
+				}
+			}
+
+			net.removePlace(root.id);
 		}
 
 		// delete temporary petri nets
@@ -158,13 +168,20 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 		net.addPetriNet(composite);
 
 		// check if the current transition has been defined
+		var roots = composite.roots.map(p => net.getPlace(p.id));
 		if(currentTransition !== undefined){
 			// connect current transition to the roots of the composition
-			var roots = composite.roots.map(p => net.getPlace(p.id));
 			constructConnection(currentTransition, roots, ident);
 		}
 		else{
-			// remove the root
+			var transitions = root.incomingTransitions.map(t => net.getTransition(t));
+			if(transitions.length !== 0){
+				for(var i = 0; i < transitions.length; i++){
+					constructConnection(transitions[i], roots, ident);
+					transitions[i].deleteOutgoingPlace(root);
+				}
+			}
+			
 			net.removePlace(root.id);
 		}
 
@@ -212,8 +229,8 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 		// check if this process is referencing itself
 		if(current === ident){
 			if(currentTransition !== undefined){
-				constructConnection(currentTransition, [root], ident);
-				processesMap[ident].addRoot(root.id);
+				var roots = processesMap[ident].roots;
+				constructConnection(currentTransition, roots, ident);
 			}
 			else{
 				root.addMetaData('isTerminal', 'stop');
