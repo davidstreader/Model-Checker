@@ -190,6 +190,23 @@ function interpretAutomaton(process, processesMap, variableMap, processId, isFai
 			processesMap[ident] = bisimulation(processesMap[process1].clone);
 			delete processesMap[process1];
 		}
+		else if(type === 'tokenRule'){
+			var process1 = ident + '.tr';
+			var node = {
+				type:'process',
+				processType:'petrinet',
+				ident:{
+					type:'identifier',
+					ident:process1
+				},
+				process:astNode.process,
+				local:[]
+			};
+
+			interpretPetriNet(node, processesMap, variableMap, processesMap[ident].id + '.tr', isFairAbstraction);
+			processesMap[ident] = tokenRule(processesMap[process1], 'toAutomaton');
+			delete processesMap[process1];
+		}
 		else{
 			throw new InterpreterException('\'' + type + '\' is not a valid function type');
 		}
