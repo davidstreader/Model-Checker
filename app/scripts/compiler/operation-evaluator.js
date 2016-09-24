@@ -27,7 +27,6 @@ function evaluateOperations(operations, processesMap, variableMap){
 		delete processesMap[idents[i]];
 	}
 
-	console.log(results);
 	return results;
 
 	function generateProcessIdent(){
