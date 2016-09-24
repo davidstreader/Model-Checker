@@ -439,8 +439,10 @@ class Graph{
       // get edges from the current node
       var edges = toDelete[i].edgesFromMe;
       delete this._nodeMap[toDelete[i].id];
+      this._nodeCount--;
       for(var j = 0; j < edges.length; j++){
         delete this._edgeMap[edges[j].id];
+        this._edgeCount--;
       }
     }
   }
