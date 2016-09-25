@@ -207,7 +207,7 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 			processedNet = abstraction(processesMap[funcIdent], isFairAbstraction);
 		}
 		else if(type === 'simp'){
-			// error
+			processedNet = bisimulation(processesMap[funcIdent]);
 		}
 		else{
 			// error
