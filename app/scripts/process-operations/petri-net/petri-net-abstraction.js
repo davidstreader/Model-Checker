@@ -15,37 +15,35 @@ function petriNetAbstraction(process, isFair){
 	// add the observable transitions to the process
 	for(var key in observableTransitionMap){
 		var transition = observableTransitionMap[key];
+		var id = process.nextTransitionId;
 		var from = process.getPlace(transition.from);
 		var to = process.getPlace(transition.to);
-		process.addTransition(process.nextPlaceId, transition.label, [from], [to]);
+		process.addTransition(id, transition.label, [from], [to]);
 	}
 
 	// delete the hidden tau events from the process
 	for(var i = 0; i < tauTransitions.length; i++){
-		var incoming = tauTransitions[i].incomingPlaces;
-		for(var j = 0; j < incoming.length; j++){
-			incoming[i].deleteOutgoingTransitions(tauTransitions[i].id);
-		}
-		var outgoing = tauTransitions[i].outgoingPlaces;
-		for(var j = 0; j < outgoing.length; j++){
-			outgoing[j].deleteIncomingTransitions(tauTransitions[i].id);
-		}
 		process.removeTransition(tauTransitions[i].id);
 	}
 
 	// remove any places that are not transitionable to
-	var places = process.places.filter(place => place.incomingTransitions.length === 0);
-	for(var i = 0; i < places.length; i++){
-		var transitions = places[i].outgoingTransitions.map(id => process.getTransition(id));
-		process.removePlace(places[i].id);
-		for(var j = 0; j < transitions.length; j++){
-			var outgoing = transitions[j].outgoingPlaces;
-			if(outgoing.length === 1){
-				places.push(outgoing[0]);
-			}
+	var places = process.places.filter(p => p.incomingTransitions.length === 0 && p.getMetaData('startPlace') === undefined);
+	while(places.length !== 0){
+		var place = places.pop();
+		var transitions = place.outgoingTransitions.map(id => process.getTransition(id));
+		for(var i = 0; i < transitions.length; i++){
+			var incoming = transitions[i].incomingPlaces;
+			if(incoming.length === 1){
+				var outgoing = transitions[i].outgoingPlaces.filter(p => p.incomingTransitions.length === 1);
+				for(var j = 0; j < outgoing.length; j++){
+					places.push(outgoing[j]);
+				}
 
-			process.removeTransition(transitions[j].id);
+				process.removeTransition(transitions[i].id);
+			}
 		}
+
+		process.removePlace(place.id);
 	}
 
 	return process;
@@ -54,7 +52,7 @@ function petriNetAbstraction(process, isFair){
 		// get observable events (transitions) that transition to the specified place
 		var incomingObservableTransitions = place.incomingTransitions
 			.map(id => process.getTransition(id))
-			.filter(transition => transition.label !== TAU);
+			.filter(t => t.label !== TAU);
 
 		var visited = {};
 		var fringe = [place];
@@ -63,7 +61,7 @@ function petriNetAbstraction(process, isFair){
 			// get neighbouring places that are transitionable to via a hidden tau event
 			var unobservableTransitions = current.outgoingTransitions
 				.map(id => process.getTransition(id))
-				.filter(transition => transition.label === TAU);
+				.filter(t => t.label === TAU);
 
 			var neighbours = [];
 			for(var i = 0; i < unobservableTransitions.length; i++){

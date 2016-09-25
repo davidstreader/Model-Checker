@@ -202,7 +202,7 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 		var type = astNode.func;
 		var processedNet;
 		if(type === 'abs'){
-			processedNet = abstraction(processMap[funcIdent], isFairAbstraction);
+			processedNet = abstraction(processesMap[funcIdent], isFairAbstraction);
 		}
 		else if(type === 'simp'){
 			// error
@@ -211,6 +211,7 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 			// error
 		}
 
+		net.addPetriNet(processedNet);
 		// check if the current transition has been defined
 		if(currentTransition !== undefined){
 			// connect current transition to the roots of the processed petri net

@@ -157,20 +157,19 @@ class PetriNet {
 	}
 
 	removePlace(id){
-		var transitions = this._placeMap[id].outgoingTransitions;
-		for(var i = 0; i < transitions.length; i++){
-			var incoming = this.getTransition(transitions[i]).incomingPlaces;
-			if(incoming.length === 1){
-				this.removeTransition(transitions[0]);
+		if(this._placeMap[id] !== undefined){
+			var incoming = this._placeMap[id].incomingTransitions.map(id => this.getTransition(id));
+			for(var i = 0; i < incoming.length; i++){
+				incoming[i].deleteOutgoingPlace(this._placeMap[id]);
 			}
-			else{
-				this.getTransition(transitions[i]).deleteIncomingPlace(this._placeMap[id]);
+			var outgoing = this._placeMap[id].outgoingTransitions.map(id => this.getTransition(id));
+			for(var i = 0; i < outgoing.length; i++){
+				outgoing[i].deleteIncomingPlace(this._placeMap[id]);
 			}
-		}
 
-		delete this._rootIds[id];
-		delete this._placeMap[id];
-		this._placeCount--;
+			this._placeCount--;
+			delete this._placeMap[id];
+		}
 	}
 
 	combinePlaces(place1, place2){
@@ -282,17 +281,31 @@ class PetriNet {
 	 * @param {string} id - the id of the transition to be removed
 	 */
 	removeTransition(id){
-		// remove from labelSets
-		var transitions = this._labelSets[this._transitionMap[id].label];
-		for(var i = 0; i < transitions.length; i++){
-			if(transitions[i].id === id){
-				this._labelSets[transitions[i].label].splice(i, 1);
+		if(this._transitionMap[id] !== undefined){
+			// remove from labelSets
+			var transitions = this._labelSets[this._transitionMap[id].label];
+			for(var i = 0; i < transitions.length; i++){
+				if(transitions[i].id === id){
+					this._labelSets[transitions[i].label].splice(i, 1);
+				}
 			}
-		}
 
-		// remove from transition map
-		delete this._transitionMap[id];
-		this._transitionCount--;
+			var incoming = this._transitionMap[id].incomingPlaces;
+			for(var i = 0; i < incoming.length; i++){
+				incoming[i].deleteOutgoingTransitions(id);
+				if(incoming[i].outgoingTransitions.length === 0){
+					incoming[i].addMetaData('isTerminal', 'stop');
+				}
+			}
+			var outgoing = this._transitionMap[id].outgoingPlaces;
+			for(var i = 0; i < outgoing.length; i++){
+				outgoing[i].deleteIncomingTransitions(id);
+			}
+
+			// remove from transition map
+			delete this._transitionMap[id];
+			this._transitionCount--;
+		}
 	}
 
 	get alphabet(){
@@ -562,7 +575,7 @@ PetriNet.Place = class {
 		// check if transition id is located in the array
 		for(var i = 0; i < this._outgoingTransitions.length; i++){
 			if(id === this._outgoingTransitions[i]){
-				this._outgoingTransitions = this._outgoingTransitions.splice(i, 1);
+				this._outgoingTransitions.splice(i, 1);
 				return true;
 			}
 		}
@@ -614,7 +627,7 @@ PetriNet.Place = class {
 		// check if transition id is located in the array
 		for(var i = 0; i < this._incomingTransitions.length; i++){
 			if(id === this._incomingTransitions[i]){
-				this._incomingTransitions = this._incomingTransitions.splice(i, 1);
+				this._incomingTransitions.splice(i, 1);
 				return true;
 			}
 		}
