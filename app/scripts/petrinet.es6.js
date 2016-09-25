@@ -184,7 +184,16 @@ class PetriNet {
 			place.addOutgoingTransition(transitions2[i].id);
 			transitions2[i].addIncomingPlace(place);
 		}
-
+		transitions1 = place1.incomingTransitions.map(x => this.getTransition(x));
+		transitions2 = place2.incomingTransitions.map(x => this.getTransition(x));
+		for(var i = 0; i < transitions1.length; i++){
+			place.addIncomingTransition(transitions1[i].id);
+			transitions1[i].addOutgoingPlace(place);
+		}
+		for(var i = 0; i < transitions2.length; i++){
+			place.addIncomingTransition(transitions2[i].id);
+			transitions2[i].addOutgoingPlace(place);
+		}
 		return place;
 	}
 
