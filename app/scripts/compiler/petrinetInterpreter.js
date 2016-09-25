@@ -149,6 +149,7 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 				}
 			}
 
+			net.removeRoot(root.id);
 			net.removePlace(root.id);
 		}
 
@@ -184,6 +185,7 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 				}
 			}
 			
+			net.removeRoot(root.id);
 			net.removePlace(root.id);
 		}
 
@@ -220,6 +222,7 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 		}
 		else{
 			// remove the root
+			net.removeRoot(root.id);
 			net.removePlace(root.id);
 		}
 
@@ -247,6 +250,7 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 			else{
 				// make the referenced place the new start place and remove the current start place
 				processesMap[ident].addRoot(localProcessesMap[current].place.id);
+				processesMap[ident].removeRoot(root.id);
 				processesMap[ident].removePlace(root.id);
 			}
 		}
@@ -267,6 +271,7 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 			}
 			else{
 				// remove the current start place
+				processesMap[ident].removeRoot(root.id);
 				processesMap[ident].removePlace(root.id);
 				for(var i = 0; i < roots.length; i++){
 					processesMap[ident].addRoot(roots[i].id);
