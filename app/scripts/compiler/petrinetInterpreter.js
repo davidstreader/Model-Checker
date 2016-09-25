@@ -237,6 +237,7 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 			if(currentTransition !== undefined){
 				var roots = processesMap[ident].roots;
 				constructConnection(currentTransition, roots, ident);
+				root.addMetaData('startPlace', true);
 			}
 			else{
 				root.addMetaData('isTerminal', 'stop');
