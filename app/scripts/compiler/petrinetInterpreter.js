@@ -300,7 +300,7 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 		if(currentTransition !== undefined){
 			constructConnection(currentTransition, [place], ident);
 		}
-		else{
+		else if(root.incomingTransitions.length === 0){
 			net.addRoot(place.id);
 		}
 	}
