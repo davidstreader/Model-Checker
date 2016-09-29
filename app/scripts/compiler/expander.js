@@ -152,7 +152,7 @@ function expand(ast){
 
 		// return a terminal if the process produced an empty ast node
 		if(node.type === 'empty'){
-			return { type:'terminal', terminal:'stop' };
+			return { type:'terminal', terminal:'STOP' };
 		}
 
 		return node;
