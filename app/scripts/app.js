@@ -16,6 +16,7 @@
     app.currentBuild = {};
     app.previousBuild = {};
     app.previousCode = '';
+    app.currentFile = '';
 
     app.compile = function(overrideBuild) {
       var code = app.getCode();
@@ -68,7 +69,7 @@
             }
           }
         }
-      }.bind(this), 0); 
+      }.bind(this), 0);
     }
 
     /**
@@ -82,7 +83,7 @@
       app.automata = {};
       setTimeout(function() {
         app.set('automata.values', graphs);
-        
+
         // listen for each rendered event.
         // once all automata have been rendered, log the results and stop listening.
         var automataRendered = 0;
@@ -130,10 +131,10 @@
     app.getCode = function() {
       var code = '';
       var temp = app.$.editor.getCode();
-      
+
       // remove white space and line breaks
       temp = temp.replace(/ /g, '');
-      
+
       // remove unnecessary whitespace
       var split = temp.split('\n');
       for(var i = 0; i < split.length; i++){
@@ -156,17 +157,35 @@
         if (opener.value === '') {
           return;
         }
+
+        // Load file into editor
         var input = e.target;
-        var reader = new FileReader();
-        reader.onload = function() {
-          var text = reader.result;
-          app.$.editor.setCode(text);
-          app.$.editor.focus();
-        };
-        reader.readAsText(input.files[0]);
+        app.currentFile = input.files[0];
+        app.reloadFile();
         opener.value = '';
+
+        // Enable reload button
+        var reload = app.$['reload'];
+        reload.disabled = false;
       };
     };
+
+    /**
+     * Reload the last used file.
+     */
+    app.reloadFile = function() {
+      if (app.currentFile === '') {
+        return;
+      }
+
+      var reader = new FileReader();
+      reader.onload = function() {
+        var text = reader.result;
+        app.$.editor.setCode(text);
+        app.$.editor.focus();
+      };
+      reader.readAsText(app.currentFile);
+    }
 
     /**
      * Save to code the user has written to their computer (as a download).

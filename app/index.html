@@ -196,6 +196,7 @@
       </paper-checkbox>
       <span class="spacer middle"></span>
       <paper-icon-button icon="icons:folder-open" class="middle" title="Open" on-tap="openFile"></paper-icon-button>
+      <paper-icon-button id="reload" icon="icons:autorenew" class="middle" title="Reload" on-tap="reloadFile" disabled=true></paper-icon-button>
       <input id="open-file" type="file" accept="text/plain" class="middle" style="display: none;"></input>
       <span class="spacer middle"></span>
       <paper-input id="filename" is="iron-input" label="Insert Filename Here" placeholder="untitled" bind-value="{{inputValue}}" class="middle" title="The name given to the file when it is downloaded."></paper-input>
