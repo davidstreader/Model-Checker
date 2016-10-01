@@ -108,12 +108,8 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 		processTemporaryPetriNet(net.id + '.b', process2, astNode.process2);
 
 		// add branches to the main petri net
-		net.addPetriNet(processesMap[process1]);
-		net.addPetriNet(processesMap[process2]);
-
-		// get the roots for the two choice branches
-		var roots1 = processesMap[process1].roots.map(p => net.getPlace(p.id));
-		var roots2 = processesMap[process2].roots.map(p => net.getPlace(p.id));
+		var roots1 = net.addPetriNet(processesMap[process1]);
+		var roots2 = net.addPetriNet(processesMap[process2]);
 
 		// create a cross product of the roots from both branches
 		var crossProducts = [];
@@ -168,10 +164,8 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 
 		// compose the processes together
 		var composite = parallelComposition(net.id, processesMap[process1], processesMap[process2]);
-		net.addPetriNet(composite);
+		var roots = net.addPetriNet(composite);
 
-		// check if the current transition has been defined
-		var roots = composite.roots.map(p => net.getPlace(p.id));
 		if(currentTransition !== undefined){
 			// connect current transition to the roots of the composition
 			constructConnection(currentTransition, roots, ident);
@@ -213,11 +207,10 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 			// error
 		}
 
-		net.addPetriNet(processedNet);
+		var roots = net.addPetriNet(processedNet);
 		// check if the current transition has been defined
 		if(currentTransition !== undefined){
 			// connect current transition to the roots of the processed petri net
-			var roots = processedNet.roots.map(p => net.getPlace(p.id));
 			constructConnection(currentTransition, roots, ident);
 		}
 		else{
@@ -264,8 +257,7 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 			}
 
 			// add the referneced net to the current one
-			processesMap[ident].addPetriNet(referencedNet);
-			var roots = referencedNet.roots.map(p => processesMap[ident].getPlace(p.id));
+			var roots = processesMap[ident].addPetriNet(referencedNet);
 
 			if(currentTransition !== undefined){	
 				constructConnection(currentTransition, roots, ident);
