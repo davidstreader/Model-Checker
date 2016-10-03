@@ -126,7 +126,7 @@
       */
       name: {
         type: String,
-        value: 'Unnamed Graph'
+        value: ''
       },
 
       graph: {
@@ -225,17 +225,19 @@
 
       // define the transitionNode
       render.shapes().transitionNode = function(parent, bbox, node) {
+        var width = node.label.length * 10;
+        width = (width < 40) ? 40 : width; 
         parent.insert('rect', ':first-child')
-          .attr('width', 40)
-          .attr('height', 40)
+          .attr('width', width)
+          .attr('height', 28)
           .attr('class', 'inner')
-          .attr('transform', 'translate(-20,-20)');
+          .attr('transform', 'translate(-' + (width / 2) + ',-14)');
 
         var shapeSvg = parent.insert('rect', ':first-child')
-          .attr('width', 40)
-          .attr('height', 40)
+          .attr('width', width)
+          .attr('height', 28)
           .attr('class', 'outer')
-          .attr('transform', 'translate(-20,-20)');
+          .attr('transform', 'translate(-' + (width / 2) + ',-14)');
 
         node.intersect = function(point) {
           return dagreD3.intersect.rect(node, point);

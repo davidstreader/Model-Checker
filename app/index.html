@@ -72,17 +72,12 @@
   }
   .process-display {
     position: relative;
+    height: 100%;
     overflow: auto;    
   }
   process-visualisation {
     position: relative;
-    height: 250px;
-    margin-top: 2px;
-    margin-right: 2px;
-    margin-bottom: 2px;
-    margin-left: 2px;
-    border: solid 1px var(--dark-primary-color);
-    resize: vertical;
+    height: 100%;
     overflow: hidden;
   }
   #main-toolbar span.spacer{
@@ -217,10 +212,9 @@
         <console-logger id="console"></console-logger>
       </div>
       <div class="layout vertical flex">
+        <process-selector id="selector" processes="{{automata.values}}"></process-selector>
         <div class="process-display">
-        <template is="dom-repeat" items="[[automata.values]]">
-          <process-visualisation name="[[item.name]]" graph="[[item.graph]]"></process-visualisation>
-        </template>
+        <process-visualisation id="visualiser"></process-visualisation>
         </div>
       </div>
     </div>

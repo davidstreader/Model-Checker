@@ -100,7 +100,7 @@ function constructGraphs(processesMap, analysis, lastGraphs){
 	 */
 	function petriNetConstructor(process){
 		// construct a graph to represet petri net
-		var graph = initialiseGraph('LR');
+		var graph = initialiseGraph('TD');
 
 		// add places in petri net to the graph
 		var startPlaces = [];

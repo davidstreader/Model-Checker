@@ -53,12 +53,13 @@
 
           // check if an error was thrown by the compiler
           if(results.type === 'error'){
-            app.$.console.log(results.toString());
+            app.$.console.error(results.toString());
           }
           else{
             if(app.liveBuilding === true || override){
               // otherwise render the automata
-              app.render(results.graphs.reverse());
+              app.set('automata.values', results.graphs.reverse());
+              app.$.selector.initialSelection();
 
               if(results.operations.length !== 0){
                 app.$.console.log('Operations:');
@@ -241,6 +242,13 @@
       app.compile(true);
       app.$.editor.focus();
     });
+
+    document.addEventListener('render-single-process', function(e){
+      app.$.visualiser.name = e.detail.name;
+      app.$.visualiser.graph = e.detail.graph;
+      app.$.visualiser.redraw();
+    });
+
 
     /**
      * This is the event which triggers when the user selects an automata from the
