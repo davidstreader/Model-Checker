@@ -1,7 +1,6 @@
 'use strict';
 
 function interpretPetriNet(process, processesMap, variableMap, processId, isFairAbstraction){
-	console.log(JSON.stringify(process));
 	var identifier = process.ident.ident;
 	var root = new Net(processId, identifier);
 	var localProcessesMap = new LocalProcessesMap(identifier, process.local);
