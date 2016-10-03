@@ -22,6 +22,16 @@ function tokenRule(process, operation){
 		// setup the fringe
 		var fringe = [];
 		var roots = process.roots;
+
+		// construct root key
+		var rootKey = {};
+		for(var i = 0; i < roots.length; i++){
+			rootKey[roots[i].id] = true;
+		}
+		rootKey = constructStateKey(rootKey);
+		// add the root to the visited state map
+		visitedStates[rootKey] = root;
+
 		fringe.push(new FringeElement(new PlaceSet(roots), root));
 
 		while(fringe.length !== 0){
