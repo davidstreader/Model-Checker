@@ -272,7 +272,7 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 			}
 		}
 		else{
-			// identifier has not been defined
+			throw new InterpreterException('The process \'' + current + '\' has not been defined.');
 		}
 	}
 
