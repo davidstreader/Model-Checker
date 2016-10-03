@@ -1,6 +1,7 @@
 'use strict';
 
 function interpretPetriNet(process, processesMap, variableMap, processId, isFairAbstraction){
+	console.log(JSON.stringify(process));
 	var identifier = process.ident.ident;
 	var root = new Net(processId, identifier);
 	var localProcessesMap = new LocalProcessesMap(identifier, process.local);
@@ -302,6 +303,11 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 		for(var i = 0; i < places.length; i++){
 			transition.addOutgoingPlace(places[i]);
 			places[i].addIncomingTransition(transition.id);
+
+			if(processesMap[ident].getPlace(places[i].id) === undefined){
+				processesMap[ident].addPlace(places[i].id, places[i].metaData);
+			}
+
 			processesMap[ident].removeRoot(places[i].id);
 		}
 	}

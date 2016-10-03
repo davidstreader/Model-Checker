@@ -223,10 +223,10 @@ function expand(ast){
 		astNode.process2 = expandNode(astNode.process2, variableMap);
 		
 		// no need for choice or composition if one of the processes is empty
-		if(astNode.process1.type === 'empty'){
+		if(astNode.process1.type === 'empty' || astNode.process1.type === 'terminal'){
 			return astNode.process2;
 		}
-		if(astNode.process2.type === 'empty'){
+		if(astNode.process2.type === 'empty' || astNode.process2.type === 'terminal'){
 			return astNode.process1;
 		}
 

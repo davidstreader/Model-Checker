@@ -74,7 +74,7 @@ class PetriNet {
 
 	removeRoot(id){
 		delete this._rootIds[id];
-		this._placeMap[id].deleteMetaData('startPlace');
+		//this._placeMap[id].deleteMetaData('startPlace');
 	}
 
 	/**
@@ -410,30 +410,49 @@ class PetriNet {
 	addPetriNet(net, mergeTo){
 		// add places from net into this petri net
 		var places = net.places;
-		var placeMap = {};
+		var roots = [];
 		for(var i = 0; i < places.length; i++){
-			var id = this.nextPlaceId;
-			this.addPlace(id, places[i].metaData);
-			placeMap[places[i].id] = id;
+			var place = places[i];
+			this._placeMap[place.id] = place;
+			
+			// check if this place is a start place
+			if(place.getMetaData('startPlace') !== undefined){
+				this.addRoot(place.id);
+				roots.push(place);
+			}
+
+			// check if this place is a terminal
+			if(place.getMetaData('isTerminal') !== undefined){
+				this.addTerminal(place);
+			}
+
+			this._placeCount++;
 		}
 
 		// add transitions from net into this petri net
 		var transitions = net.transitions;
 		for(var i = 0; i < transitions.length; i++){
 			var transition = transitions[i];
-			var id = this.nextTransitionId;
-			var incoming = transition.incomingPlaces.map(p => this.getPlace(placeMap[p.id]));
-			var outgoing = transition.outgoingPlaces.map(p => this.getPlace(placeMap[p.id]));
-			this.addTransition(id, transition.label, incoming, outgoing, transition.metaData);
+			this._transitionMap[transition.id] = transition;
+
+			if(this._labelSets[transition.label] !== undefined){
+				this._labelSets[transition.label].push(transition);
+				this._alphabet[transition.label]++;
+			}
+			else{
+				this._labelSets[transition.label] = [transition];
+				this._alphabet[transition.label] = 1;
+			}
+
+			this._transitionCount++;
 		}
 
 		// merge added petri net to the specified place if necessary
 		if(mergeTo !== undefined){
-			this.mergePlaces(mergeTo, net.roots.map(p => this.getPlace(p.id)));
+			this.mergePlaces(mergeTo, net.roots);
 		}
 
-		// return the roots of the net
-		return net.roots.map(p => this.getPlace(placeMap[p.id]));
+		return roots;
 	}
 
 	clone(label){
