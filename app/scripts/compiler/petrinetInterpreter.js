@@ -264,7 +264,7 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 				processedNet = abstraction(processedNet, isFairAbstraction);
 				break;
 			case 'simp':
-				processedNet = bisimulation([processedNet]);
+				processedNet = bisimulation(processedNet);
 				break;
 			default:
 				break;
