@@ -93,6 +93,42 @@ function petriNetBisimulation(processes){
 			}
 		}
 
+		// merge transitions that have the same entry and exit places
+		var labelSets = process.labelSets;
+		for(var label in labelSets){
+			var conditions = {};
+			var transitions = labelSets[label];
+			for(var i = 0; i < transitions.length; i++){
+				var condition = new PrePostCondition(transitions[i]);
+				var key = JSON.stringify(condition);
+				if(conditions[key] === undefined){
+					conditions[key] = [];
+				}
+				conditions[key].push(transitions[i]);
+			}
+
+			for(var key in conditions){
+				if(conditions[key].length > 1){
+					var condition = JSON.parse(key);
+					var incoming = [];
+					for(var id in condition.pre){
+						incoming.push(process.getPlace(id));
+					}
+
+					var outgoing = [];
+					for(var id in condition.post){
+						outgoing.push(process.getPlace(id));
+					}
+
+					process.addTransition(process.nextTransitionId, label, incoming, outgoing);
+
+					for(var i = 0; i < conditions[key].length; i++){
+						process.removeTransition(conditions[key][i].id);
+					}
+				}
+			}
+		}
+
 		return process;
 	}
 	else{
@@ -137,5 +173,21 @@ function petriNetBisimulation(processes){
 		}
 
 		return true;
+	}
+
+	function PrePostCondition(transition){
+		var incoming = transition.incomingPlaces.map(p => p.id).sort();
+		var pre = {};
+		for(var i = 0; i < incoming.length; i++){
+			pre[incoming[i]] = true;
+		}
+
+		var outgoing = transition.outgoingPlaces.map(p => p.id).sort();
+		var post = {};
+		for(var i = 0; i < outgoing.length; i++){
+			post[outgoing[i]] = true;
+		}
+
+		return {pre:pre, post:post};
 	}
 }
