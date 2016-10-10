@@ -2,34 +2,69 @@
 
 function interpretPetriNet(process, processesMap, variableMap, processId, isFairAbstraction){
 	var identifier = process.ident.ident;
-	var root = new Net(processId, identifier);
+	var globalRoot = new Net(processId, identifier);
 	var localProcessesMap = new LocalProcessesMap(identifier, process.local);
 
 	// interpret the main process
-	interpretNode(process.process, undefined, root, identifier);
-
-	// interpret locally defined processes
-	for(var ident in localProcessesMap){
-		var localProcess = localProcessesMap[ident];
-		interpretNode(localProcess.process, undefined, localProcess.place, identifier);
-	}
+	interpretNode(process.process, undefined, globalRoot, identifier);
 
 	// interpret hiding set if one was defined
 	if(process.hiding !== undefined){
 		processHiding(processesMap[identifier], process.hiding);
 	}
 
+	// find the roots for the interpreted petri net
+	var roots = processesMap[identifier].places.filter(p => p.getMetaData('isRoot') !== undefined);
+	if(roots.length === 0){
+		roots = processesMap[identifier].places.filter(p => p.getMetaData('potentialRoot') !== undefined);
+	}
+	for(var i = 0; i < roots.length; i++){
+		roots[i].deleteMetaData('isRoot');
+		roots[i].deleteMetaData('potentialRoot');
+		roots[i].addMetaData('startPlace', true);
+		processesMap[identifier].addRoot(roots[i].id);
+	}
+
 	function Net(id, ident){
 		var net = new PetriNet(id);
 		var root = net.addPlace();
-		net.addRoot(root.id);
+		root.addMetaData('isRoot', true);
 		processesMap[ident] = net;
 		return root;
 	}
 
-	function processTemporaryPetriNet(id, ident, astNode){
+	function processSubPetriNet(ident, astNode, root){
+		var net = processesMap[ident];
+		// check if a root has already been defined
+		if(root === undefined){
+			root = net.addPlace();
+			root.addMetaData('potentialRoot', true);
+		}
+
+		var potentialRoots = net.places.filter(p => p.getMetaData('potentialRoot') !== undefined);
+		var rootSet = {};
+		for(var i = 0; i < potentialRoots.length; i++){
+			rootSet[potentialRoots[i].id] = potentialRoots[i];
+		}
+
+		// interpret the astNode
+		interpretNode(astNode, undefined, root, ident);
+
+		// work out the new potential roots
+		var roots = net.places.filter(p => rootSet[p.id] === undefined && p.getMetaData('potentialRoot') !== undefined);
+
+		// return the defined root if there are no new roots found
+		if(roots.length === 0){
+			return [root];
+		}
+
+		return roots;
+	}
+
+	function TempNet(id, ident, astNode){
 		var root = new Net(id, ident);
 		interpretNode(astNode, undefined, root, ident);
+		return processesMap[ident];
 	}
 
 	function LocalProcessesMap(ident, localProcesses){
@@ -37,8 +72,8 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 		for(var i = 0; i < localProcesses.length; i++){
 			var astNode = localProcesses[i].ident;
 			processes[astNode.ident] = {
-				place: processesMap[ident].addPlace(),
-				process: localProcesses[i].process
+				process : localProcesses[i].process,
+				root : undefined
 			}
 		}
 
@@ -46,27 +81,27 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 	}
 
 	function interpretNode(astNode, currentTransition, root, ident){
-		var type = astNode.type;
-		if(type === 'sequence'){
-			interpretSequence(astNode, currentTransition, root, ident);
-		}
-		else if(type === 'choice'){
-			interpretChoice(astNode, currentTransition, root, ident);
-		}
-		else if(type === 'composite'){
-			interpretComposite(astNode, currentTransition, root, ident);
-		}
-		else if(type === 'function'){
-			interpretFunction(astNode, currentTransition, root, ident);
-		}
-		else if(type === 'identifier'){
-			interpretIdentifier(astNode, currentTransition, root, ident);
-		}
-		else if(type === 'terminal'){
-			interpretTerminal(astNode, currentTransition, root, ident);
-		}
-		else{
-			throw new InterpreterException('Invalid type \'' + type + '\' received');
+		switch(astNode.type){
+			case 'sequence':
+				interpretSequence(astNode, currentTransition, root, ident);
+				break;
+			case 'choice':
+				interpretChoice(astNode, currentTransition, root, ident);
+				break;
+			case 'composite':
+				interpretComposite(astNode, currentTransition, root, ident);
+				break;
+			case 'function':
+				interpretFunction(astNode, currentTransition, root, ident);
+				break;
+			case 'identifier':
+				interpretIdentifier(astNode, currentTransition, root, ident);
+				break;
+			case 'terminal':
+				interpretTerminal(astNode, currentTransition, root, ident);
+				break;
+			default:
+				break;
 		}
 
 		// check if a labelling has been defined
@@ -86,10 +121,10 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 	function interpretSequence(astNode, currentTransition, root, ident){
 		var net = processesMap[ident];
 		var place = root;
-		// check if the current transition has been defined
+		// check if the currentTransition has been defined
 		if(currentTransition !== undefined){
 			var place = net.addPlace();
-			constructConnection(currentTransition, [place], ident);
+			constructConnection(currentTransition, [place]);
 		}
 
 		// construct the new transition
@@ -101,17 +136,47 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 
 	function interpretChoice(astNode, currentTransition, root, ident){
 		var net = processesMap[ident];
-		// process both branches of the choice
-		var process1 = ident + '.process1';
-		processTemporaryPetriNet(net.id + '.a', process1, astNode.process1);
-		var process2 = ident + '.process2';
-		processTemporaryPetriNet(net.id + '.b', process2, astNode.process2);
 
-		// add branches to the main petri net
-		var roots1 = net.addPetriNet(processesMap[process1]);
-		var roots2 = net.addPetriNet(processesMap[process2]);
+		// setup each branch
+		var roots1;
+		if(astNode.process1.type === 'identifier'){
+			if(localProcessesMap[astNode.process1.ident] !== undefined){
+				var previousRoot = localProcessesMap[astNode.process1.ident].root;
+				var process = localProcessesMap[astNode.process1.ident].process;
+				var tempRoot = net.addPlace();
+				tempRoot.addMetaData('potentialRoot', true);
+				localProcessesMap[astNode.process1.ident].root = tempRoot;
+				roots1 = processSubPetriNet(ident, process, tempRoot);
+				localProcessesMap[astNode.process1.ident].root = previousRoot;
+			}
+			else{
+				roots1 = processSubPetriNet(ident, astNode.process1);
+			}
+		}
+		else{
+			roots1 = processSubPetriNet(ident, astNode.process1);
+		}
 
-		// create a cross product of the roots from both branches
+		var roots2;
+		if(astNode.process2.type === 'identifier'){
+			if(localProcessesMap[astNode.process2.ident] !== undefined){
+				var previousRoot = localProcessesMap[astNode.process2.ident].root;
+				var process = localProcessesMap[astNode.process2.ident].process;
+				var tempRoot = net.addPlace();
+				tempRoot.addMetaData('potentialRoot', true);
+				localProcessesMap[astNode.process2.ident].root = tempRoot;
+				roots2 = processSubPetriNet(ident, process, tempRoot);
+				localProcessesMap[astNode.process2.ident].root = previousRoot;
+			}
+			else{
+				roots2 = processSubPetriNet(ident, astNode.process2);
+			}
+		}
+		else{
+			roots2 = processSubPetriNet(ident, astNode.process2);
+		}
+
+		// perform a cross product of the roots from each branch
 		var crossProducts = [];
 		for(var i = 0; i < roots1.length; i++){
 			for(var j = 0; j < roots2.length; j++){
@@ -119,166 +184,184 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 			}
 			net.removePlace(roots1[i].id);
 		}
-
 		for(var i = 0; i < roots2.length; i++){
 			net.removePlace(roots2[i].id);
 		}
 
 		// check if the current transition has been defined
 		if(currentTransition !== undefined){
-			// connection current transition to the cross product places
-			constructConnection(currentTransition, crossProducts, ident);
+			constructConnection(currentTransition, crossProducts);
 		}
 		else{
-			// remove the root and make the cross product places roots
-			var transitions = root.incomingTransitions.map(t => net.getTransition(t));
+			var transitions = root.incomingTransitions.map(id => net.getTransition(id));
 			if(transitions.length !== 0){
 				for(var i = 0; i < transitions.length; i++){
-					constructConnection(transitions[i], crossProducts, ident);
+					constructConnection(transitions[i], crossProducts);
 					transitions[i].deleteOutgoingPlace(root);
 				}
 			}
 			else{
 				for(var i = 0; i < crossProducts.length; i++){
-					crossProducts[i].addMetaData('startPlace', true);
-					net.addRoot(crossProducts[i].id);
+					crossProducts[i].addMetaData('potentialRoot', true);
 				}
 			}
 
-			net.removeRoot(root.id);
 			net.removePlace(root.id);
 		}
-
-		// delete temporary petri nets
-		delete processesMap[process1];
-		delete processesMap[process2];
 	}
 
 	function interpretComposite(astNode, currentTransition, root, ident){
 		var net = processesMap[ident];
-		// interpret the two processes to be composed together
-		var process1 = ident + '.process1';
-		processTemporaryPetriNet(net.id + '.a', process1, astNode.process1);
-		var process2 = ident + '.process2';
-		processTemporaryPetriNet(net.id + '.b', process2, astNode.process2);
 
-		// compose the processes together
-		var composite = parallelComposition(net.id, processesMap[process1], processesMap[process2]);
-		var roots = net.addPetriNet(composite);
+		// interpret both branches
+		var net1 = new TempNet(net.id + '.a', ident + '.a', astNode.process1);
+		var net2 = new TempNet(net.id + '.b', ident + '.b', astNode.process2);
+		var composedNet = parallelComposition(net.id + '.comp', net1, net2);
 
+		net.addPetriNet(composedNet);
+		var roots = composedNet.places.filter(p => p.getMetaData('potentialRoot') !== undefined);
+		for(var i = 0; i < roots.length; i++){
+			roots[i].deleteMetaData('isRoot');
+			net.removeRoot(roots[i].id);
+		}
+		// check and see if the current transition has been defined
 		if(currentTransition !== undefined){
-			// connect current transition to the roots of the composition
-			constructConnection(currentTransition, roots, ident);
+			constructConnection(currentTransition, roots);
 		}
 		else{
-			var transitions = root.incomingTransitions.map(t => net.getTransition(t));
+			var transitions = root.incomingTransitions.map(id => net.getTransition(id));
 			if(transitions.length !== 0){
 				for(var i = 0; i < transitions.length; i++){
-					constructConnection(transitions[i], roots, ident);
-					transitions[i].deleteOutgoingPlace(root);
+					constructConnection(transitions[i], roots);
 				}
 			}
-			
-			net.removeRoot(root.id);
+			else{
+				for(var i = 0; i < roots.length; i++){
+					roots[i].addMetaData('potentialRoot', true);
+				}
+			}
+
 			net.removePlace(root.id);
 		}
 
-		// delete temporary petri nets
-		delete processesMap[process1];
-		delete processesMap[process2];
+		delete processesMap[ident + '.a'];
+		delete processesMap[ident + '.b'];		
 	}
 
 	function interpretFunction(astNode, currentTransition, root, ident){
 		var net = processesMap[ident];
-		// process the process to have the function executed on
-		var funcIdent = ident + '.f';
-		processTemporaryPetriNet(net.id, funcIdent, astNode.process);
 
-		// determine what function to execute
+		var processedNet = new TempNet(net.id + '.f', ident + '.f', astNode.process);
+		var roots = processedNet.places.filter(p => p.getMetaData('potentialRoot') !== undefined);
+		for(var i = 0; i < roots.length; i++){
+			roots[i].addMetaData('startPlace', true);
+			processedNet.addRoot(roots[i].id);
+		}
+
 		var type = astNode.func;
-		var processedNet;
-		if(type === 'abs'){
-			processedNet = abstraction(processesMap[funcIdent], isFairAbstraction);
-		}
-		else if(type === 'simp'){
-			processedNet = bisimulation(processesMap[funcIdent]);
-		}
-		else{
-			// error
+		switch(type){
+			case 'abs':
+				processedNet = abstraction(processedNet, isFairAbstraction);
+				break;
+			case 'simp':
+				processedNet = bisimulation([processedNet]);
+				break;
+			default:
+				break;
 		}
 
-		var roots = net.addPetriNet(processedNet);
+		roots = processedNet.roots;
+		for(var i = 0; i < roots.length; i++){
+			roots[i].deleteMetaData('startPlace');
+			processedNet.removeRoot(roots[i].id);
+		}
+
+		net.addPetriNet(processedNet);
+
 		// check if the current transition has been defined
 		if(currentTransition !== undefined){
-			// connect current transition to the roots of the processed petri net
-			constructConnection(currentTransition, roots, ident);
+			constructConnection(currentTransition, roots);
 		}
 		else{
-			// remove the root
-			net.removeRoot(root.id);
+			var transitions = root.incomingTransitions.map(id => net.getTransition(id));
+			if(transitions.length !== 0){
+				for(var i = 0; i < transitions.length; i++){
+					constructConnection(transitions[i], roots);
+				}
+			}
+			else{
+				for(var i = 0; i < roots.length; i++){
+					roots[i].addMetaData('potentialRoot', true);
+				}
+			}
+
 			net.removePlace(root.id);
 		}
 
-		// delete the temporary petri net
-		delete processesMap[funcIdent];
+		delete processesMap[ident + '.f'];
 	}
 
 	function interpretIdentifier(astNode, currentTransition, root, ident){
+		var net = processesMap[ident];
 		var current = astNode.ident;
+
 		// check if this process is referencing itself
 		if(current === ident){
+			// check if the current transition is defined
 			if(currentTransition !== undefined){
-				var roots = processesMap[ident].roots;
-				constructConnection(currentTransition, roots, ident);
-				root.addMetaData('startPlace', true);
+				constructConnection(currentTransition, [globalRoot]);
 			}
 			else{
 				root.addMetaData('isTerminal', 'stop');
 			}
 		}
-		// check if the process is referencing a locally defined process
 		else if(localProcessesMap[current] !== undefined){
-			if(currentTransition !== undefined){
-				constructConnection(currentTransition, [localProcessesMap[current].place], ident);
-			}
-			else{
-				// make the referenced place the new start place and remove the current start place
-				processesMap[ident].addRoot(localProcessesMap[current].place.id);
-				processesMap[ident].removeRoot(root.id);
-				processesMap[ident].removePlace(root.id);
-			}
-		}
-		// check if the process is referencing a globally defined process
-		else if(processesMap[current] !== undefined){
-			var referencedNet = processesMap[current].clone();
-			// make sure the referenced process is a petri net
-			if(processesMap[current].type !== 'petrinet'){
-				// throw error
-			}
-
-			// add the referneced net to the current one
-			var roots = processesMap[ident].addPetriNet(referencedNet);
-
-			if(currentTransition !== undefined){	
-				constructConnection(currentTransition, roots, ident);
-			}
-			else{
-				// remove the current start place
-				processesMap[ident].removeRoot(root.id);
-				processesMap[ident].removePlace(root.id);
-				for(var i = 0; i < roots.length; i++){
-					processesMap[ident].addRoot(roots[i].id);
+			if(localProcessesMap[current].root !== undefined){
+				// check if the current transition is defined
+				if(currentTransition !== undefined){
+					constructConnection(currentTransition, [localProcessesMap[current].root]);
+				}
+				else{
+					localProcessesMap[current].root.addMetaData('potentialRoot', true);
 				}
 			}
+			else{
+				var place = root;
+				// check if the current transition is 
+				if(currentTransition !== undefined){
+					place = net.addPlace();
+					constructConnection(currentTransition, [place]);
+				}
+
+				localProcessesMap[current].root = place;
+				interpretNode(localProcessesMap[current].process, undefined, place, ident);
+			}
 		}
-		else{
-			throw new InterpreterException('The process \'' + current + '\' has not been defined.');
+		else if(processesMap[ident] !== undefined){
+			var referencedNet = processesMap[current].clone();
+			var roots = net.addPetriNet(referencedNet);
+			for(var i = 0; i < roots.length; i++){
+				roots[i].deleteMetaData('startPlace');
+				net.removeRoot(roots[i].id);
+			}
+
+			// check that the current transition is defined
+			if(currentTransition !== undefined){
+				constructConnection(currentTransition, roots);
+			}
+			else{
+				for(var i = 0; i < roots.length; i++){
+					roots[i].addMetaData('potentialRoot', true);
+				}
+				net.removePlace(root.id);
+			}
 		}
+
 	}
 
 	function interpretTerminal(astNode, currentTransition, root, ident){
 		var net = processesMap[ident];
-		var place = (currentTransition !== undefined) ? net.addPlace() : root;
+		var place = currentTransition !== undefined ? net.addPlace() : root;
 		if(astNode.terminal === 'STOP'){
 			place.addMetaData('isTerminal', 'stop');
 		}
@@ -290,24 +373,18 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 
 		// check if the current transition has been defined
 		if(currentTransition !== undefined){
-			constructConnection(currentTransition, [place], ident);
+			constructConnection(currentTransition, [place]);
 		}
 		else if(root.incomingTransitions.length === 0){
-			net.addRoot(place.id);
+			place.addMetaData('potentialRoot', true);
 		}
 	}
 
-	function constructConnection(transition, places, ident){
+	function constructConnection(transition, places){
 		// connect each place to the transition
 		for(var i = 0; i < places.length; i++){
 			transition.addOutgoingPlace(places[i]);
 			places[i].addIncomingTransition(transition.id);
-
-			if(processesMap[ident].getPlace(places[i].id) === undefined){
-				processesMap[ident].addPlace(places[i].id, places[i].metaData);
-			}
-
-			processesMap[ident].removeRoot(places[i].id);
 		}
 	}
 
