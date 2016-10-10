@@ -22,6 +22,12 @@ function tokenRule(process, operation){
 		// setup the fringe
 		var fringe = [];
 		var roots = process.roots;
+
+		// construct root key
+		var rootKey = constructStateKey(new PlaceSet(roots));
+		// add the root to the visited state map
+		visitedStates[rootKey] = root;
+
 		fringe.push(new FringeElement(new PlaceSet(roots), root));
 
 		while(fringe.length !== 0){
@@ -70,13 +76,20 @@ function tokenRule(process, operation){
 				var nextState = JSON.parse(JSON.stringify(places));
 				// remove the places that were transiitoned from
 				for(var id in incoming){
-					delete nextState[id];
+					nextState[id]--;
+					if(nextState[id] === 0){
+						delete nextState[id];
+					}
 				}
 
 				// add the states that were transitioned to
 				var outgoing = transition.outgoingPlaces;
 				for(var j = 0; j < outgoing.length; j++){
-					nextState[outgoing[j].id] = true;
+					var nextId = outgoing[j].id;
+					if(nextState[nextId] === undefined){
+						nextState[nextId] = 0;
+					}
+					nextState[nextId]++;
 				}
 
 				var nextStateKey = constructStateKey(nextState);
@@ -126,7 +139,13 @@ function FringeElement(places, node){
 function PlaceSet(places){
 	var placeSet = {};
 	for(var i = 0; i < places.length; i++){
-		placeSet[places[i].id] = true;
+		var id = places[i].id;
+		if(placeSet[id] === undefined){
+			placeSet[places[i].id] = 1;
+		}
+		else{
+			placeSet[id]++;
+		}
 	}
 
 	return placeSet;
@@ -135,7 +154,9 @@ function PlaceSet(places){
 function constructStateKey(placeSet){
 	var states = [];
 	for(var id in placeSet){
-		states.push(id);
+		for(var i = 0; i < placeSet[id]; i++){
+			states.push(id);
+		}
 	}
 
 	return JSON.stringify(states.sort());
