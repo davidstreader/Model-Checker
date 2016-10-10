@@ -98,7 +98,7 @@ function petriNetAbstraction(process, isFair){
 
 				for(var j = 0; j < incomingObservableTransitions.length; j++){
 					var transition = incomingObservableTransitions[j];
-					var places = transition.incomingPlaces;
+					var places = transition.incomingPlaces.filter(p => p.id !== neighbour.id);
 					if(places !== undefined){
 						for(var k = 0; k < places.length; k++){
 							constructObservableTransition(places[k].id, neighbour.id, transition.label);	
@@ -108,7 +108,7 @@ function petriNetAbstraction(process, isFair){
 
 				for(var j = 0; j < outgoingObservableTransitions.length; j++){
 					var transition = outgoingObservableTransitions[j];
-					var places = transition.outgoingPlaces;
+					var places = transition.outgoingPlaces.filter(p => p.id !== place.id);
 					if(places !== undefined){
 						for(var k = 0; k < places.length; k++){
 							constructObservableTransition(place.id, places[k].id, transition.label);
