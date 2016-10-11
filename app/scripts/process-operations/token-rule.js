@@ -24,11 +24,21 @@ function tokenRule(process, operation){
 		var roots = process.roots;
 
 		// construct root key
-		var rootKey = constructStateKey(new PlaceSet(roots));
+		var rootSet = {};
+		for(var i = 0; i < roots.length; i++){
+			var tokens = roots[i].getMetaData('startPlace');
+			for(j = 0; j < tokens; j++){
+				if(rootSet[roots[i].id] === undefined){
+					rootSet[roots[i].id] = 0;
+				}
+				rootSet[roots[i].id]++;
+			}
+		}
+		var rootKey = constructStateKey(rootSet);
 		// add the root to the visited state map
 		visitedStates[rootKey] = root;
 
-		fringe.push(new FringeElement(new PlaceSet(roots), root));
+		fringe.push(new FringeElement(rootSet, root));
 
 		while(fringe.length !== 0){
 			var current = fringe.pop();
