@@ -213,7 +213,7 @@ class PetriNet {
 			}
 		}
 		for(var key in place2.metaData){
-			if(key === 'startPlace' && place[key] !== undefined){
+			if(key === 'startPlace' && place.getMetaData(key) !== undefined){
 				var tokens = place.getMetaData(key) + place2.getMetaData(key);
 				place.addMetaData(key, tokens);
 			}
