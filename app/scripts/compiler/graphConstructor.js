@@ -136,7 +136,14 @@ function constructGraphs(processesMap, analysis, lastGraphs){
 		var transitions = process.transitions;
 		for(var i = 0; i < transitions.length; i++){
 			var styleClasses = 't' + transitions[i].id;
-			graph.setNode('t' + transitions[i].id, { label:transitions[i].label, shape:'transitionNode', class:styleClasses.trim() });
+
+			var label = transitions[i].label;
+			if(label === GAMMA){
+				graph.setNode('t' + transitions[i].id, {label:label, shape:'transitionNode', style:'fill:#000000' });
+			}
+			else{
+				graph.setNode('t' + transitions[i].id, { label:label, shape:'transitionNode', class:styleClasses.trim() });
+			}
 
 			//
 			var outgoing = transitions[i].outgoingPlaces;
