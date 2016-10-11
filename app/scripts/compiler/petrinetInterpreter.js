@@ -14,21 +14,23 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 	}
 
 	// find the roots for the interpreted petri net
+	var key = 'isRoot'
 	var roots = processesMap[identifier].places.filter(p => p.getMetaData('isRoot') !== undefined);
 	if(roots.length === 0){
+		key = 'potentialRoot'
 		roots = processesMap[identifier].places.filter(p => p.getMetaData('potentialRoot') !== undefined);
 	}
 	for(var i = 0; i < roots.length; i++){
-		roots[i].deleteMetaData('isRoot');
-		roots[i].deleteMetaData('potentialRoot');
-		roots[i].addMetaData('startPlace', true);
+		var tokens = roots[i].getMetaData(key);
+		roots[i].deleteMetaData(key);
+		roots[i].addMetaData('startPlace', tokens);
 		processesMap[identifier].addRoot(roots[i].id);
 	}
 
 	function Net(id, ident){
 		var net = new PetriNet(id);
 		var root = net.addPlace();
-		root.addMetaData('isRoot', true);
+		root.addMetaData('isRoot', 1);
 		processesMap[ident] = net;
 		return root;
 	}
@@ -38,7 +40,7 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 		// check if a root has already been defined
 		if(root === undefined){
 			root = net.addPlace();
-			root.addMetaData('potentialRoot', true);
+			root.addMetaData('potentialRoot', 1);
 		}
 
 		var potentialRoots = net.places.filter(p => p.getMetaData('potentialRoot') !== undefined);
@@ -144,7 +146,7 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 				var previousRoot = localProcessesMap[astNode.process1.ident].root;
 				var process = localProcessesMap[astNode.process1.ident].process;
 				var tempRoot = net.addPlace();
-				tempRoot.addMetaData('potentialRoot', true);
+				tempRoot.addMetaData('potentialRoot', 1);
 				localProcessesMap[astNode.process1.ident].root = tempRoot;
 				roots1 = processSubPetriNet(ident, process, tempRoot);
 				localProcessesMap[astNode.process1.ident].root = previousRoot;
@@ -163,7 +165,7 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 				var previousRoot = localProcessesMap[astNode.process2.ident].root;
 				var process = localProcessesMap[astNode.process2.ident].process;
 				var tempRoot = net.addPlace();
-				tempRoot.addMetaData('potentialRoot', true);
+				tempRoot.addMetaData('potentialRoot', 1);
 				localProcessesMap[astNode.process2.ident].root = tempRoot;
 				roots2 = processSubPetriNet(ident, process, tempRoot);
 				localProcessesMap[astNode.process2.ident].root = previousRoot;
@@ -202,7 +204,7 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 			}
 			else{
 				for(var i = 0; i < crossProducts.length; i++){
-					crossProducts[i].addMetaData('potentialRoot', true);
+					crossProducts[i].addMetaData('potentialRoot', 1);
 				}
 			}
 
@@ -237,7 +239,7 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 			}
 			else{
 				for(var i = 0; i < roots.length; i++){
-					roots[i].addMetaData('potentialRoot', true);
+					roots[i].addMetaData('potentialRoot', 1);
 				}
 			}
 
@@ -254,7 +256,7 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 		var processedNet = new TempNet(net.id + '.f', ident + '.f', astNode.process);
 		var roots = processedNet.places.filter(p => p.getMetaData('potentialRoot') !== undefined);
 		for(var i = 0; i < roots.length; i++){
-			roots[i].addMetaData('startPlace', true);
+			roots[i].addMetaData('startPlace', 1);
 			processedNet.addRoot(roots[i].id);
 		}
 
@@ -272,6 +274,8 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 
 		roots = processedNet.roots;
 		for(var i = 0; i < roots.length; i++){
+			var tokens = roots[i].getMetaData('startPlace');
+			roots[i].addMetaData('potentialRoot', tokens);
 			roots[i].deleteMetaData('startPlace');
 			processedNet.removeRoot(roots[i].id);
 		}
@@ -288,10 +292,8 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 				for(var i = 0; i < transitions.length; i++){
 					constructConnection(transitions[i], roots);
 				}
-			}
-			else{
 				for(var i = 0; i < roots.length; i++){
-					roots[i].addMetaData('potentialRoot', true);
+					roots[i].deleteMetaData('potentialRoot');
 				}
 			}
 
@@ -322,7 +324,7 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 					constructConnection(currentTransition, [localProcessesMap[current].root]);
 				}
 				else{
-					localProcessesMap[current].root.addMetaData('potentialRoot', true);
+					localProcessesMap[current].root.addMetaData('potentialRoot', 1);
 				}
 			}
 			else{
@@ -351,7 +353,7 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 			}
 			else{
 				for(var i = 0; i < roots.length; i++){
-					roots[i].addMetaData('potentialRoot', true);
+					roots[i].addMetaData('potentialRoot', 1);
 				}
 				net.removePlace(root.id);
 			}
@@ -376,7 +378,7 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 			constructConnection(currentTransition, [place]);
 		}
 		else if(root.incomingTransitions.length === 0){
-			place.addMetaData('potentialRoot', true);
+			place.addMetaData('potentialRoot', 1);
 		}
 	}
 
