@@ -23,7 +23,7 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 	for(var i = 0; i < roots.length; i++){
 		var tokens = roots[i].getMetaData(key);
 		roots[i].deleteMetaData(key);
-		roots[i].addMetaData('startPlace', tokens);
+		processesMap[identifier].getPlace(roots[i].id).addMetaData('startPlace', tokens);
 		processesMap[identifier].addRoot(roots[i].id);
 	}
 
@@ -343,18 +343,20 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 			var referencedNet = processesMap[current].clone();
 			var roots = net.addPetriNet(referencedNet);
 			for(var i = 0; i < roots.length; i++){
+				var tokens = roots[i].getMetaData('startPlace');
 				roots[i].deleteMetaData('startPlace');
+				roots[i].addMetaData('potentialRoot', tokens);
 				net.removeRoot(roots[i].id);
 			}
 
 			// check that the current transition is defined
 			if(currentTransition !== undefined){
 				constructConnection(currentTransition, roots);
+				for(var i = 0; i < roots.length; i++){
+					roots[i].deleteMetaData('potentialRoot');
+				}
 			}
 			else{
-				for(var i = 0; i < roots.length; i++){
-					roots[i].addMetaData('potentialRoot', 1);
-				}
 				net.removePlace(root.id);
 			}
 		}

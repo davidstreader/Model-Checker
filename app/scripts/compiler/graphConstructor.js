@@ -107,10 +107,11 @@ function constructGraphs(processesMap, analysis, lastGraphs){
 		var places = process.places;
 		for(var i = 0; i < places.length; i++){
 			var styleClasses = 'p' + places[i].id;
-
+			var label = '';
 			// add to array of start places if necessary
 			if(places[i].getMetaData('startPlace')){
 				startPlaces.push(places[i]);
+				label += places[i].getMetaData('startPlace');
 			}
 
 			// check if this place is a terminal
@@ -120,7 +121,7 @@ function constructGraphs(processesMap, analysis, lastGraphs){
 			} 
 
 			// add place to graph
-			graph.setNode('p' + places[i].id, { label:'', shape:'placeNode', class:styleClasses.trim() });
+			graph.setNode('p' + places[i].id, { label:label, shape:'placeNode', class:styleClasses.trim() });
 
 		}
 

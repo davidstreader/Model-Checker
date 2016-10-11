@@ -68,7 +68,6 @@ class PetriNet {
 		}
 
 		this._rootIds[id] = true;
-		this._placeMap[id].addMetaData('startPlace', 1);
 		return true;
 	}
 
