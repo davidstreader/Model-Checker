@@ -8,3 +8,4 @@
 var PROCESS_TYPES = ['automata', 'petrinet'];
 var TAU = '\u03C4';
 var DELTA = '\u03B4';
+var GAMMA = '\u0263';
