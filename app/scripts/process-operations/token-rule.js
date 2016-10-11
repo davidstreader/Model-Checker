@@ -104,6 +104,14 @@ function tokenRule(process, operation){
 
 				var nextStateKey = constructStateKey(nextState);
 
+				// check if this transition is a guard
+				if(transition.label === GAMMA){
+					// push the new state to the fringe
+					fringe.push(new FringeElement(nextState, node));
+					visitedStates[nextStateKey] = node;
+					continue;
+				}
+
 				// check if this state has already been visited
 				if(visitedStates[nextStateKey] !== undefined){
 					graph.addEdge(graph.nextEdgeId, transition.label, node.id, visitedStates[nextStateKey].id);
