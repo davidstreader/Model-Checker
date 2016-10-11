@@ -68,7 +68,7 @@ class PetriNet {
 		}
 
 		this._rootIds[id] = true;
-		this._placeMap[id].addMetaData('startPlace', true);
+		this._placeMap[id].addMetaData('startPlace', 1);
 		return true;
 	}
 
@@ -174,6 +174,8 @@ class PetriNet {
 
 	combinePlaces(place1, place2){
 		var place = this.addPlace();
+
+		// get the incoming and outgoing transitions from the places
 		var transitions1 = place1.outgoingTransitions.map(x => this.getTransition(x));
 		var transitions2 = place2.outgoingTransitions.map(x => this.getTransition(x));
 		for(var i = 0; i < transitions1.length; i++){
@@ -193,6 +195,34 @@ class PetriNet {
 		for(var i = 0; i < transitions2.length; i++){
 			place.addIncomingTransition(transitions2[i].id);
 			transitions2[i].addOutgoingPlace(place);
+		}
+
+		// check if either of the two places are start place
+		if(place1.getMetaData('startPlace') !== undefined){
+			this.removeRoot(place1.id);
+		}
+		if(place2.getMetaData('startPlace') !== undefined){
+			this.removeRoot(place2.id);
+		}
+
+		// merge meta data of places
+		for(var key in place1.metaData){
+			place.addMetaData(key, place1.getMetaData(key));
+			if(key === 'startPlace'){
+				this.addRoot(place.id);
+			}
+		}
+		for(var key in place2.metaData){
+			if(key === 'startPlace' && place[key] !== undefined){
+				var tokens = place.getMetaData(key) + place2.getMetaData(key);
+				place.addMetaData(key, tokens);
+			}
+			else{
+				place.addMetaData(key, place2.getMetaData(key));
+				if(key === 'startPlace'){
+					this.addRoot(place.id);
+				}
+			}
 		}
 		return place;
 	}
