@@ -43,14 +43,8 @@ function petriNetParallelComposition(id, net1, net2){
 				}
 			}
 
-			// update references to incoming and outgoing places
-			for(var j = 0; j < incoming.length; j++){
-				incoming[j] = net.getPlace(incoming[j].id);
-			}
-			for(var j = 0; j < outgoing.length; j++){
-				outgoing[j] = net.getPlace(outgoing[j].id);
-			}
-
+			incoming = processPlaceArray(incoming);
+			outgoing = processPlaceArray(outgoing);
 			net.addTransition(transitions[i].id, action, incoming, outgoing);
 		}
 	}
@@ -60,15 +54,8 @@ function petriNetParallelComposition(id, net1, net2){
 			var transitions = labelSets2[action];
 			for(var i = 0; i < transitions.length; i++){
 				// update references to incoming and outgoing places
-				var incoming = transitions[i].incomingPlaces;
-				for(var j = 0; j < incoming.length; j++){
-					incoming[j] = net.getPlace(incoming[j].id);
-				}
-				var outgoing = transitions[i].outgoingPlaces;
-				for(var j = 0; j < outgoing.length; j++){
-					outgoing[j] = net.getPlace(outgoing[j].id);
-				}
-
+				var incoming = processPlaceArray(transitions[i].incomingPlaces);
+				var outgoing = processPlaceArray(transitions[i].outgoingPlaces);
 				net.addTransition(transitions[i].id, action, incoming, outgoing);
 			}
 		}
@@ -103,5 +90,19 @@ function petriNetParallelComposition(id, net1, net2){
 			transition1.addIncomingPlace(places[i]);
 			places[i].addOutgoingTransition(transition1.id);
 		}
+	}
+
+	function processPlaceArray(places){
+		var ids = {};
+		for(var i = 0; i < places.length; i++){
+			ids[places[i].id] = true;
+		}
+
+		var newPlaces = [];
+		for(var id in ids){
+			newPlaces.push(net.getPlace(id));
+		}
+
+		return newPlaces;
 	}
 }
