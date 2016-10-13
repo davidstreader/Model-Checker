@@ -149,11 +149,29 @@ function petriNetBisimulation(processes){
 
 	function constructColouring(place, placeMap){
 		var colouring = {};
-		var transitions = place.outgoingTransitions.map(id => process.getTransition(id));
+		var incoming = place.incomingTransitions.map(id => process.getTransition(id));
+		var outgoing = place.outgoingTransitions.map(id => process.getTransition(id));
+
 		var from = placeMap[place.id].colour;
-		for(var i = 0; i < transitions.length; i++){
-			var colour = from + ' -> |' + transitions[i].label + '|';
-			colouring[colour] = true;
+		if(incoming.length === 0){
+			for(var i = 0; i < outgoing.length; i++){
+				var colour = from + ' -> |' + outgoing[i].label + '|';
+				colouring[colour] = true;
+			}
+		}
+		else if(outgoing.length === 0){
+			for(var i = 0; i < incoming.length; i++){
+				var colour = '|' + incoming[i].label + '| -> ' + from;
+				colouring[colour] = true;
+			}
+		}
+		else{
+			for(var i = 0; i < incoming.length; i++){
+				for(var j = 0; j < outgoing.length; j++){
+					var colour = '|' + incoming[i].label + '| -> ' + from + ' -> |' + outgoing[i].label + '|';
+					colouring[colour] = true;
+				}
+			}
 		}
 
 		return colouring;
