@@ -1,111 +1,163 @@
-'use strict';
+'use strict'
 
 function petriNetAbstraction(process, isFairAbstraction){
+	var observableTransitionMap = {};
 	var hiddenTransitions = process.transitions.filter(t => t.label === TAU);
-	while(hiddenTransitions.length !== 0){
-		var inPath = {};
-		var current = hiddenTransitions.pop();
-		inPath[current.id] = true;
 
-		// find the heads of the hidden tau path
-		var heads = [];
-		var incoming = current.incomingPlaces;
-		var transitions = [];
-		for(var i = 0; i < incoming.length; i++){
-			transitions = transitions.concat(incoming[i].incomingTransitions.map(id => process.getTransition(id)).filter(t => t.label === TAU));
-		}
+	for(var i = 0; i < hiddenTransitions.length; i++){
+		constructObservableTransitions(hiddenTransitions[i]);
+	}
 
-		// if no inconing hidden transitions then the current is the head
-		if(transitions.length !== 0){
-			while(transitions.length !== 0){
-				var transition = transitions.pop();
-				incoming = transition.incomingPlaces;
-				for(var i = 0; i < incoming.length; i++){
-					var incomingTransitions = incoming[i].incomingTransitions.map(id => process.getTransition(id)).filter(t => t.label === TAU);
-					if(incomingTransitions.length === 0){
-						heads.push(transition);
-					}
-					else{
-						for(var j = 0; j < incomingTransitions.length; j++){
-							if(inPath[incomingTransitions[j].id] === undefined){
-								transitions.push(incomingTransitions[j]);
-							}
-						}
-					}
+	// add the observable transitions to the process
+	for(var key in observableTransitionMap){
+		var transition = observableTransitionMap[key];
+		var id = process.nextTransitionId;
+		var from = transition.from.map(id => process.getPlace(id));
+		var to = transition.to.map(id => process.getPlace(id));
+		process.addTransition(id, transition.label, from, to);
+	}
+
+	// delete the hidden tau events from the process
+	for(var i = 0; i < hiddenTransitions.length; i++){
+		process.removeTransition(hiddenTransitions[i].id);
+	}
+
+	// remove any places that are not transitionable to
+	var places = process.places.filter(p => p.incomingTransitions.length === 0 && p.getMetaData('startPlace') === undefined);
+	while(places.length !== 0){
+		var place = places.pop();
+		var transitions = place.outgoingTransitions.map(id => process.getTransition(id));
+		for(var i = 0; i < transitions.length; i++){
+			var incoming = transitions[i].incomingPlaces;
+			if(incoming.length === 1){
+				var outgoing = transitions[i].outgoingPlaces.filter(p => p.incomingTransitions.length === 1);
+				for(var j = 0; j < outgoing.length; j++){
+					places.push(outgoing[j]);
 				}
 
-				inPath[transition.id] = true;
-			}
-		}
-		else{
-			heads.push(current);
-		}
-
-		// find the tails of the hidden tau path
-		var tails = [];
-		var outgoing = current.outgoingPlaces;
-		var transitions = [];
-		for(var i = 0; i < outgoing.length; i++){
-			transitions = transitions.concat(outgoing[i].outgoingTransitions.map(id => process.getTransition(id)).filter(t => t.label === TAU));
-		}
-
-		// if no outgoing hidden transitions then the current is the tail
-		if(transitions.length !== 0){
-			while(transitions.length !== 0){
-				var transition = transitions.pop();
-				outgoing = transition.outgoingPlaces;
-				for(var i = 0; i < incoming.length; i++){
-					var outgoingTransitions = incoming[i].outgoingTransitions.map(id => process.getTransition(id)).filter(t => t.label === TAU);
-					if(outgoingTransitions.length === 0){
-						tails.push(transition);
-					}
-					else{
-						for(var j = 0; j < outgoingTransitions.length; j++){
-							if(inPath[outgoingTransitions[j].id] === undefined){
-								transitions.push(outgoingTransitions[j]);
-							}
-						}
-					}
-				}
-
-				inPath[transition.id] = true;
-			}
-		}
-		else{
-			tails.push(current);
-		}
-
-		// make guards
-		for(var i = 0; i < heads.length; i++){
-			var incoming = heads[i].incomingPlaces;
-			for(var j = 0; j < tails.length; j++){
-				var outgoing = tails[j].outgoingPlaces;
-				process.addTransition(process.nextTransitionId, GAMMA, incoming, outgoing);
-			}
-		}
-		for(var i = 0; i < tails.length; i++){
-		}
-
-		var nextTransitions = [];
-		for(var i = 0; i < hiddenTransitions.length; i++){
-			var id = hiddenTransitions[i].id;
-			if(inPath[id] === undefined){
-				nextTransitions.push(hiddenTransitions[i]);
+				process.removeTransition(transitions[i].id);
 			}
 		}
 
-		// remove the visited hidden transitions
-		for(var id in inPath){
-			process.removeTransition(id);
-		}
-
-		var places = process.places.filter(p => p.incomingTransitions.length === 0 & p.getMetaData('startPlace') === undefined);
-		for(var i = 0; i < places.length; i++){
-			process.removePlace(places[i].id);
-		}
-
-		hiddenTransitions = nextTransitions;
+		process.removePlace(place.id);
 	}
 
 	return process;
+
+	function constructObservableTransitions(hiddenTransition){
+		var incoming = hiddenTransition.incomingPlaces;
+
+		var fringe = [hiddenTransition];
+		while(fringe.length !== 0){
+			hiddenTransition = fringe.pop();
+			var outgoing = hiddenTransition.outgoingPlaces;
+
+			for(var i = 0; i < incoming.length; i++){
+				var observableTransitions = incoming[i].incomingTransitions
+					.map(id => process.getTransition(id))
+					.filter(t => t.label !== TAU);
+
+				for(var j = 0; j < observableTransitions.length; j++){
+					var incomingPlaces = incoming.concat(observableTransitions[j].incomingPlaces);
+					var incomingSet = {};
+					for(var k = 0; k < incomingPlaces.length; k++){
+						incomingSet[incomingPlaces[k].id] = true;
+					}
+
+					var outgoingPlaces = observableTransitions[j].outgoingPlaces;
+					for(var k = 0; k < outgoingPlaces.length; k++){
+						delete incomingSet[outgoingPlaces[k].id];
+					}
+
+					var from = [];
+					for(var id in incomingSet){
+						from.push(id);
+					}
+
+					constructObservableTransition(from, outgoing.map(p => p.id), observableTransitions[j].label);
+				}
+			}
+
+			for(var i = 0; i < outgoing.length; i++){
+				var transitions = outgoing[i].outgoingTransitions.map(id => process.getTransition(id));
+				var observableTransitions = transitions.filter(t => t.label !== TAU);
+
+				for(var j = 0; j < observableTransitions.length; j++){
+					var outgoingPlaces = outgoing.concat(observableTransitions[j].outgoingPlaces);
+					var outgoingSet = {};
+					for(var k = 0; k < outgoingPlaces.length; k++){
+						outgoingSet[outgoingPlaces[k].id] = true;
+					}
+
+					var incomingPlaces = observableTransitions[j].incomingPlaces;
+					for(var k = 0; k < incomingPlaces.length; k++){
+						delete outgoingSet[incomingPlaces[k].id];
+					}
+
+					var to = [];
+					for(var id in outgoingSet){
+						to.push(id);
+
+						constructObservableTransition(incoming.map(p => p.id), to, observableTransitions[j].label);
+					}
+				}
+			}
+
+			// push hidden transitions to fringe
+			var outgoingPlaces = hiddenTransition.outgoingPlaces;
+			for(var i = 0; i < outgoingPlaces.length; i++){
+				var outgoingTransitions = outgoingPlaces[i].outgoingTransitions
+					.map(id => process.getTransition(id))
+					.filter(t => t.label === TAU);
+
+				fringe = fringe.concat(outgoingTransitions);
+			}
+		}
+	}
+
+
+	/**
+	 * Constructs an observable transition object and adds it to the
+	 * observable transition map.
+	 *
+	 * @param {string} from - the place id the transition transitions from
+	 * @param {string} to - the place id the transition transitions to
+	 * @param {string} label - the action the transition represents
+	 */
+	function constructObservableTransition(from, to, label){
+		var key = constructTransitionKey(from, to, label);
+		if (observableTransitionMap[key] === undefined){
+			observableTransitionMap[key] = new ObservableTransition(from, to, label);
+		}
+	}
+
+	/**
+	 * Constructs and returns a key that refers to an observable transition.
+	 *
+	 * @param {string} from - the place id the transition transitions from
+	 * @param {string} to - the place id the transition transitions to
+	 * @param {string} label - the action the transition represents
+	 * @return {string} - the key for the transition
+	 */
+	function constructTransitionKey(from, to, label){
+		var incoming = JSON.stringify(from.sort());
+		var outgoing = JSON.stringify(to.sort());
+		return incoming + ' -|' + label + '|- ' + outgoing; 
+	}
+
+	/**
+	 * Constructs and returns an observable transition object.
+	 *
+	 * @param {string} from - the place id the transition transitions from
+	 * @param {string} to - the place id the transition transitions to
+	 * @param {string} label - the action the transition represents
+	 * @return {object} - object representing an ovservable transition
+	 */
+	function ObservableTransition(from, to, label){
+		return {
+			from : from,
+			to : to,
+			label : label
+		};
+	}
 }
