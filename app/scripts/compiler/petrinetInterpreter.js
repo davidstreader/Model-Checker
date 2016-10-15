@@ -51,8 +51,13 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 			rootSet[potentialRoots[i].id] = potentialRoots[i];
 		}
 
+		var rootId = root.id;
 		// interpret the astNode
 		interpretNode(astNode, undefined, root, ident);
+
+		if(net.getPlace(rootId) !== undefined){
+			return [root];
+		}
 
 		// work out the new potential roots
 		var roots = net.places.filter(p => rootSet[p.id] === undefined && p.getMetaData('potentialRoot') !== undefined);
@@ -195,6 +200,9 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 		// check if the current transition has been defined
 		if(currentTransition !== undefined){
 			constructConnection(currentTransition, crossProducts);
+			for(var i = 0; i < crossProducts.length; i++){
+				crossProducts[i].deleteMetaData('potentialRoot');
+			}
 		}
 		else{
 			var transitions = root.incomingTransitions.map(id => net.getTransition(id));
@@ -338,7 +346,7 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 				}
 
 				localProcessesMap[current].root = place;
-				interpretNode(localProcessesMap[current].process, undefined, place, ident);
+				interpretNode(localProcessesMap[current].process, currentTransition, place, ident);
 			}
 		}
 		else if(processesMap[ident] !== undefined){

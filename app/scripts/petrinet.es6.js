@@ -535,6 +535,12 @@ class PetriNet {
 				}
 			}
 		}
+
+		for(var id in this._placeMap){
+			if(this._placeMap[id].getMetaData('startPlace') === undefined){
+				delete this._rootIds[id];
+			}
+		}
 	}
 
 	/**
