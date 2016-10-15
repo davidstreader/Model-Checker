@@ -168,7 +168,7 @@ function petriNetBisimulation(processes){
 		else{
 			for(var i = 0; i < incoming.length; i++){
 				for(var j = 0; j < outgoing.length; j++){
-					var colour = '|' + incoming[i].label + '| -> ' + from + ' -> |' + outgoing[i].label + '|';
+					var colour = '|' + incoming[i].label + '| -> ' + from + ' -> |' + outgoing[j].label + '|';
 					colouring[colour] = true;
 				}
 			}
