@@ -520,6 +520,23 @@ class PetriNet {
 		return clone;
 	}
 
+	trim(){
+		var transitions = this.transitions;
+		for(var i = 0; i < transitions.length; i++){
+			for(var id in transitions[i]._incomingPlaces){
+				if(this._placeMap[id] === undefined){
+					delete transitions[i]._incomingPlaces[id];
+				}
+			}
+
+			for(var id in transitions[i]._outgoingPlaces){
+				if(this._placeMap[id] === undefined){
+					delete transitions[i]._outgoingPlaces[id];
+				}
+			}
+		}
+	}
+
 	/**
 	 * Returns the next place id for this Petri net.
 	 *

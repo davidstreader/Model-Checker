@@ -27,6 +27,8 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 		processesMap[identifier].addRoot(roots[i].id);
 	}
 
+	processesMap[identifier].trim();
+
 	function Net(id, ident){
 		var net = new PetriNet(id);
 		var root = net.addPlace();
