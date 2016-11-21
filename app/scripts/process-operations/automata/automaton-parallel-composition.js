@@ -11,7 +11,7 @@
 	 * @return {automaton} - the automaton formed by the composition
 	 */
 function automataParallelComposition(id, automaton1, automaton2){
-	var graph = new Graph(id);
+	var graph = new Automaton(id);
 	var nodes1 = automaton1.nodes;
 	var nodes2 = automaton2.nodes;
 	combineStates(graph, nodes1, nodes2);
@@ -29,9 +29,9 @@ function automataParallelComposition(id, automaton1, automaton2){
 			var fromId = node1.id + '.' + node2.id;
 
 			for(var action in alphabet){
-				var coaccessible1 = node1.coaccessible(action);
+				var coaccessible1 = automaton1.coaccessible(node1, action);
 				coaccessible1 = (coaccessible1.length !== 0) ? coaccessible1 : [undefined];
-				var coaccessible2 = node2.coaccessible(action);
+				var coaccessible2 = automaton2.coaccessible(node2, action);
 				coaccessible2 = (coaccessible2.length !== 0) ? coaccessible2 : [undefined];
 
 				for(var x = 0; x < coaccessible1.length; x++){
@@ -41,15 +41,15 @@ function automataParallelComposition(id, automaton1, automaton2){
 
 						if(c1 !== undefined && c2 !== undefined){
 							var toId = c1 + '.' + c2;
-							graph.addEdge(graph.nextEdgeId, action, fromId, toId);
+							graph.addEdge(graph.nextEdgeId, action, graph.getNode(fromId), graph.getNode(toId));
 						}
 						else if(c1 !== undefined && alphabet2[action] === undefined){
 							var toId = c1 + '.' + node2.id;
-							graph.addEdge(graph.nextEdgeId, action, fromId, toId);
+							graph.addEdge(graph.nextEdgeId, action, graph.getNode(fromId), graph.getNode(toId));
 						}
 						else if(c2 !== undefined && alphabet1[action] === undefined){
 							var toId = node1.id + '.' + c2;
-							graph.addEdge(graph.nextEdgeId, action, fromId, toId);
+							graph.addEdge(graph.nextEdgeId, action, graph.getNode(fromId), graph.getNode(toId));
 						}
 					}
 				}

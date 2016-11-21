@@ -53,7 +53,7 @@ function automataBisimulation(processes){
 
 				nodeColours[colourId].push(current);
 
-				var edges = current.edgesFromMe;
+				var edges = current.outgoingEdges.map(id => process.getEdge(id));
 				for(var i = 0; i < edges.length; i++){
 					if(visited[edges[i].to] === undefined){
 						fringe.push(process.getNode(edges[i].to));
@@ -83,7 +83,10 @@ function automataBisimulation(processes){
 		// merge nodes with the same colour
 		for(var colour in nodeColours){
 			if(nodeColours[colour].length > 1){
-				process.mergeNodes(nodeColours[colour]);
+				var arr = nodeColours[colour];
+				for(var i = 1; i < arr.length; i++){
+					process.combineNodes(arr[0], arr[i]);
+				}
 			}
 		}
 
@@ -115,7 +118,7 @@ function automataBisimulation(processes){
 
 	function constructColouring(node, nodeMap){
 		var colouring = {};
-		var edges = node.edgesFromMe;
+		var edges = node.outgoingEdges.map(id => process.getEdge(id));
 		var from = nodeMap[node.id].colour
 		for(var i = 0; i < edges.length; i++){
 			var to = nodeMap[edges[i].to].colour;

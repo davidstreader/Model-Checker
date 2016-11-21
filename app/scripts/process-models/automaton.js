@@ -2,7 +2,7 @@
 
 const AUTOMATON = {
 	get type(){
-		return 'automaton';
+		return 'automata';
 	},
 
 	get id(){
@@ -33,15 +33,18 @@ const AUTOMATON = {
 	addNode: function(id, metaData){
 		id = (id === undefined) ? this.nextNodeId : id;
 		metaData = (metaData === undefined) ? {} : metaData;
+		const node = new AutomatonNode(id, {}, {}, metaData);
+		this.nodeMap[id] = node;
 		this.nodeCount++;
+		return node;
 	},
 
 	removeNode: function(id){
-		if(this.placeMap[id] === undefined){
+		if(this.nodeMap[id] === undefined){
 			return;
 		}
 
-		delete this.placeMap[id];
+		delete this.nodeMap[id];
 
 		for(let i in this.edgeMap){
 			const edge = this.edgeMap[i];
@@ -62,27 +65,30 @@ const AUTOMATON = {
 	},
 
 	combineNodes: function(node1, node2){
-		const node = this.addNode();
-
-		const incoming = node.incomingEdges.concat(node2.incomingEdges);
+		const incoming = node2.incomingEdges;
 		for(let i = 0; i < incoming.length; i++){
 			const id = incoming[i];
-			node.addIncomingEdge(id);
-			this.getTransition(id).from = place.id;
+			node1.addIncomingEdge(id);
+			this.getEdge(id).to = node1.id;
 		}
 
-		const outgoing = node1.outgoingEdges.concat(node2.outgoingEdges);
+		const outgoing = node2.outgoingEdges;
 		for(let i = 0; i < outgoing.length; i++){
 			const id = outgoing[i];
-			node.addOutgoingEdge(id);
-			this.getTransition(id).to = place.id;
+			node1.addOutgoingEdge(id);
+			this.getEdge(id).from = node1.id;
 		}
 
-		if(node1.metaData.startNode || node2.metaData.startNode){
-			node.metaData.startNode = true;
+		for(let key in node2.metaData){
+			node1.metaData[key] = node2.metaData[key];
 		}
 
-		return place;
+		delete this.nodeMap[node2.id];
+		this.nodeCount--;
+	},
+
+	coaccessible: function(node, label){
+		return node.outgoingEdges.map(id => this.getEdge(id)).filter(e => e.label === label).map(e => e.to);
 	},
 
 	get edges(){
@@ -94,10 +100,17 @@ const AUTOMATON = {
 		return edges;
 	},
 
+	getEdge: function(id){
+		return this.edgeMap[id];
+	},
+
 	addEdge: function(id, label, from, to, metaData){
-		const edge = new AutomatonEdge(id, label, from, to, metaData);
+		const edge = new AutomatonEdge(id, label, from.id, to.id, metaData);
+		from.addOutgoingEdge(id);
+		to.addIncomingEdge(id);
 		this.edgeMap[id] = edge;
 		this.edgeCount++;
+		return edge;
 	},
 
 	removeEdge: function(id){
@@ -111,9 +124,42 @@ const AUTOMATON = {
 		const nodes = this.nodes;
 		for(let i = 0; i < nodes.length; i++){
 			const node = nodes[i];
-			delete this.incomingEdgeSet[id];
-			delete this.outgoingEdgeSet[id];
+			delete node.incomingEdgeSet[id];
+			delete node.outgoingEdgeSet[id];
 		}
+	},
+
+	removeDuplicateEdges: function(){
+		const toDelete = {};
+		const edges = this.edges;
+		for(let i = 0; i < edges.length; i++){
+			const edge1 = edges[i];
+			for(let j = i + 1; j < edges.length; j++){
+				const edge2 = edges[j];
+				if(toDelete[edge2.id]){
+					continue;
+				}
+
+				if(edge1.from === edge2.from && edge1.to === edge2.to && edge1.label === edge2.label){
+					toDelete[edge2.id] = true;
+				}
+			}
+		}
+
+		for(let id in toDelete){
+			this.removeEdge(id);
+		}
+	},
+
+	get alphabet(){
+		const labels = this.edges.map(e => e.label);
+		const alphabet = {};
+		for(let i = 0; i < labels.length; i++){
+			alphabet[labels[i]] = true;
+		}
+
+
+		return alphabet;
 	},
 
 	relabelEdges: function(oldLabel, newLabel){
@@ -158,11 +204,16 @@ const AUTOMATON = {
 			const node = new AutomatonNode(id, incoming, outgoing, metaData);
 			automaton.nodeMap[id] = node;
 			automaton.nodeCount++;
+
+			if(nodes[i].id === this.rootId){
+				automaton.root = id;
+				node.metaData.startNode = true;
+			}
 		}
 
 		// clone edges from this automaton and add them to the clone
 		const edges = this.edges;
-		for(let i = 0; i < edge.length; i++){
+		for(let i = 0; i < edges.length; i++){
 			const id = edges[i].id + '.' + cloneId;
 			const label = edges[i].label;
 			const from = edges[i].from + '.' + cloneId;
@@ -184,13 +235,40 @@ const AUTOMATON = {
 			return newSet;
 		}
 	},
+	
+	trim: function(){
+		const visited = {};
+		const fringe = [this.root];
+		while(fringe.length !== 0){
+			const current = fringe.pop();
+			if(visited[current.id]){
+				continue;
+			}
+
+			visited[current.id] = true;
+
+			const neighbours = current.outgoingEdges.map(id => this.getNode(this.getEdge(id).to));
+			for(let i = 0; i < neighbours.length; i++){
+				const neighbour = neighbours[i];
+				if(!visited[neighbour.id]){
+					fringe.push(neighbour);
+				}
+			}
+		}
+
+		for(let id in this.nodeMap){
+			if(!visited[id]){
+				this.removeNode(id);
+			}
+		}
+	},
 
 	get nextNodeId(){
-		return this.nodeId++;
+		return this.id + '.n' + this.nodeId++;
 	},
 
 	get nextEdgeId(){
-		return this.edgeId++;
+		return this.id + '.e' + this.edgeId++;
 	}
 };
 
@@ -202,7 +280,8 @@ function Automaton(id){
 	this.edgeCount = 0;
 	this.nodeId = 0;
 	this.edgeId = 0;
-	this.metaData = 0;
+	this.metaData = {};
+	Object.setPrototypeOf(this, AUTOMATON);
 }
 
 const AUTOMATON_NODE = {
@@ -215,7 +294,12 @@ const AUTOMATON_NODE = {
 	},
 
 	get incomingEdges(){
-		return Object.keys(this.getIncomingSet);
+		const incoming = [];
+		for(let id in this.incomingEdgeSet){
+			incoming.push(id);
+		}
+
+		return incoming;
 	},
 
 	addIncomingEdge: function(id){
@@ -227,7 +311,12 @@ const AUTOMATON_NODE = {
 	},
 
 	get outgoingEdges(){
-		return Object.keys(this.outgoingEdgeSet);
+		const outgoing = [];
+		for(let id in this.outgoingEdgeSet){
+			outgoing.push(id);
+		}
+
+		return outgoing;
 	},
 
 	addOutgoingEdge: function(id){
@@ -272,6 +361,7 @@ function AutomatonNode(id, incomingEdges, outgoingEdges, metaData){
 	this.incomingEdgeSet = (incomingEdges === undefined) ? {} : incomingEdges;
 	this.outgoingEdgeSet = (outgoingEdges === undefined) ? {} : outgoingEdges;
 	this.metaData = (metaData === undefined) ? {} : metaData;
+	Object.setPrototypeOf(this, AUTOMATON_NODE);
 }
 
 const AUTOMATON_EDGE = {
@@ -285,7 +375,7 @@ const AUTOMATON_EDGE = {
 
 	get label(){
 		return this.label;
-	}
+	},
 
 	set label(label){
 		this.label = label;
@@ -326,4 +416,5 @@ function AutomatonEdge(id, label, from, to, metaData){
 	this.from = from;
 	this.to = to;
 	this.metaData = (metaData === undefined) ? {} : metaData;
+	Object.setPrototypeOf(this, AUTOMATON_EDGE);
 }

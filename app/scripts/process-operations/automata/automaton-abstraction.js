@@ -22,26 +22,27 @@ function automataAbstraction(process, isFair){
 	// add the observable edges to the process
 	for(var key in observableEdgeMap){
 		var edge = observableEdgeMap[key];
-		process.addEdge(process.nextEdgeId, edge.label, edge.from, edge.to);
+		process.addEdge(process.nextEdgeId, edge.label, process.getNode(edge.from), process.getNode(edge.to));
 	}
 
 	// delete the hidden tau events from the process
 	var tauEdges = process.edges.filter(edge => edge.label === TAU);
 	for (var i = 0; i < tauEdges.length; i++){
 		var from = process.getNode(tauEdges[i].from);
-		from.deleteEdgeFromMe(tauEdges[i]);
+		from.removeOutgoingEdge(tauEdges[i].id);
 		var to = process.getNode(tauEdges[i].to);
-		from.deleteEdgeToMe(tauEdges[i]);
+		to.removeIncomingEdge(tauEdges[i].id); // to was from before???
 		process.removeEdge(tauEdges[i].id);
 	}
 
 	nodes = process.nodes;
 	for(var i = 0; i < nodes.length; i++){
 		var current = nodes[i];
-		if(current.edgesToMe.length === 0 && current.getMetaData('startNode') === undefined){
+		if(current.incomingEdges.map(id => process.getEdge(id))
+			.length === 0 && current.getMetaData('startNode') === undefined){
 			process.removeNode(current.id);
 		}
-		else if(current.edgesFromMe.length === 0 && current.getMetaData('isTerminal') === undefined){
+		else if(current.outgoingEdges.map(id => process.getEdge(id)).length === 0 && current.getMetaData('isTerminal') === undefined){
 			current.addMetaData('isTerminal', 'stop');
 		}
 	}
@@ -50,14 +51,15 @@ function automataAbstraction(process, isFair){
 
 	function constructObservableEdges(node){
 		// get observable events (edges) that transition to the specified node
-		var incomingObservableEdges = node.edgesToMe.filter(edge => edge.label !== TAU);
+		var incomingObservableEdges = node.incomingEdges.map(id => process.getEdge(id))
+		.filter(edge => edge.label !== TAU);
 
 		var visited = {};
 		var fringe = [node];
 		while(fringe.length !== 0){
 			var current = fringe.pop();
 			// get neighbouring nodes from the current node that are transitionable to via a hidden tau event
-			var neighbours = current.edgesFromMe.filter(edge => edge.label === TAU).map(edge => process.getNode(edge.to));
+			var neighbours = current.outgoingEdges.map(id => process.getEdge(id)).filter(edge => edge.label === TAU).map(edge => process.getNode(edge.to));
 
 			// iterate over the neigbouring nodes and add observable edges if possible
 			for(var i = 0; i < neighbours.length; i++){
@@ -82,7 +84,7 @@ function automataAbstraction(process, isFair){
 				// push the neighbour to the fringe
 				fringe.push(neighbour);
 
-				var outgoingObservableEdges = neighbours[i].edgesFromMe.filter(edge => edge.label !== TAU);
+				var outgoingObservableEdges = neighbours[i].outgoingEdges.map(id => process.getEdge(id)).filter(edge => edge.label !== TAU);
 
 				for(var j = 0; j < incomingObservableEdges.length; j++){
 					var edge = incomingObservableEdges[j];

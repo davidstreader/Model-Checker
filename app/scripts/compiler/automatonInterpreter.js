@@ -1,181 +1,138 @@
 'use strict';
 
 function interpretAutomaton(process, processesMap, variableMap, processId, isFairAbstraction){
-	var referenceMap = {};
-	var root = constructAutomaton(processId, process.ident.ident);
+	const processStack = [];
+	const referenceMap = {};
 
-	// interpret the main process
-	interpretNode(process.process, root, process.ident.ident);
+	const ident = process.ident.ident;
+	const automaton = new Automaton(ident);
+	const root = automaton.addNode();
+	automaton.root = root.id;
+	root.metaData.startNode = true;
 
-	// interpret hiding if a hiding set was defined
+	interpretNode(process.process, automaton, root)
+
 	if(process.hiding !== undefined){
-		processHiding(processesMap[process.ident.ident], process.hiding);
+		processHiding(automaton, process.hiding);
 	}
 
-	// remove unreachable nodes from the process
-	processesMap[process.ident.ident].trim();
+	processesMap[ident] = automaton;
 
-	// label the nodes in the automaton
-	labelNodes(processesMap[process.ident.ident]);
+	function interpretSubAutomaton(subProcess, automaton){
+		// setup the sub automaton
+		const subAutomaton = new Automaton(automaton.id);
+		subAutomaton.nodeId = automaton.nodeId;
+		subAutomaton.edgeId = automaton.edgeId;
 
-	function constructAutomaton(id, ident){
-		var graph = new Graph(id);
-		graph.root = graph.addNode();
-		graph.root.addMetaData('startNode', true);
-		processesMap[ident] = graph;
-		return graph.root;
+		// setup the sub root
+		const subRoot = subAutomaton.addNode();
+		subAutomaton.root = subRoot.id;
+		subRoot.metaData.startNode = true;
+
+		// interpret the sub process
+		interpretNode(subProcess, subAutomaton, subRoot);
+
+		// update the main automaton
+		automaton.nodeId = subAutomaton.nodeId;
+		automaton.edgeId = subAutomaton.edgeId;
+
+		processStack.push(subAutomaton);
 	}
 
-	function interpretNode(astNode, currentNode, ident){
+	function interpretNode(astNode, automaton, currentNode){
 		processReferencePointer(astNode, currentNode);
-		var type = astNode.type;
-		// determine the type of node to process
-		if(type === 'process'){
-			interpretLocalProcess(astNode, currentNode, ident);
-		}
-		else if(type === 'index'){
-			interpretIndex(astNode, currentNode, ident);
-		}
-		else if(type === 'sequence'){
-			interpretSequence(astNode, currentNode, ident);
-		}
-		else if(type === 'choice'){
-			interpretChoice(astNode, currentNode, ident);
-		}
-		else if(type === 'composite'){
-			interpretComposite(astNode, currentNode, ident);
-		}
-		else if(type === 'function'){
-			interpretFunction(astNode, currentNode, ident);
-		}
-		else if(type === 'label'){
-			interpretLabel(astNode, currentNode, ident);
-		}
-		else if(type === 'terminal'){
-			interpretTerminal(astNode, currentNode, ident);
-		}
-		else{
-			throw new InterpreterException('Invalid type \'' + type + '\' received');
+		switch(astNode.type){
+			case 'sequence':
+				interpretSequence(astNode, automaton, currentNode);
+				break;
+			case 'choice':
+				interpretChoice(astNode, automaton, currentNode);
+				break;
+			case 'composite':
+				interpretComposite(astNode, automaton, currentNode);
+				break;
+			case 'function':
+				interpretFunction(astNode, automaton, currentNode);
+				break;
+			case 'identifier':
+				interpretIdentifier(astNode, automaton, currentNode);
+				break;
+			case 'terminal':
+				currentNode.isTerminal = astNode.terminal;
+				break;
+			default:
+				break;
 		}
 
-		// check if a labelling has been defined
 		if(astNode.label !== undefined){
-			// label is an action label node
-			processLabelling(processesMap[ident], astNode.label.action);
+			processLabelling(automaton, astNode.label.action);
 		}
 
-		// check if a relabelling has been defined
 		if(astNode.relabel !== undefined){
-			processRelabelling(processesMap[ident], astNode.relabel.set);
+			processRelabelling(automaton, astNode.relabel.set);
 		}
 	}
 
-	function interpretSequence(astNode, currentNode, ident){
-		// check that the first or second part of the sequence is defined
-		if(astNode.from === undefined){
-			// throw error
-		}
+	function interpretSequence(astNode, automaton, currentNode){
+		const next = (astNode.to.type === 'reference') ? referenceMap[astNode.to.reference] : automaton.addNode();
+		const id = automaton.nextEdgeId;
+		automaton.addEdge(id, astNode.from.action, currentNode, next);
 
-		if(astNode.to === undefined){
-			// throw error
-		}
-
-		// check that from is an action label
-		if(astNode.from.type !== 'action-label'){
-			// throw error
-		}
-
-		var graph = processesMap[ident];
-
-		// check if the next ast node in the sequence is a reference
-		var next = (astNode.to.type === 'reference') ? referenceMap[astNode.to.reference] : graph.addNode();
-		var action = astNode.from.action;
-		processesMap[ident].addEdge(graph.nextEdgeId, action, currentNode.id, next.id);
-		
-		// only interpret if the next ast node is not a reference
 		if(astNode.to.type !== 'reference'){
-			interpretNode(astNode.to, next, ident);
+			interpretNode(astNode.to, automaton, next);
 		}
 	}
 
-	function interpretChoice(astNode, currentNode, ident){
-		interpretNode(astNode.process1, currentNode, ident);
-		interpretNode(astNode.process2, currentNode, ident);
+	function interpretChoice(astNode, automaton, currentNode){
+		interpretNode(astNode.process1, automaton, currentNode);
+		interpretNode(astNode.process2, automaton, currentNode);
 	}
 
-	function interpretComposite(astNode, currentNode, ident){
-		// interpret the two processes to be composed together
-		var process1 = ident + '.process1';
-		var root1 = constructAutomaton(processesMap[ident].id + 'a', process1);
-		interpretNode(astNode.process1, root1, process1);
-		labelNodes(processesMap[process1]);
+	function interpretComposite(astNode, automaton, currentNode){
+		interpretSubAutomaton(astNode.process1, automaton);
+		interpretSubAutomaton(astNode.process2, automaton);
 
-		var process2 = ident + '.process2';
-		var root2 = constructAutomaton(processesMap[ident].id + 'b', process2);
-		interpretNode(astNode.process2, root2, process2);
-		labelNodes(processesMap[process2]);
-		
-		// compose processes together
-		processesMap[ident] = parallelComposition(processesMap[ident].id, processesMap[process1], processesMap[process2]);
+		const automaton2 = processStack.pop();
+		const automaton1 = processStack.pop();
+		const composedAutomaton = parallelComposition(automaton.id + '.comp', automaton1, automaton2);
 
-		// delete unneeded processes
-		delete processesMap[process1];
-		delete processesMap[process2];
+		const root = composedAutomaton.root;
+		composedAutomaton.root = undefined;
+		delete root.metaData.startNode;
+
+		automaton.addAutomaton(composedAutomaton);
+		automaton.combineNodes(currentNode, root);
 	}
 
-	function interpretFunction(astNode, currentNode, ident){
-		var type = astNode.func;
-		if(type === 'abs'){
-			//throw new InterpreterException('abstraction function is currently not implemented');
-			var process1 = ident + '.abs';
-			var root1 = constructAutomaton(processesMap[ident].id + 'abs', process1);
-			interpretNode(astNode.process, root1, process1);
-			labelNodes(processesMap[process1]);
-			processesMap[ident] = abstraction(processesMap[process1].clone, isFairAbstraction);
-			delete processesMap[process1];
-		}
-		else if(type === 'simp'){
-			var process1 = ident + '.simp';
-			var root1 = constructAutomaton(processesMap[ident].id + 'simp', process1);
-			interpretNode(astNode.process, root1, process1);
-			labelNodes(processesMap[process1]);
-			processesMap[ident] = bisimulation(processesMap[process1].clone);
-			delete processesMap[process1];
-		}
-		else if(type === 'tokenRule'){
-			var process1 = ident + '.tr';
-			var node = {
-				type:'process',
-				processType:'petrinet',
-				ident:{
-					type:'identifier',
-					ident:process1
-				},
-				process:astNode.process,
-				local:[]
-			};
+	function interpretFunction(astNode, automaton, currentNode){
+		interpretSubAutomaton(astNode.process, automaton);
 
-			interpretPetriNet(node, processesMap, variableMap, processesMap[ident].id + '.tr', isFairAbstraction);
-			processesMap[ident] = tokenRule(processesMap[process1], 'toAutomaton');
-			delete processesMap[process1];
+		let processedAutomaton = processStack.pop();
+		switch(astNode.func){
+			case 'abs':
+				processedAutomaton = abstraction(processedAutomaton, isFairAbstraction);
+				break;
+			case 'simp':
+				processedAutomaton = bisimulation(processedAutomaton);
+			default:
+				break;
 		}
-		else{
-			throw new InterpreterException('\'' + type + '\' is not a valid function type');
-		}
+
+		const root = processedAutomaton.root;
+		processedAutomaton.root = undefined;
+		delete root.metaData.startNode;
+
+		automaton.addAutomaton(processedAutomaton);
+		automaton.combineNodes(currentNode, root);
 	}
 
-	function interpretTerminal(astNode, currentNode, ident){
-		if(astNode.terminal === 'STOP'){
-			currentNode.addMetaData('isTerminal', 'stop');
-		}
-		else if(astNode.terminal === 'ERROR'){
-			var deadlock = processesMap[ident].addNode();
-			deadlock.addMetaData('isTerminal', 'error');
-			processesMap[ident].addEdge(process.nextEdgeId, DELTA, currentNode.id, deadlock.id);
-		}
-		else{
-			// throw error
-		}
+	function interpretIdentifier(astNode, automaton, currentNode){
+		const reference = processesMap[astNode.ident].clone;
+		const root = reference.root;
+		reference.root = undefined;
+		delete root.metaData.startNode;
+		automaton.addAutomaton(reference);
+		automaton.combineNodes(currentNode, root);
 	}
 
 	function processReferencePointer(astNode, currentNode){
@@ -184,104 +141,36 @@ function interpretAutomaton(process, processesMap, variableMap, processId, isFai
 		}
 	}
 
-	/**
-	 * Labels each of the edges in the specified graph with the specified label.
-	 *
-	 * @param {graph} graph - the graph to label
-	 * @param {string} label - the new label;
-	 */
-	function processLabelling(graph, label){
-		graph.labelEdges(label);
-	}
+	function processHiding(automaton, hidingSet){
+		const alphabet = automaton.alphabet;
+		const set = {};
 
-	/** 
-	 * Relabels edges in the specified graph base on the contents of the specified 
-	 * relabel set. The relabel set is made up of objects containing the old transition
-	 * label and the new transition label.
-	 *
-	 * @param {graph} graph - the graph to relabel
-	 * @param {object[]} relabelSet - an array of objects { oldLabel, newLabel }
-	 */
-	function processRelabelling(graph, relabelSet){
-		for(var i = 0; i < relabelSet.length; i++){
-			graph.relabelEdge(relabelSet[i].oldLabel.action, relabelSet[i].newLabel.action);
+		for(let i = 0; i < hidingSet.set.length; i++){
+			set[hidingSet.set[i]] = true;
 		}
-	}
 
-	function processHiding(graph, hidingSet){
-		var edges = graph.edges;
-		var set = hidingSet.set;
-		if(hidingSet.type = 'includes'){
-			for(var i = 0; i < set.length; i++){
-				for(var j = 0; j < edges.length; j++){
-					if(edges[j].label === set[i]){
-						edges[j].label = TAU;
-					}
-				}
+		for(let label in alphabet){
+			if(set[label] !== undefined && hidingSet.type === 'includes'){
+				automaton.relabelEdges(label, TAU);
 			}
-		}
-		else{
-			for(var i = 0; i < edges.length; j++){
-				var match = false;
-				for(var j = 0; j < set.length; j++){
-					if(edges[i].label === set[j]){
-						match = true;
-						break;
-					}
-
-					if(!match){
-						edges[i].label = TAU;
-					}
-				}
+			else if(set[label] === undefined && hidingSet.type === 'excludes'){
+				automaton.relabelEdges(label, TAU);
 			}
 		}
 	}
 
-	/**
-	 * Traverses depth first through the specified graph and labels
-	 * each node in the graph in the order they are visited.
-	 *
-	 * @param {graph} graph - the graph to label
-	 */
-	function labelNodes(graph){
-		var fringe = [graph.root];
-		var id = 0;
-		var visited = {};
-
-		// traverse depth first through the graph
-		while(fringe.length !== 0){
-			var node = fringe.shift();
-			// check if this node has already been visited
-			if(!visited[node.id]){
-				node.label = '' + id++;
-				visited[node.id] = true;
-				// add neighbours of this node to the fringe
-				var neighbours = node.neighbours;
-				for(var i = 0; i < neighbours.length; i++){
-					fringe.push(graph.getNode(neighbours[i]));
-				}
-			}
+	function processLabelling(automaton, label){
+		const alphabet = automaton.alphabet;
+		for(let action in alphabet){
+			automaton.relabelEdges(action, label + '.' + action);
 		}
 	}
 
-	function reset(){
-		processesMap = {};
-		variableMap = {};
-	}
-
-	/**
-	 * Constructs and returns a 'ParserException' based off of the
-	 * specified message. Also contains the location in the code being parsed
-	 * where the error occured.
-	 *
-	 * @param {string} message - the cause of the exception
-	 * @param {object} location - the location where the exception occured
-	 */
-	function InterpreterException(message, location){
-		this.message = message;
-		this.location = location;
-		this.toString = function(){
-			return 'InterpreterException: ' + message;
-		};	
+	function processRelabelling(automaton, relabelSet){
+		for(let i = 0; i < relabelSet.length; i++){
+			const newLabel = relabelSet[i].newLabel.action;
+			const oldLabel = relabelSet[i].oldLabel.action;
+			automaton.relabelEdges(oldLabel, newLabel);
+		}
 	}
 }
