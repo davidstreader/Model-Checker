@@ -1,0 +1,329 @@
+'use strict';
+
+const AUTOMATON = {
+	get type(){
+		return 'automaton';
+	},
+
+	get id(){
+		return this.id;
+	},
+
+	get root(){
+		return this.nodeMap[this.rootId];
+	},
+
+	set root(id){
+		this.rootId = id;
+	},
+
+	get nodes(){
+		const nodes = [];
+		for(let id in this.nodeMap){
+			nodes.push(this.nodeMap[id]);
+		}
+
+		return nodes;
+	},
+
+	getNode: function(id){
+		return this.nodeMap[id];
+	},
+
+	addNode: function(id, metaData){
+		id = (id === undefined) ? this.nextNodeId : id;
+		metaData = (metaData === undefined) ? {} : metaData;
+		this.nodeCount++;
+	},
+
+	removeNode: function(id){
+		if(this.placeMap[id] === undefined){
+			return;
+		}
+
+		delete this.placeMap[id];
+
+		for(let i in this.edgeMap){
+			const edge = this.edgeMap[i];
+			if(edge.incomingNode === id){
+				delete this.edgeMap[i];
+			}
+
+			if(edge.outgoingNode === id){
+				delete this.edgeMap[i];
+			}
+		}
+
+		if(this.rootId === id){
+			this.rootId === undefined;
+		}
+
+		this.nodeCount--;
+	},
+
+	combineNodes: function(node1, node2){
+		const node = this.addNode();
+
+		const incoming = node.incomingEdges.concat(node2.incomingEdges);
+		for(let i = 0; i < incoming.length; i++){
+			const id = incoming[i];
+			node.addIncomingEdge(id);
+			this.getTransition(id).from = place.id;
+		}
+
+		const outgoing = node1.outgoingEdges.concat(node2.outgoingEdges);
+		for(let i = 0; i < outgoing.length; i++){
+			const id = outgoing[i];
+			node.addOutgoingEdge(id);
+			this.getTransition(id).to = place.id;
+		}
+
+		if(node1.metaData.startNode || node2.metaData.startNode){
+			node.metaData.startNode = true;
+		}
+
+		return place;
+	},
+
+	get edges(){
+		const edges = [];
+		for(let id in this.edgeMap){
+			edges.push(this.edgeMap[id]);
+		}
+
+		return edges;
+	},
+
+	addEdge: function(id, label, from, to, metaData){
+		const edge = new AutomatonEdge(id, label, from, to, metaData);
+		this.edgeMap[id] = edge;
+		this.edgeCount++;
+	},
+
+	removeEdge: function(id){
+		if(this.edgeMap[id] === undefined){
+			return;
+		}
+
+		delete this.edgeMap[id];
+		this.edgeCount--;
+
+		const nodes = this.nodes;
+		for(let i = 0; i < nodes.length; i++){
+			const node = nodes[i];
+			delete this.incomingEdgeSet[id];
+			delete this.outgoingEdgeSet[id];
+		}
+	},
+
+	relabelEdges: function(oldLabel, newLabel){
+		const edges = this.edges.filter(e => e.label === oldLabel);
+		for(let i = 0; i < edges.length; i++){
+			edges[i].label = newLabel;
+		}
+	},
+
+	addAutomaton: function(automaton){
+		const nodes = automaton.nodes;
+		for(let i = 0; i < nodes.length; i++){
+			const node = nodes[i];
+			this.nodeMap[node.id] = node;
+			this.nodeCount++;
+		}
+
+		const edges = automaton.edges;
+		for(let i = 0; i < edges.length; i++){
+			const edge = edges[i];
+			this.edgeMap[edge.id] = edge;
+			this.edgeCount++;
+		}
+	},
+
+	get clone(){
+		if(this.metaData.cloneCount === undefined){
+			this.metaData.cloneCount = 0;
+		}
+
+		const cloneId = this.metaData.cloneCount++;
+
+		const automaton = new Automaton(this.id + '.' + cloneId);
+
+		// clone nodes from this automaton and add them to the clone
+		const nodes = this.nodes;
+		for(let i = 0; i < nodes.length; i++){
+			const id = nodes[i].id + '.' + cloneId;
+			const incoming = relabelSet(JSON.parse(JSON.stringify(nodes[i].incomingEdgeSet)));
+			const outgoing = relabelSet(JSON.parse(JSON.stringify(nodes[i].outgoingEdgeSet)));
+			const metaData = JSON.parse(JSON.stringify(nodes[i].metaData));
+			const node = new AutomatonNode(id, incoming, outgoing, metaData);
+			automaton.nodeMap[id] = node;
+			automaton.nodeCount++;
+		}
+
+		// clone edges from this automaton and add them to the clone
+		const edges = this.edges;
+		for(let i = 0; i < edge.length; i++){
+			const id = edges[i].id + '.' + cloneId;
+			const label = edges[i].label;
+			const from = edges[i].from + '.' + cloneId;
+			const to = edges[i].to + '.' + cloneId;
+			const metaData = JSON.parse(JSON.stringify(edges[i].metaData));
+			const edge = new AutomatonEdge(id, label, from, to, metaData);
+			automaton.edgeMap[id] = edge;
+			automaton.edgeCount++;
+		}
+
+		return automaton;
+
+		function relabelSet(set){
+			const newSet = {};
+			for(let label in set){
+				newSet[label + '.' + cloneId] = true;
+			}
+
+			return newSet;
+		}
+	},
+
+	get nextNodeId(){
+		return this.nodeId++;
+	},
+
+	get nextEdgeId(){
+		return this.edgeId++;
+	}
+};
+
+function Automaton(id){
+	this.id = id;
+	this.nodeMap = {};
+	this.nodeCount = 0;
+	this.edgeMap = {};
+	this.edgeCount = 0;
+	this.nodeId = 0;
+	this.edgeId = 0;
+	this.metaData = 0;
+}
+
+const AUTOMATON_NODE = {
+	get type(){
+		return 'node';
+	},
+
+	get id(){
+		return id;
+	},
+
+	get incomingEdges(){
+		return Object.keys(this.getIncomingSet);
+	},
+
+	addIncomingEdge: function(id){
+		this.incomingEdgeSet[id] = true;
+	},
+
+	removeIncomingEdge: function(id){
+		delete this.incomingEdgeSet[id];
+	},
+
+	get outgoingEdges(){
+		return Object.keys(this.outgoingEdgeSet);
+	},
+
+	addOutgoingEdge: function(id){
+		this.outgoingEdgeSet[id] = true;
+	},
+
+	removeOutgoingEdge: function(id){
+		delete this.outgoingEdgeSet[id];
+	},
+
+	isTerminal: function(){
+		for(let id in this.outgoingEdgeSet){
+			return false;
+		}
+
+		return true;
+	},
+
+	isUnreachable: function(){
+		for(let id in this.incomingEdgeSet){
+			return false;
+		}
+
+		return true;
+	},
+
+	addMetaData: function(key, data){
+		this.metaData[key] = data;
+	},
+
+	getMetaData: function(key){
+		return this.metaData[key];
+	},
+
+	deleteMetaData: function(key){
+		delete this.metaData[key];
+	}
+};
+
+function AutomatonNode(id, incomingEdges, outgoingEdges, metaData){
+	this.id = id;
+	this.incomingEdgeSet = (incomingEdges === undefined) ? {} : incomingEdges;
+	this.outgoingEdgeSet = (outgoingEdges === undefined) ? {} : outgoingEdges;
+	this.metaData = (metaData === undefined) ? {} : metaData;
+}
+
+const AUTOMATON_EDGE = {
+	get type(){
+		return 'edge';
+	},
+
+	get id(){
+		return this.id;
+	},
+
+	get label(){
+		return this.label;
+	}
+
+	set label(label){
+		this.label = label;
+	},
+
+	get incomingNode(){
+		return this.from;
+	},
+
+	get outgoingNode(){
+		return this.to;
+	},
+
+	isHidden: function(){
+		return this.label === TAU;
+	},
+
+	isDeadlocked: function(){
+		return this.label === DELTA;
+	},
+
+	addMetaData: function(key, data){
+		this.metaData[key] = data;
+	},
+
+	getMetaData: function(key){
+		return this.metaData[key];
+	},
+
+	deleteMetaData: function(key){
+		delete this.metaData[key];
+	}
+};
+
+function AutomatonEdge(id, label, from, to, metaData){
+	this.id = id;
+	this.label = label;
+	this.from = from;
+	this.to = to;
+	this.metaData = (metaData === undefined) ? {} : metaData;
+}
