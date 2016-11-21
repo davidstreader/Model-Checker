@@ -38,7 +38,7 @@
   <style is="custom-style" include="shared-styles">
   .frame {
     position: absolute;
-    top: 64px;
+    top: 106px;
     bottom: 0;
     left: 0;
     right: 0;
@@ -73,7 +73,7 @@
   .process-display {
     position: relative;
     height: 100%;
-    overflow: auto;    
+    overflow: auto;
   }
   process-visualisation {
     position: relative;
@@ -206,18 +206,40 @@
     <!-- end toolbar -->
 
     <!-- start content -->
+    <paper-tabs selected="{{selectedCtx}}">
+      <paper-tab>Editor</paper-tab>
+      <paper-tab>Diagram</paper-tab>
+      <paper-tab id="consoletab"><span style="color:{{consoleMsgCount}}">Console</span></paper-tab>
+    </paper-tabs>
     <div class="frame">
-      <div class="layout vertical flex">
-        <text-editor autofocus id="editor" class="flex"></text-editor>
-        <console-logger id="console"></console-logger>
-      </div>
-      <div class="layout vertical flex">
-        <process-selector id="selector" processes="{{automata.values}}"></process-selector>
-        <div class="process-display">
-        <process-visualisation id="visualiser"></process-visualisation>
-        </div>
-      </div>
+      <neon-animated-pages selected="{{selectedCtx}}" class="fit">
+        <section class="layout vertical flex">
+          <text-editor autofocus id="editor" class="flex"></text-editor>
+        </section>
+        <section class="layout vertical flex">
+          <process-selector id="selector" processes="{{automata.values}}"></process-selector>
+          <div class="process-display">
+            <process-visualisation id="visualiser"></process-visualisation>
+          </div>
+        </section>
+        <section class="layout vertical flex">
+          <console-logger id="console" class="flex"></console-logger>
+        </section>
+      </neon-animated-pages>
     </div>
+    <script>
+        document.addEventListener('WebComponentsReady', function () {
+            app.selectedCtx = 0;
+            app.consoleMsgCount = "black";
+        });
+        document.addEventListener('console-change', function() {
+            if (!document.querySelector('code[id="console"] > .error')) {
+                app.consoleMsgCount = "black";
+                return;
+            }
+            app.consoleMsgCount = "#ab0000";
+        });
+    </script>
     <!-- end content -->
 
     <!-- start help-dialog -->

@@ -10,7 +10,8 @@
     "paper-elements": "PolymerElements/paper-elements#^1.0.1",
     "pegjs": "^0.9.0",
     "platinum-elements": "PolymerElements/platinum-elements#^1.0.1",
-    "javascript-detect-element-resize": "sdecima/javascript-detect-element-resize#~0.5.3"
+    "javascript-detect-element-resize": "sdecima/javascript-detect-element-resize#~0.5.3",
+    "paper-badge": "PolymerElements/paper-badge#^1.1.4"
   },
   "devDependencies": {
     "web-component-tester": "*",
