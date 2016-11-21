@@ -16,13 +16,10 @@ function petriNetParallelComposition(id, net1, net2){
 	// add places to the composed net
 	var places = net1.places.concat(net2.places);
 	for(var i = 0; i < places.length; i++){
-		net.addPlace(places[i].id, places[i].metaData);
+		net.addPlace(places[i].id, undefined, undefined, places[i].metaData);
 		// check if this place is a start or terminal place
 		if(places[i].getMetaData('startPlace') !== undefined){
 			net.addRoot(places[i].id);
-		}
-		if(places[i].getMetaData('isTerminal') !== undefined){
-			net.addTerminal(places[i].id);
 		}
 	}
 
@@ -32,14 +29,14 @@ function petriNetParallelComposition(id, net1, net2){
 	for(var action in labelSets1){
 		var transitions = labelSets1[action];
 		for(var i = 0; i < transitions.length; i++){
-			var incoming = transitions[i].incomingPlaces;
-			var outgoing = transitions[i].outgoingPlaces;
+			var incoming = transitions[i].incomingPlaces.map(id => net.getPlace(id));
+			var outgoing = transitions[i].outgoingPlaces.map(id => net.getPlace(id));
 			// check if the actions are synced
 			if(labelSets2[action] !== undefined){
 				var synced = labelSets2[action];
 				for(var j = 0; j < synced.length; j++){
-					incoming = incoming.concat(synced[j].incomingPlaces);
-					outgoing = outgoing.concat(synced[j].outgoingPlaces);
+					incoming = incoming.concat(synced[j].incomingPlaces.map(id => net.getPlace(id)));
+					outgoing = outgoing.concat(synced[j].outgoingPlaces.map(id => net.getPlace(id)));
 				}
 			}
 
@@ -54,8 +51,8 @@ function petriNetParallelComposition(id, net1, net2){
 			var transitions = labelSets2[action];
 			for(var i = 0; i < transitions.length; i++){
 				// update references to incoming and outgoing places
-				var incoming = processPlaceArray(transitions[i].incomingPlaces);
-				var outgoing = processPlaceArray(transitions[i].outgoingPlaces);
+				var incoming = processPlaceArray(transitions[i].incomingPlaces.map(id => net.getPlace(id)));
+				var outgoing = processPlaceArray(transitions[i].outgoingPlaces.map(id => net.getPlace(id)));
 				net.addTransition(transitions[i].id, action, incoming, outgoing);
 			}
 		}
@@ -69,23 +66,23 @@ function petriNetParallelComposition(id, net1, net2){
 	 * transitions
 	 */
 	function syncTransitions(transition1, transition2){
-		var places = transition1.outgoingPlaces;
+		var places = transition1.outgoingPlaces.map(id => net.getPlace(id));
 		for(var i = 0; i < places.length; i++){
 			transition2.addOutgoingPlace(places[i]);
 			places[i].addIncomingTransition(transition2.id);
 		}
-		places = transition2.outgoingPlaces;
+		places = transition2.outgoingPlaces.map(id => net.getPlace(id));
 		for(var i = 0; i < places.length; i++){
 			transition1.addOutgoingPlace(places[i]);
 			places[i].addIncomingTransition(transition1.id);
 		}
 
-		places = transition1.incomingPlaces;
+		places = transition1.incomingPlaces.map(id => net.getPlace(id));
 		for(var i = 0; i < places.length; i++){
 			transition2.addIncomingPlace(places[i]);
 			places[i].addOutgoingTransition(transition2.id);
 		}
-		places = transition2.incomingPlaces;
+		places = transition2.incomingPlaces.map(id => net.getPlace(id));
 		for(var i = 0; i < places.length; i++){
 			transition1.addIncomingPlace(places[i]);
 			places[i].addOutgoingTransition(transition1.id);

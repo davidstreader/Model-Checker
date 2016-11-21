@@ -109,13 +109,13 @@ function constructGraphs(processesMap, analysis, lastGraphs){
 			var styleClasses = 'p' + places[i].id;
 			var label = '';
 			// add to array of start places if necessary
-			if(places[i].getMetaData('startPlace')){
+			if(places[i].metaData.startPlace !== undefined){
 				startPlaces.push(places[i]);
-				label += places[i].getMetaData('startPlace');
+				label += places[i].metaData.startPlace;
 			}
 
 			// check if this place is a terminal
-			var terminal = places[i].getMetaData('isTerminal');
+			var terminal = places[i].metaData.isTerminal;
 			if(terminal !== undefined){
 				styleClasses += ' terminal ' + terminal;
 			} 
@@ -137,25 +137,18 @@ function constructGraphs(processesMap, analysis, lastGraphs){
 		for(var i = 0; i < transitions.length; i++){
 			var styleClasses = 't' + transitions[i].id;
 
-			var label = transitions[i].label;
-			if(label === GAMMA){
-				graph.setNode('t' + transitions[i].id, {label:label, shape:'transitionNode', style:'fill:#000000' });
-			}
-			else{
-				graph.setNode('t' + transitions[i].id, { label:label, shape:'transitionNode', class:styleClasses.trim() });
-			}
+			graph.setNode('t' + transitions[i].id, { label:transitions[i].label, shape:'transitionNode', class:styleClasses.trim() });
 
-			//
 			var outgoing = transitions[i].outgoingPlaces;
 			for(var j = 0; j < outgoing.length; j++){
 				var from = 't' + transitions[i].id;
-				var to = 'p' + outgoing[j].id;
+				var to = 'p' + outgoing[j];
 				graph.setEdge(from, to, { label:'', lineInterpolate:'basis' }, edgeId++);
 			}
 
 			var incoming = transitions[i].incomingPlaces;
 			for(var j = 0; j < incoming.length; j++){
-				var from = 'p' + incoming[j].id;
+				var from = 'p' + incoming[j];
 				var to = 't' + transitions[i].id;
 				graph.setEdge(from, to, { label:'', lineInterpolate:'basis' }, edgeId++);
 			}

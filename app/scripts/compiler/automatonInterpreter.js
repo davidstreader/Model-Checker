@@ -1,17 +1,11 @@
 'use strict';
 
 function interpretAutomaton(process, processesMap, variableMap, processId, isFairAbstraction){
+	var referenceMap = {};
 	var root = constructAutomaton(processId, process.ident.ident);
-	var localProcessesMap = constructLocalProcesses(process.ident.ident, process.local);
 
 	// interpret the main process
 	interpretNode(process.process, root, process.ident.ident);
-
-	// interpret the locally defined processes
-	for(var ident in localProcessesMap){
-		var localProcess = localProcessesMap[ident];
-		interpretNode(localProcess.process, localProcess.node, process.ident.ident);
-	}
 
 	// interpret hiding if a hiding set was defined
 	if(process.hiding !== undefined){
@@ -32,38 +26,8 @@ function interpretAutomaton(process, processesMap, variableMap, processId, isFai
 		return graph.root;
 	}
 
-	function constructLocalProcesses(ident, localProcesses){
-		var processes = {};
-		for(var i = 0; i < localProcesses.length; i++){
-			var astNode = localProcesses[i].ident;
-			// check if process has indices defined
-			if(astNode.ranges !== undefined){
-				constructIndexedLocalProcess(astNode.ident, ident, astNode.ranges.ranges, localProcesses[i].process);
-			}
-			else{
-				processes[astNode.ident] = { node:processesMap[ident].addNode(), process:localProcesses[i].process };
-			}
-		}
-
-		return processes;
-
-		function constructIndexedLocalProcess(ident, globalIdent, ranges, process){
-			if(ranges.length !== 0){
-				var iterator = new IndexIterator(ranges[0]);
-				while(iterator.hasNext){
-					var element = iterator.next;
-					var newIdent = ident + '[' + element + ']';
-					ranges = (ranges.length > 1) ? ranges.slice(1) : [];
-					constructIndexedLocalProcess(newIdent, globalIdent, ranges.slice(1), process);
-				}
-			}
-			else{
-				processes[ident] = { node:processesMap[globalIdent].addNode(), process:process };
-			}
-		}
-	}
-
 	function interpretNode(astNode, currentNode, ident){
+		processReferencePointer(astNode, currentNode);
 		var type = astNode.type;
 		// determine the type of node to process
 		if(type === 'process'){
@@ -83,9 +47,6 @@ function interpretAutomaton(process, processesMap, variableMap, processId, isFai
 		}
 		else if(type === 'function'){
 			interpretFunction(astNode, currentNode, ident);
-		}
-		else if(type === 'identifier'){
-			interpretIdentifier(astNode, currentNode, ident);
 		}
 		else if(type === 'label'){
 			interpretLabel(astNode, currentNode, ident);
@@ -109,21 +70,6 @@ function interpretAutomaton(process, processesMap, variableMap, processId, isFai
 		}
 	}
 
-	function interpretLocalProcess(astNode, currentNode, ident){
-		throw new InterpreterException('Functionality for interpreting a local process is currently not implemented');
-	}
-
-	function interpretIndex(astNode, currentNode, ident){
-		var iterator = new IndexIterator(astNode.range);
-		while(iterator.hasNext){
-			var element = iterator.next;
-			variableMap[astNode.variable] = element;
-			interpretNode(astNode.process, currentNode, ident);
-		}
-
-		//throw new InterpreterException('Functionality for interpreting a range is currently not implemented');
-	}
-
 	function interpretSequence(astNode, currentNode, ident){
 		// check that the first or second part of the sequence is defined
 		if(astNode.from === undefined){
@@ -140,10 +86,16 @@ function interpretAutomaton(process, processesMap, variableMap, processId, isFai
 		}
 
 		var graph = processesMap[ident];
-		var next = graph.addNode();
-		var action = processActionLabel(astNode.from.action);
+
+		// check if the next ast node in the sequence is a reference
+		var next = (astNode.to.type === 'reference') ? referenceMap[astNode.to.reference] : graph.addNode();
+		var action = astNode.from.action;
 		processesMap[ident].addEdge(graph.nextEdgeId, action, currentNode.id, next.id);
-		interpretNode(astNode.to, next, ident);
+		
+		// only interpret if the next ast node is not a reference
+		if(astNode.to.type !== 'reference'){
+			interpretNode(astNode.to, next, ident);
+		}
 	}
 
 	function interpretChoice(astNode, currentNode, ident){
@@ -212,32 +164,6 @@ function interpretAutomaton(process, processesMap, variableMap, processId, isFai
 		}
 	}
 
-	function interpretIdentifier(astNode, currentNode, ident){
-		var current = astNode.ident;
-		// check if this process is referencing itself
-		if(current === ident){
-			var root = processesMap[ident].root;
-			processesMap[ident].mergeNodes([root, currentNode]);
-		}
-		// check if the process is referencing a locally defined process
-		else if(localProcessesMap[current] !== undefined){
-			processesMap[ident].mergeNodes([localProcessesMap[current].node, currentNode]);
-		}
-		// check if the process is referencing a globally defined process
-		else if(processesMap[current] !== undefined){
-			// check that referenced process is of the same type
-			if(processesMap[ident].type === processesMap[current].type){
-				processesMap[ident].addGraph(processesMap[current].clone, currentNode);
-			}
-			else{
-				throw new InterpreterException('Cannot reference type \'' + processesMap[current].type + '\' from type \'automata\'');
-			}
-		}
-		else{
-			throw new InterpreterException('The identifier \'' + current + '\' has not been defined');
-		}
-	}
-
 	function interpretTerminal(astNode, currentNode, ident){
 		if(astNode.terminal === 'STOP'){
 			currentNode.addMetaData('isTerminal', 'stop');
@@ -249,6 +175,12 @@ function interpretAutomaton(process, processesMap, variableMap, processId, isFai
 		}
 		else{
 			// throw error
+		}
+	}
+
+	function processReferencePointer(astNode, currentNode){
+		if(astNode.reference !== undefined){
+			referenceMap[astNode.reference] = currentNode;
 		}
 	}
 
@@ -303,27 +235,6 @@ function interpretAutomaton(process, processesMap, variableMap, processId, isFai
 				}
 			}
 		}
-	}
-
-	/**
-	 * Evaluates and returns the specified expression. Returns the result as a boolean if
-	 * specified, otherwise returns the result as a number.
-	 *
-	 * @param {string} - the expression to evaluate
-	 * @return {string} - the processed action label
-	 */
-	function processActionLabel(action){
-		// replace any variables declared in the expression with its value
-		var regex = '[\$][<]*[a-zA-Z0-9]*[>]*';
-		var match = action.match(regex);
-		while(match !== null){
-			var expr = evaluate(variableMap[match[0]]);
-			action = action.replace(match[0], expr);
-			match = action.match(regex);
-		}
-
-		return action;
-
 	}
 
 	/**

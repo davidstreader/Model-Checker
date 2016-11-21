@@ -54,7 +54,7 @@ function petriNetBisimulation(processes){
 
 				var transitions = current.outgoingTransitions.map(id => process.getTransition(id));
 				for(var i = 0; i < transitions.length; i++){
-					var outgoing = transitions[i].outgoingPlaces;
+					var outgoing = transitions[i].outgoingPlaces.map(id => process.getPlace(id));
 					for(var j = 0; j < outgoing.length; j++){
 						fringe.push(outgoing[j]);
 					}
@@ -194,13 +194,13 @@ function petriNetBisimulation(processes){
 	}
 
 	function PrePostCondition(transition){
-		var incoming = transition.incomingPlaces.map(p => p.id).sort();
+		var incoming = transition.incomingPlaces.sort();
 		var pre = {};
 		for(var i = 0; i < incoming.length; i++){
 			pre[incoming[i]] = true;
 		}
 
-		var outgoing = transition.outgoingPlaces.map(p => p.id).sort();
+		var outgoing = transition.outgoingPlaces.sort();
 		var post = {};
 		for(var i = 0; i < outgoing.length; i++){
 			post[outgoing[i]] = true;

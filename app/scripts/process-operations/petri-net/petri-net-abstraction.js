@@ -28,9 +28,9 @@ function petriNetAbstraction(process, isFairAbstraction){
 		var place = places.pop();
 		var transitions = place.outgoingTransitions.map(id => process.getTransition(id));
 		for(var i = 0; i < transitions.length; i++){
-			var incoming = transitions[i].incomingPlaces;
+			var incoming = transitions[i].incomingPlaces.map(id => process.getPlace(id));
 			if(incoming.length === 1){
-				var outgoing = transitions[i].outgoingPlaces.filter(p => p.incomingTransitions.length === 1);
+				var outgoing = transitions[i].outgoingPlaces.map(id => process.getPlace(id)).filter(p => p.incomingTransitions.length === 1);
 				for(var j = 0; j < outgoing.length; j++){
 					places.push(outgoing[j]);
 				}
@@ -45,12 +45,12 @@ function petriNetAbstraction(process, isFairAbstraction){
 	return process;
 
 	function constructObservableTransitions(hiddenTransition){
-		var incoming = hiddenTransition.incomingPlaces;
+		var incoming = hiddenTransition.incomingPlaces.map(id => process.getPlace(id));
 
 		var fringe = [hiddenTransition];
 		while(fringe.length !== 0){
 			hiddenTransition = fringe.pop();
-			var outgoing = hiddenTransition.outgoingPlaces;
+			var outgoing = hiddenTransition.outgoingPlaces.map(id => process.getPlace(id));
 
 			for(var i = 0; i < incoming.length; i++){
 				var observableTransitions = incoming[i].incomingTransitions
@@ -58,13 +58,13 @@ function petriNetAbstraction(process, isFairAbstraction){
 					.filter(t => t.label !== TAU);
 
 				for(var j = 0; j < observableTransitions.length; j++){
-					var incomingPlaces = incoming.concat(observableTransitions[j].incomingPlaces);
+					var incomingPlaces = incoming.concat(observableTransitions[j].incomingPlaces.map(id => process.getPlace(id)));
 					var incomingSet = {};
 					for(var k = 0; k < incomingPlaces.length; k++){
 						incomingSet[incomingPlaces[k].id] = true;
 					}
 
-					var outgoingPlaces = observableTransitions[j].outgoingPlaces;
+					var outgoingPlaces = observableTransitions[j].outgoingPlaces.map(id => process.getPlace(id));
 					for(var k = 0; k < outgoingPlaces.length; k++){
 						delete incomingSet[outgoingPlaces[k].id];
 					}
@@ -83,13 +83,13 @@ function petriNetAbstraction(process, isFairAbstraction){
 				var observableTransitions = transitions.filter(t => t.label !== TAU);
 
 				for(var j = 0; j < observableTransitions.length; j++){
-					var outgoingPlaces = outgoing.concat(observableTransitions[j].outgoingPlaces);
+					var outgoingPlaces = outgoing.concat(observableTransitions[j].outgoingPlaces.map(id => process.getPlace(id)));
 					var outgoingSet = {};
 					for(var k = 0; k < outgoingPlaces.length; k++){
 						outgoingSet[outgoingPlaces[k].id] = true;
 					}
 
-					var incomingPlaces = observableTransitions[j].incomingPlaces;
+					var incomingPlaces = observableTransitions[j].incomingPlaces.map(id => process.getPlace(id));
 					for(var k = 0; k < incomingPlaces.length; k++){
 						delete outgoingSet[incomingPlaces[k].id];
 					}
@@ -104,7 +104,7 @@ function petriNetAbstraction(process, isFairAbstraction){
 			}
 
 			// push hidden transitions to fringe
-			var outgoingPlaces = hiddenTransition.outgoingPlaces;
+			var outgoingPlaces = hiddenTransition.outgoingPlaces.map(id => process.getPlace(id));
 			for(var i = 0; i < outgoingPlaces.length; i++){
 				var outgoingTransitions = outgoingPlaces[i].outgoingTransitions
 					.map(id => process.getTransition(id))

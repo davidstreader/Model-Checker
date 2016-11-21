@@ -49,7 +49,8 @@ function compile(code, isFairAbstraction){
 		// perform analysis to see which processes need to be re-interpreted
 		var abstractionChanged = isFairAbstraction !== lastAbstraction;
 		var analysis = performAnalysis(ast.processes, lastAnalysis, abstractionChanged); // performAnalysis function in 'analyser.js'
-		
+		ast.processes = replaceReferences(ast.processes);
+
 		// convert the processes from the ast into their appropriate data structures
 		var processes = interpret(ast.processes, ast.variableMap, analysis, lastProcesses, isFairAbstraction); // interpret function in 'interpreter.js'
 		
