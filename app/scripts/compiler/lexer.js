@@ -20,28 +20,41 @@ const Lexer = {
 	 */
 	tokenise: function(code){
 		const tokens = [];
+    let line = 1;
 		let column = 0;
-		let line = 1;
 
 		// loop through the code and construct tokens
 		while(code.length !== 0){
 			gobbleWhitespace();
+
+      // construct the start position for the current token
+      const start = new Position(line, column);
+
 			let value;
 
 			// attempt to match an action label, process type, function or keyword
 			value = matchValue(this.actionLabel);
 			if(value !== undefined){
+        // construct the end point for the current token
+        const end = new Position(line, column);
+
+        // construct the location in the code of this token
+        const location = new Location(start, end);
+
+        // determine if the action tokenised was actally a process type
 				if(this.processTypes[value] !== undefined){
-					tokens.push(new Token('action', value));
+					tokens.push(new Token('process-type', value, location));
 				}
+        // determine if the action tokenised was actually a function
 				else if(this.functions[value] !== undefined){
-					tokens.push(new Token('function', value));
+					tokens.push(new Token('function', value, location));
 				}
+        // determine if the action tokenised was actually a keyword
 				else if(this.keywords[value] !== undefined){
-					tokens.push(new Token('keyword', value));
+					tokens.push(new Token('keyword', value, location));
 				}
 				else{
-					tokens.push(new Token('action', value))
+					tokens.push(new Token('action', value, location))
 				}
 
 				continue;
@@ -50,11 +63,17 @@ const Lexer = {
 			// attempt to match an identifer or terminal
 			value = matchValue(this.identifier);
 			if(value !== undefined){
+        // construct the end point for the current token
+        const end = new Position(line, column);
+
+        // construct the location in the code of this token
+        const location = new Location(start, end);
+
 				if(this.terminals[value] !== undefined){
-					tokens.push(new Token('terminal', value));
+					tokens.push(new Token('terminal', value, location));
 				}
 				else{
-					tokens.push(new Token('identifier', value))
+					tokens.push(new Token('identifier', value, location));
 				}
 
 				continue;
@@ -63,21 +82,39 @@ const Lexer = {
 			// attempt to match an integer
 			value = matchValue(this.integer);
 			if(value !== undefined){
-				tokens.push(new Token('integer', value))
+        // construct the end point for the current token
+        const end = new Position(line, column);
+
+        // construct the location in the code of this token
+        const location = new Location(start, end);
+
+				tokens.push(new Token('integer', value, location));
 				continue;
 			}
 
 			// attempt to match a symbol
 			value = matchValue(this.symbols);
 			if(value !== undefined){
-				tokens.push(new Token('symbol', value))
+        // construct the end point for the current token
+        const end = new Position(line, column);
+
+        // construct the location in the code of this token
+        const location = new Location(start, end);
+
+				tokens.push(new Token('symbol', value, location));
 				continue;
 			}
 
 			// attempt to match an operator
 			value = matchValue(this.operators);
 			if(value !== undefined){
-				tokens.push(new Token('operator', value))
+        // construct the end point for the current token
+        const end = new Position(line, column);
+
+        // construct the location in the code of this token
+        const location = new Location(start, end);
+
+				tokens.push(new Token('operator', value, location));
 				continue;
 			}
 
@@ -154,6 +191,16 @@ const Lexer = {
 function Token(type, value){
 	this.type = type;
 	this.value = value;
+}
+
+function Position(line, column){
+  this.line = line;
+  this.col = column;
+}
+
+function Location(start, end){
+  this.start = start;
+  this.end = end;
 }
 
 // EXCEPTIONS
