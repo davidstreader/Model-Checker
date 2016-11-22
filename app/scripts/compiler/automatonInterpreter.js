@@ -16,6 +16,7 @@ function interpretAutomaton(process, processesMap, variableMap, processId, isFai
 		processHiding(automaton, process.hiding);
 	}
 
+	labelAutomaton(automaton);
 	processesMap[ident] = automaton;
 
 	function interpretSubAutomaton(subProcess, automaton){
@@ -58,7 +59,7 @@ function interpretAutomaton(process, processesMap, variableMap, processId, isFai
 				interpretIdentifier(astNode, automaton, currentNode);
 				break;
 			case 'terminal':
-				currentNode.isTerminal = astNode.terminal;
+				currentNode.metaData.isTerminal = astNode.terminal;
 				break;
 			default:
 				break;
@@ -171,6 +172,30 @@ function interpretAutomaton(process, processesMap, variableMap, processId, isFai
 			const newLabel = relabelSet[i].newLabel.action;
 			const oldLabel = relabelSet[i].oldLabel.action;
 			automaton.relabelEdges(oldLabel, newLabel);
+		}
+	}
+
+	function labelAutomaton(automaton){
+		let label = 0;
+		const visited = {};
+		const fringe = [automaton.root];
+		let index = 0;
+		while(index < fringe.length){
+			const current = fringe[index++];
+			if(visited[current.id]){
+				continue;
+			}
+
+			visited[current.id] = true;
+			current.metaData.label = label++;
+
+			const neighbours = current.outgoingEdges.map(id => automaton.getEdge(id)).map(e => automaton.getNode(e.to));
+			for(let i = 0; i < neighbours.length; i++){
+				const neighbour = neighbours[i];
+				if(!visited[neighbour.id]){
+					fringe.push(neighbour);
+				}
+			}
 		}
 	}
 }
