@@ -4,7 +4,7 @@ var processesMap;
 var variableMap;
 var nextProcessId;
 
-function interpret(processes, analysis, lastProcessesMap, isFairAbstraction){
+function interpret(processes, analysis, lastProcessesMap, context){
 	reset();
 
 	for(var i = 0; i < processes.length; i++){
@@ -14,10 +14,10 @@ function interpret(processes, analysis, lastProcessesMap, isFairAbstraction){
 			// interpret the process
 			var type = processes[i].processType;
 			if(type === 'automata'){
-				interpretAutomaton(processes[i], processesMap, isFairAbstraction);
+				interpretAutomaton(processes[i], processesMap, context);
 			}
 			else if(type === 'petrinet'){
-				interpretPetriNet(processes[i], processesMap, isFairAbstraction);
+				interpretPetriNet(processes[i], processesMap, context);
 			}
 			else{
 				// throw error

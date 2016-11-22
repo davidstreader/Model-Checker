@@ -49,7 +49,8 @@
         if(app.liveCompiling === true || override){
           var compileStartTime = (new Date()).getTime();
           var code = app.$.editor.getCode();
-          var results = app.$.parser.compile(code, app.fairAbstraction);
+          var settings = app.getSettings();
+          var results = app.$.parser.compile(code, settings);
 
           // check if an error was thrown by the compiler
           if(results.type === 'error'){
@@ -103,6 +104,12 @@
 
       return code;
     };
+
+    app.getSettings = function() {
+      return {
+        isFairAbstraction: app.fairAbstraction
+      };
+    }
 
     /**
      * Open a text file from the user's computer and set the text-area to

@@ -1,6 +1,6 @@
 'use strict';
 
-function interpretAutomaton(process, processesMap, isFairAbstraction){
+function interpretAutomaton(process, processesMap, context){
 	const processStack = [];
 	const referenceMap = {};
 
@@ -111,7 +111,7 @@ function interpretAutomaton(process, processesMap, isFairAbstraction){
 		let processedAutomaton = processStack.pop();
 		switch(astNode.func){
 			case 'abs':
-				processedAutomaton = abstraction(processedAutomaton, isFairAbstraction);
+				processedAutomaton = abstraction(processedAutomaton, context.isFairAbstraction);
 				break;
 			case 'simp':
 				processedAutomaton = bisimulation(processedAutomaton);

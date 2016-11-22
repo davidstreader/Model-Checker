@@ -6,9 +6,9 @@
  * @param{Process} process - the process to be interpreted into a petri net
  * @param{string -> ProcessModel} - a mapping from process identifier to process model
  * @param{string} processId - the id for the constructed petri net
- * @param{boolean} isFairAbstraction - whether or not fair abstraction has been specified
+ * @param{Object} context - contains information from the main application
  */
-function interpretPetriNet(process, processesMap, isFairAbstraction){
+function interpretPetriNet(process, processesMap, context){
 	const processStack = [] // stack containing interpreteted petri nets;
 
 	const identifier = process.ident.ident;
@@ -225,7 +225,7 @@ function interpretPetriNet(process, processesMap, isFairAbstraction){
 		let processedNet = processStack.pop();
 		switch(astNode.func){
 			case 'abs':
-				processedNet = abstraction(processedNet, isFairAbstraction);
+				processedNet = abstraction(processedNet, context.isFairAbstraction);
 				break;
 			case 'simp':
 				processedNet = bisimulation(processedNet);

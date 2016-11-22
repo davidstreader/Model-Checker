@@ -31,7 +31,7 @@ var lastAbstraction = true;
  * @throws{exception} - throws an exception specific to the stage where the error
  *						took place
  */
-function compile(code, isFairAbstraction){
+function compile(code, context){
 	try{
 		// convert code into an array of tokens
 		var tokens = lexer.parse(code); // lexer.parse function in 'lexer.js'
@@ -43,14 +43,14 @@ function compile(code, isFairAbstraction){
 		ast = expand(ast); // expand function defined in 'expander.js'
 
 		// perform analysis to see which processes need to be re-interpreted
-		var abstractionChanged = isFairAbstraction !== lastAbstraction;
+		var abstractionChanged = context.isFairAbstraction !== lastAbstraction;
 		var analysis = performAnalysis(ast.processes, lastAnalysis, abstractionChanged); // performAnalysis function in 'analyser.js'
 		
 		// insert local references into the main processses and handle self references
 		ast.processes = replaceReferences(ast.processes); // replaceReferences function in 'referenceReplacer.js'
 
 		// convert the processes from the ast into their appropriate data structures
-		var processes = interpret(ast.processes, analysis, lastProcesses, isFairAbstraction); // interpret function in 'interpreter.js'
+		var processes = interpret(ast.processes, analysis, lastProcesses, context); // interpret function in 'interpreter.js'
 		
 		var operations = evaluateOperations(ast.operations, processes, ast.variableMap);
 
@@ -59,7 +59,7 @@ function compile(code, isFairAbstraction){
 		lastAst = ast;
 		lastAnalysis = analysis;
 		lastProcesses = processes;
-		lastAbstraction = isFairAbstraction;
+		lastAbstraction = context.isFairAbstraction;
 
 		return { processes:processes, operations:operations };
 
