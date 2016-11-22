@@ -17,38 +17,59 @@
  * that are referenced by the process and isUpdated is a boolean determining whether the 
  * process has been updated since the last compilation
  *
- * @param {astNode[]} processes - the processes from the abstract syntax tree
- * @param {astNode[]} lastAnalysis - the analysis from the last compilation
- * @return {string -> analysis} - a mapping from identifier to analysis object
+ * @param{Process[]} processes - the processes from the abstract syntax tree
+ * @param{Identifier -> Analysis} lastAnalysis - a mapping from identifier 
+ *		to analysis object from the last compilation
+ * @return{Identifier -> Analysis} - a mapping from identifier to analysis object
  */
-function performAnalysis(processes, lastAnalysis, abstractionChanged){
-	var analysis = {};
+function performAnalysis(procsses, lastAnalysis, abstractionChanged){
+	const analysis = {};
 
-	for(var i = 0; i < processes.length; i++){
-		var current = JSON.parse(JSON.stringify(processes[i]));
-		var references = analyseProcess(current.process);
-		var localAnalysis = analyseLocalProcesses(current.local);
-		
-		// combine local process references
-		for(var identifier in localAnalysis.references){
-			references[identifier] = true;
+	// loop through each process and find references to other processes
+	for(let i = 0; i < processes.length; i++){
+		// analyse the main process to find references to other processses
+		const process = processes[i];
+		const current = JSON.parse(JSON.stringify(process));
+		const references = {};
+		analyseNode(current.process, references);
+
+		// analyse local processes to find references to other processes
+		const localReferences = {};
+		for(let j = 0; j < current.local.length; j++){
+			analyseNode(current.local[j].process, localReferences);
 		}
 
-		// create an intersection of the defined local processes and the references
-		var intersection = constructIntersection(localAnalysis.identifiers, references);
+		// combine references from the main process and local processes
+		for(let ident in localReferences){
+			references[ident] = true;
+		}
 
 		// remove any local processes that are not referenced
-		processes[i].local = updateLocalProcesses(current.local, intersection);
+		const localProcesses = [];
+		for(let j = 0; j < process.local; j++){
+			if(references[process.local[j].ident.ident]){
+				localProcesses.push(process.local[j]);
+			}
+		}
 
-		//
-		analysis[processes[i].ident.ident] = { process:processes[i], references:references };
+		// update the local processes
+		process.local = localProcesses;
+		current.local = localProcesses;
+
+		// construct an analysis object for this process
+		analysis[process.ident.ident] = {
+			process:current,
+			references:references
+		};
 	}
 
-	// check if any updates have happened since the last compilation
-	for(var ident in analysis){
+	// determine whether each process has been updated since the last compilation
+	for(let ident in analysis){
+		// check if a process with this identifier had been defined last time
 		if(lastAnalysis[ident] !== undefined && !abstractionChanged){
-			var current = JSON.stringify(analysis[ident].process);
-			var previous = JSON.stringify(lastAnalysis[ident].process);
+			const current = JSON.stringify(analysis[ident].process);
+			const previous = JSON.stringify(lastAnalysis[ident].process);
+			// compare asts from compilation and last compilation to see if they match
 			analysis[ident].isUpdated = (current === previous) ? false : true;
 		}
 		else{
@@ -56,12 +77,12 @@ function performAnalysis(processes, lastAnalysis, abstractionChanged){
 		}
 	}
 
-	// check if any updates to referenced processes require a process to be updated
-	for(var ident in analysis){
-		// no need to check if process has already been updated
+	// update a process if any processes it references were updated
+	for(let ident in analysis){
+		// no need to check if process was already updated
 		if(!analysis[ident].isUpdated){
-			// check if references have been updated
-			for(var reference in analysis[ident].references){
+			for(let reference in analysis[ident].references){
+				// check if the reference has been updated
 				if(analysis[reference] !== undefined && analysis[reference].isUpdated){
 					analysis[ident].isUpdated = true;
 					break;
@@ -72,107 +93,36 @@ function performAnalysis(processes, lastAnalysis, abstractionChanged){
 
 	return analysis;
 
+	// HELPER FUNCTIONS
+
 	/**
-	 * Descends through the abstract syntax tree starting from the specified
-	 * root and removes any position data from the nodes. Also constructs and
-	 * returns a set of the processes that are referenced.
+	 * Analyses the specified abstract syntax tree node to determine if it contains
+	 * any references to other processes. Each node recursively calls this function
+	 * on its children to determine if they contain references. Any references that
+	 * are found are stored in the specified references set.
 	 *
-	 * @param {astNode} root - the ast node to start search from
-	 * @return {string{}} - a set of identifiers
+	 * @param{ASTNode} astNode - the ast node to analyse
+	 * @param{identifier{}} - a set of referenced identifiers
 	 */
-	function analyseProcess(root){
-		var fringe = [root];
-		var references = {};
-		while(fringe.length != 0){
-			var currentNode = fringe.pop();
-			// check if the current node has position data
-			if(currentNode.position !== undefined){
-				delete currentNode.position;
-			}
-
-			// check if the current node is an identifier
-			if(currentNode.type !== undefined && currentNode.type === 'identifier'){
-				references[currentNode.ident] = true;
-				// cannot descend any further so continue
-				continue;
-			}
-
-			for(var key in currentNode){
-				// if key references an object then push to fringe
-				if(typeof(currentNode[key]) === 'object'){
-					fringe.push(currentNode[key]);
-				}
-			}
+	function analyseNode(astNode, references){
+		switch(astNode.type){
+			case 'sequence':
+				analyseNode(astNode.to, references);
+				break;
+			case 'choice':
+			case 'composite':
+				analyseNode(astNode.process1, references);
+				analyseNode(astNode.process2, references);
+				break;
+			case 'function':
+				analyseNode(astNode.process, references);
+				break;
+			case 'identifier':
+				references[astNode.ident] = true;
+				break;
+			case 'terminal':
+			default:
+				break;
 		}
-
-		return references;
-	}
-
-	/**
-	 * 
-	 *
-	 * @param {astNode[]} localProcesses - the local processes
-	 * @return {object} - a list of identifiers and a set of references
-	 */
-	function analyseLocalProcesses(localProcesses){
-		var identifiers = [];
-		var references = {};
-		for(var i = 0; i < localProcesses.length; i++){
-			var current = localProcesses[i];
-			identifiers.push(current.ident.ident);
-			var localReferences = analyseProcess(current.process);
-			// add the current local references to the set of references
-			for(var reference in localReferences){
-				references[reference] = true;
-			}
-		}
-
-		return { identifiers:identifiers, references:references };
-	}
-
-	/**
-	 * Constructs an intersection of the identifiers in the specified
-	 * identifiers array and the specified references set and returns the
-	 * result.
-	 * 
-	 * @param {string[]} identifiers - an array of identifiers
-	 * @param {string{}} references - a set of identifiers
-	 * @param {string[]} - the identifiers contained in both parameters
-	 */
-	function constructIntersection(identifiers, references){
-		var intersection = [];
-
-		// construct intersection
-		for(var i = 0; i < identifiers.length; i++){
-			for(var identifier in references){
-				if(identifiers[i] === identifier){
-					intersection.push(identifier);
-				}
-			}
-		}
-
-		return intersection;
-	}
-
-	/**
-	 * Removes any unreferenced local processes from that are not
-	 * referenced. Returns the update array of local processes.
-	 *
-	 * @param {astNode[]} localProcesses - the local processes
-	 * @param {string[]} references - the referenced processes
-	 * @return {astNode[]} - the updated array of local processes
-	 */
-	function updateLocalProcesses(localProcesses, references){
-		var newLocal = [];
-		for(var i = 0; i < localProcesses.length; i++){
-			for(var j = 0; j < references.length; j++){
-				if(localProcesses[i].ident.ident === references[j]){
-					newLocal.push(current.local[i]);
-					break;
-				}
-			}
-		}
-
-		return newLocal;
 	}
 }
