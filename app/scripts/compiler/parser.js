@@ -614,8 +614,7 @@ function parse(tokens){
 	 */
 	function parseBaseLocalProcess(tokens){
 		if(tokens[index].type === 'terminal'){
-			var terminal = parseValue(tokens[index]);
-			return { type:'terminal', terminal:terminal };
+			return parseTerminal(tokens);
 		}
 		else if(tokens[index].type === 'identifier'){
 			var ident = parseIdentifier(tokens);
@@ -665,7 +664,23 @@ function parse(tokens){
 			throw new ParserException('Expecting to parse a terminal, received the ' + token.type + '\'' + token.value + '\'');
 		}
 
-		return parseValue(tokens[index]);
+		var terminal = parseValue(tokens[index]);
+		if(terminal === 'STOP'){
+			return { type:'terminal', terminal:'stop' };
+		}
+		else if(terminal === 'ERROR'){
+			return {
+				type: 'sequence',
+				from: {
+					type:'action-label',
+					action: DELTA
+				},
+				to:{
+					type:'terminal',
+					terminal:'error'
+				}
+			};
+		}
 	}
 
 	/**
