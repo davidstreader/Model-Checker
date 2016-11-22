@@ -46,7 +46,7 @@ function performAnalysis(procsses, lastAnalysis, abstractionChanged){
 
 		// remove any local processes that are not referenced
 		const localProcesses = [];
-		for(let j = 0; j < process.local; j++){
+		for(let j = 0; j < process.local.length; j++){
 			if(references[process.local[j].ident.ident]){
 				localProcesses.push(process.local[j]);
 			}
