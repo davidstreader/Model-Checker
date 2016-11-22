@@ -125,7 +125,9 @@ const Lexer = {
 			break;
 		}
 
-		tokens.push(new Token('EOF', 'end of file'));
+    const end = new Position(line, column);
+    const location = new Location(start, end);
+		tokens.push(new Token('EOF', 'end of file', location));
 		return tokens;
 
 		// HELPER FUNCTION
@@ -188,9 +190,10 @@ const Lexer = {
  * @param{string} value - the value the token represents
  * @return{Token} - the constructed token
  */
-function Token(type, value){
+function Token(type, value, location){
 	this.type = type;
 	this.value = value;
+  this.location = location;
 }
 
 function Position(line, column){
