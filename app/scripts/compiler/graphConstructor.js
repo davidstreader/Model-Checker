@@ -7,7 +7,7 @@
  * @param {string -> process} processesMap - mapping from process name to process
  * @return {graph[]} - an array of graphs
  */
-function constructGraphs(processesMap, analysis, lastGraphs){
+function constructGraphs(processesMap){
 	var processes = [];
 	for(var ident in processesMap){
 		var graph;
@@ -17,26 +17,15 @@ function constructGraphs(processesMap, analysis, lastGraphs){
 		}
 
 		// check if the current process has been updated since the last compilation
-		if(analysis[ident].isUpdated){
-			var process = processesMap[ident];
-			if(process.type === 'automata'){
-				graph = automataConstructor(process);
-			}
-			else if(process.type === 'petrinet'){
-				graph = petriNetConstructor(process);		
-			}
-			else{
-				// throw error
-			}
+		var process = processesMap[ident];
+		if(process.type === 'automata'){
+			graph = automataConstructor(process);
+		}
+		else if(process.type === 'petrinet'){
+			graph = petriNetConstructor(process);		
 		}
 		else{
-			// find the previous graph constructed for this process
-			for(var i = 0; i < lastGraphs.length; i++){
-				if(lastGraphs[i].name === ident){
-					graph = lastGraphs[i].graph;
-					break;
-				}
-			}
+				// throw error
 		}
 
 		processes.push({ name:ident, graph:graph });

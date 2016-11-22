@@ -58,7 +58,8 @@
           else{
             if(app.liveBuilding === true || override){
               // otherwise render the automata
-              app.set('automata.values', results.graphs.reverse());
+              var graphs = constructGraphs(results.processes);
+              app.set('automata.values', graphs.reverse());
               app.$.selector.initialSelection();
 
               if(results.operations.length !== 0){
@@ -72,50 +73,6 @@
         }
       }.bind(this), 0);
     }
-
-    /**
-     * Renders the specified graphs to the UI.
-     */
-    app.render = function(graphs) {
-      app.$.console.log('Rendering...');
-      var renderStartTime = (new Date()).getTime();
-      // Can't simply assign app.automata.values to the new array as data bindings will not update.
-      // Creating a new automata object then setting the its values slightly later will work (for some reason).
-      app.automata = {};
-      setTimeout(function() {
-        app.set('automata.values', graphs);
-
-        // listen for each rendered event.
-        // once all automata have been rendered, log the results and stop listening.
-        var automataRendered = 0;
-        var renderComplete = function() {
-          automataRendered++;
-          if (automataRendered === app.automata.values.length) {
-            var renderTime = Math.max(1, ((new Date()).getTime() - renderStartTime)) / 1000;
-            app.$.console.clear(1);
-            app.$.console.log('Rendered successfully after ' + renderTime.toFixed(3) + ' seconds.');
-
-            document.removeEventListener('process-visualisation-rendered', renderComplete);
-          }
-        };
-
-        document.addEventListener('process-visualisation-rendered', renderComplete);
-      }.bind(this), 0)
-    };
-
-    app.operations = function(operations) {
-      setTimeout(function (){
-        // only print out operations results if the were any operations performed
-        if(operations.length !== 0){
-          app.$.console.log(' ');
-          app.$.console.log('Operations:');
-          var annotations = [];
-          for(var i = 0; i < operations.length; i++){
-            app.$.console.log(operations[i]);
-          }
-        }
-      }.bind(this), 0);
-    };
 
     /**
      * Compiles and builds what has currenty been entered into the text-area.

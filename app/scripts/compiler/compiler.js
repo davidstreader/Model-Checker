@@ -7,7 +7,6 @@ var lastTokens = [];
 var lastAst = {};
 var lastAnalysis = {};
 var lastProcesses = [];
-var lastGraphs = [];
 var lastAbstraction = true;
 
 /**
@@ -27,13 +26,10 @@ var lastAbstraction = true;
  * 5. Interpeting
  *		- Interprets the abstract syntax tree into data structures representing
  *		  the processes that are being modelled
- * 6. Graph Construction
- *		- Converts the data structures into a graph structure defined by dagre
- *		  which can be rendered by dagreD3
  *
- * @param {string} code - code to be processed
- * @throws {exception} - throws an exception specific to the stage where the error
- *						 took place
+ * @param{string} code - code to be processed
+ * @throws{exception} - throws an exception specific to the stage where the error
+ *						took place
  */
 function compile(code, isFairAbstraction){
 	try{
@@ -49,26 +45,24 @@ function compile(code, isFairAbstraction){
 		// perform analysis to see which processes need to be re-interpreted
 		var abstractionChanged = isFairAbstraction !== lastAbstraction;
 		var analysis = performAnalysis(ast.processes, lastAnalysis, abstractionChanged); // performAnalysis function in 'analyser.js'
-		ast.processes = replaceReferences(ast.processes);
+		
+		// insert local references into the main processses and handle self references
+		ast.processes = replaceReferences(ast.processes); // replaceReferences function in 'referenceReplacer.js'
 
 		// convert the processes from the ast into their appropriate data structures
 		var processes = interpret(ast.processes, ast.variableMap, analysis, lastProcesses, isFairAbstraction); // interpret function in 'interpreter.js'
 		
 		var operations = evaluateOperations(ast.operations, processes, ast.variableMap);
 
-		// convert the process data structures into dagre graphs that can
-		// be rendered by dagreD3
-		var graphs = constructGraphs(processes, analysis, lastGraphs); // construct graph function in 'graphConstructor.js'
-
 		// store results of this compilation
 		lastTokens = tokens;
 		lastAst = ast;
 		lastAnalysis = analysis;
 		lastProcesses = processes;
-		lastGraphs = graphs;
 		lastAbstraction = isFairAbstraction;
 
-		return {graphs:graphs, operations:operations };
+		return { processes:processes, operations:operations };
+
 	}catch(error){
 		error.type = 'error';
 		return error;
