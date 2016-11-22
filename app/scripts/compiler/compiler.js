@@ -34,8 +34,8 @@ var lastAbstraction = true;
 function compile(code, context){
 	try{
 		// convert code into an array of tokens
-		var tokens = lexer.parse(code); // lexer.parse function in 'lexer.js'
-		
+		var tokens = Lexer.tokenise(code); // lexer.parse function in 'lexer.js'
+
 		// convert code into an abstract syntax tree of the defined processes  
 		var ast = parse(tokens); // parse function in 'parser.js'
 		
