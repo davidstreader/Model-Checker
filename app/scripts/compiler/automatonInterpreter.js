@@ -97,12 +97,7 @@ function interpretAutomaton(process, processesMap, context){
 		const automaton1 = processStack.pop();
 		const composedAutomaton = parallelComposition(automaton.id + '.comp', automaton1, automaton2);
 
-		const root = composedAutomaton.root;
-		composedAutomaton.root = undefined;
-		delete root.metaData.startNode;
-
-		automaton.addAutomaton(composedAutomaton);
-		automaton.combineNodes(currentNode, root);
+		combineAutomata(automaton, composedAutomaton, currentNode);
 	}
 
 	function interpretFunction(astNode, automaton, currentNode){
@@ -119,20 +114,19 @@ function interpretAutomaton(process, processesMap, context){
 				break;
 		}
 
-		const root = processedAutomaton.root;
-		processedAutomaton.root = undefined;
-		delete root.metaData.startNode;
-
-		automaton.addAutomaton(processedAutomaton);
-		automaton.combineNodes(currentNode, root);
+		combineAutomata(automaton, processedAutomaton, currentNode);
 	}
 
 	function interpretIdentifier(astNode, automaton, currentNode){
 		const reference = processesMap[astNode.ident].clone;
-		const root = reference.root;
-		reference.root = undefined;
+		combineAutomata(automaton, reference, currentNode)
+	}
+
+	function combineAutomata(automaton, toAdd, currentNode){
+		const root = toAdd.root;
+		toAdd.root = undefined;
 		delete root.metaData.startNode;
-		automaton.addAutomaton(reference);
+		automaton.addAutomaton(toAdd);
 		automaton.combineNodes(currentNode, root);
 	}
 
