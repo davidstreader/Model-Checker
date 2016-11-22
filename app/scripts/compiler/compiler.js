@@ -50,7 +50,7 @@ function compile(code, isFairAbstraction){
 		ast.processes = replaceReferences(ast.processes); // replaceReferences function in 'referenceReplacer.js'
 
 		// convert the processes from the ast into their appropriate data structures
-		var processes = interpret(ast.processes, ast.variableMap, analysis, lastProcesses, isFairAbstraction); // interpret function in 'interpreter.js'
+		var processes = interpret(ast.processes, analysis, lastProcesses, isFairAbstraction); // interpret function in 'interpreter.js'
 		
 		var operations = evaluateOperations(ast.operations, processes, ast.variableMap);
 

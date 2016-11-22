@@ -1,6 +1,6 @@
 'use strict';
 
-function interpretAutomaton(process, processesMap, variableMap, processId, isFairAbstraction){
+function interpretAutomaton(process, processesMap, isFairAbstraction){
 	const processStack = [];
 	const referenceMap = {};
 

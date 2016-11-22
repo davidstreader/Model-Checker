@@ -8,10 +8,11 @@
  * @param{string} processId - the id for the constructed petri net
  * @param{boolean} isFairAbstraction - whether or not fair abstraction has been specified
  */
-function interpretPetriNet(process, processesMap, variableMap, processId, isFairAbstraction){
+function interpretPetriNet(process, processesMap, isFairAbstraction){
 	const processStack = [] // stack containing interpreteted petri nets;
 
-	const net = new PetriNet(processId);
+	const identifier = process.ident.ident;
+	const net = new PetriNet(identifier);
 	const root = net.addPlace();
 	root.addMetaData('startPlace', 1);
 	net.addRoot(root.id);
@@ -28,7 +29,6 @@ function interpretPetriNet(process, processesMap, variableMap, processId, isFair
 	}
 
 	// add the constructed petri net to the processes map
-	const identifier = process.ident.ident;
 	processesMap[identifier] = net;
 
 	/**
