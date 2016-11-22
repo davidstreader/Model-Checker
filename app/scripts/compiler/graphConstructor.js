@@ -60,7 +60,7 @@ function constructGraphs(processesMap){
 			}
 
 			// add node to graph
-			graph.setNode('n' + nodes[i].id, { label:nodes[i].label, shape:'automataNode', class:styleClasses.trim() });
+			graph.setNode('n' + nodes[i].id, { label:nodes[i].metaData.label, shape:'automataNode', class:styleClasses.trim() });
 		}
 
 		// setup pointer to the start node
