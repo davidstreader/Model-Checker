@@ -76,7 +76,7 @@ function automataParallelComposition(id, automaton1, automaton2){
 			for(var j = 0; j < nodes2.length; j++){
 				var id = nodes1[i].id + '.' + nodes2[j].id;
 				var metaData = metaDataIntersection(nodes1[i].metaData, nodes2[j].metaData);
-				graph.addNode(id, '', metaData);
+				graph.addNode(id, metaData);
 	
 				// check if this is the first node constructed
 				if(i === 0 && j === 0){
