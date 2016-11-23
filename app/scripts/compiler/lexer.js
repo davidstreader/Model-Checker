@@ -126,7 +126,7 @@ const Lexer = {
 		}
 
     const end = new Position(line, column);
-    const location = new Location(start, end);
+    const location = new Location(end, end);
 		tokens.push(new Token('EOF', 'end of file', location));
 		return tokens;
 
