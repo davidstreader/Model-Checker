@@ -184,6 +184,7 @@
       console.log(this.edges);
       // Create a new directed graph
       var automata = new dagreD3.graphlib.Graph({ multigraph: true });
+
       automata.setGraph({
         // nodesep: 70,
         // ranksep: 50,
@@ -244,7 +245,6 @@
       // add a new group node to the svg element for the new graph
       var svg = d3.select(this.$.svg),
       svgGroup = svg.append('g');
-
       // create the renderer
       var render = new dagreD3.render();
 
@@ -287,7 +287,7 @@
     },
 
     _center: function(svg, automata, svgGroup) {
-
+      if (!automata) return;
       // Get the SVG's attrs as well as the automata's attrs
       var svgStyle = window.getComputedStyle(svg[0][0]),
           svgWidth = parseFloat(svgStyle.getPropertyValue('width')),

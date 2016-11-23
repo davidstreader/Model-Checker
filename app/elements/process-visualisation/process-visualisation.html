@@ -4,336 +4,293 @@
 <link rel="import" href="../imports/element-resizer.html">
 
 <dom-module id="process-visualisation">
-<style>
-:host {
-  display: block;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serf;
-  color: #6C7A89;
-}
-#svg-parent{
-  @apply(--layout-fit);
-  margin: 4px 4px 4px 4px;
-}
-#svg{
-  width: 100%;
-  height: 100%;
-}
-#name{
-  position: absolute;
-  top: 4px;
-  left: 8px;
-  color: red;
-  font-size: 12pt;
-  @apply(--automata-visualisation-name-style);
-}
-.node circle.outer{
-  fill: var(--node-fill, #DADEDF);
-  stroke: var(--node-stroke, #000000);
-  stroke-width: var(--node-stroke-width, 2px);
-}
-.node circle.inner{
-  fill: transparent;
-  stroke: transparent;
-}
-.node rect.outer{
-  fill: var(--node-fill, #DADEDF);
-  stroke: var(--node-stroke, #000000);
-  stroke-width: var(--node-stroke-width, 2px);
-}
-.node rect.inner{
-  fill: transparent;
-  stroke: transparent;
-}
-.node .label {
-  color: var(--node-label-color, #000000);
-}
-.node.start{
-  transform: scale(0);
-  display: none;
-}
-.node.start .label {
-  color: var(--start-node-label-color, #000000);
-}
-.node.terminal circle.inner{
-  stroke: var(--node-stroke, #000000);
-  stroke-width: var(--terminal-node-outer-stroke-width, 2px);
-  stroke-width: var(--terminal-node-inner-stroke-width, 1.5px);
-}
-.node.terminal .label {
-
-}
-.node.stop circle.outer{
-  fill: var(--stop-node-fill);
-  stroke: var(--stop-node-stroke, #00FF00);
-  stroke-width: var(--stop-node-stroke-width);
-}
-.node.stop circle.inner{
-  stroke: var(--stop-node-stroke, #00BB00);
-  stroke-width: var(--stop-node-stroke-width);
-}
-.node.stop .label {
-  color: var(--stop-node-label-color, #000000);
-}
-.node.error circle.outer{
-  fill: var(--error-node-fill);
-  stroke: var(--error-node-stroke, #FF0000);
-  stroke-width: var(--error-node-stroke-width);
-}
-.node.error circle.inner{
-  stroke: var(--error-node-stroke, #FF0000);
-  stroke-width: var(--error-node-stroke-width);
-}
-.node.error .label {
-  color: var(--error-node-label-color, #000000);
-}
-.node.reference circle.outer{
-  fill: var(--reference-node-fill, #FFFF66);
-  stroke: var(--reference-node-stroke);
-  stroke-width: var(--reference-node-stroke-width);
-}
-.node.highlighted circle.outer{
-  fill: var(--node-highlighted-fill, #4488FF);
-}
-.edgePath path {
-  fill: var(--edge-fill, #000000);
-  stroke: var(--edge-stroke, #000000);
-  stroke-width: var(--edge-stroke-width, 1.5px);
-}
-.edgeLabel {
-  fill: var(--edge-label-color, #000000);
-}
-.transition.guard {
-  fill: var(--node-fill, #000000);
-}
-/*.edgePath defs marker path{
+  <style>
+    :host {
+      display: block;
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serf;
+      color: #6C7A89;
+    }
+    #svg-parent{
+      @apply(--layout-fit);
+      margin: 4px 4px 4px 4px;
+    }
+    #svg{
+      width: 100%;
+      height: 100%;
+    }
+    #name{
+      position: absolute;
+      top: 4px;
+      left: 8px;
+      color: red;
+      font-size: 12pt;
+      @apply(--automata-visualisation-name-style);
+    }
+    /*.edgePath defs marker path{
   fill: #8F939E;
 }*/
-</style>
-<template>
-  <div id="svg-parent">
-    <svg id="svg"></svg>
-  </div>
-  <div id="name">[[name]]</div>
-</template>
+  </style>
+  <template>
+    <div id="svg-parent">
+    </div>
+    <div id="name">[[name]]</div>
+  </template>
 </dom-module>
 <script>
-(function() {
-  'use strict';
 
-  Polymer({
-    is: 'process-visualisation',
 
-    properties: {
-      /**
-      * The name of the automata.
-      */
-      name: {
-        type: String,
-        value: ''
+  (function() {
+    'use strict';
+    Polymer({
+      is: 'process-visualisation',
+
+      properties: {
+        /**
+         * The name of the automata.
+         */
+        name: {
+          type: String,
+          value: ''
+        },
+
+        graph: {
+          type: Object,
+          value: {}
+        }
       },
 
-      graph: {
-        type: Object,
-        value: {}
-      }
-    },
+      ready: function(){
+        this.jgraph = new joint.dia.Graph();
+        this.paper = new joint.dia.Paper({
+          el: this.$['svg-parent'],
+          width: 2000,
+          height: 2000,
+          gridSize: 1,
+          model: this.jgraph
+        });
+        var paper = this.paper;
+        var dragStartPosition;
+        paper.on('blank:pointerdown',
+          function(event, x, y) {
+            var scale = V(paper.viewport).scale();
+            dragStartPosition = { x: x * scale.sx, y: y * scale.sy};
+          }
+        );
+        paper.on('cell:pointerup blank:pointerup', function(cellView, x, y) {
+          dragStartPosition = undefined;
+        });
+        $(paper.el.parentElement).mousemove(function(event) {
+//            console.log(this.dragStartPosition);
+            if (dragStartPosition !== undefined)
+              paper.setOrigin(
+                event.offsetX - dragStartPosition.x,
+                event.offsetY - dragStartPosition.y);
+          });
+        this.paper.$el.on('mousewheel DOMMouseScroll', function onMouseWheel(e) {
+          //function onMouseWheel(e){
+          e.preventDefault();
+          e = e.originalEvent;
 
-    ready: function(){
-      this.async(function(){
-        this.redraw();
-      });
+          var delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail))) / 50;
+          var offsetX = (e.offsetX || e.clientX - $(this).offset().left);
 
-      var resizeElement = this;
+          var offsetY = (e.offsetY || e.clientY - $(this).offset().top);
+          var p = offsetToLocalPoint(offsetX, offsetY);
+          var newScale = V(paper.viewport).scale().sx + delta;
+          if (newScale < 1) return;
+          var origx = paper.options.origin.x;
+          var origy = paper.options.origin.y;
+          if (newScale > 0.4 && newScale < 2) {
+            paper.setOrigin(0, 0);
+            paper.scale(newScale, newScale, p.x, p.y);
+            paper.setOrigin(origx, origy);
+          }
+        });
 
-      addResizeListener(resizeElement, function() {
-        this.debounce('process-visualisation-resizer', function() {
+        function offsetToLocalPoint(x, y) {
+          var svgPoint = paper.svg.createSVGPoint();
+          svgPoint.x = x;
+          svgPoint.y = y;
 
-          var svg = d3.select(this.$.svg),
+          var pointTransformed = svgPoint.matrixTransform(paper.viewport.getCTM().inverse());
+          return pointTransformed;
+        }
+        joint.shapes.pn.Transition = joint.shapes.basic.Generic.extend({
+
+          markup: '<g class="rotatable"><g class="scalable"><rect class="root"/></g></g><text class="label"/>',
+
+          defaults: _.defaultsDeep({
+
+            type: 'pn.Transition',
+            size: { width: 60, height: 20 },
+            attrs: {
+              'rect': {
+                width: 12,
+                height: 50,
+                fill: '#000000',
+                stroke: '#000000'
+              },
+              '.label': {
+                'text-anchor': 'middle',
+                'ref-x': .5,
+                'ref-y': 6,
+                ref: 'rect',
+                fill: '#FFFFFF',
+                'font-size': 12
+              }
+            }
+
+          }, joint.shapes.basic.Generic.prototype.defaults)
+        });
+
+
+        var resizeElement = this;
+
+        addResizeListener(resizeElement, function() {
+          this.debounce('process-visualisation-resizer', function() {
+
+            var svg = d3.select(this.$.svg),
               svgGroup = svg.select('g'),
               automata = this.graph;
 
-          // Do zoom - center
-          this._center(svg, automata, svgGroup);
+            // Do zoom - center
+            this._center(svg, automata, svgGroup);
 
-        }, 300);
-      });
-    },
-
-    setHighlightNodeId: function(id) {
-      this._highlightedNodeId = id;
-      Polymer.dom(this.$.svg).querySelectorAll('.highlighted').forEach(function(n){
-        n.classList.remove('highlighted');
-      });
-      Polymer.dom(this.$.svg).querySelector('.n'+id).classList.add('highlighted');
-    },
-
-    /**
-    * Redraw the automata.
-    */
-    redraw: function() {
-      // remove the child nodes (the old graph) from the svg element
-      for(var i = 0; i < this.$.svg.childNodes.length; i++){
-        Polymer.dom(this.$.svg).removeChild(this.$.svg.childNodes[i]);
-      }
-
-      // add a new group node to the svg element for the new graph
-      var svg = d3.select(this.$.svg),
-      svgGroup = svg.append('g');
-
-      // create the renderer
-      var render = new dagreD3.render();
-
-
-      // define the automataNode shape
-      render.shapes().automataNode = function(parent, bbox, node) {
-        var r = 22.5;
-
-        parent.insert('circle', ':first-child')
-          .attr('r', r * 0.80)
-          .attr('class', 'inner')
-          .attr('transform', 'translate(0,0)');
-
-        var shapeSvg = parent.insert('circle', ':first-child')
-          .attr('r', r)
-          .attr('class', 'outer')
-          .attr('transform', 'translate(0,0)');
-
-        node.intersect = function(point) {
-          return dagreD3.intersect.circle(node, r, point);
-        };
-
-        return shapeSvg;
-      }
-
-      // define the placeNode shape
-      render.shapes().placeNode = function(parent, bbox, node) {
-        var r = 22.5;
-
-        parent.insert('circle', ':first-child')
-          .attr('r', r * 0.80)
-          .attr('class', 'inner')
-          .attr('transform', 'translate(0,0)');
-
-        var shapeSvg = parent.insert('circle', ':first-child')
-          .attr('r', r)
-          .attr('class', 'outer')
-          .attr('transform', 'translate(0,0)');
-
-        node.intersect = function(point) {
-          return dagreD3.intersect.circle(node, r, point);
-        };
-
-        return shapeSvg;
-      };
-
-      // define the transitionNode
-      render.shapes().transitionNode = function(parent, bbox, node) {
-        var width = node.label.length * 10;
-        width = (width < 40) ? 40 : width; 
-        parent.insert('rect', ':first-child')
-          .attr('width', width)
-          .attr('height', 28)
-          .attr('class', 'inner')
-          .attr('transform', 'translate(-' + (width / 2) + ',-14)');
-
-        var shapeSvg = parent.insert('rect', ':first-child')
-          .attr('width', width)
-          .attr('height', 28)
-          .attr('class', 'outer')
-          .attr('transform', 'translate(-' + (width / 2) + ',-14)');
-
-        node.intersect = function(point) {
-          return dagreD3.intersect.rect(node, point);
-        };
-
-        return shapeSvg;
-      };
-
-      // run the renderer, which will draw the graph and insert it into the svgGroup.
-      // Note: trying call render method with a node (first arg) that is not yet in the Dom will cause an error
-      render(svgGroup, this.graph);
-
-      // remove the svg element and then put it back in properly
-      // (otherwise thing like shady dom css cannot be applied)
-      var svgParent = Polymer.dom(this.$.svg).parentNode;
-      Polymer.dom(svgParent).appendChild(Polymer.dom(svgParent).removeChild(this.$.svg));
-
-      // Do zoom - center
-      this._center(svg, this.graph, svgGroup);
-
-      this.automata = this.graph;
-
-      this.fire('process-visualisation-rendered');
-    },
-
-    _center: function(svg, automata, svgGroup) {
-
-      // Get the SVG's attrs as well as the automata's attrs
-      var svgStyle = window.getComputedStyle(svg[0][0]),
-          svgWidth = parseFloat(svgStyle.getPropertyValue('width')),
-          svgHeight = parseFloat(svgStyle.getPropertyValue('height')),
-          automataWidth = automata.graph().width,
-          automataHeight = automata.graph().height;
-
-      //  By default, set the scale to this value
-      var defaultInitialScale = 1.5;
-
-      // Compute the scale where the automata will fit
-      var computedInitialScaleForWitdth = svgWidth / (automataWidth * 1.1),
-          computedInitialScaleForHeight = svgHeight / (automataHeight * 1.1),
-          computedInitialScale = Math.min(computedInitialScaleForHeight, computedInitialScaleForWitdth);
-
-      // Choose the scale which is smaller, such that we ensure the entire automata is viewable
-      var initialScale = Math.min(defaultInitialScale, computedInitialScale);
-
-      // limit the zoom and pan behaviour
-      var zoom = d3.behavior.zoom().scaleExtent([0.5, 5]).on('zoom', function() {
-
-          // the raw translate value [x, y] from the mouse coords
-          var t = d3.event.translate;
-          // set our modified scale to reflect the initial scale in addition to the user's scale changes
-          var s = initialScale + d3.event.scale - 1;
-
-          // the maximum left value
-          var txl = Math.max(0, Math.min(svgWidth - automata.graph().width * s, t[0]));
-          // the maximum right value
-          var txr = Math.min(svgWidth - automata.graph().width * s , Math.max(0, t[0]));
-          // the ultimate x value, souch that it is bounded to txl and txr
-          var tx = Math.min(txl, Math.max(txr, t[0]));
-
-          // the maximum top value
-          var tyl = Math.max(0, Math.min(svgHeight - automata.graph().height * s, t[1]));
-          // the maximum bottom value
-          var tyr = Math.min(svgHeight - automata.graph().height * s , Math.max(0, t[1]));
-          // the ultimate y value, souch that it is bounded to txl and txr
-          var ty = Math.min(tyl, Math.max(tyr, t[1]));
-
-          // the ultimate translation array, bounded
-          var boundedTranslate = [tx, ty];
-
-          //scale and translate
-          svgGroup.attr('transform', 'translate(' + boundedTranslate[0] + ',' + boundedTranslate[1] + ')' +
-                                      'scale(' + s + ')');
+          }, 300);
         });
-      // Update the svg such that it's events call our bounding function
-      svg.call(zoom);
+      },
 
-      // Calculate the offsets required to be in center
-      var xCenterOffset = (svgWidth - automata.graph().width * initialScale) / 2;
-      var yCenterOffset = (svgHeight - automata.graph().height * initialScale) / 2;
+      setHighlightNodeId: function(id) {
+        this._highlightedNodeId = id;
+        Polymer.dom(this.$.svg).querySelectorAll('.highlighted').forEach(function(n){
+          n.classList.remove('highlighted');
+        });
+        Polymer.dom(this.$.svg).querySelector('.n'+id).classList.add('highlighted');
+      },
+      /**
+       * Redraw the automata.
+       */
+      redraw: function() {
+        this.jgraph.clear();
 
-      // Center the graph
-      zoom.translate([ xCenterOffset, yCenterOffset]).event(svg);
+        if (!this.graph.type) return;
+        if (this.graph.type == 'automata') {
+          this.visualizeAutomata(this.graph);
+          joint.layout.DirectedGraph.layout(this.jgraph, {rankDir:'LR'});
+        }
+        if (this.graph.type == 'petrinet') {
+          this.visualizePetriNet(this.graph);
+          joint.layout.DirectedGraph.layout(this.jgraph, {rankDir:'TD'});
+        }
+        this.automata = this.graph;
 
-      // Center the labels in the nodes
-      var nodeLabels = svg[0][0].querySelectorAll('g.node g.label g text tspan');
-      for(var j=0; j<nodeLabels.length; j++){
-        nodeLabels[j].setAttribute('x', '0');
-        nodeLabels[j].setAttribute('dy', '0.9em');
+        this.fire('process-visualisation-rendered');
+      },
+      _center: function(svg, automata, svgGroup) {
+
+
+      },automataLink: function(source, target, label) {
+        var cell = new joint.shapes.fsa.Arrow({
+          source: { id: source.id },
+          target: { id: target.id },
+          labels: [{ position: 0.5, attrs: { text: { text: label || '', 'font-weight': 'bold' } } }],
+          vertices: []
+        });
+        this.jgraph.addCell(cell);
+        return cell;
+      }, petrinetLink : function(from, to, label) {
+        var link = new joint.shapes.pn.Link({
+          source: {id: nodeMap[from].id, selector: '.root'},
+          target: {id: nodeMap[to].id, selector: '.root'},
+          attrs: {
+            text : { text: label||'' },
+            '.label': {text: label||'', fill: '#7c68fc'},
+            '.connection': {
+              'fill': 'none',
+              'stroke-linejoin': 'round',
+              'stroke-width': '2',
+              'stroke': '#4b4a67'
+            }
+          }
+        });
+        this.jgraph.addCell(link);
+        return link;
+      },visualizeAutomata: function(process) {
+        // add nodes in automaton to the graph
+        var nodes = process.nodes;
+        var nodeMap = {};
+        nodeMap.start = new joint.shapes.fsa.StartState();
+        this.jgraph.addCell(nodeMap.start);
+        for(var i = 0; i < nodes.length; i++){
+          if(nodes[i].getMetaData('isTerminal') !== undefined){
+            nodeMap['n' + nodes[i].id] = new joint.shapes.fsa.EndState();
+            this.jgraph.addCell(nodeMap['n' + nodes[i].id]);
+            continue;
+          }
+          // add node to graph
+          nodeMap['n' + nodes[i].id] = new joint.shapes.fsa.State({
+            size: { width: 60, height: 60 },
+            attrs: { text : { text: nodes[i].metaData.label }}
+          });
+          this.jgraph.addCell(nodeMap['n' + nodes[i].id]);
+          // check if current node is the root node
+          if(nodes[i].getMetaData('startNode')){
+            this.automataLink(nodeMap.start,nodeMap['n' + nodes[i].id]);
+          }
+        }
+
+        // add the edges between the nodes in the automaton to the graph
+        var edges = process.edges;
+        for(var i = 0; i < edges.length; i++){
+          var label = edges[i].label;
+          var from = 'n' + edges[i].from;
+          var to = 'n' + edges[i].to;
+          this.automataLink(nodeMap[from],nodeMap[to], label);
+        }
+      },visualizePetriNet: function(process) {
+        // add places in petri net to the graph
+        var startPlaces = [];
+        var nodeMap = {};
+        var places = process.places;
+        for(var i = 0; i < places.length; i++){
+          var styleClasses = 'p' + places[i].id;
+          var label = '';
+          // add to array of start places if necessary
+          if(places[i].metaData.startPlace !== undefined){
+            label = places[i].label;
+          }
+          var cell = new joint.shapes.pn.Place({
+            size: { width: 60, height: 60 },
+            attrs: {
+              '.label': {text: label, fill: '#7c68fc'}}
+          });
+          this.jgraph.addCell(cell);
+          nodeMap['p' + places[i].id] = cell;
+        }
+
+        // add transitions to the graph
+        var edgeId = 0;
+        var transitions = process.transitions;
+        for(var i = 0; i < transitions.length; i++){
+          nodeMap['t' + transitions[i].id] = new joint.shapes.pn.Transition({
+            attrs: { text : { text: transitions[i].label }}
+          });
+          this.jgraph.addCell(nodeMap['t' + transitions[i].id]);
+          var outgoing = transitions[i].outgoingPlaces;
+          for(var j = 0; j < outgoing.length; j++){
+            var from = 't' + transitions[i].id;
+            var to = 'p' + outgoing[j];
+            this.automataLink(nodeMap[from],nodeMap[to],'');
+          }
+
+          var incoming = transitions[i].incomingPlaces;
+          for(var j = 0; j < incoming.length; j++){
+            var from = 'p' + incoming[j];
+            var to = 't' + transitions[i].id;
+            this.automataLink(nodeMap[from],nodeMap[to],'');
+          }
+        }
       }
-
-    }
-
-  });
-})();
+    });
+  })();
 </script>

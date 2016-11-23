@@ -206,7 +206,7 @@
     <!-- end toolbar -->
 
     <!-- start content -->
-    <paper-tabs selected="{{selectedCtx}}">
+    <paper-tabs id="maintabs" selected="{{selectedCtx}}">
       <paper-tab>Editor</paper-tab>
       <paper-tab>Diagram</paper-tab>
       <paper-tab id="consoletab"><span style="color:{{consoleMsgCount}}">Console</span></paper-tab>
@@ -227,19 +227,6 @@
         </section>
       </neon-animated-pages>
     </div>
-    <script>
-        document.addEventListener('WebComponentsReady', function () {
-            app.selectedCtx = 0;
-            app.consoleMsgCount = "black";
-        });
-        document.addEventListener('console-change', function() {
-            if (!document.querySelector('code[id="console"] > .error')) {
-                app.consoleMsgCount = "black";
-                return;
-            }
-            app.consoleMsgCount = "#ab0000";
-        });
-    </script>
     <!-- end content -->
 
     <!-- start help-dialog -->

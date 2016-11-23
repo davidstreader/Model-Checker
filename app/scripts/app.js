@@ -17,6 +17,8 @@
     app.previousBuild = {};
     app.previousCode = '';
     app.currentFile = '';
+    app.selectedCtx = 0;
+    app.consoleMsgCount = "black";
 
     app.compile = function(overrideBuild) {
       var code = app.getCode();
@@ -246,9 +248,32 @@
     document.addEventListener('render-single-process', function(e){
       app.$.visualiser.name = e.detail.name;
       app.$.visualiser.graph = e.detail.graph;
-      app.$.visualiser.redraw();
     });
-
+    /**
+     * Simple event listener for when the user switches tabs.
+     * When we switch to index 1 (Diagram), we need to redraw the canvas,
+     * as it needs to be showing currently to render.
+     * If we switch to the editor, request focus on it.
+     */
+    document.addEventListener('iron-select', function () {
+      if (app.$.maintabs.selected === 1) {
+        app.$.visualiser.redraw();
+      } else if (app.$.maintabs.selected === 0) {
+        app.$.editor._editor.focus();
+      }
+    });
+    /**
+     * Simple event listener for when the console updates.
+     * If an error exists, then highlight the tab red to make it
+     * obvious that an error has occurred.
+     */
+    document.addEventListener('console-change', function() {
+      if (!document.querySelector('code[id="console"] > .error')) {
+        app.consoleMsgCount = "black";
+        return;
+      }
+      app.consoleMsgCount = "#ab0000";
+    });
 
     /**
      * This is the event which triggers when the user selects an automata from the
