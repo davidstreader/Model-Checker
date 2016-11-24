@@ -79,12 +79,12 @@
           }
         }
 
-        this.fire('render-single-process', graph);
+        this.fire('change-process', this.processes);
       },
 
       initialSelection: function(e, detail){
         if(this.processes.length > 0){
-          this.fire('render-single-process', this.processes[0]);
+          this.fire('change-process', this.processes[0]);
           return "0";
         }
       }

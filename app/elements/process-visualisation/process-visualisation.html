@@ -81,11 +81,11 @@
         });
         $(paper.el.parentElement).mousemove(function(event) {
 //            console.log(this.dragStartPosition);
-            if (dragStartPosition !== undefined)
-              paper.setOrigin(
-                event.offsetX - dragStartPosition.x,
-                event.offsetY - dragStartPosition.y);
-          });
+          if (dragStartPosition !== undefined)
+            paper.setOrigin(
+              event.offsetX - dragStartPosition.x,
+              event.offsetY - dragStartPosition.y);
+        });
         this.paper.$el.on('mousewheel DOMMouseScroll', function onMouseWheel(e) {
           //function onMouseWheel(e){
           e.preventDefault();
@@ -153,9 +153,6 @@
               svgGroup = svg.select('g'),
               automata = this.graph;
 
-            // Do center
-            this._center(svg, automata, svgGroup);
-
           }, 300);
         });
       },
@@ -171,29 +168,58 @@
        * Redraw the automata.
        */
       redraw: function() {
+        if (this.paper === undefined) return;
         this.jgraph.clear();
+        this.graphMap = {};
+        var lthis = this;
+        if (!app.get("automata.values")) return;
+        app.get("automata.values").forEach(function(graph) {
+          if (!graph.graph.type) return;
+          if (graph.graph.type == 'automata') {
+            lthis._visualizeAutomata(graph.graph,graph.name);
+          }
+          if (graph.graph.type == 'petrinet') {
+            lthis._visualizePetriNet(graph.graph,graph.name);
+          }
+        });
 
-        if (!this.graph.type) return;
-        if (this.graph.type == 'automata') {
-          this.visualizeAutomata(this.graph);
-          joint.layout.DirectedGraph.layout(this.jgraph, {rankDir:'LR'});
-        }
-        if (this.graph.type == 'petrinet') {
-          this.visualizePetriNet(this.graph);
-          joint.layout.DirectedGraph.layout(this.jgraph, {rankDir:'LR'});
-        }
+        joint.layout.DirectedGraph.layout(this.jgraph, {rankDir:'LR'});
+        var jgraph = this.jgraph;
+        var graphMap = this.graphMap;
+        var i = 0;
+        var paperWidth = this.paper.$el.width();
+        Object.keys(graphMap).forEach(function (key) {
+          var nodes = _.values(graphMap[key]);
+          var lx = 9999, ly = 9999, ux = 0, uy = 0;
+          for (var node in nodes) {
+            var pos = nodes[node].position();
+            lx = Math.min(lx,pos.x);
+            ly = Math.min(ly,pos.y);
+            ux = Math.max(lx,pos.x);
+            uy = Math.max(ly,pos.y);
+          }
+          var width = ux-lx;
+          var height = uy-ly;
+          if (width < paperWidth) {
+            var offsetX = (lthis.paper.$el.width()-width)/2;
+            for (var node in nodes) {
+              var pos = nodes[node].position();
+              nodes[node].position(pos.x+offsetX,pos.y);
+            }
+          }
+          var cell = new joint.shapes.basic.Rect ({
+            size: { width: 100, height: 30 },
+            position: { x:lx, y:ly},
+            attrs: {
+              rect: { fill: 'transparent', stroke: 'none' },
+              'text': {text: app.get("automata.values")[i++].name, fill: 'red', 'font-size': 20}}
+          });
+          jgraph.addCell(cell);
+          graphMap[key]['label'] = cell;
+        });
         this.automata = this.graph;
-        this._center(this.paper);
         this.fire('process-visualisation-rendered');
-      },
-      _center: function(paper) {
-        var viewbox = paper.viewport.getBoundingClientRect();
-        if (viewbox.width < paper.$el.width()) {
-          var offsetX = (paper.$el.width()-viewbox.width)/2;
-          paper.setOrigin(offsetX,0);
-        }
-
-      },automataLink: function(source, target, label) {
+      },_automataLink: function(source, target, label) {
         var cell = new joint.shapes.fsa.Arrow({
           source: { id: source.id },
           target: { id: target.id },
@@ -202,7 +228,7 @@
         });
         this.jgraph.addCell(cell);
         return cell;
-      }, petrinetLink : function(from, to, label) {
+      }, _petrinetLink : function(from, to, label) {
         var link = new joint.shapes.pn.Link({
           source: {id: nodeMap[from].id, selector: '.root'},
           target: {id: nodeMap[to].id, selector: '.root'},
@@ -219,10 +245,11 @@
         });
         this.jgraph.addCell(link);
         return link;
-      },visualizeAutomata: function(process) {
+      },_visualizeAutomata: function(process, name) {
         // add nodes in automaton to the graph
         var nodes = process.nodes;
         var nodeMap = {};
+        this.graphMap[name] = nodeMap;
         nodeMap.start = new joint.shapes.fsa.StartState();
         this.jgraph.addCell(nodeMap.start);
         for(var i = 0; i < nodes.length; i++){
@@ -239,7 +266,7 @@
           this.jgraph.addCell(nodeMap['n' + nodes[i].id]);
           // check if current node is the root node
           if(nodes[i].getMetaData('startNode')){
-            this.automataLink(nodeMap.start,nodeMap['n' + nodes[i].id]);
+            this._automataLink(nodeMap.start,nodeMap['n' + nodes[i].id]);
           }
         }
 
@@ -249,12 +276,13 @@
           var label = edges[i].label;
           var from = 'n' + edges[i].from;
           var to = 'n' + edges[i].to;
-          this.automataLink(nodeMap[from],nodeMap[to], label);
+          this._automataLink(nodeMap[from],nodeMap[to], label);
         }
-      },visualizePetriNet: function(process) {
+      },_visualizePetriNet: function(process, name) {
         // add places in petri net to the graph
         var startPlaces = [];
         var nodeMap = {};
+        this.graphMap[name] = nodeMap;
         var places = process.places;
         for(var i = 0; i < places.length; i++){
           var styleClasses = 'p' + places[i].id;
@@ -284,14 +312,14 @@
           for(var j = 0; j < outgoing.length; j++){
             var from = 't' + transitions[i].id;
             var to = 'p' + outgoing[j];
-            this.automataLink(nodeMap[from],nodeMap[to],'');
+            this._automataLink(nodeMap[from],nodeMap[to],'');
           }
 
           var incoming = transitions[i].incomingPlaces;
           for(var j = 0; j < incoming.length; j++){
             var from = 'p' + incoming[j];
             var to = 't' + transitions[i].id;
-            this.automataLink(nodeMap[from],nodeMap[to],'');
+            this._automataLink(nodeMap[from],nodeMap[to],'');
           }
         }
       }
