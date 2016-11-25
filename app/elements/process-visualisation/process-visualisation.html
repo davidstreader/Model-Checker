@@ -37,8 +37,6 @@
   </template>
 </dom-module>
 <script>
-
-
   (function() {
     'use strict';
     Polymer({
@@ -60,16 +58,94 @@
       },
 
       ready: function(){
+        var lthis = this;
         this.jgraph = new joint.dia.Graph();
         this.paper = new joint.dia.Paper({
           el: this.$['svg-parent'],
           width: 2000,
           height: 2000,
           gridSize: 1,
-          model: this.jgraph
+          model: this.jgraph,
+          restrictTranslate: true
         });
+        var exploded;
         var paper = this.paper;
         var dragStartPosition;
+        document.addEventListener('change-process', function(e){
+            //When we swap, its much easier to just restore then explode again.
+            if (exploded) {
+                lthis.fire('explode',false);
+                lthis.fire('explode',true);
+                return;
+            }
+          var node = lthis.graphMap[e.detail.name];
+          $(".process-display").stop().animate({scrollTop:node.minY}, '100', 'swing');
+        });
+        var lastOptions;
+        document.addEventListener('explode', function(e){
+          var processDisplay = $(".process-display");
+          exploded = e.detail;
+          if (e.detail) {
+            var paperWidth = lthis.paper.$el.width();
+            var paperHeight = lthis.paper.$el.height();
+            var paperScale =  V(paper.viewport).scale();
+            Object.keys(app.$.visualiser.graphMap).forEach(function (key) {
+              var nodes = _.values(app.$.visualiser.graphMap[key].map);
+              var localWidth = app.$.visualiser.graphMap[key].width;
+              var localHeight = app.$.visualiser.graphMap[key].height;
+              var minY = app.$.visualiser.graphMap[key].minY;
+              var scaleX = paperWidth/localWidth;
+              var scaleY = paperHeight/localHeight;
+              var offsetX = app.$.visualiser.graphMap[key].offsetX;
+              if (key == app.$.selector.getSelected()) {
+                lastOptions = {scrollTop:processDisplay.scrollTop(),x:paper.options.origin.x,y:paper.options.origin.y,sx:paperScale.sx,sy:paperScale.sy};
+                paper.setOrigin(0, 0);
+                paper.scale(Math.min(scaleX,scaleY), Math.min(scaleX,scaleY), 0,0);
+                processDisplay.scrollTop(0);
+                lthis.paper.setDimensions(lthis.paper.$el.width(),localHeight*Math.min(scaleX,scaleY));
+              }
+              nodes.forEach(function(nodev) {
+                if (key == app.$.selector.getSelected()) {
+                  var pos = nodev.position();
+                  var offsetXScaled = (lthis.paper.$el.width()-(localWidth*Math.min(scaleX,scaleY)))/2;
+                  nodev.scaledOffset = offsetXScaled;
+                  nodev.position(pos.x-offsetX+offsetXScaled ,pos.y-minY);
+                  nodev.exploded = true;
+                  return;
+                }
+                $("[model-id='" + nodev.id + "']").hide();
+                lthis.jgraph.getConnectedLinks(nodev).forEach(function (node) {
+                  $("[model-id='" + node.id + "']").hide();
+                });
+              });
+            });
+          } else {
+            Object.keys(app.$.visualiser.graphMap).forEach(function (key) {
+              paper.scale(lastOptions.sx, lastOptions.sy, 0,0);
+              paper.setOrigin(lastOptions.x, lastOptions.y);
+              processDisplay.scrollTop(lastOptions.scrollTop);
+              var offsetX = app.$.visualiser.graphMap[key].offsetX;
+              var nodes = _.values(app.$.visualiser.graphMap[key].map);
+              var minY = app.$.visualiser.graphMap[key].minY;
+              nodes.forEach(function(nodev) {
+                  if (nodev.exploded) {
+                    var pos = nodev.position();
+                    nodev.position(pos.x-nodev.scaledOffset+offsetX,pos.y+minY);
+                    nodev.exploded = false;
+                  }
+                $("[model-id='" + nodev.id + "']").show();
+                lthis.jgraph.getConnectedLinks(nodev).forEach(function (node) {
+                  $("[model-id='" + node.id + "']").show();
+                });
+              });
+
+              var node = Object.values(app.$.visualiser.graphMap).pop();
+              lthis.paper.setDimensions(lthis.paper.$el.width(),node.minY+node.height+200);
+            });
+
+          }
+
+        });
         paper.on('blank:pointerdown',
           function(event, x, y) {
             var scale = V(paper.viewport).scale();
@@ -81,13 +157,13 @@
         });
         $(paper.el.parentElement).mousemove(function(event) {
 //            console.log(this.dragStartPosition);
-          if (dragStartPosition !== undefined)
-            paper.setOrigin(
-              event.offsetX - dragStartPosition.x,
-              event.offsetY - dragStartPosition.y);
+          if (dragStartPosition !== undefined) {
+            var scale = V(paper.viewport).scale();
+            console.log(event.offsetX-dragStartPosition.x);
+            dragStartPosition = { x: event.offsetX * scale.sx, y: event.offsetY * scale.sy};
+          }
         });
         this.paper.$el.on('mousewheel DOMMouseScroll', function onMouseWheel(e) {
-          //function onMouseWheel(e){
           e.preventDefault();
           e = e.originalEvent;
 
@@ -114,6 +190,10 @@
 
           return svgPoint.matrixTransform(paper.viewport.getCTM().inverse());
         }
+        var height = 100;
+        var width = 9999;
+        var minY = 0;
+        var gridSize = 1;
         //Modify the transition element to place the label inside and not above.
         joint.shapes.pn.Transition = joint.shapes.basic.Generic.extend({
 
@@ -145,34 +225,92 @@
 
 
         var resizeElement = this;
+        this.jgraph.on('change:position', function(cell) {
+            //Exploded diagrams are limited by changing the dimensions of the paper
+            if (exploded) {
+              return;
+            }
 
+
+            Object.keys(lthis.graphMap).forEach(function (key) {
+                var graph = lthis.graphMap[key];
+              var nodes = _.values(graph.map);
+              var height = graph.height;
+              var minY = graph.minY;
+              var cellBbox = cell.getBBox();
+              var prev = cell.previous('position');
+              var newPos = cell.get('position');
+               if (_.contains(nodes,cell)) {
+                   if (cell.get("position").y < minY) {
+                     cell.set('position', prev);
+                   }
+                 if (cellBbox.bottomLeft().y > minY+height) {
+                   cell.set('position', prev);
+                 }
+                 if (cellBbox.origin().x < graph.minX+graph.offsetX) {
+                   cell.set('position', prev);
+                 }
+                 if (cellBbox.corner().x > graph.minX+graph.width+graph.offsetX) {
+                   cell.set('position', prev);
+                 }
+               }
+            });
+        });
         addResizeListener(resizeElement, function() {
           this.debounce('process-visualisation-resizer', function() {
-
-            var svg = d3.select(this.$.svg),
-              svgGroup = svg.select('g'),
-              automata = this.graph;
-
+            //When the page is resized, we need to also resize the svg element to fit.
+            var node = Object.values(app.$.visualiser.graphMap).pop();
+            this.paper.setDimensions(this.paper.$el.width(),node.minY+node.height+200);
+            //When we resize, its much easier to jump back to non exploded to recalculate
+            //the offsets.
+            var wasExploded = exploded;
+            if (exploded) {
+              lthis.fire('explode',false);
+            }
+            var jgraph = this.jgraph;
+            var graphMap = this.graphMap;
+            var i = 0;
+            var paperWidth = this.paper.$el.width();
+            Object.keys(graphMap).forEach(function (key) {
+              var nodes = _.values(graphMap[key].map);
+              var width = graphMap[key].width;
+              if (width < paperWidth) {
+                var oldOffsetX = graphMap[key].offsetX;
+                var offsetX = (lthis.paper.$el.width()-width)/2;
+                for (var node in nodes) {
+                  if (nodes[node] == graphMap[key].map['label']) continue;
+                  var pos = nodes[node].position();
+                  nodes[node].position(pos.x-oldOffsetX+offsetX,pos.y);
+                }
+              }
+              graphMap[key].offsetX = offsetX;
+            });
+            if (wasExploded) {
+              lthis.fire('explode',true);
+            }
           }, 300);
         });
       },
 
       setHighlightNodeId: function(id) {
         this._highlightedNodeId = id;
-        Polymer.dom(this.$.svg).querySelectorAll('.highlighted').forEach(function(n){
-          n.classList.remove('highlighted');
-        });
-        Polymer.dom(this.$.svg).querySelector('.n'+id).classList.add('highlighted');
+        //TODO: use this.graphMap to do this
+        //TODO:There also appears to be some sort of highlight function built into jointjs
+//        Polymer.dom(this.$.svg).querySelectorAll('.highlighted').forEach(function(n){
+//          n.classList.remove('highlighted');
+//        });
+//        Polymer.dom(this.$.svg).querySelector('.n'+id).classList.add('highlighted');
       },
       /**
        * Redraw the automata.
        */
       redraw: function() {
         if (this.paper === undefined) return;
+        this.paper.setDimensions(this.paper.$el.width(),0);
         this.jgraph.clear();
         this.graphMap = {};
         var lthis = this;
-        if (!app.get("automata.values")) return;
+        if (!app.get("automata.values") || app.get("automata.values").length == 0) return;
         app.get("automata.values").forEach(function(graph) {
           if (!graph.graph.type) return;
           if (graph.graph.type == 'automata') {
@@ -189,14 +327,14 @@
         var i = 0;
         var paperWidth = this.paper.$el.width();
         Object.keys(graphMap).forEach(function (key) {
-          var nodes = _.values(graphMap[key]);
+          var nodes = _.values(graphMap[key].map);
           var lx = 9999, ly = 9999, ux = 0, uy = 0;
           for (var node in nodes) {
-            var pos = nodes[node].position();
-            lx = Math.min(lx,pos.x);
-            ly = Math.min(ly,pos.y);
-            ux = Math.max(lx,pos.x);
-            uy = Math.max(ly,pos.y);
+            var bbox = nodes[node].getBBox();
+            lx = Math.min(lx,bbox.origin().x);
+            ly = Math.min(ly,bbox.origin().y);
+            ux = Math.max(ux,bbox.corner().x);
+            uy = Math.max(uy,bbox.corner().y);
           }
           var width = ux-lx;
           var height = uy-ly;
@@ -215,10 +353,19 @@
               'text': {text: app.get("automata.values")[i++].name, fill: 'red', 'font-size': 20}}
           });
           jgraph.addCell(cell);
-          graphMap[key]['label'] = cell;
+
+          graphMap[key].map['label'] = cell;
+          graphMap[key].height = height;
+          graphMap[key].width = width;
+          graphMap[key].minY = ly;
+          graphMap[key].minX = lx;
+          graphMap[key].offsetX = offsetX;
+
         });
         this.automata = this.graph;
         this.fire('process-visualisation-rendered');
+        var node = Object.values(app.$.visualiser.graphMap).pop();
+        this.paper.setDimensions(this.paper.$el.width(),node.minY+node.height+200);
       },_automataLink: function(source, target, label) {
         var cell = new joint.shapes.fsa.Arrow({
           source: { id: source.id },
@@ -249,7 +396,7 @@
         // add nodes in automaton to the graph
         var nodes = process.nodes;
         var nodeMap = {};
-        this.graphMap[name] = nodeMap;
+        this.graphMap[name] = {map:nodeMap,name:name,height:0};
         nodeMap.start = new joint.shapes.fsa.StartState();
         this.jgraph.addCell(nodeMap.start);
         for(var i = 0; i < nodes.length; i++){
@@ -282,7 +429,7 @@
         // add places in petri net to the graph
         var startPlaces = [];
         var nodeMap = {};
-        this.graphMap[name] = nodeMap;
+        this.graphMap[name] = {map:nodeMap,name:name,height:0};
         var places = process.places;
         for(var i = 0; i < places.length; i++){
           var styleClasses = 'p' + places[i].id;

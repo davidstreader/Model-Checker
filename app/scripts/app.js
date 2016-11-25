@@ -61,8 +61,6 @@
             if(app.liveBuilding === true || override){
               // otherwise render the automata
               app.set('automata.values', results.graphs.reverse());
-              app.$.selector.initialSelection();
-
               if(results.operations.length !== 0){
                 app.$.console.log('Operations:');
                 for(var i = 0; i < results.operations.length; i++){
@@ -245,17 +243,13 @@
       app.$.editor.focus();
     });
 
-    document.addEventListener('render-single-process', function(e){
-      app.$.visualiser.name = e.detail.name;
-      app.$.visualiser.graph = e.detail.graph;
-    });
     /**
      * Simple event listener for when the user switches tabs.
      * When we switch to index 1 (Diagram), we need to redraw the canvas,
      * as it needs to be showing currently to render.
      * If we switch to the editor, request focus on it.
      */
-    document.addEventListener('iron-select', function () {
+    app.$['maintabs'].addEventListener('iron-select', function (e) {
       if (app.$.maintabs.selected === 1) {
         app.$.visualiser.redraw();
       } else if (app.$.maintabs.selected === 0) {
