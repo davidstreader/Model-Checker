@@ -41,15 +41,18 @@ function automataParallelComposition(id, automaton1, automaton2){
 
 						if(c1 !== undefined && c2 !== undefined){
 							var toId = c1 + '.' + c2;
-							graph.addEdge(graph.nextEdgeId, action, graph.getNode(fromId), graph.getNode(toId));
+							var edge = graph.addEdge(graph.nextEdgeId, action, graph.getNode(fromId), graph.getNode(toId));
+							edge.locations = locationUnion(node1.locations, node2.locations);
 						}
 						else if(c1 !== undefined && alphabet2[action] === undefined){
 							var toId = c1 + '.' + node2.id;
-							graph.addEdge(graph.nextEdgeId, action, graph.getNode(fromId), graph.getNode(toId));
+							var edge = graph.addEdge(graph.nextEdgeId, action, graph.getNode(fromId), graph.getNode(toId));
+							edge.locations = node1.locations
 						}
 						else if(c2 !== undefined && alphabet1[action] === undefined){
 							var toId = node1.id + '.' + c2;
-							graph.addEdge(graph.nextEdgeId, action, graph.getNode(fromId), graph.getNode(toId));
+							var edge = graph.addEdge(graph.nextEdgeId, action, graph.getNode(fromId), graph.getNode(toId));
+							edge.locations = node2.locations;
 						}
 					}
 				}
@@ -73,16 +76,29 @@ function automataParallelComposition(id, automaton1, automaton2){
 	 */
 	function combineStates(graph, nodes1, nodes2){
 		for(var i = 0; i < nodes1.length; i++){
+			var locations1 = nodes1[i].locations;
+
 			for(var j = 0; j < nodes2.length; j++){
 				var id = nodes1[i].id + '.' + nodes2[j].id;
 				var metaData = metaDataIntersection(nodes1[i].metaData, nodes2[j].metaData);
-				graph.addNode(id, metaData);
-	
+				var node = graph.addNode(id, metaData);
+				
+				var locations2 = nodes2[j].locations;
+				node.locations = locationUnion(locations1, locations2);
+
 				// check if this is the first node constructed
 				if(i === 0 && j === 0){
 					graph.rootId = id;
 				}
 			}
 		}
+	}
+
+	function locationUnion(loc1, loc2){
+		for(var x in loc1){
+			loc2[x] = true;
+		}
+
+		return loc2;
 	}
 }
