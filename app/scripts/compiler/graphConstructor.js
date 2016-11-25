@@ -44,25 +44,4 @@ function constructGraphs(processesMap, analysis, lastGraphs){
 
 	return processes;
 
-	/**
-	 * Helper function which initialises and returns a blank
-	 * graph to build from.
-	 *
-	 * @return {graph} - blank graph
-	 */
-	function initialiseGraph(rankdir){
-		var graph = new dagreD3.graphlib.Graph({ multigraph: true });
-		graph.setGraph({
-			rankdir: rankdir,
-			marginx: 0,
-			marginy: 0
-		});
-
-		// set the default to assigning a new object as a label for each new edge
-		graph.setDefaultEdgeLabel( function(){
-			return {};
-		});
-
-		return graph;
-	}
 }

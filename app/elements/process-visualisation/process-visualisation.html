@@ -53,38 +53,45 @@
             return;
           }
           var node = lthis.graphMap[e.detail.name];
-          $(".process-display").stop().animate({scrollTop:node.parentNode.getBBox().origin().y}, '100', 'swing');
+          var scale = V(paper.viewport).scale();
+          $(".process-display").stop().animate({scrollTop:node.parentNode.getBBox().origin().y*scale.sx}, '100', 'swing');
         });
         var lastOptions;
         document.addEventListener('explode', function(e){
           var processDisplay = $(".process-display");
           exploded = e.detail;
-          if (e.detail) {
-            var paperWidth = lthis.paper.$el.width();
-            var paperHeight = lthis.paper.$el.height();
-            var paperScale =  V(paper.viewport).scale();
-            Object.keys(app.$.visualiser.graphMap).forEach(function (key) {
-              var parentNode = app.$.visualiser.graphMap[key].parentNode;
+          var paperWidth = lthis.paper.$el.width();
+          var paperHeight = lthis.paper.$el.height();
+          var paperScale =  V(paper.viewport).scale();
+          Object.keys(app.$.visualiser.graphMap).forEach(function (key) {
+            var parentNode = app.$.visualiser.graphMap[key].parentNode;
+            if (exploded) {
               $("[model-id='" + parentNode.id + "']").hide();
               var nodes = _.values(app.$.visualiser.graphMap[key].map);
               var localWidth = parentNode.getBBox().width;
               var localHeight = parentNode.getBBox().height;
               var minY = parentNode.getBBox().origin().y;
-              var scaleX = paperWidth/localWidth;
-              var scaleY = paperHeight/localHeight;
+              var scaleX = paperWidth / localWidth;
+              var scaleY = paperHeight / localHeight;
               if (key == app.$.selector.getSelected()) {
-                lastOptions = {scrollTop:processDisplay.scrollTop(),x:paper.options.origin.x,y:paper.options.origin.y,sx:paperScale.sx,sy:paperScale.sy};
+                lastOptions = {
+                  scrollTop: processDisplay.scrollTop(),
+                  x: paper.options.origin.x,
+                  y: paper.options.origin.y,
+                  sx: paperScale.sx,
+                  sy: paperScale.sy
+                };
                 paper.setOrigin(0, 0);
-                paper.scale(Math.min(scaleX,scaleY), Math.min(scaleX,scaleY), 0,0);
+                paper.scale(Math.min(scaleX, scaleY), Math.min(scaleX, scaleY), 0, 0);
                 processDisplay.scrollTop(0);
-                lthis.paper.setDimensions(lthis.paper.$el.width(),localHeight*Math.min(scaleX,scaleY));
+                lthis.paper.setDimensions(lthis.paper.$el.width(), localHeight * Math.min(scaleX, scaleY));
               }
-              nodes.forEach(function(nodev) {
+              nodes.forEach(function (nodev) {
                 if (key == app.$.selector.getSelected()) {
                   var pos = nodev.position();
-                  var offsetXScaled = (lthis.paper.$el.width()-(localWidth*Math.min(scaleX,scaleY)))/2;
-                  nodev.position(pos.x-parentNode.getBBox().origin().x+offsetXScaled ,pos.y-minY);
-                  nodev.scaledOffset = offsetXScaled;
+                  var offsetX = (lthis.paper.$el.width() - (localWidth * Math.min(scaleX, scaleY))) / 2;
+                  nodev.position(pos.x - parentNode.getBBox().origin().x + offsetX, pos.y - minY);
+                  nodev.offsetX = offsetX;
                   nodev.exploded = true;
                   return;
                 }
@@ -93,21 +100,16 @@
                   $("[model-id='" + node.id + "']").hide();
                 });
               });
-            });
-          } else {
-            Object.keys(app.$.visualiser.graphMap).forEach(function (key) {
-              var parentNode = app.$.visualiser.graphMap[key].parentNode;
+            } else {
               $("[model-id='" + parentNode.id + "']").show();
-              paper.scale(lastOptions.sx, lastOptions.sy, 0,0);
+              paper.scale(lastOptions.sx, lastOptions.sy, 0, 0);
               paper.setOrigin(lastOptions.x, lastOptions.y);
               processDisplay.scrollTop(lastOptions.scrollTop);
-              var offsetX = parentNode.getBBox().origin().x;
-              var nodes = _.values(app.$.visualiser.graphMap[key].map);
-              var minY = parentNode.getBBox().origin().y;
-              nodes.forEach(function(nodev) {
+              var minX = parentNode.getBBox().origin().x;
+              nodes.forEach(function (nodev) {
                 if (nodev.exploded) {
                   var pos = nodev.position();
-                  nodev.position(pos.x-nodev.scaledOffset+offsetX,pos.y+minY);
+                  nodev.position(pos.x - nodev.offsetX + minX, pos.y + minY);
                   nodev.exploded = false;
                 }
                 $("[model-id='" + nodev.id + "']").show();
@@ -117,18 +119,10 @@
               });
 
               var node = Object.values(app.$.visualiser.graphMap).pop();
-              lthis.paper.setDimensions(lthis.paper.$el.width(),node.minY+node.height+200);
-            });
-
-          }
-
+              lthis.paper.setDimensions(lthis.paper.$el.width(), node.minY + node.height + 200);
+            }
+          });
         });
-        paper.on('blank:pointerdown',
-          function(event, x, y) {
-            var scale = V(paper.viewport).scale();
-            dragStartPosition = { x: x * scale.sx, y: y * scale.sy};
-          }
-        );
 
         this.paper.$el.on('mousewheel DOMMouseScroll', function onMouseWheel(e) {
           e.preventDefault();
@@ -136,9 +130,13 @@
 
           var delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail))) / 50;
           var offsetX = (e.offsetX || e.clientX - $(this).offset().left);
-
           var offsetY = (e.offsetY || e.clientY - $(this).offset().top);
-          var p = offsetToLocalPoint(offsetX, offsetY);
+
+          var svgPoint = paper.svg.createSVGPoint();
+          svgPoint.x = offsetX;
+          svgPoint.y = offsetY;
+
+          var p = svgPoint.matrixTransform(paper.viewport.getCTM().inverse());
           var newScale = V(paper.viewport).scale().sx + delta;
           var origx = paper.options.origin.x;
           var origy = paper.options.origin.y;
@@ -148,49 +146,6 @@
             paper.setOrigin(origx, origy);
           }
         });
-
-        function offsetToLocalPoint(x, y) {
-          var svgPoint = paper.svg.createSVGPoint();
-          svgPoint.x = x;
-          svgPoint.y = y;
-
-          return svgPoint.matrixTransform(paper.viewport.getCTM().inverse());
-        }
-        var height = 100;
-        var width = 9999;
-        var minY = 0;
-        var gridSize = 1;
-        //Modify the transition element to place the label inside and not above.
-        joint.shapes.pn.Transition = joint.shapes.basic.Generic.extend({
-
-          markup: '<g class="rotatable"><g class="scalable"><rect class="root"/></g></g><text class="label"/>',
-
-          defaults: _.defaultsDeep({
-
-            type: 'pn.Transition',
-            size: { width: 20, height: 60 },
-            attrs: {
-              'rect': {
-                width: 12,
-                height: 50,
-                fill: '#000000',
-                stroke: '#000000'
-              },
-              '.label': {
-                'text-anchor': 'middle',
-                'ref-x': .5,
-                'ref-y': 23,
-                ref: 'rect',
-                fill: '#FFFFFF',
-                'font-size': 12
-              }
-            }
-
-          }, joint.shapes.basic.Generic.prototype.defaults)
-        });
-
-
-        var resizeElement = this;
         this.jgraph.on('change:position', function(cell) {
           //Exploded diagrams are limited by changing the dimensions of the paper
           if (exploded) {
@@ -203,16 +158,6 @@
           if (parent.rendering) return;
           var parentBbox = parent.getBBox();
           var cellBbox = cell.getBBox();
-
-          if (parentBbox.containsPoint(cellBbox.origin()) &&
-            parentBbox.containsPoint(cellBbox.topRight()) &&
-            parentBbox.containsPoint(cellBbox.corner()) &&
-            parentBbox.containsPoint(cellBbox.bottomLeft())) {
-
-            // All the four corners of the child are inside
-            // the parent area.
-            return;
-          }
           var changeX = Math.abs(cell.get("position").x-cell.previous('position').x);
           var changeY = Math.abs(cell.get("position").y-cell.previous('position').y);
           var size = parent.get("size");
@@ -226,18 +171,7 @@
           } else if (cellBbox.corner().y > parentBbox.corner().y) {
             parent.resize(size.width,size.height+changeY,{direction: "bottom"});
           }
-          // Revert the child position.
-//          cell.set('position', cell.previous('position'));
         });
-      },
-      setHighlightNodeId: function(id) {
-        this._highlightedNodeId = id;
-        //TODO: use this.graphMap to do this
-        //TODO:There also appears to be some sort of highlight function built into jointjs
-//        Polymer.dom(this.$.svg).querySelectorAll('.highlighted').forEach(function(n){
-//          n.classList.remove('highlighted');
-//        });
-//        Polymer.dom(this.$.svg).querySelector('.n'+id).classList.add('highlighted');
       },
       /**
        * Redraw the automata.
@@ -265,22 +199,22 @@
         var paperWidth = this.paper.$el.width();
         Object.keys(graphMap).forEach(function (key) {
           var nodes = _.values(graphMap[key].map);
-          var lx = 9999, ly = 9999, ux = 0, uy = 0;
-          for (var node in nodes) {
-            var bbox = nodes[node].getBBox();
+          var lx = Number.MAX_VALUE, ly = Number.MAX_VALUE, ux = 0, uy = 0;
+          nodes.forEach(function (node) {
+            var bbox = node.getBBox();
             lx = Math.min(lx,bbox.origin().x);
             ly = Math.min(ly,bbox.origin().y);
             ux = Math.max(ux,bbox.corner().x);
             uy = Math.max(uy,bbox.corner().y);
-          }
+          });
           var width = ux-lx;
           var height = uy-ly;
           var offsetX = (lthis.paper.$el.width()-width)/2;
           if (width < paperWidth) {
-            for (var node in nodes) {
-              var pos = nodes[node].position();
-              nodes[node].position(pos.x+offsetX,pos.y);
-            }
+            nodes.forEach(function (node) {
+              var pos = node.position();
+              node.position(pos.x+offsetX,pos.y);
+            });
           }
           var cell = new joint.shapes.basic.Rect ({
             size: { width: 100, height: 30 },
@@ -378,7 +312,6 @@
         this.graphMap[name] = {map:nodeMap,name:name,height:0,parentNode:parentNode};
         var places = process.places;
         for(var i = 0; i < places.length; i++){
-          var styleClasses = 'p' + places[i].id;
           var label = '';
           // add to array of start places if necessary
           if(places[i].metaData.startPlace !== undefined){
@@ -395,7 +328,6 @@
         }
 
         // add transitions to the graph
-        var edgeId = 0;
         var transitions = process.transitions;
         for(var i = 0; i < transitions.length; i++){
           nodeMap['t' + transitions[i].id] = new joint.shapes.pn.Transition({
