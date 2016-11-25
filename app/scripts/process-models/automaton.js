@@ -33,7 +33,9 @@ const AUTOMATON = {
 	addNode: function(id, metaData){
 		id = (id === undefined) ? this.nextNodeId : id;
 		metaData = (metaData === undefined) ? {} : metaData;
-		const node = new AutomatonNode(id, {}, {}, metaData);
+		const locationSet = {};
+		locationSet[this.id] = true;
+		const node = new AutomatonNode(id, {}, {}, locationSet, metaData);
 		this.nodeMap[id] = node;
 		this.nodeCount++;
 		return node;
@@ -79,6 +81,8 @@ const AUTOMATON = {
 			this.getEdge(id).from = node1.id;
 		}
 
+		node1.locations = node2.locations;
+
 		for(let key in node2.metaData){
 			node1.metaData[key] = node2.metaData[key];
 		}
@@ -105,7 +109,9 @@ const AUTOMATON = {
 	},
 
 	addEdge: function(id, label, from, to, metaData){
-		const edge = new AutomatonEdge(id, label, from.id, to.id, metaData);
+		const locationSet = {};
+		locationSet[this.id] = true;
+		const edge = new AutomatonEdge(id, label, from.id, to.id, locationSet, metaData);
 		from.addOutgoingEdge(id);
 		to.addIncomingEdge(id);
 		this.edgeMap[id] = edge;
@@ -200,8 +206,9 @@ const AUTOMATON = {
 			const id = nodes[i].id + '.' + cloneId;
 			const incoming = relabelSet(JSON.parse(JSON.stringify(nodes[i].incomingEdgeSet)));
 			const outgoing = relabelSet(JSON.parse(JSON.stringify(nodes[i].outgoingEdgeSet)));
+			const locations = JSON.parse(JSON.stringify(nodes[i].locationSet));
 			const metaData = JSON.parse(JSON.stringify(nodes[i].metaData));
-			const node = new AutomatonNode(id, incoming, outgoing, metaData);
+			const node = new AutomatonNode(id, incoming, outgoing, locations, metaData);
 			automaton.nodeMap[id] = node;
 			automaton.nodeCount++;
 
@@ -218,8 +225,9 @@ const AUTOMATON = {
 			const label = edges[i].label;
 			const from = edges[i].from + '.' + cloneId;
 			const to = edges[i].to + '.' + cloneId;
+			const locations = JSON.parse(JSON.stringify(edges[i].locationSet));
 			const metaData = JSON.parse(JSON.stringify(edges[i].metaData));
-			const edge = new AutomatonEdge(id, label, from, to, metaData);
+			const edge = new AutomatonEdge(id, label, from, to, locations, metaData);
 			automaton.edgeMap[id] = edge;
 			automaton.edgeCount++;
 		}
@@ -327,6 +335,25 @@ const AUTOMATON_NODE = {
 		delete this.outgoingEdgeSet[id];
 	},
 
+	get locations(){
+		return JSON.parse(JSON.stringify(this.locationSet));
+	},
+
+	set locations(locations){
+		this.locationSet = {};
+		for(id in locations){
+			this.locationSet[id] = true;
+		}
+	},
+
+	addLocation: function(location){
+		this.locationSet[location] = true;
+	},
+
+	removeLocation: function(location){
+		delete this.locationSet[location];
+	},
+
 	isTerminal: function(){
 		for(let id in this.outgoingEdgeSet){
 			return false;
@@ -356,10 +383,11 @@ const AUTOMATON_NODE = {
 	}
 };
 
-function AutomatonNode(id, incomingEdges, outgoingEdges, metaData){
+function AutomatonNode(id, incomingEdges, outgoingEdges, locations, metaData){
 	this.id = id;
 	this.incomingEdgeSet = (incomingEdges === undefined) ? {} : incomingEdges;
 	this.outgoingEdgeSet = (outgoingEdges === undefined) ? {} : outgoingEdges;
+	this.locationSet = (locations === undefined) ? {} : locations;
 	this.metaData = (metaData === undefined) ? {} : metaData;
 	Object.setPrototypeOf(this, AUTOMATON_NODE);
 }
@@ -389,6 +417,25 @@ const AUTOMATON_EDGE = {
 		return this.to;
 	},
 
+	get locations(){
+		return JSON.parse(JSON.stringify(this.locationSet));
+	},
+
+	set locations(locations){
+		this.locationSet = {};
+		for(id in locations){
+			this.locationSet[id] = true;
+		}
+	},
+
+	addLocation: function(location){
+		this.locationSet[location] = true;
+	},
+
+	removeLocation: function(location){
+		delete this.locationSet[location];
+	},
+
 	isHidden: function(){
 		return this.label === TAU;
 	},
@@ -410,11 +457,12 @@ const AUTOMATON_EDGE = {
 	}
 };
 
-function AutomatonEdge(id, label, from, to, metaData){
+function AutomatonEdge(id, label, from, to, locations, metaData){
 	this.id = id;
 	this.label = label;
 	this.from = from;
 	this.to = to;
+	this.locationSet = (locations === undefined) ? {} : locations;
 	this.metaData = (metaData === undefined) ? {} : metaData;
 	Object.setPrototypeOf(this, AUTOMATON_EDGE);
 }
