@@ -4,34 +4,8 @@
 <link rel="import" href="../imports/element-resizer.html">
 
 <dom-module id="process-visualisation">
-  <style>
-    :host {
-      display: block;
-      font-family: "Helvetica Neue", Helvetica, Arial, sans-serf;
-      color: #6C7A89;
-    }
-    #svg-parent{
-      @apply(--layout-fit);
-      margin: 4px 4px 4px 4px;
-    }
-    #svg{
-      width: 100%;
-      height: 100%;
-    }
-    #name{
-      position: absolute;
-      top: 4px;
-      left: 8px;
-      color: red;
-      font-size: 12pt;
-      @apply(--automata-visualisation-name-style);
-    }
-    /*.edgePath defs marker path{
-  fill: #8F939E;
-}*/
-  </style>
   <template>
-    <div id="svg-parent">
+    <div id="svg-parentNode">
     </div>
     <div id="name">[[name]]</div>
   </template>
@@ -61,7 +35,7 @@
         var lthis = this;
         this.jgraph = new joint.dia.Graph();
         this.paper = new joint.dia.Paper({
-          el: this.$['svg-parent'],
+          el: this.$['svg-parentNode'],
           width: 2000,
           height: 2000,
           gridSize: 1,
@@ -72,14 +46,14 @@
         var paper = this.paper;
         var dragStartPosition;
         document.addEventListener('change-process', function(e){
-            //When we swap, its much easier to just restore then explode again.
-            if (exploded) {
-                lthis.fire('explode',false);
-                lthis.fire('explode',true);
-                return;
-            }
+          //When we swap, its much easier to just restore then explode again.
+          if (exploded) {
+            lthis.fire('explode',false);
+            lthis.fire('explode',true);
+            return;
+          }
           var node = lthis.graphMap[e.detail.name];
-          $(".process-display").stop().animate({scrollTop:node.minY}, '100', 'swing');
+          $(".process-display").stop().animate({scrollTop:node.parentNode.getBBox().origin().y}, '100', 'swing');
         });
         var lastOptions;
         document.addEventListener('explode', function(e){
@@ -90,13 +64,14 @@
             var paperHeight = lthis.paper.$el.height();
             var paperScale =  V(paper.viewport).scale();
             Object.keys(app.$.visualiser.graphMap).forEach(function (key) {
+              var parentNode = app.$.visualiser.graphMap[key].parentNode;
+              $("[model-id='" + parentNode.id + "']").hide();
               var nodes = _.values(app.$.visualiser.graphMap[key].map);
-              var localWidth = app.$.visualiser.graphMap[key].width;
-              var localHeight = app.$.visualiser.graphMap[key].height;
-              var minY = app.$.visualiser.graphMap[key].minY;
+              var localWidth = parentNode.getBBox().width;
+              var localHeight = parentNode.getBBox().height;
+              var minY = parentNode.getBBox().origin().y;
               var scaleX = paperWidth/localWidth;
               var scaleY = paperHeight/localHeight;
-              var offsetX = app.$.visualiser.graphMap[key].offsetX;
               if (key == app.$.selector.getSelected()) {
                 lastOptions = {scrollTop:processDisplay.scrollTop(),x:paper.options.origin.x,y:paper.options.origin.y,sx:paperScale.sx,sy:paperScale.sy};
                 paper.setOrigin(0, 0);
@@ -108,8 +83,8 @@
                 if (key == app.$.selector.getSelected()) {
                   var pos = nodev.position();
                   var offsetXScaled = (lthis.paper.$el.width()-(localWidth*Math.min(scaleX,scaleY)))/2;
+                  nodev.position(pos.x-parentNode.getBBox().origin().x+offsetXScaled ,pos.y-minY);
                   nodev.scaledOffset = offsetXScaled;
-                  nodev.position(pos.x-offsetX+offsetXScaled ,pos.y-minY);
                   nodev.exploded = true;
                   return;
                 }
@@ -121,18 +96,20 @@
             });
           } else {
             Object.keys(app.$.visualiser.graphMap).forEach(function (key) {
+              var parentNode = app.$.visualiser.graphMap[key].parentNode;
+              $("[model-id='" + parentNode.id + "']").show();
               paper.scale(lastOptions.sx, lastOptions.sy, 0,0);
               paper.setOrigin(lastOptions.x, lastOptions.y);
               processDisplay.scrollTop(lastOptions.scrollTop);
-              var offsetX = app.$.visualiser.graphMap[key].offsetX;
+              var offsetX = parentNode.getBBox().origin().x;
               var nodes = _.values(app.$.visualiser.graphMap[key].map);
-              var minY = app.$.visualiser.graphMap[key].minY;
+              var minY = parentNode.getBBox().origin().y;
               nodes.forEach(function(nodev) {
-                  if (nodev.exploded) {
-                    var pos = nodev.position();
-                    nodev.position(pos.x-nodev.scaledOffset+offsetX,pos.y+minY);
-                    nodev.exploded = false;
-                  }
+                if (nodev.exploded) {
+                  var pos = nodev.position();
+                  nodev.position(pos.x-nodev.scaledOffset+offsetX,pos.y+minY);
+                  nodev.exploded = false;
+                }
                 $("[model-id='" + nodev.id + "']").show();
                 lthis.jgraph.getConnectedLinks(nodev).forEach(function (node) {
                   $("[model-id='" + node.id + "']").show();
@@ -152,17 +129,7 @@
             dragStartPosition = { x: x * scale.sx, y: y * scale.sy};
           }
         );
-        paper.on('cell:pointerup blank:pointerup', function(cellView, x, y) {
-          dragStartPosition = undefined;
-        });
-        $(paper.el.parentElement).mousemove(function(event) {
-//            console.log(this.dragStartPosition);
-          if (dragStartPosition !== undefined) {
-            var scale = V(paper.viewport).scale();
-            console.log(event.offsetX-dragStartPosition.x);
-            dragStartPosition = { x: event.offsetX * scale.sx, y: event.offsetY * scale.sy};
-          }
-        });
+
         this.paper.$el.on('mousewheel DOMMouseScroll', function onMouseWheel(e) {
           e.preventDefault();
           e = e.originalEvent;
@@ -173,7 +140,6 @@
           var offsetY = (e.offsetY || e.clientY - $(this).offset().top);
           var p = offsetToLocalPoint(offsetX, offsetY);
           var newScale = V(paper.viewport).scale().sx + delta;
-          if (newScale < 1) return;
           var origx = paper.options.origin.x;
           var origy = paper.options.origin.y;
           if (newScale > 0.4 && newScale < 2) {
@@ -226,72 +192,44 @@
 
         var resizeElement = this;
         this.jgraph.on('change:position', function(cell) {
-            //Exploded diagrams are limited by changing the dimensions of the paper
-            if (exploded) {
-              return;
-            }
+          //Exploded diagrams are limited by changing the dimensions of the paper
+          if (exploded) {
+            return;
+          }
+          var parentId = cell.get('parent');
+          if (!parentId) return;
 
+          var parent = lthis.jgraph.getCell(parentId);
+          if (parent.rendering) return;
+          var parentBbox = parent.getBBox();
+          var cellBbox = cell.getBBox();
 
-            Object.keys(lthis.graphMap).forEach(function (key) {
-                var graph = lthis.graphMap[key];
-              var nodes = _.values(graph.map);
-              var height = graph.height;
-              var minY = graph.minY;
-              var cellBbox = cell.getBBox();
-              var prev = cell.previous('position');
-              var newPos = cell.get('position');
-               if (_.contains(nodes,cell)) {
-                   if (cell.get("position").y < minY) {
-                     cell.set('position', prev);
-                   }
-                 if (cellBbox.bottomLeft().y > minY+height) {
-                   cell.set('position', prev);
-                 }
-                 if (cellBbox.origin().x < graph.minX+graph.offsetX) {
-                   cell.set('position', prev);
-                 }
-                 if (cellBbox.corner().x > graph.minX+graph.width+graph.offsetX) {
-                   cell.set('position', prev);
-                 }
-               }
-            });
-        });
-        addResizeListener(resizeElement, function() {
-          this.debounce('process-visualisation-resizer', function() {
-            //When the page is resized, we need to also resize the svg element to fit.
-            var node = Object.values(app.$.visualiser.graphMap).pop();
-            this.paper.setDimensions(this.paper.$el.width(),node.minY+node.height+200);
-            //When we resize, its much easier to jump back to non exploded to recalculate
-            //the offsets.
-            var wasExploded = exploded;
-            if (exploded) {
-              lthis.fire('explode',false);
-            }
-            var jgraph = this.jgraph;
-            var graphMap = this.graphMap;
-            var i = 0;
-            var paperWidth = this.paper.$el.width();
-            Object.keys(graphMap).forEach(function (key) {
-              var nodes = _.values(graphMap[key].map);
-              var width = graphMap[key].width;
-              if (width < paperWidth) {
-                var oldOffsetX = graphMap[key].offsetX;
-                var offsetX = (lthis.paper.$el.width()-width)/2;
-                for (var node in nodes) {
-                  if (nodes[node] == graphMap[key].map['label']) continue;
-                  var pos = nodes[node].position();
-                  nodes[node].position(pos.x-oldOffsetX+offsetX,pos.y);
-                }
-              }
-              graphMap[key].offsetX = offsetX;
-            });
-            if (wasExploded) {
-              lthis.fire('explode',true);
-            }
-          }, 300);
+          if (parentBbox.containsPoint(cellBbox.origin()) &&
+            parentBbox.containsPoint(cellBbox.topRight()) &&
+            parentBbox.containsPoint(cellBbox.corner()) &&
+            parentBbox.containsPoint(cellBbox.bottomLeft())) {
+
+            // All the four corners of the child are inside
+            // the parent area.
+            return;
+          }
+          var changeX = Math.abs(cell.get("position").x-cell.previous('position').x);
+          var changeY = Math.abs(cell.get("position").y-cell.previous('position').y);
+          var size = parent.get("size");
+          if (cellBbox.origin().x < parentBbox.origin().x) {
+            parent.resize(size.width+changeX,size.height,{direction: "left"});
+          } else if (cellBbox.corner().x > parentBbox.corner().x) {
+            parent.resize(size.width+changeX,size.height,{direction: "right"})
+          }
+          if (cellBbox.origin().y < parentBbox.origin().y) {
+            parent.resize(size.width,size.height+changeY,{direction: "top"});
+          } else if (cellBbox.corner().y > parentBbox.corner().y) {
+            parent.resize(size.width,size.height+changeY,{direction: "bottom"});
+          }
+          // Revert the child position.
+//          cell.set('position', cell.previous('position'));
         });
       },
-
       setHighlightNodeId: function(id) {
         this._highlightedNodeId = id;
         //TODO: use this.graphMap to do this
@@ -320,7 +258,6 @@
             lthis._visualizePetriNet(graph.graph,graph.name);
           }
         });
-
         joint.layout.DirectedGraph.layout(this.jgraph, {rankDir:'LR'});
         var jgraph = this.jgraph;
         var graphMap = this.graphMap;
@@ -338,8 +275,8 @@
           }
           var width = ux-lx;
           var height = uy-ly;
+          var offsetX = (lthis.paper.$el.width()-width)/2;
           if (width < paperWidth) {
-            var offsetX = (lthis.paper.$el.width()-width)/2;
             for (var node in nodes) {
               var pos = nodes[node].position();
               nodes[node].position(pos.x+offsetX,pos.y);
@@ -347,35 +284,34 @@
           }
           var cell = new joint.shapes.basic.Rect ({
             size: { width: 100, height: 30 },
-            position: { x:lx, y:ly},
+            position: { x:lx+offsetX, y:ly},
             attrs: {
-              rect: { fill: 'transparent', stroke: 'none' },
+              rect: { fill: 'transparentNode', stroke: 'none' },
               'text': {text: app.get("automata.values")[i++].name, fill: 'red', 'font-size': 20}}
           });
+
+          graphMap[key].parentNode.embed(cell);
+          var pos = graphMap[key].parentNode.position();
+          graphMap[key].parentNode.position(pos.x+offsetX,pos.y);
           jgraph.addCell(cell);
-
           graphMap[key].map['label'] = cell;
-          graphMap[key].height = height;
-          graphMap[key].width = width;
-          graphMap[key].minY = ly;
-          graphMap[key].minX = lx;
-          graphMap[key].offsetX = offsetX;
-
+          graphMap[key].parentNode.rendering = false;
         });
         this.automata = this.graph;
         this.fire('process-visualisation-rendered');
         var node = Object.values(app.$.visualiser.graphMap).pop();
         this.paper.setDimensions(this.paper.$el.width(),node.minY+node.height+200);
-      },_automataLink: function(source, target, label) {
+      }, _automataLink: function(source, target, label, parentNode) {
         var cell = new joint.shapes.fsa.Arrow({
           source: { id: source.id },
           target: { id: target.id },
           labels: [{ position: 0.5, attrs: { text: { text: label || '', 'font-weight': 'bold' } } }],
           vertices: []
         });
+        parentNode.embed(cell);
         this.jgraph.addCell(cell);
         return cell;
-      }, _petrinetLink : function(from, to, label) {
+      }, _petrinetLink : function(from, to, label, parentNode) {
         var link = new joint.shapes.pn.Link({
           source: {id: nodeMap[from].id, selector: '.root'},
           target: {id: nodeMap[to].id, selector: '.root'},
@@ -390,18 +326,24 @@
             }
           }
         });
+        parentNode.embed(link);
         this.jgraph.addCell(link);
         return link;
       },_visualizeAutomata: function(process, name) {
         // add nodes in automaton to the graph
         var nodes = process.nodes;
         var nodeMap = {};
-        this.graphMap[name] = {map:nodeMap,name:name,height:0};
+        var parentNode = new joint.shapes.basic.Rect();
+        parentNode.rendering = true;
+        this.jgraph.addCell(parentNode);
+        this.graphMap[name] = {map:nodeMap,name:name,height:0,parentNode:parentNode};
         nodeMap.start = new joint.shapes.fsa.StartState();
+        parentNode.embed(nodeMap.start);
         this.jgraph.addCell(nodeMap.start);
         for(var i = 0; i < nodes.length; i++){
           if(nodes[i].getMetaData('isTerminal') !== undefined){
             nodeMap['n' + nodes[i].id] = new joint.shapes.fsa.EndState();
+            parentNode.embed(nodeMap['n' + nodes[i].id]);
             this.jgraph.addCell(nodeMap['n' + nodes[i].id]);
             continue;
           }
@@ -410,10 +352,11 @@
             size: { width: 60, height: 60 },
             attrs: { text : { text: nodes[i].metaData.label }}
           });
+          parentNode.embed(nodeMap['n' + nodes[i].id]);
           this.jgraph.addCell(nodeMap['n' + nodes[i].id]);
           // check if current node is the root node
           if(nodes[i].getMetaData('startNode')){
-            this._automataLink(nodeMap.start,nodeMap['n' + nodes[i].id]);
+            this._automataLink(nodeMap.start,nodeMap['n' + nodes[i].id], '',parentNode);
           }
         }
 
@@ -423,13 +366,16 @@
           var label = edges[i].label;
           var from = 'n' + edges[i].from;
           var to = 'n' + edges[i].to;
-          this._automataLink(nodeMap[from],nodeMap[to], label);
+          this._automataLink(nodeMap[from],nodeMap[to], label,parentNode);
         }
       },_visualizePetriNet: function(process, name) {
         // add places in petri net to the graph
         var startPlaces = [];
         var nodeMap = {};
-        this.graphMap[name] = {map:nodeMap,name:name,height:0};
+        var parentNode = new joint.shapes.basic.Rect();
+        parentNode.rendering = true;
+        this.jgraph.addCell(parentNode);
+        this.graphMap[name] = {map:nodeMap,name:name,height:0,parentNode:parentNode};
         var places = process.places;
         for(var i = 0; i < places.length; i++){
           var styleClasses = 'p' + places[i].id;
@@ -443,6 +389,7 @@
             attrs: {
               '.label': {text: label, fill: '#7c68fc'}}
           });
+          parentNode.embed(cell);
           this.jgraph.addCell(cell);
           nodeMap['p' + places[i].id] = cell;
         }
@@ -454,19 +401,20 @@
           nodeMap['t' + transitions[i].id] = new joint.shapes.pn.Transition({
             attrs: { text : { text: transitions[i].label }}
           });
+          parentNode.embed(nodeMap['t' + transitions[i].id]);
           this.jgraph.addCell(nodeMap['t' + transitions[i].id]);
           var outgoing = transitions[i].outgoingPlaces;
           for(var j = 0; j < outgoing.length; j++){
             var from = 't' + transitions[i].id;
             var to = 'p' + outgoing[j];
-            this._automataLink(nodeMap[from],nodeMap[to],'');
+            this._automataLink(nodeMap[from],nodeMap[to],'',parentNode);
           }
 
           var incoming = transitions[i].incomingPlaces;
           for(var j = 0; j < incoming.length; j++){
             var from = 'p' + incoming[j];
             var to = 't' + transitions[i].id;
-            this._automataLink(nodeMap[from],nodeMap[to],'');
+            this._automataLink(nodeMap[from],nodeMap[to],'',parentNode);
           }
         }
       }
