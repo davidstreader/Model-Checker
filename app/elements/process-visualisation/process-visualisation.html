@@ -205,16 +205,15 @@
         app.get("automata.values").forEach(function(graph) {
           if (!graph.type) return;
           if (graph.type == 'automata') {
-            lthis._visualizeAutomata(graph,graph.name);
+            lthis._visualizeAutomata(graph,graph.id);
           }
           if (graph.type == 'petrinet') {
-            lthis._visualizePetriNet(graph,graph.name);
+            lthis._visualizePetriNet(graph,graph.id);
           }
         });
         joint.layout.DirectedGraph.layout(this.jgraph, {rankDir:'LR'});
         var jgraph = this.jgraph;
         var graphMap = this.graphMap;
-        var i = 0;
         var paperWidth = this.paper.$el.width();
         Object.keys(graphMap).forEach(function (key) {
           var nodes = _.values(graphMap[key].map);
@@ -240,7 +239,7 @@
             position: { x:lx+offsetX, y:ly},
             attrs: {
               rect: { fill: 'transparent', stroke: 'none' },
-              'text': {text: app.get("automata.values")[i++].name, fill: 'red', 'font-size': 20}}
+              'text': {text: key, fill: 'red', 'font-size': 20}}
           });
 
           graphMap[key].parentNode.embed(cell);
