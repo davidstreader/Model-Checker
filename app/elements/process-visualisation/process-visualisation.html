@@ -51,9 +51,9 @@
             maxX = Math.max(maxX,graph.parentNode.getBBox().corner().x);
           console.log(graph.parentNode.getBBox().corner().y);
         });
-        var graph = Object.values(this.graphMap).pop();
+        var graph = Object.values(this.graphMap).pop();        console.log(graph.parentNode.getBBox().corner().y);
         console.log(graph.parentNode.getBBox().corner().y);
-        this.paper.setDimensions(Math.max(maxX*scale.sx,this.paper.$el.width()),Math.max(graph.parentNode.getBBox().corner().y*scale.sy+200,this.paper.$el.parent().parent().parent().height));
+        this.paper.setDimensions(Math.max(maxX*scale.sx,this.paper.$el.width()),Math.max(graph.parentNode.getBBox().corner().y*scale.sy+200,this.paper.$el.parent().parent().height));
       },
       ready: function(){
         var lthis = this;
