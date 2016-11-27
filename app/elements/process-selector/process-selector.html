@@ -34,11 +34,16 @@
         <paper-item disabled hidden$="{{_hasProcesses}}">No Processes Defined</paper-item>
       </paper-menu>
     </paper-dropdown-menu>
-
+    <paper-button onclick="toggleExplode()" disabled$="{{_hasSelection}}">{{_explosionLabel}}</paper-button>
   </template>
 
 </dom-module>
 <script>
+  function toggleExplode() {
+      var lbl = app.$.selector._explosionLabel;
+      app.$.selector._explosionLabel = lbl==="Show all"?"Explode to process":"Show all";
+    app.$.selector.fire('explode', lbl==="Explode to process");
+  }
   (function() {
     Polymer({
       is: 'process-selector',
@@ -46,12 +51,19 @@
       properties: {
 
         /**
-         * The automata availabe to walk.
+         * The automata available to walk.
          */
         processes: {
           type: Array
         },
-
+        _explosionLabel: {
+          type: String,
+          value: "Explode to process"
+        },
+        _hasSelection: {
+          type: Boolean,
+          computed: 'hasSelected()'
+        },
         _hasProcesses: {
           type: Boolean,
           computed: '_greaterThan(processes.length, 0)'
@@ -75,18 +87,20 @@
         for(var i in this.processes){
           if(this.processes[i].name === graph.name){
             graph.graph = this.processes[i].graph;
+            this.fire('change-process', this.processes[i]);
             break;
           }
         }
 
-        this.fire('render-single-process', graph);
       },
-
       initialSelection: function(e, detail){
-        if(this.processes.length > 0){
-          this.fire('render-single-process', this.processes[0]);
           return "0";
-        }
+      },
+      getSelected: function() {
+          return $("#process-name-selector")[0].selectedItemLabel;
+      },
+      hasSelected: function() {
+          return this.getSelected() !== undefined;
       }
     });
   })();

@@ -37,9 +37,12 @@
             c.removeChild(c.lastChild); // content
             c.removeChild(c.lastChild); // line break
           }
-          return;
+        } else {
+            c.innerHTML = '';
         }
-        c.innerHTML = '';
+        this.debounce('console-change', function() {
+            this.fire('console-change');
+          }, this.changeEventDebounceTime);
       },
 
       log: function(msg){
@@ -64,6 +67,9 @@
         c.appendChild(document.createElement('BR'));
         c.scrollTop = c.scrollHeight;
 
+        this.debounce('console-change', function() {
+            this.fire('console-change');
+          }, this.changeEventDebounceTime);
         return node;
       }
     });

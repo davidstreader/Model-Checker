@@ -1,6 +1,5 @@
 (function(document) {
   'use strict';
-
   var app = document.querySelector('#app');
 
   window.addEventListener('WebComponentsReady', function() {
@@ -17,6 +16,8 @@
     app.previousBuild = {};
     app.previousCode = '';
     app.currentFile = '';
+    app.selectedCtx = 0;
+    app.consoleMsgCount = "black";
 
     app.compile = function(overrideBuild) {
       var code = app.getCode();
@@ -59,10 +60,7 @@
           else{
             if(app.liveBuilding === true || override){
               // otherwise render the automata
-              var graphs = constructGraphs(results.processes);
-              app.set('automata.values', graphs.reverse());
-              app.$.selector.initialSelection();
-
+              app.set('automata.values', results.graphs.reverse());
               if(results.operations.length !== 0){
                 app.$.console.log('Operations:');
                 for(var i = 0; i < results.operations.length; i++){
@@ -207,12 +205,31 @@
       app.$.editor.focus();
     });
 
-    document.addEventListener('render-single-process', function(e){
-      app.$.visualiser.name = e.detail.name;
-      app.$.visualiser.graph = e.detail.graph;
-      app.$.visualiser.redraw();
+    /**
+     * Simple event listener for when the user switches tabs.
+     * When we switch to index 1 (Diagram), we need to redraw the canvas,
+     * as it needs to be showing currently to render.
+     * If we switch to the editor, request focus on it.
+     */
+    app.$['maintabs'].addEventListener('iron-select', function (e) {
+      if (app.$.maintabs.selected === 1) {
+        app.$.visualiser.redraw();
+      } else if (app.$.maintabs.selected === 0) {
+        app.$.editor._editor.focus();
+      }
     });
-
+    /**
+     * Simple event listener for when the console updates.
+     * If an error exists, then highlight the tab red to make it
+     * obvious that an error has occurred.
+     */
+    document.addEventListener('console-change', function() {
+      if (!document.querySelector('code[id="console"] > .error')) {
+        app.consoleMsgCount = "black";
+        return;
+      }
+      app.consoleMsgCount = "#ab0000";
+    });
 
     /**
      * This is the event which triggers when the user selects an automata from the
