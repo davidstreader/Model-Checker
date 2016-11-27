@@ -277,6 +277,67 @@ const AUTOMATON = {
 
 	get nextEdgeId(){
 		return this.id + '.e' + this.edgeId++;
+	},
+
+	// Global Functions
+
+	strip: function(automaton){
+		return JSON.parse(JSON.stringify(automaton));
+	},
+
+	convert: function(automaton){
+		// check that the object has the correct properties
+		const properties = ['id', 'rootId', 'nodeMap', 'edgeMap', 'metaData'];
+		let match = true;
+		for(let i = 0; i < properties.length; i++){
+			if(!automaton.hasOwnProperty(properties[i])){
+				match = false;
+				break;
+			}
+		}
+
+		if(match){
+			for(let id in automaton.nodeMap){
+				const node = automaton.nodeMap[id];
+				const nodeProperties = ['id', 'incomingEdgeSet', 'outgoingEdgeSet', 'locationSet', 'metaData'];
+				let nodeMatch = true;
+				for(let i = 0; i < nodeProperties.length; i++){
+					if(!node.hasOwnProperty(nodeProperties[i])){
+						nodeMatch = false;
+						break;
+					}
+				}
+
+				if(!nodeMatch){
+					// throw error
+				}
+
+				Object.setPrototypeOf(node, AUTOMATON_NODE);
+				automaton.nodeMap[id] = node;
+			}
+
+			for(let id in automaton.edgeMap){
+				const edge = automaton.edgeMap[id];
+				const edgeProperties = ['id', 'label', 'from', 'to', 'locationSet', 'metaData'];
+				let edgeMatch = true;
+				for(let i = 0; i < edgeProperties.length; i++){
+					if(!edge.hasOwnProperty(edgeProperties[i])){
+						edgeMatch = false;
+						break;
+					}
+				}
+
+				if(!edgeMatch){
+					// throw error
+				}
+
+				Object.setPrototypeOf(edge, AUTOMATON_EDGE);
+				automaton.edgeMap[id] = edge;
+			}
+
+			Object.setPrototypeOf(automaton, AUTOMATON);
+			return automaton;
+		}
 	}
 };
 
