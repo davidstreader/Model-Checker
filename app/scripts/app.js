@@ -60,7 +60,12 @@
           else{
             if(app.liveBuilding === true || override){
               // otherwise render the automata
-              app.set('automata.values', results.graphs.reverse());
+              var graphs = [];
+              for(var id in results.processes){
+                graphs.push(results.processes[id]);
+              }
+
+              app.set('automata.values', graphs.reverse());
               if(results.operations.length !== 0){
                 app.$.console.log('Operations:');
                 for(var i = 0; i < results.operations.length; i++){

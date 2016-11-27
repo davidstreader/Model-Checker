@@ -203,12 +203,12 @@
         var lthis = this;
         if (!app.get("automata.values") || app.get("automata.values").length == 0) return;
         app.get("automata.values").forEach(function(graph) {
-          if (!graph.graph.type) return;
-          if (graph.graph.type == 'automata') {
-            lthis._visualizeAutomata(graph.graph,graph.name);
+          if (!graph.type) return;
+          if (graph.type == 'automata') {
+            lthis._visualizeAutomata(graph,graph.name);
           }
-          if (graph.graph.type == 'petrinet') {
-            lthis._visualizePetriNet(graph.graph,graph.name);
+          if (graph.type == 'petrinet') {
+            lthis._visualizePetriNet(graph,graph.name);
           }
         });
         joint.layout.DirectedGraph.layout(this.jgraph, {rankDir:'LR'});
