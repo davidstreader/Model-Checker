@@ -28,7 +28,7 @@
     <paper-dropdown-menu id="process-name-selector" label="Process" on-iron-select="_onProcessSelection" disabled$="{{!_hasProcesses}}">
       <paper-menu class="dropdown-content">
         <template is="dom-repeat" items="{{processes}}">
-          <paper-item data-automaton-name="{{item.name}}">{{item.name}}</paper-item>
+          <paper-item data-automaton-name="{{item.id}}">{{item.id}}</paper-item>
         </template>
         <paper-listbox class="dropdown-content" selected$="{{_initialSelection}}"></paper-listbox>
         <paper-item disabled hidden$="{{_hasProcesses}}">No Processes Defined</paper-item>
