@@ -45,12 +45,14 @@
             return;
           }
         var maxX = 0;
+          var maxY = 0;
         var graphs = Object.values(this.graphMap);
         graphs.forEach(function (graph) {
             maxX = Math.max(maxX,graph.parentNode.getBBox().corner().x);
+          maxY = Math.max(maxY,graph.parentNode.getBBox().corner().y);
         });
         var graph = Object.values(this.graphMap).pop();
-        this.paper.setDimensions(Math.max(maxX*scale.sx,this.paper.$el.width()),Math.max(graph.parentNode.getBBox().corner().y*scale.sy+200,this.paper.$el.parent().parent().height()));
+        this.paper.setDimensions(Math.max(maxX*scale.sx,this.paper.$el.width()),Math.max(maxY*scale.sy+200,this.paper.$el.parent().parent().height()));
       },
       ready: function(){
         var lthis = this;
@@ -106,7 +108,6 @@
               }
               nodes.forEach(function (nodev) {
                 if (key == app.$.selector.getSelected()) {
-                    console.log(nodev);
                   var pos = nodev.position();
                   var offsetX = (lthis.paper.$el.width() - (localWidth * Math.min(scaleX, scaleY))) / 2;
                   nodev.position(pos.x - parentNode.getBBox().origin().x + offsetX, pos.y - minY);
@@ -197,7 +198,7 @@
        */
       redraw: function() {
         if (this.paper === undefined) return;
-        this.paper.setDimensions(this.paper.$el.width(),9999);
+        this.paper.setDimensions(this.paper.$el.width(),999999);
         this.jgraph.clear();
         this.graphMap = {};
         var lthis = this;
@@ -211,7 +212,7 @@
             lthis._visualizePetriNet(graph,graph.id);
           }
         });
-        joint.layout.DirectedGraph.layout(this.jgraph, {rankDir:'LR'});
+        joint.layout.DirectedGraph.layout(this.jgraph, {rankDir:'LR', nodesep:100,edgesep:100});
         var jgraph = this.jgraph;
         var graphMap = this.graphMap;
         var paperWidth = this.paper.$el.width();
