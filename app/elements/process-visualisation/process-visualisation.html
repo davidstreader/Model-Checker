@@ -46,11 +46,14 @@
           }
         var maxX = 0;
         var graphs = Object.values(this.graphMap);
+        var maxY = 0;
         graphs.forEach(function (graph) {
             maxX = Math.max(maxX,graph.parentNode.getBBox().corner().x);
+          console.log(graph.parentNode.getBBox().corner().y);
         });
         var graph = Object.values(this.graphMap).pop();
-        this.paper.setDimensions(Math.max(maxX*scale.sx,this.paper.$el.width()),Math.max(graph.parentNode.getBBox().corner().y*scale.sy+200,this.paper.$el.height));
+        console.log(graph.parentNode.getBBox().corner().y);
+        this.paper.setDimensions(Math.max(maxX*scale.sx,this.paper.$el.width()),Math.max(graph.parentNode.getBBox().corner().y*scale.sy+200,this.paper.$el.parent().parent().parent().height));
       },
       ready: function(){
         var lthis = this;
@@ -197,7 +200,7 @@
        */
       redraw: function() {
         if (this.paper === undefined) return;
-        this.paper.setDimensions(this.paper.$el.width(),0);
+        this.paper.setDimensions(this.paper.$el.width(),9999);
         this.jgraph.clear();
         this.graphMap = {};
         var lthis = this;
