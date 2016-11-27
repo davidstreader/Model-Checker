@@ -85,7 +85,7 @@
       _onProcessSelection: function(e, detail){
         var graph = { name:detail.item.dataAutomatonName };
         for(var i in this.processes){
-          if(this.processes[i].name === graph.name){
+          if(this.processes[i].id === graph.name){
             graph.graph = this.processes[i].graph;
             this.fire('change-process', this.processes[i]);
             break;

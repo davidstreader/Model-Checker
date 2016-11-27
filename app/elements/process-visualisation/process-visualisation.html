@@ -70,7 +70,7 @@
             lthis.fire('explode',true);
             return;
           }
-          var node = lthis.graphMap[e.detail.name];
+          var node = lthis.graphMap[e.detail.id];
           var scale = V(paper.viewport).scale();
           $(".process-display").stop().animate({scrollTop:node.parentNode.getBBox().origin().y*scale.sx}, '100', 'swing');
         });
