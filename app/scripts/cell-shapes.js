@@ -2,6 +2,7 @@
  * Styling for the default joint.js shapes.
  */
 //Modify the transition element to place the label inside and not above.
+
 joint.shapes.pn.Transition = joint.shapes.basic.Generic.extend({
 
   markup: '<g class="rotatable"><g class="scalable"><rect class="root"/></g></g><text class="label"/>',

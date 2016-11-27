@@ -2,7 +2,14 @@
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../imports/dagre-d3.html">
 <link rel="import" href="../imports/element-resizer.html">
-
+<style>
+  /*The below css disables line tools so that you can't accidentally remove or add a line
+    to a state.*/
+  .marker-arrowheads { display: none }
+  .link-tools .tool-remove { display: none }
+  .link-tools .tool-options { display: none }
+  .link .mark-errors { display: none; }
+</style>
 <dom-module id="process-visualisation">
   <template>
     <div id="svg-parentNode">
@@ -30,24 +37,35 @@
           value: {}
         }
       },
-
+      rescale: function() {
+        var scale = V(this.paper.viewport).scale();
+          if (this.exploded) {
+            var node = Object.values(this.graphMap).pop();
+            this.paper.setDimensions(this.paper.$el.width()*scale.sx, node.minY + node.height + 200);
+            return;
+          }
+        var maxX = 0;
+        var graphs = Object.values(this.graphMap);
+        graphs.forEach(function (graph) {
+            maxX = Math.max(maxX,graph.parentNode.getBBox().corner().x);
+        });
+        var graph = Object.values(this.graphMap).pop();
+        this.paper.setDimensions(Math.max(maxX*scale.sx,this.paper.$el.width()),Math.max(graph.parentNode.getBBox().corner().y*scale.sy+200,this.paper.$el.height));
+      },
       ready: function(){
         var lthis = this;
         this.jgraph = new joint.dia.Graph();
         this.paper = new joint.dia.Paper({
           el: this.$['svg-parentNode'],
-          width: 2000,
-          height: 2000,
           gridSize: 1,
           model: this.jgraph,
           restrictTranslate: true
         });
-        var exploded;
         var paper = this.paper;
         var dragStartPosition;
         document.addEventListener('change-process', function(e){
           //When we swap, its much easier to just restore then explode again.
-          if (exploded) {
+          if (this.exploded) {
             lthis.fire('explode',false);
             lthis.fire('explode',true);
             return;
@@ -59,20 +77,20 @@
         var lastOptions;
         document.addEventListener('explode', function(e){
           var processDisplay = $(".process-display");
-          exploded = e.detail;
+          lthis.exploded = e.detail;
           var paperWidth = lthis.paper.$el.width();
           var paperHeight = lthis.paper.$el.height();
           var paperScale =  V(paper.viewport).scale();
-          Object.keys(app.$.visualiser.graphMap).forEach(function (key) {
-            var parentNode = app.$.visualiser.graphMap[key].parentNode;
-            if (exploded) {
+          Object.keys(lthis.graphMap).forEach(function (key) {
+            var parentNode = lthis.graphMap[key].parentNode;
+            var nodes = _.values(lthis.graphMap[key].map);
+            var localWidth = parentNode.getBBox().width;
+            var localHeight = parentNode.getBBox().height;
+            var minY = parentNode.getBBox().origin().y;
+            var scaleX = paperWidth / localWidth;
+            var scaleY = paperHeight / localHeight;
+            if (lthis.exploded) {
               $("[model-id='" + parentNode.id + "']").hide();
-              var nodes = _.values(app.$.visualiser.graphMap[key].map);
-              var localWidth = parentNode.getBBox().width;
-              var localHeight = parentNode.getBBox().height;
-              var minY = parentNode.getBBox().origin().y;
-              var scaleX = paperWidth / localWidth;
-              var scaleY = paperHeight / localHeight;
               if (key == app.$.selector.getSelected()) {
                 lastOptions = {
                   scrollTop: processDisplay.scrollTop(),
@@ -88,6 +106,7 @@
               }
               nodes.forEach(function (nodev) {
                 if (key == app.$.selector.getSelected()) {
+                    console.log(nodev);
                   var pos = nodev.position();
                   var offsetX = (lthis.paper.$el.width() - (localWidth * Math.min(scaleX, scaleY))) / 2;
                   nodev.position(pos.x - parentNode.getBBox().origin().x + offsetX, pos.y - minY);
@@ -118,8 +137,7 @@
                 });
               });
 
-              var node = Object.values(app.$.visualiser.graphMap).pop();
-              lthis.paper.setDimensions(lthis.paper.$el.width(), node.minY + node.height + 200);
+              lthis.rescale();
             }
           });
         });
@@ -145,10 +163,11 @@
             paper.scale(newScale, newScale, p.x, p.y);
             paper.setOrigin(origx, origy);
           }
+          lthis.rescale();
         });
         this.jgraph.on('change:position', function(cell) {
           //Exploded diagrams are limited by changing the dimensions of the paper
-          if (exploded) {
+          if (lthis.exploded) {
             return;
           }
           var parentId = cell.get('parent');
@@ -220,7 +239,7 @@
             size: { width: 100, height: 30 },
             position: { x:lx+offsetX, y:ly},
             attrs: {
-              rect: { fill: 'transparentNode', stroke: 'none' },
+              rect: { fill: 'transparent', stroke: 'none' },
               'text': {text: app.get("automata.values")[i++].name, fill: 'red', 'font-size': 20}}
           });
 
@@ -231,10 +250,9 @@
           graphMap[key].map['label'] = cell;
           graphMap[key].parentNode.rendering = false;
         });
-        this.automata = this.graph;
+        this.automata = this.graphMap;
         this.fire('process-visualisation-rendered');
-        var node = Object.values(app.$.visualiser.graphMap).pop();
-        this.paper.setDimensions(this.paper.$el.width(),node.minY+node.height+200);
+        this.rescale();
       }, _automataLink: function(source, target, label, parentNode) {
         var cell = new joint.shapes.fsa.Arrow({
           source: { id: source.id },
