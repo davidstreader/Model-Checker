@@ -251,7 +251,7 @@
           graphMap[key].parentNode.rendering = false;
         });
         jgraph.getLinks().forEach(function (link) {
-          link.set('router', { name: 'manhattan' });
+          link.set('smooth', false);
         });
         this.automata = this.graphMap;
         this.fire('process-visualisation-rendered');
