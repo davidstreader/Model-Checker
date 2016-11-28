@@ -3,7 +3,7 @@
 const PETRI_NET = {
 
 	get type(){
-		return 'petrinet';
+		return this.type;
 	},
 
 	get id(){
@@ -297,7 +297,7 @@ const PETRI_NET = {
 
 	convert: function(net){
 		// check that the object has the correct properties
-		const properties = ['id', 'rootIds', 'placeMap', 'transitionMap', 'metaData'];
+		const properties = ['type', 'id', 'rootIds', 'placeMap', 'transitionMap', 'metaData'];
 		let match = true;
 		for(let i = 0; i < properties.length; i++){
 			if(!net.hasOwnProperty(properties[i])){
@@ -362,6 +362,7 @@ const PETRI_NET = {
 }
 
 function PetriNet(id){
+	this.type = 'petrinet';
 	this.id = id;
 	this.rootIds = {};
 	this.placeMap = {};

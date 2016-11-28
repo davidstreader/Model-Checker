@@ -2,7 +2,7 @@
 
 const AUTOMATON = {
 	get type(){
-		return 'automata';
+		return this.type;
 	},
 
 	get id(){
@@ -283,7 +283,7 @@ const AUTOMATON = {
 
 	convert: function(automaton){
 		// check that the object has the correct properties
-		const properties = ['id', 'rootId', 'nodeMap', 'edgeMap', 'metaData'];
+		const properties = ['type', 'id', 'rootId', 'nodeMap', 'edgeMap', 'metaData'];
 		let match = true;
 		for(let i = 0; i < properties.length; i++){
 			if(!automaton.hasOwnProperty(properties[i])){
@@ -338,6 +338,7 @@ const AUTOMATON = {
 };
 
 function Automaton(id){
+	this.type = 'automata';
 	this.id = id;
 	this.nodeMap = {};
 	this.nodeCount = 0;
