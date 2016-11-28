@@ -18,6 +18,7 @@
     app.currentFile = '';
     app.selectedCtx = 0;
     app.consoleMsgCount = "black";
+    app.isClientSide = true;
 
     app.compile = function(overrideBuild) {
       var code = app.getCode();
@@ -118,7 +119,7 @@
     app.getSettings = function() {
       return {
         isFairAbstraction: app.fairAbstraction,
-        isClientSide: false
+        isClientSide: app.isClientSide
       };
     }
 

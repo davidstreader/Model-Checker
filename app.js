@@ -52,6 +52,7 @@ app.use('/bower_components',express.static('bower_components'));
 
 io.on('connection', function(socket){
   console.log('a user connected');
+  socket.emit('connectedToServer', {});
   socket.on('compile', function(obj, ack){
     var lastAst = {},
       lastAnalysis = {},

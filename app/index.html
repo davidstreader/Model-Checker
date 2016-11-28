@@ -188,6 +188,9 @@
         <span hidden$="{{smallScreen}}">Live Building</span>
         <span hidden$="{{!smallScreen}}">Live</span>
       </paper-checkbox>
+      <paper-checkbox id="chbx-live-building" checked="{{isClientSide}}" class="middle" title="Automatically build the automata as you define them.">
+        <span>Compile Locally</span>
+      </paper-checkbox>
       <span class="spacer middle"></span>
       <paper-icon-button icon="icons:folder-open" class="middle" title="Open" on-tap="openFile"></paper-icon-button>
       <paper-icon-button id="reload" icon="icons:autorenew" class="middle" title="Reload" on-tap="reloadFile" disabled=true></paper-icon-button>
@@ -344,6 +347,9 @@
   <script src="/socket.io/socket.io.js"></script>
   <script>
     var socket = io();
+    socket.on('connectedToServer', function (data) {
+      app.isClientSide = false;
+    });
   </script>
   <!-- endbuild-->
 </body>

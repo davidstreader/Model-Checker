@@ -37,9 +37,8 @@
     "node": ">=4.1.1"
   },
   "scripts": {
-    "test": "gulp test:local",
     "start": "node app.js",
-    "startLocal": "gulp serve"
+    "test": "gulp serve"
   },
   "dependencies": {
     "express": "^4.14.0",
