@@ -281,10 +281,6 @@ const AUTOMATON = {
 
 	// Global Functions
 
-	strip: function(automaton){
-		return JSON.parse(JSON.stringify(automaton));
-	},
-
 	convert: function(automaton){
 		// check that the object has the correct properties
 		const properties = ['id', 'rootId', 'nodeMap', 'edgeMap', 'metaData'];
