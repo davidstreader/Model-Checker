@@ -23,7 +23,7 @@
      * @return {Automaton[]} - the interpreted automata
      */
     compile: function(code, isFair) {
-      return compile(code, isFair); // defined in compiler.js
+      return Compiler.compile(code, isFair); // defined in compiler.js
     }
 
   });

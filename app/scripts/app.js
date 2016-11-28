@@ -110,7 +110,8 @@
 
     app.getSettings = function() {
       return {
-        isFairAbstraction: app.fairAbstraction
+        isFairAbstraction: app.fairAbstraction,
+        isClientSide: true
       };
     }
 
