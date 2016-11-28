@@ -16,7 +16,6 @@
     app.previousCode = '';
     app.currentFile = '';
     app.selectedCtx = 0;
-    app.consoleMsgCount = "black";
     app.isClientSide = true;
 
     if (io !== undefined) {
@@ -236,18 +235,6 @@
       } else if (app.$.maintabs.selected === 0) {
         app.$.editor._editor.focus();
       }
-    });
-    /**
-     * Simple event listener for when the console updates.
-     * If an error exists, then highlight the tab red to make it
-     * obvious that an error has occurred.
-     */
-    document.addEventListener('console-change', function() {
-      if (!document.querySelector('code[id="console"] > .error')) {
-        app.consoleMsgCount = "black";
-        return;
-      }
-      app.consoleMsgCount = "#ab0000";
     });
 
     /**

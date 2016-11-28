@@ -30,4 +30,5 @@ joint.shapes.pn.Transition = joint.shapes.basic.Generic.extend({
 
   }, joint.shapes.basic.Generic.prototype.defaults)
 });
+joint.shapes.parent = joint.shapes.basic.Rect.extend();
 
