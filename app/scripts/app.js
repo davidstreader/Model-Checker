@@ -3,7 +3,6 @@
   var app = document.querySelector('#app');
 
   window.addEventListener('WebComponentsReady', function() {
-
     /**
      * The data to use.
      */
@@ -18,6 +17,14 @@
     app.currentFile = '';
     app.selectedCtx = 0;
     app.consoleMsgCount = "black";
+    app.isClientSide = true;
+
+    if (io !== undefined) {
+      app.socket = io();
+      app.socket.on('connectedToServer', function (data) {
+        app.isClientSide = false;
+      });
+    }
 
     app.compile = function(overrideBuild) {
       var code = app.getCode();
@@ -39,7 +46,6 @@
 
       app.build(overrideBuild);
     };
-
     /**
      * Runs the compiler converting the code in the editor into visualisable
      * graphs and calls the renderer.
@@ -54,30 +60,37 @@
           var results = app.$.parser.compile(code, settings);
 
           // check if an error was thrown by the compiler
+          if (results.type === 'serverSide') {
+            return;
+          }
           if(results.type === 'error'){
             app.$.console.error(results.toString());
           }
           else{
-            if(app.liveBuilding === true || override){
-              // otherwise render the automata
-              var graphs = [];
-              for(var id in results.processes){
-                graphs.push(results.processes[id]);
-              }
-
-              app.set('automata.values', graphs.reverse());
-              if(results.operations.length !== 0){
-                app.$.console.log('Operations:');
-                for(var i = 0; i < results.operations.length; i++){
-                  app.$.console.log(results.operations[i]);
-                }
-              }
-            }
+            app.finalizeBuild(results);
           }
         }
       }.bind(this), 0);
     }
+    app.finalizeBuild = function(results, graphs) {
+      if(app.liveBuilding === true || override){
+        // otherwise render the automata
+        if (!graphs) {
+          graphs = [];
+          for (var id in results.processes) {
+            graphs.push(results.processes[id]);
+          }
+        }
 
+        app.set('automata.values', graphs.reverse());
+        if(results.operations.length !== 0){
+          app.$.console.log('Operations:');
+          for(var i = 0; i < results.operations.length; i++){
+            app.$.console.log(results.operations[i]);
+          }
+        }
+      }
+    }
     /**
      * Compiles and builds what has currenty been entered into the text-area.
      * Ignores whether or not live compile and build are currently set.
@@ -111,7 +124,7 @@
     app.getSettings = function() {
       return {
         isFairAbstraction: app.fairAbstraction,
-        isClientSide: true
+        isClientSide: app.isClientSide
       };
     }
 

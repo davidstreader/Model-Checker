@@ -45,15 +45,14 @@
             return;
           }
         var maxX = 0;
+          var maxY = 0;
         var graphs = Object.values(this.graphMap);
-        var maxY = 0;
         graphs.forEach(function (graph) {
             maxX = Math.max(maxX,graph.parentNode.getBBox().corner().x);
-          console.log(graph.parentNode.getBBox().corner().y);
+          maxY = Math.max(maxY,graph.parentNode.getBBox().corner().y);
         });
-        var graph = Object.values(this.graphMap).pop();        console.log(graph.parentNode.getBBox().corner().y);
-        console.log(graph.parentNode.getBBox().corner().y);
-        this.paper.setDimensions(Math.max(maxX*scale.sx,this.paper.$el.width()),Math.max(graph.parentNode.getBBox().corner().y*scale.sy+200,this.paper.$el.parent().parent().height));
+        var graph = Object.values(this.graphMap).pop();
+        this.paper.setDimensions(Math.max(maxX*scale.sx,this.paper.$el.width()),Math.max(maxY*scale.sy+200,this.paper.$el.parent().parent().height()));
       },
       ready: function(){
         var lthis = this;
@@ -73,7 +72,7 @@
             lthis.fire('explode',true);
             return;
           }
-          var node = lthis.graphMap[e.detail.name];
+          var node = lthis.graphMap[e.detail.id];
           var scale = V(paper.viewport).scale();
           $(".process-display").stop().animate({scrollTop:node.parentNode.getBBox().origin().y*scale.sx}, '100', 'swing');
         });
@@ -109,7 +108,6 @@
               }
               nodes.forEach(function (nodev) {
                 if (key == app.$.selector.getSelected()) {
-                    console.log(nodev);
                   var pos = nodev.position();
                   var offsetX = (lthis.paper.$el.width() - (localWidth * Math.min(scaleX, scaleY))) / 2;
                   nodev.position(pos.x - parentNode.getBBox().origin().x + offsetX, pos.y - minY);
@@ -200,7 +198,7 @@
        */
       redraw: function() {
         if (this.paper === undefined) return;
-        this.paper.setDimensions(this.paper.$el.width(),9999);
+        this.paper.setDimensions(this.paper.$el.width(),999999);
         this.jgraph.clear();
         this.graphMap = {};
         var lthis = this;
@@ -251,6 +249,9 @@
           jgraph.addCell(cell);
           graphMap[key].map['label'] = cell;
           graphMap[key].parentNode.rendering = false;
+        });
+        jgraph.getLinks().forEach(function (link) {
+          link.set('router', { name: 'manhattan' });
         });
         this.automata = this.graphMap;
         this.fire('process-visualisation-rendered');
