@@ -291,6 +291,73 @@ const PETRI_NET = {
 
 	get nextTransitionId(){
 		return this.id + '.t' + this.transitionId++;
+	},
+
+	// Global Functions
+
+	convert: function(net){
+		// check that the object has the correct properties
+		const properties = ['id', 'rootIds', 'placeMap', 'transitionMap', 'metaData'];
+		let match = true;
+		for(let i = 0; i < properties.length; i++){
+			if(!net.hasOwnProperty(properties[i])){
+				match = false;
+				break;
+			}
+		}
+
+		if(match){
+			for(let id in net.placeMap){
+				const place = net.placeMap[id];
+
+				const placeProperties = ['id', 'incomingTransitionSet', 'outgoingTransitionSet', 'metaData'];
+				let placeMatch = true;
+				for(let i = 0; i < placeProperties.length; i++){
+					if(!place.hasOwnProperty(placeProperties[i])){
+						placeMatch = false;
+						break;
+					}
+				}
+
+				if(!placeMatch){
+					// throw error
+				}
+
+				Object.setPrototypeOf(place, PETRI_NET_PLACE);
+				net.placeMap[id] = place;
+			}
+
+			net.labelSets = {};
+
+			for(let id in net.transitionMap){
+				const transition = net.transitionMap[id];
+
+				const transitionProperties = ['id', 'label', 'incomingPlaceSet', 'outgoingPlaceSet', 'metaData'];
+				let transitionMatch = true;
+				for(let i = 0; i < transitionProperties.length; i++){
+					if(!transition.hasOwnProperty(transitionProperties[i])){
+						transitionMatch = false;
+						break;
+					}
+				}
+
+				if(!transitionMatch){
+					// throw error
+				}
+
+				Object.setPrototypeOf(transition, PETRI_NET_TRANSITION);
+				net.transitionMap[id] = transition;
+
+				if(net.labelSets[transition.label] === undefined){
+					net.labelSets[transition.label] = [];
+				}
+
+				net.labelSets[transition.label].push(transition);
+			}
+
+			Object.setPrototypeOf(net, PETRI_NET);
+			return net;
+		}
 	}
 }
 
