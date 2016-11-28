@@ -54,6 +54,9 @@
           var results = app.$.parser.compile(code, settings);
 
           // check if an error was thrown by the compiler
+          if (results.type === 'serverSide') {
+            return;
+          }
           if(results.type === 'error'){
             app.$.console.error(results.toString());
           }
@@ -111,7 +114,7 @@
     app.getSettings = function() {
       return {
         isFairAbstraction: app.fairAbstraction,
-        isClientSide: true
+        isClientSide: false
       };
     }
 

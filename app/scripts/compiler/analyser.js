@@ -14,15 +14,15 @@
  * { process:..., references:..., isUpdated:... }
  *
  * Where process is the ast node for that process, references are the other processes
- * that are referenced by the process and isUpdated is a boolean determining whether the 
+ * that are referenced by the process and isUpdated is a boolean determining whether the
  * process has been updated since the last compilation
  *
  * @param{Process[]} processes - the processes from the abstract syntax tree
- * @param{Identifier -> Analysis} lastAnalysis - a mapping from identifier 
+ * @param{Identifier -> Analysis} lastAnalysis - a mapping from identifier
  *		to analysis object from the last compilation
  * @return{Identifier -> Analysis} - a mapping from identifier to analysis object
  */
-function performAnalysis(procsses, lastAnalysis, abstractionChanged){
+function performAnalysis(processes, lastAnalysis, abstractionChanged){
 	const analysis = {};
 
 	// loop through each process and find references to other processes

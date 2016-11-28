@@ -212,7 +212,7 @@
             lthis._visualizePetriNet(graph,graph.id);
           }
         });
-        joint.layout.DirectedGraph.layout(this.jgraph, {rankDir:'LR', nodesep:100,edgesep:100});
+        joint.layout.DirectedGraph.layout(this.jgraph, {rankDir:'LR'});
         var jgraph = this.jgraph;
         var graphMap = this.graphMap;
         var paperWidth = this.paper.$el.width();
@@ -249,6 +249,9 @@
           jgraph.addCell(cell);
           graphMap[key].map['label'] = cell;
           graphMap[key].parentNode.rendering = false;
+        });
+        jgraph.getLinks().forEach(function (link) {
+          link.set('router', { name: 'manhattan' });
         });
         this.automata = this.graphMap;
         this.fire('process-visualisation-rendered');

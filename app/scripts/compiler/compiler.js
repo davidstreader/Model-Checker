@@ -10,7 +10,7 @@ const Compiler = {
 		try{
 			const tokens = Lexer.tokenise(code);
 			const ast = parse(tokens);
-			
+
 			// check if this is to be compiled client side or server side
 			if(context.isClientSide){
 				return this.clientSideCompile(ast, context);
@@ -46,6 +46,21 @@ const Compiler = {
 	},
 
 	serverSideCompile: function(ast, context){
-		// TODO
+		socket.emit('compile',{ast:ast,context:context},function(results) {
+		  console.log(results);
+      var graphs = [];
+      for(var id in results.processes){
+        graphs.push(results.processes[id]);
+      }
+
+      app.set('automata.values', graphs.reverse());
+      if(results.operations.length !== 0){
+        app.$.console.log('Operations:');
+        for(var i = 0; i < results.operations.length; i++){
+          app.$.console.log(results.operations[i]);
+        }
+      }
+    });
+		return {type: "serverSide"};
 	}
 }
