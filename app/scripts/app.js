@@ -61,26 +61,30 @@
             app.$.console.error(results.toString());
           }
           else{
-            if(app.liveBuilding === true || override){
-              // otherwise render the automata
-              var graphs = [];
-              for(var id in results.processes){
-                graphs.push(results.processes[id]);
-              }
-
-              app.set('automata.values', graphs.reverse());
-              if(results.operations.length !== 0){
-                app.$.console.log('Operations:');
-                for(var i = 0; i < results.operations.length; i++){
-                  app.$.console.log(results.operations[i]);
-                }
-              }
-            }
+             app.finalizeBuild(results);
           }
         }
       }.bind(this), 0);
     }
+    app.finalizeBuild = function(results, graphs) {
+      if(app.liveBuilding === true || override){
+        // otherwise render the automata
+        if (!graphs) {
+          graphs = [];
+          for (var id in results.processes) {
+            graphs.push(results.processes[id]);
+          }
+        }
 
+        app.set('automata.values', graphs.reverse());
+        if(results.operations.length !== 0){
+          app.$.console.log('Operations:');
+          for(var i = 0; i < results.operations.length; i++){
+            app.$.console.log(results.operations[i]);
+          }
+        }
+      }
+    }
     /**
      * Compiles and builds what has currenty been entered into the text-area.
      * Ignores whether or not live compile and build are currently set.

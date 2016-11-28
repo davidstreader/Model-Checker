@@ -36,6 +36,11 @@
   "engines": {
     "node": ">=4.1.1"
   },
+  "scripts": {
+    "test": "gulp test:local",
+    "start": "node app.js",
+    "startLocal": "gulp serve"
+  },
   "dependencies": {
     "express": "^4.14.0",
     "express-ws": "^2.0.0",

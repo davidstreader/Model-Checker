@@ -44,6 +44,8 @@ fs.readdir("app/scripts/", function( err, files ) {
   });
 });
 include("app/scripts/helper-functions.js");
+include("app/scripts/index-iterator.es6.js");
+include("app/scripts/constants.js");
 
 app.use(express.static('app'))
 app.use('/bower_components',express.static('bower_components'));
@@ -51,7 +53,6 @@ app.use('/bower_components',express.static('bower_components'));
 io.on('connection', function(socket){
   console.log('a user connected');
   socket.on('compile', function(obj, ack){
-    console.log("Recieved compilation");
     var lastAst = {},
       lastAnalysis = {},
       lastProcesses = {},
@@ -67,11 +68,6 @@ io.on('connection', function(socket){
     const processes = interpret(ast.processes, analysis, lastProcesses, context);
 
     const operations = evaluateOperations(ast.operations, processes, ast.variableMap);
-
-    lastAst = ast;
-    lastAnalysis = analysis;
-    lastProcesses = processes;
-    lastAbstraction = context.isFairAbstraction;
     console.log("Sending ack");
     ack({ processes:processes, operations:operations });
   });

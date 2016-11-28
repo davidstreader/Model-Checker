@@ -47,19 +47,17 @@ const Compiler = {
 
 	serverSideCompile: function(ast, context){
 		socket.emit('compile',{ast:ast,context:context},function(results) {
-		  console.log(results);
       var graphs = [];
       for(var id in results.processes){
-        graphs.push(results.processes[id]);
-      }
-
-      app.set('automata.values', graphs.reverse());
-      if(results.operations.length !== 0){
-        app.$.console.log('Operations:');
-        for(var i = 0; i < results.operations.length; i++){
-          app.$.console.log(results.operations[i]);
+        var graph = results.processes[id];
+        if (graph.type === 'automata') {
+          graphs.push(AUTOMATON.convert(graph));
+        } else if (graph.type === 'petrinet') {
+          graphs.push(PETRI_NET.convert(graph));
         }
+
       }
+      app.finalizeBuild(results,graphs);
     });
 		return {type: "serverSide"};
 	}
