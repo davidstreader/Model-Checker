@@ -203,6 +203,7 @@
         this.graphMap = {};
         var lthis = this;
         if (!app.get("automata.values") || app.get("automata.values").length == 0) return;
+        console.log("drawing");
         app.get("automata.values").forEach(function(graph) {
           if (!graph.type) return;
           if (graph.type == 'automata') {
@@ -251,7 +252,8 @@
           graphMap[key].parentNode.rendering = false;
         });
         jgraph.getLinks().forEach(function (link) {
-          link.set('smooth', false);
+          link.set('router', { name: 'metro', excludeTypes: 'joint.shapes.parent'});
+          link.set('smooth',false);
         });
         this.automata = this.graphMap;
         this.fire('process-visualisation-rendered');
@@ -288,7 +290,7 @@
         // add nodes in automaton to the graph
         var nodes = process.nodes;
         var nodeMap = {};
-        var parentNode = new joint.shapes.basic.Rect();
+        var parentNode = new joint.shapes.parent();
         parentNode.rendering = true;
         this.jgraph.addCell(parentNode);
         this.graphMap[name] = {map:nodeMap,name:name,height:0,parentNode:parentNode};
@@ -327,7 +329,7 @@
         // add places in petri net to the graph
         var startPlaces = [];
         var nodeMap = {};
-        var parentNode = new joint.shapes.basic.Rect();
+        var parentNode = new joint.shapes.parent();
         parentNode.rendering = true;
         this.jgraph.addCell(parentNode);
         this.graphMap[name] = {map:nodeMap,name:name,height:0,parentNode:parentNode};

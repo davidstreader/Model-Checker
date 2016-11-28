@@ -36,6 +36,10 @@
   <link rel="import" href="elements/elements.html">
 
   <style is="custom-style" include="shared-styles">
+    console-logger {
+      background: white;
+      border-left: 1px solid gray;
+    }
   .frame {
     position: absolute;
     top: 106px;
@@ -211,21 +215,23 @@
     <paper-tabs id="maintabs" selected="{{selectedCtx}}">
       <paper-tab>Editor</paper-tab>
       <paper-tab>Diagram</paper-tab>
-      <paper-tab id="consoletab"><span style="color:{{consoleMsgCount}}">Console</span></paper-tab>
     </paper-tabs>
     <div class="frame">
       <neon-animated-pages selected="{{selectedCtx}}" class="fit">
-        <section class="layout vertical flex">
+        <section class="layout vertical flex" style="flex-direction: row;">
+
+          <section class="layout vertical flex">
           <text-editor autofocus id="editor" class="flex"></text-editor>
+          </section>
+          <section class="layout vertical flex">
+            <console-logger id="console" class="flex"></console-logger>
+          </section>
         </section>
         <section class="layout vertical flex">
           <process-selector id="selector" processes="{{automata.values}}"></process-selector>
           <div class="process-display">
             <process-visualisation id="visualiser"></process-visualisation>
           </div>
-        </section>
-        <section class="layout vertical flex">
-          <console-logger id="console" class="flex"></console-logger>
         </section>
       </neon-animated-pages>
     </div>

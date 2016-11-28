@@ -3,6 +3,7 @@ var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var fs = require('fs');
+var port = 5000;
 var walk = function(dir, done) {
   var results = [];
   fs.readdir(dir, function(err, list) {
@@ -51,7 +52,6 @@ app.use(express.static('app'))
 app.use('/bower_components',express.static('bower_components'));
 
 io.on('connection', function(socket){
-  console.log('a user connected');
   socket.emit('connectedToServer', {});
   socket.on('compile', function(obj, ack){
     var lastAst = {},
@@ -63,19 +63,15 @@ io.on('connection', function(socket){
     ast = expand(ast);
     const abstractionChanged = context.isFairAbstraction !== lastAbstraction;
     const analysis = performAnalysis(ast.processes, lastAnalysis, abstractionChanged);
-
     ast.processes = replaceReferences(ast.processes);
-
     const processes = interpret(ast.processes, analysis, lastProcesses, context);
-
     const operations = evaluateOperations(ast.operations, processes, ast.variableMap);
-    console.log("Sending ack");
     ack({ processes:processes, operations:operations });
   });
 });
 
-http.listen(5000, function(){
-  console.log('listening on *:5000');
+http.listen(port, function(){
+  console.log('Server started on: *:' + port);
 });
 function include(path) {
   var code = fs.readFileSync(path, 'utf-8');
