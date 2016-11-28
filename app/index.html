@@ -343,14 +343,8 @@
   </template>
 
   <!-- build:js scripts/app.js -->
-  <script src="scripts/app.js"></script>
   <script src="/socket.io/socket.io.js"></script>
-  <script>
-    var socket = io();
-    socket.on('connectedToServer', function (data) {
-      app.isClientSide = false;
-    });
-  </script>
+  <script src="scripts/app.js"></script>
   <!-- endbuild-->
 </body>
 </html>

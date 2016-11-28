@@ -10,7 +10,6 @@ const Compiler = {
 		try{
 			const tokens = Lexer.tokenise(code);
 			const ast = parse(tokens);
-
 			// check if this is to be compiled client side or server side
 			if(context.isClientSide){
 				return this.clientSideCompile(ast, context);
@@ -46,7 +45,7 @@ const Compiler = {
 	},
 
 	serverSideCompile: function(ast, context){
-		socket.emit('compile',{ast:ast,context:context},function(results) {
+    app.socket.emit('compile',{ast:ast,context:context},function(results) {
       var graphs = [];
       for(var id in results.processes){
         var graph = results.processes[id];

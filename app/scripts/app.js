@@ -3,7 +3,6 @@
   var app = document.querySelector('#app');
 
   window.addEventListener('WebComponentsReady', function() {
-
     /**
      * The data to use.
      */
@@ -19,6 +18,13 @@
     app.selectedCtx = 0;
     app.consoleMsgCount = "black";
     app.isClientSide = true;
+
+    if (io !== undefined) {
+      app.socket = io();
+      app.socket.on('connectedToServer', function (data) {
+        app.isClientSide = false;
+      });
+    }
 
     app.compile = function(overrideBuild) {
       var code = app.getCode();
@@ -40,7 +46,6 @@
 
       app.build(overrideBuild);
     };
-
     /**
      * Runs the compiler converting the code in the editor into visualisable
      * graphs and calls the renderer.
@@ -62,7 +67,7 @@
             app.$.console.error(results.toString());
           }
           else{
-             app.finalizeBuild(results);
+            app.finalizeBuild(results);
           }
         }
       }.bind(this), 0);
