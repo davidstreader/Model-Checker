@@ -39,10 +39,6 @@
       }
       return "";
     };
-    app.willSaveCookie = Boolean(app.getCookie("willSave"));
-    if (app.willSaveCookie) {
-      app.$.editor.setCode(decodeURIComponent(app.getCookie('editor')));
-    }
     app.compile = function(overrideBuild) {
       var code = app.getCode();
 
@@ -63,6 +59,13 @@
 
       app.build(overrideBuild);
     };
+
+    app.willSaveCookie = Boolean(app.getCookie("willSave"));
+    if (app.willSaveCookie) {
+      app.$.editor.setCode(decodeURIComponent(app.getCookie('editor')));
+      //We need to wait a little so that all the functions are added to app.
+      _.delay(app.compile,10);
+    }
     /**
      * Runs the compiler converting the code in the editor into visualisable
      * graphs and calls the renderer.

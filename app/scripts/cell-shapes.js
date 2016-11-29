@@ -134,8 +134,8 @@ function adjustVertices(graph, paper, cell) {
         var vertex = g.point.fromPolar(offset, angle, midPoint);
         //TODO: We need to work out offsets based on the previous vertices.
         //TODO: as the line is not a direct line between two cells, but a bent one.
-        //sibling.set('vertices', _.union(vertices,[vertex]));
-        sibling.set('vertices', [vertex]);
+        sibling.set('vertices', _.union(vertices,[vertex]));
+        //sibling.set('vertices', [vertex]);
       });
   }
 };

@@ -265,7 +265,6 @@
         });
         jgraph.getLinks().forEach(function (link) {
           link.set('smooth',false);
-          link.set('connector', { name: 'jumpover', args: { type: 'gap' }});
         });
         this.automata = this.graphMap;
         _.each(app.$.visualiser.jgraph.getCells(),function(cell) {adjustVertices(app.$.visualiser.jgraph,app.$.visualiser.paper,cell)})
