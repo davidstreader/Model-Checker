@@ -11,6 +11,128 @@
           font-size: 24px!important;
         }
       }
+      console-logger {
+        background: white;
+        border-left: 1px solid gray;
+      }
+      .frame {
+        position: absolute;
+        top: 106px;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        overflow: auto;
+        @apply(--layout-horizontal);
+      }
+      .frame > * > * {
+        margin-top: 4px;
+        margin-right: 8px;
+        margin-bottom: 4px;
+        margin-left: 8px;
+        border: solid 1px var(--dark-primary-color);
+      }
+      .frame > :first-child > * {
+        margin-right: 4px;
+      }
+      .frame > :last-child > * {
+        margin-left: 4px;
+      }
+      .frame > * > :first-child {
+        margin-top: 8px;
+      }
+      .frame > * > :last-child {
+        margin-bottom: 8px;
+      }
+      .centerer {
+        text-align: center;
+      }
+      #console {
+        height: 150px;
+      }
+      .process-display {
+        position: relative;
+        height: 100%;
+        overflow: auto;
+      }
+      process-visualisation {
+        position: relative;
+        height: 100%;
+      }
+      #main-toolbar span.spacer{
+        margin-right: 16px;
+        width: 0;
+      }
+      #btn-compile {
+        background: var(--accent-color);
+        height: 24px;
+        box-sizing: content-box;
+        position: relative;
+      }
+      #btn-compile iron-icon {
+        --iron-icon-height: 32px;
+        --iron-icon-width: 32px;
+        position: absolute;
+        left: calc(50% - 16px);
+        right: 0;
+        top: calc(50% - 16px);
+        bottom: 0;
+      }
+      .chbx  {
+        margin: 0 12px;
+        --paper-checkbox-unchecked-color: #ffffff;
+        --paper-checkbox-label-color: #ffffff;
+      }
+
+      #filename {
+        --paper-input-container-color: #ffffff;
+        --paper-input-container-input-color: #ffffff;
+        position: relative;
+        bottom: calc(50% - 28px);
+      }
+      @media all and (max-width: 959px) {
+        .frame{
+          @apply(--layout-vertical);
+        }
+        .frame > * > *,
+        .frame > :first-child > *,
+        .frame > :last-child > * {
+          margin-top: 2px;
+          margin-right: 4px;
+          margin-bottom: 2px;
+          margin-left: 4px;
+        }
+        .frame > :first-child > :first-child{
+          margin-top: 4px;
+        }
+        .frame > :last-child > :last-child{
+          margin-bottom: 4px;
+        }
+        #editor{
+          min-height: 200px;
+          height: calc(95vh - 64px - 100px);
+        }
+        #console{
+          height: 100px;
+        }
+        #btn-compile {
+        }
+        .chbx {
+          margin: 0 6px;
+        }
+      }
+      @media all and (max-width: 639px) {
+        .frame{
+          top: 56px;
+        }
+        paper-toolbar span.spacer{
+          margin-right: 0;
+          width: 0;
+          @apply(--layout-flex);
+        }
+        #editor{
+          height: calc(95vh - 56px - 100px);
+        }
+      }
     </style>
   </template>
 </dom-module>

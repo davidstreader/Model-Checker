@@ -17,6 +17,7 @@
     app.currentFile = '';
     app.selectedCtx = 0;
     app.isClientSide = true;
+    app.willSaveCookie = true;
 
     if (io !== undefined) {
       app.socket = io();
@@ -24,7 +25,24 @@
         app.isClientSide = false;
       });
     }
-
+    app.getCookie = function (cname) {
+      var name = cname + "=";
+      var ca = document.cookie.split(';');
+      for(var i = 0; i <ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0)==' ') {
+          c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+          return c.substring(name.length,c.length);
+        }
+      }
+      return "";
+    };
+    app.willSaveCookie = Boolean(app.getCookie("willSave"));
+    if (app.willSaveCookie) {
+      app.$.editor.setCode(decodeURIComponent(app.getCookie('editor')));
+    }
     app.compile = function(overrideBuild) {
       var code = app.getCode();
 
@@ -223,6 +241,9 @@
       app.$.editor.focus();
     });
 
+    app.$['chbx-save-cookie'].addEventListener('iron-change', function() {
+      document.cookie = "willSave="+app.willSaveCookie;
+    });
     /**
      * Simple event listener for when the user switches tabs.
      * When we switch to index 1 (Diagram), we need to redraw the canvas,
@@ -266,6 +287,7 @@
      * Only care about this if the live-compiling check-box is ticked.
      */
     document.addEventListener('text-editor-change', function() {
+      document.cookie = "editor="+encodeURIComponent(app.$.editor.getCode());
       if (app.liveCompiling) {
         app.compile();
       }
@@ -310,6 +332,5 @@
         default: return;
       }
     });
-
   });
 })(document);

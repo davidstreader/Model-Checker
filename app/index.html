@@ -35,142 +35,7 @@
 
   <link rel="import" href="elements/elements.html">
 
-  <style is="custom-style" include="shared-styles">
-    console-logger {
-      background: white;
-      border-left: 1px solid gray;
-    }
-  .frame {
-    position: absolute;
-    top: 106px;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    overflow: auto;
-    @apply(--layout-horizontal);
-  }
-  .frame > * > * {
-    margin-top: 4px;
-    margin-right: 8px;
-    margin-bottom: 4px;
-    margin-left: 8px;
-    border: solid 1px var(--dark-primary-color);
-  }
-  .frame > :first-child > * {
-    margin-right: 4px;
-  }
-  .frame > :last-child > * {
-    margin-left: 4px;
-  }
-  .frame > * > :first-child {
-    margin-top: 8px;
-  }
-  .frame > * > :last-child {
-    margin-bottom: 8px;
-  }
-  .centerer {
-    text-align: center;
-  }
-  #console {
-    height: 150px;
-  }
-  .process-display {
-    position: relative;
-    height: 100%;
-    overflow: auto;
-  }
-  process-visualisation {
-    position: relative;
-    height: 100%;
-  }
-  #main-toolbar span.spacer{
-    margin-right: 16px;
-    width: 0;
-  }
-  #btn-compile {
-    background: var(--accent-color);
-    height: 24px;
-    box-sizing: content-box;
-    position: relative;
-  }
-  #btn-compile iron-icon {
-    --iron-icon-height: 32px;
-    --iron-icon-width: 32px;
-    position: absolute;
-    left: calc(50% - 16px);
-    right: 0;
-    top: calc(50% - 16px);
-    bottom: 0;
-  }
-  #chbx-live-compiling {
-    margin: 0 12px;
-    --paper-checkbox-unchecked-color: #ffffff;
-    --paper-checkbox-label-color: #ffffff;
-  }
-  #chbx-live-building {
-    margin: 0 12px;
-    --paper-checkbox-unchecked-color: #ffffff;
-    --paper-checkbox-label-color: #ffffff;
-  }
-  #chbx-fair-abstraction {
-    margin: 0 12px;
-    --paper-checkbox-uncheckd-color: #ffffff;
-    --paper-checkbox-label-color: #ffffff;
-  }
-  #filename {
-    --paper-input-container-color: #ffffff;
-    --paper-input-container-input-color: #ffffff;
-    position: relative;
-    bottom: calc(50% - 28px);
-  }
-  @media all and (max-width: 959px) {
-    .frame{
-      @apply(--layout-vertical);
-    }
-    .frame > * > *,
-    .frame > :first-child > *,
-    .frame > :last-child > * {
-      margin-top: 2px;
-      margin-right: 4px;
-      margin-bottom: 2px;
-      margin-left: 4px;
-    }
-    .frame > :first-child > :first-child{
-      margin-top: 4px;
-    }
-    .frame > :last-child > :last-child{
-      margin-bottom: 4px;
-    }
-    #editor{
-      min-height: 200px;
-      height: calc(95vh - 64px - 100px);
-    }
-    #console{
-      height: 100px;
-    }
-    #btn-compile {
-    }
-    #chbx-live-compiling {
-      margin: 0 6px;
-    }
-    #chbx-minimisation {
-      margin: 0 6px;
-    }
-  }
-  @media all and (max-width: 639px) {
-    .frame{
-      top: 56px;
-    }
-    paper-toolbar span.spacer{
-      margin-right: 0;
-      width: 0;
-      @apply(--layout-flex);
-    }
-    #editor{
-      height: calc(95vh - 56px - 100px);
-    }
-  }
-  </style>
+  <style is="custom-style" include="shared-styles"> </style>
 </head>
 
 <body unresolved class="fullbleed layout vertical">
@@ -183,17 +48,20 @@
     <!-- start toolbar -->
     <paper-toolbar id="main-toolbar">
       <paper-button id="btn-compile" title="Compile and Build" raised on-tap="compileAndBuild" class="middle"><iron-icon icon="av:play-arrow"></iron-icon></paper-button>
-      <paper-checkbox id="chbx-live-compiling" checked="{{liveCompiling}}" class="middle" title="Automatically compile the automata as you define them.">
+      <paper-checkbox id="chbx-live-compiling" checked="{{liveCompiling}}" class="chbx middle" title="Automatically compile the automata as you define them.">
         <span hidden$="{{smallScreen}}">Live Compiling</span>
         <span hidden$="{{!smallScreen}}">Live</span>
       </paper-checkbox>
       <span class="spacer middle"></span>
-      <paper-checkbox id="chbx-live-building" checked="{{liveBuilding}}" class="middle" title="Automatically build the automata as you define them.">
+      <paper-checkbox id="chbx-live-building" checked="{{liveBuilding}}" class="chbx middle" title="Automatically build the automata as you define them.">
         <span hidden$="{{smallScreen}}">Live Building</span>
         <span hidden$="{{!smallScreen}}">Live</span>
       </paper-checkbox>
-      <paper-checkbox id="chbx-live-building" checked="{{isClientSide}}" class="middle" title="Automatically build the automata as you define them.">
+      <paper-checkbox checked="{{isClientSide}}" class="chbx middle" title="Compile the automata in your browser instead of on the server">
         <span>Compile Locally</span>
+      </paper-checkbox>
+      <paper-checkbox id="chbx-save-cookie" checked="{{willSaveCookie}}" class="chbx middle" title="Save current progress to a cookie and load it back">
+        <span>Autosave</span>
       </paper-checkbox>
       <span class="spacer middle"></span>
       <paper-icon-button icon="icons:folder-open" class="middle" title="Open" on-tap="openFile"></paper-icon-button>
@@ -203,7 +71,7 @@
       <paper-input id="filename" is="iron-input" label="Insert Filename Here" placeholder="untitled" bind-value="{{inputValue}}" class="middle" title="The name given to the file when it is downloaded."></paper-input>
       <paper-icon-button icon="icons:file-download" class="middle" title="Download" on-tap="downloadFile"></paper-icon-button>
       <span class="flex middle"></span>
-      <paper-checkbox id="chbx-fair-abstraction" checked="{{fairAbstraction}}" class="middle" title="Visualise abstracted automata fairly.">
+      <paper-checkbox id="chbx-fair-abstraction" checked="{{fairAbstraction}}" class="chbx middle" title="Visualise abstracted automata fairly.">
         <span hidden$="{{smallScreen}}">Fair Abstraction</span>
         <span hidden$="{{!smallScreen}}">FAbs</span>
       </paper-checkbox>
