@@ -11,11 +11,10 @@ const Compiler = {
 			const tokens = Lexer.tokenise(code);
 			const ast = parse(tokens);
 			// check if this is to be compiled client side or server side
-			if(context.isClientSide){
-				return this.clientSideCompile(ast, context);
-			}
-			else{
-				return this.serverSideCompile(ast, context);
+			if(context.isLocal){
+				return this.localCompile(ast, context);
+			} else {
+				return this.remoteCompile(ast, context);
 			}
 
 		}catch(error){
@@ -24,7 +23,7 @@ const Compiler = {
 		}
 	},
 
-	clientSideCompile: function(ast, context){
+	localCompile: function(ast, context){
 		ast = expand(ast);
 
 		const abstractionChanged = context.isFairAbstraction !== this.lastAbstraction;
@@ -44,7 +43,7 @@ const Compiler = {
 		return { processes:processes, operations:operations };
 	},
 
-	serverSideCompile: function(ast, context){
+	remoteCompile: function(ast, context){
     app.socket.emit('compile',{ast:ast,context:context},function(results) {
       var graphs = [];
       for(var id in results.processes){

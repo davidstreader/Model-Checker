@@ -144,7 +144,7 @@
     app.getSettings = function() {
       return {
         isFairAbstraction: app.fairAbstraction,
-        isClientSide: app.isClientSide
+        isLocal: app.isClientSide
       };
     }
 
