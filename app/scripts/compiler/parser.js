@@ -638,6 +638,9 @@ function parse(tokens){
 		else if(tokens[index].value === 'forall'){
 			return parseForall(tokens);
 		}
+		else if(tokens[index].type === 'process-type'){
+			return parseCasting(tokens);
+		}
 		else if(tokens[index].value === '('){
 			gobble(tokens[index], '(');
 			var process = parseLocalProcess(tokens);
@@ -779,6 +782,21 @@ function parse(tokens){
 
 		return { type:'forall', ranges:ranges, process:process };
 	}
+
+	/**
+	 * Attempts to parse and return a casting process from the specified array of tokens
+	 * starting at the current index position. A casting process is of the form:
+	 *
+	 * CASTING := PROCESS_TYPE '(' LOCAL_PROCESS ')';
+	 */
+	 function parseCasting(tokens){
+	 	var processType = parseProcessType(tokens);
+	 	gobble(tokens[index], '(');
+	 	var process = parseLocalProcess(tokens);
+	 	gobble(tokens[index], ')');
+
+	 	return { type:'function', func:processType, process:process };
+	 }
 
 	/**
 	 * Attmepts to parse and return a sequence of indices from the specified
@@ -1376,6 +1394,9 @@ function parse(tokens){
 			return true;
 		}
 		else if(tokens[index].value === 'forall'){
+			return true;
+		}
+		else if(tokens[index].type === 'process-type'){
 			return true;
 		}
 		else if(tokens[index].value === '('){

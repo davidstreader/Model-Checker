@@ -10,6 +10,7 @@
  */
 function interpretPetriNet(process, processesMap, context){
 	const processStack = [] // stack containing interpreteted petri nets;
+	let override = false;
 
 	const identifier = process.ident.ident;
 	const net = new PetriNet(identifier);
@@ -52,6 +53,12 @@ function interpretPetriNet(process, processesMap, context){
 
 		// interpret the sub process
 		interpretNode(subProcess, subNet, subRoot);
+
+		// check if this process was overridden
+		if(override){
+			override = false;
+			return;
+		}
 
 		// update the main net
 		net.placeId = subNet.placeId;
@@ -233,6 +240,9 @@ function interpretPetriNet(process, processesMap, context){
 			case 'tokenRule':
 
 				break;
+			case 'petrinet':
+				processedNet = automatonToPetriNet(processedNet); // processed net is actually an automata
+				break;
 			default:
 				break;
 		}
@@ -256,6 +266,18 @@ function interpretPetriNet(process, processesMap, context){
 
 	function interpretIdentifier(astNode, net, currentPlace, lastTransition){
 		const reference = processesMap[astNode.ident].clone;
+		
+		// check if the reference is not a petri net
+		if(reference.type !== 'petrinet'){
+			if(lastTransition !== undefined){
+				// throw error
+			}
+
+			processStack.push(reference);
+			override = true;
+			return;
+		}
+
 		const roots = reference.roots;
 		net.addPetriNet(reference);
 
