@@ -19,7 +19,7 @@
     app.isClientSide = true;
     app.willSaveCookie = true;
 
-    if (io !== undefined) {
+    if (typeof io !== 'undefined') {
       app.socket = io();
       app.socket.on('connectedToServer', function (data) {
         app.isClientSide = false;
