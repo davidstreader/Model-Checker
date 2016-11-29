@@ -12,3 +12,17 @@ body {
   font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   color: #333;
 }
+
+@media all and (max-width: 639px) {
+  .frame{
+    top: 56px;
+  }
+  paper-toolbar span.spacer{
+    margin-right: 0;
+    width: 0;
+    @apply(--layout-flex);
+  }
+  #editor{
+    height: calc(95vh - 56px - 100px);
+  }
+}
