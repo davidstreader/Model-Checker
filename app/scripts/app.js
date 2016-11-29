@@ -17,6 +17,7 @@
     app.currentFile = '';
     app.selectedCtx = 0;
     app.isClientSide = true;
+    app.willSaveCookie = true;
 
     if (io !== undefined) {
       app.socket = io();
@@ -38,8 +39,10 @@
       }
       return "";
     };
-    app.$.editor.setCode(decodeURIComponent(app.getCookie('editor')));
-
+    app.willSaveCookie = Boolean(app.getCookie("willSave"));
+    if (app.willSaveCookie) {
+      app.$.editor.setCode(decodeURIComponent(app.getCookie('editor')));
+    }
     app.compile = function(overrideBuild) {
       var code = app.getCode();
 
@@ -238,6 +241,9 @@
       app.$.editor.focus();
     });
 
+    app.$['chbx-save-cookie'].addEventListener('iron-change', function() {
+      document.cookie = "willSave="+app.willSaveCookie;
+    });
     /**
      * Simple event listener for when the user switches tabs.
      * When we switch to index 1 (Diagram), we need to redraw the canvas,

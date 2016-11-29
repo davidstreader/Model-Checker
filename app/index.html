@@ -102,21 +102,12 @@
     top: calc(50% - 16px);
     bottom: 0;
   }
-  #chbx-live-compiling {
+  .chbx  {
     margin: 0 12px;
     --paper-checkbox-unchecked-color: #ffffff;
     --paper-checkbox-label-color: #ffffff;
   }
-  #chbx-live-building {
-    margin: 0 12px;
-    --paper-checkbox-unchecked-color: #ffffff;
-    --paper-checkbox-label-color: #ffffff;
-  }
-  #chbx-fair-abstraction {
-    margin: 0 12px;
-    --paper-checkbox-uncheckd-color: #ffffff;
-    --paper-checkbox-label-color: #ffffff;
-  }
+
   #filename {
     --paper-input-container-color: #ffffff;
     --paper-input-container-input-color: #ffffff;
@@ -183,17 +174,20 @@
     <!-- start toolbar -->
     <paper-toolbar id="main-toolbar">
       <paper-button id="btn-compile" title="Compile and Build" raised on-tap="compileAndBuild" class="middle"><iron-icon icon="av:play-arrow"></iron-icon></paper-button>
-      <paper-checkbox id="chbx-live-compiling" checked="{{liveCompiling}}" class="middle" title="Automatically compile the automata as you define them.">
+      <paper-checkbox id="chbx-live-compiling" checked="{{liveCompiling}}" class="chbx middle" title="Automatically compile the automata as you define them.">
         <span hidden$="{{smallScreen}}">Live Compiling</span>
         <span hidden$="{{!smallScreen}}">Live</span>
       </paper-checkbox>
       <span class="spacer middle"></span>
-      <paper-checkbox id="chbx-live-building" checked="{{liveBuilding}}" class="middle" title="Automatically build the automata as you define them.">
+      <paper-checkbox id="chbx-live-building" checked="{{liveBuilding}}" class="chbx middle" title="Automatically build the automata as you define them.">
         <span hidden$="{{smallScreen}}">Live Building</span>
         <span hidden$="{{!smallScreen}}">Live</span>
       </paper-checkbox>
-      <paper-checkbox id="chbx-live-building" checked="{{isClientSide}}" class="middle" title="Automatically build the automata as you define them.">
+      <paper-checkbox checked="{{isClientSide}}" class="chbx middle" title="Compile the automata in your browser instead of on the server">
         <span>Compile Locally</span>
+      </paper-checkbox>
+      <paper-checkbox id="chbx-save-cookie" checked="{{willSaveCookie}}" class="chbx middle" title="Save current progress to a cookie and load it back">
+        <span>Autosave</span>
       </paper-checkbox>
       <span class="spacer middle"></span>
       <paper-icon-button icon="icons:folder-open" class="middle" title="Open" on-tap="openFile"></paper-icon-button>
@@ -203,7 +197,7 @@
       <paper-input id="filename" is="iron-input" label="Insert Filename Here" placeholder="untitled" bind-value="{{inputValue}}" class="middle" title="The name given to the file when it is downloaded."></paper-input>
       <paper-icon-button icon="icons:file-download" class="middle" title="Download" on-tap="downloadFile"></paper-icon-button>
       <span class="flex middle"></span>
-      <paper-checkbox id="chbx-fair-abstraction" checked="{{fairAbstraction}}" class="middle" title="Visualise abstracted automata fairly.">
+      <paper-checkbox id="chbx-fair-abstraction" checked="{{fairAbstraction}}" class="chbx middle" title="Visualise abstracted automata fairly.">
         <span hidden$="{{smallScreen}}">Fair Abstraction</span>
         <span hidden$="{{!smallScreen}}">FAbs</span>
       </paper-checkbox>
