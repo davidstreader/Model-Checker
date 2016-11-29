@@ -1,0 +1,3 @@
+automata {
+A = a->b->STOP
+}

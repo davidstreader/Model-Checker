@@ -61,13 +61,26 @@ if (!testingMode) {
   });
 } else {
   console.log("Entering testing mode");
+  fs.writeFileSync("tests/results.txt","");
   walk("tests", function (results) {
     results.forEach(function (result) {
-      cursor.yellow().bold().underline();
+      if (result.endsWith("results.txt")) return;
+      cursor.bold().yellow();
       console.log("Reading: " + result);
       cursor.reset();
       var code = fs.readFileSync(result, 'utf-8');
+
       var compile = Compiler.compile(code, {isLocal: true, isFairAbstraction: true});
+      if (compile.message) {
+        cursor.red();
+        console.log("Error compiling, Message: "+compile.message);
+        fs.appendFileSync("tests/results.txt",result+"  Error   "+compile.message+" \n");
+      } else {
+        cursor.green();
+        console.log("Successfully compiled");
+        fs.appendFileSync("tests/results.txt",result+"  Success   \n");
+      }
+
     });
   });
 }
