@@ -41,23 +41,23 @@
       },
       rescale: function() {
         var scale = V(this.paper.viewport).scale();
-          if (this.exploded) {
-            var node = Object.values(this.graphMap).pop();
-            this.paper.setDimensions(this.paper.$el.width()*scale.sx, node.minY + node.height + 200);
-            return;
-          }
+        if (this.exploded) {
+          var node = Object.values(this.graphMap).pop();
+          this.paper.setDimensions(this.paper.$el.width()*scale.sx, node.minY + node.height + 200);
+          return;
+        }
         var maxX = 0;
-          var maxY = 0;
+        var maxY = 0;
         var graphs = Object.values(this.graphMap);
         graphs.forEach(function (graph) {
-            maxX = Math.max(maxX,graph.parentNode.getBBox().corner().x);
+          maxX = Math.max(maxX,graph.parentNode.getBBox().corner().x);
           maxY = Math.max(maxY,graph.parentNode.getBBox().corner().y);
         });
         var graph = Object.values(this.graphMap).pop();
         this.paper.setDimensions(Math.max(maxX*scale.sx,this.paper.$el.width()),Math.max(maxY*scale.sy+200,this.paper.$el.parent().parent().height()));
       },
       ready: function(){
-        var lthis = this;
+        var _this = this;
         this.jgraph = new joint.dia.Graph();
         this.paper = new joint.dia.Paper({
           el: this.$['svg-parentNode'],
@@ -70,30 +70,30 @@
         document.addEventListener('change-process', function(e){
           //When we swap, its much easier to just restore then explode again.
           if (this.exploded) {
-            lthis.fire('explode',false);
-            lthis.fire('explode',true);
+            _this.fire('explode',false);
+            _this.fire('explode',true);
             return;
           }
-          var node = lthis.graphMap[e.detail.id];
+          var node = _this.graphMap[e.detail.id];
           var scale = V(paper.viewport).scale();
           $(".process-display").stop().animate({scrollTop:node.parentNode.getBBox().origin().y*scale.sx}, '100', 'swing');
         });
         var lastOptions;
         document.addEventListener('explode', function(e){
           var processDisplay = $(".process-display");
-          lthis.exploded = e.detail;
-          var paperWidth = lthis.paper.$el.width();
-          var paperHeight = lthis.paper.$el.height();
+          _this.exploded = e.detail;
+          var paperWidth = _this.paper.$el.width();
+          var paperHeight = _this.paper.$el.height();
           var paperScale =  V(paper.viewport).scale();
-          Object.keys(lthis.graphMap).forEach(function (key) {
-            var parentNode = lthis.graphMap[key].parentNode;
-            var nodes = _.values(lthis.graphMap[key].map);
+          Object.keys(_this.graphMap).forEach(function (key) {
+            var parentNode = _this.graphMap[key].parentNode;
+            var nodes = _.values(_this.graphMap[key].map);
             var localWidth = parentNode.getBBox().width;
             var localHeight = parentNode.getBBox().height;
             var minY = parentNode.getBBox().origin().y;
             var scaleX = paperWidth / localWidth;
             var scaleY = paperHeight / localHeight;
-            if (lthis.exploded) {
+            if (_this.exploded) {
               $("[model-id='" + parentNode.id + "']").hide();
               if (key == app.$.selector.getSelected()) {
                 lastOptions = {
@@ -106,19 +106,19 @@
                 paper.setOrigin(0, 0);
                 paper.scale(Math.min(scaleX, scaleY), Math.min(scaleX, scaleY), 0, 0);
                 processDisplay.scrollTop(0);
-                lthis.paper.setDimensions(lthis.paper.$el.width(), localHeight * Math.min(scaleX, scaleY));
+                _this.paper.setDimensions(_this.paper.$el.width(), localHeight * Math.min(scaleX, scaleY));
               }
               nodes.forEach(function (nodev) {
                 if (key == app.$.selector.getSelected()) {
                   var pos = nodev.position();
-                  var offsetX = (lthis.paper.$el.width() - (localWidth * Math.min(scaleX, scaleY))) / 2;
+                  var offsetX = (_this.paper.$el.width() - (localWidth * Math.min(scaleX, scaleY))) / 2;
                   nodev.position(pos.x - parentNode.getBBox().origin().x + offsetX, pos.y - minY);
                   nodev.offsetX = offsetX;
                   nodev.exploded = true;
                   return;
                 }
                 $("[model-id='" + nodev.id + "']").hide();
-                lthis.jgraph.getConnectedLinks(nodev).forEach(function (node) {
+                _this.jgraph.getConnectedLinks(nodev).forEach(function (node) {
                   $("[model-id='" + node.id + "']").hide();
                 });
               });
@@ -135,12 +135,12 @@
                   nodev.exploded = false;
                 }
                 $("[model-id='" + nodev.id + "']").show();
-                lthis.jgraph.getConnectedLinks(nodev).forEach(function (node) {
+                _this.jgraph.getConnectedLinks(nodev).forEach(function (node) {
                   $("[model-id='" + node.id + "']").show();
                 });
               });
 
-              lthis.rescale();
+              _this.rescale();
             }
           });
         });
@@ -166,17 +166,25 @@
             paper.scale(newScale, newScale, p.x, p.y);
             paper.setOrigin(origx, origy);
           }
-          lthis.rescale();
+          _this.rescale();
         });
+        this.myAdjustVertices = _.partial(adjustVertices, this.jgraph, this.paper);
+
+// also when an user stops interacting with an element.
+        paper.on('cell:pointerup', this.myAdjustVertices);
         this.jgraph.on('change:position', function(cell) {
+          _.each(_this.jgraph.getConnectedLinks(cell),function(link) {adjustVertices(_this.jgraph,_this.paper,link);});
+//          if (_.contains(_this.jgraph.getCells(), cell)) {
+//              _.each(_this.jgraph.getLinks(),function(link) {paper.findViewByModel(link).update()});
+//          }
           //Exploded diagrams are limited by changing the dimensions of the paper
-          if (lthis.exploded) {
+          if (_this.exploded) {
             return;
           }
           var parentId = cell.get('parent');
           if (!parentId) return;
 
-          var parent = lthis.jgraph.getCell(parentId);
+          var parent = _this.jgraph.getCell(parentId);
           if (parent.rendering) return;
           var parentBbox = parent.getBBox();
           var cellBbox = cell.getBBox();
@@ -203,16 +211,16 @@
         this.paper.setDimensions(this.paper.$el.width(),999999);
         this.jgraph.clear();
         this.graphMap = {};
-        var lthis = this;
+        var _this = this;
         if (!app.get("automata.values") || app.get("automata.values").length == 0) return;
         console.log("drawing");
         app.get("automata.values").forEach(function(graph) {
           if (!graph.type) return;
           if (graph.type == 'automata') {
-            lthis._visualizeAutomata(graph,graph.id);
+            _this._visualizeAutomata(graph,graph.id);
           }
           if (graph.type == 'petrinet') {
-            lthis._visualizePetriNet(graph,graph.id);
+            _this._visualizePetriNet(graph,graph.id);
           }
         });
         joint.layout.DirectedGraph.layout(this.jgraph, {rankDir:'LR'});
@@ -231,7 +239,7 @@
           });
           var width = ux-lx;
           var height = uy-ly;
-          var offsetX = (lthis.paper.$el.width()-width)/2;
+          var offsetX = (_this.paper.$el.width()-width)/2;
           if (width < paperWidth) {
             nodes.forEach(function (node) {
               var pos = node.position();
@@ -249,15 +257,18 @@
           graphMap[key].parentNode.embed(cell);
           var pos = graphMap[key].parentNode.position();
           graphMap[key].parentNode.position(pos.x+offsetX,pos.y);
+          cell.set("ignoreChecks",true);
           jgraph.addCell(cell);
           graphMap[key].map['label'] = cell;
           graphMap[key].parentNode.rendering = false;
+          graphMap[key].parentNode.set("ignoreChecks",true);
         });
         jgraph.getLinks().forEach(function (link) {
-          link.set('router', { name: 'metro', excludeTypes: 'joint.shapes.parent'});
           link.set('smooth',false);
+          link.set('connector', { name: 'jumpover', args: { type: 'gap' }});
         });
         this.automata = this.graphMap;
+        _.each(app.$.visualiser.jgraph.getCells(),function(cell) {adjustVertices(app.$.visualiser.jgraph,app.$.visualiser.paper,cell)})
         this.fire('process-visualisation-rendered');
         this.rescale();
       }, _automataLink: function(source, target, label, parentNode) {
