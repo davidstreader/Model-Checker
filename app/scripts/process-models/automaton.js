@@ -506,7 +506,7 @@ const AUTOMATON_EDGE = {
 
 	set locations(locations){
 		this.locationSet = {};
-		for(id in locations){
+		for(let id in locations){
 			this.locationSet[id] = true;
 		}
 	},
