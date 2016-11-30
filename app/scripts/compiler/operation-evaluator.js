@@ -20,7 +20,8 @@ function evaluateOperations(operations, processesMap, variableMap){
 		process1 = reconstruct(process1);
 		process2 = reconstruct(process2);
 
-		results.push(process1 + ' ~ ' + process2 + ' = ' + result);
+		var op = operations[i].isNegated ? '!~' : '~';
+		results.push({ operation:op, process1:process1, process2:process2, result:result });
 	}
 
 	for(var i = 0; i < idents.length; i++){
