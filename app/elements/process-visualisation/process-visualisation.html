@@ -68,6 +68,8 @@
         });
         var paper = this.paper;
         document.addEventListener('change-process', function(e){
+
+          if (_this.rendering) return;
           //When we swap, its much easier to just restore then explode again.
           if (this.exploded) {
             _this.fire('explode',false);
@@ -162,6 +164,22 @@
           }
           _this.rescale();
         });
+        this.paper.on('cell:pointerdown', function(cell) {
+          if (_this.exploded || _this.rendering) {
+            return;
+          }
+          _this.rendering = true;
+          cell = cell.model;
+          var parentId = cell.get('parent');
+          if (parentId) {
+            cell = _this.jgraph.getCell(parentId);
+          }
+          if (cell.index !== undefined) {
+            $("#process-name-selector")[0].contentElement.selected = cell.index;
+          }
+
+          _this.rendering = false;
+        });
         this.jgraph.on('change:position', function(cell) {
           //Exploded diagrams are limited by changing the dimensions of the paper
           if (_this.exploded || _this.rendering) {
@@ -173,6 +191,7 @@
             link.unset('vertices');
           });
           var parent = _this.jgraph.getCell(parentId);
+
           var parentBbox = parent.getBBox();
           var cellBbox = cell.getBBox();
           var changeX = Math.abs(cell.get("position").x-cell.previous('position').x);
@@ -199,7 +218,7 @@
         this.jgraph.clear();
         this.graphMap = {};
         var _this = this;
-
+        this.rendering = true;
         if (!app.get("automata.values") || app.get("automata.values").length == 0) return;
         var unknownProcess = true;
         app.get("automata.values").forEach(function(graph) {
@@ -211,13 +230,14 @@
           $("#process-name-selector")[0].contentElement.selected = null;
           app.$.selector._hasSelection = true;
         }
+        var i = 0;
         app.get("automata.values").forEach(function(graph) {
           if (!graph.type) return;
           if (graph.type == 'automata') {
-            _this._visualizeAutomata(graph,graph.id);
+            _this._visualizeAutomata(graph,graph.id,i++);
           }
           if (graph.type == 'petrinet') {
-            _this._visualizePetriNet(graph,graph.id);
+            _this._visualizePetriNet(graph,graph.id,i++);
           }
         });
         joint.layout.DirectedGraph.layout(this.jgraph, {rankDir:'LR',setLinkVertices: true});
@@ -278,6 +298,7 @@
         this.automata = this.graphMap;
         this.fire('process-visualisation-rendered');
         this.rescale();
+        this.rendering = false;
       }, _automataLink: function(source, target, label, parentNode) {
         var cell = new joint.shapes.fsa.Arrow({
           source: { id: source.id },
@@ -306,12 +327,14 @@
         parentNode.embed(link);
         this.jgraph.addCell(link);
         return link;
-      },_visualizeAutomata: function(process, name) {
+      },_visualizeAutomata: function(process, name, idx) {
         // add nodes in automaton to the graph
         var nodes = process.nodes;
         var nodeMap = {};
         var parentNode = new joint.shapes.parent();
+        parentNode.name = name;
         parentNode.rendering = true;
+        parentNode.index = idx;
         this.jgraph.addCell(parentNode);
         this.graphMap[name] = {map:nodeMap,name:name,height:0,parentNode:parentNode};
         for(var i = 0; i < nodes.length; i++){
@@ -356,11 +379,13 @@
           }
           this._automataLink(nodeMap[from],nodeMap[to], label,parentNode);
         }
-      },_visualizePetriNet: function(process, name) {
+      },_visualizePetriNet: function(process, name, idx) {
         // add places in petri net to the graph
         var startPlaces = [];
         var nodeMap = {};
         var parentNode = new joint.shapes.parent();
+        parentNode.index = idx;
+        parentNode.name = name;
         parentNode.rendering = true;
         this.jgraph.addCell(parentNode);
         this.graphMap[name] = {map:nodeMap,name:name,height:0,parentNode:parentNode};
