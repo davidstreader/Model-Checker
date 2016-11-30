@@ -40,17 +40,17 @@ function automataParallelComposition(id, automaton1, automaton2){
 						var c2 = coaccessible2[y];
 
 						if(c1 !== undefined && c2 !== undefined){
-							var toId = c1 + '.' + c2;
+							var toId = c1.node.id + '.' + c2.node.id;
 							var edge = graph.addEdge(graph.nextEdgeId, action, graph.getNode(fromId), graph.getNode(toId));
 							edge.locations = locationUnion(node1.locations, node2.locations);
 						}
 						else if(c1 !== undefined && alphabet2[action] === undefined){
-							var toId = c1 + '.' + node2.id;
+							var toId = c1.node.id + '.' + node2.id;
 							var edge = graph.addEdge(graph.nextEdgeId, action, graph.getNode(fromId), graph.getNode(toId));
 							edge.locations = node1.locations
 						}
 						else if(c2 !== undefined && alphabet1[action] === undefined){
-							var toId = node1.id + '.' + c2;
+							var toId = node1.id + '.' + c2.node.id;
 							var edge = graph.addEdge(graph.nextEdgeId, action, graph.getNode(fromId), graph.getNode(toId));
 							edge.locations = node2.locations;
 						}
