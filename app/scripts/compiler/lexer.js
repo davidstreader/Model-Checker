@@ -10,6 +10,7 @@ const Lexer = {
 	keywords: { 'const':true, 'range':true, 'set':true, 'if':true, 'then':true, 'else':true, 'when':true, 'forall':true },
 	symbols: '(\\.\\.|\\.|,|:|\\[|\\]|\\(|\\)|\\{|\\}|->|\\\\|@)',
 	operators: '(\\|\\||\\||&&|&|\\^|==|=|!=|<<|<=|<|>>|>=|>|\\+|-|\\*|/|%|!)',
+	operations: '~',
 	singleLineCommentStart: '//',
 	multiLineCommentStart: '/\\*',
 
@@ -117,6 +118,19 @@ const Lexer = {
         const location = new Location(start, end);
 
 				tokens.push(new Token('operator', value, location));
+				continue;
+			}
+
+			// attempt to match an operation
+			value = matchValue(this.operations);
+			if(value !== undefined){
+				// construct the end point for the current token
+				const end = new Position(line, column);
+
+				// construct the locaiton in the code of this token
+				const location = new Location(start, end);
+
+				tokens.push(new Token('operation', value, location));
 				continue;
 			}
 
