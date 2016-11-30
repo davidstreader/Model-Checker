@@ -90,7 +90,7 @@
             var nodes = _.values(_this.graphMap[key].map);
             var localWidth = parentNode.getBBox().width;
             var localHeight = parentNode.getBBox().height;
-            var minY = parentNode.getBBox().origin().y;
+            var minX = parentNode.getBBox().origin().x;
             var scaleX = paperWidth / localWidth;
             var scaleY = paperHeight / localHeight;
             if (_this.exploded) {
@@ -107,16 +107,11 @@
                 paper.scale(Math.min(scaleX, scaleY), Math.min(scaleX, scaleY), 0, 0);
                 processDisplay.scrollTop(0);
                 _this.paper.setDimensions(_this.paper.$el.width(), localHeight * Math.min(scaleX, scaleY));
+                parentNode.translate(-minX,0);
+                parentNode.minX = minX;
+                return;
               }
               nodes.forEach(function (nodev) {
-                if (key == app.$.selector.getSelected()) {
-                  var pos = nodev.position();
-                  var offsetX = (_this.paper.$el.width() - (localWidth * Math.min(scaleX, scaleY))) / 2;
-                  nodev.position(pos.x - parentNode.getBBox().origin().x + offsetX, pos.y - minY);
-                  nodev.offsetX = offsetX;
-                  nodev.exploded = true;
-                  return;
-                }
                 $("[model-id='" + nodev.id + "']").hide();
                 _this.jgraph.getConnectedLinks(nodev).forEach(function (node) {
                   $("[model-id='" + node.id + "']").hide();
@@ -127,13 +122,10 @@
               paper.scale(lastOptions.sx, lastOptions.sy, 0, 0);
               paper.setOrigin(lastOptions.x, lastOptions.y);
               processDisplay.scrollTop(lastOptions.scrollTop);
-              var minX = parentNode.getBBox().origin().x;
+              if (key == app.$.selector.getSelected()) {
+                parentNode.translate(parentNode.minX, 0);
+              }
               nodes.forEach(function (nodev) {
-                if (nodev.exploded) {
-                  var pos = nodev.position();
-                  nodev.position(pos.x - nodev.offsetX + minX, pos.y + minY);
-                  nodev.exploded = false;
-                }
                 $("[model-id='" + nodev.id + "']").show();
                 _this.jgraph.getConnectedLinks(nodev).forEach(function (node) {
                   $("[model-id='" + node.id + "']").show();
@@ -168,15 +160,8 @@
           }
           _this.rescale();
         });
-        this.myAdjustVertices = _.partial(adjustVertices, this.jgraph, this.paper);
 
-// also when an user stops interacting with an element.
-        paper.on('cell:pointerup', this.myAdjustVertices);
         this.jgraph.on('change:position', function(cell) {
-          _.each(_this.jgraph.getConnectedLinks(cell),function(link) {adjustVertices(_this.jgraph,_this.paper,link);});
-//          if (_.contains(_this.jgraph.getCells(), cell)) {
-//              _.each(_this.jgraph.getLinks(),function(link) {paper.findViewByModel(link).update()});
-//          }
           //Exploded diagrams are limited by changing the dimensions of the paper
           if (_this.exploded) {
             return;
@@ -223,14 +208,23 @@
             _this._visualizePetriNet(graph,graph.id);
           }
         });
-        joint.layout.DirectedGraph.layout(this.jgraph, {rankDir:'LR'});
+        joint.layout.DirectedGraph.layout(this.jgraph, {rankDir:'LR',setLinkVertices: true});
         var jgraph = this.jgraph;
         var graphMap = this.graphMap;
-        var paperWidth = this.paper.$el.width();
         Object.keys(graphMap).forEach(function (key) {
           var nodes = _.values(graphMap[key].map);
+          var links = [];
           var lx = Number.MAX_VALUE, ly = Number.MAX_VALUE, ux = 0, uy = 0;
           nodes.forEach(function (node) {
+            _this.jgraph.getConnectedLinks(node).forEach(function (link) {
+              links.push(link);
+              link.get('vertices').forEach(function (vertex){
+                lx = Math.min(lx,vertex.x);
+                ly = Math.min(ly,vertex.y);
+                ux = Math.max(ux,vertex.x);
+                uy = Math.max(uy,vertex.y);
+              });
+            });
             var bbox = node.getBBox();
             lx = Math.min(lx,bbox.origin().x);
             ly = Math.min(ly,bbox.origin().y);
@@ -239,24 +233,19 @@
           });
           var width = ux-lx;
           var height = uy-ly;
-          var offsetX = (_this.paper.$el.width()-width)/2;
-          if (width < paperWidth) {
-            nodes.forEach(function (node) {
-              var pos = node.position();
-              node.position(pos.x+offsetX,pos.y);
-            });
-          }
           var cell = new joint.shapes.basic.Rect ({
             size: { width: 100, height: 30 },
-            position: { x:lx+offsetX, y:ly},
+            position: { x:lx, y:ly},
             attrs: {
               rect: { fill: 'transparent', stroke: 'none' },
               'text': {text: key, fill: 'red', 'font-size': 20}}
           });
 
           graphMap[key].parentNode.embed(cell);
-          var pos = graphMap[key].parentNode.position();
-          graphMap[key].parentNode.position(pos.x+offsetX,pos.y);
+          graphMap[key].parentNode.position(lx-50,ly-50);
+          graphMap[key].parentNode.resize(width+100,height+100);
+          var offsetX = (_this.paper.$el.width()-width)/2;
+          graphMap[key].parentNode.translate(offsetX,0);
           cell.set("ignoreChecks",true);
           jgraph.addCell(cell);
           graphMap[key].map['label'] = cell;
@@ -267,7 +256,6 @@
           link.set('smooth',false);
         });
         this.automata = this.graphMap;
-        _.each(app.$.visualiser.jgraph.getCells(),function(cell) {adjustVertices(app.$.visualiser.jgraph,app.$.visualiser.paper,cell)})
         this.fire('process-visualisation-rendered');
         this.rescale();
       }, _automataLink: function(source, target, label, parentNode) {
