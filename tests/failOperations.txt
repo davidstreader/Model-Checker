@@ -1,0 +1,7 @@
+automata {
+	A = (a -> STOP).
+	B = (b -> STOP).
+}
+
+A ~ B.
+A !~ B.

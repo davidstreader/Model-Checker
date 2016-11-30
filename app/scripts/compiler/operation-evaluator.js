@@ -1,7 +1,7 @@
 'use strict';
 
 var results;
-var id;
+var opId;
 var idents;
 
 function evaluateOperations(operations, processesMap, variableMap){
@@ -20,7 +20,8 @@ function evaluateOperations(operations, processesMap, variableMap){
 		process1 = reconstruct(process1);
 		process2 = reconstruct(process2);
 
-		results.push(process1 + ' ~ ' + process2 + ' = ' + result);
+		var op = operations[i].isNegated ? '!~' : '~';
+		results.push({ operation:op, process1:process1, process2:process2, result:result });
 	}
 
 	for(var i = 0; i < idents.length; i++){
@@ -30,14 +31,14 @@ function evaluateOperations(operations, processesMap, variableMap){
 	return results;
 
 	function generateProcessIdent(){
-		var ident = 'op' + id++;
+		var ident = 'op' + opId++;
 		idents.push(ident);
 		return ident;
 	}
 
 	function reset(){
 		results = [];
-		id = 0;
+		opId = 0;
 		idents = [];
 	}
 }

@@ -92,7 +92,25 @@ const AUTOMATON = {
 	},
 
 	coaccessible: function(node, label){
-		return node.outgoingEdges.map(id => this.getEdge(id)).filter(e => e.label === label).map(e => e.to);
+		const edges = node.outgoingEdges.map(id => this.getEdge(id)).filter(e => e.label === label);
+		for(let i = 0; i < edges.length; i++){
+			const edge = edges[i];
+			const next = this.getNode(edge.to);
+			edges[i] = { node:next, edge:edge };
+		}
+
+		return edges;
+	},
+
+	isCoaccessible: function(node, label){
+		const edges = node.outgoingEdges.map(id => this.getEdge(id));
+		for(let i = 0; i < edges.length; i++){
+			if(edges[i].label === label){
+				return true;
+			}
+		}
+
+		return false;
 	},
 
 	get edges(){
@@ -111,6 +129,13 @@ const AUTOMATON = {
 	addEdge: function(id, label, from, to, metaData){
 		const locationSet = {};
 		locationSet[this.id] = true;
+		
+		if(metaData === undefined){
+			metaData = {};
+			const edges = this.edges.filter(e => e.label === label);
+			metaData.action = edges.length;
+		}
+
 		const edge = new AutomatonEdge(id, label, from.id, to.id, locationSet, metaData);
 		from.addOutgoingEdge(id);
 		to.addIncomingEdge(id);
@@ -399,7 +424,7 @@ const AUTOMATON_NODE = {
 
 	set locations(locations){
 		this.locationSet = {};
-		for(id in locations){
+		for(let id in locations){
 			this.locationSet[id] = true;
 		}
 	},

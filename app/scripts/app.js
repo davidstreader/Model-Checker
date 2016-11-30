@@ -84,7 +84,7 @@
             return;
           }
           if(results.type === 'error'){
-            app.$.console.error(results.toString());
+            app.$.console.error(results.stack);
           }
           else{
             app.finalizeBuild(results);
@@ -106,7 +106,9 @@
         if(results.operations.length !== 0){
           app.$.console.log('Operations:');
           for(var i = 0; i < results.operations.length; i++){
-            app.$.console.log(results.operations[i]);
+            var { operation, process1, process2, result } = results.operations[i];
+            var op = process1 + ' ' + operation + ' ' + process2 + ' = ' + result;
+            app.$.console.log(op);
           }
         }
       }
