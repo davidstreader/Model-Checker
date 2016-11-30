@@ -84,7 +84,7 @@
             return;
           }
           if(results.type === 'error'){
-            app.$.console.error(results.toString());
+            app.$.console.error(results.stack);
           }
           else{
             app.finalizeBuild(results);

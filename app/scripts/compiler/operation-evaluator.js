@@ -1,7 +1,7 @@
 'use strict';
 
 var results;
-var id;
+var opId;
 var idents;
 
 function evaluateOperations(operations, processesMap, variableMap){
@@ -31,14 +31,14 @@ function evaluateOperations(operations, processesMap, variableMap){
 	return results;
 
 	function generateProcessIdent(){
-		var ident = 'op' + id++;
+		var ident = 'op' + opId++;
 		idents.push(ident);
 		return ident;
 	}
 
 	function reset(){
 		results = [];
-		id = 0;
+		opId = 0;
 		idents = [];
 	}
 }

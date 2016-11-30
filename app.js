@@ -79,8 +79,52 @@ if (!testingMode) {
         cursor.green();
         console.log("Successfully compiled");
         fs.appendFileSync("tests/results.txt",result+"  Success   \n");
-      }
+      
+        var operations = compile.operations;
+        if(operations.length !== 0){
+          cursor.bold().yellow();
+          console.log("Operations:");
+          fs.appendFileSync("tests/results.txt", "Operations:\n");
+          cursor.reset();
 
+          var passed = 0;
+          var failed = 0;
+          for(var i = 0; i < operations.length; i++){
+            var { operation, process1, process2, result } = operations[i];
+            if(result){
+              cursor.green();
+              passed++;
+            }
+            else{
+              cursor.red();
+              failed++;
+            }
+
+            var op = process1 + ' ' + operation + ' ' + process2;
+            fs.appendFileSync("tests/results.txt", op + ' = ' + result + '\n');
+            console.log(op);
+            cursor.reset();
+          }
+
+          cursor.bold().yellow();
+          console.log("Results:");
+          fs.appendFileSync("tests/results.txt", "Results:\n");
+          cursor.reset();
+          
+          if(passed === operations.length){
+            cursor.green();
+            console.log("All operations passed!");
+            fs.appendFileSync("tests/results.txt", "All operations passed!\n");
+          }
+          else{
+            var outcome = failed + '/' + operations.length + ' operations failed';
+            cursor.red();
+            console.log(outcome);
+            fs.appendFileSync("tests/results.txt", outcome + "\n");         
+          }
+          cursor.reset();
+        }
+      }
     });
   });
 }
