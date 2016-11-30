@@ -11,6 +11,7 @@ joint.shapes.fsa.EndState = joint.dia.Element.extend({
     size: { width: 60, height: 60 },
     attrs: {
       '.outer': {
+        'stroke-width': 3,
         transform: 'translate(10, 10)',
         r: 10,
         fill: '#ffffff',
@@ -18,6 +19,7 @@ joint.shapes.fsa.EndState = joint.dia.Element.extend({
       },
 
       '.inner': {
+        'stroke-width': 3,
         transform: 'translate(10, 10)',
         r: 6,
         fill: '#000000'

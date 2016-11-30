@@ -305,7 +305,7 @@
         for(var i = 0; i < nodes.length; i++){
           if(nodes[i].getMetaData('isTerminal') !== undefined){
               var fill = 'green';
-            if (nodes[i].getMetaData('error') !== undefined) {
+            if (nodes[i].getMetaData('isTerminal') === 'error') {
               fill = 'red';
             }
             nodeMap['n' + nodes[i].id] = new joint.shapes.fsa.EndState({
