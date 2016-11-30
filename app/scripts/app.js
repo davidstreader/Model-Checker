@@ -84,7 +84,13 @@
             return;
           }
           if(results.type === 'error'){
-            app.$.console.error(results.stack);
+            if (results.stack) {
+              app.$.console.error("An exception was thrown that was not related to your script.");
+              app.$.console.error(results.stack);
+              throw results;
+            } else {
+              app.$.console.error(results.message);
+            }
           }
           else{
             app.finalizeBuild(results);

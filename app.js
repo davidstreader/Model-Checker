@@ -74,7 +74,9 @@ if (!testingMode) {
       if (compile.message) {
         cursor.red();
         console.log("Error compiling, Message: "+compile.message);
-        console.log(compile.stack);
+        if (compile.stack) {
+          throw compile;
+        }
         fs.appendFileSync("tests/results.txt",result+"  Error   "+compile.message+" \n");
       } else {
         cursor.green();
