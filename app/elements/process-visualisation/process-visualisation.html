@@ -162,70 +162,32 @@
           }
           _this.rescale();
         });
-        this.jgraph.on('change:size', function(cell, newPosition, opt) {
+        this.jgraph.on('change:position', function(cell) {
+          //Exploded diagrams are limited by changing the dimensions of the paper
           if (_this.exploded || _this.rendering) {
             return;
           }
-          if (opt.skipParentHandler) return;
-
-          if (cell.get('embeds') && cell.get('embeds').length) {
-            // If we're manipulating a parent element, let's store
-            // it's original size to a special property so that
-            // we can shrink the parent element back while manipulating
-            // its children.
-            cell.set('originalSize', cell.get('size'));
-          }
-        });
-
-        this.jgraph.on('change:position', function(cell, newPosition, opt) {
-          if (_this.exploded || _this.rendering) {
-            return;
-          }
-          if (opt.skipParentHandler) return;
-
-          if (cell.get('embeds') && cell.get('embeds').length) {
-            // If we're manipulating a parent element, let's store
-            // it's original position to a special property so that
-            // we can shrink the parent element back while manipulating
-            // its children.
-            cell.set('originalPosition', cell.get('position'));
-          }
-
           var parentId = cell.get('parent');
           if (!parentId) return;
           _.each(_this.jgraph.getConnectedLinks(cell),function(link) {
-             link.unset('vertices');
+            link.unset('vertices');
           });
           var parent = _this.jgraph.getCell(parentId);
           var parentBbox = parent.getBBox();
-
-          if (!parent.get('originalPosition')) parent.set('originalPosition', parent.get('position'));
-          if (!parent.get('originalSize')) parent.set('originalSize', parent.get('size'));
-
-          var originalPosition = parent.get('originalPosition');
-          var originalSize = parent.get('originalSize');
-
-          var newX = originalPosition.x;
-          var newY = originalPosition.y;
-          var newCornerX = originalPosition.x + originalSize.width;
-          var newCornerY = originalPosition.y + originalSize.height;
-
-          _.each(parent.getEmbeddedCells(), function(child) {
-            var childBbox = _this.paper.findViewByModel(child).getBBox();
-
-            if (childBbox.x < newX) { newX = childBbox.x; }
-            if (childBbox.y < newY) { newY = childBbox.y; }
-            if (childBbox.corner().x > newCornerX) { newCornerX = childBbox.corner().x; }
-            if (childBbox.corner().y > newCornerY) { newCornerY = childBbox.corner().y; }
-          });
-
-          // Note that we also pass a flag so that we know we shouldn't adjust the
-          // `originalPosition` and `originalSize` in our handlers as a reaction
-          // on the following `set()` call.
-          parent.set({
-            position: { x: newX, y: newY },
-            size: { width: newCornerX - newX, height: newCornerY - newY }
-          }, { skipParentHandler: true });
+          var cellBbox = cell.getBBox();
+          var changeX = Math.abs(cell.get("position").x-cell.previous('position').x);
+          var changeY = Math.abs(cell.get("position").y-cell.previous('position').y);
+          var size = parent.get("size");
+          if (cellBbox.origin().x < parentBbox.origin().x) {
+            parent.resize(size.width+changeX,size.height,{direction: "left"});
+          } else if (cellBbox.corner().x > parentBbox.corner().x) {
+            parent.resize(size.width+changeX,size.height,{direction: "right"})
+          }
+          if (cellBbox.origin().y < parentBbox.origin().y) {
+            parent.resize(size.width,size.height+changeY,{direction: "top"});
+          } else if (cellBbox.corner().y > parentBbox.corner().y) {
+            parent.resize(size.width,size.height+changeY,{direction: "bottom"});
+          }
         });
       },
       /**
@@ -233,13 +195,12 @@
        */
       redraw: function() {
         if (this.paper === undefined) return;
-        this.paper.setDimensions(this.paper.$el.width(),9999);
+        this.paper.setDimensions(this.paper.$el.width(),999999);
         this.jgraph.clear();
         this.graphMap = {};
         var _this = this;
 
         if (!app.get("automata.values") || app.get("automata.values").length == 0) return;
-        this.rendering = true;
         var unknownProcess = true;
         app.get("automata.values").forEach(function(graph) {
             if (graph.id == app.$.selector.getSelected()) {
@@ -317,7 +278,6 @@
         this.automata = this.graphMap;
         this.fire('process-visualisation-rendered');
         this.rescale();
-        this.rendering = false;
       }, _automataLink: function(source, target, label, parentNode) {
         var cell = new joint.shapes.fsa.Arrow({
           source: { id: source.id },
