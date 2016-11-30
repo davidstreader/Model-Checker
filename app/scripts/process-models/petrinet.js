@@ -107,6 +107,8 @@ const PETRI_NET = {
 			place.metaData.references = references1;
 		}
 
+		place.locations = place2.locations;
+
 		return place;
 	},
 
@@ -430,6 +432,10 @@ const PETRI_NET_PLACE = {
 
 	get locations(){
 		return JSON.parse(JSON.stringify(this.locationSet));
+	},
+
+	set locations(locations){
+		this.locationSet = locations;
 	},
 
 	addLocation: function(id){
