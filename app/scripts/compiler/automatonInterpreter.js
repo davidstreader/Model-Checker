@@ -121,6 +121,7 @@ function interpretAutomaton(process, processesMap, context){
 				break;
 			case 'simp':
 				processedAutomaton = bisimulation(processedAutomaton);
+				break;
 			case 'automata':
 				processedAutomaton = tokenRule(processedAutomaton, 'toAutomaton');
 				break
