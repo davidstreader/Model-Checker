@@ -125,11 +125,11 @@ const PETRI_NET = {
 		return this.transitionMap[id];
 	},
 
-	addTransition: function(id, label, incomingPlaces, outgoingPlaces){
+	addTransition: function(id, label, incomingPlaces, outgoingPlaces, metadata){
 		const locationSet = {};
 		locationSet[this.id] = true;
 
-		const transition = new PetriNetTransition(id, label, {}, {}, locationSet);
+		const transition = new PetriNetTransition(id, label, {}, {}, locationSet, metadata);
 		for(let i = 0; i < incomingPlaces.length; i++){
 			const place = incomingPlaces[i];
 			transition.addIncomingPlace(place.id);

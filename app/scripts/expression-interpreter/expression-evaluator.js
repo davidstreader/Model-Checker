@@ -51,7 +51,7 @@ function evaluate(expr){
  */
 function constructPrecedenceMap(){
 	var precedenceMap = {};
-	
+
 	precedenceMap[OR] = 10;
 	precedenceMap[AND] = 9;
 	precedenceMap[BIT_OR] = 8;
@@ -79,7 +79,7 @@ function constructPrecedenceMap(){
 /**
  * Determines whether the specified input is an operator. Returns
  * true if it is an operator, otherwise returns false.
- * 
+ *
  * @param {string} input - string to check
  * @returns {boolean} - true if input is operator, otherwise false
  */
@@ -113,7 +113,7 @@ function isOperator(input){
  * Constructs and returns an 'ExpressionInterpreterException' message based
  * off of the specified message.
  *
- * @param {string} message - the message to be constructed 
+ * @param {string} message - the message to be constructed
  */
 function ExpressionInterpreterException(message){
 	this.message = message;

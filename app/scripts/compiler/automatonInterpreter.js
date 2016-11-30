@@ -84,8 +84,12 @@ function interpretAutomaton(process, processesMap, context){
 	function interpretSequence(astNode, automaton, currentNode){
 		const next = (astNode.to.type === 'reference') ? referenceMap[astNode.to.reference] : automaton.addNode();
 		const id = automaton.nextEdgeId;
-		automaton.addEdge(id, astNode.from.action, currentNode, next);
-
+		const metadata  = {};
+		if (astNode.guardVal !== undefined) {
+		  metadata.guard = astNode.guardVal;
+		  metadata.guardVariables = astNode.guardVariables;
+    }
+		automaton.addEdge(id, astNode.from.action, currentNode, next, metadata);
 		if(astNode.to.type !== 'reference'){
 			interpretNode(astNode.to, automaton, next);
 		}

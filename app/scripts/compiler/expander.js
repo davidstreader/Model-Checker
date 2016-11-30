@@ -6,7 +6,7 @@
  *
  * automata A = ([1..2] -> STOP). === automata A = ([1] -> STOP | [2] -> STOP).
  *
- * 
+ *
  * This saves potentially having to process local references twice later on in the analysis and
  * interpretation stages of the compiler.
  *
@@ -20,7 +20,7 @@ function expand(ast){
 	for(var i = 0; i < processes.length; i++){
 		var variableMap = JSON.parse(JSON.stringify(ast.variableMap));
 		processes[i].process = expandNode(processes[i].process, variableMap);
-		
+
 		// expand local procsses if any are defined
 		if(processes[i].local.length !== 0){
 			variableMap = JSON.parse(JSON.stringify(ast.variableMap));
@@ -62,7 +62,7 @@ function expand(ast){
 	 * for all i in ranges[0]:
 	     ...
 	 *   for all j in ranges[n - 1]:
-	 *     <process local definition> 
+	 *     <process local definition>
 	 *
 	 * Where '...' represents the ranges defined inbetween range[0] and ranges[n - 1] (if any).
    * This will create an individual local definition for <ident>[i]...[n - 1], where <ident>
@@ -116,10 +116,7 @@ function expand(ast){
 	function expandNode(astNode, variableMap){
 		var type = astNode.type;
 		var node;
-		if(type === 'process'){
-			node = expandProcessNode(astNode, variableMap);
-		}
-		else if(type === 'action-label'){
+		if(type === 'action-label'){
 			node = expandActionLabelNode(astNode, variableMap);
 		}
 		else if(type === 'index'){
@@ -221,7 +218,7 @@ function expand(ast){
 	function expandChoiceOrCompositeNode(astNode, variableMap){
 		astNode.process1 = expandNode(astNode.process1, variableMap);
 		astNode.process2 = expandNode(astNode.process2, variableMap);
-		
+
 		// no need for choice or composition if one of the processes is empty
 		if(astNode.process1.type === 'empty' || astNode.process1.type === 'terminal'){
 			return astNode.process2;
@@ -246,13 +243,19 @@ function expand(ast){
 	 */
 	function expandIfStatementNode(astNode, variableMap){
 		var guard = processGuardExpression(astNode.guard, variableMap);
-		if(guard){
-			return expandNode(astNode.trueBranch, variableMap);
+
+		if(guard.result){
+		  var node = expandNode(astNode.trueBranch, variableMap);
+		  node.guardVal = guard.expr;
+		  node.guardVariables = guard.variables;
+			return node;
 		}
 		else if(astNode.falseBranch !== undefined){
-			return expandNode(astNode.falseBranch, variableMap)
+      var node = expandNode(astNode.falseBranch, variableMap);
+      node.guardVal = guard.expr;
+      node.guardVariables = guard.variables;
+			return node;
 		}
-		
 		return { type:'empty' };
 	}
 
@@ -305,7 +308,7 @@ function expand(ast){
 		 * in the forall ast node.
 		 *
 		 * @param {astNode} process - the defined process
-		 * @param {range[]} ranges - the remaining ranges 
+		 * @param {range[]} ranges - the remaining ranges
 		 * @param {string -> string} variableMap - a mapping from variable name to value
 		 * @param {astNode[]} - the processed ast nodes
 		 */
@@ -335,7 +338,7 @@ function expand(ast){
 
 	/**
 	 * Processes the specified expression by replacing any variable references
-	 * with the value that variable represents and evaluating the result. Throws 
+	 * with the value that variable represents and evaluating the result. Throws
 	 * an error if a variable is found to be undefined.
 	 *
 	 * @param {string} expr - the expr to evaluate
@@ -346,17 +349,17 @@ function expand(ast){
 		// replace any variables declared in the expression with its value
 		var regex = '[\$][a-zA-Z0-9]*';
 		var match = expr.match(regex);
+		var variables = [];
 		while(match !== null){
 			// check if the variable has been defined
 			if(variableMap[match[0]] === undefined){
 				throw new VariableDeclarationException('the variable \'' + match[0].substring(1) + '\' has not been defined');
 			}
-
+			variables.push({name:match[0].substring(1),value:variableMap[match[0]]});
 			expr = expr.replace(match[0], variableMap[match[0]]);
 			match = expr.match(regex);
 		}
-
-		return evaluate(expr);		
+		return {result:evaluate(expr),expr:expr,variables:variables};
 	}
 
 	/**
@@ -372,14 +375,14 @@ function expand(ast){
 		// replace any variables declared in the label with its value
 		var regex = '[\$][a-zA-Z0-9]*';
 		var match = label.match(regex);
-		
+
 		// if no variable was found then return
 		if(match === null){
 			return label;
 		}
-		
+
 		while(match !== null){
-			var expr = processExpression(match[0], variableMap);
+			var expr = processExpression(match[0], variableMap).result;
 			label = label.replace(match[0], expr);
 			match = label.match(regex);
 		}
@@ -389,7 +392,7 @@ function expand(ast){
 
 	/**
 	 * Processes the specified guard expression by replacing any variable references
-	 * with the value that variable represents and evaluating the result. Throws 
+	 * with the value that variable represents and evaluating the result. Throws
 	 * an error if a variable is found to be undefined.
 	 *
 	 * @param {string} expr - the expr to evaluate
@@ -398,7 +401,8 @@ function expand(ast){
 	 */
 	function processGuardExpression(expr, variableMap){
 		expr = processExpression(expr, variableMap);
-		return (expr === 0) ? false : true;
+		expr.result = expr.result !== 0;
+		return expr;
 	}
 
 	/**
@@ -414,6 +418,6 @@ function expand(ast){
 		this.location = location;
 		this.toString = function(){
 			return 'VariableDeclarationException: ' + message;
-		};	
+		};
 	}
 }

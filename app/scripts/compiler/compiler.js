@@ -11,9 +11,11 @@ const Compiler = {
 			const tokens = Lexer.tokenise(code);
 			const ast = parse(tokens);
 			// check if this is to be compiled client side or server side
-			if(context.isLocal){
+			if(context.isClientSide){
 				return this.localCompile(ast, context);
-			} else {
+			} else if (context.isLocal) {
+        return this.localCompile(ast, context);
+      } else{
 				return this.remoteCompile(ast, context);
 			}
 
@@ -39,7 +41,6 @@ const Compiler = {
 		this.lastAnalysis = analysis;
 		this.lastProcesses = processes;
 		this.lastAbstraction = context.isFairAbstraction;
-
 		return { processes:processes, operations:operations };
 	},
 

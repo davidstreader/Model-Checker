@@ -20,8 +20,8 @@ function interpretPetriNet(process, processesMap, context){
 
 	// interpret the process
 	interpretNode(process.process, net, root);
-	
-	// 
+
+	//
 	processReferences(net);
 
 	// check if a hiding set was specified for this process
@@ -129,7 +129,12 @@ function interpretPetriNet(process, processesMap, context){
 		const nextPlace = net.addPlace();
 		const id = net.nextTransitionId;
 		const label = astNode.from.action;
-		const transition = net.addTransition(id, label, [currentPlace], [nextPlace]);
+    const metadata  = {};
+    if (astNode.guardVal !== undefined) {
+      metadata.guard = astNode.guardVal;
+      metadata.guardVariables = astNode.guardVariables;
+    }
+		const transition = net.addTransition(id, label, [currentPlace], [nextPlace], metadata);
 		interpretNode(astNode.to, net, nextPlace, transition);
 	}
 
@@ -148,7 +153,7 @@ function interpretPetriNet(process, processesMap, context){
 	function interpretChoice(astNode, net, currentPlace, lastTransition){
 		interpretSubPetriNet(astNode.process1, net);
 		interpretSubPetriNet(astNode.process2, net);
-		
+
 		const subNet2 = processStack.pop();
 		const subNet1 = processStack.pop();
 
@@ -266,7 +271,7 @@ function interpretPetriNet(process, processesMap, context){
 
 	function interpretIdentifier(astNode, net, currentPlace, lastTransition){
 		const reference = processesMap[astNode.ident].clone;
-		
+
 		// check if the reference is not a petri net
 		if(reference.type !== 'petrinet'){
 			if(lastTransition !== undefined){

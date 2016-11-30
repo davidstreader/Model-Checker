@@ -37,18 +37,18 @@ joint.shapes.pn.Transition = joint.shapes.basic.Generic.extend({
   defaults: _.defaultsDeep({
 
     type: 'pn.Transition',
-    size: { width: 20, height: 60 },
+    size: { width: 60, height: 60 },
     attrs: {
       'rect': {
-        width: 12,
-        height: 50,
+        width: 60,
+        height: 60,
         fill: '#000000',
         stroke: '#000000'
       },
       '.label': {
         'text-anchor': 'middle',
         'ref-x': .5,
-        'ref-y': 23,
+        'ref-y': 10,
         ref: 'rect',
         fill: '#FFFFFF',
         'font-size': 12

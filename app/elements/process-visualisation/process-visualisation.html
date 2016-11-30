@@ -347,6 +347,13 @@
           var label = edges[i].label;
           var from = 'n' + edges[i].from;
           var to = 'n' + edges[i].to;
+          if(edges[i].getMetaData('guard') !== undefined){
+            label =edges[i].getMetaData('guard')+"\n"+label;
+              var vars = edges[i].getMetaData('guardVariables');
+              for (var v = 1; v<vars.length; v++) {
+                label = vars[v].name+"="+vars[v].value + "\n" + label;
+              }
+          }
           this._automataLink(nodeMap[from],nodeMap[to], label,parentNode);
         }
       },_visualizePetriNet: function(process, name) {
@@ -377,8 +384,16 @@
         // add transitions to the graph
         var transitions = process.transitions;
         for(var i = 0; i < transitions.length; i++){
+            var label = transitions[i].label;
+          if(transitions[i].getMetaData('guard') !== undefined){
+            label =transitions[i].getMetaData('guard')+"\n"+label;
+            var vars = transitions[i].getMetaData('guardVariables');
+            for (var v = 1; v<vars.length; v++) {
+              label = vars[v].name+"="+vars[v].value + "\n" + label;
+            }
+          }
           nodeMap['t' + transitions[i].id] = new joint.shapes.pn.Transition({
-            attrs: { text : { text: transitions[i].label }}
+            attrs: { text : { text: label }}
           });
           parentNode.embed(nodeMap['t' + transitions[i].id]);
           this.jgraph.addCell(nodeMap['t' + transitions[i].id]);
