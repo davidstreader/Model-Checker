@@ -73,13 +73,14 @@ if (!testingMode) {
       var compile = Compiler.compile(code, {isLocal: true, isFairAbstraction: true});
       if (compile.message) {
         cursor.red();
+        console.log(compile.stack);
         console.log("Error compiling, Message: "+compile.message);
         fs.appendFileSync("tests/results.txt",result+"  Error   "+compile.message+" \n");
       } else {
         cursor.green();
         console.log("Successfully compiled");
         fs.appendFileSync("tests/results.txt",result+"  Success   \n");
-      
+
         var operations = compile.operations;
         if(operations.length !== 0){
           cursor.bold().yellow();
@@ -110,7 +111,7 @@ if (!testingMode) {
           console.log("Results:");
           fs.appendFileSync("tests/results.txt", "Results:\n");
           cursor.reset();
-          
+
           if(passed === operations.length){
             cursor.green();
             console.log("All operations passed!");
@@ -120,7 +121,7 @@ if (!testingMode) {
             var outcome = failed + '/' + operations.length + ' operations failed';
             cursor.red();
             console.log(outcome);
-            fs.appendFileSync("tests/results.txt", outcome + "\n");         
+            fs.appendFileSync("tests/results.txt", outcome + "\n");
           }
           cursor.reset();
         }

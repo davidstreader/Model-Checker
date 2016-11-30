@@ -1,3 +1,10 @@
 tests/basic.txt  Success   
-tests/cribsheet.txt  Success   
+tests/cribsheet.txt  Error   Cannot read property 'id' of undefined 
 tests/fail.txt  Error   Expecting to parse '.' but received the symbol '}'. 
+tests/failOperations.txt  Success   
+Operations:
+A ~ B = false
+A !~ B = true
+Results:
+1/2 operations failed
+tests/pn2aTests.txt  Error   Cannot read property 'id' of undefined 
