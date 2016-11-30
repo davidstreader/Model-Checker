@@ -39,25 +39,8 @@
           value: {}
         }
       },
-      rescale: function() {
-        var scale = V(this.paper.viewport).scale();
-        if (this.exploded) {
-          var node = Object.values(this.graphMap).pop();
-          this.paper.setDimensions(this.paper.$el.width()*scale.sx, node.minY + node.height + 200);
-          return;
-        }
-        var maxX = 0;
-        var maxY = 0;
-        var graphs = Object.values(this.graphMap);
-        graphs.forEach(function (graph) {
-          maxX = Math.max(maxX,graph.parentNode.getBBox().corner().x);
-          maxY = Math.max(maxY,graph.parentNode.getBBox().corner().y);
-        });
-        var graph = Object.values(this.graphMap).pop();
-        this.paper.setDimensions(Math.max(maxX*scale.sx,this.paper.$el.width()),Math.max(maxY*scale.sy+200,this.paper.$el.parent().parent().height()));
-      },
       ready: function(){
-        var _this = this;
+        const _this = this;
         this.jgraph = new joint.dia.Graph();
         this.paper = new joint.dia.Paper({
           el: this.$['svg-parentNode'],
@@ -66,7 +49,7 @@
           restrictTranslate: true,
           async: true,
         });
-        var paper = this.paper;
+        const paper = this.paper;
         document.addEventListener('change-process', function(e){
 
           if (_this.rendering) return;
@@ -76,28 +59,28 @@
             _this.fire('explode',true);
             return;
           }
-          var node = _this.graphMap[e.detail.id];
-          var scale = V(paper.viewport).scale();
+          const node = _this.graphMap[e.detail.id];
+          const scale = V(paper.viewport).scale();
           $(".process-display").stop().animate({scrollTop:node.parentNode.getBBox().origin().y*scale.sx}, '100', 'swing');
         });
-        var lastOptions;
+        let lastOptions;
         document.addEventListener('explode', function(e){
-          var processDisplay = $(".process-display");
+          const processDisplay = $(".process-display");
           _this.exploded = e.detail;
-          var paperWidth = _this.paper.$el.width();
-          var paperHeight = _this.paper.$el.height();
-          var paperScale =  V(paper.viewport).scale();
+          const paperWidth = _this.paper.$el.width();
+          const paperHeight = _this.paper.$el.height();
+          const paperScale = V(paper.viewport).scale();
           Object.keys(_this.graphMap).forEach(function (key) {
-            var parentNode = _this.graphMap[key].parentNode;
-            var nodes = _.values(_this.graphMap[key].map);
-            var localWidth = parentNode.getBBox().width;
-            var localHeight = parentNode.getBBox().height;
-            var minX = parentNode.getBBox().origin().x;
-            var minY = parentNode.getBBox().origin().y;
-            var scaleX = paperWidth / localWidth;
-            var scaleY = paperHeight / localHeight;
+            const parentNode = _this.graphMap[key].parentNode;
+            const nodes = _.values(_this.graphMap[key].map);
+            const localWidth = parentNode.getBBox().width;
+            const localHeight = parentNode.getBBox().height;
+            let minX = parentNode.getBBox().origin().x;
+            let minY = parentNode.getBBox().origin().y;
+            const scaleX = paperWidth / localWidth;
+            const scaleY = paperHeight / localHeight;
             if (_this.exploded) {
-              $("[model-id='" + parentNode.id + "']").hide();
+              get$Cell(parentNode).hide();
               if (key == app.$.selector.getSelected()) {
                 lastOptions = {
                   scrollTop: processDisplay.scrollTop(),
@@ -116,13 +99,13 @@
                 return;
               }
               nodes.forEach(function (nodev) {
-                $("[model-id='" + nodev.id + "']").hide();
+                get$Cell(nodev).hide();
                 _this.jgraph.getConnectedLinks(nodev).forEach(function (node) {
-                  $("[model-id='" + node.id + "']").hide();
+                  get$Cell(node).hide();
                 });
               });
             } else {
-              $("[model-id='" + parentNode.id + "']").show();
+              get$Cell(parentNode).show();
               paper.scale(lastOptions.sx, lastOptions.sy, 0, 0);
               paper.setOrigin(lastOptions.x, lastOptions.y);
               processDisplay.scrollTop(lastOptions.scrollTop);
@@ -130,9 +113,9 @@
                 parentNode.translate(parentNode.minX, parentNode.minY);
               }
               nodes.forEach(function (nodev) {
-                $("[model-id='" + nodev.id + "']").show();
+                get$Cell(nodev).show();
                 _this.jgraph.getConnectedLinks(nodev).forEach(function (node) {
-                  $("[model-id='" + node.id + "']").show();
+                  get$Cell(node).show();
                 });
               });
 
@@ -145,18 +128,18 @@
           e.preventDefault();
           e = e.originalEvent;
 
-          var delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail))) / 50;
-          var offsetX = (e.offsetX || e.clientX - $(this).offset().left);
-          var offsetY = (e.offsetY || e.clientY - $(this).offset().top);
+          const delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail))) / 50;
+          const offsetX = (e.offsetX || e.clientX - $(this).offset().left);
+          const offsetY = (e.offsetY || e.clientY - $(this).offset().top);
 
-          var svgPoint = paper.svg.createSVGPoint();
+          const svgPoint = paper.svg.createSVGPoint();
           svgPoint.x = offsetX;
           svgPoint.y = offsetY;
 
-          var p = svgPoint.matrixTransform(paper.viewport.getCTM().inverse());
-          var newScale = V(paper.viewport).scale().sx + delta;
-          var origx = paper.options.origin.x;
-          var origy = paper.options.origin.y;
+          const p = svgPoint.matrixTransform(paper.viewport.getCTM().inverse());
+          const newScale = V(paper.viewport).scale().sx + delta;
+          const origx = paper.options.origin.x;
+          const origy = paper.options.origin.y;
           if (newScale > 0.4 && newScale < 2) {
             paper.setOrigin(0, 0);
             paper.scale(newScale, newScale, p.x, p.y);
@@ -170,7 +153,7 @@
           }
           _this.rendering = true;
           cell = cell.model;
-          var parentId = cell.get('parent');
+          const parentId = cell.get('parent');
           if (parentId) {
             cell = _this.jgraph.getCell(parentId);
           }
@@ -185,18 +168,18 @@
           if (_this.exploded || _this.rendering) {
             return;
           }
-          var parentId = cell.get('parent');
+          let parentId = cell.get('parent');
           if (!parentId) return;
           _.each(_this.jgraph.getConnectedLinks(cell),function(link) {
             link.unset('vertices');
           });
-          var parent = _this.jgraph.getCell(parentId);
+          const parent = _this.jgraph.getCell(parentId);
 
-          var parentBbox = parent.getBBox();
-          var cellBbox = cell.getBBox();
-          var changeX = Math.abs(cell.get("position").x-cell.previous('position').x);
-          var changeY = Math.abs(cell.get("position").y-cell.previous('position').y);
-          var size = parent.get("size");
+          const parentBbox = parent.getBBox();
+          const cellBbox = cell.getBBox();
+          const changeX = Math.abs(cell.get("position").x - cell.previous('position').x);
+          const changeY = Math.abs(cell.get("position").y - cell.previous('position').y);
+          const size = parent.get("size");
           if (cellBbox.origin().x < parentBbox.origin().x) {
             parent.resize(size.width+changeX,size.height,{direction: "left"});
           } else if (cellBbox.corner().x > parentBbox.corner().x) {
@@ -217,21 +200,22 @@
         this.paper.setDimensions(this.paper.$el.width(),999999);
         this.jgraph.clear();
         this.graphMap = {};
-        var _this = this;
+        const _this = this;
         this.rendering = true;
         if (!app.get("automata.values") || app.get("automata.values").length == 0) return;
-        var unknownProcess = true;
+        let unknownProcess = true;
+        //Scan through all graphs, checking if the currently selected graph exists
         app.get("automata.values").forEach(function(graph) {
-            if (graph.id == app.$.selector.getSelected()) {
-              unknownProcess = false;
-            }
+          if (graph.id == app.$.selector.getSelected()) {
+            unknownProcess = false;
+          }
         });
+        //It does not exist, deselect it.
         if (unknownProcess) {
           $("#process-name-selector")[0].contentElement.selected = null;
           app.$.selector._hasSelection = true;
         }
-        var i = 0;
-        app.get("automata.values").forEach(function(graph) {
+        _.each(app.get("automata.values"),function(graph,i){
           if (!graph.type) return;
           if (graph.type == 'automata') {
             _this._visualizeAutomata(graph,graph.id,i++);
@@ -241,14 +225,14 @@
           }
         });
         joint.layout.DirectedGraph.layout(this.jgraph, {rankDir:'LR',setLinkVertices: true});
-        var jgraph = this.jgraph;
-        var graphMap = this.graphMap;
+        const jgraph = this.jgraph;
+        const graphMap = this.graphMap;
         //Add some space between the elements
-        var offsetY = 0;
+        let offsetY = 0;
         Object.keys(graphMap).forEach(function (key) {
-          var nodes = _.values(graphMap[key].map);
-          var links = [];
-          var lx = Number.MAX_VALUE, ly = Number.MAX_VALUE, ux = 0, uy = 0;
+          const nodes = _.values(graphMap[key].map);
+          const links = [];
+          let lx = Number.MAX_VALUE, ly = Number.MAX_VALUE, ux = 0, uy = 0;
           nodes.forEach(function (node) {
             _this.jgraph.getConnectedLinks(node).forEach(function (link) {
               links.push(link);
@@ -259,22 +243,23 @@
                 uy = Math.max(uy,vertex.y);
               });
             });
-            var bbox = node.getBBox();
+            const bbox = node.getBBox();
             lx = Math.min(lx,bbox.origin().x);
             ly = Math.min(ly,bbox.origin().y);
             ux = Math.max(ux,bbox.corner().x);
             uy = Math.max(uy,bbox.corner().y);
           });
-          var width = ux-lx;
-          var height = uy-ly;
-          var offsetX = (_this.paper.$el.width()-width)/2;
+          const width = ux - lx;
+          const height = uy - ly;
+          let offsetX = (_this.paper.$el.width() - width) / 2;
           if (width+100 > _this.paper.$el.width()) offsetX = 0;
-          var cell = new joint.shapes.basic.Rect ({
-            size: { width: 100, height: 30 },
-            position: { x:lx-50, y:ly-50},
+          const cell = new joint.shapes.basic.Rect({
+            size: {width: 100, height: 30},
+            position: {x: lx - 50, y: ly - 50},
             attrs: {
-              rect: { fill: 'transparent', stroke: 'none' },
-              'text': {text: key, fill: 'red', 'font-size': 20}}
+              rect: {fill: 'transparent', stroke: 'none'},
+              'text': {text: key, fill: 'red', 'font-size': 20}
+            }
           });
 
           graphMap[key].parentNode.embed(cell);
@@ -286,63 +271,39 @@
           graphMap[key].parentNode.translate(50, -ly+50);
           graphMap[key].parentNode.translate(offsetX, offsetY);
 
-          cell.set("ignoreChecks",true);
           graphMap[key].map['label'] = cell;
-          graphMap[key].parentNode.rendering = false;
-          graphMap[key].parentNode.set("ignoreChecks",true);
           offsetY+=height+150;
-        });
-        jgraph.getLinks().forEach(function (link) {
-          link.set('smooth',false);
         });
         this.automata = this.graphMap;
         this.fire('process-visualisation-rendered');
         this.rescale();
         this.rendering = false;
-      }, _automataLink: function(source, target, label, parentNode) {
-        var cell = new joint.shapes.fsa.Arrow({
-          source: { id: source.id },
-          target: { id: target.id },
-          labels: [{ position: 0.5, attrs: { text: { text: label || '', 'font-weight': 'bold' } } }],
+      }, _link: function(source, target, label, parentNode) {
+        const cell = new joint.shapes.fsa.Arrow({
+          source: {id: source.id},
+          target: {id: target.id},
+          labels: [{position: 0.5, attrs: {text: {text: label || '', 'font-weight': 'bold'}}}],
+          smooth: false,
           attrs: {
+            //Add a slight transparency, so that you can see the links behind
             'rect': {fill: 'rgba(255, 255, 255, 0.3)'}
           }
         });
         parentNode.embed(cell);
         this.jgraph.addCell(cell);
         return cell;
-      }, _petrinetLink : function(from, to, label, parentNode) {
-        var link = new joint.shapes.pn.Link({
-          source: {id: nodeMap[from].id, selector: '.root'},
-          target: {id: nodeMap[to].id, selector: '.root'},
-          attrs: {
-            text : { text: label||'' },
-            '.label': {text: label||'', fill: '#7c68fc'},
-            'rect': {fill: 'rgba(255, 255, 255, 0.3)'},
-            '.connection': {
-              'fill': 'none',
-              'stroke-linejoin': 'round',
-              'stroke-width': '2',
-              'stroke': '#4b4a67'
-            }
-          }
-        });
-        parentNode.embed(link);
-        this.jgraph.addCell(link);
-        return link;
       },_visualizeAutomata: function(process, name, idx) {
         // add nodes in automaton to the graph
-        var nodes = process.nodes;
-        var nodeMap = {};
-        var parentNode = new joint.shapes.parent();
+        const nodes = process.nodes;
+        const nodeMap = {};
+        const parentNode = new joint.shapes.parent();
         parentNode.name = name;
-        parentNode.rendering = true;
         parentNode.index = idx;
         this.jgraph.addCell(parentNode);
         this.graphMap[name] = {map:nodeMap,name:name,height:0,parentNode:parentNode};
-        for(var i = 0; i < nodes.length; i++){
+        for(let i = 0; i < nodes.length; i++){
           if(nodes[i].getMetaData('isTerminal') !== undefined){
-              var fill = 'green';
+            let fill = 'green';
             if (nodes[i].getMetaData('isTerminal') === 'error') {
               fill = 'red';
             }
@@ -353,7 +314,7 @@
             this.jgraph.addCell(nodeMap['n' + nodes[i].id]);
             continue;
           }
-          var fill = 'lightblue';
+          let fill = 'lightblue';
           // check if current node is the root node
           if(nodes[i].getMetaData('startNode')){
             fill='red';
@@ -368,41 +329,39 @@
         }
 
         // add the edges between the nodes in the automaton to the graph
-        var edges = process.edges;
-        for(var i = 0; i < edges.length; i++){
-          var label = edges[i].label;
-          var from = 'n' + edges[i].from;
-          var to = 'n' + edges[i].to;
+        const edges = process.edges;
+        for(let i = 0; i < edges.length; i++){
+          let label = edges[i].label;
+          const from = 'n' + edges[i].from;
+          const to = 'n' + edges[i].to;
           if(edges[i].getMetaData('guard') !== undefined){
             label =edges[i].getMetaData('guard')+"\n"+label;
-              var vars = edges[i].getMetaData('guardVariables');
-              for (var v = 1; v<vars.length; v++) {
-                label = vars[v].name+"="+vars[v].value + "\n" + label;
-              }
+            const vars = edges[i].getMetaData('guardVariables');
+            for (let v = 1; v<vars.length; v++) {
+              label = vars[v].name+"="+vars[v].value + "\n" + label;
+            }
           }
-          this._automataLink(nodeMap[from],nodeMap[to], label,parentNode);
+          this._link(nodeMap[from],nodeMap[to], label,parentNode);
         }
       },_visualizePetriNet: function(process, name, idx) {
-        // add places in petri net to the graph
-        var startPlaces = [];
-        var nodeMap = {};
-        var parentNode = new joint.shapes.parent();
+        const nodeMap = {};
+        const parentNode = new joint.shapes.parent();
         parentNode.index = idx;
         parentNode.name = name;
-        parentNode.rendering = true;
         this.jgraph.addCell(parentNode);
         this.graphMap[name] = {map:nodeMap,name:name,height:0,parentNode:parentNode};
-        var places = process.places;
-        for(var i = 0; i < places.length; i++){
-          var label = '';
+        const places = process.places;
+        for(let i = 0; i < places.length; i++){
+          let label = '';
           // add to array of start places if necessary
           if(places[i].metaData.startPlace !== undefined){
             label = places[i].label;
           }
-          var cell = new joint.shapes.pn.Place({
-            size: { width: 60, height: 60 },
+          const cell = new joint.shapes.pn.Place({
+            size: {width: 60, height: 60},
             attrs: {
-              '.label': {text: label, fill: '#7c68fc'}}
+              '.label': {text: label, fill: '#7c68fc'}
+            }
           });
           parentNode.embed(cell);
           this.jgraph.addCell(cell);
@@ -410,13 +369,13 @@
         }
 
         // add transitions to the graph
-        var transitions = process.transitions;
-        for(var i = 0; i < transitions.length; i++){
-            var label = transitions[i].label;
+        const transitions = process.transitions;
+        for(let i = 0; i < transitions.length; i++){
+          let label = transitions[i].label;
           if(transitions[i].getMetaData('guard') !== undefined){
             label =transitions[i].getMetaData('guard')+"\n"+label;
-            var vars = transitions[i].getMetaData('guardVariables');
-            for (var v = 1; v<vars.length; v++) {
+            const vars = transitions[i].getMetaData('guardVariables');
+            for (let v = 1; v<vars.length; v++) {
               label = vars[v].name+"="+vars[v].value + "\n" + label;
             }
           }
@@ -425,21 +384,37 @@
           });
           parentNode.embed(nodeMap['t' + transitions[i].id]);
           this.jgraph.addCell(nodeMap['t' + transitions[i].id]);
-          var outgoing = transitions[i].outgoingPlaces;
-          for(var j = 0; j < outgoing.length; j++){
-            var from = 't' + transitions[i].id;
-            var to = 'p' + outgoing[j];
-            this._automataLink(nodeMap[from],nodeMap[to],'',parentNode);
+          const outgoing = transitions[i].outgoingPlaces;
+          for(let j = 0; j < outgoing.length; j++){
+            const from = 't' + transitions[i].id;
+            const to = 'p' + outgoing[j];
+            this._link(nodeMap[from],nodeMap[to],'',parentNode);
           }
 
-          var incoming = transitions[i].incomingPlaces;
-          for(var j = 0; j < incoming.length; j++){
-            var from = 'p' + incoming[j];
-            var to = 't' + transitions[i].id;
-            this._automataLink(nodeMap[from],nodeMap[to],'',parentNode);
+          const incoming = transitions[i].incomingPlaces;
+          for(let j = 0; j < incoming.length; j++){
+            const from = 'p' + incoming[j];
+            const to = 't' + transitions[i].id;
+            this._link(nodeMap[from],nodeMap[to],'',parentNode);
           }
         }
-      }
+      },
+      rescale: function() {
+        let screenHeight = this.paper.$el.parent().parent().height();
+        let screenWidth = this.paper.$el.width();
+        const scale = V(this.paper.viewport).scale();
+        if (this.exploded) {
+          return;
+        }
+        let maxX = 0;
+        let maxY = 0;
+        const graphs = Object.values(this.graphMap);
+        graphs.forEach(function (graph) {
+          maxX = Math.max(maxX,graph.parentNode.getBBox().corner().x);
+          maxY = Math.max(maxY,graph.parentNode.getBBox().corner().y);
+        });
+        this.paper.setDimensions(Math.max(maxX*scale.sx,screenWidth),Math.max(maxY*scale.sy+200,screenHeight));
+      },
     });
   })();
 </script>

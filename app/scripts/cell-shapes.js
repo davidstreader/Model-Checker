@@ -58,4 +58,11 @@ joint.shapes.pn.Transition = joint.shapes.basic.Generic.extend({
   }, joint.shapes.basic.Generic.prototype.defaults)
 });
 joint.shapes.parent = joint.shapes.basic.Rect.extend();
-
+/**
+ * Get a cell's jquery object
+ * @param cell the cell
+ * @returns {jQuery|HTMLElement}
+ */
+function get$Cell(cell) {
+  return $("[model-id='" + cell.id + "']");
+}
