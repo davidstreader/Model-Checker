@@ -3,6 +3,7 @@
 function interpretAutomaton(process, processesMap, context){
 	const processStack = [];
 	const referenceMap = {};
+	let override = false;
 
 	const ident = process.ident.ident;
 	const automaton = new Automaton(ident);
@@ -32,6 +33,12 @@ function interpretAutomaton(process, processesMap, context){
 
 		// interpret the sub process
 		interpretNode(subProcess, subAutomaton, subRoot);
+
+		// check if the process was overriden
+		if(override){
+			override = false;
+			return;
+		}
 
 		// update the main automaton
 		automaton.nodeId = subAutomaton.nodeId;
@@ -110,6 +117,9 @@ function interpretAutomaton(process, processesMap, context){
 				break;
 			case 'simp':
 				processedAutomaton = bisimulation(processedAutomaton);
+			case 'automata':
+				processedAutomaton = tokenRule(processedAutomaton, 'toAutomaton');
+				break
 			default:
 				break;
 		}
@@ -119,6 +129,14 @@ function interpretAutomaton(process, processesMap, context){
 
 	function interpretIdentifier(astNode, automaton, currentNode){
 		const reference = processesMap[astNode.ident].clone;
+
+		// check if the reference is not an automata
+		if(reference.type !== 'automata'){
+			processStack.push(reference);
+			override = true;
+			return;
+		}
+
 		combineAutomata(automaton, reference, currentNode)
 	}
 
