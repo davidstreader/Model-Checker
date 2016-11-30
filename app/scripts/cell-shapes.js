@@ -1,6 +1,31 @@
 /**
  * Styling for the default joint.js shapes.
  */
+joint.shapes.fsa.EndState = joint.dia.Element.extend({
+
+  markup: '<g class="rotatable"><g class="scalable"><circle class="outer"/><circle class="inner"/></g></g>',
+
+  defaults: _.defaultsDeep({
+
+    type: 'fsa.EndState',
+    size: { width: 60, height: 60 },
+    attrs: {
+      '.outer': {
+        transform: 'translate(10, 10)',
+        r: 10,
+        fill: '#ffffff',
+        stroke: '#000000'
+      },
+
+      '.inner': {
+        transform: 'translate(10, 10)',
+        r: 6,
+        fill: '#000000'
+      }
+    }
+
+  }, joint.dia.Element.prototype.defaults)
+});
 //Modify the transition element to place the label inside and not above.
 
 joint.shapes.pn.Transition = joint.shapes.basic.Generic.extend({

@@ -302,27 +302,31 @@
         parentNode.rendering = true;
         this.jgraph.addCell(parentNode);
         this.graphMap[name] = {map:nodeMap,name:name,height:0,parentNode:parentNode};
-        nodeMap.start = new joint.shapes.fsa.StartState();
-        parentNode.embed(nodeMap.start);
-        this.jgraph.addCell(nodeMap.start);
         for(var i = 0; i < nodes.length; i++){
           if(nodes[i].getMetaData('isTerminal') !== undefined){
-            nodeMap['n' + nodes[i].id] = new joint.shapes.fsa.EndState();
+              var fill = 'green';
+            if (nodes[i].getMetaData('error') !== undefined) {
+              fill = 'red';
+            }
+            nodeMap['n' + nodes[i].id] = new joint.shapes.fsa.EndState({
+              attrs: { text : { text: nodes[i].metaData.label}, '.outer': {'fill':fill} }
+            });
             parentNode.embed(nodeMap['n' + nodes[i].id]);
             this.jgraph.addCell(nodeMap['n' + nodes[i].id]);
             continue;
           }
+          var fill = 'lightblue';
+          // check if current node is the root node
+          if(nodes[i].getMetaData('startNode')){
+            fill='red';
+          }
           // add node to graph
           nodeMap['n' + nodes[i].id] = new joint.shapes.fsa.State({
             size: { width: 60, height: 60 },
-            attrs: { text : { text: nodes[i].metaData.label }}
+            attrs: { text : { text: nodes[i].metaData.label}, circle: {'fill':fill} }
           });
           parentNode.embed(nodeMap['n' + nodes[i].id]);
           this.jgraph.addCell(nodeMap['n' + nodes[i].id]);
-          // check if current node is the root node
-          if(nodes[i].getMetaData('startNode')){
-            this._automataLink(nodeMap.start,nodeMap['n' + nodes[i].id], '',parentNode);
-          }
         }
 
         // add the edges between the nodes in the automaton to the graph
