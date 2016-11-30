@@ -304,7 +304,9 @@
           source: { id: source.id },
           target: { id: target.id },
           labels: [{ position: 0.5, attrs: { text: { text: label || '', 'font-weight': 'bold' } } }],
-          vertices: []
+          attrs: {
+            'rect': {fill: 'rgba(255, 255, 255, 0.3)'}
+          }
         });
         parentNode.embed(cell);
         this.jgraph.addCell(cell);
@@ -316,6 +318,7 @@
           attrs: {
             text : { text: label||'' },
             '.label': {text: label||'', fill: '#7c68fc'},
+            'rect': {fill: 'rgba(255, 255, 255, 0.3)'},
             '.connection': {
               'fill': 'none',
               'stroke-linejoin': 'round',

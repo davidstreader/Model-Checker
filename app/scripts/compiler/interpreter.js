@@ -71,10 +71,4 @@ function interpretOneOff(ident, process, processType, processes, variables){
 
 		return node;
 	}
-
-	function reset(){
-		processesMap = {};
-		variableMap = {};
-		nextProcessId = 0;
-	}
 }
