@@ -31,18 +31,26 @@ function petriNetParallelComposition(id, net1, net2){
 		for(var i = 0; i < transitions.length; i++){
 			var incoming = transitions[i].incomingPlaces.map(id => net.getPlace(id));
 			var outgoing = transitions[i].outgoingPlaces.map(id => net.getPlace(id));
+			var locations = transitions[i].locations;
+
 			// check if the actions are synced
 			if(labelSets2[action] !== undefined){
 				var synced = labelSets2[action];
 				for(var j = 0; j < synced.length; j++){
 					incoming = incoming.concat(synced[j].incomingPlaces.map(id => net.getPlace(id)));
 					outgoing = outgoing.concat(synced[j].outgoingPlaces.map(id => net.getPlace(id)));
+					for(var id in synced[j].locations){
+						locations[id] = true;
+					}
 				}
+
+
 			}
 
 			incoming = processPlaceArray(incoming);
 			outgoing = processPlaceArray(outgoing);
-			net.addTransition(transitions[i].id, action, incoming, outgoing);
+			var transition = net.addTransition(transitions[i].id, action, incoming, outgoing);
+			transition.locations = locations;
 		}
 	}
 
@@ -53,7 +61,8 @@ function petriNetParallelComposition(id, net1, net2){
 				// update references to incoming and outgoing places
 				var incoming = processPlaceArray(transitions[i].incomingPlaces.map(id => net.getPlace(id)));
 				var outgoing = processPlaceArray(transitions[i].outgoingPlaces.map(id => net.getPlace(id)));
-				net.addTransition(transitions[i].id, action, incoming, outgoing);
+				var transition = net.addTransition(transitions[i].id, action, incoming, outgoing);
+				transition.locations = transitions[i].locations;
 			}
 		}
 	}

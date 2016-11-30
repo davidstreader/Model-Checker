@@ -531,6 +531,10 @@ const PETRI_NET_TRANSITION = {
 		return JSON.parse(JSON.stringify(this.locationSet));
 	},
 
+	set locations(locations){
+		this.locationSet = locations;
+	},
+
 	addLocation: function(id){
 		this.locationSet[id] = true;
 	},
