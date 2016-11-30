@@ -198,7 +198,18 @@
         this.jgraph.clear();
         this.graphMap = {};
         var _this = this;
+
         if (!app.get("automata.values") || app.get("automata.values").length == 0) return;
+        var unknownProcess = true;
+        app.get("automata.values").forEach(function(graph) {
+            if (graph.id == app.$.selector.getSelected()) {
+              unknownProcess = false;
+            }
+        });
+        if (unknownProcess) {
+          $("#process-name-selector")[0].contentElement.selected = null;
+          app.$.selector._hasSelection = true;
+        }
         app.get("automata.values").forEach(function(graph) {
           if (!graph.type) return;
           if (graph.type == 'automata') {
