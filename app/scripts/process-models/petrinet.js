@@ -43,7 +43,11 @@ const PETRI_NET = {
 	addPlace: function(id, metaData){
 		id = (id === undefined) ? this.nextPlaceId : id;
 		metaData = (metaData === undefined) ? {} : metaData;
-		const place = new PetriNetPlace(id, metaData);
+
+		const locationSet = {};
+		locationSet[this.id] = true;
+
+		const place = new PetriNetPlace(id, {}, {}, locationSet, metaData);
 		this.placeMap[id] = place;
 		this.placeCount++;
 		return place;
@@ -120,7 +124,10 @@ const PETRI_NET = {
 	},
 
 	addTransition: function(id, label, incomingPlaces, outgoingPlaces){
-		const transition = new PetriNetTransition(id, label);
+		const locationSet = {};
+		locationSet[this.id] = true;
+
+		const transition = new PetriNetTransition(id, label, {}, {}, locationSet);
 		for(let i = 0; i < incomingPlaces.length; i++){
 			const place = incomingPlaces[i];
 			transition.addIncomingPlace(place.id);
@@ -246,8 +253,9 @@ const PETRI_NET = {
 			const id = places[i].id + '.' + cloneId;;
 			const incoming = relabelSet(JSON.parse(JSON.stringify(places[i].incomingTransitionSet)));
 			const outgoing = relabelSet(JSON.parse(JSON.stringify(places[i].outgoingTransitionSet)));
+			const locations = JSON.parse(JSON.stringify(places[i].locations));
 			const metaData = JSON.parse(JSON.stringify(places[i].metaData));
-			const place = new PetriNetPlace(id, incoming, outgoing, metaData);
+			const place = new PetriNetPlace(id, incoming, outgoing, locations, metaData);
 			net.placeMap[id] = place;
 			net.placeCount++;
 		}
@@ -259,8 +267,9 @@ const PETRI_NET = {
 			const label = transitions[i].label;
 			const incoming = relabelSet(JSON.parse(JSON.stringify(transitions[i].incomingPlaceSet)));
 			const outgoing = relabelSet(JSON.parse(JSON.stringify(transitions[i].outgoingPlaceSet)));
+			const locations = JSON.parse(JSON.stringify(transitions[i].locations));
 			const metaData = JSON.parse(JSON.stringify(transitions[i].metaData));
-			const transition = new PetriNetTransition(id, label, incoming, outgoing, metaData);
+			const transition = new PetriNetTransition(id, label, incoming, outgoing, locations, metaData);
 			net.transitionMap[id] = transition;
 
 			if(net.labelSets[label] === undefined){
@@ -419,6 +428,18 @@ const PETRI_NET_PLACE = {
 		delete this.outgoingTransitionSet[id];
 	},
 
+	get locations(){
+		return JSON.parse(JSON.stringify(this.locationSet));
+	},
+
+	addLocation: function(id){
+		this.locationSet[id] = true;
+	},
+
+	removeLocation: function(){
+		delete this.locationSet[id];
+	},
+
 	isUnreachable: function(){
 		return Object.keys(this.incomingTransitions).length === 0;
 	},
@@ -440,10 +461,11 @@ const PETRI_NET_PLACE = {
 	}
 }
 
-function PetriNetPlace(id, incomingTransitions, outgoingTransitions, metaData){
+function PetriNetPlace(id, incomingTransitions, outgoingTransitions, locationSet, metaData){
 	this.id = id;
 	this.incomingTransitionSet = (incomingTransitions === undefined) ? {} : incomingTransitions;
 	this.outgoingTransitionSet = (outgoingTransitions === undefined) ? {} : outgoingTransitions;
+	this.locationSet = locationSet;
 	this.metaData = (metaData === undefined) ? {} : metaData;
 	Object.setPrototypeOf(this, PETRI_NET_PLACE);
 }
@@ -499,8 +521,16 @@ const PETRI_NET_TRANSITION = {
 		delete this.outgoingPlaceSet[id];
 	},
 
-	get clone(){
-		return JSON.parse(JSON.stringify(this));
+	get locations(){
+		return JSON.parse(JSON.stringify(this.locationSet));
+	},
+
+	addLocation: function(id){
+		this.locationSet[id] = true;
+	},
+
+	removeLocation: function(){
+		delete this.locationSet[id];
 	},
 
 	addMetaData: function(key, data){
@@ -516,11 +546,12 @@ const PETRI_NET_TRANSITION = {
 	}
 }
 
-function PetriNetTransition(id, label, incomingPlaces, outgoingPlaces, metaData){
+function PetriNetTransition(id, label, incomingPlaces, outgoingPlaces, locationSet, metaData){
 	this.id = id;
 	this.label = label;
 	this.incomingPlaceSet = (incomingPlaces === undefined) ? {} : incomingPlaces;
 	this.outgoingPlaceSet = (outgoingPlaces === undefined) ? {} : outgoingPlaces;
+	this.locationSet = locationSet;
 	this.metaData = (metaData === undefined) ? {} : metaData;
 	Object.setPrototypeOf(this, PETRI_NET_TRANSITION);
 }
