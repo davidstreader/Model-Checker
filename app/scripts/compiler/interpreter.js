@@ -42,8 +42,6 @@ function interpret(processes, analysis, lastProcessesMap, context){
 }
 
 function interpretOneOff(ident, process, processType, processes, variables){
-	reset();
-
 	var process = new ProcessNode(ident, process, processType);
 	process = expand({ processes:[process], variableMap:variables });
 
