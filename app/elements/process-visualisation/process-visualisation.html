@@ -63,10 +63,10 @@
           el: this.$['svg-parentNode'],
           gridSize: 1,
           model: this.jgraph,
-          restrictTranslate: true
+          restrictTranslate: true,
+          async: true,
         });
         var paper = this.paper;
-        var dragStartPosition;
         document.addEventListener('change-process', function(e){
           //When we swap, its much easier to just restore then explode again.
           if (this.exploded) {
@@ -91,6 +91,7 @@
             var localWidth = parentNode.getBBox().width;
             var localHeight = parentNode.getBBox().height;
             var minX = parentNode.getBBox().origin().x;
+            var minY = parentNode.getBBox().origin().y;
             var scaleX = paperWidth / localWidth;
             var scaleY = paperHeight / localHeight;
             if (_this.exploded) {
@@ -107,8 +108,9 @@
                 paper.scale(Math.min(scaleX, scaleY), Math.min(scaleX, scaleY), 0, 0);
                 processDisplay.scrollTop(0);
                 _this.paper.setDimensions(_this.paper.$el.width(), localHeight * Math.min(scaleX, scaleY));
-                parentNode.translate(-minX,0);
+                parentNode.translate(-minX,-minY);
                 parentNode.minX = minX;
+                parentNode.minY = minY;
                 return;
               }
               nodes.forEach(function (nodev) {
@@ -123,7 +125,7 @@
               paper.setOrigin(lastOptions.x, lastOptions.y);
               processDisplay.scrollTop(lastOptions.scrollTop);
               if (key == app.$.selector.getSelected()) {
-                parentNode.translate(parentNode.minX, 0);
+                parentNode.translate(parentNode.minX, parentNode.minY);
               }
               nodes.forEach(function (nodev) {
                 $("[model-id='" + nodev.id + "']").show();
@@ -160,7 +162,6 @@
           }
           _this.rescale();
         });
-
         this.jgraph.on('change:position', function(cell) {
           //Exploded diagrams are limited by changing the dimensions of the paper
           if (_this.exploded) {
@@ -198,7 +199,6 @@
         this.graphMap = {};
         var _this = this;
         if (!app.get("automata.values") || app.get("automata.values").length == 0) return;
-        console.log("drawing");
         app.get("automata.values").forEach(function(graph) {
           if (!graph.type) return;
           if (graph.type == 'automata') {
@@ -211,6 +211,8 @@
         joint.layout.DirectedGraph.layout(this.jgraph, {rankDir:'LR',setLinkVertices: true});
         var jgraph = this.jgraph;
         var graphMap = this.graphMap;
+        //Add some space between the elements
+        var offsetY = 0;
         Object.keys(graphMap).forEach(function (key) {
           var nodes = _.values(graphMap[key].map);
           var links = [];
@@ -233,24 +235,30 @@
           });
           var width = ux-lx;
           var height = uy-ly;
+          var offsetX = (_this.paper.$el.width()-width)/2;
+          if (width+100 > _this.paper.$el.width()) offsetX = 0;
           var cell = new joint.shapes.basic.Rect ({
             size: { width: 100, height: 30 },
-            position: { x:lx, y:ly},
+            position: { x:lx-50, y:ly-50},
             attrs: {
               rect: { fill: 'transparent', stroke: 'none' },
               'text': {text: key, fill: 'red', 'font-size': 20}}
           });
 
           graphMap[key].parentNode.embed(cell);
-          graphMap[key].parentNode.position(lx-50,ly-50);
-          graphMap[key].parentNode.resize(width+100,height+100);
-          var offsetX = (_this.paper.$el.width()-width)/2;
-          graphMap[key].parentNode.translate(offsetX,0);
-          cell.set("ignoreChecks",true);
+
           jgraph.addCell(cell);
+          graphMap[key].parentNode.resize(width+100,height+100);
+          graphMap[key].parentNode.position(lx-50,ly-50);
+          graphMap[key].parentNode.translate(50, 50);
+          graphMap[key].parentNode.translate(50, -ly+50);
+          graphMap[key].parentNode.translate(offsetX, offsetY);
+
+          cell.set("ignoreChecks",true);
           graphMap[key].map['label'] = cell;
           graphMap[key].parentNode.rendering = false;
           graphMap[key].parentNode.set("ignoreChecks",true);
+          offsetY+=height+150;
         });
         jgraph.getLinks().forEach(function (link) {
           link.set('smooth',false);
