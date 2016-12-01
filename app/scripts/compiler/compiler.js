@@ -41,14 +41,14 @@ const Compiler = {
 		this.lastAnalysis = analysis;
 		this.lastProcesses = processes;
 		this.lastAbstraction = context.isFairAbstraction;
-		return { processes:processes, operations:operations, analysis:analysis };
+		return { processes:processes, operations:operations, analysis:analysis, context:context };
 	},
 
 	remoteCompile: function(ast, context){
     app.socket.emit('compile',{ast:ast,context:context},function(results) {
-      var graphs = [];
-      for(var id in results.processes){
-        var graph = results.processes[id];
+      const graphs = [];
+      for(let id in results.processes){
+        const graph = results.processes[id];
         if (graph.type === 'automata') {
           graphs.push(AUTOMATON.convert(graph));
         } else if (graph.type === 'petrinet') {

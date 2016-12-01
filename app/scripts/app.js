@@ -18,6 +18,7 @@
     app.selectedCtx = 0;
     app.isClientSide = true;
     app.willSaveCookie = true;
+    app.isFirst = true;
 
     if (typeof io !== 'undefined') {
       app.socket = io();
@@ -60,12 +61,7 @@
       app.build(overrideBuild);
     };
 
-    app.willSaveCookie = Boolean(app.getCookie("willSave"));
-    if (app.willSaveCookie) {
-      app.$.editor.setCode(decodeURIComponent(app.getCookie('editor')));
-      //We need to wait a little so that all the functions are added to app.
-      _.delay(app.compile,10);
-    }
+
     /**
      * Runs the compiler converting the code in the editor into visualisable
      * graphs and calls the renderer.
@@ -109,6 +105,7 @@
         }
         app.set('automata.values', graphs.reverse());
         app.set('automata.analysis',results.analysis);
+        app.set('automata.isFirst',results.context.isFirst);
         app.$.visualiser.constructGraphs();
 
         if(results.operations.length !== 0){
@@ -154,7 +151,8 @@
     app.getSettings = function() {
       return {
         isFairAbstraction: app.fairAbstraction,
-        isLocal: app.isClientSide
+        isLocal: app.isClientSide,
+        isFirst: app.isFirst
       };
     }
 
@@ -305,7 +303,13 @@
         app.compile();
       }
     });
-
+    app.willSaveCookie = Boolean(app.getCookie("willSave"));
+    if (app.willSaveCookie) {
+      app.$.editor.setCode(decodeURIComponent(app.getCookie('editor')));
+      //We need to wait a little so that all the functions are added to app.
+      app.compile();
+      app.isFirst = false;
+    }
     /**
      * Listen for key presses.
      * Note: Needs to listen for keydown (not keyup) in order to prevent browser default action
