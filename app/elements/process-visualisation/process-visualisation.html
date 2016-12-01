@@ -245,9 +245,10 @@
         }
         let maxX = 0;
         let maxY = 0;
-        this.graphMap.forEach(function (graph) {
-          maxX = Math.max(maxX,graphMap[graph].parentNode.getBBox().corner().x);
-          maxY = Math.max(maxY,graphMap[graph].parentNode.getBBox().corner().y);
+        const graphs = _.values(this.graphMap);
+        graphs.forEach(function (graph) {
+          maxX = Math.max(maxX,graph.parentNode.getBBox().corner().x);
+          maxY = Math.max(maxY,graph.parentNode.getBBox().corner().y);
         });
         this.paper.setDimensions(Math.max(maxX*scale.sx,screenWidth),Math.max(maxY*scale.sy+200,screenHeight));
       },
