@@ -1,3 +1,10 @@
+const Colours = {
+  red: '#C0392b',
+  blue: '#3498DB',
+  green: '#2ECC71',
+  grey: '#BDC3C7'
+};
+
 /**
  * Styling for the default joint.js shapes.
  */
@@ -22,12 +29,14 @@ joint.shapes.fsa.EndState = joint.dia.Element.extend({
         'stroke-width': 3,
         transform: 'translate(10, 10)',
         r: 6,
-        fill: '#000000'
+        fill: Colours.grey,
+        stroke:'#000000'
       }
     }
 
   }, joint.dia.Element.prototype.defaults)
 });
+
 //Modify the transition element to place the label inside and not above.
 
 joint.shapes.pn.Transition = joint.shapes.basic.Generic.extend({
@@ -64,14 +73,14 @@ joint.shapes.pn.StartPlace = joint.dia.Element.extend({
 
   defaults: _.defaultsDeep({
 
-    type: 'pn.StartState',
+    type: 'pn.StartPlace',
     size: { width: 60, height: 60 },
     attrs: {
       '.outer': {
-        'stroke-width': 1,
+        'stroke-width': 3,
         transform: 'translate(10, 10)',
         r: 10,
-        fill: '#ffffff',
+        fill: Colours.grey,
         stroke: '#000000'
       },
 
@@ -80,6 +89,45 @@ joint.shapes.pn.StartPlace = joint.dia.Element.extend({
         transform: 'translate(10, 10)',
         r: 3,
         fill: '#000000'
+      }
+    }
+
+  }, joint.dia.Element.prototype.defaults)
+});
+
+joint.shapes.pn.Place = joint.shapes.pn.Place.extend({
+  defaults: _.defaultsDeep({
+    size: {width: 60, height: 60},
+    attrs: {
+      '.root': { fill:Colours.grey, 'stroke-width':3 },
+      '.label': {text: '', fill: '#7c68fc'}
+    }
+  }, joint.shapes.pn.Place.prototype.defaults)
+});
+
+joint.shapes.pn.TerminalPlace = joint.dia.Element.extend({
+
+  markup: '<g class="rotatable"><g class="scalable"><circle class="outer"/><circle class="inner"/></g></g>',
+
+  defaults: _.defaultsDeep({
+
+    type: 'pn.TerminalPlace',
+    size: { width: 60, height: 60 },
+    attrs: {
+      '.outer': {
+        'stroke-width': 3,
+        transform: 'translate(10, 10)',
+        r: 10,
+        fill: 'green',
+        stroke: '#000000'
+      },
+
+      '.inner': {
+        'stroke-width': 3,
+        transform: 'translate(10, 10)',
+        r: 6,
+        fill: Colours.grey,
+        stroke:'#000000'
       }
     }
 

@@ -9,9 +9,9 @@ function visualizeAutomata(process, name, graphMap, jgraph) {
   graphMap[name] = {name:name,height:0,parentNode:parentNode};
   for(let i = 0; i < nodes.length; i++){
     if(nodes[i].getMetaData('isTerminal') !== undefined){
-      let fill = 'green';
+      let fill = Colours.green;
       if (nodes[i].getMetaData('isTerminal') === 'error') {
-        fill = 'red';
+        fill = Colours.red;
       }
       nodeMap['n' + nodes[i].id] = new joint.shapes.fsa.EndState({
         attrs: { text : { text: nodes[i].metaData.label}, '.outer': {'fill':fill} }
@@ -20,10 +20,10 @@ function visualizeAutomata(process, name, graphMap, jgraph) {
       jgraph.addCell(nodeMap['n' + nodes[i].id]);
       continue;
     }
-    let fill = 'lightblue';
+    let fill = Colours.grey;
     // check if current node is the root node
     if(nodes[i].getMetaData('startNode')){
-      fill='red';
+      fill=Colours.blue;
     }
     // add node to graph
     nodeMap['n' + nodes[i].id] = new joint.shapes.fsa.State({
@@ -63,13 +63,12 @@ function visualizePetriNet(process, name, graphMap, jgraph) {
     if(places[i].metaData.startPlace !== undefined){
       cell = new joint.shapes.pn.StartPlace();
     }
+    else if(places[i].metaData.isTerminal !== undefined){
+      const fill = places[i].metaData.isTerminal === 'stop' ? Colours.green : Colours.red;
+      cell = new joint.shapes.pn.TerminalPlace({ attrs: { '.outer': {'fill':fill} }});
+    }
     else{
-      cell = new joint.shapes.pn.Place({
-        size: {width: 60, height: 60},
-        attrs: {
-          '.label': {text: '', fill: '#7c68fc'}
-        }
-      });
+      cell = new joint.shapes.pn.Place();
     }
     parentNode.embed(cell);
     jgraph.addCell(cell);
