@@ -25,7 +25,7 @@
   </style>
   <template>
     <div style="width:50%;float:left">
-      <span>Current Process</span>
+      <span>Rendered Process List</span>
       <br/>
       <paper-dropdown-menu id="process-display-selector" label="Process" on-iron-select="_onProcessSelection" disabled$="{{!_hasNames}}">
         <paper-menu class="dropdown-content">
@@ -40,7 +40,7 @@
       <paper-button onclick="clearProcess()" disabled$="{{!_hasNames}}">Clear</paper-button>
     </div>
     <div style="">
-      <span>New Process</span>
+      <span>Editor Process List</span>
       <br/>
       <paper-dropdown-menu id="process-name-selector" label="Process" on-iron-select="_onNameSelection" disabled$="{{!_hasProcesses}}">
         <paper-menu class="dropdown-content">
