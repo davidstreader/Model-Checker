@@ -37,6 +37,7 @@
       </paper-dropdown-menu>
       <paper-button onclick="toggleExplode()" disabled$="{{!_hasSelection}}">{{_explosionLabel}}</paper-button>
       <paper-button onclick="removeProcess()" disabled$="{{!_hasSelection}}">Remove Process</paper-button>
+      <paper-button onclick="clearProcess()" disabled$="{{!_hasNames}}">Clear</paper-button>
     </div>
     <div style="">
       <span>New Process</span>
@@ -50,6 +51,7 @@
         </paper-menu>
       </paper-dropdown-menu>
       <paper-button onclick="addProcess()" disabled$="{{!_hasNameSelection}}">Add Process</paper-button>
+      <paper-button onclick="addAll()" disabled$="{{!_hasProcesses}}">Add all</paper-button>
     </div>
 
   </template>
@@ -57,7 +59,7 @@
 </dom-module>
 <script>
   function toggleExplode() {
-    var lbl = app.$.selector._explosionLabel;
+    let lbl = app.$.selector._explosionLabel;
     app.$.selector._explosionLabel = lbl==="Show all"?"Explode to process":"Show all";
     app.$.selector.fire('explode', lbl==="Explode to process");
   }
@@ -66,6 +68,12 @@
   }
   function removeProcess() {
     app.$.selector.fire('removeProcess', "");
+  }
+  function clearProcess() {
+    app.$.selector.fire('clearProcess', "");
+  }
+  function addAll() {
+    app.$.selector.fire('addAll', "");
   }
   (function() {
     Polymer({
@@ -120,11 +128,6 @@
        */
       _greaterThan: function(a, b){
         return a > b;
-      },
-      _onNameSelection: function(e, detail) {
-        this._hasNameSelection = true;
-        var graph = {name: detail.item.dataAutomatonName};
-
       },
       _onProcessSelection: function(e, detail){
         this._hasSelection = true;

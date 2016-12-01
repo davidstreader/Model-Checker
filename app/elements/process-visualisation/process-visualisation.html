@@ -73,6 +73,22 @@
           if (_this.rendering) return;
           _this.addToGraph(app.$.selector.getSelectedName());
         });
+        document.addEventListener('clearProcess',function(e) {
+          //If we are currently rendering, ignore any events
+          if (_this.rendering) return;
+          _this.displayedGraphs = {};
+          $("#process-display-selector")[0].contentElement.selected = null;
+          app.$.selector._hasSelection = false;
+          app.splice('automata.display', 0, app.get('automata.display').length);
+          _this.jgraph.resetCells();
+        })
+        document.addEventListener('addAll', function(e){
+          //If we are currently rendering, ignore any events
+          if (_this.rendering) return;
+          _.each(app.get("automata.values"),function (val) {
+            _this.addToGraph(val.id);
+          });
+        });
         document.addEventListener('removeProcess', function(e){
           //If we are currently rendering, ignore any events
           if (_this.rendering) return;
