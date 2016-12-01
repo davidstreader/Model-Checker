@@ -1,11 +1,133 @@
 'use strict'
 
 function tokenRule(process, operation){
-	if(operation === 'unreachableStates'){
+	if(process.type !== 'petrinet'){
+		return process;
+	}
 
+	if(operation === 'unreachableStates'){
+		return removeUnreachableStates(process);
 	}
 	else if(operation === 'toAutomaton'){
 		return petriNetToAutomaton(process);
+	}
+
+	function removeUnreachableStates(process){
+		const visitedPlaces = {};
+		const visitedTransitions = {};
+		const markings = {};
+
+		// construct the initial marking for the petri net
+		const roots = process.roots;
+		const rootSet = {};
+		for(let i = 0; i < roots.length; i++){
+			if(rootSet[roots[i].id] === undefined){
+				rootSet[roots[i].id] = 0;
+			}
+			rootSet[roots[i].id]++;
+		}
+		const rootKey = constructStateKey(rootSet);
+
+		// push root marking the the set of visited states
+		markings[rootKey] = true;
+
+		const fringe = [rootSet];
+		while(fringe.length !== 0){
+			const places = fringe.pop();
+
+			// get the outgoing transitions from the current states
+			const transitionIds = {};
+			for(let id in places){
+				visitedPlaces[id] = true;
+				const outgoing = process.getPlace(id).outgoingTransitions;
+				for(let i = 0; i < outgoing.length; i++){
+					transitionIds[outgoing[i]] = true;
+				}
+			}
+
+			const transitions = [];
+			for(let id in transitionIds){
+				transitions.push(process.getTransition(id));
+			}
+
+			// check if there are any transitions
+			if(transitions.length === 0){
+				continue;
+			}
+
+			// find the transitions that can be executed from the current state
+			for(let i = 0; i < transitions.length; i++){
+				const transition = transitions[i];
+				const incoming = new PlaceSet(transition.incomingPlaces.map(id => process.getPlace(id)));
+
+				// check if this transition is executable from the current state
+				let isExecutable = true;
+				for(let id in incoming){
+					if(places[id] === undefined){
+						isExecutable = false;
+						break;
+					}
+				}
+
+				if(!isExecutable){
+					continue;
+				}
+
+				// construct the state that the petri net is in after execution
+				const nextState = JSON.parse(JSON.stringify(places));
+				// remove the places that were transitioned from
+				for(let id in incoming){
+					nextState[id]--;
+					if(nextState[id] === 0){
+						delete nextState[id];
+					}
+				}
+
+				// add the states that were transitioned to
+				const outgoing = transition.outgoingPlaces.map(id => process.getPlace(id));
+				for(let j = 0; j < outgoing.length; j++){
+					const nextId = outgoing[j].id;
+					if(nextState[nextId] === undefined){
+						nextState[nextId] = 0;
+					}
+					nextState[nextId]++;
+				}
+
+				// mark the transition as being visited
+				visitedTransitions[transition.id] = true;
+
+				const nextStateKey = constructStateKey(nextState);
+
+				// check if this state has already been visited
+				if(markings[nextStateKey] === undefined){
+					fringe.push(nextState);
+				}
+
+				// mark this state as being visited
+				const stateKey = constructStateKey(places);
+				markings[stateKey] = true;
+			}
+		}
+
+		// remove any unvisted places from the petri net
+		const places = process.places;
+		for(let i = 0; i < places.length; i++){
+			const place = places[i];
+			if(visitedPlaces[place.id] === undefined){
+				process.removePlace(place.id);
+			}
+		}
+
+		// remove any unvisited transitions from the petri net
+		const transitions = process.transitions;
+		for(let i = 0; i < transitions.length; i++){
+			const transition = transitions[i];
+			if(visitedTransitions[transition.id] === undefined){
+				process.removeTransition(transition.id);
+			}
+		}
+
+		return process;
 	}
 
 	function petriNetToAutomaton(process){
@@ -91,7 +213,7 @@ function tokenRule(process, operation){
 				// construct the state that the Petri net is in after execution
 				const nextState = JSON.parse(JSON.stringify(places));
 				// remove the places that were transiitoned from
-				for(const id in incoming){
+				for(let id in incoming){
 					nextState[id]--;
 					if(nextState[id] === 0){
 						delete nextState[id];
