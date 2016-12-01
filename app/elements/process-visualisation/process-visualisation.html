@@ -66,7 +66,7 @@
           }
           //Find the bounding box of the selected processes parent, and scroll to it
           //The scroll bar is inside .process-display
-          const nodeBBox = _this.graphMap[e.detail.id].parentNode.getBBox();
+          const nodeBBox = _this.displayedGraphs[e.detail.id].getBBox();
           const scale = V(paper.viewport).scale();
           $(".process-display").stop().animate({scrollTop:nodeBBox.origin().y*scale.sx}, '100', 'swing');
         });
