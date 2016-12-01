@@ -138,7 +138,7 @@ function addLabelAndPadding(graphMap, key, jgraph) {
   });
 
   graphMap[key].parentNode.embed(cell);
-
+  graphMap[key].label = cell;
   jgraph.addCell(cell);
   graphMap[key].parentNode.resize(width+100,height+100);
   //Move the parent node without moving its children, to add a padding around it

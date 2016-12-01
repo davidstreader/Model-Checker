@@ -199,23 +199,30 @@
         });
       },
       addToGraph: function(name) {
-          //TODO: Add something here to put the new graph in a free space
         this.rendering = true;
-        let cells = this.graphMap[name].parentNode.clone({deep: true});
+        //Work out the bottom corner of the lowest element
+        let maxY = 0;
+        _.each(this.displayedGraphs,function (graph) {
+          console.log(graph);
+          maxY = Math.max(maxY,graph.parentNode.getBBox().corner().y);
+        });
+        //Find a name that isnt in use
+        let oldName = name;
+        let tmpIdx = 1;
+        while (this.displayedGraphs[name]) {
+          name = oldName+(tmpIdx++);
+        }
+        this.graphMap[oldName].label.attributes.attrs.text.text = name;
+        let cells = this.graphMap[oldName].parentNode.clone({deep: true});
         cells.sort(function (a,b) {
           return a.attributes.type==="fsa.Arrow"?1:-1;
         })
         this.displayedGraphs[name] = {};
         this.displayedGraphs[name].parentNode = cells[0];
         this.jgraph.addCells(cells);
-        let maxX = 0, maxY = 0;
-       _.each(this.displayedGraphs,function (graph) {
-           console.log(graph);
-          maxX = Math.max(maxX,graph.parentNode.getBBox().corner().x);
-          maxY = Math.max(maxY,graph.parentNode.getBBox().corner().y);
-        });
-        console.log(maxY);
+        this.displayedGraphs[name].parentNode.translate(0,maxY);
         this.rendering = false;
+        this.rescale();
       },
       /**
        * Redraw the automata.
@@ -238,7 +245,6 @@
         }
         this.automata = this.graphMap;
         this.fire('process-visualisation-rendered');
-        this.rescale();
         this.rendering = false;
       },
       rescale: function() {
@@ -250,8 +256,7 @@
         }
         let maxX = 0;
         let maxY = 0;
-        const graphs = _.values(this.graphMap);
-        graphs.forEach(function (graph) {
+        _.each(this.displayedGraphs,function (graph) {
           maxX = Math.max(maxX,graph.parentNode.getBBox().corner().x);
           maxY = Math.max(maxY,graph.parentNode.getBBox().corner().y);
         });
