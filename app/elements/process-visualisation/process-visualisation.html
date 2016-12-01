@@ -68,12 +68,12 @@
           //The scroll bar is inside .process-display
           const nodeBBox = _this.displayedGraphs[e.detail.id].getBBox();
           const scale = V(paper.viewport).scale();
-          $(".process-display").stop().animate({scrollTop:nodeBBox.origin().y*scale.sx}, '100', 'swing');
+          $(".process-display").stop().animate({scrollTop:nodeBBox.origin().y*scale.sy}, '100', 'swing');
         });
         document.addEventListener('addProcess', function(e){
           //If we are currently rendering, ignore any events
           if (_this.rendering) return;
-          _this.addToGraph(app.$.selector.getSelectedName());
+          _this.addGraph(app.$.selector.getSelectedName());
         });
         document.addEventListener('clearProcess',function(e) {
           //If we are currently rendering, ignore any events
@@ -90,8 +90,7 @@
         document.addEventListener('addAll', function(){
           //If we are currently rendering, ignore any events
           if (_this.rendering) return;
-
-          _.each(app.get("automata.values"),val => _this.addToGraph(val.id));
+          _.each(app.get("automata.values"),graph => _this.addGraph(graph.id));
         });
         document.addEventListener('removeProcess', function(){
           //If we are currently rendering, ignore any events
@@ -120,30 +119,25 @@
           _this.exploded = e.detail;
           const paperWidth = _this.paper.$el.width();
           const paperHeight = _this.paper.$el.height();
-          const paperScale = V(paper.viewport).scale();
           _.each(_this.displayedGraphs,function (parentNode, key) {
-            const parentWidth = parentNode.getBBox().width;
-            const parentHeight = parentNode.getBBox().height;
-            let minX = parentNode.getBBox().origin().x;
-            let minY = parentNode.getBBox().origin().y;
-            const scaleX = paperWidth / parentWidth;
-            const scaleY = paperHeight / parentHeight;
+            const {x: minX, y: minY} = parentNode.getBBox().origin();
+            const {width,height} = parentNode.getBBox();
+            const scaleX = paperWidth / width;
+            const scaleY = paperHeight / height;
             if (_this.exploded) {
               //Hide the parent node so we don't see a box around the element
               get$Cell(parentNode).hide();
               if (key == app.$.selector.getSelected()) {
                 lastOptions = {
                   scrollTop: processDisplay.scrollTop(),
-                  x: paper.options.origin.x,
-                  y: paper.options.origin.y,
-                  sx: paperScale.sx,
-                  sy: paperScale.sy,
+                  origin: paper.options.origin,
+                  scale: V(paper.viewport).scale(),
                   key: key
                 };
                 paper.setOrigin(0, 0);
                 paper.scale(Math.min(scaleX, scaleY), Math.min(scaleX, scaleY), 0, 0);
                 processDisplay.scrollTop(0);
-                _this.paper.setDimensions(paperWidth, parentHeight * Math.min(scaleX, scaleY));
+                _this.paper.setDimensions(paperWidth, height * Math.min(scaleX, scaleY));
                 parentNode.translate(-minX,-minY);
                 parentNode.minX = minX;
                 parentNode.minY = minY;
@@ -154,8 +148,8 @@
               //Show the element that was hidden above
               get$Cell(parentNode).show();
               if (key == lastOptions.key) {
-                paper.scale(lastOptions.sx, lastOptions.sy, 0, 0);
-                paper.setOrigin(lastOptions.x, lastOptions.y);
+                paper.scale(lastOptions.scale.sx, lastOptions.scale.sy, 0, 0);
+                paper.setOrigin(lastOptions.origin.x, lastOptions.origin.y);
                 processDisplay.scrollTop(lastOptions.scrollTop);
                 parentNode.translate(parentNode.minX, parentNode.minY);
               }
@@ -223,14 +217,12 @@
           }
         });
       },
-      addToGraph: function(name) {
+      addGraph: function(name) {
         //construct the graph first if it doesnt exist or has changed
-        constructGraphs(app.$.visualiser.graphMap,name);
+        constructGraphs(this.graphMap,name);
         //Work out the bottom corner of the lowest element
         let maxY = 0;
-        _.each(this.displayedGraphs,function (graph) {
-          maxY = Math.max(maxY,graph.getBBox().corner().y);
-        });
+        _.each(this.displayedGraphs,graph => maxY = Math.max(maxY,graph.getBBox().corner().y));
         //Find a name that isnt in use
         let oldName = name;
         let tmpIdx = 1;
@@ -243,9 +235,7 @@
         let cells = this.graphMap[oldName].parentNode.clone({deep: true});
         //Sort the array, putting links after components, as the links will fail to be added if their
         //linked components do not exist
-        cells.sort(function (a,b) {
-          return a.attributes.type==="fsa.Arrow"?1:-1;
-        });
+        cells.sort((a,b) => a.attributes.type==="fsa.Arrow"?1:-1);
         let graph = {};
         //All we really care about is the parent at this point
         graph.parentNode = cells[0];
@@ -274,17 +264,18 @@
         this.fire('process-visualisation-rendered');
       },
       rescale: function() {
-        let screenHeight = this.paper.$el.parent().parent().height();
-        let screenWidth = this.paper.$el.width();
-        const scale = V(this.paper.viewport).scale();
         if (this.exploded) {
           return;
         }
+        let screenHeight = this.paper.$el.parent().parent().height();
+        let screenWidth = this.paper.$el.width();
+        const scale = V(this.paper.viewport).scale();
         let maxX = 0;
         let maxY = 0;
         _.each(this.displayedGraphs,function (graph) {
-          maxX = Math.max(maxX,graph.getBBox().corner().x);
-          maxY = Math.max(maxY,graph.getBBox().corner().y);
+          const bbox = graph.getBBox();
+          maxX = Math.max(maxX,bbox.corner().x);
+          maxY = Math.max(maxY,bbox.corner().y);
         });
         this.paper.setDimensions(Math.max(maxX*scale.sx,screenWidth),Math.max(maxY*scale.sy+200,screenHeight));
       },
