@@ -19,11 +19,14 @@ function parse(tokens){
 	reset();
 	while(index < tokens.length){
 		var token = tokens[index];
-		if(token.value === 'automata'){
-			parseProcessDefinition(tokens);
-		}
-		else if(token.value === 'petrinet'){
-			parseProcessDefinition(tokens);
+		if(token.type === 'process-type'){
+			// check if a potential casting for an operation may be parsed
+			if(tokens[index + 1].value !== '('){
+				parseProcessDefinition(tokens);
+			}
+			else{
+				parseOperation(tokens);
+			}
 		}
 		else if(token.value === 'const'){
 			parseConstDefinition(tokens);

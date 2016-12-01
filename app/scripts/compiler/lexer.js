@@ -5,7 +5,7 @@ const Lexer = {
 	identifier: '[A-Z][A-Za-z0-9_]*',
 	integer: '[0-9][0-9]*',
 	processTypes: {'automata':true, 'petrinet':true },
-	functions: {'abs': true, 'simp':true, 'tokenRule':true, 'toPetriNet':true },
+	functions: {'abs': true, 'simp':true, 'safe':true },
 	terminals: { 'STOP':true, 'ERROR': true },
 	keywords: { 'const':true, 'range':true, 'set':true, 'if':true, 'then':true, 'else':true, 'when':true, 'forall':true },
 	symbols: '(\\.\\.|\\.|,|:|\\[|\\]|\\(|\\)|\\{|\\}|->|\\\\|@)',
