@@ -24,17 +24,34 @@
     }
   </style>
   <template>
+    <div style="width:50%;float:left">
+      <span>Current Process</span>
+      <br/>
+      <paper-dropdown-menu id="process-display-selector" label="Process" on-iron-select="_onProcessSelection" disabled$="{{!_hasNames}}">
+        <paper-menu class="dropdown-content">
+          <template is="dom-repeat" items="{{display}}">
+            <paper-item data-automaton-name="{{item.id}}">{{item.id}}</paper-item>
+          </template>
+          <paper-listbox class="dropdown-content" selected$="{{_initialSelection}}"></paper-listbox>
+        </paper-menu>
+      </paper-dropdown-menu>
+      <paper-button onclick="toggleExplode()" disabled$="{{!_hasSelection}}">{{_explosionLabel}}</paper-button>
+      <paper-button onclick="removeProcess()" disabled$="{{!_hasSelection}}">Remove Process</paper-button>
+    </div>
+    <div style="">
+      <span>New Process</span>
+      <br/>
+      <paper-dropdown-menu id="process-name-selector" label="Process" on-iron-select="_onNameSelection" disabled$="{{!_hasProcesses}}">
+        <paper-menu class="dropdown-content">
+          <template is="dom-repeat" items="{{processes}}">
+            <paper-item data-automaton-name="{{item.id}}">{{item.id}}</paper-item>
+          </template>
+          <paper-listbox class="dropdown-content" selected$="{{!_hasNameSelection}}"></paper-listbox>
+        </paper-menu>
+      </paper-dropdown-menu>
+      <paper-button onclick="addProcess()" disabled$="{{!_hasNameSelection}}">Add Process</paper-button>
+    </div>
 
-    <paper-dropdown-menu id="process-name-selector" label="Process" on-iron-select="_onProcessSelection" disabled$="{{!_hasProcesses}}">
-    <paper-menu class="dropdown-content">
-      <template is="dom-repeat" items="{{display}}">
-        <paper-item data-automaton-name="{{item.id}}">{{item.id}}</paper-item>
-      </template>
-      <paper-listbox class="dropdown-content" selected$="{{_initialSelection}}"></paper-listbox>
-      <paper-item disabled hidden$="{{_hasProcesses}}">No Processes Defined</paper-item>
-    </paper-menu>
-    </paper-dropdown-menu>
-    <paper-button onclick="toggleExplode()" disabled$="{{_hasSelection}}">{{_explosionLabel}}</paper-button>
   </template>
 
 </dom-module>
@@ -43,6 +60,12 @@
     var lbl = app.$.selector._explosionLabel;
     app.$.selector._explosionLabel = lbl==="Show all"?"Explode to process":"Show all";
     app.$.selector.fire('explode', lbl==="Explode to process");
+  }
+  function addProcess() {
+    app.$.selector.fire('addProcess', "");
+  }
+  function removeProcess() {
+    app.$.selector.fire('removeProcess', "");
   }
   (function() {
     Polymer({
@@ -68,11 +91,19 @@
         },
         _hasSelection: {
           type: Boolean,
-          value: "false"
+          value: false
+        },
+        _hasNameSelection: {
+          type: Boolean,
+          value: false
         },
         _hasProcesses: {
           type: Boolean,
           computed: '_greaterThan(processes.length, 0)'
+        },
+        _hasNames: {
+          type: Boolean,
+          computed: '_greaterThan(display.length, 0)'
         },
 
         _initialSelection: {
@@ -90,9 +121,13 @@
       _greaterThan: function(a, b){
         return a > b;
       },
+      _onNameSelection: function(e, detail) {
+        this._hasNameSelection = true;
+        var graph = {name: detail.item.dataAutomatonName};
 
+      },
       _onProcessSelection: function(e, detail){
-        this._hasSelection = false;
+        this._hasSelection = true;
         var graph = { name:detail.item.dataAutomatonName };
         for(var i in this.processes){
           if(this.processes[i].id === graph.name){
@@ -107,6 +142,9 @@
         return "0";
       },
       getSelected: function() {
+        return $("#process-display-selector")[0].selectedItemLabel;
+      },
+      getSelectedName: function() {
         return $("#process-name-selector")[0].selectedItemLabel;
       }
     });

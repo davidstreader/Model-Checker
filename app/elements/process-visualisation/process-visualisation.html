@@ -43,7 +43,6 @@
         this.displayedGraphs = {};
         const _this = this;
         this.graphMap = {};
-        this.graphNames = [];
         this.jgraph = new joint.dia.Graph();
         //Create a paper element, pointing to #svg-parent, with restrictions on moving elements out of bounds
         this.paper = new joint.dia.Paper({
@@ -68,6 +67,27 @@
           const nodeBBox = _this.graphMap[e.detail.id].parentNode.getBBox();
           const scale = V(paper.viewport).scale();
           $(".process-display").stop().animate({scrollTop:nodeBBox.origin().y*scale.sx}, '100', 'swing');
+        });
+        document.addEventListener('addProcess', function(e){
+          //If we are currently rendering, ignore any events
+          if (_this.rendering) return;
+          _this.addToGraph(app.$.selector.getSelectedName());
+        });
+        document.addEventListener('removeProcess', function(e){
+          //If we are currently rendering, ignore any events
+          if (_this.rendering) return;
+          const name = app.$.selector.getSelected();
+          const dispSelector =  $("#process-display-selector")[0].contentElement;
+          let graph = _this.displayedGraphs[app.$.selector.getSelected()];
+          let index = dispSelector.selected;
+          dispSelector.selected = null;
+          app.$.selector._hasSelection = false;
+          app.splice('automata.display',index,1);
+          //Remove children
+          _this.jgraph.removeCells(graph.getEmbeddedCells());
+          //Remove parent
+          _this.jgraph.removeCells([graph]);
+          delete _this.displayedGraphs[name];
         });
         //Keep a copy of the last set options, so that when we revert from an explosion we are back
         //at the previous transformation
@@ -145,10 +165,12 @@
               link.unset('vertices');
             });
           }
-          if (cell.index !== undefined) {
-            $("#process-name-selector")[0].contentElement.selected = cell.index;
+          let disp = app.get("automata.display");
+          for (let i = 0; i < disp.length; i++) {
+            if (disp[i].parentNode === cell) {
+              $("#process-display-selector")[0].contentElement.selected = i;
+            }
           }
-
           _this.rendering = false;
         });
         this.jgraph.on('change:position', function(cell) {
@@ -182,15 +204,14 @@
         //Work out the bottom corner of the lowest element
         let maxY = 0;
         _.each(this.displayedGraphs,function (graph) {
-          maxY = Math.max(maxY,graph.parentNode.getBBox().corner().y);
+          maxY = Math.max(maxY,graph.getBBox().corner().y);
         });
         //Find a name that isnt in use
         let oldName = name;
         let tmpIdx = 1;
-        while (_.contains(this.graphNames,name)) {
+        while (this.displayedGraphs[name]) {
           name = oldName+(tmpIdx++);
         }
-        this.graphNames.push(name);
         //Assign that name to the old label
         this.graphMap[oldName].label.attributes.attrs.text.text = name;
         //Clone the process into cells, also cloning all children
@@ -204,7 +225,7 @@
         //All we really care about is the parent at this point
         graph.parentNode = cells[0];
         graph.id = name;
-        this.displayedGraphs[name] = graph;
+        this.displayedGraphs[name] = cells[0];
         this.jgraph.addCells(cells);
         //Note, we need to add the cells before translating the cell to its correct position
         graph.parentNode.translate(0,maxY);
@@ -230,8 +251,8 @@
         let maxX = 0;
         let maxY = 0;
         _.each(this.displayedGraphs,function (graph) {
-          maxX = Math.max(maxX,graph.parentNode.getBBox().corner().x);
-          maxY = Math.max(maxY,graph.parentNode.getBBox().corner().y);
+          maxX = Math.max(maxX,graph.getBBox().corner().x);
+          maxY = Math.max(maxY,graph.getBBox().corner().y);
         });
         this.paper.setDimensions(Math.max(maxX*scale.sx,screenWidth),Math.max(maxY*scale.sy+200,screenHeight));
       },
