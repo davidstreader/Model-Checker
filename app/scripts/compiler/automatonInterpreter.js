@@ -122,6 +122,11 @@ function interpretAutomaton(process, processesMap, context){
 			case 'simp':
 				processedAutomaton = bisimulation(processedAutomaton);
 				break;
+			case 'safe':
+				processedAutomaton = tokenRule(processedAutomaton, 'unreachableStates');
+				processStack.push(processedAutomaton);
+				override = true;
+				return;
 			case 'automata':
 				processedAutomaton = tokenRule(processedAutomaton, 'toAutomaton');
 				break
