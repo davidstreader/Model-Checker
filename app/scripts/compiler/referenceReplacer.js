@@ -35,7 +35,7 @@ function replaceReferences(processes){
 		localReferenceMap =  new LocalReferenceMap(processes[i].local);
 
 		const ident = processes[i].ident.ident;
-		
+
 		// construct a mapping from process identifiers to reference ids
 		const idMap = {};
 		processes[i].process = replaceProcess(processes[i].process, ident, idMap);
@@ -61,7 +61,6 @@ function replaceReferences(processes){
 	 */
 	function replaceProcess(process, ident, idMap){
 		idMap[ident] = referenceId++;
-
 		// add a reference to the root of the process ast
 		process.reference = idMap[ident];
 
@@ -116,12 +115,11 @@ function replaceReferences(processes){
 	 */
 	function replaceIdentifier(astNode, ident, idMap){
 		const reference = astNode.ident;
-		
+
 		// check if the reference already exists
 		if(idMap[reference] !== undefined){
 			return new ReferenceNode(idMap[reference]);
 		}
-
 		let process;
 		// check if the process is referencing a local or global process
 		if(localReferenceMap[reference] !== undefined){
@@ -133,7 +131,7 @@ function replaceReferences(processes){
 
 		// check that the reference was valid
 		if(process === undefined){
-			console.error('process \'' + reference + '\' has not been defined.');
+      throw new ReferenceReplacerException(reference);
 		}
 
 		// check whether a reference id has already been defined for the current process
@@ -175,4 +173,11 @@ function replaceReferences(processes){
 		this.type = 'reference';
 		this.reference = reference;
 	}
+  function ReferenceReplacerException(process, location){
+    this.message = 'Process \'' + process + '\' has not been defined';
+    this.location = location;
+    this.toString = function(){
+      return 'ReferenceReplacerException: ' + this.message;
+    }
+  }
 }

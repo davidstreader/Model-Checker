@@ -68,12 +68,9 @@ if (!testingMode) {
       console.log("Reading: " + result);
       cursor.reset();
       const code = fs.readFileSync(result, 'utf-8');
-      let compile;
-      //When we hit any exceptions, to begin with we do NOT want them caught by node.
-      //So we can just try catch and then we have the exception ready to check
-      try {
-        compile = Compiler.compile(code, {isLocal: true, isFairAbstraction: true});
-      } catch (compile) {}
+
+      let compile = Compiler.compile(code, {isLocal: true, isFairAbstraction: true});
+
       if (compile.message) {
         cursor.red();
         console.log("Error compiling, Message: "+compile.toString());
