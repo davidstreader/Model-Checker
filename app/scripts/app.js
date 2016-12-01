@@ -106,7 +106,7 @@
         app.set('automata.values', graphs.reverse());
         app.set('automata.analysis',results.analysis);
         app.set('automata.isFirst',results.context.isFirst);
-        app.$.visualiser.constructGraphs();
+        constructGraphs(app.$.visualiser.graphMap);
 
         if(results.operations.length !== 0){
           app.$.console.log('Operations:');

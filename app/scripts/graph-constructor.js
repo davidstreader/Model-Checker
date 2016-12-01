@@ -148,3 +148,21 @@ function addLabelAndPadding(graphMap, key, jgraph) {
   //Move the component back to the origin with a bit of padding
   graphMap[key].parentNode.translate(50, -ly+50);
 }
+function constructGraphs(graphMap) {
+  console.log("Constructing Graphs.");
+  //Convert each process to its respective graph
+  _.each(app.get("automata.values"),function(graph,i){
+    if (!graph.type || (!app.get("automata.isFirst") && !app.get("automata.analysis")[graph.id].isUpdated)) return;
+    //Calculate the bottom of the last drawn graph
+    let tmpjgraph = new joint.dia.Graph();
+    if (graph.type == 'automata') {
+      visualizeAutomata(graph,graph.id,graphMap,tmpjgraph);
+    }
+    if (graph.type == 'petrinet') {
+      visualizePetriNet(graph,graph.id,graphMap,tmpjgraph);
+    }
+    //Pass this through to dagre to get everything laid out
+    joint.layout.DirectedGraph.layout(tmpjgraph, {rankDir:'LR',setLinkVertices: true});
+    addLabelAndPadding(graphMap,graph.id,tmpjgraph);
+  });
+}
