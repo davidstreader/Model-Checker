@@ -204,6 +204,11 @@
         cells.sort(function (a,b) {
           return a.attributes.type==="fsa.Arrow"?1:-1;
         })
+        console.log(_.reduce(this.displayedGraphs,function(a,b) {
+          return Math.max(b, a.parentNode.getBBox().corner().y);
+        },0));
+        this.displayedGraphs[name] = {};
+        this.displayedGraphs[name].parentNode = cells[0];
         this.jgraph.addCells(cells);
         this.rendering = false;
       },
@@ -240,10 +245,9 @@
         }
         let maxX = 0;
         let maxY = 0;
-        const graphs = Object.values(this.graphMap);
-        graphs.forEach(function (graph) {
-          maxX = Math.max(maxX,graph.parentNode.getBBox().corner().x);
-          maxY = Math.max(maxY,graph.parentNode.getBBox().corner().y);
+        this.graphMap.forEach(function (graph) {
+          maxX = Math.max(maxX,graphMap[graph].parentNode.getBBox().corner().x);
+          maxY = Math.max(maxY,graphMap[graph].parentNode.getBBox().corner().y);
         });
         this.paper.setDimensions(Math.max(maxX*scale.sx,screenWidth),Math.max(maxY*scale.sy+200,screenHeight));
       },
