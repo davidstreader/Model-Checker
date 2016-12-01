@@ -14,7 +14,7 @@
 </style>
 <dom-module id="process-visualisation">
   <template>
-    <div id="svg-parentNode">
+    <div id="svg-parent">
     </div>
     <div id="name">[[name]]</div>
   </template>
@@ -42,16 +42,17 @@
       ready: function(){
         const _this = this;
         this.jgraph = new joint.dia.Graph();
+        //Create a paper element, pointing to #svg-parent, with restrictions on moving elements out of bounds
         this.paper = new joint.dia.Paper({
-          el: this.$['svg-parentNode'],
+          el: this.$['svg-parent'],
           gridSize: 1,
           model: this.jgraph,
-          restrictTranslate: true,
-          async: true,
+          restrictTranslate: true
         });
         const paper = this.paper;
+        //Process selector listener
         document.addEventListener('change-process', function(e){
-
+          //If we are currently rendering, ignore any events
           if (_this.rendering) return;
           //When we swap, its much easier to just restore then explode again.
           if (this.exploded) {
@@ -59,10 +60,14 @@
             _this.fire('explode',true);
             return;
           }
-          const node = _this.graphMap[e.detail.id];
+          //Find the bounding box of the selected processes parent, and scroll to it
+          //The scroll bar is inside .process-display
+          const nodeBBox = _this.graphMap[e.detail.id].parentNode.getBBox();
           const scale = V(paper.viewport).scale();
-          $(".process-display").stop().animate({scrollTop:node.parentNode.getBBox().origin().y*scale.sx}, '100', 'swing');
+          $(".process-display").stop().animate({scrollTop:nodeBBox.origin().y*scale.sx}, '100', 'swing');
         });
+        //Keep a copy of the last set options, so that when we revert from an explosion we are back
+        //at the previous transformation
         let lastOptions;
         document.addEventListener('explode', function(e){
           const processDisplay = $(".process-display");
@@ -73,13 +78,14 @@
           Object.keys(_this.graphMap).forEach(function (key) {
             const parentNode = _this.graphMap[key].parentNode;
             const nodes = _.values(_this.graphMap[key].map);
-            const localWidth = parentNode.getBBox().width;
-            const localHeight = parentNode.getBBox().height;
+            const parentWidth = parentNode.getBBox().width;
+            const parentHeight = parentNode.getBBox().height;
             let minX = parentNode.getBBox().origin().x;
             let minY = parentNode.getBBox().origin().y;
-            const scaleX = paperWidth / localWidth;
-            const scaleY = paperHeight / localHeight;
+            const scaleX = paperWidth / parentWidth;
+            const scaleY = paperHeight / parentHeight;
             if (_this.exploded) {
+              //Hide the parent node so we don't see a box around the element
               get$Cell(parentNode).hide();
               if (key == app.$.selector.getSelected()) {
                 lastOptions = {
@@ -92,19 +98,13 @@
                 paper.setOrigin(0, 0);
                 paper.scale(Math.min(scaleX, scaleY), Math.min(scaleX, scaleY), 0, 0);
                 processDisplay.scrollTop(0);
-                _this.paper.setDimensions(_this.paper.$el.width(), localHeight * Math.min(scaleX, scaleY));
+                _this.paper.setDimensions(paperWidth, parentHeight * Math.min(scaleX, scaleY));
                 parentNode.translate(-minX,-minY);
                 parentNode.minX = minX;
                 parentNode.minY = minY;
-                return;
               }
-              nodes.forEach(function (nodev) {
-                get$Cell(nodev).hide();
-                _this.jgraph.getConnectedLinks(nodev).forEach(function (node) {
-                  get$Cell(node).hide();
-                });
-              });
             } else {
+              //Show the element that was hidden above
               get$Cell(parentNode).show();
               paper.scale(lastOptions.sx, lastOptions.sy, 0, 0);
               paper.setOrigin(lastOptions.x, lastOptions.y);
@@ -112,38 +112,20 @@
               if (key == app.$.selector.getSelected()) {
                 parentNode.translate(parentNode.minX, parentNode.minY);
               }
-              nodes.forEach(function (nodev) {
-                get$Cell(nodev).show();
-                _this.jgraph.getConnectedLinks(nodev).forEach(function (node) {
-                  get$Cell(node).show();
-                });
-              });
-
               _this.rescale();
             }
           });
         });
-
+        //Scroll listener
         this.paper.$el.on('mousewheel DOMMouseScroll', function onMouseWheel(e) {
+            //Disable scrolling
           e.preventDefault();
           e = e.originalEvent;
-
           const delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail))) / 50;
-          const offsetX = (e.offsetX || e.clientX - $(this).offset().left);
-          const offsetY = (e.offsetY || e.clientY - $(this).offset().top);
-
-          const svgPoint = paper.svg.createSVGPoint();
-          svgPoint.x = offsetX;
-          svgPoint.y = offsetY;
-
-          const p = svgPoint.matrixTransform(paper.viewport.getCTM().inverse());
           const newScale = V(paper.viewport).scale().sx + delta;
-          const origx = paper.options.origin.x;
-          const origy = paper.options.origin.y;
           if (newScale > 0.4 && newScale < 2) {
-            paper.setOrigin(0, 0);
-            paper.scale(newScale, newScale, p.x, p.y);
-            paper.setOrigin(origx, origy);
+              //Zoom in and out with scroll
+            paper.scale(newScale, newScale, 0, 0);
           }
           _this.rescale();
         });
@@ -168,7 +150,7 @@
           if (_this.exploded || _this.rendering) {
             return;
           }
-          let parentId = cell.get('parent');
+          const parentId = cell.get('parent');
           if (!parentId) return;
           _.each(_this.jgraph.getConnectedLinks(cell),function(link) {
             link.unset('vertices');
@@ -215,6 +197,7 @@
           $("#process-name-selector")[0].contentElement.selected = null;
           app.$.selector._hasSelection = true;
         }
+        //Convert each process to its respective graph
         _.each(app.get("automata.values"),function(graph,i){
           if (!graph.type) return;
           if (graph.type == 'automata') {
@@ -224,6 +207,7 @@
             _this._visualizePetriNet(graph,graph.id,i++);
           }
         });
+        //Pass this through to dagre to get everything laid out
         joint.layout.DirectedGraph.layout(this.jgraph, {rankDir:'LR',setLinkVertices: true});
         const jgraph = this.jgraph;
         const graphMap = this.graphMap;
@@ -232,6 +216,7 @@
         Object.keys(graphMap).forEach(function (key) {
           const nodes = _.values(graphMap[key].map);
           const links = [];
+          //Loop through all nodes and vertices and work out the bounds of the parent
           let lx = Number.MAX_VALUE, ly = Number.MAX_VALUE, ux = 0, uy = 0;
           nodes.forEach(function (node) {
             _this.jgraph.getConnectedLinks(node).forEach(function (link) {
@@ -251,7 +236,9 @@
           });
           const width = ux - lx;
           const height = uy - ly;
+          //Work out how to center smaller parents
           let offsetX = (_this.paper.$el.width() - width) / 2;
+          //If the parent is larger than the screen, dont center it
           if (width+100 > _this.paper.$el.width()) offsetX = 0;
           const cell = new joint.shapes.basic.Rect({
             size: {width: 100, height: 30},
@@ -266,9 +253,15 @@
 
           jgraph.addCell(cell);
           graphMap[key].parentNode.resize(width+100,height+100);
+          //Move the parent node without moving its children, to add a padding around it
           graphMap[key].parentNode.position(lx-50,ly-50);
+          //Now move the parent node and its components back by the padding
           graphMap[key].parentNode.translate(50, 50);
+          //Move the component back to the origin with a bit of padding
           graphMap[key].parentNode.translate(50, -ly+50);
+          //Center smaller components, and place all components in the right place in order
+          //We need to do it this way as dagre kills the ordering, so its easier to just
+          //work out new y values
           graphMap[key].parentNode.translate(offsetX, offsetY);
 
           graphMap[key].map['label'] = cell;
