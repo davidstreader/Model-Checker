@@ -58,17 +58,19 @@ function visualizePetriNet(process, name, graphMap, jgraph) {
   graphMap[name] = {name:name,height:0,parentNode:parentNode};
   const places = process.places;
   for(let i = 0; i < places.length; i++){
-    let label = '';
+    let cell;
     // add to array of start places if necessary
     if(places[i].metaData.startPlace !== undefined){
-      label = places[i].label;
+      cell = new joint.shapes.pn.StartPlace();
     }
-    const cell = new joint.shapes.pn.Place({
-      size: {width: 60, height: 60},
-      attrs: {
-        '.label': {text: label, fill: '#7c68fc'}
-      }
-    });
+    else{
+      cell = new joint.shapes.pn.Place({
+        size: {width: 60, height: 60},
+        attrs: {
+          '.label': {text: '', fill: '#7c68fc'}
+        }
+      });
+    }
     parentNode.embed(cell);
     jgraph.addCell(cell);
     nodeMap['p' + places[i].id] = cell;
