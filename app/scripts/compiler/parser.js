@@ -446,12 +446,23 @@ function parse(tokens){
 			hiding = parseHiding(tokens);
 		}
 
+		// check if a variable set has been defined
+		var variables;
+		if(tokens[index].value === '$'){
+			variables = parseVariables(tokens);
+		}
+
 		gobble(tokens[index], '.');
 
 		var definition = { type:'process', processType:processType, ident:ident, process:process, local:localProcesses };
 		// add hiding set to definition if it was defined
 		if(hiding !== undefined){
 			definition.hiding = hiding;
+		}
+
+		// add variable set to defintion if it was defined
+		if(variables !== undefined){
+			definition.variables = variables;
 		}
 
 		processes.push(definition);
@@ -954,6 +965,16 @@ function parse(tokens){
 
 		return { type:type, set:set };
 	}
+
+	/**
+	 * === VARIABLES ===
+	 */
+
+	 function parseVariables(tokens){
+	 	gobble(tokens[index], '$');
+	 	var set = parseSet(tokens);
+	 	return set;
+	 }
 
 	/**
 	 * === OPERATIONS ===
