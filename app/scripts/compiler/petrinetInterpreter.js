@@ -242,8 +242,8 @@ function interpretPetriNet(process, processesMap, context){
 			case 'simp':
 				processedNet = bisimulation(processedNet);
 				break;
-			case 'tokenRule':
-
+			case 'safe':
+				processedNet = tokenRule(processedNet, 'unreachableStates');
 				break;
 			case 'petrinet':
 				processedNet = automatonToPetriNet(processedNet); // processed net is actually an automata

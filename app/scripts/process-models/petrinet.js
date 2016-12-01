@@ -161,8 +161,8 @@ const PETRI_NET = {
 
 		for(let i in this.placeMap){
 			const place = this.placeMap[i];
-			delete place.incomingTransitions[id];
-			delete place.outgoingTransitions[id];
+			delete place.incomingTransitionSet[id];
+			delete place.outgoingTransitionSet[id];
 		}
 
 		this.transitionCount--;
