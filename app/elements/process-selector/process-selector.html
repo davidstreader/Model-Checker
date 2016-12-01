@@ -129,6 +129,9 @@
       _greaterThan: function(a, b){
         return a > b;
       },
+      _onNameSelection: function(e, detail){
+        this._hasNameSelection = true;
+      },
       _onProcessSelection: function(e, detail){
         this._hasSelection = true;
         var graph = { name:detail.item.dataAutomatonName };

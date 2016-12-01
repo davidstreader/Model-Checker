@@ -57,9 +57,11 @@
           //If we are currently rendering, ignore any events
           if (_this.rendering) return;
           //When we swap, its much easier to just restore then explode again.
-          if (this.exploded) {
+          if (_this.exploded) {
+            _this.rendering = true;
             _this.fire('explode',false);
             _this.fire('explode',true);
+            _this.rendering = false;
             return;
           }
           //Find the bounding box of the selected processes parent, and scroll to it
@@ -114,8 +116,7 @@
           const paperWidth = _this.paper.$el.width();
           const paperHeight = _this.paper.$el.height();
           const paperScale = V(paper.viewport).scale();
-          Object.keys(_this.graphMap).forEach(function (key) {
-            const parentNode = _this.graphMap[key].parentNode;
+          _.each(_this.displayedGraphs,function (parentNode, key) {
             const parentWidth = parentNode.getBBox().width;
             const parentHeight = parentNode.getBBox().height;
             let minX = parentNode.getBBox().origin().x;
@@ -131,7 +132,8 @@
                   x: paper.options.origin.x,
                   y: paper.options.origin.y,
                   sx: paperScale.sx,
-                  sy: paperScale.sy
+                  sy: paperScale.sy,
+                  key: key
                 };
                 paper.setOrigin(0, 0);
                 paper.scale(Math.min(scaleX, scaleY), Math.min(scaleX, scaleY), 0, 0);
@@ -140,16 +142,19 @@
                 parentNode.translate(-minX,-minY);
                 parentNode.minX = minX;
                 parentNode.minY = minY;
+              } else {
+                  _.each(parentNode.getEmbeddedCells(),node => get$Cell(node).hide());
               }
             } else {
               //Show the element that was hidden above
               get$Cell(parentNode).show();
-              paper.scale(lastOptions.sx, lastOptions.sy, 0, 0);
-              paper.setOrigin(lastOptions.x, lastOptions.y);
-              processDisplay.scrollTop(lastOptions.scrollTop);
-              if (key == app.$.selector.getSelected()) {
+              if (key == lastOptions.key) {
+                paper.scale(lastOptions.sx, lastOptions.sy, 0, 0);
+                paper.setOrigin(lastOptions.x, lastOptions.y);
+                processDisplay.scrollTop(lastOptions.scrollTop);
                 parentNode.translate(parentNode.minX, parentNode.minY);
               }
+              _.each(parentNode.getEmbeddedCells(),node => get$Cell(node).show());
               _this.rescale();
             }
           });
