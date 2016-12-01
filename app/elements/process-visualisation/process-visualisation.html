@@ -185,9 +185,8 @@
           cell = cell.model;
           const parentId = cell.get('parent');
           if (parentId) {
-            cell = _this.jgraph.getCell(parentId);
-          } else {
             _.each(_this.jgraph.getConnectedLinks(cell),link => link.unset('vertices'));
+            cell = _this.jgraph.getCell(parentId);
           }
           let disp = app.get("automata.display");
           for (let i = 0; i < disp.length; i++) {
