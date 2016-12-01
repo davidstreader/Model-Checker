@@ -78,6 +78,9 @@
         document.addEventListener('clearProcess',function(e) {
           //If we are currently rendering, ignore any events
           if (_this.rendering) return;
+          //Reset the explosion status since the last exploded item is now gone
+          app.$.selector._explosionLabel = "Explode to process";
+          _this.fire('explode',false);
           _this.displayedGraphs = {};
           $("#process-display-selector")[0].contentElement.selected = null;
           app.$.selector._hasSelection = false;
@@ -94,6 +97,9 @@
         document.addEventListener('removeProcess', function(e){
           //If we are currently rendering, ignore any events
           if (_this.rendering) return;
+          //Reset the explosion status since the last exploded item is now gone
+          app.$.selector._explosionLabel = "Explode to process";
+          _this.fire('explode',false);
           const name = app.$.selector.getSelected();
           const dispSelector =  $("#process-display-selector")[0].contentElement;
           let graph = _this.displayedGraphs[app.$.selector.getSelected()];
@@ -252,6 +258,13 @@
         graph.parentNode.translate(0,maxY);
         this.rescale();
         app.push("automata.display",graph);
+        $("#process-display-selector")[0].contentElement.selected = app.get("automata.display").length-1;
+        //Find the bounding box of the selected processes parent, and scroll to it
+        //The scroll bar is inside .process-display
+        const nodeBBox = graph.parentNode.getBBox();
+        const scale = V(this.paper.viewport).scale();
+        $(".process-display").stop().animate({scrollTop:nodeBBox.origin().y*scale.sx}, '100', 'swing');
+
       },
       /**
        * Redraw the automata.
