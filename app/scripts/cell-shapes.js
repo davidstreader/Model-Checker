@@ -57,6 +57,35 @@ joint.shapes.pn.Transition = joint.shapes.basic.Generic.extend({
 
   }, joint.shapes.basic.Generic.prototype.defaults)
 });
+
+joint.shapes.pn.StartPlace = joint.dia.Element.extend({
+
+  markup: '<g class="rotatable"><g class="scalable"><circle class="outer"/><circle class="inner"/></g></g>',
+
+  defaults: _.defaultsDeep({
+
+    type: 'pn.StartState',
+    size: { width: 60, height: 60 },
+    attrs: {
+      '.outer': {
+        'stroke-width': 1,
+        transform: 'translate(10, 10)',
+        r: 10,
+        fill: '#ffffff',
+        stroke: '#000000'
+      },
+
+      '.inner': {
+        'stroke-width': 3,
+        transform: 'translate(10, 10)',
+        r: 3,
+        fill: '#000000'
+      }
+    }
+
+  }, joint.dia.Element.prototype.defaults)
+});
+
 joint.shapes.parent = joint.shapes.basic.Rect.extend();
 /**
  * Get a cell's jquery object
