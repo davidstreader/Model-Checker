@@ -135,10 +135,10 @@
       _onProcessSelection: function(e, detail){
         this._hasSelection = true;
         var graph = { name:detail.item.dataAutomatonName };
-        for(var i in this.processes){
-          if(this.processes[i].id === graph.name){
-            graph.graph = this.processes[i].graph;
-            this.fire('change-process', this.processes[i]);
+        for(var i in this.display){
+          if(this.display[i].id === graph.name){
+            graph.graph = this.display[i].graph;
+            this.fire('change-process', this.display[i]);
             break;
           }
         }

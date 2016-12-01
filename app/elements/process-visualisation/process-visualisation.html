@@ -58,10 +58,8 @@
           if (_this.rendering) return;
           //When we swap, its much easier to just restore then explode again.
           if (_this.exploded) {
-            _this.rendering = true;
             _this.fire('explode',false);
             _this.fire('explode',true);
-            _this.rendering = false;
             return;
           }
           //Find the bounding box of the selected processes parent, and scroll to it
