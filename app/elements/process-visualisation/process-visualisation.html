@@ -73,7 +73,6 @@
         document.addEventListener('addProcess', function(e){
           //If we are currently rendering, ignore any events
           if (_this.rendering) return;
-          constructGraphs(app.$.visualiser.graphMap,app.$.selector.getSelectedName());
           _this.addToGraph(app.$.selector.getSelectedName());
         });
         document.addEventListener('clearProcess',function(e) {
@@ -91,6 +90,7 @@
         document.addEventListener('addAll', function(){
           //If we are currently rendering, ignore any events
           if (_this.rendering) return;
+
           _.each(app.get("automata.values"),val => _this.addToGraph(val.id));
         });
         document.addEventListener('removeProcess', function(){
@@ -224,6 +224,8 @@
         });
       },
       addToGraph: function(name) {
+        //construct the graph first if it doesnt exist or has changed
+        constructGraphs(app.$.visualiser.graphMap,name);
         //Work out the bottom corner of the lowest element
         let maxY = 0;
         _.each(this.displayedGraphs,function (graph) {
