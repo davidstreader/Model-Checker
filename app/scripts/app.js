@@ -6,7 +6,7 @@
     /**
      * The data to use.
      */
-    app.automata = {values: []};
+    app.automata = {values: [],display:[]};
     app.liveCompiling = true;
     app.liveBuilding = true;
     app.fairAbstraction = true;

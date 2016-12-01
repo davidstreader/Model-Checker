@@ -27,7 +27,7 @@
 
     <paper-dropdown-menu id="process-name-selector" label="Process" on-iron-select="_onProcessSelection" disabled$="{{!_hasProcesses}}">
     <paper-menu class="dropdown-content">
-      <template is="dom-repeat" items="{{processes}}">
+      <template is="dom-repeat" items="{{display}}">
         <paper-item data-automaton-name="{{item.id}}">{{item.id}}</paper-item>
       </template>
       <paper-listbox class="dropdown-content" selected$="{{_initialSelection}}"></paper-listbox>
@@ -55,6 +55,12 @@
          */
         processes: {
           type: Array
+        },
+        /**
+         * The automata currently on display
+         */
+        display: {
+            type: Array
         },
         _explosionLabel: {
           type: String,
