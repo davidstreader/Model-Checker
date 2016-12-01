@@ -184,6 +184,7 @@
         const _this = this;
         //Convert each process to its respective graph
         _.each(app.get("automata.values"),function(graph,i){
+            console.log(app.get("automata.analysis")[graph.id].isUpdated);
           if (!graph.type || !app.get("automata.analysis")[graph.id].isUpdated) return;
           //Calculate the bottom of the last drawn graph
           let tmpjgraph = new joint.dia.Graph();
@@ -204,9 +205,6 @@
         cells.sort(function (a,b) {
           return a.attributes.type==="fsa.Arrow"?1:-1;
         })
-        console.log(_.reduce(this.displayedGraphs,function(a,b) {
-          return Math.max(b, a.parentNode.getBBox().corner().y);
-        },0));
         this.displayedGraphs[name] = {};
         this.displayedGraphs[name].parentNode = cells[0];
         this.jgraph.addCells(cells);
