@@ -1,18 +1,17 @@
-var testingMode = process.argv.slice(2).length > 0;
-var fs = require('fs');
-var ansi = require('ansi')
-  , cursor = ansi(process.stdout)
-var walk = function(dir, done) {
-  var results = [];
-  var list = fs.readdirSync(dir);
-  var i = 0;
+let testingMode = process.argv.slice(2).length > 0;
+const fs = require('fs');
+const ansi = require('ansi'), cursor = ansi(process.stdout);
+const walk = function (dir, done) {
+  let results = [];
+  const list = fs.readdirSync(dir);
+  let i = 0;
   (function next() {
-    var file = list[i++];
+    let file = list[i++];
     if (!file) return done(results);
     file = dir + '/' + file;
-    var stat = fs.statSync(file);
+    const stat = fs.statSync(file);
     if (stat && stat.isDirectory()) {
-      walk(file, function(res) {
+      walk(file, function (res) {
         results = results.concat(res);
         next();
       });
@@ -23,9 +22,9 @@ var walk = function(dir, done) {
   })();
 };
 const vm = require('vm');
-var files = fs.readdirSync("app/scripts/");
+const files = fs.readdirSync("app/scripts/");
 files.forEach( function( file) {
-  var stat = fs.statSync("app/scripts/"+file);
+  const stat = fs.statSync("app/scripts/" + file);
   if (stat && stat.isDirectory()) {
     walk("app/scripts/"+file, function(results) {
       results.forEach(function (file) {
@@ -41,11 +40,11 @@ include("app/scripts/index-iterator.es6.js");
 include("app/scripts/constants.js");
 
 if (!testingMode) {
-  var express = require('express');
-  var app = express();
-  var http = require('http').Server(app);
-  var io = require('socket.io')(http);
-  var port = 5000;
+  const express = require('express');
+  const app = express();
+  const http = require('http').Server(app);
+  const io = require('socket.io')(http);
+  const port = 5000;
 
   app.use(express.static('app'))
   app.use('/bower_components', express.static('bower_components'));
@@ -68,9 +67,13 @@ if (!testingMode) {
       cursor.bold().yellow();
       console.log("Reading: " + result);
       cursor.reset();
-      var code = fs.readFileSync(result, 'utf-8');
-
-      var compile = Compiler.compile(code, {isLocal: true, isFairAbstraction: true});
+      const code = fs.readFileSync(result, 'utf-8');
+      let compile;
+      //When we hit any exceptions, to begin with we do NOT want them caught by node.
+      //So we can just try catch and then we have the exception ready to check
+      try {
+        compile = Compiler.compile(code, {isLocal: true, isFairAbstraction: true});
+      } catch (compile) {}
       if (compile.message) {
         cursor.red();
         console.log("Error compiling, Message: "+compile.toString());
@@ -83,16 +86,16 @@ if (!testingMode) {
         console.log("Successfully compiled");
         fs.appendFileSync("tests/results.txt",result+"  Success   \n");
 
-        var operations = compile.operations;
+        const operations = compile.operations;
         if(operations.length !== 0){
           cursor.bold().yellow();
           console.log("Operations:");
           fs.appendFileSync("tests/results.txt", "Operations:\n");
           cursor.reset();
 
-          var passed = 0;
-          var failed = 0;
-          for(var i = 0; i < operations.length; i++){
+          let passed = 0;
+          let failed = 0;
+          for(let i = 0; i < operations.length; i++){
             var { operation, process1, process2, result } = operations[i];
             if(result){
               cursor.green();
@@ -103,7 +106,7 @@ if (!testingMode) {
               failed++;
             }
 
-            var op = process1 + ' ' + operation + ' ' + process2;
+            const op = process1 + ' ' + operation + ' ' + process2;
             fs.appendFileSync("tests/results.txt", op + ' = ' + result + '\n');
             console.log(op);
             cursor.reset();
@@ -120,7 +123,7 @@ if (!testingMode) {
             fs.appendFileSync("tests/results.txt", "All operations passed!\n");
           }
           else{
-            var outcome = failed + '/' + operations.length + ' operations failed';
+            const outcome = failed + '/' + operations.length + ' operations failed';
             cursor.red();
             console.log(outcome);
             fs.appendFileSync("tests/results.txt", outcome + "\n");
@@ -132,7 +135,7 @@ if (!testingMode) {
   });
 }
 function include(path) {
-  var code = fs.readFileSync(path, 'utf-8');
+  const code = fs.readFileSync(path, 'utf-8');
   vm.runInThisContext(code, path);
 }
 function exitHandler(options, err) {
