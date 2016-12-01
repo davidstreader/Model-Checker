@@ -73,6 +73,7 @@
         document.addEventListener('addProcess', function(e){
           //If we are currently rendering, ignore any events
           if (_this.rendering) return;
+          constructGraphs(app.$.visualiser.graphMap,app.$.selector.getSelectedName());
           _this.addToGraph(app.$.selector.getSelectedName());
         });
         document.addEventListener('clearProcess',function(e) {
@@ -87,14 +88,12 @@
           app.splice('automata.display', 0, app.get('automata.display').length);
           _this.jgraph.resetCells();
         })
-        document.addEventListener('addAll', function(e){
+        document.addEventListener('addAll', function(){
           //If we are currently rendering, ignore any events
           if (_this.rendering) return;
-          _.each(app.get("automata.values"),function (val) {
-            _this.addToGraph(val.id);
-          });
+          _.each(app.get("automata.values"),val => _this.addToGraph(val.id));
         });
-        document.addEventListener('removeProcess', function(e){
+        document.addEventListener('removeProcess', function(){
           //If we are currently rendering, ignore any events
           if (_this.rendering) return;
           //Reset the explosion status since the last exploded item is now gone
@@ -149,7 +148,7 @@
                 parentNode.minX = minX;
                 parentNode.minY = minY;
               } else {
-                  _.each(parentNode.getEmbeddedCells(),node => get$Cell(node).hide());
+                _.each(parentNode.getEmbeddedCells(),node => get$Cell(node).hide());
               }
             } else {
               //Show the element that was hidden above
@@ -188,9 +187,7 @@
           if (parentId) {
             cell = _this.jgraph.getCell(parentId);
           } else {
-            _.each(_this.jgraph.getConnectedLinks(cell),function(link) {
-              link.unset('vertices');
-            });
+            _.each(_this.jgraph.getConnectedLinks(cell),link => link.unset('vertices'));
           }
           let disp = app.get("automata.display");
           for (let i = 0; i < disp.length; i++) {

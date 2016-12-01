@@ -18,7 +18,6 @@
     app.selectedCtx = 0;
     app.isClientSide = true;
     app.willSaveCookie = true;
-    app.isFirst = true;
 
     if (typeof io !== 'undefined') {
       app.socket = io();
@@ -105,8 +104,6 @@
         }
         app.set('automata.values', graphs.reverse());
         app.set('automata.analysis',results.analysis);
-        app.set('automata.isFirst',results.context.isFirst);
-        constructGraphs(app.$.visualiser.graphMap);
 
         if(results.operations.length !== 0){
           app.$.console.log('Operations:');
@@ -151,8 +148,7 @@
     app.getSettings = function() {
       return {
         isFairAbstraction: app.fairAbstraction,
-        isLocal: app.isClientSide,
-        isFirst: app.isFirst
+        isLocal: app.isClientSide
       };
     }
 
