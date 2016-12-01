@@ -89,7 +89,7 @@
               app.$.console.error(results.stack);
               throw results;
             } else {
-              app.$.console.error(results.message);
+              app.$.console.error(results.toString());
             }
           }
           else{
@@ -107,8 +107,10 @@
             graphs.push(results.processes[id]);
           }
         }
-
         app.set('automata.values', graphs.reverse());
+        app.set('automata.analysis',results.analysis);
+        app.$.visualiser.constructGraphs();
+
         if(results.operations.length !== 0){
           app.$.console.log('Operations:');
           for(var i = 0; i < results.operations.length; i++){

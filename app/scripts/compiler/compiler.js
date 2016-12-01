@@ -41,7 +41,7 @@ const Compiler = {
 		this.lastAnalysis = analysis;
 		this.lastProcesses = processes;
 		this.lastAbstraction = context.isFairAbstraction;
-		return { processes:processes, operations:operations };
+		return { processes:processes, operations:operations, analysis:analysis };
 	},
 
 	remoteCompile: function(ast, context){

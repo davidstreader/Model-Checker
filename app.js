@@ -73,11 +73,11 @@ if (!testingMode) {
       var compile = Compiler.compile(code, {isLocal: true, isFairAbstraction: true});
       if (compile.message) {
         cursor.red();
-        console.log("Error compiling, Message: "+compile.message);
+        console.log("Error compiling, Message: "+compile.toString());
         if (compile.stack) {
           throw compile;
         }
-        fs.appendFileSync("tests/results.txt",result+"  Error   "+compile.message+" \n");
+        fs.appendFileSync("tests/results.txt",result+"  Error   "+compile.toString()+" \n");
       } else {
         cursor.green();
         console.log("Successfully compiled");
