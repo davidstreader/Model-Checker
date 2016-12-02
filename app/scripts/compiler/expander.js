@@ -300,7 +300,8 @@ function expand(ast){
     var regex = '[\$][a-zA-Z0-9]*';
     var match = guard.match(regex);
     while(match !== null){
-      variables.push(match[0].substring(1)+"="+variableMap[match[0]]);
+      if (match[0].indexOf("v") === -1)
+        variables.push(match[0].substring(1)+"="+variableMap[match[0]]);
       guard = guard.replace(match[0], variableMap[match[0]]);
       match = guard.match(regex);
     }
@@ -319,11 +320,11 @@ function expand(ast){
     var split = label.substring(1).replace(/[\[']+/g,'').split("]");
     for (var index in split) {
       var val = split[index];
-      if (val === "") return;
+      if (val === "") continue;
       var variable = localProcess.ranges.ranges[index].variable;
       //Skip variables that havent been resolved (e.g. C[$i][1]) as they would have been skipped
       //by the developer
-      if (variable == val) return;
+      if (variable == val) continue;
       newLbl += ", "+variable.substring(1)+":="+val;
     }
     return newLbl.substring(2);
