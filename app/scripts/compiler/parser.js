@@ -201,7 +201,6 @@ function parse(tokens){
 		// parse all the elements within the set
 		while(index < tokens.length){
 			var action = parseActionLabel(tokens).action;
-
 			// check if a range has been parsed
 			if(currentRanges < actionRanges.length){
 				processIndexedElement(currentRanges, {});
