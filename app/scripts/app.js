@@ -299,12 +299,11 @@
         app.compile();
       }
     });
-    app.willSaveCookie = Boolean(app.getCookie("willSave"));
+    app.willSaveCookie = app.getCookie("willSave")==='true';
     if (app.willSaveCookie) {
       app.$.editor.setCode(decodeURIComponent(app.getCookie('editor')));
       //We need to wait a little so that all the functions are added to app.
       app.compile();
-      app.isFirst = false;
     }
     /**
      * Listen for key presses.
