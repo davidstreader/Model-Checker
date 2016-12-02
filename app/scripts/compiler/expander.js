@@ -371,8 +371,8 @@ function expand(ast){
     var regex = '[\$][a-zA-Z0-9]*';
     var match = expr.match(regex);
     var isVariable = false;
-    var variables = [];
     while(match !== null){
+      //If the variable exists in the variableSet, then we are processing an expression without replacing variables.
       if (variableSet.indexOf(match[0].substring(1)) === 0) {
         isVariable = true;
         expr = expr.replace(match[0], match[0].substring(1));
@@ -381,19 +381,13 @@ function expand(ast){
       if(variableMap[match[0]] === undefined){
         throw new VariableDeclarationException('the variable \'' + match[0].substring(1) + '\' has not been defined');
       }
-      if (typeof variableMap[match[0]] == "number") {
-        variables.push(match[0].substring(1));
-        variables.push(variableMap[match[0]]);
-      } else {
-        variables.push(variableMap[match[0]]);
-      }
       if (!isVariable)
         expr = expr.replace(match[0], variableMap[match[0]]);
       match = expr.match(regex);
     }
     if (isVariable)
-      return {result:expr,expr:expr,tmpVars:[]};
-    return {result:evaluate(expr),expr:expr,tmpVars:variables};
+      return {result:expr,expr:expr};
+    return {result:evaluate(expr),expr:expr};
   }
 
   /**
@@ -416,15 +410,21 @@ function expand(ast){
     }
     var tmpVars = [];
     while(match !== null){
+      //Baiscally, we look for instances of the variables we would like to skip, and then
+      //temporarily change the syntax to avoid them being matched by the above regex, and
+      //just let it pass back to the diagram.
+      //Take care of a basic variable declaration
       if (variableSet.indexOf(match[0].substring(1))===0) {
         label = label.replace(match[0], "#"+match[0].substring(1));
         match = label.match(regex);
         continue;
       }
+      //Take care of assignment operators c[i + 1]
       var test = false;
       if (typeof variableMap[match[0]] == 'string') {
         for (var i in variableSet) {
           if (variableMap[match[0]].indexOf("$"+variableSet[i]) !== -1){
+            //This ends up being equal to the assignment done, so lets pass it back through the chain
             tmpVars.push(variableMap[match[0]]);
             label = label.replace(match[0], "#"+variableSet[i]);
             match = label.match(regex);
@@ -434,12 +434,7 @@ function expand(ast){
         }
         if (test) continue;
       }
-      // if ((typeof variableMap[match[0]] == 'string' && variableMap[match[0]].indexOf("$i") !== -1)) {
-      //   tmpVars.push(variableMap[match[0]]);
-      //   label = label.replace(match[0], "#i");
-      //   match = label.match(regex);
-      //   continue;
-      // }
+      //Normal variable replacement
       var expr = processExpression(match[0], variableMap);
       label = label.replace(match[0], expr.result);
       match = label.match(regex);
