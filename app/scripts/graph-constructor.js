@@ -41,8 +41,10 @@ function visualizeAutomata(process, name, graphMap, jgraph) {
     const from = 'n' + edges[i].from;
     const to = 'n' + edges[i].to;
     if(edges[i].getMetaData('guard') !== undefined){
-      label =edges[i].getMetaData('guard')+"\n"+label;
       label =edges[i].getMetaData('next')+"\n"+label;
+      label =edges[i].getMetaData('guard')+"\n"+label;
+      if (edges[i].getMetaData('variables') !== undefined) label = "\n"+label;
+      _.each(edges[i].getMetaData('variables'),variable => label =variable+label)
     }
     _link(nodeMap[from],nodeMap[to], label,parentNode,jgraph);
   }

@@ -87,6 +87,7 @@ function interpretAutomaton(process, processesMap, context){
 		if (astNode.guard !== undefined) {
 		  metadata.guard = astNode.guard;
       metadata.next = astNode.next;
+      metadata.variables = astNode.variables;
     }
 		automaton.addEdge(id, astNode.from.action, currentNode, next, metadata);
 		if(astNode.to.type !== 'reference'){

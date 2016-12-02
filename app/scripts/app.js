@@ -88,12 +88,12 @@
             }
           }
           else{
-            app.finalizeBuild(results);
+            app.finalizeBuild(results, undefined, override);
           }
         }
       }.bind(this), 0);
     }
-    app.finalizeBuild = function(results, graphs) {
+    app.finalizeBuild = function(results, graphs, override) {
       if(app.liveBuilding === true || override){
         // otherwise render the automata
         if (!graphs) {
@@ -302,7 +302,6 @@
     app.willSaveCookie = app.getCookie("willSave")==='true';
     if (app.willSaveCookie) {
       app.$.editor.setCode(decodeURIComponent(app.getCookie('editor')));
-      //We need to wait a little so that all the functions are added to app.
       app.compile();
     }
     /**

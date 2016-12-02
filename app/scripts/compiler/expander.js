@@ -15,6 +15,7 @@
  */
 function expand(ast){
   var processes = ast.processes;
+  var localProcess;
   var variableSet;
   // expand the defined processes
   for(var i = 0; i < processes.length; i++){
@@ -43,6 +44,7 @@ function expand(ast){
   function expandLocalProcessDefinitions(localProcesses, variableMap){
     var newProcesses = [];
     for(var j = 0; j < localProcesses.length; j++){
+      localProcess = localProcesses[j];
       if(localProcesses[j].ident.ranges === undefined){
         localProcesses[j].process = expandNode(localProcesses[j].process, variableMap);
         newProcesses.push(localProcesses[j]);
@@ -217,10 +219,6 @@ function expand(ast){
       expr = expr.replace(match[0],variableMap[match[0]]);
       match = expr.match(regex);
     }
-    if (!astNode.to.next) {
-      //TODO: Clearly, using this to work out the new node doesnt work at all. We need to do something else.
-      console.log("")
-    }
     astNode.from = expandNode(astNode.from, variableMap);
     astNode.to = expandNode(astNode.to, variableMap);
     return astNode;
@@ -264,23 +262,72 @@ function expand(ast){
 
     if(guard.result){
       var node = expandNode(astNode.trueBranch, variableMap);
-      if (node.to.next)
+      if (node.to.next) {
         node.next = node.to.next;
-      if (astNode.guard)
-        node.guard = processExpression(astNode.guard,variableMap).expr;
+      } else {
+        node.next = parseIndexedLabel(node.to.ident, variableMap);
+      }
+      if (astNode.guard) {
+        node.guard = processExpression(astNode.guard, variableMap).expr;
+        node.variables = processVariables(variableMap[astNode.guard], variableMap);
+      }
       return node;
     }
     else if(astNode.falseBranch !== undefined){
       var node = expandNode(astNode.falseBranch, variableMap);
-      if (node.to.next)
+      if (node.to.next) {
         node.next = node.to.next;
-      if (astNode.guard)
-        node.guard = processExpression(astNode.guard,variableMap).expr;
+      } else {
+        node.next = parseIndexedLabel(node.to.ident, variableMap);
+      }
+      if (astNode.guard) {
+        node.guard = processExpression(astNode.guard, variableMap).expr;
+        node.variables = processVariables(variableMap[astNode.guard], variableMap);
+      }
       return node;
     }
     return { type:'empty' };
   }
-
+  /**
+   * Pull variable names and values from a guard
+   * @param {string} guard the guard
+   * @param {string -> string} variableMap
+   * @returns {string}
+   */
+  function processVariables(guard, variableMap) {
+    var variables = [];
+    // replace any variables declared in the expression with its value
+    var regex = '[\$][a-zA-Z0-9]*';
+    var match = guard.match(regex);
+    while(match !== null){
+      variables.push(match[0].substring(1)+"="+variableMap[match[0]]);
+      guard = guard.replace(match[0], variableMap[match[0]]);
+      match = guard.match(regex);
+    }
+    return variables;
+  }
+  /**
+   * Change from the form C[1][2] to i:=1 j:=2
+   * @param {string} ident the original identifier
+   * @param {string -> string} variableMap
+   * @returns {string}
+   */
+  function parseIndexedLabel(ident, variableMap) {
+    var lbl = processLabel(ident, variableMap);
+    var newLbl = "";
+    var label = (lbl.label || lbl).substring(0);
+    var split = label.substring(1).replace(/[\[']+/g,'').split("]");
+    for (var index in split) {
+      var val = split[index];
+      if (val === "") return;
+      var variable = localProcess.ranges.ranges[index].variable;
+      //Skip variables that havent been resolved (e.g. C[$i][1]) as they would have been skipped
+      //by the developer
+      if (variable == val) return;
+      newLbl += ", "+variable.substring(1)+":="+val;
+    }
+    return newLbl.substring(2);
+  }
   /**
    * Expands the specified function ast node.
    *
@@ -302,7 +349,11 @@ function expand(ast){
    */
   function expandIdentiferNode(astNode, variableMap){
     var lbl = processLabel(astNode.ident, variableMap);
-    astNode.ident = lbl.label;
+    if (lbl.label) {
+      astNode.ident = lbl.label;
+    } else {
+      astNode.ident = lbl;
+    }
     if (lbl.tmpVars && lbl.tmpVars.length > 0) {
       astNode.next =lbl.tmpVars[0].substring(1);
     }
@@ -408,7 +459,6 @@ function expand(ast){
     // replace any variables declared in the label with its value
     var regex = '[\$][a-zA-Z0-9]*';
     var match = label.match(regex);
-
     // if no variable was found then return
     if(match === null){
       return label;
