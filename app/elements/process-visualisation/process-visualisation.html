@@ -78,7 +78,8 @@
           if (_this.rendering) return;
           //Reset the explosion status since the last exploded item is now gone
           app.$.selector._explosionLabel = "Explode to process";
-          _this.fire('explode',false);
+          if (_this.exploded)
+            _this.fire('explode',false);
           _this.displayedGraphs = {};
           $("#process-display-selector")[0].contentElement.selected = null;
           app.$.selector._hasSelection = false;
@@ -95,6 +96,7 @@
           if (_this.rendering) return;
           //Reset the explosion status since the last exploded item is now gone
           app.$.selector._explosionLabel = "Explode to process";
+          if (_this.exploded)
           _this.fire('explode',false);
           const name = app.$.selector.getSelected();
           const dispSelector =  $("#process-display-selector")[0].contentElement;
