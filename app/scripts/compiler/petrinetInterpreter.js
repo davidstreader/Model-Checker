@@ -130,9 +130,9 @@ function interpretPetriNet(process, processesMap, context){
 		const id = net.nextTransitionId;
 		const label = astNode.from.action;
     const metadata  = {};
-    if (astNode.guardVal !== undefined) {
-      metadata.guard = astNode.guardVal;
-      metadata.guardVariables = astNode.guardVariables;
+    if (astNode.guard !== undefined) {
+      metadata.guard = astNode.guard;
+      metadata.next = astNode.next;
     }
 		const transition = net.addTransition(id, label, [currentPlace], [nextPlace], metadata);
 		interpretNode(astNode.to, net, nextPlace, transition);

@@ -143,7 +143,7 @@ function parse(tokens){
 		if(tokens[index].type === 'identifier' && tokens[index + 1].value !== '..'){
 			var ident = parseIdentifier(tokens).ident;
 			range = constantsMap[ident];
-			
+
 			// check if constant has been defined
 			if(range === undefined){
 				throw new ParserException('The constant \'' + ident + '\' has not been defined');
@@ -163,7 +163,7 @@ function parse(tokens){
 		}
 
 		actionRanges.push({ type:'index', variable:variable, range:range });
-		
+
 		return variable;
 	}
 
@@ -197,11 +197,11 @@ function parse(tokens){
 		gobble(tokens[index], '{');
 		var currentRanges = actionRanges.length;
 		var set = [];
-		
+
 		// parse all the elements within the set
 		while(index < tokens.length){
 			var action = parseActionLabel(tokens).action;
-			
+
 			// check if a range has been parsed
 			if(currentRanges < actionRanges.length){
 				processIndexedElement(currentRanges, {});
@@ -246,7 +246,7 @@ function parse(tokens){
 		}
 
 		/**
-		 * Helper function for parsing action ranges within sets which replaces the variable 
+		 * Helper function for parsing action ranges within sets which replaces the variable
 		 * references within an action label with their value from the specified variable map.
 		 *
 		 * @param {string -> int} variableMap - a mapping of variable names to values
@@ -255,7 +255,7 @@ function parse(tokens){
 			var regex = '[\$][v]*[a-zA-Z0-9]*';
 			var result = action;
 			var match = result.match(regex);
-			
+
 			while(match !== null){
 				result = result.replace(match[0], variableMap[match[0]]);
 				match = result.match(regex);
@@ -359,7 +359,7 @@ function parse(tokens){
 	function parseSetDefinition(tokens){
 		var ident = parseAssignment(tokens, 'set');
 		checkValidIdentifier(ident);
-		
+
 		// check if this set is referencing another set
 		var set;
 		if(tokens[index].type === 'identifier'){
@@ -380,7 +380,7 @@ function parse(tokens){
 
 		}
 		else{
-			set = parseSet(tokens);			
+			set = parseSet(tokens);
 		}
 
 		constantsMap[ident] = set;
@@ -606,7 +606,7 @@ function parse(tokens){
 		var to = parseLocalProcess(tokens);
 
 		var node = { type:'sequence', from:from, to:to };
-		
+
 		while(ranges.length !== 0){
 			var next = ranges.pop();
 			next.process = node;
@@ -1015,7 +1015,7 @@ function parse(tokens){
 
 	function parseExpression(tokens, exprType){
 
-	} 
+	}
 
 	/**
 	 * Attempts to parse and return a base expression from the specified array
@@ -1025,7 +1025,7 @@ function parse(tokens){
 	 * BASE_EXPR := INTEGER | VARIABLE | IDENTIFIER
 	 *
 	 * @param {token[] tokens} - the array of tokens to parse
-	 * @return {string} - the base expression 
+	 * @return {string} - the base expression
 	 */
 	function parseBaseExpression(tokens){
 		if(tokens[index].type === 'integer'){
@@ -1079,7 +1079,7 @@ function parse(tokens){
 		if(tokens[index].type === 'operator'){
 			expr += parseOperator(tokens);
 			expr += parseExpression(tokens);
-			
+
 			var variable = generateVariableName();
 			variableMap[variable] = expr;
 			return variable;
@@ -1125,7 +1125,7 @@ function parse(tokens){
 			gobble(tokens[index], '(');
 			var expr = parseExpression(tokens);
 			gobble(tokens[index], ')');
-		
+
 			return expr;
 		}
 		else{
@@ -1371,7 +1371,7 @@ function parse(tokens){
 		for(var i = 0; i < actionRanges.length; i++){
 			ranges[i] = actionRanges[i];
 		}
-	 	
+
 	 	// attempt to parse the specified functions
 	 	for(var i = 0; i < functions.length; i++){
 	 		try{
@@ -1443,6 +1443,6 @@ function parse(tokens){
 		this.location = location;
 		this.toString = function(){
 			return 'ParserException: ' + message;
-		};	
+		};
 	}
 }

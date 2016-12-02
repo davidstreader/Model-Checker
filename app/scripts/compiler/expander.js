@@ -15,14 +15,16 @@
  */
 function expand(ast){
   var processes = ast.processes;
-
+  var variableSet;
   // expand the defined processes
   for(var i = 0; i < processes.length; i++){
     var variableMap = JSON.parse(JSON.stringify(ast.variableMap));
+    variableSet = processes[i].variables?processes[i].variables.set:[];
     processes[i].process = expandNode(processes[i].process, variableMap);
 
     // expand local procsses if any are defined
     if(processes[i].local.length !== 0){
+      variableSet = processes[i].variables?processes[i].variables.set:[];
       variableMap = JSON.parse(JSON.stringify(ast.variableMap));
       processes[i].local = expandLocalProcessDefinitions(processes[i].local, variableMap);
     }
@@ -51,7 +53,6 @@ function expand(ast){
         newProcesses = newProcesses.concat(expandIndexedDefinition(localProcesses[j], ident, ranges, variableMap));
       }
     }
-
     return newProcesses;
   }
 
@@ -87,6 +88,9 @@ function expand(ast){
         var element = iterator.next;
         variableMap[variable] = element;
         var newIdent = ident + '[' + element + ']';
+        if (variableSet.indexOf(variable.substring(1)) != -1) {
+          newIdent = ident + '[' + variable + ']';
+        }
         newProcesses = newProcesses.concat(expandIndexedDefinition(localProcess, newIdent, ranges, variableMap));
       }
     }
@@ -151,7 +155,6 @@ function expand(ast){
     if(node.type === 'empty'){
       return { type:'terminal', terminal:'STOP' };
     }
-
     return node;
   }
 
@@ -203,6 +206,16 @@ function expand(ast){
    * @return {astNode} - the expanded ast node
    */
   function expandSequenceNode(astNode, variableMap){
+    var expr = astNode.to.ident;
+    var regex = '[\$][a-zA-Z0-9]*';
+    var match = expr.match(regex);
+    while (match != null) {
+      if (typeof variableMap[match[0]] === 'string') {
+        astNode.to.next = variableMap[match[0]].substring(1);
+      }
+      expr = expr.replace(match[0],variableMap[match[0]]);
+      match = expr.match(regex);
+    }
     astNode.from = expandNode(astNode.from, variableMap);
     astNode.to = expandNode(astNode.to, variableMap);
     return astNode;
@@ -246,14 +259,18 @@ function expand(ast){
 
     if(guard.result){
       var node = expandNode(astNode.trueBranch, variableMap);
-      node.guardVal = guard.expr;
-      node.guardVariables = guard.variables;
+      if (node.to.next)
+        node.next = node.to.next;
+      if (astNode.guard)
+        node.guard = processExpression(astNode.guard,variableMap).expr;
       return node;
     }
     else if(astNode.falseBranch !== undefined){
       var node = expandNode(astNode.falseBranch, variableMap);
-      node.guardVal = guard.expr;
-      node.guardVariables = guard.variables;
+      if (node.to.next)
+        node.next = node.to.next;
+      if (astNode.guard)
+        node.guard = processExpression(astNode.guard,variableMap).expr;
       return node;
     }
     return { type:'empty' };
@@ -279,7 +296,11 @@ function expand(ast){
    * @return {astNode} - the expanded ast node
    */
   function expandIdentiferNode(astNode, variableMap){
-    astNode.ident = processLabel(astNode.ident, variableMap);
+    var lbl = processLabel(astNode.ident, variableMap);
+    astNode.ident = lbl.label;
+    if (lbl.tmpVars && lbl.tmpVars.length > 0) {
+      astNode.next =lbl.tmpVars[0].substring(1);
+    }
     if(astNode.label !== undefined){
       astNode.label = expandNode(astNode.label, variableMap);
     }
@@ -349,18 +370,30 @@ function expand(ast){
     // replace any variables declared in the expression with its value
     var regex = '[\$][a-zA-Z0-9]*';
     var match = expr.match(regex);
+    var isVariable = false;
     var variables = [];
     while(match !== null){
+      if (variableSet.indexOf(match[0].substring(1)) === 0) {
+        isVariable = true;
+        expr = expr.replace(match[0], match[0].substring(1));
+      }
       // check if the variable has been defined
       if(variableMap[match[0]] === undefined){
         throw new VariableDeclarationException('the variable \'' + match[0].substring(1) + '\' has not been defined');
       }
-      if (typeof variableMap[match[0]] == "number")
-        variables.push({name:match[0].substring(1),value:variableMap[match[0]]});
-      expr = expr.replace(match[0], variableMap[match[0]]);
+      if (typeof variableMap[match[0]] == "number") {
+        variables.push(match[0].substring(1));
+        variables.push(variableMap[match[0]]);
+      } else {
+        variables.push(variableMap[match[0]]);
+      }
+      if (!isVariable)
+        expr = expr.replace(match[0], variableMap[match[0]]);
       match = expr.match(regex);
     }
-    return {result:evaluate(expr),expr:expr,variables:variables};
+    if (isVariable)
+      return {result:expr,expr:expr,tmpVars:[]};
+    return {result:evaluate(expr),expr:expr,tmpVars:variables};
   }
 
   /**
@@ -381,14 +414,37 @@ function expand(ast){
     if(match === null){
       return label;
     }
-
+    var tmpVars = [];
     while(match !== null){
-      var expr = processExpression(match[0], variableMap).result;
-      label = label.replace(match[0], expr);
+      if (variableSet.indexOf(match[0].substring(1))===0) {
+        label = label.replace(match[0], "#"+match[0].substring(1));
+        match = label.match(regex);
+        continue;
+      }
+      var test = false;
+      if (typeof variableMap[match[0]] == 'string') {
+        for (var i in variableSet) {
+          if (variableMap[match[0]].indexOf("$"+variableSet[i]) !== -1){
+            tmpVars.push(variableMap[match[0]]);
+            label = label.replace(match[0], "#"+variableSet[i]);
+            match = label.match(regex);
+            test = true;
+            break;
+          }
+        }
+        if (test) continue;
+      }
+      // if ((typeof variableMap[match[0]] == 'string' && variableMap[match[0]].indexOf("$i") !== -1)) {
+      //   tmpVars.push(variableMap[match[0]]);
+      //   label = label.replace(match[0], "#i");
+      //   match = label.match(regex);
+      //   continue;
+      // }
+      var expr = processExpression(match[0], variableMap);
+      label = label.replace(match[0], expr.result);
       match = label.match(regex);
     }
-
-    return label;
+    return {label:label.replace("#","$"),tmpVars:tmpVars};
   }
 
   /**

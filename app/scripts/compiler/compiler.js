@@ -30,11 +30,8 @@ const Compiler = {
 
 		const abstractionChanged = context.isFairAbstraction !== this.lastAbstraction;
 		const analysis = performAnalysis(ast.processes, this.lastAnalysis, abstractionChanged);
-
 		ast.processes = replaceReferences(ast.processes);
-
 		const processes = interpret(ast.processes, analysis, this.lastProcesses, context);
-
 		const operations = evaluateOperations(ast.operations, processes, ast.variableMap);
 
 		this.lastAst = ast;

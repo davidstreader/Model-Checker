@@ -71,7 +71,6 @@ function interpretAutomaton(process, processesMap, context){
 			default:
 				break;
 		}
-
 		if(astNode.label !== undefined){
 			processLabelling(automaton, astNode.label.action);
 		}
@@ -85,9 +84,9 @@ function interpretAutomaton(process, processesMap, context){
 		const next = (astNode.to.type === 'reference') ? referenceMap[astNode.to.reference] : automaton.addNode();
 		const id = automaton.nextEdgeId;
 		const metadata  = {};
-		if (astNode.guardVal !== undefined) {
-		  metadata.guard = astNode.guardVal;
-		  metadata.guardVariables = astNode.guardVariables;
+		if (astNode.guard !== undefined) {
+		  metadata.guard = astNode.guard;
+      metadata.next = astNode.next;
     }
 		automaton.addEdge(id, astNode.from.action, currentNode, next, metadata);
 		if(astNode.to.type !== 'reference'){
@@ -139,7 +138,6 @@ function interpretAutomaton(process, processesMap, context){
 
 	function interpretIdentifier(astNode, automaton, currentNode){
 		const reference = processesMap[astNode.ident].clone;
-
 		// check if the reference is not an automata
 		if(reference.type !== 'automata'){
 			processStack.push(reference);
