@@ -1,0 +1,12 @@
+const Coins = 2
+automata {
+Money = C[i][1],
+        C[i:1..Coins][j:1..Coins] = (when (i < Coins) coin -> C[i + 1][j] | when (j < Coins) ping -> C[i][j+1]| when (j == Coins) ping -> C[i][1])${i}.
+Money6 = C[1][1],
+        C[i:1..Coins][j:1..Coins] = (when (i < Coins) coin -> C[i + 1][j] | when (j < Coins) ping -> C[i][j+1]| when (j == Coins) ping -> C[i][1]).
+Money2 = D[1],
+        D[i:1..Coins] = (when (i < Coins) coin -> D[i + 1] | when (i == Coins) ping -> D[1]).
+Money5 = C[1][1],
+        C[i:1..Coins][j:1..Coins] = (when (i < Coins && j < Coins) coin -> C[i + 1][j + 1] | when (j < Coins) ping -> C[i][j+1]| when (j == Coins) ping -> C[i][1]).
+
+}

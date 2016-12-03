@@ -208,16 +208,18 @@ function expand(ast){
    * @return {astNode} - the expanded ast node
    */
   function expandSequenceNode(astNode, variableMap){
-    var expr = astNode.to.ident;
-    var regex = '[\$][a-zA-Z0-9]*';
-    var match = expr.match(regex);
-    while (match != null) {
-      //String works perfectly for i+1, but fails for root node.
-      if (typeof variableMap[match[0]] === 'string') {
-        astNode.to.next = variableMap[match[0]].substring(1);
+    if (astNode.to.ident) {
+      var expr = astNode.to.ident;
+      var regex = '[\$][a-zA-Z0-9]*';
+      var match = expr.match(regex);
+      while (match != null) {
+        //String works perfectly for i+1, but fails for root node.
+        if (typeof variableMap[match[0]] === 'string') {
+          astNode.to.next = variableMap[match[0]].substring(1);
+        }
+        expr = expr.replace(match[0], variableMap[match[0]]);
+        match = expr.match(regex);
       }
-      expr = expr.replace(match[0],variableMap[match[0]]);
-      match = expr.match(regex);
     }
     astNode.from = expandNode(astNode.from, variableMap);
     astNode.to = expandNode(astNode.to, variableMap);
@@ -300,8 +302,11 @@ function expand(ast){
     var regex = '[\$][a-zA-Z0-9]*';
     var match = guard.match(regex);
     while(match !== null){
-      if (match[0].indexOf("v") === -1)
+      if (match[0].indexOf("v") === -1 && variableSet.indexOf(match[0].substring(1)) ===-1)
         variables.push(match[0].substring(1)+"="+variableMap[match[0]]);
+      if (variableSet.indexOf(match[0].substring(1)) > -1) {
+        variables.push(match[0].substring(1));
+      }
       guard = guard.replace(match[0], variableMap[match[0]]);
       match = guard.match(regex);
     }
@@ -314,6 +319,7 @@ function expand(ast){
    * @returns {string}
    */
   function parseIndexedLabel(ident, variableMap) {
+    if (!ident) return;
     var lbl = processLabel(ident, variableMap);
     var newLbl = "";
     var label = (lbl.label || lbl).substring(0);
