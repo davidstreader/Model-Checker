@@ -128,13 +128,14 @@ function interpretPetriNet(process, processesMap, context){
 	function interpretSequence(astNode, net, currentPlace, lastTransition){
 		const nextPlace = net.addPlace();
 		const id = net.nextTransitionId;
-		const label = astNode.from.action;
+		let label = astNode.from.action;
     const metadata  = {};
     if (astNode.guard !== undefined) {
       metadata.guard = astNode.guard;
       metadata.next = astNode.next;
       metadata.variables = astNode.variables;
     }
+    if (typeof label !== 'string') label = astNode.from.action.label;
 		const transition = net.addTransition(id, label, [currentPlace], [nextPlace], metadata);
 		interpretNode(astNode.to, net, nextPlace, transition);
 	}
