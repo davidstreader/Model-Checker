@@ -43,6 +43,16 @@ const Compiler = {
 
 	remoteCompile: function(ast, context){
     app.socket.emit('compile',{ast:ast,context:context},function(results) {
+      if (results.type === 'error') {
+        if (results.stack) {
+          app.$.console.error("An exception was thrown that was not related to your script.");
+          app.$.console.error(results.stack);
+          throw results;
+        } else {
+          app.$.console.error(results.message);
+        }
+        return;
+      }
       const graphs = [];
       for(let id in results.processes){
         const graph = results.processes[id];
