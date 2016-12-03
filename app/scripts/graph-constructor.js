@@ -42,7 +42,8 @@ function visualizeAutomata(process, name, graphMap, jgraph) {
     const to = 'n' + edges[i].to;
     let vars = edges[i].getMetaData('variables');
     if(edges[i].getMetaData('guard') !== undefined){
-      label =edges[i].getMetaData('next')+"\n"+label;
+      if (edges[i].getMetaData('next') !== undefined)
+        label =edges[i].getMetaData('next')+"\n"+label;
       label =edges[i].getMetaData('guard')+"\n"+label;
       if (vars !== undefined) label = "\n"+label;
       _.each(vars,(variable,i) => {
@@ -81,9 +82,15 @@ function visualizePetriNet(process, name, graphMap, jgraph) {
   const transitions = process.transitions;
   for(let i = 0; i < transitions.length; i++){
     let label = transitions[i].label;
+    let vars = transitions[i].getMetaData('variables');
     if(transitions[i].getMetaData('guard') !== undefined){
+      if (transitions[i].getMetaData('next') !== undefined)
+        label =transitions[i].getMetaData('next')+"\n"+label;
       label =transitions[i].getMetaData('guard')+"\n"+label;
-      label =transitions[i].getMetaData('next')+"\n"+label;
+      if (vars !== undefined) label = "\n"+label;
+      _.each(vars,(variable,i) => {
+        label =(vars.length==i+1?"":",")+variable+label;
+      })
     }
     nodeMap['t' + transitions[i].id] = new joint.shapes.pn.Transition({
       attrs: { text : { text: label }}

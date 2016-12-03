@@ -322,7 +322,8 @@ function expand(ast){
     if (!ident) return;
     var lbl = processLabel(ident, variableMap);
     var newLbl = "";
-    var label = (lbl.label || lbl).substring(0);
+    var label = (lbl.label || lbl);
+    if (label.indexOf("[")===-1) return ("->"+label);
     var split = label.substring(1).replace(/[\[']+/g,'').split("]");
     for (var index in split) {
       var val = split[index];
