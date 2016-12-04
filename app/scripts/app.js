@@ -311,7 +311,9 @@
     app.liveCompiling = app.getCookie("liveCompiling")==='true';
     if (app.willSaveCookie) {
       app.$.editor.setCode(decodeURIComponent(app.getCookie('editor')));
-      app.compile();
+      //Dont compile autosaved code unless we set live compiling
+      if (app.liveCompiling)
+        app.compile();
     }
     /**
      * Listen for key presses.
