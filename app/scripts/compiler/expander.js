@@ -456,7 +456,7 @@ function expand(ast){
       match = expr.match(regex);
     }
     if (isVariable)
-      return {result:expr,expr:expr};
+      return {result:expr,expr:expr,exprWithVars:expr};
     return {result:evaluate(expr),expr:expr,exprWithVars:exprWithVars.split("$").join("")};
   }
 
