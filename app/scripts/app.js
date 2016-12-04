@@ -306,9 +306,9 @@
         app.compile();
       }
     });
-    app.willSaveCookie = app.getCookie("willSave")==='true';
-    app.liveBuilding = app.getCookie("liveBuilding")==='true';
-    app.liveCompiling = app.getCookie("liveCompiling")==='true';
+    app.willSaveCookie = app.getCookie("willSave")!=='false';
+    app.liveBuilding = app.getCookie("liveBuilding")!=='false';
+    app.liveCompiling = app.getCookie("liveCompiling")!=='false';
     if (app.willSaveCookie) {
       app.$.editor.setCode(decodeURIComponent(app.getCookie('editor')));
       //Dont compile autosaved code unless we set live compiling
