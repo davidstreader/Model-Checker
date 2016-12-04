@@ -35,13 +35,10 @@ function replaceReferences(processes){
 		localReferenceMap =  new LocalReferenceMap(processes[i].local);
 
 		const ident = processes[i].ident.ident;
-
 		// construct a mapping from process identifiers to reference ids
 		const idMap = {};
 		processes[i].process = replaceProcess(processes[i].process, ident, idMap);
-
 		delete processes[i].local;
-
 		// put current process in the reference map
 		referenceMap[ident] = processes[i].process;
 	}
@@ -128,7 +125,6 @@ function replaceReferences(processes){
 		else if(referenceMap[reference] !== undefined){
 			return astNode;
 		}
-
 		// check that the reference was valid
 		if(process === undefined){
       throw new ReferenceReplacerException(reference);

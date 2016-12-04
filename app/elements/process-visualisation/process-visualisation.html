@@ -97,7 +97,7 @@
           //Reset the explosion status since the last exploded item is now gone
           app.$.selector._explosionLabel = "Explode to process";
           if (_this.exploded)
-          _this.fire('explode',false);
+            _this.fire('explode',false);
           const name = app.$.selector.getSelected();
           const dispSelector =  $("#process-display-selector")[0].contentElement;
           let graph = _this.displayedGraphs[app.$.selector.getSelected()];
@@ -179,7 +179,6 @@
           cell = cell.model;
           const parentId = cell.get('parent');
           if (parentId) {
-            _.each(_this.jgraph.getConnectedLinks(cell),link => link.unset('vertices'));
             cell = _this.jgraph.getCell(parentId);
           }
           let disp = app.get("automata.display");
@@ -190,6 +189,12 @@
           }
           _this.rendering = false;
         });
+        this.paper.on('cell:pointermove', function(cell) {
+          cell = cell.model;
+          const parentId = cell.get('parent');
+          if (!parentId) return;
+          adjustVertices(_this.jgraph,cell);
+        });
         this.jgraph.on('change:position', function(cell) {
           //Exploded diagrams are limited by changing the dimensions of the paper
           if (_this.exploded || _this.rendering) {
@@ -197,7 +202,6 @@
           }
           const parentId = cell.get('parent');
           if (!parentId) return;
-
           const parent = _this.jgraph.getCell(parentId);
 
           const parentBbox = parent.getBBox();
@@ -218,6 +222,7 @@
         });
       },
       addGraph: function(name) {
+        this.rendering = true;
         //construct the graph first if it doesnt exist or has changed
         constructGraphs(this.graphMap,name);
         //Work out the bottom corner of the lowest element
@@ -253,6 +258,7 @@
         const scale = V(this.paper.viewport).scale();
         $(".process-display").stop().animate({scrollTop:nodeBBox.origin().y*scale.sx}, '100', 'swing');
 
+        this.rendering = false;
       },
       /**
        * Redraw the automata.

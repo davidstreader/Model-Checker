@@ -40,12 +40,13 @@ function visualizeAutomata(process, name, graphMap, jgraph) {
     let label = edges[i].label;
     const from = 'n' + edges[i].from;
     const to = 'n' + edges[i].to;
+    let vars = edges[i].getMetaData('variables');
     if(edges[i].getMetaData('guard') !== undefined){
+      if (edges[i].getMetaData('next') !== undefined)
+        label =edges[i].getMetaData('next')+"\n"+label;
       label =edges[i].getMetaData('guard')+"\n"+label;
-      const vars = edges[i].getMetaData('guardVariables');
-      for (let v = 1; v<vars.length; v++) {
-        label = vars[v].name+"="+vars[v].value + "\n" + label;
-      }
+      if (vars !== undefined)
+        label =vars.toString().replace(/[\[\]]]/g,"")+"\n"+label;
     }
     _link(nodeMap[from],nodeMap[to], label,parentNode,jgraph);
   }
@@ -79,12 +80,13 @@ function visualizePetriNet(process, name, graphMap, jgraph) {
   const transitions = process.transitions;
   for(let i = 0; i < transitions.length; i++){
     let label = transitions[i].label;
+    let vars = transitions[i].getMetaData('variables');
     if(transitions[i].getMetaData('guard') !== undefined){
+      if (transitions[i].getMetaData('next') !== undefined)
+        label =transitions[i].getMetaData('next')+"\n"+label;
       label =transitions[i].getMetaData('guard')+"\n"+label;
-      const vars = transitions[i].getMetaData('guardVariables');
-      for (let v = 1; v<vars.length; v++) {
-        label = vars[v].name+"="+vars[v].value + "\n" + label;
-      }
+      if (vars !== undefined)
+        label =vars.toString().replace(/[\[\]]]/g,"")+"\n"+label;
     }
     nodeMap['t' + transitions[i].id] = new joint.shapes.pn.Transition({
       attrs: { text : { text: label }}
@@ -115,7 +117,7 @@ function _link(source, target, label, parentNode, jgraph) {
     smooth: false,
     attrs: {
       //Add a slight transparency, so that you can see the links behind
-      'rect': {fill: 'rgba(255, 255, 255, 0.3)'}
+      'rect': {fill: Colours.textBackground}
     }
   });
   parentNode.embed(cell);
@@ -163,3 +165,26 @@ function constructGraphs(graphMap, id) {
   joint.layout.DirectedGraph.layout(tmpjgraph, {rankDir:'LR',setLinkVertices: true});
   addLabelAndPadding(graphMap,graph.id,tmpjgraph);
 }
+/**
+ * Move a cells vertices when moving the cell
+ * @param graph The graph
+ * @param cell the cell
+ */
+function adjustVertices(graph, cell) {
+
+  // If the cell is a view, find its model.
+  cell = cell.model || cell;
+  //Ignore all clicks that arent on a cell
+  if (!cell.attributes.position) return;
+  const {x:nx,y:ny} = cell.get("position");
+  const {x:ox,y:oy} = cell.previous("position");
+  const diff = {x:nx-ox,y:ny-oy};
+  //Lets just nuke the original verticies.
+  _.each(graph.getConnectedLinks(cell),link =>{
+    let verticies = [];
+    _.each(link.get("vertices"),function (vert) {
+      verticies.push({x:vert.x+diff.x,y:vert.y+diff.y});
+    })
+    link.set('vertices', verticies);
+  });
+};

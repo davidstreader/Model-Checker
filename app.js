@@ -51,7 +51,14 @@ if (!testingMode) {
   io.on('connection', function (socket) {
     socket.emit('connectedToServer', {});
     socket.on('compile', function (obj, ack) {
-      ack(Compiler.localCompile(obj.ast,obj.context));
+      //Node appears to handle exceptions differently. Lets catch them and pass them back instead of killing the app.
+      try {
+        ack(Compiler.localCompile(obj.ast, obj.context));
+      } catch (ex) {
+        ex.type = "error";
+        ex.message = ex.toString();
+        ack(ex);
+      }
     });
   });
 
@@ -75,7 +82,7 @@ if (!testingMode) {
         cursor.red();
         console.log("Error compiling, Message: "+compile.toString());
         if (compile.stack) {
-          throw compile;
+          console.log(compile);
         }
         fs.appendFileSync("tests/results.txt",result+"  Error   "+compile.toString()+" \n");
       } else {

@@ -15,14 +15,17 @@
  */
 function expand(ast){
   var processes = ast.processes;
-
+  var localProcess;
+  var variableSet;
   // expand the defined processes
   for(var i = 0; i < processes.length; i++){
     var variableMap = JSON.parse(JSON.stringify(ast.variableMap));
+    variableSet = processes[i].variables?processes[i].variables.set:[];
     processes[i].process = expandNode(processes[i].process, variableMap);
 
     // expand local procsses if any are defined
     if(processes[i].local.length !== 0){
+      variableSet = processes[i].variables?processes[i].variables.set:[];
       variableMap = JSON.parse(JSON.stringify(ast.variableMap));
       processes[i].local = expandLocalProcessDefinitions(processes[i].local, variableMap);
     }
@@ -41,6 +44,7 @@ function expand(ast){
   function expandLocalProcessDefinitions(localProcesses, variableMap){
     var newProcesses = [];
     for(var j = 0; j < localProcesses.length; j++){
+      localProcess = localProcesses[j];
       if(localProcesses[j].ident.ranges === undefined){
         localProcesses[j].process = expandNode(localProcesses[j].process, variableMap);
         newProcesses.push(localProcesses[j]);
@@ -51,7 +55,6 @@ function expand(ast){
         newProcesses = newProcesses.concat(expandIndexedDefinition(localProcesses[j], ident, ranges, variableMap));
       }
     }
-
     return newProcesses;
   }
 
@@ -87,6 +90,9 @@ function expand(ast){
         var element = iterator.next;
         variableMap[variable] = element;
         var newIdent = ident + '[' + element + ']';
+        if (variableSet.indexOf(variable.substring(1)) != -1) {
+          newIdent = ident + '[' + variable + ']';
+        }
         newProcesses = newProcesses.concat(expandIndexedDefinition(localProcess, newIdent, ranges, variableMap));
       }
     }
@@ -151,7 +157,6 @@ function expand(ast){
     if(node.type === 'empty'){
       return { type:'terminal', terminal:'STOP' };
     }
-
     return node;
   }
 
@@ -203,6 +208,19 @@ function expand(ast){
    * @return {astNode} - the expanded ast node
    */
   function expandSequenceNode(astNode, variableMap){
+    if (astNode.to.ident) {
+      var expr = astNode.to.ident;
+      var regex = '[\$][a-zA-Z0-9]*';
+      var match = expr.match(regex);
+      while (match != null) {
+        //String works perfectly for i+1, but fails for direct node.
+        if (typeof variableMap[match[0]] === 'string') {
+          astNode.to.next = variableMap[match[0]].substring(1);
+        }
+        expr = expr.replace(match[0], variableMap[match[0]]);
+        match = expr.match(regex);
+      }
+    }
     astNode.from = expandNode(astNode.from, variableMap);
     astNode.to = expandNode(astNode.to, variableMap);
     return astNode;
@@ -246,19 +264,84 @@ function expand(ast){
 
     if(guard.result){
       var node = expandNode(astNode.trueBranch, variableMap);
-      node.guardVal = guard.expr;
-      node.guardVariables = guard.variables;
+      if (node.to.next) {
+        //append an equals sign to operators to signify that the value is being updated
+        node.next = node.to.next.replace(new RegExp(Lexer.operators),s=>s+"=");
+      } else {
+        //In this case, we are directly pointing to a node.
+        //The unparsed ident is the original unexpanded ident,
+        //And this will tell us what variables were explicitly set.
+        node.next = parseIndexedLabel(node.to.unparsedIdent, variableMap);
+      }
+      if (astNode.guard) {
+        node.guard = processExpression(astNode.guard, variableMap).exprWithVars;
+        node.variables = processVariables(variableMap[astNode.guard], variableMap);
+      }
       return node;
     }
     else if(astNode.falseBranch !== undefined){
       var node = expandNode(astNode.falseBranch, variableMap);
-      node.guardVal = guard.expr;
-      node.guardVariables = guard.variables;
+      if (node.to.next) {
+        //append an equals sign to operators to signify that the value is being updated
+        node.next = node.to.next.replace(new RegExp(Lexer.operators),s=>s+"=");
+      } else {
+        //In this case, we are directly pointing to a node.
+        //The unparsed ident is the original unexpanded ident,
+        //And this will tell us what variables were explicitly set.
+        node.next = parseIndexedLabel(node.to.unparsedIdent, variableMap);
+      }
+      if (astNode.guard) {
+        node.guard = processExpression(astNode.guard, variableMap).exprWithVars;
+        node.variables = processVariables(variableMap[astNode.guard], variableMap);
+      }
       return node;
     }
     return { type:'empty' };
   }
-
+  /**
+   * Pull variable names and values from a guard
+   * @param {string} guard the guard
+   * @param {string -> string} variableMap
+   * @returns {string}
+   */
+  function processVariables(guard, variableMap) {
+    var variables = [];
+    // replace any variables declared in the expression with its value
+    var regex = '[\$][a-zA-Z0-9]*';
+    var match = guard.match(regex);
+    while(match !== null){
+      if (match[0].indexOf("v") === -1 && variableSet.indexOf(match[0].substring(1)) ===-1)
+        variables.push(match[0].substring(1)+"="+variableMap[match[0]]);
+      if (variableSet.indexOf(match[0].substring(1)) > -1) {
+        variables.push(match[0].substring(1));
+      }
+      guard = guard.replace(match[0], variableMap[match[0]]);
+      match = guard.match(regex);
+    }
+    return variables;
+  }
+  /**
+   * Change from the form C[1][2] to i:=1 j:=2
+   * @param {string} ident the original identifier
+   * @param {string -> string} variableMap
+   * @returns {string}
+   */
+  function parseIndexedLabel(ident, variableMap) {
+    if (!ident) return;
+    var lbl = ident;
+    var newLbl = "";
+    var label = (lbl.label || lbl);
+    if (label.indexOf("[")===-1) return ("->"+label);
+    var split = label.substring(1).replace(/[\[']+/g,'').split("]");
+    for (var index in split) {
+      var val = split[index];
+      //Skip variables that havent been resolved (e.g. C[$i][1])
+      if (val === "" || val.indexOf("$") !== -1) continue;
+      var variable = localProcess.ranges.ranges[index].variable;
+      newLbl += ", "+variable.substring(1)+":="+val;
+    }
+    return newLbl.substring(2);
+  }
   /**
    * Expands the specified function ast node.
    *
@@ -279,7 +362,16 @@ function expand(ast){
    * @return {astNode} - the expanded ast node
    */
   function expandIdentiferNode(astNode, variableMap){
-    astNode.ident = processLabel(astNode.ident, variableMap);
+    astNode.unparsedIdent = astNode.ident;
+    var lbl = processLabel(astNode.ident, variableMap);
+    if (lbl.label) {
+      astNode.ident = lbl.label;
+    } else {
+      astNode.ident = lbl;
+    }
+    if (lbl.tmpVars && lbl.tmpVars.length > 0) {
+      astNode.next =lbl.tmpVars[0].substring(1);
+    }
     if(astNode.label !== undefined){
       astNode.label = expandNode(astNode.label, variableMap);
     }
@@ -349,18 +441,28 @@ function expand(ast){
     // replace any variables declared in the expression with its value
     var regex = '[\$][a-zA-Z0-9]*';
     var match = expr.match(regex);
-    var variables = [];
+    var isVariable = false;
+    var exprWithVars = expr;
     while(match !== null){
+      //If the variable exists in the variableSet, then we are processing an expression without replacing variables.
+      if (variableSet.indexOf(match[0].substring(1)) === 0) {
+        isVariable = true;
+        expr = expr.replace(match[0], match[0].substring(1));
+      }
       // check if the variable has been defined
       if(variableMap[match[0]] === undefined){
         throw new VariableDeclarationException('the variable \'' + match[0].substring(1) + '\' has not been defined');
       }
-      if (typeof variableMap[match[0]] == "number")
-        variables.push({name:match[0].substring(1),value:variableMap[match[0]]});
-      expr = expr.replace(match[0], variableMap[match[0]]);
+      if (match[0].indexOf("v")!=-1) {
+        exprWithVars=exprWithVars.replace(match[0],variableMap[match[0]]);
+      }
+      if (!isVariable)
+        expr = expr.replace(match[0], variableMap[match[0]]);
       match = expr.match(regex);
     }
-    return {result:evaluate(expr),expr:expr,variables:variables};
+    if (isVariable)
+      return {result:expr,expr:expr,exprWithVars:expr};
+    return {result:evaluate(expr),expr:expr,exprWithVars:exprWithVars.split("$").join("")};
   }
 
   /**
@@ -376,19 +478,42 @@ function expand(ast){
     // replace any variables declared in the label with its value
     var regex = '[\$][a-zA-Z0-9]*';
     var match = label.match(regex);
-
     // if no variable was found then return
     if(match === null){
       return label;
     }
-
+    var tmpVars = [];
     while(match !== null){
-      var expr = processExpression(match[0], variableMap).result;
-      label = label.replace(match[0], expr);
+      //Baiscally, we look for instances of the variables we would like to skip, and then
+      //temporarily change the syntax to avoid them being matched by the above regex, and
+      //just let it pass back to the diagram.
+      //Take care of a basic variable declaration
+      if (variableSet.indexOf(match[0].substring(1))===0) {
+        label = label.replace(match[0], "#"+match[0].substring(1));
+        match = label.match(regex);
+        continue;
+      }
+      //Take care of assignment operators c[i + 1]
+      var test = false;
+      if (typeof variableMap[match[0]] == 'string') {
+        for (var i in variableSet) {
+          if (variableMap[match[0]].indexOf("$"+variableSet[i]) !== -1){
+            //This ends up being equal to the assignment done, so lets pass it back through the chain
+            tmpVars.push(variableMap[match[0]]);
+            label = label.replace(match[0], "#"+variableSet[i]);
+            match = label.match(regex);
+            test = true;
+            break;
+          }
+        }
+        if (test) continue;
+      }
+      //Normal variable replacement
+      var expr = processExpression(match[0], variableMap);
+      label = label.replace(match[0], expr.result);
       match = label.match(regex);
     }
-
-    return label;
+    return {label:label.replace("#","$"),tmpVars:tmpVars};
   }
 
   /**
