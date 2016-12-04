@@ -7,8 +7,8 @@
      * The data to use.
      */
     app.automata = {values: [],display:[]};
-    app.liveCompiling = true;
-    app.liveBuilding = true;
+    app.liveCompiling = false;
+    app.liveBuilding = false;
     app.fairAbstraction = true;
     app.helpDialogSelectedTab = 0;
     app.currentBuild = {};

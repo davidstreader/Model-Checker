@@ -169,3 +169,24 @@ function constructGraphs(graphMap, id) {
   joint.layout.DirectedGraph.layout(tmpjgraph, {rankDir:'LR',setLinkVertices: true});
   addLabelAndPadding(graphMap,graph.id,tmpjgraph);
 }
+/**
+ * Move a cells vertices when moving the cell
+ * @param graph The graph
+ * @param cell the cell
+ */
+function adjustVertices(graph, cell) {
+
+  // If the cell is a view, find its model.
+  cell = cell.model || cell;
+  const {x:nx,y:ny} = cell.get("position");
+  const {x:ox,y:oy} = cell.previous("position");
+  const diff = {x:nx-ox,y:ny-oy};
+  //Lets just nuke the original verticies.
+  _.each(graph.getConnectedLinks(cell),link =>{
+    let verticies = [];
+    _.each(link.get("vertices"),function (vert) {
+      verticies.push({x:vert.x+diff.x,y:vert.y+diff.y});
+    })
+    link.set('vertices', verticies);
+  });
+};
