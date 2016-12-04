@@ -213,7 +213,7 @@ function expand(ast){
       var regex = '[\$][a-zA-Z0-9]*';
       var match = expr.match(regex);
       while (match != null) {
-        //String works perfectly for i+1, but fails for root node.
+        //String works perfectly for i+1, but fails for direct node.
         if (typeof variableMap[match[0]] === 'string') {
           astNode.to.next = variableMap[match[0]].substring(1);
         }
@@ -265,7 +265,8 @@ function expand(ast){
     if(guard.result){
       var node = expandNode(astNode.trueBranch, variableMap);
       if (node.to.next) {
-        node.next = node.to.next;
+        //append an equals sign to operators to signify that the value is being updated
+        node.next = node.to.next.replace(new RegExp(Lexer.operators),s=>s+"=");
       } else {
         node.next = parseIndexedLabel(node.to.ident, variableMap);
       }
@@ -278,7 +279,8 @@ function expand(ast){
     else if(astNode.falseBranch !== undefined){
       var node = expandNode(astNode.falseBranch, variableMap);
       if (node.to.next) {
-        node.next = node.to.next;
+        //append an equals sign to operators to signify that the value is being updated
+        node.next = node.to.next.replace(new RegExp(Lexer.operators),s=>s+"=");
       } else {
         node.next = parseIndexedLabel(node.to.ident, variableMap);
       }
