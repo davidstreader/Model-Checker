@@ -121,7 +121,7 @@ function _link(source, target, label, parentNode, jgraph) {
     smooth: false,
     attrs: {
       //Add a slight transparency, so that you can see the links behind
-      'rect': {fill: 'rgba(255, 255, 255, 0.5)'}
+      'rect': {fill: Colours.textBackground}
     }
   });
   parentNode.embed(cell);
