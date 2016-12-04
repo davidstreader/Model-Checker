@@ -121,7 +121,7 @@ function _link(source, target, label, parentNode, jgraph) {
     smooth: false,
     attrs: {
       //Add a slight transparency, so that you can see the links behind
-      'rect': {fill: 'rgba(255, 255, 255, 0.3)'}
+      'rect': {fill: 'rgba(255, 255, 255, 0.5)'}
     }
   });
   parentNode.embed(cell);
@@ -178,6 +178,7 @@ function adjustVertices(graph, cell) {
 
   // If the cell is a view, find its model.
   cell = cell.model || cell;
+  if (!cell) return;
   const {x:nx,y:ny} = cell.get("position");
   const {x:ox,y:oy} = cell.previous("position");
   const diff = {x:nx-ox,y:ny-oy};

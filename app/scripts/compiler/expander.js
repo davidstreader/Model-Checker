@@ -271,7 +271,7 @@ function expand(ast){
         node.next = parseIndexedLabel(node.to.ident, variableMap);
       }
       if (astNode.guard) {
-        node.guard = processExpression(astNode.guard, variableMap).expr;
+        node.guard = processExpression(astNode.guard, variableMap).exprWithVars;
         node.variables = processVariables(variableMap[astNode.guard], variableMap);
       }
       return node;
@@ -285,7 +285,7 @@ function expand(ast){
         node.next = parseIndexedLabel(node.to.ident, variableMap);
       }
       if (astNode.guard) {
-        node.guard = processExpression(astNode.guard, variableMap).expr;
+        node.guard = processExpression(astNode.guard, variableMap).exprWithVars;
         node.variables = processVariables(variableMap[astNode.guard], variableMap);
       }
       return node;
@@ -437,6 +437,7 @@ function expand(ast){
     var regex = '[\$][a-zA-Z0-9]*';
     var match = expr.match(regex);
     var isVariable = false;
+    var exprWithVars = expr;
     while(match !== null){
       //If the variable exists in the variableSet, then we are processing an expression without replacing variables.
       if (variableSet.indexOf(match[0].substring(1)) === 0) {
@@ -447,13 +448,16 @@ function expand(ast){
       if(variableMap[match[0]] === undefined){
         throw new VariableDeclarationException('the variable \'' + match[0].substring(1) + '\' has not been defined');
       }
+      if (match[0].indexOf("v")!=-1) {
+        exprWithVars=exprWithVars.replace(match[0],variableMap[match[0]]);
+      }
       if (!isVariable)
         expr = expr.replace(match[0], variableMap[match[0]]);
       match = expr.match(regex);
     }
     if (isVariable)
       return {result:expr,expr:expr};
-    return {result:evaluate(expr),expr:expr};
+    return {result:evaluate(expr),expr:expr,exprWithVars:exprWithVars.split("$").join("")};
   }
 
   /**
