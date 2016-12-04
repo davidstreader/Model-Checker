@@ -84,8 +84,8 @@ function replaceReferences(processes){
 				// choice and composite nodes are structured the same,
 				// so choice falls through into the composite case
 			case 'composite':
-				astNode.process1 = replaceNode(astNode.process1, ident, JSON.parse(JSON.stringify(idMap)));
-				astNode.process2 = replaceNode(astNode.process2, ident, JSON.parse(JSON.stringify(idMap)));
+				astNode.process1 = replaceNode(astNode.process1, ident, idMap);
+				astNode.process2 = replaceNode(astNode.process2, ident, idMap);
 				return astNode;
 			case 'function':
 				astNode.process = replaceNode(astNode.process, ident, idMap);
