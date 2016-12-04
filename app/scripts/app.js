@@ -6,9 +6,10 @@
     /**
      * The data to use.
      */
+    //For settings, defaults are set here.
     app.automata = {values: [],display:[]};
-    app.liveCompiling = false;
-    app.liveBuilding = false;
+    app.liveCompiling = true;
+    app.liveBuilding = true;
     app.fairAbstraction = true;
     app.helpDialogSelectedTab = 0;
     app.currentBuild = {};
@@ -222,6 +223,7 @@
      * Compile is called if it is.
      */
     app.$['chbx-live-compiling'].addEventListener('iron-change', function() {
+      document.cookie = "liveCompiling="+app.liveCompiling;
       if (app.liveCompiling) {
         app.compile(false);
       }
@@ -233,6 +235,7 @@
      * Compile is called if live compiling is active.
      */
     app.$['chbx-live-building'].addEventListener('iron-change', function() {
+      document.cookie = "liveBuilding="+app.liveBuilding;
       if(app.liveCompiling){
         app.compile(false);
       }
@@ -246,8 +249,12 @@
     app.$['chbx-fair-abstraction'].addEventListener('iron-change', function() {
       app.compile(true);
       app.$.editor.focus();
+      document.cookie = "fairAbstraction="+app.fairAbstraction;
     });
 
+    app.$['chbx-save-cookie'].addEventListener('iron-change', function() {
+      document.cookie = "willSave="+app.willSaveCookie;
+    });
     app.$['chbx-save-cookie'].addEventListener('iron-change', function() {
       document.cookie = "willSave="+app.willSaveCookie;
     });
@@ -300,6 +307,8 @@
       }
     });
     app.willSaveCookie = app.getCookie("willSave")==='true';
+    app.liveBuilding = app.getCookie("liveBuilding")==='true';
+    app.liveCompiling = app.getCookie("liveCompiling")==='true';
     if (app.willSaveCookie) {
       app.$.editor.setCode(decodeURIComponent(app.getCookie('editor')));
       app.compile();
