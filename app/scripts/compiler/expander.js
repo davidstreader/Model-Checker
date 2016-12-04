@@ -271,7 +271,6 @@ function expand(ast){
         //In this case, we are directly pointing to a node.
         //The unparsed ident is the original unexpanded ident,
         //And this will tell us what variables were explicitly set.
-        console.log(node.to.unparsedIdent);
         node.next = parseIndexedLabel(node.to.unparsedIdent, variableMap);
       }
       if (astNode.guard) {
