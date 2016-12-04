@@ -268,7 +268,11 @@ function expand(ast){
         //append an equals sign to operators to signify that the value is being updated
         node.next = node.to.next.replace(new RegExp(Lexer.operators),s=>s+"=");
       } else {
-        node.next = parseIndexedLabel(node.to.ident, variableMap);
+        //In this case, we are directly pointing to a node.
+        //The unparsed ident is the original unexpanded ident,
+        //And this will tell us what variables were explicitly set.
+        console.log(node.to.unparsedIdent);
+        node.next = parseIndexedLabel(node.to.unparsedIdent, variableMap);
       }
       if (astNode.guard) {
         node.guard = processExpression(astNode.guard, variableMap).exprWithVars;
@@ -282,7 +286,10 @@ function expand(ast){
         //append an equals sign to operators to signify that the value is being updated
         node.next = node.to.next.replace(new RegExp(Lexer.operators),s=>s+"=");
       } else {
-        node.next = parseIndexedLabel(node.to.ident, variableMap);
+        //In this case, we are directly pointing to a node.
+        //The unparsed ident is the original unexpanded ident,
+        //And this will tell us what variables were explicitly set.
+        node.next = parseIndexedLabel(node.to.unparsedIdent, variableMap);
       }
       if (astNode.guard) {
         node.guard = processExpression(astNode.guard, variableMap).exprWithVars;
@@ -322,18 +329,16 @@ function expand(ast){
    */
   function parseIndexedLabel(ident, variableMap) {
     if (!ident) return;
-    var lbl = processLabel(ident, variableMap);
+    var lbl = ident;
     var newLbl = "";
     var label = (lbl.label || lbl);
     if (label.indexOf("[")===-1) return ("->"+label);
     var split = label.substring(1).replace(/[\[']+/g,'').split("]");
     for (var index in split) {
       var val = split[index];
-      if (val === "") continue;
+      //Skip variables that havent been resolved (e.g. C[$i][1])
+      if (val === "" || val.indexOf("$") !== -1) continue;
       var variable = localProcess.ranges.ranges[index].variable;
-      //Skip variables that havent been resolved (e.g. C[$i][1]) as they would have been skipped
-      //by the developer
-      if (variable == val) continue;
       newLbl += ", "+variable.substring(1)+":="+val;
     }
     return newLbl.substring(2);
@@ -358,6 +363,7 @@ function expand(ast){
    * @return {astNode} - the expanded ast node
    */
   function expandIdentiferNode(astNode, variableMap){
+    astNode.unparsedIdent = astNode.ident;
     var lbl = processLabel(astNode.ident, variableMap);
     if (lbl.label) {
       astNode.ident = lbl.label;
