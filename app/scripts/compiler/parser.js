@@ -113,8 +113,15 @@ function parse(tokens){
 				break;
 			}
 		}
-
-		return { type:'action-label', action: action };
+		var ret = { type:'action-label', action: action };
+    if (tokens[index].value === '?'){
+		  ret.broadcaster = true;
+		  index++;
+    } else if (tokens[index].value === '!') {
+      ret.reciever = true;
+      index++;
+    }
+		return ret;
 	}
 
 	/**

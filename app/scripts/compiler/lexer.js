@@ -8,7 +8,7 @@ const Lexer = {
 	functions: {'abs': true, 'simp':true, 'safe':true },
 	terminals: { 'STOP':true, 'ERROR': true },
 	keywords: { 'const':true, 'range':true, 'set':true, 'if':true, 'then':true, 'else':true, 'when':true, 'forall':true },
-	symbols: '(\\.\\.|\\.|,|:|\\[|\\]|\\(|\\)|\\{|\\}|->|\\\\|@|\\$)',
+	symbols: '(\\.\\.|\\.|,|:|\\[|\\]|\\(|\\)|\\{|\\}|->|\\\\|@|\\$|\\?)',
 	operators: '(\\|\\||\\||&&|&|\\^|==|=|!=|<<|<=|<|>>|>=|>|\\+|-|\\*|/|%|!)',
 	operations: '~',
 	singleLineCommentStart: '//',
@@ -248,7 +248,7 @@ const Lexer = {
 
 			// remove the comment
 			code = code.slice(index, code.length);
-			
+
 			// update the position info
 			line++;
 			column = 0;

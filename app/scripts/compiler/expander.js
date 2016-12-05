@@ -222,11 +222,11 @@ function expand(ast){
         expr = expr.replace(match[0], variableMap[match[0]]);
         match = expr.match(regex);
       }
+      if (variables.length > 0)
+        astNode.to.next = variables;
     }
     astNode.from = expandNode(astNode.from, variableMap);
     astNode.to = expandNode(astNode.to, variableMap);
-    if (variables.length > 0)
-    astNode.to.next = variables;
     return astNode;
   }
 
