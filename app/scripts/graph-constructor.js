@@ -5,6 +5,7 @@ function visualizeAutomata(process, name, graphMap, jgraph) {
   const nodeMap = {};
   const parentNode = new joint.shapes.parent();
   parentNode.name = name;
+  let interruptId = 1;
   jgraph.addCell(parentNode);
   graphMap[name] = {name:name,height:0,parentNode:parentNode};
   for(let i = 0; i < nodes.length; i++){
@@ -33,7 +34,7 @@ function visualizeAutomata(process, name, graphMap, jgraph) {
     parentNode.embed(nodeMap['n' + nodes[i].id]);
     jgraph.addCell(nodeMap['n' + nodes[i].id]);
   }
-
+  let toEmbed = [];
   // add the edges between the nodes in the automaton to the graph
   const edges = process.edges;
   for(let i = 0; i < edges.length; i++){
@@ -48,8 +49,35 @@ function visualizeAutomata(process, name, graphMap, jgraph) {
       if (vars !== undefined)
         label =vars+"\n"+label;
     }
-    _link(nodeMap[from],nodeMap[to], label,parentNode,jgraph);
+    if (edges[i].getMetaData("interrupt")) {
+      const box = _box(jgraph, parentNode, toEmbed, name+"."+(interruptId++),graphMap, name);
+      const link = _link(nodeMap[from],nodeMap[to], label,parentNode,jgraph);
+      //move all elements in front of the link
+      box.toFront();
+      toEmbed.forEach(cell => {
+        cell.toFront();
+        cell.getEmbeddedCells().forEach(cell2 => {
+          cell2.toFront();
+        });
+      });
+      toEmbed = [link,box];
+
+    }  else {
+      toEmbed.push(_link(nodeMap[from],nodeMap[to], label,parentNode,jgraph));
+      toEmbed.push(nodeMap[from]);
+      toEmbed.push(nodeMap[to]);
+    }
   }
+}
+function _box(jgraph, parent, toEmbed, name, graphMap, key) {
+  const boxNode = new joint.shapes.box();
+  parent.embed(boxNode);
+  jgraph.addCell(boxNode);
+  //Remove embedded cells from the parent and add them to the box
+  toEmbed.forEach(cell => {parent.unembed(cell);boxNode.embed(cell);});
+  if (!graphMap[key].interrupts) graphMap[key].interrupts = [];
+  graphMap[key].interrupts.push({name:name,parentNode:boxNode});
+  return boxNode;
 }
 function visualizePetriNet(process, name, graphMap, jgraph) {
   const nodeMap = {};
@@ -129,9 +157,13 @@ function addLabelAndPadding(graphMap, key, jgraph) {
   const lx = bbox.origin().x, ly = bbox.origin().y, ux = bbox.corner().x, uy = bbox.corner().y;
   const width = ux - lx;
   const height = uy - ly;
+  let intersize = 0;
+  if (graphMap[key].interrupts) {
+    intersize = graphMap[key].interrupts.length * 30;
+  }
   const cell = new joint.shapes.basic.Rect({
     size: {width: 100, height: 30},
-    position: {x: lx - 50, y: ly - 50},
+    position: {x: lx - 50, y: ly - 50-intersize+10},
     attrs: {
       rect: {fill: 'transparent', stroke: 'none'},
       'text': {text: key, fill: 'red', 'font-size': 20}
@@ -141,11 +173,13 @@ function addLabelAndPadding(graphMap, key, jgraph) {
   graphMap[key].parentNode.embed(cell);
   graphMap[key].label = cell;
   jgraph.addCell(cell);
-  graphMap[key].parentNode.resize(width+100,height+100);
+  graphMap[key].parentNode.resize(width+100,height+100+intersize);
   //Move the parent node without moving its children, to add a padding around it
-  graphMap[key].parentNode.position(lx-50,ly-50);
+  //position needs to subtract intersize to center interrupted components
+  graphMap[key].parentNode.position(lx-50,ly-50-intersize);
+  //But translate now needs to move everything back so its at its old position, but with a changed padding.
   //Now move the parent node and its components back by the padding
-  graphMap[key].parentNode.translate(50, 50);
+  graphMap[key].parentNode.translate(50, 50+intersize);
   //Move the component back to the origin with a bit of padding
   graphMap[key].parentNode.translate(50, -ly+50);
 }
@@ -164,6 +198,25 @@ function constructGraphs(graphMap, id) {
   //Pass this through to dagre to get everything laid out
   joint.layout.DirectedGraph.layout(tmpjgraph, {rankDir:'LR',setLinkVertices: true});
   addLabelAndPadding(graphMap,graph.id,tmpjgraph);
+  if (graphMap[graph.id].interrupts) {
+    _.each(graphMap[graph.id].interrupts,graph => {
+      const id = parseInt(graph.name.split(".")[1]);
+      const bbox = graph.parentNode.getBBox().origin();
+      const cell = new joint.shapes.basic.Rect({
+        size: {width: 100, height: 30},
+        position: {x:bbox.x,y:bbox.y-25*id},
+        attrs: {
+          rect: {fill: 'transparent', stroke: 'none'},
+          'text': {text: graph.name, fill: 'red', 'font-size': 20}
+        }
+      });
+      const bbox2 = graph.parentNode.getBBox();
+      graph.parentNode.embed(cell);
+      graph.parentNode.resize(bbox2.width,bbox2.height+id*30,{direction:"top"});
+      tmpjgraph.addCell(cell);
+      graph.label = cell;
+    });
+  }
 }
 /**
  * Move a cells vertices when moving the cell
@@ -187,4 +240,16 @@ function adjustVertices(graph, cell) {
     })
     link.set('vertices', verticies);
   });
-};
+}
+let subtree = [];
+function collectDeepEmbedded(cell) {
+  subtree = [];
+  _collectDeepEmbedded(cell);
+  return subtree;
+}
+function _collectDeepEmbedded(cell) {
+  _.each(cell.getEmbeddedCells(), function(c) {
+    subtree.push(c);
+    _collectDeepEmbedded(c);
+  })
+}
