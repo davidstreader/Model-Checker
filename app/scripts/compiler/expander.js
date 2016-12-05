@@ -212,10 +212,12 @@ function expand(ast){
       var expr = astNode.to.ident;
       var regex = '[\$][a-zA-Z0-9]*';
       var match = expr.match(regex);
+      var variables = [];
       while (match != null) {
         //String works perfectly for i+1, but fails for direct node.
         if (typeof variableMap[match[0]] === 'string') {
-          astNode.to.next = variableMap[match[0]].substring(1);
+          //Append an equals sign to operators to make it obvious we are assigning
+          variables.push(variableMap[match[0]].substring(1).replace(new RegExp(Lexer.operators),s=>s+"="));
         }
         expr = expr.replace(match[0], variableMap[match[0]]);
         match = expr.match(regex);
@@ -223,6 +225,8 @@ function expand(ast){
     }
     astNode.from = expandNode(astNode.from, variableMap);
     astNode.to = expandNode(astNode.to, variableMap);
+    if (variables.length > 0)
+    astNode.to.next = variables;
     return astNode;
   }
 
@@ -266,7 +270,7 @@ function expand(ast){
       var node = expandNode(astNode.trueBranch, variableMap);
       if (node.to.next) {
         //append an equals sign to operators to signify that the value is being updated
-        node.next = [node.to.next.replace(new RegExp(Lexer.operators),s=>s+"=")];
+        node.next = node.to.next;
       } else {
         //In this case, we are directly pointing to a node.
         //The unparsed ident is the original unexpanded ident,
@@ -283,7 +287,7 @@ function expand(ast){
       var node = expandNode(astNode.falseBranch, variableMap);
       if (node.to.next) {
         //append an equals sign to operators to signify that the value is being updated
-        node.next = [node.to.next.replace(new RegExp(Lexer.operators),s=>s+"=")];
+        node.next = node.to.next;
       } else {
         //In this case, we are directly pointing to a node.
         //The unparsed ident is the original unexpanded ident,
