@@ -238,21 +238,14 @@
         }
         //Assign that name to the old label
         this.graphMap[oldName].label.attributes.attrs.text.text = name;
-        if (this.graphMap[oldName].interrupts) {
-          _.each(this.graphMap[oldName].interrupts,cell=> {
-            cell.label.oldLbl = cell.label.attributes.attrs.text.text;
-            cell.label.attributes.attrs.text.text = cell.label.attributes.attrs.text.text.replace(oldName,name);
-            cell.parentNode.set("label",cell.label.attributes.attrs.text.text);
-          })
+        //There is an undefined cell tagged on the end. My guess is its the edge???
+        var embeds = this.graphMap[oldName].parentNode.get("embeds");
+        if (embeds[embeds.length-1]===undefined) {
+          embeds.pop();
         }
         //Clone the process into cells, also cloning all children
         let cells = this.graphMap[oldName].parentNode.clone({deep: true});
 
-        if (this.graphMap[oldName].interrupts) {
-          _.each(this.graphMap[oldName].interrupts,cell=> {
-            cell.label.attributes.attrs.text.text = cell.label.oldLbl;
-          })
-        }
         //Sort the array, putting links after components, as the links will fail to be added if their
         //linked components do not exist
         cells.sort((a,b) => a.attributes.type==="fsa.Arrow"?1:-1);
@@ -267,13 +260,25 @@
         this.rescale();
         app.push("automata.display",graph);
         const _this = this;
+        const directEmbeds = _.filter(cells[0].getEmbeddedCells(),cell=>cell.attributes.type=='boxLabel');
         cells.forEach(cell => {
-            //box means interrupt
-          if (cell.attributes.type === 'box') {
+          if (directEmbeds.indexOf(cell) !== -1) {
+            return;
+          }
+
+          //box means interrupt
+          if (cell.attributes.type === 'boxLabel') {
+            const lbl = cell.attributes.attrs.text.text;
+            let newLbl = lbl;
+            tmpIdx = 1;
+            while (this.displayedGraphs[newLbl]) {
+              newLbl = lbl+(tmpIdx++);
+            }
+            cell.attr({ text: { text: newLbl } });
             let graph = {};
-            graph.parentNode = cell;
-            graph.id = cell.get("label");
-            _this.displayedGraphs[graph.id] = cell;
+            graph.parentNode = _this.jgraph.getCell(cell.get("parent"));
+            graph.id = newLbl;
+            _this.displayedGraphs[graph.id] = graph.parentNode;
             app.push("automata.display",graph);
           }
         });

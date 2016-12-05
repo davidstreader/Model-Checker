@@ -60,6 +60,7 @@ function visualizeAutomata(process, name, graphMap, jgraph) {
           cell2.toFront();
         });
       });
+      //Now that all the children are inside box, toEmbed should only contain the box
       toEmbed = [link,box];
 
     }  else {
@@ -67,10 +68,12 @@ function visualizeAutomata(process, name, graphMap, jgraph) {
       toEmbed.push(nodeMap[from]);
       toEmbed.push(nodeMap[to]);
     }
+
   }
 }
 function _box(jgraph, parent, toEmbed, name, graphMap, key) {
   const boxNode = new joint.shapes.box();
+
   parent.embed(boxNode);
   jgraph.addCell(boxNode);
   //Remove embedded cells from the parent and add them to the box
@@ -157,13 +160,13 @@ function addLabelAndPadding(graphMap, key, jgraph) {
   const lx = bbox.origin().x, ly = bbox.origin().y, ux = bbox.corner().x, uy = bbox.corner().y;
   const width = ux - lx;
   const height = uy - ly;
-  let intersize = 0;
+  let interruptSize = 0;
   if (graphMap[key].interrupts) {
-    intersize = graphMap[key].interrupts.length * 30;
+    interruptSize = graphMap[key].interrupts.length * 30;
   }
   const cell = new joint.shapes.basic.Rect({
     size: {width: 100, height: 30},
-    position: {x: lx - 50, y: ly - 50-intersize+10},
+    position: {x: lx - 50, y: ly - 50-interruptSize+10},
     attrs: {
       rect: {fill: 'transparent', stroke: 'none'},
       'text': {text: key, fill: 'red', 'font-size': 20}
@@ -173,20 +176,20 @@ function addLabelAndPadding(graphMap, key, jgraph) {
   graphMap[key].parentNode.embed(cell);
   graphMap[key].label = cell;
   jgraph.addCell(cell);
-  graphMap[key].parentNode.resize(width+100,height+100+intersize);
+  graphMap[key].parentNode.resize(width+100,height+100+interruptSize);
   //Move the parent node without moving its children, to add a padding around it
   //position needs to subtract intersize to center interrupted components
-  graphMap[key].parentNode.position(lx-50,ly-50-intersize);
+  graphMap[key].parentNode.position(lx-50,ly-50-interruptSize);
   //But translate now needs to move everything back so its at its old position, but with a changed padding.
   //Now move the parent node and its components back by the padding
-  graphMap[key].parentNode.translate(50, 50+intersize);
+  graphMap[key].parentNode.translate(50, 50+interruptSize);
   //Move the component back to the origin with a bit of padding
   graphMap[key].parentNode.translate(50, -ly+50);
 }
 function constructGraphs(graphMap, id) {
   //Find the process by id
   let graph = _.findWhere(app.get("automata.values"), {id: id});
-  if (!graph.type || (graphMap[id] && !app.get("automata.analysis")[graph.id].isUpdated)) return;
+  if (!graph.type || (graphMap[id] && app.get("automata.analysis")[graph.id] &&  !app.get("automata.analysis")[graph.id].isUpdated)) return;
   //Calculate the bottom of the last drawn graph
   let tmpjgraph = new joint.dia.Graph();
   if (graph.type == 'automata') {
@@ -195,6 +198,8 @@ function constructGraphs(graphMap, id) {
   if (graph.type == 'petrinet') {
     visualizePetriNet(graph,graph.id,graphMap,tmpjgraph);
   }
+  //We do not want to rescale the graph if it has already been rescaled.
+  if (graph.type == 'interrupt') return;
   //Pass this through to dagre to get everything laid out
   joint.layout.DirectedGraph.layout(tmpjgraph, {rankDir:'LR',setLinkVertices: true});
   addLabelAndPadding(graphMap,graph.id,tmpjgraph);
@@ -204,6 +209,7 @@ function constructGraphs(graphMap, id) {
       const bbox = graph.parentNode.getBBox().origin();
       const cell = new joint.shapes.basic.Rect({
         size: {width: 100, height: 30},
+        type: 'boxLabel',
         position: {x:bbox.x,y:bbox.y-25*id},
         attrs: {
           rect: {fill: 'transparent', stroke: 'none'},
@@ -215,6 +221,10 @@ function constructGraphs(graphMap, id) {
       graph.parentNode.resize(bbox2.width,bbox2.height+id*30,{direction:"top"});
       tmpjgraph.addCell(cell);
       graph.label = cell;
+      graph.id = graph.name;
+      graph.type = 'interrupt';
+      graphMap[graph.name] = graph;
+      app.push("automata.values",graph);
     });
   }
 }
@@ -224,7 +234,7 @@ function constructGraphs(graphMap, id) {
  * @param cell the cell
  */
 function adjustVertices(graph, cell) {
-
+  //TODO: it would be nice if the distance moved was proportional to the distance from the other cell
   // If the cell is a view, find its model.
   cell = cell.model || cell;
   //Ignore all clicks that arent on a cell
