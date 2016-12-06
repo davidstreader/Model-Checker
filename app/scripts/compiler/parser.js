@@ -121,7 +121,6 @@ function parse(tokens){
       ret.receiver = true;
       index++;
     }
-    console.log(ret);
     return ret;
   }
 

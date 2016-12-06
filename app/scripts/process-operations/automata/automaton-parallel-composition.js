@@ -22,10 +22,8 @@ function automataParallelComposition(id, automaton1, automaton2){
 	// loop through combined node states and form the parallel composition
 	for(var i = 0; i < nodes1.length; i++){
 		var node1 = nodes1[i];
-		var current = "";
 		for(var j = 0; j < nodes2.length; j++){
 			var node2 = nodes2[j];
-      current += node1.id+"."+node2.id+",";
 			// the id for the current combined state
 			var fromId = node1.id + '.' + node2.id;
 
@@ -81,7 +79,6 @@ function automataParallelComposition(id, automaton1, automaton2){
 				}
 			}
 		}
-    console.log(current);
 	}
 
 	// remove unreachable nodes from the composition

@@ -1,0 +1,9 @@
+automata {
+    A =a->b!->c->STOP || x->b?->z->STOP.
+    A2=(B|C),
+    B=(a->(b->D|x->E)),
+    C=(x->a->E),
+    D=(c->x->STOP|x->c->STOP),
+    E=(b->(c->z->STOP|z->c->STOP)).
+}
+A ~ A2.
