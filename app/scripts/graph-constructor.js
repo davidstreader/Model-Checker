@@ -19,6 +19,7 @@ function visualizeAutomata(process, name, graphMap, jgraph) {
       });
       parentNode.embed(nodeMap['n' + nodes[i].id]);
       jgraph.addCell(nodeMap['n' + nodes[i].id]);
+      nodeMap['n' + nodes[i].id].metaData = nodes[i].metaData;
       continue;
     }
     let fill = Colours.grey;
@@ -31,6 +32,7 @@ function visualizeAutomata(process, name, graphMap, jgraph) {
       size: { width: 60, height: 60 },
       attrs: { text : { text: nodes[i].metaData.label}, circle: {'fill':fill} }
     });
+    nodeMap['n' + nodes[i].id].metaData = nodes[i].metaData;
     parentNode.embed(nodeMap['n' + nodes[i].id]);
     jgraph.addCell(nodeMap['n' + nodes[i].id]);
   }
@@ -50,7 +52,7 @@ function visualizeAutomata(process, name, graphMap, jgraph) {
       if (vars !== undefined)
         label =vars+"\n"+label;
     }
-    if (edges[i].getMetaData("interrupt")) {
+    if (nodeMap[from].metaData.interrupt) {
       toEmbed.splice(toEmbed.indexOf(nodeMap[from],1));
       const connected = jgraph.getConnectedLinks(nodeMap[from]);
       let lastCell;
@@ -65,7 +67,7 @@ function visualizeAutomata(process, name, graphMap, jgraph) {
       toEmbed = _.difference(toEmbed,connected);
       const box = _box(jgraph, parentNode, toEmbed, name+"."+(interruptId++),graphMap, name);
       const link = _link(nodeMap[from],nodeMap[to], label,parentNode,jgraph);
-      const link2 = _link(box.embedNode,nodeMap[from], "interrupt",parentNode,jgraph);
+      const link2 = _link(box.embedNode,nodeMap[from], nodeMap[from].metaData.interrupt.action.action,parentNode,jgraph);
       box.toDelete =_link(lastCell,box.embedNode, "",parentNode,jgraph);
       //move all elements in front of the link
       box.toFront();

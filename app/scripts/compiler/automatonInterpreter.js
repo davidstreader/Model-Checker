@@ -22,11 +22,10 @@ function interpretAutomaton(process, processesMap, context){
         automaton.addEdge(id, "interrupt", node, intRoot, {});
       }
     });
-    const next = automaton.addNode();
     intRoot.metaData.isPartOfInterrupt = true;
     const id = automaton.nextEdgeId;
-    automaton.addEdge(id, process.interrupt.action.action, intRoot, next, {interrupt: process.interrupt});
-    interpretNode(process.interrupt.process, automaton, next);
+    intRoot.metaData.interrupt = process.interrupt;
+    interpretNode(process.interrupt.process, automaton, intRoot);
   }
   if(process.hiding !== undefined){
     processHiding(automaton, process.hiding);
