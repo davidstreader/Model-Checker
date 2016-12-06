@@ -129,7 +129,7 @@ const AUTOMATON = {
 	addEdge: function(id, label, from, to, metaData){
 		const locationSet = {};
 		locationSet[this.id] = true;
-		
+
 		if(metaData === undefined){
 			metaData = {};
 			const edges = this.edges.filter(e => e.label === label);
@@ -268,7 +268,7 @@ const AUTOMATON = {
 			return newSet;
 		}
 	},
-	
+
 	trim: function(){
 		const visited = {};
 		const fringe = [this.root];
@@ -287,6 +287,10 @@ const AUTOMATON = {
 					fringe.push(neighbour);
 				}
 			}
+
+			if(neighbours.length === 0 && current.metaData.isTerminal === undefined){
+			  current.metaData.isTerminal = 'stop';
+      }
 		}
 
 		for(let id in this.nodeMap){

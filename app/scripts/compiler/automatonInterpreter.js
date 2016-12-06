@@ -89,8 +89,8 @@ function interpretAutomaton(process, processesMap, context){
       metadata.next = astNode.next;
       metadata.variables = astNode.variables;
     }
-    if (astNode.reciever) metadata.reciever = true;
-    if (astNode.broadcaster) metadata.broadcaster = true;
+    if (astNode.from.receiver) metadata.receiver = true;
+    if (astNode.from.broadcaster) metadata.broadcaster = true;
     if (typeof astNode.from.action !== 'string') astNode.from.action = astNode.from.action.label;
     if (astNode.from.interrupt) metadata.interrupt = true;
 		automaton.addEdge(id, astNode.from.action, currentNode, next, metadata);

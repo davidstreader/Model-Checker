@@ -118,9 +118,10 @@ function parse(tokens){
       ret.broadcaster = true;
       index++;
     } else if (tokens[index].value === '!') {
-      ret.reciever = true;
+      ret.receiver = true;
       index++;
     }
+    console.log(ret);
     return ret;
   }
 

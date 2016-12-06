@@ -22,9 +22,10 @@ function automataParallelComposition(id, automaton1, automaton2){
 	// loop through combined node states and form the parallel composition
 	for(var i = 0; i < nodes1.length; i++){
 		var node1 = nodes1[i];
+		var current = "";
 		for(var j = 0; j < nodes2.length; j++){
 			var node2 = nodes2[j];
-
+      current += node1.id+"."+node2.id+",";
 			// the id for the current combined state
 			var fromId = node1.id + '.' + node2.id;
 
@@ -34,34 +35,58 @@ function automataParallelComposition(id, automaton1, automaton2){
 				var coaccessible2 = automaton2.coaccessible(node2, action);
 				coaccessible2 = (coaccessible2.length !== 0) ? coaccessible2 : [undefined];
 
-				for(var x = 0; x < coaccessible1.length; x++){
-					var c1 = coaccessible1[x];
-					for(var y = 0; y < coaccessible2.length; y++){
-						var c2 = coaccessible2[y];
+				for(var x = 0; x < coaccessible1.length; x++) {
+          var c1 = coaccessible1[x];
+          for (var y = 0; y < coaccessible2.length; y++) {
+            var c2 = coaccessible2[y];
+            if (c1 !== undefined && c2 !== undefined) {
+              var toId = c1.node.id + '.' + c2.node.id;
+              var edge = graph.addEdge(graph.nextEdgeId, action, graph.getNode(fromId), graph.getNode(toId));
+              edge.locations = locationUnion(node1.locations, node2.locations);
+            }
+            else if (c1 !== undefined && alphabet2[action] === undefined) {
+              var toId = c1.node.id + '.' + node2.id;
+              var edge = graph.addEdge(graph.nextEdgeId, action, graph.getNode(fromId), graph.getNode(toId));
+              edge.locations = node1.locations
+            }
+            else if (c2 !== undefined && alphabet1[action] === undefined) {
+              var toId = node1.id + '.' + c2.node.id;
+              var edge = graph.addEdge(graph.nextEdgeId, action, graph.getNode(fromId), graph.getNode(toId));
+              edge.locations = node2.locations;
+            }
+            if (c2 !== undefined && c2.edge.metaData.broadcaster) {
+              const receivers = automaton1.edges.filter(e => e.label === action && e.metaData.receiver);
+              receivers.forEach(function (receiver) {
+                nodes2.forEach(function(node){
+                  var fromId = receiver.from + '.' + node.id;
+                  var toId = receiver.to + '.' + node.id;
+                  if(node.id !== node2.id) {
+                    graph.addEdge(graph.nextEdgeId, action, graph.getNode(fromId), graph.getNode(toId));
+                  }
+                });
+              });
+            }
+          }
+          if(c1 !== undefined && c1.edge.metaData.broadcaster) {
+            const receivers = automaton2.edges.filter(e => e.label === action && e.metaData.receiver);
+            receivers.forEach(function (receiver) {
+              nodes1.forEach(function(node){
+                var fromId = node.id + '.' + receiver.from;
+                var toId = node.id + '.' + receiver.to;
+                graph.addEdge(graph.nextEdgeId, action, graph.getNode(fromId), graph.getNode(toId));
+              });
+            });
+          }
 
-						if(c1 !== undefined && c2 !== undefined){
-							var toId = c1.node.id + '.' + c2.node.id;
-							var edge = graph.addEdge(graph.nextEdgeId, action, graph.getNode(fromId), graph.getNode(toId));
-							edge.locations = locationUnion(node1.locations, node2.locations);
-						}
-						else if(c1 !== undefined && alphabet2[action] === undefined){
-							var toId = c1.node.id + '.' + node2.id;
-							var edge = graph.addEdge(graph.nextEdgeId, action, graph.getNode(fromId), graph.getNode(toId));
-							edge.locations = node1.locations
-						}
-						else if(c2 !== undefined && alphabet1[action] === undefined){
-							var toId = node1.id + '.' + c2.node.id;
-							var edge = graph.addEdge(graph.nextEdgeId, action, graph.getNode(fromId), graph.getNode(toId));
-							edge.locations = node2.locations;
-						}
-					}
 				}
 			}
 		}
+    console.log(current);
 	}
 
 	// remove unreachable nodes from the composition
 	graph.trim();
+    graph.removeDuplicateEdges();
 	return graph;
 
 	/**
@@ -82,14 +107,14 @@ function automataParallelComposition(id, automaton1, automaton2){
 				var id = nodes1[i].id + '.' + nodes2[j].id;
 				var metaData = metaDataIntersection(nodes1[i].metaData, nodes2[j].metaData);
 				var node = graph.addNode(id, metaData);
-				
+
 				var locations2 = nodes2[j].locations;
 				node.locations = locationUnion(locations1, locations2);
 
 				// check if this is the first node constructed
-				if(i === 0 && j === 0){
-					graph.rootId = id;
-				}
+				if(i === 0 && j === 0) {
+          graph.rootId = id;
+        }
 			}
 		}
 	}
