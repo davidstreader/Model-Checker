@@ -23,7 +23,7 @@ const Lexer = {
 	 */
 	tokenise: function(code){
 		const tokens = [];
-    let line = 1;
+		let line = 1;
 		let column = 0;
 
 		// loop through the code and construct tokens
@@ -31,29 +31,29 @@ const Lexer = {
 			gobbleWhitespace();
 			gobbleComments.bind(this)();
 
-     	// construct the start position for the current token
-      const start = new Position(line, column);
+			// construct the start position for the current token
+			const start = new Position(line, column);
 
 			let value;
 
 			// attempt to match an action label, process type, function or keyword
 			value = matchValue(this.actionLabel);
 			if(value !== undefined){
-        // construct the end point for the current token
-        const end = new Position(line, column);
+				// construct the end point for the current token
+				const end = new Position(line, column);
 
-		    // construct the location in the code of this token
-		    const location = new Location(start, end);
+				// construct the location in the code of this token
+				const location = new Location(start, end);
 
-		    // determine if the action tokenised was actally a process type
+				// determine if the action tokenised was actally a process type
 				if(this.processTypes[value] !== undefined){
 					tokens.push(new Token('process-type', value, location));
 				}
-		    // determine if the action tokenised was actually a function
+				// determine if the action tokenised was actually a function
 				else if(this.functions[value] !== undefined){
 					tokens.push(new Token('function', value, location));
 				}
-		    // determine if the action tokenised was actually a keyword
+				// determine if the action tokenised was actually a keyword
 				else if(this.keywords[value] !== undefined){
 					tokens.push(new Token('keyword', value, location));
 				}
@@ -67,11 +67,11 @@ const Lexer = {
 			// attempt to match an identifer or terminal
 			value = matchValue(this.identifier);
 			if(value !== undefined){
-        // construct the end point for the current token
-        const end = new Position(line, column);
+				// construct the end point for the current token
+				const end = new Position(line, column);
 
-        // construct the location in the code of this token
-        const location = new Location(start, end);
+				// construct the location in the code of this token
+				const location = new Location(start, end);
 
 				if(this.terminals[value] !== undefined){
 					tokens.push(new Token('terminal', value, location));
@@ -86,11 +86,11 @@ const Lexer = {
 			// attempt to match an integer
 			value = matchValue(this.integer);
 			if(value !== undefined){
-        // construct the end point for the current token
-        const end = new Position(line, column);
+				// construct the end point for the current token
+				const end = new Position(line, column);
 
-        // construct the location in the code of this token
-        const location = new Location(start, end);
+				// construct the location in the code of this token
+				const location = new Location(start, end);
 				tokens.push(new Token('integer', value, location));
 				continue;
 			}
@@ -98,11 +98,11 @@ const Lexer = {
 			// attempt to match a symbol
 			value = matchValue(this.symbols);
 			if(value !== undefined){
-        // construct the end point for the current token
-        const end = new Position(line, column);
+				// construct the end point for the current token
+				const end = new Position(line, column);
 
-        // construct the location in the code of this token
-        const location = new Location(start, end);
+				// construct the location in the code of this token
+				const location = new Location(start, end);
 
 				tokens.push(new Token('symbol', value, location));
 				continue;
@@ -111,11 +111,11 @@ const Lexer = {
 			// attempt to match an operator
 			value = matchValue(this.operators);
 			if(value !== undefined){
-        // construct the end point for the current token
-        const end = new Position(line, column);
+				// construct the end point for the current token
+				const end = new Position(line, column);
 
-        // construct the location in the code of this token
-        const location = new Location(start, end);
+				// construct the location in the code of this token
+				const location = new Location(start, end);
 
 				tokens.push(new Token('operator', value, location));
 				continue;
@@ -144,8 +144,8 @@ const Lexer = {
 			break;
 		}
 
-   	const end = new Position(line, column);
-    const location = new Location(end, end);
+		const end = new Position(line, column);
+		const location = new Location(end, end);
 		tokens.push(new Token('EOF', 'end of file', location));
 		return tokens;
 
@@ -206,6 +206,9 @@ const Lexer = {
 		function gobbleComments(){
 			// loop through and attempt to find any comments
 			while(code.length !== 0){
+				// remove any whitespace
+				gobbleWhitespace();
+				
 				let successful = false;
 
 				// try and match a single lined comment
@@ -227,9 +230,6 @@ const Lexer = {
 					break;
 				}
 			}
-
-			// remove any whitespace after the comments
-			gobbleWhitespace();
 		}
 
 		/**
