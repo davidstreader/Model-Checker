@@ -22,6 +22,26 @@ function petriNetAbstraction(net, isFair){
 		net.removeTransition(hiddenTransitions[i].id);
 	}
 
+	// remove unreachable places from the petri net
+	let places = net.places.filter(p => p.incomingTransitions.length === 0 && p.metaData.startPlace === undefined);
+	while(places.length !== 0){
+		for(let i = 0; i < places.length; i++){
+			const place = places[i];
+			const outgoing = place.outgoingTransitions.map(id => net.getTransition(id));
+			net.removePlace(place.id);
+
+			// remove any transitions that have become uncreachable from the current place
+			for(let j = 0; j < outgoing.length; j++){
+				const transition = outgoing[j];
+				if(transition.incomingPlaces.length === 0){
+					net.removeTransition(transition.id);
+				}
+			}
+		}
+
+		places = net.places.filter(p => p.incomingTransitions.length === 0 && p.metaData.startPlace === undefined);
+	}
+
 	net.constructTerminals();
 	return net;
 
