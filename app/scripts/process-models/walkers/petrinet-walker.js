@@ -110,6 +110,15 @@ const PETRI_NET_WALKER = {
 		return JSON.stringify(places.sort());
 	},
 
+	transitionKey: function(transitions){
+		const key = [];
+		for(let i = 0; i < transitions.length; i++){
+			key.push(transitions[i].label);
+		}
+
+		return keys.sort();
+	},
+
 	executeTransition: function(transition, marking){
 		const nextMarking = JSON.parse(JSON.stringify(marking));
 		const incoming = transition.incomingPlaces;

@@ -46,12 +46,16 @@ function automataParallelComposition(id, automaton1, automaton2){
               var toId = c1.node.id + '.' + node2.id;
               var edge = graph.addEdge(graph.nextEdgeId, action, graph.getNode(fromId), graph.getNode(toId));
               edge.locations = node1.locations
+              edge.metaData.originId = c1.edge.id;
             }
             else if (c2 !== undefined && alphabet1[action] === undefined) {
               var toId = node1.id + '.' + c2.node.id;
               var edge = graph.addEdge(graph.nextEdgeId, action, graph.getNode(fromId), graph.getNode(toId));
               edge.locations = node2.locations;
+              edge.metaData.originId = c2.edge.id;
             }
+
+            // check if the edge from the current second node is a broadcaster
             if (c2 !== undefined && c2.edge.metaData.broadcaster) {
               const receivers = automaton1.edges.filter(e => e.label === action && e.metaData.receiver);
               receivers.forEach(function (receiver) {
@@ -65,6 +69,8 @@ function automataParallelComposition(id, automaton1, automaton2){
               });
             }
           }
+
+          // check if the edge from the current first node is a broadcaster
           if(c1 !== undefined && c1.edge.metaData.broadcaster) {
             const receivers = automaton2.edges.filter(e => e.label === action && e.metaData.receiver);
             receivers.forEach(function (receiver) {
