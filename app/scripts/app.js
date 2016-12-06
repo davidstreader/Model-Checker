@@ -107,11 +107,23 @@
         app.set('automata.analysis',results.analysis);
 
         if(results.operations.length !== 0){
+          var passed = 0;
           app.$.console.log('Operations:');
           for(var i = 0; i < results.operations.length; i++){
             var { operation, process1, process2, result } = results.operations[i];
             var op = process1 + ' ' + operation + ' ' + process2 + ' = ' + result;
+            if(result){
+              passed++;
+            }
+
             app.$.console.log(op);
+          }
+
+          if(passed === results.operations.length){
+            app.$.console.log('All operations passed!');
+          }
+          else{
+            app.$.console.log(passed + '/' + results.operations.length + ' operations passed');
           }
         }
       }

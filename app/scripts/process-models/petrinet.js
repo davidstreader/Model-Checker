@@ -304,6 +304,24 @@ const PETRI_NET = {
 		return this.id + '.t' + this.transitionId++;
 	},
 
+	constructTerminals: function(){
+		const places = this.places;
+		for(let i = 0; i < places.length; i++){
+			const place = places[i];
+
+			if(place.outgoingTransitions.length === 0){
+				// check if an incoming transition is a deadlock
+				const incoming = place.incomingTransitions.map(id => this.getTransition(id)).filter(t => t.label === DELTA);
+				if(incoming.length === 1){
+					place.metaData.isTerminal = 'error';
+				}
+				else{
+					place.metaData.isTerminal = 'stop';
+				}
+			}
+		}
+	},
+
 	// Global Functions
 
 	convert: function(net){
