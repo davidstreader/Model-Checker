@@ -5,5 +5,12 @@ automata {
     C=(x->a->E),
     D=(c->x->STOP|x->c->STOP),
     E=(b->(c->z->STOP|z->c->STOP)).
+    A3 = (a->(b->x->B|x->C)),
+    B=(c->STOP),
+    C=(b->B|c->b->STOP).
+    A4 = (B||C),
+    B = (a!->b->c?->STOP),
+    C = (a?->x->c!->STOP).
 }
 A ~ A2.
+A3 ~ A4.

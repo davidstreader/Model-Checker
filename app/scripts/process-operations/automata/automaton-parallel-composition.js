@@ -71,7 +71,9 @@ function automataParallelComposition(id, automaton1, automaton2){
               nodes1.forEach(function(node){
                 var fromId = node.id + '.' + receiver.from;
                 var toId = node.id + '.' + receiver.to;
-                graph.addEdge(graph.nextEdgeId, action, graph.getNode(fromId), graph.getNode(toId));
+                if(node.id !== node1.id) {
+                  graph.addEdge(graph.nextEdgeId, action, graph.getNode(fromId), graph.getNode(toId));
+                }
               });
             });
           }
