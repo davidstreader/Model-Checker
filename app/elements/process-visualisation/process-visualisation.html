@@ -153,12 +153,27 @@
                 processDisplay.scrollTop(lastOptions.scrollTop);
                 parentNode.translate(parentNode.minX, parentNode.minY);
               }
-              _.each(collectDeepEmbedded(parentNode),node => get$Cell(node).show());
+              _.each(collectDeepEmbedded(parentNode),node => {
+                if (node.attributes.type === 'interruptEmbedNode') {
+                  get$Cell(node).hide();
+                  return;
+                }
+                get$Cell(node).show()
+              });
               _this.rescale();
             }
           });
           //We might have hidden interrupted states, so lets show them
-          _.each(collectDeepEmbedded(_this.displayedGraphs[app.$.selector.getSelected()]),cell=>get$Cell(cell).show());
+          _.each(collectDeepEmbedded(_this.displayedGraphs[app.$.selector.getSelected()]),cell=>{
+            if (cell.attributes.type === 'interruptEmbedNode') {
+              get$Cell(cell).hide();
+              const parent = _this.jgraph.getCell(cell.get("parent"));
+              cell.set("position",parent.get("position"));
+              cell.set("size",parent.get("size"));
+              return;
+            }
+              get$Cell(cell).show();
+          });
         });
         //Scroll listener
         this.paper.$el.on('mousewheel DOMMouseScroll', function onMouseWheel(e) {
@@ -180,7 +195,7 @@
           _this.rendering = true;
           cell = cell.model;
           const parentId = cell.get('parent');
-          if (parentId && cell.attributes.type!=='parentNode'&& cell.attributes.type!=='box') {
+          if (parentId && cell.attributes.type!=='interruptParentNode'&& cell.attributes.type!=='box') {
             cell = _this.jgraph.getCell(parentId);
           }
           let disp = app.get("automata.display");
@@ -197,11 +212,35 @@
           if (!parentId) return;
           adjustVertices(_this.jgraph,cell);
         });
-        this.jgraph.on('change:position', function(cell) {
+        this.jgraph.on('change:size', function(cell) {
           //Exploded diagrams are limited by changing the dimensions of the paper
           if (_this.exploded || _this.rendering) {
             return;
           }
+          //If a cell is an interrupt, update the size of hte respective interrupt too
+          _.each(cell.getEmbeddedCells(), node => {
+            if (node.attributes.type === 'interruptEmbedNode') {
+              node.set('position', cell.get('position'));
+              node.set('size', cell.get('size'));
+              return;
+            }
+          });
+        })
+        this.jgraph.on('change:position', function(cell) {
+          //Exploded diagrams are limited by changing the dimensions of the paper
+          //Don't update the size of the parent when the interrupt updates
+          if (_this.exploded || _this.rendering || cell.attributes.type === 'interruptEmbedNode') {
+            return;
+          }
+          //If a cell is an interrupt, update the size of hte respective interrupt too
+          _.each(cell.getEmbeddedCells(),node => {
+            if (node.attributes.type === 'interruptEmbedNode') {
+              node.set('position',cell.get('position'));
+              node.set('size',cell.get('size'));
+              return;
+            }
+            get$Cell(node).show()
+          });
           const parentId = cell.get('parent');
           if (!parentId) return;
           const parent = _this.jgraph.getCell(parentId);
@@ -259,17 +298,17 @@
         this.rescale();
         app.push("automata.display",graph);
         const _this = this;
-        const directEmbeds = _.filter(cells[0].getEmbeddedCells(),cell=>cell.attributes.type=='boxLabel');
+        const directEmbeds = _.filter(cells[0].getEmbeddedCells(),cell=>cell.attributes.type=='interruptLabel');
         cells.forEach(cell => {
           if (directEmbeds.indexOf(cell) !== -1) {
             return;
           }
 
-          if (cell.attributes.type === 'embedNode') {
+          if (cell.attributes.type === 'interruptEmbedNode') {
             get$Cell(cell).hide();
           }
           //box means interrupt
-          if (cell.attributes.type === 'boxLabel') {
+          if (cell.attributes.type === 'interruptLabel') {
             const lbl = cell.attributes.attrs.text.text;
             let newLbl = lbl;
             tmpIdx = 1;

@@ -90,10 +90,10 @@ function visualizeAutomata(process, name, graphMap, jgraph) {
 }
 function _box(jgraph, parent, toEmbed, name, graphMap, key) {
   const boxNode = new joint.shapes.box({
-    type:'parentNode'
+    type:'interruptParentNode'
   });
   const embedNode = new joint.shapes.box({
-    type:'embedNode'
+    type:'interruptEmbedNode'
   });
   parent.embed(boxNode);
   jgraph.addCell(embedNode);
@@ -232,7 +232,7 @@ function constructGraphs(graphMap, id) {
       const id = parseInt(graph.name.split(".")[1]);
       const bbox = graph.parentNode.getBBox().origin();
       const cell = new joint.shapes.basic.Rect({
-        type: "boxLabel",
+        type: "interruptLabel",
         size: {width: 100, height: 30},
         position: {x:bbox.x,y:bbox.y-25*id},
         attrs: {
