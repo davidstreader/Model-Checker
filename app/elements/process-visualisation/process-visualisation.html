@@ -142,7 +142,7 @@
                 parentNode.minX = minX;
                 parentNode.minY = minY;
               } else {
-                _.each(parentNode.getEmbeddedCells(),node => get$Cell(node).hide());
+                _.each(collectDeepEmbedded(parentNode),node => get$Cell(node).hide());
               }
             } else {
               //Show the element that was hidden above
@@ -153,7 +153,7 @@
                 processDisplay.scrollTop(lastOptions.scrollTop);
                 parentNode.translate(parentNode.minX, parentNode.minY);
               }
-              _.each(parentNode.getEmbeddedCells(),node => get$Cell(node).show());
+              _.each(collectDeepEmbedded(parentNode),node => get$Cell(node).show());
               _this.rescale();
             }
           });
