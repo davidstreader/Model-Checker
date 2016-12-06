@@ -458,6 +458,12 @@ function parse(tokens){
       variables = parseVariables(tokens);
     }
 
+    // check if an interrupt has been defined
+    var interrupt;
+    if(tokens[index].value === '~>'){
+      interrupt = parseInterrupt(tokens);
+    }
+
     gobble(tokens[index], '.');
 
     var definition = { type:'process', processType:processType, ident:ident, process:process, local:localProcesses };
@@ -469,6 +475,10 @@ function parse(tokens){
     // add variable set to defintion if it was defined
     if(variables !== undefined){
       definition.variables = variables;
+    }
+
+    if(interrupt !== undefined){
+      definition.interrupt = interrupt;
     }
 
     processes.push(definition);
@@ -606,13 +616,13 @@ function parse(tokens){
     var from = parseActionLabel(tokens);
     var end = actionRanges.length;
     var ranges = actionRanges.splice(start, end - start);
-    if (tokens[index].value.indexOf('~') !== -1) {
+    /*if (tokens[index].value.indexOf('~') !== -1) {
       gobble(tokens[index], '~>');
       from.interrupt = true;
     }  else {
       gobble(tokens[index], '->');
-    }
-
+    }*/
+    gobble(tokens[index], '->');
     var to = parseLocalProcess(tokens);
 
     var node = { type:'sequence', from:from, to:to };
@@ -820,6 +830,14 @@ function parse(tokens){
     gobble(tokens[index], ')');
 
     return { type:'function', func:processType, process:process };
+  }
+
+  function parseInterrupt(tokens){
+    gobble(tokens[index], '~>');
+    var interrupt = parseActionLabel(tokens);
+    gobble(tokens[index], '~>');
+    var process = parseLocalProcess(tokens);
+    return {action:interrupt, process:process};
   }
 
   /**
