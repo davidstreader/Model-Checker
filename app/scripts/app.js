@@ -26,20 +26,6 @@
         app.isClientSide = false;
       });
     }
-    app.getCookie = function (cname) {
-      var name = cname + "=";
-      var ca = document.cookie.split(';');
-      for(var i = 0; i <ca.length; i++) {
-        var c = ca[i];
-        while (c.charAt(0)==' ') {
-          c = c.substring(1);
-        }
-        if (c.indexOf(name) == 0) {
-          return c.substring(name.length,c.length);
-        }
-      }
-      return "";
-    };
     app.compile = function(overrideBuild) {
       var code = app.getCode();
 
@@ -235,7 +221,7 @@
      * Compile is called if it is.
      */
     app.$['chbx-live-compiling'].addEventListener('iron-change', function() {
-      document.cookie = "liveCompiling="+app.liveCompiling;
+      localStorage.setItem("liveCompiling",app.liveCompiling);
       if (app.liveCompiling) {
         app.compile(false);
       }
@@ -247,7 +233,7 @@
      * Compile is called if live compiling is active.
      */
     app.$['chbx-live-building'].addEventListener('iron-change', function() {
-      document.cookie = "liveBuilding="+app.liveBuilding;
+      localStorage.setItem("liveBuilding",app.liveBuilding);
       if(app.liveCompiling){
         app.compile(false);
       }
@@ -261,14 +247,11 @@
     app.$['chbx-fair-abstraction'].addEventListener('iron-change', function() {
       app.compile(true);
       app.$.editor.focus();
-      document.cookie = "fairAbstraction="+app.fairAbstraction;
+      localStorage.setItem("fairAbstraction",app.fairAbstraction);
     });
 
     app.$['chbx-save-cookie'].addEventListener('iron-change', function() {
-      document.cookie = "willSave="+app.willSaveCookie;
-    });
-    app.$['chbx-save-cookie'].addEventListener('iron-change', function() {
-      document.cookie = "willSave="+app.willSaveCookie;
+      localStorage.setItem("willSave",app.willSaveCookie);
     });
     /**
      * Simple event listener for when the user switches tabs.
@@ -313,16 +296,16 @@
      * Only care about this if the live-compiling check-box is ticked.
      */
     document.addEventListener('text-editor-change', function() {
-      document.cookie = "editor="+encodeURIComponent(app.$.editor.getCode());
+      localStorage.setItem("editor",encodeURIComponent(app.$.editor.getCode()));
       if (app.liveCompiling) {
         app.compile();
       }
     });
-    app.willSaveCookie = app.getCookie("willSave")!=='false';
-    app.liveBuilding = app.getCookie("liveBuilding")!=='false';
-    app.liveCompiling = app.getCookie("liveCompiling")!=='false';
-    if (app.willSaveCookie) {
-      app.$.editor.setCode(decodeURIComponent(app.getCookie('editor')));
+    app.willSaveCookie = localStorage.getItem("willSave")!=='false';
+    app.liveBuilding = localStorage.getItem("liveBuilding")!=='false';
+    app.liveCompiling = localStorage.getItem("liveCompiling")!=='false';
+    if (app.willSaveCookie && localStorage.getItem('editor') != null) {
+      app.$.editor.setCode(decodeURIComponent(localStorage.getItem('editor')));
       //Dont compile autosaved code unless we set live compiling
       if (app.liveCompiling)
         app.compile();
