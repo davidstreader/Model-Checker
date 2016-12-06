@@ -180,7 +180,7 @@
           _this.rendering = true;
           cell = cell.model;
           const parentId = cell.get('parent');
-          if (parentId && cell.attributes.type!=='box') {
+          if (parentId && cell.attributes.type!=='parentNode'&& cell.attributes.type!=='box') {
             cell = _this.jgraph.getCell(parentId);
           }
           let disp = app.get("automata.display");
