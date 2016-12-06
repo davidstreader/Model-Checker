@@ -13,19 +13,7 @@ function interpretAutomaton(process, processesMap, context){
   const interrupt = process.interrupt;
   interpretNode(process.process, automaton, root)
   if (process.interrupt) {
-    const intRoot = automaton.addNode();
-    automaton.nodes.forEach(node => {
-      if (node.metaData.isPartOfInterrupt || node == intRoot) return;
-      node.metaData.isPartOfInterrupt = true;
-      if( node !== intRoot) {
-        const id = automaton.nextEdgeId;
-        automaton.addEdge(id, "interrupt", node, intRoot, {});
-      }
-    });
-    intRoot.metaData.isPartOfInterrupt = true;
-    const id = automaton.nextEdgeId;
-    intRoot.metaData.interrupt = process.interrupt;
-    interpretNode(process.interrupt.process, automaton, intRoot);
+    interpretNode(process.interrupt.process, automaton, undefined);
   }
   if(process.hiding !== undefined){
     processHiding(automaton, process.hiding);
@@ -94,10 +82,10 @@ function interpretAutomaton(process, processesMap, context){
     }
   }
 
-  function interpretSequence(astNode, automaton, currentNode){
+  function interpretSequence(astNode, automaton, currentNode) {
     const next = (astNode.to.type === 'reference') ? referenceMap[astNode.to.reference] : automaton.addNode();
     const id = automaton.nextEdgeId;
-    const metadata  = {};
+    const metadata = {};
     if (astNode.guard !== undefined) {
       metadata.guard = astNode.guard;
       metadata.next = astNode.next;
@@ -106,7 +94,17 @@ function interpretAutomaton(process, processesMap, context){
     if (astNode.from.receiver) metadata.receiver = true;
     if (astNode.from.broadcaster) metadata.broadcaster = true;
     if (typeof astNode.from.action !== 'string') astNode.from.action = astNode.from.action.label;
-    automaton.addEdge(id, astNode.from.action, currentNode, next, metadata);
+    //Not interrupt, currentNode is defined
+    if (currentNode) {
+      automaton.addEdge(id, astNode.from.action, currentNode, next, metadata);
+    } else {
+      automaton.nodes.forEach(node => {
+        if (node.metaData.isPartOfInterrupt || node == next) return;
+        node.metaData.isPartOfInterrupt = true;
+        const id = automaton.nextEdgeId;
+        automaton.addEdge(id, astNode.from.action, node, next, {interrupt: process.interrupt});
+      });
+    }
     if(astNode.to.type !== 'reference'){
       interpretNode(astNode.to, automaton, next);
     }

@@ -6,6 +6,7 @@ function visualizeAutomata(process, name, graphMap, jgraph) {
   const parentNode = new joint.shapes.parent();
   parentNode.name = name;
   let interruptId = 1;
+  const interrupts = [];
   jgraph.addCell(parentNode);
   graphMap[name] = {name:name,height:0,parentNode:parentNode};
   for(let i = 0; i < nodes.length; i++){
@@ -36,7 +37,6 @@ function visualizeAutomata(process, name, graphMap, jgraph) {
     parentNode.embed(nodeMap['n' + nodes[i].id]);
     jgraph.addCell(nodeMap['n' + nodes[i].id]);
   }
-  let interruptNames = [];
   let toEmbed = [];
   // add the edges between the nodes in the automaton to the graph
   const edges = process.edges;
@@ -52,23 +52,17 @@ function visualizeAutomata(process, name, graphMap, jgraph) {
       if (vars !== undefined)
         label =vars+"\n"+label;
     }
-    if (nodeMap[from].metaData.interrupt) {
-      toEmbed.splice(toEmbed.indexOf(nodeMap[from],1));
-      const connected = jgraph.getConnectedLinks(nodeMap[from]);
-      let lastCell;
-      //Loop through all embedded cells and find one that links to nowhere
-      connected.forEach(link => {
-        var cell = jgraph.getCell(link.get("source"));
-        if (cell.attributes.type == 'fsa.EndState') {
-          lastCell = cell;
-        }
-      })
-      jgraph.removeCells(connected);
-      toEmbed = _.difference(toEmbed,connected);
+    if (edges[i].metaData.interrupt) {
+      var toNode = process.nodeMap[edges[i].to];
+      //Destroy all interrupt edges besides the last one.
+      if (toNode.incomingEdges.indexOf(edges[i].id) != toNode.incomingEdges.length-1) {
+        toEmbed.push(nodeMap[from]);
+        continue;
+      }
+      const target = nodeMap[to];
       const box = _box(jgraph, parentNode, toEmbed, name+"."+(interruptId++),graphMap, name);
-      const link = _link(nodeMap[from],nodeMap[to], label,parentNode,jgraph);
-      const link2 = _link(box.embedNode,nodeMap[from], nodeMap[from].metaData.interrupt.action.action,parentNode,jgraph);
-      box.toDelete =_link(lastCell,box.embedNode, "",parentNode,jgraph);
+      box.toDelete = _link(nodeMap[from],box.embedNode, "",parentNode,jgraph);
+      const link =_link(box.embedNode,target, label,parentNode,jgraph);
       //move all elements in front of the link
       box.toFront();
       toEmbed.forEach(cell => {
@@ -77,15 +71,13 @@ function visualizeAutomata(process, name, graphMap, jgraph) {
           cell2.toFront();
         });
       });
-
       //Now that all the children are inside box, toEmbed should only contain the box, plus the next node
-      toEmbed = [link,box,nodeMap[from],link2];
-
-    }  else {
-      toEmbed.push(_link(nodeMap[from],nodeMap[to], label,parentNode,jgraph));
-      toEmbed.push(nodeMap[from]);
-      toEmbed.push(nodeMap[to]);
+      toEmbed = [box,target, link];
+      continue;
     }
+    toEmbed.push(_link(nodeMap[from],nodeMap[to], label,parentNode,jgraph));
+    toEmbed.push(nodeMap[from]);
+    toEmbed.push(nodeMap[to]);
   }
 }
 function _box(jgraph, parent, toEmbed, name, graphMap, key) {

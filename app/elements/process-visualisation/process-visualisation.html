@@ -155,7 +155,6 @@
               }
               _.each(collectDeepEmbedded(parentNode),node => {
                 if (node.attributes.type === 'interruptEmbedNode') {
-                  get$Cell(node).hide();
                   return;
                 }
                 get$Cell(node).show()
@@ -167,9 +166,11 @@
           _.each(collectDeepEmbedded(_this.displayedGraphs[app.$.selector.getSelected()]),cell=>{
             if (cell.attributes.type === 'interruptEmbedNode') {
               get$Cell(cell).hide();
+              //The embed node doesnt seem to be positioned correcttly after restoring all, so lets fix that
               const parent = _this.jgraph.getCell(cell.get("parent"));
               cell.set("position",parent.get("position"));
               cell.set("size",parent.get("size"));
+              //DONT show the embed node.
               return;
             }
               get$Cell(cell).show();
@@ -222,10 +223,9 @@
             if (node.attributes.type === 'interruptEmbedNode') {
               node.set('position', cell.get('position'));
               node.set('size', cell.get('size'));
-              return;
             }
           });
-        })
+        });
         this.jgraph.on('change:position', function(cell) {
           //Exploded diagrams are limited by changing the dimensions of the paper
           //Don't update the size of the parent when the interrupt updates
@@ -277,11 +277,6 @@
         }
         //Assign that name to the old label
         this.graphMap[oldName].label.attributes.attrs.text.text = name;
-        //There is an undefined cell tagged on the end. My guess is its the edge???
-        var embeds = this.graphMap[oldName].parentNode.get("embeds");
-        if (embeds[embeds.length-1]===undefined) {
-          embeds.pop();
-        }
         //Clone the process into cells, also cloning all children
         let cells = this.graphMap[oldName].parentNode.clone({deep: true});
         //Sort the array, putting links after components, as the links will fail to be added if their
