@@ -22,6 +22,7 @@ function petriNetAbstraction(net, isFair){
 		net.removeTransition(hiddenTransitions[i].id);
 	}
 
+	net.constructTerminals();
 	return net;
 
 	function constructObservableTransitions(hiddenTransition){
