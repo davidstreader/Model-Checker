@@ -1,0 +1,5 @@
+automata {
+    A=a->b->ERROR.
+    B=A~>i~>g->STOP.
+    C=B~>j~>c->STOP.
+}

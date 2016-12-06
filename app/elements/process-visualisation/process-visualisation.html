@@ -245,7 +245,6 @@
         }
         //Clone the process into cells, also cloning all children
         let cells = this.graphMap[oldName].parentNode.clone({deep: true});
-
         //Sort the array, putting links after components, as the links will fail to be added if their
         //linked components do not exist
         cells.sort((a,b) => a.attributes.type==="fsa.Arrow"?1:-1);
@@ -266,6 +265,9 @@
             return;
           }
 
+          if (cell.attributes.type === 'embedNode') {
+            get$Cell(cell).hide();
+          }
           //box means interrupt
           if (cell.attributes.type === 'boxLabel') {
             const lbl = cell.attributes.attrs.text.text;
@@ -288,7 +290,6 @@
         const nodeBBox = graph.parentNode.getBBox();
         const scale = V(this.paper.viewport).scale();
         $(".process-display").stop().animate({scrollTop:nodeBBox.origin().y*scale.sx}, '100', 'swing');
-
         this.rendering = false;
       },
       /**
