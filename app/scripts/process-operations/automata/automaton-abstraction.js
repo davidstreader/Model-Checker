@@ -1,105 +1,120 @@
-'use strict'
+'use strict';
 
-/**
- * Performs the abstraction process on the specified automaton. This process
- * removes the hidden, unobservable events (represented as tau) in the automaton
- * and replaces them with observable events.
- *
- * @param {automaton} process - the automaton to abstract
- * @return {automaton} - the abstracted processs
- */
-function automataAbstraction(process, isFair){
-	var observableEdgeMap = {};
+function automataAbstraction(automaton, isFair){
+	const observableEdgeMap = {};
+	const walker = new AutomatonWalker(automaton);
 
-	// get all nodes that have at least one hidden tau event traversing from it
-	var nodes = process.edges.filter(edge => edge.label === TAU).map(edge => edge.from);
+	const hiddenEdges = automaton.edges.filter(e => e.label === TAU);
 
-	// populate the obvservable edge map
-	for(var id = 0; id < nodes.length; id++){
-		constructObservableEdges(process.getNode(nodes[id]));
+	for(let i = 0; i < hiddenEdges.length; i++){
+		constructIncomingObservableEdges(hiddenEdges[i]);
+		constructOutgoingObservableEdges(hiddenEdges[i]);
 	}
 
-	// add the observable edges to the process
-	for(var key in observableEdgeMap){
-		var edge = observableEdgeMap[key];
-		process.addEdge(process.nextEdgeId, edge.label, process.getNode(edge.from), process.getNode(edge.to));
+	// add the observable edges to the automaton
+	for(let key in observableEdgeMap){
+		const edge = observableEdgeMap[key];
+		automaton.addEdge(automaton.nextEdgeId, edge.label, automaton.getNode(edge.from), automaton.getNode(edge.to));
 	}
 
-	// delete the hidden tau events from the process
-	var tauEdges = process.edges.filter(edge => edge.label === TAU);
-	for (var i = 0; i < tauEdges.length; i++){
-		var from = process.getNode(tauEdges[i].from);
-		from.removeOutgoingEdge(tauEdges[i].id);
-		var to = process.getNode(tauEdges[i].to);
-		to.removeIncomingEdge(tauEdges[i].id); // to was from before???
-		process.removeEdge(tauEdges[i].id);
+	// remove the hidden edges from the automaton
+	for(let i = 0; i < hiddenEdges.length; i++){
+		automaton.removeEdge(hiddenEdges[i].id);
 	}
 
-	nodes = process.nodes;
-	for(var i = 0; i < nodes.length; i++){
-		var current = nodes[i];
-		if(current.incomingEdges.map(id => process.getEdge(id))
-			.length === 0 && current.getMetaData('startNode') === undefined){
-			process.removeNode(current.id);
-		}
-		else if(current.outgoingEdges.map(id => process.getEdge(id)).length === 0 && current.getMetaData('isTerminal') === undefined){
-			current.addMetaData('isTerminal', 'stop');
+	automaton.trim();
+	return automaton;
+
+	function constructIncomingObservableEdges(hiddenEdge){
+		const outgoingNodes = getOutgoingNodes(hiddenEdge);
+		const incomingNodes = walker.getIncomingNodes(automaton.getNode(hiddenEdge.from));
+		for(let i = 0; i < incomingNodes.length; i++){
+			const {edge, node} = incomingNodes[i];
+			
+			// construct observable actions if the edge's action is observable
+			if(edge.label !== TAU){
+				for(let j = 0; j < outgoingNodes.length; j++){
+					const next = outgoingNodes[j];
+					constructObservableEdge(node.id, next.id, edge.label);
+				}
+			}
 		}
 	}
 
-	return process;
+	function constructOutgoingObservableEdges(hiddenEdge){
+		const incomingNodes = getIncomingNodes(hiddenEdge);
+		const outgoingNodes = walker.getOutgoingNodes(automaton.getNode(hiddenEdge.to));
+		for(let i = 0; i < outgoingNodes.length; i++){
+			const {edge, node} = outgoingNodes[i];
+			
+			// construct observable actions if the edge's action is observable
+			if(edge.label !== TAU){
+				for(let j = 0; j < incomingNodes.length; j++){
+					const next = incomingNodes[j];
+					constructObservableEdge(next.id, node.id, edge.label);
+				}
+			}
+		}
+	}
 
-	function constructObservableEdges(node){
-		// get observable events (edges) that transition to the specified node
-		var incomingObservableEdges = node.incomingEdges.map(id => process.getEdge(id))
-		.filter(edge => edge.label !== TAU);
+	function getOutgoingNodes(hiddenEdge){
+		const nodes = [];
 
-		var visited = {};
-		var fringe = [node];
+		const visited = {};
+		visited[hiddenEdge.from] = true;
+
+		const fringe = [hiddenEdge];
 		while(fringe.length !== 0){
-			var current = fringe.pop();
-			// get neighbouring nodes from the current node that are transitionable to via a hidden tau event
-			var neighbours = current.outgoingEdges.map(id => process.getEdge(id)).filter(edge => edge.label === TAU).map(edge => process.getNode(edge.to));
+			const current = fringe.pop();
+			const node = automaton.getNode(current.to);
+			nodes.push(node);
 
-			// iterate over the neigbouring nodes and add observable edges if possible
-			for(var i = 0; i < neighbours.length; i++){
-				var neighbour = neighbours[i];
-
-				// add dead locked state if the abstraction is defined as unfair
-				if(neighbour.id === node.id){
-					if(!isFair){
-						var deadState = process.addNode(process.nextNodeId);
-						deadState.addMetaData('isTerminal', 'error');
-						process.addEdge(process.nextEdgeId, DELTA, node.id, deadState.id);
-					}
-					
-					continue;
-				}
-
-				// check if the current node has been visited
-				if(visited[neighbour.id] !== undefined){
-					continue;
-				}
-
-				// push the neighbour to the fringe
-				fringe.push(neighbour);
-
-				var outgoingObservableEdges = neighbours[i].outgoingEdges.map(id => process.getEdge(id)).filter(edge => edge.label !== TAU);
-
-				for(var j = 0; j < incomingObservableEdges.length; j++){
-					var edge = incomingObservableEdges[j];
-					constructObservableEdge(edge.from, neighbour.id, edge.label);
-				}
-
-				for(var j = 0; j < outgoingObservableEdges.length; j++){
-					var edge = outgoingObservableEdges[j];
-					constructObservableEdge(node.id, edge.to, edge.label);
+			// add any hidden edges from this node to the fringe
+			const edges = walker.getOutgoingEdges(node).filter(e => e.label === TAU);
+			for(let i = 0; i < edges.length; i++){
+				const next = automaton.getNode(edges[i].to);
+				
+				// add the next node to the fringe if it has not been visited already
+				if(!visited[next.id]){
+					fringe.push(edges[i]);
 				}
 			}
 
-			// mark the current node as visited
-			visited[current.id] = true;
+			// mark this node as visited
+			visited[node.id] = true;
 		}
+
+		return nodes;
+	}
+
+	function getIncomingNodes(hiddenEdge){
+		const nodes = [];
+
+		const visited = {};
+		visited[hiddenEdge.to] = true;
+
+		const fringe = [hiddenEdge];
+		while(fringe.length !== 0){
+			const current = fringe.pop();
+			const node = automaton.getNode(current.from);
+			nodes.push(node);
+
+			// add any hidden edges to this node to the fringe
+			const edges = walker.getIncomingEdges(node).filter(e => e.label === TAU);
+			for(let i = 0; i < edges.length; i++){
+				const next = automaton.getNode(edges[i].from);
+				
+				// add the next node to the fringe if it has not been visited already
+				if(!visited[next.id]){
+					fringe.push(edges[i]);
+				}
+			}
+
+			// mark this node as visited
+			visited[node.id] = true;
+		}
+
+		return nodes;
 	}
 
 	/**
