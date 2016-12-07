@@ -47,7 +47,8 @@ const Compiler = {
         if (results.stack) {
           app.$.console.error("An exception was thrown that was not related to your script.");
           app.$.console.error(results.stack);
-          throw results;
+          console.log("Error: "+results.message);
+          console.log(results.stack);
         } else {
           app.$.console.error(results.message);
         }

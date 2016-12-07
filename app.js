@@ -55,9 +55,7 @@ if (!testingMode) {
       try {
         ack(Compiler.localCompile(obj.ast, obj.context));
       } catch (ex) {
-        ex.type = "error";
-        ex.message = ex.toString();
-        ack(ex);
+        ack({type:'error',message:ex.toString(),stack:ex.stack});
       }
     });
   });
