@@ -17,6 +17,11 @@ Polymer 1.0 Home:	https://www.polymer-project.org/1.0/
 Polymer 1.0 Catalogue:	https://elements.polymer-project.org/   
 Polymer 1.0 Dev Guide:	https://www.polymer-project.org/1.0/docs/devguide/feature-overview.html   
 
+## Building
+
+For windows devices, run install.bat
+For nix devices, run install.sh
+
 ###Main Application
 -----------------------
 The Automata Concocter is a web based application that constructs finite state automata based on text input of the
@@ -74,4 +79,3 @@ So you're a SWEN302 student and you want to further enchance the Automata Concoc
 - [ ] Remove unimplemented grammar errors.
 - [ ] Parallelisation.
 - [ ] Fix Walker drop-down-box bug. Get ECS dept. to update Chrome! Currently: 40.0.2214.91
-- 
