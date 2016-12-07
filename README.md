@@ -17,7 +17,7 @@ Polymer 1.0 Home:	https://www.polymer-project.org/1.0/
 Polymer 1.0 Catalogue:	https://elements.polymer-project.org/   
 Polymer 1.0 Dev Guide:	https://www.polymer-project.org/1.0/docs/devguide/feature-overview.html   
 
-## Building
+### Building
 
 For windows devices, run install.bat
 For nix devices, run install.sh
