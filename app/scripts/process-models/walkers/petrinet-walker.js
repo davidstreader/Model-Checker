@@ -68,7 +68,7 @@ const PETRI_NET_WALKER = {
 			incomingSet[incoming[i]] = true;
 		}
 
-		return incoming;
+		return incomingSet;
 	},
 
 	getOutgoingMarking: function(transition){
