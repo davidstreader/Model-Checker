@@ -1,60 +1,61 @@
 'use strict';
 
 const Compiler = {
-	lastAst: {},
-	lastAnalysis: {},
-	lastProcesses: {},
-	lastAbstraction: true,
+  lastAst: {},
+  lastAnalysis: {},
+  lastProcesses: {},
+  lastAbstraction: true,
 
-	compile: function(code, context){
-		try{
-			const tokens = Lexer.tokenise(code);
-			const ast = parse(tokens);
-			// check if this is to be compiled client side or server side
-			if(context.isClientSide){
-				return this.localCompile(ast, context);
-			} else if (context.isLocal) {
-        return this.localCompile(ast, context);
-      } else{
-				return this.remoteCompile(ast, context);
-			}
+  compile: function(code, context){
+    if (!this.worker) {
+      this.worker = new Worker("scripts/compiler/asyncCompiler.js")
+    }
+    //Pass compilation on to the worker
+    this.worker.postMessage({code:code,context:context});
+    this.worker.onmessage = e => {
+      if (e.data.remoteCompile) {
+        this.remoteCompile(e.data.ast,context);
+      } else if (e.data.message) {
+        if (e.data.clear) app.$.console.clear();
+        app.$.console.log(e.data.message);
+      } else if (e.data.result) {
+        app.finalizeBuild(e.data.result, e.data.graphs);
+      }
+    };
+  },
 
-		}catch(error){
-			error.type = 'error';
-			return error;
-		}
-	},
+  localCompile: function(ast, context){
+    ast = expand(ast);
 
-	localCompile: function(ast, context){
-		ast = expand(ast);
+    const abstractionChanged = context.isFairAbstraction !== this.lastAbstraction;
+    const analysis = performAnalysis(ast.processes, this.lastAnalysis, abstractionChanged);
+    ast.processes = replaceReferences(ast.processes);
+    const processes = interpret(ast.processes, analysis, this.lastProcesses, context);
+    const operations = evaluateOperations(ast.operations, processes, ast.variableMap);
+    this.lastAst = ast;
+    this.lastAnalysis = analysis;
+    this.lastProcesses = processes;
+    this.lastAbstraction = context.isFairAbstraction;
+    // otherwise render the automata
+    const graphs = [];
+    for (let id in processes) {
+      graphs.push(processes[id]);
+    }
 
-		const abstractionChanged = context.isFairAbstraction !== this.lastAbstraction;
-		const analysis = performAnalysis(ast.processes, this.lastAnalysis, abstractionChanged);
-		ast.processes = replaceReferences(ast.processes);
-		const processes = interpret(ast.processes, analysis, this.lastProcesses, context);
-		const operations = evaluateOperations(ast.operations, processes, ast.variableMap);
-		this.lastAst = ast;
-		this.lastAnalysis = analysis;
-		this.lastProcesses = processes;
-		this.lastAbstraction = context.isFairAbstraction;
-		return { processes:processes, operations:operations, analysis:analysis, context:context };
-	},
+    app.finalizeBuild({ processes:processes, operations:operations, analysis:analysis, context:context }, graphs);
+  },
 
-	remoteCompile: function(ast, context){
+  //We still need to do remote compilation sync, but its not like that's a problem since sockets are async by nature
+  remoteCompile: function(ast, context){
     app.socket.off("analyse");
     app.socket.off("interpret");
-    app.socket.on("analyse",data=>{app.$.console.clear();app.$.console.log("Analysing:" +(data.i+1) +" out of "+ast.processes.length);});
-    app.socket.on("interpret",data=>{app.$.console.clear();app.$.console.log("Interpreting:" +(data.i+1) +" out of "+ast.processes.length);});
+    app.socket.on("analyse",data=>{app.$.console.clear();app.$.console.log("Analysing: "+data.ident+ " (" +(data.i+1) +"/"+ast.processes.length+")");});
+    app.socket.on("interpret",data=>{app.$.console.clear();app.$.console.log("Interpreting:"+data.ident+ " (" +(data.i+1) +"/"+ast.processes.length+")");});
+    app.socket.on("replacer",data=>{app.$.console.clear();app.$.console.log("Replacing References:"+data.ident+ " (" +(data.i+1) +"/"+ast.processes.length+")");});
+    app.socket.on("expander",data=>{app.$.console.clear();app.$.console.log("Expanding:"+data.ident+ " (" +(data.i+1) +"/"+ast.processes.length+")");});
     app.socket.emit('compile',{ast:ast,context:context},function(results) {
       if (results.type === 'error') {
-        if (results.stack) {
-          app.$.console.error("An exception was thrown that was not related to your script.");
-          app.$.console.error(results.stack);
-          console.log("Error: "+results.message);
-          console.log(results.stack);
-        } else {
-          app.$.console.error(results.message);
-        }
+        app.finalizeBuild(results);
         return;
       }
       const graphs = [];
@@ -69,6 +70,5 @@ const Compiler = {
       }
       app.finalizeBuild(results,graphs);
     });
-		return {type: "serverSide"};
-	}
+  }
 }

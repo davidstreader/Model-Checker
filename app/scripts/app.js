@@ -19,7 +19,6 @@
     app.selectedCtx = 0;
     app.isClientSide = true;
     app.willSaveCookie = true;
-    app.debug = false;
 
     if (typeof io !== 'undefined') {
       app.socket = io();
@@ -29,7 +28,6 @@
     }
     app.compile = function(overrideBuild) {
       var code = app.getCode();
-
       if(!overrideBuild){
         // if there is nothing to parse then do not continue
         if(code.length === 0){
@@ -58,36 +56,22 @@
       setTimeout(function() {
         if(app.liveCompiling === true || override){
           app.lastCompileStartTime = (new Date()).getTime();
-          var code = app.$.editor.getCode();
-          var settings = app.getSettings();
-          var results = app.$.parser.compile(code, settings);
-
-          // check if an error was thrown by the compiler
-          if (results.type === 'serverSide') {
-            return;
-          }
-          if(results.type === 'error'){
-            if (results.stack) {
-              app.$.console.error("An exception was thrown that was not related to your script.");
-              app.$.console.error(results.stack);
-              throw results;
-            } else {
-              app.$.console.error(results.toString());
-            }
-          }
-          else{
-            app.finalizeBuild(results);
-          }
+          const code = app.$.editor.getCode();
+          const settings = app.getSettings();
+          app.$.parser.compile(code, settings);
         }
       }.bind(this), 0);
     }
     app.finalizeBuild = function(results, graphs) {
-      // otherwise render the automata
-      if (!graphs) {
-        graphs = [];
-        for (var id in results.processes) {
-          graphs.push(results.processes[id]);
+      if(results.type === 'error'){
+        if (results.stack) {
+          app.$.console.error("An exception was thrown that was not related to your script.");
+          app.$.console.error(results.stack);
+          console.log(results.stack);
+        } else {
+          app.$.console.error(results.message);
         }
+        return;
       }
       app.set('automata.values', graphs.reverse());
       app.set('automata.analysis',results.analysis);

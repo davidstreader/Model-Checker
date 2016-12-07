@@ -28,7 +28,7 @@ files.forEach( function( file) {
   if (stat && stat.isDirectory()) {
     walk("app/scripts/"+file, function(results) {
       results.forEach(function (file) {
-        if (file.endsWith(".js") && !file.endsWith("app.js") && file.indexOf("tests") === -1) {
+        if (file.endsWith(".js") && !file.endsWith("app.js") && file.indexOf("tests") === -1 && file.indexOf("async") === -1) {
           include(file);
         }
       });

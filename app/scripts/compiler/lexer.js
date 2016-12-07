@@ -77,7 +77,9 @@ const Lexer = {
 					tokens.push(new Token('terminal', value, location));
 				}
 				else{
-				  if (app.debug) console.log("Found process:"+value);
+          if (typeof postMessage !== 'undefined') {
+            postMessage({clear: true, message: ("Found process:" + value)});
+          }
 					tokens.push(new Token('identifier', value, location));
 				}
 

@@ -19,6 +19,11 @@ function expand(ast){
   var variableSet;
   // expand the defined processes
   for(var i = 0; i < processes.length; i++){
+
+    if (typeof postMessage !== 'undefined') {
+      postMessage({clear:true,message:("Expanding: "+processes[i].ident.ident+" ("+(i+1)+"/"+processes.length)+")"});
+    }
+    else processes.socket.emit("expander",{ident:processes[i].ident.ident,i:i});
     var variableMap = JSON.parse(JSON.stringify(ast.variableMap));
     variableSet = processes[i].variables?processes[i].variables.set:[];
     processes[i].process = expandNode(processes[i].process, variableMap);
@@ -466,7 +471,8 @@ function expand(ast){
     }
     if (isVariable)
       return {result:expr,expr:expr,exprWithVars:expr};
-    return {result:evaluate(expr),expr:expr,exprWithVars:exprWithVars.split("$").join("")};
+    //Web workers can not use eval and evaluate. This is an alternative.
+    return {result:new Function('return '+expr)(),expr:expr,exprWithVars:exprWithVars.split("$").join("")};
   }
 
   /**
@@ -531,7 +537,6 @@ function expand(ast){
    */
   function processGuardExpression(expr, variableMap){
     expr = processExpression(expr, variableMap);
-    expr.result = expr.result !== 0;
     return expr;
   }
 

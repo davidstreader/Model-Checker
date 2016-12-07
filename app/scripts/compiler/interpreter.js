@@ -20,7 +20,9 @@ function interpret(processes, analysis, lastProcessesMap, context){
 		// check if the current process has been updated since last compilation
 		const ident = processes[i].ident.ident;
 		if(analysis[ident] !== undefined && analysis[ident].isUpdated){
-      if (typeof app !== 'undefined' && app.debug) console.log("Interpreting: "+ident);
+      if (typeof postMessage !== 'undefined') {
+        postMessage({clear:true,message:("Interpreting: "+ident+" ("+(i+1)+"/"+processes.length)+")"});
+      }
       else processes.socket.emit("interpret",{ident:ident,i:i});
       // interpret the process
 			switch(processes[i].processType){

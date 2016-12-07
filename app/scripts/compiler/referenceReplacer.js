@@ -31,6 +31,10 @@ function replaceReferences(processes){
 
 	// replace references in each process
 	for(let i = 0; i < processes.length; i++){
+    if (typeof postMessage !== 'undefined') {
+      postMessage({clear:true,message:("Replacing References: "+processes[i].ident.ident+" ("+(i+1)+"/"+processes.length)+")"});
+    }
+    else processes.socket.emit("replacer",{ident:processes[i].ident.ident,i:i});
 		// reset reference map for local processes
 		localReferenceMap =  new LocalReferenceMap(processes[i].local);
 
@@ -112,7 +116,6 @@ function replaceReferences(processes){
 	 */
 	function replaceIdentifier(astNode, ident, idMap){
 		const reference = astNode.ident;
-
 		// check if the reference already exists
 		if(idMap[reference] !== undefined){
 			return new ReferenceNode(idMap[reference]);
