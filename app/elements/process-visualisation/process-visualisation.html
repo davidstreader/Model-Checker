@@ -71,7 +71,7 @@
         document.addEventListener('addProcess', function(e){
           //If we are currently rendering, ignore any events
           if (_this.rendering) return;
-          _this.addGraph(app.$.selector.getSelectedName());
+          _this.addGraph(app.$.selector.getSelectedName(), app.$.selector.hideInterrupts);
         });
         document.addEventListener('clearProcess',function(e) {
           //If we are currently rendering, ignore any events
@@ -89,7 +89,7 @@
         document.addEventListener('addAll', function(){
           //If we are currently rendering, ignore any events
           if (_this.rendering) return;
-          _.each(app.get("automata.values"),graph => _this.addGraph(graph.id));
+          _.each(app.get("automata.values"),graph => _this.addGraph(graph.id,app.$.selector.hideInterrupts));
         });
         document.addEventListener('removeProcess', function(){
           //If we are currently rendering, ignore any events
@@ -262,10 +262,10 @@
           }
         });
       },
-      addGraph: function(name) {
+      addGraph: function(name, hidden) {
         this.rendering = true;
         //construct the graph first if it doesnt exist or has changed
-        constructGraphs(this.graphMap,name);
+        constructGraphs(this.graphMap,name, hidden);
         //Work out the bottom corner of the lowest element
         let maxY = 0;
         _.each(this.displayedGraphs,graph => maxY = Math.max(maxY,graph.getBBox().corner().y));
@@ -275,8 +275,10 @@
         while (this.displayedGraphs[name]) {
           name = oldName+(tmpIdx++);
         }
+        if (hidden) oldName +=".hidden";
         //Assign that name to the old label
         this.graphMap[oldName].label.attributes.attrs.text.text = name;
+
         //Clone the process into cells, also cloning all children
         let cells = this.graphMap[oldName].parentNode.clone({deep: true});
         //Sort the array, putting links after components, as the links will fail to be added if their

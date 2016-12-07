@@ -33,7 +33,6 @@ const Compiler = {
 		ast.processes = replaceReferences(ast.processes);
 		const processes = interpret(ast.processes, analysis, this.lastProcesses, context);
 		const operations = evaluateOperations(ast.operations, processes, ast.variableMap);
-
 		this.lastAst = ast;
 		this.lastAnalysis = analysis;
 		this.lastProcesses = processes;

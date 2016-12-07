@@ -70,6 +70,7 @@ function interpretAutomaton(process, processesMap, context){
         interpretIdentifier(astNode, automaton, currentNode);
         break;
       case 'terminal':
+        //when dealing with a terminal, we never reach the part below that deals with sequences, so we have to deal with this here.
         if (astNode.interrupt) {
           currentNode = automaton.addNode();
           //Interrupts pass through a undefined currentNode, as they have no source. This means we dont
@@ -79,11 +80,14 @@ function interpretAutomaton(process, processesMap, context){
             //we also don't want to point next to itself.
             if (node.metaData.isPartOfInterrupt || node == currentNode) return;
             node.metaData.isPartOfInterrupt = true;
+            if (node.metaData.isTerminal === 'error') return;
+            delete node.metaData.isTerminal;
             const id = automaton.nextEdgeId;
             //Setting interrupt here means that we can pick up these edges in graph-constructor,
             //and then filter them to not be shown.
             automaton.addEdge(id, astNode.interrupt.action, node, currentNode, {interrupt: process.interrupt});
           });
+          return;
         }
         currentNode.metaData.isTerminal = astNode.terminal;
         break;
@@ -121,6 +125,8 @@ function interpretAutomaton(process, processesMap, context){
         //If a node already has some interrupt set, we dont want to override it with the parent interrupt.
         //we also don't want to point next to itself.
         if (node.metaData.isPartOfInterrupt || node == next) return;
+        if (node.metaData.isTerminal === 'error') return;
+        delete node.metaData.isTerminal;
         node.metaData.isPartOfInterrupt = true;
         const id = automaton.nextEdgeId;
         //Setting interrupt here means that we can pick up these edges in graph-constructor,

@@ -1,5 +1,9 @@
 automata {
-    A=a->b->ERROR.
+    A=a->b->STOP.
     B=A~>i~>g->STOP.
     C=B~>j~>c->STOP.
+    A2=(a->B|g->C),
+    B=(g->C|b->g->C),
+    C=(c->STOP).
 }
+A2 ~ C.

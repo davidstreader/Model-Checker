@@ -1,5 +1,5 @@
 'use strict';
-function visualizeAutomata(process, name, graphMap, jgraph) {
+function visualizeAutomata(process, name, graphMap, jgraph, hidden) {
   // add nodes in automaton to the graph
   const nodes = process.nodes;
   const nodeMap = {};
@@ -52,7 +52,7 @@ function visualizeAutomata(process, name, graphMap, jgraph) {
       if (vars !== undefined)
         label =vars+"\n"+label;
     }
-    if (edges[i].metaData.interrupt) {
+    if (edges[i].metaData.interrupt && hidden) {
       var toNode = process.nodeMap[edges[i].to];
       //Destroy all interrupt edges besides the last one.
       if (toNode.incomingEdges.indexOf(edges[i].id) != toNode.incomingEdges.length-1) {
@@ -202,25 +202,28 @@ function addLabelAndPadding(graphMap, key, jgraph) {
   //Move the component back to the origin with a bit of padding
   graphMap[key].parentNode.translate(50, -ly+50);
 }
-function constructGraphs(graphMap, id) {
+function constructGraphs(graphMap, id, hidden) {
   //Find the process by id
   let graph = _.findWhere(app.get("automata.values"), {id: id});
-  if (!graph.type || (graphMap[id] && app.get("automata.analysis")[graph.id] &&  !app.get("automata.analysis")[graph.id].isUpdated)) return;
+  if (hidden)
+    id += ".hidden";
+  if (!graph.type || (graphMap[id] && app.get("automata.analysis")[id] &&  !app.get("automata.analysis")[id].isUpdated)) return;
   //Calculate the bottom of the last drawn graph
   let tmpjgraph = new joint.dia.Graph();
   if (graph.type == 'automata') {
-    visualizeAutomata(graph,graph.id,graphMap,tmpjgraph);
+    visualizeAutomata(graph,id,graphMap,tmpjgraph, hidden);
   }
   if (graph.type == 'petrinet') {
-    visualizePetriNet(graph,graph.id,graphMap,tmpjgraph);
+    visualizePetriNet(graph,id,graphMap,tmpjgraph);
   }
   //We do not want to rescale the graph if it has already been rescaled.
   if (graph.type == 'interrupt') return;
   //Pass this through to dagre to get everything laid out
   joint.layout.DirectedGraph.layout(tmpjgraph, {rankDir:'LR',setLinkVertices: true});
-  addLabelAndPadding(graphMap,graph.id,tmpjgraph);
-  if (graphMap[graph.id].interrupts) {
-    _.each(graphMap[graph.id].interrupts,graph => {
+  addLabelAndPadding(graphMap,id,tmpjgraph);
+  if (graphMap[id].interrupts) {
+    _.each(graphMap[id].interrupts,graph => {
+      graph.name = graph.name.replace(".hidden","");
       const id = parseInt(graph.name.split(".")[1]);
       const bbox = graph.parentNode.getBBox().origin();
       const cell = new joint.shapes.basic.Rect({

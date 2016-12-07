@@ -50,6 +50,9 @@
           <paper-listbox class="dropdown-content" selected$="{{!_hasNameSelection}}"></paper-listbox>
         </paper-menu>
       </paper-dropdown-menu>
+      <paper-checkbox checked="{{hideInterrupts}}" class="chbx middle" title="Hide interrupted processes behind a box">
+        <span hidden$="{{smallScreen}}">Hide interrupts</span>
+      </paper-checkbox>
       <paper-button onclick="addProcess()" disabled$="{{!_hasNameSelection}}">Add Process</paper-button>
       <paper-button onclick="addAll()" disabled$="{{!_hasProcesses}}">Add all processes</paper-button>
     </div>
@@ -92,6 +95,13 @@
          */
         display: {
             type: Array
+        },
+        hideInterrupts: {
+          type: Boolean,
+          value: true
+        },
+        smallScreen: {
+          type: Boolean
         },
         _explosionLabel: {
           type: String,

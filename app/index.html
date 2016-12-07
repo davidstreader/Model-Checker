@@ -96,7 +96,7 @@
           </section>
         </section>
         <section class="layout vertical flex">
-          <process-selector id="selector" processes="{{automata.values}}" display="{{automata.display}}"></process-selector>
+          <process-selector id="selector" processes="{{automata.values}}" display="{{automata.display}}" smallScreen="{{smallScreen}}"></process-selector>
           <div class="process-display">
             <process-visualisation id="visualiser"></process-visualisation>
           </div>
@@ -104,8 +104,6 @@
       </neon-animated-pages>
     </div>
     <!-- end content -->
-
-    <!-- start help-dialog -->
     <paper-dialog id="help-dialog" with-backdrop>
       <div class="title-bar">
         <h2>Help</h2>
@@ -116,104 +114,10 @@
         </paper-tabs>
       </div>
       <paper-dialog-scrollable class="fit">
-        <neon-animated-pages selected="{{helpDialogSelectedTab}}" class="fit">
-          <section class="page">
-            <h3>Examples:</h3>
-            <h4>Example 1: Sequence</h4>
-            <div class="centerer">
-              <div class="fwidth"><code>Example1 = action -> STOP.</code></div><br><br>
-              <img src="images/help-dialog/example1.png"></img>
-            </div>
 
-            <h4>Example 2: Choice</h4>
-            <div class="centerer">
-              <div class="fwidth"><code>Example2 = x -> STOP | y -> ERROR.</code></div><br><br>
-              <img src="images/help-dialog/example2.png"></img>
-            </div>
-
-            <h4>Example 3: Simple Referencing</h4>
-            <div class="centerer">
-              <div class="fwidth"><code>A = x -> B.<br>B = y -> STOP.</code></div><br><br>
-              <img src="images/help-dialog/example3.png"></img>
-            </div>
-
-            <h4>Example 4: Referencing</h4>
-            <div class="centerer">
-              <div class="fwidth"><code>A = u -> (w -> A | x -> B).<br>B = y -> A | z -> STOP.</code></div><br><br>
-              <img src="images/help-dialog/example4.png"></img>
-            </div>
-
-            <h3>Operations:</h3>
-            <table class="t1">
-              <thead>
-                <tr>
-                  <th class="name">Name</th>
-                  <th class="use">Use</th>
-                  <th class="description">Description</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td class="name">Sequence</td>
-                  <td class="use">[label] <span class="symbol">&dash;&gt;</span> [next state]</td>
-                  <td class="description">Create a transition path from the current state to the next state with the specified label.</td>
-                </tr><tr>
-                  <td class="name">Choice</td>
-                  <td class="use">[label A] &dash;&gt; [state A] <span class="symbol">|</span> [label B] &dash;&gt; [state B]</td>
-                  <td class="description">Create a transition path from the current state to each of the specified states with the respective label.</td>
-                </tr><tr>
-                  <td class="name">Parallel <span class="note">(Not yet supported)</span></td>
-                  <td class="use">[state A] <span class="symbol">||</span> [state B]</td>
-                  <td class="description"></td>
-                </tr>
-              </tbody>
-            </table>
-
-            <h3>Terminals:</h3>
-            <table class="t1">
-              <thead>
-                <tr>
-                  <th class="name">Name</th>
-                  <th class="description">Description</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td class="name">STOP</td>
-                  <td class="description">A successful termination.</td>
-                </tr><tr>
-                  <td class="name">ERROR</td>
-                  <td class="description">An unsuccessful termination.</td>
-                </tr>
-              </tbody>
-            </table>
-
-            <h3>Grammar:</h3>
-            <span class="title">Automata Name:</span> First character must be an uppercase alphabet character. Following can be any alpha-numeric characters (excluding all whitespace).<br></br>
-            <span class="title">Edge Label:</span> First character must be a lowercase alphabet character. Following can be any alpha-numeric characters (excluding all whitespace).<br></br>
-            <span class="title">Definition End:</span> '.' <br></br><span class="title">Definition Assignment:</span> '=' <br></br><span class="title">Choice Operation:</span> '|'<br></br>
-            <span class="title">Sequence Operation:</span> '->' <br></br><span class="title">Sequence Stop:</span> 'STOP'
-          </section>
-          <section class="page">
-            <p>Starting from the toolbar from the top left, the pink compile button is used to compile your defined automata and display your automata.
-            You use the save and open buttons alongside this to open and save predifined automata.
-            The definition frame on the left below the main tool buttons is the input area for defining automata.
-            Refer to 'Automata Definition' for more information on how to define your automata.</p>
-            <div class="centerer"><img src="images/help-dialog/toolbar.png"></img></div>
-            <p>On the right is the automata frame and displays your automata outlined in the definition frame, once the compile button is used.
-              If their is an error in the definition, an alert will be shown on the console which can be found right beneath the text frame, outlining the error.
-              Just above the automata frame where the defined automata are pictured, is the walker tool.
-              The walker tool allows the navigation of the currently displayed automata by first selecting the automata you want to navigate, then selecting the edge to navigate down.
-              Clicking the walk button will confirm the selected options and walk through the automata one step.
-              The blue coloured node as shown below shows the current node that is being visited.</p>
-            <div class="centerer"><img src="images/help-dialog/walker.png"></img></div>
-          </section>
-        </neon-animated-pages>
       </paper-dialog-scrollable>
       <paper-icon-button="icons:cancel" title="Exit" on-tap="closehelp"></paper-icon-button>
     </paper-dialog>
-    <!-- end help-dialog -->
-
   </template>
 
   <!-- build:js scripts/app.js -->
