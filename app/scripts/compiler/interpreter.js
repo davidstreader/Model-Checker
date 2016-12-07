@@ -20,7 +20,8 @@ function interpret(processes, analysis, lastProcessesMap, context){
 		// check if the current process has been updated since last compilation
 		const ident = processes[i].ident.ident;
 		if(analysis[ident] !== undefined && analysis[ident].isUpdated){
-			// interpret the process
+      if (typeof app !== 'undefined' && app.debug) console.log("Interpreting: "+ident);
+      // interpret the process
 			switch(processes[i].processType){
 				case 'automata':
 					interpretAutomaton(processes[i], processesMap, context);

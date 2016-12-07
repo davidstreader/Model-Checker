@@ -77,6 +77,7 @@ const Lexer = {
 					tokens.push(new Token('terminal', value, location));
 				}
 				else{
+				  if (app.debug) console.log("Found process:"+value);
 					tokens.push(new Token('identifier', value, location));
 				}
 
@@ -208,7 +209,7 @@ const Lexer = {
 			while(code.length !== 0){
 				// remove any whitespace
 				gobbleWhitespace();
-				
+
 				let successful = false;
 
 				// try and match a single lined comment

@@ -19,6 +19,7 @@
     app.selectedCtx = 0;
     app.isClientSide = true;
     app.willSaveCookie = true;
+    app.debug = false;
 
     if (typeof io !== 'undefined') {
       app.socket = io();
@@ -90,7 +91,8 @@
       }
       app.set('automata.values', graphs.reverse());
       app.set('automata.analysis',results.analysis);
-
+      app.$.console.clear();
+      app.$.console.log('Successfully Compiled!');
       if(results.operations.length !== 0){
         var passed = 0;
         app.$.console.log('Operations:');
