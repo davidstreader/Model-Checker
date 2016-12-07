@@ -1,3 +1,3 @@
-call npm install -g bower
+call npm install bower
 call npm install
-bower install
+node_modules/bower/bin/bower install
