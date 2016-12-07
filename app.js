@@ -38,7 +38,6 @@ files.forEach( function( file) {
 include("app/scripts/helper-functions.js");
 include("app/scripts/index-iterator.es6.js");
 include("app/scripts/constants.js");
-
 if (!testingMode) {
   const express = require('express');
   const app = express();
@@ -51,6 +50,7 @@ if (!testingMode) {
   io.on('connection', function (socket) {
     socket.emit('connectedToServer', {});
     socket.on('compile', function (obj, ack) {
+      obj.ast.processes.socket = socket;
       //Node appears to handle exceptions differently. Lets catch them and pass them back instead of killing the app.
       try {
         ack(Compiler.localCompile(obj.ast, obj.context));

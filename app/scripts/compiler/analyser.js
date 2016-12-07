@@ -28,6 +28,7 @@ function performAnalysis(processes, lastAnalysis, abstractionChanged){
 	// loop through each process and find references to other processes
 	for(let i = 0; i < processes.length; i++){
     if (typeof app !== 'undefined' && app.debug) console.log("Analysing: "+processes[i].ident.ident);
+    else processes.socket.emit("analyse",{ident:processes[i].ident.ident,i:i});
 		// analyse the main process to find references to other processses
 		const process = processes[i];
 		const current = JSON.parse(JSON.stringify(process));

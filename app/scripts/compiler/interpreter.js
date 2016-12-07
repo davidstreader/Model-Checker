@@ -21,6 +21,7 @@ function interpret(processes, analysis, lastProcessesMap, context){
 		const ident = processes[i].ident.ident;
 		if(analysis[ident] !== undefined && analysis[ident].isUpdated){
       if (typeof app !== 'undefined' && app.debug) console.log("Interpreting: "+ident);
+      else processes.socket.emit("interpret",{ident:ident,i:i});
       // interpret the process
 			switch(processes[i].processType){
 				case 'automata':

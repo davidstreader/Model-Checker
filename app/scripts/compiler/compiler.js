@@ -41,6 +41,10 @@ const Compiler = {
 	},
 
 	remoteCompile: function(ast, context){
+    app.socket.off("analyse");
+    app.socket.off("interpret");
+    app.socket.on("analyse",data=>{app.$.console.clear();app.$.console.log("Analysing:" +(data.i+1) +" out of "+ast.processes.length);});
+    app.socket.on("interpret",data=>{app.$.console.clear();app.$.console.log("Interpreting:" +(data.i+1) +" out of "+ast.processes.length);});
     app.socket.emit('compile',{ast:ast,context:context},function(results) {
       if (results.type === 'error') {
         if (results.stack) {
