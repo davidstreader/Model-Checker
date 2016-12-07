@@ -24,6 +24,12 @@ function interpretPetriNet(process, processesMap, context){
 	//
 	processReferences(net);
 
+  if (process.interrupt) {
+    process.interrupt.process.interrupt = process.interrupt.action;
+    //Interpret the interrupt, but dont pass it any node so that we can
+    //detect an interrupt node and handle it differently elsewhere.
+    interpretNode(process.interrupt.process, net);
+  }
 	// check if a hiding set was specified for this process
 	if(process.hiding !== undefined){
 		processHiding(net, process.hiding);
@@ -98,6 +104,10 @@ function interpretPetriNet(process, processesMap, context){
 				interpretReference(astNode, net, currentPlace, lastTransition);
 				break;
 			case 'terminal':
+        if (astNode.interrupt) {
+
+          return;
+        }
 				currentPlace.metaData.isTerminal = astNode.terminal;
 				break;
 			default:
@@ -136,6 +146,24 @@ function interpretPetriNet(process, processesMap, context){
       metadata.variables = astNode.variables;
     }
     if (typeof label !== 'string') label = astNode.from.action.label;
+    if (!currentPlace) {
+      currentPlace = net.addPlace();
+      //Interrupts pass through a undefined currentNode, as they have no source. This means we dont
+      //want to create a link from undefined -> interrupt, so instead, we create a link from
+      net.places.forEach(node => {
+        //If a node already has some interrupt set, we dont want to override it with the parent interrupt.
+        //we also don't want to point next to itself.
+        if (node.metaData.isPartOfInterrupt || node == currentPlace) return;
+        node.metaData.isPartOfInterrupt = true;
+        if (node.metaData.isTerminal === 'error') return;
+        delete node.metaData.isTerminal;
+        //Setting interrupt here means that we can pick up these edges in graph-constructor,
+        //and then filter them to not be shown.
+        const id = net.nextTransitionId;
+        net.addTransition(id, astNode.interrupt.action, [node], [currentPlace],  {interrupt: process.interrupt});
+      });
+      return;
+    }
 		const transition = net.addTransition(id, label, [currentPlace], [nextPlace], metadata);
 		interpretNode(astNode.to, net, nextPlace, transition);
 	}

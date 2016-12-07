@@ -1,7 +1,8 @@
 automata {
     A=a->b->STOP.
-    B=A~>i~>g->STOP.
-    C=B~>j~>c->STOP.
+    B=A~>g~>STOP.
+    C=B~>c~>STOP.
+
     A2=(a->B|g->C),
     B=(g->C|b->g->C),
     C=(c->STOP).
