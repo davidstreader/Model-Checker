@@ -12,6 +12,7 @@ function interpretAutomaton(process, processesMap, context){
   root.metaData.startNode = true;
   interpretNode(process.process, automaton, root)
   if (process.interrupt) {
+    process.interrupt.process.interrupt = process.interrupt.action;
     //Interpret the interrupt, but dont pass it any node so that we can
     //detect an interrupt node and handle it differently elsewhere.
     interpretNode(process.interrupt.process, automaton);
@@ -69,6 +70,21 @@ function interpretAutomaton(process, processesMap, context){
         interpretIdentifier(astNode, automaton, currentNode);
         break;
       case 'terminal':
+        if (astNode.interrupt) {
+          currentNode = automaton.addNode();
+          //Interrupts pass through a undefined currentNode, as they have no source. This means we dont
+          //want to create a link from undefined -> interrupt, so instead, we create a link from
+          automaton.nodes.forEach(node => {
+            //If a node already has some interrupt set, we dont want to override it with the parent interrupt.
+            //we also don't want to point next to itself.
+            if (node.metaData.isPartOfInterrupt || node == currentNode) return;
+            node.metaData.isPartOfInterrupt = true;
+            const id = automaton.nextEdgeId;
+            //Setting interrupt here means that we can pick up these edges in graph-constructor,
+            //and then filter them to not be shown.
+            automaton.addEdge(id, astNode.interrupt.action, node, currentNode, {interrupt: process.interrupt});
+          });
+        }
         currentNode.metaData.isTerminal = astNode.terminal;
         break;
       default:
