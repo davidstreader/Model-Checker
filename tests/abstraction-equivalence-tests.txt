@@ -12,6 +12,7 @@ petrinet {
 }
 
 AbsBasic ~ automata(AbsBasicPN).
+AbsBasic ~ automata(petrinet(automata(AbsBasicPN))).
 
 // abstract the first action
 automata {
@@ -25,6 +26,7 @@ petrinet {
 }
 
 AbsBasic2 ~ automata(AbsBasic2PN).
+AbsBasic2 ~ automata(petrinet(automata(AbsBasic2PN))).
 
 // abstract the last action
 automata {
@@ -38,6 +40,7 @@ petrinet {
 }
 
 AbsBasic3 ~ automata(AbsBasic3PN).
+AbsBasic3 ~ automata(petrinet(automata(AbsBasic3PN))).
 
 // multiple hidden actions
 automata {
@@ -51,6 +54,7 @@ petrinet {
 }
 
 AbsMulti ~ automata(AbsMultiPN).
+AbsMulti ~ automata(petrinet(automata(AbsMultiPN))).
 
 
 // multiple hidden actions at the beginning
@@ -65,6 +69,7 @@ automata {
 }
 
 AbsMulti2 ~ automata(AbsMulti2PN).
+AbsMulti2 ~ automata(petrinet(automata(AbsMulti2PN))).
 
 // multiple hidden actions at the end
 automata {
@@ -78,6 +83,7 @@ petrinet {
 }
 
 AbsMulti3 ~ automata(AbsMulti3PN).
+AbsMulti3 ~ automata(petrinet(automata(AbsMulti3PN))).
 
 // action hidden to form a tau loop (assumes fair abstraction)
 automata {
@@ -93,6 +99,7 @@ petrinet {
 }
 
 AbsLoop ~ automata(AbsLoopPN).
+AbsLoop ~ automata(petrinet(automata(AbsLoopPN))).
 
 // abstract a looped process with a hidden action
 automata {
@@ -106,6 +113,7 @@ petrinet {
 }
 
 AbsLoop2 ~ automata(AbsLoop2PN).
+AbsLoop2 ~ automata(petrinet(automata(AbsLoop2PN))).
 
 // abstract a looped process with a hidden action
 automata {
@@ -119,6 +127,7 @@ petrinet {
 }
 
 AbsLoop3 ~ automata(AbsLoop3PN).
+AbsLoop3 ~ automata(petrinet(automata(AbsLoop3PN))).
 
 // abstracting a syncronised action in a concurrent process
 automata {
@@ -132,6 +141,7 @@ petrinet {
 }
 
 AbsConcurrent ~ automata(AbsConcurrentPN).
+AbsConcurrent ~ automata(petrinet(automata(AbsConcurrentPN))).
 
 // abstracting a single action in a concurrent process
 automata {
@@ -145,6 +155,7 @@ petrinet {
 }
 
 AbsConcurrent2 ~ automata(AbsConcurrent2PN).
+AbsConcurrent2 ~ automata(petrinet(automata(AbsConcurrent2PN))).
 
 // abstraction example from the crib sheet
 automata {
@@ -158,6 +169,7 @@ petrinet {
 }
 
 AbsExample ~ automata(AbsExamplePN).
+AbsExample ~ automata(petrinet(automata(AbsExamplePN))).
 
 // buffer example
 automata {
@@ -173,3 +185,4 @@ petrinet {
 }
 
 AbsBuff ~ automata(AbsBuffPN).
+AbsBuff ~ automata(petrinet(automata(AbsBuffPN))).
