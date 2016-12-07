@@ -38,7 +38,7 @@ const AUTOMATON_WALKER = {
 	},
 
 	getOutgoingEdges: function(node){
-		return node.outgoingEdges.map(id => this.automaton.getEdges(id));
+		return node.outgoingEdges.map(id => this.automaton.getEdge(id));
 	},
 
 	EdgeNode: function(edge, node){
