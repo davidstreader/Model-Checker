@@ -36,10 +36,36 @@ files.forEach( function( file) {
     });
   }
 });
+//The above function does not iterate over scripts in the scripts folder, as some of them are specifically for the browser
+//and require access to the dom.
 include("app/scripts/helper-functions.js");
 include("app/scripts/index-iterator.es6.js");
 include("app/scripts/constants.js");
-if (!testingMode) {
+if (testingMode) {
+  runTests();
+} else {
+  startServer();
+}
+function include(path) {
+  const code = fs.readFileSync(path, 'utf-8');
+  vm.runInThisContext(code, path);
+}
+function exitHandler(options, err) {
+  cursor.red();
+  if (err) console.log(err.stack);
+  cursor.reset();
+  if (options.exit) process.exit();
+}
+
+//do something when app is closing
+process.on('exit', exitHandler.bind(null,{cleanup:true}));
+
+//catches ctrl+c event
+process.on('SIGINT', exitHandler.bind(null, {exit:true}));
+
+//catches uncaught exceptions
+process.on('uncaughtException', exitHandler.bind(null, {exit:true}));
+function startServer() {
   const express = require('express');
   const app = express();
   const http = require('http').Server(app);
@@ -51,6 +77,7 @@ if (!testingMode) {
   io.on('connection', function (socket) {
     socket.emit('connectedToServer', {});
     socket.on('compile', function (obj, ack) {
+      //Compile in async, so we do not hang the server  from accepting other requests
       async.parallel([() => {
         obj.ast.processes.socket = socket;
         //Node appears to handle exceptions differently. Lets catch them and pass them back instead of killing the app.
@@ -66,7 +93,8 @@ if (!testingMode) {
   http.listen(port, function () {
     console.log('Server started on: *:' + port);
   });
-} else {
+}
+function runTests() {
   console.log("Entering testing mode");
   fs.writeFileSync("tests/results.txt","");
   walk("tests", function (results) {
@@ -105,8 +133,7 @@ if (!testingMode) {
             if(result){
               cursor.green();
               passed++;
-            }
-            else{
+            } else{
               cursor.red();
               failed++;
             }
@@ -126,8 +153,7 @@ if (!testingMode) {
             cursor.green();
             console.log("All operations passed!");
             fs.appendFileSync("tests/results.txt", "All operations passed!\n");
-          }
-          else{
+          } else{
             const outcome = failed + '/' + operations.length + ' operations failed';
             cursor.red();
             console.log(outcome);
@@ -139,23 +165,3 @@ if (!testingMode) {
     });
   });
 }
-function include(path) {
-  const code = fs.readFileSync(path, 'utf-8');
-  vm.runInThisContext(code, path);
-}
-function exitHandler(options, err) {
-  cursor.red();
-  if (err) console.log(err.stack);
-  cursor.reset();
-  if (options.exit) process.exit();
-}
-
-//do something when app is closing
-process.on('exit', exitHandler.bind(null,{cleanup:true}));
-
-//catches ctrl+c event
-process.on('SIGINT', exitHandler.bind(null, {exit:true}));
-
-//catches uncaught exceptions
-process.on('uncaughtException', exitHandler.bind(null, {exit:true}));
-
