@@ -51,7 +51,7 @@ if (!testingMode) {
   io.on('connection', function (socket) {
     socket.emit('connectedToServer', {});
     socket.on('compile', function (obj, ack) {
-      async.parallel(() => {
+      async.parallel([() => {
         obj.ast.processes.socket = socket;
         //Node appears to handle exceptions differently. Lets catch them and pass them back instead of killing the app.
         try {
@@ -59,7 +59,7 @@ if (!testingMode) {
         } catch (ex) {
           ack({type: 'error', message: ex.toString(), stack: ex.stack});
         }
-      });
+      }]);
     })
   });
 

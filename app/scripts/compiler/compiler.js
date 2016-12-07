@@ -44,6 +44,8 @@ const Compiler = {
   remoteCompile: function(ast, context){
     app.socket.off("analyse");
     app.socket.off("interpret");
+    app.socket.off("replacer");
+    app.socket.off("expander");
     app.socket.on("analyse",data=>{app.$.console.clear();app.$.console.log("Analysing: "+data.ident+ " (" +(data.i+1) +"/"+ast.processes.length+")");});
     app.socket.on("interpret",data=>{app.$.console.clear();app.$.console.log("Interpreting:"+data.ident+ " (" +(data.i+1) +"/"+ast.processes.length+")");});
     app.socket.on("replacer",data=>{app.$.console.clear();app.$.console.log("Replacing References:"+data.ident+ " (" +(data.i+1) +"/"+ast.processes.length+")");});
