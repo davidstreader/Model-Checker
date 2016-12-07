@@ -62,7 +62,7 @@
         }
       }.bind(this), 0);
     }
-    app.finalizeBuild = function(results, graphs) {
+    app.finalizeBuild = function(results) {
       if(results.type === 'error'){
         if (results.stack) {
           app.$.console.error("An exception was thrown that was not related to your script.");
@@ -72,6 +72,19 @@
           app.$.console.error(results.message);
         }
         return;
+      }
+      //No matter how we get here, the graphs will have been converted to json and will lose all their
+      //structure, as we can compile locally and the worker will destroy it, or remotely and the server
+      //will destroy it.
+      const graphs = [];
+      for(let id in results.processes){
+        const graph = results.processes[id];
+        if (graph.type === 'automata') {
+          graphs.push(AUTOMATON.convert(graph));
+        } else if (graph.type === 'petrinet') {
+          graphs.push(PETRI_NET.convert(graph));
+        }
+
       }
       app.set('automata.values', graphs.reverse());
       app.set('automata.analysis',results.analysis);

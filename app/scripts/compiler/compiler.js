@@ -19,17 +19,7 @@ const Compiler = {
         if (e.data.clear) app.$.console.clear();
         app.$.console.log(e.data.message);
       } else if (e.data.result) {
-        const graphs = [];
-        for(let id in e.data.result.processes){
-          const graph = e.data.result.processes[id];
-          if (graph.type === 'automata') {
-            graphs.push(AUTOMATON.convert(graph));
-          } else if (graph.type === 'petrinet') {
-            graphs.push(PETRI_NET.convert(graph));
-          }
-
-        }
-        app.finalizeBuild(e.data.result, graphs);
+        app.finalizeBuild(e.data.result);
       }
     };
   },
@@ -63,17 +53,7 @@ const Compiler = {
         app.finalizeBuild(results);
         return;
       }
-      const graphs = [];
-      for(let id in results.processes){
-        const graph = results.processes[id];
-        if (graph.type === 'automata') {
-          graphs.push(AUTOMATON.convert(graph));
-        } else if (graph.type === 'petrinet') {
-          graphs.push(PETRI_NET.convert(graph));
-        }
-
-      }
-      app.finalizeBuild(results,graphs);
+      app.finalizeBuild(results);
     });
   }
 }
