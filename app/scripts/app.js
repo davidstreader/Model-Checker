@@ -56,7 +56,7 @@
       app.$.console.clear();
       setTimeout(function() {
         if(app.liveCompiling === true || override){
-          var compileStartTime = (new Date()).getTime();
+          app.lastCompileStartTime = (new Date()).getTime();
           var code = app.$.editor.getCode();
           var settings = app.getSettings();
           var results = app.$.parser.compile(code, settings);
@@ -75,44 +75,44 @@
             }
           }
           else{
-            app.finalizeBuild(results, undefined, override);
+            app.finalizeBuild(results);
           }
         }
       }.bind(this), 0);
     }
-    app.finalizeBuild = function(results, graphs, override) {
-      if(app.liveBuilding === true || override){
-        // otherwise render the automata
-        if (!graphs) {
-          graphs = [];
-          for (var id in results.processes) {
-            graphs.push(results.processes[id]);
-          }
-        }
-        app.set('automata.values', graphs.reverse());
-        app.set('automata.analysis',results.analysis);
-
-        if(results.operations.length !== 0){
-          var passed = 0;
-          app.$.console.log('Operations:');
-          for(var i = 0; i < results.operations.length; i++){
-            var { operation, process1, process2, result } = results.operations[i];
-            var op = process1 + ' ' + operation + ' ' + process2 + ' = ' + result;
-            if(result){
-              passed++;
-            }
-
-            app.$.console.log(op);
-          }
-
-          if(passed === results.operations.length){
-            app.$.console.log('All operations passed!');
-          }
-          else{
-            app.$.console.log(passed + '/' + results.operations.length + ' operations passed');
-          }
+    app.finalizeBuild = function(results, graphs) {
+      // otherwise render the automata
+      if (!graphs) {
+        graphs = [];
+        for (var id in results.processes) {
+          graphs.push(results.processes[id]);
         }
       }
+      app.set('automata.values', graphs.reverse());
+      app.set('automata.analysis',results.analysis);
+
+      if(results.operations.length !== 0){
+        var passed = 0;
+        app.$.console.log('Operations:');
+        for(var i = 0; i < results.operations.length; i++){
+          var { operation, process1, process2, result } = results.operations[i];
+          var op = process1 + ' ' + operation + ' ' + process2 + ' = ' + result;
+          if(result){
+            passed++;
+          }
+
+          app.$.console.log(op);
+        }
+
+        if(passed === results.operations.length){
+          app.$.console.log('All operations passed!');
+        }
+        else{
+          app.$.console.log(passed + '/' + results.operations.length + ' operations passed');
+        }
+      }
+
+      app.$.console.log("Compiled in: "+(((new Date()).getTime()-app.lastCompileStartTime)/1000)+" seconds");
     }
     /**
      * Compiles and builds what has currenty been entered into the text-area.
@@ -306,9 +306,6 @@
     app.liveCompiling = localStorage.getItem("liveCompiling")!=='false';
     if (app.willSaveCookie && localStorage.getItem('editor') != null) {
       app.$.editor.setCode(decodeURIComponent(localStorage.getItem('editor')));
-      //Dont compile autosaved code unless we set live compiling
-      if (app.liveCompiling)
-        app.compile();
     }
     /**
      * Listen for key presses.
