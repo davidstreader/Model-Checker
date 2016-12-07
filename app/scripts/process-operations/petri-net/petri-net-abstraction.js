@@ -2,10 +2,11 @@
 
 function petriNetAbstraction(net, isFair){
 	const observableTransitionMap = {};
+	const walker = new PetriNetWalker(net);
 	const hiddenTransitions = net.transitions.filter(t => t.label === TAU);
 
 	for(let i = 0; i < hiddenTransitions.length; i++){
-		constructObservableTransitions(hiddenTransitions[i]);
+		constructObservableTransitions(walker, hiddenTransitions[i]);
 	}
 
 	// add the observable transitions to the petri net
@@ -22,10 +23,30 @@ function petriNetAbstraction(net, isFair){
 		net.removeTransition(hiddenTransitions[i].id);
 	}
 
+	// remove unreachable places from the petri net
+	let places = net.places.filter(p => p.incomingTransitions.length === 0 && p.metaData.startPlace === undefined);
+	while(places.length !== 0){
+		for(let i = 0; i < places.length; i++){
+			const place = places[i];
+			const outgoing = place.outgoingTransitions.map(id => net.getTransition(id));
+			net.removePlace(place.id);
+
+			// remove any transitions that have become uncreachable from the current place
+			for(let j = 0; j < outgoing.length; j++){
+				const transition = outgoing[j];
+				if(transition.incomingPlaces.length === 0){
+					net.removeTransition(transition.id);
+				}
+			}
+		}
+
+		places = net.places.filter(p => p.incomingTransitions.length === 0 && p.metaData.startPlace === undefined);
+	}
+
 	net.constructTerminals();
 	return net;
 
-	function constructObservableTransitions(hiddenTransition){
+	function constructObservableTransitions(walker, hiddenTransition){
 		const incoming = hiddenTransition.incomingPlaces;
 		const outgoing = hiddenTransition.outgoingPlaces;
 
@@ -63,8 +84,12 @@ function petriNetAbstraction(net, isFair){
 					from[incomingPlaces[k]] = true;
 				}
 
+				const outgoingMarkings = getOutgoingMarkings(walker, hiddenTransition);
+
 				// construct a new observable transition
-				constructObservableTransition(Object.keys(from), outgoing, observable[j].label);
+				for(let k = 0; k < outgoingMarkings.length; k++){
+					constructObservableTransition(Object.keys(from), Object.keys(outgoingMarkings[k]), observable[j].label);
+				}
 			}
 		}
 
@@ -90,10 +115,62 @@ function petriNetAbstraction(net, isFair){
 					to[outgoingPlaces[k]] = true;
 				}
 
+				const incomingMarkings = getIncomingMarkings(walker, hiddenTransition);
+
 				// construct a new observable transition
-				constructObservableTransition(incoming, Object.keys(to), observable[j].label);
+				for(let k = 0; k < incomingMarkings.length; k++){
+					constructObservableTransition(Object.keys(incomingMarkings[k]), Object.keys(to), observable[j].label);
+				}
 			}
 		}
+	}
+
+	function getIncomingMarkings(walker, hiddenTransition){
+		const markings = [];
+		const visited = {};
+		const fringe = [hiddenTransition];
+		while(fringe.length !== 0){
+			const current = fringe.pop();
+			const marking = walker.getIncomingMarking(current);
+			markings.push(marking);
+
+			const incoming = walker.getIncomingTransitions(marking).filter(t => t.label === TAU);
+
+			for(let i = 0; i < incoming.length; i++){
+				const transition = incoming[i];
+				if(!visited[transition.id]){
+					fringe.push(transition);
+				}
+			}
+
+			visited[current.id] = true;
+		}
+
+		return markings;
+	}
+
+	function getOutgoingMarkings(walker, hiddenTransition){
+		const markings = [];
+		const visited = {};
+		const fringe = [hiddenTransition];
+		while(fringe.length !== 0){
+			const current = fringe.pop();
+			const marking = walker.getOutgoingMarking(current);
+			markings.push(marking);
+
+			const outgoing = walker.getOutgoingTransitions(marking).filter(t => t.label === TAU);
+			
+			for(let i = 0; i < outgoing.length; i++){
+				const transition = outgoing[i];
+				if(!visited[transition.id]){
+					fringe.push(outgoing[i]);
+				}
+			}
+
+			visited[current.id] = true;
+		}
+
+		return markings;
 	}
 
 	function constructObservableTransition(from, to, label){
