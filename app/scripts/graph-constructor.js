@@ -59,6 +59,7 @@ function visualizeAutomata(process, name, graphMap, jgraph, hidden) {
         toEmbed.push(nodeMap[from]);
         continue;
       }
+
       const target = nodeMap[to];
       const box = _box(jgraph, parentNode, toEmbed, name+"."+(interruptId++),graphMap, name);
       box.toDelete = _link(nodeMap[from],box.embedNode, "",parentNode,jgraph);
@@ -98,13 +99,22 @@ function _box(jgraph, parent, toEmbed, name, graphMap, key) {
   boxNode.embedNode = embedNode;
   return boxNode;
 }
-function visualizePetriNet(process, name, graphMap, jgraph) {
+function first(data) {
+  for(let key in data){
+    if(data.hasOwnProperty(key)){
+      return key;
+    }
+  }
+}
+function visualizePetriNet(process, name, graphMap, jgraph, hidden) {
   const nodeMap = {};
   const parentNode = new joint.shapes.parent();
+  let interruptId = 1;
   parentNode.name = name;
   jgraph.addCell(parentNode);
   graphMap[name] = {name:name,height:0,parentNode:parentNode};
   const places = process.places;
+  const places2 = _.map(places,place=>place.id);
   for(let i = 0; i < places.length; i++){
     let cell;
     // add to array of start places if necessary
@@ -123,10 +133,53 @@ function visualizePetriNet(process, name, graphMap, jgraph) {
     nodeMap['p' + places[i].id] = cell;
   }
 
+  let toEmbed = [];
   // add transitions to the graph
   const transitions = process.transitions;
   for(let i = 0; i < transitions.length; i++){
+    const incoming = transitions[i].incomingPlaces;
+    const outgoing = transitions[i].outgoingPlaces;
     let label = transitions[i].label;
+    if (transitions[i].metaData.interrupt && hidden) {
+      //inCom is expensive to calculate and needs to be done once per interrupt, so store it.
+      //inCom needs to be a list of all places leading to this interrupt.
+      //We do this by getting the node this transition leads to, and then getting all transitions from that node.
+      //We can then map the transitions to the first element in their incomingPlaceSet (as interrupts will only have one incoming node)
+      //and then we finally sort inCom so that its in order of the tree.
+      //this way, the node at the end of inCom will be one of the rightMost elements, and this is important as they are the easiest
+      //nodes to link from when creating fake nodes for dagre placement.
+      const inCom = transitions[i].metaData.inCom || _.map(process.placeMap[outgoing[0]].incomingTransitionSet,(val,transition)=>first(process.transitionMap[transition].incomingPlaceSet)).sort(place => places2.indexOf(place));
+      transitions[i].metaData.inCom = inCom;
+      if (incoming[0] !== inCom[inCom.length-1]) {
+        continue;
+      }
+      //At this point, we know that inCom contains all nodes from the interrupted process, so add all of them.
+      toEmbed = toEmbed.concat(inCom.map(node => nodeMap['p'+node]));
+      //At this point, we dont actually want to create any transitions.
+      //All we want to do is link from the last incoming to the last outgoing.
+      const to = 'p' + outgoing[0];
+      const from = 'p' + incoming[0];
+      const target = nodeMap[to];
+      const box = _box(jgraph, parentNode, toEmbed, name+"."+(interruptId++),graphMap, name);
+      let transition = new joint.shapes.pn.Transition({
+        attrs: { text : { text: label }}
+      });
+      parentNode.embed(transition);
+      jgraph.addCell(transition);
+      box.toDelete = _link(nodeMap[from],box.embedNode, "",parentNode,jgraph);
+      box.embedLink = [_link(box.embedNode,transition, '',parentNode,jgraph),transition,_link(transition,target, '',parentNode,jgraph)];
+      //move all elements in front of the link
+      box.toFront();
+      toEmbed.forEach(cell => {
+        cell.toFront();
+        cell.getEmbeddedCells().forEach(cell2 => {
+          cell2.toFront();
+        });
+      });
+      //Now that all the children are inside box, toEmbed should only contain the box, plus the next node
+      toEmbed = [box,target].concat(box.embedLink);
+      continue;
+    }
     let vars = transitions[i].getMetaData('variables');
     if(transitions[i].getMetaData('guard') !== undefined){
       if (transitions[i].getMetaData('next') !== undefined)
@@ -140,19 +193,22 @@ function visualizePetriNet(process, name, graphMap, jgraph) {
     });
     parentNode.embed(nodeMap['t' + transitions[i].id]);
     jgraph.addCell(nodeMap['t' + transitions[i].id]);
-    const outgoing = transitions[i].outgoingPlaces;
     for(let j = 0; j < outgoing.length; j++){
       const from = 't' + transitions[i].id;
       const to = 'p' + outgoing[j];
-      _link(nodeMap[from],nodeMap[to],'',parentNode,jgraph);
+      toEmbed.push(_link(nodeMap[from],nodeMap[to], '',parentNode,jgraph));
+      toEmbed.push(nodeMap[from]);
+      toEmbed.push(nodeMap[to]);
     }
 
-    const incoming = transitions[i].incomingPlaces;
     for(let j = 0; j < incoming.length; j++){
       const from = 'p' + incoming[j];
       const to = 't' + transitions[i].id;
-      _link(nodeMap[from],nodeMap[to],'',parentNode,jgraph);
+      toEmbed.push(_link(nodeMap[from],nodeMap[to],'',parentNode,jgraph));
+      toEmbed.push(nodeMap[from]);
+      toEmbed.push(nodeMap[to]);
     }
+
   }
 }
 
@@ -214,7 +270,7 @@ function constructGraphs(graphMap, id, hidden) {
     visualizeAutomata(graph,id,graphMap,tmpjgraph, hidden);
   }
   if (graph.type == 'petrinet') {
-    visualizePetriNet(graph,id,graphMap,tmpjgraph);
+    visualizePetriNet(graph,id,graphMap,tmpjgraph, hidden);
   }
   //We do not want to rescale the graph if it has already been rescaled.
   if (graph.type == 'interrupt') return;
@@ -236,6 +292,9 @@ function constructGraphs(graphMap, id, hidden) {
         }
       });
       const bbox2 = graph.parentNode.getBBox();
+      if (graph.parentNode.embedLink) {
+        graph.parentNode.embedLink.forEach(link=>link.toFront());
+      }
       graph.parentNode.toDelete.remove();
       graph.parentNode.embed(cell);
       graph.parentNode.resize(bbox2.width,bbox2.height+id*30,{direction:"top"});

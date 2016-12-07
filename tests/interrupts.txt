@@ -7,4 +7,14 @@ automata {
     B=(g->C|b->g->C),
     C=(c->STOP).
 }
+petrinet {
+    A3=a->b->STOP.
+    B3=A3~>g~>STOP.
+    C3=B3~>c~>STOP.
+
+    A4=(a->B|g->C),
+    B=(g->C|b->g->C),
+    C=(c->STOP).
+}
+automata(A4) ~ automata(C3).
 A2 ~ C.

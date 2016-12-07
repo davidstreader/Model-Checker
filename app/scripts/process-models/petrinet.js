@@ -75,8 +75,9 @@ const PETRI_NET = {
 
 	combinePlaces: function(place1, place2){
 		const place = this.addPlace();
-
-		const incoming = place1.incomingTransitions.concat(place2.incomingTransitions);
+    const isPartOfInterrupt = place1.metaData.isPartOfInterrupt || place2.metaData.isPartOfInterrupt;
+		place.metaData.isPartOfInterrupt = isPartOfInterrupt;
+    const incoming = place1.incomingTransitions.concat(place2.incomingTransitions);
 		for(let i = 0; i < incoming.length; i++){
 			const id = incoming[i];
 			place.addIncomingTransition(id);

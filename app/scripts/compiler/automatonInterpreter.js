@@ -18,23 +18,17 @@ function interpretAutomaton(process, processesMap, context){
     automaton.nodes.forEach(node => {
       //If a node already has some interrupt set, we dont want to override it with the parent interrupt.
       //we also don't want to point next to itself.
-      if (node.metaData.isPartOfInterrupt || node == currentNode) {
-        delete node.metaData.isTerminal;
-        return;
-      }
+      if (node.metaData.isPartOfInterrupt || node == currentNode) return;
       node.metaData.isPartOfInterrupt = true;
       //It would be a bit odd for error states to have things going from them
       if (node.metaData.isTerminal === 'error') return;
 
       const id = automaton.nextEdgeId;
-      //Setting interrupt here means that we can pick up these edges in graph-constructor,
-      //and then filter them to not be shown.
       automaton.addEdge(id, process.interrupt.action.action, node, currentNode, {interrupt: process.interrupt});
     });
 
     process.interrupt.process.interrupt = process.interrupt.action;
-    //Interpret the interrupt, but dont pass it any node so that we can
-    //detect an interrupt node and handle it differently elsewhere.
+
     interpretNode(process.interrupt.process, automaton, currentNode);
   }
   automaton.nodes.forEach(node => {
