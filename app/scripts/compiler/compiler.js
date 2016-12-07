@@ -19,7 +19,17 @@ const Compiler = {
         if (e.data.clear) app.$.console.clear();
         app.$.console.log(e.data.message);
       } else if (e.data.result) {
-        app.finalizeBuild(e.data.result, e.data.graphs);
+        const graphs = [];
+        for(let id in e.data.result.processes){
+          const graph = e.data.result.processes[id];
+          if (graph.type === 'automata') {
+            graphs.push(AUTOMATON.convert(graph));
+          } else if (graph.type === 'petrinet') {
+            graphs.push(PETRI_NET.convert(graph));
+          }
+
+        }
+        app.finalizeBuild(e.data.result, graphs);
       }
     };
   },
@@ -36,13 +46,8 @@ const Compiler = {
     this.lastAnalysis = analysis;
     this.lastProcesses = processes;
     this.lastAbstraction = context.isFairAbstraction;
-    // otherwise render the automata
-    const graphs = [];
-    for (let id in processes) {
-      graphs.push(processes[id]);
-    }
 
-    app.finalizeBuild({ processes:processes, operations:operations, analysis:analysis, context:context }, graphs);
+    return { processes:processes, operations:operations, analysis:analysis, context:context };
   },
 
   //We still need to do remote compilation sync, but its not like that's a problem since sockets are async by nature

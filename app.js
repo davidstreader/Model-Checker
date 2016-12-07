@@ -1,5 +1,6 @@
 let testingMode = process.argv.slice(2).length > 0;
 const fs = require('fs');
+const async = require("async");
 const ansi = require('ansi'), cursor = ansi(process.stdout);
 const walk = function (dir, done) {
   let results = [];
@@ -50,14 +51,16 @@ if (!testingMode) {
   io.on('connection', function (socket) {
     socket.emit('connectedToServer', {});
     socket.on('compile', function (obj, ack) {
-      obj.ast.processes.socket = socket;
-      //Node appears to handle exceptions differently. Lets catch them and pass them back instead of killing the app.
-      try {
-        ack(Compiler.localCompile(obj.ast, obj.context));
-      } catch (ex) {
-        ack({type:'error',message:ex.toString(),stack:ex.stack});
-      }
-    });
+      async.parallel(() => {
+        obj.ast.processes.socket = socket;
+        //Node appears to handle exceptions differently. Lets catch them and pass them back instead of killing the app.
+        try {
+          ack(Compiler.localCompile(obj.ast, obj.context));
+        } catch (ex) {
+          ack({type: 'error', message: ex.toString(), stack: ex.stack});
+        }
+      });
+    })
   });
 
   http.listen(port, function () {

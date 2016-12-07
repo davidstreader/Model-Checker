@@ -72,12 +72,7 @@ function localCompile(ast, context){
   this.lastAnalysis = analysis;
   this.lastProcesses = processes;
   this.lastAbstraction = context.isFairAbstraction;
-  // otherwise render the automata
-  const graphs = [];
-  for (let id in processes) {
-    graphs.push(processes[id]);
-  }
 
-  postMessage({result: { processes:processes, operations:operations, analysis:analysis, context:context }, graphs:graphs});
+  postMessage({result: { processes:processes, operations:operations, analysis:analysis, context:context }});
 }
 
