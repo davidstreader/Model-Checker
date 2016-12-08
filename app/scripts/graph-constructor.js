@@ -259,7 +259,6 @@ function addLabelAndPadding(graphMap, key, jgraph) {
   graphMap[key].parentNode.translate(50, -ly+50);
 }
 function constructGraphs(graphMap, id, hidden) {
-  if (id.endsWith("*")) return;
   //Find the process by id
   let graph = _.findWhere(app.get("automata.values"), {id: id});
   if (hidden)

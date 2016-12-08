@@ -430,6 +430,10 @@ function parse(tokens){
    */
   function parseSingleProcessDefinition(tokens, processType){
     var ident = parseIdentifier(tokens);
+    if (ident.ident.endsWith("*")) {
+      ident.ident = ident.ident.substring(0,ident.ident.length-1);
+      ident.dontRender = true;
+    }
     gobble(tokens[index], '=');
     var process = parseComposite(tokens);
 

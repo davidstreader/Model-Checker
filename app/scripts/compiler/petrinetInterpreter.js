@@ -14,6 +14,7 @@ function interpretPetriNet(process, processesMap, context){
 
   const identifier = process.ident.ident;
   const net = new PetriNet(identifier);
+  net.dontRender = process.ident.dontRender;
   const root = net.addPlace();
   root.addMetaData('startPlace', 1);
   net.addRoot(root.id);

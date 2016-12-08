@@ -176,19 +176,19 @@
             get$Cell(cell).show();
           });
         });
-        //Scroll listener
-        this.paper.$el.on('mousewheel DOMMouseScroll', function onMouseWheel(e) {
-          //Disable scrolling
-          e.preventDefault();
-          e = e.originalEvent;
-          const delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail))) / 50;
-          const newScale = V(paper.viewport).scale().sx + delta;
-          if (newScale > 0.4 && newScale < 2) {
-            //Zoom in and out with scroll
-            paper.scale(newScale, newScale, 0, 0);
-          }
-          _this.rescale();
-        });
+//        //Scroll listener
+//        this.paper.$el.on('mousewheel DOMMouseScroll', function onMouseWheel(e) {
+//          //Disable scrolling
+//          e.preventDefault();
+//          e = e.originalEvent;
+//          const delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail))) / 50;
+//          const newScale = V(paper.viewport).scale().sx + delta;
+//          if (newScale > 0.4 && newScale < 2) {
+//            //Zoom in and out with scroll
+//            paper.scale(newScale, newScale, 0, 0);
+//          }
+//          _this.rescale();
+//        });
         this.paper.on('cell:pointerdown', function(cell) {
           if (_this.exploded || _this.rendering) {
             return;

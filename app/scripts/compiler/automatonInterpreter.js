@@ -7,6 +7,7 @@ function interpretAutomaton(process, processesMap, context){
 
   const ident = process.ident.ident;
   const automaton = new Automaton(ident);
+  automaton.dontRender = process.ident.dontRender || false;
   const root = automaton.addNode();
   automaton.root = root.id;
   root.metaData.startNode = true;

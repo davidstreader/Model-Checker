@@ -6,7 +6,6 @@
     /**
      * The data to use.
      */
-    //For settings, defaults are set here.
     app.automata = {values: [],display:[]};
     app.liveCompiling = true;
     app.liveBuilding = true;
@@ -81,7 +80,7 @@
       const graphs = [];
       for(let id in results.processes){
         const graph = results.processes[id];
-        if (graph.id.endsWith("*")) continue;
+        if (graph.dontRender) continue;
         if (graph.type === 'automata') {
           graphs.push(AUTOMATON.convert(graph));
         } else if (graph.type === 'petrinet') {
@@ -94,11 +93,11 @@
       app.$.console.clear();
       app.$.console.log('Successfully Compiled!');
       if(results.operations.length !== 0){
-        var passed = 0;
+        let passed = 0;
         app.$.console.log('Operations:');
-        for(var i = 0; i < results.operations.length; i++){
-          var { operation, process1, process2, result } = results.operations[i];
-          var op = process1 + ' ' + operation + ' ' + process2 + ' = ' + result;
+        for(let i = 0; i < results.operations.length; i++){
+          const { operation, process1, process2, result } = results.operations[i];
+          const op = process1 + ' ' + operation + ' ' + process2 + ' = ' + result;
           if(result){
             passed++;
           }
