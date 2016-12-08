@@ -11,6 +11,7 @@
   .link .mark-errors { display: none; }
   .connection { fill: transparent; }
   .connection-wrap { fill: transparent; }
+  .marker-vertex-group {display: none; }
 </style>
 <dom-module id="process-visualisation">
   <template>
@@ -376,7 +377,7 @@
       },
       saveChanges: function() {
         if (app.willSaveCookie && !this.exploded)
-          localStorage.setItem("layout", JSON.stringify(_this.jgraph.toJSON()));
+          localStorage.setItem("layout", JSON.stringify(this.jgraph.toJSON()));
       },
       rescale: function() {
         if (this.exploded) {

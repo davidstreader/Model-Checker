@@ -5,7 +5,24 @@ const Colours = {
   grey: '#BDC3C7',
   textBackground: 'rgba(255, 255, 255, 0.5)'
 };
-
+joint.shapes.fsa.Arrow = joint.dia.Link.extend({
+  markup: [
+    '<path class="connection" stroke="black" d="M 0 0 0 0"/>',
+    '<path class="marker-source" fill="black" stroke="black" d="M 0 0 0 0"/>',
+    '<path class="marker-target" fill="black" stroke="black" d="M 0 0 0 0"/>',
+    '<path class="connection-wrap" d="M 0 0 0 0"/>',
+    '<g class="labels"/>',
+    '<g class="marker-vertices"/>',
+    '<g class="marker-arrowheads"/>',
+    '<g class="link-tools"/>',
+    '<paper-tooltip class="tooltip"><text /></paper-tooltip>'
+  ].join(''),
+  defaults: _.defaultsDeep({
+    type: 'fsa.Arrow',
+    attrs: { '.marker-target': { d: 'M 10 0 L 0 5 L 10 10 z' }},
+    smooth: true
+  }, joint.dia.Link.prototype.defaults)
+});
 /**
  * Styling for the default joint.js shapes.
  */
