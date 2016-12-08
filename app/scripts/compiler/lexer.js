@@ -72,12 +72,12 @@ const Lexer = {
 
         // construct the location in the code of this token
         const location = new Location(start, end);
-
         if(this.terminals[value] !== undefined){
           tokens.push(new Token('terminal', value, location));
         }
         else{
-          postMessage({clear: true, message: ("Found process:" + value)});
+          if (typeof postMessage === 'function')
+            postMessage({clear: true, message: ("Found process:" + value)});
 
           tokens.push(new Token('identifier', value, location));
         }

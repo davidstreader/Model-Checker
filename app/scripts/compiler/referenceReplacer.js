@@ -31,10 +31,9 @@ function replaceReferences(processes){
 
 	// replace references in each process
 	for(let i = 0; i < processes.length; i++){
-    if (typeof postMessage !== 'undefined') {
+    if (typeof postMessage === 'function')
       postMessage({clear:true,message:("Replacing References: "+processes[i].ident.ident+" ("+(i+1)+"/"+processes.length)+")"});
-    }
-    else processes.socket.emit("replacer",{ident:processes[i].ident.ident,i:i});
+
 		// reset reference map for local processes
 		localReferenceMap =  new LocalReferenceMap(processes[i].local);
 

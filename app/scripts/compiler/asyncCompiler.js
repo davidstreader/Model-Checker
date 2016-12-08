@@ -41,7 +41,6 @@ importScripts("../process-operations/parallel-composition.js");
 onmessage = function(e){
   code = e.data.code;
   context = e.data.context;
-  socket = e.data.socket;
   try{
     const tokens = Lexer.tokenise(code);
     const ast = parse(tokens);

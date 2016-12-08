@@ -50,6 +50,8 @@ if (testingMode) {
 }
 function include(path) {
   includes.push(path);
+  var code = fs.readFileSync(path, 'utf-8');
+  vm.runInThisContext(code, path);
 }
 function exitHandler(options, err) {
   cursor.red();
@@ -109,7 +111,7 @@ function runTests() {
       cursor.reset();
       const code = fs.readFileSync(result, 'utf-8');
 
-      let compile = Compiler.compile(code, {isLocal: true, isFairAbstraction: true});
+      let compile = Compiler.compileWithoutWorker(code, {isLocal: true, isFairAbstraction: true});
 
       if (compile.message) {
         cursor.red();

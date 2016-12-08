@@ -1,5 +1,5 @@
 'use strict';
-  const Compiler = {
+const Compiler = {
   lastAst: {},
   lastAnalysis: {},
   lastProcesses: {},
@@ -22,7 +22,15 @@
       }
     };
   },
-
+  compileWithoutWorker: function (code, context) {
+    try{
+      const tokens = Lexer.tokenise(code);
+      const ast = parse(tokens);
+      return this.localCompile(ast, context);
+    }catch(error){
+      return {type:'error',message: error.toString(), stack: error.stack};
+    }
+  },
   localCompile: function(ast, context){
     ast = expand(ast);
 

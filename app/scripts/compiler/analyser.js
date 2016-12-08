@@ -23,114 +23,112 @@
  * @return{Identifier -> Analysis} - a mapping from identifier to analysis object
  */
 function performAnalysis(processes, lastAnalysis, abstractionChanged){
-	const analysis = {};
+  const analysis = {};
 
-	// loop through each process and find references to other processes
-	for(let i = 0; i < processes.length; i++){
+  // loop through each process and find references to other processes
+  for(let i = 0; i < processes.length; i++){
     if (typeof app !== 'undefined') {
       app.$.console.clear();
       app.$.console.log("Analysing: "+processes[i].ident.ident);
     }
-    if (typeof postMessage !== 'undefined') {
+    if (typeof postMessage === 'function')
       postMessage({clear:true,message:("Analysing: "+processes[i].ident.ident+" ("+(i+1)+"/"+processes.length)+")"});
+    // analyse the main process to find references to other processses
+    const process = processes[i];
+    const current = JSON.parse(JSON.stringify(process));
+    const references = {};
+    analyseNode(current.process, references);
+
+    // analyse local processes to find references to other processes
+    const localReferences = {};
+    for(let j = 0; j < current.local.length; j++){
+      analyseNode(current.local[j].process, localReferences);
     }
-    else processes.socket.emit("analyse",{ident:processes[i].ident.ident,i:i});
-		// analyse the main process to find references to other processses
-		const process = processes[i];
-		const current = JSON.parse(JSON.stringify(process));
-		const references = {};
-		analyseNode(current.process, references);
 
-		// analyse local processes to find references to other processes
-		const localReferences = {};
-		for(let j = 0; j < current.local.length; j++){
-			analyseNode(current.local[j].process, localReferences);
-		}
+    // combine references from the main process and local processes
+    for(let ident in localReferences){
+      references[ident] = true;
+    }
 
-		// combine references from the main process and local processes
-		for(let ident in localReferences){
-			references[ident] = true;
-		}
+    // remove any local processes that are not referenced
+    const localProcesses = [];
+    for(let j = 0; j < process.local.length; j++){
+      if(references[process.local[j].ident.ident]){
+        localProcesses.push(process.local[j]);
+      }
+    }
 
-		// remove any local processes that are not referenced
-		const localProcesses = [];
-		for(let j = 0; j < process.local.length; j++){
-			if(references[process.local[j].ident.ident]){
-				localProcesses.push(process.local[j]);
-			}
-		}
+    // update the local processes
+    process.local = localProcesses;
+    current.local = localProcesses;
 
-		// update the local processes
-		process.local = localProcesses;
-		current.local = localProcesses;
+    // construct an analysis object for this process
+    analysis[process.ident.ident] = {
+      process:current,
+      references:references
+    };
+  }
 
-		// construct an analysis object for this process
-		analysis[process.ident.ident] = {
-			process:current,
-			references:references
-		};
-	}
+  // determine whether each process has been updated since the last compilation
+  for(let ident in analysis){
+    // check if a process with this identifier had been defined last time
+    if(lastAnalysis[ident] !== undefined && !abstractionChanged){
+      const current = JSON.stringify(analysis[ident].process);
+      const previous = JSON.stringify(lastAnalysis[ident].process);
+      // compare asts from compilation and last compilation to see if they match
+      analysis[ident].isUpdated = (current === previous) ? false : true;
+    }
+    else{
+      analysis[ident].isUpdated = true;
+    }
+  }
 
-	// determine whether each process has been updated since the last compilation
-	for(let ident in analysis){
-		// check if a process with this identifier had been defined last time
-		if(lastAnalysis[ident] !== undefined && !abstractionChanged){
-			const current = JSON.stringify(analysis[ident].process);
-			const previous = JSON.stringify(lastAnalysis[ident].process);
-			// compare asts from compilation and last compilation to see if they match
-			analysis[ident].isUpdated = (current === previous) ? false : true;
-		}
-		else{
-			analysis[ident].isUpdated = true;
-		}
-	}
+  // update a process if any processes it references were updated
+  for(let ident in analysis){
+    // no need to check if process was already updated
+    if(!analysis[ident].isUpdated){
+      for(let reference in analysis[ident].references){
+        // check if the reference has been updated
+        if(analysis[reference] !== undefined && analysis[reference].isUpdated){
+          analysis[ident].isUpdated = true;
+          break;
+        }
+      }
+    }
+  }
 
-	// update a process if any processes it references were updated
-	for(let ident in analysis){
-		// no need to check if process was already updated
-		if(!analysis[ident].isUpdated){
-			for(let reference in analysis[ident].references){
-				// check if the reference has been updated
-				if(analysis[reference] !== undefined && analysis[reference].isUpdated){
-					analysis[ident].isUpdated = true;
-					break;
-				}
-			}
-		}
-	}
+  return analysis;
 
-	return analysis;
+  // HELPER FUNCTIONS
 
-	// HELPER FUNCTIONS
-
-	/**
-	 * Analyses the specified abstract syntax tree node to determine if it contains
-	 * any references to other processes. Each node recursively calls this function
-	 * on its children to determine if they contain references. Any references that
-	 * are found are stored in the specified references set.
-	 *
-	 * @param{ASTNode} astNode - the ast node to analyse
-	 * @param{identifier{}} - a set of referenced identifiers
-	 */
-	function analyseNode(astNode, references){
-		switch(astNode.type){
-			case 'sequence':
-				analyseNode(astNode.to, references);
-				break;
-			case 'choice':
-			case 'composite':
-				analyseNode(astNode.process1, references);
-				analyseNode(astNode.process2, references);
-				break;
-			case 'function':
-				analyseNode(astNode.process, references);
-				break;
-			case 'identifier':
-				references[astNode.ident] = true;
-				break;
-			case 'terminal':
-			default:
-				break;
-		}
-	}
+  /**
+   * Analyses the specified abstract syntax tree node to determine if it contains
+   * any references to other processes. Each node recursively calls this function
+   * on its children to determine if they contain references. Any references that
+   * are found are stored in the specified references set.
+   *
+   * @param{ASTNode} astNode - the ast node to analyse
+   * @param{identifier{}} - a set of referenced identifiers
+   */
+  function analyseNode(astNode, references){
+    switch(astNode.type){
+      case 'sequence':
+        analyseNode(astNode.to, references);
+        break;
+      case 'choice':
+      case 'composite':
+        analyseNode(astNode.process1, references);
+        analyseNode(astNode.process2, references);
+        break;
+      case 'function':
+        analyseNode(astNode.process, references);
+        break;
+      case 'identifier':
+        references[astNode.ident] = true;
+        break;
+      case 'terminal':
+      default:
+        break;
+    }
+  }
 }
