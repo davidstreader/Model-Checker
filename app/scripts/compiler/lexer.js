@@ -2,7 +2,7 @@
 
 const Lexer = {
   actionLabel: '[a-z][A-Za-z0-9_]*',
-  identifier: '[A-Z][A-Za-z0-9_]*',
+  identifier: '[A-Z][A-Za-z0-9_\\*]*',
   integer: '[0-9][0-9]*',
   processTypes: {'automata':true, 'petrinet':true },
   functions: {'abs': true, 'simp':true, 'safe':true },
@@ -79,7 +79,7 @@ const Lexer = {
           if (typeof postMessage === 'function')
             postMessage({clear: true, message: ("Found process:" + value)});
 
-          tokens.push(new Token('identifier', value, location));
+          tokens.push(new Token('identifier', value, location));``
         }
 
         continue;

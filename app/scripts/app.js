@@ -81,6 +81,7 @@
       const graphs = [];
       for(let id in results.processes){
         const graph = results.processes[id];
+        if (graph.id.endsWith("*")) continue;
         if (graph.type === 'automata') {
           graphs.push(AUTOMATON.convert(graph));
         } else if (graph.type === 'petrinet') {
