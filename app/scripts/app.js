@@ -148,7 +148,8 @@
     app.getSettings = function() {
       return {
         isFairAbstraction: app.fairAbstraction,
-        isLocal: app.isClientSide
+        isLocal: app.isClientSide,
+        pruneAbstraction: true
       };
     }
 
