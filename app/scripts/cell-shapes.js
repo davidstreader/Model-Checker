@@ -15,7 +15,7 @@ joint.shapes.fsa.Arrow = joint.dia.Link.extend({
     '<g class="marker-vertices"/>',
     '<g class="marker-arrowheads"/>',
     '<g class="link-tools"/>',
-    '<paper-tooltip class="tooltip"><text /></paper-tooltip>'
+    '<title class="title" />'
   ].join(''),
   defaults: _.defaultsDeep({
     type: 'fsa.Arrow',
@@ -23,12 +23,22 @@ joint.shapes.fsa.Arrow = joint.dia.Link.extend({
     smooth: true
   }, joint.dia.Link.prototype.defaults)
 });
+joint.shapes.fsa.State = joint.shapes.basic.Circle.extend({
+  markup: '<g class="rotatable"><g class="scalable"><circle/></g><text/></g><title class="title" />',
+  defaults: _.defaultsDeep({
+    type: 'fsa.State',
+    attrs: {
+      circle: { 'stroke-width': 3 },
+      text: { 'font-weight': '800' }
+    }
+  }, joint.shapes.basic.Circle.prototype.defaults)
+});
 /**
  * Styling for the default joint.js shapes.
  */
 joint.shapes.fsa.EndState = joint.dia.Element.extend({
 
-  markup: '<g class="rotatable"><g class="scalable"><circle class="outer"/><circle class="inner"/></g></g>',
+  markup: '<g class="rotatable"><g class="scalable"><circle class="outer"/><circle class="inner"/></g></g><title class="title" />',
 
   defaults: _.defaultsDeep({
 
@@ -59,7 +69,7 @@ joint.shapes.fsa.EndState = joint.dia.Element.extend({
 
 joint.shapes.pn.Transition = joint.shapes.basic.Generic.extend({
 
-  markup: '<g class="rotatable"><g class="scalable"><rect class="root"/></g></g><text class="label"/>',
+  markup: '<g class="rotatable"><g class="scalable"><rect class="root"/></g></g><text class="label"/><title class="title" />',
 
   defaults: _.defaultsDeep({
 

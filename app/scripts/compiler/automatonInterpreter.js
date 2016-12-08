@@ -12,6 +12,10 @@ function interpretAutomaton(process, processesMap, context){
   automaton.root = root.id;
   root.metaData.startNode = true;
   interpretNode(process.process, automaton, root)
+  if (root.outgoingEdges[0] !== undefined) {
+    const metaData = automaton.edgeMap[root.outgoingEdges[0]].metaData;
+    root.metaData.variables = metaData.variables;
+  }
   if (process.interrupt) {
     const currentNode = automaton.addNode();
     //Interrupts pass through a undefined currentNode, as they have no source. This means we dont
@@ -113,6 +117,7 @@ function interpretAutomaton(process, processesMap, context){
       metadata.guard = astNode.guard;
       metadata.next = astNode.next;
       metadata.variables = astNode.variables;
+      next.metaData.variables = astNode.nextIdent;
     }
     if (astNode.from.receiver) metadata.receiver = true;
     if (astNode.from.broadcaster) metadata.broadcaster = true;

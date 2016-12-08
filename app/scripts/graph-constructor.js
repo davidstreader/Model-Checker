@@ -18,6 +18,9 @@ function visualizeAutomata(process, name, graphMap, jgraph, hidden) {
       nodeMap['n' + nodes[i].id] = new joint.shapes.fsa.EndState({
         attrs: { text : { text: nodes[i].metaData.label}, '.outer': {'fill':fill} }
       });
+      if (nodes[i].getMetaData('variables') !== undefined) {
+        nodeMap['n' + nodes[i].id].set("tooltip",nodes[i].getMetaData('variables'));
+      }
       parentNode.embed(nodeMap['n' + nodes[i].id]);
       jgraph.addCell(nodeMap['n' + nodes[i].id]);
       nodeMap['n' + nodes[i].id].metaData = nodes[i].metaData;
@@ -34,6 +37,9 @@ function visualizeAutomata(process, name, graphMap, jgraph, hidden) {
       attrs: { text : { text: nodes[i].metaData.label}, circle: {'fill':fill} }
     });
     nodeMap['n' + nodes[i].id].metaData = nodes[i].metaData;
+    if (nodes[i].getMetaData('variables') !== undefined) {
+      nodeMap['n' + nodes[i].id].set("tooltip",nodes[i].getMetaData('variables'));
+    }
     parentNode.embed(nodeMap['n' + nodes[i].id]);
     jgraph.addCell(nodeMap['n' + nodes[i].id]);
   }
@@ -42,19 +48,16 @@ function visualizeAutomata(process, name, graphMap, jgraph, hidden) {
   const edges = process.edges;
   for(let i = 0; i < edges.length; i++){
     let label = edges[i].label;
+    let tooltip = "";
     const from = 'n' + edges[i].from;
     const to = 'n' + edges[i].to;
-    //TODO: Instead of dumping all this on the graph, we should actually consider
-    //TODO: making it show on hover.
-    //TODO: Do the same with hovering over nodes, to show what variables are assigned to
-    //TODO: the nodes.
     let vars = edges[i].getMetaData('variables');
     if(edges[i].getMetaData('guard') !== undefined){
       if (edges[i].getMetaData('next') !== undefined)
-        label =edges[i].getMetaData('next')+"\n"+label;
-      label =edges[i].getMetaData('guard')+"\n"+label;
+        tooltip =edges[i].getMetaData('next')+"\n"+tooltip;
+      tooltip =edges[i].getMetaData('guard')+"\n"+tooltip;
       if (vars !== undefined)
-        label =vars+"\n"+label;
+        tooltip =vars+"\n"+tooltip;
     }
     if (edges[i].metaData.interrupt && hidden) {
       var toNode = process.nodeMap[edges[i].to];
@@ -66,8 +69,8 @@ function visualizeAutomata(process, name, graphMap, jgraph, hidden) {
 
       const target = nodeMap[to];
       const box = _box(jgraph, parentNode, toEmbed, name+"."+(interruptId++),graphMap, name);
-      box.toDelete = _link(nodeMap[from],box.embedNode, "",parentNode,jgraph);
-      const link =_link(box.embedNode,target, label,parentNode,jgraph);
+      box.toDelete = _link(nodeMap[from],box.embedNode, "","",parentNode,jgraph);
+      const link =_link(box.embedNode,target, label,tooltip,parentNode,jgraph);
       //move all elements in front of the link
       box.toFront();
       toEmbed.forEach(cell => {
@@ -80,7 +83,7 @@ function visualizeAutomata(process, name, graphMap, jgraph, hidden) {
       toEmbed = [box,target, link];
       continue;
     }
-    toEmbed.push(_link(nodeMap[from],nodeMap[to], label,parentNode,jgraph));
+    toEmbed.push(_link(nodeMap[from],nodeMap[to], label,tooltip,parentNode,jgraph));
     toEmbed.push(nodeMap[from]);
     toEmbed.push(nodeMap[to]);
   }
@@ -144,6 +147,7 @@ function visualizePetriNet(process, name, graphMap, jgraph, hidden) {
     const incoming = transitions[i].incomingPlaces;
     const outgoing = transitions[i].outgoingPlaces;
     let label = transitions[i].label;
+    let tooltip = "";
     if (transitions[i].metaData.interrupt && hidden) {
       //inCom is expensive to calculate and needs to be done once per interrupt, so store it.
       //inCom needs to be a list of all places leading to this interrupt.
@@ -170,8 +174,8 @@ function visualizePetriNet(process, name, graphMap, jgraph, hidden) {
       });
       parentNode.embed(transition);
       jgraph.addCell(transition);
-      box.toDelete = _link(nodeMap[from],box.embedNode, "",parentNode,jgraph);
-      box.embedLink = [_link(box.embedNode,transition, '',parentNode,jgraph),transition,_link(transition,target, '',parentNode,jgraph)];
+      box.toDelete = _link(nodeMap[from],box.embedNode, "",'',parentNode,jgraph);
+      box.embedLink = [_link(box.embedNode,transition, '','',parentNode,jgraph),transition,_link(transition,target, '','',parentNode,jgraph)];
       //move all elements in front of the link
       box.toFront();
       toEmbed.forEach(cell => {
@@ -187,20 +191,23 @@ function visualizePetriNet(process, name, graphMap, jgraph, hidden) {
     let vars = transitions[i].getMetaData('variables');
     if(transitions[i].getMetaData('guard') !== undefined){
       if (transitions[i].getMetaData('next') !== undefined)
-        label =transitions[i].getMetaData('next')+"\n"+label;
-      label =transitions[i].getMetaData('guard')+"\n"+label;
+        tooltip =transitions[i].getMetaData('next')+"\n"+tooltip;
+      tooltip =transitions[i].getMetaData('guard')+"\n"+tooltip;
       if (vars !== undefined)
-        label =vars+"\n"+label;
+        tooltip =vars+"\n"+tooltip;
     }
     nodeMap['t' + transitions[i].id] = new joint.shapes.pn.Transition({
-      attrs: { text : { text: label }}
+      attrs: {
+        text : { text: label }
+      }
     });
+    nodeMap['t' + transitions[i].id].set("tooltip",tooltip);
     parentNode.embed(nodeMap['t' + transitions[i].id]);
     jgraph.addCell(nodeMap['t' + transitions[i].id]);
     for(let j = 0; j < outgoing.length; j++){
       const from = 't' + transitions[i].id;
       const to = 'p' + outgoing[j];
-      toEmbed.push(_link(nodeMap[from],nodeMap[to], '',parentNode,jgraph));
+      toEmbed.push(_link(nodeMap[from],nodeMap[to], '','',parentNode,jgraph));
       toEmbed.push(nodeMap[from]);
       toEmbed.push(nodeMap[to]);
     }
@@ -208,7 +215,7 @@ function visualizePetriNet(process, name, graphMap, jgraph, hidden) {
     for(let j = 0; j < incoming.length; j++){
       const from = 'p' + incoming[j];
       const to = 't' + transitions[i].id;
-      toEmbed.push(_link(nodeMap[from],nodeMap[to],'',parentNode,jgraph));
+      toEmbed.push(_link(nodeMap[from],nodeMap[to],'','',parentNode,jgraph));
       toEmbed.push(nodeMap[from]);
       toEmbed.push(nodeMap[to]);
     }
@@ -216,7 +223,7 @@ function visualizePetriNet(process, name, graphMap, jgraph, hidden) {
   }
 }
 
-function _link(source, target, label, parentNode, jgraph) {
+function _link(source, target, label,tooltip, parentNode, jgraph) {
   const cell = new joint.shapes.fsa.Arrow({
     source: {id: source.id},
     target: {id: target.id},
@@ -227,6 +234,7 @@ function _link(source, target, label, parentNode, jgraph) {
       'rect': {fill: Colours.textBackground}
     }
   });
+  cell.set("tooltip",tooltip);
   parentNode.embed(cell);
   jgraph.addCell(cell);
   return cell;

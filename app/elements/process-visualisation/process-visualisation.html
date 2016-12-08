@@ -87,6 +87,7 @@
           app.$.selector._hasSelection = false;
           app.splice('automata.display', 0, app.get('automata.display').length);
           _this.jgraph.resetCells();
+          _this.saveChanges();
         })
         document.addEventListener('addAll', function(){
           //If we are currently rendering, ignore any events
@@ -112,6 +113,7 @@
           //Remove parent
           _this.jgraph.removeCells([graph]);
           delete _this.displayedGraphs[name];
+          _this.saveChanges();
         });
         //Keep a copy of the last set options, so that when we revert from an explosion we are back
         //at the previous transformation
@@ -180,19 +182,17 @@
             get$Cell(cell).show();
           });
         });
-        this.paper.on('cell:mouseout', ()=> {
-          console.log("out");
-        });
-        this.paper.on('cell:mouseover', ()=> {
-           console.log("TEST");
-        });
         this.paper.on('render:done', ()=> {
           app.$.selector.locked = this.rendering = false;
-
-            if (_this.graphsToAdd.length > 0) {
-                const graph = _this.graphsToAdd.pop();
-                _this.addGraph(graph.name,graph.hidden);
-            }
+          //Jointjs has a bug where you can only set attributes.
+          //To combat this, we can search for all titles and map their innerhtml to the text attribute.
+          _.each($(".title"),title=> {
+            title.innerHTML = _this.jgraph.getCell(title.parentElement.getAttribute("model-id")).get("tooltip");
+          });
+          if (_this.graphsToAdd.length > 0) {
+            const graph = _this.graphsToAdd.pop();
+            _this.addGraph(graph.name,graph.hidden);
+          }
         });
         this.paper.on('cell:pointerdown', function(cell) {
           if (_this.exploded || _this.rendering) {
@@ -215,7 +215,10 @@
         this.paper.on('cell:pointermove', function(cell) {
           cell = cell.model;
           const parentId = cell.get('parent');
-          if (!parentId) return;
+          if (!parentId) {
+            _this.saveChanges();
+            return;
+          }
           adjustVertices(_this.jgraph,cell);
           _this.saveChanges();
         });
@@ -275,8 +278,8 @@
       graphsToAdd: [],
       addGraph: function(name, hidden) {
         if (this.rendering) {
-            this.graphsToAdd.push({name: name, hidden: hidden});
-            return;
+          this.graphsToAdd.push({name: name, hidden: hidden});
+          return;
         }
         app.$.selector.locked = this.rendering = true;
         //construct the graph first if it doesnt exist or has changed

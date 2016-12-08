@@ -19,8 +19,7 @@ function expand(ast){
   var variableSet;
   // expand the defined processes
   for(var i = 0; i < processes.length; i++){
-    if (typeof postMessage === 'function')
-      postMessage({clear:true,message:("Expanding: "+processes[i].ident.ident+" ("+(i+1)+"/"+processes.length)+")"});
+    postMessage({clear:true,message:("Expanding: "+processes[i].ident.ident+" ("+(i+1)+"/"+processes.length)+")"});
     var variableMap = JSON.parse(JSON.stringify(ast.variableMap));
     variableSet = processes[i].variables?processes[i].variables.set:[];
     processes[i].process = expandNode(processes[i].process, variableMap);
@@ -277,9 +276,10 @@ function expand(ast){
         //In this case, we are directly pointing to a node.
         //The unparsed ident is the original unexpanded ident,
         //And this will tell us what variables were explicitly set.
-        node.next = parseIndexedLabel(node.to.unparsedIdent, variableMap);
+        node.next = parseIndexedLabel(node.to.unparsedIdent, variableMap, true);
       }
       if (astNode.guard) {
+        node.nextIdent =  parseIndexedLabel(node.to.ident, variableMap);
         node.guard = processExpression(astNode.guard, variableMap).exprWithVars;
         node.variables = processVariables(variableMap[astNode.guard], variableMap);
       }
@@ -294,9 +294,10 @@ function expand(ast){
         //In this case, we are directly pointing to a node.
         //The unparsed ident is the original unexpanded ident,
         //And this will tell us what variables were explicitly set.
-        node.next = parseIndexedLabel(node.to.unparsedIdent, variableMap);
+        node.next = parseIndexedLabel(node.to.unparsedIdent, variableMap, true);
       }
       if (astNode.guard) {
+        node.nextIdent =  parseIndexedLabel(node.to.ident, variableMap);
         node.guard = processExpression(astNode.guard, variableMap).exprWithVars;
         node.variables = processVariables(variableMap[astNode.guard], variableMap);
       }
@@ -332,7 +333,7 @@ function expand(ast){
    * @param {string -> string} variableMap
    * @returns {string}
    */
-  function parseIndexedLabel(ident, variableMap) {
+  function parseIndexedLabel(ident, variableMap, addColon) {
     if (!ident) return;
     var lbl = ident;
     var vars = [];
@@ -344,7 +345,7 @@ function expand(ast){
       //Skip variables that havent been resolved (e.g. C[$i][1])
       if (val === "" || val.indexOf("$") !== -1) continue;
       var variable = localProcess.ranges.ranges[index].variable;
-      vars.push(variable.substring(1)+":="+val);
+      vars.push(variable.substring(1)+(addColon?":":"")+"="+val);
     }
     return vars;
   }
