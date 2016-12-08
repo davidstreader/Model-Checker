@@ -179,6 +179,12 @@
             get$Cell(cell).show();
           });
         });
+        this.paper.on('cell:mouseout', ()=> {
+          console.log("out");
+        });
+        this.paper.on('cell:mouseover', ()=> {
+           console.log("TEST");
+        });
         this.paper.on('render:done', ()=> {
           app.$.selector.locked = this.rendering = false;
 
