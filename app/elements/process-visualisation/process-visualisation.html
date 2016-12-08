@@ -173,7 +173,7 @@
               //DONT show the embed node.
               return;
             }
-              get$Cell(cell).show();
+            get$Cell(cell).show();
           });
         });
         //Scroll listener
@@ -292,6 +292,7 @@
         this.jgraph.addCells(cells);
         //Note, we need to add the cells before translating the cell to its correct position
         graph.parentNode.translate(0,maxY);
+        graph.parentNode.set("graphId",graph.id);
         this.rescale();
         app.push("automata.display",graph);
         const _this = this;
@@ -315,6 +316,7 @@
             cell.attr({ text: { text: newLbl } });
             let graph = {};
             graph.parentNode = _this.jgraph.getCell(cell.get("parent"));
+            graph.parentNode.set("graphId",graph.id);
             graph.id = newLbl;
             _this.displayedGraphs[graph.id] = graph.parentNode;
             app.push("automata.display",graph);
@@ -326,6 +328,9 @@
         const nodeBBox = graph.parentNode.getBBox();
         const scale = V(this.paper.viewport).scale();
         $(".process-display").stop().animate({scrollTop:nodeBBox.origin().y*scale.sx}, '100', 'swing');
+        if (app.willSaveCookie)
+          localStorage.setItem("layout", JSON.stringify(_this.jgraph.toJSON()));
+
         this.rendering = false;
       },
       /**
@@ -333,6 +338,24 @@
        */
       redraw: function() {
         if (this.paper === undefined) return;
+        const _this = this;
+        if (!this.loaded && app.willSaveCookie) {
+          this.loaded = true;
+          const layout = localStorage.getItem("layout");
+          if (layout != null) {
+            this.jgraph.fromJSON(JSON.parse(layout));
+          }
+          _.each(this.jgraph.getCells(),cell => {
+            if (cell.get("graphId")) {
+              let graph = {};
+              graph.id = cell.get("graphId");
+              graph.parentNode = cell;
+              _this.displayedGraphs[graph.id] = cell;
+              app.push("automata.display",graph);
+            }
+          });
+          _this.rescale();
+        }
         if (!app.get("automata.values") || app.get("automata.values").length == 0) return;
         this.automata = this.graphMap;
         this.fire('process-visualisation-rendered');
