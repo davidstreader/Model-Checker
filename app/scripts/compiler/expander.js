@@ -19,11 +19,7 @@ function expand(ast){
   var variableSet;
   // expand the defined processes
   for(var i = 0; i < processes.length; i++){
-
-    if (typeof postMessage !== 'undefined') {
-      postMessage({clear:true,message:("Expanding: "+processes[i].ident.ident+" ("+(i+1)+"/"+processes.length)+")"});
-    }
-    else processes.socket.emit("expander",{ident:processes[i].ident.ident,i:i});
+    postMessage({clear:true,message:("Expanding: "+processes[i].ident.ident+" ("+(i+1)+"/"+processes.length)+")"});
     var variableMap = JSON.parse(JSON.stringify(ast.variableMap));
     variableSet = processes[i].variables?processes[i].variables.set:[];
     processes[i].process = expandNode(processes[i].process, variableMap);

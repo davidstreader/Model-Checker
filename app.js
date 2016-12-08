@@ -1,5 +1,7 @@
-let testingMode = process.argv.slice(2).length > 0;
+const testingMode = process.argv.slice(2).length > 0;
+const includes = [];
 const fs = require('fs');
+var Worker = require("tiny-worker");
 const async = require("async");
 const ansi = require('ansi'), cursor = ansi(process.stdout);
 const walk = function (dir, done) {
@@ -47,8 +49,7 @@ if (testingMode) {
   startServer();
 }
 function include(path) {
-  const code = fs.readFileSync(path, 'utf-8');
-  vm.runInThisContext(code, path);
+  includes.push(path);
 }
 function exitHandler(options, err) {
   cursor.red();
@@ -71,22 +72,25 @@ function startServer() {
   const http = require('http').Server(app);
   const io = require('socket.io')(http);
   const port = 5000;
-
   app.use(express.static('app'))
   app.use('/bower_components', express.static('bower_components'));
   io.on('connection', function (socket) {
     socket.emit('connectedToServer', {});
     socket.on('compile', function (obj, ack) {
+
       //Compile in async, so we do not hang the server  from accepting other requests
-      async.parallel([() => {
-        obj.ast.processes.socket = socket;
-        //Node appears to handle exceptions differently. Lets catch them and pass them back instead of killing the app.
-        try {
-          ack(Compiler.localCompile(obj.ast, obj.context));
-        } catch (ex) {
-          ack({type: 'error', message: ex.toString(), stack: ex.stack});
+      let worker = new Worker("asyncCompiler.js");
+
+      worker.onmessage = function(e) {
+        if (e.data.result) {
+          ack(e.data.result);
+        } else if (e.data.message) {
+          socket.emit("log",e.data);
+        } else {
+          console.log(e);
         }
-      }]);
+      }
+      worker.postMessage(obj);
     })
   });
 

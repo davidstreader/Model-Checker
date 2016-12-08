@@ -22,8 +22,10 @@
 
     if (typeof io !== 'undefined') {
       app.socket = io();
-      app.socket.on('connectedToServer', function (data) {
-        app.isClientSide = false;
+      app.socket.on('connectedToServer', ()=>app.isClientSide = false);
+      app.socket.on('log',data => {
+        if (data.clear) app.$.console.clear();
+        app.$.console.log(data.message);
       });
     }
     app.compile = function(overrideBuild) {

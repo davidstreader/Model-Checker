@@ -1,292 +1,291 @@
 'use strict';
 
 const Lexer = {
-	actionLabel: '[a-z][A-Za-z0-9_]*',
-	identifier: '[A-Z][A-Za-z0-9_]*',
-	integer: '[0-9][0-9]*',
-	processTypes: {'automata':true, 'petrinet':true },
-	functions: {'abs': true, 'simp':true, 'safe':true },
-	terminals: { 'STOP':true, 'ERROR': true },
-	keywords: { 'const':true, 'range':true, 'set':true, 'if':true, 'then':true, 'else':true, 'when':true, 'forall':true },
-	symbols: '(\\.\\.|\\.|,|:|\\[|\\]|\\(|\\)|\\{|\\}|->|~>|\\\\|@|\\$|\\?)',
-	operators: '(\\|\\||\\||&&|&|\\^|==|=|!=|<<|<=|<|>>|>=|>|\\+|-|\\*|/|%|!)',
-	operations: '~',
-	singleLineCommentStart: '//',
-	multiLineCommentStart: '/\\*',
+  actionLabel: '[a-z][A-Za-z0-9_]*',
+  identifier: '[A-Z][A-Za-z0-9_]*',
+  integer: '[0-9][0-9]*',
+  processTypes: {'automata':true, 'petrinet':true },
+  functions: {'abs': true, 'simp':true, 'safe':true },
+  terminals: { 'STOP':true, 'ERROR': true },
+  keywords: { 'const':true, 'range':true, 'set':true, 'if':true, 'then':true, 'else':true, 'when':true, 'forall':true },
+  symbols: '(\\.\\.|\\.|,|:|\\[|\\]|\\(|\\)|\\{|\\}|->|~>|\\\\|@|\\$|\\?)',
+  operators: '(\\|\\||\\||&&|&|\\^|==|=|!=|<<|<=|<|>>|>=|>|\\+|-|\\*|/|%|!)',
+  operations: '~',
+  singleLineCommentStart: '//',
+  multiLineCommentStart: '/\\*',
 
-	/**
-	 * Passes over the specified code block and converts it into
-	 * a series of tokens.
-	 *
-	 * @param{string} code - the code to tokenise
-	 * @param{Token[]} - an array of tokens
-	 */
-	tokenise: function(code){
-		const tokens = [];
-		let line = 1;
-		let column = 0;
+  /**
+   * Passes over the specified code block and converts it into
+   * a series of tokens.
+   *
+   * @param{string} code - the code to tokenise
+   * @param{Token[]} - an array of tokens
+   */
+  tokenise: function(code){
+    const tokens = [];
+    let line = 1;
+    let column = 0;
 
-		// loop through the code and construct tokens
-		while(code.length !== 0){
-			gobbleWhitespace();
-			gobbleComments.bind(this)();
+    // loop through the code and construct tokens
+    while(code.length !== 0){
+      gobbleWhitespace();
+      gobbleComments.bind(this)();
 
-			// construct the start position for the current token
-			const start = new Position(line, column);
+      // construct the start position for the current token
+      const start = new Position(line, column);
 
-			let value;
+      let value;
 
-			// attempt to match an action label, process type, function or keyword
-			value = matchValue(this.actionLabel);
-			if(value !== undefined){
-				// construct the end point for the current token
-				const end = new Position(line, column);
+      // attempt to match an action label, process type, function or keyword
+      value = matchValue(this.actionLabel);
+      if(value !== undefined){
+        // construct the end point for the current token
+        const end = new Position(line, column);
 
-				// construct the location in the code of this token
-				const location = new Location(start, end);
+        // construct the location in the code of this token
+        const location = new Location(start, end);
 
-				// determine if the action tokenised was actally a process type
-				if(this.processTypes[value] !== undefined){
-					tokens.push(new Token('process-type', value, location));
-				}
-				// determine if the action tokenised was actually a function
-				else if(this.functions[value] !== undefined){
-					tokens.push(new Token('function', value, location));
-				}
-				// determine if the action tokenised was actually a keyword
-				else if(this.keywords[value] !== undefined){
-					tokens.push(new Token('keyword', value, location));
-				}
-				else{
-					tokens.push(new Token('action', value, location))
-				}
+        // determine if the action tokenised was actally a process type
+        if(this.processTypes[value] !== undefined){
+          tokens.push(new Token('process-type', value, location));
+        }
+        // determine if the action tokenised was actually a function
+        else if(this.functions[value] !== undefined){
+          tokens.push(new Token('function', value, location));
+        }
+        // determine if the action tokenised was actually a keyword
+        else if(this.keywords[value] !== undefined){
+          tokens.push(new Token('keyword', value, location));
+        }
+        else{
+          tokens.push(new Token('action', value, location))
+        }
 
-				continue;
-			}
+        continue;
+      }
 
-			// attempt to match an identifer or terminal
-			value = matchValue(this.identifier);
-			if(value !== undefined){
-				// construct the end point for the current token
-				const end = new Position(line, column);
+      // attempt to match an identifer or terminal
+      value = matchValue(this.identifier);
+      if(value !== undefined){
+        // construct the end point for the current token
+        const end = new Position(line, column);
 
-				// construct the location in the code of this token
-				const location = new Location(start, end);
+        // construct the location in the code of this token
+        const location = new Location(start, end);
 
-				if(this.terminals[value] !== undefined){
-					tokens.push(new Token('terminal', value, location));
-				}
-				else{
-          if (typeof postMessage !== 'undefined') {
-            postMessage({clear: true, message: ("Found process:" + value)});
-          }
-					tokens.push(new Token('identifier', value, location));
-				}
+        if(this.terminals[value] !== undefined){
+          tokens.push(new Token('terminal', value, location));
+        }
+        else{
+          postMessage({clear: true, message: ("Found process:" + value)});
 
-				continue;
-			}
+          tokens.push(new Token('identifier', value, location));
+        }
 
-			// attempt to match an integer
-			value = matchValue(this.integer);
-			if(value !== undefined){
-				// construct the end point for the current token
-				const end = new Position(line, column);
+        continue;
+      }
 
-				// construct the location in the code of this token
-				const location = new Location(start, end);
-				tokens.push(new Token('integer', value, location));
-				continue;
-			}
+      // attempt to match an integer
+      value = matchValue(this.integer);
+      if(value !== undefined){
+        // construct the end point for the current token
+        const end = new Position(line, column);
 
-			// attempt to match a symbol
-			value = matchValue(this.symbols);
-			if(value !== undefined){
-				// construct the end point for the current token
-				const end = new Position(line, column);
+        // construct the location in the code of this token
+        const location = new Location(start, end);
+        tokens.push(new Token('integer', value, location));
+        continue;
+      }
 
-				// construct the location in the code of this token
-				const location = new Location(start, end);
+      // attempt to match a symbol
+      value = matchValue(this.symbols);
+      if(value !== undefined){
+        // construct the end point for the current token
+        const end = new Position(line, column);
 
-				tokens.push(new Token('symbol', value, location));
-				continue;
-			}
+        // construct the location in the code of this token
+        const location = new Location(start, end);
 
-			// attempt to match an operator
-			value = matchValue(this.operators);
-			if(value !== undefined){
-				// construct the end point for the current token
-				const end = new Position(line, column);
+        tokens.push(new Token('symbol', value, location));
+        continue;
+      }
 
-				// construct the location in the code of this token
-				const location = new Location(start, end);
+      // attempt to match an operator
+      value = matchValue(this.operators);
+      if(value !== undefined){
+        // construct the end point for the current token
+        const end = new Position(line, column);
 
-				tokens.push(new Token('operator', value, location));
-				continue;
-			}
+        // construct the location in the code of this token
+        const location = new Location(start, end);
 
-			// attempt to match an operation
-			value = matchValue(this.operations);
-			if(value !== undefined){
-				// construct the end point for the current token
-				const end = new Position(line, column);
+        tokens.push(new Token('operator', value, location));
+        continue;
+      }
 
-				// construct the locaiton in the code of this token
-				const location = new Location(start, end);
+      // attempt to match an operation
+      value = matchValue(this.operations);
+      if(value !== undefined){
+        // construct the end point for the current token
+        const end = new Position(line, column);
 
-				tokens.push(new Token('operation', value, location));
-				continue;
-			}
+        // construct the locaiton in the code of this token
+        const location = new Location(start, end);
 
-			// no match found, check if the end of the file has been reached
-			if(code.length > 0){
-				// otherwise throw an exception
-				const character = code.charAt(0);
-				throw new LexerException(character);
-			}
+        tokens.push(new Token('operation', value, location));
+        continue;
+      }
 
-			break;
-		}
+      // no match found, check if the end of the file has been reached
+      if(code.length > 0){
+        // otherwise throw an exception
+        const character = code.charAt(0);
+        throw new LexerException(character);
+      }
 
-		const end = new Position(line, column);
-		const location = new Location(end, end);
-		tokens.push(new Token('EOF', 'end of file', location));
-		return tokens;
+      break;
+    }
 
-		// HELPER FUNCTIONS
+    const end = new Position(line, column);
+    const location = new Location(end, end);
+    tokens.push(new Token('EOF', 'end of file', location));
+    return tokens;
 
-		/**
-		 * Attempts to match the specified regular expression at the
-		 * current position in the code. If the match is successful, the
-		 * value that was matched is returned. Otherwise returns undefined.
-		 *
-		 * @param{string} regex - the regular expression to match
-		 * @return{string} value - the value that was matched, or undefined if no match
-		 */
-		function matchValue(regex){
-			if(code.length > 0){
-				const match = code.match(regex);
-				if(match !== null && match.index === 0){
-					const value = match[0];
-					column += value.length;
-					code = code.slice(value.length, code.length);
-					return value;
-				}
-			}
-		}
+    // HELPER FUNCTIONS
 
-		/**
-		 * Removes any whitespace from the code and adjusts the current
-		 * position accordingly.
-		 */
-		function gobbleWhitespace(){
-			let index = 0
-			while(code.length !== 0){
-				const next = code.charAt(index);
-				if(next === ' ' || next === '\t'){
-					// increase the column position
-					column++;
-				}
-				else if(next === '\n' || next === '\r'){
-					// move to a new line
-					line++;
-					column = 0;
-				}
-				else{
-					break;
-				}
+    /**
+     * Attempts to match the specified regular expression at the
+     * current position in the code. If the match is successful, the
+     * value that was matched is returned. Otherwise returns undefined.
+     *
+     * @param{string} regex - the regular expression to match
+     * @return{string} value - the value that was matched, or undefined if no match
+     */
+    function matchValue(regex){
+      if(code.length > 0){
+        const match = code.match(regex);
+        if(match !== null && match.index === 0){
+          const value = match[0];
+          column += value.length;
+          code = code.slice(value.length, code.length);
+          return value;
+        }
+      }
+    }
 
-				index++;
-			}
+    /**
+     * Removes any whitespace from the code and adjusts the current
+     * position accordingly.
+     */
+    function gobbleWhitespace(){
+      let index = 0
+      while(code.length !== 0){
+        const next = code.charAt(index);
+        if(next === ' ' || next === '\t'){
+          // increase the column position
+          column++;
+        }
+        else if(next === '\n' || next === '\r'){
+          // move to a new line
+          line++;
+          column = 0;
+        }
+        else{
+          break;
+        }
 
-			// remove the whitespace from the code
-			code = code.slice(index, code.length);
-		}
+        index++;
+      }
 
-		/**
-		 * Removes any comments from the code and adjusts the current position
-		 * accordingly.
-		 */
-		function gobbleComments(){
-			// loop through and attempt to find any comments
-			while(code.length !== 0){
-				// remove any whitespace
-				gobbleWhitespace();
+      // remove the whitespace from the code
+      code = code.slice(index, code.length);
+    }
 
-				let successful = false;
+    /**
+     * Removes any comments from the code and adjusts the current position
+     * accordingly.
+     */
+    function gobbleComments(){
+      // loop through and attempt to find any comments
+      while(code.length !== 0){
+        // remove any whitespace
+        gobbleWhitespace();
 
-				// try and match a single lined comment
-				let value = matchValue(this.singleLineCommentStart);
-				if(value !== undefined){
-					gobbleSingleLineComment();
-					successful = true;
-				}
+        let successful = false;
 
-				// try and match a multi lined comment
-				value = matchValue(this.multiLineCommentStart);
-				if(value !== undefined){
-					gobbleMultiLineComment();
-					successful = true;
-				}
+        // try and match a single lined comment
+        let value = matchValue(this.singleLineCommentStart);
+        if(value !== undefined){
+          gobbleSingleLineComment();
+          successful = true;
+        }
 
-				// break if no comments were found
-				if(!successful){
-					break;
-				}
-			}
-		}
+        // try and match a multi lined comment
+        value = matchValue(this.multiLineCommentStart);
+        if(value !== undefined){
+          gobbleMultiLineComment();
+          successful = true;
+        }
 
-		/**
-		 * Removes a single lined comment from the code and adjusts the current
-		 * position accordingly.
-		 */
-		function gobbleSingleLineComment(){
-			// iterate through the characters until a line break is found
-			let index = 0;
-			while(index < code.length && code.charAt(index) !== '\n'){
-				index++;
-			}
+        // break if no comments were found
+        if(!successful){
+          break;
+        }
+      }
+    }
 
-			// gobble the line break
-			index++;
+    /**
+     * Removes a single lined comment from the code and adjusts the current
+     * position accordingly.
+     */
+    function gobbleSingleLineComment(){
+      // iterate through the characters until a line break is found
+      let index = 0;
+      while(index < code.length && code.charAt(index) !== '\n'){
+        index++;
+      }
 
-			// remove the comment
-			code = code.slice(index, code.length);
+      // gobble the line break
+      index++;
 
-			// update the position info
-			line++;
-			column = 0;
-		}
+      // remove the comment
+      code = code.slice(index, code.length);
 
-		/**
-		 * Removes a multi lined comment from the code and adjusts the current
-		 * position accordingly.
-		 */
-		function gobbleMultiLineComment(){
-			// iterate through the characters until the end of the comment is found
-			let index = 0;
-			while(index < code.length - 1 && code.charAt(index) !== '*' && code.charAt(index + 1) !== '/'){
-				// update the position info
-				if(code.charAt(index) === '\n'){
-					line++;
-					column = 0;
-				}
-				else{
-					column++;
-				}
+      // update the position info
+      line++;
+      column = 0;
+    }
 
-				index++;
-			}
+    /**
+     * Removes a multi lined comment from the code and adjusts the current
+     * position accordingly.
+     */
+    function gobbleMultiLineComment(){
+      // iterate through the characters until the end of the comment is found
+      let index = 0;
+      while(index < code.length - 1 && code.charAt(index) !== '*' && code.charAt(index + 1) !== '/'){
+        // update the position info
+        if(code.charAt(index) === '\n'){
+          line++;
+          column = 0;
+        }
+        else{
+          column++;
+        }
 
-			// gobble the end of the comment
-			index += 2;
+        index++;
+      }
 
-			// remove the comment
-			code = code.slice(index, code.length);
+      // gobble the end of the comment
+      index += 2;
 
-			// update the position info
-			column += 2 // from the '*/' at the end of the comment
-		}
-	}
+      // remove the comment
+      code = code.slice(index, code.length);
+
+      // update the position info
+      column += 2 // from the '*/' at the end of the comment
+    }
+  }
 };
 
 // CONSTRUCTORS
@@ -300,8 +299,8 @@ const Lexer = {
  * @return{Token} - the constructed token
  */
 function Token(type, value, location){
-	this.type = type;
-	this.value = value;
+  this.type = type;
+  this.value = value;
   this.location = location;
 }
 
@@ -327,9 +326,9 @@ function Location(start, end){
  * @return{LexerException} - the lexer exception
  */
 function LexerException(character, location){
-	this.message = 'Unexpected character \'' + character + '\' found';
-	this.location = location;
-	this.toString = function(){
-		return 'LexerException: ' + this.message;
-	}
+  this.message = 'Unexpected character \'' + character + '\' found';
+  this.location = location;
+  this.toString = function(){
+    return 'LexerException: ' + this.message;
+  }
 }
