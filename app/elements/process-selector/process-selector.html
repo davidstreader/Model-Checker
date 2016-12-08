@@ -35,9 +35,9 @@
           <paper-listbox class="dropdown-content" selected$="{{_initialSelection}}"></paper-listbox>
         </paper-menu>
       </paper-dropdown-menu>
-      <paper-button onclick="toggleExplode()" disabled$="{{!_hasSelection}}">{{_explosionLabel}}</paper-button>
-      <paper-button onclick="removeProcess()" disabled$="{{!_hasSelection}}">Remove Process</paper-button>
-      <paper-button onclick="clearProcess()" disabled$="{{!_hasNames}}">Clear</paper-button>
+      <paper-button onclick="toggleExplode()" disabled$="{{_explosionValid(locked,_hasSelection)}}">{{_explosionLabel}}</paper-button>
+      <paper-button onclick="removeProcess()" disabled$="{{_combineWithLocked(locked,_hasSelection)}}">Remove Process</paper-button>
+      <paper-button onclick="clearProcess()" disabled$="{{_combineWithLocked(locked,_hasNames)}}">Clear</paper-button>
     </div>
     <div style="">
       <span>Editor Process List</span>
@@ -53,8 +53,8 @@
       <paper-checkbox checked="{{hideInterrupts}}" class="chbx middle" title="Hide interrupted processes behind a box">
         <span hidden$="{{smallScreen}}">Hide interrupts</span>
       </paper-checkbox>
-      <paper-button onclick="addProcess()" disabled$="{{!_hasNameSelection}}">Add Process</paper-button>
-      <paper-button onclick="addAll()" disabled$="{{!_hasProcesses}}">Add all processes</paper-button>
+      <paper-button onclick="addProcess()" disabled$="{{_combineWithLocked(locked,_hasNameSelection)}}">Add Process</paper-button>
+      <paper-button onclick="addAll()" disabled$="{{_combineWithLocked(locked,_hasProcesses)}}">Add all processes</paper-button>
     </div>
 
   </template>
@@ -94,7 +94,7 @@
          * The automata currently on display
          */
         display: {
-            type: Array
+          type: Array
         },
         hideInterrupts: {
           type: Boolean,
@@ -123,6 +123,14 @@
           type: Boolean,
           computed: '_greaterThan(display.length, 0)'
         },
+        /**
+         * When dealing with the visualiser, during rendering we want to disable adding new elements.
+         *
+         */
+        locked: {
+          type: Boolean,
+          value: true
+        },
 
         _initialSelection: {
           type: String,
@@ -133,6 +141,13 @@
         }
       },
 
+      _combineWithLocked: function(val1, val2) {
+        return val1 || !val2;
+      },
+      _explosionValid: function(val1, val2) {
+        let lbl = app.$.selector._explosionLabel;
+        return lbl==="Explode to process" && (val1 || !val2);
+      },
       /**
        * @returns {!boolean} a > b
        */

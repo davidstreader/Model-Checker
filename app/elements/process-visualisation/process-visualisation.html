@@ -49,7 +49,8 @@
           el: this.$['svg-parent'],
           gridSize: 1,
           model: this.jgraph,
-          restrictTranslate: true
+          restrictTranslate: true,
+          async: true
         });
         const paper = this.paper;
         //Process selector listener
@@ -125,6 +126,7 @@
             const scaleX = paperWidth / width;
             const scaleY = paperHeight / height;
             if (_this.exploded) {
+              app.$.selector.locked = true;
               //Hide the parent node so we don't see a box around the element
               get$Cell(parentNode).hide();
               if (key == app.$.selector.getSelected()) {
@@ -145,6 +147,7 @@
                 _.each(collectDeepEmbedded(parentNode),node => get$Cell(node).hide());
               }
             } else {
+              app.$.selector.locked = false;
               //Show the element that was hidden above
               get$Cell(parentNode).show();
               if (key == lastOptions.key) {
@@ -176,24 +179,19 @@
             get$Cell(cell).show();
           });
         });
-//        //Scroll listener
-//        this.paper.$el.on('mousewheel DOMMouseScroll', function onMouseWheel(e) {
-//          //Disable scrolling
-//          e.preventDefault();
-//          e = e.originalEvent;
-//          const delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail))) / 50;
-//          const newScale = V(paper.viewport).scale().sx + delta;
-//          if (newScale > 0.4 && newScale < 2) {
-//            //Zoom in and out with scroll
-//            paper.scale(newScale, newScale, 0, 0);
-//          }
-//          _this.rescale();
-//        });
+        this.paper.on('render:done', ()=> {
+          app.$.selector.locked = this.rendering = false;
+
+            if (_this.graphsToAdd.length > 0) {
+                const graph = _this.graphsToAdd.pop();
+                _this.addGraph(graph.name,graph.hidden);
+            }
+        });
         this.paper.on('cell:pointerdown', function(cell) {
           if (_this.exploded || _this.rendering) {
             return;
           }
-          _this.rendering = true;
+          app.$.selector.locked = _this.rendering = true;
           cell = cell.model;
           const parentId = cell.get('parent');
           if (parentId && cell.attributes.type!=='interruptParentNode'&& cell.attributes.type!=='box') {
@@ -205,13 +203,14 @@
               $("#process-display-selector")[0].contentElement.selected = i;
             }
           }
-          _this.rendering = false;
+          app.$.selector.locked = _this.rendering = false;
         });
         this.paper.on('cell:pointermove', function(cell) {
           cell = cell.model;
           const parentId = cell.get('parent');
           if (!parentId) return;
           adjustVertices(_this.jgraph,cell);
+          _this.saveChanges();
         });
         this.jgraph.on('change:size', function(cell) {
           //Exploded diagrams are limited by changing the dimensions of the paper
@@ -225,11 +224,13 @@
               node.set('size', cell.get('size'));
             }
           });
+          _this.saveChanges();
         });
         this.jgraph.on('change:position', function(cell) {
           //Exploded diagrams are limited by changing the dimensions of the paper
           //Don't update the size of the parent when the interrupt updates
           if (_this.exploded || _this.rendering || cell.attributes.type === 'interruptEmbedNode') {
+            _this.saveChanges();
             return;
           }
           //If a cell is an interrupt, update the size of hte respective interrupt too
@@ -261,9 +262,16 @@
             parent.resize(size.width,size.height+changeY,{direction: "bottom"});
           }
         });
+        if (app.willSaveCookie)
+          localStorage.setItem("layout", JSON.stringify(_this.jgraph.toJSON()));
       },
+      graphsToAdd: [],
       addGraph: function(name, hidden) {
-        this.rendering = true;
+        if (this.rendering) {
+            this.graphsToAdd.push({name: name, hidden: hidden});
+            return;
+        }
+        app.$.selector.locked = this.rendering = true;
         //construct the graph first if it doesnt exist or has changed
         constructGraphs(this.graphMap,name, hidden);
         //Work out the bottom corner of the lowest element
@@ -328,10 +336,8 @@
         const nodeBBox = graph.parentNode.getBBox();
         const scale = V(this.paper.viewport).scale();
         $(".process-display").stop().animate({scrollTop:nodeBBox.origin().y*scale.sx}, '100', 'swing');
-        if (app.willSaveCookie)
-          localStorage.setItem("layout", JSON.stringify(_this.jgraph.toJSON()));
+        this.saveChanges();
 
-        this.rendering = false;
       },
       /**
        * Redraw the automata.
@@ -355,10 +361,16 @@
             }
           });
           _this.rescale();
+        } else {
+          app.$.selector.locked = false;
         }
         if (!app.get("automata.values") || app.get("automata.values").length == 0) return;
         this.automata = this.graphMap;
         this.fire('process-visualisation-rendered');
+      },
+      saveChanges: function() {
+        if (app.willSaveCookie && !this.exploded)
+          localStorage.setItem("layout", JSON.stringify(_this.jgraph.toJSON()));
       },
       rescale: function() {
         if (this.exploded) {

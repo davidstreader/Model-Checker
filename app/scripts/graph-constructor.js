@@ -44,6 +44,10 @@ function visualizeAutomata(process, name, graphMap, jgraph, hidden) {
     let label = edges[i].label;
     const from = 'n' + edges[i].from;
     const to = 'n' + edges[i].to;
+    //TODO: Instead of dumping all this on the graph, we should actually consider
+    //TODO: making it show on hover.
+    //TODO: Do the same with hovering over nodes, to show what variables are assigned to
+    //TODO: the nodes.
     let vars = edges[i].getMetaData('variables');
     if(edges[i].getMetaData('guard') !== undefined){
       if (edges[i].getMetaData('next') !== undefined)
