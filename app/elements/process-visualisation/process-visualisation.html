@@ -206,6 +206,8 @@
           if (parentId && cell.attributes.type!=='interruptParentNode'&& cell.attributes.type!=='box') {
             cell = _this.jgraph.getCell(parentId);
           }
+
+          if (app.get("automata.display") === undefined) app.set("automata.display",[]);
           let disp = app.get("automata.display");
           for (let i = 0; i < disp.length; i++) {
             if (disp[i].parentNode === cell) {

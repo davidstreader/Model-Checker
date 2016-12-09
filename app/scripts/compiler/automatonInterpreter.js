@@ -110,7 +110,11 @@ function interpretAutomaton(process, processesMap, context){
   }
 
   function interpretSequence(astNode, automaton, currentNode) {
-    const next = (astNode.to.type === 'reference') ? referenceMap[astNode.to.reference] : automaton.addNode();
+    let next = (astNode.to.type === 'reference') ? referenceMap[astNode.to.reference] : automaton.addNode();
+    //If we reach this issue, the local process being pointed too has been replaced by the sub process
+    //but the reference was never updated. However, the nice thing is that the replacement is always
+    //reference+1
+    if (next == undefined) next = referenceMap[astNode.to.reference+1];
     const id = automaton.nextEdgeId;
     const metadata = {};
     if (astNode.guard !== undefined) {
