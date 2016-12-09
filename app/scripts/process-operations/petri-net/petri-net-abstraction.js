@@ -15,7 +15,8 @@ function petriNetAbstraction(net, isFair){
 		const id = net.nextTransitionId;
 		const from = transition.from.map(id => net.getPlace(id));
 		const to = transition.to.map(id => net.getPlace(id));
-		net.addTransition(id, transition.label, from, to);
+		const t = net.addTransition(id, transition.label, from, to);
+		t.locations = transition.locations;
 	}
 
 	// remove the hidden transitions from the net
@@ -88,7 +89,7 @@ function petriNetAbstraction(net, isFair){
 
 				// construct a new observable transition
 				for(let k = 0; k < outgoingMarkings.length; k++){
-					constructObservableTransition(Object.keys(from), Object.keys(outgoingMarkings[k]), observable[j].label);
+					constructObservableTransition(Object.keys(from), Object.keys(outgoingMarkings[k]), observable[j].label, observable[j].locations);
 				}
 			}
 		}
@@ -119,7 +120,7 @@ function petriNetAbstraction(net, isFair){
 
 				// construct a new observable transition
 				for(let k = 0; k < incomingMarkings.length; k++){
-					constructObservableTransition(Object.keys(incomingMarkings[k]), Object.keys(to), observable[j].label);
+					constructObservableTransition(Object.keys(incomingMarkings[k]), Object.keys(to), observable[j].label, observable[j].locations);
 				}
 			}
 		}
@@ -173,10 +174,10 @@ function petriNetAbstraction(net, isFair){
 		return markings;
 	}
 
-	function constructObservableTransition(from, to, label){
+	function constructObservableTransition(from, to, label, locations){
 		const key = constructTransitionKey(from, to, label);
 		if(observableTransitionMap[key] === undefined){
-			observableTransitionMap[key] = new ObservableTransition(from, to, label);
+			observableTransitionMap[key] = new ObservableTransition(from, to, label, locations);
 		}
 	}
 
@@ -186,9 +187,10 @@ function petriNetAbstraction(net, isFair){
 		return incoming + ' -|' + label + '|- ' + outgoing; 
 	}
 
-	function ObservableTransition(from, to, label){
+	function ObservableTransition(from, to, label, locations){
 		this.from = from;
 		this.to = to;
 		this.label = label;
+		this.locations = locations;
 	}
 }

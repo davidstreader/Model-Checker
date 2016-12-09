@@ -194,6 +194,61 @@ const PETRI_NET = {
 		delete this.labelSets[oldLabel];
 	},
 
+	labelPetriNet: function(label){
+		for(let id in this.placeMap){
+			const newId = label + ':' + id;
+			const place = this.getPlace(id);
+			this.placeMap[newId] = place;
+			place.id = newId;
+
+			for(let transition in place.incomingTransitionSet){
+				place.incomingTransitionSet[label + ':' + transition] = true;
+				delete place.incomingTransitionSet[transition];
+			}
+
+			for(let transition in place.outgoingTransitionSet){
+				place.outgoingTransitionSet[label + ':' + transition] = true;
+				delete place.outgoingTransitionSet[transition];
+			}
+
+			place.locationSet[label + ':' + this.id] = true;
+			delete place.locationSet[this.id];
+
+			delete this.placeMap[id];
+		}
+
+		for(let id in this.transitionMap){
+			const newId = label + ':' + id;
+
+			const transition = this.getTransition(id);
+			this.transitionMap[newId] = transition;
+			transition.id = newId;
+
+			transition.label = label + '.' + transition.label;
+
+			for(let place in transition.incomingPlaceSet){
+				transition.incomingPlaceSet[label + ':' + place] = true;
+				delete transition.incomingPlaceSet[place];
+			}
+
+			for(let place in transition.outgoingPlaceSet){
+				transition.outgoingPlaceSet[label + ':' + place] = true;
+				delete transition.outgoingPlaceSet[place];
+			}
+
+			transition.locationSet[label + ':' + this.id] = true;
+			delete transition.locationSet[this.id];
+
+			delete this.transitionMap[id];
+		}
+
+		for(let action in this.labelSets){
+			const set = this.labelSets[action];
+			this.labelSets[label + '.' + action] = set;
+			delete this.labelSets[action];
+		}
+	},
+
 	getLabelSets: function(){
 		const labelSets = {};
 		for(let label in this.labelSets){
@@ -226,6 +281,10 @@ const PETRI_NET = {
 			const place = places[i];
 			this.placeMap[place.id] = place;
 			this.placeCount++;
+
+			if(place.metaData.startPlace !== undefined){
+				this.addRoot(place.id);
+			}
 		}
 
 		const transitions = net.transitions;
@@ -243,66 +302,37 @@ const PETRI_NET = {
 	},
 
 	get clone(){
-		if(this.metaData.cloneCount === undefined){
-			this.metaData.cloneCount = 0;
-		}
-		const cloneId = this.metaData.cloneCount++;
-
-		const net = new PetriNet(this.id + '.' + cloneId);
-
-		// clone places from this net and add them to the clone
-		const places = this.places;
-		for(let i = 0; i < places.length; i++){
-			const id = places[i].id + '.' + cloneId;;
-			const incoming = relabelSet(JSON.parse(JSON.stringify(places[i].incomingTransitionSet)));
-			const outgoing = relabelSet(JSON.parse(JSON.stringify(places[i].outgoingTransitionSet)));
-			const locations = JSON.parse(JSON.stringify(places[i].locations));
-			const metaData = JSON.parse(JSON.stringify(places[i].metaData));
-			const place = new PetriNetPlace(id, incoming, outgoing, locations, metaData);
-			net.placeMap[id] = place;
-			net.placeCount++;
-		}
-
-		// clone transitions from this net and add them to the clone
-		const transitions = this.transitions;
-		for(let i = 0; i < transitions.length; i++){
-			const id = transitions[i].id + '.' + cloneId;
-			const label = transitions[i].label;
-			const incoming = relabelSet(JSON.parse(JSON.stringify(transitions[i].incomingPlaceSet)));
-			const outgoing = relabelSet(JSON.parse(JSON.stringify(transitions[i].outgoingPlaceSet)));
-			const locations = JSON.parse(JSON.stringify(transitions[i].locations));
-			const metaData = JSON.parse(JSON.stringify(transitions[i].metaData));
-			const transition = new PetriNetTransition(id, label, incoming, outgoing, locations, metaData);
-			net.transitionMap[id] = transition;
-
-			if(net.labelSets[label] === undefined){
-				net.labelSets[label] = [];
-			}
-			net.labelSets[label].push(transition);
-
-			net.transitionCount++;
-		}
-
-		net.rootIds = relabelSet(JSON.parse(JSON.stringify(this.rootIds)));
-
-		return net;
-
-		function relabelSet(set){
-			const newSet = {};
-			for(let label in set){
-				newSet[label + '.' + cloneId] = true;
-			}
-
-			return newSet;
-		}
+		// use convert function to clone this petri net
+		const json = JSON.parse(JSON.stringify(this));
+		return this.convert(json);
 	},
 
 	get nextPlaceId(){
-		return this.id + '.p' + this.placeId++;
+		let id;
+		while(true){
+			id = this.id + '.p' + this.placeId++;
+			
+			// check if this is a unique id
+			if(this.placeMap[id] === undefined){
+				break;
+			}
+		}
+
+		return id;
 	},
 
 	get nextTransitionId(){
-		return this.id + '.t' + this.transitionId++;
+		let id;
+		while(true){
+			id = this.id + '.t' + this.transitionId++;
+			
+			// check if this is a unique id
+			if(this.transitionMap[id] === undefined){
+				break;
+			}
+		}
+
+		return id;
 	},
 
 	constructTerminals: function(){
@@ -326,83 +356,78 @@ const PETRI_NET = {
 	// Global Functions
 
 	convert: function(net){
-		// check that the object has the correct properties
-		const properties = ['type', 'id', 'rootIds', 'placeMap', 'transitionMap', 'metaData'];
-		let match = true;
-		for(let i = 0; i < properties.length; i++){
-			if(!net.hasOwnProperty(properties[i])){
-				match = false;
-				break;
+		// set up the object properties that petri nets, places and transitions should have at minimum
+		const netProperties = ['id', 'rootIds', 'placeMap', 'placeCount', 'transitionMap', 'labelSets', 'transitionCount', 'metaData'];
+		const placeProperties = ['id', 'incomingTransitionSet', 'outgoingTransitionSet', 'locationSet', 'metaData'];
+		const transitionProperties = ['id', 'label', 'incomingPlaceSet', 'outgoingPlaceSet', 'locationSet', 'metaData'];
+
+		// check if the parametised net has the correct properties
+		for(let i = 0; i < netProperties.length; i++){
+			const property = netProperties[i];
+			if(!net.hasOwnProperty(property)){
+				const message = 'Petri net JSON object should have property \'' + property + '\'';
+				throw new PetriNetException(message);
 			}
 		}
 
-		if(match){
-			for(let id in net.placeMap){
-				const place = net.placeMap[id];
-
-				const placeProperties = ['id', 'incomingTransitionSet', 'outgoingTransitionSet', 'metaData'];
-				let placeMatch = true;
-				for(let i = 0; i < placeProperties.length; i++){
-					if(!place.hasOwnProperty(placeProperties[i])){
-						placeMatch = false;
-						break;
-					}
+		// check that all the places in the petri net have the correct properties
+		for(let id in net.placeMap){
+			const p = net.placeMap[id];
+			for(let i = 0; i < placeProperties.length; i++){
+				const property = placeProperties[i];
+				if(!p.hasOwnProperty(property)){
+					const message = 'Place JSON object should have property \'' + property + '\'';
+					throw new PetriNetException(message);
 				}
-
-				if(!placeMatch){
-					// throw error
-				}
-
-				Object.setPrototypeOf(place, PETRI_NET_PLACE);
-				net.placeMap[id] = place;
 			}
 
-			net.labelSets = {};
-
-			for(let id in net.transitionMap){
-				const transition = net.transitionMap[id];
-
-				const transitionProperties = ['id', 'label', 'incomingPlaceSet', 'outgoingPlaceSet', 'metaData'];
-				let transitionMatch = true;
-				for(let i = 0; i < transitionProperties.length; i++){
-					if(!transition.hasOwnProperty(transitionProperties[i])){
-						transitionMatch = false;
-						break;
-					}
-				}
-
-				if(!transitionMatch){
-					// throw error
-				}
-
-				Object.setPrototypeOf(transition, PETRI_NET_TRANSITION);
-				net.transitionMap[id] = transition;
-
-				if(net.labelSets[transition.label] === undefined){
-					net.labelSets[transition.label] = [];
-				}
-
-				net.labelSets[transition.label].push(transition);
-			}
-
-			Object.setPrototypeOf(net, PETRI_NET);
-			return net;
+			// construct a place object
+			net.placeMap[id] = new PetriNetPlace(p.id, p.incomingTransitionSet, p.outgoingTransitionSet, p.locationSet, p.metaData);
 		}
+
+		const labelSets = {};
+
+		// check that all the transitions in the petri net have to correct properties
+		for(let id in net.transitionMap){
+			const t = net.transitionMap[id];
+
+			for(let i = 0; i < transitionProperties.length; i++){
+				const property = transitionProperties[i];
+				if(!t.hasOwnProperty(property)){
+					const message = 'Transition JSON object should have property \'' + property + '\'';
+					throw new PetriNetException(message);					
+				}
+			}
+
+			// construct a new transition object
+			const transition = new PetriNetTransition(t.id, t.label, t.incomingPlaceSet, t.outgoingPlaceSet, t.locationSet, t.metaData);
+			
+			// add transition to the label set
+			if(labelSets[t.label] === undefined){
+				labelSets[t.label] = [];
+			}
+			labelSets[t.label].push(transition);
+
+			// add transition to the map
+			net.transitionMap[id] = transition;
+		}
+
+		return new PetriNet(net.id, net.rootIds, net.placeMap, net.placeCount, net.transitionMap, labelSets, net.metaData);
 	}
 }
 
-function PetriNet(id){
+function PetriNet(id, rootIds, placeMap, placeCount, transitionMap, labelSets, transitionCount, metaData){
 	this.type = 'petrinet';
 	this.id = id;
-	this.rootIds = {};
-	this.placeMap = {};
-	this.placeCount = 0;
-	this.transitionMap = {};
-	this.labelSets = {};
-	this.transitionCount = 0;
+	this.rootIds = (rootIds !== undefined) ? rootIds : {};
+	this.placeMap = (placeMap !== undefined) ? placeMap : {};
+	this.placeCount = (placeCount !== undefined) ? placeCount : 0;
+	this.transitionMap = (transitionMap !== undefined) ? transitionMap : {};
+	this.labelSets = (labelSets !== undefined) ? labelSets : {};
+	this.transitionCount = (transitionCount !== undefined) ? transitionCount : 0;
 	this.placeId = 0;
 	this.transitionId = 0;
-	this.metaData = {};
+	this.metaData = (metaData !== undefined) ? metaData : {};
 	Object.setPrototypeOf(this, PETRI_NET);
 }
 
@@ -583,4 +608,11 @@ function PetriNetTransition(id, label, incomingPlaces, outgoingPlaces, locationS
 	this.locationSet = locationSet;
 	this.metaData = (metaData === undefined) ? {} : metaData;
 	Object.setPrototypeOf(this, PETRI_NET_TRANSITION);
+}
+
+function PetriNetException(message){
+	this.message = message;
+	this.toString = function(){
+		return 'PetriNetException: ' + this.message;
+	}
 }
