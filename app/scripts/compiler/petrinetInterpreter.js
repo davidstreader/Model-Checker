@@ -68,6 +68,14 @@ function interpretPetriNet(process, processesMap, context){
    * @param{PetriNet} net - the petri net that the sub net is a subset of
    */
   function interpretSubPetriNet(subProcess, net){
+    // check if the subprocess is a reference to a global process
+    if(subProcess.type === 'identifier'){
+      const subNet = processesMap[subProcess.ident].clone;
+      processLabellingAndRelabelling(subProcess, subNet);
+      processStack.push(subNet);
+      return;
+    }
+
     // setup the sub net
     const subNet = new PetriNet(net.id);
     subNet.placeId = net.placeId;
@@ -90,7 +98,7 @@ function interpretPetriNet(process, processesMap, context){
     // update the main net
     net.placeId = subNet.placeId;
     net.transitionId = subNet.transitionId;
-
+    console.log(subNet);
     processStack.push(subNet);
   }
 
@@ -131,15 +139,7 @@ function interpretPetriNet(process, processesMap, context){
         break;
     }
 
-    // check if a labelling has been defined for this ast node
-    if(astNode.label !== undefined){
-      processLabelling(net, astNode.label.action)
-    }
-
-    // check if a relabelling has been defined for this ast node
-    if(astNode.relabel !== undefined){
-      processRelabelling(net, astNode.relabel.set);
-    }
+    processLabellingAndRelabelling(astNode, net);
   }
 
   /**
@@ -211,6 +211,15 @@ function interpretPetriNet(process, processesMap, context){
       net.removePlace(roots[i].id);
     }
 
+    if(lastTransition == undefined){
+      for(let i = 0; i < crossProducts.length; i++){
+        crossProducts[i].metaData.startPlace = 1;
+      }
+
+      net.removePlace(currentPlace.id);
+      return;
+    }
+
     for(let i = 0; i < crossProducts.length; i++){
       net.combinePlaces(currentPlace, crossProducts[i]);
     }
@@ -242,6 +251,12 @@ function interpretPetriNet(process, processesMap, context){
     const net1 = processStack.pop();
     const composedNet = parallelComposition(net.id + '.comp', net1, net2);
 
+    if(lastTransition === undefined){
+      net.removePlace(currentPlace.id);
+      net.addPetriNet(composedNet);
+      return;
+    }
+
     const roots = composedNet.roots;
     for(let i = 0; i < roots.length; i++){
       composedNet.removeRoot(roots[i].id);
@@ -249,6 +264,7 @@ function interpretPetriNet(process, processesMap, context){
     }
 
     net.addPetriNet(composedNet);
+
     for(let i = 0; i < roots.length; i++){
       net.combinePlaces(currentPlace, roots[i]);
     }
@@ -279,6 +295,12 @@ function interpretPetriNet(process, processesMap, context){
         break;
       default:
         break;
+    }
+
+    if(lastTransition == undefined){
+      net.removePlace(currentPlace.id);
+      net.addPetriNet(processedNet);
+      return;
     }
 
     const roots = processedNet.roots;
@@ -314,6 +336,11 @@ function interpretPetriNet(process, processesMap, context){
 
     const roots = reference.roots;
     net.addPetriNet(reference);
+
+    if(lastTransition === undefined){
+      net.removePlace(currentPlace.id);
+      return;
+    }
 
     for(let i = 0; i < roots.length; i++){
       net.removeRoot(roots[i].id);
@@ -392,6 +419,18 @@ function interpretPetriNet(process, processesMap, context){
         net.relabelTransition(label, TAU);
       }
     }
+  }
+
+  function processLabellingAndRelabelling(astNode, net){
+    // check if a labelling has been defined for this ast node
+    if(astNode.label !== undefined){
+      net.labelPetriNet(astNode.label.action);
+    }
+
+    // check if a relabelling has been defined for this ast node
+    if(astNode.relabel !== undefined){
+      processRelabelling(net, astNode.relabel.set);
+    }    
   }
 
   function processLabelling(net, label){
