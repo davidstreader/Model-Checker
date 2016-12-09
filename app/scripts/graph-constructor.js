@@ -240,10 +240,9 @@ function _link(source, target, label,tooltip, parentNode, jgraph) {
   return cell;
 }
 function addLabelAndPadding(graphMap, key, jgraph) {
+  graphMap[key].parentNode.fitEmbeds({padding:50});
   const bbox = graphMap[key].parentNode.getBBox();
-  const lx = bbox.origin().x, ly = bbox.origin().y, ux = bbox.corner().x, uy = bbox.corner().y;
-  const width = ux - lx;
-  const height = uy - ly;
+  const lx = bbox.origin().x, ly = bbox.origin().y;
   let interruptHeight = 0;
   if (graphMap[key].interrupts) {
     interruptHeight = graphMap[key].interrupts.length * 30;
@@ -270,12 +269,15 @@ function addLabelAndPadding(graphMap, key, jgraph) {
   //Move the component back to the origin with a bit of padding
   graphMap[key].parentNode.translate(50, -ly+50);
 }
-function constructGraphs(graphMap, id, hidden) {
+function constructGraphs(graphMap, id, hidden, callback) {
   //Find the process by id
   let graph = _.findWhere(app.get("automata.values"), {id: id});
   if (hidden)
     id += ".hidden";
-  if (!graph.type || (graphMap[id] && app.get("automata.analysis")[id] &&  !app.get("automata.analysis")[id].isUpdated)) return;
+  if (!graph.type || (graphMap[id] && app.get("automata.analysis")[id] &&  !app.get("automata.analysis")[id].isUpdated)) {
+    callback();
+    return;
+  }
   //Calculate the bottom of the last drawn graph
   let tmpjgraph = new joint.dia.Graph();
   if (graph.type == 'automata') {
@@ -287,39 +289,42 @@ function constructGraphs(graphMap, id, hidden) {
   //We do not want to rescale the graph if it has already been rescaled.
   if (graph.type == 'interrupt') return;
   //Pass this through to dagre to get everything laid out
-  joint.layout.DirectedGraph.layout(tmpjgraph, {rankDir:'LR',setLinkVertices: true});
-  addLabelAndPadding(graphMap,id,tmpjgraph);
-  if (graphMap[id].interrupts) {
-    _.each(graphMap[id].interrupts,graph => {
-      graph.name = graph.name.replace(".hidden","");
-      const id = parseInt(graph.name.split(".")[1]);
-      const bbox = graph.parentNode.getBBox().origin();
-      const cell = new joint.shapes.basic.Rect({
-        type: "interruptLabel",
-        size: {width: 100, height: 30},
-        position: {x:bbox.x,y:bbox.y-25*id},
-        attrs: {
-          rect: {fill: 'transparent', stroke: 'none'},
-          'text': {text: graph.name, fill: 'red', 'font-size': 20}
+  joint.layout.DirectedGraph.layout(tmpjgraph, {}, ()=>{
+    addLabelAndPadding(graphMap,id,tmpjgraph);
+    if (graphMap[id].interrupts) {
+      _.each(graphMap[id].interrupts,graph => {
+        graph.name = graph.name.replace(".hidden","");
+        const id = parseInt(graph.name.split(".")[1]);
+        const bbox = graph.parentNode.getBBox().origin();
+        const cell = new joint.shapes.basic.Rect({
+          type: "interruptLabel",
+          size: {width: 100, height: 30},
+          position: {x:bbox.x,y:bbox.y-25*id},
+          attrs: {
+            rect: {fill: 'transparent', stroke: 'none'},
+            'text': {text: graph.name, fill: 'red', 'font-size': 20}
+          }
+        });
+        const bbox2 = graph.parentNode.getBBox();
+        if (graph.parentNode.embedLink) {
+          graph.parentNode.embedLink.forEach(link=>link.toFront());
         }
+        graph.parentNode.toDelete.remove();
+        graph.parentNode.embed(cell);
+        graph.parentNode.resize(bbox2.width,bbox2.height+id*30,{direction:"top"});
+        graph.parentNode.resize(bbox2.width-50,bbox2.height+id*30,{direction:"right"});
+        graph.parentNode.embedNode.set('position',graph.parentNode.get('position'));
+        graph.parentNode.embedNode.set('size',graph.parentNode.get('size'));
+        tmpjgraph.addCell(cell);
+        graph.label = cell;
+        graph.id = graph.name;
+        graph.type = 'interrupt';
+        graphMap[graph.name] = graph;
       });
-      const bbox2 = graph.parentNode.getBBox();
-      if (graph.parentNode.embedLink) {
-        graph.parentNode.embedLink.forEach(link=>link.toFront());
-      }
-      graph.parentNode.toDelete.remove();
-      graph.parentNode.embed(cell);
-      graph.parentNode.resize(bbox2.width,bbox2.height+id*30,{direction:"top"});
-      graph.parentNode.resize(bbox2.width-50,bbox2.height+id*30,{direction:"right"});
-      graph.parentNode.embedNode.set('position',graph.parentNode.get('position'));
-      graph.parentNode.embedNode.set('size',graph.parentNode.get('size'));
-      tmpjgraph.addCell(cell);
-      graph.label = cell;
-      graph.id = graph.name;
-      graph.type = 'interrupt';
-      graphMap[graph.name] = graph;
-    });
-  }
+    }
+    callback();
+  });
+
 }
 /**
  * Move a cells vertices when moving the cell
