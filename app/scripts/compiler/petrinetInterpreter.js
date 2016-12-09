@@ -98,7 +98,6 @@ function interpretPetriNet(process, processesMap, context){
     // update the main net
     net.placeId = subNet.placeId;
     net.transitionId = subNet.transitionId;
-    console.log(subNet);
     processStack.push(subNet);
   }
 
@@ -430,7 +429,7 @@ function interpretPetriNet(process, processesMap, context){
     // check if a relabelling has been defined for this ast node
     if(astNode.relabel !== undefined){
       processRelabelling(net, astNode.relabel.set);
-    }    
+    }
   }
 
   function processLabelling(net, label){

@@ -2,6 +2,9 @@
   'use strict';
   var app = document.querySelector('#app');
 
+  app.compileNoSocket = ()=> {
+    app.loaded = true;
+  };
   window.addEventListener('WebComponentsReady', function() {
     /**
      * The data to use.
@@ -16,11 +19,17 @@
     app.selectedCtx = 0;
     app.isClientSide = true;
     app.willSaveCookie = true;
+    if (app.loaded === undefined)
+      app.loaded = false;
     app.saveSettings = {currentFile: '', saveCode: true, saveLayout: true};
-
     if (typeof io !== 'undefined') {
       app.socket = io();
-      app.socket.on('connect', ()=>app.isClientSide = false);
+      app.socket.on('connect', ()=>{
+        app.isClientSide = false;
+        app.loaded = true;
+        if (app.liveCompiling)
+          app.compile();
+      });
       app.socket.on('log',data => {
         if (data.clear) app.$.console.clear();
         app.$.console.log(data.message);
@@ -300,7 +309,7 @@
      */
     document.addEventListener('text-editor-change', function() {
       localStorage.setItem("editor",encodeURIComponent(app.$.editor.getCode()));
-      if (app.liveCompiling) {
+      if (app.liveCompiling && app.loaded) {
         app.compile();
       }
     });

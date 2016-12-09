@@ -126,8 +126,8 @@
   </template>
 
   <!-- build:js scripts/app.js -->
-  <script src="/socket.io/socket.io.js"></script>
   <script src="scripts/app.js"></script>
+  <script src="/socket.io/socket.io.js" onerror="app.compileNoSocket()"></script>
   <!-- endbuild-->
 </body>
 </html>
