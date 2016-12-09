@@ -3,6 +3,7 @@ const includes = [];
 const fs = require('fs');
 var Worker = require("tiny-worker");
 const async = require("async");
+const workerMap = {};
 const ansi = require('ansi'), cursor = ansi(process.stdout);
 const walk = function (dir, done) {
   let results = [];
@@ -78,20 +79,27 @@ function startServer() {
   app.use('/bower_components', express.static('bower_components'));
   io.on('connection', function (socket) {
     socket.on('compile', function (obj, ack) {
-
+      if (workerMap[socket.id]) {
+        workerMap[socket.id].terminate();
+      }
       //Compile in async, so we do not hang the server  from accepting other requests
       let worker = new Worker("asyncCompiler.js");
-
+      workerMap[socket.id] = worker;
       worker.onmessage = function(e) {
         if (e.data.result) {
           ack(e.data.result);
+          worker.terminate();
         } else if (e.data.message) {
           socket.emit("log",e.data);
-        } else {
-          console.log(e);
         }
       }
       worker.postMessage(obj);
+    })
+    socket.on("disconnect", () => {
+      if (workerMap[socket.id]) {
+        workerMap[socket.id].terminate();
+        delete workerMap[socket.id];
+      }
     })
   });
 
