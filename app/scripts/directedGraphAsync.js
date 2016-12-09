@@ -1,3 +1,7 @@
+/**
+ * A copy paste of https://github.com/clientIO/joint/blob/master/plugins/layout/DirectedGraph/joint.layout.DirectedGraph.js
+ * But modified to use a worker thread.
+ */
 if (typeof exports === 'object') {
 
   var graphlib = require('graphlib');
@@ -11,7 +15,7 @@ dagre = dagre || (typeof window !== 'undefined' && window.dagre);
 
 joint.layout.DirectedGraph = {
 
-  layout: function(graphOrCells, opt, func) {
+  layout: function(graphOrCells, opt, callback) {
 
     var graph;
 
@@ -21,7 +25,7 @@ joint.layout.DirectedGraph = {
       // Reset cells in dry mode so the graph reference is not stored on the cells.
       graph = (new joint.dia.Graph()).resetCells(graphOrCells, { dry: true });
     }
-    graph.func = func;
+    graph.callback = callback;
     // This is not needed anymore.
     graphOrCells = null;
 
@@ -80,7 +84,7 @@ joint.layout.DirectedGraph = {
     var setNodeLabel = opt.setNodeLabel || _.noop;
     var setEdgeLabel = opt.setEdgeLabel || _.noop;
     var setEdgeName = opt.setEdgeName || _.noop;
-
+    //loop over all cells and convert them to a simple json structure we can then send
     graph.get('cells').each(function(cell) {
 
       if (cell.isLink()) {
@@ -109,6 +113,7 @@ joint.layout.DirectedGraph = {
     worker.onmessage = e => {
       // Wrap all graph changes into a batch.
       _graph.startBatch('layout');
+      //Loop over the recieved graph array and convert it back
       e.data.forEach(cell => {
         var element = _graph.getCell(cell.id);
         switch(cell.type) {
@@ -124,9 +129,12 @@ joint.layout.DirectedGraph = {
         }
       });
       _graph.stopBatch('layout');
-      _graph.func();
-      delete _graph.func;
+      //Execute the callback
+      _graph.callback();
+      //The graph object no longer needs to store the callback
+      delete _graph.callback;
     };
+    //push the graph array to the worker
     worker.postMessage({graph:graphSend,opt:JSON.parse(JSON.stringify(opt))});
   }
 };

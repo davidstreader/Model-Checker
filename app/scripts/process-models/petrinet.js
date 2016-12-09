@@ -311,7 +311,7 @@ const PETRI_NET = {
 		let id;
 		while(true){
 			id = this.id + '.p' + this.placeId++;
-			
+
 			// check if this is a unique id
 			if(this.placeMap[id] === undefined){
 				break;
@@ -325,7 +325,7 @@ const PETRI_NET = {
 		let id;
 		while(true){
 			id = this.id + '.t' + this.transitionId++;
-			
+
 			// check if this is a unique id
 			if(this.transitionMap[id] === undefined){
 				break;
@@ -395,13 +395,13 @@ const PETRI_NET = {
 				const property = transitionProperties[i];
 				if(!t.hasOwnProperty(property)){
 					const message = 'Transition JSON object should have property \'' + property + '\'';
-					throw new PetriNetException(message);					
+					throw new PetriNetException(message);
 				}
 			}
 
 			// construct a new transition object
 			const transition = new PetriNetTransition(t.id, t.label, t.incomingPlaceSet, t.outgoingPlaceSet, t.locationSet, t.metaData);
-			
+
 			// add transition to the label set
 			if(labelSets[t.label] === undefined){
 				labelSets[t.label] = [];

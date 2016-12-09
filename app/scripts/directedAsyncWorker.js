@@ -1,17 +1,25 @@
-
+//Load all imports required for dagre.
+//Note: since we dont have a real window variable, we can just create one and assign things to it.
+const window = {};
 importScripts("../../bower_components/lodash/lodash.js");
-var window = {_:_};
+//Add lodash to window
+window._ = _;
 importScripts("../../bower_components/graphlib/dist/graphlib.core.js");
+//add graphlib to window
 window.graphlib = graphlib;
 importScripts("../../bower_components/dagre/dist/dagre.core.js");
-var dagre = window.dagre;
+//dagre is added to the window normally. Pull it out so we can use it.
+const dagre = window.dagre;
 onmessage = e => {
-
-  var opt = e.data.opt;
-  var graph = e.data.graph;
-
-  var glGraphType = {directed: true, compound: true, multigraph: true};
-  var glGraph = new graphlib.Graph(glGraphType);
+  //Load data sent from the main thread
+  const opt = e.data.opt;
+  let graph = e.data.graph;
+  //Dagre settings
+  const glGraphType = {directed: true, compound: true, multigraph: true};
+  //Construct a dagre graph
+  const glGraph = new graphlib.Graph(glGraphType);
+  //The main thread passes through an array representation of all the graphs.
+  //At this point, we can import that into dagre
   graph.forEach(cell => {
     switch (cell.type) {
       case 'edge':
@@ -25,10 +33,12 @@ onmessage = e => {
         break;
     }
   });
+  //Clear the imported object so we can reuse it for export
   graph = [];
-  var glLabel = {};
-  var marginX = opt.marginX || 0;
-  var marginY = opt.marginY || 0;
+  //Some more dagre settings.
+  const glLabel = {};
+  const marginX = opt.marginX || 0;
+  const marginY = opt.marginY || 0;
 
   // Dagre layout accepts options as lower case.
   // Direction for rank nodes. Can be TB, BT, LR, or RL
@@ -51,8 +61,9 @@ onmessage = e => {
 
   // Executes the layout.
   dagre.layout(glGraph, { debugTiming: !!opt.debugTiming });
+  //Convert dagres graph to an array of edges and nodes
   glGraph.nodes().forEach(function(v) {
-    var glNode = glGraph.node(v);
+    const glNode = glGraph.node(v);
     graph.push({
       type: 'node',
       id: v,
@@ -63,10 +74,12 @@ onmessage = e => {
 
   // Import all edges.
   glGraph.edges().forEach(function(edgeObj) {
-    var glEdge = glGraph.edge(edgeObj);
-    var points = glEdge.points || [];
+    const glEdge = glGraph.edge(edgeObj);
+    const points = glEdge.points || [];
     graph.push({type:'link',id:edgeObj.name,vertices:points.slice(1, points.length - 1)});
   });
+  //push the converstion back to the main thread
   postMessage(graph);
+  //Since each dagre instance fires up a thread, its best to kill it now.
   close();
 }

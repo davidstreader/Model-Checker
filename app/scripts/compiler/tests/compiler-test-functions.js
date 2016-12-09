@@ -145,7 +145,7 @@ function testHidingNode(node, type, set){
 	expect(node.set).to.eql(set);
 }
 
-/** 
+/**
  * The following functions do not test explicitly that the ast nodes were
  * constructed correctly. This is because they have nested ast nodes within
  * them. They test the shallow values of the node and leave the deeper tests
@@ -159,7 +159,7 @@ function testHidingNode(node, type, set){
  * @param {astNode} node - the process node
  * @param {string} processType - the expected process type
  * @param {string} ident - the expected identifier
- * @param {boolean} hasLocalProcesses - 
+ * @param {boolean} hasLocalProcesses -
  */
 function testProcessNode(node, processType, ident, hasLocalProcesses){
 	expect(node).to.have.property('type', 'process');
@@ -244,7 +244,7 @@ function testChoiceNode(node){
  */
 function testFunctionNode(node, functionType){
 	expect(node).to.have.property('type', 'function');
-	expect(node).to.have.property('func', functionType);
+	expect(node).to.have.property('callback', functionType);
 	expect(node).to.have.property('process');
 }
 
@@ -315,7 +315,7 @@ function setupConnection(from, to){
  * p[0] -> t[0] -> p[1] -> t[1] -> ... -> p[n-1] -> t[n-1] -> p[n]
  *
  * @param {place[]} places - an array of places
- * @param {transition[]} transitions - an array of transitions 
+ * @param {transition[]} transitions - an array of transitions
  */
 function constructSequentialPetriNet(places, transitions){
 	for(var i = 0; i < transitions.length; i++){

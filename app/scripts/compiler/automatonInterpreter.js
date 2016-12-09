@@ -154,7 +154,7 @@ function interpretAutomaton(process, processesMap, context){
     interpretSubAutomaton(astNode.process, automaton);
 
     let processedAutomaton = processStack.pop();
-    switch(astNode.func){
+    switch(astNode.callback){
       case 'abs':
         processedAutomaton = abstraction(processedAutomaton, context.isFairAbstraction, context.pruneAbstraction);
         break;

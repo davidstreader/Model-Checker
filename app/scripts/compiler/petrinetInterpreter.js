@@ -279,7 +279,7 @@ function interpretPetriNet(process, processesMap, context){
     interpretSubPetriNet(astNode.process, net);
 
     let processedNet = processStack.pop();
-    switch(astNode.func){
+    switch(astNode.callback){
       case 'abs':
         processedNet = abstraction(processedNet, context.isFairAbstraction);
         break;

@@ -242,7 +242,9 @@ function _link(source, target, label,tooltip, parentNode, jgraph) {
 function addLabelAndPadding(graphMap, key, jgraph) {
   graphMap[key].parentNode.fitEmbeds({padding:50});
   const bbox = graphMap[key].parentNode.getBBox();
-  const lx = bbox.origin().x, ly = bbox.origin().y;
+  const lx = bbox.origin().x, ly = bbox.origin().y, ux = bbox.corner().x, uy = bbox.corner().y;
+  const width = ux - lx;
+  const height = uy - ly;
   let interruptHeight = 0;
   if (graphMap[key].interrupts) {
     interruptHeight = graphMap[key].interrupts.length * 30;
