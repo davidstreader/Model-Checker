@@ -8,7 +8,6 @@
      */
     app.automata = {values: [],display:[]};
     app.liveCompiling = true;
-    app.liveBuilding = true;
     app.fairAbstraction = true;
     app.helpDialogSelectedTab = 0;
     app.currentBuild = {};
@@ -21,10 +20,13 @@
 
     if (typeof io !== 'undefined') {
       app.socket = io();
-      app.socket.on('connectedToServer', ()=>app.isClientSide = false);
+      app.socket.on('connect', ()=>app.isClientSide = false);
       app.socket.on('log',data => {
         if (data.clear) app.$.console.clear();
         app.$.console.log(data.message);
+      });
+      app.socket.on('disconnect', function() {
+          app.isClientSide = true;
       });
     }
     app.compile = function(overrideBuild) {
@@ -231,18 +233,6 @@
     });
 
     /**
-     * Simple event listener for when the live building checkbox is ticked.
-     * Compile is called if live compiling is active.
-     */
-    app.$['chbx-live-building'].addEventListener('iron-change', function() {
-      localStorage.setItem("liveBuilding",app.liveBuilding);
-      if(app.liveCompiling){
-        app.compile(false);
-      }
-      app.$.editor.focus();
-    });
-
-    /**
      * Simple event listener for when the fair abstraction checkbox is ticked.
      * Compile is called every time the checkbox is ticked or unticked.
      */
@@ -304,7 +294,6 @@
       }
     });
     app.willSaveCookie = localStorage.getItem("willSave")!=='false';
-    app.liveBuilding = localStorage.getItem("liveBuilding")!=='false';
     app.liveCompiling = localStorage.getItem("liveCompiling")!=='false';
     if (app.willSaveCookie && localStorage.getItem('editor') != null) {
       app.$.editor.setCode(decodeURIComponent(localStorage.getItem('editor')));

@@ -44,5 +44,6 @@ onmessage = function (e) {
   } catch (ex) {
     postMessage({result:{type: 'error', message: ex.toString(), stack: ex.stack}});
   }
+  //Kill the worker as we start a new worker for each compilation
   terminate();
 }

@@ -19,6 +19,7 @@ function expand(ast){
   var variableSet;
   // expand the defined processes
   for(var i = 0; i < processes.length; i++){
+    if (typeof postMessage === 'function')
     postMessage({clear:true,message:("Expanding: "+processes[i].ident.ident+" ("+(i+1)+"/"+processes.length)+")"});
     var variableMap = JSON.parse(JSON.stringify(ast.variableMap));
     variableSet = processes[i].variables?processes[i].variables.set:[];

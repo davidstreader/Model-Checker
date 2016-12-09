@@ -77,7 +77,6 @@ function startServer() {
   app.use(express.static('app'))
   app.use('/bower_components', express.static('bower_components'));
   io.on('connection', function (socket) {
-    socket.emit('connectedToServer', {});
     socket.on('compile', function (obj, ack) {
 
       //Compile in async, so we do not hang the server  from accepting other requests
