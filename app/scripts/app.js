@@ -304,6 +304,16 @@
         app.compile();
       }
     });
+    document.addEventListener('console-change', function(e) {
+      if (e.target.id==='console') {
+        const detail = e.detail;
+        if (detail.msg) {
+          app.$.visualiserConsole[detail.type](detail.msg);
+        } else if (detail.clear) {
+          app.$.visualiserConsole.clear(detail.lines);
+        }
+      }
+    });
     app.willSaveCookie = localStorage.getItem("willSave")!=='false';
     app.liveCompiling = localStorage.getItem("liveCompiling")!=='false';
     if (app.willSaveCookie && localStorage.getItem('editor') != null) {

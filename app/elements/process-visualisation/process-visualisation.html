@@ -192,6 +192,8 @@
           if (_this.graphsToAdd.length > 0) {
             const graph = _this.graphsToAdd.pop();
             _this.addGraph(graph.name,graph.hidden);
+          } else {
+              app.$.console.log("Finished rendering!");
           }
         });
         this.paper.on('cell:pointerdown', function(cell) {
@@ -281,6 +283,8 @@
           this.graphsToAdd.push({name: name, hidden: hidden});
           return;
         }
+        app.$.console.clear();
+        app.$.console.log("Rendering: "+name);
         app.$.selector.locked = this.rendering = true;
         //construct the graph first if it doesnt exist or has changed
         constructGraphs(this.graphMap,name, hidden);
@@ -360,6 +364,8 @@
           const layout = this.layout || localStorage.getItem("layout");
           if (layout != null) {
             this.jgraph.fromJSON(JSON.parse(layout));
+            app.$.console.clear();
+            app.$.console.log("Rendering from "+(this.layout?"File":"Autosave")+" please wait.");
           }
           if (app.get("automata.display") === undefined) app.set("automata.display",[]);
           _.each(this.jgraph.getCells(),cell => {

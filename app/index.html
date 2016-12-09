@@ -90,6 +90,8 @@
           <div class="process-display">
             <process-visualisation id="visualiser"></process-visualisation>
           </div>
+            <console-logger id="visualiserConsole" style="height:30%; border-top:2px solid black"></console-logger>
+
         </section>
       </neon-animated-pages>
     </div>
@@ -114,7 +116,7 @@
       <paper-checkbox checked="{{saveSettings.saveLayout}}">
         <span>Save layout</span>
       </paper-checkbox>
-      <paper-checkbox checked="{{saveSettings.saveLayout}}">
+      <paper-checkbox checked="{{saveSettings.saveCode}}">
         <span>Save code</span>
       </paper-checkbox>
       <br/>

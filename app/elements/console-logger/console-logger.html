@@ -38,23 +38,24 @@
             c.removeChild(c.lastChild); // line break
           }
         } else {
-            c.innerHTML = '';
+          c.innerHTML = '';
         }
-        this.debounce('console-change', function() {
-            this.fire('console-change');
-          }, this.changeEventDebounceTime);
+        this.fire('console-change',{clear:true,lines:lines});
       },
 
       log: function(msg){
         this._addMessage(msg).classList.add('log');
+        this.fire('console-change',{msg:msg,type:"log"});
       },
 
       warn: function(msg){
         this._addMessage(msg).classList.add('warn');
+        this.fire('console-change',{msg:msg,type:"warn"});
       },
 
       error: function(msg){
         this._addMessage(msg).classList.add('error');
+        this.fire('console-change',{msg:msg,type:"error"});
       },
 
       _addMessage: function(msg){
@@ -66,10 +67,6 @@
         c.appendChild(node);
         c.appendChild(document.createElement('BR'));
         c.scrollTop = c.scrollHeight;
-
-        this.debounce('console-change', function() {
-            this.fire('console-change');
-          }, this.changeEventDebounceTime);
         return node;
       }
     });
