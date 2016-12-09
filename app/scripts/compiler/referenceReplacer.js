@@ -60,6 +60,12 @@ function replaceReferences(processes){
 	 * @return{ASTNode} - the updated process root
 	 */
 	function replaceProcess(process, ident, idMap){
+	  //There is an error with the ident in rare cases.
+    //The solution is to pull the ident from the process
+    //when it is an identifier.
+    if (process.type == "identifier") {
+      ident = process.ident;
+    }
 		idMap[ident] = referenceId++;
 		// add a reference to the root of the process ast
 		process.reference = idMap[ident];

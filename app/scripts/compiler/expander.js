@@ -20,7 +20,7 @@ function expand(ast){
   // expand the defined processes
   for(var i = 0; i < processes.length; i++){
     if (typeof postMessage === 'function')
-    postMessage({clear:true,message:("Expanding: "+processes[i].ident.ident+" ("+(i+1)+"/"+processes.length)+")"});
+      postMessage({clear:true,message:("Expanding: "+processes[i].ident.ident+" ("+(i+1)+"/"+processes.length)+")"});
     var variableMap = JSON.parse(JSON.stringify(ast.variableMap));
     variableSet = processes[i].variables?processes[i].variables.set:[];
     processes[i].process = expandNode(processes[i].process, variableMap);
@@ -270,17 +270,20 @@ function expand(ast){
 
     if(guard.result){
       var node = expandNode(astNode.trueBranch, variableMap);
-      if (node.to.next) {
-        //append an equals sign to operators to signify that the value is being updated
-        node.next = node.to.next;
-      } else {
-        //In this case, we are directly pointing to a node.
-        //The unparsed ident is the original unexpanded ident,
-        //And this will tell us what variables were explicitly set.
-        node.next = parseIndexedLabel(node.to.unparsedIdent, variableMap, true);
+      if (node.to) {
+        if (node.to.next) {
+          //append an equals sign to operators to signify that the value is being updated
+          node.next = node.to.next;
+        } else {
+          //In this case, we are directly pointing to a node.
+          //The unparsed ident is the original unexpanded ident,
+          //And this will tell us what variables were explicitly set.
+          node.next = parseIndexedLabel(node.to.unparsedIdent, variableMap, true);
+        }
       }
       if (astNode.guard) {
-        node.nextIdent =  parseIndexedLabel(node.to.ident, variableMap);
+        if (node.to)
+          node.nextIdent =  parseIndexedLabel(node.to.ident, variableMap);
         node.guard = processExpression(astNode.guard, variableMap).exprWithVars;
         node.variables = processVariables(variableMap[astNode.guard], variableMap);
       }
@@ -288,17 +291,20 @@ function expand(ast){
     }
     else if(astNode.falseBranch !== undefined){
       var node = expandNode(astNode.falseBranch, variableMap);
-      if (node.to.next) {
-        //append an equals sign to operators to signify that the value is being updated
-        node.next = node.to.next;
-      } else {
-        //In this case, we are directly pointing to a node.
-        //The unparsed ident is the original unexpanded ident,
-        //And this will tell us what variables were explicitly set.
-        node.next = parseIndexedLabel(node.to.unparsedIdent, variableMap, true);
+      if (node.to) {
+        if (node.to.next) {
+          //append an equals sign to operators to signify that the value is being updated
+          node.next = node.to.next;
+        } else {
+          //In this case, we are directly pointing to a node.
+          //The unparsed ident is the original unexpanded ident,
+          //And this will tell us what variables were explicitly set.
+          node.next = parseIndexedLabel(node.to.unparsedIdent, variableMap, true);
+        }
       }
       if (astNode.guard) {
-        node.nextIdent =  parseIndexedLabel(node.to.ident, variableMap);
+        if (node.to)
+          node.nextIdent =  parseIndexedLabel(node.to.ident, variableMap);
         node.guard = processExpression(astNode.guard, variableMap).exprWithVars;
         node.variables = processVariables(variableMap[astNode.guard], variableMap);
       }
