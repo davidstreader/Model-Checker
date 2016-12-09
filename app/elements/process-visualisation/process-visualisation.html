@@ -71,6 +71,7 @@
           $(".process-display").stop().animate({scrollTop:nodeBBox.origin().y*scale.sy}, '100', 'swing');
         });
         document.addEventListener('addProcess', function(e){
+          app.$.console.log("Starting Render. While rendering, you can not use the editor tab.");
           //If we are currently rendering, ignore any events
           if (_this.rendering) return;
           _this.addGraph(app.$.selector.getSelectedName(), app.$.selector.hideInterrupts);
@@ -90,6 +91,7 @@
           _this.saveChanges();
         })
         document.addEventListener('addAll', function(){
+          app.$.console.log("Starting Render. While rendering, you can not use the editor tab.");
           //If we are currently rendering, ignore any events
           if (_this.rendering) return;
           _.each(app.get("automata.values"),graph => _this.addGraph(graph.id,app.$.selector.hideInterrupts));
@@ -194,6 +196,7 @@
             _this.addGraph(graph.name,graph.hidden);
           } else {
             app.$.console.log("Finished rendering!");
+            $("#editorTab")[0].disabled = false;
           }
         });
         this.paper.on('cell:pointerdown', function(cell) {
@@ -285,8 +288,10 @@
           this.graphsToAdd.push({name: name, hidden: hidden});
           return;
         }
+        $("#editorTab")[0].disabled = true;
         app.$.console.clear();
         app.$.console.log("Rendering: "+name);
+        app.$.console.log("While rendering, you can not use the editor tab.");
         app.$.selector.locked = this.rendering = true;
         //construct the graph first if it doesnt exist or has changed
         constructGraphs(this.graphMap,name, hidden, ()=>{
@@ -365,9 +370,11 @@
           this.loaded = true;
           const layout = this.layout || localStorage.getItem("layout");
           if (layout != null) {
-            this.jgraph.fromJSON(JSON.parse(layout));
             app.$.console.clear();
             app.$.console.log("Rendering from "+(this.layout?"File":"Autosave")+" please wait.");
+            app.$.console.log("While rendering, you can not use the editor tab.");
+            $("#editorTab")[0].disabled = true;
+            this.jgraph.fromJSON(JSON.parse(layout));
           }
           if (app.get("automata.display") === undefined) app.set("automata.display",[]);
           _.each(this.jgraph.getCells(),cell => {
