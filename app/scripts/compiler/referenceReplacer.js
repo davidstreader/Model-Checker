@@ -64,7 +64,8 @@ function replaceReferences(processes){
     //The solution is to pull the ident from the process
     //when it is an identifier.
     if (process.type == "identifier") {
-      ident = process.ident;
+      //TODO: Something is going wrong here.
+      // idMap[process.ident] = referenceId;
     }
 		idMap[ident] = referenceId++;
 		// add a reference to the root of the process ast
