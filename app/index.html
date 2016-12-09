@@ -59,9 +59,6 @@
       <paper-icon-button icon="icons:folder-open" class="middle" title="Open" on-tap="openFile"></paper-icon-button>
       <paper-icon-button id="reload" icon="icons:autorenew" class="middle" title="Reload" on-tap="reloadFile" disabled=true></paper-icon-button>
       <input id="open-file" type="file" accept="text/plain" class="middle" style="display: none;"></input>
-      <span class="spacer middle"></span>
-      <paper-input id="filename" is="iron-input" label="Insert Filename Here" placeholder="untitled" bind-value="{{inputValue}}" class="middle" title="The name given to the file when it is downloaded."></paper-input>
-      <paper-icon-button icon="icons:file-download" class="middle" title="Download" on-tap="downloadFile"></paper-icon-button>
       <span class="flex middle"></span>
       <paper-checkbox id="chbx-fair-abstraction" checked="{{fairAbstraction}}" class="chbx middle" title="Visualise abstracted automata fairly.">
         <span hidden$="{{smallScreen}}">Fair Abstraction</span>
@@ -109,6 +106,19 @@
 
       </paper-dialog-scrollable>
       <paper-icon-button="icons:cancel" title="Exit" on-tap="closehelp"></paper-icon-button>
+    </paper-dialog>
+    <!-- end content -->
+    <paper-dialog id="save-dialog" with-backdrop>
+      <paper-input id="filename" is="iron-input" label="Insert Filename Here" placeholder="untitled" bind-value="{{inputValue}}" class="middle" title="The name given to the file when it is downloaded."></paper-input>
+      <paper-checkbox checked="{{saveSettings.saveLayout}}">
+        <span>Save layout</span>
+      </paper-checkbox>
+      <paper-checkbox checked="{{saveSettings.saveLayout}}">
+        <span>Save code</span>
+      </paper-checkbox>
+      <br/>
+      <paper-button onclick="app.downloadFile();app.$['save-dialog'].close();">Save</paper-button>
+      <paper-button style="float:right" onclick="app.$['save-dialog'].close();">Cancel</paper-button>
     </paper-dialog>
   </template>
 

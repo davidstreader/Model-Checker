@@ -13,10 +13,10 @@
     app.currentBuild = {};
     app.previousBuild = {};
     app.previousCode = '';
-    app.currentFile = '';
     app.selectedCtx = 0;
     app.isClientSide = true;
     app.willSaveCookie = true;
+    app.saveSettings = {currentFile: '', saveCode: true, saveLayout: true};
 
     if (typeof io !== 'undefined') {
       app.socket = io();
@@ -26,7 +26,7 @@
         app.$.console.log(data.message);
       });
       app.socket.on('disconnect', function() {
-          app.isClientSide = true;
+        app.isClientSide = true;
       });
     }
     app.compile = function(overrideBuild) {
@@ -169,7 +169,7 @@
 
         // Load file into editor
         var input = e.target;
-        app.currentFile = input.files[0];
+        app.saveSettings.currentFile = input.files[0];
         app.reloadFile();
         opener.value = '';
 
@@ -189,11 +189,16 @@
 
       var reader = new FileReader();
       reader.onload = function() {
-        var text = reader.result;
-        app.$.editor.setCode(text);
+        var text = reader.result.split("visualiser_json_layout:");
+        var code = text[0];
+        var json = text[1];
+        if (json.length > 0) {
+          app.$.visualiser.loadJSON(json);
+        }
+        app.$.editor.setCode(code);
         app.$.editor.focus();
       };
-      reader.readAsText(app.currentFile);
+      reader.readAsText(app.saveSettings.currentFile);
     }
 
     /**
@@ -205,9 +210,15 @@
       if(filename === ''){
         filename = 'untitled';
       }
-
+      app.saveSettings = {currentFile: '', saveCode: true, saveLayout: true};
+      var output = "";
+      if (app.saveSettings.saveCode)
+        output+= app.$.editor.getCode();
+      output+="\nvisualiser_json_layout:"
+      if (app.saveSettings.saveLayout)
+        output+= JSON.stringify(app.$.visualiser.jgraph.toJSON());
       var blob = new Blob(
-        [app.$.editor.getCode()],
+        [output],
         {type: 'text/plain;charset=utf-8'});
       saveAs(blob, filename + '.txt');
     };
@@ -325,7 +336,7 @@
         case 83:
           // CTRL + S
           if (e.ctrlKey) {
-            app.downloadFile();
+            app.$['save-dialog'].open();
             e.preventDefault();
           }
           break;

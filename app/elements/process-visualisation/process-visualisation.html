@@ -355,12 +355,13 @@
       redraw: function() {
         if (this.paper === undefined) return;
         const _this = this;
-        if (!this.loaded && app.willSaveCookie) {
+        if ((!this.loaded && app.willSaveCookie) || this.layout) {
           this.loaded = true;
-          const layout = localStorage.getItem("layout");
+          const layout = this.layout || localStorage.getItem("layout");
           if (layout != null) {
             this.jgraph.fromJSON(JSON.parse(layout));
           }
+          if (app.get("automata.display") === undefined) app.set("automata.display",[]);
           _.each(this.jgraph.getCells(),cell => {
             if (cell.get("graphId")) {
               let graph = {};
@@ -371,6 +372,7 @@
             }
           });
           _this.rescale();
+          delete this.layout;
         } else {
           app.$.selector.locked = false;
         }
@@ -381,6 +383,12 @@
       saveChanges: function() {
         if (app.willSaveCookie && !this.exploded)
           localStorage.setItem("layout", JSON.stringify(this.jgraph.toJSON()));
+      },
+      loadJSON: function(layout) {
+        this.layout = layout;
+        if (app.$.maintabs.selected === 1) {
+          this.redraw();
+        }
       },
       rescale: function() {
         if (this.exploded) {
