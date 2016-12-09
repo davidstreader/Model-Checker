@@ -1,10 +1,14 @@
 'use strict';
 
-function automataAbstraction(automaton, isFair){
+function automataAbstraction(automaton, isFair, prune){
 	const observableEdgeMap = {};
 	const walker = new AutomatonWalker(automaton);
 
 	const hiddenEdges = automaton.edges.filter(e => e.label === TAU);
+
+	if(hiddenEdges.length === 0){
+		return automaton;
+	}
 
 	for(let i = 0; i < hiddenEdges.length; i++){
 		constructIncomingObservableEdges(hiddenEdges[i]);
@@ -115,6 +119,36 @@ function automataAbstraction(automaton, isFair){
 		}
 
 		return nodes;
+	}
+
+	function pruneAutomaton(automaton){
+		const walker = new AutomatonWalker(automaton);
+
+		const nodes = automaton.nodes;
+		for(let i = 0; i < nodes.length; i++){
+			const node = nodes[i];
+			const edges = walker.getOutgoingEdges(node);
+			const hidden = edges.filter(e => e.label === TAU);
+			
+			if(edges.length === hidden.length && edges.length !== 0){
+				const incomingNodes = walker.getIncomingNodes(node);
+				const outgoingNodes = walker.getOutgoingNodes(node);
+				for(let j = 0; j < incomingNodes.length; j++){
+					const incoming = incomingNodes[j];
+					for(let k = 0; k < outgoingNodes.length; k++){
+						const outgoing = outgoingNodes[k];
+
+						if(incoming.node.id !== outgoing.node.id){
+							const id = automaton.nextEdgeId;
+							const edge = automaton.addEdge(id, incoming.edge.label, incoming.node, outgoing.node);
+							edge.locations = incoming.edge.locations;
+						}
+					}
+				}
+
+				automaton.removeNode(node.id);
+			}
+		}
 	}
 
 	/**

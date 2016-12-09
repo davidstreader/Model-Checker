@@ -51,11 +51,11 @@ const AUTOMATON = {
 		for(let i in this.edgeMap){
 			const edge = this.edgeMap[i];
 			if(edge.incomingNode === id){
-				delete this.edgeMap[i];
+				this.removeEdge(i);
 			}
 
 			if(edge.outgoingNode === id){
-				delete this.edgeMap[i];
+				this.removeEdge(i);
 			}
 		}
 
