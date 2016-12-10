@@ -61,6 +61,6 @@ function failOperationsTxt(result, op) {
 }
 function failTxt(compile) {
   it('The script should not compile successfully', function () {
-    assert(compile.type !=='error', "fail.txt compiled successfully");
+    assert(compile.type ==='error', "fail.txt compiled successfully");
   });
 }
