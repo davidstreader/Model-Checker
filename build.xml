@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Model Checker" default="build" basedir=".">
+  <target name="init" description="Create build folder and subfolders if required">
+    <echo message="Creating Directories..." />
+    <mkdir dir="build"/>
+    <mkdir dir="build/testResults"/>
+  </target>
+
+  <target name="cleanup" description="Remove cruft generated from testing">
+    <echo message="Cleaning up..." />
+    <delete includeemptydirs="true" failonerror="false">
+      <fileset dir="/tmp/node_modules/">
+        <include name="**" />
+      </fileset>
+    </delete>
+    <delete includeemptydirs="true" failonerror="false">
+      <fileset dir="build/testResults">
+        <include name="**" />
+      </fileset>
+    </delete>
+  </target>
+
+  <target name="mocha-jenkins" description="Test framework">
+    <echo message="Installing Deps ..." />
+    <exec executable="npm" failonerror="true">
+      <env key="NODE_PATH" value="/tmp/node_modules/" />
+      <arg value="install" />
+    </exec>
+    <echo message="Running the tests ..." />
+    <exec executable="mocha"  output="build/testResults/mocha.xml" failonerror="true">
+      <env key="NODE_PATH" value="/tmp/node_modules/" />
+      <arg value="--reporter" />
+      <arg value="xunit" />
+    </exec>
+    <echo message="Tests done" />
+  </target>
+
+  <target name="jenkins" depends="cleanup,init,mocha-jenkins" />
+</project>

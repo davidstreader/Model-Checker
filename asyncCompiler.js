@@ -1,41 +1,18 @@
-//Worker scripts run in a completely different context, so lets import all the required scripts.
-importScripts("app/scripts/compiler/lexer.js");
-importScripts("app/scripts/compiler/parser.js");
-importScripts("app/scripts/compiler/expander.js");
-importScripts("app/scripts/compiler/analyser.js");
-importScripts("app/scripts/compiler/referenceReplacer.js");
-importScripts("app/scripts/compiler/interpreter.js");
-importScripts("app/scripts/compiler/automatonInterpreter.js");
-importScripts("app/scripts/compiler/petrinetInterpreter.js");
-importScripts("app/scripts/compiler/operation-evaluator.js");
-importScripts("app/scripts/compiler/reconstructor.js");
-importScripts("app/scripts/compiler/compiler.js");
-<!-- the wrapper scripts for the process operations -->
-importScripts("app/scripts/process-operations/abstraction.js");
-importScripts("app/scripts/process-operations/bisimulation.js");
-importScripts("app/scripts/process-operations/parallel-composition.js");
-importScripts("app/scripts/process-operations/automata-to-petrinet.js");
+const fs = require('fs');
+const vm = require("vm");
+global.importScripts = (...files) => {
+  let scripts;
 
-<!-- automata process operations -->
-importScripts("app/scripts/process-operations/automata/automaton-parallel-composition.js");
-importScripts("app/scripts/process-operations/automata/automaton-abstraction.js");
-importScripts("app/scripts/process-operations/automata/automaton-bisimulation.js");
+  if (files.length > 0) {
+    scripts = files.map(file => {
+      //Essentially, we copy pasted from tiny-worker but changed it to use app/scripts/compiler as the source
+      return fs.readFileSync("app/scripts/compiler/"+file, "utf8");
+    }).join("\n");
 
-<!-- petri net process operations -->
-importScripts("app/scripts/process-operations/petri-net/petri-net-parallel-composition.js");
-importScripts("app/scripts/process-operations/petri-net/petri-net-abstraction.js");
-importScripts("app/scripts/process-operations/petri-net/petri-net-bisimulation.js");
-importScripts("app/scripts/constants.js");
-importScripts("app/scripts/helper-functions.js");
-importScripts("app/scripts/index-iterator.js");
-importScripts("app/scripts/process-models/petrinet.js");
-importScripts("app/scripts/process-models/walkers/petrinet-walker.js");
-importScripts("app/scripts/process-operations/token-rule.js");
-importScripts("app/scripts/process-models/automaton.js");
-importScripts("app/scripts/process-models/walkers/automaton-walker.js");
-importScripts("app/scripts/process-operations/abstraction.js");
-importScripts("app/scripts/process-operations/bisimulation.js");
-importScripts("app/scripts/process-operations/parallel-composition.js");
+    vm.createScript(scripts).runInThisContext();
+  }
+};
+importScripts("includes.js");
 onmessage = function (e) {
 
   //Node appears to handle exceptions differently. Lets catch them and pass them back instead of killing the app.
