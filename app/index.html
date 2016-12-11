@@ -65,6 +65,7 @@
         <span hidden$="{{smallScreen}}">Fair Abstraction</span>
         <span hidden$="{{!smallScreen}}">FAbs</span>
       </paper-checkbox>
+      <paper-icon-button icon="icons:settings" class="middle" title="Settings" on-tap="showSettings"></paper-icon-button>
       <paper-icon-button icon="icons:help" class="middle" title="Help" on-tap="showHelp"></paper-icon-button>
     </paper-toolbar>
     <!-- end toolbar -->
@@ -122,6 +123,15 @@
       <br/>
       <paper-button onclick="app.downloadFile();app.$['save-dialog'].close();">Save</paper-button>
       <paper-button style="float:right" onclick="app.$['save-dialog'].close();">Cancel</paper-button>
+    </paper-dialog>
+    <paper-dialog id="settings-dialog" with-backdrop>
+      <paper-input is="iron-input" label="Automata max node count" placeholder="100" bind-value="{{graphSettings.autoMaxNode}}" class="middle"
+                   auto-validate allowed-pattern="[0-9]" value="{{graphSettings.autoMaxNode}}"></paper-input>
+      <paper-input is="iron-input" label="Petrinet max place count" placeholder="100" bind-value="{{graphSettings.petriMaxPlace}}" class="middle"
+                   auto-validate allowed-pattern="[0-9]" value="{{graphSettings.petriMaxPlace}}"></paper-input>
+      <paper-input is="iron-input" label="Petrinet max transition count" placeholder="100" bind-value="{{graphSettings.petriMaxTrans}}" class="middle"
+                   auto-validate allowed-pattern="[0-9]" value="{{graphSettings.petriMaxTrans}}"></paper-input>
+      <paper-button style="float:right" onclick="app.$['settings-dialog'].close(); app.saveGraphSettings();">close</paper-button>
     </paper-dialog>
   </template>
 

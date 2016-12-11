@@ -19,8 +19,8 @@
     app.selectedCtx = 0;
     app.isClientSide = true;
     app.willSaveCookie = true;
-    if (app.loaded === undefined)
-      app.loaded = false;
+    app.graphSettings = {autoMaxNode: 100, petriMaxPlace:100, petriMaxTrans: 100};
+    app.loaded = app.loaded || false;
     app.saveSettings = {currentFile: '', saveCode: true, saveLayout: true};
     if (typeof io !== 'undefined') {
       app.socket = io();
@@ -89,12 +89,29 @@
       //structure, as we can compile locally and the worker will destroy it, or remotely and the server
       //will destroy it.
       const graphs = [];
+      const skipped = [];
       for(let id in results.processes){
         const graph = results.processes[id];
+        let len;
         if (graph.dontRender) continue;
         if (graph.type === 'automata') {
+          len = _.size(graph.nodeMap);
+          if (len > app.graphSettings.autoMaxNode) {
+            skipped.push({id: graph.id, length: len, type:"nodes",maxLength: app.graphSettings.autoMaxNode})
+            continue;
+          }
           graphs.push(AUTOMATON.convert(graph));
         } else if (graph.type === 'petrinet') {
+          len = _.size(graph.placeMap);
+          if (len > app.graphSettings.petriMaxPlace) {
+            skipped.push({id: graph.id, length: len, type:"places", maxLength: app.graphSettings.petriMaxPlace})
+            continue;
+          }
+          len = _.size(graph.transitionMap);
+          if (len > app.graphSettings.petriMaxTrans) {
+            skipped.push({id: graph.id, length: len, type:"transitions",maxLength: app.graphSettings.petriMaxTrans})
+            continue;
+          }
           graphs.push(PETRI_NET.convert(graph));
         }
 
@@ -125,6 +142,9 @@
       }
 
       app.$.console.log("Compiled in: "+(((new Date()).getTime()-app.lastCompileStartTime)/1000)+" seconds");
+      _.each(skipped, skip=> {
+        app.$.console.log("Skipped adding "+skip.id+" to the render list, as it has too many "+skip.type);
+      });
     }
     /**
      * Compiles and builds what has currenty been entered into the text-area.
@@ -239,7 +259,10 @@
       var help = app.$['help-dialog'];
       help.open();
     };
-
+    app.showSettings = function() {
+      var settings = app.$['settings-dialog'];
+      settings.open();
+    };
     /**
      * Simple event listener for when the checkbox in ticked.
      * Compile is called if it is.
@@ -325,6 +348,8 @@
     });
     app.willSaveCookie = localStorage.getItem("willSave")!=='false';
     app.liveCompiling = localStorage.getItem("liveCompiling")!=='false';
+    app.graphSettings = localStorage.getItem("graphSettings") !== null?JSON.parse(localStorage.getItem("graphSettings")) :  app.graphSettings;
+    app.saveGraphSettings = ()=>localStorage.setItem("graphSettings",JSON.stringify(app.graphSettings));
     if (app.willSaveCookie && localStorage.getItem('editor') != null) {
       app.$.editor.setCode(decodeURIComponent(localStorage.getItem('editor')));
     }

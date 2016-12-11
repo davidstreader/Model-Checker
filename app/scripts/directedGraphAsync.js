@@ -2,33 +2,14 @@
  * A copy paste of https://github.com/clientIO/joint/blob/master/plugins/layout/DirectedGraph/joint.layout.DirectedGraph.js
  * But modified to use a worker thread.
  */
-if (typeof exports === 'object') {
 
-  var graphlib = require('graphlib');
-  var dagre = require('dagre');
-}
-
-// In the browser, these variables are set to undefined because of JavaScript hoisting.
-// In that case, should grab them from the window object.
-graphlib = graphlib || (typeof window !== 'undefined' && window.graphlib);
-dagre = dagre || (typeof window !== 'undefined' && window.dagre);
+let graphlib = window.graphlib;
+let dagre = window.dagre;
 
 joint.layout.DirectedGraph = {
 
-  layout: function(graphOrCells, opt, callback) {
-
-    var graph;
-
-    if (graphOrCells instanceof joint.dia.Graph) {
-      graph = graphOrCells;
-    } else {
-      // Reset cells in dry mode so the graph reference is not stored on the cells.
-      graph = (new joint.dia.Graph()).resetCells(graphOrCells, { dry: true });
-    }
+  layout: function(graph, opt, callback) {
     graph.callback = callback;
-    // This is not needed anymore.
-    graphOrCells = null;
-
     // create a graphlib.Graph that represents the joint.dia.Graph
     graph.toGraphLib({
       directed: true,
@@ -55,42 +36,20 @@ joint.layout.DirectedGraph = {
       }
     });
   },
-
-  fromGraphLib: function(glGraph, opt) {
-
-    opt = opt || {};
-
-    var importNode = opt.importNode || _.noop;
-    var importEdge = opt.importEdge || _.noop;
-    var graph = (this instanceof joint.dia.Graph) ? this : new joint.dia.Graph;
-
-    // Import all nodes.
-    glGraph.nodes().forEach(function(node) {
-      importNode.call(graph, node, glGraph, graph, opt);
-    });
-
-    // Import all edges.
-    glGraph.edges().forEach(function(edge) {
-      importEdge.call(graph, edge, glGraph, graph, opt);
-    });
-
-    return graph;
-  },
-
   // Create new graphlib graph from existing JointJS graph.
   toGraphLib: function(graph, opt) {
     const graphSend = [];
     opt = opt || {};
-    var setNodeLabel = opt.setNodeLabel || _.noop;
-    var setEdgeLabel = opt.setEdgeLabel || _.noop;
-    var setEdgeName = opt.setEdgeName || _.noop;
+    const setNodeLabel = opt.setNodeLabel || _.noop;
+    const setEdgeLabel = opt.setEdgeLabel || _.noop;
+    const setEdgeName = opt.setEdgeName || _.noop;
     //loop over all cells and convert them to a simple json structure we can then send
     graph.get('cells').each(function(cell) {
 
       if (cell.isLink()) {
 
-        var source = cell.get('source');
-        var target = cell.get('target');
+        const source = cell.get('source');
+        const target = cell.get('target');
 
         // Links that end at a point are ignored.
         if (!source.id || !target.id) return;
@@ -108,14 +67,13 @@ joint.layout.DirectedGraph = {
       }
     });
 
-    var worker = new Worker("scripts/directedAsyncWorker.js");
-    var _graph = graph;
+    const worker = new Worker("scripts/directedAsyncWorker.js");
     worker.onmessage = e => {
       // Wrap all graph changes into a batch.
-      _graph.startBatch('layout');
+      graph.startBatch('layout');
       //Loop over the recieved graph array and convert it back
       e.data.forEach(cell => {
-        var element = _graph.getCell(cell.id);
+        const element = graph.getCell(cell.id);
         switch(cell.type) {
           case 'node':
             element.set('position', {
@@ -128,11 +86,11 @@ joint.layout.DirectedGraph = {
             break;
         }
       });
-      _graph.stopBatch('layout');
+      graph.stopBatch('layout');
       //Execute the callback
-      _graph.callback();
+      graph.callback();
       //The graph object no longer needs to store the callback
-      delete _graph.callback;
+      delete graph.callback;
     };
     //push the graph array to the worker
     worker.postMessage({graph:graphSend,opt:JSON.parse(JSON.stringify(opt))});
