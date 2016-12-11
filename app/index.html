@@ -131,7 +131,7 @@
                    auto-validate allowed-pattern="[0-9]" value="{{graphSettings.petriMaxPlace}}"></paper-input>
       <paper-input is="iron-input" label="Petrinet max transition count" placeholder="100" bind-value="{{graphSettings.petriMaxTrans}}" class="middle"
                    auto-validate allowed-pattern="[0-9]" value="{{graphSettings.petriMaxTrans}}"></paper-input>
-      <paper-button style="float:right" onclick="app.$['settings-dialog'].close(); app.saveGraphSettings();">close</paper-button>
+      <paper-button style="float:right" onclick="app.$['settings-dialog'].close();">close</paper-button>
     </paper-dialog>
   </template>
 

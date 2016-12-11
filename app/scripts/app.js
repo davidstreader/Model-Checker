@@ -285,6 +285,9 @@
       localStorage.setItem("fairAbstraction",app.fairAbstraction);
     });
 
+    app.$['settings-dialog'].addEventListener('iron-overlay-closed', function() {
+      app.saveGraphSettings();
+    });
     app.$['chbx-save-cookie'].addEventListener('iron-change', function() {
       localStorage.setItem("willSave",app.willSaveCookie);
     });

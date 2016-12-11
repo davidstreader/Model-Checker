@@ -171,7 +171,8 @@ function expand(ast){
    * @return {astNode} - the expanded ast node
    */
   function expandActionLabelNode(astNode, variableMap){
-    astNode.action = processLabel(astNode.action, variableMap);
+    var lbl = processLabel(astNode.action, variableMap);
+    astNode.action = lbl.label || lbl;
     return astNode;
   }
 
