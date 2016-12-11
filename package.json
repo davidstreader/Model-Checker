@@ -39,7 +39,7 @@
   },
   "scripts": {
     "start": "node app.js",
-    "test": "node node_modules/mocha/bin/mocha",
+    "test": "node node_modules/mocha/bin/mocha tests/scripts --recursive",
     "gulp": "gulp serve"
   },
   "dependencies": {

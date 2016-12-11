@@ -1,7 +1,6 @@
 const fs = require('fs');
 const vm = require("vm");
 const assert = require('chai').assert;
-const ansi = require('ansi'), cursor = ansi(process.stdout);
 global.importScripts = (...files) => {
   let scripts;
 

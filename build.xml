@@ -29,8 +29,10 @@
     <echo message="Running the tests ..." />
     <exec executable="mocha"  output="build/testResults/mocha.xml" failonerror="true">
       <env key="NODE_PATH" value="/tmp/node_modules/" />
+      <arg value="tests/scripts" />
       <arg value="--reporter" />
       <arg value="xunit" />
+      <arg value="--recursive" />
     </exec>
     <echo message="Tests done" />
   </target>

@@ -4,7 +4,8 @@
  * Unit tests that cover the correct and incorrect usages of the lexer.
  */
 describe('Lexer Tests', function(){
-	
+
+  const chai = require("chai");
 	// used by unit tests
 	const expect = chai.expect;
 	const assert = chai.assert;
