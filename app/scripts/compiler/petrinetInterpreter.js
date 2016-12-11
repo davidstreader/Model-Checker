@@ -211,8 +211,19 @@ function interpretPetriNet(process, processesMap, context){
     }
 
     if(lastTransition == undefined){
+      const references = currentPlace.metaData.references;
       for(let i = 0; i < crossProducts.length; i++){
+        net.addRoot(crossProducts[i].id);
         crossProducts[i].metaData.startPlace = 1;
+        if(references !== undefined){
+          for(let reference in references){
+            if(crossProducts[i].metaData.references === undefined){
+              crossProducts[i].metaData.references = {};
+            }
+
+            crossProducts[i].metaData.references[reference] = true;
+          }
+        }
       }
 
       net.removePlace(currentPlace.id);
@@ -296,13 +307,19 @@ function interpretPetriNet(process, processesMap, context){
         break;
     }
 
+    const roots = processedNet.roots;
+
     if(lastTransition == undefined){
+      const reference = currentPlace.metaData.reference;
       net.removePlace(currentPlace.id);
       net.addPetriNet(processedNet);
+
+      if(reference !== undefined){
+
+      }
       return;
     }
 
-    const roots = processedNet.roots;
     for(let i = 0; i < roots.length; i++){
       processedNet.removeRoot(roots[i].id);
       delete roots[i].metaData.startPlace;
@@ -364,6 +381,49 @@ function interpretPetriNet(process, processesMap, context){
     lastTransition.metaData.references[astNode.reference + ''] = true;
 
     net.removePlace(currentPlace.id);
+  }
+
+  function mergePetriNets(net, currentPlace, lastTransition, newRoots){
+    // if no transition has been defined there is nothing to link to
+    if(lastTransition === undefined){
+      // make the new roots the actual new roots of the petri net
+      for(let i = 0; i < newRoots.length; i++){
+        const root = newRoots[i];
+        net.addRoot(root.id);
+        root.metaData.startPlace = 1;
+
+        // check if there were any references to the current place
+        const references = currentPlace.metaData.references;
+        if(references !== undefined){
+          for(let reference in references){
+            // make sure that the reference meta data is defined
+            if(root.metaData.references === undefined){
+              root.metaData.references = {};
+            }
+
+            root.metaData.references[reference] = true;
+          }
+        }
+      }
+
+      net.removePlace(currentPlace.id);
+    }
+
+    // otherwise we want to merge the current place to the new roots
+    const crossProducts = [];
+    for(let i = 0; i < newRoots.length; i++){
+      const root = newRoots[i];
+      delete root.metaData.startPlace;
+      net.removeRoot(root.id);
+      const place = net.combinePlaces(currentPlace, root);
+      crossProducts.push(root);
+    }
+
+    // remove the new roots and the current place from the petri net
+    newRoots.push(currentPlace);
+    for(let i = 0; i < newRoots.length; i++){
+      net.removePlace(newRoots[i].id);
+    }
   }
 
   function processReferencePointer(astNode, place){

@@ -833,7 +833,7 @@ function parse(tokens){
     var process = parseLocalProcess(tokens);
     gobble(tokens[index], ')');
 
-    return { type:'function', callback:processType, process:process };
+    return { type:'function', func:processType, process:process };
   }
 
   function parseInterrupt(tokens){
