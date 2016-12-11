@@ -244,7 +244,7 @@ function testChoiceNode(node){
  */
 function testFunctionNode(node, functionType){
 	expect(node).to.have.property('type', 'function');
-	expect(node).to.have.property('callback', functionType);
+	expect(node).to.have.property('func', functionType);
 	expect(node).to.have.property('process');
 }
 

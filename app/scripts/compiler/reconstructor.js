@@ -78,7 +78,7 @@ function reconstruct(astNode){
 	}
 
 	function reconstructFunctionNode(astNode){
-		text += astNode.callback + '(';
+		text += astNode.func + '(';
 		reconstructNode(astNode.process);
 		text += ')';
 	}
