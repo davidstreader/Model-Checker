@@ -587,6 +587,10 @@ const PETRI_NET_TRANSITION = {
 		delete this.locationSet[id];
 	},
 
+	get metaDataSet(){
+		return JSON.parse(JSON.stringify(this.metaData));
+	},
+
 	addMetaData: function(key, data){
 		this.metaData[key] = data;
 	},
