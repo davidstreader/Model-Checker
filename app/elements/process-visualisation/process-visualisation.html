@@ -189,7 +189,7 @@
           //Jointjs has a bug where you can only set attributes.
           //To combat this, we can search for all titles and map their innerhtml to the text attribute.
           _.each($(".title"),title=> {
-            title.innerHTML = _this.jgraph.getCell(title.parentElement.getAttribute("model-id")).get("tooltip");
+            title.innerHTML = _this.jgraph.getCell(title.parentElement.getAttribute("model-id")).get("tooltip") || '';
           });
           if (_this.graphsToAdd.length > 0) {
             const graph = _this.graphsToAdd.pop();
