@@ -69,6 +69,7 @@ function petriNetParallelComposition(id, net1, net2){
 			const outgoing = transitions[i].outgoingPlaces.map(id => net.getPlace(id));
 			const transition = net.addTransition(id, action, incoming, outgoing);
 			transition.locations = transitions[i].locations;
+			transition.metaData.originId = transitions[i].id;
 		}
 	}
 
