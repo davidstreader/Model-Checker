@@ -1,125 +1,133 @@
 'use strict';
 
-	/**
-	 * Performs parallel composition of the two specified automata. Constructs
-	 * a new automaton with the specified id representing the composition. Returns
-	 * the automaton constructed by the composition.
-	 *
-	 * @param {int} id - the id of the composition
-	 * @param {automaton} net1 - the first automaton
-	 * @param {automaton} net2 - the second automaton
-	 * @return {automaton} - the automaton formed by the composition
-	 */
+/**
+ * Performs parallel composition of the two specified automata. Constructs
+ * a new automaton with the specified id representing the composition. Returns
+ * the automaton constructed by the composition.
+ *
+ * @param {int} id - the id of the composition
+ * @param {automaton} net1 - the first automaton
+ * @param {automaton} net2 - the second automaton
+ * @return {automaton} - the automaton formed by the composition
+ */
 function automataParallelComposition(id, automaton1, automaton2){
-	var graph = new Automaton(id);
-	var nodes1 = automaton1.nodes;
-	var nodes2 = automaton2.nodes;
-	combineStates(graph, nodes1, nodes2);
-	var alphabet1 = automaton1.alphabet;
-	var alphabet2 = automaton2.alphabet;
-	var alphabet = alphabetUnion(alphabet1, alphabet2);
+	const automaton = new Automaton(id);
+	const walker1 = new AutomatonWalker(automaton1);
+	const walker2 = new AutomatonWalker(automaton2);
+	const stateMap = constructStates(automaton1.nodes, automaton2.nodes);
 
-	// loop through combined node states and form the parallel composition
-	for(var i = 0; i < nodes1.length; i++){
-		var node1 = nodes1[i];
-		for(var j = 0; j < nodes2.length; j++){
-			var node2 = nodes2[j];
-			// the id for the current combined state
-			var fromId = node1.id + '.' + node2.id;
+	const alphabet1 = automaton1.alphabet;
+	const alphabet2 = automaton2.alphabet;
 
-			for(var action in alphabet){
-				var coaccessible1 = automaton1.coaccessible(node1, action);
-				coaccessible1 = (coaccessible1.length !== 0) ? coaccessible1 : [undefined];
-				var coaccessible2 = automaton2.coaccessible(node2, action);
-				coaccessible2 = (coaccessible2.length !== 0) ? coaccessible2 : [undefined];
+	const synced = {};
+	const unsynced = {};
 
-				for(var x = 0; x < coaccessible1.length; x++) {
-          var c1 = coaccessible1[x];
-          for (var y = 0; y < coaccessible2.length; y++) {
-            var c2 = coaccessible2[y];
-            if (c1 !== undefined && c2 !== undefined) {
-              var toId = c1.node.id + '.' + c2.node.id;
-              var edge = graph.addEdge(graph.nextEdgeId, action, graph.getNode(fromId), graph.getNode(toId));
-              edge.locations = locationUnion(node1.locations, node2.locations);
-            }
-            else if (c1 !== undefined && alphabet2[action] === undefined) {
-              var toId = c1.node.id + '.' + node2.id;
-              var edge = graph.addEdge(graph.nextEdgeId, action, graph.getNode(fromId), graph.getNode(toId));
-              edge.locations = node1.locations
-              edge.metaData.originId = c1.edge.id;
-            }
-            else if (c2 !== undefined && alphabet1[action] === undefined) {
-              var toId = node1.id + '.' + c2.node.id;
-              var edge = graph.addEdge(graph.nextEdgeId, action, graph.getNode(fromId), graph.getNode(toId));
-              edge.locations = node2.locations;
-              edge.metaData.originId = c2.edge.id;
-            }
+	const actions = Object.keys(alphabet1).concat(Object.keys(alphabet2));
+	for(let i = 0; i < actions.length; i++){
+		const action = actions[i];
 
-            // check if the edge from the current second node is a broadcaster
-            if (c2 !== undefined && c2.edge.metaData.broadcaster) {
-              const receivers = automaton1.edges.filter(e => e.label === action && e.metaData.receiver);
-              receivers.forEach(function (receiver) {
-                nodes2.forEach(function(node){
-                  var fromId = receiver.from + '.' + node.id;
-                  var toId = receiver.to + '.' + node.id;
-                  if(node.id !== node2.id) {
-                    graph.addEdge(graph.nextEdgeId, action, graph.getNode(fromId), graph.getNode(toId));
-                  }
-                });
-              });
-            }
-          }
+		if(action === TAU || action === DELTA){
+			unsynced[action] = true;
+		}
+		else if(alphabet1[action] !== undefined && alphabet2[action] !== undefined){
+			synced[action] = true;
+		}
+		else{
+			unsynced[action] = true;
+		}
+	}
 
-          // check if the edge from the current first node is a broadcaster
-          if(c1 !== undefined && c1.edge.metaData.broadcaster) {
-            const receivers = automaton2.edges.filter(e => e.label === action && e.metaData.receiver);
-            receivers.forEach(function (receiver) {
-              nodes1.forEach(function(node){
-                var fromId = node.id + '.' + receiver.from;
-                var toId = node.id + '.' + receiver.to;
-                if(node.id !== node1.id) {
-                  graph.addEdge(graph.nextEdgeId, action, graph.getNode(fromId), graph.getNode(toId));
-                }
-              });
-            });
-          }
+	const edges = automaton1.edges.concat(automaton2.edges);
+	
+	for(let action in unsynced){
+		const unsyncedEdges = edges.filter(e => e.label === action);
+		for(let i = 0; i < unsyncedEdges.length; i++){
+			const edge = unsyncedEdges[i];
+			const from = Object.keys(stateMap[edge.from]).map(id => automaton.getNode(id));
+			const to = Object.keys(stateMap[edge.to]).map(id => automaton.getNode(id));
+			for(let j = 0; j < from.length; j++){
+				const newEdge = automaton.addEdge(automaton.nextEdgeId, action, from[j], to[j], edge.metaDataSet);
+				newEdge.locations = edge.locations;
+				newEdge.metaData.originId = edge.id;
+			}
+		} 
+	}
 
+	for(let action in synced){
+		const syncedEdges1 = automaton1.edges.filter(e => e.label === action);
+		const syncedEdges2 = automaton2.edges.filter(e => e.label === action);
+
+		for(let i = 0; i < syncedEdges1.length; i++){
+			const edge1 = syncedEdges1[i];
+
+			for(let j = 0; j < syncedEdges2.length; j++){
+				const edge2 = syncedEdges2[j];
+
+				const fromId = edge1.from + '||' + edge2.from;
+				const toId = edge1.to + '||' + edge2.to;
+
+				const newEdge = automaton.addEdge(automaton.nextEdgeId, action, automaton.getNode(fromId), automaton.getNode(toId), locationUnion(edge1.metaDataSet, edge2.metaDataSet));
+				newEdge.locations = locationUnion(edge1.locations, edge2.locations);
+
+				// check if the current first edge is a broadcaster (only once)
+				if(j === 0 && edge1.metaData.broadcaster){
+					const receivers = syncedEdges2.filter(e => e.metaData.receiver);
+					processBroadcasting(edge1, receivers, fromId);
+				}
+
+				// check if the current second edge is a broadcaster
+				if(edge2.metaData.broadcaster){
+					const receivers = syncedEdges1.filter(e => e.metaData.receiver);
+					processBroadcasting(edge2, receivers, fromId);
 				}
 			}
 		}
 	}
 
-	// remove unreachable nodes from the composition
-	graph.trim();
-    graph.removeDuplicateEdges();
-	return graph;
+	automaton.trim();
+	return automaton;
 
-	/**
-	 * Helper function for automataParallelComposition that creates a new
-	 * node in the specified automaton for each combined state from the specified
-	 * node arrays. Each node from the first array is combined with each node from
-	 * the second array.
-	 *
-	 * @param {automaton} graph - the automaton to add nodes to
-	 * @param {node[]} nodes1 - the first array of nodes
-	 * @param {node[]} nodes2 - the second array of nodes
-	 */
-	function combineStates(graph, nodes1, nodes2){
-		for(var i = 0; i < nodes1.length; i++){
-			var locations1 = nodes1[i].locations;
+	function constructStates(nodes1, nodes2){
+		const stateMap = {};
 
-			for(var j = 0; j < nodes2.length; j++){
-				var id = nodes1[i].id + '.' + nodes2[j].id;
-				var metaData = metaDataIntersection(nodes1[i].metaData, nodes2[j].metaData);
-				var node = graph.addNode(id, metaData);
+		for(let i = 0; i < nodes1.length; i++){
+			const node1 = nodes1[i];
 
-				var locations2 = nodes2[j].locations;
-				node.locations = locationUnion(locations1, locations2);
+			stateMap[node1.id] = {};
 
-				// check if this is the first node constructed
-				if(i === 0 && j === 0) {
-          graph.rootId = id;
-        }
+			for(let j = 0; j < nodes2.length; j++){
+				const node2 = nodes2[j];
+
+				if(stateMap[node2.id] === undefined){
+					stateMap[node2.id] = {};
+				}
+
+				const node = automaton.addNode(node1.id + '||' + node2.id);
+				stateMap[node1.id][node.id] = true;
+				stateMap[node2.id][node.id] = true;
+
+				if(node1.metaData.startNode && node2.metaData.startNode){
+					node.metaData.startNode = true;
+					automaton.root = node.id;
+				}
+
+				node.locations = locationUnion(node1.locations, node2.locations);
+			}
+		}
+
+		return stateMap;
+	}
+
+	function processBroadcasting(broadcastEdge, receiverEdges, fromId){
+		for(let i = 0; i < receiverEdges.length; i++){
+			const receiver = receiverEdges[i];
+			const from = Object.keys(stateMap[receiver.from]).map(id => automaton.getNode(id));
+			const to = Object.keys(stateMap[receiver.to]).map(id => automaton.getNode(id));
+			for(let j = 0; j < from.length; j++){
+				if(from[j].id !== fromId){
+					const newEdge = automaton.addEdge(automaton.nextEdgeId, receiver.label, from[j], to[j], receiver.metaDataSet);
+					newEdge.locations = receiver.locations;
+				}
 			}
 		}
 	}

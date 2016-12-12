@@ -531,6 +531,10 @@ const AUTOMATON_EDGE = {
 		return this.label === DELTA;
 	},
 
+	get metaDataSet(){
+		return JSON.parse(JSON.stringify(this.metaData));
+	},
+
 	addMetaData: function(key, data){
 		this.metaData[key] = data;
 	},
