@@ -163,6 +163,9 @@ joint.shapes.pn.TerminalPlace = joint.dia.Element.extend({
 });
 
 joint.shapes.parent = joint.shapes.basic.Rect.extend();
+joint.shapes.interruptParentNode = joint.shapes.basic.Rect.extend();
+joint.shapes.interruptLabel = joint.shapes.basic.Rect.extend();
+joint.shapes.interruptEmbedNode = joint.shapes.basic.Rect.extend();
 joint.shapes.box = joint.shapes.basic.Rect.extend({
 
   markup: '<g class="rotatable"><g class="scalable"><rect/></g><text/></g>',

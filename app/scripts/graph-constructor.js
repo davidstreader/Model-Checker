@@ -89,10 +89,10 @@ function visualizeAutomata(process, name, graphMap, jgraph, hidden) {
   }
 }
 function _box(jgraph, parent, toEmbed, name, graphMap, key) {
-  const boxNode = new joint.shapes.box({
+  const boxNode = new joint.shapes.interruptParentNode({
     type:'interruptParentNode'
   });
-  const embedNode = new joint.shapes.box({
+  const embedNode = new joint.shapes.interruptEmbedNode({
     type:'interruptEmbedNode'
   });
   parent.embed(boxNode);
@@ -298,26 +298,27 @@ function constructGraphs(graphMap, id, hidden, callback) {
         graph.name = graph.name.replace(".hidden","");
         const id = parseInt(graph.name.split(".")[1]);
         const bbox = graph.parentNode.getBBox().origin();
-        const cell = new joint.shapes.basic.Rect({
+        const cell = new joint.shapes.interruptLabel({
           type: "interruptLabel",
           size: {width: 100, height: 30},
-          position: {x:bbox.x,y:bbox.y-25*id},
+          position: {x:bbox.x,y:bbox.y-25*(id-1)},
           attrs: {
             rect: {fill: 'transparent', stroke: 'none'},
             'text': {text: graph.name, fill: 'red', 'font-size': 20}
           }
         });
-        const bbox2 = graph.parentNode.getBBox();
         if (graph.parentNode.embedLink) {
           graph.parentNode.embedLink.forEach(link=>link.toFront());
         }
         graph.parentNode.toDelete.remove();
+        graph.parentNode.fitEmbeds({padding:50});
+        const size = graph.parentNode.get('size');
+        graph.parentNode.set('size',{width:size.width-50,height:size.height});
         graph.parentNode.embed(cell);
-        graph.parentNode.resize(bbox2.width,bbox2.height+id*30,{direction:"top"});
-        graph.parentNode.resize(bbox2.width-50,bbox2.height+id*30,{direction:"right"});
+        tmpjgraph.addCell(cell);
+
         graph.parentNode.embedNode.set('position',graph.parentNode.get('position'));
         graph.parentNode.embedNode.set('size',graph.parentNode.get('size'));
-        tmpjgraph.addCell(cell);
         graph.label = cell;
         graph.id = graph.name;
         graph.type = 'interrupt';

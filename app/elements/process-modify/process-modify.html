@@ -15,6 +15,7 @@
           <paper-listbox class="dropdown-content" selected$="{{!_hasNameSelection}}"></paper-listbox>
         </paper-menu>
       </paper-dropdown-menu>
+      <div id="svg-parent2"></div>
     </div>
   </template>
 </dom-module>
@@ -22,7 +23,82 @@
   (function() {
     'use strict';
     Polymer({
-      is: 'process-modify'
+      is: 'process-modify',
+      ready: function(){
+        this.jgraph = new joint.dia.Graph();
+        //Create a paper element, pointing to #svg-parent, with restrictions on moving elements out of bounds
+        this.paper = new joint.dia.Paper({
+          el: this.$['svg-parent2'],
+          gridSize: 1,
+          model: this.jgraph,
+          restrictTranslate: true,
+          async: true
+        });
+      },
+      redraw: function() {
+
+      },
+      graphsToAdd: [],
+      addGraph: function(name) {
+        if (this.rendering) {
+          this.graphsToAdd.push(name);
+          return;
+        }
+        $(".disableOnEdgeRender")[0].disabled = true;
+        app.$.console.clear();
+        app.$.console.log("Rendering: "+name);
+        app.$.console.log("While rendering, you can not use the editor tab.");
+        app.$.selector.locked = this.rendering = true;
+        //construct the graph first if it doesnt exist or has changed
+        constructGraphs(this.graphMap,name, hidden, ()=>{
+          //Work out the bottom corner of the lowest element
+          let maxY = 0;
+          _.each(this.displayedGraphs,graph => maxY = Math.max(maxY,graph.getBBox().corner().y));
+          //Find a name that isnt in use
+          let oldName = name;
+          let tmpIdx = 1;
+          while (this.displayedGraphs[name]) {
+            name = oldName+(tmpIdx++);
+          }
+          //Assign that name to the old label
+          this.graphMap[oldName].label.attributes.attrs.text.text = name;
+
+          //Clone the process into cells, also cloning all children
+          let cells = this.graphMap[oldName].parentNode.clone({deep: true});
+          //Sort the array, putting links after components, as the links will fail to be added if their
+          //linked components do not exist
+          cells.sort((a,b) => a.attributes.type==="fsa.Arrow"?1:-1);
+          let graph = {};
+          //All we really care about is the parent at this point
+          graph.parentNode = cells[0];
+          graph.id = name;
+          this.displayedGraphs[name] = cells[0];
+          this.jgraph.addCells(cells);
+          //Note, we need to add the cells before translating the cell to its correct position
+          graph.parentNode.translate(0,maxY);
+          graph.parentNode.set("graphId",graph.id);
+          this.rescale();
+          app.push("automata.display",graph);
+          const _this = this;
+          const directEmbeds = _.filter(cells[0].getEmbeddedCells(),cell=>cell.attributes.type=='interruptLabel');
+          cells.forEach(cell => {
+            if (directEmbeds.indexOf(cell) !== -1) {
+              return;
+            }
+
+            if (cell.attributes.type === 'interruptEmbedNode') {
+              get$Cell(cell).hide();
+            }
+          });
+          $("#process-display-selector")[0].contentElement.selected = app.get("automata.display").length-1;
+          //Find the bounding box of the selected processes parent, and scroll to it
+          //The scroll bar is inside .process-display
+          const nodeBBox = graph.parentNode.getBBox();
+          const scale = V(this.paper.viewport).scale();
+          $(".process-display").stop().animate({scrollTop:nodeBBox.origin().y*scale.sx}, '100', 'swing');
+          this.saveChanges();
+        });
+      },
     })
   })();
 </script>

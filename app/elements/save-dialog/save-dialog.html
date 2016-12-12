@@ -24,20 +24,20 @@
     'use strict';
     Polymer({
       is: 'save-dialog',
-      open: ()=> {
+      open: function() {
         $('#save-dialog')[0].open();
       },
-      close: ()=> {
+      close: function() {
         $('#save-dialog')[0].close();
       },
-      save: ()=>{
+      save: function() {
         app.downloadFile();
         $('#save-dialog')[0].close();
       },
-      getFileName: ()=>{
+      getFileName: function() {
         return $('#filename')[0].inputElement.bindValue;
       },
-      opened: ()=>{
+      opened: function() {
           return $('#save-dialog')[0].opened;
       }
     })
