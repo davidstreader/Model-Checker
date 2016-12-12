@@ -46,7 +46,7 @@ function automataParallelComposition(id, automaton1, automaton2){
 			const from = Object.keys(stateMap[edge.from]).map(id => automaton.getNode(id));
 			const to = Object.keys(stateMap[edge.to]).map(id => automaton.getNode(id));
 			for(let j = 0; j < from.length; j++){
-				const newEdge = automaton.addEdge(automaton.nextEdgeId, action, from[j], to[j]);
+				const newEdge = automaton.addEdge(automaton.nextEdgeId, action, from[j], to[j], edge.metaDataSet);
 				newEdge.locations = edge.locations;
 				newEdge.metaData.originId = edge.id;
 			}
@@ -66,7 +66,7 @@ function automataParallelComposition(id, automaton1, automaton2){
 				const fromId = edge1.from + '||' + edge2.from;
 				const toId = edge1.to + '||' + edge2.to;
 
-				const newEdge = automaton.addEdge(automaton.nextEdgeId, action, automaton.getNode(fromId), automaton.getNode(toId));
+				const newEdge = automaton.addEdge(automaton.nextEdgeId, action, automaton.getNode(fromId), automaton.getNode(toId), locationUnion(edge1.metaDataSet, edge2.metaDataSet));
 				newEdge.locations = locationUnion(edge1.locations, edge2.locations);
 
 				// check if the current first edge is a broadcaster (only once)
@@ -125,7 +125,7 @@ function automataParallelComposition(id, automaton1, automaton2){
 			const to = Object.keys(stateMap[receiver.to]).map(id => automaton.getNode(id));
 			for(let j = 0; j < from.length; j++){
 				if(from[j].id !== fromId){
-					const newEdge = automaton.addEdge(automaton.nextEdgeId, receiver.label, from[j], to[j]);
+					const newEdge = automaton.addEdge(automaton.nextEdgeId, receiver.label, from[j], to[j], receiver.metaDataSet);
 					newEdge.locations = receiver.locations;
 				}
 			}
