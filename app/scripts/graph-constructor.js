@@ -258,7 +258,7 @@ function addLabelAndPadding(graphMap, key, jgraph) {
     position: {x: lx - 50, y: ly - 50-interruptHeight+10},
     attrs: {
       rect: {fill: 'transparent', stroke: 'none'},
-      'text': {text: key, fill: 'red', 'font-size': 20}
+      'text': {text: key, fill: 'red', 'font-size': 20, 'text-anchor': 'start'}
     }
   });
 
