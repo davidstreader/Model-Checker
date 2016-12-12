@@ -196,7 +196,7 @@
             _this.addGraph(graph.name,graph.hidden);
           } else {
             app.$.console.log("Finished rendering!");
-            $("#editorTab")[0].disabled = false;
+            $(".disableOnRender")[0].disabled = false;
           }
         });
         this.paper.on('cell:pointerdown', function(cell) {
@@ -288,7 +288,7 @@
           this.graphsToAdd.push({name: name, hidden: hidden});
           return;
         }
-        $("#editorTab")[0].disabled = true;
+        $(".disableOnRender")[0].disabled = true;
         app.$.console.clear();
         app.$.console.log("Rendering: "+name);
         app.$.console.log("While rendering, you can not use the editor tab.");
@@ -373,7 +373,7 @@
             app.$.console.clear();
             app.$.console.log("Rendering from "+(this.layout?"File":"Autosave")+" please wait.");
             app.$.console.log("While rendering, you can not use the editor tab.");
-            $("#editorTab")[0].disabled = true;
+            $(".disableOnRender")[0].disabled = true;
             this.jgraph.fromJSON(JSON.parse(layout));
           }
           if (app.get("automata.display") === undefined) app.set("automata.display",[]);

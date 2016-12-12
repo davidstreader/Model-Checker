@@ -72,8 +72,10 @@
 
     <!-- start content -->
     <paper-tabs id="maintabs" selected="{{selectedCtx}}">
-      <paper-tab id="editorTab">Editor</paper-tab>
+      <!-- setting a tab's class to disableOnRender means in another script we will disable shifting to that tab when rendering-->
+      <paper-tab class="disableOnRender">Editor</paper-tab>
       <paper-tab>Diagram</paper-tab>
+      <paper-tab class="disableOnRender">Create Parallel Compisition</paper-tab>
     </paper-tabs>
     <div class="frame">
       <neon-animated-pages selected="{{selectedCtx}}" class="fit">
@@ -92,6 +94,10 @@
             <process-visualisation id="visualiser"></process-visualisation>
           </div>
             <console-logger id="visualiserConsole" style="height:30%; border-top:2px solid black"></console-logger>
+
+        </section>
+        <section class="layout vertical flex">
+
 
         </section>
       </neon-animated-pages>

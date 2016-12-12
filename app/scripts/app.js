@@ -92,24 +92,20 @@
       const skipped = [];
       for(let id in results.processes){
         const graph = results.processes[id];
-        let len;
         if (graph.dontRender) continue;
         if (graph.type === 'automata') {
-          len = _.size(graph.nodeMap);
-          if (len > app.graphSettings.autoMaxNode) {
-            skipped.push({id: graph.id, length: len, type:"nodes",maxLength: app.graphSettings.autoMaxNode})
+          if (graph.nodeCount > app.graphSettings.autoMaxNode) {
+            skipped.push({id: graph.id, length: graph.nodeCount, type:"nodes",maxLength: app.graphSettings.autoMaxNode})
             continue;
           }
           graphs.push(AUTOMATON.convert(graph));
         } else if (graph.type === 'petrinet') {
-          len = _.size(graph.placeMap);
-          if (len > app.graphSettings.petriMaxPlace) {
-            skipped.push({id: graph.id, length: len, type:"places", maxLength: app.graphSettings.petriMaxPlace})
+          if (graph.placeCount > app.graphSettings.petriMaxPlace) {
+            skipped.push({id: graph.id, length: graph.placeCount, type:"places", maxLength: app.graphSettings.petriMaxPlace})
             continue;
           }
-          len = _.size(graph.transitionMap);
-          if (len > app.graphSettings.petriMaxTrans) {
-            skipped.push({id: graph.id, length: len, type:"transitions",maxLength: app.graphSettings.petriMaxTrans})
+          if (graph.transitionCount > app.graphSettings.petriMaxTrans) {
+            skipped.push({id: graph.id, length: graph.transitionCount, type:"transitions",maxLength: app.graphSettings.petriMaxTrans})
             continue;
           }
           graphs.push(PETRI_NET.convert(graph));
