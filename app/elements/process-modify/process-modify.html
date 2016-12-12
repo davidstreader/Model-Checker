@@ -1,0 +1,28 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../imports/element-resizer.html">
+
+<dom-module id="process-modify">
+  <template>
+    <div style="">
+      <span>Process List</span>
+      <br/>
+      <paper-dropdown-menu id="process-name-selector" label="Process" on-iron-select="_onNameSelection" disabled$="{{!automata.values}}">
+        <paper-menu class="dropdown-content">
+          <template is="dom-repeat" items="{{automata.values}}">
+            <paper-item data-automaton-name="{{item.id}}">{{item.id}}</paper-item>
+          </template>
+          <paper-listbox class="dropdown-content" selected$="{{!_hasNameSelection}}"></paper-listbox>
+        </paper-menu>
+      </paper-dropdown-menu>
+    </div>
+  </template>
+</dom-module>
+<script>
+  (function() {
+    'use strict';
+    Polymer({
+      is: 'process-modify'
+    })
+  })();
+</script>

@@ -1,0 +1,34 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../imports/element-resizer.html">
+
+<dom-module id="settings-dialog">
+  <template>
+    <paper-dialog id="settings-dialog" with-backdrop>
+      <paper-input is="iron-input" label="Automata max node count" placeholder="100" bind-value="{{graphSettings.autoMaxNode}}" class="middle"
+                   auto-validate allowed-pattern="[0-9]" value="{{graphSettings.autoMaxNode}}"></paper-input>
+      <paper-input is="iron-input" label="Petrinet max place count" placeholder="100" bind-value="{{graphSettings.petriMaxPlace}}" class="middle"
+                   auto-validate allowed-pattern="[0-9]" value="{{graphSettings.petriMaxPlace}}"></paper-input>
+      <paper-input is="iron-input" label="Petrinet max transition count" placeholder="100" bind-value="{{graphSettings.petriMaxTrans}}" class="middle"
+                   auto-validate allowed-pattern="[0-9]" value="{{graphSettings.petriMaxTrans}}"></paper-input>
+      <paper-button style="float:right" on-tap="close">close</paper-button>
+    </paper-dialog>
+  </template>
+</dom-module>
+<script>
+  (function() {
+    'use strict';
+    Polymer({
+      is: 'settings-dialog',
+      open: function () {
+        $('#settings-dialog')[0].open();
+      },
+      close: function () {
+        $('#settings-dialog')[0].close();
+      },
+      opened: ()=>{
+        return $('#settings-dialog')[0].opened;
+      }
+    })
+  })();
+</script>

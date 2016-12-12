@@ -22,6 +22,7 @@
     app.graphSettings = {autoMaxNode: 100, petriMaxPlace:100, petriMaxTrans: 100};
     app.loaded = app.loaded || false;
     app.saveSettings = {currentFile: '', saveCode: true, saveLayout: true};
+
     if (typeof io !== 'undefined') {
       app.socket = io();
       app.socket.on('connect', ()=>{
@@ -230,7 +231,7 @@
      * Save to code the user has written to their computer (as a download).
      */
     app.downloadFile = function() {
-      var filename = app.$['filename'].inputElement.bindValue;
+      var filename = app.$.save.getFileName();
       // if filename has not been defined set to untitled
       if(filename === ''){
         filename = 'untitled';
@@ -252,12 +253,10 @@
      * Opens the help-dialog.
      */
     app.showHelp = function() {
-      var help = app.$['help-dialog'];
-      help.open();
+      app.$.help.open();
     };
     app.showSettings = function() {
-      var settings = app.$['settings-dialog'];
-      settings.open();
+      app.$.settings.open();
     };
     /**
      * Simple event listener for when the checkbox in ticked.
@@ -281,7 +280,7 @@
       localStorage.setItem("fairAbstraction",app.fairAbstraction);
     });
 
-    app.$['settings-dialog'].addEventListener('iron-overlay-closed', function() {
+    $("#settings-dialog")[0].addEventListener('iron-overlay-closed', function() {
       app.saveGraphSettings();
     });
     app.$['chbx-save-cookie'].addEventListener('iron-change', function() {
@@ -357,7 +356,12 @@
      * Note: Needs to listen for keydown (not keyup) in order to prevent browser default action
      */
     document.addEventListener('keydown',function(e) {
-      if (app.$['help-dialog'].opened) {
+      if (app.$.help.opened()) {
+        // CTRL + S
+        if (e.keyCode == 83 && e.ctrlKey) {
+          //Even if the help dialog is open, we don't want the default save dialog to show.
+          e.preventDefault();
+        }
         return;
       }
 
@@ -379,13 +383,13 @@
         case 83:
           // CTRL + S
           if (e.ctrlKey) {
-            app.$['save-dialog'].open();
+            app.$.save.open();
             e.preventDefault();
           }
           break;
         case 112:
           // F1
-          app.$['help-dialog'].open();
+          app.$.help.open();
           e.preventDefault();
           break;
         default: return;

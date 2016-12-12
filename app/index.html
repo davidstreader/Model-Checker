@@ -56,7 +56,7 @@
         <span>Autosave</span>
       </paper-checkbox>
       <span class="spacer middle"></span>
-      <paper-icon-button icon="icons:save" class="middle" title="Save" onclick="app.$['save-dialog'].open()"></paper-icon-button>
+      <paper-icon-button icon="icons:save" class="middle" title="Save" onclick="app.$.save.open()"></paper-icon-button>
       <paper-icon-button icon="icons:folder-open" class="middle" title="Open" on-tap="openFile"></paper-icon-button>
       <paper-icon-button id="reload" icon="icons:autorenew" class="middle" title="Reload" on-tap="reloadFile" disabled=true></paper-icon-button>
       <input id="open-file" type="file" accept="text/plain" class="middle" style="display: none;"/>
@@ -75,12 +75,11 @@
       <!-- setting a tab's class to disableOnRender means in another script we will disable shifting to that tab when rendering-->
       <paper-tab class="disableOnRender">Editor</paper-tab>
       <paper-tab>Diagram</paper-tab>
-      <paper-tab class="disableOnRender">Create Parallel Compisition</paper-tab>
+      <paper-tab class="disableOnRender">Modify Edges</paper-tab>
     </paper-tabs>
     <div class="frame">
       <neon-animated-pages selected="{{selectedCtx}}" class="fit">
         <section class="layout vertical flex" style="flex-direction: row;">
-
           <section class="layout vertical flex">
           <text-editor autofocus id="editor" class="flex"></text-editor>
           </section>
@@ -97,48 +96,16 @@
 
         </section>
         <section class="layout vertical flex">
-
-
+         <process-modify></process-modify>
         </section>
       </neon-animated-pages>
     </div>
     <!-- end content -->
-    <paper-dialog id="help-dialog" with-backdrop>
-      <div class="title-bar">
-        <h2>Help</h2>
-        <paper-icon-button class="btn-close" icon="icons:cancel" title="Exit" dialog-dismiss></paper-icon-button>
-        <paper-tabs selected="{{helpDialogSelectedTab}}">
-          <paper-tab>Creating Automata</paper-tab>
-          <paper-tab>UI Overview</paper-tab>
-        </paper-tabs>
-      </div>
-      <paper-dialog-scrollable class="fit">
-
-      </paper-dialog-scrollable>
-      <paper-icon-button="icons:cancel" title="Exit" on-tap="closehelp"></paper-icon-button>
-    </paper-dialog>
-    <!-- end content -->
-    <paper-dialog id="save-dialog" with-backdrop>
-      <paper-input id="filename" is="iron-input" label="Insert Filename Here" placeholder="untitled" bind-value="{{inputValue}}" class="middle" title="The name given to the file when it is downloaded."></paper-input>
-      <paper-checkbox checked="{{saveSettings.saveLayout}}">
-        <span>Save layout</span>
-      </paper-checkbox>
-      <paper-checkbox checked="{{saveSettings.saveCode}}">
-        <span>Save code</span>
-      </paper-checkbox>
-      <br/>
-      <paper-button onclick="app.downloadFile();app.$['save-dialog'].close();">Save</paper-button>
-      <paper-button style="float:right" onclick="app.$['save-dialog'].close();">Cancel</paper-button>
-    </paper-dialog>
-    <paper-dialog id="settings-dialog" with-backdrop>
-      <paper-input is="iron-input" label="Automata max node count" placeholder="100" bind-value="{{graphSettings.autoMaxNode}}" class="middle"
-                   auto-validate allowed-pattern="[0-9]" value="{{graphSettings.autoMaxNode}}"></paper-input>
-      <paper-input is="iron-input" label="Petrinet max place count" placeholder="100" bind-value="{{graphSettings.petriMaxPlace}}" class="middle"
-                   auto-validate allowed-pattern="[0-9]" value="{{graphSettings.petriMaxPlace}}"></paper-input>
-      <paper-input is="iron-input" label="Petrinet max transition count" placeholder="100" bind-value="{{graphSettings.petriMaxTrans}}" class="middle"
-                   auto-validate allowed-pattern="[0-9]" value="{{graphSettings.petriMaxTrans}}"></paper-input>
-      <paper-button style="float:right" onclick="app.$['settings-dialog'].close();">close</paper-button>
-    </paper-dialog>
+    <!-- include dialogs -->
+    <help-dialog id="help"></help-dialog>
+    <save-dialog id="save"></save-dialog>
+    <settings-dialog id="settings"></settings-dialog>
+    <!-- end include -->
   </template>
 
   <!-- build:js scripts/app.js -->
