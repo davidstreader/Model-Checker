@@ -15,7 +15,7 @@ function petriNetAbstraction(net, isFair){
 		const id = net.nextTransitionId;
 		const from = transition.from.map(id => net.getPlace(id));
 		const to = transition.to.map(id => net.getPlace(id));
-		const t = net.addTransition(id, transition.label, from, to);
+		const t = net.addTransition(id, transition.label, from, to, transition.metaData);
 		t.locations = transition.locations;
 	}
 
@@ -89,7 +89,7 @@ function petriNetAbstraction(net, isFair){
 
 				// construct a new observable transition
 				for(let k = 0; k < outgoingMarkings.length; k++){
-					constructObservableTransition(Object.keys(from), Object.keys(outgoingMarkings[k]), observable[j].label, observable[j].locations);
+					constructObservableTransition(Object.keys(from), Object.keys(outgoingMarkings[k]), observable[j].label, observable[j].metaDataSet, observable[j].locations);
 				}
 			}
 		}
@@ -120,7 +120,7 @@ function petriNetAbstraction(net, isFair){
 
 				// construct a new observable transition
 				for(let k = 0; k < incomingMarkings.length; k++){
-					constructObservableTransition(Object.keys(incomingMarkings[k]), Object.keys(to), observable[j].label, observable[j].locations);
+					constructObservableTransition(Object.keys(incomingMarkings[k]), Object.keys(to), observable[j].label, observable[j].metaDataSet, observable[j].locations);
 				}
 			}
 		}
@@ -174,10 +174,10 @@ function petriNetAbstraction(net, isFair){
 		return markings;
 	}
 
-	function constructObservableTransition(from, to, label, locations){
+	function constructObservableTransition(from, to, label, metaData, locations){
 		const key = constructTransitionKey(from, to, label);
 		if(observableTransitionMap[key] === undefined){
-			observableTransitionMap[key] = new ObservableTransition(from, to, label, locations);
+			observableTransitionMap[key] = new ObservableTransition(from, to, label, metaData, locations);
 		}
 	}
 
@@ -187,10 +187,11 @@ function petriNetAbstraction(net, isFair){
 		return incoming + ' -|' + label + '|- ' + outgoing; 
 	}
 
-	function ObservableTransition(from, to, label, locations){
+	function ObservableTransition(from, to, label, metaData, locations){
 		this.from = from;
 		this.to = to;
 		this.label = label;
+		this.metadata = metaData;
 		this.locations = locations;
 	}
 }
