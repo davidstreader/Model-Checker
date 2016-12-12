@@ -48,6 +48,7 @@ function automataParallelComposition(id, automaton1, automaton2){
 			for(let j = 0; j < from.length; j++){
 				const newEdge = automaton.addEdge(automaton.nextEdgeId, action, from[j], to[j]);
 				newEdge.locations = edge.locations;
+				newEdge.metaData.originId = edge.id;
 			}
 		} 
 	}
