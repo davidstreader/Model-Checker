@@ -185,7 +185,7 @@ function tokenRule(process, operation){
 
 				// check if this state has already been visited
 				if(visitedStates[nextStateKey] !== undefined){
-					const edge = graph.addEdge(graph.nextEdgeId, transition.label, node, visitedStates[nextStateKey]);
+					const edge = graph.addEdge(graph.nextEdgeId, transition.label, node, visitedStates[nextStateKey], transition.metaDataSet);
 					edge.locations = transition.locations;
 				}
 				else{
@@ -200,7 +200,7 @@ function tokenRule(process, operation){
 					}
 					next.locations = nextLocations;
 
-					const edge = graph.addEdge(graph.nextEdgeId, transition.label, node, next);
+					const edge = graph.addEdge(graph.nextEdgeId, transition.label, node, next, transition.metaDataSet);
 					edge.locations = transition.locations;
 
 					// push the new state to the fringe
