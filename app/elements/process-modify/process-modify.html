@@ -81,15 +81,6 @@
           app.push("automata.display",graph);
           const _this = this;
           const directEmbeds = _.filter(cells[0].getEmbeddedCells(),cell=>cell.attributes.type=='interruptLabel');
-          cells.forEach(cell => {
-            if (directEmbeds.indexOf(cell) !== -1) {
-              return;
-            }
-
-            if (cell.attributes.type === 'interruptEmbedNode') {
-              get$Cell(cell).hide();
-            }
-          });
           $("#process-display-selector")[0].contentElement.selected = app.get("automata.display").length-1;
           //Find the bounding box of the selected processes parent, and scroll to it
           //The scroll bar is inside .process-display

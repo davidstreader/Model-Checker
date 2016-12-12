@@ -328,10 +328,6 @@
             if (directEmbeds.indexOf(cell) !== -1) {
               return;
             }
-
-            if (cell.attributes.type === 'interruptEmbedNode') {
-              get$Cell(cell).hide();
-            }
             //box means interrupt
             if (cell.attributes.type === 'interruptLabel') {
               const lbl = cell.attributes.attrs.text.text;

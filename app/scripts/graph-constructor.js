@@ -92,8 +92,12 @@ function _box(jgraph, parent, toEmbed, name, graphMap, key) {
   const boxNode = new joint.shapes.interruptParentNode({
     type:'interruptParentNode'
   });
+  //We dont want the embed to show or have any interactions.
   const embedNode = new joint.shapes.interruptEmbedNode({
-    type:'interruptEmbedNode'
+    type:'interruptEmbedNode',
+    attrs: {
+      rect: {fill: 'transparent', stroke: 'none', visibility: 'hidden'}
+    }
   });
   parent.embed(boxNode);
   jgraph.addCell(embedNode);
@@ -299,12 +303,9 @@ function constructGraphs(graphMap, id, hidden, callback) {
         const id = parseInt(graph.name.split(".")[1]);
         const bbox = graph.parentNode.getBBox().origin();
         const cell = new joint.shapes.interruptLabel({
-          type: "interruptLabel",
-          size: {width: 100, height: 30},
           position: {x:bbox.x,y:bbox.y-25*(id-1)},
           attrs: {
-            rect: {fill: 'transparent', stroke: 'none'},
-            'text': {text: graph.name, fill: 'red', 'font-size': 20}
+            'text': {text: graph.name}
           }
         });
         if (graph.parentNode.embedLink) {
