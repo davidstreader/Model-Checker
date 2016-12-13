@@ -25,18 +25,13 @@ function automatonToPetriNet(automaton){
 	while(fringe.length !== 0){
 		const current = fringe.pop();
 
+		if(visited[current.id]){
+			continue;
+		}
+
 		const outgoing = walker.getOutgoingNodes(current);
 		for(let i = 0; i < outgoing.length; i++){
 			const {edge, node} = outgoing[i];
-
-
-			// check if this node has already been visited
-			if(!visited[node.id]){
-				fringe.push(node);
-			}
-			else{
-				continue;
-			}
 
 			const edgeId = (edge.metaData.originId === undefined) ? edge.id : edge.metaData.originId;
 
@@ -81,8 +76,10 @@ function automatonToPetriNet(automaton){
 
 			// mark this edge as executed
 			executed[edgeId] = true;
-			visited[node.id] = true;
+			fringe.push(node);
 		}
+
+		visited[current.id] = true;
 	}
 
 	const roots = net.roots;
