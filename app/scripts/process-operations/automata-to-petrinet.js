@@ -48,7 +48,15 @@ function automatonToPetriNet(automaton){
 			// get the incoming places to the new transition
 			const places = [];
 			for(let id in edge.locations){
-				places.push(placeMap[id]);
+				if(stateMap[current.id][id] !== undefined){
+					places.push(stateMap[current.id][id]);
+				}
+			}
+
+			if(places.length === 0){
+				for(let location in stateMap[current.id]){
+					places.push(stateMap[current.id][location]);
+				}
 			}
 
 			// get the outgoing places to the new transition
@@ -75,6 +83,28 @@ function automatonToPetriNet(automaton){
 			executed[edgeId] = true;
 			visited[node.id] = true;
 		}
+	}
+
+	const roots = net.roots;
+	const toDelete = [];
+	for(let i = 0; i < roots.length; i++){
+		const outgoing = roots[i].outgoingTransitions;
+		if(outgoing.length === 0){
+			const incoming = roots[i].incomingTransitions.map(id => net.getTransition(id));
+			for(let j = 0; j < roots.length; j++){
+				if(i !== j){
+					for(let k = 0; k < incoming.length; k++){
+						roots[j].addIncomingTransition(incoming[k].id);
+						incoming[k].addOutgoingPlace(roots[j].id);
+					}
+				}
+			}
+			toDelete.push(roots[i]);
+		}
+	}
+
+	for(let i = 0; i < toDelete.length; i++){
+		net.removePlace(toDelete[i].id);
 	}
 
 	// mark places as terminals if necessary
