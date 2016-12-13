@@ -22,13 +22,11 @@ onmessage = function (e) {
     for (let process in compile.analysis) {
       delete compile.analysis[process].process;
     }
-    console.log(JSON.stringify(compile.analysis));
     postMessage({clear:true,message:"Finished Compiling. Sending data to client"});
     postMessage({result:compile});
   } catch (ex) {
     postMessage({result:{type: 'error', message: ex.toString(), stack: ex.stack}});
   }
-  console.log("test");
   //Kill the worker as we start a new worker for each compilation
   terminate();
 }

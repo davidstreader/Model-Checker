@@ -17,18 +17,17 @@ io.on('connection', function (socket) {
     }
     var args = undefined;
     var opts = {
-      execArgv: ['--debug-brk='+childDebugPort,'--stack-size=32000'],
+      execArgv: ['--stack-size=320000'],
     };
     console.log("Debugging Worker at port", childDebugPort);
     childDebugPort = childDebugPort + 1;
 
     //Compile in another thread, so we do not hang the server  from accepting other requests
-    let worker = new Worker("asyncCompiler.js");
+    let worker = new Worker("asyncCompiler.js",args,opts);
     workerMap[socket.id] = worker;
     worker.onmessage = function(e) {
       if (e.data.result) {
         ack(e.data.result);
-        console.log("test3");
         worker.terminate();
       } else if (e.data.message) {
         socket.emit("log",e.data);
@@ -38,7 +37,6 @@ io.on('connection', function (socket) {
   })
   socket.on("disconnect", () => {
     if (workerMap[socket.id]) {
-      console.log("test2");
       workerMap[socket.id].terminate();
       delete workerMap[socket.id];
     }
