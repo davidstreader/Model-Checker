@@ -25,12 +25,15 @@
     Polymer({
       is: 'save-dialog',
       open: function() {
+        this.saveSettings = app.saveSettings;
         $('#save-dialog')[0].open();
       },
       close: function() {
+        app.saveSettings = this.saveSettings;
         $('#save-dialog')[0].close();
       },
       save: function() {
+        app.saveSettings = this.saveSettings;
         app.downloadFile();
         $('#save-dialog')[0].close();
       },
@@ -38,7 +41,7 @@
         return $('#filename')[0].inputElement.bindValue;
       },
       opened: function() {
-          return $('#save-dialog')[0].opened;
+        return $('#save-dialog')[0].opened;
       }
     })
   })();
