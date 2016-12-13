@@ -37,6 +37,8 @@
       });
       app.socket.on('disconnect', function() {
         app.isClientSide = true;
+        app.$.console.log("You have been disconnected from the server.");
+        app.$.console.log("As a result, your last compilation may not have completed successfully.");
       });
     }
     app.compile = function(overrideBuild) {
