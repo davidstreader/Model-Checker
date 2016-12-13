@@ -99,7 +99,7 @@
             skipped.push({id: graph.id, length: graph.nodeCount, type:"nodes",maxLength: app.graphSettings.autoMaxNode})
             continue;
           }
-          graphs.push(AUTOMATON.convert(graph));
+          graphs.push(graph);
         } else if (graph.type === 'petrinet') {
           if (graph.placeCount > app.graphSettings.petriMaxPlace) {
             skipped.push({id: graph.id, length: graph.placeCount, type:"places", maxLength: app.graphSettings.petriMaxPlace})
@@ -109,7 +109,7 @@
             skipped.push({id: graph.id, length: graph.transitionCount, type:"transitions",maxLength: app.graphSettings.petriMaxTrans})
             continue;
           }
-          graphs.push(PETRI_NET.convert(graph));
+          graphs.push(graph);
         }
 
       }
