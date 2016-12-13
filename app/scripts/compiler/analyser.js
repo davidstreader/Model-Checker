@@ -27,10 +27,6 @@ function performAnalysis(processes, lastAnalysis, abstractionChanged){
 
   // loop through each process and find references to other processes
   for(let i = 0; i < processes.length; i++){
-    if (typeof app !== 'undefined') {
-      app.$.console.clear();
-      app.$.console.log("Analysing: "+processes[i].ident.ident);
-    }
     if (typeof postMessage === 'function')
       postMessage({clear:true,message:("Analysing: "+processes[i].ident.ident+" ("+(i+1)+"/"+processes.length)+")"});
     // analyse the main process to find references to other processses

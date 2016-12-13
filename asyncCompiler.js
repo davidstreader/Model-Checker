@@ -1,5 +1,6 @@
 const fs = require('fs');
 const vm = require("vm");
+const stringify = require('fast-stable-stringify');;
 global.importScripts = (...files) => {
   let scripts;
 
@@ -14,12 +15,16 @@ global.importScripts = (...files) => {
 };
 importScripts("includes.js");
 onmessage = function (e) {
-
   //Node appears to handle exceptions differently. Lets catch them and pass them back instead of killing the app.
   try {
-    postMessage({result:Compiler.localCompile(e.data.ast, e.data.context)});
+    const compile = Compiler.localCompile(e.data.ast, e.data.context);
+    postMessage({clear:true,message:"Finished Compiling. Converting data for client"});
+    var string = stringify(compile);
+    var buf = Buffer(string);
+    postMessage({clear:true,message:"Finished Converting. Sending data to client"});
+    postMessage({result:buf});
   } catch (ex) {
-    postMessage({result:{type: 'error', message: ex.toString(), stack: ex.stack}});
+    postMessage({result:Buffer(stringify({type: 'error', message: ex.toString(), stack: ex.stack}))});
   }
   //Kill the worker as we start a new worker for each compilation
   terminate();

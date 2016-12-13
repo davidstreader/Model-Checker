@@ -22,7 +22,7 @@
     app.graphSettings = {autoMaxNode: 100, petriMaxPlace:100, petriMaxTrans: 100};
     app.loaded = app.loaded || false;
     app.saveSettings = {currentFile: '', saveCode: true, saveLayout: true};
-
+    app.decoder = new TextDecoder("UTF-8");
     if (typeof io !== 'undefined') {
       app.socket = io();
       app.socket.on('connect', ()=>{
@@ -32,6 +32,7 @@
           app.compile();
       });
       app.socket.on('log',data => {
+        data = JSON.parse(app.decoder.decode(data));
         if (data.clear) app.$.console.clear();
         app.$.console.log(data.message);
       });
