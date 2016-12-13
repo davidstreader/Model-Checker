@@ -134,26 +134,30 @@ function visualizeAutomata(process, graphID, glGraph, hidden) {
     z:0});
   let interruptId = 1;
   for(let i = 0; i < nodes.length; i++){
+    let attrs = {text : {text: nodes[i].metaData.label}}
     const id = 'n' + nodes[i].id;
     let type = "fsa.State";
     let fill = Colours.grey;
+    // check if current node is the root node
+    if(nodes[i].getMetaData('startNode')){
+      fill=Colours.blue;
+    }
     if(nodes[i].getMetaData('isTerminal') !== undefined) {
       type = "fsa.EndState";
       fill = Colours.green;
       if (nodes[i].getMetaData('isTerminal') === 'error') {
         fill = Colours.red;
       }
-    }
-    // check if current node is the root node
-    if(nodes[i].getMetaData('startNode')){
-      fill=Colours.blue;
+      attrs['.outer'] = {'fill':fill};
+    } else {
+      attrs['circle'] = {'fill':fill};
     }
     glGraph.setNode(id,{
       width: 50,
       height: 50,
       z:2,
       type:type, id:generateUuid(),
-      attrs: {text : {text: nodes[i].metaData.label}, '.outer': {'fill':fill}},
+      attrs: attrs,
       tooltip: nodes[i].getMetaData('variables')
     });
     glGraph.setParent(id,graphID);
