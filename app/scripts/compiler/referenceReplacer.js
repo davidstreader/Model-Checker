@@ -78,6 +78,7 @@ function replaceReferences(processes){
 	 * @return{ASTNode} - the updated ast node
 	 */
 	function replaceNode(astNode, ident, idMap){
+	  console.log(ident);
 		const type = astNode.type;
 		switch(type){
 			case 'sequence':

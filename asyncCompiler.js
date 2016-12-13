@@ -18,11 +18,17 @@ onmessage = function (e) {
   //Node appears to handle exceptions differently. Lets catch them and pass them back instead of killing the app.
   try {
     const compile = Compiler.localCompile(e.data.ast, e.data.context);
+    //There really is no point to storing everything twice
+    for (let process in compile.analysis) {
+      delete compile.analysis[process].process;
+    }
+    console.log(JSON.stringify(compile.analysis));
     postMessage({clear:true,message:"Finished Compiling. Sending data to client"});
     postMessage({result:compile});
   } catch (ex) {
     postMessage({result:{type: 'error', message: ex.toString(), stack: ex.stack}});
   }
+  console.log("test");
   //Kill the worker as we start a new worker for each compilation
   terminate();
 }

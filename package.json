@@ -38,7 +38,7 @@
     "node": ">=4.1.1"
   },
   "scripts": {
-    "start": "forever app.js",
+    "start": "forever start -c \"node --stack-size=32000\" app.js",
     "test": "node node_modules/mocha/bin/mocha tests/scripts --recursive",
     "gulp": "gulp serve"
   },
@@ -51,6 +51,9 @@
     "fast-stable-stringify": "^0.1.1",
     "forever": "^0.15.3",
     "mocha": "^3.2.0",
+    "msgpack": "^1.0.2",
+    "msgpack-lite": "^0.1.26",
+    "msgpack5": "^3.4.1",
     "pako": "^1.0.3",
     "socket.io": "^1.7.1",
     "tiny-worker": "^1.1.7",
