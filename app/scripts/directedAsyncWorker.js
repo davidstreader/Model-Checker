@@ -44,7 +44,7 @@ onmessage = e => {
   }
   //We do not want to rescale the graph if it has already been rescaled.
   if (graph.type == 'interrupt') return;
-  glGraph = layoutGraph(glGraph);
+  layoutGraph(glGraph);
   _.each(glGraph.interrupts,interrupt=>{
     const parentNode = glGraph.node(interrupt);
     //Add a label to each interrupt
@@ -90,6 +90,7 @@ onmessage = e => {
     }
     graph.push(glNode);
   });
+  const parentNode = glGraph.node(id);
   // Import all edges.
   glGraph.edges().forEach(function(edgeObj) {
     const glEdge = glGraph.edge(edgeObj);
@@ -103,6 +104,17 @@ onmessage = e => {
       glEdge.vertices = glEdge.points.slice(1, glEdge.points.length - 1);
     glEdge.source = {id:glGraph.node(glEdge.source).id};
     glEdge.target = {id:glGraph.node(glEdge.target).id};
+    if (!glEdge.parentNode) {
+      glEdge.parent = {id:parentNode.id};
+      parentNode.embeds = parentNode.embeds.concat({id:glEdge.id});
+    } else {
+      //This edge was set via an the _box function from interrupts
+      //this means that the parent variable references a node by name
+      //So we need to change that to id.
+      const parentNode = glGraph.node(glEdge.parentNode);
+      glEdge.parent = {id:parentNode.id};
+      parentNode.embeds = parentNode.embeds.concat({id:glEdge.id});
+    }
     graph.push(glEdge);
   });
   //push the converstion back to the main thread
@@ -114,8 +126,6 @@ function layoutGraph(glGraph) {
   // Executes the layout.
 
   glGraph.setGraph({
-    nodesep: 70,
-    ranksep: 50,
     rankdir: 'LR',
     marginx: 0,
     marginy: 0
@@ -127,8 +137,8 @@ function visualizeAutomata(process, graphID, glGraph, hidden) {
   // add nodes in automaton to the graph
   const nodes = process.nodes;
   glGraph.setNode(graphID,{type:'parent',id:generateUuid(),
-    width: 50,
-    height: 50,
+    width: 0,
+    height: 0,
     z:0});
   let interruptId = 1;
   for(let i = 0; i < nodes.length; i++){
@@ -214,9 +224,6 @@ function _link(source, target, label,tooltip, glGraph, graphID, opts) {
     deleteMe: label === "deleteMe",
     opts: opts ||{}
   },id+"");
-  //If a node is going to be deleted later, there is not point in parenting it.
-  if (label !== "deleteMe")
-    glGraph.setParent(id+"",graphID);
   return id+"";
 }
 function _box(glGraph, toEmbed, name, graphID) {
@@ -237,7 +244,11 @@ function _box(glGraph, toEmbed, name, graphID) {
   glGraph.setParent("boxNode"+name,graphID);
   glGraph.setParent("embedNode"+name,"boxNode"+name);
   //Remove embedded cells from the parent and add them to the box
-  toEmbed.forEach(cell => {glGraph.setParent(cell,"boxNode"+name);});
+  toEmbed.forEach(cell => {
+    if (glGraph.node(cell))
+      glGraph.setParent(cell,"boxNode"+name);
+    else glGraph.parentNode = "boxNode"+name;
+  });
   return name;
 }
 function first(data) {
