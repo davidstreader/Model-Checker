@@ -46,7 +46,6 @@ onmessage = e => {
   if (graph.type == 'interrupt') return;
   glGraph = layoutGraph(glGraph);
   _.each(glGraph.interrupts,interrupt=>{
-    console.log(interrupt);
     const parentNode = glGraph.node(interrupt);
     //Add a label to each interrupt
     glGraph.setNode(interrupt+"label",{type:'interruptLabel',id:generateUuid(),
@@ -63,9 +62,8 @@ onmessage = e => {
   //Clear the imported object so we can reuse it for export
   graph = [];
   //Convert dagres graph to an array of edges and nodes
-  glGraph.nodes().forEach(function(v) {
-    const glNode = glGraph.node(v);
-    if (glNode === undefined) return;
+  _.each(glGraph._nodes,function(glNode,v) {
+    if (glNode==undefined) return;
     glNode.position = {x:glNode.x - glNode.width / 2,y:glNode.y - glNode.height / 2};
     glNode.size = {width:glNode.width ,height:glNode.height};
     delete glNode.x;
@@ -116,8 +114,8 @@ function layoutGraph(glGraph) {
   // Executes the layout.
 
   glGraph.setGraph({
-    // nodesep: 70,
-    // ranksep: 50,
+    nodesep: 70,
+    ranksep: 50,
     rankdir: 'LR',
     marginx: 0,
     marginy: 0
@@ -134,8 +132,8 @@ function visualizeAutomata(process, graphID, glGraph, hidden) {
     z:0});
   let interruptId = 1;
   for(let i = 0; i < nodes.length; i++){
-    let attrs = {text : {text: nodes[i].metaData.label}}
-    const id = 'n' + nodes[i].id;
+    let attrs = {text : {text: nodes[i].metaData.label}};
+    const nid = 'n' + nodes[i].id;
     let type = "fsa.State";
     let fill = Colours.grey;
     // check if current node is the root node
@@ -152,7 +150,7 @@ function visualizeAutomata(process, graphID, glGraph, hidden) {
     } else {
       attrs['circle'] = {'fill':fill};
     }
-    glGraph.setNode(id,{
+    glGraph.setNode(nid,{
       width: 50,
       height: 50,
       z:2,
@@ -160,7 +158,7 @@ function visualizeAutomata(process, graphID, glGraph, hidden) {
       attrs: attrs,
       tooltip: nodes[i].getMetaData('variables')
     });
-    glGraph.setParent(id,graphID);
+    glGraph.setParent(nid,graphID);
   }
   let toEmbed = [];
   // add the edges between the nodes in the automaton to the graph
@@ -287,42 +285,41 @@ function visualizePetriNet(process, graphID, glGraph, hidden) {
     const tid ='t'+transitions[i].id;
     let label = transitions[i].label;
     let tooltip = "";
-    //TODO: Fix petrinet interrupts
-    // if (transitions[i].metaData.interrupt && hidden) {
-    //   //inCom is expensive to calculate and needs to be done once per interrupt, so store it.
-    //   //inCom needs to be a list of all places leading to this interrupt.
-    //   //We do this by getting the node this transition leads to, and then getting all transitions from that node.
-    //   //We can then map the transitions to the first element in their incomingPlaceSet (as interrupts will only have one incoming node)
-    //   //and then we finally sort inCom so that its in order of the tree.
-    //   //this way, the node at the end of inCom will be one of the rightMost elements, and this is important as they are the easiest
-    //   //nodes to link from when creating fake nodes for dagre placement.
-    //   const inCom = transitions[i].metaData.inCom || _.map(process.placeMap[outgoing[0]].incomingTransitionSet,(val,transition)=>first(process.transitionMap[transition].incomingPlaceSet)).sort(place => places2.indexOf(place));
-    //   transitions[i].metaData.inCom = inCom;
-    //   if (incoming[0] !== inCom[inCom.length-1]) {
-    //     continue;
-    //   }
-    //   //At this point, we know that inCom contains all nodes from the interrupted process, so add all of them.
-    //   toEmbed = toEmbed.concat(inCom.map(node => 'p'+node));
-    //   //At this point, we dont actually want to create any transitions.
-    //   //All we want to do is link from the last incoming to the last outgoing.
-    //   const target = 'p' + outgoing[0];
-    //   const from = 'p' + incoming[0];
-    //   const box = _box(glGraph, toEmbed, graphID+"."+(interruptId++), graphID);
-    //   glGraph.setNode(tid,{
-    //     width: 50,
-    //     height: 50,
-    //     z:2,
-    //     type:"pn.Transition", id:generateUuid(),
-    //     attrs: {text : {text:label}},
-    //     tooltip: tooltip
-    //   });
-    //   glGraph.setParent(tid,graphID);
-    //   _link(from,"embedNode"+box, "deleteMe",'',glGraph);
-    //
-    //   //Now that all the children are inside box, toEmbed should only contain the box, plus the next node and the transition + links
-    //   toEmbed = ["parentNode"+box,target,tid,_link("embedNode"+box,tid, '','',glGraph,graphID,{clearVerts:true}),_link(tid,target, '','',glGraph,graphID,{clearVerts:true})];
-    //   continue;
-    // }
+    if (transitions[i].metaData.interrupt && hidden) {
+      //inCom is expensive to calculate and needs to be done once per interrupt, so store it.
+      //inCom needs to be a list of all places leading to this interrupt.
+      //We do this by getting the node this transition leads to, and then getting all transitions from that node.
+      //We can then map the transitions to the first element in their incomingPlaceSet (as interrupts will only have one incoming node)
+      //and then we finally sort inCom so that its in order of the tree.
+      //this way, the node at the end of inCom will be one of the rightMost elements, and this is important as they are the easiest
+      //nodes to link from when creating fake nodes for dagre placement.
+      const inCom = transitions[i].metaData.inCom || _.map(process.placeMap[outgoing[0]].incomingTransitionSet,(val,transition)=>first(process.transitionMap[transition].incomingPlaceSet)).sort(place => places2.indexOf(place));
+      transitions[i].metaData.inCom = inCom;
+      if (incoming[0] !== inCom[inCom.length-1]) {
+        continue;
+      }
+      //At this point, we know that inCom contains all nodes from the interrupted process, so add all of them.
+      toEmbed = toEmbed.concat(inCom.map(node => 'p'+node));
+      //At this point, we dont actually want to create any transitions.
+      //All we want to do is link from the last incoming to the last outgoing.
+      const target = 'p' + outgoing[0];
+      const from = 'p' + incoming[0];
+      const box = _box(glGraph, toEmbed, graphID+"."+(interruptId++), graphID);
+      glGraph.setNode(tid,{
+        width: 50,
+        height: 50,
+        z:2,
+        type:"pn.Transition", id:generateUuid(),
+        attrs: {text : {text:label}},
+        tooltip: tooltip
+      });
+      glGraph.setParent(tid,graphID);
+      _link(from,"embedNode"+box, "deleteMe",'',glGraph,graphID);
+
+      //Now that all the children are inside box, toEmbed should only contain the box, plus the next node and the transition + links
+      toEmbed = ["boxNode"+box,target,tid,_link("embedNode"+box,tid, '','',glGraph,graphID,{clearVerts:true}),_link(tid,target, '','',glGraph,graphID,{clearVerts:true})];
+      continue;
+    }
     let vars = transitions[i].getMetaData('variables');
     if(transitions[i].getMetaData('guard') !== undefined){
       if (transitions[i].getMetaData('next') !== undefined)

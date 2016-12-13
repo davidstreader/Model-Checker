@@ -88,6 +88,10 @@
           _this.jgraph.resetCells();
           _this.saveChanges();
         })
+        //Espand the drawing area to the size of the screen when zooming
+        window.addEventListener('resize', function(){
+          _this.rescale();
+        });
         document.addEventListener('addAll', function(){
           app.$.console.log("Starting Render. While rendering, you can not use the editor tab.");
           //If we are currently rendering, ignore any events
