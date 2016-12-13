@@ -49,10 +49,8 @@ onmessage = e => {
     const parentNode = glGraph.node(interrupt);
     //Add a label to each interrupt
     glGraph.setNode(interrupt+"label",{type:'interruptLabel',id:generateUuid(),
-      width: 100,
-      height: 50,
-      x:parentNode.x-50,
-      y:parentNode.y-25,
+      position: {x:(parentNode.x-parentNode.x/2)-100,y:(parentNode.y-parentNode.y/2)-45},
+      size: {width:100,height:50},
       z:2,
       attrs: {
         'text': {text: interrupt.replace("box","").replace(".hidden","").replace("Node","")}
@@ -64,8 +62,10 @@ onmessage = e => {
   //Convert dagres graph to an array of edges and nodes
   _.each(glGraph._nodes,function(glNode,v) {
     if (glNode==undefined) return;
-    glNode.position = {x:glNode.x - glNode.width / 2,y:glNode.y - glNode.height / 2};
-    glNode.size = {width:glNode.width ,height:glNode.height};
+    if (!glNode.position)
+      glNode.position = {x:glNode.x - glNode.width / 2,y:glNode.y - glNode.height / 2};
+    if (!glNode.size)
+      glNode.size = {width:glNode.width ,height:glNode.height};
     delete glNode.x;
     delete glNode.y;
     delete glNode.width;
