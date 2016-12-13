@@ -32,7 +32,6 @@
           app.compile();
       });
       app.socket.on('log',data => {
-        data = JSON.parse(app.decoder.decode(data));
         if (data.clear) app.$.console.clear();
         app.$.console.log(data.message);
       });
