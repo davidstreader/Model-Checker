@@ -22,7 +22,7 @@ io.on('connection', function (socket) {
         ack(e.data.result);
         worker.terminate();
       } else if (e.data.message) {
-        socket.emit("log",e.data);
+        socket.emit("log",atob(JSON.stringify(e.data)));
       }
     }
     worker.postMessage(obj);
