@@ -21,10 +21,12 @@
     Polymer({
       is: 'settings-dialog',
       open: function () {
+          this.graphSettings = app.graphSettings;
         $('#settings-dialog')[0].open();
       },
       close: function () {
         $('#settings-dialog')[0].close();
+        this.graphSettings = app.graphSettings;
       },
       opened: ()=>{
         return $('#settings-dialog')[0].opened;
