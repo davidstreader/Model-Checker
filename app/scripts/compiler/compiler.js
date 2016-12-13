@@ -50,12 +50,12 @@ const Compiler = {
   //We still need to do remote compilation sync, but its not like that's a problem since sockets are async by nature
   remoteCompile: function(ast, context) {
     app.socket.emit('compile',{ast:ast,context:context},function(results) {
-      results = JSON.parse(app.decoder.decode(new Uint8Array(results.data)));
       if (results.type === 'error') {
         app.finalizeBuild(results);
         return;
       }
       app.finalizeBuild(results);
+
     });
   }
 }

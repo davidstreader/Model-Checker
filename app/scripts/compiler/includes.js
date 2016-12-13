@@ -10,6 +10,7 @@ importScripts("petrinetInterpreter.js");
 importScripts("operation-evaluator.js");
 importScripts("reconstructor.js");
 importScripts("compiler.js");
+importScripts("../../../bower_components/pako/dist/pako.js");
 <!-- the wrapper scripts for the process operations -->
 importScripts("../process-operations/abstraction.js");
 importScripts("../process-operations/bisimulation.js");

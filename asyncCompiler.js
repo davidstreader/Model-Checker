@@ -18,11 +18,8 @@ onmessage = function (e) {
   //Node appears to handle exceptions differently. Lets catch them and pass them back instead of killing the app.
   try {
     const compile = Compiler.localCompile(e.data.ast, e.data.context);
-    postMessage({clear:true,message:"Finished Compiling. Converting data for client"});
-    var string = stringify(compile);
-    var buf = Buffer(string);
-    postMessage({clear:true,message:"Finished Converting. Sending data to client"});
-    postMessage({result:buf});
+    postMessage({clear:true,message:"Finished Compiling. Sending data to client"});
+    postMessage({result:compile});
   } catch (ex) {
     postMessage({result:Buffer(stringify({type: 'error', message: ex.toString(), stack: ex.stack}))});
   }
