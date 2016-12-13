@@ -81,61 +81,31 @@ function tokenRule(process, operation){
 		return process;
 	}
 
-	function petriNetToAutomaton(process){
-		// setup the automaton to construct
-		const graph = new Automaton(process.id);
-		const root = graph.addNode();
+	function petriNetToAutomaton(net){
+		const automaton = new Automaton(net.id);
+		const root = automaton.addNode();
+		automaton.root = root.id;
 		root.metaData.startNode = true;
-		graph.root = root.id;
 
-		// setup transitions
-		const transitionMap = new TransitionMap(process.transitions);
-		const visitedStates = {};
+		const walker = new PetriNetWalker(net);
 
-		// setup the fringe
-		const fringe = [];
-		const roots = process.roots;
+		const markings = {};
 
-		// construct root key and locations
-		const rootLocations = {};
+		const roots = net.roots;
 		const rootSet = {};
 		for(let i = 0; i < roots.length; i++){
-			const tokens = roots[i].getMetaData('startPlace');
-			for(let j = 0; j < tokens; j++){
-				if(rootSet[roots[i].id] === undefined){
-					rootSet[roots[i].id] = 0;
-				}
-				rootSet[roots[i].id]++;
-				for(let id in roots[i].locations){
-					rootLocations[id] = true;
-				}
-			}
+			const root = roots[i];
+			rootSet[root.id] = true;
 		}
-		root.locations = rootLocations;
+		const rootKey = walker.markingKey(rootSet);
 
-		const rootKey = constructStateKey(rootSet);
-		// add the root to the visited state map
-		visitedStates[rootKey] = root;
+		markings[rootKey] = root;
 
-		fringe.push(new FringeElement(rootSet, root));
-
+		const fringe = [new FringeElement(rootSet, root)];
 		while(fringe.length !== 0){
-			const current = fringe.pop();
-			const {places, node} = current // deconstruct the fringe element
+			const {places, node} = fringe.pop();
 
-			// get the outgoing transitions the current state
-			const transitionIds = {};
-			for(let id in places){
-				const outgoing = process.getPlace(id).outgoingTransitions;
-				for(let i = 0; i < outgoing.length; i++){
-					transitionIds[outgoing[i]] = true;
-				}
-			}
-
-			const transitions = [];
-			for(let id in transitionIds){
-				transitions.push(process.getTransition(id));
-			}
+			const transitions = walker.getOutgoingTransitions(places);
 
 			// check if there are any transitions
 			if(transitions.length === 0){
@@ -143,90 +113,50 @@ function tokenRule(process, operation){
 				continue;
 			}
 
-			// find the transitions that can be executed from the current state
 			for(let i = 0; i < transitions.length; i++){
 				const transition = transitions[i];
-				const incoming = new PlaceSet(transition.incomingPlaces.map(id => process.getPlace(id)));
+				const nextState = walker.executeTransition(transition, places);
 
-				// check if this transition is executable from the current state
-				let isExecutable = true;
-				for(let id in incoming){
-					if(places[id] === undefined){
-						isExecutable = false;
-						break;
-					}
-				}
-
-				if(!isExecutable){
+				// check if transition was executable
+				if(nextState === undefined){
 					continue;
 				}
 
-				// construct the state that the Petri net is in after execution
-				const nextState = JSON.parse(JSON.stringify(places));
-				// remove the places that were transiitoned from
-				for(let id in incoming){
-					nextState[id]--;
-					if(nextState[id] === 0){
-						delete nextState[id];
-					}
-				}
-
-				// add the states that were transitioned to
-				const outgoing = transition.outgoingPlaces.map(id => process.getPlace(id));
-				for(let j = 0; j < outgoing.length; j++){
-					const nextId = outgoing[j].id;
-					if(nextState[nextId] === undefined){
-						nextState[nextId] = 0;
-					}
-					nextState[nextId]++;
-				}
-
-				const nextStateKey = constructStateKey(nextState);
+				const nextStateKey = walker.markingKey(nextState);
 
 				// check if this state has already been visited
-				if(visitedStates[nextStateKey] !== undefined){
-					const edge = graph.addEdge(graph.nextEdgeId, transition.label, node, visitedStates[nextStateKey], transition.metaDataSet);
+				if(markings[nextStateKey] !== undefined){
+					const edge = automaton.addEdge(automaton.nextEdgeId, transition.label, node, markings[nextStateKey], transition.metaDataSet);
 					edge.locations = transition.locations;
 				}
 				else{
-				// execute the transition
-					const next = graph.addNode();
+					const next = automaton.addNode();
 					const nextLocations = {};
 					for(let id in nextState){
-						const place = process.getPlace(id);
-						for(let l in place.locations){
-							nextLocations[l] = true;
+						const place = net.getPlace(id);
+						for(let location in place.locations){
+							nextLocations[location] = true;
 						}
 					}
 					next.locations = nextLocations;
 
-					const edge = graph.addEdge(graph.nextEdgeId, transition.label, node, next, transition.metaDataSet);
-					edge.locations = transition.locations;
+					const edge = automaton.addEdge(automaton.nextEdgeId, transition.label, node, next, transition.metaDataSet);
 
 					// push the new state to the fringe
 					fringe.push(new FringeElement(nextState, next));
 
 					// mark state as visited
-					visitedStates[nextStateKey] = next;
+					markings[nextStateKey] = next;
 				}
 			}
 		}
 
 		if(root.outgoingEdges.length === 0){
-			root.addMetaData('isTerminal', 'stop');
+			root.metaData.isTerminal = 'stop';
 		}
 
-		return graph;
+		return automaton;
 	}
-}
-
-function TransitionMap(transitions){
-	const transitionMap = {};
-	for(let i = 0; i < transitions.length; i++){
-		transitionMap[transitions[i].id] = transitions[i];
-	}
-
-	return transitionMap;
 }
 
 function FringeElement(places, node){
@@ -234,30 +164,4 @@ function FringeElement(places, node){
 		places: places,
 		node: node
 	}
-}
-
-function PlaceSet(places){
-	const placeSet = {};
-	for(let i = 0; i < places.length; i++){
-		const id = places[i].id;
-		if(placeSet[id] === undefined){
-			placeSet[places[i].id] = 1;
-		}
-		else{
-			placeSet[id]++;
-		}
-	}
-
-	return placeSet;
-}
-
-function constructStateKey(placeSet){
-	const states = [];
-	for(let id in placeSet){
-		for(let i = 0; i < placeSet[id]; i++){
-			states.push(id);
-		}
-	}
-
-	return JSON.stringify(states.sort());
 }
