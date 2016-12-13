@@ -1,10 +1,3 @@
-const Colours = {
-  red: '#C0392b',
-  blue: '#3498DB',
-  green: '#2ECC71',
-  grey: '#BDC3C7',
-  textBackground: 'rgba(255, 255, 255, 0.5)'
-};
 //Load all imports required for dagre.
 //Note: since we dont have a real window variable, we can just create one and assign things to it.
 const window = {};
@@ -16,6 +9,7 @@ importScripts("../../bower_components/graphlib/dist/graphlib.core.js");
 window.graphlib = graphlib;
 importScripts("../../bower_components/dagre/dist/dagre.core.js");
 
+importScripts("constants.js");
 importScripts("process-models/automaton.js");
 importScripts("process-models/petrinet.js");
 //dagre is added to the window normally. Pull it out so we can use it.

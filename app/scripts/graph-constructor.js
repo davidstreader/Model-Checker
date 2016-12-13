@@ -41,8 +41,7 @@ function constructGraphs(graphMap, id, hidden, callback) {
     return;
   }
 
-
-  const worker = new Worker("scripts/directedAsyncWorker.js");
+  const worker = new Worker("scripts/graph-constructor-worker.js");
   worker.postMessage({graph:graph,id:id,hidden:hidden});
   worker.onmessage = e => {  //Calculate the bottom of the last drawn graph
     let tmpjgraph = new joint.dia.Graph();

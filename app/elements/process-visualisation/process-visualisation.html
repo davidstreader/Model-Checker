@@ -313,10 +313,9 @@
 
           //Clone the process into cells, also cloning all children
           let cells = this.graphMap[oldName].parentNode.clone({deep: true});
-          //Sort the array, putting links after components, as the links will fail to be added if their
-          //linked components do not exist
-          cells.sort((a,b) => a.attributes.type==="fsa.Arrow"?1:-1);
           let graph = {};
+          //We need to make sure all nodes are rendered before edges.
+          cells.sort((a,b) => a.attributes.type==="fsa.Arrow"?1:-1);
           //All we really care about is the parent at this point
           graph.parentNode = cells[0];
           graph.id = name;
@@ -335,17 +334,13 @@
             }
             //box means interrupt
             if (cell.attributes.type === 'interruptLabel') {
-              const lbl = cell.attributes.attrs.text.text;
-              let newLbl = lbl;
-              tmpIdx = 1;
-              while (this.displayedGraphs[newLbl]) {
-                newLbl = lbl+(tmpIdx++);
-              }
-              cell.attr({ text: { text: newLbl } });
+              let lbl = cell.attributes.attrs.text.text;
+              lbl = lbl.replace(oldName.replace(".hidden",""),name);
+              cell.attr({ text: { text: lbl } });
               let graph = {};
               graph.parentNode = _this.jgraph.getCell(cell.get("parent"));
               graph.parentNode.set("graphId",graph.id);
-              graph.id = newLbl;
+              graph.id = lbl;
               _this.displayedGraphs[graph.id] = graph.parentNode;
               app.push("automata.display",graph);
             }

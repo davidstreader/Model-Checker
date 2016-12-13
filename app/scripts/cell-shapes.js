@@ -1,10 +1,3 @@
-const Colours = {
-  red: '#C0392b',
-  blue: '#3498DB',
-  green: '#2ECC71',
-  grey: '#BDC3C7',
-  textBackground: 'rgba(255, 255, 255, 0.5)'
-};
 joint.shapes.fsa.Arrow = joint.dia.Link.extend({
   markup: [
     '<path class="connection" stroke="black" d="M 0 0 0 0"/>',
