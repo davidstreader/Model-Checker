@@ -126,10 +126,12 @@
           const { operation, process1, process2, result } = results.operations[i];
           const op = process1 + ' ' + operation + ' ' + process2 + ' = ' + result;
           if(result){
+            app.$.console.log(op);
             passed++;
           }
-
-          app.$.console.log(op);
+          else{
+            app.$.console.error(op);
+          }
         }
 
         if(passed === results.operations.length){
