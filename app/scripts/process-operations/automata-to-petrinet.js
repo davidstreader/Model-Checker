@@ -96,6 +96,7 @@ function automatonToPetriNet(automaton){
 					for(let k = 0; k < incoming.length; k++){
 						roots[j].addIncomingTransition(incoming[k].id);
 						incoming[k].addOutgoingPlace(roots[j].id);
+						roots[j].metaData.startPlace++;
 					}
 				}
 			}
