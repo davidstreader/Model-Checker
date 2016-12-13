@@ -259,8 +259,8 @@
               node.set('size',cell.get('size'));
               return;
             }
-            get$Cell(node).show()
           });
+
           const parentId = cell.get('parent');
           if (!parentId) return;
           const parent = _this.jgraph.getCell(parentId);
@@ -280,6 +280,7 @@
           } else if (cellBbox.corner().y > parentBbox.corner().y) {
             parent.resize(size.width,size.height+changeY,{direction: "bottom"});
           }
+
         });
         if (app.willSaveCookie)
           localStorage.setItem("layout", JSON.stringify(_this.jgraph.toJSON()));

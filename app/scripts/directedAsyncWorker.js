@@ -93,6 +93,7 @@ onmessage = e => {
   const parentNode = glGraph.node(id);
   // Import all edges.
   glGraph.edges().forEach(function(edgeObj) {
+    //["type", "id", "z", "labels", "attrs", "smooth", "tooltip", "source", "target", "deleteMe", "opts", "points"]
     const glEdge = glGraph.edge(edgeObj);
     //Dont bother importing edges that have been flagged for deletion
     if (glEdge.deleteMe) return;
@@ -105,15 +106,13 @@ onmessage = e => {
     glEdge.source = {id:glGraph.node(glEdge.source).id};
     glEdge.target = {id:glGraph.node(glEdge.target).id};
     if (!glEdge.parentNode) {
-      glEdge.parent = {id:parentNode.id};
-      parentNode.embeds = parentNode.embeds.concat({id:glEdge.id});
+      parentNode.embeds = parentNode.embeds.concat(glEdge.id);
     } else {
       //This edge was set via an the _box function from interrupts
       //this means that the parent variable references a node by name
       //So we need to change that to id.
       const parentNode = glGraph.node(glEdge.parentNode);
-      glEdge.parent = {id:parentNode.id};
-      parentNode.embeds = parentNode.embeds.concat({id:glEdge.id});
+      parentNode.embeds = parentNode.embeds.concat(glEdge.id);
     }
     graph.push(glEdge);
   });
