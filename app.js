@@ -15,7 +15,7 @@ io.on('connection', function (socket) {
       workerMap[socket.id].terminate();
     }
     //Compile in another thread, so we do not hang the server  from accepting other requests
-    let worker = new Worker("asyncCompiler.js",undefined,{execArgv: ['--stack-size=320000']});
+    let worker = new Worker("asyncCompiler.js");
     workerMap[socket.id] = worker;
     worker.onmessage = function(e) {
       if (e.data.result) {
