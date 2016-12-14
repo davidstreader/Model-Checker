@@ -15,15 +15,8 @@ io.on('connection', function (socket) {
     if (workerMap[socket.id]) {
       workerMap[socket.id].terminate();
     }
-    var args = undefined;
-    var opts = {
-      execArgv: ['--stack-size=32000'],
-    };
-    console.log("Debugging Worker at port", childDebugPort);
-    childDebugPort = childDebugPort + 1;
-
     //Compile in another thread, so we do not hang the server  from accepting other requests
-    let worker = new Worker("asyncCompiler.js",args,opts);
+    let worker = new Worker("asyncCompiler.js",undefined,{execArgv: ['--stack-size=32000']});
     workerMap[socket.id] = worker;
     worker.onmessage = function(e) {
       if (e.data.result) {
