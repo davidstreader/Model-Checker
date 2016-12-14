@@ -10,7 +10,6 @@ importScripts("petrinetInterpreter.js");
 importScripts("operation-evaluator.js");
 importScripts("reconstructor.js");
 importScripts("compiler.js");
-importScripts("../../elements/imports/msgpack5.min.js");
 <!-- the wrapper scripts for the process operations -->
 importScripts("../process-operations/abstraction.js");
 importScripts("../process-operations/bisimulation.js");
