@@ -17,7 +17,7 @@ io.on('connection', function (socket) {
     }
     var args = undefined;
     var opts = {
-      execArgv: ['--stack-size=320000'],
+      execArgv: ['--stack-size=32000'],
     };
     console.log("Debugging Worker at port", childDebugPort);
     childDebugPort = childDebugPort + 1;
