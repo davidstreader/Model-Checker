@@ -9,12 +9,13 @@ function addLabelAndPadding(graphMap, key, jgraph) {
   if (graphMap[key].interrupts) {
     interruptHeight = graphMap[key].interrupts.length * 30;
   }
-  const cell = new joint.shapes.basic.Rect({
+  const cell = new joint.shapes.parentLabel({
+    type: "parentLabel",
     size: {width: 100, height: 30},
     position: {x: lx - 50, y: ly - 50-interruptHeight+10},
     attrs: {
-      rect: {fill: 'transparent', stroke: 'none'},
-      'text': {text: key, fill: 'red', 'font-size': 20, 'text-anchor': 'start'}
+      rect: {fill: 'transparent', stroke: 'none', style:{'pointer-events':'none'}},
+      'text': {text: key, fill: 'red', 'font-size': 20, 'text-anchor': 'start', style:{'pointer-events':'none'}}
     }
   });
 

@@ -156,6 +156,7 @@ joint.shapes.pn.TerminalPlace = joint.dia.Element.extend({
 });
 
 joint.shapes.parent = joint.shapes.basic.Rect.extend();
+joint.shapes.parentLabel = joint.shapes.basic.Rect.extend();
 joint.shapes.interruptParentNode = joint.shapes.basic.Rect.extend();
 joint.shapes.interruptEmbedNode = joint.shapes.basic.Rect.extend();
 joint.shapes.interruptLabel = joint.shapes.basic.Rect.extend({
@@ -168,7 +169,7 @@ joint.shapes.interruptLabel = joint.shapes.basic.Rect.extend({
     size: {width: 100, height: 30},
     attrs: {
       rect: {fill: 'transparent', stroke: 'none'},
-      text: {fill: 'red', 'font-size': 20}
+      text: {fill: 'red', 'font-size': 20, style:{'pointer-events':'none'}}
     }
 
   }, joint.shapes.basic.Generic.prototype.defaults)
