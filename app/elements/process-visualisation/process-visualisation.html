@@ -87,104 +87,19 @@
           app.splice('automata.display', 0, app.get('automata.display').length);
           _this.jgraph.resetCells();
           _this.saveChanges();
-        })
+        });
         //Espand the drawing area to the size of the screen when zooming
         window.addEventListener('resize', function(){
           _this.rescale();
+        });
+        document.addEventListener('explode', function(e){
+          _this.explode(e.detail,{name:app.$.selector.getSelected()});
         });
         document.addEventListener('addAll', function(){
           app.$.console.log("Starting Render. While rendering, you can not use the editor tab.");
           //If we are currently rendering, ignore any events
           if (_this.rendering) return;
           _.each(app.get("automata.values"),graph => _this.addGraph(graph.id,app.$.selector.hideInterrupts));
-        });
-        document.addEventListener('removeProcess', function(){
-          //If we are currently rendering, ignore any events
-          if (_this.rendering) return;
-          //Reset the explosion status since the last exploded item is now gone
-          app.$.selector._explosionLabel = "Explode to process";
-          if (_this.exploded)
-            _this.fire('explode',false);
-          const name = app.$.selector.getSelected();
-          const dispSelector =  $("#process-display-selector")[0].contentElement;
-          let graph = _this.displayedGraphs[app.$.selector.getSelected()];
-          let index = dispSelector.selected;
-          dispSelector.selected = null;
-          app.$.selector._hasSelection = false;
-          app.splice('automata.display',index,1);
-          //Remove children
-          _this.jgraph.removeCells(graph.getEmbeddedCells());
-          //Remove parent
-          _this.jgraph.removeCells([graph]);
-          delete _this.displayedGraphs[name];
-          _this.saveChanges();
-        });
-        //Keep a copy of the last set options, so that when we revert from an explosion we are back
-        //at the previous transformation
-        let lastOptions;
-        document.addEventListener('explode', function(e){
-          const processDisplay = $(".process-display");
-          _this.exploded = e.detail;
-          const paperWidth = _this.paper.$el.width();
-          const paperHeight = _this.paper.$el.height();
-          _.each(_this.displayedGraphs,function (parentNode, key) {
-            const {x: minX, y: minY} = parentNode.getBBox().origin();
-            const {width,height} = parentNode.getBBox();
-            const scaleX = paperWidth / width;
-            const scaleY = paperHeight / height;
-            if (_this.exploded) {
-              app.$.selector.locked = true;
-              //Hide the parent node so we don't see a box around the element
-              get$Cell(parentNode).hide();
-              if (key == app.$.selector.getSelected()) {
-                lastOptions = {
-                  scrollTop: processDisplay.scrollTop(),
-                  origin: paper.options.origin,
-                  scale: V(paper.viewport).scale(),
-                  key: key
-                };
-                paper.setOrigin(0, 0);
-                paper.scale(Math.min(scaleX, scaleY), Math.min(scaleX, scaleY), 0, 0);
-                processDisplay.scrollTop(0);
-                _this.paper.setDimensions(paperWidth, height * Math.min(scaleX, scaleY));
-                parentNode.translate(-minX,-minY);
-                parentNode.minX = minX;
-                parentNode.minY = minY;
-              } else {
-                _.each(collectDeepEmbedded(parentNode),node => get$Cell(node).hide());
-              }
-            } else {
-              app.$.selector.locked = false;
-              //Show the element that was hidden above
-              get$Cell(parentNode).show();
-              if (key == lastOptions.key) {
-                paper.scale(lastOptions.scale.sx, lastOptions.scale.sy, 0, 0);
-                paper.setOrigin(lastOptions.origin.x, lastOptions.origin.y);
-                processDisplay.scrollTop(lastOptions.scrollTop);
-                parentNode.translate(parentNode.minX, parentNode.minY);
-              }
-              _.each(collectDeepEmbedded(parentNode),node => {
-                if (node.attributes.type === 'interruptEmbedNode') {
-                  return;
-                }
-                get$Cell(node).show()
-              });
-              _this.rescale();
-            }
-          });
-          //We might have hidden interrupted states, so lets show them
-          _.each(collectDeepEmbedded(_this.displayedGraphs[app.$.selector.getSelected()]),cell=>{
-            if (cell.attributes.type === 'interruptEmbedNode') {
-              get$Cell(cell).hide();
-              //The embed node doesnt seem to be positioned correcttly after restoring all, so lets fix that
-              const parent = _this.jgraph.getCell(cell.get("parent"));
-              cell.set("position",parent.get("position"));
-              cell.set("size",parent.get("size"));
-              //DONT show the embed node.
-              return;
-            }
-            get$Cell(cell).show();
-          });
         });
         this.paper.on('render:done', ()=> {
           app.$.selector.locked = this.rendering = false;
@@ -284,6 +199,102 @@
         });
         if (app.willSaveCookie)
           localStorage.setItem("layout", JSON.stringify(_this.jgraph.toJSON()));
+      },
+      explode: function(exploded, cell) {
+        let name;
+        if (cell.name) {
+          name = cell.name;
+        } else {
+          cell = this.jgraph.getCell($(cell).parent().parent().parent().attr("model-id"));
+          name = cell.get("graphID");
+        }
+        const processDisplay = $(".process-display");
+        this.exploded = exploded;
+        const paperWidth = this.paper.$el.width();
+        const paperHeight = this.paper.$el.height();
+        const _this = this;
+        const paper = _this.paper;
+        _.each(this.displayedGraphs,function (parentNode, key) {
+          const {x: minX, y: minY} = parentNode.getBBox().origin();
+          const {width,height} = parentNode.getBBox();
+          const scaleX = paperWidth / width;
+          const scaleY = paperHeight / height;
+          if (_this.exploded) {
+            app.$.selector.locked = true;
+            //Hide the parent node so we don't see a box around the element
+            get$Cell(parentNode).hide();
+            if(!cell.name) get$Cell(cell).hide();
+            if (key == name) {
+              _this.lastOptions = {
+                scrollTop: processDisplay.scrollTop(),
+                origin: paper.options.origin,
+                scale: V(paper.viewport).scale(),
+                key: key
+              };
+              paper.setOrigin(0, 0);
+              paper.scale(Math.min(scaleX, scaleY), Math.min(scaleX, scaleY), 0, 0);
+              processDisplay.scrollTop(0);
+              _this.paper.setDimensions(paperWidth, height * Math.min(scaleX, scaleY));
+              parentNode.translate(-minX,-minY);
+              parentNode.minX = minX;
+              parentNode.minY = minY;
+            } else {
+              _.each(collectDeepEmbedded(parentNode),node => get$Cell(node).hide());
+            }
+          } else {
+            app.$.selector.locked = false;
+            //Show the element that was hidden above
+            get$Cell(parentNode).show();
+            if (key == _this.lastOptions.key) {
+              paper.scale(_this.lastOptions.scale.sx, _this.lastOptions.scale.sy, 0, 0);
+              paper.setOrigin(_this.lastOptions.origin.x, _this.lastOptions.origin.y);
+              processDisplay.scrollTop(_this.lastOptions.scrollTop);
+              parentNode.translate(parentNode.minX, parentNode.minY);
+            }
+            _.each(collectDeepEmbedded(parentNode),node => {
+              if (node.attributes.type === 'interruptEmbedNode') {
+                return;
+              }
+              adjustVertices(_this.jgraph,node);
+              get$Cell(node).show()
+            });
+
+            _this.rescale();
+          }
+        });
+        //We might have hidden interrupted states, so lets show them
+        _.each(collectDeepEmbedded(_this.displayedGraphs[app.$.selector.getSelected()]),cell=>{
+          if (cell.attributes.type==='buttons') {
+            return;
+          }
+          if (cell.attributes.type === 'interruptEmbedNode') {
+            get$Cell(cell).hide();
+            //The embed node doesnt seem to be positioned correcttly after restoring all, so lets fix that
+            const parent = _this.jgraph.getCell(cell.get("parent"));
+            cell.set("position",parent.get("position"));
+            cell.set("size",parent.get("size"));
+            //DONT show the embed node.
+            return;
+          }
+          get$Cell(cell).show();
+        });
+      },
+      removeGraph: function(cell){
+        //If we are currently rendering, ignore any events
+        if (this.rendering) return;
+        //Reset the explosion status since the last exploded item is now gone
+        app.$.selector._explosionLabel = "Explode to process";
+        if (this.exploded)
+          this.fire('explode',false);
+        cell = this.jgraph.getCell($(cell).parent().parent().parent().attr("model-id"));
+        const name = cell.get("graphID");
+        cell = this.jgraph.getCell(cell.get("parent"));
+        //Remove children
+        this.jgraph.removeCells(cell.getEmbeddedCells());
+        //Remove parent
+        this.jgraph.removeCells([cell]);
+        delete this.displayedGraphs[name];
+        this.saveChanges();
       },
       graphsToAdd: [],
       addGraph: function(name, hidden) {

@@ -18,10 +18,15 @@ function addLabelAndPadding(graphMap, key, jgraph) {
       'text': {text: key, fill: 'red', 'font-size': 20, 'text-anchor': 'start', style:{'pointer-events':'none'}}
     }
   });
-
+  const buttons = new joint.shapes.buttons({
+    position: {x: ux - 50, y: ly - 50-interruptHeight+10},
+  });
+  buttons.set("graphID",key.replace(".hidden",""));
+  graphMap[key].parentNode.embed(buttons);
   graphMap[key].parentNode.embed(cell);
   graphMap[key].label = cell;
   jgraph.addCell(cell);
+  jgraph.addCell(buttons);
   graphMap[key].parentNode.resize(width+100,height+100+interruptHeight);
   //Move the parent node without moving its children, to add a padding around it
   //position needs to subtract intersize to center interrupted components

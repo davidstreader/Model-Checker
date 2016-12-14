@@ -154,8 +154,34 @@ joint.shapes.pn.TerminalPlace = joint.dia.Element.extend({
 
   }, joint.dia.Element.prototype.defaults)
 });
+joint.shapes.buttons = joint.shapes.basic.Generic.extend({
+  markup: `<foreignObject width="100" height="60">
+    <div xmlns="http://www.w3.org/1999/xhtml">
+         <button onclick="app.$.visualiser.removeGraph(this)">Remove</button><button onclick="app.$.visualiser.explode(true,this)">Explode</button>
+    </div>
+  </foreignObject>`,
+  defaults: _.defaultsDeep({
+    type: 'buttons',
+  }, joint.shapes.basic.Generic.prototype.defaults)
+});
+joint.shapes.parent = joint.shapes.basic.Generic.extend({
 
-joint.shapes.parent = joint.shapes.basic.Rect.extend();
+  markup: `<g class="rotatable"><g class="scalable"><rect /></g></g>`,
+
+  defaults: _.defaultsDeep({
+
+    type: 'parent',
+    attrs: {
+      'rect': {
+        fill: '#ffffff',
+        stroke: '#000000',
+        width: 100,
+        height: 60
+      }
+    }
+
+  }, joint.shapes.basic.Generic.prototype.defaults)
+});
 joint.shapes.parentLabel = joint.shapes.basic.Rect.extend();
 joint.shapes.interruptParentNode = joint.shapes.basic.Rect.extend();
 joint.shapes.interruptEmbedNode = joint.shapes.basic.Rect.extend();
