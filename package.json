@@ -38,7 +38,7 @@
     "node": ">=4.1.1"
   },
   "scripts": {
-    "start":"forever -c \"node --stack-size=320000\" app.js",
+    "start": "vulcanize -o app/elements/elements.vulcanized.html app/elements/elements.html --strip-comments && forever -c \"node --stack-size=320000\" app.js",
     "test": "node node_modules/mocha/bin/mocha tests/scripts --recursive",
     "gulp": "gulp serve"
   },
@@ -57,6 +57,7 @@
     "pako": "^1.0.3",
     "socket.io": "^1.7.1",
     "tiny-worker": "^1.1.7",
+    "vulcanize-middleware": "^0.2.5",
     "webworker-threads": "^0.7.9"
   }
 }

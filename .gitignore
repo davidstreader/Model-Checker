@@ -32,3 +32,4 @@ crashlytics.properties
 crashlytics-build.properties
 fabric.properties
 results.txt
+/app/elements/elements.vulcanized.html
