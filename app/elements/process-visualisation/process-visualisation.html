@@ -81,11 +81,8 @@
           app.$.selector._explosionLabel = "Explode to process";
           if (_this.exploded)
             _this.fire('explode',false);
-          _this.displayedGraphs = {};
-          $("#process-display-selector")[0].contentElement.selected = null;
-          app.$.selector._hasSelection = false;
-          app.splice('automata.display', 0, app.get('automata.display').length);
           _this.jgraph.resetCells();
+          _this.displayedGraphs = {};
           _this.saveChanges();
         });
         //Espand the drawing area to the size of the screen when zooming
@@ -93,7 +90,7 @@
           _this.rescale();
         });
         document.addEventListener('explode', function(e){
-          _this.explode(e.detail,{name:app.$.selector.getSelected()});
+          _this.explode(e.detail);
         });
         document.addEventListener('addAll', function(){
           app.$.console.log("Starting Render. While rendering, you can not use the editor tab.");
@@ -115,26 +112,6 @@
             app.$.console.log("Finished rendering!");
             $(".disableOnRender")[0].disabled = false;
           }
-        });
-        this.paper.on('cell:pointerdown', function(cell) {
-          if (_this.exploded || _this.rendering) {
-            return;
-          }
-          app.$.selector.locked = _this.rendering = true;
-          cell = cell.model;
-          const parentId = cell.get('parent');
-          if (parentId && cell.attributes.type!=='interruptParentNode'&& cell.attributes.type!=='box') {
-            cell = _this.jgraph.getCell(parentId);
-          }
-
-          if (app.get("automata.display") === undefined) app.set("automata.display",[]);
-          let disp = app.get("automata.display");
-          for (let i = 0; i < disp.length; i++) {
-            if (disp[i].parentNode === cell) {
-              $("#process-display-selector")[0].contentElement.selected = i;
-            }
-          }
-          app.$.selector.locked = _this.rendering = false;
         });
         this.paper.on('cell:pointermove', function(cell) {
           cell = cell.model;
@@ -179,22 +156,40 @@
           const parentId = cell.get('parent');
           if (!parentId) return;
           const parent = _this.jgraph.getCell(parentId);
+          let minX = Number.MAX_VALUE, minY = Number.MAX_VALUE;
+          let maxX = 0,maxY=0;
+          let label, buttons;
+          _.each(parent.getEmbeddedCells(),node => {
+            if (node.attributes.type === 'parentLabel' ||
+              node.attributes.type === 'interruptLabel') {
+              label = node;
+              return;
+            }
+            if (node.attributes.type === 'buttons') {
+              buttons = node;
+              return;
+            }
+            if (node.attributes.type === 'interruptEmbedNode' ||
+              node.attributes.type === 'fsa.Arrow') return;
+            const bbox = node.getBBox();
+            minX = Math.min(minX,bbox.origin().x);
+            minY = Math.min(minY,bbox.origin().y);
+            maxX = Math.max(maxX,bbox.corner().x);
+            maxY = Math.max(maxY,bbox.corner().y);
+          });
+          let width = maxX-minX;
+          let height = maxY-minY;
+          width+=100;
+          height+=200;
+          parent.resize(width,height);
+          _this.rendering = true;
+          parent.set("position", {x:minX-50,y:minY-100});
+          if (label)
+            label.set("position", {x:minX-50,y:minY-90});
+          if (buttons)
+            buttons.set("position", {x:maxX-50,y:minY-90});
 
-          const parentBbox = parent.getBBox();
-          const cellBbox = cell.getBBox();
-          const changeX = Math.abs(cell.get("position").x - cell.previous('position').x);
-          const changeY = Math.abs(cell.get("position").y - cell.previous('position').y);
-          const size = parent.get("size");
-          if (cellBbox.origin().x < parentBbox.origin().x) {
-            parent.resize(size.width+changeX,size.height,{direction: "left"});
-          } else if (cellBbox.corner().x > parentBbox.corner().x) {
-            parent.resize(size.width+changeX,size.height,{direction: "right"})
-          }
-          if (cellBbox.origin().y < parentBbox.origin().y) {
-            parent.resize(size.width,size.height+changeY,{direction: "top"});
-          } else if (cellBbox.corner().y > parentBbox.corner().y) {
-            parent.resize(size.width,size.height+changeY,{direction: "bottom"});
-          }
+          _this.rendering = false;
 
         });
         if (app.willSaveCookie)
@@ -202,14 +197,15 @@
       },
       explode: function(exploded, cell) {
         let name;
-        if (cell.name) {
-          name = cell.name;
+        if (!cell) {
+          name = this.lastOptions.key;
         } else {
           cell = this.jgraph.getCell($(cell).parent().parent().parent().attr("model-id"));
           name = cell.get("graphID");
         }
         const processDisplay = $(".process-display");
         this.exploded = exploded;
+        app.$.selector.exploded = exploded;
         const paperWidth = this.paper.$el.width();
         const paperHeight = this.paper.$el.height();
         const _this = this;
@@ -255,7 +251,6 @@
               if (node.attributes.type === 'interruptEmbedNode') {
                 return;
               }
-              adjustVertices(_this.jgraph,node);
               get$Cell(node).show()
             });
 
@@ -263,8 +258,10 @@
           }
         });
         //We might have hidden interrupted states, so lets show them
-        _.each(collectDeepEmbedded(_this.displayedGraphs[app.$.selector.getSelected()]),cell=>{
+        _.each(collectDeepEmbedded(_this.displayedGraphs[name]),cell=>{
           if (cell.attributes.type==='buttons') {
+            if (exploded) get$Cell(cell).hide();
+            else get$Cell(cell).show();
             return;
           }
           if (cell.attributes.type === 'interruptEmbedNode') {
@@ -336,7 +333,6 @@
           graph.parentNode.translate(0,maxY);
           graph.parentNode.set("graphId",graph.id);
           this.rescale();
-          app.push("automata.display",graph);
           const _this = this;
           const directEmbeds = _.filter(cells[0].getEmbeddedCells(),cell=>cell.attributes.type=='interruptLabel');
           cells.forEach(cell => {
@@ -353,10 +349,8 @@
               graph.parentNode.set("graphId",graph.id);
               graph.id = lbl;
               _this.displayedGraphs[graph.id] = graph.parentNode;
-              app.push("automata.display",graph);
             }
           });
-          $("#process-display-selector")[0].contentElement.selected = app.get("automata.display").length-1;
           //Find the bounding box of the selected processes parent, and scroll to it
           //The scroll bar is inside .process-display
           const nodeBBox = graph.parentNode.getBBox();

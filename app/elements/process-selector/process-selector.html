@@ -25,24 +25,6 @@
     }
   </style>
   <template>
-    <div style="width:50%;float:left">
-      <span>Rendered Process List</span>
-      <br/>
-      <paper-dropdown-menu id="process-display-selector" label="Process" on-iron-select="_onProcessSelection" disabled$="{{!_hasNames}}">
-        <paper-menu class="dropdown-content">
-          <template is="dom-repeat" items="{{display}}">
-            <paper-item data-automaton-name="{{item.id}}">{{item.id}}</paper-item>
-          </template>
-          <paper-listbox class="dropdown-content" selected$="{{_initialSelection}}"></paper-listbox>
-        </paper-menu>
-      </paper-dropdown-menu>
-      <paper-button onclick="toggleExplode()" disabled$="{{_explosionValid(locked,_hasSelection)}}">{{_explosionLabel}}</paper-button>
-      <paper-button onclick="removeProcess()" disabled$="{{_combineWithLocked(locked,_hasSelection)}}">Remove Process</paper-button>
-      <paper-button onclick="clearProcess()" disabled$="{{_combineWithLocked(locked,_hasNames)}}">Clear</paper-button>
-    </div>
-    <div style="">
-      <span>Editor Process List</span>
-      <br/>
       <paper-dropdown-menu id="process-name-selector" label="Process" on-iron-select="_onNameSelection" disabled$="{{!_hasProcesses}}">
         <paper-menu class="dropdown-content">
           <template is="dom-repeat" items="{{processes}}">
@@ -56,16 +38,15 @@
       </paper-checkbox>
       <paper-button onclick="addProcess()" disabled$="{{_combineWithLocked(locked,_hasNameSelection)}}">Add Process</paper-button>
       <paper-button onclick="addAll()" disabled$="{{_combineWithLocked(locked,_hasProcesses)}}">Add all processes</paper-button>
-    </div>
+    <paper-button onclick="clearProcess()" disabled$="{{locked}}">Clear</paper-button>
+    <paper-button onclick="toggleExplode()" disabled$="{{!exploded}}">Show all processes</paper-button>
 
   </template>
 
 </dom-module>
 <script>
   function toggleExplode() {
-    let lbl = app.$.selector._explosionLabel;
-    app.$.selector._explosionLabel = lbl==="Show all"?"Explode to process":"Show all";
-    app.$.selector.fire('explode', lbl==="Explode to process");
+    app.$.selector.fire('explode', false);
   }
   function addProcess() {
     app.$.selector.fire('addProcess', "");
@@ -97,20 +78,16 @@
         display: {
           type: Array
         },
+        exploded: {
+          type: Boolean,
+          value: false
+        },
         hideInterrupts: {
           type: Boolean,
           value: true
         },
         smallScreen: {
           type: Boolean
-        },
-        _explosionLabel: {
-          type: String,
-          value: "Explode to process"
-        },
-        _hasSelection: {
-          type: Boolean,
-          value: false
         },
         _hasNameSelection: {
           type: Boolean,
@@ -119,10 +96,6 @@
         _hasProcesses: {
           type: Boolean,
           computed: '_greaterThan(processes.length, 0)'
-        },
-        _hasNames: {
-          type: Boolean,
-          computed: '_greaterThan(display.length, 0)'
         },
         /**
          * When dealing with the visualiser, during rendering we want to disable adding new elements.
@@ -133,6 +106,10 @@
           value: true
         },
 
+        expanded: {
+          type: Boolean,
+          value: false
+        },
         _initialSelection: {
           type: String,
           computed: 'initialSelection()'
@@ -144,10 +121,6 @@
 
       _combineWithLocked: function(val1, val2) {
         return val1 || !val2;
-      },
-      _explosionValid: function(val1, val2) {
-        let lbl = app.$.selector._explosionLabel;
-        return lbl==="Explode to process" && (val1 || !val2);
       },
       /**
        * @returns {!boolean} a > b

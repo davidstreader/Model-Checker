@@ -22,6 +22,7 @@ function addLabelAndPadding(graphMap, key, jgraph) {
     position: {x: ux - 50, y: ly - 50-interruptHeight+10},
   });
   buttons.set("graphID",key.replace(".hidden",""));
+  console.log(buttons);
   graphMap[key].parentNode.embed(buttons);
   graphMap[key].parentNode.embed(cell);
   graphMap[key].label = cell;
