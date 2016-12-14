@@ -7,7 +7,6 @@ const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
 const port = 5000;
-let childDebugPort = 5859;
 app.use(express.static('app'))
 app.use('/bower_components', express.static('bower_components'));
 io.on('connection', function (socket) {
