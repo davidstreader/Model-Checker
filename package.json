@@ -38,9 +38,9 @@
     "node": ">=4.1.1"
   },
   "scripts": {
-    "start": "vulcanize -o app/elements/elements.vulcanized.html app/elements/elements.html --strip-comments && forever -c \"node --stack-size=320000\" app.js",
+    "start": "forever stopall && vulcanize -o app/elements/elements.vulcanized.html app/elements/elements.html --strip-comments && forever -c \"node --stack-size=320000\" app.js",
     "test": "node node_modules/mocha/bin/mocha tests/scripts --recursive",
-    "gulp": "gulp serve"
+    "gulp": "forever stopall && vulcanize -o app/elements/elements.vulcanized.html app/elements/elements.html --strip-comments && gulp serve"
   },
   "dependencies": {
     "ansi": "^0.3.1",
