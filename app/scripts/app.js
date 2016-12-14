@@ -97,12 +97,14 @@
         const graph = results.processes[id];
         if (graph.dontRender) continue;
         if (graph.type === 'automata') {
+          console.log({nodeCount:graph.nodeCount,edgeCount:graph.edgeCount});
           if (graph.nodeCount > app.graphSettings.autoMaxNode) {
             skipped.push({id: graph.id, length: graph.nodeCount, type:"nodes",maxLength: app.graphSettings.autoMaxNode})
             continue;
           }
           graphs.push(graph);
         } else if (graph.type === 'petrinet') {
+          console.log({placeCount:graph.placeCount,transitionCount:graph.transitionCount});
           if (graph.placeCount > app.graphSettings.petriMaxPlace) {
             skipped.push({id: graph.id, length: graph.placeCount, type:"places", maxLength: app.graphSettings.petriMaxPlace})
             continue;
