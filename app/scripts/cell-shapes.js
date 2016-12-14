@@ -155,11 +155,7 @@ joint.shapes.pn.TerminalPlace = joint.dia.Element.extend({
   }, joint.dia.Element.prototype.defaults)
 });
 joint.shapes.buttons = joint.shapes.basic.Generic.extend({
-  markup: `<foreignObject width="100" height="60">
-    <div xmlns="http://www.w3.org/1999/xhtml">
-         <button onclick="app.$.visualiser.removeGraph(this)">Remove</button><button onclick="app.$.visualiser.explode(true,this)">Explode</button>
-    </div>
-  </foreignObject>`,
+  markup: '<foreignObject width="100" height="60"><html xmlns="http://www.w3.org/1999/xhtml"><button onclick="app.$.visualiser.removeGraph(this)">Remove</button><button onclick="app.$.visualiser.explode(true,this)">Explode</button></html></foreignObject>',
   defaults: _.defaultsDeep({
     type: 'buttons',
   }, joint.shapes.basic.Generic.prototype.defaults)
