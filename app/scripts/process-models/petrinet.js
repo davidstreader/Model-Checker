@@ -307,6 +307,27 @@ const PETRI_NET = {
 		return this.convert(json);
 	},
 
+	trim: function(){
+		let places = this.places.filter(p => p.incomingTransitions.length === 0 && p.metaData.startPlace === undefined);
+		while(places.length !== 0){
+			for(let i = 0; i < places.length; i++){
+				const place = places[i];
+				const outgoing = place.outgoingTransitions.map(id => this.getTransition(id));
+				this.removePlace(place.id);
+
+				// remove any transitions that have become uncreachable from the current place
+				for(let j = 0; j < outgoing.length; j++){
+					const transition = outgoing[j];
+					if(transition.incomingPlaces.length === 0){
+						this.removeTransition(transition.id);
+					}
+				}
+			}
+
+			places = this.places.filter(p => p.incomingTransitions.length === 0 && p.metaData.startPlace === undefined);
+		}		
+	},
+
 	get nextPlaceId(){
 		let id;
 		while(true){
