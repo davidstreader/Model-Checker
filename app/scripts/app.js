@@ -224,9 +224,11 @@
       reader.onload = function() {
         var text = reader.result.split("visualiser_json_layout:");
         var code = text[0];
-        var json = text[1];
-        if (json.length > 0) {
-          app.$.visualiser.loadJSON(json);
+        if (text.length > 1) {
+          var json = text[1];
+          if (json.length > 0) {
+            app.$.visualiser.loadJSON(json);
+          }
         }
         app.$.editor.setCode(code);
         app.$.editor.focus();
