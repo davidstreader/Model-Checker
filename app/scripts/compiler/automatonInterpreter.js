@@ -156,7 +156,7 @@ function interpretAutomaton(process, processesMap, context){
     let processedAutomaton = processStack.pop();
     switch(astNode.func){
       case 'abs':
-        processedAutomaton = abstraction(processedAutomaton, context.isFairAbstraction, context.pruneAbstraction);
+        processedAutomaton = abstraction(processedAutomaton, context.isFairAbstraction, context.pruning);
         break;
       case 'simp':
         processedAutomaton = bisimulation(processedAutomaton);

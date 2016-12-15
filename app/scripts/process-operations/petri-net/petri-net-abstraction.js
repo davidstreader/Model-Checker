@@ -1,6 +1,11 @@
 'use strict';
 
-function petriNetAbstraction(net, isFair){
+function petriNetAbstraction(net, isFair, prune){
+	// prune the net if specified
+	if(prune){
+		prunePetriNet(net);
+	}
+
 	const observableTransitionMap = {};
 	const walker = new PetriNetWalker(net);
 	const hiddenTransitions = net.transitions.filter(t => t.label === TAU);
