@@ -180,7 +180,7 @@
         //Remove children
         this.jgraph.removeCells(cell.getEmbeddedCells());
         //Remove parent
-        this.jgraph.removeCells([cell]);
+        this.jgraph.removeCells([cell,this.jgraph.getCell(cell.get("parent"))]);
         delete this.displayedGraphs[name];
       },
       rescale: function() {
@@ -237,19 +237,19 @@
           graph.id = name;
           this.displayedGraphs[name] = cells[0];
           this.jgraph.addCells(cells);
-          var m1 = new joint.shapes.devs.Model({
-            position: { x: 50, y: 50 },
-            size: { width: 90, height: 90 },
-            inPorts: ["test"],
-            outPorts: alphabet.slice(),
-            attrs: {
-              '.label': { text: 'Model', 'ref-x': .5, 'ref-y': .2 },
-              rect: { fill: '#2ECC71' }
-            }
-          });
-          this.jgraph.addCell(m1);
           //Note, we need to add the cells before translating the cell to its correct position
           graph.parentNode.translate(0,maxY);
+
+          const m1 = new joint.shapes.devs.Model({
+            size: graph.parentNode.get("size"),
+            position: graph.parentNode.get("position"),
+            outPorts: alphabet,
+            inPorts: [""]
+          });
+          this.jgraph.addCell(m1);
+          m1.embed(graph.parentNode);
+          m1.toBack();
+          m1.fitEmbeds({padding:50});
           graph.parentNode.set("graphId",graph.id);
           this.rescale();
           //Find the bounding box of the selected processes parent, and scroll to it
