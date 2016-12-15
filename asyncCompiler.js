@@ -22,6 +22,10 @@ onmessage = function (e) {
     for (let process in compile.analysis) {
       delete compile.analysis[process].process;
     }
+    for (let process in compile.processes) {
+      if (compile.processes[process].id.indexOf("*") != -1)
+        delete compile.processes[process];
+    }
     postMessage({clear:true,message:"Finished Compiling. Sending data to client"});
     postMessage({result:compile});
   } catch (ex) {
