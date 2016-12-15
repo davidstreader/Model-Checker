@@ -24,6 +24,7 @@ importScripts("../process-operations/automata/automaton-bisimulation.js");
 <!-- petri net process operations -->
 importScripts("../process-operations/petri-net/petri-net-parallel-composition.js");
 importScripts("../process-operations/petri-net/petri-net-abstraction.js");
+importScripts("../process-operations/petri-net/petri-net-prune.js");
 importScripts("../process-operations/petri-net/petri-net-bisimulation.js");
 importScripts("../constants.js");
 importScripts("../helper-functions.js");
