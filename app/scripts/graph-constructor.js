@@ -30,7 +30,6 @@ function addLabelAndPadding(graphMap, key, jgraph, opts) {
   }
 
   buttons.set("graphID",key.replace(".hidden",""));
-  console.log(buttons);
   graphMap[key].parentNode.embed(buttons);
   graphMap[key].parentNode.embed(cell);
   graphMap[key].label = cell;
@@ -62,7 +61,7 @@ function constructGraphs(graphMap, id, hidden, callback, opts) {
   worker.onmessage = e => {  //Calculate the bottom of the last drawn graph
     let tmpjgraph = new joint.dia.Graph();
     tmpjgraph.fromJSON(e.data);
-    graphMap[id] = {parentNode: tmpjgraph.getCells()[0]};
+    graphMap[id] = {parentNode: tmpjgraph.getCells()[0],alphabet:e.data.alphabet};
     addLabelAndPadding(graphMap,id,tmpjgraph, opts);
     callback();
   };

@@ -51,6 +51,7 @@ onmessage = e => {
       }});
     glGraph.setParent(interrupt+"label",interrupt);
   });
+  const alphabet = graph.alphabet;
   //Clear the imported object so we can reuse it for export
   graph = [];
   //Convert dagres graph to an array of edges and nodes
@@ -111,7 +112,7 @@ onmessage = e => {
     graph.push(glEdge);
   });
   //push the converstion back to the main thread
-  postMessage({cells:graph});
+  postMessage({cells:graph,alphabet:alphabet});
   //Since each dagre instance fires up a thread, its best to kill it now.
   close();
 }
