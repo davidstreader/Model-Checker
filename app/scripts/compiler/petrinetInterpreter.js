@@ -292,7 +292,7 @@ function interpretPetriNet(process, processesMap, context){
     let processedNet = processStack.pop();
     switch(astNode.func){
       case 'abs':
-        processedNet = abstraction(processedNet, context.isFairAbstraction);
+        processedNet = abstraction(processedNet, context.isFairAbstraction, context.pruning);
         break;
       case 'simp':
         processedNet = bisimulation(processedNet);

@@ -1,6 +1,10 @@
 'use strict';
 
 function automataAbstraction(automaton, isFair, prune){
+	if(prune){
+		pruneAutomaton(prune);
+	}
+
 	const observableEdgeMap = {};
 	const walker = new AutomatonWalker(automaton);
 

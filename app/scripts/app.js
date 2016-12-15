@@ -12,6 +12,7 @@
     app.automata = {values: [],display:[]};
     app.liveCompiling = true;
     app.fairAbstraction = true;
+    app.pruning = false;
     app.helpDialogSelectedTab = 0;
     app.currentBuild = {};
     app.previousBuild = {};
@@ -183,7 +184,7 @@
       return {
         isFairAbstraction: app.fairAbstraction,
         isLocal: app.isClientSide,
-        pruneAbstraction: true
+        pruning: app.pruning
       };
     }
 
