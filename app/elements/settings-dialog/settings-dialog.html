@@ -12,6 +12,13 @@
       <paper-input is="iron-input" label="Petrinet max transition count" placeholder="100" bind-value="{{graphSettings.petriMaxTrans}}" class="middle"
                    auto-validate allowed-pattern="[0-9]" value="{{graphSettings.petriMaxTrans}}"></paper-input>
       <paper-button style="float:right" on-tap="close">close</paper-button>
+
+      <paper-checkbox id="chbx-fair-abstraction" checked="{{fairAbstraction}}" class="chbx middle" title="Visualise abstracted processes fairly.">
+        <span>Fair Abstraction</span>
+      </paper-checkbox>
+      <paper-checkbox id="chbx-pruning" checked="{{pruning}}" class="chbx middle" title="Prune processes before abstracting them.">
+        <span>Pruning</span>
+      </paper-checkbox>
     </paper-dialog>
   </template>
 </dom-module>
@@ -22,11 +29,18 @@
       is: 'settings-dialog',
       open: function () {
         this.graphSettings = app.graphSettings;
+        this.pruning = app.pruning;
+        this.fairAbstraction = app.fairAbstraction;
         $('#settings-dialog')[0].open();
       },
       close: function () {
         $('#settings-dialog')[0].close();
-        this.graphSettings = app.graphSettings;
+        app.graphSettings = this.graphSettings;
+        app.pruning = this.pruning;
+        app.fairAbstraction = this.fairAbstraction;
+        app.compile(true);
+        localStorage.setItem("fairAbstraction",app.fairAbstraction);
+        localStorage.setItem("pruning",app.pruning);
       },
       opened: function (){
         return $('#settings-dialog')[0].opened;

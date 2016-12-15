@@ -277,16 +277,6 @@
       app.$.editor.focus();
     });
 
-    /**
-     * Simple event listener for when the fair abstraction checkbox is ticked.
-     * Compile is called every time the checkbox is ticked or unticked.
-     */
-    app.$['chbx-fair-abstraction'].addEventListener('iron-change', function() {
-      app.compile(true);
-      app.$.editor.focus();
-      localStorage.setItem("fairAbstraction",app.fairAbstraction);
-    });
-
     $("#settings-dialog")[0].addEventListener('iron-overlay-closed', function() {
       app.saveGraphSettings();
     });
@@ -353,6 +343,8 @@
     });
     app.willSaveCookie = localStorage.getItem("willSave")!=='false';
     app.liveCompiling = localStorage.getItem("liveCompiling")!=='false';
+    app.pruning = localStorage.getItem("pruning")!=='false';
+    app.fairAbstraction = localStorage.getItem("fairAbstraction")!=='false';
     app.graphSettings = localStorage.getItem("graphSettings") !== null?JSON.parse(localStorage.getItem("graphSettings")) :  app.graphSettings;
     app.saveGraphSettings = ()=>localStorage.setItem("graphSettings",JSON.stringify(app.graphSettings));
     if (app.willSaveCookie && localStorage.getItem('editor') != null) {

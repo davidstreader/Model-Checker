@@ -61,14 +61,6 @@
       <paper-icon-button id="reload" icon="icons:autorenew" class="middle" title="Reload" on-tap="reloadFile" disabled=true></paper-icon-button>
       <input id="open-file" type="file" accept="text/plain" class="middle" style="display: none;"/>
       <span class="flex middle"></span>
-      <paper-checkbox id="chbx-fair-abstraction" checked="{{fairAbstraction}}" class="chbx middle" title="Visualise abstracted processes fairly.">
-        <span hidden$="{{smallScreen}}">Fair Abstraction</span>
-        <span hidden$="{{!smallScreen}}">FAbs</span>
-      </paper-checkbox>
-      <paper-checkbox id="chbx-pruning" checked="{{pruning}}" class="chbx middle" title="Prune processes before abstracting them.">
-        <span hidden$="{{smallScreen}}">Pruning</span>
-        <span hidden$="{{!smallScreen}}">Prune</span>
-      </paper-checkbox>
       <paper-icon-button icon="icons:settings" class="middle" title="Settings" on-tap="showSettings"></paper-icon-button>
       <paper-icon-button icon="icons:help" class="middle" title="Help" on-tap="showHelp"></paper-icon-button>
     </paper-toolbar>
