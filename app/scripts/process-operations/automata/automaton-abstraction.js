@@ -2,7 +2,7 @@
 
 function automataAbstraction(automaton, isFair, prune){
 	if(prune){
-		pruneAutomaton(prune);
+		pruneAutomaton(automaton);
 	}
 
 	const observableEdgeMap = {};
