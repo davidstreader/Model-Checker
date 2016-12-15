@@ -364,6 +364,7 @@
        */
       redraw: function() {
         if (this.paper === undefined) return;
+        $("#process-name-selector")[0].contentElement.selected = null;
         const _this = this;
         if ((!this.loaded && app.willSaveCookie) || this.layout) {
           this.loaded = true;

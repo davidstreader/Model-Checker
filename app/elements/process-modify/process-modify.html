@@ -5,16 +5,15 @@
 <dom-module id="process-modify">
   <template>
     <div style="">
-      <span>Process List</span>
-      <br/>
-      <paper-dropdown-menu id="process-name-selector" label="Process" on-iron-select="_onNameSelection" disabled$="{{!automata.values}}">
+      <paper-dropdown-menu id="process-selector" label="Process" on-iron-select="_onSelection" disabled$="{{!_hasProcesses}}">
         <paper-menu class="dropdown-content">
-          <template is="dom-repeat" items="{{automata.values}}">
+          <template is="dom-repeat" items="{{processes}}">
             <paper-item data-automaton-name="{{item.id}}">{{item.id}}</paper-item>
           </template>
-          <paper-listbox class="dropdown-content" selected$="{{!_hasNameSelection}}"></paper-listbox>
+          <paper-listbox class="dropdown-content" selected$="{{!_hasSelection}}"></paper-listbox>
         </paper-menu>
       </paper-dropdown-menu>
+      <paper-button on-tap="addGraph" disabled$="{{!_hasSelection}}">Add Process</paper-button>
       <div id="svg-parent2"></div>
     </div>
   </template>
@@ -24,7 +23,39 @@
     'use strict';
     Polymer({
       is: 'process-modify',
+      properties: {
+
+        /**
+         * The automata available to walk.
+         */
+        processes: {
+          type: Array
+        },
+
+        _hasSelection: {
+          type: Boolean,
+          value: false
+        },
+        _hasProcesses: {
+          type: Boolean,
+          computed: '_greaterThan(processes.length, 0)'
+        },
+        _initialSelection: {
+          type: String,
+          computed: 'initialSelection()'
+        },
+      },
+      _initialSelection: function(){
+        return "0";
+      },
+      /**
+       * @returns {!boolean} a > b
+       */
+      _greaterThan: function(a, b){
+        return a > b;
+      },
       ready: function(){
+        this.displayedGraphs = {};
         this.jgraph = new joint.dia.Graph();
         //Create a paper element, pointing to #svg-parent, with restrictions on moving elements out of bounds
         this.paper = new joint.dia.Paper({
@@ -34,18 +65,168 @@
           restrictTranslate: true,
           async: true
         });
+        this.jgraph.on('change:position', function(cell) {
+          //Exploded diagrams are limited by changing the dimensions of the paper
+          //Don't update the size of the parent when the interrupt updates
+          if (_this.exploded || _this.rendering || cell.attributes.type === 'interruptEmbedNode') {
+            _this.saveChanges();
+            return;
+          }
+          //If a cell is an interrupt, update the size of hte respective interrupt too
+          _.each(cell.getEmbeddedCells(),node => {
+            if (node.attributes.type === 'interruptEmbedNode') {
+              node.set('position',cell.get('position'));
+              node.set('size',cell.get('size'));
+              return;
+            }
+          });
+
+          const parentId = cell.get('parent');
+          if (!parentId) return;
+          const parent = _this.jgraph.getCell(parentId);
+          let minX = Number.MAX_VALUE, minY = Number.MAX_VALUE;
+          let maxX = 0,maxY=0;
+          let label, buttons;
+          _.each(parent.getEmbeddedCells(),node => {
+            if (node.attributes.type === 'parentLabel' ||
+              node.attributes.type === 'interruptLabel') {
+              label = node;
+              return;
+            }
+            if (node.attributes.type === 'buttons') {
+              buttons = node;
+              return;
+            }
+            if (node.attributes.type === 'interruptEmbedNode' ||
+              node.attributes.type === 'fsa.Arrow') return;
+            const bbox = node.getBBox();
+            minX = Math.min(minX,bbox.origin().x);
+            minY = Math.min(minY,bbox.origin().y);
+            maxX = Math.max(maxX,bbox.corner().x);
+            maxY = Math.max(maxY,bbox.corner().y);
+          });
+          let width = maxX-minX;
+          let height = maxY-minY;
+          width+=100;
+          height+=200;
+          parent.resize(width,height);
+          _this.rendering = true;
+          parent.set("position", {x:minX-50,y:minY-100});
+          if (label)
+            label.set("position", {x:minX-50,y:minY-90});
+          if (buttons)
+            buttons.set("position", {x:maxX-50,y:minY-90});
+          _this.rendering = false;
+        });
+
+        this.paper.on('render:done', ()=> {
+          app.$.selector.locked = this.rendering = false;
+          //Jointjs has a bug where you can only set attributes.
+          //To combat this, we can search for all titles and map their innerhtml to the text attribute.
+          _.each($(".title"),title=> {
+            title.innerHTML = _this.jgraph.getCell(title.parentElement.getAttribute("model-id")).get("tooltip") || '';
+          });
+          if (_this.graphsToAdd.length > 0) {
+            const graph = _this.graphsToAdd.pop();
+            _this.addGraph(graph.name,graph.hidden);
+          } else {
+            app.$.console.log("Finished rendering!");
+            $(".disableOnRender")[0].disabled = false;
+          }
+        });
+        //Espand the drawing area to the size of the screen when zooming
+        window.addEventListener('resize', function(){
+          _this.rescale();
+        });
+        this.paper.on('cell:pointermove', function(cell) {
+          cell = cell.model;
+          const parentId = cell.get('parent');
+          if (!parentId) {
+            _this.saveChanges();
+            return;
+          }
+          adjustVertices(_this.jgraph,cell);
+          _this.saveChanges();
+        });
+        this.jgraph.on('change:size', function(cell) {
+          //Exploded diagrams are limited by changing the dimensions of the paper
+          if (_this.exploded || _this.rendering) {
+            return;
+          }
+          //If a cell is an interrupt, update the size of hte respective interrupt too
+          _.each(cell.getEmbeddedCells(), node => {
+            if (node.attributes.type === 'interruptEmbedNode') {
+              node.set('position', cell.get('position'));
+              node.set('size', cell.get('size'));
+            }
+          });
+          _this.saveChanges();
+        });
       },
-      redraw: function() {
+      _onSelection: function(e, detail){
+        this._hasSelection = true;
+        var graph = { name:detail.item.dataAutomatonName };
+        for(var i in this.display){
+          if(this.display[i].id === graph.name){
+            graph.graph = this.display[i].graph;
+            this.fire('change-process', this.display[i]);
+            break;
+          }
+        }
 
       },
-      graphsToAdd: [],
-      addGraph: function(name) {
-        if (this.rendering) {
-          this.graphsToAdd.push({name: name, hidden: hidden});
+      removeGraph: function(cell){
+          let name = cell;
+        //If we are currently rendering, ignore any events
+        if (this.rendering) return;
+        if (cell.id) {
+          cell = this.jgraph.getCell($(cell).parent().parent().parent().attr("model-id"));
+          name = cell.get("graphID");
+          cell = this.jgraph.getCell(cell.get("parent"));
+        } else {
+            cell = this.displayedGraphs[name];
+        }
+        //Remove children
+        this.jgraph.removeCells(cell.getEmbeddedCells());
+        //Remove parent
+        this.jgraph.removeCells([cell]);
+        delete this.displayedGraphs[name];
+        this.saveChanges();
+      },
+      rescale: function() {
+        if (this.exploded) {
           return;
         }
-        if (this.displayGraph[name]) {
+        let screenHeight = this.paper.$el.parent().parent().height();
+        let screenWidth = this.paper.$el.width();
+        const scale = V(this.paper.viewport).scale();
+        let maxX = 0;
+        let maxY = 0;
+        _.each(this.displayedGraphs,function (graph) {
+          const bbox = graph.getBBox();
+          maxX = Math.max(maxX,bbox.corner().x);
+          maxY = Math.max(maxY,bbox.corner().y);
+        });
+        this.paper.setDimensions(Math.max(maxX*scale.sx,screenWidth),Math.max(maxY*scale.sy+200,screenHeight));
+      },
+      redraw: function() {
+        $("#process-selector")[0].contentElement.selected = null;
+      },
 
+      graphsToAdd: [],
+      addGraph: function() {
+        let name = $("#process-selector")[0].selectedItemLabel;
+        if (this.rendering) {
+          this.graphsToAdd.push({name: name, hidden: false});
+          return;
+        }
+        //Work out the bottom corner of the lowest element
+        let maxY = 0;
+        if (this.displayedGraphs[name]) {
+            maxY = this.displayedGraphs[name].getBBox().corner().y;
+          removeGraph(name);
+        } else {
+          _.each(this.displayedGraphs,graph => maxY = Math.max(maxY,graph.getBBox().corner().y));
         }
         $(".disableOnRender")[0].disabled = true;
         app.$.console.clear();
@@ -53,22 +234,11 @@
         app.$.console.log("While rendering, you can not use the editor tab.");
         app.$.selector.locked = this.rendering = true;
         //construct the graph first if it doesnt exist or has changed
-        constructGraphs(this.graphMap,name, hidden, ()=>{
-          //Work out the bottom corner of the lowest element
-          let maxY = 0;
-          _.each(this.displayedGraphs,graph => maxY = Math.max(maxY,graph.getBBox().corner().y));
-          //Find a name that isnt in use
-          let oldName = name;
-          let tmpIdx = 1;
-          while (this.displayedGraphs[name]) {
-            name = oldName+(tmpIdx++);
-          }
-          if (hidden) oldName +=".hidden";
-          //Assign that name to the old label
-          this.graphMap[oldName].label.attributes.attrs.text.text = name;
+        //If the visualiser has a copy of the graph, its much easier to just use it isntead of keeping two sets.
+        constructGraphs(app.$.visualiser.graphMap,name, false, ()=>{
 
           //Clone the process into cells, also cloning all children
-          let cells = this.graphMap[oldName].parentNode.clone({deep: true});
+          let cells = app.$.visualiser.graphMap[name].parentNode.clone({deep: true});
           let graph = {};
           //We need to make sure all nodes are rendered before edges.
           cells.sort((a,b) => a.attributes.type==="fsa.Arrow"?1:-1);
@@ -81,15 +251,12 @@
           graph.parentNode.translate(0,maxY);
           graph.parentNode.set("graphId",graph.id);
           this.rescale();
-          app.push("modify.display",graph);
-          $("#process-display-selector")[0].contentElement.selected = app.get("modify.display").length-1;
           //Find the bounding box of the selected processes parent, and scroll to it
           //The scroll bar is inside .process-display
           const nodeBBox = graph.parentNode.getBBox();
           const scale = V(this.paper.viewport).scale();
-          $(".process-display").stop().animate({scrollTop:nodeBBox.origin().y*scale.sx}, '100', 'swing');
-          this.saveChanges();
-        });
+          $(".process-modify-display").stop().animate({scrollTop:nodeBBox.origin().y*scale.sx}, '100', 'swing');
+        },{disableExplode:true});
       },
     })
   })();

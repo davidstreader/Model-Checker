@@ -1,5 +1,5 @@
 'use strict';
-function addLabelAndPadding(graphMap, key, jgraph) {
+function addLabelAndPadding(graphMap, key, jgraph, opts) {
   graphMap[key].parentNode.fitEmbeds({padding:50});
   const bbox = graphMap[key].parentNode.getBBox();
   const lx = bbox.origin().x, ly = bbox.origin().y, ux = bbox.corner().x, uy = bbox.corner().y;
@@ -18,9 +18,17 @@ function addLabelAndPadding(graphMap, key, jgraph) {
       'text': {text: key, fill: 'red', 'font-size': 20, 'text-anchor': 'start', style:{'pointer-events':'none'}}
     }
   });
-  const buttons = new joint.shapes.buttons({
-    position: {x: ux - 50, y: ly - 50-interruptHeight+10},
-  });
+  let buttons;
+  if (opts.disableExplode) {
+    buttons = new joint.shapes.buttonsNoExplode({
+      position: {x: ux - 50, y: ly - 50-interruptHeight+10},
+    });
+  } else{
+    buttons = new joint.shapes.buttons({
+      position: {x: ux - 50, y: ly - 50-interruptHeight+10},
+    });
+  }
+
   buttons.set("graphID",key.replace(".hidden",""));
   console.log(buttons);
   graphMap[key].parentNode.embed(buttons);
@@ -38,7 +46,8 @@ function addLabelAndPadding(graphMap, key, jgraph) {
   //Move the component back to the origin with a bit of padding
   graphMap[key].parentNode.translate(50, -ly+50);
 }
-function constructGraphs(graphMap, id, hidden, callback) {
+function constructGraphs(graphMap, id, hidden, callback, opts) {
+  opts = opts || {};
   //Find the process by id
   let graph = _.findWhere(app.get("automata.values"), {id: id});
   if (hidden)
@@ -54,7 +63,7 @@ function constructGraphs(graphMap, id, hidden, callback) {
     let tmpjgraph = new joint.dia.Graph();
     tmpjgraph.fromJSON(e.data);
     graphMap[id] = {parentNode: tmpjgraph.getCells()[0]};
-    addLabelAndPadding(graphMap,id,tmpjgraph);
+    addLabelAndPadding(graphMap,id,tmpjgraph, opts);
     callback();
   };
 }
