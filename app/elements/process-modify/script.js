@@ -124,7 +124,6 @@
     addParsed: function(parse) {
       for (let id1 in parse.processes) {
         const process = parse.processes[id1];
-        console.log(process);
         const orig = {id:process.id,name:process.name||"",renamed:_.keys(_.findWhere(app.automata.allValues,{id:process.id}).compiledAlphabet).map(id=>{
           const val = {};
           val.id = id;
