@@ -9,7 +9,7 @@
 
 <dom-module id="process-modify">
   <template>
-    <div style="">
+    <div style="display:table; margin:auto">
       <paper-dropdown-menu id="process-modify-selector" label="Process" on-iron-select="_onSelection" disabled$="{{!_hasProcesses}}">
         <paper-menu class="dropdown-content">
           <template is="dom-repeat" items="{{processes}}">
@@ -30,25 +30,24 @@
           <paper-listbox class="dropdown-content" selected$="{{!_hasSelection}}"></paper-listbox>
         </paper-menu>
       </paper-dropdown-menu>
-      <br />
-      <span>{{compiledResult}}</span>
-      <br />
-      <template is="dom-repeat" items="{{added}}" as="process">
-        <div style="border: 1px solid black; margin:50px; display: inline-block;">
-          <paper-input style="padding-left: 20px; float:left" label="New Process Name ({{process.id}})" placeholder="{{process.id}}" value="{{process.name}}"></paper-input>
-          <paper-button style="float:right; margin:10px" on-tap="removeProcess">Remove</paper-button>
-          <table border="1" style="margin-left: 20px; clear:both; margin-bottom:10px; margin-right: 20px;">
-            <template is="dom-repeat" items="{{process.renamed}}" as="alphabet">
-              <tr>
-                <td>{{alphabet.id}}</td>
-                <td>-></td>
-                <td><paper-input class="modify-input" label="Edge name" placeholder="Don't Rename" value="{{alphabet.renamed}}"></paper-input></td>
-              </tr>
-            </template>
-          </table>
-        </div>
-      </template>
     </div>
+    <div style="text-align:center">{{compiledResult}}</div>
+    <template is="dom-repeat" items="{{added}}" as="process">
+      <div style="border: 1px solid black; margin:50px; display: inline-block;">
+        <paper-input style="padding-left: 20px; float:left" label="New Process Name ({{process.id}})" placeholder="{{process.id}}" value="{{process.name}}"></paper-input>
+        <paper-button style="float:right; margin:10px" on-tap="removeProcess">Remove</paper-button>
+        <table border="1" style="margin-left: 20px; clear:both; margin-bottom:10px; margin-right: 20px;">
+          <template is="dom-repeat" items="{{process.renamed}}" as="alphabet">
+            <tr>
+              <td>{{alphabet.id}}</td>
+              <td>-></td>
+              <td><paper-input class="modify-input" label="Edge name" placeholder="Don't Rename" value="{{alphabet.renamed}}" disabled$="{{alphabet.hidden}}"></paper-input></td>
+              <td><paper-checkbox checked="{{alphabet.hidden}}">Hide</paper-checkbox></td>
+            </tr>
+          </template>
+        </table>
+      </div>
+    </template>
   </template>
 </dom-module>
 <script src="script.js"></script>

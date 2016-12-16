@@ -43,33 +43,34 @@
       }
       //B3 = (one:Buff/{move/one.out} || two:Buff/{move/two.in}).
       let output = $("#process-type-selector")[0].selectedItemLabel + " "+(this.processName==""?"OUTPUT":this.processName)+" = ";
+      let processes = [];
       _.each(this.added,function(process) {
-        output +="(";
-        if (process.name !== "") {
-          output+=process.name+":";
+        let current = "";
+        if (process.name) {
+          current+=process.name+":";
         }
-        output+=process.id;
+        current+=process.id;
         if (process.renamed.length > 0) {
-          let addedBracket = false;
+          let rename = [];
+          let hidden = [];
           _.each(process.renamed,function(alphabet) {
-            if (alphabet.renamed !== "") {
-              if (!addedBracket) {
-                addedBracket = true;
-                output+="/{"
-              }
-              output += alphabet.renamed + "/" + alphabet.id+",";
-            }
+            if (alphabet.renamed &&!alphabet.hidden)
+              rename.push(alphabet.renamed + "/" + alphabet.id);
+            if (alphabet.hidden)
+              hidden.push(alphabet.id);
           });
-          if (addedBracket) {
-            output = output.substring(0,output.length-1);
-            output += "}";
-          }
+          if (rename.length > 0)
+            current += "/{"+rename.join()+"}";
+          if (hidden.length > 0)
+            current += "\\{"+hidden.join()+"}";
+
         }
-        output +=") || ";
+        processes.push("("+current+")");
       });
-      this.set("compiledResult",output.substring(0,output.length-4)+".");
+      this.set("compiledResult",output+processes.join(" || ")+".");
     },
     addToEditor: function() {
+      if (!this.compiledResult) return;
       app.$.editor.setCode(app.$.editor.getCode()+"\n"+this.compiledResult);
       app.$.editor.focus();
     },
@@ -77,7 +78,7 @@
       this.set("added",[]);
     },
     removeProcess: function(e) {
-     this.splice("added",this.added.indexOf(e.model.process),1);
+      this.splice("added",this.added.indexOf(e.model.process),1);
     },
     _initialSelection: function () {
       return "0";
@@ -101,6 +102,7 @@
         const val = {};
         val.id = id;
         val.renamed = "";
+        val.hidden = false;
         return val;
       })});
     },
