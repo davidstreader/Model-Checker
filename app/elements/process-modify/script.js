@@ -44,6 +44,7 @@
       //B3 = (one:Buff/{move/one.out} || two:Buff/{move/two.in}).
       let output = $("#process-type-selector")[0].selectedItemLabel + " "+(this.processName==""?"OUTPUT":this.processName)+" = ";
       let processes = [];
+      let hidden = [];
       _.each(this.added,function(process) {
         let current = "";
         if (process.name) {
@@ -52,22 +53,19 @@
         current+=process.id;
         if (process.renamed.length > 0) {
           let rename = [];
-          let hidden = [];
           _.each(process.renamed,function(alphabet) {
-            if (alphabet.renamed &&!alphabet.hidden)
+            if (alphabet.renamed)
               rename.push(alphabet.renamed + "/" + alphabet.id);
             if (alphabet.hidden)
-              hidden.push(alphabet.id);
+              hidden.push(alphabet.renamed?alphabet.renamed:alphabet.id);
           });
           if (rename.length > 0)
             current += "/{"+rename.join()+"}";
-          if (hidden.length > 0)
-            current += "\\{"+hidden.join()+"}";
-
         }
-        processes.push("("+current+")");
+        processes.push(current);
       });
-      this.set("compiledResult",output+processes.join(" || ")+".");
+      if (hidden.length > 0) hidden = " \\{"+_.uniq(hidden).join()+"}";
+      this.set("compiledResult",output+processes.join(" || ")+(hidden || "")+".");
     },
     addToEditor: function() {
       if (!this.compiledResult) return;
