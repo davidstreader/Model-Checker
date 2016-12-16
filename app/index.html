@@ -71,7 +71,7 @@
       <!-- setting a tab's class to disableOnRender means in another script we will disable shifting to that tab when rendering-->
       <paper-tab class="disableOnEdgeRender disableOnRender">Editor</paper-tab>
       <paper-tab class="disableOnEdgeRender">Diagram</paper-tab>
-      <paper-tab class="disableOnRender">Modify Edges</paper-tab>
+      <paper-tab class="disableOnRender">Process rename generator</paper-tab>
     </paper-tabs>
     <div class="frame">
       <neon-animated-pages selected="{{selectedCtx}}" class="fit">
@@ -93,7 +93,7 @@
         </section>
         <section class="layout vertical flex">
           <div class="process-modify-display">
-         <process-modify id="modify" processes="{{automata.values}}"></process-modify>
+         <process-modify id="modify" processes="{{automata.allValues}}"></process-modify>
           </div>
         </section>
       </neon-animated-pages>

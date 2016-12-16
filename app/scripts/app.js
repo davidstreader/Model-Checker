@@ -93,32 +93,14 @@
       //structure, as we can compile locally and the worker will destroy it, or remotely and the server
       //will destroy it.
       const graphs = [];
-      const skipped = [];
+      const allGraphs = [];
+      const skipped = results.skipped;
       for(let id in results.processes){
-        const graph = results.processes[id];
-        if (graph.dontRender) continue;
-        if (graph.type === 'automata') {
-          console.log({nodeCount:graph.nodeCount,edgeCount:graph.edgeCount});
-          if (graph.nodeCount > app.graphSettings.autoMaxNode) {
-            skipped.push({id: graph.id, length: graph.nodeCount, type:"nodes",maxLength: app.graphSettings.autoMaxNode})
-            continue;
-          }
-          graphs.push(graph);
-        } else if (graph.type === 'petrinet') {
-          console.log({placeCount:graph.placeCount,transitionCount:graph.transitionCount});
-          if (graph.placeCount > app.graphSettings.petriMaxPlace) {
-            skipped.push({id: graph.id, length: graph.placeCount, type:"places", maxLength: app.graphSettings.petriMaxPlace})
-            continue;
-          }
-          if (graph.transitionCount > app.graphSettings.petriMaxTrans) {
-            skipped.push({id: graph.id, length: graph.transitionCount, type:"transitions",maxLength: app.graphSettings.petriMaxTrans})
-            continue;
-          }
-          graphs.push(graph);
-        }
-
+        if (!_.findWhere(skipped,{id:id})) graphs.push(results.processes[id]);
+        allGraphs.push(results.processes[id]);
       }
       app.set('automata.values', graphs.reverse());
+      app.set('automata.allValues', allGraphs.reverse());
       app.set('automata.analysis',results.analysis);
       app.$.console.clear();
       app.$.console.log('Successfully Compiled!');
@@ -184,7 +166,8 @@
       return {
         isFairAbstraction: app.fairAbstraction,
         isLocal: app.isClientSide,
-        pruning: app.pruning
+        pruning: app.pruning,
+        graphSettings: app.graphSettings
       };
     }
 
@@ -224,11 +207,9 @@
       reader.onload = function() {
         var text = reader.result.split("visualiser_json_layout:");
         var code = text[0];
-        if (text.length > 1) {
-          var json = text[1];
-          if (json.length > 0) {
-            app.$.visualiser.loadJSON(json);
-          }
+        var json = text[1];
+        if (json.length > 0) {
+          app.$.visualiser.loadJSON(json);
         }
         app.$.editor.setCode(code);
         app.$.editor.focus();
@@ -296,6 +277,8 @@
         app.$.visualiser.redraw();
       } else if (app.$.maintabs.selected === 0) {
         app.$.editor._editor.focus();
+      }else if (app.$.maintabs.selected === 2) {
+        app.$.modify.redraw();
       }
     });
 

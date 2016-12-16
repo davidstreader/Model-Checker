@@ -43,8 +43,48 @@ const Compiler = {
     this.lastAnalysis = analysis;
     this.lastProcesses = processes;
     this.lastAbstraction = context.isFairAbstraction;
-
-    return { processes:processes, operations:operations, analysis:analysis, context:context };
+    const skipped = [];
+    if (context.graphSettings) {
+      for(let id in processes) {
+        const graph = processes[id];
+        graph.compiledAlphabet = graph.alphabet;
+        if (graph.dontRender) continue;
+        if (graph.type === 'automata') {
+          if (graph.nodeCount > context.graphSettings.autoMaxNode) {
+            skipped.push({
+              id: graph.id,
+              length: graph.nodeCount,
+              type: "nodes",
+              maxLength: context.graphSettings.autoMaxNode
+            });
+            delete graph.edgeMap;
+            delete graph.nodeMap;
+          }
+        } else if (graph.type === 'petrinet') {
+          if (graph.placeCount > context.graphSettings.petriMaxPlace) {
+            skipped.push({
+              id: graph.id,
+              length: graph.placeCount,
+              type: "places",
+              maxLength: context.graphSettings.petriMaxPlace
+            });
+            delete graph.places;
+            delete graph.transitions;
+          }
+          if (graph.transitionCount > context.graphSettings.petriMaxTrans) {
+            skipped.push({
+              id: graph.id,
+              length: graph.transitionCount,
+              type: "transitions",
+              maxLength: context.graphSettings.petriMaxTrans
+            });
+            delete graph.placeMap;
+            delete graph.transitionMap;
+          }
+        }
+      }
+    }
+    return { processes:processes, operations:operations, analysis:analysis, context:context, skipped:skipped  };
   },
 
   //We still need to do remote compilation sync, but its not like that's a problem since sockets are async by nature

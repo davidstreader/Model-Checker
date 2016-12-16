@@ -114,14 +114,14 @@ describe('Grammar to AST Set Tests', function(){
 		var expected = ['a'];
 		expect(constantsMap).to.have.property('N');
 		testSetNode(constantsMap['N'], expected);
-	})
+	});
 
 	it('Should parse \'set N = {a, b, c}\' correctly', function(){
 		var constantsMap = constructConstantsMap('set N = {a, b, c}');
 		var expected = ['a', 'b', 'c'];
 		expect(constantsMap).to.have.property('N');
 		testSetNode(constantsMap['N'], expected);
-	})
+	});
 
 	it('Should parse \'set N = {[0..2]}\' correctly', function(){
 		var constantsMap = constructConstantsMap('set N = {[0..2]}');

@@ -1,14 +1,15 @@
 importScripts("includes.js");
 
 onmessage = function(e){
-  code = e.data.code;
-  context = e.data.context;
+  const code = e.data.code;
+  const context = e.data.context;
   try{
     const tokens = Lexer.tokenise(code);
     const ast = parse(tokens);
     // check if this is to be compiled client side or server side
     if(context.isClientSide || context.isLocal){
-      postMessage({result: Compiler.localCompile(ast, context)});
+      const compiled = Compiler.localCompile(ast, context);
+      postMessage({result: compiled});
     } else {
       postMessage({ast:ast, remoteCompile:true});
     }

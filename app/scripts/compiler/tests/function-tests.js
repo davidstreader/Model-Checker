@@ -27,30 +27,30 @@ describe('Grammar to AST Function Tests', function(){
 		it('[' + processType + ' test] - Should parse ' + processType + ' A = abs(simp(a -> b -> c -> STOP)). correctly', function(){
 			process = constructProcesses(processType + ' A = abs(simp(a -> b -> c -> STOP)).');
 			testFunctionNode(processes[0].process, 'abs');
-			testFunctionNode(processes[0].process.process, 'simp')
+			testFunctionNode(processes[0].process.process, 'simp');
 			expect(baseProcess).to.eql(processes[0].process.process.process);
 		});
 
 		it('[' + processType + ' test] - Should parse ' + processType + ' A = simp(abs(a -> b -> c -> STOP)). correctly', function(){
 			process = constructProcesses(processType + ' A = simp(abs(a -> b -> c -> STOP)).');
 			testFunctionNode(processes[0].process, 'simp');
-			testFunctionNode(processes[0].process.process, 'abs')
+			testFunctionNode(processes[0].process.process, 'abs');
 			expect(baseProcess).to.eql(processes[0].process.process.process);
 		});
 
 		it('[' + processType + ' test] - Should parse ' + processType + ' A = abs(abs(a -> b -> c -> STOP)). correctly', function(){
 			process = constructProcesses(processType + ' A = abs(abs(a -> b -> c -> STOP)).');
 			testFunctionNode(processes[0].process, 'abs');
-			testFunctionNode(processes[0].process.process, 'abs')
+			testFunctionNode(processes[0].process.process, 'abs');
 			expect(baseProcess).to.eql(processes[0].process.process.process);
 		});
 
 		it('[' + processType + ' test] - Should parse ' + processType + ' A = simp(simp(a -> b -> c -> STOP)). correctly', function(){
 			process = constructProcesses(processType + ' A = simp(simp(a -> b -> c -> STOP)).');
 			testFunctionNode(processes[0].process, 'simp');
-			testFunctionNode(processes[0].process.process, 'simp')
+			testFunctionNode(processes[0].process.process, 'simp');
 			expect(baseProcess).to.eql(processes[0].process.process.process);
 		});
 	}
-	
+
 });

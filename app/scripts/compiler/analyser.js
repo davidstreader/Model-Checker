@@ -72,7 +72,7 @@ function performAnalysis(processes, lastAnalysis, abstractionChanged){
       const current = JSON.stringify(analysis[ident].process);
       const previous = JSON.stringify(lastAnalysis[ident].process);
       // compare asts from compilation and last compilation to see if they match
-      analysis[ident].isUpdated = (current === previous) ? false : true;
+      analysis[ident].isUpdated = (current !== previous);
     }
     else{
       analysis[ident].isUpdated = true;

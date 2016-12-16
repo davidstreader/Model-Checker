@@ -19,7 +19,6 @@ io.on('connection', function (socket) {
     workerMap[socket.id] = worker;
     worker.onmessage = function(e) {
       if (e.data.result) {
-        socket.emit("log",{message:"Received from worker thread"});
         ack(e.data.result);
         worker.terminate();
       } else if (e.data.message) {
