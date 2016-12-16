@@ -1,6 +1,7 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../imports/element-resizer.html">
+<script src="../../scripts/compiler/lexer.js"></script>
 <style>
   .modify-input > *{
     padding:0px
@@ -18,7 +19,7 @@
           <paper-listbox class="dropdown-content" selected$="{{!_hasSelection}}"></paper-listbox>
         </paper-menu>
       </paper-dropdown-menu>
-      <paper-button on-tap="addProcess" disabled$="{{!_hasSelection}}">Add Process</paper-button>
+      <paper-button on-tap="addProcess" disabled$="{{!_hasSelection}}">{{addLabel}}</paper-button>
       <paper-button on-tap="clear">Clear</paper-button>
       <paper-button on-tap="addToEditor">Add to editor</paper-button>
       <paper-input label="Process Name" placeholder="OUTPUT" value="{{processName}}" style="display: inline-block"></paper-input>
