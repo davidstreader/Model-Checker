@@ -21,7 +21,7 @@
       </paper-dropdown-menu>
       <paper-button on-tap="addProcess" disabled$="{{!_hasSelection}}">{{addLabel}}</paper-button>
       <paper-button on-tap="clear">Clear</paper-button>
-      <paper-button on-tap="addToEditor">Add to editor</paper-button>
+      <paper-button on-tap="addToEditor">{{editorLabel}}</paper-button>
       <paper-input label="Process Name" placeholder="OUTPUT" value="{{processName}}" style="display: inline-block"></paper-input>
       <paper-dropdown-menu id="process-type-selector" label="Process type">
         <paper-menu class="dropdown-content" selected="0">

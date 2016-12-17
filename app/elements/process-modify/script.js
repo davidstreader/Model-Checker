@@ -36,17 +36,23 @@
       },
       compiledResult: {
         type: String
+      },
+      editorLabel: {
+        type: String,
+        value: "Add to Editor"
       }
     },
     //Call compile if added or processName are modified
     observers: ['compile(added.*,processName)'],
     compile: function() {
+      const processName = (this.processName==""?"OUTPUT":this.processName);
+      this.editorLabel = this.getProcessFromCode(processName)?"Update Process":"Add to Editor";
       if (this.added.length === 0) {
         this.set("compiledResult","");
         return;
       }
       //B3 = (one:Buff/{move/one.out} || two:Buff/{move/two.in}).
-      let output = $("#process-type-selector")[0].selectedItemLabel + " "+(this.processName==""?"OUTPUT":this.processName)+" = ";
+      let output = $("#process-type-selector")[0].selectedItemLabel + " " + processName + " = ";
       let processes = [];
       let hidden = [];
       _.each(this.added,function(process) {
@@ -76,12 +82,25 @@
       this.set("compiledResult",output+processes.join(" || ")+(hidden || "")+".");
     },
     addToEditor: function() {
-      //TODO: look if the specified process exists, and replace it if it does.
-      //TODO: Figure out the line then replace it.
-      //TODO: We do need to take local processes into account though.
+      const processName = (this.processName==""?"OUTPUT":this.processName);
       if (!this.compiledResult) return;
-      app.$.editor.setCode(app.$.editor.getCode()+"\n"+this.compiledResult);
+      const code = app.$.editor.getCode();
+      //A regex that will match an entire process including sub processes.
+      //By adding the process we are loking for before, we can look up entire processes.
+      const process = this.getProcessFromCode(processName);
+      if (process != null) {
+        app.$.editor.setCode(code.replace(process, this.compiledResult.replace($("#process-type-selector")[0].selectedItemLabel + " ", "") + "\n"));
+        app.$.editor.focus();
+      }
+
+      app.$.editor.setCode(code+"\n"+this.compiledResult);
       app.$.editor.focus();
+    },
+    getProcessFromCode:function (processName) {
+      const code = app.$.editor.getCode();
+      const results = new RegExp(processName+' ((?:.|,\n|\r\n?)*?\.(?:\n|\r\n?|$))','g').exec(code);
+      if (results) return results[0];
+      return null;
     },
     clear: function(e) {
       this.set("added",[]);
@@ -99,11 +118,6 @@
       return a > b;
     },
     ready: function () {
-      const _this = this;
-      //Expand the drawing area to the size of the screen when zooming
-      window.addEventListener('resize', function () {
-        _this.rescale();
-      });
     },
     addProcess: function() {
       const id = $("#process-modify-selector")[0].selectedItemLabel;
@@ -116,8 +130,8 @@
         return val;
       })};
       if (parse) {
-          this.addParsed(parse);
-          return;
+        this.addParsed(parse);
+        return;
       }
       this.push("added",orig);
     },
