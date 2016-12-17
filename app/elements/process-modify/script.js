@@ -46,59 +46,84 @@
     observers: ['compile(added.*,processName)'],
     compile: function() {
       const processName = (this.processName==""?"OUTPUT":this.processName);
+      //If the new name already exists in the editor, notify the user by changing the button label
       this.editorLabel = this.getProcessFromCode(processName)?"Update Process":"Add to Editor";
+      //If we have no processes, empty the buffer and return
       if (this.added.length === 0) {
         this.set("compiledResult","");
         return;
       }
-      //B3 = (one:Buff/{move/one.out} || two:Buff/{move/two.in}).
+      //Create a string with the process type and the name
       let output = $("#process-type-selector")[0].selectedItemLabel + " " + processName + " = ";
       let processes = [];
       let hidden = [];
+      //Loop over all processes
       _.each(this.added,function(process) {
+        //The stringified version of the current process
         let current = "";
+        //If the process has a new name
         if (process.name) {
+          //Add the new name and a :
           current+=process.name+":";
         }
+        //Add the old name
         current+=process.id;
+        //If we have some renamed values
         if (process.renamed.length > 0) {
           let rename = [];
+          //Loop over the renaed values
           _.each(process.renamed,function(alphabet) {
             let id = alphabet.id;
+            //If the process is renamed, we need to prepend the process name to the id
             if (process.name) {
               id = process.name+"."+id;
             }
+            //If hte action is renamed, push it to the rename map
             if (alphabet.renamed)
               rename.push(alphabet.renamed + "/" + id);
+            //If it is hidden, push it to the hidden map
             if (alphabet.hidden)
               hidden.push(alphabet.renamed?alphabet.renamed:alphabet.id);
           });
+          //If we ended up with some renamed values, collect them and add to the current process
           if (rename.length > 0)
             current += "/{"+rename.join()+"}";
         }
+        //Push the current process to the process list
         processes.push(current);
       });
+      //Collect up all hidden actions, but only unique ones
       if (hidden.length > 0) hidden = " \\{"+_.uniq(hidden).join()+"}";
+      //Set compiled results to the process name + all the added processes collected + hidden+.
       this.set("compiledResult",output+processes.join(" || ")+(hidden || "")+".");
     },
     addToEditor: function() {
       const processName = (this.processName==""?"OUTPUT":this.processName);
+      //Dont add anything if there is nothing to add
       if (!this.compiledResult) return;
       const code = app.$.editor.getCode();
       //A regex that will match an entire process including sub processes.
       //By adding the process we are loking for before, we can look up entire processes.
       const process = this.getProcessFromCode(processName);
+      //If the process already exists
       if (process != null) {
+        //Replace the old version of the process with the new one
+        //Note, we need to get rid of the type as its now set by the original process.
         app.$.editor.setCode(code.replace(process, this.compiledResult.replace($("#process-type-selector")[0].selectedItemLabel + " ", "") + "\n"));
         app.$.editor.focus();
       }
-
+      //It doesnt, append the new process
       app.$.editor.setCode(code+"\n"+this.compiledResult);
       app.$.editor.focus();
     },
     getProcessFromCode:function (processName) {
       const code = app.$.editor.getCode();
-      const results = new RegExp(processName+' ((?:.|,\n|\r\n?)*?\.(?:\n|\r\n?|$))','g').exec(code);
+      //    B2 = (one:Buff || two:Buff).
+      //processName+'\\s*= -> B2 =
+      //((?:.|,\n|\r\n?)*? -> Non greedy match up to ( (one:Buff || two:Buff))
+      //\.(?:\n|\r\n?|$)) -> a dot followed by a newline or end (.)
+      const results = new RegExp(processName+'\\s*=((?:.|,\n|\r\n?)*?\.(?:\n|\r\n?|$))','g').exec(code);
+      //If results isnt null, then we have a match
       if (results) return results[0];
       return null;
     },
@@ -121,40 +146,55 @@
     },
     addProcess: function() {
       const id = $("#process-modify-selector")[0].selectedItemLabel;
+      //Try parsing the subprocess to see if we can import info from it
       const parse = this.parse(id);
-      const orig = {id:id,name:"",renamed:_.keys(_.findWhere(app.automata.allValues,{id:id}).compiledAlphabet).map(id=>{
-        const val = {};
-        val.id = id;
-        val.renamed = "";
-        val.hidden = false;
-        return val;
-      })};
       if (parse) {
+        //IMport found info
         this.addParsed(parse);
         return;
       }
-      this.push("added",orig);
+      //loop over all subkeys from the selected process, then map them to an array with some default states
+      this.push("added",{id:id,name:"",renamed:_.keys(_.findWhere(app.automata.allValues,{id:id}).compiledAlphabet).map(id=>{return {id:id,renamed:"",hidden:false};})});
     },
     addParsed: function(parse) {
+      //Loop over processes
       for (let id1 in parse.processes) {
         const process = parse.processes[id1];
+        //Generate a process formatted for modify
         const orig = {id:process.id,name:process.name||"",renamed:_.keys(_.findWhere(app.automata.allValues,{id:process.id}).compiledAlphabet).map(id=>{
-          const val = {};
-          val.id = id;
-          val.renamed = "";
+          const val = {id:id,renamed:"",hidden:false};
           if (process.renamed) {
             val.renamed = process.renamed[id] || "";
           }
-          val.hidden = false;
           return val;
         })};
+        //If the process has a hidden section
         if (parse.hidden) {
+          const hiddenType = parse.hiddenType;
+          //For the exclusive list, we want to start by hiding all
+          if (hiddenType == 'ex') {
+            orig.renamed.forEach(toHide => toHide.hidden = true);
+          }
+          //Loop through all the values in the new process
           for (const id in orig.renamed) {
-            if (parse.hidden.indexOf(orig.renamed[id].id) !== -1) {
-              orig.renamed[id].hidden = true;
+            //Inclusive(hide all in hidden)
+            if (hiddenType == 'inc') {
+              //If the hidden process has an action with this name
+              if (parse.hidden.indexOf(orig.renamed[id].id) !== -1) {
+                //Hide the action
+                orig.renamed[id].hidden = true;
+              }
+            } else {
+              //Exclusive (hide all not in hidden)
+              //If the hidden process has an action with this name
+              if (parse.hidden.indexOf(orig.renamed[id].id) !== -1) {
+                //show the action
+                orig.renamed[id].hidden = false;
+              }
             }
           }
         }
+        //Push the created process
         this.push("added",orig);
       }
 
@@ -163,15 +203,6 @@
       this._hasSelection = true;
       const parse = this.parse($("#process-modify-selector")[0].selectedItemLabel);
       this.set("addLabel",parse?"Load Process":"Add Process");
-      const graph = {name: detail.item.dataAutomatonName};
-      for (let i in this.display) {
-        if (this.display[i].id === graph.name) {
-          graph.graph = this.display[i].graph;
-          this.fire('change-process', this.display[i]);
-          break;
-        }
-      }
-
     },
     redraw: function() {
       $("#process-modify-selector")[0].contentElement.selected = null;
@@ -197,17 +228,17 @@
       //It also isnt one if it contains -> or ~>
       if (process.indexOf("->") > -1 || process.indexOf("~>") > -1) return {};
       //If we split out the =, we end up with the process. we want a list of bisimulated processes.
-      let processes = process.split("=")[1].split("\\")[0].split("||");
+      let processes = process.split("=")[1].split(/\\|@/)[0].split("||");
       //Loop through and parse
       for (let i in processes) {
         processes[i] = this.parseProcess(processes[i]);
       }
       //Parse the hidden set on the end
-      let hidden = process.split("\\")[1];
+      let hidden = process.split(/\\|@/)[1];
       if (hidden) {
         hidden = hidden.replace("{","").replace("}","").split(",")
       }
-      return {id:id,processes:processes,hidden:hidden};
+      return {id:id,processes:processes,hidden:hidden,hiddenType:process.indexOf("@")>-1?'ex':'inc'};
     },
     parseProcess: function(process) {
       let proc = {};
