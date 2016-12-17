@@ -21,9 +21,8 @@
       </paper-dropdown-menu>
       <paper-button on-tap="addProcess" disabled$="{{!_hasSelection}}">{{addLabel}}</paper-button>
       <paper-button on-tap="clear">Clear</paper-button>
-      <paper-button on-tap="addToEditor">{{editorLabel}}</paper-button>
       <paper-input label="Process Name" placeholder="OUTPUT" value="{{processName}}" style="display: inline-block"></paper-input>
-      <paper-dropdown-menu id="process-type-selector" label="Process type">
+      <paper-dropdown-menu id="process-type-selector" label="Process type" disabled$="{{isExisting}}">
         <paper-menu class="dropdown-content" selected="0">
           <template is="dom-repeat" items="{{PROCESS_TYPES}}">
             <paper-item data-automaton-name="{{item}}">{{item}}</paper-item>
@@ -31,6 +30,7 @@
           <paper-listbox class="dropdown-content" selected$="{{!_hasSelection}}"></paper-listbox>
         </paper-menu>
       </paper-dropdown-menu>
+      <paper-button on-tap="addToEditor">{{editorLabel}}</paper-button>
     </div>
     <div style="text-align:center">{{compiledResult}}</div>
     <template is="dom-repeat" items="{{added}}" as="process">

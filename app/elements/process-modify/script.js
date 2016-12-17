@@ -40,14 +40,23 @@
       editorLabel: {
         type: String,
         value: "Add to Editor"
+      },
+      isExisting: {
+        type: Boolean,
+        value: false
       }
     },
     //Call compile if added or processName are modified
     observers: ['compile(added.*,processName)'],
     compile: function() {
       const processName = (this.processName==""?"OUTPUT":this.processName);
+      this.isExisting = this.getProcessFromCode(processName)!==null;
       //If the new name already exists in the editor, notify the user by changing the button label
-      this.editorLabel = this.getProcessFromCode(processName)?"Update Process":"Add to Editor";
+      this.editorLabel =  this.isExisting?"Update Process":"Add to Editor";
+      if (this.isExisting) {
+        const type =_.findWhere(app.automata.allValues,{id:processName}).type;
+        $("#process-type-selector")[0].contentElement.selected = this.PROCESS_TYPES.indexOf(type);
+      }
       //If we have no processes, empty the buffer and return
       if (this.added.length === 0) {
         this.set("compiledResult","");
@@ -122,7 +131,7 @@
       //processName+'\\s*= -> B2 =
       //((?:.|,\n|\r\n?)*? -> Non greedy match up to ( (one:Buff || two:Buff))
       //\.(?:\n|\r\n?|$)) -> a dot followed by a newline or end (.)
-      const results = new RegExp(processName+'\\s*=((?:.|,\n|\r\n?)*?\.(?:\n|\r\n?|$))','g').exec(code);
+      const results = new RegExp("(:? |^)"+processName+'\\s*=((?:.|,\n|\r\n?)*?\.(?:\n|\r\n?|$))','g').exec(code);
       //If results isnt null, then we have a match
       if (results) return results[0];
       return null;
