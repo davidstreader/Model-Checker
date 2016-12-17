@@ -30,7 +30,7 @@
           <paper-listbox class="dropdown-content" selected$="{{!_hasSelection}}"></paper-listbox>
         </paper-menu>
       </paper-dropdown-menu>
-      <paper-button on-tap="addToEditor">{{editorLabel}}</paper-button>
+      <paper-button on-tap="addToEditor" disabled$="{{!hasCompiled}}">{{editorLabel}}</paper-button>
     </div>
     <div style="text-align:center">{{compiledResult}}</div>
     <template is="dom-repeat" items="{{added}}" as="process">

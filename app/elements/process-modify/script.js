@@ -44,6 +44,10 @@
       isExisting: {
         type: Boolean,
         value: false
+      },
+      hasCompiled: {
+        type: Boolean,
+        value: false
       }
     },
     //Call compile if added or processName are modified
@@ -57,8 +61,9 @@
         const type =_.findWhere(app.automata.allValues,{id:processName}).type;
         $("#process-type-selector")[0].contentElement.selected = this.PROCESS_TYPES.indexOf(type);
       }
+      this.hasCompiled = this.added.length>0;
       //If we have no processes, empty the buffer and return
-      if (this.added.length === 0) {
+      if (!this.hasCompiled) {
         this.set("compiledResult","");
         return;
       }
