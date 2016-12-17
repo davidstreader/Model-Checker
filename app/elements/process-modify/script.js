@@ -53,6 +53,8 @@
     //Call compile if added or processName are modified
     observers: ['compile(added.*,processName)'],
     compile: function() {
+      //Force upper case
+      this.processName = this.processName.toUpperCase();
       const processName = (this.processName==""?"OUTPUT":this.processName);
       this.isExisting = this.getProcessFromCode(processName)!==null;
       //If the new name already exists in the editor, notify the user by changing the button label
