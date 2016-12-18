@@ -19,6 +19,7 @@ function interpretPetriNet(process, processesMap, context){
   root.addMetaData('startPlace', 1);
   net.addRoot(root.id);
 
+  root.metaData.variables = process.process.vars;
   // interpret the process
   interpretNode(process.process, net, root);
 
@@ -156,12 +157,13 @@ function interpretPetriNet(process, processesMap, context){
     const id = net.nextTransitionId;
     let label = astNode.from.action;
     const metadata  = {};
-    if (astNode.guard !== undefined) {
-      metadata.guard = astNode.guard;
-      metadata.next = astNode.next;
-      metadata.variables = astNode.variables;
+    if (astNode.guardMetadata !== undefined) {
+      metadata.guard = astNode.guardMetadata;
     }
-    if (typeof label !== 'string') label = astNode.from.action.label;
+
+    if(astNode.to.vars) {
+      nextPlace.metaData.variables = astNode.to.vars;
+    }
     const transition = net.addTransition(id, label, [currentPlace], [nextPlace], metadata);
     interpretNode(astNode.to, net, nextPlace, transition);
   }

@@ -172,11 +172,12 @@ function visualizeAutomata(process, graphID, glGraph, hidden) {
     let tooltip = "";
     const from = 'n' + edges[i].from;
     const to = 'n' + edges[i].to;
-    let vars = edges[i].getMetaData('variables');
-    if(edges[i].getMetaData('guard') !== undefined){
-      if (edges[i].getMetaData('next') !== undefined)
-        tooltip =edges[i].getMetaData('next')+"\n"+tooltip;
-      tooltip =edges[i].getMetaData('guard')+"\n"+tooltip;
+    let guard = edges[i].getMetaData('guard');
+    if(guard !== undefined){
+      let vars = guard.variables;
+      if (guard.next !== undefined)
+        tooltip =guard.next+"\n"+tooltip;
+      tooltip =guard.guard+"\n"+tooltip;
       if (vars !== undefined)
         tooltip =vars+"\n"+tooltip;
     }
@@ -277,7 +278,8 @@ function visualizePetriNet(process, graphID, glGraph, hidden) {
       width: 50,
       height: 50,
       z:1,
-      attrs:attrs});
+      attrs:attrs,
+      tooltip: places[i].getMetaData('variables')});
     glGraph.setParent('p'+places[i].id,graphID);
   }
 
@@ -325,11 +327,13 @@ function visualizePetriNet(process, graphID, glGraph, hidden) {
       toEmbed = ["boxNode"+box,target,tid,_link("embedNode"+box,tid, '','',glGraph,graphID,{clearVerts:true}),_link(tid,target, '','',glGraph,graphID,{clearVerts:true})];
       continue;
     }
-    let vars = transitions[i].getMetaData('variables');
-    if(transitions[i].getMetaData('guard') !== undefined){
-      if (transitions[i].getMetaData('next') !== undefined)
-        tooltip =transitions[i].getMetaData('next')+"\n"+tooltip;
-      tooltip =transitions[i].getMetaData('guard')+"\n"+tooltip;
+
+    let guard = transitions[i].getMetaData('guard');
+    if(guard !== undefined){
+      let vars = guard.variables;
+      if (guard.next !== undefined)
+        tooltip =guard.next+"\n"+tooltip;
+      tooltip =guard.guard+"\n"+tooltip;
       if (vars !== undefined)
         tooltip =vars+"\n"+tooltip;
     }

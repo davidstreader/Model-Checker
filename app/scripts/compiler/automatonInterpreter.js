@@ -11,11 +11,8 @@ function interpretAutomaton(process, processesMap, context){
   const root = automaton.addNode();
   automaton.root = root.id;
   root.metaData.startNode = true;
-  interpretNode(process.process, automaton, root)
-  if (root.outgoingEdges[0] !== undefined) {
-    const metaData = automaton.edgeMap[root.outgoingEdges[0]].metaData;
-    root.metaData.variables = metaData.variables;
-  }
+  root.metaData.variables = process.process.vars;
+  interpretNode(process.process, automaton, root);
   if (process.interrupt) {
     const currentNode = automaton.addNode();
     //Interrupts pass through a undefined currentNode, as they have no source. This means we dont
@@ -111,25 +108,25 @@ function interpretAutomaton(process, processesMap, context){
 
   function interpretSequence(astNode, automaton, currentNode) {
     let next = (astNode.to.type === 'reference') ? referenceMap[astNode.to.reference] : automaton.addNode();
-    //If we reach this issue, the local process being pointed too has been replaced by the sub process
+    //If we reach this issue, the local process being pointed to has been replaced by the sub process
     //but the reference was never updated. However, the nice thing is that the replacement is always
     //reference+1
     if (next == undefined) next = referenceMap[astNode.to.reference+1];
     const id = automaton.nextEdgeId;
     const metadata = {};
-    if (astNode.guard !== undefined) {
-      metadata.guard = astNode.guard;
-      metadata.next = astNode.next;
+    if (astNode.guardMetadata !== undefined) {
+      metadata.guard = astNode.guardMetadata;
       metadata.variables = astNode.variables;
-      next.metaData.variables = astNode.nextIdent;
     }
     if (astNode.from.receiver) metadata.receiver = true;
     if (astNode.from.broadcaster) metadata.broadcaster = true;
-    if (typeof astNode.from.action !== 'string') astNode.from.action = astNode.from.action.label;
 
     automaton.addEdge(id, astNode.from.action, currentNode, next, metadata);
 
     if(astNode.to.type !== 'reference'){
+      if(astNode.to.vars) {
+        next.metaData.variables = astNode.to.vars;
+      }
       interpretNode(astNode.to, automaton, next);
     }
   }

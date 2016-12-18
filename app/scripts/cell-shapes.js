@@ -90,7 +90,7 @@ joint.shapes.pn.Transition = joint.shapes.basic.Generic.extend({
 
 joint.shapes.pn.StartPlace = joint.dia.Element.extend({
 
-  markup: '<g class="rotatable"><g class="scalable"><circle class="outer"/><circle class="inner"/></g></g>',
+  markup: '<g class="rotatable"><g class="scalable"><circle class="outer"/><circle class="inner"/></g></g><title class="title" />',
 
   defaults: _.defaultsDeep({
 
@@ -117,6 +117,7 @@ joint.shapes.pn.StartPlace = joint.dia.Element.extend({
 });
 
 joint.shapes.pn.Place = joint.shapes.pn.Place.extend({
+  markup: '<g class="rotatable"><g class="scalable"><circle class="root"/><g class="tokens" /></g><text class="label"/></g><title class="title" />',
   defaults: _.defaultsDeep({
     size: {width: 60, height: 60},
     attrs: {
