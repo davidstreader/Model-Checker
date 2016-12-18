@@ -129,7 +129,7 @@ gulp.task('serve', ['styles', 'elements', 'scripts:es6', 'images', 'vulcanize'],
   gulp.watch(['app/styles/**/*.css'], ['styles', reload]);
   gulp.watch(['app/elements/**/*.css'], ['elements', reload]);
   gulp.watch(['app/**/*.es6.js'], ['scripts:es6', reload]);
-  gulp.watch(['app/{scripts,elements}/**/{*.js,*.html}'], ['vulcanize']);
+  gulp.watch(['app/{scripts,elements}/**/{*.js,*.html}','!app/elements/elements.vulcanized.html'], ['vulcanize']);
   gulp.watch(['app/images/**/*'], reload);
 });
 
