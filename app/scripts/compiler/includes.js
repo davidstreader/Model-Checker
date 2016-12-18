@@ -10,18 +10,17 @@ importScripts("petrinetInterpreter.js");
 importScripts("operation-evaluator.js");
 importScripts("reconstructor.js");
 importScripts("compiler.js");
-<!-- the wrapper scripts for the process operations -->
+//the wrapper scripts for the process operations
 importScripts("../process-operations/abstraction.js");
 importScripts("../process-operations/bisimulation.js");
 importScripts("../process-operations/parallel-composition.js");
 importScripts("../process-operations/automata-to-petrinet.js");
 
-<!-- automata process operations -->
+//automata process operations
 importScripts("../process-operations/automata/automaton-parallel-composition.js");
 importScripts("../process-operations/automata/automaton-abstraction.js");
 importScripts("../process-operations/automata/automaton-bisimulation.js");
-
-<!-- petri net process operations -->
+// petri net process operations
 importScripts("../process-operations/petri-net/petri-net-parallel-composition.js");
 importScripts("../process-operations/petri-net/petri-net-abstraction.js");
 importScripts("../process-operations/petri-net/petri-net-prune.js");
