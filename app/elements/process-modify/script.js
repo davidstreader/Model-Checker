@@ -242,7 +242,7 @@
       //get rid of the . at the end
       process = process.substring(0,process.length-1);
       //It also isnt one if it contains -> or ~>
-      if (process.indexOf("->") > -1 || process.indexOf("~>") > -1) return {};
+      if (process.indexOf("->") > -1 || process.indexOf("~>") > -1) return null;
       //If we split out the =, we end up with the process. we want a list of bisimulated processes.
       let processes = process.split("=")[1].split(/\\|@/)[0].split("||");
       //Loop through and parse
