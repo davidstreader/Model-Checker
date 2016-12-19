@@ -36,7 +36,6 @@ function replaceReferences(processes){
 
     // reset reference map for local processes
     localReferenceMap =  new LocalReferenceMap(processes[i].local);
-
     const ident = processes[i].ident.ident;
     // construct a mapping from process identifiers to reference ids
     const idMap = {};

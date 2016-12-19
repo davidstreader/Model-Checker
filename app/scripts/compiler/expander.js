@@ -18,11 +18,21 @@ function expand(ast){
   var localProcess;
   var variableSet;
   // expand the defined processes
+
   for(var i = 0; i < processes.length; i++){
     if (typeof postMessage === 'function')
       postMessage({clear:true,message:("Expanding: "+processes[i].ident.ident+" ("+(i+1)+"/"+processes.length)+")"});
     var variableMap = JSON.parse(JSON.stringify(ast.variableMap));
     variableSet = processes[i].variables?processes[i].variables.set:[];
+    if(processes[i].local.length !== 0 && processes[i].process.ident) {
+      const ident = processes[i].process.ident.split("[")[0];
+      for (var i2 in processes[i].local) {
+        if (processes[i].local[i2].ident.ident == ident) {
+          processes[i].process.ident = processIdent(processes[i].process.ident, processes[i].local[i2]);
+          console.log(processes[i].process.ident);
+        }
+      }
+    }
     processes[i].process = expandNode(processes[i].process, variableMap);
     // expand local procsses if any are defined
     if(processes[i].local.length !== 0){
@@ -31,10 +41,24 @@ function expand(ast){
       processes[i].local = expandLocalProcessDefinitions(processes[i].local, variableMap);
     }
   }
-
   // return the result
   return ast;
 
+  function processIdent(ident, localProcess) {
+    let newIdent = ident.split("[")[0];
+    var split = ident.substring(1).replace(/[\[']+/g,'').split("]");
+    split.pop();
+    for (var index in split) {
+      var val = split[index];
+      var variable = localProcess.ranges.ranges[index].variable;
+      if (variableSet.indexOf(variable.substring(1)) !== -1) {
+        newIdent+="["+variable+"]";
+      } else {
+        newIdent+="["+val+"]";
+      }
+    }
+    return newIdent;
+  }
   /**
    * Expands and returns the local processes defined within a process.
    *
@@ -358,6 +382,9 @@ function expand(ast){
   function expandIdentiferNode(astNode, variableMap){
     var lbl = processLabel(astNode.ident, variableMap);
     astNode.ident = lbl.label;
+    if (localProcess) {
+      astNode.ident = processIdent(astNode.ident,localProcess)
+    }
     return astNode;
   }
 
@@ -424,13 +451,11 @@ function expand(ast){
     // replace any variables declared in the expression with its value
     var regex = '[\$][a-zA-Z0-9]*';
     var match = expr.match(regex);
-    var isVariable = false;
     var exprWithVars = expr;
     while(match !== null){
       //If the variable exists in the variableSet, then we are processing an expression without replacing variables.
       if (variableSet.indexOf(match[0].substring(1)) === 0) {
-        isVariable = true;
-        expr = expr.replace(match[0], match[0].substring(1));
+        exprWithVars = exprWithVars.replace(match[0], match[0].substring(1));
       }
       // check if the variable has been defined
       if(variableMap[match[0]] === undefined){
@@ -439,12 +464,9 @@ function expand(ast){
       if (match[0].indexOf("v")!=-1) {
         exprWithVars=exprWithVars.replace(match[0],variableMap[match[0]]);
       }
-      if (!isVariable)
-        expr = expr.replace(match[0], variableMap[match[0]]);
+      expr = expr.replace(match[0], variableMap[match[0]]);
       match = expr.match(regex);
     }
-    if (isVariable)
-      return {result:expr,expr:expr,exprWithVars:expr};
     //Web workers can not use eval and evaluate. This is an alternative.
     return {result:new Function('return '+expr)(),expr:expr,exprWithVars:exprWithVars.split("$").join("")};
   }
