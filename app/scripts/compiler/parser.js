@@ -318,7 +318,7 @@ const Parser = {
 			this.parseProcessDefinitionBlock(tokens, processType);
 		}
 		else{
-			const message = 'Expecting to parse a process definition or a process definition block but received the ' + token.type + '\' ' + token.value + '\'';
+			const message = 'Expecting to parse a process definition or a process definition block but received the ' + token.type + ' \'' + token.value + '\'';
 			throw new ParserException(message, token.location);
 		}
 	},
@@ -328,7 +328,7 @@ const Parser = {
 
 		// ensure that the current token is a process type
 		if(token.type !== 'process-type'){
-			const message = 'Expecting to parse a process type but received the ' + token.type + '\' ' + token.value + '\'';
+			const message = 'Expecting to parse a process type but received the ' + token.type + ' \'' + token.value + '\'';
 			throw new ParserException(message, token.location);
 		}
 
@@ -590,7 +590,7 @@ const Parser = {
 		}
 
 		// was not able to parse a base local process
-		const message = 'Expecting to parse a base local process but received the ' + token.type + '\'' + token.value + '\'';
+		const message = 'Expecting to parse a base local process but received the ' + token.type + ' \'' + token.value + '\'';
 		throw new ParserException(message, token.location);
 
 	},
@@ -600,7 +600,7 @@ const Parser = {
 
 		// check that the token is a terminal
 		if(token.type !== 'terminal'){
-			const message = 'Expecting to parse a terminal but received the ' + token.type + '\' ' + token.value;
+			const message = 'Expecting to parse a terminal but received the ' + token.type + ' \'' + token.value;
 			throw new ParserException(message, token.location);
 		}
 
@@ -692,7 +692,7 @@ const Parser = {
 
 		// check that a function has been defined
 		if(token.type !== 'function'){
-			const message = 'Expecting to parse a function but received the ' + token.type + '\' ' + token.value + '\'';
+			const message = 'Expecting to parse a function but received the ' + token.type + ' \'' + token.value + '\'';
 			throw new ParserException(message, token.location);
 		}
 
@@ -854,7 +854,7 @@ const Parser = {
 			this.parseOperationBlock(tokens);
 		}
 		else{
-			const message = 'Expecting to parse an operation or an operation block but received the ' + token.type + '\' ' + token.value + '\'';
+			const message = 'Expecting to parse an operation or an operation block but received the ' + token.type + ' \'' + token.value + '\'';
 			throw new ParserException(message, token.location);
 		}
 	},
@@ -907,7 +907,7 @@ const Parser = {
 
 		// check that the current token is an operation operator
 		if(token.type !== 'operation'){
-			const message = 'Expecting to parse an operation operator but received the ' + token.type + '\' ' + token.value + '\'';
+			const message = 'Expecting to parse an operation operator but received the ' + token.type + ' \'' + token.value + '\'';
 			throw new ParserException(message, token.location);
 		}
 
@@ -1129,7 +1129,7 @@ const Parser = {
 	gobble: function(token, value){
 		// ensure that the token value matches the expected value
 		if(token.value !== value){
-			const message = 'Expecting to parse \'' + value + '\' but received the ' + token.type + '\' ' + token.value + '\'';
+			const message = 'Expecting to parse \'' + value + '\' but received the ' + token.type + ' \'' + token.value + '\'';
 			throw new ParserException(message, token.location);
 		}
 
