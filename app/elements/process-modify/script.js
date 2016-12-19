@@ -139,7 +139,7 @@
       //processName+'\\s*= -> B2 =
       //((?:.|,\n|\r\n?)*? -> Non greedy match up to ( (one:Buff || two:Buff))
       //\.(?:\n|\r\n?|$)) -> a dot followed by a newline or end (.)
-      const results = new RegExp("(:? |^)"+processName+'\\s*=((?:.|,\n|\r\n?)*?\.(?:\n|\r\n?|$))','g').exec(code);
+      const results = new RegExp("(:?.| |^)"+processName+'\\s*=((?:.|,\n|\r\n?)*?\.(?:\s|$))','g').exec(code);
       //If results isnt null, then we have a match
       if (results) return results[0];
       return null;
