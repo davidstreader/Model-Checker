@@ -1,16 +1,20 @@
 automata {
     A =a->b!->c->STOP || x->b?->z->STOP.
-    A2=(B|C),
-    B=(a->(b->D|x->E)),
-    C=(x->a->E),
-    D=(c->x->STOP|x->c->STOP),
-    E=(b->(c->z->STOP|z->c->STOP)).
-    A3 = (a->(b->x->B|x->C)),
-    B=(c->STOP),
-    C=(b->B|c->b->STOP).
+    
+    A2 = (x -> B | a -> x -> C),
+        B = (a -> C | b -> (a -> z -> STOP | z -> a -> STOP)),
+        C = (b -> (c -> z -> STOP | z -> c -> STOP)).
+    
+    A3 = (a -> (b -> B | x -> b -> C)),
+        B = (x -> C | c -> x -> STOP),
+        C = (c -> STOP).
+    
     A4 = (B||C),
-    B = (a!->b->c?->STOP),
-    C = (a?->x->c!->STOP).
+        B = (a!->b->c?->STOP),
+        C = (a?->x->c!->STOP).
 }
-A ~ A2.
-A3 ~ A4.
+
+operation {
+    A ~ A2.
+    A3 ~ A4.
+}

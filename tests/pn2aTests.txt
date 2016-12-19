@@ -90,26 +90,28 @@ petrinet {
     FarmPN = (FarmerPN || WorkersPN).
 }
 
-Simple ~ automata(SimplePN).
-Two ~ automata(TwoPN).
-CM ~ automata(CMPN).
-VM ~ automata(VMPN).
-VM2 ~ automata(VM2PN).
-Basic ~ automata(BasicPN).
-Bas ~ automata(BasPN).
-Tt ~ automata(TtPN).
-BT ~ automata(BTPN).
-P ~ automata(PPN).
-TrRed ~ automata(TrRedPN).
-Parallel ~ automata(ParallelPN).
-Parallel2 ~ automata(Parallel2PN).
-Buff ~ automata(BuffPN).
-B2 ~ automata(B2PN).
-B3 ~ automata(B3PN).
-B4 ~ automata(B4PN).
-Money ~ automata(MoneyPN).
-Lock ~ automata(LockPN).
-Worker ~ automata(WorkerPN).
-Workers ~ automata(WorkersPN).
-Farmer ~ automata(FarmerPN).
-Farm ~ automata(FarmPN).
+operation {
+    Simple ~ automata(SimplePN).
+    Two ~ automata(TwoPN).
+    CM ~ automata(CMPN).
+    VM ~ automata(VMPN).
+    VM2 ~ automata(VM2PN).
+    Basic ~ automata(BasicPN).
+    Bas ~ automata(BasPN).
+    Tt ~ automata(TtPN).
+    BT ~ automata(BTPN).
+    P ~ automata(PPN).
+    TrRed ~ automata(TrRedPN).
+    Parallel ~ automata(ParallelPN).
+    Parallel2 ~ automata(Parallel2PN).
+    Buff ~ automata(BuffPN).
+    B2 ~ automata(B2PN).
+    B3 ~ automata(B3PN).
+    B4 ~ automata(B4PN).
+    Money ~ automata(MoneyPN).
+    Lock ~ automata(LockPN).
+    Worker ~ automata(WorkerPN).
+    Workers ~ automata(WorkersPN).
+    Farmer ~ automata(FarmerPN).
+    Farm ~ automata(FarmPN).
+}

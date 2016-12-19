@@ -25,7 +25,7 @@ const Compiler = {
   compileWithoutWorker: function (code, context) {
     try{
       const tokens = Lexer.tokenise(code);
-      const ast = parse(tokens);
+      const ast = Parser.parse(tokens);
       return this.localCompile(ast, context);
     }catch(error){
       return {type:'error',message: error.toString(), stack: error.stack};

@@ -3,5 +3,7 @@ automata {
 	B = (b -> STOP).
 }
 
-A ~ B.
-A !~ B.
+operation {
+	A ~ B.
+	A !~ B.
+}

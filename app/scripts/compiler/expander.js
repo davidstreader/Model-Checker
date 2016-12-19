@@ -28,8 +28,8 @@ function expand(ast){
       const ident = processes[i].process.ident.split("[")[0];
       for (var i2 in processes[i].local) {
         if (processes[i].local[i2].ident.ident == ident) {
-          processes[i].process.ident = processIdent(processes[i].process.ident, processes[i].local[i2]);
-          console.log(processes[i].process.ident);
+          //processes[i].process.ident = processIdent(processes[i].process.ident, processes[i].local[i2]);
+          //console.log(processes[i].process.ident);
         }
       }
     }
@@ -383,9 +383,9 @@ function expand(ast){
     var lbl = processLabel(astNode.ident, variableMap);
     astNode.ident = lbl.label;
     if (localProcess) {
-      astNode.ident = processIdent(astNode.ident,localProcess)
+      //astNode.ident = processIdent(astNode.ident,localProcess)
     }
-    console.log(astNode);
+    //console.log(astNode);
     return astNode;
   }
 

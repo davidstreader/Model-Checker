@@ -16,5 +16,8 @@ petrinet {
     B=(g->C|b->g->C),
     C=(c->STOP).
 }
-automata(A4) ~ automata(C3).
-A2 ~ C.
+
+operation {
+    automata(A4) ~ automata(C3).
+    A2 ~ C.
+}

@@ -40,6 +40,40 @@ function interpret(processes, analysis, lastProcessesMap, context){
     }
   }
 
+  /*
+  const net = new PetriNet("2WB");
+  const a = net.addPlace("A");
+  const b = net.addPlace("B");
+  const c = net.addPlace("C");
+  const d = net.addPlace("D");
+
+  net.addRoot(a.id);
+  net.addRoot(d.id);
+  a.metaData.startPlace = 1;
+  d.metaData.startPlace = 1;
+
+  net.addTransition(net.nextTransitionId, 'in', [a, d], [a, c]);
+  net.addTransition(net.nextTransitionId, 'in', [a, d], [b, d]);
+  net.addTransition(net.nextTransitionId, 'in', [a, c], [b, c]);
+  net.addTransition(net.nextTransitionId, 'out', [a, c], [a, d]);
+  net.addTransition(net.nextTransitionId, 'out', [b, c], [a, c]);
+  net.addTransition(net.nextTransitionId, 'out', [b, c], [b, d]);
+  net.addTransition(net.nextTransitionId, 'in', [b, d], [b, c]);
+  net.addTransition(net.nextTransitionId, 'out', [b, d], [a, d]);
+
+  net.combinePlaces(a, b);
+  net.combinePlaces(a, d);
+  net.combinePlaces(b, c);
+  net.combinePlaces(b, d);
+
+  net.removePlace(a.id);
+  net.removePlace(b.id);
+  net.removePlace(c.id);
+  net.removePlace(d.id);
+
+  processesMap["2WB"] = tokenRule(net, 'toAutomaton');
+  */
+  
   return processesMap;
 }
 

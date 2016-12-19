@@ -46,25 +46,27 @@ petrinet {
     Farm = (Farmer || Workers).
 }
 
-automata(Simple) ~ automata(safe(Simple)).
-automata(Two) ~ automata(safe(Two)).
-automata(CM) ~ automata(safe(CM)).
-automata(VM) ~ automata(safe(VM)).
-automata(Basic) ~ automata(safe(Basic)).
-automata(Bas) ~ automata(safe(Bas)).
-automata(Tt) ~ automata(safe(Tt)).
-automata(BT) ~ automata(safe(BT)).
-automata(P) ~ automata(safe(P)).
-automata(TrRed) ~ automata(safe(TrRed)).
-automata(Parallel) ~ automata(safe(Parallel)).
-automata(Parallel2) ~ automata(safe(Parallel2)).
-automata(Buff) ~ automata(safe(Buff)).
-automata(B2) ~ automata(safe(B2)).
-automata(B3) ~ automata(safe(B3)).
-automata(B4) ~ automata(safe(B4)).
-automata(Money) ~ automata(safe(Money)).
-automata(Lock) ~ automata(safe(Lock)).
-automata(Worker) ~ automata(safe(Worker)).
-automata(Workers) ~ automata(safe(Workers)).
-automata(Farmer) ~ automata(safe(Farmer)).
-automata(Farm) ~ automata(safe(Farm)).
+operation {
+    automata(Simple) ~ automata(safe(Simple)).
+    automata(Two) ~ automata(safe(Two)).
+    automata(CM) ~ automata(safe(CM)).
+    automata(VM) ~ automata(safe(VM)).
+    automata(Basic) ~ automata(safe(Basic)).
+    automata(Bas) ~ automata(safe(Bas)).
+    automata(Tt) ~ automata(safe(Tt)).
+    automata(BT) ~ automata(safe(BT)).
+    automata(P) ~ automata(safe(P)).
+    automata(TrRed) ~ automata(safe(TrRed)).
+    automata(Parallel) ~ automata(safe(Parallel)).
+    automata(Parallel2) ~ automata(safe(Parallel2)).
+    automata(Buff) ~ automata(safe(Buff)).
+    automata(B2) ~ automata(safe(B2)).
+    automata(B3) ~ automata(safe(B3)).
+    automata(B4) ~ automata(safe(B4)).
+    automata(Money) ~ automata(safe(Money)).
+    automata(Lock) ~ automata(safe(Lock)).
+    automata(Worker) ~ automata(safe(Worker)).
+    automata(Workers) ~ automata(safe(Workers)).
+    automata(Farmer) ~ automata(safe(Farmer)).
+    automata(Farm) ~ automata(safe(Farm)).
+}

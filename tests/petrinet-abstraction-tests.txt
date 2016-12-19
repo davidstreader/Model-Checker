@@ -8,7 +8,7 @@ petrinet {
         Stop = (STOP).
 }
 
-AbsBasic ~ EqBasic.
+operation AbsBasic ~ EqBasic.
 
 // abstract the first action
 petrinet {
@@ -17,7 +17,7 @@ petrinet {
     EqBasic2 = (b -> c -> STOP).
 }
 
-AbsBasic2 ~ EqBasic2.
+operation AbsBasic2 ~ EqBasic2.
 
 // abstract the last action
 petrinet {
@@ -26,7 +26,7 @@ petrinet {
     EqBasic3 = (a -> (b -> STOP | b -> STOP)).
 }
 
-AbsBasic3 ~ EqBasic3.
+operation AbsBasic3 ~ EqBasic3.
 
 // multiple hidden actions
 petrinet {
@@ -36,7 +36,7 @@ petrinet {
         Stop = (STOP).
 }
 
-AbsMulti ~ EqMulti.
+operation AbsMulti ~ EqMulti.
 
 
 // multiple hidden actions at the beginning
@@ -46,7 +46,7 @@ petrinet {
     EqMulti2 = (c -> d -> STOP).
 }
 
-AbsMulti2 ~ EqMulti2.
+operation AbsMulti2 ~ EqMulti2.
 
 // multiple hidden actions at the end
 petrinet {
@@ -55,7 +55,7 @@ petrinet {
     EqMulti3 = (a -> (b -> STOP | b -> STOP | b -> STOP)).
 }
 
-AbsMulti3 ~ EqMulti3.
+operation AbsMulti3 ~ EqMulti3.
 
 // action hidden to form a tau loop (assumes fair abstraction)
 petrinet {
@@ -65,7 +65,7 @@ petrinet {
     EqLoop = (a -> STOP).
 }
 
-AbsLoop ~ EqLoop.
+operation AbsLoop ~ EqLoop.
 
 // abstract a looped process with a hidden action
 petrinet {
@@ -75,7 +75,7 @@ petrinet {
         A = (a -> A).
 }
 
-AbsLoop2 ~ EqLoop2.
+operation AbsLoop2 ~ EqLoop2.
 
 // abstract a looped process with a hidden action
 petrinet {
@@ -84,7 +84,7 @@ petrinet {
     EqLoop3 = (a -> c -> EqLoop3 | a -> c -> EqLoop3).
 }
 
-AbsLoop3 ~ EqLoop3.
+operation AbsLoop3 ~ EqLoop3.
 
 // abstracting a syncronised action in a concurrent process
 petrinet {
@@ -110,7 +110,7 @@ petrinet {
         Stop = (STOP).
 }
 
-AbsExample ~ EqExample.
+operation AbsExample ~ EqExample.
 
 // buffer example
 petrinet {
