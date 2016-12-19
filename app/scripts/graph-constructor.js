@@ -77,7 +77,7 @@ function adjustVertices(graph, cell) {
   // If the cell is a view, find its model.
   cell = cell.model || cell;
   //Ignore all clicks that arent on a cell
-  if (!cell.attributes.position) return;
+  if (!cell.attributes.position || !cell.previous("position")) return;
   const {x:nx,y:ny} = cell.get("position");
   const {x:ox,y:oy} = cell.previous("position");
   const diff = {x:nx-ox,y:ny-oy};

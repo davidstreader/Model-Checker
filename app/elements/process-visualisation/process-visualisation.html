@@ -274,6 +274,16 @@
             return;
           }
           get$Cell(cell).show();
+          //Update links as they have a bug where they point to incorrect locations after exploding.
+          var vertices = cell.get('vertices');
+          if (vertices && vertices.length) {
+            var newVertices = [];
+            _.each(vertices, function(vertex) {
+              newVertices.push({ x: vertex.x+1, y: vertex.y});
+            });
+            cell.set('vertices', newVertices);
+            cell.set('vertices', vertices);
+          }
         });
       },
       removeGraph: function(cell){
