@@ -125,8 +125,9 @@
       if (process != null) {
         //Replace the old version of the process with the new one
         //Note, we need to get rid of the type as its now set by the original process.
-        app.$.editor.setCode(code.replace(process, this.compiledResult.replace($("#process-type-selector")[0].selectedItemLabel + " ", "") + "\n"));
+        app.$.editor.setCode(code.replace(process, " "+this.compiledResult.replace($("#process-type-selector")[0].selectedItemLabel + " ", "") + "\n"));
         app.$.editor.focus();
+        return;
       }
       //It doesnt, append the new process
       app.$.editor.setCode(code+"\n"+this.compiledResult);

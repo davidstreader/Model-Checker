@@ -385,6 +385,7 @@ function expand(ast){
     if (localProcess) {
       astNode.ident = processIdent(astNode.ident,localProcess)
     }
+    console.log(astNode);
     return astNode;
   }
 
