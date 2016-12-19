@@ -313,7 +313,7 @@ function visualizePetriNet(process, graphID, glGraph, hidden) {
       const from = 'p' + incoming[0];
       const box = _box(glGraph, toEmbed, graphID+"."+(interruptId++), graphID);
       glGraph.setNode(tid,{
-        width: 50,
+        width: 20,
         height: 50,
         z:2,
         type:"pn.Transition", id:generateUuid(),
@@ -338,7 +338,7 @@ function visualizePetriNet(process, graphID, glGraph, hidden) {
         tooltip =vars+"\n"+tooltip;
     }
     glGraph.setNode(tid,{
-      width: 50,
+      width: 20,
       height: 50,
       z:2,
       type:"pn.Transition", id:generateUuid(),

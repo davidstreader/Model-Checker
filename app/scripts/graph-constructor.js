@@ -72,11 +72,22 @@ function constructGraphs(graphMap, id, hidden, callback, opts) {
  * @param cell the cell
  */
 function adjustVertices(graph, cell) {
-
   //TODO: it would be nice if the distance moved was proportional to the distance from the other cell
   // If the cell is a view, find its model.
   cell = cell.model || cell;
-  //Ignore all clicks that arent on a cell
+  //Some cell types should not trigger changes.
+  switch (cell.attributes.type) {
+    case "parent":
+    case "fsa.Arrow":
+    case "buttonsNoExplode":
+    case "buttons":
+    case "parentLabel":
+    case "interruptParentNode":
+    case "interruptEmbedNode":
+    case "interruptLabel":
+      return;
+  }
+    //Ignore all clicks that arent on a cell
   if (!cell.attributes.position || !cell.previous("position")) return;
   const {x:nx,y:ny} = cell.get("position");
   const {x:ox,y:oy} = cell.previous("position");
