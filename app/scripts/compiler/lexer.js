@@ -182,12 +182,12 @@ const Lexer = {
           // increase the column position
           column++;
         }
-        else if(next === '\n' || next === '\r'){
+        else if(next === '\n'){
           // move to a new line
           line++;
           column = 0;
         }
-        else{
+        else if(next !== '\r'){
           break;
         }
 
