@@ -147,7 +147,7 @@ function replaceReferences(processes){
     }
     // check that the reference was valid
     if(process === undefined){
-      throw new ReferenceReplacerException(reference);
+      throw new ReferenceReplacerException(reference, astNode.location);
     }
 
     // check whether a reference id has already been defined for the current process
