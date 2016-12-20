@@ -15,7 +15,7 @@ onmessage = function(e){
     }
 
   }catch(error){
-    postMessage({result: {type:'error',message: error.toString(), stack: error.stack}});
+    postMessage({result: {type:'error',message: error.toString(), stack: error.stack, location: error.location}});
   }
 }
 

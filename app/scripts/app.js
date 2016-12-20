@@ -79,6 +79,9 @@
       }.bind(this), 0);
     }
     app.finalizeBuild = function(results) {
+      var Range = ace.require("ace/range").Range;
+      var editor = app.$.editor._editor.getSession();
+      _.each(editor.$backMarkers,(val,key)=>editor.removeMarker(key));
       if(results.type === 'error'){
         if (results.stack) {
           app.$.console.error("An exception was thrown that was not related to your script.");
@@ -86,6 +89,10 @@
           console.log(results.stack);
         } else {
           app.$.console.error(results.message);
+          if (results.location) {
+            const l = results.location;
+            editor.addMarker(new Range(l.start.line-1, l.start.col, l.end.line-1, l.end.col), "ace_underline");
+          }
         }
         return;
       }

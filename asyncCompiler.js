@@ -29,7 +29,7 @@ onmessage = function (e) {
     postMessage({clear:true,message:"Finished Compiling. Sending data to client"});
     postMessage({result:compile});
   } catch (ex) {
-    postMessage({result:{type: 'error', message: ex.toString(), stack: ex.stack}});
+    postMessage({result:{type: 'error', message: ex.toString(), stack: ex.stack, location: ex.location}});
   }
   //Kill the worker as we start a new worker for each compilation
   terminate();

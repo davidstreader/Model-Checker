@@ -6,6 +6,10 @@ ace.define("ace/theme/example",["require","exports","module","ace/lib/dom"], fun
 background: #f0f0f0;\
 color: #333;\
 }\
+.ace_underline {    \
+   border-bottom: 1px solid red; \
+   position:absolute\
+}\
 .ace-test .ace_print-margin {\
 width: 1px;\
 background: #e8e8e8;\
