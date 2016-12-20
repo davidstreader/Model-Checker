@@ -39,8 +39,9 @@
   },
   "scripts": {
     "start": "forever stopall && vulcanize -o app/elements/elements.vulcanized.html app/elements/elements.html --strip-comments && forever -c \"node --stack-size=320000\" app.js",
-    "test": "node node_modules/mocha/bin/mocha tests/scripts --recursive",
-    "gulp": "gulp serve"
+    "test": "mocha tests/scripts --recursive",
+    "gulp": "gulp serve",
+    "vulcanize": "vulcanize -o app/elements/elements.vulcanized.html app/elements/elements.html --strip-comments"
   },
   "dependencies": {
     "ansi": "^0.3.1",
