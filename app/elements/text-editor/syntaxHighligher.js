@@ -22,14 +22,6 @@ define('ace/mode/example_highlight_rules', function(require, exports, module) {
   var TextHighlightRules = require("ace/mode/text_highlight_rules").TextHighlightRules;
 
   var ExampleHighlightRules = function() {
-
-    var keywordMapper = this.createKeywordMapper({
-      "constant.language":
-        "STOP ERROR",
-      "keyword.operator":
-        "abs simp safe"
-    }, "text", true, " ");
-
     this.$rules = {
       "start" : [
         {token : "comment.double-slash",  regex : '\\/\\/.*'},
@@ -62,6 +54,8 @@ define('ace/mode/example_highlight_rules', function(require, exports, module) {
       ],
       "process" : [
         {token : "meta.function", regex : "if|then|else|when|forall", next: "control"},
+        {token : "constant.language", regex : "STOP|ERROR"},
+        {token : "keyword.operator", regex : "abs|simp|safe"},
         {token : "comment.double-slash",  regex : '\\/\\/.*'},
         {token : "paren.lparen", regex : "[(]"},
         {token : "paren.rparen", regex : "[\\])]"},
@@ -73,7 +67,6 @@ define('ace/mode/example_highlight_rules', function(require, exports, module) {
         {token : "keyword.operator", regex: new RegExp(Lexer.operators)},
         {token : "variable.ident", regex : new RegExp(Lexer.identifier)},
         {token : "variable.action", regex : new RegExp(Lexer.actionLabel)},
-        {token : keywordMapper, regex : "\\b\\w+\\b"},
         {defaultToken : "text"}
       ],
       "control": [

@@ -41,7 +41,7 @@ color: rgb(197, 6, 11);\
 color: rgb(88, 72, 246);\
 }\
 .ace-test .ace_constant.ace_language {\
-color: rgb(88, 92, 246);\
+color: rgb(229, 88,246);\
 }\
 .ace-test .ace_constant.ace_library {\
 color: rgb(6, 150, 14);\
