@@ -33,7 +33,6 @@ const Compiler = {
   },
   localCompile: function(ast, context){
     ast = expand(ast);
-
     const abstractionChanged = context.isFairAbstraction !== this.lastAbstraction;
     const analysis = performAnalysis(ast.processes, this.lastAnalysis, abstractionChanged);
     ast.processes = replaceReferences(ast.processes);

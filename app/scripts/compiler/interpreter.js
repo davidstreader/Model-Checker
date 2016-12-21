@@ -21,7 +21,7 @@ function interpret(processes, analysis, lastProcessesMap, context){
     const ident = processes[i].ident.ident;
     if(analysis[ident] !== undefined && analysis[ident].isUpdated){
       if (typeof postMessage === 'function')
-      postMessage({clear:true,message:("Interpreting: "+ident+" ("+(i+1)+"/"+processes.length)+")"});
+        postMessage({clear:true,message:("Interpreting: "+ident+" ("+(i+1)+"/"+processes.length)+")"});
       // interpret the process
       switch(processes[i].processType){
         case 'automata':
@@ -33,6 +33,8 @@ function interpret(processes, analysis, lastProcessesMap, context){
         default:
           break;
       }
+      //Copy location data across to the process from the ast
+      processesMap[ident].location = processes[i].location;
     }
     else{
       // use the last interpretation
@@ -41,39 +43,39 @@ function interpret(processes, analysis, lastProcessesMap, context){
   }
 
   /*
-  const net = new PetriNet("2WB");
-  const a = net.addPlace("A");
-  const b = net.addPlace("B");
-  const c = net.addPlace("C");
-  const d = net.addPlace("D");
+   const net = new PetriNet("2WB");
+   const a = net.addPlace("A");
+   const b = net.addPlace("B");
+   const c = net.addPlace("C");
+   const d = net.addPlace("D");
 
-  net.addRoot(a.id);
-  net.addRoot(d.id);
-  a.metaData.startPlace = 1;
-  d.metaData.startPlace = 1;
+   net.addRoot(a.id);
+   net.addRoot(d.id);
+   a.metaData.startPlace = 1;
+   d.metaData.startPlace = 1;
 
-  net.addTransition(net.nextTransitionId, 'in', [a, d], [a, c]);
-  net.addTransition(net.nextTransitionId, 'in', [a, d], [b, d]);
-  net.addTransition(net.nextTransitionId, 'in', [a, c], [b, c]);
-  net.addTransition(net.nextTransitionId, 'out', [a, c], [a, d]);
-  net.addTransition(net.nextTransitionId, 'out', [b, c], [a, c]);
-  net.addTransition(net.nextTransitionId, 'out', [b, c], [b, d]);
-  net.addTransition(net.nextTransitionId, 'in', [b, d], [b, c]);
-  net.addTransition(net.nextTransitionId, 'out', [b, d], [a, d]);
+   net.addTransition(net.nextTransitionId, 'in', [a, d], [a, c]);
+   net.addTransition(net.nextTransitionId, 'in', [a, d], [b, d]);
+   net.addTransition(net.nextTransitionId, 'in', [a, c], [b, c]);
+   net.addTransition(net.nextTransitionId, 'out', [a, c], [a, d]);
+   net.addTransition(net.nextTransitionId, 'out', [b, c], [a, c]);
+   net.addTransition(net.nextTransitionId, 'out', [b, c], [b, d]);
+   net.addTransition(net.nextTransitionId, 'in', [b, d], [b, c]);
+   net.addTransition(net.nextTransitionId, 'out', [b, d], [a, d]);
 
-  net.combinePlaces(a, b);
-  net.combinePlaces(a, d);
-  net.combinePlaces(b, c);
-  net.combinePlaces(b, d);
+   net.combinePlaces(a, b);
+   net.combinePlaces(a, d);
+   net.combinePlaces(b, c);
+   net.combinePlaces(b, d);
 
-  net.removePlace(a.id);
-  net.removePlace(b.id);
-  net.removePlace(c.id);
-  net.removePlace(d.id);
+   net.removePlace(a.id);
+   net.removePlace(b.id);
+   net.removePlace(c.id);
+   net.removePlace(d.id);
 
-  processesMap["2WB"] = tokenRule(net, 'toAutomaton');
-  */
-  
+   processesMap["2WB"] = tokenRule(net, 'toAutomaton');
+   */
+
   return processesMap;
 }
 

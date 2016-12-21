@@ -54,7 +54,7 @@
     observers: ['compile(added.*,processName)'],
     compile: function() {
       //Force upper case
-      this.processName = this.processName.toUpperCase();
+      this.processName = this.processName.substring(0,1).toUpperCase()+this.processName.substring(1);
       const processName = (this.processName==""?"OUTPUT":this.processName);
       this.isExisting = this.getProcessFromCode(processName)!==null;
       //If the new name already exists in the editor, notify the user by changing the button label
@@ -133,16 +133,23 @@
       app.$.editor.setCode(code+"\n"+this.compiledResult);
       app.$.editor.focus();
     },
-    getProcessFromCode:function (processName) {
-      const code = app.$.editor.getCode();
-      //    B2 = (one:Buff || two:Buff).
-      //processName+'\\s*= -> B2 =
-      //((?:.|,\n|\r\n?)*? -> Non greedy match up to ( (one:Buff || two:Buff))
-      //\.(?:\n|\r\n?|$)) -> a dot followed by a newline or end (.)
-      const results = new RegExp("(:?.| |^)"+processName+'\\s*=((?:.|\n|\r\n?)*?\.(?:\s|$))','g').exec(code);
-      //If results isnt null, then we have a match
-      if (results) return results[0];
-      return null;
+    getProcessFromCode:function (id) {
+      if (!app.automata) return null;
+      const process = _.findWhere(app.automata.allValues,{id:id});
+      if (!process) return null;
+      const loc = process.location;
+      //Split into lines
+      const code = app.$.editor.getCode().split(/\n/);
+      let endCol = loc.end.col;
+      let procCode = _.drop(code,loc.start.line-1);
+      procCode = _.dropRight(procCode,procCode.length-(loc.end.line-loc.start.line)-1);
+      procCode[0] = procCode[0].substring(loc.start.col);
+      //If we are dealing with the same line twice, we need to offset the end col by the
+      //start col as we just removed it.
+      if (loc.start.line == loc.end.line) endCol-=loc.start.col;
+      procCode[procCode.length-1] = procCode[procCode.length-1].substring(0,endCol);
+      procCode = procCode.join("\n");
+      return procCode;
     },
     clear: function(e) {
       this.set("added",[]);
@@ -230,20 +237,19 @@
     //since we only want to convert certain processes
     parse: function(process) {
       const id = process;
+      const code = this.getProcessFromCode(id);
+      if (!code) return null;
       const toMatch="("+Object.keys(Lexer.keywords).concat(Object.keys(Lexer.terminals)).concat(Object.keys(Lexer.functions)).join("|")+"|"+Lexer.operations+")";
-      //.replace(/,\r?\n/g,"" -> remove all , followed by a newline. This merges down subprocesses into one line
-      process = new RegExp(process+"=.*").exec(app.getCode().replace(/,\r?\n/g,""));
-      //if the match doesnt exist then the process named doesnt exist.
-      if (!process) return null;
-      //get the match
-      process = process[0];
+      //Remove newlines and whitespace
+      process = code.replace(/[\r\n]/,"");
       //if process contains any keywords or terminals or functions or operations, it is not a generated process.
       if (!process || process.match(toMatch)) return null;
+      //It also isnt one if it contains -> or ~>
+      if (process.indexOf("->") > -1 || process.indexOf("~>") > -1) return null;
+      //Strip whitespace and brackets
       process = process.replace(/\s*/g,"").replace("(","").replace(")","");
       //get rid of the . at the end
       process = process.substring(0,process.length-1);
-      //It also isnt one if it contains -> or ~>
-      if (process.indexOf("->") > -1 || process.indexOf("~>") > -1) return null;
       //If we split out the =, we end up with the process. we want a list of bisimulated processes.
       let processes = process.split("=")[1].split(/\\|@/)[0].split("||");
       //Loop through and parse
