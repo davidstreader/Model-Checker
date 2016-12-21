@@ -45,7 +45,7 @@ define('ace/mode/example_highlight_rules', function(require, exports, module) {
         {defaultToken : "text"}
       ],
       "const" : [
-        {token : "operator", regex : '=', next  : "pop"},
+        {token : "operator", regex : '=|~', next  : "pop"},
         {defaultToken : "variable.constant"}
       ],
       "block" : [
@@ -53,6 +53,7 @@ define('ace/mode/example_highlight_rules', function(require, exports, module) {
         {defaultToken : "comment.block"}
       ],
       "process" : [
+        {token : "keyword.operator", regex: _.keys(Lexer.processTypes).join("|")},
         {token : "meta.function", regex : _.keys(Lexer.keywords).join("|"), push: "control"},
         {token : "constant.language", regex : _.keys(Lexer.terminals).join("|")},
         {token : "keyword.operator", regex : _.keys(Lexer.functions).join("|")},
@@ -61,7 +62,7 @@ define('ace/mode/example_highlight_rules', function(require, exports, module) {
         {token : "paren.rparen", regex : "[\\])]"},
         {token : "constant.numeric", regex: "[+-]?\\d+\\b"},
         {token : "paren.lparen", regex : '\\[', push  : "range"},
-        {token : "text", regex : '\\/', push  : "rename"},
+        {token : "text", regex : '\\/|\\\\|@', push  : "set"},
         {token : "text", regex : '\\.', next  : "pop"},
         {token : "text", regex : '\\,', next  : "pop"},
         {token : "keyword.operator", regex: new RegExp(Lexer.operators)},
@@ -87,7 +88,7 @@ define('ace/mode/example_highlight_rules', function(require, exports, module) {
         {token : "variable.action", regex : new RegExp(Lexer.actionLabel)},
         {defaultToken : "text"}
       ],
-      "rename" : [
+      "set" : [
         {token : "variable.action", regex : new RegExp(Lexer.actionLabel)},
         {token : "paren.lparen", regex : "[\\[{(]"},
         {token : "text", regex : '}', next  : "pop"},
