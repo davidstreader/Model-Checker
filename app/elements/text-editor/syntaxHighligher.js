@@ -30,7 +30,7 @@ define('ace/mode/example_highlight_rules', function(require, exports, module) {
         {token : "paren.rparen", regex : "[\\])}]"},
         {token : "constant.numeric", regex: "[+-]?\\d+\\b"},
         {token : "meta.function", regex: "automata | petrinet", next: "scope"},
-        {token : "text", regex: "const", next: "const"},
+        {token : "meta.function", regex: "const", next: "const"},
         {caseInsensitive: true}
       ],
       "scope" : [
