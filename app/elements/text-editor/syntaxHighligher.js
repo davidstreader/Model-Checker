@@ -38,14 +38,16 @@ define('ace/mode/example_highlight_rules', function(require, exports, module) {
       ],
       //Inside either a automata or petrinet scope
       "scope" : [
+        {token : "keyword.operator", regex: _.keys(Lexer.processTypes).join("|")},
         {token : "comment.block",  regex : '\\/\\*', push: 'block'},
+        {token : "comment.double-slash",  regex : '\\/\\/.*'},
         {token : "paren.lparen", regex : "[\\[({]"},
         {token : "paren.rparen", regex : "[\\])}]", next: "pop"},
         {token : "variable.ident", regex : new RegExp(Lexer.identifier), push: "process"},
         {defaultToken : "text"}
       ],
       "const" : [
-        {token : "operator", regex : '=|~', next  : "pop"},
+        {token : "operator", regex : '=', next  : "pop"},
         {defaultToken : "variable.constant"}
       ],
       "block" : [
@@ -53,6 +55,7 @@ define('ace/mode/example_highlight_rules', function(require, exports, module) {
         {defaultToken : "comment.block"}
       ],
       "process" : [
+        {token : "text", regex : ',', next  : "process"},
         {token : "keyword.operator", regex: _.keys(Lexer.processTypes).join("|")},
         {token : "meta.function", regex : _.keys(Lexer.keywords).join("|"), push: "control"},
         {token : "constant.language", regex : _.keys(Lexer.terminals).join("|")},
@@ -62,13 +65,12 @@ define('ace/mode/example_highlight_rules', function(require, exports, module) {
         {token : "paren.rparen", regex : "[\\])]"},
         {token : "constant.numeric", regex: "[+-]?\\d+\\b"},
         {token : "paren.lparen", regex : '\\[', push  : "range"},
-        {token : "text", regex : '\\/|\\\\|@', push  : "set"},
-        {token : "text", regex : '\\.', next  : "pop"},
-        {token : "text", regex : '\\,', next  : "pop"},
+        {token : "text", regex : '\\/|\\\\|@|$', push  : "set"},
         {token : "keyword.operator", regex: new RegExp(Lexer.operators)},
         {token : "variable.ident", regex : new RegExp(Lexer.identifier)},
         {token : "variable.action", regex : new RegExp(Lexer.actionLabel)},
-        {defaultToken : "text"}
+        {token : "text", regex : '\\.', next  : "pop"},
+        {defaultToken : "variable.constant"}
       ],
       "control": [
         {token : "keyword.operator", regex: new RegExp(Lexer.operators)},
@@ -79,6 +81,7 @@ define('ace/mode/example_highlight_rules', function(require, exports, module) {
         {defaultToken : "text"}
       ],
       "range" : [
+        {token : "text", regex : ',|=|~', next  : "pop"},
         {token : "text", regex : '\\s|\\]:', next  : "pop"},
         {token : "keyword.operator", regex: new RegExp(Lexer.operators)},
         {token : "paren.rparen", regex : "[\\])]"},
@@ -86,6 +89,7 @@ define('ace/mode/example_highlight_rules', function(require, exports, module) {
         {token : "constant.numeric", regex: "[+-]?\\d+\\b"},
         {token : "variable.constant", regex : new RegExp(Lexer.identifier)},
         {token : "variable.action", regex : new RegExp(Lexer.actionLabel)},
+        {token : "text", regex : '\\.', next  : "pop"},
         {defaultToken : "text"}
       ],
       "set" : [

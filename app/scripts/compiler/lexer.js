@@ -9,7 +9,7 @@ const Lexer = {
   terminals: { 'STOP':true, 'ERROR': true },
   keywords: { 'const':true, 'range':true, 'set':true, 'if':true, 'then':true, 'else':true, 'when':true, 'forall':true },
   symbols: '(\\.\\.|\\.|,|:|\\[|\\]|\\(|\\)|\\{|\\}|->|~>|\\\\|@|\\$|\\?)',
-  operators: '(\\|\\||\\||&&|&|\\^|==|=|!=|<<|<=|<|>>|>=|>|\\+|-|\\*|/|%|!)',
+  operators: '(\\|\\||\\||&&|&|\\^|==|=|!=|<<|<=|<|>>|>=|>|\\+|-|\\*|/|%|!|\\?)',
   operations: '~',
   singleLineCommentStart: '//',
   multiLineCommentStart: '/\\*',
