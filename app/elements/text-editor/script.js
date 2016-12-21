@@ -32,7 +32,6 @@
         type: Object,
         value: function(){
           var editor = ace.edit(this.$.editor);
-          console.log(editor);
           editor.setTheme('ace/theme/example');
           editor.getSession().setMode('ace/mode/example'); // syntax highlighting
           return editor;

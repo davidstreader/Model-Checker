@@ -29,10 +29,10 @@ define('ace/mode/example_highlight_rules', function(require, exports, module) {
         {token : "paren.lparen", regex : "[\\[({]"},
         {token : "paren.rparen", regex : "[\\])}]"},
         {token : "constant.numeric", regex: "[+-]?\\d+\\b"},
-        //Using a negative lookahead, we can say that a process is automata followed by not a {
-        {token : "meta.function", regex: "(automata | petrinet)\\s?(?!{)", push: "process"},
+        //Using a negative lookahead, we can say that a process is automata | petrinet not followed by a {
+        {token : "meta.function", regex: "("+_.keys(Lexer.processTypes).join("|")+")\\s+(?!{)", push: "process"},
         //Because otherwise if parsed here the { is pulled in and coloured when we don't want it to be
-        {token : "meta.function", regex: "automata | petrinet", push: "scope"},
+        {token : "meta.function", regex: _.keys(Lexer.processTypes).join("|"), push: "scope"},
         {token : "meta.function", regex: "const", push: "const"},
         {caseInsensitive: true}
       ],
@@ -53,9 +53,9 @@ define('ace/mode/example_highlight_rules', function(require, exports, module) {
         {defaultToken : "comment.block"}
       ],
       "process" : [
-        {token : "meta.function", regex : "if|then|else|when|forall", push: "control"},
-        {token : "constant.language", regex : "STOP|ERROR"},
-        {token : "keyword.operator", regex : "abs|simp|safe"},
+        {token : "meta.function", regex : _.keys(Lexer.keywords).join("|"), push: "control"},
+        {token : "constant.language", regex : _.keys(Lexer.terminals).join("|")},
+        {token : "keyword.operator", regex : _.keys(Lexer.functions).join("|")},
         {token : "comment.double-slash",  regex : '\\/\\/.*'},
         {token : "paren.lparen", regex : "[(]"},
         {token : "paren.rparen", regex : "[\\])]"},
