@@ -81,6 +81,7 @@
     app.finalizeBuild = function(results) {
       var Range = ace.require("ace/range").Range;
       var editor = app.$.editor._editor.getSession();
+      editor.clearAnnotations();
       _.each(editor.$backMarkers,(val,key)=>editor.removeMarker(key));
       if(results.type === 'error'){
         if (results.stack) {
@@ -92,6 +93,10 @@
           if (results.location) {
             const l = results.location;
             editor.addMarker(new Range(l.start.line-1, l.start.col, l.end.line-1, l.end.col), "ace_underline");
+            for (let i = l.start.line; i <= l.end.line; i++) {
+              editor.setAnnotations([{row:i-1 ,column: 0, text:
+              results.message,type:"error"}]);
+            }
           }
         }
         return;
