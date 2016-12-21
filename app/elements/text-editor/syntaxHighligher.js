@@ -25,45 +25,45 @@ define('ace/mode/example_highlight_rules', function(require, exports, module) {
     this.$rules = {
       "start" : [
         {token : "comment.double-slash",  regex : '\\/\\/.*'},
-        {token : "comment.block",  regex : '\\/\\*', next: 'block'},
+        {token : "comment.block",  regex : '\\/\\*', push: 'block'},
         {token : "paren.lparen", regex : "[\\[({]"},
         {token : "paren.rparen", regex : "[\\])}]"},
         {token : "constant.numeric", regex: "[+-]?\\d+\\b"},
-        {token : "meta.function", regex: "automata | petrinet", next: "scope"},
-        {token : "meta.function", regex: "const", next: "const"},
+        //Using a negative lookahead, we can say that a process is automata followed by not a {
+        {token : "meta.function", regex: "(automata | petrinet)\\s?(?!{)", push: "process"},
+        //Because otherwise if parsed here the { is pulled in and coloured when we don't want it to be
+        {token : "meta.function", regex: "automata | petrinet", push: "scope"},
+        {token : "meta.function", regex: "const", push: "const"},
         {caseInsensitive: true}
       ],
+      //Inside either a automata or petrinet scope
       "scope" : [
-        {token : "comment.block",  regex : '\\/\\*', next: 'blockscope'},
+        {token : "comment.block",  regex : '\\/\\*', push: 'block'},
         {token : "paren.lparen", regex : "[\\[({]"},
-        {token : "paren.rparen", regex : "[\\])}]", next: "start"},
-        {token : "variable.ident", regex : new RegExp(Lexer.identifier), next: "process"},
+        {token : "paren.rparen", regex : "[\\])}]", next: "pop"},
+        {token : "variable.ident", regex : new RegExp(Lexer.identifier), push: "process"},
         {defaultToken : "text"}
       ],
       "const" : [
-        {token : "operator", regex : '=', next  : "start"},
+        {token : "operator", regex : '=', next  : "pop"},
         {defaultToken : "variable.constant"}
       ],
       "block" : [
-        {token : "comment.block", regex : '\\*\\/', next  : "start"},
-        {defaultToken : "comment.block"}
-      ],
-      "blockscope" : [
-        {token : "comment.block", regex : '\\*\\/', next  : "scope"},
+        {token : "comment.block", regex : '\\*\\/', next  : "pop"},
         {defaultToken : "comment.block"}
       ],
       "process" : [
-        {token : "meta.function", regex : "if|then|else|when|forall", next: "control"},
+        {token : "meta.function", regex : "if|then|else|when|forall", push: "control"},
         {token : "constant.language", regex : "STOP|ERROR"},
         {token : "keyword.operator", regex : "abs|simp|safe"},
         {token : "comment.double-slash",  regex : '\\/\\/.*'},
         {token : "paren.lparen", regex : "[(]"},
         {token : "paren.rparen", regex : "[\\])]"},
         {token : "constant.numeric", regex: "[+-]?\\d+\\b"},
-        {token : "paren.lparen", regex : '\\[', next  : "range"},
-        {token : "string", regex : '\\/', next  : "rename"},
-        {token : "string", regex : '\\.', next  : "scope"},
-        {token : "string", regex : '\\,', next  : "scope"},
+        {token : "paren.lparen", regex : '\\[', push  : "range"},
+        {token : "text", regex : '\\/', push  : "rename"},
+        {token : "text", regex : '\\.', next  : "pop"},
+        {token : "text", regex : '\\,', next  : "pop"},
         {token : "keyword.operator", regex: new RegExp(Lexer.operators)},
         {token : "variable.ident", regex : new RegExp(Lexer.identifier)},
         {token : "variable.action", regex : new RegExp(Lexer.actionLabel)},
@@ -74,11 +74,11 @@ define('ace/mode/example_highlight_rules', function(require, exports, module) {
         {token : "variable.constant", regex : new RegExp(Lexer.identifier)},
         {token : "paren.lparen", regex : "[\\[(]"},
         {token : "variable.action", regex : new RegExp(Lexer.actionLabel)},
-        {token : "paren.rparen", regex : "[\\])]", next: "process"},
+        {token : "paren.rparen", regex : "[\\])]", next: "pop"},
         {defaultToken : "text"}
       ],
       "range" : [
-        {token : "text", regex : '\\s|\\]:', next  : "process"},
+        {token : "text", regex : '\\s|\\]:', next  : "pop"},
         {token : "keyword.operator", regex: new RegExp(Lexer.operators)},
         {token : "paren.rparen", regex : "[\\])]"},
         {token : "keyword.operator", regex : "\\.\\."},
@@ -90,11 +90,12 @@ define('ace/mode/example_highlight_rules', function(require, exports, module) {
       "rename" : [
         {token : "variable.action", regex : new RegExp(Lexer.actionLabel)},
         {token : "paren.lparen", regex : "[\\[{(]"},
-        {token : "text", regex : '}', next  : "process"},
+        {token : "text", regex : '}', next  : "pop"},
         {defaultToken : "text"}
       ],
     };
 
+    this.normalizeRules();
   }
 
   oop.inherits(ExampleHighlightRules, TextHighlightRules);
