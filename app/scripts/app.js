@@ -148,7 +148,7 @@
       });
     }
     /**
-     * Compiles and builds what has currenty been entered into the text-area.
+     * Compiles and builds what has currently been entered into the text-area.
      * Ignores whether or not live compile and build are currently set.
      */
     app.compileAndBuild = function() {

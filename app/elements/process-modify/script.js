@@ -259,6 +259,11 @@
       //Parse the hidden set on the end
       let hidden = process.split(/\\|@/)[1];
       if (hidden) {
+        if (hidden.indexOf("{") === -1) {
+          const resolvedHidden = new RegExp("set\\s*"+hidden+"\\s*=\\s*{(.*?)}").exec(app.$.editor.getCode());
+          if (resolvedHidden) hidden = resolvedHidden[1];
+          else hidden = "";
+        }
         hidden = hidden.replace("{","").replace("}","").split(",")
       }
       return {id:id,processes:processes,hidden:hidden,hiddenType:process.indexOf("@")>-1?'ex':'inc'};
