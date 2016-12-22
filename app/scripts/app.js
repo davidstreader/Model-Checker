@@ -141,7 +141,10 @@
 
       app.$.console.log("Compiled in: "+(((new Date()).getTime()-app.lastCompileStartTime)/1000)+" seconds");
       _.each(skipped, skip=> {
-        app.$.console.log("Skipped adding "+skip.id+" to the render list, as it has too many "+skip.type);
+        if (skip.type != "user")
+          app.$.console.log("Skipped adding "+skip.id+" to the render list, as it has too many "+skip.type);
+        else
+          app.$.console.log("Skipped adding "+skip.id+" to the render list, as it was skipped by the user")
       });
     }
     /**

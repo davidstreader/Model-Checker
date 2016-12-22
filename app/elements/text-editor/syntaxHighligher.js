@@ -34,7 +34,24 @@ define('ace/mode/example_highlight_rules', function(require, exports, module) {
         //Because otherwise if parsed here the { is pulled in and coloured when we don't want it to be
         {token : "meta.function", regex: _.keys(Lexer.processTypes).join("|"), push: "scope"},
         {token : "meta.function", regex: "const", push: "const"},
-        {caseInsensitive: true}
+        {token : "meta.function", regex: "set", push: "set"},
+        {token : "meta.function", regex: "range", push: "preRangeDef"}
+      ],
+      "preRangeDef": [
+        {token : "keyword.operator", regex : "=", next:"rangeDef"},
+        {token : "variable.identifier", regex : new RegExp(Lexer.identifier)},
+        {defaultToken : "text"},
+      ],
+      "rangeDef": [
+        {token : "keyword.operator", regex : "\\.\\.", next: "lastRange"},
+        {token : "constant.numeric", regex: "[+-]?\\d+\\b"},
+        {token : "variable.constant", regex : new RegExp(Lexer.identifier)},
+        {defaultToken : "text"},
+      ],
+      //Since there is no way to easily create a regex, we can just stop the range after the next thing after ..
+      "lastRange": [
+        {token : "constant.numeric", regex: "[+-]?\\d+\\b", next:"pop"},
+        {token : "variable.constant", regex : new RegExp(Lexer.identifier), next:"pop"},
       ],
       //Inside either a automata or petrinet scope
       "scope" : [
@@ -107,6 +124,8 @@ define('ace/mode/example_highlight_rules', function(require, exports, module) {
         {token : "variable.action", regex : new RegExp(Lexer.actionLabel)},
         {token : "paren.lparen", regex : "[\\[{(]"},
         {token : "paren.rparen", regex : '}', next  : "pop"},
+        {token : "keyword.operator", regex : "="},
+        {token : "variable.identifier", regex : new RegExp(Lexer.identifier)},
         {defaultToken : "text"}
       ],
     };
