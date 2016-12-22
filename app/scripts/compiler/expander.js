@@ -22,6 +22,10 @@ function expand(ast){
   for(var i = 0; i < processes.length; i++){
     if (typeof postMessage === 'function')
       postMessage({clear:true,message:("Expanding: "+processes[i].ident.ident+" ("+(i+1)+"/"+processes.length)+")"});
+    if (processes[i].ident.ident.indexOf("*") > -1) {
+      processes[i].ident.dontRender = true;
+      processes[i].ident.ident = processes[i].ident.ident.replace("*","");
+    }
     var variableMap = JSON.parse(JSON.stringify(ast.variableMap));
     variableSet = processes[i].variables?processes[i].variables.set:[];
     if(processes[i].local.length !== 0 && processes[i].process.ident) {

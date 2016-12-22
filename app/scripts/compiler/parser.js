@@ -129,7 +129,7 @@ const Parser = {
 		if(token.type === 'identifier' && tokens[this.index + 1].value !== '..'){
 			const ident = this.parseIdentifier(tokens);
 			range = this.constantsMap[ident.ident];
-			
+
 			// check if the constant has been defined
 			if(range === undefined){
 				const message = 'The constant \'' + ident.ident + '\' has not been defined';
@@ -530,7 +530,7 @@ const Parser = {
 		const location = new Location(start, end);
 
 		let process = new SequenceNode(from, to, location);
-	
+
 		// add the process to any ranges that were potentially parsed
 		while(ranges.length !== 0){
 			const next = ranges.pop();
@@ -836,7 +836,7 @@ const Parser = {
 		const interrupt = this.parseActionLabel(tokens);
 		this.gobble(tokens[this.index], '~>');
 		const process = this.parseLocalProcess(tokens);
-		
+
 		const end = tokens[this.index - 1].location.end;
 		const location = new Location(start, end);
 
@@ -983,7 +983,7 @@ const Parser = {
 		}
 		else{
 			const message = 'Unexpected ' + token.type + ' \'' + token.value + '\' found while attempting to parse an expression';
-			throw new ParserException(message, token.location); 
+			throw new ParserException(message, token.location);
 		}
 	},
 
@@ -1049,7 +1049,7 @@ const Parser = {
 		}
 		else{
 			const message = 'Unexpected ' + token.type + ' \'' + token.value + '\' found while attempting to parse an expression';
-			throw new ParserException(message, token.location); 
+			throw new ParserException(message, token.location);
 		}
 	},
 
@@ -1308,7 +1308,7 @@ function IfStatementNode(condition, trueBranch, falseBranch, location){
 	this.type = 'if-statement';
 	this.guard = condition;
 	this.trueBranch = trueBranch;
-	
+
 	// check if a false branch was defined
 	if(falseBranch !== undefined){
 		this.falseBranch = falseBranch;
@@ -1376,5 +1376,5 @@ function ParserException(message, location){
 	this.location = location;
 	this.toString = function(){
 		return 'ParserException: ' + message + ' (' + location.start.line + ':' + location.start.col + ')';
-	};	
+	};
 }

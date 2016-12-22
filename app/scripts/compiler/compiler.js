@@ -47,8 +47,16 @@ const Compiler = {
       for(let id in processes) {
         const graph = processes[id];
         graph.compiledAlphabet = graph.alphabet;
-        if (graph.dontRender) continue;
         if (graph.type === 'automata') {
+          if (graph.dontRender) {
+            delete graph.edgeMap;
+            delete graph.nodeMap;
+            skipped.push({
+              id: graph.id,
+              type: "user"
+            });
+            continue;
+          }
           if (graph.nodeCount > context.graphSettings.autoMaxNode) {
             skipped.push({
               id: graph.id,
@@ -60,6 +68,15 @@ const Compiler = {
             delete graph.nodeMap;
           }
         } else if (graph.type === 'petrinet') {
+          if (graph.dontRender) {
+            delete graph.places;
+            delete graph.transitions;
+            skipped.push({
+              id: graph.id,
+              type: "user"
+            });
+            continue;
+          }
           if (graph.placeCount > context.graphSettings.petriMaxPlace) {
             skipped.push({
               id: graph.id,
