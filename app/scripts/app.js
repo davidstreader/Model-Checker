@@ -143,8 +143,6 @@
       _.each(skipped, skip=> {
         if (skip.type != "user")
           app.$.console.log("Skipped adding "+skip.id+" to the render list, as it has too many "+skip.type);
-        else
-          app.$.console.log("Skipped adding "+skip.id+" to the render list, as it was skipped by the user")
       });
     }
     /**
