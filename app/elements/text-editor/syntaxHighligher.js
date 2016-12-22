@@ -20,6 +20,7 @@ define('ace/mode/example_highlight_rules', function(require, exports, module) {
 
   var oop = require("ace/lib/oop");
   var TextHighlightRules = require("ace/mode/text_highlight_rules").TextHighlightRules;
+
   var ExampleHighlightRules = function() {
     this.$rules = {
       "start" : [
@@ -59,25 +60,36 @@ define('ace/mode/example_highlight_rules', function(require, exports, module) {
         {token : "meta.function", regex : _.keys(Lexer.keywords).join("|"), push: "control"},
         {token : "constant.language", regex : _.keys(Lexer.terminals).join("|")},
         {token : "keyword.operator", regex : _.keys(Lexer.functions).join("|")},
+        {token : "variable.ident", regex : new RegExp(Lexer.identifier)},
         {token : "comment.double-slash",  regex : '\\/\\/.*'},
         {token : "paren.lparen", regex : "[(]"},
         {token : "paren.rparen", regex : "[\\])]"},
         {token : "constant.numeric", regex: "[+-]?\\d+\\b"},
         {token : "paren.lparen", regex : '\\[', push  : "range"},
-        {token : "text", regex : '\\/|\\\\|@|$', push  : "set"},
-        {token : "keyword.operator", regex: new RegExp(Lexer.operators+"|"+Lexer.operations)},
-        {token : "variable.ident", regex : new RegExp(Lexer.identifier)},
+        {token : "text", regex : '\\/|\\\\|@|\\$', push  : "set"},
+        {token : "keyword.operator", regex: new RegExp(Lexer.operators)},
         {token : "variable.action", regex : new RegExp(Lexer.actionLabel)},
         {token : "text", regex : '\\.', next  : "pop"},
-        {defaultToken : "variable.constant"}
+        {defaultToken : "text"}
       ],
       "control": [
         {token : "keyword.operator", regex: new RegExp(Lexer.operators)},
         {token : "variable.constant", regex : new RegExp(Lexer.identifier)},
-        {token : "paren.lparen", regex : "[\\[(]"},
+        //The first time we encounter a (, we actually want to avoid pushing it to the stack
+        {token : "paren.lparen", regex : "[\\[(]", next: "controlInner"},
         {token : "variable.action", regex : new RegExp(Lexer.actionLabel)},
         {token : "paren.rparen", regex : "[\\])]", next: "pop"},
-        {defaultToken : "text"}
+        {defaultToken : "variable.constant"}
+      ],
+      "controlInner": [
+        {token : "keyword.operator", regex: new RegExp(Lexer.operators)},
+        {token : "variable.constant", regex : new RegExp(Lexer.identifier)},
+        //Now that we have encountered atleast 1 (, we want to keep track of how many we have encountered
+        {token : "paren.lparen", regex : "[\\[(]", push: "controlInner"},
+        {token : "variable.action", regex : new RegExp(Lexer.actionLabel)},
+        //We can now traverse backwards through each loop that was pushed onto the stack.
+        {token : "paren.rparen", regex : "[\\])]", next: "pop"},
+        {defaultToken : "variable.constant"}
       ],
       "range" : [
         {token : "text", regex : ',|=|~', next  : "pop"},
@@ -94,7 +106,7 @@ define('ace/mode/example_highlight_rules', function(require, exports, module) {
       "set" : [
         {token : "variable.action", regex : new RegExp(Lexer.actionLabel)},
         {token : "paren.lparen", regex : "[\\[{(]"},
-        {token : "text", regex : '}', next  : "pop"},
+        {token : "paren.rparen", regex : '}', next  : "pop"},
         {defaultToken : "text"}
       ],
     };
