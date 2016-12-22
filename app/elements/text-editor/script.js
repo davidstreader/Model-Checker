@@ -31,9 +31,35 @@
       _editor: {
         type: Object,
         value: function(){
+          var langTools = ace.require("ace/ext/language_tools");
           var editor = ace.edit(this.$.editor);
           editor.setTheme('ace/theme/example');
           editor.getSession().setMode('ace/mode/example'); // syntax highlighting
+          var qtags = {
+            getCompletions: function(editor, session, pos, prefix, callback) {
+              var types = {"scope": _.keys(Lexer.processTypes),"keyword": _.keys(Lexer.keywords),"terminal": _.keys(Lexer.terminals),"function":_.keys(Lexer.functions)};
+              var mapped = [];
+              _.each(types,(words,scope)=>{
+                mapped = mapped.concat(words.map(function(word) {
+                  return {
+                    caption: word,
+                    value: word,
+                    meta: scope
+                  };
+                }));
+              });
+              console.log(mapped);
+              callback(null, mapped);
+            }
+          };
+
+          langTools.setCompleters([qtags]);
+
+          editor.setOptions({
+            enableBasicAutocompletion: true,
+            enableLiveAutocompletion: true
+          });
+
           return editor;
         },
         readOnly: true

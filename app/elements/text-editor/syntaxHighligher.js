@@ -20,7 +20,6 @@ define('ace/mode/example_highlight_rules', function(require, exports, module) {
 
   var oop = require("ace/lib/oop");
   var TextHighlightRules = require("ace/mode/text_highlight_rules").TextHighlightRules;
-
   var ExampleHighlightRules = function() {
     this.$rules = {
       "start" : [
@@ -66,7 +65,7 @@ define('ace/mode/example_highlight_rules', function(require, exports, module) {
         {token : "constant.numeric", regex: "[+-]?\\d+\\b"},
         {token : "paren.lparen", regex : '\\[', push  : "range"},
         {token : "text", regex : '\\/|\\\\|@|$', push  : "set"},
-        {token : "keyword.operator", regex: new RegExp(Lexer.operators)},
+        {token : "keyword.operator", regex: new RegExp(Lexer.operators+"|"+Lexer.operations)},
         {token : "variable.ident", regex : new RegExp(Lexer.identifier)},
         {token : "variable.action", regex : new RegExp(Lexer.actionLabel)},
         {token : "text", regex : '\\.', next  : "pop"},
