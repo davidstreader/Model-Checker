@@ -62,7 +62,7 @@ ace.define("ace/theme/example",["require","exports","module","ace/lib/dom"], fun
      color: rgb(109, 121, 222);
   }
   .ace-test .ace_keyword.ace_operator {
-     color: rgb(104, 118, 135);
+     color: black;
   }
   .ace-test .ace_string {
      color: rgb(3, 106, 7);
