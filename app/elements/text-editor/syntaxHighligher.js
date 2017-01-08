@@ -48,7 +48,6 @@ define('ace/mode/example_highlight_rules', function(require, exports, module) {
         {token : "variable.constant", regex : new RegExp(Lexer.identifier)},
         {defaultToken : "text"},
       ],
-      //Since there is no way to easily create a regex, we can just stop the range after the next thing after ..
       "lastRange": [
         {token : "constant.numeric", regex: "[+-]?\\d+\\b", next:"pop"},
         {token : "variable.constant", regex : new RegExp(Lexer.identifier), next:"pop"},
@@ -83,11 +82,16 @@ define('ace/mode/example_highlight_rules', function(require, exports, module) {
         {token : "paren.rparen", regex : "[\\])]"},
         {token : "constant.numeric", regex: "[+-]?\\d+\\b"},
         {token : "paren.lparen", regex : '\\[', push  : "range"},
-        {token : "text", regex : '\\/|\\\\|@|\\$', push  : "set"},
+        {token : "text", regex : '\\/|@|\\$', push  : "set"},
+        {token : "text", regex : '\\\\', push  : "hiding"},
         {token : "keyword.operator", regex: new RegExp(Lexer.operators)},
         {token : "variable.action", regex : new RegExp(Lexer.actionLabel)},
         {token : "text", regex : '\\.', next  : "pop"},
         {defaultToken : "text"}
+      ],
+      "hiding": [
+        {token : "variable.ident", regex : new RegExp(Lexer.identifier), next: "pop"},
+        {token : "paren.lparen", regex : "{", next:"set"},
       ],
       "control": [
         {token : "keyword.operator", regex: new RegExp(Lexer.operators)},
