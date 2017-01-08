@@ -631,7 +631,7 @@ const Parser = {
 		// check if a false branch has been defined
 		if(tokens[this.index].value === 'else'){
 			this.gobble(tokens[this.index], 'else');
-			const falseBranch = this.parseLocalProcesss(tokens);
+			const falseBranch = this.parseLocalProcess(tokens);
 
 			const end = tokens[this.index - 1].location.end;
 			const location = new Location(start, end);

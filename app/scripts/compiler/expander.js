@@ -203,7 +203,7 @@ function expand(ast){
 
   function processNext(astNode, variableMap) {
     let next;
-    if (astNode.to.ident) {
+    if (astNode.to && astNode.to.ident) {
       var expr = astNode.to.ident;
       var regex = '[\$][a-zA-Z0-9]*';
       var match = expr.match(regex);
@@ -219,7 +219,7 @@ function expand(ast){
       }
       if (next.length == 0)
         next = parseIndexedLabel(astNode.to.ident, variableMap, true);
-    } else if (astNode.to.range) {
+    } else if (astNode.to && astNode.to.range) {
       next = astNode.to.process.from.action;
       const variable = astNode.to.variable;
       const range = astNode.to.range;
