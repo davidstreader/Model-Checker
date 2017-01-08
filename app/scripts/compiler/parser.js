@@ -622,9 +622,9 @@ const Parser = {
 	parseIfStatement: function(tokens){
 		const start = tokens[this.index].location.start;
 
-		gobble(tokens[this.index], 'if');
+		this.gobble(tokens[this.index], 'if');
 		const condition = this.parseExpression(tokens);
-		gobble(tokens[this.index], 'then');
+    this.gobble(tokens[this.index], 'then');
 
 		const trueBranch = this.parseLocalProcess(tokens);
 

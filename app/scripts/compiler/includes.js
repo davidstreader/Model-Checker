@@ -9,6 +9,7 @@ importScripts("automatonInterpreter.js");
 importScripts("petrinetInterpreter.js");
 importScripts("operation-evaluator.js");
 importScripts("reconstructor.js");
+importScripts("variable-hider.js");
 importScripts("compiler.js");
 //the wrapper scripts for the process operations
 importScripts("../process-operations/abstraction.js");

@@ -16,7 +16,6 @@
 function expand(ast){
   var processes = ast.processes;
   var localProcess;
-  var variableSet;
   // expand the defined processes
 
   for(var i = 0; i < processes.length; i++){
@@ -27,42 +26,15 @@ function expand(ast){
       processes[i].ident.ident = processes[i].ident.ident.replace("*","");
     }
     var variableMap = JSON.parse(JSON.stringify(ast.variableMap));
-    variableSet = processes[i].variables?processes[i].variables.set:[];
-    if(processes[i].local.length !== 0 && processes[i].process.ident) {
-      const ident = processes[i].process.ident.split("[")[0];
-      for (var i2 in processes[i].local) {
-        if (processes[i].local[i2].ident.ident == ident) {
-          //processes[i].process.ident = processIdent(processes[i].process.ident, processes[i].local[i2]);
-          //console.log(processes[i].process.ident);
-        }
-      }
-    }
     processes[i].process = expandNode(processes[i].process, variableMap);
     // expand local procsses if any are defined
     if(processes[i].local.length !== 0){
-      variableSet = processes[i].variables?processes[i].variables.set:[];
       variableMap = JSON.parse(JSON.stringify(ast.variableMap));
       processes[i].local = expandLocalProcessDefinitions(processes[i].local, variableMap);
     }
   }
   // return the result
   return ast;
-
-  function processIdent(ident, localProcess) {
-    let newIdent = ident.split("[")[0];
-    var split = ident.substring(1).replace(/[\[']+/g,'').split("]");
-    split.pop();
-    for (var index in split) {
-      var val = split[index];
-      var variable = localProcess.ranges.ranges[index].variable;
-      if (variableSet.indexOf(variable.substring(1)) !== -1) {
-        newIdent+="["+variable+"]";
-      } else {
-        newIdent+="["+val+"]";
-      }
-    }
-    return newIdent;
-  }
   /**
    * Expands and returns the local processes defined within a process.
    *
@@ -119,9 +91,6 @@ function expand(ast){
         var element = iterator.next;
         variableMap[variable] = element;
         var newIdent = ident + '[' + element + ']';
-        if (variableSet.indexOf(variable.substring(1)) != -1) {
-          newIdent = ident + '[' + variable + ']';
-        }
         newProcesses = newProcesses.concat(expandIndexedDefinition(localProcess, newIdent, ranges, variableMap));
       }
     }
@@ -335,11 +304,8 @@ function expand(ast){
     var regex = '[\$][a-zA-Z0-9]*';
     var match = guard.match(regex);
     while(match !== null){
-      if (match[0].indexOf("v") === -1 && variableSet.indexOf(match[0].substring(1)) ===-1)
+      if (match[0].indexOf("v") === -1)
         variables.push(match[0].substring(1)+"="+variableMap[match[0]]);
-      if (variableSet.indexOf(match[0].substring(1)) > -1) {
-        variables.push(match[0].substring(1));
-      }
       guard = guard.replace(match[0], variableMap[match[0]]);
       match = guard.match(regex);
     }
@@ -458,10 +424,6 @@ function expand(ast){
     var match = expr.match(regex);
     var exprWithVars = expr;
     while(match !== null){
-      //If the variable exists in the variableSet, then we are processing an expression without replacing variables.
-      if (variableSet.indexOf(match[0].substring(1)) === 0) {
-        exprWithVars = exprWithVars.replace(match[0], match[0].substring(1));
-      }
       // check if the variable has been defined
       if(variableMap[match[0]] === undefined){
         throw new VariableDeclarationException('the variable \'' + match[0].substring(1) + '\' has not been defined');
@@ -495,30 +457,6 @@ function expand(ast){
     }
     var tmpVars = [];
     while(match !== null){
-      //Baiscally, we look for instances of the variables we would like to skip, and then
-      //temporarily change the syntax to avoid them being matched by the above regex, and
-      //just let it pass back to the diagram.
-      //Take care of a basic variable declaration
-      if (variableSet.indexOf(match[0].substring(1))===0) {
-        label = label.replace(match[0], "#"+match[0].substring(1));
-        match = label.match(regex);
-        continue;
-      }
-      //Take care of assignment operators c[i + 1]
-      var test = false;
-      if (typeof variableMap[match[0]] == 'string') {
-        for (var i in variableSet) {
-          if (variableMap[match[0]].indexOf("$"+variableSet[i]) !== -1){
-            //This ends up being equal to the assignment done, so lets pass it back through the chain
-            tmpVars.push(variableMap[match[0]]);
-            label = label.replace(match[0], "#"+variableSet[i]);
-            match = label.match(regex);
-            test = true;
-            break;
-          }
-        }
-        if (test) continue;
-      }
       //Normal variable replacement
       var expr = processExpression(match[0], variableMap);
       label = label.replace(match[0], expr.result);
