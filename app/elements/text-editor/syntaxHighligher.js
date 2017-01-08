@@ -94,6 +94,7 @@ define('ace/mode/example_highlight_rules', function(require, exports, module) {
         {token : "paren.lparen", regex : "{", next:"set"},
       ],
       "control": [
+        {token : "constant.numeric", regex: "[+-]?\\d+\\b"},
         {token : "keyword.operator", regex: new RegExp(Lexer.operators)},
         {token : "variable.constant", regex : new RegExp(Lexer.identifier)},
         //The first time we encounter a (, we actually want to avoid pushing it to the stack
@@ -103,6 +104,7 @@ define('ace/mode/example_highlight_rules', function(require, exports, module) {
         {defaultToken : "variable.constant"}
       ],
       "controlInner": [
+        {token : "constant.numeric", regex: "[+-]?\\d+\\b"},
         {token : "keyword.operator", regex: new RegExp(Lexer.operators)},
         {token : "variable.constant", regex : new RegExp(Lexer.identifier)},
         //Now that we have encountered atleast 1 (, we want to keep track of how many we have encountered
