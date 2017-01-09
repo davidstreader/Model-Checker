@@ -1,6 +1,6 @@
 function hideVariables(processes) {
-  const processMap = {};
   for (let process in processes) {
+    const processMap = {};
     processes[process] = constructMap(processes[process],processMap);
     processes[process] = hideInProcess(processes[process],processMap);
   }
