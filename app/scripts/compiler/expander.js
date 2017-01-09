@@ -100,8 +100,6 @@ function expand(ast){
       // construct a new locally defined process
       var clone = JSON.parse(JSON.stringify(localProcess));
       clone.ident.ident = ident;
-      delete clone.ident.ranges;
-      delete clone.ranges;
       clone.process = expandNode(clone.process, variableMap);
       clone.process.vars = vars;
       newProcesses.push(clone);
