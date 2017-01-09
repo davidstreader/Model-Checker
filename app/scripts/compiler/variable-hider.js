@@ -6,7 +6,9 @@ function hideVariables(processes) {
   return processes;
 }
 function hideInProcess(process,processMap, variableSet, ranges) {
-  variableSet = variableSet || process.variables.set;
+  if (!variableSet && process.variables) {
+    variableSet = process.variables.set;
+  }
   ranges = ranges || process.ranges;
   if (ranges) {
     for (let range in ranges.ranges) {
