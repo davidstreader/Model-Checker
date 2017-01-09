@@ -1,6 +1,6 @@
 const Coins = 2
 automata {
-Money = C[i][1],
+Money = C[1][1],
         C[i:1..Coins][j:1..Coins] = (when (i < Coins) coin -> C[i + 1][j] | when (j < Coins) ping -> C[i][j+1]| when (j == Coins) ping -> C[i][1])${i}.
 Money6 = C[1][1],
         C[i:1..Coins][j:1..Coins] = (when (i < Coins) coin -> C[i + 1][j] | when (j < Coins) ping -> C[i][j+1]| when (j == Coins) ping -> C[i][1]).

@@ -13,7 +13,7 @@ function hideVariables(processes) {
     }
     if (!ranges && process.ranges)
       ranges = process.ranges;
-    if (ranges) {
+    if (ranges && variableSet) {
       for (let range in ranges.ranges) {
         const v = ranges.ranges[range].variable.substring(1);
         if (variableSet.indexOf(v) > -1) {
