@@ -155,10 +155,10 @@ joint.shapes.pn.TerminalPlace = joint.dia.Element.extend({
 
   }, joint.dia.Element.prototype.defaults)
 });
-joint.shapes.buttonsNoExplode = joint.shapes.basic.Generic.extend({
+joint.shapes.ButtonsNoExplode = joint.shapes.basic.Generic.extend({
   markup: '<foreignObject><html xmlns="http://www.w3.org/1999/xhtml"><button onclick="app.$.modify.removeGraph(this)">Remove</button></html></foreignObject>',
   defaults: _.defaultsDeep({
-    type: 'buttons',
+    type: 'Buttons',
     attrs: {
       'foreignObject': {
         width: 100,
@@ -167,10 +167,10 @@ joint.shapes.buttonsNoExplode = joint.shapes.basic.Generic.extend({
     }
   }, joint.shapes.basic.Generic.prototype.defaults)
 });
-joint.shapes.buttons = joint.shapes.basic.Generic.extend({
+joint.shapes.Buttons = joint.shapes.basic.Generic.extend({
   markup: '<foreignObject><html xmlns="http://www.w3.org/1999/xhtml"><button onclick="app.$.visualiser.removeGraph(this)">Remove</button><button onclick="app.$.visualiser.explode(true,this)">Explode</button></html></foreignObject>',
   defaults: _.defaultsDeep({
-    type: 'buttons',
+    type: 'Buttons',
     attrs: {
       'foreignObject': {
         width: 100,
@@ -179,13 +179,13 @@ joint.shapes.buttons = joint.shapes.basic.Generic.extend({
     }
   }, joint.shapes.basic.Generic.prototype.defaults)
 });
-joint.shapes.parent = joint.shapes.basic.Generic.extend({
+joint.shapes.Parent = joint.shapes.basic.Generic.extend({
 
   markup: `<g class="rotatable"><g class="scalable"><rect /></g></g>`,
 
   defaults: _.defaultsDeep({
 
-    type: 'parent',
+    type: 'Parent',
     attrs: {
       'rect': {
         fill: '#ffffff',
@@ -197,16 +197,16 @@ joint.shapes.parent = joint.shapes.basic.Generic.extend({
 
   }, joint.shapes.basic.Generic.prototype.defaults)
 });
-joint.shapes.parentLabel = joint.shapes.basic.Rect.extend();
-joint.shapes.interruptParentNode = joint.shapes.basic.Rect.extend();
-joint.shapes.interruptEmbedNode = joint.shapes.basic.Rect.extend();
-joint.shapes.interruptLabel = joint.shapes.basic.Rect.extend({
+joint.shapes.ParentLabel = joint.shapes.basic.Rect.extend();
+joint.shapes.InterruptParentNode = joint.shapes.basic.Rect.extend();
+joint.shapes.InterruptEmbedNode = joint.shapes.basic.Rect.extend();
+joint.shapes.InterruptLabel = joint.shapes.basic.Rect.extend({
 
   markup: '<g class="rotatable"><g class="scalable"><rect/></g><text/></g>',
 
   defaults: _.defaultsDeep({
 
-    type: "interruptLabel",
+    type: "InterruptLabel",
     size: {width: 100, height: 30},
     attrs: {
       rect: {fill: 'transparent', stroke: 'none'},
@@ -215,6 +215,7 @@ joint.shapes.interruptLabel = joint.shapes.basic.Rect.extend({
 
   }, joint.shapes.basic.Generic.prototype.defaults)
 });
+
 /**
  * Get a cell's jquery object
  * @param cell the cell

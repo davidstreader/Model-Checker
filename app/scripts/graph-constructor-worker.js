@@ -42,7 +42,7 @@ onmessage = e => {
   _.each(glGraph.interrupts,interrupt=>{
     const parentNode = glGraph.node(interrupt);
     //Add a label to each interrupt
-    glGraph.setNode(interrupt+"label",{type:'interruptLabel',id:generateUuid(),
+    glGraph.setNode(interrupt+"label",{type:'InterruptLabel',id:generateUuid(),
       position: {x:(parentNode.x-parentNode.x/2)-100,y:(parentNode.y-parentNode.y/2)-45},
       size: {width:100,height:50},
       z:2,
@@ -130,7 +130,7 @@ function layoutGraph(glGraph) {
 function visualizeAutomata(process, graphID, glGraph, hidden) {
   // add nodes in automaton to the graph
   const nodes = process.nodes;
-  glGraph.setNode(graphID,{type:'parent',id:generateUuid(),
+  glGraph.setNode(graphID,{type:'Parent',id:generateUuid(),
     width: 0,
     height: 0,
     z:0});
@@ -223,12 +223,12 @@ function _link(source, target, label,tooltip, glGraph, graphID, opts) {
 }
 function _box(glGraph, toEmbed, name, graphID) {
   glGraph.interrupts.push("boxNode"+name);
-  glGraph.setNode("boxNode"+name,{type:'interruptParentNode',id:generateUuid(),
+  glGraph.setNode("boxNode"+name,{type:'InterruptParentNode',id:generateUuid(),
     width: 0,
     height: 0,
     z:1});
   //We dont want the embed to show or have any interactions.
-  glGraph.setNode("embedNode"+name,{type:'interruptEmbedNode',id:generateUuid(),
+  glGraph.setNode("embedNode"+name,{type:'InterruptEmbedNode',id:generateUuid(),
     attrs: {
       rect: {fill: 'transparent', stroke: 'none', visibility: 'hidden'}
     },
@@ -254,7 +254,7 @@ function first(data) {
   }
 }
 function visualizePetriNet(process, graphID, glGraph, hidden) {
-  glGraph.setNode(graphID,{type:'parent',id:generateUuid(),
+  glGraph.setNode(graphID,{type:'Parent',id:generateUuid(),
     width: 50,
     height: 50,
     z:0});

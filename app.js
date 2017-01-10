@@ -24,9 +24,9 @@ io.on('connection', function (socket) {
       } else if (e.data.message) {
         socket.emit("log",e.data);
       }
-    }
+    };
     worker.postMessage(obj);
-  })
+  });
   socket.on("disconnect", () => {
     if (workerMap[socket.id]) {
       workerMap[socket.id].terminate();

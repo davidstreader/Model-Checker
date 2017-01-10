@@ -9,8 +9,8 @@ function addLabelAndPadding(graphMap, key, jgraph, opts) {
   if (graphMap[key].interrupts) {
     interruptHeight = graphMap[key].interrupts.length * 30;
   }
-  const cell = new joint.shapes.parentLabel({
-    type: "parentLabel",
+  const cell = new joint.shapes.ParentLabel({
+    type: "ParentLabel",
     size: {width: 100, height: 30},
     position: {x: lx - 50, y: ly - 50-interruptHeight+10},
     attrs: {
@@ -20,11 +20,11 @@ function addLabelAndPadding(graphMap, key, jgraph, opts) {
   });
   let buttons;
   if (opts.disableExplode) {
-    buttons = new joint.shapes.buttonsNoExplode({
+    buttons = new joint.shapes.ButtonsNoExplode({
       position: {x: ux - 50, y: ly - 50-interruptHeight+10},
     });
   } else{
-    buttons = new joint.shapes.buttons({
+    buttons = new joint.shapes.Buttons({
       position: {x: ux - 50, y: ly - 50-interruptHeight+10},
     });
   }
@@ -77,14 +77,14 @@ function adjustVertices(graph, cell) {
   cell = cell.model || cell;
   //Some cell types should not trigger changes.
   switch (cell.attributes.type) {
-    case "parent":
+    case "Parent":
     case "fsa.Arrow":
-    case "buttonsNoExplode":
-    case "buttons":
-    case "parentLabel":
-    case "interruptParentNode":
-    case "interruptEmbedNode":
-    case "interruptLabel":
+    case "ButtonsNoExplode":
+    case "Buttons":
+    case "ParentLabel":
+    case "InterruptParentNode":
+    case "InterruptEmbedNode":
+    case "InterruptLabel":
       return;
   }
     //Ignore all clicks that arent on a cell

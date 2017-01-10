@@ -1,6 +1,6 @@
 (function(document) {
   'use strict';
-  var app = document.querySelector('#app');
+  const app = document.querySelector('#app');
 
   app.compileNoSocket = ()=> {
     app.loaded = true;
@@ -43,7 +43,7 @@
       });
     }
     app.compile = function(overrideBuild) {
-      var code = app.getCode();
+      const code = app.getCode();
       if(!overrideBuild){
         // if there is nothing to parse then do not continue
         if(code.length === 0){
@@ -79,8 +79,8 @@
       }.bind(this), 0);
     }
     app.finalizeBuild = function(results) {
-      var Range = ace.require("ace/range").Range;
-      var editor = app.$.editor._editor.getSession();
+      const Range = ace.require("ace/range").Range;
+      const editor = app.$.editor._editor.getSession();
       editor.clearAnnotations();
       _.each(editor.$backMarkers,(val,key)=>editor.removeMarker(key));
       if(results.type === 'error'){
@@ -122,11 +122,29 @@
         for(let i = 0; i < results.operations.length; i++){
           const { operation, process1, process2, result } = results.operations[i];
           const op = process1 + ' ' + operation + ' ' + process2 + ' = ' + result;
-          if(result){
+          if (result == "notfound") {
+            app.$.console.error(process1.ident + ' ' + operation + ' ' + process2.ident + ' = false');
+            if (!process1.exists) {
+              app.$.console.error(process1.ident+" was not found");
+              const l = process1.location;
+              editor.addMarker(new Range(l.start.line-1, l.start.col, l.end.line-1, l.end.col), "ace_underline");
+              for (let i = l.start.line; i <= l.end.line; i++) {
+                editor.setAnnotations([{row:i-1 ,column: 0, text:process1.ident+" was not found",type:"error"}]);
+              }
+            }
+            if (!process2.exists) {
+              app.$.console.error(process2.ident+" was not found");
+              const l = process2.location;
+              editor.addMarker(new Range(l.start.line-1, l.start.col, l.end.line-1, l.end.col), "ace_underline");
+              for (let i = l.start.line; i <= l.end.line; i++) {
+                editor.setAnnotations([{row:i-1 ,column: 0, text:process2.ident+" was not found",type:"error"}]);
+              }
+            }
+          } else if(result){
             app.$.console.log(op);
+
             passed++;
-          }
-          else{
+          } else{
             app.$.console.error(op);
           }
         }
@@ -158,15 +176,15 @@
      * and unnecessary line breaks.
      */
     app.getCode = function() {
-      var code = '';
-      var temp = app.$.editor.getCode();
+      let code = '';
+      let temp = app.$.editor.getCode();
 
       // remove white space and line breaks
       temp = temp.replace(/ /g, '');
 
       // remove unnecessary whitespace
-      var split = temp.split('\n');
-      for(var i = 0; i < split.length; i++){
+      const split = temp.split('\n');
+      for(let i = 0; i < split.length; i++){
         if(split[i] !== ''){
           code += split[i] + '\n';
         }
@@ -189,7 +207,7 @@
      * the text parsed from the file.
      */
     app.openFile = function() {
-      var opener = app.$['open-file'];
+      const opener = app.$['open-file'];
       opener.click();
       opener.onchange = function(e) {
         if (opener.value === '') {
@@ -197,13 +215,13 @@
         }
 
         // Load file into editor
-        var input = e.target;
+        const input = e.target;
         app.saveSettings.currentFile = input.files[0];
         app.reloadFile();
         opener.value = '';
 
         // Enable reload button
-        var reload = app.$['reload'];
+        const reload = app.$['reload'];
         reload.disabled = false;
       };
     };
@@ -216,11 +234,11 @@
         return;
       }
 
-      var reader = new FileReader();
+      const reader = new FileReader();
       reader.onload = function() {
-        var text = reader.result.split("visualiser_json_layout:");
-        var code = text[0];
-        var json = text[1];
+        const text = reader.result.split("visualiser_json_layout:");
+        const code = text[0];
+        const json = text[1];
         if (json.length > 0) {
           app.$.visualiser.loadJSON(json);
         }
@@ -234,19 +252,19 @@
      * Save to code the user has written to their computer (as a download).
      */
     app.downloadFile = function() {
-      var filename = app.$.save.getFileName();
+      let filename = app.$.save.getFileName();
       // if filename has not been defined set to untitled
       if(filename === ''){
         filename = 'untitled';
       }
       app.saveSettings = {currentFile: '', saveCode: true, saveLayout: true};
-      var output = "";
+      let output = "";
       if (app.saveSettings.saveCode)
         output+= app.$.editor.getCode();
       output+="\nvisualiser_json_layout:"
       if (app.saveSettings.saveLayout)
         output+= JSON.stringify(app.$.visualiser.jgraph.toJSON());
-      var blob = new Blob(
+      const blob = new Blob(
         [output],
         {type: 'text/plain;charset=utf-8'});
       saveAs(blob, filename + '.txt');
@@ -301,8 +319,8 @@
      * with this automata as a sub-graph, blue.
      */
     document.addEventListener('automata-walker-start', function(e) {
-      var visualisations = Polymer.dom(this).querySelectorAll('automata-visualisation');
-      for (var i in visualisations) {
+      const visualisations = Polymer.dom(this).querySelectorAll('automata-visualisation');
+      for (let i in visualisations) {
         visualisations[i].setHighlightNodeId(e.detail.node.id);
       }
     });
@@ -313,8 +331,8 @@
      * 'e.detail.edge'.
      */
     document.addEventListener('automata-walker-walk', function(e) {
-      var visualisations = Polymer.dom(this).querySelectorAll('automata-visualisation');
-      for (var i in visualisations) {
+      const visualisations = Polymer.dom(this).querySelectorAll('automata-visualisation');
+      for (let i in visualisations) {
         visualisations[i].setHighlightNodeId(e.detail.edge.to.id);
       }
     });

@@ -36,6 +36,24 @@ function testScript(script) {
       for (let i = 0; i < operations.length; i++) {
         const {operation, process1, process2, result} = operations[i];
         const op = process1 + ' ' + operation + ' ' + process2;
+        if (result == "notfound") {
+          let msg = "Error processing operation, "+process1.ident + ' ' + operation + ' ' + process2.ident;
+          if (!process1.exists) msg+="\n"+process1.ident+" does not exist!";
+          if (!process2.exists) msg+="\n"+process2.ident+" does not exist!";
+          if (script.endsWith("nonExistantOperation.txt")) {
+            continue;
+          }
+          it("Error processing operation, "+process1.ident + ' ' + operation + ' ' + process2.ident, function () {
+            assert(process1.exists, process1.ident+" does not exist");
+            assert(process2.exists, process2.ident+" does not exist");
+          });
+          continue;
+        }
+        if (script.endsWith("nonExistantOperation.txt")) {
+          it('The script should not compile successfully', function () {
+            assert(compile.type ==='error', "nonExistantOperations.txt compiled successfully");
+          });
+        }
         if (script.endsWith("failOperations.txt")) {
           failOperationsTxt(result, op);
           continue;

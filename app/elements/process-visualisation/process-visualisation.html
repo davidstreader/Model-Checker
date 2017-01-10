@@ -130,7 +130,7 @@
           }
           //If a cell is an interrupt, update the size of hte respective interrupt too
           _.each(cell.getEmbeddedCells(), node => {
-            if (node.attributes.type === 'interruptEmbedNode') {
+            if (node.attributes.type === 'InterruptEmbedNode') {
               node.set('position', cell.get('position'));
               node.set('size', cell.get('size'));
             }
@@ -140,13 +140,13 @@
         this.jgraph.on('change:position', function(cell) {
           //Exploded diagrams are limited by changing the dimensions of the paper
           //Don't update the size of the parent when the interrupt updates
-          if (_this.exploded || _this.rendering || cell.attributes.type === 'interruptEmbedNode') {
+          if (_this.exploded || _this.rendering || cell.attributes.type === 'InterruptEmbedNode') {
             _this.saveChanges();
             return;
           }
           //If a cell is an interrupt, update the size of hte respective interrupt too
           _.each(cell.getEmbeddedCells(),node => {
-            if (node.attributes.type === 'interruptEmbedNode') {
+            if (node.attributes.type === 'InterruptEmbedNode') {
               node.set('position',cell.get('position'));
               node.set('size',cell.get('size'));
               return;
@@ -160,16 +160,16 @@
           let maxX = 0,maxY=0;
           let label, buttons;
           _.each(parent.getEmbeddedCells(),node => {
-            if (node.attributes.type === 'parentLabel' ||
-              node.attributes.type === 'interruptLabel') {
+            if (node.attributes.type === 'ParentLabel' ||
+              node.attributes.type === 'InterruptLabel') {
               label = node;
               return;
             }
-            if (node.attributes.type === 'buttons') {
+            if (node.attributes.type === 'Buttons') {
               buttons = node;
               return;
             }
-            if (node.attributes.type === 'interruptEmbedNode' ||
+            if (node.attributes.type === 'InterruptEmbedNode' ||
               node.attributes.type === 'fsa.Arrow') return;
             const bbox = node.getBBox();
             minX = Math.min(minX,bbox.origin().x);
@@ -248,7 +248,7 @@
               parentNode.translate(parentNode.minX, parentNode.minY);
             }
             _.each(collectDeepEmbedded(parentNode),node => {
-              if (node.attributes.type === 'interruptEmbedNode') {
+              if (node.attributes.type === 'InterruptEmbedNode') {
                 return;
               }
               get$Cell(node).show()
@@ -259,12 +259,12 @@
         });
         //We might have hidden interrupted states, so lets show them
         _.each(collectDeepEmbedded(_this.displayedGraphs[name]),cell=>{
-          if (cell.attributes.type==='buttons') {
+          if (cell.attributes.type==='Buttons') {
             if (exploded) get$Cell(cell).hide();
             else get$Cell(cell).show();
             return;
           }
-          if (cell.attributes.type === 'interruptEmbedNode') {
+          if (cell.attributes.type === 'InterruptEmbedNode') {
             get$Cell(cell).hide();
             //The embed node doesnt seem to be positioned correcttly after restoring all, so lets fix that
             const parent = _this.jgraph.getCell(cell.get("parent"));
@@ -344,13 +344,13 @@
           graph.parentNode.set("graphId",graph.id);
           this.rescale();
           const _this = this;
-          const directEmbeds = _.filter(cells[0].getEmbeddedCells(),cell=>cell.attributes.type=='interruptLabel');
+          const directEmbeds = _.filter(cells[0].getEmbeddedCells(),cell=>cell.attributes.type=='InterruptLabel');
           cells.forEach(cell => {
             if (directEmbeds.indexOf(cell) !== -1) {
               return;
             }
             //box means interrupt
-            if (cell.attributes.type === 'interruptLabel') {
+            if (cell.attributes.type === 'InterruptLabel') {
               let lbl = cell.attributes.attrs.text.text;
               lbl = lbl.replace(oldName.replace(".hidden",""),name);
               cell.attr({ text: { text: lbl } });

@@ -5,10 +5,10 @@
  * within the application.
  */
 
-var PROCESS_TYPES = ['automata', 'petrinet'];
-var TAU = '\u03C4';
-var DELTA = '\u03B4';
-var GAMMA = '\u0263';
+const PROCESS_TYPES = ['automata', 'petrinet'];
+const TAU = '\u03C4';
+const DELTA = '\u03B4';
+const GAMMA = '\u0263';
 const Colours = {
   red: '#C0392b',
   blue: '#3498DB',

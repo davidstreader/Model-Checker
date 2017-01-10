@@ -8,7 +8,19 @@ function evaluateOperations(operations, processesMap, variableMap){
 	reset();
 
 	for(var i = 0; i < operations.length; i++){
+    var op = operations[i].isNegated ? '!~' : '~';
 		var {process1, process2} = operations[i];
+		const process1Err = !processesMap[getIdent(process1)];
+    const process2Err = !processesMap[getIdent(process2)];
+
+    if (process1Err || process2Err) {
+      process1.ident = getIdent(process1);
+      process1.exists = !process1Err;
+      process2.ident = getIdent(process2);
+      process2.exists = !process2Err;
+      results.push({ operation:op, process1:process1, process2:process2, result:"notfound" });
+		  continue;
+    }
 		var graph1 = interpretOneOff(generateProcessIdent(), process1, 'automata', processesMap, variableMap);
 		var graph2 = interpretOneOff(generateProcessIdent(), process2, 'automata', processesMap, variableMap);
 
@@ -20,7 +32,6 @@ function evaluateOperations(operations, processesMap, variableMap){
 		process1 = reconstruct(process1);
 		process2 = reconstruct(process2);
 
-		var op = operations[i].isNegated ? '!~' : '~';
 		results.push({ operation:op, process1:process1, process2:process2, result:result });
 	}
 
@@ -41,4 +52,9 @@ function evaluateOperations(operations, processesMap, variableMap){
 		opId = 0;
 		idents = [];
 	}
+
+  function getIdent(process) {
+	  if (process.type =="function") return getIdent(process.process);
+	  return process.ident;
+  }
 }
