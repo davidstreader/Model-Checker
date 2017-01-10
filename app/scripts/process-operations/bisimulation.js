@@ -1,12 +1,16 @@
 'use strict';
 
-function bisimulation(process){
-	var type = process.type;
+function bisimulation(){
+	if(arguments.length === 0){
+		return;
+	}
+
+	var type = arguments[0].type;
 	if(type === 'automata'){
-		return automataBisimulation([process]);
+		return automataBisimulation(arguments);
 	}
 	else if(type === 'petrinet'){
-		return petriNetBisimulation([process]);
+		return petriNetBisimulation(arguments);
 	}
 	else{
 		// throw error

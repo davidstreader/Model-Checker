@@ -146,6 +146,38 @@ const PETRI_NET_WALKER = {
 		}
 
 		return nextMarking;
+	},
+
+	findMarkings: function(){
+		const markings = [];
+		const visited = {};
+		const fringe = [this.initialMarking];
+		while(fringe.length !== 0){
+			const current = fringe.pop();
+			
+			const key = this.markingKey(current);
+			if(visited[key]){
+				continue;
+			}
+
+			markings.push(current);
+
+			const transitions = this.getOutgoingTransitions(current);
+			for(let i = 0; i < transitions.length; i++){
+				const transition = transitions[i];
+
+				const nextMarking = this.executeTransition(transition, current);
+				if(nextMarking === undefined){
+					continue;
+				}
+
+				fringe.push(nextMarking);
+			}
+
+			visited[key] = true;
+		}
+
+		return markings;
 	}
 }
 
