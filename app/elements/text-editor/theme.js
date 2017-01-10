@@ -2,6 +2,7 @@ ace.define("ace/theme/example",["require","exports","module","ace/lib/dom"], fun
 
   exports.isDark = false;
   exports.cssClass = "ace-test";
+  // language=css
   exports.cssText = `
   .ace-test .ace_gutter {
      background: #f0f0f0;
