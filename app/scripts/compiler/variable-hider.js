@@ -13,6 +13,7 @@ function hideVariables(processes) {
       variableSet = process.variables.set;
     }
     const ranges = process.ranges;
+    //At this point we can finally remove the unused ranges.
     delete process.ranges;
     delete process.ident.ranges;
 
@@ -32,7 +33,10 @@ function hideVariables(processes) {
           tmp[rangeIdx] = tmp[rangeIdx].join("]");
           process.ident.ident = tmp.join("[");
           //Store a mapping from the original name to the new name
-          processMap[oldIdent] = process.ident.ident;
+          processMap[oldIdent] = {
+            ident: process.ident.ident,
+            matched: false
+          };
         }
       }
     }
@@ -79,23 +83,40 @@ function hideVariables(processes) {
     switch(node.type) {
       case "choice":
       case "composite":
-        node.process1 = processBranch(node, "process1", processMap, actionMap);
-        node.process2 = processBranch(node, "process2", processMap, actionMap);
+        let p1 = processBranch(node, "process1", processMap, actionMap, variableSet);
+        let p2 = processBranch(node, "process2", processMap, actionMap, variableSet);
+        //When we want to delete something, it will be set to null.
+        //In that case, we can just return the other node
+        if (p1 == null) node = p2;
+        if (p2 == null) node = p1;
+        //It is possible that both processes are null.
+        //In this case, the parent will get to this exact point and return the other process.
+        if (node == null) return null;
         break;
       case "sequence":
-        node.to = processBranch(node, "to", processMap, actionMap);
+        if (node.to.type == "identifier") {
+          if (processMap[node.to.ident]) {
+            const l = node.from.location;
+            //We can use the location as a unique identifier of the action
+            //As label is not enough - somebody could label two actions with
+            //identical labels
+            const key = l.start.line + "," +
+              l.start.col + l.end.line + "," +
+              l.end.col + "->" + processMap[node.to.ident].ident;
+            if (actionMap[key]) {
+              return null;
+            }
+            actionMap[key] = true;
+          }
+        }
+        processBranch(node, "to", processMap, actionMap, variableSet);
         break;
       case "function":
-        node.process = processBranch(node, "process", processMap, actionMap);
+        processBranch(node, "process", processMap, actionMap, variableSet);
         break;
       case "identifier":
         if (processMap[node.ident]) {
-          //The process either maps to an object with the identifier as a property, or directly.
-          if (typeof processMap[node.ident] == "string") {
-            node.ident = processMap[node.ident];
-          } else {
-            node.ident = processMap[node.ident].ident;
-          }
+          node.ident = processMap[node.ident].ident;
         }
         break;
     }
@@ -105,69 +126,47 @@ function hideVariables(processes) {
         let cur = node.guardMetadata.variables[it];
         for (let v in variableSet) {
           if (cur.startsWith(variableSet[v])) {
-            delete node.guardMetadata.variables[it];
+            node.guardMetadata.variables.splice(it,1);
           }
         }
       }
     }
     return node;
   }
-  function mergeProcess(process1, process2, actionMap) {
+  function mergeProcess(process1, process2) {
+    if (process1 == null) return process2;
+    if (process2 == null) return process1;
     //If both nodes are identifiers, nothing needs to be done as they are identical
     if (process1.type == "identifier" && process2.type == "identifier") {
       //the identifier itself will be identical.
       return process1;
     } else {
-      if (process1.type == "sequence") {
-        const loc = process1.to.location;
-        //Locations are unique. So if an action is duplicated, we can easily tell by its location being set.
-        let key = loc.start.line+","+loc.start.col+","+loc.end.line+","+loc.end.col;
-        if (actionMap[key]) {
-          //Since we dont want to include the sequence since it is duplicated, we can just return the other process
-          return process2;
-        }
-        actionMap[key] = true;
-      }
-      if (process2.type == "sequence") {
-        const loc = process2.to.location;
-        let key = loc.start.line+","+loc.start.col+","+loc.end.line+","+loc.end.col;
-        if (actionMap[key]) {
-          return process1;
-        }
-        actionMap[key] = true;
-      }
       //At this point, location information is hopefully not needed.
       //the easiest way to merge two unrelated nodes is to create a choice from them.
       return new ChoiceNode(process1,process2,null);
     }
   }
-  function processBranch(parent, child, processMap, actionMap) {
+  function processBranch(parent, child, processMap, actionMap, variableSet) {
     const ident = parent[child].ident;
-    parent[child] = hideNode(parent[child], processMap);
+    parent[child] = hideNode(parent[child], processMap, variableSet, actionMap);
     if (ident === undefined) return parent[child];
-    if (typeof processMap[ident] === 'object') {
-      //There is already a node with this identifier. Instead of duplicating it, we merge it
-      //With the new node
-      const {parent:parent2,child:child2} = processMap[ident];
-      const process = parent[child];
-      const process2 = parent2[child2];
-      let newNode = mergeProcess(process,process2, actionMap);
-      parent[child] = parent2[child2] = newNode;
+    if (processMap[ident]) {
+      if (processMap[ident].matched) {
+        //There is already a node with this identifier. Instead of duplicating it, we merge it
+        //With the new node
+        const {parent:parent2, child:child2} = processMap[ident];
+        const process = parent[child];
+        const process2 = parent2[child2];
+        let newNode = mergeProcess(process, process2, actionMap);
+        parent[child] = parent2[child2] = newNode;
+      }
       const newIdent = processMap[ident].ident;
       processMap[ident] = {
         child: child,
         parent: parent,
-        ident: newIdent
-      }
-    }
-    //The node needs to be marked as it will be renamed.
-    if (typeof processMap[ident] == 'string') {
-      const newIdent = processMap[ident];
-      processMap[ident] = {
-        child: child,
-        parent: parent,
-        ident: newIdent
-      }
+        ident: newIdent,
+        matched: true
+      };
     }
     return parent[child];
   }
