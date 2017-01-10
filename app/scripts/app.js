@@ -123,21 +123,23 @@
           const { operation, process1, process2, result } = results.operations[i];
           const op = process1 + ' ' + operation + ' ' + process2 + ' = ' + result;
           if (result == "notfound") {
-            app.$.console.error(process1.ident + ' ' + operation + ' ' + process2.ident + ' = false');
+            app.$.console.error(process1.ident + ' ' + operation + ' ' + process2.ident + ' = error');
             if (!process1.exists) {
-              app.$.console.error(process1.ident+" was not found");
               const l = process1.location;
+              const err = "OperationException: '"+process1.ident+"' was not found ("+l.start.line+":"+l.start.col+")";
+              app.$.console.error(err);
               editor.addMarker(new Range(l.start.line-1, l.start.col, l.end.line-1, l.end.col), "ace_underline");
               for (let i = l.start.line; i <= l.end.line; i++) {
-                editor.setAnnotations([{row:i-1 ,column: 0, text:process1.ident+" was not found",type:"error"}]);
+                editor.setAnnotations([{row:i-1 ,column: 0, text:err,type:"error"}]);
               }
             }
             if (!process2.exists) {
-              app.$.console.error(process2.ident+" was not found");
               const l = process2.location;
+              const err = "OperationException: '"+process1.ident+"' was not found ("+l.start.line+":"+l.start.col+")";
+              app.$.console.error(err);
               editor.addMarker(new Range(l.start.line-1, l.start.col, l.end.line-1, l.end.col), "ace_underline");
               for (let i = l.start.line; i <= l.end.line; i++) {
-                editor.setAnnotations([{row:i-1 ,column: 0, text:process2.ident+" was not found",type:"error"}]);
+                editor.setAnnotations([{row:i-1 ,column: 0, text:err,type:"error"}]);
               }
             }
           } else if(result){
