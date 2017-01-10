@@ -135,7 +135,7 @@
             }
             if (!process2.exists) {
               const l = process2.location;
-              const err = "OperationException: '"+process1.ident+"' was not found ("+l.start.line+":"+l.start.col+")";
+              const err = "OperationException: '"+process2.ident+"' was not found ("+l.start.line+":"+l.start.col+")";
               app.$.console.error(err);
               editor.addMarker(new Range(l.start.line-1, l.start.col, l.end.line-1, l.end.col), "ace_underline");
               for (let i = l.start.line; i <= l.end.line; i++) {
