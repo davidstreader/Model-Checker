@@ -107,7 +107,7 @@ define('ace/mode/example_highlight_rules', function(require, exports, module) {
         {token: "constant.numeric", regex: "[+-]?\\d+\\b"},
         {token: "keyword.operator", regex: new RegExp(Lexer.operators)},
         {token: "variable.constant", regex: new RegExp(Lexer.identifier)},
-        //Now that we have encountered atleast 1 (, we want to keep track of how many we have encountered
+        //Now that we have encountered at least 1 (, we want to keep track of how many we have encountered
         {token: "paren.lparen", regex: "[\\[(]", push: "controlInner"},
         {token: "variable.action", regex: new RegExp(Lexer.actionLabel)},
         //We can now traverse backwards through each loop that was pushed onto the stack.

@@ -111,7 +111,7 @@ onmessage = e => {
     }
     graph.push(glEdge);
   });
-  //push the converstion back to the main thread
+  //push the conversation back to the main thread
   postMessage({cells:graph,alphabet:alphabet});
   //Since each dagre instance fires up a thread, its best to kill it now.
   close();

@@ -7,7 +7,7 @@ const Compiler = {
 
   compile: function(code, context){
     if (!this.worker) {
-      this.worker = new Worker("scripts/compiler/asyncCompiler.js")
+      this.worker = new Worker("scripts/compiler/compiler-worker.js")
     }
     //Pass compilation on to the worker
     this.worker.postMessage({code:code,context:context});
