@@ -94,7 +94,7 @@ const PETRI_NET = {
 		const tokens1 = (place1.metaData.startPlace !== undefined) ? place1.metaData.startPlace : 0;
 		const tokens2 = (place2.metaData.startPlace !== undefined) ? place2.metaData.startPlace : 0;
 		if((tokens1 + tokens2) !== 0){
-			place.metaData.startPlace = 1;
+			place.metaData.startPlace = tokens1 + tokens2;
 			this.addRoot(place.id);
 		}
 
@@ -182,6 +182,29 @@ const PETRI_NET = {
 				}
 			}
 		}
+	},
+
+	combineTransitions: function(transitions){
+		let incoming = {};
+		for(let i = 0; i < transitions.length; i++){
+			const transition = transitions[i];
+			for(let id in transition.incomingPlaceSet){
+				incoming[id] = true;
+			}
+		}
+		incoming = Object.keys(incoming).map(id => this.getPlace(id));
+
+		let outgoing = {};
+		for(let i = 0; i < transitions.length; i++){
+			const transition = transitions[i];
+			for(let id in transition.outgoingPlaceSet){
+				outgoing[id] = true;
+			}
+		}
+		outgoing = Object.keys(outgoing).map(id => this.getPlace(id));
+	
+		const transition = this.addTransition(this.nextTransitionId, transitions[0].label, incoming, outgoing);
+		return transition;
 	},
 
 	relabelTransition: function(oldLabel, newLabel){
@@ -319,6 +342,9 @@ const PETRI_NET = {
 				for(let j = 0; j < outgoing.length; j++){
 					const transition = outgoing[j];
 					if(transition.incomingPlaces.length === 0){
+						this.removeTransition(transition.id);
+					}
+					if(transition.outgoingPlaces.length === 0){
 						this.removeTransition(transition.id);
 					}
 				}
