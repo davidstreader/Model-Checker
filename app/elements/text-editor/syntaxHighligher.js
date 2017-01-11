@@ -73,6 +73,7 @@ define('ace/mode/example_highlight_rules', function(require, exports, module) {
       "process": [
         {token: "text", regex: ',', next: "process"},
         {token: "keyword.operator", regex: _.keys(Lexer.processTypes).join("|")},
+        {token: "meta.function", regex: "then|else"},
         {token: "meta.function", regex: _.keys(Lexer.keywords).join("|"), push: "control"},
         {token: "constant.language", regex: _.keys(Lexer.terminals).join("|")},
         {token: "keyword.operator", regex: _.keys(Lexer.functions).join("|")},

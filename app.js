@@ -7,8 +7,10 @@ const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
 const port = 5000;
-if (process.argv) {
-  console.log("tset");
+if (process.argv.length > 2) {
+  const execSync = require('child_process').execSync;
+  const cmd = 'gradlew build';
+  execSync(cmd,{cwd:"modelsolver"});
 }
 app.use(express.static('app'))
 app.use('/bower_components', express.static('bower_components'));
@@ -17,6 +19,7 @@ io.on('connection', function (socket) {
     if (workerMap[socket.id]) {
       workerMap[socket.id].terminate();
     }
+    if (process.argv.length > 2) obj.solve = true;
     //Compile in another thread, so we do not hang the server  from accepting other requests
     let worker = new Worker("server-compiler-worker.js");
     workerMap[socket.id] = worker;

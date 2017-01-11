@@ -19,8 +19,19 @@ function expand(ast){
   // expand the defined processes
 
   for(var i = 0; i < processes.length; i++){
-    if (typeof postMessage === 'function')
-      postMessage({clear:true,message:("Expanding: "+processes[i].ident.ident+" ("+(i+1)+"/"+processes.length)+")"});
+    if (typeof postMessage === 'function') {
+      if (processes[i].ident.ident.startsWith("op")) {
+        postMessage({
+          clear: true,
+          message: ("Expanding Operation: " + processes[i].process.ident.ident + " (" + (i + 1) + "/" + processes.length) + ")"
+        });
+      } else {
+        postMessage({
+          clear: true,
+          message: ("Expanding: " + processes[i].ident.ident + " (" + (i + 1) + "/" + processes.length) + ")"
+        });
+      }
+    }
     if (processes[i].ident.ident.indexOf("*") > -1) {
       processes[i].ident.dontRender = true;
       processes[i].ident.ident = processes[i].ident.ident.replace("*","");

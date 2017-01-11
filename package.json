@@ -53,6 +53,7 @@
     "fast-stable-stringify": "^0.1.1",
     "forever": "^0.15.3",
     "gulp-eslint": "^3.0.1",
+    "java": "^0.8.0",
     "jbb": "^1.3.9",
     "mocha": "^3.2.0",
     "msgpack": "^1.0.2",

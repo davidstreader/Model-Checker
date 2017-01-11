@@ -18,6 +18,17 @@ onmessage = function (e) {
   //Node appears to handle exceptions differently. Lets catch them and pass them back instead of killing the app.
   try {
     const compile = Compiler.localCompile(e.data.ast, e.data.context);
+    if (e.data.solve) {
+      const java = require("java");
+      const baseDir = "lib";
+      const dependencies = fs.readdirSync(baseDir);
+
+      dependencies.forEach(function(dependency){
+        java.classpath.push(baseDir + "/" + dependency);
+      });
+      const Solver = java.import('net.tangentmc.Solver');
+      new Solver(JSON.stringify(compile));
+    }
     //There really is no point to storing everything twice
     for (let process in compile.analysis) {
       delete compile.analysis[process].process;
