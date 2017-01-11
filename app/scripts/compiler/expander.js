@@ -21,10 +21,20 @@ function expand(ast){
   for(var i = 0; i < processes.length; i++){
     if (typeof postMessage === 'function') {
       if (processes[i].ident.ident.startsWith("op")) {
+        let tmp = processes[i].process;
+        let tmpId = "";
+        let br = "";
+        while (tmp.type == "function") {
+          br += ")";
+          tmpId = tmpId+tmp.func+"(";
+          tmp = tmp.process;
+        }
+        tmpId = tmpId+tmp.ident+br;
         postMessage({
           clear: true,
-          message: ("Expanding Operation: " + processes[i].process.ident.ident + " (" + (i + 1) + "/" + processes.length) + ")"
+          message: ("Expanding Operation: " + tmpId + " (" + (i + 1) + "/" + processes.length) + ")"
         });
+
       } else {
         postMessage({
           clear: true,

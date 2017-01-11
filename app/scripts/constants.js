@@ -9,6 +9,7 @@ const PROCESS_TYPES = ['automata', 'petrinet'];
 const TAU = '\u03C4';
 const DELTA = '\u03B4';
 const GAMMA = '\u0263';
+const AND = '\u2227';
 const Colours = {
   red: '#C0392b',
   blue: '#3498DB',

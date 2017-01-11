@@ -10,7 +10,7 @@ const port = 5000;
 if (process.argv.length > 2) {
   const execSync = require('child_process').execSync;
   const cmd = 'gradlew build';
-  execSync(cmd,{cwd:"modelsolver"});
+  execSync(cmd,{cwd:"modelsolver",stdio:[process.stdin,process.stdout,process.stderr]});
 }
 app.use(express.static('app'))
 app.use('/bower_components', express.static('bower_components'));

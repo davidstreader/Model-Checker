@@ -22,6 +22,7 @@ function automataAbstraction(automaton, isFair, prune){
 	// add the observable edges to the automaton
 	for(let key in observableEdgeMap){
 		const edge = observableEdgeMap[key];
+		console.log(key);
 		automaton.addEdge(automaton.nextEdgeId, edge.label, automaton.getNode(edge.from), automaton.getNode(edge.to));
 	}
 
@@ -38,7 +39,7 @@ function automataAbstraction(automaton, isFair, prune){
 		const incomingNodes = walker.getIncomingNodes(automaton.getNode(hiddenEdge.from));
 		for(let i = 0; i < incomingNodes.length; i++){
 			const {edge, node} = incomingNodes[i];
-			
+
 			// construct observable actions if the edge's action is observable
 			if(edge.label !== TAU){
 				for(let j = 0; j < outgoingNodes.length; j++){
@@ -54,7 +55,7 @@ function automataAbstraction(automaton, isFair, prune){
 		const outgoingNodes = walker.getOutgoingNodes(automaton.getNode(hiddenEdge.to));
 		for(let i = 0; i < outgoingNodes.length; i++){
 			const {edge, node} = outgoingNodes[i];
-			
+
 			// construct observable actions if the edge's action is observable
 			if(edge.label !== TAU){
 				for(let j = 0; j < incomingNodes.length; j++){
@@ -81,7 +82,7 @@ function automataAbstraction(automaton, isFair, prune){
 			const edges = walker.getOutgoingEdges(node).filter(e => e.label === TAU);
 			for(let i = 0; i < edges.length; i++){
 				const next = automaton.getNode(edges[i].to);
-				
+
 				// add the next node to the fringe if it has not been visited already
 				if(!visited[next.id]){
 					fringe.push(edges[i]);
@@ -111,7 +112,7 @@ function automataAbstraction(automaton, isFair, prune){
 			const edges = walker.getIncomingEdges(node).filter(e => e.label === TAU);
 			for(let i = 0; i < edges.length; i++){
 				const next = automaton.getNode(edges[i].from);
-				
+
 				// add the next node to the fringe if it has not been visited already
 				if(!visited[next.id]){
 					fringe.push(edges[i]);
@@ -133,7 +134,7 @@ function automataAbstraction(automaton, isFair, prune){
 			const node = nodes[i];
 			const edges = walker.getOutgoingEdges(node);
 			const hidden = edges.filter(e => e.label === TAU);
-			
+
 			if(edges.length === hidden.length && edges.length !== 0){
 				const incomingNodes = walker.getIncomingNodes(node);
 				const outgoingNodes = walker.getOutgoingNodes(node);
@@ -143,8 +144,27 @@ function automataAbstraction(automaton, isFair, prune){
 						const outgoing = outgoingNodes[k];
 
 						if(incoming.node.id !== outgoing.node.id){
+						  let metaData = {};
+						  const inGuard = incoming.edge.metaData.guard;
+              const outGuard = outgoing.edge.metaData.guard;
+              //TODO: make it so that the outgoing guard replaces i for the provious next
+						  if (inGuard && outGuard) {
+						    metaData.guard = {};
+                let newOut = outGuard.guard;
+                for (let next in inGuard.next) {
+                const tmp = inGuard.next[next].replace("=","");
+                }
+                metaData.guard.guard = inGuard.guard+"&&"+newOut;
+                metaData.guard.next = outGuard.next;
+                metaData.guard.variables = inGuard.variables;
+              } else if (inGuard) {
+						    metaData.guard = inGuard;
+              } else if (outGuard) {
+                metaData.guard = outGuard;
+              }
+              console.log(metaData);
 							const id = automaton.nextEdgeId;
-							const edge = automaton.addEdge(id, incoming.edge.label, incoming.node, outgoing.node);
+							const edge = automaton.addEdge(id, incoming.edge.label, incoming.node, outgoing.node, metaData);
 							edge.locations = incoming.edge.locations;
 						}
 					}

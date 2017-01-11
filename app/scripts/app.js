@@ -361,7 +361,7 @@
     });
     app.willSaveCookie = localStorage.getItem("willSave")!=='false';
     app.liveCompiling = localStorage.getItem("liveCompiling")!=='false';
-    app.pruning = localStorage.getItem("pruning")!=='false';
+    app.pruning = localStorage.getItem("pruning")=='true';
     app.fairAbstraction = localStorage.getItem("fairAbstraction")!=='false';
     app.graphSettings = localStorage.getItem("graphSettings") !== null?JSON.parse(localStorage.getItem("graphSettings")) :  app.graphSettings;
     app.saveGraphSettings = ()=>localStorage.setItem("graphSettings",JSON.stringify(app.graphSettings));

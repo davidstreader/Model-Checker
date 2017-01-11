@@ -1,4 +1,4 @@
-package tangentmc;
+package net.modelsolver;
 
 import org.json.JSONObject;
 import org.sosy_lab.common.ShutdownNotifier;
@@ -13,14 +13,12 @@ import org.sosy_lab.java_smt.api.NumeralFormula.IntegerFormula;
 import org.sosy_lab.java_smt.api.SolverContext.ProverOptions;
 
 public class Solver {
-
-  public Solver(String modelJSON) throws InvalidConfigurationException, SolverException, InterruptedException {
+  public String solve(String modelJSON) throws InvalidConfigurationException, SolverException, InterruptedException {
     JSONObject processModel = new JSONObject(modelJSON);
-    System.out.println(processModel);
     Configuration config = Configuration.defaultConfiguration();
     LogManager logger = BasicLogManager.create(config);
     ShutdownNotifier notifier = ShutdownNotifier.createDummy();
-
+    JSONObject ret = new JSONObject();
     // create the solver context, which includes all necessary parts for building, manipulating,
     // and solving formulas.
     try (SolverContext context =
@@ -40,12 +38,13 @@ public class Solver {
         boolean isUnsat = prover.isUnsat();
         if (!isUnsat) {
           Model model = prover.getModel();
-          System.out.println(model.evaluate(x));
+          ret.put("success",true);
+          ret.put("value",model.evaluate(x));
         } else {
-          System.out.println("False");
+          ret.put("success",false);
         }
       }
-
     }
+    return ret.toString();
   }
 }
