@@ -452,6 +452,8 @@ function interpretPetriNet(process, processesMap, context){
 
         referenceMap[id].push(places[i]);
       }
+
+      delete places[i].metaData.references;
     }
 
     const transitions = net.transitions.filter(t => t.metaData.references !== undefined);
@@ -461,6 +463,8 @@ function interpretPetriNet(process, processesMap, context){
       for(let id in references){
         net.constructConnection(transition, referenceMap[id]);
       }
+
+      delete transition.metaData.references;
     }
   }
 
