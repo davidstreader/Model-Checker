@@ -44,8 +44,26 @@ function prunePetriNet(net){
 
 		for(let j = 0; j < outgoingTransitions.length; j++){
 			const transition = outgoingTransitions[j];
-			const outgoing = walker.executeTransition(transition, nextMarking);
-			constructTransition(transition.label, marking, outgoing);
+			const incoming = walker.getIncomingMarking(transition);
+			const outgoing = walker.getOutgoingMarking(transition);
+
+			const to = walker.getOutgoingMarking(hidden);
+			for(let id in incoming){
+				to[id]--;
+
+				if(to[id] === 0){
+					delete to[id];
+				}
+			}
+			for(let id in outgoing){
+				if(to[id] === undefined){
+					to[id] = 0;
+				}
+
+				to[id]++;
+			}
+
+			constructTransition(transition.label, marking, to);
 
 		}
 	}
@@ -80,7 +98,7 @@ function prunePetriNet(net){
 
 	function constructTransitionKey(label, from, to){
 		const fromKey = JSON.stringify(Object.keys(from).sort());
-		const toKey = JSON.stringify(Object.keys(to).sort);
+		const toKey = JSON.stringify(Object.keys(to).sort());
 		return fromKey + '-|' + label + '|- ' + toKey;
 	}
 }
