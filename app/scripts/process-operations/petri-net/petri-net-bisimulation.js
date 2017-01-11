@@ -86,9 +86,14 @@ function petriNetBisimulation(nets){
 
 		for(let id in toDelete){
 			net.removePlace(id);
+			delete toDelete[id];
 		}
 
-		//removeRedundentPlaces(net);
+		removeRedundantTransitions(net, toDelete);
+
+		for(let id in toDelete){
+			net.removeTransition(id);
+		}
 	}
 
 	function constructColouring(walker, marking, markingColours){
@@ -138,44 +143,38 @@ function petriNetBisimulation(nets){
 						const place2 = net.getPlace(id2);
 
 						net.combinePlaces(place1, place2);
-						toDelete[id2] = true;
+						toDelete[id2] = 'place';
 					}
 
-					toDelete[id1] = true;
+					toDelete[id1] = 'place';
 				}
 			}
 		}
 	}
 
-	function removeRedundentPlaces(net){
-		const places = net.places;
-		for(let i = 0; i < places.length; i++){
-			const place = places[i];
-			let identical = true;
-			for(let id in place.incomingTransitionSet){
-				if(place.outgoingTransitionSet[id] === undefined){
-					identical = false;
-					break;
+	function removeRedundantTransitions(net, toDelete){
+		for(let label in net.labelSets){
+			const transitions = net.labelSets[label];
+
+			for(let i = 0; i < transitions.length; i++){
+				const transition = transitions[i];
+				let isSubSet = true;
+				for(let j = 0; j < transitions.length; j++){
+					if(i === j){
+						continue;
+					}
+
+					if(!transitions[j].isSuperSetOf(transition)){
+						isSubSet = false;
+						break;
+					}
 				}
-			}
 
-			if(!identical){
-				continue;
+				// if the transition is a subset of all the other transitions it can be deleted
+				if(isSubSet){
+					toDelete[transition.id] = 'transition';
+				}	
 			}
-
-			identical = true;
-			for(let id in place.outgoingTransitionSet){
-				if(place.incomingTransitionSet[id] === undefined){
-					identical = false;
-					break;
-				}
-			}
-
-			if(!identical){
-				continue;
-			}
-
-			net.removePlace(place.id);
 		}
 	}
 }
