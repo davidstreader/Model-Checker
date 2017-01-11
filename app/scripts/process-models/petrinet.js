@@ -665,6 +665,28 @@ const PETRI_NET_TRANSITION = {
 		}
 	},
 
+	isSuperSetOf: function(transition){
+		for(let id in transition.incomingPlaceSet){
+			if(this.incomingPlaceSet[id] === undefined){
+				return false;
+			}
+			else if(this.incomingPlaceSet[id] < transition.incomingPlaceSet[id]){
+				return false;
+			}
+		}
+
+		for(let id in transition.outgoingPlaceSet){
+			if(this.outgoingPlaceSet[id] === undefined){
+				return false;
+			}
+			else if(this.outgoingPlaceSet[id] < transition.outgoingPlaceSet[id]){
+				return false;
+			}
+		}
+
+		return true;
+	},
+
 	get locations(){
 		return JSON.parse(JSON.stringify(this.locationSet));
 	},
