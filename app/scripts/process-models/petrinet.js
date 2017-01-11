@@ -62,8 +62,8 @@ const PETRI_NET = {
 
 		for(let i in this.transitionMap){
 			const transition = this.transitionMap[i];
-			delete transition.incomingPlaceSet[id];
-			delete transition.outgoingPlaceSet[id];
+			transition.removeIncomingPlace(id);
+			transition.removeOutgoingPlace(id);
 		}
 
 		if(this.rootIds[id] === true){
@@ -189,7 +189,7 @@ const PETRI_NET = {
 		for(let i = 0; i < transitions.length; i++){
 			const transition = transitions[i];
 			for(let id in transition.incomingPlaceSet){
-				incoming[id] = true;
+				incoming[id] = transition.incomingPlaceSet[id];
 			}
 		}
 		incoming = Object.keys(incoming).map(id => this.getPlace(id));
@@ -198,7 +198,7 @@ const PETRI_NET = {
 		for(let i = 0; i < transitions.length; i++){
 			const transition = transitions[i];
 			for(let id in transition.outgoingPlaceSet){
-				outgoing[id] = true;
+				outgoing[id] = transition.outgoingPlaceSet[id];
 			}
 		}
 		outgoing = Object.keys(outgoing).map(id => this.getPlace(id));
@@ -225,12 +225,12 @@ const PETRI_NET = {
 			place.id = newId;
 
 			for(let transition in place.incomingTransitionSet){
-				place.incomingTransitionSet[label + ':' + transition] = true;
+				place.incomingTransitionSet[label + ':' + transition] = place.incomingTransitionSet[transition];
 				delete place.incomingTransitionSet[transition];
 			}
 
 			for(let transition in place.outgoingTransitionSet){
-				place.outgoingTransitionSet[label + ':' + transition] = true;
+				place.outgoingTransitionSet[label + ':' + transition] = place.outgoingTransitionSet[transition];
 				delete place.outgoingTransitionSet[transition];
 			}
 
@@ -250,12 +250,12 @@ const PETRI_NET = {
 			transition.label = label + '.' + transition.label;
 
 			for(let place in transition.incomingPlaceSet){
-				transition.incomingPlaceSet[label + ':' + place] = true;
+				transition.incomingPlaceSet[label + ':' + place] = transition.incomingPlaceSet[place];
 				delete transition.incomingPlaceSet[place];
 			}
 
 			for(let place in transition.outgoingPlaceSet){
-				transition.outgoingPlaceSet[label + ':' + place] = true;
+				transition.outgoingPlaceSet[label + ':' + place] = transition.outgoingPlaceSet[place];
 				delete transition.outgoingPlaceSet[place];
 			}
 
@@ -497,28 +497,51 @@ const PETRI_NET_PLACE = {
 	},
 
 	addIncomingTransition: function(id){
-		this.incomingTransitionSet[id] = true;
+		if(this.incomingTransitionSet[id] === undefined){
+			this.incomingTransitionSet[id] = 0;
+		}
+
+		this.incomingTransitionSet[id]++;
 	},
 
 	removeIncomingTransition: function(id){
-		delete this.incomingTransitionSet[id];
+		if(this.incomingTransitionSet[id] !== undefined){
+			this.incomingTransitionSet[id]--;
+
+			if(this.incomingTransitionSet[id] === 0){
+				delete this.incomingTransitionSet[id];
+			}
+		}
 	},
 
 	get outgoingTransitions(){
 		const outgoing = [];
 		for(let id in this.outgoingTransitionSet){
-			outgoing.push(id);
+			const amount = this.outgoingTransitionSet[id];
+			for(let i = 0; i < amount; i++){
+				outgoing.push(id);
+			}
 		}
 
 		return outgoing;
 	},
 
 	addOutgoingTransition: function(id){
-		this.outgoingTransitionSet[id] = true;
+		if(this.outgoingTransitionSet[id] === undefined){
+			this.outgoingTransitionSet[id] = 0;
+		}
+
+		this.outgoingTransitionSet[id]++;
 	},
 
 	removeOutgoingTransition: function(id){
-		delete this.outgoingTransitionSet[id];
+		if(this.outgoingTransitionSet[id] !== undefined){
+			this.outgoingTransitionSet[id]--;
+
+			if(this.outgoingTransitionSet[id] === 0){
+				delete this.outgoingTransitionSet[id];
+			}
+		}
 	},
 
 	get locations(){
@@ -587,35 +610,59 @@ const PETRI_NET_TRANSITION = {
 	get incomingPlaces(){
 		const incoming = [];
 		for(let id in this.incomingPlaceSet){
-			incoming.push(id);
+			for(let i = 0; i < this.incomingPlaceSet[id]; i++){
+				incoming.push(id);
+			}
 		}
 
 		return incoming;
 	},
 
 	addIncomingPlace: function(id){
-		this.incomingPlaceSet[id] = true;
+		if(this.incomingPlaceSet[id] === undefined){
+			this.incomingPlaceSet[id] = 0;
+		}
+
+		this.incomingPlaceSet[id]++;
 	},
 
 	removeIncomingPlace: function(id){
-		delete this.incomingPlaceSet[id];
+		if(this.incomingPlaceSet[id] !== undefined){
+			this.incomingPlaceSet[id]--;
+
+			if(this.incomingPlaceSet[id] === 0){
+				delete this.incomingPlaceSet[id];
+			}
+		}
 	},
 
 	get outgoingPlaces(){
 		const outgoing = [];
 		for(let id in this.outgoingPlaceSet){
-			outgoing.push(id);
+			for(let i = 0; i < this.outgoingPlaceSet[id]; i++){
+				outgoing.push(id);
+			}
 		}
 
 		return outgoing;
 	},
 
 	addOutgoingPlace: function(id){
-		this.outgoingPlaceSet[id] = true;
+		if(this.outgoingPlaceSet[id] === undefined){
+			this.outgoingPlaceSet[id] = 0;
+		}
+
+		this.outgoingPlaceSet[id]++;
 	},
 
 	removeOutgoingPlace: function(id){
-		delete this.outgoingPlaceSet[id];
+		if(this.outgoingPlaceSet[id] !== undefined){
+			this.outgoingPlaceSet[id]--;
+
+			if(this.outgoingPlaceSet[id] === 0){
+				delete this.outgoingPlaceSet[id];
+			}
+		}
 	},
 
 	get locations(){
