@@ -33,6 +33,7 @@ function expand(ast){
       processes[i].local = expandLocalProcessDefinitions(processes[i].local, variableMap);
     }
   }
+  require("fs").writeFileSync("test.json",JSON.stringify(processes,null,2));
   // return the result
   return ast;
   /**
@@ -168,7 +169,7 @@ function expand(ast){
    */
   function expandActionLabelNode(astNode, variableMap){
     var lbl = processLabel(astNode.action, variableMap);
-    astNode.action = lbl.label;
+    astNode.action = lbl;
     return astNode;
   }
 
@@ -348,12 +349,10 @@ function expand(ast){
    * @return {astNode} - the expanded ast node
    */
   function expandIdentiferNode(astNode, variableMap){
-    var lbl = processLabel(astNode.ident, variableMap);
-    astNode.ident = lbl.label;
-    if (localProcess) {
-      //astNode.ident = processIdent(astNode.ident,localProcess)
+    astNode.ident = processLabel(astNode.ident, variableMap);
+    if (astNode.label) {
+      astNode.label.action = processLabel( astNode.label.action, variableMap);
     }
-    //console.log(astNode);
     return astNode;
   }
 
@@ -371,7 +370,6 @@ function expand(ast){
       var next = nodes.pop();
       astNode = { type:'composite', process1:next, process2:astNode };
     }
-
     return astNode;
 
     /**
@@ -449,18 +447,14 @@ function expand(ast){
     // replace any variables declared in the label with its value
     var regex = '[\$][a-zA-Z0-9]*';
     var match = label.match(regex);
-    // if no variable was found then return
-    if(match === null){
-      return {label:label};
-    }
-    var tmpVars = [];
+
     while(match !== null){
       //Normal variable replacement
       var expr = processExpression(match[0], variableMap);
       label = label.replace(match[0], expr.result);
       match = label.match(regex);
     }
-    return {label:label.replace("#","$"),tmpVars:tmpVars};
+    return label;
   }
 
   /**

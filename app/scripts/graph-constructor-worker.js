@@ -45,7 +45,6 @@ onmessage = e => {
     glGraph.setNode(interrupt+"label",{type:'InterruptLabel',id:generateUuid(),
       position: {x:(parentNode.x-parentNode.x/2)-100,y:(parentNode.y-parentNode.y/2)-45},
       size: {width:100,height:50},
-      z:2,
       attrs: {
         'text': {text: interrupt.replace("box","").replace(".hidden","").replace("Node","")}
       }});
@@ -132,8 +131,7 @@ function visualizeAutomata(process, graphID, glGraph, hidden) {
   const nodes = process.nodes;
   glGraph.setNode(graphID,{type:'Parent',id:generateUuid(),
     width: 0,
-    height: 0,
-    z:0});
+    height: 0});
   let interruptId = 1;
   for(let i = 0; i < nodes.length; i++){
     let attrs = {text : {text: nodes[i].metaData.label}};
@@ -157,7 +155,6 @@ function visualizeAutomata(process, graphID, glGraph, hidden) {
     glGraph.setNode(nid,{
       width: 50,
       height: 50,
-      z:2,
       type:type, id:generateUuid(),
       attrs: attrs,
       tooltip: nodes[i].getMetaData('variables')
@@ -203,10 +200,10 @@ function visualizeAutomata(process, graphID, glGraph, hidden) {
 }
 
 function _link(source, target, label,tooltip, glGraph, graphID, opts) {
+  console.log(graphID);
   const id = generateUuid();
   glGraph.setEdge(source,target,{
     type:"fsa.Arrow", id:id,
-    z:2,
     labels: [{position: 0.5, attrs: {text: {text: label || '', 'font-weight': 'bold'}}}],
     attrs: {
       //Add a slight transparency, so that you can see the links behind
@@ -225,8 +222,7 @@ function _box(glGraph, toEmbed, name, graphID) {
   glGraph.interrupts.push("boxNode"+name);
   glGraph.setNode("boxNode"+name,{type:'InterruptParentNode',id:generateUuid(),
     width: 0,
-    height: 0,
-    z:1});
+    height: 0});
   //We dont want the embed to show or have any interactions.
   glGraph.setNode("embedNode"+name,{type:'InterruptEmbedNode',id:generateUuid(),
     attrs: {
@@ -234,8 +230,7 @@ function _box(glGraph, toEmbed, name, graphID) {
     },
     width: 0,
     height: 0,
-    boxId: "boxNode"+name,
-    z:1});
+    boxId: "boxNode"+name,});
   glGraph.setParent("boxNode"+name,graphID);
   glGraph.setParent("embedNode"+name,"boxNode"+name);
   //Remove embedded cells from the parent and add them to the box
@@ -256,8 +251,7 @@ function first(data) {
 function visualizePetriNet(process, graphID, glGraph, hidden) {
   glGraph.setNode(graphID,{type:'Parent',id:generateUuid(),
     width: 50,
-    height: 50,
-    z:0});
+    height: 50});
   let interruptId = 1;
   const places = process.places;
   const places2 = _.map(places,place=>place.id);
@@ -277,7 +271,6 @@ function visualizePetriNet(process, graphID, glGraph, hidden) {
     glGraph.setNode('p'+places[i].id,{type:type,id:generateUuid(),
       width: 50,
       height: 50,
-      z:1,
       attrs:attrs,
       tooltip: places[i].getMetaData('variables')});
     glGraph.setParent('p'+places[i].id,graphID);
@@ -315,7 +308,6 @@ function visualizePetriNet(process, graphID, glGraph, hidden) {
       glGraph.setNode(tid,{
         width: 20,
         height: 50,
-        z:2,
         type:"pn.Transition", id:generateUuid(),
         attrs: {text : {text:label}},
         tooltip: tooltip
@@ -340,7 +332,6 @@ function visualizePetriNet(process, graphID, glGraph, hidden) {
     glGraph.setNode(tid,{
       width: 20,
       height: 50,
-      z:2,
       type:"pn.Transition", id:generateUuid(),
       attrs: {text : {text:label}},
       tooltip: tooltip

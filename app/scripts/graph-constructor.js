@@ -44,6 +44,8 @@ function addLabelAndPadding(graphMap, key, jgraph, opts) {
   graphMap[key].parentNode.translate(50, 50+interruptHeight);
   //Move the component back to the origin with a bit of padding
   graphMap[key].parentNode.translate(50, -ly+50);
+
+  graphMap[key].parentNode.toFront({ deep: true });
 }
 function constructGraphs(graphMap, id, hidden, callback, opts) {
   opts = opts || {};
