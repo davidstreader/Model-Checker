@@ -95,7 +95,7 @@ function tokenRule(process, operation){
 		const rootSet = {};
 		for(let i = 0; i < roots.length; i++){
 			const root = roots[i];
-			rootSet[root.id] = true;
+			rootSet[root.id] = root.metaData.startPlace;
 		}
 		const rootKey = walker.markingKey(rootSet);
 
@@ -153,6 +153,10 @@ function tokenRule(process, operation){
 
 		if(root.outgoingEdges.length === 0){
 			root.metaData.isTerminal = 'stop';
+		}
+
+		for(let id in markings){
+			delete markings[id];
 		}
 
 		return automaton;

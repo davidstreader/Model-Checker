@@ -30,7 +30,11 @@ const PETRI_NET_WALKER = {
 
 			const incoming = place.incomingTransitions;
 			for(let i = 0; i < incoming.length; i++){
-				transitionSet[incoming[i]] = true;
+				if(transitionSet[incoming[i]] === undefined){
+					transitionSet[incoming[i]] = 0;
+				}
+
+				transitionSet[incoming[i]]++;
 			}
 		}
 
@@ -51,7 +55,11 @@ const PETRI_NET_WALKER = {
 
 			const outgoing = place.outgoingTransitions;
 			for(let i = 0; i < outgoing.length; i++){
-				transitionSet[outgoing[i]] = true;
+				if(transitionSet[outgoing[i]] === undefined){
+					transitionSet[outgoing[i]] = 0;
+				}
+
+				transitionSet[outgoing[i]]++;
 			}
 		}
 
@@ -65,7 +73,11 @@ const PETRI_NET_WALKER = {
 		// construct a set of the incoming places
 		const incomingSet = {};
 		for(let i = 0; i < incoming.length; i++){
-			incomingSet[incoming[i]] = true;
+			if(incomingSet[incoming[i]] === undefined){
+				incomingSet[incoming[i]] = 0;
+			}
+
+			incomingSet[incoming[i]]++;
 		}
 
 		return incomingSet;
@@ -77,7 +89,11 @@ const PETRI_NET_WALKER = {
 		// construct a set of the outgoing places
 		const outgoingSet = {};
 		for(let i = 0; i < outgoing.length; i++){
-			outgoingSet[outgoing[i]] = true;
+			if(outgoingSet[outgoing[i]] === undefined){
+				outgoingSet[outgoing[i]] = 0;
+			}
+
+			outgoingSet[outgoing[i]]++;
 		}
 
 		return outgoingSet;
@@ -88,10 +104,16 @@ const PETRI_NET_WALKER = {
 			if(marking2[id] === undefined){
 				return false;
 			}
+			else if(marking2[id] !== marking1[id]){
+				return false;
+			}
 		}
 
 		for(let id in marking2){
 			if(marking1[id] === undefined){
+				return false;
+			}
+			else if(marking1[id] !== marking2[id]){
 				return false;
 			}
 		}
@@ -125,7 +147,7 @@ const PETRI_NET_WALKER = {
 
 		for(let i = 0; i < incoming.length; i++){
 			const id = incoming[i];
-			if(marking[id] === undefined){
+			if(nextMarking[id] === undefined){
 				return undefined;
 			}
 
