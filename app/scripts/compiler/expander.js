@@ -33,7 +33,6 @@ function expand(ast){
       processes[i].local = expandLocalProcessDefinitions(processes[i].local, variableMap);
     }
   }
-  require("fs").writeFileSync("test.json",JSON.stringify(processes,null,2));
   // return the result
   return ast;
   /**
