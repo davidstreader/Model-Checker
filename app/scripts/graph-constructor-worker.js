@@ -127,6 +127,7 @@ function layoutGraph(glGraph) {
   return glGraph;
 }
 function visualizeAutomata(process, graphID, glGraph, hidden) {
+  let lastBox = graphID;
   // add nodes in automaton to the graph
   const nodes = process.nodes;
   glGraph.setNode(graphID,{type:'Parent',id:generateUuid(),
@@ -187,20 +188,20 @@ function visualizeAutomata(process, graphID, glGraph, hidden) {
       }
 
       const box = _box(glGraph, toEmbed, graphID+"."+(interruptId++),graphID);
-      _link(from,"embedNode"+box, "deleteMe","",glGraph,graphID);
-      const link =_link("embedNode"+box,to, label,tooltip,glGraph,graphID,{clearVerts:true});
+      lastBox = box;
+      _link(from,"embedNode"+box, "deleteMe","",glGraph,graphID,lastBox);
+      const link =_link("embedNode"+box,to, label,tooltip,glGraph,lastBox,{clearVerts:true});
       //Now that all the children are inside box, toEmbed should only contain the box, plus the next node
       toEmbed = ["boxNode"+box,to, link];
       continue;
     }
-    toEmbed.push(_link(from,to, label,tooltip,glGraph,graphID));
+    toEmbed.push(_link(from,to, label,tooltip,glGraph,lastBox));
     toEmbed.push(from);
     toEmbed.push(to);
   }
 }
 
-function _link(source, target, label,tooltip, glGraph, graphID, opts) {
-  console.log(graphID);
+function _link(source, target, label,tooltip, glGraph,lastBox, opts) {
   const id = generateUuid();
   glGraph.setEdge(source,target,{
     type:"fsa.Arrow", id:id,
@@ -235,9 +236,16 @@ function _box(glGraph, toEmbed, name, graphID) {
   glGraph.setParent("embedNode"+name,"boxNode"+name);
   //Remove embedded cells from the parent and add them to the box
   toEmbed.forEach(cell => {
+
     if (glGraph.node(cell))
       glGraph.setParent(cell,"boxNode"+name);
-    else glGraph.parentNode = "boxNode"+name;
+    else if (cell) {
+      for (let edge in glGraph._edgeLabels) {
+        if (edge.endsWith(cell)) {
+          glGraph._edgeLabels[edge].parentNode = "boxNode"+name;
+        }
+      }
+    }
   });
   return name;
 }
