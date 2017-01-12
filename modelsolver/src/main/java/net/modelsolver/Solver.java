@@ -1,5 +1,7 @@
 package net.modelsolver;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.json.JSONObject;
 import org.sosy_lab.common.ShutdownNotifier;
 import org.sosy_lab.common.configuration.Configuration;
@@ -14,7 +16,16 @@ import org.sosy_lab.java_smt.api.SolverContext.ProverOptions;
 
 public class Solver {
   public String solve(String modelJSON) throws InvalidConfigurationException, SolverException, InterruptedException {
-    JSONObject processModel = new JSONObject(modelJSON);
+    JSONObject edges = new JSONObject(modelJSON);
+    JSONObject guard1JSON = edges.getJSONObject("edge1").optJSONObject("metaData");
+    JSONObject guard2JSON = edges.getJSONObject("edge2").optJSONObject("metaData");
+    if (guard1JSON == null || guard2JSON == null) return null;
+    guard1JSON = guard1JSON.getJSONObject("guard");
+    guard2JSON = guard2JSON.getJSONObject("guard");
+    Gson gson = new GsonBuilder().create();
+    Guard guard1 = gson.fromJson(guard1JSON.toString(),Guard.class);
+    Guard guard2 = gson.fromJson(guard2JSON.toString(),Guard.class);
+    System.out.println(guard1);
     Configuration config = Configuration.defaultConfiguration();
     LogManager logger = BasicLogManager.create(config);
     ShutdownNotifier notifier = ShutdownNotifier.createDummy();
@@ -28,6 +39,7 @@ public class Solver {
 
       BooleanFormulaManager bmgr = fmgr.getBooleanFormulaManager();
       IntegerFormulaManager imgr = fmgr.getIntegerFormulaManager();
+      System.out.println(guard1.getConstraints(imgr));
       IntegerFormula x = imgr.makeNumber(20);
       IntegerFormula y = imgr.makeVariable("y");
       BooleanFormula f = bmgr.and(imgr.equal(x,y),imgr.greaterThan(x=imgr.add(x,imgr.makeNumber(1)),imgr.makeNumber(0)));

@@ -42,7 +42,7 @@ function automataAbstraction(automaton, isFair, prune){
 			if(edge.label !== TAU){
 				for(let j = 0; j < outgoingNodes.length; j++){
 					const next = outgoingNodes[j];
-					constructObservableEdge(node.id, next.id, edge.label);
+					constructObservableEdge(node.id, next.id, edge.label, edge, hiddenEdge);
 				}
 			}
 		}
@@ -58,7 +58,7 @@ function automataAbstraction(automaton, isFair, prune){
 			if(edge.label !== TAU){
 				for(let j = 0; j < incomingNodes.length; j++){
 					const next = incomingNodes[j];
-					constructObservableEdge(next.id, node.id, edge.label);
+					constructObservableEdge(next.id, node.id, edge.label, edge, hiddenEdge);
 				}
 			}
 		}
@@ -142,27 +142,8 @@ function automataAbstraction(automaton, isFair, prune){
 						const outgoing = outgoingNodes[k];
 
 						if(incoming.node.id !== outgoing.node.id){
-						  let metaData = {};
-						  const inGuard = incoming.edge.metaData.guard;
-              const outGuard = outgoing.edge.metaData.guard;
-              //TODO: make it so that the outgoing guard replaces i for the provious next
-						  if (inGuard && outGuard) {
-						    metaData.guard = {};
-                let newOut = outGuard.guard;
-                for (let next in inGuard.next) {
-                const tmp = inGuard.next[next].replace("=","");
-                }
-                metaData.guard.guard = inGuard.guard+"&&"+newOut;
-                metaData.guard.next = outGuard.next;
-                metaData.guard.variables = inGuard.variables;
-              } else if (inGuard) {
-						    metaData.guard = inGuard;
-              } else if (outGuard) {
-                metaData.guard = outGuard;
-              }
-              console.log(metaData);
 							const id = automaton.nextEdgeId;
-							const edge = automaton.addEdge(id, incoming.edge.label, incoming.node, outgoing.node, metaData);
+							const edge = automaton.addEdge(id, incoming.edge.label, incoming.node, outgoing.node);
 							edge.locations = incoming.edge.locations;
 						}
 					}
@@ -173,18 +154,20 @@ function automataAbstraction(automaton, isFair, prune){
 		}
 	}
 
-	/**
-	 * Constructs an observable edge object and adds it to the
-	 * observable edge map.
-	 *
-	 * @param {string} from - the node id the edge transitions from
-	 * @param {string} to - the node id the edge transitions to
-	 * @param {string} label - the action the edge represents
-	 */
-	function constructObservableEdge(from, to, label){
+  /**
+   * Constructs an observable edge object and adds it to the
+   * observable edge map.
+   *
+   * @param {string} from - the node id the edge transitions from
+   * @param {string} to - the node id the edge transitions to
+   * @param {string} label - the action the edge represents
+   * @param {string} edge - the edge that we are merging the hidden edge with
+   * @param {string} hiddenEdge - the hidden edge
+   */
+	function constructObservableEdge(from, to, label, edge, hiddenEdge){
 		var key = constructEdgeKey(from, to, label);
 		if(observableEdgeMap[key] === undefined){
-			observableEdgeMap[key] = new ObservableEdge(from, to, label);
+			observableEdgeMap[key] = new ObservableEdge(from, to, label,  edge, hiddenEdge);
 		}
 	}
 
@@ -208,13 +191,14 @@ function automataAbstraction(automaton, isFair, prune){
 	 * @param {string} label - the action the edge represents
 	 * @return {object} - object representing an observable edge
 	 */
-	function ObservableEdge(from, to, label){
-		var edge = {
-			from : from,
-			to : to,
-			label : label
-		}
-
-		return edge;
+	function ObservableEdge(from, to, label, edge, hiddenEdge){
+	  if (combineEdges) {
+      console.log(combineEdges(edge,hiddenEdge));
+    }
+		return {
+      from : from,
+      to : to,
+      label : label
+    };
 	}
 }

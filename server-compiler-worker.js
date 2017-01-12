@@ -16,10 +16,10 @@ global.importScripts = (...files) => {
 importScripts("includes.js");
 let shouldSolve = false;
 onmessage = function (e) {
+  shouldSolve = e.data.solve;
   //Node appears to handle exceptions differently. Lets catch them and pass them back instead of killing the app.
   try {
     const compile = Compiler.localCompile(e.data.ast, e.data.context);
-    shouldSolve = e.data.solve;
     //There really is no point to storing everything twice
     for (let process in compile.analysis) {
       delete compile.analysis[process].process;
@@ -46,7 +46,7 @@ function combineEdges(edge1,edge2) {
     java.classpath.push(baseDir + "/" + dependency);
   });
   const Solver = java.import('net.modelsolver.Solver');
-  const ret = JSON.parse(new Solver().solveSync(JSON.stringify(compile)));
+  const ret = JSON.parse(new Solver().solveSync(JSON.stringify({edge1:edge1,edge2:edge2})));
   console.log(ret);
   return ret;
 }

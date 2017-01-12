@@ -97,11 +97,11 @@ const Parser = {
 		const actionLabel = new ActionLabelNode(action, location);
 
 		// check if this action has been labelled as either a broadcaster or receiver
-		if(tokens[this.index].value === '!'){
+		if(tokens[this.index].value === '?'){
 			this.parseValue(tokens[this.index]);
 			actionLabel.broadcaster = true;
 		}
-		else if(tokens[this.index].value === '?'){
+		else if(tokens[this.index].value === '!'){
 			this.parseValue(tokens[this.index]);
 			actionLabel.receiver = true;
 		}

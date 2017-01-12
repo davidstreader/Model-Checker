@@ -171,6 +171,11 @@ function visualizeAutomata(process, graphID, glGraph, hidden) {
     let tooltip = "";
     const from = 'n' + edges[i].from;
     const to = 'n' + edges[i].to;
+    if (edges[i].metaData.broadcaster) {
+      label += "?";
+    } else if (edges[i].metaData.receiver) {
+      label += "!";
+    }
     let guard = edges[i].getMetaData('guard');
     if(guard !== undefined){
       let vars = guard.variables;
