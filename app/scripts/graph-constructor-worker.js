@@ -60,26 +60,28 @@ onmessage = e => {
       glNode.position = {x:glNode.x - glNode.width / 2,y:glNode.y - glNode.height / 2};
     if (!glNode.size)
       glNode.size = {width:glNode.width ,height:glNode.height};
+    //There is no point in keeping this information when translating to what we want to send
     delete glNode.x;
     delete glNode.y;
     delete glNode.width;
     delete glNode.height;
     if (glNode.boxId) {
-      const parentNode = glGraph.node(glNode.boxId);
-      glNode.position = parentNode.position;
-      glNode.size = parentNode.size;
+      return;
     }
     if (glGraph.parent(v)) {
       glNode.parent = glGraph.node(glGraph.parent(v)).id;
     }
-    const children = glGraph.children(v);
+    let children = glGraph.children(v);
     if (children) {
       glNode.embeds = [];
-      _.each(children, child=>{
-        if (glGraph.node(child))
-          glNode.embeds.push(glGraph.node(child).id);
-        else
+      _.each(children, child=> {
+        let gnode = glGraph.node(child);
+        if (gnode) {
+          if (gnode.boxId) return;
+            glNode.embeds.push(gnode.id);
+        } else {
           glNode.embeds.push(child);
+        }
       });
     }
     graph.push(glNode);
@@ -87,7 +89,6 @@ onmessage = e => {
   const parentNode = glGraph.node(id);
   // Import all edges.
   glGraph.edges().forEach(function(edgeObj) {
-    //["type", "id", "z", "labels", "attrs", "smooth", "tooltip", "source", "target", "deleteMe", "opts", "points"]
     const glEdge = glGraph.edge(edgeObj);
     //Dont bother importing edges that have been flagged for deletion
     if (glEdge.deleteMe) return;
@@ -189,19 +190,19 @@ function visualizeAutomata(process, graphID, glGraph, hidden) {
 
       const box = _box(glGraph, toEmbed, graphID+"."+(interruptId++),graphID);
       lastBox = box;
-      _link(from,"embedNode"+box, "deleteMe","",glGraph,graphID,lastBox);
-      const link =_link("embedNode"+box,to, label,tooltip,glGraph,lastBox,{clearVerts:true});
+      _link(from,"embedNode"+box, "deleteMe","",glGraph);
+      const link =_link("embedNode"+box,to, label,tooltip,glGraph, {clearVerts:true});
       //Now that all the children are inside box, toEmbed should only contain the box, plus the next node
       toEmbed = ["boxNode"+box,to, link];
       continue;
     }
-    toEmbed.push(_link(from,to, label,tooltip,glGraph,lastBox));
+    toEmbed.push(_link(from,to, label,tooltip,glGraph));
     toEmbed.push(from);
     toEmbed.push(to);
   }
 }
 
-function _link(source, target, label,tooltip, glGraph,lastBox, opts) {
+function _link(source, target, label, tooltip, glGraph, opts) {
   const id = generateUuid();
   glGraph.setEdge(source,target,{
     type:"fsa.Arrow", id:id,
@@ -221,11 +222,16 @@ function _link(source, target, label,tooltip, glGraph,lastBox, opts) {
 }
 function _box(glGraph, toEmbed, name, graphID) {
   glGraph.interrupts.push("boxNode"+name);
-  glGraph.setNode("boxNode"+name,{type:'InterruptParentNode',id:generateUuid(),
+  const id = generateUuid();
+  //By having these nodes reference eachother,
+  //We can easily get one from the other,
+  //which aids in deleting the embed node later on.
+  glGraph.setNode("boxNode"+name,{type:'InterruptParentNode',id:id,
     width: 0,
-    height: 0});
+    height: 0,
+    embedId: "embedNode"+name});
   //We dont want the embed to show or have any interactions.
-  glGraph.setNode("embedNode"+name,{type:'InterruptEmbedNode',id:generateUuid(),
+  glGraph.setNode("embedNode"+name,{type:'InterruptEmbedNode',id:id,
     attrs: {
       rect: {fill: 'transparent', stroke: 'none', visibility: 'hidden'}
     },
@@ -321,10 +327,10 @@ function visualizePetriNet(process, graphID, glGraph, hidden) {
         tooltip: tooltip
       });
       glGraph.setParent(tid,graphID);
-      _link(from,"embedNode"+box, "deleteMe",'',glGraph,graphID);
+      _link(from,"embedNode"+box, "deleteMe",'',glGraph);
 
       //Now that all the children are inside box, toEmbed should only contain the box, plus the next node and the transition + links
-      toEmbed = ["boxNode"+box,target,tid,_link("embedNode"+box,tid, '','',glGraph,graphID,{clearVerts:true}),_link(tid,target, '','',glGraph,graphID,{clearVerts:true})];
+      toEmbed = ["boxNode"+box,target,tid,_link("embedNode"+box,tid, '','',glGraph, {clearVerts:true}),_link(tid,target, '','',glGraph, {clearVerts:true})];
       continue;
     }
 
@@ -348,7 +354,7 @@ function visualizePetriNet(process, graphID, glGraph, hidden) {
     for(let j = 0; j < outgoing.length; j++){
       const from = tid;
       const to = 'p' + outgoing[j];
-      toEmbed.push(_link(from,to, '','',glGraph,graphID));
+      toEmbed.push(_link(from,to, '','',glGraph));
       toEmbed.push(from);
       toEmbed.push(to);
     }
@@ -356,7 +362,7 @@ function visualizePetriNet(process, graphID, glGraph, hidden) {
     for(let j = 0; j < incoming.length; j++){
       const from = 'p' + incoming[j];
       const to = tid;
-      toEmbed.push(_link(from,to,'','',glGraph,graphID));
+      toEmbed.push(_link(from,to,'','',glGraph));
       toEmbed.push(from);
       toEmbed.push(to);
     }

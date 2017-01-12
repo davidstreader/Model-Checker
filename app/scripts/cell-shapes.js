@@ -168,7 +168,7 @@ joint.shapes.ButtonsNoExplode = joint.shapes.basic.Generic.extend({
   }, joint.shapes.basic.Generic.prototype.defaults)
 });
 joint.shapes.Buttons = joint.shapes.basic.Generic.extend({
-  markup: '<foreignObject><html xmlns="http://www.w3.org/1999/xhtml"><button onclick="app.$.visualiser.removeGraph(this)">Remove</button><button onclick="app.$.visualiser.explode(true,this)">Explode</button></html></foreignObject>',
+  markup: '<foreignObject><html xmlns="http://www.w3.org/1999/xhtml"><button onclick="app.$.visualiser.removeGraph(this)">Remove</button><button onclick="app.$.visualiser.explode(true,this)" style="width: 65px;">Explode</button></html></foreignObject>',
   defaults: _.defaultsDeep({
     type: 'Buttons',
     attrs: {
@@ -197,9 +197,22 @@ joint.shapes.Parent = joint.shapes.basic.Generic.extend({
 
   }, joint.shapes.basic.Generic.prototype.defaults)
 });
-joint.shapes.ParentLabel = joint.shapes.basic.Rect.extend();
+joint.shapes.ParentLabel = joint.shapes.basic.Rect.extend({
+
+  markup: '<g class="rotatable"><g class="scalable"><rect/></g><text/></g>',
+
+  defaults: _.defaultsDeep({
+
+    type: "ParentLabel",
+    size: {width: 100, height: 30},
+    attrs: {
+      rect: {fill: 'transparent', stroke: 'none'},
+      text: {fill: 'red', 'font-size': 20, style:{'pointer-events':'none'}}
+    }
+
+  }, joint.shapes.basic.Generic.prototype.defaults)
+});
 joint.shapes.InterruptParentNode = joint.shapes.basic.Rect.extend();
-joint.shapes.InterruptEmbedNode = joint.shapes.basic.Rect.extend();
 joint.shapes.InterruptLabel = joint.shapes.basic.Rect.extend({
 
   markup: '<g class="rotatable"><g class="scalable"><rect/></g><text/></g>',

@@ -46,6 +46,8 @@ function addLabelAndPadding(graphMap, key, jgraph, opts) {
   graphMap[key].parentNode.translate(50, -ly+50);
 
   graphMap[key].parentNode.toFront({ deep: true });
+
+  resizeParentToFit(graphMap[key].parentNode);
 }
 function constructGraphs(graphMap, id, hidden, callback, opts) {
   opts = opts || {};
@@ -85,7 +87,6 @@ function adjustVertices(graph, cell) {
     case "Buttons":
     case "ParentLabel":
     case "InterruptParentNode":
-    case "InterruptEmbedNode":
     case "InterruptLabel":
       return;
   }
@@ -114,4 +115,38 @@ function _collectDeepEmbedded(cell) {
     subtree.push(c);
     _collectDeepEmbedded(c);
   })
+}
+function resizeParentToFit(parent) {
+  app.$.visualiser.rendering = true;
+  let minX = Number.MAX_VALUE, minY = Number.MAX_VALUE;
+  let maxX = 0,maxY=0;
+  let label, buttons;
+  _.each(parent.getEmbeddedCells(),node => {
+    if (node.attributes.type === 'ParentLabel' ||
+      node.attributes.type === 'InterruptLabel') {
+      label = node;
+      return;
+    }
+    if (node.attributes.type === 'Buttons') {
+      buttons = node;
+      return;
+    }
+    if (node.attributes.type === 'fsa.Arrow') return;
+    const bbox = node.getBBox();
+    minX = Math.min(minX,bbox.origin().x);
+    minY = Math.min(minY,bbox.origin().y);
+    maxX = Math.max(maxX,bbox.corner().x);
+    maxY = Math.max(maxY,bbox.corner().y);
+  });
+  let width = maxX-minX;
+  let height = maxY-minY;
+  width+=100;
+  height+=100;
+  parent.resize(width,height);
+  parent.set("position", {x:minX-50,y:minY-50});
+  if (label)
+    label.set("position", {x:minX-30,y:minY-30});
+  if (buttons)
+    buttons.set("position", {x:maxX-15,y:minY-50});
+  app.$.visualiser.rendering = false;
 }
