@@ -219,16 +219,8 @@
             else get$Cell(cell).show();
             return;
           }
-          if (cell.attributes.type === 'InterruptEmbedNode') {
-            get$Cell(cell).hide();
-            //The embed node doesnt seem to be positioned correcttly after restoring all, so lets fix that
-            const parent = _this.jgraph.getCell(cell.get("parent"));
-            cell.set("position",parent.get("position"));
-            cell.set("size",parent.get("size"));
-            //DONT show the embed node.
-            return;
-          }
           get$Cell(cell).show();
+          if (cell.attributes.name === 'InterruptParentNode') return;
           //Update links as they have a bug where they point to incorrect locations after exploding.
           var vertices = cell.get('vertices');
           if (vertices && vertices.length) {

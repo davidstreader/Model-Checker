@@ -20,7 +20,7 @@
     app.selectedCtx = 0;
     app.isClientSide = true;
     app.willSaveCookie = true;
-    app.graphSettings = {autoMaxNode: 100, petriMaxPlace:100, petriMaxTrans: 100};
+    app.graphSettings = {autoMaxNode: 40, petriMaxPlace:40, petriMaxTrans: 40};
     app.loaded = app.loaded || false;
     app.saveSettings = {currentFile: '', saveCode: true, saveLayout: true};
     app.decoder = new TextDecoder("UTF-8");
