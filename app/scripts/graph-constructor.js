@@ -149,4 +149,7 @@ function resizeParentToFit(parent) {
   if (buttons)
     buttons.set("position", {x:maxX-15,y:minY-50});
   app.$.visualiser.rendering = false;
+  if (parent.get("parent")) {
+    resizeParentToFit(app.$.visualiser.jgraph.getCell(parent.get("parent")))
+  }
 }

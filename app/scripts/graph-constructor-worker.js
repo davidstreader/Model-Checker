@@ -268,7 +268,6 @@ function visualizePetriNet(process, graphID, glGraph, hidden) {
     height: 50});
   let interruptId = 1;
   const places = process.places;
-  const places2 = _.map(places,place=>place.id);
   for(let i = 0; i < places.length; i++){
     let type;
     let attrs = {};
