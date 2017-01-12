@@ -241,13 +241,13 @@ function _box(glGraph, toEmbed, name, graphID) {
   glGraph.setParent("boxNode"+name,graphID);
   glGraph.setParent("embedNode"+name,"boxNode"+name);
   //Remove embedded cells from the parent and add them to the box
-  toEmbed.forEach(cell => {
-
-    if (glGraph.node(cell))
-      glGraph.setParent(cell,"boxNode"+name);
-    else if (cell) {
+  toEmbed.forEach(embed => {
+    if (glGraph.node(embed)) {
+      glGraph.setParent(embed, "boxNode" + name);
+    } else if (embed) {
+      //Find the edge for this embed
       for (let edge in glGraph._edgeLabels) {
-        if (edge.endsWith(cell)) {
+        if (edge.endsWith(embed)) {
           glGraph._edgeLabels[edge].parentNode = "boxNode"+name;
         }
       }
@@ -300,14 +300,10 @@ function visualizePetriNet(process, graphID, glGraph, hidden) {
     let label = transitions[i].label;
     let tooltip = "";
     if (transitions[i].metaData.interrupt && hidden) {
-      //inCom is expensive to calculate and needs to be done once per interrupt, so store it.
-      //inCom needs to be a list of all places leading to this interrupt.
-      //We do this by getting the node this transition leads to, and then getting all transitions from that node.
-      //We can then map the transitions to the first element in their incomingPlaceSet (as interrupts will only have one incoming node)
-      //and then we finally sort inCom so that its in order of the tree.
-      //this way, the node at the end of inCom will be one of the rightMost elements, and this is important as they are the easiest
-      //nodes to link from when creating fake nodes for dagre placement.
-      const inCom = transitions[i].metaData.inCom || _.map(process.placeMap[outgoing[0]].incomingTransitionSet,(val,transition)=>first(process.transitionMap[transition].incomingPlaceSet)).sort(place => places2.indexOf(place));
+      //Incom is a list of all incoming transitions.
+      //We can then sort it by outgoing transition count,
+      //which means that we can get any nodes that are end points.
+      const inCom = transitions[i].metaData.inCom || _.map(process.placeMap[outgoing[0]].incomingTransitionSet,(val,transition)=>first(process.transitionMap[transition].incomingPlaceSet)).sort(place => process.placeMap[place].outgoingTransitionSet.length);
       transitions[i].metaData.inCom = inCom;
       if (incoming[0] !== inCom[inCom.length-1]) {
         continue;

@@ -300,14 +300,17 @@
           this.rescale();
           const _this = this;
           const directEmbeds = _.filter(cells[0].getEmbeddedCells(),cell=>cell.attributes.type=='InterruptLabel');
+          //Each interrupt pushes the entire graph 25 px to the left
           let pad = 0;
           cells.forEach(cell => {
             if (directEmbeds.indexOf(cell) !== -1) {
               return;
             }
             if (cell.attributes.type == "InterruptParentNode") {
+                //Add 25 px each interrupt
                 pad+=25;
               resizeParentToFit(cell);
+              //Resize parent will set this to false so we need to set it back to true
               app.$.visualiser.rendering = true;
             }
             //box means interrupt
@@ -324,6 +327,7 @@
           });
           resizeParentToFit(graph.parentNode);
           app.$.visualiser.rendering = true;
+          //Now we move the box back
           graph.parentNode.translate(pad,0);
           //Find the bounding box of the selected processes parent, and scroll to it
           //The scroll bar is inside .process-display
