@@ -260,7 +260,7 @@ const Lexer = {
     function gobbleMultiLineComment(){
       // iterate through the characters until the end of the comment is found
       let index = 0;
-      while(index < code.length - 1 && code.charAt(index) !== '*' && code.charAt(index + 1) !== '/'){
+      while(index < code.length - 1 && !(code.charAt(index) == '*' && code.charAt(index + 1) == '/')){
         // update the position info
         if(code.charAt(index) === '\n'){
           line++;
@@ -278,7 +278,6 @@ const Lexer = {
 
       // remove the comment
       code = code.slice(index, code.length);
-
       // update the position info
       column += 2 // from the '*/' at the end of the comment
     }

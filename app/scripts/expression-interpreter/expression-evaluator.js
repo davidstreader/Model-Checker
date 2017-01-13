@@ -1,29 +1,29 @@
 'use strict';
 
 // operator types
-var OR = '||';
-var AND = '&&';
-var BIT_OR = '|';
-var BIT_EXCL_OR = '^';
-var BIT_AND = '&';
-var EQUIVALENT = '==';
-var NOT_EQUIVALENT = '!=';
-var LESS_THAN = '<';
-var LESS_THAN_OR_EQUAL = '<=';
-var GREATER_THAN = '>';
-var GREATER_THAN_OR_EQUAL = '>=';
-var RIGHT_SHIFT = '>>';
-var LEFT_SHIFT = '<<';
-var ADD = '+';
-var SUBTRACT = '-';
-var MULTIPLY = '*';
-var DIVIDE = '/';
-var MODULO = '%';
+const OR = '||';
+const AND = '&&';
+const BIT_OR = '|';
+const BIT_EXCL_OR = '^';
+const BIT_AND = '&';
+const EQUIVALENT = '==';
+const NOT_EQUIVALENT = '!=';
+const LESS_THAN = '<';
+const LESS_THAN_OR_EQUAL = '<=';
+const GREATER_THAN = '>';
+const GREATER_THAN_OR_EQUAL = '>=';
+const RIGHT_SHIFT = '>>';
+const LEFT_SHIFT = '<<';
+const ADD = '+';
+const SUBTRACT = '-';
+const MULTIPLY = '*';
+const DIVIDE = '/';
+const MODULO = '%';
 
 /**
  * A mapping of operators to precedences (string -> int)
  */
-var precedenceMap = constructPrecedenceMap();
+const precedenceMap = constructPrecedenceMap();
 
 /**
  * Evaluates the specified expression and returns the result.
@@ -36,11 +36,18 @@ function evaluate(expr){
 		return expr;
 	}
 
-	var tokens = EXPR.parse(expr);
+	const tokens = EXPR.parse(expr);
 
 	// interpret the expression
-	var rpn = processShuntingYardAlgorithm(tokens, precedenceMap);
+	const rpn = processShuntingYardAlgorithm(tokens, precedenceMap);
 	return evaluateReversePolishNotation(rpn);
+}
+function getRPN(expr) {
+  const tokens = EXPR.parse(expr);
+
+  // interpret the expression
+  const rpn = processShuntingYardAlgorithm(tokens, precedenceMap);
+  return rpn;
 }
 
 /**
@@ -50,7 +57,7 @@ function evaluate(expr){
  * @returns {object} - map of operators to their precedence levels
  */
 function constructPrecedenceMap(){
-	var precedenceMap = {};
+	const precedenceMap = {};
 
 	precedenceMap[OR] = 10;
 	precedenceMap[AND] = 9;

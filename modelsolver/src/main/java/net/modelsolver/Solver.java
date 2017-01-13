@@ -16,6 +16,7 @@ import org.sosy_lab.java_smt.api.SolverContext.ProverOptions;
 
 public class Solver {
   public String solve(String modelJSON) throws InvalidConfigurationException, SolverException, InterruptedException {
+    System.out.println(ShuntingYard.postfix("sin ( max ( 2, 3 ) / 3 * 3.1415 )"));
     JSONObject edges = new JSONObject(modelJSON);
     JSONObject guard1JSON = edges.getJSONObject("edge1").optJSONObject("metaData");
     JSONObject guard2JSON = edges.getJSONObject("edge2").optJSONObject("metaData");
@@ -25,7 +26,6 @@ public class Solver {
     Gson gson = new GsonBuilder().create();
     Guard guard1 = gson.fromJson(guard1JSON.toString(),Guard.class);
     Guard guard2 = gson.fromJson(guard2JSON.toString(),Guard.class);
-    System.out.println(guard1);
     Configuration config = Configuration.defaultConfiguration();
     LogManager logger = BasicLogManager.create(config);
     ShutdownNotifier notifier = ShutdownNotifier.createDummy();
@@ -39,7 +39,8 @@ public class Solver {
 
       BooleanFormulaManager bmgr = fmgr.getBooleanFormulaManager();
       IntegerFormulaManager imgr = fmgr.getIntegerFormulaManager();
-      System.out.println(guard1.getConstraints(imgr));
+      System.out.println(guard1);
+      System.out.println(guard1.getConstraints(fmgr));
       IntegerFormula x = imgr.makeNumber(20);
       IntegerFormula y = imgr.makeVariable("y");
       BooleanFormula f = bmgr.and(imgr.equal(x,y),imgr.greaterThan(x=imgr.add(x,imgr.makeNumber(1)),imgr.makeNumber(0)));
