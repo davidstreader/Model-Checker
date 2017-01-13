@@ -1,29 +1,36 @@
 package net.modelsolver;
+import lombok.AllArgsConstructor;
+
 import java.util.*;
 
-public class ShuntingYard {
-  public static void main(String[] args) {
-    System.out.println(postfix("sin(max(2)/3*3.1415)"));
-  }
+/**
+ * A ShuntingYard algorithm that can process entire guards.
+ */
+class ShuntingYard {
+  @AllArgsConstructor
   private enum Operator
   {
-    ADD(1), SUBTRACT(2), MULTIPLY(3), DIVIDE(4), TEST(5);
+    //AND has lowest precedence as it should always be done last.
+    //COMPARISON is next, as it relies on everything else to be done
+    AND(0),COMPARISON(1),ADD(2), SUBTRACT(3), MULTIPLY(4), DIVIDE(5);
     final int precedence;
-    Operator(int p) { precedence = p; }
   }
 
+  /**
+   * A list of operations
+   */
   private static Map<String, Operator> ops = new HashMap<String, Operator>() {{
     put("+", Operator.ADD);
     put("-", Operator.SUBTRACT);
     put("*", Operator.MULTIPLY);
     put("/", Operator.DIVIDE);
     put("\\", Operator.DIVIDE);
-    put(">", Operator.TEST);
-    put("<", Operator.TEST);
-    put(">=", Operator.TEST);
-    put("<=", Operator.TEST);
-    put("==", Operator.TEST);
-    put("&&", Operator.TEST);
+    put(">", Operator.COMPARISON);
+    put("<", Operator.COMPARISON);
+    put(">=", Operator.COMPARISON);
+    put("<=", Operator.COMPARISON);
+    put("==", Operator.COMPARISON);
+    put("&&", Operator.AND);
   }};
 
   private static boolean isHigerPrec(String op, String sub)
@@ -36,18 +43,19 @@ public class ShuntingYard {
     infix = infix.replaceAll("\\s","");
     StringBuilder output = new StringBuilder();
     Stack<String> stack  = new Stack<>();
-    String combined = "(?"+String.join("|",ops.keySet());
+    String combined = "(?="+String.join("|",ops.keySet());
     combined = combined.replace("\\","\\\\");
     combined = combined.replace("/","\\/");
     combined += "|\\(|\\)"+")";
     combined = combined.replace("*","\\*");
     combined = combined.replace("+","\\+");
-    combined = combined+"|"+combined.replace("?","?<");
+    combined = combined+"|"+combined.replace("?=","?<=");
     for (String token : infix.split(combined)) {
       // operator
       if (ops.containsKey(token)) {
-        while (!stack.isEmpty() && isHigerPrec(token, stack.peek()))
+        while (!stack.isEmpty() && isHigerPrec(token, stack.peek())) {
           output.append(stack.pop()).append(' ');
+        }
         stack.push(token);
 
         // left parenthesis
@@ -68,7 +76,6 @@ public class ShuntingYard {
 
     while ( ! stack.isEmpty())
       output.append(stack.pop()).append(' ');
-
     return output.toString();
   }
 

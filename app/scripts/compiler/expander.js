@@ -305,9 +305,9 @@ function expand(ast){
       node = expandNode(astNode.falseBranch, variableMap);
     } else return { type:'empty' };
     if (astNode.guard) {
-      const guard = processExpression(astNode.guard, variableMap).exprWithVars;
-      const variables = processVariables(variableMap[astNode.guard], variableMap);
-      node.guardMetadata = {next: next, guard: guard, variables:variables};
+      const guard = processExpression(astNode.guard, variableMap);
+      const variables = processVariables(astNode.guard, variableMap);
+      node.guardMetadata = {next: next, guard: guard.exprWithVars, procGuard: guard.expr, variables:variables};
     }
     return node;
   }
@@ -445,7 +445,7 @@ function expand(ast){
         throw new VariableDeclarationException('the variable \'' + match[0].substring(1) + '\' has not been defined');
       }
       if (match[0].indexOf("v")!=-1) {
-        exprWithVars=exprWithVars.replace(match[0],"("+variableMap[match[0]]+")");
+        exprWithVars=exprWithVars.replace(match[0],variableMap[match[0]]);
       }
       expr = expr.replace(match[0], variableMap[match[0]]);
       match = expr.match(regex);

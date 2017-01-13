@@ -979,7 +979,7 @@ const Parser = {
 			const expr = this.parseExpression(tokens);
 			this.gobble(tokens[this.index], ')');
 
-			return expr;
+			return "("+expr+")";
 		}
 		else{
 			const message = 'Unexpected ' + token.type + ' \'' + token.value + '\' found while attempting to parse an expression';

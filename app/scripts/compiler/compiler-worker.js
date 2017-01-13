@@ -6,6 +6,7 @@ onmessage = function(e){
   try{
     const tokens = Lexer.tokenise(code);
     const ast = Parser.parse(tokens);
+    console.log(ast);
     // check if this is to be compiled client side or server side
     if(context.isClientSide || context.isLocal){
       const compiled = Compiler.localCompile(ast, context);

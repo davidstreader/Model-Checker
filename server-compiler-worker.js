@@ -14,9 +14,7 @@ global.importScripts = (...files) => {
   }
 };
 importScripts("includes.js");
-let shouldSolve = false;
 onmessage = function (e) {
-  shouldSolve = e.data.solve;
   //Node appears to handle exceptions differently. Lets catch them and pass them back instead of killing the app.
   try {
     const compile = Compiler.localCompile(e.data.ast, e.data.context);
@@ -37,7 +35,6 @@ onmessage = function (e) {
   terminate();
 }
 function combineEdges(edge1,edge2) {
-  if (!shouldSolve) return null;
   const java = require("java");
   const baseDir = "lib";
   const dependencies = fs.readdirSync(baseDir);
