@@ -47,6 +47,21 @@ function interpretAutomaton(process, processesMap, context){
   processesMap[ident] = automaton;
 
   function interpretSubAutomaton(subProcess, automaton){
+    // check if the sub process is a reference to a global process
+    if(subProcess.type === 'identifier'){
+      const subAutomaton = processesMap[subProcess.ident].clone;
+      if(subProcess.label !== undefined){
+        processLabelling(subAutomaton, subProcess.label.action);
+      }
+
+      if(subProcess.relabel !== undefined){
+        processRelabelling(subAutomaton, subProcess.relabel.set);
+      }
+
+      processStack.push(subAutomaton);
+      return;
+    }
+
     // setup the sub automaton
     const subAutomaton = new Automaton(automaton.id);
     subAutomaton.nodeId = automaton.nodeId;
@@ -221,10 +236,7 @@ function interpretAutomaton(process, processesMap, context){
   }
 
   function processLabelling(automaton, label){
-    const alphabet = automaton.alphabet;
-    for(let action in alphabet){
-      automaton.relabelEdges(action, label + '.' + action);
-    }
+    automaton.relabel(label);
   }
 
   function processRelabelling(automaton, relabelSet){
