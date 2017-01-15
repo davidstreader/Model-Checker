@@ -192,7 +192,7 @@ function automataAbstraction(automaton, isFair, prune){
 	 * @return {object} - object representing an observable edge
 	 */
 	function ObservableEdge(from, to, label, edge, hiddenEdge){
-	  if (combineEdges) {
+	  if (typeof combineEdges !== 'undefined') {
       console.log(combineEdges(edge,hiddenEdge));
     }
 		return {

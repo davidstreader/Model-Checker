@@ -180,7 +180,10 @@ function interpretAutomaton(process, processesMap, context){
         return;
       case 'automata':
         processedAutomaton = tokenRule(processedAutomaton, 'toAutomaton');
-        break
+        break;
+      case 'nfa2dfa':
+        processedAutomaton = automataNFA2DFA(processedAutomaton);
+        break;
       default:
         break;
     }
