@@ -22,7 +22,7 @@ function automataAbstraction(automaton, isFair, prune){
 	// add the observable edges to the automaton
 	for(let key in observableEdgeMap){
 		const edge = observableEdgeMap[key];
-		automaton.addEdge(automaton.nextEdgeId, edge.label, automaton.getNode(edge.from), automaton.getNode(edge.to));
+	 automaton.addEdge(automaton.nextEdgeId, edge.label, automaton.getNode(edge.from), automaton.getNode(edge.to),{guard:edge.guard.guard});
 	}
 	// remove the hidden edges from the automaton
 	for(let i = 0; i < hiddenEdges.length; i++){
@@ -189,16 +189,24 @@ function automataAbstraction(automaton, isFair, prune){
 	 * @param {string} from - the node id the edge transitions from
 	 * @param {string} to - the node id the edge transitions to
 	 * @param {string} label - the action the edge represents
+	 * @param edge1 - the first edge that was merged
+	 * @param edge2 - the second edge that was merged
 	 * @return {object} - object representing an observable edge
 	 */
-	function ObservableEdge(from, to, label, edge, hiddenEdge){
-	  if (typeof combineEdges !== 'undefined') {
-      console.log(combineEdges(edge,hiddenEdge));
+	function ObservableEdge(from, to, label, edge1, edge2){
+		if (typeof combineEdges !== "undefined") {
+      return {
+        from: from,
+        to: to,
+        label: label,
+        guard: combineEdges(edge1, edge2)
+      };
+    } else {
+      return {
+        from: from,
+        to: to,
+        label: label
+      };
     }
-		return {
-      from : from,
-      to : to,
-      label : label
-    };
 	}
 }
