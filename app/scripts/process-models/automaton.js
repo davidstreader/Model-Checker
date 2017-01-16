@@ -269,6 +269,53 @@ const AUTOMATON = {
 		}
 	},
 
+	relabel: function(label){
+		for(let id in this.nodeMap){
+			const node = this.nodeMap[id];
+			node.id = label + ':' + node.id;
+
+			for(let edge in node.incomingEdgeSet){
+				node.incomingEdgeSet[label + ':' + edge] = true;
+				delete node.incomingEdgeSet[edge];
+			}
+			for(let edge in node.outgoingEdgeSet){
+				node.outgoingEdgeSet[label + ':' + edge] = true;
+				delete node.outgoingEdgeSet[edge];
+			}
+
+			for(let id in node.locationSet){
+				if(id === this.id){
+					node.locationSet[label + ':' + this.id] = true;
+					delete node.locationSet[id];
+				}
+			}
+
+			this.nodeMap[node.id] = node;
+			delete this.nodeMap[id];
+		}
+
+		for(let id in this.edgeMap){
+			const edge = this.edgeMap[id];
+			edge.id = label + ':' + edge.id;
+			edge.label = label + '.' + edge.label;
+			edge.from = label + ':' + edge.from;
+			edge.to = label + ':' + edge.to;
+
+			for(let id in edge.locationSet){
+				if(id === this.id){
+					edge.locationSet[label + ':' + this.id] = true;
+					delete edge.locationSet[id];
+				}
+			}
+
+			this.edgeMap[edge.id] = edge;
+			delete this.edgeMap[id];
+		}
+
+		this.id = label + ':' + this.id;
+		this.rootId = label + ':' + this.rootId;
+	},
+
 	trim: function(){
 		const visited = {};
 		const fringe = [this.root];
