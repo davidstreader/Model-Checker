@@ -1,25 +1,24 @@
 package net.modelsolver;
 
 import org.sosy_lab.java_smt.api.BooleanFormula;
+import org.sosy_lab.java_smt.api.FormulaManager;
 import org.sosy_lab.java_smt.api.IntegerFormulaManager;
 import org.sosy_lab.java_smt.api.NumeralFormulaManager;
 
 import java.util.*;
 import java.util.regex.Pattern;
 
-import static org.sosy_lab.java_smt.api.NumeralFormula.*;
+import static org.sosy_lab.java_smt.api.NumeralFormula.IntegerFormula;
 
-/**
- * Created by sanjay on 16/01/2017.
- */
-public class FormulaUtils {
+class FormulaUtils {
   /**
    * Convert a guard string to a list of BooleanFormulae
-   * @param expr the guard string
-   * @param imgr An integerFormulaManager
+   * @param expr The guard string
+   * @param fmgr A FormulaManager
    * @return a list of all parsed guards
    */
-  static List<BooleanFormula> parseGuards(String expr, IntegerFormulaManager imgr, Map<String, IntegerFormula> varMap) {
+  static BooleanFormula parseGuard(String expr, FormulaManager fmgr, Map<String, IntegerFormula> varMap) {
+    IntegerFormulaManager imgr = fmgr.getIntegerFormulaManager();
     List<BooleanFormula> list = new ArrayList<>();
     Stack<IntegerFormula> stack = new Stack<>();
     //Use a ShuntingYard algorithm to convert the expression to infixToPostfix, then parse the infixToPostfix notation
@@ -44,7 +43,7 @@ public class FormulaUtils {
         stack.push(parseForumla(imgr,token,varMap));
       }
     }
-    return list;
+    return combineAndSimplify(fmgr,list);
   }
 
 
@@ -55,7 +54,7 @@ public class FormulaUtils {
    * @param formula the formula to parse
    * @return an IntegerFormula either representing a variable or a value
    */
-  public static IntegerFormula parseForumla(IntegerFormulaManager imgr, String formula, Map<String,IntegerFormula> varMap) {
+  private static IntegerFormula parseForumla(IntegerFormulaManager imgr, String formula, Map<String, IntegerFormula> varMap) {
     //Directly make a number for digits
     if (formula.matches("^\\d*$")) {
       return imgr.makeNumber(Integer.parseInt(formula));
@@ -118,5 +117,18 @@ public class FormulaUtils {
       }
     }
     return null;
+  }
+
+  static BooleanFormula combineAndSimplify(FormulaManager fmgr, List<BooleanFormula> formulae) {
+    BooleanFormula formula = formulae.remove(0);
+    while (formulae.size() > 0) {
+      formula = fmgr.getBooleanFormulaManager().and(formula,formulae.remove(0));
+    }
+    try {
+      return fmgr.simplify(formula);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+    return formula;
   }
 }

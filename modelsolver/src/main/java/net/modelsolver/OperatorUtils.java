@@ -11,17 +11,6 @@ import java.util.Stack;
  * Utility methods for Infix2Postfix and Postfix2Infix
  */
 class OperatorUtils {
-  //Get a single regexp that can match all operators
-  static String getCombined() {
-    String combined = "(?="+String.join("|",ops.keySet());
-    combined = combined.replace("\\","\\\\");
-    combined = combined.replace("/","\\/");
-    combined += "|\\(|\\)"+")";
-    combined = combined.replace("*","\\*");
-    combined = combined.replace("+","\\+");
-    combined = combined+"|"+combined.replace("?=","?<=");
-    return combined;
-  }
   //A list of operators with precedence mappings.
   @AllArgsConstructor
   private enum Operator
@@ -35,7 +24,7 @@ class OperatorUtils {
   /**
    * A list of operations
    */
-  static Map<String, Operator> ops = new HashMap<String, Operator>() {{
+  private static Map<String, Operator> ops = new HashMap<String, Operator>() {{
     put("+", Operator.ADD);
     put("-", Operator.SUBTRACT);
     put("*", Operator.MULTIPLY);
@@ -50,12 +39,25 @@ class OperatorUtils {
   }};
 
   /**
+   * Get a single regexp that can match all operators
+   */
+  private static String getCombined() {
+    String combined = "(?="+String.join("|",ops.keySet());
+    combined = combined.replace("\\","\\\\");
+    combined = combined.replace("/","\\/");
+    combined += "|\\(|\\)"+")";
+    combined = combined.replace("*","\\*");
+    combined = combined.replace("+","\\+");
+    combined = combined+"|"+combined.replace("?=","?<=");
+    return combined;
+  }
+  /**
    * Check if one operator has a higher precedence than another
    * @param op1 the first operator
    * @param op2 the second operator
    * @return sub >= op
    */
-  static boolean isHigerPrec(String op1, String op2)
+  private static boolean isHigerPrec(String op1, String op2)
   {
     return (ops.containsKey(op2) && ops.get(op2).precedence >= ops.get(op1).precedence);
   }
@@ -67,11 +69,11 @@ class OperatorUtils {
     infix = infix.replaceAll("\\s","");
     StringBuilder output = new StringBuilder();
     Stack<String> stack  = new Stack<>();
-    String combined = OperatorUtils.getCombined();
+    String combined = getCombined();
     for (String token : infix.split(combined)) {
       //check if we have an operator
       if (OperatorUtils.ops.containsKey(token)) {
-        while (!stack.isEmpty() && OperatorUtils.isHigerPrec(token, stack.peek())) {
+        while (!stack.isEmpty() && isHigerPrec(token, stack.peek())) {
           output.append(stack.pop()).append(' ');
         }
         stack.push(token);
@@ -115,11 +117,9 @@ class OperatorUtils {
     tmp = tmp.substring(0,tmp.length()-2).replace("=","==");
     //Add a tmp symbol around brackets so we can split around them later.
     tmp = tmp.replaceAll("[(]","$0~").replaceAll("[)]","~$0");
-    //Split around spaces and the tmp symbol.
-    String[] split = tmp.split("[\\s]+|~");
     Stack<String> stack = new Stack<>();
-    //Loop over all tokens
-    for (String token: split) {
+    //Loop over all tokens (between space and tmp symbol)
+    for (String token: tmp.split("[\\s]+|~")) {
       //When we find a closing bracket, we know that all required args are in the stack.
       if (token.equals(")")) {
         //Read the first expression
@@ -133,7 +133,7 @@ class OperatorUtils {
         //Push the constructed expression to the stack
         stack.push("("+ex1+op+ex0+")");
       } else {
-        //Just push if we havent encountered a )
+        //Just push if we haven't encountered a )
         stack.push(token);
       }
     }

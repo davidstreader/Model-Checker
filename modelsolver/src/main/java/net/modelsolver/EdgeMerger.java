@@ -9,14 +9,9 @@ import org.sosy_lab.common.log.BasicLogManager;
 import org.sosy_lab.common.log.LogManager;
 import org.sosy_lab.java_smt.SolverContextFactory;
 import org.sosy_lab.java_smt.SolverContextFactory.Solvers;
-import org.sosy_lab.java_smt.api.BooleanFormula;
-import org.sosy_lab.java_smt.api.FormulaManager;
-import org.sosy_lab.java_smt.api.ProverEnvironment;
-import org.sosy_lab.java_smt.api.SolverContext;
+import org.sosy_lab.java_smt.api.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * This class allows you to solve guard information via an SMTSolver.
@@ -42,25 +37,15 @@ public class EdgeMerger {
       Configuration config = Configuration.defaultConfiguration();
       LogManager logger = BasicLogManager.create(config);
       ShutdownNotifier notifier = ShutdownNotifier.createDummy();
-      JSONObject ret = new JSONObject();
-      boolean success;
       // create the solver context, which includes all necessary parts for building, manipulating,
       // and solving formulas.
       try (SolverContext context =
              SolverContextFactory.createSolverContext(config, logger, notifier, Solvers.SMTINTERPOL)) {
         FormulaManager fmgr = context.getFormulaManager();
-        try (ProverEnvironment prover = context.newProverEnvironment()) {
-          guard1.getConstraints(fmgr).forEach(prover::addConstraint);
-          guard2.getConstraints(fmgr).forEach(prover::addConstraint);
-          //Check if all the constraints are satisfiable
-          success = !prover.isUnsat();
-
-        }
-        ret.put("success", success);
-
+        boolean isSatisfied = checkSatisfied(context,guard1.getFormula(fmgr),guard2.getFormula(fmgr));
         Map<String,String> nextMap = new HashMap<>();
         for (String var: guard1.next) {
-          //Some symbols have an extra = sign, so to avoid issues, we can splce it out here.
+          //Some symbols have an extra = sign, so to avoid issues, we can splice it out here.
           var = var.replaceAll("(.)=?","$1");
           //If we encounter an assignment operator, just replace with the result.
           //Otherwise, replace with the operation itself
@@ -75,23 +60,34 @@ public class EdgeMerger {
         }
         //And guard1 and guard2 together
         guard = guard1.guard+"&&"+guard;
-        //Create a booleanformula of the resultant equation
-        List<BooleanFormula> formulas = FormulaUtils.parseGuards(guard,fmgr.getIntegerFormulaManager(),new HashMap<>());
-        BooleanFormula formula = formulas.remove(0);
-        while (formulas.size() > 0) {
-          formula = fmgr.getBooleanFormulaManager().and(formula,formulas.remove(0));
-        }
-        //Simplify and Convert the formula to infix (its dumped as postfix)
-        result.guard = OperatorUtils.postfixToInfix(fmgr.dumpFormula(fmgr.simplify(formula)));
-        //At this point, procGuard is the expression.
-        result.procGuard = success+"";
+        //Convert the guard to a BooleanFormula
+        BooleanFormula formulas = FormulaUtils.parseGuard(guard, fmgr, Collections.emptyMap());
+        //Convert the formula to infix (its dumped as postfix)
+        result.guard = OperatorUtils.postfixToInfix(fmgr.dumpFormula(formulas));
+        //At this point, procGuard is the result.
+        result.procGuard = isSatisfied+"";
         result.next = guard2.next;
-        ret.put("guard",new JSONObject(gson.toJson(result)));
+        return gson.toJson(result);
       }
-      return ret.toString();
     } catch (Exception ex) {
       ex.printStackTrace();
       return null;
+    }
+  }
+
+  /**
+   * Check if a set of formula results in an equation that is satisfiable
+   * @param context A solver context to perform the check in
+   * @param formulae The formulae to validate
+   * @return true if satisfiable, false otherwise
+   * @throws SolverException There was an exception while trying to solve
+   * @throws InterruptedException The thread was interrupted while we attempted to solve
+   */
+  private boolean checkSatisfied(SolverContext context, BooleanFormula... formulae) throws SolverException, InterruptedException {
+    try (ProverEnvironment prover = context.newProverEnvironment()) {
+      Arrays.stream(formulae).forEach(prover::addConstraint);
+      //Check if all the constraints are satisfiable
+      return !prover.isUnsat();
     }
   }
 }

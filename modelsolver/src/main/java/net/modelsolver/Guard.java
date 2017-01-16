@@ -1,13 +1,15 @@
 package net.modelsolver;
 
 import lombok.ToString;
-import org.sosy_lab.java_smt.api.*;
+import org.sosy_lab.java_smt.api.BooleanFormula;
+import org.sosy_lab.java_smt.api.FormulaManager;
+import org.sosy_lab.java_smt.api.IntegerFormulaManager;
 import org.sosy_lab.java_smt.api.NumeralFormula.IntegerFormula;
 
-import java.util.*;
-import java.util.regex.Pattern;
+import java.util.HashMap;
+import java.util.Map;
 
-import static net.modelsolver.FormulaUtils.parseGuards;
+import static net.modelsolver.FormulaUtils.parseGuard;
 
 /**
  * A guard, automatically created from JSON via GSON.
@@ -30,14 +32,20 @@ class Guard {
    * The processed guard, this contains all known variables already substituted in.
    */
   String procGuard;
-  private Map<String,IntegerFormula> varMap = new HashMap<>();
-  public List<BooleanFormula> getConstraints(FormulaManager mgr) {
+
+  /**
+   * Get a BooleanFormula from the guard
+   * @param mgr A FormulaManager for creating the formulae
+   * @return A BooleanFp
+   */
+  BooleanFormula getFormula(FormulaManager mgr) {
     IntegerFormulaManager imgr = mgr.getIntegerFormulaManager();
-    //We need to load in all variables as the guard may reference them
+    //Create a map of variables
+    Map<String,IntegerFormula> varMap = new HashMap<>();
     for (String var : variables) {
       String[] split = var.split("=");
       varMap.put(split[0],imgr.makeNumber(Integer.parseInt(split[1])));
     }
-    return parseGuards(procGuard,imgr,varMap);
+    return parseGuard(procGuard,mgr,varMap);
   }
 }
