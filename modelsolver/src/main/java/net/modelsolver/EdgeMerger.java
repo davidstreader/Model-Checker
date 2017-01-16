@@ -61,7 +61,7 @@ public class EdgeMerger {
         //And guard1 and guard2 together
         guard = guard1.guard+"&&"+guard;
         //Convert the guard to a BooleanFormula
-        BooleanFormula formulas = FormulaUtils.parseGuard(guard, fmgr, Collections.emptyMap());
+        BooleanFormula formulas = FormulaUtils.parseGuard(guard, fmgr, new HashMap<>());
         //Convert the formula to infix (its dumped as postfix)
         result.guard = OperatorUtils.postfixToInfix(fmgr.dumpFormula(formulas));
         //At this point, procGuard is the result.
