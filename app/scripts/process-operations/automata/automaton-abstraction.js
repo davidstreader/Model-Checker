@@ -22,7 +22,11 @@ function automataAbstraction(automaton, isFair, prune){
 	// add the observable edges to the automaton
 	for(let key in observableEdgeMap){
 		const edge = observableEdgeMap[key];
-	 automaton.addEdge(automaton.nextEdgeId, edge.label, automaton.getNode(edge.from), automaton.getNode(edge.to),{guard:edge.guard.guard});
+		const metadata = {};
+		if (edge.guard) {
+		  metadata.guard = edge.guard.guard;
+    }
+	 automaton.addEdge(automaton.nextEdgeId, edge.label, automaton.getNode(edge.from), automaton.getNode(edge.to),metadata);
 	}
 	// remove the hidden edges from the automaton
 	for(let i = 0; i < hiddenEdges.length; i++){
