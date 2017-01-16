@@ -90,8 +90,8 @@ function combineEdges(edge1,edge2) {
     java.classpath.push(baseDir + "/" + dependency);
   });
   //Initilize a solver
-  const Solver = java.import('net.modelsolver.Solver');
+  const EdgeMerger = java.import('net.modelsolver.EdgeMerger');
   //Solve
-  const ret = JSON.parse(new Solver().solveSync(JSON.stringify({edge1:edge1,edge2:edge2})));
-  return ret;
+
+  return JSON.parse(new EdgeMerger().mergeEdgesSync(JSON.stringify(edge1),JSON.stringify(edge2)));
 }

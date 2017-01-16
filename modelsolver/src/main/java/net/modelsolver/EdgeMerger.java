@@ -21,23 +21,19 @@ import java.util.Map;
 /**
  * This class allows you to solve guard information via an SMTSolver.
  */
-public class Solver {
+public class EdgeMerger {
   /**
    * Pull guard data from edgeJSON, parsing it then turning it into a series of constraints
-   * @param edgeJSON Edge data in the format {edge1:edge1,edge2:edge2}
+   * @param edge1JSON JSON data from the first edge to merge
+   * @param edge2JSON JSON data from the second edge to merge
    * @return Results from the solver
    */
-  public String solve(String edgeJSON) {
+  public String mergeEdges(String edge1JSON, String edge2JSON) {
     try {
-      //Create a JSONObject from the passed in data
-      JSONObject edges = new JSONObject(edgeJSON);
-      JSONObject guard1JSON = edges.getJSONObject("edge1").optJSONObject("metaData");
-      JSONObject guard2JSON = edges.getJSONObject("edge2").optJSONObject("metaData");
+      JSONObject guard1JSON = new JSONObject(edge1JSON).getJSONObject("metaData").optJSONObject("guard");
+      JSONObject guard2JSON = new JSONObject(edge2JSON).getJSONObject("metaData").optJSONObject("guard");
       //If either edge has no guard then nothing needs to be done.
       if (guard1JSON == null || guard2JSON == null) return null;
-      //Get the guards themselves
-      guard1JSON = guard1JSON.getJSONObject("guard");
-      guard2JSON = guard2JSON.getJSONObject("guard");
       Gson gson = new GsonBuilder().create();
       //Turn the above guard into a Guard object
       Guard guard1 = gson.fromJson(guard1JSON.toString(), Guard.class);
@@ -71,18 +67,22 @@ public class Solver {
           nextMap.put(var.split("\\W")[0],var.contains(":")?var.split(":")[1]:var);
         }
         Guard result = new Guard();
+        //Replace all outgoing variables from guard1 in guard2
         String guard = guard2.guard;
         for (String key: nextMap.keySet()) {
           //to avoid partial matches, surround the key with word boundaries.
           guard = guard.replaceAll("(\\b)"+key+"(\\b)","("+nextMap.get(key)+")");
         }
+        //And guard1 and guard2 together
         guard = guard1.guard+"&&"+guard;
+        //Create a booleanformula of the resultant equation
         List<BooleanFormula> formulas = FormulaUtils.parseGuards(guard,fmgr.getIntegerFormulaManager(),new HashMap<>());
         BooleanFormula formula = formulas.remove(0);
         while (formulas.size() > 0) {
           formula = fmgr.getBooleanFormulaManager().and(formula,formulas.remove(0));
         }
-        result.guard = guard;
+        //Simplify and Convert the formula to infix (its dumped as postfix)
+        result.guard = OperatorUtils.postfixToInfix(fmgr.dumpFormula(fmgr.simplify(formula)));
         //At this point, procGuard is the expression.
         result.procGuard = success+"";
         result.next = guard2.next;
