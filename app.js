@@ -1,10 +1,12 @@
+var isWin = /^win/.test(process.platform);
 const fs = require('fs');
 const Worker = require("tiny-worker");
 const workerMap = {};
 //Allow executing programs
 const execSync = require('child_process').execSync;
 //run gradlew and build the project to generate a lib folder.
-execSync('gradlew build', {cwd: 'modelsolver', stdio:'inherit'});
+
+execSync((isWin?"":"./")+'gradlew build', {cwd: 'modelsolver', stdio:'inherit'});
 const express = require('express');
 const app = express();
 const http = require('http').Server(app);
