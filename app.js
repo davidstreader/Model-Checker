@@ -1,4 +1,4 @@
-var isWin = /^win/.test(process.platform);
+const isWin = /^win/.test(process.platform);
 const fs = require('fs');
 const Worker = require("tiny-worker");
 const workerMap = {};

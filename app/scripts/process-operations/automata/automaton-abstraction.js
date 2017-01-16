@@ -24,7 +24,7 @@ function automataAbstraction(automaton, isFair, prune){
 		const edge = observableEdgeMap[key];
 		const metadata = {};
 		if (edge.guard) {
-		  metadata.guard = edge.guard.guard;
+		  metadata.guard = edge.guard;
     }
 	 automaton.addEdge(automaton.nextEdgeId, edge.label, automaton.getNode(edge.from), automaton.getNode(edge.to),metadata);
 	}
