@@ -81,3 +81,17 @@ function failTxt(compile) {
     assert(compile.type ==='error', "fail.txt compiled successfully");
   });
 }
+function combineEdges(edge1,edge2) {
+  const java = require("java");
+  const baseDir = "lib";
+  const dependencies = fs.readdirSync(baseDir);
+  //Load java dependancies
+  dependencies.forEach(function(dependency){
+    java.classpath.push(baseDir + "/" + dependency);
+  });
+  //Initilize a solver
+  const Solver = java.import('net.modelsolver.Solver');
+  //Solve
+  const ret = JSON.parse(new Solver().solveSync(JSON.stringify({edge1:edge1,edge2:edge2})));
+  return ret;
+}
