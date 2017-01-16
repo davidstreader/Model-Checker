@@ -111,10 +111,13 @@ class OperatorUtils {
     String tmp = res[res.length-1];
     //Remove the assert from the result
     tmp = tmp.replace("(assert ","");
+    boolean isAnd = tmp.contains("and");
     //Remove the and function from the result, we can and everything later.
     tmp = tmp.replace("(and ","");
+    //The assert and and functions leave extra brackets that need to be stripped.
+    tmp = tmp.substring(0,tmp.length()-(isAnd?2:1));
     //MathSMT returns = instead of == for comparisons.
-    tmp = tmp.substring(0,tmp.length()-2).replace("=","==");
+    tmp =tmp.replace("=","==");
     //Add a tmp symbol around brackets so we can split around them later.
     tmp = tmp.replaceAll("[(]","$0~").replaceAll("[)]","~$0");
     Stack<String> stack = new Stack<>();

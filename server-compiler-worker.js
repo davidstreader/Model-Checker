@@ -1,6 +1,16 @@
 const fs = require('fs');
 const vm = require("vm");
-const stringify = require('fast-stable-stringify');;
+const stringify = require('fast-stable-stringify');
+
+const java = require("java");
+const baseDir = "lib";
+const dependencies = fs.readdirSync(baseDir);
+//Load java dependancies
+dependencies.forEach(function(dependency){
+  java.classpath.push(baseDir + "/" + dependency);
+});
+//Initilize a solver
+const EdgeMerger = java.import('net.modelsolver.EdgeMerger')();
 global.importScripts = (...files) => {
   let scripts;
 
@@ -35,16 +45,9 @@ onmessage = function (e) {
   terminate();
 }
 function combineEdges(edge1,edge2) {
-  const java = require("java");
-  const baseDir = "lib";
-  const dependencies = fs.readdirSync(baseDir);
-  //Load java dependancies
-  dependencies.forEach(function(dependency){
-    java.classpath.push(baseDir + "/" + dependency);
-  });
-  //Initilize a solver
-  const EdgeMerger = java.import('net.modelsolver.EdgeMerger');
   //Solve
-
-  return JSON.parse(new EdgeMerger().mergeEdgesSync(JSON.stringify(edge1),JSON.stringify(edge2)));
+  return JSON.parse(EdgeMerger.mergeEdgesSync(JSON.stringify(edge1),JSON.stringify(edge2)));
+}
+function simplify(expr) {
+  return EdgeMerger.simplifyExpressionSync(expr);
 }
