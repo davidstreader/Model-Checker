@@ -19,7 +19,7 @@ function automataNFA2DFA(automaton) {
   const table2 = {};
   let stack = [];
   //TODO: incase the first is a tau, we should really get the tau clousure of root
-  stack.push([label(automaton.root)]);
+  stack.push(clousure(automaton.root));
   delete alpha[TAU];
   while (stack.length > 0) {
     const curList = stack.pop();
@@ -56,5 +56,11 @@ function automataNFA2DFA(automaton) {
   function label(n) {
     if (typeof n == "string") n = automaton.getNode(n);
     return n.metaData.label;
+  }
+  function clousure(node) {
+    let ret = [label(node)];
+    const outgoing = Object.keys(node.outgoingEdgeSet).map(e=>automaton.getEdge(e));
+    console.log(outgoing);
+    return ret;
   }
 }

@@ -6,3 +6,6 @@ automata {
     B = nfa2dfa(A).
     C = abs(A).
 }
+operation {
+    A # B.
+}
