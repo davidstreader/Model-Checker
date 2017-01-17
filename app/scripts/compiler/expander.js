@@ -308,7 +308,7 @@ function expand(ast){
       const guard = processExpression(astNode.guard, variableMap);
       const variables = processVariables(astNode.guard, variableMap);
       let guardStr = guard.exprWithVars;
-      if (simplify) guardStr = simplify(guardStr);
+      if (typeof simplify != "undefined") guardStr = simplify(guardStr);
       node.guardMetadata = {next: next, guard: guardStr, procGuard: guard.expr, variables:variables};
     }
     return node;
