@@ -4,8 +4,7 @@ import org.json.JSONObject;
 
 public class JSONToASTConverter {
 
-	public void convert(String json){
-		JSONObject ast = new JSONObject(json);
+	public void convert(JSONObject ast){
 		System.out.println("done");
 	}
 
