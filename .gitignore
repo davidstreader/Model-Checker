@@ -38,3 +38,5 @@ results.txt
 modelsolver/.gradle
 modelsolver/build
 run
+/modelchecker/.gradle/
+/modelchecker/build/
