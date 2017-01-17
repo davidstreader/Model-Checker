@@ -1,2 +1,3 @@
 rootProject.name = 'modelchecker'
-
+include(":modelsolver")
+project(':modelsolver').projectDir = new File(settingsDir, '../modelsolver')

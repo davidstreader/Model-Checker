@@ -1,4 +1,4 @@
-package net.modelsolver;
+package mc.solver;
 
 import lombok.AllArgsConstructor;
 import org.sosy_lab.common.Appender;

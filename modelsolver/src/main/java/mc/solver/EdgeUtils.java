@@ -1,4 +1,4 @@
-package net.modelsolver;
+package mc.solver;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -17,7 +17,7 @@ import java.util.*;
 /**
  * This class allows you to solve guard information via an SMTSolver.
  */
-public class EdgeMerger {
+public class EdgeUtils {
   /**
    * Pull guard data from edgeJSON, parsing it then turning it into a series of constraints
    * @param edge1JSON JSON data from the first edge to merge
@@ -34,6 +34,22 @@ public class EdgeMerger {
       //Turn the above guard into a Guard object
       Guard guard1 = gson.fromJson(guard1JSON.toString(), Guard.class);
       Guard guard2 = gson.fromJson(guard2JSON.toString(), Guard.class);
+      return gson.toJson(mergeEdges(guard1,guard2));
+
+    } catch (Exception ex) {
+      ex.printStackTrace();
+      return null;
+    }
+  }
+
+  /**
+   * Merge the guards from two edges together
+   * @param guard1 The guard from the first edge
+   * @param guard2 The guard from the second edge
+   * @return A resultant guard generated from merging the edges
+   */
+  public Guard mergeEdges(Guard guard1, Guard guard2) {
+    try {
       FormulaManager fmgr = getContext().getFormulaManager();
       boolean isSatisfied = checkSatisfied(guard1.getFormula(fmgr),guard2.getFormula(fmgr));
       Map<String,String> nextMap = new HashMap<>();
@@ -60,14 +76,13 @@ public class EdgeMerger {
       //At this point, procGuard is the result.
       result.procGuard = isSatisfied+"";
       result.next = guard2.next;
-      return gson.toJson(result);
+      return result;
 
     } catch (Exception ex) {
       ex.printStackTrace();
       return null;
     }
   }
-
   /**
    * Check if a set of formula results in an equation that is satisfiable
    * @param formulae The formulae to validate

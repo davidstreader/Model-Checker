@@ -1,4 +1,4 @@
-package net.modelsolver;
+package mc.solver;
 
 import org.sosy_lab.java_smt.api.BooleanFormula;
 import org.sosy_lab.java_smt.api.FormulaManager;
