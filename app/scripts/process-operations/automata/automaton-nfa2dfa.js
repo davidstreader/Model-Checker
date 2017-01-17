@@ -59,8 +59,8 @@ function automataNFA2DFA(automaton) {
   }
   function clousure(node) {
     let ret = [label(node)];
-    const outgoing = Object.keys(node.outgoingEdgeSet).map(e=>automaton.getEdge(e));
-    console.log(outgoing);
+    const outgoing = Object.keys(node.outgoingEdgeSet).map(e=>automaton.getEdge(e)).filter(e=>e.label==TAU).map(e => label(e.to));
+    ret = ret.concat(outgoing);
     return ret;
   }
 }
