@@ -6,7 +6,7 @@ const workerMap = {};
 const execSync = require('child_process').execSync;
 //run gradlew and build the project to generate a lib folder.
 
-execSync((isWin?"":"./")+'gradlew build', {cwd: 'modelsolver', stdio:'inherit'});
+execSync((isWin?"":"./")+'gradlew build', {cwd: 'modelchecker', stdio:'inherit'});
 const express = require('express');
 const app = express();
 const http = require('http').Server(app);
