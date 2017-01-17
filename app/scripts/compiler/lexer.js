@@ -10,7 +10,7 @@ const Lexer = {
   keywords: { 'const':true, 'range':true, 'set':true, 'if':true, 'then':true, 'else':true, 'when':true, 'forall':true },
   symbols: '(\\.\\.|\\.|,|:|\\[|\\]|\\(|\\)|\\{|\\}|->|~>|\\\\|@|\\$|\\?)',
   operators: '(\\|\\||\\||&&|&|\\^|==|=|!=|<<|<=|<|>>|>=|>|\\+|-|\\*|/|%|!|\\?)',
-  operations: '~',
+  operations: '~|#',
   singleLineCommentStart: '//',
   multiLineCommentStart: '/\\*',
 

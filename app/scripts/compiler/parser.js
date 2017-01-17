@@ -915,6 +915,9 @@ const Parser = {
 			case '~':
 				this.gobble(token, '~');
 				return 'bisimulation';
+      case '#':
+        this.gobble(token, '#');
+        return 'traceequivilant'
 			default:
 				const message = 'Recieved invalid operation operator \'' + token.value + '\'';
 				throw new ParserException(message, token.location);

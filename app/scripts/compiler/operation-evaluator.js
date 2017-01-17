@@ -1,15 +1,24 @@
 'use strict';
 
-var results;
-var opId;
-var idents;
+let results;
+let opId;
+let idents;
 
 function evaluateOperations(operations, processesMap, variableMap){
 	reset();
 
-	for(var i = 0; i < operations.length; i++){
-    var op = operations[i].isNegated ? '!~' : '~';
-		var {process1, process2} = operations[i];
+	for(let i = 0; i < operations.length; i++){
+	  let op;
+	  switch (operations[i].operation) {
+      case "bisimular":
+        op = "~";
+        break;
+      case "traceequivilant":
+        op = "#";
+        break;
+    }
+    if (operations[i].isNegated) op = "!"+op;
+		let {process1, process2} = operations[i];
 		const process1Err = !processesMap[getIdent(process1)];
     const process2Err = !processesMap[getIdent(process2)];
 
@@ -21,10 +30,17 @@ function evaluateOperations(operations, processesMap, variableMap){
       results.push({ operation:op, process1:process1, process2:process2, result:"notfound" });
 		  continue;
     }
-		var graph1 = interpretOneOff(generateProcessIdent(), process1, 'automata', processesMap, variableMap);
-		var graph2 = interpretOneOff(generateProcessIdent(), process2, 'automata', processesMap, variableMap);
-
-		var result = areBisimular([graph1, graph2], 'automata');
+		const graph1 = interpretOneOff(generateProcessIdent(), process1, 'automata', processesMap, variableMap);
+		const graph2 = interpretOneOff(generateProcessIdent(), process2, 'automata', processesMap, variableMap);
+		let result;
+		switch (operations[i].operation) {
+      case "bisimular":
+        result = areBisimular([graph1, graph2], 'automata');
+        break;
+      case "traceequivilant":
+        result = areTraceEquivilant([graph1, graph2], 'automata');
+        break;
+    }
 		if(operations[i].isNegated){
 			result = !result;
 		}
@@ -35,14 +51,14 @@ function evaluateOperations(operations, processesMap, variableMap){
 		results.push({ operation:op, process1:process1, process2:process2, result:result });
 	}
 
-	for(var i = 0; i < idents.length; i++){
+	for(let i = 0; i < idents.length; i++){
 		delete processesMap[idents[i]];
 	}
 
 	return results;
 
 	function generateProcessIdent(){
-		var ident = 'op' + opId++;
+		const ident = 'op' + opId++;
 		idents.push(ident);
 		return ident;
 	}

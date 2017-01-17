@@ -311,7 +311,6 @@ const AUTOMATON = {
 			this.edgeMap[edge.id] = edge;
 			delete this.edgeMap[id];
 		}
-
 		this.id = label + ':' + this.id;
 		this.rootId = label + ':' + this.rootId;
 	},

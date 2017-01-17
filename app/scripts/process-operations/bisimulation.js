@@ -20,3 +20,6 @@ function bisimulation(){
 function areBisimular(processes){
 	return automataBisimulation(processes);
 }
+function areTraceEquivilant(processes) {
+  return areBisimular([automataNFA2DFA(processes[0]),automataNFA2DFA(processes[1])], 'automata');
+}
