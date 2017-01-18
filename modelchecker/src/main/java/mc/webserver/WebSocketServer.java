@@ -21,7 +21,7 @@ public class WebSocketServer {
     server.start();
     server.addEventListener("compile",Map.class, (client, data, ackSender) -> {
       JSONObject ast = new JSONObject(data);
-      new JSONToASTConverter().convert(ast);
+      System.out.println(new JSONToASTConverter().convert(ast));
     });
   }
 }

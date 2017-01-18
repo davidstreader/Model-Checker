@@ -41,8 +41,7 @@ public class JSONToASTConverter {
 
 	private Map<String, String> variableMap;
 
-	public AbstractSyntaxTree convert(String json){
-		JSONObject ast = new JSONObject(json);
+	public AbstractSyntaxTree convert(JSONObject ast){
 		JSONObject variables = ast.getJSONObject("variableMap");
 		constructVariableMap(variables);
 
