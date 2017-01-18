@@ -1102,6 +1102,7 @@ const Parser = {
         throw new ParserException(message, token.location);
     }
   }, processExpression:function(expr){
+      if (typeof expr == 'number') return expr;
     // replace any variables declared in the expression with its value
     var regex = '[\$][a-zA-Z0-9]*';
     var match = expr.match(regex);
@@ -1118,10 +1119,10 @@ const Parser = {
       match = expr.match(regex);
     }
     if (missing) {
-      return {result:expr}
+      return expr;
     }
     //Web workers can not use eval and evaluate. This is an alternative.
-    return {result:new Function('return '+expr)()};
+    return new Function('return '+expr)();
   },
   processUnaryOperator: function(operator, value){
     //Parse the expression fully, and find a value for it
@@ -1129,14 +1130,14 @@ const Parser = {
     switch(operator.value){
       //You can only add or subtract from integers.
       case '+':
-        if (typeof realVal.result == 'number')
-          return realVal.result;
-        if (typeof realVal.result == 'string' && /^[^><=]*$/.exec(realVal.result))
+        if (typeof realVal == 'number')
+          return realVal;
+        if (typeof realVal == 'string' && /^[^><=]*$/.exec(realVal))
           return value;
       case '-':
-        if (typeof realVal.result == 'number')
-          return -realVal.result;
-        if (typeof realVal.result == 'string' && /^[^><=]*$/.exec(realVal.result))
+        if (typeof realVal == 'number')
+          return -realVal;
+        if (typeof realVal == 'string' && /^[^><=]*$/.exec(realVal))
           return "-"+value;
         let message = 'Unable to parse dangling unary operator \'' + operator.value + '\'';
         throw new ParserException(message, operator.location);
