@@ -48,7 +48,6 @@
                   };
                 }));
               });
-              console.log(mapped);
               callback(null, mapped);
             }
           };

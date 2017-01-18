@@ -34,3 +34,9 @@ fabric.properties
 results.txt
 /app/elements/elements.vulcanized.html
 /lib/
+.DS_Store
+modelsolver/.gradle
+modelsolver/build
+run
+/modelchecker/.gradle/
+/modelchecker/build/

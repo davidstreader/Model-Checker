@@ -1,4 +1,4 @@
-package net.modelsolver;
+package mc.solver;
 
 import lombok.ToString;
 import org.sosy_lab.java_smt.api.BooleanFormula;
@@ -9,13 +9,11 @@ import org.sosy_lab.java_smt.api.NumeralFormula.IntegerFormula;
 import java.util.HashMap;
 import java.util.Map;
 
-import static net.modelsolver.FormulaUtils.parseGuard;
-
 /**
  * A guard, automatically created from JSON via GSON.
  */
 @ToString
-class Guard {
+public class Guard {
   /**
    * Output variables
    */
@@ -46,6 +44,6 @@ class Guard {
       String[] split = var.split("=");
       varMap.put(split[0],imgr.makeNumber(Integer.parseInt(split[1])));
     }
-    return parseGuard(procGuard,mgr,varMap);
+    return FormulaUtils.parseGuard(procGuard,mgr,varMap);
   }
 }

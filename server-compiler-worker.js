@@ -10,7 +10,7 @@ dependencies.forEach(function(dependency){
   java.classpath.push(baseDir + "/" + dependency);
 });
 //Initilize a solver
-const EdgeMerger = java.import('net.modelsolver.EdgeMerger')();
+const EdgeMerger = java.import('mc.solver.EdgeUtils')();
 global.importScripts = (...files) => {
   let scripts;
 

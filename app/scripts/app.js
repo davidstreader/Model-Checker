@@ -24,24 +24,23 @@
     app.loaded = app.loaded || false;
     app.saveSettings = {currentFile: '', saveCode: true, saveLayout: true};
     app.decoder = new TextDecoder("UTF-8");
-    if (typeof io !== 'undefined') {
-      app.socket = io();
-      app.socket.on('connect', ()=>{
-        app.isClientSide = false;
-        app.loaded = true;
-        if (app.liveCompiling)
-          app.compile();
-      });
-      app.socket.on('log',data => {
-        if (data.clear) app.$.console.clear();
-        app.$.console.log(data.message);
-      });
-      app.socket.on('disconnect', function() {
-        app.isClientSide = true;
-        app.$.console.log("You have been disconnected from the server.");
-        app.$.console.log("As a result, your last compilation may not have completed successfully.");
-      });
-    }
+    app.socket = io(location.protocol+'//'+location.hostname+":5000");
+    app.socket.on('connect', ()=>{
+      app.isClientSide = false;
+      app.loaded = true;
+      if (app.liveCompiling)
+        app.compile();
+    });
+    app.socket.on('log',data => {
+      if (data.clear) app.$.console.clear();
+      app.$.console.log(data.message);
+    });
+    app.socket.on('disconnect', function() {
+      app.isClientSide = true;
+      app.$.console.log("You have been disconnected from the server.");
+      app.$.console.log("As a result, your last compilation may not have completed successfully.");
+    });
+
     app.compile = function(overrideBuild) {
       const code = app.getCode();
       if(!overrideBuild){

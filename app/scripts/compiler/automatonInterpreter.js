@@ -259,7 +259,8 @@ function interpretAutomaton(process, processesMap, context){
       }
 
       visited[current.id] = true;
-      current.metaData.label = label++;
+      if (!current.metaData.label)
+        current.metaData.label = label++;
 
       const neighbours = current.outgoingEdges.map(id => automaton.getEdge(id)).map(e => automaton.getNode(e.to));
       for(let i = 0; i < neighbours.length; i++){

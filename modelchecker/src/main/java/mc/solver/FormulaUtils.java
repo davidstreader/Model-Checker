@@ -1,9 +1,6 @@
-package net.modelsolver;
+package mc.solver;
 
-import org.sosy_lab.java_smt.api.BooleanFormula;
-import org.sosy_lab.java_smt.api.FormulaManager;
-import org.sosy_lab.java_smt.api.IntegerFormulaManager;
-import org.sosy_lab.java_smt.api.NumeralFormulaManager;
+import org.sosy_lab.java_smt.api.*;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -19,31 +16,44 @@ class FormulaUtils {
    */
   static BooleanFormula parseGuard(String expr, FormulaManager fmgr, Map<String, IntegerFormula> varMap) {
     IntegerFormulaManager imgr = fmgr.getIntegerFormulaManager();
-    List<BooleanFormula> list = new ArrayList<>();
-    Stack<IntegerFormula> stack = new Stack<>();
+    Stack<Object> stack = new Stack<>();
     //Use a ShuntingYard algorithm to convert the expression to infixToPostfix, then parse the infixToPostfix notation
     String[] tokens = OperatorUtils.infixToPostfix(expr).split("\\s+");
     for (String token: tokens) {
       //We can just not deal with this, and then we are returned a list of all guards.
-      if (Objects.equals(token, "&&")) continue;
+      if (Objects.equals(token, "&&")) {
+        BooleanFormula right = (BooleanFormula) stack.pop();
+        BooleanFormula left = (BooleanFormula) stack.pop();
+        stack.push(fmgr.getBooleanFormulaManager().and(left,right));
+        continue;
+      }
+      if (Objects.equals(token, "!")) {
+        stack.push("!");
+        continue;
+      }
       Pattern tmp = findInMap(token, operationMap);
       Pattern tmp2 = findInMap(token, comparisonMap);
       if (tmp != null) {
         //We have found an operation.
         //Apply the operation to its args then push the result to the stack
-        stack.push(operationMap.get(tmp).apply(imgr, stack.pop(), stack.pop()));
+        stack.push(operationMap.get(tmp).apply(imgr, (IntegerFormula)stack.pop(), (IntegerFormula)stack.pop()));
       } else if (tmp2 != null) {
         //Since AND is such a low priority, it will be as far to the right as possible.
         //Because of this, we can just take its args from the stack and work out the guard.
         //Because of how things are parsed, we need to do comparisons in reverse.
-        IntegerFormula right = stack.pop();
-        IntegerFormula left = stack.pop();
-        list.add(comparisonMap.get(tmp2).compare(imgr, left,right));
+        IntegerFormula right = (IntegerFormula) stack.pop();
+        IntegerFormula left = (IntegerFormula) stack.pop();
+        if (!stack.isEmpty() && stack.peek().equals("!")) {
+          stack.pop();
+          stack.push(fmgr.getBooleanFormulaManager().not(comparisonMap.get(tmp2).compare(fmgr, left,right)));
+          continue;
+        }
+        stack.push(comparisonMap.get(tmp2).compare(fmgr, left,right));
       } else {
         stack.push(parseForumla(imgr,token,varMap));
       }
     }
-    return combineAndSimplify(fmgr,list);
+    return simplify(fmgr,(BooleanFormula)stack.pop());
   }
 
 
@@ -83,11 +93,13 @@ class FormulaUtils {
    */
   private static Map<Pattern,Comparison> comparisonMap = new HashMap<Pattern,Comparison>(){
     {
-      put(Pattern.compile("<"), NumeralFormulaManager::lessThan);
-      put(Pattern.compile(">"), NumeralFormulaManager::greaterThan);
-      put(Pattern.compile("<="), NumeralFormulaManager::lessOrEquals);
-      put(Pattern.compile(">="), NumeralFormulaManager::greaterOrEquals);
-      put(Pattern.compile("=="), NumeralFormulaManager::equal);
+      put(Pattern.compile("<"), ((mgr, a, b) -> mgr.getIntegerFormulaManager().lessThan(a,b)));
+      put(Pattern.compile(">"), ((mgr, a, b) -> mgr.getIntegerFormulaManager().greaterThan(a,b)));
+      put(Pattern.compile("<="), ((mgr, a, b) -> mgr.getIntegerFormulaManager().lessOrEquals(a,b)));
+      put(Pattern.compile(">="), ((mgr, a, b) -> mgr.getIntegerFormulaManager().greaterOrEquals(a,b)));
+      put(Pattern.compile("=="), ((mgr, a, b) -> mgr.getIntegerFormulaManager().equal(a,b)));
+      put(Pattern.compile("!="), ((mgr, a, b) -> mgr.getBooleanFormulaManager().not(mgr.getIntegerFormulaManager().equal(a,b))));
+
     }};
 
   /**
@@ -101,7 +113,7 @@ class FormulaUtils {
    * A formula that takes in two IntegerFormulas and performs a comparison between them
    */
   private interface Comparison {
-    BooleanFormula compare(IntegerFormulaManager mgr, IntegerFormula a, IntegerFormula b);
+    BooleanFormula compare(FormulaManager mgr, IntegerFormula a, IntegerFormula b);
   }
 
   /**
@@ -119,11 +131,7 @@ class FormulaUtils {
     return null;
   }
 
-  static BooleanFormula combineAndSimplify(FormulaManager fmgr, List<BooleanFormula> formulae) {
-    BooleanFormula formula = formulae.remove(0);
-    while (formulae.size() > 0) {
-      formula = fmgr.getBooleanFormulaManager().and(formula,formulae.remove(0));
-    }
+  static BooleanFormula simplify(FormulaManager fmgr, BooleanFormula formula) {
     try {
       return fmgr.simplify(formula);
     } catch (InterruptedException e) {

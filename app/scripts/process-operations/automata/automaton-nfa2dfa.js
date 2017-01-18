@@ -1,45 +1,66 @@
 function automataNFA2DFA(automaton) {
-    // const newAutomaton = new Automaton(automaton.id);
-    // const stateMap = {};
-    // const stack = [];
-    // let alpha = automaton.alphabet;
-    // let last = newAutomaton.addNode(undefined, {label: "[" + label(automaton.root) + "]"});
-    // stateMap["[ " + label(automaton.root) + " ]"] = last;
-    // newAutomaton.rootId = last.id;
-    // stack.push({last:last,orig:automaton.root});
-    // while (stack.length > 0) {
-    //   const lastOrig = stack.pop();
-    //   const cur = lastOrig.orig;
-    //   const outgoing = Object.keys(cur.outgoingEdgeSet).map(e=>automaton.getEdge(e));
-    //   for (let a in alpha) {
-    //     const reachable = outgoing.filter(function (item) {
-    //       return item.label == a;
-    //     });
-    //     const state = reachable.map(o => label(o.to)).filter(function (item, index, inputArray) {
-    //       return inputArray.indexOf(item) == index;
-    //     }).toString();
-    //     if (state.trim().length > 0) {
-    //       if (!stateMap[state]) {
-    //         stateMap[state] = newAutomaton.addNode(undefined, {label: state});
-    //         for (let out in outgoing) {
-    //           stack.push({last: stateMap[state], orig: automaton.getNode(outgoing[out].to)});
-    //         }
-    //       }
-    //       newAutomaton.addEdge(newAutomaton.nextEdgeId,a,lastOrig.last,stateMap[state]);
-    //     }
-    //   }
-    // }
-    // //console.log(JSON.stringify(newAutomaton,null,2));
-    // // stack.push({from: null, set: [automaton.root]});
-    // // while (stack.length > 0) {
-    // //   const cur = stack.pop();
-    // //   newAutomaton.addNode(undefined, {label: "[" + cur.set.map(e => e.metaData.label) + "]"});
-    // //   //console.log(cur);
-    // // }
-    // //console.log(JSON.stringify(newAutomaton,null,2));
-    return automaton;
+  const table = {};
+  let alpha = automaton.alphabet;
+  for (let i in automaton.nodes) {
+    const cur = automaton.nodes[i];
+    const curLbl = cur.metaData.label;
+    const outgoing = Object.keys(cur.outgoingEdgeSet).map(e=>automaton.getEdge(e));
+    for (let out in outgoing) {
+      const rout = outgoing[out];
+      const to = automaton.getNode(rout.to);
+      table[curLbl] = table[curLbl] || {};
+      table[curLbl][rout.label] = table[curLbl][rout.label] || [];
+      table[curLbl][rout.label].push(label(to));
+    }
+    table[curLbl][TAU] = table[curLbl][TAU] || [];
+    table[curLbl][TAU].push(curLbl);
+
+  }
+  const table2 = {};
+  let stack = [];
+  //TODO: incase the first is a tau, we should really get the tau clousure of root
+  stack.push(clousure(automaton.root));
+  delete alpha[TAU];
+  while (stack.length > 0) {
+    const curList = stack.pop();
+    const lbl = curList.toString();
+    for (let a in alpha) {
+      let subTable = new Set();
+      for (let cur in curList) {
+        const ta = table[curList[cur]];
+        for (const s in ta[a]) {
+          table[ta[a][s]][TAU].forEach(s => subTable.add(s));
+        }
+      }
+      if (subTable.size == 0) continue;
+      table2[lbl] = table2[lbl] || [];
+      if (table2[lbl][a]) continue;
+      table2[lbl][a] = subTable;
+      stack.push([...subTable]);
+    }
+  }
+  const nodeTable = [];
+  const newAutomaton = new Automaton(automaton.id);
+  for (let node in table2) {
+    nodeTable[node] = newAutomaton.addNode(undefined,{label: node});
+    if (node == label(automaton.root)) {
+      newAutomaton.rootId = nodeTable[node].id;
+    }
+  }
+  for (let node in table2) {
+    for (let edge in table2[node]) {
+      newAutomaton.addEdge(newAutomaton.nextEdgeId,edge,nodeTable[node],nodeTable[[...table2[node][edge]].toString()]);
+    }
+  }
+  return newAutomaton;
   function label(n) {
     if (typeof n == "string") n = automaton.getNode(n);
     return n.metaData.label;
+  }
+  function clousure(node) {
+    let ret = [label(node)];
+    const outgoing = Object.keys(node.outgoingEdgeSet).map(e=>automaton.getEdge(e)).filter(e=>e.label==TAU).map(e => label(e.to));
+    ret = ret.concat(outgoing);
+    return ret;
   }
 }
