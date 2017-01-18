@@ -24,7 +24,7 @@
     app.loaded = app.loaded || false;
     app.saveSettings = {currentFile: '', saveCode: true, saveLayout: true};
     app.decoder = new TextDecoder("UTF-8");
-    app.socket = io(location.protocol+'//'+location.hostname+":5000");
+    app.socket = io(location.protocol+'//'+location.hostname+":5001");
     app.socket.on('connect', ()=>{
       app.isClientSide = false;
       app.loaded = true;

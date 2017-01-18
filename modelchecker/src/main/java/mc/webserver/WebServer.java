@@ -11,7 +11,7 @@ import static spark.Spark.get;
 public class WebServer {
   public static void main(String[] args) {
     Spark.externalStaticFileLocation("app");
-    Spark.port(80);
+    Spark.port(5000);
     new WebSocketServer();
     get("/bower_components/*", (req, res) -> String.join("\n",Files.readAllLines(Paths.get(req.pathInfo().substring(1)))));
   }

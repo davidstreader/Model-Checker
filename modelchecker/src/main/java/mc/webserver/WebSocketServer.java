@@ -14,7 +14,7 @@ public class WebSocketServer {
   public WebSocketServer() {
     Configuration config = new Configuration();
     config.setHostname("localhost");
-    config.setPort(5000);
+    config.setPort(5001);
 
 
     final SocketIOServer server = new SocketIOServer(config);
