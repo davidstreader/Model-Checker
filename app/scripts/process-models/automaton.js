@@ -217,18 +217,12 @@ const AUTOMATON = {
 	},
 
 	get clone(){
-		if(this.metaData.cloneCount === undefined){
-			this.metaData.cloneCount = 0;
-		}
-
-		const cloneId = this.metaData.cloneCount++;
-
-		const automaton = new Automaton(this.id + '.' + cloneId);
+		const automaton = new Automaton(this.id);
 
 		// clone nodes from this automaton and add them to the clone
 		const nodes = this.nodes;
 		for(let i = 0; i < nodes.length; i++){
-			const id = nodes[i].id + '.' + cloneId;
+			const id = nodes[i].id;
 			const incoming = relabelSet(JSON.parse(JSON.stringify(nodes[i].incomingEdgeSet)));
 			const outgoing = relabelSet(JSON.parse(JSON.stringify(nodes[i].outgoingEdgeSet)));
 			const locations = JSON.parse(JSON.stringify(nodes[i].locationSet));
@@ -246,10 +240,10 @@ const AUTOMATON = {
 		// clone edges from this automaton and add them to the clone
 		const edges = this.edges;
 		for(let i = 0; i < edges.length; i++){
-			const id = edges[i].id + '.' + cloneId;
+			const id = edges[i].id;
 			const label = edges[i].label;
-			const from = edges[i].from + '.' + cloneId;
-			const to = edges[i].to + '.' + cloneId;
+			const from = edges[i].from;
+			const to = edges[i].to;
 			const locations = JSON.parse(JSON.stringify(edges[i].locationSet));
 			const metaData = JSON.parse(JSON.stringify(edges[i].metaData));
 			const edge = new AutomatonEdge(id, label, from, to, locations, metaData);
@@ -257,12 +251,16 @@ const AUTOMATON = {
 			automaton.edgeCount++;
 		}
 
+		automaton.rootId = this.rootId;
+		automaton.nodeId = this.nodeId;
+		automaton.edgeId = this.edgeId;
+
 		return automaton;
 
 		function relabelSet(set){
 			const newSet = {};
 			for(let label in set){
-				newSet[label + '.' + cloneId] = true;
+				newSet[label] = true;
 			}
 
 			return newSet;
