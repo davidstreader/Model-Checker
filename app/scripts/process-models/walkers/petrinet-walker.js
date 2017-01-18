@@ -42,7 +42,9 @@ const PETRI_NET_WALKER = {
 		return transitions;
 	},
 
-	getOutgoingTransitions: function(marking){
+	getOutgoingTransitions: function(marking, executable){
+		executable = (executable !== undefined) ? executable : false;
+
 		// check that the a valid marking has been received
 		const transitionSet = {};
 		for(let id in marking){
@@ -60,6 +62,17 @@ const PETRI_NET_WALKER = {
 				}
 
 				transitionSet[outgoing[i]]++;
+			}
+		}
+
+		// remove transitions that are not executable if specified
+		if(executable){
+			for(let id in transitionSet){
+				const transition = this.net.getTransition(id);
+				const nextMarking = this.executeTransition(transition, marking);
+				if(nextMarking === undefined){
+					delete transitionSet[id]
+				}
 			}
 		}
 

@@ -760,11 +760,22 @@ const Parser = {
 		this.gobble(tokens[this.index], '/');
 		this.gobble(tokens[this.index], '{');
 
-		const relabels = [];
+		const currentRanges = this.actionRanges.length;
+		let relabels = [];
 
 		while(this.index < tokens.length){
 			const element = this.parseRelabelElement(tokens);
-			relabels.push(element);
+
+			// check if a range has been parsed
+			if(currentRanges < this.actionRanges.length){
+				const variableMap = {};
+				// have to bind function as it is defined within this function block
+				const processedRelabels = processIndexedElement.bind(this)(currentRanges, element, variableMap);
+				relabels = relabels.concat(processedRelabels);
+			}
+			else{
+				relabels.push(element);
+			}
 
 			// check if there are no more relabel elements to parse
 			if(tokens[this.index].value !== ','){
@@ -780,6 +791,43 @@ const Parser = {
 		const location = new Location(start, end)
 
 		return new RelabelNode(relabels, location);
+
+		function processIndexedElement(start, element, variableMap){
+			let set = [];
+			if(start === this.actionRanges.length){
+				// have to bind function as it is defined within this function block
+				let newLabel = processVariables.bind(this)(element.newLabel.action, variableMap);
+				newLabel = new ActionLabelNode(newLabel, element.newLabel.location);
+				let oldLabel = processVariables.bind(this)(element.oldLabel.action, variableMap);
+				oldLabel = new ActionLabelNode(oldLabel, element.oldLabel.location);
+
+				set.push(new RelabelElementNode(newLabel, oldLabel, element.location));
+			}
+			else{
+				const range = new IndexIterator(this.actionRanges[start].range);
+				while(range.hasNext){
+					variableMap[this.actionRanges[start].variable] = range.next;
+					// have to bind function as it is defined within this function block
+					const processedSet = processIndexedElement.bind(this)(start + 1, element, variableMap);
+					set = set.concat(processedSet);
+				}
+			}
+
+			return set;
+		}
+
+		function processVariables(element, variableMap){
+			const regex = '[\$][v]*[a-zA-Z0-9]*';
+			let result = element;
+			let match = result.match(regex);
+
+			while(match !== null){
+				result = result.replace(match[0], variableMap[match[0]]);
+				match = result.match(regex);
+			}
+
+			return result;
+		}
 	},
 
 	parseRelabelElement: function(tokens){

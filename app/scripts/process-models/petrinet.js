@@ -209,6 +209,11 @@ const PETRI_NET = {
 
 	relabelTransition: function(oldLabel, newLabel){
 		const transitions = this.labelSets[oldLabel];
+
+		if(transitions === undefined){
+			return;
+		}
+
 		for(let i = 0; i < transitions.length; i++){
 			transitions[i].label = newLabel;
 		}
