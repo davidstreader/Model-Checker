@@ -8,9 +8,6 @@ import java.nio.file.Paths;
 import static spark.Spark.get;
 
 
-/**
- * Created by sanjay on 18/01/2017.
- */
 public class WebServer {
   public static void main(String[] args) {
     Spark.externalStaticFileLocation("app");

@@ -91,7 +91,7 @@ dependencies.forEach(function(dependency){
   java.classpath.push(baseDir + "/" + dependency);
 });
 //Initilize a solver
-const EdgeMerger = java.import('net.modelsolver.EdgeMerger')();
+const EdgeMerger = java.import('mc.solver.EdgeUtils')();
 function combineEdges(edge1,edge2) {
   //Solve
   return JSON.parse(EdgeMerger.mergeEdgesSync(JSON.stringify(edge1),JSON.stringify(edge2)));

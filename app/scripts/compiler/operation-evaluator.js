@@ -10,7 +10,7 @@ function evaluateOperations(operations, processesMap, variableMap){
 	for(let i = 0; i < operations.length; i++){
 	  let op;
 	  switch (operations[i].operation) {
-      case "bisimular":
+      case "bisimulation":
         op = "~";
         break;
       case "traceequivilant":
@@ -34,7 +34,7 @@ function evaluateOperations(operations, processesMap, variableMap){
 		const graph2 = interpretOneOff(generateProcessIdent(), process2, 'automata', processesMap, variableMap);
 		let result;
 		switch (operations[i].operation) {
-      case "bisimular":
+      case "bisimulation":
         result = areBisimular([graph1, graph2], 'automata');
         break;
       case "traceequivilant":
