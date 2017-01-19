@@ -7,6 +7,9 @@ sourceCompatibility = 1.8
 
 repositories {
   mavenCentral()
+  maven {
+    url "http://logicrunch.it.uu.se:4096/~wv/maven/"
+  }
 }
 
 dependencies {
@@ -17,7 +20,16 @@ dependencies {
   compileOnly "org.projectlombok:lombok:1.16.12"
   compile group: 'com.corundumstudio.socketio', name: 'netty-socketio', version: '1.7.12'
   compile group: 'com.fasterxml.jackson.module', name: 'jackson-module-parameter-names', version: '2.8.6'
-  compile group: 'org.sosy-lab', name:'java-smt', version: '1.0.1'
+  compile group: 'com.google.guava', name: 'guava', version: '21.0'
+  compile group: 'com.google.code.findbugs', name: 'annotations', version: '3.0.1u2'
+  // https://mvnrepository.com/artifact/org.sosy-lab/java-smt
+  compile group: 'org.sosy-lab', name: 'java-smt', version: '1.0.1'
+  compile "uuverifiers:princess_2.12:2016-12-26"
+
+
+
+
+
 }
 
 task copyRuntimeLibs(type: Copy) {

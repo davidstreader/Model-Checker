@@ -2,6 +2,7 @@ package mc.util.expr;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Stack;
 
 public class ShuntingYardAlgorithm {
@@ -21,26 +22,26 @@ public class ShuntingYardAlgorithm {
 
 	private void setupPrecedenceMap(){
 		precedenceMap = new HashMap<String, Integer>();
-		precedenceMap.put("or", 10);
-		precedenceMap.put("and", 9);
-		precedenceMap.put("bitor", 8);
-		precedenceMap.put("exclor", 7);
-		precedenceMap.put("bitand", 6);
-		precedenceMap.put("eq", 5);
-		precedenceMap.put("noteq", 5);
-		precedenceMap.put("lt", 4);
-		precedenceMap.put("lteq", 4);
-		precedenceMap.put("gt", 4);
-		precedenceMap.put("gteq", 4);
-		precedenceMap.put("rshift", 3);
-		precedenceMap.put("lshift", 3);
-		precedenceMap.put("add", 2);
-		precedenceMap.put("sub", 2);
-		precedenceMap.put("mul", 1);
-		precedenceMap.put("div", 1);
-		precedenceMap.put("mod", 1);
-		precedenceMap.put("(", 0);
-		precedenceMap.put(")", 0);
+		precedenceMap.put("or", -10);
+		precedenceMap.put("and", -9);
+		precedenceMap.put("bitor", -8);
+		precedenceMap.put("exclor", -7);
+		precedenceMap.put("bitand", -6);
+		precedenceMap.put("eq", -5);
+		precedenceMap.put("noteq", -5);
+		precedenceMap.put("lt", -4);
+		precedenceMap.put("lteq", -4);
+		precedenceMap.put("gt", -4);
+		precedenceMap.put("gteq", -4);
+		precedenceMap.put("rshift", -3);
+		precedenceMap.put("lshift", -3);
+		precedenceMap.put("add", -2);
+		precedenceMap.put("sub", -2);
+		precedenceMap.put("mul", -1);
+		precedenceMap.put("div", -1);
+		precedenceMap.put("mod", -1);
+		precedenceMap.put("(", -0);
+		precedenceMap.put(")", -0);
 	}
 
 	private void reset(){
@@ -54,18 +55,18 @@ public class ShuntingYardAlgorithm {
 		char[] characters = expression.toCharArray();
 
 		while(index < expression.length()){
-			String result = parse(characters);
-			if(result == "integer"){
+      String result = parse(characters);
+			if(Objects.equals(result, "integer")){
 				IntegerOperand op = new IntegerOperand(Integer.parseInt(current));
 				output.push(op);
 			}
-			else if(result == "variable"){
+			else if(Objects.equals(result, "variable")){
 				VariableOperand op = new VariableOperand(current);
 				output.push(op);
 			}
-			else if(result == "operator"){
+			else if(Objects.equals(result, "operator")){
 				int precedence = precedenceMap.get(current);
-				while(!operatorStack.isEmpty()){
+				while(!operatorStack.isEmpty() && !Objects.equals(operatorStack.peek(), "(")){
 					int nextPrecedence = precedenceMap.get(operatorStack.peek());
 					if(precedence <= nextPrecedence){
 						String operator = operatorStack.pop();
@@ -73,15 +74,17 @@ public class ShuntingYardAlgorithm {
 						Expression lhs = output.pop();
 						Operator op = constructOperator(operator, lhs, rhs);
 						output.push(op);
-					}
+					} else {
+					  break;
+          }
 				}
 
 				operatorStack.push(current);
 			}
-			else if(result == "("){
+			else if(Objects.equals(result, "(")){
 				operatorStack.push(result);
 			}
-			else if(result == ")"){
+			else if(Objects.equals(result, ")")){
 				while(!operatorStack.isEmpty()){
 					String operator = operatorStack.pop();
 					if(operator.equals("(")){

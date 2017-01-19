@@ -8,4 +8,5 @@ public abstract class Expression {
 		ShuntingYardAlgorithm sya = new ShuntingYardAlgorithm();
 		return sya.convert(expression);
 	}
+
 }

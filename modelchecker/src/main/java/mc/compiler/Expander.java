@@ -12,12 +12,12 @@ import mc.compiler.ast.IndexNode;
 import mc.compiler.ast.SequenceNode;
 
 public class Expander {
-	
+
 	public AbstractSyntaxTree expand(AbstractSyntaxTree ast){
-		
+
 		return ast;
 	}
-	
+
 	private ASTNode expand(ASTNode astNode){
 		if(astNode instanceof ActionLabelNode){
 			astNode = expand((ActionLabelNode)astNode);
@@ -43,39 +43,39 @@ public class Expander {
 		else if(astNode instanceof ForAllStatementNode){
 			astNode = expand((ForAllStatementNode)astNode);
 		}
-		
+
 		return astNode;
 	}
-	
-	private ActionLabelNode expand(ActionLabelNode astNode){
-		
-	}
-	
-	private IndexNode expand(IndexNode astNode){
-		
-	}
-	
-	private SequenceNode expand(SequenceNode astNode){
-		
-	}
-	
-	private ChoiceNode expand(ChoiceNode astNode){
-		
-	}
-	
-	private CompositeNode expand(CompositeNode astNode){
-		
-	}
-	
-	private IfStatementNode expand(IfStatementNode astNode){
-		
-	}
-	
-	private FunctionNode expand(FunctionNode astNode){
-		
-	}
-	
-	private ForAllStatementNode(ForAllStatementnode astNode){
-		
-	}
+//
+//	private ActionLabelNode expand(ActionLabelNode astNode){
+//
+//	}
+//
+//	private IndexNode expand(IndexNode astNode){
+//
+//	}
+//
+//	private SequenceNode expand(SequenceNode astNode){
+//
+//	}
+//
+//	private ChoiceNode expand(ChoiceNode astNode){
+//
+//	}
+//
+//	private CompositeNode expand(CompositeNode astNode){
+//
+//	}
+//
+//	private IfStatementNode expand(IfStatementNode astNode){
+//
+//	}
+//
+//	private FunctionNode expand(FunctionNode astNode){
+//
+//	}
+//
+//	private ForAllStatementNode(ForAllStatementnode astNode){
+//
+//	}
 }
