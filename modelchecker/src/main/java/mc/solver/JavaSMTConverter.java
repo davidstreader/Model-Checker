@@ -34,6 +34,11 @@ public class JavaSMTConverter {
       Field nativePath = NativeLibraries.class.getDeclaredField("nativePath");
       nativePath.setAccessible(true);
       nativePath.set(null,Paths.get("native", arch + "-" + os));
+      //The above fix doesn't appear to work for linux. Instead, lets just modify java.library.path
+      System.setProperty("java.library.path", Paths.get("native", arch + "-" + os).toString());
+      Field fieldSysPath = ClassLoader.class.getDeclaredField( "sys_paths" );
+      fieldSysPath.setAccessible( true );
+      fieldSysPath.set( null, null );
     } catch (NoSuchFieldException | IllegalAccessException e) {
       e.printStackTrace();
     }
@@ -43,6 +48,7 @@ public class JavaSMTConverter {
       e.printStackTrace();
     }
   }
+
   private static SolverContext getContext() throws InvalidConfigurationException {
     if (context == null) {
       //Initilize the solver
