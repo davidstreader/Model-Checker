@@ -52,7 +52,7 @@ public class ExpressionEvaluator {
             return evaluate((AndOperator)expression, variableMap);
         }
         else if(expression instanceof BitAndOperator){
-            return evaluate((BitOrOperator)expression, variableMap);
+            return evaluate((BitAndOperator)expression, variableMap);
         }
         else if(expression instanceof EqualityOperator){
             return evaluate((EqualityOperator)expression, variableMap);

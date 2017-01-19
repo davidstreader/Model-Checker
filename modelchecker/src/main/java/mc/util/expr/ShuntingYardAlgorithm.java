@@ -20,6 +20,7 @@ public class ShuntingYardAlgorithm {
   private void setupPrecedenceMap(){
     precedenceMap = new HashMap<String, Integer>();
     precedenceMap.put("or", -10);
+    precedenceMap.put("not", -10);
     precedenceMap.put("and", -9);
     precedenceMap.put("bitor", -8);
     precedenceMap.put("exclor", -7);
@@ -34,13 +35,14 @@ public class ShuntingYardAlgorithm {
     precedenceMap.put("lshift", -3);
     precedenceMap.put("add", -2);
     precedenceMap.put("sub", -2);
+    precedenceMap.put("bitnot", -2);
     precedenceMap.put("mul", -1);
     precedenceMap.put("div", -1);
     precedenceMap.put("mod", -1);
     precedenceMap.put("(", -0);
     precedenceMap.put(")", -0);
   }
-
+  private List<String> rightOperators = Arrays.asList("bitnot","not");
   private void reset(){
     operatorStack = new Stack<String>();
     output = new Stack<Expression>();
@@ -63,7 +65,7 @@ public class ShuntingYardAlgorithm {
       } else if (Objects.equals(result, "operator")) {
         Expression rhs = output.pop();
         Expression lhs = output.pop();
-        Operator op = constructOperator(current, lhs, rhs);
+        BothOperator op = constructBothOperator(current, lhs, rhs);
         output.push(op);
       }
     }
@@ -90,14 +92,22 @@ public class ShuntingYardAlgorithm {
           if(precedence <= nextPrecedence){
             String operator = operatorStack.pop();
             Expression rhs = output.pop();
-            Expression lhs = output.pop();
-            Operator op = constructOperator(operator, lhs, rhs);
+            Operator op;
+            if (rightOperators.contains(operator)) {
+              op = constructRightOperator(operator, rhs);
+            } else {
+              Expression lhs = output.pop();
+              op = constructBothOperator(operator, lhs, rhs);
+            }
             output.push(op);
           } else {
             break;
           }
         }
 
+        operatorStack.push(current);
+      }
+      else if(Objects.equals(result, "rightoperator")) {
         operatorStack.push(current);
       }
       else if(Objects.equals(result, "(")){
@@ -109,10 +119,14 @@ public class ShuntingYardAlgorithm {
           if(operator.equals("(")){
             break;
           }
-
           Expression rhs = output.pop();
-          Expression lhs = output.pop();
-          Operator op = constructOperator(operator, lhs, rhs);
+          Operator op;
+          if (rightOperators.contains(operator)) {
+            op = constructRightOperator(operator, rhs);
+          } else {
+            Expression lhs = output.pop();
+            op = constructBothOperator(operator, lhs, rhs);
+          }
           output.push(op);
         }
       }
@@ -121,15 +135,28 @@ public class ShuntingYardAlgorithm {
     while(!operatorStack.isEmpty()){
       String operator = operatorStack.pop();
       Expression rhs = output.pop();
-      Expression lhs = output.pop();
-      Operator op = constructOperator(operator, lhs, rhs);
+      Operator op;
+      if (rightOperators.contains(operator)) {
+        op = constructRightOperator(operator, rhs);
+      } else {
+        Expression lhs = output.pop();
+        op = constructBothOperator(operator, lhs, rhs);
+      }
       output.push(op);
     }
 
     return output.pop();
   }
-
-  private Operator constructOperator(String operator, Expression lhs, Expression rhs){
+  private RightOperator constructRightOperator(String operator, Expression rhs) {
+    switch(operator) {
+      case "bitnot":
+        return new BitNotOperator(rhs);
+      case "not":
+        return new NotOperator(rhs);
+    }
+    return null;
+  }
+  private BothOperator constructBothOperator(String operator, Expression lhs, Expression rhs){
     switch(operator){
       case "or":
         return new OrOperator(lhs, rhs);
@@ -188,6 +215,7 @@ public class ShuntingYardAlgorithm {
     }
     else{
       parseOperator(expression);
+      if (rightOperators.contains(current)) return "rightoperator";
       return "operator";
     }
   }
@@ -246,7 +274,7 @@ public class ShuntingYardAlgorithm {
       current = "eq";
       index += 2;
     }
-    else if(expression[index] == '!' && expression[index + 1] == '='){
+    else if(expression[index] == '!' && index+1 < expression.length && expression[index + 1] == '='){
       current = "noteq";
       index += 2;
     }
@@ -296,6 +324,14 @@ public class ShuntingYardAlgorithm {
     }
     else if(expression[index] == '%'){
       current = "mod";
+      index++;
+    }
+    else if (expression[index] == '!') {
+      current = "not";
+      index++;
+    }
+    else if (expression[index] == '~') {
+      current = "bitnot";
       index++;
     }
   }

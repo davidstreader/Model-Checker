@@ -16,6 +16,7 @@ import java.lang.reflect.Field;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -24,11 +25,6 @@ public class JavaSMTConverter {
   //Since we end up using this multiple times from javascript, its much easier to cache it once.
   private static SolverContext context;
   static {
-    try {
-      getContext();
-    } catch (InvalidConfigurationException e) {
-      e.printStackTrace();
-    }
     try {
       String arch = Ascii.toLowerCase(NativeLibraries.Architecture.guessVmArchitecture().name());
       String os = Ascii.toLowerCase(NativeLibraries.OS.guessOperatingSystem().name());
@@ -39,6 +35,11 @@ public class JavaSMTConverter {
       nativePath.setAccessible(true);
       nativePath.set(null,Paths.get("native", arch + "-" + os));
     } catch (NoSuchFieldException | IllegalAccessException e) {
+      e.printStackTrace();
+    }
+    try {
+      getContext();
+    } catch (InvalidConfigurationException e) {
       e.printStackTrace();
     }
   }
@@ -75,8 +76,9 @@ public class JavaSMTConverter {
       out = out.replace("bvor","|");
       out = out.replace("bvashr",">>");
       out = out.replace("bvshl","<<");
+      out = out.replace("eq","==");
+      out = out.replace("not","!");
       out = out.replace("=","==");
-
       //Reverse all tokens, as our RPN notation is op left right and Z3's is left right op
       String[] tokens = out.split("\\s+");
       Collections.reverse(Arrays.asList(tokens));
@@ -128,9 +130,19 @@ public class JavaSMTConverter {
       return convert((SubtractionOperator)expr);
     } else if (expr instanceof VariableOperand) {
       return convert((VariableOperand)expr);
+    } else if (expr instanceof BitNotOperator) {
+      return convert((BitNotOperator)expr);
+    }else if (expr instanceof NotOperator) {
+      return convert((NotOperator)expr);
     }
     //This should never happen.
     throw new IllegalStateException("Solver reached an unexpected state");
+  }
+  private BitvectorFormula convert(BitNotOperator expr) {
+    return bvmgr().not((BitvectorFormula) convert(expr.getRightHandSide()));
+  }
+  private BooleanFormula convert(NotOperator expr) {
+    return bmgr().not((BooleanFormula) convert(expr.getRightHandSide()));
   }
   private BooleanFormula convert(AndOperator expr) {
     return bmgr().and((BooleanFormula) convert(expr.getLeftHandSide()), (BooleanFormula) convert(expr.getRightHandSide()));
