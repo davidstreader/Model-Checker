@@ -177,9 +177,10 @@ public class JSONToASTConverter {
 	public IndexNode convertIndexNode(JSONObject json){
 		String variable = json.getString("variable");
 		ASTNode range = convertJSONNode(json.getJSONObject("range"));
+		ASTNode process = convertJSONNode(json.getJSONObject("process"));
 		JSONObject jsonLocation = json.getJSONObject("location");
 		Location location = convertLocation(jsonLocation);
-		return new IndexNode(variable, range, location);
+		return new IndexNode(variable, range, process, location);
 	}
 
 	public RangeNode convertRangeNode(JSONObject json){
