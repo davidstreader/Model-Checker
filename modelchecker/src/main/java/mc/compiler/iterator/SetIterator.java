@@ -1,0 +1,28 @@
+package mc.compiler.iterator;
+
+import java.util.List;
+
+/**
+ * Created by sheriddavi on 19/01/17.
+ */
+public class SetIterator<String> implements IndexIterator<String> {
+
+    // fields
+    private List<String> set;
+    private int index;
+
+    public SetIterator(List<String> set){
+        this.set = set;
+        this.index = 0;
+    }
+
+    @Override
+    public String next() {
+        return set.get(index++);
+    }
+
+    @Override
+    public boolean hasNext() {
+        return index < set.size();
+    }
+}
