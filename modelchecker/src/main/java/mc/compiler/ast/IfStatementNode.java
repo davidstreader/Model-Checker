@@ -47,4 +47,6 @@ public class IfStatementNode extends ASTNode {
 	public void setFalseBranch(ASTNode falseBranch){
 		this.falseBranch = falseBranch;
 	}
+
+	public boolean hasFalseBranch(){ return falseBranch != null; }
 }
