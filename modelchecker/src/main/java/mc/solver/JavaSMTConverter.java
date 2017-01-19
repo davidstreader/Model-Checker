@@ -1,6 +1,8 @@
 package mc.solver;
 
+import com.google.common.base.Ascii;
 import mc.util.expr.*;
+import org.sosy_lab.common.NativeLibraries;
 import org.sosy_lab.common.ShutdownNotifier;
 import org.sosy_lab.common.configuration.Configuration;
 import org.sosy_lab.common.configuration.InvalidConfigurationException;
@@ -9,9 +11,13 @@ import org.sosy_lab.common.log.LogManager;
 import org.sosy_lab.java_smt.SolverContextFactory;
 import org.sosy_lab.java_smt.SolverContextFactory.Solvers;
 import org.sosy_lab.java_smt.api.*;
-import org.sosy_lab.java_smt.api.NumeralFormula.IntegerFormula;
 
-import java.math.BigInteger;
+import java.lang.reflect.Field;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class JavaSMTConverter {
 
@@ -21,6 +27,18 @@ public class JavaSMTConverter {
     try {
       getContext();
     } catch (InvalidConfigurationException e) {
+      e.printStackTrace();
+    }
+    try {
+      String arch = Ascii.toLowerCase(NativeLibraries.Architecture.guessVmArchitecture().name());
+      String os = Ascii.toLowerCase(NativeLibraries.OS.guessOperatingSystem().name());
+      //By default, JavaSMT looks for native libraries next to the jar file.
+      //However, this doesn't help us since the jar its reading is in the maven directory.
+      //So here we override it with the native library.
+      Field nativePath = NativeLibraries.class.getDeclaredField("nativePath");
+      nativePath.setAccessible(true);
+      nativePath.set(null,Paths.get("native", arch + "-" + os));
+    } catch (NoSuchFieldException | IllegalAccessException e) {
       e.printStackTrace();
     }
   }
@@ -36,34 +54,48 @@ public class JavaSMTConverter {
     }
     return context;
   }
-  private IntegerFormulaManager imgr() {
-    return context.getFormulaManager().getIntegerFormulaManager();
+  private BitvectorFormulaManager bvmgr() {
+    return context.getFormulaManager().getBitvectorFormulaManager();
   }
   private BooleanFormulaManager bmgr() {
     return context.getFormulaManager().getBooleanFormulaManager();
   }
-  private BitvectorFormulaManager bvmgr() {
-    return context.getFormulaManager().getBitvectorFormulaManager();
-  }
-  public String simplify(Expression expr) {
-    Formula f = null;
+  public Expression simplify(Expression expr) {
     try {
-      f = context.getFormulaManager().simplify(convert(expr));
+      Formula f = context.getFormulaManager().simplify(convert(expr));
+      String out = f.toString();
+      //Convert from #x00000000 hex format to decimal
+      Matcher matcher = Pattern.compile("#x\\w{8}").matcher(out);
+      while (matcher.find()) {
+        out = out.replaceAll(matcher.group(0),""+Integer.parseInt(matcher.group(0).substring(2),16));
+      }
+      out = out.replace("and","&&");
+      out = out.replace("bvand","&");
+      out = out.replace("bvnot","~");
+      out = out.replace("bvor","|");
+      out = out.replace("bvashr",">>");
+      out = out.replace("bvshl","<<");
+      out = out.replace("=","==");
+
+      //Reverse all tokens, as our RPN notation is op left right and Z3's is left right op
+      String[] tokens = out.split("\\s+");
+      Collections.reverse(Arrays.asList(tokens));
+      out = String.join(" ",tokens);
+      return new ShuntingYardAlgorithm().importExpr(out);
     } catch (InterruptedException e) {
       e.printStackTrace();
-      return null;
+      return expr;
     }
-    return f.toString();
   }
-  public Formula convert(Expression expr) {
+  private Formula convert(Expression expr) {
     if (expr instanceof AdditionOperator) {
       return convert((AdditionOperator)expr);
     } else if(expr instanceof AndOperator) {
       return convert((AndOperator)expr);
     } else if(expr instanceof BitAndOperator) {
-      throw new UnsupportedOperationException("Solver does not support bit and");
+      return convert((BitAndOperator)expr);
     } else if (expr instanceof BitOrOperator) {
-      throw new UnsupportedOperationException("Solver does not support bit or");
+      return convert((BitOrOperator) expr);
     } else if (expr instanceof DivisionOperator) {
       return convert((DivisionOperator)expr);
     } else if (expr instanceof EqualityOperator) {
@@ -77,7 +109,7 @@ public class JavaSMTConverter {
     } else if (expr instanceof IntegerOperand) {
       return convert((IntegerOperand)expr);
     } else if (expr instanceof LeftShiftOperator) {
-      throw new UnsupportedOperationException("Solver does not support left shift");
+      return convert((LeftShiftOperator) expr);
     } else if (expr instanceof LessThanEqOperator) {
       return convert((LessThanEqOperator)expr);
     } else if (expr instanceof LessThanOperator) {
@@ -91,13 +123,14 @@ public class JavaSMTConverter {
     } else if (expr instanceof OrOperator) {
       return convert((OrOperator)expr);
     } else if (expr instanceof RightShiftOperator) {
-      throw new UnsupportedOperationException("Solver does not support right shift");
+      return convert((RightShiftOperator) expr);
     } else if (expr instanceof SubtractionOperator) {
       return convert((SubtractionOperator)expr);
     } else if (expr instanceof VariableOperand) {
       return convert((VariableOperand)expr);
     }
-    return null;
+    //This should never happen.
+    throw new IllegalStateException("Solver reached an unexpected state");
   }
   private BooleanFormula convert(AndOperator expr) {
     return bmgr().and((BooleanFormula) convert(expr.getLeftHandSide()), (BooleanFormula) convert(expr.getRightHandSide()));
@@ -110,50 +143,54 @@ public class JavaSMTConverter {
   }
 
   private BooleanFormula convert(GreaterThanEqOperator expr) {
-    return imgr().greaterOrEquals((IntegerFormula) convert(expr.getLeftHandSide()), (IntegerFormula) convert(expr.getRightHandSide()));
+    return bvmgr().greaterOrEquals((BitvectorFormula) convert(expr.getLeftHandSide()), (BitvectorFormula) convert(expr.getRightHandSide()),true);
   }
   private BooleanFormula convert(GreaterThanOperator expr) {
-    return imgr().greaterThan((IntegerFormula) convert(expr.getLeftHandSide()), (IntegerFormula) convert(expr.getRightHandSide()));
+    return bvmgr().greaterThan((BitvectorFormula) convert(expr.getLeftHandSide()), (BitvectorFormula) convert(expr.getRightHandSide()),true);
   }
   private BooleanFormula convert(LessThanEqOperator expr) {
-    return imgr().lessOrEquals((IntegerFormula) convert(expr.getLeftHandSide()), (IntegerFormula) convert(expr.getRightHandSide()));
+    return bvmgr().lessOrEquals((BitvectorFormula) convert(expr.getLeftHandSide()), (BitvectorFormula) convert(expr.getRightHandSide()),true);
   }
   private BooleanFormula convert(LessThanOperator expr) {
-    return imgr().lessThan((IntegerFormula) convert(expr.getLeftHandSide()), (IntegerFormula) convert(expr.getRightHandSide()));
+    return bvmgr().lessThan((BitvectorFormula) convert(expr.getLeftHandSide()), (BitvectorFormula) convert(expr.getRightHandSide()),true);
   }
   private BooleanFormula convert(EqualityOperator expr) {
-    return imgr().equal((IntegerFormula)convert(expr.getLeftHandSide()),(IntegerFormula) convert(expr.getRightHandSide()));
+    return bvmgr().equal((BitvectorFormula)convert(expr.getLeftHandSide()),(BitvectorFormula) convert(expr.getRightHandSide()));
   }
   private BooleanFormula convert(NotEqualOperator expr) {
-    return bmgr().not(imgr().equal((IntegerFormula)convert(expr.getLeftHandSide()), (IntegerFormula)convert(expr.getRightHandSide())));
+    return bmgr().not(bvmgr().equal((BitvectorFormula)convert(expr.getLeftHandSide()), (BitvectorFormula)convert(expr.getRightHandSide())));
   }
-//    public IntegerFormula convert(BitAndOperator expr) {
-//      IntegerFormula left = (IntegerFormula) convert(expr.getLeftHandSide());
-//      IntegerFormula right = (IntegerFormula) convert(expr.getLeftHandSide());
-//    return context.getFormulaManager().;
-//  }
-//  public IntegerFormula convert(BitOrOperator expr) {
-//    return context.mkOr((BooleanFormula)convert(expr.getLeftHandSide()),(BooleanFormula)convert(expr.getRightHandSide()));
-//  }
-  private IntegerFormula convert(ModuloOperator expr) {
-    return imgr().modulo((IntegerFormula) convert(expr.getLeftHandSide()), (IntegerFormula) convert(expr.getRightHandSide()));
+  private BitvectorFormula convert(ModuloOperator expr) {
+    return bvmgr().modulo((BitvectorFormula) convert(expr.getLeftHandSide()), (BitvectorFormula) convert(expr.getRightHandSide()),true);
   }
-  private IntegerFormula convert(MultiplicationOperator expr) {
-    return imgr().multiply((IntegerFormula) convert(expr.getLeftHandSide()), (IntegerFormula) convert(expr.getRightHandSide()));
+  private BitvectorFormula convert(MultiplicationOperator expr) {
+    return bvmgr().multiply((BitvectorFormula) convert(expr.getLeftHandSide()), (BitvectorFormula) convert(expr.getRightHandSide()));
   }
-  private IntegerFormula convert(SubtractionOperator expr) {
-    return imgr().subtract((IntegerFormula) convert(expr.getLeftHandSide()), (IntegerFormula) convert(expr.getRightHandSide()));
+  private BitvectorFormula convert(SubtractionOperator expr) {
+    return bvmgr().subtract((BitvectorFormula) convert(expr.getLeftHandSide()), (BitvectorFormula) convert(expr.getRightHandSide()));
   }
-  private IntegerFormula convert(DivisionOperator expr) {
-    return imgr().divide((IntegerFormula) convert(expr.getLeftHandSide()), (IntegerFormula) convert(expr.getRightHandSide()));
+  private BitvectorFormula convert(DivisionOperator expr) {
+    return bvmgr().divide((BitvectorFormula) convert(expr.getLeftHandSide()), (BitvectorFormula) convert(expr.getRightHandSide()),true);
   }
-  private IntegerFormula convert(AdditionOperator expr) {
-    return imgr().add((IntegerFormula) convert(expr.getLeftHandSide()), (IntegerFormula) convert(expr.getRightHandSide()));
+  private BitvectorFormula convert(AdditionOperator expr) {
+    return bvmgr().add((BitvectorFormula) convert(expr.getLeftHandSide()), (BitvectorFormula) convert(expr.getRightHandSide()));
   }
-  private IntegerFormula convert(VariableOperand expr) {
-    return imgr().makeVariable(expr.getValue());
+  private BitvectorFormula convert(BitAndOperator expr) {
+    return bvmgr().and((BitvectorFormula) convert(expr.getLeftHandSide()), (BitvectorFormula) convert(expr.getRightHandSide()));
   }
-  private IntegerFormula convert(IntegerOperand expr) {
-    return imgr().makeNumber(expr.getValue());
+  private BitvectorFormula convert(BitOrOperator expr) {
+    return bvmgr().or((BitvectorFormula) convert(expr.getLeftHandSide()), (BitvectorFormula) convert(expr.getRightHandSide()));
+  }
+  private BitvectorFormula convert(LeftShiftOperator expr) {
+    return bvmgr().shiftLeft((BitvectorFormula) convert(expr.getLeftHandSide()), (BitvectorFormula) convert(expr.getRightHandSide()));
+  }
+  private BitvectorFormula convert(RightShiftOperator expr) {
+    return bvmgr().shiftRight((BitvectorFormula) convert(expr.getLeftHandSide()), (BitvectorFormula) convert(expr.getRightHandSide()),true);
+  }
+  private BitvectorFormula convert(VariableOperand expr) {
+    return bvmgr().makeVariable(FormulaType.getBitvectorTypeWithSize(32),expr.getValue());
+  }
+  private BitvectorFormula convert(IntegerOperand expr) {
+    return bvmgr().makeBitvector(32,expr.getValue());
   }
 }
