@@ -10,6 +10,14 @@ repositories {
   maven {
     url "http://logicrunch.it.uu.se:4096/~wv/maven/"
   }
+  repositories {
+    ivy {
+      url 'https://www.sosy-lab.org/ivy/'
+      layout "pattern", {
+        artifact "[organisation]/[module]/[artifact]-[revision](-[classifier]).[ext]"
+      }
+    }
+  }
 }
 
 dependencies {
@@ -23,8 +31,7 @@ dependencies {
   compile group: 'com.google.guava', name: 'guava', version: '21.0'
   compile group: 'com.google.code.findbugs', name: 'annotations', version: '3.0.1u2'
   // https://mvnrepository.com/artifact/org.sosy-lab/java-smt
-  compile group: 'org.sosy-lab', name: 'java-smt', version: '1.0.1'
-  compile "uuverifiers:princess_2.12:2016-12-26"
+  compile group: 'org.sosy_lab', name: 'javasmt', version: '1.0.1-60-g9a31f2a', configuration: 'runtime'
 
 
 

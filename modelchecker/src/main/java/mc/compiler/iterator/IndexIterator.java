@@ -19,7 +19,7 @@ public interface IndexIterator<E> extends Iterator<E> {
         }
         else if(astNode instanceof SetNode){
             SetNode set = (SetNode)astNode;
-            return new SetIterator<String>(new ArrayList<String>(set.getSet()));
+            return new SetIterator(new ArrayList<>(set.getSet()));
         }
 
         throw new IllegalArgumentException("incorrect ast node");

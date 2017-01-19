@@ -11,6 +11,8 @@ import org.sosy_lab.java_smt.SolverContextFactory.Solvers;
 import org.sosy_lab.java_smt.api.*;
 import org.sosy_lab.java_smt.api.NumeralFormula.IntegerFormula;
 
+import java.math.BigInteger;
+
 public class JavaSMTConverter {
 
   //Since we end up using this multiple times from javascript, its much easier to cache it once.
@@ -30,7 +32,7 @@ public class JavaSMTConverter {
       ShutdownNotifier notifier = ShutdownNotifier.createDummy();
       // create the solver context, which includes all necessary parts for building, manipulating,
       // and solving formulas.
-      context = SolverContextFactory.createSolverContext(config, logger, notifier, Solvers.SMTINTERPOL);
+      context = SolverContextFactory.createSolverContext(config, logger, notifier, Solvers.Z3);
     }
     return context;
   }
@@ -42,6 +44,16 @@ public class JavaSMTConverter {
   }
   private BitvectorFormulaManager bvmgr() {
     return context.getFormulaManager().getBitvectorFormulaManager();
+  }
+  public String simplify(Expression expr) {
+    Formula f = null;
+    try {
+      f = context.getFormulaManager().simplify(convert(expr));
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+      return null;
+    }
+    return f.toString();
   }
   public Formula convert(Expression expr) {
     if (expr instanceof AdditionOperator) {

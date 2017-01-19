@@ -3,7 +3,7 @@ package mc.compiler.iterator;
 /**
  * Created by sheriddavi on 19/01/17.
  */
-public class RangeIterator<Integer> implements IndexIterator<Integer> {
+public class RangeIterator implements IndexIterator<Integer> {
 
     // fields
     private int start;

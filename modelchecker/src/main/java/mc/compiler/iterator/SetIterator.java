@@ -2,10 +2,8 @@ package mc.compiler.iterator;
 
 import java.util.List;
 
-/**
- * Created by sheriddavi on 19/01/17.
- */
-public class SetIterator<String> implements IndexIterator<String> {
+
+public class SetIterator implements IndexIterator<String> {
 
     // fields
     private List<String> set;
