@@ -1,7 +1,7 @@
 package com.redpois0n.terminal;
 
 public abstract class InputListener {
-	
+
 	/**
 	 * Called when a command is entered
 	 * @param terminal
@@ -13,7 +13,5 @@ public abstract class InputListener {
 	 * Called when Ctrl+C is pressed
 	 * @param terminal
 	 */
-	public void onTerminate(JTerminal terminal) {
-		
-	}
+	public void onTerminate(JTerminal terminal) {}
 }

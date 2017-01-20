@@ -7,9 +7,6 @@ import mc.compiler.ast.SetNode;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-/**
- * Created by sheriddavi on 19/01/17.
- */
 public interface IndexIterator<E> extends Iterator<E> {
 
     static IndexIterator construct(ASTNode astNode){

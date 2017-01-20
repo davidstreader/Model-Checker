@@ -17,12 +17,10 @@ import javax.swing.*;
 
 public class TerminalWindow {
 
-  private Process p;
   @Getter
   private PrintWriter writer;
   @Getter
   private JTerminal terminal;
-  private JScrollPane scrollPane;
   private JPanel panel;
   @Getter
   private JProgressBar progressBar1;
@@ -31,17 +29,33 @@ public class TerminalWindow {
   @Getter
   JFrame frame;
 
-  public TerminalWindow(Main main) {
+  TerminalWindow(Main main) {
+    frame = new JFrame();
+    frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+    frame.addKeyListener(terminal.getKeyListener());
+    frame.add($$$getRootComponent$$$());
+    frame.setSize(800, 600);
+    frame.setVisible(true);
+    frame.setTitle("Model Checker Server Process");
+    listenToCommands(main);
+  }
+
+  /**
+   * Listen to commands entered into the terminal and forward them to the command manager
+   * @param main the main instance
+   */
+  private void listenToCommands(Main main) {
     terminal.addInputListener(new InputListener() {
       String cmd = "";
-
       @Override
       public void processCommand(JTerminal terminal, char c) {
         try {
           if (c == '\n') {
-            if (writer == null) {
+            if (!main.isReloaded()) {
+              //Execute the command
               main.getCommandManager().executeCommand(cmd);
             } else {
+              //Forward the command to the sub process.
               writer.println(cmd);
             }
             cmd = "";
@@ -58,18 +72,10 @@ public class TerminalWindow {
         main.stop();
       }
     });
-    frame = new JFrame();
-    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    frame.addKeyListener(terminal.getKeyListener());
-    frame.add(panel);
-    frame.setSize(675, 300);
-    frame.setVisible(true);
-    frame.setTitle("Model Checker Server Process");
   }
 
   public void wrapProcess(Process p) {
     try {
-      this.p = p;
       writer = new PrintWriter(p.getOutputStream(), true);
 
       new Thread(() -> {
@@ -112,11 +118,11 @@ public class TerminalWindow {
     panel.setBackground(new Color(-16777216));
     panel.setForeground(new Color(-16777216));
     panel.setName("null.contentPane");
-    scrollPane = new JScrollPane();
-    scrollPane.setForeground(new Color(-16777216));
-    scrollPane.setVisible(true);
-    panel.add(scrollPane, BorderLayout.CENTER);
-    scrollPane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEmptyBorder(), null));
+    final JScrollPane scrollPane1 = new JScrollPane();
+    scrollPane1.setForeground(new Color(-16777216));
+    scrollPane1.setVisible(true);
+    panel.add(scrollPane1, BorderLayout.CENTER);
+    scrollPane1.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEmptyBorder(), null));
     terminal = new JTerminal();
     terminal.setContentType("text/plain");
     terminal.setFont(new Font("monospaced", terminal.getFont().getStyle(), 14));
@@ -128,7 +134,7 @@ public class TerminalWindow {
     terminal.setText("");
     terminal.setVerifyInputWhenFocusTarget(true);
     terminal.setVisible(true);
-    scrollPane.setViewportView(terminal);
+    scrollPane1.setViewportView(terminal);
     progressPanel = new JPanel();
     progressPanel.setLayout(new GridLayoutManager(3, 1, new Insets(0, 0, 0, 0), -1, -1));
     progressPanel.setBackground(new Color(-16777216));

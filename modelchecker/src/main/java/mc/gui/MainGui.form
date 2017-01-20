@@ -11,7 +11,7 @@
     </properties>
     <border type="none"/>
     <children>
-      <scrollpane id="9a9a8" binding="scrollPane">
+      <scrollpane id="9a9a8">
         <constraints border-constraint="Center"/>
         <properties>
           <foreground color="-16777216"/>

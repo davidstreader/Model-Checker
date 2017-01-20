@@ -8,11 +8,7 @@ import mc.util.expr.ExpressionEvaluator;
 import java.util.Collections;
 
 public class SimplifyCommand implements Command{
-  private Main main;
   private JavaSMTConverter eval = new JavaSMTConverter();
-  public SimplifyCommand(Main main) {
-    this.main = main;
-  }
   @Override
   public void run(String[] args) {
     String expr = String.join(" ",args);

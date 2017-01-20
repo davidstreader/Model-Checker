@@ -1,6 +1,6 @@
 package mc.solver;
 
-import com.google.common.base.Ascii;
+import mc.util.Utils;
 import mc.util.expr.*;
 import org.sosy_lab.common.NativeLibraries;
 import org.sosy_lab.common.ShutdownNotifier;
@@ -16,7 +16,6 @@ import java.lang.reflect.Field;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,14 +25,13 @@ public class JavaSMTConverter {
   private static SolverContext context;
   static {
     try {
-      String arch = Ascii.toLowerCase(NativeLibraries.Architecture.guessVmArchitecture().name());
-      String os = Ascii.toLowerCase(NativeLibraries.OS.guessOperatingSystem().name());
       //By default, JavaSMT looks for native libraries next to the jar file.
       //However, this doesn't help us since the jar its reading is in the maven directory.
       //So here we override it with the native library.
+      //This only works on windows.
       Field nativePath = NativeLibraries.class.getDeclaredField("nativePath");
       nativePath.setAccessible(true);
-      nativePath.set(null,Paths.get("native", arch + "-" + os));
+      nativePath.set(null,Paths.get(Utils.getArch()));
     } catch (NoSuchFieldException | IllegalAccessException e) {
       e.printStackTrace();
     }
@@ -66,11 +64,12 @@ public class JavaSMTConverter {
     try {
       Formula f = context.getFormulaManager().simplify(convert(expr));
       String out = f.toString();
-      //Convert from #x00000000 hex format to decimal
+      //Convert from #x00000000 (BitVector) hex format to decimal
       Matcher matcher = Pattern.compile("#x\\w{8}").matcher(out);
       while (matcher.find()) {
         out = out.replaceAll(matcher.group(0),""+Integer.parseInt(matcher.group(0).substring(2),16));
       }
+      //Replace Z3 functions with their respective symbols
       out = out.replace("and","&&");
       out = out.replace("bvand","&");
       out = out.replace("bvnot","~");
@@ -84,6 +83,7 @@ public class JavaSMTConverter {
       String[] tokens = out.split("\\s+");
       Collections.reverse(Arrays.asList(tokens));
       out = String.join(" ",tokens);
+      //Convert to Expression
       return new ShuntingYardAlgorithm().importExpr(out);
     } catch (InterruptedException e) {
       e.printStackTrace();
@@ -139,6 +139,7 @@ public class JavaSMTConverter {
     //This should never happen.
     throw new IllegalStateException("Solver reached an unexpected state");
   }
+  //We use BitVectors here instead of Integers so that we have access to bitwise operators.
   private BitvectorFormula convert(BitNotOperator expr) {
     return bvmgr().not((BitvectorFormula) convert(expr.getRightHandSide()));
   }
@@ -154,7 +155,6 @@ public class JavaSMTConverter {
   private BooleanFormula convert(ExclOrOperator expr) {
     return bmgr().xor((BooleanFormula) convert(expr.getLeftHandSide()), (BooleanFormula) convert(expr.getRightHandSide()));
   }
-
   private BooleanFormula convert(GreaterThanEqOperator expr) {
     return bvmgr().greaterOrEquals((BitvectorFormula) convert(expr.getLeftHandSide()), (BitvectorFormula) convert(expr.getRightHandSide()),true);
   }

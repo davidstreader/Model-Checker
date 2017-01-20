@@ -37,12 +37,14 @@ public class Main {
   @Getter
   private boolean reloaded = false;
   public Main(boolean reloaded) {
+    //Make sure that we kill the subprocess when this process exits.
     Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
     commandManager = new CommandManager(this);
     Ansi.setEnabled(true);
     //getResource will add a jar: to the start of files inside jars.
     isJar = Main.class.getResource("Main.class").toString().startsWith("jar");
     this.reloaded = reloaded;
+    //If this is a sub process, or we are running headless, dont start the gui.
     if (!reloaded && !GraphicsEnvironment.isHeadless()) {
       gui = new MainGui(this);
     }
@@ -50,6 +52,7 @@ public class Main {
     if (!isJar && GraphicsEnvironment.isHeadless()) {
       AnsiConsole.systemInstall();
     }
+    //Start the server if we aren't running from a jar or are in a sub process
     if (!isJar || reloaded) {
       webServer = new WebServer();
       webServer.startServer();
@@ -57,6 +60,7 @@ public class Main {
       System.out.println(ansi().render("@|green Started Server!|@"));
       return;
     }
+    //Load all the bower dependencies
     new BowerManager(this).initBower();
     startWrappedProcess();
   }
@@ -82,6 +86,7 @@ public class Main {
   }
 
   public void stop() {
+    //Kill the sub prcess if it exists
     if (subProcess != null) {
       subProcess.destroy();
     }
@@ -103,10 +108,14 @@ public class Main {
     System.out.println(ansi().render("@|red Native arguments not found!|@"));
     System.out.println(ansi().render("@|yellow Starting sub-process with native arguments|@"));
     String nativePath = Paths.get("native", getArch()).toString();
+    //Easy way to get the current jar file
     String jarPath = WebServer.class.getResource("WebServer.class").toString().split("!")[0].replace("jar:file:/","");
+    //Set java.library.path to the native path for windows
     ProcessBuilder builder = new ProcessBuilder("java","-Djava.library.path="+nativePath,"-jar",jarPath,"reloaded");
     Map<String, String> envs = builder.environment();
+    //Set the linux native path
     envs.put("LD_LIBRARY_PATH", nativePath);
+    //Set the mac native path
     envs.put("DYLD_LIBRARY_PATH", nativePath);
     spawnProcess(builder);
   }

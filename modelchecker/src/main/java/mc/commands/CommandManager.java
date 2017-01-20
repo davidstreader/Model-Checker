@@ -12,11 +12,10 @@ import java.util.Objects;
 
 public class CommandManager {
   private Map<String,Command> commandMap = new HashMap<>();
-  private Main main;
+  //Load commands
   public CommandManager(Main main) {
-    this.main = main;
-    commandMap.put("eval",new EvalCommand(main));
-    commandMap.put("simp",new SimplifyCommand(main));
+    commandMap.put("eval",new EvalCommand());
+    commandMap.put("simp",new SimplifyCommand());
     commandMap.put("simplify",commandMap.get("simp"));
     commandMap.put("exit",new ExitCommand(main));
   }
@@ -30,6 +29,9 @@ public class CommandManager {
     else System.out.println(Ansi.ansi().render("@|red Unable to find command |@"));
   }
 
+  /**
+   * Listens to System.in, parsing commands and passing them to executeCommand
+   */
   public void registerInput() {
     Thread thread = new Thread(()->{
       BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));

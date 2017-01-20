@@ -13,8 +13,9 @@ class TerminalOutputStream extends OutputStream {
   private int i = 0;
   @Override
   public void write(int b) throws IOException {
+    //Buffer all chars written to this stream
     buffer[i++] = (char)b;
-    //Write when we hit a newline.
+    //Write when we hit a newline or run out of space in the buffer.
     if ((char) b == '\n' || i == 4096) {
       terminal.getTerminal().append(new String(buffer,0,i));
       i = 0;
