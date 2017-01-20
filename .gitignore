@@ -41,3 +41,4 @@ run
 /modelchecker/.gradle/
 /modelchecker/build/
 /bower_install/
+/ModelChecker.jar

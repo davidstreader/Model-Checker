@@ -19,6 +19,7 @@ import static mc.util.Utils.getArch;
 import static org.fusesource.jansi.Ansi.ansi;
 
 public class Main {
+  private PrintStream out = System.out;
   @Getter
   private CommandManager commandManager;
   @Getter
@@ -55,7 +56,7 @@ public class Main {
       webServer = new WebServer();
       webServer.startServer();
       commandManager.registerInput();
-      System.out.print(ansi().render("@|green Started Server!|@"));
+      System.out.println(ansi().render("@|green Started Server!|@"));
       return;
     }
     new BowerManager(this).initBower();
@@ -86,7 +87,7 @@ public class Main {
     if (subProcess != null) {
       subProcess.destroy();
     }
-    System.exit(0);
+    Runtime.getRuntime().halt(0);
   }
 
   public static void main(String[] args) {

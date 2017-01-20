@@ -34,6 +34,7 @@ public class TerminalWindow {
   public TerminalWindow(Main main) {
     terminal.addInputListener(new InputListener() {
       String cmd = "";
+
       @Override
       public void processCommand(JTerminal terminal, char c) {
         try {
@@ -51,6 +52,7 @@ public class TerminalWindow {
           ex.printStackTrace();
         }
       }
+
       @Override
       public void onTerminate(JTerminal terminal) {
         main.stop();
@@ -139,7 +141,7 @@ public class TerminalWindow {
     progressPanel.add(spacer1, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
     final JLabel label1 = new JLabel();
     label1.setForeground(new Color(-1));
-    label1.setText("Loading");
+    label1.setText("Extracting NPM");
     progressPanel.add(label1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
   }
 

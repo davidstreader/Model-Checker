@@ -20,7 +20,7 @@ public class WebSocketServer {
 
 
     server = new SocketIOServer(config);
-    server.start();
+    server.startAsync();
     server.addEventListener("compile",Map.class, (client, data, ackSender) -> {
       JSONObject ast = new JSONObject(data);
       System.out.println(new JSONToASTConverter().convert(ast));
