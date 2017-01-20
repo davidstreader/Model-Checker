@@ -11,7 +11,6 @@ import org.fusesource.jansi.AnsiConsole;
 
 import java.awt.*;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.nio.file.Paths;
 import java.util.Map;
 
@@ -19,7 +18,6 @@ import static mc.util.Utils.getArch;
 import static org.fusesource.jansi.Ansi.ansi;
 
 public class Main {
-  private PrintStream out = System.out;
   @Getter
   private CommandManager commandManager;
   @Getter
