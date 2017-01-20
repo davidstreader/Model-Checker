@@ -1,4 +1,4 @@
-package mc.util.expr.tests;
+package mc.util.expr;
 
 import mc.util.expr.Expression;
 import mc.util.expr.ExpressionEvaluator;

@@ -1,4 +1,4 @@
-package mc.util.expr.tests;
+package mc.util.expr;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
