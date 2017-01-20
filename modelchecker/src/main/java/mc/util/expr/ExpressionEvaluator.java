@@ -72,6 +72,12 @@ public class ExpressionEvaluator {
         else if(expression instanceof GreaterThanEqOperator){
             return evaluate((GreaterThanEqOperator)expression, variableMap);
         }
+        else if(expression instanceof NotOperator){
+            return evaluate((NotOperator)expression, variableMap);
+        }
+        else if(expression instanceof BitNotOperator){
+            return evaluate((BitNotOperator)expression, variableMap);
+        }
 
         throw new IllegalArgumentException("");
     }
@@ -205,5 +211,15 @@ public class ExpressionEvaluator {
         int rhs = evaluate(expression.getRightHandSide(), variableMap);
         boolean result = lhs >= rhs;
         return result ? 1 : 0;
+    }
+
+    private int evaluate(NotOperator expression, Map<String, Integer> variableMap){
+        int rhs = evaluate(expression.getRightHandSide(), variableMap);
+        return rhs == 0 ? 1 : 0;
+    }
+
+    private int evaluate(BitNotOperator expression, Map<String, Integer> variableMap){
+        int rhs = evaluate(expression.getRightHandSide(), variableMap);
+        return ~rhs;
     }
 }
