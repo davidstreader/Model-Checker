@@ -8,6 +8,10 @@ public class ConstToken extends KeywordToken {
 		super(location);
 	}
 
+	public boolean equals(Object obj){
+		return obj instanceof ConstToken;
+	}
+
 	public String toString(){
 		return "const";
 	}

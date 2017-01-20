@@ -8,6 +8,10 @@ public class MultiplicationToken extends OperatorToken {
 		super(location);
 	}
 
+	public boolean equals(Object obj){
+		return obj instanceof MultiplicationToken;
+	}
+
 	public String toString(){
 		return "*";
 	}

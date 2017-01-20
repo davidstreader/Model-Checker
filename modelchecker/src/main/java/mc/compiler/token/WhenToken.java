@@ -8,6 +8,10 @@ public class WhenToken extends KeywordToken {
 		super(location);
 	}
 
+	public boolean equals(Object obj){
+		return obj instanceof WhenToken;
+	}
+
 	public String toString(){
 		return "when";
 	}

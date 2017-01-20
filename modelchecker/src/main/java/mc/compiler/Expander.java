@@ -6,19 +6,65 @@ import mc.util.expr.Expression;
 import mc.util.expr.ExpressionEvaluator;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Expander {
-	
+
 	public AbstractSyntaxTree expand(AbstractSyntaxTree ast){
 
 		List<ProcessNode> processes = ast.getProcesses();
 		for(int i = 0; i < processes.size(); i++){
 			ProcessNode process = processes.get(i);
+			Map<String, Object> variableMap = new HashMap<String, Object>();
+			ASTNode root = expand(process, variableMap);
+			process.setProcess(root);
+
+			List<LocalProcessNode> localProcesses = expandLocalProcesses(process.getLocalProcesses(), variableMap);
+			process.setLocalProcesses(localProcesses);
 		}
 
 		return ast;
 	}
-	
+
+	private List<LocalProcessNode> expandLocalProcesses(List<LocalProcessNode> localProcesses, Map<String, Object> variableMap){
+		List<LocalProcessNode> newLocalProcesses = new ArrayList<LocalProcessNode>();
+
+		for(int i = 0; i < localProcesses.size(); i++){
+			LocalProcessNode localProcess = localProcesses.get(i);
+			if(localProcess.getRanges() == null){
+				ASTNode root = expand(localProcess.getProcess(), variableMap);
+				localProcess.setProcess(root);
+				newLocalProcesses.add(localProcess);
+			}
+			else{
+				newLocalProcesses.addAll(expandLocalProcesses(localProcess, variableMap, localProcess.getRanges().getRanges(), 0));
+			}
+		}
+
+		return newLocalProcesses;
+	}
+
+	private List<LocalProcessNode> expandLocalProcesses(LocalProcessNode localProcess, Map<String, Object> variableMap, List<IndexNode> ranges, int index){
+		List<LocalProcessNode> newLocalProcesses = new ArrayList<LocalProcessNode>();
+
+		if(index < ranges.size()){
+			IndexNode range = ranges.get(index);
+			IndexIterator iterator = IndexIterator.construct(range.getRange());
+			String variable = range.getVariable();
+			variableMap.put(variable, iterator.next());
+			newLocalProcesses.addAll(expandLocalProcesses(localProcess, variableMap, ranges, index + 1));
+		}
+		else{
+			// TODO: need to clone the local process
+			ASTNode root = expand(localProcess.getProcess(), variableMap);
+			localProcess.setProcess(root);
+			newLocalProcesses.add(localProcess);
+		}
+
+		return newLocalProcesses;
+	}
+
 	private ASTNode expand(ASTNode astNode, Map<String, Object> variableMap){
 		if(astNode instanceof ActionLabelNode){
 			astNode = expand((ActionLabelNode)astNode, variableMap);
@@ -41,38 +87,40 @@ public class Expander {
 		else if(astNode instanceof FunctionNode){
 			astNode = expand((FunctionNode)astNode, variableMap);
 		}
-        else if(astNode instanceof IdentifierNode){
-            astNode = expand((IdentifierNode)astNode, variableMap);
-        }
+		else if(astNode instanceof IdentifierNode){
+			astNode = expand((IdentifierNode)astNode, variableMap);
+		}
 		else if(astNode instanceof ForAllStatementNode){
 			astNode = expand((ForAllStatementNode)astNode, variableMap);
 		}
-		
+
 		return astNode;
 	}
-	
+
 	private ActionLabelNode expand(ActionLabelNode astNode, Map<String, Object> variableMap){
-		return null;
+		String action = processVariables(astNode.getAction(), variableMap);
+		astNode.setAction(action);
+		return astNode;
 	}
-	
+
 	private ASTNode expand(IndexNode astNode, Map<String, Object> variableMap){
 		IndexIterator iterator = IndexIterator.construct(astNode.getRange());
 		Stack<ASTNode> iterations = new Stack<ASTNode>();
-        while(iterator.hasNext()){
+		while(iterator.hasNext()){
 			Object element = iterator.next();
-            variableMap.put(astNode.getVariable(), element);
-            iterations.push(expand(astNode.getProcess(), variableMap));
+			variableMap.put(astNode.getVariable(), element);
+			iterations.push(expand(astNode.getProcess(), variableMap));
 		}
 
-        ASTNode node = iterations.pop();
-        while(!iterations.isEmpty()){
-            ASTNode nextNode = iterations.pop();
-            node = new ChoiceNode(nextNode, node, astNode.getLocation());
-        }
+		ASTNode node = iterations.pop();
+		while(!iterations.isEmpty()){
+			ASTNode nextNode = iterations.pop();
+			node = new ChoiceNode(nextNode, node, astNode.getLocation());
+		}
 
-        return node;
+		return node;
 	}
-	
+
 	private SequenceNode expand(SequenceNode astNode, Map<String, Object> variableMap){
 		ActionLabelNode from = expand(astNode.getFrom(), variableMap);
 		ASTNode to = expand(astNode.getTo(), variableMap);
@@ -80,7 +128,7 @@ public class Expander {
 		astNode.setTo(to);
 		return astNode;
 	}
-	
+
 	private ASTNode expand(ChoiceNode astNode, Map<String, Object> variableMap){
 		ASTNode process1 = expand(astNode.getFirstProcess(), variableMap);
 		ASTNode process2 = expand(astNode.getSecondProcess(), variableMap);
@@ -97,7 +145,7 @@ public class Expander {
 		astNode.setSecondProcess(process2);
 		return astNode;
 	}
-	
+
 	private ASTNode expand(CompositeNode astNode, Map<String, Object> variableMap){
 		ASTNode process1 = expand(astNode.getFirstProcess(), variableMap);
 		ASTNode process2 = expand(astNode.getSecondProcess(), variableMap);
@@ -114,7 +162,7 @@ public class Expander {
 		astNode.setSecondProcess(process2);
 		return astNode;
 	}
-	
+
 	private ASTNode expand(IfStatementNode astNode, Map<String, Object> variableMap){
 		boolean condition = evaluateExpression(astNode.getCondition(), variableMap);
 		if(condition){
@@ -126,24 +174,52 @@ public class Expander {
 
 		return new EmptyNode();
 	}
-	
+
 	private FunctionNode expand(FunctionNode astNode, Map<String, Object> variableMap){
 		ASTNode process = expand(astNode.getProcess(), variableMap);
 		astNode.setProcess(process);
 		return astNode;
 	}
 
-    private IdentifierNode expand(IdentifierNode astNode, Map<String, Object> variableMap){
-        return null;
-    }
-
-	private ForAllStatementNode expand(ForAllStatementNode astNode, Map<String, Object> variableMap){
-		return null;
+	private IdentifierNode expand(IdentifierNode astNode, Map<String, Object> variableMap){
+		String identifier = processVariables(astNode.getIdentifier(), variableMap);
+		astNode.setIdentifer(identifier);
+		return astNode;
 	}
 
-    private CompositeNode expand(ASTNode process, Map<String, Object> variableMap, List<ASTNode> ranges){
-        return null;
-    }
+	private ASTNode expand(ForAllStatementNode astNode, Map<String, Object> variableMap){
+		Stack<ASTNode> nodes = expand(astNode.getProcess(), variableMap, astNode.getRanges().getRanges(), 0);
+
+		ASTNode node = nodes.pop();
+		while(!nodes.isEmpty()){
+			ASTNode nextNode = nodes.pop();
+			node = new CompositeNode(nextNode, node, astNode.getLocation());
+		}
+
+		return node;
+	}
+
+	private Stack<ASTNode> expand(ASTNode process, Map<String, Object> variableMap, List<IndexNode> ranges, int index){
+		Stack<ASTNode> nodes = new Stack<ASTNode>();
+
+		if(index < ranges.size()){
+			IndexNode node = ranges.get(index);
+			IndexIterator iterator = IndexIterator.construct(node.getRange());
+			String variable = node.getVariable();
+
+			while(iterator.hasNext()){
+				variableMap.put(variable, iterator.next());
+				nodes.addAll(expand(process, variableMap, ranges, index + 1));
+			}
+		}
+		else{
+			// TODO: need to clone process
+			process = expand(process, variableMap);
+			nodes.add(process);
+		}
+
+		return nodes;
+	}
 
 	private boolean evaluateExpression(Expression condition, Map<String, Object> variableMap){
 		// remove all strings from the variableMap
@@ -157,5 +233,22 @@ public class Expander {
 
 		int result = new ExpressionEvaluator().evaluateExpression(condition, variables);
 		return result != 0;
+	}
+
+	private String processVariables(String string, Map<String, Object> variableMap){
+		Pattern pattern = Pattern.compile("\\$v[0-9]+");
+
+		while(true){
+			Matcher matcher = pattern.matcher(string);
+			if(matcher.find()){
+				String variable = matcher.group();
+				string = string.replaceFirst(variable, variableMap.get(variable).toString());
+			}
+			else{
+				break;
+			}
+		}
+
+		return string;
 	}
 }

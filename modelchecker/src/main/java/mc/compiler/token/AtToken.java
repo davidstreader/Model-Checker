@@ -8,6 +8,10 @@ public class AtToken extends SymbolToken {
 		super(location);
 	}
 
+	public boolean equals(Object obj){
+		return obj instanceof AtToken;
+	}
+
 	public String toString(){
 		return "@";
 	}

@@ -8,6 +8,10 @@ public class DollarToken extends SymbolToken {
 		super(location);
 	}
 
+	public boolean equals(Object obj){
+		return obj instanceof DollarToken;
+	}
+
 	public String toString(){
 		return "$";
 	}

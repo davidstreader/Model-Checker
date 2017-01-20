@@ -8,6 +8,10 @@ public class IfToken extends KeywordToken {
 		super(location);
 	}
 
+	public boolean equals(Object obj){
+		return obj instanceof IfToken;
+	}
+
 	public String toString(){
 		return "if";
 	}

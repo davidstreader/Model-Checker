@@ -7,18 +7,18 @@ import mc.util.Location;
 public class RangesNode extends ASTNode {
 
 	// fields
-	private List<ASTNode> ranges;
+	private List<IndexNode> ranges;
 
-	public RangesNode(List<ASTNode> ranges, Location location){
+	public RangesNode(List<IndexNode> ranges, Location location){
 		super(location);
 		this.ranges = ranges;
 	}
 
-	public List<ASTNode> getRanges(){
+	public List<IndexNode> getRanges(){
 		return ranges;
 	}
 
-	public void setRanges(List<ASTNode> ranges){
+	public void setRanges(List<IndexNode> ranges){
 		this.ranges = ranges;
 	}
 }

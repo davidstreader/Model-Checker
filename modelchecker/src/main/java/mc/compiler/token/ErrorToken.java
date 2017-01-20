@@ -8,6 +8,10 @@ public class ErrorToken extends TerminalToken {
 		super(location);
 	}
 
+	public boolean equals(Object obj){
+		return obj instanceof ErrorToken;
+	}
+
 	public String toString(){
 		return "ERROR";
 	}

@@ -8,6 +8,10 @@ public class AdditionToken extends OperatorToken {
 		super(location);
 	}
 
+	public boolean equals(Object obj){
+		return obj instanceof AdditionToken;
+	}
+
 	public String toString(){
 		return "+";
 	}

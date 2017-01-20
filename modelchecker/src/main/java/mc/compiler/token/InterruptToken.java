@@ -8,6 +8,10 @@ public class InterruptToken extends SymbolToken {
 		super(location);
 	}
 
+	public boolean equals(Object obj){
+		return obj instanceof InterruptToken;
+	}
+
 	public String toString(){
 		return "~>";
 	}

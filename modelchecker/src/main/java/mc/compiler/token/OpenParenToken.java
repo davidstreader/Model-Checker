@@ -8,6 +8,10 @@ public class OpenParenToken extends SymbolToken {
 		super(location);
 	}
 
+	public boolean equals(Object obj){
+		return obj instanceof OpenParenToken;
+	}
+
 	public String toString(){
 		return "(";
 	}

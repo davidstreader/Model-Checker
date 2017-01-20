@@ -8,6 +8,10 @@ public class SequenceToken extends SymbolToken {
 		super(location);
 	}
 
+	public boolean equals(Object obj){
+		return obj instanceof SequenceToken;
+	}
+
 	public String toString(){
 		return "->";
 	}

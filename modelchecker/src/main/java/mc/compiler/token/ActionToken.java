@@ -15,6 +15,18 @@ public class ActionToken extends Token {
 		return action;
 	}
 
+	public boolean equals(Object obj){
+		if(obj == this){
+			return true;
+		}
+		if(obj instanceof ActionToken){
+			ActionToken token = (ActionToken)obj;
+			return action.equals(token.getAction());
+		}
+
+		return false;
+	}
+
 	public String toString(){
 		return action;
 	}

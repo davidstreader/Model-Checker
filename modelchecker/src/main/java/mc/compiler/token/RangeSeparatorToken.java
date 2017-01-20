@@ -8,6 +8,10 @@ public class RangeSeparatorToken extends SymbolToken {
 		super(location);
 	}
 
+	public boolean equals(Object obj){
+		return obj instanceof RangeSeparatorToken;
+	}
+
 	public String toString(){
 		return "..";
 	}

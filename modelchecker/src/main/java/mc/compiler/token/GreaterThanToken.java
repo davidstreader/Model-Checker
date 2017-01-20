@@ -8,6 +8,10 @@ public class GreaterThanToken extends OperatorToken {
 		super(location);
 	}
 
+	public boolean equals(Object obj){
+		return obj instanceof GreaterThanToken;
+	}
+
 	public String toString(){
 		return ">";
 	}
