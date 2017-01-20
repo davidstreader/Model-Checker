@@ -15,7 +15,7 @@ shadowJar {
   destinationDir = new File("../")
 }
 sourceCompatibility = 1.8
-mainClassName = 'mc.webserver.WebServer'
+mainClassName = 'mc.Main'
 repositories {
   mavenCentral()
   maven {

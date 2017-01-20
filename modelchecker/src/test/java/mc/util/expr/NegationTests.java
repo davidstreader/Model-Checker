@@ -1,7 +1,5 @@
 package mc.util.expr;
 
-import mc.util.expr.Expression;
-import mc.util.expr.ExpressionEvaluator;
 import org.junit.Test;
 
 import java.util.HashMap;
