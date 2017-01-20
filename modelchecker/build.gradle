@@ -1,10 +1,21 @@
+plugins {
+  id 'com.github.johnrengelman.shadow' version '1.2.4'
+}
+
 group 'net.modelchecker'
 version '1.0-SNAPSHOT'
 
 apply plugin: 'java'
-
+apply plugin: 'application'
+apply plugin: 'com.github.johnrengelman.shadow'
+shadowJar {
+  baseName = 'ModelChecker'
+  classifier = null
+  version = null
+  destinationDir = new File("../")
+}
 sourceCompatibility = 1.8
-
+mainClassName = 'mc.webserver.WebServer'
 repositories {
   mavenCentral()
   maven {
@@ -30,21 +41,7 @@ dependencies {
   compile group: 'com.fasterxml.jackson.module', name: 'jackson-module-parameter-names', version: '2.8.6'
   compile group: 'com.google.guava', name: 'guava', version: '21.0'
   compile group: 'com.google.code.findbugs', name: 'annotations', version: '3.0.1u2'
-  // https://mvnrepository.com/artifact/org.sosy-lab/java-smt
   compile group: 'org.sosy_lab', name: 'javasmt', version: '1.0.1-60-g9a31f2a', configuration: 'runtime'
-
-
-
-
+  compile group: 'net.lingala.zip4j', name: 'zip4j', version: '1.3.2'
 
 }
-
-task copyRuntimeLibs(type: Copy) {
-  dependsOn build
-  into "../lib"
-
-  from configurations.testRuntime
-  from jar
-
-}
-build.finalizedBy(copyRuntimeLibs)

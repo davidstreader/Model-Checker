@@ -40,3 +40,4 @@ modelsolver/build
 run
 /modelchecker/.gradle/
 /modelchecker/build/
+/bower_install/
