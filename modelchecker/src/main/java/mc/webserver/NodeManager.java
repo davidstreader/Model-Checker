@@ -19,7 +19,7 @@ import static org.fusesource.jansi.Ansi.ansi;
  * Manage loading dependencies for bower
  */
 @AllArgsConstructor
-public class BowerManager {
+public class NodeManager {
   private Main main;
   public void initBower() {
     try {
@@ -30,6 +30,7 @@ public class BowerManager {
     }
     installBower();
     runBower();
+    vulcanize();
   }
 
   private void runBower() {
@@ -87,5 +88,10 @@ public class BowerManager {
       }
     }
 
+  }
+  public void vulcanize() {
+    boolean isWin = NativeLibraries.OS.guessOperatingSystem() == NativeLibraries.OS.WINDOWS;
+    ProcessBuilder builder = new ProcessBuilder(Paths.get("bower_install", "npm"+ (isWin ? ".cmd" : "")).toAbsolutePath().toString(),"run-script","vulcanize");
+    main.spawnProcess(builder);
   }
 }

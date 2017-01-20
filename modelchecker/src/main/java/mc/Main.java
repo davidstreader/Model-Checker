@@ -4,12 +4,13 @@ import lombok.Getter;
 import lombok.Setter;
 import mc.commands.CommandManager;
 import mc.gui.MainGui;
-import mc.webserver.BowerManager;
+import mc.webserver.NodeManager;
 import mc.webserver.WebServer;
 import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.AnsiConsole;
 
 import java.awt.*;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Map;
@@ -36,6 +37,9 @@ public class Main {
   private boolean isJar = false;
   @Getter
   private boolean reloaded = false;
+  public Main() {
+    reloaded = false;
+  }
   public Main(boolean reloaded) {
     //Make sure that we kill the subprocess when this process exits.
     Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
@@ -61,7 +65,9 @@ public class Main {
       return;
     }
     //Load all the bower dependencies
-    new BowerManager(this).initBower();
+    //Dont build node deps in production
+    if (new File("executables").exists())
+      new NodeManager(this).initBower();
     startWrappedProcess();
   }
   /**
@@ -71,13 +77,13 @@ public class Main {
   public void spawnProcess(ProcessBuilder builder) {
     if (stopped) return;
     //If headless, redirect the output to the standard terminal
-    if (GraphicsEnvironment.isHeadless()) builder.inheritIO();
+    if (gui == null) builder.inheritIO();
       //Else redirect error so we can get the processes output stream
     else builder.redirectErrorStream(true);
     try {
       subProcess = builder.start();
       //Redirect the terminal to the gui
-      if (!GraphicsEnvironment.isHeadless())
+      if (gui != null)
         gui.redirectTerminalProcess(subProcess);
       subProcess.waitFor();
     } catch (IOException | InterruptedException e) {
