@@ -8,6 +8,10 @@ public class BitOrToken extends OperatorToken {
 		super(location);
 	}
 
+	public boolean equals(Object obj){
+		return obj instanceof BitOrToken;
+	}
+
 	public String toString(){
 		return "|";
 	}

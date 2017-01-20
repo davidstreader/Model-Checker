@@ -8,6 +8,10 @@ public class SetToken extends KeywordToken {
 		super(location);
 	}
 
+	public boolean equals(Object obj){
+		return obj instanceof SetToken;
+	}
+
 	public String toString(){
 		return "set";
 	}

@@ -8,6 +8,10 @@ public class OpenBracketToken extends SymbolToken {
 		super(location);
 	}
 
+	public boolean equals(Object obj){
+		return obj instanceof OpenBracketToken;
+	}
+
 	public String toString(){
 		return "[";
 	}

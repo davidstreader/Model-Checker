@@ -8,6 +8,10 @@ public class ElseToken extends KeywordToken {
 		super(location);
 	}
 
+	public boolean equals(Object obj){
+		return obj instanceof ElseToken;
+	}
+
 	public String toString(){
 		return "else";
 	}

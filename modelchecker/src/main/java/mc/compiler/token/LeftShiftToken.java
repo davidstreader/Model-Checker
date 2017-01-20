@@ -8,6 +8,10 @@ public class LeftShiftToken extends OperatorToken {
 		super(location);
 	}
 
+	public boolean equals(Object obj){
+		return obj instanceof LeftShiftToken;
+	}
+
 	public String toString(){
 		return "<<";
 	}

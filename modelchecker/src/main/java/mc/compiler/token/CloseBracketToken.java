@@ -8,6 +8,10 @@ public class CloseBracketToken extends SymbolToken {
 		super(location);
 	}
 
+	public boolean equals(Object obj){
+		return obj instanceof CloseBracketToken;
+	}
+
 	public String toString(){
 		return "]";
 	}

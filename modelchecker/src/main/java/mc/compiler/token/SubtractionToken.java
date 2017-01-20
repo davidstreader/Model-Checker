@@ -8,6 +8,10 @@ public class SubtractionToken extends OperatorToken {
 		super(location);
 	}
 
+	public boolean equals(Object obj){
+		return obj instanceof SubtractionToken;
+	}
+
 	public String toString(){
 		return "-";
 	}

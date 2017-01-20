@@ -15,6 +15,18 @@ public class IdentifierToken extends Token {
 		return identifier;
 	}
 
+	public boolean equals(Object obj){
+		if(obj == this){
+			return true;
+		}
+		if(obj instanceof IdentifierToken){
+			IdentifierToken token = (IdentifierToken)obj;
+			return identifier.equals(token.getIdentifier());
+		}
+
+		return false;
+	}
+
 	public String toString(){
 		return identifier;
 	}

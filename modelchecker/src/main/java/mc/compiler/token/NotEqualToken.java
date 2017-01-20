@@ -8,6 +8,10 @@ public class NotEqualToken extends OperatorToken {
 		super(location);
 	}
 
+	public boolean equals(Object obj){
+		return obj instanceof NotEqualToken;
+	}
+
 	public String toString(){
 		return "!=";
 	}

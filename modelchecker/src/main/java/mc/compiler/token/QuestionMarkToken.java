@@ -8,6 +8,10 @@ public class QuestionMarkToken extends SymbolToken {
 		super(location);
 	}
 
+	public boolean equals(Object obj){
+		return obj instanceof QuestionMarkToken;
+	}
+
 	public String toString(){
 		return "?";
 	}

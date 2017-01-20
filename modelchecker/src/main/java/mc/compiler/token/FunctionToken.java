@@ -15,6 +15,18 @@ public class FunctionToken extends Token {
 		return function;
 	}
 
+	public boolean equals(Object obj){
+		if(obj == this){
+			return true;
+		}
+		if(obj instanceof FunctionToken){
+			FunctionToken token = (FunctionToken)obj;
+			return function.equals(token.getFunction());
+		}
+
+		return false;
+	}
+
 	public String toString(){
 		return function;
 	}

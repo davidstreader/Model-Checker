@@ -8,6 +8,10 @@ public class StopToken extends TerminalToken {
 		super(location);
 	}
 
+	public boolean equals(Object obj){
+		return obj instanceof StopToken;
+	}
+
 	public String toString(){
 		return "STOP";
 	}

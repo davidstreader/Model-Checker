@@ -8,6 +8,10 @@ public class OrToken extends OperatorToken {
 		super(location);
 	}
 
+	public boolean equals(Object obj){
+		return obj instanceof OrToken;
+	}
+
 	public String toString(){
 		return "||";
 	}

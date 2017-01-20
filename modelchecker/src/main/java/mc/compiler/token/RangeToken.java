@@ -8,6 +8,10 @@ public class RangeToken extends KeywordToken {
 		super(location);
 	}
 
+	public boolean equals(Object obj){
+		return obj instanceof RangeToken;
+	}
+
 	public String toString(){
 		return "range";
 	}

@@ -8,6 +8,10 @@ public class DotToken extends SymbolToken {
 		super(location);
 	}
 
+	public boolean equals(Object obj){
+		return obj instanceof DotToken;
+	}
+
 	public String toString(){
 		return ".";
 	}

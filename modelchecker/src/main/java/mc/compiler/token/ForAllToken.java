@@ -8,6 +8,10 @@ public class ForAllToken extends KeywordToken {
 		super(location);
 	}
 
+	public boolean equals(Object obj){
+		return obj instanceof ForAllToken;
+	}
+
 	public String toString(){
 		return "forall";
 	}

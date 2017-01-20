@@ -8,6 +8,10 @@ public class NegateToken extends OperatorToken {
 		super(location);
 	}
 
+	public boolean equals(Object obj){
+		return obj instanceof NegateToken;
+	}
+
 	public String toString(){
 		return "!";
 	}
