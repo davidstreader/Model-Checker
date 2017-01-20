@@ -9,31 +9,10 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import mc.compiler.ast.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import mc.compiler.ast.ASTNode;
-import mc.compiler.ast.AbstractSyntaxTree;
-import mc.compiler.ast.ActionLabelNode;
-import mc.compiler.ast.ChoiceNode;
-import mc.compiler.ast.CompositeNode;
-import mc.compiler.ast.ForAllStatementNode;
-import mc.compiler.ast.FunctionNode;
-import mc.compiler.ast.HidingNode;
-import mc.compiler.ast.IdentifierNode;
-import mc.compiler.ast.IfStatementNode;
-import mc.compiler.ast.IndexNode;
-import mc.compiler.ast.InterruptNode;
-import mc.compiler.ast.LocalProcessNode;
-import mc.compiler.ast.OperationNode;
-import mc.compiler.ast.ProcessNode;
-import mc.compiler.ast.RangeNode;
-import mc.compiler.ast.RangesNode;
-import mc.compiler.ast.RelabelElementNode;
-import mc.compiler.ast.RelabelNode;
-import mc.compiler.ast.SequenceNode;
-import mc.compiler.ast.SetNode;
-import mc.compiler.ast.TerminalNode;
 import mc.util.Location;
 import mc.util.expr.Expression;
 
@@ -89,62 +68,62 @@ public class JSONToASTConverter {
 		String type = json.getString("type");
 		ASTNode node;
 		switch(type){
-		case "identifier":
-			node = convertIdentifierNode(json);
-			break;
-		case "action-label":
-			node = convertActionLabelNode(json);
-			break;
-		case "index":
-			node = convertIndexNode(json);
-			break;
-		case "range":
-			node = convertRangeNode(json);
-			break;
-		case "set":
-			node = convertSetNode(json);
-			break;
-		case "process":
-			node = convertProcessNode(json);
-			break;
-		case "composite":
-			node = convertCompositeNode(json);
-			break;
-		case "choice":
-			node = convertChoiceNode(json);
-			break;
-		case "sequence":
-			node = convertSequenceNode(json);
-			break;
-		case "terminal":
-			node = convertTerminalNode(json);
-			break;
-		case "if-statement":
-			node = convertIfStatementNode(json);
-			break;
-		case "function":
-			node = convertFunctionNode(json);
-			break;
-		case "forall":
-			node = convertForAllStatementNode(json);
-			break;
-		case "ranges":
-			node = convertRangesNode(json);
-			break;
-		case "relabel":
-			node = convertRelabelNode(json);
-			break;
-		case "hiding":
-			node = convertHidingNode(json);
-			break;
-		case "interrupt":
-			node = convertInterruptNode(json);
-			break;
-		case "operation":
-			node = convertOperationNode(json);
-			break;
-		default:
-			throw new IllegalArgumentException(type + " is not a correct json object");
+			case "identifier":
+				node = convertIdentifierNode(json);
+				break;
+			case "action-label":
+				node = convertActionLabelNode(json);
+				break;
+			case "index":
+				node = convertIndexNode(json);
+				break;
+			case "range":
+				node = convertRangeNode(json);
+				break;
+			case "set":
+				node = convertSetNode(json);
+				break;
+			case "process":
+				node = convertProcessNode(json);
+				break;
+			case "composite":
+				node = convertCompositeNode(json);
+				break;
+			case "choice":
+				node = convertChoiceNode(json);
+				break;
+			case "sequence":
+				node = convertSequenceNode(json);
+				break;
+			case "terminal":
+				node = convertTerminalNode(json);
+				break;
+			case "if-statement":
+				node = convertIfStatementNode(json);
+				break;
+			case "function":
+				node = convertFunctionNode(json);
+				break;
+			case "forall":
+				node = convertForAllStatementNode(json);
+				break;
+			case "ranges":
+				node = convertRangesNode(json);
+				break;
+			case "relabel":
+				node = convertRelabelNode(json);
+				break;
+			case "hiding":
+				node = convertHidingNode(json);
+				break;
+			case "interrupt":
+				node = convertInterruptNode(json);
+				break;
+			case "operation":
+				node = convertOperationNode(json);
+				break;
+			default:
+				throw new IllegalArgumentException(type + " is not a correct json object");
 		}
 
 		if(json.has("label")){
@@ -177,7 +156,11 @@ public class JSONToASTConverter {
 	public IndexNode convertIndexNode(JSONObject json){
 		String variable = json.getString("variable");
 		ASTNode range = convertJSONNode(json.getJSONObject("range"));
-		ASTNode process = convertJSONNode(json.getJSONObject("process"));
+		JSONObject jsonProcess = json.optJSONObject("process");
+		ASTNode process = null;
+		if(jsonProcess != null){
+			convertJSONNode(jsonProcess);
+		}
 		JSONObject jsonLocation = json.getJSONObject("location");
 		Location location = convertLocation(jsonLocation);
 		return new IndexNode(variable, range, process, location);
@@ -299,9 +282,12 @@ public class JSONToASTConverter {
 
 	public RangesNode convertRangesNode(JSONObject json){
 		JSONArray array = json.getJSONArray("ranges");
-		List<ASTNode> ranges = new ArrayList<ASTNode>();
+		List<IndexNode> ranges = new ArrayList<IndexNode>();
 		for(int i = 0; i < array.length(); i++){
-			ranges.add(convertJSONNode(array.getJSONObject(i)));
+			ASTNode node = convertJSONNode(array.getJSONObject(i));
+			if(node instanceof IndexNode) {
+				ranges.add((IndexNode)node);
+			}
 		}
 
 		//JSONObject jsonLocation = json.getJSONObject("location"); // TODO: fix js parser, doesn't assign location information
