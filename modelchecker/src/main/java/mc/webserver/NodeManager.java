@@ -17,10 +17,17 @@ import static mc.util.Utils.getArch;
 import static org.fusesource.jansi.Ansi.ansi;
 
 /**
- * Manage loading dependencies for bower
+ * Manage loading dependencies for bower/node and vulcanize.
  */
 @AllArgsConstructor
 public class NodeManager {
+  /**
+   * Run a copy of the node manager on its own.
+   * @param args command arguments
+   */
+  public static void main(String[] args) {
+    new NodeManager(new Main()).initBower();
+  }
   private Main main;
   public void initBower() {
     try {
@@ -65,7 +72,7 @@ public class NodeManager {
       System.out.println(ansi().render("@|yellow Extracting NPM|@"));
       ZipFile file = new ZipFile(Paths.get("executables","npm-4.1.1.zip").toString());
       Thread monitor = null;
-      if (!GraphicsEnvironment.isHeadless()) {
+      if (main.getGui() != null) {
         main.getGui().showProgressBar();
         monitor = new Thread(()->{
           while (!Thread.interrupted()) {

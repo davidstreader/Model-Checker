@@ -1,4 +1,7 @@
 #!/bin/bash
-echo Running $BASH_SOURCE
+echo "Building jar"
 cd modelchecker
-./gradlew build shadowJar 
+./gradlew build shadowJar
+cd ..
+echo "Configuring Bower"
+java -cp ModelChecker.jar mc.webserver.NodeManager

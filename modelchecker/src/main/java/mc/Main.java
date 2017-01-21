@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Map;
+import java.util.Objects;
 
 import static mc.util.Utils.getArch;
 import static org.fusesource.jansi.Ansi.ansi;
