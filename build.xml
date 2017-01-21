@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="Model Checker" default="build" basedir=".">
+<project name="Model Checker" default="jenkins" basedir=".">
   <target name="init" description="Create build folder and subfolders if required">
     <echo message="Creating Directories..." />
     <mkdir dir="build"/>
