@@ -1,6 +1,7 @@
 package mc.util;
 
 import com.google.common.base.Ascii;
+import mc.Main;
 import org.sosy_lab.common.NativeLibraries;
 
 public class Utils {
@@ -11,5 +12,9 @@ public class Utils {
   }
   public static boolean isWin() {
     return NativeLibraries.OS.guessOperatingSystem() == NativeLibraries.OS.WINDOWS;
+  }
+  public static boolean isJar() {
+    //getResource will add a jar: to the start of files inside jars.
+    return Main.class.getResource("Main.class").toString().startsWith("jar");
   }
 }

@@ -18,7 +18,11 @@ Polymer 1.0 Dev Guide:	https://www.polymer-project.org/1.0/docs/devguide/feature
 ### Building / Distributing
 
 -----------------------
-Run the publisher to build the project. This will also generate a dist.zip, which can be copied to a machine for distribution.
+Run the publisher to build the project. This will also generate a `dist.zip`, which can be copied to a machine for distribution.
+If you would like to automatically build the project on pull, copy `post-merge` to `.git/hooks`.
+To build from the command line, run `modelchecker/gradlew build shadowJar`
+Once built, you can double click to run the application.
+You can run the publisher from command line with `java -cp ModelChecker.jar mc.Publish`
 
 ### Main Application
 
