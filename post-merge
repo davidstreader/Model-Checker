@@ -1,0 +1,4 @@
+#!/bin/bash
+echo Running $BASH_SOURCE
+cd modelchecker
+./gradlew build shadowJar 
