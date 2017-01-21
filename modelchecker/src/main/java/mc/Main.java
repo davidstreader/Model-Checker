@@ -5,7 +5,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import mc.commands.CommandManager;
 import mc.gui.MainGui;
-import mc.webserver.NodeManager;
+import mc.webserver.DependencyManager;
 import mc.webserver.WebServer;
 import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.AnsiConsole;
@@ -15,7 +15,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Map;
-import java.util.Objects;
 
 import static mc.util.Utils.getArch;
 import static org.fusesource.jansi.Ansi.ansi;
@@ -59,7 +58,7 @@ public class Main {
     if (!isJar || reloaded) {
       //If bower has not loaded, init it now.
       if (!new File("bower_components").exists())
-        new NodeManager(this).initBower();
+        new DependencyManager(this).initBower();
       webServer = new WebServer();
       webServer.startServer();
       commandManager.registerInput();
@@ -69,7 +68,7 @@ public class Main {
     //Load all the bower dependencies
     //Dont build node deps in production
     if (new File("executables").exists())
-      new NodeManager(this).initBower();
+      new DependencyManager(this).initBower();
     startWrappedProcess();
   }
   /**

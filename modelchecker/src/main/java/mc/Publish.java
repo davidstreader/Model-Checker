@@ -1,7 +1,7 @@
 package mc;
 
 import mc.util.Utils;
-import mc.webserver.NodeManager;
+import mc.webserver.DependencyManager;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.model.ZipParameters;
@@ -29,7 +29,7 @@ public class Publish extends Main{
     }
     System.out.println(ansi().render("@|yellow Downloading bower dependencies|@"));
     //Load all the bower dependencies
-    new NodeManager(this).initBower();
+    new DependencyManager(this).initBower();
     try {
       new File("dist.zip").delete();
       System.out.println(ansi().render("@|yellow Compressing distribution|@"));

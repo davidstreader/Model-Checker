@@ -5,9 +5,7 @@ import mc.Main;
 import mc.util.Utils;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
-import org.sosy_lab.common.NativeLibraries;
 
-import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -20,13 +18,13 @@ import static org.fusesource.jansi.Ansi.ansi;
  * Manage loading dependencies for bower/node and vulcanize.
  */
 @AllArgsConstructor
-public class NodeManager {
+public class DependencyManager {
   /**
    * Run a copy of the node manager on its own.
    * @param args command arguments
    */
   public static void main(String[] args) {
-    new NodeManager(new Main()).initBower();
+    new DependencyManager(new Main()).initBower();
   }
   private Main main;
   public void initBower() {
