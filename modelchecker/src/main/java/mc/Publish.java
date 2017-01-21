@@ -1,12 +1,12 @@
 package mc;
 
+import mc.util.Utils;
 import mc.webserver.NodeManager;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.model.ZipParameters;
 import org.apache.commons.io.FileUtils;
 import org.fusesource.jansi.AnsiConsole;
-import org.sosy_lab.common.NativeLibraries;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,7 +23,7 @@ public class Publish extends Main{
     super();
     AnsiConsole.systemInstall();
     System.out.println(ansi().render("@|yellow Building gradle project|@"));
-    String gradle = NativeLibraries.OS.guessOperatingSystem() == NativeLibraries.OS.WINDOWS?"gradlew.bat":"gradlew";
+    String gradle = Utils.isWin()?"gradlew.bat":"gradlew";
     ProcessBuilder builder = new ProcessBuilder(new File("modelchecker", gradle).getAbsolutePath(),"build","shadowJar");
     builder.directory(new File("modelchecker"));
     spawnProcess(builder);

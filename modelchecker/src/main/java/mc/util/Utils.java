@@ -9,4 +9,7 @@ public class Utils {
     String os = Ascii.toLowerCase(NativeLibraries.OS.guessOperatingSystem().name());
     return arch + "-" + os;
   }
+  public static boolean isWin() {
+    return NativeLibraries.OS.guessOperatingSystem() == NativeLibraries.OS.WINDOWS;
+  }
 }

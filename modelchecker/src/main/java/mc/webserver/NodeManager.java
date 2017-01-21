@@ -2,6 +2,7 @@ package mc.webserver;
 
 import lombok.AllArgsConstructor;
 import mc.Main;
+import mc.util.Utils;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import org.sosy_lab.common.NativeLibraries;
@@ -35,8 +36,7 @@ public class NodeManager {
 
   private void runBower() {
     System.out.println(ansi().render("@|yellow Updating Bower Dependencies|@ - @|yellow This may take a while.|@"));
-    boolean isWin = NativeLibraries.OS.guessOperatingSystem() == NativeLibraries.OS.WINDOWS;
-    ProcessBuilder builder = new ProcessBuilder(new File("bower_install","bower") + (isWin ? ".cmd" : ""), "install","-d");
+    ProcessBuilder builder = new ProcessBuilder(new File("bower_install","bower") + (Utils.isWin() ? ".cmd" : ""), "install","-d");
     main.spawnProcess(builder);
   }
 
@@ -44,8 +44,7 @@ public class NodeManager {
     File bowerInstall = new File("bower_install","bower");
     if (!bowerInstall.exists()) {
       System.out.println(ansi().render("@|green Installing bower|@"));
-      boolean isWin = NativeLibraries.OS.guessOperatingSystem() == NativeLibraries.OS.WINDOWS;
-      ProcessBuilder builder = new ProcessBuilder("npm" + (isWin ? ".cmd" : ""), "install", "bower","-d");
+      ProcessBuilder builder = new ProcessBuilder("npm" + (Utils.isWin() ? ".cmd" : ""), "install", "bower","-d");
       builder.directory(new File("bower_install"));
       main.spawnProcess(builder);
     }
@@ -90,8 +89,7 @@ public class NodeManager {
 
   }
   public void vulcanize() {
-    boolean isWin = NativeLibraries.OS.guessOperatingSystem() == NativeLibraries.OS.WINDOWS;
-    ProcessBuilder builder = new ProcessBuilder(Paths.get("bower_install", "npm"+ (isWin ? ".cmd" : "")).toAbsolutePath().toString(),"run-script","vulcanize");
+    ProcessBuilder builder = new ProcessBuilder(Paths.get("bower_install", "npm"+ (Utils.isWin() ? ".cmd" : "")).toAbsolutePath().toString(),"run-script","vulcanize");
     main.spawnProcess(builder);
   }
 }

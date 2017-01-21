@@ -42,3 +42,4 @@ run
 /modelchecker/build/
 /bower_install/
 /ModelChecker.jar
+/dist.zip

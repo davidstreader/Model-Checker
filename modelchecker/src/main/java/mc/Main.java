@@ -1,6 +1,7 @@
 package mc;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import mc.commands.CommandManager;
 import mc.gui.MainGui;
@@ -17,7 +18,7 @@ import java.util.Map;
 
 import static mc.util.Utils.getArch;
 import static org.fusesource.jansi.Ansi.ansi;
-
+@NoArgsConstructor
 public class Main {
   @Getter
   private CommandManager commandManager;
@@ -37,10 +38,7 @@ public class Main {
   private boolean isJar = false;
   @Getter
   private boolean reloaded = false;
-  public Main() {
-    reloaded = false;
-  }
-  public Main(boolean reloaded) {
+  private Main(boolean reloaded) {
     //Make sure that we kill the subprocess when this process exits.
     Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
     commandManager = new CommandManager(this);
@@ -58,6 +56,9 @@ public class Main {
     }
     //Start the server if we aren't running from a jar or are in a sub process
     if (!isJar || reloaded) {
+      //If bower has not loaded, init it now.
+      if (!new File("bower_components").exists())
+        new NodeManager(this).initBower();
       webServer = new WebServer();
       webServer.startServer();
       commandManager.registerInput();
