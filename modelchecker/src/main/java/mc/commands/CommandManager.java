@@ -14,9 +14,9 @@ public class CommandManager {
   private Map<String,Command> commandMap = new HashMap<>();
   //Load commands
   public CommandManager(Main main) {
-    commandMap.put("eval",new EvalCommand());
-    commandMap.put("simp",new SimplifyCommand());
-    commandMap.put("simplify",commandMap.get("simp"));
+    commandMap.put("eval", new EvalCommand());
+    commandMap.put("simp", new SimplifyCommand());
+    commandMap.put("simplify", commandMap.get("simp"));
     commandMap.put("exit",new ExitCommand(main));
   }
   public void executeCommand(String command) {

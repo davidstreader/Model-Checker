@@ -31,7 +31,7 @@ public class JavaSMTConverter {
       //This only works on windows.
       Field nativePath = NativeLibraries.class.getDeclaredField("nativePath");
       nativePath.setAccessible(true);
-      nativePath.set(null,Paths.get(Utils.getArch()));
+      nativePath.set(null,Paths.get("native",Utils.getArch()));
     } catch (NoSuchFieldException | IllegalAccessException e) {
       e.printStackTrace();
     }
