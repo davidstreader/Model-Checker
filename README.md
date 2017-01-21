@@ -1,5 +1,5 @@
 # Model-Checker [![Build Status](https://jenkins.tangentmc.net/buildStatus/icon?job=Model-Checker)](https://jenkins.tangentmc.net/job/Model-Checker/)
-[Currently hosted application](http://modelchecker-swen302.herokuapp.com/).    
+[Currently hosted application](http://modelchecker.tangentmc.net/).    
 NB: URL may change and this link will be useless.   
 Streader's Raiders SWEN302 Group Project
 
