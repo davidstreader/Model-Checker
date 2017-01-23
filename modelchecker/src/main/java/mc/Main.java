@@ -51,7 +51,6 @@ public class Main {
       webServer = new WebServer();
       webServer.startServer();
       commandManager.registerInput();
-      System.out.println(ansi().render("@|green Started Server!|@"));
       return;
     }
     //Load all the bower dependencies
