@@ -122,12 +122,6 @@ public class JTerminal extends JTextPane {
     setCaret(new TerminalCaret());
 
     addKeyListener(new KeyEventListener());
-    addInputListener(new InputListener() {
-      @Override
-      public void processCommand(JTerminal terminal, char c) {
-
-      }
-    });
   }
 
   /**
@@ -248,10 +242,10 @@ public class JTerminal extends JTextPane {
   }
 
   /**
-   * Called when key pressed, checks if character is valid and checks for combinations such as Ctrl+C
-   * @param c
+   * Called when key pressed, passes it on to the input listeners
+   * @param c the char that was pressed
    */
-  public void keyPressed(char c) {
+  private void keyPressed(char c) {
     for (InputListener l : inputListeners) {
       l.processCommand(this, c);
     }

@@ -5,9 +5,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import mc.commands.CommandManager;
 import mc.gui.MainGui;
+import mc.util.Utils;
 import mc.webserver.DependencyManager;
 import mc.webserver.WebServer;
-import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.AnsiConsole;
 
 import java.awt.*;
@@ -31,31 +31,20 @@ public class Main {
   private boolean stopped = false;
   @Getter
   private WebServer webServer;
-  /**
-   * Is this application currently running from a jar file
-   */
-  @Getter
-  private boolean isJar = false;
   @Getter
   private boolean reloaded = false;
   private Main(boolean reloaded) {
+    AnsiConsole.systemInstall();
     //Make sure that we kill the subprocess when this process exits.
     Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
     commandManager = new CommandManager(this);
-    Ansi.setEnabled(true);
-    //getResource will add a jar: to the start of files inside jars.
-    isJar = Main.class.getResource("Main.class").toString().startsWith("jar");
     this.reloaded = reloaded;
     //If this is a sub process, or we are running headless, dont start the gui.
     if (!reloaded && !GraphicsEnvironment.isHeadless()) {
       gui = new MainGui(this);
     }
-    //If we are not running from a jar, but are running headless, enable ANSI normally.
-    if (!isJar && GraphicsEnvironment.isHeadless()) {
-      AnsiConsole.systemInstall();
-    }
     //Start the server if we aren't running from a jar or are in a sub process
-    if (!isJar || reloaded) {
+    if (!Utils.isJar() || reloaded) {
       //If bower has not loaded, init it now.
       if (!new File("bower_components").exists())
         new DependencyManager(this).initBower();
@@ -115,15 +104,15 @@ public class Main {
     System.out.println(ansi().render("@|red Native arguments not found!|@"));
     System.out.println(ansi().render("@|yellow Starting sub-process with native arguments|@"));
     String nativePath = Paths.get("native", getArch()).toString();
-    //Easy way to get the current jar file
-    String jarPath = WebServer.class.getResource("WebServer.class").toString().split("!")[0].replace("jar:file:/","");
     //Set java.library.path to the native path for windows
-    ProcessBuilder builder = new ProcessBuilder("java","-Djava.library.path="+nativePath,"-jar",jarPath,"reloaded");
-    Map<String, String> envs = builder.environment();
+    //Set jansi.passthrough as the parent application will handle the ansi chars, not the child.
+    //Set the reloaded flag so that we know that the application has been loaded twice.
+    ProcessBuilder builder = new ProcessBuilder("java","-Djansi.passthrough=true","-Djava.library.path="+nativePath,"-jar",Utils.getJarPath(),"reloaded");
+    Map<String, String> environment = builder.environment();
     //Set the linux native path
-    envs.put("LD_LIBRARY_PATH", nativePath);
+    environment.put("LD_LIBRARY_PATH", nativePath);
     //Set the mac native path
-    envs.put("DYLD_LIBRARY_PATH", nativePath);
+    environment.put("DYLD_LIBRARY_PATH", nativePath);
     spawnProcess(builder);
   }
 }

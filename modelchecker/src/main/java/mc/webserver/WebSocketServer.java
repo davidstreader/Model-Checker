@@ -20,6 +20,7 @@ public class WebSocketServer {
 
 
     server = new SocketIOServer(config);
+    //TODO: uncomment when we are able to compile from java
     server.startAsync();
     server.addEventListener("compile",Map.class, (client, data, ackSender) -> {
       JSONObject ast = new JSONObject(data);

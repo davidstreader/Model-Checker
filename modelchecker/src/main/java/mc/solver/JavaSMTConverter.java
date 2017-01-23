@@ -76,9 +76,9 @@ public class JavaSMTConverter {
       out = out.replace("bvor","|");
       out = out.replace("bvashr",">>");
       out = out.replace("bvshl","<<");
+      out = out.replace("=","==");
       out = out.replace("eq","==");
       out = out.replace("not","!");
-      out = out.replace("=","==");
       //Reverse all tokens, as our RPN notation is op left right and Z3's is left right op
       String[] tokens = out.split("\\s+");
       Collections.reverse(Arrays.asList(tokens));

@@ -34,6 +34,8 @@ public class Publish extends Main{
       new File("dist.zip").delete();
       System.out.println(ansi().render("@|yellow Compressing distribution|@"));
       ZipFile file = new ZipFile("dist.zip");
+      //We only need to package the jar, the web dependencies, the native libs and the web app.
+      //Everything else is used to either generate the bower_components folder, or for dev.
       file.addFile(new File("ModelChecker.jar"),new ZipParameters());
       file.addFolder(new File("bower_components"),new ZipParameters());
       file.addFolder(new File("native"),new ZipParameters());

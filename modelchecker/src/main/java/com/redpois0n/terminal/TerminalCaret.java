@@ -21,21 +21,21 @@ public class TerminalCaret extends DefaultCaret {
 		if (width <= 0) {
 			width = getComponent().getWidth();
 		}
-			
+
 		repaint();
 	}
 
 	public void paint(Graphics g) {
 		JTextComponent comp = getComponent();
-		
+
 		if (comp == null) {
 			return;
 		}
-		
+
 		int dot = getDot();
-		Rectangle r = null;
+		Rectangle r;
 		char dotChar;
-		
+
 		try {
 			r = comp.modelToView(dot);
 			if (r == null) {
@@ -58,7 +58,7 @@ public class TerminalCaret extends DefaultCaret {
 		g.setXORMode(comp.getBackground());
 
 		width = g.getFontMetrics().charWidth(dotChar);
-		
+
 		if (isVisible()) {
 			g.fillRect(r.x, r.y, width, r.height);
 		}

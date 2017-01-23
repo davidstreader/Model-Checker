@@ -74,28 +74,23 @@ public class TerminalWindow {
     });
   }
 
-  public void wrapProcess(Process p) {
-    try {
-      writer = new PrintWriter(p.getOutputStream(), true);
+  void wrapProcess(Process p) {
+    writer = new PrintWriter(p.getOutputStream(), true);
+    new Thread(() -> {
+      try {
+        while (p.isAlive()) {
+          BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
 
-      new Thread(() -> {
-        try {
-          while (true) {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+          String line;
 
-            String line;
-
-            while ((line = reader.readLine()) != null) {
-              terminal.append(line + "\n");
-            }
+          while ((line = reader.readLine()) != null) {
+            terminal.append(line + "\n");
           }
-        } catch (Exception e) {
-          e.printStackTrace();
         }
-      }).start();
-    } catch (Exception ex) {
-      ex.printStackTrace();
-    }
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }).start();
   }
 
   {

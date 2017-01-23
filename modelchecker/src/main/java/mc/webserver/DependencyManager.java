@@ -41,7 +41,7 @@ public class DependencyManager {
 
   private void runBower() {
     System.out.println(ansi().render("@|yellow Updating Bower Dependencies|@ - @|yellow This may take a while.|@"));
-    ProcessBuilder builder = new ProcessBuilder(new File("bower_install","bower") + (Utils.isWin() ? ".cmd" : ""), "install","-d");
+    ProcessBuilder builder = new ProcessBuilder(new File("bower_install","bower") + Utils.getNodeExtension(), "install","-d");
     main.spawnProcess(builder);
   }
 
@@ -49,7 +49,7 @@ public class DependencyManager {
     File bowerInstall = new File("bower_install","bower");
     if (!bowerInstall.exists()) {
       System.out.println(ansi().render("@|green Installing bower|@"));
-      ProcessBuilder builder = new ProcessBuilder("npm" + (Utils.isWin() ? ".cmd" : ""), "install", "bower","-d");
+      ProcessBuilder builder = new ProcessBuilder("npm" + Utils.getNodeExtension(), "install", "bower","-d");
       builder.directory(new File("bower_install"));
       main.spawnProcess(builder);
     }
@@ -58,7 +58,7 @@ public class DependencyManager {
   private void unzipNPM() throws IOException, ZipException {
     File bowerInstall = new File("bower_install");
     if (bowerInstall.mkdir()) {
-      System.out.println(ansi().render("@|red Node install not found!|@ @|yellow Copying files for Node|@"));
+      System.out.println(ansi().render("@|red Node install not found!|@\n@|yellow Copying files for Node|@"));
       File nodeExes = new File("executables", getArch());
       for (File f : nodeExes.listFiles()) {
         System.out.println("Copying: "+f.getName());
@@ -75,6 +75,11 @@ public class DependencyManager {
         monitor = new Thread(()->{
           while (!Thread.interrupted()) {
             main.getGui().setProgressBarValue(file.getProgressMonitor().getPercentDone());
+            try {
+              Thread.sleep(100);
+            } catch (InterruptedException e) {
+              return;
+            }
           }
         });
         monitor.start();
@@ -94,7 +99,7 @@ public class DependencyManager {
 
   }
   public void vulcanize() {
-    ProcessBuilder builder = new ProcessBuilder(Paths.get("bower_install", "npm"+ (Utils.isWin() ? ".cmd" : "")).toAbsolutePath().toString(),"run-script","vulcanize");
+    ProcessBuilder builder = new ProcessBuilder(new File("bower_install", "npm")+ Utils.getNodeExtension(),"run-script","vulcanize");
     main.spawnProcess(builder);
   }
 }

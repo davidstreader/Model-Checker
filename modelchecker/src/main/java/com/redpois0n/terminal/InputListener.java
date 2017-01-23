@@ -4,14 +4,14 @@ public abstract class InputListener {
 
 	/**
 	 * Called when a command is entered
-	 * @param terminal
-	 * @param c
+	 * @param terminal The terminal
+	 * @param c The character that was typed
 	 */
 	public abstract void processCommand(JTerminal terminal, char c);
 
 	/**
 	 * Called when Ctrl+C is pressed
-	 * @param terminal
+	 * @param terminal The terminal
 	 */
 	public void onTerminate(JTerminal terminal) {}
 }
