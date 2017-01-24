@@ -5,6 +5,7 @@ import mc.compiler.ast.ASTNode;
 import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by sheriddavi on 24/01/17.
@@ -24,6 +25,14 @@ public abstract class ProcessModelObject implements Serializable {
         return id;
     }
 
+    public Object getMetaData(String key){
+        if(metaData.containsKey(key)){
+            return metaData.get(key);
+        }
+
+        return null;
+    }
+
     public void addMetaData(String key, Object value){
         metaData.put(key, value);
     }
@@ -36,6 +45,10 @@ public abstract class ProcessModelObject implements Serializable {
 
     public boolean hasMetaData(String key){
         return metaData.containsKey(key);
+    }
+
+    public Set<String> getMetaDataKeys(){
+        return metaData.keySet();
     }
 
     public ProcessModelObject clone(){
