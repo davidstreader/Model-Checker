@@ -154,10 +154,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     }
 
     public int getNodeCount(){
-        return nodeMap.entrySet().stream()
-                .map(x -> x.getValue())
-                .collect(Collectors.toList())
-                .size();
+        return nodeMap.size();
     }
 
     public List<AutomatonEdge> getEdges(){
@@ -226,9 +223,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     }
 
     public int getEdgeCount(){
-        return edgeMap.entrySet().stream()
-                .map(x -> x.getValue())
-                .collect(Collectors.toList()).size();
+        return edgeMap.size();
     }
 
     public Set<String> getAlphabet(){
