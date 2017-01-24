@@ -71,7 +71,7 @@ public class AutomatonNode extends ProcessModelObject {
         return false;
     }
 
-    public boolean removeOutgoingEdges(AutomatonEdge edge){
+    public boolean removeOutgoingEdge(AutomatonEdge edge){
         if(outgoingEdges.containsKey(edge.getId())){
             outgoingEdges.remove(edge.getId());
             return true;
