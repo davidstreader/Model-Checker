@@ -1,6 +1,6 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
-
+<script src="../../../bower_components/ansi_up/ansi_up.js" type="text/javascript"></script>
 <dom-module id="console-logger">
   <style>
     :host {
@@ -59,9 +59,8 @@
       },
 
       _addMessage: function(msg){
-        var text = document.createTextNode(msg);
         var node = document.createElement('SPAN');
-        node.appendChild(text);
+        node.innerHTML = ansi_up.ansi_to_html(msg);
 
         var c = Polymer.dom(this.$.console);
         c.appendChild(node);

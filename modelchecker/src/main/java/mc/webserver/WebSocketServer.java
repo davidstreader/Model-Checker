@@ -7,11 +7,11 @@ import com.corundumstudio.socketio.SocketIOServer;
 import mc.compiler.JSONToASTConverter;
 import org.json.JSONObject;
 
+import java.net.InetSocketAddress;
 import java.util.Map;
 
-/**
- * Created by sanjay on 18/01/2017.
- */
+import static org.fusesource.jansi.Ansi.ansi;
+
 public class WebSocketServer {
   SocketIOServer server;
   public WebSocketServer() {
@@ -22,10 +22,10 @@ public class WebSocketServer {
 
 
     server = new SocketIOServer(config);
-    //TODO: uncomment when we are able to compile from java
     server.startAsync();
     server.addEventListener("compile",Map.class, (client, data, ackSender) -> {
       this.client.set(client);
+      System.out.println(ansi().render("Received compile command from @|yellow "+getSocketHostname()+"|@"));
       JSONObject ast = new JSONObject(data);
       System.out.println(new JSONToASTConverter().convert(ast));
     });
@@ -40,5 +40,8 @@ public class WebSocketServer {
   }
   public <T> void send(String event, T obj, AckCallback<T> callback) {
     client.get().sendEvent(event,callback,obj);
+  }
+  public String getSocketHostname() {
+    return ((InetSocketAddress)client.get().getRemoteAddress()).getHostString();
   }
 }
