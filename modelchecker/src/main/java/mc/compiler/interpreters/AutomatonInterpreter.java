@@ -4,29 +4,47 @@ import mc.compiler.ast.*;
 import mc.process_models.ProcessModel;
 import mc.process_models.automata.Automaton;
 import mc.process_models.automata.AutomatonNode;
+import mc.process_models.automata.operations.AutomataOperations;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Stack;
 
 /**
  * Created by sheriddavi on 24/01/17.
  */
 public class AutomatonInterpreter {
 
+    private AutomataOperations operations;
+
     private Map<String, ProcessModel> processMap;
     private Map<Integer, AutomatonNode> referenceMap;
+    private Stack<ProcessModel> processStack;
 
     public AutomatonInterpreter(){
+        this.operations = new AutomataOperations();
         reset();
     }
 
-    public Automaton interpret(ProcessNode processNode, Map<String, ProcessModel> processMap){
+    public ProcessModel interpret(ProcessNode processNode, Map<String, ProcessModel> processMap){
         reset();
         this.processMap = processMap;
         String identifier = processNode.getIdentifier();
-        Automaton automaton = new Automaton(identifier);
-        interpretNode(processNode.getProcess(), automaton, automaton.getRoot());
-        return automaton;
+        interpretProcess(processNode.getProcess(), identifier);
+
+        return processStack.pop();
+    }
+
+    private void interpretProcess(ASTNode astNode, String identifier){
+        if(astNode instanceof IdentifierNode){
+            String reference = ((IdentifierNode)astNode).getIdentifier();
+            processStack.push(processMap.get(reference));
+        }
+        else{
+            Automaton automaton = new Automaton(identifier);
+            interpretNode(astNode, automaton, automaton.getRoot());
+            processStack.push(automaton);
+        }
     }
 
     private void interpretNode(ASTNode astNode, Automaton automaton, AutomatonNode currentNode){
@@ -77,6 +95,20 @@ public class AutomatonInterpreter {
     }
 
     private void interpretNode(CompositeNode astNode, Automaton automaton, AutomatonNode currentNode){
+        interpretProcess(astNode.getFirstProcess(), automaton.getId() + ".pc1");
+        interpretProcess(astNode.getSecondProcess(), automaton.getId() + ".pc2");
+
+        ProcessModel model2 = processStack.pop();
+        ProcessModel model1 = processStack.pop();
+        if(!(model1 instanceof Automaton) || !(model2 instanceof Automaton)){
+            // TODO: throw error
+        }
+
+        Automaton comp = operations.parallelComposition(automaton.getId(), (Automaton)model1, (Automaton)model2);
+        comp = operations.removeUnreachableNodes(comp);
+
+        automaton.addAutomaton(comp);
+        automaton.combineNodes(currentNode, comp.getRoot());
 
     }
 
@@ -89,6 +121,7 @@ public class AutomatonInterpreter {
 
         Automaton next = (Automaton)((Automaton)model).clone();
         automaton.addAutomaton(next);
+        automaton.combineNodes(currentNode, next.getRoot());
     }
 
     private void interpretNode(FunctionNode astNode, Automaton automaton, AutomatonNode currentNode){
@@ -101,5 +134,6 @@ public class AutomatonInterpreter {
 
     private void reset(){
         this.referenceMap = new HashMap<Integer, AutomatonNode>();
+        this.processStack = new Stack<ProcessModel>();
     }
 }
