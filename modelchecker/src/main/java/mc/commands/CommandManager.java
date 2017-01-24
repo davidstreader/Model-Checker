@@ -1,14 +1,15 @@
 package mc.commands;
 
 import mc.Main;
+import org.apache.commons.lang3.StringUtils;
 import org.fusesource.jansi.Ansi;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 public class CommandManager {
   private Map<String,Command> commandMap = new HashMap<>();
@@ -22,12 +23,14 @@ public class CommandManager {
     commandMap.put("exit",new ExitCommand(main));
   }
   public void executeCommand(String command) {
-    if (command.matches("\\s+") || Objects.equals(command, "")) return;
-    String cmd = command.split(" ")[0];
-    if (command.length() <= cmd.length()) command = "";
-    else command = command.substring(cmd.length()+1);
-    if (commandMap.containsKey(cmd)) commandMap.get(cmd).run(command.split(" "));
-    else {
+    if (StringUtils.isEmpty(command)) return;
+    String[] split = command.split("\\s+");
+    String cmd = split[0];
+    if (commandMap.containsKey(cmd)) {
+      if (split.length > 1) split = Arrays.copyOfRange(split,1,split.length);
+      else split = new String[0];
+      commandMap.get(cmd).run(split);
+    } else {
       System.out.println(Ansi.ansi().render("@|red Unable to find command |@"));
       System.out.println("For a list of commands, type help.");
     }
