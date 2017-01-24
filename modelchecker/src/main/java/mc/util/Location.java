@@ -1,6 +1,8 @@
 package mc.util;
 
-public class Location {
+import java.io.Serializable;
+
+public class Location implements Serializable {
 
 	// fields
 	private int lineStart;

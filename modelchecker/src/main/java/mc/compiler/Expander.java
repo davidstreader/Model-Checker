@@ -10,14 +10,17 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Expander {
-
+	
+	private Map<String, String> globalVariableMap;
+	
 	public AbstractSyntaxTree expand(AbstractSyntaxTree ast){
-
+		globalVariableMap = ast.getVariableMap();
+		
 		List<ProcessNode> processes = ast.getProcesses();
 		for(int i = 0; i < processes.size(); i++){
 			ProcessNode process = processes.get(i);
 			Map<String, Object> variableMap = new HashMap<String, Object>();
-			ASTNode root = expand(process, variableMap);
+			ASTNode root = expand(process.getProcess(), variableMap);
 			process.setProcess(root);
 
 			List<LocalProcessNode> localProcesses = expandLocalProcesses(process.getLocalProcesses(), variableMap);
@@ -52,14 +55,19 @@ public class Expander {
 			IndexNode range = ranges.get(index);
 			IndexIterator iterator = IndexIterator.construct(range.getRange());
 			String variable = range.getVariable();
-			variableMap.put(variable, iterator.next());
-			newLocalProcesses.addAll(expandLocalProcesses(localProcess, variableMap, ranges, index + 1));
+			localProcess.setIdentifier(localProcess.getIdentifier() + "[" + variable + "]");
+			
+			while(iterator.hasNext()){
+				variableMap.put(variable, iterator.next());
+				newLocalProcesses.addAll(expandLocalProcesses(localProcess, variableMap, ranges, index + 1));
+			}
 		}
 		else{
-			// TODO: need to clone the local process
-			ASTNode root = expand(localProcess.getProcess(), variableMap);
-			localProcess.setProcess(root);
-			newLocalProcesses.add(localProcess);
+			LocalProcessNode clone = (LocalProcessNode)localProcess.clone();
+			ASTNode root = expand(clone.getProcess(), variableMap);
+			clone.setIdentifier(processVariables(clone.getIdentifier(), variableMap));
+			clone.setProcess(root);
+			newLocalProcesses.add(clone);
 		}
 
 		return newLocalProcesses;
@@ -164,7 +172,7 @@ public class Expander {
 	}
 
 	private ASTNode expand(IfStatementNode astNode, Map<String, Object> variableMap){
-		boolean condition = evaluateExpression(astNode.getCondition(), variableMap);
+		boolean condition = evaluateCondition(astNode.getCondition(), variableMap);
 		if(condition){
 			return expand(astNode.getTrueBranch(), variableMap);
 		}
@@ -213,15 +221,14 @@ public class Expander {
 			}
 		}
 		else{
-			// TODO: need to clone process
-			process = expand(process, variableMap);
+			process = expand(process.clone(), variableMap);
 			nodes.add(process);
 		}
 
 		return nodes;
 	}
 
-	private boolean evaluateExpression(Expression condition, Map<String, Object> variableMap){
+	private int evaluateExpression(Expression expression, Map<String, Object> variableMap){
 		// remove all strings from the variableMap
 		Map<String, Integer> variables = new HashMap<String, Integer>();
 		for(String key : variableMap.keySet()){
@@ -231,18 +238,31 @@ public class Expander {
 			}
 		}
 
-		int result = new ExpressionEvaluator().evaluateExpression(condition, variables);
-		return result != 0;
+		int result = new ExpressionEvaluator().evaluateExpression(expression, variables);
+		return result;
+	}
+	
+	private boolean evaluateCondition(Expression condition, Map<String, Object> variableMap){
+		int result = evaluateExpression(condition, variableMap);
+		return result != 0 ? true : false;
 	}
 
 	private String processVariables(String string, Map<String, Object> variableMap){
-		Pattern pattern = Pattern.compile("\\$v[0-9]+");
+		Pattern pattern = Pattern.compile("\\$[a-z][a-zA-Z0-9_]*");
 
 		while(true){
 			Matcher matcher = pattern.matcher(string);
 			if(matcher.find()){
 				String variable = matcher.group();
-				string = string.replaceFirst(variable, variableMap.get(variable).toString());
+				// check if variable is a global variable
+				if(globalVariableMap.containsKey(variable)){
+					Expression expression = Expression.constructExpression(globalVariableMap.get(variable));
+					int result = evaluateExpression(expression, variableMap);
+					string = string.replace(variable, "" + result);
+				}
+				else if(variableMap.containsKey(variable)){
+					string = string.replace(variable, variableMap.get(variable).toString());
+				}
 			}
 			else{
 				break;
