@@ -31,7 +31,7 @@
       is: 'console-logger',
 
       clear: function(lines){
-        var c = Polymer.dom(this.$.console);
+        const c = Polymer.dom(this.$.console);
         if (lines) {
           for (lines = Number.parseInt(lines); lines > 0; lines--){
             c.removeChild(c.lastChild); // content
