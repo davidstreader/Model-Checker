@@ -2,7 +2,6 @@ package mc.util;
 
 import com.google.common.base.Ascii;
 import mc.Main;
-import mc.webserver.WebServer;
 import org.sosy_lab.common.NativeLibraries;
 
 public class Utils {
