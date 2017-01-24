@@ -14,7 +14,9 @@ public class CommandManager {
   private Map<String,Command> commandMap = new HashMap<>();
   //Load commands
   public CommandManager(Main main) {
+    commandMap.put("help", new HelpCommand());
     commandMap.put("eval", new EvalCommand());
+    commandMap.put("evaluate", commandMap.get("eval"));
     commandMap.put("simp", new SimplifyCommand());
     commandMap.put("simplify", commandMap.get("simp"));
     commandMap.put("exit",new ExitCommand(main));
@@ -25,7 +27,10 @@ public class CommandManager {
     if (command.length() <= cmd.length()) command = "";
     else command = command.substring(cmd.length()+1);
     if (commandMap.containsKey(cmd)) commandMap.get(cmd).run(command.split(" "));
-    else System.out.println(Ansi.ansi().render("@|red Unable to find command |@"));
+    else {
+      System.out.println(Ansi.ansi().render("@|red Unable to find command |@"));
+      System.out.println("For a list of commands, type help.");
+    }
   }
 
   /**
