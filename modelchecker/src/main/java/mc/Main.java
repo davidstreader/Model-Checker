@@ -35,11 +35,11 @@ public class Main {
   private boolean reloaded = false;
   private Main(boolean reloaded) {
     AnsiConsole.systemInstall();
-    //Make sure that we kill the subprocess when this process exits.
+    //Make sure that we kill the sub-process when this process exits.
     Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
     commandManager = new CommandManager(this);
     this.reloaded = reloaded;
-    //If this is a sub process, or we are running headless, dont start the gui.
+    //If this is a sub process, or we are running headless, don't start the gui.
     if (!reloaded && !GraphicsEnvironment.isHeadless()) {
       gui = new MainGui(this);
     }
@@ -50,13 +50,14 @@ public class Main {
         new DependencyManager(this).initBower();
       webServer = new WebServer();
       webServer.startServer();
+      //Listen for commands
       commandManager.registerInput();
       return;
     }
     //Load all the bower dependencies
-    //Dont build node deps in production
     if (new File("executables").exists())
       new DependencyManager(this).initBower();
+    //Start the wrapped process with all the native libraries added.
     startWrappedProcess();
   }
   /**

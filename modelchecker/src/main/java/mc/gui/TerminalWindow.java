@@ -42,25 +42,20 @@ public class TerminalWindow {
 
   /**
    * Listen to commands entered into the terminal and forward them to the command manager
+   *
    * @param main the main instance
    */
   private void listenToCommands(Main main) {
     terminal.addInputListener(new InputListener() {
-      String cmd = "";
       @Override
-      public void processCommand(JTerminal terminal, char c) {
+      public void processCommand(JTerminal terminal, String cmd) {
         try {
-          if (c == '\n') {
-            if (!main.isReloaded()) {
-              //Execute the command
-              main.getCommandManager().executeCommand(cmd);
-            } else {
-              //Forward the command to the sub process.
-              writer.println(cmd);
-            }
-            cmd = "";
+          if (!main.isReloaded()) {
+            //Execute the command
+            main.getCommandManager().executeCommand(cmd);
           } else {
-            cmd += c;
+            //Forward the command to the sub process.
+            writer.println(cmd);
           }
         } catch (Exception ex) {
           ex.printStackTrace();

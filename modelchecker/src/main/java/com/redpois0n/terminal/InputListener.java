@@ -7,7 +7,7 @@ public abstract class InputListener {
 	 * @param terminal The terminal
 	 * @param c The character that was typed
 	 */
-	public abstract void processCommand(JTerminal terminal, char c);
+	public abstract void processCommand(JTerminal terminal, String cmd);
 
 	/**
 	 * Called when Ctrl+C is pressed

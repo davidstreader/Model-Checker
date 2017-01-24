@@ -25,17 +25,6 @@ public class JavaSMTConverter {
   private static SolverContext context;
   static {
     try {
-      //By default, JavaSMT looks for native libraries next to the jar file.
-      //However, this doesn't help us since the jar its reading is in the maven directory.
-      //So here we override it with the native library.
-      //This only works on windows.
-      Field nativePath = NativeLibraries.class.getDeclaredField("nativePath");
-      nativePath.setAccessible(true);
-      nativePath.set(null,Paths.get("native",Utils.getArch()));
-    } catch (NoSuchFieldException | IllegalAccessException e) {
-      e.printStackTrace();
-    }
-    try {
       getContext();
     } catch (InvalidConfigurationException e) {
       e.printStackTrace();

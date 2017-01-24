@@ -1,5 +1,7 @@
 package com.redpois0n.terminal;
 
+import lombok.AllArgsConstructor;
+
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Rectangle;
@@ -9,8 +11,7 @@ import javax.swing.text.JTextComponent;
 
 @SuppressWarnings("serial")
 public class TerminalCaret extends DefaultCaret {
-
-	protected synchronized void damage(Rectangle r) {
+  protected synchronized void damage(Rectangle r) {
 		if (r == null)
 			return;
 

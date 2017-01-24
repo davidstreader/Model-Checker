@@ -10,6 +10,11 @@ import java.io.PrintStream;
 public class MainGui {
   @Getter
   private TerminalWindow terminal;
+  /**
+   * Get a copy of the normal terminal as System.out is redirected.
+   */
+  @Getter
+  private static PrintStream originalOut = System.out;
   public MainGui(Main main) {
     terminal = new TerminalWindow(main);
     //When the window is closed, kill the sub process and the main app.

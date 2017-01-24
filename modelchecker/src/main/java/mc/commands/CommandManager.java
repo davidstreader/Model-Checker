@@ -20,7 +20,6 @@ public class CommandManager {
     commandMap.put("exit",new ExitCommand(main));
   }
   public void executeCommand(String command) {
-    System.out.println();
     if (command.matches("\\s+") || Objects.equals(command, "")) return;
     String cmd = command.split(" ")[0];
     if (command.length() <= cmd.length()) command = "";
