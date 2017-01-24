@@ -5,7 +5,7 @@ public abstract class InputListener {
 	/**
 	 * Called when a command is entered
 	 * @param terminal The terminal
-	 * @param c The character that was typed
+	 * @param cmd the command that was typed
 	 */
 	public abstract void processCommand(JTerminal terminal, String cmd);
 
