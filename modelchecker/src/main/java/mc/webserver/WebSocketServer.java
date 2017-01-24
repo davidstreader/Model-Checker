@@ -31,6 +31,8 @@ public class WebSocketServer {
         JSONObject ast = new JSONObject(data);
         System.out.println(new JSONToASTConverter().convert(ast.getJSONObject("ast")));
       } catch (Exception ex) {
+        System.out.println(ansi().render("@|red An error occurred while compiling.|@"));
+        ex.printStackTrace();
         new LogMessage("The following error is unrelated to your script. Please report it to the developers").send();
         new LogMessage(ExceptionUtils.getStackTrace(ex),false,true).send();
       }

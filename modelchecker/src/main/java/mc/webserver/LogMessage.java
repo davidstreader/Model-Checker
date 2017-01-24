@@ -17,6 +17,5 @@ public class LogMessage {
   }
   public void send() {
     Main.getInstance().getWebServer().getSocket().send("log",this);
-
   }
 }
