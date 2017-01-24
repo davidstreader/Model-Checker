@@ -2,9 +2,6 @@ package mc.util.expr;
 
 import java.util.Map;
 
-/**
- * Created by sheriddavi on 19/01/17.
- */
 public class ExpressionPrinter {
 
   public String printExpression(Expression expression, Map<String, Integer> variableMap){
@@ -13,197 +10,197 @@ public class ExpressionPrinter {
 
   private String print(Expression expression, Map<String, Integer> variableMap){
     if(expression instanceof IntegerOperand){
-      return evaluate((IntegerOperand)expression);
+      return print((IntegerOperand)expression);
     }
     else if(expression instanceof VariableOperand){
-      return evaluate((VariableOperand)expression, variableMap);
+      return print((VariableOperand)expression, variableMap);
     }
     else if(expression instanceof AdditionOperator){
-      return evaluate((AdditionOperator)expression, variableMap);
+      return print((AdditionOperator)expression, variableMap);
     }
     else if(expression instanceof SubtractionOperator){
-      return evaluate((SubtractionOperator)expression, variableMap);
+      return print((SubtractionOperator)expression, variableMap);
     }
     else if(expression instanceof MultiplicationOperator){
-      return evaluate((MultiplicationOperator)expression, variableMap);
+      return print((MultiplicationOperator)expression, variableMap);
     }
     else if(expression instanceof DivisionOperator){
-      return evaluate((DivisionOperator)expression, variableMap);
+      return print((DivisionOperator)expression, variableMap);
     }
     else if(expression instanceof ModuloOperator){
-      return evaluate((ModuloOperator)expression, variableMap);
+      return print((ModuloOperator)expression, variableMap);
     }
     else if(expression instanceof LeftShiftOperator){
-      return evaluate((LeftShiftOperator)expression, variableMap);
+      return print((LeftShiftOperator)expression, variableMap);
     }
     else if(expression instanceof RightShiftOperator){
-      return evaluate((RightShiftOperator)expression, variableMap);
+      return print((RightShiftOperator)expression, variableMap);
     }
     else if(expression instanceof OrOperator){
-      return evaluate((OrOperator)expression, variableMap);
+      return print((OrOperator)expression, variableMap);
     }
     else if(expression instanceof BitOrOperator){
-      return evaluate((BitOrOperator)expression, variableMap);
+      return print((BitOrOperator)expression, variableMap);
     }
     else if(expression instanceof ExclOrOperator){
-      return evaluate((ExclOrOperator)expression, variableMap);
+      return print((ExclOrOperator)expression, variableMap);
     }
     else if(expression instanceof AndOperator){
-      return evaluate((AndOperator)expression, variableMap);
+      return print((AndOperator)expression, variableMap);
     }
     else if(expression instanceof BitAndOperator){
-      return evaluate((BitAndOperator)expression, variableMap);
+      return print((BitAndOperator)expression, variableMap);
     }
     else if(expression instanceof EqualityOperator){
-      return evaluate((EqualityOperator)expression, variableMap);
+      return print((EqualityOperator)expression, variableMap);
     }
     else if(expression instanceof NotEqualOperator){
-      return evaluate((NotEqualOperator)expression, variableMap);
+      return print((NotEqualOperator)expression, variableMap);
     }
     else if(expression instanceof LessThanOperator){
-      return evaluate((LessThanOperator)expression, variableMap);
+      return print((LessThanOperator)expression, variableMap);
     }
     else if(expression instanceof LessThanEqOperator){
-      return evaluate((LessThanEqOperator)expression, variableMap);
+      return print((LessThanEqOperator)expression, variableMap);
     }
     else if(expression instanceof GreaterThanOperator){
-      return evaluate((GreaterThanOperator)expression, variableMap);
+      return print((GreaterThanOperator)expression, variableMap);
     }
     else if(expression instanceof GreaterThanEqOperator){
-      return evaluate((GreaterThanEqOperator)expression, variableMap);
+      return print((GreaterThanEqOperator)expression, variableMap);
     }
     else if(expression instanceof NotOperator){
-      return evaluate((NotOperator)expression, variableMap);
+      return print((NotOperator)expression, variableMap);
     }
     else if(expression instanceof BitNotOperator){
-      return evaluate((BitNotOperator)expression, variableMap);
+      return print((BitNotOperator)expression, variableMap);
     }
 
     throw new IllegalArgumentException("");
   }
 
-  private String evaluate(IntegerOperand expression){
+  private String print(IntegerOperand expression){
     return expression.getValue()+"";
   }
 
-  private String evaluate(VariableOperand expression, Map<String, Integer> variableMap){
+  private String print(VariableOperand expression, Map<String, Integer> variableMap){
     return variableMap.containsKey(expression.getValue())?variableMap.get(expression.getValue())+"":expression.getValue();
   }
 
-  private String evaluate(AdditionOperator expression, Map<String, Integer> variableMap){
+  private String print(AdditionOperator expression, Map<String, Integer> variableMap){
     String lhs = print(expression.getLeftHandSide(), variableMap);
     String rhs = print(expression.getRightHandSide(), variableMap);
     return "("+lhs +"+"+ rhs+")";
   }
 
-  private String evaluate(SubtractionOperator expression, Map<String, Integer> variableMap){
+  private String print(SubtractionOperator expression, Map<String, Integer> variableMap){
     String lhs = print(expression.getLeftHandSide(), variableMap);
     String rhs = print(expression.getRightHandSide(), variableMap);
     return "("+lhs +"-"+ rhs+")";
   }
 
-  private String evaluate(MultiplicationOperator expression, Map<String, Integer> variableMap){
+  private String print(MultiplicationOperator expression, Map<String, Integer> variableMap){
     String lhs = print(expression.getLeftHandSide(), variableMap);
     String rhs = print(expression.getRightHandSide(), variableMap);
     return "("+lhs +"*"+ rhs+")";
   }
 
-  private String evaluate(DivisionOperator expression, Map<String, Integer> variableMap){
+  private String print(DivisionOperator expression, Map<String, Integer> variableMap){
     String lhs = print(expression.getLeftHandSide(), variableMap);
     String rhs = print(expression.getRightHandSide(), variableMap);
     return "("+lhs +"/"+ rhs+")";
   }
 
-  private String evaluate(ModuloOperator expression, Map<String, Integer> variableMap){
+  private String print(ModuloOperator expression, Map<String, Integer> variableMap){
     String lhs = print(expression.getLeftHandSide(), variableMap);
     String rhs = print(expression.getRightHandSide(), variableMap);
     return "("+lhs +"%"+ rhs+")";
   }
 
-  private String evaluate(LeftShiftOperator expression, Map<String, Integer> variableMap){
+  private String print(LeftShiftOperator expression, Map<String, Integer> variableMap){
     String lhs = print(expression.getLeftHandSide(), variableMap);
     String rhs = print(expression.getRightHandSide(), variableMap);
     return "("+lhs +"<<"+ rhs+")";
   }
 
-  private String evaluate(RightShiftOperator expression, Map<String, Integer> variableMap){
+  private String print(RightShiftOperator expression, Map<String, Integer> variableMap){
     String lhs = print(expression.getLeftHandSide(), variableMap);
     String rhs = print(expression.getRightHandSide(), variableMap);
     return "("+lhs +">>"+ rhs+")";
   }
 
-  private String evaluate(OrOperator expression, Map<String, Integer> variableMap){
+  private String print(OrOperator expression, Map<String, Integer> variableMap){
     String lhs = print(expression.getLeftHandSide(), variableMap);
     String rhs = print(expression.getRightHandSide(), variableMap);
     return "("+lhs+"||"+rhs+")";
   }
 
-  private String evaluate(BitOrOperator expression, Map<String, Integer> variableMap){
+  private String print(BitOrOperator expression, Map<String, Integer> variableMap){
     String lhs = print(expression.getLeftHandSide(), variableMap);
     String rhs = print(expression.getRightHandSide(), variableMap);
     return "("+lhs+"|"+rhs+")";
   }
 
-  private String evaluate(ExclOrOperator expression, Map<String, Integer> variableMap){
+  private String print(ExclOrOperator expression, Map<String, Integer> variableMap){
     String lhs = print(expression.getLeftHandSide(), variableMap);
     String rhs = print(expression.getRightHandSide(), variableMap);
     return "("+lhs+"^"+rhs+")";
   }
 
-  private String evaluate(AndOperator expression, Map<String, Integer> variableMap){
+  private String print(AndOperator expression, Map<String, Integer> variableMap){
     String lhs = print(expression.getLeftHandSide(), variableMap);
     String rhs = print(expression.getRightHandSide(), variableMap);
     return "("+lhs+"&&"+rhs+")";
   }
 
-  private String evaluate(BitAndOperator expression, Map<String, Integer> variableMap){
+  private String print(BitAndOperator expression, Map<String, Integer> variableMap){
     String lhs = print(expression.getLeftHandSide(), variableMap);
     String rhs = print(expression.getRightHandSide(), variableMap);
     return "("+lhs+"&"+rhs+")";
   }
 
-  private String evaluate(EqualityOperator expression, Map<String, Integer> variableMap){
+  private String print(EqualityOperator expression, Map<String, Integer> variableMap){
     String lhs = print(expression.getLeftHandSide(), variableMap);
     String rhs = print(expression.getRightHandSide(), variableMap);
     return "("+lhs+"=="+rhs+")";
   }
 
-  private String evaluate(NotEqualOperator expression, Map<String, Integer> variableMap){
+  private String print(NotEqualOperator expression, Map<String, Integer> variableMap){
     String lhs = print(expression.getLeftHandSide(), variableMap);
     String rhs = print(expression.getRightHandSide(), variableMap);
     return "("+lhs+"!="+rhs+")";
   }
 
-  private String evaluate(LessThanOperator expression, Map<String, Integer> variableMap){
+  private String print(LessThanOperator expression, Map<String, Integer> variableMap){
     String lhs = print(expression.getLeftHandSide(), variableMap);
     String rhs = print(expression.getRightHandSide(), variableMap);
     return "("+lhs+"<"+rhs+")";
   }
 
-  private String evaluate(LessThanEqOperator expression, Map<String, Integer> variableMap){
+  private String print(LessThanEqOperator expression, Map<String, Integer> variableMap){
     String lhs = print(expression.getLeftHandSide(), variableMap);
     String rhs = print(expression.getRightHandSide(), variableMap);
     return "("+lhs+"<="+rhs+")";
   }
 
-  private String evaluate(GreaterThanOperator expression, Map<String, Integer> variableMap){
+  private String print(GreaterThanOperator expression, Map<String, Integer> variableMap){
     String lhs = print(expression.getLeftHandSide(), variableMap);
     String rhs = print(expression.getRightHandSide(), variableMap);
     return "("+lhs+">"+rhs+")";
   }
 
-  private String evaluate(GreaterThanEqOperator expression, Map<String, Integer> variableMap){
+  private String print(GreaterThanEqOperator expression, Map<String, Integer> variableMap){
     String lhs = print(expression.getLeftHandSide(), variableMap);
     String rhs = print(expression.getRightHandSide(), variableMap);
     return "("+lhs+">="+rhs+")";
   }
 
-  private String evaluate(NotOperator expression, Map<String, Integer> variableMap){
+  private String print(NotOperator expression, Map<String, Integer> variableMap){
     String rhs = print(expression.getRightHandSide(), variableMap);
     return "("+"!"+rhs+")";
   }
 
-  private String evaluate(BitNotOperator expression, Map<String, Integer> variableMap){
+  private String print(BitNotOperator expression, Map<String, Integer> variableMap){
     String rhs = print(expression.getRightHandSide(), variableMap);
     return "("+"~"+rhs+")";
   }
