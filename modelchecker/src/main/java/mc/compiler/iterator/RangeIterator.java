@@ -6,19 +6,17 @@ package mc.compiler.iterator;
 public class RangeIterator implements IndexIterator<Integer> {
 
     // fields
-    private int start;
-    private int end;
     private int current;
+    private int end;
 
     public RangeIterator(int start, int end){
-        this.start = start;
-        this.end = end;
         this.current = start;
+        this.end = end;
     }
 
     @Override
     public Integer next(){
-        return null;
+        return current++;
     }
 
     @Override
