@@ -151,11 +151,12 @@ public class JSONToASTConverter {
 
   public IndexNode convertIndexNode(JSONObject json){
     String variable = json.getString("variable");
-    ASTNode range = convertJSONNode(json.getJSONObject("range"));
-    JSONObject jsonProcess = json.optJSONObject("process");
+    ASTNode range = null;
+    if (json.has("range"))
+      range = convertJSONNode(json.getJSONObject("range"));
     ASTNode process = null;
-    if(jsonProcess != null){
-      convertJSONNode(jsonProcess);
+    if(json.has("process")){
+      process = convertJSONNode(json.getJSONObject("process"));
     }
     JSONObject jsonLocation = json.getJSONObject("location");
     Location location = convertLocation(jsonLocation);
@@ -277,7 +278,6 @@ public class JSONToASTConverter {
   }
 
   public RangesNode convertRangesNode(JSONObject json){
-    if (json == null) return null;
     JSONArray array = json.getJSONArray("ranges");
     List<IndexNode> ranges = new ArrayList<IndexNode>();
     for(int i = 0; i < array.length(); i++){
