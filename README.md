@@ -81,3 +81,10 @@ Main application css files can be found in the styles directory (Model-Checker/a
 
 So you're a SWEN302 student and you want to further enchance the Automata Concocter... These are some tasks which we did no have the time to complete:   
 - [ ] Get ECS dept. to update Chrome! Currently: 40.0.2214.91
+
+###Java-SMT
+
+----------------------
+
+As there were issues with java-smt's ivy repo, it has been mirrored as a maven repo at https://maven.tangentmc.net/#browse/browse/components:victoria:c60bc6b9612f47d3772762b7941dfc35
+If this does go down, the scripts used to generate it can be found at https://github.com/sanjay900/java-smt-maven

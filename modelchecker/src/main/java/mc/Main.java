@@ -33,7 +33,10 @@ public class Main {
   private WebServer webServer;
   @Getter
   private boolean reloaded = false;
+  @Getter
+  private static Main instance;
   private Main(boolean reloaded) {
+    instance = this;
     AnsiConsole.systemInstall();
     //Make sure that we kill the sub-process when this process exits.
     Runtime.getRuntime().addShutdownHook(new Thread(this::stop));

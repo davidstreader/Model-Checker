@@ -1,26 +1,22 @@
 package mc.compiler;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import mc.compiler.ast.*;
+import mc.util.Location;
+import mc.util.expr.Expression;
+import mc.webserver.LogMessage;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import mc.util.Location;
-import mc.util.expr.Expression;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class JSONToASTConverter {
 
 	private Map<String, String> variableMap;
 
 	public AbstractSyntaxTree convert(JSONObject ast){
+	  new LogMessage("Importing AST").send();
 		JSONObject variables = ast.getJSONObject("variableMap");
 		constructVariableMap(variables);
 

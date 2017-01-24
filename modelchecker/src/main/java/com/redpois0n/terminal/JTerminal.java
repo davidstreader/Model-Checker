@@ -1,5 +1,7 @@
 package com.redpois0n.terminal;
 
+import spark.utils.StringUtils;
+
 import javax.swing.*;
 import javax.swing.text.*;
 import java.awt.*;
@@ -283,7 +285,7 @@ public class JTerminal extends JTextPane {
     public void keyPressed(KeyEvent e) {
       if (e.getKeyCode() == KeyEvent.VK_ENTER) {
         String c = getCommand();
-        if (c.length() == 0) return;
+        if (StringUtils.isEmpty(c)) return;
         for (InputListener l : inputListeners) {
           l.processCommand(JTerminal.this, c);
         }
