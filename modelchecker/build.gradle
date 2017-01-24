@@ -36,4 +36,6 @@ dependencies {
   compile group: 'org.fusesource.jansi', name: 'jansi', version: '1.14'
   compile group: 'com.intellij', name: 'forms_rt', version: '7.0.3'
   compile group: 'commons-io', name: 'commons-io', version: '2.5'
+  compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.5'
+
 }

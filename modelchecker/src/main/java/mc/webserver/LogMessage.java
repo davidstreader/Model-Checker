@@ -11,6 +11,7 @@ import static org.fusesource.jansi.Ansi.ansi;
 public class LogMessage {
   private String message;
   private boolean clear = false;
+  private boolean error = false;
   public LogMessage(String message) {
     this.message = ansi().render(message).toString();
   }

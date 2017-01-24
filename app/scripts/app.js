@@ -33,7 +33,8 @@
     });
     app.socket.on('log',data => {
       if (data.clear) app.$.console.clear();
-      app.$.console.log(data.message);
+      if (data.error) app.$.console.error(data.message);
+      else app.$.console.log(data.message);
     });
     app.socket.on('disconnect', function() {
       app.isClientSide = true;

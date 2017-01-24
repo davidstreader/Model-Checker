@@ -5,6 +5,7 @@ import com.corundumstudio.socketio.Configuration;
 import com.corundumstudio.socketio.SocketIOClient;
 import com.corundumstudio.socketio.SocketIOServer;
 import mc.compiler.JSONToASTConverter;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.json.JSONObject;
 
 import java.net.InetSocketAddress;
@@ -26,8 +27,13 @@ public class WebSocketServer {
     server.addEventListener("compile",Map.class, (client, data, ackSender) -> {
       this.client.set(client);
       System.out.println(ansi().render("Received compile command from @|yellow "+getSocketHostname()+"|@"));
-      JSONObject ast = new JSONObject(data);
-      System.out.println(new JSONToASTConverter().convert(ast));
+      try {
+        JSONObject ast = new JSONObject(data);
+        System.out.println(new JSONToASTConverter().convert(ast.getJSONObject("ast")));
+      } catch (Exception ex) {
+        new LogMessage("The following error is unrelated to your script. Please report it to the developers").send();
+        new LogMessage(ExceptionUtils.getStackTrace(ex),false,true).send();
+      }
     });
   }
   private ThreadLocal<SocketIOClient> client = new ThreadLocal<>();

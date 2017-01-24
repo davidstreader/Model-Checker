@@ -110,6 +110,7 @@ public class TerminalWindow {
     panel.setName("null.contentPane");
     final JScrollPane scrollPane1 = new JScrollPane();
     scrollPane1.setForeground(new Color(-16777216));
+    scrollPane1.setHorizontalScrollBarPolicy(31);
     scrollPane1.setVisible(true);
     panel.add(scrollPane1, BorderLayout.CENTER);
     scrollPane1.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEmptyBorder(), null));

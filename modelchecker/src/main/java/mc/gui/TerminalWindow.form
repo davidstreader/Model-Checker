@@ -15,6 +15,7 @@
         <constraints border-constraint="Center"/>
         <properties>
           <foreground color="-16777216"/>
+          <horizontalScrollBarPolicy value="31"/>
           <visible value="true"/>
         </properties>
         <border type="empty"/>
