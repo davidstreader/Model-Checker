@@ -38,17 +38,41 @@ public class WebSocketServer {
       }
     });
   }
+
+  /**
+   * Each client is given its own thread to compile in. Storing the client in a ThreadLocal means
+   * that we get access to the client from anywhere during the compilation.
+   */
   private ThreadLocal<SocketIOClient> client = new ThreadLocal<>();
   public void stop() {
     server.stop();
     System.out.println("Stopped Socket.IO Server.");
   }
+
+  /**
+   * Send a message to the client while compiling.
+   * @param event the event
+   * @param obj the message
+   * @param <T> The message type
+   */
   public <T> void send(String event, T obj) {
     client.get().sendEvent(event,obj);
   }
+  /**
+   * Send a message to the client while compiling.
+   * @param event the event
+   * @param obj the message
+   * @param callback a callback to run with the response from the client
+   * @param <T> The message type
+   */
   public <T> void send(String event, T obj, AckCallback<T> callback) {
     client.get().sendEvent(event,callback,obj);
   }
+
+  /**
+   * Get the hostname of the current client
+   * @return the hostname of the current client
+   */
   public String getSocketHostname() {
     return ((InetSocketAddress)client.get().getRemoteAddress()).getHostString();
   }
