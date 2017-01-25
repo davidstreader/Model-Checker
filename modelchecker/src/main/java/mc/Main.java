@@ -40,7 +40,6 @@ public class Main {
     AnsiConsole.systemInstall();
     //Make sure that we kill the sub-process when this process exits.
     Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
-    commandManager = new CommandManager(this);
     this.reloaded = reloaded;
     //If this is a sub process, or we are running headless, don't start the gui.
     if (!reloaded && !GraphicsEnvironment.isHeadless()) {
@@ -48,6 +47,7 @@ public class Main {
     }
     //Start the server if we aren't running from a jar or are in a sub process
     if (!Utils.isJar() || reloaded) {
+      commandManager = new CommandManager(this);
       //If bower has not loaded, init it now.
       if (!new File("bower_components").exists())
         new DependencyManager(this).initBower();
