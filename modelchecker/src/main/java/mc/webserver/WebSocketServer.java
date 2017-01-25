@@ -14,6 +14,7 @@ import org.json.JSONObject;
 
 import java.net.InetSocketAddress;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 
 import static org.fusesource.jansi.Ansi.ansi;
@@ -36,14 +37,16 @@ public class WebSocketServer {
         AbstractSyntaxTree ast = new JSONToASTConverter().convert(new JSONObject(data).getJSONObject("ast"));
         ast = new ReferenceReplacer().replaceReferences(ast);
          Map<String,ProcessModel> map = new Interpreter().interpret(ast);
-        System.out.println(map);
+        System.out.println(data.get("context"));
+        ProcessReturn ret= new ProcessReturn(map, Collections.emptyMap(),null,(Map)data.get("context"),Collections.emptyList());
+        ackSender.sendAckData(ret);
       } catch (Exception ex) {
         System.out.println(ansi().render("@|red An error occurred while compiling.|@"));
         new LogMessage("The following error is unrelated to your script. Please report it to the developers").send();
         //Get a stack trace then split it into lines
         String[] lines = ExceptionUtils.getStackTrace(ex).split("\n");
         for (int i = 0; i < lines.length; i++) {
-          //if the line contains com.conrun... then we have gotten up to the socketio portion of the stack trace
+          //if the line contains com.conrun... then we have gotten up to the socket.io portion of the stack trace
           //And we can ignore this line and the rest.
           if (lines[i].contains("com.corundumstudio.socketio")) {
             lines = Arrays.copyOfRange(lines,0,i);

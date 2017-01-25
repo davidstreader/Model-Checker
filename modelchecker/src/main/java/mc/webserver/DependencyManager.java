@@ -52,9 +52,16 @@ public class DependencyManager {
       ProcessBuilder builder = new ProcessBuilder("npm" + Utils.getNodeExtension(), "install", "bower","-d");
       builder.directory(new File("bower_install"));
       main.spawnProcess(builder);
+      if (!Utils.isWin()) {
+        chmod("bower");
+      }
     }
   }
-
+  private void chmod(String app) {
+    ProcessBuilder builder = new ProcessBuilder("chmod","+x",app);
+    builder.directory(new File("bower_install"));
+    main.spawnProcess(builder);
+  }
   private void unzipNPM() throws IOException, ZipException {
     File bowerInstall = new File("bower_install");
     if (bowerInstall.mkdir()) {
@@ -94,6 +101,9 @@ public class DependencyManager {
       for (File f: new File(npmdir,"bin").listFiles()) {
         System.out.println("Copying: "+f.getName());
         Files.copy(f.toPath(), Paths.get(bowerInstall.toPath().toString(), f.getName()));
+      }
+      if (!Utils.isWin()) {
+        chmod("npm");
       }
     }
 
