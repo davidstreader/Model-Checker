@@ -36,7 +36,7 @@ public class JTerminal extends JTextPane {
     COLORS.put("31", Color.red.darker());
     COLORS.put("32", Color.green.darker());
     COLORS.put("33", Color.yellow.darker());
-    COLORS.put("34", Color.blue);
+    COLORS.put("34", new Color(100, 149, 237));
     COLORS.put("35", Color.magenta.darker());
     COLORS.put("36", Color.cyan.darker());
     COLORS.put("37", Color.lightGray);
@@ -47,7 +47,7 @@ public class JTerminal extends JTextPane {
     COLORS.put("91", Color.red);
     COLORS.put("92", Color.green);
     COLORS.put("93", Color.yellow);
-    COLORS.put("94", Color.blue.brighter());
+    COLORS.put("94", new Color(100, 149, 237).brighter());
     COLORS.put("95", Color.magenta);
     COLORS.put("96", Color.cyan);
     COLORS.put("97", Color.white);

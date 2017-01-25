@@ -4,8 +4,8 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.ConsoleAppender;
 import ch.qos.logback.core.OutputStreamAppender;
-import ch.qos.logback.core.util.StatusPrinter;
 import lombok.Getter;
 import mc.Main;
 import org.slf4j.LoggerFactory;
@@ -17,11 +17,6 @@ import java.io.PrintStream;
 public class MainGui {
   @Getter
   private TerminalWindow terminal;
-  /**
-   * Get a copy of the normal terminal as System.out is redirected.
-   */
-  @Getter
-  private static PrintStream originalOut = System.out;
   public MainGui(Main main) {
     terminal = new TerminalWindow(main);
     //When the window is closed, kill the sub process and the main app.
@@ -32,22 +27,28 @@ public class MainGui {
         main.stop();
       }
     });
-    // Get LoggerContext from SLF4J
+    addTerminalLoggerAppender();
+  }
+
+  private void addTerminalLoggerAppender() {
+    //Get a logger context for logback
     LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
+    //Get the root logger
     Logger log = context.getLogger(Logger.ROOT_LOGGER_NAME);
     PatternLayoutEncoder encoder = new PatternLayoutEncoder();
     encoder.setContext(context);
     encoder.setPattern("[%thread] %highlight(%-5level) %cyan(%logger{15}) - %msg %n");
     encoder.start();
+    //Create an OutputStreamAppender that logs to the TerminalWindow
     OutputStreamAppender<ILoggingEvent> appender= new OutputStreamAppender<>();
     appender.setName( "OutputStream Appender" );
     appender.setContext(context);
-    appender.setEncoder(encoder);  // <-- must be set before outputstream
+    appender.setEncoder(encoder);
     appender.setOutputStream(new PrintStream(new TerminalOutputStream(terminal)));
     appender.start();
     log.addAppender(appender);
-
   }
+
   /**
    * Show the progress bar
    */
@@ -86,6 +87,19 @@ public class MainGui {
   }
 
   public static void registerConsoleAppender() {
-
+    LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
+    Logger log = context.getLogger(Logger.ROOT_LOGGER_NAME);
+    PatternLayoutEncoder encoder = new PatternLayoutEncoder();
+    encoder.setContext(context);
+    encoder.setPattern("[%thread] %highlight(%-5level) %cyan(%logger{15}) - %msg %n");
+    encoder.start();
+    //Instead of logging to the window, log to the normal console as
+    //we are running headless
+    OutputStreamAppender<ILoggingEvent> appender= new ConsoleAppender<>();
+    appender.setName( "OutputStream Appender" );
+    appender.setContext(context);
+    appender.setEncoder(encoder);
+    appender.start();
+    log.addAppender(appender);
   }
 }

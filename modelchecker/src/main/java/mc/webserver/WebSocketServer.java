@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 import static org.fusesource.jansi.Ansi.ansi;
 
 public class WebSocketServer {
-  Logger logger = LoggerFactory.getLogger(WebSocketServer.class);
+  private Logger logger = LoggerFactory.getLogger(WebSocketServer.class);
   private SocketIOServer server;
   public WebSocketServer() {
     Configuration config = new Configuration();
