@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import mc.commands.CommandManager;
+import mc.commands.PassThroughCommandManager;
 import mc.gui.MainGui;
 import mc.util.Utils;
 import mc.webserver.DependencyManager;
@@ -57,6 +58,7 @@ public class Main {
       commandManager.registerInput();
       return;
     }
+    commandManager = new PassThroughCommandManager(this);
     //Load all the bower dependencies
     if (new File("executables").exists())
       new DependencyManager(this).initBower();

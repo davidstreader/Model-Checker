@@ -1,6 +1,7 @@
 package mc.commands;
 
 import mc.Main;
+import mc.util.Utils;
 import org.apache.commons.lang3.StringUtils;
 import org.fusesource.jansi.Ansi;
 
@@ -12,15 +13,17 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class CommandManager {
-  private Map<String,Command> commandMap = new HashMap<>();
+  protected Map<String,Command> commandMap = new HashMap<>();
   //Load commands
   public CommandManager(Main main) {
     commandMap.put("help", new HelpCommand());
-    commandMap.put("eval", new EvalCommand());
-    commandMap.put("evaluate", commandMap.get("eval"));
-    commandMap.put("simp", new SimplifyCommand());
-    commandMap.put("simplify", commandMap.get("simp"));
     commandMap.put("exit",new ExitCommand(main));
+    if (main.isReloaded() || !Utils.isJar()) {
+      commandMap.put("eval", new EvalCommand());
+      commandMap.put("evaluate", commandMap.get("eval"));
+      commandMap.put("simp", new SimplifyCommand());
+      commandMap.put("simplify", commandMap.get("simp"));
+    }
   }
   public void executeCommand(String command) {
     if (StringUtils.isEmpty(command)) return;

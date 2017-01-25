@@ -26,7 +26,7 @@ public class JavaSMTConverter {
   static {
     try {
       getContext();
-    } catch (InvalidConfigurationException e) {
+    } catch (Exception e) {
       e.printStackTrace();
     }
   }
