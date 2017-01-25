@@ -18,7 +18,7 @@ public class AutomatonNode extends ProcessModelObject {
     private Map<String, AutomatonEdge> outgoingEdges;
 
     public AutomatonNode(String id){
-        super(id);
+        super(id,"node");
         this.label = null;
         incomingEdges = new HashMap<String, AutomatonEdge>();
         outgoingEdges = new HashMap<String, AutomatonEdge>();

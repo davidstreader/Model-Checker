@@ -16,10 +16,13 @@ public abstract class ProcessModelObject implements Serializable {
     // fields
     private String id;
     @Getter
+    private String type;
+    @Getter
     private Map<String, Object> metaData;
 
-    public ProcessModelObject(String id){
+    public ProcessModelObject(String id, String type){
         this.id = id;
+        this.type = type;
         this.metaData = new HashMap<String, Object>();
     }
 

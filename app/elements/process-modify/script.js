@@ -60,7 +60,7 @@
       //If the new name already exists in the editor, notify the user by changing the button label
       this.editorLabel =  this.isExisting?"Update Process":"Add to Editor";
       if (this.isExisting) {
-        const type =_.findWhere(app.automata.allValues,{id:processName}).type;
+        const type =_.find(app.automata.allValues,{id:processName}).type;
         $("#process-type-selector")[0].contentElement.selected = this.PROCESS_TYPES.indexOf(type);
       }
       this.hasCompiled = this.added.length>0;
@@ -135,7 +135,7 @@
     },
     getProcessFromCode:function (id) {
       if (!app.automata) return null;
-      const process = _.findWhere(app.automata.allValues,{id:id});
+      const process = _.find(app.automata.allValues,{id:id});
       if (!process) return null;
       const loc = process.location;
       //Split into lines
@@ -178,14 +178,14 @@
         return;
       }
       //loop over all subkeys from the selected process, then map them to an array with some default states
-      this.push("added",{id:id,name:"",renamed:_.keys(_.findWhere(app.automata.allValues,{id:id}).compiledAlphabet).map(id=>{return {id:id,renamed:"",hidden:false};})});
+      this.push("added",{id:id,name:"",renamed:_.keys(_.find(app.automata.allValues,{id:id}).compiledAlphabet).map(id=>{return {id:id,renamed:"",hidden:false};})});
     },
     addParsed: function(parse) {
       //Loop over processes
       for (let id1 in parse.processes) {
         const process = parse.processes[id1];
         //Generate a process formatted for modify
-        const orig = {id:process.id,name:process.name||"",renamed:_.keys(_.findWhere(app.automata.allValues,{id:process.id}).compiledAlphabet).map(id=>{
+        const orig = {id:process.id,name:process.name||"",renamed:_.keys(_.find(app.automata.allValues,{id:process.id}).compiledAlphabet).map(id=>{
           const val = {id:id,renamed:"",hidden:false};
           if (process.renamed) {
             val.renamed = process.renamed[id] || "";

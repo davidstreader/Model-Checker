@@ -52,7 +52,7 @@ function addLabelAndPadding(graphMap, key, jgraph, opts) {
 function constructGraphs(graphMap, id, hidden, callback, opts) {
   opts = opts || {};
   //Find the process by id
-  let graph = _.findWhere(app.get("automata.values"), {id: id});
+  let graph = _.find(app.get("automata.values"), {id: id});
   if (hidden)
     id += ".hidden";
   if (!graph.type || (graphMap[id] && app.get("automata.analysis")[id] &&  !app.get("automata.analysis")[id].isUpdated)) {

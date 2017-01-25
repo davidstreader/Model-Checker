@@ -108,7 +108,7 @@
       const allGraphs = [];
       const skipped = results.skipped;
       for(let id in results.processes){
-        if (!_.findWhere(skipped,{id:id})) graphs.push(results.processes[id]);
+        if (!_.find(skipped,{id:id})) graphs.push(results.processes[id]);
         allGraphs.push(results.processes[id]);
       }
       app.set('automata.values', graphs.reverse());

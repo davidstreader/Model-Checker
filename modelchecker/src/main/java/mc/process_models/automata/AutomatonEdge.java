@@ -1,11 +1,19 @@
 package mc.process_models.automata;
 
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import mc.Constant;
 import mc.process_models.ProcessModelObject;
+
+import java.io.IOException;
 
 /**
  * Created by sheriddavi on 24/01/17.
  */
+@JsonSerialize(using = AutomatonEdge.AutomatonEdgeSerializser.class)
 public class AutomatonEdge extends ProcessModelObject {
 
     private String label;
@@ -13,7 +21,7 @@ public class AutomatonEdge extends ProcessModelObject {
     private AutomatonNode to;
 
     public AutomatonEdge(String id, String label, AutomatonNode from, AutomatonNode to){
-        super(id);
+        super(id,"edge");
         this.label = label;
         this.from = from;
         this.to = to;
@@ -62,4 +70,26 @@ public class AutomatonEdge extends ProcessModelObject {
 
         return builder.toString();
     }
+  public static class AutomatonEdgeSerializser extends StdSerializer<AutomatonEdge> {
+
+    public AutomatonEdgeSerializser() {
+      super(AutomatonEdge.class, true);
+    }
+
+    @Override
+    public void serialize(AutomatonEdge value, JsonGenerator jgen, SerializerProvider provider)
+      throws IOException, JsonGenerationException {
+      jgen.writeStartObject();
+      jgen.writeObjectField("id", value.getId());
+      jgen.writeObjectField("label", value.getLabel());
+      jgen.writeObjectField("to", value.getTo().getId());
+      jgen.writeObjectField("from", value.getFrom().getId());
+      //TODO: add locationset
+      jgen.writeObjectField("locationSet", null);
+      jgen.writeObjectField("metaData", value.getMetaData());
+      jgen.writeEndObject();
+
+    }
+
+  }
 }
