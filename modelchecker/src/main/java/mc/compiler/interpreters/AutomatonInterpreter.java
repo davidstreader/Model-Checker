@@ -78,7 +78,7 @@ public class AutomatonInterpreter {
         }
 
         if(astNode.hasLabel()){
-            automaton = operations.labelAutomaton(automaton, astNode.getLabel());
+            //automaton = operations.labelAutomaton(automaton, astNode.getLabel());
         }
         if(astNode.hasRelabel()){
             for(RelabelElementNode element : astNode.getRelabel().getRelabels()){
@@ -145,7 +145,7 @@ public class AutomatonInterpreter {
         switch(astNode.getFunction()){
             case "abs":
                 if(model instanceof Automaton){
-                    processed = operations.abstraction((Automaton)model);
+                   // processed = operations.abstraction((Automaton)model);
                     break;
                 }
 

@@ -21,7 +21,6 @@ import java.util.Map;
 
 import static mc.util.Utils.getArch;
 import static org.fusesource.jansi.Ansi.ansi;
-@NoArgsConstructor
 public class Main {
   @Getter
   private CommandManager commandManager;
@@ -39,6 +38,10 @@ public class Main {
   @Getter
   private static Main instance;
   private Logger logger = LoggerFactory.getLogger(Main.class);
+  public Main() {
+    AnsiConsole.systemInstall();
+    MainGui.registerConsoleAppender();
+  }
   private Main(boolean reloaded) {
     instance = this;
     AnsiConsole.systemInstall();

@@ -28,8 +28,12 @@ public class MainGui {
       }
     });
     addTerminalLoggerAppender();
+    redirectIO();
   }
-
+  private void redirectIO() {
+    System.setOut(new PrintStream(new TerminalOutputStream(terminal)));
+    System.setErr(System.out);
+  }
   private void addTerminalLoggerAppender() {
     //Get a logger context for logback
     LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();

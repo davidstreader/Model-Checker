@@ -31,8 +31,13 @@ public class Utils {
    * Windows requires a .cmd appended to the node executables, linux does not.
    * @return ".cmd" on windows or an empty string.
    */
-  public static String getNodeExtension() {
+  public static String getNPMExtension() {
     if (isWin()) return ".cmd";
+    return "";
+  }
+
+  public static String getNodeExtension() {
+    if (isWin()) return ".exe";
     return "";
   }
 }

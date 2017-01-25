@@ -16,8 +16,6 @@ import static org.fusesource.jansi.Ansi.ansi;
  */
 public class Publish extends Main{
   private Publish() {
-    super();
-
     AnsiConsole.systemInstall();
     //If we are running from the jar, its a bad idea to replace the jar we are running from.
     if (!Utils.isJar()) {

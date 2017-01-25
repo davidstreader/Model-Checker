@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -49,10 +48,10 @@ public class DependencyManager {
   private void runBower() {
     logger.info(""+ansi().render("@|yellow Updating Bower Dependencies|@ - @|yellow This may take a while.|@"));
     if (Utils.isWin()) {
-      ProcessBuilder builder = new ProcessBuilder(new File("bower_install", "bower") + Utils.getNodeExtension(), "install", "-d");
+      ProcessBuilder builder = new ProcessBuilder(new File("bower_install", "bower") + Utils.getNPMExtension(), "install", "-d");
       main.spawnProcess(builder);
     } else {
-      ProcessBuilder builder = new ProcessBuilder(Paths.get("bower_install","node_modules","bower","bin","bower") + Utils.getNodeExtension(), "install", "-d");
+      ProcessBuilder builder = new ProcessBuilder(Paths.get("bower_install","node_modules","bower","bin","bower") + Utils.getNPMExtension(), "install", "-d");
       main.spawnProcess(builder);
     }
   }
@@ -61,7 +60,7 @@ public class DependencyManager {
     File bowerInstall = new File("bower_install","bower");
     if (!bowerInstall.exists()) {
       logger.info(""+ansi().render("@|green Installing bower|@"));
-      ProcessBuilder builder = new ProcessBuilder("npm" + Utils.getNodeExtension(), "install", "bower","-d");
+      ProcessBuilder builder = new ProcessBuilder("npm" + Utils.getNPMExtension(), "install", "bower","-d");
       builder.directory(new File("bower_install"));
       main.spawnProcess(builder);
       if (!Utils.isWin()) {
@@ -72,7 +71,7 @@ public class DependencyManager {
   }
   private void installVulcanize() {
     logger.info(""+ansi().render("@|green Installing vulcanize|@"));
-    ProcessBuilder builder = new ProcessBuilder("npm" + Utils.getNodeExtension(), "install", "vulcanize","-d");
+    ProcessBuilder builder = new ProcessBuilder("npm" + Utils.getNPMExtension(), "install", "vulcanize","-d");
     builder.directory(new File("bower_install"));
     main.spawnProcess(builder);
   }
@@ -84,7 +83,8 @@ public class DependencyManager {
   private void unzipNPM() throws IOException, ZipException {
     File bowerInstall = new File("bower_install");
     if (bowerInstall.mkdir()) {
-      logger.info(""+ansi().render("@|red Node install not found!|@\n@|yellow Copying files for Node|@"));
+      logger.info(""+ansi().render("@|red Node install not found!|@"));
+      logger.info(""+ansi().render("@|yellow Copying files for Node|@"));
       File nodeExes = new File("executables", getArch());
       for (File f : nodeExes.listFiles()) {
         logger.info(""+"Copying: "+f.getName());
@@ -128,7 +128,9 @@ public class DependencyManager {
 
   }
   public void vulcanize() {
-    ProcessBuilder builder = new ProcessBuilder(new File("bower_install", "npm")+ Utils.getNodeExtension(),"run-script","vulcanize");
+    logger.info(""+ansi().render("@|yellow Vulcanizing HTML|@"));
+    ProcessBuilder builder = new ProcessBuilder("node"+ Utils.getNodeExtension(),"node_modules/vulcanize/bin/vulcanize","-o","../app/elements/elements.vulcanized.html","../app/elements/elements.html","--strip-comments");
+    builder.directory(new File("bower_install"));
     main.spawnProcess(builder);
   }
   public void copyNatives() {
