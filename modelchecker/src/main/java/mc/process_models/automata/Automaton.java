@@ -11,6 +11,8 @@ import java.util.stream.Collectors;
  */
 public class Automaton extends ProcessModelObject implements ProcessModel {
 
+    public static final boolean CONSTRUCT_ROOT = true;
+
     private AutomatonNode root;
     private Map<String, AutomatonNode> nodeMap;
     private Map<String, AutomatonEdge> edgeMap;
@@ -21,16 +23,31 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
     public Automaton(String id){
         super(id);
+        setupAutomaton();
+
+        // setup the root for this automaton
+        this.root = addNode();
+        root.addMetaData("startNode", true);
+    }
+
+    public Automaton(String id, boolean constructRoot){
+        super(id);
+        setupAutomaton();
+
+        // only construct a root node if specified to do so
+        if(constructRoot){
+            this.root = addNode();
+            root.addMetaData("startNode", true);
+        }
+    }
+
+    private void setupAutomaton(){
         this.nodeMap = new HashMap<String, AutomatonNode>();
         this.edgeMap = new HashMap<String, AutomatonEdge>();
         this.alphabet = new HashMap<String, List<AutomatonEdge>>();
 
         this.nodeId = 0;
         this.edgeId = 0;
-
-        // setup the root for this automaton
-        this.root = addNode();
-        root.addMetaData("startNode", true);
     }
 
     public AutomatonNode getRoot(){
@@ -218,8 +235,32 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
             return false;
         }
 
+        // remove references to this edge
+        edge.getFrom().removeOutgoingEdge(edge);
+        edge.getTo().removeIncomingEdge(edge);
+
         edgeMap.remove(edge.getId());
         return true;
+    }
+
+    public boolean removeEdge(String id){
+        if(!edgeMap.containsKey(id)){
+            return false;
+        }
+
+        return removeEdge(edgeMap.get(id));
+    }
+
+    public void relabelEdges(String oldLabel, String newLabel){
+        if(alphabet.containsKey(oldLabel)){
+            List<AutomatonEdge> edges = alphabet.get(oldLabel);
+            edges.forEach(edge -> edge.setLabel(newLabel));
+            if(alphabet.containsKey(newLabel)){
+                edges.addAll(alphabet.get(newLabel));
+            }
+            alphabet.put(newLabel, edges);
+            alphabet.remove(oldLabel);
+        }
     }
 
     public int getEdgeCount(){
@@ -230,9 +271,28 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
         return alphabet.keySet();
     }
 
-    public void addAutomaton(Automaton automaton){
-        automaton.getNodes().stream().forEach(node -> nodeMap.put(node.getId(), node));
-        automaton.getEdges().stream().forEach(edge -> edgeMap.put(edge.getId(), edge));
+    public AutomatonNode addAutomaton(Automaton automaton){
+        AutomatonNode root = null;
+        for(AutomatonNode node : automaton.getNodes()){
+            AutomatonNode newNode = addNode(node.getId());
+            for(String key : node.getMetaDataKeys()){
+                newNode.addMetaData(key, node.getMetaData(key));
+                if(key.equals("startNode")){
+                    root = newNode;
+                }
+            }
+        }
+
+        for(AutomatonEdge edge : automaton.getEdges()){
+            AutomatonNode from = getNode(edge.getFrom().getId());
+            AutomatonNode to = getNode(edge.getTo().getId());
+            AutomatonEdge newEdge = addEdge(edge.getId(), edge.getLabel(), from, to);
+            for(String key : edge.getMetaDataKeys()){
+                newEdge.addMetaData(key, edge.getMetaData(key));
+            }
+        }
+
+        return root;
     }
 
 
