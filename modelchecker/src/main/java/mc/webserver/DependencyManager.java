@@ -60,7 +60,14 @@ public class DependencyManager {
       if (!Utils.isWin()) {
         chmod("bower");
       }
+      installVulcanize();
     }
+  }
+  private void installVulcanize() {
+    System.out.println(ansi().render("@|green Installing vulcanize|@"));
+    ProcessBuilder builder = new ProcessBuilder("npm" + Utils.getNodeExtension(), "install", "vulcanize","-d");
+    builder.directory(new File("bower_install"));
+    main.spawnProcess(builder);
   }
   private void chmod(String app) {
     ProcessBuilder builder = new ProcessBuilder("chmod","+x",app);
