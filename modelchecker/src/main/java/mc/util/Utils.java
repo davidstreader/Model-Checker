@@ -15,6 +15,10 @@ public class Utils {
   public static boolean isWin() {
     return NativeLibraries.OS.guessOperatingSystem() == NativeLibraries.OS.WINDOWS;
   }
+  @SuppressWarnings("deprecation")
+  public static boolean isMac() {
+    return NativeLibraries.OS.guessOperatingSystem() == NativeLibraries.OS.MACOSX;
+  }
   public static boolean isJar() {
     //getResource will add a jar: to the start of files inside jars.
     return Main.class.getResource("Main.class").toString().startsWith("jar");

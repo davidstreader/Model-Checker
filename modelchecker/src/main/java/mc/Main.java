@@ -46,7 +46,7 @@ public class Main {
       gui = new MainGui(this);
     }
     //Start the server if we aren't running from a jar or are in a sub process
-    if (!Utils.isJar() || reloaded) {
+    if (!Utils.isJar() || reloaded || Utils.isMac()) {
       commandManager = new CommandManager(this);
       //If bower has not loaded, init it now.
       if (!new File("bower_components").exists())
@@ -114,6 +114,8 @@ public class Main {
     Map<String, String> environment = builder.environment();
     //Set the linux native path
     environment.put("LD_LIBRARY_PATH", nativePath);
+    //Set the mac native path
+    environment.put("DYLD_LIBRARY_PATH", nativePath);
     System.out.println(environment);
     spawnProcess(builder);
   }
