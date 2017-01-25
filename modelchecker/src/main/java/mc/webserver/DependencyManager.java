@@ -41,8 +41,13 @@ public class DependencyManager {
 
   private void runBower() {
     System.out.println(ansi().render("@|yellow Updating Bower Dependencies|@ - @|yellow This may take a while.|@"));
-    ProcessBuilder builder = new ProcessBuilder(new File("bower_install","bower") + Utils.getNodeExtension(), "install","-d");
-    main.spawnProcess(builder);
+    if (Utils.isWin()) {
+      ProcessBuilder builder = new ProcessBuilder(new File("bower_install", "bower") + Utils.getNodeExtension(), "install", "-d");
+      main.spawnProcess(builder);
+    } else {
+      ProcessBuilder builder = new ProcessBuilder(Paths.get("bower_install","node_modules","bower","bin","bower") + Utils.getNodeExtension(), "install", "-d");
+      main.spawnProcess(builder);
+    }
   }
 
   private void installBower() {
