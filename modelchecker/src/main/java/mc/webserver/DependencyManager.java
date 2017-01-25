@@ -30,6 +30,7 @@ public class DependencyManager {
   }
   private Main main;
   public void initBower() {
+    System.out.println(ansi().render("@|yellow Copying natives|@"));
     copyNatives();
     try {
       unzipNPM();
@@ -135,7 +136,7 @@ public class DependencyManager {
     File natives = new File("native",Utils.getArch());
     for (File n: natives.listFiles()) {
       try {
-        Files.copy(n.toPath(),libDir.toPath(), REPLACE_EXISTING);
+        Files.copy(n.toPath(),Paths.get(libDir.toPath().toString(),n.getName()), REPLACE_EXISTING);
       } catch (IOException e) {
         e.printStackTrace();
       }
