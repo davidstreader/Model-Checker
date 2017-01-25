@@ -11,13 +11,15 @@ public class ProcessNode extends ASTNode {
 	private String identifier;
 	private ASTNode process;
 	private List<LocalProcessNode> localProcesses;
+	private HidingNode hiding;
 
-	public ProcessNode(String type, String identifier, ASTNode process, List<LocalProcessNode> localProcesses, Location location){
+	public ProcessNode(String type, String identifier, ASTNode process, List<LocalProcessNode> localProcesses, HidingNode hiding, Location location){
 		super(location);
 		this.type = type;
 		this.identifier = identifier;
 		this.process = process;
 		this.localProcesses = localProcesses;
+		this.hiding = hiding;
 	}
 
 	public String getType(){
@@ -50,5 +52,13 @@ public class ProcessNode extends ASTNode {
 
 	public void setLocalProcesses(List<LocalProcessNode> localProcesses){
 		this.localProcesses = localProcesses;
+	}
+
+	public HidingNode getHiding(){
+		return hiding;
+	}
+
+	public boolean hasHiding(){
+		return hiding != null;
 	}
 }

@@ -192,9 +192,15 @@ public class JSONToASTConverter {
       localProcesses.add(localProcess);
     }
 
+    JSONObject jsonHiding = json.optJSONObject("hiding");
+    HidingNode hiding = null;
+    if(jsonHiding != null){
+      hiding = convertHidingNode(jsonHiding);
+    }
+
     JSONObject jsonLocation = json.getJSONObject("location");
     Location location = convertLocation(jsonLocation);
-    return new ProcessNode(type, identifier, process, localProcesses, location);
+    return new ProcessNode(type, identifier, process, localProcesses, hiding, location);
   }
 
   public LocalProcessNode convertLocalProcessNode(JSONObject json){
