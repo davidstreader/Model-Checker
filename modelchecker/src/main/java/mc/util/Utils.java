@@ -21,7 +21,7 @@ public class Utils {
   }
   public static String getJarPath() {
     if (!isJar()) throw new UnsupportedOperationException("The application currently is not running from a jar file.");
-    return Main.class.getResource("Main.class").toString().split("!")[0].replace("jar:file:/","");
+    return Main.class.getResource("Main.class").toString().split("!")[0].replace("jar:file:"+(Utils.isWin()?"/":""),"");
   }
   /**
    * Windows requires a .cmd appended to the node executables, linux does not.
