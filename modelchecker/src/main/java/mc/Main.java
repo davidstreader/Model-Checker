@@ -61,6 +61,7 @@ public class Main {
       webServer.startServer();
       //Listen for commands
       commandManager.registerInput();
+      logger.info(""+ansi().render("@|green Started Server!|@"));
       return;
     }
     commandManager = new PassThroughCommandManager(this);

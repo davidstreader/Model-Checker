@@ -5,6 +5,8 @@ import mc.Main;
 import mc.util.Utils;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,6 +23,7 @@ import static org.fusesource.jansi.Ansi.ansi;
  */
 @AllArgsConstructor
 public class DependencyManager {
+  private static Logger logger = LoggerFactory.getLogger(DependencyManager.class);
   /**
    * Run a copy of the node manager on its own.
    * @param args command arguments
@@ -30,7 +33,7 @@ public class DependencyManager {
   }
   private Main main;
   public void initBower() {
-    System.out.println(ansi().render("@|yellow Copying natives|@"));
+    logger.info(""+ansi().render("@|yellow Copying natives|@"));
     copyNatives();
     try {
       unzipNPM();
@@ -44,7 +47,7 @@ public class DependencyManager {
   }
 
   private void runBower() {
-    System.out.println(ansi().render("@|yellow Updating Bower Dependencies|@ - @|yellow This may take a while.|@"));
+    logger.info(""+ansi().render("@|yellow Updating Bower Dependencies|@ - @|yellow This may take a while.|@"));
     if (Utils.isWin()) {
       ProcessBuilder builder = new ProcessBuilder(new File("bower_install", "bower") + Utils.getNodeExtension(), "install", "-d");
       main.spawnProcess(builder);
@@ -57,7 +60,7 @@ public class DependencyManager {
   private void installBower() {
     File bowerInstall = new File("bower_install","bower");
     if (!bowerInstall.exists()) {
-      System.out.println(ansi().render("@|green Installing bower|@"));
+      logger.info(""+ansi().render("@|green Installing bower|@"));
       ProcessBuilder builder = new ProcessBuilder("npm" + Utils.getNodeExtension(), "install", "bower","-d");
       builder.directory(new File("bower_install"));
       main.spawnProcess(builder);
@@ -68,7 +71,7 @@ public class DependencyManager {
     }
   }
   private void installVulcanize() {
-    System.out.println(ansi().render("@|green Installing vulcanize|@"));
+    logger.info(""+ansi().render("@|green Installing vulcanize|@"));
     ProcessBuilder builder = new ProcessBuilder("npm" + Utils.getNodeExtension(), "install", "vulcanize","-d");
     builder.directory(new File("bower_install"));
     main.spawnProcess(builder);
@@ -81,16 +84,16 @@ public class DependencyManager {
   private void unzipNPM() throws IOException, ZipException {
     File bowerInstall = new File("bower_install");
     if (bowerInstall.mkdir()) {
-      System.out.println(ansi().render("@|red Node install not found!|@\n@|yellow Copying files for Node|@"));
+      logger.info(""+ansi().render("@|red Node install not found!|@\n@|yellow Copying files for Node|@"));
       File nodeExes = new File("executables", getArch());
       for (File f : nodeExes.listFiles()) {
-        System.out.println("Copying: "+f.getName());
+        logger.info(""+"Copying: "+f.getName());
         Files.copy(f.toPath(), Paths.get(bowerInstall.toPath().toString(), f.getName()));
       }
       File nodeModules = new File(bowerInstall,"node_modules");
       File npmdir = new File(nodeModules,"npm");
       nodeModules.mkdir();
-      System.out.println(ansi().render("@|yellow Extracting NPM|@"));
+      logger.info(""+ansi().render("@|yellow Extracting NPM|@"));
       ZipFile file = new ZipFile(Paths.get("executables","npm-4.1.1.zip").toString());
       Thread monitor = null;
       if (main.getGui() != null) {
@@ -113,9 +116,9 @@ public class DependencyManager {
         main.getGui().hideProgressBar();
       }
       Files.move(new File(nodeModules,"npm-4.1.1").toPath(),npmdir.toPath());
-      System.out.println(ansi().render("@|yellow Copying NPM executables|@"));
+      logger.info(""+ansi().render("@|yellow Copying NPM executables|@"));
       for (File f: new File(npmdir,"bin").listFiles()) {
-        System.out.println("Copying: "+f.getName());
+        logger.info(""+"Copying: "+f.getName());
         Files.copy(f.toPath(), Paths.get(bowerInstall.toPath().toString(), f.getName()));
       }
       if (!Utils.isWin()) {

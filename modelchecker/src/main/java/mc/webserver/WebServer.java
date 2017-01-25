@@ -1,6 +1,8 @@
 package mc.webserver;
 
 import lombok.Getter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import spark.Spark;
 
 import java.io.IOException;
@@ -13,17 +15,17 @@ import static spark.Spark.get;
 
 
 public class WebServer {
+  Logger logger = LoggerFactory.getLogger(WebServer.class);
   @Getter
   private WebSocketServer socket;
   public void startServer() {
-    System.out.println(ansi().render("@|green Starting Web Server|@"));
+    logger.info(""+ansi().render("@|green Starting Web Server|@"));
     if (checkPortInUse()) return;
     Spark.externalStaticFileLocation("app");
     Spark.port(5000);
     get("/bower_components/*", (req, res) -> String.join("\n",Files.readAllLines(Paths.get(req.pathInfo().substring(1)))));
-    System.out.println(ansi().render("@|green Starting Socket.IO Server|@"));
+    logger.info(""+ansi().render("@|green Starting Socket.IO Server|@"));
     socket = new WebSocketServer();
-    System.out.println(ansi().render("@|green Started Server!|@"));
   }
 
   private boolean checkPortInUse() {
@@ -31,8 +33,8 @@ public class WebServer {
       new ServerSocket(5000).close();
       return false;
     } catch (IOException e) {
-      System.out.println(ansi().render("@|red Port 5000 is already in use. Unable to start WebServer.|@"));
-      System.out.println(ansi().render("@|yellow Type exit to close the program.|@"));
+      logger.error(""+ansi().render("@|red Port 5000 is already in use. Unable to start WebServer.|@"));
+      logger.info(""+ansi().render("@|yellow Type exit to close the program.|@"));
       return true;
     }
   }
