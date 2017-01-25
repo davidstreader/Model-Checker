@@ -46,7 +46,7 @@ public class Main {
       gui = new MainGui(this);
     }
     //Start the server if we aren't running from a jar or are in a sub process
-    if (!Utils.isJar() || reloaded || Utils.isMac()) {
+    if (!Utils.isJar() || reloaded) {
       commandManager = new CommandManager(this);
       //If bower has not loaded, init it now.
       if (!new File("bower_components").exists())
@@ -94,7 +94,7 @@ public class Main {
 
   public static void main(String[] args) {
     //The easiest way to tell if we have reloaded the application is to set a flag.
-    boolean reloaded = (args.length > 0 && args[0].equals("reloaded"));
+    boolean reloaded = (args.length > 0 && args[0].equals("reloaded")) || Utils.isMac();
     new Main(reloaded);
   }
 
