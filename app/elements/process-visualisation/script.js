@@ -85,8 +85,6 @@
       }
       this.rendering = true;
       app.$.console.clear();
-      app.$.console.log("Rendering: "+name);
-      app.$.console.log("While rendering, you can not use the editor tab.");
       //app.$.selector.locked = this.rendering = true;
       let graph = _.findWhere(app.get("automata.values"), {id: name});
       switch (graph.type) {

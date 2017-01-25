@@ -266,6 +266,8 @@ function getCytoscapeStyle() {
         'label': 'data(label)',
         'curve-style': 'bezier',
         'font-size': '10',
+        'target-arrow-color': '#ad1a66',
+        'target-arrow-shape': 'triangle'
       }
     }
   ]
