@@ -1,5 +1,6 @@
 package mc.compiler.interpreters;
 
+import mc.Constant;
 import mc.compiler.ast.*;
 import mc.process_models.ProcessModel;
 import mc.process_models.automata.Automaton;
@@ -8,6 +9,7 @@ import mc.process_models.automata.operations.AutomataOperations;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 
 public class AutomatonInterpreter {
@@ -29,7 +31,13 @@ public class AutomatonInterpreter {
         String identifier = processNode.getIdentifier();
         interpretProcess(processNode.getProcess(), identifier);
 
-        return processStack.pop();
+        Automaton automaton = (Automaton)processStack.pop();
+
+        if(processNode.hasHiding()){
+            processHiding(automaton, processNode.getHiding());
+        }
+
+        return automaton;
     }
 
     private void interpretProcess(ASTNode astNode, String identifier){
@@ -68,6 +76,15 @@ public class AutomatonInterpreter {
         else if(astNode instanceof TerminalNode){
             interpretNode((TerminalNode)astNode, automaton, currentNode);
         }
+
+        if(astNode.hasLabel()){
+            automaton = operations.labelAutomaton(automaton, astNode.getLabel());
+        }
+        if(astNode.hasRelabel()){
+            for(RelabelElementNode element : astNode.getRelabel().getRelabels()){
+                automaton.relabelEdges(element.getOldLabel(), element.getNewLabel());
+            }
+        }
     }
 
     private void interpretNode(SequenceNode astNode, Automaton automaton, AutomatonNode currentNode){
@@ -102,10 +119,9 @@ public class AutomatonInterpreter {
         }
 
         Automaton comp = operations.parallelComposition(automaton.getId(), (Automaton)model1, (Automaton)model2);
-        comp = operations.removeUnreachableNodes(comp);
 
-        automaton.addAutomaton(comp);
-        automaton.combineNodes(currentNode, comp.getRoot());
+        AutomatonNode oldRoot = automaton.addAutomaton(comp);
+        automaton.combineNodes(currentNode, oldRoot);
 
     }
 
@@ -122,11 +138,43 @@ public class AutomatonInterpreter {
     }
 
     private void interpretNode(FunctionNode astNode, Automaton automaton, AutomatonNode currentNode){
+        interpretProcess(astNode.getProcess(), automaton.getId() + ".fn");
+        ProcessModel model = processStack.pop();
 
+        Automaton processed = null;
+        switch(astNode.getFunction()){
+            case "abs":
+                if(model instanceof Automaton){
+                    processed = operations.abstraction((Automaton)model);
+                    break;
+                }
+
+                // TODO: throw error: expecting an automaton
+            default:
+                // TODO: throw error
+                System.out.println("FUNCTION ERROR");
+        }
+
+        AutomatonNode oldRoot = automaton.addAutomaton(processed);
+        automaton.combineNodes(currentNode, oldRoot);
     }
 
     private void interpretNode(TerminalNode astNode, Automaton automaton, AutomatonNode currentNode){
         currentNode.addMetaData("isTerminal", astNode.getTerminal());
+    }
+
+    private void processHiding(Automaton automaton, HidingNode hiding){
+        Set<String> alphabet = automaton.getAlphabet();
+        String type = hiding.getType();
+
+        for(String action : hiding.getSet()){
+            if(alphabet.contains(action) && type.equals("includes")){
+                automaton.relabelEdges(action, Constant.HIDDEN);
+            }
+            else if(!alphabet.contains(action) && type.equals("excludes")){
+                automaton.relabelEdges(action, Constant.HIDDEN);
+            }
+        }
     }
 
     private void reset(){
