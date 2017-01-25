@@ -114,8 +114,6 @@ public class Main {
     Map<String, String> environment = builder.environment();
     //Set the linux native path
     environment.put("LD_LIBRARY_PATH", nativePath);
-    //Set the mac native path
-    environment.put("DYLD_LIBRARY_PATH", nativePath);
     System.out.println(environment);
     spawnProcess(builder);
   }
