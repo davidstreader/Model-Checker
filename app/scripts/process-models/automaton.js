@@ -368,7 +368,7 @@ const AUTOMATON = {
 		if(match){
 			for(let id in automaton.nodeMap){
 				const node = automaton.nodeMap[id];
-				const nodeProperties = ['id', 'incomingEdgeSet', 'outgoingEdgeSet', 'locationSet', 'metaData'];
+				const nodeProperties = ['id', 'incomingEdgeSet', 'outgoingEdgeSet', 'metaData'];
 				let nodeMatch = true;
 				for(let i = 0; i < nodeProperties.length; i++){
 					if(!node.hasOwnProperty(nodeProperties[i])){
@@ -387,7 +387,7 @@ const AUTOMATON = {
 
 			for(let id in automaton.edgeMap){
 				const edge = automaton.edgeMap[id];
-				const edgeProperties = ['id', 'label', 'from', 'to', 'locationSet', 'metaData'];
+				const edgeProperties = ['id', 'label', 'from', 'to', 'metaData'];
 				let edgeMatch = true;
 				for(let i = 0; i < edgeProperties.length; i++){
 					if(!edge.hasOwnProperty(edgeProperties[i])){
