@@ -2,34 +2,15 @@
 <link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../imports/dagre-d3.html">
 <link rel="import" href="../imports/element-resizer.html">
+<script src="../../scripts/process-models/automaton.js"></script>
+<script src="../../scripts/process-models/petrinet.js"></script>
+<script src="../../scripts/graph-constructor-worker.js"></script>
 <script src="http://cytoscape.github.io/cytoscape.js/api/cytoscape.js-latest/cytoscape.min.js"></script>
 <script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-cose-bilkent/1.0.5/cytoscape-cose-bilkent.js"></script>
-<script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-cola/1.4.3/cola.js"></script>
-<script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-cola/1.4.3/cytoscape-cola.js"></script>
-<script src="https://cdn.rawgit.com/cpettitt/dagre/e66c29b8/dist/dagre.min.js"></script>
-<script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-dagre/7f0e6690/cytoscape-dagre.js"></script>
-<script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-spread/f2026ff9/cytoscape-spread.js"></script>
-<script src="https://cdn.rawgit.com/samizdatco/arbor/c5f7ec33/lib/arbor.js"></script>
-<script src="https://cdn.rawgit.com/samizdatco/arbor/c5f7ec33/lib/arbor-tween.js"></script>
-<script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-arbor/436f0b0a/cytoscape-arbor.js"></script>
-<script src="https://cdn.rawgit.com/Nickolasmv/cytoscape-ngraph.forcelayout/a37e3468/cytoscape-ngraph.forcelayout.js"></script>
-<script src="https://cdn.rawgit.com/monprin/polywas/6fef4395/polywas-layout.js"></script>
-<script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-springy/f01922d7/cytoscape-springy.js"></script>
-<style>
-  /*The below css disables line tools so that you can't accidentally remove or add a line
-    to a state.*/
-  .marker-arrowheads { display: none }
-  .link-tools .tool-remove { display: none }
-  .link-tools .tool-options { display: none }
-  .link .mark-errors { display: none; }
-  .connection { fill: transparent; }
-  .connection-wrap { fill: transparent; }
-  /*.marker-vertex-group {display: none; }*/
-</style>
 <dom-module id="process-visualisation">
   <template>
     <div id="svg-parent"></div>
     <div id="name">[[name]]</div>
   </template>
 </dom-module>
-<script src="script.js"></script>
+<script src="script.js"></script>z

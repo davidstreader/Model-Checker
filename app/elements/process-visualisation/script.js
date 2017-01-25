@@ -18,7 +18,7 @@
     },
     attached: function(){
       Polymer.dom.flush();
-      this.displayedGraphs = {};
+      this.displayedGraphs = [];
       const _this = this;
       this.graphMap = {};
       app.$.selector.locked = false;
@@ -31,6 +31,20 @@
         style: getCytoscapeStyle(),
       });
       this.cy.on("layoutstop",()=>{
+        let y = 0;
+        const cur = this.displayedGraphs[this.displayedGraphs.length-1];
+        if (cur === undefined) return;
+        if (this.displayedGraphs.length > 1) {
+          const prev = this.displayedGraphs[this.displayedGraphs.length-2];
+          //Work out the bottom of the last element, and then add a 20px buffer, plus some space
+          //For interrupts
+          let y = prev.parent.position("y")+prev.parent.height()/2+20+10*cur.interrupts;
+
+        }
+        //Move all descendants, and also add some padding to the left of interrupts to make them line up correctly.
+        cur.parent.descendants().positions((i,node)=>{
+          return {y: node.position("y")+y,x: node.position("x")+cur.interrupts*2}
+        });
         this.rendering = false;
         if (this.graphsToAdd.length > 0) {
           const graph = this.graphsToAdd.pop();
@@ -87,9 +101,7 @@
       app.$.console.clear();
       //app.$.selector.locked = this.rendering = true;
       let graph = _.findWhere(app.get("automata.values"), {id: name});
-      switch (graph.type) {
-        case "automata": this.addAutomata(graph);
-      }
+      this.convertAndAddGraph(graph,name,hidden);
     },
     /**
      * Redraw the automata.
@@ -110,61 +122,57 @@
         this.redraw();
       }
     },
-    addAutomata: function(graph) {
-      this.cy.add({
+    convertAndAddGraph: function(graph,id,hidden) {
+      const glGraph = convertGraph(graph,id,hidden);
+      const parent = {
         group: "nodes",
-        data: { id: graph.id, label:graph.id },
-      });
-
-
-      for (let nodeId in graph.nodeMap) {
-        const node = graph.nodeMap[nodeId];
-        this.cy.add({
-          group: "nodes",
-          data: { id: nodeId, label:node.metaData.label, parent: graph.id },
-          position: { x: 10+Math.random(), y: 10+Math.random()},
-        });
+        data: { id: id, label:graph.id },
+        position: { x: 10, y: 10},
+      };
+      this.cy.add(parent);
+      this.displayedGraphs.push({parent: this.cy.elements('node[id="'+id+'"]')[0], interrupts: (glGraph.interrupts || []).length});
+      for (let nodeId in glGraph.nodes) {
+        const node = glGraph.nodes[nodeId];
+        node.position = { x: 10+Math.random(), y: 10+Math.random()},
+        this.cy.add(node);
       }
-      for (let edgeId in graph.edgeMap) {
-        const edge = graph.edgeMap[edgeId];
-        this.cy.add({
-          group: "edges",
-          data: { id: edgeId, label:edge.label, source: edge.from, target: edge.to, parent: graph.id},
-        });
+      for (let edgeId in glGraph.edges) {
+        const edge = glGraph.edges[edgeId];
+        this.cy.add(edge);
       }
+
        this.cy.collection('[parent="'+graph.id+'"]').union(this.cy.collection('[id="'+graph.id+'"]')).layout({
          name: 'cose-bilkent',
          fit: false,
-         // Padding on fit
-         padding: 10,
          // Whether to enable incremental mode
          randomize: true,
-         // Node repulsion (non overlapping) multiplier
-         nodeRepulsion: 4500,
-         // Ideal edge (non nested) length
-         idealEdgeLength: 100,
-         // Divisor to compute edge forces
-         edgeElasticity: 0.45,
-         // Nesting factor (multiplier) to compute ideal edge length for nested edges
-         nestingFactor: 0.1,
-         // Gravity force (constant)
-         gravity: 0.25,
-         // Maximum number of iterations to perform
-         numIter: 2500,
-         // For enabling tiling
-         tile: false,
-         // Type of layout animation. The option set is {'during', 'end', false}
-         animate: 'end',
-         // Represents the amount of the vertical space to put between the zero degree members during the tiling operation(can also be a function)
-         tilingPaddingVertical: 10,
-         // Represents the amount of the horizontal space to put between the zero degree members during the tiling operation(can also be a function)
-         tilingPaddingHorizontal: 10,
-         // Gravity range (constant) for compounds
-         gravityRangeCompound: 1.5,
-         // Gravity force (constant) for compounds
-         gravityCompound: 1.0,
-         // Gravity range (constant)
-         gravityRange: 3.8});
+         // // Node repulsion (non overlapping) multiplier
+         // nodeRepulsion: 4500,
+         // // Ideal edge (non nested) length
+         // idealEdgeLength: 100,
+         // // Divisor to compute edge forces
+         // edgeElasticity: 0.45,
+         // // Nesting factor (multiplier) to compute ideal edge length for nested edges
+         // nestingFactor: 0.1,
+         // // Gravity force (constant)
+         // gravity: 0.25,
+         // // Maximum number of iterations to perform
+         // numIter: 2500,
+         // // For enabling tiling
+         // tile: false,
+         // // Type of layout animation. The option set is {'during', 'end', false}
+         // animate: 'end',
+         // // Represents the amount of the vertical space to put between the zero degree members during the tiling operation(can also be a function)
+         // tilingPaddingVertical: 10,
+         // // Represents the amount of the horizontal space to put between the zero degree members during the tiling operation(can also be a function)
+         // tilingPaddingHorizontal: 10,
+         // // Gravity range (constant) for compounds
+         // gravityRangeCompound: 1.5,
+         // // Gravity force (constant) for compounds
+         // gravityCompound: 1.0,
+         // // Gravity range (constant)
+         // gravityRange: 3.8
+       });
     },
     rescale: function() {
       if (this.exploded) {

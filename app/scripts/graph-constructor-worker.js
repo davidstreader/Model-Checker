@@ -1,167 +1,40 @@
-//Load all imports required for dagre.
-//Note: since we dont have a real window variable, we can just create one and assign things to it.
-const window = {};
-importScripts("../../bower_components/lodash/lodash.js");
-//Add lodash to window
-window._ = _;
-importScripts("../../bower_components/graphlib/dist/graphlib.core.js");
-//add graphlib to window
-window.graphlib = graphlib;
-importScripts("../../bower_components/dagre/dist/dagre.core.js");
-
-importScripts("constants.js");
-importScripts("process-models/automaton.js");
-importScripts("process-models/petrinet.js");
-//dagre is added to the window normally. Pull it out so we can use it.
-const dagre = window.dagre;
-/**
- * @param e
- */
-onmessage = e => {
-  //Load data sent from the main thread
-  let graph = e.data.graph;
-  const id = e.data.id;
-  const hidden = e.data.hidden;
-  //Dagre settings
-  const glGraphType = {directed: true, compound: true, multigraph: true};
-  //Construct a dagre graph
-  let glGraph = new graphlib.Graph(glGraphType);
-  glGraph.interrupts = [];
-  //At this point, we can import that into dagre
+function convertGraph(graph, id, hidden) {
+  let glGraph = {};
   if (graph.type == 'automata') {
     graph = AUTOMATON.convert(graph);
-    visualizeAutomata(graph,id,glGraph, hidden);
+    visualizeAutomata(graph,id, hidden, glGraph);
   }
   if (graph.type == 'petrinet') {
     graph = PETRI_NET.convert(graph);
-    visualizePetriNet(graph,id,glGraph, hidden);
+    visualizePetriNet(graph,id, hidden, glGraph);
   }
-  //We do not want to rescale the graph if it has already been rescaled.
-  if (graph.type == 'interrupt') return;
-  layoutGraph(glGraph);
-  _.each(glGraph.interrupts,interrupt=>{
-    const parentNode = glGraph.node(interrupt);
-    //Add a label to each interrupt
-    glGraph.setNode(interrupt+"label",{type:'InterruptLabel',id:generateUuid(),
-      position: {x:(parentNode.x-parentNode.x/2)-100,y:(parentNode.y-parentNode.y/2)-45},
-      size: {width:100,height:50},
-      attrs: {
-        'text': {text: interrupt.replace("box","").replace(".hidden","").replace("Node","")}
-      }});
-    glGraph.setParent(interrupt+"label",interrupt);
-  });
-  const alphabet = graph.alphabet;
-  //Clear the imported object so we can reuse it for export
-  graph = [];
-  //Convert dagres graph to an array of edges and nodes
-  _.each(glGraph._nodes,function(glNode,v) {
-    if (glNode==undefined) return;
-    if (!glNode.position)
-      glNode.position = {x:glNode.x - glNode.width / 2,y:glNode.y - glNode.height / 2};
-    if (!glNode.size)
-      glNode.size = {width:glNode.width ,height:glNode.height};
-    //There is no point in keeping this information when translating to what we want to send
-    delete glNode.x;
-    delete glNode.y;
-    delete glNode.width;
-    delete glNode.height;
-    if (glNode.boxId) {
-      return;
-    }
-    if (glGraph.parent(v)) {
-      glNode.parent = glGraph.node(glGraph.parent(v)).id;
-    }
-    let children = glGraph.children(v);
-    if (children) {
-      glNode.embeds = [];
-      _.each(children, child=> {
-        let gnode = glGraph.node(child);
-        if (gnode) {
-          if (gnode.boxId) return;
-            glNode.embeds.push(gnode.id);
-        } else {
-          glNode.embeds.push(child);
-        }
-      });
-    }
-    graph.push(glNode);
-  });
-  const parentNode = glGraph.node(id);
-  // Import all edges.
-  glGraph.edges().forEach(function(edgeObj) {
-    const glEdge = glGraph.edge(edgeObj);
-    //Dont bother importing edges that have been flagged for deletion
-    if (glEdge.deleteMe) return;
-    //Allow skipping verts
-    if (!glEdge.opts.clearVerts)
-    // Remove the first and last point from points array.
-    // Those are source/target element connection points
-    // ie. they lies on the edge of connected elements.
-      glEdge.vertices = glEdge.points.slice(1, glEdge.points.length - 1);
-    glEdge.source = {id:glGraph.node(glEdge.source).id};
-    glEdge.target = {id:glGraph.node(glEdge.target).id};
-    if (!glEdge.parentNode) {
-      parentNode.embeds = parentNode.embeds.concat(glEdge.id);
-    } else {
-      //This edge was set via an the _box function from interrupts
-      //this means that the parent variable references a node by name
-      //So we need to change that to id.
-      const parentNode = glGraph.node(glEdge.parentNode);
-      parentNode.embeds = parentNode.embeds.concat(glEdge.id);
-    }
-    graph.push(glEdge);
-  });
-  //push the conversation back to the main thread
-  postMessage({cells:graph,alphabet:alphabet});
-  //Since each dagre instance fires up a thread, its best to kill it now.
-  close();
-}
-function layoutGraph(glGraph) {
-  // Executes the layout.
-
-  glGraph.setGraph({
-    rankdir: 'LR',
-    marginx: 0,
-    marginy: 0
-  });
-  dagre.layout(glGraph);
   return glGraph;
 }
-function visualizeAutomata(process, graphID, glGraph, hidden) {
+function visualizeAutomata(process, graphID, hidden, glGraph) {
+  glGraph.interrupts = [];
   let lastBox = graphID;
   // add nodes in automaton to the graph
   const nodes = process.nodes;
-  glGraph.setNode(graphID,{type:'Parent',id:generateUuid(),
-    width: 0,
-    height: 0});
+  glGraph.nodes = [];
+  glGraph.edges = [];
   let interruptId = 1;
   for(let i = 0; i < nodes.length; i++){
-    let attrs = {text : {text: nodes[i].metaData.label}};
     const nid = 'n' + nodes[i].id;
-    let type = "fsa.State";
-    let fill = Colours.grey;
+    let type = "fsaState";
     // check if current node is the root node
     if(nodes[i].getMetaData('startNode')){
-      fill=Colours.blue;
+      type = "fsaStartState";
     }
     if(nodes[i].getMetaData('isTerminal') !== undefined) {
-      type = "fsa.EndState";
-      fill = Colours.green;
+      type = "fsaEndState";
       if (nodes[i].getMetaData('isTerminal') === 'error') {
-        fill = Colours.red;
+        type = "fsaErrorState";
       }
-      attrs['.outer'] = {'fill':fill};
-    } else {
-      attrs['circle'] = {'fill':fill};
     }
-    glGraph.setNode(nid,{
-      width: 50,
-      height: 50,
-      type:type, id:generateUuid(),
-      attrs: attrs,
-      tooltip: nodes[i].getMetaData('variables')
+    glGraph.nodes.push({
+      group:"nodes",
+      data: {id: graphID+nid, label: nodes[i].metaData.label, type: type, tooltip: nodes[i].getMetaData('variables'), parent: graphID},
     });
-    glGraph.setParent(nid,graphID);
   }
   let toEmbed = [];
   // add the edges between the nodes in the automaton to the graph
@@ -169,8 +42,8 @@ function visualizeAutomata(process, graphID, glGraph, hidden) {
   for(let i = 0; i < edges.length; i++){
     let label = edges[i].label;
     let tooltip = "";
-    const from = 'n' + edges[i].from;
-    const to = 'n' + edges[i].to;
+    const from = graphID+'n' + edges[i].from;
+    const to = graphID+'n' + edges[i].to;
     if (edges[i].metaData.broadcaster) {
       label += "?";
     } else if (edges[i].metaData.receiver) {
@@ -192,73 +65,40 @@ function visualizeAutomata(process, graphID, glGraph, hidden) {
         toEmbed.push(from);
         continue;
       }
-
-      const box = _box(glGraph, toEmbed, graphID+"."+(interruptId++),graphID);
-      lastBox = box;
-      _link(from,"embedNode"+box, "deleteMe","",glGraph);
-      const link =_link("embedNode"+box,to, label,tooltip,glGraph, {clearVerts:true});
+      lastBox = _box(glGraph, toEmbed, graphID+"."+(interruptId++),graphID);
       //Now that all the children are inside box, toEmbed should only contain the box, plus the next node
-      toEmbed = ["boxNode"+box,to, link];
+      toEmbed = [ lastBox, _link(lastBox,to, label,tooltip, glGraph, lastBox), to];
       continue;
     }
-    toEmbed.push(_link(from,to, label,tooltip,glGraph));
+    toEmbed.push(_link(from,to, label,tooltip,glGraph, lastBox));
     toEmbed.push(from);
     toEmbed.push(to);
   }
 }
 
-function _link(source, target, label, tooltip, glGraph, opts) {
-  const id = generateUuid();
-  glGraph.setEdge(source,target,{
-    type:"fsa.Arrow", id:id,
-    labels: [{position: 0.5, attrs: {text: {text: label || '', 'font-weight': 'bold'}}}],
-    attrs: {
-      //Add a slight transparency, so that you can see the links behind
-      'rect': {fill: Colours.textBackground}
-    },
-    smooth: false,
-    tooltip: tooltip,
-    source: source,
-    target: target,
-    deleteMe: label === "deleteMe",
-    opts: opts ||{}
-  },id+"");
-  return id+"";
+function _link(source, target, label, tooltip, glGraph, lastBox) {
+  glGraph.edges.push({
+    group: "edges",
+    data: {id:source+"->"+target,label: label, tooltip: tooltip,source: source,target: target, parent: lastBox},
+  });
+  return source+"->"+target;
 }
 function _box(glGraph, toEmbed, name, graphID) {
   glGraph.interrupts.push("boxNode"+name);
-  const id = generateUuid();
-  //By having these nodes reference eachother,
-  //We can easily get one from the other,
-  //which aids in deleting the embed node later on.
-  glGraph.setNode("boxNode"+name,{type:'InterruptParentNode',id:id,
-    width: 0,
-    height: 0,
-    embedId: "embedNode"+name});
-  //We dont want the embed to show or have any interactions.
-  glGraph.setNode("embedNode"+name,{type:'InterruptEmbedNode',id:id,
-    attrs: {
-      rect: {fill: 'transparent', stroke: 'none', visibility: 'hidden'}
-    },
-    width: 0,
-    height: 0,
-    boxId: "boxNode"+name,});
-  glGraph.setParent("boxNode"+name,graphID);
-  glGraph.setParent("embedNode"+name,"boxNode"+name);
+  //we need to use unshift here, as the parents need to load before the children.
+  glGraph.nodes.unshift({
+    group:"nodes",
+    data: {id: "boxNode"+name, type: 'Interrupt', parent: graphID, label: name},
+  });
   //Remove embedded cells from the parent and add them to the box
   toEmbed.forEach(embed => {
-    if (glGraph.node(embed)) {
-      glGraph.setParent(embed, "boxNode" + name);
-    } else if (embed) {
-      //Find the edge for this embed
-      for (let edge in glGraph._edgeLabels) {
-        if (edge.endsWith(embed)) {
-          glGraph._edgeLabels[edge].parentNode = "boxNode"+name;
-        }
-      }
+    let el = _.findWhere(glGraph.nodes,{data:{id: embed}});
+    if (!el) {
+      el = _.findWhere(glGraph.edges,{data:{id: embed}});
     }
+    el.data.parent = "boxNode"+name;
   });
-  return name;
+  return "boxNode"+name;
 }
 function first(data) {
   for(let key in data){
@@ -267,119 +107,6 @@ function first(data) {
     }
   }
 }
-function visualizePetriNet(process, graphID, glGraph, hidden) {
-  glGraph.setNode(graphID,{type:'Parent',id:generateUuid(),
-    width: 50,
-    height: 50});
-  let interruptId = 1;
-  const places = process.places;
-  for(let i = 0; i < places.length; i++){
-    let type;
-    let attrs = {};
-    // add to array of start places if necessary
-    if(places[i].metaData.startPlace !== undefined){
-      type = "pn.StartPlace";
-    } else if(places[i].metaData.isTerminal !== undefined){
-      const fill = places[i].metaData.isTerminal === 'stop' ? Colours.green : Colours.red;
-      type ="pn.TerminalPlace";
-      attrs = { '.outer': {'fill':fill} };
-    } else{
-      type = "pn.Place";
-    }
-    glGraph.setNode('p'+places[i].id,{type:type,id:generateUuid(),
-      width: 50,
-      height: 50,
-      attrs:attrs,
-      tooltip: places[i].getMetaData('variables')});
-    glGraph.setParent('p'+places[i].id,graphID);
-  }
+function visualizePetriNet(process, graphID, hidden) {
 
-  let toEmbed = [];
-  // add transitions to the graph
-  const transitions = process.transitions;
-  for(let i = 0; i < transitions.length; i++){
-    const incoming = transitions[i].incomingPlaces;
-    const outgoing = transitions[i].outgoingPlaces;
-    const tid ='t'+transitions[i].id;
-    let label = transitions[i].label;
-    let tooltip = "";
-    if (transitions[i].metaData.interrupt && hidden) {
-      //Incom is a list of all incoming transitions.
-      //We can then sort it by outgoing transition count,
-      //which means that we can get any nodes that are end points.
-      const inCom = transitions[i].metaData.inCom || _.map(process.placeMap[outgoing[0]].incomingTransitionSet,(val,transition)=>first(process.transitionMap[transition].incomingPlaceSet)).sort(place => process.placeMap[place].outgoingTransitionSet.length);
-      transitions[i].metaData.inCom = inCom;
-      if (incoming[0] !== inCom[inCom.length-1]) {
-        continue;
-      }
-      //At this point, we know that inCom contains all nodes from the interrupted process, so add all of them.
-      toEmbed = toEmbed.concat(inCom.map(node => 'p'+node));
-      //At this point, we dont actually want to create any transitions.
-      //All we want to do is link from the last incoming to the last outgoing.
-      const target = 'p' + outgoing[0];
-      const from = 'p' + incoming[0];
-      const box = _box(glGraph, toEmbed, graphID+"."+(interruptId++), graphID);
-      glGraph.setNode(tid,{
-        width: 20,
-        height: 50,
-        type:"pn.Transition", id:generateUuid(),
-        attrs: {text : {text:label}},
-        tooltip: tooltip
-      });
-      glGraph.setParent(tid,graphID);
-      _link(from,"embedNode"+box, "deleteMe",'',glGraph);
-
-      //Now that all the children are inside box, toEmbed should only contain the box, plus the next node and the transition + links
-      toEmbed = ["boxNode"+box,target,tid,_link("embedNode"+box,tid, '','',glGraph, {clearVerts:true}),_link(tid,target, '','',glGraph, {clearVerts:true})];
-      continue;
-    }
-
-    let guard = transitions[i].getMetaData('guard');
-    if(guard !== undefined){
-      let vars = guard.variables;
-      if (guard.next !== undefined)
-        tooltip =guard.next+"\n"+tooltip;
-      tooltip =guard.guard+"\n"+tooltip;
-      if (vars !== undefined)
-        tooltip =vars+"\n"+tooltip;
-    }
-    glGraph.setNode(tid,{
-      width: 20,
-      height: 50,
-      type:"pn.Transition", id:generateUuid(),
-      attrs: {text : {text:label}},
-      tooltip: tooltip
-    });
-    glGraph.setParent(tid,graphID);
-    for(let j = 0; j < outgoing.length; j++){
-      const from = tid;
-      const to = 'p' + outgoing[j];
-      toEmbed.push(_link(from,to, '','',glGraph));
-      toEmbed.push(from);
-      toEmbed.push(to);
-    }
-
-    for(let j = 0; j < incoming.length; j++){
-      const from = 'p' + incoming[j];
-      const to = tid;
-      toEmbed.push(_link(from,to,'','',glGraph));
-      toEmbed.push(from);
-      toEmbed.push(to);
-    }
-
-  }
-}
-//Generate a UUID for joint
-//From stackoverflow
-const lut = []; for (let i=0; i<256; i++) { lut[i] = (i<16?'0':'')+(i).toString(16); }
-function generateUuid()
-{
-  const d0 = Math.random() * 0xffffffff | 0;
-  const d1 = Math.random() * 0xffffffff | 0;
-  const d2 = Math.random() * 0xffffffff | 0;
-  const d3 = Math.random() * 0xffffffff | 0;
-  return lut[d0&0xff]+lut[d0>>8&0xff]+lut[d0>>16&0xff]+lut[d0>>24&0xff]+'-'+
-    lut[d1&0xff]+lut[d1>>8&0xff]+'-'+lut[d1>>16&0x0f|0x40]+lut[d1>>24&0xff]+'-'+
-    lut[d2&0x3f|0x80]+lut[d2>>8&0xff]+'-'+lut[d2>>16&0xff]+lut[d2>>24&0xff]+
-    lut[d3&0xff]+lut[d3>>8&0xff]+lut[d3>>16&0xff]+lut[d3>>24&0xff];
 }
