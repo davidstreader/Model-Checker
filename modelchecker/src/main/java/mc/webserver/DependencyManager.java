@@ -8,9 +8,11 @@ import net.lingala.zip4j.exception.ZipException;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static mc.util.Utils.getArch;
 import static org.fusesource.jansi.Ansi.ansi;
 
@@ -28,7 +30,7 @@ public class DependencyManager {
   }
   private Main main;
   public void initBower() {
-    System.out.println(System.getProperty("java.library.path"));
+    copyNatives();
     try {
       unzipNPM();
     } catch (IOException | ZipException e) {
@@ -124,5 +126,19 @@ public class DependencyManager {
   public void vulcanize() {
     ProcessBuilder builder = new ProcessBuilder(new File("bower_install", "npm")+ Utils.getNodeExtension(),"run-script","vulcanize");
     main.spawnProcess(builder);
+  }
+  public void copyNatives() {
+    if (!Utils.isMac()) return;
+    String homeDir = System.getProperty("user.home");
+    File libDir = new File(homeDir,"lib");
+    libDir.mkdirs();
+    File natives = new File("native",Utils.getArch());
+    for (File n: natives.listFiles()) {
+      try {
+        Files.copy(n.toPath(),libDir.toPath(), REPLACE_EXISTING);
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
   }
 }

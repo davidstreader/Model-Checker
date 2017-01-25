@@ -94,7 +94,7 @@ public class Main {
 
   public static void main(String[] args) {
     //The easiest way to tell if we have reloaded the application is to set a flag.
-    boolean reloaded = (args.length > 0 && args[0].equals("reloaded")) || Utils.isMac();
+    boolean reloaded = (args.length > 0 && args[0].equals("reloaded"));
     new Main(reloaded);
   }
 
