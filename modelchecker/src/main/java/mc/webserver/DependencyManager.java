@@ -28,6 +28,7 @@ public class DependencyManager {
   }
   private Main main;
   public void initBower() {
+    System.out.println(System.getProperty("java.library.path"));
     try {
       unzipNPM();
     } catch (IOException | ZipException e) {
