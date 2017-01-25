@@ -1,7 +1,14 @@
 package mc.gui;
 
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.OutputStreamAppender;
+import ch.qos.logback.core.util.StatusPrinter;
 import lombok.Getter;
 import mc.Main;
+import org.slf4j.LoggerFactory;
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -25,9 +32,21 @@ public class MainGui {
         main.stop();
       }
     });
-    //Redirect System.out and System.err to the console
-    System.setOut(new PrintStream(new TerminalOutputStream(terminal)));
-    System.setErr(System.out);
+    // Get LoggerContext from SLF4J
+    LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
+    Logger log = context.getLogger(Logger.ROOT_LOGGER_NAME);
+    PatternLayoutEncoder encoder = new PatternLayoutEncoder();
+    encoder.setContext(context);
+    encoder.setPattern("[%thread] %highlight(%-5level) %cyan(%logger{15}) - %msg %n");
+    encoder.start();
+    OutputStreamAppender<ILoggingEvent> appender= new OutputStreamAppender<>();
+    appender.setName( "OutputStream Appender" );
+    appender.setContext(context);
+    appender.setEncoder(encoder);  // <-- must be set before outputstream
+    appender.setOutputStream(new PrintStream(new TerminalOutputStream(terminal)));
+    appender.start();
+    log.addAppender(appender);
+
   }
   /**
    * Show the progress bar
@@ -64,5 +83,9 @@ public class MainGui {
    */
   public void redirectTerminalProcess(Process process) {
     terminal.wrapProcess(process);
+  }
+
+  public static void registerConsoleAppender() {
+
   }
 }

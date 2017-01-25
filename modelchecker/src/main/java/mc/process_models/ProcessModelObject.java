@@ -1,5 +1,6 @@
 package mc.process_models;
 
+import lombok.Getter;
 import mc.compiler.ast.ASTNode;
 
 import java.io.*;
@@ -14,6 +15,7 @@ public abstract class ProcessModelObject implements Serializable {
 
     // fields
     private String id;
+    @Getter
     private Map<String, Object> metaData;
 
     public ProcessModelObject(String id){

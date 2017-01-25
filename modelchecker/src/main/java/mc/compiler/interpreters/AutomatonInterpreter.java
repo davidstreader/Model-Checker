@@ -12,9 +12,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-/**
- * Created by sheriddavi on 24/01/17.
- */
 public class AutomatonInterpreter {
 
     private AutomataOperations operations;

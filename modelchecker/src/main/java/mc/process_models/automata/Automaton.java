@@ -209,6 +209,10 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
             // TODO: throw error
         }
 
+        if(to == null){
+          System.out.println("NILL");
+        }
+
         if(!nodeMap.containsKey(to.getId())){
             // TODO: throw error
         }

@@ -10,6 +10,8 @@ import mc.util.Utils;
 import mc.webserver.DependencyManager;
 import mc.webserver.WebServer;
 import org.fusesource.jansi.AnsiConsole;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.io.File;
@@ -36,6 +38,7 @@ public class Main {
   private boolean reloaded = false;
   @Getter
   private static Main instance;
+  private Logger logger = LoggerFactory.getLogger(Main.class);
   private Main(boolean reloaded) {
     instance = this;
     AnsiConsole.systemInstall();
@@ -45,6 +48,8 @@ public class Main {
     //If this is a sub process, or we are running headless, don't start the gui.
     if (!reloaded && !GraphicsEnvironment.isHeadless()) {
       gui = new MainGui(this);
+    } else {
+      MainGui.registerConsoleAppender();
     }
     //Start the server if we aren't running from a jar or are in a sub process
     if (!Utils.isJar() || reloaded) {
@@ -106,8 +111,8 @@ public class Main {
    */
   private void startWrappedProcess() {
 
-    System.out.println(ansi().render("@|red Native arguments not found!|@"));
-    System.out.println(ansi().render("@|yellow Starting sub-process with native arguments|@"));
+    logger.warn(ansi().render("@|red Native arguments not found!|@")+"");
+    logger.info(ansi().render("@|yellow Starting sub-process with native arguments|@")+"");
     String nativePath = Paths.get("native", getArch()).toAbsolutePath().toString();
     //Set java.library.path to the native path for windows
     //Set jansi.passthrough as the parent application will handle the ansi chars, not the child.
