@@ -30,8 +30,16 @@ public class OperationNode extends ASTNode {
 		return firstProcess;
 	}
 
+    public void setFirstProcess(ASTNode firstProcess){
+        this.firstProcess = firstProcess;
+    }
+
 	public ASTNode getSecondProcess(){
 		return secondProcess;
 	}
+
+    public void setSecondProcess(ASTNode secondProcess){
+        this.secondProcess = secondProcess;
+    }
 
 }
