@@ -16,7 +16,7 @@ public class JSONToASTConverter {
   private Map<String, String> variableMap;
 
   public AbstractSyntaxTree convert(JSONObject ast){
-    new LogMessage("Importing AST").send();
+    //new LogMessage("Importing AST").send();
     JSONObject variables = ast.getJSONObject("variableMap");
     constructVariableMap(variables);
 
@@ -293,9 +293,9 @@ public class JSONToASTConverter {
       }
     }
 
-    //JSONObject jsonLocation = json.getJSONObject("location"); // TODO: fix js parser, doesn't assign location information
-    //Location location = convertLocation(jsonLocation);
-    return new RangesNode(ranges, null);
+    JSONObject jsonLocation = json.getJSONObject("location");
+    Location location = convertLocation(jsonLocation);
+    return new RangesNode(ranges, location);
   }
 
   public RelabelNode convertRelabelNode(JSONObject json){
@@ -306,9 +306,9 @@ public class JSONToASTConverter {
       relabels.add(relabel);
     }
 
-    //JSONObject jsonLocation = json.getJSONObject("location"); // TODO: fix js parser, doesn't assign location information
-    //Location location = convertLocation(jsonLocation);
-    return new RelabelNode(relabels, null);
+    JSONObject jsonLocation = json.getJSONObject("location");
+    Location location = convertLocation(jsonLocation);
+    return new RelabelNode(relabels, location);
   }
 
   public RelabelElementNode convertRelabelElementNode(JSONObject json){
