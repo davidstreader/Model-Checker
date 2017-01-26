@@ -2,6 +2,8 @@ package mc.process_models.automata.operations;
 
 import mc.process_models.automata.Automaton;
 
+import java.util.List;
+
 /**
  * Created by sheriddavi on 24/01/17.
  */
@@ -9,12 +11,14 @@ public class AutomataOperations {
 
     private AutomataParallelComposition composition;
     private AutomataAbstraction abstraction;
+    private AutomataBisimulation bisimulation;
     private AutomataReachability reachability;
     private AutomataLabeller labeller;
 
     public AutomataOperations(){
         this.composition = new AutomataParallelComposition();
         this.abstraction = new AutomataAbstraction();
+        this.bisimulation = new AutomataBisimulation();
         this.reachability = new AutomataReachability();
         this.labeller = new AutomataLabeller();
     }
@@ -29,6 +33,14 @@ public class AutomataOperations {
         Automaton processedAutomaton = abstraction.performAbstraction(automaton, true);
         processedAutomaton = removeUnreachableNodes(processedAutomaton);
         return processedAutomaton;
+    }
+
+    public Automaton simplification(Automaton automaton){
+        return bisimulation.performSimplification(automaton);
+    }
+
+    public boolean bisimulation(List<Automaton> automata){
+        return bisimulation.areBisimular(automata);
     }
 
     public Automaton removeUnreachableNodes(Automaton automaton){

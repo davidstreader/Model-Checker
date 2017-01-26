@@ -7,10 +7,7 @@ import mc.process_models.automata.Automaton;
 import mc.process_models.automata.AutomatonNode;
 import mc.process_models.automata.operations.AutomataOperations;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
+import java.util.*;
 
 public class AutomatonInterpreter {
 
@@ -43,7 +40,11 @@ public class AutomatonInterpreter {
     private void interpretProcess(ASTNode astNode, String identifier){
         if(astNode instanceof IdentifierNode){
             String reference = ((IdentifierNode)astNode).getIdentifier();
-            processStack.push(processMap.get(reference));
+            ProcessModel model = processMap.get(reference);
+            if(model instanceof Automaton){
+                model = processLabellingAndRelabelling((Automaton)model, astNode);
+            }
+            processStack.push(model);
         }
         else{
             Automaton automaton = new Automaton(identifier);
@@ -77,14 +78,7 @@ public class AutomatonInterpreter {
             interpretNode((TerminalNode)astNode, automaton, currentNode);
         }
 
-        if(astNode.hasLabel()){
-            automaton = operations.labelAutomaton(automaton, astNode.getLabel());
-        }
-        if(astNode.hasRelabel()){
-            for(RelabelElementNode element : astNode.getRelabel().getRelabels()){
-                automaton.relabelEdges(element.getOldLabel(), element.getNewLabel());
-            }
-        }
+        processLabellingAndRelabelling(automaton, astNode);
     }
 
     private void interpretNode(SequenceNode astNode, Automaton automaton, AutomatonNode currentNode){
@@ -150,6 +144,13 @@ public class AutomatonInterpreter {
                 }
 
                 // TODO: throw error: expecting an automaton
+            case "simp":
+                if(model instanceof Automaton){
+                    processed = operations.simplification((Automaton)model);
+                    break;
+                }
+
+                // TODO: throw error: expecting an automaton
             default:
                 // TODO: throw error
                 System.out.println("FUNCTION ERROR");
@@ -161,6 +162,19 @@ public class AutomatonInterpreter {
 
     private void interpretNode(TerminalNode astNode, Automaton automaton, AutomatonNode currentNode){
         currentNode.addMetaData("isTerminal", astNode.getTerminal());
+    }
+
+    private Automaton processLabellingAndRelabelling(Automaton automaton, ASTNode astNode){
+        if(astNode.hasLabel()){
+            automaton = operations.labelAutomaton(automaton, astNode.getLabel());
+        }
+        if(astNode.hasRelabel()){
+            for(RelabelElementNode element : astNode.getRelabel().getRelabels()){
+                automaton.relabelEdges(element.getOldLabel(), element.getNewLabel());
+            }
+        }
+
+        return automaton;
     }
 
     private void processHiding(Automaton automaton, HidingNode hiding){
