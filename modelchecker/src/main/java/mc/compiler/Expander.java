@@ -10,12 +10,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Expander {
-	
+
 	private Map<String, String> globalVariableMap;
-	
+
 	public AbstractSyntaxTree expand(AbstractSyntaxTree ast){
 		globalVariableMap = ast.getVariableMap();
-		
+
 		List<ProcessNode> processes = ast.getProcesses();
 		for(int i = 0; i < processes.size(); i++){
 			ProcessNode process = processes.get(i);
@@ -56,7 +56,7 @@ public class Expander {
 			IndexIterator iterator = IndexIterator.construct(range.getRange());
 			String variable = range.getVariable();
 			localProcess.setIdentifier(localProcess.getIdentifier() + "[" + variable + "]");
-			
+
 			while(iterator.hasNext()){
 				variableMap.put(variable, iterator.next());
 				newLocalProcesses.addAll(expandLocalProcesses(localProcess, variableMap, ranges, index + 1));
@@ -241,7 +241,7 @@ public class Expander {
 		int result = new ExpressionEvaluator().evaluateExpression(expression, variables);
 		return result;
 	}
-	
+
 	private boolean evaluateCondition(Expression condition, Map<String, Object> variableMap){
 		int result = evaluateExpression(condition, variableMap);
 		return result != 0 ? true : false;
@@ -256,7 +256,7 @@ public class Expander {
 				String variable = matcher.group();
 				// check if variable is a global variable
 				if(globalVariableMap.containsKey(variable)){
-					Expression expression = Expression.constructExpression(globalVariableMap.get(variable));
+					Expression expression = Expression.constructExpression(variable,globalVariableMap);
 					int result = evaluateExpression(expression, variableMap);
 					string = string.replace(variable, "" + result);
 				}

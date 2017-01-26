@@ -14,7 +14,7 @@ public class SimplifyCommand implements Command{
   public void run(String[] args) {
     String expr = String.join(" ",args);
     try {
-      System.out.println("Expression simplified to: " + printer.printExpression(eval.simplify(Expression.constructExpression(expr)),Collections.emptyMap()));
+      System.out.println("Expression simplified to: " + printer.printExpression(eval.simplify(Expression.constructExpression(expr,Collections.emptyMap())),Collections.emptyMap()));
     } catch (Exception ex) {
       System.out.println(Ansi.ansi().render("@|red There was an error parsing that expression. |@"));
     }
