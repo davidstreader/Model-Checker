@@ -101,13 +101,12 @@
         }
         return;
       }
-      //No matter how we get here, the graphs will have been converted to json and will lose all their
-      //structure, as we can compile locally and the worker will destroy it, or remotely and the server
-      //will destroy it.
       const graphs = [];
       const allGraphs = [];
       const skipped = results.skipped;
       for(let id in results.processes){
+        //TODO: Why are there even null processes?
+        if (results.processes[id] == null) continue;
         if (!_.find(skipped,{id:id})) graphs.push(results.processes[id]);
         allGraphs.push(results.processes[id]);
       }

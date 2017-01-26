@@ -9,17 +9,15 @@ import mc.compiler.JSONToASTConverter;
 import mc.compiler.ReferenceReplacer;
 import mc.compiler.ast.AbstractSyntaxTree;
 import mc.process_models.ProcessModel;
-import mc.process_models.automata.Automaton;
-import mc.process_models.automata.AutomatonEdge;
-import mc.process_models.automata.AutomatonNode;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Map;
 
 import static org.fusesource.jansi.Ansi.ansi;
 

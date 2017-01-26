@@ -49,26 +49,8 @@
         _this.saveChanges();
       });
       this.cy.panzoom();
-      this.cy.on("layoutstop",()=>{
-        let y = 20;
-        const cur = this.displayedGraphs[this.displayedGraphs.length-1];
-        if (cur === undefined) return;
-        if (this.displayedGraphs.length > 1) {
-          const prev = _.maxBy(this.displayedGraphs,g => g.parent.position("y")+(g.parent.height()/2));
-          //Work out the bottom of the last element, and then add a 20px buffer, plus some space
-          //For interrupts
-          y = prev.parent.position("y")+(prev.parent.height()/2)+20+(10*cur.interrupts);
-        }
-        //Move all descendants, and also add some padding to the left of interrupts to make them line up correctly.
-        cur.parent.descendants().positions((i,node)=>{
-          return {y: node.position("y")+y,x: 50+node.position("x")+cur.interrupts*2}
-        });
-        this.rendering = false;
-        if (this.graphsToAdd.length > 0) {
-          const graph = this.graphsToAdd.pop();
-          this.addGraph(graph.name,graph.hidden);
-        }
-        _this.saveChanges();
+      this.cy.on("layoutstop",function() {
+        _this.layoutStop();
       });
       document.addEventListener('addProcess', function(e){
         app.$.console.log("Starting Render. While rendering, you can not use the editor tab.");
@@ -96,6 +78,27 @@
         _.each(app.get("automata.values"),graph => _this.addGraph(graph.id,app.$.selector.hideInterrupts));
       });
 
+    },
+    layoutStop: function() {
+      let y = 20;
+      const cur = this.displayedGraphs[this.displayedGraphs.length-1];
+      if (cur === undefined) return;
+      if (this.displayedGraphs.length > 1) {
+        const prev = _.maxBy(this.displayedGraphs,g => g.parent.position("y")+(g.parent.height()/2));
+        //Work out the bottom of the last element, and then add a 20px buffer, plus some space
+        //For interrupts
+        y = prev.parent.position("y")+(prev.parent.height()/2)+20+(10*cur.interrupts);
+      }
+      //Move all descendants, and also add some padding to the left of interrupts to make them line up correctly.
+      cur.parent.descendants().positions((i,node)=>{
+        return {y: node.position("y")+y,x: 50+node.position("x")+cur.interrupts*2}
+      });
+      this.rendering = false;
+      if (this.graphsToAdd.length > 0) {
+        const graph = this.graphsToAdd.pop();
+        this.addGraph(graph.name,graph.hidden);
+      }
+      this.saveChanges();
     },
     removeGraph: function(cell){
       //If we are currently rendering, ignore any events
@@ -176,11 +179,15 @@
       glGraph.edges.forEach(edge =>{
         this.cy.add(edge);
       });
-      //Apply the cose-bilkent algorithm to all the elements inside the parent.
-      this.cy.collection('[parent="'+id+'"], [id="'+id+'"]').layout({
-        name: 'cose-bilkent',
-        fit: false
-      });
+      if (glGraph.nodes.length > 1) {
+        //Apply the cose-bilkent algorithm to all the elements inside the parent.
+        this.cy.collection('[parent="' + id + '"], [id="' + id + '"]').layout({
+          name: 'cose-bilkent',
+          fit: false
+        });
+      } else {
+        this.layoutStop();
+      }
     },
     rescale: function() {
       //Get the height of the containing viewport, then set the height of the element to match.

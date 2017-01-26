@@ -29,7 +29,6 @@ function visualizeAutomata(process, graphID, hidden, glGraph) {
         type = "fsaErrorState";
       }
     }
-    console.log(type);
     glGraph.nodes.push({
       group:"nodes",
       data: {id: graphID+nid, label: nodes[i].metaData.label, type: type, tooltip: nodes[i].variables, parent: graphID},
