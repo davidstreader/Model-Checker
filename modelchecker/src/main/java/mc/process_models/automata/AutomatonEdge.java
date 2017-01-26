@@ -69,7 +69,7 @@ public class AutomatonEdge extends ProcessModelObject {
   public static class AutomatonEdgeSerializer extends StdSerializer<AutomatonEdge> {
 
     public AutomatonEdgeSerializer() {
-      super(AutomatonEdge.class, true);
+      super(AutomatonEdge.class);
     }
 
     @Override
@@ -82,7 +82,6 @@ public class AutomatonEdge extends ProcessModelObject {
       jgen.writeObjectField("from", value.getFrom().getId());
       jgen.writeObjectField("metaData", value.getMetaData());
       jgen.writeEndObject();
-
     }
 
   }
