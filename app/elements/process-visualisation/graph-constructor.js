@@ -1,11 +1,9 @@
 function convertGraph(graph, id, hidden) {
   let glGraph = {};
   if (graph.type == 'automata') {
-    graph = AUTOMATON.convert(graph);
     visualizeAutomata(graph,id, hidden, glGraph);
   }
   if (graph.type == 'petrinet') {
-    graph = PETRI_NET.convert(graph);
     visualizePetriNet(graph,id, hidden, glGraph);
   }
   return glGraph;
@@ -14,7 +12,7 @@ function visualizeAutomata(process, graphID, hidden, glGraph) {
   glGraph.interrupts = [];
   let lastBox = graphID;
   // add nodes in automaton to the graph
-  const nodes = process.nodes;
+  const nodes = Object.values(process.nodeMap);
   glGraph.nodes = [];
   glGraph.edges = [];
   let interruptId = 1;
@@ -22,23 +20,23 @@ function visualizeAutomata(process, graphID, hidden, glGraph) {
     const nid = 'n' + nodes[i].id;
     let type = "fsaState";
     // check if current node is the root node
-    if(nodes[i].getMetaData('startNode')){
+    if(nodes[i].startNode){
       type = "fsaStartState";
     }
-    if(nodes[i].getMetaData('isTerminal') !== undefined) {
+    if(nodes[i].isTerminal !== undefined) {
       type = "fsaEndState";
-      if (nodes[i].getMetaData('isTerminal') === 'error') {
+      if (nodes[i].isTerminal === 'error') {
         type = "fsaErrorState";
       }
     }
     glGraph.nodes.push({
       group:"nodes",
-      data: {id: graphID+nid, label: nodes[i].metaData.label, type: type, tooltip: nodes[i].getMetaData('variables'), parent: graphID},
+      data: {id: graphID+nid, label: nodes[i].metaData.label, type: type, tooltip: nodes[i].variables, parent: graphID},
     });
   }
   let toEmbed = [];
   // add the edges between the nodes in the automaton to the graph
-  const edges = process.edges;
+  const edges = Object.values(process.edgeMap);
   for(let i = 0; i < edges.length; i++){
     let label = edges[i].label;
     let tooltip = "";
@@ -49,7 +47,7 @@ function visualizeAutomata(process, graphID, hidden, glGraph) {
     } else if (edges[i].metaData.receiver) {
       label += "!";
     }
-    let guard = edges[i].getMetaData('guard');
+    let guard = edges[i].metaData.guard;
     if(guard !== undefined){
       let vars = guard.variables;
       if (guard.next !== undefined)

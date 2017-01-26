@@ -265,7 +265,7 @@
         output+= app.$.editor.getCode();
       output+="\nvisualiser_json_layout:"
       if (app.saveSettings.saveLayout)
-        output+= JSON.stringify(app.$.visualiser.jgraph.toJSON());
+        output+= JSON.stringify(app.$.visualiser.cy.json());
       const blob = new Blob(
         [output],
         {type: 'text/plain;charset=utf-8'});

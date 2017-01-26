@@ -25,27 +25,22 @@
       app.$.selector.locked = false;
       this.cy = cytoscape({
         container: document.getElementById('svg-parent'),
-
-        layout: {
-          name: 'cose-bilkent'
-        },
         style: getCytoscapeStyle(),
       });
       this.cy.cxtmenu( {
-        openMenuEvents: 'cxttapstart taphold',
-        menuRadius: 100, // the radius of the circular menu in pixels
-        selector: '[isParent]', // elements matching this Cytoscape.js selector will trigger cxtmenus
-        commands: [ // an array of commands to list in the menu or a function that returns the array
+        menuRadius: 100,
+        selector: '[isParent]',
+        commands: [
           {
-            content: 'Explode', // html/text content to be displayed in the menu
-            select: function (ele) { // a function to execute when the command is selected
+            content: 'Explode',
+            select: function (ele) {
               _this.cy.fit(ele);
             }
           },
           {
-            content: 'Remove', // html/text content to be displayed in the menu
-            select: function (ele) { // a function to execute when the command is selected
-              _this.removeGraph(ele) // `ele` holds the reference to the active element
+            content: 'Remove',
+            select: function (ele) {
+              _this.removeGraph(ele);
             }
           }
         ]
@@ -86,8 +81,6 @@
         if (_this.rendering) return;
         //Reset the explosion status since the last exploded item is now gone
         app.$.selector._explosionLabel = "Explode to process";
-        if (_this.exploded)
-          _this.fire('explode',false);
         _this.cy.remove(_this.cy.elements())
         _this.displayedGraphs = [];
         _this.saveChanges();
@@ -128,21 +121,20 @@
     redraw: function() {
       $("#process-name-selector")[0].contentElement.selected = null;
       this.automata = this.graphMap;
-      if (!this.loaded) {
-        this.loadJSON()
+      if (!this.loaded && app.willSaveCookie && localStorage.getItem("layout") !== null) {
+        this.loadJSON(localStorage.getItem("layout"));
       }
       this.fire('process-visualisation-rendered');
       this.rescale();
     },
     saveChanges: function() {
-      if (app.willSaveCookie && !this.exploded)
+      if (app.willSaveCookie)
         localStorage.setItem("layout", JSON.stringify(this.cy.json()));
     },
-    loadJSON: function() {
-      if (app.willSaveCookie && localStorage.getItem("layout") !== null)
-        app.$.console.clear();
-      app.$.console.log("Rendering from "+(this.layout?"File":"Autosave")+" please wait.");
-      this.cy.json(JSON.parse(localStorage.getItem("layout")));
+    loadJSON: function(json) {
+      app.$.console.clear();
+      app.$.console.log("Rendering from "+(this.loaded?"Autosave":"File")+" please wait.");
+      this.cy.json(JSON.parse(json));
 
       const parentNodes = app.$.visualiser.cy.filter(":parent");
       parentNodes.forEach(node => {
@@ -178,53 +170,21 @@
       this.cy.add(parent);
       this.displayedGraphs.push({parent: this.cy.elements('node[id="'+id+'"]')[0], interrupts: (glGraph.interrupts || []).length});
       this.graphIds[oldId] = (this.graphIds[oldId] || 0)+1;
-      for (let nodeId in glGraph.nodes) {
-        const node = glGraph.nodes[nodeId];
-        node.position = { x: 10+Math.random(), y: 10+Math.random()},
-          this.cy.add(node);
-      }
-      for (let edgeId in glGraph.edges) {
-        const edge = glGraph.edges[edgeId];
+      glGraph.nodes.forEach(node =>{
+        node.position = { x: 10+Math.random(), y: 10+Math.random()};
+        this.cy.add(node);
+      });
+      glGraph.edges.forEach(edge =>{
         this.cy.add(edge);
-      }
-
-      this.cy.collection('[parent="'+id+'"]').union(this.cy.collection('[id="'+id+'"]')).layout({
+      });
+      //Apply the cose-bilkent algorithm to all the elements inside the parent.
+      this.cy.collection('[parent="'+id+'"], [id="'+id+'"]').layout({
         name: 'cose-bilkent',
-        fit: false,
-        // Whether to enable incremental mode
-        randomize: true,
-        // // Node repulsion (non overlapping) multiplier
-        // nodeRepulsion: 4500,
-        // // Ideal edge (non nested) length
-        // idealEdgeLength: 100,
-        // // Divisor to compute edge forces
-        // edgeElasticity: 0.45,
-        // // Nesting factor (multiplier) to compute ideal edge length for nested edges
-        // nestingFactor: 0.1,
-        // // Gravity force (constant)
-        // gravity: 0.25,
-        // // Maximum number of iterations to perform
-        // numIter: 2500,
-        // // For enabling tiling
-        // tile: false,
-        // // Type of layout animation. The option set is {'during', 'end', false}
-        // animate: 'end',
-        // // Represents the amount of the vertical space to put between the zero degree members during the tiling operation(can also be a function)
-        // tilingPaddingVertical: 10,
-        // // Represents the amount of the horizontal space to put between the zero degree members during the tiling operation(can also be a function)
-        // tilingPaddingHorizontal: 10,
-        // // Gravity range (constant) for compounds
-        // gravityRangeCompound: 1.5,
-        // // Gravity force (constant) for compounds
-        // gravityCompound: 1.0,
-        // // Gravity range (constant)
-        // gravityRange: 3.8
+        fit: false
       });
     },
     rescale: function() {
-      if (this.exploded) {
-        return;
-      }
+      //Get the height of the containing viewport, then set the height of the element to match.
       let screenHeight = $(this.cy.container()).parent().parent().height();
       $(this.cy.container()).height(screenHeight);
     },
