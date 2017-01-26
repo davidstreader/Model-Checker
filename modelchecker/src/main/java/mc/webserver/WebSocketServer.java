@@ -4,6 +4,7 @@ import com.corundumstudio.socketio.AckCallback;
 import com.corundumstudio.socketio.Configuration;
 import com.corundumstudio.socketio.SocketIOClient;
 import com.corundumstudio.socketio.SocketIOServer;
+import mc.compiler.Expander;
 import mc.compiler.Interpreter;
 import mc.compiler.JSONToASTConverter;
 import mc.compiler.ReferenceReplacer;
@@ -39,6 +40,7 @@ public class WebSocketServer {
       try {
         Context context = Context.fromJSON(data.get("context"));
         AbstractSyntaxTree ast = new JSONToASTConverter().convert(new JSONObject(data).getJSONObject("ast"));
+        ast = new Expander().expand(ast);
         ast = new ReferenceReplacer().replaceReferences(ast);
          Map<String,ProcessModel> map = new Interpreter().interpret(ast);
 
