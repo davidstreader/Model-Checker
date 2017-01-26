@@ -106,9 +106,11 @@ public class AutomataBisimulation {
                 if(colourId == Integer.MIN_VALUE){
                     colourId = colourCount++;
                     colourMap.put(colourId, colouring);
-                    nodeColours.put(colourId, new ArrayList<AutomatonNode>());
                 }
 
+                if(!nodeColours.containsKey(colourId)){
+                    nodeColours.put(colourId, new ArrayList<AutomatonNode>());
+                }
                 nodeColours.get(colourId).add(current);
 
                 current.getOutgoingEdges().stream()
