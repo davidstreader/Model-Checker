@@ -23,7 +23,12 @@ public class WebServer {
     if (checkPortInUse()) return;
     Spark.externalStaticFileLocation("app");
     Spark.port(5000);
-    get("/bower_components/*", (req, res) -> String.join("\n",Files.readAllLines(Paths.get(req.pathInfo().substring(1)))));
+    get("/bower_components/*", (req, res) -> {
+      if (req.pathInfo().endsWith(".css")) {
+        res.type("text/css");
+      }
+     return String.join("\n",Files.readAllLines(Paths.get(req.pathInfo().substring(1))));
+    });
     logger.info(""+ansi().render("@|green Starting Socket.IO Server|@"));
     socket = new WebSocketServer();
   }

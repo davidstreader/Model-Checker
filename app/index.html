@@ -68,10 +68,9 @@
 
     <!-- start content -->
     <paper-tabs id="maintabs" selected="{{selectedCtx}}">
-      <!-- setting a tab's class to disableOnRender means in another script we will disable shifting to that tab when rendering-->
-      <paper-tab class="disableOnEdgeRender disableOnRender">Editor</paper-tab>
-      <paper-tab class="disableOnEdgeRender">Diagram</paper-tab>
-      <paper-tab class="disableOnRender">Process generator</paper-tab>
+      <paper-tab>Editor</paper-tab>
+      <paper-tab>Diagram</paper-tab>
+      <paper-tab>Process generator</paper-tab>
     </paper-tabs>
     <div class="frame">
       <neon-animated-pages selected="{{selectedCtx}}" class="fit">
