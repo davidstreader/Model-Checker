@@ -1,8 +1,7 @@
 package mc.util.expr;
 
-import mc.webserver.LogMessage;
-
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -22,4 +21,7 @@ public abstract class Expression implements Serializable {
 		return sya.convert(expression);
 	}
 
+  public static Expression constructExpression(String s) {
+    return constructExpression(s, Collections.emptyMap());
+  }
 }
