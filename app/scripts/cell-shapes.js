@@ -266,12 +266,8 @@ function getCytoscapeStyle() {
         'label': 'data(label)',
         'curve-style': 'bezier',
         'font-size': '10',
-<<<<<<< Updated upstream
         'target-arrow-color': '#ad1a66',
-        'target-arrow-shape': 'triangle'
-=======
         'target-arrow-shape': 'triangle',
->>>>>>> Stashed changes
       }
     }
   ]

@@ -2,11 +2,16 @@
 <link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../imports/dagre-d3.html">
 <link rel="import" href="../imports/element-resizer.html">
+<link rel="stylesheet" href="../../../bower_components/cytoscape-panzoom/cytoscape.js-panzoom.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 <script src="../../scripts/process-models/automaton.js"></script>
 <script src="../../scripts/process-models/petrinet.js"></script>
 <script src="../../scripts/graph-constructor-worker.js"></script>
 <script src="http://cytoscape.github.io/cytoscape.js/api/cytoscape.js-latest/cytoscape.min.js"></script>
 <script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-cose-bilkent/1.0.5/cytoscape-cose-bilkent.js"></script>
+<script src="../../../bower_components/cytoscape-panzoom/cytoscape-panzoom.js"></script>
+<script src="cxt-menu.js"></script>
+
 <dom-module id="process-visualisation">
   <template>
     <div id="svg-parent"></div>

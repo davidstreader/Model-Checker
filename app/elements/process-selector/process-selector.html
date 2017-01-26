@@ -39,15 +39,11 @@
       <paper-button onclick="addProcess()" disabled$="{{_combineWithLocked(locked,_hasNameSelection)}}">Add Process</paper-button>
       <paper-button onclick="addAll()" disabled$="{{_combineWithLocked(locked,_hasProcesses)}}">Add all processes</paper-button>
     <paper-button onclick="clearProcess()" disabled$="{{locked}}">Clear</paper-button>
-    <paper-button onclick="toggleExplode()" disabled$="{{!exploded}}">Show all processes</paper-button>
 
   </template>
 
 </dom-module>
 <script>
-  function toggleExplode() {
-    app.$.selector.fire('explode', false);
-  }
   function addProcess() {
     app.$.selector.fire('addProcess', "");
   }
