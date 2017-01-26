@@ -27,6 +27,17 @@ public class Expander {
 			process.setLocalProcesses(localProcesses);
 		}
 
+        List<OperationNode> operations = ast.getOperations();
+        for(int i = 0; i < operations.size(); i++){
+            OperationNode operation = operations.get(i);
+            Map<String, Object> variableMap = new HashMap<String, Object>();
+            ASTNode process1 = expand(operation.getFirstProcess(), variableMap);
+            ASTNode process2 = expand(operation.getSecondProcess(), variableMap);
+
+            operation.setFirstProcess(process1);
+            operation.setSecondProcess(process2);
+        }
+
 		return ast;
 	}
 
