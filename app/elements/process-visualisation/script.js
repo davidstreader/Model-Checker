@@ -59,7 +59,7 @@
         const cur = this.displayedGraphs[this.displayedGraphs.length-1];
         if (cur === undefined) return;
         if (this.displayedGraphs.length > 1) {
-          const prev = _.max(this.displayedGraphs,g => g.parent.position("y")+(g.parent.height()/2));
+          const prev = _.maxBy(this.displayedGraphs,g => g.parent.position("y")+(g.parent.height()/2));
           //Work out the bottom of the last element, and then add a 20px buffer, plus some space
           //For interrupts
           y = prev.parent.position("y")+(prev.parent.height()/2)+20+(10*cur.interrupts);
@@ -119,7 +119,7 @@
       this.rendering = true;
       app.$.console.clear();
       //app.$.selector.locked = this.rendering = true;
-      let graph = _.findWhere(app.get("automata.values"), {id: name});
+      let graph = _.find(app.get("automata.values"), {id: name});
       this.convertAndAddGraph(graph,name,hidden);
     },
     /**
@@ -140,7 +140,9 @@
     },
     loadJSON: function() {
       if (app.willSaveCookie && localStorage.getItem("layout") !== null)
-        this.cy.json(JSON.parse(localStorage.getItem("layout")));
+        app.$.console.clear();
+      app.$.console.log("Rendering from "+(this.layout?"File":"Autosave")+" please wait.");
+      this.cy.json(JSON.parse(localStorage.getItem("layout")));
 
       const parentNodes = app.$.visualiser.cy.filter(":parent");
       parentNodes.forEach(node => {

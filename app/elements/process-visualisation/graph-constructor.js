@@ -110,3 +110,38 @@ function first(data) {
 function visualizePetriNet(process, graphID, hidden) {
 
 }
+function getCytoscapeStyle() {
+  return [
+    {
+      selector: 'node',
+      style: {
+        'background-color': '#ad1a66',
+        'label': 'data(label)',
+        "text-valign" : "center",
+        "text-halign" : "center",
+        'font-size': '10',
+      }
+    },
+
+    {
+      selector: ':parent',
+      style: {
+        'background-opacity': 0.333,
+        "text-valign" : "top",
+      }
+    },
+
+    {
+      selector: 'edge',
+      style: {
+        'width': 3,
+        'line-color': '#ad1a66',
+        'label': 'data(label)',
+        'curve-style': 'bezier',
+        'font-size': '10',
+        'target-arrow-color': '#ad1a66',
+        'target-arrow-shape': 'triangle',
+      }
+    }
+  ]
+}
