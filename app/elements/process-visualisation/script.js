@@ -19,6 +19,7 @@
     attached: function(){
       Polymer.dom.flush();
       this.displayedGraphs = [];
+      this.graphIds = {};
       const _this = this;
       this.graphMap = {};
       app.$.selector.locked = false;
@@ -49,13 +50,16 @@
           }
         ]
       } );
+      this.cy.on("position",()=>{
+        _this.saveChanges();
+      });
       this.cy.panzoom();
       this.cy.on("layoutstop",()=>{
         let y = 0;
         const cur = this.displayedGraphs[this.displayedGraphs.length-1];
         if (cur === undefined) return;
         if (this.displayedGraphs.length > 1) {
-          const prev = this.displayedGraphs[this.displayedGraphs.length-2];
+          const prev = _.max(this.displayedGraphs,g => g.parent.position("y")+(g.parent.height()/2));
           //Work out the bottom of the last element, and then add a 20px buffer, plus some space
           //For interrupts
           y = prev.parent.position("y")+(prev.parent.height()/2)+20+(10*cur.interrupts);
@@ -108,7 +112,6 @@
     },
     graphsToAdd: [],
     addGraph: function(name, hidden) {
-      console.log(this.rendering);
       if (this.rendering) {
         this.graphsToAdd.push({name: name, hidden: hidden});
         return;
@@ -138,17 +141,41 @@
     loadJSON: function() {
       if (app.willSaveCookie && localStorage.getItem("layout") !== null)
         this.cy.json(JSON.parse(localStorage.getItem("layout")));
+
+      const parentNodes = app.$.visualiser.cy.filter(":parent");
+      parentNodes.forEach(node => {
+        let id = node.id();
+        this.displayedGraphs.push({parent: node});
+        if (id.indexOf(".") > 0) {
+          const num = id.substring(id.lastIndexOf(".")+1);
+          id = id.substring(0,id.lastIndexOf("."));
+          if (this.graphIds[id]) {
+            this.graphIds[id] = Math.max(this.graphIds[id], parseInt(num) + 1);
+          } else {
+            this.graphIds[id] = parseInt(num)+1
+          }
+        } else {
+          if (!this.graphIds[id]) {
+            this.graphIds[id] = 1;
+          }
+        }
+      });
       this.loaded = true;
     },
     convertAndAddGraph: function(graph,id,hidden) {
+      const oldId = id;
+      if (this.graphIds[id]) {
+        id += "."+this.graphIds[id];
+      }
       const glGraph = convertGraph(graph,id,hidden);
       const parent = {
         group: "nodes",
-        data: { id: id, label:graph.id, isParent: true },
+        data: { id: id, label:id, isParent: true },
         position: { x: 10, y: 10},
       };
       this.cy.add(parent);
       this.displayedGraphs.push({parent: this.cy.elements('node[id="'+id+'"]')[0], interrupts: (glGraph.interrupts || []).length});
+      this.graphIds[oldId] = (this.graphIds[oldId] || 0)+1;
       for (let nodeId in glGraph.nodes) {
         const node = glGraph.nodes[nodeId];
         node.position = { x: 10+Math.random(), y: 10+Math.random()},
@@ -159,7 +186,7 @@
         this.cy.add(edge);
       }
 
-      this.cy.collection('[parent="'+graph.id+'"]').union(this.cy.collection('[id="'+graph.id+'"]')).layout({
+      this.cy.collection('[parent="'+id+'"]').union(this.cy.collection('[id="'+id+'"]')).layout({
         name: 'cose-bilkent',
         fit: false,
         // Whether to enable incremental mode
