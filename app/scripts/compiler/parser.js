@@ -706,7 +706,10 @@ const Parser = {
     const ranges = this.parseRanges(tokens);
     const process = this.parseComposite(tokens);
 
-    return new ForAllStatementNode(ranges, process);
+    const end = tokens[this.index - 1].location.end;
+    const location = new Location(start, end);
+
+    return new ForAllStatementNode(ranges, process, location);
   },
 
   parseIndices: function(tokens){
@@ -1416,13 +1419,13 @@ function ForAllStatementNode(ranges, process, location){
 function RangesNode(ranges, location){
   this.type = 'ranges';
   this.ranges = ranges;
-  this.location;
+  this.location = location;
 }
 
 function RelabelNode(relabelSet, location){
   this.type = 'relabel';
   this.set = relabelSet;
-  this.location;
+  this.location = location;
 }
 
 function RelabelElementNode(newLabel, oldLabel, location){
