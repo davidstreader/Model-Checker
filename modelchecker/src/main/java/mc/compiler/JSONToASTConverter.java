@@ -252,7 +252,7 @@ public class JSONToASTConverter {
 
   public IfStatementNode convertIfStatementNode(JSONObject json){
     String guard = json.getString("guard");
-    Expression condition = Expression.constructExpression(variableMap.get(guard));
+    Expression condition = Expression.constructExpression(guard,variableMap);
     ASTNode trueBranch = convertJSONNode(json.getJSONObject("trueBranch"));
 
     JSONObject jsonLocation = json.getJSONObject("location");
