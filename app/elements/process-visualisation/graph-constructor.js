@@ -20,15 +20,16 @@ function visualizeAutomata(process, graphID, hidden, glGraph) {
     const nid = 'n' + nodes[i].id;
     let type = "fsaState";
     // check if current node is the root node
-    if(nodes[i].startNode){
+    if(nodes[i].metaData.startNode){
       type = "fsaStartState";
     }
-    if(nodes[i].isTerminal !== undefined) {
+    if(nodes[i].metaData.isTerminal !== undefined) {
       type = "fsaEndState";
-      if (nodes[i].isTerminal === 'error') {
+      if (nodes[i].metaData.isTerminal === 'error') {
         type = "fsaErrorState";
       }
     }
+    console.log(type);
     glGraph.nodes.push({
       group:"nodes",
       data: {id: graphID+nid, label: nodes[i].metaData.label, type: type, tooltip: nodes[i].variables, parent: graphID},
@@ -113,14 +114,31 @@ function getCytoscapeStyle() {
     {
       selector: 'node',
       style: {
-        'background-color': '#ad1a66',
+        'background-color': Colours.grey,
         'label': 'data(label)',
         "text-valign" : "center",
         "text-halign" : "center",
-        'font-size': '10',
+        'font-size': '15',
+        'font-weight': 'bold',
+        'border-width': '3px',
       }
     },
-
+    {
+      selector: 'node[type=\'fsaStartState\']',
+      style: {
+        'border-style': 'double',
+        'background-color': Colours.green,
+        'border-width': '10px',
+      }
+    },
+    {
+      selector: 'node[type=\'fsaEndState\']',
+      style: {
+        'border-style': 'double',
+        'background-color': Colours.red,
+        'border-width': '10px',
+      }
+    },
     {
       selector: ':parent',
       style: {
@@ -128,17 +146,21 @@ function getCytoscapeStyle() {
         "text-valign" : "top",
       }
     },
-
     {
       selector: 'edge',
       style: {
         'width': 3,
-        'line-color': '#ad1a66',
+        'line-color': 'black',
         'label': 'data(label)',
         'curve-style': 'bezier',
-        'font-size': '10',
-        'target-arrow-color': '#ad1a66',
+        'font-size': '18',
+        'font-weight': 'bold',
+        'target-arrow-color': 'black',
         'target-arrow-shape': 'triangle',
+        'text-background-opacity': 1,
+        'text-background-color': '#ffffff',
+        'text-background-shape': 'rectangle',
+        'text-rotation': 'autorotate'
       }
     }
   ]

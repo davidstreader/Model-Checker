@@ -164,7 +164,7 @@
         if (skip.type != "user")
           app.$.console.log("Skipped adding "+skip.id+" to the render list, as it has too many "+skip.type);
       });
-    }
+    };
     /**
      * Compiles and builds what has currently been entered into the text-area.
      * Ignores whether or not live compile and build are currently set.

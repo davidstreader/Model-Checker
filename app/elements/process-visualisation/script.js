@@ -50,7 +50,7 @@
       });
       this.cy.panzoom();
       this.cy.on("layoutstop",()=>{
-        let y = 0;
+        let y = 20;
         const cur = this.displayedGraphs[this.displayedGraphs.length-1];
         if (cur === undefined) return;
         if (this.displayedGraphs.length > 1) {
@@ -111,7 +111,6 @@
       }
       this.rendering = true;
       app.$.console.clear();
-      //app.$.selector.locked = this.rendering = true;
       let graph = _.find(app.get("automata.values"), {id: name});
       this.convertAndAddGraph(graph,name,hidden);
     },
@@ -122,7 +121,7 @@
       $("#process-name-selector")[0].contentElement.selected = null;
       this.automata = this.graphMap;
       if (!this.loaded && app.willSaveCookie && localStorage.getItem("layout") !== null) {
-        this.loadJSON(localStorage.getItem("layout"));
+       // this.loadJSON(localStorage.getItem("layout"));
       }
       this.fire('process-visualisation-rendered');
       this.rescale();
