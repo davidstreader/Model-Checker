@@ -33,9 +33,9 @@ public class Expander {
             Map<String, Object> variableMap = new HashMap<String, Object>();
             ASTNode process1 = expand(operation.getFirstProcess(), variableMap);
             ASTNode process2 = expand(operation.getSecondProcess(), variableMap);
-
-            operation.setFirstProcess(process1);
-            operation.setSecondProcess(process2);
+            //TODO: uncomment this when code is pushed
+            //operation.setFirstProcess(process1);
+            //operation.setSecondProcess(process2);
         }
 
 		return ast;

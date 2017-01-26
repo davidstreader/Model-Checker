@@ -77,7 +77,7 @@ function visualizeAutomata(process, graphID, hidden, glGraph) {
 function _link(source, target, label, tooltip, glGraph, lastBox) {
   glGraph.edges.push({
     group: "edges",
-    data: {id:source+"->"+target,label: label, tooltip: tooltip,source: source,target: target, parent: lastBox},
+    data: {id:source+"-"+label+"->"+target,label: label, tooltip: tooltip,source: source,target: target, parent: lastBox},
   });
   return source+"->"+target;
 }
@@ -152,7 +152,7 @@ function getCytoscapeStyle() {
         'line-color': 'black',
         'label': 'data(label)',
         'curve-style': 'bezier',
-        'font-size': '18',
+        'font-size': '15',
         'font-weight': 'bold',
         'target-arrow-color': 'black',
         'target-arrow-shape': 'triangle',
