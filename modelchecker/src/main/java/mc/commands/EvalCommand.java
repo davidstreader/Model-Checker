@@ -11,7 +11,7 @@ public class EvalCommand implements Command{
   public void run(String[] args) {
     String expr = String.join(" ",args);
     try {
-    System.out.println("Expression evaluated to: "+ eval.evaluateExpression(Expression.constructExpression(expr,Collections.emptyMap()), Collections.emptyMap()));
+    System.out.println("Expression evaluated to: "+ eval.evaluateExpression(Expression.constructExpression(expr), Collections.emptyMap()));
   } catch (Exception ex) {
     System.out.println(Ansi.ansi().render("@|red There was an error parsing that expression. |@"));
   }
