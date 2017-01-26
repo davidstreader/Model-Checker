@@ -50,7 +50,7 @@
           }
         ]
       } );
-      this.cy.on("position",()=>{
+      this.cy.on("position pan zoom",()=>{
         _this.saveChanges();
       });
       this.cy.panzoom();
@@ -66,7 +66,7 @@
         }
         //Move all descendants, and also add some padding to the left of interrupts to make them line up correctly.
         cur.parent.descendants().positions((i,node)=>{
-          return {y: node.position("y")+y,x: node.position("x")+cur.interrupts*2}
+          return {y: node.position("y")+y,x: 50+node.position("x")+cur.interrupts*2}
         });
         this.rendering = false;
         if (this.graphsToAdd.length > 0) {
