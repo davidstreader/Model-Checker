@@ -65,7 +65,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
     this.root = root;
   }
-  @JsonIgnore
+
   public List<AutomatonNode> getNodes(){
     return nodeMap.entrySet().stream()
       .map(x -> x.getValue())
@@ -172,7 +172,6 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     return nodeMap.size();
   }
 
-  @JsonIgnore
   public List<AutomatonEdge> getEdges(){
     return edgeMap.entrySet().stream()
       .map(x -> x.getValue())
@@ -329,19 +328,5 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
   }
   public String getRootId() {
     return getRoot().getId();
-  }
-  public Map<String,AutomatonNode> getNodeMap() {
-    Map<String,AutomatonNode> nodeMap = new HashMap<>();
-    for (AutomatonNode node: getNodes()) {
-      nodeMap.put(node.getId(),node);
-    }
-    return nodeMap;
-  }
-  public Map<String,AutomatonEdge> getEdgeMap() {
-    Map<String,AutomatonEdge> edgeMap = new HashMap<>();
-    for (AutomatonEdge node: getEdges()) {
-      edgeMap.put(node.getId(),node);
-    }
-    return edgeMap;
   }
 }

@@ -12,7 +12,7 @@ function visualizeAutomata(process, graphID, hidden, glGraph) {
   glGraph.interrupts = [];
   let lastBox = graphID;
   // add nodes in automaton to the graph
-  const nodes = Object.values(process.nodeMap);
+  const nodes = process.nodes;
   glGraph.nodes = [];
   glGraph.edges = [];
   let interruptId = 1;
@@ -36,7 +36,7 @@ function visualizeAutomata(process, graphID, hidden, glGraph) {
   }
   let toEmbed = [];
   // add the edges between the nodes in the automaton to the graph
-  const edges = Object.values(process.edgeMap);
+  const edges = process.edges;
   for(let i = 0; i < edges.length; i++){
     let label = edges[i].label;
     let tooltip = "";
