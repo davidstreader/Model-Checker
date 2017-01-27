@@ -67,6 +67,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         }
         else{
             Automaton automaton = new Automaton(identifier);
+            automaton.addMetaData("location",astNode.getLocation());
             interpretNode(astNode, automaton, automaton.getRoot());
             processStack.push(automaton);
         }

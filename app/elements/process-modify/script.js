@@ -137,16 +137,16 @@
       if (!app.automata) return null;
       const process = _.find(app.automata.allValues,{id:id});
       if (!process) return null;
-      const loc = process.location;
+      const loc = process.metaData.location;
       //Split into lines
       const code = app.$.editor.getCode().split(/\n/);
-      let endCol = loc.end.col;
-      let procCode = _.drop(code,loc.start.line-1);
-      procCode = _.dropRight(procCode,procCode.length-(loc.end.line-loc.start.line)-1);
-      procCode[0] = procCode[0].substring(loc.start.col);
+      let endCol = loc.colEnd;
+      let procCode = _.drop(code,loc.lineStart-1);
+      procCode = _.dropRight(procCode,procCode.length-(loc.lineEnd-loc.lineStart)-1);
+      procCode[0] = procCode[0].substring(loc.colStart);
       //If we are dealing with the same line twice, we need to offset the end col by the
       //start col as we just removed it.
-      if (loc.start.line == loc.end.line) endCol-=loc.start.col;
+      if (loc.lineStart == loc.lineEnd) endCol-=loc.colStart;
       procCode[procCode.length-1] = procCode[procCode.length-1].substring(0,endCol);
       procCode = procCode.join("\n");
       return procCode;
@@ -178,14 +178,15 @@
         return;
       }
       //loop over all subkeys from the selected process, then map them to an array with some default states
-      this.push("added",{id:id,name:"",renamed:_.keys(_.find(app.automata.allValues,{id:id}).alphabet).map(id=>{return {id:id,renamed:"",hidden:false};})});
+      this.push("added",{id:id,name:"",renamed:Object.values(_.find(app.automata.allValues,{id:id}).alphabet).map(id=>{return {id:id,renamed:"",hidden:false};})});
     },
     addParsed: function(parse) {
       //Loop over processes
       for (let id1 in parse.processes) {
         const process = parse.processes[id1];
+
         //Generate a process formatted for modify
-        const orig = {id:process.id,name:process.name||"",renamed:_.keys(_.find(app.automata.allValues,{id:process.id}).compiledAlphabet).map(id=>{
+        const orig = {id:process.id,name:process.name||"",renamed:Object.values(_.find(app.automata.allValues,{id:process.id}).alphabet).map(id=>{
           const val = {id:id,renamed:"",hidden:false};
           if (process.renamed) {
             val.renamed = process.renamed[id] || "";
@@ -242,16 +243,15 @@
       const toMatch="("+Object.keys(Lexer.keywords).concat(Object.keys(Lexer.terminals)).concat(Object.keys(Lexer.functions)).join("|")+"|"+Lexer.operations+")";
       //Remove newlines and whitespace
       process = code.replace(/[\r\n]/,"");
+      console.log(process);
       //if process contains any keywords or terminals or functions or operations, it is not a generated process.
       if (!process || process.match(toMatch)) return null;
       //It also isnt one if it contains -> or ~>
       if (process.indexOf("->") > -1 || process.indexOf("~>") > -1) return null;
       //Strip whitespace and brackets
       process = process.replace(/\s*/g,"").replace("(","").replace(")","");
-      //get rid of the . at the end
-      process = process.substring(0,process.length-1);
-      //If we split out the =, we end up with the process. we want a list of bisimulated processes.
-      let processes = process.split("=")[1].split(/\\|@/)[0].split("||");
+      //We want a list of bisimulated processes.
+      let processes = process.split(/\\|@/)[0].split("||");
       //Loop through and parse
       for (let i in processes) {
         processes[i] = this.parseProcess(processes[i]);
