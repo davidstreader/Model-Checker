@@ -93,12 +93,11 @@ public class WebSocketServer {
   @Getter
   private class EmptyProcessModel implements ProcessModel {
     private Set<String> alphabet;
-    private Location location;
+    private Map<String,Object> metaData;
     private String id;
-    //TODO: add location data.
     EmptyProcessModel(Automaton automaton) {
       this.alphabet = automaton.getAlphabet();
-      this.location = null;
+      this.metaData = automaton.getMetaData();
       this.id = automaton.getId();
     }
   }
