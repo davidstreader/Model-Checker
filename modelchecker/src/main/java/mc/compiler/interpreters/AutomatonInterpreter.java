@@ -7,6 +7,7 @@ import mc.process_models.automata.Automaton;
 import mc.process_models.automata.AutomatonEdge;
 import mc.process_models.automata.AutomatonNode;
 import mc.process_models.automata.operations.AutomataOperations;
+import mc.webserver.LogMessage;
 
 import java.util.*;
 
@@ -69,6 +70,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         // check if the current ast node has a reference attached
         if(astNode.hasReferenceId()){
             referenceMap.put(astNode.getReferenceId(), currentNode);
+            currentNode.addMetaData("reference", astNode.getReferenceId());
         }
 
         if(astNode instanceof SequenceNode){
@@ -100,6 +102,10 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         if(astNode.getTo() instanceof ReferenceNode){
             ReferenceNode reference = (ReferenceNode)astNode.getTo();
             AutomatonNode nextNode = referenceMap.get(reference.getReference());
+            if(nextNode == null){
+                new LogMessage("" + reference.getReference()).send();
+                new LogMessage(referenceMap.toString()).send();
+            }
             automaton.addEdge(action, currentNode, nextNode);
         }
         else {
@@ -139,8 +145,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         }
 
         Automaton next = (Automaton)((Automaton)model).clone();
-        automaton.addAutomaton(next);
-        automaton.combineNodes(currentNode, next.getRoot());
+        addAutomaton(currentNode, automaton, next);
     }
 
     private void interpretNode(FunctionNode astNode, Automaton automaton, AutomatonNode currentNode){
@@ -168,8 +173,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
                 System.out.println("FUNCTION ERROR");
         }
 
-        AutomatonNode oldRoot = automaton.addAutomaton(processed);
-        automaton.combineNodes(currentNode, oldRoot);
+        addAutomaton(currentNode, automaton, processed);
     }
 
     private void interpretNode(TerminalNode astNode, Automaton automaton, AutomatonNode currentNode){
@@ -187,6 +191,21 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         }
 
         return automaton;
+    }
+
+    private void addAutomaton(AutomatonNode currentNode, Automaton automaton1, Automaton automaton2){
+        List<Integer> references = new ArrayList<Integer>();
+
+        AutomatonNode oldRoot = automaton1.addAutomaton(automaton2);
+        if(currentNode.hasMetaData("reference")){
+            references.add((int)currentNode.getMetaData("reference"));
+        }
+        if(oldRoot.hasMetaData("reference")){
+            references.add((int)oldRoot.getMetaData("reference"));
+        }
+
+        AutomatonNode node = automaton1.combineNodes(currentNode, oldRoot);
+        references.forEach(id -> referenceMap.put(id, node));
     }
 
     private void processHiding(Automaton automaton, HidingNode hiding){
