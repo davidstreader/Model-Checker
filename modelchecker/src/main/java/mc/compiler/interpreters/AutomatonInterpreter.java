@@ -27,6 +27,11 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         reset();
         this.processMap = processMap;
         String identifier = processNode.getIdentifier();
+        boolean skipped = false;
+        if (identifier.endsWith("*")) {
+          skipped = true;
+          identifier = identifier.substring(0,identifier.length()-1);
+        }
         interpretProcess(processNode.getProcess(), identifier);
 
         Automaton automaton = (Automaton)processStack.pop();
@@ -34,7 +39,9 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         if(processNode.hasHiding()){
             processHiding(automaton, processNode.getHiding());
         }
-
+        if (skipped) {
+          automaton.addMetaData("skipped",true);
+        }
         return labelAutomaton(automaton);
     }
 
@@ -205,7 +212,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
 
     private Automaton labelAutomaton(Automaton automaton){
         Automaton labelled = new Automaton(automaton.getId());
-
+        labelled.getMetaData().putAll(automaton.getMetaData());
         Set<String> visited = new HashSet<String>();
         Map<String, AutomatonNode> nodeMap = new HashMap<String, AutomatonNode>();
 

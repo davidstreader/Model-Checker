@@ -107,7 +107,7 @@
       for(let id in results.processes){
         //TODO: Why are there even null processes?
         if (results.processes[id] == null) continue;
-        if (!_.find(skipped,{id:id})) graphs.push(results.processes[id]);
+        if (!_.find(skipped,{id:results.processes[id].id})) graphs.push(results.processes[id]);
         allGraphs.push(results.processes[id]);
       }
       app.set('automata.values', graphs.reverse());

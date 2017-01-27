@@ -70,7 +70,11 @@ public class WebSocketServer {
     List<SkipObject> skipped = new ArrayList<>();
     for (ProcessModel process: processMap.values()) {
       if (process instanceof Automaton) {
-        //TODO: if a graph has an astrix skip it
+        Automaton automaton = (Automaton) process;
+        if (automaton.getMetaData("skipped") != null) {
+          skipped.add(new SkipObject(((Automaton) process).getId(),"user",0,0));
+          processMap.put(((Automaton) process).getId(),null);
+        }
         if (((Automaton) process).getNodes().size() > context.getGraphSettings().getAutoMaxNode()) {
           skipped.add(new SkipObject(((Automaton) process).getId(),
             "nodes",
