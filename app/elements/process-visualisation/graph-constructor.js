@@ -152,7 +152,7 @@ function getCytoscapeStyle() {
         'line-color': 'black',
         'label': 'data(label)',
         'curve-style': 'bezier',
-        'font-size': '15',
+        'font-size': '12',
         'font-weight': 'bold',
         'target-arrow-color': 'black',
         'target-arrow-shape': 'triangle',

@@ -184,8 +184,7 @@
         this.cy.collection('[parent="' + id + '"], [id="' + id + '"]').layout({
           name: 'cose-bilkent',
           fit: false,
-          // Maximum number of iterations to perform
-          numIter: 2500
+          nodeRepulsion: 10000,
         });
       } else {
         this.layoutStop();

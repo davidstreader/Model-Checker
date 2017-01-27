@@ -9,9 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created by sheriddavi on 27/01/17.
- */
 public class OperationEvaluator {
 
     private int operationId;
