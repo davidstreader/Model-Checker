@@ -15,7 +15,9 @@ public class ReferenceReplacer {
 	private Map<String, Integer> referenceMap;
 
 	public ReferenceReplacer(){
-		reset();
+        globalReferences = new HashSet<String>();
+        referenceId = 0;
+        referenceMap = new HashMap<String, Integer>();
 	}
 
 	public AbstractSyntaxTree replaceReferences(AbstractSyntaxTree ast){
@@ -24,6 +26,7 @@ public class ReferenceReplacer {
 		List<ProcessNode> processes = ast.getProcesses();
 
 		for(int i = 0; i < processes.size(); i++){
+            referenceMap.clear();
 			ProcessNode process = processes.get(i);
 
 			String identifier = process.getIdentifier();
@@ -124,8 +127,8 @@ public class ReferenceReplacer {
 	}
 
 	private void reset() {
-		globalReferences = new HashSet<String>();
+		globalReferences.clear();
 		referenceId = 0;
-		referenceMap = new HashMap<String, Integer>();
+		referenceMap.clear();
 	}
 }
