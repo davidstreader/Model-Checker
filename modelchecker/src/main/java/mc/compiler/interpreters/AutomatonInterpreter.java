@@ -109,10 +109,6 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         if(astNode.getTo() instanceof ReferenceNode){
             ReferenceNode reference = (ReferenceNode)astNode.getTo();
             AutomatonNode nextNode = referenceMap.get(reference.getReference());
-            if(nextNode == null){
-                new LogMessage("" + reference.getReference()).send();
-                new LogMessage(referenceMap.toString()).send();
-            }
             automaton.addEdge(action, currentNode, nextNode);
         }
         else {
