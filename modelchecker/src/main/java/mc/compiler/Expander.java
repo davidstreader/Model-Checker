@@ -113,6 +113,10 @@ public class Expander {
 			astNode = expand((ForAllStatementNode)astNode, variableMap);
 		}
 
+        if(astNode.hasLabel()){
+            astNode.setLabel(processVariables(astNode.getLabel(), variableMap));
+        }
+
 		return astNode;
 	}
 
