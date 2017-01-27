@@ -4,10 +4,12 @@ import com.corundumstudio.socketio.AckCallback;
 import com.corundumstudio.socketio.Configuration;
 import com.corundumstudio.socketio.SocketIOClient;
 import com.corundumstudio.socketio.SocketIOServer;
+import lombok.Getter;
 import mc.compiler.CompilationObject;
 import mc.compiler.Compiler;
 import mc.process_models.ProcessModel;
 import mc.process_models.automata.Automaton;
+import mc.util.Location;
 import mc.webserver.ProcessReturn.SkipObject;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.json.JSONObject;
@@ -15,10 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.fusesource.jansi.Ansi.ansi;
 
@@ -70,13 +69,17 @@ public class WebSocketServer {
     List<SkipObject> skipped = new ArrayList<>();
     for (ProcessModel process: processMap.values()) {
       if (process instanceof Automaton) {
-        //TODO: if a graph has an astrix skip it
+        Automaton automaton = (Automaton) process;
+        if (automaton.getMetaData("skipped") != null) {
+          skipped.add(new SkipObject(((Automaton) process).getId(),"user",0,0));
+          processMap.put(automaton.getId(),new EmptyProcessModel(automaton));
+        }
         if (((Automaton) process).getNodes().size() > context.getGraphSettings().getAutoMaxNode()) {
           skipped.add(new SkipObject(((Automaton) process).getId(),
             "nodes",
             ((Automaton) process).getNodes().size(),
             context.getGraphSettings().getAutoMaxNode()));
-          processMap.put(((Automaton) process).getId(),null);
+          processMap.put(automaton.getId(),new EmptyProcessModel(automaton));
         }
 
       }
@@ -84,6 +87,21 @@ public class WebSocketServer {
     return skipped;
   }
 
+  /**
+   * A process model with most information stripped out as it will not be rendered.
+   */
+  @Getter
+  private class EmptyProcessModel implements ProcessModel {
+    private Set<String> alphabet;
+    private Location location;
+    private String id;
+    //TODO: add location data.
+    EmptyProcessModel(Automaton automaton) {
+      this.alphabet = automaton.getAlphabet();
+      this.location = null;
+      this.id = automaton.getId();
+    }
+  }
 
   /**
    * Each client is given its own thread to compile in. Storing the client in a ThreadLocal means

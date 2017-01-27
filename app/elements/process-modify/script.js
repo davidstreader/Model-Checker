@@ -178,7 +178,7 @@
         return;
       }
       //loop over all subkeys from the selected process, then map them to an array with some default states
-      this.push("added",{id:id,name:"",renamed:_.keys(_.find(app.automata.allValues,{id:id}).compiledAlphabet).map(id=>{return {id:id,renamed:"",hidden:false};})});
+      this.push("added",{id:id,name:"",renamed:_.keys(_.find(app.automata.allValues,{id:id}).alphabet).map(id=>{return {id:id,renamed:"",hidden:false};})});
     },
     addParsed: function(parse) {
       //Loop over processes
