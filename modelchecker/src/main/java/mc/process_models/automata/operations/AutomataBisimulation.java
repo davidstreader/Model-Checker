@@ -14,9 +14,7 @@ public class AutomataBisimulation {
     private final int STOP_COLOUR = 0;
     private final int ERROR_COLOUR = -1;
 
-    private int lastColourCount;
-    private int colourCount;
-    private int colourAmount;
+    private int nextColourId;
 
     public Automaton performSimplification(Automaton automaton){
         reset();
@@ -71,8 +69,11 @@ public class AutomataBisimulation {
     }
 
     private Map<Integer, List<AutomatonNode>> performColouring(Automaton automaton, Map<Integer, List<Colour>> colourMap){
-        perfromInitialColouring(automaton);
+        int lastColourCount = 0;
+        int colourCount = 1;
+        int colourAmount = 0;
 
+        perfromInitialColouring(automaton);
         Map<Integer, List<AutomatonNode>> nodeColours = null;
 
         while(lastColourCount <= colourCount){
@@ -125,7 +126,7 @@ public class AutomataBisimulation {
                 }
 
                 if(colourId == Integer.MIN_VALUE){
-                    colourId = colourCount++;
+                    colourId = getNextColourId();
                     colourMap.put(colourId, colouring);
                 }
 
@@ -211,10 +212,12 @@ public class AutomataBisimulation {
         return colouring;
     }
 
+    private int getNextColourId(){
+        return nextColourId++;
+    }
+
     private void reset(){
-        lastColourCount = 0;
-        colourCount = 1;
-        colourAmount = 0;
+        nextColourId = 1;
     }
 
     private class Colour implements Comparable<Colour> {

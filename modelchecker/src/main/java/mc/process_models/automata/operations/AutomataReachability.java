@@ -50,6 +50,11 @@ public class AutomataReachability {
                 .filter(node -> !visited.contains(node.getId()))
                 .forEach(node -> automaton.removeNode(node));
 
+        // make sure all terminal nodes are marked as terminal nodes
+        automaton.getNodes().stream()
+                .filter(node -> node.getOutgoingEdges().size() == 0 && !node.hasMetaData("isTerminal"))
+                .forEach(node -> node.addMetaData("isTerminal", "STOP"));
+
         return automaton;
     }
 
