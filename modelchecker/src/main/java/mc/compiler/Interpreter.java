@@ -37,8 +37,9 @@ public class Interpreter {
                     System.out.println("ERROR: " + process.getType());
                     // TODO: throw error
             }
-
-            processMap.put(process.getIdentifier(), model);
+            String ident = process.getIdentifier();
+            if (ident.endsWith("*")) ident = ident.substring(0,ident.length()-1);
+            processMap.put(ident, model);
         }
 
         return processMap;
