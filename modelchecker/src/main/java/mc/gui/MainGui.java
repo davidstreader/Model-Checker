@@ -31,7 +31,7 @@ public class MainGui {
     redirectIO();
   }
   private void redirectIO() {
-    System.setOut(new PrintStream(new TerminalOutputStream(terminal)));
+    System.setOut(new PrintStream(new TerminalOutputStream(terminal),true));
     System.setErr(System.out);
   }
   private void addTerminalLoggerAppender() {

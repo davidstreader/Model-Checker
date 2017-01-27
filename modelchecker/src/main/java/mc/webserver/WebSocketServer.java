@@ -4,20 +4,20 @@ import com.corundumstudio.socketio.AckCallback;
 import com.corundumstudio.socketio.Configuration;
 import com.corundumstudio.socketio.SocketIOClient;
 import com.corundumstudio.socketio.SocketIOServer;
-import mc.compiler.Expander;
-import mc.compiler.Interpreter;
-import mc.compiler.JSONToASTConverter;
-import mc.compiler.ReferenceReplacer;
-import mc.compiler.ast.AbstractSyntaxTree;
+import mc.compiler.CompilationObject;
+import mc.compiler.Compiler;
 import mc.process_models.ProcessModel;
+import mc.process_models.automata.Automaton;
+import mc.webserver.ProcessReturn.SkipObject;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import static org.fusesource.jansi.Ansi.ansi;
@@ -38,14 +38,7 @@ public class WebSocketServer {
       this.client.set(client);
       logger.info(ansi().render("Received compile command from @|yellow "+getSocketHostname()+"|@")+"");
       try {
-        Context context = Context.fromJSON(data.get("context"));
-        AbstractSyntaxTree ast = new JSONToASTConverter().convert(new JSONObject(data).getJSONObject("ast"));
-        ast = new Expander().expand(ast);
-        ast = new ReferenceReplacer().replaceReferences(ast);
-         Map<String,ProcessModel> map = new Interpreter().interpret(ast);
-
-        ProcessReturn ret= new ProcessReturn(map, Collections.emptyMap(),null,context,Collections.emptyList());
-        ackSender.sendAckData(ret);
+        ackSender.sendAckData(compile(data));
       } catch (Exception ex) {
         logger.error(ansi().render("@|red An error occurred while compiling.|@")+"");
         new LogMessage("The following error is unrelated to your script. Please report it to the developers").send();
@@ -63,6 +56,32 @@ public class WebSocketServer {
         new LogMessage(String.join("\n",lines),false,true).send();
       }
     });
+  }
+
+  private ProcessReturn compile(Map data) {
+    Context context = Context.fromJSON(data.get("context"));
+    CompilationObject ret = new Compiler().compile(new JSONObject(data).getJSONObject("ast"));
+    Map<String,ProcessModel> processModelMap = ret.getProcessMap();
+    List<SkipObject> skipped = processSkipped(processModelMap,context);
+    return new ProcessReturn(processModelMap, ret.getOperationResults(),null,context,skipped);
+  }
+
+  private List<SkipObject> processSkipped(Map<String, ProcessModel> processMap, Context context) {
+    List<SkipObject> skipped = new ArrayList<>();
+    for (ProcessModel process: processMap.values()) {
+      if (process instanceof Automaton) {
+        //TODO: if a graph has an astrix skip it
+        if (((Automaton) process).getNodes().size() > context.getGraphSettings().getAutoMaxNode()) {
+          skipped.add(new SkipObject(((Automaton) process).getId(),
+            "nodes",
+            ((Automaton) process).getNodes().size(),
+            context.getGraphSettings().getAutoMaxNode()));
+          processMap.put(((Automaton) process).getId(),null);
+        }
+
+      }
+    }
+    return skipped;
   }
 
 

@@ -7,10 +7,10 @@ import org.slf4j.LoggerFactory;
 
 @Getter
 public class Context {
-  boolean isFairAbstraction;
-  boolean isLocal;
-  boolean pruning;
-  GraphSettings graphSettings;
+  private boolean isFairAbstraction;
+  private boolean isLocal;
+  private boolean pruning;
+  private GraphSettings graphSettings;
 
   public static Context fromJSON(Object context) {
     LoggerFactory.getLogger(Context.class).info(context+"");
@@ -19,9 +19,9 @@ public class Context {
   }
 
   @Getter
-  private class GraphSettings {
-    int autoMaxNode;
-    int petriMaxPlace;
-    int petriMaxTrans;
+  class GraphSettings {
+    private int autoMaxNode;
+    private int petriMaxPlace;
+    private int petriMaxTrans;
   }
 }

@@ -122,10 +122,10 @@
           const { operation, process1, process2, result } = results.operations[i];
           const op = process1 + ' ' + operation + ' ' + process2 + ' = ' + result;
           if (result == "notfound") {
-            app.$.console.error(process1.ident + ' ' + operation + ' ' + process2.ident + ' = error');
+            app.$.console.error(process1 + ' ' + operation + ' ' + process2 + ' = error');
             if (!process1.exists) {
               const l = process1.location;
-              const err = "OperationException: '"+process1.ident+"' was not found ("+l.start.line+":"+l.start.col+")";
+              const err = "OperationException: '"+process1+"' was not found ("+l.start.line+":"+l.start.col+")";
               app.$.console.error(err);
               editor.addMarker(new Range(l.start.line-1, l.start.col, l.end.line-1, l.end.col), "ace_underline");
               for (let i = l.start.line; i <= l.end.line; i++) {
@@ -134,7 +134,7 @@
             }
             if (!process2.exists) {
               const l = process2.location;
-              const err = "OperationException: '"+process2.ident+"' was not found ("+l.start.line+":"+l.start.col+")";
+              const err = "OperationException: '"+process2+"' was not found ("+l.start.line+":"+l.start.col+")";
               app.$.console.error(err);
               editor.addMarker(new Range(l.start.line-1, l.start.col, l.end.line-1, l.end.col), "ace_underline");
               for (let i = l.start.line; i <= l.end.line; i++) {

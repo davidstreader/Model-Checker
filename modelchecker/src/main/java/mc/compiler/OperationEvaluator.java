@@ -22,9 +22,9 @@ public class OperationEvaluator {
         this.automataOperations = new AutomataOperations();
     }
 
-    public List<Boolean> evaluateOperations(List<OperationNode> operations, Map<String, ProcessModel> processMap, Interpreter interpreter){
+    public List<OperationResult> evaluateOperations(List<OperationNode> operations, Map<String, ProcessModel> processMap, Interpreter interpreter){
         reset();
-        List<Boolean> results = new ArrayList<Boolean>();
+        List<OperationResult> results = new ArrayList<OperationResult>();
 
         for(OperationNode operation : operations){
             List<Automaton> automata = new ArrayList<Automaton>();
@@ -38,9 +38,8 @@ public class OperationEvaluator {
                 result = !result;
             }
 
-            results.add(result);
+            results.add(new OperationResult(operation.getFirstProcess(),operation.getSecondProcess(),operation.getOperation(),result));
         }
-
         return results;
     }
 
@@ -51,5 +50,4 @@ public class OperationEvaluator {
     private void reset(){
         operationId = 0;
     }
-
 }
