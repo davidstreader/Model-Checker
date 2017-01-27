@@ -4,12 +4,13 @@ import mc.Constant;
 import mc.compiler.ast.*;
 import mc.process_models.ProcessModel;
 import mc.process_models.automata.Automaton;
+import mc.process_models.automata.AutomatonEdge;
 import mc.process_models.automata.AutomatonNode;
 import mc.process_models.automata.operations.AutomataOperations;
 
 import java.util.*;
 
-public class AutomatonInterpreter {
+public class AutomatonInterpreter implements ProcessModelInterpreter {
 
     private AutomataOperations operations;
 
@@ -34,7 +35,18 @@ public class AutomatonInterpreter {
             processHiding(automaton, processNode.getHiding());
         }
 
-        return automaton;
+        return labelAutomaton(automaton);
+    }
+
+    public ProcessModel interpret(ASTNode astNode, String identifier, Map<String, ProcessModel> processMap){
+        reset();
+        this.processMap = processMap;
+
+        interpretProcess(astNode, identifier);
+
+        Automaton automaton = (Automaton)processStack.pop();
+
+        return labelAutomaton(automaton);
     }
 
     private void interpretProcess(ASTNode astNode, String identifier){
@@ -42,7 +54,7 @@ public class AutomatonInterpreter {
             String reference = ((IdentifierNode)astNode).getIdentifier();
             ProcessModel model = processMap.get(reference);
             if(model instanceof Automaton){
-                model = processLabellingAndRelabelling((Automaton)model, astNode);
+                model = processLabellingAndRelabelling((Automaton)((Automaton) model).clone(), astNode);
             }
             processStack.push(model);
         }
@@ -189,6 +201,58 @@ public class AutomatonInterpreter {
                 automaton.relabelEdges(action, Constant.HIDDEN);
             }
         }
+    }
+
+    private Automaton labelAutomaton(Automaton automaton){
+        Automaton labelled = new Automaton(automaton.getId());
+
+        Set<String> visited = new HashSet<String>();
+        Map<String, AutomatonNode> nodeMap = new HashMap<String, AutomatonNode>();
+
+        Queue<AutomatonNode> fringe = new LinkedList<AutomatonNode>();
+        AutomatonNode root = automaton.getRoot();
+        nodeMap.put(root.getId(), labelled.getRoot());
+        for(String key : root.getMetaDataKeys()){
+            labelled.getRoot().addMetaData(key, root.getMetaData(key));
+        }
+
+        fringe.offer(root);
+
+        int label = 0;
+        while(!fringe.isEmpty()){
+            AutomatonNode current = fringe.poll();
+
+            if(visited.contains(current.getId())){
+                continue;
+            }
+
+            for(AutomatonEdge edge : current.getOutgoingEdges()){
+                AutomatonNode to = null;
+                if(nodeMap.containsKey(edge.getTo().getId())){
+                    to = nodeMap.get(edge.getTo().getId());
+                }
+                else{
+                    to = labelled.addNode();
+                    nodeMap.put(edge.getTo().getId(), to);
+
+                    for(String key : edge.getTo().getMetaDataKeys()){
+                        to.addMetaData(key, edge.getTo().getMetaData(key));
+                    }
+                }
+
+                AutomatonEdge newEdge = labelled.addEdge(edge.getLabel(), nodeMap.get(current.getId()), to);
+                for(String key : edge.getMetaDataKeys()){
+                    newEdge.addMetaData(key, edge.getMetaData(key));
+                }
+
+                fringe.offer(edge.getTo());
+            }
+
+            nodeMap.get(current.getId()).addMetaData("label", label++);
+            visited.add(current.getId());
+        }
+
+        return labelled;
     }
 
     private void reset(){

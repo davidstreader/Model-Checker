@@ -1,6 +1,8 @@
 package mc.compiler;
 
+import mc.compiler.ast.ASTNode;
 import mc.compiler.ast.AbstractSyntaxTree;
+import mc.compiler.ast.OperationNode;
 import mc.compiler.ast.ProcessNode;
 import mc.compiler.interpreters.AutomatonInterpreter;
 import mc.process_models.ProcessModel;
@@ -40,5 +42,19 @@ public class Interpreter {
         }
 
         return processMap;
+    }
+
+    public ProcessModel interpret(String processModelType, ASTNode astNode, String identifer, Map<String, ProcessModel> processMap){
+        ProcessModel model = null;
+        switch(processModelType){
+            case "automata":
+                model = automaton.interpret(astNode, identifer, processMap);
+                break;
+            default:
+                System.out.println("ERROR: " + processModelType);
+                // TODO: throw error
+        }
+
+        return model;
     }
 }
