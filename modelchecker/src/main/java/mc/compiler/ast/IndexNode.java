@@ -13,6 +13,7 @@ public class IndexNode extends ASTNode {
 		super(location);
 		this.variable = variable;
 		this.range = range;
+        this.process = process;
 	}
 
 	public String getVariable(){
