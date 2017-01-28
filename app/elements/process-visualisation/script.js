@@ -90,7 +90,7 @@
       }
       //Move all descendants, and also add some padding to the left of interrupts to make them line up correctly.
       cur.parent.descendants().positions((i,node)=>{
-        return {y: node.position("y")+y,x: 50+node.position("x")+cur.interrupts*2}
+        return {y: node.position("y")+y,x: node.position("x")+cur.interrupts*2}
       });
       this.rendering = false;
       if (this.graphsToAdd.length > 0) {
@@ -163,6 +163,14 @@
         id += "."+this.graphIds[id];
       }
       const glGraph = convertGraph(graph,id,hidden);
+      let y = 20;
+      if (this.displayedGraphs.length > 0) {
+        const prev = _.maxBy(this.displayedGraphs,g => g.parent.position("y")+(g.parent.height()/2));
+        //Work out the bottom of the last element, and then add a 20px buffer, plus some space
+        //For interrupts
+        y = prev.parent.position("y")+(prev.parent.height()/2)+20+(10*(glGraph.interrupts || []).length);
+      }
+      console.log(y);
       const parent = {
         group: "nodes",
         data: { id: id, label:id, isParent: true },
@@ -172,7 +180,7 @@
       this.displayedGraphs.push({parent: this.cy.elements('node[id="'+id+'"]')[0], interrupts: (glGraph.interrupts || []).length});
       this.graphIds[oldId] = (this.graphIds[oldId] || 0)+1;
       glGraph.nodes.forEach(node =>{
-        node.position = { x: 10+Math.random(), y: 10+Math.random()};
+        node.position = { x: 60+Math.random(), y: y+Math.random()};
         this.cy.add(node);
       });
       glGraph.edges.forEach(edge =>{
