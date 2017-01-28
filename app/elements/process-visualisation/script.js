@@ -77,7 +77,6 @@
         if (_this.rendering) return;
         _.each(app.get("automata.values"),graph => _this.addGraph(graph.id,app.$.selector.hideInterrupts));
       });
-
     },
     layoutStop: function() {
       let y = 20;
@@ -184,7 +183,7 @@
         this.cy.collection('[parent="' + id + '"], [id="' + id + '"]').layout({
           name: 'cose-bilkent',
           fit: false,
-          nodeRepulsion: 10000,
+          nodeRepulsion: app.nodeSep,
         });
       } else {
         this.layoutStop();

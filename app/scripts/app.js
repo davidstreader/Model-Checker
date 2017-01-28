@@ -13,6 +13,7 @@
     app.liveCompiling = true;
     app.fairAbstraction = true;
     app.pruning = false;
+    app.nodeSep = 10000;
     app.helpDialogSelectedTab = 0;
     app.currentBuild = {};
     app.previousBuild = {};
@@ -361,6 +362,7 @@
     app.liveCompiling = localStorage.getItem("liveCompiling")!=='false';
     app.pruning = localStorage.getItem("pruning")=='true';
     app.fairAbstraction = localStorage.getItem("fairAbstraction")!=='false';
+    app.nodeSep = localStorage.getItem("nodeSep") !== null?parseInt(localStorage.getItem("nodeSep")) : app.nodeSep;
     app.graphSettings = localStorage.getItem("graphSettings") !== null?JSON.parse(localStorage.getItem("graphSettings")) :  app.graphSettings;
     app.saveGraphSettings = ()=>localStorage.setItem("graphSettings",JSON.stringify(app.graphSettings));
     if (app.willSaveCookie && localStorage.getItem('editor') != null) {
