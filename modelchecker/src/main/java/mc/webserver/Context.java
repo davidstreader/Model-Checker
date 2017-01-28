@@ -12,8 +12,7 @@ public class Context {
   private boolean pruning;
   private GraphSettings graphSettings;
 
-  public static Context fromJSON(Object context) {
-    LoggerFactory.getLogger(Context.class).info(context+"");
+  static Context fromJSON(Object context) {
     JsonElement jsonElement = new Gson().toJsonTree(context);
     return new Gson().fromJson(jsonElement, Context.class);
   }
