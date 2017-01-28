@@ -86,7 +86,7 @@ function _box(glGraph, toEmbed, name, graphID) {
   //we need to use unshift here, as the parents need to load before the children.
   glGraph.nodes.unshift({
     group:"nodes",
-    data: {id: "boxNode"+name, type: 'Interrupt', parent: graphID, label: name},
+    data: {id: "boxNode"+name, type: 'interrupt', parent: graphID, label: name},
   });
   //Remove embedded cells from the parent and add them to the box
   toEmbed.forEach(embed => {
