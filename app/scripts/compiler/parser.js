@@ -611,8 +611,9 @@ const Parser = {
       case 'STOP':
         return node;
       case 'ERROR':
-        const from = new ActionLabelNode(delta);
-        return new SequenceNode(from, terminal);
+        const from = new ActionLabelNode(DELTA);
+        from.location = token.location;
+        return new SequenceNode(from, node, token.location);
       default:
         const message = 'Invalid terminal \'' + terminal + '\' was parsed';
         throw new ParserException(message, token.location);

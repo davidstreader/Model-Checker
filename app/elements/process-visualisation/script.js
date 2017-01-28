@@ -123,7 +123,7 @@
       $("#process-name-selector")[0].contentElement.selected = null;
       this.automata = this.graphMap;
       if (!this.loaded && app.willSaveCookie && localStorage.getItem("layout") !== null) {
-       // this.loadJSON(localStorage.getItem("layout"));
+        this.loadJSON(localStorage.getItem("layout"));
       }
       this.fire('process-visualisation-rendered');
       this.rescale();

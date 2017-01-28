@@ -25,7 +25,7 @@ function visualizeAutomata(process, graphID, hidden, glGraph) {
     }
     if(nodes[i].metaData.isTerminal !== undefined) {
       type = "fsaEndState";
-      if (nodes[i].metaData.isTerminal === 'error') {
+      if (nodes[i].metaData.isTerminal === 'ERROR') {
         type = "fsaErrorState";
       }
     }
@@ -126,12 +126,20 @@ function getCytoscapeStyle() {
       selector: 'node[type=\'fsaStartState\']',
       style: {
         'border-style': 'double',
-        'background-color': Colours.green,
+        'background-color': Colours.blue,
         'border-width': '10px',
       }
     },
     {
       selector: 'node[type=\'fsaEndState\']',
+      style: {
+        'border-style': 'double',
+        'background-color': Colours.green,
+        'border-width': '10px',
+      }
+    },
+    {
+      selector: 'node[type=\'fsaErrorState\']',
       style: {
         'border-style': 'double',
         'background-color': Colours.red,
