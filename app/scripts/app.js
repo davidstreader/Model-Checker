@@ -141,7 +141,7 @@
                 editor.setAnnotations([{row:i-1 ,column: 0, text:err,type:"error"}]);
               }
             }
-          } else if(result){
+          } else if(result=="true"){
             app.$.console.log(op);
 
             passed++;
