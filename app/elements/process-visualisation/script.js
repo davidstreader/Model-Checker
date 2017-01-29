@@ -159,25 +159,27 @@
     },
     convertAndAddGraph: function(graph,id,hidden) {
       const oldId = id;
+      //If there is already a drawn graph with this id,
+      //then graphIds contains the next number to append to the label
       if (this.graphIds[id]) {
         id += "."+this.graphIds[id];
       }
       const glGraph = convertGraph(graph,id,hidden);
+      const interruptLength = (glGraph.interrupts || []).length;
       let y = 20;
       if (this.displayedGraphs.length > 0) {
         const prev = _.maxBy(this.displayedGraphs,g => g.parent.position("y")+(g.parent.height()/2));
         //Work out the bottom of the last element, and then add a 20px buffer, plus some space
         //For interrupts
-        y = prev.parent.position("y")+(prev.parent.height()/2)+20+(10*(glGraph.interrupts || []).length);
+        y = prev.parent.position("y")+(prev.parent.height()/2)+20+(10*interruptLength);
       }
-      console.log(y);
-      const parent = {
+      let parent = {
         group: "nodes",
         data: { id: id, label:id, isParent: true },
         position: { x: 10, y: 10},
       };
-      this.cy.add(parent);
-      this.displayedGraphs.push({parent: this.cy.elements('node[id="'+id+'"]')[0], interrupts: (glGraph.interrupts || []).length});
+      parent = this.cy.add(parent);
+      this.displayedGraphs.push({parent: parent[0], interrupts: interruptLength});
       this.graphIds[oldId] = (this.graphIds[oldId] || 0)+1;
       glGraph.nodes.forEach(node =>{
         node.position = { x: 60+Math.random(), y: y+Math.random()};

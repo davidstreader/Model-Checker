@@ -2,8 +2,11 @@ package mc.compiler;
 
 import mc.compiler.ast.*;
 import mc.compiler.iterator.IndexIterator;
+import mc.solver.JavaSMTConverter;
 import mc.util.expr.Expression;
 import mc.util.expr.ExpressionEvaluator;
+import mc.util.expr.ExpressionPrinter;
+import mc.webserver.LogMessage;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -19,6 +22,7 @@ public class Expander {
 		List<ProcessNode> processes = ast.getProcesses();
 		for(int i = 0; i < processes.size(); i++){
 			ProcessNode process = processes.get(i);
+      new LogMessage("Expanding:",process).send();
 			Map<String, Object> variableMap = new HashMap<String, Object>();
 			ASTNode root = expand(process.getProcess(), variableMap);
 			process.setProcess(root);
@@ -188,6 +192,7 @@ public class Expander {
 
 	private ASTNode expand(IfStatementNode astNode, Map<String, Object> variableMap){
 		boolean condition = evaluateCondition(astNode.getCondition(), variableMap);
+
 		if(condition){
 			return expand(astNode.getTrueBranch(), variableMap);
 		}
@@ -259,7 +264,7 @@ public class Expander {
 
 	private boolean evaluateCondition(Expression condition, Map<String, Object> variableMap){
 		int result = evaluateExpression(condition, variableMap);
-		return result != 0 ? true : false;
+		return result != 0;
 	}
 
 	private String processVariables(String string, Map<String, Object> variableMap){

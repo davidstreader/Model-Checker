@@ -49,7 +49,6 @@ public class ShuntingYardAlgorithm {
     index = 0;
   }
   public Expression importExpr(String expression) {
-    expression = expression.replaceAll("[()]","");
     if (Objects.equals(expression, "true")) return new IntegerOperand(1);
     if (Objects.equals(expression, "false")) return new IntegerOperand(0);
     reset();
@@ -63,9 +62,13 @@ public class ShuntingYardAlgorithm {
         VariableOperand op = new VariableOperand(current);
         output.push(op);
       } else if (Objects.equals(result, "operator")) {
-        Expression rhs = output.pop();
         Expression lhs = output.pop();
+        Expression rhs = output.pop();
         BothOperator op = constructBothOperator(current, lhs, rhs);
+        output.push(op);
+      } else if (Objects.equals(result,"rightoperator")) {
+        Expression rhs = output.pop();
+        RightOperator op = constructRightOperator(current, rhs);
         output.push(op);
       }
     }
@@ -247,7 +250,7 @@ public class ShuntingYardAlgorithm {
 
   private void parseOperator(char[] expression){
     if(expression[index] == '|'){
-      if(expression[index + 1] == '|'){
+      if(index+1 < expression.length && expression[index + 1] == '|'){
         current = "or";
         index += 2;
       }
@@ -257,7 +260,7 @@ public class ShuntingYardAlgorithm {
       }
     }
     else if(expression[index] == '&'){
-      if(expression[index + 1] == '&'){
+      if(index+1 < expression.length && expression[index + 1] == '&'){
         current = "and";
         index += 2;
       }
@@ -270,7 +273,7 @@ public class ShuntingYardAlgorithm {
       current = "exclor";
       index++;
     }
-    else if(expression[index] == '=' && expression[index + 1] == '='){
+    else if(index+1 < expression.length && expression[index] == '=' && expression[index + 1] == '='){
       current = "eq";
       index += 2;
     }
@@ -279,32 +282,35 @@ public class ShuntingYardAlgorithm {
       index += 2;
     }
     else if(expression[index] == '<'){
-      if(expression[index + 1] == '='){
-        current = "lteq";
-        index += 2;
+      if (index+1 < expression.length) {
+        if (expression[index + 1] == '=') {
+          current = "lteq";
+          index += 2;
+          return;
+        } else if (expression[index + 1] == '<') {
+          current = "lshift";
+          index += 2;
+          return;
+        }
       }
-      else if(expression[index + 1] == '<'){
-        current = "lshift";
-        index += 2;
-      }
-      else{
-        current = "lt";
-        index++;
-      }
+      current = "lt";
+      index++;
+
     }
-    else if(expression[index] == '>'){
-      if(expression[index + 1] == '='){
-        current = "gteq";
-        index += 2;
+    else if(expression[index] == '>') {
+      if (index+1 < expression.length) {
+        if (expression[index + 1] == '=') {
+          current = "gteq";
+          index += 2;
+          return;
+        } else if (expression[index + 1] == '>') {
+          current = "rshift";
+          index += 2;
+          return;
+        }
       }
-      else if(expression[index + 1] == '>'){
-        current = "rshift";
-        index += 2;
-      }
-      else{
-        current = "gt";
-        index++;
-      }
+      current = "gt";
+      index++;
     }
     else if(expression[index] == '+'){
       current = "add";
