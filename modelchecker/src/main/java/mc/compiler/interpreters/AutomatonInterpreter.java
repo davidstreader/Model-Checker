@@ -30,8 +30,8 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         String identifier = processNode.getIdentifier();
         boolean skipped = false;
         if (identifier.endsWith("*")) {
-          skipped = true;
-          identifier = identifier.substring(0,identifier.length()-1);
+            skipped = true;
+            identifier = identifier.substring(0,identifier.length()-1);
         }
         interpretProcess(processNode.getProcess(), identifier);
 
@@ -41,7 +41,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
             processHiding(automaton, processNode.getHiding());
         }
         if (skipped) {
-          automaton.addMetaData("skipped",true);
+            automaton.addMetaData("skipped",true);
         }
         return labelAutomaton(automaton);
     }
@@ -170,7 +170,12 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
                     processed = operations.simplification((Automaton)model);
                     break;
                 }
-
+                // TODO: throw error: expecting an automaton
+            case "nfa2dfa":
+                if(model instanceof Automaton){
+                    processed = operations.nfa2dfa((Automaton)model);
+                    break;
+                }
                 // TODO: throw error: expecting an automaton
             default:
                 // TODO: throw error
@@ -270,8 +275,8 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
 
                 fringe.offer(edge.getTo());
             }
-
-            nodeMap.get(current.getId()).addMetaData("label", label++);
+            if (!nodeMap.get(current.getId()).getMetaData().containsKey("label"))
+                nodeMap.get(current.getId()).addMetaData("label", label++);
             visited.add(current.getId());
         }
 

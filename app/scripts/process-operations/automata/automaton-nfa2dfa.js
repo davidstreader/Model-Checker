@@ -18,7 +18,6 @@ function automataNFA2DFA(automaton) {
   }
   const table2 = {};
   let stack = [];
-  //TODO: incase the first is a tau, we should really get the tau clousure of root
   stack.push(clousure(automaton.root));
   delete alpha[TAU];
   while (stack.length > 0) {
