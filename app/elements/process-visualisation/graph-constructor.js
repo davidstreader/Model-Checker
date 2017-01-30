@@ -43,9 +43,9 @@ function visualizeAutomata(process, graphID, hidden, glGraph) {
     const edges = process.edges;
     for(let i = 0; i < edges.length; i++){
         let label = edges[i].label;
-        let tooltip = "";
         const from = graphID+'n' + edges[i].from;
         const to = graphID+'n' + edges[i].to;
+        const tooltip = "";
         if (edges[i].metaData.broadcaster) {
             label += "?";
         } else if (edges[i].metaData.receiver) {
@@ -53,12 +53,10 @@ function visualizeAutomata(process, graphID, hidden, glGraph) {
         }
         let guard = edges[i].metaData.guard;
         if(guard !== undefined){
-            let vars = guard.variables;
-            if (guard.next !== undefined)
-                tooltip =guard.next+"\n"+tooltip;
-            tooltip =guard.guard+"\n"+tooltip;
-            if (vars !== undefined)
-                tooltip =vars+"\n"+tooltip;
+            label += " ";
+            label += guard.varStr+" ";
+            label += guard.guardStr+" ";
+            label += guard.nextStr;
         }
         if (edges[i].metaData.interrupt && hidden) {
             const toNode = process.nodeMap[edges[i].to];

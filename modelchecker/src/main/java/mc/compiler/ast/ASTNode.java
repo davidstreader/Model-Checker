@@ -1,7 +1,9 @@
 package mc.compiler.ast;
 
 import java.io.*;
+import java.util.HashMap;
 
+import lombok.Getter;
 import mc.util.Location;
 
 public abstract class ASTNode implements Serializable {
@@ -13,6 +15,8 @@ public abstract class ASTNode implements Serializable {
 	private RelabelNode relabel;
 	private Integer referenceId;
 	private Location location;
+	@Getter
+	private HashMap<String,Object> metaData = new HashMap<>();
 
 	public ASTNode(Location location){
 		label = null;

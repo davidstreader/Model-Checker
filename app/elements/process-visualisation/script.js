@@ -77,7 +77,7 @@
                 _this.rescale();
             });
             document.addEventListener('addAll', function(){
-                app.$.console.log("Starting Render. While rendering, you can not use the editor tab.");
+                app.$.console.log("Starting Render.");
                 //If we are currently rendering, ignore any events
                 if (_this.rendering) return;
                 _.each(app.get("automata.values"),graph => _this.addGraph(graph.id,app.$.selector.hideInterrupts));
@@ -92,7 +92,6 @@
                 cur.descendants().positions((i,node)=>{
                     return {y: node.position("y")+y-60,x: node.position("x")+x-60}
                 });
-                console.log(cur.data("last"));
                 return;
             }
             if (this.cy.filter(":parent").length > 1) {
@@ -159,7 +158,6 @@
             const parentNodes = app.$.visualiser.cy.filter(":parent");
             parentNodes.forEach(node => {
                 let id = node.id();
-                this.cy.filter(":parent").push({parent: node});
                 if (id.indexOf(".") > 0) {
                     const num = id.substring(id.lastIndexOf(".")+1);
                     id = id.substring(0,id.lastIndexOf("."));
