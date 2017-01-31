@@ -151,13 +151,14 @@ public class Expander {
         //add a guard to every sequenceNode. This will only contain next data.
         Guard guard = new Guard();
         if (astNode.getTo() instanceof IdentifierNode) {
+            //Parse the next values from this IdentifierNode
             guard.parseNext(((IdentifierNode) astNode.getTo()).getIdentifier(), globalVariableMap, ranges);
+            //There were next values, so assign to the metadata
+            if (guard.hasData())
+                astNode.getMetaData().put("guard",guard);
         }
         ActionLabelNode from = expand(astNode.getFrom(), variableMap);
         ASTNode to = expand(astNode.getTo(), variableMap);
-        if (guard.hasData()) {
-            astNode.getMetaData().put("guard",guard);
-        }
         astNode.setFrom(from);
         astNode.setTo(to);
         return astNode;

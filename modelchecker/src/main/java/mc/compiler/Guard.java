@@ -15,17 +15,26 @@ import java.util.*;
 @ToString
 
 public class Guard implements Serializable{
-    //Dont serialize this data as we serialize the below methods instead.
+    //Don't serialize this data as we serialize the below methods instead.
     @Getter(onMethod = @__(@JsonIgnore))
     Expression guard;
     @Getter(onMethod = @__(@JsonIgnore))
     Map<String,Integer> variables = new HashMap<>();
     @Getter(onMethod = @__(@JsonIgnore))
     List<String> next = new ArrayList<>();
+
+    /**
+     * Get the guard as a string, used for serialization.
+     * @return The guard as a string, or an empty string if none exists.
+     */
     public String getGuardStr() {
         if (guard == null) return "";
         return rm$(new ExpressionPrinter().printExpression(guard, Collections.emptyMap()));
     }
+    /**
+     * Get the variable list as a string, used for serialization.
+     * @return The variable list as a string, or an empty string if none exists.
+     */
     public String getVarStr() {
         if (variables.isEmpty()) return "";
         StringBuilder builder = new StringBuilder();
@@ -35,6 +44,10 @@ public class Guard implements Serializable{
         String str = builder.toString();
         return rm$(str.substring(0,str.length()-1));
     }
+    /**
+     * Get the next variable list as a string, used for serialization.
+     * @return The next variable list as a string, or an empty string if none exists.
+     */
     public String getNextStr() {
         if (next.isEmpty()) return "";
         return rm$(String.join(",",next));
@@ -47,14 +60,19 @@ public class Guard implements Serializable{
      * @param ranges The ranges for the current identifier
      */
     public void parseNext(String identifier, Map<String, String> globalVariableMap, List<IndexNode> ranges) {
+        //Check that there are actually variables in the identifier
         if (!identifier.contains("[")) return;
+        //Get a list of all variables
         List<String> vars = new ArrayList<>(Arrays.asList(identifier.replace("]","").split("\\[")));
         //Remove the actual identifier from the start.
         vars.remove(0);
+        //Loop through the ranges and variables
         for (int i = 0; i < ranges.size(); i++) {
             IndexNode range = ranges.get(i);
             String var = vars.get(i);
             boolean found = false;
+            //If the globalVariableMap is inside the identifier,
+            //Then the next value is inside the map
             for (String gVar : globalVariableMap.keySet()) {
                 if (identifier.contains(gVar)) {
                     next.add(rm$(globalVariableMap.get(gVar)));
@@ -62,10 +80,12 @@ public class Guard implements Serializable{
                     break;
                 }
             }
+            //It wasn't found, so it is just a value on its own.
             if (!found) {
                 next.add(rm$(range.getVariable()+"="+var));
             }
         }
+        //Replace symbols with their assignment counterparts.
         for (int i = 0; i < next.size(); i++) {
             String nextVar = next.get(i);
             nextVar = nextVar.replace("=",":=");
@@ -77,13 +97,13 @@ public class Guard implements Serializable{
         return str.replace("$","");
     }
 
-    public void mergeWith(Guard guard) {
+    void mergeWith(Guard guard) {
         if (guard.guard != null) this.guard = guard.guard;
         this.variables.putAll(guard.variables);
         this.next.addAll(guard.next);
     }
     @JsonIgnore
-    public boolean hasData() {
+    boolean hasData() {
         return guard != null || !variables.isEmpty() || !next.isEmpty();
     }
     private static String operators = "(&|\\^|<<|>>|\\+|-|\\*|/|%)";

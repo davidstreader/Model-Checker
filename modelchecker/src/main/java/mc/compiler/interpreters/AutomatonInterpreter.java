@@ -120,7 +120,6 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
             nextEdge = automaton.addEdge(action, currentNode, nextNode);
             interpretNode(astNode.getTo(), automaton, nextNode);
         }
-        System.out.println(currentNode.getMetaData());
         if (currentNode.getMetaData().containsKey("guard")) {
             nextEdge.addMetaData("guard",astNode.getMetaData().get("guard"));
             currentNode.getMetaData().remove("guard");

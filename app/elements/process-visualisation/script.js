@@ -26,7 +26,6 @@
                 container: document.getElementById('svg-parent'),
                 style: getCytoscapeStyle(),
             });
-            //TODO: add a rerender.
             this.cy.cxtmenu( {
                 menuRadius: 100,
                 selector: '[isParent]',
@@ -46,6 +45,7 @@
                     {
                         content: 'Redraw',
                         select: function (ele) {
+                            //Keep track of the last position as it gets wiped when we rerun the layout
                             const x =  ele.position("x");
                             const y =  ele.position("y");
                             ele.data("last",{x:x,y:y});
@@ -86,6 +86,7 @@
         layoutStop: function(cur) {
             let y = 20;
             if (cur === undefined) return;
+            //If last is set, we are rerunning the layout, and we do not want to use normal positioning.
             if (cur.data("last")) {
                 y = cur.data("last").y;
                 const x = cur.data("last").x;
@@ -106,11 +107,13 @@
                     return {y: node.position("y") + y, x: node.position("x") + cur.data("interrupts") * 2}
                 });
             } else {
-                cur.descendants().positions((i, node) => {
+                //If there is only one node, we can just set its position and ignore what it was last set to.
+                cur.descendants().positions(() => {
                     return {y: y, x: cur.data("interrupts") * 2}
                 });
             }
             this.rendering = false;
+            //If there is another graph waiting, add it now.
             if (this.graphsToAdd.length > 0) {
                 const graph = this.graphsToAdd.pop();
                 this.addGraph(graph.name,graph.hidden);

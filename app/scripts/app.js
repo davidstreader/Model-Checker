@@ -105,8 +105,6 @@
       const allGraphs = [];
       const skipped = results.skipped;
       for(let id in results.processes){
-        //TODO: Why are there even null processes?
-        if (results.processes[id] == null) continue;
         if (!_.find(skipped,{id:results.processes[id].id})) graphs.push(results.processes[id]);
         allGraphs.push(results.processes[id]);
       }

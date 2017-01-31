@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class ExpressionPrinter {
-    List<VariableOperand> vars = new ArrayList<>();
+    //A list of all VariableOperands used in the last print()
+    private List<VariableOperand> vars = new ArrayList<>();
     public String printExpression(Expression expression, Map<String, Integer> variableMap){
         return print(expression, variableMap);
     }
@@ -211,13 +211,16 @@ public class ExpressionPrinter {
     }
 
     public Map<String, Integer> getVariables(Expression expression, Map<String, Object> variableMap) {
+        //Get just the variables from the map
         HashMap<String,Integer> varMap = new HashMap<>();
         for (String key : variableMap.keySet()) {
             if (variableMap.get(key) instanceof Integer) {
                 varMap.put(key, (Integer) variableMap.get(key));
             }
         }
+        //Print the expression, keeping track of all used variables
         print(expression, varMap);
+        //Map from used variables to list of variables and their values
         Map<String,Integer> newVarMap = new HashMap<>();
         for (VariableOperand var: vars) {
             newVarMap.put(var.getValue(),varMap.get(var.getValue()));
