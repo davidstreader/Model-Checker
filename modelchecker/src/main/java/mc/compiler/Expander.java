@@ -70,10 +70,9 @@ public class Expander {
             IndexIterator iterator = IndexIterator.construct(range.getRange());
             String variable = range.getVariable();
             localProcess.setIdentifier(localProcess.getIdentifier() + "[" + variable + "]");
-
             while(iterator.hasNext()){
                 variableMap.put(variable, iterator.next());
-                newLocalProcesses.addAll(expandLocalProcesses(localProcess, variableMap, ranges, index + 1));
+                newLocalProcesses.addAll(expandLocalProcesses((LocalProcessNode) localProcess.clone(), variableMap, ranges, index + 1));
             }
         }
         else{
@@ -286,27 +285,30 @@ public class Expander {
     }
 
     private String processVariables(String string, Map<String, Object> variableMap){
+        Map<String,String> varMap = new HashMap<>();
+        varMap.putAll(globalVariableMap);
+        for (String key : variableMap.keySet()) {
+            varMap.put(key,variableMap.get(key).toString());
+        }
         Pattern pattern = Pattern.compile("\\$[a-z][a-zA-Z0-9_]*");
-
         while(true){
             Matcher matcher = pattern.matcher(string);
             if(matcher.find()){
                 String variable = matcher.group();
                 // check if variable is a global variable
                 if(globalVariableMap.containsKey(variable)){
-                    Expression expression = Expression.constructExpression(variable,globalVariableMap);
+                    Expression expression = Expression.constructExpression(variable,varMap);
                     int result = evaluateExpression(expression, variableMap);
-                    string = string.replace(variable, "" + result);
+                    string = string.replaceAll(Matcher.quoteReplacement(variable)+"\\b","" + result);
                 }
                 else if(variableMap.containsKey(variable)){
-                    string = string.replace(variable, variableMap.get(variable).toString());
+                    string = string.replaceAll(Matcher.quoteReplacement(variable)+"\\b", variableMap.get(variable).toString());
                 }
             }
             else{
                 break;
             }
         }
-
         return string;
     }
 }
