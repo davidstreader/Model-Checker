@@ -161,8 +161,8 @@ public class JSONToASTConverter {
   }
 
   public RangeNode convertRangeNode(JSONObject json){
-    String start = json.getString("start");
-    String end = json.getString("end");
+    int start = json.getInt("start");
+    int end = json.getInt("end");
     JSONObject jsonLocation = json.getJSONObject("location");
     Location location = convertLocation(jsonLocation);
     return new RangeNode(start, end, location);

@@ -1,8 +1,10 @@
 package mc.process_models.automata.operations;
 
+import mc.compiler.Guard;
 import mc.process_models.automata.Automaton;
 import mc.process_models.automata.AutomatonEdge;
 import mc.process_models.automata.AutomatonNode;
+import mc.solver.JavaSMTConverter;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -11,7 +13,7 @@ import java.util.stream.Collectors;
  * Created by sheriddavi on 25/01/17.
  */
 public class AutomataAbstraction {
-
+    private JavaSMTConverter smt = new JavaSMTConverter();
     public Automaton performAbstraction(Automaton automaton, boolean isFair){
         Automaton abstraction = new Automaton(automaton.getId() + ".abs", !Automaton.CONSTRUCT_ROOT);
         automaton.getNodes().forEach(node -> addNode(abstraction, node));
@@ -32,6 +34,7 @@ public class AutomataAbstraction {
     }
 
     private void constructOutgoingObservableEdges(Automaton abstraction, AutomatonEdge hiddenEdge){
+        Guard hiddenGuard = (Guard) hiddenEdge.getMetaData("guard");
         List<AutomatonEdge> incomingObservableEdges = hiddenEdge.getFrom().getIncomingEdges().stream()
                 .filter(edge -> !edge.isHidden())
                 .collect(Collectors.toList());
@@ -56,11 +59,26 @@ public class AutomataAbstraction {
 
         for(AutomatonEdge edge : incomingObservableEdges){
             AutomatonNode from = abstraction.getNode(edge.getFrom().getId() + ".abs");
-            outgoingNodes.forEach(to -> abstraction.addEdge(edge.getLabel(), from, to));
+            Guard fromGuard = (Guard) from.getMetaData("guard");
+            Guard outGuard = null;
+            if (fromGuard != null && hiddenGuard == null) {
+                outGuard = fromGuard;
+            } else if (fromGuard == null && hiddenGuard != null) {
+                outGuard = hiddenGuard;
+            } else if (fromGuard != null) {
+                outGuard = smt.combineGuards(hiddenGuard,fromGuard);
+            }
+            for (AutomatonNode to : outgoingNodes) {
+                AutomatonEdge edge1 = abstraction.addEdge(edge.getLabel(), from, to);
+                if (outGuard != null) {
+                    edge1.addMetaData("guard",outGuard);
+                }
+            }
         }
     }
 
     private void constructIncomingObservableEdges(Automaton abstraction, AutomatonEdge hiddenEdge){
+        Guard hiddenGuard = (Guard) hiddenEdge.getMetaData("guard");
         List<AutomatonEdge> outgoingObservableEdges = hiddenEdge.getTo().getOutgoingEdges().stream()
                 .filter(edge -> !edge.isHidden())
                 .collect(Collectors.toList());
@@ -85,7 +103,21 @@ public class AutomataAbstraction {
 
         for(AutomatonEdge edge : outgoingObservableEdges){
             AutomatonNode to = abstraction.getNode(edge.getTo().getId() + ".abs");
-            incomingNodes.forEach(from -> abstraction.addEdge(edge.getLabel(), from, to));
+            Guard toGuard = (Guard) to.getMetaData("guard");
+            Guard outGuard = null;
+            if (toGuard != null && hiddenGuard == null) {
+                outGuard = toGuard;
+            } else if (toGuard == null && hiddenGuard != null) {
+                outGuard = hiddenGuard;
+            } else if (toGuard != null) {
+                outGuard = smt.combineGuards(hiddenGuard,toGuard);
+            }
+            for (AutomatonNode from : incomingNodes) {
+                AutomatonEdge edge1 = abstraction.addEdge(edge.getLabel(), from, to);
+                if (outGuard != null) {
+                    edge1.addMetaData("guard",outGuard);
+                }
+            }
         }
     }
 

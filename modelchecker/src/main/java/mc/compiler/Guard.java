@@ -22,6 +22,8 @@ public class Guard implements Serializable{
     Map<String,Integer> variables = new HashMap<>();
     @Getter(onMethod = @__(@JsonIgnore))
     List<String> next = new ArrayList<>();
+    @Getter(onMethod = @__(@JsonIgnore))
+    Map<String,String> nextMap = new HashMap<>();
 
     /**
      * Get the guard as a string, used for serialization.
@@ -76,19 +78,20 @@ public class Guard implements Serializable{
             for (String gVar : globalVariableMap.keySet()) {
                 if (identifier.contains(gVar)) {
                     next.add(rm$(globalVariableMap.get(gVar)));
+                    nextMap.put(range.getVariable(),globalVariableMap.get(gVar));
                     found = true;
                     break;
                 }
             }
             //It wasn't found, so it is just a value on its own.
             if (!found) {
-                next.add(rm$(range.getVariable()+"="+var));
+                next.add(rm$(range.getVariable()+":="+var));
+                nextMap.put(range.getVariable(),globalVariableMap.get(var));
             }
         }
         //Replace symbols with their assignment counterparts.
         for (int i = 0; i < next.size(); i++) {
             String nextVar = next.get(i);
-            nextVar = nextVar.replace("=",":=");
             nextVar = nextVar.replaceAll(operators,"$1=");
             next.set(i,nextVar);
         }
@@ -97,7 +100,7 @@ public class Guard implements Serializable{
         return str.replace("$","");
     }
 
-    void mergeWith(Guard guard) {
+    public void mergeWith(Guard guard) {
         if (guard.guard != null) this.guard = guard.guard;
         this.variables.putAll(guard.variables);
         this.next.addAll(guard.next);

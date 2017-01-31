@@ -1,16 +1,12 @@
 package mc.compiler.interpreters;
 
 import mc.Constant;
-import mc.compiler.Guard;
 import mc.compiler.ast.*;
 import mc.process_models.ProcessModel;
 import mc.process_models.automata.Automaton;
 import mc.process_models.automata.AutomatonEdge;
 import mc.process_models.automata.AutomatonNode;
 import mc.process_models.automata.operations.AutomataOperations;
-import mc.util.expr.Expression;
-import mc.util.expr.ExpressionPrinter;
-import mc.webserver.LogMessage;
 
 import java.util.*;
 
@@ -120,6 +116,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
             nextEdge = automaton.addEdge(action, currentNode, nextNode);
             interpretNode(astNode.getTo(), automaton, nextNode);
         }
+
         if (currentNode.getMetaData().containsKey("guard")) {
             nextEdge.addMetaData("guard",astNode.getMetaData().get("guard"));
             currentNode.getMetaData().remove("guard");

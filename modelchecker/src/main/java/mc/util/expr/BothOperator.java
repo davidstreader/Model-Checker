@@ -1,10 +1,14 @@
 package mc.util.expr;
 
+import lombok.Setter;
+
 public abstract class BothOperator extends Operator {
 
 	// fields
+    @Setter
 	private Expression lhs;
-	private Expression rhs;
+	@Setter
+    private Expression rhs;
 
 	public BothOperator(Expression lhs, Expression rhs){
 		this.lhs = lhs;
