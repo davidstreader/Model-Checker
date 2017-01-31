@@ -143,7 +143,7 @@
         redraw: function() {
             $("#process-name-selector")[0].contentElement.selected = null;
             this.automata = this.graphMap;
-            if (!this.loaded && app.willSaveCookie && localStorage.getItem("layout") !== null) {
+            if (!this.connected && app.willSaveCookie && localStorage.getItem("layout") !== null) {
                 this.loadJSON(localStorage.getItem("layout"));
             }
             this.fire('process-visualisation-rendered');
@@ -155,7 +155,7 @@
         },
         loadJSON: function(json) {
             app.$.console.clear();
-            app.$.console.log("Rendering from "+(this.loaded?"Autosave":"File")+" please wait.");
+            app.$.console.log("Rendering from "+(this.connected?"Autosave":"File")+" please wait.");
             this.cy.json(JSON.parse(json));
 
             const parentNodes = app.$.visualiser.cy.filter(":parent");
@@ -175,7 +175,7 @@
                     }
                 }
             });
-            this.loaded = true;
+            this.connected = true;
         },
         convertAndAddGraph: function(graph,id,hidden) {
             const oldId = id;
