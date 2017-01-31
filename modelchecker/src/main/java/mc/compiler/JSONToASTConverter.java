@@ -16,7 +16,6 @@ public class JSONToASTConverter {
   private Map<String, String> variableMap;
 
   public AbstractSyntaxTree convert(JSONObject ast){
-    //new LogMessage("Importing AST").send();
     JSONObject variables = ast.getJSONObject("variableMap");
     constructVariableMap(variables);
 
@@ -49,7 +48,7 @@ public class JSONToASTConverter {
         Matcher matcher = pattern.matcher(expression);
         if(matcher.find()){
           String variable = matcher.group();
-          expression = expression.replaceFirst(variable, variables.getString(variable));
+          expression = expression.replaceFirst(Pattern.quote(variable),  Matcher.quoteReplacement(variables.getString(variable)));
         }
         else{
           matchFound = false;

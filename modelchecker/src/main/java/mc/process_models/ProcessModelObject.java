@@ -1,16 +1,13 @@
 package mc.process_models;
 
 import lombok.Getter;
-import mc.compiler.ast.ASTNode;
+import org.apache.commons.lang3.SerializationUtils;
 
-import java.io.*;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * Created by sheriddavi on 24/01/17.
- */
 public abstract class ProcessModelObject implements Serializable {
 
     // fields
@@ -57,25 +54,6 @@ public abstract class ProcessModelObject implements Serializable {
     }
 
     public ProcessModelObject clone(){
-        try {
-            ByteArrayOutputStream output = new ByteArrayOutputStream();
-            ObjectOutputStream out = new ObjectOutputStream(output);
-            out.writeObject(this);
-            out.close();
-            output.close();
-
-            ByteArrayInputStream input = new ByteArrayInputStream(output.toByteArray());
-            ObjectInputStream in = new ObjectInputStream(input);
-            ProcessModelObject obj = (ProcessModelObject)in.readObject();
-            in.close();
-            input.close();
-            return obj;
-
-        } catch (IOException | ClassNotFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-        return null;
+        return SerializationUtils.clone(this);
     }
 }

@@ -1,8 +1,6 @@
 package mc.solver;
 
-import mc.util.Utils;
 import mc.util.expr.*;
-import org.sosy_lab.common.NativeLibraries;
 import org.sosy_lab.common.ShutdownNotifier;
 import org.sosy_lab.common.configuration.Configuration;
 import org.sosy_lab.common.configuration.InvalidConfigurationException;
@@ -12,10 +10,10 @@ import org.sosy_lab.java_smt.SolverContextFactory;
 import org.sosy_lab.java_smt.SolverContextFactory.Solvers;
 import org.sosy_lab.java_smt.api.*;
 
-import java.lang.reflect.Field;
-import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -50,34 +48,34 @@ public class JavaSMTConverter {
     return context.getFormulaManager().getBooleanFormulaManager();
   }
   public Expression simplify(Expression expr) {
-    try {
-      Formula f = context.getFormulaManager().simplify(convert(expr));
-      String out = f.toString();
-      //Convert from #x00000000 (BitVector) hex format to decimal
-      Matcher matcher = Pattern.compile("#x\\w{8}").matcher(out);
-      while (matcher.find()) {
-        out = out.replaceAll(matcher.group(0),""+Integer.parseInt(matcher.group(0).substring(2),16));
-      }
-      //Replace Z3 functions with their respective symbols
-      out = out.replace("and","&&");
-      out = out.replace("bvand","&");
-      out = out.replace("bvnot","~");
-      out = out.replace("bvor","|");
-      out = out.replace("bvashr",">>");
-      out = out.replace("bvshl","<<");
-      out = out.replace("=","==");
-      out = out.replace("eq","==");
-      out = out.replace("not","!");
-      //Reverse all tokens, as our RPN notation is op left right and Z3's is left right op
-      String[] tokens = out.split("\\s+");
-      Collections.reverse(Arrays.asList(tokens));
-      out = String.join(" ",tokens);
-      //Convert to Expression
-      return new ShuntingYardAlgorithm().importExpr(out);
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-      return expr;
+    Formula f = convert(expr);
+    String out = f.toString();
+    //Convert from #x00000000 (BitVector) hex format to decimal
+    Matcher matcher = Pattern.compile("#x\\w{8}").matcher(out);
+    while (matcher.find()) {
+      out = out.replaceAll(matcher.group(0),""+Integer.parseInt(matcher.group(0).substring(2),16));
     }
+    //Replace Z3 functions with their respective symbols
+    out = out.replace("and","&&");
+    out = out.replace("bvand","&");
+    out = out.replace("bvnot","~");
+    out = out.replace("bvor","|");
+    out = out.replace("bvashr",">>");
+    out = out.replace("bvshl","<<");
+    out = out.replace("=","==");
+    out = out.replace("eq","==");
+    out = out.replace("bvsle","<=");
+    out = out.replace("bvslt","<");
+    out = out.replace("not","!");
+    out = out.replaceAll("[()]","");
+    //Replace a ! directly followed by a == with a !=
+    out = out.replaceAll("! ==","!=");
+    //Reverse all tokens, as our RPN notation is right left op and Z3's is op left right
+    String[] tokens = out.split("\\s+");
+    Collections.reverse(Arrays.asList(tokens));
+    out = String.join(" ",tokens);
+    //Convert to Expression
+    return new ShuntingYardAlgorithm().importExpr(out);
   }
   private Formula convert(Expression expr) {
     if (expr instanceof AdditionOperator) {

@@ -1,12 +1,15 @@
 package mc.compiler.interpreters;
 
 import mc.Constant;
+import mc.compiler.Guard;
 import mc.compiler.ast.*;
 import mc.process_models.ProcessModel;
 import mc.process_models.automata.Automaton;
 import mc.process_models.automata.AutomatonEdge;
 import mc.process_models.automata.AutomatonNode;
 import mc.process_models.automata.operations.AutomataOperations;
+import mc.util.expr.Expression;
+import mc.util.expr.ExpressionPrinter;
 import mc.webserver.LogMessage;
 
 import java.util.*;
@@ -30,8 +33,8 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         String identifier = processNode.getIdentifier();
         boolean skipped = false;
         if (identifier.endsWith("*")) {
-          skipped = true;
-          identifier = identifier.substring(0,identifier.length()-1);
+            skipped = true;
+            identifier = identifier.substring(0,identifier.length()-1);
         }
         interpretProcess(processNode.getProcess(), identifier);
 
@@ -41,7 +44,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
             processHiding(automaton, processNode.getHiding());
         }
         if (skipped) {
-          automaton.addMetaData("skipped",true);
+            automaton.addMetaData("skipped",true);
         }
         return labelAutomaton(automaton);
     }
@@ -80,7 +83,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
             referenceMap.put(astNode.getReferenceId(), currentNode);
             currentNode.addMetaData("reference", astNode.getReferenceId());
         }
-
+        currentNode.getMetaData().putAll(astNode.getMetaData());
         if(astNode instanceof SequenceNode){
             interpretNode((SequenceNode)astNode, automaton, currentNode);
         }
@@ -99,23 +102,27 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         else if(astNode instanceof TerminalNode){
             interpretNode((TerminalNode)astNode, automaton, currentNode);
         }
-
         processLabellingAndRelabelling(automaton, astNode);
     }
 
     private void interpretNode(SequenceNode astNode, Automaton automaton, AutomatonNode currentNode){
         String action = astNode.getFrom().getAction();
-
+        AutomatonNode nextNode;
+        AutomatonEdge nextEdge;
         // check if the next ast node is a reference node
         if(astNode.getTo() instanceof ReferenceNode){
             ReferenceNode reference = (ReferenceNode)astNode.getTo();
-            AutomatonNode nextNode = referenceMap.get(reference.getReference());
-            automaton.addEdge(action, currentNode, nextNode);
+            nextNode = referenceMap.get(reference.getReference());
+            nextEdge = automaton.addEdge(action, currentNode, nextNode);
         }
         else {
-            AutomatonNode nextNode = automaton.addNode();
-            automaton.addEdge(action, currentNode, nextNode);
+            nextNode = automaton.addNode();
+            nextEdge = automaton.addEdge(action, currentNode, nextNode);
             interpretNode(astNode.getTo(), automaton, nextNode);
+        }
+        if (currentNode.getMetaData().containsKey("guard")) {
+            nextEdge.addMetaData("guard",astNode.getMetaData().get("guard"));
+            currentNode.getMetaData().remove("guard");
         }
     }
 
@@ -170,7 +177,12 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
                     processed = operations.simplification((Automaton)model);
                     break;
                 }
-
+                // TODO: throw error: expecting an automaton
+            case "nfa2dfa":
+                if(model instanceof Automaton){
+                    processed = operations.nfa2dfa((Automaton)model);
+                    break;
+                }
                 // TODO: throw error: expecting an automaton
             default:
                 // TODO: throw error
@@ -270,8 +282,8 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
 
                 fringe.offer(edge.getTo());
             }
-
-            nodeMap.get(current.getId()).addMetaData("label", label++);
+            if (!nodeMap.get(current.getId()).getMetaData().containsKey("label"))
+                nodeMap.get(current.getId()).addMetaData("label", label++);
             visited.add(current.getId());
         }
 

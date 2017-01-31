@@ -8,6 +8,7 @@ import mc.process_models.automata.operations.AutomataOperations;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Created by sheriddavi on 27/01/17.
@@ -33,8 +34,13 @@ public class OperationEvaluator {
         List<Automaton> automata = new ArrayList<Automaton>();
         automata.add((Automaton) interpreter.interpret("automata", operation.getFirstProcess(), getNextOperationId(), processMap));
         automata.add((Automaton) interpreter.interpret("automata", operation.getSecondProcess(), getNextOperationId(), processMap));
-
-
+        if (Objects.equals(operation.getOperation(), "traceequivilant")) {
+            List<Automaton> automata1 = new ArrayList<>();
+            for (Automaton a: automata) {
+                automata1.add(new AutomataOperations().nfa2dfa(a));
+            }
+            automata = automata1;
+        }
         boolean result = automataOperations.bisimulation(automata);
 
         if (operation.isNegated()) {

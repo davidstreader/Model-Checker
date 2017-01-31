@@ -71,13 +71,13 @@ public class WebSocketServer {
       if (process instanceof Automaton) {
         Automaton automaton = (Automaton) process;
         if (automaton.getMetaData("skipped") != null) {
-          skipped.add(new SkipObject(((Automaton) process).getId(),"user",0,0));
+          skipped.add(new SkipObject(automaton.getId(),"user",0,0));
           processMap.put(automaton.getId(),new EmptyProcessModel(automaton));
         }
-        if (((Automaton) process).getNodes().size() > context.getGraphSettings().getAutoMaxNode()) {
-          skipped.add(new SkipObject(((Automaton) process).getId(),
+        if (automaton.getNodes().size() > context.getGraphSettings().getAutoMaxNode()) {
+          skipped.add(new SkipObject(automaton.getId(),
             "nodes",
-            ((Automaton) process).getNodes().size(),
+            automaton.getNodes().size(),
             context.getGraphSettings().getAutoMaxNode()));
           processMap.put(automaton.getId(),new EmptyProcessModel(automaton));
         }

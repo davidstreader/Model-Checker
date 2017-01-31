@@ -11,7 +11,7 @@ public abstract class Expression implements Serializable {
 	public abstract int evaluate();
 
 	public static Expression constructExpression(String expression, Map<String,String> variableMap){
-    Pattern regex = Pattern.compile("(\\$v\\w)");
+    Pattern regex = Pattern.compile("(\\$v\\b)");
     Matcher matcher = regex.matcher(expression);
     while (matcher.find()) {
       expression = expression.replace(matcher.group(0),variableMap.get(matcher.group(0)));

@@ -7,9 +7,10 @@ import java.util.Map;
 import java.util.Set;
 
 import mc.compiler.ast.*;
+import mc.webserver.LogMessage;
 
 public class ReferenceReplacer {
-	
+
 	private Set<String> globalReferences;
 	private int referenceId;
 	private Map<String, Integer> referenceMap;
@@ -28,6 +29,7 @@ public class ReferenceReplacer {
 		for(int i = 0; i < processes.size(); i++){
             referenceMap.clear();
 			ProcessNode process = processes.get(i);
+      new LogMessage("Replacing references:",process).send();
 
 			String identifier = process.getIdentifier();
 			globalReferences.add(identifier);
@@ -45,10 +47,10 @@ public class ReferenceReplacer {
 			ASTNode root = replaceReferences(process.getProcess(), identifier, localReferences);
 			process.setProcess(root);
 		}
-		
+
 		return ast;
 	}
-	
+
 	private ASTNode replaceReferences(ASTNode astNode, String identifier, Map<String, LocalProcessNode> localReferences){
 		if(astNode instanceof SequenceNode){
 			return replaceReferences((SequenceNode)astNode, identifier, localReferences);
@@ -65,7 +67,7 @@ public class ReferenceReplacer {
 		else if(astNode instanceof FunctionNode){
 			return replaceReferences((FunctionNode)astNode, identifier, localReferences);
 		}
-		
+
 		return astNode;
 	}
 
@@ -80,17 +82,17 @@ public class ReferenceReplacer {
 		ASTNode process2 = replaceReferences(astNode.getSecondProcess(), identifier, localReferences);
 		astNode.setFirstProcess(process1);
 		astNode.setSecondProcess(process2);
-		return astNode;	
+		return astNode;
 	}
-	
+
 	private CompositeNode replaceReferences(CompositeNode astNode, String identifier, Map<String, LocalProcessNode> localReferences){
 		ASTNode process1 = replaceReferences(astNode.getFirstProcess(), identifier, localReferences);
 		ASTNode process2 = replaceReferences(astNode.getSecondProcess(), identifier, localReferences);
 		astNode.setFirstProcess(process1);
 		astNode.setSecondProcess(process2);
-		return astNode;	
+		return astNode;
 	}
-	
+
 	private ASTNode replaceReferences(IdentifierNode astNode, String identifier, Map<String, LocalProcessNode> localReferences){
 		String reference = astNode.getIdentifier();
 		// check if the identifier is referencing a local process
@@ -119,7 +121,7 @@ public class ReferenceReplacer {
 		// TODO: should throw an error, identifier has not been defined either locally or globally
 		return astNode;
 	}
-	
+
 	private FunctionNode replaceReferences(FunctionNode astNode, String identifier, Map<String, LocalProcessNode> localReferences){
 		ASTNode process = replaceReferences(astNode.getProcess(), identifier, localReferences);
 		astNode.setProcess(process);

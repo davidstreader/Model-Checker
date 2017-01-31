@@ -6,6 +6,7 @@ import mc.compiler.ast.OperationNode;
 import mc.compiler.ast.ProcessNode;
 import mc.compiler.interpreters.AutomatonInterpreter;
 import mc.process_models.ProcessModel;
+import mc.webserver.LogMessage;
 
 import java.util.HashMap;
 import java.util.List;
@@ -28,6 +29,7 @@ public class Interpreter {
 
         List<ProcessNode> processes = ast.getProcesses();
         for(ProcessNode process : processes){
+          new LogMessage("Interpreting:",process).send();
             ProcessModel model = null;
             switch(process.getType()){
                 case "automata":

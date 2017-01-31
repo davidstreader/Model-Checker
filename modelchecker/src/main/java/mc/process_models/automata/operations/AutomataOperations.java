@@ -14,6 +14,7 @@ public class AutomataOperations {
     private AutomataBisimulation bisimulation;
     private AutomataReachability reachability;
     private AutomataLabeller labeller;
+    private AutomataNFA2DFA nfa2DFA;
 
     public AutomataOperations(){
         this.composition = new AutomataParallelComposition();
@@ -21,6 +22,7 @@ public class AutomataOperations {
         this.bisimulation = new AutomataBisimulation();
         this.reachability = new AutomataReachability();
         this.labeller = new AutomataLabeller();
+        this.nfa2DFA = new AutomataNFA2DFA();
     }
 
     public Automaton parallelComposition(String id, Automaton automaton1, Automaton automaton2){
@@ -50,4 +52,8 @@ public class AutomataOperations {
     public Automaton labelAutomaton(Automaton automaton, String label){
         return labeller.labelAutomaton(automaton, label);
     }
+
+  public Automaton nfa2dfa(Automaton model) {
+    return nfa2DFA.preformNFA2DFA(model);
+  }
 }
