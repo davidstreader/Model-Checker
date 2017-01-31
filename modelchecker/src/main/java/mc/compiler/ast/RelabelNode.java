@@ -22,4 +22,19 @@ public class RelabelNode extends ASTNode {
 		this.relabels = relabels;
 	}
 
+    public boolean equals(Object obj){
+        if(obj == this){
+            return true;
+        }
+        if(obj == null){
+            return false;
+        }
+        if(obj instanceof RelabelNode){
+            RelabelNode node = (RelabelNode)obj;
+            return relabels.equals(node.getRelabels());
+        }
+
+        return false;
+    }
+
 }

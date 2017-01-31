@@ -18,10 +18,6 @@ public class FunctionNode extends ASTNode {
 		return function;
 	}
 
-	public void setFunction(String function){
-		this.function = function;
-	}
-
 	public ASTNode getProcess(){
 		return process;
 	}
@@ -29,5 +25,27 @@ public class FunctionNode extends ASTNode {
 	public void setProcess(ASTNode process){
 		this.process = process;
 	}
+
+    public boolean equals(Object obj){
+        if(obj == this){
+            return true;
+        }
+        if(obj == null){
+            return false;
+        }
+        if(obj instanceof FunctionNode){
+            FunctionNode node = (FunctionNode)obj;
+            if(!function.equals(node.getFunction())){
+                return false;
+            }
+            if(!process.equals(node.getProcess())){
+                return false;
+            }
+
+            return true;
+        }
+
+        return false;
+    }
 
 }

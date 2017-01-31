@@ -20,4 +20,19 @@ public class ActionLabelNode extends ASTNode {
 		this.action = action;
 	}
 
+    public boolean equals(Object obj){
+        if(obj == this){
+            return true;
+        }
+        if(obj == null){
+            return false;
+        }
+        if(obj instanceof ActionLabelNode){
+            ActionLabelNode node = (ActionLabelNode)obj;
+            return action.equals(node.getAction());
+        }
+
+        return false;
+    }
+
 }

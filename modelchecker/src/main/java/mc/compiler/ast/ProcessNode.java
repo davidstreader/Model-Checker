@@ -12,6 +12,19 @@ public class ProcessNode extends ASTNode {
 	private ASTNode process;
 	private List<LocalProcessNode> localProcesses;
 	private HidingNode hiding;
+    private VariableSetNode variables;
+    private InterruptNode interrupt;
+
+    public ProcessNode(String type, String identifier, ASTNode process, List<LocalProcessNode> localProcesses, Location location){
+        super(location);
+        this.type = type;
+        this.identifier = identifier;
+        this.process = process;
+        this.localProcesses = localProcesses;
+        hiding = null;
+        variables = null;
+        interrupt = null;
+    }
 
 	public ProcessNode(String type, String identifier, ASTNode process, List<LocalProcessNode> localProcesses, HidingNode hiding, Location location){
 		super(location);
@@ -20,6 +33,8 @@ public class ProcessNode extends ASTNode {
 		this.process = process;
 		this.localProcesses = localProcesses;
 		this.hiding = hiding;
+        variables = null;
+        interrupt = null;
 	}
 
 	public String getType(){
@@ -58,7 +73,72 @@ public class ProcessNode extends ASTNode {
 		return hiding;
 	}
 
+    public void setHiding(HidingNode hiding){
+        this.hiding = hiding;
+    }
+
 	public boolean hasHiding(){
 		return hiding != null;
 	}
+
+    public VariableSetNode getVariables(){
+        return variables;
+    }
+
+    public void setVariables(VariableSetNode variables){
+        this.variables = variables;
+    }
+
+    public boolean hasVariableSet(){
+        return variables != null;
+    }
+
+    public InterruptNode getInterrupt(){
+        return interrupt;
+    }
+
+    public void setInterrupt(InterruptNode interrupt){
+        this.interrupt = interrupt;
+    }
+
+    public boolean hasInterrupt(){
+        return interrupt != null;
+    }
+
+    public boolean equals(Object obj){
+        if(obj == this){
+            return true;
+        }
+        if(obj == null){
+            return false;
+        }
+        if(obj instanceof ProcessNode){
+            ProcessNode node = (ProcessNode)obj;
+            if(!type.equals(node.getType())){
+                return false;
+            }
+            if(!identifier.equals(node.getIdentifier())){
+                return false;
+            }
+            if(!process.equals(node.getProcess())){
+                return false;
+            }
+            if(!localProcesses.equals(node.getLocalProcesses())){
+                return false;
+            }
+            if(hasHiding() && !hiding.equals(node.getHiding())){
+                return false;
+            }
+            if(hasVariableSet() && !variables.equals(node.getVariables())){
+                return false;
+            }
+            if(hasInterrupt() && !interrupt.equals(node.getInterrupt())){
+                return false;
+            }
+
+            return true;
+        }
+
+        return false;
+    }
 }

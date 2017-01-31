@@ -30,4 +30,25 @@ public class ChoiceNode extends ASTNode {
 		this.secondProcess = secondProcess;
 	}
 
+    public boolean equals(Object obj){
+        if(obj == this){
+            return true;
+        }
+        if(obj == null){
+            return false;
+        }
+        if(obj instanceof ChoiceNode){
+            ChoiceNode node = (ChoiceNode)obj;
+            if(!firstProcess.equals(node.getFirstProcess())){
+                return false;
+            }
+            if(!secondProcess.equals(node.getSecondProcess())){
+                return false;
+            }
+
+            return true;
+        }
+
+        return false;
+    }
 }

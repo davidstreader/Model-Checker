@@ -21,4 +21,19 @@ public class SetNode extends ASTNode {
 	public void setSet(Set<String> set){
 		this.set = set;
 	}
+
+    public boolean equals(Object obj){
+        if(obj == this){
+            return true;
+        }
+        if(obj == null){
+            return false;
+        }
+        if(obj instanceof SetNode){
+            SetNode node = (SetNode)obj;
+            return set.equals(node.getSet());
+        }
+
+        return false;
+    }
 }

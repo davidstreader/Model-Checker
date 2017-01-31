@@ -28,10 +28,6 @@ public class LocalProcessNode extends ASTNode {
 		return ranges;
 	}
 
-	public void setRanges(RangesNode ranges){
-		this.ranges = ranges;
-	}
-
 	public ASTNode getProcess(){
 		return process;
 	}
@@ -39,4 +35,29 @@ public class LocalProcessNode extends ASTNode {
 	public void setProcess(ASTNode process){
 		this.process = process;
 	}
+
+    public boolean equals(Object obj){
+        if(obj == this){
+            return true;
+        }
+        if(obj == null){
+            return false;
+        }
+        if(obj instanceof LocalProcessNode){
+            LocalProcessNode node = (LocalProcessNode)obj;
+            if(!identifier.equals(node.getIdentifier())){
+                return false;
+            }
+            if(!ranges.equals(node.getRanges())){
+                return false;
+            }
+            if(!process.equals(node.getProcess())){
+                return false;
+            }
+
+            return true;
+        }
+
+        return false;
+    }
 }
