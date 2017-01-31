@@ -18,7 +18,18 @@ public class RangesNode extends ASTNode {
 		return ranges;
 	}
 
-	public void setRanges(List<IndexNode> ranges){
-		this.ranges = ranges;
-	}
+    public boolean equals(Object obj){
+        if(obj == this){
+            return true;
+        }
+        if(obj == null){
+            return true;
+        }
+        if(obj instanceof RangesNode){
+            RangesNode node = (RangesNode)obj;
+            return ranges.equals(node.getRanges());
+        }
+
+        return false;
+    }
 }

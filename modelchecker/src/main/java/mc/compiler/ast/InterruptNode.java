@@ -29,4 +29,26 @@ public class InterruptNode extends ASTNode {
 	public void setProcess(ASTNode process){
 		this.process = process;
 	}
+
+    public boolean equals(Object obj){
+        if(obj == this){
+            return true;
+        }
+        if(obj == null){
+            return false;
+        }
+        if(obj instanceof InterruptNode){
+            InterruptNode node = (InterruptNode)obj;
+            if(!action.equals(node.getAction())){
+                return false;
+            }
+            if(!process.equals(node.getProcess())){
+                return false;
+            }
+
+            return true;
+        }
+
+        return false;
+    }
 }

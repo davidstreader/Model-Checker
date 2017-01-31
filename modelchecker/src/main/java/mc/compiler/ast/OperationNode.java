@@ -42,4 +42,31 @@ public class OperationNode extends ASTNode {
         this.secondProcess = secondProcess;
     }
 
+    public boolean equals(Object obj){
+        if(obj == this){
+            return true;
+        }
+        if(obj == null){
+            return false;
+        }
+        if(obj instanceof OperationNode){
+            OperationNode node = (OperationNode)obj;
+            if(!operation.equals(node.getOperation())){
+                return false;
+            }
+            if(isNegated != node.isNegated()){
+                return false;
+            }
+            if(!firstProcess.equals(node.getFirstProcess())){
+                return false;
+            }
+            if(!secondProcess.equals(node.getSecondProcess())){
+                return false;
+            }
+
+            return true;
+        }
+
+        return false;
+    }
 }

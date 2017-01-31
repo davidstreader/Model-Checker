@@ -32,25 +32,38 @@ public class IfStatementNode extends ASTNode {
 		return condition;
 	}
 
-	public void setCondition(Expression condition){
-		this.condition = condition;
-	}
-
 	public ASTNode getTrueBranch(){
 		return trueBranch;
-	}
-
-	public void setTrueBranch(ASTNode trueBranch){
-		this.trueBranch = trueBranch;
 	}
 
 	public ASTNode getFalseBranch(){
 		return falseBranch;
 	}
 
-	public void setFalseBranch(ASTNode falseBranch){
-		this.falseBranch = falseBranch;
-	}
-
 	public boolean hasFalseBranch(){ return falseBranch != null; }
+
+    public boolean equals(Object obj){
+        if(obj == this){
+            return true;
+        }
+        if(obj == null){
+            return false;
+        }
+        if(obj instanceof IfStatementNode){
+            IfStatementNode node = (IfStatementNode)obj;
+            if(!condition.equals(node.getCondition())){
+                return false;
+            }
+            if(!trueBranch.equals(node.getTrueBranch())){
+                return false;
+            }
+            if(!falseBranch.equals(node.getFalseBranch())){
+                return false;
+            }
+
+            return true;
+        }
+
+        return false;
+    }
 }

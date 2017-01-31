@@ -5,7 +5,7 @@ import mc.util.Location;
 public class IdentifierNode extends ASTNode {
 
 	// fields
-	String identifier;
+	private String identifier;
 
 	public IdentifierNode(String identifier, Location location){
 		super(location);
@@ -19,4 +19,19 @@ public class IdentifierNode extends ASTNode {
 	public void setIdentifer(String identifier){
 		this.identifier = identifier;
 	}
+
+    public boolean equals(Object obj){
+        if(obj == this){
+            return true;
+        }
+        if(obj == null){
+            return false;
+        }
+        if(obj instanceof IdentifierNode){
+            IdentifierNode node = (IdentifierNode)obj;
+            return identifier.equals(node.getIdentifier());
+        }
+
+        return false;
+    }
 }

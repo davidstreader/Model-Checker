@@ -18,4 +18,19 @@ public class ReferenceNode extends ASTNode {
     public int getReference(){
         return reference;
     }
+
+    public boolean equals(Object obj){
+        if(obj == this){
+            return true;
+        }
+        if(obj == null){
+            return false;
+        }
+        if(obj instanceof ReferenceNode){
+            ReferenceNode node = (ReferenceNode)obj;
+            return reference == node.getReference();
+        }
+
+        return false;
+    }
 }

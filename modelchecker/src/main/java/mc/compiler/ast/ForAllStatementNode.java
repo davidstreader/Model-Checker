@@ -29,4 +29,26 @@ public class ForAllStatementNode extends ASTNode {
 	public void setProcess(ASTNode process){
 		this.process = process;
 	}
+
+    public boolean equals(Object obj){
+        if(obj == this){
+            return true;
+        }
+        if(obj == null){
+            return false;
+        }
+        if(obj instanceof ForAllStatementNode){
+            ForAllStatementNode node = (ForAllStatementNode)obj;
+            if(!ranges.equals(node.getRanges())){
+                return false;
+            }
+            if(!process.equals(node.getProcess())){
+                return false;
+            }
+
+            return true;
+        }
+
+        return false;
+    }
 }

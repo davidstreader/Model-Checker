@@ -15,4 +15,19 @@ public class TerminalNode extends ASTNode {
 	public String getTerminal(){
 		return terminal;
 	}
+
+    public boolean equals(Object obj){
+        if(obj == this){
+            return true;
+        }
+        if(obj == null){
+            return false;
+        }
+        if(obj instanceof TerminalNode){
+            TerminalNode node = (TerminalNode)obj;
+            return terminal.equals(node.getTerminal());
+        }
+
+        return false;
+    }
 }
