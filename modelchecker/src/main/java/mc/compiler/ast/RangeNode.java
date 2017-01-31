@@ -5,28 +5,28 @@ import mc.util.Location;
 public class RangeNode extends ASTNode {
 
 	// fields
-	private String start;
-	private String end;
+	private int start;
+	private int end;
 
-	public RangeNode(String start, String end, Location location){
+	public RangeNode(int start, int end, Location location){
 		super(location);
 		this.start = start;
 		this.end = end;
 	}
 
-	public String getStart(){
+	public int getStart(){
 		return start;
 	}
 
-	public void setStart(String start){
+	public void setStart(int start){
 		this.start = start;
 	}
 
-	public String getEnd(){
+	public int getEnd(){
 		return end;
 	}
 
-	public void setEnd(String end){
+	public void setEnd(int end){
 		this.end = end;
 	}
 
@@ -39,10 +39,10 @@ public class RangeNode extends ASTNode {
         }
         if(obj instanceof RangeNode){
             RangeNode node = (RangeNode)obj;
-            if(!start.equals(node.getStart())){
+            if(start != node.getStart()){
                 return false;
             }
-            if(!end.equals(node.getEnd())){
+            if(end == node.getEnd()){
                 return false;
             }
 
