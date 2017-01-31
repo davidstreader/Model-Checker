@@ -1,5 +1,6 @@
 package mc.process_models;
 
+import com.rits.cloning.Cloner;
 import lombok.Getter;
 import org.apache.commons.lang3.SerializationUtils;
 
@@ -54,6 +55,6 @@ public abstract class ProcessModelObject implements Serializable {
     }
 
     public ProcessModelObject clone(){
-        return SerializationUtils.clone(this);
+        return new Cloner().deepClone(this);
     }
 }

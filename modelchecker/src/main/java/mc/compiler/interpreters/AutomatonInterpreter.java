@@ -177,7 +177,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
                 // TODO: throw error: expecting an automaton
             case "nfa2dfa":
                 if(model instanceof Automaton){
-                    processed = operations.nfa2dfa((Automaton)model);
+                    processed = operations.nfa2dfa(labelAutomaton((Automaton)model));
                     break;
                 }
                 // TODO: throw error: expecting an automaton

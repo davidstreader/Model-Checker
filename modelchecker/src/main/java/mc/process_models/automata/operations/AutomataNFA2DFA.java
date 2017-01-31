@@ -51,7 +51,7 @@ public class AutomataNFA2DFA {
         for (String node : table2.keySet()) {
             nodeTable.put(node,newAutomaton.addNode());
             nodeTable.get(node).addMetaData("label",node);
-            if (automaton.getRoot().getMetaData("label").toString().equals(node.replaceAll("[\\[\\]]",""))) {
+            if (isRoot(node,automaton)) {
                 newAutomaton.setRoot(nodeTable.get(node));
                 nodeTable.get(node).addMetaData("startNode",true);
             }
