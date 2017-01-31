@@ -8,20 +8,20 @@ import java.util.regex.Pattern;
 
 public abstract class Expression implements Serializable {
 
-	public abstract int evaluate();
+    public abstract int evaluate();
 
-	public static Expression constructExpression(String expression, Map<String,String> variableMap){
-    Pattern regex = Pattern.compile("(\\$v\\b)");
-    Matcher matcher = regex.matcher(expression);
-    while (matcher.find()) {
-      expression = expression.replace(matcher.group(0),variableMap.get(matcher.group(0)));
-      matcher = regex.matcher(expression);
+    public static Expression constructExpression(String expression, Map<String,String> variableMap){
+        Pattern regex = Pattern.compile("(\\$v.+\\b)");
+        Matcher matcher = regex.matcher(expression);
+        while (matcher.find()) {
+            expression = expression.replace(matcher.group(0),variableMap.get(matcher.group(0)));
+            matcher = regex.matcher(expression);
+        }
+        ShuntingYardAlgorithm sya = new ShuntingYardAlgorithm();
+        return sya.convert(expression);
     }
-		ShuntingYardAlgorithm sya = new ShuntingYardAlgorithm();
-		return sya.convert(expression);
-	}
 
-  public static Expression constructExpression(String s) {
-    return constructExpression(s, Collections.emptyMap());
-  }
+    public static Expression constructExpression(String s) {
+        return constructExpression(s, Collections.emptyMap());
+    }
 }
