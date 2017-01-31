@@ -68,8 +68,8 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
     public List<AutomatonNode> getNodes() {
         return nodeMap.entrySet().stream()
-                .map(x -> x.getValue())
-                .collect(Collectors.toList());
+            .map(x -> x.getValue())
+            .collect(Collectors.toList());
     }
 
     public AutomatonNode getNode(String id) {
@@ -102,8 +102,8 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
         List<AutomatonEdge> edges = node.getIncomingEdges();
         edges.addAll(node.getOutgoingEdges());
         edges.stream()
-                .map(edge -> edge.getId())
-                .forEach(id -> edgeMap.remove(id));
+            .map(edge -> edge.getId())
+            .forEach(id -> edgeMap.remove(id));
         nodeMap.remove(node.getId());
         return true;
     }
@@ -142,7 +142,10 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
                 }
             }
         }
-
+        if (node1.hasMetaData("startNode") || node2.hasMetaData("startNode")) {
+            setRoot(node);
+            node.addMetaData("startNode",true);
+        }
         removeNode(node1);
         removeNode(node2);
         return node;
@@ -174,8 +177,8 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
     public List<AutomatonEdge> getEdges() {
         return edgeMap.entrySet().stream()
-                .map(x -> x.getValue())
-                .collect(Collectors.toList());
+            .map(x -> x.getValue())
+            .collect(Collectors.toList());
     }
 
     public AutomatonEdge getEdge(String id) {
@@ -213,8 +216,8 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
         // check if there is already an identical edge between the specified nodes
         List<AutomatonEdge> edges = from.getOutgoingEdges().stream()
-                .filter(edge -> edge.getLabel().equals(label) && edge.getTo().getId().equals(to.getId()))
-                .collect(Collectors.toList());
+            .filter(edge -> edge.getLabel().equals(label) && edge.getTo().getId().equals(to.getId()))
+            .collect(Collectors.toList());
 
         if(edges.size() > 0){
             return edges.get(0);
