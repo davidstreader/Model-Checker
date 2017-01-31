@@ -17,6 +17,8 @@ const Compiler = {
       } else if (e.data.message) {
         if (e.data.clear) app.$.console.clear();
         app.$.console.log(e.data.message);
+      } else if (e.data.result) {
+        app.finalizeBuild(e.data.result);
       }
     };
   },
