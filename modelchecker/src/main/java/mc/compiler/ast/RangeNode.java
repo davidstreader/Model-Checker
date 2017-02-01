@@ -42,7 +42,7 @@ public class RangeNode extends ASTNode {
             if(start != node.getStart()){
                 return false;
             }
-            if(end == node.getEnd()){
+            if(end != node.getEnd()){
                 return false;
             }
 
