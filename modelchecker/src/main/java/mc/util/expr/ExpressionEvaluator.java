@@ -1,11 +1,33 @@
 package mc.util.expr;
 
 import java.util.Map;
+import java.util.Stack;
 
 /**
  * Created by sheriddavi on 19/01/17.
  */
 public class ExpressionEvaluator {
+
+    public boolean isExecutable(Expression expression){
+        Stack<Expression> fringe = new Stack<Expression>();
+        fringe.push(expression);
+
+        while(!fringe.isEmpty()){
+            Expression current = fringe.pop();
+            if(current instanceof VariableOperand){
+                return false;
+            }
+            else if(current instanceof RightOperator){
+                fringe.push(((RightOperator)current).getRightHandSide());
+            }
+            else if(current instanceof BothOperator){
+                fringe.push(((BothOperator)current).getLeftHandSide());
+                fringe.push(((BothOperator)current).getRightHandSide());
+            }
+        }
+
+        return true;
+    }
 
     public int evaluateExpression(Expression expression, Map<String, Integer> variableMap){
         return evaluate(expression, variableMap);
