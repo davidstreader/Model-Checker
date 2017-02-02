@@ -1,11 +1,7 @@
 package mc.compiler.ast;
 
-import mc.solver.JavaSMTConverter;
 import mc.util.Location;
 import mc.util.expr.Expression;
-import mc.util.expr.ExpressionPrinter;
-
-import java.util.Collections;
 
 public class IfStatementNode extends ASTNode {
 

@@ -4,7 +4,7 @@ import mc.compiler.Guard;
 import mc.process_models.automata.Automaton;
 import mc.process_models.automata.AutomatonEdge;
 import mc.process_models.automata.AutomatonNode;
-import mc.solver.JavaSMTConverter;
+import mc.solver.ExpressionSolver;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
  * Created by sheriddavi on 25/01/17.
  */
 public class AutomataAbstraction {
-    private JavaSMTConverter smt = new JavaSMTConverter();
     public Automaton performAbstraction(Automaton automaton, boolean isFair){
         Automaton abstraction = new Automaton(automaton.getId() + ".abs", !Automaton.CONSTRUCT_ROOT);
         automaton.getNodes().forEach(node -> addNode(abstraction, node));
@@ -66,7 +65,7 @@ public class AutomataAbstraction {
             } else if (fromGuard == null && hiddenGuard != null) {
                 outGuard = hiddenGuard;
             } else if (fromGuard != null) {
-                outGuard = smt.combineGuards(hiddenGuard,fromGuard);
+                outGuard = ExpressionSolver.combineGuards(hiddenGuard,fromGuard);
             }
             for (AutomatonNode to : outgoingNodes) {
                 AutomatonEdge edge1 = abstraction.addEdge(edge.getLabel(), from, to);
@@ -110,7 +109,7 @@ public class AutomataAbstraction {
             } else if (toGuard == null && hiddenGuard != null) {
                 outGuard = hiddenGuard;
             } else if (toGuard != null) {
-                outGuard = smt.combineGuards(hiddenGuard,toGuard);
+                outGuard = ExpressionSolver.combineGuards(hiddenGuard,toGuard);
             }
             for (AutomatonNode from : incomingNodes) {
                 AutomatonEdge edge1 = abstraction.addEdge(edge.getLabel(), from, to);

@@ -48,32 +48,6 @@ public class ShuntingYardAlgorithm {
     output = new Stack<Expression>();
     index = 0;
   }
-  public Expression importExpr(String expression) {
-    if (Objects.equals(expression, "true")) return new IntegerOperand(1);
-    if (Objects.equals(expression, "false")) return new IntegerOperand(0);
-    reset();
-    char[] characters = expression.toCharArray();
-    while (index < expression.length()) {
-      String result = parse(characters);
-      if (Objects.equals(result, "integer")) {
-        IntegerOperand op = new IntegerOperand(Integer.parseInt(current));
-        output.push(op);
-      } else if (Objects.equals(result, "variable")) {
-        VariableOperand op = new VariableOperand(current);
-        output.push(op);
-      } else if (Objects.equals(result, "operator")) {
-        Expression lhs = output.pop();
-        Expression rhs = output.pop();
-        BothOperator op = constructBothOperator(current, lhs, rhs);
-        output.push(op);
-      } else if (Objects.equals(result,"rightoperator")) {
-        Expression rhs = output.pop();
-        RightOperator op = constructRightOperator(current, rhs);
-        output.push(op);
-      }
-    }
-    return output.pop();
-  }
   public Expression convert(String expression){
     reset();
     char[] characters = expression.toCharArray();
