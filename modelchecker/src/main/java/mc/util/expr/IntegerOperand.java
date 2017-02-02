@@ -12,4 +12,19 @@ public class IntegerOperand extends Operand {
 	public int getValue(){
 		return integer;
 	}
+
+    public boolean equals(Object obj){
+        if(obj == this){
+            return true;
+        }
+        if(obj == null){
+            return false;
+        }
+        if(obj instanceof IntegerOperand){
+            IntegerOperand op = (IntegerOperand)obj;
+            return integer == op.getValue();
+        }
+
+        return false;
+    }
 }
