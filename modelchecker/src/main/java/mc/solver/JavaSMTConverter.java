@@ -1,10 +1,13 @@
 package mc.solver;
 
 import com.microsoft.z3.*;
+import com.microsoft.z3.enumerations.Z3_lbool;
 import mc.compiler.Guard;
 import mc.util.expr.*;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 
 class JavaSMTConverter {
     public JavaSMTConverter(Context o) {
@@ -77,6 +80,7 @@ class JavaSMTConverter {
             return new RightShiftOperator(convert(f.getArgs()[0]),convert(f.getArgs()[1]));
         }
         if (f.isConst()) {
+            if (f.isBool()) return new BooleanOperand(f.getBoolValue()==Z3_lbool.Z3_L_TRUE);
             return new VariableOperand(f.getSExpr());
         }
         if (f instanceof BitVecNum) {
@@ -84,124 +88,132 @@ class JavaSMTConverter {
         }
         throw new IllegalStateException("Error");
     }
-    public Expression simplify(Expression expr) {
-        return convert(convert(expr).simplify());
+    public Expression simplify(Expression expr, Map<String, Integer> variables) {
+        return convert(convert(expr,variables).simplify());
     }
-    private Expr convert(Expression expr) {
+    private Expr convert(Expression expr, Map<String, Integer> variables) {
         if (expr instanceof AdditionOperator) {
-            return convert((AdditionOperator)expr);
+            return convert((AdditionOperator)expr,variables);
         } else if(expr instanceof AndOperator) {
-            return convert((AndOperator)expr);
+            return convert((AndOperator)expr,variables);
         } else if(expr instanceof BitAndOperator) {
-            return convert((BitAndOperator)expr);
+            return convert((BitAndOperator)expr,variables);
         } else if (expr instanceof BitOrOperator) {
-            return convert((BitOrOperator) expr);
+            return convert((BitOrOperator) expr,variables);
         } else if (expr instanceof DivisionOperator) {
-            return convert((DivisionOperator)expr);
+            return convert((DivisionOperator)expr,variables);
         } else if (expr instanceof EqualityOperator) {
-            return convert((EqualityOperator)expr);
+            return convert((EqualityOperator)expr,variables);
         } else if (expr instanceof ExclOrOperator) {
-            return convert((ExclOrOperator)expr);
+            return convert((ExclOrOperator)expr,variables);
         } else if (expr instanceof GreaterThanEqOperator) {
-            return convert((GreaterThanEqOperator)expr);
+            return convert((GreaterThanEqOperator)expr,variables);
         } else if (expr instanceof GreaterThanOperator) {
-            return convert((GreaterThanOperator)expr);
+            return convert((GreaterThanOperator)expr,variables);
         } else if (expr instanceof IntegerOperand) {
             return convert((IntegerOperand)expr);
         } else if (expr instanceof LeftShiftOperator) {
-            return convert((LeftShiftOperator) expr);
+            return convert((LeftShiftOperator) expr,variables);
         } else if (expr instanceof LessThanEqOperator) {
-            return convert((LessThanEqOperator)expr);
+            return convert((LessThanEqOperator)expr,variables);
         } else if (expr instanceof LessThanOperator) {
-            return convert((LessThanOperator)expr);
+            return convert((LessThanOperator)expr,variables);
         } else if (expr instanceof ModuloOperator) {
-            return convert((ModuloOperator)expr);
+            return convert((ModuloOperator)expr,variables);
         } else if (expr instanceof MultiplicationOperator) {
-            return convert((MultiplicationOperator)expr);
+            return convert((MultiplicationOperator)expr,variables);
         } else if (expr instanceof NotEqualOperator) {
-            return convert((NotEqualOperator)expr);
+            return convert((NotEqualOperator)expr,variables);
         } else if (expr instanceof OrOperator) {
-            return convert((OrOperator)expr);
+            return convert((OrOperator)expr,variables);
         } else if (expr instanceof RightShiftOperator) {
-            return convert((RightShiftOperator) expr);
+            return convert((RightShiftOperator) expr,variables);
         } else if (expr instanceof SubtractionOperator) {
-            return convert((SubtractionOperator)expr);
+            return convert((SubtractionOperator)expr,variables);
         } else if (expr instanceof VariableOperand) {
-            return convert((VariableOperand)expr);
+            return convert((VariableOperand)expr,variables);
         } else if (expr instanceof BitNotOperator) {
-            return convert((BitNotOperator)expr);
+            return convert((BitNotOperator)expr,variables);
         }else if (expr instanceof NotOperator) {
-            return convert((NotOperator)expr);
+            return convert((NotOperator)expr,variables);
+        }else if (expr instanceof BooleanOperand) {
+            return convert((BooleanOperand)expr);
         }
         //This should never happen.
         throw new IllegalStateException("Solver reached an unexpected state");
     }
     //We use BitVectors here instead of Integers so that we have access to bitwise operators.
-    private BitVecExpr convert(BitNotOperator expr) {
-        return context.mkBVNot((BitVecExpr) convert(expr.getRightHandSide()));
+    private BitVecExpr convert(BitNotOperator expr, Map<String, Integer> variables) {
+        return context.mkBVNot((BitVecExpr) convert(expr.getRightHandSide(), variables));
     }
-    private BoolExpr convert(NotOperator expr) {
-        return context.mkNot((BoolExpr) convert(expr.getRightHandSide()));
+    private BoolExpr convert(NotOperator expr, Map<String, Integer> variables) {
+        return context.mkNot((BoolExpr) convert(expr.getRightHandSide(), variables));
     }
-    private BoolExpr convert(AndOperator expr) {
-        return context.mkAnd((BoolExpr) convert(expr.getLeftHandSide()), (BoolExpr) convert(expr.getRightHandSide()));
+    private BoolExpr convert(AndOperator expr, Map<String, Integer> variables) {
+        return context.mkAnd((BoolExpr) convert(expr.getLeftHandSide(), variables), (BoolExpr) convert(expr.getRightHandSide(), variables));
     }
-    private BoolExpr convert(OrOperator expr) {
-        return context.mkOr((BoolExpr) convert(expr.getLeftHandSide()), (BoolExpr) convert(expr.getRightHandSide()));
+    private BoolExpr convert(OrOperator expr, Map<String, Integer> variables) {
+        return context.mkOr((BoolExpr) convert(expr.getLeftHandSide(), variables), (BoolExpr) convert(expr.getRightHandSide(), variables));
     }
-    private BoolExpr convert(ExclOrOperator expr) {
-        return context.mkXor((BoolExpr) convert(expr.getLeftHandSide()), (BoolExpr) convert(expr.getRightHandSide()));
+    private BoolExpr convert(ExclOrOperator expr, Map<String, Integer> variables) {
+        return context.mkXor((BoolExpr) convert(expr.getLeftHandSide(), variables), (BoolExpr) convert(expr.getRightHandSide(), variables));
     }
-    private BoolExpr convert(GreaterThanEqOperator expr) {
-        return context.mkBVSGE((BitVecExpr) convert(expr.getLeftHandSide()), (BitVecExpr) convert(expr.getRightHandSide()));
+    private BoolExpr convert(GreaterThanEqOperator expr, Map<String, Integer> variables) {
+        return context.mkBVSGE((BitVecExpr) convert(expr.getLeftHandSide(), variables), (BitVecExpr) convert(expr.getRightHandSide(), variables));
     }
-    private BoolExpr convert(GreaterThanOperator expr) {
-        return context.mkBVSGT((BitVecExpr) convert(expr.getLeftHandSide()), (BitVecExpr) convert(expr.getRightHandSide()));
+    private BoolExpr convert(GreaterThanOperator expr, Map<String, Integer> variables) {
+        return context.mkBVSGT((BitVecExpr) convert(expr.getLeftHandSide(), variables), (BitVecExpr) convert(expr.getRightHandSide(), variables));
     }
-    private BoolExpr convert(LessThanEqOperator expr) {
-        return context.mkBVSLE((BitVecExpr) convert(expr.getLeftHandSide()), (BitVecExpr) convert(expr.getRightHandSide()));
+    private BoolExpr convert(LessThanEqOperator expr, Map<String, Integer> variables) {
+        return context.mkBVSLE((BitVecExpr) convert(expr.getLeftHandSide(), variables), (BitVecExpr) convert(expr.getRightHandSide(), variables));
     }
-    private BoolExpr convert(LessThanOperator expr) {
-        return context.mkBVSLT((BitVecExpr) convert(expr.getLeftHandSide()), (BitVecExpr) convert(expr.getRightHandSide()));
+    private BoolExpr convert(LessThanOperator expr, Map<String, Integer> variables) {
+        return context.mkBVSLT((BitVecExpr) convert(expr.getLeftHandSide(), variables), (BitVecExpr) convert(expr.getRightHandSide(), variables));
     }
-    private BoolExpr convert(EqualityOperator expr) {
-        return context.mkEq(convert(expr.getLeftHandSide()), convert(expr.getRightHandSide()));
+    private BoolExpr convert(EqualityOperator expr, Map<String, Integer> variables) {
+        return context.mkEq(convert(expr.getLeftHandSide(), variables), convert(expr.getRightHandSide(), variables));
     }
-    private BoolExpr convert(NotEqualOperator expr) {
-        return context.mkNot(context.mkEq(convert(expr.getLeftHandSide()), convert(expr.getRightHandSide())));
+    private BoolExpr convert(NotEqualOperator expr, Map<String, Integer> variables) {
+        return context.mkNot(context.mkEq(convert(expr.getLeftHandSide(), variables), convert(expr.getRightHandSide(), variables)));
     }
-    private BitVecExpr convert(ModuloOperator expr) {
-        return context.mkBVSMod((BitVecExpr) convert(expr.getLeftHandSide()), (BitVecExpr) convert(expr.getRightHandSide()));
+    private BitVecExpr convert(ModuloOperator expr, Map<String, Integer> variables) {
+        return context.mkBVSMod((BitVecExpr) convert(expr.getLeftHandSide(), variables), (BitVecExpr) convert(expr.getRightHandSide(), variables));
     }
-    private BitVecExpr convert(MultiplicationOperator expr) {
-        return context.mkBVMul((BitVecExpr) convert(expr.getLeftHandSide()), (BitVecExpr) convert(expr.getRightHandSide()));
+    private BitVecExpr convert(MultiplicationOperator expr, Map<String, Integer> variables) {
+        return context.mkBVMul((BitVecExpr) convert(expr.getLeftHandSide(), variables), (BitVecExpr) convert(expr.getRightHandSide(), variables));
     }
-    private BitVecExpr convert(SubtractionOperator expr) {
-        return context.mkBVSub((BitVecExpr) convert(expr.getLeftHandSide()), (BitVecExpr) convert(expr.getRightHandSide()));
+    private BitVecExpr convert(SubtractionOperator expr, Map<String, Integer> variables) {
+        return context.mkBVSub((BitVecExpr) convert(expr.getLeftHandSide(), variables), (BitVecExpr) convert(expr.getRightHandSide(), variables));
     }
-    private BitVecExpr convert(DivisionOperator expr) {
-        return context.mkBVSDiv((BitVecExpr) convert(expr.getLeftHandSide()), (BitVecExpr) convert(expr.getRightHandSide()));
+    private BitVecExpr convert(DivisionOperator expr, Map<String, Integer> variables) {
+        return context.mkBVSDiv((BitVecExpr) convert(expr.getLeftHandSide(), variables), (BitVecExpr) convert(expr.getRightHandSide(), variables));
     }
-    private BitVecExpr convert(AdditionOperator expr) {
-        return context.mkBVAdd((BitVecExpr) convert(expr.getLeftHandSide()), (BitVecExpr) convert(expr.getRightHandSide()));
+    private BitVecExpr convert(AdditionOperator expr, Map<String, Integer> variables) {
+        return context.mkBVAdd((BitVecExpr) convert(expr.getLeftHandSide(), variables), (BitVecExpr) convert(expr.getRightHandSide(), variables));
     }
-    private BitVecExpr convert(BitAndOperator expr) {
-        return context.mkBVAND((BitVecExpr) convert(expr.getLeftHandSide()), (BitVecExpr) convert(expr.getRightHandSide()));
+    private BitVecExpr convert(BitAndOperator expr, Map<String, Integer> variables) {
+        return context.mkBVAND((BitVecExpr) convert(expr.getLeftHandSide(), variables), (BitVecExpr) convert(expr.getRightHandSide(), variables));
     }
-    private BitVecExpr convert(BitOrOperator expr) {
-        return context.mkBVOR((BitVecExpr) convert(expr.getLeftHandSide()), (BitVecExpr) convert(expr.getRightHandSide()));
+    private BitVecExpr convert(BitOrOperator expr, Map<String, Integer> variables) {
+        return context.mkBVOR((BitVecExpr) convert(expr.getLeftHandSide(), variables), (BitVecExpr) convert(expr.getRightHandSide(), variables));
     }
-    private BitVecExpr convert(LeftShiftOperator expr) {
-        return context.mkBVSHL((BitVecExpr) convert(expr.getLeftHandSide()), (BitVecExpr) convert(expr.getRightHandSide()));
+    private BitVecExpr convert(LeftShiftOperator expr, Map<String, Integer> variables) {
+        return context.mkBVSHL((BitVecExpr) convert(expr.getLeftHandSide(), variables), (BitVecExpr) convert(expr.getRightHandSide(), variables));
     }
-    private BitVecExpr convert(RightShiftOperator expr) {
-        return context.mkBVASHR((BitVecExpr) convert(expr.getLeftHandSide()), (BitVecExpr) convert(expr.getRightHandSide()));
+    private BitVecExpr convert(RightShiftOperator expr, Map<String, Integer> variables) {
+        return context.mkBVASHR((BitVecExpr) convert(expr.getLeftHandSide(), variables), (BitVecExpr) convert(expr.getRightHandSide(), variables));
     }
-    private BitVecExpr convert(VariableOperand expr) {
+    private BitVecExpr convert(VariableOperand expr, Map<String, Integer> variables) {
+        if (variables.containsKey(expr.getValue())) {
+            return context.mkBV(variables.get(expr.getValue()),32);
+        }
         return context.mkBVConst(expr.getValue(),32);
     }
     private BitVecExpr convert(IntegerOperand expr) {
         return context.mkBV(expr.getValue(),32);
+    }
+    private BoolExpr convert(BooleanOperand expr) {
+        return context.mkBool(expr.getValue());
     }
 
     public Guard combineGuards(Guard first, Guard second) {
@@ -214,7 +226,7 @@ class JavaSMTConverter {
         }
         Expression secondGuard = second.getGuard();
 
-        ret.setGuard(simplify(new AndOperator(first.getGuard(),substitute(secondGuard,subMap))));
+        ret.setGuard(simplify(new AndOperator(first.getGuard(),substitute(secondGuard,subMap)), Collections.emptyMap()));
         return ret;
     }
     private Expression substitute(BothOperator expression, HashMap<String, Expression> subMap) {

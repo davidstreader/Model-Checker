@@ -1,10 +1,10 @@
 package mc.compiler;
 
+import com.microsoft.z3.BoolExpr;
 import mc.compiler.ast.*;
 import mc.compiler.iterator.IndexIterator;
-import mc.util.expr.Expression;
-import mc.util.expr.ExpressionEvaluator;
-import mc.util.expr.ExpressionPrinter;
+import mc.solver.ExpressionSolver;
+import mc.util.expr.*;
 import mc.webserver.LogMessage;
 
 import java.util.*;
@@ -267,6 +267,21 @@ public class Expander {
 
     private int evaluateExpression(Expression expression, Map<String, Object> variableMap){
         // remove all strings from the variableMap
+        Map<String, Integer> variables = new HashMap<>();
+        for(String key : variableMap.keySet()){
+            Object value = variableMap.get(key);
+            if(value instanceof Integer){
+                variables.put(key, (Integer)value);
+            }
+        }
+        Expression ex = ExpressionSolver.simplify(expression, variables);
+        if (ex instanceof BooleanOperand) return ((BooleanOperand) ex).getValue()?1:0;
+        if (ex instanceof IntegerOperand) return ((IntegerOperand) ex).getValue();
+        //TODO: throw better error
+        throw new IllegalStateException("There was an undefined variable in that statement.");
+    }
+
+    private boolean evaluateCondition(Expression condition, Map<String, Object> variableMap){
         Map<String, Integer> variables = new HashMap<String, Integer>();
         for(String key : variableMap.keySet()){
             Object value = variableMap.get(key);
@@ -274,14 +289,8 @@ public class Expander {
                 variables.put(key, (Integer)value);
             }
         }
-
-        int result = new ExpressionEvaluator().evaluateExpression(expression, variables);
-        return result;
-    }
-
-    private boolean evaluateCondition(Expression condition, Map<String, Object> variableMap){
-        int result = evaluateExpression(condition, variableMap);
-        return result != 0;
+        Expression ex = ExpressionSolver.simplify(condition,variables);
+        return ex instanceof BooleanOperand && ((BooleanOperand) ex).getValue();
     }
 
     private String processVariables(String string, Map<String, Object> variableMap){

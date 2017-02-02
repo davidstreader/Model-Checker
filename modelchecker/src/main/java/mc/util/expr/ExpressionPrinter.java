@@ -1,9 +1,6 @@
 package mc.util.expr;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ExpressionPrinter {
     //A list of all VariableOperands used in the last print()
@@ -15,6 +12,9 @@ public class ExpressionPrinter {
     private String print(Expression expression, Map<String, Integer> variableMap){
         if(expression instanceof IntegerOperand){
             return print((IntegerOperand)expression);
+        }
+        else if(expression instanceof BooleanOperand){
+            return print((BooleanOperand)expression);
         }
         else if(expression instanceof VariableOperand){
             return print((VariableOperand)expression, variableMap);
@@ -84,6 +84,9 @@ public class ExpressionPrinter {
     }
 
     private String print(IntegerOperand expression){
+        return expression.getValue()+"";
+    }
+    private String print(BooleanOperand expression){
         return expression.getValue()+"";
     }
 
@@ -226,5 +229,9 @@ public class ExpressionPrinter {
             newVarMap.put(var.getValue(),varMap.get(var.getValue()));
         }
         return newVarMap;
+    }
+
+    public String printExpression(Expression expression) {
+        return printExpression(expression, Collections.emptyMap());
     }
 }

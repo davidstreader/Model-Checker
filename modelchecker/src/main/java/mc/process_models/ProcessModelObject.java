@@ -1,11 +1,17 @@
 package mc.process_models;
 
 import com.rits.cloning.Cloner;
+import com.rits.cloning.IDeepCloner;
+import com.rits.cloning.IFastCloner;
 import lombok.Getter;
+import mc.process_models.automata.Automaton;
+import mc.process_models.automata.AutomatonEdge;
+import mc.process_models.automata.AutomatonNode;
 import org.apache.commons.lang3.SerializationUtils;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 

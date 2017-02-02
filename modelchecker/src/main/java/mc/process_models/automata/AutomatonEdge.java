@@ -1,15 +1,11 @@
 package mc.process_models.automata;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import mc.Constant;
 import mc.process_models.ProcessModelObject;
+import mc.process_models.automata.serializers.JSONEdgeSerializer;
 
-import java.io.IOException;
-
-@JsonSerialize(using = AutomatonEdge.AutomatonEdgeSerializer.class)
+@JsonSerialize(using = JSONEdgeSerializer.class)
 public class AutomatonEdge extends ProcessModelObject {
 
     private String label;
@@ -66,23 +62,4 @@ public class AutomatonEdge extends ProcessModelObject {
 
         return builder.toString();
     }
-  public static class AutomatonEdgeSerializer extends StdSerializer<AutomatonEdge> {
-
-    public AutomatonEdgeSerializer() {
-      super(AutomatonEdge.class);
-    }
-
-    @Override
-    public void serialize(AutomatonEdge value, JsonGenerator jgen, SerializerProvider provider)
-      throws IOException {
-      jgen.writeStartObject();
-      jgen.writeObjectField("id", value.getId());
-      jgen.writeObjectField("label", value.getLabel());
-      jgen.writeObjectField("to", value.getTo().getId());
-      jgen.writeObjectField("from", value.getFrom().getId());
-      jgen.writeObjectField("metaData", value.getMetaData());
-      jgen.writeEndObject();
-    }
-
-  }
 }

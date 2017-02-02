@@ -1,5 +1,7 @@
 package mc.util.expr;
 
+import mc.solver.ExpressionSolver;
+
 import java.util.Map;
 import java.util.Stack;
 
@@ -9,24 +11,8 @@ import java.util.Stack;
 public class ExpressionEvaluator {
 
     public boolean isExecutable(Expression expression){
-        Stack<Expression> fringe = new Stack<Expression>();
-        fringe.push(expression);
-
-        while(!fringe.isEmpty()){
-            Expression current = fringe.pop();
-            if(current instanceof VariableOperand){
-                return false;
-            }
-            else if(current instanceof RightOperator){
-                fringe.push(((RightOperator)current).getRightHandSide());
-            }
-            else if(current instanceof BothOperator){
-                fringe.push(((BothOperator)current).getLeftHandSide());
-                fringe.push(((BothOperator)current).getRightHandSide());
-            }
-        }
-
-        return true;
+        //If you simplify an expression with no variables it will be evaluated by the solver.
+        return ExpressionSolver.simplify(expression) instanceof Operand;
     }
 
     public int evaluateExpression(Expression expression, Map<String, Integer> variableMap){
@@ -36,6 +22,9 @@ public class ExpressionEvaluator {
     private int evaluate(Expression expression, Map<String, Integer> variableMap){
         if(expression instanceof IntegerOperand){
             return evaluate((IntegerOperand)expression);
+        }
+        else if(expression instanceof BooleanOperand){
+            return evaluate((BooleanOperand)expression);
         }
         else if(expression instanceof VariableOperand){
             return evaluate((VariableOperand)expression, variableMap);
@@ -102,6 +91,10 @@ public class ExpressionEvaluator {
         }
 
         throw new IllegalArgumentException("");
+    }
+
+    private int evaluate(BooleanOperand expression) {
+        return expression.getValue()?1:0;
     }
 
     private int evaluate(IntegerOperand expression){

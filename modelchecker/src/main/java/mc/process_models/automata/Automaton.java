@@ -1,8 +1,9 @@
 package mc.process_models.automata;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.rits.cloning.Cloner;
 import mc.process_models.ProcessModel;
 import mc.process_models.ProcessModelObject;
+import mc.process_models.automata.serializers.EdgeClone;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -336,5 +337,26 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
     public String getRootId() {
         return getRoot().getId();
+    }
+    public Automaton clone() {
+        Cloner cloner = new Cloner();
+        //Cloning while all the edges and nodes point to each other is asking for trouble.
+        //We can just keep a list of all cloned edges and add the data in after the cloning is done.
+        IdentityHashMap<AutomatonEdge,EdgeClone> edgeMap = new IdentityHashMap<>();
+        cloner.registerFastCloner(AutomatonEdge.class, (t, cloner1, clones) -> {
+            AutomatonEdge edge = (AutomatonEdge)t;
+            //Create a new edge that does not reference the nodes.
+            AutomatonEdge newEdge = new AutomatonEdge(edge.getId(),edge.getLabel(),null,null);
+            //Keep track of where this edge should point
+            edgeMap.put(newEdge, new EdgeClone(edge));
+            return newEdge;
+        });
+        //Deep clone this automata, using the above method to clone edges.
+        Automaton ret = cloner.deepClone(this);
+        //Correct all the edge clones so they point to the right place.
+        for (AutomatonEdge edge: ret.getEdges()) {
+            edgeMap.get(edge).apply(edge,ret);
+        }
+        return ret;
     }
 }
