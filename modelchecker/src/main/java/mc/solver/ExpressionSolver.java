@@ -1,6 +1,7 @@
 package mc.solver;
 
 import com.microsoft.z3.Context;
+import lombok.SneakyThrows;
 import mc.Main;
 import mc.compiler.Guard;
 import mc.util.expr.Expression;
@@ -26,13 +27,14 @@ public class ExpressionSolver {
         }
     }
     public static Expression simplify(Expression ex) {
-        return converter.simplify(ex, Collections.emptyMap());
+        return simplify(ex, Collections.emptyMap());
     }
-
+    @SneakyThrows
     public static Guard combineGuards(Guard hiddenGuard, Guard toGuard) {
         return converter.combineGuards(hiddenGuard,toGuard);
     }
 
+    @SneakyThrows
     public static Expression simplify(Expression ex, Map<String, Integer> variables) {
         return converter.simplify(ex,variables);
     }

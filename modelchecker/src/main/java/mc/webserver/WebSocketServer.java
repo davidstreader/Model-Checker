@@ -7,6 +7,7 @@ import com.corundumstudio.socketio.SocketIOServer;
 import lombok.Getter;
 import mc.compiler.CompilationObject;
 import mc.compiler.Compiler;
+import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
 import mc.process_models.automata.Automaton;
 import mc.util.Location;
@@ -39,7 +40,11 @@ public class WebSocketServer {
       try {
         ackSender.sendAckData(compile(data));
       } catch (Exception ex) {
-        logger.error(ansi().render("@|red An error occurred while compiling.|@")+"");
+          if (ex instanceof CompilationException) {
+              new LogMessage(ex.toString().replace("mc.exceptions.",""),false,true).send();
+              return;
+          }
+          logger.error(ansi().render("@|red An error occurred while compiling.|@")+"");
         new LogMessage("The following error is unrelated to your script. Please report it to the developers").send();
         //Get a stack trace then split it into lines
         String[] lines = ExceptionUtils.getStackTrace(ex).split("\n");

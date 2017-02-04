@@ -1,5 +1,7 @@
 package mc.commands;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import mc.solver.ExpressionSolver;
 import mc.util.expr.BooleanOperand;
 import mc.util.expr.Expression;
@@ -15,7 +17,9 @@ public class EvalCommand implements Command{
         Expression expression = Expression.constructExpression(args[0]);
         Map<String,Integer> vars = Collections.emptyMap();
         if (args.length > 1) {
-            //TODO: parse a json map of vars
+            vars = new Gson().fromJson(
+                args[1], new TypeToken<Map<String, Integer>>() {}.getType()
+            );
         }
         try {
             System.out.println("Expression evaluated to: "+ eval(ExpressionSolver.simplify(expression, vars)));
