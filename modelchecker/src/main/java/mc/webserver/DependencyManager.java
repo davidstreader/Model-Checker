@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static mc.util.Utils.getArch;
@@ -55,13 +56,15 @@ public class DependencyManager {
       main.spawnProcess(builder);
     }
   }
-
+  private String getNPMExec() {
+      return new File("bower_install","npm"+Utils.getNPMExtension()).getAbsolutePath();
+  }
   private void installBower() {
     File bowerInstall = new File("bower_install","bower");
     if (!bowerInstall.exists()) {
       logger.info(""+ansi().render("@|green Installing bower|@"));
-      ProcessBuilder builder = new ProcessBuilder("npm" + Utils.getNPMExtension(), "install", "bower","-d");
-      builder.directory(new File("bower_install"));
+      ProcessBuilder builder = new ProcessBuilder(getNPMExec(), "install", "bower","-d");
+      builder.directory(new File("bower_install").getAbsoluteFile());
       main.spawnProcess(builder);
       if (!Utils.isWin()) {
         chmod("bower");
@@ -71,8 +74,8 @@ public class DependencyManager {
   }
   private void installVulcanize() {
     logger.info(""+ansi().render("@|green Installing vulcanize|@"));
-    ProcessBuilder builder = new ProcessBuilder("npm" + Utils.getNPMExtension(), "install", "vulcanize","-d");
-    builder.directory(new File("bower_install"));
+    ProcessBuilder builder = new ProcessBuilder(getNPMExec(), "install", "vulcanize","-d");
+    builder.directory(new File("bower_install").getAbsoluteFile());
     main.spawnProcess(builder);
   }
   private void chmod(String app) {
@@ -129,7 +132,7 @@ public class DependencyManager {
   }
   public void vulcanize() {
     logger.info(""+ansi().render("@|yellow Vulcanizing HTML|@"));
-    ProcessBuilder builder = new ProcessBuilder("node"+ Utils.getNodeExtension(),"node_modules/vulcanize/bin/vulcanize","-o","../app/elements/elements.vulcanized.html","../app/elements/elements.html","--strip-comments");
+    ProcessBuilder builder = new ProcessBuilder(new File("bower_install","node"+ Utils.getNodeExtension()).getAbsolutePath(),"node_modules/vulcanize/bin/vulcanize","-o","../app/elements/elements.vulcanized.html","../app/elements/elements.html","--strip-comments");
     builder.directory(new File("bower_install"));
     main.spawnProcess(builder);
   }
