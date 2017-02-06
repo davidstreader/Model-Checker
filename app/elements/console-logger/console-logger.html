@@ -71,10 +71,10 @@
                 return nodes;
             },
             _addMessage: function(msg) {
-                var node = document.createElement('SPAN');
+                let node = document.createElement('SPAN');
                 node.innerHTML = ansi_up.ansi_to_html(msg);
 
-                var c = Polymer.dom(this.$.console);
+                let c = Polymer.dom(this.$.console);
                 c.appendChild(node);
                 c.appendChild(document.createElement('BR'));
                 c.scrollTop = c.scrollHeight;

@@ -10,57 +10,57 @@ import java.util.Map;
 
 public class Compiler {
 
-  public static final int CODE = 0;
-  public static final int JSON = 1;
+    public static final int CODE = 0;
+    public static final int JSON = 1;
 
-  // fields
-  private Lexer lexer;
-  private Expander expander;
-  private ReferenceReplacer replacer;
-  private Interpreter interpreter;
-  private OperationEvaluator evaluator;
+    // fields
+    private Lexer lexer;
+    private Expander expander;
+    private ReferenceReplacer replacer;
+    private Interpreter interpreter;
+    private OperationEvaluator evaluator;
 
-  private JSONToASTConverter jsonToAst;
+    private JSONToASTConverter jsonToAst;
 
-  public Compiler(){
-    this.lexer = new Lexer();
-    this.expander = new Expander();
-    this.replacer = new ReferenceReplacer();
-    this.interpreter = new Interpreter();
-    this.evaluator = new OperationEvaluator();
-    this.jsonToAst = new JSONToASTConverter();
-  }
-
-  public CompilationObject compile(String code, int type) throws CompilationException {
-    if(type == CODE){
-      return compile(code);
+    public Compiler(){
+        this.lexer = new Lexer();
+        this.expander = new Expander();
+        this.replacer = new ReferenceReplacer();
+        this.interpreter = new Interpreter();
+        this.evaluator = new OperationEvaluator();
+        this.jsonToAst = new JSONToASTConverter();
     }
-    else if(type == JSON){
-      JSONObject json = new JSONObject(code);
-      return compile(json);
+
+    public CompilationObject compile(String code, int type) throws CompilationException {
+        if(type == CODE){
+            return compile(code);
+        }
+        else if(type == JSON){
+            JSONObject json = new JSONObject(code);
+            return compile(json);
+        }
+        else{
+            throw new CompilationException(getClass(),"Unable to find code type: "+type);
+        }
     }
-    else{
-      throw new CompilationException(getClass(),"Unable to find code type: "+type);
+
+    public CompilationObject compile(String code) throws CompilationException{
+        // TODO
+        return null;
     }
-  }
 
-  public CompilationObject compile(String code){
-    // TODO
-    return null;
-  }
+    public CompilationObject compile(JSONObject json) throws CompilationException {
+        AbstractSyntaxTree ast = jsonToAst.convert(json);
+        return compile(ast);
+    }
 
-  public CompilationObject compile(JSONObject json) throws CompilationException {
-    AbstractSyntaxTree ast = jsonToAst.convert(json);
-    return compile(ast);
-  }
-
-  private CompilationObject compile(AbstractSyntaxTree ast) throws CompilationException {
-    ast = expander.expand(ast);
-    ast = replacer.replaceReferences(ast);
-    Map<String, ProcessModel> processMap = interpreter.interpret(ast);
-    List<OperationResult> results = evaluator.evaluateOperations(ast.getOperations(), processMap, interpreter);
-    return new CompilationObject(processMap, results);
-  }
+    private CompilationObject compile(AbstractSyntaxTree ast) throws CompilationException {
+        ast = expander.expand(ast);
+        ast = replacer.replaceReferences(ast);
+        Map<String, ProcessModel> processMap = interpreter.interpret(ast);
+        List<OperationResult> results = evaluator.evaluateOperations(ast.getOperations(), processMap, interpreter);
+        return new CompilationObject(processMap, results);
+    }
 
 
 }

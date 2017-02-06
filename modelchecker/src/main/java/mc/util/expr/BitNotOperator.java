@@ -6,9 +6,4 @@ public class BitNotOperator extends RightOperator {
     super(rhs);
   }
 
-  public int evaluate(){
-    int rhs = getRightHandSide().evaluate();
-    return ~rhs;
-  }
-
 }

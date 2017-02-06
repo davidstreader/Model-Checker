@@ -1,5 +1,6 @@
 package mc.util.expr;
 
+import mc.exceptions.CompilationException;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -17,150 +18,117 @@ public class NegationTests {
     private Map<String, Integer> variableMap = new HashMap<String, Integer>();
 
     @Test
-    public void simpleNegateTest_1(){
-        Expression expression = Expression.constructExpression("!0");
+    public void simpleNegateTest_1() throws CompilationException {
+        Expression expression = Expression.constructExpression("!$false");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
         // check that the correct result was received
         if(result != 1){
-            fail("Expecting the expression '!0' to equal 1 but received " + result);
+            fail("Expecting the expression '!$false' to equal 1 but received " + result);
         }
     }
 
     @Test
-    public void simpleNegateTest_2(){
-        Expression expression = Expression.constructExpression("!1");
+    public void simpleNegateTest_2() throws CompilationException{
+        Expression expression = Expression.constructExpression("!$true");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
         // check that the correct result was received
         if(result != 0){
-            fail("Expecting the expression '!1' to equal 0 but received " + result);
+            fail("Expecting the expression '!$true' to equal 0 but received " + result);
         }
     }
 
     @Test
-    public void simpleNegateTest_3(){
-        Expression expression = Expression.constructExpression("!100");
-        int result = evaluator.evaluateExpression(expression, variableMap);
-
-        // check that the correct result was received
-        if(result != 0){
-            fail("Expecting the expression '!100' to equal 0 but received " + result);
-        }
-    }
-
-    @Test
-    public void parenNegateTest_1(){
-        Expression expression = Expression.constructExpression("!(0)");
+    public void parenNegateTest_1() throws CompilationException{
+        Expression expression = Expression.constructExpression("!($false)");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
         // check that the correct result was received
         if(result != 1){
-            fail("Expecting the expression '!(0)' to equal 1 but received " + result);
+            fail("Expecting the expression '!($false)' to equal 1 but received " + result);
         }
     }
 
     @Test
-    public void parenNegateTest_2(){
-        Expression expression = Expression.constructExpression("!(1)");
+    public void parenNegateTest_2() throws CompilationException{
+        Expression expression = Expression.constructExpression("!($true)");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
         // check that the correct result was received
         if(result != 0){
-            fail("Expecting the expression '!(1)' to equal 0 but received " + result);
+            fail("Expecting the expression '!($true)' to equal 0 but received " + result);
         }
     }
 
     @Test
-    public void parenNegateTest_3(){
-        Expression expression = Expression.constructExpression("!(100)");
+    public void parenNegateTest_5() throws CompilationException{
+        Expression expression = Expression.constructExpression("!($true || $true)");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
         // check that the correct result was received
         if(result != 0){
-            fail("Expecting the expression '!(100)' to equal 0 but received " + result);
+            fail("Expecting the expression '!($true || $true)' to equal 0 but received " + result);
         }
     }
 
     @Test
-    public void parenNegateTest_4(){
-        Expression expression = Expression.constructExpression("!(1 - 1)");
+    public void parenNegateTest_6() throws CompilationException{
+        Expression expression = Expression.constructExpression("!($true && $true)");
+        int result = evaluator.evaluateExpression(expression, variableMap);
+
+        // check that the correct result was received
+        if(result != 0){
+            fail("Expecting the expression '!($true && $true)' to equal 0 but received " + result);
+        }
+    }
+
+    @Test
+    public void parenNegateTest_7() throws CompilationException{
+        Expression expression = Expression.constructExpression("!($true && $false)");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
         // check that the correct result was received
         if(result != 1){
-            fail("Expecting the expression '!(1 - 1)' to equal 1 but received " + result);
+            fail("Expecting the expression '!($true && $false)' to equal 1 but received " + result);
         }
     }
 
     @Test
-    public void parenNegateTest_5(){
-        Expression expression = Expression.constructExpression("!(1 || 1)");
-        int result = evaluator.evaluateExpression(expression, variableMap);
-
-        // check that the correct result was received
-        if(result != 0){
-            fail("Expecting the expression '!(1 || 1)' to equal 0 but received " + result);
-        }
-    }
-
-    @Test
-    public void parenNegateTest_6(){
-        Expression expression = Expression.constructExpression("!(1 && 1)");
-        int result = evaluator.evaluateExpression(expression, variableMap);
-
-        // check that the correct result was received
-        if(result != 0){
-            fail("Expecting the expression '!(1 && 1)' to equal 0 but received " + result);
-        }
-    }
-
-    @Test
-    public void parenNegateTest_7(){
-        Expression expression = Expression.constructExpression("!(1 && 0)");
+    public void parenNegateTest_8() throws CompilationException{
+        Expression expression = Expression.constructExpression("!($false || $false)");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
         // check that the correct result was received
         if(result != 1){
-            fail("Expecting the expression '!(1 && 0)' to equal 1 but received " + result);
+            fail("Expecting the expression '!($false || $false)' to equal 1 but received " + result);
         }
     }
 
     @Test
-    public void parenNegateTest_8(){
-        Expression expression = Expression.constructExpression("!(0 || 0)");
-        int result = evaluator.evaluateExpression(expression, variableMap);
-
-        // check that the correct result was received
-        if(result != 1){
-            fail("Expecting the expression '!(0 || 0)' to equal 1 but received " + result);
-        }
-    }
-
-    @Test
-    public void parenNegateTest_9(){
-        Expression expression = Expression.constructExpression("!!0");
+    public void parenNegateTest_9() throws CompilationException{
+        Expression expression = Expression.constructExpression("!!$false");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
         // check that the correct result was received
         if(result != 0){
-            fail("Expecting the expression '!!0' to equal 0 but received " + result);
+            fail("Expecting the expression '!!$false' to equal 0 but received " + result);
         }
     }
 
     @Test
-    public void parenNegateTest_10(){
-        Expression expression = Expression.constructExpression("!!1");
+    public void parenNegateTest_10() throws CompilationException{
+        Expression expression = Expression.constructExpression("!!$true");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
         // check that the correct result was received
         if(result != 1){
-            fail("Expecting the expression '!!1' to equal 1 but received " + result);
+            fail("Expecting the expression '!!$true' to equal 1 but received " + result);
         }
     }
 
     @Test
-    public void simpleBitNegationTest_1(){
+    public void simpleBitNegationTest_1() throws CompilationException{
         Expression expression = Expression.constructExpression("~1");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -171,7 +139,7 @@ public class NegationTests {
     }
 
     @Test
-    public void simpleBitNegationTest_2(){
+    public void simpleBitNegationTest_2() throws CompilationException{
         Expression expression = Expression.constructExpression("~100");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -182,7 +150,7 @@ public class NegationTests {
     }
 
     @Test
-    public void simpleBitNegationTest_3(){
+    public void simpleBitNegationTest_3() throws CompilationException{
         Expression expression = Expression.constructExpression("~0");
         int result = evaluator.evaluateExpression(expression, variableMap);
 

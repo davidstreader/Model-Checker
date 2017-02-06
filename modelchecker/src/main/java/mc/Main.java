@@ -41,7 +41,7 @@ public class Main {
         AnsiConsole.systemInstall();
         MainGui.registerConsoleAppender();
     }
-    private Main(boolean reloaded) {
+    public Main(boolean reloaded) {
         instance = this;
         AnsiConsole.systemInstall();
         //Make sure that we kill the sub-process when this process exits.
@@ -71,7 +71,7 @@ public class Main {
         if (new File("executables").exists())
             new DependencyManager(this).initBower();
         //Start the wrapped process with all the native libraries added.
-        startWrappedProcess();
+        startWrappedProcess(getClass());
     }
     /**
      * Spawn a process and redirect its output to the right place
@@ -112,7 +112,7 @@ public class Main {
      * Since the jar is normally not started with the libraries loaded, we can just load it again with the libraries
      * in place.
      */
-    private void startWrappedProcess() {
+    private void startWrappedProcess(Class<?> classToWrap) {
 
         logger.warn(ansi().render("@|red Native arguments not found!|@")+"");
         logger.info(ansi().render("@|yellow Starting sub-process with native arguments|@")+"");
@@ -120,7 +120,7 @@ public class Main {
         //Set java.library.path to the native path for windows
         //Set jansi.passthrough as the parent application will handle the ansi chars, not the child.
         //Set the reloaded flag so that we know that the application has been loaded twice.
-        ProcessBuilder builder = new ProcessBuilder("java","-Djansi.passthrough=true","-Djava.library.path="+nativePath,"-jar",Utils.getJarPath(),"reloaded");
+        ProcessBuilder builder = new ProcessBuilder("java","-Djansi.passthrough=true","-Djava.library.path="+nativePath,"-cp",Utils.getJarPath(),classToWrap.getName(),"reloaded");
         Map<String, String> environment = builder.environment();
         //Set the linux native path
         environment.put("LD_LIBRARY_PATH", nativePath);

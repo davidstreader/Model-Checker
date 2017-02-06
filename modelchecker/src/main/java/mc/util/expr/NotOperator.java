@@ -8,11 +8,4 @@ public class NotOperator extends RightOperator {
     super(rhs);
   }
 
-  @Override
-  public int evaluate() {
-    int rhs = getRightHandSide().evaluate();
-    boolean ret = rhs != 0;
-    if (ret) return 1;
-    return 0;
-  }
 }

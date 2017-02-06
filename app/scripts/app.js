@@ -93,28 +93,27 @@
                 }
             }.bind(this), 0);
         }
-        app.finalizeBuild = function(results) {
+        app.showError = function(error) {
             const Range = ace.require("ace/range").Range;
             const editor = app.$.editor._editor.getSession();
             editor.clearAnnotations();
             _.each(editor.$backMarkers,(val,key)=>editor.removeMarker(key));
-            if(results.type === 'error'){
-                if (results.stack) {
-                    app.$.console.error("An exception was thrown that was not related to your script.");
-                    app.$.console.error(results.message+"\n"+results.stack);
-                    console.log(results.message+"\n"+results.stack);
-                } else {
-                    app.$.console.error(results.message);
-                    if (results.location) {
-                        const l = results.location;
-                        editor.addMarker(new Range(l.lineStart-1, l.colStart, l.lineEnd-1, l.colEnd), "ace_underline");
-                        for (let i = l.lineStart; i <= l.lineEnd; i++) {
-                            editor.setAnnotations([{row:i-1 ,column: 0, text:results.message,type:"error"}]);
-                        }
+            if (error.stack) {
+                app.$.console.error("An exception was thrown that was not related to your script.");
+                app.$.console.error(error.message+"\n"+error.stack);
+                console.log(error.message+"\n"+error.stack);
+            } else {
+                app.$.console.error(error.message);
+                if (error.location) {
+                    const l = error.location;
+                    editor.addMarker(new Range(l.lineStart-1, l.colStart, l.lineEnd-1, l.colEnd), "ace_underline");
+                    for (let i = l.lineStart; i <= l.lineEnd; i++) {
+                        editor.setAnnotations([{row:i-1 ,column: 0, text:error.message,type:"error"}]);
                     }
                 }
-                return;
             }
+        };
+        app.finalizeBuild = function(results) {
             const graphs = [];
             const allGraphs = [];
             const skipped = results.skipped;

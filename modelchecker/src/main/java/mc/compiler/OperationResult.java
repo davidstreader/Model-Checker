@@ -45,9 +45,9 @@ public class OperationResult {
   }
   @AllArgsConstructor
   @Getter
-  private class OperationProcess {
-    String ident;
-    boolean exists;
-    Location location;
+  public class OperationProcess {
+    private String ident;
+    private boolean exists;
+    private Location location;
   }
 }

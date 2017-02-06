@@ -6,7 +6,4 @@ public class AdditionOperator extends BothOperator {
 		super(lhs, rhs);
 	}
 
-	public int evaluate(){
-		return getLeftHandSide().evaluate() + getRightHandSide().evaluate();
-	}
 }

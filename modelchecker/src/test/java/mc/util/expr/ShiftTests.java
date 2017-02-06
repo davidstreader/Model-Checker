@@ -1,5 +1,6 @@
 package mc.util.expr;
 
+import mc.exceptions.CompilationException;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -17,7 +18,7 @@ public class ShiftTests {
     private Map<String, Integer> variableMap = new HashMap<String, Integer>();
 
     @Test
-    public void simpleLeftShiftTest_1(){
+    public void simpleLeftShiftTest_1() throws CompilationException {
         Expression expression = Expression.constructExpression("2 << 3");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -28,7 +29,7 @@ public class ShiftTests {
     }
 
     @Test
-    public void simpleLeftShiftTest_2(){
+    public void simpleLeftShiftTest_2() throws CompilationException{
         Expression expression = Expression.constructExpression("3 << 2");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -39,7 +40,7 @@ public class ShiftTests {
     }
 
     @Test
-    public void simpleLeftShiftTest_3(){
+    public void simpleLeftShiftTest_3() throws CompilationException{
         Expression expression = Expression.constructExpression("2 << 3 << 4");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -50,7 +51,7 @@ public class ShiftTests {
     }
 
     @Test
-    public void parenLeftShiftTest_1(){
+    public void parenLeftShiftTest_1() throws CompilationException{
         Expression expression = Expression.constructExpression("2 << (2 + 1)");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -61,7 +62,7 @@ public class ShiftTests {
     }
 
     @Test
-    public void parenLeftShiftTest_2(){
+    public void parenLeftShiftTest_2() throws CompilationException{
         Expression expression = Expression.constructExpression("(3 - 1) << (2 + 1)");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -72,7 +73,7 @@ public class ShiftTests {
     }
 
     @Test
-    public void mixedLeftShiftTest_1(){
+    public void mixedLeftShiftTest_1() throws CompilationException{
         Expression expression = Expression.constructExpression("3 - 1 << 2 + 1");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -83,7 +84,7 @@ public class ShiftTests {
     }
 
     @Test
-    public void simpleRightShiftTest_1(){
+    public void simpleRightShiftTest_1() throws CompilationException{
         Expression expression = Expression.constructExpression("512 >> 3");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -94,7 +95,7 @@ public class ShiftTests {
     }
 
     @Test
-    public void simpleRightShiftTest_2(){
+    public void simpleRightShiftTest_2() throws CompilationException{
         Expression expression = Expression.constructExpression("512 >> 2");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -105,7 +106,7 @@ public class ShiftTests {
     }
 
     @Test
-    public void simpleRightShiftTest_3(){
+    public void simpleRightShiftTest_3() throws CompilationException{
         Expression expression = Expression.constructExpression("1024 >> 3 >> 2");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -116,7 +117,7 @@ public class ShiftTests {
     }
 
     @Test
-    public void parenRightShiftTest_1(){
+    public void parenRightShiftTest_1() throws CompilationException{
         Expression expression = Expression.constructExpression("512 >> (2 + 1)");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -127,7 +128,7 @@ public class ShiftTests {
     }
 
     @Test
-    public void parenRightShiftTest_2(){
+    public void parenRightShiftTest_2() throws CompilationException{
         Expression expression = Expression.constructExpression("(520 - 8) >> (2 + 1)");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -138,7 +139,7 @@ public class ShiftTests {
     }
 
     @Test
-    public void mixedRightShiftTest_1(){
+    public void mixedRightShiftTest_1() throws CompilationException{
         Expression expression = Expression.constructExpression("520 - 8 >> 2 + 1");
         int result = evaluator.evaluateExpression(expression, variableMap);
 

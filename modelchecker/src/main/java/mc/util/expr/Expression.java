@@ -8,8 +8,6 @@ import java.util.regex.Pattern;
 
 public abstract class Expression implements Serializable {
 
-    public abstract int evaluate();
-
     public static Expression constructExpression(String expression, Map<String,String> variableMap){
         Pattern regex = Pattern.compile("(\\$v.+\\b)");
         Matcher matcher = regex.matcher(expression);

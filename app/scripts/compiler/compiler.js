@@ -12,23 +12,21 @@ const Compiler = {
     //Pass compilation on to the worker
     this.worker.postMessage({code:code,context:context});
     this.worker.onmessage = e => {
-      if (e.data.remoteCompile) {
-        this.remoteCompile(e.data.ast,context);
+      if (e.data.ast) {
+          app.socket.emit('compile',{ast:e.data.ast,context:context},function(results) {
+              if (results == undefined) return;
+              if (results.type == "error") {
+                  app.showError(results);
+                  return;
+              }
+              app.finalizeBuild(results);
+          });
       } else if (e.data.message) {
         if (e.data.clear) app.$.console.clear();
         app.$.console.log(e.data.message);
-      } else if (e.data.result) {
-        app.finalizeBuild(e.data.result);
+      } else if (e.data.error) {
+        app.showError(e.data);
       }
     };
   },
-
-  //We still need to do remote compilation sync, but its not like that's a problem since sockets are async by nature
-  remoteCompile: function(ast, context) {
-    app.socket.emit('compile',{ast:ast,context:context},function(results) {
-        if (results == undefined) return;
-      console.log(results);
-      app.finalizeBuild(results);
-    });
-  }
 }

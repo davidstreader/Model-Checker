@@ -5,10 +5,10 @@ onmessage = function(e){
     try{
         const tokens = Lexer.tokenise(code);
         const ast = Parser.parse(tokens);
-        postMessage({ast:ast, remoteCompile:true});
+        postMessage({ast:ast});
 
     }catch(error){
-        postMessage({result: {type:'error',message: error.toString(), stack: error.stack, location: error.location}});
+        postMessage({error:true,message: error.toString(), stack: error.stack, location: error.location});
     }
 }
 

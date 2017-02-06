@@ -6,7 +6,4 @@ public class ModuloOperator extends BothOperator {
 		super(lhs, rhs);
 	}
 
-	public int evaluate(){
-		return getLeftHandSide().evaluate() % getRightHandSide().evaluate();
-	}
 }

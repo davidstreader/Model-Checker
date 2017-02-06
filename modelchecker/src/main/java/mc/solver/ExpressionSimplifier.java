@@ -117,7 +117,8 @@ public class ExpressionSimplifier {
             return new VariableOperand(f.getSExpr());
         }
         if (f instanceof BitVecNum) {
-            return new IntegerOperand(((BitVecNum) f).getInt());
+            //We need to get the long value here, as the results are unsigned, so ints introduce errors when retrieving.
+            return new IntegerOperand((int) ((BitVecNum) f).getLong());
         }
         throw new IllegalStateException("Error");
     }
@@ -183,7 +184,7 @@ public class ExpressionSimplifier {
         Expr right = convert(expr.getRightHandSide(),variables);
         if (right instanceof BitVecExpr)
             return context.mkBVNot((BitVecExpr) right);
-        throw new CompilationException(getClass(),"Operator `&` cannot be applied to "+getName(right.getClass().getSimpleName()));
+        throw new CompilationException(getClass(),"Operator `~` cannot be applied to "+getName(right.getClass().getSimpleName()));
     }
     private BoolExpr convert(NotOperator expr, Map<String, Integer> variables) throws CompilationException {
         Expr right = convert(expr.getRightHandSide(),variables);
