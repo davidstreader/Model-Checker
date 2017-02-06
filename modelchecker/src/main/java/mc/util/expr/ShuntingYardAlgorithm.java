@@ -183,14 +183,14 @@ public class ShuntingYardAlgorithm {
     private String parse(char[] expression){
         gobbleWhitespace(expression);
         String string = new String(expression).substring(index);
-        if (string.toLowerCase().startsWith("true")) {
+        if (string.toLowerCase().startsWith("$true")) {
             current = "true";
-            index += 4;
+            index += 5;
             return "boolean";
         }
-        if (string.toLowerCase().startsWith("false")) {
+        if (string.toLowerCase().startsWith("$false")) {
             current = "false";
-            index += 5;
+            index += 6;
             return "boolean";
         }
         if(Character.isDigit(expression[index])){

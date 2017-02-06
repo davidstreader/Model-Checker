@@ -91,8 +91,8 @@ class JavaSMTConverter {
     }
 
     private String getName(String className) {
-        if (className.contains("BoolExpr")) return "`Boolean`";
-        if (className.contains("BitVecExpr")) return "`Integer`";
+        if (className.contains("Bool")) return "`Boolean`";
+        if (className.contains("BitVec")) return "`Integer`";
         return className;
     }
 
