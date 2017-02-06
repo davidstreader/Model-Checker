@@ -298,7 +298,9 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
                 newEdge.addMetaData(key, edge.getMetaData(key));
             }
         }
-
+        if (root == null) {
+            throw new CompilationException(getClass(),"There was no root found while trying to add an automaton");
+        }
         return root;
     }
 

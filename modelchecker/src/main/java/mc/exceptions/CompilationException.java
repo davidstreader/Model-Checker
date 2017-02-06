@@ -12,7 +12,7 @@ public class CompilationException extends Exception{
     @Getter
     Class<?> clazz;
     public CompilationException(Class<?> clazz, String message, Location location) {
-        super(clazz.getSimpleName()+": "+message);
+        super(clazz.getSimpleName()+"Exception: "+message);
         this.clazz = clazz;
         this.location = location;
     }
