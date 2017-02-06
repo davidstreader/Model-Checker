@@ -101,8 +101,8 @@
             if(results.type === 'error'){
                 if (results.stack) {
                     app.$.console.error("An exception was thrown that was not related to your script.");
-                    app.$.console.error(results.stack);
-                    console.log(results.stack);
+                    app.$.console.error(results.message+"\n"+results.stack);
+                    console.log(results.message+"\n"+results.stack);
                 } else {
                     app.$.console.error(results.message);
                     if (results.location) {

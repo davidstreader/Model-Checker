@@ -38,7 +38,8 @@ public class WebSocketServer {
             this.client.set(client);
             logger.info(ansi().render("Received compile command from @|yellow "+getSocketHostname()+"|@")+"");
             try {
-                ackSender.sendAckData(compile(data));
+                ProcessReturn ret = compile(data);
+                ackSender.sendAckData(ret);
             } catch (Exception ex) {
                 //Get a stack trace then split it into lines
                 String[] lines = ExceptionUtils.getStackTrace(ex).split("\n");
@@ -46,18 +47,17 @@ public class WebSocketServer {
                     //if the line contains com.conrun... then we have gotten up to the socket.io portion of the stack trace
                     //And we can ignore this line and the rest.
                     if (lines[i].contains("com.corundumstudio.socketio")) {
-                        lines = Arrays.copyOfRange(lines,0,i);
+                        lines = Arrays.copyOfRange(lines,1,i);
                         break;
                     }
                 }
                 if (ex instanceof CompilationException) {
-                    new LogMessage(ex.getMessage().replace("mc.exceptions.",""),false,true,((CompilationException) ex).getLocation()).send();
-                    LoggerFactory.getLogger(((CompilationException) ex).getClazz()).error(String.join("\n",lines));
+                    ackSender.sendAckData(new ErrorMessage(ex.getMessage().replace("mc.exceptions.",""),((CompilationException) ex).getLocation()));
+                    LoggerFactory.getLogger(((CompilationException) ex).getClazz()).error(ex+"\n"+String.join("\n",lines));
                 } else {
                     logger.error(ansi().render("@|red An error occurred while compiling.|@") + "");
-                    new LogMessage("The following error is unrelated to your script. Please report it to the developers").send();
-                    logger.error(String.join("\n",lines));
-                    new LogMessage(String.join("\n",lines),false,true).send();
+                    logger.error(ex+"\n"+String.join("\n",lines));
+                    ackSender.sendAckData(new ErrorMessage(ex+"",String.join("\n",lines),null));
                 }
             }
         });
