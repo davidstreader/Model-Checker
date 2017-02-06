@@ -9,8 +9,11 @@ import mc.util.Location;
 public class CompilationException extends Exception{
     @Getter
     Location location;
+    @Getter
+    Class<?> clazz;
     public CompilationException(Class<?> clazz, String message, Location location) {
         super(clazz.getSimpleName()+": "+message);
+        this.clazz = clazz;
         this.location = location;
     }
 
