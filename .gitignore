@@ -43,3 +43,5 @@ run
 /bower_install/
 /ModelChecker.jar
 /dist.zip
+/Model-Checker.iml
+modelchecker/src/test/resources/
