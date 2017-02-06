@@ -37,8 +37,7 @@ public class Interpreter {
                     model = automaton.interpret(process, processMap);
                     break;
                 default:
-                    System.out.println("ERROR: " + process.getType());
-                    // TODO: throw error
+                    throw new CompilationException(getClass(),"Unable to find the process type: "+process.getType());
             }
             String ident = process.getIdentifier();
             if (ident.endsWith("*")) ident = ident.substring(0,ident.length()-1);
@@ -55,8 +54,7 @@ public class Interpreter {
                 model = automaton.interpret(astNode, identifer, processMap);
                 break;
             default:
-                System.out.println("ERROR: " + processModelType);
-                // TODO: throw error
+                throw new CompilationException(getClass(),"Unable to find the process type: "+processModelType);
         }
 
         return model;

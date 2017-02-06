@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 
 import mc.compiler.ast.*;
+import mc.exceptions.CompilationException;
 import mc.webserver.LogMessage;
 
 public class ReferenceReplacer {
@@ -21,7 +22,7 @@ public class ReferenceReplacer {
         referenceMap = new HashMap<String, Integer>();
 	}
 
-	public AbstractSyntaxTree replaceReferences(AbstractSyntaxTree ast){
+	public AbstractSyntaxTree replaceReferences(AbstractSyntaxTree ast) throws CompilationException {
 		reset();
 
 		List<ProcessNode> processes = ast.getProcesses();
@@ -51,7 +52,7 @@ public class ReferenceReplacer {
 		return ast;
 	}
 
-	private ASTNode replaceReferences(ASTNode astNode, String identifier, Map<String, LocalProcessNode> localReferences){
+	private ASTNode replaceReferences(ASTNode astNode, String identifier, Map<String, LocalProcessNode> localReferences) throws CompilationException {
 		if(astNode instanceof SequenceNode){
 			return replaceReferences((SequenceNode)astNode, identifier, localReferences);
 		}
@@ -71,13 +72,13 @@ public class ReferenceReplacer {
 		return astNode;
 	}
 
-	private SequenceNode replaceReferences(SequenceNode astNode, String identifier, Map<String, LocalProcessNode> localReferences){
+	private SequenceNode replaceReferences(SequenceNode astNode, String identifier, Map<String, LocalProcessNode> localReferences) throws CompilationException {
 		ASTNode to = replaceReferences(astNode.getTo(), identifier, localReferences);
 		astNode.setTo(to);
 		return astNode;
 	}
 
-	private ChoiceNode replaceReferences(ChoiceNode astNode, String identifier, Map<String, LocalProcessNode> localReferences){
+	private ChoiceNode replaceReferences(ChoiceNode astNode, String identifier, Map<String, LocalProcessNode> localReferences) throws CompilationException {
 		ASTNode process1 = replaceReferences(astNode.getFirstProcess(), identifier, localReferences);
 		ASTNode process2 = replaceReferences(astNode.getSecondProcess(), identifier, localReferences);
 		astNode.setFirstProcess(process1);
@@ -85,7 +86,7 @@ public class ReferenceReplacer {
 		return astNode;
 	}
 
-	private CompositeNode replaceReferences(CompositeNode astNode, String identifier, Map<String, LocalProcessNode> localReferences){
+	private CompositeNode replaceReferences(CompositeNode astNode, String identifier, Map<String, LocalProcessNode> localReferences) throws CompilationException {
 		ASTNode process1 = replaceReferences(astNode.getFirstProcess(), identifier, localReferences);
 		ASTNode process2 = replaceReferences(astNode.getSecondProcess(), identifier, localReferences);
 		astNode.setFirstProcess(process1);
@@ -93,7 +94,7 @@ public class ReferenceReplacer {
 		return astNode;
 	}
 
-	private ASTNode replaceReferences(IdentifierNode astNode, String identifier, Map<String, LocalProcessNode> localReferences){
+	private ASTNode replaceReferences(IdentifierNode astNode, String identifier, Map<String, LocalProcessNode> localReferences) throws CompilationException {
 		String reference = astNode.getIdentifier();
 		// check if the identifier is referencing a local process
 		if(localReferences.containsKey(reference)){
@@ -117,12 +118,10 @@ public class ReferenceReplacer {
 		else if(globalReferences.contains(reference)){
 			return astNode;
 		}
-
-		// TODO: should throw an error, identifier has not been defined either locally or globally
-		return astNode;
+        throw new CompilationException(getClass(),"Unable to find reference for node: "+reference,astNode.getLocation());
 	}
 
-	private FunctionNode replaceReferences(FunctionNode astNode, String identifier, Map<String, LocalProcessNode> localReferences){
+	private FunctionNode replaceReferences(FunctionNode astNode, String identifier, Map<String, LocalProcessNode> localReferences) throws CompilationException {
 		ASTNode process = replaceReferences(astNode.getProcess(), identifier, localReferences);
 		astNode.setProcess(process);
 		return astNode;

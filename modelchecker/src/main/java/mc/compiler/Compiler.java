@@ -8,9 +8,6 @@ import org.json.JSONObject;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created by sheriddavi on 24/01/17.
- */
 public class Compiler {
 
   public static final int CODE = 0;
@@ -43,8 +40,7 @@ public class Compiler {
       return compile(json);
     }
     else{
-      // TODO: error
-      return null;
+      throw new CompilationException(getClass(),"Unable to find code type: "+type);
     }
   }
 
