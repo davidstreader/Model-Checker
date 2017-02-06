@@ -28,9 +28,26 @@
                 app.compile();
         });
         app.socket.on('log',data => {
-            if (data.clear) app.$.console.clear();
-            if (data.error) app.$.console.error(data.message);
-            else app.$.console.log(data.message);
+            if (data.clear) {
+                app.$.console.clear();
+            }
+            if (data.error) {
+                app.$.console.error(data.message);
+                if (data.location) {
+                    const Range = ace.require("ace/range").Range;
+                    const editor = app.$.editor._editor.getSession();
+                    editor.clearAnnotations();
+                    _.each(editor.$backMarkers,(val,key)=>editor.removeMarker(key));
+                    const l = data.location;
+                    editor.addMarker(new Range(l.lineStart-1, l.colStart, l.lineEnd-1, l.colEnd), "ace_underline");
+                    for (let i = l.lineStart; i <= l.lineEnd; i++) {
+                        editor.setAnnotations([{row:i-1 ,column: 0, text:data.message,type:"error"}]);
+                    }
+                }
+            }
+            else {
+                app.$.console.log(data.message);
+            }
         });
         app.socket.on('disconnect', function() {
             app.connected = false;

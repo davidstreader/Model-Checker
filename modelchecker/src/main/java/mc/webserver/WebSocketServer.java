@@ -41,7 +41,7 @@ public class WebSocketServer {
         ackSender.sendAckData(compile(data));
       } catch (Exception ex) {
           if (ex instanceof CompilationException) {
-              new LogMessage(ex.toString().replace("mc.exceptions.",""),false,true).send();
+              new LogMessage(ex.getMessage().replace("mc.exceptions.",""),false,true,((CompilationException) ex).getLocation()).send();
               return;
           }
           logger.error(ansi().render("@|red An error occurred while compiling.|@")+"");

@@ -1,7 +1,9 @@
 package mc.compiler.interpreters;
 
+import lombok.SneakyThrows;
 import mc.Constant;
 import mc.compiler.ast.*;
+import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
 import mc.process_models.automata.Automaton;
 import mc.process_models.automata.AutomatonEdge;
@@ -144,15 +146,15 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         automaton.combineNodes(currentNode, oldRoot);
 
     }
-
+    @SneakyThrows
     private void interpretNode(IdentifierNode astNode, Automaton automaton, AutomatonNode currentNode){
         // check that the reference is to an automaton
         ProcessModel model = processMap.get(astNode.getIdentifier());
         if(!(model instanceof Automaton)){
-            // TODO: throw error
+            throw new CompilationException(getClass(),"Unable to find identifier: "+astNode.getIdentifier(),astNode.getLocation());
         }
 
-        Automaton next = (Automaton)((Automaton)model).clone();
+        Automaton next = ((Automaton)model).clone();
         addAutomaton(currentNode, automaton, next);
     }
 

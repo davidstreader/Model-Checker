@@ -3,20 +3,52 @@ package mc.solver;
 import com.microsoft.z3.*;
 import com.microsoft.z3.enumerations.Z3_lbool;
 import mc.compiler.Guard;
-import mc.exceptions.EvaluationException;
+import mc.exceptions.CompilationException;
 import mc.util.expr.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-class JavaSMTConverter {
-    public JavaSMTConverter(Context o) {
+class EvaluationSimplifier {
+    private static EvaluationSimplifier simplifier;
+    private static Logger logger = LoggerFactory.getLogger(EvaluationSimplifier.class);
+    static {
+        try {
+            HashMap<String, String> cfg = new HashMap<>();
+            cfg.put("model", "true");
+            Context ctx = new Context(cfg);
+            simplifier = new EvaluationSimplifier(ctx);
+        } catch (UnsatisfiedLinkError ex) {
+            logger.error("Unable to load native libraries. Error: "+ex.getLocalizedMessage());
+        }
+    }
+    private EvaluationSimplifier(Context o) {
         context = o;
+    }
+
+    public static Expression simplify(Expression expr, Map<String, Integer> variables) throws CompilationException {
+        return simplifier.convert(simplifier.convert(expr,variables).simplify());
+    }
+
+    public static Guard combineGuards(Guard first, Guard second) throws CompilationException {
+        Guard ret = new Guard();
+        ret.setVariables(first.getVariables());
+        ret.setNext(second.getNext());
+        HashMap<String,Expression> subMap = new HashMap<>();
+        for (String str: first.getNextMap().keySet()) {
+            subMap.put(str,Expression.constructExpression(first.getNextMap().get(str)));
+        }
+        Expression secondGuard = second.getGuard();
+
+        ret.setGuard(simplify(new AndOperator(first.getGuard(),simplifier.substitute(secondGuard,subMap)), Collections.emptyMap()));
+        return ret;
     }
     //Since we end up using this multiple times from javascript, its much easier to cache it once.
     private Context context;
-    public Expression convert(Expr f) {
+    private Expression convert(Expr f) {
         if (f.isBVAdd()) {
             return new AdditionOperator(convert(f.getArgs()[0]), convert(f.getArgs()[1]));
         }
@@ -95,11 +127,7 @@ class JavaSMTConverter {
         if (className.contains("BitVec")) return "`Integer`";
         return className;
     }
-
-    public Expression simplify(Expression expr, Map<String, Integer> variables) throws EvaluationException {
-        return convert(convert(expr,variables).simplify());
-    }
-    private Expr convert(Expression expr, Map<String, Integer> variables) throws EvaluationException {
+    private Expr convert(Expression expr, Map<String, Integer> variables) throws CompilationException {
         if (expr instanceof AdditionOperator) {
             return convert((AdditionOperator) expr, variables);
         } else if (expr instanceof AndOperator) {
@@ -151,139 +179,141 @@ class JavaSMTConverter {
         throw new IllegalStateException("Solver reached an unexpected state");
     }
     //We use BitVectors here instead of Integers so that we have access to bitwise operators.
-    private BitVecExpr convert(BitNotOperator expr, Map<String, Integer> variables) throws EvaluationException {
+    private BitVecExpr convert(BitNotOperator expr, Map<String, Integer> variables) throws CompilationException {
         Expr right = convert(expr.getRightHandSide(),variables);
         if (right instanceof BitVecExpr)
             return context.mkBVNot((BitVecExpr) right);
-        throw new EvaluationException("Operator `&` cannot be applied to "+getName(right.getClass().getSimpleName()));
+        throw new CompilationException(getClass(),"Operator `&` cannot be applied to "+getName(right.getClass().getSimpleName()));
     }
-    private BoolExpr convert(NotOperator expr, Map<String, Integer> variables) throws EvaluationException {
+    private BoolExpr convert(NotOperator expr, Map<String, Integer> variables) throws CompilationException {
         Expr right = convert(expr.getRightHandSide(),variables);
         if (right instanceof BoolExpr)
             return context.mkNot((BoolExpr) right);
-        throw new EvaluationException("Operator `!` cannot be applied to "+getName(right.getClass().getSimpleName()));
+        throw new CompilationException(getClass(),"Operator `!` cannot be applied to "+getName(right.getClass().getSimpleName()));
     }
-    private BoolExpr convert(AndOperator expr, Map<String, Integer> variables) throws EvaluationException {
+    private BoolExpr convert(AndOperator expr, Map<String, Integer> variables) throws CompilationException {
         Expr left = convert(expr.getLeftHandSide(),variables);
         Expr right = convert(expr.getRightHandSide(),variables);
         if (left instanceof BoolExpr && right instanceof BoolExpr)
             return context.mkAnd((BoolExpr)left, (BoolExpr)right);
-        throw new EvaluationException("Operator `&&` cannot be applied to "+getName(left.getClass().getSimpleName())+","+getName(right.getClass().getSimpleName()));
+        throw new CompilationException(getClass(),"Operator `&&` cannot be applied to "+getName(left.getClass().getSimpleName())+","+getName(right.getClass().getSimpleName()));
     }
-    private BoolExpr convert(OrOperator expr, Map<String, Integer> variables) throws EvaluationException {
+    private BoolExpr convert(OrOperator expr, Map<String, Integer> variables) throws CompilationException {
         Expr left = convert(expr.getLeftHandSide(),variables);
         Expr right = convert(expr.getRightHandSide(),variables);
         if (left instanceof BoolExpr && right instanceof BoolExpr)
             return context.mkOr((BoolExpr)left, (BoolExpr)right);
-        throw new EvaluationException("Operator `||` cannot be applied to "+getName(left.getClass().getSimpleName())+","+getName(right.getClass().getSimpleName()));
+        throw new CompilationException(getClass(),"Operator `||` cannot be applied to "+getName(left.getClass().getSimpleName())+","+getName(right.getClass().getSimpleName()));
     }
-    private BoolExpr convert(ExclOrOperator expr, Map<String, Integer> variables) throws EvaluationException {
+    private BoolExpr convert(ExclOrOperator expr, Map<String, Integer> variables) throws CompilationException {
         Expr left = convert(expr.getLeftHandSide(),variables);
         Expr right = convert(expr.getRightHandSide(),variables);
         if (left instanceof BoolExpr && right instanceof BoolExpr)
             return context.mkXor((BoolExpr)left, (BoolExpr)right);
-        throw new EvaluationException("Operator `^` cannot be applied to "+getName(left.getClass().getSimpleName())+","+getName(right.getClass().getSimpleName()));
+        throw new CompilationException(getClass(),"Operator `^` cannot be applied to "+getName(left.getClass().getSimpleName())+","+getName(right.getClass().getSimpleName()));
     }
-    private BoolExpr convert(GreaterThanEqOperator expr, Map<String, Integer> variables) throws EvaluationException {
+    private BoolExpr convert(GreaterThanEqOperator expr, Map<String, Integer> variables) throws CompilationException {
         Expr left = convert(expr.getLeftHandSide(),variables);
         Expr right = convert(expr.getRightHandSide(),variables);
         if (left instanceof BitVecExpr && right instanceof BitVecExpr)
             return context.mkBVSGE((BitVecExpr)left, (BitVecExpr)right);
-        throw new EvaluationException("Operator `>=` cannot be applied to "+getName(left.getClass().getSimpleName())+","+getName(right.getClass().getSimpleName()));
+        throw new CompilationException(getClass(),"Operator `>=` cannot be applied to "+getName(left.getClass().getSimpleName())+","+getName(right.getClass().getSimpleName()));
     }
-    private BoolExpr convert(GreaterThanOperator expr, Map<String, Integer> variables) throws EvaluationException {
+    private BoolExpr convert(GreaterThanOperator expr, Map<String, Integer> variables) throws CompilationException {
         Expr left = convert(expr.getLeftHandSide(),variables);
         Expr right = convert(expr.getRightHandSide(),variables);
         if (left instanceof BitVecExpr && right instanceof BitVecExpr)
             return context.mkBVSGT((BitVecExpr)left, (BitVecExpr)right);
-        throw new EvaluationException("Operator `>` cannot be applied to "+getName(left.getClass().getSimpleName())+","+getName(right.getClass().getSimpleName()));
+        throw new CompilationException(getClass(),"Operator `>` cannot be applied to "+getName(left.getClass().getSimpleName())+","+getName(right.getClass().getSimpleName()));
     }
-    private BoolExpr convert(LessThanEqOperator expr, Map<String, Integer> variables) throws EvaluationException {
+    private BoolExpr convert(LessThanEqOperator expr, Map<String, Integer> variables) throws CompilationException {
         Expr left = convert(expr.getLeftHandSide(),variables);
         Expr right = convert(expr.getRightHandSide(),variables);
         if (left instanceof BitVecExpr && right instanceof BitVecExpr)
             return context.mkBVSLE((BitVecExpr)left, (BitVecExpr)right);
-        throw new EvaluationException("Operator `<=` cannot be applied to "+getName(left.getClass().getSimpleName())+","+getName(right.getClass().getSimpleName()));
+        throw new CompilationException(getClass(),"Operator `<=` cannot be applied to "+getName(left.getClass().getSimpleName())+","+getName(right.getClass().getSimpleName()));
     }
-    private BoolExpr convert(LessThanOperator expr, Map<String, Integer> variables) throws EvaluationException {
+    private BoolExpr convert(LessThanOperator expr, Map<String, Integer> variables) throws CompilationException {
         Expr left = convert(expr.getLeftHandSide(),variables);
         Expr right = convert(expr.getRightHandSide(),variables);
         if (left instanceof BitVecExpr && right instanceof BitVecExpr)
             return context.mkBVSLT((BitVecExpr)left, (BitVecExpr)right);
-        throw new EvaluationException("Operator `<` cannot be applied to "+getName(left.getClass().getSimpleName())+","+getName(right.getClass().getSimpleName()));
+        throw new CompilationException(getClass(),"Operator `<` cannot be applied to "+getName(left.getClass().getSimpleName())+","+getName(right.getClass().getSimpleName()));
     }
-    private BoolExpr convert(EqualityOperator expr, Map<String, Integer> variables) throws EvaluationException {
+    private BoolExpr convert(EqualityOperator expr, Map<String, Integer> variables) throws CompilationException {
         Expr left = convert(expr.getLeftHandSide(),variables);
         Expr right = convert(expr.getRightHandSide(),variables);
-        return context.mkEq(left,right);
+        if (left.getClass() == right.getClass())
+            return context.mkEq(left,right);
+        throw new CompilationException(getClass(),"Operator `==` cannot be applied to "+getName(left.getClass().getSimpleName())+","+getName(right.getClass().getSimpleName()));
     }
-    private BoolExpr convert(NotEqualOperator expr, Map<String, Integer> variables) throws EvaluationException {
+    private BoolExpr convert(NotEqualOperator expr, Map<String, Integer> variables) throws CompilationException {
         Expr left = convert(expr.getLeftHandSide(),variables);
         Expr right = convert(expr.getRightHandSide(),variables);
         return context.mkNot(context.mkEq(left, right));
     }
-    private BitVecExpr convert(ModuloOperator expr, Map<String, Integer> variables) throws EvaluationException {
+    private BitVecExpr convert(ModuloOperator expr, Map<String, Integer> variables) throws CompilationException {
         Expr left = convert(expr.getLeftHandSide(),variables);
         Expr right = convert(expr.getRightHandSide(),variables);
         if (left instanceof BitVecExpr && right instanceof BitVecExpr)
             return context.mkBVSMod((BitVecExpr)left, (BitVecExpr)right);
-        throw new EvaluationException("Operator `%` cannot be applied to "+getName(left.getClass().getSimpleName())+","+getName(right.getClass().getSimpleName()));
+        throw new CompilationException(getClass(),"Operator `%` cannot be applied to "+getName(left.getClass().getSimpleName())+","+getName(right.getClass().getSimpleName()));
     }
-    private BitVecExpr convert(MultiplicationOperator expr, Map<String, Integer> variables) throws EvaluationException {
+    private BitVecExpr convert(MultiplicationOperator expr, Map<String, Integer> variables) throws CompilationException {
         Expr left = convert(expr.getLeftHandSide(),variables);
         Expr right = convert(expr.getRightHandSide(),variables);
         if (left instanceof BitVecExpr && right instanceof BitVecExpr)
             return context.mkBVMul((BitVecExpr)left, (BitVecExpr)right);
-        throw new EvaluationException("Operator `*` cannot be applied to "+getName(left.getClass().getSimpleName())+","+getName(right.getClass().getSimpleName()));
+        throw new CompilationException(getClass(),"Operator `*` cannot be applied to "+getName(left.getClass().getSimpleName())+","+getName(right.getClass().getSimpleName()));
     }
-    private BitVecExpr convert(SubtractionOperator expr, Map<String, Integer> variables) throws EvaluationException {
+    private BitVecExpr convert(SubtractionOperator expr, Map<String, Integer> variables) throws CompilationException {
         Expr left = convert(expr.getLeftHandSide(),variables);
         Expr right = convert(expr.getRightHandSide(),variables);
         if (left instanceof BitVecExpr && right instanceof BitVecExpr)
             return context.mkBVSub((BitVecExpr)left, (BitVecExpr)right);
-        throw new EvaluationException("Operator `-` cannot be applied to "+getName(left.getClass().getSimpleName())+","+getName(right.getClass().getSimpleName()));
+        throw new CompilationException(getClass(),"Operator `-` cannot be applied to "+getName(left.getClass().getSimpleName())+","+getName(right.getClass().getSimpleName()));
     }
-    private BitVecExpr convert(DivisionOperator expr, Map<String, Integer> variables) throws EvaluationException {
+    private BitVecExpr convert(DivisionOperator expr, Map<String, Integer> variables) throws CompilationException {
         Expr left = convert(expr.getLeftHandSide(),variables);
         Expr right = convert(expr.getRightHandSide(),variables);
         if (left instanceof BitVecExpr && right instanceof BitVecExpr)
             return context.mkBVSDiv((BitVecExpr)left, (BitVecExpr)right);
-        throw new EvaluationException("Operator `/` cannot be applied to "+getName(left.getClass().getSimpleName())+","+getName(right.getClass().getSimpleName()));
+        throw new CompilationException(getClass(),"Operator `/` cannot be applied to "+getName(left.getClass().getSimpleName())+","+getName(right.getClass().getSimpleName()));
     }
-    private BitVecExpr convert(AdditionOperator expr, Map<String, Integer> variables) throws EvaluationException {
+    private BitVecExpr convert(AdditionOperator expr, Map<String, Integer> variables) throws CompilationException {
         Expr left = convert(expr.getLeftHandSide(),variables);
         Expr right = convert(expr.getRightHandSide(),variables);
         if (left instanceof BitVecExpr && right instanceof BitVecExpr)
             return context.mkBVAdd((BitVecExpr)left, (BitVecExpr)right);
-        throw new EvaluationException("Operator `+` cannot be applied to "+getName(left.getClass().getSimpleName())+","+getName(right.getClass().getSimpleName()));
+        throw new CompilationException(getClass(),"Operator `+` cannot be applied to "+getName(left.getClass().getSimpleName())+","+getName(right.getClass().getSimpleName()));
     }
-    private BitVecExpr convert(BitAndOperator expr, Map<String, Integer> variables) throws EvaluationException {
+    private BitVecExpr convert(BitAndOperator expr, Map<String, Integer> variables) throws CompilationException {
         Expr left = convert(expr.getLeftHandSide(),variables);
         Expr right = convert(expr.getRightHandSide(),variables);
         if (left instanceof BitVecExpr && right instanceof BitVecExpr)
             return context.mkBVAND((BitVecExpr)left, (BitVecExpr)right);
-        throw new EvaluationException("Operator `&` cannot be applied to "+getName(left.getClass().getSimpleName())+","+getName(right.getClass().getSimpleName()));
+        throw new CompilationException(getClass(),"Operator `&` cannot be applied to "+getName(left.getClass().getSimpleName())+","+getName(right.getClass().getSimpleName()));
     }
-    private BitVecExpr convert(BitOrOperator expr, Map<String, Integer> variables) throws EvaluationException {
+    private BitVecExpr convert(BitOrOperator expr, Map<String, Integer> variables) throws CompilationException {
         Expr left = convert(expr.getLeftHandSide(),variables);
         Expr right = convert(expr.getRightHandSide(),variables);
         if (left instanceof BitVecExpr && right instanceof BitVecExpr)
             return context.mkBVOR((BitVecExpr)left, (BitVecExpr)right);
-        throw new EvaluationException("Operator `|` cannot be applied to "+getName(left.getClass().getSimpleName())+","+getName(right.getClass().getSimpleName()));
+        throw new CompilationException(getClass(),"Operator `|` cannot be applied to "+getName(left.getClass().getSimpleName())+","+getName(right.getClass().getSimpleName()));
     }
-    private BitVecExpr convert(LeftShiftOperator expr, Map<String, Integer> variables) throws EvaluationException {
+    private BitVecExpr convert(LeftShiftOperator expr, Map<String, Integer> variables) throws CompilationException {
         Expr left = convert(expr.getLeftHandSide(),variables);
         Expr right = convert(expr.getRightHandSide(),variables);
         if (left instanceof BitVecExpr && right instanceof BitVecExpr)
             return context.mkBVSHL((BitVecExpr)left, (BitVecExpr)right);
-        throw new EvaluationException("Operator `<<` cannot be applied to "+getName(left.getClass().getSimpleName())+","+getName(right.getClass().getSimpleName()));
+        throw new CompilationException(getClass(),"Operator `<<` cannot be applied to "+getName(left.getClass().getSimpleName())+","+getName(right.getClass().getSimpleName()));
     }
-    private BitVecExpr convert(RightShiftOperator expr, Map<String, Integer> variables) throws EvaluationException {
+    private BitVecExpr convert(RightShiftOperator expr, Map<String, Integer> variables) throws CompilationException {
         Expr left = convert(expr.getLeftHandSide(),variables);
         Expr right = convert(expr.getRightHandSide(),variables);
         if (left instanceof BitVecExpr && right instanceof BitVecExpr)
             return context.mkBVASHR((BitVecExpr)left, (BitVecExpr)right);
-        throw new EvaluationException("Operator `>>` cannot be applied to "+getName(left.getClass().getSimpleName())+","+getName(right.getClass().getSimpleName()));
+        throw new CompilationException(getClass(),"Operator `>>` cannot be applied to "+getName(left.getClass().getSimpleName())+","+getName(right.getClass().getSimpleName()));
     }
     private BitVecExpr convert(VariableOperand expr, Map<String, Integer> variables) {
         if (variables.containsKey(expr.getValue())) {
@@ -296,20 +326,6 @@ class JavaSMTConverter {
     }
     private BoolExpr convert(BooleanOperand expr) {
         return context.mkBool(expr.getValue());
-    }
-
-    public Guard combineGuards(Guard first, Guard second) throws EvaluationException {
-        Guard ret = new Guard();
-        ret.setVariables(first.getVariables());
-        ret.setNext(second.getNext());
-        HashMap<String,Expression> subMap = new HashMap<>();
-        for (String str: first.getNextMap().keySet()) {
-            subMap.put(str,Expression.constructExpression(first.getNextMap().get(str)));
-        }
-        Expression secondGuard = second.getGuard();
-
-        ret.setGuard(simplify(new AndOperator(first.getGuard(),substitute(secondGuard,subMap)), Collections.emptyMap()));
-        return ret;
     }
     private Expression substitute(BothOperator expression, HashMap<String, Expression> subMap) {
         expression.setLhs(substitute(expression.getLeftHandSide(), subMap));
