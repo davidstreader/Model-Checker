@@ -1,6 +1,6 @@
 package mc.commands;
 
-import mc.solver.ExpressionSolver;
+import mc.solver.ExpressionSimplifier;
 import mc.util.expr.Expression;
 import mc.util.expr.ExpressionPrinter;
 import org.fusesource.jansi.Ansi;
@@ -14,7 +14,7 @@ public class SimplifyCommand implements Command{
         String expr = String.join(" ",args);
         try {
             Expression expression = Expression.constructExpression(expr);
-            expression = ExpressionSolver.simplify(expression);
+            expression = ExpressionSimplifier.simplify(expression, Collections.emptyMap());
             System.out.println(Ansi.ansi().render("Expression simplified to: @|yellow " + printer.printExpression(expression)+"|@"));
         } catch (Exception ex) {
             System.out.println(Ansi.ansi().render("@|red There was an error parsing that expression. |@"));

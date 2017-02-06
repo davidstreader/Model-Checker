@@ -1,5 +1,6 @@
 package mc.process_models.automata.operations;
 
+import mc.exceptions.CompilationException;
 import mc.process_models.automata.Automaton;
 
 import java.util.List;
@@ -25,19 +26,19 @@ public class AutomataOperations {
         this.nfa2DFA = new AutomataNFA2DFA();
     }
 
-    public Automaton parallelComposition(String id, Automaton automaton1, Automaton automaton2){
+    public Automaton parallelComposition(String id, Automaton automaton1, Automaton automaton2) throws CompilationException {
         Automaton processedAutomaton = composition.performParallelComposition(id, automaton1, automaton2);
         processedAutomaton = removeUnreachableNodes(processedAutomaton);
         return processedAutomaton;
     }
 
-    public Automaton abstraction(Automaton automaton){
+    public Automaton abstraction(Automaton automaton) throws CompilationException {
         Automaton processedAutomaton = abstraction.performAbstraction(automaton, true);
         processedAutomaton = removeUnreachableNodes(processedAutomaton);
         return processedAutomaton;
     }
 
-    public Automaton simplification(Automaton automaton){
+    public Automaton simplification(Automaton automaton) throws CompilationException {
         return bisimulation.performSimplification(automaton);
     }
 
@@ -49,11 +50,11 @@ public class AutomataOperations {
         return reachability.removeUnreachableNodes(automaton);
     }
 
-    public Automaton labelAutomaton(Automaton automaton, String label){
+    public Automaton labelAutomaton(Automaton automaton, String label) throws CompilationException {
         return labeller.labelAutomaton(automaton, label);
     }
 
-  public Automaton nfa2dfa(Automaton model) {
+  public Automaton nfa2dfa(Automaton model) throws CompilationException {
     return nfa2DFA.preformNFA2DFA(model);
   }
 }

@@ -65,7 +65,7 @@ public abstract class ASTNode implements Serializable {
 		return location;
 	}
 
-	public ASTNode clone(){
+	public ASTNode copy(){
 		try {
 			ByteArrayOutputStream output = new ByteArrayOutputStream();
 			ObjectOutputStream out = new ObjectOutputStream(output);

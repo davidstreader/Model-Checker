@@ -6,7 +6,7 @@ import lombok.EqualsAndHashCode;
 /**
  * Created by sanjay on 3/02/17.
  */
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = false)
 @AllArgsConstructor
 public class BooleanOperand extends Operand{
     private boolean value;

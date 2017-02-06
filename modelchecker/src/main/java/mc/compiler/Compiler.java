@@ -1,6 +1,7 @@
 package mc.compiler;
 
 import mc.compiler.ast.AbstractSyntaxTree;
+import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
 import org.json.JSONObject;
 
@@ -33,7 +34,7 @@ public class Compiler {
     this.jsonToAst = new JSONToASTConverter();
   }
 
-  public CompilationObject compile(String code, int type){
+  public CompilationObject compile(String code, int type) throws CompilationException {
     if(type == CODE){
       return compile(code);
     }
@@ -52,12 +53,12 @@ public class Compiler {
     return null;
   }
 
-  public CompilationObject compile(JSONObject json){
+  public CompilationObject compile(JSONObject json) throws CompilationException {
     AbstractSyntaxTree ast = jsonToAst.convert(json);
     return compile(ast);
   }
 
-  private CompilationObject compile(AbstractSyntaxTree ast){
+  private CompilationObject compile(AbstractSyntaxTree ast) throws CompilationException {
     ast = expander.expand(ast);
     ast = replacer.replaceReferences(ast);
     Map<String, ProcessModel> processMap = interpreter.interpret(ast);

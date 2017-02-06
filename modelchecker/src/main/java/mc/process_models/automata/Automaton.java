@@ -1,9 +1,12 @@
 package mc.process_models.automata;
 
 import com.rits.cloning.Cloner;
+import lombok.SneakyThrows;
+import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
 import mc.process_models.ProcessModelObject;
 import mc.process_models.automata.serializers.EdgeClone;
+import mc.util.Location;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -52,16 +55,15 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     public AutomatonNode getRoot() {
         return root;
     }
-
-    public void setRoot(AutomatonNode root) {
+    public void setRoot(AutomatonNode root) throws CompilationException {
         // check the the new root is defined
         if (root == null) {
-            // TODO: throw error
+            throw new CompilationException(getClass(),"Unable to set the root node to null",(Location)getMetaData().get("location"));
         }
 
         // check that the new root is part of this automaton
         if (!nodeMap.containsKey(root.getId())) {
-            // TODO: throw error
+            throw new CompilationException(getClass(),"Unable to set the root node to "+root.getId()+", as the root is not a part of this automaton",(Location)getMetaData().get("location"));
         }
 
         this.root = root;
@@ -72,14 +74,12 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
             .map(x -> x.getValue())
             .collect(Collectors.toList());
     }
-
-    public AutomatonNode getNode(String id) {
+    public AutomatonNode getNode(String id) throws CompilationException {
         if (nodeMap.containsKey(id)) {
             return nodeMap.get(id);
         }
 
-        // TODO: throw error
-        return null;
+        throw new CompilationException(getClass(),"Unable to get the node "+id+" as it does not exist.",(Location)getMetaData().get("location"));
     }
 
     public AutomatonNode addNode() {
@@ -108,14 +108,13 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
         nodeMap.remove(node.getId());
         return true;
     }
-
-    public AutomatonNode combineNodes(AutomatonNode node1, AutomatonNode node2) {
+    public AutomatonNode combineNodes(AutomatonNode node1, AutomatonNode node2) throws CompilationException {
         if (!nodeMap.containsKey(node1.getId())) {
-            // TODO: throw error
+            throw new CompilationException(getClass(),node1.getId()+" was not found in the automaton "+getId(),(Location)getMetaData().get("location"));
         }
 
         if (!nodeMap.containsKey(node2.getId())) {
-            // TODO: throw error
+            throw new CompilationException(getClass(),node2.getId()+" was not found in the automaton "+getId(),(Location)getMetaData().get("location"));
         }
 
         AutomatonNode node = addNode();
@@ -181,38 +180,35 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
             .map(x -> x.getValue())
             .collect(Collectors.toList());
     }
-
-    public AutomatonEdge getEdge(String id) {
+    public AutomatonEdge getEdge(String id) throws CompilationException {
         if (edgeMap.containsKey(id)) {
             return edgeMap.get(id);
         }
 
-        // TODO: throw error
-        return null;
+        throw new CompilationException(getClass(),"Edge "+id+" was not found in the automaton "+getId(),(Location)getMetaData().get("location"));
     }
 
-    public AutomatonEdge addEdge(String label, AutomatonNode from, AutomatonNode to) {
+    public AutomatonEdge addEdge(String label, AutomatonNode from, AutomatonNode to) throws CompilationException {
         String id = getNextEdgeId();
         return addEdge(id, label, from, to);
     }
-
-    public AutomatonEdge addEdge(String id, String label, AutomatonNode from, AutomatonNode to) {
+    public AutomatonEdge addEdge(String id, String label, AutomatonNode from, AutomatonNode to) throws CompilationException {
         // check that the nodes have been defined
         if (from == null) {
-            // TODO: throw error
+            throw new CompilationException(getClass(),"Unable to add the specified edge as the source was null.",(Location)getMetaData().get("location"));
         }
 
         if (to == null) {
-            // TODO: throw error
+            throw new CompilationException(getClass(),"Unable to add the specified edge as the destination was null.",(Location)getMetaData().get("location"));
         }
 
         // check that the nodes are part of this automaton
         if (!nodeMap.containsKey(from.getId())) {
-            // TODO: throw error
+            throw new CompilationException(getClass(),"Unable to add the specified edge as "+from.getId()+" is not a part of this automaton",(Location)getMetaData().get("location"));
         }
 
         if (!nodeMap.containsKey(to.getId())) {
-            // TODO: throw error
+            throw new CompilationException(getClass(),"Unable to add the specified edge as "+to.getId()+" is not a part of this automaton",(Location)getMetaData().get("location"));
         }
 
         // check if there is already an identical edge between the specified nodes
@@ -282,7 +278,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
         return alphabet.keySet();
     }
 
-    public AutomatonNode addAutomaton(Automaton automaton) {
+    public AutomatonNode addAutomaton(Automaton automaton) throws CompilationException {
         AutomatonNode root = null;
         for (AutomatonNode node : automaton.getNodes()) {
             AutomatonNode newNode = addNode(node.getId());
@@ -338,7 +334,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     public String getRootId() {
         return getRoot().getId();
     }
-    public Automaton clone() {
+    public Automaton copy() throws CompilationException {
         Cloner cloner = new Cloner();
         //Cloning while all the edges and nodes point to each other is asking for trouble.
         //We can just keep a list of all cloned edges and add the data in after the cloning is done.

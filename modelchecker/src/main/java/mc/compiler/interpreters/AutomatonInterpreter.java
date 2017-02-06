@@ -25,7 +25,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         reset();
     }
 
-    public ProcessModel interpret(ProcessNode processNode, Map<String, ProcessModel> processMap){
+    public ProcessModel interpret(ProcessNode processNode, Map<String, ProcessModel> processMap) throws CompilationException {
         reset();
         this.processMap = processMap;
         String identifier = processNode.getIdentifier();
@@ -47,7 +47,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         return labelAutomaton(automaton);
     }
 
-    public ProcessModel interpret(ASTNode astNode, String identifier, Map<String, ProcessModel> processMap){
+    public ProcessModel interpret(ASTNode astNode, String identifier, Map<String, ProcessModel> processMap) throws CompilationException {
         reset();
         this.processMap = processMap;
 
@@ -58,12 +58,12 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         return labelAutomaton(automaton);
     }
 
-    private void interpretProcess(ASTNode astNode, String identifier){
+    private void interpretProcess(ASTNode astNode, String identifier) throws CompilationException {
         if(astNode instanceof IdentifierNode){
             String reference = ((IdentifierNode)astNode).getIdentifier();
             ProcessModel model = processMap.get(reference);
             if(model instanceof Automaton){
-                model = processLabellingAndRelabelling((Automaton)((Automaton) model).clone(), astNode);
+                model = processLabellingAndRelabelling(((Automaton) model).copy(), astNode);
             }
             processStack.push(model);
         }
@@ -75,7 +75,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         }
     }
 
-    private void interpretNode(ASTNode astNode, Automaton automaton, AutomatonNode currentNode){
+    private void interpretNode(ASTNode astNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException {
         // check if the current ast node has a reference attached
         if(astNode.hasReferenceId()){
             referenceMap.put(astNode.getReferenceId(), currentNode);
@@ -103,7 +103,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         processLabellingAndRelabelling(automaton, astNode);
     }
 
-    private void interpretNode(SequenceNode astNode, Automaton automaton, AutomatonNode currentNode){
+    private void interpretNode(SequenceNode astNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException {
         String action = astNode.getFrom().getAction();
         AutomatonNode nextNode;
         AutomatonEdge nextEdge;
@@ -125,19 +125,18 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         }
     }
 
-    private void interpretNode(ChoiceNode astNode, Automaton automaton, AutomatonNode currentNode){
+    private void interpretNode(ChoiceNode astNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException {
         interpretNode(astNode.getFirstProcess(), automaton, currentNode);
         interpretNode(astNode.getSecondProcess(), automaton, currentNode);
     }
-
-    private void interpretNode(CompositeNode astNode, Automaton automaton, AutomatonNode currentNode){
+    private void interpretNode(CompositeNode astNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException {
         interpretProcess(astNode.getFirstProcess(), automaton.getId() + ".pc1");
         interpretProcess(astNode.getSecondProcess(), automaton.getId() + ".pc2");
 
         ProcessModel model2 = processStack.pop();
         ProcessModel model1 = processStack.pop();
         if(!(model1 instanceof Automaton) || !(model2 instanceof Automaton)){
-            // TODO: throw error
+            throw new CompilationException(getClass(),"Expecting an automaton, received: "+model1.getClass().getSimpleName()+","+model2.getClass().getSimpleName(),astNode.getLocation());
         }
 
         Automaton comp = operations.parallelComposition(automaton.getId(), (Automaton)model1, (Automaton)model2);
@@ -146,46 +145,44 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         automaton.combineNodes(currentNode, oldRoot);
 
     }
-    @SneakyThrows
-    private void interpretNode(IdentifierNode astNode, Automaton automaton, AutomatonNode currentNode){
+    private void interpretNode(IdentifierNode astNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException {
         // check that the reference is to an automaton
         ProcessModel model = processMap.get(astNode.getIdentifier());
         if(!(model instanceof Automaton)){
             throw new CompilationException(getClass(),"Unable to find identifier: "+astNode.getIdentifier(),astNode.getLocation());
         }
 
-        Automaton next = ((Automaton)model).clone();
+        Automaton next = ((Automaton)model).copy();
         addAutomaton(currentNode, automaton, next);
     }
-
-    private void interpretNode(FunctionNode astNode, Automaton automaton, AutomatonNode currentNode){
+    private void interpretNode(FunctionNode astNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException {
         interpretProcess(astNode.getProcess(), automaton.getId() + ".fn");
         ProcessModel model = processStack.pop();
-
-        Automaton processed = null;
+        if (model == null) {
+            throw new CompilationException(getClass(),"Expecting an automaton, received an undefined process.",astNode.getLocation());
+        }
+        Automaton processed;
         switch(astNode.getFunction()){
             case "abs":
                 if(model instanceof Automaton){
                     processed = operations.abstraction((Automaton)model);
                     break;
                 }
-
-                // TODO: throw error: expecting an automaton
+                throw new CompilationException(getClass(),"Expecting an automaton, received a: "+model.getClass().getSimpleName(),astNode.getLocation());
             case "simp":
                 if(model instanceof Automaton){
                     processed = operations.simplification((Automaton)model);
                     break;
                 }
-                // TODO: throw error: expecting an automaton
+                throw new CompilationException(getClass(),"Expecting an automaton, received a: "+model.getClass().getSimpleName(),astNode.getLocation());
             case "nfa2dfa":
                 if(model instanceof Automaton){
                     processed = operations.nfa2dfa(labelAutomaton((Automaton)model));
                     break;
                 }
-                // TODO: throw error: expecting an automaton
+                throw new CompilationException(getClass(),"Expecting an automaton, received a: "+model.getClass().getSimpleName(),astNode.getLocation());
             default:
-                // TODO: throw error
-                System.out.println("FUNCTION ERROR");
+                throw new CompilationException(getClass(),"Expecting a known function, received: "+astNode.getFunction(),astNode.getLocation());
         }
 
         addAutomaton(currentNode, automaton, processed);
@@ -195,7 +192,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         currentNode.addMetaData("isTerminal", astNode.getTerminal());
     }
 
-    private Automaton processLabellingAndRelabelling(Automaton automaton, ASTNode astNode){
+    private Automaton processLabellingAndRelabelling(Automaton automaton, ASTNode astNode) throws CompilationException {
         if(astNode.hasLabel()){
             automaton = operations.labelAutomaton(automaton, astNode.getLabel());
         }
@@ -208,7 +205,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         return automaton;
     }
 
-    private void addAutomaton(AutomatonNode currentNode, Automaton automaton1, Automaton automaton2){
+    private void addAutomaton(AutomatonNode currentNode, Automaton automaton1, Automaton automaton2) throws CompilationException {
         List<Integer> references = new ArrayList<Integer>();
 
         AutomatonNode oldRoot = automaton1.addAutomaton(automaton2);
@@ -237,7 +234,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         }
     }
 
-    private Automaton labelAutomaton(Automaton automaton){
+    private Automaton labelAutomaton(Automaton automaton) throws CompilationException {
         Automaton labelled = new Automaton(automaton.getId());
         labelled.getMetaData().putAll(automaton.getMetaData());
         Set<String> visited = new HashSet<String>();

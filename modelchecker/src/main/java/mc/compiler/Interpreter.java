@@ -5,6 +5,7 @@ import mc.compiler.ast.AbstractSyntaxTree;
 import mc.compiler.ast.OperationNode;
 import mc.compiler.ast.ProcessNode;
 import mc.compiler.interpreters.AutomatonInterpreter;
+import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
 import mc.webserver.LogMessage;
 
@@ -24,7 +25,7 @@ public class Interpreter {
         this.automaton = new AutomatonInterpreter();
     }
 
-    public Map<String, ProcessModel> interpret(AbstractSyntaxTree ast){
+    public Map<String, ProcessModel> interpret(AbstractSyntaxTree ast) throws CompilationException {
         Map<String, ProcessModel> processMap = new HashMap<String, ProcessModel>();
 
         List<ProcessNode> processes = ast.getProcesses();
@@ -47,7 +48,7 @@ public class Interpreter {
         return processMap;
     }
 
-    public ProcessModel interpret(String processModelType, ASTNode astNode, String identifer, Map<String, ProcessModel> processMap){
+    public ProcessModel interpret(String processModelType, ASTNode astNode, String identifer, Map<String, ProcessModel> processMap) throws CompilationException {
         ProcessModel model = null;
         switch(processModelType){
             case "automata":

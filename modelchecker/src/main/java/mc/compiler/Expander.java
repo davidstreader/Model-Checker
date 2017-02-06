@@ -1,10 +1,13 @@
 package mc.compiler;
 
-import com.microsoft.z3.BoolExpr;
 import mc.compiler.ast.*;
 import mc.compiler.iterator.IndexIterator;
-import mc.solver.ExpressionSolver;
-import mc.util.expr.*;
+import mc.exceptions.CompilationException;
+import mc.solver.ExpressionSimplifier;
+import mc.util.expr.BooleanOperand;
+import mc.util.expr.Expression;
+import mc.util.expr.ExpressionPrinter;
+import mc.util.expr.IntegerOperand;
 import mc.webserver.LogMessage;
 
 import java.util.*;
@@ -15,7 +18,7 @@ public class Expander {
 
     private Map<String, String> globalVariableMap;
     private List<IndexNode> ranges;
-    public AbstractSyntaxTree expand(AbstractSyntaxTree ast){
+    public AbstractSyntaxTree expand(AbstractSyntaxTree ast) throws CompilationException {
         globalVariableMap = ast.getVariableMap();
 
         List<ProcessNode> processes = ast.getProcesses();
@@ -44,7 +47,7 @@ public class Expander {
         return ast;
     }
 
-    private List<LocalProcessNode> expandLocalProcesses(List<LocalProcessNode> localProcesses, Map<String, Object> variableMap){
+    private List<LocalProcessNode> expandLocalProcesses(List<LocalProcessNode> localProcesses, Map<String, Object> variableMap) throws CompilationException {
         List<LocalProcessNode> newLocalProcesses = new ArrayList<LocalProcessNode>();
 
         for(int i = 0; i < localProcesses.size(); i++){
@@ -62,7 +65,7 @@ public class Expander {
         return newLocalProcesses;
     }
 
-    private List<LocalProcessNode> expandLocalProcesses(LocalProcessNode localProcess, Map<String, Object> variableMap, List<IndexNode> ranges, int index){
+    private List<LocalProcessNode> expandLocalProcesses(LocalProcessNode localProcess, Map<String, Object> variableMap, List<IndexNode> ranges, int index) throws CompilationException {
         List<LocalProcessNode> newLocalProcesses = new ArrayList<LocalProcessNode>();
         this.ranges = ranges;
         if(index < ranges.size()){
@@ -72,11 +75,11 @@ public class Expander {
             localProcess.setIdentifier(localProcess.getIdentifier() + "[" + variable + "]");
             while(iterator.hasNext()){
                 variableMap.put(variable, iterator.next());
-                newLocalProcesses.addAll(expandLocalProcesses((LocalProcessNode) localProcess.clone(), variableMap, ranges, index + 1));
+                newLocalProcesses.addAll(expandLocalProcesses((LocalProcessNode) localProcess.copy(), variableMap, ranges, index + 1));
             }
         }
         else{
-            LocalProcessNode clone = (LocalProcessNode)localProcess.clone();
+            LocalProcessNode clone = (LocalProcessNode)localProcess.copy();
             ASTNode root = expand(clone.getProcess(), variableMap);
             clone.setIdentifier(processVariables(clone.getIdentifier(), variableMap));
             clone.setProcess(root);
@@ -86,7 +89,7 @@ public class Expander {
         return newLocalProcesses;
     }
 
-    private ASTNode expand(ASTNode astNode, Map<String, Object> variableMap){
+    private ASTNode expand(ASTNode astNode, Map<String, Object> variableMap) throws CompilationException {
         if(astNode instanceof ActionLabelNode){
             astNode = expand((ActionLabelNode)astNode, variableMap);
         }
@@ -122,13 +125,13 @@ public class Expander {
         return astNode;
     }
 
-    private ActionLabelNode expand(ActionLabelNode astNode, Map<String, Object> variableMap){
+    private ActionLabelNode expand(ActionLabelNode astNode, Map<String, Object> variableMap) throws CompilationException {
         String action = processVariables(astNode.getAction(), variableMap);
         astNode.setAction(action);
         return astNode;
     }
 
-    private ASTNode expand(IndexNode astNode, Map<String, Object> variableMap){
+    private ASTNode expand(IndexNode astNode, Map<String, Object> variableMap) throws CompilationException {
         IndexIterator iterator = IndexIterator.construct(astNode.getRange());
         Stack<ASTNode> iterations = new Stack<ASTNode>();
         while(iterator.hasNext()){
@@ -146,7 +149,7 @@ public class Expander {
         return node;
     }
 
-    private SequenceNode expand(SequenceNode astNode, Map<String, Object> variableMap){
+    private SequenceNode expand(SequenceNode astNode, Map<String, Object> variableMap) throws CompilationException {
         //add a guard to every sequenceNode. This will only contain next data.
         Guard guard = new Guard();
         if (astNode.getTo() instanceof IdentifierNode) {
@@ -163,7 +166,7 @@ public class Expander {
         return astNode;
     }
 
-    private ASTNode expand(ChoiceNode astNode, Map<String, Object> variableMap){
+    private ASTNode expand(ChoiceNode astNode, Map<String, Object> variableMap) throws CompilationException {
         ASTNode process1 = expand(astNode.getFirstProcess(), variableMap);
         ASTNode process2 = expand(astNode.getSecondProcess(), variableMap);
 
@@ -180,7 +183,7 @@ public class Expander {
         return astNode;
     }
 
-    private ASTNode expand(CompositeNode astNode, Map<String, Object> variableMap){
+    private ASTNode expand(CompositeNode astNode, Map<String, Object> variableMap) throws CompilationException {
         ASTNode process1 = expand(astNode.getFirstProcess(), variableMap);
         ASTNode process2 = expand(astNode.getSecondProcess(), variableMap);
 
@@ -197,7 +200,7 @@ public class Expander {
         return astNode;
     }
 
-    private ASTNode expand(IfStatementNode astNode, Map<String, Object> variableMap){
+    private ASTNode expand(IfStatementNode astNode, Map<String, Object> variableMap) throws CompilationException {
         Guard guard = new Guard();
         guard.setGuard(astNode.getCondition());
         guard.setVariables(new ExpressionPrinter().getVariables(astNode.getCondition(),variableMap));
@@ -220,19 +223,19 @@ public class Expander {
         return new EmptyNode();
     }
 
-    private FunctionNode expand(FunctionNode astNode, Map<String, Object> variableMap){
+    private FunctionNode expand(FunctionNode astNode, Map<String, Object> variableMap) throws CompilationException {
         ASTNode process = expand(astNode.getProcess(), variableMap);
         astNode.setProcess(process);
         return astNode;
     }
 
-    private IdentifierNode expand(IdentifierNode astNode, Map<String, Object> variableMap){
+    private IdentifierNode expand(IdentifierNode astNode, Map<String, Object> variableMap) throws CompilationException {
         String identifier = processVariables(astNode.getIdentifier(), variableMap);
         astNode.setIdentifer(identifier);
         return astNode;
     }
 
-    private ASTNode expand(ForAllStatementNode astNode, Map<String, Object> variableMap){
+    private ASTNode expand(ForAllStatementNode astNode, Map<String, Object> variableMap) throws CompilationException {
         Stack<ASTNode> nodes = expand(astNode.getProcess(), variableMap, astNode.getRanges().getRanges(), 0);
 
         ASTNode node = nodes.pop();
@@ -244,7 +247,7 @@ public class Expander {
         return node;
     }
 
-    private Stack<ASTNode> expand(ASTNode process, Map<String, Object> variableMap, List<IndexNode> ranges, int index){
+    private Stack<ASTNode> expand(ASTNode process, Map<String, Object> variableMap, List<IndexNode> ranges, int index) throws CompilationException {
         Stack<ASTNode> nodes = new Stack<ASTNode>();
 
         if(index < ranges.size()){
@@ -258,14 +261,13 @@ public class Expander {
             }
         }
         else{
-            process = expand(process.clone(), variableMap);
+            process = expand(process.copy(), variableMap);
             nodes.add(process);
         }
 
         return nodes;
     }
-
-    private int evaluateExpression(Expression expression, Map<String, Object> variableMap){
+    private int evaluateExpression(Expression expression, Map<String, Object> variableMap) throws CompilationException {
         // remove all strings from the variableMap
         Map<String, Integer> variables = new HashMap<>();
         for(String key : variableMap.keySet()){
@@ -274,14 +276,13 @@ public class Expander {
                 variables.put(key, (Integer)value);
             }
         }
-        Expression ex = ExpressionSolver.simplify(expression, variables);
+        Expression ex = ExpressionSimplifier.simplify(expression, variables);
         if (ex instanceof BooleanOperand) return ((BooleanOperand) ex).getValue()?1:0;
         if (ex instanceof IntegerOperand) return ((IntegerOperand) ex).getValue();
-        //TODO: throw better error
-        throw new IllegalStateException("There was an undefined variable in that statement.");
+        throw new CompilationException(getClass(),"There was an undefined variable in that statement.");
     }
 
-    private boolean evaluateCondition(Expression condition, Map<String, Object> variableMap){
+    private boolean evaluateCondition(Expression condition, Map<String, Object> variableMap) throws CompilationException {
         Map<String, Integer> variables = new HashMap<String, Integer>();
         for(String key : variableMap.keySet()){
             Object value = variableMap.get(key);
@@ -289,11 +290,11 @@ public class Expander {
                 variables.put(key, (Integer)value);
             }
         }
-        Expression ex = ExpressionSolver.simplify(condition,variables);
+        Expression ex = ExpressionSimplifier.simplify(condition,variables);
         return ex instanceof BooleanOperand && ((BooleanOperand) ex).getValue();
     }
 
-    private String processVariables(String string, Map<String, Object> variableMap){
+    private String processVariables(String string, Map<String, Object> variableMap) throws CompilationException {
         Map<String,String> varMap = new HashMap<>();
         varMap.putAll(globalVariableMap);
         for (String key : variableMap.keySet()) {

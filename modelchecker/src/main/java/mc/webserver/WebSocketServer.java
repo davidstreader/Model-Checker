@@ -62,7 +62,7 @@ public class WebSocketServer {
     });
   }
 
-  private ProcessReturn compile(Map data) {
+  private ProcessReturn compile(Map data) throws CompilationException {
     Context context = Context.fromJSON(data.get("context"));
     CompilationObject ret = new Compiler().compile(new JSONObject(data).getJSONObject("ast"));
     Map<String,ProcessModel> processModelMap = ret.getProcessMap();

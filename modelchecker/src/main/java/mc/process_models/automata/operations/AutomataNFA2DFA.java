@@ -2,6 +2,7 @@ package mc.process_models.automata.operations;
 
 import com.google.common.base.Stopwatch;
 import mc.Constant;
+import mc.exceptions.CompilationException;
 import mc.process_models.automata.Automaton;
 import mc.process_models.automata.AutomatonEdge;
 import mc.process_models.automata.AutomatonNode;
@@ -9,7 +10,7 @@ import mc.process_models.automata.AutomatonNode;
 import java.util.*;
 
 public class AutomataNFA2DFA {
-    public Automaton preformNFA2DFA(Automaton automaton){
+    public Automaton preformNFA2DFA(Automaton automaton) throws CompilationException {
         System.out.println("NFA2DFA Start:");
         Stopwatch timer = Stopwatch.createStarted();
         Automaton newAutomaton = new Automaton(automaton.getId(),false);

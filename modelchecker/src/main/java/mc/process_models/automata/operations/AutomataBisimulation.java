@@ -1,5 +1,6 @@
 package mc.process_models.automata.operations;
 
+import mc.exceptions.CompilationException;
 import mc.process_models.automata.Automaton;
 import mc.process_models.automata.AutomatonNode;
 
@@ -16,7 +17,7 @@ public class AutomataBisimulation {
 
     private int nextColourId;
 
-    public Automaton performSimplification(Automaton automaton){
+    public Automaton performSimplification(Automaton automaton) throws CompilationException {
         reset();
 
         Map<Integer, List<Colour>> colourMap = new HashMap<Integer, List<Colour>>();
@@ -38,7 +39,7 @@ public class AutomataBisimulation {
             }
 
             // remove the nodes that were merged
-            nodes.forEach(node -> automaton.removeNode(node));
+            nodes.forEach(automaton::removeNode);
         }
 
         return automaton;

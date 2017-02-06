@@ -2,7 +2,7 @@ package mc.commands;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import mc.solver.ExpressionSolver;
+import mc.solver.ExpressionSimplifier;
 import mc.util.expr.BooleanOperand;
 import mc.util.expr.Expression;
 import mc.util.expr.IntegerOperand;
@@ -22,7 +22,7 @@ public class EvalCommand implements Command{
             );
         }
         try {
-            System.out.println("Expression evaluated to: "+ eval(ExpressionSolver.simplify(expression, vars)));
+            System.out.println("Expression evaluated to: "+ eval(ExpressionSimplifier.simplify(expression, vars)));
         } catch (Exception ex) {
             System.out.println(Ansi.ansi().render("@|red There was an error parsing that expression. |@"));
             System.out.println("Error Message: "+ex.getLocalizedMessage());

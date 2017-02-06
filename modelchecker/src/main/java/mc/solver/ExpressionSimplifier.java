@@ -12,20 +12,20 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-class EvaluationSimplifier {
-    private static EvaluationSimplifier simplifier;
-    private static Logger logger = LoggerFactory.getLogger(EvaluationSimplifier.class);
+public class ExpressionSimplifier {
+    private static ExpressionSimplifier simplifier;
+    private static Logger logger = LoggerFactory.getLogger(ExpressionSimplifier.class);
     static {
         try {
             HashMap<String, String> cfg = new HashMap<>();
             cfg.put("model", "true");
             Context ctx = new Context(cfg);
-            simplifier = new EvaluationSimplifier(ctx);
+            simplifier = new ExpressionSimplifier(ctx);
         } catch (UnsatisfiedLinkError ex) {
             logger.error("Unable to load native libraries. Error: "+ex.getLocalizedMessage());
         }
     }
-    private EvaluationSimplifier(Context o) {
+    private ExpressionSimplifier(Context o) {
         context = o;
     }
 

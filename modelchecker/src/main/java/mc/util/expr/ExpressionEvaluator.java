@@ -1,18 +1,19 @@
 package mc.util.expr;
 
-import mc.solver.ExpressionSolver;
+import mc.exceptions.CompilationException;
+import mc.solver.ExpressionSimplifier;
 
+import java.util.Collections;
 import java.util.Map;
-import java.util.Stack;
 
 /**
  * Created by sheriddavi on 19/01/17.
  */
 public class ExpressionEvaluator {
 
-    public boolean isExecutable(Expression expression){
+    public boolean isExecutable(Expression expression) throws CompilationException {
         //If you simplify an expression with no variables it will be evaluated by the solver.
-        return ExpressionSolver.simplify(expression) instanceof Operand;
+        return ExpressionSimplifier.simplify(expression, Collections.emptyMap()) instanceof Operand;
     }
 
     public int evaluateExpression(Expression expression, Map<String, Integer> variableMap){

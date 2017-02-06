@@ -4,6 +4,7 @@ import com.rits.cloning.Cloner;
 import com.rits.cloning.IDeepCloner;
 import com.rits.cloning.IFastCloner;
 import lombok.Getter;
+import mc.exceptions.CompilationException;
 import mc.process_models.automata.Automaton;
 import mc.process_models.automata.AutomatonEdge;
 import mc.process_models.automata.AutomatonNode;
@@ -60,7 +61,7 @@ public abstract class ProcessModelObject implements Serializable {
         return metaData.keySet();
     }
 
-    public ProcessModelObject clone(){
+    public ProcessModelObject copy() throws CompilationException {
         return new Cloner().deepClone(this);
     }
 }

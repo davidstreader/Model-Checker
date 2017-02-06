@@ -1,6 +1,7 @@
 package mc.compiler;
 
 import mc.compiler.ast.OperationNode;
+import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
 import mc.process_models.automata.Automaton;
 import mc.process_models.automata.operations.AutomataOperations;
@@ -23,7 +24,7 @@ public class OperationEvaluator {
     this.automataOperations = new AutomataOperations();
   }
 
-  public List<OperationResult> evaluateOperations(List<OperationNode> operations, Map<String, ProcessModel> processMap, Interpreter interpreter){
+  public List<OperationResult> evaluateOperations(List<OperationNode> operations, Map<String, ProcessModel> processMap, Interpreter interpreter) throws CompilationException {
     reset();
     List<OperationResult> results = new ArrayList<OperationResult>();
 

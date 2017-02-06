@@ -1,6 +1,7 @@
 package mc.process_models.automata.operations;
 
 import mc.Constant;
+import mc.exceptions.CompilationException;
 import mc.process_models.automata.Automaton;
 import mc.process_models.automata.AutomatonEdge;
 import mc.process_models.automata.AutomatonNode;
@@ -18,7 +19,7 @@ public class AutomataParallelComposition {
     private Set<String> syncedActions;
     private Set<String> unsyncedActions;
 
-    public Automaton performParallelComposition(String id, Automaton automaton1, Automaton automaton2){
+    public Automaton performParallelComposition(String id, Automaton automaton1, Automaton automaton2) throws CompilationException {
         setup(id);
         AutomatonNode root = automaton.getRoot();
 
@@ -41,7 +42,7 @@ public class AutomataParallelComposition {
         return automaton;
     }
 
-    private void setupNodes(List<AutomatonNode> nodes1, List<AutomatonNode> nodes2){
+    private void setupNodes(List<AutomatonNode> nodes1, List<AutomatonNode> nodes2) throws CompilationException {
         for(AutomatonNode node1 : nodes1){
             nodeMap.put(node1.getId(), new ArrayList<AutomatonNode>());
 
@@ -96,7 +97,7 @@ public class AutomataParallelComposition {
         }
     }
 
-    private void processUnsyncedActions(List<AutomatonEdge> edges1, List<AutomatonEdge> edges2){
+    private void processUnsyncedActions(List<AutomatonEdge> edges1, List<AutomatonEdge> edges2) throws CompilationException {
         List<AutomatonEdge> allEdges = new ArrayList<AutomatonEdge>(edges1);
         allEdges.addAll(edges2);
 
@@ -116,7 +117,7 @@ public class AutomataParallelComposition {
         }
     }
 
-    private void processSyncedActions(List<AutomatonEdge> edges1, List<AutomatonEdge> edges2){
+    private void processSyncedActions(List<AutomatonEdge> edges1, List<AutomatonEdge> edges2) throws CompilationException {
         for(String action : syncedActions){
             List<AutomatonEdge> syncedEdges1 = edges1.stream()
                     .filter(edge -> action.equals(edge.getLabel()))

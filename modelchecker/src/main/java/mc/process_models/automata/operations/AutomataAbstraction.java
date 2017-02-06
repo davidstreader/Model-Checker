@@ -1,10 +1,11 @@
 package mc.process_models.automata.operations;
 
 import mc.compiler.Guard;
+import mc.exceptions.CompilationException;
 import mc.process_models.automata.Automaton;
 import mc.process_models.automata.AutomatonEdge;
 import mc.process_models.automata.AutomatonNode;
-import mc.solver.ExpressionSolver;
+import mc.solver.ExpressionSimplifier;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -13,15 +14,17 @@ import java.util.stream.Collectors;
  * Created by sheriddavi on 25/01/17.
  */
 public class AutomataAbstraction {
-    public Automaton performAbstraction(Automaton automaton, boolean isFair){
+    public Automaton performAbstraction(Automaton automaton, boolean isFair) throws CompilationException {
         Automaton abstraction = new Automaton(automaton.getId() + ".abs", !Automaton.CONSTRUCT_ROOT);
-        automaton.getNodes().forEach(node -> addNode(abstraction, node));
-        automaton.getEdges().stream()
-                .filter(edge -> !edge.isHidden())
-                .forEach(edge -> addEdge(abstraction, edge));
+        for (AutomatonNode automatonNode : automaton.getNodes()) {
+            addNode(abstraction,automatonNode);
+        }
+        for (AutomatonEdge automatonEdge : automaton.getEdges()) {
+            if (!automatonEdge.isHidden()) addEdge(abstraction,automatonEdge);
+        }
 
         List<AutomatonEdge> hiddenEdges = automaton.getEdges().stream()
-                .filter(edge -> edge.isHidden())
+                .filter(AutomatonEdge::isHidden)
                 .collect(Collectors.toList());
 
         for(AutomatonEdge hiddenEdge : hiddenEdges){
@@ -32,7 +35,7 @@ public class AutomataAbstraction {
         return abstraction;
     }
 
-    private void constructOutgoingObservableEdges(Automaton abstraction, AutomatonEdge hiddenEdge){
+    private void constructOutgoingObservableEdges(Automaton abstraction, AutomatonEdge hiddenEdge) throws CompilationException {
         Guard hiddenGuard = (Guard) hiddenEdge.getMetaData("guard");
         List<AutomatonEdge> incomingObservableEdges = hiddenEdge.getFrom().getIncomingEdges().stream()
                 .filter(edge -> !edge.isHidden())
@@ -65,7 +68,7 @@ public class AutomataAbstraction {
             } else if (fromGuard == null && hiddenGuard != null) {
                 outGuard = hiddenGuard;
             } else if (fromGuard != null) {
-                outGuard = ExpressionSolver.combineGuards(hiddenGuard,fromGuard);
+                outGuard = ExpressionSimplifier.combineGuards(hiddenGuard,fromGuard);
             }
             for (AutomatonNode to : outgoingNodes) {
                 AutomatonEdge edge1 = abstraction.addEdge(edge.getLabel(), from, to);
@@ -76,7 +79,7 @@ public class AutomataAbstraction {
         }
     }
 
-    private void constructIncomingObservableEdges(Automaton abstraction, AutomatonEdge hiddenEdge){
+    private void constructIncomingObservableEdges(Automaton abstraction, AutomatonEdge hiddenEdge) throws CompilationException {
         Guard hiddenGuard = (Guard) hiddenEdge.getMetaData("guard");
         List<AutomatonEdge> outgoingObservableEdges = hiddenEdge.getTo().getOutgoingEdges().stream()
                 .filter(edge -> !edge.isHidden())
@@ -109,7 +112,7 @@ public class AutomataAbstraction {
             } else if (toGuard == null && hiddenGuard != null) {
                 outGuard = hiddenGuard;
             } else if (toGuard != null) {
-                outGuard = ExpressionSolver.combineGuards(hiddenGuard,toGuard);
+                outGuard = ExpressionSimplifier.combineGuards(hiddenGuard,toGuard);
             }
             for (AutomatonNode from : incomingNodes) {
                 AutomatonEdge edge1 = abstraction.addEdge(edge.getLabel(), from, to);
@@ -120,7 +123,7 @@ public class AutomataAbstraction {
         }
     }
 
-    private void addNode(Automaton abstraction, AutomatonNode node){
+    private void addNode(Automaton abstraction, AutomatonNode node) throws CompilationException {
         AutomatonNode newNode = abstraction.addNode(node.getId() + ".abs");
         for(String key : node.getMetaDataKeys()){
             newNode.addMetaData(key, node.getMetaData(key));
@@ -130,7 +133,7 @@ public class AutomataAbstraction {
         }
     }
 
-    private void addEdge(Automaton abstraction, AutomatonEdge edge){
+    private void addEdge(Automaton abstraction, AutomatonEdge edge) throws CompilationException {
         AutomatonNode from = abstraction.getNode(edge.getFrom().getId() + ".abs");
         AutomatonNode to = abstraction.getNode(edge.getTo().getId() + ".abs");
         AutomatonEdge newEdge = abstraction.addEdge(edge.getLabel(), from, to);

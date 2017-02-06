@@ -1,5 +1,6 @@
 package mc.process_models.automata.operations;
 
+import mc.exceptions.CompilationException;
 import mc.process_models.automata.Automaton;
 import mc.process_models.automata.AutomatonEdge;
 import mc.process_models.automata.AutomatonNode;
@@ -11,7 +12,7 @@ import java.util.List;
  */
 public class AutomataLabeller {
 
-    public Automaton labelAutomaton(Automaton automaton, String label){
+    public Automaton labelAutomaton(Automaton automaton, String label) throws CompilationException {
         Automaton labelled = new Automaton(label + ":" + automaton.getId());
 
         List<AutomatonNode> nodes = automaton.getNodes();
