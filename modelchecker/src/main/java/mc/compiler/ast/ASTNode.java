@@ -11,42 +11,14 @@ public abstract class ASTNode implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	// fields
-	private String label;
-	private RelabelNode relabel;
 	private Integer referenceId;
 	private Location location;
 	@Getter
 	private HashMap<String,Object> metaData = new HashMap<>();
 
 	public ASTNode(Location location){
-		label = null;
-		relabel = null;
 		referenceId = null;
 		this.location = location;
-	}
-
-	public String getLabel(){
-		return label;
-	}
-
-	public void setLabel(String label){
-		this.label = label;
-	}
-
-	public boolean hasLabel(){
-		return label != null;
-	}
-
-	public RelabelNode getRelabel(){
-		return relabel;
-	}
-
-	public void setRelabelNode(RelabelNode relabel){
-		this.relabel = relabel;
-	}
-
-	public boolean hasRelabel(){
-		return relabel != null;
 	}
 
 	public int getReferenceId(){

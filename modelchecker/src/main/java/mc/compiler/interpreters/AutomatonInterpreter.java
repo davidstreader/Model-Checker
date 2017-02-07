@@ -62,9 +62,6 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         if(astNode instanceof IdentifierNode){
             String reference = ((IdentifierNode)astNode).getIdentifier();
             ProcessModel model = processMap.get(reference);
-            if(model instanceof Automaton){
-                model = processLabellingAndRelabelling(((Automaton) model).copy(), astNode);
-            }
             processStack.push(model);
         }
         else{
@@ -82,7 +79,10 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
             currentNode.addMetaData("reference", astNode.getReferenceId());
         }
         currentNode.getMetaData().putAll(astNode.getMetaData());
-        if(astNode instanceof SequenceNode){
+        if(astNode instanceof ProcessRootNode){
+            interpretNode((ProcessRootNode)astNode, automaton, currentNode);
+        }
+        else if(astNode instanceof SequenceNode){
             interpretNode((SequenceNode)astNode, automaton, currentNode);
         }
         else if(astNode instanceof ChoiceNode){
@@ -100,7 +100,19 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         else if(astNode instanceof TerminalNode){
             interpretNode((TerminalNode)astNode, automaton, currentNode);
         }
-        processLabellingAndRelabelling(automaton, astNode);
+    }
+
+    private int subProcessCount = 0;
+    private void interpretNode(ProcessRootNode astNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException{
+        interpretProcess(astNode.getProcess(), automaton.getId() + "." + ++subProcessCount);
+        Automaton model = (Automaton)processStack.pop();
+        processLabellingAndRelabelling(model, astNode);
+        if(astNode.hasHiding()){
+            processHiding(automaton, astNode.getHiding());
+        }
+
+        AutomatonNode oldRoot = automaton.addAutomaton(model);
+        automaton.combineNodes(currentNode, oldRoot);
     }
 
     private void interpretNode(SequenceNode astNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException {
@@ -192,12 +204,12 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         currentNode.addMetaData("isTerminal", astNode.getTerminal());
     }
 
-    private Automaton processLabellingAndRelabelling(Automaton automaton, ASTNode astNode) throws CompilationException {
+    private Automaton processLabellingAndRelabelling(Automaton automaton, ProcessRootNode astNode) throws CompilationException {
         if(astNode.hasLabel()){
             automaton = operations.labelAutomaton(automaton, astNode.getLabel());
         }
-        if(astNode.hasRelabel()){
-            for(RelabelElementNode element : astNode.getRelabel().getRelabels()){
+        if(astNode.hasRelabelSet()){
+            for(RelabelElementNode element : astNode.getRelabelSet().getRelabels()){
                 automaton.relabelEdges(element.getOldLabel(), element.getNewLabel());
             }
         }

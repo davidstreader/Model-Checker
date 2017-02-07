@@ -25,19 +25,27 @@ public class ProcessRootNode extends ASTNode {
         return process;
     }
 
+    public void setProcess(ASTNode process){
+        this.process = process;
+    }
+
     public String getLabel(){
         return label;
+    }
+
+    public void setLabel(String label){
+        this.label = label;
     }
 
     public boolean hasLabel(){
         return label != null;
     }
 
-    public RelabelNode getRelabels(){
+    public RelabelNode getRelabelSet(){
         return relabels;
     }
 
-    public boolean hasRelabels(){
+    public boolean hasRelabelSet(){
         return relabels != null;
     }
 
@@ -67,10 +75,10 @@ public class ProcessRootNode extends ASTNode {
             if(hasLabel() && node.hasLabel() && !label.equals(node.getLabel())){
                 return false;
             }
-            if(hasRelabel() != node.hasRelabel()){
+            if(hasRelabelSet() != node.hasRelabelSet()){
                 return false;
             }
-            if(hasRelabel() && node.hasRelabel() && !relabels.equals(node.getRelabels())){
+            if(hasRelabelSet() && node.hasRelabelSet() && !relabels.equals(node.getRelabelSet())){
                 return false;
             }
             if(hasHiding() != node.hasHiding()){

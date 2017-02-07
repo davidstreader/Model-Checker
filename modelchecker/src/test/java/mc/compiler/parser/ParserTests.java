@@ -2,10 +2,10 @@ package mc.compiler.parser;
 
 import mc.compiler.Lexer;
 import mc.compiler.Parser;
+import mc.compiler.TestBase;
 import mc.compiler.ast.*;
-import mc.compiler.exceptions.LexerException;
-import mc.compiler.tests.TestBase;
 import mc.compiler.token.Token;
+import mc.exceptions.CompilationException;
 
 import java.util.List;
 
@@ -22,7 +22,7 @@ public abstract class ParserTests extends TestBase {
             List<Token> tokens = lexer.tokenise(code);
             AbstractSyntaxTree ast = parser.parse(tokens);
             return ast.getProcesses().get(index);
-        } catch (LexerException e) {
+        } catch (CompilationException e) {
             e.printStackTrace();
         }
 

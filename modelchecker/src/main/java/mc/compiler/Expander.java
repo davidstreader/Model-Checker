@@ -4,10 +4,7 @@ import mc.compiler.ast.*;
 import mc.compiler.iterator.IndexIterator;
 import mc.exceptions.CompilationException;
 import mc.solver.ExpressionSimplifier;
-import mc.util.expr.BooleanOperand;
-import mc.util.expr.Expression;
-import mc.util.expr.ExpressionPrinter;
-import mc.util.expr.IntegerOperand;
+import mc.util.expr.*;
 import mc.webserver.LogMessage;
 
 import java.util.*;
@@ -16,8 +13,12 @@ import java.util.regex.Pattern;
 
 public class Expander {
 
+    private final Pattern VAR_PATTERN = Pattern.compile("\\$[a-z][a-zA-Z0-9_]*");
+
     private Map<String, Expression> globalVariableMap;
+    private ExpressionEvaluator evaluator;
     private List<IndexNode> ranges;
+
     public AbstractSyntaxTree expand(AbstractSyntaxTree ast) throws CompilationException {
         globalVariableMap = ast.getVariableMap();
 
@@ -90,7 +91,10 @@ public class Expander {
     }
 
     private ASTNode expand(ASTNode astNode, Map<String, Object> variableMap) throws CompilationException {
-        if(astNode instanceof ActionLabelNode){
+        if(astNode instanceof ProcessRootNode){
+            astNode = expand((ProcessRootNode)astNode, variableMap);
+        }
+        else if(astNode instanceof ActionLabelNode){
             astNode = expand((ActionLabelNode)astNode, variableMap);
         }
         else if(astNode instanceof IndexNode){
@@ -118,10 +122,13 @@ public class Expander {
             astNode = expand((ForAllStatementNode)astNode, variableMap);
         }
 
-        if(astNode.hasLabel()){
-            astNode.setLabel(processVariables(astNode.getLabel(), variableMap));
-        }
+        return astNode;
+    }
 
+    private ASTNode expand(ProcessRootNode astNode, Map<String, Object> variableMap) throws CompilationException {
+        astNode.setLabel(processVariables(astNode.getLabel(), variableMap));
+        ASTNode process = expand(astNode.getProcess(), variableMap);
+        astNode.setProcess(process);
         return astNode;
     }
 
@@ -137,7 +144,7 @@ public class Expander {
         while(iterator.hasNext()){
             Object element = iterator.next();
             variableMap.put(astNode.getVariable(), element);
-            iterations.push(expand(astNode.getProcess(), variableMap));
+            iterations.push(expand(astNode.getProcess().copy(), variableMap));
         }
 
         ASTNode node = iterations.pop();
@@ -297,25 +304,40 @@ public class Expander {
     }
 
     private String processVariables(String string, Map<String, Object> variableMap) throws CompilationException {
-        Pattern pattern = Pattern.compile("\\$[a-z][a-zA-Z0-9_]*");
+        Map<String, Integer> integerMap = constructIntegerMap(variableMap);
         while(true){
-            Matcher matcher = pattern.matcher(string);
+            Matcher matcher = VAR_PATTERN.matcher(string);
             if(matcher.find()){
                 String variable = matcher.group();
-                // check if variable is a global variable
+                // check if the variable is a global variable
                 if(globalVariableMap.containsKey(variable)){
                     Expression expression = globalVariableMap.get(variable);
-                    int result = evaluateExpression(expression, variableMap);
-                    string = string.replaceAll(Matcher.quoteReplacement(variable)+"\\b","" + result);
+                    int result = evaluator.evaluateExpression(expression, integerMap);
+                    string = matcher.replaceAll("" + result);
+                }
+                else if(integerMap.containsKey(variable)){
+                    string = matcher.replaceAll("" + integerMap.get(variable));
                 }
                 else if(variableMap.containsKey(variable)){
-                    string = string.replaceAll(Matcher.quoteReplacement(variable)+"\\b", variableMap.get(variable).toString());
+                    string = string.replaceAll(Pattern.quote("[" + variable + "]"), "" + variableMap.get(variable));
                 }
             }
             else{
                 break;
             }
         }
+
         return string;
+    }
+
+    private Map<String, Integer> constructIntegerMap(Map<String, Object> variableMap){
+        Map<String, Integer> integerMap = new HashMap<String, Integer>();
+        for(String key : variableMap.keySet()){
+            if(variableMap.get(key) instanceof Integer){
+                integerMap.put(key, (Integer)variableMap.get(key));
+            }
+        }
+
+        return integerMap;
     }
 }
