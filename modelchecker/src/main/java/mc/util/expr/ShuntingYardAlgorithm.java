@@ -128,7 +128,7 @@ public class ShuntingYardAlgorithm {
 
         return output.pop();
     }
-    private RightOperator constructRightOperator(String operator, Expression rhs) {
+    private UnaryOperator constructRightOperator(String operator, Expression rhs) {
         switch(operator) {
             case "bitnot":
                 return new BitNotOperator(rhs);
@@ -137,7 +137,7 @@ public class ShuntingYardAlgorithm {
         }
         return null;
     }
-    private BothOperator constructBothOperator(String operator, Expression lhs, Expression rhs){
+    private BinaryOperator constructBothOperator(String operator, Expression lhs, Expression rhs){
         switch(operator){
             case "or":
                 return new OrOperator(lhs, rhs);

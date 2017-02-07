@@ -2,7 +2,7 @@ package mc.util.expr;
 
 import lombok.Setter;
 
-public abstract class BothOperator extends Operator {
+public abstract class BinaryOperator extends Operator {
 
 	// fields
     @Setter
@@ -10,7 +10,7 @@ public abstract class BothOperator extends Operator {
 	@Setter
     private Expression rhs;
 
-	public BothOperator(Expression lhs, Expression rhs){
+	public BinaryOperator(Expression lhs, Expression rhs){
 		this.lhs = lhs;
 		this.rhs = rhs;
 	}
@@ -30,8 +30,8 @@ public abstract class BothOperator extends Operator {
         if(obj == null){
             return false;
         }
-        if(obj instanceof BothOperator){
-            BothOperator op = (BothOperator)obj;
+        if(obj instanceof BinaryOperator){
+            BinaryOperator op = (BinaryOperator)obj;
             if(!lhs.equals(op.getLeftHandSide())){
                 return false;
             }

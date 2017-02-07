@@ -2,13 +2,13 @@ package mc.util.expr;
 
 import lombok.Setter;
 
-public abstract class RightOperator extends Operator {
+public abstract class UnaryOperator extends Operator {
 
     // fields
     @Setter
     private Expression rhs;
 
-    public RightOperator(Expression rhs) {
+    public UnaryOperator(Expression rhs) {
         this.rhs = rhs;
     }
 
@@ -23,8 +23,8 @@ public abstract class RightOperator extends Operator {
         if(obj == null){
             return false;
         }
-        if(obj instanceof RightOperator){
-            RightOperator op = (RightOperator)obj;
+        if(obj instanceof UnaryOperator){
+            UnaryOperator op = (UnaryOperator)obj;
             return rhs.equals(op.getRightHandSide());
         }
 
