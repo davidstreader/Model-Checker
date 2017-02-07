@@ -328,21 +328,21 @@ public class ExpressionSimplifier {
     private BoolExpr convert(BooleanOperand expr) {
         return context.mkBool(expr.getValue());
     }
-    private Expression substitute(BothOperator expression, HashMap<String, Expression> subMap) {
+    private Expression substitute(BinaryOperator expression, HashMap<String, Expression> subMap) {
         expression.setLhs(substitute(expression.getLeftHandSide(), subMap));
         expression.setRhs(substitute(expression.getRightHandSide(), subMap));
         return expression;
     }
-    private Expression substitute(RightOperator expression, HashMap<String, Expression> subMap) {
+    private Expression substitute(UnaryOperator expression, HashMap<String, Expression> subMap) {
         expression.setRhs(substitute(expression.getRightHandSide(), subMap));
         return expression;
     }
     private Expression substitute(Expression expression, HashMap<String, Expression> subMap) {
-        if (expression instanceof BothOperator) {
-            return substitute((BothOperator) expression, subMap);
+        if (expression instanceof BinaryOperator) {
+            return substitute((BinaryOperator) expression, subMap);
         }
-        if (expression instanceof RightOperator) {
-            return substitute((RightOperator)expression, subMap);
+        if (expression instanceof UnaryOperator) {
+            return substitute((UnaryOperator)expression, subMap);
         }
         if (expression instanceof IntegerOperand) return expression;
         if (expression instanceof VariableOperand) {
