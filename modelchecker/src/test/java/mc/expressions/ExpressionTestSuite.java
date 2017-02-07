@@ -1,4 +1,4 @@
-package mc.util.expr;
+package mc.expressions;
 
 import mc.ScriptTests;
 import org.junit.runner.RunWith;

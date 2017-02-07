@@ -1,6 +1,8 @@
-package mc.util.expr;
+package mc.expressions;
 
 import mc.exceptions.CompilationException;
+import mc.util.expr.Expression;
+import mc.util.expr.ExpressionEvaluator;
 import org.junit.Test;
 
 import java.util.HashMap;

@@ -121,17 +121,6 @@ public class JSONToASTConverter {
             default:
                 throw new IllegalArgumentException(type + " is not a correct json object");
         }
-
-        if(json.has("label")){
-            ActionLabelNode action = convertActionLabelNode(json.getJSONObject("label"));
-            node.setLabel(action.getAction());
-        }
-
-        if(json.has("relabel")){
-            RelabelNode relabel = convertRelabelNode(json.getJSONObject("relabel"));
-            node.setRelabelNode(relabel);
-        }
-
         return node;
     }
 
