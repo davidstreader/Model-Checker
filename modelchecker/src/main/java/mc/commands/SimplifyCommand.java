@@ -22,6 +22,8 @@ public class SimplifyCommand implements Command{
             System.out.println(Ansi.ansi().render("@|red There was an error parsing that expression. |@"));
             if (ex instanceof CompilationException) {
                 LoggerFactory.getLogger(((CompilationException) ex).getClazz()).error(ex.getLocalizedMessage());
+            } else {
+                LoggerFactory.getLogger(getClass()).error(ex.getLocalizedMessage());
             }
 
         }
