@@ -1,24 +1,24 @@
 package mc.compiler.ast;
 
-import java.util.Set;
+import java.util.List;
 
 import mc.util.Location;
 
 public class SetNode extends ASTNode {
 
 	// fields
-	private Set<String> set;
+	private List<String> set;
 
-	public SetNode(Set<String> set, Location location){
+	public SetNode(List<String> set, Location location){
 		super(location);
 		this.set = set;
 	}
 
-	public Set<String> getSet(){
+	public List<String> getSet(){
 		return set;
 	}
 
-	public void setSet(Set<String> set){
+	public void setSet(List<String> set){
 		this.set = set;
 	}
 

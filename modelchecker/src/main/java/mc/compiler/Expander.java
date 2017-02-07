@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
 
 public class Expander {
 
-    private Map<String, String> globalVariableMap;
+    private Map<String, Expression> globalVariableMap;
     private List<IndexNode> ranges;
     public AbstractSyntaxTree expand(AbstractSyntaxTree ast) throws CompilationException {
         globalVariableMap = ast.getVariableMap();

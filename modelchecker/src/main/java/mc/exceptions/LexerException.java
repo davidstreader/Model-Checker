@@ -1,11 +1,13 @@
 package mc.exceptions;
 
-public class LexerException extends Exception {
+import mc.compiler.Lexer;
+
+public class LexerException extends CompilationException {
 
 	private static final long serialVersionUID = 1L;
 
 	public LexerException(String message){
-		super("LexerException: " + message);
+		super(Lexer.class, "LexerException: " + message, null);
 	}
 	
 }

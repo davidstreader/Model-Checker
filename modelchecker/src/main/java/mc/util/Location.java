@@ -17,6 +17,13 @@ public class Location implements Serializable {
 		this.colEnd = colEnd;
 	}
 
+    public Location(Location start, Location end){
+        this.lineStart = start.getLineStart();
+        this.colStart = start.getColStart();
+        this.lineEnd = end.getLineEnd();
+        this.colEnd = end.getColEnd();
+    }
+
 	public int getLineStart(){
 		return lineStart;
 	}
