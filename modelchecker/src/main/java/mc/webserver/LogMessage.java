@@ -35,6 +35,9 @@ public class LogMessage {
 
   public void send() {
     this.message = ansi().render(message).toString();
+      if (Main.getInstance() != null)
     Main.getInstance().getWebServer().getSocket().send("log",this);
+      else
+          System.out.println(message);
   }
 }

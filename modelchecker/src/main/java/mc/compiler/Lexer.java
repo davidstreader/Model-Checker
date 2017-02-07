@@ -87,7 +87,7 @@ public class Lexer {
 		if(string.equals("automata") || string.equals("petrinet")){
 			return new ProcessTypeToken(string, location);
 		}
-		else if(string.equals("abs") || string.equals("simp") || string.equals("safe")){
+		else if(string.equals("abs") || string.equals("simp") || string.equals("safe") || string.equals("prune")){
 			return new FunctionToken(string, location);
 		}
 		else if(string.equals("STOP")){

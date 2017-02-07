@@ -170,6 +170,10 @@ public class ExpressionSimplifier {
             return convert((SubtractionOperator) expr, variables);
         } else if (expr instanceof VariableOperand) {
             return convert((VariableOperand) expr, variables);
+        } else if (expr instanceof PositiveOperator) {
+            return convert((PositiveOperator) expr, variables);
+        } else if (expr instanceof NegativeOperator) {
+            return convert((NegativeOperator) expr, variables);
         } else if (expr instanceof BitNotOperator) {
             return convert((BitNotOperator) expr, variables);
         } else if (expr instanceof NotOperator) {
@@ -192,6 +196,18 @@ public class ExpressionSimplifier {
         if (right instanceof BoolExpr)
             return context.mkNot((BoolExpr) right);
         throw new CompilationException(getClass(),"Operator `!` cannot be applied to "+getName(right.getClass().getSimpleName()));
+    }
+    private BitVecExpr convert(PositiveOperator expr, Map<String, Integer> variables) throws CompilationException {
+        Expr right = convert(expr.getRightHandSide(),variables);
+        if (right instanceof BitVecExpr)
+            return (BitVecExpr)right;
+        throw new CompilationException(getClass(),"Unary operator `+` cannot be applied to "+getName(right.getClass().getSimpleName()));
+    }
+    private BitVecExpr convert(NegativeOperator expr, Map<String, Integer> variables) throws CompilationException {
+        Expr right = convert(expr.getRightHandSide(),variables);
+        if (right instanceof BitVecExpr)
+            return context.mkBVNeg((BitVecExpr) right);
+        throw new CompilationException(getClass(),"Unary operator `+` cannot be applied to "+getName(right.getClass().getSimpleName()));
     }
     private BoolExpr convert(AndOperator expr, Map<String, Integer> variables) throws CompilationException {
         Expr left = convert(expr.getLeftHandSide(),variables);
