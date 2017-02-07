@@ -7,6 +7,7 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -19,11 +20,17 @@ public class ScriptTests {
             System.out.println("Running script: "+file);
             if (file.getName().endsWith("results.txt") || !file.getName().endsWith("txt")) return;
             mc.compiler.Compiler compiler = new mc.compiler.Compiler();
-            List<OperationResult> operations = compiler.compile(String.join("\n",Files.readAllLines(file.toPath()))).getOperationResults();
-            if (shouldFail(file.getName())) {
-                fail("Test script: "+file.getName()+" should not compile!");
-            } else {
-                fail("Test script: "+file.getName()+" should compile!");
+            List<OperationResult> operations = Collections.emptyList();
+            try {
+                operations = compiler.compile(String.join("\n", Files.readAllLines(file.toPath()))).getOperationResults();
+                if (shouldFail(file.getName())) {
+                    fail("Test script: " + file.getName() + " should not compile!");
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                if (!shouldFail(file.getName())) {
+                    fail("Test script: " + file.getName() + " should compile!");
+                }
             }
 
             if (operations.size() > 0) {
