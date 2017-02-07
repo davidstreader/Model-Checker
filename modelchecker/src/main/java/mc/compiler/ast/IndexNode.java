@@ -47,7 +47,10 @@ public class IndexNode extends ASTNode {
             if(!range.equals(node.getRange())){
                 return false;
             }
-            if(!process.equals(node.getProcess())){
+            if(process == null && node.getProcess() != null || process != null && node.getProcess() == null){
+                return false;
+            }
+            if(process != null && node.getProcess() != null && !process.equals(node.getProcess())){
                 return false;
             }
 

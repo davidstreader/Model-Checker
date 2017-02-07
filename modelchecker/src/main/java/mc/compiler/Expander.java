@@ -125,7 +125,9 @@ public class Expander {
     }
 
     private ASTNode expand(ProcessRootNode astNode, Map<String, Object> variableMap) throws CompilationException {
-        astNode.setLabel(processVariables(astNode.getLabel(), variableMap));
+        if(astNode.hasLabel()) {
+            astNode.setLabel(processVariables(astNode.getLabel(), variableMap));
+        }
         ASTNode process = expand(astNode.getProcess(), variableMap);
         astNode.setProcess(process);
         return astNode;

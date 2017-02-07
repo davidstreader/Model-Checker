@@ -81,6 +81,9 @@ public class Parser {
             else if(token instanceof SetToken){
                 parseSetDefinition();
             }
+            else if(token instanceof OperationToken){
+                parseOperation();
+            }
         }
 
         return new AbstractSyntaxTree(processes, operations, variableMap);
@@ -425,6 +428,16 @@ public class Parser {
         }
 
         ProcessNode processNode = new ProcessNode(processType, identifier.getIdentifier(), process, localProcesses, constructLocation(start));
+
+        // check if an interrupt process has been defined
+        if(peekToken() instanceof InterruptToken){
+            processNode.setInterrupt(parseInterrupt());
+        }
+
+        // check if a variable set has been defined
+        if(peekToken() instanceof DollarToken){
+            processNode.setVariables(parseVariables());
+        }
 
         // ensure that the next token is the '.' token
         if(!(nextToken() instanceof DotToken)){
@@ -971,7 +984,68 @@ public class Parser {
         return new InterruptNode(action, process, constructLocation(start));
     }
 
-    // EXPRESSION
+    // OPERATIONS
+    private void parseOperation() throws CompilationException {
+        if(!(nextToken() instanceof OperationToken)){
+            // TODO: throw error
+        }
+
+        if(!(peekToken() instanceof OpenBraceToken)){
+            parseSingleOperation();
+        }
+        else{
+            parseOperationBlock();
+        }
+    }
+
+    private void parseSingleOperation() throws CompilationException {
+        int start = index;
+        ASTNode process1 = parseComposite();
+
+        boolean isNegated = false;
+        if(peekToken() instanceof NegateToken){
+            nextToken();
+            isNegated = true;
+        }
+
+        String type = parseOperationType();
+
+        ASTNode process2 = parseComposite();
+
+        // ensure that the next token is a '.' token
+        if(!(nextToken() instanceof DotToken)){
+            // TODO: throw error
+        }
+
+        OperationNode operation = new OperationNode(type, isNegated, process1, process2, constructLocation(start));
+        operations.add(operation);
+    }
+
+    private void parseOperationBlock() throws CompilationException {
+        if(!(nextToken() instanceof OpenBraceToken)){
+            // TODO: throw error
+        }
+
+        while(!(peekToken() instanceof CloseBraceToken)){
+            parseSingleOperation();
+        }
+
+        if(!(nextToken() instanceof CloseBracketToken)){
+            // TODO: throw error
+        }
+    }
+
+    private String parseOperationType(){
+        if(peekToken() instanceof BisimulationToken){
+            nextToken();
+            return "bisimulation";
+        }
+
+        // TODO: throw error
+        return null;
+    }
+
+    // EXPRESSIONS
 
     private String parseExpression() throws CompilationException {
         List<String> exprTokens = new ArrayList<String>();
