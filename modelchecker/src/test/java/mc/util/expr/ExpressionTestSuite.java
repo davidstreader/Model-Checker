@@ -1,5 +1,6 @@
 package mc.util.expr;
 
+import mc.ScriptTests;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
@@ -10,7 +11,6 @@ import org.junit.runners.Suite;
     BooleanTests.class,
     MultiplicationTests.class,
     NegationTests.class,
-    ShiftTests.class,
     ScriptTests.class
 })
 

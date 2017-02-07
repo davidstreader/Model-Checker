@@ -19,11 +19,13 @@ public class Compiler {
     private ReferenceReplacer replacer;
     private Interpreter interpreter;
     private OperationEvaluator evaluator;
+    private Parser parser;
 
     private JSONToASTConverter jsonToAst;
 
     public Compiler(){
         this.lexer = new Lexer();
+        parser = new Parser();
         this.expander = new Expander();
         this.replacer = new ReferenceReplacer();
         this.interpreter = new Interpreter();
@@ -45,8 +47,7 @@ public class Compiler {
     }
 
     public CompilationObject compile(String code) throws CompilationException{
-        // TODO
-        return null;
+        return compile(parser.parse(lexer.tokenise(code)));
     }
 
     public CompilationObject compile(JSONObject json) throws CompilationException {

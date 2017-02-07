@@ -1,0 +1,23 @@
+automata {
+    A=a->b->STOP.
+    B=A~>g~>STOP.
+    C=B~>c~>STOP.
+
+    A2=(a->B|g->C),
+    B=(g->C|b->g->C),
+    C=(c->STOP).
+}
+petrinet {
+    A3=a->b->STOP.
+    B3=A3~>g~>STOP.
+    C3=B3~>c~>STOP.
+
+    A4=(a->B|g->C),
+    B=(g->C|b->g->C),
+    C=(c->STOP).
+}
+
+operation {
+    automata(A4) ~ automata(C3).
+    A2 ~ C.
+}

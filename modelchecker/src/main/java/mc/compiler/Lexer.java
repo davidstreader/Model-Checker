@@ -8,27 +8,27 @@ import mc.exceptions.LexerException;
 import mc.util.Location;
 
 public class Lexer {
-	
+
 	private int index;
-	
+
 	// used for constructing locations of tokens
 	private int line;
 	private int column;
-	
+
 	public List<Token> tokenise(String code) throws LexerException{
 		reset();
 		List<Token> tokens = new ArrayList<Token>();
-		
+
 		char[] characters = code.toCharArray();
-		
+
 		while(index < characters.length){
 			gobbleWhitespace(characters);
 			gobbleComments(characters);
-			
+
 			if(index >= characters.length){
 				break;
 			}
-			
+
 			if(Character.isLetter(characters[index])){
 				String value = parseString(characters);
 				Token token = constructStringToken(value);
@@ -47,10 +47,10 @@ public class Lexer {
 				tokens.add(token);
 			}
 		}
-		
+
 		return tokens;
 	}
-	
+
 	private String parseString(char[] characters){
 		StringBuilder builder = new StringBuilder();
 		while(index < characters.length){
@@ -61,13 +61,13 @@ public class Lexer {
 			else{
 				break;
 			}
-			
+
 			index++;
 		}
-		
+
 		return builder.toString();
 	}
-	
+
 	private String parseInteger(char[] characters){
 		StringBuilder builder = new StringBuilder();
 		while(index < characters.length){
@@ -78,10 +78,10 @@ public class Lexer {
 				break;
 			}
 		}
-		
+
 		return builder.toString();
 	}
-	
+
 	private Token constructStringToken(String string){
 		Location location = new Location(line, line, column, column + string.length());
 		if(string.equals("automata") || string.equals("petrinet")){
@@ -123,7 +123,7 @@ public class Lexer {
 		else if(Character.isUpperCase(string.charAt(0))){
 			return new IdentifierToken(string, location);
 		}
-		
+
 		return new ActionToken(string, location);
 	}
 
@@ -186,7 +186,7 @@ public class Lexer {
 				Location location = new Location(line, line, column, column + 2);
 				column += 2;
 				index += 2;
-				return new SequenceToken(location);				
+				return new SequenceToken(location);
 			}
 			else{
 				Location location = new Location(line, line, column, column++);
@@ -199,7 +199,7 @@ public class Lexer {
 				Location location = new Location(line, line, column, column + 2);
 				column += 2;
 				index += 2;
-				return new InterruptToken(location);				
+				return new InterruptToken(location);
 			}
 			else{
 				Location location = new Location(line, line, column, column++);
@@ -211,7 +211,7 @@ public class Lexer {
 			Location location = new Location(line, line, column, column++);
 			index++;
 			return new HideToken(location);
-		}		
+		}
 		else if(characters[index] == '@'){
 			Location location = new Location(line, line, column, column++);
 			index++;
@@ -232,7 +232,7 @@ public class Lexer {
 				Location location = new Location(line, line, column, column + 2);
 				column += 2;
 				index += 2;
-				return new OrToken(location);				
+				return new OrToken(location);
 			}
 			else{
 				Location location = new Location(line, line, column, column++);
@@ -245,7 +245,7 @@ public class Lexer {
 				Location location = new Location(line, line, column, column + 2);
 				column += 2;
 				index += 2;
-				return new AndToken(location);				
+				return new AndToken(location);
 			}
 			else{
 				Location location = new Location(line, line, column, column++);
@@ -263,7 +263,7 @@ public class Lexer {
 				Location location = new Location(line, line, column, column + 2);
 				column += 2;
 				index += 2;
-				return new EqualityToken(location);				
+				return new EqualityToken(location);
 			}
 			else{
 				Location location = new Location(line, line, column, column++);
@@ -276,7 +276,7 @@ public class Lexer {
 				Location location = new Location(line, line, column, column + 2);
 				column += 2;
 				index += 2;
-				return new NotEqualToken(location);				
+				return new NotEqualToken(location);
 			}
 			else{
 				Location location = new Location(line, line, column, column++);
@@ -289,13 +289,13 @@ public class Lexer {
 				Location location = new Location(line, line, column, column + 2);
 				column += 2;
 				index++;
-				return new LessThanEqToken(location);				
+				return new LessThanEqToken(location);
 			}
 			if(index < characters.length - 1 && characters[index] == '<'){
 				Location location = new Location(line, line, column, column + 2);
 				column += 2;
 				index += 2;
-				return new LeftShiftToken(location);				
+				return new LeftShiftToken(location);
 			}
 			else{
 				Location location = new Location(line, line, column, column++);
@@ -308,13 +308,13 @@ public class Lexer {
 				Location location = new Location(line, line, column, column + 2);
 				column += 2;
 				index += 2;
-				return new GreaterThanEqToken(location);				
+				return new GreaterThanEqToken(location);
 			}
 			if(index < characters.length - 1 && characters[index] == '>'){
 				Location location = new Location(line, line, column, column + 2);
 				column += 2;
 				index += 2;
-				return new RightShiftToken(location);				
+				return new RightShiftToken(location);
 			}
 			else{
 				Location location = new Location(line, line, column, column++);
@@ -342,10 +342,10 @@ public class Lexer {
 			index++;
 			return new ModuloToken(location);
 		}
-		
+
 		throw new LexerException("Found invalid character '" + characters[index] + "' (" + line + ":" + column + ")");
 	}
-	
+
 	private void gobbleComments(char[] characters){
 		while(index < characters.length - 1){
 			if(characters[index] == '/' && characters[index + 1] == '/'){
@@ -359,25 +359,25 @@ public class Lexer {
 				gobbleWhitespace(characters);
 				continue;
 			}
-			
+
 			break;
 		}
 	}
-	
+
 	private void gobbleSingleLineComment(char[] characters){
 		while(index < characters.length){
 			if(characters[index] == '\n'){
 				break;
 			}
-			
+
 			index++;
 		}
-		
+
 		index++;
 		line++;
 		column = 0;
 	}
-	
+
 	private void gobbleMultiLineComment(char[] characters){
 		while(index < characters.length - 1){
 			if(characters[index] == '*' && characters[index + 1] == '/'){
@@ -390,13 +390,13 @@ public class Lexer {
 			else{
 				column++;
 			}
-			
+
 			index++;
 		}
-		
+
 		index += 2;
 	}
-	
+
 	private void gobbleWhitespace(char[] characters){
 		while(index < characters.length){
 			if(characters[index] == ' ' || characters[index] == '\t'){
@@ -409,11 +409,11 @@ public class Lexer {
 			else{
 				break;
 			}
-			
+
 			index++;
 		}
 	}
-	
+
 	private void reset(){
 		index = 0;
 		line = 1;
