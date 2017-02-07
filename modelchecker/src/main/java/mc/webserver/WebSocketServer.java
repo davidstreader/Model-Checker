@@ -34,7 +34,7 @@ public class WebSocketServer {
 
         server = new SocketIOServer(config);
         server.startAsync();
-        server.addEventListener("compile",Map.class, (client, data, ackSender) -> {
+        server.addEventListener("compile",CompileRequest.class, (client, data, ackSender) -> {
             this.client.set(client);
             logger.info(ansi().render("Received compile command from @|yellow "+getSocketHostname()+"|@")+"");
             try {
@@ -63,12 +63,11 @@ public class WebSocketServer {
         });
     }
 
-    private ProcessReturn compile(Map data) throws CompilationException {
-        Context context = Context.fromJSON(data.get("context"));
-        CompilationObject ret = new Compiler().compile(new JSONObject(data).getJSONObject("ast"));
+    private ProcessReturn compile(CompileRequest data) throws CompilationException {
+        CompilationObject ret = new Compiler().compile(data.getCode());
         Map<String,ProcessModel> processModelMap = ret.getProcessMap();
-        List<SkipObject> skipped = processSkipped(processModelMap,context);
-        return new ProcessReturn(processModelMap, ret.getOperationResults(),null,context,skipped);
+        List<SkipObject> skipped = processSkipped(processModelMap,data.getContext());
+        return new ProcessReturn(processModelMap, ret.getOperationResults(),null,data.getContext(),skipped);
     }
 
     private List<SkipObject> processSkipped(Map<String, ProcessModel> processMap, Context context) {
