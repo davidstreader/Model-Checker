@@ -42,6 +42,7 @@ dependencies {
     compile 'uk.com.robust-it:cloning:1.9.3'
 }
 test {
+    setWorkingDir "../"
     systemProperty "java.library.path", natives
     environment "PATH", natives
     environment "LD_LIBRARY_PATH", natives
@@ -50,7 +51,7 @@ test {
 }
 
 static getNatives() {
-    String ret = "../native/x86";
+    String ret = "native/x86";
     if (System.getProperty("os.arch").endsWith("64")) ret += "_64";
     if (Os.isFamily(Os.FAMILY_WINDOWS)) {
         ret+="-windows"

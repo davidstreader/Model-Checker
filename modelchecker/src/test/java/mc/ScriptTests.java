@@ -14,7 +14,7 @@ import java.util.Objects;
 import static org.junit.Assert.*;
 
 public class ScriptTests {
-    @Test
+    @Test(timeout=1000)
     public void testScripts() throws IOException, CompilationException {
         for (File file:new File("tests").listFiles()) {
             System.out.println("Running script: "+file);

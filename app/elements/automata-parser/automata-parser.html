@@ -1,5 +1,4 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
-<link rel="import" href="../imports/compiler.html">
 
 <script>
 // jshint -W098
@@ -13,11 +12,16 @@
      * that tree into processes represented as automata.
      *
      * @param {string} code - the code to parse
-     * @param {boolean} isFair - determines whether fair or unfair abstraction is performed
-     * @return {Automaton[]} - the interpreted automata
      */
-    compile: function(code, isFair) {
-      Compiler.compile(code, isFair); // defined in compiler.js
+    compile: function(code) {
+        app.socket.emit('compile',{code:code,context:app.getSettings()},function(results) {
+            if (results == undefined) return;
+            if (results.type == "error") {
+                app.showError(results);
+                return;
+            }
+            app.finalizeBuild(results);
+        });
     }
 
   });
