@@ -37,7 +37,7 @@
           editor.getSession().setMode('ace/mode/example'); // syntax highlighting
           var qtags = {
             getCompletions: function(editor, session, pos, prefix, callback) {
-              var types = {"scope": _.keys(Lexer.processTypes),"keyword": _.keys(Lexer.keywords),"terminal": _.keys(Lexer.terminals),"function":_.keys(Lexer.functions)};
+              var types = {"scope": _.keys(LexerTokens.processTypes),"keyword": _.keys(LexerTokens.keywords),"terminal": _.keys(LexerTokens.terminals),"function":_.keys(LexerTokens.functions)};
               var mapped = [];
               _.each(types,(words,scope)=>{
                 mapped = mapped.concat(words.map(function(word) {
