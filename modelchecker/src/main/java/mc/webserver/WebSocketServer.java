@@ -42,22 +42,23 @@ public class WebSocketServer {
                 ackSender.sendAckData(ret);
             } catch (Exception ex) {
                 //Get a stack trace then split it into lines
-                String[] lines = ExceptionUtils.getStackTrace(ex).split("\n");
-                for (int i = 0; i < lines.length; i++) {
+                String[] lineSplit = ExceptionUtils.getStackTrace(ex).split("\n");
+                for (int i = 0; i < lineSplit.length; i++) {
                     //if the line contains com.conrun... then we have gotten up to the socket.io portion of the stack trace
                     //And we can ignore this line and the rest.
-                    if (lines[i].contains("com.corundumstudio.socketio")) {
-                        lines = Arrays.copyOfRange(lines,1,i);
+                    if (lineSplit[i].contains("com.corundumstudio.socketio")) {
+                        lineSplit = Arrays.copyOfRange(lineSplit,1,i);
                         break;
                     }
                 }
+                String lines = String.join("\n",lineSplit);
                 if (ex instanceof CompilationException) {
                     ackSender.sendAckData(new ErrorMessage(ex.getMessage().replace("mc.exceptions.",""),((CompilationException) ex).getLocation()));
-                    LoggerFactory.getLogger(((CompilationException) ex).getClazz()).error(ex+"\n"+String.join("\n",lines));
+                    LoggerFactory.getLogger(((CompilationException) ex).getClazz()).error(ex+"\n"+lines);
                 } else {
                     logger.error(ansi().render("@|red An error occurred while compiling.|@") + "");
-                    logger.error(ex+"\n"+String.join("\n",lines));
-                    ackSender.sendAckData(new ErrorMessage(ex+"",String.join("\n",lines),null));
+                    logger.error(ex+"\n"+lines);
+                    ackSender.sendAckData(new ErrorMessage(ex+"",lines,null));
                 }
             }
         });

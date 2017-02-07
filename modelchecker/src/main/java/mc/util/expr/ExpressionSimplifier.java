@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class ExpressionSimplifier {
     private static ExpressionSimplifier simplifier;
@@ -261,7 +262,7 @@ public class ExpressionSimplifier {
     private BoolExpr convert(EqualityOperator expr, Map<String, Integer> variables) throws CompilationException {
         Expr left = convert(expr.getLeftHandSide(),variables);
         Expr right = convert(expr.getRightHandSide(),variables);
-        if (left.getClass() == right.getClass())
+        if (Objects.equals(getName(left.getClass().getSimpleName()), getName(right.getClass().getSimpleName())))
             return context.mkEq(left,right);
         throw new CompilationException(getClass(),"Operator `==` cannot be applied to "+getName(left.getClass().getSimpleName())+","+getName(right.getClass().getSimpleName()));
     }

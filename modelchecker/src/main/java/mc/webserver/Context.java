@@ -1,7 +1,5 @@
 package mc.webserver;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
