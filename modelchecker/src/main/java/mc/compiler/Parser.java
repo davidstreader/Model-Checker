@@ -429,6 +429,16 @@ public class Parser {
 
         ProcessNode processNode = new ProcessNode(processType, identifier.getIdentifier(), process, localProcesses, constructLocation(start));
 
+        // check if an interrupt process has been defined
+        if(peekToken() instanceof InterruptToken){
+            processNode.setInterrupt(parseInterrupt());
+        }
+
+        // check if a variable set has been defined
+        if(peekToken() instanceof DollarToken){
+            processNode.setVariables(parseVariables());
+        }
+
         // ensure that the next token is the '.' token
         if(!(nextToken() instanceof DotToken)){
             // TODO: throw error
