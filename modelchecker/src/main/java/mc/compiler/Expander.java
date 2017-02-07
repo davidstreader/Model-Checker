@@ -3,7 +3,6 @@ package mc.compiler;
 import mc.compiler.ast.*;
 import mc.compiler.iterator.IndexIterator;
 import mc.exceptions.CompilationException;
-import mc.solver.ExpressionSimplifier;
 import mc.util.expr.*;
 import mc.webserver.LogMessage;
 

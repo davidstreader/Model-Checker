@@ -1,9 +1,11 @@
 package mc.commands;
 
-import mc.solver.ExpressionSimplifier;
+import mc.exceptions.CompilationException;
+import mc.util.expr.ExpressionSimplifier;
 import mc.util.expr.Expression;
 import mc.util.expr.ExpressionPrinter;
 import org.fusesource.jansi.Ansi;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 
@@ -18,7 +20,10 @@ public class SimplifyCommand implements Command{
             System.out.println(Ansi.ansi().render("Expression simplified to: @|yellow " + printer.printExpression(expression)+"|@"));
         } catch (Exception ex) {
             System.out.println(Ansi.ansi().render("@|red There was an error parsing that expression. |@"));
-            System.out.println("Error Message: "+ex.getLocalizedMessage());
+            if (ex instanceof CompilationException) {
+                LoggerFactory.getLogger(((CompilationException) ex).getClazz()).error(ex.getLocalizedMessage());
+            }
+
         }
     }
 }

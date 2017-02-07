@@ -1,6 +1,7 @@
 package mc.compiler.parser;
 
 import mc.compiler.ast.*;
+import mc.exceptions.CompilationException;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -14,7 +15,7 @@ import static junit.framework.TestCase.fail;
 public class RootTests extends ParserTests {
 
     @Test
-    public void correctRootTest_1(){
+    public void correctRootTest_1() throws CompilationException {
         String input = "automata Test = a:(a -> STOP).";
         ProcessNode node = constructProcessNode(input);
         TerminalNode terminal = new TerminalNode("STOP", null);
@@ -26,7 +27,7 @@ public class RootTests extends ParserTests {
     }
 
     @Test
-    public void correctRootTest_2(){
+    public void correctRootTest_2() throws CompilationException {
         String input = "automata Test = (a -> STOP)/{b/a}.";
         ProcessNode node = constructProcessNode(input);
         TerminalNode terminal = new TerminalNode("STOP", null);
@@ -39,7 +40,7 @@ public class RootTests extends ParserTests {
     }
 
     @Test
-    public void correctRootTest_3(){
+    public void correctRootTest_3() throws CompilationException {
         String input = "automata Test = (a -> STOP)\\{a}.";
         ProcessNode node = constructProcessNode(input);
         TerminalNode terminal = new TerminalNode("STOP", null);
@@ -52,7 +53,7 @@ public class RootTests extends ParserTests {
     }
 
     @Test
-    public void correctRootTest_4(){
+    public void correctRootTest_4() throws CompilationException {
         String input = "automata Test = (a -> STOP)@{a}.";
         ProcessNode node = constructProcessNode(input);
         TerminalNode terminal = new TerminalNode("STOP", null);
@@ -65,7 +66,7 @@ public class RootTests extends ParserTests {
     }
 
     @Test
-    public void correctRootTest_5(){
+    public void correctRootTest_5() throws CompilationException {
         String input = "automata Test = a:(a -> STOP)/{b/a}.";
         ProcessNode node = constructProcessNode(input);
         TerminalNode terminal = new TerminalNode("STOP", null);
@@ -78,7 +79,7 @@ public class RootTests extends ParserTests {
     }
 
     @Test
-    public void correctRootTest_6(){
+    public void correctRootTest_6() throws CompilationException {
         String input = "automata Test = a:(a -> STOP)\\{a.a}.";
         ProcessNode node = constructProcessNode(input);
         TerminalNode terminal = new TerminalNode("STOP", null);
@@ -91,7 +92,7 @@ public class RootTests extends ParserTests {
     }
 
     @Test
-    public void correctRootTest_7(){
+    public void correctRootTest_7() throws CompilationException {
         String input = "automata Test = a:(a -> STOP)@{a.a}.";
         ProcessNode node = constructProcessNode(input);
         TerminalNode terminal = new TerminalNode("STOP", null);
@@ -104,7 +105,7 @@ public class RootTests extends ParserTests {
     }
 
     @Test
-    public void correctRootTest_8(){
+    public void correctRootTest_8() throws CompilationException {
         String input = "automata Test = (a -> STOP)/{b/a}\\{b}.";
         ProcessNode node = constructProcessNode(input);
         TerminalNode terminal = new TerminalNode("STOP", null);
@@ -118,7 +119,7 @@ public class RootTests extends ParserTests {
     }
 
     @Test
-    public void correctRootTest_9(){
+    public void correctRootTest_9() throws CompilationException {
         String input = "automata Test = (a -> STOP)/{b/a}@{b}.";
         ProcessNode node = constructProcessNode(input);
         TerminalNode terminal = new TerminalNode("STOP", null);
@@ -132,7 +133,7 @@ public class RootTests extends ParserTests {
     }
 
     @Test
-    public void correctRootTest_10(){
+    public void correctRootTest_10() throws CompilationException {
         String input = "automata Test = a:(a -> STOP)/{b/a.a}\\{b}.";
         ProcessNode node = constructProcessNode(input);
         TerminalNode terminal = new TerminalNode("STOP", null);
@@ -146,7 +147,7 @@ public class RootTests extends ParserTests {
     }
 
     @Test
-    public void correctRootTest_11(){
+    public void correctRootTest_11() throws CompilationException {
         String input = "automata Test = a:(a -> STOP)/{b/a.a}@{b}.";
         ProcessNode node = constructProcessNode(input);
         TerminalNode terminal = new TerminalNode("STOP", null);

@@ -5,7 +5,7 @@ import mc.exceptions.CompilationException;
 import mc.process_models.automata.Automaton;
 import mc.process_models.automata.AutomatonEdge;
 import mc.process_models.automata.AutomatonNode;
-import mc.solver.ExpressionSimplifier;
+import mc.util.expr.ExpressionSimplifier;
 
 import java.util.*;
 import java.util.stream.Collectors;

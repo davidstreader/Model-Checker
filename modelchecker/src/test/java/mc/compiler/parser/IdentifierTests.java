@@ -2,6 +2,7 @@ package mc.compiler.parser;
 
 import static org.junit.Assert.*;
 
+import mc.exceptions.CompilationException;
 import org.junit.Test;
 
 import mc.compiler.ast.ChoiceNode;
@@ -12,9 +13,9 @@ import mc.compiler.ast.SequenceNode;
 import mc.compiler.ast.TerminalNode;
 
 public class IdentifierTests extends ParserTests {
-	
+
 	@Test
-	public void basicIdentifierTest(){
+	public void basicIdentifierTest() throws CompilationException {
 		String input = "automata Test = (a -> STOP). automata Test2 = Test.";
 		ProcessNode node = constructProcessNode(input, 1);
 		IdentifierNode expected = new IdentifierNode("Test", null);
@@ -22,9 +23,9 @@ public class IdentifierTests extends ParserTests {
 			fail("expecting identifer nodes to be equilvalent");
 		}
 	}
-	
+
 	@Test
-	public void mixedIdentifierTest_1(){
+	public void mixedIdentifierTest_1() throws CompilationException {
 		String input = "automata Test1 = (a -> STOP). automata Test2 = (Test1 | b -> STOP).";
 		ProcessNode node = constructProcessNode(input, 1);
 		IdentifierNode identifier = new IdentifierNode("Test1", null);
@@ -34,9 +35,9 @@ public class IdentifierTests extends ParserTests {
 			fail("expecting choice nodes to be equilvalent");
 		}
 	}
-	
+
 	@Test
-	public void mixedIdentifierTest_2(){
+	public void mixedIdentifierTest_2() throws CompilationException {
 		String input = "automata Test1 = (b -> STOP). automata Test2 = (a -> STOP | Test1).";
 		ProcessNode node = constructProcessNode(input, 1);
 		IdentifierNode identifier = new IdentifierNode("Test1", null);
@@ -46,9 +47,9 @@ public class IdentifierTests extends ParserTests {
 			fail("expecting choice nodes to be equilvalent");
 		}
 	}
-	
+
 	@Test
-	public void mixedIdentifierTest_3(){
+	public void mixedIdentifierTest_3() throws CompilationException {
 		String input = "automata Test1 = (a -> STOP). automata Test2 = (b -> STOP). automata Test3 = (Test1 | Test2).";
 		ProcessNode node = constructProcessNode(input, 2);
 		IdentifierNode identifier1 = new IdentifierNode("Test1", null);
@@ -58,9 +59,9 @@ public class IdentifierTests extends ParserTests {
 			fail("expecting choice nodes to be equilvalent");
 		}
 	}
-	
+
 	@Test
-	public void mixedIdentifierTest_4(){
+	public void mixedIdentifierTest_4() throws CompilationException {
 		String input = "automata Test1 = (a -> STOP). automata Test2 = (Test1 || b -> STOP).";
 		ProcessNode node = constructProcessNode(input, 1);
 		IdentifierNode identifier = new IdentifierNode("Test1", null);
@@ -70,9 +71,9 @@ public class IdentifierTests extends ParserTests {
 			fail("expecting composite nodes to be equilvalent");
 		}
 	}
-	
+
 	@Test
-	public void mixedIdentifierTest_5(){
+	public void mixedIdentifierTest_5() throws CompilationException {
 		String input = "automata Test1 = (b -> STOP). automata Test2 = (a -> STOP || Test1).";
 		ProcessNode node = constructProcessNode(input, 1);
 		IdentifierNode identifier = new IdentifierNode("Test1", null);
@@ -82,9 +83,9 @@ public class IdentifierTests extends ParserTests {
 			fail("expecting composite nodes to be equilvalent");
 		}
 	}
-	
+
 	@Test
-	public void mixedIdentifierTest_6(){
+	public void mixedIdentifierTest_6() throws CompilationException {
 		String input = "automata Test1 = (a -> STOP). automata Test2 = (b -> STOP). automata Test3 = (Test1 || Test2).";
 		ProcessNode node = constructProcessNode(input, 2);
 		IdentifierNode identifier1 = new IdentifierNode("Test1", null);

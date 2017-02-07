@@ -1,7 +1,6 @@
 package mc.util.expr;
 
 import mc.exceptions.CompilationException;
-import mc.solver.ExpressionSimplifier;
 
 import java.util.Collections;
 import java.util.Map;

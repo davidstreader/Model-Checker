@@ -1,4 +1,5 @@
 package mc.compiler;
+
 import mc.compiler.expander.ExpanderTestSuite;
 import mc.compiler.parser.ParserTestSuite;
 import org.junit.runner.RunWith;

@@ -3,6 +3,8 @@ package mc.compiler;
 import mc.compiler.ast.*;
 import mc.util.Location;
 import mc.util.expr.Expression;
+import mc.util.expr.ExpressionEvaluator;
+import mc.util.expr.ExpressionPrinter;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -12,7 +14,7 @@ import java.util.regex.Pattern;
 
 public class JSONToASTConverter {
 
-    private Map<String, String> variableMap;
+    private Map<String, Expression> variableMap;
 
     public AbstractSyntaxTree convert(JSONObject ast){
         JSONObject variables = ast.getJSONObject("variableMap");
@@ -36,7 +38,7 @@ public class JSONToASTConverter {
     }
 
     private void constructVariableMap(JSONObject variables){
-        variableMap = new HashMap<String, String>();
+        variableMap = new HashMap<String, Expression>();
         Set<String> keys = variables.keySet();
 
         Pattern pattern = Pattern.compile("\\$v[0-9]+");
@@ -54,7 +56,7 @@ public class JSONToASTConverter {
                 }
             }
 
-            variableMap.put(key, expression);
+            variableMap.put(key, Expression.constructExpression(expression));
         }
     }
 
@@ -169,7 +171,7 @@ public class JSONToASTConverter {
 
     public SetNode convertSetNode(JSONObject json){
         JSONArray array = json.getJSONArray("set");
-        Set<String> set = new HashSet<String>();
+        List<String> set = new ArrayList<>();
         for(int i = 0; i < array.length(); i++){
             set.add(array.getString(i));
         }
@@ -265,7 +267,7 @@ public class JSONToASTConverter {
 
     public IfStatementNode convertIfStatementNode(JSONObject json){
         String guard = json.getString("guard");
-        Expression condition = Expression.constructExpression(guard,variableMap);
+        Expression condition = Expression.constructExpression(guard,null);
         ASTNode trueBranch = convertJSONNode(json.getJSONObject("trueBranch"));
 
         JSONObject jsonLocation = json.getJSONObject("location");
@@ -336,7 +338,7 @@ public class JSONToASTConverter {
     public HidingNode convertHidingNode(JSONObject json){
         String type = json.getString("type");
         JSONArray array = json.getJSONArray("set");
-        Set<String> set = new HashSet<String>();
+        List<String> set = new ArrayList<>();
         for(int i = 0; i < array.length(); i++){
             String element = array.getString(i);
             set.add(element);

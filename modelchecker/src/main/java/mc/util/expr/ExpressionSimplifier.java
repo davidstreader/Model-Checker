@@ -1,10 +1,9 @@
-package mc.solver;
+package mc.util.expr;
 
 import com.microsoft.z3.*;
 import com.microsoft.z3.enumerations.Z3_lbool;
 import mc.compiler.Guard;
 import mc.exceptions.CompilationException;
-import mc.util.expr.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,26 +13,28 @@ import java.util.Map;
 
 public class ExpressionSimplifier {
     private static ExpressionSimplifier simplifier;
-    private static Logger logger = LoggerFactory.getLogger(ExpressionSimplifier.class);
-    static {
-        try {
-            HashMap<String, String> cfg = new HashMap<>();
-            cfg.put("model", "true");
-            Context ctx = new Context(cfg);
-            simplifier = new ExpressionSimplifier(ctx);
-        } catch (UnsatisfiedLinkError ex) {
-            logger.error("Unable to load native libraries. Error: "+ex.getLocalizedMessage());
-        }
-    }
     private ExpressionSimplifier(Context o) {
         context = o;
     }
 
     public static Expression simplify(Expression expr, Map<String, Integer> variables) throws CompilationException {
+        init();
         return simplifier.convert(simplifier.convert(expr,variables).simplify());
     }
-
+    private static void init() throws CompilationException {
+        if (simplifier == null) {
+            try {
+                HashMap<String, String> cfg = new HashMap<>();
+                cfg.put("model", "true");
+                Context ctx = new Context(cfg);
+                simplifier = new ExpressionSimplifier(ctx);
+            } catch (UnsatisfiedLinkError | NoClassDefFoundError ex) {
+                throw new CompilationException(ExpressionSimplifier.class,"Unable to initialize native code. Reason: "+ex.getMessage());
+            }
+        }
+    }
     public static Guard combineGuards(Guard first, Guard second) throws CompilationException {
+        init();
         Guard ret = new Guard();
         ret.setVariables(first.getVariables());
         ret.setNext(second.getNext());
