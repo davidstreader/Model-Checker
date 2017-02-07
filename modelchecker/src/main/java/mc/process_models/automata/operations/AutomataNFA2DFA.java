@@ -29,6 +29,7 @@ public class AutomataNFA2DFA {
         }
         table.remove(Constant.HIDDEN);
         System.out.println("NFA2DFA Table1: "+timer.stop());
+        System.out.println(table);
         timer.reset().start();
         Stack<Set<String>> stack = new Stack<>();
         stack.add(clousure(automaton.getRoot()));
@@ -54,6 +55,7 @@ public class AutomataNFA2DFA {
             }
         }
         System.out.println("NFA2DFA Table2: "+timer.stop());
+        System.out.println(table2);
         timer.reset().start();
         HashMap<String,AutomatonNode> nodeTable = new HashMap<>();
         for (String node : table2.keySet()) {
@@ -75,6 +77,8 @@ public class AutomataNFA2DFA {
     }
 
     private boolean isRoot(String node, Automaton automaton) {
+        System.out.println(node);
+        System.out.println("REAL:"+automaton.getRoot().getMetaData("label").toString());
         String[] nodes = node.replaceAll("[\\[\\]]","").split(",");
         return Arrays.asList(nodes).contains(automaton.getRoot().getMetaData("label").toString());
     }
