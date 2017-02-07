@@ -1,7 +1,5 @@
 package mc.util.expr;
 
-import mc.Main;
-import mc.solver.ExpressionSimplifier;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 

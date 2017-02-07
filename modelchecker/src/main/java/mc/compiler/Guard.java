@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import mc.compiler.ast.IndexNode;
 import mc.exceptions.CompilationException;
-import mc.solver.ExpressionSimplifier;
+import mc.util.expr.ExpressionSimplifier;
 import mc.util.expr.Expression;
 import mc.util.expr.ExpressionEvaluator;
 import mc.util.expr.ExpressionPrinter;
