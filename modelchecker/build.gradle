@@ -14,6 +14,7 @@ shadowJar {
   version = null
   destinationDir = new File("../")
 }
+import org.apache.tools.ant.taskdefs.condition.Os
 sourceCompatibility = 1.8
 mainClassName = 'mc.Main'
 repositories {
@@ -39,4 +40,24 @@ dependencies {
   compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.5'
   compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.+'
     compile 'uk.com.robust-it:cloning:1.9.3'
+}
+test {
+    systemProperty "java.library.path", natives
+    environment "PATH", natives
+    environment "LD_LIBRARY_PATH", natives
+    //TODO: We need to use a specific lib dir on mac.
+    environment "DYLD_LIBRARY_PATH", natives
+}
+
+static getNatives() {
+    String ret = "../native/x86";
+    if (System.getProperty("os.arch").endsWith("64")) ret += "_64";
+    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+        ret+="-windows"
+    } else if (Os.isFamily(Os.FAMILY_MAC)) {
+        ret+="-macosx"
+    } else {
+        ret +="-linux"
+    }
+    return ret;
 }

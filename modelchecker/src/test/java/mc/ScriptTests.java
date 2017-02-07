@@ -27,9 +27,10 @@ public class ScriptTests {
                     fail("Test script: " + file.getName() + " should not compile!");
                 }
             } catch (Exception ex) {
-                ex.printStackTrace();
                 if (!shouldFail(file.getName())) {
                     fail("Test script: " + file.getName() + " should compile!");
+                } else {
+                    ex.printStackTrace();
                 }
             }
 
