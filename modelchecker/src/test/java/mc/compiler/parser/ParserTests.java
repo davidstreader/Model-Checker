@@ -2,10 +2,12 @@ package mc.compiler.parser;
 
 import mc.compiler.Lexer;
 import mc.compiler.Parser;
-import mc.compiler.ast.*;
-import mc.compiler.exceptions.LexerException;
-import mc.compiler.tests.TestBase;
+import mc.compiler.TestBase;
+import mc.compiler.ast.AbstractSyntaxTree;
+import mc.compiler.ast.ProcessNode;
 import mc.compiler.token.Token;
+import mc.exceptions.CompilationException;
+import mc.exceptions.LexerException;
 
 import java.util.List;
 
@@ -17,7 +19,7 @@ public abstract class ParserTests extends TestBase {
     private Lexer lexer = new Lexer();
     private Parser parser = new Parser();
 
-    protected ProcessNode constructProcessNode(String code, int index){
+    protected ProcessNode constructProcessNode(String code, int index) throws CompilationException {
         try {
             List<Token> tokens = lexer.tokenise(code);
             AbstractSyntaxTree ast = parser.parse(tokens);
@@ -28,8 +30,8 @@ public abstract class ParserTests extends TestBase {
 
         return null;
     }
-    
-    protected ProcessNode constructProcessNode(String code){
+
+    protected ProcessNode constructProcessNode(String code) throws CompilationException {
     	return constructProcessNode(code, 0);
     }
 }

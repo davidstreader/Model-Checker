@@ -1,9 +1,9 @@
 package mc.compiler;
+
+import mc.compiler.expander.ExpanderTestSuite;
+import mc.compiler.parser.ParserTestSuite;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
-
-import mc.compiler.tests.expander.ExpanderTestSuite;
-import mc.compiler.tests.parser.ParserTestSuite;
 
 @RunWith(Suite.class)
 
