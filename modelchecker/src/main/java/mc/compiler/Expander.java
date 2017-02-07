@@ -291,15 +291,12 @@ public class Expander {
             }
         }
         Expression ex = ExpressionSimplifier.simplify(condition,variables);
-        return ex instanceof BooleanOperand && ((BooleanOperand) ex).getValue();
+        if (ex instanceof BooleanOperand)
+            return ((BooleanOperand) ex).getValue();
+        throw new CompilationException(getClass(),"Guard expressions should simplify to boolean values.");
     }
 
     private String processVariables(String string, Map<String, Object> variableMap) throws CompilationException {
-        Map<String,String> varMap = new HashMap<>();
-        varMap.putAll(globalVariableMap);
-        for (String key : variableMap.keySet()) {
-            varMap.put(key,variableMap.get(key).toString());
-        }
         Pattern pattern = Pattern.compile("\\$[a-z][a-zA-Z0-9_]*");
         while(true){
             Matcher matcher = pattern.matcher(string);
@@ -307,7 +304,7 @@ public class Expander {
                 String variable = matcher.group();
                 // check if variable is a global variable
                 if(globalVariableMap.containsKey(variable)){
-                    Expression expression = Expression.constructExpression(variable,varMap);
+                    Expression expression = globalVariableMap.get(variable);
                     int result = evaluateExpression(expression, variableMap);
                     string = string.replaceAll(Matcher.quoteReplacement(variable)+"\\b","" + result);
                 }

@@ -64,7 +64,7 @@ public class Guard implements Serializable{
      * @param globalVariableMap The global variable map
      * @param ranges The ranges for the current identifier
      */
-    public void parseNext(String identifier, Map<String, String> globalVariableMap, List<IndexNode> ranges) {
+    public void parseNext(String identifier, Map<String, Expression> globalVariableMap, List<IndexNode> ranges) {
         //Check that there are actually variables in the identifier
         if (!identifier.contains("[")) return;
         //Get a list of all variables
@@ -80,8 +80,8 @@ public class Guard implements Serializable{
             //Then the next value is inside the map
             for (String gVar : globalVariableMap.keySet()) {
                 if (identifier.contains(gVar)) {
-                    next.add(rm$(globalVariableMap.get(gVar)));
-                    nextMap.put(range.getVariable(),globalVariableMap.get(gVar));
+                    next.add(rm$(new ExpressionPrinter().printExpression(globalVariableMap.get(gVar))));
+                    nextMap.put(range.getVariable(),new ExpressionPrinter().printExpression(globalVariableMap.get(gVar)));
                     found = true;
                     break;
                 }
@@ -89,7 +89,7 @@ public class Guard implements Serializable{
             //It wasn't found, so it is just a value on its own.
             if (!found) {
                 next.add(rm$(range.getVariable()+":="+var));
-                nextMap.put(range.getVariable(),globalVariableMap.get(var));
+                nextMap.put(range.getVariable(),new ExpressionPrinter().printExpression(globalVariableMap.get(var)));
             }
         }
         //Replace symbols with their assignment counterparts.
