@@ -3,7 +3,10 @@ package mc.compiler;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import mc.compiler.ast.IndexNode;
+import mc.exceptions.CompilationException;
+import mc.solver.ExpressionSimplifier;
 import mc.util.expr.Expression;
+import mc.util.expr.ExpressionEvaluator;
 import mc.util.expr.ExpressionPrinter;
 
 import java.io.Serializable;
@@ -110,6 +113,13 @@ public class Guard implements Serializable{
         return guard != null || !variables.isEmpty() || !next.isEmpty();
     }
     private static String operators = "(&|\\^|<<|>>|\\+|-|\\*|/|%)";
-
+    public boolean getShouldDisplay() {
+        if (guard == null) return false;
+        try {
+            return !(new ExpressionEvaluator().isExecutable(ExpressionSimplifier.simplify(getGuard(),variables)));
+        } catch (CompilationException e) {
+            return false;
+        }
+    }
 
 }
