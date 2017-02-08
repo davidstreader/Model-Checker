@@ -45,6 +45,7 @@ public class Parser {
     private Map<String, Expression> variableMap;
     private Map<String, ASTNode> constantMap;
     private List<IndexNode> actionRanges;
+    private Set<String> definedVariables;
     private int index;
     private int variableId;
 
@@ -57,6 +58,7 @@ public class Parser {
         variableMap = new HashMap<String, Expression>();
         constantMap = new HashMap<String, ASTNode>();
         actionRanges = new ArrayList<IndexNode>();
+        definedVariables = new HashSet<String>();
         index = 0;
         variableId = 0;
         expressionParser = new ExpressionParser();
@@ -202,7 +204,9 @@ public class Parser {
         int start = index;
         String variable = null;
         if(hasLabel()){
-            variable = "$" + parseLabel();
+            String label = parseLabel();
+            definedVariables.add(label);
+            variable = "$" + label;
         }
         else{
             // a variable has not been defined, give the variable a unique internally defined name
@@ -690,12 +694,12 @@ public class Parser {
             // TODO: throw error
         }
 
-        ASTNode trueBranch = parseComposite();
+        ASTNode trueBranch = parseLocalProcess();
 
         // check if an else branch was defined
         if(peekToken() instanceof ElseToken){
             nextToken(); // gobble the 'then' token
-            ASTNode falseBranch = parseComposite();
+            ASTNode falseBranch = parseLocalProcess();
 
             return new IfStatementNode(expression, trueBranch, falseBranch, constructLocation(start));
         }
@@ -711,7 +715,7 @@ public class Parser {
         }
 
         Expression expression = variableMap.get(parseExpression());
-        ASTNode trueBranch = parseComposite();
+        ASTNode trueBranch = parseLocalProcess();
         return new IfStatementNode(expression, trueBranch, constructLocation(start));
     }
 
@@ -1320,7 +1324,8 @@ public class Parser {
             return true;
         }
         else if(token instanceof ActionToken){
-            return true;
+            String action = ((ActionToken)token).getAction();
+            return definedVariables.contains(action);
         }
         else if(token instanceof OpenParenToken){
             return true;

@@ -272,7 +272,7 @@ public class Lexer {
 			}
 		}
 		else if(characters[index] == '!'){
-			if(index < characters.length - 1 && characters[index] == '='){
+			if(index < characters.length - 1 && characters[index + 1] == '='){
 				Location location = new Location(line, line, column, column + 2);
 				column += 2;
 				index += 2;
@@ -285,13 +285,13 @@ public class Lexer {
 			}
 		}
 		else if(characters[index] == '<'){
-			if(index < characters.length - 1 && characters[index] == '='){
+			if(index < characters.length - 1 && characters[index + 1] == '='){
 				Location location = new Location(line, line, column, column + 2);
 				column += 2;
 				index++;
 				return new LessThanEqToken(location);
 			}
-			if(index < characters.length - 1 && characters[index] == '<'){
+			if(index < characters.length - 1 && characters[index + 1] == '<'){
 				Location location = new Location(line, line, column, column + 2);
 				column += 2;
 				index += 2;
@@ -304,13 +304,13 @@ public class Lexer {
 			}
 		}
 		else if(characters[index] == '>'){
-			if(index < characters.length - 1 && characters[index] == '='){
+			if(index < characters.length - 1 && characters[index + 1] == '='){
 				Location location = new Location(line, line, column, column + 2);
 				column += 2;
 				index += 2;
 				return new GreaterThanEqToken(location);
 			}
-			if(index < characters.length - 1 && characters[index] == '>'){
+			if(index < characters.length - 1 && characters[index + 1] == '>'){
 				Location location = new Location(line, line, column, column + 2);
 				column += 2;
 				index += 2;

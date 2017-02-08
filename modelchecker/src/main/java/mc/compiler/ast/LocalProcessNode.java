@@ -48,7 +48,10 @@ public class LocalProcessNode extends ASTNode {
             if(!identifier.equals(node.getIdentifier())){
                 return false;
             }
-            if(!ranges.equals(node.getRanges())){
+            if(ranges == null && node.getRanges() != null || ranges != null && node.getRanges() == null){
+                return false;
+            }
+            if(ranges != null && !ranges.equals(node.getRanges())){
                 return false;
             }
             if(!process.equals(node.getProcess())){
