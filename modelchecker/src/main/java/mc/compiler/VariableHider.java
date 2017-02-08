@@ -26,8 +26,8 @@ public class VariableHider {
     }
 
     private void constructMap(LocalProcessNode process, HashMap<String, HiddenObject> processMap, VariableSetNode variables) {
-        List<IndexNode> ranges = process.getRanges().getRanges();
-        if (!ranges.isEmpty() && variables != null) {
+        if (process.getRanges() != null && variables != null) {
+            List<IndexNode> ranges = process.getRanges().getRanges();
             for (int i = 0; i < ranges.size(); i++) {
                 String v = ranges.get(i).getVariable().substring(1);
                 if (variables.getVariables().contains(v)) {
