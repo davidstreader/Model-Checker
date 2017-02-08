@@ -805,8 +805,8 @@ public class Parser {
             }
         }
 
-        List<IndexNode> ranges = new ArrayList<IndexNode(actionRanges.subList(rangeStart, actionRanges.size()));
-        actionRanges = new ArrayList<IndexNode<(actionRanges.subList(0, rangeStart));
+        List<IndexNode> ranges = new ArrayList<IndexNode>(actionRanges.subList(rangeStart, actionRanges.size()));
+        actionRanges = new ArrayList<IndexNode>(actionRanges.subList(0, rangeStart));
 
         return new RangesNode(ranges, constructLocation(start));
     }
