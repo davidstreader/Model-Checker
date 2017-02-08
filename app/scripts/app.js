@@ -114,6 +114,9 @@
             }
         };
         app.finalizeBuild = function(results) {
+            const editor = app.$.editor._editor.getSession();
+            editor.clearAnnotations();
+            _.each(editor.$backMarkers,(val,key)=>editor.removeMarker(key));
             const graphs = [];
             const allGraphs = [];
             const skipped = results.skipped;
