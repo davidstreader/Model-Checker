@@ -70,7 +70,6 @@ public class Expander {
         List<LocalProcessNode> newLocalProcesses = new ArrayList<LocalProcessNode>();
         if(index < ranges.size()){
             IndexNode range = ranges.get(index);
-            this.ranges.add(range);
             IndexIterator iterator = IndexIterator.construct(range.getRange());
             String variable = range.getVariable();
             localProcess.setIdentifier(localProcess.getIdentifier() + "[" + variable + "]");
@@ -143,11 +142,12 @@ public class Expander {
     private ASTNode expand(IndexNode astNode, Map<String, Object> variableMap) throws CompilationException {
         IndexIterator iterator = IndexIterator.construct(astNode.getRange());
         Stack<ASTNode> iterations = new Stack<ASTNode>();
-        this.ranges.add(astNode);
         while(iterator.hasNext()){
+            this.ranges.add(astNode);
             Object element = iterator.next();
             variableMap.put(astNode.getVariable(), element);
             iterations.push(expand(astNode.getProcess().copy(), variableMap));
+            this.ranges.remove(astNode);
         }
 
         ASTNode node = iterations.pop();
