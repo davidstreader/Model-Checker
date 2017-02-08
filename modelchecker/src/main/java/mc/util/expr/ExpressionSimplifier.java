@@ -208,7 +208,7 @@ public class ExpressionSimplifier {
         Expr right = convert(expr.getRightHandSide(),variables);
         if (right instanceof BitVecExpr)
             return context.mkBVNeg((BitVecExpr) right);
-        throw new CompilationException(getClass(),"Unary operator `+` cannot be applied to "+getName(right.getClass().getSimpleName()));
+        throw new CompilationException(getClass(),"Unary operator `-` cannot be applied to "+getName(right.getClass().getSimpleName()));
     }
     private BoolExpr convert(AndOperator expr, Map<String, Integer> variables) throws CompilationException {
         Expr left = convert(expr.getLeftHandSide(),variables);

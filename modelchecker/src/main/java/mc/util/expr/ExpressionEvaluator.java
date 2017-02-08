@@ -12,7 +12,8 @@ public class ExpressionEvaluator {
 
     public boolean isExecutable(Expression expression) throws CompilationException {
         //If you simplify an expression with no variables it will be evaluated by the solver.
-        return ExpressionSimplifier.simplify(expression, Collections.emptyMap()) instanceof Operand;
+        Expression ex = ExpressionSimplifier.simplify(expression, Collections.emptyMap());
+        return ex instanceof BooleanOperand || ex instanceof IntegerOperand ;
     }
 
     public int evaluateExpression(Expression ex, Map<String, Integer> variableMap) throws CompilationException {

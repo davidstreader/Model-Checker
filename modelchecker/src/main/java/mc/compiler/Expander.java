@@ -15,7 +15,7 @@ public class Expander {
     private final Pattern VAR_PATTERN = Pattern.compile("\\$[a-z][a-zA-Z0-9_]*");
 
     private Map<String, Expression> globalVariableMap;
-    private ExpressionEvaluator evaluator;
+    private ExpressionEvaluator evaluator = new ExpressionEvaluator();
     private List<IndexNode> ranges;
 
     public AbstractSyntaxTree expand(AbstractSyntaxTree ast) throws CompilationException {
@@ -26,6 +26,7 @@ public class Expander {
             ProcessNode process = processes.get(i);
             new LogMessage("Expanding:",process).send();
             Map<String, Object> variableMap = new HashMap<String, Object>();
+            ranges = new ArrayList<>();
             ASTNode root = expand(process.getProcess(), variableMap);
             process.setProcess(root);
 
@@ -67,9 +68,9 @@ public class Expander {
 
     private List<LocalProcessNode> expandLocalProcesses(LocalProcessNode localProcess, Map<String, Object> variableMap, List<IndexNode> ranges, int index) throws CompilationException {
         List<LocalProcessNode> newLocalProcesses = new ArrayList<LocalProcessNode>();
-        this.ranges = ranges;
         if(index < ranges.size()){
             IndexNode range = ranges.get(index);
+            this.ranges.add(range);
             IndexIterator iterator = IndexIterator.construct(range.getRange());
             String variable = range.getVariable();
             localProcess.setIdentifier(localProcess.getIdentifier() + "[" + variable + "]");
@@ -142,6 +143,7 @@ public class Expander {
     private ASTNode expand(IndexNode astNode, Map<String, Object> variableMap) throws CompilationException {
         IndexIterator iterator = IndexIterator.construct(astNode.getRange());
         Stack<ASTNode> iterations = new Stack<ASTNode>();
+        this.ranges.add(astNode);
         while(iterator.hasNext()){
             Object element = iterator.next();
             variableMap.put(astNode.getVariable(), element);
