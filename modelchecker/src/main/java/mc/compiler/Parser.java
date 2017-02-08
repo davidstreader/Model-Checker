@@ -98,7 +98,7 @@ public class Parser {
      * @return
      *      -- an @code{IdentifierNode}
      */
-    private IdentifierNode parseIdentifier(){
+    private IdentifierNode parseIdentifier() throws CompilationException {
         Token token = nextToken();
 
         if(token instanceof IdentifierToken){
@@ -106,8 +106,7 @@ public class Parser {
             return new IdentifierNode(identifier.getIdentifier(), identifier.getLocation());
         }
 
-        // TODO: throw error
-        return null;
+        throw constructException("expecting to parse an identifier but received \"" + token.toString() + "\"", token.getLocation());
     }
 
     // ACTION LABELS
@@ -141,7 +140,7 @@ public class Parser {
                 else if(hasIdentifierReference()){
                     String identifier = ((IdentifierToken)peekToken()).getIdentifier();
                     if(!constantMap.containsKey(identifier)){
-                        // TODO: throw errror
+                        throw constructException("The identifier \"" + identifier + "\" has not been defined");
                     }
 
                     ASTNode constant = constantMap.get(identifier);
@@ -160,13 +159,14 @@ public class Parser {
                 }
 
                 if(!(nextToken() instanceof CloseBracketToken)){
-                    // TODO: throw error
+                    Token error = tokens.get(index - 1);
+                    throw constructException("Expecting to parse a \"]\" but received \"" + error.toString() + "\"", error.getLocation());
                 }
 
                 builder.append("[" + variable + "]");
             }
             else{
-                // TODO: throw error
+                throw constructException("expecting to parse an action label or action range but received \"" + token.toString() + "\"", token.getLocation());
             }
 
             if(peekToken() instanceof DotToken){
@@ -212,13 +212,13 @@ public class Parser {
             IdentifierNode identifier = parseIdentifier();
 
             if(!constantMap.containsKey(identifier.getIdentifier())){
-                // TODO: throw error
+                throw constructException("the identifier \"" + identifier.getIdentifier() + "\" has not been defined", identifier.getLocation());
             }
 
             ASTNode constant = constantMap.get(identifier.getIdentifier());
 
             if(constant instanceof ConstNode){
-                // TODO: throw error
+                throw constructException("expecting a range or set constant but received a const", identifier.getLocation());
             }
 
             range = constant;
@@ -264,7 +264,8 @@ public class Parser {
 
         // ensure that the next token is the '..' token
         if(!(nextToken() instanceof RangeSeparatorToken)){
-            // TODO: throw error
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \"..\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
         // parse the next expression and evaluate it if necessary to get the start value of the range
@@ -297,7 +298,8 @@ public class Parser {
         int start = index;
         // ensure the next token is the '{' token
         if(!(nextToken() instanceof OpenBraceToken)){
-            // TODO: throw error
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \"{\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
         List<String> set = new ArrayList<String>();
@@ -317,7 +319,8 @@ public class Parser {
 
         // ensure the next token is the '}' token
         if(!(nextToken() instanceof CloseBraceToken)){
-            // TODO: throw error
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \"}\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
         return new SetNode(set, constructLocation(start));
@@ -328,14 +331,16 @@ public class Parser {
     private void parseConstDefinition() throws CompilationException {
         // ensure that the next token is the 'const' token
         if(!(nextToken() instanceof ConstToken)){
-            // TODO: throw error
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \"const\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
         IdentifierNode identifier = parseIdentifier();
 
         // ensure that the next token is the '=' token
         if(!(nextToken() instanceof AssignToken)){
-            // TODO: throw error
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \"=\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
         int start = index;
@@ -348,14 +353,16 @@ public class Parser {
     private void parseRangeDefinition() throws CompilationException {
         // ensure the next token is the 'range' token
         if(!(nextToken() instanceof RangeToken)){
-            // TODO: throw error
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \"range\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
         IdentifierNode identifier = parseIdentifier();
 
         // ensure the next token is the '=' token
         if(!(nextToken() instanceof AssignToken)){
-            // TODO: throw error
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \"=\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
         int start = index;
@@ -363,7 +370,8 @@ public class Parser {
 
         // ensure the next token is the '..' token
         if(!(nextToken() instanceof RangeSeparatorToken)){
-            // TODO: throw error
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \"..\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
         int endValue = parseSimpleExpression();
@@ -375,14 +383,16 @@ public class Parser {
     private void parseSetDefinition() throws CompilationException {
         // ensure that the next token is the 'set' token
         if(!(nextToken() instanceof SetToken)){
-            // TODO: throw error
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \"set\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
         IdentifierNode identifier = parseIdentifier();
 
         // ensure that the next token is the '=' token
         if(!(nextToken() instanceof AssignToken)){
-            // TODO: throw error
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \"=\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
         SetNode set = parseSet();
@@ -402,7 +412,7 @@ public class Parser {
             parseProcessDefinitionBlock(processType);
         }
         else{
-            // TODO: throw error
+            throw constructException("expecting to parse a process definition or a process definition block but received \"" + peekToken().toString() + "\"");
         }
     }
 
@@ -412,12 +422,12 @@ public class Parser {
 
         // ensure that the next token is the '=' token
         if(!(nextToken() instanceof AssignToken)){
-            // TODO: throw error
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \"=\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
         ASTNode process = parseComposite();
 
-        // TODO: parse local processes
         List<LocalProcessNode> localProcesses = new ArrayList<LocalProcessNode>();
 
         while(peekToken() instanceof CommaToken){
@@ -439,7 +449,8 @@ public class Parser {
 
         // ensure that the next token is the '.' token
         if(!(nextToken() instanceof DotToken)){
-            // TODO: throw error
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \".\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
         processes.add(processNode);
@@ -448,7 +459,8 @@ public class Parser {
     private void parseProcessDefinitionBlock(String processType) throws CompilationException {
         // ensure that the next token is the '{' token
         if(!(nextToken() instanceof OpenBraceToken)){
-            // TODO: throw error
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \"{\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
         while(!(peekToken() instanceof CloseBraceToken)){
@@ -457,7 +469,8 @@ public class Parser {
 
         // ensure that the next token is the '}' token
         if(!(nextToken() instanceof CloseBraceToken)){
-            // TODO: throw error
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \"}\" but received \"" + error.toString() + "\"", error.getLocation());
         }
     }
 
@@ -472,7 +485,8 @@ public class Parser {
         }
 
         if(!(nextToken() instanceof AssignToken)){
-            // TODO: throw error
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \"=\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
         ASTNode process = parseComposite();
@@ -480,14 +494,13 @@ public class Parser {
         return new LocalProcessNode(identifier.getIdentifier(), ranges, process, constructLocation(start));
     }
 
-    private String parseProcessType(){
+    private String parseProcessType() throws CompilationException {
         Token token = nextToken();
         if(token instanceof ProcessTypeToken){
             return ((ProcessTypeToken)token).getProcessType();
         }
 
-        // TODO: throw error
-        return null;
+        throw constructException("expecting to parse a process type but received \"" + token.toString() + "\"", token.getLocation());
     }
 
     private ASTNode parseComposite() throws CompilationException {
@@ -543,7 +556,8 @@ public class Parser {
             nextToken();
             ASTNode process = parseComposite();
             if(!(nextToken() instanceof CloseParenToken)){
-                // TODO: throw error
+                Token error = tokens.get(index - 1);
+                throw constructException("expecting to parse \")\" but received \"" + error.toString() + "\"", error.getLocation());
             }
 
             return process;
@@ -570,7 +584,8 @@ public class Parser {
 
         // ensure that the next token is a '->' token
         if(!(nextToken() instanceof SequenceToken)){
-            // TODO: throw error
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \"->\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
         ASTNode to = parseLocalProcess();
@@ -617,14 +632,14 @@ public class Parser {
 
             // ensure that the next token is a ')' token
             if(!(nextToken() instanceof CloseParenToken)){
-                // TODO: throw error
+                Token error = tokens.get(index - 1);
+                throw constructException("expecting to parse \")\" but received \"" + error.toString() + "\"", error.getLocation());
             }
 
             return process;
         }
 
-        // TODO: throw error
-        return null;
+        throw constructException("expecting to parse a base local process but received \"" + peekToken().toString() + "\"");
     }
 
     private FunctionNode parseFunction() throws CompilationException {
@@ -633,27 +648,28 @@ public class Parser {
 
         // ensure that the next token is a '(' token
         if(!(nextToken() instanceof OpenParenToken)){
-            // TODO: throw error;
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \"(\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
         ASTNode process = parseComposite();
 
         // ensure that the next token is a ')' token
         if(!(nextToken() instanceof CloseParenToken)){
-            // TODO: throw error
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \")\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
         return new FunctionNode(type, process, constructLocation(start));
     }
 
-    private String parseFunctionType(){
+    private String parseFunctionType() throws CompilationException {
         Token token = nextToken();
         if(token instanceof FunctionToken){
             return ((FunctionToken)token).getFunction();
         }
 
-        // TODO: throw error
-        return null;
+        throw constructException("expecting to parse a function type but received \"" + token.toString() + "\"", token.getLocation());
     }
 
     private FunctionNode parseCasting() throws CompilationException {
@@ -662,14 +678,16 @@ public class Parser {
 
         // ensure that the next token is a '(' token
         if(!(nextToken() instanceof OpenParenToken)){
-            // TODO: throw error
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \"(\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
         ASTNode process = parseComposite();
 
         // ensure the next token is a ')' token
         if(!(nextToken() instanceof CloseParenToken)){
-            // TODO: throw error;
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \")\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
         return new FunctionNode(cast, process, constructLocation(start));
@@ -679,14 +697,16 @@ public class Parser {
         int start = index;
         // ensure that the next token is a 'if' token
         if(!(nextToken() instanceof IfToken)){
-            // TODO: throw error
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \"if\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
         Expression expression = variableMap.get(parseExpression());
 
         // ensure that the next token is a 'then' token
         if(!(nextToken() instanceof ThenToken)){
-            // TODO: throw error
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \"then\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
         ASTNode trueBranch = parseLocalProcess();
@@ -706,7 +726,8 @@ public class Parser {
         int start = index;
         // ensure that the next token is a 'when' token
         if(!(nextToken() instanceof WhenToken)){
-            // TODO: throw error
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \"when\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
         Expression expression = variableMap.get(parseExpression());
@@ -718,25 +739,28 @@ public class Parser {
         int start = index;
         // ensure that the next token is a 'forall' token
         if(!(nextToken() instanceof ForAllToken)){
-            // TODO: throw error
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \"forall\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
         RangesNode ranges = parseRanges();
 
         if(!(nextToken() instanceof OpenParenToken)){
-            // TODO: throw error
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \"(\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
         ASTNode process = parseComposite();
 
         if(!(nextToken() instanceof CloseParenToken)){
-            // TODO: throw error
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \")\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
         return new ForAllStatementNode(ranges, process, constructLocation(start));
     }
 
-    private ASTNode parseTerminal(){
+    private ASTNode parseTerminal() throws CompilationException {
         Token token = nextToken();
         if(token instanceof TerminalToken){
             if(token instanceof StopToken){
@@ -749,8 +773,7 @@ public class Parser {
             return new SequenceNode(deadlock, terminal, token.getLocation());
         }
 
-        // TODO: throw error
-        return null;
+        throw constructException("expecting to parse a terminal but received \"" + token.toString() + "\"", token.getLocation());
     }
 
     private String parseIndices() throws CompilationException {
@@ -758,7 +781,7 @@ public class Parser {
 
         Token token = peekToken();
         if(!(token instanceof OpenBracketToken)){
-            // TODO: throw error
+            throw constructException("expecting to parse \"[\" but received \"" + token.toString() + "\"");
         }
 
         while(token instanceof OpenBracketToken){
@@ -769,7 +792,7 @@ public class Parser {
 
             token = nextToken();
             if(!(token instanceof CloseBracketToken)){
-                // TODO: throw error
+                throw constructException("expecting to parse \"]\" but received \"" + token.toString() + "\"", token.getLocation());
             }
 
             builder.append("[" + expression + "]");
@@ -785,7 +808,7 @@ public class Parser {
         int start = index;
 
         if(!(peekToken() instanceof OpenBracketToken)){
-            // TODO: throw error
+            throw constructException("expecting to parse \"[\" but received \"" + peekToken().toString() + "\"");
         }
 
         int rangeStart = actionRanges.size();
@@ -796,7 +819,8 @@ public class Parser {
             parseActionRange();
 
             if(!(nextToken() instanceof CloseBracketToken)){
-                // TODO: throw error
+                Token error = tokens.get(index - 1);
+                throw constructException("expecting to parse \"]\" but received \"" + error.toString() + "\"", error.getLocation());
             }
         }
 
@@ -808,7 +832,7 @@ public class Parser {
 
     // RELABELLING AND HIDING
 
-    private String parseProcessLabel(){
+    private String parseProcessLabel() throws CompilationException {
         StringBuilder builder = new StringBuilder();
 
         while(true){
@@ -827,15 +851,16 @@ public class Parser {
                     builder.append(((IntegerToken)token).getInteger());
                 }
                 else{
-                    // TODO: throw error
+                    throw constructException("expecting to parse an integer or variable but received \"" + token.toString() + "\"", token.getLocation());
                 }
 
                 if(!(nextToken() instanceof CloseBracketToken)){
-                    // TODO: throw error
+                    Token error = tokens.get(index - 1);
+                    throw constructException("expecting to parse \"]\" but received \"" + error.toString() + "\"", error.getLocation());
                 }
             }
             else{
-                // TODO: throw error
+                throw constructException("expecting to parse a process label but received \"" + token.toString() + "\"", token.getLocation());
             }
 
             if(peekToken() instanceof DotToken){
@@ -849,23 +874,26 @@ public class Parser {
         }
 
         if(!(nextToken() instanceof ColonToken)){
-            // TODO: throw error
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \":\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
         return builder.toString();
     }
 
-    private String parseLabel(){
+    private String parseLabel() throws CompilationException {
         // ensure that the next token is an action token
         if(!(peekToken() instanceof ActionToken)){
-            // TODO: throw error
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse a variable but received \"" + error.toString() + "\"", error.getLocation());
         }
 
         String label = ((ActionToken)nextToken()).getAction();
 
         // ensure that the next token is a ':' token
         if(!(nextToken() instanceof ColonToken)){
-            // TODO: throw error
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \":\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
         return label;
@@ -873,12 +901,14 @@ public class Parser {
 
     private RelabelNode parseRelabel() throws CompilationException {
         int start = index;
-        if(!(peekToken() instanceof DivisionToken)){
-            // TODO: throw error
+        if(!(nextToken() instanceof DivisionToken)){
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \"/\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
         if(!(nextToken() instanceof OpenBraceToken)){
-            // TODO: throw error
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \"{\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
         List<RelabelElementNode> relabels = new ArrayList<RelabelElementNode>();
@@ -903,7 +933,8 @@ public class Parser {
 
         // ensure that the next token is the '}' token
         if(!(nextToken() instanceof CloseBraceToken)){
-            // TODO: throw error
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \"}\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
         return new RelabelNode(relabels, constructLocation(start));
@@ -914,7 +945,8 @@ public class Parser {
         ActionLabelNode newLabel = parseActionLabel();
 
         if(!(nextToken() instanceof DivisionToken)){
-            // TODO: throw error
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \"/\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
         ActionLabelNode oldLabel = parseActionLabel();
@@ -924,8 +956,8 @@ public class Parser {
 
     private HidingNode parseHiding() throws CompilationException {
         int start = index;
-        if(!(peekToken() instanceof HideToken) || !(peekToken() instanceof AtToken)){
-            // TODO: throw error
+        if(!(peekToken() instanceof HideToken) && !(peekToken() instanceof AtToken)){
+            throw constructException("expecting to parse \"\\\" or \"@\" but received \"" + peekToken().toString() + "\"");
         }
 
         // assume that type is inclusive unless specified otherwise
@@ -939,28 +971,31 @@ public class Parser {
         return new HidingNode(type, set.getSet(), constructLocation(start));
     }
 
-    private VariableSetNode parseVariables(){
+    private VariableSetNode parseVariables() throws CompilationException {
         int start = index;
         if(!(nextToken() instanceof DollarToken)){
-            // TODO: throw error
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \"$\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
         if(!(nextToken() instanceof OpenBraceToken)){
-            // TODO: throw error
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \"{\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
         Set<String> variables = new HashSet<String>();
 
         while(!(peekToken() instanceof CloseBraceToken)){
             if(!(peekToken() instanceof ActionToken)){
-                // TODO: throw error
+                throw constructException("expecting to parse a variable but received \"" + peekToken().toString() + "\"");
             }
 
             variables.add(((ActionToken)nextToken()).getAction());
         }
 
         if(!(nextToken() instanceof CloseBraceToken)){
-            // TODO: throw error
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \"}\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
         return new VariableSetNode(variables, constructLocation(start));
@@ -969,13 +1004,15 @@ public class Parser {
     private InterruptNode parseInterrupt() throws CompilationException {
         int start = index;
         if(!(nextToken() instanceof InterruptToken)){
-            // TODO : throw error
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \"~>\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
         ActionLabelNode action = parseActionLabel();
 
         if(!(nextToken() instanceof InterruptToken)){
-            // TODO : throw error
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \"~>\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
         ASTNode process = parseComposite();
@@ -986,7 +1023,8 @@ public class Parser {
     // OPERATIONS
     private void parseOperation() throws CompilationException {
         if(!(nextToken() instanceof OperationToken)){
-            // TODO: throw error
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \"operation\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
         if(!(peekToken() instanceof OpenBraceToken)){
@@ -995,6 +1033,8 @@ public class Parser {
         else{
             parseOperationBlock();
         }
+
+        throw constructException("expecting to parse an operation or an operation block but received \"" + peekToken().toString() + "\"");
     }
 
     private void parseSingleOperation() throws CompilationException {
@@ -1013,7 +1053,8 @@ public class Parser {
 
         // ensure that the next token is a '.' token
         if(!(nextToken() instanceof DotToken)){
-            // TODO: throw error
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \".\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
         OperationNode operation = new OperationNode(type, isNegated, process1, process2, constructLocation(start));
@@ -1022,7 +1063,8 @@ public class Parser {
 
     private void parseOperationBlock() throws CompilationException {
         if(!(nextToken() instanceof OpenBraceToken)){
-            // TODO: throw error
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \"{\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
         while(!(peekToken() instanceof CloseBraceToken)){
@@ -1030,18 +1072,18 @@ public class Parser {
         }
 
         if(!(nextToken() instanceof CloseBracketToken)){
-            // TODO: throw error
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \"}\" but received \"" + error.toString() + "\"", error.getLocation());
         }
     }
 
-    private String parseOperationType(){
+    private String parseOperationType() throws CompilationException {
         if(peekToken() instanceof BisimulationToken){
             nextToken();
             return "bisimulation";
         }
 
-        // TODO: throw error
-        return null;
+        throw constructException("expecting to parse an operation type but received \"" + peekToken().toString() + "\"");
     }
 
     // EXPRESSIONS
@@ -1065,7 +1107,7 @@ public class Parser {
         return variable;
     }
 
-    private void parseExpression(List<String> expression){
+    private void parseExpression(List<String> expression) throws CompilationException {
         parseBaseExpression(expression);
         while(hasExpressionToken()){
             parseOperator(expression);
@@ -1073,29 +1115,26 @@ public class Parser {
         }
     }
 
-    private void parseBaseExpression(List<String> expression){
+    private void parseBaseExpression(List<String> expression) throws CompilationException {
         Token token = nextToken();
 
         // check if a unary operation can be parsed
-        if(token instanceof OperatorToken){
-            if(token instanceof AdditionToken){
+        if(token instanceof OperatorToken) {
+            if (token instanceof AdditionToken) {
                 expression.add("#+");
                 token = nextToken();
-            }
-            else if(token instanceof SubtractionToken){
+            } else if (token instanceof SubtractionToken) {
                 expression.add("#-");
                 token = nextToken();
-            }
-            else if(token instanceof NegateToken){
+            } else if (token instanceof NegateToken) {
                 expression.add("#!");
                 token = nextToken();
-            }
-            else if(token instanceof BisimulationToken){
+            } else if (token instanceof BisimulationToken) {
                 expression.add("#~");
                 token = nextToken();
+            } else {
+                throw constructException("expecting to parse an unary operator but received the operator \"" + token.toString() + "\"", token.getLocation());
             }
-
-            // TODO: throw error: incorrect operator
         }
 
         // check if either a integer, variable, constant or parenthesised expression can be parsed
@@ -1112,13 +1151,16 @@ public class Parser {
 
             // check that a constant has been defined with the specified identifier
             if(!constantMap.containsKey(identifier)){
-                // TODO: throw error
+                Token error = tokens.get(index - 1);
+                throw constructException("the identifier \"" + identifier + "\" has not been defined", error.getLocation());
             }
 
             // check that the constant referenced is a const (integer value)
             ASTNode constant = constantMap.get(identifier);
             if(!(constant instanceof ConstNode)){
-                // TODO: throw error
+                String type = (constant instanceof RangeNode) ? "range" : "set";
+                Token error = tokens.get(index - 1);
+                throw constructException("expecting a const but received a " + type, error.getLocation());
 
             }
 
@@ -1131,19 +1173,19 @@ public class Parser {
 
             token = nextToken();
             if(!(token instanceof CloseParenToken)){
-                // TODO: throw error
+                throw constructException("expecting to parse \")\" but received \"" + token.toString() + "\"", token.getLocation());
             }
 
             expression.add(")");
         }
     }
 
-    private void parseOperator(List<String> expression){
+    private void parseOperator(List<String> expression) throws CompilationException {
         Token token = nextToken();
 
         // check that the operation is an operator
         if(!(token instanceof OperatorToken)){
-            // TODO: throw error
+            throw constructException("expecting to parse an operator but received \"" + token.toString() + "\"", token.getLocation());
         }
 
         if(token instanceof OrToken){
@@ -1201,7 +1243,7 @@ public class Parser {
             expression.add("%");
         }
         else{
-            // TODO: throw error
+            throw constructException("received an incorrect operator \"" + token.toString() + "\"", token.getLocation());
         }
     }
 
@@ -1213,7 +1255,7 @@ public class Parser {
         return expressionEvaluator.evaluateExpression(expression, new HashMap<String, Integer>());
     }
 
-    private void parseSimpleExpression(List<String> expression){
+    private void parseSimpleExpression(List<String> expression) throws CompilationException {
         parseBaseSimpleExpression(expression);
         while(hasExpressionToken()){
             parseSimpleOperator(expression);
@@ -1221,32 +1263,29 @@ public class Parser {
         }
     }
 
-    private void parseBaseSimpleExpression(List<String> expression){
+    private void parseBaseSimpleExpression(List<String> expression) throws CompilationException {
         Token token = nextToken();
 
         // check if a unary operation can be parsed
-        if(token instanceof OperatorToken){
-            if(token instanceof AdditionToken){
+        if(token instanceof OperatorToken) {
+            if (token instanceof AdditionToken) {
                 expression.add("#+");
                 token = nextToken();
-            }
-            else if(token instanceof SubtractionToken){
+            } else if (token instanceof SubtractionToken) {
                 expression.add("#-");
                 token = nextToken();
-            }
-            else if(token instanceof NegateToken){
+            } else if (token instanceof NegateToken) {
                 expression.add("#!");
                 token = nextToken();
-            }
-            else if(token instanceof BisimulationToken){
+            } else if (token instanceof BisimulationToken) {
                 expression.add("#~");
                 token = nextToken();
+            } else {
+                throw constructException("expecting to parse an unary operator but received the operator \"" + token.toString() + "\"", token.getLocation());
             }
-
-            // TODO: throw error: incorrect operator
         }
 
-        // check if either a integer, constant or parenthesised expression can be parsed
+    // check if either a integer, constant or parenthesised expression can be parsed
         if(token instanceof IntegerToken){
             int integer = ((IntegerToken)token).getInteger();
             expression.add("" + integer);
@@ -1256,17 +1295,20 @@ public class Parser {
 
             // check that a constant has been defined with the specified identifier
             if(!constantMap.containsKey(identifier)){
-                // TODO: throw error
+                Token error = tokens.get(index - 1);
+                throw constructException("the identifier \"" + identifier + "\" has not been defined", error.getLocation());
             }
 
             // check that the constant referenced is a const (integer value)
             ASTNode constant = constantMap.get(identifier);
             if(!(constant instanceof ConstNode)){
-                // TODO: throw error
-
+                String type = (constant instanceof RangeNode) ? "range" : "set";
+                Token error = tokens.get(index - 1);
+                throw constructException("expecting a const but received a " + type, error.getLocation());
             }
 
             int value = ((ConstNode)constant).getValue();
+            expression.add("" + value);
         }
         else if(token instanceof OpenParenToken){
             expression.add("(");
@@ -1274,7 +1316,7 @@ public class Parser {
 
             token = nextToken();
             if(!(token instanceof CloseParenToken)){
-                // TODO: throw error
+                throw constructException("expecting to parse \")\" but received \"" + token.toString() + "\"", token.getLocation());
             }
 
             expression.add(")");
@@ -1282,12 +1324,12 @@ public class Parser {
     }
 
 
-    private void parseSimpleOperator(List<String> expression){
+    private void parseSimpleOperator(List<String> expression) throws CompilationException {
         Token token = nextToken();
 
         // check that the token is an operator
         if(!(token instanceof OperatorToken)){
-            // TODO: throw error
+            throw constructException("expecting to parse an operator but received \"" + token.toString() + "\"", token.getLocation());
         }
 
         if(token instanceof AdditionToken){
@@ -1306,11 +1348,11 @@ public class Parser {
             expression.add("%");
         }
         else{
-            // TODO: throw error
+            throw constructException("received an incorrect operator \"" + token.toString() + "\"", token.getLocation());
         }
     }
 
-    private boolean hasExpressionToken(){
+    private boolean hasExpressionToken() throws CompilationException {
         Token token = peekToken();
         if(token instanceof OperatorToken){
             return true;
@@ -1361,7 +1403,7 @@ public class Parser {
      * @return
      *      -- the next @Code{Token}
      */
-    private Token nextToken(){
+    private Token nextToken() throws CompilationException {
         checkNotEOF();
         return tokens.get(index++);
     }
@@ -1372,12 +1414,12 @@ public class Parser {
      * @return
      *      -- the next @code{Token}
      */
-    private Token peekToken(){
+    private Token peekToken() throws CompilationException {
         checkNotEOF();
         return tokens.get(index);
     }
 
-    private boolean hasProcessLabel(){
+    private boolean hasProcessLabel() throws CompilationException {
         int start = index;
 
         while(true){
@@ -1417,7 +1459,7 @@ public class Parser {
         return true;
     }
 
-    private boolean hasLabel(){
+    private boolean hasLabel() throws CompilationException {
         if(!(peekToken() instanceof ActionToken)){
             return false;
         }
@@ -1428,7 +1470,7 @@ public class Parser {
         return false;
     }
 
-    private boolean hasVariableReference(){
+    private boolean hasVariableReference() throws CompilationException {
         int start = index;
         if(nextToken() instanceof ActionToken){
             if(nextToken() instanceof CloseBracketToken){
@@ -1441,7 +1483,7 @@ public class Parser {
         return false;
     }
 
-    private boolean hasIdentifierReference(){
+    private boolean hasIdentifierReference() throws CompilationException {
         int start = index;
         if(nextToken() instanceof IdentifierToken){
             if(nextToken() instanceof CloseBracketToken){
@@ -1460,9 +1502,12 @@ public class Parser {
         return new Location(locStart, locEnd);
     }
 
-    private void checkNotEOF(){
+    private void checkNotEOF() throws CompilationException {
         if(index >= tokens.size()){
-            // TODO: throw error
+            Location last = tokens.get(tokens.size() - 1).getLocation();
+            Location eof = new Location(last.getLineStart(), last.getColStart() + 1, last.getLineEnd(), last.getColEnd() + 2);
+            throw constructException("end of file reached", eof);
+
         }
     }
 
@@ -1473,6 +1518,15 @@ public class Parser {
         actionRanges.clear();
         index = 0;
         variableId = 0;
+    }
+
+    private CompilationException constructException(String message){
+        Location location = tokens.get(index).getLocation();
+        return constructException(message, location);
+    }
+
+    private CompilationException constructException(String message, Location location){
+        return new CompilationException(Parser.class, message, location);
     }
 
     private class ExpressionParser {
