@@ -805,8 +805,8 @@ public class Parser {
             }
         }
 
-        List<IndexNode> ranges = actionRanges.subList(rangeStart, actionRanges.size());
-        actionRanges = actionRanges.subList(0, rangeStart);
+        List<IndexNode> ranges = new ArrayList<IndexNode(actionRanges.subList(rangeStart, actionRanges.size()));
+        actionRanges = new ArrayList<IndexNode<(actionRanges.subList(0, rangeStart));
 
         return new RangesNode(ranges, constructLocation(start));
     }
@@ -893,8 +893,8 @@ public class Parser {
             RelabelElementNode element = parseRelabelElement();
 
             if(rangeStart < actionRanges.size()){
-                List<IndexNode> ranges = actionRanges.subList(rangeStart, actionRanges.size());
-                actionRanges = actionRanges.subList(0, rangeStart);
+                List<IndexNode> ranges = new ArrayList<IndexNode>(actionRanges.subList(rangeStart, actionRanges.size()));
+                actionRanges = new ArrayList<IndexNode>(actionRanges.subList(0, rangeStart));
 
                 element.setRanges(new RangesNode(ranges, element.getLocation()));
             }
