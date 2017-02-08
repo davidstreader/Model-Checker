@@ -1578,6 +1578,9 @@ public class Parser {
                         if(precedenceMap.get(operatorStack.peek()) < precedence){
                             output.push(constructOperator(operatorStack.pop()));
                         }
+                        else{
+                            break;
+                        }
                     }
 
                     operatorStack.push(token);
