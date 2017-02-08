@@ -126,6 +126,7 @@ public class DependencyManager {
       }
       if (!Utils.isWin()) {
         chmod("npm");
+        chmod("node");
       }
     }
 
