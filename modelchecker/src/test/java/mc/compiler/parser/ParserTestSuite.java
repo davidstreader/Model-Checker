@@ -10,7 +10,9 @@ import org.junit.runners.Suite;
         IdentifierTests.class,
         FunctionTests.class,
         IndexTests.class,
-        RootTests.class
+        ForAllTests.class,
+        RootTests.class,
+        ExampleTests.class
 })
 
 /**

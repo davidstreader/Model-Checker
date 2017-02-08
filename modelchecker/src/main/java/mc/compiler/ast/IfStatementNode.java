@@ -53,7 +53,10 @@ public class IfStatementNode extends ASTNode {
             if(!trueBranch.equals(node.getTrueBranch())){
                 return false;
             }
-            if(!falseBranch.equals(node.getFalseBranch())){
+            if(falseBranch == null && node.hasFalseBranch() || falseBranch != null && !node.hasFalseBranch()){
+                return false;
+            }
+            if(falseBranch != null && !falseBranch.equals(node.getFalseBranch())){
                 return false;
             }
 

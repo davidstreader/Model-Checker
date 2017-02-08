@@ -33,4 +33,16 @@ public abstract class ParserTests extends TestBase {
     protected ProcessNode constructProcessNode(String code) throws CompilationException {
     	return constructProcessNode(code, 0);
     }
+
+    protected List<ProcessNode> constructProcessList(String code) throws CompilationException {
+        try {
+            List<Token> tokens = lexer.tokenise(code);
+            AbstractSyntaxTree ast = parser.parse(tokens);
+            return ast.getProcesses();
+        } catch (CompilationException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
 }
