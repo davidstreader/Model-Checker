@@ -29,7 +29,6 @@ public class Expander {
             ranges = new ArrayList<>();
             ASTNode root = expand(process.getProcess(), variableMap);
             process.setProcess(root);
-
             List<LocalProcessNode> localProcesses = expandLocalProcesses(process.getLocalProcesses(), variableMap);
             process.setLocalProcesses(localProcesses);
         }

@@ -16,6 +16,7 @@ public class Compiler {
     // fields
     private Lexer lexer;
     private Expander expander;
+    private VariableHider hider;
     private ReferenceReplacer replacer;
     private Interpreter interpreter;
     private OperationEvaluator evaluator;
@@ -27,6 +28,7 @@ public class Compiler {
         this.lexer = new Lexer();
         parser = new Parser();
         this.expander = new Expander();
+        this.hider = new VariableHider();
         this.replacer = new ReferenceReplacer();
         this.interpreter = new Interpreter();
         this.evaluator = new OperationEvaluator();
@@ -57,6 +59,7 @@ public class Compiler {
 
     private CompilationObject compile(AbstractSyntaxTree ast) throws CompilationException {
         ast = expander.expand(ast);
+        ast = hider.hideVariables(ast);
         ast = replacer.replaceReferences(ast);
         Map<String, ProcessModel> processMap = interpreter.interpret(ast);
         List<OperationResult> results = evaluator.evaluateOperations(ast.getOperations(), processMap, interpreter);

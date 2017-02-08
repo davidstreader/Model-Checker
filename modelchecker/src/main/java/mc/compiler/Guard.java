@@ -27,6 +27,8 @@ public class Guard implements Serializable{
     List<String> next = new ArrayList<>();
     @Getter(onMethod = @__(@JsonIgnore))
     Map<String,String> nextMap = new HashMap<>();
+    @Getter
+    private boolean shouldDisplay = false;
 
     /**
      * Get the guard as a string, used for serialization.
@@ -113,13 +115,5 @@ public class Guard implements Serializable{
         return guard != null || !variables.isEmpty() || !next.isEmpty();
     }
     private static String operators = "(&|\\^|<<|>>|\\+|-|\\*|/|%)";
-    public boolean getShouldDisplay() {
-        if (guard == null) return false;
-        try {
-            return !(new ExpressionEvaluator().isExecutable(ExpressionSimplifier.simplify(getGuard(),variables)));
-        } catch (CompilationException e) {
-            return false;
-        }
-    }
 
 }
