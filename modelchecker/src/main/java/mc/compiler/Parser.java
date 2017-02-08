@@ -138,7 +138,7 @@ public class Parser {
                 if(hasLabel() || peekToken() instanceof OpenBraceToken){
                     variable = parseActionRange();
                 }
-                else if(peekToken() instanceof IdentifierToken){
+                else if(hasIdentifierReference()){
                     String identifier = ((IdentifierToken)peekToken()).getIdentifier();
                     if(!constantMap.containsKey(identifier)){
                         // TODO: throw errror
@@ -152,14 +152,8 @@ public class Parser {
                         variable = parseActionRange();
                     }
                 }
-                else if(peekToken() instanceof ActionToken){
-                    variable = "[" + ((ActionToken)token).getAction() + "]";
-
-                    if(!(nextToken() instanceof CloseBracketToken)){
-                        // TODO: throw error
-                    }
-
-
+                else if(hasVariableReference()){
+                    variable = "$" + ((ActionToken)nextToken()).getAction();
                 }
                 else {
                     variable = parseActionRangeOrExpression();
@@ -516,14 +510,15 @@ public class Parser {
             hiding = parseHiding();
         }
 
+        // wrap the parsed process as a process root if either a label, relabel or hiding has been defined
+        if(label != null || relabel != null || hiding != null){
+            process = new ProcessRootNode(process, label, relabel, hiding, process.getLocation());
+        }
+
         if(peekToken() instanceof OrToken){
             nextToken(); // gobble the '||' token
             ASTNode process2 = parseComposite();
             process = new CompositeNode(process, process2, constructLocation(start));
-        }
-
-        if(label != null || relabel != null || hiding != null){
-            return new ProcessRootNode(process, label, relabel, hiding, process.getLocation());
         }
 
         return process;
@@ -1061,6 +1056,9 @@ public class Parser {
             int result = expressionEvaluator.evaluateExpression(expression, new HashMap<String, Integer>());
             return "" + result;
         }
+        else if(expression instanceof VariableOperand){
+            return ((VariableOperand)expression).getValue();
+        }
 
         String variable = nextVariableId();
         variableMap.put(variable, expression);
@@ -1427,6 +1425,32 @@ public class Parser {
             return true;
         }
 
+        return false;
+    }
+
+    private boolean hasVariableReference(){
+        int start = index;
+        if(nextToken() instanceof ActionToken){
+            if(nextToken() instanceof CloseBracketToken){
+                index = start;
+                return true;
+            }
+        }
+
+        index = start;
+        return false;
+    }
+
+    private boolean hasIdentifierReference(){
+        int start = index;
+        if(nextToken() instanceof IdentifierToken){
+            if(nextToken() instanceof CloseBracketToken){
+                index = start;
+                return true;
+            }
+        }
+
+        index = start;
         return false;
     }
 
