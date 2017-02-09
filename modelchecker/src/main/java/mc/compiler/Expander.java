@@ -284,6 +284,7 @@ public class Expander {
                 variables.put(key, (Integer)value);
             }
         }
+
         Expression ex = ExpressionSimplifier.simplify(condition,variables);
         if (ex instanceof BooleanOperand)
             return ((BooleanOperand) ex).getValue();
@@ -300,13 +301,13 @@ public class Expander {
                 if(globalVariableMap.containsKey(variable)){
                     Expression expression = globalVariableMap.get(variable);
                     int result = evaluator.evaluateExpression(expression, integerMap);
-                    string = matcher.replaceAll("" + result);
+                    string = string.replaceAll(Pattern.quote(variable)+"\\b","" + result);
                 }
                 else if(integerMap.containsKey(variable)){
-                    string = matcher.replaceAll("" + integerMap.get(variable));
+                    string = string.replaceAll(Pattern.quote(variable)+"\\b","" + integerMap.get(variable));
                 }
                 else if(variableMap.containsKey(variable)){
-                    string = string.replaceAll(Pattern.quote("[" + variable + "]"), "" + variableMap.get(variable));
+                    string = string.replaceAll(Pattern.quote("[" + variable + "]")+"\\b", "" + variableMap.get(variable));
                 }
             }
             else{

@@ -39,7 +39,7 @@ function visualizeAutomata(process, graphID, hidden, glGraph) {
             for (let i in vars) {
                 tooltip+=i+"="+vars[i]+",";
             }
-            tooltip = tooltip.substr(0,tooltip.length-1).replace("\\$","");
+            tooltip = tooltip.substr(0,tooltip.length-1).replace(/\$/g,"");
         }
         glGraph.nodes.push({
             group:"nodes",
