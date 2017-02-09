@@ -129,6 +129,11 @@ public class Expander {
         }
         ASTNode process = expand(astNode.getProcess(), variableMap);
         astNode.setProcess(process);
+
+        if(astNode.hasRelabelSet()){
+            astNode.setRelabelSet(expand(astNode.getRelabelSet()));
+        }
+
         return astNode;
     }
 
@@ -276,6 +281,45 @@ public class Expander {
 
         return nodes;
     }
+
+    private RelabelNode expand(RelabelNode relabel) throws CompilationException {
+        List<RelabelElementNode> relabels = new ArrayList<RelabelElementNode>();
+
+        for(RelabelElementNode element : relabel.getRelabels()){
+            if(!element.hasRanges()){
+                relabels.add(element);
+            }
+            else{
+                Map<String, Object> variableMap = new HashMap<String, Object>();
+                relabels.addAll(expand(element, variableMap, element.getRanges().getRanges(), 0));
+            }
+        }
+
+        return new RelabelNode(relabels, relabel.getLocation());
+    }
+
+    private List<RelabelElementNode> expand(RelabelElementNode element, Map<String, Object> variableMap, List<IndexNode> ranges, int index) throws CompilationException {
+        List<RelabelElementNode> elements = new ArrayList<RelabelElementNode>();
+
+        if(index < ranges.size()){
+            IndexNode node = ranges.get(index);
+            IndexIterator iterator = IndexIterator.construct(node.getRange());
+            String variable = node.getVariable();
+
+            while(iterator.hasNext()){
+                variableMap.put(variable, iterator.next());
+                elements.addAll(expand(element, variableMap, ranges, index + 1));
+            }
+        }
+        else{
+            String newLabel = processVariables(element.getNewLabel(), variableMap);
+            String oldLabel = processVariables(element.getOldLabel(), variableMap);
+            elements.add(new RelabelElementNode(newLabel, oldLabel, element.getLocation()));
+        }
+
+        return elements;
+    }
+
     private int evaluateExpression(Expression expression, Map<String, Object> variableMap) throws CompilationException {
         // remove all strings from the variableMap
         Map<String, Integer> variables = new HashMap<>();
