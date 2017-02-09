@@ -45,6 +45,10 @@ public class ProcessRootNode extends ASTNode {
         return relabels;
     }
 
+    public void setRelabelSet(RelabelNode relabels){
+        this.relabels = relabels;
+    }
+
     public boolean hasRelabelSet(){
         return relabels != null;
     }
