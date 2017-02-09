@@ -240,10 +240,9 @@
       const id = process;
       const code = this.getProcessFromCode(id);
       if (!code) return null;
-      const toMatch="("+Object.keys(Lexer.keywords).concat(Object.keys(Lexer.terminals)).concat(Object.keys(Lexer.functions)).join("|")+"|"+Lexer.operations+")";
+      const toMatch="("+Object.keys(LexerTokens.keywords).concat(Object.keys(LexerTokens.terminals)).concat(Object.keys(LexerTokens.functions)).join("|")+"|"+LexerTokens.operations+")";
       //Remove newlines and whitespace
       process = code.replace(/[\r\n]/,"");
-      console.log(process);
       //if process contains any keywords or terminals or functions or operations, it is not a generated process.
       if (!process || process.match(toMatch)) return null;
       //It also isnt one if it contains -> or ~>

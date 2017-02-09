@@ -35,7 +35,7 @@ function visualizeAutomata(process, graphID, hidden, glGraph) {
         }
         let tooltip;
         const vars = nodes[i].metaData.variables;
-        if (Object.keys(vars).length > 0) {
+        if (vars && Object.keys(vars).length > 0) {
             tooltip = "";
             for (let i in vars) {
                 tooltip+=i+"="+vars[i]+", ";
