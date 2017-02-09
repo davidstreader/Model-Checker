@@ -81,15 +81,17 @@ public class Guard implements Serializable{
             //If the globalVariableMap is inside the identifier,
             //Then the next value is inside the map
             for (String gVar : globalVariableMap.keySet()) {
-                if (identifier.contains(gVar)) {
-                    next.add(rm$(new ExpressionPrinter().printExpression(globalVariableMap.get(gVar))));
-                    nextMap.put(range.getVariable(),new ExpressionPrinter().printExpression(globalVariableMap.get(gVar)));
+                if (var.contains(gVar)) {
+                    String printed = new ExpressionPrinter().printExpression(globalVariableMap.get(gVar));
+                    printed = printed.substring(1,printed.length()-1);
+                    nextMap.put(range.getVariable(),printed);
+                    next.add(rm$(printed));
                     found = true;
                     break;
                 }
             }
             //It wasn't found, so it is just a value on its own.
-            if (!found) {
+            if (!found && !Objects.equals(var, range.getVariable())) {
                 next.add(rm$(range.getVariable()+":="+var));
                 nextMap.put(range.getVariable(),var);
             }

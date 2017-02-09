@@ -78,11 +78,13 @@ public class Expander {
             }
         }
         else{
+            this.ranges.addAll(ranges);
             LocalProcessNode clone = (LocalProcessNode)localProcess.copy();
             ASTNode root = expand(clone.getProcess(), variableMap);
             clone.setIdentifier(processVariables(clone.getIdentifier(), variableMap));
             clone.setProcess(root);
             newLocalProcesses.add(clone);
+            this.ranges.removeAll(ranges);
         }
 
         return newLocalProcesses;
