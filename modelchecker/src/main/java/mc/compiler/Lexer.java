@@ -402,10 +402,10 @@ public class Lexer {
 
 	private void gobbleWhitespace(char[] characters){
 		while(index < characters.length){
-			if(characters[index] == ' ' || characters[index] == '\t'){
+			if(characters[index] == ' ' || characters[index] == '\t'|| characters[index] == '\r'){
 				column++;
 			}
-			else if(characters[index] == '\n' || characters[index] ==  '\r'){
+			else if(characters[index] == '\n'){
 				line++;
 				column = 0;
 			}
