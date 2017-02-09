@@ -179,21 +179,7 @@
             this.applyTooltips();
         },
         applyTooltips: function() {
-            this.cy.edges().qtip({
-                content: function(){ return this.data().tooltip },
-                position: {
-                    my: 'top center',
-                    at: 'bottom center'
-                },
-                style: {
-                    classes: 'qtip-bootstrap',
-                    tip: {
-                        width: 16,
-                        height: 8
-                    }
-                }
-            });
-            this.cy.nodes("[!isParent]").qtip({
+            this.cy.elements("[tooltip]").qtip({
                 content: function(){ return this.data().tooltip },
                 position: {
                     my: 'top center',

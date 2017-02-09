@@ -33,9 +33,10 @@ function visualizeAutomata(process, graphID, hidden, glGraph) {
                 type = "fsaErrorState";
             }
         }
-        let tooltip = "";
+        let tooltip;
         const vars = nodes[i].metaData.variables;
-        if (vars) {
+        if (Object.keys(vars).length > 0) {
+            tooltip = "";
             for (let i in vars) {
                 tooltip+=i+"="+vars[i]+", ";
             }
@@ -53,7 +54,7 @@ function visualizeAutomata(process, graphID, hidden, glGraph) {
         let label = edges[i].label;
         const from = graphID+'n' + edges[i].from;
         const to = graphID+'n' + edges[i].to;
-        let tooltip = "";
+        let tooltip;
         if (edges[i].metaData.receiver) {
             label += "?";
         } else if (edges[i].metaData.broadcaster) {
@@ -68,6 +69,7 @@ function visualizeAutomata(process, graphID, hidden, glGraph) {
         }
 
         if (guard !== undefined) {
+            tooltip = "";
             if (guard.varStr.length > 0)
             tooltip += "Variables:<span style='color:blue'>" +guard.varStr+"</span><br/>";
             if (guard.guardStr.length > 0)
