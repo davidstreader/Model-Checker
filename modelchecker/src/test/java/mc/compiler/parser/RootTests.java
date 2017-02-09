@@ -5,6 +5,7 @@ import mc.exceptions.CompilationException;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static junit.framework.TestCase.fail;
@@ -160,8 +161,33 @@ public class RootTests extends ParserTests {
         }
     }
 
+    @Test
+    public void correctIndexedRelabelSetTest_1() throws CompilationException {
+        String input = "automata Test = (a -> STOP)/{[i:1..2].test/[i]}.";
+        ProcessNode node = constructProcessNode(input);
+        TerminalNode terminal = new TerminalNode("STOP", null);
+        SequenceNode process = constructSequenceNode(new String[]{"a"}, terminal);
+
+        IndexNode index = new IndexNode("$i", new RangeNode(1, 2, null), null, null);
+        RangesNode range = new RangesNode(new ArrayList<IndexNode>(Arrays.asList(index)), null);
+        RelabelNode relabel = constructRelabelSet("[$i].test", "[$i]", range);
+
+        ProcessRootNode expected = new ProcessRootNode(process, null, relabel, null, null);
+        if(!expected.equals(node.getProcess())){
+            fail("expecting process root nodes to be equivalent");
+        }
+    }
+
     private RelabelNode constructRelabelSet(String newLabel, String oldLabel){
         RelabelElementNode element = new RelabelElementNode(newLabel, oldLabel, null);
+        List<RelabelElementNode> elements = new ArrayList<RelabelElementNode>();
+        elements.add(element);
+        return new RelabelNode(elements, null);
+    }
+
+    private RelabelNode constructRelabelSet(String newLabel, String oldLabel, RangesNode ranges){
+        RelabelElementNode element = new RelabelElementNode(newLabel, oldLabel, null);
+        element.setRanges(ranges);
         List<RelabelElementNode> elements = new ArrayList<RelabelElementNode>();
         elements.add(element);
         return new RelabelNode(elements, null);
