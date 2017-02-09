@@ -91,7 +91,7 @@ public class Guard implements Serializable{
             //It wasn't found, so it is just a value on its own.
             if (!found) {
                 next.add(rm$(range.getVariable()+":="+var));
-                nextMap.put(range.getVariable(),new ExpressionPrinter().printExpression(globalVariableMap.get(var)));
+                nextMap.put(range.getVariable(),var);
             }
         }
         //Replace symbols with their assignment counterparts.
