@@ -69,7 +69,7 @@ be set
 
     Based on the type of message to be printed (log,warn,error) to the console the corrosponding functions are called within 
     console-logger.html passing a String containing the message. These methods are invoked when interpreting the given
-    definitions by the user.
+    definitions by the user. The logger is also able to handle ansi colour escape sequences via `ansi_up`.
 
 ###Styles
 
