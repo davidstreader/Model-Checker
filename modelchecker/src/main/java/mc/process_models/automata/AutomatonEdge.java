@@ -58,6 +58,7 @@ public class AutomatonEdge extends ProcessModelObject {
         builder.append("\tlabel:" + label + "\n");
         builder.append("\tfrom:" + from.getId() + "\n");
         builder.append("\tto:" + to.getId() + "\n");
+        builder.append("\tmetadata:" + getMetaData()+"\n");
         builder.append("}");
 
         return builder.toString();

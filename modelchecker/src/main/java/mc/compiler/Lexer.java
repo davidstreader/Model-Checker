@@ -55,7 +55,7 @@ public class Lexer {
 		StringBuilder builder = new StringBuilder();
 		while(index < characters.length){
 			char letter = characters[index];
-			if(Character.isLetter(letter) || Character.isDigit(letter) || letter == '_'){
+			if(Character.isLetter(letter) || Character.isDigit(letter) || letter == '_' || letter == '?' || letter == '!'){
 				builder.append(letter);
 			}
 			else{

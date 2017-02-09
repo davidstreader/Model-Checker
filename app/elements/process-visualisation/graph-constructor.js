@@ -46,9 +46,9 @@ function visualizeAutomata(process, graphID, hidden, glGraph) {
         const from = graphID+'n' + edges[i].from;
         const to = graphID+'n' + edges[i].to;
         const tooltip = "";
-        if (edges[i].metaData.broadcaster) {
+        if (edges[i].metaData.receiver) {
             label += "?";
-        } else if (edges[i].metaData.receiver) {
+        } else if (edges[i].metaData.broadcaster) {
             label += "!";
         }
         let guard = edges[i].metaData.guard;

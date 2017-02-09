@@ -100,7 +100,6 @@ public class Parser {
      */
     private IdentifierNode parseIdentifier(){
         Token token = nextToken();
-
         if(token instanceof IdentifierToken){
             IdentifierToken identifier = (IdentifierToken)token;
             return new IdentifierNode(identifier.getIdentifier(), identifier.getLocation());
