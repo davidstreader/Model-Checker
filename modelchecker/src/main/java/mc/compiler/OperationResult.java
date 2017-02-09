@@ -5,6 +5,7 @@ import lombok.Getter;
 import mc.compiler.ast.ASTNode;
 import mc.compiler.ast.FunctionNode;
 import mc.compiler.ast.IdentifierNode;
+import mc.exceptions.CompilationException;
 import mc.util.Location;
 
 @Getter
@@ -14,26 +15,26 @@ public class OperationResult {
   private String operation;
   private String result;
 
-  public OperationResult(ASTNode process1, ASTNode process2, String operation, boolean negated, boolean result) {
+  public OperationResult(ASTNode process1, ASTNode process2, String operation, boolean negated, boolean result) throws CompilationException {
     this.process1 = new OperationProcess(getIdent(process1), true, process1.getLocation());
     this.process2 = new OperationProcess(getIdent(process2), true, process2.getLocation());
     this.operation = (negated?"!":"")+getOpSymbol(operation);
     this.result = result+"";
   }
 
-  public OperationResult(ASTNode process1, ASTNode process2, String operation, boolean negated, boolean firstFound, boolean secondFound) {
+  public OperationResult(ASTNode process1, ASTNode process2, String operation, boolean negated, boolean firstFound, boolean secondFound) throws CompilationException {
     this.process1 = new OperationProcess(getIdent(process1), firstFound, process1.getLocation());
     this.process2 = new OperationProcess(getIdent(process2), secondFound, process2.getLocation());
     this.operation = (negated?"!":"")+getOpSymbol(operation);
     this.result = "notfound";
   }
 
-  private String getOpSymbol(String op) {
+  private String getOpSymbol(String op) throws CompilationException {
     switch (op) {
       case "bisimulation": return "~";
-      case "traceequivilant": return "#";
+      case "traceequivalent": return "#";
     }
-    throw new UnsupportedOperationException("Unknown operation: "+op);
+    throw new CompilationException(OperationEvaluator.class,"Unknown operation: "+op);
   }
   public static String getIdent(ASTNode process) {
     if (process instanceof IdentifierNode) {

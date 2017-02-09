@@ -18,6 +18,7 @@ public class ScriptTests {
     public void testScripts() throws IOException, CompilationException {
         for (File file:new File("tests").listFiles()) {
             System.out.println("Running script: "+file);
+            System.out.flush();
             if (file.getName().endsWith("results.txt") || !file.getName().endsWith("txt")) return;
             mc.compiler.Compiler compiler = new mc.compiler.Compiler();
             List<OperationResult> operations = Collections.emptyList();
@@ -29,8 +30,6 @@ public class ScriptTests {
             } catch (Exception ex) {
                 if (!shouldFail(file.getName())) {
                     fail("Test script: " + file.getName() + " should compile!");
-                } else {
-                    ex.printStackTrace();
                 }
             }
 
@@ -47,7 +46,7 @@ public class ScriptTests {
                         continue;
                     }
                     if (shouldFailOperations(file.getName(), op)) {
-                        assertFalse("Operation '" + op + "' should fail", Objects.equals(result.getResult(), "false"));
+                        assertTrue("Operation '" + op + "' should fail", Objects.equals(result.getResult(), "false"));
                     } else {
                         assertTrue("Operation '" + op + "' should pass", Objects.equals(result.getResult(), "true"));
                     }

@@ -1091,7 +1091,10 @@ public class Parser {
             nextToken();
             return "bisimulation";
         }
-
+        if(peekToken() instanceof TraceEquivalentTypeToken){
+            nextToken();
+            return "traceequivalent";
+        }
         throw constructException("expecting to parse an operation type but received \"" + peekToken().toString() + "\"");
     }
 

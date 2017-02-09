@@ -87,7 +87,7 @@ public class Lexer {
 		if(string.equals("automata") || string.equals("petrinet")){
 			return new ProcessTypeToken(string, location);
 		}
-		else if(string.equals("abs") || string.equals("simp") || string.equals("safe") || string.equals("prune")){
+		else if(string.equals("abs") || string.equals("simp") || string.equals("safe") || string.equals("prune") || string.equals("nfa2dfa")){
 			return new FunctionToken(string, location);
 		}
         else if(string.equals("operation")){
@@ -197,6 +197,11 @@ public class Lexer {
 				return new SubtractionToken(location);
 			}
 		}
+		else if (characters[index] == '#') {
+            Location location = new Location(line, column, line, column++);
+            index++;
+            return new TraceEquivalentTypeToken(location);
+        }
 		else if(characters[index] == '~'){
 			if(index < characters.length - 1 && characters[index + 1] == '>'){
 				Location location = new Location(line, column, line, column + 2);
