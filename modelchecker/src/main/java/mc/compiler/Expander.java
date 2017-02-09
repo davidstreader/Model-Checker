@@ -134,6 +134,12 @@ public class Expander {
             astNode.setRelabelSet(expand(astNode.getRelabelSet()));
         }
 
+        if(astNode.hasHiding()){
+            HidingNode hiding = astNode.getHiding();
+            hiding.setSet(expand(hiding.getSet()));
+            astNode.setHiding(hiding);
+        }
+
         return astNode;
     }
 
@@ -318,6 +324,47 @@ public class Expander {
         }
 
         return elements;
+    }
+
+    private SetNode expand(SetNode set) throws CompilationException {
+        // check if any ranges were defined for this set
+        Map<Integer, RangesNode> rangeMap = set.getRangeMap();
+        if(rangeMap.isEmpty()){
+            return set;
+        }
+
+        List<String> actions = set.getSet();
+        List<String> newActions = new ArrayList<String>();
+        for(int i = 0; i < actions.size(); i++){
+            if(rangeMap.containsKey(i)){
+                Map<String, Object> variableMap = new HashMap<String, Object>();
+                newActions.addAll(expand(actions.get(i), variableMap, rangeMap.get(i).getRanges(), 0));
+            }
+            else{
+                newActions.add(actions.get(i));
+            }
+        }
+
+        return new SetNode(newActions, set.getLocation());
+    }
+
+    private List<String> expand(String action, Map<String, Object> variableMap, List<IndexNode> ranges, int index) throws CompilationException {
+        List<String> actions = new ArrayList<String>();
+        if(index < ranges.size()){
+            IndexNode node = ranges.get(index);
+            IndexIterator iterator = IndexIterator.construct(node);
+            String variable = node.getVariable();
+
+            while(iterator.hasNext()){
+                variableMap.put(variable, iterator.next());
+                actions.addAll(expand(action, variableMap, ranges, index + 1));
+            }
+        }
+        else{
+            actions.add(processVariables(action, variableMap));
+        }
+
+        return actions;
     }
 
     private int evaluateExpression(Expression expression, Map<String, Object> variableMap) throws CompilationException {
