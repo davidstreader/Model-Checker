@@ -1080,7 +1080,7 @@ public class Parser {
             parseSingleOperation();
         }
 
-        if(!(nextToken() instanceof CloseBracketToken)){
+        if(!(nextToken() instanceof CloseBraceToken)){
             Token error = tokens.get(index - 1);
             throw constructException("expecting to parse \"}\" but received \"" + error.toString() + "\"", error.getLocation());
         }
