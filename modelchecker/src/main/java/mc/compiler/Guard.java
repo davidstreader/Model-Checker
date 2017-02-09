@@ -2,8 +2,7 @@ package mc.compiler;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
-import mc.util.expr.Expression;
-import mc.util.expr.ExpressionPrinter;
+import mc.util.expr.*;
 
 import java.io.Serializable;
 import java.util.*;
@@ -25,7 +24,7 @@ public class Guard implements Serializable{
     Map<String,String> nextMap = new HashMap<>();
     @Getter
     private boolean shouldDisplay = false;
-
+    private Set<String> hiddenVariables = new HashSet<>();
     /**
      * Get the guard as a string, used for serialization.
      * @return The guard as a string, or an empty string if none exists.
@@ -34,12 +33,47 @@ public class Guard implements Serializable{
         if (guard == null) return "";
         return rm$(new ExpressionPrinter().printExpression(guard, Collections.emptyMap()));
     }
+    public String getHiddenGuardStr() {
+        if (guard == null) return "";
+        List<Expression> andList = new ArrayList<>();
+        collectAnds(andList,guard);
+        //If there are no ands in the expression, use the root guard.
+        if (andList.isEmpty()) andList.add(guard);
+        andList.removeIf(s -> !containsHidden(s));
+        if (andList.isEmpty()) return "";
+        Expression combined = andList.remove(0);
+        while (!andList.isEmpty()) {
+            combined = new AndOperator(combined,andList.remove(0));
+        }
+        return rm$(new ExpressionPrinter().printExpression(combined, Collections.emptyMap()));
+    }
+    private void collectAnds(List<Expression> andList, Expression ex) {
+        if (ex instanceof AndOperator) {
+            andList.add(ex);
+        }
+        if (ex instanceof UnaryOperator) collectAnds(andList,((UnaryOperator) ex).getRightHandSide());
+        if (ex instanceof BinaryOperator) {
+            collectAnds(andList,((BinaryOperator) ex).getLeftHandSide());
+            collectAnds(andList,((BinaryOperator) ex).getRightHandSide());
+        }
+    }
+    private boolean containsHidden(Expression ex) {
+        //If there is an and inside this expression, then don't check its variables as it is added on its own.
+        if (ex instanceof AndOperator) return false;
+        if (ex instanceof UnaryOperator) return containsHidden(((UnaryOperator) ex).getRightHandSide());
+        if (ex instanceof BinaryOperator) {
+            return containsHidden(((BinaryOperator) ex).getRightHandSide()) || containsHidden(((BinaryOperator) ex).getLeftHandSide());
+        }
+        //Substring away the $ as the hidden map does not have them.
+        return ex instanceof VariableOperand && hiddenVariables.contains(((VariableOperand) ex).getValue().substring(1));
+    }
     /**
      * Get the variable list as a string, used for serialization.
      * @return The variable list as a string, or an empty string if none exists.
      */
     public String getVarStr() {
         if (variables.isEmpty()) return "";
+        variables.keySet().removeAll(hiddenVariables);
         StringBuilder builder = new StringBuilder();
         for (String var: variables.keySet()) {
             builder.append(var+"="+variables.get(var)+",");
@@ -53,6 +87,7 @@ public class Guard implements Serializable{
      */
     public String getNextStr() {
         if (next.isEmpty()) return "";
+        next.removeIf(next -> hiddenVariables.contains(next.split("\\W")[0]));
         return rm$(String.join(",",next));
     }
 
@@ -98,6 +133,7 @@ public class Guard implements Serializable{
         if (guard.guard != null) this.guard = guard.guard;
         this.variables.putAll(guard.variables);
         this.next.addAll(guard.next);
+        this.hiddenVariables.addAll(guard.hiddenVariables);
     }
     @JsonIgnore
     boolean hasData() {

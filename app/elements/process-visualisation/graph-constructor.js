@@ -61,11 +61,8 @@ function visualizeAutomata(process, graphID, hidden, glGraph) {
             label += "!";
         }
         let guard = edges[i].metaData.guard;
-        if(guard !== undefined && guard.shouldDisplay){
-            label += " ";
-            label += guard.varStr+" ";
-            label += guard.guardStr+" ";
-            label += guard.nextStr;
+        if(guard !== undefined && guard.hiddenGuardStr.length > 0){
+            label += " "+guard.hiddenGuardStr;
         }
 
         if (guard !== undefined) {

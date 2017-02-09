@@ -17,6 +17,7 @@ public class Expander {
     private Map<String, Expression> globalVariableMap;
     private ExpressionEvaluator evaluator = new ExpressionEvaluator();
     private Map<String,List<String>> identMap = new HashMap<>();
+    private Set<String> hiddenVariables;
     public AbstractSyntaxTree expand(AbstractSyntaxTree ast) throws CompilationException {
         globalVariableMap = ast.getVariableMap();
 
@@ -24,6 +25,9 @@ public class Expander {
         for(int i = 0; i < processes.size(); i++){
             ProcessNode process = processes.get(i);
             new LogMessage("Expanding:",process).send();
+            if (process.hasVariableSet())
+                hiddenVariables = process.getVariables().getVariables();
+            else hiddenVariables = Collections.emptySet();
             Map<String, Object> variableMap = new HashMap<String, Object>();
             ASTNode root = expand(process.getProcess(), variableMap);
             process.setProcess(root);
@@ -242,6 +246,7 @@ public class Expander {
         Guard guard = new Guard();
         guard.setGuard(astNode.getCondition());
         guard.setVariables(new ExpressionPrinter().getVariables(astNode.getCondition(),variableMap));
+        guard.setHiddenVariables(hiddenVariables);
         boolean condition = evaluateCondition(astNode.getCondition(), variableMap);
         if(condition){
             ASTNode expand = expand(astNode.getTrueBranch(), variableMap);
