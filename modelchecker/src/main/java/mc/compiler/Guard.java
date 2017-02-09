@@ -14,7 +14,7 @@ import java.util.*;
 @ToString
 
 public class Guard implements Serializable{
-    //Don't serialize this data as we serialize the below methods instead.
+    //Don't serialize these getters as we serialize the below methods instead.
     @Getter(onMethod = @__(@JsonIgnore))
     Expression guard;
     @Getter(onMethod = @__(@JsonIgnore))
@@ -60,7 +60,7 @@ public class Guard implements Serializable{
      * Parse an identifier and turn it into a list of variable assignments
      * @param identifier The identifier
      * @param globalVariableMap The global variable map
-     * @param identMap A map from identifiers to a list of the variables in them (L[$i] = L -> [$i]
+     * @param identMap A map from identifiers to a list of the variables in them (L[$i] = L -> [$i])
      */
     public void parseNext(String identifier, Map<String, Expression> globalVariableMap, Map<String, List<String>> identMap) {
         //Check that there are actually variables in the identifier
