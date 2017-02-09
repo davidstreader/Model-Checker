@@ -176,6 +176,37 @@
                 }
             });
             this.connected = true;
+            this.applyTooltips();
+        },
+        applyTooltips: function() {
+            this.cy.edges().qtip({
+                content: function(){ return this.data().tooltip },
+                position: {
+                    my: 'top center',
+                    at: 'bottom center'
+                },
+                style: {
+                    classes: 'qtip-bootstrap',
+                    tip: {
+                        width: 16,
+                        height: 8
+                    }
+                }
+            });
+            this.cy.nodes("[!isParent]").qtip({
+                content: function(){ return this.data().tooltip },
+                position: {
+                    my: 'top center',
+                    at: 'bottom center'
+                },
+                style: {
+                    classes: 'qtip-bootstrap',
+                    tip: {
+                        width: 16,
+                        height: 8
+                    }
+                }
+            });
         },
         convertAndAddGraph: function(graph,id,hidden) {
             const oldId = id;
@@ -208,6 +239,7 @@
             glGraph.edges.forEach(edge =>{
                 this.cy.add(edge);
             });
+            this.applyTooltips();
             this.applyCose(id, parent);
         },
         applyCose : function(id, node) {

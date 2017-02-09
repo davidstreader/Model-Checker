@@ -116,6 +116,10 @@ public class VariableHider {
                 ((IdentifierNode) node).setIdentifer(processMap.get(((IdentifierNode) node).getIdentifier()).ident);
             }
         }
+        if (node.getMetaData().containsKey("variables") && variableSet != null) {
+            HashMap<String,Object> variables = (HashMap<String, Object>) node.getMetaData().get("variables");
+            variables.keySet().removeAll(variableSet.getVariables());
+        }
         if (node.getMetaData().containsKey("guard")) {
             Guard guard = (Guard) node.getMetaData().get("guard");
             if (variableSet != null) {
@@ -125,7 +129,7 @@ public class VariableHider {
         }
         return node;
     }
-    ASTNode mergeProcess(ASTNode process1, ASTNode process2) {
+    private ASTNode mergeProcess(ASTNode process1, ASTNode process2) {
         if (process1 == null) return process2;
         if (process2 == null) return process1;
         //If both nodes are identifiers, nothing needs to be done as they are identical
@@ -139,7 +143,7 @@ public class VariableHider {
         }
     }
     @SneakyThrows
-    ASTNode processBranch(ASTNode parent, String child, HashMap<String, HiddenObject> processMap, List<String> actionMap,VariableSetNode variableSet) {
+    private ASTNode processBranch(ASTNode parent, String child, HashMap<String, HiddenObject> processMap, List<String> actionMap, VariableSetNode variableSet) {
         Method set = createSetter(parent,child);
         Method get = createGetter(parent,child);
         ASTNode childNode = (ASTNode) get.invoke(parent);
