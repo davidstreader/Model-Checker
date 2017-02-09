@@ -1,5 +1,5 @@
 /* AUTOMATA ABSTRACTION TESTS */
-/*
+
 // basic abstraction
 automata {
     Basic = (a -> b -> c -> STOP)\{b}.
@@ -149,4 +149,3 @@ automata {
 }
 
 operation AbsBuff ~ EqBuff.
-*/
