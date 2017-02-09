@@ -78,6 +78,9 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
             referenceMap.put(astNode.getReferenceId(), currentNode);
             currentNode.addMetaData("reference", astNode.getReferenceId());
         }
+        if (astNode.getMetaData().containsKey("variables")) {
+            currentNode.addMetaData("variables",astNode.getMetaData().get("variables"));
+        }
         currentNode.getMetaData().putAll(astNode.getMetaData());
         if(astNode instanceof ProcessRootNode){
             interpretNode((ProcessRootNode)astNode, automaton, currentNode);

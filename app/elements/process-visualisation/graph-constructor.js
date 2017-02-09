@@ -33,9 +33,17 @@ function visualizeAutomata(process, graphID, hidden, glGraph) {
                 type = "fsaErrorState";
             }
         }
+        let tooltip = "";
+        const vars = nodes[i].metaData.variables;
+        if (vars) {
+            for (let i in vars) {
+                tooltip+=i+"="+vars[i]+",";
+            }
+            tooltip = tooltip.substr(0,tooltip.length-1);
+        }
         glGraph.nodes.push({
             group:"nodes",
-            data: {id: graphID+nid, label: nodes[i].metaData.label, type: type, tooltip: nodes[i].variables, parent: graphID},
+            data: {id: graphID+nid, label: nodes[i].metaData.label, type: type, tooltip: tooltip, parent: graphID},
         });
     }
     let toEmbed = [];
@@ -45,7 +53,7 @@ function visualizeAutomata(process, graphID, hidden, glGraph) {
         let label = edges[i].label;
         const from = graphID+'n' + edges[i].from;
         const to = graphID+'n' + edges[i].to;
-        const tooltip = "";
+        let tooltip = "";
         if (edges[i].metaData.receiver) {
             label += "?";
         } else if (edges[i].metaData.broadcaster) {
@@ -57,6 +65,12 @@ function visualizeAutomata(process, graphID, hidden, glGraph) {
             label += guard.varStr+" ";
             label += guard.guardStr+" ";
             label += guard.nextStr;
+        }
+
+        if (guard !== undefined) {
+            tooltip += guard.varStr+"<br/>";
+            tooltip += guard.guardStr+"<br/>";
+            tooltip += guard.nextStr;
         }
         if (edges[i].metaData.interrupt && hidden) {
             const toNode = process.nodeMap[edges[i].to];

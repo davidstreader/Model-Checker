@@ -119,7 +119,7 @@ public class Expander {
         else if(astNode instanceof ForAllStatementNode){
             astNode = expand((ForAllStatementNode)astNode, variableMap);
         }
-
+        astNode.getMetaData().put("variables",new HashMap<>(variableMap));
         return astNode;
     }
 
@@ -276,21 +276,6 @@ public class Expander {
 
         return nodes;
     }
-    private int evaluateExpression(Expression expression, Map<String, Object> variableMap) throws CompilationException {
-        // remove all strings from the variableMap
-        Map<String, Integer> variables = new HashMap<>();
-        for(String key : variableMap.keySet()){
-            Object value = variableMap.get(key);
-            if(value instanceof Integer){
-                variables.put(key, (Integer)value);
-            }
-        }
-        Expression ex = ExpressionSimplifier.simplify(expression, variables);
-        if (ex instanceof BooleanOperand) return ((BooleanOperand) ex).getValue()?1:0;
-        if (ex instanceof IntegerOperand) return ((IntegerOperand) ex).getValue();
-        throw new CompilationException(getClass(),"There was an undefined variable in that statement.");
-    }
-
     private boolean evaluateCondition(Expression condition, Map<String, Object> variableMap) throws CompilationException {
         Map<String, Integer> variables = new HashMap<String, Integer>();
         for(String key : variableMap.keySet()){
