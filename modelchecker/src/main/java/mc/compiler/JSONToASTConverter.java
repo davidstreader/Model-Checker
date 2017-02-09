@@ -336,7 +336,7 @@ public class JSONToASTConverter {
         JSONObject jsonLocation = json.getJSONObject("location");
         Location location = convertLocation(jsonLocation);
 
-        return new HidingNode(type, set, location);
+        return new HidingNode(type, null, location);
     }
 
     public InterruptNode convertInterruptNode(JSONObject json){
