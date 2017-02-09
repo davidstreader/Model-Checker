@@ -366,7 +366,7 @@ public class Expander {
                     string = string.replaceAll(Pattern.quote(variable)+"\\b","" + integerMap.get(variable));
                 }
                 else if(variableMap.containsKey(variable)){
-                    string = string.replaceAll(Pattern.quote("[" + variable + "]")+"\\b", "" + variableMap.get(variable));
+                    string = string.replaceAll(Pattern.quote("[" + variable + "]"), "" + variableMap.get(variable));
                 }
             }
             else{
