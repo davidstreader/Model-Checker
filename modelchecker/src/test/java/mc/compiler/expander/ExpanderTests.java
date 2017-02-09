@@ -33,5 +33,16 @@ public class ExpanderTests extends TestBase {
 	protected ProcessNode constructProcessNode(String code){
 		return constructProcessNode(code, 0);
 	}
-	
+
+    protected List<ProcessNode> constructProcessList(String code) {
+        try{
+            List<Token> tokens = lexer.tokenise(code);
+            AbstractSyntaxTree ast = parser.parse(tokens);
+            return expander.expand(ast).getProcesses();
+        }catch(CompilationException e){
+            e.printStackTrace();
+        }
+
+        return null;
+    }
 }
