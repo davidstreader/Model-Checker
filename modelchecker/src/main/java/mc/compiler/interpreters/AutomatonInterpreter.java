@@ -64,6 +64,21 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
             ProcessModel model = processMap.get(reference);
             processStack.push(model);
         }
+        else if(astNode instanceof ProcessRootNode){
+            ProcessRootNode root = (ProcessRootNode)astNode;
+
+            Automaton automaton = new Automaton(identifier);
+            automaton.addMetaData("location",astNode.getLocation());
+            interpretNode(root.getProcess(), automaton, automaton.getRoot());
+
+            automaton = processLabellingAndRelabelling(automaton, root);
+
+            if(root.hasHiding()){
+                processHiding(automaton, root.getHiding());
+            }
+
+            processStack.push(automaton);
+        }
         else{
             Automaton automaton = new Automaton(identifier);
             automaton.addMetaData("location",astNode.getLocation());
@@ -109,9 +124,11 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     private void interpretNode(ProcessRootNode astNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException{
         interpretProcess(astNode.getProcess(), automaton.getId() + "." + ++subProcessCount);
         Automaton model = (Automaton)processStack.pop();
+
         processLabellingAndRelabelling(model, astNode);
+
         if(astNode.hasHiding()){
-            processHiding(automaton, astNode.getHiding());
+            processHiding(model, astNode.getHiding());
         }
 
         AutomatonNode oldRoot = automaton.addAutomaton(model);
