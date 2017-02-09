@@ -61,7 +61,9 @@
         <paper-icon-button id="reload" icon="icons:autorenew" class="middle" title="Reload" on-tap="reloadFile" disabled=true></paper-icon-button>
         <input id="open-file" type="file" accept="text/plain" class="middle" style="display: none;"/>
         <span class="spacer middle"></span>
-        <span class="middle" id="serverStatus"><img src='https://img.shields.io/badge/Server%20Status-Online-brightgreen.svg'/></span>
+        <div class="middle">Server Status:</div>
+        <span class="spacer middle"></span>
+        <div class="middle" id="serverStatus"><img class="status-badge" src='https://img.shields.io/badge/-Online-brightgreen.svg'/></div>
         <span class="flex middle"></span>
         <paper-icon-button icon="icons:settings" class="middle" title="Settings" on-tap="showSettings"></paper-icon-button>
         <paper-icon-button icon="icons:help" class="middle" title="Help" on-tap="showHelp"></paper-icon-button>

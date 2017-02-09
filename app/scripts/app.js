@@ -26,13 +26,13 @@
             app.connected = true;
             if (app.liveCompiling)
                 app.compile();
-            $("#serverStatus").html("<img src='https://img.shields.io/badge/Server%20Status-Online-brightgreen.svg'/>")
+            $("#serverStatus").html("<img class='status-badge' src='https://img.shields.io/badge/-Online-brightgreen.svg'/>")
         });
         app.socket.on('disconnect', function() {
             app.connected = false;
             app.$.console.log("You have been disconnected from the server.");
             app.$.console.log("As a result, your last compilation may not have completed successfully.");
-            $("#serverStatus").html("<img src='https://img.shields.io/badge/Server%20Status-Offline-red.svg'/>")
+            $("#serverStatus").html("<img class='status-badge' src='https://img.shields.io/badge/-Offline-red.svg'/>")
         });
         app.socket.on('log',data => {
             if (data.clear) {
