@@ -57,6 +57,10 @@ public class ProcessRootNode extends ASTNode {
         return hiding;
     }
 
+    public void setHiding(HidingNode hiding){
+        this.hiding = hiding;
+    }
+
     public boolean hasHiding(){
         return hiding != null;
     }

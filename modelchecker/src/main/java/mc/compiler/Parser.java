@@ -302,10 +302,22 @@ public class Parser {
         }
 
         List<String> set = new ArrayList<String>();
+        Map<Integer, RangesNode> rangeMap = new HashMap<Integer, RangesNode>();
 
         while(!(peekToken() instanceof CloseBracketToken)){
             // parse the current action and add it to the set
-            set.add(parseActionLabel().getAction());
+
+            int rangeStart = actionRanges.size();
+            ActionLabelNode action = parseActionLabel();
+
+            if(rangeStart < actionRanges.size()){
+                List<IndexNode> ranges = new ArrayList<IndexNode>(actionRanges.subList(rangeStart, actionRanges.size()));
+                actionRanges = new ArrayList<IndexNode>(actionRanges.subList(0, rangeStart));
+                RangesNode range = new RangesNode(ranges, action.getLocation());
+                rangeMap.put(set.size(), range);
+            }
+
+            set.add(action.getAction());
 
             // check if another action label can be parsed
             if(!(peekToken() instanceof CommaToken)){
@@ -322,7 +334,7 @@ public class Parser {
             throw constructException("expecting to parse \"}\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
-        return new SetNode(set, constructLocation(start));
+        return new SetNode(set, rangeMap, constructLocation(start));
     }
 
     // CONSTANT DEFINITIONS
@@ -967,7 +979,7 @@ public class Parser {
 
         SetNode set = parseSet();
 
-        return new HidingNode(type, set.getSet(), constructLocation(start));
+        return new HidingNode(type, set, constructLocation(start));
     }
 
     private VariableSetNode parseVariables() throws CompilationException {

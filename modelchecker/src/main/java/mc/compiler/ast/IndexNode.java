@@ -24,6 +24,10 @@ public class IndexNode extends ASTNode {
 		return range;
 	}
 
+    public void setRange(ASTNode range){
+        this.range = range;
+    }
+
 	public ASTNode getProcess(){
 		return process;
 	}

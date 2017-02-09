@@ -73,6 +73,12 @@ public class Expander {
         }
         if(index < ranges.size()){
             IndexNode range = ranges.get(index);
+
+            // if the index node contains a set then it may need expanding
+            if(range.getRange() instanceof SetNode){
+                range.setRange(expand((SetNode)range.getRange()));
+            }
+
             IndexIterator iterator = IndexIterator.construct(range.getRange());
             String variable = range.getVariable();
             localProcess.setIdentifier(localProcess.getIdentifier() + "[" + variable + "]");
@@ -155,6 +161,11 @@ public class Expander {
     }
 
     private ASTNode expand(IndexNode astNode, Map<String, Object> variableMap) throws CompilationException {
+        // if the index node contains a set then it may need expanding
+        if(astNode.getRange() instanceof SetNode){
+            astNode.setRange(expand((SetNode)astNode.getRange()));
+        }
+
         IndexIterator iterator = IndexIterator.construct(astNode.getRange());
         Stack<ASTNode> iterations = new Stack<ASTNode>();
         while(iterator.hasNext()){
@@ -275,6 +286,12 @@ public class Expander {
 
         if(index < ranges.size()){
             IndexNode node = ranges.get(index);
+
+            // if the index node contains a set then it may need expanding
+            if(node.getRange() instanceof SetNode){
+                node.setRange(expand((SetNode)node.getRange()));
+            }
+
             IndexIterator iterator = IndexIterator.construct(node.getRange());
             String variable = node.getVariable();
 

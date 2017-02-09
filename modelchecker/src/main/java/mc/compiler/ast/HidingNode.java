@@ -8,9 +8,9 @@ public class HidingNode extends ASTNode {
 
 	// fields
 	private String type;
-	private List<String> set;
+	private SetNode set;
 
-	public HidingNode(String type, List<String> set, Location location){
+	public HidingNode(String type, SetNode set, Location location){
 		super(location);
 		this.type = type;
 		this.set = set;
@@ -20,9 +20,13 @@ public class HidingNode extends ASTNode {
 		return type;
 	}
 
-	public List<String> getSet(){
+	public SetNode getSet(){
 		return set;
 	}
+
+    public void setSet(SetNode set){
+        this.set = set;
+    }
 
     public boolean equals(Object obj){
         if(obj == this){
