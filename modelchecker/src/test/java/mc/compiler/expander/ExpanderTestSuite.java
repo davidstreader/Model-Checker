@@ -9,6 +9,7 @@ import org.junit.runners.Suite;
 	    RangeIndexTests.class,
 	    SetIndexTests.class,
 	    ForAllTests.class,
+        SetTests.class,
 	    SequenceTests.class,
         ExampleTests.class
 })
