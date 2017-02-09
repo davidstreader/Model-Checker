@@ -35,7 +35,7 @@ public class OperationEvaluator {
         List<Automaton> automata = new ArrayList<Automaton>();
         automata.add((Automaton) interpreter.interpret("automata", operation.getFirstProcess(), getNextOperationId(), processMap));
         automata.add((Automaton) interpreter.interpret("automata", operation.getSecondProcess(), getNextOperationId(), processMap));
-        if (Objects.equals(operation.getOperation(), "traceequivalent")) {
+        if (Objects.equals(operation.getOperation(), "traceEquivalent")) {
             List<Automaton> automata1 = new ArrayList<>();
             for (Automaton a: automata) {
                 automata1.add(new AutomataOperations().nfa2dfa(a));

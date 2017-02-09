@@ -32,7 +32,7 @@ public class OperationResult {
   private String getOpSymbol(String op) throws CompilationException {
     switch (op) {
       case "bisimulation": return "~";
-      case "traceequivalent": return "#";
+      case "traceEquivalent": return "#";
     }
     throw new CompilationException(OperationEvaluator.class,"Unknown operation: "+op);
   }
