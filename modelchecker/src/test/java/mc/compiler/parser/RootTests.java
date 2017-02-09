@@ -196,6 +196,6 @@ public class RootTests extends ParserTests {
     private HidingNode constructHiding(String type, String element){
         List<String> set = new ArrayList<String>();
         set.add(element);
-        return new HidingNode(type, set, null);
+        return new HidingNode(type, new SetNode(set, null), null);
     }
 }

@@ -108,7 +108,7 @@ public class ExampleTests extends ExpanderTests {
         ProcessNode basic = new ProcessNode("automata", "Basic", sequence, localProcesses, null);
 
         // Bas
-        HidingNode hiding = new HidingNode("includes", new ArrayList<String>(Arrays.asList("t")), null);
+        HidingNode hiding = new HidingNode("includes", new SetNode(new ArrayList<String>(Arrays.asList("t")), null), null);
         ProcessRootNode root = new ProcessRootNode(new IdentifierNode("Basic", null), null, null, hiding, null);
         ProcessNode bas = new ProcessNode("automata", "Bas", root, localProcesses, null);
 
@@ -231,7 +231,7 @@ public class ExampleTests extends ExpanderTests {
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode sequence1 = constructSequenceNode(new String[]{"a", "m", "c"}, terminal);
         SequenceNode sequence2 = constructSequenceNode(new String[]{"x", "m", "z"}, terminal);
-        HidingNode hiding = new HidingNode("includes", new ArrayList<String>(Arrays.asList("m")), null);
+        HidingNode hiding = new HidingNode("includes", new SetNode(new ArrayList<String>(Arrays.asList("m")), null), null);
         CompositeNode composite = constructCompositeNode(sequence1, sequence2);
         ProcessRootNode root = new ProcessRootNode(composite, null, null, hiding, null);
 
@@ -269,7 +269,7 @@ public class ExampleTests extends ExpanderTests {
         expected.add(new ProcessNode("automata", "B3", composite2, localProcesses, null));
 
         // B4
-        HidingNode hiding = new HidingNode("includes", new ArrayList<String>(Arrays.asList("move")), null);
+        HidingNode hiding = new HidingNode("includes", new SetNode(new ArrayList<String>(Arrays.asList("move")), null), null);
         ProcessRootNode root5 = new ProcessRootNode(new IdentifierNode("B3", null), null, null, hiding, null);
         expected.add(new ProcessNode("automata", "B4", root5, localProcesses, null));
 
