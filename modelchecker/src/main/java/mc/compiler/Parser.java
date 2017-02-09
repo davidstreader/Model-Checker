@@ -1044,8 +1044,6 @@ public class Parser {
         else{
             parseOperationBlock();
         }
-
-        throw constructException("expecting to parse an operation or an operation block but received \"" + peekToken().toString() + "\"");
     }
 
     private void parseSingleOperation() throws CompilationException {
