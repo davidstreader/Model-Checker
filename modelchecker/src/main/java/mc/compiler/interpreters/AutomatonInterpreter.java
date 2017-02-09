@@ -249,7 +249,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         Set<String> alphabet = automaton.getAlphabet();
         String type = hiding.getType();
 
-        for(String action : hiding.getSet()){
+        for(String action : hiding.getSet().getSet()){
             if(alphabet.contains(action) && type.equals("includes")){
                 automaton.relabelEdges(action, Constant.HIDDEN);
             }
