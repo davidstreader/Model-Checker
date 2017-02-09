@@ -14,7 +14,7 @@ body {
 }
 
 .status-badge {
-    padding: auto;
+    padding-left: 10px;
     position: absolute;
     top: 0;
     bottom: 0;
