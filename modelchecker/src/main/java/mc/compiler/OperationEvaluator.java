@@ -47,9 +47,9 @@ public class OperationEvaluator {
         if (operation.isNegated()) {
           result = !result;
         }
-        results.add(new OperationResult(operation.getFirstProcess(),operation.getSecondProcess(),operation.getOperation(),result));
+        results.add(new OperationResult(operation.getFirstProcess(),operation.getSecondProcess(),operation.getOperation(), operation.isNegated(), result));
       } else {
-        results.add(new OperationResult(operation.getFirstProcess(),operation.getSecondProcess(),operation.getOperation(),firstFound,secondFound));
+        results.add(new OperationResult(operation.getFirstProcess(),operation.getSecondProcess(),operation.getOperation(), operation.isNegated(), firstFound, secondFound));
       }
     }
     return results;

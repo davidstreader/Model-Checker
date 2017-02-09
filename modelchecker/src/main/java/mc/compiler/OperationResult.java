@@ -14,17 +14,17 @@ public class OperationResult {
   private String operation;
   private String result;
 
-  public OperationResult(ASTNode process1, ASTNode process2, String operation, boolean result) {
+  public OperationResult(ASTNode process1, ASTNode process2, String operation, boolean negated, boolean result) {
     this.process1 = new OperationProcess(getIdent(process1), true, process1.getLocation());
     this.process2 = new OperationProcess(getIdent(process2), true, process2.getLocation());
-    this.operation = getOpSymbol(operation);
+    this.operation = (negated?"!":"")+getOpSymbol(operation);
     this.result = result+"";
   }
 
-  public OperationResult(ASTNode process1, ASTNode process2, String operation, boolean firstFound, boolean secondFound) {
+  public OperationResult(ASTNode process1, ASTNode process2, String operation, boolean negated, boolean firstFound, boolean secondFound) {
     this.process1 = new OperationProcess(getIdent(process1), firstFound, process1.getLocation());
     this.process2 = new OperationProcess(getIdent(process2), secondFound, process2.getLocation());
-    this.operation = getOpSymbol(operation);
+    this.operation = (negated?"!":"")+getOpSymbol(operation);
     this.result = "notfound";
   }
 
