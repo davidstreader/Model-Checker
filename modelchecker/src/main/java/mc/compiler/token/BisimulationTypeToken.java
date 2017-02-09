@@ -2,14 +2,14 @@ package mc.compiler.token;
 
 import mc.util.Location;
 
-public class BisimulationToken extends OperationToken {
+public class BisimulationTypeToken extends OperationTypeToken {
 	
-	public BisimulationToken(Location location){
+	public BisimulationTypeToken(Location location){
 		super(location);
 	}
 
 	public boolean equals(Object obj){
-		return obj instanceof BisimulationToken;
+		return obj instanceof BisimulationTypeToken;
 	}
 
 	public String toString(){

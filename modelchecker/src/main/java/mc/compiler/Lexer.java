@@ -90,6 +90,9 @@ public class Lexer {
 		else if(string.equals("abs") || string.equals("simp") || string.equals("safe") || string.equals("prune")){
 			return new FunctionToken(string, location);
 		}
+        else if(string.equals("operation")){
+            return new OperationToken(location);
+        }
 		else if(string.equals("STOP")){
 			return new StopToken(location);
 		}
@@ -204,7 +207,7 @@ public class Lexer {
 			else{
 				Location location = new Location(line, line, column, column++);
 				index++;
-				return new BisimulationToken(location);
+				return new BisimulationTypeToken(location);
 			}
 		}
 		else if(characters[index] == '\\'){

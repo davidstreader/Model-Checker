@@ -1089,7 +1089,7 @@ public class Parser {
     }
 
     private String parseOperationType() throws CompilationException {
-        if(peekToken() instanceof BisimulationToken){
+        if(peekToken() instanceof BisimulationTypeToken){
             nextToken();
             return "bisimulation";
         }
@@ -1140,7 +1140,7 @@ public class Parser {
             } else if (token instanceof NegateToken) {
                 expression.add("#!");
                 token = nextToken();
-            } else if (token instanceof BisimulationToken) {
+            } else if (token instanceof BisimulationTypeToken) {
                 expression.add("#~");
                 token = nextToken();
             } else {
@@ -1288,7 +1288,7 @@ public class Parser {
             } else if (token instanceof NegateToken) {
                 expression.add("#!");
                 token = nextToken();
-            } else if (token instanceof BisimulationToken) {
+            } else if (token instanceof BisimulationTypeToken) {
                 expression.add("#~");
                 token = nextToken();
             } else {
