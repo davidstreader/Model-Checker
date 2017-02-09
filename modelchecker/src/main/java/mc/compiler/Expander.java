@@ -16,8 +16,7 @@ public class Expander {
 
     private Map<String, Expression> globalVariableMap;
     private ExpressionEvaluator evaluator = new ExpressionEvaluator();
-    private List<IndexNode> ranges;
-
+    private Map<String,List<String>> identMap = new HashMap<>();
     public AbstractSyntaxTree expand(AbstractSyntaxTree ast) throws CompilationException {
         globalVariableMap = ast.getVariableMap();
 
@@ -26,7 +25,6 @@ public class Expander {
             ProcessNode process = processes.get(i);
             new LogMessage("Expanding:",process).send();
             Map<String, Object> variableMap = new HashMap<String, Object>();
-            ranges = new ArrayList<>();
             ASTNode root = expand(process.getProcess(), variableMap);
             process.setProcess(root);
             List<LocalProcessNode> localProcesses = expandLocalProcesses(process.getLocalProcesses(), variableMap);
@@ -67,11 +65,18 @@ public class Expander {
 
     private List<LocalProcessNode> expandLocalProcesses(LocalProcessNode localProcess, Map<String, Object> variableMap, List<IndexNode> ranges, int index) throws CompilationException {
         List<LocalProcessNode> newLocalProcesses = new ArrayList<LocalProcessNode>();
+        if (index == 0) {
+            identMap.put(localProcess.getIdentifier(),new ArrayList<>());
+            for (IndexNode node: ranges) {
+                identMap.get(localProcess.getIdentifier()).add(node.getVariable());
+            }
+        }
         if(index < ranges.size()){
             IndexNode range = ranges.get(index);
             IndexIterator iterator = IndexIterator.construct(range.getRange());
             String variable = range.getVariable();
             localProcess.setIdentifier(localProcess.getIdentifier() + "[" + variable + "]");
+
             while(iterator.hasNext()){
                 variableMap.put(variable, iterator.next());
                 newLocalProcesses.addAll(expandLocalProcesses((LocalProcessNode) localProcess.copy(), variableMap, ranges, index + 1));
@@ -153,11 +158,9 @@ public class Expander {
         IndexIterator iterator = IndexIterator.construct(astNode.getRange());
         Stack<ASTNode> iterations = new Stack<ASTNode>();
         while(iterator.hasNext()){
-            this.ranges.add(astNode);
             Object element = iterator.next();
             variableMap.put(astNode.getVariable(), element);
             iterations.push(expand(astNode.getProcess().copy(), variableMap));
-            this.ranges.remove(astNode);
         }
 
         ASTNode node = iterations.pop();
@@ -174,7 +177,7 @@ public class Expander {
         Guard guard = new Guard();
         if (astNode.getTo() instanceof IdentifierNode) {
             //Parse the next values from this IdentifierNode
-            guard.parseNext(((IdentifierNode) astNode.getTo()).getIdentifier(), globalVariableMap, ranges);
+            guard.parseNext(((IdentifierNode) astNode.getTo()).getIdentifier(), globalVariableMap, identMap);
             //There were next values, so assign to the metadata
             if (guard.hasData())
                 astNode.getMetaData().put("guard",guard);

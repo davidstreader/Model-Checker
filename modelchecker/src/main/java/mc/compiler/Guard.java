@@ -2,11 +2,7 @@ package mc.compiler;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
-import mc.compiler.ast.IndexNode;
-import mc.exceptions.CompilationException;
-import mc.util.expr.ExpressionSimplifier;
 import mc.util.expr.Expression;
-import mc.util.expr.ExpressionEvaluator;
 import mc.util.expr.ExpressionPrinter;
 
 import java.io.Serializable;
@@ -64,34 +60,27 @@ public class Guard implements Serializable{
      * Parse an identifier and turn it into a list of variable assignments
      * @param identifier The identifier
      * @param globalVariableMap The global variable map
-     * @param ranges The ranges for the current identifier
+     * @param identMap A map from identifiers to a list of the variables in them (L[$i] = L -> [$i]
      */
-    public void parseNext(String identifier, Map<String, Expression> globalVariableMap, List<IndexNode> ranges) {
+    public void parseNext(String identifier, Map<String, Expression> globalVariableMap, Map<String, List<String>> identMap) {
         //Check that there are actually variables in the identifier
         if (!identifier.contains("[")) return;
         //Get a list of all variables
         List<String> vars = new ArrayList<>(Arrays.asList(identifier.replace("]","").split("\\[")));
         //Remove the actual identifier from the start.
-        vars.remove(0);
+        List<String> varNames = identMap.get(vars.remove(0));
         //Loop through the ranges and variables
-        for (int i = 0; i < ranges.size(); i++) {
-            IndexNode range = ranges.get(i);
-            String var = vars.get(i);
-            boolean found = false;
-            //If the globalVariableMap is inside the identifier,
-            //Then the next value is inside the map
-            for (String gVar : globalVariableMap.keySet()) {
-                if (identifier.contains(gVar)) {
-                    next.add(rm$(new ExpressionPrinter().printExpression(globalVariableMap.get(gVar))));
-                    nextMap.put(range.getVariable(),new ExpressionPrinter().printExpression(globalVariableMap.get(gVar)));
-                    found = true;
-                    break;
-                }
-            }
-            //It wasn't found, so it is just a value on its own.
-            if (!found) {
-                next.add(rm$(range.getVariable()+":="+var));
-                nextMap.put(range.getVariable(),var);
+        for (String var : vars) {
+            if (globalVariableMap.containsKey(var)) {
+                String printed = new ExpressionPrinter().printExpression(globalVariableMap.get(var));
+                printed = printed.substring(1, printed.length() - 1);
+                nextMap.put(var, printed);
+                next.add(rm$(printed));
+                break;
+            } else if (var.matches("\\d+")) {
+                String varName = varNames.get(vars.indexOf(var));
+                next.add(rm$(varName + ":=" + var));
+                nextMap.put(var, varName);
             }
         }
         //Replace symbols with their assignment counterparts.

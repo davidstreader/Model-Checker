@@ -37,9 +37,9 @@ function visualizeAutomata(process, graphID, hidden, glGraph) {
         const vars = nodes[i].metaData.variables;
         if (vars) {
             for (let i in vars) {
-                tooltip+=i+"="+vars[i]+",";
+                tooltip+=i+"="+vars[i]+", ";
             }
-            tooltip = tooltip.substr(0,tooltip.length-1).replace(/\$/g,"");
+            tooltip = "Variables: <span style='color:blue'>"+tooltip.substr(0,tooltip.length-2).replace(/\$/g,"")+"</span>";
         }
         glGraph.nodes.push({
             group:"nodes",
@@ -68,9 +68,12 @@ function visualizeAutomata(process, graphID, hidden, glGraph) {
         }
 
         if (guard !== undefined) {
-            tooltip += guard.varStr+"<br/>";
-            tooltip += guard.guardStr+"<br/>";
-            tooltip += guard.nextStr;
+            if (guard.varStr.length > 0)
+            tooltip += "Variables:<span style='color:blue'>" +guard.varStr+"</span><br/>";
+            if (guard.guardStr.length > 0)
+            tooltip += "Guard:<span style='color:blue'>" +guard.guardStr+"</span><br/>";
+            if (guard.nextStr.length > 0)
+            tooltip += "Assigned variables:<span style='color:blue'>" +guard.nextStr+"</span>";
         }
         if (edges[i].metaData.interrupt && hidden) {
             const toNode = process.nodeMap[edges[i].to];
