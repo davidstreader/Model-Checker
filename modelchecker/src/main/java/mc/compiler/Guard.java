@@ -39,9 +39,7 @@ public class Guard implements Serializable{
         collectAnds(andList,guard);
         //If there are no ands in the expression, use the root guard.
         if (andList.isEmpty()) andList.add(guard);
-        System.out.println(andList);
         andList.removeIf(s -> !containsHidden(s));
-        System.out.println(andList);
         if (andList.isEmpty()) return "";
         Expression combined = andList.remove(0);
         while (!andList.isEmpty()) {
