@@ -86,6 +86,9 @@ public class Parser {
             else if(token instanceof OperationToken){
                 parseOperation();
             }
+            else{
+                throw constructException("expecting to parse a process, operation or const definition but received \"" + token.toString() +"\"", token.getLocation());
+            }
         }
 
         return new AbstractSyntaxTree(processes, operations, variableMap);
