@@ -128,7 +128,9 @@ public class Expander {
         else if(astNode instanceof ForAllStatementNode){
             astNode = expand((ForAllStatementNode)astNode, variableMap);
         }
-        astNode.getMetaData().put("variables",new HashMap<>(variableMap));
+        HashMap<String,Object> tmpVarMap = new HashMap<>(variableMap);
+        tmpVarMap.keySet().removeIf(s -> hiddenVariables.contains(s.substring(1)));
+        astNode.getMetaData().put("variables",tmpVarMap);
         return astNode;
     }
 

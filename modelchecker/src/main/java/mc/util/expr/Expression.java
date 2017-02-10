@@ -22,4 +22,8 @@ public abstract class Expression implements Serializable {
     public static Expression constructExpression(String s) {
         return constructExpression(s, Collections.emptyMap());
     }
+    @Override
+    public String toString() {
+        return new ExpressionPrinter().printExpression(this);
+    }
 }

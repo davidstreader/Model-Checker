@@ -39,7 +39,9 @@ public class Guard implements Serializable{
         collectAnds(andList,guard);
         //If there are no ands in the expression, use the root guard.
         if (andList.isEmpty()) andList.add(guard);
+        System.out.println(andList);
         andList.removeIf(s -> !containsHidden(s));
+        System.out.println(andList);
         if (andList.isEmpty()) return "";
         Expression combined = andList.remove(0);
         while (!andList.isEmpty()) {
@@ -49,7 +51,8 @@ public class Guard implements Serializable{
     }
     private void collectAnds(List<Expression> andList, Expression ex) {
         if (ex instanceof AndOperator) {
-            andList.add(ex);
+            andList.add(((AndOperator) ex).getLeftHandSide());
+            andList.add(((AndOperator) ex).getRightHandSide());
         }
         if (ex instanceof UnaryOperator) collectAnds(andList,((UnaryOperator) ex).getRightHandSide());
         if (ex instanceof BinaryOperator) {
@@ -57,6 +60,7 @@ public class Guard implements Serializable{
             collectAnds(andList,((BinaryOperator) ex).getRightHandSide());
         }
     }
+
     private boolean containsHidden(Expression ex) {
         //If there is an and inside this expression, then don't check its variables as it is added on its own.
         if (ex instanceof AndOperator) return false;
@@ -87,7 +91,6 @@ public class Guard implements Serializable{
      */
     public String getNextStr() {
         if (next.isEmpty()) return "";
-        next.removeIf(next -> hiddenVariables.contains(next.split("\\W")[0]));
         return rm$(String.join(",",next));
     }
 
