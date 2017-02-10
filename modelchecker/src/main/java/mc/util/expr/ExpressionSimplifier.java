@@ -12,6 +12,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * Simplify expressions using Z3
+ */
 public class ExpressionSimplifier {
     private static ExpressionSimplifier simplifier;
     private ExpressionSimplifier(Context o) {
@@ -24,6 +27,7 @@ public class ExpressionSimplifier {
     }
     private static void init() throws CompilationException {
         if (simplifier == null) {
+            //Initilize Z3, throwing an appropriate error if this fails.
             try {
                 HashMap<String, String> cfg = new HashMap<>();
                 cfg.put("model", "true");
@@ -34,11 +38,28 @@ public class ExpressionSimplifier {
             }
         }
     }
+
+    /**
+     * Combine two guards together
+     * @param first The first guard
+     * @param second The second guard
+     * @return A logical and of both guards, with the next variables substituted from the first into the second.
+     * @throws CompilationException
+     */
     public static Guard combineGuards(Guard first, Guard second) throws CompilationException {
         init();
+        //Create a new guard
         Guard ret = new Guard();
-        ret.setVariables(first.getVariables());
+        //Start with variables from the second guard
+        ret.setVariables(second.getVariables());
+        //Replace all the variables from the second guard with ones from the first guard
+        ret.getVariables().putAll(first.getVariables());
         ret.setNext(second.getNext());
+        //If there are next variables that exist in the first map that have not been edited by the second, add them.
+        for (String s: first.getNext()) {
+            if (!second.getNextMap().containsKey(s.split("\\W")[0]))
+                ret.getNext().add(s);
+        }
         HashMap<String,Expression> subMap = new HashMap<>();
         for (String str: first.getNextMap().keySet()) {
             subMap.put(str,Expression.constructExpression(first.getNextMap().get(str)));

@@ -128,6 +128,7 @@ public class Expander {
         else if(astNode instanceof ForAllStatementNode){
             astNode = expand((ForAllStatementNode)astNode, variableMap);
         }
+        //Create a temporary variable map that does not contain hidden variables and store it.
         HashMap<String,Object> tmpVarMap = new HashMap<>(variableMap);
         tmpVarMap.keySet().removeIf(s -> hiddenVariables.contains(s.substring(1)));
         astNode.getMetaData().put("variables",tmpVarMap);

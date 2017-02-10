@@ -1,7 +1,14 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../imports/element-resizer.html">
-
+<style>
+    #nodeSep {
+        width: 84% !important;
+    }
+    #nodeSep > .slider-input.paper-slider {
+        width: 150px !important;
+    }
+</style>
 <dom-module id="settings-dialog">
   <template>
     <paper-dialog id="settings-dialog" with-backdrop>
@@ -13,7 +20,7 @@
                    auto-validate allowed-pattern="[0-9]" value="{{graphSettings.petriMaxTrans}}"></paper-input>
 
       <span>Node Separation</span>
-      <paper-slider id="nodeSep" min="1000" max="500000" value="{{nodeSep}}"></paper-slider>
+      <paper-slider id="nodeSep" min="1000" max="5000000" value="{{nodeSep}}" editable></paper-slider>
       <paper-checkbox id="chbx-fair-abstraction" checked="{{fairAbstraction}}" class="chbx middle" title="Visualise abstracted processes fairly.">
         <span>Fair Abstraction</span>
       </paper-checkbox>
