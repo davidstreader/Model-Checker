@@ -1,8 +1,9 @@
 automata {
     A = (a -> B | c-> D),
-    B = x->A|b->C,
-    C = a->B,
-    D = c->C|x->C\{x}.
+        B = (x->A|b->C),
+        C = (a->B),
+        D = (c->C|x->C)\{x}.
+    
     B = nfa2dfa(A).
     C = abs(A).
 }
