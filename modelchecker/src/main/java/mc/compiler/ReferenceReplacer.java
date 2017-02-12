@@ -53,7 +53,10 @@ public class ReferenceReplacer {
 	}
 
 	private ASTNode replaceReferences(ASTNode astNode, String identifier, Map<String, LocalProcessNode> localReferences) throws CompilationException {
-		if(astNode instanceof SequenceNode){
+		if(astNode instanceof ProcessRootNode){
+            return replaceReferences((ProcessRootNode)astNode, identifier, localReferences);
+        }
+        else if(astNode instanceof SequenceNode){
 			return replaceReferences((SequenceNode)astNode, identifier, localReferences);
 		}
 		else if(astNode instanceof ChoiceNode){
@@ -71,6 +74,12 @@ public class ReferenceReplacer {
 
 		return astNode;
 	}
+
+    private ProcessRootNode replaceReferences(ProcessRootNode astNode, String identifier, Map<String, LocalProcessNode> localReferences) throws CompilationException {
+        ASTNode process = replaceReferences(astNode.getProcess(), identifier, localReferences);
+        astNode.setProcess(process);
+        return astNode;
+    }
 
 	private SequenceNode replaceReferences(SequenceNode astNode, String identifier, Map<String, LocalProcessNode> localReferences) throws CompilationException {
 		ASTNode to = replaceReferences(astNode.getTo(), identifier, localReferences);

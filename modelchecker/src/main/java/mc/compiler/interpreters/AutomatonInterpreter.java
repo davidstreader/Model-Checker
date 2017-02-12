@@ -67,6 +67,10 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
 
             Automaton automaton = new Automaton(identifier);
             automaton.addMetaData("location",astNode.getLocation());
+
+            if(root.hasReferenceId()){
+                referenceMap.put(root.getReferenceId(), automaton.getRoot());
+            }
             interpretNode(root.getProcess(), automaton, automaton.getRoot());
 
             automaton = processLabellingAndRelabelling(automaton, root);
