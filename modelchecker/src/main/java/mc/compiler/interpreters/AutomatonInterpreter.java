@@ -71,7 +71,8 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
             if(root.hasReferenceId()){
                 referenceMap.put(root.getReferenceId(), automaton.getRoot());
             }
-            interpretNode(root.getProcess(), automaton, automaton.getRoot());
+            interpretProcess(root.getProcess(), identifier);
+            automaton = (Automaton)processStack.pop();
 
             automaton = processLabellingAndRelabelling(automaton, root);
 

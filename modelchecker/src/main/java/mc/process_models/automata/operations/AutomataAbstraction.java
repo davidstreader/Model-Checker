@@ -14,19 +14,28 @@ import java.util.stream.Collectors;
  * Created by sheriddavi on 25/01/17.
  */
 public class AutomataAbstraction {
+
     public Automaton performAbstraction(Automaton automaton, boolean isFair) throws CompilationException {
         Automaton abstraction = new Automaton(automaton.getId() + ".abs", !Automaton.CONSTRUCT_ROOT);
+
+        // add the nodes from the specified automaton to the abstracted representation
         for (AutomatonNode automatonNode : automaton.getNodes()) {
-            addNode(abstraction,automatonNode);
-        }
-        for (AutomatonEdge automatonEdge : automaton.getEdges()) {
-            if (!automatonEdge.isHidden()) addEdge(abstraction,automatonEdge);
+            addNode(abstraction, automatonNode);
         }
 
+        // only add the observable edges from the specified automaton to the abstracted representation
+        for (AutomatonEdge automatonEdge : automaton.getEdges()) {
+            if(!automatonEdge.isHidden()){
+                addEdge(abstraction, automatonEdge);
+            }
+        }
+
+        // retrieve the unobservable edges from the specified automaton
         List<AutomatonEdge> hiddenEdges = automaton.getEdges().stream()
                 .filter(AutomatonEdge::isHidden)
                 .collect(Collectors.toList());
 
+        // construct observable edges to replace the unobservable edges
         for(AutomatonEdge hiddenEdge : hiddenEdges){
             constructOutgoingObservableEdges(abstraction, hiddenEdge);
             constructIncomingObservableEdges(abstraction, hiddenEdge);
