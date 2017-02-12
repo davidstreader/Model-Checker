@@ -11,6 +11,7 @@ public class ProcessNode extends ASTNode {
 	private String identifier;
 	private ASTNode process;
 	private List<LocalProcessNode> localProcesses;
+    private RelabelNode relabels;
 	private HidingNode hiding;
     private VariableSetNode variables;
     private InterruptNode interrupt;
@@ -68,6 +69,18 @@ public class ProcessNode extends ASTNode {
 	public void setLocalProcesses(List<LocalProcessNode> localProcesses){
 		this.localProcesses = localProcesses;
 	}
+
+    public RelabelNode getRelabels(){
+        return relabels;
+    }
+
+    public void setRelabels(RelabelNode relabels){
+        this.relabels = relabels;
+    }
+
+    public boolean hasRelabels(){
+        return relabels != null;
+    }
 
 	public HidingNode getHiding(){
 		return hiding;

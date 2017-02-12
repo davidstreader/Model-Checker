@@ -29,21 +29,19 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         reset();
         this.processMap = processMap;
         String identifier = processNode.getIdentifier();
-        boolean skipped = false;
-        if (identifier.endsWith("*")) {
-            skipped = true;
-            identifier = identifier.substring(0,identifier.length()-1);
-        }
+
         interpretProcess(processNode.getProcess(), identifier);
 
         Automaton automaton = (Automaton)processStack.pop();
 
+        if(processNode.hasRelabels()){
+            processRelabelling(automaton, processNode.getRelabels());
+        }
+
         if(processNode.hasHiding()){
             processHiding(automaton, processNode.getHiding());
         }
-        if (skipped) {
-            automaton.addMetaData("skipped",true);
-        }
+
         return labelAutomaton(automaton);
     }
 
@@ -239,9 +237,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
             automaton = operations.labelAutomaton(automaton, astNode.getLabel());
         }
         if(astNode.hasRelabelSet()){
-            for(RelabelElementNode element : astNode.getRelabelSet().getRelabels()){
-                automaton.relabelEdges(element.getOldLabel(), element.getNewLabel());
-            }
+            processRelabelling(automaton, astNode.getRelabelSet());
         }
 
         return automaton;
@@ -260,6 +256,12 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
 
         AutomatonNode node = automaton1.combineNodes(currentNode, oldRoot);
         references.forEach(id -> referenceMap.put(id, node));
+    }
+
+    private void processRelabelling(Automaton automaton, RelabelNode relabels){
+        for(RelabelElementNode element : relabels.getRelabels()){
+            automaton.relabelEdges(element.getOldLabel(), element.getNewLabel());
+        }
     }
 
     private void processHiding(Automaton automaton, HidingNode hiding){

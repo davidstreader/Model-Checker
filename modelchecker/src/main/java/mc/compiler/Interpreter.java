@@ -39,9 +39,16 @@ public class Interpreter {
                 default:
                     throw new CompilationException(getClass(),"Unable to find the process type: "+process.getType());
             }
-            String ident = process.getIdentifier();
-            if (ident.endsWith("*")) ident = ident.substring(0,ident.length()-1);
-            processMap.put(ident, model);
+
+            // check if this process has been marked as not to be rendered
+            if(process.getMetaData().containsKey("skipped")){
+                boolean isSkipped = (boolean)process.getMetaData().get("skipped");
+                if(isSkipped){
+                    model.addMetaData("skipped", true);
+                }
+            }
+
+            processMap.put(process.getIdentifier(), model);
         }
 
         return processMap;

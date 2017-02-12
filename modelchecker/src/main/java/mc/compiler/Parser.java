@@ -434,6 +434,13 @@ public class Parser {
         int start = index;
         IdentifierNode identifier = parseIdentifier();
 
+        // check if this process has been marked as not to be rendered
+        boolean toRender = true;
+        if(peekToken() instanceof MultiplicationToken){
+            nextToken();
+            toRender = false;
+        }
+
         // ensure that the next token is the '=' token
         if(!(nextToken() instanceof AssignToken)){
             Token error = tokens.get(index - 1);
@@ -450,6 +457,20 @@ public class Parser {
         }
 
         ProcessNode processNode = new ProcessNode(processType, identifier.getIdentifier(), process, localProcesses, constructLocation(start));
+
+        if(!toRender){
+            processNode.getMetaData().put("skipped", true);
+        }
+
+        // check if a relabel set has been defined
+        if(peekToken() instanceof DivisionToken){
+            processNode.setRelabels(parseRelabel());
+        }
+
+        // check if a hiding set has been defined
+        if(peekToken() instanceof HideToken || peekToken() instanceof AtToken){
+            processNode.setHiding(parseHiding());
+        }
 
         // check if an interrupt process has been defined
         if(peekToken() instanceof InterruptToken){
@@ -503,7 +524,7 @@ public class Parser {
             throw constructException("expecting to parse \"=\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
-        ASTNode process = parseComposite();
+        ASTNode process = parseLocalProcess();
 
         return new LocalProcessNode(identifier.getIdentifier(), ranges, process, constructLocation(start));
     }
