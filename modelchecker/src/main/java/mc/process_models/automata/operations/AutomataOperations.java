@@ -12,6 +12,7 @@ public class AutomataOperations {
 
     private AutomataParallelComposition composition;
     private AutomataAbstraction abstraction;
+    private AutomataPruning pruning;
     private AutomataBisimulation bisimulation;
     private AutomataReachability reachability;
     private AutomataLabeller labeller;
@@ -20,6 +21,7 @@ public class AutomataOperations {
     public AutomataOperations(){
         this.composition = new AutomataParallelComposition();
         this.abstraction = new AutomataAbstraction();
+        this.pruning = new AutomataPruning();
         this.bisimulation = new AutomataBisimulation();
         this.reachability = new AutomataReachability();
         this.labeller = new AutomataLabeller();
@@ -34,6 +36,12 @@ public class AutomataOperations {
 
     public Automaton abstraction(Automaton automaton) throws CompilationException {
         Automaton processedAutomaton = abstraction.performAbstraction(automaton, true);
+        processedAutomaton = removeUnreachableNodes(processedAutomaton);
+        return processedAutomaton;
+    }
+
+    public Automaton prune(Automaton automaton) throws CompilationException {
+        Automaton processedAutomaton = pruning.performPruning(automaton);
         processedAutomaton = removeUnreachableNodes(processedAutomaton);
         return processedAutomaton;
     }

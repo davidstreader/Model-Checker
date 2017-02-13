@@ -218,9 +218,22 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
                     break;
                 }
                 throw new CompilationException(getClass(),"Expecting an automaton, received a: "+model.getClass().getSimpleName(),astNode.getLocation());
+            case "prune":
+                if(model instanceof Automaton){
+                    processed = operations.prune(((Automaton)model).copy());
+                    break;
+                }
+                throw new CompilationException(getClass(),"Expecting an automaton, received a: "+model.getClass().getSimpleName(),astNode.getLocation());
             case "simp":
                 if(model instanceof Automaton){
                     processed = operations.simplification((Automaton)model);
+                    break;
+                }
+                throw new CompilationException(getClass(),"Expecting an automaton, received a: "+model.getClass().getSimpleName(),astNode.getLocation());
+            case "safe":
+                if(model instanceof Automaton){
+                    // automata cannot contain unreachable states therefore they are always safe
+                    processed = (Automaton)model;
                     break;
                 }
                 throw new CompilationException(getClass(),"Expecting an automaton, received a: "+model.getClass().getSimpleName(),astNode.getLocation());
