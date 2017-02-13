@@ -106,6 +106,9 @@ public class WebSocketServer {
             this.metaData = automaton.getMetaData();
             this.id = automaton.getId();
         }
+        public void addMetaData(String key, Object value){};
+        public void removeMetaData(String key){}
+        public boolean hasMetaData(String key){ return false; }
     }
 
     /**
