@@ -17,7 +17,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     private AutomataOperations operations;
 
     private Map<String, ProcessModel> processMap;
-    private Map<Integer, AutomatonNode> referenceMap;
+    private Map<String, AutomatonNode> referenceMap;
     private Stack<ProcessModel> processStack;
 
     public AutomatonInterpreter(){
@@ -68,8 +68,10 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
             Automaton automaton = new Automaton(identifier);
             automaton.addMetaData("location",astNode.getLocation());
 
-            if(root.hasReferenceId()){
-                referenceMap.put(root.getReferenceId(), automaton.getRoot());
+            if(root.hasReferences()){
+                for(String reference : root.getReferences()){
+                    referenceMap.put(reference, automaton.getRoot());
+                }
             }
             interpretProcess(root.getProcess(), identifier);
             automaton = (Automaton)processStack.pop();
@@ -92,9 +94,11 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
 
     private void interpretNode(ASTNode astNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException {
         // check if the current ast node has a reference attached
-        if(astNode.hasReferenceId()){
-            referenceMap.put(astNode.getReferenceId(), currentNode);
-            currentNode.addMetaData("reference", astNode.getReferenceId());
+        if(astNode.hasReferences()){
+            for(String reference : astNode.getReferences()){
+                referenceMap.put(reference, currentNode);
+            }
+            currentNode.addMetaData("reference", astNode.getReferences());
         }
         if (astNode.getMetaData().containsKey("variables")) {
             currentNode.addMetaData("variables",astNode.getMetaData().get("variables"));
@@ -249,14 +253,16 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     }
 
     private void addAutomaton(AutomatonNode currentNode, Automaton automaton1, Automaton automaton2) throws CompilationException {
-        List<Integer> references = new ArrayList<Integer>();
+        List<String> references = new ArrayList<String>();
+
+        if(currentNode.hasMetaData("reference")){
+            references.addAll((Set<String>)currentNode.getMetaData("reference"));
+        }
 
         AutomatonNode oldRoot = automaton1.addAutomaton(automaton2);
-        if(currentNode.hasMetaData("reference")){
-            references.add((int)currentNode.getMetaData("reference"));
-        }
+
         if(oldRoot.hasMetaData("reference")){
-            references.add((int)oldRoot.getMetaData("reference"));
+            references.addAll((Set<String>)oldRoot.getMetaData("reference"));
         }
 
         AutomatonNode node = automaton1.combineNodes(currentNode, oldRoot);
@@ -336,7 +342,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     }
 
     private void reset(){
-        this.referenceMap = new HashMap<Integer, AutomatonNode>();
+        this.referenceMap = new HashMap<String, AutomatonNode>();
         this.processStack = new Stack<ProcessModel>();
     }
 }

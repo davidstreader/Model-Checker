@@ -8,14 +8,14 @@ import mc.util.Location;
 public class ReferenceNode extends ASTNode {
 
     // fields
-    private int reference;
+    private String reference;
 
-    public ReferenceNode(int reference, Location location){
+    public ReferenceNode(String reference, Location location){
         super(location);
         this.reference = reference;
     }
 
-    public int getReference(){
+    public String getReference(){
         return reference;
     }
 
@@ -28,7 +28,7 @@ public class ReferenceNode extends ASTNode {
         }
         if(obj instanceof ReferenceNode){
             ReferenceNode node = (ReferenceNode)obj;
-            return reference == node.getReference();
+            return reference.equals(node.getReference());
         }
 
         return false;

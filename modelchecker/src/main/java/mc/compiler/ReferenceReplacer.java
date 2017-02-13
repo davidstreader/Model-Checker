@@ -13,14 +13,12 @@ import mc.webserver.LogMessage;
 public class ReferenceReplacer {
 
 	private Set<String> globalReferences;
-	private int referenceId;
-	private Map<String, Integer> referenceMap;
+	private Set<String> references;
 
 	public ReferenceReplacer(){
         globalReferences = new HashSet<String>();
-        referenceId = 0;
-        referenceMap = new HashMap<String, Integer>();
-	}
+        references = new HashSet<String>();
+    }
 
 	public AbstractSyntaxTree replaceReferences(AbstractSyntaxTree ast) throws CompilationException {
 		reset();
@@ -28,20 +26,20 @@ public class ReferenceReplacer {
 		List<ProcessNode> processes = ast.getProcesses();
 
 		for(int i = 0; i < processes.size(); i++){
-            referenceMap.clear();
+            references.clear();
 			ProcessNode process = processes.get(i);
-      new LogMessage("Replacing references:",process).send();
+
+            new LogMessage("Replacing references:",process).send();
 
 			String identifier = process.getIdentifier();
 			globalReferences.add(identifier);
-			int id = referenceId++;
-			process.getProcess().setReferenceId(id);
-			referenceMap.put(identifier, id);
+			process.getProcess().addReference(identifier);
+			references.add(identifier);
 
 			Map<String, LocalProcessNode> localReferences = new HashMap<String, LocalProcessNode>();
 			List<LocalProcessNode> localProcesses = process.getLocalProcesses();
 			for(int j = 0; j < localProcesses.size(); j++){
-				String localIdentifier = localProcesses.get(j).getIdentifier();
+				String localIdentifier = identifier + "." + localProcesses.get(j).getIdentifier();
 				localReferences.put(localIdentifier, localProcesses.get(j));
 			}
 
@@ -106,27 +104,34 @@ public class ReferenceReplacer {
 	private ASTNode replaceReferences(IdentifierNode astNode, String identifier, Map<String, LocalProcessNode> localReferences) throws CompilationException {
 		String reference = astNode.getIdentifier();
 		// check if the identifier is referencing a local process
-		if(localReferences.containsKey(reference)){
+		if(localReferences.containsKey(identifier + "." + reference)){
 			// check if this local process has been referenced before
-			if(referenceMap.containsKey(reference)){
-				return new ReferenceNode(referenceMap.get(reference), astNode.getLocation());
+			if(references.contains(identifier + "." + reference)){
+				return new ReferenceNode(identifier + "." + reference, astNode.getLocation());
 			}
 			else{
-				ASTNode node = localReferences.get(reference).getProcess();
-				int id = referenceId++;
-				node.setReferenceId(id);
-				referenceMap.put(reference, id);
+				ASTNode node = localReferences.get(identifier + "." + reference).getProcess();
+				node.addReference(identifier + "." + reference);
+
+                if(astNode.hasReferences()){
+                    for(String r : astNode.getReferences()){
+                        node.addReference(r);
+                    }
+                }
+
+                references.add(identifier + "." + reference);
 				return replaceReferences(node, identifier, localReferences);
 			}
 		}
 		// check if the identifier is referencing itself
 		else if(reference.equals(identifier)){
-			return new ReferenceNode(referenceMap.get(identifier), astNode.getLocation());
+			return new ReferenceNode(identifier, astNode.getLocation());
 		}
 		// check if the identifier is referencing a global process
 		else if(globalReferences.contains(reference)){
 			return astNode;
 		}
+
         throw new CompilationException(getClass(),"Unable to find reference for node: "+reference,astNode.getLocation());
 	}
 
@@ -138,7 +143,6 @@ public class ReferenceReplacer {
 
 	private void reset() {
 		globalReferences.clear();
-		referenceId = 0;
-		referenceMap.clear();
+		references.clear();
 	}
 }

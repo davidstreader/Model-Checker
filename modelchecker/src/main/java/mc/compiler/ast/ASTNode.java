@@ -2,6 +2,8 @@ package mc.compiler.ast;
 
 import java.io.*;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 import lombok.Getter;
 import mc.util.Location;
@@ -11,26 +13,30 @@ public abstract class ASTNode implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	// fields
-	private Integer referenceId;
+	private Set<String> references;
 	private Location location;
 	@Getter
 	private HashMap<String,Object> metaData = new HashMap<>();
 
 	public ASTNode(Location location){
-		referenceId = null;
+		references = null;
 		this.location = location;
 	}
 
-	public int getReferenceId(){
-		return referenceId;
+	public Set<String> getReferences(){
+		return references;
 	}
 
-	public void setReferenceId(int referenceId){
-		this.referenceId = referenceId;
+	public void addReference(String reference){
+		if(references == null){
+            references = new HashSet<String>();
+        }
+
+        references.add(reference);
 	}
 
-	public boolean hasReferenceId(){
-		return referenceId != null;
+	public boolean hasReferences(){
+		return references != null;
 	}
 
 	public Location getLocation(){
