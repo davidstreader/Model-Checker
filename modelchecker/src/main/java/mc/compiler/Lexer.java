@@ -296,7 +296,7 @@ public class Lexer {
 			if(index < characters.length - 1 && characters[index + 1] == '='){
 				Location location = new Location(line, column, line, column + 2);
 				column += 2;
-				index++;
+				index += 2;
 				return new LessThanEqToken(location);
 			}
 			if(index < characters.length - 1 && characters[index + 1] == '<'){
