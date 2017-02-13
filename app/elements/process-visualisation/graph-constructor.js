@@ -3,13 +3,6 @@ function convertGraph(graph, id, hidden) {
     if (graph.type == 'automata') {
         visualizeAutomata(graph,id, hidden, glGraph);
     }
-    if (graph.type == 'petrinet') {
-        //visualizePetriNet(graph,id, hidden, glGraph);
-        //TODO: Petrinet rendering
-        //For reference:
-        //https://github.com/DavidSheridan/Model-Checker/blob/c502816e3d0ff8e6b15018b90d325a1ebda00e3f/app/scripts/graph-constructor-worker.js
-        //https://github.com/DavidSheridan/Model-Checker/blob/c502816e3d0ff8e6b15018b90d325a1ebda00e3f/app/scripts/cell-shapes.js
-    }
     return glGraph;
 }
 function visualizeAutomata(process, graphID, hidden, glGraph) {

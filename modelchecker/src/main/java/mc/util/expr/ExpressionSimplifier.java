@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * Simplify expressions using Z3
+ * A class that is able to simplify expressions using Z3
  */
 public class ExpressionSimplifier {
     private static ExpressionSimplifier simplifier;
@@ -21,13 +21,25 @@ public class ExpressionSimplifier {
         context = o;
     }
 
+    /**
+     * Simplify an expression
+     * @param expr The expression
+     * @param variables a list of variables and their values to substitute, if required.
+     * @return The simplified expression
+     * @throws CompilationException An error converting to z3 occurred.
+     */
     public static Expression simplify(Expression expr, Map<String, Integer> variables) throws CompilationException {
         init();
         return simplifier.convert(simplifier.convert(expr,variables).simplify());
     }
+
+    /**
+     * Initialize Z3.
+     * @throws CompilationException There was an error Initializing Z3.
+     */
     private static void init() throws CompilationException {
         if (simplifier == null) {
-            //Initilize Z3, throwing an appropriate error if this fails.
+            //Initialize Z3, throwing an appropriate error if this fails.
             try {
                 HashMap<String, String> cfg = new HashMap<>();
                 cfg.put("model", "true");
@@ -60,18 +72,26 @@ public class ExpressionSimplifier {
             if (!second.getNextMap().containsKey(s.split("\\W")[0]))
                 ret.getNext().add(s);
         }
+        //convert the next variables into a series of expressions.
         HashMap<String,Expression> subMap = new HashMap<>();
         for (String str: first.getNextMap().keySet()) {
             subMap.put(str,Expression.constructExpression(first.getNextMap().get(str)));
         }
         Expression secondGuard = second.getGuard();
-
-        ret.setGuard(simplify(new AndOperator(first.getGuard(),simplifier.substitute(secondGuard,subMap)), Collections.emptyMap()));
+        //Substitute every value from the subMap into the second guard.
+        secondGuard = simplifier.substitute(secondGuard,subMap);
+        ret.setGuard(new AndOperator(first.getGuard(),secondGuard));
         return ret;
     }
     //Since we end up using this multiple times from javascript, its much easier to cache it once.
     private Context context;
-    private Expression convert(Expr f) {
+
+    /**
+     * Convert from a Z3 expression back into an Expression.
+     * @param f The Z3 tree
+     * @return An Expression equivalent to the Z3 expression.
+     */
+    private Expression convert(Expr f) throws CompilationException {
         if (f.isBVAdd()) {
             return new AdditionOperator(convert(f.getArgs()[0]), convert(f.getArgs()[1]));
         }
@@ -79,6 +99,7 @@ public class ExpressionSimplifier {
             return new BitNotOperator(convert(f.getArgs()[0]));
         }
         if (f.isNot()) {
+            //Instead of keeping not followed by equal, merge them together.
             if (f.getArgs()[0].isEq()) {
                 return new NotEqualOperator(convert(f.getArgs()[0].getArgs()[0]), convert(f.getArgs()[0].getArgs()[1]));
             }
@@ -140,17 +161,31 @@ public class ExpressionSimplifier {
             return new VariableOperand(f.getSExpr());
         }
         if (f instanceof BitVecNum) {
-            //We need to get the long value here, as the results are unsigned, so ints introduce errors when retrieving.
+            //We need to get the long value here, as the results are unsigned, so ints introduce errors as they overflow before
+            //becoming signed again.
             return new IntegerOperand((int) ((BitVecNum) f).getLong());
         }
-        throw new IllegalStateException("Error");
+        throw new CompilationException(ExpressionSimplifier.class,"An unknown Z3 expression was found. "+f.toString());
     }
 
+    /**
+     * Convert from a z3 class name to a simple name
+     * @param className the z3 class name
+     * @return Boolean for boolean expressions, Integer for integral expressions.
+     */
     private String getName(String className) {
         if (className.contains("Bool")) return "`Boolean`";
         if (className.contains("BitVec")) return "`Integer`";
         return className;
     }
+
+    /**
+     * Convert from an Expression to a Z3 expression
+     * @param expr The expression
+     * @param variables a list of variablles to substitute if required
+     * @return a Z3 expression
+     * @throws CompilationException Something went wrong while converting.
+     */
     private Expr convert(Expression expr, Map<String, Integer> variables) throws CompilationException {
         if (expr instanceof AdditionOperator) {
             return convert((AdditionOperator) expr, variables);
@@ -204,7 +239,7 @@ public class ExpressionSimplifier {
             return convert((BooleanOperand) expr);
         }
         //This should never happen.
-        throw new IllegalStateException("Solver reached an unexpected state");
+        throw new CompilationException(ExpressionSimplifier.class,"An unknown expression type was found. "+expr.getClass().getSimpleName());
     }
     //We use BitVectors here instead of Integers so that we have access to bitwise operators.
     private BitVecExpr convert(BitNotOperator expr, Map<String, Integer> variables) throws CompilationException {
@@ -367,16 +402,23 @@ public class ExpressionSimplifier {
     private BoolExpr convert(BooleanOperand expr) {
         return context.mkBool(expr.getValue());
     }
-    private Expression substitute(BinaryOperator expression, HashMap<String, Expression> subMap) {
+
+    /**
+     * Substitute a variable for a replacement.
+     * @param expression the expression to substitute
+     * @param subMap The map of variables to substitutions
+     * @return the substituted expression.
+     */
+    private Expression substitute(BinaryOperator expression, HashMap<String, Expression> subMap) throws CompilationException {
         expression.setLhs(substitute(expression.getLeftHandSide(), subMap));
         expression.setRhs(substitute(expression.getRightHandSide(), subMap));
         return expression;
     }
-    private Expression substitute(UnaryOperator expression, HashMap<String, Expression> subMap) {
+    private Expression substitute(UnaryOperator expression, HashMap<String, Expression> subMap) throws CompilationException {
         expression.setRhs(substitute(expression.getRightHandSide(), subMap));
         return expression;
     }
-    private Expression substitute(Expression expression, HashMap<String, Expression> subMap) {
+    private Expression substitute(Expression expression, HashMap<String, Expression> subMap) throws CompilationException {
         if (expression instanceof BinaryOperator) {
             return substitute((BinaryOperator) expression, subMap);
         }
@@ -390,6 +432,6 @@ public class ExpressionSimplifier {
             }
             return expression;
         }
-        throw new IllegalStateException("Should not be here.");
+        throw new CompilationException(ExpressionSimplifier.class, "An unknown expression type was found when trying to substitute. "+expression.getClass().getSimpleName());
     }
 }

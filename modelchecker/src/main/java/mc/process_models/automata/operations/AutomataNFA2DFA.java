@@ -8,87 +8,58 @@ import mc.process_models.automata.AutomatonEdge;
 import mc.process_models.automata.AutomatonNode;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class AutomataNFA2DFA {
     public Automaton preformNFA2DFA(Automaton automaton) throws CompilationException {
-        System.out.println("NFA2DFA Start:");
-        Stopwatch timer = Stopwatch.createStarted();
         Automaton newAutomaton = new Automaton(automaton.getId(),false);
-        Set<String> alphabet = automaton.getAlphabet();
-        HashMap<String,HashMap<String,HashSet<String>>> table = new HashMap<>();
-        for (AutomatonNode cur: automaton.getNodes()) {
-            String curLbl = cur.getMetaData("label").toString();
-            table.putIfAbsent(curLbl,new HashMap<>());
-            for (AutomatonEdge rout : cur.getOutgoingEdges()) {
-                AutomatonNode to = rout.getTo();
-                table.get(curLbl).putIfAbsent(rout.getLabel(),new HashSet<>());
-                table.get(curLbl).get(rout.getLabel()).add(to.getMetaData("label").toString());
+        Stack<Set<AutomatonNode>> working = new Stack<>();
+        HashMap<Set<AutomatonNode>,AutomatonNode> states = new HashMap<>();
+        AutomatonNode root;
+        Set<AutomatonNode> rootClosure = clousure(automaton.getRoot());
+        states.put(rootClosure, root = newAutomaton.addNode());
+        root.addMetaData("label",makeLabel(rootClosure));
+        working.add(clousure(automaton.getRoot()));
+        while (!working.isEmpty()) {
+            Set<AutomatonNode> set = working.pop();
+            AutomatonNode workingNode = states.get(set);
+            if (isRoot(set)) {
+                states.get(set).addMetaData("startNode",true);
+                newAutomaton.setRoot(states.get(set));
             }
-            table.get(curLbl).putIfAbsent(Constant.HIDDEN,new HashSet<>());
-            table.get(curLbl).get(Constant.HIDDEN).add(curLbl);
-        }
-        table.remove(Constant.HIDDEN);
-        System.out.println("NFA2DFA Table1: "+timer.stop());
-        System.out.println(table);
-        timer.reset().start();
-        Stack<Set<String>> stack = new Stack<>();
-        stack.add(clousure(automaton.getRoot()));
-        HashMap<String,HashMap<String,Set<String>>> table2 = new HashMap<>();
-        while (!stack.isEmpty()) {
-            Set<String> curList = stack.pop();
-            String lbl = curList.toString();
-            for (String a : alphabet) {
-                table2.putIfAbsent(lbl,new HashMap<>());
-                if (table2.get(lbl).containsKey(a)) continue;
-                Set<String> subTable = new HashSet<>();
-                for (String cur : curList) {
-                    HashMap<String,HashSet<String>> ta = table.get(cur);
-                    if (ta.containsKey(a)) {
-                        for (String s : ta.get(a)) {
-                            subTable.addAll(table.get(s).get(Constant.HIDDEN));
-                        }
-                    }
+            HashMap<String,Set<AutomatonNode>> mappedToAlpha = new HashMap<>();
+            for (AutomatonNode node: set) {
+                for (AutomatonEdge edge: node.getOutgoingEdges()) {
+                    mappedToAlpha.putIfAbsent(edge.getLabel(),new HashSet<>());
+                    mappedToAlpha.get(edge.getLabel()).addAll(clousure(edge.getTo()));
                 }
-                if (subTable.isEmpty()) continue;
-                table2.get(lbl).put(a,subTable);
-                stack.push(subTable);
+            }
+            for (String alpha: mappedToAlpha.keySet()) {
+                if (Objects.equals(alpha, Constant.HIDDEN)) continue;
+                Set<AutomatonNode> mappedSet = mappedToAlpha.get(alpha);
+                if (!states.keySet().contains(mappedSet)) {
+                    states.put(mappedSet,newAutomaton.addNode());
+                    states.get(mappedSet).addMetaData("label",makeLabel(mappedSet));
+                    working.add(mappedSet);
+                }
+                newAutomaton.addEdge(alpha,workingNode,states.get(mappedSet));
             }
         }
-        System.out.println("NFA2DFA Table2: "+timer.stop());
-        System.out.println(table2);
-        timer.reset().start();
-        HashMap<String,AutomatonNode> nodeTable = new HashMap<>();
-        for (String node : table2.keySet()) {
-            nodeTable.put(node,newAutomaton.addNode());
-            nodeTable.get(node).addMetaData("label",node);
-            if (isRoot(node,automaton)) {
-                newAutomaton.setRoot(nodeTable.get(node));
-                nodeTable.get(node).addMetaData("startNode",true);
-            }
-        }
-        for (String node : table2.keySet()) {
-            for (String edge : table2.get(node).keySet()) {
-                if (Objects.equals(edge, Constant.HIDDEN)) continue;
-                newAutomaton.addEdge(edge,nodeTable.get(node),nodeTable.get(table2.get(node).get(edge).toString()));
-            }
-        }
-        System.out.println("NFA2DFA Added nodes: "+timer.stop());
         return newAutomaton;
     }
-
-    private boolean isRoot(String node, Automaton automaton) {
-        System.out.println(node);
-        System.out.println("REAL:"+automaton.getRoot().getMetaData("label").toString());
-        String[] nodes = node.replaceAll("[\\[\\]]","").split(",");
-        return Arrays.asList(nodes).contains(automaton.getRoot().getMetaData("label").toString());
+    private boolean isRoot(Set<AutomatonNode> nodes) {
+        return nodes.stream().anyMatch(node -> node.hasMetaData("startNode"));
     }
-
-    public Set<String> clousure(AutomatonNode node) {
-        Set<String> nodes = new HashSet<>();
-        nodes.add(node.getMetaData("label").toString());
+    private String makeLabel(Collection<AutomatonNode> nodes) {
+        return "{"+nodes.stream().map(s -> s.getMetaData("label").toString()).sorted().collect(Collectors.joining(","))+"}";
+    }
+    private Set<AutomatonNode> clousure(AutomatonNode node) {
+        Set<AutomatonNode> nodes = new HashSet<>();
+        nodes.add(node);
         for (AutomatonEdge edge: node.getOutgoingEdges()) {
             if (Objects.equals(edge.getLabel(), Constant.HIDDEN)) {
-                nodes.add(edge.getTo().getMetaData("label").toString());
+                nodes.add(edge.getTo());
+                nodes.addAll(clousure(edge.getTo()));
             }
         }
         return nodes;
