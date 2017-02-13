@@ -12,6 +12,7 @@ import org.junit.runners.Suite;
         IndexTests.class,
         ForAllTests.class,
         RootTests.class,
+        SetTests.class,
         ExampleTests.class
 })
 
