@@ -204,12 +204,14 @@
             const glGraph = convertGraph(graph,id,hidden);
             const interruptLength = (glGraph.interrupts || []).length;
             let y = 20;
+            //If there are any parent elements
             if (this.cy.filter(":parent").length > 0) {
                 const prev = _.maxBy(this.cy.filter(":parent"),g => g.position("y")+(g.height()/2));
                 //Work out the bottom of the last element, and then add a 20px buffer, plus some space
                 //For interrupts
                 y = prev.position("y")+(prev.height()/2)+20+(10*interruptLength);
             }
+            //create a new parent
             let parent = {
                 group: "nodes",
                 data: { id: id, label:id, isParent: true },
