@@ -1,6 +1,5 @@
 package mc.process_models.automata.operations;
 
-import com.google.common.base.Stopwatch;
 import mc.Constant;
 import mc.exceptions.CompilationException;
 import mc.process_models.automata.Automaton;
@@ -12,57 +11,156 @@ import java.util.stream.Collectors;
 
 public class AutomataNFAToDFA {
 
-    public Automaton preformNFA2DFA(Automaton automaton) throws CompilationException {
-        Automaton newAutomaton = new Automaton(automaton.getId(),false);
-        Stack<Set<AutomatonNode>> working = new Stack<>();
-        HashMap<Set<AutomatonNode>,AutomatonNode> states = new HashMap<>();
-        AutomatonNode root;
-        Set<AutomatonNode> rootClosure = clousure(automaton.getRoot());
-        states.put(rootClosure, root = newAutomaton.addNode());
-        root.addMetaData("label",makeLabel(rootClosure));
-        working.add(clousure(automaton.getRoot()));
-        while (!working.isEmpty()) {
-            Set<AutomatonNode> set = working.pop();
-            AutomatonNode workingNode = states.get(set);
-            if (isRoot(set)) {
-                states.get(set).addMetaData("startNode",true);
-                newAutomaton.setRoot(states.get(set));
+    public Automaton performNFAToDFA(Automaton nfa) throws CompilationException {
+        Automaton dfa = new Automaton(nfa.getId(), !Automaton.CONSTRUCT_ROOT);
+
+        Map<Set<String>, List<AutomatonNode>> stateMap = new HashMap<Set<String>, List<AutomatonNode>>();
+        Map<String, AutomatonNode> nodeMap = new HashMap<String, AutomatonNode>();
+        Set<String> visited = new HashSet<String>();
+
+        Stack<Set<String>> fringe = new Stack<Set<String>>();
+        fringe.push(constructClosure(nfa.getRoot(), stateMap));
+
+        Set<String> alphabet = nfa.getAlphabet();
+        alphabet.remove(Constant.HIDDEN);
+
+        boolean processedRoot = false;
+        while(!fringe.isEmpty()){
+            Set<String> states = fringe.pop();
+            String id = constructNodeId(stateMap.get(states), nfa.getId());
+
+            if(visited.contains(id)){
+                continue;
             }
-            HashMap<String,Set<AutomatonNode>> mappedToAlpha = new HashMap<>();
-            for (AutomatonNode node: set) {
-                for (AutomatonEdge edge: node.getOutgoingEdges()) {
-                    mappedToAlpha.putIfAbsent(edge.getLabel(),new HashSet<>());
-                    mappedToAlpha.get(edge.getLabel()).addAll(clousure(edge.getTo()));
+
+            if(!nodeMap.containsKey(id)){
+                nodeMap.put(id, dfa.addNode(id));
+                AutomatonNode node = nodeMap.get(id);
+                node.addMetaData("label", constructLabel(stateMap.get(states)));
+            }
+            AutomatonNode node = nodeMap.get(id);
+
+            if(!processedRoot){
+                dfa.setRoot(node);
+                node.addMetaData("startNode", true);
+                processedRoot = true;
+            }
+
+            for(String action : alphabet){
+                Set<String> nextStates = constructStateSet(stateMap.get(states), action, stateMap);
+                String nextId = constructNodeId(stateMap.get(nextStates), nfa.getId());
+
+                if(!nodeMap.containsKey(nextId)){
+                    nodeMap.put(nextId, dfa.addNode(nextId));
+                    AutomatonNode nextNode = nodeMap.get(nextId);
+                    nextNode.addMetaData("label", constructLabel(stateMap.get(nextStates)));
+                }
+                AutomatonNode nextNode = nodeMap.get(nextId);
+
+                dfa.addEdge(action, node, nextNode);
+
+                fringe.push(nextStates);
+            }
+
+            visited.add(id);
+        }
+
+        return dfa;
+    }
+
+    private Set<String> constructClosure(AutomatonNode node, Map<Set<String>, List<AutomatonNode>> stateMap){
+        Set<String> states = new HashSet<String>();
+        List<AutomatonNode> nodes = new ArrayList<AutomatonNode>();
+
+        Stack<AutomatonNode> fringe = new Stack<AutomatonNode>();
+        fringe.push(node);
+
+        while(!fringe.isEmpty()){
+            AutomatonNode current = fringe.pop();
+
+            if(states.contains(current.getId())){
+                continue;
+            }
+
+            states.add(current.getId());
+            nodes.add(current);
+
+            List<AutomatonEdge> edges = current.getOutgoingEdges().stream()
+                    .filter(edge -> edge.isHidden())
+                    .collect(Collectors.toList());
+
+            edges.forEach(edge -> fringe.push(edge.getTo()));
+        }
+
+        if(!stateMap.containsKey(states)){
+            stateMap.put(states, nodes);
+        }
+
+        return states;
+    }
+
+    private Set<String> constructStateSet(List<AutomatonNode> nodes, String action, Map<Set<String>, List<AutomatonNode>> stateMap){
+        Set<String> states = new HashSet<String>();
+        List<AutomatonNode> nextNodes = new ArrayList<AutomatonNode>();
+        Set<String> visited = new HashSet<String>();
+
+        Stack<AutomatonNode> fringe = new Stack<AutomatonNode>();
+        nodes.forEach(node -> fringe.push(node));
+
+        while(!fringe.isEmpty()){
+            AutomatonNode current = fringe.pop();
+
+            if(visited.contains(current.getId())){
+                continue;
+            }
+
+            List<AutomatonEdge> edges = current.getOutgoingEdges();
+            for(AutomatonEdge edge : edges){
+                if(action.equals(edge.getLabel())){
+                    states.add(edge.getTo().getId());
+                    nextNodes.add(edge.getTo());
+                }
+                else if(edge.getLabel().equals(Constant.HIDDEN)){
+                    fringe.push(edge.getTo());
                 }
             }
-            for (String alpha: mappedToAlpha.keySet()) {
-                if (Objects.equals(alpha, Constant.HIDDEN)) continue;
-                Set<AutomatonNode> mappedSet = mappedToAlpha.get(alpha);
-                if (!states.keySet().contains(mappedSet)) {
-                    states.put(mappedSet,newAutomaton.addNode());
-                    states.get(mappedSet).addMetaData("label",makeLabel(mappedSet));
-                    working.add(mappedSet);
-                }
-                newAutomaton.addEdge(alpha,workingNode,states.get(mappedSet));
+
+            visited.add(current.getId());
+        }
+
+        if(!stateMap.containsKey(states)){
+            stateMap.put(states, nextNodes);
+        }
+
+        return states;
+    }
+
+    private String constructNodeId(List<AutomatonNode> nodes, String identifier){
+        StringBuilder builder = new StringBuilder();
+        builder.append(identifier);
+        builder.append(constructLabel(nodes));
+
+        return builder.toString();
+    }
+
+    private String constructLabel(List<AutomatonNode> nodes){
+        ArrayList<Integer> labels = new ArrayList<Integer>();
+        for(AutomatonNode node : nodes){
+            labels.add((int)node.getMetaData("label"));
+        }
+
+        Collections.sort(labels);
+
+        StringBuilder builder = new StringBuilder();
+        builder.append("{");
+        for(int i = 0; i < labels.size(); i++){
+            builder.append(labels.get(i));
+            if(i < labels.size() - 1){
+                builder.append(",");
             }
         }
-        return newAutomaton;
-    }
-    private boolean isRoot(Set<AutomatonNode> nodes) {
-        return nodes.stream().anyMatch(node -> node.hasMetaData("startNode"));
-    }
-    private String makeLabel(Collection<AutomatonNode> nodes) {
-        return "{"+nodes.stream().map(s -> s.getMetaData("label").toString()).sorted().collect(Collectors.joining(","))+"}";
-    }
-    private Set<AutomatonNode> clousure(AutomatonNode node) {
-        Set<AutomatonNode> nodes = new HashSet<>();
-        nodes.add(node);
-        for (AutomatonEdge edge: node.getOutgoingEdges()) {
-            if (Objects.equals(edge.getLabel(), Constant.HIDDEN)) {
-                nodes.add(edge.getTo());
-                nodes.addAll(clousure(edge.getTo()));
-            }
-        }
-        return nodes;
+        builder.append("}");
+
+        return builder.toString();
     }
 }
