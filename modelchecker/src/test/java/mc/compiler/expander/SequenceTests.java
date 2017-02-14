@@ -1,5 +1,6 @@
 package mc.compiler.expander;
 
+import mc.Constant;
 import mc.compiler.ast.*;
 import org.junit.Test;
 
@@ -25,7 +26,7 @@ public class SequenceTests extends ExpanderTests {
     public void correctSequenceToTerminalTest_2(){
         String input = "automata Test = (a -> ERROR).";
         ProcessNode node = constructProcessNode(input);
-        String[] sequence = new String[]{"a", "DEADLOCK"};
+        String[] sequence = new String[]{"a", Constant.DEADLOCK};
         TerminalNode terminal = new TerminalNode("ERROR", null);
         SequenceNode expected = constructSequenceNode(sequence, terminal);
         if(!expected.equals(node.getProcess())){

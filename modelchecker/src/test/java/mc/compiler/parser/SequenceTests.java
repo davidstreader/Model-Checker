@@ -1,5 +1,6 @@
 package mc.compiler.parser;
 
+import mc.Constant;
 import mc.compiler.ast.*;
 import mc.exceptions.CompilationException;
 import org.junit.Test;
@@ -33,7 +34,7 @@ public class SequenceTests extends ParserTests {
     public void correctSequenceToTerminalTest_2() throws CompilationException {
         String input = "automata Test = (a -> ERROR).";
         ProcessNode node = constructProcessNode(input);
-        String[] sequence = new String[]{"a", "DEADLOCK"};
+        String[] sequence = new String[]{"a", Constant.DEADLOCK};
         TerminalNode terminal = new TerminalNode("ERROR", null);
         SequenceNode expected = constructSequenceNode(sequence, terminal);
         if(!expected.equals(node.getProcess())){
@@ -63,7 +64,7 @@ public class SequenceTests extends ParserTests {
     public void correctSequenceToTerminalTest_4() throws CompilationException {
         String input = "automata Test = (a -> b -> ERROR).";
         ProcessNode node = constructProcessNode(input);
-        String[] sequence = new String[]{"a", "b", "DEADLOCK"};
+        String[] sequence = new String[]{"a", "b", Constant.DEADLOCK};
         TerminalNode terminal = new TerminalNode("ERROR", null);
         SequenceNode expected = constructSequenceNode(sequence, terminal);
         if(!expected.equals(node.getProcess())){
@@ -93,7 +94,7 @@ public class SequenceTests extends ParserTests {
     public void correctSequenceToTerminalTest_6() throws CompilationException {
         String input = "automata Test = (a -> b -> c -> ERROR).";
         ProcessNode node = constructProcessNode(input);
-        String[] sequence = new String[]{"a", "b", "c", "DEADLOCK"};
+        String[] sequence = new String[]{"a", "b", "c", Constant.DEADLOCK};
         TerminalNode terminal = new TerminalNode("ERROR", null);
         SequenceNode expected = constructSequenceNode(sequence, terminal);
         if(!expected.equals(node.getProcess())){
@@ -123,7 +124,7 @@ public class SequenceTests extends ParserTests {
     public void correctSequenceToTerminalTest_8() throws CompilationException {
         String input = "automata Test = (a -> b -> c -> d -> ERROR).";
         ProcessNode node = constructProcessNode(input);
-        String[] sequence = new String[]{"a", "b", "c", "d", "DEADLOCK"};
+        String[] sequence = new String[]{"a", "b", "c", "d", Constant.DEADLOCK};
         TerminalNode terminal = new TerminalNode("ERROR", null);
         SequenceNode expected = constructSequenceNode(sequence, terminal);
         if(!expected.equals(node.getProcess())){
@@ -153,7 +154,7 @@ public class SequenceTests extends ParserTests {
     public void correctSequenceToTerminalTest_10() throws CompilationException {
         String input = "automata Test = (a -> b -> c -> d -> e -> ERROR).";
         ProcessNode node = constructProcessNode(input);
-        String[] sequence = new String[]{"a", "b", "c", "d", "e", "DEADLOCK"};
+        String[] sequence = new String[]{"a", "b", "c", "d", "e", Constant.DEADLOCK};
         TerminalNode terminal = new TerminalNode("ERROR", null);
         SequenceNode expected = constructSequenceNode(sequence, terminal);
         if(!expected.equals(node.getProcess())){
