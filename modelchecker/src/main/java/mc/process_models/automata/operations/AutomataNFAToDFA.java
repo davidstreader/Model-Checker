@@ -9,7 +9,8 @@ import mc.process_models.automata.AutomatonNode;
 
 import java.util.*;
 
-public class AutomataNFA2DFA {
+public class AutomataNFAToDFA {
+
     public Automaton preformNFA2DFA(Automaton automaton) throws CompilationException {
         System.out.println("NFA2DFA Start:");
         Stopwatch timer = Stopwatch.createStarted();

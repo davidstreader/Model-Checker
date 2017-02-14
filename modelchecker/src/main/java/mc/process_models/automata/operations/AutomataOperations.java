@@ -16,7 +16,7 @@ public class AutomataOperations {
     private AutomataBisimulation bisimulation;
     private AutomataReachability reachability;
     private AutomataLabeller labeller;
-    private AutomataNFA2DFA nfa2DFA;
+    private AutomataNFAToDFA nfaToDFA;
 
     public AutomataOperations(){
         this.composition = new AutomataParallelComposition();
@@ -25,7 +25,7 @@ public class AutomataOperations {
         this.bisimulation = new AutomataBisimulation();
         this.reachability = new AutomataReachability();
         this.labeller = new AutomataLabeller();
-        this.nfa2DFA = new AutomataNFA2DFA();
+        this.nfaToDFA = new AutomataNFAToDFA();
     }
 
     public Automaton parallelComposition(String id, Automaton automaton1, Automaton automaton2) throws CompilationException {
@@ -63,6 +63,6 @@ public class AutomataOperations {
     }
 
   public Automaton nfa2dfa(Automaton model) throws CompilationException {
-    return nfa2DFA.preformNFA2DFA(model);
+    return nfaToDFA.performNFAToDFA(model);
   }
 }
