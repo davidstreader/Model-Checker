@@ -32,9 +32,7 @@ public class ReferenceReplacer {
             new LogMessage("Replacing references:",process).send();
 
 			String identifier = process.getIdentifier();
-			globalReferences.add(identifier);
-			process.getProcess().addReference(identifier);
-			references.add(identifier);
+            addReference(process.getProcess(), identifier);
 
 			Map<String, LocalProcessNode> localReferences = new HashMap<String, LocalProcessNode>();
 			List<LocalProcessNode> localProcesses = process.getLocalProcesses();
@@ -111,7 +109,8 @@ public class ReferenceReplacer {
 			}
 			else{
 				ASTNode node = localReferences.get(identifier + "." + reference).getProcess();
-				node.addReference(identifier + "." + reference);
+				String ident = identifier + "." + reference;
+                addReference(node, ident);
 
                 if(astNode.hasReferences()){
                     for(String r : astNode.getReferences()){
@@ -119,7 +118,6 @@ public class ReferenceReplacer {
                     }
                 }
 
-                references.add(identifier + "." + reference);
 				return replaceReferences(node, identifier, localReferences);
 			}
 		}
@@ -140,6 +138,16 @@ public class ReferenceReplacer {
 		astNode.setProcess(process);
 		return astNode;
 	}
+
+    private void addReference(ASTNode process, String identifier){
+        globalReferences.add(identifier);
+        while(process instanceof ProcessRootNode){
+            process = ((ProcessRootNode)process).getProcess();
+        }
+
+        process.addReference(identifier);
+        references.add(identifier);
+    }
 
 	private void reset() {
 		globalReferences.clear();

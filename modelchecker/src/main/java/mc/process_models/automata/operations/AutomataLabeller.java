@@ -13,13 +13,16 @@ import java.util.List;
 public class AutomataLabeller {
 
     public Automaton labelAutomaton(Automaton automaton, String label) throws CompilationException {
-        Automaton labelled = new Automaton(label + ":" + automaton.getId());
+        Automaton labelled = new Automaton(label + ":" + automaton.getId(), !Automaton.CONSTRUCT_ROOT);
 
         List<AutomatonNode> nodes = automaton.getNodes();
         for(AutomatonNode node : nodes){
             AutomatonNode newNode = labelled.addNode(label + ":" + node.getId());
             for(String key : node.getMetaDataKeys()){
                 newNode.addMetaData(key, node.getMetaData(key));
+                if(key.equals("startNode")){
+                    labelled.setRoot(newNode);
+                }
             }
         }
 

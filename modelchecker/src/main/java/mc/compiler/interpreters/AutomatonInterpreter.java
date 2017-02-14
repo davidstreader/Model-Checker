@@ -32,7 +32,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
 
         interpretProcess(processNode.getProcess(), identifier);
 
-        Automaton automaton = (Automaton)processStack.pop();
+        Automaton automaton = ((Automaton)processStack.pop()).copy();
 
         if(processNode.hasRelabels()){
             processRelabelling(automaton, processNode.getRelabels());
@@ -51,7 +51,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
 
         interpretProcess(astNode, identifier);
 
-        Automaton automaton = (Automaton)processStack.pop();
+        Automaton automaton = ((Automaton)processStack.pop()).copy();
 
         return labelAutomaton(automaton);
     }
@@ -59,22 +59,16 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     private void interpretProcess(ASTNode astNode, String identifier) throws CompilationException {
         if(astNode instanceof IdentifierNode){
             String reference = ((IdentifierNode)astNode).getIdentifier();
+            System.out.println("Interpret identifier reference: " + reference);
             ProcessModel model = processMap.get(reference);
             processStack.push(model);
         }
         else if(astNode instanceof ProcessRootNode){
             ProcessRootNode root = (ProcessRootNode)astNode;
+            System.out.println("Interpret process root: " + identifier);
 
-            Automaton automaton = new Automaton(identifier);
-            automaton.addMetaData("location",astNode.getLocation());
-
-            if(root.hasReferences()){
-                for(String reference : root.getReferences()){
-                    referenceMap.put(reference, automaton.getRoot());
-                }
-            }
             interpretProcess(root.getProcess(), identifier);
-            automaton = (Automaton)processStack.pop();
+            Automaton automaton = ((Automaton)processStack.pop()).copy();
 
             automaton = processLabellingAndRelabelling(automaton, root);
 
@@ -85,6 +79,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
             processStack.push(automaton);
         }
         else{
+            System.out.println("Interpret local process");
             Automaton automaton = new Automaton(identifier);
             automaton.addMetaData("location",astNode.getLocation());
             interpretNode(astNode, automaton, automaton.getRoot());
@@ -130,7 +125,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     private int subProcessCount = 0;
     private void interpretNode(ProcessRootNode astNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException{
         interpretProcess(astNode.getProcess(), automaton.getId() + "." + ++subProcessCount);
-        Automaton model = (Automaton)processStack.pop();
+        Automaton model = ((Automaton)processStack.pop()).copy();
 
         processLabellingAndRelabelling(model, astNode);
 
@@ -188,7 +183,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
             throw new CompilationException(getClass(),"Expecting an automaton, received: "+model1.getClass().getSimpleName()+","+model2.getClass().getSimpleName(),astNode.getLocation());
         }
 
-        Automaton comp = operations.parallelComposition(automaton.getId(), (Automaton)model1, (Automaton)model2);
+        Automaton comp = operations.parallelComposition(automaton.getId(), ((Automaton)model1).copy(), ((Automaton)model2).copy());
 
         AutomatonNode oldRoot = automaton.addAutomaton(comp);
         automaton.combineNodes(currentNode, oldRoot);
@@ -214,7 +209,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         switch(astNode.getFunction()){
             case "abs":
                 if(model instanceof Automaton){
-                    processed = operations.abstraction((Automaton)model);
+                    processed = operations.abstraction(((Automaton)model).copy());
                     break;
                 }
                 throw new CompilationException(getClass(),"Expecting an automaton, received a: "+model.getClass().getSimpleName(),astNode.getLocation());
@@ -226,20 +221,20 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
                 throw new CompilationException(getClass(),"Expecting an automaton, received a: "+model.getClass().getSimpleName(),astNode.getLocation());
             case "simp":
                 if(model instanceof Automaton){
-                    processed = operations.simplification((Automaton)model);
+                    processed = operations.simplification(((Automaton)model).copy());
                     break;
                 }
                 throw new CompilationException(getClass(),"Expecting an automaton, received a: "+model.getClass().getSimpleName(),astNode.getLocation());
             case "safe":
                 if(model instanceof Automaton){
                     // automata cannot contain unreachable states therefore they are always safe
-                    processed = (Automaton)model;
+                    processed = ((Automaton)model).copy();
                     break;
                 }
                 throw new CompilationException(getClass(),"Expecting an automaton, received a: "+model.getClass().getSimpleName(),astNode.getLocation());
             case "nfa2dfa":
                 if(model instanceof Automaton){
-                    processed = operations.nfa2dfa(labelAutomaton((Automaton)model));
+                    processed = operations.nfa2dfa(labelAutomaton(((Automaton)model)).copy());
                     break;
                 }
                 throw new CompilationException(getClass(),"Expecting an automaton, received a: "+model.getClass().getSimpleName(),astNode.getLocation());

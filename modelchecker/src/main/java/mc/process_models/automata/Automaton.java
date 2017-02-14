@@ -55,6 +55,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     public AutomatonNode getRoot() {
         return root;
     }
+
     public void setRoot(AutomatonNode root) throws CompilationException {
         // check the the new root is defined
         if (root == null) {
@@ -69,11 +70,16 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
         this.root = root;
     }
 
+    public String getRootId() {
+        return root.getId();
+    }
+
     public List<AutomatonNode> getNodes() {
         return nodeMap.entrySet().stream()
             .map(x -> x.getValue())
             .collect(Collectors.toList());
     }
+
     public AutomatonNode getNode(String id) throws CompilationException {
         if (nodeMap.containsKey(id)) {
             return nodeMap.get(id);
@@ -108,6 +114,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
         nodeMap.remove(node.getId());
         return true;
     }
+
     public AutomatonNode combineNodes(AutomatonNode node1, AutomatonNode node2) throws CompilationException {
         if (!nodeMap.containsKey(node1.getId())) {
             throw new CompilationException(getClass(),node1.getId()+" was not found in the automaton "+getId(),(Location)getMetaData().get("location"));
@@ -180,6 +187,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
             .map(x -> x.getValue())
             .collect(Collectors.toList());
     }
+
     public AutomatonEdge getEdge(String id) throws CompilationException {
         if (edgeMap.containsKey(id)) {
             return edgeMap.get(id);
@@ -192,6 +200,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
         String id = getNextEdgeId();
         return addEdge(id, label, from, to);
     }
+
     public AutomatonEdge addEdge(String id, String label, AutomatonNode from, AutomatonNode to) throws CompilationException {
         // check that the nodes have been defined
         if (from == null) {
@@ -280,13 +289,19 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
     public AutomatonNode addAutomaton(Automaton automaton) throws CompilationException {
         AutomatonNode root = null;
-        for (AutomatonNode node : automaton.getNodes()) {
+        for(AutomatonNode node : automaton.getNodes()){
             AutomatonNode newNode = addNode(node.getId());
-            for (String key : node.getMetaDataKeys()) {
-                newNode.addMetaData(key, node.getMetaData(key));
-                if (key.equals("startNode")) {
+            for(String key : node.getMetaDataKeys()){
+                if(key.equals("startNode")){
                     root = newNode;
+                    if(this.root != null){
+                        continue;
+                    }
+
+                    this.root = newNode;
                 }
+
+                newNode.addMetaData(key, node.getMetaData(key));
             }
         }
 
@@ -333,9 +348,6 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
         return builder.toString();
     }
 
-    public String getRootId() {
-        return getRoot().getId();
-    }
     public Automaton copy() throws CompilationException {
         Cloner cloner = new Cloner();
         //Cloning while all the edges and nodes point to each other is asking for trouble.
