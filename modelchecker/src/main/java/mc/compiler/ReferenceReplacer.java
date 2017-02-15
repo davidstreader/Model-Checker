@@ -1,10 +1,6 @@
 package mc.compiler;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import mc.compiler.ast.*;
 import mc.exceptions.CompilationException;
@@ -43,6 +39,7 @@ public class ReferenceReplacer {
 
 			ASTNode root = replaceReferences(process.getProcess(), identifier, localReferences);
 			process.setProcess(root);
+            process.setLocalProcesses(new ArrayList<LocalProcessNode>());
 		}
 
 		return ast;
