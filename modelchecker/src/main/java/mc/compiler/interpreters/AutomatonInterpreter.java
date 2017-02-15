@@ -59,13 +59,11 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     private void interpretProcess(ASTNode astNode, String identifier) throws CompilationException {
         if(astNode instanceof IdentifierNode){
             String reference = ((IdentifierNode)astNode).getIdentifier();
-            System.out.println("Interpret identifier reference: " + reference);
             ProcessModel model = processMap.get(reference);
             processStack.push(model);
         }
         else if(astNode instanceof ProcessRootNode){
             ProcessRootNode root = (ProcessRootNode)astNode;
-            System.out.println("Interpret process root: " + identifier);
 
             interpretProcess(root.getProcess(), identifier);
             Automaton automaton = ((Automaton)processStack.pop()).copy();
@@ -79,7 +77,6 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
             processStack.push(automaton);
         }
         else{
-            System.out.println("Interpret local process");
             Automaton automaton = new Automaton(identifier);
             automaton.addMetaData("location",astNode.getLocation());
             interpretNode(astNode, automaton, automaton.getRoot());
@@ -298,19 +295,10 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     }
 
     private Automaton labelAutomaton(Automaton automaton) throws CompilationException {
-        Automaton labelled = new Automaton(automaton.getId());
-        labelled.getMetaData().putAll(automaton.getMetaData());
         Set<String> visited = new HashSet<String>();
-        Map<String, AutomatonNode> nodeMap = new HashMap<String, AutomatonNode>();
 
         Queue<AutomatonNode> fringe = new LinkedList<AutomatonNode>();
-        AutomatonNode root = automaton.getRoot();
-        nodeMap.put(root.getId(), labelled.getRoot());
-        for(String key : root.getMetaDataKeys()){
-            labelled.getRoot().addMetaData(key, root.getMetaData(key));
-        }
-
-        fringe.offer(root);
+        fringe.offer(automaton.getRoot());
 
         int label = 0;
         while(!fringe.isEmpty()){
@@ -320,33 +308,15 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
                 continue;
             }
 
-            for(AutomatonEdge edge : current.getOutgoingEdges()){
-                AutomatonNode to = null;
-                if(nodeMap.containsKey(edge.getTo().getId())){
-                    to = nodeMap.get(edge.getTo().getId());
-                }
-                else{
-                    to = labelled.addNode();
-                    nodeMap.put(edge.getTo().getId(), to);
-
-                    for(String key : edge.getTo().getMetaDataKeys()){
-                        to.addMetaData(key, edge.getTo().getMetaData(key));
-                    }
-                }
-
-                AutomatonEdge newEdge = labelled.addEdge(edge.getLabel(), nodeMap.get(current.getId()), to);
-                for(String key : edge.getMetaDataKeys()){
-                    newEdge.addMetaData(key, edge.getMetaData(key));
-                }
-
-                fringe.offer(edge.getTo());
+            current.getOutgoingEdges().forEach(edge -> fringe.offer(edge.getTo()));
+            if(!current.hasMetaData("dfa")) {
+                current.addMetaData("label", label++);
             }
-            if (!nodeMap.get(current.getId()).getMetaData().containsKey("label"))
-                nodeMap.get(current.getId()).addMetaData("label", label++);
+
             visited.add(current.getId());
         }
 
-        return labelled;
+        return automaton;
     }
 
     private void reset(){
