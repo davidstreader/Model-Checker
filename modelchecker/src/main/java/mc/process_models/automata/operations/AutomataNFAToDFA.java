@@ -37,6 +37,7 @@ public class AutomataNFAToDFA {
                 nodeMap.put(id, dfa.addNode(id));
                 AutomatonNode node = nodeMap.get(id);
                 node.addMetaData("label", constructLabel(stateMap.get(states)));
+                node.addMetaData("dfa", true);
             }
             AutomatonNode node = nodeMap.get(id);
 
@@ -48,12 +49,18 @@ public class AutomataNFAToDFA {
 
             for(String action : alphabet){
                 Set<String> nextStates = constructStateSet(stateMap.get(states), action, stateMap);
+
+                if(nextStates.isEmpty()){
+                    continue;
+                }
+
                 String nextId = constructNodeId(stateMap.get(nextStates), nfa.getId());
 
                 if(!nodeMap.containsKey(nextId)){
                     nodeMap.put(nextId, dfa.addNode(nextId));
                     AutomatonNode nextNode = nodeMap.get(nextId);
                     nextNode.addMetaData("label", constructLabel(stateMap.get(nextStates)));
+                    nextNode.addMetaData("dfa", true);
                 }
                 AutomatonNode nextNode = nodeMap.get(nextId);
 
@@ -144,11 +151,18 @@ public class AutomataNFAToDFA {
     }
 
     private String constructLabel(List<AutomatonNode> nodes){
-        ArrayList<Integer> labels = new ArrayList<Integer>();
+        Set<String> labelSet = new HashSet<String>();
         for(AutomatonNode node : nodes){
-            labels.add((int)node.getMetaData("label"));
+            Object label = node.getMetaData("label");
+            if(label instanceof Integer){
+                labelSet.add(Integer.toString((Integer)label));
+            }
+            else if(label instanceof String){
+                labelSet.add((String)label);
+            }
         }
 
+        List<String> labels = new ArrayList<String>(labelSet);
         Collections.sort(labels);
 
         StringBuilder builder = new StringBuilder();
