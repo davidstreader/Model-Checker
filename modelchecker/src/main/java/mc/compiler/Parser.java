@@ -1026,6 +1026,10 @@ public class Parser {
             }
 
             variables.add(((ActionToken)nextToken()).getAction());
+
+            if(peekToken() instanceof CommaToken){
+                nextToken();
+            }
         }
 
         if(!(nextToken() instanceof CloseBraceToken)){
