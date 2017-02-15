@@ -349,24 +349,33 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     }
 
     public Automaton copy() throws CompilationException {
-        Cloner cloner = new Cloner();
-        //Cloning while all the edges and nodes point to each other is asking for trouble.
-        //We can just keep a list of all cloned edges and add the data in after the cloning is done.
-        IdentityHashMap<AutomatonEdge,EdgeClone> edgeMap = new IdentityHashMap<>();
-        cloner.registerFastCloner(AutomatonEdge.class, (t, cloner1, clones) -> {
-            AutomatonEdge edge = (AutomatonEdge)t;
-            //Create a new edge that does not reference the nodes.
-            AutomatonEdge newEdge = new AutomatonEdge(edge.getId(),edge.getLabel(),null,null);
-            //Keep track of where this edge should point
-            edgeMap.put(newEdge, new EdgeClone(edge));
-            return newEdge;
-        });
-        //Deep clone this automata, using the above method to clone edges.
-        Automaton ret = cloner.deepClone(this);
-        //Correct all the edge clones so they point to the right place.
-        for (AutomatonEdge edge: ret.getEdges()) {
-            edgeMap.get(edge).apply(edge,ret);
+        Automaton copy = new Automaton(getId(), !CONSTRUCT_ROOT);
+
+        List<AutomatonNode> nodes = getNodes();
+        for(AutomatonNode node : nodes){
+            AutomatonNode newNode = copy.addNode(node.getId());
+            for(String key : node.getMetaDataKeys()){
+                newNode.addMetaData(key, node.getMetaData(key));
+                if(key.equals("startNode")){
+                    copy.setRoot(newNode);
+                }
+            }
         }
-        return ret;
+
+        List<AutomatonEdge> edges = getEdges();
+        for(AutomatonEdge edge : edges){
+            AutomatonNode from = copy.getNode(edge.getFrom().getId());
+            AutomatonNode to = copy.getNode(edge.getTo().getId());
+            AutomatonEdge newEdge = copy.addEdge(edge.getId(), edge.getLabel(), from, to);
+            for(String key : edge.getMetaDataKeys()){
+                newEdge.addMetaData(key, edge.getMetaData(key));
+            }
+        }
+
+        for(String key : getMetaDataKeys()){
+            addMetaData(key, getMetaData(key));
+        }
+
+        return copy;
     }
 }
