@@ -18,7 +18,6 @@ public class AutomataParallelComposition {
 
     public Automaton performParallelComposition(String id, Automaton automaton1, Automaton automaton2) throws CompilationException {
         setup(id);
-        AutomatonNode root = automaton.getRoot();
 
         // construct the parallel composition of the states from both automata
         List<AutomatonNode> nodes1 = automaton1.getNodes();
@@ -32,10 +31,14 @@ public class AutomataParallelComposition {
 
         List<AutomatonEdge> edges1 = automaton1.getEdges();
         List<AutomatonEdge> edges2 = automaton2.getEdges();
+
+        // add any broadcasted actions to the unsynced set
+        edges1.stream().filter(edge -> edge.hasMetaData("isBroadcaster")).forEach(edge -> unsyncedActions.add(edge.getLabel()));
+        edges2.stream().filter(edge -> edge.hasMetaData("isBroadcaster")).forEach(edge -> unsyncedActions.add(edge.getLabel()));
+
         processUnsyncedActions(edges1, edges2);
         processSyncedActions(edges1, edges2);
 
-        automaton.removeNode(root);
         return automaton;
     }
 
@@ -100,7 +103,7 @@ public class AutomataParallelComposition {
 
         for(String action : unsyncedActions){
             List<AutomatonEdge> edges = allEdges.stream()
-                .filter(edge -> action.equals(edge.getLabel()))
+                .filter(edge -> action.equals(edge.getLabel()) && !edge.hasMetaData("isReceiver")) // receivers never get executed
                 .collect(Collectors.toList());
 
             for(AutomatonEdge edge : edges){
@@ -126,43 +129,23 @@ public class AutomataParallelComposition {
             for(AutomatonEdge edge1 : syncedEdges1){
                 for(AutomatonEdge edge2 : syncedEdges2){
                     AutomatonNode from = automaton.getNode(createId(edge1.getFrom(), edge2.getFrom()));
+
+                    // any edges from the from node are broadcasted and should get replaced by the synced transition
+                    from.getOutgoingEdges().stream().forEach(edge -> automaton.removeEdge(edge.getId()));
+
                     AutomatonNode to = automaton.getNode(createId(edge1.getTo(), edge2.getTo()));
-                    AutomatonEdge edge = automaton.addEdge(action, from, to);
-                    if (edgeIs(edge1,"broadcaster")||edgeIs(edge2,"broadcaster")) {
-                        edge.addMetaData("broadcaster",true);
-                        List<AutomatonEdge> broadcasters = syncedEdges2.stream().filter(e -> edgeIs(e,"broadcaster")).collect(Collectors.toList());
-                        broadcasters.addAll(syncedEdges1.stream().filter(e -> edgeIs(e,"broadcaster")).collect(Collectors.toList()));
-
-                        processBroadcasting(broadcasters,from.getId());
-                    } else if (edgeIs(edge1,"receiver")||edgeIs(edge2,"receiver")) {
-                        edge.addMetaData("receiver",true);
-                    }
+                    automaton.addEdge(action, from, to);
                 }
             }
         }
     }
 
-    private void processBroadcasting(List<AutomatonEdge> broadcasters, String fromId) throws CompilationException {
-        for (AutomatonEdge edge : broadcasters) {
-            List<AutomatonNode> from = nodeMap.get(edge.getFrom().getId());
-            List<AutomatonNode> to = nodeMap.get(edge.getTo().getId());
-            for(int j = 0; j < from.size(); j++){
-                if(!Objects.equals(from.get(j).getId(), fromId)){
-                    automaton.addEdge(edge.getLabel(), from.get(j), to.get(j)).getMetaData().putAll(edge.getMetaData());
-                }
-            }
-        }
-    }
-
-    private boolean edgeIs(AutomatonEdge edge,String test) {
-        return edge.getMetaData().containsKey(test);
-    }
     private String createId(AutomatonNode node1, AutomatonNode node2){
         return node1.getId() + "||" + node2.getId();
     }
 
     private void setup(String id){
-        this.automaton = new Automaton(id);
+        this.automaton = new Automaton(id, !Automaton.CONSTRUCT_ROOT);
         this.nodeMap = new HashMap<String, List<AutomatonNode>>();
         this.syncedActions = new HashSet<String>();
         this.unsyncedActions = new HashSet<String>();
