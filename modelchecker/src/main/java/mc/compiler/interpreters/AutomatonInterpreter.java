@@ -159,11 +159,11 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
             currentNode.getMetaData().remove("guard");
         }
 
-        if(astNode.getMetaData().containsKey("isBroadcaster")){
-            nextEdge.addMetaData("broadcaster", true);
+        if(astNode.getFrom().getMetaData().containsKey("isBroadcaster")){
+            nextEdge.addMetaData("isBroadcaster", true);
         }
-        else if(astNode.getMetaData().containsKey("isReceiver")){
-            nextEdge.addMetaData("receiver", true);
+        else if(astNode.getFrom().getMetaData().containsKey("isReceiver")){
+            nextEdge.addMetaData("isReceiver", true);
         }
     }
 
