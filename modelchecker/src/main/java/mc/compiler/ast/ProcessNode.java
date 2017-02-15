@@ -119,6 +119,10 @@ public class ProcessNode extends ASTNode {
     }
 
     public boolean equals(Object obj){
+        boolean result = super.equals(obj);
+        if(!result){
+            return false;
+        }
         if(obj == this){
             return true;
         }

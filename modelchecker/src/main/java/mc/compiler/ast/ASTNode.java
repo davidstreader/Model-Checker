@@ -15,7 +15,7 @@ public abstract class ASTNode implements Serializable {
 	// fields
 	private Set<String> references;
 	private Location location;
-	@Getter
+    @Getter
 	private HashMap<String,Object> metaData = new HashMap<>();
 
 	public ASTNode(Location location){
@@ -42,6 +42,28 @@ public abstract class ASTNode implements Serializable {
 	public Location getLocation(){
 		return location;
 	}
+
+    public boolean equals(Object obj){
+        if(obj == null){
+            return false;
+        }
+        if(obj == this){
+            return true;
+        }
+        if(obj instanceof ASTNode){
+            ASTNode node = (ASTNode)obj;
+            if(hasReferences() && !node.hasReferences() || !hasReferences() && node.hasReferences()){
+                return false;
+            }
+            if(!hasReferences() && !node.hasReferences()){
+                return true;
+            }
+
+            return references.equals(node.getReferences());
+        }
+
+        return false;
+    }
 
 	public ASTNode copy(){
 		try {
