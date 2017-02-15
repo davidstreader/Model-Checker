@@ -1,7 +1,6 @@
 package mc.compiler;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import mc.compiler.token.*;
 import mc.exceptions.LexerException;
@@ -11,9 +10,17 @@ public class Lexer {
 
 	private int index;
 
+    private Set<String> processTypes;
+    private Set<String> functions;
+
 	// used for constructing locations of tokens
 	private int line;
 	private int column;
+
+    public Lexer(){
+        processTypes = new HashSet<String>(Arrays.asList("automata", "petrinet"));
+        functions = new HashSet<String>(Arrays.asList("abs", "simp", "safe", "prune", "nfa2dfa"));
+    }
 
 	public List<Token> tokenise(String code) throws LexerException{
 		reset();
@@ -84,10 +91,10 @@ public class Lexer {
 
 	private Token constructStringToken(String string){
 		Location location = new Location(line, column, line, column + string.length());
-		if(string.equals("automata") || string.equals("petrinet")){
+		if(processTypes.contains(string)){
 			return new ProcessTypeToken(string, location);
 		}
-		else if(string.equals("abs") || string.equals("simp") || string.equals("safe") || string.equals("prune") || string.equals("nfa2dfa")){
+		else if(functions.contains(string)){
 			return new FunctionToken(string, location);
 		}
         else if(string.equals("operation")){
