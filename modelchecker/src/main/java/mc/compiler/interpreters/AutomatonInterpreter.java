@@ -137,13 +137,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     private void interpretNode(SequenceNode astNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException {
         String action = astNode.getFrom().getAction();
         Map<String,Object> metadata = new HashMap<>();
-        if (action.contains("?")) {
-            metadata.put("receiver",true);
-            action = action.replace("?","");
-        } else if (action.contains("!")) {
-            metadata.put("broadcaster",true);
-            action = action.replace("!","");
-        }
+
         AutomatonNode nextNode;
         AutomatonEdge nextEdge;
         // check if the next ast node is a reference node
@@ -163,6 +157,13 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         if (currentNode.getMetaData().containsKey("guard")) {
             nextEdge.addMetaData("guard",astNode.getMetaData().get("guard"));
             currentNode.getMetaData().remove("guard");
+        }
+
+        if(astNode.getMetaData().containsKey("isBroadcaster")){
+            nextEdge.addMetaData("broadcaster", true);
+        }
+        else if(astNode.getMetaData().containsKey("isReceiver")){
+            nextEdge.addMetaData("receiver", true);
         }
     }
 

@@ -181,7 +181,29 @@ public class Parser {
             }
         }
 
-        return new ActionLabelNode(builder.toString(), constructLocation(start));
+        // check if this action label has been specified as either a broadcaster or a receiver
+        boolean isBroadcaster = false;
+        boolean isReceiver = false;
+        if(peekToken() instanceof NegateToken || peekToken() instanceof QuestionMarkToken){
+            Token token = nextToken();
+            if(token instanceof NegateToken){
+                isBroadcaster = true;
+            }
+            else{
+                isReceiver = true;
+            }
+        }
+
+        ActionLabelNode action = new ActionLabelNode(builder.toString(), constructLocation(start));
+
+        if(isBroadcaster){
+            action.getMetaData().put("isBroadcaster", true);
+        }
+        else if(isReceiver){
+            action.getMetaData().put("isReceiver", true);
+        }
+
+        return action;
     }
 
     /**
