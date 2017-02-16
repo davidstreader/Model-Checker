@@ -1,6 +1,5 @@
 package mc.compiler.lexer;
 
-import com.sun.org.apache.bcel.internal.generic.LXOR;
 import mc.compiler.token.*;
 import mc.exceptions.LexerException;
 import org.junit.Test;

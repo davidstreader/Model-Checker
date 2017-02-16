@@ -142,7 +142,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
         for(String key : node2.getMetaDataKeys()){
             node.addMetaData(key, node2.getMetaData(key));
         }
-        
+
         if(node1.hasMetaData("startNode") || node2.hasMetaData("startNode")){
             setRoot(node);
             node.addMetaData("startNode",true);
