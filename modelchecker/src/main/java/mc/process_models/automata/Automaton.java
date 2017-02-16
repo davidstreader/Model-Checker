@@ -120,12 +120,11 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     }
 
     public AutomatonNode combineNodes(AutomatonNode node1, AutomatonNode node2) throws CompilationException {
-        if (!nodeMap.containsKey(node1.getId())) {
-            throw new CompilationException(getClass(),node1.getId()+" was not found in the automaton "+getId(),(Location)getMetaData().get("location"));
+        if(!nodeMap.containsKey(node1.getId())){
+            throw new CompilationException(getClass(), node1.getId() + " was not found in the automaton " + getId(), (Location)getMetaData("location"));
         }
-
-        if (!nodeMap.containsKey(node2.getId())) {
-            throw new CompilationException(getClass(),node2.getId()+" was not found in the automaton "+getId(),(Location)getMetaData().get("location"));
+        if(!nodeMap.containsKey(node2.getId())){
+            throw new CompilationException(getClass(),node2.getId() + " was not found in the automaton "+ getId(), (Location)getMetaData("location"));
         }
 
         AutomatonNode node = addNode();
@@ -136,27 +135,19 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
         processOutgoingEdges(node, node1);
         processOutgoingEdges(node, node2);
 
-        // create an intersection of the metadata from both nodes
-        for (String key : node1.getMetaDataKeys()) {
-            Object data = node1.getMetaData(key);
-
-            // check if the second node has a matching metadata key
-            if (node2.hasMetaData(key)) {
-                // check that the metadata is equivalent
-                if (data.equals(node2.getMetaData(key))) {
-                    // add metadata to the composed node
-                    node.addMetaData(key, data);
-
-                    if (key.equals("startNode")) {
-                        setRoot(node);
-                    }
-                }
-            }
+        // create a union of the metadata from both nodes
+        for(String key : node1.getMetaDataKeys()){
+            node.addMetaData(key, node1.getMetaData(key));
         }
-        if (node1.hasMetaData("startNode") || node2.hasMetaData("startNode")) {
+        for(String key : node2.getMetaDataKeys()){
+            node.addMetaData(key, node2.getMetaData(key));
+        }
+        
+        if(node1.hasMetaData("startNode") || node2.hasMetaData("startNode")){
             setRoot(node);
             node.addMetaData("startNode",true);
         }
+
         removeNode(node1);
         removeNode(node2);
         return node;
