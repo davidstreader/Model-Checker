@@ -200,7 +200,9 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         switch(astNode.getFunction()){
             case "abs":
                 if(model instanceof Automaton){
-                    processed = operations.abstraction(((Automaton)model).copy());
+                    boolean isFair = (astNode.getMetaData().containsKey("isFair")) ? (boolean)astNode.getMetaData().get("isFair") : true;
+                    boolean prune = (astNode.getMetaData().containsKey("prune")) ? (boolean)astNode.getMetaData().get("prune") : false;
+                    processed = operations.abstraction(((Automaton)model).copy(), isFair, prune);
                     break;
                 }
                 throw new CompilationException(getClass(),"Expecting an automaton, received a: "+model.getClass().getSimpleName(),astNode.getLocation());

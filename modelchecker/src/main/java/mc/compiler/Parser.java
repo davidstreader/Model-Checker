@@ -692,6 +692,12 @@ public class Parser {
         int start = index;
         String type = parseFunctionType();
 
+        // check if any flags have been set
+        Set<String> flags = null;
+        if(peekToken() instanceof OpenBraceToken){
+            flags = parseFlags();
+        }
+
         // ensure that the next token is a '(' token
         if(!(nextToken() instanceof OpenParenToken)){
             Token error = tokens.get(index - 1);
@@ -706,7 +712,13 @@ public class Parser {
             throw constructException("expecting to parse \")\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
-        return new FunctionNode(type, process, constructLocation(start));
+        FunctionNode function = new FunctionNode(type, process, constructLocation(start));
+
+        if(type.equals("abs") && flags != null){
+            processAbstractionFlags(function, flags);
+        }
+
+        return function;
     }
 
     private String parseFunctionType() throws CompilationException {
@@ -716,6 +728,61 @@ public class Parser {
         }
 
         throw constructException("expecting to parse a function type but received \"" + token.toString() + "\"", token.getLocation());
+    }
+
+    private Set<String> validFlags = new HashSet<String>(Arrays.asList("fair", "unfair"));
+
+    private Set<String> parseFlags() throws CompilationException {
+        int start;
+
+        if(!(nextToken() instanceof OpenBraceToken)){
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \"{\" but received \"" + error.toString() + "\"", error.getLocation());
+        }
+
+        Set<String> flags = new HashSet<String>();
+
+        while(!(peekToken() instanceof CloseBraceToken)){
+            if(!(peekToken() instanceof ActionToken)){
+                throw constructException("Expecting to parse a flag but received \"" + peekToken().toString() + "\"");
+            }
+
+            ActionToken token = (ActionToken)nextToken();
+            String flag = token.getAction();
+
+            if(!validFlags.contains(flag)){
+                throw constructException("\"" + flag + "\" is not a correct flag", token.getLocation());
+            }
+
+            flags.add(flag);
+
+            if(peekToken() instanceof CommaToken){
+                nextToken();
+            }
+        }
+
+        if(!(nextToken() instanceof CloseBraceToken)){
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \"}\" but received \"" + error.toString() + "\"", error.getLocation());
+        }
+
+        return flags;
+    }
+
+    private void processAbstractionFlags(FunctionNode function, Set<String> flags){
+        if(flags.contains("fair") && !flags.contains("unfair")){
+            function.getMetaData().put("isFair", true);
+        }
+        else if(flags.contains("unfair") && !flags.contains("fair")){
+            function.getMetaData().put("isFair", false);
+        }
+        else if(flags.contains("fair") && flags.contains("unfair")){
+            function.getMetaData().put("isFair", true);
+        }
+
+        if(flags.contains("prune")){
+            function.getMetaData().put("prune", true);
+        }
     }
 
     private FunctionNode parseCasting() throws CompilationException {
@@ -1071,6 +1138,7 @@ public class Parser {
     }
 
     // OPERATIONS
+
     private void parseOperation() throws CompilationException {
         if(!(nextToken() instanceof OperationToken)){
             Token error = tokens.get(index - 1);

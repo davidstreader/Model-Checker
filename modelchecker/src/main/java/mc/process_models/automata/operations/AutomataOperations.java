@@ -34,8 +34,13 @@ public class AutomataOperations {
         return processedAutomaton;
     }
 
-    public Automaton abstraction(Automaton automaton) throws CompilationException {
-        Automaton processedAutomaton = abstraction.performAbstraction(automaton, true);
+    public Automaton abstraction(Automaton automaton, boolean isFair, boolean prune) throws CompilationException {
+        Automaton processedAutomaton = automaton;
+        if(prune){
+            prune(processedAutomaton);
+        }
+
+        processedAutomaton = abstraction.performAbstraction(automaton, isFair);
         processedAutomaton = removeUnreachableNodes(processedAutomaton);
         return processedAutomaton;
     }
