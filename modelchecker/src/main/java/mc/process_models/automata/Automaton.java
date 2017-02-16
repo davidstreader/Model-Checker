@@ -90,6 +90,10 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
     public AutomatonNode addNode() {
         String id = getNextNodeId();
+        while(nodeMap.containsKey(id)){
+            id = getNextNodeId();
+        }
+        
         return addNode(id);
     }
 
