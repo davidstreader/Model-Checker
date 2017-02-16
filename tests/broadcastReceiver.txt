@@ -1,20 +1,32 @@
 automata {
-    A =a->b?->c->STOP || x->b!->z->STOP.
+    A = (a -> b? -> c -> STOP || x -> b! -> z -> STOP).
 
-    A2 = (x -> B | a -> x -> C),
-        B = (a -> C | b -> (a -> z -> STOP | z -> a -> STOP)),
-        C = (b -> (c -> z -> STOP | z -> c -> STOP)).
+    ExpectedA = (x -> B | a -> x -> C),
+        B = (a -> C | b! -> (a -> z -> STOP | z -> a -> STOP)),
+        C = (b! -> (c -> z -> STOP | z -> c -> STOP)).
 
-    A3 = (a -> (b -> B | x -> b -> C)),
-        B = (x -> C | c -> x -> STOP),
-        C = (c -> STOP).
-
-    A4 = (B||C),
+    B = (B||C),
         B = (a?->b->c!->STOP),
         C = (a!->x->c?->STOP).
+
+    ExpectedB = (a! -> (b -> B | x -> b -> C)),
+        B = (x -> C | c! -> x -> STOP),
+        C = (c! -> STOP).
+        
+    C = (a -> b? -> c -> STOP || x -> b? -> z -> STOP).
+    
+    ExpectedC = (a -> B | x -> C),
+        B = (x -> D),
+        C = (a -> D),
+        D = (b? -> E),
+        E = (c -> F | z -> G),
+        F = (z -> H),
+        G = (c -> H),
+        H = (STOP).
 }
 
 operation {
-    A ~ A2.
-    A3 ~ A4.
+    A ~ ExpectedA.
+    B ~ ExpectedB.
+    C ~ ExpectedC.
 }

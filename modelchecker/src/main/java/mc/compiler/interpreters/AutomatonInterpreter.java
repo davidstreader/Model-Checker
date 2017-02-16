@@ -158,13 +158,6 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
             nextEdge.addMetaData("guard",astNode.getMetaData().get("guard"));
             currentNode.getMetaData().remove("guard");
         }
-
-        if(astNode.getFrom().getMetaData().containsKey("isBroadcaster")){
-            nextEdge.addMetaData("isBroadcaster", true);
-        }
-        else if(astNode.getFrom().getMetaData().containsKey("isReceiver")){
-            nextEdge.addMetaData("isReceiver", true);
-        }
     }
 
     private void interpretNode(ChoiceNode astNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException {

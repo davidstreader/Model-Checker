@@ -32,10 +32,6 @@ public class AutomataParallelComposition {
         List<AutomatonEdge> edges1 = automaton1.getEdges();
         List<AutomatonEdge> edges2 = automaton2.getEdges();
 
-        // add any broadcasted actions to the unsynced set
-        edges1.stream().filter(edge -> edge.hasMetaData("isBroadcaster")).forEach(edge -> unsyncedActions.add(edge.getLabel()));
-        edges2.stream().filter(edge -> edge.hasMetaData("isBroadcaster")).forEach(edge -> unsyncedActions.add(edge.getLabel()));
-
         processUnsyncedActions(edges1, edges2);
         processSyncedActions(edges1, edges2);
 
@@ -79,21 +75,35 @@ public class AutomataParallelComposition {
     }
 
     private void setupActions(Set<String> alphabet1, Set<String> alphabet2){
-        Set<String> actions = new HashSet<>();
-        actions.addAll(alphabet1);
-        actions.addAll(alphabet2);
+        for(String action : alphabet1){
+            processAction(action, alphabet2);
+        }
+        for(String action : alphabet2){
+            processAction(action, alphabet1);
+        }
+    }
 
-        for(String action : actions){
-            // if action is hidden or deadlocked it is always unsynced
-            if(action.equals(Constant.HIDDEN) || action.equals(Constant.DEADLOCK)){
-                unsyncedActions.add(action);
-            }
-            else if(alphabet1.contains(action) && alphabet2.contains(action)){
+    private void processAction(String action, Set<String> alphabet){
+        // if action is hidden or deadlocked it is always unsynced
+        if(action.equals(Constant.HIDDEN) || action.equals(Constant.DEADLOCK)){
+            unsyncedActions.add(action);
+        }
+        // broadcasting actions are always unsynced
+        else if(action.endsWith("!")){
+            if(containsReceiver(action, alphabet)){
                 syncedActions.add(action);
             }
-            else{
-                unsyncedActions.add(action);
-            }
+
+            unsyncedActions.add(action);
+        }
+        else if(action.endsWith("?") && containsReceiver(action, alphabet)){
+            syncedActions.add(action);
+        }
+        else if(alphabet.contains(action)){
+            syncedActions.add(action);
+        }
+        else{
+            unsyncedActions.add(action);
         }
     }
 
@@ -120,10 +130,10 @@ public class AutomataParallelComposition {
     private void processSyncedActions(List<AutomatonEdge> edges1, List<AutomatonEdge> edges2) throws CompilationException {
         for(String action : syncedActions){
             List<AutomatonEdge> syncedEdges1 = edges1.stream()
-                    .filter(edge -> action.equals(edge.getLabel()))
+                    .filter(edge -> equals(action, edge.getLabel()))
                     .collect(Collectors.toList());
             List<AutomatonEdge> syncedEdges2 = edges2.stream()
-                    .filter(edge -> action.equals(edge.getLabel()))
+                    .filter(edge -> equals(action, edge.getLabel()))
                     .collect(Collectors.toList());
 
             for(AutomatonEdge edge1 : syncedEdges1){
@@ -142,6 +152,31 @@ public class AutomataParallelComposition {
 
     private String createId(AutomatonNode node1, AutomatonNode node2){
         return node1.getId() + "||" + node2.getId();
+    }
+
+    private boolean containsReceiver(String broadcaster, Set<String> receivers){
+        String broadcastAction = broadcaster.substring(0, broadcaster.length() - 1);
+        for(String receiver : receivers){
+            String action = receiver.substring(0, receiver.length() - 1);
+            if(action.equals(broadcastAction)){
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean equals(String action1, String action2){
+        if(action1.equals(action2)){
+            return true;
+        }
+        else if(action1.endsWith("!")){
+            action1 = action1.substring(0, action1.length() - 1);
+            action2 = action2.substring(0, action2.length() - 1);
+            return action1.equals(action2);
+        }
+
+        return false;
     }
 
     private void setup(String id){
