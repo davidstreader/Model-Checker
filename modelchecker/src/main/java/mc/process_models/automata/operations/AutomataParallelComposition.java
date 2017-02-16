@@ -94,10 +94,17 @@ public class AutomataParallelComposition {
                 syncedActions.add(action);
             }
 
-            unsyncedActions.add(action);
+            if(containsBroadcaster(action, alphabet)){
+                syncedActions.add(action);
+            }
+            else {
+                unsyncedActions.add(action);
+            }
         }
-        else if(action.endsWith("?") && containsReceiver(action, alphabet)){
-            syncedActions.add(action);
+        else if(action.endsWith("?")){
+            if(containsReceiver(action, alphabet)) {
+                syncedActions.add(action);
+            }
         }
         else if(alphabet.contains(action)){
             syncedActions.add(action);
@@ -157,9 +164,25 @@ public class AutomataParallelComposition {
     private boolean containsReceiver(String broadcaster, Set<String> receivers){
         String broadcastAction = broadcaster.substring(0, broadcaster.length() - 1);
         for(String receiver : receivers){
-            String action = receiver.substring(0, receiver.length() - 1);
-            if(action.equals(broadcastAction)){
-                return true;
+            if(receiver.endsWith("?")){
+                String action = receiver.substring(0, receiver.length() - 1);
+                if(action.equals(broadcastAction)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private boolean containsBroadcaster(String broadcaster, Set<String> receivers){
+        String broadcastAction = broadcaster.substring(0, broadcaster.length() - 1);
+        for(String receiver : receivers){
+            if(receiver.endsWith("!")){
+                String action = receiver.substring(0, receiver.length() - 1);
+                if(action.equals(broadcastAction)) {
+                    return true;
+                }
             }
         }
 

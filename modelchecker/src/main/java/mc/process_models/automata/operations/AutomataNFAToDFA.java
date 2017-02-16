@@ -72,6 +72,9 @@ public class AutomataNFAToDFA {
             visited.add(id);
         }
 
+        dfa.getNodes().stream()
+                .filter(node -> node.getOutgoingEdges().isEmpty())
+                .forEach(node -> node.addMetaData("isTerminal", "STOP"));
         return dfa;
     }
 

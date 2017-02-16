@@ -93,7 +93,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
         while(nodeMap.containsKey(id)){
             id = getNextNodeId();
         }
-        
+
         return addNode(id);
     }
 
