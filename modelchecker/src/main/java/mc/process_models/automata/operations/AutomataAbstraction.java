@@ -1,5 +1,6 @@
 package mc.process_models.automata.operations;
 
+import mc.Constant;
 import mc.compiler.Guard;
 import mc.exceptions.CompilationException;
 import mc.process_models.automata.Automaton;
@@ -37,14 +38,14 @@ public class AutomataAbstraction {
 
         // construct observable edges to replace the unobservable edges
         for(AutomatonEdge hiddenEdge : hiddenEdges){
-            constructOutgoingObservableEdges(abstraction, hiddenEdge);
-            constructIncomingObservableEdges(abstraction, hiddenEdge);
+            constructOutgoingObservableEdges(abstraction, hiddenEdge, isFair);
+            constructIncomingObservableEdges(abstraction, hiddenEdge, isFair);
         }
 
         return abstraction;
     }
 
-    private void constructOutgoingObservableEdges(Automaton abstraction, AutomatonEdge hiddenEdge) throws CompilationException {
+    private void constructOutgoingObservableEdges(Automaton abstraction, AutomatonEdge hiddenEdge, boolean isFair) throws CompilationException {
         Guard hiddenGuard = (Guard) hiddenEdge.getMetaData("guard");
         List<AutomatonEdge> incomingObservableEdges = hiddenEdge.getFrom().getIncomingEdges().stream()
                 .filter(edge -> !edge.isHidden())
@@ -57,12 +58,28 @@ public class AutomataAbstraction {
 
         while(!fringe.isEmpty()){
             AutomatonEdge current = fringe.pop();
+
+            // if the tau path returns to the specified hidden edge then there is a tau loop
+            if(visited.contains(current.getId()) && current == hiddenEdge){
+                // if abstraction is not fair, need to specify that process could deadlock in an infinite tau loop
+                if(!isFair) {
+                    AutomatonNode deadlockNode = abstraction.addNode();
+                    deadlockNode.addMetaData("isTerminal", "ERROR");
+
+                    AutomatonNode from = abstraction.getNode(hiddenEdge.getFrom().getId() + ".abs");
+                    abstraction.addEdge(Constant.DEADLOCK, from, deadlockNode);
+                }
+
+                // edge has already been processed
+                continue;
+            }
+
             List<AutomatonEdge> outgoingEdges = current.getTo().getOutgoingEdges();
 
             outgoingNodes.add(abstraction.getNode(current.getTo().getId() + ".abs"));
 
             outgoingEdges.stream()
-                    .filter(edge -> edge.isHidden() && !visited.contains(edge.getId()))
+                    .filter(edge -> edge.isHidden())
                     .forEach(edge -> fringe.push(edge));
 
             visited.add(current.getId());
@@ -88,7 +105,7 @@ public class AutomataAbstraction {
         }
     }
 
-    private void constructIncomingObservableEdges(Automaton abstraction, AutomatonEdge hiddenEdge) throws CompilationException {
+    private void constructIncomingObservableEdges(Automaton abstraction, AutomatonEdge hiddenEdge, boolean isFair) throws CompilationException {
         Guard hiddenGuard = (Guard) hiddenEdge.getMetaData("guard");
         List<AutomatonEdge> outgoingObservableEdges = hiddenEdge.getTo().getOutgoingEdges().stream()
                 .filter(edge -> !edge.isHidden())
@@ -101,6 +118,7 @@ public class AutomataAbstraction {
 
         while(!fringe.isEmpty()){
             AutomatonEdge current = fringe.pop();
+
             List<AutomatonEdge> incomingEdges = current.getFrom().getIncomingEdges();
 
             incomingNodes.add(abstraction.getNode(current.getFrom().getId() + ".abs"));
