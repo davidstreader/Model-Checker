@@ -41,6 +41,7 @@ public class Parser {
 
     private List<Token> tokens;
     private List<ProcessNode> processes;
+    private Set<String> processIdentifiers;
     private List<OperationNode> operations;
     private Map<String, Expression> variableMap;
     private Map<String, ASTNode> constantMap;
@@ -54,6 +55,7 @@ public class Parser {
 
     public Parser(){
         processes = new ArrayList<ProcessNode>();
+        processIdentifiers = new HashSet<String>();
         operations = new ArrayList<OperationNode>();
         variableMap = new HashMap<String, Expression>();
         constantMap = new HashMap<String, ASTNode>();
@@ -362,6 +364,12 @@ public class Parser {
 
         IdentifierNode identifier = parseIdentifier();
 
+        // check if a process with this identifier has already been defined
+        if(processIdentifiers.contains(identifier.getIdentifier())){
+            throw constructException("The identifier \"" + identifier.getIdentifier() + "\" has already been defined", identifier.getLocation());
+        }
+        processIdentifiers.add(identifier.getIdentifier());
+
         // ensure that the next token is the '=' token
         if(!(nextToken() instanceof AssignToken)){
             Token error = tokens.get(index - 1);
@@ -383,6 +391,12 @@ public class Parser {
         }
 
         IdentifierNode identifier = parseIdentifier();
+
+        // check if a process with this identifier has already been defined
+        if(processIdentifiers.contains(identifier.getIdentifier())){
+            throw constructException("The identifier \"" + identifier.getIdentifier() + "\" has already been defined", identifier.getLocation());
+        }
+        processIdentifiers.add(identifier.getIdentifier());
 
         // ensure the next token is the '=' token
         if(!(nextToken() instanceof AssignToken)){
@@ -413,6 +427,12 @@ public class Parser {
         }
 
         IdentifierNode identifier = parseIdentifier();
+
+        // check if a process with this identifier has already been defined
+        if(processIdentifiers.contains(identifier.getIdentifier())){
+            throw constructException("The identifier \"" + identifier.getIdentifier() + "\" has already been defined", identifier.getLocation());
+        }
+        processIdentifiers.add(identifier.getIdentifier());
 
         // ensure that the next token is the '=' token
         if(!(nextToken() instanceof AssignToken)){
@@ -445,6 +465,12 @@ public class Parser {
         int start = index;
         IdentifierNode identifier = parseIdentifier();
 
+        // check if a proceess with this identifier has already been defined
+        if(processIdentifiers.contains(identifier.getIdentifier())){
+            throw constructException("The identifier \"" + identifier.getIdentifier() + "\" has already been defined", identifier.getLocation());
+        }
+        processIdentifiers.add(identifier.getIdentifier());
+
         // check if this process has been marked as not to be rendered
         boolean toRender = true;
         if(peekToken() instanceof MultiplicationToken){
@@ -461,10 +487,11 @@ public class Parser {
         ASTNode process = parseComposite();
 
         List<LocalProcessNode> localProcesses = new ArrayList<LocalProcessNode>();
+        Set<String> localIdentifiers = new HashSet<String>();
 
         while(peekToken() instanceof CommaToken){
             nextToken(); // gobble the comma
-            localProcesses.add(parseLocalProcessDefinition());
+            localProcesses.add(parseLocalProcessDefinition(localIdentifiers));
         }
 
         ProcessNode processNode = new ProcessNode(processType, identifier.getIdentifier(), process, localProcesses, constructLocation(start));
@@ -520,7 +547,7 @@ public class Parser {
         }
     }
 
-    private LocalProcessNode parseLocalProcessDefinition() throws CompilationException {
+    private LocalProcessNode parseLocalProcessDefinition(Set<String> localIdentifiers) throws CompilationException {
         int start = index;
         IdentifierNode identifier = parseIdentifier();
 
@@ -529,6 +556,12 @@ public class Parser {
         if(peekToken() instanceof OpenBracketToken){
             ranges = parseRanges();
         }
+
+        // check if a local process with this identifier has already been defined
+        if(localIdentifiers.contains(identifier.getIdentifier())){
+            throw constructException("The identifier \"" + identifier.getIdentifier() + "\" has already been defined", identifier.getLocation());
+        }
+        localIdentifiers.add(identifier.getIdentifier());
 
         if(!(nextToken() instanceof AssignToken)){
             Token error = tokens.get(index - 1);
@@ -1632,9 +1665,12 @@ public class Parser {
 
     private void reset(){
         processes.clear();
+        processIdentifiers.clear();
+        operations.clear();
         variableMap.clear();
         constantMap.clear();
         actionRanges.clear();
+        definedVariables.clear();
         index = 0;
         variableId = 0;
     }
