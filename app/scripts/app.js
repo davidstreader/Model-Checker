@@ -108,6 +108,8 @@
                 app.$.console.error(error.message);
                 if (error.location) {
                     const l = error.location;
+                    //If colEnd==colStart, add one to colEnd so that a character is highlighted.
+                    if (l.colEnd == l.colStart) l.colEnd++;
                     editor.addMarker(new Range(l.lineStart-1, l.colStart, l.lineEnd-1, l.colEnd), "ace_underline");
                     for (let i = l.lineStart; i <= l.lineEnd; i++) {
                         editor.setAnnotations([{row:i-1 ,column: 0, text:error.message,type:"error"}]);

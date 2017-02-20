@@ -398,7 +398,7 @@ public class Lexer {
 			if(characters[index] == '*' && characters[index + 1] == '/'){
 				break;
 			}
-			else if(characters[index] == '\n' || characters[index] == '\r'){
+			else if(characters[index] == '\n'){
 				line++;
 				column = 0;
 			}
