@@ -261,7 +261,7 @@
                 const text = reader.result.split("visualiser_json_layout:");
                 const code = text[0];
                 const json = text[1];
-                if (json.length > 0) {
+                if (json != null && json.length > 0) {
                     app.$.visualiser.loadJSON(json);
                 }
                 app.$.editor.setCode(code);
