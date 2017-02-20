@@ -77,7 +77,7 @@ public class AutomataBisimulation {
         perfromInitialColouring(automaton);
         Map<Integer, List<AutomatonNode>> nodeColours = null;
 
-        while(lastColourCount <= colourCount){
+        while(true){
             nodeColours = new HashMap<Integer, List<AutomatonNode>>();
             Set<String> visited = new HashSet<String>();
 
@@ -165,23 +165,11 @@ public class AutomataBisimulation {
     private void perfromInitialColouring(Automaton automaton){
         List<AutomatonNode> nodes = automaton.getNodes();
         for(AutomatonNode node : nodes){
-            if(node.hasMetaData("isTerminal")){
-                String terminal = (String)node.getMetaData("isTerminal");
-                if(terminal.equals("STOP")){
-                    node.addMetaData("colour", STOP_COLOUR);
-                }
-                else if(terminal.equals("ERROR")){
-                    node.addMetaData("colour", ERROR_COLOUR);
-                }
-            }
-            else{
-                node.addMetaData("colour", BASE_COLOUR);
-            }
+            node.addMetaData("colour", BASE_COLOUR);
         }
     }
     private List<Colour> constructColouring(AutomatonNode node){
         Set<Colour> colouringSet = new HashSet<>();
-
         int from = (int)node.getMetaData("colour");
         node.getOutgoingEdges()
             .forEach(edge -> colouringSet.add(new Colour(from, (int)edge.getTo().getMetaData("colour"),edge.getLabel())));
@@ -215,19 +203,20 @@ public class AutomataBisimulation {
                 return true;
             }
 
-            if(obj instanceof Colour){
-                Colour col = (Colour)obj;
-                if(to != col.to){
-                    return false;
-                }
-                if(!action.equals(col.action)){
-                    return false;
-                }
-
-                return true;
+            if(obj instanceof Colour) {
+                Colour col = (Colour) obj;
+                return to == col.to && action.equals(col.action);
             }
 
             return false;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = from;
+            result = 31 * result + to;
+            result = 31 * result + action.hashCode();
+            return result;
         }
 
         public int compareTo(Colour col){
