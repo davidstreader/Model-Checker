@@ -77,7 +77,7 @@ public class AutomataBisimulation {
         perfromInitialColouring(automaton);
         Map<Integer, List<AutomatonNode>> nodeColours = null;
 
-        while(true){
+        while(lastColourCount <= colourCount){
             nodeColours = new HashMap<Integer, List<AutomatonNode>>();
             Set<String> visited = new HashSet<String>();
 
@@ -129,7 +129,6 @@ public class AutomataBisimulation {
                 if(colourId == Integer.MIN_VALUE){
                     colourId = getNextColourId();
                     colourMap.put(colourId, colouring);
-                    colourCount++;
                 }
 
                 if(!nodeColours.containsKey(colourId)){
@@ -165,11 +164,47 @@ public class AutomataBisimulation {
     private void perfromInitialColouring(Automaton automaton){
         List<AutomatonNode> nodes = automaton.getNodes();
         for(AutomatonNode node : nodes){
-            node.addMetaData("colour", BASE_COLOUR);
+            if(node.hasMetaData("isTerminal")){
+                String terminal = (String)node.getMetaData("isTerminal");
+                if(terminal.equals("STOP")){
+                    node.addMetaData("colour", STOP_COLOUR);
+                }
+                else if(terminal.equals("ERROR")){
+                    node.addMetaData("colour", ERROR_COLOUR);
+                }
+            }
+            else{
+                node.addMetaData("colour", BASE_COLOUR);
+            }
         }
     }
+
+    private Map<String, Integer> contructNodeMap(Automaton automaton){
+        Map<String, Integer> nodeMap = new HashMap<String, Integer>();
+
+        for(AutomatonNode node : automaton.getNodes()){
+            int colour = BASE_COLOUR;
+
+            // check if the current node is a terminal
+            if(node.hasMetaData("isTerminal")){
+                String terminal = (String)node.getMetaData("isTerminal");
+                if(terminal.equals("STOP")){
+                    colour = STOP_COLOUR;
+                }
+                else if(terminal.equals("ERROR")){
+                    colour = ERROR_COLOUR;
+                }
+            }
+
+            nodeMap.put(node.getId(), colour);
+        }
+
+        return nodeMap;
+    }
+
     private List<Colour> constructColouring(AutomatonNode node){
         Set<Colour> colouringSet = new HashSet<>();
+
         int from = (int)node.getMetaData("colour");
         node.getOutgoingEdges()
             .forEach(edge -> colouringSet.add(new Colour(from, (int)edge.getTo().getMetaData("colour"),edge.getLabel())));
@@ -203,9 +238,16 @@ public class AutomataBisimulation {
                 return true;
             }
 
-            if(obj instanceof Colour) {
-                Colour col = (Colour) obj;
-                return to == col.to && action.equals(col.action);
+            if(obj instanceof Colour){
+                Colour col = (Colour)obj;
+                if(to != col.to){
+                    return false;
+                }
+                if(!action.equals(col.action)){
+                    return false;
+                }
+
+                return true;
             }
 
             return false;
@@ -215,7 +257,7 @@ public class AutomataBisimulation {
         public int hashCode() {
             int result = from;
             result = 31 * result + to;
-            result = 31 * result + action.hashCode();
+            result = 31 * result + (action != null ? action.hashCode() : 0);
             return result;
         }
 
