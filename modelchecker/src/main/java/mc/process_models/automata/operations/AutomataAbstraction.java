@@ -73,14 +73,16 @@ public class AutomataAbstraction {
                 // edge has already been processed
                 continue;
             }
-
+            //Check if an edge has already been processed.
+            if (visited.contains(current.getId())) {
+                continue;
+            }
             List<AutomatonEdge> outgoingEdges = current.getTo().getOutgoingEdges();
 
             outgoingNodes.add(abstraction.getNode(current.getTo().getId() + ".abs"));
-
             outgoingEdges.stream()
-                    .filter(edge -> edge.isHidden())
-                    .forEach(edge -> fringe.push(edge));
+                    .filter(AutomatonEdge::isHidden)
+                    .forEach(fringe::push);
 
             visited.add(current.getId());
         }
