@@ -59,7 +59,6 @@
             });
             this.cy.panzoom();
             document.addEventListener('addProcess', function(e){
-                app.$.console.log("Starting Render. While rendering, you can not use the editor tab.");
                 //If we are currently rendering, ignore any events
                 if (_this.rendering) return;
                 _this.addGraph(app.$.selector.getSelectedName(), app.$.selector.hideInterrupts);
