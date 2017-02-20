@@ -83,32 +83,32 @@
             });
         },
         layoutStop: function(cur) {
-            let y = 20;
+            let x = 20;
             if (cur === undefined) return;
             //If last is set, we are rerunning the layout, and we do not want to use normal positioning.
             if (cur.data("last")) {
-                y = cur.data("last").y;
-                const x = cur.data("last").x;
+                const y = cur.data("last").y;
+                x = cur.data("last").x;
                 cur.descendants().positions((i,node)=>{
                     return {y: node.position("y")+y-60,x: node.position("x")+x-60}
                 });
                 return;
             }
             if (this.cy.filter(":parent").length > 1) {
-                const prev = _.maxBy(this.cy.filter(":parent"),g => g.position("y")+(g.height()/2));
+                const prev = _.maxBy(this.cy.filter(":parent"),g => g.position("x")+(g.width()/2));
                 //Work out the bottom of the last element, and then add a 20px buffer, plus some space
                 //For interrupts
-                y = prev.position("y")+(prev.height()/2)+20+(10*cur.data("interrupts"));
+                x = prev.position("x")+(prev.width()/2)+20;
             }
             if (cur.descendants().length > 1) {
                 //Move all descendants, and also add some padding to the left of interrupts to make them line up correctly.
                 cur.descendants().positions((i, node) => {
-                    return {y: node.position("y") + y, x: node.position("x") + cur.data("interrupts") * 2}
+                    return {y: node.position("y") + 10*cur.data("interrupts"), x: node.position("x") + x + cur.data("interrupts") * 2}
                 });
             } else {
                 //If there is only one node, we can just set its position and ignore what it was last set to.
                 cur.descendants().positions(() => {
-                    return {y: y, x: cur.data("interrupts") * 2}
+                    return {y: 0, x: x}
                 });
             }
             this.rendering = false;
@@ -202,13 +202,13 @@
             }
             const glGraph = convertGraph(graph,id,hidden);
             const interruptLength = (glGraph.interrupts || []).length;
-            let y = 20;
+            let x = 20;
             //If there are any parent elements
-            if (this.cy.filter(":parent").length > 0) {
-                const prev = _.maxBy(this.cy.filter(":parent"),g => g.position("y")+(g.height()/2));
+            if (this.cy.filter(":parent").length > 1) {
+                const prev = _.maxBy(this.cy.filter(":parent"),g => g.position("x")+(g.width()/2));
                 //Work out the bottom of the last element, and then add a 20px buffer, plus some space
                 //For interrupts
-                y = prev.position("y")+(prev.height()/2)+20+(10*interruptLength);
+                x = prev.position("x")+(prev.width()/2)+20;
             }
             //create a new parent
             let parent = {
@@ -220,7 +220,7 @@
             parent.data("interrupts",interruptLength);
             this.graphIds[oldId] = (this.graphIds[oldId] || 0)+1;
             glGraph.nodes.forEach(node =>{
-                node.position = { x: 60+Math.random()*2, y: y+Math.random()*2};
+                node.position = { x: x+Math.random()*2, y: Math.random()*2};
                 this.cy.add(node);
             });
             glGraph.edges.forEach(edge =>{
