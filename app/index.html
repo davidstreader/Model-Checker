@@ -64,17 +64,18 @@
         <div class="middle">Server Status:</div>
         <div class="middle" id="serverStatus"><img class="status-badge" src='https://img.shields.io/badge/-Online-brightgreen.svg'/></div>
         <span class="flex middle"></span>
+        <paper-tabs class="middle" id="maintabs" selected="{{selectedCtx}}">
+            <paper-tab>Editor</paper-tab>
+            <paper-tab>Process Models</paper-tab>
+            <paper-tab>Process Generator</paper-tab>
+        </paper-tabs>
+        <span class="flex middle"></span>
         <paper-icon-button icon="icons:settings" class="middle" title="Settings" on-tap="showSettings"></paper-icon-button>
         <paper-icon-button icon="icons:help" class="middle" title="Help" on-tap="showHelp"></paper-icon-button>
     </paper-toolbar>
     <!-- end toolbar -->
 
     <!-- start content -->
-    <paper-tabs id="maintabs" selected="{{selectedCtx}}">
-        <paper-tab>Editor</paper-tab>
-        <paper-tab>Process Models</paper-tab>
-        <paper-tab>Process Generator</paper-tab>
-    </paper-tabs>
     <div class="frame">
         <neon-animated-pages selected="{{selectedCtx}}" class="fit">
             <section class="layout vertical flex" style="flex-direction: row;">
@@ -90,7 +91,6 @@
                 <div class="process-display">
                     <process-visualisation id="visualiser"></process-visualisation>
                 </div>
-                <console-logger id="visualiserConsole" style="height:30%; border-top:2px solid black"></console-logger>
 
             </section>
             <section class="layout vertical flex">
