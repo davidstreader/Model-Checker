@@ -38,7 +38,7 @@ public class OperationEvaluator {
         if (Objects.equals(operation.getOperation(), "traceEquivalent")) {
             List<Automaton> automata1 = new ArrayList<>();
             for (Automaton a: automata) {
-                automata1.add(new AutomataOperations().nfa2dfa(a));
+                automata1.add(new AutomataOperations().nfaToDFA(a));
             }
             automata = automata1;
         }

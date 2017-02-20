@@ -1,6 +1,5 @@
 package mc.compiler.interpreters;
 
-import lombok.SneakyThrows;
 import mc.Constant;
 import mc.compiler.ast.*;
 import mc.exceptions.CompilationException;
@@ -227,7 +226,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
                 throw new CompilationException(getClass(),"Expecting an automaton, received a: "+model.getClass().getSimpleName(),astNode.getLocation());
             case "nfa2dfa":
                 if(model instanceof Automaton){
-                    processed = operations.nfa2dfa(labelAutomaton(((Automaton)model)).copy());
+                    processed = operations.nfaToDFA(labelAutomaton(((Automaton)model)).copy());
                     break;
                 }
                 throw new CompilationException(getClass(),"Expecting an automaton, received a: "+model.getClass().getSimpleName(),astNode.getLocation());

@@ -67,7 +67,7 @@ public class AutomataOperations {
         return labeller.labelAutomaton(automaton, label);
     }
 
-  public Automaton nfa2dfa(Automaton model) throws CompilationException {
+  public Automaton nfaToDFA(Automaton model) throws CompilationException {
     return nfaToDFA.performNFAToDFA(model);
   }
 }
