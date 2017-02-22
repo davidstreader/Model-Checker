@@ -6,9 +6,6 @@ import mc.process_models.automata.AutomatonNode;
 
 import java.util.*;
 
-/**
- * Created by sheriddavi on 26/01/17.
- */
 public class AutomataBisimulation {
 
     private final int BASE_COLOUR = 1;

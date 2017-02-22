@@ -1,6 +1,7 @@
 package mc.compiler;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 import mc.compiler.ast.*;
 import mc.exceptions.CompilationException;
@@ -11,7 +12,7 @@ public class ReferenceReplacer {
 	private Set<String> globalReferences;
 	private Set<String> references;
 
-	public ReferenceReplacer(){
+    public ReferenceReplacer(){
         globalReferences = new HashSet<String>();
         references = new HashSet<String>();
     }
@@ -26,8 +27,7 @@ public class ReferenceReplacer {
 			ProcessNode process = processes.get(i);
 
             new LogMessage("Replacing references:",process).send();
-
-			String identifier = process.getIdentifier();
+            String identifier = process.getIdentifier();
             addReference(process.getProcess(), identifier);
 
 			Map<String, LocalProcessNode> localReferences = new HashMap<String, LocalProcessNode>();
@@ -98,16 +98,16 @@ public class ReferenceReplacer {
 
 	private ASTNode replaceReferences(IdentifierNode astNode, String identifier, Map<String, LocalProcessNode> localReferences) throws CompilationException {
 		String reference = astNode.getIdentifier();
+		String localReference = findLocalReference(identifier + "." + reference,localReferences);
 		// check if the identifier is referencing a local process
-		if(localReferences.containsKey(identifier + "." + reference)){
+		if(localReference != null){
 			// check if this local process has been referenced before
-			if(references.contains(identifier + "." + reference)){
-				return new ReferenceNode(identifier + "." + reference, astNode.getLocation());
+			if(references.contains(localReference)){
+				return new ReferenceNode(localReference, astNode.getLocation());
 			}
 			else{
-				ASTNode node = localReferences.get(identifier + "." + reference).getProcess();
-				String ident = identifier + "." + reference;
-                addReference(node, ident);
+				ASTNode node = localReferences.get(localReference).getProcess();
+                addReference(node, localReference);
 
                 if(astNode.hasReferences()){
                     for(String r : astNode.getReferences()){
@@ -126,10 +126,24 @@ public class ReferenceReplacer {
 		else if(globalReferences.contains(reference)){
 			return astNode;
 		}
-
         throw new CompilationException(getClass(),"Unable to find reference for node: "+reference,astNode.getLocation());
 	}
 
+    /**
+     * Search for a reference, swapping any undefined variables for regexps that match anything.
+     * @param identifier The identifier to find
+     * @param localReferences A list of all local references
+     * @return The local reference key, or null if no match is found.
+     */
+    private String findLocalReference(String identifier, Map<String, LocalProcessNode> localReferences) {
+	    for (String key: localReferences.keySet()) {
+            String testKey = key.replaceAll("\\$[a-z][a-zA-Z0-9_]*",".+").replace("[","\\[").replace("]","\\]");
+            if (Pattern.compile(testKey).matcher(identifier).matches()) {
+                return key;
+            }
+        }
+        return null;
+    }
 	private FunctionNode replaceReferences(FunctionNode astNode, String identifier, Map<String, LocalProcessNode> localReferences) throws CompilationException {
 		ASTNode process = replaceReferences(astNode.getProcess(), identifier, localReferences);
 		astNode.setProcess(process);

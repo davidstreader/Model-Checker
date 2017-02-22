@@ -57,9 +57,8 @@ public class Compiler {
         return compile(ast);
     }
 
-    private CompilationObject compile(AbstractSyntaxTree ast) throws CompilationException {
+    public CompilationObject compile(AbstractSyntaxTree ast) throws CompilationException {
         ast = expander.expand(ast);
-        ast = hider.hideVariables(ast);
         ast = replacer.replaceReferences(ast);
         Map<String, ProcessModel> processMap = interpreter.interpret(ast);
         List<OperationResult> results = evaluator.evaluateOperations(ast.getOperations(), processMap, interpreter);

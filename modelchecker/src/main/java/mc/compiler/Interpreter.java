@@ -55,7 +55,7 @@ public class Interpreter {
     }
 
     public ProcessModel interpret(String processModelType, ASTNode astNode, String identifer, Map<String, ProcessModel> processMap) throws CompilationException {
-        ProcessModel model = null;
+        ProcessModel model;
         switch(processModelType){
             case "automata":
                 model = automaton.interpret(astNode, identifer, processMap);

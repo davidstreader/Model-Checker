@@ -2,6 +2,7 @@ package mc.compiler;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
+import mc.exceptions.CompilationException;
 import mc.util.expr.*;
 
 import java.io.Serializable;
@@ -29,11 +30,11 @@ public class Guard implements Serializable{
      * Get the guard as a string, used for serialization.
      * @return The guard as a string, or an empty string if none exists.
      */
-    public String getGuardStr() {
+    public String getGuardStr() throws CompilationException {
         if (guard == null) return "";
         return rm$(new ExpressionPrinter().printExpression(guard, Collections.emptyMap()));
     }
-    public String getHiddenGuardStr() {
+    public String getHiddenGuardStr() throws CompilationException {
         if (guard == null) return "";
         List<Expression> andList = new ArrayList<>();
         collectAnds(andList,guard);
@@ -98,7 +99,7 @@ public class Guard implements Serializable{
      * @param globalVariableMap The global variable map
      * @param identMap A map from identifiers to a list of the variables in them (L[$i] = L -> [$i])
      */
-    public void parseNext(String identifier, Map<String, Expression> globalVariableMap, Map<String, List<String>> identMap) {
+    public void parseNext(String identifier, Map<String, Expression> globalVariableMap, Map<String, List<String>> identMap) throws CompilationException {
         //Check that there are actually variables in the identifier
         if (!identifier.contains("[")) return;
         //Get a list of all variables

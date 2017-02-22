@@ -4,10 +4,7 @@ import com.microsoft.z3.*;
 import com.microsoft.z3.enumerations.Z3_lbool;
 import mc.compiler.Guard;
 import mc.exceptions.CompilationException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -20,7 +17,19 @@ public class ExpressionSimplifier {
     private ExpressionSimplifier(Context o) {
         context = o;
     }
-
+    private boolean isSolveable1(Expression expr, Map<String, Integer> variables) throws CompilationException {
+        Solver solver = context.mkSolver();
+        Expr test = convert(expr, variables);
+        if (test instanceof BoolExpr) {
+            solver.add((BoolExpr)convert(expr, variables));
+            return solver.check() == Status.SATISFIABLE;
+        }
+        throw new CompilationException(ExpressionSimplifier.class,
+            "Unable to check if equation is satisfied as it was not a boolean expression.");
+    }
+    public static boolean isSolveable(Expression expr, Map<String, Integer> variables) throws CompilationException {
+        return simplifier.isSolveable1(expr, variables);
+    }
     /**
      * Simplify an expression
      * @param expr The expression

@@ -1,5 +1,7 @@
 package mc.util.expr;
 
+import mc.exceptions.CompilationException;
+
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Map;

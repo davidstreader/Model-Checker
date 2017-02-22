@@ -9,6 +9,7 @@ import mc.webserver.LogMessage;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class Expander {
 
@@ -48,7 +49,6 @@ public class Expander {
 
         return ast;
     }
-
     private List<LocalProcessNode> expandLocalProcesses(List<LocalProcessNode> localProcesses, Map<String, Object> variableMap) throws CompilationException {
         List<LocalProcessNode> newLocalProcesses = new ArrayList<LocalProcessNode>();
 
@@ -79,10 +79,14 @@ public class Expander {
             IndexNode range = ranges.get(index);
             IndexIterator iterator = IndexIterator.construct(expand(range));
             String variable = range.getVariable();
-            localProcess.setIdentifier(localProcess.getIdentifier() + "[" + variable + "]");
-
-            while(iterator.hasNext()){
-                variableMap.put(variable, iterator.next());
+            if (!hiddenVariables.contains(variable.substring(1))) {
+                localProcess.setIdentifier(localProcess.getIdentifier() + "[" + variable + "]");
+                while(iterator.hasNext()){
+                    variableMap.put(variable, iterator.next());
+                    newLocalProcesses.addAll(expandLocalProcesses((LocalProcessNode) localProcess.copy(), variableMap, ranges, index + 1));
+                }
+            } else {
+                localProcess.setIdentifier(localProcess.getIdentifier() + "[" + variable + "]");
                 newLocalProcesses.addAll(expandLocalProcesses((LocalProcessNode) localProcess.copy(), variableMap, ranges, index + 1));
             }
         }
@@ -393,21 +397,6 @@ public class Expander {
         return actions;
     }
 
-    private int evaluateExpression(Expression expression, Map<String, Object> variableMap) throws CompilationException {
-        // remove all strings from the variableMap
-        Map<String, Integer> variables = new HashMap<>();
-        for(String key : variableMap.keySet()){
-            Object value = variableMap.get(key);
-            if(value instanceof Integer){
-                variables.put(key, (Integer)value);
-            }
-        }
-        Expression ex = ExpressionSimplifier.simplify(expression, variables);
-        if (ex instanceof BooleanOperand) return ((BooleanOperand) ex).getValue()?1:0;
-        if (ex instanceof IntegerOperand) return ((IntegerOperand) ex).getValue();
-        throw new CompilationException(getClass(),"There was an undefined variable in that statement.");
-    }
-
     private boolean evaluateCondition(Expression condition, Map<String, Object> variableMap) throws CompilationException {
         Map<String, Integer> variables = new HashMap<String, Integer>();
         for(String key : variableMap.keySet()){
@@ -420,20 +409,27 @@ public class Expander {
         Expression ex = ExpressionSimplifier.simplify(condition,variables);
         if (ex instanceof BooleanOperand)
             return ((BooleanOperand) ex).getValue();
-        throw new CompilationException(getClass(),"Guard expressions should simplify to boolean values.");
+        return ExpressionSimplifier.isSolveable(ex,variables);
     }
 
     private String processVariables(String string, Map<String, Object> variableMap) throws CompilationException {
         Map<String, Integer> integerMap = constructIntegerMap(variableMap);
+        ExpressionPrinter printer = new ExpressionPrinter();
+        //Construct a pattern with all hidden variables removed.
+        Pattern pattern = Pattern.compile(VAR_PATTERN+hiddenVariables.stream().map(s->"(?<!\\$"+s+")").collect(Collectors.joining())+"\\b");
         while(true){
-            Matcher matcher = VAR_PATTERN.matcher(string);
+            Matcher matcher = pattern.matcher(string);
             if(matcher.find()){
                 String variable = matcher.group();
                 // check if the variable is a global variable
                 if(globalVariableMap.containsKey(variable)){
                     Expression expression = globalVariableMap.get(variable);
-                    int result = evaluator.evaluateExpression(expression, integerMap);
-                    string = string.replaceAll(Pattern.quote(variable)+"\\b","" + result);
+                    if (containsHidden(expression)) {
+                        string = string.replaceAll(Pattern.quote(variable) + "\\b", "" + printer.printExpression(expression).replace("$",""));
+                    } else {
+                        int result = evaluator.evaluateExpression(expression, integerMap);
+                        string = string.replaceAll(Pattern.quote(variable) + "\\b", "" + result);
+                    }
                 }
                 else if(integerMap.containsKey(variable)){
                     string = string.replaceAll(Pattern.quote(variable)+"\\b","" + integerMap.get(variable));
@@ -448,6 +444,17 @@ public class Expander {
         }
 
         return string;
+    }
+
+    private boolean containsHidden(Expression expression) throws CompilationException {
+        if (expression instanceof VariableOperand)
+            return hiddenVariables.contains(((VariableOperand) expression).getValue().substring(1));
+        if (expression instanceof BinaryOperator)
+            return containsHidden(((BinaryOperator) expression).getLeftHandSide()) ||
+                containsHidden(((BinaryOperator) expression).getRightHandSide());
+        if (expression instanceof UnaryOperator) return containsHidden(((UnaryOperator) expression).getRightHandSide());
+        if (expression instanceof IntegerOperand) return false;
+        throw new CompilationException(Expander.class,"Unexpected state");
     }
 
     private Map<String, Integer> constructIntegerMap(Map<String, Object> variableMap){
