@@ -23,28 +23,31 @@ public class ReferenceReplacer {
 		List<ProcessNode> processes = ast.getProcesses();
 
 		for(int i = 0; i < processes.size(); i++){
-            references.clear();
-			ProcessNode process = processes.get(i);
-
-            new LogMessage("Replacing references:",process).send();
-            String identifier = process.getIdentifier();
-            addReference(process.getProcess(), identifier);
-
-			Map<String, LocalProcessNode> localReferences = new HashMap<String, LocalProcessNode>();
-			List<LocalProcessNode> localProcesses = process.getLocalProcesses();
-			for(int j = 0; j < localProcesses.size(); j++){
-				String localIdentifier = identifier + "." + localProcesses.get(j).getIdentifier();
-				localReferences.put(localIdentifier, localProcesses.get(j));
-			}
-
-			ASTNode root = replaceReferences(process.getProcess(), identifier, localReferences);
-			process.setProcess(root);
-            process.setLocalProcesses(new ArrayList<LocalProcessNode>());
+            replaceReferences(processes.get(i));
 		}
 
 		return ast;
 	}
+	//We can use this to replace references after the initial ast is compiled.
+    //Because of that it is public, and it should NOT be reset.
+    public ProcessNode replaceReferences(ProcessNode process) throws CompilationException {
+        references.clear();
+        new LogMessage("Replacing references:",process).send();
+        String identifier = process.getIdentifier();
+        addReference(process.getProcess(), identifier);
 
+        Map<String, LocalProcessNode> localReferences = new HashMap<String, LocalProcessNode>();
+        List<LocalProcessNode> localProcesses = process.getLocalProcesses();
+        for(int j = 0; j < localProcesses.size(); j++){
+            String localIdentifier = identifier + "." + localProcesses.get(j).getIdentifier();
+            localReferences.put(localIdentifier, localProcesses.get(j));
+        }
+
+        ASTNode root = replaceReferences(process.getProcess(), identifier, localReferences);
+        process.setProcess(root);
+        process.setLocalProcesses(new ArrayList<LocalProcessNode>());
+        return process;
+    }
 	private ASTNode replaceReferences(ASTNode astNode, String identifier, Map<String, LocalProcessNode> localReferences) throws CompilationException {
 		if(astNode instanceof ProcessRootNode){
             return replaceReferences((ProcessRootNode)astNode, identifier, localReferences);

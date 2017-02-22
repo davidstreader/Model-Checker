@@ -31,7 +31,7 @@ public class Interpreter {
         List<ProcessNode> processes = ast.getProcesses();
         for(ProcessNode process : processes){
           new LogMessage("Interpreting:",process).send();
-            ProcessModel model = null;
+            ProcessModel model;
             switch(process.getType()){
                 case "automata":
                     model = automaton.interpret(process, processMap);

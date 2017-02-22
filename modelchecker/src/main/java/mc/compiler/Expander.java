@@ -18,22 +18,13 @@ public class Expander {
     private Map<String, Expression> globalVariableMap;
     private ExpressionEvaluator evaluator = new ExpressionEvaluator();
     private Map<String,List<String>> identMap = new HashMap<>();
-    private Set<String> hiddenVariables;
+    private Set<String> hiddenVariables = new HashSet<>();
     public AbstractSyntaxTree expand(AbstractSyntaxTree ast) throws CompilationException {
         globalVariableMap = ast.getVariableMap();
 
         List<ProcessNode> processes = ast.getProcesses();
         for(int i = 0; i < processes.size(); i++){
-            ProcessNode process = processes.get(i);
-            new LogMessage("Expanding:",process).send();
-            if (process.hasVariableSet())
-                hiddenVariables = process.getVariables().getVariables();
-            else hiddenVariables = Collections.emptySet();
-            Map<String, Object> variableMap = new HashMap<String, Object>();
-            ASTNode root = expand(process.getProcess(), variableMap);
-            process.setProcess(root);
-            List<LocalProcessNode> localProcesses = expandLocalProcesses(process.getLocalProcesses(), variableMap);
-            process.setLocalProcesses(localProcesses);
+            expand(processes.get(i));
         }
 
         List<OperationNode> operations = ast.getOperations();
@@ -48,6 +39,18 @@ public class Expander {
         }
 
         return ast;
+    }
+    public ProcessNode expand(ProcessNode process) throws CompilationException {
+        new LogMessage("Expanding:",process).send();
+        if (process.hasVariableSet())
+            hiddenVariables = process.getVariables().getVariables();
+        else hiddenVariables = Collections.emptySet();
+        Map<String, Object> variableMap = new HashMap<String, Object>();
+        ASTNode root = expand(process.getProcess(), variableMap);
+        process.setProcess(root);
+        List<LocalProcessNode> localProcesses = expandLocalProcesses(process.getLocalProcesses(), variableMap);
+        process.setLocalProcesses(localProcesses);
+        return process;
     }
     private List<LocalProcessNode> expandLocalProcesses(List<LocalProcessNode> localProcesses, Map<String, Object> variableMap) throws CompilationException {
         List<LocalProcessNode> newLocalProcesses = new ArrayList<LocalProcessNode>();

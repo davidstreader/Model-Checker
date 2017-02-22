@@ -1,6 +1,7 @@
 package mc.compiler.interpreters;
 
 import mc.Constant;
+import mc.compiler.Compiler;
 import mc.compiler.ast.*;
 import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
@@ -18,6 +19,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     private Map<String, ProcessModel> processMap;
     private Map<String, AutomatonNode> referenceMap;
     private Stack<ProcessModel> processStack;
+    private VariableSetNode variables;
 
     public AutomatonInterpreter(){
         this.operations = new AutomataOperations();
@@ -28,7 +30,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         reset();
         this.processMap = processMap;
         String identifier = processNode.getIdentifier();
-
+        this.variables = processNode.getVariables();
         interpretProcess(processNode.getProcess(), identifier);
 
         Automaton automaton = ((Automaton)processStack.pop()).copy();
@@ -58,8 +60,17 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     private void interpretProcess(ASTNode astNode, String identifier) throws CompilationException {
         if(astNode instanceof IdentifierNode){
             String reference = ((IdentifierNode)astNode).getIdentifier();
-            ProcessModel model = processMap.get(reference);
-            processStack.push(model);
+            if (this.variables != null) {
+                ProcessNode node = (ProcessNode) Compiler.lastCompiler.getProcessNodeMap().get(reference).copy();
+                node.setVariables(this.variables);
+                node = Compiler.lastCompiler.getExpander().expand(node);
+                node = Compiler.lastCompiler.getReplacer().replaceReferences(node);
+                ProcessModel model = this.interpret(node,this.processMap);
+                processStack.push(model);
+            } else {
+                ProcessModel model = processMap.get(reference);
+                processStack.push(model);
+            }
         }
         else if(astNode instanceof ProcessRootNode){
             ProcessRootNode root = (ProcessRootNode)astNode;

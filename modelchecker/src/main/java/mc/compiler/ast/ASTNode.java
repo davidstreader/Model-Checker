@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.rits.cloning.Cloner;
 import lombok.Getter;
 import mc.util.Location;
 
@@ -66,25 +67,7 @@ public abstract class ASTNode implements Serializable {
     }
 
 	public ASTNode copy(){
-		try {
-			ByteArrayOutputStream output = new ByteArrayOutputStream();
-			ObjectOutputStream out = new ObjectOutputStream(output);
-			out.writeObject(this);
-			out.close();
-			output.close();
-
-			ByteArrayInputStream input = new ByteArrayInputStream(output.toByteArray());
-			ObjectInputStream in = new ObjectInputStream(input);
-			ASTNode node = (ASTNode)in.readObject();
-			in.close();
-			input.close();
-			return node;
-
-		} catch (IOException | ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		return null;
+        Cloner cloner = new Cloner();
+        return cloner.deepClone(this);
 	}
 }
