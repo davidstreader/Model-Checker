@@ -257,6 +257,21 @@ public class Expander {
         guard.setGuard(astNode.getCondition());
         guard.setVariables(new ExpressionPrinter().getVariables(astNode.getCondition(),variableMap));
         guard.setHiddenVariables(hiddenVariables);
+        if (guard.getVariables().keySet().stream().map(s -> s.substring(1)).anyMatch(s -> hiddenVariables.contains(s))) {
+            ASTNode trueBranch = expand(astNode.getTrueBranch(), variableMap);
+            if (trueBranch.getMetaData().containsKey("guard"))
+                guard.mergeWith((Guard) trueBranch.getMetaData().get("guard"));
+            trueBranch.getMetaData().put("guard", guard);
+            if (astNode.hasFalseBranch()) {
+                ASTNode falseBranch = expand(astNode.getFalseBranch(), variableMap);
+                if (falseBranch.getMetaData().containsKey("guard"))
+                    guard.mergeWith((Guard) falseBranch.getMetaData().get("guard"));
+                falseBranch.getMetaData().put("guard", guard);
+                return new ChoiceNode(trueBranch, falseBranch, astNode.getLocation());
+            } else {
+                return trueBranch;
+            }
+        }
         boolean condition = evaluateCondition(astNode.getCondition(), variableMap);
         if(condition){
             ASTNode expand = expand(astNode.getTrueBranch(), variableMap);
@@ -412,7 +427,7 @@ public class Expander {
         Expression ex = ExpressionSimplifier.simplify(condition,variables);
         if (ex instanceof BooleanOperand)
             return ((BooleanOperand) ex).getValue();
-        return ExpressionSimplifier.isSolveable(ex,variables);
+        throw new CompilationException(Expander.class,"Must be a boolean");
     }
 
     private String processVariables(String string, Map<String, Object> variableMap) throws CompilationException {

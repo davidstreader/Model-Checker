@@ -70,10 +70,16 @@ public class Compiler {
         return new CompilationObject(processMap, results);
     }
     @AllArgsConstructor
-    @Getter
     public static class LocalCompiler {
-        HashMap<String,ProcessNode> processNodeMap;
-        Expander expander;
-        ReferenceReplacer replacer;
+        @Getter
+        private HashMap<String,ProcessNode> processNodeMap;
+        private Expander expander;
+        private ReferenceReplacer replacer;
+
+        public ProcessNode compile(ProcessNode node) throws CompilationException {
+            node = expander.expand(node);
+            node = replacer.replaceReferences(node);
+            return node;
+        }
     }
 }

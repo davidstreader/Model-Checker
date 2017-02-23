@@ -64,9 +64,9 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
             String reference = ((IdentifierNode)astNode).getIdentifier();
             if (this.variables != null) {
                 ProcessNode node = (ProcessNode) compiler.getProcessNodeMap().get(reference).copy();
+                //Use the current variable set when recompiling.
                 node.setVariables(this.variables);
-                node = compiler.getExpander().expand(node);
-                node = compiler.getReplacer().replaceReferences(node);
+                node = compiler.compile(node);
                 ProcessModel model = new AutomatonInterpreter().interpret(node,this.processMap, compiler);
                 processStack.push(model);
             } else {
