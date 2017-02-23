@@ -362,14 +362,9 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
             AutomatonNode from = copy.getNode(edge.getFrom().getId());
             AutomatonNode to = copy.getNode(edge.getTo().getId());
             AutomatonEdge newEdge = copy.addEdge(edge.getId(), edge.getLabel(), from, to);
-            for(String key : edge.getMetaDataKeys()){
-                newEdge.addMetaData(key, edge.getMetaData(key));
-            }
+            newEdge.getMetaData().putAll(edge.getMetaData());
         }
-
-        for(String key : getMetaDataKeys()){
-            addMetaData(key, getMetaData(key));
-        }
+        copy.getMetaData().putAll(getMetaData());
 
         return copy;
     }
