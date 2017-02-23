@@ -151,7 +151,10 @@ public class AutomataParallelComposition {
                         from.getOutgoingEdges().forEach(edge -> automaton.removeEdge(edge.getId()));
 
                     AutomatonNode to = automaton.getNode(createId(edge1.getTo(), edge2.getTo()));
-                    automaton.addEdge(action, from, to).getMetaData().putAll(edge1.getMetaData());
+                    Guard guard = new Guard();
+                    if (edge1.hasMetaData("guard")) guard.mergeWith((Guard) edge1.getMetaData("guard"));
+                    if (edge2.hasMetaData("guard")) guard.mergeWith((Guard) edge2.getMetaData("guard"));
+                    automaton.addEdge(action, from, to).getMetaData().put("guard",guard);
 
                 }
             }
