@@ -36,6 +36,7 @@ public class Guard implements Serializable{
     }
     public String getHiddenGuardStr() throws CompilationException {
         if (guard == null) return "";
+        hiddenVariables.removeAll(variables.keySet());
         List<Expression> andList = new ArrayList<>();
         collectAnds(andList,guard);
         //If there are no ands in the expression, use the root guard.
