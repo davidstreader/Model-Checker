@@ -34,6 +34,7 @@ public class Interpreter {
             switch(process.getType()){
                 case "automata":
                     model = automaton.interpret(process, processMap, localCompiler);
+                    model.addMetaData("location",process.getLocation());
                     break;
                 default:
                     throw new CompilationException(getClass(),"Unable to find the process type: "+process.getType());

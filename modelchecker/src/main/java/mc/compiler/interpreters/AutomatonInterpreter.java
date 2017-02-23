@@ -148,7 +148,6 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
 
     private void interpretNode(SequenceNode astNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException {
         String action = astNode.getFrom().getAction();
-        Map<String,Object> metadata = new HashMap<>();
 
         AutomatonNode nextNode;
         AutomatonEdge nextEdge;
@@ -157,13 +156,11 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
             ReferenceNode reference = (ReferenceNode)astNode.getTo();
             nextNode = referenceMap.get(reference.getReference());
             nextEdge = automaton.addEdge(action, currentNode, nextNode);
-            nextEdge.getMetaData().putAll(metadata);
         }
         else {
             nextNode = automaton.addNode();
             nextEdge = automaton.addEdge(action, currentNode, nextNode);
             interpretNode(astNode.getTo(), automaton, nextNode);
-            nextEdge.getMetaData().putAll(metadata);
         }
 
         if (currentNode.getMetaData().containsKey("guard")) {

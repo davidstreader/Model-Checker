@@ -245,6 +245,7 @@
       process = code.replace(/[\r\n]/,"");
       //if process contains any keywords or terminals or functions or operations, it is not a generated process.
       if (!process || process.match(toMatch)) return null;
+      process = process.split("=")[1];
       //It also isnt one if it contains -> or ~>
       if (process.indexOf("->") > -1 || process.indexOf("~>") > -1) return null;
       //Strip whitespace and brackets
