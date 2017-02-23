@@ -1,6 +1,7 @@
 package mc.process_models.automata.operations;
 
 import mc.Constant;
+import mc.compiler.Guard;
 import mc.exceptions.CompilationException;
 import mc.process_models.automata.Automaton;
 import mc.process_models.automata.AutomatonEdge;
@@ -127,7 +128,7 @@ public class AutomataParallelComposition {
                 List<AutomatonNode> from = nodeMap.get(edge.getFrom().getId());
                 List<AutomatonNode> to = nodeMap.get(edge.getTo().getId());
                 for(int i = 0; i < from.size(); i++){
-                    automaton.addEdge(edge.getLabel(), from.get(i), to.get(i));
+                    automaton.addEdge(edge.getLabel(), from.get(i), to.get(i)).getMetaData().putAll(edge.getMetaData());
                 }
             }
         }
@@ -150,7 +151,8 @@ public class AutomataParallelComposition {
                         from.getOutgoingEdges().forEach(edge -> automaton.removeEdge(edge.getId()));
 
                     AutomatonNode to = automaton.getNode(createId(edge1.getTo(), edge2.getTo()));
-                    automaton.addEdge(action, from, to);
+                    automaton.addEdge(action, from, to).getMetaData().putAll(edge1.getMetaData());
+
                 }
             }
         }

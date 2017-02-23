@@ -227,7 +227,8 @@ public class ExpressionPrinter {
         //Map from used variables to list of variables and their values
         Map<String,Integer> newVarMap = new HashMap<>();
         for (String var: vars) {
-            newVarMap.put(var,varMap.get(var));
+            if (varMap.containsKey(var))
+                newVarMap.put(var,varMap.get(var));
         }
         return newVarMap;
     }
