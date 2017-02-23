@@ -1,5 +1,6 @@
 package mc.compiler;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import mc.compiler.ast.AbstractSyntaxTree;
 import mc.compiler.ast.ProcessNode;
@@ -15,12 +16,9 @@ public class Compiler {
 
     public static final int CODE = 0;
     public static final int JSON = 1;
-    public static Compiler lastCompiler;
     // fields
     private Lexer lexer;
-    @Getter
     private Expander expander;
-    @Getter
     private ReferenceReplacer replacer;
     private Interpreter interpreter;
     private OperationEvaluator evaluator;
@@ -61,18 +59,21 @@ public class Compiler {
     }
 
     private CompilationObject compile(AbstractSyntaxTree ast) throws CompilationException {
-        lastCompiler = this;
-        this.processNodeMap = new HashMap<>();
+        HashMap<String,ProcessNode> processNodeMap = new HashMap<>();
         for (ProcessNode node: ast.getProcesses()) {
             processNodeMap.put(node.getIdentifier(), (ProcessNode) node.copy());
         }
         ast = expander.expand(ast);
         ast = replacer.replaceReferences(ast);
-        Map<String, ProcessModel> processMap = interpreter.interpret(ast);
+        Map<String, ProcessModel> processMap = interpreter.interpret(ast, new LocalCompiler(processNodeMap, expander, replacer));
         List<OperationResult> results = evaluator.evaluateOperations(ast.getOperations(), processMap, interpreter);
         return new CompilationObject(processMap, results);
     }
+    @AllArgsConstructor
     @Getter
-    private Map<String,ProcessNode> processNodeMap;
-
+    public static class LocalCompiler {
+        HashMap<String,ProcessNode> processNodeMap;
+        Expander expander;
+        ReferenceReplacer replacer;
+    }
 }

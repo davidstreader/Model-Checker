@@ -2,7 +2,6 @@ package mc.compiler;
 
 import mc.compiler.ast.ASTNode;
 import mc.compiler.ast.AbstractSyntaxTree;
-import mc.compiler.ast.OperationNode;
 import mc.compiler.ast.ProcessNode;
 import mc.compiler.interpreters.AutomatonInterpreter;
 import mc.exceptions.CompilationException;
@@ -25,7 +24,7 @@ public class Interpreter {
         this.automaton = new AutomatonInterpreter();
     }
 
-    public Map<String, ProcessModel> interpret(AbstractSyntaxTree ast) throws CompilationException {
+    public Map<String, ProcessModel> interpret(AbstractSyntaxTree ast, Compiler.LocalCompiler localCompiler) throws CompilationException {
         Map<String, ProcessModel> processMap = new HashMap<String, ProcessModel>();
 
         List<ProcessNode> processes = ast.getProcesses();
@@ -34,7 +33,7 @@ public class Interpreter {
             ProcessModel model;
             switch(process.getType()){
                 case "automata":
-                    model = automaton.interpret(process, processMap);
+                    model = automaton.interpret(process, processMap, localCompiler);
                     break;
                 default:
                     throw new CompilationException(getClass(),"Unable to find the process type: "+process.getType());

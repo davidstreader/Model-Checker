@@ -1,7 +1,6 @@
 package mc.compiler.interpreters;
 
 import mc.Constant;
-import mc.compiler.Compiler;
 import mc.compiler.ast.*;
 import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
@@ -12,6 +11,8 @@ import mc.process_models.automata.operations.AutomataOperations;
 
 import java.util.*;
 
+import static mc.compiler.Compiler.*;
+
 public class AutomatonInterpreter implements ProcessModelInterpreter {
 
     private AutomataOperations operations;
@@ -20,14 +21,15 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     private Map<String, AutomatonNode> referenceMap;
     private Stack<ProcessModel> processStack;
     private VariableSetNode variables;
-
+    private LocalCompiler compiler;
     public AutomatonInterpreter(){
         this.operations = new AutomataOperations();
         reset();
     }
 
-    public ProcessModel interpret(ProcessNode processNode, Map<String, ProcessModel> processMap) throws CompilationException {
+    public ProcessModel interpret(ProcessNode processNode, Map<String, ProcessModel> processMap, LocalCompiler compiler) throws CompilationException {
         reset();
+        this.compiler = compiler;
         this.processMap = processMap;
         String identifier = processNode.getIdentifier();
         this.variables = processNode.getVariables();
@@ -61,11 +63,11 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         if(astNode instanceof IdentifierNode){
             String reference = ((IdentifierNode)astNode).getIdentifier();
             if (this.variables != null) {
-                ProcessNode node = (ProcessNode) Compiler.lastCompiler.getProcessNodeMap().get(reference).copy();
+                ProcessNode node = (ProcessNode) compiler.getProcessNodeMap().get(reference).copy();
                 node.setVariables(this.variables);
-                node = Compiler.lastCompiler.getExpander().expand(node);
-                node = Compiler.lastCompiler.getReplacer().replaceReferences(node);
-                ProcessModel model = this.interpret(node,this.processMap);
+                node = compiler.getExpander().expand(node);
+                node = compiler.getReplacer().replaceReferences(node);
+                ProcessModel model = new AutomatonInterpreter().interpret(node,this.processMap, compiler);
                 processStack.push(model);
             } else {
                 ProcessModel model = processMap.get(reference);
