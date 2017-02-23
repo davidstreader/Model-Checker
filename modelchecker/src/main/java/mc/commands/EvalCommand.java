@@ -14,7 +14,7 @@ import java.util.Collections;
 import java.util.Map;
 
 public class EvalCommand implements Command{
-    ExpressionEvaluator eval = new ExpressionEvaluator();
+    private ExpressionEvaluator eval = new ExpressionEvaluator();
     @Override
     public void run(String[] args) {
         try {
