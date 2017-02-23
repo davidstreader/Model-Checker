@@ -141,6 +141,7 @@
          */
         redraw: function() {
             $("#process-name-selector")[0].contentElement.selected = null;
+            app.$.selector._hasNameSelection = false;
             this.automata = this.graphMap;
             if (!this.connected && app.willSaveCookie && localStorage.getItem("layout") !== null) {
                 this.loadJSON(localStorage.getItem("layout"));
