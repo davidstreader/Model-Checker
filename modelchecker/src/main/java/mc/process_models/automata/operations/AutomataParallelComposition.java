@@ -126,8 +126,6 @@ public class AutomataParallelComposition {
             for(AutomatonEdge edge : edges){
                 List<AutomatonNode> from = nodeMap.get(edge.getFrom().getId());
                 List<AutomatonNode> to = nodeMap.get(edge.getTo().getId());
-                System.out.println(from);
-                System.out.println(to);
                 for(int i = 0; i < from.size(); i++){
                     automaton.addEdge(edge.getLabel(), from.get(i), to.get(i));
                 }

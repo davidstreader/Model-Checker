@@ -139,7 +139,7 @@ public class ReferenceReplacer {
      * @return The local reference key, or null if no match is found.
      */
     private String findLocalReference(String identifier, Map<String, LocalProcessNode> localReferences) {
-	    for (String key: localReferences.keySet()) {
+        for (String key: localReferences.keySet()) {
             String testKey = key.replaceAll("\\$[a-z][a-zA-Z0-9_]*",".+").replace("[","\\[").replace("]","\\]");
             if (Pattern.compile(testKey).matcher(identifier).matches()) {
                 return key;

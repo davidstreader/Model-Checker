@@ -257,35 +257,31 @@ public class Expander {
         guard.setGuard(astNode.getCondition());
         guard.setVariables(new ExpressionPrinter().getVariables(astNode.getCondition(),variableMap));
         guard.setHiddenVariables(hiddenVariables);
-        if (guard.getVariables().keySet().stream().map(s -> s.substring(1)).anyMatch(s -> hiddenVariables.contains(s))) {
-            ASTNode trueBranch = expand(astNode.getTrueBranch(), variableMap);
-            if (trueBranch.getMetaData().containsKey("guard"))
-                guard.mergeWith((Guard) trueBranch.getMetaData().get("guard"));
-            trueBranch.getMetaData().put("guard", guard);
-            if (astNode.hasFalseBranch()) {
-                ASTNode falseBranch = expand(astNode.getFalseBranch(), variableMap);
-                if (falseBranch.getMetaData().containsKey("guard"))
-                    guard.mergeWith((Guard) falseBranch.getMetaData().get("guard"));
-                falseBranch.getMetaData().put("guard", guard);
-                return new ChoiceNode(trueBranch, falseBranch, astNode.getLocation());
-            } else {
-                return trueBranch;
-            }
+
+        ASTNode trueBranch = expand(astNode.getTrueBranch(), variableMap);
+        if (trueBranch.getMetaData().containsKey("guard"))
+            guard.mergeWith((Guard) trueBranch.getMetaData().get("guard"));
+        trueBranch.getMetaData().put("guard", guard);
+        ASTNode falseBranch = null;
+        if (astNode.hasFalseBranch()) {
+            falseBranch = expand(astNode.getFalseBranch(), variableMap);
+            if (falseBranch.getMetaData().containsKey("guard"))
+                guard.mergeWith((Guard) falseBranch.getMetaData().get("guard"));
+            falseBranch.getMetaData().put("guard", guard);
         }
         boolean condition = evaluateCondition(astNode.getCondition(), variableMap);
         if(condition){
-            ASTNode expand = expand(astNode.getTrueBranch(), variableMap);
-            if (expand.getMetaData().containsKey("guard"))
-                guard.mergeWith((Guard) expand.getMetaData().get("guard"));
-            expand.getMetaData().put("guard",guard);
-            return expand;
+            if (guard.getVariables().keySet().stream().map(s -> s.substring(1)).anyMatch(s -> hiddenVariables.contains(s))) {
+                if (astNode.hasFalseBranch()) {
+                    return new ChoiceNode(trueBranch, falseBranch, astNode.getLocation());
+                } else {
+                    return trueBranch;
+                }
+            }
+            return trueBranch;
         }
         else if(astNode.hasFalseBranch()){
-            ASTNode expand = expand(astNode.getFalseBranch(), variableMap);
-            if (expand.getMetaData().containsKey("guard"))
-                guard.mergeWith((Guard) expand.getMetaData().get("guard"));
-            expand.getMetaData().put("guard",guard);
-            return expand;
+            return falseBranch;
         }
 
         return new EmptyNode();
@@ -427,7 +423,7 @@ public class Expander {
         Expression ex = ExpressionSimplifier.simplify(condition,variables);
         if (ex instanceof BooleanOperand)
             return ((BooleanOperand) ex).getValue();
-        throw new CompilationException(Expander.class,"Must be a boolean");
+        return ExpressionSimplifier.isSolveable(ex,variables);
     }
 
     private String processVariables(String string, Map<String, Object> variableMap) throws CompilationException {
