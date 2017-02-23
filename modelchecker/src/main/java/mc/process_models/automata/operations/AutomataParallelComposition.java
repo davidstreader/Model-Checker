@@ -120,7 +120,7 @@ public class AutomataParallelComposition {
 
         for(String action : unsyncedActions){
             List<AutomatonEdge> edges = allEdges.stream()
-                .filter(edge -> action.equals(edge.getLabel()) && !edge.hasMetaData("isReceiver")) // receivers never get executed
+                .filter(edge -> action.equals(edge.getLabel()) && !edge.getLabel().endsWith("?")) // receivers never get executed
                 .collect(Collectors.toList());
 
             for(AutomatonEdge edge : edges){
@@ -136,18 +136,18 @@ public class AutomataParallelComposition {
     private void processSyncedActions(List<AutomatonEdge> edges1, List<AutomatonEdge> edges2) throws CompilationException {
         for(String action : syncedActions){
             List<AutomatonEdge> syncedEdges1 = edges1.stream()
-                    .filter(edge -> equals(action, edge.getLabel()))
-                    .collect(Collectors.toList());
+                .filter(edge -> equals(action, edge.getLabel()))
+                .collect(Collectors.toList());
             List<AutomatonEdge> syncedEdges2 = edges2.stream()
-                    .filter(edge -> equals(action, edge.getLabel()))
-                    .collect(Collectors.toList());
+                .filter(edge -> equals(action, edge.getLabel()))
+                .collect(Collectors.toList());
 
             for(AutomatonEdge edge1 : syncedEdges1){
                 for(AutomatonEdge edge2 : syncedEdges2){
                     AutomatonNode from = automaton.getNode(createId(edge1.getFrom(), edge2.getFrom()));
-
-                    // any edges from the from node are broadcasted and should get replaced by the synced transition
-                    from.getOutgoingEdges().forEach(edge -> automaton.removeEdge(edge.getId()));
+                    if (edge1.getLabel().endsWith("!") || edge2.getLabel().endsWith("!"))
+                        // any edges from the from node are broadcasted and should get replaced by the synced transition
+                        from.getOutgoingEdges().forEach(edge -> automaton.removeEdge(edge.getId()));
 
                     AutomatonNode to = automaton.getNode(createId(edge1.getTo(), edge2.getTo()));
                     automaton.addEdge(action, from, to);
