@@ -77,11 +77,6 @@ be set
 
 Main application css files can be found in the styles directory (Model-Checker/app/styles/). Styling in relation to custom elements can be altered from a custom elements corosponding html file. 
 
-####Where to from here...
-
-So you're a SWEN302 student and you want to further enchance the Automata Concocter... These are some tasks which we did no have the time to complete:   
-- [ ] Get ECS dept. to update Chrome! Currently: 40.0.2214.91
-
 ###Java-SMT
 
 ----------------------
