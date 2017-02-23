@@ -3,6 +3,7 @@ package mc.compiler;
 import mc.compiler.ast.*;
 import mc.compiler.iterator.IndexIterator;
 import mc.exceptions.CompilationException;
+import mc.util.Location;
 import mc.util.expr.*;
 import mc.webserver.LogMessage;
 
@@ -96,7 +97,7 @@ public class Expander {
         else{
             LocalProcessNode clone = (LocalProcessNode)localProcess.copy();
             ASTNode root = expand(clone.getProcess(), variableMap);
-            clone.setIdentifier(processVariables(clone.getIdentifier(), variableMap));
+            clone.setIdentifier(processVariables(clone.getIdentifier(), variableMap, clone.getLocation()));
             clone.setProcess(root);
             newLocalProcesses.add(clone);
         }
@@ -144,7 +145,7 @@ public class Expander {
 
     private ASTNode expand(ProcessRootNode astNode, Map<String, Object> variableMap) throws CompilationException {
         if(astNode.hasLabel()) {
-            astNode.setLabel(processVariables(astNode.getLabel(), variableMap));
+            astNode.setLabel(processVariables(astNode.getLabel(), variableMap, astNode.getLocation()));
         }
         ASTNode process = expand(astNode.getProcess(), variableMap);
         astNode.setProcess(process);
@@ -163,7 +164,7 @@ public class Expander {
     }
 
     private ActionLabelNode expand(ActionLabelNode astNode, Map<String, Object> variableMap) throws CompilationException {
-        String action = processVariables(astNode.getAction(), variableMap);
+        String action = processVariables(astNode.getAction(), variableMap, astNode.getLocation());
         astNode.setAction(action);
         return astNode;
     }
@@ -294,7 +295,7 @@ public class Expander {
     }
 
     private IdentifierNode expand(IdentifierNode astNode, Map<String, Object> variableMap) throws CompilationException {
-        String identifier = processVariables(astNode.getIdentifier(), variableMap);
+        String identifier = processVariables(astNode.getIdentifier(), variableMap, astNode.getLocation());
         astNode.setIdentifer(identifier);
         return astNode;
     }
@@ -362,8 +363,8 @@ public class Expander {
             }
         }
         else{
-            String newLabel = processVariables(element.getNewLabel(), variableMap);
-            String oldLabel = processVariables(element.getOldLabel(), variableMap);
+            String newLabel = processVariables(element.getNewLabel(), variableMap, element.getLocation());
+            String oldLabel = processVariables(element.getOldLabel(), variableMap, element.getLocation());
             elements.add(new RelabelElementNode(newLabel, oldLabel, element.getLocation()));
         }
 
@@ -405,10 +406,16 @@ public class Expander {
             }
         }
         else{
-            actions.add(processVariables(action, variableMap));
+            actions.add(processVariables(action, variableMap, getFullRangeLocation(ranges)));
         }
 
         return actions;
+    }
+    //Get the location from a ranges node.
+    private Location getFullRangeLocation(List<IndexNode> ranges) {
+        Location start = ranges.get(0).getLocation();
+        Location end = ranges.get(ranges.size()-1).getLocation();
+        return new Location(start.getLineStart(),start.getColStart(),end.getLineEnd(),end.getColEnd());
     }
 
     private boolean evaluateCondition(Expression condition, Map<String, Object> variableMap) throws CompilationException {
@@ -426,7 +433,7 @@ public class Expander {
         return ExpressionSimplifier.isSolveable(ex,variables);
     }
 
-    private String processVariables(String string, Map<String, Object> variableMap) throws CompilationException {
+    private String processVariables(String string, Map<String, Object> variableMap, Location location) throws CompilationException {
         Map<String, Integer> integerMap = constructIntegerMap(variableMap);
         ExpressionPrinter printer = new ExpressionPrinter();
         //Construct a pattern with all hidden variables removed.
@@ -450,6 +457,8 @@ public class Expander {
                 }
                 else if(variableMap.containsKey(variable)){
                     string = string.replaceAll(Pattern.quote("[" + variable + "]"), "" + variableMap.get(variable));
+                } else {
+                    throw new CompilationException(Expander.class,"Unable to find a variable replacement for: "+variable,location);
                 }
             }
             else{
