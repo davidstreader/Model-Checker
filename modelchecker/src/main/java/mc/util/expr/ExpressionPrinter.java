@@ -4,7 +4,7 @@ import java.util.*;
 
 public class ExpressionPrinter {
     //A list of all VariableOperands used in the last print()
-    private List<VariableOperand> vars = new ArrayList<>();
+    private List<String> vars = new ArrayList<>();
     public String printExpression(Expression expression, Map<String, Integer> variableMap){
         return print(expression, variableMap);
     }
@@ -91,7 +91,7 @@ public class ExpressionPrinter {
     }
 
     private String print(VariableOperand expression, Map<String, Integer> variableMap){
-        vars.add(expression);
+        vars.add(expression.getValue());
         return variableMap.containsKey(expression.getValue())?variableMap.get(expression.getValue())+"":expression.getValue();
     }
 
@@ -214,6 +214,7 @@ public class ExpressionPrinter {
     }
 
     public Map<String, Integer> getVariables(Expression expression, Map<String, Object> variableMap) {
+        vars.clear();
         //Get just the variables from the map
         HashMap<String,Integer> varMap = new HashMap<>();
         for (String key : variableMap.keySet()) {
@@ -225,8 +226,8 @@ public class ExpressionPrinter {
         print(expression, varMap);
         //Map from used variables to list of variables and their values
         Map<String,Integer> newVarMap = new HashMap<>();
-        for (VariableOperand var: vars) {
-            newVarMap.put(var.getValue(),varMap.get(var.getValue()));
+        for (String var: vars) {
+            newVarMap.put(var,varMap.get(var));
         }
         return newVarMap;
     }
