@@ -88,6 +88,9 @@ public class Parser {
             else if(token instanceof OperationToken){
                 parseOperation();
             }
+            else if(token instanceof EquationToken){
+                parseEquation();
+            }
             else{
                 throw constructException("expecting to parse a process, operation or const definition but received \"" + token.toString() +"\"", token.getLocation());
             }
@@ -1169,7 +1172,19 @@ public class Parser {
 
         return new InterruptNode(action, process, constructLocation(start));
     }
+    private void parseEquation() throws CompilationException {
+        if(!(nextToken() instanceof EquationToken)){
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \"equation\" but received \"" + error.toString() + "\"", error.getLocation());
+        }
 
+        if(!(peekToken() instanceof OpenBraceToken)){
+            parseSingleOperation(true);
+        }
+        else{
+            parseOperationBlock(true);
+        }
+    }
     // OPERATIONS
 
     private void parseOperation() throws CompilationException {
@@ -1179,14 +1194,14 @@ public class Parser {
         }
 
         if(!(peekToken() instanceof OpenBraceToken)){
-            parseSingleOperation();
+            parseSingleOperation(false);
         }
         else{
-            parseOperationBlock();
+            parseOperationBlock(false);
         }
     }
 
-    private void parseSingleOperation() throws CompilationException {
+    private void parseSingleOperation(boolean isEq) throws CompilationException {
         int start = index;
         ASTNode process1 = parseComposite();
 
@@ -1205,19 +1220,21 @@ public class Parser {
             Token error = tokens.get(index - 1);
             throw constructException("expecting to parse \".\" but received \"" + error.toString() + "\"", error.getLocation());
         }
-
         OperationNode operation = new OperationNode(type, isNegated, process1, process2, constructLocation(start));
+        if (isEq) {
+            operation.getMetaData().put("equation",true);
+        }
         operations.add(operation);
     }
 
-    private void parseOperationBlock() throws CompilationException {
+    private void parseOperationBlock(boolean isEq) throws CompilationException {
         if(!(nextToken() instanceof OpenBraceToken)){
             Token error = tokens.get(index - 1);
             throw constructException("expecting to parse \"{\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
         while(!(peekToken() instanceof CloseBraceToken)){
-            parseSingleOperation();
+            parseSingleOperation(isEq);
         }
 
         if(!(nextToken() instanceof CloseBraceToken)){

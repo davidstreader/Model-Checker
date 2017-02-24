@@ -15,16 +15,16 @@ public class OperationResult {
   private String operation;
   private String result;
 
-  public OperationResult(ASTNode process1, ASTNode process2, String operation, boolean negated, boolean result) throws CompilationException {
-    this.process1 = new OperationProcess(getIdent(process1), true, process1.getLocation());
-    this.process2 = new OperationProcess(getIdent(process2), true, process2.getLocation());
+  public OperationResult(ASTNode process1, ASTNode process2, String ident1, String ident2, String operation, boolean negated, boolean result) throws CompilationException {
+    this.process1 = new OperationProcess(ident1, true, process1.getLocation());
+    this.process2 = new OperationProcess(ident2, true, process2.getLocation());
     this.operation = (negated?"!":"")+getOpSymbol(operation);
     this.result = result+"";
   }
 
-  public OperationResult(ASTNode process1, ASTNode process2, String operation, boolean negated, boolean firstFound, boolean secondFound) throws CompilationException {
-    this.process1 = new OperationProcess(getIdent(process1), firstFound, process1.getLocation());
-    this.process2 = new OperationProcess(getIdent(process2), secondFound, process2.getLocation());
+  public OperationResult(ASTNode process1, ASTNode process2, String ident1, String ident2, String operation, boolean negated, boolean firstFound, boolean secondFound) throws CompilationException {
+    this.process1 = new OperationProcess(ident1, firstFound, process1.getLocation());
+    this.process2 = new OperationProcess(ident2, secondFound, process2.getLocation());
     this.operation = (negated?"!":"")+getOpSymbol(operation);
     this.result = "notfound";
   }
@@ -35,14 +35,6 @@ public class OperationResult {
       case "traceEquivalent": return "#";
     }
     throw new CompilationException(OperationEvaluator.class,"Unknown operation: "+op);
-  }
-  public static String getIdent(ASTNode process) {
-    if (process instanceof IdentifierNode) {
-      return ((IdentifierNode) process).getIdentifier();
-    } else if (process instanceof FunctionNode) {
-      return getIdent(((FunctionNode) process).getProcess());
-    }
-    return null;
   }
   @AllArgsConstructor
   @Getter

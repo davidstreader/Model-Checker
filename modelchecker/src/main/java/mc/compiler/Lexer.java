@@ -100,6 +100,9 @@ public class Lexer {
         else if(string.equals("operation")){
             return new OperationToken(location);
         }
+        else if(string.equals("equation")){
+            return new EquationToken(location);
+        }
 		else if(string.equals("STOP")){
 			return new StopToken(location);
 		}

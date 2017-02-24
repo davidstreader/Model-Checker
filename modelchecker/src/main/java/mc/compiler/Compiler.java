@@ -6,11 +6,11 @@ import mc.compiler.ast.AbstractSyntaxTree;
 import mc.compiler.ast.ProcessNode;
 import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
+import mc.process_models.automata.Automaton;
+import mc.process_models.automata.AutomatonGenerator;
 import org.json.JSONObject;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Compiler {
 
@@ -50,15 +50,15 @@ public class Compiler {
     }
 
     public CompilationObject compile(String code) throws CompilationException{
-        return compile(parser.parse(lexer.tokenise(code)));
+        return compile(parser.parse(lexer.tokenise(code)), code);
     }
 
     public CompilationObject compile(JSONObject json) throws CompilationException {
         AbstractSyntaxTree ast = jsonToAst.convert(json);
-        return compile(ast);
+        return compile(ast, json+"");
     }
 
-    private CompilationObject compile(AbstractSyntaxTree ast) throws CompilationException {
+    private CompilationObject compile(AbstractSyntaxTree ast, String code) throws CompilationException {
         HashMap<String,ProcessNode> processNodeMap = new HashMap<>();
         for (ProcessNode node: ast.getProcesses()) {
             processNodeMap.put(node.getIdentifier(), (ProcessNode) node.copy());
@@ -66,7 +66,7 @@ public class Compiler {
         ast = expander.expand(ast);
         ast = replacer.replaceReferences(ast);
         Map<String, ProcessModel> processMap = interpreter.interpret(ast, new LocalCompiler(processNodeMap, expander, replacer));
-        List<OperationResult> results = evaluator.evaluateOperations(ast.getOperations(), processMap, interpreter);
+        List<OperationResult> results = evaluator.evaluateOperations(ast.getOperations(), processMap, interpreter, code);
         return new CompilationObject(processMap, results);
     }
     @AllArgsConstructor
