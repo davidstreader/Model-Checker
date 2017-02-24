@@ -145,7 +145,6 @@ public class AutomataBisimulation {
             for(int colourId : nodeColours.keySet()){
                 nodeColours.get(colourId).forEach(node -> node.addMetaData("colour", colourId));
             }
-            colourCount = nodeColours.size();
             // break if no new colours were added
             if(colourCount - lastColourCount == colourAmount){
                 break;
