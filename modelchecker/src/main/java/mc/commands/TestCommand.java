@@ -33,16 +33,6 @@ public class TestCommand implements Command {
             if (operations.size() > 0) {
                 for (OperationResult result : operations) {
                     String op = result.getProcess1().getIdent() + ' ' + result.getOperation() + ' ' + result.getProcess2().getIdent();
-                    if (!result.getProcess1().isExists() || !result.getProcess2().isExists()) {
-                        System.out.println(Ansi.ansi().render("Operation @|yellow `"+op+"`|@ @|red FAILED|@"));
-                        if (!result.getProcess1().isExists()) {
-                            System.out.println(Ansi.ansi().render("Identifier @|yellow `"+result.getProcess1().getIdent()+"`|@ was @|red not|@ found!"));
-                        }
-                        if (!result.getProcess2().isExists()) {
-                            System.out.println(Ansi.ansi().render("Identifier @|yellow `"+result.getProcess2().getIdent()+"`|@ was @|red not|@ found!"));
-                        }
-                        continue;
-                    }
                     if (Objects.equals(result.getResult(), "false")) {
                         System.out.println(Ansi.ansi().render("Operation @|yellow `"+op+"|@ @|green PASSED @|"));
                     } else {

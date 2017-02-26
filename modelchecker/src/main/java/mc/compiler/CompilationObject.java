@@ -12,4 +12,5 @@ import java.util.Map;
 public class CompilationObject {
     private Map<String, ProcessModel> processMap;
     private List<OperationResult> operationResults;
+    private List<OperationResult> equationResults;
 }

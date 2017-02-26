@@ -68,7 +68,7 @@ public class WebSocketServer {
         CompilationObject ret = new Compiler().compile(data.getCode());
         Map<String,ProcessModel> processModelMap = ret.getProcessMap();
         List<SkipObject> skipped = processSkipped(processModelMap,data.getContext());
-        return new ProcessReturn(processModelMap, ret.getOperationResults(),null,data.getContext(),skipped);
+        return new ProcessReturn(processModelMap, ret.getOperationResults(),ret.getEquationResults(),data.getContext(),skipped);
     }
 
     private List<SkipObject> processSkipped(Map<String, ProcessModel> processMap, Context context) {

@@ -1,5 +1,6 @@
 package mc.compiler;
 
+import com.sun.corba.se.spi.orb.Operation;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import mc.compiler.ast.AbstractSyntaxTree;
@@ -22,6 +23,7 @@ public class Compiler {
     private ReferenceReplacer replacer;
     private Interpreter interpreter;
     private OperationEvaluator evaluator;
+    private EquationEvaluator eqEvaluator;
     private Parser parser;
 
     private JSONToASTConverter jsonToAst;
@@ -32,6 +34,7 @@ public class Compiler {
         this.expander = new Expander();
         this.replacer = new ReferenceReplacer();
         this.interpreter = new Interpreter();
+        this.eqEvaluator = new EquationEvaluator();
         this.evaluator = new OperationEvaluator();
         this.jsonToAst = new JSONToASTConverter();
     }
@@ -67,7 +70,8 @@ public class Compiler {
         ast = replacer.replaceReferences(ast);
         Map<String, ProcessModel> processMap = interpreter.interpret(ast, new LocalCompiler(processNodeMap, expander, replacer));
         List<OperationResult> results = evaluator.evaluateOperations(ast.getOperations(), processMap, interpreter, code);
-        return new CompilationObject(processMap, results);
+        List<OperationResult> eqResults = eqEvaluator.evaluateEquations(ast.getEquations(), interpreter, code);
+        return new CompilationObject(processMap, results, eqResults);
     }
     @AllArgsConstructor
     public static class LocalCompiler {

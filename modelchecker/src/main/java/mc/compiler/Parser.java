@@ -43,6 +43,7 @@ public class Parser {
     private List<ProcessNode> processes;
     private Set<String> processIdentifiers;
     private List<OperationNode> operations;
+    private List<OperationNode> equations;
     private Map<String, Expression> variableMap;
     private Map<String, ASTNode> constantMap;
     private List<IndexNode> actionRanges;
@@ -57,6 +58,7 @@ public class Parser {
         processes = new ArrayList<ProcessNode>();
         processIdentifiers = new HashSet<String>();
         operations = new ArrayList<OperationNode>();
+        equations = new ArrayList<OperationNode>();
         variableMap = new HashMap<String, Expression>();
         constantMap = new HashMap<String, ASTNode>();
         actionRanges = new ArrayList<IndexNode>();
@@ -96,7 +98,7 @@ public class Parser {
             }
         }
 
-        return new AbstractSyntaxTree(processes, operations, variableMap);
+        return new AbstractSyntaxTree(processes, operations, equations, variableMap);
     }
 
     /**
@@ -1222,9 +1224,10 @@ public class Parser {
         }
         OperationNode operation = new OperationNode(type, isNegated, process1, process2, constructLocation(start));
         if (isEq) {
-            operation.getMetaData().put("equation",true);
+            equations.add(operation);
+        } else {
+            operations.add(operation);
         }
-        operations.add(operation);
     }
 
     private void parseOperationBlock(boolean isEq) throws CompilationException {

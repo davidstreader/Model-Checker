@@ -13,7 +13,7 @@ import java.util.Map;
 public class ProcessReturn {
   public Map<String,ProcessModel> processes;
   public List<OperationResult> operations;
-  public Object analysis;
+  public List<OperationResult> equations;
   public Context context;
   public List<SkipObject> skipped;
   @AllArgsConstructor

@@ -34,7 +34,7 @@ public class JSONToASTConverter {
             operations.add(operation);
         }
 
-        return new AbstractSyntaxTree(processes, operations, variableMap);
+        return new AbstractSyntaxTree(processes, operations, null, variableMap);
     }
 
     private void constructVariableMap(JSONObject variables){

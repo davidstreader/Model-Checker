@@ -26,11 +26,7 @@ public class OperationEvaluator {
     public List<OperationResult> evaluateOperations(List<OperationNode> operations, Map<String, ProcessModel> processMap, Interpreter interpreter, String code) throws CompilationException {
         reset();
         List<OperationResult> results = new ArrayList<OperationResult>();
-        Map<String, ProcessModel> generated = new HashMap<>();
-        AutomatonGenerator generator = new AutomatonGenerator();
         for(OperationNode operation : operations){
-            boolean isEquation = operation.getMetaData().containsKey("equation");
-            Map<String, ProcessModel> currentProcessMap = isEquation?generated:processMap;
             String firstId = findIdent(operation.getFirstProcess(), code);
             String secondId = findIdent(operation.getSecondProcess(), code);
             List<String> firstIds = collectIdentifiers(operation.getFirstProcess());
@@ -38,18 +34,12 @@ public class OperationEvaluator {
             List<Automaton> automata = new ArrayList<Automaton>();
             List<String> missing = new ArrayList<>(firstIds);
             missing.addAll(secondIds);
-            missing.removeAll(currentProcessMap.keySet());
+            missing.removeAll(processMap.keySet());
             if (!missing.isEmpty()) {
-                if (isEquation) {
-                    for (String id: missing) {
-                        currentProcessMap.put(id,generator.generateAutomaton(5,5,id));
-                    }
-                } else {
-                    throw new CompilationException(OperationEvaluator.class, "Identifier " + missing.get(0) + " not found!", operation.getLocation());
-                }
+                throw new CompilationException(OperationEvaluator.class, "Identifier " + missing.get(0) + " not found!", operation.getLocation());
             }
-            automata.add((Automaton) interpreter.interpret("automata", operation.getFirstProcess(), getNextOperationId(), currentProcessMap));
-            automata.add((Automaton) interpreter.interpret("automata", operation.getSecondProcess(), getNextOperationId(), currentProcessMap));
+            automata.add((Automaton) interpreter.interpret("automata", operation.getFirstProcess(), getNextOperationId(), processMap));
+            automata.add((Automaton) interpreter.interpret("automata", operation.getSecondProcess(), getNextOperationId(), processMap));
 
             if (Objects.equals(operation.getOperation(), "traceEquivalent")) {
                 List<Automaton> automata1 = new ArrayList<>();
@@ -62,18 +52,18 @@ public class OperationEvaluator {
             if (operation.isNegated()) {
                 result = !result;
             }
-            results.add(new OperationResult(operation.getFirstProcess(),operation.getSecondProcess(), firstId, secondId, operation.getOperation(), operation.isNegated(), result));
+            results.add(new OperationResult(operation.getFirstProcess(),operation.getSecondProcess(), firstId, secondId, operation.getOperation(), operation.isNegated(), result,automata));
 
         }
         return results;
     }
 
-    private List<String> collectIdentifiers(ASTNode process) {
+    static List<String> collectIdentifiers(ASTNode process) {
         List<String> ids = new ArrayList<>();
         collectIdentifiers(process,ids);
         return ids;
     }
-    private void collectIdentifiers(ASTNode process, List<String> ids) {
+    private static void collectIdentifiers(ASTNode process, List<String> ids) {
         if (process instanceof IdentifierNode) ids.add(((IdentifierNode) process).getIdentifier());
         if (process instanceof ChoiceNode) {
             collectIdentifiers(((ChoiceNode) process).getFirstProcess(), ids);
@@ -92,7 +82,7 @@ public class OperationEvaluator {
         if (process instanceof SequenceNode) collectIdentifiers(((SequenceNode) process).getTo(), ids);
     }
 
-    private String findIdent(ASTNode firstProcess, String code) {
+    static String findIdent(ASTNode firstProcess, String code) {
         Location loc = firstProcess.getLocation();
         String[] lines = code.split("\\n");
         lines = Arrays.copyOfRange(lines,loc.getLineStart()-1,loc.getLineEnd());

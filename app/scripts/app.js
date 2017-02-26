@@ -124,6 +124,7 @@
             const graphs = [];
             const allGraphs = [];
             const skipped = results.skipped;
+            console.log(results);
             for(let id in results.processes){
                 if(!_.find(skipped, { id: results.processes[id].id })){
                     results.processes[id].id = id;
@@ -143,29 +144,8 @@
                 for(let i = 0; i < results.operations.length; i++){
                     const { operation, process1, process2, result } = results.operations[i];
                     const op = process1.ident + ' ' + operation + ' ' + process2.ident + ' = ' + result;
-                    if (result == "notfound") {
-                        app.$.console.error(process1.ident + ' ' + operation + ' ' + process2.ident + ' = error');
-                        if (!process1.exists) {
-                            const l = process1.location;
-                            const err = "OperationException: '"+process1.ident+"' was not found ("+l.lineStart+":"+l.colStart+")";
-                            app.$.console.error(err);
-                            editor.addMarker(new Range(l.lineStart-1, l.colStart, l.lineEnd-1, l.colEnd), "ace_underline");
-                            for (let i = l.lineStart; i <= l.lineEnd; i++) {
-                                editor.setAnnotations([{row:i-1 ,column: 0, text:err,type:"error"}]);
-                            }
-                        }
-                        if (!process2.exists) {
-                            const l = process2.location;
-                            const err = "OperationException: '"+process2.ident+"' was not found ("+l.lineStart+":"+l.colStart+")";
-                            app.$.console.error(err);
-                            editor.addMarker(new Range(l.lineStart-1, l.colStart, l.lineEnd-1, l.colEnd), "ace_underline");
-                            for (let i = l.lineStart; i <= l.lineEnd; i++) {
-                                editor.setAnnotations([{row:i-1 ,column: 0, text:err,type:"error"}]);
-                            }
-                        }
-                    } else if(result=="true"){
+                    if(result=="true"){
                         app.$.console.log(op);
-
                         passed++;
                     } else{
                         app.$.console.error(op);
@@ -179,7 +159,27 @@
                     app.$.console.log(passed + '/' + results.operations.length + ' operations passed');
                 }
             }
+            if(results.equations.length !== 0){
+                let passed = 0;
+                app.$.console.log('Equations:');
+                for(let i = 0; i < results.equations.length; i++){
+                    const { operation, process1, process2, result } = results.equations[i];
+                    const op = process1.ident + ' ' + operation + ' ' + process2.ident + ' = ' + result;
+                    if(result=="true"){
+                        app.$.console.log(op);
+                        passed++;
+                    } else{
+                        app.$.console.error(op);
+                    }
+                }
 
+                if(passed === results.equations.length){
+                    app.$.console.log('All equations passed!');
+                }
+                else{
+                    app.$.console.log(passed + '/' + results.equations.length + ' operations passed');
+                }
+            }
             app.$.console.log("Compiled in: "+(((new Date()).getTime()-app.lastCompileStartTime)/1000)+" seconds");
             _.each(skipped, skip=> {
                 if (skip.type != "user")
