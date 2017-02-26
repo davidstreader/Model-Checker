@@ -43,7 +43,7 @@ public class OperationEvaluator {
             if (Objects.equals(operation.getOperation(), "traceEquivalent")) {
                 List<Automaton> automata1 = new ArrayList<>();
                 for (Automaton a: automata) {
-                    automata1.add(new AutomataOperations().nfaToDFA(a));
+                    automata1.add(automataOperations.nfaToDFA(a));
                 }
                 automata = automata1;
             }
@@ -51,7 +51,7 @@ public class OperationEvaluator {
             if (operation.isNegated()) {
                 result = !result;
             }
-            results.add(new OperationResult(operation.getFirstProcess(),operation.getSecondProcess(), firstId, secondId, operation.getOperation(), operation.isNegated(), result,automata));
+            results.add(new OperationResult(operation.getFirstProcess(),operation.getSecondProcess(), firstId, secondId, operation.getOperation(), operation.isNegated(), result));
 
         }
         return results;

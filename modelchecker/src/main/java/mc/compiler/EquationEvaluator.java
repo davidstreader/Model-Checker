@@ -25,7 +25,7 @@ public class EquationEvaluator {
     public List<OperationResult> evaluateEquations(List<OperationNode> operations, Interpreter interpreter, String code) throws CompilationException {
         reset();
         List<OperationResult> results = new ArrayList<OperationResult>();
-        Map<String, ProcessModel> generated = new HashMap<>();
+        Map<String, List<ProcessModel>> generated = new HashMap<>();
         AutomatonGenerator generator = new AutomatonGenerator();
         for(OperationNode operation : operations){
             String firstId = OperationEvaluator.findIdent(operation.getFirstProcess(), code);
@@ -35,25 +35,33 @@ public class EquationEvaluator {
             List<Automaton> automata = new ArrayList<Automaton>();
             Set<String> ids = new HashSet<>(firstIds);
             ids.addAll(secondIds);
+            int nodeCount = 4;
             for (String id: ids) {
-               // generated.put(id,generator.generateAutomaton(5,5,id));
+                generated.put(id,generator.generateAutomaton(5,nodeCount,id,automataOperations));
             }
-
-            automata.add((Automaton) interpreter.interpret("automata", operation.getFirstProcess(), getNextEquationId(), generated));
-            automata.add((Automaton) interpreter.interpret("automata", operation.getSecondProcess(), getNextEquationId(), generated));
-
-            if (Objects.equals(operation.getOperation(), "traceEquivalent")) {
-                List<Automaton> automata1 = new ArrayList<>();
-                for (Automaton a: automata) {
-                    automata1.add(new AutomataOperations().nfaToDFA(a));
+            for (int i = 0; i < nodeCount; i++) {
+                automata.clear();
+                Map<String, ProcessModel> currentMap = new HashMap<>();
+                for (String s: generated.keySet()) {
+                    currentMap.put(s,generated.get(s).get(i));
                 }
-                automata = automata1;
+
+                automata.add((Automaton) interpreter.interpret("automata", operation.getFirstProcess(), getNextEquationId(), currentMap));
+                automata.add((Automaton) interpreter.interpret("automata", operation.getSecondProcess(), getNextEquationId(), currentMap));
+
+                if (Objects.equals(operation.getOperation(), "traceEquivalent")) {
+                    List<Automaton> automata1 = new ArrayList<>();
+                    for (Automaton a : automata) {
+                        automata1.add(automataOperations.nfaToDFA(a));
+                    }
+                    automata = automata1;
+                }
+                boolean result = automataOperations.bisimulation(automata);
+                if (operation.isNegated()) {
+                    result = !result;
+                }
+                results.add(new OperationResult(operation.getFirstProcess(), operation.getSecondProcess(), firstId, secondId, operation.getOperation(), operation.isNegated(), result));
             }
-            boolean result = automataOperations.bisimulation(automata);
-            if (operation.isNegated()) {
-                result = !result;
-            }
-            results.add(new OperationResult(operation.getFirstProcess(),operation.getSecondProcess(), firstId, secondId, operation.getOperation(), operation.isNegated(), result,automata));
 
         }
         return results;

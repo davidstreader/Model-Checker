@@ -29,7 +29,6 @@ public class AutomataReachability {
         Set<String> visited = new HashSet<String>();
         Stack<AutomatonNode> fringe = new Stack<AutomatonNode>();
         fringe.push(automaton.getRoot());
-
         // find the reachable nodes within the specified automaton
         while(!fringe.isEmpty()){
             AutomatonNode current = fringe.pop();

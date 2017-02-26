@@ -4,12 +4,13 @@ import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
 import mc.process_models.automata.Automaton;
 import mc.process_models.automata.AutomatonNode;
+import mc.process_models.automata.operations.AutomataOperations;
 
 import java.util.*;
 
 public class AutomatonGenerator {
-    public Map<String, ProcessModel> generateAutomaton(int alphabetCount, int nodeCount, String id) throws CompilationException {
-        Map<String, ProcessModel> automata = new HashMap<>();
+    public List<ProcessModel> generateAutomaton(int alphabetCount, int nodeCount, String id, AutomataOperations operations) throws CompilationException {
+        List<ProcessModel> automata = new ArrayList<>();
         //Generate alphabet for alphabetCount a -> b -> .. -> zz etc
         List<String> alphabet = new ArrayList<>();
         String current = "a";
@@ -17,11 +18,19 @@ public class AutomatonGenerator {
             alphabet.add(current);
             current = next(current);
         }
-        int i = 0;
         for (BinaryNode treeNode : allBinaryTrees(nodeCount-1)) {
-            Automaton automaton = new Automaton(id+(i++), false);
+            Automaton automaton = new Automaton(id, false);
             automaton.setRoot(binToAutomata(automaton,new BinaryNode(treeNode,null),alphabet,0));
-            automata.put(automaton.getId(),automaton);
+            automaton.getRoot().addMetaData("startNode",true);
+            boolean exists = false;
+            //Check that there already isn't an equivalent process in the array.
+            for (ProcessModel a : automata) {
+                if (operations.bisimulation(Arrays.asList((Automaton)a,automaton))) {
+                    exists = true;
+                }
+            }
+            if (!exists)
+                automata.add(automaton);
         }
         return automata;
     }

@@ -6,7 +6,10 @@ import mc.compiler.ast.AbstractSyntaxTree;
 import mc.compiler.ast.ProcessNode;
 import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
+import mc.process_models.automata.Automaton;
+import mc.process_models.automata.AutomatonNode;
 import mc.process_models.automata.generator.AutomatonGenerator;
+import mc.process_models.automata.operations.AutomataOperations;
 import org.json.JSONObject;
 
 import java.util.*;
@@ -52,8 +55,14 @@ public class Compiler {
 
     public CompilationObject compile(String code) throws CompilationException{
         if (code.startsWith("random")) {
-            int nodeCount = Integer.parseInt(code.split("random\\(")[1].replace(")",""));
-            return new CompilationObject(new AutomatonGenerator().generateAutomaton(5,nodeCount,"A"),Collections.emptyList(),Collections.emptyList());
+            Map<String,ProcessModel> models = new HashMap<>();
+            int i = 0;
+            List<ProcessModel> nodes = new AutomatonGenerator().generateAutomaton(5,5,"A",new AutomataOperations());
+            for (ProcessModel model:nodes) {
+                Automaton a = (Automaton) model;
+                models.put(a.getId()+(i++),a);
+            }
+            return new CompilationObject(models,Collections.emptyList(),Collections.emptyList());
         }
         return compile(parser.parse(lexer.tokenise(code)), code);
     }
@@ -73,6 +82,7 @@ public class Compiler {
         Map<String, ProcessModel> processMap = interpreter.interpret(ast, new LocalCompiler(processNodeMap, expander, replacer));
         List<OperationResult> results = evaluator.evaluateOperations(ast.getOperations(), processMap, interpreter, code);
         List<OperationResult> eqResults = eqEvaluator.evaluateEquations(ast.getEquations(), interpreter, code);
+        int i = 0;
         return new CompilationObject(processMap, results, eqResults);
     }
     @AllArgsConstructor

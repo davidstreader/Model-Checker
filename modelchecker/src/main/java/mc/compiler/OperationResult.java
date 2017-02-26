@@ -15,13 +15,11 @@ public class OperationResult {
     private OperationProcess process2;
     private String operation;
     private String result;
-    private List<Automaton> test;
-    public OperationResult(ASTNode process1, ASTNode process2, String ident1, String ident2, String operation, boolean negated, boolean result, List<Automaton> test) throws CompilationException {
+    public OperationResult(ASTNode process1, ASTNode process2, String ident1, String ident2, String operation, boolean negated, boolean result) throws CompilationException {
         this.process1 = new OperationProcess(ident1, process1.getLocation());
         this.process2 = new OperationProcess(ident2, process2.getLocation());
         this.operation = (negated?"!":"")+getOpSymbol(operation);
         this.result = result+"";
-        this.test = test;
     }
 
     private String getOpSymbol(String op) throws CompilationException {
