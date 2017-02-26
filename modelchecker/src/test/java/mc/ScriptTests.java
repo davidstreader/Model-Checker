@@ -36,13 +36,22 @@ public class ScriptTests {
             if (operations.size() > 0) {
                 for (OperationResult result : operations) {
                     String op = result.getProcess1().getIdent() + ' ' + result.getOperation() + ' ' + result.getProcess2().getIdent();
-                    assertTrue("Operation '" + op + "' should pass", Objects.equals(result.getResult(), "true"));
+                    if (shouldFailOperations(file.getName(), op)) {
+                        assertTrue("Operation '" + op + "' should fail", Objects.equals(result.getResult(), "false"));
+                    } else {
+                        assertTrue("Operation '" + op + "' should pass", Objects.equals(result.getResult(), "true"));
+                    }
+
                 }
             }
         }
     }
     private boolean shouldFail(String fileName) {
-        if (fileName.contains("fail.txt") || fileName.contains("failOperations.txt")) return true;
+        if (fileName.contains("fail.txt") || fileName.contains("nonExistantOperation.txt")) return true;
+        return false;
+    }
+    private boolean shouldFailOperations(String fileName, String op) {
+        if (fileName.contains("failOperations.txt") && Objects.equals(op, "A ~ B")) return true;
         return false;
     }
 
