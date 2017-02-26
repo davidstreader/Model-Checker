@@ -1,14 +1,12 @@
 package mc.compiler;
 
-import com.sun.corba.se.spi.orb.Operation;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import mc.compiler.ast.AbstractSyntaxTree;
 import mc.compiler.ast.ProcessNode;
 import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
-import mc.process_models.automata.Automaton;
-import mc.process_models.automata.AutomatonGenerator;
+import mc.process_models.automata.generator.AutomatonGenerator;
 import org.json.JSONObject;
 
 import java.util.*;
@@ -53,6 +51,10 @@ public class Compiler {
     }
 
     public CompilationObject compile(String code) throws CompilationException{
+        if (code.startsWith("random")) {
+            int nodeCount = Integer.parseInt(code.split("random\\(")[1].replace(")",""));
+            return new CompilationObject(new AutomatonGenerator().generateAutomaton(5,nodeCount,"A"),Collections.emptyList(),Collections.emptyList());
+        }
         return compile(parser.parse(lexer.tokenise(code)), code);
     }
 

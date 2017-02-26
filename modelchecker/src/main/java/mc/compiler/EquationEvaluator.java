@@ -4,7 +4,7 @@ import mc.compiler.ast.*;
 import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
 import mc.process_models.automata.Automaton;
-import mc.process_models.automata.AutomatonGenerator;
+import mc.process_models.automata.generator.AutomatonGenerator;
 import mc.process_models.automata.operations.AutomataOperations;
 
 import java.util.*;
@@ -36,7 +36,7 @@ public class EquationEvaluator {
             Set<String> ids = new HashSet<>(firstIds);
             ids.addAll(secondIds);
             for (String id: ids) {
-                generated.put(id,generator.generateAutomaton(5,5,id));
+               // generated.put(id,generator.generateAutomaton(5,5,id));
             }
 
             automata.add((Automaton) interpreter.interpret("automata", operation.getFirstProcess(), getNextEquationId(), generated));

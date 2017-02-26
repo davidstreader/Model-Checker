@@ -4,7 +4,6 @@ import mc.compiler.ast.*;
 import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
 import mc.process_models.automata.Automaton;
-import mc.process_models.automata.AutomatonGenerator;
 import mc.process_models.automata.operations.AutomataOperations;
 import mc.util.Location;
 
