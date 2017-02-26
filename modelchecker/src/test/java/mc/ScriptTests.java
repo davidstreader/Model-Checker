@@ -36,31 +36,13 @@ public class ScriptTests {
             if (operations.size() > 0) {
                 for (OperationResult result : operations) {
                     String op = result.getProcess1().getIdent() + ' ' + result.getOperation() + ' ' + result.getProcess2().getIdent();
-                    if (Objects.equals(result.getResult(), "notfound")) {
-                        if (file.getName().endsWith("nonExistantOperation.txt")) {
-                            continue;
-                        }
-                        System.out.println(op);
-                        assertTrue(result.getProcess1().getIdent() + " does not exist", result.getProcess1().isExists());
-                        assertTrue(result.getProcess2().getIdent() + " does not exist", result.getProcess1().isExists());
-                        continue;
-                    }
-                    if (shouldFailOperations(file.getName(), op)) {
-                        assertTrue("Operation '" + op + "' should fail", Objects.equals(result.getResult(), "false"));
-                    } else {
-                        assertTrue("Operation '" + op + "' should pass", Objects.equals(result.getResult(), "true"));
-                    }
-
+                    assertTrue("Operation '" + op + "' should pass", Objects.equals(result.getResult(), "true"));
                 }
             }
         }
     }
     private boolean shouldFail(String fileName) {
-        if (fileName.contains("fail.txt")) return true;
-        return false;
-    }
-    private boolean shouldFailOperations(String fileName, String op) {
-        if (fileName.contains("failOperations.txt") && Objects.equals(op, "A ~ B")) return true;
+        if (fileName.contains("fail.txt") || fileName.contains("failOperations.txt")) return true;
         return false;
     }
 
