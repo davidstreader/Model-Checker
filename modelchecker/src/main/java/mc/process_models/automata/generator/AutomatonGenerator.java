@@ -20,7 +20,7 @@ public class AutomatonGenerator {
         String current = "a";
         while (alphabet.size() < alphabetCount) {
             alphabet.add(current);
-            current = next(current);
+            current = nextCharacter(current);
         }
         for (BinaryNode treeNode : allBinaryTrees(nodeCount-1)) {
             Automaton automaton = new Automaton(id, false);
@@ -30,7 +30,11 @@ public class AutomatonGenerator {
             HashMap<AutomatonNode, Integer> nodeToLevels = new HashMap<>();
             fillLevels(automaton.getRoot(), levels, nodeToLevels, 0);
             Set<Set<AutomatonNode>> rootPowerSet = Sets.powerSet(nodeToLevels.keySet());
-            automata.add(automaton.copy());
+            if (multipleAlphabet) {
+                automata.addAll(applyAlphabet(automaton,alphabet));
+            } else {
+                automata.add(automaton.copy());
+            }
             for (Set<AutomatonNode> powerSets: rootPowerSet) {
                 List<Automaton> currentNodes = new ArrayList<>();
                 for (AutomatonNode node :powerSets) {
@@ -43,14 +47,15 @@ public class AutomatonGenerator {
                         for (Automaton a: currentNodes) {
                             clone.addAll(addEdgesBelow(a,node,powerSet));
                         }
-                        if (multipleAlphabet) {
-                            for (Automaton a : clone) {
-                                automata.addAll(applyAlphabet(a,alphabet));
-                            }
-                        } else {
-                            automata.addAll(clone);
-                        }
+                        currentNodes = clone;
                     }
+                }
+                if (multipleAlphabet) {
+                    for (Automaton a : currentNodes) {
+                        automata.addAll(applyAlphabet(a,alphabet));
+                    }
+                } else {
+                    automata.addAll(currentNodes);
                 }
             }
         }
@@ -102,12 +107,12 @@ public class AutomatonGenerator {
         }
         return c;
     }
-    public String next(String s) {
+    private String nextCharacter(String s) {
         int length = s.length();
         char c = s.charAt(length - 1);
 
         if(c == 'z')
-            return length > 1 ? next(s.substring(0, length - 1)) + 'a' : "aa";
+            return length > 1 ? nextCharacter(s.substring(0, length - 1)) + 'a' : "aa";
 
         return s.substring(0, length - 1) + ++c;
     }
