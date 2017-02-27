@@ -68,7 +68,8 @@
                 if (_this.rendering) return;
                 //Reset the explosion status since the last exploded item is now gone
                 app.$.selector._explosionLabel = "Explode to process";
-                _this.cy.remove(_this.cy.elements())
+                _this.cy.remove(_this.cy.elements());
+                _this.graphIds = {};
                 _this.saveChanges();
             });
             //Espand the drawing area to the size of the screen when zooming
