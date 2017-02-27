@@ -102,6 +102,9 @@ public class AutomataParallelComposition {
                 unsyncedActions.add(action);
             }
         }
+        else if(action.endsWith("?")){
+            unsyncedActions.add(action);
+        }
         else if(alphabet.contains(action)){
             syncedActions.add(action);
         }
