@@ -31,7 +31,7 @@ public class AutomatonGenerator {
             for (int i = 0;i<levels.size();i++) {
                 final int li = i;
                 List<AutomatonNode> nodes = levels.get(i);
-                Set<AutomatonNode> links = levels.entrySet().stream().filter(s -> s.getKey() <= li).flatMap(s -> s.getValue().stream()).collect(Collectors.toSet());
+                Set<AutomatonNode> links = levels.entrySet().stream().flatMap(s -> s.getValue().stream()).collect(Collectors.toSet());
                 Set<Set<AutomatonNode>> powerSet = Sets.powerSet(links);
                 for (AutomatonNode node : nodes) {
                     for (Set<AutomatonNode> set : powerSet) {
