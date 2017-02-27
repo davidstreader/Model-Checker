@@ -63,4 +63,24 @@ public class AutomatonEdge extends ProcessModelObject {
 
         return builder.toString();
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        AutomatonEdge edge = (AutomatonEdge) o;
+
+        if (!label.equals(edge.label)) return false;
+        if (!from.getId().equals(edge.from.getId())) return false;
+        return to.getId().equals(edge.to.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        int result = label.hashCode();
+        result = 31 * result + from.getId().hashCode();
+        result = 31 * result + to.getId().hashCode();
+        return result;
+    }
 }

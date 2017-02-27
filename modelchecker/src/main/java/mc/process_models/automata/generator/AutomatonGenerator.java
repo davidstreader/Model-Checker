@@ -22,6 +22,9 @@ public class AutomatonGenerator {
             alphabet.add(current);
             current = nextCharacter(current);
         }
+        Set<Set<AutomatonEdge>> edges = new HashSet<>();
+        List<ProcessModel> basic = new ArrayList<>();
+        root:
         for (BinaryNode treeNode : allBinaryTrees(nodeCount-1)) {
             Automaton automaton = new Automaton(id, false);
             automaton.setRoot(binToAutomata(automaton,new BinaryNode(treeNode,null), 0));
@@ -35,17 +38,23 @@ public class AutomatonGenerator {
             } else {
                 automata.add(automaton.copy());
             }
+            for (ProcessModel b : basic) {
+                if (operations.bisimulation(Arrays.asList((Automaton)b,automaton))) {
+                    continue root;
+                }
+            }
+            basic.add(automaton);
             for (Set<AutomatonNode> powerSets: rootPowerSet) {
                 List<Automaton> currentNodes = new ArrayList<>();
                 for (AutomatonNode node :powerSets) {
                     Set<AutomatonNode> links = levels.entrySet().stream().filter(s -> s.getKey() <= nodeToLevels.get(node)).flatMap(s -> s.getValue().stream()).collect(Collectors.toSet());
                     Set<Set<AutomatonNode>> powerSet = Sets.powerSet(links);
                     if (currentNodes.isEmpty()) {
-                        currentNodes.addAll(addEdgesBelow(automaton,node,powerSet));
+                        currentNodes.addAll(addEdgesBelow(automaton,node,powerSet, nodeToLevels.get(node)));
                     } else {
                         List<Automaton> clone = new ArrayList<>(currentNodes);
                         for (Automaton a: currentNodes) {
-                            clone.addAll(addEdgesBelow(a,node,powerSet));
+                            clone.addAll(addEdgesBelow(a,node,powerSet, nodeToLevels.get(node)));
                         }
                         currentNodes = clone;
                     }
@@ -55,20 +64,27 @@ public class AutomatonGenerator {
                         automata.addAll(applyAlphabet(a,alphabet));
                     }
                 } else {
-                    automata.addAll(currentNodes);
+                    for (Automaton a : currentNodes) {
+                        Set<AutomatonEdge> edgeSet = new HashSet<>(a.getEdges());
+                        if (!edges.contains(edgeSet)) {
+                            edges.add(edgeSet);
+                            automata.add(a);
+                        }
+                    }
                 }
             }
         }
-
         return automata;
     }
-    private List<Automaton> addEdgesBelow(Automaton automaton, AutomatonNode node, Set<Set<AutomatonNode>> powerSet) throws CompilationException {
+    private List<Automaton> addEdgesBelow(Automaton automaton, AutomatonNode node, Set<Set<AutomatonNode>> powerSet, int level) throws CompilationException {
         List<Automaton> automata = new ArrayList<>();
         for (Set<AutomatonNode> set : powerSet) {
             if (set.isEmpty()) continue;
             Automaton clone = automaton.copy();
             for (AutomatonNode setNode: set) {
-                clone.addEdge("edge",clone.getNode(node.getId()),clone.getNode(setNode.getId()));
+                AutomatonNode from = clone.getNode(node.getId());
+                AutomatonNode to = clone.getNode(setNode.getId());
+                clone.addEdge("edge"+level,from,to);
             }
             automata.add(clone);
         }
@@ -103,7 +119,7 @@ public class AutomatonGenerator {
         AutomatonNode c = a.addNode();
         //Essentially, all binary trees map to arbitrary trees. https://blogs.msdn.microsoft.com/ericlippert/2010/04/22/every-tree-there-is/
         for (BinaryNode child = n.getLeft(); child != null; child = child.getRight()) {
-            a.addEdge("edge",c, binToAutomata(a,child, level + 1));
+            a.addEdge("edge"+level,c, binToAutomata(a,child, level + 1));
         }
         return c;
     }
