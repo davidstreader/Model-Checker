@@ -345,7 +345,8 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
     public Automaton copy() throws CompilationException {
         Automaton copy = new Automaton(getId(), !CONSTRUCT_ROOT);
-
+        copy.nodeId = nodeId;
+        copy.edgeId = edgeId;
         List<AutomatonNode> nodes = getNodes();
         for(AutomatonNode node : nodes){
             AutomatonNode newNode = copy.addNode(node.getId());

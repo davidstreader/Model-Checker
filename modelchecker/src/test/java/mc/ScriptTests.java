@@ -47,12 +47,10 @@ public class ScriptTests {
         }
     }
     private boolean shouldFail(String fileName) {
-        if (fileName.contains("fail.txt") || fileName.contains("nonExistantOperation.txt")) return true;
-        return false;
+        return fileName.contains("fail.txt") || fileName.contains("nonExistantOperation.txt");
     }
     private boolean shouldFailOperations(String fileName, String op) {
-        if (fileName.contains("failOperations.txt") && Objects.equals(op, "A ~ B")) return true;
-        return false;
+        return fileName.contains("failOperations.txt") && Objects.equals(op, "A ~ B");
     }
 
 }

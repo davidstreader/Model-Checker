@@ -37,7 +37,7 @@ public class EquationEvaluator {
             ids.addAll(secondIds);
             int nodeCount = 4;
             for (String id: ids) {
-                generated.put(id,generator.generateAutomaton(5,nodeCount,id,automataOperations));
+                generated.put(id,generator.generateAutomaton(5,nodeCount,id,automataOperations,true));
             }
             for (int i = 0; i < nodeCount; i++) {
                 automata.clear();

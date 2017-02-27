@@ -10,6 +10,7 @@ import mc.process_models.automata.Automaton;
 import mc.process_models.automata.AutomatonNode;
 import mc.process_models.automata.generator.AutomatonGenerator;
 import mc.process_models.automata.operations.AutomataOperations;
+import mc.webserver.LogMessage;
 import org.json.JSONObject;
 
 import java.util.*;
@@ -55,9 +56,13 @@ public class Compiler {
 
     public CompilationObject compile(String code) throws CompilationException{
         if (code.startsWith("random")) {
+            new LogMessage("Generating random models").send();
+            boolean alphabet = Boolean.parseBoolean(code.split(",")[1]);
+            int nodeCount = Integer.parseInt(code.split(",")[2]);
+            int alphabetCount = Integer.parseInt(code.split(",")[3]);
             Map<String,ProcessModel> models = new HashMap<>();
             int i = 0;
-            List<ProcessModel> nodes = new AutomatonGenerator().generateAutomaton(5,5,"A",new AutomataOperations());
+            List<ProcessModel> nodes = new AutomatonGenerator().generateAutomaton(alphabetCount,nodeCount,"A",new AutomataOperations(),alphabet);
             for (ProcessModel model:nodes) {
                 Automaton a = (Automaton) model;
                 models.put(a.getId()+(i++),a);
