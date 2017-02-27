@@ -34,10 +34,10 @@ public class LogMessage {
     }
 
     public void send() {
-        boolean hasClient = Main.getInstance().getWebServer().getSocket().hasClient();
+        boolean hasClient = Main.getInstance() != null && Main.getInstance().getWebServer().getSocket().hasClient();
         if (!hasClient) message = message.replace("@|black","@|white");
         this.message = ansi().render(message).toString();
-        if (Main.getInstance() != null && Main.getInstance().getWebServer().getSocket().hasClient())
+        if (hasClient)
             Main.getInstance().getWebServer().getSocket().send("log",this);
         else
             System.out.println(message);
