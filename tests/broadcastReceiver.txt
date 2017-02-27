@@ -28,6 +28,6 @@ automata {
 operation {
     A ~ ExpectedA.
     B ~ ExpectedB.
-    #Write this again since reviever->reviever no longer syncs
-    #C ~ ExpectedC.
+    //Write this again since reviever->reviever no longer syncs
+    //C ~ ExpectedC.
 }
