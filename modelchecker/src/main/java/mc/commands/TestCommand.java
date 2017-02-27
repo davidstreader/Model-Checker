@@ -19,7 +19,7 @@ public class TestCommand implements Command {
         }
         mc.compiler.Compiler compiler = new mc.compiler.Compiler();
         for (File file:f.listFiles()) {
-            System.out.println(Ansi.ansi().render("Testing script: "+file));
+            System.out.println(Ansi.ansi().render("Testing script: @|yellow `"+file+"`|@"));
             if (file.getName().endsWith("results.txt") || !file.getName().endsWith("txt")) return;
 
             List<OperationResult> operations = Collections.emptyList();
@@ -28,15 +28,15 @@ public class TestCommand implements Command {
                 System.out.println(Ansi.ansi().render("File @|yellow `"+file.getName()+"`|@: @|green COMPILED |@"));
             } catch (Exception ex) {
                 System.out.println(Ansi.ansi().render("File @|yellow `"+file.getName()+"`|@: @|red FAILED |@"));
-                System.out.println(Ansi.ansi().render("Reason: Timeout"));
+                System.out.println(Ansi.ansi().render("Reason: "+ex.getMessage()));
             }
             if (operations.size() > 0) {
                 for (OperationResult result : operations) {
                     String op = result.getProcess1().getIdent() + ' ' + result.getOperation() + ' ' + result.getProcess2().getIdent();
-                    if (Objects.equals(result.getResult(), "false")) {
-                        System.out.println(Ansi.ansi().render("Operation @|yellow `"+op+"|@ @|green PASSED @|"));
+                    if (Objects.equals(result.getResult(), "true")) {
+                        System.out.println(Ansi.ansi().render("Operation @|yellow `"+op+"|@ @|green PASSED |@"));
                     } else {
-                        System.out.println(Ansi.ansi().render("Operation @|yellow `"+op+"`|@ @|green FAILED @|"));
+                        System.out.println(Ansi.ansi().render("Operation @|yellow `"+op+"`|@ @|green FAILED |@"));
                     }
 
                 }

@@ -148,4 +148,7 @@ public class WebSocketServer {
     public String getSocketHostname() {
         return ((InetSocketAddress)client.get().getRemoteAddress()).getHostString();
     }
+    public boolean hasClient() {
+        return client.get() != null;
+    }
 }
