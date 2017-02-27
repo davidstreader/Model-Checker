@@ -2,6 +2,7 @@ package mc.process_models.automata.generator;
 
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Sets;
+import lombok.SneakyThrows;
 import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
 import mc.process_models.automata.Automaton;
@@ -33,17 +34,17 @@ public class AutomatonGenerator {
             HashMap<AutomatonNode, Integer> nodeToLevels = new HashMap<>();
             fillLevels(automaton.getRoot(), levels, nodeToLevels, 0);
             Set<Set<AutomatonNode>> rootPowerSet = Sets.powerSet(nodeToLevels.keySet());
-            if (multipleAlphabet) {
-                automata.addAll(applyAlphabet(automaton,alphabet));
-            } else {
-                automata.add(automaton.copy());
-            }
             for (ProcessModel b : basic) {
                 if (operations.bisimulation(Arrays.asList((Automaton)b,automaton))) {
                     continue root;
                 }
             }
-            basic.add(automaton);
+            basic.add(automaton.copy());
+            if (multipleAlphabet) {
+                applyAlphabet(automaton,alphabet).forEach(s -> addToSet(edges,automata,s));
+            } else {
+                addToSet(edges,automata,automaton);
+            }
             for (Set<AutomatonNode> powerSets: rootPowerSet) {
                 List<Automaton> currentNodes = new ArrayList<>();
                 for (AutomatonNode node :powerSets) {
@@ -60,21 +61,20 @@ public class AutomatonGenerator {
                     }
                 }
                 if (multipleAlphabet) {
-                    for (Automaton a : currentNodes) {
-                        automata.addAll(applyAlphabet(a,alphabet));
-                    }
+                    currentNodes.stream().flatMap(s -> applyAlphabet(s,alphabet).stream()).forEach(s -> addToSet(edges,automata,s));
                 } else {
-                    for (Automaton a : currentNodes) {
-                        Set<AutomatonEdge> edgeSet = new HashSet<>(a.getEdges());
-                        if (!edges.contains(edgeSet)) {
-                            edges.add(edgeSet);
-                            automata.add(a);
-                        }
-                    }
+                    currentNodes.forEach(a -> addToSet(edges,automata,a));
                 }
             }
         }
         return automata;
+    }
+    private void addToSet(Set<Set<AutomatonEdge>> edges, List<ProcessModel> automata, Automaton a) {
+        Set<AutomatonEdge> edgeSet = new HashSet<>(a.getEdges());
+        if (!edges.contains(edgeSet)) {
+            edges.add(edgeSet);
+            automata.add(a);
+        }
     }
     private List<Automaton> addEdgesBelow(Automaton automaton, AutomatonNode node, Set<Set<AutomatonNode>> powerSet, int level) throws CompilationException {
         List<Automaton> automata = new ArrayList<>();
@@ -90,7 +90,8 @@ public class AutomatonGenerator {
         }
         return automata;
     }
-    private Collection<Automaton> applyAlphabet(Automaton automaton, Set<String> alphabet) throws CompilationException {
+    @SneakyThrows
+    private Collection<Automaton> applyAlphabet(Automaton automaton, Set<String> alphabet) {
         ArrayList<Automaton> list = new ArrayList<>();
         Set<Set<String>> powerSet = Sets.powerSet(alphabet).stream().filter(s -> s.size() == automaton.getEdgeCount()).collect(Collectors.toSet());
         for (Set<String> set:powerSet) {
@@ -156,4 +157,5 @@ public class AutomatonGenerator {
 
         return result;
     }
+
 }
