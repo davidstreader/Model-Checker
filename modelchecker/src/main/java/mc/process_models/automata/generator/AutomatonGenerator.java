@@ -27,21 +27,29 @@ public class AutomatonGenerator {
             automaton.setRoot(binToAutomata(automaton,new BinaryNode(treeNode,null), 0));
             automaton.getRoot().addMetaData("startNode",true);
             HashMap<Integer,List<AutomatonNode>> levels = new HashMap<>();
-            fillLevels(automaton.getRoot(), levels, 0);
-            for (int i = 0;i<levels.size();i++) {
-                final int li = i;
-                List<AutomatonNode> nodes = levels.get(i);
-                Set<AutomatonNode> links = levels.entrySet().stream().flatMap(s -> s.getValue().stream()).collect(Collectors.toSet());
-                Set<Set<AutomatonNode>> powerSet = Sets.powerSet(links);
-                for (AutomatonNode node : nodes) {
-                    for (Set<AutomatonNode> set : powerSet) {
-                        Automaton clone = automaton.copy();
-                        for (AutomatonNode setNode: set) {
-                            clone.addEdge("edge",clone.getNode(node.getId()),clone.getNode(setNode.getId()));
+            HashMap<AutomatonNode, Integer> nodeToLevels = new HashMap<>();
+            fillLevels(automaton.getRoot(), levels, nodeToLevels, 0);
+            Set<Set<AutomatonNode>> rootPowerSet = Sets.powerSet(nodeToLevels.keySet());
+            automata.add(automaton.copy());
+            for (Set<AutomatonNode> powerSets: rootPowerSet) {
+                List<Automaton> currentNodes = new ArrayList<>();
+                for (AutomatonNode node :powerSets) {
+                    Set<AutomatonNode> links = levels.entrySet().stream().filter(s -> s.getKey() <= nodeToLevels.get(node)).flatMap(s -> s.getValue().stream()).collect(Collectors.toSet());
+                    Set<Set<AutomatonNode>> powerSet = Sets.powerSet(links);
+                    if (currentNodes.isEmpty()) {
+                        currentNodes.addAll(addEdgesBelow(automaton,node,powerSet));
+                    } else {
+                        List<Automaton> clone = new ArrayList<>(currentNodes);
+                        for (Automaton a: currentNodes) {
+                            clone.addAll(addEdgesBelow(a,node,powerSet));
                         }
-                        if (multipleAlphabet)
-                            automata.addAll(applyAlphabet(clone,alphabet));
-                        else automata.add(clone);
+                        if (multipleAlphabet) {
+                            for (Automaton a : clone) {
+                                automata.addAll(applyAlphabet(a,alphabet));
+                            }
+                        } else {
+                            automata.addAll(clone);
+                        }
                     }
                 }
             }
@@ -49,7 +57,18 @@ public class AutomatonGenerator {
 
         return automata;
     }
-
+    private List<Automaton> addEdgesBelow(Automaton automaton, AutomatonNode node, Set<Set<AutomatonNode>> powerSet) throws CompilationException {
+        List<Automaton> automata = new ArrayList<>();
+        for (Set<AutomatonNode> set : powerSet) {
+            if (set.isEmpty()) continue;
+            Automaton clone = automaton.copy();
+            for (AutomatonNode setNode: set) {
+                clone.addEdge("edge",clone.getNode(node.getId()),clone.getNode(setNode.getId()));
+            }
+            automata.add(clone);
+        }
+        return automata;
+    }
     private Collection<Automaton> applyAlphabet(Automaton automaton, Set<String> alphabet) throws CompilationException {
         ArrayList<Automaton> list = new ArrayList<>();
         Set<Set<String>> powerSet = Sets.powerSet(alphabet).stream().filter(s -> s.size() == automaton.getEdgeCount()).collect(Collectors.toSet());
@@ -67,11 +86,12 @@ public class AutomatonGenerator {
         return list;
     }
 
-    private void fillLevels(AutomatonNode root, HashMap<Integer, List<AutomatonNode>> levels, int i) {
+    private void fillLevels(AutomatonNode root, HashMap<Integer, List<AutomatonNode>> levels, HashMap<AutomatonNode, Integer> nodeToLevels, int i) {
         levels.putIfAbsent(i,new ArrayList<>());
         levels.get(i).add(root);
+        nodeToLevels.put(root,i);
         for (AutomatonEdge e: root.getOutgoingEdges()) {
-            fillLevels(e.getTo(), levels, i+1);
+            fillLevels(e.getTo(), levels, nodeToLevels, i+1);
         }
     }
     private AutomatonNode binToAutomata(Automaton a, BinaryNode n, int level) throws CompilationException {
