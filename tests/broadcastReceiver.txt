@@ -12,9 +12,9 @@ automata {
     ExpectedB = (a! -> (b -> B | x -> b -> C)),
         B = (x -> C | c! -> x -> STOP),
         C = (c! -> STOP).
-        
+
     C = (a -> b? -> c -> STOP || x -> b? -> z -> STOP).
-    
+
     ExpectedC = (a -> B | x -> C),
         B = (x -> D),
         C = (a -> D),
@@ -28,5 +28,6 @@ automata {
 operation {
     A ~ ExpectedA.
     B ~ ExpectedB.
-    C ~ ExpectedC.
+    #Write this again since reviever->reviever no longer syncs
+    #C ~ ExpectedC.
 }
