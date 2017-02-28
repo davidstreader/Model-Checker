@@ -51,7 +51,7 @@ public class OperationEvaluator {
             if (operation.isNegated()) {
                 result = !result;
             }
-            results.add(new OperationResult(operation.getFirstProcess(),operation.getSecondProcess(), firstId, secondId, operation.getOperation(), operation.isNegated(), result));
+            results.add(new OperationResult(operation.getFirstProcess(),operation.getSecondProcess(), firstId, secondId, operation.getOperation(), operation.isNegated(), result,""));
 
         }
         return results;

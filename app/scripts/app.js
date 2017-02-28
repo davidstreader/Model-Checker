@@ -142,8 +142,8 @@
                 let passed = 0;
                 app.$.console.log('Operations:');
                 for(let i = 0; i < results.operations.length; i++){
-                    const { operation, process1, process2, result } = results.operations[i];
-                    const op = process1.ident + ' ' + operation + ' ' + process2.ident + ' = ' + result;
+                    const { operation, process1, process2, result, extra } = results.operations[i];
+                    const op = process1.ident + ' ' + operation + ' ' + process2.ident + ' = ' + result + ' '+ extra;
                     if(result=="true"){
                         app.$.console.log(op);
                         passed++;
@@ -163,8 +163,8 @@
                 let passed = 0;
                 app.$.console.log('Equations:');
                 for(let i = 0; i < results.equations.length; i++){
-                    const { operation, process1, process2, result } = results.equations[i];
-                    const op = process1.ident + ' ' + operation + ' ' + process2.ident + ' = ' + result;
+                    const { operation, process1, process2, result, extra } = results.equations[i];
+                    const op = process1.ident + ' ' + operation + ' ' + process2.ident + ' = ' + result + ' ' + extra;
                     if(result=="true"){
                         app.$.console.log(op);
                         passed++;
