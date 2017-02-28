@@ -14,7 +14,6 @@ public class VariableCollector {
         else if(expression instanceof UnaryOperator){
             collectVariables((UnaryOperator)expression, vars);
         }
-
     }
 
     private void collectVariables(VariableOperand expression, List<String> vars){

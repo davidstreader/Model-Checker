@@ -70,4 +70,8 @@ public abstract class ASTNode implements Serializable {
         Cloner cloner = new Cloner();
         return cloner.deepClone(this);
 	}
+
+    public Object getMetaData(String key) {
+        return metaData.get(key);
+    }
 }

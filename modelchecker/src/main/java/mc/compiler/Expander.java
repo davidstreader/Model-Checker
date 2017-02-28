@@ -255,60 +255,48 @@ public class Expander {
 
     private ASTNode expand(IfStatementNode astNode, Map<String, Object> variableMap) throws CompilationException {
         VariableCollector collector = new VariableCollector();
-        Guard trueGuard = new Guard();
-        trueGuard.setGuard(astNode.getCondition());
-        Map<String,Integer> vars = new VariableCollector().getVariables(astNode.getCondition(),variableMap);
-        trueGuard.setVariables(vars);
-        trueGuard.setHiddenVariables(hiddenVariables);
-        Guard falseGuard = new Guard();
-        falseGuard.setGuard(astNode.getCondition());
-        falseGuard.setVariables(vars);
-        falseGuard.setHiddenVariables(hiddenVariables);
-        vars = collector.getVariables(astNode.getCondition(),variableMap);
+        Map<String,Integer> vars = collector.getVariables(astNode.getCondition(),variableMap);
+        Guard trueGuard = new Guard(astNode.getCondition(),vars,hiddenVariables);
+        Guard falseGuard = new Guard(astNode.getCondition(),vars,hiddenVariables);
+        ASTNode trueBranch = expand(astNode.getTrueBranch(), variableMap);
+        if (trueBranch.getMetaData().containsKey("guard"))
+            trueGuard.mergeWith((Guard) trueBranch.getMetaData("guard"));
+        trueBranch.getMetaData().put("guard", trueGuard);
+        ASTNode falseBranch = null;
+        if (astNode.hasFalseBranch()) {
+            falseBranch = expand(astNode.getFalseBranch(), variableMap);
+            if (falseBranch.getMetaData().containsKey("guard"))
+                falseGuard.mergeWith((Guard) falseBranch.getMetaData("guard"));
+            falseBranch.getMetaData().put("guard", falseGuard);
+        }
+        //Check if there are any hidden variables inside both the variableMap and the expression
         if (vars.keySet().stream().map(s -> s.substring(1)).anyMatch(s -> hiddenVariables.contains(s))) {
-            ASTNode trueBranch = expand(astNode.getTrueBranch(), variableMap);
-            if (trueBranch.getMetaData().containsKey("guard"))
-                trueGuard.mergeWith((Guard) trueBranch.getMetaData().get("guard"));
-            trueBranch.getMetaData().put("guard", trueGuard);
             if (astNode.hasFalseBranch()) {
-                ASTNode falseBranch = expand(astNode.getFalseBranch(), variableMap);
-                if (falseBranch.getMetaData().containsKey("guard"))
-                    falseGuard.mergeWith((Guard) falseBranch.getMetaData().get("guard"));
-                falseBranch.getMetaData().put("guard", falseGuard);
                 return new ChoiceNode(trueBranch, falseBranch, astNode.getLocation());
             } else {
                 return trueBranch;
             }
         }
-        //Collect all hidden variables, but this time even collect variables that aren't in the variableMap.
+        //Collect all hidden variables, including variables that aren't in variableMap.
         vars = collector.getVariables(astNode.getCondition(), hiddenVariables.stream().collect(Collectors.toMap(s->"$"+s,s->0)));
         boolean hiddenVariableFound = vars.keySet().stream().map(s -> s.substring(1)).anyMatch(s -> hiddenVariables.contains(s));
-        boolean condition = evaluateCondition(astNode.getCondition(), variableMap);
-        if(condition){
-            ASTNode trueBranch = expand(astNode.getTrueBranch(), variableMap);
-            if (trueBranch.getMetaData().containsKey("guard"))
-                trueGuard.mergeWith((Guard) trueBranch.getMetaData().get("guard"));
-            trueBranch.getMetaData().put("guard",trueGuard);
+        if(evaluateCondition(astNode.getCondition(), variableMap)){
             //If a hidden variable is found in the current expression
             if (astNode.hasFalseBranch() && hiddenVariableFound) {
-                ASTNode falseBranch = astNode.getFalseBranch();
+                ASTNode falseBranch2 = astNode.getFalseBranch();
                 //See if we can find an else with no if tied to it
-                while (falseBranch instanceof IfStatementNode) {
-                    falseBranch = ((IfStatementNode) falseBranch).getFalseBranch();
+                while (falseBranch2 instanceof IfStatementNode) {
+                    falseBranch2 = ((IfStatementNode) falseBranch2).getFalseBranch();
                 }
                 //One was found, we must include it as it is possible for there to be hidden variables that can go through that branch.
                 if (falseBranch != null) {
-                    return new ChoiceNode(trueBranch, expand(astNode.getFalseBranch(),variableMap), astNode.getLocation());
+                    return new ChoiceNode(trueBranch, falseBranch, astNode.getLocation());
                 }
             }
             return trueBranch;
         }
         else if(astNode.hasFalseBranch()){
-            ASTNode expand = expand(astNode.getFalseBranch(), variableMap);
-            if (expand.getMetaData().containsKey("guard"))
-                falseGuard.mergeWith((Guard) expand.getMetaData().get("guard"));
-            expand.getMetaData().put("guard",falseGuard);
-            return expand;
+            return falseBranch;
         }
         return new EmptyNode();
     }

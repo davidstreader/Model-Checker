@@ -37,7 +37,6 @@ public class Guard implements Serializable{
     }
     public String getHiddenGuardStr() throws CompilationException {
         if (guard == null) return "";
-        hiddenVariables.removeAll(variables.keySet());
         List<Expression> andList = new ArrayList<>();
         collectAnds(andList,guard);
         //If there are no ands in the expression, use the root guard.
@@ -141,6 +140,7 @@ public class Guard implements Serializable{
         this.next.removeIf(t -> next.stream().anyMatch(s -> Pattern.compile(s.split("\\W")[0]+"\\W").matcher(t).find()));
         this.next.addAll(guard.next);
         this.hiddenVariables.addAll(guard.hiddenVariables);
+        hiddenVariables.removeAll(variables.keySet());
     }
     @JsonIgnore
     boolean hasData() {
@@ -149,6 +149,11 @@ public class Guard implements Serializable{
     private static String operators = "(&|\\^|<<|>>|\\+|-|\\*|/|%)";
     public Guard copy() {
         return new Guard(guard,variables,next,nextMap,shouldDisplay,hiddenVariables);
+    }
+    public Guard(Expression guard, Map<String,Integer> variables, Set<String> hiddenVariables) {
+        setGuard(guard);
+        setVariables(variables);
+        setHiddenVariables(hiddenVariables);
     }
 
 }
