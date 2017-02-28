@@ -1,7 +1,9 @@
 package mc.process_models.automata.operations;
 
+import mc.compiler.Guard;
 import mc.exceptions.CompilationException;
 import mc.process_models.automata.Automaton;
+import mc.process_models.automata.AutomatonEdge;
 import mc.process_models.automata.AutomatonNode;
 
 import java.util.*;
@@ -17,7 +19,7 @@ public class AutomataBisimulation {
     public Automaton performSimplification(Automaton automaton) throws CompilationException {
         reset();
 
-        Map<Integer, List<Colour>> colourMap = new HashMap<Integer, List<Colour>>();
+        Map<Integer, List<Colour>> colourMap = new HashMap<>();
         Map<Integer, List<AutomatonNode>> nodeColours = performColouring(automaton, colourMap);
 
         // merge nodes that have the same colouring
@@ -45,7 +47,7 @@ public class AutomataBisimulation {
     public boolean areBisimular(List<Automaton> automata){
         reset();
 
-        Map<Integer, List<Colour>> colourMap = new HashMap<Integer, List<Colour>>();
+        Map<Integer, List<Colour>> colourMap = new HashMap<>();
 
         int rootColour = Integer.MIN_VALUE;
 
@@ -67,18 +69,17 @@ public class AutomataBisimulation {
     }
 
     private Map<Integer, List<AutomatonNode>> performColouring(Automaton automaton, Map<Integer, List<Colour>> colourMap){
-        int lastColourCount = 0;
-        int colourCount = 1;
-        int colourAmount = 0;
+        int lastColourCount = 1;
 
         perfromInitialColouring(automaton);
-        Map<Integer, List<AutomatonNode>> nodeColours = null;
+        Map<Integer, List<AutomatonNode>> nodeColours = new HashMap<>();
 
-        while(lastColourCount <= colourCount){
-            nodeColours = new HashMap<Integer, List<AutomatonNode>>();
-            Set<String> visited = new HashSet<String>();
+        while(nodeColours.size() != lastColourCount){
+            lastColourCount = nodeColours.size();
+            nodeColours = new HashMap<>();
+            Set<String> visited = new HashSet<>();
 
-            Queue<AutomatonNode> fringe = new LinkedList<AutomatonNode>();
+            Queue<AutomatonNode> fringe = new LinkedList<>();
             fringe.offer(automaton.getRoot());
 
             while(!fringe.isEmpty()){
@@ -94,13 +95,13 @@ public class AutomataBisimulation {
                     String terminal = (String)current.getMetaData("isTerminal");
                     if(terminal.equals("STOP")){
                         if(!nodeColours.containsKey(STOP_COLOUR)){
-                            nodeColours.put(STOP_COLOUR, new ArrayList<AutomatonNode>());
+                            nodeColours.put(STOP_COLOUR, new ArrayList<>());
                         }
                         nodeColours.get(STOP_COLOUR).add(current);
                     }
                     else if(terminal.equals("ERROR")){
                         if(!nodeColours.containsKey(ERROR_COLOUR)){
-                            nodeColours.put(ERROR_COLOUR, new ArrayList<AutomatonNode>());
+                            nodeColours.put(ERROR_COLOUR, new ArrayList<>());
                         }
                         nodeColours.get(ERROR_COLOUR).add(current);
                     }
@@ -129,14 +130,14 @@ public class AutomataBisimulation {
                 }
 
                 if(!nodeColours.containsKey(colourId)){
-                    nodeColours.put(colourId, new ArrayList<AutomatonNode>());
+                    nodeColours.put(colourId, new ArrayList<>());
                 }
                 nodeColours.get(colourId).add(current);
 
                 current.getOutgoingEdges().stream()
-                    .map(edge -> edge.getTo())
+                    .map(AutomatonEdge::getTo)
                     .filter(node -> !visited.contains(node.getId()))
-                    .forEach(node -> fringe.offer(node));
+                    .forEach(fringe::offer);
 
                 visited.add(current.getId());
             }
@@ -145,13 +146,7 @@ public class AutomataBisimulation {
             for(int colourId : nodeColours.keySet()){
                 nodeColours.get(colourId).forEach(node -> node.addMetaData("colour", colourId));
             }
-            // break if no new colours were added
-            if(colourCount - lastColourCount == colourAmount){
-                break;
-            }
 
-            colourAmount = colourCount - lastColourCount;
-            lastColourCount = colourCount;
         }
 
         return nodeColours;
@@ -176,7 +171,7 @@ public class AutomataBisimulation {
     }
 
     private Map<String, Integer> contructNodeMap(Automaton automaton){
-        Map<String, Integer> nodeMap = new HashMap<String, Integer>();
+        Map<String, Integer> nodeMap = new HashMap<>();
 
         for(AutomatonNode node : automaton.getNodes()){
             int colour = BASE_COLOUR;
@@ -203,7 +198,7 @@ public class AutomataBisimulation {
 
         int from = (int)node.getMetaData("colour");
         node.getOutgoingEdges()
-            .forEach(edge -> colouringSet.add(new Colour(from, (int)edge.getTo().getMetaData("colour"),edge.getLabel())));
+            .forEach(edge -> colouringSet.add(new Colour(from, (int)edge.getTo().getMetaData("colour"),edge.getLabel(),null)));
         List<Colour> colouring = new ArrayList<>(colouringSet);
         Collections.sort(colouring);
         return colouring;
@@ -222,11 +217,13 @@ public class AutomataBisimulation {
         public int from;
         public int to;
         public String action;
+        public Guard guard;
 
-        public Colour(int from, int to, String action){
+        public Colour(int from, int to, String action, Guard guard){
             this.from = from;
             this.to = to;
             this.action = action;
+            this.guard = guard;
         }
 
         public boolean equals(Object obj){
@@ -242,7 +239,9 @@ public class AutomataBisimulation {
                 if(!action.equals(col.action)){
                     return false;
                 }
-
+                if (guard != null && col.guard != null && guard.getNext() != col.guard.getNext()) {
+                    return false;
+                }
                 return true;
             }
 
@@ -254,6 +253,7 @@ public class AutomataBisimulation {
             int result = from;
             result = 31 * result + to;
             result = 31 * result + (action != null ? action.hashCode() : 0);
+            result = 31 * result + (guard != null ? guard.getNext().hashCode() : 0);
             return result;
         }
 
