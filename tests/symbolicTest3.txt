@@ -1,0 +1,18 @@
+const N = 2
+automata {
+Im = C[0][0],
+       C[i:0..N][j:0..N] = (when i< N coin -> C[i + 1][j] |
+                            when j<N  bang -> C[0][j+1] |
+                            when j==N xxx -> C[0][0]).
+
+Imi = Im${i}.   
+Imj = Im${j}.
+Ii = Imi${}.
+Ij = Imj${}.
+CIm = Ii || Ij.
+}
+operation {
+Ii ~ Im.
+Ij~Im.
+ CIm ~ Im.
+}
