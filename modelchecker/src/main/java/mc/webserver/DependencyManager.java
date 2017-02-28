@@ -59,6 +59,9 @@ public class DependencyManager {
   private String getNPMExec() {
       return new File("bower_install","npm"+Utils.getNPMExtension()).getAbsolutePath();
   }
+    private String getNodeExec() {
+        return new File("bower_install","node"+Utils.getNPMExtension()).getAbsolutePath();
+    }
   private void installBower() {
     File bowerInstall = new File("bower_install","bower");
     if (!bowerInstall.exists()) {
@@ -133,7 +136,7 @@ public class DependencyManager {
   }
   public void vulcanize() {
     logger.info(""+ansi().render("@|yellow Vulcanizing HTML|@"));
-    ProcessBuilder builder = new ProcessBuilder(new File("bower_install","node"+ Utils.getNodeExtension()).getAbsolutePath(),"node_modules/vulcanize/bin/vulcanize","-o","../app/elements/elements.vulcanized.html","../app/elements/elements.html","--strip-comments");
+    ProcessBuilder builder = new ProcessBuilder(getNodeExec(),"node_modules/vulcanize/bin/vulcanize","-o","../app/elements/elements.vulcanized.html","../app/elements/elements.html","--strip-comments");
     builder.directory(new File("bower_install"));
     main.spawnProcess(builder);
   }
