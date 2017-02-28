@@ -18,6 +18,7 @@ public class WebServer {
   Logger logger = LoggerFactory.getLogger(WebServer.class);
   @Getter
   private WebSocketServer socket;
+  //TODO: IMPORTANT  Mabye we should consider proxying websocket data through spark to socketio?
   public void startServer() {
     logger.info(""+ansi().render("@|green Starting Web Server|@"));
     if (checkPortInUse()) return;

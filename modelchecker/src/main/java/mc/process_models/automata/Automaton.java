@@ -5,6 +5,7 @@ import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
 import mc.process_models.ProcessModelObject;
 import mc.util.Location;
+import mc.util.expr.ExpressionSimplifier;
 import mc.util.expr.OrOperator;
 
 import java.util.*;
@@ -160,14 +161,14 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
         removeNode(node2);
         return node;
     }
-    private void processGuards(AutomatonEdge edge1, AutomatonEdge edge2) {
+    private void processGuards(AutomatonEdge edge1, AutomatonEdge edge2) throws CompilationException {
         if (edge1.getLabel().equals(edge2.getLabel()) && edge1.hasMetaData("guard") && edge2.hasMetaData("guard")) {
             Guard guard1 = (Guard) edge1.getMetaData("guard");
             Guard guard2 = (Guard) edge2.getMetaData("guard");
             //Since assignment should be the same (same colour) we can just copy most data from either guard.
             Guard combined = guard1.copy();
             //We could take either path
-            combined.setGuard(new OrOperator(guard1.getGuard(),guard2.getGuard()));
+            combined.setGuard(ExpressionSimplifier.simplify(new OrOperator(guard1.getGuard(),guard2.getGuard()),Collections.emptyMap()));
             edge1.addMetaData("guard",combined);
             edge2.addMetaData("guard",combined);
         }
