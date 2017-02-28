@@ -135,6 +135,7 @@ public class Guard implements Serializable{
     public void mergeWith(Guard guard) {
         if (guard.guard != null) this.guard = guard.guard;
         this.variables.putAll(guard.variables);
+        this.next.removeIf(t -> getNext().stream().anyMatch(s -> t.contains(s.split("\\W")[0])));
         this.next.addAll(guard.next);
         this.hiddenVariables.addAll(guard.hiddenVariables);
     }
