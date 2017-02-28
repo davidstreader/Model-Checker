@@ -68,6 +68,14 @@ public class AutomataParallelComposition {
                         }
                     }
                 }
+                HashMap<String,Object> varmap = new HashMap<>();
+                if (node1.getMetaData().containsKey("variables")) {
+                    varmap.putAll((Map<? extends String, ?>) node1.getMetaData().get("variables"));
+                }
+                if (node2.getMetaData().containsKey("variables")) {
+                    varmap.putAll((Map<? extends String, ?>) node2.getMetaData().get("variables"));
+                }
+                node.addMetaData("variables",varmap);
 
                 nodeMap.get(node1.getId()).add(node);
                 nodeMap.get(node2.getId()).add(node);

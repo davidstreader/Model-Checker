@@ -249,7 +249,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
         // add edge to the edge and alphabet maps
         if (!alphabet.containsKey(label)) {
-            alphabet.put(label, new ArrayList<AutomatonEdge>());
+            alphabet.put(label, new ArrayList<>());
         }
         alphabet.get(label).add(edge);
         edgeMap.put(id, edge);
