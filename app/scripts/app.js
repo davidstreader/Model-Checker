@@ -279,7 +279,6 @@
             if(filename === ''){
                 filename = 'untitled';
             }
-            app.saveSettings = {currentFile: '', saveCode: true, saveLayout: true};
             let output = "";
             if (app.saveSettings.saveCode)
                 output+= app.$.editor.getCode();
