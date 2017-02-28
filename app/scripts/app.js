@@ -282,9 +282,10 @@
             let output = "";
             if (app.saveSettings.saveCode)
                 output+= app.$.editor.getCode();
-            output+="\nvisualiser_json_layout:"
-            if (app.saveSettings.saveLayout)
+            if (app.saveSettings.saveLayout) {
+                output+="\nvisualiser_json_layout:"
                 output+= JSON.stringify(app.$.visualiser.cy.json());
+            }
             const blob = new Blob(
                 [output],
                 {type: 'text/plain;charset=utf-8'});
