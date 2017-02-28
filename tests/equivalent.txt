@@ -3,15 +3,15 @@
 automata {
     IfMoney1 = C[0],
         C[i:0..3] = (if i < 3 then coin -> C[i + 1] else coin -> C[0]).
-    
+
     IfMoney2 = C[0],
         C[i:0..3] = (if i < 3 then coin -> C[i + 1] else if i == 3 then coin -> C[0]).
-    
+
     WhenMoney = C[0],
         C[i:0..3] = (when i < 3 coin -> C[i + 1] | when i == 3 coin -> C[0]).
-        
+
     LoopMoney = (coin -> coin -> coin -> coin -> LoopMoney).
-    
+
     LPMoney = (coin -> A),
         A = (coin -> B),
         B = (coin -> C),
@@ -21,12 +21,6 @@ automata {
 operation {
     IfMoney1 ~ IfMoney2.
     IfMoney1 ~ WhenMoney.
-    IfMoney1 ~ LoopMoney.
-    IfMoney1 ~ LPMoney.
     IfMoney2 ~ WhenMoney.
-    IfMoney2 ~ LoopMoney.
-    IfMoney2 ~ LPMoney.
-    WhenMoney ~ LoopMoney.
-    WhenMoney ~ LPMoney.
     LoopMoney ~ LPMoney.
 }

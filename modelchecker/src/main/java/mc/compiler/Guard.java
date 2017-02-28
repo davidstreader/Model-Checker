@@ -7,6 +7,7 @@ import mc.util.expr.*;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.regex.Pattern;
 
 @Setter
 @AllArgsConstructor
@@ -117,6 +118,7 @@ public class Guard implements Serializable{
                 break;
             } else if (var.matches("\\d+")) {
                 String varName = varNames.get(vars.indexOf(var));
+                next.removeIf(s -> s.matches(varName+"\\W.*"));
                 next.add(rm$(varName + ":=" + var));
                 nextMap.put(var, varName);
             }
@@ -135,7 +137,8 @@ public class Guard implements Serializable{
     public void mergeWith(Guard guard) {
         if (guard.guard != null) this.guard = guard.guard;
         this.variables.putAll(guard.variables);
-        this.next.removeIf(t -> getNext().stream().anyMatch(s -> t.contains(s.split("\\W")[0])));
+        //Remove any existing variables
+        this.next.removeIf(t -> next.stream().anyMatch(s -> Pattern.compile(s.split("\\W")[0]+"\\W").matcher(t).find()));
         this.next.addAll(guard.next);
         this.hiddenVariables.addAll(guard.hiddenVariables);
     }
