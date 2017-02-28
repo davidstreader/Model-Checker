@@ -103,7 +103,9 @@ public class AutomataParallelComposition {
             }
         }
         else if(action.endsWith("?")){
-            unsyncedActions.add(action);
+            if(!containsBroadcaster(action, alphabet)) {
+                unsyncedActions.add(action);
+            }
         }
         else if(alphabet.contains(action)){
             syncedActions.add(action);
@@ -119,7 +121,7 @@ public class AutomataParallelComposition {
 
         for(String action : unsyncedActions){
             List<AutomatonEdge> edges = allEdges.stream()
-                .filter(edge -> action.equals(edge.getLabel()) && !edge.getLabel().endsWith("?")) // receivers never get executed
+                .filter(edge -> action.equals(edge.getLabel())) // receivers never get executed
                 .collect(Collectors.toList());
 
             for(AutomatonEdge edge : edges){
