@@ -198,7 +198,7 @@ public class AutomataBisimulation {
 
         int from = (int)node.getMetaData("colour");
         node.getOutgoingEdges()
-            .forEach(edge -> colouringSet.add(new Colour(from, (int)edge.getTo().getMetaData("colour"),edge.getLabel(),null)));
+            .forEach(edge -> colouringSet.add(new Colour(from, (int)edge.getTo().getMetaData("colour"),edge.getLabel(), (Guard) edge.getMetaData("guard"))));
         List<Colour> colouring = new ArrayList<>(colouringSet);
         Collections.sort(colouring);
         return colouring;
@@ -239,8 +239,10 @@ public class AutomataBisimulation {
                 if(!action.equals(col.action)){
                     return false;
                 }
-                if (guard != null && col.guard != null && guard.getNext() != col.guard.getNext()) {
-                    return false;
+                if (guard != null && col.guard != null) {
+                    if (!guard.getNext().equals(col.guard.getNext())) {
+                        return false;
+                    }
                 }
                 return true;
             }
@@ -253,7 +255,7 @@ public class AutomataBisimulation {
             int result = from;
             result = 31 * result + to;
             result = 31 * result + (action != null ? action.hashCode() : 0);
-            result = 31 * result + (guard != null ? guard.getNext().hashCode() : 0);
+            result = 31 * result + (guard != null && !guard.getNext().isEmpty() ? guard.getNext().hashCode() : 0);
             return result;
         }
 

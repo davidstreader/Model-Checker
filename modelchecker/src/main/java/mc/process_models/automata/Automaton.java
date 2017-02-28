@@ -1,12 +1,11 @@
 package mc.process_models.automata;
 
-import com.rits.cloning.Cloner;
-import lombok.SneakyThrows;
+import mc.compiler.Guard;
 import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
 import mc.process_models.ProcessModelObject;
-import mc.process_models.automata.serializers.EdgeClone;
 import mc.util.Location;
+import mc.util.expr.OrOperator;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -126,9 +125,19 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
         if(!nodeMap.containsKey(node2.getId())){
             throw new CompilationException(getClass(),node2.getId() + " was not found in the automaton "+ getId(), (Location)getMetaData("location"));
         }
-
         AutomatonNode node = addNode();
 
+        for (AutomatonEdge edge1 : node1.getIncomingEdges()) {
+            for (AutomatonEdge edge2: node2.getIncomingEdges()) {
+                processGuards(edge1,edge2);
+            }
+        }
+
+        for (AutomatonEdge edge1 : node1.getOutgoingEdges()) {
+            for (AutomatonEdge edge2: node2.getOutgoingEdges()) {
+                processGuards(edge1,edge2);
+            }
+        }
         // add the incoming and outgoing edges from both nodes to the combined nodes
         processIncomingEdges(node, node1);
         processIncomingEdges(node, node2);
@@ -147,16 +156,25 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
             setRoot(node);
             node.addMetaData("startNode",true);
         }
-
         removeNode(node1);
         removeNode(node2);
         return node;
     }
-
+    private void processGuards(AutomatonEdge edge1, AutomatonEdge edge2) {
+        if (edge1.getLabel().equals(edge2.getLabel()) && edge1.hasMetaData("guard") && edge2.hasMetaData("guard")) {
+            Guard guard1 = (Guard) edge1.getMetaData("guard");
+            Guard guard2 = (Guard) edge2.getMetaData("guard");
+            //Since assignment should be the same (same colour) we can just copy most data from either guard.
+            Guard combined = guard1.copy();
+            //We could take either path
+            combined.setGuard(new OrOperator(guard1.getGuard(),guard2.getGuard()));
+            edge1.addMetaData("guard",combined);
+            edge2.addMetaData("guard",combined);
+        }
+    }
     private void processIncomingEdges(AutomatonNode node, AutomatonNode oldNode) {
         List<AutomatonEdge> edges = oldNode.getIncomingEdges();
-        for (int i = 0; i < edges.size(); i++) {
-            AutomatonEdge edge = edges.get(i);
+        for (AutomatonEdge edge : edges) {
             node.addIncomingEdge(edge);
             edge.setTo(node);
             oldNode.removeIncomingEdge(edge);
@@ -165,8 +183,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
     private void processOutgoingEdges(AutomatonNode node, AutomatonNode oldNode) {
         List<AutomatonEdge> edges = oldNode.getOutgoingEdges();
-        for (int i = 0; i < edges.size(); i++) {
-            AutomatonEdge edge = edges.get(i);
+        for (AutomatonEdge edge : edges) {
             node.addOutgoingEdge(edge);
             edge.setFrom(node);
             oldNode.removeOutgoingEdge(edge);
