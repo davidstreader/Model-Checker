@@ -2,6 +2,7 @@ package mc;
 
 import mc.compiler.OperationResult;
 import mc.exceptions.CompilationException;
+import org.fusesource.jansi.Ansi;
 import org.junit.Test;
 
 import java.io.File;
@@ -50,7 +51,10 @@ public class ScriptTests {
         return fileName.contains("fail.txt") || fileName.contains("nonExistantOperation.txt");
     }
     private boolean shouldFailOperations(String fileName, String op) {
-        return fileName.contains("failOperations.txt") && Objects.equals(op, "A ~ B");
+        return fileName.contains("failOperations.txt") && Objects.equals(removeANSIEscape(op), "A ~ B");
+    }
+    private String removeANSIEscape(String str) {
+        return str.replaceAll("\u001B\\[[\\d;]*[^\\d;]","");
     }
 
 }
