@@ -14,7 +14,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class AutomatonGenerator {
-    public List<ProcessModel> generateAutomaton(int alphabetCount, int nodeCount, String id, AutomataOperations operations, boolean multipleAlphabet) throws CompilationException {
+    public List<ProcessModel> generateAutomaton(int alphabetCount, int nodeCount, int maxTransitions, String id, AutomataOperations operations, boolean multipleAlphabet) throws CompilationException {
         List<ProcessModel> automata = new ArrayList<>();
         //Generate alphabet for alphabetCount a -> b -> .. -> zz etc
         Set<String> alphabet = new HashSet<>();
@@ -41,9 +41,9 @@ public class AutomatonGenerator {
             }
             basic.add(automaton.copy());
             if (multipleAlphabet) {
-                applyAlphabet(automaton,alphabet).forEach(s -> addToSet(edges,automata,s));
+                applyAlphabet(automaton,alphabet).forEach(s -> addToSet(edges,automata,s, maxTransitions));
             } else {
-                addToSet(edges,automata,automaton);
+                addToSet(edges,automata,automaton, maxTransitions);
             }
             for (Set<AutomatonNode> powerSets: rootPowerSet) {
                 List<Automaton> currentNodes = new ArrayList<>();
@@ -61,15 +61,16 @@ public class AutomatonGenerator {
                     }
                 }
                 if (multipleAlphabet) {
-                    currentNodes.stream().flatMap(s -> applyAlphabet(s,alphabet).stream()).forEach(s -> addToSet(edges,automata,s));
+                    currentNodes.stream().flatMap(s -> applyAlphabet(s,alphabet).stream()).forEach(s -> addToSet(edges,automata,s, maxTransitions));
                 } else {
-                    currentNodes.forEach(a -> addToSet(edges,automata,a));
+                    currentNodes.forEach(a -> addToSet(edges,automata,a, maxTransitions));
                 }
             }
         }
         return automata;
     }
-    private void addToSet(Set<Set<AutomatonEdge>> edges, List<ProcessModel> automata, Automaton a) {
+    private void addToSet(Set<Set<AutomatonEdge>> edges, List<ProcessModel> automata, Automaton a, int maxTransitions) {
+        if (a.getEdgeCount() > maxTransitions) return;
         Set<AutomatonEdge> edgeSet = new HashSet<>(a.getEdges());
         if (!edges.contains(edgeSet)) {
             edges.add(edgeSet);

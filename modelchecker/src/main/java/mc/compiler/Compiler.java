@@ -60,9 +60,10 @@ public class Compiler {
             boolean alphabet = Boolean.parseBoolean(code.split(",")[1]);
             int nodeCount = Integer.parseInt(code.split(",")[2]);
             int alphabetCount = Integer.parseInt(code.split(",")[3]);
+            int maxTransitionCount = Integer.parseInt(code.split(",")[4]);
             Map<String,ProcessModel> models = new HashMap<>();
             int i = 0;
-            List<ProcessModel> nodes = new AutomatonGenerator().generateAutomaton(alphabetCount,nodeCount,"A",new AutomataOperations(),alphabet);
+            List<ProcessModel> nodes = new AutomatonGenerator().generateAutomaton(alphabetCount,nodeCount,maxTransitionCount,"A",new AutomataOperations(),alphabet);
             for (ProcessModel model:nodes) {
                 Automaton a = (Automaton) model;
                 models.put(a.getId()+(i++),a);
