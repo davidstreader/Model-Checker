@@ -3,8 +3,6 @@ package mc.util.expr;
 import java.util.*;
 
 public class ExpressionPrinter {
-    //A list of all VariableOperands used in the last print()
-    private List<String> vars = new ArrayList<>();
     public String printExpression(Expression expression, Map<String, Integer> variableMap){
         return print(expression, variableMap);
     }
@@ -91,7 +89,6 @@ public class ExpressionPrinter {
     }
 
     private String print(VariableOperand expression, Map<String, Integer> variableMap){
-        vars.add(expression.getValue());
         return variableMap.containsKey(expression.getValue())?variableMap.get(expression.getValue())+"":expression.getValue();
     }
 
@@ -211,26 +208,6 @@ public class ExpressionPrinter {
     private String print(BitNotOperator expression, Map<String, Integer> variableMap){
         String rhs = print(expression.getRightHandSide(), variableMap);
         return "("+"~"+rhs+")";
-    }
-
-    public Map<String, Integer> getVariables(Expression expression, Map<String, Object> variableMap) {
-        vars.clear();
-        //Get just the variables from the map
-        HashMap<String,Integer> varMap = new HashMap<>();
-        for (String key : variableMap.keySet()) {
-            if (variableMap.get(key) instanceof Integer) {
-                varMap.put(key, (Integer) variableMap.get(key));
-            }
-        }
-        //Print the expression, keeping track of all used variables
-        print(expression, varMap);
-        //Map from used variables to list of variables and their values
-        Map<String,Integer> newVarMap = new HashMap<>();
-        for (String var: vars) {
-            if (varMap.containsKey(var))
-                newVarMap.put(var,varMap.get(var));
-        }
-        return newVarMap;
     }
 
     public String printExpression(Expression expression) {

@@ -254,16 +254,17 @@ public class Expander {
     }
 
     private ASTNode expand(IfStatementNode astNode, Map<String, Object> variableMap) throws CompilationException {
+        VariableCollector collector = new VariableCollector();
         Guard trueGuard = new Guard();
         trueGuard.setGuard(astNode.getCondition());
-        Map<String,Integer> vars = new ExpressionPrinter().getVariables(astNode.getCondition(),variableMap);
+        Map<String,Integer> vars = new VariableCollector().getVariables(astNode.getCondition(),variableMap);
         trueGuard.setVariables(vars);
         trueGuard.setHiddenVariables(hiddenVariables);
         Guard falseGuard = new Guard();
         falseGuard.setGuard(astNode.getCondition());
         falseGuard.setVariables(vars);
         falseGuard.setHiddenVariables(hiddenVariables);
-        vars = new ExpressionPrinter().getVariables(astNode.getCondition(),variableMap);
+        vars = collector.getVariables(astNode.getCondition(),variableMap);
         if (vars.keySet().stream().map(s -> s.substring(1)).anyMatch(s -> hiddenVariables.contains(s))) {
             ASTNode trueBranch = expand(astNode.getTrueBranch(), variableMap);
             if (trueBranch.getMetaData().containsKey("guard"))
@@ -280,7 +281,7 @@ public class Expander {
             }
         }
         //Collect all hidden variables, but this time even collect variables that aren't in the variableMap.
-        vars = new ExpressionPrinter().getVariables(astNode.getCondition(), hiddenVariables.stream().collect(Collectors.toMap(s->"$"+s,s->0)));
+        vars = collector.getVariables(astNode.getCondition(), hiddenVariables.stream().collect(Collectors.toMap(s->"$"+s,s->0)));
         boolean hiddenVariableFound = vars.keySet().stream().map(s -> s.substring(1)).anyMatch(s -> hiddenVariables.contains(s));
         boolean condition = evaluateCondition(astNode.getCondition(), variableMap);
         if(condition){
