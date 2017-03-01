@@ -209,12 +209,12 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
         throw new CompilationException(getClass(),"Edge "+id+" was not found in the automaton "+getId(),(Location)getMetaData().get("location"));
     }
 
-    public AutomatonEdge addEdge(String label, AutomatonNode from, AutomatonNode to) throws CompilationException {
+    public AutomatonEdge addEdge(String label, AutomatonNode from, AutomatonNode to, Map<String,Object> metaData) throws CompilationException {
         String id = getNextEdgeId();
-        return addEdge(id, label, from, to);
+        return addEdge(id, label, from, to, metaData);
     }
 
-    public AutomatonEdge addEdge(String id, String label, AutomatonNode from, AutomatonNode to) throws CompilationException {
+    public AutomatonEdge addEdge(String id, String label, AutomatonNode from, AutomatonNode to, Map<String,Object> metaData) throws CompilationException {
         // check that the nodes have been defined
         if (from == null) {
             throw new CompilationException(getClass(),"Unable to add the specified edge as the source was null.",(Location)getMetaData().get("location"));
@@ -239,10 +239,20 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
             .collect(Collectors.toList());
 
         if(edges.size() > 0){
-            return edges.get(0);
+            for (AutomatonEdge edge : edges) {
+                if (edge.getMetaData("guard") == null && !metaData.containsKey("guard")) {
+                    return edge;
+                }
+                Guard guard = (Guard) edge.getMetaData("guard");
+                Guard guard2 = (Guard) metaData.get("guard");
+                if(guard != null && guard2 != null) {
+                    if (Objects.equals(guard,guard2)) return edge;
+                }
+            }
         }
 
         AutomatonEdge edge = new AutomatonEdge(id, label, from, to);
+        edge.getMetaData().putAll(metaData);
 
         // add edge reference to the incoming and outgoing nodes
         from.addOutgoingEdge(edge);
@@ -321,7 +331,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
         for (AutomatonEdge edge : automaton.getEdges()) {
             AutomatonNode from = getNode(edge.getFrom().getId());
             AutomatonNode to = getNode(edge.getTo().getId());
-            AutomatonEdge newEdge = addEdge(edge.getId(), edge.getLabel(), from, to);
+            AutomatonEdge newEdge = addEdge(edge.getId(), edge.getLabel(), from, to, edge.getMetaData());
             for (String key : edge.getMetaDataKeys()) {
                 newEdge.addMetaData(key, edge.getMetaData(key));
             }
@@ -380,10 +390,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
         for(AutomatonEdge edge : edges){
             AutomatonNode from = copy.getNode(edge.getFrom().getId());
             AutomatonNode to = copy.getNode(edge.getTo().getId());
-            AutomatonEdge newEdge = copy.addEdge(edge.getId(), edge.getLabel(), from, to);
-            for(String key : edge.getMetaDataKeys()){
-                newEdge.addMetaData(key, edge.getMetaData(key));
-            }
+            copy.addEdge(edge.getId(), edge.getLabel(), from, to, edge.getMetaData());
         }
 
         for(String key : getMetaDataKeys()){

@@ -64,7 +64,7 @@ public class AutomataNFAToDFA {
                 }
                 AutomatonNode nextNode = nodeMap.get(nextId);
 
-                dfa.addEdge(action, node, nextNode);
+                dfa.addEdge(action, node, nextNode, Collections.emptyMap());
 
                 fringe.push(nextStates);
             }

@@ -28,4 +28,13 @@ public abstract class Expression implements Serializable {
     public String toString() {
         return new ExpressionPrinter().printExpression(this);
     }
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || !(o instanceof Expression)) return false;
+        try {
+            Expression simple =  ExpressionSimplifier.simplify(new EqualityOperator(this, (Expression) o),Collections.emptyMap());
+            if (simple instanceof BooleanOperand && ((BooleanOperand) simple).getValue()) return true;
+        } catch (CompilationException ignored) {}
+        return false;
+    }
 }

@@ -150,22 +150,21 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         String action = astNode.getFrom().getAction();
 
         AutomatonNode nextNode;
-        AutomatonEdge nextEdge;
+        HashMap<String,Object> metaData = new HashMap<>();
+        if (currentNode.getMetaData().containsKey("guard")) {
+            metaData.put("guard",astNode.getMetaData().get("guard"));
+            currentNode.getMetaData().remove("guard");
+        }
         // check if the next ast node is a reference node
         if(astNode.getTo() instanceof ReferenceNode){
             ReferenceNode reference = (ReferenceNode)astNode.getTo();
             nextNode = referenceMap.get(reference.getReference());
-            nextEdge = automaton.addEdge(action, currentNode, nextNode);
+            automaton.addEdge(action, currentNode, nextNode,metaData);
         }
         else {
             nextNode = automaton.addNode();
-            nextEdge = automaton.addEdge(action, currentNode, nextNode);
+            automaton.addEdge(action, currentNode, nextNode,metaData);
             interpretNode(astNode.getTo(), automaton, nextNode);
-        }
-
-        if (currentNode.getMetaData().containsKey("guard")) {
-            nextEdge.addMetaData("guard",astNode.getMetaData().get("guard"));
-            currentNode.getMetaData().remove("guard");
         }
     }
 

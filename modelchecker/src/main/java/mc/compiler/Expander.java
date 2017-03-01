@@ -286,10 +286,12 @@ public class Expander {
                 ASTNode falseBranch2 = astNode.getFalseBranch();
                 //See if we can find an else with no if tied to it
                 while (falseBranch2 instanceof IfStatementNode) {
+                    vars = collector.getVariables(((IfStatementNode) falseBranch2).getCondition(), hiddenVariables.stream().collect(Collectors.toMap(s->"$"+s,s->0)));
+                    if(vars.keySet().stream().map(s -> s.substring(1)).anyMatch(s -> hiddenVariables.contains(s))) break;
                     falseBranch2 = ((IfStatementNode) falseBranch2).getFalseBranch();
                 }
                 //One was found, we must include it as it is possible for there to be hidden variables that can go through that branch.
-                if (falseBranch != null) {
+                if (falseBranch2 != null) {
                     return new ChoiceNode(trueBranch, falseBranch, astNode.getLocation());
                 }
             }

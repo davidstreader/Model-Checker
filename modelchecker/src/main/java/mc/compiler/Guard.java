@@ -156,4 +156,25 @@ public class Guard implements Serializable{
         setHiddenVariables(hiddenVariables);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Guard guard1 = (Guard) o;
+        if (!guard1.getNext().equals(getNext())) return false;
+        if (!Objects.equals(guard1.getGuard(),guard)) return false;
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = guard != null ? guard.hashCode() : 0;
+        result = 31 * result + (variables != null ? variables.hashCode() : 0);
+        result = 31 * result + (next != null ? next.hashCode() : 0);
+        result = 31 * result + (nextMap != null ? nextMap.hashCode() : 0);
+        result = 31 * result + (shouldDisplay ? 1 : 0);
+        result = 31 * result + (hiddenVariables != null ? hiddenVariables.hashCode() : 0);
+        return result;
+    }
 }

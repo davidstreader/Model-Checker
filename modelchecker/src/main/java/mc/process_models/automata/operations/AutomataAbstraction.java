@@ -67,7 +67,7 @@ public class AutomataAbstraction {
                     deadlockNode.addMetaData("isTerminal", "ERROR");
 
                     AutomatonNode from = abstraction.getNode(hiddenEdge.getFrom().getId() + ".abs");
-                    abstraction.addEdge(Constant.DEADLOCK, from, deadlockNode);
+                    abstraction.addEdge(Constant.DEADLOCK, from, deadlockNode,Collections.emptyMap());
                 }
 
                 // edge has already been processed
@@ -99,10 +99,12 @@ public class AutomataAbstraction {
                 outGuard = ExpressionSimplifier.combineGuards(hiddenGuard,fromGuard);
             }
             for (AutomatonNode to : outgoingNodes) {
-                AutomatonEdge edge1 = abstraction.addEdge(edge.getLabel(), from, to);
+                Map<String,Object> metaData = new HashMap<>();
                 if (outGuard != null) {
-                    edge1.addMetaData("guard",outGuard);
+                    metaData.put("guard",outGuard);
                 }
+                abstraction.addEdge(edge.getLabel(), from, to, metaData);
+
             }
         }
     }
@@ -144,10 +146,11 @@ public class AutomataAbstraction {
                 outGuard = ExpressionSimplifier.combineGuards(hiddenGuard,toGuard);
             }
             for (AutomatonNode from : incomingNodes) {
-                AutomatonEdge edge1 = abstraction.addEdge(edge.getLabel(), from, to);
+                Map<String,Object> metaData = new HashMap<>();
                 if (outGuard != null) {
-                    edge1.addMetaData("guard",outGuard);
+                    metaData.put("guard",outGuard);
                 }
+                abstraction.addEdge(edge.getLabel(), from, to, metaData);
             }
         }
     }
@@ -165,9 +168,6 @@ public class AutomataAbstraction {
     private void addEdge(Automaton abstraction, AutomatonEdge edge) throws CompilationException {
         AutomatonNode from = abstraction.getNode(edge.getFrom().getId() + ".abs");
         AutomatonNode to = abstraction.getNode(edge.getTo().getId() + ".abs");
-        AutomatonEdge newEdge = abstraction.addEdge(edge.getLabel(), from, to);
-        for(String key : edge.getMetaDataKeys()){
-            newEdge.addMetaData(key, edge.getMetaData(key));
-        }
+        abstraction.addEdge(edge.getLabel(), from, to, edge.getMetaData());
     }
 }

@@ -30,11 +30,7 @@ public class AutomataLabeller {
         for(AutomatonEdge edge : edges){
             AutomatonNode from = labelled.getNode(label + ":" + edge.getFrom().getId());
             AutomatonNode to = labelled.getNode(label + ":" + edge.getTo().getId());
-            AutomatonEdge newEdge = labelled.addEdge(label + "." + edge.getLabel(), from, to);
-
-            for(String key : edge.getMetaDataKeys()){
-                newEdge.addMetaData(key, edge.getMetaData(key));
-            }
+            labelled.addEdge(label + "." + edge.getLabel(), from, to, edge.getMetaData());
         }
 
         for(String key : automaton.getMetaDataKeys()){

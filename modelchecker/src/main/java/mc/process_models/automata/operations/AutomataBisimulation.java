@@ -244,7 +244,7 @@ public class AutomataBisimulation {
                     return false;
                 }
                 if (guard != null && col.guard != null) {
-                    if (!similarGuards(guard,col.guard)) {
+                    if (!guard.equals(col.guard)) {
                         return false;
                     }
                 }
@@ -252,21 +252,6 @@ public class AutomataBisimulation {
             }
 
             return false;
-        }
-
-        private boolean similarGuards(Guard guard, Guard guard1) {
-            for (String next: guard.getNext()) {
-                for (String next2: guard1.getNext()) {
-                    if (!next.equals(next2)) {
-                        if (Objects.equals(next.split("\\w")[0], next2.split("\\w")[0])) {
-                            if (!next.contains(":=") && !next2.contains(":=")) {
-                                return false;
-                            }
-                        }
-                    }
-                }
-            }
-            return true;
         }
 
         @Override

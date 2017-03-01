@@ -85,7 +85,7 @@ public class AutomatonGenerator {
             for (AutomatonNode setNode: set) {
                 AutomatonNode from = clone.getNode(node.getId());
                 AutomatonNode to = clone.getNode(setNode.getId());
-                clone.addEdge("edge"+level,from,to);
+                clone.addEdge("edge"+level,from,to, Collections.emptyMap());
             }
             automata.add(clone);
         }
@@ -121,7 +121,7 @@ public class AutomatonGenerator {
         AutomatonNode c = a.addNode();
         //Essentially, all binary trees map to arbitrary trees. https://blogs.msdn.microsoft.com/ericlippert/2010/04/22/every-tree-there-is/
         for (BinaryNode child = n.getLeft(); child != null; child = child.getRight()) {
-            a.addEdge("edge"+level,c, binToAutomata(a,child, level + 1));
+            a.addEdge("edge"+level,c, binToAutomata(a,child, level + 1),Collections.emptyMap());
         }
         return c;
     }

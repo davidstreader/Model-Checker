@@ -136,7 +136,7 @@ public class AutomataParallelComposition {
                 List<AutomatonNode> from = nodeMap.get(edge.getFrom().getId());
                 List<AutomatonNode> to = nodeMap.get(edge.getTo().getId());
                 for(int i = 0; i < from.size(); i++){
-                    automaton.addEdge(edge.getLabel(), from.get(i), to.get(i)).getMetaData().putAll(edge.getMetaData());
+                    automaton.addEdge(edge.getLabel(), from.get(i), to.get(i), edge.getMetaData()).getMetaData().putAll(edge.getMetaData());
                 }
             }
         }
@@ -162,7 +162,9 @@ public class AutomataParallelComposition {
                     Guard guard = new Guard();
                     if (edge1.hasMetaData("guard")) guard.mergeWith((Guard) edge1.getMetaData("guard"));
                     if (edge2.hasMetaData("guard")) guard.mergeWith((Guard) edge2.getMetaData("guard"));
-                    automaton.addEdge(action, from, to).getMetaData().put("guard",guard);
+                    Map<String,Object> metaData = new HashMap<>();
+                    metaData.put("guard",guard);;
+                    automaton.addEdge(action, from, to,metaData);
 
                 }
             }
