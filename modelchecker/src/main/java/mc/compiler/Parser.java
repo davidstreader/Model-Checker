@@ -733,7 +733,7 @@ public class Parser {
         // check if any flags have been set
         Set<String> flags = null;
         if(peekToken() instanceof OpenBraceToken){
-            flags = parseFlags();
+            flags = parseFlags(type);
         }
 
         // ensure that the next token is a '(' token
@@ -755,7 +755,9 @@ public class Parser {
         if(type.equals("abs") && flags != null){
             processAbstractionFlags(function, flags);
         }
-
+        if (type.equals("simp") && flags != null) {
+            function.getMetaData().put("replacements",flags);
+        }
         return function;
     }
 
@@ -768,9 +770,9 @@ public class Parser {
         throw constructException("expecting to parse a function type but received \"" + token.toString() + "\"", token.getLocation());
     }
 
-    private Set<String> validFlags = new HashSet<String>(Arrays.asList("fair", "unfair"));
+    private Set<String> validAbsFlags = new HashSet<String>(Arrays.asList("fair", "unfair"));
 
-    private Set<String> parseFlags() throws CompilationException {
+    private Set<String> parseFlags(String functionType) throws CompilationException {
         int start;
 
         if(!(nextToken() instanceof OpenBraceToken)){
@@ -786,12 +788,18 @@ public class Parser {
             }
 
             ActionToken token = (ActionToken)nextToken();
-            String flag = token.getAction();
+            String flag = token.getAction()+"=";
 
-            if(!validFlags.contains(flag)){
+            if(!validAbsFlags.contains(flag) && Objects.equals(functionType, "abs")){
                 throw constructException("\"" + flag + "\" is not a correct flag", token.getLocation());
             }
-
+            if (Objects.equals(functionType, "simp")) {
+                if(!(peekToken() instanceof AssignToken)){
+                    throw constructException("Expecting to parse '=' but received \"" + peekToken().toString() + "\"");
+                }
+                nextToken();
+                flag+=parseExpression();
+            }
             flags.add(flag);
 
             if(peekToken() instanceof CommaToken){

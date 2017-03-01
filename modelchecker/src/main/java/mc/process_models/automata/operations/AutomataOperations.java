@@ -2,8 +2,10 @@ package mc.process_models.automata.operations;
 
 import mc.exceptions.CompilationException;
 import mc.process_models.automata.Automaton;
+import mc.util.expr.Expression;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by sheriddavi on 24/01/17.
@@ -51,8 +53,8 @@ public class AutomataOperations {
         return processedAutomaton;
     }
 
-    public Automaton simplification(Automaton automaton) throws CompilationException {
-        return bisimulation.performSimplification(automaton);
+    public Automaton simplification(Automaton automaton, Map<String, Expression> replacements) throws CompilationException {
+        return bisimulation.performSimplification(automaton, replacements);
     }
 
     public boolean bisimulation(List<Automaton> automata){

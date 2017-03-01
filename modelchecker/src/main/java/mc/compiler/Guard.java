@@ -7,7 +7,9 @@ import mc.util.expr.*;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Setter
 @AllArgsConstructor
@@ -152,15 +154,33 @@ public class Guard implements Serializable{
         setHiddenVariables(hiddenVariables);
     }
 
-    @Override
-    public boolean equals(Object o) {
+    public boolean equals(Object o, Map<String, Expression> replacements) throws CompilationException {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Guard guard1 = (Guard) o;
-        if (hiddenVariables.isEmpty() && ((Guard) o).hiddenVariables.isEmpty()) return true;
-        if (!guard1.getNext().equals(getNext())) return false;
-        if (!Objects.equals(guard1.getGuard(),guard)) return false;
+        if (hiddenVariables.isEmpty() && guard1.hiddenVariables.isEmpty()) return true;
+        if (replacements != null) {
+            List<Expression> nexts1 = next.stream().map(next -> replaceVariables(next,replacements)).collect(Collectors.toList());
+            List<Expression> nexts2 = guard1.next.stream().map(next -> replaceVariables(next,replacements)).collect(Collectors.toList());
+            if (!nexts1.equals(nexts2)) return false;
+        } else if (!guard1.getNext().equals(next)) {
+            return false;
+        }
+        if (!Objects.equals(ExpressionSimplifier.substitute(guard1.guard,replacements),
+            ExpressionSimplifier.substitute(guard,replacements))) {
+            return false;
+        }
         return true;
+    }
+
+    private Expression replaceVariables(String next, Map<String, Expression> replacements) {
+        next = next.substring(next.indexOf('=')+1);
+        for (String key:replacements.keySet()) {
+            next = next.replaceAll("\\b"+key+"\\b", Matcher.quoteReplacement(replacements.get(key)+""));
+        }
+        next = next.replaceAll("\\$","");
+        next = next.replaceAll("[a-z]+","\\$$0");
+        return Expression.constructExpression(next);
     }
 
     @Override

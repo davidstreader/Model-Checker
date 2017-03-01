@@ -419,16 +419,17 @@ public class ExpressionSimplifier {
      * @param subMap The map of variables to substitutions
      * @return the substituted expression.
      */
-    private Expression substitute(BinaryOperator expression, HashMap<String, Expression> subMap) throws CompilationException {
+    private static Expression substitute(BinaryOperator expression, Map<String, Expression> subMap) throws CompilationException {
         expression.setLhs(substitute(expression.getLeftHandSide(), subMap));
         expression.setRhs(substitute(expression.getRightHandSide(), subMap));
         return expression;
     }
-    private Expression substitute(UnaryOperator expression, HashMap<String, Expression> subMap) throws CompilationException {
+    private static Expression substitute(UnaryOperator expression, Map<String, Expression> subMap) throws CompilationException {
         expression.setRhs(substitute(expression.getRightHandSide(), subMap));
         return expression;
     }
-    private Expression substitute(Expression expression, HashMap<String, Expression> subMap) throws CompilationException {
+    public static Expression substitute(Expression expression, Map<String, Expression> subMap) throws CompilationException {
+        if (subMap == null) return expression;
         if (expression instanceof BinaryOperator) {
             return substitute((BinaryOperator) expression, subMap);
         }

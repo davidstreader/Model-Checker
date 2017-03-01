@@ -8,6 +8,7 @@ import mc.process_models.automata.Automaton;
 import mc.process_models.automata.AutomatonEdge;
 import mc.process_models.automata.AutomatonNode;
 import mc.process_models.automata.operations.AutomataOperations;
+import mc.util.expr.Expression;
 
 import java.util.*;
 
@@ -222,7 +223,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
                 throw new CompilationException(getClass(),"Expecting an automaton, received a: "+model.getClass().getSimpleName(),astNode.getLocation());
             case "simp":
                 if(model instanceof Automaton){
-                    processed = operations.simplification(((Automaton)model).copy());
+                    processed = operations.simplification(((Automaton)model).copy(),(Map<String,Expression>)astNode.getMetaData("replacements"));
                     break;
                 }
                 throw new CompilationException(getClass(),"Expecting an automaton, received a: "+model.getClass().getSimpleName(),astNode.getLocation());

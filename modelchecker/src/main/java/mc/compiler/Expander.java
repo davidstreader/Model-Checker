@@ -305,9 +305,26 @@ public class Expander {
 
     private FunctionNode expand(FunctionNode astNode, Map<String, Object> variableMap) throws CompilationException {
         ASTNode process = expand(astNode.getProcess(), variableMap);
+        if (astNode.getMetaData("replacements") != null) {
+            Set<String> unReplacements = (Set<String>) astNode.getMetaData("replacements");
+            HashMap<String, Expression> replacements = new HashMap<>();
+            for (String str : unReplacements) {
+                String var = str.substring(0, str.indexOf('='));
+                String exp = str.substring(str.indexOf('=') + 1);
+                Expression expression;
+                if (globalVariableMap.containsKey(exp)) {
+                    expression = globalVariableMap.get(exp);
+                } else {
+                    expression = Expression.constructExpression(exp);
+                }
+                replacements.put(var, expression);
+            }
+            astNode.getMetaData().put("replacements",replacements);
+        }
         astNode.setProcess(process);
         return astNode;
     }
+
 
     private IdentifierNode expand(IdentifierNode astNode, Map<String, Object> variableMap) throws CompilationException {
         String identifier = processVariables(astNode.getIdentifier(), variableMap, astNode.getLocation());
