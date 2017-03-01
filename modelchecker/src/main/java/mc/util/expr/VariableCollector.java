@@ -32,10 +32,12 @@ public class VariableCollector {
     public Map<String, Integer> getVariables(Expression expression, Map<String, Object> variableMap) {
         ArrayList<String> vars = new ArrayList<>();
         //Get just the variables from the map
-        HashMap<String,Integer> varMap = new HashMap<>();
-        for (String key : variableMap.keySet()) {
-            if (variableMap.get(key) instanceof Integer) {
-                varMap.put(key, (Integer) variableMap.get(key));
+        HashMap<String, Integer> varMap = new HashMap<>();
+        if (variableMap != null) {
+            for (String key : variableMap.keySet()) {
+                if (variableMap.get(key) instanceof Integer) {
+                    varMap.put(key, (Integer) variableMap.get(key));
+                }
             }
         }
         //Print the expression, keeping track of all used variables
@@ -43,6 +45,7 @@ public class VariableCollector {
         //Map from used variables to list of variables and their values
         Map<String,Integer> newVarMap = new HashMap<>();
         for (String var: vars) {
+            if (variableMap == null) newVarMap.put(var,null);
             if (varMap.containsKey(var))
                 newVarMap.put(var,varMap.get(var));
         }

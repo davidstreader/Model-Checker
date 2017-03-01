@@ -32,7 +32,7 @@ public class Guard implements Serializable{
      * @return The guard as a string, or an empty string if none exists.
      */
     public String getGuardStr() throws CompilationException {
-        if (guard == null) return "";
+        if (guard == null || hiddenVariables.isEmpty()) return "";
         return rm$(new ExpressionPrinter().printExpression(guard, Collections.emptyMap()));
     }
     public String getHiddenGuardStr() throws CompilationException {
@@ -76,7 +76,9 @@ public class Guard implements Serializable{
      * @return The variable list as a string, or an empty string if none exists.
      */
     public String getVarStr() {
-        if (variables.isEmpty()) return "";
+        Set<String> vars = new VariableCollector().getVariables(guard,null).keySet();
+        variables.keySet().removeIf(s -> !vars.contains(s.substring(1)));
+        if (variables.isEmpty() || hiddenVariables.isEmpty()) return "";
         variables.keySet().removeAll(hiddenVariables);
         StringBuilder builder = new StringBuilder();
         for (String var: variables.keySet()) {
