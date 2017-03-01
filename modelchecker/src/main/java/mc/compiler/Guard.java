@@ -157,8 +157,8 @@ public class Guard implements Serializable{
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-
         Guard guard1 = (Guard) o;
+        if (hiddenVariables.isEmpty() && ((Guard) o).hiddenVariables.isEmpty()) return true;
         if (!guard1.getNext().equals(getNext())) return false;
         if (!Objects.equals(guard1.getGuard(),guard)) return false;
         return true;

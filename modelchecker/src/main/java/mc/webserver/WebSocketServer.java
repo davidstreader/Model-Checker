@@ -65,7 +65,7 @@ public class WebSocketServer {
     }
 
     private ProcessReturn compile(CompileRequest data) throws CompilationException {
-        CompilationObject ret = new Compiler().compile(data.getCode());
+        CompilationObject ret = new Compiler().compile(data.getCode(),data.getContext());
         Map<String,ProcessModel> processModelMap = ret.getProcessMap();
         List<SkipObject> skipped = processSkipped(processModelMap,data.getContext());
         return new ProcessReturn(processModelMap, ret.getOperationResults(),ret.getEquationResults(),data.getContext(),skipped);

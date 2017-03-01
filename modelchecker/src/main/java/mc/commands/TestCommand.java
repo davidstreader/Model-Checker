@@ -1,6 +1,7 @@
 package mc.commands;
 
 import mc.compiler.OperationResult;
+import mc.webserver.Context;
 import org.fusesource.jansi.Ansi;
 
 import java.io.File;
@@ -24,7 +25,7 @@ public class TestCommand implements Command {
 
             List<OperationResult> operations = Collections.emptyList();
             try {
-                operations = compiler.compile(String.join("\n", Files.readAllLines(file.toPath()))).getOperationResults();
+                operations = compiler.compile(String.join("\n", Files.readAllLines(file.toPath())),new Context()).getOperationResults();
                 System.out.println(Ansi.ansi().render("File @|yellow `"+file.getName()+"`|@: @|green COMPILED |@"));
             } catch (Exception ex) {
                 System.out.println(Ansi.ansi().render("File @|yellow `"+file.getName()+"`|@: @|red FAILED |@"));

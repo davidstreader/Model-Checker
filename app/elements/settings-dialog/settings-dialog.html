@@ -19,6 +19,10 @@
       <paper-input is="iron-input" label="Petrinet max transition count" placeholder="100" bind-value="{{graphSettings.petriMaxTrans}}" class="middle"
                    auto-validate allowed-pattern="[0-9]" value="{{graphSettings.petriMaxTrans}}"></paper-input>
 
+        <paper-input is="iron-input" label="Operation failure count" placeholder="10" bind-value="{{graphSettings.failCount}}" class="middle"
+                     auto-validate allowed-pattern="[0-9]" value="{{graphSettings.petriMaxPlace}}"></paper-input>
+        <paper-input is="iron-input" label="Operation pass count" placeholder="10" bind-value="{{graphSettings.passCount}}" class="middle"
+                     auto-validate allowed-pattern="[0-9]" value="{{graphSettings.petriMaxTrans}}"></paper-input>
       <span>Node Separation</span>
       <paper-slider id="nodeSep" min="1000" max="5000000" value="{{nodeSep}}" editable></paper-slider>
       <paper-checkbox id="chbx-fair-abstraction" checked="{{fairAbstraction}}" class="chbx middle" title="Visualise abstracted processes fairly.">

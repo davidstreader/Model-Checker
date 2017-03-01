@@ -7,6 +7,7 @@ import mc.process_models.ProcessModel;
 import mc.process_models.automata.Automaton;
 import mc.process_models.automata.generator.AutomatonGenerator;
 import mc.process_models.automata.operations.AutomataOperations;
+import mc.webserver.Context;
 import mc.webserver.LogMessage;
 
 import java.util.*;
@@ -24,9 +25,11 @@ public class EquationEvaluator {
         this.automataOperations = new AutomataOperations();
     }
 
-    public List<OperationResult> evaluateEquations(List<OperationNode> operations, String code) throws CompilationException {
+    public List<OperationResult> evaluateEquations(List<OperationNode> operations, String code, Context context) throws CompilationException {
         reset();
+        int passedCount = 0,failedCount = 0;
         List<OperationResult> results = new ArrayList<OperationResult>();
+        List<ProcessModel> toRender = new ArrayList<>();
         AutomatonGenerator generator = new AutomatonGenerator();
         for(OperationNode operation : operations){
             new LogMessage("Checking equation: "+operation.getOperation(),true,false).send();
