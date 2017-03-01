@@ -23,8 +23,6 @@
         app.saveSettings = {currentFile: '', saveCode: true, saveLayout: true};
         app.decoder = new TextDecoder("UTF-8");
         const proto = window.location.protocol.replace("http","").replace(":","");
-        console.log(window.location.protocol);
-        console.log("PROTO:"+proto);
         app.socket = new ReconnectingWebSocket("ws"+proto+"://" + location.hostname + ":" + location.port + "/socket/");
         app.socket.onmessage = function (msg) {
             let results = JSON.parse(msg.data);
