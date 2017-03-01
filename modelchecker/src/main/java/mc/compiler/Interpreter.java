@@ -8,9 +8,7 @@ import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
 import mc.webserver.LogMessage;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by sheriddavi on 24/01/17.
@@ -25,7 +23,7 @@ public class Interpreter {
     }
 
     public Map<String, ProcessModel> interpret(AbstractSyntaxTree ast, Compiler.LocalCompiler localCompiler) throws CompilationException {
-        Map<String, ProcessModel> processMap = new HashMap<String, ProcessModel>();
+        Map<String, ProcessModel> processMap = new LinkedHashMap<>();
 
         List<ProcessNode> processes = ast.getProcesses();
         for(ProcessNode process : processes){

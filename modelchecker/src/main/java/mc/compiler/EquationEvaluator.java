@@ -16,6 +16,7 @@ import mc.webserver.LogMessage;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -37,7 +38,7 @@ public class EquationEvaluator {
             failedCount = new AtomicInteger(0),
             opId = new AtomicInteger(0);
         List<OperationResult> results = new ArrayList<OperationResult>();
-        Map<String,ProcessModel> toRender = new ConcurrentHashMap<>();
+        Map<String,ProcessModel> toRender = new ConcurrentSkipListMap<>();
         AutomatonGenerator generator = new AutomatonGenerator();
         for(OperationNode operation : operations){
             new LogMessage("Checking equation: "+operation.getOperation(),true,false).send();
