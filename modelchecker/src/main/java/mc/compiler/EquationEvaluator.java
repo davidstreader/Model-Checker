@@ -72,6 +72,10 @@ public class EquationEvaluator {
                     if (operation.isNegated()) {
                         result = !result;
                     }
+                    if (!result && failedCount < context.getGraphSettings().getFailCount()) {
+                        toRender.addAll(automata);
+                        toRender.addAll(currentMap.values());
+                    }
                     return result;
                 } catch (CompilationException ex) {
                     return false;

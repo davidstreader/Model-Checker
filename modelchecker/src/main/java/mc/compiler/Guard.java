@@ -143,7 +143,6 @@ public class Guard implements Serializable{
     boolean hasData() {
         return guard != null || !variables.isEmpty() || !next.isEmpty();
     }
-    private static String operators = "(&|\\^|<<|>>|\\+|-|\\*|/|%)";
     public Guard copy() {
         return new Guard(guard,variables,next,nextMap,shouldDisplay,hiddenVariables);
     }

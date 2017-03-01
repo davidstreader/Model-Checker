@@ -13,7 +13,7 @@ import java.util.Objects;
  * A class that is able to simplify expressions using Z3
  */
 public class ExpressionSimplifier {
-    private static ExpressionSimplifier simplifier;
+    private static ThreadLocal<ExpressionSimplifier> simplifier = new ThreadLocal<>();
     private ExpressionSimplifier(Context o) {
         context = o;
     }
@@ -28,7 +28,8 @@ public class ExpressionSimplifier {
             "Unable to check if equation is satisfied as it was not a boolean expression.");
     }
     public static boolean isSolveable(Expression expr, Map<String, Integer> variables) throws CompilationException {
-        return simplifier.isSolveable1(expr, variables);
+        init();
+        return simplifier.get().isSolveable1(expr, variables);
     }
     /**
      * Simplify an expression
@@ -39,7 +40,7 @@ public class ExpressionSimplifier {
      */
     public static Expression simplify(Expression expr, Map<String, Integer> variables) throws CompilationException {
         init();
-        return simplifier.convert(simplifier.convert(expr,variables).simplify());
+        return simplifier.get().convert(simplifier.get().convert(expr,variables).simplify());
     }
 
     /**
@@ -47,13 +48,13 @@ public class ExpressionSimplifier {
      * @throws CompilationException There was an error Initializing Z3.
      */
     private static void init() throws CompilationException {
-        if (simplifier == null) {
+        if (simplifier.get() == null) {
             //Initialize Z3, throwing an appropriate error if this fails.
             try {
                 HashMap<String, String> cfg = new HashMap<>();
                 cfg.put("model", "true");
                 Context ctx = new Context(cfg);
-                simplifier = new ExpressionSimplifier(ctx);
+                simplifier.set(new ExpressionSimplifier(ctx));
             } catch (UnsatisfiedLinkError | NoClassDefFoundError ex) {
                 throw new CompilationException(ExpressionSimplifier.class,"Unable to initialize native code. Reason: "+ex.getMessage());
             }
@@ -88,7 +89,7 @@ public class ExpressionSimplifier {
         }
         Expression secondGuard = second.getGuard();
         //Substitute every value from the subMap into the second guard.
-        secondGuard = simplifier.substitute(secondGuard,subMap);
+        secondGuard = simplifier.get().substitute(secondGuard,subMap);
         ret.setGuard(new AndOperator(first.getGuard(),secondGuard));
         return ret;
     }
@@ -138,7 +139,7 @@ public class ExpressionSimplifier {
         if (f.isEq()) {
             return new EqualityOperator(convert(f.getArgs()[0]), convert(f.getArgs()[1]));
         }
-        if (f.isBVSMod() || f.toString().startsWith("(bvsmod")) {
+        if (f.isBVSMod()) {
             return new ModuloOperator(convert(f.getArgs()[0]), convert(f.getArgs()[1]));
         }
         if (f.isBVMul()) {
