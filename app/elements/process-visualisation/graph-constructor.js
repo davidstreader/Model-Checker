@@ -67,6 +67,7 @@ function visualizeAutomata(process, graphID, hidden, glGraph) {
             if (guard.nextStr.length > 0)
             tooltip += "Assigned variables:<span style='color:blue'>" +guard.nextStr+"</span>";
         }
+        if (tooltip == "") tooltip = undefined;
         if (edges[i].metaData.interrupt && hidden) {
             const toNode = process.nodeMap[edges[i].to];
             //Destroy all interrupt edges besides the last one.

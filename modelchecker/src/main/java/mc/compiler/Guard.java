@@ -36,7 +36,7 @@ public class Guard implements Serializable{
         return rm$(new ExpressionPrinter().printExpression(guard, Collections.emptyMap()));
     }
     public String getHiddenGuardStr() throws CompilationException {
-        if (guard == null) return "";
+        if (guard == null || hiddenVariables.isEmpty()) return "";
         List<Expression> andList = new ArrayList<>();
         collectAnds(andList,guard);
         //If there are no ands in the expression, use the root guard.
@@ -92,7 +92,7 @@ public class Guard implements Serializable{
      * @return The next variable list as a string, or an empty string if none exists.
      */
     public String getNextStr() {
-        if (next.isEmpty()) return "";
+        if (next.isEmpty() || hiddenVariables.isEmpty()) return "";
         return rm$(String.join(",",next));
     }
 
