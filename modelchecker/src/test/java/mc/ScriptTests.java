@@ -2,6 +2,7 @@ package mc;
 
 import mc.compiler.OperationResult;
 import mc.exceptions.CompilationException;
+import mc.webserver.Context;
 import org.fusesource.jansi.Ansi;
 import org.junit.Test;
 
@@ -24,7 +25,7 @@ public class ScriptTests {
             mc.compiler.Compiler compiler = new mc.compiler.Compiler();
             List<OperationResult> operations = Collections.emptyList();
             try {
-                operations = compiler.compile(String.join("\n", Files.readAllLines(file.toPath()))).getOperationResults();
+                operations = compiler.compile(String.join("\n", Files.readAllLines(file.toPath())),new Context()).getOperationResults();
                 if (shouldFail(file.getName())) {
                     fail("Test script: " + file.getName() + " should not compile!");
                 }
