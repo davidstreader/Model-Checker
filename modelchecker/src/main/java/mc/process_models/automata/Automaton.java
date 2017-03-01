@@ -144,13 +144,18 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
         processIncomingEdges(node, node2);
         processOutgoingEdges(node, node1);
         processOutgoingEdges(node, node2);
-
         // create a union of the metadata from both nodes
         for(String key : node1.getMetaDataKeys()){
             node.addMetaData(key, node1.getMetaData(key));
         }
         for(String key : node2.getMetaDataKeys()){
             node.addMetaData(key, node2.getMetaData(key));
+        }
+        node.removeMetaData("variables");
+        Map<String, Object> vars1 = (Map<String, Object>) node1.getMetaData("variables");
+        Map<String, Object> vars2 = (Map<String, Object>) node2.getMetaData("variables");
+        if (Objects.equals(vars1,vars2)) {
+            node.addMetaData("variables", vars1);
         }
 
         if(node1.hasMetaData("startNode") || node2.hasMetaData("startNode")){

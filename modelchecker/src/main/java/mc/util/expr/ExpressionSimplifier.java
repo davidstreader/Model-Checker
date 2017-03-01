@@ -138,7 +138,7 @@ public class ExpressionSimplifier {
         if (f.isEq()) {
             return new EqualityOperator(convert(f.getArgs()[0]), convert(f.getArgs()[1]));
         }
-        if (f.isBVSMod()) {
+        if (f.isBVSMod() || f.toString().startsWith("(bvsmod")) {
             return new ModuloOperator(convert(f.getArgs()[0]), convert(f.getArgs()[1]));
         }
         if (f.isBVMul()) {

@@ -113,9 +113,10 @@ public class Guard implements Serializable{
         for (String var : vars) {
             if (globalVariableMap.containsKey(var)) {
                 String printed = new ExpressionPrinter().printExpression(globalVariableMap.get(var));
+                String variable = new VariableCollector().getVariables(globalVariableMap.get(var),null).keySet().iterator().next();
                 printed = printed.substring(1, printed.length() - 1);
                 nextMap.put(var, printed);
-                next.add(rm$(printed));
+                next.add(variable+":="+rm$(printed));
                 break;
             } else if (var.matches("\\d+")) {
                 String varName = varNames.get(vars.indexOf(var));
@@ -123,12 +124,6 @@ public class Guard implements Serializable{
                 next.add(rm$(varName + ":=" + var));
                 nextMap.put(var, varName);
             }
-        }
-        //Replace symbols with their assignment counterparts.
-        for (int i = 0; i < next.size(); i++) {
-            String nextVar = next.get(i);
-            nextVar = nextVar.replaceAll(operators,"$1=");
-            next.set(i,nextVar);
         }
     }
     private static String rm$(String str) {
