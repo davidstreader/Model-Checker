@@ -17,8 +17,6 @@ public class Context {
     @Getter
     public class GraphSettings {
         private int autoMaxNode;
-        private int petriMaxPlace;
-        private int petriMaxTrans;
         private int passCount;
         private int failCount;
     }

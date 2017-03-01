@@ -10,57 +10,58 @@
     }
 </style>
 <dom-module id="settings-dialog">
-  <template>
-    <paper-dialog id="settings-dialog" with-backdrop>
-      <paper-input is="iron-input" label="Automata max node count" placeholder="100" bind-value="{{graphSettings.autoMaxNode}}" class="middle"
-                   auto-validate allowed-pattern="[0-9]" value="{{graphSettings.autoMaxNode}}"></paper-input>
-      <paper-input is="iron-input" label="Petrinet max place count" placeholder="100" bind-value="{{graphSettings.petriMaxPlace}}" class="middle"
-                   auto-validate allowed-pattern="[0-9]" value="{{graphSettings.petriMaxPlace}}"></paper-input>
-      <paper-input is="iron-input" label="Petrinet max transition count" placeholder="100" bind-value="{{graphSettings.petriMaxTrans}}" class="middle"
-                   auto-validate allowed-pattern="[0-9]" value="{{graphSettings.petriMaxTrans}}"></paper-input>
+    <template>
+        <paper-dialog id="settings-dialog" with-backdrop>
+            <paper-input is="iron-input" label="Automata max node count" placeholder="100" bind-value="{{graphSettings.autoMaxNode}}" class="middle"
+                         auto-validate allowed-pattern="[0-9]" value="{{graphSettings.autoMaxNode}}"></paper-input>
 
-        <paper-input is="iron-input" label="Operation failure count" placeholder="10" bind-value="{{graphSettings.failCount}}" class="middle"
-                     auto-validate allowed-pattern="[0-9]" value="{{graphSettings.failCount}}"></paper-input>
-        <paper-input is="iron-input" label="Operation pass count" placeholder="10" bind-value="{{graphSettings.passCount}}" class="middle"
-                     auto-validate allowed-pattern="[0-9]" value="{{graphSettings.passCount}}"></paper-input>
-      <span>Node Separation</span>
-      <paper-slider id="nodeSep" min="1000" max="5000000" value="{{nodeSep}}" editable></paper-slider>
-      <paper-checkbox id="chbx-fair-abstraction" checked="{{fairAbstraction}}" class="chbx middle" title="Visualise abstracted processes fairly.">
-        <span>Fair Abstraction</span>
-      </paper-checkbox>
-      <paper-checkbox id="chbx-pruning" checked="{{pruning}}" class="chbx middle" title="Prune processes before abstracting them.">
-        <span>Pruning</span>
-      </paper-checkbox>
-      <paper-button style="float:right" on-tap="close">close</paper-button>
-    </paper-dialog>
-  </template>
+            <paper-input is="iron-input" label="Operation failure count" placeholder="10" bind-value="{{graphSettings.failCount}}" class="middle"
+                         auto-validate allowed-pattern="[0-9]" value="{{graphSettings.failCount}}"></paper-input>
+            <paper-input is="iron-input" label="Operation pass count" placeholder="10" bind-value="{{graphSettings.passCount}}" class="middle"
+                         auto-validate allowed-pattern="[0-9]" value="{{graphSettings.passCount}}"></paper-input>
+            <span>Node Separation</span>
+            <paper-slider id="nodeSep" min="1000" max="5000000" value="{{nodeSep}}" editable></paper-slider>
+            <paper-checkbox id="chbx-fair-abstraction" checked="{{fairAbstraction}}" class="chbx middle" title="Visualise abstracted processes fairly.">
+                <span>Fair Abstraction</span>
+            </paper-checkbox>
+            <paper-checkbox id="chbx-pruning" checked="{{pruning}}" class="chbx middle" title="Prune processes before abstracting them.">
+                <span>Pruning</span>
+            </paper-checkbox>
+            <paper-button style="float:right" on-tap="close">close</paper-button>
+        </paper-dialog>
+    </template>
 </dom-module>
 <script>
-  (function() {
-    'use strict';
-    Polymer({
-      is: 'settings-dialog',
-      open: function () {
-        this.graphSettings = app.graphSettings;
-        this.pruning = app.pruning;
-        this.fairAbstraction = app.fairAbstraction;
-        this.nodeSep = app.nodeSep;
-        $('#settings-dialog')[0].open();
-      },
-      close: function () {
-        $('#settings-dialog')[0].close();
-        app.graphSettings = this.graphSettings;
-        app.pruning = this.pruning;
-        app.fairAbstraction = this.fairAbstraction;
-        app.nodeSep = this.nodeSep;
-        app.compile(true);
-        localStorage.setItem("fairAbstraction",app.fairAbstraction);
-        localStorage.setItem("pruning",app.pruning);
-        localStorage.setItem("nodeSep",app.nodeSep);
-      },
-      opened: function (){
-        return $('#settings-dialog')[0].opened;
-      }
-    })
-  })();
+    (function() {
+        'use strict';
+        Polymer({
+            is: 'settings-dialog',
+            open: function () {
+                this.graphSettings = app.graphSettings;
+                this.pruning = app.pruning;
+                this.fairAbstraction = app.fairAbstraction;
+                this.nodeSep = app.nodeSep;
+                $('#settings-dialog')[0].open();
+            },
+            close: function () {
+                $('#settings-dialog')[0].close();
+                for (let key in this.graphSettings) {
+                    if (this.graphSettings[key] == "") {
+                        this.graphSettings[key] = app.graphDefaults[key];
+                    }
+                }
+                app.graphSettings = this.graphSettings;
+                app.pruning = this.pruning;
+                app.fairAbstraction = this.fairAbstraction;
+                app.nodeSep = this.nodeSep;
+                app.compile(true);
+                localStorage.setItem("fairAbstraction",app.fairAbstraction);
+                localStorage.setItem("pruning",app.pruning);
+                localStorage.setItem("nodeSep",app.nodeSep);
+            },
+            opened: function (){
+                return $('#settings-dialog')[0].opened;
+            }
+        })
+    })();
 </script>
