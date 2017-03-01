@@ -1265,7 +1265,6 @@ public class Parser {
         parseExpression(exprTokens);
 
         Expression expression = expressionParser.parseExpression(exprTokens);
-
         if(expressionEvaluator.isExecutable(expression)){
             int result = expressionEvaluator.evaluateExpression(expression, new HashMap<String, Integer>());
             return "" + result;

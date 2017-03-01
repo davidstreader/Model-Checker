@@ -1,6 +1,9 @@
 package mc.compiler;
 
 import com.google.common.collect.Lists;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import mc.compiler.ast.OperationNode;
 import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
@@ -11,6 +14,8 @@ import mc.webserver.Context;
 import mc.webserver.LogMessage;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -25,11 +30,13 @@ public class EquationEvaluator {
         this.automataOperations = new AutomataOperations();
     }
 
-    public List<OperationResult> evaluateEquations(List<OperationNode> operations, String code, Context context) throws CompilationException {
+    public EquationReturn evaluateEquations(List<OperationNode> operations, String code, Context context) throws CompilationException {
         reset();
-        int passedCount = 0,failedCount = 0;
+        final AtomicInteger passedCount = new AtomicInteger(0),
+            failedCount = new AtomicInteger(0),
+            opId = new AtomicInteger(0);
         List<OperationResult> results = new ArrayList<OperationResult>();
-        List<ProcessModel> toRender = new ArrayList<>();
+        Map<String,ProcessModel> toRender = new ConcurrentHashMap<>();
         AutomatonGenerator generator = new AutomatonGenerator();
         for(OperationNode operation : operations){
             new LogMessage("Checking equation: "+operation.getOperation(),true,false).send();
@@ -56,7 +63,7 @@ public class EquationEvaluator {
                     List<Automaton> automata = new ArrayList<>();
                     Map<String, ProcessModel> currentMap = new HashMap<>();
                     for (ProcessModel m: processModels) {
-                        currentMap.put(((Automaton)m).getId(),m);
+                        currentMap.put(m.getId(),m);
                     }
                     automata.add((Automaton) interpreter.interpret("automata", operation.getFirstProcess(), getNextEquationId(), currentMap));
                     automata.add((Automaton) interpreter.interpret("automata", operation.getSecondProcess(), getNextEquationId(), currentMap));
@@ -72,9 +79,15 @@ public class EquationEvaluator {
                     if (operation.isNegated()) {
                         result = !result;
                     }
-                    if (!result && failedCount < context.getGraphSettings().getFailCount()) {
-                        toRender.addAll(automata);
-                        toRender.addAll(currentMap.values());
+                    if (!result && failedCount.get() < context.getGraphSettings().getFailCount()) {
+                        String id2 = "op"+opId.getAndIncrement()+": (";
+                        for (ProcessModel auto: automata) {
+                            toRender.put(id2+firstId+OperationResult.getOpSymbol(operation.getOperation())+secondId+")",auto);
+                        }
+                        for (String id: currentMap.keySet()) {
+                            toRender.put(id2+id+")",currentMap.get(id));
+                        }
+                        failedCount.incrementAndGet();
                     }
                     return result;
                 } catch (CompilationException ex) {
@@ -83,7 +96,7 @@ public class EquationEvaluator {
             }).count();
             results.add(new OperationResult(operation.getFirstProcess(), operation.getSecondProcess(), firstId, secondId, operation.getOperation(), operation.isNegated(), passed == perms.size()," @|black ("+passed+"/"+perms.size()+") |@"));
         }
-        return results;
+        return new EquationReturn(results,toRender);
     }
 
     private String getNextEquationId(){
@@ -110,5 +123,12 @@ public class EquationEvaluator {
             copy.add(map);
             return permutationsImpl(ori,d+1,copy);
         });
+    }
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    class EquationReturn {
+        List<OperationResult> results;
+        Map<String,ProcessModel> toRender;
     }
 }

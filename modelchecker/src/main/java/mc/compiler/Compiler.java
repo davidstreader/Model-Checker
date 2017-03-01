@@ -64,8 +64,9 @@ public class Compiler {
         ast = replacer.replaceReferences(ast);
         Map<String, ProcessModel> processMap = interpreter.interpret(ast, new LocalCompiler(processNodeMap, expander, replacer));
         List<OperationResult> results = evaluator.evaluateOperations(ast.getOperations(), processMap, interpreter, code);
-        List<OperationResult> eqResults = eqEvaluator.evaluateEquations(ast.getEquations(), code, context);
-        return new CompilationObject(processMap, results, eqResults);
+        EquationEvaluator.EquationReturn eqResults = eqEvaluator.evaluateEquations(ast.getEquations(), code, context);
+        processMap.putAll(eqResults.getToRender());
+        return new CompilationObject(processMap, results, eqResults.getResults());
     }
     @AllArgsConstructor
     public static class LocalCompiler {

@@ -25,7 +25,7 @@ public class OperationResult {
         this.extra = Ansi.ansi().render(extra)+"";
     }
 
-    private String getOpSymbol(String op) throws CompilationException {
+    public static String getOpSymbol(String op) throws CompilationException {
         switch (op) {
             case "bisimulation": return "~";
             case "traceEquivalent": return "#";

@@ -8,5 +8,5 @@ public interface ProcessModel {
     void addMetaData(String key, Object value);
     void removeMetaData(String key);
     boolean hasMetaData(String key);
-
+    String getId();
 }
