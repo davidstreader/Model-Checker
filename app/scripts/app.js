@@ -22,7 +22,8 @@
         app.connected = false;
         app.saveSettings = {currentFile: '', saveCode: true, saveLayout: true};
         app.decoder = new TextDecoder("UTF-8");
-        app.socket = new ReconnectingWebSocket("ws://" + location.hostname + ":" + location.port + "/socket/");
+        let proto = window.location.protocol.replace("http","").replace(":","");
+        app.socket = new ReconnectingWebSocket("ws"+proto+"://" + location.hostname + ":" + location.port + "/socket/");
         app.socket.onmessage = function (msg) {
             let results = JSON.parse(msg.data);
             const data = results.data;

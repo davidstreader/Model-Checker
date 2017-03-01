@@ -166,11 +166,8 @@ public class Guard implements Serializable{
         } else if (!guard1.getNext().equals(next)) {
             return false;
         }
-        if (!Objects.equals(ExpressionSimplifier.substitute(guard1.guard,replacements),
-            ExpressionSimplifier.substitute(guard,replacements))) {
-            return false;
-        }
-        return true;
+        return Objects.equals(ExpressionSimplifier.substitute(guard1.guard, replacements),
+            ExpressionSimplifier.substitute(guard, replacements));
     }
 
     private Expression replaceVariables(String next, Map<String, Expression> replacements) {
