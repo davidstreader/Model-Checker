@@ -14,14 +14,7 @@
      * @param {string} code - the code to parse
      */
     compile: function(code) {
-        app.socket.emit('compile',{code:code,context:app.getSettings()},function(results) {
-            if (results == undefined) return;
-            if (results.type == "error") {
-                app.showError(results);
-                return;
-            }
-            app.finalizeBuild(results);
-        });
+        app.socket.send(JSON.stringify({code:code,context:app.getSettings()}));
     }
 
   });

@@ -12,18 +12,18 @@ import java.nio.file.Paths;
 
 import static org.fusesource.jansi.Ansi.ansi;
 import static spark.Spark.get;
+import static spark.Spark.redirect;
+import static spark.Spark.webSocket;
 
 
 public class WebServer {
   Logger logger = LoggerFactory.getLogger(WebServer.class);
-  @Getter
-  private WebSocketServer socket;
-  //TODO: IMPORTANT  Mabye we should consider proxying websocket data through spark to socketio?
   public void startServer() {
     logger.info(""+ansi().render("@|green Starting Web Server|@"));
     if (checkPortInUse()) return;
     Spark.externalStaticFileLocation("app");
     Spark.port(5000);
+    webSocket("/socket",WebSocketServer.class);
     get("/bower_components/*", (req, res) -> {
       if (req.pathInfo().endsWith(".css")) {
         res.type("text/css");
@@ -31,7 +31,6 @@ public class WebServer {
      return String.join("\n",Files.readAllLines(Paths.get(req.pathInfo().substring(1))));
     });
     logger.info(""+ansi().render("@|green Starting Socket.IO Server|@"));
-    socket = new WebSocketServer();
   }
 
   private boolean checkPortInUse() {

@@ -2,8 +2,10 @@ package mc.webserver;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
+@Setter
 @NoArgsConstructor
 public class Context {
     private boolean isFairAbstraction;

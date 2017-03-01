@@ -21,41 +21,51 @@
         app.connected = false;
         app.saveSettings = {currentFile: '', saveCode: true, saveLayout: true};
         app.decoder = new TextDecoder("UTF-8");
-        app.socket = io(location.protocol+'//'+location.hostname+":5001");
-        app.socket.on('connect', ()=>{
+        app.socket = new ReconnectingWebSocket("ws://" + location.hostname + ":" + location.port + "/socket/");
+        app.socket.onmessage = function (msg) {
+            let results = JSON.parse(msg.data);
+            const data = results.data;
+            if (results.event == "compileReturn") {
+                if (data.type == "error") {
+                    app.showError(data);
+                    return;
+                }
+                app.finalizeBuild(data);
+            } else if (results.event = "log") {
+                if (data.clear) {
+                    app.$.console.clear();
+                }
+                if (data.error) {
+                    app.$.console.error(data.message);
+                    if (data.location) {
+                        const Range = ace.require("ace/range").Range;
+                        const editor = app.$.editor._editor.getSession();
+                        editor.clearAnnotations();
+                        _.each(editor.$backMarkers,(val,key)=>editor.removeMarker(key));
+                        const l = data.location;
+                        editor.addMarker(new Range(l.lineStart-1, l.colStart, l.lineEnd-1, l.colEnd), "ace_underline");
+                        for (let i = l.lineStart; i <= l.lineEnd; i++) {
+                            editor.setAnnotations([{row:i-1 ,column: 0, text:data.message,type:"error"}]);
+                        }
+                    }
+                }
+                else {
+                    app.$.console.log(data.message);
+                }
+            }
+        };
+        app.socket.onopen = function () {
             app.connected = true;
             if (app.liveCompiling)
                 app.compile();
             $("#serverStatus").html("<img class='status-badge' src='https://img.shields.io/badge/-Online-brightgreen.svg'/>")
-        });
-        app.socket.on('disconnect', function() {
+        };
+        app.socket.onclose = function () {
             app.connected = false;
             app.$.console.log("You have been disconnected from the server.");
             app.$.console.log("As a result, your last compilation may not have completed successfully.");
             $("#serverStatus").html("<img class='status-badge' src='https://img.shields.io/badge/-Offline-red.svg'/>")
-        });
-        app.socket.on('log',data => {
-            if (data.clear) {
-                app.$.console.clear();
-            }
-            if (data.error) {
-                app.$.console.error(data.message);
-                if (data.location) {
-                    const Range = ace.require("ace/range").Range;
-                    const editor = app.$.editor._editor.getSession();
-                    editor.clearAnnotations();
-                    _.each(editor.$backMarkers,(val,key)=>editor.removeMarker(key));
-                    const l = data.location;
-                    editor.addMarker(new Range(l.lineStart-1, l.colStart, l.lineEnd-1, l.colEnd), "ace_underline");
-                    for (let i = l.lineStart; i <= l.lineEnd; i++) {
-                        editor.setAnnotations([{row:i-1 ,column: 0, text:data.message,type:"error"}]);
-                    }
-                }
-            }
-            else {
-                app.$.console.log(data.message);
-            }
-        });
+        };
 
         app.compile = function(overrideBuild) {
             const code = app.getCode();
@@ -91,7 +101,7 @@
                     app.lastCompileStartTime = (new Date()).getTime();
                     const code = app.$.editor.getCode();
                     const settings = app.getSettings();
-                    app.$.parser.compile(code, settings);
+                    app.socket.send(JSON.stringify({code:code,context:settings}));
                 }
             }.bind(this), 0);
         }
@@ -218,7 +228,7 @@
 
         app.getSettings = function() {
             return {
-                isFairAbstraction: app.fairAbstraction,
+                fairAbstraction: app.fairAbstraction,
                 pruning: app.pruning,
                 graphSettings: app.graphSettings
             };
