@@ -788,7 +788,7 @@ public class Parser {
             }
 
             ActionToken token = (ActionToken)nextToken();
-            String flag = token.getAction()+"=";
+            String flag = token.getAction();
 
             if(!validAbsFlags.contains(flag) && Objects.equals(functionType, "abs")){
                 throw constructException("\"" + flag + "\" is not a correct flag", token.getLocation());
@@ -798,7 +798,7 @@ public class Parser {
                     throw constructException("Expecting to parse '=' but received \"" + peekToken().toString() + "\"");
                 }
                 nextToken();
-                flag+=parseExpression();
+                flag+="="+parseExpression();
             }
             flags.add(flag);
 
