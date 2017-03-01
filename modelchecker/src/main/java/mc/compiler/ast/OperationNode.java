@@ -1,6 +1,10 @@
 package mc.compiler.ast;
 
+import lombok.Getter;
+import mc.compiler.EquationEvaluator;
 import mc.util.Location;
+
+import static mc.compiler.EquationEvaluator.*;
 
 public class OperationNode extends ASTNode {
 
@@ -9,13 +13,16 @@ public class OperationNode extends ASTNode {
 	private boolean isNegated;
 	private ASTNode firstProcess;
 	private ASTNode secondProcess;
+	@Getter
+	private EquationSettings equationSettings;
 
-	public OperationNode(String operation, boolean isNegated, ASTNode firstProcess, ASTNode secondProcess, Location location){
+	public OperationNode(String operation, boolean isNegated, ASTNode firstProcess, ASTNode secondProcess, Location location, EquationSettings equationSettings){
 		super(location);
 		this.operation = operation;
 		this.isNegated = isNegated;
 		this.firstProcess = firstProcess;
 		this.secondProcess = secondProcess;
+		this.equationSettings = equationSettings;
 	}
 
 	public String getOperation(){

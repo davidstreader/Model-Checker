@@ -46,7 +46,7 @@ public class Compiler {
             int maxTransitionCount = Integer.parseInt(code.split(",")[4]);
             Map<String,ProcessModel> models = new HashMap<>();
             int i = 0;
-            List<ProcessModel> nodes = new AutomatonGenerator().generateAutomaton(alphabetCount,nodeCount,maxTransitionCount,"A",new AutomataOperations(),alphabet);
+            List<ProcessModel> nodes = new AutomatonGenerator().generateAutomaton("A",new AutomataOperations(),new EquationEvaluator.EquationSettings(alphabet,alphabetCount,nodeCount,maxTransitionCount));
             for (ProcessModel model:nodes) {
                 Automaton a = (Automaton) model;
                 models.put(a.getId()+(i++),a);

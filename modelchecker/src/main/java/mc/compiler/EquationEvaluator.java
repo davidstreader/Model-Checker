@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import mc.compiler.ast.OperationNode;
 import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
@@ -48,10 +49,9 @@ public class EquationEvaluator {
             List<Collection<ProcessModel>> generated = new ArrayList<>();
             Set<String> ids = new TreeSet<>(firstIds);
             ids.addAll(secondIds);
-            int nodeCount = 3;
             new LogMessage("Generating models").send();
             for (String id: ids) {
-                generated.add(generator.generateAutomaton(5,nodeCount,4,id,automataOperations,false));
+                generated.add(generator.generateAutomaton(id,automataOperations,operation.getEquationSettings()));
             }
             new LogMessage("Generating permutations").send();
             List<List<ProcessModel>> perms = permutations(generated).collect(Collectors.toList());
@@ -125,10 +125,18 @@ public class EquationEvaluator {
         });
     }
     @Getter
-    @Setter
     @AllArgsConstructor
     class EquationReturn {
         List<OperationResult> results;
         Map<String,ProcessModel> toRender;
+    }
+    @Getter
+    @AllArgsConstructor
+    @ToString
+    public static class EquationSettings {
+        boolean alphabet;
+        int nodeCount;
+        int alphabetCount;
+        int maxTransitionCount;
     }
 }

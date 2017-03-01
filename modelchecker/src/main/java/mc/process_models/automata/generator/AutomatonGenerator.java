@@ -3,6 +3,8 @@ package mc.process_models.automata.generator;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Sets;
 import lombok.SneakyThrows;
+import mc.compiler.EquationEvaluator;
+import mc.compiler.EquationEvaluator.EquationSettings;
 import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
 import mc.process_models.automata.Automaton;
@@ -14,19 +16,19 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class AutomatonGenerator {
-    public List<ProcessModel> generateAutomaton(int alphabetCount, int nodeCount, int maxTransitions, String id, AutomataOperations operations, boolean multipleAlphabet) throws CompilationException {
+    public List<ProcessModel> generateAutomaton(String id, AutomataOperations operations, EquationSettings equationSettings) throws CompilationException {
         List<ProcessModel> automata = new ArrayList<>();
         //Generate alphabet for alphabetCount a -> b -> .. -> zz etc
         Set<String> alphabet = new HashSet<>();
         String current = "a";
-        while (alphabet.size() < alphabetCount) {
+        while (alphabet.size() < equationSettings.getAlphabetCount()) {
             alphabet.add(current);
             current = nextCharacter(current);
         }
         Set<Set<AutomatonEdge>> edges = new HashSet<>();
         List<ProcessModel> basic = new ArrayList<>();
         root:
-        for (BinaryNode treeNode : allBinaryTrees(nodeCount-1)) {
+        for (BinaryNode treeNode : allBinaryTrees(equationSettings.getNodeCount()-1)) {
             Automaton automaton = new Automaton(id, false);
             automaton.setRoot(binToAutomata(automaton,new BinaryNode(treeNode,null), 0));
             automaton.getRoot().addMetaData("startNode",true);
@@ -40,10 +42,10 @@ public class AutomatonGenerator {
                 }
             }
             basic.add(automaton.copy());
-            if (multipleAlphabet) {
-                applyAlphabet(automaton,alphabet).forEach(s -> addToSet(edges,automata,s, maxTransitions));
+            if (equationSettings.isAlphabet()) {
+                applyAlphabet(automaton,alphabet).forEach(s -> addToSet(edges,automata,s, equationSettings.getMaxTransitionCount()));
             } else {
-                addToSet(edges,automata,automaton, maxTransitions);
+                addToSet(edges,automata,automaton, equationSettings.getMaxTransitionCount());
             }
             for (Set<AutomatonNode> powerSets: rootPowerSet) {
                 List<Automaton> currentNodes = new ArrayList<>();
@@ -60,10 +62,10 @@ public class AutomatonGenerator {
                         currentNodes = clone;
                     }
                 }
-                if (multipleAlphabet) {
-                    currentNodes.stream().flatMap(s -> applyAlphabet(s,alphabet).stream()).forEach(s -> addToSet(edges,automata,s, maxTransitions));
+                if (equationSettings.isAlphabet()) {
+                    currentNodes.stream().flatMap(s -> applyAlphabet(s,alphabet).stream()).forEach(s -> addToSet(edges,automata,s, equationSettings.getMaxTransitionCount()));
                 } else {
-                    currentNodes.forEach(a -> addToSet(edges,automata,a, maxTransitions));
+                    currentNodes.forEach(a -> addToSet(edges,automata,a, equationSettings.getMaxTransitionCount()));
                 }
             }
         }
@@ -158,5 +160,6 @@ public class AutomatonGenerator {
 
         return result;
     }
+
 
 }

@@ -1179,12 +1179,54 @@ public class Parser {
             Token error = tokens.get(index - 1);
             throw constructException("expecting to parse \"equation\" but received \"" + error.toString() + "\"", error.getLocation());
         }
+        if (!(nextToken() instanceof OpenParenToken)) {
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \"(\" but received \"" + error.toString() + "\"", error.getLocation());
+        }
+        boolean alphabet;
+        int nodeCount,alphabetCount, maxTransitionCount;
+        if (!(peekToken().toString().equals("true") || peekToken().toString().equals("false"))) {
+            Token error = tokens.get(index);
+            throw constructException("expecting to parse \"true or false\" but received \"" + error.toString() + "\"", error.getLocation());
+        }
+        alphabet = Boolean.parseBoolean(nextToken().toString());
+        if (!(nextToken() instanceof CommaToken)) {
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \",\" but received \"" + error.toString() + "\"", error.getLocation());
+        }
+        if (!(peekToken() instanceof IntegerToken)) {
+            Token error = tokens.get(index);
+            throw constructException("expecting to parse an integer but received \"" + error.toString() + "\"", error.getLocation());
+        }
+        nodeCount = ((IntegerToken)nextToken()).getInteger();
+        if (!(nextToken() instanceof CommaToken)) {
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \",\" but received \"" + error.toString() + "\"", error.getLocation());
+        }
+        if (!(peekToken() instanceof IntegerToken)) {
+            Token error = tokens.get(index);
+            throw constructException("expecting to parse an integer but received \"" + error.toString() + "\"", error.getLocation());
+        }
+        alphabetCount = ((IntegerToken)nextToken()).getInteger();
+        if (!(nextToken() instanceof CommaToken)) {
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \",\" but received \"" + error.toString() + "\"", error.getLocation());
+        }
+        if (!(peekToken() instanceof IntegerToken)) {
+            Token error = tokens.get(index);
+            throw constructException("expecting to parse an integer but received \"" + error.toString() + "\"", error.getLocation());
+        }
+        maxTransitionCount = ((IntegerToken)nextToken()).getInteger();
 
+        if (!(nextToken() instanceof CloseParenToken)) {
+            Token error = tokens.get(index - 1);
+            throw constructException("expecting to parse \")\" but received \"" + error.toString() + "\"", error.getLocation());
+        }
         if(!(peekToken() instanceof OpenBraceToken)){
-            parseSingleOperation(true);
+            parseSingleOperation(true, new EquationEvaluator.EquationSettings(alphabet,nodeCount,alphabetCount,maxTransitionCount));
         }
         else{
-            parseOperationBlock(true);
+            parseOperationBlock(true, new EquationEvaluator.EquationSettings(alphabet,nodeCount,alphabetCount,maxTransitionCount));
         }
     }
     // OPERATIONS
@@ -1196,14 +1238,14 @@ public class Parser {
         }
 
         if(!(peekToken() instanceof OpenBraceToken)){
-            parseSingleOperation(false);
+            parseSingleOperation(false, null);
         }
         else{
-            parseOperationBlock(false);
+            parseOperationBlock(false, null);
         }
     }
 
-    private void parseSingleOperation(boolean isEq) throws CompilationException {
+    private void parseSingleOperation(boolean isEq, EquationEvaluator.EquationSettings equationSettings) throws CompilationException {
         int start = index;
         ASTNode process1 = parseComposite();
 
@@ -1222,7 +1264,7 @@ public class Parser {
             Token error = tokens.get(index - 1);
             throw constructException("expecting to parse \".\" but received \"" + error.toString() + "\"", error.getLocation());
         }
-        OperationNode operation = new OperationNode(type, isNegated, process1, process2, constructLocation(start));
+        OperationNode operation = new OperationNode(type, isNegated, process1, process2, constructLocation(start), equationSettings);
         if (isEq) {
             equations.add(operation);
         } else {
@@ -1230,14 +1272,14 @@ public class Parser {
         }
     }
 
-    private void parseOperationBlock(boolean isEq) throws CompilationException {
+    private void parseOperationBlock(boolean isEq, EquationEvaluator.EquationSettings equationSettings) throws CompilationException {
         if(!(nextToken() instanceof OpenBraceToken)){
             Token error = tokens.get(index - 1);
             throw constructException("expecting to parse \"{\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
         while(!(peekToken() instanceof CloseBraceToken)){
-            parseSingleOperation(isEq);
+            parseSingleOperation(isEq, equationSettings);
         }
 
         if(!(nextToken() instanceof CloseBraceToken)){
