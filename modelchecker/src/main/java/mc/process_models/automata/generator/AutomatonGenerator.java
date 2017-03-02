@@ -13,6 +13,7 @@ import mc.process_models.automata.AutomatonNode;
 import mc.process_models.automata.operations.AutomataOperations;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 public class AutomatonGenerator {
@@ -37,7 +38,7 @@ public class AutomatonGenerator {
             fillLevels(automaton.getRoot(), levels, nodeToLevels, 0);
             Set<Set<AutomatonNode>> rootPowerSet = Sets.powerSet(nodeToLevels.keySet());
             for (ProcessModel b : basic) {
-                if (operations.bisimulation(Arrays.asList((Automaton)b,automaton),()->true)) {
+                if (operations.bisimulation(Arrays.asList((Automaton)b,automaton),new AtomicBoolean(false))) {
                     continue root;
                 }
             }

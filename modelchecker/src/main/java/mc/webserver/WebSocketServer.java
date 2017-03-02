@@ -10,7 +10,7 @@ import mc.process_models.automata.Automaton;
 import mc.webserver.ProcessReturn.SkipObject;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.eclipse.jetty.websocket.api.Session;
-import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import org.slf4j.Logger;
@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.fusesource.jansi.Ansi.ansi;
 @WebSocket
@@ -27,10 +28,8 @@ public class WebSocketServer {
     private Logger logger = LoggerFactory.getLogger(WebSocketServer.class);
     @OnWebSocketMessage
     public void onMessage(Session user, String message) {
-        isStopped.set(false);
-        String hostName = user.getRemoteAddress().getHostName();
-        if (runners.containsKey(hostName)) runners.get(hostName).interrupt();
-        if (loggers.containsKey(hostName)) loggers.get(hostName).interrupt();
+        interruptSession(user);
+        isStopped.put(user,new AtomicBoolean(false));
         BlockingQueue<LogMessage> queue = new LinkedBlockingQueue<>();
         Thread logThread = new Thread(() -> {
             client.set(user);
@@ -41,7 +40,7 @@ public class WebSocketServer {
             } catch (InterruptedException ignored) {
             }
         });
-        loggers.put(hostName,logThread);
+        loggers.put(user,logThread);
         logThread.start();
         Thread runner = new Thread(()-> {
             try {
@@ -78,14 +77,21 @@ public class WebSocketServer {
                 logThread.interrupt();
                 ret2.put("event", "compileReturn");
                 user.getRemote().sendString(mapper.writeValueAsString(ret2));
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
+                //Ignore as all exceptions here are InterruptedExceptions which we dont care about.
+            } catch (Exception ignored) {}
         });
-        runners.put(hostName,runner);
+        runners.put(user,runner);
         runner.start();
     }
-
+    @OnWebSocketClose
+    public void onClose(Session user, int statusCode, String reason) {
+        interruptSession(user);
+    }
+    private void interruptSession(Session user) {
+        if (isStopped.containsKey(user)) isStopped.get(user).set(true);
+        if (runners.containsKey(user)) runners.get(user).interrupt();
+        if (loggers.containsKey(user)) loggers.get(user).interrupt();
+    }
     private ProcessReturn compile(CompileRequest data) throws CompilationException {
         CompilationObject ret = new Compiler().compile(data.getCode(),data.getContext());
         Map<String,ProcessModel> processModelMap = ret.getProcessMap();
@@ -154,10 +160,10 @@ public class WebSocketServer {
      * Each client is given its own thread to compile in. Storing the client in a ThreadLocal means
      * that we get access to the client from anywhere during the compilation.
      */
-    private static HashMap<String,Thread> runners = new HashMap<>();
-    private static HashMap<String,Thread> loggers = new HashMap<>();
+    private static HashMap<Session,Thread> runners = new HashMap<>();
+    private static HashMap<Session,Thread> loggers = new HashMap<>();
+    private static HashMap<Session,AtomicBoolean> isStopped = new HashMap<>();
     private static ThreadLocal<Session> client = new ThreadLocal<>();
-    private static ThreadLocal<Boolean> isStopped = new ThreadLocal<>();
     @Getter
     private static ThreadLocal<BlockingQueue<LogMessage>> messageQueue = new ThreadLocal<>();
     /**
@@ -170,7 +176,7 @@ public class WebSocketServer {
     public static boolean hasClient() {
         return client.get() != null;
     }
-    public static boolean isStopped() {
-        return isStopped.get() == null?false:isStopped.get();
+    public static AtomicBoolean isStopped() {
+        return hasClient()?isStopped.get(client.get()):new AtomicBoolean(false);
     }
 }

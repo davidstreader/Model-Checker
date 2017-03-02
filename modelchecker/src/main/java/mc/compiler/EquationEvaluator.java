@@ -3,7 +3,6 @@ package mc.compiler;
 import com.google.common.collect.Lists;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.ToString;
 import mc.compiler.ast.OperationNode;
 import mc.exceptions.CompilationException;
@@ -14,13 +13,13 @@ import mc.process_models.automata.operations.AutomataOperations;
 import mc.webserver.Context;
 import mc.webserver.LogMessage;
 import mc.webserver.WebSocketServer;
-import org.eclipse.jetty.websocket.api.Session;
 
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -64,7 +63,7 @@ public class EquationEvaluator {
             List<List<ProcessModel>> perms = permutations(generated).collect(Collectors.toList());
             new LogMessage("Evaluating equations (0/"+perms.size()+")").send();
             BlockingQueue<LogMessage> messageQueue = WebSocketServer.getMessageQueue().get();
-            Supplier<Boolean> isStopped = WebSocketServer::isStopped;
+            AtomicBoolean b = WebSocketServer.isStopped();
             long passed = perms.parallelStream().filter(processModels -> {
                 AutomataOperations automataOperations = new AutomataOperations();
                 Interpreter interpreter = new Interpreter();
@@ -74,7 +73,7 @@ public class EquationEvaluator {
                     for (ProcessModel m: processModels) {
                         currentMap.put(m.getId(),m);
                     }
-                    if (isStopped.get()) return false;
+                    if (b.get()) return false;
                     automata.add((Automaton) interpreter.interpret("automata", operation.getFirstProcess(), getNextEquationId(), currentMap));
                     automata.add((Automaton) interpreter.interpret("automata", operation.getSecondProcess(), getNextEquationId(), currentMap));
 
@@ -85,8 +84,8 @@ public class EquationEvaluator {
                         }
                         automata = automata1;
                     }
-                    if (isStopped.get()) return false;
-                    boolean result = automataOperations.bisimulation(automata, isStopped);
+                    if (b.get()) return false;
+                    boolean result = automataOperations.bisimulation(automata, b);
                     if (operation.isNegated()) {
                         result = !result;
                     }

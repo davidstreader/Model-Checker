@@ -1,6 +1,5 @@
 package mc.process_models.automata.operations;
 
-import com.microsoft.z3.Expr;
 import lombok.ToString;
 import mc.compiler.Guard;
 import mc.exceptions.CompilationException;
@@ -8,24 +7,21 @@ import mc.process_models.automata.Automaton;
 import mc.process_models.automata.AutomatonEdge;
 import mc.process_models.automata.AutomatonNode;
 import mc.util.expr.Expression;
-import mc.util.expr.ExpressionEvaluator;
-import mc.util.expr.ExpressionSimplifier;
 
 import java.util.*;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class AutomataBisimulation {
 
     private final int BASE_COLOUR = 1;
     private final int STOP_COLOUR = 0;
     private final int ERROR_COLOUR = -1;
-    private Supplier<Boolean> shouldRun;
+    private AtomicBoolean shouldStop;
     private int nextColourId;
     private Map<String,Expression> replacements;
     public Automaton performSimplification(Automaton automaton, Map<String, Expression> replacements) throws CompilationException {
         reset();
-        shouldRun = ()->true;
+        shouldStop = new AtomicBoolean(false);
         this.replacements = replacements;
         Map<Integer, List<Colour>> colourMap = new HashMap<>();
         Map<Integer, List<AutomatonNode>> nodeColours = performColouring(automaton, colourMap);
@@ -52,15 +48,15 @@ public class AutomataBisimulation {
         return automaton;
     }
 
-    public boolean areBisimular(List<Automaton> automata, Supplier<Boolean> checkToStop){
+    public boolean areBisimular(List<Automaton> automata, AtomicBoolean checkToStop){
         reset();
-        shouldRun = checkToStop;
+        shouldStop = checkToStop;
         Map<Integer, List<Colour>> colourMap = new HashMap<>();
 
         int rootColour = Integer.MIN_VALUE;
 
         for(Automaton automaton : automata){
-            if (!shouldRun.get()) return false;
+            if (shouldStop.get()) return false;
             performColouring(automaton, colourMap);
 
             AutomatonNode root = automaton.getRoot();
@@ -83,7 +79,7 @@ public class AutomataBisimulation {
         perfromInitialColouring(automaton);
         Map<Integer, List<AutomatonNode>> nodeColours = new HashMap<>();
 
-        while(nodeColours.size() != lastColourCount && shouldRun.get()){
+        while(nodeColours.size() != lastColourCount && !shouldStop.get()){
             lastColourCount = nodeColours.size();
             nodeColours = new HashMap<>();
             Set<String> visited = new HashSet<>();
@@ -91,7 +87,7 @@ public class AutomataBisimulation {
             Queue<AutomatonNode> fringe = new LinkedList<>();
             fringe.offer(automaton.getRoot());
 
-            while(!fringe.isEmpty() && shouldRun.get()){
+            while(!fringe.isEmpty() && !shouldStop.get()){
                 AutomatonNode current = fringe.poll();
 
                 // check if the current node has been visited
