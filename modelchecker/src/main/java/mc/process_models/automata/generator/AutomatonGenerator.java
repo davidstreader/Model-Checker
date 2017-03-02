@@ -37,7 +37,7 @@ public class AutomatonGenerator {
             fillLevels(automaton.getRoot(), levels, nodeToLevels, 0);
             Set<Set<AutomatonNode>> rootPowerSet = Sets.powerSet(nodeToLevels.keySet());
             for (ProcessModel b : basic) {
-                if (operations.bisimulation(Arrays.asList((Automaton)b,automaton))) {
+                if (operations.bisimulation(Arrays.asList((Automaton)b,automaton),()->true)) {
                     continue root;
                 }
             }

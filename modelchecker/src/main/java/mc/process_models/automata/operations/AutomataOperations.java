@@ -6,6 +6,7 @@ import mc.util.expr.Expression;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * Created by sheriddavi on 24/01/17.
@@ -57,8 +58,8 @@ public class AutomataOperations {
         return bisimulation.performSimplification(automaton, replacements);
     }
 
-    public boolean bisimulation(List<Automaton> automata){
-        return bisimulation.areBisimular(automata);
+    public boolean bisimulation(List<Automaton> automata, Supplier<Boolean> checkToStop){
+        return bisimulation.areBisimular(automata, checkToStop);
     }
 
     public Automaton removeUnreachableNodes(Automaton automaton){
@@ -72,4 +73,6 @@ public class AutomataOperations {
   public Automaton nfaToDFA(Automaton model) throws CompilationException {
     return nfaToDFA.performNFAToDFA(model);
   }
+
+
 }

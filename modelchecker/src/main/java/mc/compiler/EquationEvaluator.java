@@ -20,6 +20,7 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -63,6 +64,7 @@ public class EquationEvaluator {
             List<List<ProcessModel>> perms = permutations(generated).collect(Collectors.toList());
             new LogMessage("Evaluating equations (0/"+perms.size()+")").send();
             BlockingQueue<LogMessage> messageQueue = WebSocketServer.getMessageQueue().get();
+            Supplier<Boolean> isStopped = WebSocketServer::isStopped;
             long passed = perms.parallelStream().filter(processModels -> {
                 AutomataOperations automataOperations = new AutomataOperations();
                 Interpreter interpreter = new Interpreter();
@@ -72,6 +74,7 @@ public class EquationEvaluator {
                     for (ProcessModel m: processModels) {
                         currentMap.put(m.getId(),m);
                     }
+                    if (isStopped.get()) return false;
                     automata.add((Automaton) interpreter.interpret("automata", operation.getFirstProcess(), getNextEquationId(), currentMap));
                     automata.add((Automaton) interpreter.interpret("automata", operation.getSecondProcess(), getNextEquationId(), currentMap));
 
@@ -82,22 +85,23 @@ public class EquationEvaluator {
                         }
                         automata = automata1;
                     }
-                    boolean result = automataOperations.bisimulation(automata);
+                    if (isStopped.get()) return false;
+                    boolean result = automataOperations.bisimulation(automata, isStopped);
                     if (operation.isNegated()) {
                         result = !result;
                     }
                     if (!result && failedCount.get() < context.getGraphSettings().getFailCount()) {
                         String id2 = "op"+opId.getAndIncrement()+": (";
-                        for (ProcessModel auto: automata) {
-                            toRender.put(id2+opIdent+")",auto);
-                        }
+                        toRender.put(id2+firstId+")",automata.get(0));
+                        toRender.put(id2+secondId+")",automata.get(1));
+
                         for (String id: currentMap.keySet()) {
                             toRender.put(id2+id+")",currentMap.get(id));
                         }
                         failedCount.incrementAndGet();
                     }
                     int done = doneCount.incrementAndGet();
-                    if (System.currentTimeMillis()-timeStamp.get() > 1000) {
+                    if (System.currentTimeMillis()-timeStamp.get() > 100) {
                         messageQueue.add(new LogMessage("Evaluating equations (" + done + "/" + perms.size() +") ("+((int)(done/(double)perms.size()*100.0))+ "%)", 1));
                         timeStamp.set(System.currentTimeMillis());
                     }
@@ -119,7 +123,7 @@ public class EquationEvaluator {
     private void reset(){
         equationId = 0;
     }
-    public <T> Stream<List<T>> permutations(List<Collection<T>> collections) {
+    private <T> Stream<List<T>> permutations(List<Collection<T>> collections) {
         if (collections == null || collections.isEmpty()) {
             return Stream.empty();
         } else {
