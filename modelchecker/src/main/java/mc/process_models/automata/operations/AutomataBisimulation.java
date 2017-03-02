@@ -25,6 +25,7 @@ public class AutomataBisimulation {
     private Map<String,Expression> replacements;
     public Automaton performSimplification(Automaton automaton, Map<String, Expression> replacements) throws CompilationException {
         reset();
+        shouldRun = ()->true;
         this.replacements = replacements;
         Map<Integer, List<Colour>> colourMap = new HashMap<>();
         Map<Integer, List<AutomatonNode>> nodeColours = performColouring(automaton, colourMap);
