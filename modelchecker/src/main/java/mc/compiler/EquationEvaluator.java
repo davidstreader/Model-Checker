@@ -39,7 +39,8 @@ public class EquationEvaluator {
         final AtomicInteger passedCount = new AtomicInteger(0),
             failedCount = new AtomicInteger(0),
             opId = new AtomicInteger(0),
-            doneCount = new AtomicInteger(0);
+            doneCount = new AtomicInteger(0),
+            doneCountTimer = new AtomicInteger(0);
         final AtomicLong timeStamp = new AtomicLong(System.currentTimeMillis());
         List<OperationResult> results = new ArrayList<OperationResult>();
         Map<String,ProcessModel> toRender = new ConcurrentSkipListMap<>();

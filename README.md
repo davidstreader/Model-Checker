@@ -1,5 +1,5 @@
-# Model-Checker [![Build Status](https://jenkins.tangentmc.net/buildStatus/icon?job=Model-Checker)](https://jenkins.tangentmc.net/job/Model-Checker/)
-[Currently hosted application](http://modelchecker.tangentmc.net/).    
+# Model-Checker [![Build Status](https://jenkins.tangentmc.net/buildStatus/icon?job=Model-Checker)](https://jenkins.tangentmc.net/job/Model-Checker/) [![GitHub release](https://img.shields.io/github/release/DavidSheridan/Model-Checker.svg)](https://github.com/DavidSheridan/Model-Checker/releases)
+[Currently hosted application](http://modelchecker.tangentmc.net/).     
 NB: URL may change and this link will be useless.   
 Streader's Raiders SWEN302 Group Project
 
