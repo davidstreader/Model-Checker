@@ -35,7 +35,11 @@
                 app.finalizeBuild(data);
             } else if (results.event = "log") {
                 if (data.clear) {
-                    app.$.console.clear();
+                    if (data.clearAmt != -1) {
+                        app.$.console.clear(data.clearAmt);
+                    } else {
+                        app.$.console.clear();
+                    }
                 }
                 if (data.error) {
                     app.$.console.error(data.message);

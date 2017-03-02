@@ -13,11 +13,13 @@ import mc.process_models.automata.generator.AutomatonGenerator;
 import mc.process_models.automata.operations.AutomataOperations;
 import mc.webserver.Context;
 import mc.webserver.LogMessage;
+import mc.webserver.WebSocketServer;
+import org.eclipse.jetty.websocket.api.Session;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -36,16 +38,19 @@ public class EquationEvaluator {
         reset();
         final AtomicInteger passedCount = new AtomicInteger(0),
             failedCount = new AtomicInteger(0),
-            opId = new AtomicInteger(0);
+            opId = new AtomicInteger(0),
+            doneCount = new AtomicInteger(0);
+        final AtomicLong timeStamp = new AtomicLong(System.currentTimeMillis());
         List<OperationResult> results = new ArrayList<OperationResult>();
         Map<String,ProcessModel> toRender = new ConcurrentSkipListMap<>();
         AutomatonGenerator generator = new AutomatonGenerator();
         for(OperationNode operation : operations){
-            new LogMessage("Checking equation: "+operation.getOperation(),true,false).send();
             String firstId = OperationEvaluator.findIdent(operation.getFirstProcess(), code);
             String secondId = OperationEvaluator.findIdent(operation.getSecondProcess(), code);
             List<String> firstIds = OperationEvaluator.collectIdentifiers(operation.getFirstProcess());
             List<String> secondIds = OperationEvaluator.collectIdentifiers(operation.getSecondProcess());
+            String opIdent = firstId+" "+OperationResult.getOpSymbol(operation.getOperation())+" "+secondId;
+            new LogMessage("Checking equation: "+opIdent,true,false).send();
             //Since both are tree based, they should have the same iteration order.
             List<Collection<ProcessModel>> generated = new ArrayList<>();
             Set<String> ids = new TreeSet<>(firstIds);
@@ -56,7 +61,8 @@ public class EquationEvaluator {
             }
             new LogMessage("Generating permutations").send();
             List<List<ProcessModel>> perms = permutations(generated).collect(Collectors.toList());
-            new LogMessage("Evaluating equation").send();
+            new LogMessage("Evaluating equations (0/"+perms.size()+")").send();
+            BlockingQueue<LogMessage> messageQueue = WebSocketServer.getMessageQueue().get();
             long passed = perms.parallelStream().filter(processModels -> {
                 AutomataOperations automataOperations = new AutomataOperations();
                 Interpreter interpreter = new Interpreter();
@@ -83,13 +89,19 @@ public class EquationEvaluator {
                     if (!result && failedCount.get() < context.getGraphSettings().getFailCount()) {
                         String id2 = "op"+opId.getAndIncrement()+": (";
                         for (ProcessModel auto: automata) {
-                            toRender.put(id2+firstId+OperationResult.getOpSymbol(operation.getOperation())+secondId+")",auto);
+                            toRender.put(id2+opIdent+")",auto);
                         }
                         for (String id: currentMap.keySet()) {
                             toRender.put(id2+id+")",currentMap.get(id));
                         }
                         failedCount.incrementAndGet();
                     }
+                    int done = doneCount.incrementAndGet();
+                    if (System.currentTimeMillis()-timeStamp.get() > 1000) {
+                        messageQueue.add(new LogMessage("Evaluating equations (" + done + "/" + perms.size() +") ("+((int)(done/(double)perms.size()*100.0))+ "%)", 1));
+                        timeStamp.set(System.currentTimeMillis());
+                    }
+
                     return result;
                 } catch (CompilationException ex) {
                     return false;

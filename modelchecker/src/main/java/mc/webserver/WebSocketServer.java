@@ -18,6 +18,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import static org.fusesource.jansi.Ansi.ansi;
 @WebSocket
@@ -29,6 +31,17 @@ public class WebSocketServer {
     @OnWebSocketMessage
     public void onMessage(Session user, String message) throws IOException {
         client.set(user);
+        BlockingQueue<LogMessage> queue = new LinkedBlockingQueue<>();
+        messageQueue.set(queue);
+        Thread logThread = new Thread(()->{
+            client.set(user);
+            try {
+                while (!Thread.interrupted()) {
+                    queue.take().send();
+                }
+            } catch (InterruptedException ignored) {}
+        });
+        logThread.start();
         ObjectMapper mapper = new ObjectMapper();
         CompileRequest data = mapper.readValue(message,CompileRequest.class);
         logger.info(ansi().render("Received compile command from @|yellow "+getSocketHostname()+"|@")+"");
@@ -57,6 +70,7 @@ public class WebSocketServer {
                 ret2.put("data",new ErrorMessage(ex+"",lines,null));
             }
         }
+        logThread.interrupt();
         ret2.put("event","compileReturn");
         user.getRemote().sendString(mapper.writeValueAsString(ret2));
     }
@@ -130,7 +144,8 @@ public class WebSocketServer {
      * that we get access to the client from anywhere during the compilation.
      */
     private static ThreadLocal<Session> client = new ThreadLocal<>();
-
+    @Getter
+    private static ThreadLocal<BlockingQueue<LogMessage>> messageQueue = new ThreadLocal<>();
     /**
      * Get the hostname of the current client
      * @return the hostname of the current client

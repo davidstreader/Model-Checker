@@ -17,16 +17,23 @@ public class LogMessage {
     private boolean clear = false;
     private boolean error = false;
     private Location location = null;
+    private int clearAmt = -1;
     public LogMessage(String message) {
         this.message = message;
     }
 
     public LogMessage(String function, ProcessNode process) {
-        this(function+" @|black "+process.getIdentifier()+" "+formatLocation(process.getLocation())+"|@",true,false,null);
+        this(function+" @|black "+process.getIdentifier()+" "+formatLocation(process.getLocation())+"|@",true,false,null,-1);
     }
 
     public LogMessage(String message, boolean clear, boolean error) {
-        this(message,clear,error,null);
+        this(message,clear,error,null,-1);
+    }
+
+    public LogMessage(String message, int clearAmt) {
+        this(message);
+        this.clearAmt = clearAmt;
+        this.clear = true;
     }
 
     private static String formatLocation(Location location) {
