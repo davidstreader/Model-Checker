@@ -48,7 +48,7 @@ public class WebSocketServer {
                 messageQueue.set(queue);
                 ObjectMapper mapper = new ObjectMapper();
                 CompileRequest data = mapper.readValue(message, CompileRequest.class);
-                logger.info(ansi().render("Received compile command from @|yellow " + getSocketHostname() + "|@") + "");
+                logger.info(ansi().render("Received compile command from @|yellow " + user.getRemoteAddress().getHostString() + "|@") + "");
                 HashMap<String, Object> ret2 = new HashMap<>();
                 try {
                     ProcessReturn ret = compile(data);
@@ -79,6 +79,7 @@ public class WebSocketServer {
                 user.getRemote().sendString(mapper.writeValueAsString(ret2));
                 //Ignore as all exceptions here are InterruptedExceptions which we dont care about.
             } catch (Exception ignored) {}
+            interruptSession(user);
         });
         runners.put(user,runner);
         runner.start();
@@ -166,14 +167,8 @@ public class WebSocketServer {
     private static ThreadLocal<Session> client = new ThreadLocal<>();
     @Getter
     private static ThreadLocal<BlockingQueue<LogMessage>> messageQueue = new ThreadLocal<>();
-    /**
-     * Get the hostname of the current client
-     * @return the hostname of the current client
-     */
-    public static String getSocketHostname() {
-        return client.get().getRemoteAddress().getHostString();
-    }
-    public static boolean hasClient() {
+
+    static boolean hasClient() {
         return client.get() != null;
     }
     public static AtomicBoolean isStopped() {
