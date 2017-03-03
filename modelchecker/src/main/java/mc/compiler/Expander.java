@@ -317,7 +317,7 @@ public class Expander {
                 } else {
                     expression = Expression.constructExpression(exp);
                 }
-                replacements.put(var, expression);
+                replacements.put("$"+var, expression);
             }
             astNode.getMetaData().put("replacements",replacements);
         }

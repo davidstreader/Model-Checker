@@ -180,7 +180,7 @@ public class Guard implements Serializable{
             Expression expvars2 = ExpressionSimplifier.substitute(exp2.copy(),vars2);
             if (!ExpressionSimplifier.isSolveable(expvars2,Collections.emptyMap())) return false;
         }
-        return exp1.equals(exp2);
+        return ExpressionSimplifier.isSolveable(new EqualityOperator(exp1,exp2),Collections.emptyMap());
     }
     @Override
     public int hashCode() {
