@@ -1,5 +1,6 @@
 package mc.process_models.automata.operations;
 
+import lombok.AllArgsConstructor;
 import lombok.ToString;
 import mc.compiler.Guard;
 import mc.exceptions.CompilationException;
@@ -180,7 +181,7 @@ public class AutomataBisimulation {
 
         int from = (int)node.getMetaData("colour");
         node.getOutgoingEdges()
-            .forEach(edge -> colouringSet.add(new Colour(from, (int)edge.getTo().getMetaData("colour"),edge.getLabel(), (Guard) edge.getMetaData("guard"))));
+            .forEach(edge -> colouringSet.add(new Colour(from, (int)edge.getTo().getMetaData("colour"),edge.getLabel(), (Guard) edge.getMetaData("guard"),node)));
         List<Colour> colouring = new ArrayList<>(colouringSet);
         Collections.sort(colouring);
         return colouring;
@@ -194,19 +195,14 @@ public class AutomataBisimulation {
         nextColourId = 1;
     }
     @ToString
+    @AllArgsConstructor
     private class Colour implements Comparable<Colour> {
 
         public int from;
         public int to;
         public String action;
         public Guard guard;
-
-        public Colour(int from, int to, String action, Guard guard){
-            this.from = from;
-            this.to = to;
-            this.action = action;
-            this.guard = guard;
-        }
+        public AutomatonNode node;
 
         public boolean equals(Object obj){
             if(obj == this){
@@ -223,7 +219,7 @@ public class AutomataBisimulation {
                 }
                 if (guard != null && col.guard != null) {
                     try {
-                        if (!guard.equals(col.guard,replacements)) {
+                        if (!guard.equals(col.guard,replacements,node,col.node)) {
                             return false;
                         }
                     } catch (CompilationException e) {

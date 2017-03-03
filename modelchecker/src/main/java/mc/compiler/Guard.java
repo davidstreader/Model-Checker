@@ -3,8 +3,11 @@ package mc.compiler;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import mc.exceptions.CompilationException;
+import mc.process_models.automata.AutomatonEdge;
+import mc.process_models.automata.AutomatonNode;
 import mc.util.expr.*;
 
+import javax.xml.soap.Node;
 import java.io.Serializable;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -154,7 +157,7 @@ public class Guard implements Serializable{
         setHiddenVariables(hiddenVariables);
     }
 
-    public boolean equals(Object o, Map<String, Expression> replacements) throws CompilationException {
+    public boolean equals(Object o, Map<String, Expression> replacements, AutomatonNode first, AutomatonNode second) throws CompilationException {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Guard guard1 = (Guard) o;
@@ -166,8 +169,24 @@ public class Guard implements Serializable{
         } else if (!guard1.getNext().equals(next)) {
             return false;
         }
-        return Objects.equals(ExpressionSimplifier.substitute(guard1.guard, replacements),
-            ExpressionSimplifier.substitute(guard, replacements));
+        List<List<AutomatonEdge>> edgeList1 =  new ArrayList<>();
+        List<List<AutomatonEdge>> edgeList2 =  new ArrayList<>();
+        edgeList1.add(NodeUtils.findPathToRoot(first));
+        edgeList1.addAll(NodeUtils.findLoops(first));
+        edgeList2.add(NodeUtils.findPathToRoot(second));
+        edgeList2.addAll(NodeUtils.findLoops(second));
+        Expression exp1 = ExpressionSimplifier.substitute(guard, replacements);
+        Expression exp2 = ExpressionSimplifier.substitute(guard1.guard, replacements);
+        for (List<AutomatonEdge> edges1:edgeList1) {
+            Map<String,Expression> vars1 = NodeUtils.collectVariables(edges1);
+            Expression expvars1 = ExpressionSimplifier.substitute(exp1,vars1);
+            for (List<AutomatonEdge> edges2:edgeList2) {
+                Map<String,Expression> vars2 = NodeUtils.collectVariables(edges2);
+                Expression expvars2 = ExpressionSimplifier.substitute(exp2,vars2);
+                if (!expvars1.equals(expvars2)) return false;
+            }
+        }
+        return true;
     }
 
     private Expression replaceVariables(String next, Map<String, Expression> replacements) {
