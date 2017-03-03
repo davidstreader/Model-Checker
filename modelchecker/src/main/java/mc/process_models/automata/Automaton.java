@@ -173,7 +173,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
             //Since assignment should be the same (same colour) we can just copy most data from either guard.
             Guard combined = guard1.copy();
             //We could take either path
-            combined.setGuard(ExpressionSimplifier.simplify(new OrOperator(guard1.getGuard(),guard2.getGuard()),Collections.emptyMap()));
+            combined.setGuard(new OrOperator(guard1.getGuard(),guard2.getGuard()));
             edge1.addMetaData("guard",combined);
             edge2.addMetaData("guard",combined);
         }

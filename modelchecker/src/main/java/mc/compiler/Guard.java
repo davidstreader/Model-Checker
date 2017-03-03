@@ -162,44 +162,26 @@ public class Guard implements Serializable{
         if (o == null || getClass() != o.getClass()) return false;
         Guard guard1 = (Guard) o;
         if (hiddenVariables.isEmpty() && guard1.hiddenVariables.isEmpty()) return true;
-        if (replacements != null) {
-            List<Expression> nexts1 = next.stream().map(next -> replaceVariables(next,replacements)).collect(Collectors.toList());
-            List<Expression> nexts2 = guard1.next.stream().map(next -> replaceVariables(next,replacements)).collect(Collectors.toList());
-            if (!nexts1.equals(nexts2)) return false;
-        } else if (!guard1.getNext().equals(next)) {
-            return false;
-        }
         List<List<AutomatonEdge>> edgeList1 =  new ArrayList<>();
         List<List<AutomatonEdge>> edgeList2 =  new ArrayList<>();
         edgeList1.add(NodeUtils.findPathToRoot(first));
         edgeList1.addAll(NodeUtils.findLoops(first));
         edgeList2.add(NodeUtils.findPathToRoot(second));
         edgeList2.addAll(NodeUtils.findLoops(second));
-        Expression exp1 = ExpressionSimplifier.substitute(ExpressionSimplifier.simplify(guard,Collections.emptyMap()), replacements);
-        Expression exp2 = ExpressionSimplifier.substitute(ExpressionSimplifier.simplify(guard1.guard,Collections.emptyMap()), replacements);
+        Expression exp1 = ExpressionSimplifier.substitute(guard.copy(), replacements);
+        Expression exp2 = ExpressionSimplifier.substitute(guard1.guard.copy(), replacements);
         for (List<AutomatonEdge> edges1:edgeList1) {
             Map<String,Expression> vars1 = NodeUtils.collectVariables(edges1);
-            Expression expvars1 = ExpressionSimplifier.substitute(exp1,vars1);
+            Expression expvars1 = ExpressionSimplifier.substitute(exp1.copy(),vars1);
             if (!ExpressionSimplifier.isSolveable(expvars1,Collections.emptyMap())) return false;
         }
         for (List<AutomatonEdge> edges2:edgeList2) {
             Map<String,Expression> vars2 = NodeUtils.collectVariables(edges2);
-            Expression expvars2 = ExpressionSimplifier.substitute(exp2,vars2);
+            Expression expvars2 = ExpressionSimplifier.substitute(exp2.copy(),vars2);
             if (!ExpressionSimplifier.isSolveable(expvars2,Collections.emptyMap())) return false;
         }
         return exp1.equals(exp2);
     }
-
-    private Expression replaceVariables(String next, Map<String, Expression> replacements) {
-        next = next.substring(next.indexOf('=')+1);
-        for (String key:replacements.keySet()) {
-            next = next.replaceAll("\\b"+key+"\\b", Matcher.quoteReplacement(replacements.get(key)+""));
-        }
-        next = next.replaceAll("\\$","");
-        next = next.replaceAll("[a-z]+","\\$$0");
-        return Expression.constructExpression(next);
-    }
-
     @Override
     public int hashCode() {
         int result = guard != null ? guard.hashCode() : 0;

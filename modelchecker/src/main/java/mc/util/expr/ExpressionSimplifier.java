@@ -5,6 +5,7 @@ import com.microsoft.z3.enumerations.Z3_lbool;
 import mc.compiler.Guard;
 import mc.exceptions.CompilationException;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -26,6 +27,9 @@ public class ExpressionSimplifier {
         }
         throw new CompilationException(ExpressionSimplifier.class,
             "Unable to check if equation is satisfied as it was not a boolean expression.");
+    }
+    public static Expression copy(Expression other) throws CompilationException {
+        return simplifier.get().convert(simplifier.get().convert(other, Collections.emptyMap()));
     }
     public static boolean isSolveable(Expression expr, Map<String, Integer> variables) throws CompilationException {
         init();
@@ -188,7 +192,6 @@ public class ExpressionSimplifier {
         if (className.contains("BitVec")) return "`Integer`";
         return className;
     }
-
     /**
      * Convert from an Expression to a Z3 expression
      * @param expr The expression

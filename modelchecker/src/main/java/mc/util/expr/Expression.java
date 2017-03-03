@@ -37,4 +37,7 @@ public abstract class Expression implements Serializable {
         } catch (CompilationException ignored) {}
         return false;
     }
+    public Expression copy() throws CompilationException {
+        return ExpressionSimplifier.copy(this);
+    }
 }

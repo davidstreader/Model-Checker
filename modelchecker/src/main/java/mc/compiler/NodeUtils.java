@@ -9,6 +9,7 @@ import mc.util.expr.ExpressionSimplifier;
 import mc.util.expr.IntegerOperand;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class NodeUtils {
     public static List<List<AutomatonEdge>> findLoops(AutomatonNode node) {
