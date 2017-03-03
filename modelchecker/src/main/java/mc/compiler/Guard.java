@@ -175,18 +175,19 @@ public class Guard implements Serializable{
         edgeList1.addAll(NodeUtils.findLoops(first));
         edgeList2.add(NodeUtils.findPathToRoot(second));
         edgeList2.addAll(NodeUtils.findLoops(second));
-        Expression exp1 = ExpressionSimplifier.substitute(guard, replacements);
-        Expression exp2 = ExpressionSimplifier.substitute(guard1.guard, replacements);
+        Expression exp1 = ExpressionSimplifier.substitute(ExpressionSimplifier.simplify(guard,Collections.emptyMap()), replacements);
+        Expression exp2 = ExpressionSimplifier.substitute(ExpressionSimplifier.simplify(guard1.guard,Collections.emptyMap()), replacements);
         for (List<AutomatonEdge> edges1:edgeList1) {
             Map<String,Expression> vars1 = NodeUtils.collectVariables(edges1);
             Expression expvars1 = ExpressionSimplifier.substitute(exp1,vars1);
-            for (List<AutomatonEdge> edges2:edgeList2) {
-                Map<String,Expression> vars2 = NodeUtils.collectVariables(edges2);
-                Expression expvars2 = ExpressionSimplifier.substitute(exp2,vars2);
-                if (!expvars1.equals(expvars2)) return false;
-            }
+            if (!ExpressionSimplifier.isSolveable(expvars1,Collections.emptyMap())) return false;
         }
-        return true;
+        for (List<AutomatonEdge> edges2:edgeList2) {
+            Map<String,Expression> vars2 = NodeUtils.collectVariables(edges2);
+            Expression expvars2 = ExpressionSimplifier.substitute(exp2,vars2);
+            if (!ExpressionSimplifier.isSolveable(expvars2,Collections.emptyMap())) return false;
+        }
+        return exp1.equals(exp2);
     }
 
     private Expression replaceVariables(String next, Map<String, Expression> replacements) {
