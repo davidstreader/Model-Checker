@@ -7,12 +7,9 @@ import mc.process_models.automata.AutomatonEdge;
 import mc.process_models.automata.AutomatonNode;
 import mc.util.expr.*;
 
-import javax.xml.soap.Node;
 import java.io.Serializable;
 import java.util.*;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 @Setter
 @AllArgsConstructor
@@ -162,18 +159,12 @@ public class Guard implements Serializable{
         if (o == null || getClass() != o.getClass()) return false;
         Guard guard1 = (Guard) o;
         if (hiddenVariables.isEmpty() && guard1.hiddenVariables.isEmpty()) return true;
-        List<List<AutomatonEdge>> edgeList1 =  new ArrayList<>();
-        List<List<AutomatonEdge>> edgeList2 =  new ArrayList<>();
-        edgeList1.addAll(NodeUtils.findLoopsAndPathToRoot(first));
-
-        edgeList2.addAll(NodeUtils.findLoopsAndPathToRoot(second));
-
         Expression exp1 = ExpressionSimplifier.substitute(guard.copy(), replacements);
         Expression exp2 = ExpressionSimplifier.substitute(guard1.guard.copy(), replacements);
-        if (!edgeList1.parallelStream().map(NodeUtils::collectVariables)
+        if (!NodeUtils.findLoopsAndPathToRoot(first).map(NodeUtils::collectVariables)
             .map(s -> ExpressionSimplifier.substitute(exp1.copy(),s))
             .allMatch(s->ExpressionSimplifier.isSolveable(s,Collections.emptyMap()))) return false;
-        if (!edgeList2.parallelStream().map(NodeUtils::collectVariables)
+        if (!NodeUtils.findLoopsAndPathToRoot(second).map(NodeUtils::collectVariables)
             .map(s -> ExpressionSimplifier.substitute(exp2.copy(),s))
             .allMatch(s->ExpressionSimplifier.isSolveable(s,Collections.emptyMap()))) return false;
         return ExpressionSimplifier.isSolveable(new EqualityOperator(exp1,exp2),Collections.emptyMap());

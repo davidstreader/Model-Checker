@@ -2,6 +2,7 @@ package mc.compiler;
 
 import lombok.SneakyThrows;
 import mc.exceptions.CompilationException;
+import mc.process_models.automata.Automaton;
 import mc.process_models.automata.AutomatonEdge;
 import mc.process_models.automata.AutomatonNode;
 import mc.util.expr.Expression;
@@ -9,47 +10,28 @@ import mc.util.expr.ExpressionSimplifier;
 import mc.util.expr.IntegerOperand;
 
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class NodeUtils {
-    public static List<List<AutomatonEdge>> findLoopsAndPathToRoot(AutomatonNode node) {
-        List<List<AutomatonEdge>> cycles = new ArrayList<>();
-        for (AutomatonEdge edge:node.getIncomingEdges()) {
+    public static Stream<List<AutomatonEdge>> findLoopsAndPathToRoot(AutomatonNode node) {
+        return node.getIncomingEdges().parallelStream().flatMap(edge ->{
             List<AutomatonEdge> visited = new ArrayList<>();
             visited.add(edge);
-            if (edge.getTo() == node) cycles.add(Collections.singletonList(edge));
-            for (AutomatonEdge edge2:edge.getFrom().getIncomingEdges()) {
-                findLoops(node,edge2,new ArrayList<>(),visited,cycles);
-            }
-        }
-        return cycles;
+            return findLoops(node,edge,new ArrayList<>(),visited);
+        });
     }
-    private static boolean findLoops(AutomatonNode toFind, AutomatonEdge edge, List<AutomatonEdge> path, List<AutomatonEdge> visited, List<List<AutomatonEdge>> cycles) {
-        if (visited.contains(edge)) return false;
+    private static Stream<List<AutomatonEdge>> findLoops(AutomatonNode toFind, AutomatonEdge edge, List<AutomatonEdge> path, List<AutomatonEdge> visited) {
+        if (visited.contains(edge)) return Stream.empty();
         visited.add(edge);
         if (edge.getFrom() == toFind) {
             path.add(edge);
-            cycles.add(new ArrayList<>(path));
-            return true;
+            return Stream.of(path);
         }
         if (edge.getFrom().hasMetaData("startNode")) {
             path.add(edge);
-            cycles.add(new ArrayList<>(path));
-            return true;
+            return Stream.of(path);
         }
-        for (AutomatonEdge e : edge.getFrom().getOutgoingEdges()) {
-            if (findLoops(toFind, e, path, visited, cycles)) {
-                path.add(edge);
-                return true;
-            }
-        }
-        for (AutomatonEdge e : edge.getFrom().getIncomingEdges()) {
-            if (findLoops(toFind, e, path, visited, cycles)) {
-                path.add(edge);
-                return true;
-            }
-        }
-        return false;
+        return edge.getFrom().getIncomingEdges().parallelStream().flatMap(e->findLoops(toFind, e, path, visited));
     }
 
     /**
