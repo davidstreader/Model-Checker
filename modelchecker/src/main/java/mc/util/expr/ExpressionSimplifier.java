@@ -2,6 +2,7 @@ package mc.util.expr;
 
 import com.microsoft.z3.*;
 import com.microsoft.z3.enumerations.Z3_lbool;
+import lombok.SneakyThrows;
 import mc.compiler.Guard;
 import mc.exceptions.CompilationException;
 
@@ -29,9 +30,11 @@ public class ExpressionSimplifier {
             "Unable to check if equation is satisfied as it was not a boolean expression.");
     }
     public static Expression copy(Expression other) throws CompilationException {
+        init();
         return simplifier.get().convert(simplifier.get().convert(other, Collections.emptyMap()));
     }
-    public static boolean isSolveable(Expression expr, Map<String, Integer> variables) throws CompilationException {
+    @SneakyThrows
+    public static boolean isSolveable(Expression expr, Map<String, Integer> variables) {
         init();
         return simplifier.get().isSolveable1(expr, variables);
     }
@@ -431,7 +434,8 @@ public class ExpressionSimplifier {
         expression.setRhs(substitute(expression.getRightHandSide(), subMap));
         return expression;
     }
-    public static Expression substitute(Expression expression, Map<String, Expression> subMap) throws CompilationException {
+    @SneakyThrows
+    public static Expression substitute(Expression expression, Map<String, Expression> subMap) {
         if (subMap == null) return expression;
         if (expression instanceof BinaryOperator) {
             return substitute((BinaryOperator) expression, subMap);

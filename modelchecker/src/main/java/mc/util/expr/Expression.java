@@ -1,5 +1,6 @@
 package mc.util.expr;
 
+import lombok.SneakyThrows;
 import mc.exceptions.CompilationException;
 
 import java.io.Serializable;
@@ -37,7 +38,8 @@ public abstract class Expression implements Serializable {
         } catch (CompilationException ignored) {}
         return false;
     }
-    public Expression copy() throws CompilationException {
+    @SneakyThrows
+    public Expression copy() {
         return ExpressionSimplifier.copy(this);
     }
 }

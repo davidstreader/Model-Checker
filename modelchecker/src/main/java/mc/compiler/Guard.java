@@ -166,20 +166,18 @@ public class Guard implements Serializable{
         List<List<AutomatonEdge>> edgeList2 =  new ArrayList<>();
         edgeList1.add(NodeUtils.findPathToRoot(first));
         edgeList1.addAll(NodeUtils.findLoops(first));
+
         edgeList2.add(NodeUtils.findPathToRoot(second));
         edgeList2.addAll(NodeUtils.findLoops(second));
+
         Expression exp1 = ExpressionSimplifier.substitute(guard.copy(), replacements);
         Expression exp2 = ExpressionSimplifier.substitute(guard1.guard.copy(), replacements);
-        for (List<AutomatonEdge> edges1:edgeList1) {
-            Map<String,Expression> vars1 = NodeUtils.collectVariables(edges1);
-            Expression expvars1 = ExpressionSimplifier.substitute(exp1.copy(),vars1);
-            if (!ExpressionSimplifier.isSolveable(expvars1,Collections.emptyMap())) return false;
-        }
-        for (List<AutomatonEdge> edges2:edgeList2) {
-            Map<String,Expression> vars2 = NodeUtils.collectVariables(edges2);
-            Expression expvars2 = ExpressionSimplifier.substitute(exp2.copy(),vars2);
-            if (!ExpressionSimplifier.isSolveable(expvars2,Collections.emptyMap())) return false;
-        }
+        if (!edgeList1.parallelStream().map(NodeUtils::collectVariables)
+            .map(s -> ExpressionSimplifier.substitute(exp1.copy(),s))
+            .allMatch(s->ExpressionSimplifier.isSolveable(s,Collections.emptyMap()))) return false;
+        if (!edgeList2.parallelStream().map(NodeUtils::collectVariables)
+            .map(s -> ExpressionSimplifier.substitute(exp2.copy(),s))
+            .allMatch(s->ExpressionSimplifier.isSolveable(s,Collections.emptyMap()))) return false;
         return ExpressionSimplifier.isSolveable(new EqualityOperator(exp1,exp2),Collections.emptyMap());
     }
     @Override
