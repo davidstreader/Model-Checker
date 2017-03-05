@@ -49,9 +49,9 @@ public class WebSocketServer {
                 ObjectMapper mapper = new ObjectMapper();
                 CompileRequest data = mapper.readValue(message, CompileRequest.class);
                 logger.info(ansi().render("Received compile command from @|yellow " + user.getRemoteAddress().getHostString() + "|@") + "");
-                Object ret2;
+                Object ret;
                 try {
-                    ret2 = compile(data);
+                    ret = compile(data);
                 } catch (Exception ex) {
                     //Get a stack trace then split it into lines
                     String[] lineSplit = ExceptionUtils.getStackTrace(ex).split("\n");
@@ -65,17 +65,17 @@ public class WebSocketServer {
                     }
                     String lines = String.join("\n", lineSplit);
                     if (ex instanceof CompilationException) {
-                        ret2 = new ErrorMessage(ex.getMessage().replace("mc.exceptions.", ""), ((CompilationException) ex).getLocation());
+                        ret = new ErrorMessage(ex.getMessage().replace("mc.exceptions.", ""), ((CompilationException) ex).getLocation());
                         LoggerFactory.getLogger(((CompilationException) ex).getClazz()).error(ex + "\n" + lines);
                     } else {
                         logger.error(ansi().render("@|red An error occurred while compiling.|@") + "");
                         logger.error(ex + "\n" + lines);
-                        ret2 = new ErrorMessage(ex + "", lines, null);
+                        ret = new ErrorMessage(ex + "", lines, null);
                     }
                 }
                 logThread.interrupt();
-                send("compileReturn",ret2);
-                user.getRemote().sendString(mapper.writeValueAsString(ret2));
+                send("compileReturn", ret);
+                user.getRemote().sendString(mapper.writeValueAsString(ret));
                 //Ignore as all exceptions here are InterruptedExceptions which we dont care about.
             } catch (Exception ignored) {}
             interruptSession(user);
