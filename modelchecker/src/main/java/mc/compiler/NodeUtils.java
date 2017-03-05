@@ -37,9 +37,7 @@ public class NodeUtils {
     /**
      * Create an expression resulting from combining all guards between node and start inclusive.
      * @return
-     * @throws CompilationException
      */
-    @SneakyThrows
     public static Map<String,Expression> collectVariables(List<AutomatonEdge> edges) {
         HashMap<String,Expression> exp = new HashMap<>();
         for (AutomatonEdge edge:edges) {

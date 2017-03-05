@@ -51,6 +51,8 @@ public class CommandManager {
                     String line = reader.readLine();
                     if (line != null) {
                         executeCommand(line);
+                    } else {
+                        break;
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
