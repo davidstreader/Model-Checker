@@ -49,10 +49,9 @@ public class WebSocketServer {
                 ObjectMapper mapper = new ObjectMapper();
                 CompileRequest data = mapper.readValue(message, CompileRequest.class);
                 logger.info(ansi().render("Received compile command from @|yellow " + user.getRemoteAddress().getHostString() + "|@") + "");
-                HashMap<String, Object> ret2 = new HashMap<>();
+                Object ret2;
                 try {
-                    ProcessReturn ret = compile(data);
-                    ret2.put("data", ret);
+                    ret2 = compile(data);
                 } catch (Exception ex) {
                     //Get a stack trace then split it into lines
                     String[] lineSplit = ExceptionUtils.getStackTrace(ex).split("\n");
@@ -66,16 +65,16 @@ public class WebSocketServer {
                     }
                     String lines = String.join("\n", lineSplit);
                     if (ex instanceof CompilationException) {
-                        ret2.put("data", new ErrorMessage(ex.getMessage().replace("mc.exceptions.", ""), ((CompilationException) ex).getLocation()));
+                        ret2 = new ErrorMessage(ex.getMessage().replace("mc.exceptions.", ""), ((CompilationException) ex).getLocation());
                         LoggerFactory.getLogger(((CompilationException) ex).getClazz()).error(ex + "\n" + lines);
                     } else {
                         logger.error(ansi().render("@|red An error occurred while compiling.|@") + "");
                         logger.error(ex + "\n" + lines);
-                        ret2.put("data", new ErrorMessage(ex + "", lines, null));
+                        ret2 = new ErrorMessage(ex + "", lines, null);
                     }
                 }
                 logThread.interrupt();
-                ret2.put("event", "compileReturn");
+                send("compileReturn",ret2);
                 user.getRemote().sendString(mapper.writeValueAsString(ret2));
                 //Ignore as all exceptions here are InterruptedExceptions which we dont care about.
             } catch (Exception ignored) {}
