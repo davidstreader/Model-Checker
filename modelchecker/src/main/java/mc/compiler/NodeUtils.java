@@ -12,21 +12,13 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class NodeUtils {
-    public static List<List<AutomatonEdge>> findLoops(AutomatonNode node) {
+    public static List<List<AutomatonEdge>> findLoopsAndPathToRoot(AutomatonNode node) {
         List<List<AutomatonEdge>> cycles = new ArrayList<>();
         for (AutomatonEdge edge:node.getIncomingEdges()) {
             List<AutomatonEdge> visited = new ArrayList<>();
             visited.add(edge);
             if (edge.getTo() == node) cycles.add(Collections.singletonList(edge));
             for (AutomatonEdge edge2:edge.getFrom().getIncomingEdges()) {
-                findLoops(node,edge2,new ArrayList<>(),visited,cycles);
-            }
-        }
-        for (AutomatonEdge edge:node.getOutgoingEdges()) {
-            List<AutomatonEdge> visited = new ArrayList<>();
-            visited.add(edge);
-            if (edge.getFrom() == node) cycles.add(Collections.singletonList(edge));
-            for (AutomatonEdge edge2:edge.getTo().getOutgoingEdges()) {
                 findLoops(node,edge2,new ArrayList<>(),visited,cycles);
             }
         }
@@ -40,22 +32,10 @@ public class NodeUtils {
             cycles.add(new ArrayList<>(path));
             return true;
         }
-        if (edge.getTo() == toFind) {
+        if (edge.getFrom().hasMetaData("startNode")) {
             path.add(edge);
             cycles.add(new ArrayList<>(path));
             return true;
-        }
-        for (AutomatonEdge e : edge.getTo().getOutgoingEdges()) {
-            if (findLoops(toFind, e, path, visited, cycles)) {
-                path.add(edge);
-                return true;
-            }
-        }
-        for (AutomatonEdge e : edge.getTo().getIncomingEdges()) {
-            if (findLoops(toFind, e, path, visited, cycles)) {
-                path.add(edge);
-                return true;
-            }
         }
         for (AutomatonEdge e : edge.getFrom().getOutgoingEdges()) {
             if (findLoops(toFind, e, path, visited, cycles)) {
@@ -68,33 +48,6 @@ public class NodeUtils {
                 path.add(edge);
                 return true;
             }
-        }
-        return false;
-    }
-    public static List<AutomatonEdge> findPathToRoot(AutomatonNode node) {
-        List<AutomatonEdge> path = new ArrayList<>();
-        List<AutomatonEdge> edges = new ArrayList<>();
-        for (AutomatonEdge e:node.getIncomingEdges()) {
-            edges.clear();
-            if (findPathToRoot(e,path, edges)) {
-                Collections.reverse(edges);
-                return edges;
-            }
-        }
-        return Collections.emptyList();
-    }
-    private static boolean findPathToRoot(AutomatonEdge edge, List<AutomatonEdge> path, List<AutomatonEdge> visited) {
-        if (visited.contains(edge)) return false;
-        visited.add(edge);
-        if (edge.getFrom().hasMetaData("startNode")) {
-            path.add(edge);
-            return true;
-        }
-        for (AutomatonEdge e : edge.getFrom().getIncomingEdges()) {
-         if (findPathToRoot(e, path, visited)) {
-             path.add(edge);
-             return true;
-         }
         }
         return false;
     }

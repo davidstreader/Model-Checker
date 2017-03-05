@@ -164,11 +164,9 @@ public class Guard implements Serializable{
         if (hiddenVariables.isEmpty() && guard1.hiddenVariables.isEmpty()) return true;
         List<List<AutomatonEdge>> edgeList1 =  new ArrayList<>();
         List<List<AutomatonEdge>> edgeList2 =  new ArrayList<>();
-        edgeList1.add(NodeUtils.findPathToRoot(first));
-        edgeList1.addAll(NodeUtils.findLoops(first));
+        edgeList1.addAll(NodeUtils.findLoopsAndPathToRoot(first));
 
-        edgeList2.add(NodeUtils.findPathToRoot(second));
-        edgeList2.addAll(NodeUtils.findLoops(second));
+        edgeList2.addAll(NodeUtils.findLoopsAndPathToRoot(second));
 
         Expression exp1 = ExpressionSimplifier.substitute(guard.copy(), replacements);
         Expression exp2 = ExpressionSimplifier.substitute(guard1.guard.copy(), replacements);
