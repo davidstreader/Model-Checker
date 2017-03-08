@@ -1,10 +1,12 @@
 package mc.process_models.automata;
 
+import mc.compiler.EquationEvaluator;
 import mc.compiler.Guard;
 import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
 import mc.process_models.ProcessModelObject;
 import mc.util.Location;
+import mc.util.expr.EqualityOperator;
 import mc.util.expr.ExpressionSimplifier;
 import mc.util.expr.OrOperator;
 
@@ -172,9 +174,10 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
             Guard guard2 = (Guard) edge2.getMetaData("guard");
             //Since assignment should be the same (same colour) we can just copy most data from either guard.
             Guard combined = guard1.copy();
-            if (!guard1.equals(guard2))
+            //By putting both equations equal to eachother, if we have multiple or operations, then if one matches then it will be solveable.
+            if (!ExpressionSimplifier.isSolveable(new EqualityOperator(guard1.getGuard(),guard2.getGuard()),Collections.emptyMap()))
                 //We could take either path
-                combined.setGuard(new OrOperator(guard1.getGuard(),guard2.getGuard()));
+                combined.setGuard(new OrOperator(guard1.getGuard(), guard2.getGuard()));
             else
                 combined.setGuard(guard1.getGuard());
             edge1.addMetaData("guard",combined);

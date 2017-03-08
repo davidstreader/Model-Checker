@@ -23,11 +23,7 @@ public class NodeUtils {
     private static Stream<List<AutomatonEdge>> findLoops(AutomatonNode toFind, AutomatonEdge edge, List<AutomatonEdge> path, List<AutomatonEdge> visited) {
         if (visited.contains(edge)) return Stream.empty();
         visited.add(edge);
-        if (edge.getFrom() == toFind) {
-            path.add(edge);
-            return Stream.of(path);
-        }
-        if (edge.getFrom().hasMetaData("startNode")) {
+        if (edge.getFrom() == toFind || edge.getFrom().hasMetaData("startNode")) {
             path.add(edge);
             return Stream.of(path);
         }

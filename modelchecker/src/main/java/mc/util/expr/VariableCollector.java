@@ -1,36 +1,34 @@
 package mc.util.expr;
 
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class VariableCollector {
 
-    private void collectVariables(Expression expression, List<String> vars){
+    private Stream<String> collectVariables(Expression expression){
         if(expression instanceof VariableOperand){
-            collectVariables((VariableOperand)expression, vars);
+            return Stream.of(((VariableOperand)expression).getValue());
         }
         else if(expression instanceof BinaryOperator){
-            collectVariables((BinaryOperator)expression, vars);
+            return collectVariables((BinaryOperator)expression);
         }
         else if(expression instanceof UnaryOperator){
-            collectVariables((UnaryOperator)expression, vars);
+            return collectVariables((UnaryOperator)expression);
         }
+        return Stream.empty();
     }
 
-    private void collectVariables(VariableOperand expression, List<String> vars){
-        vars.add(expression.getValue());
+    private Stream<String> collectVariables(BinaryOperator expression){
+        return Stream.concat(collectVariables(expression.getLeftHandSide()),collectVariables(expression.getRightHandSide()));
     }
 
-    private void collectVariables(BinaryOperator expression, List<String> vars){
-        collectVariables(expression.getLeftHandSide(), vars);
-        collectVariables(expression.getRightHandSide(), vars);
-    }
-
-    private void collectVariables(UnaryOperator expression, List<String> vars){
-        collectVariables(expression.getRightHandSide(), vars);
+    private Stream<String> collectVariables(UnaryOperator expression){
+        return collectVariables(expression.getRightHandSide());
     }
 
     public Map<String, Integer> getVariables(Expression expression, Map<String, Object> variableMap) {
-        ArrayList<String> vars = new ArrayList<>();
         //Get just the variables from the map
         HashMap<String, Integer> varMap = new HashMap<>();
         if (variableMap != null) {
@@ -40,15 +38,13 @@ public class VariableCollector {
                 }
             }
         }
-        //Print the expression, keeping track of all used variables
-        collectVariables(expression, vars);
         //Map from used variables to list of variables and their values
         Map<String,Integer> newVarMap = new HashMap<>();
-        for (String var: vars) {
+        collectVariables(expression).parallel().distinct().forEach(var -> {
             if (variableMap == null) newVarMap.put(var,null);
             if (varMap.containsKey(var))
                 newVarMap.put(var,varMap.get(var));
-        }
+        });
         return newVarMap;
     }
 }
