@@ -281,9 +281,11 @@
         renamed = {};
         for (let i in proc.renamed) {
           const split = proc.renamed[i].split("/");
-          renamed[split[1]] = split[0];
+          const id = split[1].split(".")[1] || split[1];
+          renamed[id] = split[0];
         }
         proc.renamed = renamed;
+        console.log(proc.renamed)
 ;      }
       return proc;
     }
