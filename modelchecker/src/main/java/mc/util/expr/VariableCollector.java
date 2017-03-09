@@ -1,8 +1,7 @@
 package mc.util.expr;
 
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Stream;
 
 public class VariableCollector {
