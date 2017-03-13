@@ -115,8 +115,14 @@ public class Guard implements Serializable{
         for (String var : vars) {
             if (globalVariableMap.containsKey(var)) {
                 String printed = new ExpressionPrinter().printExpression(globalVariableMap.get(var));
-                String variable = new VariableCollector().getVariables(globalVariableMap.get(var),null).keySet().iterator().next();
-                printed = printed.substring(1, printed.length() - 1);
+                String variable;
+                if (new ExpressionEvaluator().isExecutable(globalVariableMap.get(var))) {
+                    variable = varNames.get(vars.indexOf(var));
+                } else {
+                    variable = new VariableCollector().getVariables(globalVariableMap.get(var),null).keySet().iterator().next();
+                    //Strip extra brackets
+                    printed = printed.substring(1, printed.length() - 1);
+                }
                 nextMap.put(var, printed);
                 next.add(variable+":="+rm$(printed));
                 break;
