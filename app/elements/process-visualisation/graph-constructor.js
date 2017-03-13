@@ -54,11 +54,11 @@ function visualizeAutomata(process, graphID, hidden, glGraph) {
             label += "!";
         }
         let guard = edges[i].metaData.guard;
-        if(guard !== undefined && guard.hiddenGuardStr && guard.hiddenGuardStr.length > 0){
+        if(guard && guard.hiddenGuardStr && guard.hiddenGuardStr.length > 0){
             label += " "+guard.hiddenGuardStr;
         }
 
-        if (guard !== undefined) {
+        if (guard) {
             tooltip = "";
             if (guard.varStr.length > 0)
             tooltip += "Variables:<span style='color:blue'>" +guard.varStr+"</span><br/>";
