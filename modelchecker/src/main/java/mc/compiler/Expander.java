@@ -458,7 +458,6 @@ public class Expander {
                 variables.put(key, (Integer)value);
             }
         }
-
         Expression ex = ExpressionSimplifier.simplify(condition,variables);
         if (ex instanceof BooleanOperand)
             return ((BooleanOperand) ex).getValue();

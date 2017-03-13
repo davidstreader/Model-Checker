@@ -5,32 +5,7 @@ import mc.compiler.ast.*;
 import mc.compiler.token.*;
 import mc.exceptions.CompilationException;
 import mc.util.Location;
-import mc.util.expr.AdditionOperator;
-import mc.util.expr.AndOperator;
-import mc.util.expr.BitAndOperator;
-import mc.util.expr.BitNotOperator;
-import mc.util.expr.BitOrOperator;
-import mc.util.expr.DivisionOperator;
-import mc.util.expr.EqualityOperator;
-import mc.util.expr.ExclOrOperator;
-import mc.util.expr.Expression;
-import mc.util.expr.ExpressionEvaluator;
-import mc.util.expr.GreaterThanEqOperator;
-import mc.util.expr.GreaterThanOperator;
-import mc.util.expr.IntegerOperand;
-import mc.util.expr.LeftShiftOperator;
-import mc.util.expr.LessThanEqOperator;
-import mc.util.expr.LessThanOperator;
-import mc.util.expr.ModuloOperator;
-import mc.util.expr.MultiplicationOperator;
-import mc.util.expr.NegativeOperator;
-import mc.util.expr.NotEqualOperator;
-import mc.util.expr.NotOperator;
-import mc.util.expr.OrOperator;
-import mc.util.expr.PositiveOperator;
-import mc.util.expr.RightShiftOperator;
-import mc.util.expr.SubtractionOperator;
-import mc.util.expr.VariableOperand;
+import mc.util.expr.*;
 
 import java.util.*;
 
@@ -861,7 +836,6 @@ public class Parser {
         }
 
         Expression expression = variableMap.get(parseExpression());
-
         // ensure that the next token is a 'then' token
         if(!(nextToken() instanceof ThenToken)){
             Token error = tokens.get(index - 1);
@@ -1316,13 +1290,8 @@ public class Parser {
 
         Expression expression = expressionParser.parseExpression(exprTokens);
         if(expressionEvaluator.isExecutable(expression)){
-            int result = expressionEvaluator.evaluateExpression(expression, new HashMap<String, Integer>());
-            return "" + result;
+            expression = ExpressionSimplifier.simplify(expression,Collections.emptyMap());
         }
-        else if(expression instanceof VariableOperand){
-            return ((VariableOperand)expression).getValue();
-        }
-
         String variable = nextVariableId();
         variableMap.put(variable, expression);
         return variable;
