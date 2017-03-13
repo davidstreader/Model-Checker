@@ -6,6 +6,7 @@ import mc.compiler.token.*;
 import mc.exceptions.CompilationException;
 import mc.util.Location;
 import mc.util.expr.*;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 
@@ -246,15 +247,17 @@ public class Parser {
         int start = index;
 
         // parse the next expression and evaluate it if necessary to get the start value of the range
-        String expression = parseExpression();
+        String expression = parseExpression(true);
         int startValue;
         if(variableMap.containsKey(expression)){
             // in this case, 'expression' is an internal variable reference to an expression
             startValue = expressionEvaluator.evaluateExpression(variableMap.get(expression), new HashMap<String, Integer>());
         }
-        else{
+        else if (StringUtils.isNumeric(expression)){
             // otherwise the expression is an integer that we can parse
             startValue = Integer.parseInt(expression);
+        } else {
+            throw constructException("expecting to parse a numerical expression but received \""+expression+"\"",tokens.get(index-1).getLocation());
         }
 
         // ensure that the next token is the '..' token
@@ -264,15 +267,16 @@ public class Parser {
         }
 
         // parse the next expression and evaluate it if necessary to get the start value of the range
-        expression = parseExpression();
+        expression = parseExpression(true);
         int endValue;
         if(variableMap.containsKey(expression)){
             // in this case, 'expression' is an internal variable reference to an expression
             endValue = expressionEvaluator.evaluateExpression(variableMap.get(expression), new HashMap<String, Integer>());
-        }
-        else{
+        } else if (StringUtils.isNumeric(expression)){
             // otherwise the expression is an integer that we can parse
             endValue = Integer.parseInt(expression);
+        } else {
+            throw constructException("expecting to parse a numerical expression but received \""+expression+"\"",tokens.get(index-1).getLocation());
         }
 
         return new RangeNode(startValue, endValue, constructLocation(start));
@@ -773,7 +777,7 @@ public class Parser {
                     throw constructException("Expecting to parse '=' but received \"" + peekToken().toString() + "\"");
                 }
                 nextToken();
-                flag+="="+parseExpression();
+                flag+="="+parseExpression(false);
             }
             flags.add(flag);
 
@@ -835,7 +839,8 @@ public class Parser {
             throw constructException("expecting to parse \"if\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
-        Expression expression = variableMap.get(parseExpression());
+        Expression expression = variableMap.get(parseExpression(false));
+
         // ensure that the next token is a 'then' token
         if(!(nextToken() instanceof ThenToken)){
             Token error = tokens.get(index - 1);
@@ -863,7 +868,7 @@ public class Parser {
             throw constructException("expecting to parse \"when\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
-        Expression expression = variableMap.get(parseExpression());
+        Expression expression = variableMap.get(parseExpression(false));
         ASTNode trueBranch = parseLocalProcess();
         return new IfStatementNode(expression, trueBranch, constructLocation(start));
     }
@@ -921,7 +926,7 @@ public class Parser {
             // gobble the open bracket
             nextToken();
 
-            String expression = parseExpression();
+            String expression = parseExpression(false);
 
             token = nextToken();
             if(!(token instanceof CloseBracketToken)){
@@ -1284,15 +1289,22 @@ public class Parser {
 
     // EXPRESSIONS
 
-    private String parseExpression() throws CompilationException {
+    private String parseExpression(boolean returnBasic) throws CompilationException {
         List<String> exprTokens = new ArrayList<String>();
         parseExpression(exprTokens);
 
         Expression expression = expressionParser.parseExpression(exprTokens);
-        //If the expression resolves to a simple int or boolean, use the simplified expression.
         if(expressionEvaluator.isExecutable(expression)){
             expression = ExpressionSimplifier.simplify(expression,Collections.emptyMap());
+            if (returnBasic) {
+                if (expression instanceof IntegerOperand) return ((IntegerOperand) expression).getValue() + "";
+                if (expression instanceof BooleanOperand) return ((BooleanOperand) expression).getValue() + "";
+            }
         }
+        else if(expression instanceof VariableOperand){
+            return ((VariableOperand)expression).getValue();
+        }
+
         String variable = nextVariableId();
         variableMap.put(variable, expression);
         return variable;
@@ -1570,7 +1582,7 @@ public class Parser {
         int currentVarId = variableId;
 
         // parse an expression
-        String variable = parseExpression();
+        String variable = parseExpression(false);
 
         // check if the expression is part of an action range
         if (peekToken() instanceof RangeSeparatorToken) {
