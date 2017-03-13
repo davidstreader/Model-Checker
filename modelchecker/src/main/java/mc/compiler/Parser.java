@@ -1289,6 +1289,7 @@ public class Parser {
         parseExpression(exprTokens);
 
         Expression expression = expressionParser.parseExpression(exprTokens);
+        //If the expression resolves to a simple int or boolean, use the simplified expression.
         if(expressionEvaluator.isExecutable(expression)){
             expression = ExpressionSimplifier.simplify(expression,Collections.emptyMap());
         }

@@ -48,11 +48,6 @@ function visualizeAutomata(process, graphID, hidden, glGraph) {
         const from = graphID+'n' + edges[i].from;
         const to = graphID+'n' + edges[i].to;
         let tooltip;
-        if (edges[i].metaData.receiver) {
-            label += "?";
-        } else if (edges[i].metaData.broadcaster) {
-            label += "!";
-        }
         let guard = edges[i].metaData.guard;
         if(guard && guard.hiddenGuardStr && guard.hiddenGuardStr.length > 0){
             label += " "+guard.hiddenGuardStr;
