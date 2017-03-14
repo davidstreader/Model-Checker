@@ -834,8 +834,14 @@ public class Parser {
             Token error = tokens.get(index - 1);
             throw constructException("expecting to parse \"if\" but received \"" + error.toString() + "\"", error.getLocation());
         }
+        String expr = parseExpression();
+        Expression expression;
+        if (variableMap.containsKey(expr)) {
+            expression = variableMap.get(expr);
+        } else {
+            expression = Expression.constructExpression(expr);
+        }
 
-        Expression expression = variableMap.get(parseExpression());
         // ensure that the next token is a 'then' token
         if(!(nextToken() instanceof ThenToken)){
             Token error = tokens.get(index - 1);
@@ -862,8 +868,13 @@ public class Parser {
             Token error = tokens.get(index - 1);
             throw constructException("expecting to parse \"when\" but received \"" + error.toString() + "\"", error.getLocation());
         }
-
-        Expression expression = variableMap.get(parseExpression());
+        String expr = parseExpression();
+        Expression expression;
+        if (variableMap.containsKey(expr)) {
+            expression = variableMap.get(expr);
+        } else {
+            expression = Expression.constructExpression(expr);
+        }
         ASTNode trueBranch = parseLocalProcess();
         return new IfStatementNode(expression, trueBranch, constructLocation(start));
     }
@@ -1285,13 +1296,23 @@ public class Parser {
     // EXPRESSIONS
 
     private String parseExpression() throws CompilationException {
-        List<String> exprTokens = new ArrayList<>();
+        List<String> exprTokens = new ArrayList<String>();
         parseExpression(exprTokens);
 
         Expression expression = expressionParser.parseExpression(exprTokens);
-//        if(expressionEvaluator.isExecutable(expression)){
-//            expression = ExpressionSimplifier.simplify(expression,Collections.emptyMap());
-//        }
+        if(expressionEvaluator.isExecutable(expression)){
+            Expression simp = ExpressionSimplifier.simplify(expression,Collections.emptyMap());
+            if (simp instanceof BooleanOperand) {
+                return ((BooleanOperand) simp).getValue()+"";
+            }
+            if (simp instanceof IntegerOperand) {
+                return ((IntegerOperand) simp).getValue()+"";
+            }
+        }
+        else if(expression instanceof VariableOperand){
+            return ((VariableOperand)expression).getValue();
+        }
+
         String variable = nextVariableId();
         variableMap.put(variable, expression);
         return variable;
@@ -1475,7 +1496,7 @@ public class Parser {
             }
         }
 
-    // check if either a integer, constant or parenthesised expression can be parsed
+        // check if either a integer, constant or parenthesised expression can be parsed
         if(token instanceof IntegerToken){
             int integer = ((IntegerToken)token).getInteger();
             expression.add("" + integer);

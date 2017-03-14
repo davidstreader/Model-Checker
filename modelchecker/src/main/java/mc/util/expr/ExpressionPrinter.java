@@ -77,7 +77,6 @@ public class ExpressionPrinter {
         else if(expression instanceof BitNotOperator){
             return print((BitNotOperator)expression, variableMap);
         }
-
         throw new IllegalArgumentException("");
     }
 
