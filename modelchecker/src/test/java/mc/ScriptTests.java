@@ -2,8 +2,7 @@ package mc;
 
 import mc.compiler.OperationResult;
 import mc.exceptions.CompilationException;
-import mc.webserver.Context;
-import org.fusesource.jansi.Ansi;
+import mc.webserver.webobjects.Context;
 import org.junit.Test;
 
 import java.io.File;

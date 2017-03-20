@@ -7,7 +7,8 @@ import mc.compiler.Compiler;
 import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
 import mc.process_models.automata.Automaton;
-import mc.webserver.ProcessReturn.SkipObject;
+import mc.webserver.webobjects.*;
+import mc.webserver.webobjects.ProcessReturn.SkipObject;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
@@ -167,7 +168,7 @@ public class WebSocketServer {
     @Getter
     private static ThreadLocal<BlockingQueue<LogMessage>> messageQueue = new ThreadLocal<>();
 
-    static boolean hasClient() {
+    public static boolean hasClient() {
         return client.get() != null;
     }
     public static AtomicBoolean isStopped() {

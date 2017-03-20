@@ -58,7 +58,7 @@ public class Main {
             commandManager = new CommandManager(this);
             //If bower has not loaded, init it now.
             if (!new File("bower_components").exists())
-                new DependencyManager(this).initBower();
+                new DependencyManager(this).initDeps();
             webServer = new WebServer();
             webServer.startServer();
             //Listen for commands
@@ -69,7 +69,7 @@ public class Main {
         commandManager = new PassThroughCommandManager(this);
         //Load all the bower dependencies
         if (new File("executables").exists())
-            new DependencyManager(this).initBower();
+            new DependencyManager(this).initDeps();
         //Start the wrapped process with all the native libraries added.
         startWrappedProcess(getClass());
     }

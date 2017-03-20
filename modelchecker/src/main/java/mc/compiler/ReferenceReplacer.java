@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 
 import mc.compiler.ast.*;
 import mc.exceptions.CompilationException;
-import mc.webserver.LogMessage;
+import mc.webserver.webobjects.LogMessage;
 
 public class ReferenceReplacer {
 

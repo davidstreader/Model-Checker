@@ -1,4 +1,4 @@
-package mc.webserver;
+package mc.webserver.webobjects;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,11 +13,4 @@ public class Context {
     private boolean pruning;
     private GraphSettings graphSettings;
 
-    @NoArgsConstructor
-    @Getter
-    public class GraphSettings {
-        private int autoMaxNode;
-        private int passCount;
-        private int failCount;
-    }
 }

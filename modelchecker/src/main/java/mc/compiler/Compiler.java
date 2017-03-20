@@ -9,8 +9,8 @@ import mc.process_models.ProcessModel;
 import mc.process_models.automata.Automaton;
 import mc.process_models.automata.generator.AutomatonGenerator;
 import mc.process_models.automata.operations.AutomataOperations;
-import mc.webserver.Context;
-import mc.webserver.LogMessage;
+import mc.webserver.webobjects.Context;
+import mc.webserver.webobjects.LogMessage;
 
 import java.util.Collections;
 import java.util.HashMap;

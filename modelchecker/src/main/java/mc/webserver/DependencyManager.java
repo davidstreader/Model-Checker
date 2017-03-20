@@ -29,12 +29,24 @@ public class DependencyManager {
      * @param args command arguments
      */
     public static void main(String[] args) {
-        new DependencyManager(new Main()).initBower();
+        new DependencyManager(new Main()).initDeps();
     }
     private Main main;
-    public void initBower() {
-        logger.info(""+ansi().render("@|yellow Copying natives|@"));
+
+    /**
+     * Initialize natives + bower
+     */
+    public void initDeps() {
+
         copyNatives();
+        //If bower has not loaded, init it now.
+        if (!new File("bower_components").exists())
+            initBower();
+    }
+    /**
+     * Initialize a bower workspace
+     */
+    private void initBower() {
         try {
             unzipNPM();
         } catch (IOException | ZipException e) {
@@ -86,11 +98,19 @@ public class DependencyManager {
         builder.directory(new File("bower_install"));
         main.spawnProcess(builder);
     }
+
+    /**
+     * Unzip node, getting the correct executables for the current architecture.
+     * Also make sure to fix permissions on unix systems.
+     * @throws IOException An error occurred while copying files
+     * @throws ZipException An error occurred while extracting files
+     */
     private void unzipNPM() throws IOException, ZipException {
         File bowerInstall = new File("bower_install");
         if (bowerInstall.mkdir()) {
             logger.info(""+ansi().render("@|red Node install not found!|@"));
             logger.info(""+ansi().render("@|yellow Copying files for Node|@"));
+            //Copy node executables
             File nodeExes = new File("executables", getArch());
             for (File f : nodeExes.listFiles()) {
                 logger.info(""+"Copying: "+f.getName());
@@ -102,6 +122,8 @@ public class DependencyManager {
             logger.info(""+ansi().render("@|yellow Extracting NPM|@"));
             ZipFile file = new ZipFile(Paths.get("executables","npm-4.1.1.zip").toString());
             Thread monitor = null;
+            //Start up a thread that monitors the following zip extraction in another thread so we can
+            //have a progress bar
             if (main.getGui() != null) {
                 main.getGui().showProgressBar();
                 monitor = new Thread(()->{
@@ -116,6 +138,7 @@ public class DependencyManager {
                 });
                 monitor.start();
             }
+            //Extract npm from a distribution zip
             file.extractAll(nodeModules.toString());
             if (monitor != null) {
                 monitor.interrupt();
@@ -123,6 +146,7 @@ public class DependencyManager {
             }
             Files.move(new File(nodeModules,"npm-4.1.1").toPath(),npmdir.toPath());
             logger.info(""+ansi().render("@|yellow Copying NPM executables|@"));
+            //copy the binaries from npm's install to the main node dir
             for (File f: new File(npmdir,"bin").listFiles()) {
                 logger.info(""+"Copying: "+f.getName());
                 Files.copy(f.toPath(), Paths.get(bowerInstall.toPath().toString(), f.getName()));
@@ -134,14 +158,26 @@ public class DependencyManager {
         }
 
     }
-    public void vulcanize() {
+
+    /**
+     * When someone requests the website, its best to send one giant file instead of thousands of small ones.
+     * Vulcanization is the process that merges all the files together, and this will run a vulcanization routine
+     * from node.
+     */
+    private void vulcanize() {
         logger.info(""+ansi().render("@|yellow Vulcanizing HTML|@"));
         ProcessBuilder builder = new ProcessBuilder(getNodeExec(),"node_modules/vulcanize/bin/vulcanize","-o","../app/elements/elements.vulcanized.html","../app/elements/elements.html","--strip-comments");
         builder.directory(new File("bower_install"));
         main.spawnProcess(builder);
     }
-    public void copyNatives() {
+
+    /**
+     * When dealing with mac computers, we can not set a library folder. To resolve this, we can just copy the libraries
+     * we want to the users library folder.
+     */
+    private void copyNatives() {
         if (!Utils.isMac()) return;
+        logger.info(""+ansi().render("@|yellow Copying natives|@"));
         String homeDir = System.getProperty("user.home");
         File libDir = new File(homeDir,"lib");
         libDir.mkdirs();

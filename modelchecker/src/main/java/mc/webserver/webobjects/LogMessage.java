@@ -1,10 +1,11 @@
-package mc.webserver;
+package mc.webserver.webobjects;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import mc.Main;
 import mc.compiler.ast.ProcessNode;
 import mc.util.Location;
+import mc.webserver.WebSocketServer;
 
 import javax.annotation.Nullable;
 
@@ -12,9 +13,18 @@ import static org.fusesource.jansi.Ansi.ansi;
 
 @AllArgsConstructor
 @Getter
+/**
+ * A message to send back to the client
+ */
 public class LogMessage {
     private String message;
+    /**
+     * Clear the log window
+     */
     private boolean clear = false;
+    /**
+     * Tell the client this is an error
+     */
     private boolean error = false;
     private Location location = null;
     private int clearAmt = -1;
@@ -42,6 +52,7 @@ public class LogMessage {
 
     public void send() {
         boolean hasClient = WebSocketServer.hasClient();
+        //Web server is black on white, terminal is white on black.
         if (!hasClient) message = message.replace("@|black","@|white");
         this.message = ansi().render(message).toString();
         if (hasClient)

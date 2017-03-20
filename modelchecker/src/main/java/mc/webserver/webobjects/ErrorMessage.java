@@ -1,4 +1,4 @@
-package mc.webserver;
+package mc.webserver.webobjects;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -6,13 +6,16 @@ import mc.util.Location;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-class ErrorMessage extends LogMessage {
+/**
+ * An error message with a stack trace to send back to the client
+ */
+public class ErrorMessage extends LogMessage {
     String type = "error";
     String stack = null;
-    ErrorMessage(String message, Location location) {
+    public ErrorMessage(String message, Location location) {
         super(message, false, true, location, -1);
     }
-    ErrorMessage(String message, String stack, Location location) {
+    public ErrorMessage(String message, String stack, Location location) {
         super(message, false, true, location, -1);
         this.stack = stack;
     }

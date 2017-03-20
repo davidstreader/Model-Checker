@@ -1,11 +1,11 @@
-package mc.webserver;
+package mc.webserver.webobjects;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import mc.compiler.OperationResult;
 import mc.process_models.ProcessModel;
-import org.json.JSONObject;
+import mc.webserver.webobjects.Context;
 
 import java.util.List;
 import java.util.Map;
@@ -19,7 +19,7 @@ public class ProcessReturn {
   @AllArgsConstructor
   @Getter
   @Setter
-  static class SkipObject {
+  public static class SkipObject {
     String id;
     String type;
     int length;

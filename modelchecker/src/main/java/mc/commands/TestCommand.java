@@ -1,7 +1,7 @@
 package mc.commands;
 
 import mc.compiler.OperationResult;
-import mc.webserver.Context;
+import mc.webserver.webobjects.Context;
 import org.fusesource.jansi.Ansi;
 
 import java.io.File;

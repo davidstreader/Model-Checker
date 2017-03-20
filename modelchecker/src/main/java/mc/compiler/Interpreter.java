@@ -6,7 +6,7 @@ import mc.compiler.ast.ProcessNode;
 import mc.compiler.interpreters.AutomatonInterpreter;
 import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
-import mc.webserver.LogMessage;
+import mc.webserver.webobjects.LogMessage;
 
 import java.util.*;
 
