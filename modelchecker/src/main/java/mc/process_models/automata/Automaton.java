@@ -172,7 +172,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
         if (edge1.getLabel().equals(edge2.getLabel()) && edge1.hasMetaData("guard") && edge2.hasMetaData("guard")) {
             Guard guard1 = (Guard) edge1.getMetaData("guard");
             Guard guard2 = (Guard) edge2.getMetaData("guard");
-            if (guard1 == null || guard2 == null) return;
+            if (guard1 == null || guard2 == null || guard1.getGuard() == null || guard2.getGuard() == null) return;
             //Since assignment should be the same (same colour) we can just copy most data from either guard.
             Guard combined = guard1.copy();
             //By putting both equations equal to eachother, if we have multiple or operations, then if one matches then it will be solveable.
