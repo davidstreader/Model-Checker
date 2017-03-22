@@ -285,7 +285,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         }
     }
 
-    private void processHiding(Automaton automaton, HidingNode hiding){
+    private void processHiding(Automaton automaton, HidingNode hiding) throws CompilationException {
         Set<String> alphabet = automaton.getAlphabet();
         String type = hiding.getType();
 
@@ -295,6 +295,8 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
             }
             else if(!alphabet.contains(action) && type.equals("excludes")){
                 automaton.relabelEdges(action, Constant.HIDDEN);
+            } else {
+                throw new CompilationException(AutomatonInterpreter.class,"Unable to find action "+action+" for hiding.",hiding.getLocation());
             }
         }
     }
