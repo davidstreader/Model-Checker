@@ -99,6 +99,9 @@
          */
         app.build = function(override) {
             app.$.console.clear();
+            const editor = app.$.editor._editor.getSession();
+            editor.clearAnnotations();
+            _.each(editor.$backMarkers,(val,key)=>editor.removeMarker(key));
             if (!app.connected) {
                 app.$.console.error("Unable to compile: No connection to server.")
             }
@@ -114,8 +117,6 @@
         app.showError = function(error) {
             const Range = ace.require("ace/range").Range;
             const editor = app.$.editor._editor.getSession();
-            editor.clearAnnotations();
-            _.each(editor.$backMarkers,(val,key)=>editor.removeMarker(key));
             if (error.stack) {
                 app.$.console.error("An exception was thrown that was not related to your script.");
                 app.$.console.error(error.message+"\n"+error.stack);

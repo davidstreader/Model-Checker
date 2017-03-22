@@ -1,6 +1,5 @@
 package mc.process_models.automata;
 
-import mc.compiler.EquationEvaluator;
 import mc.compiler.Guard;
 import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
@@ -46,9 +45,9 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     }
 
     private void setupAutomaton() {
-        this.nodeMap = new HashMap<String, AutomatonNode>();
-        this.edgeMap = new HashMap<String, AutomatonEdge>();
-        this.alphabet = new HashMap<String, List<AutomatonEdge>>();
+        this.nodeMap = new HashMap<>();
+        this.edgeMap = new HashMap<>();
+        this.alphabet = new HashMap<>();
 
         this.nodeId = 0;
         this.edgeId = 0;
@@ -78,7 +77,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
     public List<AutomatonNode> getNodes() {
         return nodeMap.entrySet().stream()
-            .map(x -> x.getValue())
+            .map(Map.Entry::getValue)
             .collect(Collectors.toList());
     }
 
@@ -115,7 +114,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
         List<AutomatonEdge> edges = node.getIncomingEdges();
         edges.addAll(node.getOutgoingEdges());
         edges.stream()
-            .map(edge -> edge.getId())
+            .map(ProcessModelObject::getId)
             .forEach(id -> edgeMap.remove(id));
         nodeMap.remove(node.getId());
         return true;
@@ -154,8 +153,8 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
             node.addMetaData(key, node2.getMetaData(key));
         }
         node.removeMetaData("variables");
-        Map<String, Object> vars1 = (Map<String, Object>) node1.getMetaData("variables");
-        Map<String, Object> vars2 = (Map<String, Object>) node2.getMetaData("variables");
+        Map<?,?> vars1 = (Map) node1.getMetaData("variables");
+        Map<?,?> vars2 = (Map) node2.getMetaData("variables");
         if (Objects.equals(vars1,vars2)) {
             node.addMetaData("variables", vars1);
         }
@@ -209,7 +208,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
     public List<AutomatonEdge> getEdges() {
         return edgeMap.entrySet().stream()
-            .map(x -> x.getValue())
+            .map(Map.Entry::getValue)
             .collect(Collectors.toList());
     }
 
