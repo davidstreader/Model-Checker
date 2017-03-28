@@ -37,11 +37,11 @@ public class DependencyManager {
      * Initialize natives + bower
      */
     public void initDeps() {
-
         copyNatives();
         //If bower has not loaded, init it now.
         if (!new File("bower_components").exists())
             initBower();
+        vulcanize();
     }
     /**
      * Initialize a bower workspace
@@ -55,7 +55,6 @@ public class DependencyManager {
         }
         installBower();
         runBower();
-        vulcanize();
     }
 
     private void runBower() {
