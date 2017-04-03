@@ -61,3 +61,5 @@ static getNatives() {
     }
     return ret;
 }
+test.dependsOn 'cleanTest'
+
