@@ -2,6 +2,7 @@
 [Currently hosted application](http://modelchecker.tangentmc.net/).     
 NB: URL may change and this link will be useless.   
 Streader's Raiders SWEN302 Group Project
+
 [Click for the latest dist.zip build from master](https://jenkins.tangentmc.net/job/Model-Checker)
 
 ## Overview
