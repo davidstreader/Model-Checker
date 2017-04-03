@@ -38,6 +38,11 @@ public class DependencyManager {
      */
     public void initDeps() {
         copyNatives();
+        //Create file to vulcanize too, as some things complain when it doesnt exist.
+        try {
+            Paths.get("app","elements","elements.vulcanized.html").toFile().createNewFile();
+        } catch (IOException e) {
+        }
         //If bower has not loaded, init it now.
         if (!new File("bower_components").exists())
             initBower();
