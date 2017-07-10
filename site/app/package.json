@@ -1,7 +1,9 @@
 {
   "dependencies": {
+    "@danielfarrell/bootstrap-combobox": "^1.1.8",
     "ace": "^1.3.0",
     "ace-builds": "^1.2.8",
+    "awesome-bootstrap-checkbox": "^1.0.0-alpha.5",
     "babel-loader": "^7.1.1",
     "bootstrap": "^3.3.7",
     "bootstrap-webpack": "^0.0.6",
@@ -12,6 +14,8 @@
     "fs": "^0.0.1-security",
     "imports-loader": "^0.7.1",
     "jquery": "^3.2.1",
+    "jquery-resizable": "^1.0.6",
+    "jquery-resizable-dom": "^0.20.0",
     "less": "^2.7.2",
     "less-loader": "^4.0.4",
     "reconnecting-websocket": "^3.0.7",

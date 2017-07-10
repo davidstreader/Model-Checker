@@ -2,6 +2,10 @@
 # yarn lockfile v1
 
 
+"@danielfarrell/bootstrap-combobox@^1.1.8":
+  version "1.1.8"
+  resolved "https://registry.yarnpkg.com/@danielfarrell/bootstrap-combobox/-/bootstrap-combobox-1.1.8.tgz#489d0a9edb5a2fc9c65971d4422294e7ab9320ec"
+
 "@types/clone@^0.1.29":
   version "0.1.30"
   resolved "https://registry.yarnpkg.com/@types/clone/-/clone-0.1.30.tgz#e7365648c1b42136a59c7d5040637b3b5c83b614"
@@ -295,6 +299,10 @@ autoprefixer@^6.3.1:
     num2fraction "^1.2.2"
     postcss "^5.2.16"
     postcss-value-parser "^3.2.3"
+
+awesome-bootstrap-checkbox@^1.0.0-alpha.5:
+  version "1.0.0-alpha.5"
+  resolved "https://registry.yarnpkg.com/awesome-bootstrap-checkbox/-/awesome-bootstrap-checkbox-1.0.0-alpha.5.tgz#359db3d5ab1da7c1dffde6f90ab19ca6bc4ae14f"
 
 aws-sign2@~0.6.0:
   version "0.6.0"
@@ -2126,6 +2134,14 @@ isstream@~0.1.2:
 jju@^1.1.0:
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/jju/-/jju-1.3.0.tgz#dadd9ef01924bc728b03f2f7979bdbd62f7a2aaa"
+
+jquery-resizable-dom@^0.20.0:
+  version "0.20.0"
+  resolved "https://registry.yarnpkg.com/jquery-resizable-dom/-/jquery-resizable-dom-0.20.0.tgz#f6e428cb413760a2ac38d3779e9ca3874ffb119a"
+
+jquery-resizable@^1.0.6:
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/jquery-resizable/-/jquery-resizable-1.0.6.tgz#e2f5bfc471a08bbf8fbeeeea156a8e7c9754e67c"
 
 jquery@^3.2.1:
   version "3.2.1"

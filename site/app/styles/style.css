@@ -1,0 +1,109 @@
+.navbar-btn{
+    margin-right:10px;
+}
+.navbar {
+    margin-bottom: 0 !important;
+}
+#console {
+    position:absolute;
+    top: 45px;
+    left: 10px;
+    right: 10px;
+    bottom: 0;
+}
+body, html, .panel-container, .tab-content div {
+    height:100%;
+}
+.tab-content {
+    height:calc(100% - 51px);
+}
+.panel-container {
+    display: flex;
+    flex-direction: row;
+    border: 1px solid silver;
+    overflow: hidden;
+    height:100%;
+    /* avoid browser level touch actions */
+    xtouch-action: none;
+}
+.left-panel {
+    flex: 0 0 auto;
+    width: 60%;
+    min-height: 200px;
+    min-width: 150px;
+    white-space: nowrap;
+}
+
+.splitter {
+    flex: 0 0 auto;
+    width: 18px;
+    border-left: 1px solid black;
+    border-right: 1px solid black;
+    background: url(https://raw.githubusercontent.com/RickStrahl/jquery-resizable/master/assets/vsizegrip.png) center center no-repeat white;
+    min-height: 200px;
+    cursor: col-resize;
+}
+
+.right-panel {
+    flex: 1 1 auto;
+    /* resizable */
+    padding: 0 10px;
+    width: 100%;
+    min-height: 200px;
+    min-width: 200px;
+}
+@media (min-width: 768px) {
+    .navbar-center {
+        text-align: center;
+    }
+    .navbar-center ul{
+        margin: 0 auto;
+        float: none;
+        display: inline-block;
+    }
+}
+.invert {
+    background-color: #1f1e1e !important;
+    color: #dcdcdc;
+}
+
+.invert .modal-content{
+    background-color: #1f1e1e !important;
+    color: #dcdcdc;
+}
+.invert .ui-widget-header {
+    background-color: #4d4c4c !important;
+    color: #9d9d9d;
+}
+.invert .ui-widget-content {
+    background-color: #313030 !important;
+    color: #9d9d9d;
+}
+.invert button {
+    background-color: #0F0F0F;
+    border: 1px solid black;
+    border-top: transparent
+}
+.invert input {
+    background-color: #0F0F0F;
+    border: 1px solid black;
+    border-top: transparent
+}
+.invert pre {
+    border: 1px solid #4d4c4c;
+    background-color: #313030 !important;
+    color: #dcdcdc;
+}
+.invert .panel-container {
+    border: 1px solid #4d4c4c;
+}
+.invert .splitter {
+    border-left: 1px solid #4d4c4c;
+    border-right: 1px solid #4d4c4c;
+    background: url(https://raw.githubusercontent.com/RickStrahl/jquery-resizable/master/assets/vsizegrip.png) center center no-repeat #0F0F0F;
+}
+.ace_marker-layer .ace_underline {
+    position: absolute;
+    z-index: 4;
+    border-bottom: solid red 3px;
+}

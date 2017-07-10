@@ -4,109 +4,209 @@
     <meta charset="utf-8">
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="generator" content="Polymer Starter Kit" />
-    <title>Automata Concocter</title>
-    <link rel="manifest" href="manifest.json">
+    <title>SWEN224 Modelling Tool</title>
+    <link rel="stylesheet" href="styles/style.css">
 
-    <!-- Chrome for Android theme color -->
-    <meta name="theme-color" content="#303F9F">
-
-    <!-- Tile color for Win8 -->
-    <meta name="msapplication-TileColor" content="#3372DF">
-
-    <!-- Add to homescreen for Chrome on Android -->
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="Model Checker">
-    <link rel="icon" sizes="192x192" href="images/touch/chrome-touch-icon-192x192.png">
-
-    <!-- Add to homescreen for Safari on iOS -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <meta name="apple-mobile-web-app-title" content="Model Checker">
-    <link rel="apple-touch-icon" href="images/touch/apple-touch-icon.png">
-
-    <!-- Tile icon for Win8 (144x144) -->
-    <meta name="msapplication-TileImage" content="images/touch/ms-touch-icon-144x144-precomposed.png">
-
-    <link rel="stylesheet" href="styles/main.css">
-    <link rel="stylesheet" href="styles/help-dialog.css">
-    <custom-style>
-        <style include="shared-styles"> </style>
-    </custom-style>
+    <!-- build:js scripts/app.js -->
+    <script src="scripts/bundle.js"></script>
 </head>
 
-<body unresolved class="fullbleed layout vertical">
-<span id="browser-sync-binding"></span>
-<template is="dom-bind" id="app">
-    <iron-media-query query="(max-width: 959px)" query-matches="{{smallScreen}}"></iron-media-query>
+<body>
+<div id="settings-dialog" class="modal fade" title="Add class" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close"
+                        data-dismiss="modal">
+                    <span aria-hidden="true">&times;</span>
+                    <span class="sr-only">Close</span>
+                </button>
+                <h4 class="modal-title" id="myModalLabel">
+                    Settings
+                </h4>
+            </div>
 
-    <automata-parser id="parser"></automata-parser>
-
-    <!-- start toolbar -->
-    <paper-toolbar id="main-toolbar">
-        <paper-button id="btn-compile" title="Compile and Build" raised on-tap="compileAndBuild" class="middle"><iron-icon icon="av:play-arrow"></iron-icon></paper-button>
-        <paper-checkbox id="chbx-live-compiling" checked="{{liveCompiling}}" class="chbx middle" title="Automatically compile the automata as you define them.">
-            <span hidden$="{{smallScreen}}">Live Compiling</span>
-            <span hidden$="{{!smallScreen}}">Live</span>
-        </paper-checkbox>
-        <paper-checkbox id="chbx-save-cookie" checked="{{willSaveCookie}}" class="chbx middle" title="Save current progress to a cookie and load it back">
-            <span>Autosave</span>
-        </paper-checkbox>
-        <span class="spacer middle"></span>
-        <paper-icon-button icon="icons:save" class="middle" title="Save" onclick="app.$.save.open()"></paper-icon-button>
-        <paper-icon-button icon="icons:folder-open" class="middle" title="Open" on-tap="openFile"></paper-icon-button>
-        <paper-icon-button id="reload" icon="icons:autorenew" class="middle" title="Reload" on-tap="reloadFile" disabled=true></paper-icon-button>
-        <input id="open-file" type="file" accept="text/plain" class="middle" style="display: none;"/>
-        <span class="spacer middle"></span>
-        <div class="middle">Server Status:</div>
-        <div class="middle" id="serverStatus"><img class="status-badge" src='https://img.shields.io/badge/-Online-brightgreen.svg'/></div>
-        <span class="flex middle"></span>
-        <paper-tabs class="middle" id="maintabs" selected="{{selectedCtx}}">
-            <paper-tab>Editor</paper-tab>
-            <paper-tab>Process Models</paper-tab>
-            <paper-tab>Process Generator</paper-tab>
-        </paper-tabs>
-        <span class="flex middle"></span>
-        <paper-icon-button icon="icons:settings" class="middle" title="Settings" on-tap="showSettings"></paper-icon-button>
-        <paper-icon-button icon="icons:help" class="middle" title="Help" on-tap="showHelp"></paper-icon-button>
-    </paper-toolbar>
-    <!-- end toolbar -->
-
-    <!-- start content -->
-    <div class="frame">
-        <neon-animated-pages selected="{{selectedCtx}}" class="fit">
-            <section class="layout vertical flex" style="flex-direction: row;">
-                <section class="layout vertical flex">
-                    <text-editor autofocus id="editor" class="flex"></text-editor>
-                </section>
-                <section class="layout vertical flex">
-                    <console-logger id="console" class="flex"></console-logger>
-                </section>
-            </section>
-            <section class="layout vertical flex">
-                <process-selector style="margin:auto" id="selector" processes="{{automata.values}}" display="{{automata.display}}" smallScreen="{{smallScreen}}"></process-selector>
-                <div class="process-display">
-                    <process-visualisation id="visualiser"></process-visualisation>
+            <form role="form" style="padding-left:20px; padding-right:20px">
+                <div class="form-group">
+                    <label for="liveCompiling">Live Compiling</label>
+                    <input type="checkbox" name="name" id="liveCompiling" value="" class="form-control">
                 </div>
-
-            </section>
-            <section class="layout vertical flex">
-                <div class="process-modify-display">
-                    <process-modify id="modify" processes="{{automata.allValues}}"></process-modify>
+                <div class="form-group">
+                    <label for="autoSave">Autosave</label>
+                    <input type="text" name="autoSave" id="autoSave" value="" class="form-control">
                 </div>
-            </section>
-        </neon-animated-pages>
+                <div class="form-group">
+                    <label for="darkMode">Dark Mode</label>
+                    <input type="checkbox" name="darkMode" id="darkMode" value="" class="form-control">
+                </div>
+                <!-- Allow form submission with keyboard without duplicating the dialog button -->
+                <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+            </form>
+        </div>
     </div>
-    <!-- end content -->
-    <!-- include dialogs -->
-    <help-dialog id="help"></help-dialog>
-    <save-dialog id="save"></save-dialog>
-    <settings-dialog id="settings"></settings-dialog>
-    <!-- end include -->
-</template>
+</div>
+<nav class="navbar navbar-default navbar-static-top">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">SWEN224 Modelling Tool</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li>
+                    <div>
+                        <a href="#" title="Compile Project" class="btn btn-primary navbar-btn">
+                            <span class="glyphicon glyphicon-play"></span>
+                        </a>
+                    </div>
+                </li>
+                <li>
+                    <div>
+                        <a href="#" title="Download current project" class="btn btn-primary navbar-btn">
+                            <span class="glyphicon glyphicon-save"></span>
+                        </a>
+                    </div>
+                </li>
+                <li>
+                    <div>
+                        <a href="#" title="Open project" class="btn btn-primary navbar-btn">
+                            <span class="glyphicon glyphicon-open"></span>
+                        </a>
+                    </div>
+                </li>
+                <li class="active"><a data-toggle="tab" href="#editor">Editor</a></li>
+                <li><a data-toggle="tab" href="#models">Process Models</a></li>
+                <li><a data-toggle="tab" href="#generator">Process Generator</a></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <div>
+                        <a href="#" class="btn btn-primary navbar-btn" data-toggle="modal" data-target="#settings-dialog">
+                            <span class="glyphicon glyphicon-cog"></span>
+                        </a>
+                    </div>
+                </li>
+                <li>
+                    <div>
+                        <a href="#" class="btn btn-primary navbar-btn">
+                            <span class="glyphicon glyphicon-question-sign"></span>
+                        </a>
+                    </div>
+                </li>
+            </ul>
+        </div><!--/.nav-collapse -->
+    </div>
+</nav>
+<div class="tab-content">
+    <div id="editor" class="tab-pane fade in active">
+        <div class="panel-container">
 
-<!-- build:js scripts/app.js -->
-<script src="scripts/bundle.js"></script>
+            <div class="left-panel" id="ace-editor"></div>
+
+            <div class="splitter"></div>
+
+            <div class="right-panel" style="padding:10px;position:relative">
+                <h4 style="margin:0">Console Output: (Server status: <span class="label label-success">Connected</span>)</h4>
+                <pre id="console">Disconnected from server.</pre>
+            </div>
+        </div>
+    </div>
+    <div id="models" class="tab-pane fade">
+        <nav class="navbar navbar-default navbar-static-top">
+            <div class="container">
+                <div id="navbar-process" class="navbar-center">
+                    <ul class="nav navbar-nav">
+                        <li><a href="#models">Process:</a></li>
+                        <li style="margin-right: 10px;">
+                            <select class="form-control navbar-btn"><option>test</option></select>
+                        </li>
+                        <li>
+                            <span class="navbar-text" style="">Hide Interrupts:</span>
+                            <span class="navbar-text" style="margin-left: 0;">
+                              <input type="checkbox" class="autosubmit" id="hide-interrupts" value="true">
+                            </span>
+                        </li>
+                        <li>
+                            <div>
+                                <a href="#" title="Compile Project" class="btn btn-primary navbar-btn">
+                                    <span class="glyphicon glyphicon-plus"></span> Add process
+                                </a>
+                            </div>
+                        </li>
+                        <li>
+                            <div>
+                                <a href="#" title="Download current project" class="btn btn-primary navbar-btn">
+                                    <span class="glyphicon glyphicon-plus"></span> Add all processes
+                                </a>
+                            </div>
+                        </li>
+                        <li>
+                            <div>
+                                <a href="#" title="Open project" class="btn btn-primary navbar-btn">
+                                    <span class="glyphicon glyphicon-trash"></span> Clear
+                                </a>
+                            </div>
+                        </li>
+                    </ul>
+                </div><!--/.nav-collapse -->
+            </div>
+        </nav>
+    </div>
+    <div id="generator" class="tab-pane fade">
+        <nav class="navbar navbar-default navbar-static-top">
+            <div class="container">
+                <div id="navbar-generator" class="navbar-center">
+                    <ul class="nav navbar-nav">
+                        <li><a href="#models">Process:</a></li>
+                        <li style="margin-right: 10px;">
+                            <select class="form-control navbar-btn"><option>test</option></select>
+                        </li>
+                        <li>
+                            <div>
+                                <a href="#" title="Compile Project" class="btn btn-primary navbar-btn">
+                                    <span class="glyphicon glyphicon-plus"></span> Add Process
+                                </a>
+                            </div>
+                        </li>
+                        <li>
+                            <div>
+                                <a href="#" title="Compile Project" class="btn btn-primary navbar-btn">
+                                    <span class="glyphicon glyphicon-trash"></span> Clear
+                                </a>
+                            </div>
+                        </li>
+                        <li><a href="#models">Process Name:</a></li>
+                        <li style="margin-right: 10px;">
+                            <input class="form-control navbar-btn" type="text"/>
+                        </li>
+                        <li style="margin-right: 10px;">
+                            <select class="form-control navbar-btn"><option>Automata</option><option>Petrinet</option></select>
+                        </li>
+                        <li>
+                            <div>
+                                <a href="#" title="Download current project" class="btn btn-primary navbar-btn">
+                                    <span class="glyphicon glyphicon-play"></span> Generate
+                                </a>
+                            </div>
+                        </li>
+                        <li>
+                            <div>
+                                <a href="#" title="Open project" class="btn btn-primary navbar-btn">
+                                    <span class="glyphicon glyphicon-trash"></span> Clear
+                                </a>
+                            </div>
+                        </li>
+                    </ul>
+                </div><!--/.nav-collapse -->
+            </div>
+        </nav>
+    </div>
+</div>
 <!-- endbuild-->
 </body>
 </html>

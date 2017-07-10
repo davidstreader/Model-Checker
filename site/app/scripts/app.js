@@ -1,10 +1,33 @@
+window.jQuery = require("jquery");
+window.$ = window.jQuery;
+require("jquery-resizable-dom/src/jquery-resizable");
 require("ace-builds/src-min-noconflict/ace.js");
-require("ace-builds/src-min-noconflict/ext-language_tools.js");
-require("bootstrap-webpack");
-(function(document) {
-    'use strict';
-    const app = document.querySelector('#app');
+require("ace-builds/src-min-noconflict/theme-vibrant_ink.js");
+require("ace-builds/src-min-noconflict/theme-crimson_editor.js")
 
+$(function() {
+    'use strict';
+
+    const app = document.querySelector('#app');
+    $(".left-panel").resizable({
+        handleSelector: ".splitter",
+        resizeHeight: false
+    });
+    const editor = ace.edit("ace-editor");
+    function invert(inverted) {
+        const body = $("body");
+        const nav = $(".navbar");
+        inverted?nav.addClass("navbar-inverse"):nav.removeClass("navbar-inverse");
+        inverted?body.addClass("invert"):body.removeClass("invert");
+        const theme = "ace/theme/"+(inverted?"vibrant_ink":"crimson_editor");
+        editor.setTheme(theme);
+        localStorage.setItem("config_invert",inverted);
+    }
+    $("#darkMode").change(function(){
+        invert(this.checked);
+    });
+    $("#darkMode")[0].checked = localStorage.getItem(("config_invert"));
+    invert(localStorage.getItem(("config_invert")));
     window.addEventListener('WebComponentsReady', function() {
         /**
          * The data to use.
@@ -444,4 +467,4 @@ require("bootstrap-webpack");
             }
         });
     });
-})(document);
+});
