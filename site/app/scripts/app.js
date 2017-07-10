@@ -1,3 +1,6 @@
+require("ace-builds/src-min-noconflict/ace.js");
+require("ace-builds/src-min-noconflict/ext-language_tools.js");
+require("bootstrap-webpack");
 (function(document) {
     'use strict';
     const app = document.querySelector('#app');

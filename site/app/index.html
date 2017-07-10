@@ -30,12 +30,9 @@
 
     <link rel="stylesheet" href="styles/main.css">
     <link rel="stylesheet" href="styles/help-dialog.css">
-
-    <script async src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
-
-    <link rel="import" media="none" href="elements/elements.vulcanized.html">
-
-    <style is="custom-style" include="shared-styles"> </style>
+    <custom-style>
+        <style include="shared-styles"> </style>
+    </custom-style>
 </head>
 
 <body unresolved class="fullbleed layout vertical">
@@ -109,8 +106,7 @@
 </template>
 
 <!-- build:js scripts/app.js -->
-<script src="scripts/app.js"></script>
-<script src="https://cdn.rawgit.com/joewalnes/reconnecting-websocket/fd7c819b/reconnecting-websocket.min.js"></script>
+<script src="scripts/bundle.js"></script>
 <!-- endbuild-->
 </body>
 </html>
