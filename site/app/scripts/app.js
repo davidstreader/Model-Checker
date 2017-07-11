@@ -172,7 +172,7 @@ $(function() {
         app.automata.values = graphs.reverse();
         app.automata.allValues = allGraphs.reverse();
         app.automata.analysis = results.analysis;
-        app.utils.fillSelect(_.map(app.automata.values,val=>val.id),$("#model-process"),true,false,"No processes found");
+        app.utils.fillSelect(_.map(app.automata.values,val=>val.id),$(".process-list"),true,false,"No processes found");
         $(".disable-no-process").prop("disabled",app.automata.values.length===0);
         app.console.clear();
         app.console.log('Successfully Compiled!');
@@ -263,6 +263,9 @@ $(function() {
     app.settings.init();
     app.models = require("./models");
     app.models.init();
+    app.generator = require("./generator");
+    app.generator.init();
     $("#model-tab").on('shown.bs.tab',app.models.redraw);
+    $("#generator-tab").on('shown.bs.tab',app.generator.redraw);
     $("#editor-tab").on('shown.bs.tab',()=>app.editor._editor.focus());
 });

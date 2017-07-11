@@ -187,7 +187,7 @@
                     <ul class="nav navbar-nav">
                         <li><a href="#models">Process:</a></li>
                         <li style="margin-right: 10px;">
-                            <select class="form-control navbar-btn" id="model-process" disabled></select>
+                            <select class="form-control navbar-btn process-list" id="model-process" disabled><option>No processes found</option></select>
                         </li>
                         <li>
                             <span class="navbar-text" style="">Hide Interrupts:</span>
@@ -229,47 +229,42 @@
                     <ul class="nav navbar-nav">
                         <li><a href="#models">Process:</a></li>
                         <li style="margin-right: 10px;">
-                            <select class="form-control navbar-btn"><option>test</option></select>
+                            <select id="process-modify-selector" class="form-control navbar-btn process-list" disabled><option>No processes found</option></select>
                         </li>
                         <li>
                             <div>
-                                <a href="#" title="Add process to generator" class="btn btn-primary navbar-btn disable-no-process">
+                                <button id="add-modify" title="Add process to generator" class="btn btn-primary navbar-btn disable-no-process" disabled>
                                     <span class="glyphicon glyphicon-plus"></span> Add Process
-                                </a>
-                            </div>
-                        </li>
-                        <li>
-                            <div>
-                                <a href="#" title="Clear generator" class="btn btn-primary navbar-btn">
-                                    <span class="glyphicon glyphicon-trash"></span> Clear
-                                </a>
+                                </button>
                             </div>
                         </li>
                         <li><a href="#models">Process Name:</a></li>
                         <li style="margin-right: 10px;">
-                            <input class="form-control navbar-btn" type="text"/>
+                            <input class="form-control navbar-btn" type="text" id="modify-name"/>
                         </li>
                         <li style="margin-right: 10px;">
-                            <select class="form-control navbar-btn"><option>Automata</option><option>Petrinet</option></select>
+                            <select id="process-type-selector" class="form-control navbar-btn"><option>Automata</option><option>Petrinet</option></select>
                         </li>
                         <li>
                             <div>
-                                <a href="#" title="Download current project" class="btn btn-primary navbar-btn">
+                                <button id="generate-modify" title="Generate process and add to editor" class="btn btn-primary navbar-btn disable-no-gen" disabled>
                                     <span class="glyphicon glyphicon-play"></span> Generate
-                                </a>
+                                </button>
                             </div>
                         </li>
                         <li>
                             <div>
-                                <a href="#" title="Open project" class="btn btn-primary navbar-btn">
+                                <button id="clear-modify" title="Clear processes from generator" class="btn btn-primary navbar-btn">
                                     <span class="glyphicon glyphicon-trash"></span> Clear
-                                </a>
+                                </button>
                             </div>
                         </li>
                     </ul>
                 </div><!--/.nav-collapse -->
             </div>
         </nav>
+        <pre id="generated-text" style="text-align: center"> </pre>
+        <div id="generated-processes"></div>
     </div>
 </div>
 <input type="file" id="files" style="height:0; display:none" />

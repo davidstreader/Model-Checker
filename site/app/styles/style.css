@@ -121,3 +121,16 @@ body, html, .panel-container, .tab-pane {
 .slider.slider-horizontal {
     width: 100% !important;
 }
+.gen-form {
+    float:left; padding-left:20px; padding-right:20px; padding-top:20px;
+    margin:20px;
+    width:300px;
+    background: white;
+    border: 1px solid black;
+    border-radius:20px;
+}
+.invert .gen-form {
+    border: 1px solid #4d4c4c;
+    background-color: #313030 !important;
+    color: #dcdcdc;
+}
