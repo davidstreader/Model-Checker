@@ -12,6 +12,46 @@
 </head>
 
 <body>
+<div id="save-dialog" data-keyboard="true" class="modal fade" title="Add class" role="dialog" >
+    <div class="modal-dialog" tabindex='-1'>
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close"
+                        data-dismiss="modal">
+                    <span aria-hidden="true">&times;</span>
+                    <span class="sr-only">Close</span>
+                </button>
+                <h4 class="modal-title">
+                    Save project
+                </h4>
+            </div>
+
+            <form role="form" style="padding-left:20px; padding-right:20px; padding-top:20px">
+                <div class="form-group">
+                    <label>Filename</label>
+                    <input type="text" id="fileName" value="" class="form-control">
+                </div>
+                <div class="form-group">
+                    <input type="checkbox" class="checkbox-dialog" id="saveLayout" style="float:left" checked>
+                    <div style="float:left;line-height:34px;padding-left:10px">Save Layout</div>
+                    <input type="checkbox" id="saveCode" class="checkbox-dialog" style="float:right" checked>
+                    <div style="float:right;line-height:34px;padding-right:10px">Save Code</div>
+                </div>
+
+                <div class="form-group" style="clear:both">
+                    <button class="btn btn-primary navbar-btn" data-toggle="modal" data-target="#settings-dialog">
+                        Save
+                    </button>
+                    <button class="btn btn-primary navbar-btn pull-right" data-dismiss="modal" style="margin-right:0">
+                        Cancel
+                    </button>
+                </div>
+                <!-- Allow form submission with keyboard without duplicating the dialog button -->
+                <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+            </form>
+        </div>
+    </div>
+</div>
 <div id="settings-dialog" class="modal fade" title="Add class" role="dialog">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -25,19 +65,43 @@
                     Settings
                 </h4>
             </div>
+            <form role="form" style="padding-left:20px; padding-right:20px; padding-top:20px">
+                <div class="form-group">
+                    <label>Node Separation</label>
+                    <input id="nodeSep" class="form-control" type="text" data-slider-min="1000" data-slider-max="5000000" data-slider-step="100" data-slider-value="1000"/>
+                </div>
+                <div class="form-group">
+                    <label>Automata max node count</label>
+                    <input type="text" id="maxNodeCount" value="" class="form-control" min="0">
+                </div>
+                <div class="form-group">
+                    <label>Operation failure count</label>
+                    <input type="number" id="failCount" value="" class="form-control" min="0">
+                </div>
+                <div class="form-group">
+                    <label>Operation pass count</label>
+                    <input type="text" id="passCount" value="" class="form-control" min="0">
+                </div>
+                <div class="form-group">
+                    <input type="checkbox" class="checkbox-dialog" id="fairAbs" style="float:left" checked>
+                    <div style="float:left;line-height:34px;padding-left:10px">Fair Abstraction</div>
+                    <input type="checkbox" class="checkbox-dialog" id="pruning" style="float:right" checked>
+                    <div style="float:right;line-height:34px;padding-right:10px">Pruning</div>
+                </div>
+                <div class="form-group" style="clear:both">
+                    <input type="checkbox" class="checkbox-dialog" id="autoSave" style="float:left" checked>
+                    <div style="float:left;line-height:34px;padding-left:10px">Autosave</div>
+                    <input type="checkbox" class="checkbox-dialog" id="liveCompiling" style="float:right" checked>
+                    <div style="float:right;line-height:34px;padding-right:10px">Live Compiling</div>
+                </div>
 
-            <form role="form" style="padding-left:20px; padding-right:20px">
-                <div class="form-group">
-                    <label for="liveCompiling">Live Compiling</label>
-                    <input type="checkbox" name="name" id="liveCompiling" value="" class="form-control">
-                </div>
-                <div class="form-group">
-                    <label for="autoSave">Autosave</label>
-                    <input type="text" name="autoSave" id="autoSave" value="" class="form-control">
-                </div>
-                <div class="form-group">
-                    <label for="darkMode">Dark Mode</label>
-                    <input type="checkbox" name="darkMode" id="darkMode" value="" class="form-control">
+                <div class="form-group" style="clear:both">
+                    <input type="checkbox" class="checkbox-dialog" id="darkMode" style="float:left" checked>
+                    <div style="float:left;line-height:34px;padding-left:10px">Dark Mode</div>
+                    <button class="btn btn-primary navbar-btn pull-right" data-dismiss="modal" style="margin-right:0">
+                        Close
+                    </button>
+                    <div style="clear:both"></div>
                 </div>
                 <!-- Allow form submission with keyboard without duplicating the dialog button -->
                 <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
@@ -67,15 +131,15 @@
                 </li>
                 <li>
                     <div>
-                        <a href="#" title="Download current project" class="btn btn-primary navbar-btn">
-                            <span class="glyphicon glyphicon-save"></span>
+                        <a href="#" title="Download current project" class="btn btn-primary navbar-btn" data-toggle="modal" data-target="#save-dialog">
+                            <span class="glyphicon glyphicon-floppy-disk"></span>
                         </a>
                     </div>
                 </li>
                 <li>
                     <div>
                         <a href="#" title="Open project" class="btn btn-primary navbar-btn">
-                            <span class="glyphicon glyphicon-open"></span>
+                            <span class="glyphicon glyphicon-folder-open"></span>
                         </a>
                     </div>
                 </li>
@@ -111,8 +175,8 @@
             <div class="splitter"></div>
 
             <div class="right-panel" style="padding:10px;position:relative">
-                <h4 style="margin:0">Console Output: (Server status: <span class="label label-success">Connected</span>)</h4>
-                <pre id="console">Disconnected from server.</pre>
+                <h4 style="margin:0">Console Output: (Server status: <span class="label label-danger" id="status">Disconnected</span>)</h4>
+                <pre id="console"></pre>
             </div>
         </div>
     </div>
@@ -123,7 +187,7 @@
                     <ul class="nav navbar-nav">
                         <li><a href="#models">Process:</a></li>
                         <li style="margin-right: 10px;">
-                            <select class="form-control navbar-btn"><option>test</option></select>
+                            <select class="form-control navbar-btn" id="model-process" disabled></select>
                         </li>
                         <li>
                             <span class="navbar-text" style="">Hide Interrupts:</span>
@@ -133,21 +197,21 @@
                         </li>
                         <li>
                             <div>
-                                <a href="#" title="Compile Project" class="btn btn-primary navbar-btn">
+                                <button title="Add process to model" class="btn btn-primary navbar-btn" disabled>
                                     <span class="glyphicon glyphicon-plus"></span> Add process
-                                </a>
+                                </button>
                             </div>
                         </li>
                         <li>
                             <div>
-                                <a href="#" title="Download current project" class="btn btn-primary navbar-btn">
+                                <button title="Add all processes to model" class="btn btn-primary navbar-btn" disabled>
                                     <span class="glyphicon glyphicon-plus"></span> Add all processes
-                                </a>
+                                </button>
                             </div>
                         </li>
                         <li>
                             <div>
-                                <a href="#" title="Open project" class="btn btn-primary navbar-btn">
+                                <a href="#" title="Clear model" class="btn btn-primary navbar-btn">
                                     <span class="glyphicon glyphicon-trash"></span> Clear
                                 </a>
                             </div>
@@ -156,6 +220,7 @@
                 </div><!--/.nav-collapse -->
             </div>
         </nav>
+        <div id="svg-parent"></div>
     </div>
     <div id="generator" class="tab-pane fade">
         <nav class="navbar navbar-default navbar-static-top">
@@ -168,14 +233,14 @@
                         </li>
                         <li>
                             <div>
-                                <a href="#" title="Compile Project" class="btn btn-primary navbar-btn">
+                                <a href="#" title="Add process to generator" class="btn btn-primary navbar-btn">
                                     <span class="glyphicon glyphicon-plus"></span> Add Process
                                 </a>
                             </div>
                         </li>
                         <li>
                             <div>
-                                <a href="#" title="Compile Project" class="btn btn-primary navbar-btn">
+                                <a href="#" title="Clear generator" class="btn btn-primary navbar-btn">
                                     <span class="glyphicon glyphicon-trash"></span> Clear
                                 </a>
                             </div>

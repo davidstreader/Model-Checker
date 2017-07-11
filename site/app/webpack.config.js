@@ -1,7 +1,6 @@
 var webpack = require('webpack');
 module.exports = {
-    entry: [
-    "bootstrap-webpack", "./scripts/app.js"],
+    entry: "./scripts/app.js",
     output: {
         path: __dirname,
         filename: "scripts/bundle.js"
@@ -35,5 +34,11 @@ module.exports = {
             {test: /\.eot(\?v=\d+\.\d+\.\d+)?$/, loader: 'file-loader'},
             {test: /\.svg(\?v=\d+\.\d+\.\d+)?$/, loader: 'url-loader?limit=10000&mimetype=image/svg+xml'}
         ]
-    }
+    },
+    plugins: [
+        new webpack.ProvidePlugin({
+            $: 'jquery',
+            jQuery: 'jquery'
+        })
+    ]
 };

@@ -77,7 +77,7 @@
                 _this.rescale();
             });
             document.addEventListener('addAll', function(){
-                app.$.console.log("Starting Render.");
+                app.console.log("Starting Render.");
                 //If we are currently rendering, ignore any events
                 if (_this.rendering) return;
                 _.each(app.get("automata.values"),graph => _this.addGraph(graph.id,app.$.selector.hideInterrupts));
@@ -133,7 +133,7 @@
                 return;
             }
             this.rendering = true;
-            app.$.console.clear();
+            app.console.clear();
             let graph = _.find(app.get("automata.values"), {id: name});
             this.convertAndAddGraph(graph,name,hidden);
         },
@@ -155,8 +155,8 @@
                 localStorage.setItem("layout", JSON.stringify(this.cy.json()));
         },
         loadJSON: function(json) {
-            app.$.console.clear();
-            app.$.console.log("Rendering from "+(this.connected?"Autosave":"File")+" please wait.");
+            app.console.clear();
+            app.console.log("Rendering from "+(this.connected?"Autosave":"File")+" please wait.");
             this.cy.json(JSON.parse(json));
 
             const parentNodes = app.$.visualiser.cy.filter(":parent");
