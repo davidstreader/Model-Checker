@@ -251,4 +251,5 @@ $(function() {
     $("#model-tab").on('shown.bs.tab',app.models.redraw);
     $("#generator-tab").on('shown.bs.tab',app.generator.redraw);
     $("#editor-tab").on('shown.bs.tab',()=>app.editor._editor.focus());
+    $("#compilebt").click(app.compileAndBuild);
 });
