@@ -49,7 +49,7 @@ public class Main {
         Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
         this.reloaded = reloaded;
         //If this is a sub process, or we are running headless, don't start the gui.
-        if (!reloaded && !GraphicsEnvironment.isHeadless()) {
+        if (!reloaded && System.console() != null) {
             gui = new MainGui(this);
         } else {
             MainGui.registerConsoleAppender();
@@ -112,6 +112,7 @@ public class Main {
         logger.warn(ansi().render("@|red Native arguments not found!|@")+"");
         logger.info(ansi().render("@|yellow Starting sub-process with native arguments|@")+"");
         String nativePath = Paths.get("native", getArch()).toAbsolutePath().toString();
+        System.out.println(nativePath);
         //Set java.library.path to the native path for windows
         //Set jansi.passthrough as the parent application will handle the ansi chars, not the child.
         //Set the reloaded flag so that we know that the application has been loaded twice.
