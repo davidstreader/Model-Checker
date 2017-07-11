@@ -1,7 +1,7 @@
 package mc;
 
 import mc.util.Utils;
-import mc.webserver.DependencyManager;
+import mc.webserver.NativesManager;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.model.ZipParameters;
@@ -26,8 +26,7 @@ public class Publish extends Main{
       spawnProcess(builder);
     }
     System.out.println(ansi().render("@|yellow Configuring node dependencies|@"));
-    //Make sure that all the node dependencies have been loaded, and the site is vulcanized.
-    new DependencyManager(this).initDeps();
+      new NativesManager().copyNatives();
     try {
       new File("dist.zip").delete();
       System.out.println(ansi().render("@|yellow Compressing distribution|@"));

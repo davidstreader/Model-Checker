@@ -90,7 +90,7 @@ public class EquationEvaluator {
                     if (operation.isNegated()) {
                         result = !result;
                     }
-                    if (!result && failedCount.get() < context.getGraphSettings().getFailCount()) {
+                    if (!result && failedCount.get() < context.getFailCount()) {
                         String id2 = "op"+opId.getAndIncrement()+": (";
                         toRender.put(id2+firstId+")",automata.get(0));
                         toRender.put(id2+secondId+")",automata.get(1));

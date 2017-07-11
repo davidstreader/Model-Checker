@@ -1,22 +1,20 @@
 window.$ = window.jQuery = jQuery;
 require("bootstrap-webpack");
-require("bootstrap-slider/dist/bootstrap-slider.min.js");
-require("bootstrap-slider/dist/css/bootstrap-slider.min.css");
+require("font-awesome/css/font-awesome.css");
+require("bootstrap-slider/dist/bootstrap-slider.js");
+require("bootstrap-slider/dist/css/bootstrap-slider.css");
 require("jquery-resizable-dom/src/jquery-resizable");
 require("ace-builds/src-min-noconflict/ace.js");
 require("ace-builds/src-min-noconflict/theme-vibrant_ink.js");
-require("ace-builds/src-min-noconflict/theme-crimson_editor.js")
+require("ace-builds/src-min-noconflict/theme-crimson_editor.js");
+require("ace-builds/src-min-noconflict/ext-language_tools");
+require("cytoscape-panzoom/cytoscape.js-panzoom.css");
+require("./mode-example");
+require("./theme-example");
 
 $(function() {
     'use strict';
-    const cytoscape = require("cytoscape");
-    const cxtmenu = require("cytoscape-cxtmenu");
     const ReconnectingWebSocket = require("reconnecting-websocket");
-    cxtmenu(cytoscape);
-    this.cy = cytoscape({
-        container: document.getElementById('svg-parent'),
-        // style: getCytoscapeStyle(),
-    });
     const app = {};
     window.app = app;
     $(".left-panel").resizable({
@@ -25,60 +23,34 @@ $(function() {
     });
 
 
-    const editor = ace.edit("ace-editor");
-    function invert(inverted) {
-        const body = $("body");
-        const nav = $(".navbar");
-        inverted?nav.addClass("navbar-inverse"):nav.removeClass("navbar-inverse");
-        inverted?body.addClass("invert"):body.removeClass("invert");
-        const theme = "ace/theme/"+(inverted?"vibrant_ink":"crimson_editor");
-        editor.setTheme(theme);
-        localStorage.setItem("config_invert",inverted);
-    }
-    const darkMode = $("#darkMode");
-    darkMode.change(function(){
-        invert(this.checked);
-    });
-    darkMode[0].checked = localStorage.getItem(("config_invert"));
-    invert(localStorage.getItem(("config_invert")));
-    /**
-     * The data to use.
-     */
+
+    app.utils = require("./utils");
+    app.editor = require("./editor");
     app.file = require("./save-load");
-    app.file.load();
-    app.settings = require("./settings");
-    app.settings.load();
+    app.file.init();
     app.console = require("./console");
     app.automata = {values: [],display:[]};
-    app.liveCompiling = true;
-    app.fairAbstraction = true;
-    app.pruning = false;
-    app.nodeSep = 10000;
     app.helpDialogSelectedTab = 0;
     app.currentBuild = {};
     app.previousBuild = {};
-    app.previousCode = '';
     app.selectedCtx = 0;
-    app.willSaveCookie = true;
-    app.graphDefaults = {autoMaxNode: 40, failCount: 10, passCount: 10}
-    app.graphSettings = JSON.parse(JSON.stringify(app.graphDefaults));
     app.connected = false;
-    app.saveSettings = {currentFile: '', saveCode: true, saveLayout: true};
     app.decoder = new TextDecoder("UTF-8");
     const proto = window.location.protocol.replace("http","").replace(":","");
     app.socket = new ReconnectingWebSocket("ws"+proto+"://" + location.hostname + ":" + location.port + "/socket/");
     app.socket.onmessage = function (msg) {
+        if (msg === undefined) return;
         let results = JSON.parse(msg.data);
         const data = results.data;
-        if (results.event == "compileReturn") {
-            if (data.type == "error") {
+        if (results.event === "compileReturn") {
+            if (data.type === "error") {
                 app.showError(data);
                 return;
             }
             app.finalizeBuild(data);
-        } else if (results.event = "log") {
+        } else if (results.event === "log") {
             if (data.clear) {
-                if (data.clearAmt != -1) {
+                if (data.clearAmt !== -1) {
                     app.console.clear(data.clearAmt);
                 } else {
                     app.console.clear();
@@ -110,7 +82,7 @@ $(function() {
         statusBadge.removeClass("label-danger");
         statusBadge.addClass("label-success");
         if (app.liveCompiling)
-            app.compile();
+            app.compileAndBuild();
     };
     app.socket.onclose = function () {
         app.connected = false;
@@ -122,7 +94,7 @@ $(function() {
     };
 
     app.compile = function(overrideBuild) {
-        const code = app.getCode();
+        const code = app.editor.getCodeClean();
         if(!overrideBuild){
             // if there is nothing to parse then do not continue
             if(code.length === 0){
@@ -147,7 +119,7 @@ $(function() {
      */
     app.build = function(override) {
         app.console.clear();
-        const editor = app.$.editor._editor.getSession();
+        const editor = app.editor._editor.getSession();
         editor.clearAnnotations();
         _.each(editor.$backMarkers,(val,key)=>editor.removeMarker(key));
         if (!app.connected) {
@@ -156,15 +128,15 @@ $(function() {
         setTimeout(function() {
             if(app.liveCompiling === true || override){
                 app.lastCompileStartTime = (new Date()).getTime();
-                const code = app.$.editor.getCode();
-                const settings = app.getSettings();
+                const code = app.editor.getCode();
+                const settings = app.settings.getSettings();
                 app.socket.send(JSON.stringify({code:code,context:settings}));
             }
         }.bind(this), 0);
     };
     app.showError = function(error) {
         const Range = ace.require("ace/range").Range;
-        const editor = app.$.editor._editor.getSession();
+        const editor = app.editor._editor.getSession();
         if (error.stack) {
             app.console.error("An exception was thrown that was not related to your script.");
             app.console.error(error.message+"\n"+error.stack);
@@ -183,13 +155,12 @@ $(function() {
         }
     };
     app.finalizeBuild = function(results) {
-        const editor = app.$.editor._editor.getSession();
+        const editor = app.editor._editor.getSession();
         editor.clearAnnotations();
         _.each(editor.$backMarkers,(val,key)=>editor.removeMarker(key));
         const graphs = [];
         const allGraphs = [];
         const skipped = results.skipped;
-        console.log(results);
         for(let id in results.processes){
             if(!_.find(skipped, { id: results.processes[id].id })){
                 results.processes[id].id = id;
@@ -198,9 +169,11 @@ $(function() {
 
             allGraphs.push(results.processes[id]);
         }
-        app.set('automata.values', graphs.reverse());
-        app.set('automata.allValues', allGraphs.reverse());
-        app.set('automata.analysis',results.analysis);
+        app.automata.values = graphs.reverse();
+        app.automata.allValues = allGraphs.reverse();
+        app.automata.analysis = results.analysis;
+        app.utils.fillSelect(_.map(app.automata.values,val=>val.id),$("#model-process"),true,false,"No processes found");
+        $(".disable-no-process").prop("disabled",app.automata.values.length===0);
         app.console.clear();
         app.console.log('Successfully Compiled!');
         if(results.operations.length !== 0){
@@ -259,190 +232,37 @@ $(function() {
         app.compile(true);
     };
 
-    /**
-     * Gets and returns the code from the editor. Strips the code of all whitespace
-     * and unnecessary line breaks.
-     */
-    app.getCode = function() {
-        let code = '';
-        let temp = app.$.editor.getCode();
 
-        // remove white space and line breaks
-        temp = temp.replace(/ /g, '');
-
-        // remove unnecessary whitespace
-        const split = temp.split('\n');
-        for(let i = 0; i < split.length; i++){
-            if(split[i] !== ''){
-                code += split[i] + '\n';
-            }
-        }
-
-        return code;
-    };
-
-    app.getSettings = function() {
-        return {
-            fairAbstraction: app.fairAbstraction,
-            pruning: app.pruning,
-            graphSettings: app.graphSettings
-        };
-    }
-
-    /**
-     * Open a text file from the user's computer and set the text-area to
-     * the text parsed from the file.
-     */
-    app.openFile = function() {
-        const opener = app.$['open-file'];
-        opener.click();
-        opener.onchange = function(e) {
-            if (opener.value === '') {
-                return;
-            }
-
-            // Load file into editor
-            const input = e.target;
-            app.saveSettings.currentFile = input.files[0];
-            app.reloadFile();
-            opener.value = '';
-
-            // Enable reload button
-            const reload = app.$['reload'];
-            reload.disabled = false;
-        };
-    };
-
-    /**
-     * Reload the last used file.
-     */
-    app.reloadFile = function() {
-        if (app.currentFile === '') {
-            return;
-        }
-
-        const reader = new FileReader();
-        reader.onload = function() {
-            const text = reader.result.split("visualiser_json_layout:");
-            const code = text[0];
-            const json = text[1];
-            if (json && json.length > 0) {
-                app.$.visualiser.loadJSON(json);
-            }
-            app.$.editor.setCode(code);
-            app.$.editor.focus();
-        };
-        reader.readAsText(app.saveSettings.currentFile);
-    }
-
-    /**
-     * Save to code the user has written to their computer (as a download).
-     */
-    app.downloadFile = function() {
-        let filename = app.$.save.getFileName();
-        // if filename has not been defined set to untitled
-        if(filename === ''){
-            filename = 'untitled';
-        }
-        let output = "";
-        if (app.saveSettings.saveCode)
-            output+= app.$.editor.getCode();
-        if (app.saveSettings.saveLayout) {
-            output+="\nvisualiser_json_layout:"
-            output+= JSON.stringify(app.$.visualiser.cy.json());
-        }
-        const blob = new Blob(
-            [output],
-            {type: 'text/plain;charset=utf-8'});
-        saveAs(blob, filename + '.txt');
-    };
-
-    /**
-     * Opens the help-dialog.
-     */
-    app.showHelp = function() {
-        app.$.help.open();
-    };
-    app.showSettings = function() {
-        app.$.settings.open();
-    };
-    /**
-     * Simple event listener for when the checkbox in ticked.
-     * Compile is called if it is.
-     */
-    app.$['chbx-live-compiling'].addEventListener('iron-change', function() {
-        localStorage.setItem("liveCompiling",app.liveCompiling);
-        if (app.liveCompiling) {
-            app.compile(false);
-        }
-        app.$.editor.focus();
-    });
-
-    $("#settings-dialog")[0].addEventListener('iron-overlay-closed', function() {
-        app.saveGraphSettings();
-    });
-    app.$['chbx-save-cookie'].addEventListener('iron-change', function() {
-        localStorage.setItem("willSave",app.willSaveCookie);
-    });
-    /**
-     * Simple event listener for when the user switches tabs.
-     * When we switch to index 1 (Diagram), we need to redraw the canvas,
-     * as it needs to be showing currently to render.
-     * If we switch to the editor, request focus on it.
-     */
-    app.$['maintabs'].addEventListener('iron-select', function (e) {
-        if (app.$.maintabs.selected === 1) {
-            app.$.visualiser.redraw();
-        } else if (app.$.maintabs.selected === 0) {
-            app.$.editor._editor.focus();
-        }else if (app.$.maintabs.selected === 2) {
-            app.$.modify.redraw();
-        }
-    });
-
-    /**
-     * This is the event which triggers when the user selects an automata from the
-     * list to walk down. It sets the root node of this automata, and all automata
-     * with this automata as a sub-graph, blue.
-     */
-    document.addEventListener('automata-walker-start', function(e) {
-        const visualisations = Polymer.dom(this).querySelectorAll('automata-visualisation');
-        for (let i in visualisations) {
-            visualisations[i].setHighlightNodeId(e.detail.node.id);
-        }
-    });
-    /**
-     * This is the event which triggers when the user presses the walk
-     * button on the walker element. The walker has already checked for the valid
-     * edge and thrown any errors. The edge to walk is given in the event argument
-     * 'e.detail.edge'.
-     */
-    document.addEventListener('automata-walker-walk', function(e) {
-        const visualisations = Polymer.dom(this).querySelectorAll('automata-visualisation');
-        for (let i in visualisations) {
-            visualisations[i].setHighlightNodeId(e.detail.edge.to.id);
-        }
-    });
-
+    // /**
+    //  * Simple event listener for when the user switches tabs.
+    //  * When we switch to index 1 (Diagram), we need to redraw the canvas,
+    //  * as it needs to be showing currently to render.
+    //  * If we switch to the editor, request focus on it.
+    //  */
+    // app.$['maintabs'].addEventListener('iron-select', function (e) {
+    //     if (app.$.maintabs.selected === 1) {
+    //         app.$.visualiser.redraw();
+    //     } else if (app.$.maintabs.selected === 0) {
+    //         app.$.editor._editor.focus();
+    //     }else if (app.$.maintabs.selected === 2) {
+    //         app.$.modify.redraw();
+    //     }
+    // });
     /**
      * This is the event which triggers when the text in the text area is changed.
      * Only care about this if the live-compiling check-box is ticked.
      */
-    document.addEventListener('text-editor-change', function() {
-        localStorage.setItem("editor",encodeURIComponent(app.$.editor.getCode()));
-        if (app.liveCompiling && app.connected) {
-            app.compile();
-        }
+    app.editor._editor.on("input", function() {
+        if (app.settings.getSettings().liveCompiling && app.connected)
+            app.compileAndBuild();
+        if (app.settings.getSettings().autoSave)
+            localStorage.setItem("editor",encodeURIComponent(app.editor.getCode()));
     });
-    app.willSaveCookie = localStorage.getItem("willSave")!=='false';
-    app.liveCompiling = localStorage.getItem("liveCompiling")!=='false';
-    app.pruning = localStorage.getItem("pruning")=='true';
-    app.fairAbstraction = localStorage.getItem("fairAbstraction")!=='false';
-    app.nodeSep = localStorage.getItem("nodeSep") !== null?parseInt(localStorage.getItem("nodeSep")) : app.nodeSep;
-    app.graphSettings = localStorage.getItem("graphSettings") !== null?JSON.parse(localStorage.getItem("graphSettings")) :  app.graphSettings;
-    app.saveGraphSettings = ()=>localStorage.setItem("graphSettings",JSON.stringify(app.graphSettings));
-    if (app.willSaveCookie && localStorage.getItem('editor') != null) {
-        app.$.editor.setCode(decodeURIComponent(localStorage.getItem('editor')));
-    }
 
+    app.settings = require("./settings");
+    app.settings.init();
+    app.models = require("./models");
+    app.models.init();
+    $("#model-tab").on('shown.bs.tab',app.models.redraw);
+    $("#editor-tab").on('shown.bs.tab',()=>app.editor._editor.focus());
 });

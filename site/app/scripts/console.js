@@ -1,7 +1,7 @@
 const _ = require("lodash");
-const ansi_up = require("ansi-up").AnsiUp.prototype;
+const AU = require("ansi-up");
+const ansi_up = new AU.AnsiUp();
 const c = $("#console");
-ansi_up.ansi_to_html("Test");
 module.exports = {
     clear: function(lines){
         if (lines) {
@@ -12,28 +12,18 @@ module.exports = {
         } else {
             c.html("");
         }
-        // this.fire('console-change',{clear:true,lines:lines});
     },
 
     log: function(msg){
-        this._addMessages(msg,'log')
-        // this.fire('console-change',{msg:msg,type:"log"});
+        this._addMessage(msg,'log')
     },
 
     warn: function(msg){
-        this._addMessages(msg,'warn')
-        // this.fire('console-change',{msg:msg,type:"warn"});
+        this._addMessage(msg,'warn')
     },
 
     error: function(msg){
-        this._addMessages(msg,'error')
-        // this.fire('console-change',{msg:msg,type:"error"});
-    },
-
-    _addMessages: function(msg,style){
-        let nodes = [];
-        msg.split("\n").forEach(msgs => nodes.push(this._addMessage(msgs,style)));
-        return nodes;
+        this._addMessage(msg,'error')
     },
     _addMessage: function(msg,style) {
         let node = document.createElement('SPAN');

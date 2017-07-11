@@ -54,6 +54,7 @@ public class WebSocketServer {
                 try {
                     ret = compile(data);
                 } catch (Exception ex) {
+                    ex.printStackTrace();
                     //Get a stack trace then split it into lines
                     String[] lineSplit = ExceptionUtils.getStackTrace(ex).split("\n");
                     for (int i = 0; i < lineSplit.length; i++) {
@@ -109,11 +110,11 @@ public class WebSocketServer {
                     skipped.add(new SkipObject(automaton.getId(),"user",0,0));
                     processMap.put(automaton.getId(),new EmptyProcessModel(automaton));
                 }
-                if (automaton.getNodes().size() > context.getGraphSettings().getAutoMaxNode()) {
+                if (automaton.getNodes().size() > context.getAutoMaxNode()) {
                     skipped.add(new SkipObject(automaton.getId(),
                         "nodes",
                         automaton.getNodes().size(),
-                        context.getGraphSettings().getAutoMaxNode()));
+                        context.getAutoMaxNode()));
                     processMap.put(automaton.getId(),new EmptyProcessModel(automaton));
                 }
 

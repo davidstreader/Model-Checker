@@ -4,6 +4,9 @@
 .navbar {
     margin-bottom: 0 !important;
 }
+.test {
+    color: white;
+}
 #console {
     position:absolute;
     top: 45px;
@@ -11,7 +14,7 @@
     right: 10px;
     bottom: 0;
 }
-body, html, .panel-container, .tab-content div {
+body, html, .panel-container, .tab-pane {
     height:100%;
 }
 #svg-parent {

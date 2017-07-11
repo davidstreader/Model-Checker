@@ -124,42 +124,42 @@
             <ul class="nav navbar-nav">
                 <li>
                     <div>
-                        <a href="#" title="Compile Project" class="btn btn-primary navbar-btn">
+                        <button title="Compile Project" class="btn btn-primary navbar-btn">
                             <span class="glyphicon glyphicon-play"></span>
-                        </a>
+                        </button>
                     </div>
                 </li>
                 <li>
                     <div>
-                        <a href="#" title="Download current project" class="btn btn-primary navbar-btn" data-toggle="modal" data-target="#save-dialog">
+                        <button title="Download current project" class="btn btn-primary navbar-btn" data-toggle="modal" data-target="#save-dialog">
                             <span class="glyphicon glyphicon-floppy-disk"></span>
-                        </a>
+                        </button>
                     </div>
                 </li>
                 <li>
                     <div>
-                        <a href="#" title="Open project" class="btn btn-primary navbar-btn">
+                        <button title="Open project" class="btn btn-primary navbar-btn" id="open-bt">
                             <span class="glyphicon glyphicon-folder-open"></span>
-                        </a>
+                        </button>
                     </div>
                 </li>
-                <li class="active"><a data-toggle="tab" href="#editor">Editor</a></li>
-                <li><a data-toggle="tab" href="#models">Process Models</a></li>
-                <li><a data-toggle="tab" href="#generator">Process Generator</a></li>
+                <li class="active"><a data-toggle="tab" href="#editor" id="editor-tab">Editor</a></li>
+                <li><a data-toggle="tab" href="#models" id="model-tab">Process Models</a></li>
+                <li><a data-toggle="tab" href="#generator" id="generator-tab">Process Generator</a></li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 <li>
                     <div>
-                        <a href="#" class="btn btn-primary navbar-btn" data-toggle="modal" data-target="#settings-dialog">
+                        <button class="btn btn-primary navbar-btn" data-toggle="modal" data-target="#settings-dialog">
                             <span class="glyphicon glyphicon-cog"></span>
-                        </a>
+                        </button>
                     </div>
                 </li>
                 <li>
                     <div>
-                        <a href="#" class="btn btn-primary navbar-btn">
+                        <button class="btn btn-primary navbar-btn">
                             <span class="glyphicon glyphicon-question-sign"></span>
-                        </a>
+                        </button>
                     </div>
                 </li>
             </ul>
@@ -192,28 +192,28 @@
                         <li>
                             <span class="navbar-text" style="">Hide Interrupts:</span>
                             <span class="navbar-text" style="margin-left: 0;">
-                              <input type="checkbox" class="autosubmit" id="hide-interrupts" value="true">
+                              <input type="checkbox" class="autosubmit disable-no-process" id="hide-interrupts" value="true">
                             </span>
                         </li>
                         <li>
                             <div>
-                                <button title="Add process to model" class="btn btn-primary navbar-btn" disabled>
+                                <button title="Add process to model" class="btn btn-primary navbar-btn disable-no-process" id="add-process" disabled>
                                     <span class="glyphicon glyphicon-plus"></span> Add process
                                 </button>
                             </div>
                         </li>
                         <li>
                             <div>
-                                <button title="Add all processes to model" class="btn btn-primary navbar-btn" disabled>
+                                <button title="Add all processes to model" class="btn btn-primary navbar-btn disable-no-process" id="add-all-process" disabled>
                                     <span class="glyphicon glyphicon-plus"></span> Add all processes
                                 </button>
                             </div>
                         </li>
                         <li>
                             <div>
-                                <a href="#" title="Clear model" class="btn btn-primary navbar-btn">
+                                <button title="Clear model" class="btn btn-primary navbar-btn" id="clear-process">
                                     <span class="glyphicon glyphicon-trash"></span> Clear
-                                </a>
+                                </button>
                             </div>
                         </li>
                     </ul>
@@ -233,7 +233,7 @@
                         </li>
                         <li>
                             <div>
-                                <a href="#" title="Add process to generator" class="btn btn-primary navbar-btn">
+                                <a href="#" title="Add process to generator" class="btn btn-primary navbar-btn disable-no-process">
                                     <span class="glyphicon glyphicon-plus"></span> Add Process
                                 </a>
                             </div>
@@ -272,6 +272,7 @@
         </nav>
     </div>
 </div>
+<input type="file" id="files" style="height:0; display:none" />
 <!-- endbuild-->
 </body>
 </html>

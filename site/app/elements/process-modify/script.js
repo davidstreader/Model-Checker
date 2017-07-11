@@ -285,7 +285,6 @@
           renamed[id] = split[0];
         }
         proc.renamed = renamed;
-        console.log(proc.renamed)
 ;      }
       return proc;
     }
