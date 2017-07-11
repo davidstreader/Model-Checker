@@ -231,23 +231,6 @@ $(function() {
     app.compileAndBuild = function() {
         app.compile(true);
     };
-
-
-    // /**
-    //  * Simple event listener for when the user switches tabs.
-    //  * When we switch to index 1 (Diagram), we need to redraw the canvas,
-    //  * as it needs to be showing currently to render.
-    //  * If we switch to the editor, request focus on it.
-    //  */
-    // app.$['maintabs'].addEventListener('iron-select', function (e) {
-    //     if (app.$.maintabs.selected === 1) {
-    //         app.$.visualiser.redraw();
-    //     } else if (app.$.maintabs.selected === 0) {
-    //         app.$.editor._editor.focus();
-    //     }else if (app.$.maintabs.selected === 2) {
-    //         app.$.modify.redraw();
-    //     }
-    // });
     /**
      * This is the event which triggers when the text in the text area is changed.
      * Only care about this if the live-compiling check-box is ticked.

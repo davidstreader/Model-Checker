@@ -27,12 +27,14 @@
     "less": "^2.7.2",
     "less-loader": "^4.0.4",
     "lodash": "^4.17.4",
+    "qtip2": "^3.0.3",
     "reconnecting-websocket": "^3.0.7",
     "style-loader": "^0.18.2",
     "url-loader": "^0.5.9",
     "webpack": "^3.1.0"
   },
   "devDependencies": {
+    "babili-webpack-plugin": "^0.1.2",
     "vulcanize-loader": "^2.0.1",
     "wc-loader": "^1.1.5",
     "web-components-loader": "^0.1.2"

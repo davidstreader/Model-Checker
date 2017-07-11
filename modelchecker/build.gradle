@@ -78,7 +78,19 @@ node {
     // Set the work directory where node_modules should be located
     nodeModulesDir = file("${project.projectDir}/../site/app")
 }
+task webpack(type: NodeTask, dependsOn: 'npmInstall') {
+    def osName = System.getProperty("os.name").toLowerCase()
+    if (osName.contains("windows")) {
+        script = project.file("${project.projectDir}/../site/app/node_modules/webpack/bin/webpack.js")
+    } else {
+        script = project.file("${project.projectDir}/../site/app/node_modules/.bin/webpack")
+    }
+    execOverrides {
+        it.workingDir = "${project.projectDir}/../site/app"
+    }
+}
 
+processResources.dependsOn 'webpack'
 static getNatives() {
     String ret = "native/x86";
     if (System.getProperty("os.arch").endsWith("64")) ret += "_64";
@@ -100,7 +112,9 @@ sourceSets {
         }
         resources {
             srcDirs "src/main/resources", "../site"
-            exclude '**/node_modules/**'
+            exclude '**/node_modules/**','**/scripts/**','**/yarn.lock','**/webpack.config.js','**/package.json'
         }
     }
 }
+
+assemble.dependsOn shadowJar

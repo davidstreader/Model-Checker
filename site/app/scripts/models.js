@@ -17,12 +17,10 @@ module.exports = {
         const cytoscape = require("cytoscape");
         const cxtmenu = require("cytoscape-cxtmenu");
         const panzoom = require("cytoscape-panzoom");
-        const qtip = require("cytoscape-qtip");
         const cose = require("cytoscape-cose-bilkent");
         cxtmenu(cytoscape);
         panzoom(cytoscape);
         cose(cytoscape);
-        qtip(cytoscape);
         cy = cytoscape({
             container: document.getElementById('svg-parent'),
             style: getCytoscapeStyle()
@@ -292,20 +290,21 @@ function loadJSON(json) {
     applyTooltips();
 }
 function applyTooltips() {
-    cy.elements("[tooltip]").qtip({
-        content: function(){ return data().tooltip },
-        position: {
-            my: 'top center',
-            at: 'bottom center'
-        },
-        style: {
-            classes: 'qtip-bootstrap',
-            tip: {
-                width: 16,
-                height: 8
-            }
-        }
-    });
+    //TODO: Qtip sucks. We should look for something to replace it.
+    // cy.elements("[tooltip]").qtip({
+    //     content: function(){ return data().tooltip },
+    //     position: {
+    //         my: 'top center',
+    //         at: 'bottom center'
+    //     },
+    //     style: {
+    //         classes: 'qtip-bootstrap',
+    //         tip: {
+    //             width: 16,
+    //             height: 8
+    //         }
+    //     }
+    // });
 }
 function convertAndAddGraph(graph,id,hidden) {
     const oldId = id;
