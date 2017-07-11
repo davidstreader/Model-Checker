@@ -60,19 +60,12 @@ modelchecker/src/test/resources/
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 !/app/elements/elements.vulcanized.html
-/site/app/e18bbf611f2a2e43afc071aa2f4e1512.ttf
-/site/app/fa2772327f55d8198301fdb8bcfc8158.woff
-/site/app/448c34a56d699c29117adc64c43affeb.woff2
-/site/app/glyphicons-halflings-regular.svg
+/site/app/*.ttf
+/site/app/*.woff
+/site/app/*.woff2
+/site/app/*.svg
+/site/app/*.eot
 /site/app/cache-config.json
-/site/app/89889688147bd7575d6327160d64e760.svg
-/site/app/f4769f9bdb7466be65088239c12046d1.eot
 /site/yarn.lock
 /site/app/scripts/bundle.js
-/site/app/674f50d287a8c48dc19ba404d20fe713.eot
-/site/app/912ec66d7572ff821749319396470bde.svg
-/site/app/af7ae505a9eed503f8b8e6982036873e.woff2
-/site/app/fee66e712a8a08eef5805a46892932ad.woff
-/site/app/b06871f281fee6b241d60582ae9369b9.ttf
-/site/app/fontawesome-webfont.svg
 /site/app/bundle.js
