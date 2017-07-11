@@ -1,7 +1,0 @@
-#!/bin/bash
-echo "Building jar"
-cd modelchecker
-./gradlew build shadowJar
-cd ..
-echo "Configuring Bower"
-java -cp ModelChecker.jar mc.webserver.DependencyManager

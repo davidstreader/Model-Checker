@@ -8,9 +8,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class Context {
-    private boolean isFairAbstraction;
-    private boolean isLocal;
-    private boolean pruning;
-    private GraphSettings graphSettings;
-
+    private boolean liveCompiling, fairAbstraction, pruning, darkTheme, saveCode, saveLayout, autoSave;
+    private int nodeSep, autoMaxNode, failCount, passCount;
+    private String currentFile;
 }

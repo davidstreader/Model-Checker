@@ -6,7 +6,7 @@ import mc.commands.CommandManager;
 import mc.commands.PassThroughCommandManager;
 import mc.gui.MainGui;
 import mc.util.Utils;
-import mc.webserver.DependencyManager;
+import mc.webserver.NativesManager;
 import mc.webserver.WebServer;
 import org.fusesource.jansi.AnsiConsole;
 import org.slf4j.Logger;
@@ -44,11 +44,12 @@ public class Main {
     public Main(boolean reloaded) {
         instance = this;
         AnsiConsole.systemInstall();
+        new NativesManager().copyNatives();
         //Make sure that we kill the sub-process when this process exits.
         Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
         this.reloaded = reloaded;
-        //If this is a sub process, or we are running headless, don't start the gui.
-        if (!reloaded && !GraphicsEnvironment.isHeadless()) {
+        //If this is a sub process, or we are running with a console, don't start the gui.
+        if (!reloaded && Utils.isJavaw()) {
             gui = new MainGui(this);
         } else {
             MainGui.registerConsoleAppender();
@@ -56,9 +57,6 @@ public class Main {
         //Start the server if we aren't running from a jar or are in a sub process
         if (!Utils.isJar() || reloaded) {
             commandManager = new CommandManager(this);
-            //If bower has not loaded, init it now.
-            if (!new File("bower_components").exists())
-                new DependencyManager(this).initDeps();
             webServer = new WebServer();
             webServer.startServer();
             //Listen for commands
@@ -67,9 +65,6 @@ public class Main {
             return;
         }
         commandManager = new PassThroughCommandManager(this);
-        //Load all the bower dependencies
-        if (new File("executables").exists())
-            new DependencyManager(this).initDeps();
         //Start the wrapped process with all the native libraries added.
         startWrappedProcess(getClass());
     }
