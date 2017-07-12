@@ -112,7 +112,11 @@ public class AutomataParallelComposition {
         }
         else if(action.endsWith("?")){
             if(!containsBroadcaster(action, alphabet)) {
-                unsyncedActions.add(action);
+                if(containsReceiver(action, alphabet)){
+                    syncedActions.add(action);
+                } else {
+                    unsyncedActions.add(action);
+                }
             }
         }
         else if(alphabet.contains(action)){
