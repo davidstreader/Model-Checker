@@ -352,7 +352,7 @@ function applyCose(id, node) {
             },
             name: 'cose-bilkent',
             fit: false,
-            nodeRepulsion: app.nodeSep,
+            idealEdgeLength: app.settings.getSettings().nodeSep,
         }).run();
     } else {
         layoutStop(node);

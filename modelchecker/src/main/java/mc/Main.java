@@ -12,8 +12,6 @@ import org.fusesource.jansi.AnsiConsole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.*;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Map;
@@ -44,7 +42,6 @@ public class Main {
     public Main(boolean reloaded) {
         instance = this;
         AnsiConsole.systemInstall();
-        new NativesManager().copyNatives();
         //Make sure that we kill the sub-process when this process exits.
         Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
         this.reloaded = reloaded;
@@ -54,6 +51,7 @@ public class Main {
         } else {
             MainGui.registerConsoleAppender();
         }
+        new NativesManager().copyNatives();
         //Start the server if we aren't running from a jar or are in a sub process
         if (!Utils.isJar() || reloaded) {
             commandManager = new CommandManager(this);

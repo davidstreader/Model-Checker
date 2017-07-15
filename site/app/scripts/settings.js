@@ -8,7 +8,7 @@ const defaults = {
     liveCompiling: true,
     fairAbstraction: true,
     pruning: false,
-    nodeSep: 10000,
+    nodeSep: 50,
     autoMaxNode: 40,
     failCount: 10,
     passCount: 10,

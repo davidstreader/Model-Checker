@@ -1,18 +1,18 @@
 package mc.webserver;
 
 import lombok.AllArgsConstructor;
-import mc.Main;
 import mc.util.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
+import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.util.Enumeration;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.fusesource.jansi.Ansi.ansi;
 
 /**
@@ -26,43 +26,39 @@ public class NativesManager {
      * we want to the users library folder.
      */
     public void copyNatives() {
+        logger.info(""+ansi().render("@|yellow Copying natives|@"));
+        String homeDir = System.getProperty("user.home");
+        File libDir = new File(homeDir,"lib");
+        libDir.mkdirs();
         if (!new File("native").exists() && Utils.isJar()) {
             try {
                 File f =new File(NativesManager.class.getProtectionDomain()
                     .getCodeSource()
                     .getLocation()
                     .getPath());
-                java.util.jar.JarFile jarfile = new java.util.jar.JarFile(f);
-                java.util.Enumeration<java.util.jar.JarEntry> enu = jarfile.entries();
+                JarFile jarfile = new JarFile(f);
+                Enumeration<JarEntry> enu = jarfile.entries();
                 while (enu.hasMoreElements()) {
-                    java.util.jar.JarEntry je = enu.nextElement();
-                    if (!je.getName().startsWith("native")) continue;
+                    JarEntry je = enu.nextElement();
+                    //Only copy natives
+                    if (!je.getName().startsWith("native/"+Utils.getArch())) continue;
                     if (je.isDirectory()) {
                         continue;
                     }
-                    java.io.File fl = new java.io.File(je.getName());
+                    File fl = new File(je.getName());
+                    //When dealing with mac, just copy the natives to the user's library folder
+                    if (Utils.isMac()) {
+                        fl = new File(libDir.toPath().toString(),je.getName());
+                    }
                     if (!fl.exists()) {
                         fl.getParentFile().mkdirs();
                     }
-                    java.io.InputStream is = jarfile.getInputStream(je);
+                    InputStream is = jarfile.getInputStream(je);
                     Files.copy(is,fl.toPath());
                     is.close();
                 }
             } catch (IOException ex) {
                 ex.printStackTrace();
-            }
-        }
-        if (!Utils.isMac()) return;
-        logger.info(""+ansi().render("@|yellow Copying natives|@"));
-        String homeDir = System.getProperty("user.home");
-        File libDir = new File(homeDir,"lib");
-        libDir.mkdirs();
-        File natives = new File("native",Utils.getArch());
-        for (File n: natives.listFiles()) {
-            try {
-                Files.copy(n.toPath(),Paths.get(libDir.toPath().toString(),n.getName()), REPLACE_EXISTING);
-            } catch (IOException e) {
-                e.printStackTrace();
             }
         }
     }
