@@ -15,26 +15,26 @@ import static spark.Spark.webSocket;
 
 
 public class WebServer {
-  Logger logger = LoggerFactory.getLogger(WebServer.class);
-  public void startServer() {
-    logger.info(""+ansi().render("@|green Starting Web Server|@"));
-    if (checkPortInUse()) return;
-    Spark.staticFileLocation("app");
-    Spark.port(5000);
-    webSocket("/socket",WebSocketServer.class);
-    logger.info(""+ansi().render("@|green Starting Socket.IO Server|@"));
-  }
-
-  private boolean checkPortInUse() {
-    try {
-      new ServerSocket(5000).close();
-      return false;
-    } catch (IOException e) {
-      logger.error(""+ansi().render("@|red Port 5000 is already in use. Unable to start WebServer.|@"));
-      logger.info(""+ansi().render("@|yellow Type exit to close the program.|@"));
-      return true;
+    Logger logger = LoggerFactory.getLogger(WebServer.class);
+    public void startServer() {
+        logger.info(""+ansi().render("@|green Starting Web Server|@"));
+        if (checkPortInUse()) return;
+        Spark.staticFileLocation("../../../../site/app");
+        Spark.port(5000);
+        webSocket("/socket",WebSocketServer.class);
+        Spark.init();
     }
-  }
+
+    private boolean checkPortInUse() {
+        try {
+            new ServerSocket(5000).close();
+            return false;
+        } catch (IOException e) {
+            logger.error(""+ansi().render("@|red Port 5000 is already in use. Unable to start WebServer.|@"));
+            logger.info(""+ansi().render("@|yellow Type exit to close the program.|@"));
+            return true;
+        }
+    }
 
 
 }
