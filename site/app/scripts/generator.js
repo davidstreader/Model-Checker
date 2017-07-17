@@ -227,12 +227,11 @@ function addProcess(isImport) {
         const variables = node.metaData.variables;
         for (let v in variables) {
             v = v.substring(1);
-            if (vars[v] === undefined) {
-                vars[v] = false;
-            }
+            vars[v] = false;
         }
     });
     const vs = process.metaData.variables;
+    console.log(vs);
     for (const v in vs) {
         const variable = vs[v];
         vars[variable]=true;
