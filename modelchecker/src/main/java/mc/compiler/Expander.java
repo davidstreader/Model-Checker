@@ -447,7 +447,7 @@ public class Expander {
     private Location getFullRangeLocation(List<IndexNode> ranges) {
         Location start = ranges.get(0).getLocation();
         Location end = ranges.get(ranges.size()-1).getLocation();
-        return new Location(start.getLineStart(),start.getColStart(),end.getLineEnd(),end.getColEnd());
+        return new Location(start.getLineStart(),start.getColStart(),end.getLineEnd(),end.getColEnd(),start.getStartIndex(),end.getEndIndex());
     }
 
     private boolean evaluateCondition(Expression condition, Map<String, Object> variableMap) throws CompilationException {

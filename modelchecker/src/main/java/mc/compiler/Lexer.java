@@ -44,7 +44,7 @@ public class Lexer {
 			}
 			else if(Character.isDigit(characters[index])){
 				String integer = parseInteger(characters);
-				Location location = new Location(line, column, line, column + integer.length());
+				Location location = new Location(line, column, line, column + integer.length(),index,index+integer.length());
 				Token token = new IntegerToken(Integer.parseInt(integer), location);
 				tokens.add(token);
 				column += integer.length();
@@ -90,7 +90,7 @@ public class Lexer {
 	}
 
 	private Token constructStringToken(String string){
-		Location location = new Location(line, column, line, column + string.length());
+		Location location = new Location(line, column, line, column + string.length(),index,index+string.length());
 		if(processTypes.contains(string)){
 			return new ProcessTypeToken(string, location);
 		}
@@ -143,220 +143,220 @@ public class Lexer {
 	private Token constructSymbolToken(char[] characters) throws LexerException{
 		if(characters[index] == '.'){
 			if(index < characters.length - 1 && characters[index + 1] == '.'){
-				Location location = new Location(line, column, line, column + 2);
+				Location location = new Location(line, column, line, column + 2,index,index+2);
 				column += 2;
 				index += 2;
 				return new RangeSeparatorToken(location);
 			}
 			else{
-				Location location = new Location(line, column, line, column++);
+				Location location = new Location(line, column, line, column++,index,index+1);
 				index++;
 				return new DotToken(location);
 			}
 		}
 		else if(characters[index] == ','){
-			Location location = new Location(line, column, line, column++);
+			Location location = new Location(line, column, line, column++,index,index+1);
 			index++;
 			return new CommaToken(location);
 		}
 		else if(characters[index] == ':'){
-			Location location = new Location(line, column, line, column++);
+			Location location = new Location(line, column, line, column++,index,index+1);
 			index++;
 			return new ColonToken(location);
 		}
 		else if(characters[index] == '['){
-			Location location = new Location(line, column, line, column++);
+			Location location = new Location(line, column, line, column++,index,index+1);
 			index++;
 			return new OpenBracketToken(location);
 		}
 		else if(characters[index] == ']'){
-			Location location = new Location(line, column, line, column++);
+			Location location = new Location(line, column, line, column++,index,index+1);
 			index++;
 			return new CloseBracketToken(location);
 		}
 		else if(characters[index] == '('){
-			Location location = new Location(line, column, line, column++);
+			Location location = new Location(line, column, line, column++,index,index+1);
 			index++;
 			return new OpenParenToken(location);
 		}
 		else if(characters[index] == ')'){
-			Location location = new Location(line, column, line, column++);
+			Location location = new Location(line, column, line, column++,index,index+1);
 			index++;
 			return new CloseParenToken(location);
 		}
 		else if(characters[index] == '{'){
-			Location location = new Location(line, column, line, column++);
+			Location location = new Location(line, column, line, column++,index,index+1);
 			index++;
 			return new OpenBraceToken(location);
 		}
 		else if(characters[index] == '}'){
-			Location location = new Location(line, column, line, column++);
+			Location location = new Location(line, column, line, column++,index,index+1);
 			index++;
 			return new CloseBraceToken(location);
 		}
 		else if(characters[index] == '-'){
 			if(index < characters.length - 1 && characters[index + 1] == '>'){
-				Location location = new Location(line, column, line, column + 2);
+				Location location = new Location(line, column, line, column + 2,index,index+2);
 				column += 2;
 				index += 2;
 				return new SequenceToken(location);
 			}
 			else{
-				Location location = new Location(line, column, line, column++);
+				Location location = new Location(line, column, line, column++,index,index+1);
 				index++;
 				return new SubtractionToken(location);
 			}
 		}
 		else if (characters[index] == '#') {
-            Location location = new Location(line, column, line, column++);
+            Location location = new Location(line, column, line, column++,index,index+1);
             index++;
             return new TraceEquivalentTypeToken(location);
         }
 		else if(characters[index] == '~'){
 			if(index < characters.length - 1 && characters[index + 1] == '>'){
-				Location location = new Location(line, column, line, column + 2);
+				Location location = new Location(line, column, line, column + 2,index,index+2);
 				column += 2;
 				index += 2;
 				return new InterruptToken(location);
 			}
 			else{
-				Location location = new Location(line, column, line, column++);
+				Location location = new Location(line, column, line, column++,index,index+1);
 				index++;
 				return new BisimulationTypeToken(location);
 			}
 		}
 		else if(characters[index] == '\\'){
-			Location location = new Location(line, column, line, column++);
+			Location location = new Location(line, column, line, column++,index,index+1);
 			index++;
 			return new HideToken(location);
 		}
 		else if(characters[index] == '@'){
-			Location location = new Location(line, column, line, column++);
+			Location location = new Location(line, column, line, column++,index,index+1);
 			index++;
 			return new AtToken(location);
 		}
 		else if(characters[index] == '$'){
-			Location location = new Location(line, column, line, column++);
+			Location location = new Location(line, column, line, column++,index,index+1);
 			index++;
 			return new DollarToken(location);
 		}
 		else if(characters[index] == '?'){
-			Location location = new Location(line, column, line, column++);
+			Location location = new Location(line, column, line, column++,index,index+1);
 			index++;
 			return new QuestionMarkToken(location);
 		}
 		else if(characters[index] == '|'){
 			if(index < characters.length - 1 && characters[index + 1] == '|'){
-				Location location = new Location(line, column, line, column + 2);
+				Location location = new Location(line, column, line, column + 2,index,index+2);
 				column += 2;
 				index += 2;
 				return new OrToken(location);
 			}
 			else{
-				Location location = new Location(line, column, line, column++);
+				Location location = new Location(line, column, line, column++,index,index+1);
 				index++;
 				return new BitOrToken(location);
 			}
 		}
 		else if(characters[index] == '&'){
 			if(index < characters.length - 1 && characters[index + 1] == '&'){
-				Location location = new Location(line, column, line, column + 2);
+				Location location = new Location(line, column, line, column + 2,index,index+2);
 				column += 2;
 				index += 2;
 				return new AndToken(location);
 			}
 			else{
-				Location location = new Location(line, column, line, column++);
+				Location location = new Location(line, column, line, column++,index,index+1);
 				index++;
 				return new BitAndToken(location);
 			}
 		}
 		else if(characters[index] == '^'){
-			Location location = new Location(line, column, line, column++);
+			Location location = new Location(line, column, line, column++,index,index+1);
 			index++;
 			return new ExclOrToken(location);
 		}
 		else if(characters[index] == '='){
 			if(index < characters.length - 1 && characters[index + 1] == '='){
-				Location location = new Location(line, column, line, column + 2);
+				Location location = new Location(line, column, line, column + 2,index,index+2);
 				column += 2;
 				index += 2;
 				return new EqualityToken(location);
 			}
 			else{
-				Location location = new Location(line, column, line, column++);
+				Location location = new Location(line, column, line, column++,index,index+1);
 				index++;
 				return new AssignToken(location);
 			}
 		}
 		else if(characters[index] == '!'){
 			if(index < characters.length - 1 && characters[index + 1] == '='){
-				Location location = new Location(line, column, line, column + 2);
+				Location location = new Location(line, column, line, column + 2,index,index+2);
 				column += 2;
 				index += 2;
 				return new NotEqualToken(location);
 			}
 			else{
-				Location location = new Location(line, column, line, column++);
+				Location location = new Location(line, column, line, column++,index,index+1);
 				index++;
 				return new NegateToken(location);
 			}
 		}
 		else if(characters[index] == '<'){
 			if(index < characters.length - 1 && characters[index + 1] == '='){
-				Location location = new Location(line, column, line, column + 2);
+				Location location = new Location(line, column, line, column + 2,index,index+2);
 				column += 2;
 				index += 2;
 				return new LessThanEqToken(location);
 			}
 			if(index < characters.length - 1 && characters[index + 1] == '<'){
-				Location location = new Location(line, column, line, column + 2);
+				Location location = new Location(line, column, line, column + 2,index,index+2);
 				column += 2;
 				index += 2;
 				return new LeftShiftToken(location);
 			}
 			else{
-				Location location = new Location(line, column, line, column++);
+				Location location = new Location(line, column, line, column++,index,index+1);
 				index++;
 				return new LessThanToken(location);
 			}
 		}
 		else if(characters[index] == '>'){
 			if(index < characters.length - 1 && characters[index + 1] == '='){
-				Location location = new Location(line, column, line, column + 2);
+				Location location = new Location(line, column, line, column + 2,index,index+2);
 				column += 2;
 				index += 2;
 				return new GreaterThanEqToken(location);
 			}
 			if(index < characters.length - 1 && characters[index + 1] == '>'){
-				Location location = new Location(line, column, line, column + 2);
+				Location location = new Location(line, column, line, column + 2,index,index+2);
 				column += 2;
 				index += 2;
 				return new RightShiftToken(location);
 			}
 			else{
-				Location location = new Location(line, column, line, column++);
+				Location location = new Location(line, column, line, column++,index,index+1);
 				index++;
 				return new GreaterThanToken(location);
 			}
 		}
 		else if(characters[index] == '+'){
-			Location location = new Location(line, column, line, column++);
+			Location location = new Location(line, column, line, column++,index,index+1);
 			index++;
 			return new AdditionToken(location);
 		}
 		else if(characters[index] == '*'){
-			Location location = new Location(line, column, line, column++);
+			Location location = new Location(line, column, line, column++,index,index+1);
 			index++;
 			return new MultiplicationToken(location);
 		}
 		else if(characters[index] == '/'){
-			Location location = new Location(line, column, line, column++);
+			Location location = new Location(line, column, line, column++,index,index+1);
 			index++;
 			return new DivisionToken(location);
 		}
 		else if(characters[index] == '%'){
-			Location location = new Location(line, column, line, column++);
+			Location location = new Location(line, column, line, column++,index,index+1);
 			index++;
 			return new ModuloToken(location);
 		}

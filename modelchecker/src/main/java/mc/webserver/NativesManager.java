@@ -8,7 +8,9 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.CopyOption;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -30,6 +32,8 @@ public class NativesManager {
         String homeDir = System.getProperty("user.home");
         File libDir = new File(homeDir,"lib");
         libDir.mkdirs();
+        //Where to copy the files from in the jar
+        String prefix = "native/"+Utils.getArch();
         if (!new File("native").exists() && Utils.isJar()) {
             try {
                 File f =new File(NativesManager.class.getProtectionDomain()
@@ -41,20 +45,21 @@ public class NativesManager {
                 while (enu.hasMoreElements()) {
                     JarEntry je = enu.nextElement();
                     //Only copy natives
-                    if (!je.getName().startsWith("native/"+Utils.getArch())) continue;
+                    if (!je.getName().startsWith(prefix)) continue;
                     if (je.isDirectory()) {
                         continue;
                     }
                     File fl = new File(je.getName());
                     //When dealing with mac, just copy the natives to the user's library folder
                     if (Utils.isMac()) {
-                        fl = new File(libDir.toPath().toString(),je.getName());
+                        //Skip prefix when copying for mac
+                        fl = new File(libDir.toPath().toString(),je.getName().replace(prefix,""));
                     }
                     if (!fl.exists()) {
                         fl.getParentFile().mkdirs();
                     }
                     InputStream is = jarfile.getInputStream(je);
-                    Files.copy(is,fl.toPath());
+                    Files.copy(is,fl.toPath(), StandardCopyOption.REPLACE_EXISTING);
                     is.close();
                 }
             } catch (IOException ex) {

@@ -91,6 +91,10 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         }
         else{
             Automaton automaton = new Automaton(identifier);
+            if (variables != null) {
+                automaton.addMetaData("variables_location",variables.getLocation());
+                automaton.addMetaData("variables",variables.getVariables());
+            }
             automaton.addMetaData("location",astNode.getLocation());
             interpretNode(astNode, automaton, automaton.getRoot());
             processStack.push(automaton);

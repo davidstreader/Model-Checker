@@ -14,6 +14,7 @@ const generateBt = $("#generate-modify");
 const clearBt = $("#clear-modify");
 const outputBox = $("#generated-text");
 const rendered = $("#generated-processes");
+let vars = {};
 function init() {
     selector.change(updateButton);
     typeSelector.change(compile);
@@ -95,9 +96,51 @@ function compile(shouldRender) {
     });
     //Collect up all hidden actions, but only unique ones
     if (hidden.length > 0) hidden = " \\{"+_.uniq(hidden).join()+"}";
-    compiledResult = output+processes.join(" || ")+(hidden || "")+".";
+    let varStr = "";
+    if (vars) {
+        const varsC = [];
+        for (const id in vars) {
+           if (vars[id]) varsC.push(id);
+        }
+        varStr=`\${${varsC.join()}}`;
+    }
+    compiledResult = output+processes.join(" || ")+(hidden || "")+varStr+".";
     //Set compiled results to the process name + all the added processes collected + hidden+.
     outputBox.text(compiledResult);
+    if (shouldRender) {
+        renderVars();
+    }
+}
+function renderVars() {
+    const form = $(`<form role="form" class="gen-form"></form>`);
+    const gp1 = $(`<div class="form-group"></div>`);
+    const pname = $(`<label>Variables to hide</label>`);
+    const removeBt = $(`<button class="btn btn-primary navbar-btn pull-right">Remove</button>`);
+    removeBt.click(()=>{
+        added.splice(added.indexOf(process),1);
+        compile(true);
+    });
+    form.append(gp1);
+    gp1.append(pname);
+    const table = $(`<table border="1"></table>`);
+    for (const id in vars) {
+        const hidden = vars[id];
+        const tr = $("<tr></tr>");
+        const nametd = $(`<td style="padding: 0 10px;">${id}</td>`);
+        const checkTD = $("<td></td>");
+        const check = $(`<input type="checkbox" title="Hide variable symbolically" style="margin: 0 10px;"/>`);
+        check[0].checked = hidden;
+        check.change(function(){
+            vars[id] = this.checked;
+            compile(false);
+        });
+        checkTD.append(check);
+        tr.append(nametd,checkTD);
+        table.append(tr);
+    }
+    form.append(table);
+    form.append(removeBt);
+    rendered.append(form);
 }
 function render(process) {
     const form = $(`<form role="form" class="gen-form"></form>`);
@@ -110,15 +153,13 @@ function render(process) {
         compile();
     });
     removeBt.click(()=>{
-      added.splice(added.indexOf(process),1);
-      compile(true);
+        added.splice(added.indexOf(process),1);
+        compile(true);
     });
     form.append(gp1);
-    pname.text(`New Process Name (${process.id})`);
     gp1.append(pname);
     gp1.append(nameTb);
     const table = $(`<table border="1"></table>`);
-    console.log(process);
     for (const a in process.renamed) {
         const alphabet = process.renamed[a];
         const renamed = alphabet.renamed || "";
@@ -132,7 +173,8 @@ function render(process) {
         });
         inputTD.append(input);
         const checkTD = $("<td></td>");
-        const check = $(`<input type="checkbox" title="Hide edge" value="${alphabet.hidden}" style="margin: 0 10px;"/>`);
+        const check = $(`<input type="checkbox" title="Hide edge" style="margin: 0 10px;"/>`);
+        check[0].checked = alphabet.hidden;
         check.change(function(){
             alphabet.hidden = this.checked;
             compile();
@@ -156,6 +198,7 @@ function addToEditor() {
     const process = getProcessFromCode(processName);
     //If the process already exists
     if (process !== null) {
+
         //Replace the old version of the process with the new one
         //Note, we need to get rid of the type as its now set by the original process.
         app.editor.setCode(code.replace(process+".", compiledResult.replace(typeSelector.val().toLowerCase() + " ", "")));
@@ -169,38 +212,54 @@ function getProcessFromCode(id) {
     const process = _.find(app.automata.allValues,{id:id});
     if (!process) return null;
     const loc = process.metaData.location;
-    //Split into lines
-    const code = app.editor.getCode().split(/\n/);
-    let endCol = loc.colEnd;
-    let procCode = _.drop(code,loc.lineStart-1);
-    procCode = _.dropRight(procCode,procCode.length-(loc.lineEnd-loc.lineStart)-1);
-    procCode[0] = procCode[0].substring(loc.colStart);
-    //If we are dealing with the same line twice, we need to offset the end col by the
-    //start col as we just removed it.
-    if (loc.lineStart === loc.lineEnd) endCol-=loc.colStart;
-    procCode[procCode.length-1] = procCode[procCode.length-1].substring(0,endCol);
-    procCode = procCode.join("\n");
-    return procCode;
+    return app.editor.getCode().substring(loc.startIndex,loc.endIndex);
 }
 function addProcess() {
     const id = selector.val();
+    const process = _.find(app.automata.allValues, {id: id});
     //Try parsing the subprocess to see if we can import info from it
     const parsed = parse(id);
     if (parsed) {
-        //IMport found info
+        //Import found info
         addParsed(parsed);
-        compile(true);
-        return;
+    } else {
+        //loop over all subkeys from the selected process, then map them to an array with some default states
+        added.push({
+            id: id,
+            name: "",
+            renamed: Object.values(process.alphabet).map(id => {
+                return {id: id, renamed: "", hidden: false};
+            })
+        });
     }
-    //loop over all subkeys from the selected process, then map them to an array with some default states
-    added.push({id:id,name:"",renamed:Object.values(_.find(app.automata.allValues,{id:id}).alphabet).map(id=>{return {id:id,renamed:"",hidden:false};})});
+    loadVariables();
+
+    const vs = process.metaData.variables;
+    for (const v in vs) {
+        const variable = vs[v];
+        vars[variable]=true;
+    }
     compile(true);
 }
+const rangeMatcher = new RegExp("\\[("+LexerTokens.actionLabel+"):[\\w.]*\\]","g");
+function loadVariables() {
+    const variables = {};
+    for (const id in added) {
+        loadVariablesFrom(added[id].id,variables);
+    }
+    vars = variables;
+}
+function loadVariablesFrom(id,variables) {
+    const code = getProcessFromCode(id);
+    if (!code) return;
+    code.replace(new RegExp(LexerTokens.identifier,"g"), (match, id) => loadVariablesFrom(id));
+    code.replace(rangeMatcher, (match, id) => variables[id] = vars[id]||false);
+}
 function addParsed(parse) {
+    nameBox.val(parse.id);
     //Loop over processes
     for (let id1 in parse.processes) {
         const process = parse.processes[id1];
-
         //Generate a process formatted for modify
         const orig = {
             id: process.id,
@@ -282,6 +341,10 @@ function parse(process) {
     //Loop through and parse
     for (let i in processes) {
         processes[i] = parseProcess(processes[i]);
+    }
+    let hiddenVar = process.split(/${/)[1];
+    if (hiddenVar) {
+        hiddenVar = hiddenVar.split("}")[0];
     }
     //Parse the hidden set on the end
     let hidden = process.split(/[\\@]/)[1];

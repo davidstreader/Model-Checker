@@ -1716,7 +1716,7 @@ public class Parser {
     private void checkNotEOF() throws CompilationException {
         if(index >= tokens.size()){
             Location last = tokens.get(tokens.size() - 1).getLocation();
-            Location eof = new Location(last.getLineStart(), last.getColStart() + 1, last.getLineEnd(), last.getColEnd() + 2);
+            Location eof = new Location(last.getLineStart(), last.getColStart() + 1, last.getLineEnd(), last.getColEnd() + 2,last.getStartIndex()+1,last.getEndIndex()+2);
             throw constructException("end of file reached", eof);
 
         }

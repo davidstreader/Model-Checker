@@ -1,7 +1,11 @@
 package mc.util;
 
-import java.io.Serializable;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
+import java.io.Serializable;
+@Getter
+@AllArgsConstructor
 public class Location implements Serializable {
 
 	// fields
@@ -9,37 +13,17 @@ public class Location implements Serializable {
 	private int colStart;
 	private int lineEnd;
 	private int colEnd;
-
-	public Location(int lineStart, int colStart, int lineEnd, int colEnd){
-		this.lineStart = lineStart;
-		this.colStart = colStart;
-		this.lineEnd = lineEnd;
-		this.colEnd = colEnd;
-	}
+	private int startIndex;
+    private int endIndex;
 
     public Location(Location start, Location end){
         this.lineStart = start.getLineStart();
         this.colStart = start.getColStart();
         this.lineEnd = end.getLineEnd();
         this.colEnd = end.getColEnd();
+        this.startIndex = start.getStartIndex();
+        this.endIndex = end.getEndIndex();
     }
-
-	public int getLineStart(){
-		return lineStart;
-	}
-
-	public int getColStart(){
-		return colStart;
-	}
-
-	public int getLineEnd(){
-		return lineEnd;
-	}
-
-	public int getColEnd(){
-		return colEnd;
-	}
-
 	public String toString(){
 		return "(" + lineStart + ":" + colStart + "-" + lineEnd + ":" + colEnd +")";
 	}
