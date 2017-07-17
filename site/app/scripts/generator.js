@@ -113,7 +113,7 @@ function compile(shouldRender) {
     }
 }
 function renderVars() {
-    const form = $(`<form role="form" class="gen-form"></form>`);
+    const form = $(`<form role="form" class="gen-form" style="padding-bottom: 20px"></form>`);
     const gp1 = $(`<div class="form-group"></div>`);
     const pname = $(`<label>Variables to hide</label>`);
     form.append(gp1);
@@ -138,7 +138,7 @@ function renderVars() {
     rendered.append(form);
 }
 function render(process) {
-    const form = $(`<form role="form" class="gen-form"></form>`);
+    const form = $(`<form role="form" class="gen-form" style="padding-bottom: 20px"></form>`);
     const gp1 = $(`<div class="form-group"></div>`);
     const pname = $(`<label>New Process Name (Original: ${process.id})</label>`);
     const removeBt = $(`<button class="btn btn-primary navbar-btn pull-right">Remove</button>`);
