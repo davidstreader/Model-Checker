@@ -22,12 +22,6 @@ public class WebServer {
     Spark.staticFileLocation("app");
     Spark.port(5000);
     webSocket("/socket",WebSocketServer.class);
-    get("/bower_components/*", (req, res) -> {
-      if (req.pathInfo().endsWith(".css")) {
-        res.type("text/css");
-      }
-     return String.join("\n",Files.readAllLines(Paths.get(req.pathInfo().substring(1))));
-    });
     logger.info(""+ansi().render("@|green Starting Socket.IO Server|@"));
   }
 
