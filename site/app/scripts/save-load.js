@@ -6,7 +6,13 @@ function loadFile(file) {
     const reader = new FileReader();
     reader.readAsText(file);
     reader.onload = function(file) {
-        app.editor.setCode(file.target.result);
+        const text = file.target.result.split("visualiser_json_layout:");
+        const code = text[0];
+        const json = text[1];
+        if (json && json.length > 0) {
+            app.models.loadJSON(json);
+        }
+        app.editor.setCode(code);
     }
 }
 /**
@@ -16,6 +22,12 @@ function loadFile(file) {
 function init() {
     $("#save-dialog").on('shown.bs.modal', function () {
         $(this).find("#fileName").focus().select();
+    }).submit(function(e){
+        downloadFile();
+        return false;
+    });
+    $("#save").click(()=>{
+        downloadFile();
     });
     const files = $('#files');
     $("#open-bt").click(()=>files.click());
@@ -75,20 +87,20 @@ function init() {
  * Save to code the user has written to their computer (as a download).
  */
 function downloadFile() {
-    let filename = app.$.save.getFileName();
+    let filename = $("#fileName").val();
     // if filename has not been defined set to untitled
     if(filename === ''){
         filename = 'untitled';
     }
     let output = "";
-    if (app.settings.getSettings().saveCode)
-        output+= app.$.editor.getCode();
-    if (app.settings.getSettings().saveLayout) {
+    if ($("#saveCode")[0].checked)
+        output+= app.editor.getCode();
+    if ($("#saveLayout")[0].checked) {
         output+="\nvisualiser_json_layout:"
-        output+= JSON.stringify(app.$.visualiser.cy.json());
+        output+= JSON.stringify(app.models.getJSON());
     }
     const blob = new Blob(
         [output],
         {type: 'text/plain;charset=utf-8'});
-    saveAs(blob, filename + '.txt');
+    require("file-saver").saveAs(blob, filename + '.txt');
 }

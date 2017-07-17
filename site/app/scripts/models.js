@@ -3,6 +3,8 @@ let cy,graphIds,graphMap,rendering,connected,graphsToAdd = [];
 module.exports = {
     redraw: redraw,
     addGraph: addGraph,
+    loadJSON: loadJSON,
+    getJSON: ()=>cy.json(),
     updateTheme: function() {
         cy.style()
             .selector(':parent')
