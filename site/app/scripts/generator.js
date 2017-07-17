@@ -154,7 +154,8 @@ function render(process) {
     form.append(gp1);
     gp1.append(pname);
     gp1.append(nameTb);
-    const table = $(`<table border="1"></table>`);
+    const table = $(`<table border="1"><tr><td style="padding: 0 10px;">Edge Name</td><td style="padding: 0 10px;">New Name</td><td style="padding: 0 10px;">Hide Edge?</td></tr></table>`);
+
     for (const a in process.renamed) {
         const alphabet = process.renamed[a];
         const renamed = alphabet.renamed || "";

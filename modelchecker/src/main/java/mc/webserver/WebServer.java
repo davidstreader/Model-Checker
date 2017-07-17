@@ -19,7 +19,8 @@ public class WebServer {
     public void startServer() {
         logger.info(""+ansi().render("@|green Starting Web Server|@"));
         if (checkPortInUse()) return;
-        Spark.staticFileLocation("../../../../site/app");
+//        Spark.staticFileLocation("../../../../site/app");
+        Spark.staticFileLocation("app");
         Spark.port(5000);
         webSocket("/socket",WebSocketServer.class);
         Spark.init();
