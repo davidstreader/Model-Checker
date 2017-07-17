@@ -118,11 +118,12 @@ function render(process) {
     gp1.append(pname);
     gp1.append(nameTb);
     const table = $(`<table border="1"></table>`);
+    console.log(process);
     for (const a in process.renamed) {
         const alphabet = process.renamed[a];
         const renamed = alphabet.renamed || "";
         const tr = $("<tr></tr>");
-        const nametd = $(`<td>${alphabet.id}&nbsp;&#8209;>&nbsp;</td>`);
+        const nametd = $(`<td style="padding: 0 10px;">${alphabet.id}&nbsp;&#8209;></td>`);
         const inputTD = $("<td></td>");
         const input = $(`<input type="text" class="form-control" placeholder="Dont rename" value="${renamed}"/>`);
         input.on("input",()=>{
@@ -131,7 +132,7 @@ function render(process) {
         });
         inputTD.append(input);
         const checkTD = $("<td></td>");
-        const check = $(`<input type="checkbox" value="${alphabet.hidden}" style="margin-left: 10px;"/>`);
+        const check = $(`<input type="checkbox" title="Hide edge" value="${alphabet.hidden}" style="margin: 0 10px;"/>`);
         check.change(function(){
             alphabet.hidden = this.checked;
             compile();
@@ -154,7 +155,7 @@ function addToEditor() {
     //By adding the process we are loking for before, we can look up entire processes.
     const process = getProcessFromCode(processName);
     //If the process already exists
-    if (process != null) {
+    if (process !== null) {
         //Replace the old version of the process with the new one
         //Note, we need to get rid of the type as its now set by the original process.
         app.editor.setCode(code.replace(process+".", compiledResult.replace(typeSelector.val().toLowerCase() + " ", "")));
@@ -176,7 +177,7 @@ function getProcessFromCode(id) {
     procCode[0] = procCode[0].substring(loc.colStart);
     //If we are dealing with the same line twice, we need to offset the end col by the
     //start col as we just removed it.
-    if (loc.lineStart == loc.lineEnd) endCol-=loc.colStart;
+    if (loc.lineStart === loc.lineEnd) endCol-=loc.colStart;
     procCode[procCode.length-1] = procCode[procCode.length-1].substring(0,endCol);
     procCode = procCode.join("\n");
     return procCode;
@@ -216,13 +217,13 @@ function addParsed(parse) {
         if (parse.hidden) {
             const hiddenType = parse.hiddenType;
             //For the exclusive list, we want to start by hiding all
-            if (hiddenType == 'ex') {
+            if (hiddenType === 'ex') {
                 orig.renamed.forEach(toHide => toHide.hidden = true);
             }
             //Loop through all the values in the new process
             for (const id in orig.renamed) {
                 //Inclusive(hide all in hidden)
-                if (hiddenType == 'inc') {
+                if (hiddenType === 'inc') {
                     //If the hidden process has an action with name
                     if (parse.hidden.indexOf(orig.renamed[id].id) !== -1) {
                         //Hide the action
@@ -283,7 +284,7 @@ function parse(process) {
         processes[i] = parseProcess(processes[i]);
     }
     //Parse the hidden set on the end
-    let hidden = process.split(/\\|@/)[1];
+    let hidden = process.split(/[\\@]/)[1];
     if (hidden) {
         if (hidden.indexOf("{") === -1) {
             const resolvedHidden = new RegExp("set\\s*"+hidden+"\\s*=\\s*{(.*?)}").exec(app.editor.getCode());

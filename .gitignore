@@ -70,3 +70,4 @@ hs_err_pid*
 /site/app/scripts/bundle.js
 /site/app/bundle.js
 /site/app/yarn.lock
+/site/app/app.iml
