@@ -224,44 +224,49 @@
     </div>
     <div id="generator" class="tab-pane fade">
         <nav class="navbar navbar-default navbar-static-top">
-            <div class="container">
-                <div id="navbar-generator" class="navbar-center">
-                    <ul class="nav navbar-nav">
-                        <li><a href="#models">Process:</a></li>
-                        <li style="margin-right: 10px;">
-                            <select id="process-modify-selector" class="form-control navbar-btn process-list" disabled><option>No processes found</option></select>
-                        </li>
-                        <li>
-                            <div>
-                                <button id="add-modify" title="Add process to generator" class="btn btn-primary navbar-btn disable-no-process" disabled>
-                                    <span class="glyphicon glyphicon-plus"></span> Add Process
-                                </button>
-                            </div>
-                        </li>
-                        <li><a href="#models">Process Name:</a></li>
-                        <li style="margin-right: 10px;">
-                            <input class="form-control navbar-btn" type="text" id="modify-name"/>
-                        </li>
-                        <li style="margin-right: 10px;">
-                            <select id="process-type-selector" class="form-control navbar-btn"><option>Automata</option><option>Petrinet</option></select>
-                        </li>
-                        <li>
-                            <div>
-                                <button id="generate-modify" title="Generate process and add to editor" class="btn btn-primary navbar-btn disable-no-gen" disabled>
-                                    <span class="glyphicon glyphicon-play"></span> Generate
-                                </button>
-                            </div>
-                        </li>
-                        <li>
-                            <div>
-                                <button id="clear-modify" title="Clear processes from generator" class="btn btn-primary navbar-btn">
-                                    <span class="glyphicon glyphicon-trash"></span> Clear
-                                </button>
-                            </div>
-                        </li>
-                    </ul>
-                </div><!--/.nav-collapse -->
-            </div>
+            <div id="navbar-generator" class="navbar-center">
+                <ul class="nav navbar-nav">
+                    <li><a href="#models">Process:</a></li>
+                    <li style="margin-right: 10px;">
+                        <select id="process-modify-selector" class="form-control navbar-btn process-list" disabled><option>No processes found</option></select>
+                    </li>
+                    <li>
+                        <div>
+                            <button id="add-modify" title="Add process to generator" class="btn btn-primary navbar-btn disable-no-process" disabled>
+                                <span class="glyphicon glyphicon-plus"></span> Add Process
+                            </button>
+                        </div>
+                    </li>
+                    <li>
+                        <div>
+                            <button id="import-modify" title="Import existing process to generator" class="btn btn-primary navbar-btn disable-no-process" disabled>
+                                <span class="glyphicon glyphicon-plus"></span> Import Process
+                            </button>
+                        </div>
+                    </li>
+                    <li><a href="#models">Process Name:</a></li>
+                    <li style="margin-right: 10px;">
+                        <input class="form-control navbar-btn" type="text" id="modify-name"/>
+                    </li>
+                    <li style="margin-right: 10px;">
+                        <select id="process-type-selector" class="form-control navbar-btn"><option>Automata</option><option>Petrinet</option></select>
+                    </li>
+                    <li>
+                        <div>
+                            <button id="generate-modify" title="Generate process and add to editor" class="btn btn-primary navbar-btn disable-no-gen" disabled>
+                                <span class="glyphicon glyphicon-play"></span> Generate
+                            </button>
+                        </div>
+                    </li>
+                    <li>
+                        <div>
+                            <button id="clear-modify" title="Clear processes from generator" class="btn btn-primary navbar-btn">
+                                <span class="glyphicon glyphicon-trash"></span> Clear
+                            </button>
+                        </div>
+                    </li>
+                </ul>
+            </div><!--/.nav-collapse -->
         </nav>
         <pre id="generated-text" style="text-align: center"> </pre>
         <div id="generated-processes"></div>

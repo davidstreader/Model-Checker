@@ -1,7 +1,6 @@
 const LexerTokens = require("./lexer-tokens");
 module.exports = {
     init:init,
-    parse:parse,
     redraw: redraw,
     added: ()=>added
 };
@@ -9,6 +8,7 @@ let compiledResult = "",added=[];
 const selector = $("#process-modify-selector");
 const typeSelector = $("#process-type-selector");
 const addButton = $("#add-modify");
+const importButton = $("#import-modify");
 const nameBox = $("#modify-name");
 const generateBt = $("#generate-modify");
 const clearBt = $("#clear-modify");
@@ -16,20 +16,16 @@ const outputBox = $("#generated-text");
 const rendered = $("#generated-processes");
 let vars = {};
 function init() {
-    selector.change(updateButton);
     typeSelector.change(compile);
     nameBox.on("input",compile);
-    addButton.click(addProcess);
+    addButton.click(()=>addProcess(false));
+    importButton.click(()=>addProcess(true));
     clearBt.click(clear);
     generateBt.click(addToEditor);
 }
 function clear() {
     added.splice(0,added.length);
     compile(true);
-}
-function updateButton() {
-    const parsed = parse(selector.val());
-    addButton.html(`<span class="glyphicon glyphicon-plus"></span> `+(parsed?"Import Process":"Add Process"));
 }
 function compile(shouldRender) {
     //Force upper case
@@ -54,7 +50,7 @@ function compile(shouldRender) {
     //Create a string with the process type and the name
     let output = typeSelector.val().toLowerCase() + " " + processName + " = ";
     let processes = [];
-    let hidden = [];
+    let rename = [];
     if (shouldRender)
         rendered.html("");
     //Loop over all processes
@@ -71,43 +67,48 @@ function compile(shouldRender) {
         //Add the old name
         current+=process.id;
         //If we have some renamed values
-        if (process.renamed.length > 0) {
-            let rename = [];
+        if (Object.keys(process.renamed).length > 0) {
+            let hidden = [];
             //Loop over the renaed values
             _.each(process.renamed,function(alphabet) {
                 let id = alphabet.id;
+                let renamedId = alphabet.renamed;
                 //If the process is renamed, we need to prepend the process name to the id
                 if (process.name) {
                     id = process.name+"."+id;
+                    renamedId +="."+id;
                 }
                 //If hte action is renamed, push it to the rename map
                 if (alphabet.renamed)
                     rename.push(alphabet.renamed + "/" + id);
                 //If it is hidden, push it to the hidden map
                 if (alphabet.hidden)
-                    hidden.push(alphabet.renamed?alphabet.renamed:alphabet.id);
+                    hidden.push(alphabet.renamed?renamedId:id);
             });
-            //If we ended up with some renamed values, collect them and add to the current process
-            if (rename.length > 0)
-                current += "/{"+rename.join()+"}";
+            //If we ended up with some hidden values, collect them and add to the current process
+            if (hidden.length > 0)
+                current += "\\{"+hidden.join()+"}";
         }
         //Push the current process to the process list
         processes.push(current);
     });
-    //Collect up all hidden actions, but only unique ones
-    if (hidden.length > 0) hidden = " \\{"+_.uniq(hidden).join()+"}";
     let varStr = "";
-    if (vars) {
+    if (Object.keys(vars).length > 0) {
         const varsC = [];
         for (const id in vars) {
-           if (vars[id]) varsC.push(id);
+            if (vars[id]) varsC.push(id);
         }
-        varStr=`\${${varsC.join()}}`;
+        if (varsC.length > 0)
+            varStr=`\${${varsC.join()}}`;
     }
-    compiledResult = output+processes.join(" || ")+(hidden || "")+varStr+".";
+    let renameStr = "";
+    //If we ended up with some renamed values, collect them and add to the current process
+    if (rename.length > 0)
+        renameStr = "/{"+rename.join()+"}";
+    compiledResult = output+processes.join(" || ")+renameStr+varStr+".";
     //Set compiled results to the process name + all the added processes collected + hidden+.
     outputBox.text(compiledResult);
-    if (shouldRender) {
+    if (shouldRender && Object.keys(vars).length > 0) {
         renderVars();
     }
 }
@@ -115,11 +116,6 @@ function renderVars() {
     const form = $(`<form role="form" class="gen-form"></form>`);
     const gp1 = $(`<div class="form-group"></div>`);
     const pname = $(`<label>Variables to hide</label>`);
-    const removeBt = $(`<button class="btn btn-primary navbar-btn pull-right">Remove</button>`);
-    removeBt.click(()=>{
-        added.splice(added.indexOf(process),1);
-        compile(true);
-    });
     form.append(gp1);
     gp1.append(pname);
     const table = $(`<table border="1"></table>`);
@@ -139,7 +135,6 @@ function renderVars() {
         table.append(tr);
     }
     form.append(table);
-    form.append(removeBt);
     rendered.append(form);
 }
 function render(process) {
@@ -150,7 +145,7 @@ function render(process) {
     const nameTb = $(`<input type="text" class="form-control" style="padding-left: 20px; float:left" placeholder="${process.id}" value="${process.name}"/>`);
     nameTb.on("input",()=>{
         process.name = nameTb.val();
-        compile();
+        compile(false);
     });
     removeBt.click(()=>{
         added.splice(added.indexOf(process),1);
@@ -208,32 +203,35 @@ function addToEditor() {
     app.editor.setCode(code+"\n"+compiledResult);
 }
 function getProcessFromCode(id) {
-    if (!app.automata) return null;
-    const process = _.find(app.automata.allValues,{id:id});
+    const process = find(id);
     if (!process) return null;
     const loc = process.metaData.location;
     return app.editor.getCode().substring(loc.startIndex,loc.endIndex);
 }
-function addProcess() {
+function addProcess(isImport) {
     const id = selector.val();
-    const process = _.find(app.automata.allValues, {id: id});
-    //Try parsing the subprocess to see if we can import info from it
-    const parsed = parse(id);
-    if (parsed) {
+    const process = find(id);
+    if (isImport) {
         //Import found info
-        addParsed(parsed);
+        importProcess(process);
     } else {
         //loop over all subkeys from the selected process, then map them to an array with some default states
         added.push({
             id: id,
             name: "",
-            renamed: Object.values(process.alphabet).map(id => {
-                return {id: id, renamed: "", hidden: false};
-            })
+            renamed: generateRenameMap(process)
         });
     }
-    loadVariables();
 
+    process.nodes.forEach(node=>{
+        const variables = node.metaData.variables;
+        for (let v in variables) {
+            v = v.substring(1);
+            if (vars[v] === undefined) {
+                vars[v] = false;
+            }
+        }
+    });
     const vs = process.metaData.variables;
     for (const v in vs) {
         const variable = vs[v];
@@ -241,57 +239,68 @@ function addProcess() {
     }
     compile(true);
 }
-const rangeMatcher = new RegExp("\\[("+LexerTokens.actionLabel+"):[\\w.]*\\]","g");
-function loadVariables() {
-    const variables = {};
-    for (const id in added) {
-        loadVariablesFrom(added[id].id,variables);
-    }
-    vars = variables;
+
+
+function generateRenameMap(process) {
+    const map = {};
+    const alphaMap = process.metaData.alphabet_before_hiding || process.alphabet;
+    alphaMap.forEach(alpha => {
+        if (alpha.indexOf(".") !== -1) alpha = alpha.split(".")[1];
+        map[alpha] = {id: alpha, renamed: "", hidden: false};
+    });
+    return map;
 }
-function loadVariablesFrom(id,variables) {
-    const code = getProcessFromCode(id);
-    if (!code) return;
-    code.replace(new RegExp(LexerTokens.identifier,"g"), (match, id) => loadVariablesFrom(id));
-    code.replace(rangeMatcher, (match, id) => variables[id] = vars[id]||false);
-}
-function addParsed(parse) {
+function importProcess(parse) {
     nameBox.val(parse.id);
     //Loop over processes
-    for (let id1 in parse.processes) {
-        const process = parse.processes[id1];
+    for (let id1 in parse.metaData.processList) {
+        const process = parse.metaData.processList[id1];
         //Generate a process formatted for modify
         const orig = {
-            id: process.id,
-            name: process.name || "",
-            renamed: Object.values(_.find(app.automata.allValues, {id: process.id}).alphabet).map(id => {
-                const val = {id: id, renamed: "", hidden: false};
-                if (process.renamed) {
-                    val.renamed = process.renamed[id] || "";
-                }
-                return val;
-            })
+            id: process.id.indexOf(":")===-1?process.id:process.id.split(":")[1],
+            name: process.id.indexOf(":")===-1?"":process.id.split(":")[0],
+            renamed: generateRenameMap(process)
         };
+        process.nodes.forEach(node=>{
+            const variables = node.metaData.variables;
+            for (let v in variables) {
+                v = v.substring(1);
+                if (vars[v] === undefined) {
+                    vars[v] = false;
+                }
+            }
+        });
+        if (process.metaData.relabels) {
+            for (const i in process.metaData.relabels) {
+                const relabel = process.metaData.relabels[i];
+                let old = relabel.oldLabel;
+                if (old.indexOf(".") !== -1) {
+                    old = old.split(".")[1];
+                }
+                orig.renamed[old].renamed = relabel.newLabel;
+            }
+        }
         //If the process has a hidden section
-        if (parse.hidden) {
-            const hiddenType = parse.hiddenType;
+        if (process.metaData.hiding) {
+            const hiddenType = process.metaData.hiding.type;
+            const hiddenSet = process.metaData.hiding.set.set;
             //For the exclusive list, we want to start by hiding all
-            if (hiddenType === 'ex') {
+            if (hiddenType === 'excludes') {
                 orig.renamed.forEach(toHide => toHide.hidden = true);
             }
             //Loop through all the values in the new process
             for (const id in orig.renamed) {
                 //Inclusive(hide all in hidden)
-                if (hiddenType === 'inc') {
+                if (hiddenType === 'includes') {
                     //If the hidden process has an action with name
-                    if (parse.hidden.indexOf(orig.renamed[id].id) !== -1) {
+                    if (hiddenSet.indexOf(orig.renamed[id].id) !== -1) {
                         //Hide the action
                         orig.renamed[id].hidden = true;
                     }
                 } else {
                     //Exclusive (hide all not in hidden)
                     //If the hidden process has an action with name
-                    if (parse.hidden.indexOf(orig.renamed[id].id) !== -1) {
+                    if (hiddenSet.indexOf(orig.renamed[id].id) !== -1) {
                         //show the action
                         orig.renamed[id].hidden = false;
                     }
@@ -302,65 +311,10 @@ function addParsed(parse) {
         added.push(orig);
     }
 }
-function parseProcess(process) {
-    let proc = {};
-    //renamed starts with a /
-    let renamed = process.split(/\/(.*)/);
-    let id = renamed[0];
-    id = id.split(":");
-    proc.id = id.length>1?id[1]:id[0];
-    if (id.length>1) proc.name = id[0];
-    if (renamed.length > 1) {
-        proc.renamed = renamed[1].replace("{","").replace("}","").split(",");
-        renamed = {};
-        for (let i in proc.renamed) {
-            const split = proc.renamed[i].split("/");
-            const id = split[1].split(".")[1] || split[1];
-            renamed[id] = split[0];
-        }
-        proc.renamed = renamed;
-    }
-    return proc;
-}
-function parse(process) {
-    const id = process;
-    const code = getProcessFromCode(id);
-    if (!code) return null;
-    const toMatch="("+Object.keys(LexerTokens.keywords).concat(Object.keys(LexerTokens.terminals)).concat(Object.keys(LexerTokens.functions)).join("|")+"|"+LexerTokens.operations+")";
-    //Remove newlines and whitespace
-    process = code.replace(/[\r\n]/,"");
-    //if process contains any keywords or terminals or functions or operations, it is not a generated process.
-    if (!process || process.match(toMatch)) return null;
-    process = process.split("=")[1];
-    //It also isnt one if it contains -> or ~>
-    if (process.indexOf("->") > -1 || process.indexOf("~>") > -1) return null;
-    //Strip whitespace and brackets
-    process = process.replace(/\s*/g,"").replace("(","").replace(")","");
-    //We want a list of bisimulated processes.
-    let processes = process.split(/\\|@/)[0].split("||");
-    //Loop through and parse
-    for (let i in processes) {
-        processes[i] = parseProcess(processes[i]);
-    }
-    let hiddenVar = process.split(/${/)[1];
-    if (hiddenVar) {
-        hiddenVar = hiddenVar.split("}")[0];
-    }
-    //Parse the hidden set on the end
-    let hidden = process.split(/[\\@]/)[1];
-    if (hidden) {
-        if (hidden.indexOf("{") === -1) {
-            const resolvedHidden = new RegExp("set\\s*"+hidden+"\\s*=\\s*{(.*?)}").exec(app.editor.getCode());
-            if (resolvedHidden) hidden = resolvedHidden[1];
-            else hidden = "";
-        }
-        hidden = hidden.replace("{","").replace("}","").split(",")
-    }
-    return {id:id,processes:processes,hidden:hidden,hiddenType:process.indexOf("@")>-1?'ex':'inc'};
-}
-function redraw() {
-    updateButton();
-}
+function redraw() {}
 function removeProcess(id) {
     this.splice("added",this.added.indexOf(id),1);
+}
+function find(id) {
+    return _.find(app.automata.allValues, {id: id});
 }

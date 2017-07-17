@@ -5,7 +5,6 @@ import mc.compiler.ast.*;
 import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
 import mc.process_models.automata.Automaton;
-import mc.process_models.automata.AutomatonEdge;
 import mc.process_models.automata.AutomatonNode;
 import mc.process_models.automata.operations.AutomataOperations;
 import mc.util.expr.Expression;
@@ -21,6 +20,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     private Map<String, ProcessModel> processMap;
     private Map<String, AutomatonNode> referenceMap;
     private Stack<ProcessModel> processStack;
+    private List<Automaton> combinedProcesses;
     private VariableSetNode variables;
     private LocalCompiler compiler;
     public AutomatonInterpreter(){
@@ -46,6 +46,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
             processHiding(automaton, processNode.getHiding());
         }
 
+        automaton.addMetaData("processList",combinedProcesses);
         return labelAutomaton(automaton);
     }
 
@@ -57,6 +58,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
 
         Automaton automaton = ((Automaton)processStack.pop()).copy();
 
+        automaton.addMetaData("processList",combinedProcesses);
         return labelAutomaton(automaton);
     }
 
@@ -74,6 +76,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
                 ProcessModel model = processMap.get(reference);
                 processStack.push(model);
             }
+            combinedProcesses.add((Automaton) processStack.peek());
         }
         else if(astNode instanceof ProcessRootNode){
             ProcessRootNode root = (ProcessRootNode)astNode;
@@ -82,9 +85,9 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
             Automaton automaton = ((Automaton)processStack.pop()).copy();
 
             automaton = processLabellingAndRelabelling(automaton, root);
-
             if(root.hasHiding()){
                 processHiding(automaton, root.getHiding());
+                automaton.addMetaData("hiding",root.getHiding());
             }
 
             processStack.push(automaton);
@@ -95,6 +98,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
                 automaton.addMetaData("variables_location",variables.getLocation());
                 automaton.addMetaData("variables",variables.getVariables());
             }
+
             automaton.addMetaData("location",astNode.getLocation());
             interpretNode(astNode, automaton, automaton.getRoot());
             processStack.push(automaton);
@@ -186,7 +190,6 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         if(!(model1 instanceof Automaton) || !(model2 instanceof Automaton)){
             throw new CompilationException(getClass(),"Expecting an automaton, received: "+model1.getClass().getSimpleName()+","+model2.getClass().getSimpleName(),astNode.getLocation());
         }
-
         Automaton comp = operations.parallelComposition(automaton.getId(), ((Automaton)model1).copy(), ((Automaton)model2).copy());
 
         AutomatonNode oldRoot = automaton.addAutomaton(comp);
@@ -284,6 +287,8 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     }
 
     private void processRelabelling(Automaton automaton, RelabelNode relabels){
+        automaton.addMetaData("alphabet_before_hiding",new HashSet<>(automaton.getAlphabet()));
+        automaton.addMetaData("relabels",relabels.getRelabels());
         for(RelabelElementNode element : relabels.getRelabels()){
             automaton.relabelEdges(element.getOldLabel(), element.getNewLabel());
         }
@@ -291,16 +296,23 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
 
     private void processHiding(Automaton automaton, HidingNode hiding) throws CompilationException {
         Set<String> alphabet = automaton.getAlphabet();
+        if (!automaton.hasMetaData("alphabet_before_hiding"))
+            automaton.addMetaData("alphabet_before_hiding",new HashSet<>(automaton.getAlphabet()));
+        Set<String> hidden = new HashSet<>(hiding.getSet().getSet());
         String type = hiding.getType();
-
-        for(String action : hiding.getSet().getSet()){
-            if(alphabet.contains(action) && type.equals("includes")){
-                automaton.relabelEdges(action, Constant.HIDDEN);
+        if (type.equals("includes")) {
+            for (String action : hidden) {
+                if (alphabet.contains(action)) {
+                    automaton.relabelEdges(action, Constant.HIDDEN);
+                } else {
+                    throw new CompilationException(AutomatonInterpreter.class, "Unable to find action " + action + " for hiding.", hiding.getLocation());
+                }
             }
-            else if(!alphabet.contains(action) && type.equals("excludes")){
-                automaton.relabelEdges(action, Constant.HIDDEN);
-            } else {
-                throw new CompilationException(AutomatonInterpreter.class,"Unable to find action "+action+" for hiding.",hiding.getLocation());
+        } else if (type.equals("excludes")) {
+            for (String action : new ArrayList<>(alphabet)) {
+                if (!hidden.contains(action)) {
+                    automaton.relabelEdges(action, Constant.HIDDEN);
+                }
             }
         }
     }
@@ -333,5 +345,6 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     private void reset(){
         this.referenceMap = new HashMap<String, AutomatonNode>();
         this.processStack = new Stack<ProcessModel>();
+        combinedProcesses = new ArrayList<>();
     }
 }
