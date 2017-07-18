@@ -50,7 +50,7 @@ function compile(shouldRender) {
     //Create a string with the process type and the name
     let output = typeSelector.val().toLowerCase() + " " + processName + " = ";
     let processes = [];
-    let rename = [];
+    let hidden = new Set();
     if (shouldRender)
         rendered.html("");
     //Loop over all processes
@@ -66,29 +66,27 @@ function compile(shouldRender) {
         }
         //Add the old name
         current+=process.id;
+        let rename = [];
         //If we have some renamed values
         if (Object.keys(process.renamed).length > 0) {
-            let hidden = [];
             //Loop over the renaed values
             _.each(process.renamed,function(alphabet) {
                 let id = alphabet.id;
-                let renamedId = alphabet.renamed;
                 //If the process is renamed, we need to prepend the process name to the id
                 if (process.name) {
                     id = process.name+"."+id;
-                    renamedId +="."+id;
                 }
                 //If hte action is renamed, push it to the rename map
                 if (alphabet.renamed)
                     rename.push(alphabet.renamed + "/" + id);
                 //If it is hidden, push it to the hidden map
                 if (alphabet.hidden)
-                    hidden.push(alphabet.renamed?renamedId:id);
+                    hidden.add(alphabet.renamed || id);
             });
-            //If we ended up with some hidden values, collect them and add to the current process
-            if (hidden.length > 0)
-                current += "\\{"+hidden.join()+"}";
         }
+        //If we ended up with some hidden values, collect them and add to the current process
+        if (rename.length > 0)
+            current += "/{"+rename.join()+"}";
         //Push the current process to the process list
         processes.push(current);
     });
@@ -101,11 +99,11 @@ function compile(shouldRender) {
         if (varsC.length > 0)
             varStr=`\${${varsC.join()}}`;
     }
-    let renameStr = "";
+    let hiddenStr = "";
     //If we ended up with some renamed values, collect them and add to the current process
-    if (rename.length > 0)
-        renameStr = "/{"+rename.join()+"}";
-    compiledResult = output+processes.join(" || ")+renameStr+varStr+".";
+    if (hidden.size > 0)
+        hiddenStr = "\\{"+Array.from(hidden).join()+"}";
+    compiledResult = output+"("+processes.join(" || ")+")"+hiddenStr+varStr+".";
     //Set compiled results to the process name + all the added processes collected + hidden+.
     outputBox.text(compiledResult);
     if (shouldRender && Object.keys(vars).length > 0) {
@@ -140,9 +138,9 @@ function renderVars() {
 function render(process) {
     const form = $(`<form role="form" class="gen-form" style="padding-bottom: 20px"></form>`);
     const gp1 = $(`<div class="form-group"></div>`);
-    const pname = $(`<label>New Process Name (Original: ${process.id})</label>`);
+    const pname = $(`<label>Process: ${process.id}</label><br /><label>Edge prefix</label>`);
     const removeBt = $(`<button class="btn btn-primary navbar-btn pull-right">Remove</button>`);
-    const nameTb = $(`<input type="text" class="form-control" style="padding-left: 20px; float:left" placeholder="${process.id}" value="${process.name}"/>`);
+    const nameTb = $(`<input type="text" class="form-control" style="padding-left: 20px; float:left" placeholder="No prefix" value="${process.name}"/>`);
     nameTb.on("input",()=>{
         process.name = nameTb.val();
         compile(false);
@@ -154,7 +152,7 @@ function render(process) {
     form.append(gp1);
     gp1.append(pname);
     gp1.append(nameTb);
-    const table = $(`<table border="1"><tr><td style="padding: 0 10px;">Edge Name</td><td style="padding: 0 10px;">New Name</td><td style="padding: 0 10px;">Hide Edge?</td></tr></table>`);
+    const table = $(`<table border="1"><tr><th style="padding: 0 10px;">Edge Name</th><th style="padding: 0 10px;">New Name</th><th style="padding: 0 10px;">Hide Edge?</th></tr></table>`);
 
     for (const a in process.renamed) {
         const alphabet = process.renamed[a];
@@ -241,7 +239,6 @@ function generateRenameMap(process) {
     const map = {};
     const alphaMap = process.metaData.alphabet_before_hiding || process.alphabet;
     alphaMap.forEach(alpha => {
-        if (alpha.indexOf(".") !== -1) alpha = alpha.split(".")[1];
         map[alpha] = {id: alpha, renamed: "", hidden: false};
     });
     return map;

@@ -1,13 +1,16 @@
 package mc.webserver;
 
+import mc.util.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spark.Spark;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
 
 import static org.fusesource.jansi.Ansi.ansi;
 import static spark.Spark.get;
@@ -19,8 +22,11 @@ public class WebServer {
     public void startServer() {
         logger.info(""+ansi().render("@|green Starting Web Server|@"));
         if (checkPortInUse()) return;
-//        Spark.staticFileLocation("../../../../site/app");
-        Spark.staticFileLocation("app");
+        if (Utils.isJar()) {
+            Spark.staticFileLocation("app");
+        } else {
+            Spark.externalStaticFileLocation("../../../../site/app");
+        }
         Spark.port(5000);
         webSocket("/socket",WebSocketServer.class);
         Spark.init();
