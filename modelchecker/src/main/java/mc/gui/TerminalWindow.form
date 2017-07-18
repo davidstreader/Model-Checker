@@ -64,7 +64,7 @@
             </constraints>
             <properties>
               <foreground color="-1"/>
-              <text value="Extracting NPM"/>
+              <text value="Downloading Update"/>
             </properties>
           </component>
         </children>

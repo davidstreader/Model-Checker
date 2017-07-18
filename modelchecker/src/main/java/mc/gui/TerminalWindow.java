@@ -50,7 +50,7 @@ public class TerminalWindow {
       @Override
       public void processCommand(JTerminal terminal, String cmd) {
         try {
-          if (!main.isReloaded()) {
+          if (writer == null && main.getCommandManager() != null) {
             //Execute the command
             main.getCommandManager().executeCommand(cmd);
           } else {
@@ -138,7 +138,7 @@ public class TerminalWindow {
     progressPanel.add(spacer1, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
     final JLabel label1 = new JLabel();
     label1.setForeground(new Color(-1));
-    label1.setText("Extracting NPM");
+    label1.setText("Downloading update");
     progressPanel.add(label1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
   }
 

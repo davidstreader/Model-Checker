@@ -71,3 +71,4 @@ hs_err_pid*
 /site/app/bundle.js
 /site/app/yarn.lock
 /site/app/app.iml
+!/modelchecker/src/main/java/com/redpois0n/terminal/JTerminal.java

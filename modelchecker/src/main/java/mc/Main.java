@@ -13,10 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.Map;
 
-import static mc.util.Utils.getArch;
 import static org.fusesource.jansi.Ansi.ansi;
 public class Main {
     @Getter
@@ -51,6 +49,7 @@ public class Main {
         } else {
             MainGui.registerConsoleAppender();
         }
+        new AutoUpdate().checkForUpdates();
         new NativesManager().copyNatives();
         //Start the server if we aren't running from a jar or are in a sub process
         if (!Utils.isJar() || reloaded) {
@@ -96,6 +95,12 @@ public class Main {
     }
 
     public static void main(String[] args) {
+        if (args.length > 0) {
+            if (args[0].equals("update")) {
+                new AutoUpdate().install();
+                return;
+            }
+        }
         //The easiest way to tell if we have reloaded the application is to set a flag.
         boolean reloaded = (args.length > 0 && args[0].equals("reloaded"));
         new Main(reloaded);

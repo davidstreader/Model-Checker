@@ -5,6 +5,7 @@ import mc.Main;
 import org.sosy_lab.common.NativeLibraries;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 
 public class Utils {
     @SuppressWarnings("deprecation")
@@ -50,5 +51,10 @@ public class Utils {
     public static String getNodeExtension() {
         if (isWin()) return ".exe";
         return "";
+    }
+
+    public static String getJavaExecutable() {
+        String javaHome = System.getProperty("java.home");
+        return Paths.get(javaHome,"bin",isJavaw() ? "javaw" : "java").toAbsolutePath().toString();
     }
 }

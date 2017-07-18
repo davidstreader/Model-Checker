@@ -285,7 +285,7 @@ public class JTerminal extends JTextPane {
     public void keyPressed(KeyEvent e) {
       if (e.getKeyCode() == KeyEvent.VK_ENTER) {
         String c = getCommand();
-        if (StringUtils.isEmpty(c)) return;
+        if ("".equals(c) || c == null) return;
         for (InputListener l : inputListeners) {
           l.processCommand(JTerminal.this, c);
         }
