@@ -224,15 +224,11 @@ function addProcess(isImport) {
         });
     }
 
-    process.nodes.forEach(node=>{
-        const variables = node.metaData.variables;
-        for (let v in variables) {
-            v = v.substring(1);
-            vars[v] = false;
-        }
-    });
-    const vs = process.metaData.variables;
-    console.log(vs);
+    const variables = process.metaData.variables;
+    for (let v in variables) {
+        vars[variables[v]] = false;
+    }
+    const vs = process.metaData.hidden_vars;
     for (const v in vs) {
         const variable = vs[v];
         vars[variable]=true;
@@ -261,15 +257,10 @@ function importProcess(parse) {
             name: process.id.indexOf(":")===-1?"":process.id.split(":")[0],
             renamed: generateRenameMap(process)
         };
-        process.nodes.forEach(node=>{
-            const variables = node.metaData.variables;
-            for (let v in variables) {
-                v = v.substring(1);
-                if (vars[v] === undefined) {
-                    vars[v] = false;
-                }
-            }
-        });
+        const variables = process.metaData.variables;
+        for (let v in variables) {
+            vars[variables[v]] = false;
+        }
         if (process.metaData.relabels) {
             for (const i in process.metaData.relabels) {
                 const relabel = process.metaData.relabels[i];

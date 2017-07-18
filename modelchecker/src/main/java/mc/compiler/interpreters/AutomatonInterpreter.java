@@ -10,6 +10,7 @@ import mc.process_models.automata.operations.AutomataOperations;
 import mc.util.expr.Expression;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static mc.compiler.Compiler.*;
 
@@ -46,7 +47,13 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
             processHiding(automaton, processNode.getHiding());
         }
 
-        automaton.addMetaData("processList",combinedProcesses);
+        automaton.addMetaData("processList",combinedProcesses.stream().map(process -> {
+            Map<String,Object> map = new HashMap<>();
+            map.put("metaData",process.getMetaData());
+            map.put("id",process.getId());
+            map.put("alphabet",process.getAlphabet());
+            return map;
+        }).collect(Collectors.toList()));
         return labelAutomaton(automaton);
     }
 
@@ -95,16 +102,17 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         else{
             Automaton automaton = new Automaton(identifier);
             if (variables != null) {
-                automaton.addMetaData("variables_location",variables.getLocation());
-                automaton.addMetaData("variables",variables.getVariables());
+                automaton.addMetaData("hidden_vars_loc",variables.getLocation());
+                    automaton.addMetaData("hidden_vars",variables.getVariables());
             }
 
+            automaton.addMetaData("variables",variableList);
             automaton.addMetaData("location",astNode.getLocation());
             interpretNode(astNode, automaton, automaton.getRoot());
             processStack.push(automaton);
         }
     }
-
+    private Set<String> variableList = new HashSet<>();
     private void interpretNode(ASTNode astNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException {
         // check if the current ast node has a reference attached
         if(astNode.hasReferences()){
@@ -114,6 +122,8 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
             currentNode.addMetaData("reference", astNode.getReferences());
         }
         if (astNode.getMetaData().containsKey("variables")) {
+            Map<String,Object> varMap = (Map<String, Object>) astNode.getMetaData().get("variables");
+            varMap.keySet().stream().map(s->s.substring(1)).forEach(variableList::add);
             currentNode.addMetaData("variables",astNode.getMetaData().get("variables"));
         }
         currentNode.getMetaData().putAll(astNode.getMetaData());
