@@ -45,5 +45,4 @@ module.exports = {
             jQuery: 'jquery'
         }),
         new BabiliPlugin()
-    ]
-};
+    ]};

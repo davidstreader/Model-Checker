@@ -5,6 +5,8 @@ import mc.Main;
 import org.sosy_lab.common.NativeLibraries;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.nio.file.Paths;
 
 public class Utils {
@@ -37,7 +39,12 @@ public class Utils {
     }
     public static String getJarPath() {
         if (!isJar()) throw new UnsupportedOperationException("The application currently is not running from a jar file.");
-        return Main.class.getResource("Main.class").toString().split("!")[0].replace("jar:file:"+(Utils.isWin()?"/":""),"");
+        try {
+            return URLDecoder.decode(Main.class.getResource("Main.class").toString(),"UTF-8").split("!")[0].replace("jar:file:"+(Utils.isWin()?"/":""),"");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
     /**
      * Windows requires a .cmd appended to the node executables, linux does not.

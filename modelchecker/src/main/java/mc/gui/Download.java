@@ -31,10 +31,10 @@ public class Download extends Observable implements Runnable {
     // Constructor for Download.
     public Download(URL url, String file) {
         this.url = url;
+        this.file = file;
         size = -1;
         downloaded = 0;
         status = DOWNLOADING;
-        this.file = file;
         // Begin the download.
         download();
     }
@@ -125,7 +125,6 @@ public class Download extends Observable implements Runnable {
                 size = contentLength;
                 stateChanged();
             }
-
             // Open file and seek to the end of it.
             file = new RandomAccessFile(this.file, "rw");
             file.seek(downloaded);
