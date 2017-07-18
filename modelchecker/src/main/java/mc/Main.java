@@ -109,7 +109,7 @@ public class Main {
 
         logger.warn(ansi().render("@|red Native arguments not found!|@")+"");
         logger.info(ansi().render("@|yellow Starting sub-process with native arguments|@")+"");
-        String nativePath = Paths.get("native", getArch()).toAbsolutePath().toString();
+        String nativePath = NativesManager.getNativesDir().toAbsolutePath().toString();
         //Set java.library.path to the native path for windows
         //Set jansi.passthrough as the parent application will handle the ansi chars, not the child.
         //Set the reloaded flag so that we know that the application has been loaded twice.
