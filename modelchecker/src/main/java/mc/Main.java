@@ -51,8 +51,8 @@ public class Main {
         }
         if (!reloaded) {
             new AutoUpdate().checkForUpdates();
+            new NativesManager().copyNatives();
         }
-        new NativesManager().copyNatives();
         //Start the server if we aren't running from a jar or are in a sub process
         if (!Utils.isJar() || reloaded) {
             commandManager = new CommandManager(this);
