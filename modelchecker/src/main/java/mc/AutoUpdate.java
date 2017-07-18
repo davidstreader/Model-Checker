@@ -43,14 +43,13 @@ public class AutoUpdate {
         if (downloadInfo == null) return;
         logger.info(""+ansi().render("@|red Update found! (Current version: "+version+", New version: "+downloadInfo[1]+")|@"));
         logger.info(""+ansi().render("@|yellow Starting update|@"));
-        String jarPath = Utils.getJarPath();
+        ProcessBuilder nativeLauncher = Main.getInstance().createWrappedProcess();
         String dlPath = Utils.getJarPath().replace(".jar","-tmp.jar");
         download(downloadInfo);
         ProcessBuilder builder = new ProcessBuilder("java","-Djansi.passthrough=true","-jar", dlPath,"update");
         Main.getInstance().spawnProcess(builder);
         new File(dlPath).delete();
-        builder = new ProcessBuilder("java","-Djansi.passthrough=true","-jar", jarPath);
-        Main.getInstance().spawnProcess(builder);
+        Main.getInstance().spawnProcess(nativeLauncher);
         Main.getInstance().stop();
     }
     public void download(String[] downloadInfo) {

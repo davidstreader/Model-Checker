@@ -65,7 +65,7 @@ public class Main {
         }
         commandManager = new PassThroughCommandManager(this);
         //Start the wrapped process with all the native libraries added.
-        startWrappedProcess(getClass());
+        spawnProcess(createWrappedProcess());
     }
     /**
      * Spawn a process and redirect its output to the right place
@@ -112,15 +112,13 @@ public class Main {
      * Since the jar is normally not started with the libraries loaded, we can just load it again with the libraries
      * in place.
      */
-    private void startWrappedProcess(Class<?> classToWrap) {
+    public ProcessBuilder createWrappedProcess() {
 
-        logger.warn(ansi().render("@|red Native arguments not found!|@")+"");
-        logger.info(ansi().render("@|yellow Starting sub-process with native arguments|@")+"");
         String nativePath = NativesManager.getNativesDir().toAbsolutePath().toString();
         //Set java.library.path to the native path for windows
         //Set jansi.passthrough as the parent application will handle the ansi chars, not the child.
         //Set the reloaded flag so that we know that the application has been loaded twice.
-        ProcessBuilder builder = new ProcessBuilder("java","-Djansi.passthrough=true","-Djava.library.path="+nativePath,"-cp",Utils.getJarPath(),classToWrap.getName(),"reloaded");
+        ProcessBuilder builder = new ProcessBuilder("java","-Djansi.passthrough=true","-Djava.library.path="+nativePath,"-jar",Utils.getJarPath(),"reloaded");
         Map<String, String> environment = builder.environment();
         //Set the linux native path
         environment.put("LD_LIBRARY_PATH", nativePath);
@@ -128,6 +126,6 @@ public class Main {
         environment.put("PATH", nativePath);
         //Set the mac native path
         environment.put("DYLD_LIBRARY_PATH", nativePath);
-        spawnProcess(builder);
+        return builder;
     }
 }
