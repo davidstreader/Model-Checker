@@ -35,7 +35,9 @@ public class AutoUpdate {
         }
         return null;
     }
-
+    public boolean isUpdated() {
+        return getDownloadInfo() == null;
+    }
     public void checkForUpdates() {
         if (!Utils.isJar()) return;
         AnsiConsole.systemInstall();
