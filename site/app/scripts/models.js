@@ -69,7 +69,9 @@ module.exports = {
             if (rendering) return;
             cy.remove(cy.elements());
             graphIds = {};
-            saveChanges();
+        });
+        $("#export-process").click(function(e) {
+            require("file-saver").saveAs(cy.png({output:"blob"}), "model.png");
         });
         $("#add-all-process").click(function(){
             app.console.log("Starting Render.");

@@ -19,7 +19,7 @@ import static spark.Spark.webSocket;
 
 
 public class WebServer {
-    Logger logger = LoggerFactory.getLogger(WebServer.class);
+    private Logger logger = LoggerFactory.getLogger(WebServer.class);
     public void startServer() {
         logger.info(""+ansi().render("@|green Starting Web Server|@"));
         if (checkPortInUse()) return;
