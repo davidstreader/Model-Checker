@@ -24,13 +24,12 @@ public class Expander {
         globalVariableMap = ast.getVariableMap();
 
         List<ProcessNode> processes = ast.getProcesses();
-        for(int i = 0; i < processes.size(); i++){
-            expand(processes.get(i));
+        for (ProcessNode process : processes) {
+            expand(process);
         }
 
         List<OperationNode> operations = ast.getOperations();
-        for(int i = 0; i < operations.size(); i++){
-            OperationNode operation = operations.get(i);
+        for (OperationNode operation : operations) {
             Map<String, Object> variableMap = new HashMap<String, Object>();
             ASTNode process1 = expand(operation.getFirstProcess(), variableMap);
             ASTNode process2 = expand(operation.getSecondProcess(), variableMap);
@@ -43,10 +42,19 @@ public class Expander {
     }
     public ProcessNode expand(ProcessNode process) throws CompilationException {
         new LogMessage("Expanding:",process).send();
+        identMap.clear();
         if (process.hasVariableSet())
             hiddenVariables = process.getVariables().getVariables();
         else hiddenVariables = Collections.emptySet();
         Map<String, Object> variableMap = new HashMap<String, Object>();
+        for (LocalProcessNode node : process.getLocalProcesses()) {
+            identMap.put(node.getIdentifier(),new ArrayList<>());
+            if (node.getRanges() != null) {
+                for (IndexNode in : node.getRanges().getRanges()) {
+                    identMap.get(node.getIdentifier()).add(in.getVariable());
+                }
+            }
+        }
         ASTNode root = expand(process.getProcess(), variableMap);
         process.setProcess(root);
         List<LocalProcessNode> localProcesses = expandLocalProcesses(process.getLocalProcesses(), variableMap);
@@ -55,15 +63,12 @@ public class Expander {
     }
     private List<LocalProcessNode> expandLocalProcesses(List<LocalProcessNode> localProcesses, Map<String, Object> variableMap) throws CompilationException {
         List<LocalProcessNode> newLocalProcesses = new ArrayList<LocalProcessNode>();
-
-        for(int i = 0; i < localProcesses.size(); i++){
-            LocalProcessNode localProcess = localProcesses.get(i);
-            if(localProcess.getRanges() == null){
+        for (LocalProcessNode localProcess : localProcesses) {
+            if (localProcess.getRanges() == null) {
                 ASTNode root = expand(localProcess.getProcess(), variableMap);
                 localProcess.setProcess(root);
                 newLocalProcesses.add(localProcess);
-            }
-            else{
+            } else {
                 newLocalProcesses.addAll(expandLocalProcesses(localProcess, variableMap, localProcess.getRanges().getRanges(), 0));
             }
         }
@@ -73,12 +78,6 @@ public class Expander {
 
     private List<LocalProcessNode> expandLocalProcesses(LocalProcessNode localProcess, Map<String, Object> variableMap, List<IndexNode> ranges, int index) throws CompilationException {
         List<LocalProcessNode> newLocalProcesses = new ArrayList<LocalProcessNode>();
-        if (index == 0) {
-            identMap.put(localProcess.getIdentifier(),new ArrayList<>());
-            for (IndexNode node: ranges) {
-                identMap.get(localProcess.getIdentifier()).add(node.getVariable());
-            }
-        }
         if(index < ranges.size()){
             IndexNode range = ranges.get(index);
             IndexIterator iterator = IndexIterator.construct(expand(range));
