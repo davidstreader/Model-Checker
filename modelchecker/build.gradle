@@ -42,7 +42,7 @@ dependencies {
     compile 'uk.com.robust-it:cloning:1.9.3'
 }
 test {
-    setWorkingDir "../"
+    setWorkingDir "src/main/resources"
     systemProperty "java.library.path", natives
     environment "PATH", natives
     environment "LD_LIBRARY_PATH", natives
@@ -92,7 +92,7 @@ task webpack(type: NodeTask, dependsOn: 'npmInstall') {
 
 processResources.dependsOn 'webpack'
 static getNatives() {
-    String ret = "modelchecker/src/main/resources/native/x86"
+    String ret = "../resources/native/x86"
     if (System.getProperty("os.arch").endsWith("64")) ret += "_64"
     if (Os.isFamily(Os.FAMILY_WINDOWS)) {
         ret+="-windows"
@@ -104,7 +104,6 @@ static getNatives() {
     return ret
 }
 test.dependsOn 'cleanTest'
-
 sourceSets {
     main {
         java {

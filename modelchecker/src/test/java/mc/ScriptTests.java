@@ -32,7 +32,7 @@ public class ScriptTests {
             }
         } catch (Exception ex) {
             if (!shouldFail(file.getName())) {
-                fail("Test script: " + file.getName() + " should compile!");
+                fail("Test script: " + file.getName() + " should compile! error: "+ex.getLocalizedMessage());
             }
         }
 
