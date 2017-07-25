@@ -2,10 +2,13 @@ ace.define('ace/mode/example', function(require, exports, module) {
 
   const oop = ace.require("ace/lib/oop");
   const TextMode = ace.require("ace/mode/text").Mode;
-  const ExampleHighlightRules = ace.require("ace/mode/example_highlight_rules").ExampleHighlightRules;
 
+
+  const CstyleBehaviour = ace.require("ace/mode/behaviour/cstyle").CstyleBehaviour;
+  const ExampleHighlightRules = ace.require("ace/mode/example_highlight_rules").ExampleHighlightRules;
   const Mode = function () {
     this.HighlightRules = ExampleHighlightRules;
+      this.$behaviour = new CstyleBehaviour();
   };
   oop.inherits(Mode, TextMode);
 

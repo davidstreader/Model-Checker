@@ -1,3 +1,4 @@
+//TODO: Think about using something like https://github.com/nidi3/graphviz-java to do all the positioning on the server side, then send that shit to the clint
 const _ = require("lodash");
 let cy,graphIds,graphMap,rendering,connected,graphsToAdd = [];
 module.exports = {
@@ -67,7 +68,7 @@ module.exports = {
         $("#clear-process").click(function(e) {
             //If we are currently rendering, ignore any events
             if (rendering) return;
-            cy.remove(cy.elements());
+            cy.json({elements:[], style:getCytoscapeStyle()});
             graphIds = {};
             //Nuke the layout
             localStorage.layout = "{}";

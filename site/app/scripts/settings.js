@@ -30,6 +30,7 @@ const pruning = $("#pruning");
 const autoSave = $("#autoSave");
 const liveCompiling = $("#liveCompiling");
 function load() {
+    if (settings.nodeSep > 200) settings.nodeSep = 200;
     saveSettings();
     nodeSep.slider();
     nodeSep.val(settings.nodeSep);

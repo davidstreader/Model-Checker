@@ -1,6 +1,7 @@
 const langTools = ace.require("ace/ext/language_tools");
 const editor = ace.edit("ace-editor");
 const LexerTokens = require("./lexer-tokens");
+editor.setBehavioursEnabled(true);
 editor.setTheme('ace/theme/example');
 editor.getSession().setMode('ace/mode/example'); // syntax highlighting
 const qtags = {
