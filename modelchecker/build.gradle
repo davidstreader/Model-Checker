@@ -40,6 +40,7 @@ dependencies {
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.5'
     compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.+'
     compile 'uk.com.robust-it:cloning:1.9.3'
+    compile "guru.nidi:graphviz-java:0.2.1"
 }
 test {
     setWorkingDir "src/main/resources"
