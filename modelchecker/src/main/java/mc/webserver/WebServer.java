@@ -1,5 +1,6 @@
 package mc.webserver;
 
+import mc.AutoUpdate;
 import mc.util.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +19,7 @@ import static spark.Spark.webSocket;
 
 
 public class WebServer {
-    Logger logger = LoggerFactory.getLogger(WebServer.class);
+    private Logger logger = LoggerFactory.getLogger(WebServer.class);
     public void startServer() {
         logger.info(""+ansi().render("@|green Starting Web Server|@"));
         if (checkPortInUse()) return;
@@ -29,6 +30,12 @@ public class WebServer {
         }
         Spark.port(5000);
         webSocket("/socket",WebSocketServer.class);
+        Spark.get("/update",(r,t) -> {
+            AutoUpdate update = new AutoUpdate();
+            if (update.isUpdated()) return "No updates available";
+            update.checkForUpdates();
+            return "Update successful";
+        });
         Spark.init();
     }
 

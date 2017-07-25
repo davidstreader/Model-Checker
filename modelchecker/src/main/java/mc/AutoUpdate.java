@@ -20,7 +20,7 @@ import static org.fusesource.jansi.Ansi.ansi;
  */
 public class AutoUpdate {
     private Logger logger = LoggerFactory.getLogger(AutoUpdate.class);
-    private static final String version = "v1.9";
+    private static final String version = "v2.0";
     private static final String githubAPI = "https://api.github.com/repos/DavidSheridan/Model-Checker/releases/latest";
     private String[] getDownloadInfo() {
         try {
@@ -35,7 +35,9 @@ public class AutoUpdate {
         }
         return null;
     }
-
+    public boolean isUpdated() {
+        return getDownloadInfo() == null;
+    }
     public void checkForUpdates() {
         if (!Utils.isJar()) return;
         AnsiConsole.systemInstall();
