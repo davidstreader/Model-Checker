@@ -69,7 +69,8 @@ module.exports = {
             if (rendering) return;
             cy.remove(cy.elements());
             graphIds = {};
-            saveChanges();
+            //Nuke the layout
+            localStorage.layout = "{}";
         });
         $("#add-all-process").click(function(){
             app.console.log("Starting Render.");
