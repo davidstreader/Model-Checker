@@ -9,6 +9,7 @@ import mc.process_models.ProcessModel;
 import mc.process_models.automata.Automaton;
 import mc.process_models.automata.generator.AutomatonGenerator;
 import mc.process_models.automata.operations.AutomataOperations;
+import mc.webserver.FakeContext;
 import mc.webserver.webobjects.Context;
 import mc.webserver.webobjects.LogMessage;
 
@@ -66,13 +67,15 @@ public class Compiler {
         List<OperationResult> results = evaluator.evaluateOperations(ast.getOperations(), processMap, interpreter, code);
         EquationEvaluator.EquationReturn eqResults = eqEvaluator.evaluateEquations(ast.getEquations(), code, context);
         processMap.putAll(eqResults.getToRender());
-        processMap.values().forEach(s -> {
-            try {
-                ((Automaton) s).position();
-            } catch (CompilationException e) {
-                e.printStackTrace();
-            }
-        });
+        if (!(context instanceof FakeContext)) {
+            processMap.values().forEach(s -> {
+                try {
+                    ((Automaton) s).position();
+                } catch (CompilationException e) {
+                    e.printStackTrace();
+                }
+            });
+        }
         return new CompilationObject(processMap, results, eqResults.getResults());
     }
     @AllArgsConstructor

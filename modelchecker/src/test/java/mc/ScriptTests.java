@@ -2,6 +2,7 @@ package mc;
 
 import mc.compiler.OperationResult;
 import mc.exceptions.CompilationException;
+import mc.webserver.FakeContext;
 import mc.webserver.webobjects.Context;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,11 +27,12 @@ public class ScriptTests {
         mc.compiler.Compiler compiler = new mc.compiler.Compiler();
         List<OperationResult> operations = Collections.emptyList();
         try {
-            operations = compiler.compile(String.join("\n", Files.readAllLines(file.toPath())),new Context()).getOperationResults();
+            operations = compiler.compile(String.join("\n", Files.readAllLines(file.toPath())),new FakeContext()).getOperationResults();
             if (shouldFail(file.getName())) {
                 fail("Test script: " + file.getName() + " should not compile!");
             }
         } catch (Exception ex) {
+            ex.printStackTrace();
             if (!shouldFail(file.getName())) {
                 fail("Test script: " + file.getName() + " should compile! error: "+ex.getLocalizedMessage());
             }
