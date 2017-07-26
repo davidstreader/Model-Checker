@@ -460,7 +460,7 @@ public class Expander {
         Expression ex = ExpressionSimplifier.simplify(condition,variables);
         if (ex instanceof BooleanOperand)
             return ((BooleanOperand) ex).getValue();
-        return ExpressionSimplifier.isSolveable(ex,variables);
+        return ExpressionSimplifier.isSolvable(ex,variables);
     }
 
     private String processVariables(String string, Map<String, Object> variableMap, Location location) throws CompilationException {

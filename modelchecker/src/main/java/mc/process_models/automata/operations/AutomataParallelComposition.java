@@ -19,7 +19,6 @@ public class AutomataParallelComposition {
 
     public Automaton performParallelComposition(String id, Automaton automaton1, Automaton automaton2) throws CompilationException {
         setup(id);
-
         // construct the parallel composition of the states from both automata
         List<AutomatonNode> nodes1 = automaton1.getNodes();
         List<AutomatonNode> nodes2 = automaton2.getNodes();

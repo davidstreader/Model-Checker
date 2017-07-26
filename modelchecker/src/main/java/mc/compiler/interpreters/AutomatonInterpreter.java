@@ -154,7 +154,6 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     private void interpretNode(ProcessRootNode astNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException{
         interpretProcess(astNode.getProcess(), automaton.getId() + "." + ++subProcessCount);
         Automaton model = ((Automaton)processStack.pop()).copy();
-
         processLabellingAndRelabelling(model, astNode);
 
         if(astNode.hasHiding()){
@@ -197,6 +196,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
 
         ProcessModel model2 = processStack.pop();
         ProcessModel model1 = processStack.pop();
+
         if(!(model1 instanceof Automaton) || !(model2 instanceof Automaton)){
             throw new CompilationException(getClass(),"Expecting an automaton, received: "+model1.getClass().getSimpleName()+","+model2.getClass().getSimpleName(),astNode.getLocation());
         }

@@ -3,7 +3,6 @@ package mc.compiler;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import mc.exceptions.CompilationException;
-import mc.process_models.automata.AutomatonEdge;
 import mc.process_models.automata.AutomatonNode;
 import mc.util.expr.*;
 
@@ -167,13 +166,14 @@ public class Guard implements Serializable{
         if (hiddenVariables.isEmpty() && guard1.hiddenVariables.isEmpty()) return true;
         Expression exp1 = ExpressionSimplifier.substitute(guard.copy(), replacements);
         Expression exp2 = ExpressionSimplifier.substitute(guard1.guard.copy(), replacements);
-        if (!NodeUtils.findLoopsAndPathToRoot(first).map(NodeUtils::collectVariables)
-            .map(s -> ExpressionSimplifier.substitute(exp1.copy(),s))
-            .allMatch(s->ExpressionSimplifier.isSolveable(s,Collections.emptyMap()))) return false;
-        if (!NodeUtils.findLoopsAndPathToRoot(second).map(NodeUtils::collectVariables)
-            .map(s -> ExpressionSimplifier.substitute(exp2.copy(),s))
-            .allMatch(s->ExpressionSimplifier.isSolveable(s,Collections.emptyMap()))) return false;
-        return ExpressionSimplifier.isSolveable(new EqualityOperator(exp1,exp2),Collections.emptyMap());
+        return NodeUtils.findLoopsAndPathToRoot(first).map(NodeUtils::collectVariables)
+            .map(s -> ExpressionSimplifier.substitute(exp1.copy(), s))
+            .allMatch(s -> ExpressionSimplifier.isSolvable(s, Collections.emptyMap())) &&
+            NodeUtils.findLoopsAndPathToRoot(second)
+                .map(NodeUtils::collectVariables)
+                .map(s -> ExpressionSimplifier.substitute(exp2.copy(), s))
+                .allMatch(s -> ExpressionSimplifier.isSolvable(s, Collections.emptyMap())) &&
+            ExpressionSimplifier.isSolvable(new EqualityOperator(exp1, exp2), Collections.emptyMap());
     }
     @Override
     public int hashCode() {

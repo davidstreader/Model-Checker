@@ -2,8 +2,10 @@ package mc.util.expr;
 
 import lombok.SneakyThrows;
 import mc.exceptions.CompilationException;
+import org.apache.xalan.xsltc.compiler.CompilerException;
 
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -40,6 +42,27 @@ public abstract class Expression implements Serializable {
     }
     @SneakyThrows
     public Expression copy() {
-        return ExpressionSimplifier.copy(this);
+        return cloneExpr(this);
+    }
+    private Expression cloneExpr(Expression expr) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, CompilerException {
+        if (expr instanceof BinaryOperator) {
+            return cloneExpr((BinaryOperator)expr);
+        }
+        if (expr instanceof UnaryOperator) {
+            return cloneExpr((UnaryOperator)expr);
+        }
+        if (expr instanceof VariableOperand) {
+            return new VariableOperand(((VariableOperand) expr).getValue());
+        }
+        if (expr instanceof IntegerOperand) {
+            return new IntegerOperand(((IntegerOperand) expr).getValue());
+        }
+        throw new CompilerException("Unable to clone: "+expr);
+    }
+    private BinaryOperator cloneExpr(BinaryOperator orig) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, CompilerException {
+        return orig.getClass().getConstructor(Expression.class, Expression.class).newInstance(cloneExpr(orig.getLeftHandSide()),cloneExpr(orig.getRightHandSide()));
+    }
+    private UnaryOperator cloneExpr(UnaryOperator orig) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, CompilerException {
+        return orig.getClass().getConstructor(Expression.class).newInstance(cloneExpr(orig.getRightHandSide()));
     }
 }

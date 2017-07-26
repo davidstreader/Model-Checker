@@ -6,7 +6,6 @@ import lombok.SneakyThrows;
 import mc.compiler.Guard;
 import mc.exceptions.CompilationException;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -19,24 +18,24 @@ public class ExpressionSimplifier {
     private ExpressionSimplifier(Context o) {
         context = o;
     }
-    private boolean isSolveable1(Expression expr, Map<String, Integer> variables) throws CompilationException {
-        Solver solver = context.mkSolver();
-        Expr test = convert(expr, variables);
+    private boolean isSolvable1(Expression expr, Map<String, Integer> variables) throws CompilationException {
+        Expr test = convert(expr, variables).simplify();
         if (test instanceof BoolExpr) {
-            solver.add((BoolExpr)convert(expr, variables));
+            BoolExpr testB = (BoolExpr) test;
+            if (testB.isConst()) {
+                return testB.getBoolValue().toInt()==1;
+            }
+            Solver solver = context.mkSolver();
+            solver.add(testB);
             return solver.check() == Status.SATISFIABLE;
         }
         throw new CompilationException(ExpressionSimplifier.class,
             "Unable to check if equation is satisfied as it was not a boolean expression.");
     }
-    public static Expression copy(Expression other) throws CompilationException {
-        init();
-        return simplifier.get().convert(simplifier.get().convert(other, Collections.emptyMap()));
-    }
     @SneakyThrows
-    public static boolean isSolveable(Expression expr, Map<String, Integer> variables) {
+    public static boolean isSolvable(Expression expr, Map<String, Integer> variables) {
         init();
-        return simplifier.get().isSolveable1(expr, variables);
+        return simplifier.get().isSolvable1(expr, variables);
     }
     /**
      * Simplify an expression
