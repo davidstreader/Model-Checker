@@ -68,10 +68,10 @@ public class WebSocketServer {
                     String lines = String.join("\n", lineSplit);
                     if (ex instanceof CompilationException) {
                         ret = new ErrorMessage(ex.getMessage().replace("mc.exceptions.", ""), ((CompilationException) ex).getLocation());
-                        LoggerFactory.getLogger(((CompilationException) ex).getClazz()).error(ex + "\n" + lines);
+//                        LoggerFactory.getLogger(((CompilationException) ex).getClazz()).error(ex + "\n" + lines);
                     } else {
-//                        logger.error(ansi().render("@|red An error occurred while compiling.|@") + "");
-//                        logger.error(ex + "\n" + lines);
+                        logger.error(ansi().render("@|red An error occurred while compiling.|@") + "");
+                        logger.error(ex + "\n" + lines);
                         ret = new ErrorMessage(ex + "", lines, null);
                     }
                 }

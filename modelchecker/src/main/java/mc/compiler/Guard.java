@@ -173,7 +173,7 @@ public class Guard implements Serializable{
                 .map(NodeUtils::collectVariables)
                 .map(s -> ExpressionSimplifier.substitute(exp2.copy(), s))
                 .allMatch(s -> ExpressionSimplifier.isSolvable(s, Collections.emptyMap())) &&
-            ExpressionSimplifier.isSolvable(new EqualityOperator(exp1, exp2), Collections.emptyMap());
+            ExpressionSimplifier.equate(this, guard1);
     }
     @Override
     public int hashCode() {

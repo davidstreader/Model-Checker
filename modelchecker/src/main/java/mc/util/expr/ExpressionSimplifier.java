@@ -18,25 +18,6 @@ public class ExpressionSimplifier {
     private ExpressionSimplifier(Context o) {
         context = o;
     }
-    private boolean isSolvable1(Expression expr, Map<String, Integer> variables) throws CompilationException {
-        Expr test = convert(expr, variables).simplify();
-        if (test instanceof BoolExpr) {
-            BoolExpr testB = (BoolExpr) test;
-            if (testB.isConst()) {
-                return testB.getBoolValue().toInt()==1;
-            }
-            Solver solver = context.mkSolver();
-            solver.add(testB);
-            return solver.check() == Status.SATISFIABLE;
-        }
-        throw new CompilationException(ExpressionSimplifier.class,
-            "Unable to check if equation is satisfied as it was not a boolean expression.");
-    }
-    @SneakyThrows
-    public static boolean isSolvable(Expression expr, Map<String, Integer> variables) {
-        init();
-        return simplifier.get().isSolvable1(expr, variables);
-    }
     /**
      * Simplify an expression
      * @param expr The expression
@@ -450,5 +431,32 @@ public class ExpressionSimplifier {
             return expression;
         }
         throw new CompilationException(ExpressionSimplifier.class, "An unknown expression type was found when trying to substitute. "+expression.getClass().getSimpleName());
+    }
+    private boolean eq1(Guard guard1, Guard guard2) throws CompilationException {
+        BoolExpr expr = context.mkAnd((BoolExpr)convert(guard1.getGuard(),guard1.getVariables()),(BoolExpr)convert(guard2.getGuard(),guard2.getVariables()));
+        return solve(expr);
+    }
+    @SneakyThrows
+    public static boolean equate(Guard guard1, Guard guard2) {
+        return simplifier.get().eq1(guard1,guard2);
+
+    }
+
+    @SneakyThrows
+    public static boolean isSolvable(Expression ex, Map<String, Integer> variables) {
+        Expr b = simplifier.get().convert(ex,variables);
+        return simplifier.get().solve(b);
+    }
+    private boolean solve(Expr expr) throws CompilationException {
+        if (!(expr instanceof BoolExpr)) {
+            throw new CompilationException(ExpressionSimplifier.class,"You can only check if booleans are solvable!");
+        }
+        BoolExpr simpl = (BoolExpr) expr.simplify();
+        if (simpl.isConst()) {
+            return simpl.getBoolValue().toInt()==1;
+        }
+        Solver solver = context.mkSolver();
+        solver.add((BoolExpr) expr);
+        return solver.check() == Status.SATISFIABLE;
     }
 }
