@@ -1,17 +1,35 @@
 package mc.process_models.automata;
 
-import com.google.common.collect.Maps;
+import com.google.gson.Gson;
+import guru.nidi.graphviz.attribute.Rank;
+import guru.nidi.graphviz.attribute.RankDir;
+import guru.nidi.graphviz.engine.*;
+import guru.nidi.graphviz.model.Label;
+import guru.nidi.graphviz.model.Link;
+import guru.nidi.graphviz.model.MutableGraph;
+import guru.nidi.graphviz.model.Node;
 import mc.compiler.Guard;
 import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
 import mc.process_models.ProcessModelObject;
+import mc.util.GraphvizV8ThreadedEngine;
 import mc.util.Location;
-import mc.util.expr.EqualityOperator;
 import mc.util.expr.ExpressionSimplifier;
 import mc.util.expr.OrOperator;
+import mc.webserver.webobjects.LogMessage;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
+import java.awt.geom.Point2D;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
+
+import static guru.nidi.graphviz.model.Factory.mutGraph;
+import static guru.nidi.graphviz.model.Factory.node;
 
 public class Automaton extends ProcessModelObject implements ProcessModel {
 
@@ -44,7 +62,6 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
             root.addMetaData("startNode", true);
         }
     }
-
     private void setupAutomaton() {
         this.nodeMap = new HashMap<>();
         this.edgeMap = new HashMap<>();
@@ -57,7 +74,43 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     public AutomatonNode getRoot() {
         return root;
     }
+    public void position() throws CompilationException {
+        new LogMessage("Performing layout algorithm: "+getId(),true,false).send();
+        MutableGraph g = mutGraph(getId()).setDirected().generalAttrs().add(RankDir.LEFT_TO_RIGHT);
+        Map<String,Node> graphNodes = new HashMap<>();
+        for (AutomatonNode node : getNodes()) {
+            Node n = node(node.getId());
+            if (node.hasMetaData("startNode")) {
+                n = n.with(Rank.MIN);
+            }
+//            for (String key: node.getMetaDataKeys()) {
+//                n = n.with(key,node.getMetaData(key));
+//            }
+            graphNodes.put(node.getId(),n);
+            g.add(n);
+        }
+        for (AutomatonEdge edge : getEdges()) {
+            Node to = graphNodes.get(edge.getTo().getId());
+            Node from = graphNodes.get(edge.getFrom().getId());
+            Node l = from.link(to.linkTo().with(Label.of(edge.getLabel())));
+//            for (String key: edge.getMetaDataKeys()) {
+//                l = l.with(key,edge.getMetaData(key));
+//            }
+            g.add(l);
+        }
 
+        Graphviz viz = Graphviz.fromGraph(g);
+        Graphviz.useEngine(new GraphvizV8ThreadedEngine());
+        String ret = viz.engine(Engine.DOT).render(Format.JSON).toString();
+        JSONObject obj = new JSONObject(ret);
+        JSONArray objects = obj.getJSONArray("objects");
+        for (int i = 0; i < objects.length(); i++) {
+            JSONObject ele = objects.getJSONObject(i);
+            String[] posString = ele.getString("pos").split(",");
+
+            getNode(ele.getString("name")).addMetaData("pos",new Point2D.Double(Double.parseDouble(posString[0]),Double.parseDouble(posString[1])));
+        }
+    }
     public void setRoot(AutomatonNode root) throws CompilationException {
         // check the the new root is defined
         if (root == null) {
@@ -110,7 +163,6 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
         if (!nodeMap.containsKey(node.getId())) {
             return false;
         }
-
         // remove the edges that reference the specified node
         List<AutomatonEdge> edges = node.getIncomingEdges();
         edges.addAll(node.getOutgoingEdges());
@@ -173,8 +225,6 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
             Guard guard1 = (Guard) edge1.getMetaData("guard");
             Guard guard2 = (Guard) edge2.getMetaData("guard");
             if (guard1 == null || guard2 == null || guard1.getGuard() == null || guard2.getGuard() == null) return;
-            Map<String,Integer> vars1 = guard1.getVariables();
-            Map<String,Integer> vars2 = guard2.getVariables();
             //Since assignment should be the same (same colour) we can just copy most data from either guard.
             Guard combined = guard1.copy();
             //By putting both equations equal to eachother, if we have multiple or operations, then if one matches then it will be solveable.
@@ -294,6 +344,15 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
         edgeMap.remove(edge.getId());
         return true;
+    }
+
+    private boolean findEdgeWith(Link link, String id) {
+        for (Map.Entry<String,Object> entry : link.attrs()) {
+            if (entry.getKey().equals("id") && entry.getValue().equals(id)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean removeEdge(String id) {

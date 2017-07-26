@@ -124,7 +124,7 @@ function visualizeAutomata(process, graphID, hidden, glGraph) {
         }
         glGraph.nodes.push({
             group:"nodes",
-            data: {id: graphID+nid, label: nodes[i].metaData.label, type: type, tooltip: tooltip, parent: graphID},
+            data: {id: graphID+nid, label: nodes[i].metaData.label, type: type, tooltip: tooltip, parent: graphID,position: nodes[i].metaData.pos},
         });
     }
     let toEmbed = [];
@@ -340,7 +340,7 @@ function convertAndAddGraph(graph,id,hidden) {
     parent.data("interrupts",interruptLength);
     graphIds[oldId] = (graphIds[oldId] || 0)+1;
     glGraph.nodes.forEach(node =>{
-        node.position = { x: x+Math.random()*2, y: Math.random()*2};
+        node.position = { x: x+node.data.position.x, y: node.data.position.y};
         cy.add(node);
     });
     glGraph.edges.forEach(edge =>{
@@ -358,7 +358,13 @@ function applyCose(id, node) {
                 layoutStop(node);
             },
             name: 'cose-bilkent',
+            // Whether to enable incremental mode
+            randomize: false,
             fit: false,
+            // Node repulsion (non overlapping) multiplier
+            nodeRepulsion: app.settings.getSettings().nodeSep*1000,
+
+            animate: false,
             idealEdgeLength: app.settings.getSettings().nodeSep,
         }).run();
     } else {
@@ -368,6 +374,22 @@ function applyCose(id, node) {
 function layoutStop(cur) {
     let x = 20;
     if (cur === undefined) return;
+    let xMin = Infinity, yMin = Infinity, xMax = -Infinity, yMax = -Infinity;
+    const blob = cur.descendants().jsons();
+    for (const i in blob) {
+        const node = blob[i];
+        xMin = Math.min(xMin,node.position.x);
+        xMax = Math.max(xMax,node.position.x);
+        yMin = Math.min(yMin,node.position.y);
+        yMax = Math.max(yMax,node.position.y);
+    }
+    const width =  xMax-xMin, height = yMax-yMin;
+    if (height > width) {
+        cur.descendants().positions((node,i)=>{
+            return {y: node.position("x"),x: node.position("y")}
+        });
+    }
+    console.log({xMin:xMin, xMax:xMax, yMin: yMin, yMax: yMax, width: xMax-xMin, height: yMax-yMin});
     //If last is set, we are rerunning the layout, and we do not want to use normal positioning.
     if (cur.data("last")) {
         const y = cur.data("last").y;
