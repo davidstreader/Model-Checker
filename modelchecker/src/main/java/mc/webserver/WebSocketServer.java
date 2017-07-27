@@ -110,6 +110,7 @@ public class WebSocketServer {
     @OnWebSocketClose
     public void onClose(Session user, int statusCode, String reason) {
         interruptSession(user);
+        loggers.get(user).interrupt();
     }
     private void interruptSession(Session user) {
         if (runners.containsKey(user)) runners.get(user).stop();
