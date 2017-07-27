@@ -6,7 +6,7 @@ import mc.util.expr.Expression;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 
 /**
  * Created by sheriddavi on 24/01/17.
@@ -58,8 +58,8 @@ public class AutomataOperations {
         return bisimulation.performSimplification(automaton, replacements);
     }
 
-    public boolean bisimulation(List<Automaton> automata, AtomicBoolean checkToStop){
-        return bisimulation.areBisimular(automata, checkToStop);
+    public boolean bisimulation(List<Automaton> automata){
+        return bisimulation.areBisimular(automata);
     }
 
     public Automaton removeUnreachableNodes(Automaton automaton){

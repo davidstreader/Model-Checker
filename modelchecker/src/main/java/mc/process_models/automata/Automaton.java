@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.concurrent.BlockingQueue;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -74,8 +75,8 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     public AutomatonNode getRoot() {
         return root;
     }
-    public void position() throws CompilationException {
-        new LogMessage("Performing layout algorithm: "+getId(),true,false).send();
+    public void position(BlockingQueue<LogMessage> messageQueue) throws CompilationException {
+        messageQueue.add(new LogMessage("Performing layout algorithm: "+getId(),true,false));
         MutableGraph g = mutGraph(getId()).setDirected().generalAttrs().add(RankDir.LEFT_TO_RIGHT);
         Map<String,Node> graphNodes = new HashMap<>();
         for (AutomatonNode node : getNodes()) {
@@ -100,9 +101,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
         }
 
         Graphviz viz = Graphviz.fromGraph(g);
-        Graphviz.useEngine(new GraphvizV8ThreadedEngine());
-        String ret = viz.engine(Engine.DOT).render(Format.JSON).toString();
-        JSONObject obj = new JSONObject(ret);
+        JSONObject obj = new JSONObject(viz.engine(Engine.DOT).render(Format.JSON).toString());
         JSONArray objects = obj.getJSONArray("objects");
         for (int i = 0; i < objects.length(); i++) {
             JSONObject ele = objects.getJSONObject(i);

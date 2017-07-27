@@ -6,6 +6,7 @@ import mc.Main;
 import mc.compiler.ast.ProcessNode;
 import mc.util.Location;
 import mc.webserver.WebSocketServer;
+import org.eclipse.jetty.websocket.api.Session;
 
 import javax.annotation.Nullable;
 
@@ -49,15 +50,12 @@ public class LogMessage {
     private static String formatLocation(Location location) {
         return "("+location.getLineStart()+":"+location.getColStart()+")";
     }
-
-    public void send() {
-        boolean hasClient = WebSocketServer.hasClient();
-        //Web server is black on white, terminal is white on black.
-        if (!hasClient) message = message.replace("@|black","@|white");
+    public void render() {
         this.message = ansi().render(message).toString();
-        if (hasClient)
-            WebSocketServer.send("log",this);
-        else
-            System.out.println(message);
+    }
+    public void printToConsole() {
+        message = message.replace("@|black","@|white");
+        render();
+        System.out.println(message);
     }
 }

@@ -13,13 +13,14 @@ import mc.process_models.automata.operations.AutomataOperations;
 import mc.webserver.webobjects.Context;
 import mc.webserver.webobjects.LogMessage;
 import mc.webserver.WebSocketServer;
+import org.apache.xpath.operations.Bool;
 
 import java.util.*;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -34,14 +35,8 @@ public class EquationEvaluator {
         this.automataOperations = new AutomataOperations();
     }
 
-    public EquationReturn evaluateEquations(List<OperationNode> operations, String code, Context context) throws CompilationException {
+    public EquationReturn evaluateEquations(List<OperationNode> operations, String code, Context context, BlockingQueue<LogMessage> messageQueue) throws CompilationException {
         reset();
-        final AtomicInteger passedCount = new AtomicInteger(0),
-            failedCount = new AtomicInteger(0),
-            opId = new AtomicInteger(0),
-            doneCount = new AtomicInteger(0),
-            doneCountTimer = new AtomicInteger(0);
-        final AtomicLong timeStamp = new AtomicLong(System.currentTimeMillis());
         List<OperationResult> results = new ArrayList<OperationResult>();
         Map<String,ProcessModel> toRender = new ConcurrentSkipListMap<>();
         AutomatonGenerator generator = new AutomatonGenerator();
@@ -51,69 +46,77 @@ public class EquationEvaluator {
             List<String> firstIds = OperationEvaluator.collectIdentifiers(operation.getFirstProcess());
             List<String> secondIds = OperationEvaluator.collectIdentifiers(operation.getSecondProcess());
             String opIdent = firstId+" "+OperationResult.getOpSymbol(operation.getOperation())+" "+secondId;
-            new LogMessage("Checking equation: "+opIdent,true,false).send();
+            messageQueue.add(new LogMessage("Checking equation: "+opIdent,true,false));
             //Since both are tree based, they should have the same iteration order.
             List<Collection<ProcessModel>> generated = new ArrayList<>();
             Set<String> ids = new TreeSet<>(firstIds);
             ids.addAll(secondIds);
-            new LogMessage("Generating models").send();
+            messageQueue.add(new LogMessage("Generating models"));
             for (String id: ids) {
                 generated.add(generator.generateAutomaton(id,automataOperations,operation.getEquationSettings()));
             }
-            new LogMessage("Generating permutations").send();
+            messageQueue.add(new LogMessage("Generating permutations"));
             List<List<ProcessModel>> perms = permutations(generated).collect(Collectors.toList());
-            new LogMessage("Evaluating equations (0/"+perms.size()+")").send();
-            BlockingQueue<LogMessage> messageQueue = WebSocketServer.getMessageQueue().get();
-            AtomicBoolean b = WebSocketServer.isStopped();
-            long passed = perms.parallelStream().filter(processModels -> {
-                AutomataOperations automataOperations = new AutomataOperations();
-                Interpreter interpreter = new Interpreter();
-                try {
-                    List<Automaton> automata = new ArrayList<>();
-                    Map<String, ProcessModel> currentMap = new HashMap<>();
-                    for (ProcessModel m: processModels) {
-                        currentMap.put(m.getId(),m);
-                    }
-                    if (b.get()) return false;
-                    automata.add((Automaton) interpreter.interpret("automata", operation.getFirstProcess(), getNextEquationId(), currentMap));
-                    automata.add((Automaton) interpreter.interpret("automata", operation.getSecondProcess(), getNextEquationId(), currentMap));
-
-                    if (Objects.equals(operation.getOperation(), "traceEquivalent")) {
-                        List<Automaton> automata1 = new ArrayList<>();
-                        for (Automaton a : automata) {
-                            automata1.add(automataOperations.nfaToDFA(a));
-                        }
-                        automata = automata1;
-                    }
-                    if (b.get()) return false;
-                    boolean result = automataOperations.bisimulation(automata, b);
-                    if (operation.isNegated()) {
-                        result = !result;
-                    }
-                    if (!result && failedCount.get() < context.getFailCount()) {
-                        String id2 = "op"+opId.getAndIncrement()+": (";
-                        toRender.put(id2+firstId+")",automata.get(0));
-                        toRender.put(id2+secondId+")",automata.get(1));
-
-                        for (String id: currentMap.keySet()) {
-                            toRender.put(id2+id+")",currentMap.get(id));
-                        }
-                        failedCount.incrementAndGet();
-                    }
-                    int done = doneCount.incrementAndGet();
-                    if (System.currentTimeMillis()-timeStamp.get() > 100) {
-                        messageQueue.add(new LogMessage("Evaluating equations (" + done + "/" + perms.size() +") ("+((int)(done/(double)perms.size()*100.0))+ "%)", 1));
-                        timeStamp.set(System.currentTimeMillis());
-                    }
-
-                    return result;
-                } catch (CompilationException ex) {
-                    return false;
-                }
-            }).count();
-            results.add(new OperationResult(operation.getFirstProcess(), operation.getSecondProcess(), firstId, secondId, operation.getOperation(), operation.isNegated(), passed == perms.size()," @|black ("+passed+"/"+perms.size()+") |@"));
+            messageQueue.add(new LogMessage("Evaluating equations (0/"+perms.size()+")"));
+            ModelStatus status = new ModelStatus();
+            ExecutorService service = Executors.newCachedThreadPool();
+            for (List<ProcessModel> models : perms) {
+                service.submit(()->testModel(models,messageQueue,status, operation, context, toRender, firstId, secondId, perms.size()));
+            }
+            service.shutdown();
+            try {
+                service.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+            } catch (InterruptedException e) {
+                System.out.println("Interrupted!");
+                service.shutdownNow();
+            }
+            results.add(new OperationResult(operation.getFirstProcess(), operation.getSecondProcess(), firstId, secondId, operation.getOperation(), operation.isNegated(), status.passCount == perms.size()," @|black ("+status.passCount+"/"+perms.size()+") |@"));
         }
         return new EquationReturn(results,toRender);
+    }
+
+    private boolean testModel(List<ProcessModel> processModels, BlockingQueue<LogMessage> messageQueue, ModelStatus status, OperationNode operation, Context context, Map<String, ProcessModel> toRender, String firstId, String secondId, int size) {
+        AutomataOperations automataOperations = new AutomataOperations();
+        Interpreter interpreter = new Interpreter();
+        try {
+            List<Automaton> automata = new ArrayList<>();
+            Map<String, ProcessModel> currentMap = new HashMap<>();
+            for (ProcessModel m: processModels) {
+                currentMap.put(m.getId(),m);
+            }
+            automata.add((Automaton) interpreter.interpret("automata", operation.getFirstProcess(), getNextEquationId(), currentMap));
+            automata.add((Automaton) interpreter.interpret("automata", operation.getSecondProcess(), getNextEquationId(), currentMap));
+
+            if (Objects.equals(operation.getOperation(), "traceEquivalent")) {
+                List<Automaton> automata1 = new ArrayList<>();
+                for (Automaton a : automata) {
+                    automata1.add(automataOperations.nfaToDFA(a));
+                }
+                automata = automata1;
+            }
+            boolean result = automataOperations.bisimulation(automata);
+            if (operation.isNegated()) {
+                result = !result;
+            }
+            if (!result && status.failCount < context.getFailCount()) {
+                String id2 = "op"+(status.id++)+": (";
+                toRender.put(id2+firstId+")",automata.get(0));
+                toRender.put(id2+secondId+")",automata.get(1));
+
+                for (String id: currentMap.keySet()) {
+                    toRender.put(id2+id+")",currentMap.get(id));
+                }
+                status.failCount++;
+            }
+            int done = ++status.doneCount;
+            messageQueue.add(new LogMessage("Evaluating equations (" + done + "/" + size +") ("+((int)(done/(double)size*100.0))+ "%)", 1));
+            status.timeStamp = System.currentTimeMillis();
+
+
+            return result;
+        } catch (CompilationException ex) {
+            return false;
+        }
     }
 
     private String getNextEquationId(){
@@ -155,5 +158,13 @@ public class EquationEvaluator {
         int nodeCount;
         int alphabetCount;
         int maxTransitionCount;
+    }
+
+    private class ModelStatus {
+        int passCount;
+        int failCount;
+        int id;
+        int doneCount;
+        long timeStamp;
     }
 }

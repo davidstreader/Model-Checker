@@ -1,6 +1,7 @@
 package mc.compiler;
 
 import java.util.*;
+import java.util.concurrent.BlockingQueue;
 import java.util.regex.Pattern;
 
 import mc.compiler.ast.*;
@@ -17,22 +18,22 @@ public class ReferenceReplacer {
         references = new HashSet<String>();
     }
 
-	public AbstractSyntaxTree replaceReferences(AbstractSyntaxTree ast) throws CompilationException {
+	public AbstractSyntaxTree replaceReferences(AbstractSyntaxTree ast, BlockingQueue<LogMessage> messageQueue) throws CompilationException {
 		reset();
 
 		List<ProcessNode> processes = ast.getProcesses();
 
 		for(int i = 0; i < processes.size(); i++){
-            replaceReferences(processes.get(i));
+            replaceReferences(processes.get(i), messageQueue);
 		}
 
 		return ast;
 	}
 	//We can use this to replace references after the initial ast is compiled.
     //Because of that it is public, and it should NOT be reset.
-    public ProcessNode replaceReferences(ProcessNode process) throws CompilationException {
+    public ProcessNode replaceReferences(ProcessNode process, BlockingQueue<LogMessage> messageQueue) throws CompilationException {
         references.clear();
-        new LogMessage("Replacing references:",process).send();
+        messageQueue.add(new LogMessage("Replacing references:",process));
         String identifier = process.getIdentifier();
         addReference(process.getProcess(), identifier);
 

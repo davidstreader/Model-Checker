@@ -8,6 +8,7 @@ import mc.util.expr.*;
 import mc.webserver.webobjects.LogMessage;
 
 import java.util.*;
+import java.util.concurrent.BlockingQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -20,12 +21,12 @@ public class Expander {
     private ExpressionEvaluator evaluator = new ExpressionEvaluator();
     private Map<String,List<String>> identMap = new HashMap<>();
     private Set<String> hiddenVariables = new HashSet<>();
-    public AbstractSyntaxTree expand(AbstractSyntaxTree ast) throws CompilationException {
+    public AbstractSyntaxTree expand(AbstractSyntaxTree ast, BlockingQueue<LogMessage> messageQueue) throws CompilationException {
         globalVariableMap = ast.getVariableMap();
 
         List<ProcessNode> processes = ast.getProcesses();
         for (ProcessNode process : processes) {
-            expand(process);
+            expand(process, messageQueue);
         }
 
         List<OperationNode> operations = ast.getOperations();
@@ -40,8 +41,8 @@ public class Expander {
 
         return ast;
     }
-    public ProcessNode expand(ProcessNode process) throws CompilationException {
-        new LogMessage("Expanding:",process).send();
+    public ProcessNode expand(ProcessNode process, BlockingQueue<LogMessage> messageQueue) throws CompilationException {
+        messageQueue.add(new LogMessage("Expanding:",process));
         identMap.clear();
         if (process.hasVariableSet())
             hiddenVariables = process.getVariables().getVariables();

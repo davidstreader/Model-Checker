@@ -9,6 +9,7 @@ import mc.process_models.ProcessModel;
 import mc.webserver.webobjects.LogMessage;
 
 import java.util.*;
+import java.util.concurrent.BlockingQueue;
 
 /**
  * Created by sheriddavi on 24/01/17.
@@ -22,12 +23,12 @@ public class Interpreter {
         this.automaton = new AutomatonInterpreter();
     }
 
-    public Map<String, ProcessModel> interpret(AbstractSyntaxTree ast, Compiler.LocalCompiler localCompiler) throws CompilationException {
+    public Map<String, ProcessModel> interpret(AbstractSyntaxTree ast, Compiler.LocalCompiler localCompiler, BlockingQueue<LogMessage> messageQueue) throws CompilationException {
         Map<String, ProcessModel> processMap = new LinkedHashMap<>();
 
         List<ProcessNode> processes = ast.getProcesses();
         for(ProcessNode process : processes){
-          new LogMessage("Interpreting:",process).send();
+            messageQueue.add(new LogMessage("Interpreting:",process));
             ProcessModel model;
             switch(process.getType()){
                 case "automata":

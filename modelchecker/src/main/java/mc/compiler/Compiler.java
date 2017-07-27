@@ -1,5 +1,6 @@
 package mc.compiler;
 
+import guru.nidi.graphviz.engine.Graphviz;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import mc.compiler.ast.AbstractSyntaxTree;
@@ -9,6 +10,7 @@ import mc.process_models.ProcessModel;
 import mc.process_models.automata.Automaton;
 import mc.process_models.automata.generator.AutomatonGenerator;
 import mc.process_models.automata.operations.AutomataOperations;
+import mc.util.GraphvizV8ThreadedEngine;
 import mc.webserver.FakeContext;
 import mc.webserver.webobjects.Context;
 import mc.webserver.webobjects.LogMessage;
@@ -17,6 +19,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
 
 public class Compiler {
     // fields
@@ -38,9 +41,9 @@ public class Compiler {
         this.evaluator = new OperationEvaluator();
     }
 
-    public CompilationObject compile(String code, Context context) throws CompilationException{
+    public CompilationObject compile(String code, Context context, BlockingQueue<LogMessage> messageQueue) throws CompilationException{
         if (code.startsWith("random")) {
-            new LogMessage("Generating random models").send();
+            messageQueue.add(new LogMessage("Generating random models"));
             boolean alphabet = Boolean.parseBoolean(code.split(",")[1]);
             int nodeCount = Integer.parseInt(code.split(",")[2]);
             int alphabetCount = Integer.parseInt(code.split(",")[3]);
@@ -54,23 +57,23 @@ public class Compiler {
             }
             return new CompilationObject(models,Collections.emptyList(),Collections.emptyList());
         }
-        return compile(parser.parse(lexer.tokenise(code)), code, context);
+        return compile(parser.parse(lexer.tokenise(code)), code, context, messageQueue);
     }
-    private CompilationObject compile(AbstractSyntaxTree ast, String code, Context context) throws CompilationException {
+    private CompilationObject compile(AbstractSyntaxTree ast, String code, Context context, BlockingQueue<LogMessage> messageQueue) throws CompilationException {
         HashMap<String,ProcessNode> processNodeMap = new HashMap<>();
         for (ProcessNode node: ast.getProcesses()) {
             processNodeMap.put(node.getIdentifier(), (ProcessNode) node.copy());
         }
-        ast = expander.expand(ast);
-        ast = replacer.replaceReferences(ast);
-        Map<String, ProcessModel> processMap = interpreter.interpret(ast, new LocalCompiler(processNodeMap, expander, replacer));
+        ast = expander.expand(ast, messageQueue);
+        ast = replacer.replaceReferences(ast, messageQueue);
+        Map<String, ProcessModel> processMap = interpreter.interpret(ast, new LocalCompiler(processNodeMap, expander, replacer,messageQueue),messageQueue);
         List<OperationResult> results = evaluator.evaluateOperations(ast.getOperations(), processMap, interpreter, code);
-        EquationEvaluator.EquationReturn eqResults = eqEvaluator.evaluateEquations(ast.getEquations(), code, context);
+        EquationEvaluator.EquationReturn eqResults = eqEvaluator.evaluateEquations(ast.getEquations(), code, context,messageQueue);
         processMap.putAll(eqResults.getToRender());
         if (!(context instanceof FakeContext)) {
             processMap.values().forEach(s -> {
                 try {
-                    ((Automaton) s).position();
+                    ((Automaton) s).position(messageQueue);
                 } catch (CompilationException e) {
                     e.printStackTrace();
                 }
@@ -84,10 +87,11 @@ public class Compiler {
         private HashMap<String,ProcessNode> processNodeMap;
         private Expander expander;
         private ReferenceReplacer replacer;
+        private BlockingQueue<LogMessage> messageQueue;
 
         public ProcessNode compile(ProcessNode node) throws CompilationException {
-            node = expander.expand(node);
-            node = replacer.replaceReferences(node);
+            node = expander.expand(node,messageQueue);
+            node = replacer.replaceReferences(node,messageQueue);
             return node;
         }
     }

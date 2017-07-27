@@ -1,6 +1,7 @@
 package mc.webserver;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import mc.compiler.CompilationObject;
 import mc.compiler.Compiler;
@@ -12,6 +13,7 @@ import mc.webserver.webobjects.ProcessReturn.SkipObject;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import org.slf4j.Logger;
@@ -27,34 +29,36 @@ import static org.fusesource.jansi.Ansi.ansi;
 @WebSocket
 public class WebSocketServer {
     private Logger logger = LoggerFactory.getLogger(WebSocketServer.class);
-    @OnWebSocketMessage
-    public void onMessage(Session user, String message) {
-        interruptSession(user);
-        isStopped.put(user,new AtomicBoolean(false));
-        BlockingQueue<LogMessage> queue = new LinkedBlockingQueue<>();
-        Thread logThread = new Thread(() -> {
-            client.set(user);
+    private ObjectMapper mapper = new ObjectMapper();
+    @AllArgsConstructor
+    @Getter
+    private class LogThread extends Thread {
+        BlockingQueue<LogMessage> queue;
+        Session user;
+        @Override
+        public void run() {
             try {
                 while (!Thread.interrupted()) {
-                    queue.take().send();
+                    LogMessage log = queue.take();
+                    log.render();
+                    WebSocketServer.send("log",log,user);
+                    Thread.sleep(100);
                 }
-            } catch (InterruptedException ignored) {
-            }
-        });
-        loggers.put(user,logThread);
-        logThread.start();
-        Thread runner = new Thread(()-> {
+            } catch (InterruptedException ignored) { }
+        }
+    }
+    @AllArgsConstructor
+    private class CompileThread extends Thread {
+        CompileRequest data;
+        Session user;
+        @Override
+        public void run() {
             try {
-                client.set(user);
-                messageQueue.set(queue);
-                ObjectMapper mapper = new ObjectMapper();
-                CompileRequest data = mapper.readValue(message, CompileRequest.class);
-                logger.info(ansi().render("Received compile command from @|yellow " + user.getRemoteAddress().getHostString() + "|@") + "");
+
                 Object ret;
                 try {
-                    ret = compile(data);
+                    ret = compile(data,loggers.get(user).queue);
                 } catch (Exception ex) {
-                    ex.printStackTrace();
                     //Get a stack trace then split it into lines
                     String[] lineSplit = ExceptionUtils.getStackTrace(ex).split("\n");
                     for (int i = 0; i < lineSplit.length; i++) {
@@ -75,27 +79,44 @@ public class WebSocketServer {
                         ret = new ErrorMessage(ex + "", lines, null);
                     }
                 }
-                logThread.interrupt();
-                send("compileReturn", ret);
+                send("compileReturn", ret,user);
                 user.getRemote().sendString(mapper.writeValueAsString(ret));
                 //Ignore as all exceptions here are InterruptedExceptions which we dont care about.
             } catch (Exception ignored) {}
             interruptSession(user);
-        });
-        runners.put(user,runner);
-        runner.start();
+        }
+    }
+    @OnWebSocketMessage
+    public void onMessage(Session user, String message) {
+        interruptSession(user);
+        logger.info(ansi().render("Received compile command from @|yellow " + user.getRemoteAddress().getHostString() + "|@") + "");
+        try {
+            CompileRequest data = mapper.readValue(message, CompileRequest.class);
+            Thread runner = new CompileThread(data,user);
+            runners.put(user,runner);
+            runner.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @OnWebSocketConnect
+    public void onOpen(Session user) {
+        BlockingQueue<LogMessage> queue = new LinkedBlockingQueue<>();
+        LogThread logThread = new LogThread(queue, user);
+        loggers.put(user,logThread);
+        logThread.start();
     }
     @OnWebSocketClose
     public void onClose(Session user, int statusCode, String reason) {
         interruptSession(user);
     }
     private void interruptSession(Session user) {
-        if (isStopped.containsKey(user)) isStopped.get(user).set(true);
-        if (runners.containsKey(user)) runners.get(user).interrupt();
-        if (loggers.containsKey(user)) loggers.get(user).interrupt();
+        if (runners.containsKey(user)) runners.get(user).stop();
+        System.gc();
     }
-    private ProcessReturn compile(CompileRequest data) throws CompilationException {
-        CompilationObject ret = new Compiler().compile(data.getCode(),data.getContext());
+    private ProcessReturn compile(CompileRequest data, BlockingQueue<LogMessage> messageQueue) throws CompilationException {
+        CompilationObject ret = new Compiler().compile(data.getCode(),data.getContext(),messageQueue);
         Map<String,ProcessModel> processModelMap = ret.getProcessMap();
         List<SkipObject> skipped = processSkipped(processModelMap,data.getContext());
         return new ProcessReturn(processModelMap, ret.getOperationResults(),ret.getEquationResults(),data.getContext(),skipped);
@@ -123,18 +144,12 @@ public class WebSocketServer {
         return skipped;
     }
 
-    /**
-     * Send a message to the client while compiling.
-     * @param event the event
-     * @param obj the message
-     * @param <T> The message type
-     */
-    public static <T> void send(String event, T obj) {
+    private static <T> void send (String event, T obj, Session client) {
         Map<String,Object> map = new HashMap<>();
         map.put("event",event);
         map.put("data",obj);
         try {
-            client.get().getRemote().sendString(new ObjectMapper().writeValueAsString(map));
+            client.getRemote().sendString(new ObjectMapper().writeValueAsString(map));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -163,16 +178,5 @@ public class WebSocketServer {
      * that we get access to the client from anywhere during the compilation.
      */
     private static HashMap<Session,Thread> runners = new HashMap<>();
-    private static HashMap<Session,Thread> loggers = new HashMap<>();
-    private static HashMap<Session,AtomicBoolean> isStopped = new HashMap<>();
-    private static ThreadLocal<Session> client = new ThreadLocal<>();
-    @Getter
-    private static ThreadLocal<BlockingQueue<LogMessage>> messageQueue = new ThreadLocal<>();
-
-    public static boolean hasClient() {
-        return client.get() != null;
-    }
-    public static AtomicBoolean isStopped() {
-        return hasClient()?isStopped.get(client.get()):new AtomicBoolean(false);
-    }
+    private static HashMap<Session,LogThread> loggers = new HashMap<>();
 }

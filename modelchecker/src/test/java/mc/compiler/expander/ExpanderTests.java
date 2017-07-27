@@ -10,26 +10,27 @@ import mc.compiler.ast.AbstractSyntaxTree;
 import mc.compiler.ast.ProcessNode;
 import mc.compiler.token.Token;
 import mc.exceptions.CompilationException;
+import mc.util.PrintQueue;
 
 public class ExpanderTests extends TestBase {
 
 	private Lexer lexer = new Lexer();
 	private Parser parser = new Parser();
 	private Expander expander = new Expander();
-	
+
 	protected ProcessNode constructProcessNode(String code, int index){
 		try{
 			List<Token> tokens = lexer.tokenise(code);
 			AbstractSyntaxTree ast = parser.parse(tokens);
-			ast = expander.expand(ast);
+			ast = expander.expand(ast,new PrintQueue());
 			return ast.getProcesses().get(index);
 		}catch(CompilationException e){
 			e.printStackTrace();
 		}
-		
+
 		return null;
 	}
-	
+
 	protected ProcessNode constructProcessNode(String code){
 		return constructProcessNode(code, 0);
 	}
@@ -38,7 +39,7 @@ public class ExpanderTests extends TestBase {
         try{
             List<Token> tokens = lexer.tokenise(code);
             AbstractSyntaxTree ast = parser.parse(tokens);
-            return expander.expand(ast).getProcesses();
+            return expander.expand(ast,new PrintQueue()).getProcesses();
         }catch(CompilationException e){
             e.printStackTrace();
         }

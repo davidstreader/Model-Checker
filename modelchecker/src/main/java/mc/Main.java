@@ -7,6 +7,7 @@ import lombok.Setter;
 import mc.commands.CommandManager;
 import mc.commands.PassThroughCommandManager;
 import mc.gui.MainGui;
+import mc.util.GraphvizV8ThreadedEngine;
 import mc.util.Utils;
 import mc.webserver.NativesManager;
 import mc.webserver.WebServer;
@@ -58,6 +59,7 @@ public class Main {
         //Start the server if we aren't running from a jar or are in a sub process
         if (!Utils.isJar() || reloaded) {
             commandManager = new CommandManager(this);
+            Graphviz.useEngine(new GraphvizV8ThreadedEngine());
             webServer = new WebServer();
             webServer.startServer();
             //Listen for commands

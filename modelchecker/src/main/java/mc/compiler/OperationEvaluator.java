@@ -48,7 +48,7 @@ public class OperationEvaluator {
                 }
                 automata = automata1;
             }
-            boolean result = automataOperations.bisimulation(automata,new AtomicBoolean(false));
+            boolean result = automataOperations.bisimulation(automata);
             if (operation.isNegated()) {
                 result = !result;
             }

@@ -24,12 +24,7 @@ public class GraphvizV8ThreadedEngine extends AbstractJsGraphvizEngine {
 
     @Override
     public void release() {
-        if (messages.get() != null)
-            messages.get().release();
-        if (v8.get() != null)
-            v8.get().release(true);
     }
-
     @Override
     protected void doInit() throws Exception {
         v8.set(V8.createV8Runtime());
