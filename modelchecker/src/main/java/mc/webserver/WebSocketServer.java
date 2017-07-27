@@ -1,5 +1,6 @@
 package mc.webserver;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,7 +24,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.fusesource.jansi.Ansi.ansi;
 @WebSocket
@@ -33,18 +33,25 @@ public class WebSocketServer {
     @AllArgsConstructor
     @Getter
     private class LogThread extends Thread {
-        BlockingQueue<LogMessage> queue;
+        BlockingQueue<Object> queue;
         Session user;
         @Override
         public void run() {
             try {
                 while (!Thread.interrupted()) {
-                    LogMessage log = queue.take();
-                    log.render();
-                    WebSocketServer.send("log",log,user);
-                    Thread.sleep(100);
+                    Object log = queue.take();
+                    if (log instanceof LogMessage) {
+                        ((LogMessage) log).render();
+                        log = new SendObject(log,"log");
+                    }
+                    if (log instanceof SendObject) {
+                        user.getRemote().sendString(new ObjectMapper().writeValueAsString(log));
+                    }
+                    Thread.sleep(1);
                 }
-            } catch (InterruptedException ignored) { }
+            } catch (InterruptedException ignored) { } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
     @AllArgsConstructor
@@ -79,13 +86,13 @@ public class WebSocketServer {
                         ret = new ErrorMessage(ex + "", lines, null);
                     }
                 }
-                send("compileReturn", ret,user);
-                user.getRemote().sendString(mapper.writeValueAsString(ret));
+                loggers.get(user).queue.add(new SendObject(ret,"compileReturn"));
                 //Ignore as all exceptions here are InterruptedExceptions which we dont care about.
             } catch (Exception ignored) {}
             interruptSession(user);
         }
     }
+
     @OnWebSocketMessage
     public void onMessage(Session user, String message) {
         interruptSession(user);
@@ -102,7 +109,7 @@ public class WebSocketServer {
 
     @OnWebSocketConnect
     public void onOpen(Session user) {
-        BlockingQueue<LogMessage> queue = new LinkedBlockingQueue<>();
+        BlockingQueue<Object> queue = new LinkedBlockingQueue<>();
         LogThread logThread = new LogThread(queue, user);
         loggers.put(user,logThread);
         logThread.start();
@@ -116,7 +123,7 @@ public class WebSocketServer {
         if (runners.containsKey(user)) runners.get(user).stop();
         System.gc();
     }
-    private ProcessReturn compile(CompileRequest data, BlockingQueue<LogMessage> messageQueue) throws CompilationException {
+    private ProcessReturn compile(CompileRequest data, BlockingQueue<Object> messageQueue) throws CompilationException {
         CompilationObject ret = new Compiler().compile(data.getCode(),data.getContext(),messageQueue);
         Map<String,ProcessModel> processModelMap = ret.getProcessMap();
         List<SkipObject> skipped = processSkipped(processModelMap,data.getContext());
@@ -145,16 +152,6 @@ public class WebSocketServer {
         return skipped;
     }
 
-    private static <T> void send (String event, T obj, Session client) {
-        Map<String,Object> map = new HashMap<>();
-        map.put("event",event);
-        map.put("data",obj);
-        try {
-            client.getRemote().sendString(new ObjectMapper().writeValueAsString(map));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
     /**
      * A process model with most information stripped out as it will not be rendered.

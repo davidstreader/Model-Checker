@@ -18,7 +18,7 @@ public class ReferenceReplacer {
         references = new HashSet<String>();
     }
 
-	public AbstractSyntaxTree replaceReferences(AbstractSyntaxTree ast, BlockingQueue<LogMessage> messageQueue) throws CompilationException {
+	public AbstractSyntaxTree replaceReferences(AbstractSyntaxTree ast, BlockingQueue<Object> messageQueue) throws CompilationException {
 		reset();
 
 		List<ProcessNode> processes = ast.getProcesses();
@@ -31,7 +31,7 @@ public class ReferenceReplacer {
 	}
 	//We can use this to replace references after the initial ast is compiled.
     //Because of that it is public, and it should NOT be reset.
-    public ProcessNode replaceReferences(ProcessNode process, BlockingQueue<LogMessage> messageQueue) throws CompilationException {
+    public ProcessNode replaceReferences(ProcessNode process, BlockingQueue<Object> messageQueue) throws CompilationException {
         references.clear();
         messageQueue.add(new LogMessage("Replacing references:",process));
         String identifier = process.getIdentifier();

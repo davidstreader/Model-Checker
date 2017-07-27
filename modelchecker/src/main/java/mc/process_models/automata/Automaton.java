@@ -75,7 +75,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     public AutomatonNode getRoot() {
         return root;
     }
-    public void position(BlockingQueue<LogMessage> messageQueue) throws CompilationException {
+    public void position(BlockingQueue<Object> messageQueue) throws CompilationException {
         messageQueue.add(new LogMessage("Performing layout algorithm: "+getId(),true,false));
         MutableGraph g = mutGraph(getId()).setDirected().generalAttrs().add(RankDir.LEFT_TO_RIGHT);
         Map<String,Node> graphNodes = new HashMap<>();

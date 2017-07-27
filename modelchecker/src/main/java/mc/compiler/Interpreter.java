@@ -23,7 +23,7 @@ public class Interpreter {
         this.automaton = new AutomatonInterpreter();
     }
 
-    public Map<String, ProcessModel> interpret(AbstractSyntaxTree ast, Compiler.LocalCompiler localCompiler, BlockingQueue<LogMessage> messageQueue) throws CompilationException {
+    public Map<String, ProcessModel> interpret(AbstractSyntaxTree ast, Compiler.LocalCompiler localCompiler, BlockingQueue<Object> messageQueue) throws CompilationException {
         Map<String, ProcessModel> processMap = new LinkedHashMap<>();
 
         List<ProcessNode> processes = ast.getProcesses();

@@ -41,7 +41,7 @@ public class Compiler {
         this.evaluator = new OperationEvaluator();
     }
 
-    public CompilationObject compile(String code, Context context, BlockingQueue<LogMessage> messageQueue) throws CompilationException{
+    public CompilationObject compile(String code, Context context, BlockingQueue<Object> messageQueue) throws CompilationException{
         if (code.startsWith("random")) {
             messageQueue.add(new LogMessage("Generating random models"));
             boolean alphabet = Boolean.parseBoolean(code.split(",")[1]);
@@ -59,7 +59,7 @@ public class Compiler {
         }
         return compile(parser.parse(lexer.tokenise(code)), code, context, messageQueue);
     }
-    private CompilationObject compile(AbstractSyntaxTree ast, String code, Context context, BlockingQueue<LogMessage> messageQueue) throws CompilationException {
+    private CompilationObject compile(AbstractSyntaxTree ast, String code, Context context, BlockingQueue<Object> messageQueue) throws CompilationException {
         HashMap<String,ProcessNode> processNodeMap = new HashMap<>();
         for (ProcessNode node: ast.getProcesses()) {
             processNodeMap.put(node.getIdentifier(), (ProcessNode) node.copy());
@@ -87,7 +87,7 @@ public class Compiler {
         private HashMap<String,ProcessNode> processNodeMap;
         private Expander expander;
         private ReferenceReplacer replacer;
-        private BlockingQueue<LogMessage> messageQueue;
+        private BlockingQueue<Object> messageQueue;
 
         public ProcessNode compile(ProcessNode node) throws CompilationException {
             node = expander.expand(node,messageQueue);

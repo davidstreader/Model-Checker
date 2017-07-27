@@ -21,7 +21,7 @@ public class Expander {
     private ExpressionEvaluator evaluator = new ExpressionEvaluator();
     private Map<String,List<String>> identMap = new HashMap<>();
     private Set<String> hiddenVariables = new HashSet<>();
-    public AbstractSyntaxTree expand(AbstractSyntaxTree ast, BlockingQueue<LogMessage> messageQueue) throws CompilationException {
+    public AbstractSyntaxTree expand(AbstractSyntaxTree ast, BlockingQueue<Object> messageQueue) throws CompilationException {
         globalVariableMap = ast.getVariableMap();
 
         List<ProcessNode> processes = ast.getProcesses();
@@ -41,7 +41,7 @@ public class Expander {
 
         return ast;
     }
-    public ProcessNode expand(ProcessNode process, BlockingQueue<LogMessage> messageQueue) throws CompilationException {
+    public ProcessNode expand(ProcessNode process, BlockingQueue<Object> messageQueue) throws CompilationException {
         messageQueue.add(new LogMessage("Expanding:",process));
         identMap.clear();
         if (process.hasVariableSet())

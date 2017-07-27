@@ -35,7 +35,7 @@ public class EquationEvaluator {
         this.automataOperations = new AutomataOperations();
     }
 
-    public EquationReturn evaluateEquations(List<OperationNode> operations, String code, Context context, BlockingQueue<LogMessage> messageQueue) throws CompilationException {
+    public EquationReturn evaluateEquations(List<OperationNode> operations, String code, Context context, BlockingQueue<Object> messageQueue) throws CompilationException {
         reset();
         List<OperationResult> results = new ArrayList<OperationResult>();
         Map<String,ProcessModel> toRender = new ConcurrentSkipListMap<>();
@@ -75,7 +75,7 @@ public class EquationEvaluator {
         return new EquationReturn(results,toRender);
     }
 
-    private boolean testModel(List<ProcessModel> processModels, BlockingQueue<LogMessage> messageQueue, ModelStatus status, OperationNode operation, Context context, Map<String, ProcessModel> toRender, String firstId, String secondId, int size) {
+    private boolean testModel(List<ProcessModel> processModels, BlockingQueue<Object> messageQueue, ModelStatus status, OperationNode operation, Context context, Map<String, ProcessModel> toRender, String firstId, String secondId, int size) {
         AutomataOperations automataOperations = new AutomataOperations();
         Interpreter interpreter = new Interpreter();
         try {

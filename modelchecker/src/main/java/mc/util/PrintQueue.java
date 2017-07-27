@@ -11,55 +11,57 @@ import java.util.concurrent.TimeUnit;
  * Since we use a blocking queue to handle sending messages to the client, we need a queue for sending messages to the terminal.
  * Lets cheat a little.
  */
-public class PrintQueue implements BlockingQueue<LogMessage> {
+public class PrintQueue implements BlockingQueue<Object> {
     @Override
-    public boolean add(LogMessage logMessage) {
-        logMessage.printToConsole();
+    public boolean add(Object logMessage) {
+        if (logMessage instanceof LogMessage) {
+            ((LogMessage) logMessage).printToConsole();
+        }
         return true;
     }
 
     @Override
-    public boolean offer(LogMessage logMessage) {
+    public boolean offer(Object o) {
         return false;
     }
 
     @Override
-    public LogMessage remove() {
+    public Object remove() {
         return null;
     }
 
     @Override
-    public LogMessage poll() {
+    public Object poll() {
         return null;
     }
 
     @Override
-    public LogMessage element() {
+    public Object element() {
         return null;
     }
 
     @Override
-    public LogMessage peek() {
+    public Object peek() {
         return null;
     }
 
     @Override
-    public void put(LogMessage logMessage) throws InterruptedException {
+    public void put(Object o) throws InterruptedException {
 
     }
 
     @Override
-    public boolean offer(LogMessage logMessage, long timeout, TimeUnit unit) throws InterruptedException {
+    public boolean offer(Object o, long timeout, TimeUnit unit) throws InterruptedException {
         return false;
     }
 
     @Override
-    public LogMessage take() throws InterruptedException {
+    public Object take() throws InterruptedException {
         return null;
     }
 
     @Override
-    public LogMessage poll(long timeout, TimeUnit unit) throws InterruptedException {
+    public Object poll(long timeout, TimeUnit unit) throws InterruptedException {
         return null;
     }
 
@@ -79,7 +81,7 @@ public class PrintQueue implements BlockingQueue<LogMessage> {
     }
 
     @Override
-    public boolean addAll(Collection<? extends LogMessage> c) {
+    public boolean addAll(Collection<?> c) {
         return false;
     }
 
@@ -114,7 +116,7 @@ public class PrintQueue implements BlockingQueue<LogMessage> {
     }
 
     @Override
-    public Iterator<LogMessage> iterator() {
+    public Iterator<Object> iterator() {
         return null;
     }
 
@@ -129,12 +131,14 @@ public class PrintQueue implements BlockingQueue<LogMessage> {
     }
 
     @Override
-    public int drainTo(Collection<? super LogMessage> c) {
+    public int drainTo(Collection<? super Object> c) {
         return 0;
     }
 
     @Override
-    public int drainTo(Collection<? super LogMessage> c, int maxElements) {
+    public int drainTo(Collection<? super Object> c, int maxElements) {
         return 0;
     }
+
+
 }
