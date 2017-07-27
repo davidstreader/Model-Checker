@@ -72,10 +72,13 @@ public class Compiler {
         processMap.putAll(eqResults.getToRender());
         if (!(context instanceof FakeContext)) {
             processMap.values().forEach(s -> {
-                try {
-                    ((Automaton) s).position(messageQueue);
-                } catch (CompilationException e) {
-                    e.printStackTrace();
+                if (s instanceof Automaton) {
+                    if (((Automaton) s).getNodeCount() > context.getAutoMaxNode()) return;
+                    try {
+                        ((Automaton) s).position(messageQueue);
+                    } catch (CompilationException e) {
+                        e.printStackTrace();
+                    }
                 }
             });
         }
