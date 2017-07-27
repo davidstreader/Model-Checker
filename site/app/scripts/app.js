@@ -85,12 +85,14 @@ $(function() {
             app.compileAndBuild();
     };
     app.socket.onclose = function () {
+        if (app.connected) {
+            statusBadge.text("Disconnected");
+            statusBadge.addClass("label-danger");
+            statusBadge.removeClass("label-success");
+            app.console.warn("You have been disconnected from the server.");
+            app.console.warn("As a result, your last compilation may not have completed successfully.");
+        }
         app.connected = false;
-        statusBadge.text("Disconnected");
-        statusBadge.addClass("label-danger");
-        statusBadge.removeClass("label-success");
-        app.console.warn("You have been disconnected from the server.");
-        app.console.warn("As a result, your last compilation may not have completed successfully.");
     };
 
     app.compile = function(overrideBuild) {
