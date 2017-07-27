@@ -77,6 +77,7 @@ $(function() {
     };
     const statusBadge = $("#status");
     app.socket.onopen = function () {
+        app.socket.reconnectInterval = 100;
         app.connected = true;
         statusBadge.text("Connected");
         statusBadge.removeClass("label-danger");

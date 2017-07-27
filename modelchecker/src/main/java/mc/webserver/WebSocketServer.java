@@ -24,12 +24,26 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import static org.fusesource.jansi.Ansi.ansi;
 @WebSocket
 public class WebSocketServer {
     private Logger logger = LoggerFactory.getLogger(WebSocketServer.class);
     private ObjectMapper mapper = new ObjectMapper();
+    public WebSocketServer() {
+        SendObject keepAlive = new SendObject("tick","keepalive");
+        new Thread(()->{
+           while(true) {
+               loggers.values().stream().map(LogThread::getQueue).forEach(queue->queue.add(keepAlive));
+               try {
+                   Thread.sleep(TimeUnit.SECONDS.toMillis(5));
+               } catch (InterruptedException e) {
+                   e.printStackTrace();
+               }
+           }
+        }).start();
+    }
     @AllArgsConstructor
     @Getter
     private class LogThread extends Thread {
@@ -118,6 +132,7 @@ public class WebSocketServer {
     public void onClose(Session user, int statusCode, String reason) {
         interruptSession(user);
         loggers.get(user).interrupt();
+        loggers.remove(user);
     }
     private void interruptSession(Session user) {
         if (runners.containsKey(user)) runners.get(user).stop();
