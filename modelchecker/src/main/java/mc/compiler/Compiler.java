@@ -11,6 +11,7 @@ import mc.process_models.automata.Automaton;
 import mc.process_models.automata.generator.AutomatonGenerator;
 import mc.process_models.automata.operations.AutomataOperations;
 import mc.util.GraphvizV8ThreadedEngine;
+import mc.util.expr.ExpressionSimplifier;
 import mc.webserver.FakeContext;
 import mc.webserver.webobjects.Context;
 import mc.webserver.webobjects.LogMessage;
@@ -82,6 +83,9 @@ public class Compiler {
                 }
             });
         }
+
+        GraphvizV8ThreadedEngine.doRelease();
+        System.gc();
         return new CompilationObject(processMap, results, eqResults.getResults());
     }
     @AllArgsConstructor

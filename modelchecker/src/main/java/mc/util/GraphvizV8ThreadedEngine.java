@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class GraphvizV8ThreadedEngine extends AbstractJsGraphvizEngine {
+    private static GraphvizV8ThreadedEngine engine;
     private static final Pattern ABORT = Pattern.compile("^undefined:\\d+: abort");
     private static final Pattern ERROR = Pattern.compile("^undefined:\\d+: (.*?)\n");
     private ThreadLocal<V8Array> messages = new ThreadLocal<>();
@@ -20,6 +21,7 @@ public class GraphvizV8ThreadedEngine extends AbstractJsGraphvizEngine {
 
     public GraphvizV8ThreadedEngine() {
         super(true);
+        engine = this;
     }
 
     @Override
@@ -31,6 +33,12 @@ public class GraphvizV8ThreadedEngine extends AbstractJsGraphvizEngine {
         v8.get().executeVoidScript(jsInitEnv());
         messages.set(v8.get().getArray("$$prints"));
         v8.get().executeVoidScript(jsVizCode("1.8.0"));
+    }
+    public static void doRelease() {
+        engine.messages.get().release();
+        engine.messages.remove();
+        engine.v8.get().release();
+        engine.v8.remove();
     }
 
     @Override

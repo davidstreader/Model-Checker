@@ -289,11 +289,11 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
         // check that the nodes are part of this automaton
         if (!nodeMap.containsKey(from.getId())) {
-            throw new CompilationException(getClass(),"Unable to add the specified edge as "+from.getId()+" is not a part of this automaton",(Location)getMetaData().get("location"));
+            throw new CompilationException(getClass(),"Unable to add the specified edge as "+from.getId()+" is not a part of this automaton. \nPlease make sure you aren't linking directly to a parallel composed process!",(Location)getMetaData().get("location"));
         }
 
         if (!nodeMap.containsKey(to.getId())) {
-            throw new CompilationException(getClass(),"Unable to add the specified edge as "+to.getId()+" is not a part of this automaton",(Location)getMetaData().get("location"));
+            throw new CompilationException(getClass(),"Unable to add the specified edge as "+to.getId()+" is not a part of this automaton.  \nPlease make sure you aren't linking directly to a parallel composed process!",(Location)getMetaData().get("location"));
         }
 
         // check if there is already an identical edge between the specified nodes
