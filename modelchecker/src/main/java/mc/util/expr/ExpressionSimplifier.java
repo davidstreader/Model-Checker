@@ -9,30 +9,12 @@ import mc.exceptions.CompilationException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * A class that is able to simplify expressions using Z3
  */
 public class ExpressionSimplifier {
-    /**
-     * Simplify an expression
-     * @param expr The expression
-     * @param variables a list of variables and their values to substitute, if required.
-     * @return The simplified expression
-     * @throws CompilationException An error converting to z3 occurred.
-     */
-    public static Expression simplify(Expression expr, Map<String, Integer> variables) throws CompilationException {
-        Context context = mkCtx();
-        Expression ret = convert(convert(expr,variables, context).simplify());
-        closeCtx(context);
-        return ret;
-    }
-
-    private static Context mkCtx() {
-        HashMap<String, String> cfg = new HashMap<>();
-        cfg.put("model", "true");
-        return new Context(cfg);
-    }
 
     /**
      * Combine two guards together
@@ -389,16 +371,19 @@ public class ExpressionSimplifier {
      * @return the substituted expression.
      */
     private static Expression substitute(BinaryOperator expression, Map<String, Expression> subMap) throws CompilationException {
+        expression.clearTmp();
         expression.setLhs(substitute(expression.getLeftHandSide(), subMap));
         expression.setRhs(substitute(expression.getRightHandSide(), subMap));
         return expression;
     }
     private static Expression substitute(UnaryOperator expression, Map<String, Expression> subMap) throws CompilationException {
+        expression.clearTmp();
         expression.setRhs(substitute(expression.getRightHandSide(), subMap));
         return expression;
     }
     @SneakyThrows
     public static Expression substitute(Expression expression, Map<String, Expression> subMap) {
+        expression.clearTmp();
         if (subMap == null) return expression;
         if (expression instanceof BinaryOperator) {
             return substitute((BinaryOperator) expression, subMap);
@@ -417,27 +402,52 @@ public class ExpressionSimplifier {
     }
     @SneakyThrows
     public static boolean equate(Guard guard1, Guard guard2) {
-        Context context = mkCtx();
-        BoolExpr expr = context.mkAnd((BoolExpr)convert(guard1.getGuard(),guard1.getVariables(),context),(BoolExpr)convert(guard2.getGuard(),guard2.getVariables(),context));
-        boolean ret = solve(expr,context);
-        closeCtx(context);
-        return ret;
-
-    }
-    private static void closeCtx(Context context) {
-        try {
-            context.close();
-        } catch (Z3Exception ex) {
-
+        try (Context context = mkCtx()) {
+            BoolExpr expr = context.mkAnd((BoolExpr)convert(guard1.getGuard(),guard1.getVariables(),context),(BoolExpr)convert(guard2.getGuard(),guard2.getVariables(),context));
+            return solve(expr,context);
         }
     }
     @SneakyThrows
     public static boolean isSolvable(Expression ex, Map<String, Integer> variables) {
-        Context context = mkCtx();
-        Expr b = convert(ex,variables, context);
-        boolean ret = solve(b,context);
-        closeCtx(context);
-        return ret;
+        if (ex.solveable.containsKey(variables)) {
+            return ex.solveable.get(variables);
+        }
+        try (Context context = mkCtx()) {
+            Expr b = convert(ex,variables, context);
+            boolean ret = solve(b,context);
+            ex.solveable.put(variables,ret);
+            return ret;
+        }
+    }
+    /**
+     * Simplify an expression
+     * @param expr The expression
+     * @param variables a list of variables and their values to substitute, if required.
+     * @return The simplified expression
+     * @throws CompilationException An error converting to z3 occurred.
+     */
+    public static Expression simplify(Expression expr, Map<String, Integer> variables) throws CompilationException {
+        if (expr.simplified.containsKey(variables)) {
+            return expr.simplified.get(variables);
+        }
+        try (Context context = mkCtx()) {
+            Expression simp = convert(convert(expr,variables, context).simplify());
+            expr.simplified.put(variables,simp);
+            return simp;
+        }
+    }
+
+    private static Context mkCtx() {
+        if (Thread.interrupted()) {
+            throw new RuntimeException(new InterruptedException());
+        }
+        HashMap<String, String> cfg = new HashMap<>();
+        cfg.put("model", "true");
+        Context ctx = new Context(cfg);
+        if (Thread.interrupted()) {
+            throw new RuntimeException(new InterruptedException());
+        }
+        return ctx;
     }
     private static boolean solve(Expr expr, Context context) throws CompilationException {
         if (!(expr instanceof BoolExpr)) {
@@ -449,8 +459,6 @@ public class ExpressionSimplifier {
         }
         Solver solver = context.mkSolver();
         solver.add((BoolExpr) expr);
-        boolean ret = solver.check() == Status.SATISFIABLE;
-        closeCtx(context);
-        return ret;
+        return solver.check() == Status.SATISFIABLE;
     }
 }

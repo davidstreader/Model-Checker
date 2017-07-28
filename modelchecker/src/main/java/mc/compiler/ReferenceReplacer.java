@@ -5,6 +5,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.regex.Pattern;
 
 import mc.compiler.ast.*;
+import mc.compiler.interpreters.AutomatonInterpreter;
 import mc.exceptions.CompilationException;
 import mc.webserver.webobjects.LogMessage;
 
@@ -50,6 +51,9 @@ public class ReferenceReplacer {
         return process;
     }
 	private ASTNode replaceReferences(ASTNode astNode, String identifier, Map<String, LocalProcessNode> localReferences) throws CompilationException {
+        if (Thread.interrupted()) {
+            throw new RuntimeException(new InterruptedException());
+        }
 		if(astNode instanceof ProcessRootNode){
             return replaceReferences((ProcessRootNode)astNode, identifier, localReferences);
         }

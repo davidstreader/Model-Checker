@@ -36,11 +36,11 @@ public class GraphvizV8ThreadedEngine extends AbstractJsGraphvizEngine {
     }
     public static void doRelease() {
         if (engine == null) return;
-        if (engine.messages != null) {
+        if (engine.messages.get() != null) {
             engine.messages.get().release();
             engine.messages.remove();
         }
-        if (engine.v8 != null) {
+        if (engine.v8.get() != null) {
             engine.v8.get().release();
             engine.v8.remove();
         }

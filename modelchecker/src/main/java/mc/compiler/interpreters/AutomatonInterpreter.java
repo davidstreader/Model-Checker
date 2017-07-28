@@ -1,6 +1,8 @@
 package mc.compiler.interpreters;
 
 import mc.Constant;
+import mc.compiler.Expander;
+import mc.compiler.Interpreter;
 import mc.compiler.ast.*;
 import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
@@ -114,6 +116,9 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     }
     private Set<String> variableList = new HashSet<>();
     private void interpretNode(ASTNode astNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException {
+        if (Thread.interrupted()) {
+            throw new RuntimeException(new InterruptedException());
+        }
         // check if the current ast node has a reference attached
         if(astNode.hasReferences()){
             for(String reference : astNode.getReferences()){

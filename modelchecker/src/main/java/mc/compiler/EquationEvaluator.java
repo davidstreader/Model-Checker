@@ -67,7 +67,6 @@ public class EquationEvaluator {
             try {
                 service.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
             } catch (InterruptedException e) {
-                System.out.println("Interrupted!");
                 service.shutdownNow();
             }
             results.add(new OperationResult(operation.getFirstProcess(), operation.getSecondProcess(), firstId, secondId, operation.getOperation(), operation.isNegated(), status.passCount == perms.size()," @|black ("+status.passCount+"/"+perms.size()+") |@"));

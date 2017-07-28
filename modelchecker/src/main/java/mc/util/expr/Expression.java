@@ -7,7 +7,9 @@ import org.apache.xalan.xsltc.compiler.CompilerException;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -64,5 +66,11 @@ public abstract class Expression implements Serializable {
     }
     private UnaryOperator cloneExpr(UnaryOperator orig) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, CompilerException {
         return orig.getClass().getConstructor(Expression.class).newInstance(cloneExpr(orig.getRightHandSide()));
+    }
+    HashMap<Map<String,Integer>,Boolean> solveable = new HashMap<>();
+    HashMap<Map<String,Integer>,Expression> simplified = new HashMap<>();
+    public void clearTmp() {
+        simplified.clear();
+        solveable.clear();
     }
 }

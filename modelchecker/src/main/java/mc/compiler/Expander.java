@@ -106,6 +106,9 @@ public class Expander {
     }
 
     private ASTNode expand(ASTNode astNode, Map<String, Object> variableMap) throws CompilationException {
+        if (Thread.interrupted()) {
+            throw new RuntimeException(new InterruptedException());
+        }
         if(astNode instanceof ProcessRootNode){
             astNode = expand((ProcessRootNode)astNode, variableMap);
         }

@@ -28,7 +28,7 @@ public class Lexer {
 
 		char[] characters = code.toCharArray();
 
-		while(index < characters.length){
+		while(index < characters.length && !Thread.interrupted()){
 			gobbleWhitespace(characters);
 			gobbleComments(characters);
 

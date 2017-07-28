@@ -82,9 +82,8 @@ public class Compiler {
                     }
                 }
             });
+            GraphvizV8ThreadedEngine.doRelease();
         }
-
-        GraphvizV8ThreadedEngine.doRelease();
         System.gc();
         return new CompilationObject(processMap, results, eqResults.getResults());
     }
