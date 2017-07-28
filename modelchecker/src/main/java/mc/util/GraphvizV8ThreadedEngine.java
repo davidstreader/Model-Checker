@@ -35,10 +35,15 @@ public class GraphvizV8ThreadedEngine extends AbstractJsGraphvizEngine {
         v8.get().executeVoidScript(jsVizCode("1.8.0"));
     }
     public static void doRelease() {
-        engine.messages.get().release();
-        engine.messages.remove();
-        engine.v8.get().release();
-        engine.v8.remove();
+        if (engine == null) return;
+        if (engine.messages != null) {
+            engine.messages.get().release();
+            engine.messages.remove();
+        }
+        if (engine.v8 != null) {
+            engine.v8.get().release();
+            engine.v8.remove();
+        }
     }
 
     @Override
