@@ -51,7 +51,7 @@ public class ReferenceReplacer {
         return process;
     }
 	private ASTNode replaceReferences(ASTNode astNode, String identifier, Map<String, LocalProcessNode> localReferences) throws CompilationException {
-        if (Thread.interrupted()) {
+        if (Thread.currentThread().isInterrupted()) {
             throw new RuntimeException(new InterruptedException());
         }
 		if(astNode instanceof ProcessRootNode){

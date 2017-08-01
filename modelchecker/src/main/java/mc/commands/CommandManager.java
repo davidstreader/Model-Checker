@@ -46,7 +46,7 @@ public class CommandManager {
     public void registerInput() {
         Thread thread = new Thread(()->{
             BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-            while (!Thread.interrupted()) {
+            while (!Thread.currentThread().isInterrupted()) {
                 try {
                     String line = reader.readLine();
                     if (line != null) {

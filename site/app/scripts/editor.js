@@ -22,7 +22,6 @@ const qtags = {
 };
 
 langTools.setCompleters([qtags]);
-
 editor.setOptions({
     enableBasicAutocompletion: true,
     enableLiveAutocompletion: true

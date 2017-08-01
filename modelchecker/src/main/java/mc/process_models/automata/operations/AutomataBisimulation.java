@@ -54,7 +54,7 @@ public class AutomataBisimulation {
         int rootColour = Integer.MIN_VALUE;
 
         for(Automaton automaton : automata){
-            if (Thread.interrupted()) return false;
+            if (Thread.currentThread().isInterrupted()) return false;
             performColouring(automaton, colourMap);
 
             AutomatonNode root = automaton.getRoot();
@@ -77,7 +77,7 @@ public class AutomataBisimulation {
         perfromInitialColouring(automaton);
         Map<Integer, List<AutomatonNode>> nodeColours = new HashMap<>();
 
-        while(nodeColours.size() != lastColourCount && !Thread.interrupted()){
+        while(nodeColours.size() != lastColourCount && !Thread.currentThread().isInterrupted()){
             lastColourCount = nodeColours.size();
             nodeColours = new HashMap<>();
             Set<String> visited = new HashSet<>();
@@ -85,7 +85,7 @@ public class AutomataBisimulation {
             Queue<AutomatonNode> fringe = new LinkedList<>();
             fringe.offer(automaton.getRoot());
 
-            while(!fringe.isEmpty() && !Thread.interrupted()){
+            while(!fringe.isEmpty() && !Thread.currentThread().isInterrupted()){
                 AutomatonNode current = fringe.poll();
 
                 // check if the current node has been visited

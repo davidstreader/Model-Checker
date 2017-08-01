@@ -54,9 +54,10 @@ public class WebSocketServer {
         @Override
         public void run() {
             try {
-                while (!Thread.interrupted() && user.isOpen()) {
+                while (!Thread.currentThread().isInterrupted() && user.isOpen()) {
                     Object log = queue.take();
                     if (log instanceof LogMessage) {
+                        if (((LogMessage) log).hasExpired()) continue;
                         ((LogMessage) log).render();
                         log = new SendObject(log,"log");
                     }
@@ -87,7 +88,7 @@ public class WebSocketServer {
             try {
                 ret = compile(data,loggers.get(user).queue);
             } catch (Exception ex) {
-                if (Thread.interrupted() || ex.getCause() != null && ex.getCause() instanceof InterruptedException) {
+                if (Thread.currentThread().isInterrupted() || ex.getCause() != null && ex.getCause() instanceof InterruptedException) {
                     return;
                 }
                 //Get a stack trace then split it into lines

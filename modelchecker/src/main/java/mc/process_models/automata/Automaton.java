@@ -99,7 +99,9 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 //            }
             g.add(l);
         }
-
+        if (Thread.currentThread().isInterrupted()) {
+            throw new RuntimeException(new InterruptedException("Interrupted!"));
+        }
         Graphviz viz = Graphviz.fromGraph(g);
         JSONObject obj = new JSONObject(viz.engine(Engine.DOT).render(Format.JSON).toString());
         JSONArray objects = obj.getJSONArray("objects");

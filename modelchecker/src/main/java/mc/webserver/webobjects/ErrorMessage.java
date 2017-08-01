@@ -13,10 +13,10 @@ public class ErrorMessage extends LogMessage {
     String type = "error";
     String stack = null;
     public ErrorMessage(String message, Location location) {
-        super(message, false, true, location, -1);
+        super(message, false, true, location, -1,Thread.currentThread());
     }
     public ErrorMessage(String message, String stack, Location location) {
-        super(message, false, true, location, -1);
+        super(message, false, true, location, -1, Thread.currentThread());
         this.stack = stack;
     }
 }

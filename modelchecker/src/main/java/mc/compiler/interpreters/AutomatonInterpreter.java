@@ -116,7 +116,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     }
     private Set<String> variableList = new HashSet<>();
     private void interpretNode(ASTNode astNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException {
-        if (Thread.interrupted()) {
+        if (Thread.currentThread().isInterrupted()) {
             throw new RuntimeException(new InterruptedException());
         }
         // check if the current ast node has a reference attached

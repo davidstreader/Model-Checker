@@ -48,7 +48,7 @@ public class Parser {
         reset();
         this.tokens = tokens;
 
-        while (index < this.tokens.size() && !Thread.interrupted()) {
+        while (index < this.tokens.size() && !Thread.currentThread().isInterrupted()) {
             Token token = peekToken();
             if (token instanceof ProcessTypeToken) {
                 parseProcessDefinition();
@@ -443,7 +443,7 @@ public class Parser {
         List<LocalProcessNode> localProcesses = new ArrayList<LocalProcessNode>();
         Set<String> localIdentifiers = new HashSet<String>();
 
-        while (peekToken() instanceof CommaToken && !Thread.interrupted()) {
+        while (peekToken() instanceof CommaToken && !Thread.currentThread().isInterrupted()) {
             nextToken(); // gobble the comma
             localProcesses.add(parseLocalProcessDefinition(localIdentifiers));
         }

@@ -29,16 +29,18 @@ public class LogMessage {
     private boolean error = false;
     private Location location = null;
     private int clearAmt = -1;
+    private Thread thread;
     public LogMessage(String message) {
         this.message = message;
+        this.thread = Thread.currentThread();
     }
 
     public LogMessage(String function, ProcessNode process) {
-        this(function+" @|black "+process.getIdentifier()+" "+formatLocation(process.getLocation())+"|@",true,false,null,-1);
+        this(function+" @|black "+process.getIdentifier()+" "+formatLocation(process.getLocation())+"|@",true,false,null,-1,Thread.currentThread());
     }
 
     public LogMessage(String message, boolean clear, boolean error) {
-        this(message,clear,error,null,-1);
+        this(message,clear,error,null,-1,Thread.currentThread());
     }
 
     public LogMessage(String message, int clearAmt) {
@@ -57,5 +59,8 @@ public class LogMessage {
         message = message.replace("@|black","@|white");
         render();
         System.out.println(message);
+    }
+    public boolean hasExpired() {
+        return thread.isInterrupted();
     }
 }
