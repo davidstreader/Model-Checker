@@ -16,6 +16,7 @@ import mc.util.GraphvizV8ThreadedEngine;
 import mc.util.Location;
 import mc.util.expr.ExpressionSimplifier;
 import mc.util.expr.OrOperator;
+import mc.webserver.WebSocketServer;
 import mc.webserver.webobjects.LogMessage;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -75,8 +76,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     public AutomatonNode getRoot() {
         return root;
     }
-    public void position(BlockingQueue<Object> messageQueue) throws CompilationException {
-        messageQueue.add(new LogMessage("Performing layout algorithm: "+getId(),true,false));
+    public void position() {
         MutableGraph g = mutGraph(getId()).setDirected().generalAttrs().add(RankDir.LEFT_TO_RIGHT);
         Map<String,Node> graphNodes = new HashMap<>();
         for (AutomatonNode node : getNodes()) {
@@ -99,9 +99,6 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 //            }
             g.add(l);
         }
-        if (Thread.currentThread().isInterrupted()) {
-            throw new RuntimeException(new InterruptedException("Interrupted!"));
-        }
         Graphviz viz = Graphviz.fromGraph(g);
         JSONObject obj = new JSONObject(viz.engine(Engine.DOT).render(Format.JSON).toString());
         JSONArray objects = obj.getJSONArray("objects");
@@ -109,7 +106,11 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
             JSONObject ele = objects.getJSONObject(i);
             String[] posString = ele.getString("pos").split(",");
 
-            getNode(ele.getString("name")).addMetaData("pos",new Point2D.Double(Double.parseDouble(posString[0]),Double.parseDouble(posString[1])));
+            try {
+                getNode(ele.getString("name")).addMetaData("pos",new Point2D.Double(Double.parseDouble(posString[0]),Double.parseDouble(posString[1])));
+            } catch (CompilationException e) {
+                e.printStackTrace();
+            }
         }
     }
     public void setRoot(AutomatonNode root) throws CompilationException {

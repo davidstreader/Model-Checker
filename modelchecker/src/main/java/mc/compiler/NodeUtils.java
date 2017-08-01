@@ -14,7 +14,7 @@ import java.util.stream.Stream;
 
 public class NodeUtils {
     public static Stream<List<AutomatonEdge>> findLoopsAndPathToRoot(AutomatonNode node) {
-        return node.getIncomingEdges().parallelStream().flatMap(edge ->{
+        return node.getIncomingEdges().stream().flatMap(edge ->{
             List<AutomatonEdge> visited = new ArrayList<>();
             visited.add(edge);
             return findLoops(node,edge,new ArrayList<>(),visited);
@@ -27,7 +27,7 @@ public class NodeUtils {
             path.add(edge);
             return Stream.of(path);
         }
-        return edge.getFrom().getIncomingEdges().parallelStream().flatMap(e->findLoops(toFind, e, path, visited));
+        return edge.getFrom().getIncomingEdges().stream().flatMap(e->findLoops(toFind, e, path, visited));
     }
 
     /**

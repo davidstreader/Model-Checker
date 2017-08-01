@@ -5,6 +5,7 @@ import java.util.*;
 import mc.compiler.token.*;
 import mc.exceptions.LexerException;
 import mc.util.Location;
+import mc.webserver.WebSocketServer;
 
 public class Lexer {
 

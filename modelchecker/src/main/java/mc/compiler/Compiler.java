@@ -1,6 +1,6 @@
 package mc.compiler;
 
-import guru.nidi.graphviz.engine.Graphviz;
+import com.eclipsesource.v8.V8;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import mc.compiler.ast.AbstractSyntaxTree;
@@ -11,16 +11,18 @@ import mc.process_models.automata.Automaton;
 import mc.process_models.automata.generator.AutomatonGenerator;
 import mc.process_models.automata.operations.AutomataOperations;
 import mc.util.GraphvizV8ThreadedEngine;
-import mc.util.expr.ExpressionSimplifier;
 import mc.webserver.FakeContext;
+import mc.webserver.WebSocketServer;
 import mc.webserver.webobjects.Context;
 import mc.webserver.webobjects.LogMessage;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 public class Compiler {
     // fields
@@ -42,7 +44,7 @@ public class Compiler {
         this.evaluator = new OperationEvaluator();
     }
 
-    public CompilationObject compile(String code, Context context, BlockingQueue<Object> messageQueue) throws CompilationException{
+    public CompilationObject compile(String code, Context context, BlockingQueue<Object> messageQueue) throws CompilationException, InterruptedException {
         if (code.startsWith("random")) {
             messageQueue.add(new LogMessage("Generating random models"));
             boolean alphabet = Boolean.parseBoolean(code.split(",")[1]);
@@ -60,7 +62,7 @@ public class Compiler {
         }
         return compile(parser.parse(lexer.tokenise(code)), code, context, messageQueue);
     }
-    private CompilationObject compile(AbstractSyntaxTree ast, String code, Context context, BlockingQueue<Object> messageQueue) throws CompilationException {
+    private CompilationObject compile(AbstractSyntaxTree ast, String code, Context context, BlockingQueue<Object> messageQueue) throws CompilationException, InterruptedException {
         HashMap<String,ProcessNode> processNodeMap = new HashMap<>();
         for (ProcessNode node: ast.getProcesses()) {
             processNodeMap.put(node.getIdentifier(), (ProcessNode) node.copy());
@@ -72,19 +74,26 @@ public class Compiler {
         EquationEvaluator.EquationReturn eqResults = eqEvaluator.evaluateEquations(ast.getEquations(), code, context,messageQueue);
         processMap.putAll(eqResults.getToRender());
         if (!(context instanceof FakeContext)) {
-            processMap.values().forEach(s -> {
-                if (s instanceof Automaton) {
-                    if (((Automaton) s).getNodeCount() > context.getAutoMaxNode()) return;
-                    try {
-                        ((Automaton) s).position(messageQueue);
-                    } catch (CompilationException e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-            GraphvizV8ThreadedEngine.doRelease();
+            List<Automaton> toPosition = processMap.values().stream().filter(Automaton.class::isInstance).map(s -> (Automaton)s).filter(s -> s.getNodeCount() <= context.getAutoMaxNode()).collect(Collectors.toList());
+            ExecutorService service = Executors.newCachedThreadPool();
+            final AtomicInteger counter=new AtomicInteger(toPosition.size());
+            messageQueue.add(new LogMessage("Laying out processes",true,false));
+            List<V8> engines = new ArrayList<>();
+            GraphvizV8ThreadedEngine.getV8Engines().put(Thread.currentThread(),engines);
+            toPosition.forEach(s ->
+                service.submit(() -> {
+                    GraphvizV8ThreadedEngine.getV8Engines().put(Thread.currentThread(),engines);
+                    s.position();
+                    messageQueue.add(new LogMessage("Layout done for @|black "+s.getId()+"|@, remaining: "+counter.decrementAndGet(),true,false));
+                }));
+            try {
+                service.shutdown();
+                service.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+            } catch (InterruptedException e) {
+                service.shutdownNow();
+                throw e;
+            }
         }
-        System.gc();
         return new CompilationObject(processMap, results, eqResults.getResults());
     }
     @AllArgsConstructor
@@ -95,7 +104,7 @@ public class Compiler {
         private ReferenceReplacer replacer;
         private BlockingQueue<Object> messageQueue;
 
-        public ProcessNode compile(ProcessNode node) throws CompilationException {
+        public ProcessNode compile(ProcessNode node) throws CompilationException, InterruptedException {
             node = expander.expand(node,messageQueue);
             node = replacer.replaceReferences(node,messageQueue);
             return node;

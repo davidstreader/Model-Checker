@@ -103,7 +103,7 @@ public class Guard implements Serializable{
      * @param globalVariableMap The global variable map
      * @param identMap A map from identifiers to a list of the variables in them (L[$i] = L -> [$i])
      */
-    public void parseNext(String identifier, Map<String, Expression> globalVariableMap, Map<String, List<String>> identMap) throws CompilationException {
+    public void parseNext(String identifier, Map<String, Expression> globalVariableMap, Map<String, List<String>> identMap) throws CompilationException, InterruptedException {
         //Check that there are actually variables in the identifier
         if (!identifier.contains("[")) return;
         //Get a list of all variables

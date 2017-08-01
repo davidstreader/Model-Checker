@@ -39,7 +39,7 @@ public class VariableCollector {
         }
         //Map from used variables to list of variables and their values
         Map<String,Integer> newVarMap = new HashMap<>();
-        collectVariables(expression).parallel().distinct().forEach(var -> {
+        collectVariables(expression).distinct().forEach(var -> {
             if (variableMap == null) newVarMap.put(var,null);
             if (varMap.containsKey(var))
                 newVarMap.put(var,varMap.get(var));

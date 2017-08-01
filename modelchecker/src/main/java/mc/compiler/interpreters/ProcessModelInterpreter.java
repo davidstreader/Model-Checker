@@ -13,7 +13,7 @@ import java.util.Map;
  */
 public interface ProcessModelInterpreter {
 
-    public ProcessModel interpret(ProcessNode processNode, Map<String, ProcessModel> processMap, Compiler.LocalCompiler localCompiler) throws CompilationException;
+    public ProcessModel interpret(ProcessNode processNode, Map<String, ProcessModel> processMap, Compiler.LocalCompiler localCompiler) throws CompilationException, InterruptedException;
 
-    public ProcessModel interpret(ASTNode astNode, String identifier, Map<String, ProcessModel> processMap) throws CompilationException;
+    public ProcessModel interpret(ASTNode astNode, String identifier, Map<String, ProcessModel> processMap) throws CompilationException, InterruptedException;
 }

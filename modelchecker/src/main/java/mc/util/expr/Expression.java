@@ -9,7 +9,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -39,7 +38,11 @@ public abstract class Expression implements Serializable {
         try {
             Expression simple =  ExpressionSimplifier.simplify(new EqualityOperator(this, (Expression) o),Collections.emptyMap());
             if (simple instanceof BooleanOperand && ((BooleanOperand) simple).getValue()) return true;
-        } catch (CompilationException ignored) {}
+        } catch (CompilationException ignored) {
+
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         return false;
     }
     @SneakyThrows

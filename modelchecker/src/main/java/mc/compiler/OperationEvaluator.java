@@ -23,7 +23,7 @@ public class OperationEvaluator {
         this.automataOperations = new AutomataOperations();
     }
 
-    public List<OperationResult> evaluateOperations(List<OperationNode> operations, Map<String, ProcessModel> processMap, Interpreter interpreter, String code) throws CompilationException {
+    public List<OperationResult> evaluateOperations(List<OperationNode> operations, Map<String, ProcessModel> processMap, Interpreter interpreter, String code) throws CompilationException, InterruptedException {
         reset();
         List<OperationResult> results = new ArrayList<OperationResult>();
         for(OperationNode operation : operations){

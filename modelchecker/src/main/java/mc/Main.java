@@ -1,7 +1,6 @@
 package mc;
 
 import guru.nidi.graphviz.engine.Graphviz;
-import guru.nidi.graphviz.engine.GraphvizV8Engine;
 import lombok.Getter;
 import lombok.Setter;
 import mc.commands.CommandManager;

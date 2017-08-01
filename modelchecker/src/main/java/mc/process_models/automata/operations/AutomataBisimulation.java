@@ -8,6 +8,7 @@ import mc.process_models.automata.Automaton;
 import mc.process_models.automata.AutomatonEdge;
 import mc.process_models.automata.AutomatonNode;
 import mc.util.expr.Expression;
+import mc.webserver.WebSocketServer;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;

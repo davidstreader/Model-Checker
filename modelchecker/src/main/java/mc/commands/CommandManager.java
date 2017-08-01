@@ -2,6 +2,7 @@ package mc.commands;
 
 import mc.Main;
 import mc.util.Utils;
+import mc.webserver.WebSocketServer;
 import org.apache.commons.lang3.StringUtils;
 import org.fusesource.jansi.Ansi;
 
@@ -46,7 +47,7 @@ public class CommandManager {
     public void registerInput() {
         Thread thread = new Thread(()->{
             BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-            while (!Thread.currentThread().isInterrupted()) {
+            while (!Thread.interrupted()) {
                 try {
                     String line = reader.readLine();
                     if (line != null) {

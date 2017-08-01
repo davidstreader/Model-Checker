@@ -5,6 +5,7 @@ import com.microsoft.z3.enumerations.Z3_lbool;
 import lombok.SneakyThrows;
 import mc.compiler.Guard;
 import mc.exceptions.CompilationException;
+import mc.webserver.WebSocketServer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -426,30 +427,33 @@ public class ExpressionSimplifier {
      * @return The simplified expression
      * @throws CompilationException An error converting to z3 occurred.
      */
-    public static Expression simplify(Expression expr, Map<String, Integer> variables) throws CompilationException {
+    public static Expression simplify(Expression expr, Map<String, Integer> variables) throws CompilationException, InterruptedException {
         if (expr.simplified.containsKey(variables)) {
             return expr.simplified.get(variables);
         }
         try (Context context = mkCtx()) {
             Expression simp = convert(convert(expr,variables, context).simplify());
             expr.simplified.put(variables,simp);
+            if (Thread.currentThread().isInterrupted()) {
+                throw new InterruptedException();
+            }
             return simp;
         }
     }
 
-    private static Context mkCtx() {
+    private static Context mkCtx() throws InterruptedException {
         if (Thread.currentThread().isInterrupted()) {
-            throw new RuntimeException(new InterruptedException());
+            throw new InterruptedException();
         }
         HashMap<String, String> cfg = new HashMap<>();
         cfg.put("model", "true");
         Context ctx = new Context(cfg);
         if (Thread.currentThread().isInterrupted()) {
-            throw new RuntimeException(new InterruptedException());
+            throw new InterruptedException();
         }
         return ctx;
     }
-    private static boolean solve(Expr expr, Context context) throws CompilationException {
+    private static boolean solve(Expr expr, Context context) throws CompilationException, InterruptedException {
         if (!(expr instanceof BoolExpr)) {
             throw new CompilationException(ExpressionSimplifier.class,"You can only check if booleans are solvable!");
         }
@@ -459,6 +463,9 @@ public class ExpressionSimplifier {
         }
         Solver solver = context.mkSolver();
         solver.add((BoolExpr) expr);
+        if (Thread.currentThread().isInterrupted()) {
+            throw new InterruptedException();
+        }
         return solver.check() == Status.SATISFIABLE;
     }
 }

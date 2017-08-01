@@ -10,13 +10,13 @@ import java.util.Map;
  */
 public class ExpressionEvaluator {
 
-    public boolean isExecutable(Expression expression) throws CompilationException {
+    public boolean isExecutable(Expression expression) throws CompilationException, InterruptedException {
         //If you simplify an expression with no variables it will be evaluated by the solver.
         Expression ex = ExpressionSimplifier.simplify(expression, Collections.emptyMap());
         return ex instanceof BooleanOperand || ex instanceof IntegerOperand ;
     }
 
-    public int evaluateExpression(Expression ex, Map<String, Integer> variableMap) throws CompilationException {
+    public int evaluateExpression(Expression ex, Map<String, Integer> variableMap) throws CompilationException, InterruptedException {
         ex = ExpressionSimplifier.simplify(ex, variableMap);
         if (ex instanceof BooleanOperand) return ((BooleanOperand) ex).getValue()?1:0;
         if (ex instanceof IntegerOperand) return ((IntegerOperand) ex).getValue();
