@@ -1,8 +1,8 @@
 package mc.util;
 
 import com.google.common.base.Ascii;
+import com.sun.javafx.PlatformUtil;
 import mc.Main;
-import org.sosy_lab.common.NativeLibraries;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -12,17 +12,17 @@ import java.nio.file.Paths;
 public class Utils {
     @SuppressWarnings("deprecation")
     public static String getArch() {
-        String arch = Ascii.toLowerCase(NativeLibraries.Architecture.guessVmArchitecture().name());
-        String os = Ascii.toLowerCase(NativeLibraries.OS.guessOperatingSystem().name());
+        String arch = Ascii.toLowerCase(System.getProperty("os.name"));
+        String os = isWin()?"windows":isMac()?"macosx":"linux";
         return arch + "-" + os;
     }
     @SuppressWarnings("deprecation")
     public static boolean isWin() {
-        return NativeLibraries.OS.guessOperatingSystem() == NativeLibraries.OS.WINDOWS;
+        return PlatformUtil.isWindows();
     }
     @SuppressWarnings("deprecation")
     public static boolean isMac() {
-        return NativeLibraries.OS.guessOperatingSystem() == NativeLibraries.OS.MACOSX;
+        return PlatformUtil.isMac();
     }
     public static boolean isJavaw() {
         try {

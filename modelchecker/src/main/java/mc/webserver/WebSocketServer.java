@@ -117,8 +117,7 @@ public class WebSocketServer {
                         ex.printStackTrace();
                     }
                 }
-                if (loggers.containsKey(user))
-                    loggers.get(user).queue.add(new SendObject(ret, "compileReturn"));
+                loggers.get(user).queue.add(new SendObject(ret, "compileReturn"));
             }
         }
     }

@@ -438,11 +438,7 @@ public class ExpressionSimplifier {
             return simp;
         }
     }
-
     private static Context mkCtx() throws InterruptedException {
-        if (Thread.currentThread().isInterrupted()) {
-            throw new InterruptedException();
-        }
         HashMap<String, String> cfg = new HashMap<>();
         cfg.put("model", "true");
         Context ctx = new Context(cfg);
