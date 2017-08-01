@@ -166,7 +166,9 @@ public class AutomataParallelComposition {
                     if (edge1.hasMetaData("guard")) guard.mergeWith((Guard) edge1.getMetaData("guard"));
                     if (edge2.hasMetaData("guard")) guard.mergeWith((Guard) edge2.getMetaData("guard"));
                     Map<String,Object> metaData = new HashMap<>();
-                    metaData.put("guard",guard);
+                    if (guard.hasData()) {
+                        metaData.put("guard", guard);
+                    }
                     automaton.addEdge(action, from, to,metaData);
 
                 }

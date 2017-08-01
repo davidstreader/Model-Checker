@@ -82,7 +82,6 @@ public class Guard implements Serializable{
      * @return The variable list as a string, or an empty string if none exists.
      */
     public String getVarStr() {
-        if (guard == null) return "";
         Set<String> vars = new VariableCollector().getVariables(guard,null).keySet();
         variables.keySet().removeIf(s -> !vars.contains(s.substring(1)));
         if (variables.isEmpty() || hiddenVariables.isEmpty()) return "";
@@ -153,7 +152,7 @@ public class Guard implements Serializable{
         hiddenVariables.removeAll(variables.keySet());
     }
     @JsonIgnore
-    boolean hasData() {
+    public boolean hasData() {
         return guard != null || !variables.isEmpty() || !next.isEmpty();
     }
     public Guard copy() {
