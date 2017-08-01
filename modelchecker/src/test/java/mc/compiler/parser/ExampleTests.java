@@ -1,5 +1,8 @@
 package mc.compiler.parser;
 
+import com.microsoft.z3.BitVecExpr;
+import com.microsoft.z3.BoolExpr;
+import com.microsoft.z3.Context;
 import mc.compiler.ast.*;
 import mc.exceptions.CompilationException;
 import mc.util.expr.*;
@@ -9,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.fail;
 
@@ -16,6 +20,9 @@ import static org.junit.Assert.fail;
  * Created by sheriddavi on 8/02/17.
  */
 public class ExampleTests extends ParserTests {
+
+    public ExampleTests() throws InterruptedException {
+    }
 
     @Test
     public void correctSimpleTest_1() throws CompilationException, InterruptedException {
@@ -305,11 +312,11 @@ public class ExampleTests extends ParserTests {
         List<LocalProcessNode> localProcesses = new ArrayList<>();
         IndexNode index = new IndexNode("$i", new RangeNode(1, 3, null), null, null);
         RangesNode range = new RangesNode(new ArrayList<>(Collections.singletonList(index)), null);
-
-        LessThanOperator expr1 = new LessThanOperator(new VariableOperand("$i"), new IntegerOperand(3));
+        Context context = ExpressionSimplifier.getContext();
+        BoolExpr expr1 = context.mkBVSLT(context.mkBVConst("$i",32), context.mkBV(3,32));
         SequenceNode sequence1 = constructSequenceNode(new String[]{"coin"}, new IdentifierNode("C[$v1]", null));
         IfStatementNode branch1 = new IfStatementNode(expr1, sequence1, null);
-        EqualityOperator expr2 = new EqualityOperator(new VariableOperand("$i"), new IntegerOperand(3));
+        BoolExpr expr2 = context.mkEq(context.mkBVConst("$i",32), context.mkBV(3,32));
         SequenceNode sequence2 = constructSequenceNode(new String[]{"coin"}, new IdentifierNode("C[1]", null));
         IfStatementNode branch2 = new IfStatementNode(expr2, sequence2, null);
         ChoiceNode choice = constructChoiceNode(branch1, branch2);
@@ -333,12 +340,13 @@ public class ExampleTests extends ParserTests {
 
         List<LocalProcessNode> localProcesses = new ArrayList<>();
 
-        VariableOperand i = new VariableOperand("$i");
-        VariableOperand j = new VariableOperand("$j");
-        EqualityOperator expr1 = new EqualityOperator(i, j);
+        Context context = ExpressionSimplifier.getContext();
+        BitVecExpr i = context.mkBVConst("$i",32);
+        BitVecExpr j = context.mkBVConst("$i",32);
+        BoolExpr expr1 = context.mkEq(i, j);
         SequenceNode sequence1 = constructSequenceNode(new String[]{"open", "close"}, new IdentifierNode("L[$j]", null));
         IfStatementNode branch1 = new IfStatementNode(expr1, sequence1, null);
-        NotEqualOperator expr2 = new NotEqualOperator(i, j);
+        BoolExpr expr2 = context.mkNot(context.mkEq(i, j));
         SequenceNode sequence2 = constructSequenceNode(new String[]{"error"}, new IdentifierNode("Lock", null));
         IfStatementNode branch2 = new IfStatementNode(expr2, sequence2, null);
         ChoiceNode choice = constructChoiceNode(branch1, branch2);
@@ -374,12 +382,13 @@ public class ExampleTests extends ParserTests {
         ForAllStatementNode forall = new ForAllStatementNode(range, root1, null);
         expected.add(new ProcessNode("automata", "Workers", forall, emptyLocal, null));
 
+        Context context = ExpressionSimplifier.getContext();
         // Farmer
         List<LocalProcessNode> localProcesses = new ArrayList<>();
-        LessThanOperator expr1 = new LessThanOperator(new VariableOperand("$i"), new IntegerOperand(3));
+        BoolExpr expr1 = context.mkBVSLT(context.mkBVConst("$i",32), context.mkBV(3,32));
         SequenceNode sequence2 = constructSequenceNode(new String[]{"[$i].getTask"}, new IdentifierNode("F[$v1]", null));
         IfStatementNode branch1 = new IfStatementNode(expr1, sequence2, null);
-        GreaterThanEqOperator expr2 = new GreaterThanEqOperator(new VariableOperand("$i"), new IntegerOperand(3));
+        BoolExpr expr2 = context.mkBVSGT(context.mkBVConst("$i",32), context.mkBV(3,32));
         SequenceNode sequence3 = constructSequenceNode(new String[]{"[$i].getTask"}, new IdentifierNode("F[1]", null));
         IfStatementNode branch2 = new IfStatementNode(expr2, sequence3, null);
         ChoiceNode choice = constructChoiceNode(branch1, branch2);
@@ -389,7 +398,6 @@ public class ExampleTests extends ParserTests {
         // Farm
         CompositeNode composite = constructCompositeNode(new IdentifierNode("Farmer", null), new IdentifierNode("Workers", null));
         expected.add(new ProcessNode("automata", "Farm", composite, emptyLocal, null));
-
 
         if(!expected.equals(nodes)){
             fail("expecting process node lists to be equivalent");

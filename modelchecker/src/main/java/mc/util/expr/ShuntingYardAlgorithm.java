@@ -1,5 +1,10 @@
 package mc.util.expr;
 
+import com.microsoft.z3.BitVecExpr;
+import com.microsoft.z3.BoolExpr;
+import com.microsoft.z3.Context;
+import com.microsoft.z3.Expr;
+
 import java.util.*;
 
 public class ShuntingYardAlgorithm {
@@ -7,12 +12,14 @@ public class ShuntingYardAlgorithm {
     private Map<String, Integer> precedenceMap;
 
     private Stack<String> operatorStack;
-    private Stack<Expression> output;
+    private Stack<Expr> output;
 
     private int index;
     private String current;
+    private Context context;
 
-    public ShuntingYardAlgorithm(){
+    public ShuntingYardAlgorithm() throws InterruptedException {
+        this.context = ExpressionSimplifier.getContext();
         setupPrecedenceMap();
         reset();
     }
@@ -48,22 +55,22 @@ public class ShuntingYardAlgorithm {
         output = new Stack<>();
         index = 0;
     }
-    public Expression convert(String expression){
+    public Expr convert(String expression) throws InterruptedException {
         reset();
         char[] characters = expression.toCharArray();
 
         while(index < expression.length()){
             String result = parse(characters);
             if(Objects.equals(result, "boolean")){
-                BooleanOperand op = new BooleanOperand(Boolean.parseBoolean(current));
+                BoolExpr op = context.mkBool(Boolean.parseBoolean(current));
                 output.push(op);
             }
             if(Objects.equals(result, "integer")){
-                IntegerOperand op = new IntegerOperand(Integer.parseInt(current));
+                BitVecExpr op = ExpressionSimplifier.mkBV(Integer.parseInt(current));
                 output.push(op);
             }
             else if(Objects.equals(result, "variable")){
-                VariableOperand op = new VariableOperand(current);
+                BitVecExpr op = context.mkBVConst(current,32);
                 output.push(op);
             }
             else if(Objects.equals(result, "operator")){
@@ -72,12 +79,12 @@ public class ShuntingYardAlgorithm {
                     int nextPrecedence = precedenceMap.get(operatorStack.peek());
                     if(precedence <= nextPrecedence){
                         String operator = operatorStack.pop();
-                        Expression rhs = output.pop();
-                        Operator op;
+                        Expr rhs = output.pop();
+                        Expr op;
                         if (rightOperators.contains(operator)) {
                             op = constructRightOperator(operator, rhs);
                         } else {
-                            Expression lhs = output.pop();
+                            Expr lhs = output.pop();
                             op = constructBothOperator(operator, lhs, rhs);
                         }
                         output.push(op);
@@ -100,12 +107,12 @@ public class ShuntingYardAlgorithm {
                     if(operator.equals("(")){
                         break;
                     }
-                    Expression rhs = output.pop();
-                    Operator op;
+                    Expr rhs = output.pop();
+                    Expr op;
                     if (rightOperators.contains(operator)) {
                         op = constructRightOperator(operator, rhs);
                     } else {
-                        Expression lhs = output.pop();
+                        Expr lhs = output.pop();
                         op = constructBothOperator(operator, lhs, rhs);
                     }
                     output.push(op);
@@ -115,12 +122,12 @@ public class ShuntingYardAlgorithm {
 
         while(!operatorStack.isEmpty()){
             String operator = operatorStack.pop();
-            Expression rhs = output.pop();
-            Operator op;
+            Expr rhs = output.pop();
+            Expr op;
             if (rightOperators.contains(operator)) {
                 op = constructRightOperator(operator, rhs);
             } else {
-                Expression lhs = output.pop();
+                Expr lhs = output.pop();
                 op = constructBothOperator(operator, lhs, rhs);
             }
             output.push(op);
@@ -128,53 +135,53 @@ public class ShuntingYardAlgorithm {
 
         return output.pop();
     }
-    private UnaryOperator constructRightOperator(String operator, Expression rhs) {
+    private Expr constructRightOperator(String operator, Expr rhs) {
         switch(operator) {
             case "bitnot":
-                return new BitNotOperator(rhs);
+                return context.mkBVNot((BitVecExpr) rhs);
             case "not":
-                return new NotOperator(rhs);
+                return context.mkNot((BoolExpr) rhs);
         }
         return null;
     }
-    private BinaryOperator constructBothOperator(String operator, Expression lhs, Expression rhs){
+    private Expr constructBothOperator(String operator, Expr lhs, Expr rhs){
         switch(operator){
             case "or":
-                return new OrOperator(lhs, rhs);
+                return context.mkOr((BoolExpr) lhs,(BoolExpr) rhs);
             case "bitor":
-                return new BitOrOperator(lhs, rhs);
+                return context.mkBVOR((BitVecExpr) lhs,(BitVecExpr) rhs);
             case "exclor":
-                return new ExclOrOperator(lhs, rhs);
+                return context.mkXor((BoolExpr) lhs,(BoolExpr) rhs);
             case "and":
-                return new AndOperator(lhs, rhs);
+                return context.mkAnd((BoolExpr) lhs,(BoolExpr) rhs);
             case "bitand":
-                return new BitAndOperator(lhs, rhs);
+                return context.mkBVAND((BitVecExpr) lhs,(BitVecExpr) rhs);
             case "eq":
-                return new EqualityOperator(lhs, rhs);
+                return context.mkEq(lhs, rhs);
             case "noteq":
-                return new NotEqualOperator(lhs, rhs);
+                return context.mkNot(context.mkEq(lhs,rhs));
             case "lt":
-                return new LessThanOperator(lhs, rhs);
+                return context.mkBVSLT((BitVecExpr) lhs,(BitVecExpr) rhs);
             case "lteq":
-                return new LessThanEqOperator(lhs, rhs);
+                return context.mkBVSLE((BitVecExpr) lhs,(BitVecExpr) rhs);
             case "gt":
-                return new GreaterThanOperator(lhs, rhs);
+                return context.mkBVSGT((BitVecExpr) lhs,(BitVecExpr) rhs);
             case "gteq":
-                return new GreaterThanEqOperator(lhs, rhs);
+                return context.mkBVSGE((BitVecExpr) lhs,(BitVecExpr) rhs);
             case "lshift":
-                return new LeftShiftOperator(lhs, rhs);
+                return context.mkBVASHR((BitVecExpr) lhs,(BitVecExpr) rhs);
             case "rshift":
-                return new RightShiftOperator(lhs, rhs);
+                return context.mkBVSHL((BitVecExpr) lhs,(BitVecExpr) rhs);
             case "add":
-                return new AdditionOperator(lhs, rhs);
+                return context.mkBVAdd((BitVecExpr) lhs,(BitVecExpr) rhs);
             case "sub":
-                return new SubtractionOperator(lhs, rhs);
+                return context.mkBVSub((BitVecExpr) lhs,(BitVecExpr) rhs);
             case "mul":
-                return new MultiplicationOperator(lhs, rhs);
+                return context.mkBVMul((BitVecExpr) lhs,(BitVecExpr) rhs);
             case "div":
-                return new DivisionOperator(lhs, rhs);
+                return context.mkBVSDiv((BitVecExpr) lhs,(BitVecExpr) rhs);
             case "mod":
-                return new ModuloOperator(lhs, rhs);
+                return context.mkBVSMod((BitVecExpr) lhs,(BitVecExpr) rhs);
         }
 
         return null;

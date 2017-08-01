@@ -8,7 +8,10 @@ import static org.junit.Assert.fail;
 
 public class IdentifierTests extends ParserTests {
 
-	@Test
+    public IdentifierTests() throws InterruptedException {
+    }
+
+    @Test
 	public void basicIdentifierTest() throws CompilationException, InterruptedException {
 		String input = "automata Test = (a -> STOP). automata Test2 = Test.";
 		ProcessNode node = constructProcessNode(input, 1);

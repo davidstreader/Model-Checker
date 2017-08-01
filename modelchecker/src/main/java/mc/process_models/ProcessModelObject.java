@@ -1,5 +1,8 @@
 package mc.process_models;
 
+import com.microsoft.z3.BoolExpr;
+import com.microsoft.z3.Expr;
+import com.microsoft.z3.Z3Object;
 import com.rits.cloning.Cloner;
 import lombok.Getter;
 import mc.exceptions.CompilationException;
@@ -55,6 +58,10 @@ public abstract class ProcessModelObject implements Serializable {
     }
 
     public ProcessModelObject copy() throws CompilationException {
-        return new Cloner().deepClone(this);
+        Cloner cloner = new Cloner();
+        cloner.dontClone(Z3Object.class);
+        cloner.dontClone(Expr.class);
+        cloner.dontClone(BoolExpr.class);
+        return cloner.deepClone(this);
     }
 }

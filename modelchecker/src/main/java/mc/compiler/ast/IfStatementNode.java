@@ -1,42 +1,49 @@
 package mc.compiler.ast;
 
+import com.microsoft.z3.BoolExpr;
+import com.microsoft.z3.Expr;
+import lombok.ToString;
 import mc.util.Location;
-import mc.util.expr.Expression;
+import mc.util.expr.ExpressionSimplifier;
+import org.apache.xpath.operations.Bool;
 
+import static mc.util.expr.ExpressionSimplifier.getContext;
+
+@ToString
 public class IfStatementNode extends ASTNode {
 
-	// fields
-	private Expression condition;
-	private ASTNode trueBranch;
-	private ASTNode falseBranch;
+    // fields
+    private BoolExpr condition;
+    private ASTNode trueBranch;
+    private ASTNode falseBranch;
 
-	public IfStatementNode(Expression condition, ASTNode trueBranch, Location location){
-		super(location);
-		this.condition = condition;
-		this.trueBranch = trueBranch;
-		falseBranch = null;
-	}
+    public IfStatementNode(BoolExpr condition, ASTNode trueBranch, Location location){
+        super(location);
+        this.condition = condition;
+        this.trueBranch = trueBranch;
+        falseBranch = null;
+    }
 
-	public IfStatementNode(Expression condition, ASTNode trueBranch, ASTNode falseBranch, Location location){
-		super(location);
-		this.condition = condition;
-		this.trueBranch = trueBranch;
-		this.falseBranch = falseBranch;
-	}
+    public IfStatementNode(BoolExpr condition, ASTNode trueBranch, ASTNode falseBranch, Location location){
+        super(location);
+        this.condition = condition;
+        this.trueBranch = trueBranch;
+        this.falseBranch = falseBranch;
+    }
 
-	public Expression getCondition(){
-		return condition;
-	}
+    public BoolExpr getCondition(){
+        return condition;
+    }
 
-	public ASTNode getTrueBranch(){
-		return trueBranch;
-	}
+    public ASTNode getTrueBranch(){
+        return trueBranch;
+    }
 
-	public ASTNode getFalseBranch(){
-		return falseBranch;
-	}
+    public ASTNode getFalseBranch(){
+        return falseBranch;
+    }
 
-	public boolean hasFalseBranch(){ return falseBranch != null; }
+    public boolean hasFalseBranch(){ return falseBranch != null; }
 
     public boolean equals(Object obj){
         boolean result = super.equals(obj);
@@ -48,8 +55,12 @@ public class IfStatementNode extends ASTNode {
         }
         if(obj instanceof IfStatementNode){
             IfStatementNode node = (IfStatementNode)obj;
-            if(!condition.equals(node.getCondition())){
-                return false;
+            try {
+                if(getContext().mkEq(condition,node.getCondition()).simplify().isFalse()){
+                    return false;
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
             if(!trueBranch.equals(node.getTrueBranch())){
                 return false;

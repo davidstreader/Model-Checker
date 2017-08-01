@@ -1,10 +1,12 @@
 package mc.compiler.ast;
 
+import lombok.ToString;
 import mc.util.Location;
 
 /**
  * Created by sheriddavi on 1/02/17.
  */
+@ToString
 public class ProcessRootNode extends ASTNode {
 
     // fields

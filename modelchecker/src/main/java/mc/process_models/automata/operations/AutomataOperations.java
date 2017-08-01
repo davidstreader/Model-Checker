@@ -1,8 +1,8 @@
 package mc.process_models.automata.operations;
 
+import com.microsoft.z3.Expr;
 import mc.exceptions.CompilationException;
 import mc.process_models.automata.Automaton;
-import mc.util.expr.Expression;
 
 import java.util.List;
 import java.util.Map;
@@ -36,7 +36,7 @@ public class AutomataOperations {
         return processedAutomaton;
     }
 
-    public Automaton abstraction(Automaton automaton, boolean isFair, boolean prune) throws CompilationException {
+    public Automaton abstraction(Automaton automaton, boolean isFair, boolean prune) throws CompilationException, InterruptedException {
         Automaton processedAutomaton = automaton;
         if(prune){
             prune(processedAutomaton);
@@ -47,13 +47,13 @@ public class AutomataOperations {
         return processedAutomaton;
     }
 
-    public Automaton prune(Automaton automaton) throws CompilationException {
+    public Automaton prune(Automaton automaton) throws CompilationException, InterruptedException {
         Automaton processedAutomaton = pruning.performPruning(automaton);
         processedAutomaton = removeUnreachableNodes(processedAutomaton);
         return processedAutomaton;
     }
 
-    public Automaton simplification(Automaton automaton, Map<String, Expression> replacements) throws CompilationException {
+    public Automaton simplification(Automaton automaton, Map<String, Expr> replacements) throws CompilationException, InterruptedException {
         return bisimulation.performSimplification(automaton, replacements);
     }
 

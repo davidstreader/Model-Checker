@@ -10,6 +10,9 @@ import static junit.framework.TestCase.fail;
 
 public class SequenceTests extends ExpanderTests {
 
+    public SequenceTests() throws InterruptedException {
+    }
+
     @Test
     public void correctSequenceToTerminalTest_1() throws InterruptedException {
         String input = "automata Test = (a -> STOP).";

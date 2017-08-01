@@ -14,6 +14,9 @@ import static junit.framework.TestCase.fail;
  */
 public class SetTests extends ExpanderTests {
 
+    public SetTests() throws InterruptedException {
+    }
+
     @Test
     public void correctSetExpansionTest_1() throws InterruptedException {
         String input = "automata Test = ([i:{[1..2]}] -> STOP).";

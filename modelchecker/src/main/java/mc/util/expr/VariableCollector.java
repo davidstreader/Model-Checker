@@ -1,33 +1,22 @@
 package mc.util.expr;
 
+import com.microsoft.z3.Expr;
+
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
 public class VariableCollector {
 
-    private Stream<String> collectVariables(Expression expression){
-        if(expression instanceof VariableOperand){
-            return Stream.of(((VariableOperand)expression).getValue());
+    private Stream<String> collectVariables(Expr expression){
+        if(expression.isConst()){
+            return Stream.of(expression.toString());
         }
-        else if(expression instanceof BinaryOperator){
-            return collectVariables((BinaryOperator)expression);
-        }
-        else if(expression instanceof UnaryOperator){
-            return collectVariables((UnaryOperator)expression);
-        }
-        return Stream.empty();
+        return Arrays.stream(expression.getArgs()).map(this::collectVariables).flatMap(s->s);
     }
 
-    private Stream<String> collectVariables(BinaryOperator expression){
-        return Stream.concat(collectVariables(expression.getLeftHandSide()),collectVariables(expression.getRightHandSide()));
-    }
-
-    private Stream<String> collectVariables(UnaryOperator expression){
-        return collectVariables(expression.getRightHandSide());
-    }
-
-    public Map<String, Integer> getVariables(Expression expression, Map<String, Object> variableMap) {
+    public Map<String, Integer> getVariables(Expr expression, Map<String, Object> variableMap) {
         //Get just the variables from the map
         HashMap<String, Integer> varMap = new HashMap<>();
         if (variableMap != null) {

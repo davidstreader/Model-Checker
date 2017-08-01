@@ -11,6 +11,9 @@ import static org.junit.Assert.fail;
 
 public class SetIndexTests extends ExpanderTests {
 
+    public SetIndexTests() throws InterruptedException {
+    }
+
     @Test
     public void correctSetIndexExpansionTest_1() throws InterruptedException {
         String input = "automata Test = ([{a}] -> STOP).";

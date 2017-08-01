@@ -17,6 +17,9 @@ import static junit.framework.TestCase.fail;
  */
 public class IndexTests extends ParserTests {
 
+    public IndexTests() throws InterruptedException {
+    }
+
     @Test
     public void correctIndexRangeTest_1() throws CompilationException, InterruptedException {
         String input = "automata Test = ([1..2] -> STOP).";

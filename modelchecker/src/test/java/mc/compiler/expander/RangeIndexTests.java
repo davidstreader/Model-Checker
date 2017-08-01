@@ -11,7 +11,10 @@ import static org.junit.Assert.fail;
 
 public class RangeIndexTests extends ExpanderTests {
 
-	@Test
+    public RangeIndexTests() throws InterruptedException {
+    }
+
+    @Test
 	public void correctRangeIndexExpansionTest_1() throws InterruptedException {
 		String input = "automata Test = ([1..2] -> STOP).";
 		ProcessNode node = constructProcessNode(input);

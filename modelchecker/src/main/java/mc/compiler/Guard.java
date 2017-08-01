@@ -1,14 +1,20 @@
 package mc.compiler;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.microsoft.z3.BoolExpr;
+import com.microsoft.z3.Expr;
 import lombok.*;
 import mc.exceptions.CompilationException;
 import mc.process_models.automata.AutomatonNode;
-import mc.util.expr.*;
+import mc.util.expr.ExpressionEvaluator;
+import mc.util.expr.ExpressionPrinter;
+import mc.util.expr.VariableCollector;
 
 import java.io.Serializable;
 import java.util.*;
 import java.util.regex.Pattern;
+
+import static mc.util.expr.ExpressionSimplifier.*;
 
 @Setter
 @AllArgsConstructor
@@ -18,7 +24,7 @@ import java.util.regex.Pattern;
 public class Guard implements Serializable{
     //Don't serialize these getters as we serialize the below methods instead.
     @Getter(onMethod = @__(@JsonIgnore))
-    Expression guard;
+    BoolExpr guard;
     @Getter(onMethod = @__(@JsonIgnore))
     Map<String,Integer> variables = new HashMap<>();
     @Getter(onMethod = @__(@JsonIgnore))
@@ -34,43 +40,42 @@ public class Guard implements Serializable{
      */
     public String getGuardStr() throws CompilationException {
         if (guard == null || hiddenVariables.isEmpty()) return "";
-        return rm$(new ExpressionPrinter().printExpression(guard, Collections.emptyMap()));
+        return rm$(ExpressionPrinter.printExpression(guard, Collections.emptyMap()));
     }
-    public String getHiddenGuardStr() throws CompilationException {
+    public String getHiddenGuardStr() throws CompilationException, InterruptedException {
         if (guard == null || hiddenVariables.isEmpty()) return "";
-        List<Expression> andList = new ArrayList<>();
+        List<BoolExpr> andList = new ArrayList<>();
         collectAnds(andList,guard);
         //If there are no ands in the expression, use the root guard.
         if (andList.isEmpty()) andList.add(guard);
         andList.removeIf(s -> !containsHidden(s));
         if (andList.isEmpty()) return "";
-        Expression combined = andList.remove(0);
-        while (!andList.isEmpty()) {
-            combined = new AndOperator(combined,andList.remove(0));
-        }
-        return rm$(new ExpressionPrinter().printExpression(combined, Collections.emptyMap()));
+        Expr combined = getContext().mkAnd(andList.toArray(new BoolExpr[0]));
+        return rm$(ExpressionPrinter.printExpression(combined, Collections.emptyMap()));
     }
-    private void collectAnds(List<Expression> andList, Expression ex) {
-        if (ex instanceof AndOperator) {
-            andList.add(((AndOperator) ex).getLeftHandSide());
-            andList.add(((AndOperator) ex).getRightHandSide());
-        }
-        if (ex instanceof UnaryOperator) collectAnds(andList,((UnaryOperator) ex).getRightHandSide());
-        if (ex instanceof BinaryOperator) {
-            collectAnds(andList,((BinaryOperator) ex).getLeftHandSide());
-            collectAnds(andList,((BinaryOperator) ex).getRightHandSide());
+    private void collectAnds(List<BoolExpr> andList, Expr ex) {
+
+        if (ex.isAnd()) {
+            for (Expr expr : ex.getArgs()) {
+                andList.add((BoolExpr) expr);
+            }
+        } else {
+            for (Expr expr : ex.getArgs()) {
+                collectAnds(andList,expr);
+            }
         }
     }
 
-    private boolean containsHidden(Expression ex) {
+    private boolean containsHidden(Expr ex) {
         //If there is an and inside this expression, then don't check its variables as it is added on its own.
-        if (ex instanceof AndOperator) return false;
-        if (ex instanceof UnaryOperator) return containsHidden(((UnaryOperator) ex).getRightHandSide());
-        if (ex instanceof BinaryOperator) {
-            return containsHidden(((BinaryOperator) ex).getRightHandSide()) || containsHidden(((BinaryOperator) ex).getLeftHandSide());
+        if (ex.isAnd()) return false;
+        if (ex.isConst()) {
+            return hiddenVariables.contains(ex.toString().substring(1));
         }
-        //Substring away the $ as the hidden map does not have them.
-        return ex instanceof VariableOperand && hiddenVariables.contains(((VariableOperand) ex).getValue().substring(1));
+        for (Expr expr : ex.getArgs()) {
+            if (containsHidden(expr)) return true;
+        }
+        return false;
     }
     /**
      * Get the variable list as a string, used for serialization.
@@ -103,7 +108,7 @@ public class Guard implements Serializable{
      * @param globalVariableMap The global variable map
      * @param identMap A map from identifiers to a list of the variables in them (L[$i] = L -> [$i])
      */
-    public void parseNext(String identifier, Map<String, Expression> globalVariableMap, Map<String, List<String>> identMap) throws CompilationException, InterruptedException {
+    public void parseNext(String identifier, Map<String, Expr> globalVariableMap, Map<String, List<String>> identMap) throws CompilationException, InterruptedException {
         //Check that there are actually variables in the identifier
         if (!identifier.contains("[")) return;
         //Get a list of all variables
@@ -113,7 +118,7 @@ public class Guard implements Serializable{
         //Loop through the ranges and variables
         for (String var : vars) {
             if (globalVariableMap.containsKey(var)) {
-                String printed = new ExpressionPrinter().printExpression(globalVariableMap.get(var));
+                String printed = ExpressionPrinter.printExpression(globalVariableMap.get(var));
                 String variable;
                 if (new ExpressionEvaluator().isExecutable(globalVariableMap.get(var))) {
                     variable = varNames.get(vars.indexOf(var));
@@ -153,27 +158,27 @@ public class Guard implements Serializable{
     public Guard copy() {
         return new Guard(guard,variables,next,nextMap,shouldDisplay,hiddenVariables);
     }
-    public Guard(Expression guard, Map<String,Integer> variables, Set<String> hiddenVariables) {
+    public Guard(BoolExpr guard, Map<String,Integer> variables, Set<String> hiddenVariables) {
         setGuard(guard);
         setVariables(variables);
         setHiddenVariables(hiddenVariables);
     }
 
-    public boolean equals(Object o, Map<String, Expression> replacements, AutomatonNode first, AutomatonNode second) throws CompilationException {
+    public boolean equals(Object o, Map<String, Expr> replacements, AutomatonNode first, AutomatonNode second) throws CompilationException, InterruptedException {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Guard guard1 = (Guard) o;
         if (hiddenVariables.isEmpty() && guard1.hiddenVariables.isEmpty()) return true;
-        Expression exp1 = ExpressionSimplifier.substitute(guard.copy(), replacements);
-        Expression exp2 = ExpressionSimplifier.substitute(guard1.guard.copy(), replacements);
+        Expr exp1 = substitute(guard, replacements);
+        Expr exp2 = substitute(guard1.guard, replacements);
         return NodeUtils.findLoopsAndPathToRoot(first).map(NodeUtils::collectVariables)
-            .map(s -> ExpressionSimplifier.substitute(exp1.copy(), s))
-            .allMatch(s -> ExpressionSimplifier.isSolvable(s, Collections.emptyMap())) &&
+            .map(s -> substitute(exp1, s))
+            .allMatch(s -> isSolvable((BoolExpr) s, Collections.emptyMap())) &&
             NodeUtils.findLoopsAndPathToRoot(second)
                 .map(NodeUtils::collectVariables)
-                .map(s -> ExpressionSimplifier.substitute(exp2.copy(), s))
-                .allMatch(s -> ExpressionSimplifier.isSolvable(s, Collections.emptyMap())) &&
-            ExpressionSimplifier.equate(this, guard1);
+                .map(s -> substitute(exp2, s))
+                .allMatch(s -> isSolvable((BoolExpr) s, Collections.emptyMap())) &&
+            equate(this, guard1);
     }
     @Override
     public int hashCode() {

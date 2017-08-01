@@ -18,6 +18,9 @@ abstract class ParserTests extends TestBase {
     private final Lexer lexer = new Lexer();
     private final Parser parser = new Parser();
 
+    public ParserTests() throws InterruptedException {
+    }
+
     ProcessNode constructProcessNode(String code, int index) throws InterruptedException {
         try {
             List<Token> tokens = lexer.tokenise(code);

@@ -1,5 +1,8 @@
 package mc.compiler.ast;
 
+import com.microsoft.z3.BoolExpr;
+import com.microsoft.z3.Expr;
+import com.microsoft.z3.Z3Object;
 import com.rits.cloning.Cloner;
 import lombok.Getter;
 import mc.util.Location;
@@ -68,6 +71,9 @@ public abstract class ASTNode implements Serializable {
 
 	public ASTNode copy(){
         Cloner cloner = new Cloner();
+        cloner.dontClone(Z3Object.class);
+        cloner.dontClone(Expr.class);
+        cloner.dontClone(BoolExpr.class);
         return cloner.deepClone(this);
 	}
 

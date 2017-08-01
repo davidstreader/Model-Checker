@@ -1,9 +1,10 @@
 package mc.compiler.ast;
 
+import lombok.ToString;
 import mc.util.Location;
 
 import java.util.List;
-
+@ToString
 public class RangesNode extends ASTNode {
 
 	// fields

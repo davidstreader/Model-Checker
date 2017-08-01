@@ -1,11 +1,13 @@
 package mc.compiler;
 
+import com.microsoft.z3.*;
 import mc.Constant;
 import mc.compiler.ast.*;
 import mc.compiler.token.*;
 import mc.exceptions.CompilationException;
 import mc.util.Location;
-import mc.util.expr.*;
+import mc.util.expr.ExpressionEvaluator;
+import mc.util.expr.ExpressionSimplifier;
 
 import java.util.*;
 
@@ -19,7 +21,7 @@ public class Parser {
     private Set<String> processIdentifiers;
     private List<OperationNode> operations;
     private List<OperationNode> equations;
-    private Map<String, Expression> variableMap;
+    private Map<String, Expr> variableMap;
     private Map<String, ASTNode> constantMap;
     private List<IndexNode> actionRanges;
     private Set<String> definedVariables;
@@ -29,7 +31,7 @@ public class Parser {
     private ExpressionParser expressionParser;
     private ExpressionEvaluator expressionEvaluator;
 
-    public Parser() {
+    public Parser() throws InterruptedException {
         processes = new ArrayList<>();
         processIdentifiers = new HashSet<>();
         operations = new ArrayList<>();
@@ -799,11 +801,11 @@ public class Parser {
             throw constructException("expecting to parse \"if\" but received \"" + error.toString() + "\"", error.getLocation());
         }
         String expr = parseExpression();
-        Expression expression;
+        BoolExpr expression;
         if (variableMap.containsKey(expr)) {
-            expression = variableMap.get(expr);
+            expression = (BoolExpr) variableMap.get(expr);
         } else {
-            expression = Expression.constructExpression(expr);
+            expression = (BoolExpr) ExpressionSimplifier.constructExpression(expr);
         }
 
         // ensure that the next token is a 'then' token
@@ -833,11 +835,11 @@ public class Parser {
             throw constructException("expecting to parse \"when\" but received \"" + error.toString() + "\"", error.getLocation());
         }
         String expr = parseExpression();
-        Expression expression;
+        BoolExpr expression;
         if (variableMap.containsKey(expr)) {
-            expression = variableMap.get(expr);
+            expression = (BoolExpr) variableMap.get(expr);
         } else {
-            expression = Expression.constructExpression(expr);
+            expression = (BoolExpr) ExpressionSimplifier.constructExpression(expr);
         }
         ASTNode trueBranch = parseLocalProcess();
         return new IfStatementNode(expression, trueBranch, constructLocation(start));
@@ -1255,18 +1257,20 @@ public class Parser {
     private String parseExpression() throws CompilationException, InterruptedException {
         List<String> exprTokens = new ArrayList<>();
         parseExpression(exprTokens);
-
-        Expression expression = expressionParser.parseExpression(exprTokens);
+        Expr expression = expressionParser.parseExpression(exprTokens);
         if (expressionEvaluator.isExecutable(expression)) {
-            Expression simp = ExpressionSimplifier.simplify(expression, Collections.emptyMap());
-            if (simp instanceof BooleanOperand) {
-                return ((BooleanOperand) simp).getValue() + "";
+            Expr simp = expression.simplify();
+            if (simp.isTrue()) {
+                return "true";
             }
-            if (simp instanceof IntegerOperand) {
-                return ((IntegerOperand) simp).getValue() + "";
+            if (simp.isFalse()) {
+                return "false";
             }
-        } else if (expression instanceof VariableOperand) {
-            return ((VariableOperand) expression).getValue();
+            if (simp instanceof BitVecNum) {
+                return ((IntNum)ExpressionSimplifier.getContext().mkBV2Int(((BitVecNum) simp),true).simplify()).getInt()+"";
+            }
+        } else if (expression.isConst()) {
+            return expression.toString();
         }
 
         String variable = nextVariableId();
@@ -1394,7 +1398,7 @@ public class Parser {
         List<String> exprTokens = new ArrayList<>();
         parseSimpleExpression(exprTokens);
 
-        Expression expression = expressionParser.parseExpression(exprTokens);
+        Expr expression = expressionParser.parseExpression(exprTokens);
         return expressionEvaluator.evaluateExpression(expression, new HashMap<>());
     }
 
@@ -1659,27 +1663,28 @@ public class Parser {
         private List<String> tokens;
         private Map<String, Integer> precedenceMap;
         private Stack<String> operatorStack;
-        private Stack<Expression> output;
+        private Stack<Expr> output;
+        private Context context = ExpressionSimplifier.getContext();
 
-        public ExpressionParser() {
+        public ExpressionParser() throws InterruptedException {
             tokens = new ArrayList<>();
             precedenceMap = constructPrecedenceMap();
             operatorStack = new Stack<>();
             output = new Stack<>();
         }
 
-        public Expression parseExpression(List<String> tokens) {
+        public Expr parseExpression(List<String> tokens) throws InterruptedException {
             reset();
             this.tokens = tokens;
 
             for (String token : tokens) {
                 // check if the current token is an integer
                 if (Character.isDigit(token.charAt(0))) {
-                    output.push(new IntegerOperand(Integer.parseInt(token)));
+                    output.push(ExpressionSimplifier.mkBV(Integer.parseInt(token)));
                 }
                 // check if the current token is a variable
                 else if (token.charAt(0) == '$') {
-                    output.push(new VariableOperand(token));
+                    output.push(context.mkBVConst(token,32));
                 }
                 // check if token is an open parenthesis
                 else if (token.equals("(")) {
@@ -1718,7 +1723,7 @@ public class Parser {
             return output.pop();
         }
 
-        private Expression constructOperator(String operator) {
+        private Expr constructOperator(String operator) {
             if (operator.charAt(0) == '#') {
                 return constructUnaryOperator(operator);
             }
@@ -1726,62 +1731,62 @@ public class Parser {
             return constructBinaryOperator(operator);
         }
 
-        private Expression constructUnaryOperator(String operator) {
-            Expression operand = output.pop();
+        private Expr constructUnaryOperator(String operator) {
+            Expr operand = output.pop();
             switch (operator) {
                 case "#+":
-                    return new PositiveOperator(operand);
+                    return operand;
                 case "#-":
-                    return new NegativeOperator(operand);
+                    return context.mkBVNeg((BitVecExpr) operand);
                 case "#!":
-                    return new NotOperator(operand);
+                    return context.mkNot((BoolExpr) operand);
                 case "#~":
-                    return new BitNotOperator(operand);
+                    return context.mkBVNot((BitVecExpr) operand);
             }
 
             return null;
         }
 
-        private Expression constructBinaryOperator(String operator) {
-            Expression rhs = output.pop();
-            Expression lhs = output.pop();
+        private Expr constructBinaryOperator(String operator) {
+            Expr rhs = output.pop();
+            Expr lhs = output.pop();
             switch (operator) {
                 case "||":
-                    return new OrOperator(lhs, rhs);
+                    return context.mkOr((BoolExpr) lhs,(BoolExpr) rhs);
                 case "|":
-                    return new BitOrOperator(lhs, rhs);
+                    return context.mkBVOR((BitVecExpr) lhs,(BitVecExpr) rhs);
                 case "^":
-                    return new ExclOrOperator(lhs, rhs);
+                    return context.mkXor((BoolExpr) lhs,(BoolExpr) rhs);
                 case "&&":
-                    return new AndOperator(lhs, rhs);
+                    return context.mkAnd((BoolExpr) lhs,(BoolExpr) rhs);
                 case "&":
-                    return new BitAndOperator(lhs, rhs);
+                    return context.mkBVAND((BitVecExpr) lhs,(BitVecExpr) rhs);
                 case "==":
-                    return new EqualityOperator(lhs, rhs);
+                    return context.mkEq(lhs, rhs);
                 case "!=":
-                    return new NotEqualOperator(lhs, rhs);
+                    return context.mkNot(context.mkEq(lhs,rhs));
                 case "<":
-                    return new LessThanOperator(lhs, rhs);
+                    return context.mkBVSLT((BitVecExpr) lhs,(BitVecExpr) rhs);
                 case "<=":
-                    return new LessThanEqOperator(lhs, rhs);
+                    return context.mkBVSLE((BitVecExpr) lhs,(BitVecExpr) rhs);
                 case ">":
-                    return new GreaterThanOperator(lhs, rhs);
+                    return context.mkBVSGT((BitVecExpr) lhs,(BitVecExpr) rhs);
                 case ">=":
-                    return new GreaterThanEqOperator(lhs, rhs);
+                    return context.mkBVSGE((BitVecExpr) lhs,(BitVecExpr) rhs);
                 case "<<":
-                    return new LeftShiftOperator(lhs, rhs);
+                    return context.mkBVASHR((BitVecExpr) lhs,(BitVecExpr) rhs);
                 case ">>":
-                    return new RightShiftOperator(lhs, rhs);
+                    return context.mkBVSHL((BitVecExpr) lhs,(BitVecExpr) rhs);
                 case "+":
-                    return new AdditionOperator(lhs, rhs);
+                    return context.mkBVAdd((BitVecExpr) lhs,(BitVecExpr) rhs);
                 case "-":
-                    return new SubtractionOperator(lhs, rhs);
+                    return context.mkBVSub((BitVecExpr) lhs,(BitVecExpr) rhs);
                 case "*":
-                    return new MultiplicationOperator(lhs, rhs);
+                    return context.mkBVMul((BitVecExpr) lhs,(BitVecExpr) rhs);
                 case "/":
-                    return new DivisionOperator(lhs, rhs);
+                    return context.mkBVSDiv((BitVecExpr) lhs,(BitVecExpr) rhs);
                 case "%":
-                    return new ModuloOperator(lhs, rhs);
+                    return context.mkBVSMod((BitVecExpr) lhs,(BitVecExpr) rhs);
             }
 
             return null;

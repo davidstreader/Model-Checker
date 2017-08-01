@@ -12,6 +12,9 @@ import static junit.framework.TestCase.fail;
  */
 public class SequenceTests extends ParserTests {
 
+    public SequenceTests() throws InterruptedException {
+    }
+
     /**
      * Should be able to parse the input "automata Test = (a -> STOP)." correctly.
      */

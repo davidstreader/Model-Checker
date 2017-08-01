@@ -12,7 +12,10 @@ import static org.junit.Assert.fail;
 
 public class ForAllTests extends ExpanderTests {
 
-	@Test
+    public ForAllTests() throws InterruptedException {
+    }
+
+    @Test
 	public void correctForAllExpansionTest_1() throws InterruptedException {
 		String input = "automata Test = (forall [i:1..2] ([i]:(a -> STOP))).";
 		ProcessNode node = constructProcessNode(input);

@@ -13,6 +13,9 @@ import static junit.framework.TestCase.fail;
  */
 public class SetTests extends ParserTests {
 
+    public SetTests() throws InterruptedException {
+    }
+
     @Test
     public void correctIndexedSetTest_1() throws CompilationException, InterruptedException {
         String input = "automata Test = ([i:{[1..2]}] -> STOP).";

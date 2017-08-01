@@ -15,6 +15,9 @@ import static junit.framework.TestCase.fail;
  */
 public class RootTests extends ParserTests {
 
+    public RootTests() throws InterruptedException {
+    }
+
     @Test
     public void correctRootTest_1() throws CompilationException, InterruptedException {
         String input = "automata Test = a:(a -> STOP).";

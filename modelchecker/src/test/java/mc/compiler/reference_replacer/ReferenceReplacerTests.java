@@ -19,6 +19,9 @@ public class ReferenceReplacerTests extends TestBase {
     private final Expander expander = new Expander();
     private final ReferenceReplacer replacer = new ReferenceReplacer();
 
+    public ReferenceReplacerTests() throws InterruptedException {
+    }
+
     ProcessNode constructProcessNode(String code) throws InterruptedException {
         try{
             List<Token> tokens = lexer.tokenise(code);

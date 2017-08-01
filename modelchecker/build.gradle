@@ -93,8 +93,9 @@ task webpack(type: NodeTask, dependsOn: 'npmInstall') {
 
 processResources.dependsOn 'webpack'
 static getNatives() {
-    String ret = "../resources/native/x86"
-    if (System.getProperty("os.arch").endsWith("64")) ret += "_64"
+    String ret = "../resources/native/"
+    if (System.getProperty("os.arch").endsWith("64")) ret += "amd64"
+    if (System.getProperty("os.arch").endsWith("86")) ret += "x86"
     if (Os.isFamily(Os.FAMILY_WINDOWS)) {
         ret+="-windows"
     } else if (Os.isFamily(Os.FAMILY_MAC)) {

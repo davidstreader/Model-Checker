@@ -18,7 +18,10 @@ public class ExpanderTests extends TestBase {
 	private final Parser parser = new Parser();
 	private final Expander expander = new Expander();
 
-	ProcessNode constructProcessNode(String code) throws InterruptedException {
+    public ExpanderTests() throws InterruptedException {
+    }
+
+    ProcessNode constructProcessNode(String code) throws InterruptedException {
         try{
             List<Token> tokens = lexer.tokenise(code);
             AbstractSyntaxTree ast = parser.parse(tokens);

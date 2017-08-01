@@ -1,5 +1,6 @@
 package mc.compiler.interpreters;
 
+import com.microsoft.z3.Expr;
 import mc.Constant;
 import mc.compiler.ast.*;
 import mc.exceptions.CompilationException;
@@ -7,7 +8,6 @@ import mc.process_models.ProcessModel;
 import mc.process_models.automata.Automaton;
 import mc.process_models.automata.AutomatonNode;
 import mc.process_models.automata.operations.AutomataOperations;
-import mc.util.expr.Expression;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -209,7 +209,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         automaton.combineNodes(currentNode, oldRoot);
 
     }
-    private void interpretNode(IdentifierNode astNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException {
+    private void interpretNode(IdentifierNode astNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException {
         // check that the reference is to an automaton
         ProcessModel model = processMap.get(astNode.getIdentifier());
         if(!(model instanceof Automaton)){
@@ -243,7 +243,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
                 throw new CompilationException(getClass(),"Expecting an automaton, received a: "+model.getClass().getSimpleName(),astNode.getLocation());
             case "simp":
                 if(model instanceof Automaton){
-                    processed = operations.simplification(((Automaton)model).copy(),(Map<String,Expression>)astNode.getMetaData("replacements"));
+                    processed = operations.simplification(((Automaton)model).copy(),(Map<String,Expr>)astNode.getMetaData("replacements"));
                     break;
                 }
                 throw new CompilationException(getClass(),"Expecting an automaton, received a: "+model.getClass().getSimpleName(),astNode.getLocation());
@@ -282,7 +282,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         return automaton;
     }
 
-    private void addAutomaton(AutomatonNode currentNode, Automaton automaton1, Automaton automaton2) throws CompilationException {
+    private void addAutomaton(AutomatonNode currentNode, Automaton automaton1, Automaton automaton2) throws CompilationException, InterruptedException {
         List<String> references = new ArrayList<>();
 
         if(currentNode.hasMetaData("reference")){

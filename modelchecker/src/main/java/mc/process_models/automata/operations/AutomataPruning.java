@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
  */
 public class AutomataPruning {
 
-    public Automaton performPruning(Automaton automaton) throws CompilationException {
+    public Automaton performPruning(Automaton automaton) throws CompilationException, InterruptedException {
         // find the hidden edges within the automaton
         List<AutomatonEdge> hiddenEdges = automaton.getEdges().stream()
                 .filter(AutomatonEdge::isHidden)

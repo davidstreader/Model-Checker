@@ -15,7 +15,6 @@ import mc.process_models.ProcessModel;
 import mc.process_models.ProcessModelObject;
 import mc.util.Location;
 import mc.util.expr.ExpressionSimplifier;
-import mc.util.expr.OrOperator;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -168,7 +167,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
         return true;
     }
 
-    public AutomatonNode combineNodes(AutomatonNode node1, AutomatonNode node2) throws CompilationException {
+    public AutomatonNode combineNodes(AutomatonNode node1, AutomatonNode node2) throws CompilationException, InterruptedException {
         if(!nodeMap.containsKey(node1.getId())){
             throw new CompilationException(getClass(), node1.getId() + " was not found in the automaton " + getId(), (Location)getMetaData("location"));
         }
@@ -215,7 +214,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
         removeNode(node2);
         return node;
     }
-    private void processGuards(AutomatonEdge edge1, AutomatonEdge edge2) throws CompilationException {
+    private void processGuards(AutomatonEdge edge1, AutomatonEdge edge2) throws CompilationException, InterruptedException {
         if (edge1.getLabel().equals(edge2.getLabel()) && edge1.hasMetaData("guard") && edge2.hasMetaData("guard")) {
             Guard guard1 = (Guard) edge1.getMetaData("guard");
             Guard guard2 = (Guard) edge2.getMetaData("guard");
@@ -225,7 +224,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
             //By putting both equations equal to eachother, if we have multiple or operations, then if one matches then it will be solveable.
             if (!guard1.getVariables().isEmpty() && !ExpressionSimplifier.equate(guard1,guard2))
                 //We could take either path
-                combined.setGuard(new OrOperator(guard1.getGuard(), guard2.getGuard()));
+                combined.setGuard(ExpressionSimplifier.getContext().mkOr(guard1.getGuard(), guard2.getGuard()));
             else
                 combined.setGuard(guard1.getGuard());
             edge1.addMetaData("guard",combined);

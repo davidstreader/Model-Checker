@@ -14,6 +14,9 @@ import static junit.framework.TestCase.fail;
  */
 public class RootTests extends ExpanderTests {
 
+    public RootTests() throws InterruptedException {
+    }
+
     @Test
     public void correctExpandedRelabelSetTest_1() throws CompilationException, InterruptedException {
         String input = "automata Test = (a -> STOP)/{[i:1..2].test/[i]}.";

@@ -1,5 +1,9 @@
 package mc.util.expr;
 
+import com.microsoft.z3.BitVecExpr;
+import com.microsoft.z3.BitVecNum;
+import com.microsoft.z3.Expr;
+import com.microsoft.z3.IntNum;
 import mc.exceptions.CompilationException;
 
 import java.util.Collections;
@@ -10,16 +14,17 @@ import java.util.Map;
  */
 public class ExpressionEvaluator {
 
-    public boolean isExecutable(Expression expression) throws CompilationException, InterruptedException {
+    public boolean isExecutable(Expr expression) throws CompilationException, InterruptedException {
         //If you simplify an expression with no variables it will be evaluated by the solver.
-        Expression ex = ExpressionSimplifier.simplify(expression, Collections.emptyMap());
-        return ex instanceof BooleanOperand || ex instanceof IntegerOperand ;
+        Expr ex = expression.simplify();
+        return ex instanceof BitVecNum;
     }
 
-    public int evaluateExpression(Expression ex, Map<String, Integer> variableMap) throws CompilationException, InterruptedException {
-        ex = ExpressionSimplifier.simplify(ex, variableMap);
-        if (ex instanceof BooleanOperand) return ((BooleanOperand) ex).getValue()?1:0;
-        if (ex instanceof IntegerOperand) return ((IntegerOperand) ex).getValue();
-        throw new CompilationException(getClass(),"There was an undefined variable in that statement.");
+    public int evaluateExpression(Expr ex, Map<String, Integer> variableMap) throws CompilationException, InterruptedException {
+        ex = ExpressionSimplifier.substituteInts(ex, variableMap).simplify();
+        if (ex.isTrue()) return 1;
+        if (ex.isFalse()) return 0;
+        if (ex instanceof BitVecNum) return ((IntNum)ExpressionSimplifier.getContext().mkBV2Int(((BitVecNum) ex),true).simplify()).getInt();
+        throw new CompilationException(getClass(),"There was an undefined variable in the statement: "+ExpressionPrinter.printExpression(ex));
     }
 }

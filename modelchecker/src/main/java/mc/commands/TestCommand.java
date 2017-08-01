@@ -19,7 +19,13 @@ public class TestCommand implements Command {
             System.out.println(Ansi.ansi().render("@|red ERROR: Expected a directory|@"));
             return;
         }
-        mc.compiler.Compiler compiler = new mc.compiler.Compiler();
+        mc.compiler.Compiler compiler = null;
+        try {
+            compiler = new mc.compiler.Compiler();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            return;
+        }
         for (File file:f.listFiles()) {
             System.out.println(Ansi.ansi().render("Testing script: @|yellow `"+file+"`|@"));
             if (file.getName().endsWith("results.txt") || !file.getName().endsWith("txt")) return;

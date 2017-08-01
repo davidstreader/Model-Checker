@@ -3,9 +3,10 @@ package mc.commands;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
+import com.microsoft.z3.Expr;
 import mc.exceptions.CompilationException;
-import mc.util.expr.Expression;
 import mc.util.expr.ExpressionEvaluator;
+import mc.util.expr.ExpressionSimplifier;
 import org.fusesource.jansi.Ansi;
 import org.slf4j.LoggerFactory;
 
@@ -18,13 +19,13 @@ public class EvalCommand implements Command{
     @Override
     public void run(String[] args) {
         try {
-            Expression expression;
+            Expr expression;
             Map<String,Integer> vars = Collections.emptyMap();
             try {
-                expression = Expression.constructExpression(String.join(" ",args));
+                expression = ExpressionSimplifier.constructExpression(String.join(" ",args));
             } catch (Exception ex) {
                 if (args.length > 1) {
-                    expression = Expression.constructExpression(String.join(" ", Arrays.copyOfRange(args, 0, args.length - 1)));
+                    expression = ExpressionSimplifier.constructExpression(String.join(" ", Arrays.copyOfRange(args, 0, args.length - 1)));
                     vars = new Gson().fromJson(
                         "{" + args[args.length - 1] + "}".replace("=", ":"), new TypeToken<Map<String, Integer>>() {
                         }.getType()

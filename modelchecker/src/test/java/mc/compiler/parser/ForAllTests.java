@@ -16,6 +16,9 @@ import static org.junit.Assert.fail;
  */
 public class ForAllTests extends ParserTests {
 
+    public ForAllTests() throws InterruptedException {
+    }
+
     @Test
     public void correctForAllTest_1() throws CompilationException, InterruptedException {
         String input = "automata Test = (forall [i:1..2] ([i]:(a -> STOP))).";

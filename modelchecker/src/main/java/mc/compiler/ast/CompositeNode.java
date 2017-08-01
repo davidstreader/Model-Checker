@@ -1,7 +1,8 @@
 package mc.compiler.ast;
 
+import lombok.ToString;
 import mc.util.Location;
-
+@ToString
 public class CompositeNode extends ASTNode {
 
 	// fields

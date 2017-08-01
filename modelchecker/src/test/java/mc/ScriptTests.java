@@ -23,7 +23,7 @@ public class ScriptTests {
         this.file = file;
     }
     @Test(timeout=100000)
-    public void testScript() throws IOException, CompilationException {
+    public void testScript() throws IOException, CompilationException, InterruptedException {
         if (file.getName().endsWith("results.txt") || !file.getName().endsWith("txt")) return;
         mc.compiler.Compiler compiler = new mc.compiler.Compiler();
         List<OperationResult> operations = Collections.emptyList();

@@ -1,8 +1,8 @@
 package mc.compiler.ast;
 
+import com.microsoft.z3.Expr;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import mc.util.expr.Expression;
 
 import java.util.List;
 import java.util.Map;
@@ -13,6 +13,6 @@ public class AbstractSyntaxTree {
 	private List<ProcessNode> processes;
 	private List<OperationNode> operations;
     private List<OperationNode> equations;
-	private Map<String, Expression> variableMap;
+	private Map<String, Expr> variableMap;
 
 }

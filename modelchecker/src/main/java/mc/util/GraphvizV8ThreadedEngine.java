@@ -51,7 +51,6 @@ public class GraphvizV8ThreadedEngine extends AbstractJsGraphvizEngine {
         if (v8Engines.containsKey(thread)) {
             for (V8 v8 : v8Engines.get(thread)) {
                 if (v8 == null) {
-                    System.out.println("What.");
                     return;
                 }
                 v8.terminateExecution();

@@ -1,5 +1,6 @@
 package mc.webserver;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import mc.compiler.CompilationObject;
@@ -8,6 +9,7 @@ import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
 import mc.process_models.automata.Automaton;
 import mc.util.GraphvizV8ThreadedEngine;
+import mc.util.expr.ExpressionSimplifier;
 import mc.webserver.webobjects.*;
 import mc.webserver.webobjects.ProcessReturn.SkipObject;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -65,6 +67,9 @@ public class WebSocketServer {
                     if (log instanceof SendObject) {
                         user.getRemote().sendString(new ObjectMapper().writeValueAsString(log));
                     }
+                    if (log instanceof String) {
+                        user.getRemote().sendString((String) log);
+                    }
                 }
                 queue.clear();
             } catch (InterruptedException ignored) { } catch (IOException e) {
@@ -88,6 +93,7 @@ public class WebSocketServer {
         @Override
         public void run() {
             while (user.isOpen()) {
+                System.gc();
                 Object ret;
                 try {
                     CompileRequest req = data.take();
@@ -117,7 +123,11 @@ public class WebSocketServer {
                         ex.printStackTrace();
                     }
                 }
-                loggers.get(user).queue.add(new SendObject(ret, "compileReturn"));
+                try {
+                    loggers.get(user).queue.add(new ObjectMapper().writeValueAsString(new SendObject(ret, "compileReturn")));
+                } catch (JsonProcessingException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -148,6 +158,8 @@ public class WebSocketServer {
     @OnWebSocketClose
     public void onClose(Session user, int statusCode, String reason) {
         if (runners.containsKey(user)) {
+            runners.get(user).data.clear();
+            ExpressionSimplifier.closeContext(runners.get(user));
             runners.get(user).interrupt();
         }
         loggers.get(user).interrupt();

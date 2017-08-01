@@ -33,7 +33,7 @@ public class Compiler {
     private EquationEvaluator eqEvaluator;
     private Parser parser;
 
-    public Compiler(){
+    public Compiler() throws InterruptedException {
         this.lexer = new Lexer();
         parser = new Parser();
         this.expander = new Expander();
@@ -74,7 +74,7 @@ public class Compiler {
         processMap.putAll(eqResults.getToRender());
         if (!(context instanceof FakeContext)) {
             List<Automaton> toPosition = processMap.values().stream().filter(Automaton.class::isInstance).map(s -> (Automaton)s).filter(s -> s.getNodeCount() <= context.getAutoMaxNode()).collect(Collectors.toList());
-            ExecutorService service = Executors.newCachedThreadPool();
+            ExecutorService service = Executors.newFixedThreadPool(4);
             final AtomicInteger counter=new AtomicInteger(toPosition.size());
             messageQueue.add(new LogMessage("Laying out processes",true,false));
             List<V8> engines = new ArrayList<>();

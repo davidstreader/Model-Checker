@@ -16,6 +16,9 @@ import static org.junit.Assert.fail;
  */
 public class ExampleTests extends ExpanderTests {
 
+    public ExampleTests() throws InterruptedException {
+    }
+
     @Test
     public void correctSimpleTest_1() throws CompilationException, InterruptedException {
         String input = "automata Simple = (takeTea -> STOP).";

@@ -1,10 +1,11 @@
 package mc.compiler;
 
+import com.microsoft.z3.BitVecNum;
+import com.microsoft.z3.Expr;
+import lombok.SneakyThrows;
 import mc.process_models.automata.AutomatonEdge;
 import mc.process_models.automata.AutomatonNode;
-import mc.util.expr.Expression;
 import mc.util.expr.ExpressionSimplifier;
-import mc.util.expr.IntegerOperand;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,8 +35,9 @@ public class NodeUtils {
      * Create an expression resulting from combining all guards between node and start inclusive.
      * @return
      */
-    public static Map<String,Expression> collectVariables(List<AutomatonEdge> edges) {
-        HashMap<String,Expression> exp = new HashMap<>();
+    @SneakyThrows
+    public static Map<String,Expr> collectVariables(List<AutomatonEdge> edges) {
+        HashMap<String,Expr> exp = new HashMap<>();
         for (AutomatonEdge edge:edges) {
             if (edge.hasMetaData("guard")) {
                 Guard guard = (Guard) edge.getMetaData("guard");
@@ -45,9 +47,9 @@ public class NodeUtils {
                     next = next.replaceAll("[a-z]+","\\$$0");
                     String variable = next.substring(0,next.indexOf("="));
                     String expression = next.substring(next.indexOf("=")+1);
-                    Expression newExp = Expression.constructExpression(expression);
+                    Expr newExp = ExpressionSimplifier.constructExpression(expression);
                     //If we overwrite a variable, then there is nothing to substitute.
-                    if (exp.containsKey(variable) && !(newExp instanceof IntegerOperand)) {
+                    if (exp.containsKey(variable) && !(newExp instanceof BitVecNum)) {
                         exp.put(variable, ExpressionSimplifier.substitute(newExp,exp));
                     } else {
                         exp.put(variable,newExp);

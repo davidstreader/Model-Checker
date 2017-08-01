@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
  */
 public class AutomataAbstraction {
 
-    public Automaton performAbstraction(Automaton automaton, boolean isFair) throws CompilationException {
+    public Automaton performAbstraction(Automaton automaton, boolean isFair) throws CompilationException, InterruptedException {
         Automaton abstraction = new Automaton(automaton.getId() + ".abs", !Automaton.CONSTRUCT_ROOT);
 
         // add the nodes from the specified automaton to the abstracted representation
@@ -45,7 +45,7 @@ public class AutomataAbstraction {
         return abstraction;
     }
 
-    private void constructOutgoingObservableEdges(Automaton abstraction, AutomatonEdge hiddenEdge, boolean isFair) throws CompilationException {
+    private void constructOutgoingObservableEdges(Automaton abstraction, AutomatonEdge hiddenEdge, boolean isFair) throws CompilationException, InterruptedException {
         Guard hiddenGuard = (Guard) hiddenEdge.getMetaData("guard");
         List<AutomatonEdge> incomingObservableEdges = hiddenEdge.getFrom().getIncomingEdges().stream()
                 .filter(edge -> !edge.isHidden())
@@ -109,7 +109,7 @@ public class AutomataAbstraction {
         }
     }
 
-    private void constructIncomingObservableEdges(Automaton abstraction, AutomatonEdge hiddenEdge, boolean isFair) throws CompilationException {
+    private void constructIncomingObservableEdges(Automaton abstraction, AutomatonEdge hiddenEdge, boolean isFair) throws CompilationException, InterruptedException {
         Guard hiddenGuard = (Guard) hiddenEdge.getMetaData("guard");
         List<AutomatonEdge> outgoingObservableEdges = hiddenEdge.getTo().getOutgoingEdges().stream()
                 .filter(edge -> !edge.isHidden())

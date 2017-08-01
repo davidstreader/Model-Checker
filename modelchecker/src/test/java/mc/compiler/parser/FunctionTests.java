@@ -11,7 +11,10 @@ import static org.junit.Assert.fail;
 
 public class FunctionTests extends ParserTests {
 
-	@Test
+    public FunctionTests() throws InterruptedException {
+    }
+
+    @Test
 	public void correctAbsTest() throws CompilationException, InterruptedException {
 		String input = "automata Test = abs(a -> STOP).";
 		ProcessNode node = constructProcessNode(input);

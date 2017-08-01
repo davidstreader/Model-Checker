@@ -1,5 +1,6 @@
 package mc.process_models.automata.operations;
 
+import com.microsoft.z3.Expr;
 import lombok.AllArgsConstructor;
 import lombok.ToString;
 import mc.compiler.Guard;
@@ -7,7 +8,6 @@ import mc.exceptions.CompilationException;
 import mc.process_models.automata.Automaton;
 import mc.process_models.automata.AutomatonEdge;
 import mc.process_models.automata.AutomatonNode;
-import mc.util.expr.Expression;
 
 import java.util.*;
 
@@ -17,8 +17,8 @@ public class AutomataBisimulation {
     private final int STOP_COLOUR = 0;
     private final int ERROR_COLOUR = -1;
     private int nextColourId;
-    private Map<String,Expression> replacements;
-    public Automaton performSimplification(Automaton automaton, Map<String, Expression> replacements) throws CompilationException {
+    private Map<String,Expr> replacements;
+    public Automaton performSimplification(Automaton automaton, Map<String, Expr> replacements) throws CompilationException, InterruptedException {
         reset();
         this.replacements = replacements;
         Map<Integer, List<Colour>> colourMap = new HashMap<>();
@@ -220,6 +220,8 @@ public class AutomataBisimulation {
                         }
                     } catch (CompilationException e) {
                         return false;
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
                     }
                 }
                 return true;
