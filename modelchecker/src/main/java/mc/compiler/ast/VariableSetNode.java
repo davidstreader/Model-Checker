@@ -28,9 +28,6 @@ public class VariableSetNode extends ASTNode {
         if(obj == this){
             return true;
         }
-        if(obj == null){
-            return false;
-        }
         if(obj instanceof VariableSetNode){
             VariableSetNode node = (VariableSetNode)obj;
             return variables.equals(node.getVariables());

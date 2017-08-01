@@ -27,9 +27,6 @@ public class ReferenceNode extends ASTNode {
         if(obj == this){
             return true;
         }
-        if(obj == null){
-            return false;
-        }
         if(obj instanceof ReferenceNode){
             ReferenceNode node = (ReferenceNode)obj;
             return reference.equals(node.getReference());

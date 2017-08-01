@@ -34,7 +34,7 @@ public class Main {
     private boolean reloaded = false;
     @Getter
     private static Main instance;
-    private Logger logger = LoggerFactory.getLogger(Main.class);
+
     public Main() {
         AnsiConsole.systemInstall();
         MainGui.registerConsoleAppender();
@@ -63,6 +63,7 @@ public class Main {
             webServer.startServer();
             //Listen for commands
             commandManager.registerInput();
+            Logger logger = LoggerFactory.getLogger(Main.class);
             logger.info(""+ansi().render("@|green Started Server!|@"));
             return;
         }

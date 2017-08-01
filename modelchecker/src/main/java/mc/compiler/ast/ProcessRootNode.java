@@ -73,9 +73,6 @@ public class ProcessRootNode extends ASTNode {
         if(obj == this){
             return true;
         }
-        if(obj == null){
-            return false;
-        }
         if(obj instanceof ProcessRootNode){
             ProcessRootNode node = (ProcessRootNode)obj;
             if(!process.equals(node.getProcess())){
@@ -96,11 +93,7 @@ public class ProcessRootNode extends ASTNode {
             if(hasHiding() != node.hasHiding()){
                 return false;
             }
-            if(hasHiding() && node.hasHiding() && !hiding.equals(node.getHiding())){
-                return false;
-            }
-
-            return true;
+            return !hasHiding() || !node.hasHiding() || hiding.equals(node.getHiding());
         }
 
         return false;

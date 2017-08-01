@@ -52,16 +52,15 @@ public class AutomatonEdge extends ProcessModelObject {
     }
 
     public String toString(){
-        StringBuilder builder = new StringBuilder();
-        builder.append("edge{\n");
-        builder.append("\tid:" + getId() + "\n");
-        builder.append("\tlabel:" + label + "\n");
-        builder.append("\tfrom:" + from.getId() + "\n");
-        builder.append("\tto:" + to.getId() + "\n");
-        builder.append("\tmetadata:" + getMetaData()+"\n");
-        builder.append("}");
+        String builder = "edge{\n" +
+            "\tid:" + getId() + "\n" +
+            "\tlabel:" + label + "\n" +
+            "\tfrom:" + from.getId() + "\n" +
+            "\tto:" + to.getId() + "\n" +
+            "\tmetadata:" + getMetaData() + "\n" +
+            "}";
 
-        return builder.toString();
+        return builder;
     }
 
     @Override

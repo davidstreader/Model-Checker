@@ -192,10 +192,9 @@ function addToEditor() {
     const process = getProcessFromCode(processName);
     //If the process already exists
     if (process !== null) {
-
         //Replace the old version of the process with the new one
         //Note, we need to get rid of the type as its now set by the original process.
-        app.editor.setCode(code.replace(process+".", compiledResult.replace(typeSelector.val().toLowerCase() + " ", "")));
+        app.editor.setCode(code.replace(process+".", compiledResult.replace(typeSelector.val().toLowerCase() + " ", "")).replace(processName,""));
         return;
     }
     //It doesnt, append the new process

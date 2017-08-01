@@ -13,11 +13,11 @@ import static org.junit.Assert.fail;
 public class ForAllTests extends ExpanderTests {
 
 	@Test
-	public void correctForAllExpansionTest_1(){
+	public void correctForAllExpansionTest_1() throws InterruptedException {
 		String input = "automata Test = (forall [i:1..2] ([i]:(a -> STOP))).";
 		ProcessNode node = constructProcessNode(input);
 		TerminalNode terminal = new TerminalNode("STOP", null);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		branches.push(new ProcessRootNode(constructSequenceNode(new String[]{"a"}, terminal), "[1]", null, null, null));
 		branches.push(new ProcessRootNode(constructSequenceNode(new String[]{"a"}, terminal), "[2]", null, null, null));
 
@@ -32,11 +32,11 @@ public class ForAllTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctForAllExpansionTest_2(){
+	public void correctForAllExpansionTest_2() throws InterruptedException {
 		String input = "automata Test = (forall [i:1..3] ([i]:(a -> STOP))).";
 		ProcessNode node = constructProcessNode(input);
 		TerminalNode terminal = new TerminalNode("STOP", null);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		branches.push(new ProcessRootNode(constructSequenceNode(new String[]{"a"}, terminal), "[1]", null, null, null));
 		branches.push(new ProcessRootNode(constructSequenceNode(new String[]{"a"}, terminal), "[2]", null, null, null));
 		branches.push(new ProcessRootNode(constructSequenceNode(new String[]{"a"}, terminal), "[3]", null, null, null));
@@ -52,11 +52,11 @@ public class ForAllTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctForAllExpansionTest_3(){
+	public void correctForAllExpansionTest_3() throws InterruptedException {
 		String input = "automata Test = (forall [i:{a}] ([i]:(a -> STOP))).";
 		ProcessNode node = constructProcessNode(input);
 		TerminalNode terminal = new TerminalNode("STOP", null);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		branches.push(new ProcessRootNode(constructSequenceNode(new String[]{"a"}, terminal), "a", null, null, null));
 
 		ASTNode expected = branches.pop();
@@ -70,11 +70,11 @@ public class ForAllTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctForAllExpansionTest_4(){
+	public void correctForAllExpansionTest_4() throws InterruptedException {
 		String input = "automata Test = (forall [i:{a, b}] ([i]:(a -> STOP))).";
 		ProcessNode node = constructProcessNode(input);
 		TerminalNode terminal = new TerminalNode("STOP", null);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		branches.push(new ProcessRootNode(constructSequenceNode(new String[]{"a"}, terminal), "a", null, null, null));
 		branches.push(new ProcessRootNode(constructSequenceNode(new String[]{"a"}, terminal), "b", null, null, null));
 
@@ -89,11 +89,11 @@ public class ForAllTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctForAllExpansionTest_5(){
+	public void correctForAllExpansionTest_5() throws InterruptedException {
 		String input = "automata Test = (forall [i:{a, b, c}] ([i]:(a -> STOP))).";
 		ProcessNode node = constructProcessNode(input);
 		TerminalNode terminal = new TerminalNode("STOP", null);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		branches.push(new ProcessRootNode(constructSequenceNode(new String[]{"a"}, terminal), "a", null, null, null));
 		branches.push(new ProcessRootNode(constructSequenceNode(new String[]{"a"}, terminal), "b", null, null, null));
 		branches.push(new ProcessRootNode(constructSequenceNode(new String[]{"a"}, terminal), "c", null, null, null));
@@ -109,11 +109,11 @@ public class ForAllTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctForAllExpansionTest_6(){
+	public void correctForAllExpansionTest_6() throws InterruptedException {
 		String input = "range N = 1..2 automata Test = (forall [i:N] ([i]:(a -> STOP))).";
 		ProcessNode node = constructProcessNode(input);
 		TerminalNode terminal = new TerminalNode("STOP", null);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		branches.push(new ProcessRootNode(constructSequenceNode(new String[]{"a"}, terminal), "[1]", null, null, null));
 		branches.push(new ProcessRootNode(constructSequenceNode(new String[]{"a"}, terminal), "[2]", null, null, null));
 
@@ -128,11 +128,11 @@ public class ForAllTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctForAllExpansionTest_7(){
+	public void correctForAllExpansionTest_7() throws InterruptedException {
 		String input = "range N = 1..3 automata Test = (forall [i:N] ([i]:(a -> STOP))).";
 		ProcessNode node = constructProcessNode(input);
 		TerminalNode terminal = new TerminalNode("STOP", null);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		branches.push(new ProcessRootNode(constructSequenceNode(new String[]{"a"}, terminal), "[1]", null, null, null));
 		branches.push(new ProcessRootNode(constructSequenceNode(new String[]{"a"}, terminal), "[2]", null, null, null));
 		branches.push(new ProcessRootNode(constructSequenceNode(new String[]{"a"}, terminal), "[3]", null, null, null));
@@ -148,11 +148,11 @@ public class ForAllTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctForAllExpansionTest_8(){
+	public void correctForAllExpansionTest_8() throws InterruptedException {
 		String input = "set N = {a} automata Test = (forall [i:N] ([i]:(a -> STOP))).";
 		ProcessNode node = constructProcessNode(input);
 		TerminalNode terminal = new TerminalNode("STOP", null);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		branches.push(new ProcessRootNode(constructSequenceNode(new String[]{"a"}, terminal), "a", null, null, null));
 
 		ASTNode expected = branches.pop();
@@ -166,11 +166,11 @@ public class ForAllTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctForAllExpansionTest_9(){
+	public void correctForAllExpansionTest_9() throws InterruptedException {
 		String input = "set N = {a, b} automata Test = (forall [i:N] ([i]:(a -> STOP))).";
 		ProcessNode node = constructProcessNode(input);
 		TerminalNode terminal = new TerminalNode("STOP", null);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		branches.push(new ProcessRootNode(constructSequenceNode(new String[]{"a"}, terminal), "a", null, null, null));
 		branches.push(new ProcessRootNode(constructSequenceNode(new String[]{"a"}, terminal), "b", null, null, null));
 
@@ -185,11 +185,11 @@ public class ForAllTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctForAllExpansionTest_10(){
+	public void correctForAllExpansionTest_10() throws InterruptedException {
 		String input = "set N = {a, b, c} automata Test = (forall [i:N] ([i]:(a -> STOP))).";
 		ProcessNode node = constructProcessNode(input);
 		TerminalNode terminal = new TerminalNode("STOP", null);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		branches.push(new ProcessRootNode(constructSequenceNode(new String[]{"a"}, terminal), "a", null, null, null));
 		branches.push(new ProcessRootNode(constructSequenceNode(new String[]{"a"}, terminal), "b", null, null, null));
 		branches.push(new ProcessRootNode(constructSequenceNode(new String[]{"a"}, terminal), "c", null, null, null));

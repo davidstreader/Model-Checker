@@ -126,9 +126,6 @@ public class ProcessNode extends ASTNode {
         if(obj == this){
             return true;
         }
-        if(obj == null){
-            return false;
-        }
         if(obj instanceof ProcessNode){
             ProcessNode node = (ProcessNode)obj;
             if(!type.equals(node.getType())){
@@ -149,11 +146,7 @@ public class ProcessNode extends ASTNode {
             if(hasVariableSet() && !variables.equals(node.getVariables())){
                 return false;
             }
-            if(hasInterrupt() && !interrupt.equals(node.getInterrupt())){
-                return false;
-            }
-
-            return true;
+            return !hasInterrupt() || interrupt.equals(node.getInterrupt());
         }
 
         return false;

@@ -18,13 +18,13 @@ public class Lexer {
 	private int column;
 
     public Lexer(){
-        processTypes = new HashSet<String>(Arrays.asList("automata", "petrinet"));
-        functions = new HashSet<String>(Arrays.asList("abs", "simp", "safe", "prune", "nfa2dfa"));
+        processTypes = new HashSet<>(Arrays.asList("automata", "petrinet"));
+        functions = new HashSet<>(Arrays.asList("abs", "simp", "safe", "prune", "nfa2dfa"));
     }
 
 	public List<Token> tokenise(String code) throws LexerException{
 		reset();
-		List<Token> tokens = new ArrayList<Token>();
+		List<Token> tokens = new ArrayList<>();
 
 		char[] characters = code.toCharArray();
 

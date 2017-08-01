@@ -38,19 +38,12 @@ public class InterruptNode extends ASTNode {
         if(obj == this){
             return true;
         }
-        if(obj == null){
-            return false;
-        }
         if(obj instanceof InterruptNode){
             InterruptNode node = (InterruptNode)obj;
             if(!action.equals(node.getAction())){
                 return false;
             }
-            if(!process.equals(node.getProcess())){
-                return false;
-            }
-
-            return true;
+            return process.equals(node.getProcess());
         }
 
         return false;

@@ -229,8 +229,8 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         switch(astNode.getFunction()){
             case "abs":
                 if(model instanceof Automaton){
-                    boolean isFair = (astNode.getMetaData().containsKey("isFair")) ? (boolean)astNode.getMetaData().get("isFair") : true;
-                    boolean prune = (astNode.getMetaData().containsKey("prune")) ? (boolean)astNode.getMetaData().get("prune") : false;
+                    boolean isFair = (!astNode.getMetaData().containsKey("isFair")) || (boolean) astNode.getMetaData().get("isFair");
+                    boolean prune = (astNode.getMetaData().containsKey("prune")) && (boolean) astNode.getMetaData().get("prune");
                     processed = operations.abstraction(((Automaton)model).copy(), isFair, prune);
                     break;
                 }
@@ -283,7 +283,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     }
 
     private void addAutomaton(AutomatonNode currentNode, Automaton automaton1, Automaton automaton2) throws CompilationException {
-        List<String> references = new ArrayList<String>();
+        List<String> references = new ArrayList<>();
 
         if(currentNode.hasMetaData("reference")){
             references.addAll((Set<String>)currentNode.getMetaData("reference"));
@@ -331,9 +331,9 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     }
 
     private Automaton labelAutomaton(Automaton automaton) throws CompilationException {
-        Set<String> visited = new HashSet<String>();
+        Set<String> visited = new HashSet<>();
 
-        Queue<AutomatonNode> fringe = new LinkedList<AutomatonNode>();
+        Queue<AutomatonNode> fringe = new LinkedList<>();
         fringe.offer(automaton.getRoot());
 
         int label = 0;
@@ -356,8 +356,8 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     }
 
     private void reset(){
-        this.referenceMap = new HashMap<String, AutomatonNode>();
-        this.processStack = new Stack<ProcessModel>();
+        this.referenceMap = new HashMap<>();
+        this.processStack = new Stack<>();
         combinedProcesses = new ArrayList<>();
     }
 }

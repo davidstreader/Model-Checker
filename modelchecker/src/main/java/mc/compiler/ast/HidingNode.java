@@ -34,19 +34,12 @@ public class HidingNode extends ASTNode {
         if(obj == this){
             return true;
         }
-        if(obj == null){
-            return false;
-        }
         if(obj instanceof HidingNode){
             HidingNode node = (HidingNode)obj;
             if(!type.equals(node.getType())){
                 return false;
             }
-            if(!set.equals(node.getSet())){
-                return false;
-            }
-
-            return true;
+            return set.equals(node.getSet());
         }
 
         return false;

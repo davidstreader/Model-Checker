@@ -26,9 +26,6 @@ public class RangesNode extends ASTNode {
         if(obj == this){
             return true;
         }
-        if(obj == null){
-            return true;
-        }
         if(obj instanceof RangesNode){
             RangesNode node = (RangesNode)obj;
             return ranges.equals(node.getRanges());

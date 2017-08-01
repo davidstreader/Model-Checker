@@ -16,11 +16,11 @@ import static junit.framework.TestCase.fail;
 public class ShiftTests {
 
     // fields
-    private ExpressionEvaluator evaluator = new ExpressionEvaluator();
-    private Map<String, Integer> variableMap = new HashMap<String, Integer>();
+    private final ExpressionEvaluator evaluator = new ExpressionEvaluator();
+    private final Map<String, Integer> variableMap = new HashMap<>();
 
     @Test
-    public void simpleLeftShiftTest_1() throws CompilationException {
+    public void simpleLeftShiftTest_1() throws CompilationException, InterruptedException {
         Expression expression = Expression.constructExpression("2 << 3");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -31,7 +31,7 @@ public class ShiftTests {
     }
 
     @Test
-    public void simpleLeftShiftTest_2() throws CompilationException{
+    public void simpleLeftShiftTest_2() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("3 << 2");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -42,7 +42,7 @@ public class ShiftTests {
     }
 
     @Test
-    public void simpleLeftShiftTest_3() throws CompilationException{
+    public void simpleLeftShiftTest_3() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("2 << 3 << 4");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -53,7 +53,7 @@ public class ShiftTests {
     }
 
     @Test
-    public void parenLeftShiftTest_1() throws CompilationException{
+    public void parenLeftShiftTest_1() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("2 << (2 + 1)");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -64,7 +64,7 @@ public class ShiftTests {
     }
 
     @Test
-    public void parenLeftShiftTest_2() throws CompilationException{
+    public void parenLeftShiftTest_2() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("(3 - 1) << (2 + 1)");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -75,7 +75,7 @@ public class ShiftTests {
     }
 
     @Test
-    public void mixedLeftShiftTest_1() throws CompilationException{
+    public void mixedLeftShiftTest_1() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("3 - 1 << 2 + 1");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -86,7 +86,7 @@ public class ShiftTests {
     }
 
     @Test
-    public void simpleRightShiftTest_1() throws CompilationException{
+    public void simpleRightShiftTest_1() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("512 >> 3");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -97,7 +97,7 @@ public class ShiftTests {
     }
 
     @Test
-    public void simpleRightShiftTest_2() throws CompilationException{
+    public void simpleRightShiftTest_2() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("512 >> 2");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -108,7 +108,7 @@ public class ShiftTests {
     }
 
     @Test
-    public void simpleRightShiftTest_3() throws CompilationException{
+    public void simpleRightShiftTest_3() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("1024 >> 3 >> 2");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -119,7 +119,7 @@ public class ShiftTests {
     }
 
     @Test
-    public void parenRightShiftTest_1() throws CompilationException{
+    public void parenRightShiftTest_1() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("512 >> (2 + 1)");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -130,7 +130,7 @@ public class ShiftTests {
     }
 
     @Test
-    public void parenRightShiftTest_2() throws CompilationException{
+    public void parenRightShiftTest_2() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("(520 - 8) >> (2 + 1)");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -141,7 +141,7 @@ public class ShiftTests {
     }
 
     @Test
-    public void mixedRightShiftTest_1() throws CompilationException{
+    public void mixedRightShiftTest_1() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("520 - 8 >> 2 + 1");
         int result = evaluator.evaluateExpression(expression, variableMap);
 

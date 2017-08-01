@@ -24,13 +24,13 @@ public class OperationEvaluator {
 
     public List<OperationResult> evaluateOperations(List<OperationNode> operations, Map<String, ProcessModel> processMap, Interpreter interpreter, String code) throws CompilationException, InterruptedException {
         reset();
-        List<OperationResult> results = new ArrayList<OperationResult>();
+        List<OperationResult> results = new ArrayList<>();
         for(OperationNode operation : operations){
             String firstId = findIdent(operation.getFirstProcess(), code);
             String secondId = findIdent(operation.getSecondProcess(), code);
             List<String> firstIds = collectIdentifiers(operation.getFirstProcess());
             List<String> secondIds = collectIdentifiers(operation.getSecondProcess());
-            List<Automaton> automata = new ArrayList<Automaton>();
+            List<Automaton> automata = new ArrayList<>();
             List<String> missing = new ArrayList<>(firstIds);
             missing.addAll(secondIds);
             missing.removeAll(processMap.keySet());

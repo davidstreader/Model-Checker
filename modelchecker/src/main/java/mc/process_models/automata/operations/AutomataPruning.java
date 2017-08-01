@@ -16,7 +16,7 @@ public class AutomataPruning {
     public Automaton performPruning(Automaton automaton) throws CompilationException {
         // find the hidden edges within the automaton
         List<AutomatonEdge> hiddenEdges = automaton.getEdges().stream()
-                .filter(edge -> edge.isHidden())
+                .filter(AutomatonEdge::isHidden)
                 .collect(Collectors.toList());
 
         // if there are no hidden edges then there is nothing to prune
@@ -24,27 +24,25 @@ public class AutomataPruning {
             return automaton;
         }
 
-        for(int i = 0; i < hiddenEdges.size(); i++){
-            AutomatonEdge hiddenEdge = hiddenEdges.get(i);
-
+        for (AutomatonEdge hiddenEdge : hiddenEdges) {
             AutomatonNode from = hiddenEdge.getFrom();
             AutomatonNode to = hiddenEdge.getTo();
 
             List<AutomatonEdge> incomingHiddenEdges = from.getIncomingEdges().stream()
-                    .filter(edge -> edge.isHidden())
-                    .collect(Collectors.toList());
+                .filter(AutomatonEdge::isHidden)
+                .collect(Collectors.toList());
 
             // if there are incoming hidden edges then we cannot prune the current edge
-            if(!incomingHiddenEdges.isEmpty()){
+            if (!incomingHiddenEdges.isEmpty()) {
                 continue;
             }
 
             List<AutomatonEdge> outgoingHiddenEdges = to.getOutgoingEdges().stream()
-                    .filter(edge -> edge.isHidden())
-                    .collect(Collectors.toList());
+                .filter(AutomatonEdge::isHidden)
+                .collect(Collectors.toList());
 
             // if there are outgoing hidden edges then we cannot prune the current edge
-            if(!outgoingHiddenEdges.isEmpty()){
+            if (!outgoingHiddenEdges.isEmpty()) {
                 continue;
             }
 

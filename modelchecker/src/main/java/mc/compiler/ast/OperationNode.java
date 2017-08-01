@@ -56,9 +56,6 @@ public class OperationNode extends ASTNode {
         if(obj == this){
             return true;
         }
-        if(obj == null){
-            return false;
-        }
         if(obj instanceof OperationNode){
             OperationNode node = (OperationNode)obj;
             if(!operation.equals(node.getOperation())){
@@ -70,11 +67,7 @@ public class OperationNode extends ASTNode {
             if(!firstProcess.equals(node.getFirstProcess())){
                 return false;
             }
-            if(!secondProcess.equals(node.getSecondProcess())){
-                return false;
-            }
-
-            return true;
+            return secondProcess.equals(node.getSecondProcess());
         }
 
         return false;

@@ -30,14 +30,14 @@ public class Parser {
     private ExpressionEvaluator expressionEvaluator;
 
     public Parser() {
-        processes = new ArrayList<ProcessNode>();
-        processIdentifiers = new HashSet<String>();
-        operations = new ArrayList<OperationNode>();
-        equations = new ArrayList<OperationNode>();
-        variableMap = new HashMap<String, Expression>();
-        constantMap = new HashMap<String, ASTNode>();
-        actionRanges = new ArrayList<IndexNode>();
-        definedVariables = new HashSet<String>();
+        processes = new ArrayList<>();
+        processIdentifiers = new HashSet<>();
+        operations = new ArrayList<>();
+        equations = new ArrayList<>();
+        variableMap = new HashMap<>();
+        constantMap = new HashMap<>();
+        actionRanges = new ArrayList<>();
+        definedVariables = new HashSet<>();
         index = 0;
         variableId = 0;
         expressionParser = new ExpressionParser();
@@ -134,7 +134,7 @@ public class Parser {
                     throw constructException("Expecting to parse a \"]\" but received \"" + error.toString() + "\"", error.getLocation());
                 }
 
-                builder.append("[" + variable + "]");
+                builder.append("[").append(variable).append("]");
             } else {
                 throw constructException("expecting to parse an action label or action range but received \"" + token.toString() + "\"", token.getLocation());
             }
@@ -229,7 +229,7 @@ public class Parser {
         int startValue;
         if (variableMap.containsKey(expression)) {
             // in this case, 'expression' is an internal variable reference to an expression
-            startValue = expressionEvaluator.evaluateExpression(variableMap.get(expression), new HashMap<String, Integer>());
+            startValue = expressionEvaluator.evaluateExpression(variableMap.get(expression), new HashMap<>());
         } else {
             // otherwise the expression is an integer that we can parse
             startValue = Integer.parseInt(expression);
@@ -246,7 +246,7 @@ public class Parser {
         int endValue;
         if (variableMap.containsKey(expression)) {
             // in this case, 'expression' is an internal variable reference to an expression
-            endValue = expressionEvaluator.evaluateExpression(variableMap.get(expression), new HashMap<String, Integer>());
+            endValue = expressionEvaluator.evaluateExpression(variableMap.get(expression), new HashMap<>());
         } else {
             // otherwise the expression is an integer that we can parse
             endValue = Integer.parseInt(expression);
@@ -273,8 +273,8 @@ public class Parser {
             throw constructException("expecting to parse \"{\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
-        List<String> set = new ArrayList<String>();
-        Map<Integer, RangesNode> rangeMap = new HashMap<Integer, RangesNode>();
+        List<String> set = new ArrayList<>();
+        Map<Integer, RangesNode> rangeMap = new HashMap<>();
 
         while (!(peekToken() instanceof CloseBracketToken)) {
             // parse the current action and add it to the set
@@ -283,8 +283,8 @@ public class Parser {
             ActionLabelNode action = parseActionLabel();
 
             if (rangeStart < actionRanges.size()) {
-                List<IndexNode> ranges = new ArrayList<IndexNode>(actionRanges.subList(rangeStart, actionRanges.size()));
-                actionRanges = new ArrayList<IndexNode>(actionRanges.subList(0, rangeStart));
+                List<IndexNode> ranges = new ArrayList<>(actionRanges.subList(rangeStart, actionRanges.size()));
+                actionRanges = new ArrayList<>(actionRanges.subList(0, rangeStart));
                 RangesNode range = new RangesNode(ranges, action.getLocation());
                 rangeMap.put(set.size(), range);
             }
@@ -440,8 +440,8 @@ public class Parser {
 
         ASTNode process = parseComposite();
 
-        List<LocalProcessNode> localProcesses = new ArrayList<LocalProcessNode>();
-        Set<String> localIdentifiers = new HashSet<String>();
+        List<LocalProcessNode> localProcesses = new ArrayList<>();
+        Set<String> localIdentifiers = new HashSet<>();
 
         while (peekToken() instanceof CommaToken && !Thread.currentThread().isInterrupted()) {
             nextToken(); // gobble the comma
@@ -607,10 +607,10 @@ public class Parser {
         int rangeStart = actionRanges.size();
         ActionLabelNode from = parseActionLabel();
 
-        List<IndexNode> ranges = new ArrayList<IndexNode>();
+        List<IndexNode> ranges = new ArrayList<>();
         if (rangeStart < actionRanges.size()) {
             ranges.addAll(actionRanges.subList(rangeStart, actionRanges.size()));
-            actionRanges = new ArrayList<IndexNode>(actionRanges.subList(0, rangeStart));
+            actionRanges = new ArrayList<>(actionRanges.subList(0, rangeStart));
             Collections.reverse(ranges);
         }
 
@@ -623,9 +623,9 @@ public class Parser {
         ASTNode to = parseLocalProcess();
 
         ASTNode node = new SequenceNode(from, to, constructLocation(start));
-        for (int i = 0; i < ranges.size(); i++) {
-            ranges.get(i).setProcess(node);
-            node = ranges.get(i);
+        for (IndexNode range : ranges) {
+            range.setProcess(node);
+            node = range;
         }
 
         return node;
@@ -711,7 +711,7 @@ public class Parser {
         throw constructException("expecting to parse a function type but received \"" + token.toString() + "\"", token.getLocation());
     }
 
-    private Set<String> validAbsFlags = new HashSet<String>(Arrays.asList("fair", "unfair"));
+    private Set<String> validAbsFlags = new HashSet<>(Arrays.asList("fair", "unfair"));
 
     private Set<String> parseFlags(String functionType) throws CompilationException, InterruptedException {
         int start;
@@ -721,7 +721,7 @@ public class Parser {
             throw constructException("expecting to parse \"{\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
-        Set<String> flags = new HashSet<String>();
+        Set<String> flags = new HashSet<>();
 
         while (!(peekToken() instanceof CloseBraceToken)) {
             if (!(peekToken() instanceof ActionToken)) {
@@ -903,7 +903,7 @@ public class Parser {
                 throw constructException("expecting to parse \"]\" but received \"" + token.toString() + "\"", token.getLocation());
             }
 
-            builder.append("[" + expression + "]");
+            builder.append("[").append(expression).append("]");
 
             // setup the token for the loop condition
             token = peekToken();
@@ -932,8 +932,8 @@ public class Parser {
             }
         }
 
-        List<IndexNode> ranges = new ArrayList<IndexNode>(actionRanges.subList(rangeStart, actionRanges.size()));
-        actionRanges = new ArrayList<IndexNode>(actionRanges.subList(0, rangeStart));
+        List<IndexNode> ranges = new ArrayList<>(actionRanges.subList(rangeStart, actionRanges.size()));
+        actionRanges = new ArrayList<>(actionRanges.subList(0, rangeStart));
 
         return new RangesNode(ranges, constructLocation(start));
     }
@@ -1013,15 +1013,15 @@ public class Parser {
             throw constructException("expecting to parse \"{\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
-        List<RelabelElementNode> relabels = new ArrayList<RelabelElementNode>();
+        List<RelabelElementNode> relabels = new ArrayList<>();
         int rangeStart = actionRanges.size();
 
         while (!(peekToken() instanceof CloseBraceToken)) {
             RelabelElementNode element = parseRelabelElement();
 
             if (rangeStart < actionRanges.size()) {
-                List<IndexNode> ranges = new ArrayList<IndexNode>(actionRanges.subList(rangeStart, actionRanges.size()));
-                actionRanges = new ArrayList<IndexNode>(actionRanges.subList(0, rangeStart));
+                List<IndexNode> ranges = new ArrayList<>(actionRanges.subList(rangeStart, actionRanges.size()));
+                actionRanges = new ArrayList<>(actionRanges.subList(0, rangeStart));
 
                 element.setRanges(new RangesNode(ranges, element.getLocation()));
             }
@@ -1085,7 +1085,7 @@ public class Parser {
             throw constructException("expecting to parse \"{\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
-        Set<String> variables = new HashSet<String>();
+        Set<String> variables = new HashSet<>();
 
         while (!(peekToken() instanceof CloseBraceToken)) {
             if (!(peekToken() instanceof ActionToken)) {
@@ -1253,7 +1253,7 @@ public class Parser {
     // EXPRESSIONS
 
     private String parseExpression() throws CompilationException, InterruptedException {
-        List<String> exprTokens = new ArrayList<String>();
+        List<String> exprTokens = new ArrayList<>();
         parseExpression(exprTokens);
 
         Expression expression = expressionParser.parseExpression(exprTokens);
@@ -1295,9 +1295,6 @@ public class Parser {
                 token = nextToken();
             } else if (token instanceof NegateToken) {
                 expression.add("#!");
-                token = nextToken();
-            } else if (token instanceof BisimulationTypeToken) {
-                expression.add("#~");
                 token = nextToken();
             } else {
                 throw constructException("expecting to parse an unary operator but received the operator \"" + token.toString() + "\"", token.getLocation());
@@ -1394,11 +1391,11 @@ public class Parser {
     }
 
     private int parseSimpleExpression() throws CompilationException, InterruptedException {
-        List<String> exprTokens = new ArrayList<String>();
+        List<String> exprTokens = new ArrayList<>();
         parseSimpleExpression(exprTokens);
 
         Expression expression = expressionParser.parseExpression(exprTokens);
-        return expressionEvaluator.evaluateExpression(expression, new HashMap<String, Integer>());
+        return expressionEvaluator.evaluateExpression(expression, new HashMap<>());
     }
 
     private void parseSimpleExpression(List<String> expression) throws CompilationException {
@@ -1422,9 +1419,6 @@ public class Parser {
                 token = nextToken();
             } else if (token instanceof NegateToken) {
                 expression.add("#!");
-                token = nextToken();
-            } else if (token instanceof BisimulationTypeToken) {
-                expression.add("#~");
                 token = nextToken();
             } else {
                 throw constructException("expecting to parse an unary operator but received the operator \"" + token.toString() + "\"", token.getLocation());
@@ -1594,11 +1588,8 @@ public class Parser {
         if (!(peekToken() instanceof ActionToken)) {
             return false;
         }
-        if (index < tokens.size() - 1 && (tokens.get(index + 1) instanceof ColonToken)) {
-            return true;
-        }
+        return index < tokens.size() - 1 && (tokens.get(index + 1) instanceof ColonToken);
 
-        return false;
     }
 
     private boolean hasVariableReference() throws CompilationException {
@@ -1671,10 +1662,10 @@ public class Parser {
         private Stack<Expression> output;
 
         public ExpressionParser() {
-            tokens = new ArrayList<String>();
+            tokens = new ArrayList<>();
             precedenceMap = constructPrecedenceMap();
-            operatorStack = new Stack<String>();
-            output = new Stack<Expression>();
+            operatorStack = new Stack<>();
+            output = new Stack<>();
         }
 
         public Expression parseExpression(List<String> tokens) {
@@ -1797,7 +1788,7 @@ public class Parser {
         }
 
         private Map<String, Integer> constructPrecedenceMap() {
-            Map<String, Integer> precedenceMap = new HashMap<String, Integer>();
+            Map<String, Integer> precedenceMap = new HashMap<>();
             precedenceMap.put("(", 0);
             precedenceMap.put(")", 0);
 

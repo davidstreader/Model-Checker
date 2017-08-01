@@ -20,8 +20,8 @@ public class AutomatonNode extends ProcessModelObject {
     public AutomatonNode(String id){
         super(id,"node");
         this.label = null;
-        incomingEdges = new HashMap<String, AutomatonEdge>();
-        outgoingEdges = new HashMap<String, AutomatonEdge>();
+        incomingEdges = new HashMap<>();
+        outgoingEdges = new HashMap<>();
     }
 
     public String getLabel(){
@@ -34,7 +34,7 @@ public class AutomatonNode extends ProcessModelObject {
 
     public List<AutomatonEdge> getIncomingEdges(){
         return incomingEdges.entrySet().stream()
-                .map(x -> x.getValue())
+                .map(Map.Entry::getValue)
                 .collect(Collectors.toList());
     }
 
@@ -58,7 +58,7 @@ public class AutomatonNode extends ProcessModelObject {
 
     public List<AutomatonEdge> getOutgoingEdges(){
         return outgoingEdges.entrySet().stream()
-                .map(x -> x.getValue())
+                .map(Map.Entry::getValue)
                 .collect(Collectors.toList());
     }
 
@@ -85,7 +85,7 @@ public class AutomatonNode extends ProcessModelObject {
         List<AutomatonEdge> incoming = getIncomingEdges();
 
         builder.append("node{\n");
-        builder.append("\tid:" + getId() + "\n");
+        builder.append("\tid:").append(getId()).append("\n");
         builder.append("\tincoming:{");
         for(int i = 0; i < incoming.size(); i++){
             builder.append(incoming.get(i).getId());

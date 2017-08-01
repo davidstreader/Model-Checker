@@ -18,7 +18,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 @RunWith(Parameterized.class)
 public class ScriptTests {
-    File file;
+    private final File file;
     public ScriptTests(String name, File file) {
         this.file = file;
     }

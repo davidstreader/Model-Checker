@@ -14,11 +14,11 @@ public class AutomataNFAToDFA {
     public Automaton performNFAToDFA(Automaton nfa) throws CompilationException {
         Automaton dfa = new Automaton(nfa.getId(), !Automaton.CONSTRUCT_ROOT);
 
-        Map<Set<String>, List<AutomatonNode>> stateMap = new HashMap<Set<String>, List<AutomatonNode>>();
-        Map<String, AutomatonNode> nodeMap = new HashMap<String, AutomatonNode>();
-        Set<String> visited = new HashSet<String>();
+        Map<Set<String>, List<AutomatonNode>> stateMap = new HashMap<>();
+        Map<String, AutomatonNode> nodeMap = new HashMap<>();
+        Set<String> visited = new HashSet<>();
 
-        Stack<Set<String>> fringe = new Stack<Set<String>>();
+        Stack<Set<String>> fringe = new Stack<>();
         fringe.push(constructClosure(nfa.getRoot(), stateMap));
 
         Set<String> alphabet = nfa.getAlphabet();
@@ -79,10 +79,10 @@ public class AutomataNFAToDFA {
     }
 
     private Set<String> constructClosure(AutomatonNode node, Map<Set<String>, List<AutomatonNode>> stateMap){
-        Set<String> states = new HashSet<String>();
-        List<AutomatonNode> nodes = new ArrayList<AutomatonNode>();
+        Set<String> states = new HashSet<>();
+        List<AutomatonNode> nodes = new ArrayList<>();
 
-        Stack<AutomatonNode> fringe = new Stack<AutomatonNode>();
+        Stack<AutomatonNode> fringe = new Stack<>();
         fringe.push(node);
 
         while(!fringe.isEmpty()){
@@ -96,7 +96,7 @@ public class AutomataNFAToDFA {
             nodes.add(current);
 
             List<AutomatonEdge> edges = current.getOutgoingEdges().stream()
-                    .filter(edge -> edge.isHidden())
+                    .filter(AutomatonEdge::isHidden)
                     .collect(Collectors.toList());
 
             edges.forEach(edge -> fringe.push(edge.getTo()));
@@ -110,12 +110,12 @@ public class AutomataNFAToDFA {
     }
 
     private Set<String> constructStateSet(List<AutomatonNode> nodes, String action, Map<Set<String>, List<AutomatonNode>> stateMap){
-        Set<String> states = new HashSet<String>();
-        List<AutomatonNode> nextNodes = new ArrayList<AutomatonNode>();
-        Set<String> visited = new HashSet<String>();
+        Set<String> states = new HashSet<>();
+        List<AutomatonNode> nextNodes = new ArrayList<>();
+        Set<String> visited = new HashSet<>();
 
-        Stack<AutomatonNode> fringe = new Stack<AutomatonNode>();
-        nodes.forEach(node -> fringe.push(node));
+        Stack<AutomatonNode> fringe = new Stack<>();
+        nodes.forEach(fringe::push);
 
         while(!fringe.isEmpty()){
             AutomatonNode current = fringe.pop();
@@ -146,15 +146,14 @@ public class AutomataNFAToDFA {
     }
 
     private String constructNodeId(List<AutomatonNode> nodes, String identifier){
-        StringBuilder builder = new StringBuilder();
-        builder.append(identifier);
-        builder.append(constructLabel(nodes));
+        String builder = identifier +
+            constructLabel(nodes);
 
-        return builder.toString();
+        return builder;
     }
 
     private String constructLabel(List<AutomatonNode> nodes){
-        Set<String> labelSet = new HashSet<String>();
+        Set<String> labelSet = new HashSet<>();
         for(AutomatonNode node : nodes){
             Object label = node.getMetaData("label");
             if(label instanceof Integer){
@@ -165,7 +164,7 @@ public class AutomataNFAToDFA {
             }
         }
 
-        List<String> labels = new ArrayList<String>(labelSet);
+        List<String> labels = new ArrayList<>(labelSet);
         Collections.sort(labels);
 
         StringBuilder builder = new StringBuilder();

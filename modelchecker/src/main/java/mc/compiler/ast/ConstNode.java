@@ -26,9 +26,6 @@ public class ConstNode extends ASTNode {
         if(obj == this){
             return true;
         }
-        if(obj == null){
-            return false;
-        }
         if(obj instanceof ConstNode){
             ConstNode node = (ConstNode)obj;
             return value == node.getValue();

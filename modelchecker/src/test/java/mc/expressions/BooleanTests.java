@@ -16,11 +16,11 @@ import static junit.framework.TestCase.fail;
 public class BooleanTests {
 
     // fields
-    private ExpressionEvaluator evaluator = new ExpressionEvaluator();
-    private Map<String, Integer> variableMap = new HashMap<String, Integer>();
+    private final ExpressionEvaluator evaluator = new ExpressionEvaluator();
+    private final Map<String, Integer> variableMap = new HashMap<>();
 
     @Test
-    public void simpleComparatorTest_1() throws CompilationException {
+    public void simpleComparatorTest_1() throws CompilationException, InterruptedException {
         Expression expression = Expression.constructExpression("3 < 1");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -31,7 +31,7 @@ public class BooleanTests {
     }
 
     @Test
-    public void simpleComparatorTest_2() throws CompilationException{
+    public void simpleComparatorTest_2() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("3 <= 1");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -42,7 +42,7 @@ public class BooleanTests {
     }
 
     @Test
-    public void simpleComparatorTest_3() throws CompilationException{
+    public void simpleComparatorTest_3() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("5 < 6");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -53,7 +53,7 @@ public class BooleanTests {
     }
 
     @Test
-    public void simpleComparatorTest_4() throws CompilationException{
+    public void simpleComparatorTest_4() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("5 <= 5");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -64,7 +64,7 @@ public class BooleanTests {
     }
 
     @Test
-    public void simpleComparatorTest_5() throws CompilationException{
+    public void simpleComparatorTest_5() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("6 > 9");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -75,7 +75,7 @@ public class BooleanTests {
     }
 
     @Test
-    public void simpleComparatorTest_6() throws CompilationException{
+    public void simpleComparatorTest_6() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("7 > 6");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -86,7 +86,7 @@ public class BooleanTests {
     }
 
     @Test
-    public void simpleComparatorTest_7() throws CompilationException{
+    public void simpleComparatorTest_7() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("7 >= 7");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -97,7 +97,7 @@ public class BooleanTests {
     }
 
     @Test
-    public void simpleEquivalenceTest_1() throws CompilationException{
+    public void simpleEquivalenceTest_1() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("1 != 1");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -108,7 +108,7 @@ public class BooleanTests {
     }
 
     @Test
-    public void simpleEquivalenceTest_2() throws CompilationException{
+    public void simpleEquivalenceTest_2() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("2 == 2");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -119,7 +119,7 @@ public class BooleanTests {
     }
 
     @Test
-    public void simpleBooleanTest_1() throws CompilationException{
+    public void simpleBooleanTest_1() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("10 != 10 || 10 == 10");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -130,7 +130,7 @@ public class BooleanTests {
     }
 
     @Test
-    public void simpleBooleanTest_2() throws CompilationException{
+    public void simpleBooleanTest_2() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("10 != 10 && 10 == 10");
         int result = evaluator.evaluateExpression(expression, variableMap);
 

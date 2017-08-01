@@ -38,19 +38,12 @@ public class SequenceNode extends ASTNode {
         if(obj == this){
             return true;
         }
-        if(obj == null){
-            return false;
-        }
         if(obj instanceof SequenceNode){
             SequenceNode node = (SequenceNode)obj;
             if(!from.equals(node.getFrom())){
                 return false;
             }
-            if(!to.equals(node.getTo())){
-                return false;
-            }
-
-            return true;
+            return to.equals(node.getTo());
         }
 
         return false;

@@ -56,4 +56,4 @@ function getCodeClean() {
     }
 
     return code;
-};
+}

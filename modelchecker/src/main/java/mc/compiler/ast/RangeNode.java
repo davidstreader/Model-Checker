@@ -38,19 +38,12 @@ public class RangeNode extends ASTNode {
         if(obj == this){
             return true;
         }
-        if(obj == null){
-            return false;
-        }
         if(obj instanceof RangeNode){
             RangeNode node = (RangeNode)obj;
             if(start != node.getStart()){
                 return false;
             }
-            if(end != node.getEnd()){
-                return false;
-            }
-
-            return true;
+            return end == node.getEnd();
         }
 
         return false;

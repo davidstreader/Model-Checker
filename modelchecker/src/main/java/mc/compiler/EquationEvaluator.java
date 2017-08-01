@@ -31,7 +31,7 @@ public class EquationEvaluator {
 
     public EquationReturn evaluateEquations(List<OperationNode> operations, String code, Context context, BlockingQueue<Object> messageQueue) throws CompilationException {
         reset();
-        List<OperationResult> results = new ArrayList<OperationResult>();
+        List<OperationResult> results = new ArrayList<>();
         Map<String,ProcessModel> toRender = new ConcurrentSkipListMap<>();
         AutomatonGenerator generator = new AutomatonGenerator();
         for(OperationNode operation : operations){
@@ -125,7 +125,7 @@ public class EquationEvaluator {
         if (collections == null || collections.isEmpty()) {
             return Stream.empty();
         } else {
-            return permutationsImpl(collections, 0, new LinkedList<T>());
+            return permutationsImpl(collections, 0, new LinkedList<>());
         }
     }
     private static <T> Stream<List<T>> permutationsImpl(List<Collection<T>> ori, int d, List<T> current) {

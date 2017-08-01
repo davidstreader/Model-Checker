@@ -18,7 +18,7 @@ public class ShuntingYardAlgorithm {
     }
 
     private void setupPrecedenceMap(){
-        precedenceMap = new HashMap<String, Integer>();
+        precedenceMap = new HashMap<>();
         precedenceMap.put("or", -10);
         precedenceMap.put("not", -10);
         precedenceMap.put("and", -9);
@@ -44,8 +44,8 @@ public class ShuntingYardAlgorithm {
     }
     private List<String> rightOperators = Arrays.asList("bitnot","not");
     private void reset(){
-        operatorStack = new Stack<String>();
-        output = new Stack<Expression>();
+        operatorStack = new Stack<>();
+        output = new Stack<>();
         index = 0;
     }
     public Expression convert(String expression){

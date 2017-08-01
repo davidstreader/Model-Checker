@@ -28,9 +28,6 @@ public class IdentifierNode extends ASTNode {
         if(obj == this){
             return true;
         }
-        if(obj == null){
-            return false;
-        }
         if(obj instanceof IdentifierNode){
             IdentifierNode node = (IdentifierNode)obj;
             return identifier.equals(node.getIdentifier());

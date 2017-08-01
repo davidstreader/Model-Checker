@@ -9,7 +9,7 @@ import static org.junit.Assert.fail;
 public class IdentifierTests extends ParserTests {
 
 	@Test
-	public void basicIdentifierTest() throws CompilationException {
+	public void basicIdentifierTest() throws CompilationException, InterruptedException {
 		String input = "automata Test = (a -> STOP). automata Test2 = Test.";
 		ProcessNode node = constructProcessNode(input, 1);
 		IdentifierNode expected = new IdentifierNode("Test", null);
@@ -19,7 +19,7 @@ public class IdentifierTests extends ParserTests {
 	}
 
 	@Test
-	public void mixedIdentifierTest_1() throws CompilationException {
+	public void mixedIdentifierTest_1() throws CompilationException, InterruptedException {
 		String input = "automata Test1 = (a -> STOP). automata Test2 = (Test1 | b -> STOP).";
 		ProcessNode node = constructProcessNode(input, 1);
 		IdentifierNode identifier = new IdentifierNode("Test1", null);
@@ -31,7 +31,7 @@ public class IdentifierTests extends ParserTests {
 	}
 
 	@Test
-	public void mixedIdentifierTest_2() throws CompilationException {
+	public void mixedIdentifierTest_2() throws CompilationException, InterruptedException {
 		String input = "automata Test1 = (b -> STOP). automata Test2 = (a -> STOP | Test1).";
 		ProcessNode node = constructProcessNode(input, 1);
 		IdentifierNode identifier = new IdentifierNode("Test1", null);
@@ -43,7 +43,7 @@ public class IdentifierTests extends ParserTests {
 	}
 
 	@Test
-	public void mixedIdentifierTest_3() throws CompilationException {
+	public void mixedIdentifierTest_3() throws CompilationException, InterruptedException {
 		String input = "automata Test1 = (a -> STOP). automata Test2 = (b -> STOP). automata Test3 = (Test1 | Test2).";
 		ProcessNode node = constructProcessNode(input, 2);
 		IdentifierNode identifier1 = new IdentifierNode("Test1", null);
@@ -55,7 +55,7 @@ public class IdentifierTests extends ParserTests {
 	}
 
 	@Test
-	public void mixedIdentifierTest_4() throws CompilationException {
+	public void mixedIdentifierTest_4() throws CompilationException, InterruptedException {
 		String input = "automata Test1 = (a -> STOP). automata Test2 = (Test1 || b -> STOP).";
 		ProcessNode node = constructProcessNode(input, 1);
 		IdentifierNode identifier = new IdentifierNode("Test1", null);
@@ -67,7 +67,7 @@ public class IdentifierTests extends ParserTests {
 	}
 
 	@Test
-	public void mixedIdentifierTest_5() throws CompilationException {
+	public void mixedIdentifierTest_5() throws CompilationException, InterruptedException {
 		String input = "automata Test1 = (b -> STOP). automata Test2 = (a -> STOP || Test1).";
 		ProcessNode node = constructProcessNode(input, 1);
 		IdentifierNode identifier = new IdentifierNode("Test1", null);
@@ -79,7 +79,7 @@ public class IdentifierTests extends ParserTests {
 	}
 
 	@Test
-	public void mixedIdentifierTest_6() throws CompilationException {
+	public void mixedIdentifierTest_6() throws CompilationException, InterruptedException {
 		String input = "automata Test1 = (a -> STOP). automata Test2 = (b -> STOP). automata Test3 = (Test1 || Test2).";
 		ProcessNode node = constructProcessNode(input, 2);
 		IdentifierNode identifier1 = new IdentifierNode("Test1", null);

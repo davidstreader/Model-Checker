@@ -30,7 +30,7 @@ public abstract class ASTNode implements Serializable {
 
 	public void addReference(String reference){
 		if(references == null){
-            references = new HashSet<String>();
+            references = new HashSet<>();
         }
 
         references.add(reference);

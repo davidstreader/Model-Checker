@@ -17,9 +17,6 @@ public class EmptyNode extends ASTNode {
         if(obj == this){
             return true;
         }
-        if(obj == null){
-            return false;
-        }
 
         return obj instanceof EmptyNode;
     }

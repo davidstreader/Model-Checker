@@ -12,10 +12,10 @@ import static org.junit.Assert.fail;
 public class RangeIndexTests extends ExpanderTests {
 
 	@Test
-	public void correctRangeIndexExpansionTest_1(){
+	public void correctRangeIndexExpansionTest_1() throws InterruptedException {
 		String input = "automata Test = ([1..2] -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"[1]"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"[2]"}, terminal));
@@ -31,10 +31,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_2(){
+	public void correctRangeIndexExpansionTest_2() throws InterruptedException {
 		String input = "automata Test = ([1..2]b -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"[1]b"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"[2]b"}, terminal));
@@ -50,10 +50,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_3(){
+	public void correctRangeIndexExpansionTest_3() throws InterruptedException {
 		String input = "automata Test = ([1..2].b -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"[1].b"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"[2].b"}, terminal));
@@ -69,10 +69,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_4(){
+	public void correctRangeIndexExpansionTest_4() throws InterruptedException {
 		String input = "automata Test = ([1..2][3] -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"[1][3]"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"[2][3]"}, terminal));
@@ -88,10 +88,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_5(){
+	public void correctRangeIndexExpansionTest_5() throws InterruptedException {
 		String input = "automata Test = (a[1..2] -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"a[1]"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"a[2]"}, terminal));
@@ -107,10 +107,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_6(){
+	public void correctRangeIndexExpansionTest_6() throws InterruptedException {
 		String input = "automata Test = (a[1..2]b -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"a[1]b"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"a[2]b"}, terminal));
@@ -126,10 +126,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_7(){
+	public void correctRangeIndexExpansionTest_7() throws InterruptedException {
 		String input = "automata Test = (a[1..2].b -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"a[1].b"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"a[2].b"}, terminal));
@@ -145,10 +145,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_8(){
+	public void correctRangeIndexExpansionTest_8() throws InterruptedException {
 		String input = "automata Test = (a[1..2][3] -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"a[1][3]"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"a[2][3]"}, terminal));
@@ -164,10 +164,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_9(){
+	public void correctRangeIndexExpansionTest_9() throws InterruptedException {
 		String input = "automata Test = (a.[1..2] -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"a.[1]"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"a.[2]"}, terminal));
@@ -183,10 +183,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_10(){
+	public void correctRangeIndexExpansionTest_10() throws InterruptedException {
 		String input = "automata Test = (a.[1..2]b -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"a.[1]b"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"a.[2]b"}, terminal));
@@ -202,10 +202,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_11(){
+	public void correctRangeIndexExpansionTest_11() throws InterruptedException {
 		String input = "automata Test = (a.[1..2].b -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"a.[1].b"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"a.[2].b"}, terminal));
@@ -221,10 +221,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_12(){
+	public void correctRangeIndexExpansionTest_12() throws InterruptedException {
 		String input = "automata Test = (a.[1..2][3] -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"a.[1][3]"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"a.[2][3]"}, terminal));
@@ -240,10 +240,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_13(){
+	public void correctRangeIndexExpansionTest_13() throws InterruptedException {
 		String input = "automata Test = ([1][1..2] -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"[1][1]"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"[1][2]"}, terminal));
@@ -259,10 +259,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_14(){
+	public void correctRangeIndexExpansionTest_14() throws InterruptedException {
 		String input = "automata Test = ([1][1..2]b -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"[1][1]b"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"[1][2]b"}, terminal));
@@ -278,10 +278,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_15(){
+	public void correctRangeIndexExpansionTest_15() throws InterruptedException {
 		String input = "automata Test = ([1][1..2].b -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"[1][1].b"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"[1][2].b"}, terminal));
@@ -297,10 +297,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_16(){
+	public void correctRangeIndexExpansionTest_16() throws InterruptedException {
 		String input = "automata Test = ([1][1..2][3] -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"[1][1][3]"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"[1][2][3]"}, terminal));
@@ -316,10 +316,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_17(){
+	public void correctRangeIndexExpansionTest_17() throws InterruptedException {
 		String input = "automata Test = ([1..3] -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"[1]"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"[2]"}, terminal));
@@ -336,10 +336,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_18(){
+	public void correctRangeIndexExpansionTest_18() throws InterruptedException {
 		String input = "automata Test = ([1..3]b -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"[1]b"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"[2]b"}, terminal));
@@ -356,10 +356,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_19(){
+	public void correctRangeIndexExpansionTest_19() throws InterruptedException {
 		String input = "automata Test = ([1..3].b -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"[1].b"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"[2].b"}, terminal));
@@ -376,10 +376,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_20(){
+	public void correctRangeIndexExpansionTest_20() throws InterruptedException {
 		String input = "automata Test = ([1..3][3] -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"[1][3]"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"[2][3]"}, terminal));
@@ -396,10 +396,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_21(){
+	public void correctRangeIndexExpansionTest_21() throws InterruptedException {
 		String input = "automata Test = (a[1..3] -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"a[1]"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"a[2]"}, terminal));
@@ -416,10 +416,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_22(){
+	public void correctRangeIndexExpansionTest_22() throws InterruptedException {
 		String input = "automata Test = (a[1..3]b -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"a[1]b"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"a[2]b"}, terminal));
@@ -436,10 +436,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_23(){
+	public void correctRangeIndexExpansionTest_23() throws InterruptedException {
 		String input = "automata Test = (a[1..3].b -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"a[1].b"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"a[2].b"}, terminal));
@@ -456,10 +456,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_24(){
+	public void correctRangeIndexExpansionTest_24() throws InterruptedException {
 		String input = "automata Test = (a[1..3][3] -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"a[1][3]"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"a[2][3]"}, terminal));
@@ -476,10 +476,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_25(){
+	public void correctRangeIndexExpansionTest_25() throws InterruptedException {
 		String input = "automata Test = (a.[1..3] -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"a.[1]"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"a.[2]"}, terminal));
@@ -496,10 +496,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_26(){
+	public void correctRangeIndexExpansionTest_26() throws InterruptedException {
 		String input = "automata Test = (a.[1..3]b -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"a.[1]b"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"a.[2]b"}, terminal));
@@ -516,10 +516,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_27(){
+	public void correctRangeIndexExpansionTest_27() throws InterruptedException {
 		String input = "automata Test = (a.[1..3].b -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"a.[1].b"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"a.[2].b"}, terminal));
@@ -536,10 +536,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_28(){
+	public void correctRangeIndexExpansionTest_28() throws InterruptedException {
 		String input = "automata Test = (a.[1..3][3] -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"a.[1][3]"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"a.[2][3]"}, terminal));
@@ -556,10 +556,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_29(){
+	public void correctRangeIndexExpansionTest_29() throws InterruptedException {
 		String input = "automata Test = ([1][1..3] -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"[1][1]"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"[1][2]"}, terminal));
@@ -576,10 +576,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_30(){
+	public void correctRangeIndexExpansionTest_30() throws InterruptedException {
 		String input = "automata Test = ([1][1..3]b -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"[1][1]b"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"[1][2]b"}, terminal));
@@ -596,10 +596,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_31(){
+	public void correctRangeIndexExpansionTest_31() throws InterruptedException {
 		String input = "automata Test = ([1][1..3].b -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"[1][1].b"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"[1][2].b"}, terminal));
@@ -616,10 +616,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_32(){
+	public void correctRangeIndexExpansionTest_32() throws InterruptedException {
 		String input = "automata Test = ([1][1..3][3] -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"[1][1][3]"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"[1][2][3]"}, terminal));
@@ -636,10 +636,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_33(){
+	public void correctRangeIndexExpansionTest_33() throws InterruptedException {
 		String input = "automata Test = ([1..5] -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"[1]"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"[2]"}, terminal));
@@ -658,10 +658,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_34(){
+	public void correctRangeIndexExpansionTest_34() throws InterruptedException {
 		String input = "automata Test = ([1..5]b -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"[1]b"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"[2]b"}, terminal));
@@ -680,10 +680,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_35(){
+	public void correctRangeIndexExpansionTest_35() throws InterruptedException {
 		String input = "automata Test = ([1..5].b -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"[1].b"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"[2].b"}, terminal));
@@ -702,10 +702,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_36(){
+	public void correctRangeIndexExpansionTest_36() throws InterruptedException {
 		String input = "automata Test = ([1..5][3] -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"[1][3]"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"[2][3]"}, terminal));
@@ -724,10 +724,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_37(){
+	public void correctRangeIndexExpansionTest_37() throws InterruptedException {
 		String input = "automata Test = (a[1..5] -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"a[1]"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"a[2]"}, terminal));
@@ -746,10 +746,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_38(){
+	public void correctRangeIndexExpansionTest_38() throws InterruptedException {
 		String input = "automata Test = (a[1..5]b -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"a[1]b"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"a[2]b"}, terminal));
@@ -768,10 +768,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_39(){
+	public void correctRangeIndexExpansionTest_39() throws InterruptedException {
 		String input = "automata Test = (a[1..5].b -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"a[1].b"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"a[2].b"}, terminal));
@@ -790,10 +790,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_40(){
+	public void correctRangeIndexExpansionTest_40() throws InterruptedException {
 		String input = "automata Test = (a[1..5][3] -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"a[1][3]"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"a[2][3]"}, terminal));
@@ -812,10 +812,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_41(){
+	public void correctRangeIndexExpansionTest_41() throws InterruptedException {
 		String input = "automata Test = (a.[1..5] -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"a.[1]"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"a.[2]"}, terminal));
@@ -834,10 +834,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_42(){
+	public void correctRangeIndexExpansionTest_42() throws InterruptedException {
 		String input = "automata Test = (a.[1..5]b -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"a.[1]b"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"a.[2]b"}, terminal));
@@ -856,10 +856,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_43(){
+	public void correctRangeIndexExpansionTest_43() throws InterruptedException {
 		String input = "automata Test = (a.[1..5].b -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"a.[1].b"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"a.[2].b"}, terminal));
@@ -878,10 +878,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_44(){
+	public void correctRangeIndexExpansionTest_44() throws InterruptedException {
 		String input = "automata Test = (a.[1..5][3] -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"a.[1][3]"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"a.[2][3]"}, terminal));
@@ -900,10 +900,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_45(){
+	public void correctRangeIndexExpansionTest_45() throws InterruptedException {
 		String input = "automata Test = ([1][1..5] -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"[1][1]"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"[1][2]"}, terminal));
@@ -922,10 +922,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_46(){
+	public void correctRangeIndexExpansionTest_46() throws InterruptedException {
 		String input = "automata Test = ([1][1..5]b -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"[1][1]b"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"[1][2]b"}, terminal));
@@ -944,10 +944,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_47(){
+	public void correctRangeIndexExpansionTest_47() throws InterruptedException {
 		String input = "automata Test = ([1][1..5].b -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"[1][1].b"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"[1][2].b"}, terminal));
@@ -966,10 +966,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_48(){
+	public void correctRangeIndexExpansionTest_48() throws InterruptedException {
 		String input = "automata Test = ([1][1..5][3] -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"[1][1][3]"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"[1][2][3]"}, terminal));
@@ -988,10 +988,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_49(){
+	public void correctRangeIndexExpansionTest_49() throws InterruptedException {
 		String input = "automata Test = ([10..20] -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"[10]"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"[11]"}, terminal));
@@ -1016,10 +1016,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_50(){
+	public void correctRangeIndexExpansionTest_50() throws InterruptedException {
 		String input = "automata Test = ([10..20]b -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"[10]b"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"[11]b"}, terminal));
@@ -1044,10 +1044,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_51(){
+	public void correctRangeIndexExpansionTest_51() throws InterruptedException {
 		String input = "automata Test = ([10..20].b -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"[10].b"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"[11].b"}, terminal));
@@ -1072,10 +1072,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_52(){
+	public void correctRangeIndexExpansionTest_52() throws InterruptedException {
 		String input = "automata Test = ([10..20][3] -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"[10][3]"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"[11][3]"}, terminal));
@@ -1100,10 +1100,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_53(){
+	public void correctRangeIndexExpansionTest_53() throws InterruptedException {
 		String input = "automata Test = (a[10..20] -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"a[10]"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"a[11]"}, terminal));
@@ -1128,10 +1128,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_54(){
+	public void correctRangeIndexExpansionTest_54() throws InterruptedException {
 		String input = "automata Test = (a[10..20]b -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"a[10]b"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"a[11]b"}, terminal));
@@ -1156,10 +1156,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_55(){
+	public void correctRangeIndexExpansionTest_55() throws InterruptedException {
 		String input = "automata Test = (a[10..20].b -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"a[10].b"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"a[11].b"}, terminal));
@@ -1184,10 +1184,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_56(){
+	public void correctRangeIndexExpansionTest_56() throws InterruptedException {
 		String input = "automata Test = (a[10..20][3] -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"a[10][3]"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"a[11][3]"}, terminal));
@@ -1212,10 +1212,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_57(){
+	public void correctRangeIndexExpansionTest_57() throws InterruptedException {
 		String input = "automata Test = (a.[10..20] -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"a.[10]"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"a.[11]"}, terminal));
@@ -1240,10 +1240,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_58(){
+	public void correctRangeIndexExpansionTest_58() throws InterruptedException {
 		String input = "automata Test = (a.[10..20]b -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"a.[10]b"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"a.[11]b"}, terminal));
@@ -1268,10 +1268,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_59(){
+	public void correctRangeIndexExpansionTest_59() throws InterruptedException {
 		String input = "automata Test = (a.[10..20].b -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"a.[10].b"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"a.[11].b"}, terminal));
@@ -1296,10 +1296,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_60(){
+	public void correctRangeIndexExpansionTest_60() throws InterruptedException {
 		String input = "automata Test = (a.[10..20][3] -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"a.[10][3]"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"a.[11][3]"}, terminal));
@@ -1324,10 +1324,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_61(){
+	public void correctRangeIndexExpansionTest_61() throws InterruptedException {
 		String input = "automata Test = ([1][10..20] -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"[1][10]"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"[1][11]"}, terminal));
@@ -1352,10 +1352,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_62(){
+	public void correctRangeIndexExpansionTest_62() throws InterruptedException {
 		String input = "automata Test = ([1][10..20]b -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"[1][10]b"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"[1][11]b"}, terminal));
@@ -1380,10 +1380,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_63(){
+	public void correctRangeIndexExpansionTest_63() throws InterruptedException {
 		String input = "automata Test = ([1][10..20].b -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"[1][10].b"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"[1][11].b"}, terminal));
@@ -1408,10 +1408,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_64(){
+	public void correctRangeIndexExpansionTest_64() throws InterruptedException {
 		String input = "automata Test = ([1][10..20][3] -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"[1][10][3]"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"[1][11][3]"}, terminal));
@@ -1436,10 +1436,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_65(){
+	public void correctRangeIndexExpansionTest_65() throws InterruptedException {
 		String input = "automata Test = ([-2..5] -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"[-2]"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"[-1]"}, terminal));
@@ -1461,10 +1461,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_66(){
+	public void correctRangeIndexExpansionTest_66() throws InterruptedException {
 		String input = "automata Test = ([-2..5]b -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"[-2]b"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"[-1]b"}, terminal));
@@ -1486,10 +1486,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_67(){
+	public void correctRangeIndexExpansionTest_67() throws InterruptedException {
 		String input = "automata Test = ([-2..5].b -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"[-2].b"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"[-1].b"}, terminal));
@@ -1511,10 +1511,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_68(){
+	public void correctRangeIndexExpansionTest_68() throws InterruptedException {
 		String input = "automata Test = ([-2..5][3] -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"[-2][3]"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"[-1][3]"}, terminal));
@@ -1536,10 +1536,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_69(){
+	public void correctRangeIndexExpansionTest_69() throws InterruptedException {
 		String input = "automata Test = (a[-2..5] -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"a[-2]"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"a[-1]"}, terminal));
@@ -1561,10 +1561,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_70(){
+	public void correctRangeIndexExpansionTest_70() throws InterruptedException {
 		String input = "automata Test = (a[-2..5]b -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"a[-2]b"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"a[-1]b"}, terminal));
@@ -1586,10 +1586,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_71(){
+	public void correctRangeIndexExpansionTest_71() throws InterruptedException {
 		String input = "automata Test = (a[-2..5].b -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"a[-2].b"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"a[-1].b"}, terminal));
@@ -1611,10 +1611,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_72(){
+	public void correctRangeIndexExpansionTest_72() throws InterruptedException {
 		String input = "automata Test = (a[-2..5][3] -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"a[-2][3]"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"a[-1][3]"}, terminal));
@@ -1636,10 +1636,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_73(){
+	public void correctRangeIndexExpansionTest_73() throws InterruptedException {
 		String input = "automata Test = (a.[-2..5] -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"a.[-2]"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"a.[-1]"}, terminal));
@@ -1661,10 +1661,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_74(){
+	public void correctRangeIndexExpansionTest_74() throws InterruptedException {
 		String input = "automata Test = (a.[-2..5]b -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"a.[-2]b"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"a.[-1]b"}, terminal));
@@ -1686,10 +1686,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_75(){
+	public void correctRangeIndexExpansionTest_75() throws InterruptedException {
 		String input = "automata Test = (a.[-2..5].b -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"a.[-2].b"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"a.[-1].b"}, terminal));
@@ -1711,10 +1711,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_76(){
+	public void correctRangeIndexExpansionTest_76() throws InterruptedException {
 		String input = "automata Test = (a.[-2..5][3] -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"a.[-2][3]"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"a.[-1][3]"}, terminal));
@@ -1736,10 +1736,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_77(){
+	public void correctRangeIndexExpansionTest_77() throws InterruptedException {
 		String input = "automata Test = ([1][-2..5] -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"[1][-2]"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"[1][-1]"}, terminal));
@@ -1761,10 +1761,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_78(){
+	public void correctRangeIndexExpansionTest_78() throws InterruptedException {
 		String input = "automata Test = ([1][-2..5]b -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"[1][-2]b"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"[1][-1]b"}, terminal));
@@ -1786,10 +1786,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_79(){
+	public void correctRangeIndexExpansionTest_79() throws InterruptedException {
 		String input = "automata Test = ([1][-2..5].b -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"[1][-2].b"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"[1][-1].b"}, terminal));
@@ -1811,10 +1811,10 @@ public class RangeIndexTests extends ExpanderTests {
 	}
 
 	@Test
-	public void correctRangeIndexExpansionTest_80(){
+	public void correctRangeIndexExpansionTest_80() throws InterruptedException {
 		String input = "automata Test = ([1][-2..5][3] -> STOP).";
 		ProcessNode node = constructProcessNode(input);
-		Stack<ASTNode> branches = new Stack<ASTNode>();
+		Stack<ASTNode> branches = new Stack<>();
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		branches.push(constructSequenceNode(new String[]{"[1][-2][3]"}, terminal));
 		branches.push(constructSequenceNode(new String[]{"[1][-1][3]"}, terminal));

@@ -28,9 +28,6 @@ public class ActionLabelNode extends ASTNode {
         if(obj == this){
             return true;
         }
-        if(obj == null){
-            return false;
-        }
         if(obj instanceof ActionLabelNode){
             ActionLabelNode node = (ActionLabelNode)obj;
             return action.equals(node.getAction());

@@ -44,9 +44,6 @@ public class RelabelElementNode extends ASTNode {
         if(obj == this){
             return true;
         }
-        if(obj == null){
-            return false;
-        }
         if(obj instanceof RelabelElementNode){
             RelabelElementNode node = (RelabelElementNode)obj;
             if(!newLabel.equals(node.getNewLabel())){
@@ -55,11 +52,7 @@ public class RelabelElementNode extends ASTNode {
             if(!oldLabel.equals(node.getOldLabel())){
                 return false;
             }
-            if(hasRanges() && node.hasRanges() && !ranges.equals(node.getRanges())){
-                return false;
-            }
-
-            return true;
+            return !hasRanges() || !node.hasRanges() || ranges.equals(node.getRanges());
         }
 
         return false;

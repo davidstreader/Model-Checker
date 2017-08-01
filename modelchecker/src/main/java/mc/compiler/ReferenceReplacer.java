@@ -14,8 +14,8 @@ public class ReferenceReplacer {
 	private Set<String> references;
 
     public ReferenceReplacer(){
-        globalReferences = new HashSet<String>();
-        references = new HashSet<String>();
+        globalReferences = new HashSet<>();
+        references = new HashSet<>();
     }
 
 	public AbstractSyntaxTree replaceReferences(AbstractSyntaxTree ast, BlockingQueue<Object> messageQueue) throws CompilationException, InterruptedException {
@@ -23,9 +23,9 @@ public class ReferenceReplacer {
 
 		List<ProcessNode> processes = ast.getProcesses();
 
-		for(int i = 0; i < processes.size(); i++){
-            replaceReferences(processes.get(i), messageQueue);
-		}
+        for (ProcessNode process : processes) {
+            replaceReferences(process, messageQueue);
+        }
 
 		return ast;
 	}
@@ -37,16 +37,16 @@ public class ReferenceReplacer {
         String identifier = process.getIdentifier();
         addReference(process.getProcess(), identifier);
 
-        Map<String, LocalProcessNode> localReferences = new HashMap<String, LocalProcessNode>();
+        Map<String, LocalProcessNode> localReferences = new HashMap<>();
         List<LocalProcessNode> localProcesses = process.getLocalProcesses();
-        for(int j = 0; j < localProcesses.size(); j++){
-            String localIdentifier = identifier + "." + localProcesses.get(j).getIdentifier();
-            localReferences.put(localIdentifier, localProcesses.get(j));
+        for (LocalProcessNode localProcess : localProcesses) {
+            String localIdentifier = identifier + "." + localProcess.getIdentifier();
+            localReferences.put(localIdentifier, localProcess);
         }
 
         ASTNode root = replaceReferences(process.getProcess(), identifier, localReferences);
         process.setProcess(root);
-        process.setLocalProcesses(new ArrayList<LocalProcessNode>());
+        process.setLocalProcesses(new ArrayList<>());
         return process;
     }
 	private ASTNode replaceReferences(ASTNode astNode, String identifier, Map<String, LocalProcessNode> localReferences) throws CompilationException, InterruptedException {

@@ -30,9 +30,6 @@ public class RelabelNode extends ASTNode {
         if(obj == this){
             return true;
         }
-        if(obj == null){
-            return false;
-        }
         if(obj instanceof RelabelNode){
             RelabelNode node = (RelabelNode)obj;
             return relabels.equals(node.getRelabels());

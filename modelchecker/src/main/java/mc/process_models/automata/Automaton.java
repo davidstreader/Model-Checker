@@ -424,7 +424,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
         builder.append("automaton:{\n");
         builder.append("\tnodes:{\n");
         for (AutomatonNode node : nodeMap.values()) {
-            builder.append("\t\t" + node.getId());
+            builder.append("\t\t").append(node.getId());
             if (node == root) {
                 builder.append("(root)");
             }
@@ -432,7 +432,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
         }
         builder.append("\t}\n\tedges:{\n");
         for (AutomatonEdge edge : edgeMap.values()) {
-            builder.append("\t\t" + edge.getFrom().getId() + " -" + edge.getLabel() + "> " + edge.getTo().getId() + "\n");
+            builder.append("\t\t").append(edge.getFrom().getId()).append(" -").append(edge.getLabel()).append("> ").append(edge.getTo().getId()).append("\n");
         }
         builder.append("\t}\n}");
 

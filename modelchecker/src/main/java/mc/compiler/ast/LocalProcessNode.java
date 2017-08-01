@@ -44,9 +44,6 @@ public class LocalProcessNode extends ASTNode {
         if(obj == this){
             return true;
         }
-        if(obj == null){
-            return false;
-        }
         if(obj instanceof LocalProcessNode){
             LocalProcessNode node = (LocalProcessNode)obj;
             if(!identifier.equals(node.getIdentifier())){
@@ -59,11 +56,7 @@ public class LocalProcessNode extends ASTNode {
                 return false;
             }
             if (process == null) return false;
-            if(!process.equals(node.getProcess())){
-                return false;
-            }
-
-            return true;
+            return process.equals(node.getProcess());
         }
 
         return false;

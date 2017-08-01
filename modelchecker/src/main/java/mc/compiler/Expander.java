@@ -31,7 +31,7 @@ public class Expander {
 
         List<OperationNode> operations = ast.getOperations();
         for (OperationNode operation : operations) {
-            Map<String, Object> variableMap = new HashMap<String, Object>();
+            Map<String, Object> variableMap = new HashMap<>();
             ASTNode process1 = expand(operation.getFirstProcess(), variableMap);
             ASTNode process2 = expand(operation.getSecondProcess(), variableMap);
 
@@ -47,7 +47,7 @@ public class Expander {
         if (process.hasVariableSet())
             hiddenVariables = process.getVariables().getVariables();
         else hiddenVariables = Collections.emptySet();
-        Map<String, Object> variableMap = new HashMap<String, Object>();
+        Map<String, Object> variableMap = new HashMap<>();
         for (LocalProcessNode node : process.getLocalProcesses()) {
             identMap.put(node.getIdentifier(),new ArrayList<>());
             if (node.getRanges() != null) {
@@ -63,7 +63,7 @@ public class Expander {
         return process;
     }
     private List<LocalProcessNode> expandLocalProcesses(List<LocalProcessNode> localProcesses, Map<String, Object> variableMap) throws CompilationException, InterruptedException {
-        List<LocalProcessNode> newLocalProcesses = new ArrayList<LocalProcessNode>();
+        List<LocalProcessNode> newLocalProcesses = new ArrayList<>();
         for (LocalProcessNode localProcess : localProcesses) {
             if (localProcess.getRanges() == null) {
                 ASTNode root = expand(localProcess.getProcess(), variableMap);
@@ -78,7 +78,7 @@ public class Expander {
     }
 
     private List<LocalProcessNode> expandLocalProcesses(LocalProcessNode localProcess, Map<String, Object> variableMap, List<IndexNode> ranges, int index) throws CompilationException, InterruptedException {
-        List<LocalProcessNode> newLocalProcesses = new ArrayList<LocalProcessNode>();
+        List<LocalProcessNode> newLocalProcesses = new ArrayList<>();
         if(index < ranges.size()){
             IndexNode range = ranges.get(index);
             IndexIterator iterator = IndexIterator.construct(expand(range));
@@ -174,7 +174,7 @@ public class Expander {
 
     private ASTNode expand(IndexNode astNode, Map<String, Object> variableMap) throws CompilationException, InterruptedException {
         IndexIterator iterator = IndexIterator.construct(expand(astNode));
-        Stack<ASTNode> iterations = new Stack<ASTNode>();
+        Stack<ASTNode> iterations = new Stack<>();
         while(iterator.hasNext()){
             Object element = iterator.next();
             variableMap.put(astNode.getVariable(), element);
@@ -348,7 +348,7 @@ public class Expander {
     }
 
     private Stack<ASTNode> expand(ASTNode process, Map<String, Object> variableMap, List<IndexNode> ranges, int index) throws CompilationException, InterruptedException {
-        Stack<ASTNode> nodes = new Stack<ASTNode>();
+        Stack<ASTNode> nodes = new Stack<>();
 
         if(index < ranges.size()){
             IndexNode node = ranges.get(index);
@@ -369,14 +369,14 @@ public class Expander {
     }
 
     private RelabelNode expand(RelabelNode relabel) throws CompilationException, InterruptedException {
-        List<RelabelElementNode> relabels = new ArrayList<RelabelElementNode>();
+        List<RelabelElementNode> relabels = new ArrayList<>();
 
         for(RelabelElementNode element : relabel.getRelabels()){
             if(!element.hasRanges()){
                 relabels.add(element);
             }
             else{
-                Map<String, Object> variableMap = new HashMap<String, Object>();
+                Map<String, Object> variableMap = new HashMap<>();
                 relabels.addAll(expand(element, variableMap, element.getRanges().getRanges(), 0));
             }
         }
@@ -385,7 +385,7 @@ public class Expander {
     }
 
     private List<RelabelElementNode> expand(RelabelElementNode element, Map<String, Object> variableMap, List<IndexNode> ranges, int index) throws CompilationException, InterruptedException {
-        List<RelabelElementNode> elements = new ArrayList<RelabelElementNode>();
+        List<RelabelElementNode> elements = new ArrayList<>();
 
         if(index < ranges.size()){
             IndexNode node = ranges.get(index);
@@ -414,10 +414,10 @@ public class Expander {
         }
 
         List<String> actions = set.getSet();
-        List<String> newActions = new ArrayList<String>();
+        List<String> newActions = new ArrayList<>();
         for(int i = 0; i < actions.size(); i++){
             if(rangeMap.containsKey(i)){
-                Map<String, Object> variableMap = new HashMap<String, Object>();
+                Map<String, Object> variableMap = new HashMap<>();
                 newActions.addAll(expand(actions.get(i), variableMap, rangeMap.get(i).getRanges(), 0));
             }
             else{
@@ -429,7 +429,7 @@ public class Expander {
     }
 
     private List<String> expand(String action, Map<String, Object> variableMap, List<IndexNode> ranges, int index) throws CompilationException, InterruptedException {
-        List<String> actions = new ArrayList<String>();
+        List<String> actions = new ArrayList<>();
         if(index < ranges.size()){
             IndexNode node = ranges.get(index);
             IndexIterator iterator = IndexIterator.construct(expand(node));
@@ -454,7 +454,7 @@ public class Expander {
     }
 
     private boolean evaluateCondition(Expression condition, Map<String, Object> variableMap) throws CompilationException, InterruptedException {
-        Map<String, Integer> variables = new HashMap<String, Integer>();
+        Map<String, Integer> variables = new HashMap<>();
         for(String key : variableMap.keySet()){
             Object value = variableMap.get(key);
             if(value instanceof Integer){
@@ -515,7 +515,7 @@ public class Expander {
     }
 
     private Map<String, Integer> constructIntegerMap(Map<String, Object> variableMap){
-        Map<String, Integer> integerMap = new HashMap<String, Integer>();
+        Map<String, Integer> integerMap = new HashMap<>();
         for(String key : variableMap.keySet()){
             if(variableMap.get(key) instanceof Integer){
                 integerMap.put(key, (Integer)variableMap.get(key));

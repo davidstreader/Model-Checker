@@ -21,7 +21,7 @@ public class SetNode extends ASTNode {
     public SetNode(List<String> set, Location location){
         super(location);
         this.set = set;
-        this.rangeMap = new HashMap<Integer, RangesNode>();
+        this.rangeMap = new HashMap<>();
     }
 
 	public List<String> getSet(){
@@ -43,9 +43,6 @@ public class SetNode extends ASTNode {
         }
         if(obj == this){
             return true;
-        }
-        if(obj == null){
-            return false;
         }
         if(obj instanceof SetNode){
             SetNode node = (SetNode)obj;

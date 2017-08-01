@@ -16,11 +16,11 @@ import static junit.framework.TestCase.fail;
 public class NegationTests {
 
     // fields
-    private ExpressionEvaluator evaluator = new ExpressionEvaluator();
-    private Map<String, Integer> variableMap = new HashMap<String, Integer>();
+    private final ExpressionEvaluator evaluator = new ExpressionEvaluator();
+    private final Map<String, Integer> variableMap = new HashMap<>();
 
     @Test
-    public void simpleNegateTest_1() throws CompilationException {
+    public void simpleNegateTest_1() throws CompilationException, InterruptedException {
         Expression expression = Expression.constructExpression("!$false");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -31,7 +31,7 @@ public class NegationTests {
     }
 
     @Test
-    public void simpleNegateTest_2() throws CompilationException{
+    public void simpleNegateTest_2() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("!$true");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -42,7 +42,7 @@ public class NegationTests {
     }
 
     @Test
-    public void parenNegateTest_1() throws CompilationException{
+    public void parenNegateTest_1() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("!($false)");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -53,7 +53,7 @@ public class NegationTests {
     }
 
     @Test
-    public void parenNegateTest_2() throws CompilationException{
+    public void parenNegateTest_2() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("!($true)");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -64,7 +64,7 @@ public class NegationTests {
     }
 
     @Test
-    public void parenNegateTest_5() throws CompilationException{
+    public void parenNegateTest_5() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("!($true || $true)");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -75,7 +75,7 @@ public class NegationTests {
     }
 
     @Test
-    public void parenNegateTest_6() throws CompilationException{
+    public void parenNegateTest_6() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("!($true && $true)");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -86,7 +86,7 @@ public class NegationTests {
     }
 
     @Test
-    public void parenNegateTest_7() throws CompilationException{
+    public void parenNegateTest_7() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("!($true && $false)");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -97,7 +97,7 @@ public class NegationTests {
     }
 
     @Test
-    public void parenNegateTest_8() throws CompilationException{
+    public void parenNegateTest_8() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("!($false || $false)");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -108,7 +108,7 @@ public class NegationTests {
     }
 
     @Test
-    public void parenNegateTest_9() throws CompilationException{
+    public void parenNegateTest_9() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("!!$false");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -119,7 +119,7 @@ public class NegationTests {
     }
 
     @Test
-    public void parenNegateTest_10() throws CompilationException{
+    public void parenNegateTest_10() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("!!$true");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -130,7 +130,7 @@ public class NegationTests {
     }
 
     @Test
-    public void simpleBitNegationTest_1() throws CompilationException{
+    public void simpleBitNegationTest_1() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("~1");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -141,7 +141,7 @@ public class NegationTests {
     }
 
     @Test
-    public void simpleBitNegationTest_2() throws CompilationException{
+    public void simpleBitNegationTest_2() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("~100");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -152,7 +152,7 @@ public class NegationTests {
     }
 
     @Test
-    public void simpleBitNegationTest_3() throws CompilationException{
+    public void simpleBitNegationTest_3() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("~0");
         int result = evaluator.evaluateExpression(expression, variableMap);
 

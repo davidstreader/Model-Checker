@@ -44,9 +44,6 @@ public class IndexNode extends ASTNode {
         if(obj == this){
             return true;
         }
-        if(obj == null){
-            return false;
-        }
         if(obj instanceof IndexNode){
             IndexNode node = (IndexNode)obj;
             if(!variable.equals(node.getVariable())){
@@ -58,11 +55,7 @@ public class IndexNode extends ASTNode {
             if(process == null && node.getProcess() != null || process != null && node.getProcess() == null){
                 return false;
             }
-            if(process != null && node.getProcess() != null && !process.equals(node.getProcess())){
-                return false;
-            }
-
-            return true;
+            return process == null || node.getProcess() == null || process.equals(node.getProcess());
         }
 
         return false;

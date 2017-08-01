@@ -34,19 +34,12 @@ public class FunctionNode extends ASTNode {
         if(obj == this){
             return true;
         }
-        if(obj == null){
-            return false;
-        }
         if(obj instanceof FunctionNode){
             FunctionNode node = (FunctionNode)obj;
             if(!function.equals(node.getFunction())){
                 return false;
             }
-            if(!process.equals(node.getProcess())){
-                return false;
-            }
-
-            return true;
+            return process.equals(node.getProcess());
         }
 
         return false;

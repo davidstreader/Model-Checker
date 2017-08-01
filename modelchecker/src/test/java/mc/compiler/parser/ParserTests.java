@@ -13,12 +13,12 @@ import java.util.List;
 /**
  * Created by sheriddavi on 1/02/17.
  */
-public abstract class ParserTests extends TestBase {
+abstract class ParserTests extends TestBase {
 
-    private Lexer lexer = new Lexer();
-    private Parser parser = new Parser();
+    private final Lexer lexer = new Lexer();
+    private final Parser parser = new Parser();
 
-    protected ProcessNode constructProcessNode(String code, int index) throws CompilationException {
+    ProcessNode constructProcessNode(String code, int index) throws InterruptedException {
         try {
             List<Token> tokens = lexer.tokenise(code);
             AbstractSyntaxTree ast = parser.parse(tokens);
@@ -30,11 +30,11 @@ public abstract class ParserTests extends TestBase {
         return null;
     }
 
-    protected ProcessNode constructProcessNode(String code) throws CompilationException {
+    ProcessNode constructProcessNode(String code) throws InterruptedException {
     	return constructProcessNode(code, 0);
     }
 
-    protected List<ProcessNode> constructProcessList(String code) throws CompilationException {
+    List<ProcessNode> constructProcessList(String code) throws InterruptedException {
         try {
             List<Token> tokens = lexer.tokenise(code);
             AbstractSyntaxTree ast = parser.parse(tokens);

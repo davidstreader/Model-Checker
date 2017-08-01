@@ -46,9 +46,6 @@ public class IfStatementNode extends ASTNode {
         if(obj == this){
             return true;
         }
-        if(obj == null){
-            return false;
-        }
         if(obj instanceof IfStatementNode){
             IfStatementNode node = (IfStatementNode)obj;
             if(!condition.equals(node.getCondition())){
@@ -60,11 +57,7 @@ public class IfStatementNode extends ASTNode {
             if(falseBranch == null && node.hasFalseBranch() || falseBranch != null && !node.hasFalseBranch()){
                 return false;
             }
-            if(falseBranch != null && !falseBranch.equals(node.getFalseBranch())){
-                return false;
-            }
-
-            return true;
+            return falseBranch == null || falseBranch.equals(node.getFalseBranch());
         }
 
         return false;

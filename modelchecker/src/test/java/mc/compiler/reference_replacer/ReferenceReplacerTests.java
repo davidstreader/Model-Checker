@@ -14,18 +14,18 @@ import java.util.List;
  */
 public class ReferenceReplacerTests extends TestBase {
 
-    private Lexer lexer = new Lexer();
-    private Parser parser = new Parser();
-    private Expander expander = new Expander();
-    private ReferenceReplacer replacer = new ReferenceReplacer();
+    private final Lexer lexer = new Lexer();
+    private final Parser parser = new Parser();
+    private final Expander expander = new Expander();
+    private final ReferenceReplacer replacer = new ReferenceReplacer();
 
-    protected ProcessNode constructProcessNode(String code, int index){
+    ProcessNode constructProcessNode(String code) throws InterruptedException {
         try{
             List<Token> tokens = lexer.tokenise(code);
             AbstractSyntaxTree ast = parser.parse(tokens);
             ast = expander.expand(ast,new PrintQueue());
             ast = replacer.replaceReferences(ast,new PrintQueue());
-            return ast.getProcesses().get(index);
+            return ast.getProcesses().get(0);
         }catch(CompilationException e){
             e.printStackTrace();
         }
@@ -33,11 +33,7 @@ public class ReferenceReplacerTests extends TestBase {
         return null;
     }
 
-    protected ProcessNode constructProcessNode(String code){
-        return constructProcessNode(code, 0);
-    }
-
-    protected List<ProcessNode> constructProcessList(String code) {
+    List<ProcessNode> constructProcessList(String code) throws InterruptedException {
         try{
             List<Token> tokens = lexer.tokenise(code);
             AbstractSyntaxTree ast = parser.parse(tokens);

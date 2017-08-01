@@ -24,9 +24,6 @@ public class TerminalNode extends ASTNode {
         if(obj == this){
             return true;
         }
-        if(obj == null){
-            return false;
-        }
         if(obj instanceof TerminalNode){
             TerminalNode node = (TerminalNode)obj;
             return terminal.equals(node.getTerminal());

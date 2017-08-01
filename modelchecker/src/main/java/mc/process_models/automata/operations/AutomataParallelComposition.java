@@ -40,11 +40,11 @@ public class AutomataParallelComposition {
 
     private void setupNodes(List<AutomatonNode> nodes1, List<AutomatonNode> nodes2) throws CompilationException {
         for(AutomatonNode node1 : nodes1){
-            nodeMap.put(node1.getId(), new ArrayList<AutomatonNode>());
+            nodeMap.put(node1.getId(), new ArrayList<>());
 
             for(AutomatonNode node2 : nodes2){
                 if(!nodeMap.containsKey(node2.getId())){
-                    nodeMap.put(node2.getId(), new ArrayList<AutomatonNode>());
+                    nodeMap.put(node2.getId(), new ArrayList<>());
                 }
 
                 String id = createId(node1, node2);
@@ -221,8 +221,8 @@ public class AutomataParallelComposition {
 
     private void setup(String id){
         this.automaton = new Automaton(id, !Automaton.CONSTRUCT_ROOT);
-        this.nodeMap = new HashMap<String, List<AutomatonNode>>();
-        this.syncedActions = new HashSet<String>();
-        this.unsyncedActions = new HashSet<String>();
+        this.nodeMap = new HashMap<>();
+        this.syncedActions = new HashSet<>();
+        this.unsyncedActions = new HashSet<>();
     }
 }

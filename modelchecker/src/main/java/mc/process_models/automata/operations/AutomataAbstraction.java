@@ -51,9 +51,9 @@ public class AutomataAbstraction {
                 .filter(edge -> !edge.isHidden())
                 .collect(Collectors.toList());
 
-        List<AutomatonNode> outgoingNodes = new ArrayList<AutomatonNode>();
-        Set<String> visited = new HashSet<String>();
-        Stack<AutomatonEdge> fringe = new Stack<AutomatonEdge>();
+        List<AutomatonNode> outgoingNodes = new ArrayList<>();
+        Set<String> visited = new HashSet<>();
+        Stack<AutomatonEdge> fringe = new Stack<>();
         fringe.push(hiddenEdge);
 
         while(!fringe.isEmpty()){
@@ -115,9 +115,9 @@ public class AutomataAbstraction {
                 .filter(edge -> !edge.isHidden())
                 .collect(Collectors.toList());
 
-        List<AutomatonNode> incomingNodes = new ArrayList<AutomatonNode>();
-        Set<String> visited = new HashSet<String>();
-        Stack<AutomatonEdge> fringe = new Stack<AutomatonEdge>();
+        List<AutomatonNode> incomingNodes = new ArrayList<>();
+        Set<String> visited = new HashSet<>();
+        Stack<AutomatonEdge> fringe = new Stack<>();
         fringe.push(hiddenEdge);
 
         while(!fringe.isEmpty()){
@@ -129,7 +129,7 @@ public class AutomataAbstraction {
 
             incomingEdges.stream()
                     .filter(edge -> edge.isHidden() && !visited.contains(edge.getId()))
-                    .forEach(edge -> fringe.push(edge));
+                    .forEach(fringe::push);
 
             visited.add(current.getId());
         }

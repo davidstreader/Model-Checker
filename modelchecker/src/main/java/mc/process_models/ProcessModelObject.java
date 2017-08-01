@@ -21,7 +21,7 @@ public abstract class ProcessModelObject implements Serializable {
     public ProcessModelObject(String id, String type){
         this.id = id;
         this.type = type;
-        this.metaData = new HashMap<String, Object>();
+        this.metaData = new HashMap<>();
     }
 
     public String getId(){

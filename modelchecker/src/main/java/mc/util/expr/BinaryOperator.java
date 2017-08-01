@@ -35,11 +35,7 @@ public abstract class BinaryOperator extends Operator {
             if(!lhs.equals(op.getLeftHandSide())){
                 return false;
             }
-            if(!rhs.equals(op.getRightHandSide())){
-                return false;
-            }
-
-            return true;
+            return rhs.equals(op.getRightHandSide());
         }
 
         return false;

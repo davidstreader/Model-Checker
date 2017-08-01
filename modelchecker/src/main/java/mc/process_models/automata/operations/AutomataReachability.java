@@ -1,6 +1,7 @@
 package mc.process_models.automata.operations;
 
 import mc.process_models.automata.Automaton;
+import mc.process_models.automata.AutomatonEdge;
 import mc.process_models.automata.AutomatonNode;
 
 import java.util.HashSet;
@@ -23,8 +24,8 @@ public class AutomataReachability {
      *      -- the processed @code{Automaton}
      */
     public Automaton removeUnreachableNodes(Automaton automaton){
-        Set<String> visited = new HashSet<String>();
-        Stack<AutomatonNode> fringe = new Stack<AutomatonNode>();
+        Set<String> visited = new HashSet<>();
+        Stack<AutomatonNode> fringe = new Stack<>();
         fringe.push(automaton.getRoot());
         // find the reachable nodes within the specified automaton
         while(!fringe.isEmpty()){
@@ -33,9 +34,9 @@ public class AutomataReachability {
             // push the neighbouring nodes from the current node to the fringe
             // if they have not already been visited
             current.getOutgoingEdges().stream()
-                    .map(edge -> edge.getTo())
+                    .map(AutomatonEdge::getTo)
                     .filter(node -> !visited.contains(node.getId()))
-                    .forEach(node -> fringe.push(node));
+                    .forEach(fringe::push);
 
             // mark the current node as being visited
             visited.add(current.getId());
@@ -44,7 +45,7 @@ public class AutomataReachability {
         // remove the nodes that were not reached during the traversal
         automaton.getNodes().stream()
                 .filter(node -> !visited.contains(node.getId()))
-                .forEach(node -> automaton.removeNode(node));
+                .forEach(automaton::removeNode);
 
         // make sure all terminal nodes are marked as terminal nodes
         automaton.getNodes().stream()

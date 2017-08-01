@@ -16,11 +16,11 @@ import static junit.framework.TestCase.fail;
 public class MultiplicationTests {
 
     // fields
-    private ExpressionEvaluator evaluator = new ExpressionEvaluator();
-    private Map<String, Integer> variableMap = new HashMap<String, Integer>();
+    private final ExpressionEvaluator evaluator = new ExpressionEvaluator();
+    private final Map<String, Integer> variableMap = new HashMap<>();
 
     @Test
-    public void simpleMultiplicationTest_1() throws CompilationException {
+    public void simpleMultiplicationTest_1() throws CompilationException, InterruptedException {
         Expression expression = Expression.constructExpression("1 * 1");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -31,7 +31,7 @@ public class MultiplicationTests {
     }
 
     @Test
-    public void simpleMultiplicationTest_2() throws CompilationException{
+    public void simpleMultiplicationTest_2() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("2 * 3");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -42,7 +42,7 @@ public class MultiplicationTests {
     }
 
     @Test
-    public void simpleMultiplicationTest_3() throws CompilationException{
+    public void simpleMultiplicationTest_3() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("4 * 5 * 6");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -53,7 +53,7 @@ public class MultiplicationTests {
     }
 
     @Test
-    public void parenMultiplicationTest_1() throws CompilationException{
+    public void parenMultiplicationTest_1() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("4 * (5 * 6)");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -64,7 +64,7 @@ public class MultiplicationTests {
     }
 
     @Test
-    public void parenMultiplicationTest_2() throws CompilationException{
+    public void parenMultiplicationTest_2() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("(4 * 5) * 6");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -75,7 +75,7 @@ public class MultiplicationTests {
     }
 
     @Test
-    public void parenMultiplicationTest_3() throws CompilationException{
+    public void parenMultiplicationTest_3() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("(4 * 5 * 6)");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -86,7 +86,7 @@ public class MultiplicationTests {
     }
 
     @Test
-    public void parenMultiplicationTest_4() throws CompilationException{
+    public void parenMultiplicationTest_4() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("((4 * 5 * 6))");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -97,7 +97,7 @@ public class MultiplicationTests {
     }
 
     @Test
-    public void simpleDivisionTest_1() throws CompilationException{
+    public void simpleDivisionTest_1() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("3 / 2");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -108,7 +108,7 @@ public class MultiplicationTests {
     }
 
     @Test
-    public void simpleMixedTest_1() throws CompilationException{
+    public void simpleMixedTest_1() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("4 / 2 * 8 / 4");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -119,7 +119,7 @@ public class MultiplicationTests {
     }
 
     @Test
-    public void simpleMixedTest_2() throws CompilationException{
+    public void simpleMixedTest_2() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("4 * 2 / 2 * 2");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -130,7 +130,7 @@ public class MultiplicationTests {
     }
 
     @Test
-    public void simpleMixedTest_3() throws CompilationException{
+    public void simpleMixedTest_3() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("4 + 2 * 8 + 6");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -141,7 +141,7 @@ public class MultiplicationTests {
     }
 
     @Test
-    public void simpleMixedTest_4() throws CompilationException{
+    public void simpleMixedTest_4() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("4 - 2 * 8 - 6");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -152,7 +152,7 @@ public class MultiplicationTests {
     }
 
     @Test
-    public void parenMixedTest_1() throws CompilationException{
+    public void parenMixedTest_1() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("(4 * 2) / (2 * 2)");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -163,7 +163,7 @@ public class MultiplicationTests {
     }
 
     @Test
-    public void parenMixedTest_2() throws CompilationException{
+    public void parenMixedTest_2() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("(4 + 2) * (8 + 6)");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -174,7 +174,7 @@ public class MultiplicationTests {
     }
 
     @Test
-    public void parenMixedTest_3() throws CompilationException{
+    public void parenMixedTest_3() throws CompilationException, InterruptedException{
         Expression expression = Expression.constructExpression("(4 - 2) * (8 - 6)");
         int result = evaluator.evaluateExpression(expression, variableMap);
 

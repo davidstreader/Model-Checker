@@ -83,7 +83,7 @@ public class Guard implements Serializable{
         variables.keySet().removeAll(hiddenVariables);
         StringBuilder builder = new StringBuilder();
         for (String var: variables.keySet()) {
-            builder.append(var+"="+variables.get(var)+",");
+            builder.append(var).append("=").append(variables.get(var)).append(",");
         }
         String str = builder.toString();
         return rm$(str.substring(0,str.length()-1));

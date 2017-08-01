@@ -14,28 +14,24 @@ import java.util.List;
 
 public class ExpanderTests extends TestBase {
 
-	private Lexer lexer = new Lexer();
-	private Parser parser = new Parser();
-	private Expander expander = new Expander();
+	private final Lexer lexer = new Lexer();
+	private final Parser parser = new Parser();
+	private final Expander expander = new Expander();
 
-	protected ProcessNode constructProcessNode(String code, int index){
-		try{
-			List<Token> tokens = lexer.tokenise(code);
-			AbstractSyntaxTree ast = parser.parse(tokens);
-			ast = expander.expand(ast,new PrintQueue());
-			return ast.getProcesses().get(index);
-		}catch(CompilationException e){
-			e.printStackTrace();
-		}
+	ProcessNode constructProcessNode(String code) throws InterruptedException {
+        try{
+            List<Token> tokens = lexer.tokenise(code);
+            AbstractSyntaxTree ast = parser.parse(tokens);
+            ast = expander.expand(ast,new PrintQueue());
+            return ast.getProcesses().get(0);
+        }catch(CompilationException e){
+            e.printStackTrace();
+        }
 
-		return null;
+        return null;
 	}
 
-	protected ProcessNode constructProcessNode(String code){
-		return constructProcessNode(code, 0);
-	}
-
-    protected List<ProcessNode> constructProcessList(String code) {
+    List<ProcessNode> constructProcessList(String code) throws InterruptedException {
         try{
             List<Token> tokens = lexer.tokenise(code);
             AbstractSyntaxTree ast = parser.parse(tokens);

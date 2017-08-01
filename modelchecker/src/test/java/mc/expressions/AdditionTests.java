@@ -16,11 +16,11 @@ import static junit.framework.TestCase.fail;
 public class AdditionTests {
 
     // fields
-    private ExpressionEvaluator evaluator = new ExpressionEvaluator();
-    private Map<String, Integer> variableMap = new HashMap<String, Integer>();
+    private final ExpressionEvaluator evaluator = new ExpressionEvaluator();
+    private final Map<String, Integer> variableMap = new HashMap<>();
 
     @Test
-    public void singleOperandTest() throws CompilationException {
+    public void singleOperandTest() throws CompilationException, InterruptedException {
         Expression expression = Expression.constructExpression("1");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -31,7 +31,7 @@ public class AdditionTests {
     }
 
     @Test
-    public void simpleAdditionTest_1() throws CompilationException{
+    public void simpleAdditionTest_1() throws CompilationException, InterruptedException {
         Expression expression = Expression.constructExpression("1 + 1");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -42,7 +42,7 @@ public class AdditionTests {
     }
 
     @Test
-    public void simpleAdditionTest_2() throws CompilationException{
+    public void simpleAdditionTest_2() throws CompilationException, InterruptedException {
         Expression expression = Expression.constructExpression("3 + 2 + 1");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -53,7 +53,7 @@ public class AdditionTests {
     }
 
     @Test
-    public void parenAdditionTest_1() throws CompilationException{
+    public void parenAdditionTest_1() throws CompilationException, InterruptedException {
         Expression expression = Expression.constructExpression("3 + (2 + 1)");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -64,7 +64,7 @@ public class AdditionTests {
     }
 
     @Test
-    public void parenAdditionTest_2() throws CompilationException{
+    public void parenAdditionTest_2() throws CompilationException, InterruptedException {
         Expression expression = Expression.constructExpression("(3 + 2) + 1");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -75,7 +75,7 @@ public class AdditionTests {
     }
 
     @Test
-    public void parenAdditionTest_3() throws CompilationException{
+    public void parenAdditionTest_3() throws CompilationException, InterruptedException {
         Expression expression = Expression.constructExpression("(3 + 2 + 1)");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -86,7 +86,7 @@ public class AdditionTests {
     }
 
     @Test
-    public void parenAdditionTest_4() throws CompilationException{
+    public void parenAdditionTest_4() throws CompilationException, InterruptedException {
         Expression expression = Expression.constructExpression("((3 + 2 + 1))");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -97,7 +97,7 @@ public class AdditionTests {
     }
 
     @Test
-    public void simpleSubtractionTest_1() throws CompilationException{
+    public void simpleSubtractionTest_1() throws CompilationException, InterruptedException {
         Expression expression = Expression.constructExpression("3 - 2");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -108,7 +108,7 @@ public class AdditionTests {
     }
 
     @Test
-    public void simpleSubtrctionTest_2() throws CompilationException{
+    public void simpleSubtrctionTest_2() throws CompilationException, InterruptedException {
         Expression expression = Expression.constructExpression("5 - 2 - 1");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -119,7 +119,7 @@ public class AdditionTests {
     }
 
     @Test
-    public void parenSubtractionTest_1() throws CompilationException{
+    public void parenSubtractionTest_1() throws CompilationException, InterruptedException {
         Expression expression = Expression.constructExpression("5 - (2 - 1)");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -130,7 +130,7 @@ public class AdditionTests {
     }
 
     @Test
-    public void parenSubtractionTest_2() throws CompilationException{
+    public void parenSubtractionTest_2() throws CompilationException, InterruptedException {
         Expression expression = Expression.constructExpression("(5 - 2) - 1");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -141,7 +141,7 @@ public class AdditionTests {
     }
 
     @Test
-    public void parenSubtractionTest_3() throws CompilationException{
+    public void parenSubtractionTest_3() throws CompilationException, InterruptedException {
         Expression expression = Expression.constructExpression("(5 - 2 - 1)");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -152,7 +152,7 @@ public class AdditionTests {
     }
 
     @Test
-    public void parenSubtractionTest_4() throws CompilationException{
+    public void parenSubtractionTest_4() throws CompilationException, InterruptedException {
         Expression expression = Expression.constructExpression("((5 - 2 - 1))");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -163,7 +163,7 @@ public class AdditionTests {
     }
 
     @Test
-    public void simpleMixedTest_1() throws CompilationException{
+    public void simpleMixedTest_1() throws CompilationException, InterruptedException {
         Expression expression = Expression.constructExpression("10 + 2 - 7");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -174,7 +174,7 @@ public class AdditionTests {
     }
 
     @Test
-    public void simpleMixedTest_2() throws CompilationException{
+    public void simpleMixedTest_2() throws CompilationException, InterruptedException {
         Expression expression = Expression.constructExpression("10 - 2 + 7");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -185,7 +185,7 @@ public class AdditionTests {
     }
 
     @Test
-    public void parenMixedTest_1() throws CompilationException{
+    public void parenMixedTest_1() throws CompilationException, InterruptedException {
         Expression expression = Expression.constructExpression("(10 + 2) - 7");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -196,7 +196,7 @@ public class AdditionTests {
     }
 
     @Test
-    public void parenMixedTest_2() throws CompilationException{
+    public void parenMixedTest_2() throws CompilationException, InterruptedException {
         Expression expression = Expression.constructExpression("(10 - 2) + 7");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -207,7 +207,7 @@ public class AdditionTests {
     }
 
     @Test
-    public void parenMixedTest_3() throws CompilationException{
+    public void parenMixedTest_3() throws CompilationException, InterruptedException {
         Expression expression = Expression.constructExpression("10 + (2 - 7)");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -218,7 +218,7 @@ public class AdditionTests {
     }
 
     @Test
-    public void parenMixedTest_4() throws CompilationException{
+    public void parenMixedTest_4() throws CompilationException, InterruptedException {
         Expression expression = Expression.constructExpression("10 - (2 + 7)");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -229,7 +229,7 @@ public class AdditionTests {
     }
 
     @Test
-    public void parenMixedTest_5() throws CompilationException{
+    public void parenMixedTest_5() throws CompilationException, InterruptedException {
         Expression expression = Expression.constructExpression("(10 + 2 - 7)");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -240,7 +240,7 @@ public class AdditionTests {
     }
 
     @Test
-    public void parenMixedTest_6() throws CompilationException{
+    public void parenMixedTest_6() throws CompilationException, InterruptedException {
         Expression expression = Expression.constructExpression("(10 - 2 + 7)");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -251,7 +251,7 @@ public class AdditionTests {
     }
 
     @Test
-    public void parenMixedTest_7() throws CompilationException{
+    public void parenMixedTest_7() throws CompilationException, InterruptedException {
         Expression expression = Expression.constructExpression("(10 + 5) - (3 + 2)");
         int result = evaluator.evaluateExpression(expression, variableMap);
 
@@ -262,7 +262,7 @@ public class AdditionTests {
     }
 
     @Test
-    public void parenMixedTest_8() throws CompilationException{
+    public void parenMixedTest_8() throws CompilationException, InterruptedException {
         Expression expression = Expression.constructExpression("(10 + (5 - 3) + 2)");
         int result = evaluator.evaluateExpression(expression, variableMap);
 

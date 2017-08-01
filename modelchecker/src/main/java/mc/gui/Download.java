@@ -166,14 +166,14 @@ public class Download extends Observable implements Runnable {
             if (file != null) {
                 try {
                     file.close();
-                } catch (Exception e) {}
+                } catch (Exception ignored) {}
             }
 
             // Close connection to server.
             if (stream != null) {
                 try {
                     stream.close();
-                } catch (Exception e) {}
+                } catch (Exception ignored) {}
             }
         }
     }

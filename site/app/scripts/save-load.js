@@ -96,7 +96,7 @@ function downloadFile() {
     if ($("#saveCode")[0].checked)
         output+= app.editor.getCode();
     if ($("#saveLayout")[0].checked) {
-        output+="\nvisualiser_json_layout:"
+        output+="\nvisualiser_json_layout:";
         output+= JSON.stringify(app.models.getJSON());
     }
     const blob = new Blob(
