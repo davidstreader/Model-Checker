@@ -12,8 +12,8 @@ import java.nio.file.Paths;
 public class Utils {
     @SuppressWarnings("deprecation")
     public static String getArch() {
-        String arch = Ascii.toLowerCase(System.getProperty("os.name"));
-        String os = isWin()?"windows":isMac()?"macosx":"linux";
+        String arch = Ascii.toLowerCase(System.getProperty("os.arch"));
+        String os = isWin()?"windows":(isMac()?"macosx":"linux");
         return arch + "-" + os;
     }
     @SuppressWarnings("deprecation")
