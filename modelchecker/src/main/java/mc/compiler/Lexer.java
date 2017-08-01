@@ -1,11 +1,10 @@
 package mc.compiler;
 
-import java.util.*;
-
 import mc.compiler.token.*;
 import mc.exceptions.LexerException;
 import mc.util.Location;
-import mc.webserver.WebSocketServer;
+
+import java.util.*;
 
 public class Lexer {
 

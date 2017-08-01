@@ -6,7 +6,6 @@ import mc.util.expr.Expression;
 
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 
 /**
  * Created by sheriddavi on 24/01/17.

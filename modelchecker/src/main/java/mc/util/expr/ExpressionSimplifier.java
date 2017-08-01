@@ -5,12 +5,10 @@ import com.microsoft.z3.enumerations.Z3_lbool;
 import lombok.SneakyThrows;
 import mc.compiler.Guard;
 import mc.exceptions.CompilationException;
-import mc.webserver.WebSocketServer;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * A class that is able to simplify expressions using Z3

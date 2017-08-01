@@ -1,14 +1,12 @@
 package mc.compiler;
 
+import mc.compiler.ast.*;
+import mc.exceptions.CompilationException;
+import mc.webserver.webobjects.LogMessage;
+
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.regex.Pattern;
-
-import mc.compiler.ast.*;
-import mc.compiler.interpreters.AutomatonInterpreter;
-import mc.exceptions.CompilationException;
-import mc.webserver.WebSocketServer;
-import mc.webserver.webobjects.LogMessage;
 
 public class ReferenceReplacer {
 

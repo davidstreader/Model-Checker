@@ -5,7 +5,6 @@ import mc.compiler.iterator.IndexIterator;
 import mc.exceptions.CompilationException;
 import mc.util.Location;
 import mc.util.expr.*;
-import mc.webserver.WebSocketServer;
 import mc.webserver.webobjects.LogMessage;
 
 import java.util.*;

@@ -1,7 +1,5 @@
 package com.redpois0n.terminal;
 
-import spark.utils.StringUtils;
-
 import javax.swing.*;
 import javax.swing.text.*;
 import java.awt.*;

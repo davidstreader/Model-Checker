@@ -2,13 +2,8 @@ package mc.webserver.webobjects;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import mc.Main;
 import mc.compiler.ast.ProcessNode;
 import mc.util.Location;
-import mc.webserver.WebSocketServer;
-import org.eclipse.jetty.websocket.api.Session;
-
-import javax.annotation.Nullable;
 
 import static org.fusesource.jansi.Ansi.ansi;
 

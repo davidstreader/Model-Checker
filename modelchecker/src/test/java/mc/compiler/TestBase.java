@@ -1,18 +1,8 @@
 package mc.compiler;
 
-import java.util.List;
-import java.util.Set;
+import mc.compiler.ast.*;
 
-import mc.compiler.ast.ASTNode;
-import mc.compiler.ast.ActionLabelNode;
-import mc.compiler.ast.ChoiceNode;
-import mc.compiler.ast.CompositeNode;
-import mc.compiler.ast.FunctionNode;
-import mc.compiler.ast.IndexNode;
-import mc.compiler.ast.RangeNode;
-import mc.compiler.ast.SequenceNode;
-import mc.compiler.ast.SetNode;
-import mc.compiler.ast.TerminalNode;
+import java.util.List;
 
 public abstract class TestBase {
 
@@ -31,7 +21,7 @@ public abstract class TestBase {
         SequenceNode node2 = constructSequenceNode(sequence2, terminal);
         return new ChoiceNode(node1, node2, null);
     }
-    
+
     protected ChoiceNode constructChoiceNode(ASTNode process1, ASTNode process2){
     	return new ChoiceNode(process1, process2, null);
     }
@@ -47,7 +37,7 @@ public abstract class TestBase {
     	return new CompositeNode(process1, process2, null);
     }
 
-    
+
     protected FunctionNode constructFunctionNode(String function, ASTNode process){
         return new FunctionNode(function, process, null);
     }

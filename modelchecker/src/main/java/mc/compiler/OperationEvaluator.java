@@ -8,7 +8,6 @@ import mc.process_models.automata.operations.AutomataOperations;
 import mc.util.Location;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Created by sheriddavi on 27/01/17.

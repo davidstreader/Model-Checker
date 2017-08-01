@@ -1,6 +1,5 @@
 package mc.compiler.lexer;
 
-import mc.compiler.token.ModuloToken;
 import mc.compiler.token.ProcessTypeToken;
 import mc.compiler.token.Token;
 import mc.exceptions.LexerException;

@@ -1,15 +1,15 @@
 package mc.compiler;
 
-import lombok.SneakyThrows;
-import mc.exceptions.CompilationException;
-import mc.process_models.automata.Automaton;
 import mc.process_models.automata.AutomatonEdge;
 import mc.process_models.automata.AutomatonNode;
 import mc.util.expr.Expression;
 import mc.util.expr.ExpressionSimplifier;
 import mc.util.expr.IntegerOperand;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 public class NodeUtils {

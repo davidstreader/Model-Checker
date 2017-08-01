@@ -1,13 +1,8 @@
 package com.redpois0n.terminal;
 
-import lombok.AllArgsConstructor;
-
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Rectangle;
-
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.JTextComponent;
+import java.awt.*;
 
 @SuppressWarnings("serial")
 public class TerminalCaret extends DefaultCaret {

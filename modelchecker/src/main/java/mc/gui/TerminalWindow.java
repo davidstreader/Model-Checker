@@ -8,12 +8,11 @@ import com.redpois0n.terminal.JTerminal;
 import lombok.Getter;
 import mc.Main;
 
+import javax.swing.*;
 import java.awt.*;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-
-import javax.swing.*;
 
 public class TerminalWindow {
 

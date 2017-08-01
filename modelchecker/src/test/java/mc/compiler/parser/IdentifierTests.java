@@ -1,16 +1,10 @@
 package mc.compiler.parser;
 
-import static org.junit.Assert.*;
-
+import mc.compiler.ast.*;
 import mc.exceptions.CompilationException;
 import org.junit.Test;
 
-import mc.compiler.ast.ChoiceNode;
-import mc.compiler.ast.CompositeNode;
-import mc.compiler.ast.IdentifierNode;
-import mc.compiler.ast.ProcessNode;
-import mc.compiler.ast.SequenceNode;
-import mc.compiler.ast.TerminalNode;
+import static org.junit.Assert.fail;
 
 public class IdentifierTests extends ParserTests {
 

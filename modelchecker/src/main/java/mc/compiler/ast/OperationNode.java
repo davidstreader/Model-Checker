@@ -1,10 +1,9 @@
 package mc.compiler.ast;
 
 import lombok.Getter;
-import mc.compiler.EquationEvaluator;
 import mc.util.Location;
 
-import static mc.compiler.EquationEvaluator.*;
+import static mc.compiler.EquationEvaluator.EquationSettings;
 
 public class OperationNode extends ASTNode {
 

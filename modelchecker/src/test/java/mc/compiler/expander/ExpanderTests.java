@@ -1,7 +1,5 @@
 package mc.compiler.expander;
 
-import java.util.List;
-
 import mc.compiler.Expander;
 import mc.compiler.Lexer;
 import mc.compiler.Parser;
@@ -11,6 +9,8 @@ import mc.compiler.ast.ProcessNode;
 import mc.compiler.token.Token;
 import mc.exceptions.CompilationException;
 import mc.util.PrintQueue;
+
+import java.util.List;
 
 public class ExpanderTests extends TestBase {
 

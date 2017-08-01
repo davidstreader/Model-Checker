@@ -1,10 +1,8 @@
 package mc.commands;
 
 import mc.Main;
-import mc.commands.CommandManager;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Arrays;
 

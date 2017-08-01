@@ -1,7 +1,5 @@
 package mc.compiler.ast;
 
-import java.util.List;
-
 import mc.util.Location;
 
 public class HidingNode extends ASTNode {

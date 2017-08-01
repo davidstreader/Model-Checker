@@ -4,7 +4,10 @@ import mc.compiler.ast.*;
 import mc.exceptions.CompilationException;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import static junit.framework.TestCase.fail;
 

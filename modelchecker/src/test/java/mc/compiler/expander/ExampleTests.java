@@ -2,7 +2,6 @@ package mc.compiler.expander;
 
 import mc.compiler.ast.*;
 import mc.exceptions.CompilationException;
-import mc.util.expr.*;
 import org.junit.Test;
 
 import java.util.ArrayList;

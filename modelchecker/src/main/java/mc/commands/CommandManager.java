@@ -2,7 +2,6 @@ package mc.commands;
 
 import mc.Main;
 import mc.util.Utils;
-import mc.webserver.WebSocketServer;
 import org.apache.commons.lang3.StringUtils;
 import org.fusesource.jansi.Ansi;
 

@@ -1,8 +1,8 @@
 package mc.compiler.ast;
 
-import java.util.List;
-
 import mc.util.Location;
+
+import java.util.List;
 
 public class RelabelNode extends ASTNode {
 

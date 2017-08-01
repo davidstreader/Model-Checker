@@ -3,7 +3,6 @@ package mc.process_models.automata.generator;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Sets;
 import lombok.SneakyThrows;
-import mc.compiler.EquationEvaluator;
 import mc.compiler.EquationEvaluator.EquationSettings;
 import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
@@ -13,7 +12,6 @@ import mc.process_models.automata.AutomatonNode;
 import mc.process_models.automata.operations.AutomataOperations;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 

@@ -1,8 +1,6 @@
 package mc.compiler.interpreters;
 
 import mc.Constant;
-import mc.compiler.Expander;
-import mc.compiler.Interpreter;
 import mc.compiler.ast.*;
 import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
@@ -10,12 +8,11 @@ import mc.process_models.automata.Automaton;
 import mc.process_models.automata.AutomatonNode;
 import mc.process_models.automata.operations.AutomataOperations;
 import mc.util.expr.Expression;
-import mc.webserver.WebSocketServer;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static mc.compiler.Compiler.*;
+import static mc.compiler.Compiler.LocalCompiler;
 
 public class AutomatonInterpreter implements ProcessModelInterpreter {
 

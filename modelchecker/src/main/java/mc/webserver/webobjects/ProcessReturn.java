@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.Setter;
 import mc.compiler.OperationResult;
 import mc.process_models.ProcessModel;
-import mc.webserver.webobjects.Context;
 
 import java.util.List;
 import java.util.Map;

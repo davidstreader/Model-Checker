@@ -6,7 +6,6 @@ import mc.compiler.token.*;
 import mc.exceptions.CompilationException;
 import mc.util.Location;
 import mc.util.expr.*;
-import mc.webserver.WebSocketServer;
 
 import java.util.*;
 

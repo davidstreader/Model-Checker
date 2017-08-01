@@ -12,15 +12,9 @@ import mc.process_models.automata.generator.AutomatonGenerator;
 import mc.process_models.automata.operations.AutomataOperations;
 import mc.webserver.webobjects.Context;
 import mc.webserver.webobjects.LogMessage;
-import mc.webserver.WebSocketServer;
-import org.apache.xpath.operations.Bool;
 
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 

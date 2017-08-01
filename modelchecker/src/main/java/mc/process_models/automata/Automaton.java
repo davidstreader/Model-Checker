@@ -1,9 +1,10 @@
 package mc.process_models.automata;
 
-import com.google.gson.Gson;
 import guru.nidi.graphviz.attribute.Rank;
 import guru.nidi.graphviz.attribute.RankDir;
-import guru.nidi.graphviz.engine.*;
+import guru.nidi.graphviz.engine.Engine;
+import guru.nidi.graphviz.engine.Format;
+import guru.nidi.graphviz.engine.Graphviz;
 import guru.nidi.graphviz.model.Label;
 import guru.nidi.graphviz.model.Link;
 import guru.nidi.graphviz.model.MutableGraph;
@@ -12,22 +13,14 @@ import mc.compiler.Guard;
 import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
 import mc.process_models.ProcessModelObject;
-import mc.util.GraphvizV8ThreadedEngine;
 import mc.util.Location;
 import mc.util.expr.ExpressionSimplifier;
 import mc.util.expr.OrOperator;
-import mc.webserver.WebSocketServer;
-import mc.webserver.webobjects.LogMessage;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.awt.geom.Point2D;
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.*;
-import java.util.concurrent.BlockingQueue;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static guru.nidi.graphviz.model.Factory.mutGraph;

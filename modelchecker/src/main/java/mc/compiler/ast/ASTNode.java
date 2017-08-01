@@ -1,13 +1,13 @@
 package mc.compiler.ast;
 
-import java.io.*;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
-
 import com.rits.cloning.Cloner;
 import lombok.Getter;
 import mc.util.Location;
+
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 public abstract class ASTNode implements Serializable {
 

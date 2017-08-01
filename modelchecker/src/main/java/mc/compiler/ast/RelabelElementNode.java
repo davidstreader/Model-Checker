@@ -1,6 +1,5 @@
 package mc.compiler.ast;
 
-import mc.compiler.token.RangeSeparatorToken;
 import mc.util.Location;
 
 public class RelabelElementNode extends ASTNode {

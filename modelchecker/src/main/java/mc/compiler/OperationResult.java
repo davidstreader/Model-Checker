@@ -4,11 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import mc.compiler.ast.ASTNode;
 import mc.exceptions.CompilationException;
-import mc.process_models.automata.Automaton;
 import mc.util.Location;
 import org.fusesource.jansi.Ansi;
-
-import java.util.List;
 
 @Getter
 public class OperationResult {

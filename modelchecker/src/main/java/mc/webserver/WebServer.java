@@ -6,15 +6,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spark.Spark;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Arrays;
 
 import static org.fusesource.jansi.Ansi.ansi;
-import static spark.Spark.get;
 import static spark.Spark.webSocket;
 
 

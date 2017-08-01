@@ -1,8 +1,10 @@
 package mc.gui;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.InputStream;
+import java.io.RandomAccessFile;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.Observable;
 
 // This class downloads a file from a URL.
 //from https://stackoverflow.com/questions/14069848/download-a-file-while-also-updating-a-jprogressbar

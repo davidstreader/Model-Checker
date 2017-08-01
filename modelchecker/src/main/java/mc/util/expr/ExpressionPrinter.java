@@ -1,6 +1,7 @@
 package mc.util.expr;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Map;
 
 public class ExpressionPrinter {
     public String printExpression(Expression expression, Map<String, Integer> variableMap){

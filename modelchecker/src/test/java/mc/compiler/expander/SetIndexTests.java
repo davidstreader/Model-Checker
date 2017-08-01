@@ -1,14 +1,13 @@
 package mc.compiler.expander;
 
-import static org.junit.Assert.*;
-
-import java.util.Stack;
-
-import org.junit.Test;
-
 import mc.compiler.ast.ASTNode;
 import mc.compiler.ast.ProcessNode;
 import mc.compiler.ast.TerminalNode;
+import org.junit.Test;
+
+import java.util.Stack;
+
+import static org.junit.Assert.fail;
 
 public class SetIndexTests extends ExpanderTests {
 
@@ -923,5 +922,5 @@ public class SetIndexTests extends ExpanderTests {
 			fail("expecting choice nodes to be equivalent");
 		}
 	}
-	
+
 }

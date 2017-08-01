@@ -12,7 +12,6 @@ import mc.process_models.automata.generator.AutomatonGenerator;
 import mc.process_models.automata.operations.AutomataOperations;
 import mc.util.GraphvizV8ThreadedEngine;
 import mc.webserver.FakeContext;
-import mc.webserver.WebSocketServer;
 import mc.webserver.webobjects.Context;
 import mc.webserver.webobjects.LogMessage;
 

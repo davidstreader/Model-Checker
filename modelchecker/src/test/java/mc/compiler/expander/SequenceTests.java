@@ -4,9 +4,9 @@ import mc.Constant;
 import mc.compiler.ast.*;
 import org.junit.Test;
 
-import static junit.framework.TestCase.fail;
-
 import java.util.Stack;
+
+import static junit.framework.TestCase.fail;
 
 public class SequenceTests extends ExpanderTests {
 
@@ -61,7 +61,7 @@ public class SequenceTests extends ExpanderTests {
             fail("expecting the sequence nodes to be equivalent");
         }
     }
-    
+
     @Test
     public void correctIndexSequenceTest_1(){
     	String input = "automata Test = ([1..2] -> [3..4] -> STOP).";
@@ -70,17 +70,17 @@ public class SequenceTests extends ExpanderTests {
     	Stack<ASTNode> branches = new Stack<ASTNode>();
     	branches.push(constructSequenceNode(new String[]{"[1]"}, choice));
     	branches.push(constructSequenceNode(new String[]{"[2]"}, choice));
-    	
+
     	ASTNode expected = branches.pop();
     	while(!branches.isEmpty()){
     		expected = constructChoiceNode(branches.pop(), expected);
     	}
-    	
+
     	if(!expected.equals(node.getProcess())){
     		fail("expecting choice nodes to be equivalent");
     	}
     }
-    
+
     @Test
     public void correctIndexSequenceTest_2(){
     	String input = "automata Test = ([1..2] -> [{a, b}] -> STOP).";
@@ -89,17 +89,17 @@ public class SequenceTests extends ExpanderTests {
     	Stack<ASTNode> branches = new Stack<ASTNode>();
     	branches.push(constructSequenceNode(new String[]{"[1]"}, choice));
     	branches.push(constructSequenceNode(new String[]{"[2]"}, choice));
-    	
+
     	ASTNode expected = branches.pop();
     	while(!branches.isEmpty()){
     		expected = constructChoiceNode(branches.pop(), expected);
     	}
-    	
+
     	if(!expected.equals(node.getProcess())){
     		fail("expecting choice nodes to be equivalent");
     	}
     }
-    
+
     @Test
     public void correctIndexSequenceTest_3(){
     	String input = "automata Test = ([{a, b}] -> [3..4] -> STOP).";
@@ -108,17 +108,17 @@ public class SequenceTests extends ExpanderTests {
     	Stack<ASTNode> branches = new Stack<ASTNode>();
     	branches.push(constructSequenceNode(new String[]{"a"}, choice));
     	branches.push(constructSequenceNode(new String[]{"b"}, choice));
-    	
+
     	ASTNode expected = branches.pop();
     	while(!branches.isEmpty()){
     		expected = constructChoiceNode(branches.pop(), expected);
     	}
-    	
+
     	if(!expected.equals(node.getProcess())){
     		fail("expecting choice nodes to be equivalent");
     	}
     }
-    
+
     @Test
     public void correctIndexSequenceTest_4(){
     	String input = "automata Test = ([{a, b}] -> [{c, d}] -> STOP).";
@@ -127,12 +127,12 @@ public class SequenceTests extends ExpanderTests {
     	Stack<ASTNode> branches = new Stack<ASTNode>();
     	branches.push(constructSequenceNode(new String[]{"a"}, choice));
     	branches.push(constructSequenceNode(new String[]{"b"}, choice));
-    	
+
     	ASTNode expected = branches.pop();
     	while(!branches.isEmpty()){
     		expected = constructChoiceNode(branches.pop(), expected);
     	}
-    	
+
     	if(!expected.equals(node.getProcess())){
     		fail("expecting choice nodes to be equivalent");
     	}

@@ -4,11 +4,8 @@ import mc.process_models.automata.Automaton;
 import mc.process_models.automata.AutomatonNode;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.Stack;
-import java.util.jar.Pack200;
-import java.util.stream.Collectors;
 
 /**
  * Created by sheriddavi on 25/01/17.

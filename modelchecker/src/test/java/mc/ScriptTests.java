@@ -4,7 +4,6 @@ import mc.compiler.OperationResult;
 import mc.exceptions.CompilationException;
 import mc.util.PrintQueue;
 import mc.webserver.FakeContext;
-import mc.webserver.webobjects.Context;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -15,7 +14,8 @@ import java.nio.file.Files;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 @RunWith(Parameterized.class)
 public class ScriptTests {
     File file;

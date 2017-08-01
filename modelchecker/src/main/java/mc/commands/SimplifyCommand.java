@@ -1,9 +1,9 @@
 package mc.commands;
 
 import mc.exceptions.CompilationException;
-import mc.util.expr.ExpressionSimplifier;
 import mc.util.expr.Expression;
 import mc.util.expr.ExpressionPrinter;
+import mc.util.expr.ExpressionSimplifier;
 import org.fusesource.jansi.Ansi;
 import org.slf4j.LoggerFactory;
 
