@@ -159,8 +159,9 @@ public class WebSocketServer {
     public void onClose(Session user, int statusCode, String reason) {
         if (runners.containsKey(user)) {
             runners.get(user).data.clear();
-            ExpressionSimplifier.closeContext(runners.get(user));
             runners.get(user).interrupt();
+            ExpressionSimplifier.closeContext(runners.get(user));
+            runners.remove(user);
             System.gc();
         }
         loggers.get(user).interrupt();
