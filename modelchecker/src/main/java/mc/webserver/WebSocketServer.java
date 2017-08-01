@@ -161,6 +161,7 @@ public class WebSocketServer {
             runners.get(user).data.clear();
             ExpressionSimplifier.closeContext(runners.get(user));
             runners.get(user).interrupt();
+            System.gc();
         }
         loggers.get(user).interrupt();
         loggers.remove(user);
