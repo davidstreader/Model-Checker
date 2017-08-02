@@ -46,7 +46,7 @@ public class NativesManager {
         logger.info(""+ansi().render("@|yellow Copying natives|@"));
         //Where to copy the files from in the jar (jars always use /)
         String zipPrefix = "native/"+Utils.getArch();
-        if (!new File("native").exists() && Utils.isJar()) {
+        if (!new File("native",Utils.getArch()).exists() && Utils.isJar()) {
             try {
                 File f =new File(NativesManager.class.getProtectionDomain()
                     .getCodeSource()

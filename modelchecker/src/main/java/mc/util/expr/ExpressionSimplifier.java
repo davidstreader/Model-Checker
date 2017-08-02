@@ -151,7 +151,9 @@ public class ExpressionSimplifier {
     }
 
     public static void closeContext(Thread compileThread) {
-        context.get(compileThread).close();
-        context.remove(compileThread);
+        if (context.containsKey(compileThread)) {
+            context.get(compileThread).close();
+            context.remove(compileThread);
+        }
     }
 }
