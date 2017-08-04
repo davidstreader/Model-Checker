@@ -54,6 +54,7 @@ public class GraphvizV8ThreadedEngine extends AbstractJsGraphvizEngine {
                     return;
                 }
                 v8.terminateExecution();
+                v8.release(true);
             }
         }
         v8Engines.remove(thread);
