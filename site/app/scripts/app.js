@@ -82,7 +82,7 @@ $(function() {
         statusBadge.text("Connected");
         statusBadge.removeClass("label-danger");
         statusBadge.addClass("label-success");
-        if (app.liveCompiling)
+        if (app.settings.getSettings().liveCompiling)
             app.compileAndBuild();
     };
     app.socket.onclose = function () {
@@ -255,5 +255,4 @@ $(function() {
     $("#generator-tab").on('shown.bs.tab',app.generator.redraw);
     $("#editor-tab").on('shown.bs.tab',()=>app.editor._editor.focus());
     $("#compilebt").click(app.compileAndBuild);
-    app.compileAndBuild();
 });
