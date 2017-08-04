@@ -1,5 +1,6 @@
 package mc;
 
+import com.sun.javafx.PlatformUtil;
 import guru.nidi.graphviz.engine.Graphviz;
 import lombok.Getter;
 import lombok.Setter;
@@ -40,6 +41,7 @@ public class Main {
         MainGui.registerConsoleAppender();
     }
     public Main(boolean reloaded) {
+        System.out.println(PlatformUtil.getEmbeddedType());
         instance = this;
         AnsiConsole.systemInstall();
         //Make sure that we kill the sub-process when this process exits.

@@ -14,7 +14,7 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.regex.Pattern;
 
-import static mc.util.expr.ExpressionSimplifier.*;
+import static mc.util.expr.Expression.*;
 
 @Setter
 @AllArgsConstructor

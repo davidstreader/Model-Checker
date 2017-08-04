@@ -9,7 +9,7 @@ import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
 import mc.process_models.automata.Automaton;
 import mc.util.GraphvizV8ThreadedEngine;
-import mc.util.expr.ExpressionSimplifier;
+import mc.util.expr.Expression;
 import mc.webserver.webobjects.*;
 import mc.webserver.webobjects.ProcessReturn.SkipObject;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -160,7 +160,7 @@ public class WebSocketServer {
         if (runners.containsKey(user)) {
             runners.get(user).data.clear();
             runners.get(user).interrupt();
-            ExpressionSimplifier.closeContext(runners.get(user));
+            Expression.closeContext(runners.get(user));
             runners.remove(user);
             System.gc();
         }

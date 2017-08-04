@@ -1,13 +1,10 @@
 package mc.compiler.ast;
 
 import com.microsoft.z3.BoolExpr;
-import com.microsoft.z3.Expr;
 import lombok.ToString;
 import mc.util.Location;
-import mc.util.expr.ExpressionSimplifier;
-import org.apache.xpath.operations.Bool;
 
-import static mc.util.expr.ExpressionSimplifier.getContext;
+import static mc.util.expr.Expression.getContext;
 
 @ToString
 public class IfStatementNode extends ASTNode {

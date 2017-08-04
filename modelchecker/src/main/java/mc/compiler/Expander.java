@@ -8,7 +8,6 @@ import mc.exceptions.CompilationException;
 import mc.util.Location;
 import mc.util.expr.*;
 import mc.webserver.webobjects.LogMessage;
-import org.apache.xpath.operations.Bool;
 
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
@@ -321,7 +320,7 @@ public class Expander {
                 if (globalVariableMap.containsKey(exp)) {
                     expression = globalVariableMap.get(exp);
                 } else {
-                    expression = ExpressionSimplifier.constructExpression(exp);
+                    expression = Expression.constructExpression(exp);
                 }
                 replacements.put("$"+var, expression);
             }
@@ -464,7 +463,7 @@ public class Expander {
                 variables.put(key, (Integer)value);
             }
         }
-        return ExpressionSimplifier.isSolvable(condition,variables);
+        return Expression.isSolvable(condition,variables);
     }
 
     private String processVariables(String string, Map<String, Object> variableMap, Location location) throws CompilationException, InterruptedException {

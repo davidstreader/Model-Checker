@@ -48,10 +48,7 @@ public class NativesManager {
         String zipPrefix = "native/"+Utils.getArch();
         if (!new File("native",Utils.getArch()).exists() && Utils.isJar()) {
             try {
-                File f =new File(NativesManager.class.getProtectionDomain()
-                    .getCodeSource()
-                    .getLocation()
-                    .getPath());
+                File f =new File(Utils.getJarPath());
                 JarFile jarfile = new JarFile(f);
                 Enumeration<JarEntry> enu = jarfile.entries();
                 while (enu.hasMoreElements()) {

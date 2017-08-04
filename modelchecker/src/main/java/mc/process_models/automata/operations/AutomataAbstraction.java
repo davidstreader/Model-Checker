@@ -6,7 +6,7 @@ import mc.exceptions.CompilationException;
 import mc.process_models.automata.Automaton;
 import mc.process_models.automata.AutomatonEdge;
 import mc.process_models.automata.AutomatonNode;
-import mc.util.expr.ExpressionSimplifier;
+import mc.util.expr.Expression;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -96,7 +96,7 @@ public class AutomataAbstraction {
             } else if (fromGuard == null && hiddenGuard != null) {
                 outGuard = hiddenGuard;
             } else if (fromGuard != null) {
-                outGuard = ExpressionSimplifier.combineGuards(hiddenGuard,fromGuard);
+                outGuard = Expression.combineGuards(hiddenGuard,fromGuard);
             }
             for (AutomatonNode to : outgoingNodes) {
                 Map<String,Object> metaData = new HashMap<>();
@@ -143,7 +143,7 @@ public class AutomataAbstraction {
             } else if (toGuard == null && hiddenGuard != null) {
                 outGuard = hiddenGuard;
             } else if (toGuard != null) {
-                outGuard = ExpressionSimplifier.combineGuards(hiddenGuard,toGuard);
+                outGuard = Expression.combineGuards(hiddenGuard,toGuard);
             }
             for (AutomatonNode from : incomingNodes) {
                 Map<String,Object> metaData = new HashMap<>();

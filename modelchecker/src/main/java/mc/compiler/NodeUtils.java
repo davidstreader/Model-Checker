@@ -5,7 +5,7 @@ import com.microsoft.z3.Expr;
 import lombok.SneakyThrows;
 import mc.process_models.automata.AutomatonEdge;
 import mc.process_models.automata.AutomatonNode;
-import mc.util.expr.ExpressionSimplifier;
+import mc.util.expr.Expression;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -47,10 +47,10 @@ public class NodeUtils {
                     next = next.replaceAll("[a-z]+","\\$$0");
                     String variable = next.substring(0,next.indexOf("="));
                     String expression = next.substring(next.indexOf("=")+1);
-                    Expr newExp = ExpressionSimplifier.constructExpression(expression);
+                    Expr newExp = Expression.constructExpression(expression);
                     //If we overwrite a variable, then there is nothing to substitute.
                     if (exp.containsKey(variable) && !(newExp instanceof BitVecNum)) {
-                        exp.put(variable, ExpressionSimplifier.substitute(newExp,exp));
+                        exp.put(variable, Expression.substitute(newExp,exp));
                     } else {
                         exp.put(variable,newExp);
                     }

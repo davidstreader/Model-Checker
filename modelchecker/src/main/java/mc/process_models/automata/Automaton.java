@@ -14,7 +14,7 @@ import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
 import mc.process_models.ProcessModelObject;
 import mc.util.Location;
-import mc.util.expr.ExpressionSimplifier;
+import mc.util.expr.Expression;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -222,9 +222,9 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
             //Since assignment should be the same (same colour) we can just copy most data from either guard.
             Guard combined = guard1.copy();
             //By putting both equations equal to eachother, if we have multiple or operations, then if one matches then it will be solveable.
-            if (!guard1.getVariables().isEmpty() && !ExpressionSimplifier.equate(guard1,guard2))
+            if (!guard1.getVariables().isEmpty() && !Expression.equate(guard1,guard2))
                 //We could take either path
-                combined.setGuard(ExpressionSimplifier.getContext().mkOr(guard1.getGuard(), guard2.getGuard()));
+                combined.setGuard(Expression.getContext().mkOr(guard1.getGuard(), guard2.getGuard()));
             else
                 combined.setGuard(guard1.getGuard());
             edge1.addMetaData("guard",combined);
@@ -281,7 +281,6 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
         if (to == null) {
             throw new CompilationException(getClass(),"Unable to add the specified edge as the destination was null.",(Location)getMetaData().get("location"));
         }
-
         // check that the nodes are part of this automaton
         if (!nodeMap.containsKey(from.getId())) {
             throw new CompilationException(getClass(),"Unable to add the specified edge as "+from.getId()+" is not a part of this automaton. \nPlease make sure you aren't linking directly to a parallel composed process!",(Location)getMetaData().get("location"));

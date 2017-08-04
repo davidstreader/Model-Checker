@@ -4,9 +4,7 @@ import com.microsoft.z3.*;
 import lombok.SneakyThrows;
 import mc.compiler.Guard;
 import mc.exceptions.CompilationException;
-import mc.webserver.WebSocketServer;
 
-import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,10 +14,7 @@ import java.util.regex.Pattern;
 /**
  * A class that is able to simplify expressions using Z3
  */
-public class ExpressionSimplifier {
-
-    public ExpressionSimplifier() throws NoSuchFieldException {
-    }
+public class Expression {
 
     /**
      * Combine two guards together
@@ -79,18 +74,6 @@ public class ExpressionSimplifier {
         }
         return (T) expr.substitute(consts,replacements);
     }
-
-    /**
-     * Convert from a z3 class name to a simple name
-     * @param className the z3 class name
-     * @return Boolean for boolean expressions, Integer for integral expressions.
-     */
-    private static String getName(String className) {
-        if (className.contains("Bool")) return "`Boolean`";
-        if (className.contains("BitVec")) return "`Integer`";
-        return className;
-    }
-
     @SneakyThrows
     public static boolean equate(Guard guard1, Guard guard2) {
             BoolExpr expr = getContext().mkAnd(substituteInts(guard1.getGuard(),guard1.getVariables()),substituteInts(guard2.getGuard(),guard2.getVariables()));
@@ -103,11 +86,7 @@ public class ExpressionSimplifier {
     private static Context mkCtx() throws InterruptedException {
         HashMap<String, String> cfg = new HashMap<>();
         cfg.put("model", "true");
-        Context ctx = new Context(cfg);
-        if (Thread.currentThread().isInterrupted()) {
-            throw new InterruptedException();
-        }
-        return ctx;
+        return new Context(cfg);
     }
     private static boolean solve(BoolExpr expr) throws CompilationException, InterruptedException {
         BoolExpr simpl = (BoolExpr) expr.simplify();
@@ -144,14 +123,8 @@ public class ExpressionSimplifier {
     public static BitVecExpr mkBV(int i) throws InterruptedException {
         return getContext().mkBV(i,32);
     }
-    private static Context getContextFor(Z3Object obj) throws IllegalAccessException, NoSuchFieldException {
-        Field m_ctx = Z3Object.class.getDeclaredField("m_ctx");
-        m_ctx.setAccessible(true);
-        return (Context) m_ctx.get(obj);
-    }
-
     public static void closeContext(Thread compileThread) {
-        if (context.containsKey(compileThread)) {
+        if (context.containsKey(compileThread) && context.get(compileThread) != null) {
             context.get(compileThread).close();
             context.remove(compileThread);
         }

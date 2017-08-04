@@ -7,7 +7,7 @@ import mc.compiler.token.*;
 import mc.exceptions.CompilationException;
 import mc.util.Location;
 import mc.util.expr.ExpressionEvaluator;
-import mc.util.expr.ExpressionSimplifier;
+import mc.util.expr.Expression;
 
 import java.util.*;
 
@@ -420,7 +420,6 @@ public class Parser {
     private void parseSingleProcessDefinition(String processType) throws CompilationException, InterruptedException {
         int start = index;
         IdentifierNode identifier = parseIdentifier();
-
         // check if a proceess with this identifier has already been defined
         if (processIdentifiers.contains(identifier.getIdentifier())) {
             throw constructException("The identifier \"" + identifier.getIdentifier() + "\" has already been defined", identifier.getLocation());
@@ -523,8 +522,12 @@ public class Parser {
             Token error = tokens.get(index - 1);
             throw constructException("expecting to parse \"=\" but received \"" + error.toString() + "\"", error.getLocation());
         }
-
-        ASTNode process = parseLocalProcess();
+        ASTNode process;
+        if (peekToken() instanceof OpenParenToken) {
+            process = parseLocalProcess();
+        } else {
+            process = parseComposite();
+        }
 
         return new LocalProcessNode(identifier.getIdentifier(), ranges, process, constructLocation(start));
     }
@@ -805,7 +808,7 @@ public class Parser {
         if (variableMap.containsKey(expr)) {
             expression = (BoolExpr) variableMap.get(expr);
         } else {
-            expression = (BoolExpr) ExpressionSimplifier.constructExpression(expr);
+            expression = (BoolExpr) Expression.constructExpression(expr);
         }
 
         // ensure that the next token is a 'then' token
@@ -839,7 +842,7 @@ public class Parser {
         if (variableMap.containsKey(expr)) {
             expression = (BoolExpr) variableMap.get(expr);
         } else {
-            expression = (BoolExpr) ExpressionSimplifier.constructExpression(expr);
+            expression = (BoolExpr) Expression.constructExpression(expr);
         }
         ASTNode trueBranch = parseLocalProcess();
         return new IfStatementNode(expression, trueBranch, constructLocation(start));
@@ -1267,7 +1270,7 @@ public class Parser {
                 return "false";
             }
             if (simp instanceof BitVecNum) {
-                return ((IntNum)ExpressionSimplifier.getContext().mkBV2Int(((BitVecNum) simp),true).simplify()).getInt()+"";
+                return ((IntNum) Expression.getContext().mkBV2Int(((BitVecNum) simp),true).simplify()).getInt()+"";
             }
         } else if (expression.isConst()) {
             return expression.toString();
@@ -1664,7 +1667,7 @@ public class Parser {
         private Map<String, Integer> precedenceMap;
         private Stack<String> operatorStack;
         private Stack<Expr> output;
-        private Context context = ExpressionSimplifier.getContext();
+        private Context context = Expression.getContext();
 
         public ExpressionParser() throws InterruptedException {
             tokens = new ArrayList<>();
@@ -1680,7 +1683,7 @@ public class Parser {
             for (String token : tokens) {
                 // check if the current token is an integer
                 if (Character.isDigit(token.charAt(0))) {
-                    output.push(ExpressionSimplifier.mkBV(Integer.parseInt(token)));
+                    output.push(Expression.mkBV(Integer.parseInt(token)));
                 }
                 // check if the current token is a variable
                 else if (token.charAt(0) == '$') {

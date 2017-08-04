@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.fail;
 
@@ -312,7 +311,7 @@ public class ExampleTests extends ParserTests {
         List<LocalProcessNode> localProcesses = new ArrayList<>();
         IndexNode index = new IndexNode("$i", new RangeNode(1, 3, null), null, null);
         RangesNode range = new RangesNode(new ArrayList<>(Collections.singletonList(index)), null);
-        Context context = ExpressionSimplifier.getContext();
+        Context context = Expression.getContext();
         BoolExpr expr1 = context.mkBVSLT(context.mkBVConst("$i",32), context.mkBV(3,32));
         SequenceNode sequence1 = constructSequenceNode(new String[]{"coin"}, new IdentifierNode("C[$v1]", null));
         IfStatementNode branch1 = new IfStatementNode(expr1, sequence1, null);
@@ -340,7 +339,7 @@ public class ExampleTests extends ParserTests {
 
         List<LocalProcessNode> localProcesses = new ArrayList<>();
 
-        Context context = ExpressionSimplifier.getContext();
+        Context context = Expression.getContext();
         BitVecExpr i = context.mkBVConst("$i",32);
         BitVecExpr j = context.mkBVConst("$i",32);
         BoolExpr expr1 = context.mkEq(i, j);
@@ -382,7 +381,7 @@ public class ExampleTests extends ParserTests {
         ForAllStatementNode forall = new ForAllStatementNode(range, root1, null);
         expected.add(new ProcessNode("automata", "Workers", forall, emptyLocal, null));
 
-        Context context = ExpressionSimplifier.getContext();
+        Context context = Expression.getContext();
         // Farmer
         List<LocalProcessNode> localProcesses = new ArrayList<>();
         BoolExpr expr1 = context.mkBVSLT(context.mkBVConst("$i",32), context.mkBV(3,32));

@@ -355,14 +355,27 @@ function applyCose(id, node) {
         //Apply the cose-bilkent algorithm to all the elements inside the parent.
         nodes.layout({
             stop: function() {
-                layoutStop(node);
+                nodes.layout({
+                    stop: function() {
+                        layoutStop(node);
+                    },
+                    name: 'cose-bilkent',
+                    // Whether to enable incremental mode
+                    randomize: false,
+                    fit: false,
+                    // Node repulsion (non overlapping) multiplier
+                    nodeRepulsion: 100000,
+
+                    animate: false,
+                    idealEdgeLength: app.settings.getSettings().nodeSep,
+                }).run();
             },
             name: 'cose-bilkent',
             // Whether to enable incremental mode
             randomize: false,
             fit: false,
             // Node repulsion (non overlapping) multiplier
-            nodeRepulsion: app.settings.getSettings().nodeSep*1000,
+            nodeRepulsion: 100000,
 
             animate: false,
             idealEdgeLength: app.settings.getSettings().nodeSep,
