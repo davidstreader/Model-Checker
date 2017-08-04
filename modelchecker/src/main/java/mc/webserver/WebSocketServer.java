@@ -112,9 +112,7 @@ public class WebSocketServer {
                         }
                     }
                     String lines = String.join("\n", lineSplit);
-                    if (ex instanceof EmptyStackException) {
-                        ret = new ErrorMessage("There was an error parsing one of your expressions.",null);
-                    } else if (ex instanceof CompilationException) {
+                    if (ex instanceof CompilationException) {
                         ret = new ErrorMessage(ex.getMessage().replace("mc.exceptions.", ""), ((CompilationException) ex).getLocation());
                     } else {
                         logger.error(ansi().render("@|red An error occurred while compiling.|@") + "");

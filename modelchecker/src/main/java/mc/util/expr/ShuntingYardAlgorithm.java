@@ -4,6 +4,8 @@ import com.microsoft.z3.BitVecExpr;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
+import mc.exceptions.CompilationException;
+import org.apache.xalan.xsltc.compiler.CompilerException;
 
 import java.util.*;
 
@@ -55,30 +57,54 @@ public class ShuntingYardAlgorithm {
         output = new Stack<>();
         index = 0;
     }
-    public Expr convert(String expression) throws InterruptedException {
-        reset();
-        char[] characters = expression.toCharArray();
+    public Expr convert(String expression) throws InterruptedException, CompilationException {
+        try {
+            reset();
+            char[] characters = expression.toCharArray();
 
-        while(index < expression.length()){
-            String result = parse(characters);
-            if(Objects.equals(result, "boolean")){
-                BoolExpr op = context.mkBool(Boolean.parseBoolean(current));
-                output.push(op);
-            }
-            if(Objects.equals(result, "integer")){
-                BitVecExpr op = Expression.mkBV(Integer.parseInt(current));
-                output.push(op);
-            }
-            else if(Objects.equals(result, "variable")){
-                BitVecExpr op = context.mkBVConst(current,32);
-                output.push(op);
-            }
-            else if(Objects.equals(result, "operator")){
-                int precedence = precedenceMap.get(current);
-                while(!operatorStack.isEmpty() && !Objects.equals(operatorStack.peek(), "(")){
-                    int nextPrecedence = precedenceMap.get(operatorStack.peek());
-                    if(precedence <= nextPrecedence){
+            while (index < expression.length()) {
+                String result = parse(characters);
+                if (Objects.equals(result, "boolean")) {
+                    BoolExpr op = context.mkBool(Boolean.parseBoolean(current));
+                    output.push(op);
+                }
+                if (Objects.equals(result, "integer")) {
+                    BitVecExpr op = Expression.mkBV(Integer.parseInt(current));
+                    output.push(op);
+                } else if (Objects.equals(result, "variable")) {
+                    BitVecExpr op = context.mkBVConst(current, 32);
+                    output.push(op);
+                } else if (Objects.equals(result, "operator")) {
+                    int precedence = precedenceMap.get(current);
+                    while (!operatorStack.isEmpty() && !Objects.equals(operatorStack.peek(), "(")) {
+                        int nextPrecedence = precedenceMap.get(operatorStack.peek());
+                        if (precedence <= nextPrecedence) {
+                            String operator = operatorStack.pop();
+                            Expr rhs = output.pop();
+                            Expr op;
+                            if (rightOperators.contains(operator)) {
+                                op = constructRightOperator(operator, rhs);
+                            } else {
+                                Expr lhs = output.pop();
+                                op = constructBothOperator(operator, lhs, rhs);
+                            }
+                            output.push(op);
+                        } else {
+                            break;
+                        }
+                    }
+
+                    operatorStack.push(current);
+                } else if (Objects.equals(result, "rightoperator")) {
+                    operatorStack.push(current);
+                } else if (Objects.equals(result, "(")) {
+                    operatorStack.push(result);
+                } else if (Objects.equals(result, ")")) {
+                    while (!operatorStack.isEmpty()) {
                         String operator = operatorStack.pop();
+                        if (operator.equals("(")) {
+                            break;
+                        }
                         Expr rhs = output.pop();
                         Expr op;
                         if (rightOperators.contains(operator)) {
@@ -88,52 +114,27 @@ public class ShuntingYardAlgorithm {
                             op = constructBothOperator(operator, lhs, rhs);
                         }
                         output.push(op);
-                    } else {
-                        break;
                     }
                 }
+            }
 
-                operatorStack.push(current);
-            }
-            else if(Objects.equals(result, "rightoperator")) {
-                operatorStack.push(current);
-            }
-            else if(Objects.equals(result, "(")){
-                operatorStack.push(result);
-            }
-            else if(Objects.equals(result, ")")){
-                while(!operatorStack.isEmpty()){
-                    String operator = operatorStack.pop();
-                    if(operator.equals("(")){
-                        break;
-                    }
-                    Expr rhs = output.pop();
-                    Expr op;
-                    if (rightOperators.contains(operator)) {
-                        op = constructRightOperator(operator, rhs);
-                    } else {
-                        Expr lhs = output.pop();
-                        op = constructBothOperator(operator, lhs, rhs);
-                    }
-                    output.push(op);
+            while (!operatorStack.isEmpty()) {
+                String operator = operatorStack.pop();
+                Expr rhs = output.pop();
+                Expr op;
+                if (rightOperators.contains(operator)) {
+                    op = constructRightOperator(operator, rhs);
+                } else {
+                    Expr lhs = output.pop();
+                    op = constructBothOperator(operator, lhs, rhs);
                 }
+                output.push(op);
             }
-        }
 
-        while(!operatorStack.isEmpty()){
-            String operator = operatorStack.pop();
-            Expr rhs = output.pop();
-            Expr op;
-            if (rightOperators.contains(operator)) {
-                op = constructRightOperator(operator, rhs);
-            } else {
-                Expr lhs = output.pop();
-                op = constructBothOperator(operator, lhs, rhs);
-            }
-            output.push(op);
+            return output.pop();
+        } catch (EmptyStackException ex) {
+            throw new CompilationException(ShuntingYardAlgorithm.class,"There was an issue trying to parse the expression: \n"+expression);
         }
-
-        return output.pop();
     }
     private Expr constructRightOperator(String operator, Expr rhs) {
         switch(operator) {

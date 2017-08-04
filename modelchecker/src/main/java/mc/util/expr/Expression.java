@@ -107,7 +107,7 @@ public class Expression {
         }
         return context.get(Thread.currentThread());
     }
-    public static Expr constructExpression(String expression, Map<String,String> variableMap) throws InterruptedException {
+    public static Expr constructExpression(String expression, Map<String,String> variableMap) throws InterruptedException, CompilationException {
         java.util.regex.Pattern regex = Pattern.compile("(\\$v.+\\b)");
         Matcher matcher = regex.matcher(expression);
         while (matcher.find()) {
@@ -117,7 +117,7 @@ public class Expression {
         ShuntingYardAlgorithm sya = new ShuntingYardAlgorithm();
         return sya.convert(expression);
     }
-    public static Expr constructExpression(String s) throws InterruptedException {
+    public static Expr constructExpression(String s) throws InterruptedException, CompilationException {
         return constructExpression(s, Collections.emptyMap());
     }
     public static BitVecExpr mkBV(int i) throws InterruptedException {

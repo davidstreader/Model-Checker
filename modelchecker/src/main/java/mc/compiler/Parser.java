@@ -1676,54 +1676,58 @@ public class Parser {
             output = new Stack<>();
         }
 
-        public Expr parseExpression(List<String> tokens) throws InterruptedException {
-            reset();
-            this.tokens = tokens;
+        public Expr parseExpression(List<String> tokens) throws InterruptedException, CompilationException {
+            try {
+                reset();
+                this.tokens = tokens;
 
-            for (String token : tokens) {
-                // check if the current token is an integer
-                if (Character.isDigit(token.charAt(0))) {
-                    output.push(Expression.mkBV(Integer.parseInt(token)));
-                }
-                // check if the current token is a variable
-                else if (token.charAt(0) == '$') {
-                    output.push(context.mkBVConst(token,32));
-                }
-                // check if token is an open parenthesis
-                else if (token.equals("(")) {
-                    operatorStack.push(token);
-                }
-                // check if the token is a closed parenthesis
-                else if (token.equals(")")) {
-                    while (!operatorStack.isEmpty()) {
-                        String operator = operatorStack.pop();
-                        if (operator.equals("(")) {
-                            break;
-                        }
-
-                        output.push(constructOperator(operator));
+                for (String token : tokens) {
+                    // check if the current token is an integer
+                    if (Character.isDigit(token.charAt(0))) {
+                        output.push(Expression.mkBV(Integer.parseInt(token)));
                     }
-                }
-                // otherwise the token is an operator
-                else {
-                    int precedence = precedenceMap.get(token);
-                    while (!operatorStack.isEmpty() && !operatorStack.peek().equals("(")) {
-                        if (precedenceMap.get(operatorStack.peek()) < precedence) {
-                            output.push(constructOperator(operatorStack.pop()));
-                        } else {
-                            break;
+                    // check if the current token is a variable
+                    else if (token.charAt(0) == '$') {
+                        output.push(context.mkBVConst(token, 32));
+                    }
+                    // check if token is an open parenthesis
+                    else if (token.equals("(")) {
+                        operatorStack.push(token);
+                    }
+                    // check if the token is a closed parenthesis
+                    else if (token.equals(")")) {
+                        while (!operatorStack.isEmpty()) {
+                            String operator = operatorStack.pop();
+                            if (operator.equals("(")) {
+                                break;
+                            }
+
+                            output.push(constructOperator(operator));
                         }
                     }
+                    // otherwise the token is an operator
+                    else {
+                        int precedence = precedenceMap.get(token);
+                        while (!operatorStack.isEmpty() && !operatorStack.peek().equals("(")) {
+                            if (precedenceMap.get(operatorStack.peek()) < precedence) {
+                                output.push(constructOperator(operatorStack.pop()));
+                            } else {
+                                break;
+                            }
+                        }
 
-                    operatorStack.push(token);
+                        operatorStack.push(token);
+                    }
                 }
-            }
 
-            while (!operatorStack.isEmpty()) {
-                output.push(constructOperator(operatorStack.pop()));
-            }
+                while (!operatorStack.isEmpty()) {
+                    output.push(constructOperator(operatorStack.pop()));
+                }
 
-            return output.pop();
+                return output.pop();
+            } catch (EmptyStackException ex) {
+                throw new CompilationException(Parser.class,"There was an error parsing the expression:\n"+tokens);
+            }
         }
 
         private Expr constructOperator(String operator) {

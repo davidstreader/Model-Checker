@@ -272,8 +272,6 @@ function saveChanges() {
         localStorage.setItem("layout", JSON.stringify(cy.json()));
 }
 function loadJSON(json) {
-    app.console.clear();
-    app.console.log("Rendering from "+(loading?"Autosave":"File")+" please wait.");
     cy.json(JSON.parse(json));
 
     const parentNodes = cy.filter(":parent");

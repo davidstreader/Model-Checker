@@ -41,7 +41,6 @@ public class Main {
         MainGui.registerConsoleAppender();
     }
     public Main(boolean reloaded) {
-        System.out.println(PlatformUtil.getEmbeddedType());
         instance = this;
         AnsiConsole.systemInstall();
         //Make sure that we kill the sub-process when this process exits.
@@ -103,12 +102,6 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        if (args.length > 0) {
-            if (args[0].equals("update")) {
-                new AutoUpdate().install();
-                return;
-            }
-        }
         //The easiest way to tell if we have reloaded the application is to set a flag.
         boolean reloaded = (args.length > 0 && args[0].equals("reloaded"));
         new Main(reloaded);
