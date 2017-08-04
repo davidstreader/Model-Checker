@@ -72,7 +72,9 @@ public class WebSocketServer {
                     }
                 }
                 queue.clear();
-            } catch (InterruptedException ignored) { } catch (IOException e) {
+            } catch (InterruptedException ignored) {
+
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
@@ -97,10 +99,17 @@ public class WebSocketServer {
                 Object ret;
                 try {
                     CompileRequest req = data.take();
+                    //Clear interrupted flag
+                    Thread.interrupted();
                     ret = compile(req, loggers.get(user).queue);
                 } catch (InterruptedException ex) {
+                    Expression.closeContext(runners.get(user));
                     continue;
                 } catch (Exception ex) {
+                    if (ex.getCause() instanceof InterruptedException) {
+                        Expression.closeContext(runners.get(user));
+                        continue;
+                    }
                     //Get a stack trace then split it into lines
                     String[] lineSplit = ExceptionUtils.getStackTrace(ex).split("\n");
                     for (int i = 0; i < lineSplit.length; i++) {
@@ -121,11 +130,16 @@ public class WebSocketServer {
                         ex.printStackTrace();
                     }
                 }
+                if (Thread.interrupted()) {
+                    Expression.closeContext(runners.get(user));
+                    continue;
+                }
                 try {
                     loggers.get(user).queue.add(new ObjectMapper().writeValueAsString(new SendObject(ret, "compileReturn")));
                 } catch (JsonProcessingException e) {
                     e.printStackTrace();
                 }
+                Expression.closeContext(runners.get(user));
             }
         }
     }
@@ -158,7 +172,6 @@ public class WebSocketServer {
         if (runners.containsKey(user)) {
             runners.get(user).data.clear();
             runners.get(user).interrupt();
-            Expression.closeContext(runners.get(user));
             runners.remove(user);
             System.gc();
         }

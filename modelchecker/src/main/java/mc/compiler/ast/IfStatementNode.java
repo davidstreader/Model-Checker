@@ -57,7 +57,8 @@ public class IfStatementNode extends ASTNode {
                     return false;
                 }
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                Thread.currentThread().interrupt();
+               throw new RuntimeException(e);
             }
             if(!trueBranch.equals(node.getTrueBranch())){
                 return false;

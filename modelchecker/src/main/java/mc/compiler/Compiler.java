@@ -90,6 +90,7 @@ public class Compiler {
                 service.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
             } catch (InterruptedException e) {
                 service.shutdownNow();
+
                 throw e;
             }
         }

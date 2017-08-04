@@ -54,8 +54,7 @@ public class Lexer {
 				tokens.add(token);
 			}
 		}
-
-		return tokens;
+        return tokens;
 	}
 
 	private String parseString(char[] characters){
