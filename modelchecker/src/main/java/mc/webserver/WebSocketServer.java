@@ -88,11 +88,6 @@ public class WebSocketServer {
             this.user = user;
         }
         @Override
-        public void interrupt() {
-            GraphvizV8ThreadedEngine.terminateAllOnThread(this);
-            super.interrupt();
-        }
-        @Override
         public void run() {
             while (user.isOpen()) {
                 System.gc();
@@ -104,10 +99,12 @@ public class WebSocketServer {
                     ret = compile(req, loggers.get(user).queue);
                 } catch (InterruptedException ex) {
                     Expression.closeContext(runners.get(user));
+                    GraphvizV8ThreadedEngine.terminateAllOnThread(this);
                     continue;
                 } catch (Exception ex) {
                     if (ex.getCause() instanceof InterruptedException) {
                         Expression.closeContext(runners.get(user));
+                        GraphvizV8ThreadedEngine.terminateAllOnThread(this);
                         continue;
                     }
                     //Get a stack trace then split it into lines
@@ -132,6 +129,7 @@ public class WebSocketServer {
                 }
                 if (Thread.interrupted()) {
                     Expression.closeContext(runners.get(user));
+                    GraphvizV8ThreadedEngine.terminateAllOnThread(this);
                     continue;
                 }
                 try {
@@ -140,6 +138,7 @@ public class WebSocketServer {
                     e.printStackTrace();
                 }
                 Expression.closeContext(runners.get(user));
+                GraphvizV8ThreadedEngine.terminateAllOnThread(this);
             }
         }
     }
