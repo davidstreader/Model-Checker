@@ -52,15 +52,11 @@ public class GraphvizV8ThreadedEngine extends AbstractJsGraphvizEngine {
     private static ConcurrentHashMap<Thread,List<V8>> v8Engines= new ConcurrentHashMap<>();
 
     public static void terminateAllOnThread(Thread thread) {
-        if (v8Engines.containsKey(thread)) {
-            for (V8 v8 : v8Engines.get(thread)) {
-                if (v8 == null) {
-                    logger.info("Found a null v8??? Ignoring.");
-                    continue;
-                }
+        List<V8> v8s = v8Engines.remove(thread);
+        if (v8s != null) {
+            for (V8 v8 : v8s) {
                 v8.terminateExecution();
             }
         }
-        v8Engines.remove(thread);
     }
 }
