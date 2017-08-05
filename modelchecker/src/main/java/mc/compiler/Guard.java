@@ -3,7 +3,6 @@ package mc.compiler;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Expr;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import lombok.*;
 import mc.exceptions.CompilationException;
 import mc.process_models.automata.AutomatonNode;

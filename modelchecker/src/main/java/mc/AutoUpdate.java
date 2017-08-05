@@ -20,7 +20,7 @@ import static org.fusesource.jansi.Ansi.ansi;
  */
 public class AutoUpdate {
     private Logger logger = LoggerFactory.getLogger(AutoUpdate.class);
-    private static final String version = "v4.0";
+    private static final String version = "v4.1";
     private static final String githubAPI = "https://api.github.com/repos/DavidSheridan/Model-Checker/releases/latest";
     private String[] getDownloadInfo() {
         try {
