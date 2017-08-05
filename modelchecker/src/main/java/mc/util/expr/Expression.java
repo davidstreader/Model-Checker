@@ -1,6 +1,11 @@
 package mc.util.expr;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.microsoft.z3.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.SneakyThrows;
 import mc.compiler.Guard;
 import mc.exceptions.CompilationException;
@@ -8,6 +13,7 @@ import mc.exceptions.CompilationException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,7 +21,34 @@ import java.util.regex.Pattern;
  * A class that is able to simplify expressions using Z3
  */
 public class Expression {
-
+    @Data
+    @AllArgsConstructor
+    private static class Substitute {
+        Map<String,Integer> variables;
+        Expr expr;
+    }
+    private static LoadingCache<Substitute, Expr> substitutions = CacheBuilder.newBuilder()
+        .maximumSize(1000)
+        .expireAfterWrite(5, TimeUnit.SECONDS)
+        .build(
+            new CacheLoader<Substitute, Expr>() {
+                public Expr load(Substitute key) throws InterruptedException {
+                    Map<String,Integer> subMap = key.variables;
+                    Expr expr = key.expr;
+                    Expr[] consts = new Expr[subMap.size()];
+                    Expr[] replacements = new Expr[subMap.size()];
+                    int i =0;
+                    for (String c : subMap.keySet()) {
+                        consts[i] = getContext().mkBVConst(c,32);
+                        replacements[i++] = getContext().mkBV(subMap.get(c),32);
+                    }
+                    Expr t = expr.substitute(consts,replacements);
+                    if (Thread.currentThread().isInterrupted()) {
+                        throw new InterruptedException("Interrupted!");
+                    }
+                    return t;
+                }
+            });
     /**
      * Combine two guards together
      * @param first The first guard
@@ -50,15 +83,8 @@ public class Expression {
 
     @SneakyThrows
     @SuppressWarnings("unchecked")
-    public static <T extends Expr> T substituteInts(T expr, Map<String, Integer> subMap) {
-        Expr[] consts = new Expr[subMap.size()];
-        Expr[] replacements = new Expr[subMap.size()];
-        int i =0;
-        for (String c : subMap.keySet()) {
-            consts[i] = getContext().mkBVConst(c,32);
-            replacements[i++] = getContext().mkBV(subMap.get(c),32);
-        }
-        return (T) expr.substitute(consts,replacements);
+    public static Expr substituteInts(Expr expr, Map<String, Integer> subMap) {
+        return substitutions.get(new Substitute(subMap,expr));
     }
 
     @SneakyThrows
@@ -72,16 +98,20 @@ public class Expression {
             consts[i] = getContext().mkBVConst(c,32);
             replacements[i++] = subMap.get(c);
         }
-        return (T) expr.substitute(consts,replacements);
+        T t = (T) expr.substitute(consts,replacements);
+        if (Thread.currentThread().isInterrupted()) {
+            throw new InterruptedException("Interrupted!");
+        }
+        return t;
     }
     @SneakyThrows
     public static boolean equate(Guard guard1, Guard guard2) {
-            BoolExpr expr = getContext().mkAnd(substituteInts(guard1.getGuard(),guard1.getVariables()),substituteInts(guard2.getGuard(),guard2.getVariables()));
+            BoolExpr expr = getContext().mkAnd(guard1.getResolved(),guard2.getResolved());
             return solve(expr);
     }
     @SneakyThrows
     public static boolean isSolvable(BoolExpr ex, Map<String, Integer> variables) {
-        return solve(substituteInts(ex,variables));
+        return solve((BoolExpr) substituteInts(ex,variables));
     }
     private static Context mkCtx() throws InterruptedException {
         HashMap<String, String> cfg = new HashMap<>();
@@ -124,8 +154,12 @@ public class Expression {
         return getContext().mkBV(i,32);
     }
     public static void closeContext(Thread compileThread) {
-        if (context.containsKey(compileThread)) {
-            context.remove(compileThread).close();
+        try {
+            if (context.containsKey(compileThread)) {
+                context.remove(compileThread).close();
+            }
+        } catch (Z3Exception ignored) {
+
         }
     }
 }

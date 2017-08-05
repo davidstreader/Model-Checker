@@ -2,6 +2,7 @@ package mc.webserver;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.microsoft.z3.Z3Exception;
 import lombok.Getter;
 import mc.compiler.CompilationObject;
 import mc.compiler.Compiler;
@@ -101,7 +102,7 @@ public class WebSocketServer {
                     //Clear interrupted flag
                     Thread.interrupted();
                     ret = compile(request, logThread.queue);
-                } catch (InterruptedException ex) {
+                } catch (InterruptedException | Z3Exception ex) {
                     continue;
                 } catch (Exception ex) {
                     if (ex.getCause() instanceof InterruptedException) {
