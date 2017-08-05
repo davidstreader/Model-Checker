@@ -21,8 +21,6 @@ public class CommandManager {
         if (main.isReloaded() || !Utils.isJar()) {
             commandMap.put("eval", new EvalCommand());
             commandMap.put("evaluate", commandMap.get("eval"));
-            commandMap.put("simp", new SimplifyCommand());
-            commandMap.put("simplify", commandMap.get("simp"));
             commandMap.put("test", new TestCommand());
         }
     }

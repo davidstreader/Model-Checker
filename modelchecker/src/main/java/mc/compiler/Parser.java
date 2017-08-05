@@ -1,13 +1,16 @@
 package mc.compiler;
 
-import com.microsoft.z3.*;
+import com.microsoft.z3.BitVecNum;
+import com.microsoft.z3.BoolExpr;
+import com.microsoft.z3.Expr;
+import com.microsoft.z3.IntNum;
 import mc.Constant;
 import mc.compiler.ast.*;
 import mc.compiler.token.*;
 import mc.exceptions.CompilationException;
 import mc.util.Location;
-import mc.util.expr.ExpressionEvaluator;
 import mc.util.expr.Expression;
+import mc.util.expr.ExpressionEvaluator;
 
 import java.util.*;
 
@@ -28,7 +31,6 @@ public class Parser {
     private int index;
     private int variableId;
 
-    private ExpressionParser expressionParser;
     private ExpressionEvaluator expressionEvaluator;
 
     public Parser() throws InterruptedException {
@@ -42,7 +44,6 @@ public class Parser {
         definedVariables = new HashSet<>();
         index = 0;
         variableId = 0;
-        expressionParser = new ExpressionParser();
         expressionEvaluator = new ExpressionEvaluator();
     }
 
@@ -68,6 +69,7 @@ public class Parser {
                 throw constructException("expecting to parse a process, operation or const definition but received \"" + token.toString() + "\"", token.getLocation());
             }
         }
+
         return new AbstractSyntaxTree(processes, operations, equations, variableMap);
     }
 
@@ -1259,7 +1261,7 @@ public class Parser {
     private String parseExpression() throws CompilationException, InterruptedException {
         List<String> exprTokens = new ArrayList<>();
         parseExpression(exprTokens);
-        Expr expression = expressionParser.parseExpression(exprTokens);
+        Expr expression = Expression.constructExpression(String.join(" ",exprTokens));
         if (expressionEvaluator.isExecutable(expression)) {
             Expr simp = expression.simplify();
             if (simp.isTrue()) {
@@ -1269,7 +1271,7 @@ public class Parser {
                 return "false";
             }
             if (simp instanceof BitVecNum) {
-                return ((IntNum) Expression.getContext().mkBV2Int(((BitVecNum) simp),true).simplify()).getInt()+"";
+                return ExpressionEvaluator.evaluate((BitVecNum) simp) + "";
             }
         } else if (expression.isConst()) {
             return expression.toString();
@@ -1294,13 +1296,13 @@ public class Parser {
         // check if a unary operation can be parsed
         if (token instanceof OperatorToken) {
             if (token instanceof AdditionToken) {
-                expression.add("#+");
+                expression.add("+");
                 token = nextToken();
             } else if (token instanceof SubtractionToken) {
-                expression.add("#-");
+                expression.add("-");
                 token = nextToken();
             } else if (token instanceof NegateToken) {
-                expression.add("#!");
+                expression.add("!");
                 token = nextToken();
             } else {
                 throw constructException("expecting to parse an unary operator but received the operator \"" + token.toString() + "\"", token.getLocation());
@@ -1400,7 +1402,7 @@ public class Parser {
         List<String> exprTokens = new ArrayList<>();
         parseSimpleExpression(exprTokens);
 
-        Expr expression = expressionParser.parseExpression(exprTokens);
+        Expr expression = Expression.constructExpression(String.join(" ",exprTokens));
         return expressionEvaluator.evaluateExpression(expression, new HashMap<>());
     }
 
@@ -1418,13 +1420,13 @@ public class Parser {
         // check if a unary operation can be parsed
         if (token instanceof OperatorToken) {
             if (token instanceof AdditionToken) {
-                expression.add("#+");
+                expression.add("+");
                 token = nextToken();
             } else if (token instanceof SubtractionToken) {
-                expression.add("#-");
+                expression.add("-");
                 token = nextToken();
             } else if (token instanceof NegateToken) {
-                expression.add("#!");
+                expression.add("!");
                 token = nextToken();
             } else {
                 throw constructException("expecting to parse an unary operator but received the operator \"" + token.toString() + "\"", token.getLocation());
@@ -1658,187 +1660,5 @@ public class Parser {
 
     private CompilationException constructException(String message, Location location) {
         return new CompilationException(Parser.class, message, location);
-    }
-
-    private class ExpressionParser {
-
-        private List<String> tokens;
-        private Map<String, Integer> precedenceMap;
-        private Stack<String> operatorStack;
-        private Stack<Expr> output;
-        private Context context = Expression.getContext();
-
-        public ExpressionParser() throws InterruptedException {
-            tokens = new ArrayList<>();
-            precedenceMap = constructPrecedenceMap();
-            operatorStack = new Stack<>();
-            output = new Stack<>();
-        }
-
-        public Expr parseExpression(List<String> tokens) throws InterruptedException, CompilationException {
-            try {
-                reset();
-                this.tokens = tokens;
-
-                for (String token : tokens) {
-                    // check if the current token is an integer
-                    if (Character.isDigit(token.charAt(0))) {
-                        output.push(Expression.mkBV(Integer.parseInt(token)));
-                    }
-                    // check if the current token is a variable
-                    else if (token.charAt(0) == '$') {
-                        output.push(context.mkBVConst(token, 32));
-                    }
-                    // check if token is an open parenthesis
-                    else if (token.equals("(")) {
-                        operatorStack.push(token);
-                    }
-                    // check if the token is a closed parenthesis
-                    else if (token.equals(")")) {
-                        while (!operatorStack.isEmpty()) {
-                            String operator = operatorStack.pop();
-                            if (operator.equals("(")) {
-                                break;
-                            }
-
-                            output.push(constructOperator(operator));
-                        }
-                    }
-                    // otherwise the token is an operator
-                    else {
-                        int precedence = precedenceMap.get(token);
-                        while (!operatorStack.isEmpty() && !operatorStack.peek().equals("(")) {
-                            if (precedenceMap.get(operatorStack.peek()) < precedence) {
-                                output.push(constructOperator(operatorStack.pop()));
-                            } else {
-                                break;
-                            }
-                        }
-
-                        operatorStack.push(token);
-                    }
-                }
-
-                while (!operatorStack.isEmpty()) {
-                    output.push(constructOperator(operatorStack.pop()));
-                }
-
-                return output.pop();
-            } catch (EmptyStackException ex) {
-                throw new CompilationException(Parser.class,"There was an error parsing the expression:\n"+tokens);
-            }
-        }
-
-        private Expr constructOperator(String operator) {
-            if (operator.charAt(0) == '#') {
-                return constructUnaryOperator(operator);
-            }
-
-            return constructBinaryOperator(operator);
-        }
-
-        private Expr constructUnaryOperator(String operator) {
-            Expr operand = output.pop();
-            switch (operator) {
-                case "#+":
-                    return operand;
-                case "#-":
-                    return context.mkBVNeg((BitVecExpr) operand);
-                case "#!":
-                    return context.mkNot((BoolExpr) operand);
-                case "#~":
-                    return context.mkBVNot((BitVecExpr) operand);
-            }
-
-            return null;
-        }
-
-        private Expr constructBinaryOperator(String operator) {
-            Expr rhs = output.pop();
-            Expr lhs = output.pop();
-            switch (operator) {
-                case "||":
-                    return context.mkOr((BoolExpr) lhs,(BoolExpr) rhs);
-                case "|":
-                    return context.mkBVOR((BitVecExpr) lhs,(BitVecExpr) rhs);
-                case "^":
-                    return context.mkXor((BoolExpr) lhs,(BoolExpr) rhs);
-                case "&&":
-                    return context.mkAnd((BoolExpr) lhs,(BoolExpr) rhs);
-                case "&":
-                    return context.mkBVAND((BitVecExpr) lhs,(BitVecExpr) rhs);
-                case "==":
-                    return context.mkEq(lhs, rhs);
-                case "!=":
-                    return context.mkNot(context.mkEq(lhs,rhs));
-                case "<":
-                    return context.mkBVSLT((BitVecExpr) lhs,(BitVecExpr) rhs);
-                case "<=":
-                    return context.mkBVSLE((BitVecExpr) lhs,(BitVecExpr) rhs);
-                case ">":
-                    return context.mkBVSGT((BitVecExpr) lhs,(BitVecExpr) rhs);
-                case ">=":
-                    return context.mkBVSGE((BitVecExpr) lhs,(BitVecExpr) rhs);
-                case "<<":
-                    return context.mkBVASHR((BitVecExpr) lhs,(BitVecExpr) rhs);
-                case ">>":
-                    return context.mkBVSHL((BitVecExpr) lhs,(BitVecExpr) rhs);
-                case "+":
-                    return context.mkBVAdd((BitVecExpr) lhs,(BitVecExpr) rhs);
-                case "-":
-                    return context.mkBVSub((BitVecExpr) lhs,(BitVecExpr) rhs);
-                case "*":
-                    return context.mkBVMul((BitVecExpr) lhs,(BitVecExpr) rhs);
-                case "/":
-                    return context.mkBVSDiv((BitVecExpr) lhs,(BitVecExpr) rhs);
-                case "%":
-                    return context.mkBVSMod((BitVecExpr) lhs,(BitVecExpr) rhs);
-            }
-
-            return null;
-        }
-
-        private Map<String, Integer> constructPrecedenceMap() {
-            Map<String, Integer> precedenceMap = new HashMap<>();
-            precedenceMap.put("(", 0);
-            precedenceMap.put(")", 0);
-
-            precedenceMap.put("#+", 1);
-            precedenceMap.put("#-", 1);
-            precedenceMap.put("#!", 1);
-            precedenceMap.put("#~", 1);
-
-            precedenceMap.put("*", 2);
-            precedenceMap.put("/", 2);
-            precedenceMap.put("%", 2);
-
-            precedenceMap.put("+", 3);
-            precedenceMap.put("-", 3);
-
-            precedenceMap.put("<<", 4);
-            precedenceMap.put(">>", 4);
-
-            precedenceMap.put("<", 5);
-            precedenceMap.put("<=", 5);
-            precedenceMap.put(">", 5);
-            precedenceMap.put(">=", 5);
-
-            precedenceMap.put("==", 6);
-            precedenceMap.put("!=", 6);
-
-            precedenceMap.put("&", 7);
-            precedenceMap.put("^", 8);
-            precedenceMap.put("|", 9);
-            precedenceMap.put("&&", 10);
-            precedenceMap.put("||", 11);
-
-            return precedenceMap;
-        }
-
-        private void reset() {
-            operatorStack.clear();
-            output.clear();
-        }
-
     }
 }

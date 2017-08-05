@@ -5,7 +5,6 @@ import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
 import mc.exceptions.CompilationException;
-import org.apache.xalan.xsltc.compiler.CompilerException;
 
 import java.util.*;
 
@@ -28,30 +27,31 @@ public class ShuntingYardAlgorithm {
 
     private void setupPrecedenceMap(){
         precedenceMap = new HashMap<>();
-        precedenceMap.put("or", -10);
-        precedenceMap.put("not", -10);
-        precedenceMap.put("and", -9);
-        precedenceMap.put("bitor", -8);
-        precedenceMap.put("exclor", -7);
-        precedenceMap.put("bitand", -6);
-        precedenceMap.put("eq", -5);
-        precedenceMap.put("noteq", -5);
-        precedenceMap.put("lt", -4);
-        precedenceMap.put("lteq", -4);
-        precedenceMap.put("gt", -4);
-        precedenceMap.put("gteq", -4);
-        precedenceMap.put("rshift", -3);
-        precedenceMap.put("lshift", -3);
-        precedenceMap.put("add", -2);
-        precedenceMap.put("sub", -2);
+        precedenceMap.put("or", -12);
+        precedenceMap.put("and", -11);
+        precedenceMap.put("bitor", -10);
+        precedenceMap.put("exclor", -9);
+        precedenceMap.put("bitand", -8);
+        precedenceMap.put("eq", -7);
+        precedenceMap.put("noteq", -7);
+        precedenceMap.put("lt", -6);
+        precedenceMap.put("lteq", -6);
+        precedenceMap.put("gt", -6);
+        precedenceMap.put("gteq", -6);
+        precedenceMap.put("rshift", -5);
+        precedenceMap.put("lshift", -5);
+        precedenceMap.put("add", -4);
+        precedenceMap.put("sub", -4);
         precedenceMap.put("bitnot", -2);
-        precedenceMap.put("mul", -1);
-        precedenceMap.put("div", -1);
-        precedenceMap.put("mod", -1);
-        precedenceMap.put("(", -0);
-        precedenceMap.put(")", -0);
+        precedenceMap.put("not", -2);
+        precedenceMap.put("neg", -2);
+        precedenceMap.put("mul", -3);
+        precedenceMap.put("div", -3);
+        precedenceMap.put("mod", -3);
+        precedenceMap.put("(", -1);
+        precedenceMap.put(")", -1);
     }
-    private List<String> rightOperators = Arrays.asList("bitnot","not");
+    private List<String> rightOperators = Arrays.asList("bitnot","not","neg");
     private void reset(){
         operatorStack = new Stack<>();
         output = new Stack<>();
@@ -79,16 +79,7 @@ public class ShuntingYardAlgorithm {
                     while (!operatorStack.isEmpty() && !Objects.equals(operatorStack.peek(), "(")) {
                         int nextPrecedence = precedenceMap.get(operatorStack.peek());
                         if (precedence <= nextPrecedence) {
-                            String operator = operatorStack.pop();
-                            Expr rhs = output.pop();
-                            Expr op;
-                            if (rightOperators.contains(operator)) {
-                                op = constructRightOperator(operator, rhs);
-                            } else {
-                                Expr lhs = output.pop();
-                                op = constructBothOperator(operator, lhs, rhs);
-                            }
-                            output.push(op);
+                            processStack(operatorStack.pop());
                         } else {
                             break;
                         }
@@ -105,36 +96,30 @@ public class ShuntingYardAlgorithm {
                         if (operator.equals("(")) {
                             break;
                         }
-                        Expr rhs = output.pop();
-                        Expr op;
-                        if (rightOperators.contains(operator)) {
-                            op = constructRightOperator(operator, rhs);
-                        } else {
-                            Expr lhs = output.pop();
-                            op = constructBothOperator(operator, lhs, rhs);
-                        }
-                        output.push(op);
+                        processStack(operator);
                     }
                 }
             }
 
             while (!operatorStack.isEmpty()) {
-                String operator = operatorStack.pop();
-                Expr rhs = output.pop();
-                Expr op;
-                if (rightOperators.contains(operator)) {
-                    op = constructRightOperator(operator, rhs);
-                } else {
-                    Expr lhs = output.pop();
-                    op = constructBothOperator(operator, lhs, rhs);
-                }
-                output.push(op);
+                processStack(operatorStack.pop());
             }
 
             return output.pop();
-        } catch (EmptyStackException ex) {
-            throw new CompilationException(ShuntingYardAlgorithm.class,"There was an issue trying to parse the expression: \n"+expression);
+        } catch (EmptyStackException | ClassCastException ex) {
+            throw new CompilationException(ShuntingYardAlgorithm.class,"There was an issue trying to parse the expression: "+expression);
         }
+    }
+    private void processStack(String operator) {
+        Expr rhs = output.pop();
+        Expr op;
+        if (rightOperators.contains(operator)) {
+            op = constructRightOperator(operator, rhs);
+        } else {
+            Expr lhs = output.pop();
+            op = constructBothOperator(operator, lhs, rhs);
+        }
+        output.push(op);
     }
     private Expr constructRightOperator(String operator, Expr rhs) {
         switch(operator) {
@@ -142,6 +127,8 @@ public class ShuntingYardAlgorithm {
                 return context.mkBVNot((BitVecExpr) rhs);
             case "not":
                 return context.mkNot((BoolExpr) rhs);
+            case "neg":
+                return context.mkBVNeg((BitVecExpr) rhs);
         }
         return null;
     }
@@ -320,11 +307,19 @@ public class ShuntingYardAlgorithm {
             index++;
         }
         else if(expression[index] == '+'){
-            current = "add";
+            if (precedenceMap.containsKey(current) || index == 0) {
+                current = "pos";
+            } else {
+                current = "add";
+            }
             index++;
         }
         else if(expression[index] == '-'){
-            current = "sub";
+            if (precedenceMap.containsKey(current) || index == 0) {
+                current = "neg";
+            } else {
+                current = "sub";
+            }
             index++;
         }
         else if(expression[index] == '*'){

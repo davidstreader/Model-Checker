@@ -22,7 +22,10 @@ public class ExpressionEvaluator {
         ex = Expression.substituteInts(ex, variableMap).simplify();
         if (ex.isTrue()) return 1;
         if (ex.isFalse()) return 0;
-        if (ex instanceof BitVecNum) return ((IntNum) Expression.getContext().mkBV2Int(((BitVecNum) ex),true).simplify()).getInt();
+        if (ex instanceof BitVecNum) return evaluate((BitVecNum) ex);
         throw new CompilationException(getClass(),"There was an undefined variable in the statement: "+ExpressionPrinter.printExpression(ex));
+    }
+    public static int evaluate(BitVecNum ex) throws InterruptedException {
+        return ((IntNum) Expression.getContext().mkBV2Int(ex,true).simplify()).getInt();
     }
 }
