@@ -20,7 +20,7 @@ sourceCompatibility = 1.8
 mainClassName = 'mc.Main'
 repositories {
     mavenCentral()
-    maven { url 'https://maven.tangentmc.net/repository/victoria' }
+    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
@@ -39,8 +39,10 @@ dependencies {
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.5'
     compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.+'
     compile 'uk.com.robust-it:cloning:1.9.3'
-    compile "guru.nidi:graphviz-java:0.2.1"
     compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'com.github.jgraph:jgraphx:v3.7.4'
+
+
 }
 test {
     setWorkingDir "src/main/resources"

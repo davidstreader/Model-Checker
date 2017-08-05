@@ -400,7 +400,6 @@ function layoutStop(cur) {
             return {y: node.position("x"),x: node.position("y")}
         });
     }
-    console.log({xMin:xMin, xMax:xMax, yMin: yMin, yMax: yMax, width: xMax-xMin, height: yMax-yMin});
     //If last is set, we are rerunning the layout, and we do not want to use normal positioning.
     if (cur.data("last")) {
         const y = cur.data("last").y;
@@ -419,7 +418,7 @@ function layoutStop(cur) {
     if (cur.descendants().length > 1) {
         //Move all descendants, and also add some padding to the left of interrupts to make them line up correctly.
         cur.descendants().positions((node, i) => {
-            return {y: node.position("y") + 10*cur.data("interrupts"), x: node.position("x") + x + cur.data("interrupts") * 2}
+            return {y: -node.position("y") + 10*cur.data("interrupts"), x: node.position("x") + x + cur.data("interrupts") * 2}
         });
     } else {
         //If there is only one node, we can just set its position and ignore what it was last set to.

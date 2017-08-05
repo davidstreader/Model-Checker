@@ -1,29 +1,19 @@
 package mc.process_models.automata;
 
-import guru.nidi.graphviz.attribute.Rank;
-import guru.nidi.graphviz.attribute.RankDir;
-import guru.nidi.graphviz.engine.Engine;
-import guru.nidi.graphviz.engine.Format;
-import guru.nidi.graphviz.engine.Graphviz;
-import guru.nidi.graphviz.model.Label;
-import guru.nidi.graphviz.model.Link;
-import guru.nidi.graphviz.model.MutableGraph;
-import guru.nidi.graphviz.model.Node;
+import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
+import com.mxgraph.layout.mxGraphLayout;
+import com.mxgraph.layout.orthogonal.mxOrthogonalLayout;
+import com.mxgraph.model.mxCell;
+import com.mxgraph.view.mxGraph;
 import mc.compiler.Guard;
 import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
 import mc.process_models.ProcessModelObject;
 import mc.util.Location;
 import mc.util.expr.Expression;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
-import java.awt.geom.Point2D;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static guru.nidi.graphviz.model.Factory.mutGraph;
-import static guru.nidi.graphviz.model.Factory.node;
 
 public class Automaton extends ProcessModelObject implements ProcessModel {
 
@@ -69,40 +59,44 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
         return root;
     }
     public void position() {
-        MutableGraph g = mutGraph(getId()).setDirected().generalAttrs().add(RankDir.LEFT_TO_RIGHT);
-        Map<String,Node> graphNodes = new HashMap<>();
-        for (AutomatonNode node : getNodes()) {
-            Node n = node(node.getId());
-            if (node.hasMetaData("startNode")) {
-                n = n.with(Rank.MIN);
+        mxGraph graph = new mxGraph();
+        Object parent = graph.getDefaultParent();
+        try {
+            Map<String, mxCell> graphNodes = new HashMap<>();
+            for (AutomatonNode node : getNodes()) {
+                mxCell n = (mxCell) graph.insertVertex(parent, node.getId(), node.getId(), 0, 0, 0, 0);
+                graphNodes.put(node.getId(), n);
+                if (node.hasMetaData("startNode")) {
+                    graph.getModel().setRoot(n);
+                }
             }
-//            for (String key: node.getMetaDataKeys()) {
-//                n = n.with(key,node.getMetaData(key));
-//            }
-            graphNodes.put(node.getId(),n);
-            g.add(n);
-        }
-        for (AutomatonEdge edge : getEdges()) {
-            Node to = graphNodes.get(edge.getTo().getId());
-            Node from = graphNodes.get(edge.getFrom().getId());
-            Node l = from.link(to.linkTo().with(Label.of(edge.getLabel())));
-//            for (String key: edge.getMetaDataKeys()) {
-//                l = l.with(key,edge.getMetaData(key));
-//            }
-            g.add(l);
-        }
-        Graphviz viz = Graphviz.fromGraph(g);
-        JSONObject obj = new JSONObject(viz.engine(Engine.DOT).render(Format.JSON).toString());
-        JSONArray objects = obj.getJSONArray("objects");
-        for (int i = 0; i < objects.length(); i++) {
-            JSONObject ele = objects.getJSONObject(i);
-            String[] posString = ele.getString("pos").split(",");
-
+            for (AutomatonEdge edge : getEdges()) {
+                Object to = graphNodes.get(edge.getTo().getId());
+                Object from = graphNodes.get(edge.getFrom().getId());
+                graph.insertEdge(parent, edge.getId(), edge.getLabel(), from, to);
+            }
+            mxGraphLayout layout;
             try {
-                getNode(ele.getString("name")).addMetaData("pos",new Point2D.Double(Double.parseDouble(posString[0]),Double.parseDouble(posString[1])));
-            } catch (CompilationException e) {
-                e.printStackTrace();
+                layout = new mxHierarchicalLayout(graph) {
+
+                    @Override
+                    public List<Object> findRoots(Object parent, Set<Object> vertices)
+                    {
+                        List<Object> list = new ArrayList<>();
+                        list.add(graphNodes.get(getRoot().getId()));
+                        return list;
+                    }
+                };
+                layout.execute(parent);
+            } catch (Exception ex) {
+                layout = new mxOrthogonalLayout(graph);
+                layout.execute(parent);
             }
+            for (Map.Entry<String, mxCell> id : graphNodes.entrySet()) {
+                getNode(id.getKey()).addMetaData("pos",id.getValue().getGeometry().getPoint());
+            }
+        } catch (CompilationException e) {
+            e.printStackTrace();
         }
     }
     public void setRoot(AutomatonNode root) throws CompilationException {
@@ -337,15 +331,6 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
         edgeMap.remove(edge.getId());
         return true;
-    }
-
-    private boolean findEdgeWith(Link link, String id) {
-        for (Map.Entry<String,Object> entry : link.attrs()) {
-            if (entry.getKey().equals("id") && entry.getValue().equals(id)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public boolean removeEdge(String id) {

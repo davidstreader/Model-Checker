@@ -124,9 +124,8 @@ public class Expression {
         return getContext().mkBV(i,32);
     }
     public static void closeContext(Thread compileThread) {
-        if (context.containsKey(compileThread) && context.get(compileThread) != null) {
-            context.get(compileThread).close();
-            context.remove(compileThread);
+        if (context.containsKey(compileThread)) {
+            context.remove(compileThread).close();
         }
     }
 }

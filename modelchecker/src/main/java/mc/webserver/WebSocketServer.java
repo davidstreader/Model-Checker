@@ -8,12 +8,12 @@ import mc.compiler.Compiler;
 import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
 import mc.process_models.automata.Automaton;
-import mc.util.GraphvizV8ThreadedEngine;
 import mc.util.expr.Expression;
 import mc.webserver.webobjects.*;
 import mc.webserver.webobjects.ProcessReturn.SkipObject;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.eclipse.jetty.websocket.api.Session;
+import org.eclipse.jetty.websocket.api.WebSocketException;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
@@ -36,9 +36,9 @@ public class WebSocketServer {
         SendObject keepAlive = new SendObject("tick","keepalive");
         new Thread(()->{
             while(true) {
-                loggers.values().stream().map(LogThread::getQueue).forEach(queue->queue.add(keepAlive));
+                runners.values().stream().map(s -> s.logThread.queue).forEach(queue->queue.add(keepAlive));
                 try {
-                    Thread.sleep(TimeUnit.SECONDS.toMillis(5));
+                    Thread.sleep(TimeUnit.SECONDS.toMillis(20));
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -47,11 +47,10 @@ public class WebSocketServer {
     }
     @Getter
     private class LogThread extends Thread {
-        BlockingQueue<Object> queue;
+        BlockingQueue<Object> queue = new LinkedBlockingQueue<>();
         Session user;
-        public LogThread(BlockingQueue<Object> queue, Session user) {
+        public LogThread(Session user) {
             super("Log thread");
-            this.queue = queue;
             this.user = user;
         }
         @Override
@@ -72,83 +71,85 @@ public class WebSocketServer {
                     }
                 }
                 queue.clear();
-            } catch (InterruptedException | IOException ignored) {
+            } catch (InterruptedException | IOException | WebSocketException ignored) {
 
             }
         }
     }
     private class CompileThread extends Thread {
-        LinkedBlockingQueue<CompileRequest> data = new LinkedBlockingQueue<>();
-        Session user;
+        volatile CompileRequest req;
+        final Session user;
+        final LogThread logThread;
 
-        public CompileThread(Session user) {
+        public CompileThread(Session user, LogThread thread) {
             super("Compiler");
             this.user = user;
+            logThread = thread;
         }
         @Override
-        public void run() {
+        public synchronized void run() {
             while (user.isOpen()) {
+                Expression.closeContext(this);
                 System.gc();
                 Object ret;
                 try {
-                    CompileRequest req = data.take();
+                    while (req == null) {
+                        wait();
+                    }
+                    CompileRequest request = req;
+                    req = null;
                     //Clear interrupted flag
                     Thread.interrupted();
-                    ret = compile(req, loggers.get(user).queue);
+                    ret = compile(request, logThread.queue);
                 } catch (InterruptedException ex) {
-                    Expression.closeContext(runners.get(user));
-                    GraphvizV8ThreadedEngine.terminateAllOnThread(this);
                     continue;
                 } catch (Exception ex) {
                     if (ex.getCause() instanceof InterruptedException) {
-                        Expression.closeContext(runners.get(user));
-                        GraphvizV8ThreadedEngine.terminateAllOnThread(this);
                         continue;
                     }
-                    //Get a stack trace then split it into lines
-                    String[] lineSplit = ExceptionUtils.getStackTrace(ex).split("\n");
-                    for (int i = 0; i < lineSplit.length; i++) {
-                        //if the line contains com.conrun... then we have gotten up to the socket.io portion of the stack trace
-                        //And we can ignore this line and the rest.
-                        if (lineSplit[i].contains("mc.webserver")) {
-                            lineSplit = Arrays.copyOfRange(lineSplit, 1, i);
-                            break;
-                        }
-                    }
-                    String lines = String.join("\n", lineSplit);
-                    if (ex instanceof CompilationException) {
-                        ret = new ErrorMessage(ex.getMessage().replace("mc.exceptions.", ""), ((CompilationException) ex).getLocation());
-                    } else {
-                        logger.error(ansi().render("@|red An error occurred while compiling.|@") + "");
-                        logger.error(ex + "\n" + lines);
-                        ret = new ErrorMessage(ex + "", lines, null);
-                        ex.printStackTrace();
-                    }
+                    ret = getErrorMessage(ex);
                 }
                 if (Thread.interrupted()) {
-                    Expression.closeContext(runners.get(user));
-                    GraphvizV8ThreadedEngine.terminateAllOnThread(this);
                     continue;
                 }
                 try {
-                    loggers.get(user).queue.add(new ObjectMapper().writeValueAsString(new SendObject(ret, "compileReturn")));
+                    logThread.queue.add(new ObjectMapper().writeValueAsString(new SendObject(ret, "compileReturn")));
                 } catch (JsonProcessingException e) {
                     e.printStackTrace();
                 }
-                Expression.closeContext(runners.get(user));
-                GraphvizV8ThreadedEngine.terminateAllOnThread(this);
             }
+            Expression.closeContext(this);
+        }
+    }
+
+    private ErrorMessage getErrorMessage(Exception ex) {
+        //Get a stack trace then split it into lines
+        String[] lineSplit = ExceptionUtils.getStackTrace(ex).split("\n");
+        for (int i = 0; i < lineSplit.length; i++) {
+            //if the line contains com.conrun... then we have gotten up to the socket.io portion of the stack trace
+            //And we can ignore this line and the rest.
+            if (lineSplit[i].contains("mc.webserver")) {
+                lineSplit = Arrays.copyOfRange(lineSplit, 1, i);
+                break;
+            }
+        }
+        String lines = String.join("\n", lineSplit);
+        if (ex instanceof CompilationException) {
+            return new ErrorMessage(ex.getMessage().replace("mc.exceptions.", ""), ((CompilationException) ex).getLocation());
+        } else {
+            logger.error(ansi().render("@|red An error occurred while compiling.|@") + "");
+            logger.error(ex + "\n" + lines);
+            return new ErrorMessage(ex + "", lines, null);
         }
     }
 
     @OnWebSocketMessage
-    public void onMessage(Session user, String message) {
+    public synchronized void onMessage(Session user, String message) {
         logger.info(ansi().render("Received compile command from @|yellow " + user.getRemoteAddress().getHostString() + "|@") + "");
-        runners.get(user).data.clear();
-        runners.get(user).interrupt();
         try {
-            CompileRequest data = mapper.readValue(message, CompileRequest.class);
-            runners.get(user).data.add(data);
+            runners.get(user).req = mapper.readValue(message, CompileRequest.class);
+            runners.get(user).interrupt();
+            notifyAll();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -156,10 +157,8 @@ public class WebSocketServer {
 
     @OnWebSocketConnect
     public void onOpen(Session user) {
-        BlockingQueue<Object> queue = new LinkedBlockingQueue<>();
-        LogThread logThread = new LogThread(queue, user);
-        loggers.put(user,logThread);
-        CompileThread thread = new CompileThread(user);
+        LogThread logThread = new LogThread(user);
+        CompileThread thread = new CompileThread(user,logThread);
         runners.put(user,thread);
         thread.start();
         logThread.start();
@@ -167,13 +166,8 @@ public class WebSocketServer {
     @OnWebSocketClose
     public void onClose(Session user, int statusCode, String reason) {
         if (runners.containsKey(user)) {
-            runners.get(user).data.clear();
-            runners.get(user).interrupt();
-            runners.remove(user);
-            System.gc();
+            runners.remove(user).interrupt();
         }
-        loggers.get(user).interrupt();
-        loggers.remove(user);
     }
     private ProcessReturn compile(CompileRequest data, BlockingQueue<Object> messageQueue) throws CompilationException, InterruptedException {
         CompilationObject ret = new Compiler().compile(data.getCode(),data.getContext(),messageQueue);
@@ -225,5 +219,4 @@ public class WebSocketServer {
     }
 
     private static HashMap<Session,CompileThread> runners = new HashMap<>();
-    private static HashMap<Session,LogThread> loggers = new HashMap<>();
 }
