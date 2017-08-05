@@ -4,12 +4,16 @@ import com.eclipsesource.v8.V8;
 import guru.nidi.graphviz.engine.AbstractJsGraphvizEngine;
 import guru.nidi.graphviz.engine.GraphvizException;
 import lombok.Getter;
+import mc.webserver.WebSocketServer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class GraphvizV8ThreadedEngine extends AbstractJsGraphvizEngine {
+    private Logger logger = LoggerFactory.getLogger(GraphvizV8ThreadedEngine.class);
     public GraphvizV8ThreadedEngine() {
         super(true);
     }
@@ -51,10 +55,9 @@ public class GraphvizV8ThreadedEngine extends AbstractJsGraphvizEngine {
         if (v8Engines.containsKey(thread)) {
             for (V8 v8 : v8Engines.get(thread)) {
                 if (v8 == null) {
-                    return;
+                    continue;
                 }
                 v8.terminateExecution();
-                v8.release(true);
             }
         }
         v8Engines.remove(thread);
