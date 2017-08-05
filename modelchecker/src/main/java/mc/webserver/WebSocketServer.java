@@ -72,10 +72,8 @@ public class WebSocketServer {
                     }
                 }
                 queue.clear();
-            } catch (InterruptedException ignored) {
+            } catch (InterruptedException | IOException ignored) {
 
-            } catch (IOException e) {
-                e.printStackTrace();
             }
         }
     }

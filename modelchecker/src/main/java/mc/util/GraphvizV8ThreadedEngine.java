@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class GraphvizV8ThreadedEngine extends AbstractJsGraphvizEngine {
-    private Logger logger = LoggerFactory.getLogger(GraphvizV8ThreadedEngine.class);
+    private static Logger logger = LoggerFactory.getLogger(GraphvizV8ThreadedEngine.class);
     public GraphvizV8ThreadedEngine() {
         super(true);
     }
@@ -55,6 +55,7 @@ public class GraphvizV8ThreadedEngine extends AbstractJsGraphvizEngine {
         if (v8Engines.containsKey(thread)) {
             for (V8 v8 : v8Engines.get(thread)) {
                 if (v8 == null) {
+                    logger.info("Found a null v8??? Ignoring.");
                     continue;
                 }
                 v8.terminateExecution();
