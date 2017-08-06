@@ -84,7 +84,18 @@ public class Expression {
     @SneakyThrows
     @SuppressWarnings("unchecked")
     public static Expr substituteInts(Expr expr, Map<String, Integer> subMap) {
-        return substitutions.get(new Substitute(subMap,expr));
+        Expr[] consts = new Expr[subMap.size()];
+        Expr[] replacements = new Expr[subMap.size()];
+        int i =0;
+        for (String c : subMap.keySet()) {
+            consts[i] = getContext().mkBVConst(c,32);
+            replacements[i++] = getContext().mkBV(subMap.get(c),32);
+        }
+        Expr t = expr.substitute(consts,replacements);
+        if (Thread.currentThread().isInterrupted()) {
+            throw new InterruptedException("Interrupted!");
+        }
+        return t;
     }
 
     @SneakyThrows
