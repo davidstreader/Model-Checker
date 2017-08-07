@@ -238,8 +238,7 @@ public class Parser {
                 // otherwise the expression is an integer that we can parse
                 startValue = Integer.parseInt(expression);
             } catch (NumberFormatException ex) {
-                Token error = tokens.get(index - 1);
-                throw constructException("expecting to parse a number but received \"" + error.toString() + "\"", error.getLocation());
+                throw constructException("expecting to parse a number but received \"" + expression + "\"", constructLocation(start));
             }
         }
 
