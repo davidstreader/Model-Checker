@@ -110,7 +110,6 @@ public class ShuntingYardAlgorithm {
         } catch (EmptyStackException | ClassCastException ex) {
             if (location == null)
                 throw new CompilationException(ShuntingYardAlgorithm.class,"There was an issue trying to parse the expression: "+expression);
-
             throw new CompilationException(ShuntingYardAlgorithm.class,"There was an issue trying to parse the expression: "+expression, location);
         }
     }

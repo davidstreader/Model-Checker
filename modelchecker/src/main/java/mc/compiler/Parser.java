@@ -10,6 +10,7 @@ import mc.exceptions.CompilationException;
 import mc.util.Location;
 import mc.util.expr.Expression;
 import mc.util.expr.ExpressionEvaluator;
+import mc.util.expr.ExpressionPrinter;
 
 import java.util.*;
 
@@ -802,21 +803,22 @@ public class Parser {
     }
 
     private IfStatementNode parseIfStatement() throws CompilationException, InterruptedException {
-        int start = index;
         // ensure that the next token is a 'if' token
         if (!(nextToken() instanceof IfToken)) {
             Token error = tokens.get(index - 1);
             throw constructException("expecting to parse \"if\" but received \"" + error.toString() + "\"", error.getLocation());
         }
-        Token current = peekToken();
+        int start = index;
         String expr = parseExpression();
-        BoolExpr expression;
+        Expr expression;
         if (variableMap.containsKey(expr)) {
-            expression = (BoolExpr) variableMap.get(expr);
+            expression = variableMap.get(expr);
         } else {
-            expression = (BoolExpr) Expression.constructExpression(expr, current.getLocation());
+            expression = Expression.constructExpression(expr, constructLocation(start));
         }
-
+        if (!(expression instanceof BoolExpr)) {
+            throw constructException("expecting to parse a boolean statement but received \"" +ExpressionPrinter.printExpression(expression)+"\"", constructLocation(start));
+        }
         // ensure that the next token is a 'then' token
         if (!(nextToken() instanceof ThenToken)) {
             Token error = tokens.get(index - 1);
@@ -830,10 +832,10 @@ public class Parser {
             nextToken(); // gobble the 'then' token
             ASTNode falseBranch = parseLocalProcess();
 
-            return new IfStatementNode(expression, trueBranch, falseBranch, constructLocation(start));
+            return new IfStatementNode((BoolExpr) expression, trueBranch, falseBranch, constructLocation(start));
         }
 
-        return new IfStatementNode(expression, trueBranch, constructLocation(start));
+        return new IfStatementNode((BoolExpr) expression, trueBranch, constructLocation(start));
     }
 
     private IfStatementNode parseWhenStatement() throws CompilationException, InterruptedException {
@@ -843,16 +845,19 @@ public class Parser {
             Token error = tokens.get(index - 1);
             throw constructException("expecting to parse \"when\" but received \"" + error.toString() + "\"", error.getLocation());
         }
-        Token current = peekToken();
+        start = index;
         String expr = parseExpression();
-        BoolExpr expression;
+        Expr expression;
         if (variableMap.containsKey(expr)) {
-            expression = (BoolExpr) variableMap.get(expr);
+            expression = variableMap.get(expr);
         } else {
-            expression = (BoolExpr) Expression.constructExpression(expr,current.getLocation());
+            expression = Expression.constructExpression(expr,constructLocation(start));
+        }
+        if (!(expression instanceof BoolExpr)) {
+            throw constructException("expecting to parse a boolean statement but received \"" +ExpressionPrinter.printExpression(expression)+"\"", constructLocation(start));
         }
         ASTNode trueBranch = parseLocalProcess();
-        return new IfStatementNode(expression, trueBranch, constructLocation(start));
+        return new IfStatementNode((BoolExpr) expression, trueBranch, constructLocation(start));
     }
 
     private ForAllStatementNode parseForAllStatement() throws CompilationException, InterruptedException {
@@ -1266,9 +1271,9 @@ public class Parser {
 
     private String parseExpression() throws CompilationException, InterruptedException {
         List<String> exprTokens = new ArrayList<>();
-        Token current = peekToken();
+        int start = index;
         parseExpression(exprTokens);
-        Expr expression = Expression.constructExpression(String.join(" ",exprTokens),current.getLocation());
+        Expr expression = Expression.constructExpression(String.join(" ",exprTokens),constructLocation(start));
         if (expressionEvaluator.isExecutable(expression)) {
             Expr simp = expression.simplify();
             if (simp.isTrue()) {
@@ -1407,10 +1412,10 @@ public class Parser {
 
     private int parseSimpleExpression() throws CompilationException, InterruptedException {
         List<String> exprTokens = new ArrayList<>();
-        Token current = peekToken();
+        int start = index;
         parseSimpleExpression(exprTokens);
 
-        Expr expression = Expression.constructExpression(String.join(" ",exprTokens),current.getLocation());
+        Expr expression = Expression.constructExpression(String.join(" ",exprTokens),constructLocation(start));
         return expressionEvaluator.evaluateExpression(expression, new HashMap<>());
     }
 
