@@ -212,7 +212,7 @@ public class Expander {
         Guard guard = new Guard();
         if (astNode.getTo() instanceof IdentifierNode) {
             //Parse the next values from this IdentifierNode
-            guard.parseNext(((IdentifierNode) astNode.getTo()).getIdentifier(), globalVariableMap, identMap);
+            guard.parseNext(((IdentifierNode) astNode.getTo()).getIdentifier(), globalVariableMap, identMap,astNode.getTo().getLocation());
             //There were next values, so assign to the metadata
             if (guard.hasData())
                 astNode.getMetaData().put("guard",guard);
@@ -320,7 +320,7 @@ public class Expander {
                 if (globalVariableMap.containsKey(exp)) {
                     expression = globalVariableMap.get(exp);
                 } else {
-                    expression = Expression.constructExpression(exp);
+                    expression = Expression.constructExpression(exp,astNode.getLocation());
                 }
                 replacements.put("$"+var, expression);
             }

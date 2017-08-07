@@ -3,7 +3,6 @@ package mc.compiler;
 import com.microsoft.z3.BitVecNum;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Expr;
-import com.microsoft.z3.IntNum;
 import mc.Constant;
 import mc.compiler.ast.*;
 import mc.compiler.token.*;
@@ -234,8 +233,13 @@ public class Parser {
             // in this case, 'expression' is an internal variable reference to an expression
             startValue = expressionEvaluator.evaluateExpression(variableMap.get(expression), new HashMap<>());
         } else {
-            // otherwise the expression is an integer that we can parse
-            startValue = Integer.parseInt(expression);
+            try {
+                // otherwise the expression is an integer that we can parse
+                startValue = Integer.parseInt(expression);
+            } catch (NumberFormatException ex) {
+                Token error = tokens.get(index - 1);
+                throw constructException("expecting to parse a number but received \"" + error.toString() + "\"", error.getLocation());
+            }
         }
 
         // ensure that the next token is the '..' token
@@ -804,12 +808,13 @@ public class Parser {
             Token error = tokens.get(index - 1);
             throw constructException("expecting to parse \"if\" but received \"" + error.toString() + "\"", error.getLocation());
         }
+        Token current = peekToken();
         String expr = parseExpression();
         BoolExpr expression;
         if (variableMap.containsKey(expr)) {
             expression = (BoolExpr) variableMap.get(expr);
         } else {
-            expression = (BoolExpr) Expression.constructExpression(expr);
+            expression = (BoolExpr) Expression.constructExpression(expr, current.getLocation());
         }
 
         // ensure that the next token is a 'then' token
@@ -838,12 +843,13 @@ public class Parser {
             Token error = tokens.get(index - 1);
             throw constructException("expecting to parse \"when\" but received \"" + error.toString() + "\"", error.getLocation());
         }
+        Token current = peekToken();
         String expr = parseExpression();
         BoolExpr expression;
         if (variableMap.containsKey(expr)) {
             expression = (BoolExpr) variableMap.get(expr);
         } else {
-            expression = (BoolExpr) Expression.constructExpression(expr);
+            expression = (BoolExpr) Expression.constructExpression(expr,current.getLocation());
         }
         ASTNode trueBranch = parseLocalProcess();
         return new IfStatementNode(expression, trueBranch, constructLocation(start));
@@ -1260,8 +1266,9 @@ public class Parser {
 
     private String parseExpression() throws CompilationException, InterruptedException {
         List<String> exprTokens = new ArrayList<>();
+        Token current = peekToken();
         parseExpression(exprTokens);
-        Expr expression = Expression.constructExpression(String.join(" ",exprTokens));
+        Expr expression = Expression.constructExpression(String.join(" ",exprTokens),current.getLocation());
         if (expressionEvaluator.isExecutable(expression)) {
             Expr simp = expression.simplify();
             if (simp.isTrue()) {
@@ -1400,9 +1407,10 @@ public class Parser {
 
     private int parseSimpleExpression() throws CompilationException, InterruptedException {
         List<String> exprTokens = new ArrayList<>();
+        Token current = peekToken();
         parseSimpleExpression(exprTokens);
 
-        Expr expression = Expression.constructExpression(String.join(" ",exprTokens));
+        Expr expression = Expression.constructExpression(String.join(" ",exprTokens),current.getLocation());
         return expressionEvaluator.evaluateExpression(expression, new HashMap<>());
     }
 

@@ -5,6 +5,7 @@ import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
 import mc.exceptions.CompilationException;
+import mc.util.Location;
 
 import java.util.*;
 
@@ -57,7 +58,7 @@ public class ShuntingYardAlgorithm {
         output = new Stack<>();
         index = 0;
     }
-    public Expr convert(String expression) throws InterruptedException, CompilationException {
+    public Expr convert(String expression, Location location) throws InterruptedException, CompilationException {
         try {
             reset();
             char[] characters = expression.toCharArray();
@@ -107,7 +108,10 @@ public class ShuntingYardAlgorithm {
 
             return output.pop();
         } catch (EmptyStackException | ClassCastException ex) {
-            throw new CompilationException(ShuntingYardAlgorithm.class,"There was an issue trying to parse the expression: "+expression);
+            if (location == null)
+                throw new CompilationException(ShuntingYardAlgorithm.class,"There was an issue trying to parse the expression: "+expression);
+
+            throw new CompilationException(ShuntingYardAlgorithm.class,"There was an issue trying to parse the expression: "+expression, location);
         }
     }
     private void processStack(String operator) {

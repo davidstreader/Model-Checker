@@ -22,10 +22,10 @@ public class EvalCommand implements Command{
             Expr expression;
             Map<String,Integer> vars = Collections.emptyMap();
             try {
-                expression = Expression.constructExpression(String.join(" ",args));
+                expression = Expression.constructExpression(String.join(" ",args),null);
             } catch (Exception ex) {
                 if (args.length > 1) {
-                    expression = Expression.constructExpression(String.join(" ", Arrays.copyOfRange(args, 0, args.length - 1)));
+                    expression = Expression.constructExpression(String.join(" ", Arrays.copyOfRange(args, 0, args.length - 1)),null);
                     vars = new Gson().fromJson(
                         "{" + args[args.length - 1] + "}".replace("=", ":"), new TypeToken<Map<String, Integer>>() {
                         }.getType()

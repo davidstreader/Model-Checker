@@ -6,6 +6,7 @@ import com.microsoft.z3.Expr;
 import lombok.*;
 import mc.exceptions.CompilationException;
 import mc.process_models.automata.AutomatonNode;
+import mc.util.Location;
 import mc.util.expr.ExpressionEvaluator;
 import mc.util.expr.ExpressionPrinter;
 import mc.util.expr.VariableCollector;
@@ -109,13 +110,17 @@ public class Guard implements Serializable{
      * @param globalVariableMap The global variable map
      * @param identMap A map from identifiers to a list of the variables in them (L[$i] = L -> [$i])
      */
-    public void parseNext(String identifier, Map<String, Expr> globalVariableMap, Map<String, List<String>> identMap) throws CompilationException, InterruptedException {
+    public void parseNext(String identifier, Map<String, Expr> globalVariableMap, Map<String, List<String>> identMap, Location location) throws CompilationException, InterruptedException {
         //Check that there are actually variables in the identifier
         if (!identifier.contains("[")) return;
         //Get a list of all variables
         List<String> vars = new ArrayList<>(Arrays.asList(identifier.replace("]","").split("\\[")));
         //Remove the actual identifier from the start.
-        List<String> varNames = identMap.get(vars.remove(0));
+        String ident = vars.remove(0);
+        List<String> varNames = identMap.get(ident);
+        if (varNames == null) {
+            throw new CompilationException(Guard.class,"Unable to find identifier: "+ident, location);
+        }
         //Loop through the ranges and variables
         for (String var : vars) {
             if (globalVariableMap.containsKey(var)) {

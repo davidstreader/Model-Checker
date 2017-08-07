@@ -9,9 +9,11 @@ import lombok.Data;
 import lombok.SneakyThrows;
 import mc.compiler.Guard;
 import mc.exceptions.CompilationException;
+import mc.util.Location;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -111,7 +113,7 @@ public class Expression {
         //convert the next variables into a series of expressions.
         HashMap<String,Expr> subMap = new HashMap<>();
         for (String str: first.getNextMap().keySet()) {
-            subMap.put(str,constructExpression(first.getNextMap().get(str)));
+            subMap.put(str,constructExpression(first.getNextMap().get(str),null));
         }
         BoolExpr secondGuard = second.getGuard();
         //Substitute every value from the subMap into the second guard.
@@ -170,7 +172,7 @@ public class Expression {
         }
         return context.get(Thread.currentThread());
     }
-    public static Expr constructExpression(String expression, Map<String,String> variableMap) throws InterruptedException, CompilationException {
+    public static Expr constructExpression(String expression, Map<String,String> variableMap, Location location) throws InterruptedException, CompilationException {
         java.util.regex.Pattern regex = Pattern.compile("(\\$v.+\\b)");
         Matcher matcher = regex.matcher(expression);
         while (matcher.find()) {
@@ -178,10 +180,10 @@ public class Expression {
             matcher = regex.matcher(expression);
         }
         ShuntingYardAlgorithm sya = new ShuntingYardAlgorithm();
-        return sya.convert(expression);
+        return sya.convert(expression, location);
     }
-    public static Expr constructExpression(String s) throws InterruptedException, CompilationException {
-        return constructExpression(s, Collections.emptyMap());
+    public static Expr constructExpression(String s, Location location) throws InterruptedException, CompilationException {
+        return constructExpression(s, Collections.emptyMap(), location);
     }
     public static BitVecExpr mkBV(int i) throws InterruptedException {
         return getContext().mkBV(i,32);

@@ -47,7 +47,7 @@ public class NodeUtils {
                     next = next.replaceAll("[a-z]+","\\$$0");
                     String variable = next.substring(0,next.indexOf("="));
                     String expression = next.substring(next.indexOf("=")+1);
-                    Expr newExp = Expression.constructExpression(expression);
+                    Expr newExp = Expression.constructExpression(expression,null);
                     //If we overwrite a variable, then there is nothing to substitute.
                     if (exp.containsKey(variable) && !(newExp instanceof BitVecNum)) {
                         exp.put(variable, Expression.substitute(newExp,exp));
