@@ -103,7 +103,7 @@ function compile(shouldRender) {
     //If we ended up with some renamed values, collect them and add to the current process
     if (hidden.size > 0)
         hiddenStr = "\\{"+Array.from(hidden).join()+"}";
-    compiledResult = output+"("+processes.join(" || ")+")"+hiddenStr+varStr+".";
+    compiledResult = output+"simp(abs(("+processes.join(" || ")+")"+hiddenStr+"))"+varStr+".";
     //Set compiled results to the process name + all the added processes collected + hidden+.
     outputBox.text(compiledResult);
     if (shouldRender && Object.keys(vars).length > 0) {
