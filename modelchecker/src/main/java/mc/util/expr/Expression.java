@@ -13,6 +13,7 @@ import mc.exceptions.CompilationException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,12 +25,50 @@ public class Expression {
     @Data
     @AllArgsConstructor
     private static class Substitute {
+        Context thread;
         Map<String,Integer> variables;
         Expr expr;
     }
+    @Data
+    @AllArgsConstructor
+    private static class And {
+        Context thread;
+        Expr expr1;
+        Map<String,Integer> variables1;
+        Expr expr2;
+        Map<String,Integer> variables2;
+    }
+    private static LoadingCache<And, Boolean> equated = CacheBuilder.newBuilder()
+        .maximumSize(1000)
+        .expireAfterWrite(1, TimeUnit.SECONDS)
+        .build(
+            new CacheLoader<And, Boolean>() {
+                public Boolean load(And key) throws InterruptedException, CompilationException {
+                    BoolExpr expr = getContext().mkAnd((BoolExpr)substituteInts(key.expr1,key.variables1),(BoolExpr)substituteInts(key.expr2,key.variables2));
+                    return solve(expr);
+                }
+            });
+    private static LoadingCache<Substitute, Boolean> solved = CacheBuilder.newBuilder()
+        .maximumSize(1000)
+        .expireAfterWrite(1, TimeUnit.SECONDS)
+        .build(
+            new CacheLoader<Substitute, Boolean>() {
+                public Boolean load(Substitute key) throws InterruptedException {
+                    BoolExpr simpl = (BoolExpr) key.expr.simplify();
+                    if (simpl.isConst()) {
+                        return simpl.getBoolValue().toInt()==1;
+                    }
+                    Solver solver = getContext().mkSolver();
+                    solver.add((BoolExpr) key.expr);
+                    if (Thread.currentThread().isInterrupted()) {
+                        throw new InterruptedException();
+                    }
+                    return solver.check() == Status.SATISFIABLE;
+                }
+            });
     private static LoadingCache<Substitute, Expr> substitutions = CacheBuilder.newBuilder()
         .maximumSize(1000)
-        .expireAfterWrite(5, TimeUnit.SECONDS)
+        .expireAfterWrite(1, TimeUnit.SECONDS)
         .build(
             new CacheLoader<Substitute, Expr>() {
                 public Expr load(Substitute key) throws InterruptedException {
@@ -84,18 +123,7 @@ public class Expression {
     @SneakyThrows
     @SuppressWarnings("unchecked")
     public static Expr substituteInts(Expr expr, Map<String, Integer> subMap) {
-        Expr[] consts = new Expr[subMap.size()];
-        Expr[] replacements = new Expr[subMap.size()];
-        int i =0;
-        for (String c : subMap.keySet()) {
-            consts[i] = getContext().mkBVConst(c,32);
-            replacements[i++] = getContext().mkBV(subMap.get(c),32);
-        }
-        Expr t = expr.substitute(consts,replacements);
-        if (Thread.currentThread().isInterrupted()) {
-            throw new InterruptedException("Interrupted!");
-        }
-        return t;
+        return substitutions.get(new Substitute(getContext(),subMap, expr));
     }
 
     @SneakyThrows
@@ -117,8 +145,7 @@ public class Expression {
     }
     @SneakyThrows
     public static boolean equate(Guard guard1, Guard guard2) {
-            BoolExpr expr = getContext().mkAnd(guard1.getResolved(),guard2.getResolved());
-            return solve(expr);
+        return equated.get(new And(getContext(),guard1.getGuard(),guard1.getVariables(),guard2.getGuard(),guard2.getVariables()));
     }
     @SneakyThrows
     public static boolean isSolvable(BoolExpr ex, Map<String, Integer> variables) {
@@ -130,16 +157,11 @@ public class Expression {
         return new Context(cfg);
     }
     private static boolean solve(BoolExpr expr) throws CompilationException, InterruptedException {
-        BoolExpr simpl = (BoolExpr) expr.simplify();
-        if (simpl.isConst()) {
-            return simpl.getBoolValue().toInt()==1;
+        try {
+            return solved.get(new Substitute(getContext(),Collections.emptyMap(),expr));
+        } catch (ExecutionException e) {
+            throw new CompilationException(Expression.class,"Error occurred while solving: "+ExpressionPrinter.printExpression(expr));
         }
-        Solver solver = getContext().mkSolver();
-        solver.add((BoolExpr) expr);
-        if (Thread.currentThread().isInterrupted()) {
-            throw new InterruptedException();
-        }
-        return solver.check() == Status.SATISFIABLE;
     }
     private static Map<Thread,Context> context = new HashMap<>();
     public static Context getContext() throws InterruptedException {
@@ -165,12 +187,8 @@ public class Expression {
         return getContext().mkBV(i,32);
     }
     public static void closeContext(Thread compileThread) {
-        try {
-            if (context.containsKey(compileThread)) {
-                context.remove(compileThread).close();
-            }
-        } catch (Z3Exception ignored) {
-
+        if (context.containsKey(compileThread)) {
+            context.remove(compileThread).close();
         }
     }
 }

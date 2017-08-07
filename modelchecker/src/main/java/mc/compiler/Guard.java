@@ -6,7 +6,6 @@ import com.microsoft.z3.Expr;
 import lombok.*;
 import mc.exceptions.CompilationException;
 import mc.process_models.automata.AutomatonNode;
-import mc.util.expr.Expression;
 import mc.util.expr.ExpressionEvaluator;
 import mc.util.expr.ExpressionPrinter;
 import mc.util.expr.VariableCollector;
@@ -158,7 +157,7 @@ public class Guard implements Serializable{
         return guard != null || !variables.isEmpty() || !next.isEmpty();
     }
     public Guard copy() {
-        return new Guard(guard,variables,next,nextMap,shouldDisplay,hiddenVariables,resolved);
+        return new Guard(guard,variables,next,nextMap,shouldDisplay,hiddenVariables);
     }
     public Guard(BoolExpr guard, Map<String,Integer> variables, Set<String> hiddenVariables) {
         setGuard(guard);
@@ -191,21 +190,5 @@ public class Guard implements Serializable{
         result = 31 * result + (shouldDisplay ? 1 : 0);
         result = 31 * result + (hiddenVariables != null ? hiddenVariables.hashCode() : 0);
         return result;
-    }
-    private BoolExpr resolved;
-    public void setGuard(BoolExpr guard) {
-        this.guard = guard;
-        this.resolved = null;
-    }
-    public void setVariables(Map<String,Integer> vars) {
-        this.variables = vars;
-        this.resolved = null;
-    }
-    @JsonIgnore
-    public BoolExpr getResolved() {
-        if (this.resolved == null) {
-            return this.resolved = (BoolExpr) Expression.substituteInts(guard,variables);
-        }
-        return resolved;
     }
 }

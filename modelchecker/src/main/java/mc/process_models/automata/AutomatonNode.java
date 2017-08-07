@@ -2,6 +2,7 @@ package mc.process_models.automata;
 
 import mc.process_models.ProcessModelObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,9 +34,7 @@ public class AutomatonNode extends ProcessModelObject {
     }
 
     public List<AutomatonEdge> getIncomingEdges(){
-        return incomingEdges.entrySet().stream()
-                .map(Map.Entry::getValue)
-                .collect(Collectors.toList());
+        return new ArrayList<>(incomingEdges.values());
     }
 
     public boolean addIncomingEdge(AutomatonEdge edge){
@@ -57,9 +56,7 @@ public class AutomatonNode extends ProcessModelObject {
     }
 
     public List<AutomatonEdge> getOutgoingEdges(){
-        return outgoingEdges.entrySet().stream()
-                .map(Map.Entry::getValue)
-                .collect(Collectors.toList());
+        return new ArrayList<>(outgoingEdges.values());
     }
 
     public boolean addOutgoingEdge(AutomatonEdge edge){

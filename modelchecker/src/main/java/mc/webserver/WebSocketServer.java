@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -90,9 +91,9 @@ public class WebSocketServer {
         @Override
         public synchronized void run() {
             while (user.isOpen()) {
-                Expression.closeContext(this);
                 System.gc();
                 Object ret;
+                Expression.closeContext(this);
                 try {
                     while (req == null) {
                         wait();
@@ -102,10 +103,10 @@ public class WebSocketServer {
                     //Clear interrupted flag
                     Thread.interrupted();
                     ret = compile(request, logThread.queue);
-                } catch (InterruptedException | Z3Exception ex) {
+                } catch (InterruptedException ex) {
                     continue;
                 } catch (Exception ex) {
-                    if (ex.getCause() instanceof InterruptedException) {
+                    if (ex.getCause() instanceof InterruptedException || ex.getCause() instanceof ExecutionException) {
                         continue;
                     }
                     ret = getErrorMessage(ex);
@@ -120,6 +121,7 @@ public class WebSocketServer {
                 }
             }
             Expression.closeContext(this);
+            System.gc();
         }
     }
 
