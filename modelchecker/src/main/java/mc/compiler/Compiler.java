@@ -72,7 +72,7 @@ public class Compiler {
         EquationEvaluator.EquationReturn eqResults = eqEvaluator.evaluateEquations(ast.getEquations(), code, context,messageQueue);
         processMap.putAll(eqResults.getToRender());
         if (!(context instanceof FakeContext)) {
-            List<Automaton> toPosition = processMap.values().stream().filter(Automaton.class::isInstance).map(s -> (Automaton)s).filter(s -> s.getNodeCount() <= context.getAutoMaxNode()).collect(Collectors.toList());
+            List<Automaton> toPosition = processMap.values().stream().filter(Automaton.class::isInstance).map(s -> (Automaton)s).filter(s -> s.getNodeCount() <= Math.min(context.getAutoMaxNode(),100)).collect(Collectors.toList());
             int counter = toPosition.size();
             for (Automaton automaton : toPosition) {
                 messageQueue.add(new LogMessage("Performing layout for @|black "+automaton.getId()+"|@, remaining: "+counter--,true,false));
