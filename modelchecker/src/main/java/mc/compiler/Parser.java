@@ -248,6 +248,7 @@ public class Parser {
             throw constructException("expecting to parse \"..\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
+        start = index;
         // parse the next expression and evaluate it if necessary to get the start value of the range
         expression = parseExpression();
         int endValue;
@@ -256,7 +257,12 @@ public class Parser {
             endValue = expressionEvaluator.evaluateExpression(variableMap.get(expression), new HashMap<>());
         } else {
             // otherwise the expression is an integer that we can parse
-            endValue = Integer.parseInt(expression);
+            try {
+                // otherwise the expression is an integer that we can parse
+                endValue = Integer.parseInt(expression);
+            } catch (NumberFormatException ex) {
+                throw constructException("expecting to parse a number but received \"" + expression + "\"", constructLocation(start));
+            }
         }
 
         return new RangeNode(startValue, endValue, constructLocation(start));
