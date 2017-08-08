@@ -46,13 +46,14 @@ public class ShuntingYardAlgorithm {
         precedenceMap.put("bitnot", -2);
         precedenceMap.put("not", -2);
         precedenceMap.put("neg", -2);
+        precedenceMap.put("pos", -2);
         precedenceMap.put("mul", -3);
         precedenceMap.put("div", -3);
         precedenceMap.put("mod", -3);
         precedenceMap.put("(", -1);
         precedenceMap.put(")", -1);
     }
-    private List<String> rightOperators = Arrays.asList("bitnot","not","neg");
+    private List<String> rightOperators = Arrays.asList("bitnot","not","neg","pos");
     private void reset(){
         operatorStack = new Stack<>();
         output = new Stack<>();
@@ -132,6 +133,8 @@ public class ShuntingYardAlgorithm {
                 return context.mkNot((BoolExpr) rhs);
             case "neg":
                 return context.mkBVNeg((BitVecExpr) rhs);
+            case "pos":
+                return rhs;
         }
         return null;
     }
