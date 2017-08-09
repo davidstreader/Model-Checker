@@ -431,6 +431,8 @@ function layoutStop(cur) {
     if (graphsToAdd.length > 0) {
         const graph = graphsToAdd.pop();
         addGraph(graph.name,graph.hidden);
+    } else {
+        cy.fit(cy.elements());
     }
     saveChanges();
 }

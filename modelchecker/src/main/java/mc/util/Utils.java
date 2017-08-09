@@ -1,7 +1,6 @@
 package mc.util;
 
 import com.google.common.base.Ascii;
-import com.sun.javafx.PlatformUtil;
 import mc.Main;
 
 import java.io.IOException;
@@ -10,19 +9,16 @@ import java.net.URLDecoder;
 import java.nio.file.Paths;
 
 public class Utils {
-    @SuppressWarnings("deprecation")
     public static String getArch() {
         String arch = Ascii.toLowerCase(System.getProperty("os.arch"));
         String os = isWin()?"windows":(isMac()?"macosx":"linux");
         return arch + "-" + os;
     }
-    @SuppressWarnings("deprecation")
     public static boolean isWin() {
-        return PlatformUtil.isWindows();
+        return OSUtils.getOperatingSystemType() == OSUtils.OSType.Windows;
     }
-    @SuppressWarnings("deprecation")
     public static boolean isMac() {
-        return PlatformUtil.isMac();
+        return OSUtils.getOperatingSystemType() == OSUtils.OSType.MacOS;
     }
     public static boolean isJavaw() {
         try {
