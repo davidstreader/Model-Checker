@@ -234,6 +234,17 @@ $(function() {
     app.compileAndBuild = function() {
         app.compile(true);
     };
+    /**
+     * This is the event which triggers when the text in the text area is changed.
+     * Only care about this if the live-compiling check-box is ticked.
+     */
+    app.editor._editor.on("input", function() {
+        if (app.settings.getSettings().liveCompiling && app.connected)
+            app.compileAndBuild();
+        if (app.settings.getSettings().autoSave)
+            localStorage.setItem("editor",encodeURIComponent(app.editor.getCode()));
+    });
+
     app.settings = require("./settings");
     app.settings.init();
     app.models = require("./models");
