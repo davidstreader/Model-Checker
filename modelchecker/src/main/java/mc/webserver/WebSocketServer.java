@@ -24,16 +24,14 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 import static org.fusesource.jansi.Ansi.ansi;
 @WebSocket
 public class WebSocketServer {
     private Logger logger = LoggerFactory.getLogger(WebSocketServer.class);
     private ObjectMapper mapper = new ObjectMapper();
+    private ExecutorService service = Executors.newFixedThreadPool(10);
     public WebSocketServer() {
         SendObject keepAlive = new SendObject("tick","keepalive");
         new Thread(()->{
@@ -78,7 +76,7 @@ public class WebSocketServer {
             }
         }
     }
-    private class CompileThread extends Thread {
+    public class CompileThread extends Thread {
         volatile CompileRequest req;
         final Session user;
         final LogThread logThread;
@@ -92,8 +90,7 @@ public class WebSocketServer {
         public synchronized void run() {
             while (user.isOpen()) {
                 System.gc();
-                Object ret;
-                Expression.closeContext(this);
+                Future<String> future = null;
                 try {
                     while (req == null) {
                         wait();
@@ -102,30 +99,37 @@ public class WebSocketServer {
                     req = null;
                     //Clear interrupted flag
                     Thread.interrupted();
-                    ret = compile(request, logThread.queue);
-                } catch (InterruptedException ex) {
-                    continue;
-                } catch (Exception ex) {
-                    if (ex.getCause() instanceof InterruptedException || ex.getCause() instanceof ExecutionException) {
+                    logThread.queue.offer(new LogMessage("Waiting for other users to compile"));
+                    future=service.submit(()-> {
+                        try (com.microsoft.z3.Context ctx = Expression.mkCtx()) {
+                            return new ObjectMapper().writeValueAsString(new SendObject(compile(request,ctx, logThread.queue), "compileReturn"));
+                        }
+                    });
+                    logThread.queue.add(future.get());
+
+                } catch (InterruptedException ignored) {
+                    if (future != null) {
+                        future.cancel(true);
+                    }
+                } catch (ExecutionException eex) {
+                    Throwable ex = eex.getCause();
+                    ex.printStackTrace();
+                    eex.printStackTrace();
+                    if (ex instanceof InterruptedException) {
                         continue;
                     }
-                    ret = getErrorMessage(ex);
-                }
-                if (Thread.interrupted()) {
-                    continue;
-                }
-                try {
-                    logThread.queue.add(new ObjectMapper().writeValueAsString(new SendObject(ret, "compileReturn")));
-                } catch (JsonProcessingException e) {
-                    e.printStackTrace();
+                    try {
+                        logThread.queue.add(new ObjectMapper().writeValueAsString(new SendObject(getErrorMessage(ex), "compileReturn")));
+                    } catch (JsonProcessingException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
-            Expression.closeContext(this);
             System.gc();
         }
     }
 
-    private ErrorMessage getErrorMessage(Exception ex) {
+    private ErrorMessage getErrorMessage(Throwable ex) {
         //Get a stack trace then split it into lines
         String[] lineSplit = ExceptionUtils.getStackTrace(ex).split("\n");
         for (int i = 0; i < lineSplit.length; i++) {
@@ -172,8 +176,8 @@ public class WebSocketServer {
             runners.remove(user).interrupt();
         }
     }
-    private ProcessReturn compile(CompileRequest data, BlockingQueue<Object> messageQueue) throws CompilationException, InterruptedException {
-        CompilationObject ret = new Compiler().compile(data.getCode(),data.getContext(),messageQueue);
+    private ProcessReturn compile(CompileRequest data, com.microsoft.z3.Context ctx, BlockingQueue<Object> messageQueue) throws CompilationException, InterruptedException {
+        CompilationObject ret = new Compiler().compile(data.getCode(),data.getContext(),ctx,messageQueue);
         Map<String,ProcessModel> processModelMap = ret.getProcessMap();
         List<SkipObject> skipped = processSkipped(processModelMap,data.getContext());
         return new ProcessReturn(processModelMap, ret.getOperationResults(),ret.getEquationResults(),data.getContext(),skipped);

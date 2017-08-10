@@ -29,7 +29,7 @@ public class EquationEvaluator {
         this.automataOperations = new AutomataOperations();
     }
 
-    public EquationReturn evaluateEquations(List<OperationNode> operations, String code, Context context, BlockingQueue<Object> messageQueue) throws CompilationException {
+    public EquationReturn evaluateEquations(List<OperationNode> operations, String code, Context context, com.microsoft.z3.Context z3Context, BlockingQueue<Object> messageQueue) throws CompilationException {
         reset();
         List<OperationResult> results = new ArrayList<>();
         Map<String,ProcessModel> toRender = new ConcurrentSkipListMap<>();
@@ -53,9 +53,9 @@ public class EquationEvaluator {
             List<List<ProcessModel>> perms = permutations(generated).collect(Collectors.toList());
             messageQueue.add(new LogMessage("Evaluating equations (0/"+perms.size()+")"));
             ModelStatus status = new ModelStatus();
-            ExecutorService service = Executors.newCachedThreadPool();
+            ExecutorService service = Executors.newFixedThreadPool(4);
             for (List<ProcessModel> models : perms) {
-                service.submit(()->testModel(models,messageQueue,status, operation, context, toRender, firstId, secondId, perms.size()));
+                service.submit(()->testModel(models,messageQueue,status, operation, context, z3Context, toRender, firstId, secondId, perms.size()));
             }
             service.shutdown();
             try {
@@ -68,7 +68,7 @@ public class EquationEvaluator {
         return new EquationReturn(results,toRender);
     }
 
-    private boolean testModel(List<ProcessModel> processModels, BlockingQueue<Object> messageQueue, ModelStatus status, OperationNode operation, Context context, Map<String, ProcessModel> toRender, String firstId, String secondId, int size) {
+    private boolean testModel(List<ProcessModel> processModels, BlockingQueue<Object> messageQueue, ModelStatus status, OperationNode operation, Context context, com.microsoft.z3.Context z3Context, Map<String, ProcessModel> toRender, String firstId, String secondId, int size) {
         AutomataOperations automataOperations = new AutomataOperations();
         Interpreter interpreter = new Interpreter();
         try {
@@ -77,8 +77,8 @@ public class EquationEvaluator {
             for (ProcessModel m: processModels) {
                 currentMap.put(m.getId(),m);
             }
-            automata.add((Automaton) interpreter.interpret("automata", operation.getFirstProcess(), getNextEquationId(), currentMap));
-            automata.add((Automaton) interpreter.interpret("automata", operation.getSecondProcess(), getNextEquationId(), currentMap));
+            automata.add((Automaton) interpreter.interpret("automata", operation.getFirstProcess(), getNextEquationId(), currentMap,z3Context));
+            automata.add((Automaton) interpreter.interpret("automata", operation.getSecondProcess(), getNextEquationId(), currentMap,z3Context));
 
             if (Objects.equals(operation.getOperation(), "traceEquivalent")) {
                 List<Automaton> automata1 = new ArrayList<>();

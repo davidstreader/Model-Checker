@@ -1,7 +1,9 @@
 package mc.commands;
 
+import com.microsoft.z3.Context;
 import mc.compiler.OperationResult;
 import mc.util.PrintQueue;
+import mc.util.expr.Expression;
 import mc.webserver.FakeContext;
 import org.fusesource.jansi.Ansi;
 
@@ -31,8 +33,8 @@ public class TestCommand implements Command {
             if (file.getName().endsWith("results.txt") || !file.getName().endsWith("txt")) return;
 
             List<OperationResult> operations = Collections.emptyList();
-            try {
-                operations = compiler.compile(String.join("\n", Files.readAllLines(file.toPath())),new FakeContext(),new PrintQueue()).getOperationResults();
+            try (Context context = Expression.mkCtx()){
+                operations = compiler.compile(String.join("\n", Files.readAllLines(file.toPath())),new FakeContext(),context,new PrintQueue()).getOperationResults();
                 System.out.println(Ansi.ansi().render("File @|yellow `"+file.getName()+"`|@: @|green COMPILED |@"));
             } catch (Exception ex) {
                 System.out.println(Ansi.ansi().render("File @|yellow `"+file.getName()+"`|@: @|red FAILED |@"));

@@ -2,6 +2,7 @@ package mc.compiler;
 
 import com.microsoft.z3.BitVecNum;
 import com.microsoft.z3.BoolExpr;
+import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
 import mc.Constant;
 import mc.compiler.ast.*;
@@ -30,6 +31,7 @@ public class Parser {
     private Set<String> definedVariables;
     private int index;
     private int variableId;
+    private Context context;
 
     private ExpressionEvaluator expressionEvaluator;
 
@@ -47,9 +49,10 @@ public class Parser {
         expressionEvaluator = new ExpressionEvaluator();
     }
 
-    public AbstractSyntaxTree parse(List<Token> tokens) throws CompilationException, InterruptedException {
+    public AbstractSyntaxTree parse(List<Token> tokens, Context context) throws CompilationException, InterruptedException {
         reset();
         this.tokens = tokens;
+        this.context = context;
 
         while (index < this.tokens.size() && !Thread.currentThread().isInterrupted()) {
             Token token = peekToken();
@@ -232,7 +235,7 @@ public class Parser {
         int startValue;
         if (variableMap.containsKey(expression)) {
             // in this case, 'expression' is an internal variable reference to an expression
-            startValue = expressionEvaluator.evaluateExpression(variableMap.get(expression), new HashMap<>());
+            startValue = expressionEvaluator.evaluateExpression(variableMap.get(expression), new HashMap<>(),context);
         } else {
             try {
                 // otherwise the expression is an integer that we can parse
@@ -254,7 +257,7 @@ public class Parser {
         int endValue;
         if (variableMap.containsKey(expression)) {
             // in this case, 'expression' is an internal variable reference to an expression
-            endValue = expressionEvaluator.evaluateExpression(variableMap.get(expression), new HashMap<>());
+            endValue = expressionEvaluator.evaluateExpression(variableMap.get(expression), new HashMap<>(),context);
         } else {
             // otherwise the expression is an integer that we can parse
             try {
@@ -819,7 +822,7 @@ public class Parser {
         if (variableMap.containsKey(expr)) {
             expression = variableMap.get(expr);
         } else {
-            expression = Expression.constructExpression(expr, constructLocation(start));
+            expression = Expression.constructExpression(expr, constructLocation(start),context);
         }
         if (!(expression instanceof BoolExpr)) {
             throw constructException("expecting to parse a boolean statement but received \"" +ExpressionPrinter.printExpression(expression)+"\"", constructLocation(start));
@@ -840,7 +843,7 @@ public class Parser {
             return new IfStatementNode((BoolExpr) expression, trueBranch, falseBranch, constructLocation(start));
         }
 
-        return new IfStatementNode((BoolExpr) expression, trueBranch, constructLocation(start));
+        return new IfStatementNode((BoolExpr) expression, trueBranch, constructLocation(start),context);
     }
 
     private IfStatementNode parseWhenStatement() throws CompilationException, InterruptedException {
@@ -856,13 +859,13 @@ public class Parser {
         if (variableMap.containsKey(expr)) {
             expression = variableMap.get(expr);
         } else {
-            expression = Expression.constructExpression(expr,constructLocation(start));
+            expression = Expression.constructExpression(expr,constructLocation(start),context);
         }
         if (!(expression instanceof BoolExpr)) {
             throw constructException("expecting to parse a boolean statement but received \"" +ExpressionPrinter.printExpression(expression)+"\"", constructLocation(start));
         }
         ASTNode trueBranch = parseLocalProcess();
-        return new IfStatementNode((BoolExpr) expression, trueBranch, constructLocation(start));
+        return new IfStatementNode((BoolExpr) expression, trueBranch, constructLocation(start),context);
     }
 
     private ForAllStatementNode parseForAllStatement() throws CompilationException, InterruptedException {
@@ -1278,7 +1281,7 @@ public class Parser {
         List<String> exprTokens = new ArrayList<>();
         int start = index;
         parseExpression(exprTokens);
-        Expr expression = Expression.constructExpression(String.join(" ",exprTokens),constructLocation(start));
+        Expr expression = Expression.constructExpression(String.join(" ",exprTokens),constructLocation(start),context);
         if (expressionEvaluator.isExecutable(expression)) {
             Expr simp = expression.simplify();
             if (simp.isTrue()) {
@@ -1288,7 +1291,7 @@ public class Parser {
                 return "false";
             }
             if (simp instanceof BitVecNum) {
-                return ExpressionEvaluator.evaluate((BitVecNum) simp) + "";
+                return ExpressionEvaluator.evaluate((BitVecNum) simp,context) + "";
             }
         } else if (expression.isConst()) {
             return expression.toString();
@@ -1420,8 +1423,8 @@ public class Parser {
         int start = index;
         parseSimpleExpression(exprTokens);
 
-        Expr expression = Expression.constructExpression(String.join(" ",exprTokens),constructLocation(start));
-        return expressionEvaluator.evaluateExpression(expression, new HashMap<>());
+        Expr expression = Expression.constructExpression(String.join(" ",exprTokens),constructLocation(start),context);
+        return expressionEvaluator.evaluateExpression(expression, new HashMap<>(),context);
     }
 
     private void parseSimpleExpression(List<String> expression) throws CompilationException {

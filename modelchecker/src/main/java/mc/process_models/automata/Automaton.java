@@ -1,5 +1,6 @@
 package mc.process_models.automata;
 
+import com.microsoft.z3.Context;
 import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
 import com.mxgraph.layout.mxGraphLayout;
 import com.mxgraph.layout.orthogonal.mxOrthogonalLayout;
@@ -161,7 +162,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
         return true;
     }
 
-    public AutomatonNode combineNodes(AutomatonNode node1, AutomatonNode node2) throws CompilationException, InterruptedException {
+    public AutomatonNode combineNodes(AutomatonNode node1, AutomatonNode node2, Context context) throws CompilationException, InterruptedException {
         if(!nodeMap.containsKey(node1.getId())){
             throw new CompilationException(getClass(), node1.getId() + " was not found in the automaton " + getId(), (Location)getMetaData("location"));
         }
@@ -172,13 +173,13 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
         for (AutomatonEdge edge1 : node1.getIncomingEdges()) {
             for (AutomatonEdge edge2: node2.getIncomingEdges()) {
-                processGuards(edge1,edge2);
+                processGuards(edge1,edge2,context);
             }
         }
 
         for (AutomatonEdge edge1 : node1.getOutgoingEdges()) {
             for (AutomatonEdge edge2: node2.getOutgoingEdges()) {
-                processGuards(edge1,edge2);
+                processGuards(edge1,edge2,context);
             }
         }
         // add the incoming and outgoing edges from both nodes to the combined nodes
@@ -208,7 +209,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
         removeNode(node2);
         return node;
     }
-    private void processGuards(AutomatonEdge edge1, AutomatonEdge edge2) throws CompilationException, InterruptedException {
+    private void processGuards(AutomatonEdge edge1, AutomatonEdge edge2, Context context) throws CompilationException, InterruptedException {
         if (edge1.getLabel().equals(edge2.getLabel()) && edge1.hasMetaData("guard") && edge2.hasMetaData("guard")) {
             Guard guard1 = (Guard) edge1.getMetaData("guard");
             Guard guard2 = (Guard) edge2.getMetaData("guard");
@@ -216,9 +217,9 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
             //Since assignment should be the same (same colour) we can just copy most data from either guard.
             Guard combined = guard1.copy();
             //By putting both equations equal to eachother, if we have multiple or operations, then if one matches then it will be solveable.
-            if (!guard1.getVariables().isEmpty() && !Expression.equate(guard1,guard2))
+            if (!guard1.getVariables().isEmpty() && !Expression.equate(guard1,guard2, context))
                 //We could take either path
-                combined.setGuard(Expression.getContext().mkOr(guard1.getGuard(), guard2.getGuard()));
+                combined.setGuard(context.mkOr(guard1.getGuard(), guard2.getGuard()));
             else
                 combined.setGuard(guard1.getGuard());
             edge1.addMetaData("guard",combined);

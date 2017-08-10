@@ -1,10 +1,10 @@
 package mc.compiler.ast;
 
 import com.microsoft.z3.BoolExpr;
+import com.microsoft.z3.Context;
 import lombok.ToString;
 import mc.util.Location;
 
-import static mc.util.expr.Expression.getContext;
 
 @ToString
 public class IfStatementNode extends ASTNode {
@@ -13,12 +13,14 @@ public class IfStatementNode extends ASTNode {
     private BoolExpr condition;
     private ASTNode trueBranch;
     private ASTNode falseBranch;
+    private Context z3Context;
 
-    public IfStatementNode(BoolExpr condition, ASTNode trueBranch, Location location){
+    public IfStatementNode(BoolExpr condition, ASTNode trueBranch, Location location, Context z3Context){
         super(location);
         this.condition = condition;
         this.trueBranch = trueBranch;
         falseBranch = null;
+        this.z3Context = z3Context;
     }
 
     public IfStatementNode(BoolExpr condition, ASTNode trueBranch, ASTNode falseBranch, Location location){
@@ -52,13 +54,8 @@ public class IfStatementNode extends ASTNode {
         }
         if(obj instanceof IfStatementNode){
             IfStatementNode node = (IfStatementNode)obj;
-            try {
-                if(getContext().mkEq(condition,node.getCondition()).simplify().isFalse()){
-                    return false;
-                }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-               throw new RuntimeException(e);
+            if(z3Context.mkEq(condition,node.getCondition()).simplify().isFalse()){
+                return false;
             }
             if(!trueBranch.equals(node.getTrueBranch())){
                 return false;

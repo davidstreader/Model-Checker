@@ -32,8 +32,6 @@ public class Compiler {
     private OperationEvaluator evaluator;
     private EquationEvaluator eqEvaluator;
     private Parser parser;
-    //Limit to 4 renderers at a time.
-    private static ExecutorService renderingService = Executors.newFixedThreadPool(4);
 
     public Compiler() throws InterruptedException {
         this.lexer = new Lexer();
@@ -45,7 +43,7 @@ public class Compiler {
         this.evaluator = new OperationEvaluator();
     }
 
-    public CompilationObject compile(String code, Context context, BlockingQueue<Object> messageQueue) throws CompilationException, InterruptedException {
+    public CompilationObject compile(String code, Context context, com.microsoft.z3.Context z3Context, BlockingQueue<Object> messageQueue) throws CompilationException, InterruptedException {
         if (code.startsWith("random")) {
             messageQueue.add(new LogMessage("Generating random models"));
             boolean alphabet = Boolean.parseBoolean(code.split(",")[1]);
@@ -61,34 +59,26 @@ public class Compiler {
             }
             return new CompilationObject(models,Collections.emptyList(),Collections.emptyList());
         }
-        return compile(parser.parse(lexer.tokenise(code)), code, context, messageQueue);
+        return compile(parser.parse(lexer.tokenise(code),z3Context), code,z3Context, context, messageQueue);
     }
-    private CompilationObject compile(AbstractSyntaxTree ast, String code, Context context, BlockingQueue<Object> messageQueue) throws CompilationException, InterruptedException {
+    private CompilationObject compile(AbstractSyntaxTree ast, String code, com.microsoft.z3.Context z3Context, Context context, BlockingQueue<Object> messageQueue) throws CompilationException, InterruptedException {
         HashMap<String,ProcessNode> processNodeMap = new HashMap<>();
         for (ProcessNode node: ast.getProcesses()) {
             processNodeMap.put(node.getIdentifier(), (ProcessNode) node.copy());
         }
-        ast = expander.expand(ast, messageQueue);
+        ast = expander.expand(ast, messageQueue, z3Context);
         ast = replacer.replaceReferences(ast, messageQueue);
-        Map<String, ProcessModel> processMap = interpreter.interpret(ast, new LocalCompiler(processNodeMap, expander, replacer,messageQueue),messageQueue);
-        List<OperationResult> results = evaluator.evaluateOperations(ast.getOperations(), processMap, interpreter, code);
-        EquationEvaluator.EquationReturn eqResults = eqEvaluator.evaluateEquations(ast.getEquations(), code, context,messageQueue);
+        Map<String, ProcessModel> processMap = interpreter.interpret(ast, new LocalCompiler(processNodeMap, expander, replacer,messageQueue),messageQueue,z3Context);
+        List<OperationResult> results = evaluator.evaluateOperations(ast.getOperations(), processMap, interpreter, code,z3Context);
+        EquationEvaluator.EquationReturn eqResults = eqEvaluator.evaluateEquations(ast.getEquations(), code, context,z3Context,messageQueue);
         processMap.putAll(eqResults.getToRender());
         if (!(context instanceof FakeContext)) {
-            messageQueue.add(new LogMessage("Waiting for render queue to clear up",true,false));
-            try {
-                renderingService.submit(() -> {
-                    List<Automaton> toPosition = processMap.values().stream().filter(Automaton.class::isInstance).map(s -> (Automaton)s).filter(s -> s.getNodeCount() <= Math.min(context.getAutoMaxNode(),300)).collect(Collectors.toList());
-                    int counter = toPosition.size();
-                    for (Automaton automaton : toPosition) {
-                        messageQueue.add(new LogMessage("Performing layout for @|black "+automaton.getId()+"|@, remaining: "+counter--,true,false));
-                        automaton.position();
-                    }
-                }).get();
-            } catch (ExecutionException e) {
-                e.printStackTrace();
+            List<Automaton> toPosition = processMap.values().stream().filter(Automaton.class::isInstance).map(s -> (Automaton)s).filter(s -> s.getNodeCount() <= Math.min(context.getAutoMaxNode(),300)).collect(Collectors.toList());
+            int counter = toPosition.size();
+            for (Automaton automaton : toPosition) {
+                messageQueue.add(new LogMessage("Performing layout for @|black "+automaton.getId()+"|@, remaining: "+counter--,true,false));
+                automaton.position();
             }
-
         }
         return new CompilationObject(processMap, results, eqResults.getResults());
     }
@@ -100,8 +90,8 @@ public class Compiler {
         private ReferenceReplacer replacer;
         private BlockingQueue<Object> messageQueue;
 
-        public ProcessNode compile(ProcessNode node) throws CompilationException, InterruptedException {
-            node = expander.expand(node,messageQueue);
+        public ProcessNode compile(ProcessNode node, com.microsoft.z3.Context context) throws CompilationException, InterruptedException {
+            node = expander.expand(node,messageQueue,context);
             node = replacer.replaceReferences(node,messageQueue);
             return node;
         }

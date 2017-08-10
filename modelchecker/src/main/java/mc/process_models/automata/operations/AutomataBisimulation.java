@@ -1,5 +1,6 @@
 package mc.process_models.automata.operations;
 
+import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
 import lombok.AllArgsConstructor;
 import lombok.ToString;
@@ -18,7 +19,7 @@ public class AutomataBisimulation {
     private final int ERROR_COLOUR = -1;
     private int nextColourId;
     private Map<String,Expr> replacements;
-    public Automaton performSimplification(Automaton automaton, Map<String, Expr> replacements) throws CompilationException, InterruptedException {
+    public Automaton performSimplification(Automaton automaton, Map<String, Expr> replacements, Context context) throws CompilationException, InterruptedException {
         reset();
         this.replacements = replacements;
         Map<Integer, List<Colour>> colourMap = new HashMap<>();
@@ -36,7 +37,7 @@ public class AutomataBisimulation {
             // merge the nodes to form one node
             AutomatonNode mergedNode = nodes.get(0);
             for(int i = 1; i < nodes.size(); i++){
-                mergedNode = automaton.combineNodes(mergedNode, nodes.get(i));
+                mergedNode = automaton.combineNodes(mergedNode, nodes.get(i), context);
             }
 
             // remove the nodes that were merged

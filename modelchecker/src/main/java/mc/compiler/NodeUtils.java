@@ -1,6 +1,7 @@
 package mc.compiler;
 
 import com.microsoft.z3.BitVecNum;
+import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
 import lombok.SneakyThrows;
 import mc.process_models.automata.AutomatonEdge;
@@ -36,7 +37,7 @@ public class NodeUtils {
      * @return
      */
     @SneakyThrows
-    public static Map<String,Expr> collectVariables(List<AutomatonEdge> edges) {
+    public static Map<String,Expr> collectVariables(List<AutomatonEdge> edges, Context context) {
         HashMap<String,Expr> exp = new HashMap<>();
         for (AutomatonEdge edge:edges) {
             if (edge.hasMetaData("guard")) {
@@ -47,10 +48,10 @@ public class NodeUtils {
                     next = next.replaceAll("[a-z]+","\\$$0");
                     String variable = next.substring(0,next.indexOf("="));
                     String expression = next.substring(next.indexOf("=")+1);
-                    Expr newExp = Expression.constructExpression(expression,null);
+                    Expr newExp = Expression.constructExpression(expression,null,context);
                     //If we overwrite a variable, then there is nothing to substitute.
                     if (exp.containsKey(variable) && !(newExp instanceof BitVecNum)) {
-                        exp.put(variable, Expression.substitute(newExp,exp));
+                        exp.put(variable, Expression.substitute(newExp,exp,context));
                     } else {
                         exp.put(variable,newExp);
                     }

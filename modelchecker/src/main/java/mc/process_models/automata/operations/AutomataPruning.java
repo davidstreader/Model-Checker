@@ -4,6 +4,7 @@ import mc.exceptions.CompilationException;
 import mc.process_models.automata.Automaton;
 import mc.process_models.automata.AutomatonEdge;
 import mc.process_models.automata.AutomatonNode;
+import com.microsoft.z3.Context;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -13,7 +14,7 @@ import java.util.stream.Collectors;
  */
 public class AutomataPruning {
 
-    public Automaton performPruning(Automaton automaton) throws CompilationException, InterruptedException {
+    public Automaton performPruning(Automaton automaton, Context context) throws CompilationException, InterruptedException {
         // find the hidden edges within the automaton
         List<AutomatonEdge> hiddenEdges = automaton.getEdges().stream()
                 .filter(AutomatonEdge::isHidden)
@@ -47,7 +48,7 @@ public class AutomataPruning {
             }
 
             // since there are no incoming or outgoing hidden edges we can merge the two nodes
-            automaton.combineNodes(from, to);
+            automaton.combineNodes(from, to, context);
             automaton.removeEdge(hiddenEdge);
         }
 

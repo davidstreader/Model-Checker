@@ -1,5 +1,6 @@
 package mc.process_models.automata.operations;
 
+import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
 import mc.exceptions.CompilationException;
 import mc.process_models.automata.Automaton;
@@ -36,25 +37,25 @@ public class AutomataOperations {
         return processedAutomaton;
     }
 
-    public Automaton abstraction(Automaton automaton, boolean isFair, boolean prune) throws CompilationException, InterruptedException {
+    public Automaton abstraction(Automaton automaton, boolean isFair, boolean prune, Context context) throws CompilationException, InterruptedException {
         Automaton processedAutomaton = automaton;
         if(prune){
-            prune(processedAutomaton);
+            prune(processedAutomaton, context);
         }
 
-        processedAutomaton = abstraction.performAbstraction(automaton, isFair);
+        processedAutomaton = abstraction.performAbstraction(automaton, isFair,context);
         processedAutomaton = removeUnreachableNodes(processedAutomaton);
         return processedAutomaton;
     }
 
-    public Automaton prune(Automaton automaton) throws CompilationException, InterruptedException {
-        Automaton processedAutomaton = pruning.performPruning(automaton);
+    public Automaton prune(Automaton automaton, Context context) throws CompilationException, InterruptedException {
+        Automaton processedAutomaton = pruning.performPruning(automaton, context);
         processedAutomaton = removeUnreachableNodes(processedAutomaton);
         return processedAutomaton;
     }
 
-    public Automaton simplification(Automaton automaton, Map<String, Expr> replacements) throws CompilationException, InterruptedException {
-        return bisimulation.performSimplification(automaton, replacements);
+    public Automaton simplification(Automaton automaton, Map<String, Expr> replacements, Context context) throws CompilationException, InterruptedException {
+        return bisimulation.performSimplification(automaton, replacements, context);
     }
 
     public boolean bisimulation(List<Automaton> automata){
