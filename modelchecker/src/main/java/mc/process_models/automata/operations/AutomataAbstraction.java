@@ -7,6 +7,7 @@ import mc.process_models.automata.Automaton;
 import mc.process_models.automata.AutomatonEdge;
 import mc.process_models.automata.AutomatonNode;
 import mc.util.expr.Expression;
+import com.microsoft.z3.Context;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -16,7 +17,7 @@ import java.util.stream.Collectors;
  */
 public class AutomataAbstraction {
 
-    public Automaton performAbstraction(Automaton automaton, boolean isFair) throws CompilationException, InterruptedException {
+    public Automaton performAbstraction(Automaton automaton, boolean isFair, Context context) throws CompilationException, InterruptedException {
         Automaton abstraction = new Automaton(automaton.getId() + ".abs", !Automaton.CONSTRUCT_ROOT);
 
         // add the nodes from the specified automaton to the abstracted representation
@@ -38,14 +39,14 @@ public class AutomataAbstraction {
 
         // construct observable edges to replace the unobservable edges
         for(AutomatonEdge hiddenEdge : hiddenEdges){
-            constructOutgoingObservableEdges(abstraction, hiddenEdge, isFair);
-            constructIncomingObservableEdges(abstraction, hiddenEdge, isFair);
+            constructOutgoingObservableEdges(abstraction, hiddenEdge, isFair,context);
+            constructIncomingObservableEdges(abstraction, hiddenEdge, isFair,context);
         }
 
         return abstraction;
     }
 
-    private void constructOutgoingObservableEdges(Automaton abstraction, AutomatonEdge hiddenEdge, boolean isFair) throws CompilationException, InterruptedException {
+    private void constructOutgoingObservableEdges(Automaton abstraction, AutomatonEdge hiddenEdge, boolean isFair, Context context) throws CompilationException, InterruptedException {
         Guard hiddenGuard = (Guard) hiddenEdge.getMetaData("guard");
         List<AutomatonEdge> incomingObservableEdges = hiddenEdge.getFrom().getIncomingEdges().stream()
                 .filter(edge -> !edge.isHidden())
@@ -96,7 +97,7 @@ public class AutomataAbstraction {
             } else if (fromGuard == null && hiddenGuard != null) {
                 outGuard = hiddenGuard;
             } else if (fromGuard != null) {
-                outGuard = Expression.combineGuards(hiddenGuard,fromGuard);
+                outGuard = Expression.combineGuards(hiddenGuard,fromGuard,context);
             }
             for (AutomatonNode to : outgoingNodes) {
                 Map<String,Object> metaData = new HashMap<>();
@@ -109,7 +110,7 @@ public class AutomataAbstraction {
         }
     }
 
-    private void constructIncomingObservableEdges(Automaton abstraction, AutomatonEdge hiddenEdge, boolean isFair) throws CompilationException, InterruptedException {
+    private void constructIncomingObservableEdges(Automaton abstraction, AutomatonEdge hiddenEdge, boolean isFair, Context context) throws CompilationException, InterruptedException {
         Guard hiddenGuard = (Guard) hiddenEdge.getMetaData("guard");
         List<AutomatonEdge> outgoingObservableEdges = hiddenEdge.getTo().getOutgoingEdges().stream()
                 .filter(edge -> !edge.isHidden())
@@ -143,7 +144,7 @@ public class AutomataAbstraction {
             } else if (toGuard == null && hiddenGuard != null) {
                 outGuard = hiddenGuard;
             } else if (toGuard != null) {
-                outGuard = Expression.combineGuards(hiddenGuard,toGuard);
+                outGuard = Expression.combineGuards(hiddenGuard,toGuard,context);
             }
             for (AutomatonNode from : incomingNodes) {
                 Map<String,Object> metaData = new HashMap<>();

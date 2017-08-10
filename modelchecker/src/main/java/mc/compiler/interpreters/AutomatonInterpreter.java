@@ -1,5 +1,6 @@
 package mc.compiler.interpreters;
 
+import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
 import mc.Constant;
 import mc.compiler.ast.*;
@@ -25,13 +26,15 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     private VariableSetNode variables;
     private LocalCompiler compiler;
     private Set<String> variableList;
+    private Context context;
     public AutomatonInterpreter(){
         this.operations = new AutomataOperations();
         reset();
     }
 
-    public ProcessModel interpret(ProcessNode processNode, Map<String, ProcessModel> processMap, LocalCompiler compiler) throws CompilationException, InterruptedException {
+    public ProcessModel interpret(ProcessNode processNode, Map<String, ProcessModel> processMap, LocalCompiler compiler, Context context) throws CompilationException, InterruptedException {
         reset();
+        this.context = context;
         this.compiler = compiler;
         this.variableList = new HashSet<>();
         this.processMap = processMap;
@@ -59,8 +62,9 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         return labelAutomaton(automaton);
     }
 
-    public ProcessModel interpret(ASTNode astNode, String identifier, Map<String, ProcessModel> processMap) throws CompilationException, InterruptedException {
+    public ProcessModel interpret(ASTNode astNode, String identifier, Map<String, ProcessModel> processMap, Context context) throws CompilationException, InterruptedException {
         reset();
+        this.context = context;
         this.processMap = processMap;
 
         interpretProcess(astNode, identifier);
@@ -78,8 +82,8 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
                 ProcessNode node = (ProcessNode) compiler.getProcessNodeMap().get(reference).copy();
                 //Use the current variable set when recompiling.
                 node.setVariables(this.variables);
-                node = compiler.compile(node);
-                ProcessModel model = new AutomatonInterpreter().interpret(node,this.processMap, compiler);
+                node = compiler.compile(node,context);
+                ProcessModel model = new AutomatonInterpreter().interpret(node,this.processMap, compiler,context);
                 processStack.push(model);
             } else {
                 ProcessModel model = processMap.get(reference);
@@ -165,7 +169,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         }
 
         AutomatonNode oldRoot = automaton.addAutomaton(model);
-        automaton.combineNodes(currentNode, oldRoot);
+        automaton.combineNodes(currentNode, oldRoot,context);
     }
 
     private void interpretNode(SequenceNode astNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException {
@@ -204,10 +208,10 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         if(!(model1 instanceof Automaton) || !(model2 instanceof Automaton)){
             throw new CompilationException(getClass(),"Expecting an automaton, received: "+model1.getClass().getSimpleName()+","+model2.getClass().getSimpleName(),astNode.getLocation());
         }
-        Automaton comp = operations.parallelComposition(automaton.getId(), ((Automaton)model1).copy(), ((Automaton)model2).copy());
+        Automaton comp = operations.parallelComposition(automaton.getId(), ((Automaton)model1).copy(), ((Automaton)model2).copy(),context);
 
         AutomatonNode oldRoot = automaton.addAutomaton(comp);
-        automaton.combineNodes(currentNode, oldRoot);
+        automaton.combineNodes(currentNode, oldRoot,context);
 
     }
     private void interpretNode(IdentifierNode astNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException {
@@ -232,19 +236,19 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
                 if(model instanceof Automaton){
                     boolean isFair = (!astNode.getMetaData().containsKey("isFair")) || (boolean) astNode.getMetaData().get("isFair");
                     boolean prune = (astNode.getMetaData().containsKey("prune")) && (boolean) astNode.getMetaData().get("prune");
-                    processed = operations.abstraction(((Automaton)model).copy(), isFair, prune);
+                    processed = operations.abstraction(((Automaton)model).copy(), isFair, prune,context);
                     break;
                 }
                 throw new CompilationException(getClass(),"Expecting an automaton, received a: "+model.getClass().getSimpleName(),astNode.getLocation());
             case "prune":
                 if(model instanceof Automaton){
-                    processed = operations.prune(((Automaton)model).copy());
+                    processed = operations.prune(((Automaton)model).copy(),context);
                     break;
                 }
                 throw new CompilationException(getClass(),"Expecting an automaton, received a: "+model.getClass().getSimpleName(),astNode.getLocation());
             case "simp":
                 if(model instanceof Automaton){
-                    processed = operations.simplification(((Automaton)model).copy(),(Map<String,Expr>)astNode.getMetaData("replacements"));
+                    processed = operations.simplification(((Automaton)model).copy(),(Map<String,Expr>)astNode.getMetaData("replacements"),context);
                     break;
                 }
                 throw new CompilationException(getClass(),"Expecting an automaton, received a: "+model.getClass().getSimpleName(),astNode.getLocation());
@@ -296,7 +300,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
             references.addAll((Set<String>)oldRoot.getMetaData("reference"));
         }
 
-        AutomatonNode node = automaton1.combineNodes(currentNode, oldRoot);
+        AutomatonNode node = automaton1.combineNodes(currentNode, oldRoot,context);
         references.forEach(id -> referenceMap.put(id, node));
     }
 

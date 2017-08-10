@@ -1,5 +1,6 @@
 package mc.compiler;
 
+import com.microsoft.z3.Context;
 import mc.compiler.ast.ASTNode;
 import mc.compiler.ast.AbstractSyntaxTree;
 import mc.compiler.ast.ProcessNode;
@@ -25,7 +26,7 @@ public class Interpreter {
         this.automaton = new AutomatonInterpreter();
     }
 
-    public Map<String, ProcessModel> interpret(AbstractSyntaxTree ast, Compiler.LocalCompiler localCompiler, BlockingQueue<Object> messageQueue) throws CompilationException, InterruptedException {
+    public Map<String, ProcessModel> interpret(AbstractSyntaxTree ast, Compiler.LocalCompiler localCompiler, BlockingQueue<Object> messageQueue, Context context) throws CompilationException, InterruptedException {
         Map<String, ProcessModel> processMap = new LinkedHashMap<>();
 
         List<ProcessNode> processes = ast.getProcesses();
@@ -34,7 +35,7 @@ public class Interpreter {
             ProcessModel model;
             switch(process.getType()){
                 case "automata":
-                    model = automaton.interpret(process, processMap, localCompiler);
+                    model = automaton.interpret(process, processMap, localCompiler, context);
                     model.addMetaData("location",process.getLocation());
                     break;
                 default:
@@ -55,11 +56,11 @@ public class Interpreter {
         return processMap;
     }
 
-    public ProcessModel interpret(String processModelType, ASTNode astNode, String identifer, Map<String, ProcessModel> processMap) throws CompilationException, InterruptedException {
+    public ProcessModel interpret(String processModelType, ASTNode astNode, String identifer, Map<String, ProcessModel> processMap, Context context) throws CompilationException, InterruptedException {
         ProcessModel model;
         switch(processModelType){
             case "automata":
-                model = automaton.interpret(astNode, identifer, processMap);
+                model = automaton.interpret(astNode, identifer, processMap, context);
                 break;
             default:
                 throw new CompilationException(getClass(),"Unable to find the process type: "+processModelType);

@@ -1,5 +1,6 @@
 package mc.compiler;
 
+import com.microsoft.z3.Context;
 import mc.compiler.ast.*;
 import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
@@ -22,7 +23,7 @@ public class OperationEvaluator {
         this.automataOperations = new AutomataOperations();
     }
 
-    public List<OperationResult> evaluateOperations(List<OperationNode> operations, Map<String, ProcessModel> processMap, Interpreter interpreter, String code) throws CompilationException, InterruptedException {
+    public List<OperationResult> evaluateOperations(List<OperationNode> operations, Map<String, ProcessModel> processMap, Interpreter interpreter, String code, Context context) throws CompilationException, InterruptedException {
         reset();
         List<OperationResult> results = new ArrayList<>();
         for(OperationNode operation : operations){
@@ -37,8 +38,8 @@ public class OperationEvaluator {
             if (!missing.isEmpty()) {
                 throw new CompilationException(OperationEvaluator.class, "Identifier " + missing.get(0) + " not found!", operation.getLocation());
             }
-            automata.add((Automaton) interpreter.interpret("automata", operation.getFirstProcess(), getNextOperationId(), processMap));
-            automata.add((Automaton) interpreter.interpret("automata", operation.getSecondProcess(), getNextOperationId(), processMap));
+            automata.add((Automaton) interpreter.interpret("automata", operation.getFirstProcess(), getNextOperationId(), processMap,context));
+            automata.add((Automaton) interpreter.interpret("automata", operation.getSecondProcess(), getNextOperationId(), processMap,context));
 
             if (Objects.equals(operation.getOperation(), "traceEquivalent")) {
                 List<Automaton> automata1 = new ArrayList<>();

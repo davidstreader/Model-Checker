@@ -2,6 +2,7 @@ package mc.compiler;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.microsoft.z3.BoolExpr;
+import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
 import lombok.*;
 import mc.exceptions.CompilationException;
@@ -19,7 +20,6 @@ import static mc.util.expr.Expression.*;
 
 @Setter
 @AllArgsConstructor
-@NoArgsConstructor
 @ToString
 
 public class Guard implements Serializable{
@@ -35,6 +35,8 @@ public class Guard implements Serializable{
     @Getter
     private boolean shouldDisplay = false;
     private Set<String> hiddenVariables = new HashSet<>();
+    @JsonIgnore
+    private Context context;
     /**
      * Get the guard as a string, used for serialization.
      * @return The guard as a string, or an empty string if none exists.
@@ -51,7 +53,7 @@ public class Guard implements Serializable{
         if (andList.isEmpty()) andList.add(guard);
         andList.removeIf(s -> !containsHidden(s));
         if (andList.isEmpty()) return "";
-        Expr combined = getContext().mkAnd(andList.toArray(new BoolExpr[0]));
+        Expr combined = context.mkAnd(andList.toArray(new BoolExpr[0]));
         return rm$(ExpressionPrinter.printExpression(combined, Collections.emptyMap()));
     }
     private void collectAnds(List<BoolExpr> andList, Expr ex) {
@@ -162,12 +164,13 @@ public class Guard implements Serializable{
         return guard != null || !variables.isEmpty() || !next.isEmpty();
     }
     public Guard copy() {
-        return new Guard(guard,variables,next,nextMap,shouldDisplay,hiddenVariables);
+        return new Guard(guard,variables,next,nextMap,shouldDisplay,hiddenVariables,context);
     }
-    public Guard(BoolExpr guard, Map<String,Integer> variables, Set<String> hiddenVariables) {
+    public Guard(BoolExpr guard, Map<String,Integer> variables, Set<String> hiddenVariables, Context context) {
         setGuard(guard);
         setVariables(variables);
         setHiddenVariables(hiddenVariables);
+        this.context = context;
     }
 
     public boolean equals(Object o, Map<String, Expr> replacements, AutomatonNode first, AutomatonNode second) throws CompilationException, InterruptedException {
@@ -175,16 +178,19 @@ public class Guard implements Serializable{
         if (o == null || getClass() != o.getClass()) return false;
         Guard guard1 = (Guard) o;
         if (hiddenVariables.isEmpty() && guard1.hiddenVariables.isEmpty()) return true;
-        Expr exp1 = substitute(guard, replacements);
-        Expr exp2 = substitute(guard1.guard, replacements);
-        return NodeUtils.findLoopsAndPathToRoot(first).map(NodeUtils::collectVariables)
-            .map(s -> substitute(exp1, s))
-            .allMatch(s -> isSolvable((BoolExpr) s, Collections.emptyMap())) &&
+        Expr exp1 = substitute(guard, replacements,context);
+        Expr exp2 = substitute(guard1.guard, replacements,context);
+        return NodeUtils.findLoopsAndPathToRoot(first).map(edges -> NodeUtils.collectVariables(edges,context))
+            .map(s -> substitute(exp1, s,context))
+            .allMatch(s -> isSolvable((BoolExpr) s, Collections.emptyMap(),context)) &&
             NodeUtils.findLoopsAndPathToRoot(second)
-                .map(NodeUtils::collectVariables)
-                .map(s -> substitute(exp2, s))
-                .allMatch(s -> isSolvable((BoolExpr) s, Collections.emptyMap())) &&
-            equate(this, guard1);
+                .map(edges -> NodeUtils.collectVariables(edges,context))
+                .map(s -> substitute(exp2, s,context))
+                .allMatch(s -> isSolvable((BoolExpr) s, Collections.emptyMap(),context)) &&
+            equate(this, guard1,context);
+    }
+    public Guard(Context context) {
+        this.context = context;
     }
     @Override
     public int hashCode() {

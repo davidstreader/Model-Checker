@@ -20,8 +20,8 @@ public class ShuntingYardAlgorithm {
     private String current;
     private Context context;
 
-    public ShuntingYardAlgorithm() throws InterruptedException {
-        this.context = Expression.getContext();
+    public ShuntingYardAlgorithm(Context context) throws InterruptedException {
+        this.context = context;
         setupPrecedenceMap();
         reset();
     }
@@ -71,7 +71,7 @@ public class ShuntingYardAlgorithm {
                     output.push(op);
                 }
                 if (Objects.equals(result, "integer")) {
-                    BitVecExpr op = Expression.mkBV(Integer.parseInt(current));
+                    BitVecExpr op = Expression.mkBV(Integer.parseInt(current),context);
                     output.push(op);
                 } else if (Objects.equals(result, "variable")) {
                     BitVecExpr op = context.mkBVConst(current, 32);

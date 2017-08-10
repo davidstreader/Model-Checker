@@ -3,6 +3,7 @@ package mc.commands;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
+import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
 import mc.exceptions.CompilationException;
 import mc.util.expr.ExpressionEvaluator;
@@ -19,23 +20,25 @@ public class EvalCommand implements Command{
     @Override
     public void run(String[] args) {
         try {
-            Expr expression;
-            Map<String,Integer> vars = Collections.emptyMap();
-            try {
-                expression = Expression.constructExpression(String.join(" ",args),null);
-            } catch (Exception ex) {
-                if (args.length > 1) {
-                    expression = Expression.constructExpression(String.join(" ", Arrays.copyOfRange(args, 0, args.length - 1)),null);
-                    vars = new Gson().fromJson(
-                        "{" + args[args.length - 1] + "}".replace("=", ":"), new TypeToken<Map<String, Integer>>() {
-                        }.getType()
-                    );
-                } else {
-                    throw ex;
+            try (Context context = Expression.mkCtx()) {
+                Expr expression;
+                Map<String,Integer> vars = Collections.emptyMap();
+                try {
+                    expression = Expression.constructExpression(String.join(" ",args),null, context);
+                } catch (Exception ex) {
+                    if (args.length > 1) {
+                        expression = Expression.constructExpression(String.join(" ", Arrays.copyOfRange(args, 0, args.length - 1)),null, context);
+                        vars = new Gson().fromJson(
+                            "{" + args[args.length - 1] + "}".replace("=", ":"), new TypeToken<Map<String, Integer>>() {
+                            }.getType()
+                        );
+                    } else {
+                        throw ex;
 
+                    }
                 }
+                System.out.println(Ansi.ansi().render("Expression evaluated to: @|yellow " + eval.evaluateExpression(expression, vars, context) + "|@"));
             }
-            System.out.println(Ansi.ansi().render("Expression evaluated to: @|yellow "+ eval.evaluateExpression(expression,vars)+"|@"));
         } catch (Exception ex) {
             if (ex instanceof JsonSyntaxException) {
                 System.out.println(Ansi.ansi().render("@|red The variable map that was provided is invalid. |@"));

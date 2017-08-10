@@ -7,9 +7,11 @@ import com.microsoft.z3.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.SneakyThrows;
+import mc.Constant;
 import mc.compiler.Guard;
 import mc.exceptions.CompilationException;
 import mc.util.Location;
+import mc.webserver.WebSocketServer;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -46,8 +48,8 @@ public class Expression {
         .build(
             new CacheLoader<And, Boolean>() {
                 public Boolean load(And key) throws InterruptedException, CompilationException {
-                    BoolExpr expr = getContext().mkAnd((BoolExpr)substituteInts(key.expr1,key.variables1),(BoolExpr)substituteInts(key.expr2,key.variables2));
-                    return solve(expr);
+                    BoolExpr expr = key.thread.mkAnd((BoolExpr)substituteInts(key.expr1,key.variables1,key.thread),(BoolExpr)substituteInts(key.expr2,key.variables2,key.thread));
+                    return solve(expr,key.thread);
                 }
             });
     private static LoadingCache<Substitute, Boolean> solved = CacheBuilder.newBuilder()
@@ -60,7 +62,7 @@ public class Expression {
                     if (simpl.isConst()) {
                         return simpl.getBoolValue().toInt()==1;
                     }
-                    Solver solver = getContext().mkSolver();
+                    Solver solver = key.thread.mkSolver();
                     solver.add((BoolExpr) key.expr);
                     if (Thread.currentThread().isInterrupted()) {
                         throw new InterruptedException();
@@ -80,8 +82,8 @@ public class Expression {
                     Expr[] replacements = new Expr[subMap.size()];
                     int i =0;
                     for (String c : subMap.keySet()) {
-                        consts[i] = getContext().mkBVConst(c,32);
-                        replacements[i++] = getContext().mkBV(subMap.get(c),32);
+                        consts[i] = key.thread.mkBVConst(c,32);
+                        replacements[i++] = key.thread.mkBV(subMap.get(c),32);
                     }
                     Expr t = expr.substitute(consts,replacements);
                     if (Thread.currentThread().isInterrupted()) {
@@ -97,9 +99,9 @@ public class Expression {
      * @return A logical and of both guards, with the next variables substituted from the first into the second.
      * @throws CompilationException
      */
-    public static Guard combineGuards(Guard first, Guard second) throws CompilationException, InterruptedException {
+    public static Guard combineGuards(Guard first, Guard second, Context ctx) throws CompilationException, InterruptedException {
         //Create a new guard
-        Guard ret = new Guard();
+        Guard ret = new Guard(ctx);
         //Start with variables from the second guard
         ret.setVariables(second.getVariables());
         //Replace all the variables from the second guard with ones from the first guard
@@ -113,30 +115,30 @@ public class Expression {
         //convert the next variables into a series of expressions.
         HashMap<String,Expr> subMap = new HashMap<>();
         for (String str: first.getNextMap().keySet()) {
-            subMap.put(str,constructExpression(first.getNextMap().get(str),null));
+            subMap.put(str,constructExpression(first.getNextMap().get(str),null, ctx));
         }
         BoolExpr secondGuard = second.getGuard();
         //Substitute every value from the subMap into the second guard.
-        secondGuard = substitute(secondGuard,subMap);
-        ret.setGuard(getContext().mkAnd(first.getGuard(), secondGuard));
+        secondGuard = substitute(secondGuard,subMap,ctx);
+        ret.setGuard(ctx.mkAnd(first.getGuard(), secondGuard));
         return ret;
     }
 
     @SneakyThrows
     @SuppressWarnings("unchecked")
-    public static Expr substituteInts(Expr expr, Map<String, Integer> subMap) {
-        return substitutions.get(new Substitute(getContext(),subMap, expr));
+    public static Expr substituteInts(Expr expr, Map<String, Integer> subMap, Context ctx) {
+        return substitutions.get(new Substitute(ctx,subMap, expr));
     }
 
     @SneakyThrows
     @SuppressWarnings("unchecked")
-    public static <T extends Expr> T substitute(T expr, Map<String, Expr> subMap) {
+    public static <T extends Expr> T substitute(T expr, Map<String, Expr> subMap, Context ctx) {
         if (subMap == null) return expr;
         Expr[] consts = new Expr[subMap.size()];
         Expr[] replacements = new Expr[subMap.size()];
         int i =0;
         for (String c : subMap.keySet()) {
-            consts[i] = getContext().mkBVConst(c,32);
+            consts[i] = ctx.mkBVConst(c,32);
             replacements[i++] = subMap.get(c);
         }
         T t = (T) expr.substitute(consts,replacements);
@@ -146,51 +148,39 @@ public class Expression {
         return t;
     }
     @SneakyThrows
-    public static boolean equate(Guard guard1, Guard guard2) {
-        return equated.get(new And(getContext(),guard1.getGuard(),guard1.getVariables(),guard2.getGuard(),guard2.getVariables()));
+    public static boolean equate(Guard guard1, Guard guard2, Context ctx) {
+        return equated.get(new And(ctx,guard1.getGuard(),guard1.getVariables(),guard2.getGuard(),guard2.getVariables()));
     }
     @SneakyThrows
-    public static boolean isSolvable(BoolExpr ex, Map<String, Integer> variables) {
-        return solve((BoolExpr) substituteInts(ex,variables));
+    public static boolean isSolvable(BoolExpr ex, Map<String, Integer> variables, Context ctx) {
+        return solve((BoolExpr) substituteInts(ex,variables, ctx),ctx);
     }
-    private static Context mkCtx() throws InterruptedException {
+    public static Context mkCtx() throws InterruptedException {
         HashMap<String, String> cfg = new HashMap<>();
         cfg.put("model", "true");
         return new Context(cfg);
     }
-    private static boolean solve(BoolExpr expr) throws CompilationException, InterruptedException {
+    private static boolean solve(BoolExpr expr, Context ctx) throws CompilationException, InterruptedException {
         try {
-            return solved.get(new Substitute(getContext(),Collections.emptyMap(),expr));
+            return solved.get(new Substitute(ctx,Collections.emptyMap(),expr));
         } catch (ExecutionException e) {
             throw new CompilationException(Expression.class,"Error occurred while solving: "+ExpressionPrinter.printExpression(expr));
         }
     }
-    private static Map<Thread,Context> context = new HashMap<>();
-    public static Context getContext() throws InterruptedException {
-        if (context.get(Thread.currentThread()) == null) {
-            context.put(Thread.currentThread(),mkCtx());
-        }
-        return context.get(Thread.currentThread());
-    }
-    public static Expr constructExpression(String expression, Map<String,String> variableMap, Location location) throws InterruptedException, CompilationException {
+    private static Expr constructExpression(String expression, Map<String, String> variableMap, Location location, Context context) throws InterruptedException, CompilationException {
         java.util.regex.Pattern regex = Pattern.compile("(\\$v.+\\b)");
         Matcher matcher = regex.matcher(expression);
         while (matcher.find()) {
             expression = expression.replace(matcher.group(0),variableMap.get(matcher.group(0)));
             matcher = regex.matcher(expression);
         }
-        ShuntingYardAlgorithm sya = new ShuntingYardAlgorithm();
+        ShuntingYardAlgorithm sya = new ShuntingYardAlgorithm(context);
         return sya.convert(expression, location);
     }
-    public static Expr constructExpression(String s, Location location) throws InterruptedException, CompilationException {
-        return constructExpression(s, Collections.emptyMap(), location);
+    public static Expr constructExpression(String s, Location location, Context context) throws InterruptedException, CompilationException {
+        return constructExpression(s, Collections.emptyMap(), location, context);
     }
-    public static BitVecExpr mkBV(int i) throws InterruptedException {
-        return getContext().mkBV(i,32);
-    }
-    public static void closeContext(Thread compileThread) {
-        if (context.containsKey(compileThread)) {
-            context.remove(compileThread).close();
-        }
+    static BitVecExpr mkBV(int i, Context ctx) throws InterruptedException {
+        return ctx.mkBV(i,32);
     }
 }
