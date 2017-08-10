@@ -113,8 +113,6 @@ public class WebSocketServer {
                     }
                 } catch (ExecutionException eex) {
                     Throwable ex = eex.getCause();
-                    ex.printStackTrace();
-                    eex.printStackTrace();
                     if (ex instanceof InterruptedException) {
                         continue;
                     }
