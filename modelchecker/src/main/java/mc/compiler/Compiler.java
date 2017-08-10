@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -31,6 +32,8 @@ public class Compiler {
     private OperationEvaluator evaluator;
     private EquationEvaluator eqEvaluator;
     private Parser parser;
+    //Limit to 4 renderers at a time.
+    private static ExecutorService renderingService = Executors.newFixedThreadPool(4);
 
     public Compiler() throws InterruptedException {
         this.lexer = new Lexer();
@@ -72,13 +75,20 @@ public class Compiler {
         EquationEvaluator.EquationReturn eqResults = eqEvaluator.evaluateEquations(ast.getEquations(), code, context,messageQueue);
         processMap.putAll(eqResults.getToRender());
         if (!(context instanceof FakeContext)) {
-            List<Automaton> toPosition = processMap.values().stream().filter(Automaton.class::isInstance).map(s -> (Automaton)s).filter(s -> s.getNodeCount() <= Math.min(context.getAutoMaxNode(),300)).collect(Collectors.toList());
-            int counter = toPosition.size();
-            for (Automaton automaton : toPosition) {
-                messageQueue.add(new LogMessage("Performing layout for @|black "+automaton.getId()+"|@, remaining: "+counter--,true,false));
-                automaton.position();
-
+            messageQueue.add(new LogMessage("Waiting for render queue to clear up",true,false));
+            try {
+                renderingService.submit(() -> {
+                    List<Automaton> toPosition = processMap.values().stream().filter(Automaton.class::isInstance).map(s -> (Automaton)s).filter(s -> s.getNodeCount() <= Math.min(context.getAutoMaxNode(),300)).collect(Collectors.toList());
+                    int counter = toPosition.size();
+                    for (Automaton automaton : toPosition) {
+                        messageQueue.add(new LogMessage("Performing layout for @|black "+automaton.getId()+"|@, remaining: "+counter--,true,false));
+                        automaton.position();
+                    }
+                }).get();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
             }
+
         }
         return new CompilationObject(processMap, results, eqResults.getResults());
     }
