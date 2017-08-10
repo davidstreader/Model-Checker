@@ -53,7 +53,6 @@ public class AutomataParallelComposition {
                 // create an intersection of the metadata from both nodes
                 for(String key : node1.getMetaDataKeys()){
                     Object data = node1.getMetaData(key);
-
                     // check if the second node has a matching metadata key
                     if(node2.hasMetaData(key)){
                         // check that the metadata is equivalent

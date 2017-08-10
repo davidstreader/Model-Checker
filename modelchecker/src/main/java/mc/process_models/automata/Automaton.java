@@ -194,10 +194,12 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
             node.addMetaData(key, node2.getMetaData(key));
         }
         node.removeMetaData("variables");
-        Map<?,?> vars1 = (Map) node1.getMetaData("variables");
-        Map<?,?> vars2 = (Map) node2.getMetaData("variables");
-        if (Objects.equals(vars1,vars2)) {
-            node.addMetaData("variables", vars1);
+        if (node1.hasMetaData("variables") && node2.hasMetaData("variables")) {
+            Map<?, ?> vars1 = (Map) node1.getMetaData("variables");
+            Map<?, ?> vars2 = (Map) node2.getMetaData("variables");
+            if (Objects.equals(vars1, vars2)) {
+                node.addMetaData("variables", vars1);
+            }
         }
 
         if(node1.hasMetaData("startNode") || node2.hasMetaData("startNode")){

@@ -24,6 +24,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     private List<Automaton> combinedProcesses;
     private VariableSetNode variables;
     private LocalCompiler compiler;
+    private Set<String> variableList;
     public AutomatonInterpreter(){
         this.operations = new AutomataOperations();
         reset();
@@ -32,6 +33,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     public ProcessModel interpret(ProcessNode processNode, Map<String, ProcessModel> processMap, LocalCompiler compiler) throws CompilationException, InterruptedException {
         reset();
         this.compiler = compiler;
+        this.variableList = new HashSet<>();
         this.processMap = processMap;
         String identifier = processNode.getIdentifier();
         this.variables = processNode.getVariables();
@@ -112,7 +114,6 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
             processStack.push(automaton);
         }
     }
-    private Set<String> variableList = new HashSet<>();
     private void interpretNode(ASTNode astNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException {
         if (Thread.currentThread().isInterrupted()) {
             throw new InterruptedException();
@@ -127,7 +128,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         if (astNode.getMetaData().containsKey("variables")) {
             Map<String,Object> varMap = (Map<String, Object>) astNode.getMetaData().get("variables");
             varMap.keySet().stream().map(s->s.substring(1)).forEach(variableList::add);
-            currentNode.addMetaData("variables",astNode.getMetaData().get("variables"));
+            currentNode.addMetaData("variables",varMap);
         }
         currentNode.getMetaData().putAll(astNode.getMetaData());
         if(astNode instanceof ProcessRootNode){
