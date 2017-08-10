@@ -31,8 +31,8 @@ public class AutomataOperations {
         this.nfaToDFA = new AutomataNFAToDFA();
     }
 
-    public Automaton parallelComposition(String id, Automaton automaton1, Automaton automaton2) throws CompilationException {
-        Automaton processedAutomaton = composition.performParallelComposition(id, automaton1, automaton2);
+    public Automaton parallelComposition(String id, Automaton automaton1, Automaton automaton2, Context context) throws CompilationException {
+        Automaton processedAutomaton = composition.performParallelComposition(id, automaton1, automaton2, context);
         processedAutomaton = removeUnreachableNodes(processedAutomaton);
         return processedAutomaton;
     }

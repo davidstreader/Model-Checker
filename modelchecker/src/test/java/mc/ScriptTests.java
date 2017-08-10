@@ -1,8 +1,10 @@
 package mc;
 
+import com.microsoft.z3.Context;
 import mc.compiler.OperationResult;
 import mc.exceptions.CompilationException;
 import mc.util.PrintQueue;
+import mc.util.expr.Expression;
 import mc.webserver.FakeContext;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,8 +29,8 @@ public class ScriptTests {
         if (file.getName().endsWith("results.txt") || !file.getName().endsWith("txt")) return;
         mc.compiler.Compiler compiler = new mc.compiler.Compiler();
         List<OperationResult> operations = Collections.emptyList();
-        try {
-            operations = compiler.compile(String.join("\n", Files.readAllLines(file.toPath())),new FakeContext(),new PrintQueue()).getOperationResults();
+        try (Context context = Expression.mkCtx()) {
+            operations = compiler.compile(String.join("\n", Files.readAllLines(file.toPath())),new FakeContext(),context,new PrintQueue()).getOperationResults();
             if (shouldFail(file.getName())) {
                 fail("Test script: " + file.getName() + " should not compile!");
             }

@@ -6,6 +6,7 @@ import mc.exceptions.CompilationException;
 import mc.process_models.automata.Automaton;
 import mc.process_models.automata.AutomatonEdge;
 import mc.process_models.automata.AutomatonNode;
+import com.microsoft.z3.Context;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -17,7 +18,7 @@ public class AutomataParallelComposition {
     private Set<String> syncedActions;
     private Set<String> unsyncedActions;
 
-    public Automaton performParallelComposition(String id, Automaton automaton1, Automaton automaton2) throws CompilationException {
+    public Automaton performParallelComposition(String id, Automaton automaton1, Automaton automaton2, Context context) throws CompilationException {
         setup(id);
         // construct the parallel composition of the states from both automata
         List<AutomatonNode> nodes1 = automaton1.getNodes();
@@ -33,7 +34,7 @@ public class AutomataParallelComposition {
         List<AutomatonEdge> edges2 = automaton2.getEdges();
 
         processUnsyncedActions(edges1, edges2);
-        processSyncedActions(edges1, edges2);
+        processSyncedActions(edges1, edges2, context);
 
         return automaton;
     }
@@ -145,7 +146,7 @@ public class AutomataParallelComposition {
         }
     }
 
-    private void processSyncedActions(List<AutomatonEdge> edges1, List<AutomatonEdge> edges2) throws CompilationException {
+    private void processSyncedActions(List<AutomatonEdge> edges1, List<AutomatonEdge> edges2, Context context) throws CompilationException {
         for(String action : syncedActions){
             List<AutomatonEdge> syncedEdges1 = edges1.stream()
                 .filter(edge -> equals(action, edge.getLabel()))
@@ -162,7 +163,7 @@ public class AutomataParallelComposition {
                         from.getOutgoingEdges().forEach(edge -> automaton.removeEdge(edge.getId()));
 
                     AutomatonNode to = automaton.getNode(createId(edge1.getTo(), edge2.getTo()));
-                    Guard guard = new Guard();
+                    Guard guard = new Guard(context);
                     if (edge1.hasMetaData("guard")) guard.mergeWith((Guard) edge1.getMetaData("guard"));
                     if (edge2.hasMetaData("guard")) guard.mergeWith((Guard) edge2.getMetaData("guard"));
                     Map<String,Object> metaData = new HashMap<>();

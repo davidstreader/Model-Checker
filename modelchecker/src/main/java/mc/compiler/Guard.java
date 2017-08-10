@@ -20,7 +20,6 @@ import static mc.util.expr.Expression.*;
 
 @Setter
 @AllArgsConstructor
-@NoArgsConstructor
 @ToString
 
 public class Guard implements Serializable{
@@ -167,10 +166,11 @@ public class Guard implements Serializable{
     public Guard copy() {
         return new Guard(guard,variables,next,nextMap,shouldDisplay,hiddenVariables,context);
     }
-    public Guard(BoolExpr guard, Map<String,Integer> variables, Set<String> hiddenVariables) {
+    public Guard(BoolExpr guard, Map<String,Integer> variables, Set<String> hiddenVariables, Context context) {
         setGuard(guard);
         setVariables(variables);
         setHiddenVariables(hiddenVariables);
+        this.context = context;
     }
 
     public boolean equals(Object o, Map<String, Expr> replacements, AutomatonNode first, AutomatonNode second) throws CompilationException, InterruptedException {
@@ -188,6 +188,9 @@ public class Guard implements Serializable{
                 .map(s -> substitute(exp2, s,context))
                 .allMatch(s -> isSolvable((BoolExpr) s, Collections.emptyMap(),context)) &&
             equate(this, guard1,context);
+    }
+    public Guard(Context context) {
+        this.context = context;
     }
     @Override
     public int hashCode() {

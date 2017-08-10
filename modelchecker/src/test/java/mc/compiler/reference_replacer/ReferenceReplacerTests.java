@@ -25,8 +25,8 @@ public class ReferenceReplacerTests extends TestBase {
     ProcessNode constructProcessNode(String code) throws InterruptedException {
         try{
             List<Token> tokens = lexer.tokenise(code);
-            AbstractSyntaxTree ast = parser.parse(tokens);
-            ast = expander.expand(ast,new PrintQueue());
+            AbstractSyntaxTree ast = parser.parse(tokens,context);
+            ast = expander.expand(ast,new PrintQueue(),context);
             ast = replacer.replaceReferences(ast,new PrintQueue());
             return ast.getProcesses().get(0);
         }catch(CompilationException e){
@@ -39,8 +39,8 @@ public class ReferenceReplacerTests extends TestBase {
     List<ProcessNode> constructProcessList(String code) throws InterruptedException {
         try{
             List<Token> tokens = lexer.tokenise(code);
-            AbstractSyntaxTree ast = parser.parse(tokens);
-            ast = expander.expand(ast,new PrintQueue());
+            AbstractSyntaxTree ast = parser.parse(tokens,context);
+            ast = expander.expand(ast,new PrintQueue(),context);
             return replacer.replaceReferences(ast,new PrintQueue()).getProcesses();
         }catch(CompilationException e){
             e.printStackTrace();

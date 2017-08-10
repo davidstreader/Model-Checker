@@ -101,7 +101,7 @@ public class Expression {
      */
     public static Guard combineGuards(Guard first, Guard second, Context ctx) throws CompilationException, InterruptedException {
         //Create a new guard
-        Guard ret = new Guard();
+        Guard ret = new Guard(ctx);
         //Start with variables from the second guard
         ret.setVariables(second.getVariables());
         //Replace all the variables from the second guard with ones from the first guard

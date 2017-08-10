@@ -1,10 +1,17 @@
 package mc.compiler;
 
+import com.microsoft.z3.Context;
 import mc.compiler.ast.*;
+import mc.util.expr.Expression;
 
 import java.util.List;
 
 public abstract class TestBase {
+
+    protected final Context context = Expression.mkCtx();
+
+    protected TestBase() throws InterruptedException {
+    }
 
     public SequenceNode constructSequenceNode(String[] actions, ASTNode node){
         for(int i = actions.length - 1; i >= 0; i--){

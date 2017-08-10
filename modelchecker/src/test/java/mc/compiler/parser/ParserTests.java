@@ -24,7 +24,7 @@ abstract class ParserTests extends TestBase {
     ProcessNode constructProcessNode(String code, int index) throws InterruptedException {
         try {
             List<Token> tokens = lexer.tokenise(code);
-            AbstractSyntaxTree ast = parser.parse(tokens);
+            AbstractSyntaxTree ast = parser.parse(tokens,context);
             return ast.getProcesses().get(index);
         } catch (CompilationException e) {
             e.printStackTrace();
@@ -40,7 +40,7 @@ abstract class ParserTests extends TestBase {
     List<ProcessNode> constructProcessList(String code) throws InterruptedException {
         try {
             List<Token> tokens = lexer.tokenise(code);
-            AbstractSyntaxTree ast = parser.parse(tokens);
+            AbstractSyntaxTree ast = parser.parse(tokens,context);
             return ast.getProcesses();
         } catch (CompilationException e) {
             e.printStackTrace();
