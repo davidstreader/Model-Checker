@@ -82,8 +82,21 @@ public class Main {
         if (gui == null) builder.inheritIO();
             //Else redirect error so we can get the processes output stream
         else builder.redirectErrorStream(true);
-
-        while (!Thread.currentThread().isInterrupted()) {
+        Thread current = Thread.currentThread();
+        new Thread(()->{
+           while (!Thread.currentThread().isInterrupted()) {
+               try {
+                   Thread.sleep(100);
+                   if (subProcess != null) {
+                       subProcess.waitFor();
+                       current.interrupt();
+                   }
+               } catch (InterruptedException e) {
+                   e.printStackTrace();
+               }
+           }
+        }).start();
+        while (true) {
             try {
                 subProcess = builder.start();
                 //Redirect the terminal to the gui
@@ -96,10 +109,9 @@ public class Main {
                 System.out.println("Restarting sub-process");
                 Thread.sleep(TimeUnit.MINUTES.toMillis(5));
             } catch (IOException | InterruptedException e) {
-                e.printStackTrace();
+                System.out.println("Sub process died, Restarting sub-process!");
             }
             subProcess.destroyForcibly();
-
         }
     }
 
