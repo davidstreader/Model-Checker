@@ -94,7 +94,7 @@ public class Main {
                     System.exit(0);
                 }
                 System.out.println("Restarting sub-process");
-                Thread.sleep(TimeUnit.MINUTES.toMillis(1));
+                Thread.sleep(TimeUnit.MINUTES.toMillis(5));
             } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
             }
