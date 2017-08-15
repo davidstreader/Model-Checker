@@ -82,8 +82,6 @@ $(function() {
         statusBadge.text("Connected");
         statusBadge.removeClass("label-danger");
         statusBadge.addClass("label-success");
-        if (app.settings.getSettings().liveCompiling)
-            app.compileAndBuild();
     };
     app.socket.onclose = function () {
         if (app.connected) {

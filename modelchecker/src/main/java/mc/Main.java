@@ -8,12 +8,14 @@ import mc.gui.MainGui;
 import mc.util.Utils;
 import mc.webserver.NativesManager;
 import mc.webserver.WebServer;
+import mc.webserver.webobjects.LogMessage;
 import org.fusesource.jansi.AnsiConsole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static org.fusesource.jansi.Ansi.ansi;
 public class Main {
@@ -30,6 +32,7 @@ public class Main {
     private WebServer webServer;
     @Getter
     private boolean reloaded = false;
+    private boolean autoKill = false;
     @Getter
     private static Main instance;
 
@@ -37,8 +40,9 @@ public class Main {
         AnsiConsole.systemInstall();
         MainGui.registerConsoleAppender();
     }
-    public Main(boolean reloaded) {
+    public Main(boolean reloaded, boolean autoKill) {
         instance = this;
+        this.autoKill = autoKill;
         AnsiConsole.systemInstall();
         //Make sure that we kill the sub-process when this process exits.
         Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
@@ -78,14 +82,24 @@ public class Main {
         if (gui == null) builder.inheritIO();
             //Else redirect error so we can get the processes output stream
         else builder.redirectErrorStream(true);
-        try {
-            subProcess = builder.start();
-            //Redirect the terminal to the gui
-            if (gui != null)
-                gui.redirectTerminalProcess(subProcess);
-            subProcess.waitFor();
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+
+        while (!Thread.currentThread().isInterrupted()) {
+            try {
+                subProcess = builder.start();
+                //Redirect the terminal to the gui
+                if (gui != null)
+                    gui.redirectTerminalProcess(subProcess);
+                if (!autoKill) {
+                    subProcess.waitFor();
+                    System.exit(0);
+                }
+                System.out.println("Restarting sub-process");
+                Thread.sleep(TimeUnit.MINUTES.toMillis(1));
+            } catch (IOException | InterruptedException e) {
+                e.printStackTrace();
+            }
+            subProcess.destroyForcibly();
+
         }
     }
 
@@ -100,7 +114,8 @@ public class Main {
     public static void main(String[] args) {
         //The easiest way to tell if we have reloaded the application is to set a flag.
         boolean reloaded = (args.length > 0 && args[0].equals("reloaded"));
-        new Main(reloaded);
+        boolean autoKill = (args.length > 0 && args[0].equals("autoKill"));
+        new Main(reloaded,autoKill);
     }
 
     /**
