@@ -171,6 +171,9 @@ public class Expression {
         java.util.regex.Pattern regex = Pattern.compile("(\\$v.+\\b)");
         Matcher matcher = regex.matcher(expression);
         while (matcher.find()) {
+            if (!variableMap.containsKey(matcher.group(0))) {
+                throw new CompilationException(Expression.class,"Unable to find variable: "+matcher.group(0),location);
+            }
             expression = expression.replace(matcher.group(0),variableMap.get(matcher.group(0)));
             matcher = regex.matcher(expression);
         }
