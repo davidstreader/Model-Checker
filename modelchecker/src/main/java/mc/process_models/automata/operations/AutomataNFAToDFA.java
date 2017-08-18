@@ -32,12 +32,8 @@ public class AutomataNFAToDFA {
             if(visited.contains(id)){
                 continue;
             }
-
             if(!nodeMap.containsKey(id)){
                 nodeMap.put(id, dfa.addNode(id));
-                AutomatonNode node = nodeMap.get(id);
-                node.addMetaData("label", constructLabel(stateMap.get(states)));
-                node.addMetaData("dfa", true);
             }
             AutomatonNode node = nodeMap.get(id);
 
@@ -58,9 +54,6 @@ public class AutomataNFAToDFA {
 
                 if(!nodeMap.containsKey(nextId)){
                     nodeMap.put(nextId, dfa.addNode(nextId));
-                    AutomatonNode nextNode = nodeMap.get(nextId);
-                    nextNode.addMetaData("label", constructLabel(stateMap.get(nextStates)));
-                    nextNode.addMetaData("dfa", true);
                 }
                 AutomatonNode nextNode = nodeMap.get(nextId);
 
@@ -146,10 +139,7 @@ public class AutomataNFAToDFA {
     }
 
     private String constructNodeId(List<AutomatonNode> nodes, String identifier){
-        String builder = identifier +
-            constructLabel(nodes);
-
-        return builder;
+        return identifier + constructLabel(nodes);
     }
 
     private String constructLabel(List<AutomatonNode> nodes){

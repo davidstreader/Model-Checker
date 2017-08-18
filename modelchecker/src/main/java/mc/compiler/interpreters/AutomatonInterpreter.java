@@ -109,7 +109,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
             Automaton automaton = new Automaton(identifier);
             if (variables != null) {
                 automaton.addMetaData("hidden_vars_loc",variables.getLocation());
-                    automaton.addMetaData("hidden_vars",variables.getVariables());
+                automaton.addMetaData("hidden_vars",variables.getVariables());
             }
 
             automaton.addMetaData("variables",variableList);
@@ -350,9 +350,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
             }
 
             current.getOutgoingEdges().forEach(edge -> fringe.offer(edge.getTo()));
-            if(!current.hasMetaData("dfa")) {
-                current.addMetaData("label", label++);
-            }
+            current.addMetaData("label", label++);
 
             visited.add(current.getId());
         }
