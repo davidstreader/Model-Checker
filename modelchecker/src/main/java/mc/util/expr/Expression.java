@@ -13,6 +13,7 @@ import mc.exceptions.CompilationException;
 import mc.util.Location;
 import mc.webserver.WebSocketServer;
 
+import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
@@ -101,7 +102,7 @@ public class Expression {
      */
     public static Guard combineGuards(Guard first, Guard second, Context ctx) throws CompilationException, InterruptedException {
         //Create a new guard
-        Guard ret = new Guard(ctx);
+        Guard ret = new Guard();
         //Start with variables from the second guard
         ret.setVariables(second.getVariables());
         //Replace all the variables from the second guard with ones from the first guard
@@ -185,5 +186,22 @@ public class Expression {
     }
     static BitVecExpr mkBV(int i, Context ctx) throws InterruptedException {
         return ctx.mkBV(i,32);
+    }
+    private static Field m_ctx;
+    static {
+        try {
+            m_ctx = Z3Object.class.getDeclaredField("m_ctx");
+            m_ctx.setAccessible(true);
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        }
+    }
+    public static Context getContextFrom(Z3Object object) {
+        try {
+            return (Context) m_ctx.get(object);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        throw new RuntimeException("Error creating context!");
     }
 }

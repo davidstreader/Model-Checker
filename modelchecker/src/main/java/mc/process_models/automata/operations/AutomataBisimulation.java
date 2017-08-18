@@ -9,6 +9,7 @@ import mc.exceptions.CompilationException;
 import mc.process_models.automata.Automaton;
 import mc.process_models.automata.AutomatonEdge;
 import mc.process_models.automata.AutomatonNode;
+import mc.util.expr.Expression;
 
 import java.util.*;
 
@@ -216,7 +217,7 @@ public class AutomataBisimulation {
                 }
                 if (guard != null && col.guard != null) {
                     try {
-                        if (!guard.equals(col.guard,replacements,node,col.node)) {
+                        if (!guard.equals(col.guard,replacements,node,col.node, Expression.getContextFrom(col.guard.getGuard()))) {
                             return false;
                         }
                     } catch (CompilationException e) {

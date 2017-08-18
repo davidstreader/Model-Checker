@@ -210,7 +210,7 @@ public class Expander {
 
     private SequenceNode expand(SequenceNode astNode, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException {
         //add a guard to every sequenceNode. This will only contain next data.
-        Guard guard = new Guard(context);
+        Guard guard = new Guard();
         if (astNode.getTo() instanceof IdentifierNode) {
             //Parse the next values from this IdentifierNode
             guard.parseNext(((IdentifierNode) astNode.getTo()).getIdentifier(), globalVariableMap, identMap,astNode.getTo().getLocation());
@@ -262,8 +262,8 @@ public class Expander {
     private ASTNode expand(IfStatementNode astNode, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException {
         VariableCollector collector = new VariableCollector();
         Map<String,Integer> vars = collector.getVariables(astNode.getCondition(),variableMap);
-        Guard trueGuard = new Guard(astNode.getCondition(),vars,hiddenVariables,context);
-        Guard falseGuard = new Guard(astNode.getCondition(),vars,hiddenVariables,context);
+        Guard trueGuard = new Guard(astNode.getCondition(),vars,hiddenVariables);
+        Guard falseGuard = new Guard(astNode.getCondition(),vars,hiddenVariables);
         ASTNode trueBranch = expand(astNode.getTrueBranch(), variableMap, context);
         if (trueBranch.getMetaData().containsKey("guard"))
             trueGuard.mergeWith((Guard) trueBranch.getMetaData("guard"));
