@@ -190,7 +190,7 @@ public class WebSocketServer {
                     skipped.add(new SkipObject(automaton.getId(),"user",0,0));
                     processMap.put(automaton.getId(),new EmptyProcessModel(automaton));
                 }
-                if (automaton.getNodes().size() > context.getAutoMaxNode() || automaton.getEdges().size() > 100) {
+                if (automaton.getNodeCount() > context.getAutoMaxNode()) {
                     skipped.add(new SkipObject(automaton.getId(),
                         "nodes",
                         automaton.getNodes().size(),
