@@ -6,7 +6,6 @@ import mc.exceptions.CompilationException;
 import mc.process_models.automata.Automaton;
 import mc.process_models.automata.AutomatonEdge;
 import mc.process_models.automata.AutomatonNode;
-import com.microsoft.z3.Context;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -18,7 +17,7 @@ public class AutomataParallelComposition {
     private Set<String> syncedActions;
     private Set<String> unsyncedActions;
 
-    public Automaton performParallelComposition(String id, Automaton automaton1, Automaton automaton2, Context context) throws CompilationException {
+    public Automaton performParallelComposition(String id, Automaton automaton1, Automaton automaton2) throws CompilationException {
         setup(id);
         // construct the parallel composition of the states from both automata
         List<AutomatonNode> nodes1 = automaton1.getNodes();
@@ -32,10 +31,9 @@ public class AutomataParallelComposition {
 
         List<AutomatonEdge> edges1 = automaton1.getEdges();
         List<AutomatonEdge> edges2 = automaton2.getEdges();
-
         processUnsyncedActions(edges1, edges2);
-        processSyncedActions(edges1, edges2, context);
-
+        processSyncedActions(edges1, edges2);
+        nodeMap.clear();
         return automaton;
     }
 
@@ -44,10 +42,7 @@ public class AutomataParallelComposition {
             nodeMap.put(node1.getId(), new ArrayList<>());
 
             for(AutomatonNode node2 : nodes2){
-                if(!nodeMap.containsKey(node2.getId())){
-                    nodeMap.put(node2.getId(), new ArrayList<>());
-                }
-
+                nodeMap.putIfAbsent(node2.getId(),new ArrayList<>());
                 String id = createId(node1, node2);
                 AutomatonNode node = automaton.addNode(id);
 
@@ -145,7 +140,8 @@ public class AutomataParallelComposition {
         }
     }
 
-    private void processSyncedActions(List<AutomatonEdge> edges1, List<AutomatonEdge> edges2, Context context) throws CompilationException {
+    private void processSyncedActions(List<AutomatonEdge> edges1, List<AutomatonEdge> edges2) throws CompilationException {
+
         for(String action : syncedActions){
             List<AutomatonEdge> syncedEdges1 = edges1.stream()
                 .filter(edge -> equals(action, edge.getLabel()))
@@ -177,7 +173,7 @@ public class AutomataParallelComposition {
     }
 
     private String createId(AutomatonNode node1, AutomatonNode node2){
-        return node1.getId() + "||" + node2.getId();
+        return node1.getId().hashCode() + "||" + node2.getId().hashCode();
     }
 
     private boolean containsReceiver(String broadcaster, Set<String> receivers){

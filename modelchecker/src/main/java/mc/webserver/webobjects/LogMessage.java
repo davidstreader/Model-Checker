@@ -1,5 +1,6 @@
 package mc.webserver.webobjects;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import mc.compiler.ast.ProcessNode;
@@ -7,11 +8,11 @@ import mc.util.Location;
 
 import static org.fusesource.jansi.Ansi.ansi;
 
-@AllArgsConstructor
-@Getter
 /**
  * A message to send back to the client
  */
+@AllArgsConstructor
+@Getter
 public class LogMessage {
     private String message;
     /**
@@ -24,6 +25,8 @@ public class LogMessage {
     private boolean error = false;
     private Location location = null;
     private int clearAmt = -1;
+
+    @Getter(onMethod = @__(@JsonIgnore))
     private Thread thread;
     public LogMessage(String message) {
         this.message = message;

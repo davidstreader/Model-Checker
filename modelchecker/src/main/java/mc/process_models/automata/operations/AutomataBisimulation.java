@@ -77,8 +77,11 @@ public class AutomataBisimulation {
 
         perfromInitialColouring(automaton);
         Map<Integer, List<AutomatonNode>> nodeColours = new HashMap<>();
-
-        while(nodeColours.size() != lastColourCount && !Thread.currentThread().isInterrupted()){
+        boolean runTwice = true;
+        while(runTwice || nodeColours.size() != lastColourCount && !Thread.currentThread().isInterrupted()){
+            if (nodeColours.size() == lastColourCount) {
+                runTwice = false;
+            }
             lastColourCount = nodeColours.size();
             nodeColours = new HashMap<>();
             Set<String> visited = new HashSet<>();
