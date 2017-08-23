@@ -39,11 +39,35 @@ public class AutomataAbstraction {
 
         // construct observable edges to replace the unobservable edges
         for(AutomatonEdge hiddenEdge : hiddenEdges){
+            boolean b = constructEdgeOnlyTau(abstraction,hiddenEdge,isFair,context);
+            if (b) continue;
             constructOutgoingObservableEdges(abstraction, hiddenEdge, isFair,context);
             constructIncomingObservableEdges(abstraction, hiddenEdge, isFair,context);
         }
-
+        List<AutomatonNode> toRemove = new ArrayList<>();
+        for (AutomatonNode node : abstraction.getNodes()) {
+            if (node.hasMetaData("startNode")) continue;
+            if (node.getOutgoingEdges().stream().allMatch(AutomatonEdge::isHidden)) {
+                toRemove.add(node);
+            }
+        }
+        toRemove.forEach(abstraction::removeNode);
         return abstraction;
+    }
+
+    private boolean constructEdgeOnlyTau(Automaton abstraction, AutomatonEdge hiddenEdge, boolean isFair, Context context) throws CompilationException {
+        if (!hiddenEdge.getFrom().getOutgoingEdges().stream().allMatch(AutomatonEdge::isHidden)) {
+            return false;
+        }
+        AutomatonNode to = abstraction.getNode(hiddenEdge.getTo().getId() + ".abs");
+        List<AutomatonEdge> incomingObservableEdges = hiddenEdge.getFrom().getIncomingEdges().stream()
+            .filter(edge -> !edge.isHidden())
+            .collect(Collectors.toList());
+        for (AutomatonEdge edge : incomingObservableEdges) {
+            AutomatonNode from = abstraction.getNode(edge.getFrom().getId() + ".abs");
+            abstraction.addEdge(edge.getLabel(),from,to,Collections.emptyMap());
+        }
+        return true;
     }
 
     private void constructOutgoingObservableEdges(Automaton abstraction, AutomatonEdge hiddenEdge, boolean isFair, Context context) throws CompilationException, InterruptedException {
