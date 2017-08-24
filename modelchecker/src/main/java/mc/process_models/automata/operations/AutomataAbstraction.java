@@ -34,47 +34,49 @@ public class AutomataAbstraction {
 
         // retrieve the unobservable edges from the specified automaton
         List<AutomatonEdge> hiddenEdges = automaton.getEdges().stream()
-                .filter(AutomatonEdge::isHidden)
-                .collect(Collectors.toList());
+            .filter(AutomatonEdge::isHidden)
+            .collect(Collectors.toList());
 
+        List<AutomatonNode> toRemove = new ArrayList<>();
         // construct observable edges to replace the unobservable edges
         for(AutomatonEdge hiddenEdge : hiddenEdges){
-            boolean b = constructEdgeOnlyTau(abstraction,hiddenEdge,isFair,context);
-            if (b) continue;
+            AutomatonNode b = constructEdgeOnlyTau(abstraction,hiddenEdge,isFair,context);
+            toRemove.add(b);
             constructOutgoingObservableEdges(abstraction, hiddenEdge, isFair,context);
             constructIncomingObservableEdges(abstraction, hiddenEdge, isFair,context);
         }
-        List<AutomatonNode> toRemove = new ArrayList<>();
-        for (AutomatonNode node : abstraction.getNodes()) {
-            if (node.hasMetaData("startNode")) continue;
-            if (node.getOutgoingEdges().stream().allMatch(AutomatonEdge::isHidden)) {
-                toRemove.add(node);
+        toRemove.forEach(s -> {
+            if (s != null) {
+                abstraction.removeNode(s);
             }
-        }
-        toRemove.forEach(abstraction::removeNode);
+        });
         return abstraction;
     }
 
-    private boolean constructEdgeOnlyTau(Automaton abstraction, AutomatonEdge hiddenEdge, boolean isFair, Context context) throws CompilationException {
+    private AutomatonNode constructEdgeOnlyTau(Automaton abstraction, AutomatonEdge hiddenEdge, boolean isFair, Context context) throws CompilationException {
         if (!hiddenEdge.getFrom().getOutgoingEdges().stream().allMatch(AutomatonEdge::isHidden)) {
-            return false;
+            return null;
         }
+        if (hiddenEdge.getFrom().hasMetaData("startNode")) return null;
         AutomatonNode to = abstraction.getNode(hiddenEdge.getTo().getId() + ".abs");
+        if (hiddenEdge.getTo() == hiddenEdge.getFrom()) {
+            return null;
+        }
         List<AutomatonEdge> incomingObservableEdges = hiddenEdge.getFrom().getIncomingEdges().stream()
             .filter(edge -> !edge.isHidden())
             .collect(Collectors.toList());
         for (AutomatonEdge edge : incomingObservableEdges) {
             AutomatonNode from = abstraction.getNode(edge.getFrom().getId() + ".abs");
-            abstraction.addEdge(edge.getLabel(),from,to,Collections.emptyMap());
+            abstraction.addEdge(edge.getLabel(),from,to,from.getMetaData());
         }
-        return true;
+        return abstraction.getNode(hiddenEdge.getFrom().getId()+".abs");
     }
 
     private void constructOutgoingObservableEdges(Automaton abstraction, AutomatonEdge hiddenEdge, boolean isFair, Context context) throws CompilationException, InterruptedException {
         Guard hiddenGuard = (Guard) hiddenEdge.getMetaData("guard");
         List<AutomatonEdge> incomingObservableEdges = hiddenEdge.getFrom().getIncomingEdges().stream()
-                .filter(edge -> !edge.isHidden())
-                .collect(Collectors.toList());
+            .filter(edge -> !edge.isHidden())
+            .collect(Collectors.toList());
 
         List<AutomatonNode> outgoingNodes = new ArrayList<>();
         Set<String> visited = new HashSet<>();
@@ -106,8 +108,8 @@ public class AutomataAbstraction {
 
             outgoingNodes.add(abstraction.getNode(current.getTo().getId() + ".abs"));
             outgoingEdges.stream()
-                    .filter(AutomatonEdge::isHidden)
-                    .forEach(fringe::push);
+                .filter(AutomatonEdge::isHidden)
+                .forEach(fringe::push);
 
             visited.add(current.getId());
         }
@@ -137,8 +139,8 @@ public class AutomataAbstraction {
     private void constructIncomingObservableEdges(Automaton abstraction, AutomatonEdge hiddenEdge, boolean isFair, Context context) throws CompilationException, InterruptedException {
         Guard hiddenGuard = (Guard) hiddenEdge.getMetaData("guard");
         List<AutomatonEdge> outgoingObservableEdges = hiddenEdge.getTo().getOutgoingEdges().stream()
-                .filter(edge -> !edge.isHidden())
-                .collect(Collectors.toList());
+            .filter(edge -> !edge.isHidden())
+            .collect(Collectors.toList());
 
         List<AutomatonNode> incomingNodes = new ArrayList<>();
         Set<String> visited = new HashSet<>();
@@ -153,8 +155,8 @@ public class AutomataAbstraction {
             incomingNodes.add(abstraction.getNode(current.getFrom().getId() + ".abs"));
 
             incomingEdges.stream()
-                    .filter(edge -> edge.isHidden() && !visited.contains(edge.getId()))
-                    .forEach(fringe::push);
+                .filter(edge -> edge.isHidden() && !visited.contains(edge.getId()))
+                .forEach(fringe::push);
 
             visited.add(current.getId());
         }
