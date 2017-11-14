@@ -12,7 +12,8 @@ Automata Concocter is developed using the [Bootstrap](http://getbootstrap.com/) 
 ### Building / Distributing
 
 -----------------------
-Run the build task using `gradlew build` inside modelchecker. This will take care of web dependencies and will give you a single executable jar.
+>cd .../Model-Checker
+Run the build task using `./gradlew build` inside modelchecker. This will take care of web dependencies and will give you a single executable jar.
 
 ### Main Application
 
