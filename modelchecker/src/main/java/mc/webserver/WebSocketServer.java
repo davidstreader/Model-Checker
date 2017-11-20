@@ -32,8 +32,7 @@ public class WebSocketServer {
     private Logger logger = LoggerFactory.getLogger(WebSocketServer.class);
     private ObjectMapper mapper = new ObjectMapper();
     private ExecutorService service = Executors.newFixedThreadPool(10);
-    public WebSocketServer() {
-        SendObject keepAlive = new SendObject("tick","keepalive");
+    public WebSocketServer() { SendObject keepAlive = new SendObject("tick","keepalive");
         new Thread(()->{
             while(true) {
                 runners.values().stream().map(s -> s.logThread.queue).forEach(queue->queue.add(keepAlive));
@@ -47,8 +46,7 @@ public class WebSocketServer {
     }
     @Getter
     private class LogThread extends Thread {
-        BlockingQueue<Object> queue = new LinkedBlockingQueue<>();
-        Session user;
+        BlockingQueue<Object> queue = new LinkedBlockingQueue<>(); Session user;
         public LogThread(Session user) {
             super("Log thread");
             this.user = user;
@@ -182,24 +180,30 @@ public class WebSocketServer {
     }
 
     private List<SkipObject> processSkipped(Map<String, ProcessModel> processMap, Context context) {
-        List<SkipObject> skipped = new ArrayList<>();
+        List<SkipObject> skipped                   = new ArrayList<>();
+        Set<Automaton>   skippedAutomataForRemoval = new HashSet<>();
+
         for (ProcessModel process: processMap.values()) {
             if (process instanceof Automaton) {
                 Automaton automaton = (Automaton) process;
                 if (automaton.getMetaData("skipped") != null) {
                     skipped.add(new SkipObject(automaton.getId(),"user",0,0));
-                    processMap.put(automaton.getId(),new EmptyProcessModel(automaton));
+                    skippedAutomataForRemoval.add(automaton);
                 }
                 if (automaton.getNodeCount() > context.getAutoMaxNode()) {
                     skipped.add(new SkipObject(automaton.getId(),
                         "nodes",
                         automaton.getNodes().size(),
                         context.getAutoMaxNode()));
-                    processMap.put(automaton.getId(),new EmptyProcessModel(automaton));
+                    skippedAutomataForRemoval.add(automaton);
                 }
 
             }
         }
+
+        skippedAutomataForRemoval.forEach(
+                automata -> processMap.put(automata.getId(),new EmptyProcessModel(automata))
+        );
         return skipped;
     }
 
