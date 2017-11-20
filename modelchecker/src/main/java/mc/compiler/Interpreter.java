@@ -9,6 +9,7 @@ import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
 import mc.webserver.webobjects.LogMessage;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +53,8 @@ public class Interpreter {
 
             processMap.put(process.getIdentifier(), model);
         }
+
+
 
         return processMap;
     }

@@ -43,23 +43,28 @@ public class Compiler {
         this.evaluator = new OperationEvaluator();
     }
 
+
     public CompilationObject compile(String code, Context context, com.microsoft.z3.Context z3Context, BlockingQueue<Object> messageQueue) throws CompilationException, InterruptedException {
-        if (code.startsWith("random")) {
-            messageQueue.add(new LogMessage("Generating random models"));
-            boolean alphabet = Boolean.parseBoolean(code.split(",")[1]);
-            int nodeCount = Integer.parseInt(code.split(",")[2]);
-            int alphabetCount = Integer.parseInt(code.split(",")[3]);
-            int maxTransitionCount = Integer.parseInt(code.split(",")[4]);
-            Map<String,ProcessModel> models = new HashMap<>();
-            int i = 0;
-            List<ProcessModel> nodes = new AutomatonGenerator().generateAutomaton("A",new AutomataOperations(),new EquationEvaluator.EquationSettings(alphabet,alphabetCount,nodeCount,maxTransitionCount));
-            for (ProcessModel model:nodes) {
-                Automaton a = (Automaton) model;
-                models.put(a.getId()+(i++),a);
-            }
-            return new CompilationObject(models,Collections.emptyList(),Collections.emptyList());
-        }
-        return compile(parser.parse(lexer.tokenise(code),z3Context), code,z3Context, context, messageQueue);
+        /**
+         * As far as understood the below code is a dummy one for testing purpose that no longer functions.
+
+         if (code.startsWith("random")) {
+         messageQueue.add(new LogMessage("Generating random models"));
+         boolean alphabet = Boolean.parseBoolean(code.split(",")[1]);
+         int nodeCount = Integer.parseInt(code.split(",")[2]);
+         int alphabetCount = Integer.parseInt(code.split(",")[3]);
+         int maxTransitionCount = Integer.parseInt(code.split(",")[4]);
+         Map<String,ProcessModel> models = new HashMap<>();
+         int i = 0;
+         List<ProcessModel> nodes = new AutomatonGenerator().generateAutomaton("A",new AutomataOperations(),new EquationEvaluator.EquationSettings(alphabet,alphabetCount,nodeCount,maxTransitionCount));
+         for (ProcessModel model:nodes) {
+         Automaton a = (Automaton) model;
+         models.put(a.getId()+(i++),a);
+         }
+         return new CompilationObject(models,Collections.emptyList(),Collections.emptyList());
+         }
+         */
+        return compile(parser.parse(lexer.tokenise(code), z3Context), code, z3Context, context, messageQueue);
     }
     private CompilationObject compile(AbstractSyntaxTree ast, String code, com.microsoft.z3.Context z3Context, Context context, BlockingQueue<Object> messageQueue) throws CompilationException, InterruptedException {
         HashMap<String,ProcessNode> processNodeMap = new HashMap<>();
@@ -73,12 +78,15 @@ public class Compiler {
         EquationEvaluator.EquationReturn eqResults = eqEvaluator.evaluateEquations(ast.getEquations(), code, context,z3Context,messageQueue);
         processMap.putAll(eqResults.getToRender());
         if (!(context instanceof FakeContext)) {
+
             List<Automaton> toPosition = processMap.values().stream().filter(Automaton.class::isInstance).map(s -> (Automaton)s).filter(s -> s.getNodeCount() <= context.getAutoMaxNode()).collect(Collectors.toList());
+
             int counter = toPosition.size();
             for (Automaton automaton : toPosition) {
                 messageQueue.add(new LogMessage("Performing layout for @|black "+automaton.getId()+"|@, remaining: "+counter--,true,false));
                 automaton.position();
             }
+
         }
         return new CompilationObject(processMap, results, eqResults.getResults());
     }

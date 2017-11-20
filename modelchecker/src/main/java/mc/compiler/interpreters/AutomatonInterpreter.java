@@ -59,6 +59,8 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
             map.put("alphabet",process.getAlphabet());
             return map;
         }).collect(Collectors.toList()));
+
+
         return labelAutomaton(automaton);
     }
 

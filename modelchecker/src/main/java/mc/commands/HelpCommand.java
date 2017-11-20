@@ -8,6 +8,9 @@ public class HelpCommand implements Command {
     System.out.println(formatCommand("help","","Get a list of commands"));
     System.out.println(formatCommand("simplify, simp","expression","Simplify an expression"));
     System.out.println(formatCommand("evaluate, eval","expression","Evaluate an expression"));
+    System.out.println(formatCommand("test","directory of files to compile and run","Tests files"));
+    System.out.println(formatCommand("exit","","Exits"));
+
   }
 
   private String formatCommand(String command, String usage, String message) {

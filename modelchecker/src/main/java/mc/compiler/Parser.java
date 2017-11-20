@@ -180,7 +180,7 @@ public class Parser {
      */
     private String parseActionRange() throws CompilationException, InterruptedException {
         int start = index;
-        String variable = null;
+        String variable;
         if (hasLabel()) {
             String label = parseLabel();
             definedVariables.add(label);
@@ -190,7 +190,7 @@ public class Parser {
             variable = nextVariableId();
         }
 
-        ASTNode range = null;
+        ASTNode range;
         if (peekToken() instanceof IdentifierToken && !(tokens.get(index + 1) instanceof RangeSeparatorToken)) {
             IdentifierNode identifier = parseIdentifier();
 
@@ -733,7 +733,6 @@ public class Parser {
     private Set<String> validAbsFlags = new HashSet<>(Arrays.asList("fair", "unfair"));
 
     private Set<String> parseFlags(String functionType) throws CompilationException, InterruptedException {
-        int start;
 
         if (!(nextToken() instanceof OpenBraceToken)) {
             Token error = tokens.get(index - 1);
@@ -853,7 +852,7 @@ public class Parser {
             Token error = tokens.get(index - 1);
             throw constructException("expecting to parse \"when\" but received \"" + error.toString() + "\"", error.getLocation());
         }
-        start = index;
+
         String expr = parseExpression();
         Expr expression;
         if (variableMap.containsKey(expr)) {
@@ -1614,11 +1613,7 @@ public class Parser {
     }
 
     private boolean hasLabel() throws CompilationException {
-        if (!(peekToken() instanceof ActionToken)) {
-            return false;
-        }
-        return index < tokens.size() - 1 && (tokens.get(index + 1) instanceof ColonToken);
-
+        return peekToken() instanceof ActionToken && index < tokens.size() - 1 && (tokens.get(index + 1) instanceof ColonToken);
     }
 
     private boolean hasVariableReference() throws CompilationException {

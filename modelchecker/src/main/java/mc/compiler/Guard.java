@@ -49,9 +49,9 @@ public class Guard implements Serializable{
         collectAnds(andList,guard);
         //If there are no ands in the expression, use the root guard.
         if (andList.isEmpty()) andList.add(guard);
-        andList.removeIf(s -> !containsHidden(s));
+            andList.removeIf(s -> !containsHidden(s));
         if (andList.isEmpty()) return "";
-        Expr combined = getContextFrom(andList.get(0)).mkAnd(andList.toArray(new BoolExpr[0]));
+             Expr combined = getContextFrom(andList.get(0)).mkAnd(andList.toArray(new BoolExpr[0]));
         return rm$(ExpressionPrinter.printExpression(combined, Collections.emptyMap()));
     }
     private void collectAnds(List<BoolExpr> andList, Expr ex) {
@@ -68,7 +68,7 @@ public class Guard implements Serializable{
     }
 
     private boolean containsHidden(Expr ex) {
-        //If there is an and inside this expression, then don't check its variables as it is added on its own.
+        //If there is an 'and' inside this expression, then don't check its variables as it is added on its own.
         if (ex.isAnd()) return false;
         if (ex.isConst()) {
             return hiddenVariables.contains(ex.toString().substring(1));

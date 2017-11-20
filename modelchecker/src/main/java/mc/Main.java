@@ -116,7 +116,7 @@ public class Main {
     }
 
     public void stop() {
-        //Kill the sub prcess if it exists
+        //Kill the sub process if it exists
         if (subProcess != null) {
             subProcess.destroy();
         }
