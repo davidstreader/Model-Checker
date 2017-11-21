@@ -1,10 +1,10 @@
 package mc.process_models.automata.operations;
 
+import com.microsoft.z3.Context;
 import mc.exceptions.CompilationException;
 import mc.process_models.automata.Automaton;
 import mc.process_models.automata.AutomatonEdge;
 import mc.process_models.automata.AutomatonNode;
-import com.microsoft.z3.Context;
 
 import java.util.List;
 import java.util.stream.Collectors;

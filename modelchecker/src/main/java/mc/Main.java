@@ -8,7 +8,6 @@ import mc.gui.MainGui;
 import mc.util.Utils;
 import mc.webserver.NativesManager;
 import mc.webserver.WebServer;
-import mc.webserver.webobjects.LogMessage;
 import org.fusesource.jansi.AnsiConsole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

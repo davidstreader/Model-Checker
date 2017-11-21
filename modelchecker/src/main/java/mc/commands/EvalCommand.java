@@ -6,8 +6,8 @@ import com.google.gson.reflect.TypeToken;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
 import mc.exceptions.CompilationException;
-import mc.util.expr.ExpressionEvaluator;
 import mc.util.expr.Expression;
+import mc.util.expr.ExpressionEvaluator;
 import org.fusesource.jansi.Ansi;
 import org.slf4j.LoggerFactory;
 
