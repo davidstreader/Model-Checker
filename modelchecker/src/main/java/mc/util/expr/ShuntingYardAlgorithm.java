@@ -69,8 +69,7 @@ public class ShuntingYardAlgorithm {
                 if (Objects.equals(result, "boolean")) {
                     BoolExpr op = context.mkBool(Boolean.parseBoolean(current));
                     output.push(op);
-                }
-                if (Objects.equals(result, "integer")) {
+                } else if (Objects.equals(result, "integer")) {
                     BitVecExpr op = Expression.mkBV(Integer.parseInt(current),context);
                     output.push(op);
                 } else if (Objects.equals(result, "variable")) {

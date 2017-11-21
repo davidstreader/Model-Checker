@@ -38,6 +38,8 @@ public class AutomataParallelComposition {
     }
 
     private void setupNodes(List<AutomatonNode> nodes1, List<AutomatonNode> nodes2) throws CompilationException {
+        //Setting up all the potentially valid nodes.
+        //After this process we remove any inaccessable.
         for(AutomatonNode node1 : nodes1){
             nodeMap.put(node1.getId(), new ArrayList<>());
 
@@ -62,6 +64,8 @@ public class AutomataParallelComposition {
                         }
                     }
                 }
+
+
                 HashMap<String,Object> varmap = new HashMap<>();
                 if (node1.getMetaData().containsKey("variables")) {
                     varmap.putAll((Map<? extends String, ?>) node1.getMetaData().get("variables"));
@@ -73,6 +77,8 @@ public class AutomataParallelComposition {
 
                 nodeMap.get(node1.getId()).add(node);
                 nodeMap.get(node2.getId()).add(node);
+                if(Objects.equals(node1.getMetaData().get("isTerminal"),("ERROR")) || Objects.equals(node2.getMetaData().get("isTerminal"),("ERROR")))
+                    node.addMetaData("isTerminal","ERROR");
             }
         }
     }
@@ -134,6 +140,9 @@ public class AutomataParallelComposition {
                 List<AutomatonNode> from = nodeMap.get(edge.getFrom().getId());
                 List<AutomatonNode> to = nodeMap.get(edge.getTo().getId());
                 for(int i = 0; i < Math.min(from.size(),to.size()); i++){
+                    if(Objects.equals(from.get(i).getMetaData().get("isTerminal"), "ERROR")) //Dont set any links from terminal error nodes.
+                        continue;
+
                     automaton.addEdge(edge.getLabel(), from.get(i), to.get(i), edge.getMetaData()).getMetaData().putAll(edge.getMetaData());
                 }
             }
