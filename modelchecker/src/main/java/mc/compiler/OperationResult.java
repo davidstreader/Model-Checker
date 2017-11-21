@@ -8,7 +8,15 @@ import mc.util.Location;
 import org.fusesource.jansi.Ansi;
 
 @Getter
+/**
+ *  For holding the output of operations in the operation block. Eg
+ *  operation {
+ *      P1 ~ P2.
+ *      P3 # P4.
+ *  }
+ */
 public class OperationResult {
+
     private OperationProcess process1;
     private OperationProcess process2;
     private String operation;

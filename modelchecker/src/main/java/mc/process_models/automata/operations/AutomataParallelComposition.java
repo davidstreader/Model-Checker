@@ -112,7 +112,7 @@ public class AutomataParallelComposition {
         }
         else if(action.endsWith("?")){
             if(!containsBroadcaster(action, alphabet)) {
-                if(containsReceiver(action, alphabet)){
+                if(containsReceiver(action, alphabet)) {
                     syncedActions.add(action);
                 } else {
                     unsyncedActions.add(action);
@@ -162,10 +162,10 @@ public class AutomataParallelComposition {
             for(AutomatonEdge edge1 : syncedEdges1){
                 for(AutomatonEdge edge2 : syncedEdges2){
                     AutomatonNode from = automaton.getNode(createId(edge1.getFrom(), edge2.getFrom()));
-                    if (edge1.getLabel().endsWith("!") || edge2.getLabel().endsWith("!"))
+                    if (edge1.getLabel().endsWith("!") || edge2.getLabel().endsWith("!")) {
                         // any edges from the from node are broadcasted and should get replaced by the synced transition
                         from.getOutgoingEdges().forEach(edge -> automaton.removeEdge(edge.getId()));
-
+                    }
                     AutomatonNode to = automaton.getNode(createId(edge1.getTo(), edge2.getTo()));
                     Guard guard = new Guard();
                     if (edge1.hasMetaData("guard") && edge1.getMetaData("guard") != null) guard.mergeWith((Guard) edge1.getMetaData("guard"));

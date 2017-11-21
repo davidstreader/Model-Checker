@@ -21,7 +21,7 @@ public class WebServer {
         if (Utils.isJar()) {
             Spark.staticFileLocation("app");
         } else {
-            Spark.externalStaticFileLocation("../../../../site/app");
+            Spark.externalStaticFileLocation("../site/app");
         }
         Spark.port(5000);
         webSocket("/socket",WebSocketServer.class);

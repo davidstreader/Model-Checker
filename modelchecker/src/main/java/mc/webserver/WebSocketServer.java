@@ -175,7 +175,7 @@ public class WebSocketServer {
     private ProcessReturn compile(CompileRequest data, com.microsoft.z3.Context ctx, BlockingQueue<Object> messageQueue) throws CompilationException, InterruptedException {
         CompilationObject ret = new Compiler().compile(data.getCode(),data.getContext(),ctx,messageQueue);
         Map<String,ProcessModel> processModelMap = ret.getProcessMap();
-        List<SkipObject> skipped = processSkipped(processModelMap,data.getContext());
+        List<SkipObject> skipped = processSkipped(processModelMap,data.getContext()); // getContext has the max number of nodes allowed to be displayed
         return new ProcessReturn(processModelMap, ret.getOperationResults(),ret.getEquationResults(),data.getContext(),skipped);
     }
 
@@ -190,7 +190,7 @@ public class WebSocketServer {
                     skipped.add(new SkipObject(automaton.getId(),"user",0,0));
                     skippedAutomataForRemoval.add(automaton);
                 }
-                if (automaton.getNodeCount() > context.getAutoMaxNode()) {
+                if (automaton.getNodeCount() > context.getAutoMaxNode()) { // context = webpage settings.
                     skipped.add(new SkipObject(automaton.getId(),
                         "nodes",
                         automaton.getNodes().size(),
@@ -202,7 +202,7 @@ public class WebSocketServer {
         }
 
         skippedAutomataForRemoval.forEach(
-                automata -> processMap.put(automata.getId(),new EmptyProcessModel(automata))
+                automata -> processMap.put(automata.getId(), new EmptyProcessModel(automata))
         );
         return skipped;
     }

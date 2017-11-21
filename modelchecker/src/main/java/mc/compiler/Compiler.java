@@ -7,20 +7,16 @@ import mc.compiler.ast.ProcessNode;
 import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
 import mc.process_models.automata.Automaton;
-import mc.process_models.automata.generator.AutomatonGenerator;
-import mc.process_models.automata.operations.AutomataOperations;
 import mc.webserver.FakeContext;
 import mc.webserver.webobjects.Context;
 import mc.webserver.webobjects.LogMessage;
+import mc.compiler.token.Token;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 public class Compiler {
@@ -45,26 +41,9 @@ public class Compiler {
 
 
     public CompilationObject compile(String code, Context context, com.microsoft.z3.Context z3Context, BlockingQueue<Object> messageQueue) throws CompilationException, InterruptedException {
-        /**
-         * As far as understood the below code is a dummy one for testing purpose that no longer functions.
-
-         if (code.startsWith("random")) {
-         messageQueue.add(new LogMessage("Generating random models"));
-         boolean alphabet = Boolean.parseBoolean(code.split(",")[1]);
-         int nodeCount = Integer.parseInt(code.split(",")[2]);
-         int alphabetCount = Integer.parseInt(code.split(",")[3]);
-         int maxTransitionCount = Integer.parseInt(code.split(",")[4]);
-         Map<String,ProcessModel> models = new HashMap<>();
-         int i = 0;
-         List<ProcessModel> nodes = new AutomatonGenerator().generateAutomaton("A",new AutomataOperations(),new EquationEvaluator.EquationSettings(alphabet,alphabetCount,nodeCount,maxTransitionCount));
-         for (ProcessModel model:nodes) {
-         Automaton a = (Automaton) model;
-         models.put(a.getId()+(i++),a);
-         }
-         return new CompilationObject(models,Collections.emptyList(),Collections.emptyList());
-         }
-         */
-        return compile(parser.parse(lexer.tokenise(code), z3Context), code, z3Context, context, messageQueue);
+        List<Token> codeInput = lexer.tokenise(code);
+        AbstractSyntaxTree structedCode = parser.parse(codeInput, z3Context);
+        return compile(structedCode, code, z3Context, context, messageQueue);
     }
     private CompilationObject compile(AbstractSyntaxTree ast, String code, com.microsoft.z3.Context z3Context, Context context, BlockingQueue<Object> messageQueue) throws CompilationException, InterruptedException {
         HashMap<String,ProcessNode> processNodeMap = new HashMap<>();
