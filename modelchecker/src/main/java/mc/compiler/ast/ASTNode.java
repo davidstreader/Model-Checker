@@ -57,7 +57,7 @@ public abstract class ASTNode implements Serializable {
         }
         if(obj instanceof ASTNode){
             ASTNode node = (ASTNode)obj;
-            if(hasReferences() && !node.hasReferences() || !hasReferences() && node.hasReferences()){
+            if(node.hasReferences() != hasReferences()){
                 return false;
             }
             if(!hasReferences() && !node.hasReferences()){
