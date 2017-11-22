@@ -170,6 +170,7 @@ public class AutomataParallelComposition {
                     AutomatonNode from = automaton.getNode(createId(edge1.getFrom(), edge2.getFrom()));
                     if (edge1.getLabel().endsWith("!") || edge2.getLabel().endsWith("!")) {
                         // any edges from the from node are broadcasted and should get replaced by the synced transition
+                        // Remove any edges that have ! or ? at the end.
                         from.getOutgoingEdges().stream().filter(e -> e.getLabel().endsWith("!") || e.getLabel().endsWith("?")).forEach(edge -> automaton.removeEdge(edge.getId()));
                     }
                     AutomatonNode to = automaton.getNode(createId(edge1.getTo(), edge2.getTo()));

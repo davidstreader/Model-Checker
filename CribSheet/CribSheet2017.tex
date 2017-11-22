@@ -2067,84 +2067,12 @@ Below is a list of interesting projects  that could be SWEN302/489  or even MSc 
 
 \newpage
 \section{Bugs and examples}
-\subsection{Bug 1  Abstraction}
-\begin{verbatim}
-             /* Bug1  in abstraction */
-automata {
-Z = (a->l->Z|b->(r->x->STOP|y->STOP)).
-Yl = abs(Z\{l}).
-Ylr = abs(Yl\{r}).
-Yr = abs(Z\{r}).
-Yrl = abs(Yl\{r}).
-Y = abs(Z\{r,l}).
-}
-operation {
-Y~Yrl.
-Y~Ylr.
-Ylr~Yrl.
-}
-\end{verbatim}
-
-\subsection{Bug 2  Broadcast communication}
-
-\begin{verbatim}
-automata {
-             /* Bug2  in broadcast comunication*/
-S = x->S|a->STOP.
-R = x->STOP.
-Good = S||R.
-SR = (a->STOP|x->a->STOP).
-
-Sb = x!->Sb|a->STOP.
-Rb = x?->STOP.
-Bug = Sb||Rb.
-SbRb = (a->STOP|x!->X),
-     X = (x!->X|a->STOP).
-
-Sbb = x?->Sbb|a->STOP.
-Rbb = x!->STOP.
-Bugb = Sbb||Rbb.
-SbbRbb = (a->x!->STOP|x!->a->STOP).
-}
-operation {
-Bug ~ SbRb.
-Bugb ~ SbbRbb.
-Good ~ SR.
-}
-\end{verbatim}
-\subsection{Bug 3 restricted rendering }
+\subsection{Bug 1  Abstraction             (Solved)}
+\subsection{Bug 2  Broadcast communication (Solved)}
+\subsection{Bug 3 restricted rendering     (Solved)}
 
 
-\begin{verbatim}
-const N = 3
-automata {
-             /*Bug in not rendering automata */
-Sendb* = input-> sout! -> Sendb.
-Receiveb* = sout? -> output->Receiveb.
-Go = Sendb||Receiveb.
-
-Buf1data = input[i:1..N] -> F[i],
-   F[d:1..N] = output[d] -> Buf1data.
- 
-           /* not rendering Buf2a makes the compile fail 
- Performing layout for Buf2, remaining: 1
-An exception was thrown that was not related to your script.
-java.util.ConcurrentModificationException
-	at java.util.LinkedHashMap$LinkedHashIterator.nextNode(LinkedHashMap.java:711)
-	at java.util.LinkedHashMap$LinkedValueIterator.next(LinkedHashMap.java:739)
- */
-Buf2a* = (a:Buf1data)/{b.move[x:1..N]/a.output[x]}.
-Buf2b = (b:Buf1data)/{b.move[x:1..N]/b.input[x]}.
-
-Buf2data* = Buf2a||Buf2b.
-
-Buf2 = simp(abs(Buf2data\{b.move[x:1..N]})).
-
-}
-}
-\end{verbatim}
-
-\subsection{Need for failure semantics}
+\subsection{Need for failure semantics(Not a bug)}
 \begin{verbatim}
 automata {
 /* Question is 2 place buffer with: two faulty  one place bufferes 
