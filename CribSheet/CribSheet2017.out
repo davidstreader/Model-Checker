@@ -1,0 +1,68 @@
+\BOOKMARK [1][-]{section.1}{A practical approach to formalisation}{}% 1
+\BOOKMARK [2][-]{subsection.1.1}{Approaches}{section.1}% 2
+\BOOKMARK [1][-]{section.2}{State based interaction}{}% 3
+\BOOKMARK [1][-]{section.3}{Event based interaction}{}% 4
+\BOOKMARK [1][-]{section.4}{Defining Basic Processes}{}% 5
+\BOOKMARK [2][-]{subsubsection.4.0.1}{Event prefixing }{section.4}% 6
+\BOOKMARK [3][-]{subsubsection.4.0.2}{Event choice}{subsubsection.4.0.1}% 7
+\BOOKMARK [2][-]{subsection.4.1}{Non deterministic processes}{section.4}% 8
+\BOOKMARK [2][-]{subsection.4.2}{Internal Choice }{section.4}% 9
+\BOOKMARK [2][-]{subsection.4.3}{Properties of Choice}{section.4}% 10
+\BOOKMARK [2][-]{subsection.4.4}{Non terminating processes}{section.4}% 11
+\BOOKMARK [2][-]{subsection.4.5}{Translating any finite state automata into a process term}{section.4}% 12
+\BOOKMARK [1][-]{section.5}{Semantics of processes with atomic events}{}% 13
+\BOOKMARK [2][-]{subsection.5.1}{Complete Trace equality}{section.5}% 14
+\BOOKMARK [2][-]{subsection.5.2}{Bisimulation}{section.5}% 15
+\BOOKMARK [1][-]{section.6}{Event hiding and process simplification}{}% 16
+\BOOKMARK [2][-]{subsection.6.1}{Event hiding and non terminating processes }{section.6}% 17
+\BOOKMARK [1][-]{section.7}{Concurrent Processes }{}% 18
+\BOOKMARK [2][-]{subsection.7.1}{Handshake synchronisation }{section.7}% 19
+\BOOKMARK [2][-]{subsection.7.2}{Broadcast event synchronisation}{section.7}% 20
+\BOOKMARK [1][-]{section.8}{ Renaming events and simplifying Processes}{}% 21
+\BOOKMARK [2][-]{subsection.8.1}{Labelling Processes}{section.8}% 22
+\BOOKMARK [2][-]{subsection.8.2}{Event renaming}{section.8}% 23
+\BOOKMARK [2][-]{subsection.8.3}{Process simplification}{section.8}% 24
+\BOOKMARK [1][-]{section.9}{Testing and equality}{}% 25
+\BOOKMARK [1][-]{section.10}{Indexed Process definitions}{}% 26
+\BOOKMARK [2][-]{subsection.10.1}{The small world assumption}{section.10}% 27
+\BOOKMARK [2][-]{subsection.10.2}{State indexing}{section.10}% 28
+\BOOKMARK [2][-]{subsection.10.3}{Event indexing}{section.10}% 29
+\BOOKMARK [2][-]{subsection.10.4}{Cars Example}{section.10}% 30
+\BOOKMARK [2][-]{subsection.10.5}{From Natural Language to indexed process model}{section.10}% 31
+\BOOKMARK [2][-]{subsection.10.6}{Indexing concurrent processes.}{section.10}% 32
+\BOOKMARK [1][-]{section.11}{Petri Nets red 2b added 2017}{}% 33
+\BOOKMARK [2][-]{subsection.11.1}{Appearance}{section.11}% 34
+\BOOKMARK [2][-]{subsection.11.2}{Token Rule}{section.11}% 35
+\BOOKMARK [2][-]{subsection.11.3}{Automata to Nets}{section.11}% 36
+\BOOKMARK [1][-]{section.12}{ Symbolic Processes red mostly 2b added 2017}{}% 37
+\BOOKMARK [1][-]{section.13}{ Index freezing \(z3 - headless Isabelle\)}{}% 38
+\BOOKMARK [2][-]{subsection.13.1}{Need for index freezing }{section.13}% 39
+\BOOKMARK [2][-]{subsection.13.2}{Symbolic 2 Atomic mapping S2A}{section.13}% 40
+\BOOKMARK [2][-]{subsection.13.3}{Symbolic parallel composition \137s\137}{section.13}% 41
+\BOOKMARK [2][-]{subsection.13.4}{Symbolic abstraction}{section.13}% 42
+\BOOKMARK [2][-]{subsection.13.5}{Symbolic simplification}{section.13}% 43
+\BOOKMARK [1][-]{section.14}{Symbolic Petri Nets red 2b added 2017}{}% 44
+\BOOKMARK [1][-]{section.15}{Statefull syntax}{}% 45
+\BOOKMARK [2][-]{subsection.15.1}{Translation:}{section.15}% 46
+\BOOKMARK [1][-]{section.16}{Semantic equivalence of processes}{}% 47
+\BOOKMARK [2][-]{subsection.16.1}{Classic notions of equality}{section.16}% 48
+\BOOKMARK [2][-]{subsection.16.2}{Complete Trace equality}{section.16}% 49
+\BOOKMARK [2][-]{subsection.16.3}{Failure equality}{section.16}% 50
+\BOOKMARK [2][-]{subsection.16.4}{Bisimulation}{section.16}% 51
+\BOOKMARK [2][-]{subsection.16.5}{Some practical considerations}{section.16}% 52
+\BOOKMARK [1][-]{section.17}{TLA+ Overview}{}% 53
+\BOOKMARK [2][-]{subsection.17.1}{Partial specifications}{section.17}% 54
+\BOOKMARK [2][-]{subsection.17.2}{Variable hiding}{section.17}% 55
+\BOOKMARK [2][-]{subsection.17.3}{Composition and Decomposition of specifications}{section.17}% 56
+\BOOKMARK [2][-]{subsection.17.4}{Further Comparison with processes}{section.17}% 57
+\BOOKMARK [1][-]{section.18}{Syntax}{}% 58
+\BOOKMARK [1][-]{section.19}{Tool Development}{}% 59
+\BOOKMARK [2][-]{subsection.19.1}{Quality Code}{section.19}% 60
+\BOOKMARK [2][-]{subsection.19.2}{Technical overview}{section.19}% 61
+\BOOKMARK [2][-]{subsection.19.3}{Link with TLA+}{section.19}% 62
+\BOOKMARK [2][-]{subsection.19.4}{Extensions TO DO}{section.19}% 63
+\BOOKMARK [1][-]{section.20}{Bugs and examples}{}% 64
+\BOOKMARK [2][-]{subsection.20.1}{Bug 1 Abstraction}{section.20}% 65
+\BOOKMARK [2][-]{subsection.20.2}{Bug 2 Broadcast communication}{section.20}% 66
+\BOOKMARK [2][-]{subsection.20.3}{Bug 3 restricted rendering }{section.20}% 67
+\BOOKMARK [2][-]{subsection.20.4}{Need for failure semantics}{section.20}% 68

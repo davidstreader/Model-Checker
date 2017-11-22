@@ -1,0 +1,9 @@
+const N = 2
+
+Farmer = ([i:0..N].task ->W[i]),
+   W[i:0..N] = ([i].end->Farmer).
+
+Worker = (task->work->end->Worker).
+||Workers = (forall [i:0..N] ([i]:Worker)).
+
+||Yard = (Workers||Farmer).

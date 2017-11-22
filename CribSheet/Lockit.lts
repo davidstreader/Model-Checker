@@ -1,0 +1,6 @@
+const N = 2
+
+Lock = ([i:1..N].setlock -> L[i]),
+L[j:1..N] = ([i:1..N].enter -> 
+                        ( when (i==j)open ->close->L[j]
+                         |when(i!=j) error->Lock)).
