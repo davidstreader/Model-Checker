@@ -1,15 +1,12 @@
 package mc;
 
-import mc.gui.Download;
 import mc.util.Utils;
-import org.apache.commons.io.FileUtils;
 import org.fusesource.jansi.AnsiConsole;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spark.utils.IOUtils;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 

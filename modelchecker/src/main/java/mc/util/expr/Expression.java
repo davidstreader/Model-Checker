@@ -7,16 +7,13 @@ import com.microsoft.z3.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.SneakyThrows;
-import mc.Constant;
 import mc.compiler.Guard;
 import mc.exceptions.CompilationException;
 import mc.util.Location;
-import mc.webserver.WebSocketServer;
 
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;

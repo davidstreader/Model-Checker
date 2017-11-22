@@ -7,7 +7,10 @@ import mc.compiler.ast.*;
 import mc.compiler.iterator.IndexIterator;
 import mc.exceptions.CompilationException;
 import mc.util.Location;
-import mc.util.expr.*;
+import mc.util.expr.Expression;
+import mc.util.expr.ExpressionEvaluator;
+import mc.util.expr.ExpressionPrinter;
+import mc.util.expr.VariableCollector;
 import mc.webserver.webobjects.LogMessage;
 
 import java.util.*;

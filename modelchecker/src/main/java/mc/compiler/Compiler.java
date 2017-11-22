@@ -4,15 +4,14 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import mc.compiler.ast.AbstractSyntaxTree;
 import mc.compiler.ast.ProcessNode;
+import mc.compiler.token.Token;
 import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
 import mc.process_models.automata.Automaton;
 import mc.webserver.FakeContext;
 import mc.webserver.webobjects.Context;
 import mc.webserver.webobjects.LogMessage;
-import mc.compiler.token.Token;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

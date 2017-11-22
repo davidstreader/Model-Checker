@@ -2,7 +2,6 @@ package mc.webserver;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.microsoft.z3.Z3Exception;
 import lombok.Getter;
 import mc.compiler.CompilationObject;
 import mc.compiler.Compiler;
