@@ -7,7 +7,7 @@ import mc.exceptions.CompilationException;
 import mc.util.Location;
 import org.fusesource.jansi.Ansi;
 
-@Getter
+
 /**
  *  For holding the output of operations in the operation block. Eg
  *  operation {
@@ -15,6 +15,7 @@ import org.fusesource.jansi.Ansi;
  *      P3 # P4.
  *  }
  */
+@Getter
 public class OperationResult {
 
     private OperationProcess process1;

@@ -53,7 +53,7 @@ public class Compiler {
         ast = expander.expand(ast, messageQueue, z3Context);
         ast = replacer.replaceReferences(ast, messageQueue);
         Map<String, ProcessModel> processMap = interpreter.interpret(ast, new LocalCompiler(processNodeMap, expander, replacer,messageQueue),messageQueue,z3Context);
-        List<OperationResult> results = evaluator.evaluateOperations(ast.getOperations(), processMap, interpreter, code,z3Context);
+        List<OperationResult> opResults = evaluator.evaluateOperations(ast.getOperations(), processMap, interpreter, code,z3Context);
         EquationEvaluator.EquationReturn eqResults = eqEvaluator.evaluateEquations(ast.getEquations(), code, context,z3Context,messageQueue);
         processMap.putAll(eqResults.getToRender());
         if (!(context instanceof FakeContext)) {
@@ -67,7 +67,7 @@ public class Compiler {
             }
 
         }
-        return new CompilationObject(processMap, results, eqResults.getResults());
+        return new CompilationObject(processMap, opResults, eqResults.getResults());
     }
     @AllArgsConstructor
     public static class LocalCompiler {

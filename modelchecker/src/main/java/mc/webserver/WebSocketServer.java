@@ -29,10 +29,13 @@ import java.util.concurrent.*;
 import static org.fusesource.jansi.Ansi.ansi;
 @WebSocket
 public class WebSocketServer {
+    private static HashMap<Session,CompileThread> runners = new HashMap<>();
     private Logger logger = LoggerFactory.getLogger(WebSocketServer.class);
     private ObjectMapper mapper = new ObjectMapper();
     private ExecutorService service = Executors.newFixedThreadPool(10);
-    public WebSocketServer() { SendObject keepAlive = new SendObject("tick","keepalive");
+
+    public WebSocketServer() {
+        SendObject keepAlive = new SendObject("tick","keepalive");
         new Thread(()->{
             while(true) {
                 runners.values().stream().map(s -> s.logThread.queue).forEach(queue->queue.add(keepAlive));
@@ -46,7 +49,8 @@ public class WebSocketServer {
     }
     @Getter
     private class LogThread extends Thread {
-        BlockingQueue<Object> queue = new LinkedBlockingQueue<>(); Session user;
+        BlockingQueue<Object> queue = new LinkedBlockingQueue<>();
+        Session user;
         public LogThread(Session user) {
             super("Log thread");
             this.user = user;
@@ -226,6 +230,4 @@ public class WebSocketServer {
         public void removeMetaData(String key){}
         public boolean hasMetaData(String key){ return false; }
     }
-
-    private static HashMap<Session,CompileThread> runners = new HashMap<>();
 }

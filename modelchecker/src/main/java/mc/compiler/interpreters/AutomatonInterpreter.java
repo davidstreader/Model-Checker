@@ -207,9 +207,9 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         ProcessModel model2 = processStack.pop();
         ProcessModel model1 = processStack.pop();
 
-        if(!(model1 instanceof Automaton) || !(model2 instanceof Automaton)){
+        if(!(model1 instanceof Automaton) || !(model2 instanceof Automaton))
             throw new CompilationException(getClass(),"Expecting an automaton, received: "+model1.getClass().getSimpleName()+","+model2.getClass().getSimpleName(),astNode.getLocation());
-        }
+
         Automaton comp = operations.parallelComposition(automaton.getId(), ((Automaton)model1).copy(), ((Automaton)model2).copy());
         AutomatonNode oldRoot = automaton.addAutomaton(comp);
         automaton.combineNodes(currentNode, oldRoot,context);
@@ -218,9 +218,9 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     private void interpretNode(IdentifierNode astNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException {
         // check that the reference is to an automaton
         ProcessModel model = processMap.get(astNode.getIdentifier());
-        if(!(model instanceof Automaton)){
+        if(!(model instanceof Automaton))
             throw new CompilationException(getClass(),"Unable to find identifier: "+astNode.getIdentifier(),astNode.getLocation());
-        }
+
 
         Automaton next = ((Automaton)model).copy();
         addAutomaton(currentNode, automaton, next);
@@ -228,44 +228,37 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     private void interpretNode(FunctionNode astNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException {
         interpretProcess(astNode.getProcess(), automaton.getId() + ".fn");
         ProcessModel model = processStack.pop();
-        if (model == null) {
+        if (model == null)
             throw new CompilationException(getClass(),"Expecting an automaton, received an undefined process.",astNode.getLocation());
-        }
+
+        if(! (model instanceof Automaton ) )
+            throw new CompilationException(getClass(),"Expecting an automaton, received a: "+model.getClass().getSimpleName(),astNode.getLocation());
+
         Automaton processed;
         switch(astNode.getFunction()){
             case "abs":
-                if(model instanceof Automaton){
-                    boolean isFair = (!astNode.getMetaData().containsKey("isFair")) || (boolean) astNode.getMetaData().get("isFair");
-                    boolean prune = (astNode.getMetaData().containsKey("prune")) && (boolean) astNode.getMetaData().get("prune");
-                    processed = operations.abstraction(((Automaton)model).copy(), isFair, prune,context);
-                    break;
-                }
-                throw new CompilationException(getClass(),"Expecting an automaton, received a: "+model.getClass().getSimpleName(),astNode.getLocation());
+                boolean isFair = (!astNode.getMetaData().containsKey("isFair")) || (boolean) astNode.getMetaData().get("isFair");
+                boolean prune = (astNode.getMetaData().containsKey("prune")) && (boolean) astNode.getMetaData().get("prune");
+                processed = operations.abstraction(((Automaton)model).copy(), isFair, prune,context);
+             break;
+
             case "prune":
-                if(model instanceof Automaton){
-                    processed = operations.prune(((Automaton)model).copy(),context);
-                    break;
-                }
-                throw new CompilationException(getClass(),"Expecting an automaton, received a: "+model.getClass().getSimpleName(),astNode.getLocation());
+                 processed = operations.prune(((Automaton)model).copy(),context);
+            break;
+
             case "simp":
-                if(model instanceof Automaton){
-                    processed = operations.simplification(((Automaton)model).copy(),(Map<String,Expr>)astNode.getMetaData("replacements"),context);
-                    break;
-                }
-                throw new CompilationException(getClass(),"Expecting an automaton, received a: "+model.getClass().getSimpleName(),astNode.getLocation());
+                 processed = operations.simplification(((Automaton)model).copy(),(Map<String,Expr>)astNode.getMetaData("replacements"),context);
+             break;
+
             case "safe":
-                if(model instanceof Automaton){
-                    // automata cannot contain unreachable states therefore they are always safe
-                    processed = ((Automaton)model).copy();
-                    break;
-                }
-                throw new CompilationException(getClass(),"Expecting an automaton, received a: "+model.getClass().getSimpleName(),astNode.getLocation());
+                // automata cannot contain unreachable states therefore they are always safe
+                processed = ((Automaton)model).copy();
+            break;
+
             case "nfa2dfa":
-                if(model instanceof Automaton){
                     processed = operations.nfaToDFA(labelAutomaton(((Automaton)model)).copy());
-                    break;
-                }
-                throw new CompilationException(getClass(),"Expecting an automaton, received a: "+model.getClass().getSimpleName(),astNode.getLocation());
+             break;
+
             default:
                 throw new CompilationException(getClass(),"Expecting a known function, received: "+astNode.getFunction(),astNode.getLocation());
         }

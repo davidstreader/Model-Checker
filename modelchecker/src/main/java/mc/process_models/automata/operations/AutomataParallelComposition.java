@@ -24,13 +24,14 @@ public class AutomataParallelComposition {
         List<AutomatonNode> nodes2 = automaton2.getNodes();
         setupNodes(nodes1, nodes2);
 
-        // find the synchronous and non-synchronous actions in both alphabet sets
+        // find the synchronous and non-synchronous actions in both alphabet sets, this means find the edge labels that are the same
         Set<String> alphabet1 = automaton1.getAlphabet();
         Set<String> alphabet2 = automaton2.getAlphabet();
         setupActions(alphabet1, alphabet2);
 
         List<AutomatonEdge> edges1 = automaton1.getEdges();
         List<AutomatonEdge> edges2 = automaton2.getEdges();
+        //The edges here are meaning the labeled lines in each of the automata that we are composing
         processUnsyncedActions(edges1, edges2);
         processSyncedActions(edges1, edges2);
         nodeMap.clear();
@@ -83,47 +84,51 @@ public class AutomataParallelComposition {
         }
     }
 
-    private void setupActions(Set<String> alphabet1, Set<String> alphabet2){
-        for(String action : alphabet1){
-            processAction(action, alphabet2);
+    private void setupActions(Set<String> firstAutomataEdgeLabelsList, Set<String> secondAutomataEdgeLabelsList){
+        for(String edgeLabel : firstAutomataEdgeLabelsList){
+            processAction(edgeLabel, secondAutomataEdgeLabelsList);
         }
-        for(String action : alphabet2){
-            processAction(action, alphabet1);
+        for(String edgeLabel : secondAutomataEdgeLabelsList){
+            processAction(edgeLabel, firstAutomataEdgeLabelsList);
         }
     }
 
-    private void processAction(String action, Set<String> alphabet){
+    /**
+     * Function produces two lists of unsynced and synced actions so we can later merge diagram elements together
+     * @param edgeLabel The edge to test whether it is in the other automatas edgelist (I.e what we can combine)
+     * @param listEdgeLabels The edge list with which we are searching for things that match edgeLabel, so we can sync them.
+     */
+    private void processAction(String edgeLabel, Set<String> listEdgeLabels){
         // if action is hidden or deadlocked it is always unsynced
-        if(action.equals(Constant.HIDDEN) || action.equals(Constant.DEADLOCK)){
-            unsyncedActions.add(action);
+        if(edgeLabel.equals(Constant.HIDDEN) || edgeLabel.equals(Constant.DEADLOCK)){
+            unsyncedActions.add(edgeLabel);
         }
         // broadcasting actions are always unsynced
-        else if(action.endsWith("!")){
-            if(containsReceiver(action, alphabet)){
-                syncedActions.add(action);
+        else if(edgeLabel.endsWith("!")){
+            if(containsReceiver(edgeLabel, listEdgeLabels)){
+                syncedActions.add(edgeLabel);
             }
-
-            if(containsBroadcaster(action, alphabet)){
-                syncedActions.add(action);
+            if(containsBroadcaster(edgeLabel, listEdgeLabels)){
+                syncedActions.add(edgeLabel);
             }
             else {
-                unsyncedActions.add(action);
+                unsyncedActions.add(edgeLabel);
             }
         }
-        else if(action.endsWith("?")){
-            if(!containsBroadcaster(action, alphabet)) {
-                if(containsReceiver(action, alphabet)) {
-                    syncedActions.add(action);
+        else if(edgeLabel.endsWith("?")){
+            if(!containsBroadcaster(edgeLabel, listEdgeLabels)) {
+                if(containsReceiver(edgeLabel, listEdgeLabels)) {
+                    syncedActions.add(edgeLabel);
                 } else {
-                    unsyncedActions.add(action);
+                    unsyncedActions.add(edgeLabel);
                 }
             }
         }
-        else if(alphabet.contains(action)){
-            syncedActions.add(action);
+        else if(listEdgeLabels.contains(edgeLabel)){
+            syncedActions.add(edgeLabel);
         }
         else{
-            unsyncedActions.add(action);
+            unsyncedActions.add(edgeLabel);
         }
     }
 
@@ -149,14 +154,15 @@ public class AutomataParallelComposition {
         }
     }
 
-    private void processSyncedActions(List<AutomatonEdge> edges1, List<AutomatonEdge> edges2) throws CompilationException {
+    private void processSyncedActions(List<AutomatonEdge> edgesInTheFirst, List<AutomatonEdge> edgesInTheSecond) throws CompilationException {
 
-        for(String action : syncedActions){
-            List<AutomatonEdge> syncedEdges1 = edges1.stream()
-                .filter(edge -> equals(action, edge.getLabel()))
+        for(String currentSyncEdgeLabel : syncedActions){
+
+            List<AutomatonEdge> syncedEdges1 = edgesInTheFirst.stream()
+                .filter(edge -> equals(currentSyncEdgeLabel, edge.getLabel()))
                 .collect(Collectors.toList());
-            List<AutomatonEdge> syncedEdges2 = edges2.stream()
-                .filter(edge -> equals(action, edge.getLabel()))
+            List<AutomatonEdge> syncedEdges2 = edgesInTheSecond.stream()
+                .filter(edge -> equals(currentSyncEdgeLabel, edge.getLabel()))
                 .collect(Collectors.toList());
 
             for(AutomatonEdge edge1 : syncedEdges1){
@@ -164,7 +170,7 @@ public class AutomataParallelComposition {
                     AutomatonNode from = automaton.getNode(createId(edge1.getFrom(), edge2.getFrom()));
                     if (edge1.getLabel().endsWith("!") || edge2.getLabel().endsWith("!")) {
                         // any edges from the from node are broadcasted and should get replaced by the synced transition
-                        from.getOutgoingEdges().forEach(edge -> automaton.removeEdge(edge.getId()));
+                        from.getOutgoingEdges().stream().filter(e -> e.getLabel().endsWith("!") || e.getLabel().endsWith("?")).forEach(edge -> automaton.removeEdge(edge.getId()));
                     }
                     AutomatonNode to = automaton.getNode(createId(edge1.getTo(), edge2.getTo()));
                     Guard guard = new Guard();
@@ -174,7 +180,7 @@ public class AutomataParallelComposition {
                     if (guard.hasData()) {
                         metaData.put("guard", guard);
                     }
-                    automaton.addEdge(action, from, to,metaData);
+                    automaton.addEdge(currentSyncEdgeLabel, from, to,metaData);
 
                 }
             }
@@ -187,9 +193,9 @@ public class AutomataParallelComposition {
 
     private boolean containsReceiver(String broadcaster, Set<String> receivers){
         String broadcastAction = broadcaster.substring(0, broadcaster.length() - 1);
-        for(String receiver : receivers){
-            if(receiver.endsWith("?")){
-                String action = receiver.substring(0, receiver.length() - 1);
+        for(String potentialReceiver : receivers){
+            if(potentialReceiver.endsWith("?")){
+                String action = potentialReceiver.substring(0, potentialReceiver.length() - 1);
                 if(action.equals(broadcastAction)) {
                     return true;
                 }
