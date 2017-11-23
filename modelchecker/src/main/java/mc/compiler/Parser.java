@@ -812,7 +812,7 @@ public class Parser {
     }
 
     /**
-     * This parses the statement executed by a conditional
+     * This parses the statement executed by a conditional Identifier
      * @return the ASTNode of the decision
      * @throws CompilationException if there is an error in the conditional process
      * @throws InterruptedException if the user interrupts the process
