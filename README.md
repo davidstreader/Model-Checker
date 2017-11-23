@@ -1,8 +1,6 @@
 # Model-Checker 
 
-[![Build Status](https://img.shields.io/travis/davidstreader/Model-Checker.svg)](https://jenkins.tangentmc.net/job/Model-Checker/)
-[![GitHub release](https://img.shields.io/github/release/davidstreader/Model-Checker.svg)](https://github.com/davidstreader/Model-Checker/releases)
-[Click for the latest jar build from master](https://jenkins.tangentmc.net/job/Model-Checker)
+[![Build Status](https://jenkins.tangentmc.net/job/Model-Checker/badge/icon)](https://jenkins.tangentmc.net/job/Model-Checker/)
 
 ## Overview
 
