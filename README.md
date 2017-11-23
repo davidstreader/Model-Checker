@@ -22,28 +22,44 @@ file with defined state machines.
 
 -----------------------
 
+## Linux
 ```bash 
 $cd modelchecker
 $./gradlew build
 $cd ..
 ```
+Please be aware that if you have a web authentication proxy you will need to add arguments to gradlew.
+
+## Windows
+Ensure that the `JAVA_HOME` environmental variable is set correctly.
+
+Use `git bash` to run the gradle build script, as `npm` is tempremental
+```bash
+$cd modelchecker
+$./gradlew build
+```
+
 
 This will build a jar file `ModelChecker.jar` in the root folder of the
 repository
 
 
-### Styles
+### Web interface
 
 -----------------------
 
-Main application css files can be found in the styles directory
-(Model-Checker/app/styles/).
+Main web source files can be found in the `app` directory
+(Model-Checker/app/).
 
 
 ### Overall Structure
 
 -----------------------
 
-The program is roughly broken into the `Lexer`, `Abstract Syntax Tree`,
-`Interpreter` and the `automata` itself, which may have `operations` performed
-upon it.
+Lexer -> Parser -> Interpreter -> Evaluator -> Graphical display
+
+The lexer produces a list of Tokens from the input code given via the web interface, this list is then passed to the Parser.  
+The Parser produces an AST (Abstract syntax tree) which is then used by the interperator to build automata diagrams.
+Finally the evaluator first tests the operations (Which are similar to tests), then it moves onto testing equations which is done by generating different automata and the applying 
+the user created automata to test if it works over a given set space.
+This is then sent to the web interface via websocket.
