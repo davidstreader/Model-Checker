@@ -26,7 +26,6 @@ file with defined state machines.
 ```bash 
 $cd modelchecker
 $./gradlew build
-$cd ..
 ```
 Please be aware that if you have a web authentication proxy you will need to add arguments to gradlew.
 
@@ -39,10 +38,12 @@ $cd modelchecker
 $./gradlew build
 ```
 
-
-This will build a jar file `ModelChecker.jar` in the root folder of the
-repository
-
+These will build a jar file `ModelChecker.jar` in the root folder of the
+repository.
+To then run do the below:
+```bash
+$java -jar ../ModelChecker.jar
+```
 
 ### Web interface
 
