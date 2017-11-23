@@ -2,6 +2,7 @@ package mc.compiler.ast;
 
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
+import lombok.NonNull;
 import lombok.ToString;
 import mc.util.Location;
 
@@ -15,6 +16,13 @@ public class IfStatementNode extends ASTNode {
     private ASTNode falseBranch;
     private Context z3Context;
 
+    /**
+     * The set up structure for handling if statements
+     * @param condition     The boolean expression that determines if the true branch occurs
+     * @param trueBranch    The branch directly after the "then", what happens when "condition" is true
+     * @param location      Where in the code this appears
+     * @param z3Context     The z3 context for evaluating the boolean expression passed
+     */
     public IfStatementNode(BoolExpr condition, ASTNode trueBranch, Location location, Context z3Context){
         super(location);
         this.condition = condition;
@@ -23,12 +31,23 @@ public class IfStatementNode extends ASTNode {
         this.z3Context = z3Context;
     }
 
-    public IfStatementNode(BoolExpr condition, ASTNode trueBranch, ASTNode falseBranch, Location location){
+    /**
+     *  This function is an extension of the basic if .. then, with the addition of else.
+     * @param condition     The boolean expression that determines if the true branch or false branch occurs
+     * @param trueBranch    The branch directly after the "then", what happens when "condition" is true
+     * @param falseBranch   The else branch, what happens if condition is false
+     * @param location      Where in the code this appears
+     * @param z3Context     The z3 context for evaluating the boolean expression passed
+     */
+    public IfStatementNode(BoolExpr condition, ASTNode trueBranch, ASTNode falseBranch, Location location, Context z3Context){
         super(location);
         this.condition = condition;
         this.trueBranch = trueBranch;
         this.falseBranch = falseBranch;
+        this.z3Context = z3Context;
     }
+
+
 
     public BoolExpr getCondition(){
         return condition;

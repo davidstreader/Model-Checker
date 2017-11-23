@@ -1,4 +1,4 @@
-package mc.webserver.webobjects;
+package mc.webserver;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
@@ -51,7 +51,7 @@ public class LogMessage {
         return "("+location.getLineStart()+":"+location.getColStart()+")";
     }
     public void render() {
-        this.message = ansi().render(message).toString();
+        this.message = Ansi.ansi().render(message).toString();
     }
     public void printToConsole() {
         message = message.replace("@|black","@|white");

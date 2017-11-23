@@ -1,6 +1,7 @@
 package mc.webserver.webobjects;
 
 import lombok.Data;
+import mc.webserver.Context;
 
 @Data
 /**

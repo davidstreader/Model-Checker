@@ -1,4 +1,4 @@
-package mc.webserver.webobjects;
+package mc.webserver;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

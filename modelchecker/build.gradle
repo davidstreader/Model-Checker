@@ -75,7 +75,8 @@ subprojects {
         workingDir new File("../src/main/resources/")
         testLogging {
             showStandardStreams = true
-        } systemProperty "java.library.path", natives
+        }
+        systemProperty "java.library.path", natives
         environment "PATH", natives
         environment "LD_LIBRARY_PATH", natives
         //TODO: We need to use a specific lib dir on mac.

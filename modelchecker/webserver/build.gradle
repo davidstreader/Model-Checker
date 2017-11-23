@@ -1,7 +1,6 @@
 dependencies {
     compile project(':compiler')
     compile 'com.sparkjava:spark-core:2.5.4'
-    compile group: 'org.fusesource.jansi', name: 'jansi', version: '1.14'
     compile group: 'org.json', name: 'json', version: '20160810'
     compile group: 'com.fasterxml.jackson.module', name: 'jackson-module-parameter-names', version: '2.8.6'
 }
