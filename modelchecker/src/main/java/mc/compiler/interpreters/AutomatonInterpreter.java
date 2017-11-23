@@ -126,9 +126,9 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         }
         // check if the current ast node has a reference attached
         if(astNode.hasReferences()){
-            for(String reference : astNode.getReferences()){
+            for(String reference : astNode.getReferences())
                 referenceMap.put(reference, currentNode);
-            }
+
             currentNode.addMetaData("reference", astNode.getReferences());
         }
         if (astNode.getMetaData().containsKey("variables")) {

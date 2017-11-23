@@ -592,7 +592,7 @@ public class Parser {
     private ASTNode parseChoice() throws CompilationException, InterruptedException {
         int start = index;
 
-        ASTNode process = parseLocalProcess();
+        ASTNode process = parseConditionalProcess();
 
         if (peekToken() instanceof BitOrToken) {
             nextToken(); // gobble the '|' token
@@ -605,6 +605,7 @@ public class Parser {
 
     private ASTNode parseLocalProcess() throws CompilationException, InterruptedException {
         if (peekToken() instanceof OpenParenToken) {
+
             nextToken();
             ASTNode process = parseComposite();
             if (!(nextToken() instanceof CloseParenToken)) {
@@ -655,6 +656,7 @@ public class Parser {
             return parseTerminal();
         } else if (peekToken() instanceof IdentifierToken) {
             IdentifierNode identifier = parseIdentifier();
+
             if (peekToken() instanceof OpenBracketToken) {
                 identifier.setIdentifer(identifier.getIdentifier() + parseIndices());
             }
@@ -664,7 +666,7 @@ public class Parser {
             return parseFunction();
         } else if (peekToken() instanceof ProcessTypeToken) {
             return parseCasting();
-        } else if (peekToken() instanceof IfToken) {
+        } else if (peekToken() instanceof IfToken) { // Else token is parsed within the IfStatement block
             return parseIfStatement();
         } else if (peekToken() instanceof WhenToken) {
             return parseWhenStatement();
@@ -809,6 +811,19 @@ public class Parser {
         return new FunctionNode(cast, process, constructLocation(start));
     }
 
+    /**
+     * This parses the statement executed by a conditional
+     * @return the ASTNode of the decision
+     * @throws CompilationException if there is an error in the conditional process
+     * @throws InterruptedException if the user interrupts the process
+     */
+    private ASTNode parseConditionalProcess() throws CompilationException, InterruptedException {
+        // When we reach the Body operation of the if statement which is after the THEN keyword, we need to make sure it isnt a Identifier variable.
+        if(peekToken() instanceof IdentifierToken)
+            throw  constructException("expecting to parse a conditional process but received \"" + peekToken().toString() + "\" " + peekToken().getLocation());
+        return parseLocalProcess();
+    }
+
     private IfStatementNode parseIfStatement() throws CompilationException, InterruptedException {
         // ensure that the next token is a 'if' token
         if (!(nextToken() instanceof IfToken)) {
@@ -832,28 +847,30 @@ public class Parser {
             throw constructException("expecting to parse \"then\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
-        ASTNode trueBranch = parseLocalProcess();
+        ASTNode trueBranch = parseConditionalProcess();
 
         // check if an else branch was defined
         if (peekToken() instanceof ElseToken) {
             nextToken(); // gobble the 'then' token
-            ASTNode falseBranch = parseLocalProcess();
-
-            return new IfStatementNode((BoolExpr) expression, trueBranch, falseBranch, constructLocation(start));
+            ASTNode falseBranch = parseConditionalProcess();
+            return new IfStatementNode((BoolExpr) expression, trueBranch, falseBranch, constructLocation(start), context);
         }
 
         return new IfStatementNode((BoolExpr) expression, trueBranch, constructLocation(start),context);
     }
 
     private IfStatementNode parseWhenStatement() throws CompilationException, InterruptedException {
-        int start = index;
         // ensure that the next token is a 'when' token
+
         if (!(nextToken() instanceof WhenToken)) {
             Token error = tokens.get(index - 1);
             throw constructException("expecting to parse \"when\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
+
+        int start = index;
         String expr = parseExpression();
+
         Expr expression;
         if (variableMap.containsKey(expr)) {
             expression = variableMap.get(expr);
@@ -863,6 +880,8 @@ public class Parser {
         if (!(expression instanceof BoolExpr)) {
             throw constructException("expecting to parse a boolean statement but received \"" +ExpressionPrinter.printExpression(expression)+"\"", constructLocation(start));
         }
+
+
         ASTNode trueBranch = parseLocalProcess();
         return new IfStatementNode((BoolExpr) expression, trueBranch, constructLocation(start),context);
     }
@@ -1280,7 +1299,9 @@ public class Parser {
         List<String> exprTokens = new ArrayList<>();
         int start = index;
         parseExpression(exprTokens);
+
         Expr expression = Expression.constructExpression(String.join(" ",exprTokens),constructLocation(start),context);
+
         if (expressionEvaluator.isExecutable(expression)) {
             Expr simp = expression.simplify();
             if (simp.isTrue()) {
@@ -1293,10 +1314,12 @@ public class Parser {
                 return ExpressionEvaluator.evaluate((BitVecNum) simp,context) + "";
             }
         } else if (expression.isConst()) {
+
             return expression.toString();
         }
 
         String variable = nextVariableId();
+
         variableMap.put(variable, expression);
         return variable;
     }

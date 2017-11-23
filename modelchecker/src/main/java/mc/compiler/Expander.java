@@ -272,6 +272,7 @@ public class Expander {
             trueGuard.mergeWith((Guard) trueBranch.getMetaData("guard"));
         trueBranch.getMetaData().put("guard", trueGuard);
         ASTNode falseBranch = null;
+
         if (astNode.hasFalseBranch()) {
             falseBranch = expand(astNode.getFalseBranch(), variableMap, context);
             if (falseBranch.getMetaData().containsKey("guard"))

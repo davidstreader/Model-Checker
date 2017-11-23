@@ -2,6 +2,9 @@ package mc.compiler.token;
 
 import mc.util.Location;
 
+/**
+ * Identifier token is any variable starting with an uppercase letter.
+ */
 public class IdentifierToken extends Token {
 
 	private String identifier;

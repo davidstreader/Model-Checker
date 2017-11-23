@@ -50,8 +50,14 @@ public class Compiler {
             processNodeMap.put(node.getIdentifier(), (ProcessNode) node.copy());
         }
         ast = expander.expand(ast, messageQueue, z3Context);
+        /** replacer.replaceReferences
+         * Expands references i.e Initally we are now at: P1 = a->P2.
+         *                                                P2 = b->c->x.
+         *  Then it explands it to, P1 = a->b->c->x. If it needs it
+         */
         ast = replacer.replaceReferences(ast, messageQueue);
         Map<String, ProcessModel> processMap = interpreter.interpret(ast, new LocalCompiler(processNodeMap, expander, replacer,messageQueue),messageQueue,z3Context);
+
         List<OperationResult> opResults = evaluator.evaluateOperations(ast.getOperations(), processMap, interpreter, code,z3Context);
         EquationEvaluator.EquationReturn eqResults = eqEvaluator.evaluateEquations(ast.getEquations(), code, context,z3Context,messageQueue);
         processMap.putAll(eqResults.getToRender());

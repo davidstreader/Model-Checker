@@ -52,10 +52,9 @@ public class Main {
         } else {
             MainGui.registerConsoleAppender();
         }
-        if (!reloaded) {
+        if (!reloaded)
             new NativesManager().copyNatives();
-            new AutoUpdate().checkForUpdates();
-        }
+
         //Start the server if we aren't running from a jar or are in a sub process
         if (!Utils.isJar() || reloaded) {
             commandManager = new CommandManager(this);
