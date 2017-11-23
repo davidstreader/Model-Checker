@@ -18,7 +18,12 @@ import java.util.concurrent.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-
+/**
+ *  Generates different automata to test if they work within the user created model.
+ *  For example, if we're looking at the property of communitivity.
+ *  Where A || (B || C) = (A || B) || C
+ *  If we generate different models for A, B and C we can test that it follows that law. If the user generated an automata that followed that process as such.
+ */
 public class EquationEvaluator {
 
     private int equationId;
