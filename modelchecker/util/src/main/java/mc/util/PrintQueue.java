@@ -1,6 +1,6 @@
 package mc.util;
 
-import mc.webserver.webobjects.LogMessage;
+import mc.webserver.LogMessage;
 
 import java.util.Collection;
 import java.util.Iterator;

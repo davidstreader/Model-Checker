@@ -1218,9 +1218,9 @@ public class Parser {
             throw constructException("expecting to parse \")\" but received \"" + error.toString() + "\"", error.getLocation());
         }
         if (!(peekToken() instanceof OpenBraceToken)) {
-            parseSingleOperation(true, new EquationEvaluator.EquationSettings(alphabet, nodeCount, alphabetCount, maxTransitionCount));
+            parseSingleOperation(true, new EquationSettings(alphabet, nodeCount, alphabetCount, maxTransitionCount));
         } else {
-            parseOperationBlock(true, new EquationEvaluator.EquationSettings(alphabet, nodeCount, alphabetCount, maxTransitionCount));
+            parseOperationBlock(true, new EquationSettings(alphabet, nodeCount, alphabetCount, maxTransitionCount));
         }
     }
     // OPERATIONS
@@ -1238,7 +1238,7 @@ public class Parser {
         }
     }
 
-    private void parseSingleOperation(boolean isEq, EquationEvaluator.EquationSettings equationSettings) throws CompilationException, InterruptedException {
+    private void parseSingleOperation(boolean isEq, EquationSettings equationSettings) throws CompilationException, InterruptedException {
         int start = index;
         ASTNode process1 = parseComposite();
 
@@ -1265,7 +1265,7 @@ public class Parser {
         }
     }
 
-    private void parseOperationBlock(boolean isEq, EquationEvaluator.EquationSettings equationSettings) throws CompilationException, InterruptedException {
+    private void parseOperationBlock(boolean isEq, EquationSettings equationSettings) throws CompilationException, InterruptedException {
         if (!(nextToken() instanceof OpenBraceToken)) {
             Token error = tokens.get(index - 1);
             throw constructException("expecting to parse \"{\" but received \"" + error.toString() + "\"", error.getLocation());

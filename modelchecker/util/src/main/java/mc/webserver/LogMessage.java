@@ -5,8 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import mc.compiler.ast.ProcessNode;
 import mc.util.Location;
-
-import static org.fusesource.jansi.Ansi.ansi;
+import org.fusesource.jansi.Ansi;
 
 /**
  * A message to send back to the client
