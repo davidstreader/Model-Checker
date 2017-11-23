@@ -592,7 +592,7 @@ public class Parser {
     private ASTNode parseChoice() throws CompilationException, InterruptedException {
         int start = index;
 
-        ASTNode process = parseConditionalProcess();
+        ASTNode process = parseLocalProcess();
 
         if (peekToken() instanceof BitOrToken) {
             nextToken(); // gobble the '|' token
