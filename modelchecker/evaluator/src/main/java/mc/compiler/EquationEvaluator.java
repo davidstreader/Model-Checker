@@ -11,7 +11,7 @@ import mc.process_models.automata.Automaton;
 import mc.process_models.automata.generator.AutomatonGenerator;
 import mc.process_models.automata.operations.AutomataOperations;
 import mc.webserver.Context;
-import mc.webserver.webobjects.LogMessage;
+import mc.webserver.LogMessage;
 
 import java.util.*;
 import java.util.concurrent.*;

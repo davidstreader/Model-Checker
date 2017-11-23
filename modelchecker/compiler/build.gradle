@@ -1,4 +1,5 @@
 dependencies {
     compile project(':parsing')
     compile project(':interpreter')
+    compile project(':evaluator')
 }

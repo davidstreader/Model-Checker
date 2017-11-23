@@ -7,7 +7,7 @@ import mc.compiler.ast.ProcessNode;
 import mc.compiler.interpreters.AutomatonInterpreter;
 import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
-import mc.webserver.webobjects.LogMessage;
+import mc.webserver.LogMessage;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -26,7 +26,7 @@ public class Interpreter {
         this.automaton = new AutomatonInterpreter();
     }
 
-    public Map<String, ProcessModel> interpret(AbstractSyntaxTree ast, Compiler.LocalCompiler localCompiler, BlockingQueue<Object> messageQueue, Context context) throws CompilationException, InterruptedException {
+    public Map<String, ProcessModel> interpret(AbstractSyntaxTree ast, LocalCompiler localCompiler, BlockingQueue<Object> messageQueue, Context context) throws CompilationException, InterruptedException {
         Map<String, ProcessModel> processMap = new LinkedHashMap<>();
 
         List<ProcessNode> processes = ast.getProcesses();

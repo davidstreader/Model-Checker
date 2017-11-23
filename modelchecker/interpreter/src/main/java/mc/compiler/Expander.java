@@ -11,7 +11,7 @@ import mc.util.expr.Expression;
 import mc.util.expr.ExpressionEvaluator;
 import mc.util.expr.ExpressionPrinter;
 import mc.util.expr.VariableCollector;
-import mc.webserver.webobjects.LogMessage;
+import mc.webserver.LogMessage;
 
 import java.util.*;
 import java.util.concurrent.BlockingQueue;

@@ -1,4 +1,4 @@
-mainClassName = 'mc.Main'
+//mainClassName = 'mc.Main'
 dependencies {
     compile project(':automata_model')
     compile project(':interpreter')
