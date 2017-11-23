@@ -146,15 +146,6 @@ public class EquationEvaluator {
         List<OperationResult> results;
         Map<String,ProcessModel> toRender;
     }
-    @Getter
-    @AllArgsConstructor
-    @ToString
-    public static class EquationSettings {
-        boolean alphabet;
-        int nodeCount;
-        int alphabetCount;
-        int maxTransitionCount;
-    }
 
     private class ModelStatus {
         int passCount;

@@ -2,8 +2,7 @@ package mc.compiler.ast;
 
 import lombok.Getter;
 import mc.util.Location;
-
-import static mc.compiler.EquationEvaluator.EquationSettings;
+import mc.compiler.EquationSettings;
 
 public class OperationNode extends ASTNode {
 

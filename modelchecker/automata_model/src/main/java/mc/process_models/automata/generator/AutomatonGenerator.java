@@ -3,7 +3,7 @@ package mc.process_models.automata.generator;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Sets;
 import lombok.SneakyThrows;
-import mc.compiler.EquationEvaluator.EquationSettings;
+import mc.compiler.EquationSettings;
 import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
 import mc.process_models.automata.Automaton;
