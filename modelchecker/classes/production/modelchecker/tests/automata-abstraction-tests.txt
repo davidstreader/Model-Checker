@@ -1,0 +1,151 @@
+/* AUTOMATA ABSTRACTION TESTS */
+
+// basic abstraction
+automata {
+    Basic = (a -> b -> c -> STOP)\{b}.
+    AbsBasic = abs(Basic).
+    EqBasic = (a -> c -> Stop | a -> c -> Stop),
+        Stop = (STOP).
+}
+
+operation AbsBasic ~ EqBasic.
+
+// abstract the first action
+automata {
+    Basic2 = (a -> b -> c -> STOP)\{a}.
+    AbsBasic2 = abs(Basic2).
+    EqBasic2 = (b -> c -> STOP).
+}
+
+operation AbsBasic2 ~ EqBasic2.
+
+// abstract the last action
+automata {
+    Basic3 = (a -> b -> c -> STOP)\{c}.
+    AbsBasic3 = abs(Basic3).
+    EqBasic3 = (a -> (b -> STOP | b -> STOP)).
+}
+
+operation AbsBasic3 ~ EqBasic3.
+
+// multiple hidden actions
+automata {
+    Multi = (a -> b -> c -> d -> STOP)\{b, c}.
+    AbsMulti = abs(Multi).
+    EqMulti = (a -> d -> Stop | a -> d -> Stop | a -> d -> Stop),
+        Stop = (STOP).
+}
+
+operation AbsMulti ~ EqMulti.
+
+// multiple hidden actions at the beginning
+automata {
+    Multi2 = (a -> b -> c -> d -> STOP)\{a, b}.
+    AbsMulti2 = abs(Multi2).
+    EqMulti2 = (c -> d -> STOP).
+}
+
+operation AbsMulti2 ~ EqMulti2.
+
+// multiple hidden actions at the end
+automata {
+    Multi3 = (a -> b -> c -> d -> STOP)\{c, d}.
+    AbsMulti3 = abs(Multi3).
+    EqMulti3 = (a -> (b -> STOP | b -> STOP | b -> STOP)).
+}
+
+operation AbsMulti3 ~ EqMulti3.
+
+// action hidden to form a tau loop (assumes fair abstraction)
+automata {
+    Loop = (a -> A),
+        A = (x -> A)\{x}.
+    AbsLoop = abs(Loop).
+    EqLoop = (a -> STOP).
+}
+
+operation AbsLoop ~ EqLoop.
+
+// abstract a looped process with a hidden action
+automata {
+    Loop2 = (a -> x -> Loop2)\{x}.
+    AbsLoop2 = abs(Loop2).
+    EqLoop2 = (a -> EqLoop2 | a -> A),
+        A = (a -> A).
+}
+
+operation AbsLoop2 ~ EqLoop2.
+
+// abstract a looped process with a hidden action
+automata {
+    Loop3 = (a -> b -> c -> Loop3)\{b}.
+    AbsLoop3 = abs(Loop3).
+    EqLoop3 = (a -> c -> EqLoop3 | a -> c -> EqLoop3).
+}
+
+operation AbsLoop3 ~ EqLoop3.
+
+// abstracting a syncronised action in a concurrent process
+automata {
+    Concurrent = (a -> b -> c -> STOP || x -> b -> z -> STOP)\{b}.
+    AbsConcurrent = abs(Concurrent).
+    EqConcurrent = (a -> A | x -> B),
+        A = (x -> C | x -> D),
+        B = (a -> C | a -> D),
+        C = (c -> E | z -> F),
+        D = (c -> E | z -> F),
+        E = (z -> Stop),
+        F = (c -> Stop),
+        Stop = (STOP).
+}
+
+operation AbsConcurrent ~ EqConcurrent.
+
+// abstracting a single action in a concurrent process
+automata {
+    Concurrent2 = (a -> b -> c -> STOP || x -> y -> z -> STOP)\{b}.
+    AbsConcurrent2 = abs(Concurrent2).
+    EqConcurrent2 = (a -> A | a -> B | x -> D),
+        A = (c -> C | x -> E | x -> F),
+        B = (c -> C | x -> F),
+        C = (x -> G),
+        D = (a -> E | a -> F | y -> H),
+        E = (c -> G | y -> I | y -> J),
+        F = (c -> G | y -> J),
+        G = (y -> K),
+        H = (a -> I | a -> J | z -> L),
+        I = (c -> K | z -> M | z -> N),
+        J = (c -> K | z -> N),
+        K = (z -> Stop),
+        L = (a -> M | a -> N),
+        M = (c -> Stop),
+        N = (c -> Stop),
+        Stop = (STOP).
+}
+
+operation AbsConcurrent2 ~ EqConcurrent2.
+
+// abstraction example from the crib sheet
+automata {
+    Example = (a -> (x -> b -> STOP | c -> STOP))\{x}.
+    AbsExample = abs(Example).
+    EqExample = (a -> A | a -> B),
+        A = (c -> STOP | b -> Stop),
+        B = (b -> Stop),
+        Stop = (STOP).
+}
+
+operation AbsExample ~ EqExample.
+
+// buffer example
+automata {
+    Buff = (in -> out -> Buff).
+    Buff2 = (a:Buff/{x/a.out} || b:Buff/{x/b.in})\{x}.
+    AbsBuff = abs(Buff2).
+    EqBuff = (a.in -> A | a.in -> C),
+        A = (b.out -> EqBuff | a.in -> B),
+        B = (b.out -> A | b.out -> C),
+        C = (a.in -> B | b.out -> EqBuff).
+}
+
+operation AbsBuff ~ EqBuff.

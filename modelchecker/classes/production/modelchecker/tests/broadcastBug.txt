@@ -1,0 +1,25 @@
+automata {
+             /* Bug2  in broadcast comunication*/
+// Good but not broadcast
+S = x->S|a->STOP.
+R = x->STOP.
+Good = S||R.
+SR = (a->STOP|x->a->STOP).
+
+//Broadcast  Fail  initial a lost by ||
+Sb = x!->Sb|a->STOP.
+Rb = x?->STOP.
+Bug = Sb||Rb.
+SbRb = (a->STOP|x!->X),
+     X = (x!->X|a->STOP).
+
+Sbb = x?->Sbb|a->STOP.
+Rbb = x!->STOP.
+Bugb = Sbb||Rbb.
+SbbRbb = (a->x!->STOP|x!->a->STOP).
+}
+operation {
+Bug ~ SbRb.
+Bugb ~ SbbRbb.
+Good ~ SR.
+}

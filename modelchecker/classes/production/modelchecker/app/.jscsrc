@@ -1,0 +1,6 @@
+{
+  "preset": "google",
+  "maximumLineLength": 120,
+  "disallowSpacesInAnonymousFunctionExpression": null,
+  "excludeFiles": ["node_modules/**", "app/elements/automata-parser/parser.js"]
+}

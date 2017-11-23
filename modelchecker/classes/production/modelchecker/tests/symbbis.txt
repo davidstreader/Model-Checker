@@ -1,0 +1,34 @@
+const N = 2
+const M = 4
+automata {
+
+Test = (a-> X | b->Z),
+      Z = W[1],
+      X =  Y[1],
+      W[i:0..M] =(when (i<= M) coin -> W[(i+1)%M]),
+      Y[j:0..N] =(when (j<= N) coin -> Y[(j+1)%N]).
+
+Atomic = simp(Test).
+
+Symb = Test${i,j}.  // Symb should have two states
+Res = simp{i=(2*i)}(Symb).
+Hope = Res${}.
+
+BadTest = (a-> X | b->Z),
+      Z = W[1],
+      X =  Y[1],
+      W[i:0..M] =(when (i<= M) coin -> W[(i+1)%M]|
+                  when (i==2) bang ->STOP),
+      Y[j:0..N] =(when (j<= N) coin -> Y[(j+1)%N]|
+                  when (j==2) bang ->STOP).
+
+BadAtom = simp(BadTest).
+BadSymb = BadTest${i,j}.  // Symb should not be simplified (currently is)
+
+}
+operation {
+Test ~ Atomic.
+Hope ~ Atomic.
+// do we hae an isomorphism test?
+
+}

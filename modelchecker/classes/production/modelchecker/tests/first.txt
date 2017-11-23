@@ -1,0 +1,8 @@
+automata {
+VM = coin -> X,
+    X = (teaBtn ->teaDrink ->sigh->VM | 
+         coffeeBtn -> coffeeDrink ->shake->STOP).
+}
+operation {
+}
+

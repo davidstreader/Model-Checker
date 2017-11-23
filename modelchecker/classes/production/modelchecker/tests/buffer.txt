@@ -1,0 +1,8 @@
+/* Buffer Example */
+
+automata {
+    Buff = (in -> out -> Buff).
+    B2 = (a:Buff/{x/a.out} || b:Buff/{x/b.in})\{x}.
+    B3 = abs(B2).
+    B4 = simp(B3).
+}

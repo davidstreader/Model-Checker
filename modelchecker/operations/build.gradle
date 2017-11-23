@@ -1,0 +1,3 @@
+dependencies {
+    compile project(':automata_model')
+}

@@ -1,0 +1,9 @@
+{
+    "esversion":6,
+    "globals": {
+        "wrap": true,
+        "unwrap": true,
+        // our globals
+        "app": true
+    }
+}

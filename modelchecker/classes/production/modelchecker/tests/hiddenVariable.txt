@@ -1,0 +1,18 @@
+const Coins = 2
+const Max = 2
+automata {
+Money = C[1][1],
+        C[i:1..Coins][j:1..Coins] = (when (i < Coins) coin -> C[i + 1][j] | when (j < Coins) ping -> C[i][j+1]| when (j == Coins) ping -> C[i][1])${i}.
+Money6 = C[1][1],
+        C[i:1..Coins][j:1..Coins] = (when (i < Coins) coin -> C[i + 1][j] | when (j < Coins) ping -> C[i][j+1]| when (j == Coins) ping -> C[i][1]).
+Money2 = D[1],
+        D[i:1..Coins] = (when (i < Coins) coin -> D[i + 1] | when (i == Coins) ping -> D[1]).
+Money5 = C[1][1],
+        C[i:1..Coins][j:1..Coins] = (when (i < Coins && j < Coins) coin -> C[i + 1][j + 1] | when (j < Coins) ping -> C[i][j+1]| when (j == Coins) ping -> C[i][1]).
+M2 = C[0][0][0],
+        C[mlis:0..Max][is:0..Max][isml:0..Max] =
+            (when (isml == 0 && ((mlis + is) < Max)) ml2br -> C[mlis + 1][is][isml]
+            |when (mlis > 0 && is < Max) br2is -> C[mlis - 1][is + 1][isml]
+            |when (mlis == 0 && is > 0 && isml < Max) is2br -> C[mlis][is - 1][isml + 1]
+            |when (isml > 0) br2ml -> C[mlis][is][isml - 1])${isml}.
+}
