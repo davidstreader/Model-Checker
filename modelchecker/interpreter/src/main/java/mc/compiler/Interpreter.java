@@ -7,7 +7,7 @@ import mc.compiler.ast.ProcessNode;
 import mc.compiler.interpreters.AutomatonInterpreter;
 import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
-import mc.webserver.LogMessage;
+import mc.util.LogAST;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -31,7 +31,7 @@ public class Interpreter {
 
         List<ProcessNode> processes = ast.getProcesses();
         for(ProcessNode process : processes){
-            messageQueue.add(new LogMessage("Interpreting:",process));
+            messageQueue.add(new LogAST("Interpreting:",process));
             ProcessModel model;
             switch(process.getType()){
                 case "automata":

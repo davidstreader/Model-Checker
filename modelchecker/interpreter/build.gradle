@@ -1,3 +1,4 @@
 dependencies {
-    compile project(':operations')
+    compile project(':ast')
+    compile project(':automata_model')
 }

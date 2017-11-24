@@ -1,7 +1,8 @@
-//mainClassName = 'mc.Main'
 dependencies {
     compile project(':automata_model')
     compile project(':interpreter')
     compile project(':parsing')
     compile project(':webserver')
 }
+apply plugin: 'application'
+mainClassName = 'mc.Main'

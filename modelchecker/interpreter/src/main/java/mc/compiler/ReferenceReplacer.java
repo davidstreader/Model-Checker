@@ -2,7 +2,7 @@ package mc.compiler;
 
 import mc.compiler.ast.*;
 import mc.exceptions.CompilationException;
-import mc.webserver.webobjects.LogMessage;
+import mc.util.LogAST;
 
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
@@ -33,7 +33,7 @@ public class ReferenceReplacer {
     //Because of that it is public, and it should NOT be reset.
     public ProcessNode replaceReferences(ProcessNode process, BlockingQueue<Object> messageQueue) throws CompilationException, InterruptedException {
         references.clear();
-        messageQueue.add(new LogMessage("Replacing references:",process));
+        messageQueue.add(new LogAST("Replacing references:",process));
         String identifier = process.getIdentifier();
         addReference(process.getProcess(), identifier);
 

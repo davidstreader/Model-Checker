@@ -11,7 +11,7 @@ import mc.util.expr.Expression;
 import mc.util.expr.ExpressionEvaluator;
 import mc.util.expr.ExpressionPrinter;
 import mc.util.expr.VariableCollector;
-import mc.webserver.LogMessage;
+import mc.util.LogAST;
 
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
@@ -48,7 +48,7 @@ public class Expander {
         return ast;
     }
     public ProcessNode expand(ProcessNode process, BlockingQueue<Object> messageQueue, Context context) throws CompilationException, InterruptedException {
-        messageQueue.add(new LogMessage("Expanding:",process));
+        messageQueue.add(new LogAST("Expanding:",process));
         identMap.clear();
         if (process.hasVariableSet())
             hiddenVariables = process.getVariables().getVariables();
