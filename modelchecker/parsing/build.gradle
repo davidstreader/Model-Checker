@@ -1,0 +1,4 @@
+dependencies {
+    compile project(':ast')
+    compile project(':evaluator')
+}

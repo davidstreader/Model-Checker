@@ -69,7 +69,7 @@ subprojects {
 
     test {
         //TODO: Edit this to make it work when we change the resource directory
-        workingDir new File("../src/main/resources/")
+        workingDir new File("../resources/")
         testLogging {
             showStandardStreams = true
         }
