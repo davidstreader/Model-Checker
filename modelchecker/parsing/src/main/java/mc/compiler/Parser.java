@@ -592,7 +592,7 @@ public class Parser {
     private ASTNode parseChoice() throws CompilationException, InterruptedException {
         int start = index;
 
-        ASTNode process = parseConditionalProcess();
+        ASTNode process = parseLocalProcess();
 
         if (peekToken() instanceof BitOrToken) {
             nextToken(); // gobble the '|' token
@@ -812,7 +812,7 @@ public class Parser {
     }
 
     /**
-     * This parses the statement executed by a conditional
+     * This parses the statement executed by a conditional Identifier
      * @return the ASTNode of the decision
      * @throws CompilationException if there is an error in the conditional process
      * @throws InterruptedException if the user interrupts the process
