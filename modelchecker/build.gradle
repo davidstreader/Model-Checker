@@ -162,5 +162,3 @@ assemble.dependsOn shadowJar
 tasks.eclipse.doLast {
     delete '.project'
 }
-
-
