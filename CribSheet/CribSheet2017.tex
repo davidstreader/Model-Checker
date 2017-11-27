@@ -791,29 +791,6 @@ On the right hand side of the equality we define guarded events:
 \begin{center}\verb$when(c<N) coin->C[c+1]$ \end{center}
 the \verb$coin$ event  will only occur when the guard is true, \verb|c<N| and the event  ends at node \verb$C[c+1]$.  {\bf Note a guard  only applies to one event.}  Each time you add a choice you need to add any required  guard.
 
-{\color{red}
-The \verb|if...then...else| command is very like the choice between two \verb|wait| commands with an exception.  Notice how the else part of the if command is not prefixed with an event and it parses and produces the automata displayed.
-
-\begin{center}\begin{minipage}{0.5\textwidth}
-\begin{verbatim}
-PurseIf = P[0],
-  P[c:0..N] =  
-   (if (c < N) then  addcoin-> P[c+1] 
-    else    P[0] ).\end{verbatim} 
-\end{minipage}
-\begin{minipage}{0.45\textwidth}
-\includegraphics[scale=0.15]{PurseIf.jpg}
-\end{minipage}\end{center}
-
-Where as if we use a process that is not event prefixed in a \verb|when| command, see example below, then it fails to parse. 
-\begin{center}\begin{minipage}{0.5\textwidth}
-\begin{verbatim}
-PurseW = P[0],
-  P[c:0..N] =  
-   (when (c < N)   addcoin-> P[c+1] |
-   when (c >= N)   P[0] ).\end{verbatim} 
-\end{minipage}\end{center}
-}
 
 
 
