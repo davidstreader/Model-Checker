@@ -18,6 +18,7 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
+import org.eclipse.jetty.websocket.common.WebSocketSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,6 +60,7 @@ public class WebSocketServer {
             try {
                 while (!Thread.currentThread().isInterrupted() && user.isOpen()) {
                     Object log = queue.take();
+
                     if (log instanceof LogMessage) {
                         if (((LogMessage) log).hasExpired()) continue;
                         ((LogMessage) log).render();

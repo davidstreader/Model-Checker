@@ -8,7 +8,7 @@ buildscript {
 import org.apache.tools.ant.taskdefs.condition.Os
 
 static getNatives() {
-    String ret = "../resources/native/"
+    String ret = '../resources/native/'
     if (System.getProperty("os.arch").endsWith("64")) ret += "amd64"
     if (System.getProperty("os.arch").endsWith("86")) ret += "x86"
     if (Os.isFamily(Os.FAMILY_WINDOWS)) {
@@ -23,15 +23,15 @@ static getNatives() {
 
 plugins {
     id 'com.github.johnrengelman.shadow' version '1.2.4'
-    id "com.moowork.node" version "1.2.0"
+    id 'com.moowork.node' version '1.2.0'
 }
 
-group 'net.modelchecker'
+group   'net.modelchecker'
 version '1.0-SNAPSHOT'
 
-apply plugin: 'java'
-apply plugin: 'application'
-apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin:   'java'
+apply plugin:   'application'
+apply plugin:   'com.github.johnrengelman.shadow'
 mainClassName = 'mc.Main'
 shadowJar {
     baseName = 'ModelChecker'
@@ -55,19 +55,18 @@ allprojects {
 subprojects {
     apply plugin: 'java'
     apply from: "$rootDir/gradle/version.gradle"
-    apply plugin: "com.github.johnrengelman.shadow"
 
-    repositories { jcenter() }
     dependencies {
-        if (project.name != "util") {
-            compile project(":util")
+        if (project.name !=  'util') {
+            compile project(':util')
         }
-        testCompile group: 'junit', name: 'junit', version: '4.11'
+        testCompile 'junit:junit:4.11'
         compileOnly 'org.projectlombok:lombok:1.16.12'
-        compile 'uk.com.robust-it:cloning:1.9.3'
-        compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.5'
-        compile group: 'commons-io', name: 'commons-io', version: '2.5'
+        compile     'uk.com.robust-it:cloning:1.9.3'
+        compile     'org.apache.commons:commons-lang3:3.5'
+        compile     'commons-io:commons-io:2.5'
     }
+
     sourceCompatibility = 1.8
 
     test {
@@ -75,10 +74,10 @@ subprojects {
         testLogging {
             showStandardStreams = true
         }
-        systemProperty "java.library.path", natives
-        environment "PATH", natives
-        environment "LD_LIBRARY_PATH", natives
-        environment "DYLD_LIBRARY_PATH", natives
+        systemProperty 'java.library.path', natives
+        environment    'PATH',              natives
+        environment    'LD_LIBRARY_PATH',   natives
+        environment    'DYLD_LIBRARY_PATH', natives
     }
 }
 
@@ -87,12 +86,32 @@ test {
     testLogging {
         showStandardStreams = true
     }
-    systemProperty "java.library.path", natives
-    environment    "PATH",              natives
-    environment    "LD_LIBRARY_PATH",   natives
-    environment    "DYLD_LIBRARY_PATH", natives
+    systemProperty 'java.library.path', natives
+    environment    'PATH',              natives
+    environment    'LD_LIBRARY_PATH',   natives
+    environment    'DYLD_LIBRARY_PATH', natives
 }
 
+dependencies {
+    compile project(':ast')
+    compile project(':automata_model')
+    compile project(':compiler')
+    compile project(':core')
+    compile project(':evaluator')
+    compile project(':interpreter')
+    compile project(':parsing')
+    compile project(':util')
+    compile project(':webserver')
+}
+
+sourceSets {
+    main {
+        resources {
+            srcDirs "src/main/resources", "../site"
+            exclude '**/node_modules/**','**/scripts/**','**/yarn.lock','**/webpack.config.js','**/package.json'
+        }
+    }
+}
 
 node {
     // Version of node to use.
@@ -137,31 +156,11 @@ task webpack(type: NodeTask, dependsOn: 'npmInstall') {
 }
 
 processResources.dependsOn 'webpack'
-
 test.dependsOn 'cleanTest'
+assemble.dependsOn shadowJar
 
 tasks.eclipse.doLast {
     delete '.project'
 }
 
-dependencies {
-    compile project(':ast')
-    compile project(':automata_model')
-    compile project(':compiler')
-    compile project(':core')
-    compile project(':evaluator')
-    compile project(':interpreter')
-    compile project(':parsing')
-    compile project(':util')
-    compile project(':webserver')
-}
 
-sourceSets {
-    main {
-        resources {
-            srcDirs "src/main/resources", "../site"
-            exclude '**/node_modules/**','**/scripts/**','**/yarn.lock','**/webpack.config.js','**/package.json'
-        }
-    }
-}
-assemble.dependsOn shadowJar
