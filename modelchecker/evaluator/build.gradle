@@ -1,0 +1,5 @@
+dependencies {
+    compile project(':interpreter')
+    compile project(':automata_model')
+    compile project(':ast')
+}

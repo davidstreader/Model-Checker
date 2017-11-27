@@ -1,57 +1,118 @@
-plugins {
-    id 'com.github.johnrengelman.shadow' version '1.2.4'
-    id "com.moowork.node" version "1.2.0"
+buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+    }
+}
+import org.apache.tools.ant.taskdefs.condition.Os
+
+static getNatives() {
+    String ret = '../resources/native/'
+    if (System.getProperty("os.arch").endsWith("64")) ret += "amd64"
+    if (System.getProperty("os.arch").endsWith("86")) ret += "x86"
+    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+        ret+="-windows"
+    } else if (Os.isFamily(Os.FAMILY_MAC)) {
+        ret+="-macosx"
+    } else {
+        ret +="-linux"
+    }
+    return ret
 }
 
-group 'net.modelchecker'
+plugins {
+    id 'com.github.johnrengelman.shadow' version '1.2.4'
+    id 'com.moowork.node' version '1.2.0'
+}
+
+group   'net.modelchecker'
 version '1.0-SNAPSHOT'
 
-apply plugin: 'java'
-apply plugin: 'application'
-apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin:   'java'
+apply plugin:   'application'
+apply plugin:   'com.github.johnrengelman.shadow'
+mainClassName = 'mc.Main'
 shadowJar {
     baseName = 'ModelChecker'
     classifier = null
     version = null
     destinationDir = new File("../")
 }
-import org.apache.tools.ant.taskdefs.condition.Os
-sourceCompatibility = 1.8
-mainClassName = 'mc.Main'
-repositories {
-    mavenCentral()
-    maven { url 'https://jitpack.io' }
+
+allprojects {
+    apply plugin: 'eclipse'
+    apply plugin: 'idea'
+
+    version = '1.0'
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+    }
+}
+subprojects {
+    apply plugin: 'java'
+    apply from: "$rootDir/gradle/version.gradle"
+
+    dependencies {
+        if (project.name !=  'util') {
+            compile project(':util')
+        }
+        testCompile 'junit:junit:4.11'
+        compileOnly 'org.projectlombok:lombok:1.16.12'
+        compile     'uk.com.robust-it:cloning:1.9.3'
+        compile     'org.apache.commons:commons-lang3:3.5'
+        compile     'commons-io:commons-io:2.5'
+    }
+
+    sourceCompatibility = 1.8
+
+    test {
+        workingDir new File("../resources/")
+        testLogging {
+            showStandardStreams = true
+        }
+        systemProperty 'java.library.path', natives
+        environment    'PATH',              natives
+        environment    'LD_LIBRARY_PATH',   natives
+        environment    'DYLD_LIBRARY_PATH', natives
+    }
+}
+
+test {
+    workingDir new File("resources/")
+    testLogging {
+        showStandardStreams = true
+    }
+    systemProperty 'java.library.path', natives
+    environment    'PATH',              natives
+    environment    'LD_LIBRARY_PATH',   natives
+    environment    'DYLD_LIBRARY_PATH', natives
 }
 
 dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.11'
-    compile "com.sparkjava:spark-core:2.5.4"
-    compile group: 'org.json', name: 'json', version: '20160810'
-    compile group: 'com.google.code.gson', name: 'gson', version: '2.8.0'
-    compileOnly "org.projectlombok:lombok:1.16.12"
-    compile group: 'com.fasterxml.jackson.module', name: 'jackson-module-parameter-names', version: '2.8.6'
-    compile group: 'com.google.guava', name: 'guava', version: '21.0'
-    compile group: 'com.google.code.findbugs', name: 'annotations', version: '3.0.1u2'
-    compile group: 'net.lingala.zip4j', name: 'zip4j', version: '1.3.2'
-    compile group: 'org.fusesource.jansi', name: 'jansi', version: '1.14'
-    compile group: 'com.intellij', name: 'forms_rt', version: '7.0.3'
-    compile group: 'commons-io', name: 'commons-io', version: '2.5'
-    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.5'
-    compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.+'
-    compile 'uk.com.robust-it:cloning:1.9.3'
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.github.jgraph:jgraphx:v3.7.4'
-
-
+    compile project(':ast')
+    compile project(':automata_model')
+    compile project(':compiler')
+    compile project(':core')
+    compile project(':evaluator')
+    compile project(':interpreter')
+    compile project(':parsing')
+    compile project(':util')
+    compile project(':webserver')
 }
-test {
-    setWorkingDir "src/main/resources"
-    systemProperty "java.library.path", natives
-    environment "PATH", natives
-    environment "LD_LIBRARY_PATH", natives
-    //TODO: We need to use a specific lib dir on mac.
-    environment "DYLD_LIBRARY_PATH", natives
+
+sourceSets {
+    main {
+        resources {
+            srcDirs "src/main/resources", "../site"
+            exclude '**/node_modules/**','**/scripts/**','**/yarn.lock','**/webpack.config.js','**/package.json'
+        }
+    }
 }
+
 node {
     // Version of node to use.
     version = '6.11.0'
@@ -81,6 +142,7 @@ node {
     // Set the work directory where node_modules should be located
     nodeModulesDir = file("${project.projectDir}/../site/app")
 }
+
 task webpack(type: NodeTask, dependsOn: 'npmInstall') {
     def osName = System.getProperty("os.name").toLowerCase()
     if (osName.contains("windows")) {
@@ -94,30 +156,11 @@ task webpack(type: NodeTask, dependsOn: 'npmInstall') {
 }
 
 processResources.dependsOn 'webpack'
-static getNatives() {
-    String ret = "../resources/native/"
-    if (System.getProperty("os.arch").endsWith("64")) ret += "amd64"
-    if (System.getProperty("os.arch").endsWith("86")) ret += "x86"
-    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-        ret+="-windows"
-    } else if (Os.isFamily(Os.FAMILY_MAC)) {
-        ret+="-macosx"
-    } else {
-        ret +="-linux"
-    }
-    return ret
-}
 test.dependsOn 'cleanTest'
-sourceSets {
-    main {
-        java {
-            srcDir 'src/main/java'
-        }
-        resources {
-            srcDirs "src/main/resources", "../site"
-            exclude '**/node_modules/**','**/scripts/**','**/yarn.lock','**/webpack.config.js','**/package.json'
-        }
-    }
+assemble.dependsOn shadowJar
+
+tasks.eclipse.doLast {
+    delete '.project'
 }
 
-assemble.dependsOn shadowJar
+

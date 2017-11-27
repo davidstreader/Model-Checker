@@ -1,0 +1,6 @@
+dependencies {
+    compile project(':parsing')
+    compile project(':interpreter')
+    compile project(':evaluator')
+    compile project(':ast')
+}
