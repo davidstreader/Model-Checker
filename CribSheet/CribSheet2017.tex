@@ -944,6 +944,9 @@ Farm = (Farmer || Workers).
 The \verb$Farmer$  process is far from ideal in some regards.
 
 \section{Petri Nets  {\color{red} 2b added 2017}}
+{\color{red}
+Need to introduce the {\bf location of transitions} of a  automata. Parallel processes have disjoint locations. Sequential processes, choice and action prefixing have identical locations.  The {\sf hide}ing preserves the location of all observed transitions.
+
 What we refer to as a Petri Net is actually an extension of Petri Nets with labels on the  transition.  This appear in the literature under the name of the \emph{Box calculus}. Our definition of parallel composition is not a part of main stream Petri Nets but a part of the Box calculus.  
 
 Up until now  we have not distinguished between a process specification $\mathcal{A}$ written in our language  and its semantics displayed  as an automata {\sf A}.  Now that we define a Petri Net semantics for  the same language will define 
@@ -952,7 +955,7 @@ a function {\sf Petri} that constructs a Petri Net with event labelled transitio
  \subsection{Appearance}
  Nets have  Places, large circles,  not nodes and the initial state of a Petri Net is a set of places each  \emph{marked} with a  token, a small black circle. The transitions are represented by Boxes and event names. Arcs are added from \emph{pre place}, ${\sf\bullet t}$ to the Box of transition {\sf t}  and from transition {\sf t} Box  to \emph{post place} ${\sf t\bullet}$.
 
-Finite state Petri Nets  like finite state automata can be  approximation of potential infinite sate processes.
+Finite state Petri Nets  like finite state automata can be  approximation of potential infinite sate processes. The location of the Petri net transitions is the same as that for Automata. 
 
 There is a simple relation between finite state sequential automata and finite state Petri Nets. In addition the definition of event hiding and event renaming   on Petri Nets and its relation to event hiding and event renaming   on  automata is quite obvious.
 
@@ -972,7 +975,7 @@ Event synchronisation of $t_1$, $\aro{\bullet t_1}{a}{t_1\bullet}$ and $t_2$, $\
 \subsection{Token Rule}
  
 
- We define \verb|TokenRule| that maps Petri Nets to atomic processes.  These are the same automata that would have been constructed had we built the automata directly from our process language, hence we have:
+ We define \verb|TokenRule| that maps Petri Nets to atomic processes and must preserve the transition  locations.  These are the same automata that would have been constructed had we built the automata directly from our process language, hence we have:
 
 \[{\sf TokenRule(Petri(\mathcal{A}))\sim  \mathcal{A}}\]  
 
@@ -987,11 +990,46 @@ The \verb|TokenRule|  builds an automata from a Petri Net by executing transitio
 
 Above explains how an atomic specification can be used to build a Finite State Petri Net, FSPN.  The construction of FSPN from indexed specifications  proceeds by constructing the FSPN for each sequential process analogously to the construction of finite state automata. 
 
-
-We can compute, {\sf PTokenRule},  a partial Token Rule that takes a set of process names that must be converted into an automaton  prior to applying $\_\parallel_n\_$ to build a Petri Net from the newly built sequential Net and the remaining Petri Nets.
-
+We can compute, {\sf PTokenRule},  a \emph{partial Token Rule} that takes a set of process names that must be converted into an automaton  prior to applying $\_\parallel_n\_$ to build a Petri Net from the newly built sequential Net and the remaining Petri Nets.
 
 
+\subsection{From Automata to Petri Nets}
+Building Petri Nets from automata with located transitions {\sf LA2PN} works as follows:
+
+Note the Interleaving Merge of {\bf N processes} builds  an Automata that is an {\bf N-dimensional} cube. The first thing you need to do is identify the start and end "corners". 
+
+\vspace{1em} \begin{minipage}{0.2\textwidth}
+\begin{verbatim}
+A=a->(b->STOP|
+          c->STOP).
+B=aa->(bb->STOP|
+          cc->STOP).
+S= A||B.
+  \end{verbatim} 
+\end{minipage}
+\begin{minipage}{0.6\textwidth}
+\begin{center}\includegraphics[scale=0.4]{Surface.png}\end{center}
+\end{minipage}
+
+In the above example the start and end corners are marked with blue and green nodes. But this is because the "cubes" are the whole automata. What is required is to find these cubes. 
+
+{\bf Suggestion 1 *Not So Good*}  Let {\sf Loc(A) = 1, Loc(B)=2} in above.   Add the root {\sf 0} to the TODO list. For each element in TODO list compute the surfaces if  we have  two transitions with disjoint location leaving  so compute $\sf \{0,1,2,4\}$. Remove $\sf 0$ from the TODO list and add nodes ${\sf \{1,2,4\}}$ to the TODO list.  When 
+$\arop{n}{\_}{x}{l}$,  $\arop{m}{\_}{x}{k}$, ${\sf  l \notin Loc(Next(n))}$ and ${\sf  k \notin Loc(Next(m))}$ then {\sf x} is ${\sf \{1,2\}}$ end!
+
+Question with {\sf n} distinct locations, $\sf \{1,2,3,4,\ldots n\}$ ?
+\begin{enumerate}
+\item split into location {\sf 1} and locations $\sf \{2,3,4,\ldots n\}$ and build two Petri nets then split the Petri Net for locations $\sf \{2,3,4,\ldots n\}$.
+\end{enumerate}
+Having done this the cubes can be converted into Petri Nets and joined together.
+
+{\bf Suggestion 2 *Looks Good*} Step 1 approximation build separate Nets one for each location, duplicating synchronised events. Where {\bf twists} occur make cross product of places.
+
+Note we glue automata together by glueing two nodes together and with Petri Nets we need to glue to markings together. This is done by building the cross product of  two sets of tokens.
+
+
+\[{\sf A\sim  TokenRule(LA2PN(A))}\]
+
+\subsection{Indexed Petri Nets}
 
 Indexed, specifications can be turned into FSPN in two quite separate ways. For a sequential indexed process $\mathcal{P_I}$ :
 \begin{enumerate}
@@ -1008,14 +1046,15 @@ Can we define Petri Net bisimulation so that:
 \[{\sf Petri(\mathcal{A}\$\{x\}) \sim_n  (Petri(\mathcal{A}))\$\{x\}  \qquad     Petri(abs(\mathcal{A}))\sim_n  abs_n(Petri(\mathcal{A})) }\]  
 
 
-\subsection{Automata to Nets}
-We have details of abstraction and simplification on automata but not on Petri Nets. There are two ways to extend these ideas:
+\subsection{Hiding and simplifying  Nets}
+Tow options
 \begin{enumerate}
-\item define abstraction and bisimulation on nets
-\item define a mapping from automata to Petri Nets. This would require the definition of process location and hence event location. From \emph{Located automata} it would then be feasible to construct Petri Nets.
+\item define abstraction and bisimulation on nets OR
+\item use {\sf LA2P} the mapping from located automata to Petri Nets. 
 \end{enumerate}
-Another advantage of using located Automata and Nets is that event refinement can be defined.
+An advantage of using located Automata and Nets is that event refinement can be defined.
 
+}
 \section{ Symbolic Processes  {\color{red} mostly 2b added 2017}}
 Simple process specifications, those with out indexes, are "atomic" specifications that produce atomic automata.   An atomic  automata has atomic transitions with  a single atomic name and  a finite set of  atomic  nodes each   representing  one state.  
 
