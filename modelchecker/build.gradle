@@ -30,7 +30,9 @@ group 'net.modelchecker'
 version '1.0-SNAPSHOT'
 
 apply plugin: 'java'
+apply plugin: 'application'
 apply plugin: 'com.github.johnrengelman.shadow'
+mainClassName = 'mc.Main'
 shadowJar {
     baseName = 'ModelChecker'
     classifier = null
@@ -64,11 +66,11 @@ subprojects {
         compileOnly 'org.projectlombok:lombok:1.16.12'
         compile 'uk.com.robust-it:cloning:1.9.3'
         compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.5'
+        compile group: 'commons-io', name: 'commons-io', version: '2.5'
     }
     sourceCompatibility = 1.8
 
     test {
-        //TODO: Edit this to make it work when we change the resource directory
         workingDir new File("../resources/")
         testLogging {
             showStandardStreams = true
@@ -76,12 +78,20 @@ subprojects {
         systemProperty "java.library.path", natives
         environment "PATH", natives
         environment "LD_LIBRARY_PATH", natives
-        //TODO: We need to use a specific lib dir on mac.
         environment "DYLD_LIBRARY_PATH", natives
     }
 }
 
-
+test {
+    workingDir new File("resources/")
+    testLogging {
+        showStandardStreams = true
+    }
+    systemProperty "java.library.path", natives
+    environment    "PATH",              natives
+    environment    "LD_LIBRARY_PATH",   natives
+    environment    "DYLD_LIBRARY_PATH", natives
+}
 
 
 node {
@@ -134,4 +144,24 @@ tasks.eclipse.doLast {
     delete '.project'
 }
 
-//mainClassName = 'mc.Main'
+dependencies {
+    compile project(':ast')
+    compile project(':automata_model')
+    compile project(':compiler')
+    compile project(':core')
+    compile project(':evaluator')
+    compile project(':interpreter')
+    compile project(':parsing')
+    compile project(':util')
+    compile project(':webserver')
+}
+
+sourceSets {
+    main {
+        resources {
+            srcDirs "src/main/resources", "../site"
+            exclude '**/node_modules/**','**/scripts/**','**/yarn.lock','**/webpack.config.js','**/package.json'
+        }
+    }
+}
+assemble.dependsOn shadowJar

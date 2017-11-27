@@ -1,6 +1,7 @@
 dependencies {
     compile project(':compiler')
-    compile 'com.sparkjava:spark-core:2.5.4'
+    compile 'com.sparkjava:spark-core:2.5.3'
+//    compile group: 'org.eclipse.jetty.websocket', name: 'websocket-server', version: '9.4.7.v20170914'
     compile group: 'org.json', name: 'json', version: '20160810'
     compile group: 'com.fasterxml.jackson.module', name: 'jackson-module-parameter-names', version: '2.8.6'
 }
