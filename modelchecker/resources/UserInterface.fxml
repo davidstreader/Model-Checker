@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.embed.swing.SwingNode?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.SeparatorMenuItem?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox prefHeight="700.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="mc.client.ui.UserInterfaceController">
+    <children>
+        <MenuBar VBox.vgrow="NEVER">
+            <menus>
+                <Menu mnemonicParsing="false" text="File">
+                    <items>
+                        <MenuItem mnemonicParsing="false" onAction="#handleCreateNew" text="New" />
+                        <MenuItem mnemonicParsing="false" onAction="#handleOpen" text="Open…" />
+                        <Menu mnemonicParsing="false" onAction="#handleOpenRecentAction" text="Open Recent" />
+                        <SeparatorMenuItem mnemonicParsing="false" />
+                        <MenuItem mnemonicParsing="false" onAction="#handleFileClose" text="Close" />
+                        <MenuItem mnemonicParsing="false" onAction="#handleSave" text="Save" />
+                        <MenuItem mnemonicParsing="false" onAction="#handleSaveAs" text="Save As…" />
+                        <SeparatorMenuItem mnemonicParsing="false" />
+                        <MenuItem mnemonicParsing="false" onAction="#handleQuit" text="Quit" />
+                    </items>
+                </Menu>
+            </menus>
+        </MenuBar>
+        <AnchorPane fx:id="mainWindowSize" maxHeight="-1.0" maxWidth="-1.0" prefHeight="-1.0" prefWidth="-1.0" VBox.vgrow="ALWAYS">
+            <children>
+                <TabPane layoutY="42.0" prefHeight="629.0" prefWidth="1000.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="42.0">
+                    <tabs>
+                        <Tab text="Code">
+                            <content>
+                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                    <children>
+                                        <SplitPane dividerPositions="0.29797979797979796" layoutX="354.0" layoutY="149.0" prefHeight="160.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                            <items>
+                                                <AnchorPane prefHeight="584.0" prefWidth="293.0">
+                                                    <children>
+                                                        <TextArea fx:id="userCodeInput" layoutX="37.0" layoutY="19.0" prefHeight="528.0" prefWidth="293.0" wrapText="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                                    </children>
+                                                </AnchorPane>
+                                                <AnchorPane>
+                                                    <children>
+                                                        <TextArea fx:id="compilerOutput" editable="false" layoutX="204.0" layoutY="80.0" wrapText="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                                    </children>
+                                                </AnchorPane>
+                                            </items>
+                                        </SplitPane>
+                                    </children>
+                                </AnchorPane>
+                            </content>
+                        </Tab>
+                        <Tab text="Process models">
+                            <content>
+                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                    <children>
+                                        <AnchorPane prefHeight="46.0" prefWidth="1000.0" style="-fx-background-color: #BFBFBF;" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                            <children>
+                                                <ComboBox fx:id="modelsList" layoutX="208.0" layoutY="10.0" prefWidth="150.0" AnchorPane.leftAnchor="208.0" />
+                                                <Label layoutX="59.0" layoutY="13.0" text="Process models:" AnchorPane.leftAnchor="59.0">
+                                                    <font>
+                                                        <Font size="17.0" />
+                                                    </font>
+                                                </Label>
+                                                <Button layoutX="385.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleAddSelectedModel" text="Add model" AnchorPane.leftAnchor="385.0" />
+                                                <Button layoutX="486.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleAddallModels" text="Add all models" />
+                                                <Button layoutX="613.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleClearCanvas" text="Clear" />
+                                                <Button layoutX="675.0" layoutY="10.0" mnemonicParsing="false" onAction="#handlExportImage" text="Export as image" />
+                                            </children>
+
+                                        </AnchorPane>
+                                        <SwingNode fx:id="modelDisplay" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="46.0" />
+                                    </children>
+                                </AnchorPane>
+                            </content>
+                        </Tab>
+                    </tabs>
+                </TabPane>
+                <Button layoutX="890.0" layoutY="2.0" mnemonicParsing="false" onAction="#handOptionsRequest" prefHeight="38.0" prefWidth="89.0" text="Options" AnchorPane.rightAnchor="21.0" />
+                <Button layoutX="782.0" layoutY="2.0" mnemonicParsing="false" onAction="#handleCompileRequest" prefHeight="38.0" prefWidth="89.0" text="Compile" AnchorPane.rightAnchor="129.0" />
+                <Label layoutX="3.0" layoutY="2.0" prefHeight="38.0" prefWidth="283.0" text="Process modelling tool" AnchorPane.leftAnchor="3.0">
+                    <font>
+                        <Font size="24.0" />
+                    </font>
+                </Label>
+            </children>
+        </AnchorPane>
+    </children>
+</VBox>

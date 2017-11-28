@@ -1,0 +1,5 @@
+dependencies {
+    compile project(':compiler')
+}
+apply plugin: 'application'
+mainClassName = 'mc.client.ui.UserInterfaceApplication'

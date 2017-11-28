@@ -2,12 +2,12 @@ package mc;
 
 import lombok.Getter;
 import lombok.Setter;
+import mc.client.ui.UserInterfaceApplication;
 import mc.commands.CommandManager;
 import mc.commands.PassThroughCommandManager;
 import mc.gui.MainGui;
 import mc.util.Utils;
 import mc.webserver.NativesManager;
-import mc.webserver.WebServer;
 import org.fusesource.jansi.AnsiConsole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,17 +18,20 @@ import java.util.concurrent.TimeUnit;
 
 import static org.fusesource.jansi.Ansi.ansi;
 public class Main {
+
     @Getter
     private CommandManager commandManager;
+
     @Getter
     private MainGui gui;
+
     @Getter
     private Process subProcess;
+
     @Getter
     @Setter
     private boolean stopped = false;
-    @Getter
-    private WebServer webServer;
+
     @Getter
     private boolean reloaded = false;
     private boolean autoKill = false;
@@ -59,8 +62,9 @@ public class Main {
         //Start the server if we aren't running from a jar or are in a sub process
         if (!Utils.isJar() || reloaded) {
             commandManager = new CommandManager(this);
-            webServer = new WebServer();
-            webServer.startServer();
+//            webServer = new WebServer();
+//            webServer.startServer();
+            UserInterfaceApplication.main(new String[0]);
             //Listen for commands
             commandManager.registerInput();
             Logger logger = LoggerFactory.getLogger(Main.class);
