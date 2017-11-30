@@ -84,7 +84,6 @@ public class ModelView implements Observer{
     private void addAutomata(Automaton automata,mxGraph graph){
         mxCell parent = (mxCell) graph.addCell(new mxCell(automata.getId()));
         cellList.add(parent);
-
         nodeMap = new HashMap<>();
         automata.getNodes().forEach(n -> {
             mxCell gNode = (mxCell) graph.insertVertex(parent,n.getId(),n.getId(),100, 100, 20, 20, "vertex");
@@ -157,13 +156,5 @@ public class ModelView implements Observer{
         update(null, comp.compile("automata { A = b -> c -> STOP." +
                 "                             B = d -> c -> STOP." +
                 "                             C = A || B.}", new Context(), Expression.mkCtx(),new LinkedBlockingQueue<>()));
-    }
-
-    public static void main(String[] args) {
-        JFrame frame = new JFrame("Hello World");
-        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        frame.add(ModelView.getInstance().graphComponent);
-        frame.setSize(400,320);
-        frame.setVisible(true);
     }
 }

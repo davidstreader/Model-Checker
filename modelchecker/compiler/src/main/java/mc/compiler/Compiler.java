@@ -39,7 +39,12 @@ public class Compiler {
     public CompilationObject compile(String code, Context context, com.microsoft.z3.Context z3Context, BlockingQueue<Object> messageQueue) throws CompilationException, InterruptedException {
         List<Token> codeInput = lexer.tokenise(code);
         AbstractSyntaxTree structedCode = parser.parse(codeInput, z3Context);
-        return compile(structedCode, code, z3Context, context, messageQueue);
+
+        CompilationObject compilerOutput = compile(structedCode, code, z3Context, context, messageQueue);
+
+        CompilationObservable.getInstance().updateClient(compilerOutput);
+
+        return compilerOutput;
     }
     private CompilationObject compile(AbstractSyntaxTree ast, String code, com.microsoft.z3.Context z3Context, Context context, BlockingQueue<Object> messageQueue) throws CompilationException, InterruptedException {
         HashMap<String,ProcessNode> processNodeMap = new HashMap<>();
