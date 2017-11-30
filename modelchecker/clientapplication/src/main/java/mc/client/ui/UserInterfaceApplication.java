@@ -4,6 +4,8 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 public class UserInterfaceApplication extends Application {
@@ -25,11 +27,14 @@ public class UserInterfaceApplication extends Application {
      */
     @Override
     public void start(Stage primaryStage) throws Exception {
+        Font.loadFont(getClass().getResource("/clientres/hasklig.otf").toExternalForm(),10);
         Parent root = FXMLLoader.load(getClass().getResource("/UserInterface.fxml"));
         primaryStage.setTitle("Automata Modeller");
         Scene windowScene = new Scene(root, 1000, 700);
         primaryStage.setScene(windowScene);
+        primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/clientres/icon.jpg")));
         primaryStage.show();
+        primaryStage.setOnHiding(e -> System.exit(0));
     }
 
     public static void main(String[] args) {

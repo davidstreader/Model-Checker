@@ -2,10 +2,10 @@ package mc;
 
 import lombok.Getter;
 import lombok.Setter;
+import mc.client.ModelView;
 import mc.client.ui.UserInterfaceApplication;
 import mc.commands.CommandManager;
 import mc.commands.PassThroughCommandManager;
-import mc.gui.MainGui;
 import mc.util.Utils;
 import mc.webserver.NativesManager;
 import org.fusesource.jansi.AnsiConsole;
@@ -23,9 +23,6 @@ public class Main {
     private CommandManager commandManager;
 
     @Getter
-    private MainGui gui;
-
-    @Getter
     private Process subProcess;
 
     @Getter
@@ -40,7 +37,6 @@ public class Main {
 
     public Main() {
         AnsiConsole.systemInstall();
-        MainGui.registerConsoleAppender();
     }
 
     public Main(boolean reloaded, boolean autoKill) {
@@ -51,19 +47,10 @@ public class Main {
         Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
         this.reloaded = reloaded;
         //If this is a sub process, or we are running with a console, don't start the gui.
-        if (!reloaded && Utils.isJavaw()) {
-            gui = new MainGui(this);
-        } else {
-            MainGui.registerConsoleAppender();
-        }
-        if (!reloaded)
-            new NativesManager().copyNatives();
-
         //Start the server if we aren't running from a jar or are in a sub process
         if (!Utils.isJar() || reloaded) {
             commandManager = new CommandManager(this);
-//            webServer = new WebServer();
-//            webServer.startServer();
+
             UserInterfaceApplication.main(new String[0]);
             //Listen for commands
             commandManager.registerInput();
@@ -81,10 +68,9 @@ public class Main {
      */
     public void spawnProcess(ProcessBuilder builder) {
         if (stopped) return;
+
         //If headless, redirect the output to the standard terminal
-        if (gui == null) builder.inheritIO();
-            //Else redirect error so we can get the processes output stream
-        else builder.redirectErrorStream(true);
+        builder.inheritIO();
         Thread current = Thread.currentThread();
         new Thread(()->{
            while (!Thread.currentThread().isInterrupted()) {
@@ -103,8 +89,6 @@ public class Main {
             try {
                 subProcess = builder.start();
                 //Redirect the terminal to the gui
-                if (gui != null)
-                    gui.redirectTerminalProcess(subProcess);
                 if (!autoKill) {
                     subProcess.waitFor();
                     System.exit(0);

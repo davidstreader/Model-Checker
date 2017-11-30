@@ -5,6 +5,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.layout.AnchorPane;
+import mc.client.ModelView;
 
 import javax.swing.*;
 import java.net.URL;
@@ -25,18 +26,7 @@ public class UserInterfaceController implements Initializable {
      */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        SwingUtilities.invokeLater(() ->{
-            JButton jButton = new JButton("Click me!");
-            jButton.setBounds(0,0,120,50);
-
-            JPanel panel = new JPanel();
-            panel.setLayout(null);
-            panel.add(jButton);
-
-            panel.setSize(120, 60);
-
-            modelDisplay.setContent(panel);
-        });
+        SwingUtilities.invokeLater(() -> modelDisplay.setContent(ModelView.getInstance().getGraphComponent()));
     }
 
     @FXML

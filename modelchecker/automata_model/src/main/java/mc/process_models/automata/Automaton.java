@@ -10,6 +10,7 @@ import mc.compiler.Guard;
 import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
 import mc.process_models.ProcessModelObject;
+import mc.process_models.ProcessType;
 import mc.util.Location;
 import mc.util.expr.Expression;
 
@@ -452,5 +453,10 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
         }
 
         return copy;
+    }
+
+
+    public ProcessType getProcessType(){
+        return ProcessType.AUTOMATA;
     }
 }

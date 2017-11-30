@@ -1,5 +1,4 @@
 dependencies {
     compile project(':compiler')
+    compile 'com.github.jgraph:jgraphx:v3.7.6'
 }
-apply plugin: 'application'
-mainClassName = 'mc.client.ui.UserInterfaceApplication'
