@@ -53,8 +53,8 @@ public class UserInterfaceController implements Initializable {
         completionDictionary.add(new ArrayList<>(Arrays.asList(SyntaxHighlighting.functions)));
         completionDictionary.add(new ArrayList<>(Arrays.asList(SyntaxHighlighting.keywords)));
 
-        userCodeInput.setStyle("-fx-background-color: #32302f");
-        userCodeInput.getStylesheets().add(getClass().getResource("/automata-keywords.css").toExternalForm());
+        userCodeInput.setStyle("-fx-background-color: #32302f;");
+        userCodeInput.getStylesheets().add(getClass().getResource("/clientres/automata-keywords.css").toExternalForm());
 
         ListView popupSelection = new ListView();
         popupSelection.setStyle(
