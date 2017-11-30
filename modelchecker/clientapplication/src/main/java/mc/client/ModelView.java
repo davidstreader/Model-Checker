@@ -55,8 +55,6 @@ public class ModelView implements Observer{
         rootNodes.clear();
         mxGraph graph = new mxGraph();
 
-
-
         CompilationObject compiled = (CompilationObject) arg;
         graph.getModel().beginUpdate();
         try {
@@ -78,8 +76,6 @@ public class ModelView implements Observer{
     }
 
     private void addAutomata(Automaton automata,mxGraph graph){
-
-//        mxCell parent = (mxCell) graph.addCell(new mxCell(automata.getId()));
         Object parent = graph.getDefaultParent();
         nodeMap = new HashMap<>();
         automata.getNodes().forEach(n -> {
@@ -129,11 +125,6 @@ public class ModelView implements Observer{
 
 
 
-
-
-
-
-
     private static ModelView instance;
     /**
      * Enforcing Singleton
@@ -143,12 +134,6 @@ public class ModelView implements Observer{
     private ModelView(){
         CompilationObservable.getInstance().addObserver(this);
         graphComponent = new mxGraphComponent(new mxGraph());
-        Compiler comp = new Compiler();
-        //hacky test
-        update(null, comp.compile("automata { A = b -> c -> STOP." +
-                "                             B = d -> c -> STOP." +
-                "                             C = A || B.}", new Context(), Expression.mkCtx(),new LinkedBlockingQueue<>()));
-
     }
 
     public static ModelView getInstance(){
@@ -157,11 +142,4 @@ public class ModelView implements Observer{
         return instance;
     }
 
-    public static void main(String[] args) {
-        JFrame frame = new JFrame("Hello World");
-        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        frame.add(ModelView.getInstance().graphComponent);
-        frame.setSize(400,320);
-        frame.setVisible(true);
-    }
 }
