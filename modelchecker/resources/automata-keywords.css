@@ -1,0 +1,55 @@
+.process {
+    -fx-fill: #c4550b;
+    -fx-font-weight: bold;
+}
+.function {
+    -fx-fill: #c4550b;
+}
+.terminalStop {
+    -fx-fill: green;
+}
+.terminalError {
+    -fx-fill: red;
+}
+.keyword {
+    -fx-fill: #c4550b;
+    -fx-font-weight: bold;
+}
+.symbol {
+    -fx-fill: #c4550b;
+}
+.operator {
+    -fx-fill: #c4550b;
+}
+.operation {
+    -fx-fill: black;
+}
+
+.actionLabel {
+    -fx-fill: #e8d52c;
+}
+
+.identifier {
+    -fx-fill: #e8d52c;
+}
+
+.number {
+    -fx-fill: #2cb5ba;
+}
+
+.paren {
+    -fx-fill: firebrick;
+    -fx-font-weight: bold;
+}
+.bracket {
+    -fx-fill: darkgreen;
+    -fx-font-weight: bold;
+}
+.brace {
+    -fx-fill: teal;
+    -fx-font-weight: bold;
+}
+
+.comment {
+	-fx-fill: grey;
+}
