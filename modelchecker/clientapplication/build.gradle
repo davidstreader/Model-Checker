@@ -3,5 +3,4 @@ dependencies {
     compile 'com.github.jgraph:jgraphx:v3.7.6'
     // https://mvnrepository.com/artifact/org.fxmisc.richtext/richtextfx
     compile group: 'org.fxmisc.richtext', name: 'richtextfx', version: '0.8.1'
-
 }
