@@ -5,8 +5,10 @@ import com.mxgraph.layout.mxGraphLayout;
 import com.mxgraph.layout.orthogonal.mxOrthogonalLayout;
 import com.mxgraph.model.mxCell;
 import com.mxgraph.swing.mxGraphComponent;
+import com.mxgraph.util.mxConstants;
 import com.mxgraph.util.mxPoint;
 import com.mxgraph.view.mxGraph;
+import com.mxgraph.view.mxStylesheet;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import mc.compiler.CompilationObject;
@@ -35,6 +37,7 @@ public class ModelView implements Observer{
 
     private Map<String,Object> nodeMap = new HashMap<>();
     private List<String> rootNodes = new ArrayList<>();
+    private List<mxCell> cellList = new ArrayList<>();
 
 
     /**
@@ -49,15 +52,15 @@ public class ModelView implements Observer{
     @Override
     @SuppressWarnings("unchecked")
     public void update(Observable o, Object arg) {
-
         //reset state
         nodeMap.clear();
         rootNodes.clear();
+        cellList.clear();
         mxGraph graph = new mxGraph();
-
-
+        setupStyles(graph);
 
         CompilationObject compiled = (CompilationObject) arg;
+
         graph.getModel().beginUpdate();
         try {
             compiled.getProcessMap().values().forEach(process -> {
@@ -73,68 +76,69 @@ public class ModelView implements Observer{
         } finally {
             graph.getModel().endUpdate();
         }
+        cellList.add((mxCell) graph.getDefaultParent());
         layout(graph);
         graphComponent.setGraph(graph);
     }
 
     private void addAutomata(Automaton automata,mxGraph graph){
+        mxCell parent = (mxCell) graph.addCell(new mxCell(automata.getId()));
+        cellList.add(parent);
 
-//        mxCell parent = (mxCell) graph.addCell(new mxCell(automata.getId()));
-        Object parent = graph.getDefaultParent();
         nodeMap = new HashMap<>();
         automata.getNodes().forEach(n -> {
-            mxCell gNode = (mxCell) graph.insertVertex(parent,n.getId(),n.getId(),100, 100, 20, 20);
+            mxCell gNode = (mxCell) graph.insertVertex(parent,n.getId(),n.getId(),100, 100, 20, 20, "vertex");
             nodeMap.put(n.getId(),gNode);
             if (n.hasMetaData("startNode"))
                 rootNodes.add(n.getId());
         });
+
         automata.getEdges().forEach(e -> {
             Object to = nodeMap.get(e.getTo().getId());
             Object from = nodeMap.get(e.getFrom().getId());
             graph.insertEdge(parent,e.getId(),e.getLabel(),from,to);
         });
+        graph.groupCells(parent,2,nodeMap.values().toArray());
     }
 
-
-
-
     private void layout(mxGraph graph){
-        graph.setCellsEditable(false);
         graph.setAllowDanglingEdges(false);
-        graph.setAllowNegativeCoordinates(false);
         graph.setAllowLoops(false);
-        graph.setCellsDeletable(false);
-        graph.setCellsCloneable(false);
-        graph.setCellsDisconnectable(false);
-        graph.setDropEnabled(false);
-        graph.setSplitEnabled(false);
+        graph.setAllowNegativeCoordinates(false);
         graph.setCellsBendable(false);
+        graph.setCellsCloneable(false);
+        graph.setCellsDeletable(false);
+        graph.setCellsDisconnectable(false);
+        graph.setCellsEditable(false);
         graph.setCellsResizable(false);
+//        graph.setDropEnabled(false);
         graph.setEnabled(false);
-        graphComponent.setConnectable(false);
-        graphComponent.setPanning(true);
+        graph.setSplitEnabled(false);
 
 
         mxGraphLayout layout;
         try {
             layout = new mxHierarchicalLayout(graph);
-
-            layout.execute(graph.getDefaultParent());
+            cellList.forEach(layout::execute);
         } catch(Throwable ignored) {
             layout = new mxOrthogonalLayout(graph);
             layout.execute(graph.getDefaultParent());
         }
     }
 
+    private void setupStyles(mxGraph graph) {
+        mxStylesheet ss = graph.getStylesheet();
+        Hashtable<String, Object> style = new Hashtable<>();
+        style.put(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_ELLIPSE);
+        style.put(mxConstants.STYLE_FILLCOLOR, "#ffffff");
+        style.put(mxConstants.STYLE_STROKECOLOR, "#000000");
+        style.put(mxConstants.STYLE_FONTCOLOR, "#000000");
+        ss.putCellStyle("vertex", style);
+    }
 
 
-
-
-
-
-
-
-    private static ModelView instance;
+    @Getter
+    private static ModelView instance = new ModelView();
     /**
      * Enforcing Singleton
      */
@@ -143,18 +147,16 @@ public class ModelView implements Observer{
     private ModelView(){
         CompilationObservable.getInstance().addObserver(this);
         graphComponent = new mxGraphComponent(new mxGraph());
+        graphComponent.setConnectable(false);
+        graphComponent.setPanning(true);
+
+
+
         Compiler comp = new Compiler();
         //hacky test
         update(null, comp.compile("automata { A = b -> c -> STOP." +
                 "                             B = d -> c -> STOP." +
                 "                             C = A || B.}", new Context(), Expression.mkCtx(),new LinkedBlockingQueue<>()));
-
-    }
-
-    public static ModelView getInstance(){
-        if(instance == null)
-            instance = new ModelView();
-        return instance;
     }
 
     public static void main(String[] args) {
