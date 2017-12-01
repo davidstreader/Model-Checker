@@ -38,8 +38,8 @@ public class SyntaxHighlighting {
     static final String OPERATORS = "\\|\\||\\||&&|&|\\^|==|=|!=|<<|<=|<|>>|>=|>|\\+|-|\\*|\\/|%|!|\\?";
     static final String OPERATIONS = "~|#";
     static final String ACTION_LABEL_PATTERN = "[a-z][A-Za-z0-9_]*";
-    static final String IDENT_PATTERN = "[A-Z][A-Za-z0-9_\\\\*]*";
-    static final String INT_PATTERN = "[0-9][0-9]*";
+    static final String IDENT_PATTERN = "[A-Z][A-Za-z0-9_]*\\*?";
+    static final String INT_PATTERN = "[0-9]+";
 
     static final String PAREN_PATTERN = "\\(|\\)";
     static final String BRACE_PATTERN = "\\{|\\}";
