@@ -5,9 +5,12 @@ import javafx.embed.swing.SwingNode;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
+import javafx.scene.control.TextArea;
 import javafx.scene.input.KeyCode;
 import mc.client.ModelView;
+
 import mc.compiler.Compiler;
 import mc.exceptions.CompilationException;
 import mc.util.expr.Expression;
@@ -34,7 +37,11 @@ public class UserInterfaceController implements Initializable {
 
     @FXML private CodeArea userCodeInput;
 
+    @FXML private TextArea compilerOutputDisplay;
+
     @FXML private SwingNode modelDisplay;
+
+    @FXML private ComboBox modelsList;
 
     private static final String[] processTypes = new String[] {
             "automata", "petrinet", "operation", "equation",
@@ -100,7 +107,7 @@ public class UserInterfaceController implements Initializable {
      */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        SwingUtilities.invokeLater(() -> modelDisplay.setContent(ModelView.getInstance().getGraphComponent()));
+        SwingUtilities.invokeLater(() -> modelDisplay.setContent(ModelView.getInstance().updateGraph())); // Have to initalise it or there is a delay between the graph becoming ready and actually displaying things
         completionDictionary = new TrieNode<>(  new ArrayList<>(Arrays.asList(processTypes)) );
         completionDictionary.add(new ArrayList<>(Arrays.asList(functions)));
         completionDictionary.add(new ArrayList<>(Arrays.asList(keywords)));
@@ -141,7 +148,7 @@ public class UserInterfaceController implements Initializable {
         });
 
         popupSelection.setOnKeyReleased(event -> {
-            if(event.getCode() == KeyCode.ENTER) {
+            if(event.getCode() == KeyCode.ENTER || event.getCode() == KeyCode.TAB) {
                 String selectedItem = (String)popupSelection.getSelectionModel().getSelectedItem();
                 if(selectedItem != null) {
 
@@ -168,11 +175,18 @@ public class UserInterfaceController implements Initializable {
 
         });
 
+
+
         autocompleteBox.getContent().add(popupSelection);
+        autocompleteBox.setAutoHide(true);
 
         executor = Executors.newSingleThreadExecutor();
 
         userCodeInput.setParagraphGraphicFactory(LineNumberFactory.get(userCodeInput)); // Add line numbers
+
+        userCodeInput.setOnMouseClicked(event -> { // If the user clicks outside of the autocompletion box they probably dont want it there...
+            autocompleteBox.hide();
+        });
 
         userCodeInput.richChanges() // Set up syntax highlighting in another thread as regex finding can take a while.
                 .filter(ch -> !ch.getInserted().equals(ch.getRemoved())) // XXX
@@ -381,17 +395,23 @@ public class UserInterfaceController implements Initializable {
 
     @FXML
     private void handleAddSelectedModel(ActionEvent event) {
+        if(modelsList.getSelectionModel().getSelectedItem() != null && modelsList.getSelectionModel().getSelectedItem() instanceof String) {
 
+            ModelView.getInstance().addDisplayedAutomata((String) modelsList.getSelectionModel().getSelectedItem());
+            SwingUtilities.invokeLater(() -> modelDisplay.setContent(ModelView.getInstance().updateGraph()));
+        }
     }
 
     @FXML
     private void handleAddallModels(ActionEvent event) {
-
+            ModelView.getInstance().addAllAutomata();
+            SwingUtilities.invokeLater(() -> modelDisplay.setContent(ModelView.getInstance().updateGraph()));
     }
 
     @FXML
-    private void handleClearCanvas(ActionEvent event) {
-
+    private void handleClearGraph(ActionEvent event) {
+        ModelView.getInstance().clearDisplayed();
+        SwingUtilities.invokeLater(() -> modelDisplay.setContent(ModelView.getInstance().updateGraph()));
     }
 
     @FXML
@@ -408,18 +428,22 @@ public class UserInterfaceController implements Initializable {
     private void handleCompileRequest(ActionEvent event) {
         String userCode = userCodeInput.getText();
         if(!userCode.isEmpty()) {
-            System.out.println("Handling compile request!");
+            compilerOutputDisplay.clear();
+            modelsList.getItems().clear();
 
             try {
                 Compiler codeCompiler = new Compiler();
                 codeCompiler.compile(userCode, new Context(), Expression.mkCtx(), new LinkedBlockingQueue<>()); // This follows the observer pattern. Within the compile function the code is then told to update an observer
+
+                for(String models : ModelView.getInstance().getProcessMap().keySet())
+                    modelsList.getItems().add(models);
+
+                compilerOutputDisplay.insertText(0,"Compiling completed sucessfully!");
             } catch (InterruptedException e) {
                 e.printStackTrace();
             } catch (CompilationException e) {
-                e.printStackTrace();
+                compilerOutputDisplay.insertText(0,e.toString());
             }
-
-            SwingUtilities.invokeLater(() -> modelDisplay.setContent(ModelView.getInstance().getGraphComponent()));
         }
     }
 

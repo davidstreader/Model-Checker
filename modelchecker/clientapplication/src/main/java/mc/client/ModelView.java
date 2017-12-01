@@ -5,33 +5,27 @@ import com.mxgraph.layout.mxGraphLayout;
 import com.mxgraph.layout.orthogonal.mxOrthogonalLayout;
 import com.mxgraph.model.mxCell;
 import com.mxgraph.swing.mxGraphComponent;
-import com.mxgraph.util.mxPoint;
 import com.mxgraph.view.mxGraph;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import mc.compiler.CompilationObject;
 import mc.compiler.CompilationObservable;
-import mc.compiler.Compiler;
+import mc.process_models.ProcessModel;
 import mc.process_models.automata.Automaton;
-import mc.process_models.automata.AutomatonNode;
-import mc.util.expr.Expression;
-import mc.webserver.Context;
-import mc.webserver.FakeContext;
-import mc.webserver.NativesManager;
 
-import javax.swing.*;
-import java.awt.*;
 import java.util.*;
 import java.util.List;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.stream.Collectors;
+
 
 /**
  * Created by bealjaco on 29/11/17.
  */
 public class ModelView implements Observer{
-    @Getter
     private mxGraphComponent graphComponent;
+
+    private Set<String> displayedAutomata;
+
+    private CompilationObject compiledResult;
 
     private Map<String,Object> nodeMap = new HashMap<>();
     private List<String> rootNodes = new ArrayList<>();
@@ -49,23 +43,32 @@ public class ModelView implements Observer{
     @Override
     @SuppressWarnings("unchecked")
     public void update(Observable o, Object arg) {
-
+        if(!(arg instanceof CompilationObject))
+            throw new IllegalArgumentException("arg object was not of type compilationObject");
         //reset state
         nodeMap.clear();
         rootNodes.clear();
-        mxGraph graph = new mxGraph();
 
-        CompilationObject compiled = (CompilationObject) arg;
+
+        compiledResult = (CompilationObject) arg;
+    }
+
+    public mxGraphComponent updateGraph() {
+        mxGraph graph = new mxGraph();
         graph.getModel().beginUpdate();
         try {
-            compiled.getProcessMap().values().forEach(process -> {
-                switch (process.getProcessType()) {
-                    case AUTOMATA:
-                        addAutomata((Automaton) process, graph);
-                        break;
-                    case PETRINET:
-                        //TODO: Petrinet display
-                        break;
+
+            displayedAutomata.forEach(processLabel -> {
+                Map<String, ProcessModel> automataMap = this.getProcessMap();
+                if(automataMap.containsKey(processLabel) && !nodeMap.containsKey(processLabel)) {
+                    switch (automataMap.get(processLabel).getProcessType()) {
+                        case AUTOMATA:
+                            addAutomata((Automaton) automataMap.get(processLabel), graph);
+                            break;
+                        case PETRINET:
+                            //TODO: Petrinet display
+                            break;
+                    }
                 }
             });
         } finally {
@@ -73,6 +76,8 @@ public class ModelView implements Observer{
         }
         layout(graph);
         graphComponent.setGraph(graph);
+
+        return graphComponent;
     }
 
     private void addAutomata(Automaton automata,mxGraph graph){
@@ -91,6 +96,22 @@ public class ModelView implements Observer{
         });
     }
 
+    public void addDisplayedAutomata(String modelLabel) {
+        displayedAutomata.add(modelLabel);
+    }
+
+    public void clearDisplayed() {
+        displayedAutomata.clear();
+    }
+
+    public void addAllAutomata() {
+            displayedAutomata.addAll(this.getProcessMap().keySet());
+    }
+
+
+    public Map<String, ProcessModel> getProcessMap() {
+        return  compiledResult.getProcessMap();
+    }
 
 
 
@@ -134,6 +155,7 @@ public class ModelView implements Observer{
     private ModelView(){
         CompilationObservable.getInstance().addObserver(this);
         graphComponent = new mxGraphComponent(new mxGraph());
+        displayedAutomata = new LinkedHashSet<>();
     }
 
     public static ModelView getInstance(){

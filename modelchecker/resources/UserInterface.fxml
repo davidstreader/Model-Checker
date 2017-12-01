@@ -53,7 +53,7 @@
                                                 </AnchorPane>
                                                 <AnchorPane>
                                                     <children>
-                                                        <TextArea fx:id="compilerOutput" editable="false" layoutX="204.0" layoutY="80.0" wrapText="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                                        <TextArea fx:id="compilerOutputDisplay" editable="false" layoutX="204.0" layoutY="80.0" wrapText="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                                                     </children>
                                                 </AnchorPane>
                                             </items>
@@ -76,7 +76,7 @@
                                                 </Label>
                                                 <Button layoutX="385.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleAddSelectedModel" text="Add model" AnchorPane.leftAnchor="385.0" />
                                                 <Button layoutX="486.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleAddallModels" text="Add all models" />
-                                                <Button layoutX="613.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleClearCanvas" text="Clear" />
+                                                <Button layoutX="613.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleClearGraph" text="Clear" />
                                                 <Button layoutX="675.0" layoutY="10.0" mnemonicParsing="false" onAction="#handlExportImage" text="Export as image" />
                                             </children>
 
