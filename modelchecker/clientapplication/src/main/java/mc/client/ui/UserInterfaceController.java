@@ -30,6 +30,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static mc.client.ui.SyntaxHighlighting.computeHighlighting;
+
 public class UserInterfaceController implements Initializable {
     private javafx.stage.Popup autocompleteBox = new javafx.stage.Popup();
     private ExecutorService executor;
@@ -107,19 +109,20 @@ public class UserInterfaceController implements Initializable {
      */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+
         SwingUtilities.invokeLater(() -> modelDisplay.setContent(ModelView.getInstance().updateGraph())); // Have to initalise it or there is a delay between the graph becoming ready and actually displaying things
         completionDictionary = new TrieNode<>(  new ArrayList<>(Arrays.asList(processTypes)) );
         completionDictionary.add(new ArrayList<>(Arrays.asList(functions)));
         completionDictionary.add(new ArrayList<>(Arrays.asList(keywords)));
 
-
-        userCodeInput.getStylesheets().add(getClass().getResource("/automata-keywords.css").toExternalForm());
+        userCodeInput.setStyle("-fx-background-color: #32302f;");
+        userCodeInput.getStylesheets().add(getClass().getResource("/clientres/automata-keywords.css").toExternalForm());
 
         ListView popupSelection = new ListView();
         popupSelection.setStyle(
-                "-fx-background-color: #f7e1a0;" +
-                        "-fx-text-fill: black;" +
-                        "-fx-padding: 5;"
+                        "-fx-background-color: #f7e1a0;" +
+                        "-fx-text-fill:        black;" +
+                        "-fx-padding:          5;"
         );
 
 
@@ -276,62 +279,6 @@ public class UserInterfaceController implements Initializable {
         userCodeInput.setStyleSpans(0, highlighting); // Fires a style event
     }
 
-    private static StyleSpans<Collection<String>> computeHighlighting(String text) {
-        Matcher matcher = PATTERN.matcher(text);
-        int lastKwEnd = 0;
-        StyleSpansBuilder<Collection<String>> spansBuilder
-                = new StyleSpansBuilder<>();
-
-
-        while(matcher.find()) {
-            String styleClass;
-
-            if (matcher.group("PROCESSTYPE") != null) {
-                styleClass = "process";
-            } else if (matcher.group("FUNCTION") != null) {
-                styleClass = "function";
-            } else if (matcher.group("TERMINAL") != null) {
-                if (matcher.group("TERMINAL").equals("STOP"))
-                    styleClass = "terminalStop";
-                else
-                    styleClass = "terminalError";
-            } else if(matcher.group("KEYWORD") != null) {
-                styleClass = "keyword";
-            }else if(matcher.group("SYMBOL") != null) {
-                styleClass = "symbol";
-            } else if(matcher.group("OPERATOR") != null) {
-                styleClass = "operator";
-            } else if(matcher.group("OPERATION") != null) {
-                styleClass = "operation";
-            } else if(matcher.group("ACTIONLABEL") != null) {
-                styleClass = "actionLabel";
-            } else if(matcher.group("IDENTIFER") != null) {
-                styleClass = "identifier";
-            } else if(matcher.group("INT") != null) {
-                styleClass = "number";
-            } else if(matcher.group("PAREN") != null) {
-                styleClass = "paren";
-
-            } else if(matcher.group("BRACE") != null) {
-                styleClass = "brace";
-
-            }else if(matcher.group("BRACKET") != null) {
-                styleClass = "bracket";
-
-            } else if(matcher.group("COMMENT") != null) {
-                styleClass = "comment";
-            } else {
-                styleClass = null;
-            }
-
-
-            spansBuilder.add(Collections.emptyList(), matcher.start() - lastKwEnd);
-            spansBuilder.add(Collections.singleton(styleClass), matcher.end() - matcher.start());
-            lastKwEnd = matcher.end();
-        }
-        spansBuilder.add(Collections.emptyList(), text.length() - lastKwEnd);
-        return spansBuilder.create();
-    }
 
     private String getWordAtIndex(int pos) {
         String text = userCodeInput.getText().substring(0, pos);

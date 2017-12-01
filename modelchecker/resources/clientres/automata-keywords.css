@@ -1,0 +1,96 @@
+/**
+ * The type blocks
+ */
+.process {
+    -fx-fill: #fabd2f;
+    -fx-font-weight: bold;
+}
+
+/**
+ * functions (e.g. abs)
+ */
+.function {
+    -fx-fill: #83a598;
+}
+
+/**
+ * special STOP keyword
+ */
+.terminalStop {
+    -fx-fill: #d3869b;
+}
+
+/**
+ * special ERROR keyword
+ */
+.terminalError {
+    -fx-fill: #d3869b;
+}
+
+/**
+ * if/else/when keywords
+ */
+.keyword {
+    -fx-fill: #d3869b;
+    -fx-font-weight: bold;
+}
+
+/**
+ * mathematical style symbols
+ */
+.symbol {
+    -fx-fill: #d5c4a1;
+}
+
+/**
+ * bisim, trace operations
+ */
+.operator {
+    -fx-fill: #d5c4a1;
+}
+
+/**
+ * mathematical operators
+ */
+.operation {
+    -fx-fill: #d5c4a1;
+}
+
+/**
+ * actions e.g. a ->
+ */
+.actionLabel {
+    -fx-fill: #fb4934;
+}
+
+/**
+ * Process identifier
+ */
+.identifier {
+    -fx-fill: #e8d52c;
+}
+
+.number {
+    -fx-fill: #fe8019;
+}
+
+.paren {
+    -fx-fill: #d5c4a1;
+    -fx-font-weight: bold;
+}
+.bracket {
+    -fx-fill: #d5c4a1;
+    -fx-font-weight: bold;
+}
+.brace {
+    -fx-fill: #d5c4a1;
+    -fx-font-weight: bold;
+}
+
+.comment {
+	-fx-fill: #665c54;
+}
+
+.caret {
+    -fx-stroke: #d5c4a1;
+}

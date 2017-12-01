@@ -9,8 +9,6 @@ import mc.process_models.automata.Automaton;
 import mc.webserver.FakeContext;
 import mc.webserver.Context;
 import mc.webserver.LogMessage;
-import mc.compiler.LocalCompiler;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

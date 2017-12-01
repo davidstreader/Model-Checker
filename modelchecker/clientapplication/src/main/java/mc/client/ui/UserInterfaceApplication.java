@@ -28,7 +28,7 @@ public class UserInterfaceApplication extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         Font.loadFont(getClass().getResource("/clientres/hasklig.otf").toExternalForm(),10);
-        Parent root = FXMLLoader.load(getClass().getResource("/UserInterface.fxml"));
+        Parent root = FXMLLoader.load(getClass().getResource("/clientres/UserInterface.fxml"));
 
         primaryStage.setTitle("Automata Modeller");
         Scene windowScene = new Scene(root, 1000, 700);
