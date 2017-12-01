@@ -58,9 +58,9 @@ public class UserInterfaceController implements Initializable {
 
         ListView popupSelection = new ListView();
         popupSelection.setStyle(
-                "-fx-background-color: #f7e1a0;" +
-                        "-fx-text-fill: black;" +
-                        "-fx-padding: 5;"
+                        "-fx-background-color: #f7e1a0;" +
+                        "-fx-text-fill:        black;" +
+                        "-fx-padding:          5;"
         );
 
 
@@ -89,7 +89,7 @@ public class UserInterfaceController implements Initializable {
         });
 
         popupSelection.setOnKeyReleased(event -> {
-            if(event.getCode() == KeyCode.ENTER) {
+            if(event.getCode() == KeyCode.ENTER || event.getCode() == KeyCode.TAB) {
                 String selectedItem = (String)popupSelection.getSelectionModel().getSelectedItem();
                 if(selectedItem != null) {
 

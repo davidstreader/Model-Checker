@@ -82,14 +82,22 @@ public class ModelView implements Observer{
     }
 
     private void addAutomata(Automaton automata,mxGraph graph){
-        mxCell parent = (mxCell) graph.addCell(new mxCell(automata.getId()));
+        mxCell parent = (mxCell) graph.insertVertex(graph.getDefaultParent(),automata.getId(),automata.getId(),0,0,100,100,"group");
         cellList.add(parent);
         nodeMap = new HashMap<>();
         automata.getNodes().forEach(n -> {
-            mxCell gNode = (mxCell) graph.insertVertex(parent,n.getId(),n.getId(),100, 100, 20, 20, "vertex");
+            mxCell gNode = (mxCell) graph.insertVertex(parent,n.getId(),n.getId(),100, 100, 40, 40, "vertex");
             nodeMap.put(n.getId(),gNode);
-            if (n.hasMetaData("startNode"))
+            if (n.hasMetaData("startNode")) {
                 rootNodes.add(n.getId());
+                gNode.setStyle("vertex;start");
+            }
+            if(n.hasMetaData("isTerminal")) {
+                if(Objects.equals(n.getMetaData("isTerminal"),"STOP"))
+                    gNode.setStyle("vertex;stop");
+                if(Objects.equals(n.getMetaData("isTerminal"),"ERROR"))
+                    gNode.setStyle("vertex;error");
+            }
         });
 
         automata.getEdges().forEach(e -> {
@@ -127,12 +135,34 @@ public class ModelView implements Observer{
 
     private void setupStyles(mxGraph graph) {
         mxStylesheet ss = graph.getStylesheet();
-        Hashtable<String, Object> style = new Hashtable<>();
-        style.put(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_ELLIPSE);
-        style.put(mxConstants.STYLE_FILLCOLOR, "#ffffff");
-        style.put(mxConstants.STYLE_STROKECOLOR, "#000000");
-        style.put(mxConstants.STYLE_FONTCOLOR, "#000000");
-        ss.putCellStyle("vertex", style);
+        Hashtable<String, Object> nodeStyle = new Hashtable<>();
+        nodeStyle.put(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_ELLIPSE);
+        nodeStyle.put(mxConstants.STYLE_FILLCOLOR, "#ffffff");
+        nodeStyle.put(mxConstants.STYLE_STROKECOLOR, "#000000");
+        nodeStyle.put(mxConstants.STYLE_FONTCOLOR, "#000000");
+        ss.putCellStyle("vertex", nodeStyle);
+
+
+        Hashtable<String,Object> groupStyle = new Hashtable<>();
+        groupStyle.put(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_RECTANGLE);
+        groupStyle.put(mxConstants.STYLE_FILLCOLOR, "#666666");
+        groupStyle.put(mxConstants.STYLE_FONTCOLOR, "#ffffff");
+//        groupStyle.put(mxConstants.STYLE_LABEL_POSITION,mxConstants.ALIGN_TOP);
+        groupStyle.put(mxConstants.STYLE_GLASS,1);
+        ss.putCellStyle("group", groupStyle);
+
+        /**
+         * Styles for specific node types
+         */
+        Hashtable<String,Object> beginningStyle = new Hashtable<>();
+        beginningStyle.put(mxConstants.STYLE_FILLCOLOR, "#00ff00");
+        ss.putCellStyle("start", beginningStyle);
+        Hashtable<String,Object> stopStyle = new Hashtable<>();
+        stopStyle.put(mxConstants.STYLE_FILLCOLOR, "#0000ff");
+        ss.putCellStyle("stop", stopStyle);
+        Hashtable<String,Object> errorStyle = new Hashtable<>();
+        errorStyle.put(mxConstants.STYLE_FILLCOLOR, "#ff0000");
+        ss.putCellStyle("error", errorStyle);
     }
 
 
