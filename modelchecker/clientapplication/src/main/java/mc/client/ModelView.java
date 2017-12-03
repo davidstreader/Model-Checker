@@ -1,7 +1,6 @@
 package mc.client;
 
-import edu.uci.ics.jung.algorithms.layout.DAGLayout;
-import edu.uci.ics.jung.algorithms.layout.Layout;
+import edu.uci.ics.jung.algorithms.layout.*;
 import edu.uci.ics.jung.graph.DirectedSparseGraph;
 import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
 import edu.uci.ics.jung.graph.Graph;
@@ -71,7 +70,9 @@ public class ModelView implements Observer{
                 .filter(Objects::nonNull)
                 .forEach(this::addProcess);
 
-        Layout<GraphNode,DirectedEdge> layout = new DAGLayout<>(graph);
+
+        //apply a layout to the graph
+        Layout<GraphNode,DirectedEdge> layout = new FRLayout<>(graph);
 
         VisualizationViewer<GraphNode,DirectedEdge> vv = new VisualizationViewer<>(layout);
 
