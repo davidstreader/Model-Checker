@@ -3,8 +3,12 @@ package mc.client;
 import edu.uci.ics.jung.algorithms.layout.DAGLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.graph.DirectedSparseGraph;
+import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
+import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
+import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
+import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import javafx.embed.swing.SwingNode;
 import javafx.geometry.Bounds;
 import lombok.Getter;
@@ -58,7 +62,7 @@ public class ModelView implements Observer{
      * @return the graph component that is displayed
      */
     public VisualizationViewer<GraphNode,DirectedEdge> updateGraph(SwingNode s) {
-        graph = new DirectedSparseGraph<>();
+        graph = new DirectedSparseMultigraph<>();
         if(compiledResult == null)
             return new VisualizationViewer<>(new DAGLayout<>(new DirectedSparseGraph<>()));
         compiledResult.getProcessMap().keySet().stream()
@@ -69,7 +73,13 @@ public class ModelView implements Observer{
 
         Layout<GraphNode,DirectedEdge> layout = new DAGLayout<>(graph);
 
-        VisualizationViewer<GraphNode,DirectedEdge> vv = new VisualizationViewer<GraphNode, DirectedEdge>(layout);
+        VisualizationViewer<GraphNode,DirectedEdge> vv = new VisualizationViewer<>(layout);
+
+        DefaultModalGraphMouse gm = new DefaultModalGraphMouse();
+        gm.setMode(ModalGraphMouse.Mode.TRANSFORMING);
+        vv.setGraphMouse(gm);
+        vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
+        vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller());
 
         Bounds b = s.getBoundsInParent();
         vv.setPreferredSize(new Dimension((int)b.getWidth(),(int)b.getHeight()));
