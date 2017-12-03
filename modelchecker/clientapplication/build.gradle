@@ -1,8 +1,10 @@
 dependencies {
     compile project(':compiler')
-    compile 'com.github.jgraph:jgraphx:v3.7.6'
     // https://mvnrepository.com/artifact/org.fxmisc.richtext/richtextfx
     compile group: 'org.fxmisc.richtext', name: 'richtextfx', version: '0.8.1'
-    // https://mvnrepository.com/artifact/org.prefuse/prefuse
-    compile group: 'org.prefuse', name: 'prefuse', version: '20071021'
+
+    // https://mvnrepository.com/artifact/net.sf.jung/
+    compile group: 'net.sf.jung', name: 'jung-visualization', version: '2.1.1'
+    compile group: 'net.sf.jung', name: 'jung-graph-impl', version: '2.1.1'
+
 }

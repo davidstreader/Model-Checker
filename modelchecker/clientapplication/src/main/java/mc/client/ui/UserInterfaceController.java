@@ -109,8 +109,8 @@ public class UserInterfaceController implements Initializable {
      */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-
-        SwingUtilities.invokeLater(() -> modelDisplay.setContent(ModelView.getInstance().updateGraph())); // Have to initalise it or there is a delay between the graph becoming ready and actually displaying things
+        // Have to initalise it or there is a delay between the graph becoming ready and actually displaying things
+        SwingUtilities.invokeLater(() -> modelDisplay.setContent(ModelView.getInstance().updateGraph(modelDisplay)));
         completionDictionary = new TrieNode<>(  new ArrayList<>(Arrays.asList(processTypes)) );
         completionDictionary.add(new ArrayList<>(Arrays.asList(functions)));
         completionDictionary.add(new ArrayList<>(Arrays.asList(keywords)));
@@ -345,20 +345,20 @@ public class UserInterfaceController implements Initializable {
         if(modelsList.getSelectionModel().getSelectedItem() != null && modelsList.getSelectionModel().getSelectedItem() instanceof String) {
 
             ModelView.getInstance().addDisplayedAutomata((String) modelsList.getSelectionModel().getSelectedItem());
-            SwingUtilities.invokeLater(() -> modelDisplay.setContent(ModelView.getInstance().updateGraph()));
+            SwingUtilities.invokeLater(() -> modelDisplay.setContent(ModelView.getInstance().updateGraph(modelDisplay)));
         }
     }
 
     @FXML
     private void handleAddallModels(ActionEvent event) {
             ModelView.getInstance().addAllAutomata();
-            SwingUtilities.invokeLater(() -> modelDisplay.setContent(ModelView.getInstance().updateGraph()));
+            SwingUtilities.invokeLater(() -> modelDisplay.setContent(ModelView.getInstance().updateGraph(modelDisplay)));
     }
 
     @FXML
     private void handleClearGraph(ActionEvent event) {
         ModelView.getInstance().clearDisplayed();
-        SwingUtilities.invokeLater(() -> modelDisplay.setContent(ModelView.getInstance().updateGraph()));
+        SwingUtilities.invokeLater(() -> modelDisplay.setContent(ModelView.getInstance().updateGraph(modelDisplay)));
     }
 
     @FXML
