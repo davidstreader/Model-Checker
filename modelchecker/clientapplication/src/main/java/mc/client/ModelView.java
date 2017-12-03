@@ -140,6 +140,7 @@ public class ModelView implements Observer{
 
 
 
+
     private void layout(mxGraph graph){
         graph.setAllowDanglingEdges(false);
         graph.setAllowLoops(false);

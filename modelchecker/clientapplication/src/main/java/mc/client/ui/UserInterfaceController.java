@@ -13,15 +13,19 @@ import mc.client.ModelView;
 
 import mc.compiler.Compiler;
 import mc.exceptions.CompilationException;
+import mc.util.Location;
 import mc.util.expr.Expression;
 import mc.webserver.Context;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
+import org.fxmisc.richtext.model.StyleSpan;
 import org.fxmisc.richtext.model.StyleSpans;
 import org.fxmisc.richtext.model.StyleSpansBuilder;
 
 import javax.swing.*;
 import java.net.URL;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -33,6 +37,7 @@ import java.util.regex.Pattern;
 import static mc.client.ui.SyntaxHighlighting.computeHighlighting;
 
 public class UserInterfaceController implements Initializable {
+    private boolean holdHighlighting = false;
     private javafx.stage.Popup autocompleteBox = new javafx.stage.Popup();
     private ExecutorService executor;
     private TrieNode<String> completionDictionary;
@@ -185,6 +190,8 @@ public class UserInterfaceController implements Initializable {
 
         executor = Executors.newSingleThreadExecutor();
 
+
+
         userCodeInput.setParagraphGraphicFactory(LineNumberFactory.get(userCodeInput)); // Add line numbers
 
         userCodeInput.setOnMouseClicked(event -> { // If the user clicks outside of the autocompletion box they probably dont want it there...
@@ -192,7 +199,7 @@ public class UserInterfaceController implements Initializable {
         });
 
         userCodeInput.richChanges() // Set up syntax highlighting in another thread as regex finding can take a while.
-                .filter(ch -> !ch.getInserted().equals(ch.getRemoved())) // XXX
+                .filter(ch -> !ch.getInserted().equals(ch.getRemoved()) &&  !holdHighlighting) // Hold highlighting if we have an issue and have highlighted it, otherwise it gets wiped.
                 .successionEnds(Duration.ofMillis(20))
                 .supplyTask(this::computeHighlightingAsync)
                 .awaitLatest(userCodeInput.richChanges())
@@ -206,8 +213,8 @@ public class UserInterfaceController implements Initializable {
                 })
                 .subscribe(this::applyHighlighting);
 
-        userCodeInput.richChanges().filter(ch -> !ch.getInserted().equals(ch.getRemoved())).subscribe(( change) -> { // Hook for detecting user input, used for autocompletion as that happens quickly.
-            if(change.getInserted().getStyleOfChar(0).isEmpty()) { // If this isnt a style event rather than the user typing.
+        userCodeInput.richChanges().filter(ch -> !ch.getInserted().equals(ch.getRemoved()) && ch.getInserted().getStyleOfChar(0).isEmpty()).subscribe(( change) -> { // Hook for detecting user input, used for autocompletion as that happens quickly.
+
                 if (change.getRemoved().getText().length() == 0) {  // If this isnt a backspace character
 
                     String currentUserCode = userCodeInput.getText();
@@ -257,7 +264,7 @@ public class UserInterfaceController implements Initializable {
 
                 }
 
-            }
+            holdHighlighting = false;
 
         });
 
@@ -389,7 +396,11 @@ public class UserInterfaceController implements Initializable {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             } catch (CompilationException e) {
+                holdHighlighting = true;
                 compilerOutputDisplay.insertText(0,e.toString());
+                Location compilerIssue = e.getLocation();
+                userCodeInput.setStyleClass(compilerIssue.getStartIndex(), compilerIssue.getEndIndex(), "issue");
+
             }
         }
     }

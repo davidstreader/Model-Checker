@@ -94,3 +94,11 @@
 .caret {
     -fx-stroke: #d5c4a1;
 }
+
+/**
+*   If there is a segment of code the compiler disagrees with.
+*/
+.issue {
+    -fx-underline: true;
+    -fx-stroke: red;
+}
