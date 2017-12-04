@@ -1,42 +1,49 @@
 package mc.client;
 
-import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
-import com.mxgraph.layout.mxGraphLayout;
-import com.mxgraph.layout.orthogonal.mxOrthogonalLayout;
-import com.mxgraph.model.mxCell;
-import com.mxgraph.swing.mxGraphComponent;
-
-import com.mxgraph.util.mxConstants;
-
-import com.mxgraph.view.mxGraph;
-import com.mxgraph.view.mxStylesheet;
+import edu.uci.ics.jung.algorithms.layout.DAGLayout;
+import edu.uci.ics.jung.algorithms.layout.FRLayout;
+import edu.uci.ics.jung.algorithms.layout.Layout;
+import edu.uci.ics.jung.graph.DirectedSparseGraph;
+import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
+import edu.uci.ics.jung.graph.Graph;
+import edu.uci.ics.jung.visualization.VisualizationViewer;
+import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
+import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
+import javafx.embed.swing.SwingNode;
+import javafx.geometry.Bounds;
 import lombok.Getter;
-import lombok.SneakyThrows;
+import lombok.Setter;
+import mc.client.graph.DirectedEdge;
+import mc.client.graph.GraphNode;
 import mc.compiler.CompilationObject;
 import mc.compiler.CompilationObservable;
 import mc.process_models.ProcessModel;
 import mc.process_models.automata.Automaton;
-import mc.util.expr.Expression;
-import mc.webserver.Context;
 
+import java.awt.*;
+import java.io.IOException;
 import java.util.*;
 import java.util.List;
-import java.util.concurrent.LinkedBlockingQueue;
-import mc.compiler.Compiler;
+import java.util.function.Consumer;
 
 /**
  * Created by bealjaco on 29/11/17.
  */
 public class ModelView implements Observer{
-    private mxGraphComponent graphComponent;
+    private Graph<GraphNode,DirectedEdge> graph;
+    private VisualizationViewer<GraphNode,DirectedEdge> graphView;
 
     private Set<String> displayedAutomata;
 
     private CompilationObject compiledResult;
 
-    private Map<String,Object> nodeMap = new HashMap<>();
     private List<String> rootNodes = new ArrayList<>();
-    private List<mxCell> cellList = new ArrayList<>();
+
+    private static final Font sourceCodePro;
+
+    @Setter
+    private Consumer<Collection<String>> listOfAutomataUpdater;
+
 
 
     /**
@@ -54,70 +61,95 @@ public class ModelView implements Observer{
         if(!(arg instanceof CompilationObject))
             throw new IllegalArgumentException("arg object was not of type compilationObject");
         //reset state
-        nodeMap.clear();
         rootNodes.clear();
-        cellList.clear();
-
 
         compiledResult = (CompilationObject) arg;
+        listOfAutomataUpdater.accept(compiledResult.getProcessMap().keySet());
     }
 
-    public mxGraphComponent updateGraph() {
-        mxGraph graph = new mxGraph();
+    /**
+     * A method to update the graph that is displayed
+     * @return the graph component that is displayed
+     */
+    public VisualizationViewer<GraphNode,DirectedEdge> updateGraph(SwingNode s) {
+        graph = new DirectedSparseMultigraph<>();
+        if(compiledResult == null)
+            return new VisualizationViewer<>(new DAGLayout<>(new DirectedSparseGraph<>()));
+        compiledResult.getProcessMap().keySet().stream()
+                .filter(displayedAutomata::contains)
+                .map(compiledResult.getProcessMap()::get)
+                .filter(Objects::nonNull)
+                .forEach(this::addProcess);
 
-        setupStyles(graph);
 
-        graph.getModel().beginUpdate();
-        try {
+        //apply a layout to the graph
+        Layout<GraphNode,DirectedEdge> layout = new FRLayout<>(graph);
 
-            displayedAutomata.forEach(processLabel -> {
-                Map<String, ProcessModel> automataMap = this.getProcessMap();
-                if(automataMap.containsKey(processLabel) && !nodeMap.containsKey(processLabel)) {
-                    switch (automataMap.get(processLabel).getProcessType()) {
-                        case AUTOMATA:
-                            addAutomata((Automaton) automataMap.get(processLabel), graph);
-                            break;
-                        case PETRINET:
-                            //TODO: Petrinet display
-                            break;
-                    }
-                }
-            });
-        } finally {
-            graph.getModel().endUpdate();
+        VisualizationViewer<GraphNode,DirectedEdge> vv = new VisualizationViewer<>(layout);
+
+        DefaultModalGraphMouse gm = new DefaultModalGraphMouse();
+        gm.setMode(ModalGraphMouse.Mode.TRANSFORMING);
+        vv.setGraphMouse(gm);
+
+        vv.getRenderContext().setVertexLabelTransformer(GraphNode::getNodeId);
+        if(sourceCodePro!=null)
+            vv.getRenderContext().setEdgeFontTransformer(e->sourceCodePro);
+        vv.getRenderContext().setEdgeLabelTransformer(DirectedEdge::getLabel);
+
+        vv.getRenderContext().setVertexFillPaintTransformer(node -> {
+            if(node.getNodeTermination().equals("START"))
+                return Color.GREEN;
+            if (node.getNodeTermination().equals("STOP"))
+                return Color.CYAN;
+            if(node.getNodeTermination().equals("ERROR"))
+                return Color.RED;
+            return Color.LIGHT_GRAY;
+        });
+
+        Bounds b = s.getBoundsInParent();
+        vv.setPreferredSize(new Dimension((int)b.getWidth(),(int)b.getHeight()));
+
+        return vv;
+    }
+
+    private void addProcess(ProcessModel p){
+        switch (p.getProcessType()){
+            case AUTOMATA:
+                addAutomata((Automaton)p);
+                break;
+            case PETRINET:
+                //TODO
+                break;
         }
-        cellList.add((mxCell) graph.getDefaultParent());
-        layout(graph);
-        graphComponent.setGraph(graph);
-
-        return graphComponent;
     }
+    /**
+     * Add an individual automata to the graph
+     * @param automata the automata object
+     */
+    private void addAutomata(Automaton automata){
+        //make a new "parent" object for the children to be parents of
+        Map<String,GraphNode> nodeMap = new HashMap<>();
 
-    private void addAutomata(Automaton automata,mxGraph graph){
-        mxCell parent = (mxCell) graph.insertVertex(graph.getDefaultParent(),automata.getId(),automata.getId(),0,0,100,100,"group");
-        cellList.add(parent);
-        nodeMap = new HashMap<>();
+        //add all the nodes to the graph
         automata.getNodes().forEach(n -> {
-            mxCell gNode = (mxCell) graph.insertVertex(parent,n.getId(),n.getId(),100, 100, 40, 40, "vertex");
-            nodeMap.put(n.getId(),gNode);
-            if (n.hasMetaData("startNode")) {
-                rootNodes.add(n.getId());
-                gNode.setStyle("vertex;start");
-            }
-            if(n.hasMetaData("isTerminal")) {
-                if(Objects.equals(n.getMetaData("isTerminal"),"STOP"))
-                    gNode.setStyle("vertex;stop");
-                if(Objects.equals(n.getMetaData("isTerminal"),"ERROR"))
-                    gNode.setStyle("vertex;error");
-            }
+            String nodeTermination = "";
+            if(n.getId().equals(automata.getRootId()))
+                nodeTermination = "START";
+            if(n.hasMetaData("isTerminal"))
+                nodeTermination = (String) n.getMetaData("isTerminal");
+            GraphNode node = new GraphNode(automata.getId(),n.getId(),nodeTermination);
+            nodeMap.put(n.getId(),node);
+            graph.addVertex(node);
         });
 
+        //add the edges to the graph
         automata.getEdges().forEach(e -> {
-            Object to = nodeMap.get(e.getTo().getId());
-            Object from = nodeMap.get(e.getFrom().getId());
-            graph.insertEdge(parent,e.getId(),e.getLabel(),from,to);
+            GraphNode to   = nodeMap.get(e.getTo().getId());
+            GraphNode from = nodeMap.get(e.getFrom().getId());
+            graph.addEdge(new DirectedEdge(e.getLabel(),UUID.randomUUID().toString()),from,to);
         });
-        graph.groupCells(parent,2,nodeMap.values().toArray());
+
+        //officially "group" the cells
     }
 
 
@@ -130,96 +162,35 @@ public class ModelView implements Observer{
     }
 
     public void addAllAutomata() {
-            displayedAutomata.addAll(this.getProcessMap().keySet());
+        displayedAutomata.addAll(this.getProcessMap().keySet());
     }
-
 
     public Map<String, ProcessModel> getProcessMap() {
         return  compiledResult.getProcessMap();
     }
 
-
-
-
-    private void layout(mxGraph graph){
-        graph.setAllowDanglingEdges(false);
-        graph.setAllowLoops(false);
-        graph.setAllowNegativeCoordinates(false);
-        graph.setCellsBendable(false);
-        graph.setCellsCloneable(false);
-        graph.setCellsDeletable(false);
-        graph.setCellsDisconnectable(false);
-        graph.setCellsEditable(false);
-        graph.setCellsResizable(false);
-//        graph.setDropEnabled(false);
-        graph.setEnabled(false);
-        graph.setSplitEnabled(false);
-
-
-        mxGraphLayout layout;
-        try {
-            layout = new mxHierarchicalLayout(graph);
-            cellList.forEach(layout::execute);
-        } catch(Throwable ignored) {
-            layout = new mxOrthogonalLayout(graph);
-            layout.execute(graph.getDefaultParent());
-        }
-    }
-
-    private void setupStyles(mxGraph graph) {
-        mxStylesheet ss = graph.getStylesheet();
-        Hashtable<String, Object> nodeStyle = new Hashtable<>();
-        nodeStyle.put(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_ELLIPSE);
-        nodeStyle.put(mxConstants.STYLE_FILLCOLOR, "#ffffff");
-        nodeStyle.put(mxConstants.STYLE_STROKECOLOR, "#000000");
-        nodeStyle.put(mxConstants.STYLE_FONTCOLOR, "#000000");
-        ss.putCellStyle("vertex", nodeStyle);
-
-
-        Hashtable<String,Object> groupStyle = new Hashtable<>();
-        groupStyle.put(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_RECTANGLE);
-        groupStyle.put(mxConstants.STYLE_FILLCOLOR, "#666666");
-        groupStyle.put(mxConstants.STYLE_FONTCOLOR, "#ffffff");
-//        groupStyle.put(mxConstants.STYLE_LABEL_POSITION,mxConstants.ALIGN_TOP);
-        groupStyle.put(mxConstants.STYLE_GLASS,1);
-        ss.putCellStyle("group", groupStyle);
-
-        /**
-         * Styles for specific node types
-         */
-        Hashtable<String,Object> beginningStyle = new Hashtable<>();
-        beginningStyle.put(mxConstants.STYLE_FILLCOLOR, "#00ff00");
-        ss.putCellStyle("start", beginningStyle);
-        Hashtable<String,Object> stopStyle = new Hashtable<>();
-        stopStyle.put(mxConstants.STYLE_FILLCOLOR, "#0000ff");
-        ss.putCellStyle("stop", stopStyle);
-        Hashtable<String,Object> errorStyle = new Hashtable<>();
-        errorStyle.put(mxConstants.STYLE_FILLCOLOR, "#ff0000");
-        ss.putCellStyle("error", errorStyle);
-    }
-
-
     @Getter
     private static ModelView instance = new ModelView();
+
     /**
      * Enforcing Singleton
      */
-    //TODO REMOVE THIS!!!
-    @SneakyThrows
     private ModelView(){
         CompilationObservable.getInstance().addObserver(this);
-        graphComponent = new mxGraphComponent(new mxGraph());
 
         displayedAutomata = new LinkedHashSet<>();
+    }
 
-        graphComponent.setConnectable(false);
-        graphComponent.setPanning(true);
-
-        Compiler comp = new Compiler();
-
-        //hacky test
-        update(null, comp.compile("automata { A = b -> c -> STOP." +
-                "                             B = d -> c -> STOP." +
-                "                             C = A || B.}", new Context(), Expression.mkCtx(),new LinkedBlockingQueue<>()));
+    //register font
+    static {
+        Font source;
+        try {
+            source = Font.createFont(Font.TRUETYPE_FONT,
+                    ModelView.class.getResourceAsStream("/clientres/SourceCodePro-Bold.ttf"))
+                    .deriveFont(15f);
+        } catch (FontFormatException | IOException e) {
+            source = null;
+        }
+        sourceCodePro = source;
     }
 }
