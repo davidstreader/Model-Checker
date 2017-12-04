@@ -6,6 +6,7 @@ import com.microsoft.z3.Expr;
 import com.microsoft.z3.Z3Object;
 import com.rits.cloning.Cloner;
 import lombok.Getter;
+import lombok.Setter;
 import mc.exceptions.CompilationException;
 
 import java.io.Serializable;
@@ -16,6 +17,7 @@ import java.util.Set;
 public abstract class ProcessModelObject implements Serializable {
 
     // fields
+    @Getter @Setter
     private String id;
     @Getter
     private String type;
@@ -26,10 +28,6 @@ public abstract class ProcessModelObject implements Serializable {
         this.id = id;
         this.type = type;
         this.metaData = new HashMap<>();
-    }
-
-    public String getId(){
-        return id;
     }
 
     public Object getMetaData(String key){

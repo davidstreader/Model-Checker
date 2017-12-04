@@ -12,12 +12,15 @@ import javafx.embed.swing.SwingNode;
 import javafx.geometry.Bounds;
 import lombok.Getter;
 import lombok.Setter;
+import mc.client.graph.AutomataPainter;
 import mc.client.graph.DirectedEdge;
 import mc.client.graph.GraphNode;
+import mc.client.graph.NodeStates;
 import mc.compiler.CompilationObject;
 import mc.compiler.CompilationObservable;
 import mc.compiler.OperationResult;
 import mc.process_models.ProcessModel;
+import mc.process_models.ProcessType;
 import mc.process_models.automata.Automaton;
 
 import java.awt.*;
@@ -28,6 +31,8 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+import static java.util.stream.Collectors.toSet;
+
 /**
  * Created by bealjaco on 29/11/17.
  */
@@ -37,6 +42,8 @@ public class ModelView implements Observer{
     private VisualizationViewer<GraphNode,DirectedEdge> graphView;
 
     private Set<String> automataToDisplay;
+    private Set<String> visibleAutomata;
+    private Map<String,Set<GraphNode>> automata;
 
     private CompilationObject compiledResult;
 
@@ -59,13 +66,20 @@ public class ModelView implements Observer{
      * @param arg an argument passed to the <code>notifyObservers</code>
      */
     @Override
-    @SuppressWarnings("unchecked")
     public void update(Observable o, Object arg) {
         if(!(arg instanceof CompilationObject))
             throw new IllegalArgumentException("arg object was not of type compilationObject");
 
         compiledResult = (CompilationObject) arg;
-        listOfAutomataUpdater.accept(compiledResult.getProcessMap().keySet());
+        visibleAutomata = getProcessMap().entrySet().stream()
+                .filter(e -> e.getValue().getProcessType() != ProcessType.AUTOMATA ||
+                        ((Automaton)e.getValue()).getNodes().size() <= 40)
+                .map(Map.Entry::getKey)
+                .collect(toSet());
+
+        //remove processes marked at skipped and too large models to display
+        listOfAutomataUpdater.accept(visibleAutomata);
+
         updateLog.accept(compiledResult.getOperationResults(),compiledResult.getEquationResults());
     }
 
@@ -74,6 +88,9 @@ public class ModelView implements Observer{
      * @return the graph component that is displayed
      */
     public VisualizationViewer<GraphNode,DirectedEdge> updateGraph(SwingNode s) {
+
+        automata = new HashMap<>();
+
         graph = new DirectedSparseMultigraph<>();
         if(compiledResult == null)
             return new VisualizationViewer<>(new DAGLayout<>(new DirectedSparseGraph<>()));
@@ -86,9 +103,9 @@ public class ModelView implements Observer{
 
         //apply a layout to the graph
         Layout<GraphNode,DirectedEdge> layout = new FRLayout<>(graph);
-
         VisualizationViewer<GraphNode,DirectedEdge> vv = new VisualizationViewer<>(layout);
 
+        //create a custom mouse controller (both movable, scalable and manipulatable)
         PluggableGraphMouse gm = new PluggableGraphMouse();
         gm.add(new TranslatingGraphMousePlugin(MouseEvent.BUTTON2_MASK));
         gm.add(new TranslatingGraphMousePlugin(MouseEvent.BUTTON3_MASK));
@@ -96,26 +113,29 @@ public class ModelView implements Observer{
         gm.add(new PickingGraphMousePlugin<>());
         vv.setGraphMouse(gm);
 
+        //label the nodes
         vv.getRenderContext().setVertexLabelTransformer(GraphNode::getNodeId);
+        vv.getRenderContext().setEdgeLabelTransformer(DirectedEdge::getLabel);
 
+
+        // if the font was imported successfully, set the font (the standard font does not display greek symbols
+        // (i.e. tau and delta events)
         if(sourceCodePro!=null) {
             vv.getRenderContext().setEdgeFontTransformer(e -> sourceCodePro);
             vv.getRenderContext().setVertexFontTransformer(e -> sourceCodePro);
         }
 
-        vv.getRenderContext().setEdgeLabelTransformer(DirectedEdge::getLabel);
-        vv.getRenderContext().setVertexFillPaintTransformer(node -> {
-            if(node.getNodeTermination().equals("START"))
-                return Color.GREEN;
-            if (node.getNodeTermination().equals("STOP"))
-                return Color.CYAN;
-            if(node.getNodeTermination().equals("ERROR"))
-                return Color.RED;
-            return Color.LIGHT_GRAY;
-        });
+        //set the colour of the nodes
+        vv.getRenderContext().setVertexFillPaintTransformer(
+                node -> NodeStates.valueOf(node.getNodeTermination().toUpperCase()).getColorNodes());
 
+        //autoscale the graph to fit in the display port
         Bounds b = s.getBoundsInParent();
         vv.setPreferredSize(new Dimension((int)b.getWidth(),(int)b.getHeight()));
+
+        //This draws the boxes around the automata
+        vv.addPreRenderPaintable(new AutomataPainter(vv,this.automata));
+
         return vv;
     }
 
@@ -139,12 +159,12 @@ public class ModelView implements Observer{
 
         //add all the nodes to the graph
         automata.getNodes().forEach(n -> {
-            String nodeTermination = "";
+            String nodeTermination = "NOMINAL";
             if(n.getId().equals(automata.getRootId()))
                 nodeTermination = "START";
             if(n.hasMetaData("isTerminal"))
                 nodeTermination = (String) n.getMetaData("isTerminal");
-
+            nodeTermination = nodeTermination.toLowerCase();
             GraphNode node = new GraphNode(automata.getId(),n.getId(),nodeTermination);
             nodeMap.put(n.getId(),node);
             graph.addVertex(node);
@@ -157,11 +177,12 @@ public class ModelView implements Observer{
             graph.addEdge(new DirectedEdge(e.getLabel(),UUID.randomUUID().toString()),from,to);
         });
 
+        this.automata.put(automata.getId(),new HashSet<>(nodeMap.values()));
     }
-
 
     public void addDisplayedAutomata(String modelLabel) {
         assert compiledResult.getProcessMap().containsKey(modelLabel);
+        assert visibleAutomata.contains(modelLabel);
         automataToDisplay.add(modelLabel);
     }
 
@@ -170,7 +191,8 @@ public class ModelView implements Observer{
     }
 
     public void addAllAutomata() {
-        automataToDisplay.addAll(getProcessMap().keySet());
+        automataToDisplay.clear();
+        automataToDisplay.addAll(visibleAutomata);
     }
 
     public Map<String, ProcessModel> getProcessMap() {
