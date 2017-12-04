@@ -7,8 +7,7 @@ import edu.uci.ics.jung.graph.DirectedSparseGraph;
 import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
-import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
-import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
+import edu.uci.ics.jung.visualization.control.*;
 import javafx.embed.swing.SwingNode;
 import javafx.geometry.Bounds;
 import lombok.Getter;
@@ -21,6 +20,7 @@ import mc.process_models.ProcessModel;
 import mc.process_models.automata.Automaton;
 
 import java.awt.*;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
@@ -87,15 +87,17 @@ public class ModelView implements Observer{
 
         VisualizationViewer<GraphNode,DirectedEdge> vv = new VisualizationViewer<>(layout);
 
-        DefaultModalGraphMouse gm = new DefaultModalGraphMouse();
-        gm.setMode(ModalGraphMouse.Mode.TRANSFORMING);
+        PluggableGraphMouse gm = new PluggableGraphMouse();
+        gm.add(new TranslatingGraphMousePlugin(MouseEvent.BUTTON2_MASK));
+        gm.add(new TranslatingGraphMousePlugin(MouseEvent.BUTTON3_MASK));
+        gm.add(new ScalingGraphMousePlugin(new CrossoverScalingControl(),0,1.1f,0.9f));
+        gm.add(new PickingGraphMousePlugin<>());
         vv.setGraphMouse(gm);
 
         vv.getRenderContext().setVertexLabelTransformer(GraphNode::getNodeId);
         if(sourceCodePro!=null)
             vv.getRenderContext().setEdgeFontTransformer(e->sourceCodePro);
         vv.getRenderContext().setEdgeLabelTransformer(DirectedEdge::getLabel);
-
         vv.getRenderContext().setVertexFillPaintTransformer(node -> {
             if(node.getNodeTermination().equals("START"))
                 return Color.GREEN;
@@ -108,7 +110,6 @@ public class ModelView implements Observer{
 
         Bounds b = s.getBoundsInParent();
         vv.setPreferredSize(new Dimension((int)b.getWidth(),(int)b.getHeight()));
-
         return vv;
     }
 
