@@ -60,47 +60,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     public AutomatonNode getRoot() {
         return root;
     }
-    public void position() {
-        mxGraph graph = new mxGraph();
-        Object parent = graph.getDefaultParent();
-        try {
-            Map<String, mxCell> graphNodes = new HashMap<>();
-            for (AutomatonNode node : getNodes()) {
-                mxCell n = (mxCell) graph.insertVertex(parent, node.getId(), node.getId(), 0, 0, 0, 0);
-                graphNodes.put(node.getId(), n);
-                if (node.hasMetaData("startNode")) {
-                    graph.getModel().setRoot(n);
-                }
-            }
-            for (AutomatonEdge edge : getEdges()) {
-                Object to = graphNodes.get(edge.getTo().getId());
-                Object from = graphNodes.get(edge.getFrom().getId());
-                graph.insertEdge(parent, edge.getId(), edge.getLabel(), from, to);
-            }
-            mxGraphLayout layout;
-            try {
-                layout = new mxHierarchicalLayout(graph) {
 
-                    @Override
-                    public List<Object> findRoots(Object parent, Set<Object> vertices)
-                    {
-                        List<Object> list = new ArrayList<>();
-                        list.add(graphNodes.get(getRoot().getId()));
-                        return list;
-                    }
-                };
-                layout.execute(parent);
-            } catch (Exception ex) {
-                layout = new mxOrthogonalLayout(graph);
-                layout.execute(parent);
-            }
-            for (Map.Entry<String, mxCell> id : graphNodes.entrySet()) {
-                getNode(id.getKey()).addMetaData("pos",id.getValue().getGeometry().getPoint());
-            }
-        } catch (CompilationException e) {
-            e.printStackTrace();
-        }
-    }
     public void setRoot(AutomatonNode root) throws CompilationException {
         // check the the new root is defined
         if (root == null) {

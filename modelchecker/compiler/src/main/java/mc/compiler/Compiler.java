@@ -63,17 +63,6 @@ public class Compiler {
         List<OperationResult> opResults = evaluator.evaluateOperations(ast.getOperations(), processMap, interpreter, code,z3Context);
         EquationEvaluator.EquationReturn eqResults = eqEvaluator.evaluateEquations(ast.getEquations(), code, context,z3Context,messageQueue);
         processMap.putAll(eqResults.getToRender());
-        if (!(context instanceof FakeContext)) {
-
-            List<Automaton> toPosition = processMap.values().stream().filter(Automaton.class::isInstance).map(s -> (Automaton)s).filter(s -> s.getNodeCount() <= context.getAutoMaxNode()).collect(Collectors.toList());
-
-            int counter = toPosition.size();
-            for (Automaton automaton : toPosition) {
-                messageQueue.add(new LogMessage("Performing layout for @|black "+automaton.getId()+"|@, remaining: "+counter--,true,false));
-                automaton.position();
-            }
-
-        }
         return new CompilationObject(processMap, opResults, eqResults.getResults());
     }
 
