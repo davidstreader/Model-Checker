@@ -1,17 +1,17 @@
 package mc.client;
 
-import edu.uci.ics.jung.algorithms.layout.*;
+import edu.uci.ics.jung.algorithms.layout.DAGLayout;
+import edu.uci.ics.jung.algorithms.layout.FRLayout;
+import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.graph.DirectedSparseGraph;
 import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
-import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import javafx.embed.swing.SwingNode;
 import javafx.geometry.Bounds;
 import lombok.Getter;
-import mc.Constant;
 import mc.client.graph.DirectedEdge;
 import mc.client.graph.GraphNode;
 import mc.compiler.CompilationObject;
@@ -20,6 +20,7 @@ import mc.process_models.ProcessModel;
 import mc.process_models.automata.Automaton;
 
 import java.awt.*;
+import java.io.IOException;
 import java.util.*;
 import java.util.List;
 
@@ -35,6 +36,19 @@ public class ModelView implements Observer{
     private CompilationObject compiledResult;
 
     private List<String> rootNodes = new ArrayList<>();
+
+    private static final Font sourceCodePro;
+    static {
+        Font source;
+        try {
+            source = Font.createFont(Font.TRUETYPE_FONT,
+                        ModelView.class.getResourceAsStream("/clientres/SourceCodePro-Bold.ttf"))
+                    .deriveFont(15f);
+        } catch (FontFormatException | IOException e) {
+            source = null;
+        }
+        sourceCodePro = source;
+    }
 
 
     /**
@@ -82,6 +96,8 @@ public class ModelView implements Observer{
         vv.setGraphMouse(gm);
 
         vv.getRenderContext().setVertexLabelTransformer(GraphNode::getNodeId);
+        if(sourceCodePro!=null)
+            vv.getRenderContext().setEdgeFontTransformer(e->sourceCodePro);
         vv.getRenderContext().setEdgeLabelTransformer(DirectedEdge::getLabel);
 
         vv.getRenderContext().setVertexFillPaintTransformer(node -> {
