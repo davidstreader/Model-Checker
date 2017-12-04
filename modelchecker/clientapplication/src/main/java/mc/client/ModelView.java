@@ -12,6 +12,7 @@ import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
 import javafx.embed.swing.SwingNode;
 import javafx.geometry.Bounds;
 import lombok.Getter;
+import lombok.Setter;
 import mc.client.graph.DirectedEdge;
 import mc.client.graph.GraphNode;
 import mc.compiler.CompilationObject;
@@ -23,6 +24,7 @@ import java.awt.*;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Created by bealjaco on 29/11/17.
@@ -38,17 +40,10 @@ public class ModelView implements Observer{
     private List<String> rootNodes = new ArrayList<>();
 
     private static final Font sourceCodePro;
-    static {
-        Font source;
-        try {
-            source = Font.createFont(Font.TRUETYPE_FONT,
-                        ModelView.class.getResourceAsStream("/clientres/SourceCodePro-Bold.ttf"))
-                    .deriveFont(15f);
-        } catch (FontFormatException | IOException e) {
-            source = null;
-        }
-        sourceCodePro = source;
-    }
+
+    @Setter
+    private Consumer<Collection<String>> listOfAutomataUpdater;
+
 
 
     /**
@@ -69,6 +64,7 @@ public class ModelView implements Observer{
         rootNodes.clear();
 
         compiledResult = (CompilationObject) arg;
+        listOfAutomataUpdater.accept(compiledResult.getProcessMap().keySet());
     }
 
     /**
@@ -183,5 +179,17 @@ public class ModelView implements Observer{
         CompilationObservable.getInstance().addObserver(this);
 
         displayedAutomata = new LinkedHashSet<>();
+    }
+    //register font
+    static {
+        Font source;
+        try {
+            source = Font.createFont(Font.TRUETYPE_FONT,
+                    ModelView.class.getResourceAsStream("/clientres/SourceCodePro-Bold.ttf"))
+                    .deriveFont(15f);
+        } catch (FontFormatException | IOException e) {
+            source = null;
+        }
+        sourceCodePro = source;
     }
 }

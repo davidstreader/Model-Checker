@@ -111,7 +111,12 @@ public class UserInterfaceController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         // Have to initalise it or there is a delay between the graph becoming ready and actually displaying things
         SwingUtilities.invokeLater(() -> modelDisplay.setContent(ModelView.getInstance().updateGraph(modelDisplay)));
-        completionDictionary = new TrieNode<>(  new ArrayList<>(Arrays.asList(processTypes)) );
+
+        //register a callback for whenever the list of automata is changed
+        ModelView.getInstance().setListOfAutomataUpdater(this::updateModelsList);
+
+
+        completionDictionary = new TrieNode<>(new ArrayList<>(Arrays.asList(processTypes)));
         completionDictionary.add(new ArrayList<>(Arrays.asList(functions)));
         completionDictionary.add(new ArrayList<>(Arrays.asList(keywords)));
 
@@ -382,9 +387,6 @@ public class UserInterfaceController implements Initializable {
                 Compiler codeCompiler = new Compiler();
                 codeCompiler.compile(userCode, new Context(), Expression.mkCtx(), new LinkedBlockingQueue<>()); // This follows the observer pattern. Within the compile function the code is then told to update an observer
 
-                for(String models : ModelView.getInstance().getProcessMap().keySet())
-                    modelsList.getItems().add(models);
-
                 compilerOutputDisplay.insertText(0,"Compiling completed sucessfully!");
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -398,6 +400,12 @@ public class UserInterfaceController implements Initializable {
     private void handleSaveAs(ActionEvent event) {
 
 
+    }
+
+    private void updateModelsList(Collection<String> models){
+        modelsList.getItems().clear();
+        models.forEach(modelsList.getItems()::add);
+        modelsList.getSelectionModel().selectFirst();
     }
 
 }
