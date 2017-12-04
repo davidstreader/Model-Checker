@@ -12,7 +12,7 @@ import javafx.embed.swing.SwingNode;
 import javafx.geometry.Bounds;
 import lombok.Getter;
 import lombok.Setter;
-import mc.client.graph.AutomataPainter;
+import mc.client.graph.AutomataBorderPaintable;
 import mc.client.graph.DirectedEdge;
 import mc.client.graph.GraphNode;
 import mc.client.graph.NodeStates;
@@ -134,7 +134,7 @@ public class ModelView implements Observer{
         vv.setPreferredSize(new Dimension((int)b.getWidth(),(int)b.getHeight()));
 
         //This draws the boxes around the automata
-        vv.addPreRenderPaintable(new AutomataPainter(vv,this.automata));
+        vv.addPreRenderPaintable(new AutomataBorderPaintable(vv,this.automata));
 
         return vv;
     }
