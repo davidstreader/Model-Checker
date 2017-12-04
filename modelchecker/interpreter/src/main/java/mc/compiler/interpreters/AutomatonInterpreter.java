@@ -3,6 +3,7 @@ package mc.compiler.interpreters;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
 import mc.Constant;
+import mc.compiler.Guard;
 import mc.compiler.ast.*;
 import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
@@ -100,7 +101,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
             automaton = processLabellingAndRelabelling(automaton, root);
             if(root.hasHiding()){
                 processHiding(automaton, root.getHiding());
-                automaton.addMetaData("hiding",root.getHiding());
+                automaton.setHiding(root.getHiding());
             }
 
             processStack.push(automaton);
@@ -108,12 +109,13 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         else{
             Automaton automaton = new Automaton(identifier);
             if (variables != null) {
-                automaton.addMetaData("hidden_vars_loc",variables.getLocation());
-                automaton.addMetaData("hidden_vars",variables.getVariables());
+                automaton.setHiddenVariables(variables.getVariables());
+                automaton.setHiddenVariablesLocation(variables.getLocation());
             }
 
-            automaton.addMetaData("variables",variableList);
-            automaton.addMetaData("location",astNode.getLocation());
+            automaton.setVariables(variableList);
+            automaton.setVariablesLocation(astNode.getLocation());
+
             interpretNode(astNode, automaton, automaton.getRoot());
             processStack.push(automaton);
         }
@@ -127,12 +129,12 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
             for(String reference : astNode.getReferences())
                 referenceMap.put(reference, currentNode);
 
-            currentNode.addMetaData("reference", astNode.getReferences());
+            currentNode.setReferences(astNode.getReferences());
         }
         if (astNode.getMetaData().containsKey("variables")) {
             Map<String,Object> varMap = (Map<String, Object>) astNode.getMetaData().get("variables");
             varMap.keySet().stream().map(s->s.substring(1)).forEach(variableList::add);
-            currentNode.addMetaData("variables",varMap);
+            currentNode.setVariables(varMap);
         }
         currentNode.getMetaData().putAll(astNode.getMetaData());
         if(astNode instanceof ProcessRootNode){
@@ -176,20 +178,20 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         String action = astNode.getFrom().getAction();
 
         AutomatonNode nextNode;
-        HashMap<String,Object> metaData = new HashMap<>();
-        if (currentNode.getMetaData().containsKey("guard")) {
-            metaData.put("guard",astNode.getMetaData().get("guard"));
-            currentNode.getMetaData().remove("guard");
+        Guard foundGuard = null;
+        if (currentNode.getGuard() != null) {
+            foundGuard = (Guard)astNode.getMetaData().get("guard");
+            currentNode.setGuard(null);
         }
         // check if the next ast node is a reference node
         if(astNode.getTo() instanceof ReferenceNode){
             ReferenceNode reference = (ReferenceNode)astNode.getTo();
             nextNode = referenceMap.get(reference.getReference());
-            automaton.addEdge(action, currentNode, nextNode,metaData);
+            automaton.addEdge(action, currentNode, nextNode,foundGuard);
         }
         else {
             nextNode = automaton.addNode();
-            automaton.addEdge(action, currentNode, nextNode,metaData);
+            automaton.addEdge(action, currentNode, nextNode,foundGuard);
             interpretNode(astNode.getTo(), automaton, nextNode);
         }
     }
@@ -265,7 +267,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     }
 
     private void interpretNode(TerminalNode astNode, Automaton automaton, AutomatonNode currentNode){
-        currentNode.addMetaData("isTerminal", astNode.getTerminal());
+        currentNode.setTerminal(astNode.getTerminal());
     }
 
     private Automaton processLabellingAndRelabelling(Automaton automaton, ProcessRootNode astNode) throws CompilationException {
@@ -282,14 +284,14 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     private void addAutomaton(AutomatonNode currentNode, Automaton automaton1, Automaton automaton2) throws CompilationException, InterruptedException {
         List<String> references = new ArrayList<>();
 
-        if(currentNode.hasMetaData("reference")){
-            references.addAll((Set<String>)currentNode.getMetaData("reference"));
+        if(currentNode.getReferences() != null){
+            references.addAll(currentNode.getReferences());
         }
 
         AutomatonNode oldRoot = automaton1.addAutomaton(automaton2);
 
-        if(oldRoot.hasMetaData("reference")){
-            references.addAll((Set<String>)oldRoot.getMetaData("reference"));
+        if(oldRoot.getReferences() != null){
+            references.addAll(oldRoot.getReferences());
         }
 
         AutomatonNode node = automaton1.combineNodes(currentNode, oldRoot,context);
@@ -297,8 +299,9 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     }
 
     private void processRelabelling(Automaton automaton, RelabelNode relabels){
-        automaton.addMetaData("alphabet_before_hiding",new HashSet<>(automaton.getAlphabet()));
-        automaton.addMetaData("relabels",relabels.getRelabels());
+        automaton.setAlphabetBeforeHiding(new HashSet<>(automaton.getAlphabet()));
+        automaton.setRelabels(relabels.getRelabels());
+
         for(RelabelElementNode element : relabels.getRelabels()){
             automaton.relabelEdges(element.getOldLabel(), element.getNewLabel());
         }
@@ -306,8 +309,8 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
 
     private void processHiding(Automaton automaton, HidingNode hiding) throws CompilationException {
         Set<String> alphabet = automaton.getAlphabet();
-        if (!automaton.hasMetaData("alphabet_before_hiding"))
-            automaton.addMetaData("alphabet_before_hiding",new HashSet<>(automaton.getAlphabet()));
+        if (automaton.getAlphabetBeforeHiding() == null)
+            automaton.setAlphabetBeforeHiding(new HashSet<>(automaton.getAlphabet()));
         Set<String> hidden = new HashSet<>(hiding.getSet().getSet());
         String type = hiding.getType();
         if (type.equals("includes")) {
@@ -342,7 +345,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
             }
 
             current.getOutgoingEdges().forEach(edge -> fringe.offer(edge.getTo()));
-            current.addMetaData("label", label++);
+            current.setLabelNumber(label++);
 
             visited.add(current.getId());
         }

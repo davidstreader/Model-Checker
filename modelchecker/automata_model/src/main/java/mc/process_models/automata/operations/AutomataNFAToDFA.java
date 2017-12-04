@@ -39,7 +39,7 @@ public class AutomataNFAToDFA {
 
             if(!processedRoot){
                 dfa.setRoot(node);
-                node.addMetaData("startNode", true);
+                node.setStartNode(true);
                 processedRoot = true;
             }
 
@@ -57,7 +57,7 @@ public class AutomataNFAToDFA {
                 }
                 AutomatonNode nextNode = nodeMap.get(nextId);
 
-                dfa.addEdge(action, node, nextNode, Collections.emptyMap());
+                dfa.addEdge(action, node, nextNode, null);
 
                 fringe.push(nextStates);
             }
@@ -67,7 +67,7 @@ public class AutomataNFAToDFA {
 
         dfa.getNodes().stream()
                 .filter(node -> node.getOutgoingEdges().isEmpty())
-                .forEach(node -> node.addMetaData("isTerminal", "STOP"));
+                .forEach(node -> node.setTerminal("STOP"));
         return dfa;
     }
 
@@ -144,15 +144,8 @@ public class AutomataNFAToDFA {
 
     private String constructLabel(List<AutomatonNode> nodes){
         Set<String> labelSet = new HashSet<>();
-        for(AutomatonNode node : nodes){
-            Object label = node.getMetaData("label");
-            if(label instanceof Integer){
-                labelSet.add(Integer.toString((Integer)label));
-            }
-            else if(label instanceof String){
-                labelSet.add((String)label);
-            }
-        }
+        for(AutomatonNode node : nodes)
+            labelSet.add(Integer.toString(node.getLabelNumber()));
 
         List<String> labels = new ArrayList<>(labelSet);
         Collections.sort(labels);

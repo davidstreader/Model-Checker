@@ -25,7 +25,7 @@ public class NodeUtils {
     private static Stream<List<AutomatonEdge>> findLoops(AutomatonNode toFind, AutomatonEdge edge, List<AutomatonEdge> path, List<AutomatonEdge> visited) {
         if (visited.contains(edge)) return Stream.empty();
         visited.add(edge);
-        if (edge.getFrom() == toFind || edge.getFrom().hasMetaData("startNode")) {
+        if (edge.getFrom() == toFind || edge.getFrom().isStartNode()) {
             path.add(edge);
             return Stream.of(path);
         }
@@ -40,8 +40,8 @@ public class NodeUtils {
     public static Map<String,Expr> collectVariables(List<AutomatonEdge> edges, Context context) {
         HashMap<String,Expr> exp = new HashMap<>();
         for (AutomatonEdge edge:edges) {
-            if (edge.hasMetaData("guard")) {
-                Guard guard = (Guard) edge.getMetaData("guard");
+            if (edge.getGuard() != null) {
+                Guard guard =  edge.getGuard();
                 for (String next: guard.getNext()) {
                     next = next.replaceAll(":","");
                     next = next.replaceAll("\\$","");

@@ -1,45 +1,75 @@
 package mc.process_models.automata;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import lombok.Getter;
+import lombok.Setter;
 import mc.Constant;
+import mc.compiler.Guard;
 import mc.process_models.ProcessModelObject;
 import mc.process_models.automata.serializers.JSONEdgeSerializer;
+
+import java.util.Map;
+import java.util.Set;
 
 @JsonSerialize(using = JSONEdgeSerializer.class)
 public class AutomatonEdge extends ProcessModelObject {
 
+    @Getter
+    @Setter
     private String label;
+
+    @Getter
+    @Setter
     private AutomatonNode from;
+
+    @Getter
+    @Setter
     private AutomatonNode to;
+
+    @Getter
+    @Setter
+    private Guard guard;
+
+    //Overriding the abstract class so we can see where these methods are being used
+    // Temp code to find where the metadata is being set and used.
+    public Map<String, Object> getMetaData(){
+        System.out.println("Someone called getMetaData");
+        return null;
+
+    }
+
+    public Object getMetaData(String key) {
+        System.out.println("[Node]Asked for key: " + key);
+
+        return null;
+    }
+
+    public void addMetaData(String key, Object value){
+        System.out.println("[Node]Was told to add: " + key + " data: " + value.toString());
+
+    }
+
+    public void removeMetaData(String key) {
+        System.out.println("[Node]Was told to remove: " + key);
+
+    }
+
+    public boolean hasMetaData(String key){
+        System.out.println("[Node]Asked if " + key + " exists");
+        return false;
+    }
+
+    public Set<String> getMetaDataKeys() {
+        System.out.println("[Node]Was told to get keyset");
+        return null;
+    }
+
+    //End temp
 
     public AutomatonEdge(String id, String label, AutomatonNode from, AutomatonNode to){
         super(id,"edge");
         this.label = label;
         this.from = from;
-        this.to = to;
-    }
-
-    public String getLabel(){
-        return label;
-    }
-
-    public void setLabel(String label){
-        this.label = label;
-    }
-
-    public AutomatonNode getFrom(){
-        return from;
-    }
-
-    public void setFrom(AutomatonNode from){
-        this.from = from;
-    }
-
-    public AutomatonNode getTo(){
-        return to;
-    }
-
-    public void setTo(AutomatonNode to){
         this.to = to;
     }
 
@@ -57,7 +87,7 @@ public class AutomatonEdge extends ProcessModelObject {
             "\tlabel:" + label + "\n" +
             "\tfrom:" + from.getId() + "\n" +
             "\tto:" + to.getId() + "\n" +
-            "\tmetadata:" + getMetaData() + "\n" +
+            "\tmetadata:" + getGuard() + "\n" +
             "}";
 
         return builder;
@@ -82,4 +112,8 @@ public class AutomatonEdge extends ProcessModelObject {
         result = 31 * result + to.getId().hashCode();
         return result;
     }
+
+
+
+
 }

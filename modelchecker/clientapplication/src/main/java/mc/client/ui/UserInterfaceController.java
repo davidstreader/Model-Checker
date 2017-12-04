@@ -242,7 +242,8 @@ public class UserInterfaceController implements Initializable {
                                         popupSelection.getItems().addAll(list);
                                         popupSelection.getSelectionModel().select(0);
 
-                                        autocompleteBox.show(userCodeInput, userCodeInput.getCaretBounds().get().getMinX(), userCodeInput.getCaretBounds().get().getMaxY());
+                                        if(userCodeInput.getCaretBounds().isPresent())
+                                            autocompleteBox.show(userCodeInput, userCodeInput.getCaretBounds().get().getMinX(), userCodeInput.getCaretBounds().get().getMaxY());
 
                                     } else { // If we dont have any autocomplete suggestions dont show the box
                                         autocompleteBox.hide();
@@ -399,7 +400,9 @@ public class UserInterfaceController implements Initializable {
                 holdHighlighting = true;
                 compilerOutputDisplay.insertText(0,e.toString());
                 Location compilerIssue = e.getLocation();
-                userCodeInput.setStyleClass(compilerIssue.getStartIndex(), compilerIssue.getEndIndex(), "issue");
+
+                if(compilerIssue.getStartIndex() > 0 && compilerIssue.getStartIndex() < userCodeInput.getText().length())
+                 userCodeInput.setStyleClass(compilerIssue.getStartIndex(), compilerIssue.getEndIndex(), "issue");
 
             }
         }

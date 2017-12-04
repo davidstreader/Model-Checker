@@ -100,14 +100,14 @@ public class ModelView implements Observer{
         automata.getNodes().forEach(n -> {
             mxCell gNode = (mxCell) graph.insertVertex(parent,n.getId(),n.getId(),100, 100, 40, 40, "vertex");
             nodeMap.put(n.getId(),gNode);
-            if (n.hasMetaData("startNode")) {
+            if (n.isStartNode()) {
                 rootNodes.add(n.getId());
                 gNode.setStyle("vertex;start");
             }
-            if(n.hasMetaData("isTerminal")) {
-                if(Objects.equals(n.getMetaData("isTerminal"),"STOP"))
+            if(n.isTerminal()) {
+                if(n.getTerminal().equals("STOP"))
                     gNode.setStyle("vertex;stop");
-                if(Objects.equals(n.getMetaData("isTerminal"),"ERROR"))
+                if(n.getTerminal().equals("ERROR"))
                     gNode.setStyle("vertex;error");
             }
         });
@@ -215,11 +215,11 @@ public class ModelView implements Observer{
         graphComponent.setConnectable(false);
         graphComponent.setPanning(true);
 
-        Compiler comp = new Compiler();
+        //Compiler comp = new Compiler();
 
         //hacky test
-        update(null, comp.compile("automata { A = b -> c -> STOP." +
-                "                             B = d -> c -> STOP." +
-                "                             C = A || B.}", new Context(), Expression.mkCtx(),new LinkedBlockingQueue<>()));
+       // update(null, comp.compile("automata { A = b -> c -> STOP." +
+         //       "                             B = d -> c -> STOP." +
+         //       "                             C = A || B.}", new Context(), Expression.mkCtx(),new LinkedBlockingQueue<>()));
     }
 }

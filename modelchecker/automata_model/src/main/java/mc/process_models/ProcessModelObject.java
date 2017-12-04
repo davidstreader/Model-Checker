@@ -19,8 +19,14 @@ public abstract class ProcessModelObject implements Serializable {
     private String id;
     @Getter
     private String type;
-    @Getter
+
     private Map<String, Object> metaData;
+
+    public Map<String, Object> getMetaData(){
+        System.out.println("Someone called getMetaData");
+        return null;
+
+    }
 
     public ProcessModelObject(String id, String type){
         this.id = id;
