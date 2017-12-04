@@ -11,6 +11,7 @@ import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import javafx.embed.swing.SwingNode;
 import javafx.geometry.Bounds;
 import lombok.Getter;
+import mc.Constant;
 import mc.client.graph.DirectedEdge;
 import mc.client.graph.GraphNode;
 import mc.compiler.CompilationObject;
