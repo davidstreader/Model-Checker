@@ -51,9 +51,6 @@ allprojects {
         mavenCentral()
         maven { url 'https://jitpack.io' }
     }
-    dependencies {
-        testCompile 'junit:junit:4.11'
-    }
 }
 subprojects {
     apply plugin: 'java'
@@ -63,6 +60,7 @@ subprojects {
         if (project.name !=  'util') {
             compile project(':util')
         }
+        testCompile 'junit:junit:4.11'
         compileOnly 'org.projectlombok:lombok:1.16.12'
         compile     'uk.com.robust-it:cloning:1.9.3'
         compile     'org.apache.commons:commons-lang3:3.5'
