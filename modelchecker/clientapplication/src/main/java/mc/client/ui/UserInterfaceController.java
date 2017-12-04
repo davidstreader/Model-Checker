@@ -5,10 +5,14 @@ import javafx.embed.swing.SwingNode;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextArea;
+import javafx.geometry.Insets;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
+import javafx.scene.layout.GridPane;
+import javafx.stage.FileChooser;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import mc.client.ModelView;
 
 import mc.compiler.Compiler;
@@ -24,6 +28,9 @@ import org.fxmisc.richtext.model.StyleSpans;
 import org.fxmisc.richtext.model.StyleSpansBuilder;
 
 import javax.swing.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -51,6 +58,8 @@ public class UserInterfaceController implements Initializable {
 
     @FXML private ComboBox modelsList;
 
+    private Stage window;
+    private Scene scene;
 
     /**
      * Called to initialize a controller after its root element has been
@@ -271,34 +280,54 @@ public class UserInterfaceController implements Initializable {
     }
 
     @FXML
-    private void handleQuit(ActionEvent event) {
-        System.exit(0);
-    }
-
-    @FXML
     private void handleCreateNew(ActionEvent event) {
-
-    }
-
-    @FXML
-    private void handleOpenRecentAction(ActionEvent event) {
-
-
+        if (!(userCodeInput.getText().equals(""))) {
+            saveButtonFunctionality();
+        }
+        String length = userCodeInput.getText();
+        int size = length.length();
+        userCodeInput.deleteText(0, size);
     }
 
     @FXML
     private void handleOpen(ActionEvent event) {
+        if (!(userCodeInput.getText().equals(""))) {
+            addToScene();
+        } else {
+            dontSaveButtonFunctionality();
+        }
+    }
+
+    @FXML
+    private void handleOpenRecentAction(ActionEvent event) {
+        //display("OpenRecent");
 
     }
 
     @FXML
     private void handleFileClose(ActionEvent event) {
-
+        if (!(userCodeInput.getText().equals(""))) {
+            saveButtonFunctionality();
+        }
+        String length = userCodeInput.getText();
+        int size = length.length();
+        userCodeInput.deleteText(0, size);
     }
 
     @FXML
     private void handleSave(ActionEvent event) {
+        addToScene();
 
+    }
+
+    @FXML
+    private void handleSaveAs(ActionEvent event) {
+        addToScene();
+    }
+
+    @FXML
+    private void handleQuit(ActionEvent event) {
+        System.exit(0);
     }
 
     @FXML
@@ -356,11 +385,6 @@ public class UserInterfaceController implements Initializable {
         }
     }
 
-    @FXML
-    private void handleSaveAs(ActionEvent event) {
-
-
-    }
 
     //helpers for ModelView
 
@@ -387,4 +411,113 @@ public class UserInterfaceController implements Initializable {
         }
     }
 
+
+    public void addToScene() {
+        window = new Stage();
+        Label label = new Label("Do you want to save changes?");
+
+
+        Button saveButton = new Button();
+        saveButton.setText("Save");
+        saveButton.setOnAction(e -> saveButtonFunctionality());
+
+
+        Button dontSaveButton = new Button();
+        dontSaveButton.setText("Don't Save");
+        dontSaveButton.setOnAction(e -> dontSaveButtonFunctionality());
+
+
+        Button cancelButton = new Button();
+        cancelButton.setText("Cancel");
+        cancelButton.setOnAction(e -> cancelButtonFunctionality());
+
+
+        GridPane grid = new GridPane();
+        grid.setPadding(new Insets(10, 10, 10, 10));
+        grid.setVgap(25);
+        grid.setHgap(10);
+
+        // Adding the labels and the Buttons in order
+        GridPane.setConstraints(label, 0, 0);
+        GridPane.setConstraints(saveButton, 1, 0);
+        GridPane.setConstraints(dontSaveButton, 2, 0);
+        GridPane.setConstraints(cancelButton, 3, 0);
+
+
+        grid.getChildren().addAll(label, saveButton, dontSaveButton, cancelButton);
+
+
+        scene = new Scene(grid, 460, 85);
+
+        window.setScene(scene);
+        window.setMaxWidth(460);
+        window.setMaxHeight(85);
+        window.setMinWidth(460);
+        window.setMinHeight(85);
+        window.initModality(Modality.APPLICATION_MODAL);
+        window.show();
+    }
+
+    public void saveButtonFunctionality() {
+        window = new Stage();
+        FileChooser fileChooser;
+        PrintStream readTo;
+        File selectedFile;
+        fileChooser = new FileChooser();
+        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("TXT", "*.txt"));
+        fileChooser.setTitle("Save file into a directory");
+        selectedFile = fileChooser.showSaveDialog(window);
+
+        outerloop:
+        try {
+            if (selectedFile == null) {
+                break outerloop;
+            }else {
+                readTo = new PrintStream(selectedFile);
+                readTo.print(userCodeInput.getText());
+                readTo.close();
+            }
+        } catch (IOException message) {
+            System.out.println("Dont Fuck AROUND");
+        }
+        window.close();
+    }
+
+    public void dontSaveButtonFunctionality() {
+        window = new Stage();
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("TXT", "*.txt"));
+        fileChooser.setTitle("Open Resource File");
+
+        File selectedFile = fileChooser.showOpenDialog(window);
+        String theCode = "";
+        Scanner scanner;
+
+        outerloop:
+        try {
+            if (selectedFile == null) {
+                break outerloop;
+            } else {
+                scanner = new Scanner(selectedFile);
+                while (scanner.hasNext()) {
+                    theCode = theCode + scanner.nextLine() + "\n";
+                }
+                scanner.close();
+                String length = userCodeInput.getText();
+                int size = length.length();
+                userCodeInput.deleteText(0, size);
+                userCodeInput.replaceSelection(theCode);
+            }
+        } catch (IOException message) {
+            System.out.println(message);
+        }
+        window.close();
+    }
+
+    public void cancelButtonFunctionality() {
+        window.close();
+    }
+
 }
+
+

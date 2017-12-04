@@ -49,7 +49,6 @@ public class Interpreter {
                     model.addMetaData("skipped", true);
                 }
             }
-
             processMap.put(process.getIdentifier(), model);
         }
 
