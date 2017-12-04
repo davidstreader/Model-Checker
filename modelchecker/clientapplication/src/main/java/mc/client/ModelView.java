@@ -79,8 +79,19 @@ public class ModelView implements Observer{
         DefaultModalGraphMouse gm = new DefaultModalGraphMouse();
         gm.setMode(ModalGraphMouse.Mode.TRANSFORMING);
         vv.setGraphMouse(gm);
-        vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
-        vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller());
+
+        vv.getRenderContext().setVertexLabelTransformer(GraphNode::getNodeId);
+        vv.getRenderContext().setEdgeLabelTransformer(DirectedEdge::getLabel);
+
+        vv.getRenderContext().setVertexFillPaintTransformer(node -> {
+            if(node.getNodeTermination().equals("START"))
+                return Color.GREEN;
+            if (node.getNodeTermination().equals("STOP"))
+                return Color.CYAN;
+            if(node.getNodeTermination().equals("ERROR"))
+                return Color.RED;
+            return Color.LIGHT_GRAY;
+        });
 
         Bounds b = s.getBoundsInParent();
         vv.setPreferredSize(new Dimension((int)b.getWidth(),(int)b.getHeight()));
@@ -108,7 +119,12 @@ public class ModelView implements Observer{
 
         //add all the nodes to the graph
         automata.getNodes().forEach(n -> {
-            GraphNode node = new GraphNode(automata.getId(),n.getId());
+            String nodeTermination = "";
+            if(n.getId().equals(automata.getRootId()))
+                nodeTermination = "START";
+            if(n.hasMetaData("isTerminal"))
+                nodeTermination = (String) n.getMetaData("isTerminal");
+            GraphNode node = new GraphNode(automata.getId(),n.getId(),nodeTermination);
             nodeMap.put(n.getId(),node);
             graph.addVertex(node);
         });
