@@ -12,6 +12,7 @@ import javafx.scene.input.KeyCode;
 import mc.client.ModelView;
 
 import mc.compiler.Compiler;
+import mc.compiler.OperationResult;
 import mc.exceptions.CompilationException;
 import mc.util.Location;
 import mc.util.expr.Expression;
@@ -50,59 +51,6 @@ public class UserInterfaceController implements Initializable {
 
     @FXML private ComboBox modelsList;
 
-    private static final String[] processTypes = new String[] {
-            "automata", "petrinet", "operation", "equation",
-
-    };
-
-    private static final String[] functions = new String[] {
-            "abs", "simp", "safe", "nfa2dfa"
-    };
-
-    private static final String[] terminals = new String[] {
-            "STOP", "ERROR"
-    };
-
-    private static final String[] keywords = new String[] {
-            "const", "range", "set", "if", "then", "else", "when", "forall"
-    };
-
-    private static final String PROCESSTYPES_PATTERN = "\\b(" + String.join("|", processTypes) + ")\\b";
-    private static final String FUNCTIONS_PATTERN = "\\b(" + String.join("|", functions) + ")\\b";
-    private static final String TERMINALS_PATTERN = "\\b(" + String.join("|", terminals) + ")\\b";
-    private static final String KEYWORDS_PATTERN = "\\b(" + String.join("|", keywords) + ")\\b";
-
-    private static final String SYMBOLS = "\\.\\.|\\.|,|:|\\[|\\]|\\(|\\)|->|~>|\\\\|@|\\$|\\?";
-    private static final String OPERATORS = "\\|\\||\\||&&|&|\\^|==|=|!=|<<|<=|<|>>|>=|>|\\+|-|\\*|\\/|%|!|\\?";
-    private static final String OPERATIONS = "~|#";
-    private static final String ACTION_LABEL_PATTERN = "[a-z][A-Za-z0-9_]*";
-    private static final String IDENT_PATTERN = "[A-Z][A-Za-z0-9_\\\\*]*";
-    private static final String INT_PATTERN = "[0-9][0-9]*";
-
-    private static final String PAREN_PATTERN = "\\(|\\)";
-    private static final String BRACE_PATTERN = "\\{|\\}";
-    private static final String BRACKET_PATTERN = "\\[|\\]";
-    private static final String COMMENT_PATTERN = "\\/\\/[^\n]*";
-
-    private static final Pattern PATTERN = Pattern.compile(
-            "(?<COMMENT>" + COMMENT_PATTERN + ")"+
-                    "|(?<PROCESSTYPE>" + PROCESSTYPES_PATTERN + ")" +
-                    "|(?<FUNCTION>" + FUNCTIONS_PATTERN + ")" +
-                    "|(?<TERMINAL>" + TERMINALS_PATTERN + ")" +
-                    "|(?<KEYWORD>" + KEYWORDS_PATTERN + ")" +
-                    "|(?<SYMBOL>" + SYMBOLS + ")" +
-                    "|(?<OPERATOR>" + OPERATORS + ")" +
-                    "|(?<OPERATION>" + OPERATIONS + ")" +
-                    "|(?<ACTIONLABEL>" + ACTION_LABEL_PATTERN + ")" +
-                    "|(?<IDENTIFER>" + IDENT_PATTERN + ")" +
-                    "|(?<INT>" + INT_PATTERN + ")"
-                    + "|(?<PAREN>" + PAREN_PATTERN + ")"
-                    + "|(?<BRACE>" + BRACE_PATTERN + ")"
-                    + "|(?<BRACKET>" + BRACKET_PATTERN + ")"
-    );
-
-
-
 
     /**
      * Called to initialize a controller after its root element has been
@@ -119,11 +67,12 @@ public class UserInterfaceController implements Initializable {
 
         //register a callback for whenever the list of automata is changed
         ModelView.getInstance().setListOfAutomataUpdater(this::updateModelsList);
+        ModelView.getInstance().setUpdateLog(this::updateLogText);
 
 
-        completionDictionary = new TrieNode<>(new ArrayList<>(Arrays.asList(processTypes)));
-        completionDictionary.add(new ArrayList<>(Arrays.asList(functions)));
-        completionDictionary.add(new ArrayList<>(Arrays.asList(keywords)));
+        completionDictionary = new TrieNode<>(new ArrayList<>(Arrays.asList(SyntaxHighlighting.processTypes)));
+        completionDictionary.add(new ArrayList<>(Arrays.asList(SyntaxHighlighting.functions)));
+        completionDictionary.add(new ArrayList<>(Arrays.asList(SyntaxHighlighting.keywords)));
 
         userCodeInput.setStyle("-fx-background-color: #32302f;");
         userCodeInput.getStylesheets().add(getClass().getResource("/clientres/automata-keywords.css").toExternalForm());
@@ -413,10 +362,29 @@ public class UserInterfaceController implements Initializable {
 
     }
 
+    //helpers for ModelView
+
+    /**
+     * This recieves a list of all valid models and registers them with the combobox
+     * @param models a collection of the processIDs of all valid models
+     */
     private void updateModelsList(Collection<String> models){
         modelsList.getItems().clear();
         models.forEach(modelsList.getItems()::add);
         modelsList.getSelectionModel().selectFirst();
+    }
+
+    private void updateLogText(List<OperationResult> opRes, List<OperationResult> eqRes){
+        if(opRes.size() > 0){
+            compilerOutputDisplay.appendText("\n##Operation Results##\n");
+            opRes.forEach(o -> compilerOutputDisplay.appendText(o.getProcess1().getIdent() + " " + o.getOperation() + " " +
+                                                                o.getProcess2().getIdent() + " = " + o.getResult() + "\n"));
+        }
+        if(eqRes.size() > 0){
+            compilerOutputDisplay.appendText("\n##Operation Results##\n");
+            eqRes.forEach(o -> compilerOutputDisplay.appendText(o.getProcess1().getIdent() + " " + o.getOperation() + " " +
+                                                                o.getProcess2().getIdent() + " = " + o.getResult() + "\n"));
+        }
     }
 
 }

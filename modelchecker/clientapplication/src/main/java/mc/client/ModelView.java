@@ -16,6 +16,7 @@ import mc.client.graph.DirectedEdge;
 import mc.client.graph.GraphNode;
 import mc.compiler.CompilationObject;
 import mc.compiler.CompilationObservable;
+import mc.compiler.OperationResult;
 import mc.process_models.ProcessModel;
 import mc.process_models.automata.Automaton;
 
@@ -24,25 +25,27 @@ import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
  * Created by bealjaco on 29/11/17.
  */
 public class ModelView implements Observer{
+
     private Graph<GraphNode,DirectedEdge> graph;
     private VisualizationViewer<GraphNode,DirectedEdge> graphView;
 
-    private Set<String> displayedAutomata;
+    private Set<String> automataToDisplay;
 
     private CompilationObject compiledResult;
-
-    private List<String> rootNodes = new ArrayList<>();
 
     private static final Font sourceCodePro;
 
     @Setter
     private Consumer<Collection<String>> listOfAutomataUpdater;
+    @Setter
+    private BiConsumer<List<OperationResult>,List<OperationResult>> updateLog;
 
 
 
@@ -60,11 +63,10 @@ public class ModelView implements Observer{
     public void update(Observable o, Object arg) {
         if(!(arg instanceof CompilationObject))
             throw new IllegalArgumentException("arg object was not of type compilationObject");
-        //reset state
-        rootNodes.clear();
 
         compiledResult = (CompilationObject) arg;
         listOfAutomataUpdater.accept(compiledResult.getProcessMap().keySet());
+        updateLog.accept(compiledResult.getOperationResults(),compiledResult.getEquationResults());
     }
 
     /**
@@ -76,7 +78,7 @@ public class ModelView implements Observer{
         if(compiledResult == null)
             return new VisualizationViewer<>(new DAGLayout<>(new DirectedSparseGraph<>()));
         compiledResult.getProcessMap().keySet().stream()
-                .filter(displayedAutomata::contains)
+                .filter(automataToDisplay::contains)
                 .map(compiledResult.getProcessMap()::get)
                 .filter(Objects::nonNull)
                 .forEach(this::addProcess);
@@ -95,8 +97,12 @@ public class ModelView implements Observer{
         vv.setGraphMouse(gm);
 
         vv.getRenderContext().setVertexLabelTransformer(GraphNode::getNodeId);
-        if(sourceCodePro!=null)
-            vv.getRenderContext().setEdgeFontTransformer(e->sourceCodePro);
+
+        if(sourceCodePro!=null) {
+            vv.getRenderContext().setEdgeFontTransformer(e -> sourceCodePro);
+            vv.getRenderContext().setVertexFontTransformer(e -> sourceCodePro);
+        }
+
         vv.getRenderContext().setEdgeLabelTransformer(DirectedEdge::getLabel);
         vv.getRenderContext().setVertexFillPaintTransformer(node -> {
             if(node.getNodeTermination().equals("START"))
@@ -138,6 +144,7 @@ public class ModelView implements Observer{
                 nodeTermination = "START";
             if(n.hasMetaData("isTerminal"))
                 nodeTermination = (String) n.getMetaData("isTerminal");
+
             GraphNode node = new GraphNode(automata.getId(),n.getId(),nodeTermination);
             nodeMap.put(n.getId(),node);
             graph.addVertex(node);
@@ -150,20 +157,20 @@ public class ModelView implements Observer{
             graph.addEdge(new DirectedEdge(e.getLabel(),UUID.randomUUID().toString()),from,to);
         });
 
-        //officially "group" the cells
     }
 
 
     public void addDisplayedAutomata(String modelLabel) {
-        displayedAutomata.add(modelLabel);
+        assert compiledResult.getProcessMap().containsKey(modelLabel);
+        automataToDisplay.add(modelLabel);
     }
 
     public void clearDisplayed() {
-        displayedAutomata.clear();
+        automataToDisplay.clear();
     }
 
     public void addAllAutomata() {
-        displayedAutomata.addAll(this.getProcessMap().keySet());
+        automataToDisplay.addAll(getProcessMap().keySet());
     }
 
     public Map<String, ProcessModel> getProcessMap() {
@@ -178,8 +185,7 @@ public class ModelView implements Observer{
      */
     private ModelView(){
         CompilationObservable.getInstance().addObserver(this);
-
-        displayedAutomata = new LinkedHashSet<>();
+        automataToDisplay = new HashSet<>();
     }
 
     //register font
