@@ -1,9 +1,11 @@
 package mc.client.graph;
 
 import edu.uci.ics.jung.visualization.Layer;
+import edu.uci.ics.jung.visualization.MultiLayerTransformer;
 import edu.uci.ics.jung.visualization.VisualizationServer;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.layout.ObservableCachingLayout;
+import javafx.scene.transform.Affine;
 import lombok.RequiredArgsConstructor;
 
 import java.awt.*;
@@ -26,11 +28,11 @@ public class AutomataBorderPaintable implements VisualizationServer.Paintable{
 
         ObservableCachingLayout layout = (ObservableCachingLayout) vv.getGraphLayout();
 
-        AffineTransform transform = vv
+        //TODO: fix the transform and make it scale more effectively
+        MultiLayerTransformer transform = vv
                 .getRenderContext()
-                .getMultiLayerTransformer()
-                .getTransformer(Layer.LAYOUT)
-                .getTransform();
+                .getMultiLayerTransformer();
+
 
         automata.forEach((key, value) -> {
             Rectangle2D boundingBox = computeBoundingBox(value, layout, transform);
@@ -52,14 +54,14 @@ public class AutomataBorderPaintable implements VisualizationServer.Paintable{
     }
 
     private static <V> Rectangle2D computeBoundingBox(Iterable<V> vertices, ObservableCachingLayout<V, ?> layout,
-                                                      AffineTransform at) {
+                                                      MultiLayerTransformer at) {
         double minX = Double.MAX_VALUE;
         double minY = Double.MAX_VALUE;
         double maxX = -Double.MAX_VALUE;
         double maxY = -Double.MAX_VALUE;
         for (V vertex : vertices) {
             Point2D location = layout.apply(vertex);
-            at.transform(location, location);
+            location = at.transform(location);
             minX = Math.min(minX, location.getX());
             minY = Math.min(minY, location.getY());
             maxX = Math.max(maxX, location.getX());

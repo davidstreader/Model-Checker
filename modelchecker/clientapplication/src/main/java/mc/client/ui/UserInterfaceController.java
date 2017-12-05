@@ -477,17 +477,18 @@ public class UserInterfaceController implements Initializable {
         fileChooser.setTitle("Save file into a directory");
         selectedFile = fileChooser.showSaveDialog(window);
 
-        outerloop:
         try {
             if (selectedFile == null) {
-                break outerloop;
+                window.close();
+                return;
             }else {
                 readTo = new PrintStream(selectedFile);
                 readTo.print(userCodeInput.getText());
                 readTo.close();
             }
         } catch (IOException message) {
-            System.out.println("Dont Fuck AROUND");
+            //TODO: Gracefully handle errors
+            message.printStackTrace();
         }
         window.close();
     }
@@ -518,7 +519,8 @@ public class UserInterfaceController implements Initializable {
                 userCodeInput.replaceSelection(theCode);
             }
         } catch (IOException message) {
-            System.out.println(message);
+            //TODO: Gracefully handle errors
+            message.printStackTrace();
         }
         window.close();
     }
