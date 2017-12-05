@@ -17,11 +17,9 @@ public class AutomataLabeller {
         List<AutomatonNode> nodes = automaton.getNodes();
         for(AutomatonNode node : nodes){
             AutomatonNode newNode = labelled.addNode(label + ":" + node.getId());
-            for(String key : node.getMetaDataKeys()){
-                newNode.addMetaData(key, node.getMetaData(key));
-                if(key.equals("startNode")){
-                    labelled.setRoot(newNode);
-                }
+            newNode.copyProperties(node);
+            if(newNode.isStartNode()){
+                labelled.setRoot(newNode);
             }
         }
 
@@ -29,12 +27,11 @@ public class AutomataLabeller {
         for(AutomatonEdge edge : edges){
             AutomatonNode from = labelled.getNode(label + ":" + edge.getFrom().getId());
             AutomatonNode to = labelled.getNode(label + ":" + edge.getTo().getId());
-            labelled.addEdge(label + "." + edge.getLabel(), from, to, edge.getMetaData());
+            labelled.addEdge(label + "." + edge.getLabel(), from, to, edge.getGuard());
         }
 
-        for(String key : automaton.getMetaDataKeys()){
-            labelled.addMetaData(key, automaton.getMetaData(key));
-        }
+
+        labelled.copyProperties(automaton);
 
         return labelled;
     }

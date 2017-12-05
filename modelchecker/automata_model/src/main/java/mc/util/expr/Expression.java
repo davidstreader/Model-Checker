@@ -132,10 +132,19 @@ public class Expression {
     @SuppressWarnings("unchecked")
     public static <T extends Expr> T substitute(T expr, Map<String, Expr> subMap, Context ctx) {
         if (subMap == null) return expr;
-        Expr[] consts = new Expr[subMap.size()];
-        Expr[] replacements = new Expr[subMap.size()];
+
+        int numberNull = 0;
+        for (String c : subMap.keySet())
+            if(subMap.get(c) == null)
+                numberNull++;
+
+
+        Expr[] consts = new Expr[subMap.size()-numberNull];
+        Expr[] replacements = new Expr[subMap.size()-numberNull];
         int i =0;
         for (String c : subMap.keySet()) {
+            if(subMap.get(c) == null)
+                continue;
             consts[i] = ctx.mkBVConst(c,32);
             replacements[i++] = subMap.get(c);
         }

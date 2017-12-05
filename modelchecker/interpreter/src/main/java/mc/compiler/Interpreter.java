@@ -36,19 +36,12 @@ public class Interpreter {
             switch(process.getType()){
                 case "automata":
                     model = automaton.interpret(process, processMap, localCompiler, context);
-                    model.addMetaData("location",process.getLocation());
+                    model.setLocation(process.getLocation());
                     break;
                 default:
                     throw new CompilationException(getClass(),"Unable to find the process type: "+process.getType());
             }
 
-            // check if this process has been marked as not to be rendered
-            if(process.getMetaData().containsKey("skipped")){
-                boolean isSkipped = (boolean)process.getMetaData().get("skipped");
-                if(isSkipped){
-                    model.addMetaData("skipped", true);
-                }
-            }
             processMap.put(process.getIdentifier(), model);
         }
 

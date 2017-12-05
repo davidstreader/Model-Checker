@@ -49,37 +49,29 @@ public class AutomataParallelComposition {
                 String id = createId(node1, node2);
                 AutomatonNode node = automaton.addNode(id);
 
-                // create an intersection of the metadata from both nodes
-                for(String key : node1.getMetaDataKeys()){
-                    Object data = node1.getMetaData(key);
-                    // check if the second node has a matching metadata key
-                    if(node2.hasMetaData(key)){
-                        // check that the metadata is equivalent
-                        if(data.equals(node2.getMetaData(key))){
-                            // add metadata to the composed node
-                            node.addMetaData(key, data);
+                // create an intersection of both nodes
+               node.copyProperties(node1.createIntersection(node2));
 
-                            if(key.equals("startNode")){
-                                automaton.setRoot(node);
-                            }
-                        }
-                    }
-                }
+                if(node.isStartNode())
+                    automaton.setRoot(node);
+
 
 
                 HashMap<String,Object> varmap = new HashMap<>();
-                if (node1.getMetaData().containsKey("variables")) {
-                    varmap.putAll((Map<? extends String, ?>) node1.getMetaData().get("variables"));
+                if (node1.getVariables() != null) {
+                    varmap.putAll(node1.getVariables());
                 }
-                if (node2.getMetaData().containsKey("variables")) {
-                    varmap.putAll((Map<? extends String, ?>) node2.getMetaData().get("variables"));
+                if (node2.getVariables() != null) {
+                    varmap.putAll(node2.getVariables());
                 }
-                node.addMetaData("variables",varmap);
+                node.setVariables(varmap);
 
                 nodeMap.get(node1.getId()).add(node);
                 nodeMap.get(node2.getId()).add(node);
-                if(Objects.equals(node1.getMetaData().get("isTerminal"),("ERROR")) || Objects.equals(node2.getMetaData().get("isTerminal"),("ERROR")))
-                    node.addMetaData("isTerminal","ERROR");
+
+                if(node2.getTerminal() != null && node2.getTerminal().equals("ERROR") || node1.getTerminal() != null && node1.getTerminal().equals("ERROR"))
+                    node.setTerminal("ERROR");
+
             }
         }
     }
@@ -145,10 +137,10 @@ public class AutomataParallelComposition {
                 List<AutomatonNode> from = nodeMap.get(edge.getFrom().getId());
                 List<AutomatonNode> to = nodeMap.get(edge.getTo().getId());
                 for(int i = 0; i < Math.min(from.size(),to.size()); i++){
-                    if(Objects.equals(from.get(i).getMetaData().get("isTerminal"), "ERROR")) //Dont set any links from terminal error nodes.
+                    if(from.get(i).isTerminal() && from.get(i).getTerminal().equals("ERROR")) //Dont set any links from terminal error nodes.
                         continue;
 
-                    automaton.addEdge(edge.getLabel(), from.get(i), to.get(i), edge.getMetaData()).getMetaData().putAll(edge.getMetaData());
+                    automaton.addEdge(edge.getLabel(), from.get(i), to.get(i), edge.getGuard()).setGuard(edge.getGuard());
                 }
             }
         }
@@ -175,13 +167,15 @@ public class AutomataParallelComposition {
                     }
                     AutomatonNode to = automaton.getNode(createId(edge1.getTo(), edge2.getTo()));
                     Guard guard = new Guard();
-                    if (edge1.hasMetaData("guard") && edge1.getMetaData("guard") != null) guard.mergeWith((Guard) edge1.getMetaData("guard"));
-                    if (edge2.hasMetaData("guard") && edge2.getMetaData("guard") != null) guard.mergeWith((Guard) edge2.getMetaData("guard"));
-                    Map<String,Object> metaData = new HashMap<>();
+                    if (edge1.getGuard() != null) guard.mergeWith(edge1.getGuard());
+                    if (edge2.getGuard() != null) guard.mergeWith(edge2.getGuard());
+
                     if (guard.hasData()) {
-                        metaData.put("guard", guard);
+                        automaton.addEdge(currentSyncEdgeLabel, from, to, guard);
+                    } else {
+                        automaton.addEdge(currentSyncEdgeLabel, from, to, null);
                     }
-                    automaton.addEdge(currentSyncEdgeLabel, from, to,metaData);
+
 
                 }
             }

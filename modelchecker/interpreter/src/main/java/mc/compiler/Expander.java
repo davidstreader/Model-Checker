@@ -148,7 +148,7 @@ public class Expander {
         //Create a temporary variable map that does not contain hidden variables and store it.
         HashMap<String,Object> tmpVarMap = new HashMap<>(variableMap);
         tmpVarMap.keySet().removeIf(s -> hiddenVariables.contains(s.substring(1)));
-        astNode.getMetaData().put("variables",tmpVarMap);
+        astNode.setModelVariables(tmpVarMap);
         return astNode;
     }
 
@@ -219,7 +219,7 @@ public class Expander {
             guard.parseNext(((IdentifierNode) astNode.getTo()).getIdentifier(), globalVariableMap, identMap,astNode.getTo().getLocation());
             //There were next values, so assign to the metadata
             if (guard.hasData())
-                astNode.getMetaData().put("guard",guard);
+                astNode.setGuard(guard);
         }
         ActionLabelNode from = expand(astNode.getFrom(), variableMap, context);
         ASTNode to = expand(astNode.getTo(), variableMap, context);
@@ -268,16 +268,17 @@ public class Expander {
         Guard trueGuard = new Guard(astNode.getCondition(),vars,hiddenVariables);
         Guard falseGuard = new Guard(astNode.getCondition(),vars,hiddenVariables);
         ASTNode trueBranch = expand(astNode.getTrueBranch(), variableMap, context);
-        if (trueBranch.getMetaData().containsKey("guard"))
-            trueGuard.mergeWith((Guard) trueBranch.getMetaData("guard"));
-        trueBranch.getMetaData().put("guard", trueGuard);
+        if (trueBranch.getGuard() != null)
+            trueGuard.mergeWith((Guard)trueBranch.getGuard());
+
+        trueBranch.setGuard(trueGuard);
         ASTNode falseBranch = null;
 
         if (astNode.hasFalseBranch()) {
             falseBranch = expand(astNode.getFalseBranch(), variableMap, context);
-            if (falseBranch.getMetaData().containsKey("guard"))
-                falseGuard.mergeWith((Guard) falseBranch.getMetaData("guard"));
-            falseBranch.getMetaData().put("guard", falseGuard);
+            if (falseBranch.getGuard() != null)
+                falseGuard.mergeWith((Guard)falseBranch.getGuard());
+            falseBranch.setGuard(falseGuard);
         }
         //Check if there are any hidden variables inside both the variableMap and the expression
         if (vars.keySet().stream().map(s -> s.substring(1)).anyMatch(s -> hiddenVariables.contains(s))) {
@@ -315,8 +316,8 @@ public class Expander {
 
     private FunctionNode expand(FunctionNode astNode, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException {
         ASTNode process = expand(astNode.getProcess(), variableMap, context);
-        if (astNode.getMetaData("replacements") != null) {
-            Set<String> unReplacements = (Set<String>) astNode.getMetaData("replacements");
+        if (astNode.getReferences() != null) {
+            Set<String> unReplacements = (Set<String>) astNode.getReplacements();
             HashMap<String, Expr> replacements = new HashMap<>();
             for (String str : unReplacements) {
                 String var = str.substring(0, str.indexOf('='));
@@ -329,7 +330,7 @@ public class Expander {
                 }
                 replacements.put("$"+var, expression);
             }
-            astNode.getMetaData().put("replacements",replacements);
+            astNode.setReplacements(replacements);
         }
         astNode.setProcess(process);
         return astNode;

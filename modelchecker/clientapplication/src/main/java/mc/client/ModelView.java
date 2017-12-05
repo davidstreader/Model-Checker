@@ -160,14 +160,15 @@ public class ModelView implements Observer{
         //add all the nodes to the graph
         automata.getNodes().forEach(n -> {
             String nodeTermination = "NOMINAL";
-            if(n.getId().equals(automata.getRootId()))
+            if(n.isStartNode())
                 nodeTermination = "START";
-            if(n.hasMetaData("isTerminal"))
-                nodeTermination = (String) n.getMetaData("isTerminal");
+            if(n.getTerminal() != null)
+                nodeTermination = n.getTerminal();
             nodeTermination = nodeTermination.toLowerCase();
             GraphNode node = new GraphNode(automata.getId(),n.getId(),nodeTermination);
             nodeMap.put(n.getId(),node);
             graph.addVertex(node);
+
         });
 
         //add the edges to the graph

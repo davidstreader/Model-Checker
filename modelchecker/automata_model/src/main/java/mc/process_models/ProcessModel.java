@@ -1,10 +1,12 @@
 package mc.process_models;
 
+import mc.util.Location;
+
 public interface ProcessModel {
 
-    void addMetaData(String key, Object value);
-    void removeMetaData(String key);
-    boolean hasMetaData(String key);
     String getId();
     ProcessType getProcessType();
+
+    void setLocation(Location toThis);
+    Location getLocation();
 }

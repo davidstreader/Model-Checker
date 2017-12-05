@@ -6,6 +6,7 @@ import com.microsoft.z3.Expr;
 import com.microsoft.z3.Z3Object;
 import com.rits.cloning.Cloner;
 import lombok.Getter;
+import lombok.Setter;
 import mc.util.Location;
 
 import java.io.Serializable;
@@ -20,10 +21,16 @@ public abstract class ASTNode implements Serializable {
 	// fields
 	private Set<String> references;
 	private Location location;
-    @Getter
-	private HashMap<String,Object> metaData = new HashMap<>();
 
-	public ASTNode(Location location){
+    @Getter
+    @Setter
+    private HashMap<String, Object> modelVariables;
+
+    @Getter
+    @Setter
+    private Object guard;
+
+    public ASTNode(Location location){
 		references = null;
 		this.location = location;
 	}
@@ -79,7 +86,4 @@ public abstract class ASTNode implements Serializable {
         return cloner.deepClone(this);
 	}
 
-    public Object getMetaData(String key) {
-        return metaData.get(key);
-    }
 }

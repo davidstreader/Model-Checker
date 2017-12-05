@@ -1,12 +1,36 @@
 package mc.compiler.ast;
 
+import com.microsoft.z3.Expr;
+import lombok.Getter;
+import lombok.Setter;
 import mc.util.Location;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class FunctionNode extends ASTNode {
 
 	// fields
 	private String function;
 	private ASTNode process;
+
+    @Getter
+    @Setter
+    private boolean fair = true;
+
+    private boolean prune;
+
+    public boolean needsPruning() {
+        return prune;
+    }
+
+    public void setPruning(boolean prune) {
+        this.prune = prune;
+    }
+
+    @Getter
+    @Setter
+    private Map<String,Expr> replacements;
 
 	public FunctionNode(String function, ASTNode process, Location location){
 		super(location);

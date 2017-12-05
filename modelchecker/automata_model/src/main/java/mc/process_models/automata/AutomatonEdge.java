@@ -1,45 +1,37 @@
 package mc.process_models.automata;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import lombok.Getter;
+import lombok.Setter;
 import mc.Constant;
+import mc.compiler.Guard;
 import mc.process_models.ProcessModelObject;
 import mc.process_models.automata.serializers.JSONEdgeSerializer;
 
 @JsonSerialize(using = JSONEdgeSerializer.class)
 public class AutomatonEdge extends ProcessModelObject {
 
+    @Getter
+    @Setter
     private String label;
+
+    @Getter
+    @Setter
     private AutomatonNode from;
+
+    @Getter
+    @Setter
     private AutomatonNode to;
+
+    @Getter
+    @Setter
+    private Guard guard;
+
 
     public AutomatonEdge(String id, String label, AutomatonNode from, AutomatonNode to){
         super(id,"edge");
         this.label = label;
         this.from = from;
-        this.to = to;
-    }
-
-    public String getLabel(){
-        return label;
-    }
-
-    public void setLabel(String label){
-        this.label = label;
-    }
-
-    public AutomatonNode getFrom(){
-        return from;
-    }
-
-    public void setFrom(AutomatonNode from){
-        this.from = from;
-    }
-
-    public AutomatonNode getTo(){
-        return to;
-    }
-
-    public void setTo(AutomatonNode to){
         this.to = to;
     }
 
@@ -57,7 +49,7 @@ public class AutomatonEdge extends ProcessModelObject {
             "\tlabel:" + label + "\n" +
             "\tfrom:" + from.getId() + "\n" +
             "\tto:" + to.getId() + "\n" +
-            "\tmetadata:" + getMetaData() + "\n" +
+            "\tmetadata:" + getGuard() + "\n" +
             "}";
 
         return builder;
@@ -82,4 +74,8 @@ public class AutomatonEdge extends ProcessModelObject {
         result = 31 * result + to.getId().hashCode();
         return result;
     }
+
+
+
+
 }

@@ -59,7 +59,7 @@ public class AutomataBisimulation {
             performColouring(automaton, colourMap);
 
             AutomatonNode root = automaton.getRoot();
-            int colour = (int)root.getMetaData("colour");
+            int colour = root.getColour();
 
             if(rootColour == Integer.MIN_VALUE){
                 rootColour = colour;
@@ -98,8 +98,8 @@ public class AutomataBisimulation {
                 }
 
                 // check if the current node is a terminal
-                if(current.hasMetaData("isTerminal")){
-                    String terminal = (String)current.getMetaData("isTerminal");
+                if(current.isTerminal()){
+                    String terminal = current.getTerminal();
                     if(terminal.equals("STOP")){
                         if(!nodeColours.containsKey(STOP_COLOUR)){
                             nodeColours.put(STOP_COLOUR, new ArrayList<>());
@@ -151,7 +151,7 @@ public class AutomataBisimulation {
 
             // apply colours to the nodes
             for(int colourId : nodeColours.keySet()){
-                nodeColours.get(colourId).forEach(node -> node.addMetaData("colour", colourId));
+                nodeColours.get(colourId).forEach(node -> node.setColour(colourId));
             }
 
         }
@@ -162,17 +162,17 @@ public class AutomataBisimulation {
     private void perfromInitialColouring(Automaton automaton){
         List<AutomatonNode> nodes = automaton.getNodes();
         for(AutomatonNode node : nodes){
-            if(node.hasMetaData("isTerminal")){
-                String terminal = (String)node.getMetaData("isTerminal");
+            if(node.isTerminal()){
+                String terminal = node.getTerminal();
                 if(terminal.equals("STOP")){
-                    node.addMetaData("colour", STOP_COLOUR);
+                    node.setColour(STOP_COLOUR);
                 }
                 else if(terminal.equals("ERROR")){
-                    node.addMetaData("colour", ERROR_COLOUR);
+                    node.setColour(ERROR_COLOUR);
                 }
             }
             else{
-                node.addMetaData("colour", BASE_COLOUR);
+                node.setColour(BASE_COLOUR);
             }
         }
     }
@@ -180,9 +180,9 @@ public class AutomataBisimulation {
     private List<Colour> constructColouring(AutomatonNode node){
         Set<Colour> colouringSet = new HashSet<>();
 
-        int from = (int)node.getMetaData("colour");
+        int from = node.getColour();
         node.getOutgoingEdges()
-            .forEach(edge -> colouringSet.add(new Colour(from, (int)edge.getTo().getMetaData("colour"),edge.getLabel(), (Guard) edge.getMetaData("guard"),node)));
+            .forEach(edge -> colouringSet.add(new Colour(from, edge.getTo().getColour(),edge.getLabel(),  edge.getGuard(),node)));
         List<Colour> colouring = new ArrayList<>(colouringSet);
         Collections.sort(colouring);
         return colouring;

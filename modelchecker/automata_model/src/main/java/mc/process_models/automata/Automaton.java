@@ -6,7 +6,11 @@ import com.mxgraph.layout.mxGraphLayout;
 import com.mxgraph.layout.orthogonal.mxOrthogonalLayout;
 import com.mxgraph.model.mxCell;
 import com.mxgraph.view.mxGraph;
+import lombok.Getter;
+import lombok.Setter;
 import mc.compiler.Guard;
+import mc.compiler.ast.HidingNode;
+import mc.compiler.ast.RelabelElementNode;
 import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
 import mc.process_models.ProcessModelObject;
@@ -29,13 +33,50 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     private int nodeId;
     private int edgeId;
 
+    @Getter
+    @Setter
+    private Location location;
+
+    @Getter
+    @Setter
+    private HidingNode hiding;
+
+    @Getter
+    @Setter
+    private Set<String> hiddenVariables;
+
+    @Getter
+    @Setter
+    private Location hiddenVariablesLocation;
+
+    @Getter
+    @Setter
+    private Location variablesLocation;
+
+    @Getter
+    @Setter
+    private Set<String> variables;
+
+    @Getter
+    @Setter
+    private Set<String> alphabetBeforeHiding;
+
+    @Getter
+    @Setter
+    private List<RelabelElementNode> relabels;
+
+    @Getter
+    @Setter
+    private List<Automaton> processList;
+
+
     public Automaton(String id) {
         super(id, "automata");
         setupAutomaton();
 
         // setup the root for this automaton
         this.root = addNode();
-        root.addMetaData("startNode", true);
+        root.setStartNode(true);
     }
 
     public Automaton(String id, boolean constructRoot) {
@@ -45,9 +86,23 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
         // only construct a root node if specified to do so
         if (constructRoot) {
             this.root = addNode();
-            root.addMetaData("startNode", true);
+            root.setStartNode(true);
         }
     }
+
+    public void copyProperties(Automaton fromThisautomata) {
+        this.location = fromThisautomata.getLocation();
+        this.hiding = fromThisautomata.getHiding();
+        this.hiddenVariables = fromThisautomata.getHiddenVariables();
+        this.hiddenVariablesLocation = fromThisautomata.getHiddenVariablesLocation();
+
+        this.variables = fromThisautomata.getVariables();
+        this.variablesLocation = fromThisautomata.getVariablesLocation();
+
+        this.alphabetBeforeHiding = fromThisautomata.getAlphabetBeforeHiding();
+        this.relabels = fromThisautomata.getRelabels();
+    }
+
     private void setupAutomaton() {
         this.nodeMap = new HashMap<>();
         this.edgeMap = new HashMap<>();
@@ -64,12 +119,12 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     public void setRoot(AutomatonNode root) throws CompilationException {
         // check the the new root is defined
         if (root == null) {
-            throw new CompilationException(getClass(),"Unable to set the root node to null",(Location)getMetaData().get("location"));
+            throw new CompilationException(getClass(),"Unable to set the root node to null",this.getLocation());
         }
 
         // check that the new root is part of this automaton
         if (!nodeMap.containsKey(root.getId())) {
-            throw new CompilationException(getClass(),"Unable to set the root node to "+root.getId()+", as the root is not a part of this automaton",(Location)getMetaData().get("location"));
+            throw new CompilationException(getClass(),"Unable to set the root node to "+root.getId()+", as the root is not a part of this automaton",this.getLocation());
         }
 
         this.root = root;
@@ -90,7 +145,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
             return nodeMap.get(id);
         }
 
-        throw new CompilationException(getClass(),"Unable to get the node "+id+" as it does not exist.",(Location)getMetaData().get("location"));
+        throw new CompilationException(getClass(),"Unable to get the node "+id+" as it does not exist.",this.getLocation());
     }
 
     public AutomatonNode addNode() {
@@ -125,10 +180,10 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
     public AutomatonNode combineNodes(AutomatonNode node1, AutomatonNode node2, Context context) throws CompilationException, InterruptedException {
         if(!nodeMap.containsKey(node1.getId())){
-            throw new CompilationException(getClass(), node1.getId() + " was not found in the automaton " + getId(), (Location)getMetaData("location"));
+            throw new CompilationException(getClass(), node1.getId() + " was not found in the automaton " + getId(), this.getLocation());
         }
         if(!nodeMap.containsKey(node2.getId())){
-            throw new CompilationException(getClass(),node2.getId() + " was not found in the automaton "+ getId(), (Location)getMetaData("location"));
+            throw new CompilationException(getClass(),node2.getId() + " was not found in the automaton "+ getId(), this.getLocation());
         }
         AutomatonNode node = addNode();
 
@@ -149,33 +204,27 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
         processOutgoingEdges(node, node1);
         processOutgoingEdges(node, node2);
         // create a union of the metadata from both nodes
-        for(String key : node1.getMetaDataKeys()){
-            node.addMetaData(key, node1.getMetaData(key));
-        }
-        for(String key : node2.getMetaDataKeys()){
-            node.addMetaData(key, node2.getMetaData(key));
-        }
-        node.removeMetaData("variables");
-        if (node1.hasMetaData("variables") && node2.hasMetaData("variables")) {
-            Map<?, ?> vars1 = (Map) node1.getMetaData("variables");
-            Map<?, ?> vars2 = (Map) node2.getMetaData("variables");
-            if (Objects.equals(vars1, vars2)) {
-                node.addMetaData("variables", vars1);
-            }
-        }
+        node.copyProperties(node1);
+        node.copyProperties(node2);
 
-        if(node1.hasMetaData("startNode") || node2.hasMetaData("startNode")){
+        node.setVariables(null); // Remove the variables
+        if (node1.getVariables() != null && node2.getVariables() != null)
+            if (node1.getVariables().equals(node2.getVariables()))
+                node.setVariables(node1.getVariables());
+
+
+        if(node1.isStartNode() || node2.isStartNode()){
             setRoot(node);
-            node.addMetaData("startNode",true);
+            node.setStartNode(true);
         }
         removeNode(node1);
         removeNode(node2);
         return node;
     }
     private void processGuards(AutomatonEdge edge1, AutomatonEdge edge2, Context context) throws CompilationException, InterruptedException {
-        if (edge1.getLabel().equals(edge2.getLabel()) && edge1.hasMetaData("guard") && edge2.hasMetaData("guard")) {
-            Guard guard1 = (Guard) edge1.getMetaData("guard");
-            Guard guard2 = (Guard) edge2.getMetaData("guard");
+        if (edge1.getLabel().equals(edge2.getLabel()) && edge1.getGuard() != null && edge2.getGuard() != null) {
+            Guard guard1 = edge1.getGuard();
+            Guard guard2 = edge2.getGuard();
             if (guard1 == null || guard2 == null || guard1.getGuard() == null || guard2.getGuard() == null) return;
             //Since assignment should be the same (same colour) we can just copy most data from either guard.
             Guard combined = guard1.copy();
@@ -185,8 +234,8 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
                 combined.setGuard(context.mkOr(guard1.getGuard(), guard2.getGuard()));
             else
                 combined.setGuard(guard1.getGuard());
-            edge1.addMetaData("guard",combined);
-            edge2.addMetaData("guard",combined);
+            edge1.setGuard(combined);
+            edge2.setGuard(combined);
         }
     }
     private void processIncomingEdges(AutomatonNode node, AutomatonNode oldNode) {
@@ -222,30 +271,30 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
             return edgeMap.get(id);
         }
 
-        throw new CompilationException(getClass(),"Edge "+id+" was not found in the automaton "+getId(),(Location)getMetaData().get("location"));
+        throw new CompilationException(getClass(),"Edge "+id+" was not found in the automaton "+getId(),this.getLocation());
     }
 
-    public AutomatonEdge addEdge(String label, AutomatonNode from, AutomatonNode to, Map<String,Object> metaData) throws CompilationException {
+    public AutomatonEdge addEdge(String label, AutomatonNode from, AutomatonNode to, Guard currentEdgesGuard) throws CompilationException {
         String id = getNextEdgeId();
-        return addEdge(id, label, from, to, metaData);
+        return addEdge(id, label, from, to, currentEdgesGuard);
     }
 
-    public AutomatonEdge addEdge(String id, String label, AutomatonNode from, AutomatonNode to, Map<String,Object> metaData) throws CompilationException {
+    public AutomatonEdge addEdge(String id, String label, AutomatonNode from, AutomatonNode to, Guard currentEdgesGuard) throws CompilationException {
         // check that the nodes have been defined
         if (from == null) {
-            throw new CompilationException(getClass(),"Unable to add the specified edge as the source was null.",(Location)getMetaData().get("location"));
+            throw new CompilationException(getClass(),"Unable to add the specified edge as the source was null.",this.getLocation());
         }
 
         if (to == null) {
-            throw new CompilationException(getClass(),"Unable to add the specified edge as the destination was null.",(Location)getMetaData().get("location"));
+            throw new CompilationException(getClass(),"Unable to add the specified edge as the destination was null.",this.getLocation());
         }
         // check that the nodes are part of this automaton
         if (!nodeMap.containsKey(from.getId())) {
-            throw new CompilationException(getClass(),"Unable to add the specified edge as "+from.getId()+" is not a part of this automaton. \nPlease make sure you aren't linking directly to a parallel composed process!",(Location)getMetaData().get("location"));
+            throw new CompilationException(getClass(),"Unable to add the specified edge as "+from.getId()+" is not a part of this automaton. \nPlease make sure you aren't linking directly to a parallel composed process!",this.getLocation());
         }
 
         if (!nodeMap.containsKey(to.getId())) {
-            throw new CompilationException(getClass(),"Unable to add the specified edge as "+to.getId()+" is not a part of this automaton.  \nPlease make sure you aren't linking directly to a parallel composed process!",(Location)getMetaData().get("location"));
+            throw new CompilationException(getClass(),"Unable to add the specified edge as "+to.getId()+" is not a part of this automaton.  \nPlease make sure you aren't linking directly to a parallel composed process!",this.getLocation());
         }
 
         // check if there is already an identical edge between the specified nodes
@@ -255,19 +304,18 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
         if(edges.size() > 0){
             for (AutomatonEdge edge : edges) {
-                if (edge.getMetaData("guard") == null && !metaData.containsKey("guard")) {
+
+                if (edge.getGuard() == null && currentEdgesGuard == null)
                     return edge;
-                }
-                Guard guard = (Guard) edge.getMetaData("guard");
-                Guard guard2 = (Guard) metaData.get("guard");
-                if(guard != null && guard2 != null) {
-                    if (Objects.equals(guard,guard2)) return edge;
-                }
+
+
+                if (edge.getGuard()!= null && edge.getGuard().equals(currentEdgesGuard))
+                    return edge;
             }
         }
 
         AutomatonEdge edge = new AutomatonEdge(id, label, from, to);
-        edge.getMetaData().putAll(metaData);
+        edge.setGuard(currentEdgesGuard);
 
         // add edge reference to the incoming and outgoing nodes
         from.addOutgoingEdge(edge);
@@ -326,35 +374,33 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     }
 
     public AutomatonNode addAutomaton(Automaton automaton) throws CompilationException {
-        AutomatonNode root = null;
+        AutomatonNode thisAutomataRoot = null;
         for(AutomatonNode node : automaton.getNodes()){
             AutomatonNode newNode = addNode(node.getId());
-            for(String key : node.getMetaDataKeys()){
-                if(key.equals("startNode")){
-                    root = newNode;
-                    if(this.root != null){
-                        continue;
-                    }
 
+            newNode.copyProperties(node);
+            if(newNode.isStartNode()) {
+                if (this.root != null) {
+                    thisAutomataRoot = newNode;
                     this.root = newNode;
+                } else {
+                    newNode.setStartNode(false);
                 }
-
-                newNode.addMetaData(key, node.getMetaData(key));
             }
+
         }
 
         for (AutomatonEdge edge : automaton.getEdges()) {
             AutomatonNode from = getNode(edge.getFrom().getId());
             AutomatonNode to = getNode(edge.getTo().getId());
-            AutomatonEdge newEdge = addEdge(edge.getId(), edge.getLabel(), from, to, edge.getMetaData());
-            for (String key : edge.getMetaDataKeys()) {
-                newEdge.addMetaData(key, edge.getMetaData(key));
-            }
+
+            this.addEdge(edge.getId(), edge.getLabel(), from, to, edge.getGuard());
+
         }
-        if (root == null) {
+        if (thisAutomataRoot == null) {
             throw new CompilationException(getClass(),"There was no root found while trying to add an automaton");
         }
-        return root;
+        return thisAutomataRoot;
     }
 
 
@@ -393,24 +439,22 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
         List<AutomatonNode> nodes = getNodes();
         for(AutomatonNode node : nodes){
             AutomatonNode newNode = copy.addNode(node.getId());
-            for(String key : node.getMetaDataKeys()){
-                newNode.addMetaData(key, node.getMetaData(key));
-                if(key.equals("startNode")){
-                    copy.setRoot(newNode);
-                }
-            }
+            newNode.copyProperties(node);
+            if(newNode.isStartNode())
+                copy.setRoot(newNode);
+
         }
 
         List<AutomatonEdge> edges = getEdges();
         for(AutomatonEdge edge : edges){
             AutomatonNode from = copy.getNode(edge.getFrom().getId());
             AutomatonNode to = copy.getNode(edge.getTo().getId());
-            copy.addEdge(edge.getId(), edge.getLabel(), from, to, edge.getMetaData());
+            copy.addEdge(edge.getId(), edge.getLabel(), from, to, edge.getGuard());
         }
 
-        for(String key : getMetaDataKeys()){
-            copy.addMetaData(key, getMetaData(key));
-        }
+
+        copy.copyProperties(this);
+
 
         return copy;
     }

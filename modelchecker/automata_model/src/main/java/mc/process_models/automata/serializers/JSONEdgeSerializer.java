@@ -22,7 +22,7 @@ public class JSONEdgeSerializer extends StdSerializer<AutomatonEdge> {
         jgen.writeObjectField("label", value.getLabel());
         jgen.writeObjectField("to", value.getTo().getId());
         jgen.writeObjectField("from", value.getFrom().getId());
-        jgen.writeObjectField("metaData", value.getMetaData());
+//        jgen.writeObjectField("metaData", value.getMetaData());
         jgen.writeEndObject();
     }
 

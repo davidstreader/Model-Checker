@@ -128,6 +128,7 @@ public class Main {
         //Set jansi.passthrough as the parent application will handle the ansi chars, not the child.
         //Set the reloaded flag so that we know that the application has been loaded twice.
         //Set UseG1GC so that ram usage is dropped after peaks
+
         ProcessBuilder builder = new ProcessBuilder("java","-Djansi.passthrough=true","-XX:+UseG1GC","-Djava.library.path="+nativePath,"-jar",Utils.getJarPath(),"reloaded");
         Map<String, String> environment = builder.environment();
         //Set the linux native path

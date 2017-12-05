@@ -57,7 +57,7 @@ public class AutomataAbstraction {
         if (!hiddenEdge.getFrom().getOutgoingEdges().stream().allMatch(AutomatonEdge::isHidden)) {
             return null;
         }
-        if (hiddenEdge.getFrom().hasMetaData("startNode")) return null;
+        if (hiddenEdge.getFrom().isStartNode()) return null;
         AutomatonNode to = abstraction.getNode(hiddenEdge.getTo().getId() + ".abs");
         if (hiddenEdge.getTo() == hiddenEdge.getFrom()) {
             return null;
@@ -67,13 +67,13 @@ public class AutomataAbstraction {
             .collect(Collectors.toList());
         for (AutomatonEdge edge : incomingObservableEdges) {
             AutomatonNode from = abstraction.getNode(edge.getFrom().getId() + ".abs");
-            abstraction.addEdge(edge.getLabel(),from,to,from.getMetaData());
+            abstraction.addEdge(edge.getLabel(),from,to, from.getGuard());
         }
         return abstraction.getNode(hiddenEdge.getFrom().getId()+".abs");
     }
 
     private void constructOutgoingObservableEdges(Automaton abstraction, AutomatonEdge hiddenEdge, boolean isFair, Context context) throws CompilationException, InterruptedException {
-        Guard hiddenGuard = (Guard) hiddenEdge.getMetaData("guard");
+        Guard hiddenGuard = hiddenEdge.getGuard();
         List<AutomatonEdge> incomingObservableEdges = hiddenEdge.getFrom().getIncomingEdges().stream()
             .filter(edge -> !edge.isHidden())
             .collect(Collectors.toList());
@@ -91,10 +91,10 @@ public class AutomataAbstraction {
                 // if abstraction is not fair, need to specify that process could deadlock in an infinite tau loop
                 if(!isFair) {
                     AutomatonNode deadlockNode = abstraction.addNode();
-                    deadlockNode.addMetaData("isTerminal", "ERROR");
+                    deadlockNode.setTerminal("ERROR");
 
                     AutomatonNode from = abstraction.getNode(hiddenEdge.getFrom().getId() + ".abs");
-                    abstraction.addEdge(Constant.DEADLOCK, from, deadlockNode,Collections.emptyMap());
+                    abstraction.addEdge(Constant.DEADLOCK, from, deadlockNode,null);
                 }
 
                 // edge has already been processed
@@ -116,7 +116,7 @@ public class AutomataAbstraction {
 
         for(AutomatonEdge edge : incomingObservableEdges){
             AutomatonNode from = abstraction.getNode(edge.getFrom().getId() + ".abs");
-            Guard fromGuard = (Guard) from.getMetaData("guard");
+            Guard fromGuard = from.getGuard();
             Guard outGuard = null;
             if (fromGuard != null && hiddenGuard == null) {
                 outGuard = fromGuard;
@@ -126,18 +126,20 @@ public class AutomataAbstraction {
                 outGuard = Expression.combineGuards(hiddenGuard,fromGuard,context);
             }
             for (AutomatonNode to : outgoingNodes) {
-                Map<String,Object> metaData = new HashMap<>();
                 if (outGuard != null) {
-                    metaData.put("guard",outGuard);
+                    abstraction.addEdge(edge.getLabel(), from, to, outGuard);
+                } else {
+                    abstraction.addEdge(edge.getLabel(), from, to, null);
                 }
-                abstraction.addEdge(edge.getLabel(), from, to, metaData);
+
+
 
             }
         }
     }
 
     private void constructIncomingObservableEdges(Automaton abstraction, AutomatonEdge hiddenEdge, boolean isFair, Context context) throws CompilationException, InterruptedException {
-        Guard hiddenGuard = (Guard) hiddenEdge.getMetaData("guard");
+        Guard hiddenGuard = hiddenEdge.getGuard();
         List<AutomatonEdge> outgoingObservableEdges = hiddenEdge.getTo().getOutgoingEdges().stream()
             .filter(edge -> !edge.isHidden())
             .collect(Collectors.toList());
@@ -163,7 +165,7 @@ public class AutomataAbstraction {
 
         for(AutomatonEdge edge : outgoingObservableEdges){
             AutomatonNode to = abstraction.getNode(edge.getTo().getId() + ".abs");
-            Guard toGuard = (Guard) to.getMetaData("guard");
+            Guard toGuard = to.getGuard();
             Guard outGuard = null;
             if (toGuard != null && hiddenGuard == null) {
                 outGuard = toGuard;
@@ -173,28 +175,23 @@ public class AutomataAbstraction {
                 outGuard = Expression.combineGuards(hiddenGuard,toGuard,context);
             }
             for (AutomatonNode from : incomingNodes) {
-                Map<String,Object> metaData = new HashMap<>();
-                if (outGuard != null) {
-                    metaData.put("guard",outGuard);
-                }
-                abstraction.addEdge(edge.getLabel(), from, to, metaData);
+                abstraction.addEdge(edge.getLabel(), from, to, outGuard);
             }
         }
     }
 
     private void addNode(Automaton abstraction, AutomatonNode node) throws CompilationException {
         AutomatonNode newNode = abstraction.addNode(node.getId() + ".abs");
-        for(String key : node.getMetaDataKeys()){
-            newNode.addMetaData(key, node.getMetaData(key));
-            if(key.equals("startNode")){
-                abstraction.setRoot(newNode);
-            }
-        }
+
+        newNode.copyProperties(node);
+        if(newNode.isStartNode())
+            abstraction.setRoot(newNode);
+
     }
 
     private void addEdge(Automaton abstraction, AutomatonEdge edge) throws CompilationException {
         AutomatonNode from = abstraction.getNode(edge.getFrom().getId() + ".abs");
         AutomatonNode to = abstraction.getNode(edge.getTo().getId() + ".abs");
-        abstraction.addEdge(edge.getLabel(), from, to, edge.getMetaData());
+        abstraction.addEdge(edge.getLabel(), from, to, edge.getGuard());
     }
 }
