@@ -162,7 +162,7 @@ public class ModelView implements Observer{
             String nodeTermination = "NOMINAL";
             if(n.isStartNode())
                 nodeTermination = "START";
-            if(n.getTerminal() != null)
+            if(n.isTerminal())
                 nodeTermination = n.getTerminal();
             nodeTermination = nodeTermination.toLowerCase();
             GraphNode node = new GraphNode(automata.getId(),n.getId(),nodeTermination);

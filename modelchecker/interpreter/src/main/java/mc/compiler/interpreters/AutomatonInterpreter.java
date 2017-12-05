@@ -52,11 +52,6 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
             processHiding(automaton, processNode.getHiding());
         }
 
-
-
-        automaton.setProcessList(combinedProcesses);
-
-
         return labelAutomaton(automaton);
     }
 
@@ -69,7 +64,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
 
         Automaton automaton = ((Automaton)processStack.pop()).copy();
 
-        automaton.setProcessList(combinedProcesses);
+
         return labelAutomaton(automaton);
     }
 
