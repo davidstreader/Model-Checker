@@ -26,6 +26,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     private LocalCompiler compiler;
     private Set<String> variableList;
     private Context context;
+    private int subProcessCount = 0;
     public AutomatonInterpreter(){
         this.operations = new AutomataOperations();
         reset();
@@ -51,13 +52,9 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
             processHiding(automaton, processNode.getHiding());
         }
 
-        automaton.addMetaData("processList",combinedProcesses.stream().map(process -> {
-            Map<String,Object> map = new HashMap<>();
-            map.put("metaData",process.getMetaData());
-            map.put("id",process.getId());
-            map.put("alphabet",process.getAlphabet());
-            return map;
-        }).collect(Collectors.toList()));
+
+
+        automaton.setProcessList(combinedProcesses);
 
 
         return labelAutomaton(automaton);
@@ -72,7 +69,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
 
         Automaton automaton = ((Automaton)processStack.pop()).copy();
 
-        automaton.addMetaData("processList",combinedProcesses);
+        automaton.setProcessList(combinedProcesses);
         return labelAutomaton(automaton);
     }
 
@@ -131,12 +128,12 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
 
             currentNode.setReferences(astNode.getReferences());
         }
-        if (astNode.getMetaData().containsKey("variables")) {
-            Map<String,Object> varMap = (Map<String, Object>) astNode.getMetaData().get("variables");
+        if (astNode.getModelVariables() != null) {
+            Map<String,Object> varMap = astNode.getModelVariables();
             varMap.keySet().stream().map(s->s.substring(1)).forEach(variableList::add);
             currentNode.setVariables(varMap);
         }
-        currentNode.getMetaData().putAll(astNode.getMetaData());
+        currentNode.copyPropertiesFromASTNode(astNode);
         if(astNode instanceof ProcessRootNode){
             interpretNode((ProcessRootNode)astNode, automaton, currentNode);
         }
@@ -160,7 +157,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         }
     }
 
-    private int subProcessCount = 0;
+
     private void interpretNode(ProcessRootNode astNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException {
         interpretProcess(astNode.getProcess(), automaton.getId() + "." + ++subProcessCount);
         Automaton model = ((Automaton)processStack.pop()).copy();
@@ -180,7 +177,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         AutomatonNode nextNode;
         Guard foundGuard = null;
         if (currentNode.getGuard() != null) {
-            foundGuard = (Guard)astNode.getMetaData().get("guard");
+            foundGuard = (Guard)astNode.getGuard();
             currentNode.setGuard(null);
         }
         // check if the next ast node is a reference node
@@ -237,8 +234,8 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         Automaton processed;
         switch(astNode.getFunction()){
             case "abs":
-                boolean isFair = (!astNode.getMetaData().containsKey("isFair")) || (boolean) astNode.getMetaData().get("isFair");
-                boolean prune = (astNode.getMetaData().containsKey("prune")) && (boolean) astNode.getMetaData().get("prune");
+                boolean isFair = astNode.isFair();
+                boolean prune = astNode.needsPruning();
                 processed = operations.abstraction(((Automaton)model).copy(), isFair, prune,context);
              break;
 
@@ -247,7 +244,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
             break;
 
             case "simp":
-                 processed = operations.simplification(((Automaton)model).copy(),(Map<String,Expr>)astNode.getMetaData("replacements"),context);
+                 processed = operations.simplification(((Automaton)model).copy(),astNode.getReplacements(),context);
              break;
 
             case "safe":

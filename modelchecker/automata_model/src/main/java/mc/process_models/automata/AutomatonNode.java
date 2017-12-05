@@ -3,6 +3,10 @@ package mc.process_models.automata;
 import lombok.Getter;
 import lombok.Setter;
 import mc.compiler.Guard;
+import mc.compiler.ast.ASTNode;
+import mc.compiler.ast.FunctionNode;
+import mc.compiler.ast.IfStatementNode;
+import mc.compiler.ast.SequenceNode;
 import mc.process_models.ProcessModelObject;
 
 import java.awt.*;
@@ -62,45 +66,9 @@ public class AutomatonNode extends ProcessModelObject {
         outgoingEdges = new HashMap<>();
     }
 
-    // Temp code to find where the metadata is being set and used.
-    public Map<String, Object> getMetaData(){
-        System.out.println("Someone called getMetaData");
-        return null;
 
-    }
-
-    public Object getMetaData(String key) {
-        System.out.println("[Node]Asked for key: " + key);
-
-        return null;
-    }
-
-    public void addMetaData(String key, Object value){
-        System.out.println("[Node]Was told to add: " + key + " data: " + value.toString());
-
-    }
-
-    public void removeMetaData(String key) {
-        System.out.println("[Node]Was told to remove: " + key);
-
-    }
-
-    public boolean hasMetaData(String key){
-        System.out.println("[Node]Asked if " + key + " exists");
-        return false;
-    }
-
-    public Set<String> getMetaDataKeys() {
-        System.out.println("[Node]Was told to get keyset");
-        return null;
-    }
-
-
-
-    //End temp
 
     public void copyProperties(AutomatonNode fromThisNode) {
-
         this.terminal = fromThisNode.getTerminal();
         this.startNode = fromThisNode.isStartNode();
         this.colour = fromThisNode.getColour();
@@ -109,8 +77,14 @@ public class AutomatonNode extends ProcessModelObject {
         this.labelNumber = fromThisNode.getLabelNumber();
         this.guard = fromThisNode.getGuard();
         this.variables = fromThisNode.getVariables();
-        //More to be added
+    }
 
+    public void copyPropertiesFromASTNode(ASTNode fromThisNode) {
+        if(fromThisNode.getModelVariables() != null)
+            this.variables = fromThisNode.getModelVariables();
+
+
+        this.guard = (Guard)fromThisNode.getGuard();
     }
 
     /**

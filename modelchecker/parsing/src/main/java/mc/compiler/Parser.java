@@ -465,10 +465,6 @@ public class Parser {
 
         ProcessNode processNode = new ProcessNode(processType, identifier.getIdentifier(), process, localProcesses, constructLocation(start));
 
-        if (!toRender) {
-            processNode.getMetaData().put("skipped", true);
-        }
-
         // check if a relabel set has been defined
         if (peekToken() instanceof DivisionToken) {
             processNode.setRelabels(parseRelabel());
@@ -717,8 +713,13 @@ public class Parser {
         if (type.equals("abs") && flags != null) {
             processAbstractionFlags(function, flags);
         }
+
         if (type.equals("simp") && flags != null) {
-            function.getMetaData().put("replacements", flags);
+            if(function.getReplacements() == null)
+                function.setReplacements(new HashMap<>());
+
+            for(String simpReplacements : flags) // UGH, *TODO* We need to change this. Im not sure why this is a thing to begin with.
+                function.getReplacements().put(simpReplacements, null);
         }
         return function;
     }
@@ -777,17 +778,16 @@ public class Parser {
     }
 
     private void processAbstractionFlags(FunctionNode function, Set<String> flags) {
+        System.out.println("Flags: " + flags.toString());
         if (flags.contains("fair") && !flags.contains("unfair")) {
-            function.getMetaData().put("isFair", true);
+            function.setFair(true);
         } else if (flags.contains("unfair") && !flags.contains("fair")) {
-            function.getMetaData().put("isFair", false);
+            function.setFair(false);
         } else if (flags.contains("fair") && flags.contains("unfair")) {
-            function.getMetaData().put("isFair", true);
+            function.setFair(true);
         }
 
-        if (flags.contains("prune")) {
-            function.getMetaData().put("prune", true);
-        }
+        function.setPruning(flags.contains("prune"));
     }
 
     private FunctionNode parseCasting() throws CompilationException, InterruptedException {

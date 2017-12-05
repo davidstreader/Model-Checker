@@ -2,10 +2,8 @@ package mc.compiler.ast;
 
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
-import lombok.NonNull;
 import lombok.ToString;
 import mc.util.Location;
-import mc.
 
 
 @ToString
@@ -16,7 +14,7 @@ public class IfStatementNode extends ASTNode {
     private ASTNode trueBranch;
     private ASTNode falseBranch;
     private Context z3Context;
-    private Guard guard;
+
 
     /**
      * The set up structure for handling if statements
@@ -90,8 +88,4 @@ public class IfStatementNode extends ASTNode {
         return false;
     }
 
-    public Guard getGuard() {
-
-
-    }
 }

@@ -137,7 +137,7 @@ public class AutomataParallelComposition {
                 List<AutomatonNode> from = nodeMap.get(edge.getFrom().getId());
                 List<AutomatonNode> to = nodeMap.get(edge.getTo().getId());
                 for(int i = 0; i < Math.min(from.size(),to.size()); i++){
-                    if(from.get(i).getTerminal().equals("ERROR")) //Dont set any links from terminal error nodes.
+                    if(from.get(i).isTerminal() && from.get(i).getTerminal().equals("ERROR")) //Dont set any links from terminal error nodes.
                         continue;
 
                     automaton.addEdge(edge.getLabel(), from.get(i), to.get(i), edge.getGuard()).setGuard(edge.getGuard());

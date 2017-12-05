@@ -65,43 +65,9 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     @Setter
     private List<RelabelElementNode> relabels;
 
-
-    // Temp code to find where the metadata is being set and used.
-    public Map<String, Object> getMetaData(){
-        System.out.println("Someone called getMetaData");
-        return null;
-
-    }
-
-    public Object getMetaData(String key) {
-        System.out.println("[Node]Asked for key: " + key);
-
-        return null;
-    }
-
-    public void addMetaData(String key, Object value){
-        System.out.println("[Node]Was told to add: " + key + " data: " + value.toString());
-
-    }
-
-    public void removeMetaData(String key) {
-        System.out.println("[Node]Was told to remove: " + key);
-
-    }
-
-    public boolean hasMetaData(String key){
-        System.out.println("[Node]Asked if " + key + " exists");
-        return false;
-    }
-
-    public Set<String> getMetaDataKeys() {
-        System.out.println("[Node]Was told to get keyset");
-        return null;
-    }
-
-
-
-    //End temp
+    @Getter
+    @Setter
+    private List<Automaton> processList;
 
 
     public Automaton(String id) {
@@ -383,7 +349,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
                     return edge;
 
 
-                if (edge.getGuard().equals(currentEdgesGuard))
+                if (edge.getGuard()!= null && edge.getGuard().equals(currentEdgesGuard))
                     return edge;
             }
         }
@@ -526,9 +492,9 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
             copy.addEdge(edge.getId(), edge.getLabel(), from, to, edge.getGuard());
         }
 
-        for(String key : getMetaDataKeys()){
-            copy.addMetaData(key, getMetaData(key));
-        }
+
+        copy.copyProperties(this);
+
 
         return copy;
     }
