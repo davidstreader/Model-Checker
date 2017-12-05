@@ -1,29 +1,30 @@
 package mc.client.graph;
 
+import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.visualization.MultiLayerTransformer;
 import edu.uci.ics.jung.visualization.VisualizationServer;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
-import edu.uci.ics.jung.visualization.layout.ObservableCachingLayout;
 import lombok.RequiredArgsConstructor;
 
 import java.awt.*;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
 @RequiredArgsConstructor
 public class AutomataBorderPaintable implements VisualizationServer.Paintable{
 
-    private final VisualizationViewer vv;
+    private final VisualizationViewer<GraphNode, DirectedEdge> vv;
     private final Map<String,Set<GraphNode>> automata;
 
     @Override
     public void paint(Graphics g_) {
         Graphics2D g = (Graphics2D) g_;
 
-        ObservableCachingLayout layout = (ObservableCachingLayout) vv.getGraphLayout();
+        Layout<GraphNode,DirectedEdge> layout = vv.getGraphLayout();
 
         //TODO: fix the transform and make it scale more effectively
         MultiLayerTransformer transform = vv
@@ -50,7 +51,7 @@ public class AutomataBorderPaintable implements VisualizationServer.Paintable{
 
     }
 
-    private static <V> Rectangle2D computeBoundingBox(Iterable<V> vertices, ObservableCachingLayout<V, ?> layout,
+    private static <V> Rectangle2D computeBoundingBox(Collection<V> vertices, Layout<V, ?> layout,
                                                       MultiLayerTransformer at) {
         double minX = Double.MAX_VALUE;
         double minY = Double.MAX_VALUE;

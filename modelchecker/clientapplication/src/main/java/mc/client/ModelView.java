@@ -6,6 +6,8 @@ import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.*;
+import edu.uci.ics.jung.visualization.decorators.EdgeShape;
+import edu.uci.ics.jung.visualization.renderers.Renderer;
 import javafx.embed.swing.SwingNode;
 import javafx.geometry.Bounds;
 import lombok.Getter;
@@ -98,9 +100,12 @@ public class ModelView implements Observer{
                 .filter(Objects::nonNull)
                 .forEach(this::addProcess);
 
-
         //apply a layout to the graph
-        Layout<GraphNode,DirectedEdge> layout = new KKLayout<>(graph);
+        Layout<GraphNode,DirectedEdge> layout ;
+        if(graph.getVertexCount() == 0)
+            layout = new DAGLayout<>(graph);
+        else
+            layout = new ISOMLayout<>(graph);
         VisualizationViewer<GraphNode,DirectedEdge> vv = new VisualizationViewer<>(layout);
 
         //create a custom mouse controller (both movable, scalable and manipulatable)
@@ -114,6 +119,10 @@ public class ModelView implements Observer{
         //label the nodes
         vv.getRenderContext().setVertexLabelTransformer(GraphNode::getNodeId);
         vv.getRenderContext().setEdgeLabelTransformer(DirectedEdge::getLabel);
+        vv.getRenderer().getVertexLabelRenderer().setPosition(Renderer.VertexLabel.Position.CNTR);
+
+        //change the shape on two edges
+//        vv.getRenderContext().setEdgeShapeTransformer(EdgeShape.Line);
 
 
         // if the font was imported successfully, set the font (the standard font does not display greek symbols
@@ -125,7 +134,7 @@ public class ModelView implements Observer{
 
         //set the colour of the nodes
         vv.getRenderContext().setVertexFillPaintTransformer(
-                node -> NodeStates.valueOf(node.getNodeTermination().toUpperCase()).getColorNodes());
+                node -> NodeStates.valueOf(node.getNodeTermination()).getColorNodes());
 
         //autoscale the graph to fit in the display port
         Bounds b = s.getBoundsInParent();
@@ -162,11 +171,10 @@ public class ModelView implements Observer{
                 nodeTermination = "START";
             if(n.isTerminal())
                 nodeTermination = n.getTerminal();
-            nodeTermination = nodeTermination.toLowerCase();
+
             GraphNode node = new GraphNode(automata.getId(),n.getId(),nodeTermination);
             nodeMap.put(n.getId(),node);
             graph.addVertex(node);
-
         });
 
         //add the edges to the graph
