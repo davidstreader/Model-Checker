@@ -1,11 +1,6 @@
 package mc.process_models.automata;
 
 import com.microsoft.z3.Context;
-import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
-import com.mxgraph.layout.mxGraphLayout;
-import com.mxgraph.layout.orthogonal.mxOrthogonalLayout;
-import com.mxgraph.model.mxCell;
-import com.mxgraph.view.mxGraph;
 import lombok.Getter;
 import lombok.Setter;
 import mc.compiler.Guard;
@@ -64,10 +59,6 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     @Getter
     @Setter
     private List<RelabelElementNode> relabels;
-
-    @Getter
-    @Setter
-    private List<Automaton> processList;
 
 
     public Automaton(String id) {

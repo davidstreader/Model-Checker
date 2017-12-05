@@ -3,7 +3,6 @@ package mc.compiler;
 import com.google.common.collect.Lists;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.ToString;
 import mc.compiler.ast.OperationNode;
 import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;

@@ -4,9 +4,6 @@ import lombok.Getter;
 import lombok.Setter;
 import mc.compiler.Guard;
 import mc.compiler.ast.ASTNode;
-import mc.compiler.ast.FunctionNode;
-import mc.compiler.ast.IfStatementNode;
-import mc.compiler.ast.SequenceNode;
 import mc.process_models.ProcessModelObject;
 
 import java.awt.*;

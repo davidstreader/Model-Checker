@@ -10,9 +10,6 @@ import lombok.Setter;
 import mc.exceptions.CompilationException;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 
 public abstract class ProcessModelObject implements Serializable {
 

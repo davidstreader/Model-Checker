@@ -778,14 +778,8 @@ public class Parser {
     }
 
     private void processAbstractionFlags(FunctionNode function, Set<String> flags) {
-        System.out.println("Flags: " + flags.toString());
-        if (flags.contains("fair") && !flags.contains("unfair")) {
-            function.setFair(true);
-        } else if (flags.contains("unfair") && !flags.contains("fair")) {
-            function.setFair(false);
-        } else if (flags.contains("fair") && flags.contains("unfair")) {
-            function.setFair(true);
-        }
+
+        function.setFair(flags.contains("fair") || !flags.contains("unfair"));
 
         function.setPruning(flags.contains("prune"));
     }
