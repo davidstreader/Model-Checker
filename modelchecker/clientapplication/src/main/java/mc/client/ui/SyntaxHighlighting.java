@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
  */
 public class SyntaxHighlighting {
     static final String[] processTypes = new String[] {
-            "automata", "petrinet", "operation", "equation",
+           "processes", "automata", "petrinet", "operation", "equation",
 
     };
 
