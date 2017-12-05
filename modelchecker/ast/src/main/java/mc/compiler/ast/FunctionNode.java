@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.Setter;
 import mc.util.Location;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public class FunctionNode extends ASTNode {

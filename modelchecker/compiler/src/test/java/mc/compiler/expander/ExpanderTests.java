@@ -1,6 +1,5 @@
 package mc.compiler.expander;
 
-import com.microsoft.z3.Context;
 import mc.compiler.Expander;
 import mc.compiler.Lexer;
 import mc.compiler.Parser;
@@ -10,7 +9,6 @@ import mc.compiler.ast.ProcessNode;
 import mc.compiler.token.Token;
 import mc.exceptions.CompilationException;
 import mc.util.PrintQueue;
-import mc.util.expr.Expression;
 
 import java.util.List;
 

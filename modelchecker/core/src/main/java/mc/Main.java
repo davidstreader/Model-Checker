@@ -2,7 +2,6 @@ package mc;
 
 import lombok.Getter;
 import lombok.Setter;
-import mc.client.ModelView;
 import mc.client.ui.UserInterfaceApplication;
 import mc.commands.CommandManager;
 import mc.commands.PassThroughCommandManager;

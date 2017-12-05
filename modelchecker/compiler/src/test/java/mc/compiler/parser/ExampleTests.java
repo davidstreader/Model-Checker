@@ -2,10 +2,8 @@ package mc.compiler.parser;
 
 import com.microsoft.z3.BitVecExpr;
 import com.microsoft.z3.BoolExpr;
-import com.microsoft.z3.Context;
 import mc.compiler.ast.*;
 import mc.exceptions.CompilationException;
-import mc.util.expr.*;
 import org.junit.Test;
 
 import java.util.ArrayList;

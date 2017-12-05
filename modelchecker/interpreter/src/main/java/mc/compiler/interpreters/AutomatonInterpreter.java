@@ -1,18 +1,17 @@
 package mc.compiler.interpreters;
 
 import com.microsoft.z3.Context;
-import com.microsoft.z3.Expr;
 import mc.Constant;
 import mc.compiler.Guard;
+import mc.compiler.LocalCompiler;
 import mc.compiler.ast.*;
 import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
 import mc.process_models.automata.Automaton;
 import mc.process_models.automata.AutomatonNode;
 import mc.process_models.automata.operations.AutomataOperations;
+
 import java.util.*;
-import java.util.stream.Collectors;
-import mc.compiler.LocalCompiler;
 
 public class AutomatonInterpreter implements ProcessModelInterpreter {
 

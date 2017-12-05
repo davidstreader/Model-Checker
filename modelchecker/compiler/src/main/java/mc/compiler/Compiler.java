@@ -5,15 +5,12 @@ import mc.compiler.ast.ProcessNode;
 import mc.compiler.token.Token;
 import mc.exceptions.CompilationException;
 import mc.process_models.ProcessModel;
-import mc.process_models.automata.Automaton;
-import mc.webserver.FakeContext;
 import mc.webserver.Context;
-import mc.webserver.LogMessage;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
-import java.util.stream.Collectors;
 
 public class Compiler {
     // fields

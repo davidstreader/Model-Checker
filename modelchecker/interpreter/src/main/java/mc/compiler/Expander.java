@@ -7,11 +7,11 @@ import mc.compiler.ast.*;
 import mc.compiler.iterator.IndexIterator;
 import mc.exceptions.CompilationException;
 import mc.util.Location;
+import mc.util.LogAST;
 import mc.util.expr.Expression;
 import mc.util.expr.ExpressionEvaluator;
 import mc.util.expr.ExpressionPrinter;
 import mc.util.expr.VariableCollector;
-import mc.util.LogAST;
 
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
