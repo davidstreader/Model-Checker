@@ -19,6 +19,7 @@ file with defined state machines.
 ### Building / Distributing
 
 -----------------------
+Starting note that this build process has only been tested on Java JDK 8u151.
 
 ## Linux
 ```bash 
