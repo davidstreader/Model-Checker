@@ -1,6 +1,6 @@
 /* Check that equivalent processes defined in different ways are equivalent when constructed */
 
-automata {
+processes {
     IfMoney1 = C[0],
         C[i:0..3] = (if i < 3 then coin -> C[i + 1] else coin -> C[0]).
 
@@ -17,6 +17,8 @@ automata {
         B = (coin -> C),
         C = (coin -> LPMoney).
 }
+
+automata IfMoney1, IfMoney2, WhenMoney, LoopMoney, LPMoney.
 
 operation {
     IfMoney1 ~ IfMoney2.

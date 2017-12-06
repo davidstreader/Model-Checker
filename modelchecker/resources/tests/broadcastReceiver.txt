@@ -1,4 +1,4 @@
-    automata {
+  processes {
         A = (a -> b? -> c -> STOP || x -> b! -> z -> STOP).
 
         ExpectedA = (x -> B | a -> x -> C),
@@ -24,9 +24,15 @@
             G = (c -> H),
             H = (STOP).
     }
+    
+    automata A,ExpectedA.
+    
+    automata B,ExpectedB.
+    
+    automata C,ExpectedC.
 
     operation {
         A ~ ExpectedA.
         B ~ ExpectedB.
-        //C ~ ExpectedC.
+        C ~ ExpectedC.
     }

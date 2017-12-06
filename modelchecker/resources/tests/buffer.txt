@@ -1,8 +1,10 @@
 /* Buffer Example */
 
-automata {
+processes {
     Buff = (in -> out -> Buff).
     B2 = (a:Buff/{x/a.out} || b:Buff/{x/b.in})\{x}.
     B3 = abs(B2).
     B4 = simp(B3).
 }
+
+automata Buff,B2,B3,B4. 

@@ -97,49 +97,4 @@ public class FunctionTests extends ParserTests {
 		}
 	}
 
-	@Test
-	public void correctAutomataCastTest() throws CompilationException, InterruptedException {
-		String input = "processes Test = automata(a -> STOP).\nautomata Test.";
-		ProcessNode node = constructProcessNode(input);
-		SequenceNode sequence = constructSequenceNode(new String[]{"a"}, new TerminalNode("STOP", null));
-		FunctionNode expected = new FunctionNode("automata", sequence, null);
-		if(!expected.equals(node.getProcess())){
-			fail("expecting function nodes to be equivalent");
-		}
-	}
-
-	@Test
-	public void correctPetriNetCastTest() throws CompilationException, InterruptedException {
-		String input = "processes Test = petrinet(a -> STOP).\npetrinet Test.";
-		ProcessNode node = constructProcessNode(input);
-		SequenceNode sequence = constructSequenceNode(new String[]{"a"}, new TerminalNode("STOP", null));
-		FunctionNode expected = new FunctionNode("petrinet", sequence, null);
-		if(!expected.equals(node.getProcess())){
-			fail("expecting function nodes to be equivalent");
-		}
-	}
-
-	@Test
-	public void correctMixedCastTest_1() throws CompilationException, InterruptedException {
-		String input = "processes Test = TokenRule(A2P(a -> STOP)).\nautomata Test.";
-		ProcessNode node = constructProcessNode(input);
-		SequenceNode sequence = constructSequenceNode(new String[]{"a"}, new TerminalNode("STOP", null));
-		FunctionNode cast = new FunctionNode("petrinet", sequence, null);
-		FunctionNode expected = new FunctionNode("automata", cast, null);
-		if(!expected.equals(node.getProcess())){
-			fail("expecting function nodes to be equivalent");
-		}
-	}
-
-	@Test
-	public void correctMixedCastTest_2() throws CompilationException, InterruptedException {
-		String input = "processes Test = petrinet(automata(a -> STOP)).\npetrinet Test.";
-		ProcessNode node = constructProcessNode(input);
-		SequenceNode sequence = constructSequenceNode(new String[]{"a"}, new TerminalNode("STOP", null));
-		FunctionNode cast = new FunctionNode("automata", sequence, null);
-		FunctionNode expected = new FunctionNode("petrinet", cast, null);
-		if(!expected.equals(node.getProcess())){
-			fail("expecting function nodes to be equivalent");
-		}
-	}
 }
