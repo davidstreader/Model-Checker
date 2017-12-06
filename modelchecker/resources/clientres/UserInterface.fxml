@@ -6,6 +6,7 @@
 <?import javafx.scene.text.Font?>
 <?import org.fxmisc.richtext.CodeArea?>
 <?import org.fxmisc.flowless.VirtualizedScrollPane?>
+
 <VBox prefHeight="700.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="mc.client.ui.UserInterfaceController">
     <children>
         <MenuBar VBox.vgrow="NEVER">
@@ -83,7 +84,7 @@
                 </TabPane>
                 <Button layoutX="890.0" layoutY="2.0" mnemonicParsing="false" onAction="#handOptionsRequest" prefHeight="38.0" prefWidth="89.0" text="Options" AnchorPane.rightAnchor="21.0" />
                 <Button layoutX="782.0" layoutY="2.0" mnemonicParsing="false" onAction="#handleCompileRequest" prefHeight="38.0" prefWidth="89.0" text="Compile" AnchorPane.rightAnchor="129.0" />
-                <Label layoutX="3.0" layoutY="2.0" prefHeight="38.0" prefWidth="283.0" text="Process modelling tool" AnchorPane.leftAnchor="3.0">
+                <Label layoutX="3.0" layoutY="2.0" prefHeight="38.0" prefWidth="283.0" text="Process Modelling Tool" AnchorPane.leftAnchor="3.0">
                     <font>
                         <Font size="24.0" />
                     </font>

@@ -37,8 +37,10 @@ shadowJar {
     classifier     = null
     version        = null
     destinationDir = new File("../")
-} allprojects { apply plugin: 'idea'
+}
 
+allprojects {
+    apply plugin: 'idea'
     version = '1.0'
 
     repositories {
