@@ -421,6 +421,7 @@ public class Parser {
     // PROCESS DEFINITIONS
 
     private void parseProcessesDefinition() throws CompilationException, InterruptedException {
+        nextToken();// Eat the ProcessDefintionToken
 
         Token token = peekToken();
         if (token instanceof IdentifierToken) {
@@ -435,7 +436,7 @@ public class Parser {
     private void parseSingleProcessDefinition() throws CompilationException, InterruptedException {
         int start = index;
         IdentifierNode identifier = parseIdentifier();
-        // check if a proceess with this identifier has already been defined
+        // check if a process with this identifier has already been defined
         if (processIdentifiers.contains(identifier.getIdentifier()))
             throw constructException("The identifier \"" + identifier.getIdentifier() + "\" has already been defined", identifier.getLocation());
 
@@ -463,7 +464,7 @@ public class Parser {
         }
 
         //Dont set ProcessNode type just yet as that will be done when, or if we encounter a display node that sets it.
-        ProcessNode processNode = new ProcessNode("", identifier.getIdentifier(), process, localProcesses, constructLocation(start));
+        ProcessNode processNode = new ProcessNode("processes", identifier.getIdentifier(), process, localProcesses, constructLocation(start));
 
         // check if a relabel set has been defined
         if (peekToken() instanceof DivisionToken) {
@@ -562,7 +563,7 @@ public class Parser {
             }
 
         if(!contained)
-            throw constructException("identifier not defined\"" + ((IdentifierToken) token).getIdentifier() + "\"", token.getLocation());
+            throw constructException("identifier not defined \"" + ((IdentifierToken) token).getIdentifier() + "\"", token.getLocation());
 
 
         for(token = nextToken(); token instanceof CommaToken; token = nextToken() ){
@@ -573,7 +574,9 @@ public class Parser {
                 throw constructException("expecting to parse a identifier but received \"" + token.toString() + "\"", token.getLocation());
 
             for(ProcessNode node : processes)
-                if(node.getIdentifier().equals(((IdentifierToken) token).getIdentifier())) {
+                if( node.getIdentifier().equals(((IdentifierToken) token).getIdentifier()) ) {
+
+
                     node.setType(currentDisplayType.getProcessType());
                     contained = true;
                     break;
@@ -584,6 +587,14 @@ public class Parser {
 
         }
 
+    }
+
+    private String parseCastType() throws CompilationException {
+        Token token = nextToken();
+        if(!(token instanceof CastToken))
+            throw constructException("expected cast token got\"" + token.toString() + "\"", token.getLocation());
+
+        return ((CastToken) token).getCastType();
     }
 
     private ASTNode parseComposite() throws CompilationException, InterruptedException {
@@ -695,7 +706,7 @@ public class Parser {
             return identifier;
         } else if (peekToken() instanceof FunctionToken) {
             return parseFunction();
-        } else if (peekToken() instanceof DisplayTypeToken) {
+        } else if (peekToken() instanceof CastToken) {
             return parseCasting();
         } else if (peekToken() instanceof IfToken) { // Else token is parsed within the IfStatement block
             return parseIfStatement();
@@ -821,7 +832,7 @@ public class Parser {
 
     private FunctionNode parseCasting() throws CompilationException, InterruptedException {
         int start = index;
-        String cast = parseDisplayType();
+        String cast = parseCastType();
 
         // ensure that the next token is a '(' token
         if (!(nextToken() instanceof OpenParenToken)) {

@@ -38,6 +38,13 @@ public class Interpreter {
                     model = automaton.interpret(process, processMap, localCompiler, context);
                     model.setLocation(process.getLocation());
                     break;
+
+                case "processes":
+                    continue;
+
+                case "petrinet":
+                    continue;
+
                 default:
                     throw new CompilationException(getClass(),"Unable to find the process type: "+process.getType());
             }

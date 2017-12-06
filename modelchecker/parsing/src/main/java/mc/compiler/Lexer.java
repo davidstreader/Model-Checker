@@ -9,6 +9,7 @@ import java.util.*;
 public class Lexer {
 
     private Set<String> displayTypes;
+    private Set<String> castTypes;
     private Set<String> functions;
 
 	// used for constructing locations of tokens
@@ -20,6 +21,8 @@ public class Lexer {
 
         displayTypes = new HashSet<>(Arrays.asList("automata", "petrinet"));
         functions = new HashSet<>(Arrays.asList("abs", "simp", "safe", "prune", "nfa2dfa"));
+        castTypes = new HashSet<>(Arrays.asList("TokenRule", "A2P"));
+
     }
 
 	public List<Token> tokenise(String code) throws LexerException{
@@ -93,10 +96,11 @@ public class Lexer {
 
         if(stringToToken.equals("processes")) {
             return new ProcessesDefintionToken(location);
+        } else if(castTypes.contains(stringToToken)) {
+            return new CastToken(stringToToken, location);
         } else if(displayTypes.contains(stringToToken)){
 			return new DisplayTypeToken(stringToToken, location); // Sets the type of display we want the process to undergo
-		}
-		else if(functions.contains(stringToToken)){
+		} else if(functions.contains(stringToToken)){
 			return new FunctionToken(stringToToken, location);
 		}
 

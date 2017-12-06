@@ -389,8 +389,8 @@ public class UserInterfaceController implements Initializable {
                 compilerOutputDisplay.insertText(0,e.toString());
                 Location compilerIssue = e.getLocation();
 
-                if(compilerIssue.getStartIndex() > 0 && compilerIssue.getStartIndex() < userCodeInput.getText().length())
-                 userCodeInput.setStyleClass(compilerIssue.getStartIndex(), compilerIssue.getEndIndex(), "issue");
+                //if(compilerIssue.getStartIndex() > 0 && compilerIssue.getStartIndex() < userCodeInput.getText().length())
+                // userCodeInput.setStyleClass(compilerIssue.getStartIndex(), compilerIssue.getEndIndex(), "issue");
 
             }
         }
