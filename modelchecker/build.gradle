@@ -4,23 +4,16 @@ buildscript {
         mavenCentral()
         maven { url 'https://jitpack.io' }
     }
-    dependencies {
-        classpath "net.ltgt.gradle:gradle-apt-plugin:0.5"
-    }
 }
 import org.apache.tools.ant.taskdefs.condition.Os
 
 static getNatives() {
-    String ret = '../resources/native/'
+    String ret = 'resources/native/'
     if (System.getProperty("os.arch").endsWith("64")) ret += "amd64"
     if (System.getProperty("os.arch").endsWith("86")) ret += "x86"
-    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-        ret+="-windows"
-    } else if (Os.isFamily(Os.FAMILY_MAC)) {
-        ret+="-macosx"
-    } else {
-        ret +="-linux"
-    }
+    if (Os.isFamily(Os.FAMILY_WINDOWS)) ret+="-windows"
+    else if (Os.isFamily(Os.FAMILY_MAC)) ret+="-macosx"
+    else ret +="-linux"
     return ret
 }
 
@@ -34,7 +27,6 @@ version '1.0-SNAPSHOT'
 apply plugin: 'java'
 apply plugin: 'application'
 apply plugin: 'com.github.johnrengelman.shadow'
-apply plugin: 'net.ltgt.apt'
 
 mainClassName = 'mc.Main'
 
@@ -78,10 +70,10 @@ subprojects {
         testLogging {
             showStandardStreams = true
         }
-        systemProperty 'java.library.path', natives
-        environment    'PATH',              natives
-        environment    'LD_LIBRARY_PATH',   natives
-        environment    'DYLD_LIBRARY_PATH', natives
+        systemProperty 'java.library.path', "../" + natives
+        environment    'PATH',              "../" + natives
+        environment    'LD_LIBRARY_PATH',   "../" + natives
+        environment    'DYLD_LIBRARY_PATH', "../" + natives
     }
 }
 
@@ -99,15 +91,14 @@ test {
 dependencies {
     compile project(':ast')
     compile project(':automata_model')
+    compile project(':clientapplication')
     compile project(':compiler')
     compile project(':core')
-    compile project(':clientapplication')
     compile project(':evaluator')
     compile project(':interpreter')
+    compile project(':operations')
     compile project(':parsing')
     compile project(':util')
-    compile project(':operations')
-    apt     project(':operations')
 }
 
 sourceSets {
@@ -121,4 +112,3 @@ sourceSets {
 
 test.dependsOn 'cleanTest'
 assemble.dependsOn shadowJar
-
