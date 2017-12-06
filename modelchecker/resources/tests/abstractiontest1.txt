@@ -1,4 +1,4 @@
-automata {
+processes {
 Z = (a->l->Z|b->(r->x->STOP|y->STOP)).
 Yl = abs(Z\{l}).
 Ylr = abs(Yl\{r}).
@@ -6,6 +6,9 @@ Yr = abs(Z\{r}).
 Yrl = abs(Yl\{r}).
 Y = abs(Z\{r,l}).
 }
+
+automata Z,Yl,Ylr,Yr,Yrl,Y.
+
 operation {
 Y~Yrl.
 Y~Ylr.

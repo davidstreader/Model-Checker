@@ -20,7 +20,7 @@ public class RootTests extends ParserTests {
 
     @Test
     public void correctRootTest_1() throws CompilationException, InterruptedException {
-        String input = "automata Test = a:(a -> STOP).";
+        String input = "processes Test = a:(a -> STOP).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"a"}, terminal);
@@ -32,7 +32,7 @@ public class RootTests extends ParserTests {
 
     @Test
     public void correctRootTest_2() throws CompilationException, InterruptedException {
-        String input = "automata Test = (a -> STOP)/{b/a}.";
+        String input = "processes Test = (a -> STOP)/{b/a}.\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"a"}, terminal);
@@ -45,7 +45,7 @@ public class RootTests extends ParserTests {
 
     @Test
     public void correctRootTest_3() throws CompilationException, InterruptedException {
-        String input = "automata Test = (a -> STOP)\\{a}.";
+        String input = "processes Test = (a -> STOP)\\{a}.\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"a"}, terminal);
@@ -58,7 +58,7 @@ public class RootTests extends ParserTests {
 
     @Test
     public void correctRootTest_4() throws CompilationException, InterruptedException {
-        String input = "automata Test = (a -> STOP)@{a}.";
+        String input = "processes Test = (a -> STOP)@{a}.\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"a"}, terminal);
@@ -71,7 +71,7 @@ public class RootTests extends ParserTests {
 
     @Test
     public void correctRootTest_5() throws CompilationException, InterruptedException {
-        String input = "automata Test = a:(a -> STOP)/{b/a}.";
+        String input = "processes Test = a:(a -> STOP)/{b/a}.\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"a"}, terminal);
@@ -84,7 +84,7 @@ public class RootTests extends ParserTests {
 
     @Test
     public void correctRootTest_6() throws CompilationException, InterruptedException {
-        String input = "automata Test = a:(a -> STOP)\\{a.a}.";
+        String input = "processes Test = a:(a -> STOP)\\{a.a}.\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"a"}, terminal);
@@ -97,7 +97,7 @@ public class RootTests extends ParserTests {
 
     @Test
     public void correctRootTest_7() throws CompilationException, InterruptedException {
-        String input = "automata Test = a:(a -> STOP)@{a.a}.";
+        String input = "processes Test = a:(a -> STOP)@{a.a}.\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"a"}, terminal);
@@ -110,7 +110,7 @@ public class RootTests extends ParserTests {
 
     @Test
     public void correctRootTest_8() throws CompilationException, InterruptedException {
-        String input = "automata Test = (a -> STOP)/{b/a}\\{b}.";
+        String input = "processes Test = (a -> STOP)/{b/a}\\{b}.\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"a"}, terminal);
@@ -124,7 +124,7 @@ public class RootTests extends ParserTests {
 
     @Test
     public void correctRootTest_9() throws CompilationException, InterruptedException {
-        String input = "automata Test = (a -> STOP)/{b/a}@{b}.";
+        String input = "processes Test = (a -> STOP)/{b/a}@{b}.\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"a"}, terminal);
@@ -138,7 +138,7 @@ public class RootTests extends ParserTests {
 
     @Test
     public void correctRootTest_10() throws CompilationException, InterruptedException {
-        String input = "automata Test = a:(a -> STOP)/{b/a.a}\\{b}.";
+        String input = "processes Test = a:(a -> STOP)/{b/a.a}\\{b}.\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"a"}, terminal);
@@ -152,7 +152,7 @@ public class RootTests extends ParserTests {
 
     @Test
     public void correctRootTest_11() throws CompilationException, InterruptedException {
-        String input = "automata Test = a:(a -> STOP)/{b/a.a}@{b}.";
+        String input = "processes Test = a:(a -> STOP)/{b/a.a}@{b}.\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"a"}, terminal);
@@ -166,7 +166,7 @@ public class RootTests extends ParserTests {
 
     @Test
     public void correctIndexedRelabelSetTest_1() throws CompilationException, InterruptedException {
-        String input = "automata Test = (a -> STOP)/{[i:1..2].test/[i]}.";
+        String input = "processes Test = (a -> STOP)/{[i:1..2].test/[i]}.\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"a"}, terminal);

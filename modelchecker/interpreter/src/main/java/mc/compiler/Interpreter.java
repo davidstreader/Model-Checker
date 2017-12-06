@@ -34,15 +34,15 @@ public class Interpreter {
             messageQueue.add(new LogAST("Interpreting:",process));
             ProcessModel model;
             switch(process.getType()){
+                case "processes": // If it is not a automata or petrinet then construct it (Its a non-drawn process)
+                    continue;
+
                 case "automata":
                     model = automaton.interpret(process, processMap, localCompiler, context);
                     model.setLocation(process.getLocation());
                     break;
 
-                case "processes":
-                    continue;
-
-                case "petrinet":
+                case "petrinet": // Not implemented yet.
                     continue;
 
                 default:
