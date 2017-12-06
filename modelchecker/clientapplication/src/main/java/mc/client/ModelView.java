@@ -1,8 +1,6 @@
 package mc.client;
 
-import edu.uci.ics.jung.algorithms.layout.DAGLayout;
-import edu.uci.ics.jung.algorithms.layout.FRLayout;
-import edu.uci.ics.jung.algorithms.layout.Layout;
+import edu.uci.ics.jung.algorithms.layout.*;
 import edu.uci.ics.jung.graph.DirectedSparseGraph;
 import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
 import edu.uci.ics.jung.graph.Graph;
@@ -102,7 +100,7 @@ public class ModelView implements Observer{
 
 
         //apply a layout to the graph
-        Layout<GraphNode,DirectedEdge> layout = new FRLayout<>(graph);
+        Layout<GraphNode,DirectedEdge> layout = new KKLayout<>(graph);
         VisualizationViewer<GraphNode,DirectedEdge> vv = new VisualizationViewer<>(layout);
 
         //create a custom mouse controller (both movable, scalable and manipulatable)
