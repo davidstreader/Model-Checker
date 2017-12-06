@@ -25,10 +25,6 @@ public abstract class ProcessModelObject implements Serializable {
 
     }
 
-    public String getId(){
-        return id;
-    }
-
     public ProcessModelObject copy() throws CompilationException {
         Cloner cloner = new Cloner();
         cloner.dontClone(Context.class);

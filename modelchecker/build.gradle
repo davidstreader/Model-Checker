@@ -8,11 +8,13 @@ buildscript {
 import org.apache.tools.ant.taskdefs.condition.Os
 
 static getNatives() {
-    String ret = 'resources/native/'
-    if (System.getProperty("os.arch").endsWith("64")) ret += "amd64"
-    if (System.getProperty("os.arch").endsWith("86")) ret += "x86"
-    if (Os.isFamily(Os.FAMILY_WINDOWS)) ret+="-windows"
-    else if (Os.isFamily(Os.FAMILY_MAC)) ret+="-macosx"
+    String ret = "resources/native/"
+
+         if (System.getProperty("os.arch").endsWith("64")) ret += "amd64"
+    else if (System.getProperty("os.arch").endsWith("86")) ret += "x86"
+
+         if (Os.isFamily(Os.FAMILY_WINDOWS)) ret+="-windows"
+    else if (Os.isFamily(Os.FAMILY_MAC))     ret+="-macosx"
     else ret +="-linux"
     return ret
 }
@@ -35,10 +37,7 @@ shadowJar {
     classifier     = null
     version        = null
     destinationDir = new File("../")
-}
-
-allprojects {
-    apply plugin: 'idea'
+} allprojects { apply plugin: 'idea'
 
     version = '1.0'
 
@@ -70,10 +69,10 @@ subprojects {
         testLogging {
             showStandardStreams = true
         }
-        systemProperty 'java.library.path', "../" + natives
-        environment    'PATH',              "../" + natives
-        environment    'LD_LIBRARY_PATH',   "../" + natives
-        environment    'DYLD_LIBRARY_PATH', "../" + natives
+        systemProperty 'java.library.path', "$rootDir/" + natives
+        environment    'PATH',              "$rootDir/" + natives
+        environment    'LD_LIBRARY_PATH',   "$rootDir/" + natives
+        environment    'DYLD_LIBRARY_PATH', "$rootDir/" + natives
     }
 }
 
@@ -82,10 +81,10 @@ test {
     testLogging {
         showStandardStreams = true
     }
-    systemProperty 'java.library.path', natives
-    environment    'PATH',              natives
-    environment    'LD_LIBRARY_PATH',   natives
-    environment    'DYLD_LIBRARY_PATH', natives
+    systemProperty 'java.library.path', "$rootDir/" + natives
+    environment    'PATH',              "$rootDir/" + natives
+    environment    'LD_LIBRARY_PATH',   "$rootDir/" + natives
+    environment    'DYLD_LIBRARY_PATH', "$rootDir/" + natives
 }
 
 dependencies {
