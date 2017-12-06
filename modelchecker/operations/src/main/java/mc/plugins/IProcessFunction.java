@@ -28,11 +28,12 @@ public interface IProcessFunction {
     /**
      * Execute the function on automata
      *
-     * @param flags the flags given by the function (e.g. {@code unfair} in {@code abs{unfair}(A)}
+     * @param id       the id of the resulting automaton
+     * @param flags    the flags given by the function (e.g. {@code unfair} in {@code abs{unfair}(A)}
      * @param automata a variable number of automata taken in by the function
      * @return the resulting automaton of the operation
      */
-    Automaton compose(String[] flags, Automaton... automata);
+    Automaton compose(String id, String[] flags, Automaton... automata);
 
     //TODO: Petrinet functions
 }

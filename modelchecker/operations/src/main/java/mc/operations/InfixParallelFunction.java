@@ -1,29 +1,40 @@
-package mc.plugins;
+package mc.operations;
 
+import mc.plugins.IProcessInfixFunction;
 import mc.process_models.automata.Automaton;
 
-public interface IProcessInfixFunction {
-
+public class InfixParallelFunction implements IProcessInfixFunction{
     /**
      * A method of tracking the function
+     *
      * @return The Human-Readable form of the function name
      */
-    String getFunctionName();
+    @Override
+    public String getFunctionName() {
+        return "Parallel";
+    }
 
     /**
      * The form which the function will appear when composd in the text
+     *
      * @return
      */
-    String getNotation();
+    @Override
+    public String getNotation() {
+        return "||";
+    }
 
     /**
      * Execute the function
+     *
      * @param id         the id of the resulting automaton
      * @param automaton1 the first  automaton in the function (e.g. {@code A} in {@code A||B})
      * @param automaton2 the second automaton in the function (e.g. {@code B} in {@code A||B})
      * @return the resulting automaton of the operation
      */
-    Automaton compose(String id, Automaton automaton1, Automaton automaton2);
+    @Override
+    public Automaton compose(String id, Automaton automaton1, Automaton automaton2) {
+        return null;
+    }
 
-    //TODO: Petrinet
 }

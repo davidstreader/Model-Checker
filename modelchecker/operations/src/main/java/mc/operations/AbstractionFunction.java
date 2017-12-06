@@ -34,12 +34,14 @@ public class AbstractionFunction implements IProcessFunction{
     /**
      * Execute the function on automata
      *
+     * @param id       the id of the resulting automaton
      * @param flags    the flags given by the function (e.g. {@code unfair} in {@code abs{unfair}(A)}
      * @param automata a variable number of automata taken in by the function
      * @return the resulting automaton of the operation
      */
     @Override
-    public Automaton compose(String[] flags, Automaton... automata) {
+    public Automaton compose(String id, String[] flags, Automaton... automata) {
         return null;
     }
+
 }
