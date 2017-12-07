@@ -38,10 +38,6 @@ public class AutomatonNode extends ProcessModelObject {
 
     @Getter
     @Setter
-    private Point position;
-
-    @Getter
-    @Setter
     private Set<String> references;
 
     @Getter
@@ -69,7 +65,6 @@ public class AutomatonNode extends ProcessModelObject {
         this.terminal = fromThisNode.getTerminal();
         this.startNode = fromThisNode.isStartNode();
         this.colour = fromThisNode.getColour();
-        this.position = fromThisNode.getPosition();
         this.references = fromThisNode.getReferences();
         this.labelNumber = fromThisNode.getLabelNumber();
         this.guard = fromThisNode.getGuard();
@@ -102,10 +97,6 @@ public class AutomatonNode extends ProcessModelObject {
 
         if(this.colour == withThisNode.getColour())
             newNode.setColour(this.colour);
-
-        if(this.position != null && withThisNode.getPosition() != null)
-            if(this.position.equals(withThisNode.getPosition()))
-                newNode.setPosition(this.position);
 
         if(this.references != null && withThisNode.getReferences() != null)
             if(this.references.equals(withThisNode.getReferences()))
