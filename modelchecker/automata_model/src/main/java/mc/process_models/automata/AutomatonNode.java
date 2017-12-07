@@ -52,6 +52,7 @@ public class AutomatonNode extends ProcessModelObject {
     @Setter
     private Map<String, Object> variables = new HashMap<String, Object>();
 
+
     public AutomatonNode(String id){
         super(id,"node");
         this.label = null;

@@ -1,6 +1,7 @@
 package mc.client;
 
 import edu.uci.ics.jung.algorithms.layout.*;
+import edu.uci.ics.jung.graph.DirectedOrderedSparseMultigraph;
 import edu.uci.ics.jung.graph.DirectedSparseGraph;
 import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
 import edu.uci.ics.jung.graph.Graph;
@@ -14,6 +15,7 @@ import mc.client.graph.AutomataBorderPaintable;
 import mc.client.graph.DirectedEdge;
 import mc.client.graph.GraphNode;
 import mc.client.graph.NodeStates;
+import mc.client.ui.SeededRandomizedLayout;
 import mc.compiler.CompilationObject;
 import mc.compiler.CompilationObservable;
 import mc.compiler.OperationResult;
@@ -89,7 +91,7 @@ public class ModelView implements Observer{
 
         automata = new HashMap<>();
 
-        graph = new DirectedSparseMultigraph<>();
+        graph = new DirectedOrderedSparseMultigraph<>();
         if(compiledResult == null)
             return new VisualizationViewer<>(new DAGLayout<>(new DirectedSparseGraph<>()));
         compiledResult.getProcessMap().keySet().stream()
@@ -100,7 +102,10 @@ public class ModelView implements Observer{
 
 
         //apply a layout to the graph
+        Bounds b = s.getBoundsInParent();
+
         Layout<GraphNode,DirectedEdge> layout = new KKLayout<>(graph);
+        layout.setInitializer(new SeededRandomizedLayout<>(new Dimension((int)b.getWidth(),(int)b.getHeight())));
         VisualizationViewer<GraphNode,DirectedEdge> vv = new VisualizationViewer<>(layout);
 
         //create a custom mouse controller (both movable, scalable and manipulatable)
@@ -110,6 +115,7 @@ public class ModelView implements Observer{
         gm.add(new ScalingGraphMousePlugin(new CrossoverScalingControl(),0,1.1f,0.9f));
         gm.add(new PickingGraphMousePlugin<>());
         vv.setGraphMouse(gm);
+
 
         //label the nodes
         vv.getRenderContext().setVertexLabelTransformer(GraphNode::getNodeId);
@@ -128,7 +134,7 @@ public class ModelView implements Observer{
                 node -> NodeStates.valueOf(node.getNodeTermination().toUpperCase()).getColorNodes());
 
         //autoscale the graph to fit in the display port
-        Bounds b = s.getBoundsInParent();
+
         vv.setPreferredSize(new Dimension((int)b.getWidth(),(int)b.getHeight()));
 
         //This draws the boxes around the automata
@@ -163,8 +169,12 @@ public class ModelView implements Observer{
             if(n.isTerminal())
                 nodeTermination = n.getTerminal();
             nodeTermination = nodeTermination.toLowerCase();
-            GraphNode node = new GraphNode(automata.getId(),n.getId(),nodeTermination);
+
+            //Make sure we are using a human reable label, the parallel compositions fill Id with long strings.
+            String nodeLabel = (n.getId().contains("||"))? Integer.toString(n.getLabelNumber()) : n.getId();
+            GraphNode node = new GraphNode(automata.getId(),nodeLabel,nodeTermination);
             nodeMap.put(n.getId(),node);
+
             graph.addVertex(node);
 
         });
