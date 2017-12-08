@@ -54,11 +54,11 @@ public class KKLayoutGroups<V,E> extends AbstractLayout<V,E> implements Iterativ
     private int maxIterations = 2000;
     private String status = "KKLayout";
 
-    private double L;			// the ideal length of an edge
+    private double L = 10;			// the ideal length of an edge
     private double K = 1;		// arbitrary const number
 
-    private boolean adjustForGravity = true;
-    private boolean exchangeVertices = true;
+    private boolean adjustForGravity = false;
+    private boolean exchangeVertices = false;
 
 
     private HashMap<String, diagramIndividualData> diagrams = new HashMap<String, diagramIndividualData>();
@@ -202,8 +202,6 @@ public class KKLayoutGroups<V,E> extends AbstractLayout<V,E> implements Iterativ
     public void step() {
         try {
             currentIteration++;
-            if(true)
-                    return;
 
             if(getGraph().getVertexCount() == 0)
                 return;

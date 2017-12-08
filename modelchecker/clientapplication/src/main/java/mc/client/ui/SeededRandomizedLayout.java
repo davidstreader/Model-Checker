@@ -65,13 +65,9 @@ public class SeededRandomizedLayout<V> implements Function<V,Point2D> {
             }
 
 
+            return new Point2D.Double(Spacing.get(Integer.toString(v.hashCode())), 50+random.nextDouble() * d.height);
 
-            return new Point2D.Double(Spacing.get(Integer.toString(v.hashCode())), 100);
-
-        } else {
-            return new Point2D.Double(0, 0);
-
-        }
+        } else {return null;}
 
     }
 }
