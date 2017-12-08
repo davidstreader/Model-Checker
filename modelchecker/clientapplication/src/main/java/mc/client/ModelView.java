@@ -1,9 +1,7 @@
 package mc.client;
 
 import edu.uci.ics.jung.algorithms.layout.*;
-import edu.uci.ics.jung.graph.DirectedOrderedSparseMultigraph;
 import edu.uci.ics.jung.graph.DirectedSparseGraph;
-import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.*;
@@ -15,6 +13,7 @@ import mc.client.graph.AutomataBorderPaintable;
 import mc.client.graph.DirectedEdge;
 import mc.client.graph.GraphNode;
 import mc.client.graph.NodeStates;
+import mc.client.ui.KKLayoutGroups;
 import mc.client.ui.SeededRandomizedLayout;
 import mc.compiler.CompilationObject;
 import mc.compiler.CompilationObservable;
@@ -91,7 +90,7 @@ public class ModelView implements Observer{
 
         automata = new HashMap<>();
 
-        graph = new DirectedOrderedSparseMultigraph<>();
+        graph = new DirectedSparseGraph<>();
         if(compiledResult == null)
             return new VisualizationViewer<>(new DAGLayout<>(new DirectedSparseGraph<>()));
         compiledResult.getProcessMap().keySet().stream()
@@ -101,12 +100,18 @@ public class ModelView implements Observer{
                 .forEach(this::addProcess);
 
 
-        //apply a layout to the graph
+
         Bounds b = s.getBoundsInParent();
 
-        Layout<GraphNode,DirectedEdge> layout = new KKLayout<>(graph);
+        //apply a layout to the graph
+        Layout<GraphNode,DirectedEdge> layout = new KKLayoutGroups<>(graph);
+
+        //Setting the initializer so we get a random layout. But not a random layout every time.
         layout.setInitializer(new SeededRandomizedLayout<>(new Dimension((int)b.getWidth(),(int)b.getHeight())));
+
         VisualizationViewer<GraphNode,DirectedEdge> vv = new VisualizationViewer<>(layout);
+
+
 
         //create a custom mouse controller (both movable, scalable and manipulatable)
         PluggableGraphMouse gm = new PluggableGraphMouse();
@@ -134,7 +139,6 @@ public class ModelView implements Observer{
                 node -> NodeStates.valueOf(node.getNodeTermination().toUpperCase()).getColorNodes());
 
         //autoscale the graph to fit in the display port
-
         vv.setPreferredSize(new Dimension((int)b.getWidth(),(int)b.getHeight()));
 
         //This draws the boxes around the automata
