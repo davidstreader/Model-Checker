@@ -17,6 +17,7 @@ import java.awt.Dimension;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
+import java.util.HashMap;
 
 import edu.uci.ics.jung.algorithms.layout.AbstractLayout;
 import edu.uci.ics.jung.algorithms.layout.util.RandomLocationTransformer;
@@ -25,6 +26,8 @@ import edu.uci.ics.jung.algorithms.shortestpath.DistanceStatistics;
 import edu.uci.ics.jung.algorithms.shortestpath.UnweightedShortestPath;
 import edu.uci.ics.jung.algorithms.util.IterativeContext;
 import edu.uci.ics.jung.graph.Graph;
+import lombok.Data;
+import mc.client.graph.GraphNode;
 
 /**
  * Implements the Kamada-Kawai algorithm for node layout.
@@ -37,10 +40,11 @@ import edu.uci.ics.jung.graph.Graph;
  */
 public class KKLayoutGroups<V,E> extends AbstractLayout<V,E> implements IterativeContext {
 
+
     private class diagramIndividualData {
-        public String id;
-        public V[] vertices;
-        public Point2D[] xydata;
+        public ArrayList<V> vertices = new ArrayList<V>();
+        public ArrayList<Point2D> xydata = new ArrayList<Point2D>();
+        public double distanceMatrix[][];
 
     }
 
@@ -52,13 +56,12 @@ public class KKLayoutGroups<V,E> extends AbstractLayout<V,E> implements Iterativ
 
     private double L;			// the ideal length of an edge
     private double K = 1;		// arbitrary const number
-    private double[][] dm;     // distance matrix
 
     private boolean adjustForGravity = true;
     private boolean exchangeVertices = true;
 
 
-    private ArrayList<diagramIndividualData> diagrams;
+    private HashMap<String, diagramIndividualData> diagrams = new HashMap<String, diagramIndividualData>();
 
     /**
      * Retrieves graph distances between vertices of the visible graph
@@ -150,27 +153,22 @@ public class KKLayoutGroups<V,E> extends AbstractLayout<V,E> implements Iterativ
             double height = size.getHeight();
             double width = size.getWidth();
 
-            int n = graph.getVertexCount();
-            dm = new double[n][n];
-            vertices = (V[])graph.getVertices().toArray();
+            V[] vertices = (V[])graph.getVertices().toArray();
 
-
-            xydata = new Point2D[n];
-
-            // assign IDs to all visible vertices
-            while(true) {
-                try {
-                    int index = 0;
-                    for(V v : graph.getVertices()) {
-                        System.out.println(v.toString());
-                        Point2D xyd = apply(v);
-                        vertices[index] = v;
-                        xydata[index] = xyd;
-                        index++;
+                for (V v : vertices) {
+                    String key = ((GraphNode) v).getAutomata();
+                    if (!diagrams.containsKey(key)) {
+                        diagramIndividualData newDiagram = new diagramIndividualData();
+                        newDiagram.vertices.add(v);
+                        newDiagram.xydata.add(apply(v));
+                        diagrams.put(key, newDiagram);
+                    } else if(!diagrams.get(key).vertices.contains(v)){ // This may cause problems for larger diagrams
+                        diagrams.get(key).vertices.add(v);
+                        diagrams.get(key).xydata.add(apply(v)); //Applies the inital layout (Randomly placing it down)
                     }
-                    break;
-                } catch(ConcurrentModificationException cme) {}
-            }
+                }
+
+
 
             diameter = DistanceStatistics.<V,E>diameter(graph, distance, true);
 
@@ -178,77 +176,95 @@ public class KKLayoutGroups<V,E> extends AbstractLayout<V,E> implements Iterativ
             L = (L0 / diameter) * length_factor;  // length_factor used to be hardcoded to 0.9
             //L = 0.75 * Math.sqrt(height * width / n);
 
-            for (int i = 0; i < n - 1; i++) {
-                for (int j = i + 1; j < n; j++) {
-                    Number d_ij = distance.getDistance(vertices[i], vertices[j]);
-                    Number d_ji = distance.getDistance(vertices[j], vertices[i]);
-                    double dist = diameter * disconnected_multiplier;
-                    if (d_ij != null)
-                        dist = Math.min(d_ij.doubleValue(), dist);
-                    if (d_ji != null)
-                        dist = Math.min(d_ji.doubleValue(), dist);
-                    dm[i][j] = dm[j][i] = dist;
+
+
+            for(String process : diagrams.keySet()) {
+                ArrayList<V> vertexes  = diagrams.get(process).vertices;
+                diagrams.get(process).distanceMatrix = new double[vertexes.size()][vertexes.size()];
+                for(int i = 0; i < vertexes.size()-1; i++) {
+                    for(int j = i+1; j < vertexes.size(); j++) {
+                        Number d_ij = distance.getDistance(vertices[i], vertices[j]);
+                        Number d_ji = distance.getDistance(vertices[j], vertices[i]);
+                        double dist = diameter * disconnected_multiplier;
+                        if (d_ij != null)
+                            dist = Math.min(d_ij.doubleValue(), dist);
+                        if (d_ji != null)
+                            dist = Math.min(d_ji.doubleValue(), dist);
+                        diagrams.get(process).distanceMatrix[i][j] =  diagrams.get(process).distanceMatrix[j][i] = dist;
+                    }
                 }
+
             }
+
         }
     }
 
     public void step() {
         try {
             currentIteration++;
-            double energy = calcEnergy();
-            status = "Kamada-Kawai V=" + getGraph().getVertexCount()
-                    + "(" + getGraph().getVertexCount() + ")"
-                    + " IT: " + currentIteration
-                    + " E=" + energy
-            ;
+            if(true)
+                    return;
 
-            int n = getGraph().getVertexCount();
-            if (n == 0)
+            if(getGraph().getVertexCount() == 0)
                 return;
 
-            double maxDeltaM = 0;
-            int pm = -1;            // the node having max deltaM
-            for (int i = 0; i < n; i++) {
-                if (isLocked(vertices[i]))
-                    continue;
-                double deltam = calcDeltaM(i);
 
-                if (maxDeltaM < deltam) {
-                    maxDeltaM = deltam;
-                    pm = i;
-                }
-            }
-            if (pm == -1)
-                return;
+            for(String currentProcess : diagrams.keySet()) {
+                ArrayList<V> vertices = diagrams.get(currentProcess).vertices;
+                ArrayList<Point2D> xydata = diagrams.get(currentProcess).xydata;
 
-            for (int i = 0; i < 100; i++) {
-                double[] dxy = calcDeltaXY(pm);
-                xydata[pm].setLocation(xydata[pm].getX()+dxy[0], xydata[pm].getY()+dxy[1]);
+                double energy = calcEnergy(diagrams.get(currentProcess));
+                status = "Kamada-Kawai V=" + getGraph().getVertexCount()
+                        + "(" + getGraph().getVertexCount() + ")"
+                        + " IT: " + currentIteration
+                        + " E=" + energy
+                ;
 
-                double deltam = calcDeltaM(pm);
-                if (deltam < EPSILON)
-                    break;
-            }
-
-            if (adjustForGravity)
-                adjustForGravity();
-
-            if (exchangeVertices && maxDeltaM < EPSILON) {
-                energy = calcEnergy();
-                for (int i = 0; i < n - 1; i++) {
-                    if (isLocked(vertices[i]))
+                int nodeWithMaxDelta = -1; // the node having max deltaM
+                double maxDeltaM = 0;
+                for (int i = 0; i < vertices.size(); i++) {
+                    if (isLocked(vertices.get(i)))
                         continue;
-                    for (int j = i + 1; j < n; j++) {
-                        if (isLocked(vertices[j]))
+                    double deltam = calcDeltaM(i, diagrams.get(currentProcess));
+
+                    if (maxDeltaM < deltam) {
+                        maxDeltaM = deltam;
+                        nodeWithMaxDelta = i;
+                    }
+                }
+
+                if (nodeWithMaxDelta == -1)
+                    continue;
+
+                for (int i = 0; i < 100; i++) {
+                    double[] dxy = calcDeltaXY(nodeWithMaxDelta, diagrams.get(currentProcess));
+                    xydata.get(nodeWithMaxDelta).setLocation(xydata.get(nodeWithMaxDelta).getX() + dxy[0], xydata.get(nodeWithMaxDelta).getY() + dxy[1]);
+
+                    double deltam = calcDeltaM(nodeWithMaxDelta, diagrams.get(currentProcess));
+                    if (deltam < EPSILON)
+                        break;
+                }
+
+
+               if (adjustForGravity)
+                   adjustForGravity(diagrams.get(currentProcess));
+
+                if (exchangeVertices && maxDeltaM < EPSILON) {
+                    energy = calcEnergy(diagrams.get(currentProcess));
+                    for (int i = 0; i < vertices.size() - 1; i++) {
+                        if (isLocked(vertices.get(i)))
                             continue;
-                        double xenergy = calcEnergyIfExchanged(i, j);
-                        if (energy > xenergy) {
-                            double sx = xydata[i].getX();
-                            double sy = xydata[i].getY();
-                            xydata[i].setLocation(xydata[j]);
-                            xydata[j].setLocation(sx, sy);
-                            return;
+                        for (int j = i + 1; j < vertices.size(); j++) {
+                            if (isLocked(vertices.get(j)))
+                             continue;
+                            double xenergy = calcEnergyIfExchanged(i, j, diagrams.get(currentProcess));
+                            if (energy > xenergy) {
+                                double sx = xydata.get(i).getX();
+                                double sy = xydata.get(i).getY();
+                                xydata.get(i).setLocation(xydata.get(j));
+                                xydata.get(j).setLocation(sx, sy);
+                                return;
+                             }
                         }
                     }
                 }
@@ -263,22 +279,22 @@ public class KKLayoutGroups<V,E> extends AbstractLayout<V,E> implements Iterativ
      * Shift all vertices so that the center of gravity is located at
      * the center of the screen.
      */
-    public void adjustForGravity() {
+    public void adjustForGravity(diagramIndividualData thisDiagram) {
         Dimension d = getSize();
         double height = d.getHeight();
         double width = d.getWidth();
         double gx = 0;
         double gy = 0;
-        for (int i = 0; i < xydata.length; i++) {
-            gx += xydata[i].getX();
-            gy += xydata[i].getY();
+        for (int i = 0; i < thisDiagram.xydata.size(); i++) {
+            gx += thisDiagram.xydata.get(i).getX();
+            gy += thisDiagram.xydata.get(i).getY();
         }
-        gx /= xydata.length;
-        gy /= xydata.length;
+        gx /= thisDiagram.xydata.size();
+        gy /= thisDiagram.xydata.size();
         double diffx = width / 2 - gx;
         double diffy = height / 2 - gy;
-        for (int i = 0; i < xydata.length; i++) {
-            xydata[i].setLocation(xydata[i].getX()+diffx, xydata[i].getY()+diffy);
+        for (int i = 0; i < thisDiagram.xydata.size(); i++) {
+            thisDiagram.xydata.get(i).setLocation( thisDiagram.xydata.get(i).getX()+diffx,  thisDiagram.xydata.get(i).getY()+diffy);
         }
     }
 
@@ -313,7 +329,7 @@ public class KKLayoutGroups<V,E> extends AbstractLayout<V,E> implements Iterativ
     /**
      * Determines a step to new position of the vertex m.
      */
-    private double[] calcDeltaXY(int m) {
+    private double[] calcDeltaXY(int node, diagramIndividualData elements) {
         double dE_dxm = 0;
         double dE_dym = 0;
         double d2E_d2xm = 0;
@@ -321,14 +337,14 @@ public class KKLayoutGroups<V,E> extends AbstractLayout<V,E> implements Iterativ
         double d2E_dymdxm = 0;
         double d2E_d2ym = 0;
 
-        for (int i = 0; i < vertices.length; i++) {
-            if (i != m) {
+        for (int i = 0; i < elements.vertices.size(); i++) {
+            if (i != node) {
 
-                double dist = dm[m][i];
+                double dist = elements.distanceMatrix[node][i];
                 double l_mi = L * dist;
                 double k_mi = K / (dist * dist);
-                double dx = xydata[m].getX() - xydata[i].getX();
-                double dy = xydata[m].getY() - xydata[i].getY();
+                double dx = elements.xydata.get(node).getX() - elements.xydata.get(i).getX();
+                double dy = elements.xydata.get(node).getY() - elements.xydata.get(i).getY();
                 double d = Math.sqrt(dx * dx + dy * dy);
                 double ddd = d * d * d;
 
@@ -351,17 +367,18 @@ public class KKLayoutGroups<V,E> extends AbstractLayout<V,E> implements Iterativ
     /**
      * Calculates the gradient of energy function at the vertex m.
      */
-    private double calcDeltaM(int m) {
+
+    private double calcDeltaM(int node, diagramIndividualData elements) {
         double dEdxm = 0;
         double dEdym = 0;
-        for (int i = 0; i < vertices.length; i++) {
-            if (i != m) {
-                double dist = dm[m][i];
+        for (int i = 0; i < elements.vertices.size(); i++) {
+            if (i != node) {
+                double dist = elements.distanceMatrix[node][i];
                 double l_mi = L * dist;
                 double k_mi = K / (dist * dist);
 
-                double dx = xydata[m].getX() - xydata[i].getX();
-                double dy = xydata[m].getY() - xydata[i].getY();
+                double dx = elements.xydata.get(node).getX() - elements.xydata.get(i).getX();
+                double dy = elements.xydata.get(node).getY() - elements.xydata.get(i).getY();
                 double d = Math.sqrt(dx * dx + dy * dy);
 
                 double common = k_mi * (1 - l_mi / d);
@@ -375,15 +392,15 @@ public class KKLayoutGroups<V,E> extends AbstractLayout<V,E> implements Iterativ
     /**
      * Calculates the energy function E.
      */
-    private double calcEnergy() {
+    private double calcEnergy(diagramIndividualData currentDiagram) {
         double energy = 0;
-        for (int i = 0; i < vertices.length - 1; i++) {
-            for (int j = i + 1; j < vertices.length; j++) {
-                double dist = dm[i][j];
+        for (int i = 0; i < currentDiagram.vertices.size() - 1; i++) {
+            for (int j = i + 1; j < currentDiagram.vertices.size(); j++) {
+                double dist = currentDiagram.distanceMatrix[i][j];
                 double l_ij = L * dist;
                 double k_ij = K / (dist * dist);
-                double dx = xydata[i].getX() - xydata[j].getX();
-                double dy = xydata[i].getY() - xydata[j].getY();
+                double dx = currentDiagram.xydata.get(i).getX() - currentDiagram.xydata.get(j).getX();
+                double dy = currentDiagram.xydata.get(i).getY() - currentDiagram.xydata.get(j).getY();
                 double d = Math.sqrt(dx * dx + dy * dy);
 
 
@@ -398,22 +415,22 @@ public class KKLayoutGroups<V,E> extends AbstractLayout<V,E> implements Iterativ
      * Calculates the energy function E as if positions of the
      * specified vertices are exchanged.
      */
-    private double calcEnergyIfExchanged(int p, int q) {
+    private double calcEnergyIfExchanged(int p, int q, diagramIndividualData currentDiagram) {
         if (p >= q)
             throw new RuntimeException("p should be < q");
         double energy = 0;		// < 0
-        for (int i = 0; i < vertices.length - 1; i++) {
-            for (int j = i + 1; j < vertices.length; j++) {
+        for (int i = 0; i < currentDiagram.vertices.size()-1; i++) {
+            for (int j = i + 1; j < currentDiagram.vertices.size(); j++) {
                 int ii = i;
                 int jj = j;
                 if (i == p) ii = q;
                 if (j == q) jj = p;
 
-                double dist = dm[i][j];
+                double dist = currentDiagram.distanceMatrix[i][j];
                 double l_ij = L * dist;
                 double k_ij = K / (dist * dist);
-                double dx = xydata[ii].getX() - xydata[jj].getX();
-                double dy = xydata[ii].getY() - xydata[jj].getY();
+                double dx =  currentDiagram.xydata.get(ii).getX() - currentDiagram.xydata.get(jj).getX();
+                double dy =  currentDiagram.xydata.get(ii).getY() - currentDiagram.xydata.get(jj).getY();
                 double d = Math.sqrt(dx * dx + dy * dy);
 
                 energy += k_ij / 2 * (dx * dx + dy * dy + l_ij * l_ij -

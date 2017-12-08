@@ -14,6 +14,7 @@ package mc.client.ui;
 import java.awt.Dimension;
 import java.awt.geom.Point2D;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Random;
 
 import com.google.common.base.Function;
@@ -33,8 +34,10 @@ import mc.client.graph.GraphNode;
 public class SeededRandomizedLayout<V> implements Function<V,Point2D> {
     Dimension d;
     Random random;
-    int xSpacing = 0;
-    String lastAutomataLabel;
+    Integer counter = 0;
+
+    HashMap<String, Integer> Spacing = new HashMap<>();
+    HashMap<String, Integer> processModelsPreviousSpacing = new HashMap<>();
 
 
     /**
@@ -43,28 +46,30 @@ public class SeededRandomizedLayout<V> implements Function<V,Point2D> {
      * @param d the size of the layout area
      */
     public SeededRandomizedLayout(Dimension d) {
-        this(d, 42);
-    }
-
-    /**
-     * Creates an instance with the specified dimension and random seed.
-     * @param d the size of the layout area
-     * @param seed the seed for the internal random number generator
-     */
-    public SeededRandomizedLayout(final Dimension d, long seed) {
         this.d = d;
-        this.random = new Random(seed);
+        this.random = new Random(42);
     }
 
     public Point2D apply(V v) {
         if(v instanceof GraphNode) {
 
+            if(!processModelsPreviousSpacing.containsKey(((GraphNode) v).getAutomata())) { // If we are adding a new process model
+                processModelsPreviousSpacing.put(((GraphNode) v).getAutomata(), counter);
+                Spacing.put(Integer.toString(v.hashCode()), counter);
+                counter += 300;
+            } else if(!Spacing.containsKey(Integer.toString(v.hashCode()))){
+                Integer previousSpacing = processModelsPreviousSpacing.get(((GraphNode) v).getAutomata());
+
+                processModelsPreviousSpacing.put(((GraphNode) v).getAutomata(),previousSpacing+50);
+                Spacing.put(Integer.toString(v.hashCode()), previousSpacing+50);
+            }
 
 
-            return new Point2D.Double(random.nextDouble() * d.width+xSpacing, random.nextDouble() * d.height);
+
+            return new Point2D.Double(Spacing.get(Integer.toString(v.hashCode())), 100);
 
         } else {
-            return new Point2D.Double(random.nextDouble() * d.width, random.nextDouble() * d.height);
+            return new Point2D.Double(0, 0);
 
         }
 

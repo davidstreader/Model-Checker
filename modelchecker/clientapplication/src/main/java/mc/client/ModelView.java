@@ -104,6 +104,7 @@ public class ModelView implements Observer{
         Bounds b = s.getBoundsInParent();
 
         //apply a layout to the graph
+
         Layout<GraphNode,DirectedEdge> layout = new KKLayoutGroups<>(graph);
 
         //Setting the initializer so we get a random layout. But not a random layout every time.
