@@ -28,7 +28,7 @@ public class NativesManager {
         if (Utils.isMac()) {
             return getMacLibDir();
         } else {
-            return Paths.get("native",Utils.getArch());
+            return Paths.get("resources/native",Utils.getArch());
         }
 
     }
