@@ -34,10 +34,10 @@ import mc.client.graph.GraphNode;
 public class SeededRandomizedLayout<V> implements Function<V,Point2D> {
     Dimension d;
     Random random;
-    Integer counter = 0;
+    static Integer counter = 0;
 
-    HashMap<String, Integer> Spacing = new HashMap<>();
-    HashMap<String, Integer> processModelsPreviousSpacing = new HashMap<>();
+    static HashMap<String, Integer> Spacing = new HashMap<>();
+    static HashMap<String, Integer> processModelsPreviousSpacing = new HashMap<>();
 
 
     /**
@@ -48,10 +48,14 @@ public class SeededRandomizedLayout<V> implements Function<V,Point2D> {
     public SeededRandomizedLayout(Dimension d) {
         this.d = d;
         this.random = new Random(42);
+        System.out.println(d);
     }
 
     public Point2D apply(V v) {
         if(v instanceof GraphNode) {
+            this.random = new Random(v.hashCode());
+
+
 
             if(!processModelsPreviousSpacing.containsKey(((GraphNode) v).getAutomata())) { // If we are adding a new process model
                 processModelsPreviousSpacing.put(((GraphNode) v).getAutomata(), counter);
@@ -64,7 +68,7 @@ public class SeededRandomizedLayout<V> implements Function<V,Point2D> {
                 Spacing.put(Integer.toString(v.hashCode()), previousSpacing+50);
             }
 
-
+            System.out.println("["+((GraphNode) v).getAutomata()+"] Putting: " + Integer.toString(v.hashCode()) +  " at: " + Spacing.get(Integer.toString(v.hashCode())));
             return new Point2D.Double(Spacing.get(Integer.toString(v.hashCode())), 50+random.nextDouble() * d.height);
 
         } else {return null;}

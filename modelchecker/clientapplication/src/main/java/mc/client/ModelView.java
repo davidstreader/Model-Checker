@@ -13,7 +13,6 @@ import mc.client.graph.AutomataBorderPaintable;
 import mc.client.graph.DirectedEdge;
 import mc.client.graph.GraphNode;
 import mc.client.graph.NodeStates;
-import mc.client.ui.KKLayoutGroups;
 import mc.client.ui.SeededRandomizedLayout;
 import mc.compiler.CompilationObject;
 import mc.compiler.CompilationObservable;
@@ -102,13 +101,16 @@ public class ModelView implements Observer{
 
 
         Bounds b = s.getBoundsInParent();
-
+        System.out.println(b);
         //apply a layout to the graph
 
-        Layout<GraphNode,DirectedEdge> layout = new KKLayoutGroups<>(graph);
+        Layout<GraphNode,DirectedEdge> layout = new SpringLayout2<GraphNode, DirectedEdge>(graph);
 
         //Setting the initializer so we get a random layout. But not a random layout every time.
         layout.setInitializer(new SeededRandomizedLayout<>(new Dimension((int)b.getWidth(),(int)b.getHeight())));
+        layout.setSize(new Dimension((int)b.getWidth()+2000,(int)b.getHeight()));
+
+        ((SpringLayout2)layout).setRepulsionRange(30);
 
         VisualizationViewer<GraphNode,DirectedEdge> vv = new VisualizationViewer<>(layout);
 
