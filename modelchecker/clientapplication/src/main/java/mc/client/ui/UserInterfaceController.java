@@ -1,5 +1,6 @@
 package mc.client.ui;
 
+import edu.uci.ics.jung.algorithms.layout.FRLayout;
 import javafx.concurrent.Task;
 import javafx.embed.swing.SwingNode;
 import javafx.event.ActionEvent;

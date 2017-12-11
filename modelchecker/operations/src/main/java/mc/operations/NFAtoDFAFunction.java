@@ -1,7 +1,9 @@
-package mc.process_models.automata.operations;
+package mc.operations;
 
+import com.microsoft.z3.Context;
 import mc.Constant;
 import mc.exceptions.CompilationException;
+import mc.plugins.IProcessFunction;
 import mc.process_models.automata.Automaton;
 import mc.process_models.automata.AutomatonEdge;
 import mc.process_models.automata.AutomatonNode;
@@ -9,10 +11,53 @@ import mc.process_models.automata.AutomatonNode;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class AutomataNFAToDFA {
+public class NFAtoDFAFunction implements IProcessFunction{
+    /**
+     * Gets the method name when it is called (e.g. {@code abs} in {@code abs(A)})
+     *
+     * @return the name of the function
+     */
+    @Override
+    public String getFunctionName() {
+        return "nfa2dfa";
+    }
 
-    public Automaton performNFAToDFA(Automaton nfa) throws CompilationException {
-        Automaton dfa = new Automaton(nfa.getId(), !Automaton.CONSTRUCT_ROOT);
+    /**
+     * Get the available flags for the function described by this interface (e.g. {@code unfair} in
+     * {@code abs{unfair}(A)}
+     *
+     * @return a collection of available flags (note, no variables may be flags)
+     */
+    @Override
+    public Collection<String> getValidFlags() {
+        return Collections.EMPTY_LIST;
+    }
+
+    /**
+     * Gets the number of automata to parse into the function
+     *
+     * @return the number of arguments
+     */
+    @Override
+    public int getNumberArguments() {
+        return 1;
+    }
+
+    /**
+     * Execute the function on automata
+     *
+     * @param id       the id of the resulting automaton
+     * @param flags    the flags given by the function (e.g. {@code unfair} in {@code abs{unfair}(A)}
+     * @param context
+     * @param automata a variable number of automata taken in by the function
+     * @return the resulting automaton of the operation
+     * @throws CompilationException when the function fails
+     */
+    @Override
+    public Automaton compose(String id, String[] flags, Context context, Automaton... automata) throws CompilationException {
+        assert automata.length == 1;
+        Automaton nfa = automata[0].copy();
+        Automaton dfa = new Automaton(id, !Automaton.CONSTRUCT_ROOT);
 
         Map<Set<String>, List<AutomatonNode>> stateMap = new HashMap<>();
         Map<String, AutomatonNode> nodeMap = new HashMap<>();
@@ -27,15 +72,15 @@ public class AutomataNFAToDFA {
         boolean processedRoot = false;
         while(!fringe.isEmpty()){
             Set<String> states = fringe.pop();
-            String id = constructNodeId(stateMap.get(states), nfa.getId());
+            String idNode = constructNodeId(stateMap.get(states), nfa.getId());
 
-            if(visited.contains(id)){
+            if(visited.contains(idNode)){
                 continue;
             }
-            if(!nodeMap.containsKey(id)){
-                nodeMap.put(id, dfa.addNode(id));
+            if(!nodeMap.containsKey(idNode)){
+                nodeMap.put(idNode, dfa.addNode(idNode));
             }
-            AutomatonNode node = nodeMap.get(id);
+            AutomatonNode node = nodeMap.get(idNode);
 
             if(!processedRoot){
                 dfa.setRoot(node);
@@ -62,7 +107,7 @@ public class AutomataNFAToDFA {
                 fringe.push(nextStates);
             }
 
-            visited.add(id);
+            visited.add(idNode);
         }
 
         dfa.getNodes().stream()

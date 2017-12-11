@@ -463,10 +463,9 @@ public class Expander {
 
     private boolean evaluateCondition(BoolExpr condition, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException {
         Map<String, Integer> variables = new HashMap<>();
-        for(String key : variableMap.keySet()){
-            Object value = variableMap.get(key);
-            if(value instanceof Integer){
-                variables.put(key, (Integer)value);
+        for(Map.Entry<String,Object> entry: variableMap.entrySet()){
+            if(entry.getValue() instanceof Integer){
+                variables.put(entry.getKey(), (Integer)entry.getValue());
             }
         }
         return Expression.isSolvable(condition,variables,context);
@@ -521,9 +520,9 @@ public class Expander {
 
     private Map<String, Integer> constructIntegerMap(Map<String, Object> variableMap){
         Map<String, Integer> integerMap = new HashMap<>();
-        for(String key : variableMap.keySet()){
-            if(variableMap.get(key) instanceof Integer){
-                integerMap.put(key, (Integer)variableMap.get(key));
+        for(Map.Entry<String,Object> entry : variableMap.entrySet()){
+            if(entry.getValue() instanceof Integer){
+                integerMap.put(entry.getKey(), (Integer)entry.getValue());
             }
         }
 

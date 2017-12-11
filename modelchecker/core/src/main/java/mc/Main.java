@@ -6,6 +6,7 @@ import mc.client.ui.UserInterfaceApplication;
 import mc.commands.CommandManager;
 import mc.commands.PassThroughCommandManager;
 import mc.plugins.IProcessFunction;
+import mc.plugins.IProcessInfixFunction;
 import mc.plugins.PluginManager;
 import mc.util.Utils;
 import mc.webserver.NativesManager;
@@ -15,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import static org.fusesource.jansi.Ansi.ansi;
@@ -51,7 +53,9 @@ public class Main {
         //Start the server if we aren't running from a jar or are in a sub process
         if (!Utils.isJar() || reloaded) {
             commandManager = new CommandManager(this);
-            PluginManager.getInstance().getFunctions().stream().map(IProcessFunction::getFunctionName).forEach(System.out::println);
+
+            PluginManager.getInstance().registerPlugins();
+
             UserInterfaceApplication.main(new String[0]);
             //Listen for commands
             commandManager.registerInput();
@@ -140,4 +144,5 @@ public class Main {
         environment.put("DYLD_LIBRARY_PATH", nativePath);
         return builder;
     }
+
 }

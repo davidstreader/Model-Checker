@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import mc.compiler.ast.OperationNode;
 import mc.exceptions.CompilationException;
+import mc.plugins.IOperationInfixFunction;
 import mc.process_models.ProcessModel;
 import mc.process_models.automata.Automaton;
 import mc.process_models.automata.generator.AutomatonGenerator;
@@ -23,6 +24,7 @@ public class EquationEvaluator {
     private int equationId;
 
     private AutomataOperations automataOperations;
+    private static Map<String, Class<? extends IOperationInfixFunction>> operationsMap = new HashMap<>();
 
     public EquationEvaluator(){
         this.automataOperations = new AutomataOperations();
@@ -79,14 +81,10 @@ public class EquationEvaluator {
             automata.add((Automaton) interpreter.interpret("automata", operation.getFirstProcess(), getNextEquationId(), currentMap,z3Context));
             automata.add((Automaton) interpreter.interpret("automata", operation.getSecondProcess(), getNextEquationId(), currentMap,z3Context));
 
-            if (Objects.equals(operation.getOperation(), "traceEquivalent")) {
-                List<Automaton> automata1 = new ArrayList<>();
-                for (Automaton a : automata) {
-                    automata1.add(automataOperations.nfaToDFA(a));
-                }
-                automata = automata1;
-            }
-            boolean result = automataOperations.bisimulation(automata);
+            //
+
+            boolean result = instantiate(operationsMap.get(operation.getOperation().toLowerCase())).evaluate(automata);
+
             if (operation.isNegated()) {
                 result = !result;
             }
@@ -95,9 +93,9 @@ public class EquationEvaluator {
                 toRender.put(id2+firstId+")",automata.get(0));
                 toRender.put(id2+secondId+")",automata.get(1));
 
-                for (String id: currentMap.keySet()) {
-                    toRender.put(id2+id+")",currentMap.get(id));
-                }
+                for (Map.Entry<String,ProcessModel> entry: currentMap.entrySet() )
+                    toRender.put(id2+entry.getKey()+")",entry.getValue());
+
                 status.failCount++;
             }
             int done = ++status.doneCount;
@@ -141,16 +139,30 @@ public class EquationEvaluator {
     }
     @Getter
     @AllArgsConstructor
-    class EquationReturn {
+    static class EquationReturn {
         List<OperationResult> results;
         Map<String,ProcessModel> toRender;
     }
 
-    private class ModelStatus {
+    private static class ModelStatus {
         int passCount;
         int failCount;
         int id;
         int doneCount;
         long timeStamp;
     }
+
+    public static void addOperations(Class<? extends IOperationInfixFunction> clazz){
+        String name = instantiate(clazz).getFunctionName();
+        operationsMap.put(name.toLowerCase(),clazz);
+    }
+
+    public static <V> V instantiate(Class<V> clazz){
+        try {
+            return clazz.newInstance();
+        } catch (IllegalAccessException | InstantiationException e) {
+        }
+        return null;
+    }
+
 }

@@ -1,5 +1,6 @@
 package mc.plugins;
 
+import mc.exceptions.CompilationException;
 import mc.process_models.automata.Automaton;
 
 public interface IProcessInfixFunction {
@@ -11,10 +12,12 @@ public interface IProcessInfixFunction {
     String getFunctionName();
 
     /**
-     * The form which the function will appear when composd in the text
-     * @return
+     * The form which the function will appear when composed in the text
+     *
+     * @return the textual notation of the infix function
      */
     String getNotation();
+
 
     /**
      * Execute the function
@@ -23,7 +26,9 @@ public interface IProcessInfixFunction {
      * @param automaton2 the second automaton in the function (e.g. {@code B} in {@code A||B})
      * @return the resulting automaton of the operation
      */
-    Automaton compose(String id, Automaton automaton1, Automaton automaton2);
+    Automaton compose(String id, Automaton automaton1, Automaton automaton2) throws CompilationException;
+
 
     //TODO: Petrinet
+
 }

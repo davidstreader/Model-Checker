@@ -3,12 +3,16 @@ package mc.compiler;
 import com.microsoft.z3.Context;
 import mc.compiler.ast.*;
 import mc.exceptions.CompilationException;
+import mc.plugins.IOperationInfixFunction;
 import mc.process_models.ProcessModel;
 import mc.process_models.automata.Automaton;
 import mc.process_models.automata.operations.AutomataOperations;
 import mc.util.Location;
 
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * Created by sheriddavi on 27/01/17.
@@ -18,42 +22,46 @@ public class OperationEvaluator {
     private int operationId;
 
     private AutomataOperations automataOperations;
+    private static Map<String, Class<? extends IOperationInfixFunction>> operationsMap = new HashMap<>();
 
     public OperationEvaluator(){
         this.automataOperations = new AutomataOperations();
     }
 
-    public List<OperationResult> evaluateOperations(List<OperationNode> operations, Map<String, ProcessModel> processMap, Interpreter interpreter, String code, Context context) throws CompilationException, InterruptedException {
+    public List<OperationResult> evaluateOperations(List<OperationNode> operations,
+                                                    Map<String, ProcessModel> processMap, Interpreter interpreter,
+                                                    String code, Context context)
+            throws CompilationException, InterruptedException {
         reset();
         List<OperationResult> results = new ArrayList<>();
         for(OperationNode operation : operations){
-            String firstId = findIdent(operation.getFirstProcess(), code);
+
+            String firstId  = findIdent(operation.getFirstProcess(),  code);
             String secondId = findIdent(operation.getSecondProcess(), code);
+
             List<String> firstIds = collectIdentifiers(operation.getFirstProcess());
             List<String> secondIds = collectIdentifiers(operation.getSecondProcess());
+
             List<Automaton> automata = new ArrayList<>();
             List<String> missing = new ArrayList<>(firstIds);
+
             missing.addAll(secondIds);
             missing.removeAll(processMap.keySet());
+
             if (!missing.isEmpty()) {
                 throw new CompilationException(OperationEvaluator.class, "Identifier " + missing.get(0) + " not found!", operation.getLocation());
             }
+
             automata.add((Automaton) interpreter.interpret("automata", operation.getFirstProcess(), getNextOperationId(), processMap,context));
             automata.add((Automaton) interpreter.interpret("automata", operation.getSecondProcess(), getNextOperationId(), processMap,context));
 
-            if (Objects.equals(operation.getOperation(), "traceEquivalent")) {
-                List<Automaton> automata1 = new ArrayList<>();
-                for (Automaton a: automata) {
-                    automata1.add(automataOperations.nfaToDFA(a));
-                }
-                automata = automata1;
-            }
-            boolean result = automataOperations.bisimulation(automata);
+
+            boolean result = instantiate(operationsMap.get(operation.getOperation().toLowerCase())).evaluate(automata);
+
             if (operation.isNegated()) {
                 result = !result;
             }
             results.add(new OperationResult(operation.getFirstProcess(),operation.getSecondProcess(), firstId, secondId, operation.getOperation(), operation.isNegated(), result,""));
-
         }
         return results;
     }
@@ -101,5 +109,22 @@ public class OperationEvaluator {
 
     private void reset(){
         operationId = 0;
+    }
+
+
+    public static void addOperations(Class<? extends IOperationInfixFunction> clazz){
+        String name = instantiate(clazz).getFunctionName();
+        Logger.getLogger(OperationEvaluator.class.getSimpleName()).info("LOADED " + name + " FUNCTION PLUGIN");
+        operationsMap.put(name.toLowerCase(),clazz);
+    }
+
+    public static <V> V instantiate(Class<V> clazz){
+        try {
+            return clazz.newInstance();
+        } catch (IllegalAccessException | InstantiationException e) {
+            Logger.getLogger(OperationEvaluator.class.getSimpleName())
+                    .log(Level.WARNING,clazz.getSimpleName() + " was unable to be added as an operation");
+        }
+        return null;
     }
 }

@@ -1,12 +1,13 @@
 package mc.client;
 
-import edu.uci.ics.jung.algorithms.layout.*;
+import edu.uci.ics.jung.algorithms.layout.DAGLayout;
+import edu.uci.ics.jung.algorithms.layout.Layout;
+import edu.uci.ics.jung.algorithms.layout.SpringLayout;
 import edu.uci.ics.jung.graph.DirectedSparseGraph;
 import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.*;
-import edu.uci.ics.jung.visualization.decorators.EdgeShape;
 import edu.uci.ics.jung.visualization.renderers.Renderer;
 import javafx.embed.swing.SwingNode;
 import javafx.geometry.Bounds;
@@ -85,6 +86,7 @@ public class ModelView implements Observer{
 
     /**
      * A method to update the graph that is displayed
+     *
      * @return the graph component that is displayed
      */
     public VisualizationViewer<GraphNode,DirectedEdge> updateGraph(SwingNode s) {
@@ -105,7 +107,7 @@ public class ModelView implements Observer{
         if(graph.getVertexCount() == 0)
             layout = new DAGLayout<>(graph);
         else
-            layout = new ISOMLayout<>(graph);
+            layout = new SpringLayout<>(graph);
         VisualizationViewer<GraphNode,DirectedEdge> vv = new VisualizationViewer<>(layout);
 
         //create a custom mouse controller (both movable, scalable and manipulatable)

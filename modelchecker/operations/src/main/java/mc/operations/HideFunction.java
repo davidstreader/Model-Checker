@@ -1,5 +1,7 @@
 package mc.operations;
 
+import com.microsoft.z3.Context;
+import mc.exceptions.CompilationException;
 import mc.plugins.IProcessFunction;
 import mc.process_models.automata.Automaton;
 
@@ -28,6 +30,16 @@ public class HideFunction implements IProcessFunction{
     }
 
     /**
+     * Gets the number of automata to parse into the function
+     *
+     * @return the number of arguments
+     */
+    @Override
+    public int getNumberArguments() {
+        return 0;
+    }
+
+    /**
      * Execute the function on automata
      *
      * @param id       the id of the resulting automaton
@@ -36,7 +48,7 @@ public class HideFunction implements IProcessFunction{
      * @return the resulting automaton of the operation
      */
     @Override
-    public Automaton compose(String id, String[] flags, Automaton... automata) {
+    public Automaton compose(String id, String[] flags, Context context, Automaton... automata) throws CompilationException {
         return null;
     }
 }

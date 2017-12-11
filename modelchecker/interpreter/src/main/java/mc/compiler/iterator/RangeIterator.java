@@ -1,5 +1,7 @@
 package mc.compiler.iterator;
 
+import java.util.NoSuchElementException;
+
 /**
  * Created by sheriddavi on 19/01/17.
  */
@@ -16,7 +18,9 @@ public class RangeIterator implements IndexIterator<Integer> {
 
     @Override
     public Integer next(){
-        return current++;
+        if(current+1 < end)
+            return current++;
+        throw new NoSuchElementException();
     }
 
     @Override

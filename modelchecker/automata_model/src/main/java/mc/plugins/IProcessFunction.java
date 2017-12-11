@@ -1,5 +1,7 @@
 package mc.plugins;
 
+import com.microsoft.z3.Context;
+import mc.exceptions.CompilationException;
 import mc.process_models.automata.Automaton;
 
 import java.util.Collection;
@@ -26,14 +28,22 @@ public interface IProcessFunction {
     Collection<String> getValidFlags();
 
     /**
+     * Gets the number of automata to parse into the function
+     * @return the number of arguments
+     */
+    int getNumberArguments();
+
+
+    /**
      * Execute the function on automata
      *
      * @param id       the id of the resulting automaton
      * @param flags    the flags given by the function (e.g. {@code unfair} in {@code abs{unfair}(A)}
      * @param automata a variable number of automata taken in by the function
      * @return the resulting automaton of the operation
+     * @throws CompilationException when the function fails
      */
-    Automaton compose(String id, String[] flags, Automaton... automata);
+    Automaton compose(String id, String[] flags, Context context, Automaton... automata) throws CompilationException;
 
     //TODO: Petrinet functions
 }

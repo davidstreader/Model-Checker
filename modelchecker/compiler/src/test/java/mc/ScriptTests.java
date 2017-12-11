@@ -3,9 +3,11 @@ package mc;
 import com.microsoft.z3.Context;
 import mc.compiler.OperationResult;
 import mc.exceptions.CompilationException;
+import mc.plugins.PluginManager;
 import mc.util.PrintQueue;
 import mc.util.expr.Expression;
 import mc.webserver.FakeContext;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -20,6 +22,10 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 @RunWith(Parameterized.class)
 public class ScriptTests {
+    @BeforeClass
+    public static void initialise(){
+        PluginManager.getInstance().registerPlugins();
+    }
     private final File file;
     public ScriptTests(String name, File file) {
         this.file = file;

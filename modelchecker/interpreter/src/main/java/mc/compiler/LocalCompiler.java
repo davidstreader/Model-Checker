@@ -8,9 +8,6 @@ import mc.exceptions.CompilationException;
 import java.util.HashMap;
 import java.util.concurrent.BlockingQueue;
 
-/**
- * Created by bealjaco on 23/11/17.
- */
 @AllArgsConstructor
 public class LocalCompiler {
     @Getter
