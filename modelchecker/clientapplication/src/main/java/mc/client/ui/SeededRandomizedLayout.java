@@ -51,25 +51,19 @@ public class SeededRandomizedLayout<V> implements Function<V,Point2D> {
         System.out.println(d);
     }
 
+    public void clear() {
+       counter = 0;
+
+       Spacing = new HashMap<>();
+       processModelsPreviousSpacing = new HashMap<>();
+    }
+
     public Point2D apply(V v) {
         if(v instanceof GraphNode) {
             this.random = new Random(v.hashCode());
 
 
-
-            if(!processModelsPreviousSpacing.containsKey(((GraphNode) v).getAutomata())) { // If we are adding a new process model
-                processModelsPreviousSpacing.put(((GraphNode) v).getAutomata(), counter);
-                Spacing.put(Integer.toString(v.hashCode()), counter);
-                counter += 300;
-            } else if(!Spacing.containsKey(Integer.toString(v.hashCode()))){
-                Integer previousSpacing = processModelsPreviousSpacing.get(((GraphNode) v).getAutomata());
-
-                processModelsPreviousSpacing.put(((GraphNode) v).getAutomata(),previousSpacing+50);
-                Spacing.put(Integer.toString(v.hashCode()), previousSpacing+50);
-            }
-
-            System.out.println("["+((GraphNode) v).getAutomata()+"] Putting: " + Integer.toString(v.hashCode()) +  " at: " + Spacing.get(Integer.toString(v.hashCode())));
-            return new Point2D.Double(Spacing.get(Integer.toString(v.hashCode())), 50+random.nextDouble() * d.height);
+            return new Point2D.Double(50+random.nextDouble() * d.width, 50+random.nextDouble() * d.height);
 
         } else {return null;}
 

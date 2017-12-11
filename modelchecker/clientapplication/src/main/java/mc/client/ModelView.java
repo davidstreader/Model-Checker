@@ -14,6 +14,7 @@ import mc.client.graph.DirectedEdge;
 import mc.client.graph.GraphNode;
 import mc.client.graph.NodeStates;
 import mc.client.ui.SeededRandomizedLayout;
+import mc.client.ui.SpringLayoutUnbounded;
 import mc.compiler.CompilationObject;
 import mc.compiler.CompilationObservable;
 import mc.compiler.OperationResult;
@@ -37,7 +38,8 @@ import static java.util.stream.Collectors.toSet;
 public class ModelView implements Observer{
 
     private Graph<GraphNode,DirectedEdge> graph;
-    private VisualizationViewer<GraphNode,DirectedEdge> graphView;
+
+    private SeededRandomizedLayout layoutInitalPosition; // As the data within this is static we need to clear it when the user does, otherwise layouts become odd.
 
     private Set<String> automataToDisplay;
     private Set<String> visibleAutomata;
@@ -101,19 +103,23 @@ public class ModelView implements Observer{
 
 
         Bounds b = s.getBoundsInParent();
-        System.out.println(b);
         //apply a layout to the graph
 
-        Layout<GraphNode,DirectedEdge> layout = new SpringLayout2<GraphNode, DirectedEdge>(graph);
+        Layout<GraphNode,DirectedEdge> layout = new SpringLayoutUnbounded<GraphNode, DirectedEdge>(graph, automata);
 
         //Setting the initializer so we get a random layout. But not a random layout every time.
-        layout.setInitializer(new SeededRandomizedLayout<>(new Dimension((int)b.getWidth(),(int)b.getHeight())));
-        layout.setSize(new Dimension((int)b.getWidth()+2000,(int)b.getHeight()));
 
-        ((SpringLayout2)layout).setRepulsionRange(30);
+        layoutInitalPosition = new SeededRandomizedLayout<>(new Dimension((int)b.getWidth(),(int)b.getHeight()));
+
+        layout.setInitializer(layoutInitalPosition);
+        layout.setSize(new Dimension((int)b.getWidth(),(int)b.getHeight()));
+
+        ((SpringLayoutUnbounded)layout).setRepulsionRange(30);
 
         VisualizationViewer<GraphNode,DirectedEdge> vv = new VisualizationViewer<>(layout);
 
+        vv.getRenderingHints().remove( //As this seems to be very expensive in jung
+                RenderingHints.KEY_ANTIALIASING);
 
 
         //create a custom mouse controller (both movable, scalable and manipulatable)
@@ -146,6 +152,8 @@ public class ModelView implements Observer{
 
         //This draws the boxes around the automata
         vv.addPreRenderPaintable(new AutomataBorderPaintable(vv,this.automata));
+
+        //Shuffle automata to make sure they dont overlap.
 
         return vv;
     }
@@ -204,6 +212,8 @@ public class ModelView implements Observer{
 
     public void clearDisplayed() {
         automataToDisplay.clear();
+        if(layoutInitalPosition != null)
+            layoutInitalPosition.clear();
     }
 
     public void addAllAutomata() {

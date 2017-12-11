@@ -1,5 +1,6 @@
 package mc.client.graph;
 
+import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.visualization.MultiLayerTransformer;
 import edu.uci.ics.jung.visualization.VisualizationServer;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
@@ -17,6 +18,7 @@ import java.util.Set;
 public class AutomataBorderPaintable implements VisualizationServer.Paintable{
 
     private final VisualizationViewer vv;
+
     private final Map<String,Set<GraphNode>> automata;
 
     @Override
@@ -34,8 +36,6 @@ public class AutomataBorderPaintable implements VisualizationServer.Paintable{
         automata.forEach((key, value) -> {
             Rectangle2D boundingBox = computeBoundingBox(value, layout, transform);
 
-
-
             double d = 80;
             Shape rect = new RoundRectangle2D.Double(
                     boundingBox.getMinX() - d,
@@ -47,7 +47,8 @@ public class AutomataBorderPaintable implements VisualizationServer.Paintable{
             g.fill(rect);
             g.setColor(Color.BLACK);
             g.draw(rect);
-            g.drawString(key, (int) boundingBox.getCenterX(), (int) boundingBox.getCenterY());
+
+            g.drawString(key, (int) boundingBox.getX(), (int) boundingBox.getY());
         });
 
     }
