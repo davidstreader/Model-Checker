@@ -8,6 +8,6 @@ import mc.webserver.LogMessage;
  */
 public class LogAST extends LogMessage {
     public LogAST(String function, ProcessNode process) {
-        super(function+" @|black "+process.getIdentifier()+" "+ formatLocation(process.getLocation())+"|@",true,false,null,-1,Thread.currentThread());
+        super(function+" "+process.getIdentifier()+" "+ formatLocation(process.getLocation())+" ",true,false,null,-1,Thread.currentThread());
     }
 }
