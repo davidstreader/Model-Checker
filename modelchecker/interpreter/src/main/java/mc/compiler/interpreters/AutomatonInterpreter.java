@@ -17,6 +17,8 @@ import mc.process_models.automata.operations.AutomataOperations;
 import java.util.*;
 import java.util.logging.Logger;
 
+import static mc.util.Utils.instantiateClass;
+
 public class AutomatonInterpreter implements ProcessModelInterpreter {
 
     private AutomataOperations operations;
@@ -379,13 +381,4 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         infixFunctions.put(name,clazz);
     }
 
-    private static <V> V instantiateClass(Class<V> clazz){
-        V instance = null;
-        try {
-             instance = clazz.newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
-        return instance;
-    }
 }

@@ -14,6 +14,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import static mc.util.Utils.instantiateClass;
+
 /**
  * Created by sheriddavi on 27/01/17.
  */
@@ -56,7 +58,7 @@ public class OperationEvaluator {
             automata.add((Automaton) interpreter.interpret("automata", operation.getSecondProcess(), getNextOperationId(), processMap,context));
 
 
-            boolean result = instantiate(operationsMap.get(operation.getOperation().toLowerCase())).evaluate(automata);
+            boolean result = instantiateClass(operationsMap.get(operation.getOperation().toLowerCase())).evaluate(automata);
 
             if (operation.isNegated()) {
                 result = !result;
@@ -113,18 +115,9 @@ public class OperationEvaluator {
 
 
     public static void addOperations(Class<? extends IOperationInfixFunction> clazz){
-        String name = instantiate(clazz).getFunctionName();
+        String name = instantiateClass(clazz).getFunctionName();
         Logger.getLogger(OperationEvaluator.class.getSimpleName()).info("LOADED " + name + " FUNCTION PLUGIN");
         operationsMap.put(name.toLowerCase(),clazz);
     }
 
-    public static <V> V instantiate(Class<V> clazz){
-        try {
-            return clazz.newInstance();
-        } catch (IllegalAccessException | InstantiationException e) {
-            Logger.getLogger(OperationEvaluator.class.getSimpleName())
-                    .log(Level.WARNING,clazz.getSimpleName() + " was unable to be added as an operation");
-        }
-        return null;
-    }
 }

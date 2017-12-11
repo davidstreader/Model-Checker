@@ -18,6 +18,8 @@ import java.util.concurrent.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static mc.util.Utils.instantiateClass;
+
 
 public class EquationEvaluator {
 
@@ -83,7 +85,7 @@ public class EquationEvaluator {
 
             //
 
-            boolean result = instantiate(operationsMap.get(operation.getOperation().toLowerCase())).evaluate(automata);
+            boolean result = instantiateClass(operationsMap.get(operation.getOperation().toLowerCase())).evaluate(automata);
 
             if (operation.isNegated()) {
                 result = !result;
@@ -153,16 +155,8 @@ public class EquationEvaluator {
     }
 
     public static void addOperations(Class<? extends IOperationInfixFunction> clazz){
-        String name = instantiate(clazz).getFunctionName();
+        String name = instantiateClass(clazz).getFunctionName();
         operationsMap.put(name.toLowerCase(),clazz);
-    }
-
-    public static <V> V instantiate(Class<V> clazz){
-        try {
-            return clazz.newInstance();
-        } catch (IllegalAccessException | InstantiationException e) {
-        }
-        return null;
     }
 
 }

@@ -16,6 +16,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static mc.util.Utils.instantiateClass;
+
 public class AutomatonGenerator {
 
     private static Map<String,Class<? extends IOperationInfixFunction>> operations = new HashMap<>();
@@ -174,16 +176,6 @@ public class AutomatonGenerator {
     public static void addOperation(Class<? extends IOperationInfixFunction> clazz){
         String name = instantiateClass(clazz).getFunctionName();
         operations.put(name,clazz);
-    }
-
-    private static <V> V instantiateClass(Class<V> clazz){
-        V instance = null;
-        try {
-            instance = clazz.newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
-        return instance;
     }
 
 }
