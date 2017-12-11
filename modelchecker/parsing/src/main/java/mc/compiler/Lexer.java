@@ -2,16 +2,19 @@ package mc.compiler;
 
 import mc.compiler.token.*;
 import mc.exceptions.LexerException;
+import mc.plugins.IProcessFunction;
 import mc.util.Location;
 
 import java.util.*;
+
+import static mc.util.Utils.instantiateClass;
 
 public class Lexer {
 
 	private int index;
 
     private Set<String> processTypes;
-    private Set<String> functions;
+    private static Set<String> functions = new HashSet<>();
 
 	// used for constructing locations of tokens
 	private int line;
@@ -19,7 +22,6 @@ public class Lexer {
 
     public Lexer(){
         processTypes = new HashSet<>(Arrays.asList("automata", "petrinet"));
-        functions = new HashSet<>(Arrays.asList("abs", "simp", "safe", "prune", "nfa2dfa"));
     }
 
 	public List<Token> tokenise(String code) throws LexerException{
@@ -436,4 +438,8 @@ public class Lexer {
 		line = 1;
 		column = 0;
 	}
+
+	public static void registerFunction(Class<? extends IProcessFunction> function) {
+        functions.add(instantiateClass(function).getFunctionName().toLowerCase());
+    }
 }

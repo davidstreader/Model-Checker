@@ -3,16 +3,19 @@ package mc.compiler.lexer;
 import mc.compiler.token.FunctionToken;
 import mc.compiler.token.Token;
 import mc.exceptions.LexerException;
+import mc.plugins.PluginManager;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.List;
 
 import static org.junit.Assert.fail;
 
-/**
- * Created by sheriddavi on 13/02/17.
- */
 public class FunctionTests extends LexerTests {
+    @BeforeClass
+    public static void initialise(){
+        PluginManager.getInstance().registerPlugins();
+    }
 
     @Test
     public void tokeniseAbsTest() throws LexerException {

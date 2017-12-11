@@ -26,6 +26,7 @@ public class ScriptTests {
     public static void initialise(){
         PluginManager.getInstance().registerPlugins();
     }
+
     private final File file;
     public ScriptTests(String name, File file) {
         this.file = file;

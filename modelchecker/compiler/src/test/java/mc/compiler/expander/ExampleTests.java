@@ -2,6 +2,8 @@ package mc.compiler.expander;
 
 import mc.compiler.ast.*;
 import mc.exceptions.CompilationException;
+import mc.plugins.PluginManager;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -9,15 +11,19 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 /**
  * Created by sheriddavi on 9/02/17.
  */
 public class ExampleTests extends ExpanderTests {
-
-    public ExampleTests() throws InterruptedException {
+    @BeforeClass
+    public static void initialise(){
+        PluginManager.getInstance().registerPlugins();
     }
+
+    public ExampleTests() throws InterruptedException {}
 
     @Test
     public void correctSimpleTest_1() throws CompilationException, InterruptedException {
@@ -121,6 +127,7 @@ public class ExampleTests extends ExpanderTests {
 
         List<ProcessNode> expected = new ArrayList<>(Arrays.asList(basic, bas, b));
 
+        assertEquals(expected,nodes);
         if(!expected.equals(nodes)){
             fail("expecting process node lists to be equivalent");
         }

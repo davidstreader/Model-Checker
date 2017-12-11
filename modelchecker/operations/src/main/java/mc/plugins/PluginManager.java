@@ -3,6 +3,7 @@ package mc.plugins;
 
 import com.google.common.collect.ImmutableSet;
 import lombok.Getter;
+import mc.compiler.Lexer;
 import mc.compiler.OperationEvaluator;
 import mc.compiler.interpreters.AutomatonInterpreter;
 import mc.process_models.automata.generator.AutomatonGenerator;
@@ -48,10 +49,18 @@ public class PluginManager {
         return ImmutableSet.copyOf(reflection.getSubTypesOf(IOperationInfixFunction.class));
     }
 
+    /**
+     * This function calls the relevant parts of the parser and provides the requisite class files to the parser
+     */
     public void registerPlugins(){
+        //register the {@code f(x)} style functions to the interpreter
         getFunctions().forEach(AutomatonInterpreter::addFunction);
+        getFunctions().forEach(Lexer::registerFunction);
+        //register the {@code X||Y} style functions to the interpreter
         getInfixFunctions().forEach(AutomatonInterpreter::addInfixFunction);
+        //register the operations functions to the interpreter
         getInfixOperations().forEach(OperationEvaluator::addOperations);
+        //register the operations functions to the equation generator
         getInfixOperations().forEach(AutomatonGenerator::addOperation);
     }
 
