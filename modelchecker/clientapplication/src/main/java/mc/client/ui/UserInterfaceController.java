@@ -1,6 +1,11 @@
 package mc.client.ui;
 
+
 import edu.uci.ics.jung.graph.Graph;
+
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+
 import javafx.concurrent.Task;
 import javafx.embed.swing.SwingNode;
 import javafx.event.ActionEvent;
@@ -53,7 +58,34 @@ public class UserInterfaceController implements Initializable {
     @FXML private ComboBox modelsList;
 
     private Stage window;
+
+
     private Scene scene;
+    private boolean saveButton = false;
+    private boolean dontSaveButton = false;
+    private boolean cancel = false;
+    private boolean hasBeenSavedBefore = false;
+    private String buttonName;
+
+
+    private int lengthEdgeValue = 10;
+    private int maxNodeLabelValue = 10;
+    private int operationFailureLabelValue = 10;
+    private int operationPassLabelValue = 10;
+
+
+    private List<Integer> theOptionChangesForIntegeres = new ArrayList<>();
+
+
+    private boolean fairAbstractionSelected = false;
+    private boolean autoSaveSelected = false;
+    private boolean darkModeSelected = false;
+    private boolean pruningSelected = false;
+    private boolean liveCompillingSelected = false;
+
+    private List<Boolean> theOptionChangesForBooleans = new ArrayList<>();
+
+
 
     /**
      * Called to initialize a controller after its root element has been
@@ -286,49 +318,88 @@ public class UserInterfaceController implements Initializable {
     }
 
     @FXML
-    private void handleCreateNew(ActionEvent event) {
-        if (!(userCodeInput.getText().equals(""))) {
-            saveButtonFunctionality();
+    private void handleCreateNew(ActionEvent event) throws InterruptedException {
+        buttonName = "New";
+        outerloop:
+        // If the Code Area is not empty which means there are codes that we can save.
+        if (!(userCodeInput.getText().isEmpty())) {
+            // Open a dialogue and give the user three options (SAVE, DON'TSAVE, CANCEL)
+            createSceneFile();
+            window.close();
+            System.out.println("THIS IS BEFORE ANY OF THE INTERACTION");
+            if (saveButton) {
+                setBackFlags();
+                // do these operations when the user click on SAVE button in the dialogue
+                hasBeenSavedBefore = true;
+                cleanTheCodeArea();
+
+
+            } else if (dontSaveButton) {
+                window.close();
+                // do these operations when the user click on DON'TSAVE button in the dialogue
+                cleanTheCodeArea();
+
+            } else {
+                // Close the dialogue if the user clicking on the CANCEL
+                window.close();
+                break outerloop;
+            }
+
         }
-        String length = userCodeInput.getText();
-        int size = length.length();
-        userCodeInput.deleteText(0, size);
+        window.close();
     }
 
     @FXML
     private void handleOpen(ActionEvent event) {
-        if (!(userCodeInput.getText().equals(""))) {
-            addToScene();
+        window = new Stage();
+        buttonName = "Open";
+        outerloop:
+        // If the Code Area is not empty which means there are codes that we can save.
+        if (!(userCodeInput.getText().isEmpty())) {
+            // Open a dialogue and give the user three options (SAVE, DON'TSAVE, CANCEL)
+            createSceneFile();
+            if (saveButton) {
+                setBackFlags();
+                // do these operations when the user click on SAVE button in the dialogue
+                cleanTheCodeArea();
+            } else if (dontSaveButton) {
+                setBackFlags();
+            } else {
+                // Close the dialogue if the user clicking on the CANCEL
+                break outerloop;
+            }
         } else {
             dontSaveButtonFunctionality();
         }
+
     }
 
     @FXML
     private void handleOpenRecentAction(ActionEvent event) {
-        //display("OpenRecent");
-
+        /**/
     }
 
     @FXML
     private void handleFileClose(ActionEvent event) {
         if (!(userCodeInput.getText().equals(""))) {
             saveButtonFunctionality();
+            System.exit(0);
         }
-        String length = userCodeInput.getText();
-        int size = length.length();
-        userCodeInput.deleteText(0, size);
+        System.exit(0);
     }
 
     @FXML
     private void handleSave(ActionEvent event) {
-        addToScene();
-
+        window = new Stage();
+        if (!(hasBeenSavedBefore)) {
+            saveButtonFunctionality();
+        }
     }
 
     @FXML
     private void handleSaveAs(ActionEvent event) {
-        addToScene();
+        window = new Stage();
+        saveButtonFunctionality();
     }
 
     @FXML
@@ -392,7 +463,7 @@ public class UserInterfaceController implements Initializable {
 
     @FXML
     private void handOptionsRequest(ActionEvent event) {
-
+        creatSceneOptions();
     }
 
     //TODO: make this a better concurrent process
@@ -453,54 +524,12 @@ public class UserInterfaceController implements Initializable {
     }
 
 
-    public void addToScene() {
-        window = new Stage();
-        Label label = new Label("Do you want to save changes?");
 
 
-        Button saveButton = new Button();
-        saveButton.setText("Save");
-        saveButton.setOnAction(e -> saveButtonFunctionality());
-
-
-        Button dontSaveButton = new Button();
-        dontSaveButton.setText("Don't Save");
-        dontSaveButton.setOnAction(e -> dontSaveButtonFunctionality());
-
-
-        Button cancelButton = new Button();
-        cancelButton.setText("Cancel");
-        cancelButton.setOnAction(e -> cancelButtonFunctionality());
-
-
-        GridPane grid = new GridPane();
-        grid.setPadding(new Insets(10, 10, 10, 10));
-        grid.setVgap(25);
-        grid.setHgap(10);
-
-        // Adding the labels and the Buttons in order
-        GridPane.setConstraints(label, 0, 0);
-        GridPane.setConstraints(saveButton, 1, 0);
-        GridPane.setConstraints(dontSaveButton, 2, 0);
-        GridPane.setConstraints(cancelButton, 3, 0);
-
-
-        grid.getChildren().addAll(label, saveButton, dontSaveButton, cancelButton);
-
-
-        scene = new Scene(grid, 460, 85);
-
-        window.setScene(scene);
-        window.setMaxWidth(460);
-        window.setMaxHeight(85);
-        window.setMinWidth(460);
-        window.setMinHeight(85);
-        window.initModality(Modality.APPLICATION_MODAL);
-        window.show();
-    }
-
-    public void saveButtonFunctionality() {
-        window = new Stage();
+    private boolean saveButtonFunctionality() {
+        dontSaveButton = false;
+        cancel = false;
+        saveButton = true;
         FileChooser fileChooser;
         PrintStream readTo;
         File selectedFile;
@@ -509,24 +538,29 @@ public class UserInterfaceController implements Initializable {
         fileChooser.setTitle("Save file into a directory");
         selectedFile = fileChooser.showSaveDialog(window);
 
+        outerloop:
         try {
             if (selectedFile == null) {
-                window.close();
-                return;
-            }else {
+                break outerloop;
+            } else {
                 readTo = new PrintStream(selectedFile);
-                readTo.print(userCodeInput.getText());
+                readTo.println(userCodeInput.getText());
+                readTo = readTheOptionsIntegers(readTo);
+                readTo = readTheOptionsBooleans(readTo);
                 readTo.close();
+                hasBeenSavedBefore = true;
             }
         } catch (IOException message) {
-            //TODO: Gracefully handle errors
-            message.printStackTrace();
+            System.out.println(message);
         }
         window.close();
+        return true;
     }
 
-    public void dontSaveButtonFunctionality() {
-        window = new Stage();
+    private void dontSaveButtonFunctionality() {
+        saveButton = false;
+        dontSaveButton = true;
+        cancel = false;
         FileChooser fileChooser = new FileChooser();
         fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("TXT", "*.txt"));
         fileChooser.setTitle("Open Resource File");
@@ -541,9 +575,10 @@ public class UserInterfaceController implements Initializable {
                 break outerloop;
             } else {
                 scanner = new Scanner(selectedFile);
-                while (scanner.hasNext()) {
+                while (scanner.hasNext() && !scanner.hasNext("lengthEdgeValue:")) {
                     theCode = theCode + scanner.nextLine() + "\n";
                 }
+                readOptions(scanner);
                 scanner.close();
                 String length = userCodeInput.getText();
                 int size = length.length();
@@ -551,16 +586,433 @@ public class UserInterfaceController implements Initializable {
                 userCodeInput.replaceSelection(theCode);
             }
         } catch (IOException message) {
-            //TODO: Gracefully handle errors
-            message.printStackTrace();
+            System.out.println(message);
         }
+
         window.close();
     }
 
-    public void cancelButtonFunctionality() {
+    private GridPane createGrideOptions() {
+        final Label lengthEdgeLabel = new Label("Length of the Edge:");
+        Slider lengthEdge = createSlider();
+        lengthEdge.valueProperty().addListener(new ChangeListener() {
+            @Override
+            public void changed(ObservableValue arg0, Object arg1, Object arg2) {
+                lengthEdgeValue = (int) lengthEdge.getValue();
+            }
+        });
+        lengthEdge.setValue((double) lengthEdgeValue);
+
+
+        final Label maxNodeLabel = new Label("Automa Max Node:");
+        Slider maxNode = createSlider();
+        maxNode.valueProperty().addListener(new ChangeListener() {
+            @Override
+            public void changed(ObservableValue arg0, Object arg1, Object arg2) {
+                maxNodeLabelValue = (int) maxNode.getValue();
+            }
+        });
+        maxNode.setValue((double) maxNodeLabelValue);
+
+
+        final Label operationFailureLabel = new Label("Operation failure count:");
+        Slider operationFailure = createSlider();
+        operationFailure.valueProperty().addListener(new ChangeListener() {
+            @Override
+            public void changed(ObservableValue arg0, Object arg1, Object arg2) {
+                operationFailureLabelValue = (int) operationFailure.getValue();
+            }
+        });
+        operationFailure.setValue((double) operationFailureLabelValue);
+
+
+        final Label operationPassLabel = new Label("Operation pass count:");
+        Slider operationPass = createSlider();
+        operationPass.valueProperty().addListener(new ChangeListener() {
+            @Override
+            public void changed(ObservableValue arg0, Object arg1, Object arg2) {
+                operationPassLabelValue = (int) operationPass.getValue();
+            }
+        });
+        operationPass.setValue((double) operationPassLabelValue);
+
+        CheckBox fairAbstraction;
+        if (!(fairAbstractionSelected)) {
+            fairAbstraction = new CheckBox("Fair Abstraction");
+            fairAbstraction.setOnAction(e -> fairAbstractionFunctionality());
+        } else {
+            fairAbstraction = new CheckBox("Fair Abstraction");
+            fairAbstraction.setOnAction(e -> fairAbstractionFunctionality());
+            fairAbstraction.setSelected(true);
+        }
+
+        CheckBox autoSave;
+        if (!(autoSaveSelected)) {
+            autoSave = new CheckBox("Autosave");
+            autoSave.setOnAction(e -> autoSaveFunctionality());
+        } else {
+            autoSave = new CheckBox("Autosave");
+            autoSave.setOnAction(e -> autoSaveFunctionality());
+            autoSave.setSelected(true);
+        }
+
+        CheckBox darkMode;
+        if (!(darkModeSelected)) {
+            darkMode = new CheckBox("Dark Mode");
+            darkMode.setOnAction(e -> darkModeFunctionality());
+        } else {
+            darkMode = new CheckBox("Dark Mode");
+            darkMode.setOnAction(e -> darkModeFunctionality());
+            darkMode.setSelected(true);
+
+        }
+
+        CheckBox pruning;
+        if (!(pruningSelected)) {
+            pruning = new CheckBox("Pruning");
+            pruning.setOnAction(e -> pruningFunctionality());
+        } else {
+            pruning = new CheckBox("Pruning");
+            pruning.setOnAction(e -> pruningFunctionality());
+            pruning.setSelected(true);
+        }
+
+        CheckBox liveCompilling;
+        if (!(liveCompillingSelected)) {
+            liveCompilling = new CheckBox("Live Compilling");
+            liveCompilling.setOnAction(e -> liveCompilingFunctionality());
+        } else {
+            liveCompilling = new CheckBox("Live Compilling");
+            liveCompilling.setOnAction(e -> liveCompilingFunctionality());
+            liveCompilling.setSelected(true);
+        }
+
+        Button closeButton = new Button("Close");
+        closeButton.setOnAction(e -> window.close());
+
+
+        GridPane grid = new GridPane();
+        grid.setPadding(new Insets(10, 10, 10, 10));
+        grid.setVgap(25);
+        grid.setHgap(10);
+
+
+        GridPane.setConstraints(lengthEdgeLabel, 0, 0);
+        GridPane.setConstraints(lengthEdge, 1, 0);
+
+        GridPane.setConstraints(maxNodeLabel, 0, 1);
+        GridPane.setConstraints(maxNode, 1, 1);
+
+        GridPane.setConstraints(operationFailureLabel, 0, 2);
+        GridPane.setConstraints(operationFailure, 1, 2);
+
+        GridPane.setConstraints(operationPassLabel, 0, 3);
+        GridPane.setConstraints(operationPass, 1, 3);
+
+        GridPane.setConstraints(fairAbstraction, 0, 5);
+        GridPane.setConstraints(autoSave, 0, 4);
+        GridPane.setConstraints(darkMode, 0, 6);
+
+        GridPane.setConstraints(pruning, 1, 4);
+        GridPane.setConstraints(liveCompilling, 1, 5);
+        GridPane.setConstraints(closeButton, 1, 6);
+
+
+        grid.getChildren().addAll(lengthEdgeLabel, lengthEdge, maxNodeLabel, maxNode, operationFailureLabel,
+                operationFailure, operationPassLabel, operationPass, fairAbstraction, autoSave, darkMode, pruning,
+                liveCompilling, closeButton);
+        return grid;
+    }
+
+    private GridPane createGrideFile() {
+        Label label = new Label("Do you want to save changes?");
+
+        Button saveButton = createSaveButton();
+        Button dontSaveButton = createDontSaveButtonForNew();
+        Button cancelButton = createCancelButton();
+
+        if (buttonName.equals("New")) {
+            saveButton = createSaveButton();
+            dontSaveButton = createDontSaveButtonForNew();
+            cancelButton = createCancelButton();
+        } else if (buttonName.equals("Open")) {
+            saveButton = createSaveButtonForOpen();
+            dontSaveButton = createDontSaveButton();
+            cancelButton = createCancelButton();
+        } else if (buttonName.equals("OpenRecent")) {
+            saveButton = createSaveButton();
+            dontSaveButton = createDontSaveButton();
+            cancelButton = createCancelButton();
+        } else if (buttonName.equals("Close")) {
+            saveButton = createSaveButton();
+            dontSaveButton = createDontSaveButtonForNew();
+            cancelButton = createCancelButton();
+        } else if (buttonName.equals("Save")) {
+            saveButton = createSaveButton();
+            dontSaveButton = createDontSaveButton();
+            cancelButton = createCancelButton();
+        } else if (buttonName.equals("SaveAs")) {
+            saveButton = createSaveButton();
+            dontSaveButton = createDontSaveButton();
+            cancelButton = createCancelButton();
+        } else {
+            System.exit(0);
+        }
+
+        GridPane grid = new GridPane();
+        grid.setPadding(new Insets(10, 10, 10, 10));
+        grid.setVgap(25);
+        grid.setHgap(10);
+
+        GridPane.setConstraints(label, 0, 0);
+        GridPane.setConstraints(saveButton, 1, 0);
+        GridPane.setConstraints(dontSaveButton, 2, 0);
+        GridPane.setConstraints(cancelButton, 3, 0);
+
+        grid.getChildren().addAll(label, saveButton, dontSaveButton, cancelButton);
+        return grid;
+    }
+
+    private Button createSaveButton() {
+        Button saveButtonTemp = new Button();
+        saveButtonTemp.setText("Save");
+        saveButtonTemp.setOnAction(e -> saveButtonFunctionality());
+        return saveButtonTemp;
+
+    }
+
+    private Button createDontSaveButton() {
+        Button dontSaveButton = new Button();
+        dontSaveButton.setText("Don't Save");
+        dontSaveButton.setOnAction(e -> dontSaveButtonFunctionality());
+        return dontSaveButton;
+    }
+
+    private Button createCancelButton() {
+        Button cancelButton = new Button();
+        cancelButton.setText("Cancel");
+        cancelButton.setOnAction(e -> cancelButtonFunctionality());
+        return cancelButton;
+    }
+
+    private Button createDontSaveButtonForNew() {
+        Button dontSaveTemp = new Button();
+        dontSaveTemp.setText("Don'tSave");
+        dontSaveTemp.setOnAction(e -> cleanTheCodeArea());
+        return dontSaveTemp;
+    }
+
+    private Button createSaveButtonForOpen() {
+        Button dontSaveButton = new Button();
+        dontSaveButton.setText("Save");
+        dontSaveButton.setOnAction(e -> dontSaveButtonFunctionality());
+        return dontSaveButton;
+    }
+
+    private void cancelButtonFunctionality() {
+        saveButton = false;
+        dontSaveButton = false;
+        cancel = true;
         window.close();
     }
 
+    private void creatSceneOptions() {
+        window = new Stage();
+        scene = sceneGeneratorOptions();
+        window.setScene(scene);
+        window.setMaxWidth(350);
+        window.setMaxHeight(410);
+        window.setMinWidth(350);
+        window.setMinHeight(410);
+        window.initModality(Modality.APPLICATION_MODAL);
+        window.show();
+    }
+
+    private void createSceneFile() {
+        window = new Stage();
+        scene = sceneGeneratorFile();
+        window.setScene(scene);
+        window.setMaxWidth(460);
+        window.setMaxHeight(85);
+        window.setMinWidth(460);
+        window.setMinHeight(85);
+        window.initModality(Modality.APPLICATION_MODAL);
+        window.showAndWait();
+    }
+
+    private Slider createSlider() {
+        Slider slider = new Slider();
+        slider.setMin(0);
+        slider.setMax(40);
+        slider.setValue(20);
+        slider.setShowTickLabels(true);
+        slider.setShowTickMarks(true);
+        slider.setMajorTickUnit(20);
+        slider.setMinorTickCount(5);
+        slider.setBlockIncrement(4);
+        return slider;
+    }
+
+    private PrintStream readTheOptionsBooleans(PrintStream readTo) {
+        readTo.println();
+
+
+        theOptionChangesForBooleans.add(0, fairAbstractionSelected);
+        theOptionChangesForBooleans.add(1, autoSaveSelected);
+        theOptionChangesForBooleans.add(2, darkModeSelected);
+        theOptionChangesForBooleans.add(3, pruningSelected);
+        theOptionChangesForBooleans.add(4, liveCompillingSelected);
+
+        readTo.println("fairAbstractionSelected: " + fairAbstractionSelected);
+        readTo.println("autoSaveSelected: " + autoSaveSelected);
+        readTo.println("darkModeSelected: " + darkModeSelected);
+        readTo.println("pruningSelected: " + pruningSelected);
+        readTo.println("liveCompillingSelected: " + liveCompillingSelected);
+
+        return readTo;
+    }
+
+
+    private PrintStream readTheOptionsIntegers(PrintStream readTo) {
+        readTo.println();
+
+        theOptionChangesForIntegeres.add(0, lengthEdgeValue);
+        theOptionChangesForIntegeres.add(1, maxNodeLabelValue);
+        theOptionChangesForIntegeres.add(2, operationFailureLabelValue);
+        theOptionChangesForIntegeres.add(3, operationPassLabelValue);
+
+        readTo.println("lengthEdgeValue: " + lengthEdgeValue);
+        readTo.println("maxNodeLabelValue: " + maxNodeLabelValue);
+        readTo.println("operationFailureLabelValue: " + operationFailureLabelValue);
+        readTo.println("operationPassLabelValue: " + operationPassLabelValue);
+
+        return readTo;
+    }
+
+    private void readOptions(Scanner scanner) {
+/*
+        try {
+*/
+        if (scanner.hasNext("lengthEdgeValue:")) {
+            scanner.next();
+            lengthEdgeValue = scanner.nextInt();
+        }
+
+        if (scanner.hasNext("maxNodeLabelValue:")) {
+            scanner.next();
+            maxNodeLabelValue = scanner.nextInt();
+        }
+
+        if (scanner.hasNext("operationFailureLabelValue:")) {
+            scanner.next();
+            operationFailureLabelValue = scanner.nextInt();
+        }
+
+        if (scanner.hasNext("operationPassLabelValue:")) {
+            scanner.next();
+            operationPassLabelValue = scanner.nextInt();
+        }
+
+
+        if (scanner.hasNext("fairAbstractionSelected:")) {
+            scanner.next();
+            fairAbstractionSelected = scanner.nextBoolean();
+        }
+
+        if (scanner.hasNext("autoSaveSelected:")) {
+            scanner.next();
+            autoSaveSelected = scanner.nextBoolean();
+        }
+
+        if (scanner.hasNext("darkModeSelected:")) {
+            scanner.next();
+            darkModeSelected = scanner.nextBoolean();
+        }
+
+        if (scanner.hasNext("pruningSelected:")) {
+            scanner.next();
+            pruningSelected = scanner.nextBoolean();
+        }
+
+        if (scanner.hasNext("liveCompillingSelected:")) {
+            scanner.next();
+            liveCompillingSelected = scanner.nextBoolean();
+        }
+
+        /*} catch (IOException message) {
+            System.out.println(message);
+        }
+*/    }
+
+    private Scene sceneGeneratorOptions() {
+        GridPane grid = createGrideOptions();
+        scene = new Scene(grid, 500, 100);
+        return scene;
+    }
+
+    private Scene sceneGeneratorFile() {
+        GridPane grid = createGrideFile();
+        scene = new Scene(grid, 460, 85);
+        return scene;
+    }
+
+    private void setBackFlags() {
+        saveButton = false;
+        dontSaveButton = false;
+        cancel = false;
+    }
+
+    private void cleanTheCodeArea() {
+        dontSaveButton = true;
+        String length = userCodeInput.getText();
+        int size = length.length();
+        userCodeInput.deleteText(0, size);
+        this.window.close();
+    }
+
+
+    private void fairAbstractionFunctionality() {
+        fairAbstractionSelected = (!fairAbstractionSelected ? true : false);
+    }
+
+    private void autoSaveFunctionality() {
+        autoSaveSelected = (!autoSaveSelected ? true : false);
+    }
+
+    private void darkModeFunctionality() {
+        darkModeSelected = (!darkModeSelected ? true : false);
+    }
+
+    private void pruningFunctionality() {
+        pruningSelected = (!pruningSelected ? true : false);
+    }
+
+    private void liveCompilingFunctionality() {
+        liveCompillingSelected = (!liveCompillingSelected ? true : false);
+    }
+
+    public boolean isAutoSaveSelected() {
+        return autoSaveSelected;
+    }
+
+    public boolean isFairAbstractionSelected() {
+        return fairAbstractionSelected;
+    }
+
+    public boolean isDarkModeSelected() {
+        return darkModeSelected;
+    }
+
+    public boolean isPruningSelected() {
+        return pruningSelected;
+    }
+
+    public boolean isLiveCompillingSelected() {
+        return liveCompillingSelected;
+    }
 }
+
+
+
 
 
