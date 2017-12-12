@@ -320,7 +320,6 @@ public class UserInterfaceController implements Initializable {
     @FXML
     private void handleCreateNew(ActionEvent event) throws InterruptedException {
         buttonName = "New";
-        outerloop:
         // If the Code Area is not empty which means there are codes that we can save.
         if (!(userCodeInput.getText().isEmpty())) {
             // Open a dialogue and give the user three options (SAVE, DON'TSAVE, CANCEL)
@@ -342,7 +341,6 @@ public class UserInterfaceController implements Initializable {
             } else {
                 // Close the dialogue if the user clicking on the CANCEL
                 window.close();
-                break outerloop;
             }
 
         }
@@ -890,9 +888,6 @@ public class UserInterfaceController implements Initializable {
     }
 
     private void readOptions(Scanner scanner) {
-/*
-        try {
-*/
         if (scanner.hasNext("lengthEdgeValue:")) {
             scanner.next();
             lengthEdgeValue = scanner.nextInt();
@@ -938,11 +933,7 @@ public class UserInterfaceController implements Initializable {
             scanner.next();
             liveCompillingSelected = scanner.nextBoolean();
         }
-
-        /*} catch (IOException message) {
-            System.out.println(message);
-        }
-*/    }
+    }
 
     private Scene sceneGeneratorOptions() {
         GridPane grid = createGrideOptions();
