@@ -1,6 +1,6 @@
 package mc.compiler.lexer;
 
-import mc.compiler.token.ProcessTypeToken;
+import mc.compiler.token.DisplayTypeToken;
 import mc.compiler.token.Token;
 import mc.exceptions.LexerException;
 import org.junit.Test;
@@ -24,11 +24,11 @@ public class ProcessTypeTests extends LexerTests {
         }
 
         // ensure the correct token was constructed
-        if(!(tokens.get(0) instanceof ProcessTypeToken)){
+        if(!(tokens.get(0) instanceof DisplayTypeToken)){
             fail("expecting to parse a process type token");
         }
 
-        ProcessTypeToken token = (ProcessTypeToken)tokens.get(0);
+        DisplayTypeToken token = (DisplayTypeToken)tokens.get(0);
 
         // ensure that the token is an automata token
         if(!token.getProcessType().equals("automata")){
@@ -46,11 +46,11 @@ public class ProcessTypeTests extends LexerTests {
         }
 
         // ensure the correct token was constructed
-        if(!(tokens.get(0) instanceof ProcessTypeToken)){
+        if(!(tokens.get(0) instanceof DisplayTypeToken)){
             fail("expecting to parse a process type token");
         }
 
-        ProcessTypeToken token = (ProcessTypeToken)tokens.get(0);
+        DisplayTypeToken token = (DisplayTypeToken)tokens.get(0);
 
         // ensure that the token is a petrinet token
         if(!token.getProcessType().equals("petrinet")){

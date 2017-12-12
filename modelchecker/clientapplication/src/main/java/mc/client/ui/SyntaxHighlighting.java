@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
  */
 public class SyntaxHighlighting {
     static final String[] processTypes = new String[] {
-            "automata", "petrinet", "operation", "equation",
+           "processes", "automata", "petrinet", "operation", "equation",
 
     };
 
@@ -44,7 +44,7 @@ public class SyntaxHighlighting {
     static final String PAREN_PATTERN = "\\(|\\)";
     static final String BRACE_PATTERN = "\\{|\\}";
     static final String BRACKET_PATTERN = "\\[|\\]";
-    static final String COMMENT_PATTERN = "\\/\\/[^\n]*";
+    static final String COMMENT_PATTERN = "(?://[^\n]*)|(?:/\\*.*?\\*/)|(?:/\\*(?!\\*/).*)";
 
     static final Pattern PATTERN = Pattern.compile(
             "(?<COMMENT>" + COMMENT_PATTERN + ")"+

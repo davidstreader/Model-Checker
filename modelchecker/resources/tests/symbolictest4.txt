@@ -1,5 +1,5 @@
 const N = 2
-automata {
+processes {
 Im = C[0][0][0],
        C[i:0..N][j:0..N][k:0..N] = (when i< N coin -> C[i + 1][j][k] |
                             when j<N  bang -> C[0][j+1][k] |
@@ -43,17 +43,34 @@ Hopex = abs(Imx\{coin}).  // hide with nothing expanded
 Newx = simp(Hopex).
 Nextx = Hopex${}.  // expand after hiding
 }
+
+automata Im, Atomic.
+
+automata Hope, Hh, Imi.
+
+automata New, Next, Nn.
+
+automata Imj, Newj, Nextj.
+
+automata Imk, Newk, Nextk.
+
+automata X, Xm.
+
+automata Ii, Ij, CIm.
+
+automata Imx, Imex, Hopex, Newx, Nextx.
+
 operation {
-Ii ~ Im.
-Ij~Im.
-CIm ~ Im.
-Xm ~ Im.
-Hope ~ Next.
-Next ~ Hope.
-Nextj ~ Hope.
-Nextk ~ Hope.
-Imex ~ Im.
-Nextx ~ Hope.
+  Ii ~ Im.
+  Ij~Im.
+  CIm ~ Im.
+  Xm ~ Im.
+  Hope ~ Next.
+  Next ~ Hope.
+  Nextj ~ Hope.
+  Nextk ~ Hope.
+  Imex ~ Im.
+  Nextx ~ Hope.
 }
 
 

@@ -15,7 +15,7 @@ public class SequenceTests extends ExpanderTests {
 
     @Test
     public void correctSequenceToTerminalTest_1() throws InterruptedException {
-        String input = "automata Test = (a -> STOP).";
+        String input = "processes Test = (a -> STOP).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
         String[] sequence = new String[]{"a"};
         TerminalNode terminal = new TerminalNode("STOP", null);
@@ -27,7 +27,7 @@ public class SequenceTests extends ExpanderTests {
 
     @Test
     public void correctSequenceToTerminalTest_2() throws InterruptedException {
-        String input = "automata Test = (a -> ERROR).";
+        String input = "processes Test = (a -> ERROR).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
         String[] sequence = new String[]{"a", Constant.DEADLOCK};
         TerminalNode terminal = new TerminalNode("ERROR", null);
@@ -39,7 +39,7 @@ public class SequenceTests extends ExpanderTests {
 
     @Test
     public void correctSequenceToChoiceTest() throws InterruptedException {
-        String input = "automata Test = (a -> (a -> STOP | x -> STOP)).";
+        String input = "processes Test = (a -> (a -> STOP | x -> STOP)).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
         String[] sequence = new String[]{"a"};
         String[] sequence1 = new String[]{"a"};
@@ -53,7 +53,7 @@ public class SequenceTests extends ExpanderTests {
 
     @Test
     public void correctSequenceToCompositeTest() throws InterruptedException {
-        String input = "automata Test = (a -> (a -> STOP || x -> STOP)).";
+        String input = "processes Test = (a -> (a -> STOP || x -> STOP)).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
         String[] sequence = new String[]{"a"};
         String[] sequence1 = new String[]{"a"};
@@ -67,7 +67,7 @@ public class SequenceTests extends ExpanderTests {
 
     @Test
     public void correctIndexSequenceTest_1() throws InterruptedException {
-    	String input = "automata Test = ([1..2] -> [3..4] -> STOP).";
+    	String input = "processes Test = ([1..2] -> [3..4] -> STOP).\nautomata Test.";
     	ProcessNode node = constructProcessNode(input);
     	ChoiceNode choice = constructChoiceNode(new String[]{"[3]"}, new String[]{"[4]"});
     	Stack<ASTNode> branches = new Stack<>();
@@ -86,7 +86,7 @@ public class SequenceTests extends ExpanderTests {
 
     @Test
     public void correctIndexSequenceTest_2() throws InterruptedException {
-    	String input = "automata Test = ([1..2] -> [{a, b}] -> STOP).";
+    	String input = "processes Test = ([1..2] -> [{a, b}] -> STOP).\nautomata Test.";
     	ProcessNode node = constructProcessNode(input);
     	ChoiceNode choice = constructChoiceNode(new String[]{"a"}, new String[]{"b"});
     	Stack<ASTNode> branches = new Stack<>();
@@ -105,7 +105,7 @@ public class SequenceTests extends ExpanderTests {
 
     @Test
     public void correctIndexSequenceTest_3() throws InterruptedException {
-    	String input = "automata Test = ([{a, b}] -> [3..4] -> STOP).";
+    	String input = "processes Test = ([{a, b}] -> [3..4] -> STOP).\nautomata Test.";
     	ProcessNode node = constructProcessNode(input);
     	ChoiceNode choice = constructChoiceNode(new String[]{"[3]"}, new String[]{"[4]"});
     	Stack<ASTNode> branches = new Stack<>();
@@ -124,7 +124,7 @@ public class SequenceTests extends ExpanderTests {
 
     @Test
     public void correctIndexSequenceTest_4() throws InterruptedException {
-    	String input = "automata Test = ([{a, b}] -> [{c, d}] -> STOP).";
+    	String input = "processes Test = ([{a, b}] -> [{c, d}] -> STOP).\nautomata Test.";
     	ProcessNode node = constructProcessNode(input);
     	ChoiceNode choice = constructChoiceNode(new String[]{"c"}, new String[]{"d"});
     	Stack<ASTNode> branches = new Stack<>();

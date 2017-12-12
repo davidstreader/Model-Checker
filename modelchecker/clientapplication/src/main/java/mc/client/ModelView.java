@@ -2,8 +2,8 @@ package mc.client;
 
 import edu.uci.ics.jung.algorithms.layout.*;
 import edu.uci.ics.jung.graph.DirectedSparseGraph;
-import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
 import edu.uci.ics.jung.graph.Graph;
+import edu.uci.ics.jung.graph.util.Context;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.*;
 import edu.uci.ics.jung.visualization.decorators.EdgeShape;
@@ -16,12 +16,17 @@ import mc.client.graph.AutomataBorderPaintable;
 import mc.client.graph.DirectedEdge;
 import mc.client.graph.GraphNode;
 import mc.client.graph.NodeStates;
+import mc.client.ui.DoubleClickHandler;
+import mc.client.ui.SeededRandomizedLayout;
+
+import mc.client.ui.SpringlayoutBase;
 import mc.compiler.CompilationObject;
 import mc.compiler.CompilationObservable;
 import mc.compiler.OperationResult;
 import mc.process_models.ProcessModel;
 import mc.process_models.ProcessType;
 import mc.process_models.automata.Automaton;
+
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -39,11 +44,20 @@ import static java.util.stream.Collectors.toSet;
 public class ModelView implements Observer{
 
     private Graph<GraphNode,DirectedEdge> graph;
-    private VisualizationViewer<GraphNode,DirectedEdge> graphView;
+
+    private Layout<GraphNode,DirectedEdge> layout; // So the user can independantly freeze automata.
+
+    private  VisualizationViewer<GraphNode,DirectedEdge> vv;
+    private Bounds windowSize;
+
+    private DoubleClickHandler massSelect;
+
+    private SeededRandomizedLayout layoutInitalizer;
 
     private Set<String> automataToDisplay;
     private Set<String> visibleAutomata;
-    private Map<String,Set<GraphNode>> automata;
+    private Map<String,Set<GraphNode>> processModels;
+
 
     private CompilationObject compiledResult;
 
@@ -88,42 +102,23 @@ public class ModelView implements Observer{
      * @return the graph component that is displayed
      */
     public VisualizationViewer<GraphNode,DirectedEdge> updateGraph(SwingNode s) {
-
-        automata = new HashMap<>();
-
-        graph = new DirectedSparseMultigraph<>();
         if(compiledResult == null)
             return new VisualizationViewer<>(new DAGLayout<>(new DirectedSparseGraph<>()));
+
+        layoutInitalizer.setDimensions(new Dimension((int) s.getBoundsInParent().getWidth(), (int) s.getBoundsInParent().getHeight()));
+
         compiledResult.getProcessMap().keySet().stream()
                 .filter(automataToDisplay::contains)
                 .map(compiledResult.getProcessMap()::get)
                 .filter(Objects::nonNull)
                 .forEach(this::addProcess);
 
-        //apply a layout to the graph
-        Layout<GraphNode,DirectedEdge> layout ;
-        if(graph.getVertexCount() == 0)
-            layout = new DAGLayout<>(graph);
-        else
-            layout = new ISOMLayout<>(graph);
-        VisualizationViewer<GraphNode,DirectedEdge> vv = new VisualizationViewer<>(layout);
+        massSelect.updateProcessModelList(processModels);
 
-        //create a custom mouse controller (both movable, scalable and manipulatable)
-        PluggableGraphMouse gm = new PluggableGraphMouse();
-        gm.add(new TranslatingGraphMousePlugin(MouseEvent.BUTTON2_MASK));
-        gm.add(new TranslatingGraphMousePlugin(MouseEvent.BUTTON3_MASK));
-        gm.add(new ScalingGraphMousePlugin(new CrossoverScalingControl(),0,1.1f,0.9f));
-        gm.add(new PickingGraphMousePlugin<>());
-        vv.setGraphMouse(gm);
-
-        //label the nodes
-        vv.getRenderContext().setVertexLabelTransformer(GraphNode::getNodeId);
-        vv.getRenderContext().setEdgeLabelTransformer(DirectedEdge::getLabel);
-        vv.getRenderer().getVertexLabelRenderer().setPosition(Renderer.VertexLabel.Position.CNTR);
-
-        //change the shape on two edges
-//        vv.getRenderContext().setEdgeShapeTransformer(EdgeShape.Line);
-
+        if(windowSize == null || !windowSize.equals(s.getBoundsInParent())) {
+            windowSize = s.getBoundsInParent();
+            layout.setSize(new Dimension((int) windowSize.getWidth(), (int) windowSize.getHeight()));
+        }
 
         // if the font was imported successfully, set the font (the standard font does not display greek symbols
         // (i.e. tau and delta events)
@@ -136,17 +131,20 @@ public class ModelView implements Observer{
         vv.getRenderContext().setVertexFillPaintTransformer(
                 node -> NodeStates.valueOf(node.getNodeTermination()).getColorNodes());
 
+
         //autoscale the graph to fit in the display port
-        Bounds b = s.getBoundsInParent();
-        vv.setPreferredSize(new Dimension((int)b.getWidth(),(int)b.getHeight()));
+        vv.setPreferredSize(new Dimension((int)windowSize.getWidth(),(int)windowSize.getHeight()));
 
         //This draws the boxes around the automata
-        vv.addPreRenderPaintable(new AutomataBorderPaintable(vv,this.automata));
+        vv.addPreRenderPaintable(new AutomataBorderPaintable(vv,this.processModels));
 
         return vv;
     }
 
     private void addProcess(ProcessModel p){
+        if(processModels.containsKey(p.getId())) // Dont re-add things that are already there...
+            return;
+
         switch (p.getProcessType()){
             case AUTOMATA:
                 addAutomata((Automaton)p);
@@ -171,11 +169,22 @@ public class ModelView implements Observer{
                 nodeTermination = "START";
             if(n.isTerminal())
                 nodeTermination = n.getTerminal();
+            nodeTermination = nodeTermination.toLowerCase();
 
-            GraphNode node = new GraphNode(automata.getId(),n.getId(),nodeTermination);
+            //Make sure we are using a human reable label, the parallel compositions fill Id with long strings.
+            String nodeLabel = (n.getId().contains("||"))? Integer.toString(n.getLabelNumber()) : n.getId();
+
+            String splitTokens[] = nodeLabel.split("\\.");
+            nodeLabel = splitTokens[splitTokens.length-1]; //Remove junk in the label, otherwise it ends up as Test.n1, we only need n1
+
+
+
+            GraphNode node = new GraphNode(automata.getId(),nodeLabel,nodeTermination);
             nodeMap.put(n.getId(),node);
+
             graph.addVertex(node);
         });
+
 
         //add the edges to the graph
         automata.getEdges().forEach(e -> {
@@ -184,17 +193,20 @@ public class ModelView implements Observer{
             graph.addEdge(new DirectedEdge(e.getLabel(),UUID.randomUUID().toString()),from,to);
         });
 
-        this.automata.put(automata.getId(),new HashSet<>(nodeMap.values()));
+        this.processModels.put(automata.getId(),new HashSet<>(nodeMap.values()));
     }
 
     public void addDisplayedAutomata(String modelLabel) {
         assert compiledResult.getProcessMap().containsKey(modelLabel);
         assert visibleAutomata.contains(modelLabel);
         automataToDisplay.add(modelLabel);
+
     }
 
     public void clearDisplayed() {
         automataToDisplay.clear();
+        initalise();
+
     }
 
     public void addAllAutomata() {
@@ -202,9 +214,89 @@ public class ModelView implements Observer{
         automataToDisplay.addAll(visibleAutomata);
     }
 
+    public void freezeAllCurrentlyDisplayed() {
+        if(layout != null ) {
+            for(String processModeName : processModels.keySet())
+                for(GraphNode vertexToLock : processModels.get(processModeName))
+                    layout.lock(vertexToLock, true);
+        }
+    }
+
+    public void unfreezeAllCurrentlyDisplayed() {
+        if(layout != null ) {
+            for(String processModeName : processModels.keySet())
+                for(GraphNode vertexToLock : processModels.get(processModeName))
+                    layout.lock(vertexToLock, false);
+        }
+    }
+
+    public void freezeProcessModel(String automataLabel) {
+        if(layout != null &&  automataToDisplay.contains(automataLabel)) {
+
+            for(GraphNode vertexToLock : processModels.get(automataLabel)) {
+                layout.lock(vertexToLock, true);
+            }
+        }
+    }
+
+    public void unfreezeProcessModel(String automataLabel) {
+        if(layout != null &&  automataToDisplay.contains(automataLabel)) {
+            for(GraphNode vertexToLock : processModels.get(automataLabel)) {
+                layout.lock(vertexToLock, false);
+            }
+        }
+    }
+
     public Map<String, ProcessModel> getProcessMap() {
         return  compiledResult.getProcessMap();
     }
+
+
+    private void initalise()  {
+        automataToDisplay = new HashSet<>();
+
+        layoutInitalizer = new SeededRandomizedLayout();
+
+        graph = new DirectedSparseGraph<>();
+
+        //apply a layout to the graph
+        layout = new SpringlayoutBase<>(graph);
+        ((SpringlayoutBase)layout).setStretch(0.8);
+        ((SpringlayoutBase)layout).setRepulsionRange(1000);
+
+        layout.setInitializer(layoutInitalizer);
+
+        vv = new VisualizationViewer<>(layout);
+
+        vv.getRenderingHints().remove( //As this seems to be very expensive in jung
+                RenderingHints.KEY_ANTIALIASING);
+
+        //create a custom mouse controller (both movable, scalable and manipulatable)
+        PluggableGraphMouse gm = new PluggableGraphMouse();
+        gm.add(new TranslatingGraphMousePlugin(MouseEvent.BUTTON2_MASK));
+        gm.add(new TranslatingGraphMousePlugin(MouseEvent.BUTTON3_MASK));
+        gm.add(new ScalingGraphMousePlugin(new CrossoverScalingControl(),0,1.1f,0.9f));
+        gm.add(new PickingGraphMousePlugin<>());
+
+        vv.setGraphMouse(gm);
+
+        massSelect = new DoubleClickHandler(processModels, vv);
+        vv.addGraphMouseListener(massSelect);
+
+
+        //label the nodes
+        vv.getRenderContext().setVertexLabelTransformer(GraphNode::getNodeId);
+        vv.getRenderContext().setEdgeLabelTransformer(DirectedEdge::getLabel);
+
+        // Sets edges as lines
+        vv.getRenderContext().setEdgeShapeTransformer(EdgeShape.line(graph));
+
+
+
+        processModels = new HashMap<>();
+
+    }
+
 
     @Getter
     private static ModelView instance = new ModelView();
@@ -214,7 +306,7 @@ public class ModelView implements Observer{
      */
     private ModelView(){
         CompilationObservable.getInstance().addObserver(this);
-        automataToDisplay = new HashSet<>();
+        initalise();
     }
 
     //register font

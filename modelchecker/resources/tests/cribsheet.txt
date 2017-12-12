@@ -2,7 +2,7 @@ const Coins = 4
 const Locks = 2
 const W = 3
 
-automata {
+processes {
     Simple = (takeTea -> STOP).
 
     Two = (teaButton -> takeTea -> STOP).
@@ -48,3 +48,9 @@ automata {
         F[i:1..W] = (when (i < W) [i].getTask -> F[i + 1] | when (i >= W) [i].getTask -> F[1]).
     Farm = (Farmer || Workers).
 }
+automata Simple, Two, CM, VM, VM2, Basic, Bas, B, Tt, BT, P.
+automata TrRed.
+automata Parallel, Parallel2.
+automata Buff, B2, B3, B4, B5, B6.
+automata Money, Lock.
+automata Worker, Workers, Farmer, Farm.

@@ -1,6 +1,6 @@
 /* Unfair abstraction tests */
 
-automata {
+processes {
     Basic = (a -> B),
         B = (x -> B | c -> STOP)\{x}.
     
@@ -12,6 +12,8 @@ automata {
     FairBasicExp = (a -> c -> STOP).
 }
 
+automata Basic, UnfairBasicAbs, UnfairBasicExp, FairBasicAbs, StndBasicAbs, FairBasicExp.
+
 operation {
     UnfairBasicAbs ~ UnfairBasicExp.
     UnfairBasicAbs !~ FairBasicExp.
@@ -21,7 +23,7 @@ operation {
     StndBasicAbs !~ UnfairBasicExp.
 }
 
-automata {
+processes {
     Basic2 = (a -> B),
         B = (x -> y -> B | c -> STOP)\{x, y}.
     
@@ -39,6 +41,8 @@ automata {
         D = (STOP).
 }
 
+automata Basic2, UnfairBasicAbs2, UnfairBasicExp2, FairBasicAbs2, StndBasicAbs2, FairBasicExp2.
+
 operation {
     UnfairBasicAbs2 ~ UnfairBasicExp2.
     UnfairBasicAbs2 !~ FairBasicExp2.
@@ -48,7 +52,7 @@ operation {
     StndBasicAbs2 !~ UnfairBasicExp2.
 }
 
-automata {
+processes {
     Loop = (a -> B | x -> Loop),
         B = (b -> Loop | x -> B)\{x}.
         
@@ -61,6 +65,8 @@ automata {
     FairLoopExp = (a -> b -> FairLoopExp).
 }
 
+automata Loop, UnfairLoopAbs, UnfairLoopExp, FairLoopAbs, StndLoopAbs, FairLoopExp.
+
 operation {
     UnfairLoopAbs ~ UnfairLoopExp.
     UnfairLoopAbs !~ FairLoopExp.
@@ -70,7 +76,7 @@ operation {
     StndLoopAbs !~ UnfairLoopExp.
 }
 
-automata {
+processes {
     Tau = (a -> Tau)\{a}.
     
     UnfairTauAbs = abs{unfair}(Tau).
@@ -81,6 +87,8 @@ automata {
     FairTauExp = (STOP).
 }
 
+automata Tau, UnfairTauAbs, UnfairTauExp, FairTauAbs, StndTauAbs, FairTauExp.
+
 operation {
     UnfairTauAbs ~ UnfairTauExp.
     UnfairTauAbs !~ FairTauExp.
@@ -90,7 +98,7 @@ operation {
     StndTauAbs !~ UnfairTauExp.
 }
 
-automata {
+processes {
     Tau2 = (a -> b -> Tau2)\{a, b}.
     
     UnfairTauAbs2 = abs{unfair}(Tau2).
@@ -100,6 +108,8 @@ automata {
     StndTauAbs2 = abs(Tau2).
     FairTauExp2 = (STOP).
 }
+
+automata Tau2, UnfairTauAbs2, UnfairTauExp2, FairTauAbs2, StndTauAbs2, FairTauExp2.
 
 operation {
     UnfairTauAbs2 ~ UnfairTauExp2.

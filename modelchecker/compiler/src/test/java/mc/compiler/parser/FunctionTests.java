@@ -16,7 +16,7 @@ public class FunctionTests extends ParserTests {
 
     @Test
 	public void correctAbsTest() throws CompilationException, InterruptedException {
-		String input = "automata Test = abs(a -> STOP).";
+		String input = "processes Test = abs(a -> STOP).\nautomata Test.";
 		ProcessNode node = constructProcessNode(input);
 		SequenceNode sequence = constructSequenceNode(new String[]{"a"}, new TerminalNode("STOP", null));
 		FunctionNode expected = new FunctionNode("abs", sequence, null);
@@ -27,7 +27,7 @@ public class FunctionTests extends ParserTests {
 
 	@Test
 	public void correctSimpTest() throws CompilationException, InterruptedException {
-		String input = "automata Test = simp(a -> STOP).";
+		String input = "processes Test = simp(a -> STOP).\nautomata Test.";
 		ProcessNode node = constructProcessNode(input);
 		SequenceNode sequence = constructSequenceNode(new String[]{"a"}, new TerminalNode("STOP", null));
 		FunctionNode expected = new FunctionNode("simp", sequence, null);
@@ -38,7 +38,7 @@ public class FunctionTests extends ParserTests {
 
 	@Test
 	public void correctSafeTest() throws CompilationException, InterruptedException {
-		String input = "automata Test = safe(a -> STOP).";
+		String input = "processes Test = safe(a -> STOP).\nautomata Test.";
 		ProcessNode node = constructProcessNode(input);
 		SequenceNode sequence = constructSequenceNode(new String[]{"a"}, new TerminalNode("STOP", null));
 		FunctionNode expected = new FunctionNode("safe", sequence, null);
@@ -49,7 +49,7 @@ public class FunctionTests extends ParserTests {
 
 	@Test
 	public void correctPruneTest() throws CompilationException, InterruptedException {
-		String input = "automata Test = prune(a -> STOP).";
+		String input = "processes Test = prune(a -> STOP).\nautomata Test.";
 		ProcessNode node = constructProcessNode(input);
 		SequenceNode sequence = constructSequenceNode(new String[]{"a"}, new TerminalNode("STOP", null));
 		FunctionNode expected = new FunctionNode("prune", sequence, null);
@@ -60,7 +60,7 @@ public class FunctionTests extends ParserTests {
 
 	@Test
 	public void correctNestedTest_1() throws CompilationException, InterruptedException {
-		String input = "automata Test = simp(abs(a -> STOP)).";
+		String input = "processes Test = simp(abs(a -> STOP)).\nautomata Test.";
 		ProcessNode node = constructProcessNode(input);
 		SequenceNode sequence = constructSequenceNode(new String[]{"a"}, new TerminalNode("STOP", null));
 		FunctionNode function = new FunctionNode("abs", sequence, null);
@@ -72,7 +72,7 @@ public class FunctionTests extends ParserTests {
 
 	@Test
 	public void correctNestedTest_2() throws CompilationException, InterruptedException {
-		String input = "automata Test = simp(abs(prune(a -> STOP))).";
+		String input = "processes Test = simp(abs(prune(a -> STOP))).\nautomata Test.";
 		ProcessNode node = constructProcessNode(input);
 		SequenceNode sequence = constructSequenceNode(new String[]{"a"}, new TerminalNode("STOP", null));
 		FunctionNode function1 = new FunctionNode("prune", sequence, null);
@@ -85,7 +85,7 @@ public class FunctionTests extends ParserTests {
 
 	@Test
 	public void correctNestedTest_3() throws CompilationException, InterruptedException {
-		String input = "petrinet Test = safe(simp(abs(prune(a -> STOP)))).";
+		String input = "processes Test = safe(simp(abs(prune(a -> STOP)))).\npetrinet Test.";
 		ProcessNode node = constructProcessNode(input);
 		SequenceNode sequence = constructSequenceNode(new String[]{"a"}, new TerminalNode("STOP", null));
 		FunctionNode function1 = new FunctionNode("prune", sequence, null);
@@ -97,49 +97,4 @@ public class FunctionTests extends ParserTests {
 		}
 	}
 
-	@Test
-	public void correctAutomataCastTest() throws CompilationException, InterruptedException {
-		String input = "automata Test = automata(a -> STOP).";
-		ProcessNode node = constructProcessNode(input);
-		SequenceNode sequence = constructSequenceNode(new String[]{"a"}, new TerminalNode("STOP", null));
-		FunctionNode expected = new FunctionNode("automata", sequence, null);
-		if(!expected.equals(node.getProcess())){
-			fail("expecting function nodes to be equivalent");
-		}
-	}
-
-	@Test
-	public void correctPetriNetCastTest() throws CompilationException, InterruptedException {
-		String input = "petrinet Test = petrinet(a -> STOP).";
-		ProcessNode node = constructProcessNode(input);
-		SequenceNode sequence = constructSequenceNode(new String[]{"a"}, new TerminalNode("STOP", null));
-		FunctionNode expected = new FunctionNode("petrinet", sequence, null);
-		if(!expected.equals(node.getProcess())){
-			fail("expecting function nodes to be equivalent");
-		}
-	}
-
-	@Test
-	public void correctMixedCastTest_1() throws CompilationException, InterruptedException {
-		String input = "automata Test = automata(petrinet(a -> STOP)).";
-		ProcessNode node = constructProcessNode(input);
-		SequenceNode sequence = constructSequenceNode(new String[]{"a"}, new TerminalNode("STOP", null));
-		FunctionNode cast = new FunctionNode("petrinet", sequence, null);
-		FunctionNode expected = new FunctionNode("automata", cast, null);
-		if(!expected.equals(node.getProcess())){
-			fail("expecting function nodes to be equivalent");
-		}
-	}
-
-	@Test
-	public void correctMixedCastTest_2() throws CompilationException, InterruptedException {
-		String input = "petrinet Test = petrinet(automata(a -> STOP)).";
-		ProcessNode node = constructProcessNode(input);
-		SequenceNode sequence = constructSequenceNode(new String[]{"a"}, new TerminalNode("STOP", null));
-		FunctionNode cast = new FunctionNode("automata", sequence, null);
-		FunctionNode expected = new FunctionNode("petrinet", cast, null);
-		if(!expected.equals(node.getProcess())){
-			fail("expecting function nodes to be equivalent");
-		}
-	}
 }

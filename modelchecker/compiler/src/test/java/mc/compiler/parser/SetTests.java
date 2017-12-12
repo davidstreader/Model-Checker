@@ -18,7 +18,7 @@ public class SetTests extends ParserTests {
 
     @Test
     public void correctIndexedSetTest_1() throws CompilationException, InterruptedException {
-        String input = "automata Test = ([i:{[1..2]}] -> STOP).";
+        String input = "processes Test = ([i:{[1..2]}] -> STOP).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
 
         SequenceNode sequence = constructSequenceNode(new String[]{"[$i]"}, new TerminalNode("STOP", null));
@@ -37,7 +37,7 @@ public class SetTests extends ParserTests {
 
     @Test
     public void correctIndexedSetTest_2() throws CompilationException, InterruptedException {
-        String input = "automata Test = ([i:{[10..15]}] -> STOP).";
+        String input = "processes Test = ([i:{[10..15]}] -> STOP).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
 
         SequenceNode sequence = constructSequenceNode(new String[]{"[$i]"}, new TerminalNode("STOP", null));
@@ -56,7 +56,7 @@ public class SetTests extends ParserTests {
 
     @Test
     public void correctIndexedSetTest_3() throws CompilationException, InterruptedException {
-        String input = "automata Test = ([i:{[1..2], [3..4]}] -> STOP).";
+        String input = "processes Test = ([i:{[1..2], [3..4]}] -> STOP).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
 
         SequenceNode sequence = constructSequenceNode(new String[]{"[$i]"}, new TerminalNode("STOP", null));
@@ -77,7 +77,7 @@ public class SetTests extends ParserTests {
 
     @Test
     public void correctIndexedSetTest_4() throws CompilationException, InterruptedException {
-        String input = "automata Test = ([i:{[1..3], [3..4]}] -> STOP).";
+        String input = "processes Test = ([i:{[1..3], [3..4]}] -> STOP).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
 
         SequenceNode sequence = constructSequenceNode(new String[]{"[$i]"}, new TerminalNode("STOP", null));
@@ -98,7 +98,7 @@ public class SetTests extends ParserTests {
 
     @Test
     public void correctIndexedSetTest_5() throws CompilationException, InterruptedException {
-        String input = "automata Test = ([i:{[1..2], a, b}] -> STOP).";
+        String input = "processes Test = ([i:{[1..2], a, b}] -> STOP).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
 
         SequenceNode sequence = constructSequenceNode(new String[]{"[$i]"}, new TerminalNode("STOP", null));
@@ -117,7 +117,7 @@ public class SetTests extends ParserTests {
 
     @Test
     public void correctIndexedSetTest_6() throws CompilationException, InterruptedException {
-        String input = "automata Test = ([i:{a, [1..2], b}] -> STOP).";
+        String input = "processes Test = ([i:{a, [1..2], b}] -> STOP).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
 
         SequenceNode sequence = constructSequenceNode(new String[]{"[$i]"}, new TerminalNode("STOP", null));
@@ -136,7 +136,7 @@ public class SetTests extends ParserTests {
 
     @Test
     public void correctIndexedSetTest_7() throws CompilationException, InterruptedException {
-        String input = "automata Test = ([i:{a, b, [1..2]}] -> STOP).";
+        String input = "processes Test = ([i:{a, b, [1..2]}] -> STOP).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
 
         SequenceNode sequence = constructSequenceNode(new String[]{"[$i]"}, new TerminalNode("STOP", null));
@@ -155,7 +155,7 @@ public class SetTests extends ParserTests {
 
     @Test
     public void correctIndexedSetTest_8() throws CompilationException, InterruptedException {
-        String input = "automata Test = ([i:{[{[1..2]}]}] -> STOP).";
+        String input = "processes Test = ([i:{[{[1..2]}]}] -> STOP).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
 
         SequenceNode sequence = constructSequenceNode(new String[]{"[$i]"}, new TerminalNode("STOP", null));
@@ -180,7 +180,7 @@ public class SetTests extends ParserTests {
 
     @Test
     public void correctConstantIndexedSetTest_1() throws CompilationException, InterruptedException {
-        String input = "const N = 1 automata Test = ([i:{[N..2]}] -> STOP).";
+        String input = "const N = 1 processes Test = ([i:{[N..2]}] -> STOP).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
 
         SequenceNode sequence = constructSequenceNode(new String[]{"[$i]"}, new TerminalNode("STOP", null));
@@ -199,7 +199,7 @@ public class SetTests extends ParserTests {
 
     @Test
     public void correctConstantIndexedSetTest_2() throws CompilationException, InterruptedException {
-        String input = "const N = 2 automata Test = ([i:{[1..N]}] -> STOP).";
+        String input = "const N = 2 processes Test = ([i:{[1..N]}] -> STOP).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
 
         SequenceNode sequence = constructSequenceNode(new String[]{"[$i]"}, new TerminalNode("STOP", null));
@@ -218,7 +218,7 @@ public class SetTests extends ParserTests {
 
     @Test
     public void correctConstantIndexedSetTest_3() throws CompilationException, InterruptedException {
-        String input = "const N = 1 const M = 2 automata Test = ([i:{[N..M]}] -> STOP).";
+        String input = "const N = 1 const M = 2 processes Test = ([i:{[N..M]}] -> STOP).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
 
         SequenceNode sequence = constructSequenceNode(new String[]{"[$i]"}, new TerminalNode("STOP", null));
@@ -237,7 +237,7 @@ public class SetTests extends ParserTests {
 
     @Test
     public void correctConstantIndexedSetTest_4() throws CompilationException, InterruptedException {
-        String input = "range N = 1..2 automata Test = ([i:{[N]}] -> STOP).";
+        String input = "range N = 1..2 processes Test = ([i:{[N]}] -> STOP).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
 
         SequenceNode sequence = constructSequenceNode(new String[]{"[$i]"}, new TerminalNode("STOP", null));
@@ -256,7 +256,7 @@ public class SetTests extends ParserTests {
 
     @Test
     public void correctConstantIndexedSetTest_5() throws CompilationException, InterruptedException {
-        String input = "const N = 1 range RANGE = N..2 automata Test = ([i:{[RANGE]}] -> STOP).";
+        String input = "const N = 1 range RANGE = N..2 processes Test = ([i:{[RANGE]}] -> STOP).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
 
         SequenceNode sequence = constructSequenceNode(new String[]{"[$i]"}, new TerminalNode("STOP", null));
@@ -275,7 +275,7 @@ public class SetTests extends ParserTests {
 
     @Test
     public void correctConstantIndexedSetTest_6() throws CompilationException, InterruptedException {
-        String input = "const M = 2 range RANGE = 1..M automata Test = ([i:{[RANGE]}] -> STOP).";
+        String input = "const M = 2 range RANGE = 1..M processes Test = ([i:{[RANGE]}] -> STOP).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
 
         SequenceNode sequence = constructSequenceNode(new String[]{"[$i]"}, new TerminalNode("STOP", null));
@@ -294,7 +294,7 @@ public class SetTests extends ParserTests {
 
     @Test
     public void correctConstantIndexedSetTest_7() throws CompilationException, InterruptedException {
-        String input = "const N = 1 const M = 2 range RANGE = N..M automata Test = ([i:{[RANGE]}] -> STOP).";
+        String input = "const N = 1 const M = 2 range RANGE = N..M processes Test = ([i:{[RANGE]}] -> STOP).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
 
         SequenceNode sequence = constructSequenceNode(new String[]{"[$i]"}, new TerminalNode("STOP", null));
@@ -313,7 +313,7 @@ public class SetTests extends ParserTests {
 
     @Test
     public void correctConstantIndexedSetTest_8() throws CompilationException, InterruptedException {
-        String input = "set N = {[1..2]} automata Test = ([i:N] -> STOP).";
+        String input = "set N = {[1..2]} processes Test = ([i:N] -> STOP).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
 
         SequenceNode sequence = constructSequenceNode(new String[]{"[$i]"}, new TerminalNode("STOP", null));

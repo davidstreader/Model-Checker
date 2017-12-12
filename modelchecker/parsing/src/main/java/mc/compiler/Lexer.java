@@ -8,18 +8,21 @@ import java.util.*;
 
 public class Lexer {
 
-	private int index;
-
-    private Set<String> processTypes;
+    private Set<String> displayTypes;
+    private Set<String> castTypes;
     private Set<String> functions;
 
 	// used for constructing locations of tokens
+	private int index;
 	private int line;
 	private int column;
 
     public Lexer(){
-        processTypes = new HashSet<>(Arrays.asList("automata", "petrinet"));
+
+        displayTypes = new HashSet<>(Arrays.asList("automata", "petrinet"));
         functions = new HashSet<>(Arrays.asList("abs", "simp", "safe", "prune", "nfa2dfa"));
+        castTypes = new HashSet<>(Arrays.asList("TokenRule", "A2P"));
+
     }
 
 	public List<Token> tokenise(String code) throws LexerException{
@@ -88,59 +91,68 @@ public class Lexer {
 		return builder.toString();
 	}
 
-	private Token constructStringToken(String string){
-		Location location = new Location(line, column, line, column + string.length(),index,index+string.length());
-		if(processTypes.contains(string)){
-			return new ProcessTypeToken(string, location);
-		}
-		else if(functions.contains(string)){
-			return new FunctionToken(string, location);
-		}
-        else if(string.equals("operation")){
-            return new OperationToken(location);
-        }
-        else if(string.equals("equation")){
-            return new EquationToken(location);
-        }
-		else if(string.equals("STOP")){
-			return new StopToken(location);
-		}
-		else if(string.equals("ERROR")){
-			return new ErrorToken(location);
-		}
-		else if(string.equals("const")){
-			return new ConstToken(location);
-		}
-		else if(string.equals("range")){
-			return new RangeToken(location);
-		}
-		else if(string.equals("set")){
-			return new SetToken(location);
-		}
-		else if(string.equals("if")){
-			return new IfToken(location);
-		}
-		else if(string.equals("then")){
-			return new ThenToken(location);
-		}
-		else if(string.equals("else")){
-			return new ElseToken(location);
-		}
-		else if(string.equals("when")){
-			return new WhenToken(location);
-		}
-		else if(string.equals("forall")){
-			return new ForAllToken(location);
-		}
-		else if(Character.isUpperCase(string.charAt(0))){
-			return new IdentifierToken(string, location);
+	private Token constructStringToken(String stringToToken){
+		Location location = new Location(line, column, line, column + stringToToken.length(),index,index+stringToToken.length());
+
+        if(stringToToken.equals("processes")) {
+            return new ProcessesDefintionToken(location);
+        } else if(castTypes.contains(stringToToken)) {
+            return new CastToken(stringToToken, location);
+        } else if(displayTypes.contains(stringToToken)){
+			return new DisplayTypeToken(stringToToken, location); // Sets the type of display we want the process to undergo
+		} else if(functions.contains(stringToToken)){
+			return new FunctionToken(stringToToken, location);
 		}
 
-		return new ActionToken(string, location);
+        switch(stringToToken) {
+            case "operation":
+                return new OperationToken(location);
+
+            case "equation":
+                return new EquationToken(location);
+
+            case "STOP":
+                return new StopToken(location);
+
+            case "ERROR":
+                return new ErrorToken(location);
+
+            case "const":
+                return new ConstToken(location);
+
+            case "range":
+                return new RangeToken(location);
+
+            case "set":
+                return new SetToken(location);
+
+            case "if":
+                return new IfToken(location);
+
+            case "then":
+                return new ThenToken(location);
+
+            case "else":
+                return new ElseToken(location);
+
+            case "when":
+                return new WhenToken(location);
+
+            case "forall":
+                return new ForAllToken(location);
+        }
+
+        if(Character.isUpperCase(stringToToken.charAt(0))){
+            return new IdentifierToken(stringToToken, location);
+        }
+
+		return new ActionToken(stringToToken, location);
 	}
 
 	private Token constructSymbolToken(char[] characters) throws LexerException{
-		if(characters[index] == '.'){
+
+        //The more complex operators consisting of 1 or more symbols
+        if(characters[index] == '.'){
 			if(index < characters.length - 1 && characters[index + 1] == '.'){
 				Location location = new Location(line, column, line, column + 2,index,index+2);
 				column += 2;
@@ -152,215 +164,221 @@ public class Lexer {
 				index++;
 				return new DotToken(location);
 			}
-		}
-		else if(characters[index] == ','){
-			Location location = new Location(line, column, line, column++,index,index+1);
-			index++;
-			return new CommaToken(location);
-		}
-		else if(characters[index] == ':'){
-			Location location = new Location(line, column, line, column++,index,index+1);
-			index++;
-			return new ColonToken(location);
-		}
-		else if(characters[index] == '['){
-			Location location = new Location(line, column, line, column++,index,index+1);
-			index++;
-			return new OpenBracketToken(location);
-		}
-		else if(characters[index] == ']'){
-			Location location = new Location(line, column, line, column++,index,index+1);
-			index++;
-			return new CloseBracketToken(location);
-		}
-		else if(characters[index] == '('){
-			Location location = new Location(line, column, line, column++,index,index+1);
-			index++;
-			return new OpenParenToken(location);
-		}
-		else if(characters[index] == ')'){
-			Location location = new Location(line, column, line, column++,index,index+1);
-			index++;
-			return new CloseParenToken(location);
-		}
-		else if(characters[index] == '{'){
-			Location location = new Location(line, column, line, column++,index,index+1);
-			index++;
-			return new OpenBraceToken(location);
-		}
-		else if(characters[index] == '}'){
-			Location location = new Location(line, column, line, column++,index,index+1);
-			index++;
-			return new CloseBraceToken(location);
-		}
-		else if(characters[index] == '-'){
-			if(index < characters.length - 1 && characters[index + 1] == '>'){
-				Location location = new Location(line, column, line, column + 2,index,index+2);
-				column += 2;
-				index += 2;
-				return new SequenceToken(location);
-			}
-			else{
-				Location location = new Location(line, column, line, column++,index,index+1);
-				index++;
-				return new SubtractionToken(location);
-			}
-		}
-		else if (characters[index] == '#') {
-            Location location = new Location(line, column, line, column++,index,index+1);
-            index++;
-            return new TraceEquivalentTypeToken(location);
+		}else if(characters[index] == '-'){
+            if(index < characters.length - 1 && characters[index + 1] == '>'){
+                Location location = new Location(line, column, line, column + 2,index,index+2);
+                column += 2;
+                index += 2;
+                return new SequenceToken(location);
+            }
+            else{
+                Location location = new Location(line, column, line, column++,index,index+1);
+                index++;
+                return new SubtractionToken(location);
+            }
+        } else if(characters[index] == '~'){
+            if(index < characters.length - 1 && characters[index + 1] == '>'){
+                Location location = new Location(line, column, line, column + 2,index,index+2);
+                column += 2;
+                index += 2;
+                return new InterruptToken(location);
+            }
+            else{
+                Location location = new Location(line, column, line, column++,index,index+1);
+                index++;
+                return new BisimulationTypeToken(location);
+            }
+        }else if(characters[index] == '|'){
+            if(index < characters.length - 1 && characters[index + 1] == '|'){
+                Location location = new Location(line, column, line, column + 2,index,index+2);
+                column += 2;
+                index += 2;
+                return new OrToken(location);
+            }
+            else{
+                Location location = new Location(line, column, line, column++,index,index+1);
+                index++;
+                return new BitOrToken(location);
+            }
         }
-		else if(characters[index] == '~'){
-			if(index < characters.length - 1 && characters[index + 1] == '>'){
-				Location location = new Location(line, column, line, column + 2,index,index+2);
-				column += 2;
-				index += 2;
-				return new InterruptToken(location);
-			}
-			else{
-				Location location = new Location(line, column, line, column++,index,index+1);
-				index++;
-				return new BisimulationTypeToken(location);
-			}
-		}
-		else if(characters[index] == '\\'){
-			Location location = new Location(line, column, line, column++,index,index+1);
-			index++;
-			return new HideToken(location);
-		}
-		else if(characters[index] == '@'){
-			Location location = new Location(line, column, line, column++,index,index+1);
-			index++;
-			return new AtToken(location);
-		}
-		else if(characters[index] == '$'){
-			Location location = new Location(line, column, line, column++,index,index+1);
-			index++;
-			return new DollarToken(location);
-		}
-		else if(characters[index] == '?'){
-			Location location = new Location(line, column, line, column++,index,index+1);
-			index++;
-			return new QuestionMarkToken(location);
-		}
-		else if(characters[index] == '|'){
-			if(index < characters.length - 1 && characters[index + 1] == '|'){
-				Location location = new Location(line, column, line, column + 2,index,index+2);
-				column += 2;
-				index += 2;
-				return new OrToken(location);
-			}
-			else{
-				Location location = new Location(line, column, line, column++,index,index+1);
-				index++;
-				return new BitOrToken(location);
-			}
-		}
-		else if(characters[index] == '&'){
-			if(index < characters.length - 1 && characters[index + 1] == '&'){
-				Location location = new Location(line, column, line, column + 2,index,index+2);
-				column += 2;
-				index += 2;
-				return new AndToken(location);
-			}
-			else{
-				Location location = new Location(line, column, line, column++,index,index+1);
-				index++;
-				return new BitAndToken(location);
-			}
-		}
-		else if(characters[index] == '^'){
-			Location location = new Location(line, column, line, column++,index,index+1);
-			index++;
-			return new ExclOrToken(location);
-		}
-		else if(characters[index] == '='){
-			if(index < characters.length - 1 && characters[index + 1] == '='){
-				Location location = new Location(line, column, line, column + 2,index,index+2);
-				column += 2;
-				index += 2;
-				return new EqualityToken(location);
-			}
-			else{
-				Location location = new Location(line, column, line, column++,index,index+1);
-				index++;
-				return new AssignToken(location);
-			}
-		}
-		else if(characters[index] == '!'){
-			if(index < characters.length - 1 && characters[index + 1] == '='){
-				Location location = new Location(line, column, line, column + 2,index,index+2);
-				column += 2;
-				index += 2;
-				return new NotEqualToken(location);
-			}
-			else{
-				Location location = new Location(line, column, line, column++,index,index+1);
-				index++;
-				return new NegateToken(location);
-			}
-		}
-		else if(characters[index] == '<'){
-			if(index < characters.length - 1 && characters[index + 1] == '='){
-				Location location = new Location(line, column, line, column + 2,index,index+2);
-				column += 2;
-				index += 2;
-				return new LessThanEqToken(location);
-			}
-			if(index < characters.length - 1 && characters[index + 1] == '<'){
-				Location location = new Location(line, column, line, column + 2,index,index+2);
-				column += 2;
-				index += 2;
-				return new LeftShiftToken(location);
-			}
-			else{
-				Location location = new Location(line, column, line, column++,index,index+1);
-				index++;
-				return new LessThanToken(location);
-			}
-		}
-		else if(characters[index] == '>'){
-			if(index < characters.length - 1 && characters[index + 1] == '='){
-				Location location = new Location(line, column, line, column + 2,index,index+2);
-				column += 2;
-				index += 2;
-				return new GreaterThanEqToken(location);
-			}
-			if(index < characters.length - 1 && characters[index + 1] == '>'){
-				Location location = new Location(line, column, line, column + 2,index,index+2);
-				column += 2;
-				index += 2;
-				return new RightShiftToken(location);
-			}
-			else{
-				Location location = new Location(line, column, line, column++,index,index+1);
-				index++;
-				return new GreaterThanToken(location);
-			}
-		}
-		else if(characters[index] == '+'){
-			Location location = new Location(line, column, line, column++,index,index+1);
-			index++;
-			return new AdditionToken(location);
-		}
-		else if(characters[index] == '*'){
-			Location location = new Location(line, column, line, column++,index,index+1);
-			index++;
-			return new MultiplicationToken(location);
-		}
-		else if(characters[index] == '/'){
-			Location location = new Location(line, column, line, column++,index,index+1);
-			index++;
-			return new DivisionToken(location);
-		}
-		else if(characters[index] == '%'){
-			Location location = new Location(line, column, line, column++,index,index+1);
-			index++;
-			return new ModuloToken(location);
-		}
+        else if(characters[index] == '&'){
+            if(index < characters.length - 1 && characters[index + 1] == '&'){
+                Location location = new Location(line, column, line, column + 2,index,index+2);
+                column += 2;
+                index += 2;
+                return new AndToken(location);
+            }
+            else{
+                Location location = new Location(line, column, line, column++,index,index+1);
+                index++;
+                return new BitAndToken(location);
+            }
+        }		else if(characters[index] == '='){
+            if(index < characters.length - 1 && characters[index + 1] == '='){
+                Location location = new Location(line, column, line, column + 2,index,index+2);
+                column += 2;
+                index += 2;
+                return new EqualityToken(location);
+            }
+            else{
+                Location location = new Location(line, column, line, column++,index,index+1);
+                index++;
+                return new AssignToken(location);
+            }
+        }
+        else if(characters[index] == '!'){
+            if(index < characters.length - 1 && characters[index + 1] == '='){
+                Location location = new Location(line, column, line, column + 2,index,index+2);
+                column += 2;
+                index += 2;
+                return new NotEqualToken(location);
+            }
+            else{
+                Location location = new Location(line, column, line, column++,index,index+1);
+                index++;
+                return new NegateToken(location);
+            }
+        }
+        else if(characters[index] == '<'){
+            if(index < characters.length - 1 && characters[index + 1] == '='){
+                Location location = new Location(line, column, line, column + 2,index,index+2);
+                column += 2;
+                index += 2;
+                return new LessThanEqToken(location);
+            }
+            if(index < characters.length - 1 && characters[index + 1] == '<'){
+                Location location = new Location(line, column, line, column + 2,index,index+2);
+                column += 2;
+                index += 2;
+                return new LeftShiftToken(location);
+            }
+            else{
+                Location location = new Location(line, column, line, column++,index,index+1);
+                index++;
+                return new LessThanToken(location);
+            }
+        }
+        else if(characters[index] == '>'){
 
-		throw new LexerException("Found invalid character '" + characters[index] + "' (" + line + ":" + column + ")");
+            if(index < characters.length - 1 && characters[index + 1] == '='){
+                Location location = new Location(line, column, line, column + 2,index,index+2);
+                column += 2;
+                index += 2;
+                return new GreaterThanEqToken(location);
+            }
+            if(index < characters.length - 1 && characters[index + 1] == '>'){
+                Location location = new Location(line, column, line, column + 2,index,index+2);
+                column += 2;
+                index += 2;
+                return new RightShiftToken(location);
+            }
+            else{
+                Location location = new Location(line, column, line, column++,index,index+1);
+                index++;
+                return new GreaterThanToken(location);
+            }
+        }
+
+        //Less complex symbols that are made of only one character
+        Location location = new Location(line, column, line, column++,index,index+1);
+        switch(characters[index] ) {
+
+            case ',': {
+                index++;
+                return new CommaToken(location);
+            }
+
+            case ':': {
+                index++;
+                return new ColonToken(location);
+            }
+
+            case '[': {
+                index++;
+                return new OpenBracketToken(location);
+            }
+
+            case ']': {
+                index++;
+                return new CloseBracketToken(location);
+            }
+
+            case '(': {
+                index++;
+                return new OpenParenToken(location);
+            }
+
+            case ')': {
+                index++;
+                return new CloseParenToken(location);
+            }
+
+            case '{': {
+                index++;
+                return new OpenBraceToken(location);
+            }
+
+            case '}': {
+                index++;
+                return new CloseBraceToken(location);
+            }
+
+            case '#': {
+                index++;
+                return new TraceEquivalentTypeToken(location);
+            }
+
+            case '\\': {
+                index++;
+                return new HideToken(location);
+            }
+
+            case '@': {
+                index++;
+                return new AtToken(location);
+            }
+
+            case '$': {
+                index++;
+                return new DollarToken(location);
+            }
+
+            case '?': {
+                index++;
+                return new QuestionMarkToken(location);
+            }
+
+            case '^': {
+                index++;
+                return new ExclOrToken(location);
+            }
+
+            case '+': {
+                index++;
+                return new AdditionToken(location);
+            }
+
+            case '*': {
+                index++;
+                return new MultiplicationToken(location);
+            }
+
+            case '/': {
+                index++;
+                return new DivisionToken(location);
+            }
+
+            case '%': {
+                index++;
+                return new ModuloToken(location);
+            }
+
+            default: {
+                throw new LexerException("Found invalid character '" + characters[index] + "' (" + line + ":" + column + ")");
+            }
+
+
+        }
 	}
 
 	private void gobbleComments(char[] characters){

@@ -19,7 +19,7 @@ public class RootTests extends ExpanderTests {
 
     @Test
     public void correctExpandedRelabelSetTest_1() throws CompilationException, InterruptedException {
-        String input = "automata Test = (a -> STOP)/{[i:1..2].test/[i]}.";
+        String input = "processes Test = (a -> STOP)/{[i:1..2].test/[i]}.\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"a"}, terminal);
@@ -37,7 +37,7 @@ public class RootTests extends ExpanderTests {
 
     @Test
     public void correctExpandedRelabelSetTest_2() throws CompilationException, InterruptedException {
-        String input = "automata Test = (a -> STOP)/{[i:1..3].test/[i]}.";
+        String input = "processes Test = (a -> STOP)/{[i:1..3].test/[i]}.\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"a"}, terminal);
@@ -56,7 +56,7 @@ public class RootTests extends ExpanderTests {
 
     @Test
     public void correctExpandedRelabelSetTest_3() throws CompilationException, InterruptedException {
-        String input = "automata Test = (a -> STOP)/{[i:{a}].test/[i]}.";
+        String input = "processes Test = (a -> STOP)/{[i:{a}].test/[i]}.\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"a"}, terminal);
@@ -73,7 +73,7 @@ public class RootTests extends ExpanderTests {
 
     @Test
     public void correctExpandedRelabelSetTest_4() throws CompilationException, InterruptedException {
-        String input = "automata Test = (a -> STOP)/{[i:{a , b}].test/[i]}.";
+        String input = "processes Test = (a -> STOP)/{[i:{a , b}].test/[i]}.\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"a"}, terminal);
@@ -91,7 +91,7 @@ public class RootTests extends ExpanderTests {
 
     @Test
     public void correctExpandedRelabelSetTest_5() throws CompilationException, InterruptedException {
-        String input = "automata Test = (a -> STOP)/{[i:{a , b, c}].test/[i]}.";
+        String input = "processes Test = (a -> STOP)/{[i:{a , b, c}].test/[i]}.\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"a"}, terminal);
@@ -110,7 +110,7 @@ public class RootTests extends ExpanderTests {
 
     @Test
     public void correctExpandedRelabelSetTest_6() throws CompilationException, InterruptedException {
-        String input = "range N = 1..2 automata Test = (a -> STOP)/{[i:N].test/[i]}.";
+        String input = "range N = 1..2 processes Test = (a -> STOP)/{[i:N].test/[i]}.\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"a"}, terminal);
@@ -128,7 +128,7 @@ public class RootTests extends ExpanderTests {
 
     @Test
     public void correctExpandedRelabelSetTest_7() throws CompilationException, InterruptedException {
-        String input = "range N = 1..3 automata Test = (a -> STOP)/{[i:N].test/[i]}.";
+        String input = "range N = 1..3 processes Test = (a -> STOP)/{[i:N].test/[i]}.\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"a"}, terminal);
@@ -147,7 +147,7 @@ public class RootTests extends ExpanderTests {
 
     @Test
     public void correctExpandedRelabelSetTest_8() throws CompilationException, InterruptedException {
-        String input = "set N = {a} automata Test = (a -> STOP)/{[i:N].test/[i]}.";
+        String input = "set N = {a} processes Test = (a -> STOP)/{[i:N].test/[i]}.\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"a"}, terminal);
@@ -164,7 +164,7 @@ public class RootTests extends ExpanderTests {
 
     @Test
     public void correctExpandedRelabelSetTest_9() throws CompilationException, InterruptedException {
-        String input = "set N = {a, b} automata Test = (a -> STOP)/{[i:N].test/[i]}.";
+        String input = "set N = {a, b} processes Test = (a -> STOP)/{[i:N].test/[i]}.\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"a"}, terminal);
@@ -182,7 +182,7 @@ public class RootTests extends ExpanderTests {
 
     @Test
     public void correctExpandedRelabelSetTest_10() throws CompilationException, InterruptedException {
-        String input = "set N = {a, b, c} automata Test = (a -> STOP)/{[i:N].test/[i]}.";
+        String input = "set N = {a, b, c} processes Test = (a -> STOP)/{[i:N].test/[i]}.\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"a"}, terminal);

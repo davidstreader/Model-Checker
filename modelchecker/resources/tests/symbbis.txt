@@ -1,6 +1,6 @@
 const N = 2
 const M = 4
-automata {
+processes {
 
 Test = (a-> X | b->Z),
       Z = W[1],
@@ -24,8 +24,12 @@ BadTest = (a-> X | b->Z),
 
 BadAtom = simp(BadTest).
 BadSymb = BadTest${i,j}.  // Symb should not be simplified (currently is)
-
 }
+
+automata Test, Atomic, Symb, Res, Hope.
+
+automata BadTest, BadAtom, BadSymb.
+
 operation {
 Test ~ Atomic.
 Hope ~ Atomic.

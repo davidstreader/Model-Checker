@@ -17,7 +17,7 @@ public class ForAllTests extends ExpanderTests {
 
     @Test
 	public void correctForAllExpansionTest_1() throws InterruptedException {
-		String input = "automata Test = (forall [i:1..2] ([i]:(a -> STOP))).";
+		String input = "processes Test = (forall [i:1..2] ([i]:(a -> STOP))).\nautomata Test.";
 		ProcessNode node = constructProcessNode(input);
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		Stack<ASTNode> branches = new Stack<>();
@@ -36,7 +36,7 @@ public class ForAllTests extends ExpanderTests {
 
 	@Test
 	public void correctForAllExpansionTest_2() throws InterruptedException {
-		String input = "automata Test = (forall [i:1..3] ([i]:(a -> STOP))).";
+		String input = "processes Test = (forall [i:1..3] ([i]:(a -> STOP))).\nautomata Test.";
 		ProcessNode node = constructProcessNode(input);
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		Stack<ASTNode> branches = new Stack<>();
@@ -56,7 +56,8 @@ public class ForAllTests extends ExpanderTests {
 
 	@Test
 	public void correctForAllExpansionTest_3() throws InterruptedException {
-		String input = "automata Test = (forall [i:{a}] ([i]:(a -> STOP))).";
+		String input = "processes Test = (forall [i:{a}] ([i]:(a -> STOP))).\n" +
+				"automata Test.";
 		ProcessNode node = constructProcessNode(input);
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		Stack<ASTNode> branches = new Stack<>();
@@ -74,7 +75,8 @@ public class ForAllTests extends ExpanderTests {
 
 	@Test
 	public void correctForAllExpansionTest_4() throws InterruptedException {
-		String input = "automata Test = (forall [i:{a, b}] ([i]:(a -> STOP))).";
+		String input = "processes Test = (forall [i:{a, b}] ([i]:(a -> STOP))).\n" +
+				"automata Test.";
 		ProcessNode node = constructProcessNode(input);
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		Stack<ASTNode> branches = new Stack<>();
@@ -93,7 +95,8 @@ public class ForAllTests extends ExpanderTests {
 
 	@Test
 	public void correctForAllExpansionTest_5() throws InterruptedException {
-		String input = "automata Test = (forall [i:{a, b, c}] ([i]:(a -> STOP))).";
+		String input = "processes Test = (forall [i:{a, b, c}] ([i]:(a -> STOP))).\n" +
+				"automata Test.";
 		ProcessNode node = constructProcessNode(input);
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		Stack<ASTNode> branches = new Stack<>();
@@ -113,7 +116,8 @@ public class ForAllTests extends ExpanderTests {
 
 	@Test
 	public void correctForAllExpansionTest_6() throws InterruptedException {
-		String input = "range N = 1..2 automata Test = (forall [i:N] ([i]:(a -> STOP))).";
+		String input = "range N = 1..2 processes Test = (forall [i:N] ([i]:(a -> STOP))).\n" +
+				"automata Test.";
 		ProcessNode node = constructProcessNode(input);
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		Stack<ASTNode> branches = new Stack<>();
@@ -132,7 +136,8 @@ public class ForAllTests extends ExpanderTests {
 
 	@Test
 	public void correctForAllExpansionTest_7() throws InterruptedException {
-		String input = "range N = 1..3 automata Test = (forall [i:N] ([i]:(a -> STOP))).";
+		String input = "range N = 1..3 processes Test = (forall [i:N] ([i]:(a -> STOP))).\n" +
+				"automata Test.";
 		ProcessNode node = constructProcessNode(input);
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		Stack<ASTNode> branches = new Stack<>();
@@ -152,7 +157,8 @@ public class ForAllTests extends ExpanderTests {
 
 	@Test
 	public void correctForAllExpansionTest_8() throws InterruptedException {
-		String input = "set N = {a} automata Test = (forall [i:N] ([i]:(a -> STOP))).";
+		String input = "set N = {a} processes Test = (forall [i:N] ([i]:(a -> STOP))).\n" +
+				"automata Test.";
 		ProcessNode node = constructProcessNode(input);
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		Stack<ASTNode> branches = new Stack<>();
@@ -170,7 +176,8 @@ public class ForAllTests extends ExpanderTests {
 
 	@Test
 	public void correctForAllExpansionTest_9() throws InterruptedException {
-		String input = "set N = {a, b} automata Test = (forall [i:N] ([i]:(a -> STOP))).";
+		String input = "set N = {a, b} processes Test = (forall [i:N] ([i]:(a -> STOP))).\n" +
+				"automata Test.";
 		ProcessNode node = constructProcessNode(input);
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		Stack<ASTNode> branches = new Stack<>();
@@ -189,7 +196,8 @@ public class ForAllTests extends ExpanderTests {
 
 	@Test
 	public void correctForAllExpansionTest_10() throws InterruptedException {
-		String input = "set N = {a, b, c} automata Test = (forall [i:N] ([i]:(a -> STOP))).";
+		String input = "set N = {a, b, c} processes Test = (forall [i:N] ([i]:(a -> STOP))).\n" +
+				"automata Test.";
 		ProcessNode node = constructProcessNode(input);
 		TerminalNode terminal = new TerminalNode("STOP", null);
 		Stack<ASTNode> branches = new Stack<>();

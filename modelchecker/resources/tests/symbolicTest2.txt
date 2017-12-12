@@ -1,5 +1,5 @@
 const N = 2
-automata {
+processes {
 Im = C[0][0],
     C[i:0..N][j:0..N] = (if i < N then coin -> C[i + 1][j] else 
                           if j<N then bang -> C[0][j+1] else
@@ -10,6 +10,9 @@ Ii = Imi${}.
 Ij = Imj${}.
 CIm = Imi || Imj.
 }
+
+automata Im, Imi, Imj, Ii, Ij, CIm.
+
 operation {
 Ii ~ Im.
 Ij~Im.

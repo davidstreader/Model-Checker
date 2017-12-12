@@ -20,8 +20,9 @@ public class ExampleTests extends ReferenceReplacerTests {
     }
 
     @Test
-    public void correctSimpleTest_1() throws CompilationException, InterruptedException {
-        String input = "automata Simple = (takeTea -> STOP).";
+    public void correctSimpleTestExample_1() throws CompilationException, InterruptedException {
+        String input =  "processes Simple = (takeTea -> STOP).\n" +
+                        "automata Simple.";
         ProcessNode node = constructProcessNode(input);
 
         TerminalNode terminal = new TerminalNode("STOP", null);
@@ -35,8 +36,9 @@ public class ExampleTests extends ReferenceReplacerTests {
     }
 
     @Test
-    public void correctSimpleTest_2() throws CompilationException, InterruptedException {
-        String input = "automata Two = (teaButton -> takeTea -> STOP).";
+    public void correctSimpleTestExample_2() throws CompilationException, InterruptedException {
+        String input = "processes Two = (teaButton -> takeTea -> STOP).\n" +
+                       "automata Two.";
         ProcessNode node = constructProcessNode(input);
 
         TerminalNode terminal = new TerminalNode("STOP", null);
@@ -50,8 +52,8 @@ public class ExampleTests extends ReferenceReplacerTests {
     }
 
     @Test
-    public void correctCoffeeMachineTest() throws CompilationException, InterruptedException {
-        String input = "automata CM = (teaButton -> takeTea -> STOP | coffeeButton -> takeCoffee -> STOP).";
+    public void correctCoffeeMachineTestExample() throws CompilationException, InterruptedException {
+        String input = "processes CM = (teaButton -> takeTea -> STOP | coffeeButton -> takeCoffee -> STOP).\nautomata CM.";
         ProcessNode node = constructProcessNode(input);
 
         TerminalNode terminal = new TerminalNode("STOP", null);
@@ -67,8 +69,8 @@ public class ExampleTests extends ReferenceReplacerTests {
     }
 
     @Test
-    public void correctVendingMachineTest_1() throws CompilationException, InterruptedException {
-        String input = "automata VM = (coin -> (teaBtn -> tea -> STOP | coffeeBtn -> coffee -> STOP)).";
+    public void correctVendingMachineTestExample_1() throws CompilationException, InterruptedException {
+        String input = "processes VM = (coin -> (teaBtn -> tea -> STOP | coffeeBtn -> coffee -> STOP)).\nautomata VM.";
         ProcessNode node = constructProcessNode(input);
 
         TerminalNode terminal = new TerminalNode("STOP", null);
@@ -85,8 +87,8 @@ public class ExampleTests extends ReferenceReplacerTests {
     }
 
     @Test
-    public void correctVendingMachineTest_2() throws CompilationException, InterruptedException {
-        String input = "automata VM2 = (coin -> teaBtn -> tea -> STOP | coin -> coffeeBtn -> coffee -> STOP).";
+    public void correctVendingMachineTestExample_2() throws CompilationException, InterruptedException {
+        String input = "processes VM2 = (coin -> teaBtn -> tea -> STOP | coin -> coffeeBtn -> coffee -> STOP).\nautomata VM2.";
         ProcessNode node = constructProcessNode(input);
 
         TerminalNode terminal = new TerminalNode("STOP", null);
@@ -102,7 +104,7 @@ public class ExampleTests extends ReferenceReplacerTests {
     }
 
     @Test
-    public void correctBasicAbstractionTest() throws CompilationException, InterruptedException {
+    public void correctBasicAbstractionTestExample() throws CompilationException, InterruptedException {
         List<ProcessNode> nodes = constructProcessList(constructBasicTestInput());
 
         TerminalNode terminal = new TerminalNode("STOP", null);
@@ -136,16 +138,17 @@ public class ExampleTests extends ReferenceReplacerTests {
     }
 
     private String constructBasicTestInput(){
-        return "automata {" +
+        return "processes {" +
             "Basic = (a -> (t -> b -> STOP | c -> STOP))." +
             "Bas = Basic\\{t}." +
             "B = abs(Bas)." +
-            "}";
+            "}\n" +
+                "automata Basic,Bas,B.";
     }
 
     @Test
-    public void correctSimpleLoopTest_1() throws CompilationException, InterruptedException {
-        String input = "automata Tt = (takeTea -> Tt).";
+    public void correctSimpleLoopTestExample_1() throws CompilationException, InterruptedException {
+        String input = "processes Tt = (takeTea -> Tt).\nautomata Tt.";
         ProcessNode node = constructProcessNode(input);
 
         ReferenceNode reference = new ReferenceNode("Tt", null);
@@ -159,8 +162,8 @@ public class ExampleTests extends ReferenceReplacerTests {
     }
 
     @Test
-    public void correctSimpleLoopTest_2() throws CompilationException, InterruptedException {
-        String input = "automata BT = (teaButton -> takeTea -> BT).";
+    public void correctSimpleLoopTestExample_2() throws CompilationException, InterruptedException {
+        String input = "processes BT = (teaButton -> takeTea -> BT).\nautomata BT.";
         ProcessNode node = constructProcessNode(input);
 
         ReferenceNode reference = new ReferenceNode("BT", null);
@@ -174,8 +177,8 @@ public class ExampleTests extends ReferenceReplacerTests {
     }
 
     @Test
-    public void correctSimpleLocalProcessTest() throws CompilationException, InterruptedException {
-        String input = "automata P = (a -> Q), Q = (b -> P | c -> Q).";
+    public void correctSimpleLocalProcessTestExample() throws CompilationException, InterruptedException {
+        String input = "processes P = (a -> Q), Q = (b -> P | c -> Q).\nautomata P.";
         ProcessNode node = constructProcessNode(input);
 
         SequenceNode sequence1 = constructSequenceNode(new String[]{"b"}, new ReferenceNode("P", null));
@@ -193,8 +196,8 @@ public class ExampleTests extends ReferenceReplacerTests {
     }
 
     @Test
-    public void correctTrafficLightTest() throws CompilationException, InterruptedException {
-        String input = "automata TrRed = (red -> TrRed | turnGreen -> TrGreen), TrGreen = (green -> TrGreen | turnRed -> TrRed).";
+    public void correctTrafficLightTestExample() throws CompilationException, InterruptedException {
+        String input = "processes TrRed = (red -> TrRed | turnGreen -> TrGreen), TrGreen = (green -> TrGreen | turnRed -> TrRed).\nautomata TrRed.";
         ProcessNode node = constructProcessNode(input);
 
         SequenceNode sequence1 = constructSequenceNode(new String[]{"red"}, new ReferenceNode("TrRed", null));
@@ -214,8 +217,8 @@ public class ExampleTests extends ReferenceReplacerTests {
     }
 
     @Test
-    public void correctParallelTest_1() throws CompilationException, InterruptedException {
-        String input = "automata Parallel = ((a -> b -> c -> STOP) || (x -> y -> z -> STOP)).";
+    public void correctParallelTestExample_1() throws CompilationException, InterruptedException {
+        String input = "processes Parallel = ((a -> b -> c -> STOP) || (x -> y -> z -> STOP)).\nautomata Parallel.";
         ProcessNode node = constructProcessNode(input);
 
         TerminalNode terminal = new TerminalNode("STOP", null);
@@ -232,8 +235,8 @@ public class ExampleTests extends ReferenceReplacerTests {
     }
 
     @Test
-    public void correctParallelTest_2() throws CompilationException, InterruptedException {
-        String input = "automata Parallel2 = ((a -> m -> c -> STOP) || (x -> m -> z -> STOP))\\{m}.";
+    public void correctParallelTestExample_2() throws CompilationException, InterruptedException {
+        String input = "processes Parallel2 = ((a -> m -> c -> STOP) || (x -> m -> z -> STOP))\\{m}.\nautomata Parallel2.";
         ProcessNode node = constructProcessNode(input);
 
         TerminalNode terminal = new TerminalNode("STOP", null);
@@ -252,7 +255,7 @@ public class ExampleTests extends ReferenceReplacerTests {
     }
 
     @Test
-    public void correctBufferTest() throws CompilationException, InterruptedException {
+    public void correctBufferTestExample() throws CompilationException, InterruptedException {
         List<ProcessNode> nodes = constructProcessList(constructBufferInput());
 
         List<ProcessNode> expected = new ArrayList<>();
@@ -303,19 +306,21 @@ public class ExampleTests extends ReferenceReplacerTests {
     }
 
     private String constructBufferInput(){
-        return "automata {" +
+        return "processes {" +
             "Buff = (in -> out -> Buff)." +
             "B2 = (one:Buff || two:Buff)." +
             "B3 = (one:Buff/{move/one.out} || two:Buff/{move/two.in})." +
             "B4 = B3\\{move}." +
             "B5 = abs(B4)." +
             "B6 = simp(B5)." +
-            "}";
+            "}\n"+
+                "automata Buff,B2,B3,B4,B5,B6."
+                ;
     }
 
     @Test
-    public void correctMoneyTest() throws CompilationException, InterruptedException {
-        String input = "const Coins = 3 automata Money = C[1], C[i:1..Coins] = (when (i < Coins) coin -> C[i + 1] | when (i == Coins) coin -> C[1]).";
+    public void correctMoneyTestExample() throws CompilationException, InterruptedException {
+        String input = "const Coins = 3 processes Money = C[1], C[i:1..Coins] = (when (i < Coins) coin -> C[i + 1] | when (i == Coins) coin -> C[1]).\nautomata Money.";
         ProcessNode node = constructProcessNode(input);
 
         SequenceNode sequence1 = constructSequenceNode(new String[]{"coin"}, new ReferenceNode("Money.C[1]", null));
@@ -334,8 +339,8 @@ public class ExampleTests extends ReferenceReplacerTests {
     }
 
     @Test
-    public void correctLockTest() throws CompilationException, InterruptedException {
-        String input = "const Locks = 2 automata Lock = ([i:1..Locks].setLock -> L[i]), L[j:1..Locks] = ([i:1..Locks].enter -> (when (i == j) open -> close -> L[j] | when (i != j) error -> Lock)).";
+    public void correctLockTestExample() throws CompilationException, InterruptedException {
+        String input = "const Locks = 2 processes Lock = ([i:1..Locks].setLock -> L[i]), L[j:1..Locks] = ([i:1..Locks].enter -> (when (i == j) open -> close -> L[j] | when (i != j) error -> Lock)).\nautomata Lock.";
         ProcessNode node = constructProcessNode(input);
 
         SequenceNode sequence1 = constructSequenceNode(new String[]{"[1].enter", "open", "close"}, new ReferenceNode("Lock.L[1]", null));
@@ -359,7 +364,7 @@ public class ExampleTests extends ReferenceReplacerTests {
     }
 
     @Test
-    public void correctFarmTest() throws CompilationException, InterruptedException {
+    public void correctFarmTestExample() throws CompilationException, InterruptedException {
         List<ProcessNode> nodes = constructProcessList(constructFarmInput());
 
         List<ProcessNode> expected = new ArrayList<>();
@@ -401,12 +406,13 @@ public class ExampleTests extends ReferenceReplacerTests {
 
     private String constructFarmInput(){
         return "const W = 3 " +
-            "automata {" +
+            "processes {" +
             "Worker = (getTask -> doTask -> Worker)." +
             "Workers = (forall [i:1..W] ([i]:Worker))." +
             "Farmer = F[1], F[i:1..W] = (when (i < W) [i].getTask -> F[i + 1] | when (i >= W) [i].getTask -> F[1])." +
             "Farm = (Farmer || Workers)." +
-            "}";
+            "}\n"+
+                "automata Worker,Workers,Farmer,Farm.";
     }
 
 }

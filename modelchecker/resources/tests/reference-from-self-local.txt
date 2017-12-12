@@ -1,4 +1,5 @@
-automata {
+processes {
 Test = C[0],
 C[0..0]=c->Test.
 }
+automata Test.
