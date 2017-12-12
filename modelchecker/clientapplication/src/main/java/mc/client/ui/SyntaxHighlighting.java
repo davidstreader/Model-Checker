@@ -1,5 +1,6 @@
 package mc.client.ui;
 
+import mc.plugins.PluginManager;
 import org.fxmisc.richtext.model.StyleSpans;
 import org.fxmisc.richtext.model.StyleSpansBuilder;
 
@@ -8,18 +9,20 @@ import java.util.Collections;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Created by bealjaco on 1/12/17.
- */
 public class SyntaxHighlighting {
+
+
+    //initialise the syntax from plugins
+    static {
+        functions = PluginManager.getInstance().getFunctionList();
+    }
+
     static final String[] processTypes = new String[] {
             "automata", "petrinet", "operation", "equation",
 
     };
 
-    static final String[] functions = new String[] {
-            "abs", "simp", "safe", "nfa2dfa"
-    };
+    static final String[] functions;
 
     static final String[] terminals = new String[] {
             "STOP", "ERROR"

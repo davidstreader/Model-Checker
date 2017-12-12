@@ -5,9 +5,14 @@ import com.google.common.collect.ImmutableSet;
 import lombok.Getter;
 import mc.compiler.Lexer;
 import mc.compiler.OperationEvaluator;
+import mc.compiler.Parser;
 import mc.compiler.interpreters.AutomatonInterpreter;
 import mc.process_models.automata.generator.AutomatonGenerator;
+import mc.util.Utils;
 import org.reflections.Reflections;
+
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class PluginManager {
 
@@ -55,13 +60,23 @@ public class PluginManager {
     public void registerPlugins(){
         //register the {@code f(x)} style functions to the interpreter
         getFunctions().forEach(AutomatonInterpreter::addFunction);
-        getFunctions().forEach(Lexer::registerFunction);
+        getFunctions().forEach(Lexer ::registerFunction);
+        getFunctions().forEach(Parser::registerFunction);
+
         //register the {@code X||Y} style functions to the interpreter
         getInfixFunctions().forEach(AutomatonInterpreter::addInfixFunction);
         //register the operations functions to the interpreter
         getInfixOperations().forEach(OperationEvaluator::addOperations);
         //register the operations functions to the equation generator
         getInfixOperations().forEach(AutomatonGenerator::addOperation);
+    }
+
+    public String[] getFunctionList(){
+        return getFunctions().stream()
+                .map(Utils::instantiateClass)
+                .filter(Objects::nonNull)
+                .map(IProcessFunction::getFunctionName)
+                .toArray(String[]::new);
     }
 
 }
