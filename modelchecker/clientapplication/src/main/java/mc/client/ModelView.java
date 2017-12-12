@@ -173,6 +173,12 @@ public class ModelView implements Observer{
 
             //Make sure we are using a human reable label, the parallel compositions fill Id with long strings.
             String nodeLabel = (n.getId().contains("||"))? Integer.toString(n.getLabelNumber()) : n.getId();
+
+            String splitTokens[] = nodeLabel.split("\\.");
+            nodeLabel = splitTokens[splitTokens.length-1]; //Remove junk in the label, otherwise it ends up as Test.n1, we only need n1
+
+
+
             GraphNode node = new GraphNode(automata.getId(),nodeLabel,nodeTermination);
             nodeMap.put(n.getId(),node);
 
