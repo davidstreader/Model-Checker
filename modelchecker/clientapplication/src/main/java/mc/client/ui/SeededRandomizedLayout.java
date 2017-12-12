@@ -20,6 +20,7 @@ import java.util.Random;
 import com.google.common.base.Function;
 
 import edu.uci.ics.jung.algorithms.layout.StaticLayout;
+import lombok.Setter;
 import mc.client.graph.GraphNode;
 
 /**
@@ -32,25 +33,34 @@ import mc.client.graph.GraphNode;
  * @param <V> the vertex type
  */
 public class SeededRandomizedLayout<V> implements Function<V,Point2D> {
-    Dimension d;
-    Random random;
+    private Dimension d;
+
+    public void setDimensions(Dimension d_) {
+        this.d = d_;
+    }
+
+    private Random random;
+
+    public SeededRandomizedLayout() {
+        this.random = new Random(42);
+    }
 
 
     /**
      * Creates an instance with the specified size which uses the current time
      * as the random seed.
      * @param d the size of the layout area
+     *
+     *
      */
     public SeededRandomizedLayout(Dimension d) {
         this.d = d;
         this.random = new Random(42);
-        System.out.println(d);
     }
 
     public Point2D apply(V v) {
         if(v instanceof GraphNode) {
             this.random = new Random(v.hashCode());
-
 
             return new Point2D.Double(50+random.nextDouble() * d.width, 50+random.nextDouble() * d.height);
 

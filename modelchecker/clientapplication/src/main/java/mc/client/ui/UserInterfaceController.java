@@ -374,6 +374,23 @@ public class UserInterfaceController implements Initializable {
     }
 
     @FXML
+    private void handleFreezeAll(ActionEvent event) {
+        String selecteditem = (String)modelsList.getSelectionModel().getSelectedItem();
+        if(selecteditem != null) {
+            ModelView.getInstance().freezeAllCurrentlyDisplayed();
+        }
+    }
+
+    @FXML
+    private void handleUnfreezeAll(ActionEvent event) {
+        String selecteditem = (String)modelsList.getSelectionModel().getSelectedItem();
+        if(selecteditem != null) {
+            ModelView.getInstance().unfreezeAllCurrentlyDisplayed();
+        }
+    }
+
+
+    @FXML
     private void handOptionsRequest(ActionEvent event) {
 
     }

@@ -138,6 +138,9 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
     }
 
     public void initialize() {
+
+
+
     }
 
     /**
@@ -215,7 +218,7 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
                 double dx = 0, dy = 0;
 
                 for (V v2 : getGraph().getVertices()) {
-                    if (v == v2 ) continue;
+                    if (v == v2 || !((GraphNode)v).getAutomata().equals(((GraphNode)v2).getAutomata())) continue;
                     Point2D p = apply(v);
                     Point2D p2 = apply(v2);
                     if(p == null || p2 == null) continue;
@@ -227,11 +230,6 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
                         dy += Math.random();
                     } else if (distanceSq < repulsion_range_sq) {
                         double factor = 1;
-
-                        if(!((GraphNode)v).getAutomata().equals(((GraphNode)v2).getAutomata())) {
-                            dx += 4*(factor * vx / distanceSq);
-                            dy += 4*(factor * vy / distanceSq);
-                        }
 
                         dx += factor * vx / distanceSq;
                         dy += factor * vy / distanceSq;
