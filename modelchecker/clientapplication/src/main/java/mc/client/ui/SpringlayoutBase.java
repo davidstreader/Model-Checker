@@ -41,6 +41,7 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
     protected Function<? super E, Integer> lengthFunction;
     protected int repulsion_range_sq = 100 * 100;
     protected double force_multiplier = 1.0 / 3.0;
+    protected boolean done = false;
 
     protected LoadingCache<V, SpringVertexData> springVertexData =
             CacheBuilder.newBuilder().build(new CacheLoader<V, SpringVertexData>() {
@@ -177,7 +178,7 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
                 double vy = p1.getY() - p2.getY();
                 double len = Math.sqrt(vx * vx + vy * vy);
 
-                double desiredLen = lengthFunction.apply(e);
+                double desiredLen = 100;
 
                 // round from zero, if needed [zero would be Bad.].
                 len = (len == 0) ? .0001 : len;
@@ -214,7 +215,7 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
                 double dx = 0, dy = 0;
 
                 for (V v2 : getGraph().getVertices()) {
-                    if (v == v2 || !((GraphNode)v).getAutomata().equals(((GraphNode)v2).getAutomata())) continue;
+                    if (v == v2 ) continue;
                     Point2D p = apply(v);
                     Point2D p2 = apply(v2);
                     if(p == null || p2 == null) continue;
@@ -226,6 +227,12 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
                         dy += Math.random();
                     } else if (distanceSq < repulsion_range_sq) {
                         double factor = 1;
+
+                        if(!((GraphNode)v).getAutomata().equals(((GraphNode)v2).getAutomata())) {
+                            dx += 4*(factor * vx / distanceSq);
+                            dy += 4*(factor * vy / distanceSq);
+                        }
+
                         dx += factor * vx / distanceSq;
                         dy += factor * vy / distanceSq;
                     }
@@ -301,8 +308,11 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
      * @return false
      */
     public boolean done() {
-        return false;
+        return done;
     }
+
+    //Means we can continue
+    public void setDone(boolean val) {done = val;}
 
     /**
      * No effect.

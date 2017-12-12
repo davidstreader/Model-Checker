@@ -34,10 +34,6 @@ import mc.client.graph.GraphNode;
 public class SeededRandomizedLayout<V> implements Function<V,Point2D> {
     Dimension d;
     Random random;
-    static Integer counter = 0;
-
-    static HashMap<String, Integer> Spacing = new HashMap<>();
-    static HashMap<String, Integer> processModelsPreviousSpacing = new HashMap<>();
 
 
     /**
@@ -49,13 +45,6 @@ public class SeededRandomizedLayout<V> implements Function<V,Point2D> {
         this.d = d;
         this.random = new Random(42);
         System.out.println(d);
-    }
-
-    public void clear() {
-       counter = 0;
-
-       Spacing = new HashMap<>();
-       processModelsPreviousSpacing = new HashMap<>();
     }
 
     public Point2D apply(V v) {

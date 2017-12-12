@@ -7,8 +7,7 @@ import edu.uci.ics.jung.graph.util.Context;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.*;
 import edu.uci.ics.jung.visualization.decorators.EdgeShape;
-import edu.uci.ics.jung.visualization.decorators.EdgeShape.Line;
-import edu.uci.ics.jung.visualization.picking.PickedState;
+
 import javafx.embed.swing.SwingNode;
 import javafx.geometry.Bounds;
 import lombok.Getter;
@@ -17,8 +16,10 @@ import mc.client.graph.AutomataBorderPaintable;
 import mc.client.graph.DirectedEdge;
 import mc.client.graph.GraphNode;
 import mc.client.graph.NodeStates;
+import mc.client.ui.DoubleClickHandler;
 import mc.client.ui.SeededRandomizedLayout;
-import mc.client.ui.SpringLayoutUnbounded;
+
+import mc.client.ui.SpringlayoutBase;
 import mc.compiler.CompilationObject;
 import mc.compiler.CompilationObservable;
 import mc.compiler.OperationResult;
@@ -29,8 +30,6 @@ import mc.process_models.automata.Automaton;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.awt.geom.Line2D;
-import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
@@ -46,7 +45,7 @@ public class ModelView implements Observer{
 
     private Graph<GraphNode,DirectedEdge> graph;
 
-    private SeededRandomizedLayout layoutInitalPosition; // As the data within this is static we need to clear it when the user does, otherwise layouts become odd.
+    private Layout<GraphNode,DirectedEdge> layout; // So the user can independantly freeze automata.
 
     private Set<String> automataToDisplay;
     private Set<String> visibleAutomata;
@@ -101,6 +100,7 @@ public class ModelView implements Observer{
         graph = new DirectedSparseGraph<>();
         if(compiledResult == null)
             return new VisualizationViewer<>(new DAGLayout<>(new DirectedSparseGraph<>()));
+
         compiledResult.getProcessMap().keySet().stream()
                 .filter(automataToDisplay::contains)
                 .map(compiledResult.getProcessMap()::get)
@@ -112,18 +112,20 @@ public class ModelView implements Observer{
         Bounds b = s.getBoundsInParent();
         //apply a layout to the graph
 
-        Layout<GraphNode,DirectedEdge> layout = new SpringLayoutUnbounded<GraphNode, DirectedEdge>(graph, automata);
+        layout = new SpringlayoutBase<GraphNode, DirectedEdge>(graph);
+        ((SpringlayoutBase)layout).setStretch(0.8);
+
 
         //Setting the initializer so we get a random layout. But not a random layout every time.
 
-        layoutInitalPosition = new SeededRandomizedLayout<>(new Dimension((int)b.getWidth(),(int)b.getHeight()));
+        SeededRandomizedLayout  layoutInitalPosition = new SeededRandomizedLayout<>(new Dimension((int)b.getWidth(),(int)b.getHeight()));
 
         layout.setInitializer(layoutInitalPosition);
         layout.setSize(new Dimension((int)b.getWidth(),(int)b.getHeight()));
 
-        ((SpringLayoutUnbounded)layout).setRepulsionRange(30);
 
         VisualizationViewer<GraphNode,DirectedEdge> vv = new VisualizationViewer<>(layout);
+
 
         vv.getRenderingHints().remove( //As this seems to be very expensive in jung
                 RenderingHints.KEY_ANTIALIASING);
@@ -134,46 +136,11 @@ public class ModelView implements Observer{
         gm.add(new TranslatingGraphMousePlugin(MouseEvent.BUTTON3_MASK));
         gm.add(new ScalingGraphMousePlugin(new CrossoverScalingControl(),0,1.1f,0.9f));
         gm.add(new PickingGraphMousePlugin<>());
+
         vv.setGraphMouse(gm);
 
 
-        vv.addGraphMouseListener(new GraphMouseListener<GraphNode>() {
-            private long startTime = -1;
-
-            @Override
-            public void graphClicked(GraphNode graphNode, MouseEvent me) {
-                if(startTime == -1)
-                    startTime = System.currentTimeMillis();
-                else if(System.currentTimeMillis() - startTime <= 500){ // 500 millis is the average time for a double click
-                    //if double click on a vertex, get the automata name then select all other vertexes
-
-                    String automataName = graphNode.getAutomata();
-                    if(automata.containsKey(automataName)) {
-                        PickedState<GraphNode> pickedVertexState = vv.getPickedVertexState(); // The graph has 'picking' support.
-                                                                                              // So we can just add them to the picked list,
-                                                                                              // and let pickingGraphMousePlugin deal with it
-
-                        automata.get(automataName).stream()
-                                .filter(v -> v != graphNode)
-                                .forEach(v -> pickedVertexState.pick(v, true));
-                    }
-
-                    startTime = -1;
-                } else
-                    startTime = -1;
-
-            }
-
-            @Override
-            public void graphPressed(GraphNode graphNode, MouseEvent me) {
-
-            }
-
-            @Override
-            public void graphReleased(GraphNode graphNode, MouseEvent me) {
-
-            }
-        });
+        vv.addGraphMouseListener(new DoubleClickHandler(automata, vv));
 
         //label the nodes
         vv.getRenderContext().setVertexLabelTransformer(GraphNode::getNodeId);
@@ -254,17 +221,33 @@ public class ModelView implements Observer{
         assert compiledResult.getProcessMap().containsKey(modelLabel);
         assert visibleAutomata.contains(modelLabel);
         automataToDisplay.add(modelLabel);
+
     }
 
     public void clearDisplayed() {
         automataToDisplay.clear();
-        if(layoutInitalPosition != null)
-            layoutInitalPosition.clear();
+
     }
 
     public void addAllAutomata() {
         automataToDisplay.clear();
         automataToDisplay.addAll(visibleAutomata);
+    }
+
+    public void freezeProcessModel(String automataLabel) {
+        if(layout != null &&  automataToDisplay.contains(automataLabel)) {
+            for(GraphNode vertexToLock : automata.get(automataLabel)) {
+                layout.lock(vertexToLock, true);
+            }
+        }
+    }
+
+    public void unfreezeProcessModel(String automataLabel) {
+        if(layout != null &&  automataToDisplay.contains(automataLabel)) {
+            for(GraphNode vertexToLock : automata.get(automataLabel)) {
+                layout.lock(vertexToLock, false);
+            }
+        }
     }
 
     public Map<String, ProcessModel> getProcessMap() {

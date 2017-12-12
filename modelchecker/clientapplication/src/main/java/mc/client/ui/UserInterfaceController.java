@@ -1,5 +1,6 @@
 package mc.client.ui;
 
+import edu.uci.ics.jung.graph.Graph;
 import javafx.concurrent.Task;
 import javafx.embed.swing.SwingNode;
 import javafx.event.ActionEvent;
@@ -357,8 +358,19 @@ public class UserInterfaceController implements Initializable {
     }
 
     @FXML
-    private void handlExportImage(ActionEvent event) {
+    private void handleFreeze(ActionEvent event) {
+        String selecteditem = (String)modelsList.getSelectionModel().getSelectedItem();
+        if(selecteditem != null) {
+            ModelView.getInstance().freezeProcessModel(selecteditem);
+        }
+    }
 
+    @FXML
+    private void handleUnfreeze(ActionEvent event) {
+        String selecteditem = (String)modelsList.getSelectionModel().getSelectedItem();
+        if(selecteditem != null) {
+            ModelView.getInstance().unfreezeProcessModel(selecteditem);
+        }
     }
 
     @FXML
