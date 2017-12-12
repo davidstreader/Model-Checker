@@ -33,36 +33,42 @@ import mc.client.graph.GraphNode;
  * @param <V> the vertex type
  */
 public class SeededRandomizedLayout<V> implements Function<V,Point2D> {
-    private Dimension d;
+    private Dimension screenDimensions;
 
-    public void setDimensions(Dimension d_) {
-        this.d = d_;
-    }
+    private Integer counter = 100;
 
-    private Random random;
+    private  HashMap<String, Integer> processModelsPreviousSpacing = new HashMap<>();
 
-    public SeededRandomizedLayout() {
-        this.random = new Random(42);
-    }
 
+    public SeededRandomizedLayout() {}
 
     /**
-     * Creates an instance with the specified size which uses the current time
-     * as the random seed.
-     * @param d the size of the layout area
+     *  Creates an instance that sets up the size of the screen
      *
-     *
+     * @param d_ the size of the layout area
      */
-    public SeededRandomizedLayout(Dimension d) {
-        this.d = d;
-        this.random = new Random(42);
+    public SeededRandomizedLayout(Dimension d_) {
+        this.screenDimensions = d_;
+    }
+
+    /**
+     * Dimensions of the visible window. So we know how much space we have
+     * @param d_
+     */
+    public void setDimensions(Dimension d_) {
+        this.screenDimensions = d_;
     }
 
     public Point2D apply(V v) {
         if(v instanceof GraphNode) {
-            this.random = new Random(v.hashCode());
+            Random random = new Random(v.hashCode());
+            if(!processModelsPreviousSpacing.containsKey(((GraphNode) v).getAutomata())) { // If we are adding a new process model
+                processModelsPreviousSpacing.put(((GraphNode) v).getAutomata(), counter);
+                counter += 200;
+             }
 
-            return new Point2D.Double(50+random.nextDouble() * d.width, 50+random.nextDouble() * d.height);
+            int currentSpacing = processModelsPreviousSpacing.get(((GraphNode) v).getAutomata());
+            return new Point2D.Double((currentSpacing-200 < 0 )? 0: currentSpacing-200+random.nextDouble() * currentSpacing, 50+random.nextDouble() * screenDimensions.height);
 
         } else {return null;}
 
