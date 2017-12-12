@@ -38,11 +38,7 @@ public class Main {
     @Getter
     private static Main instance;
 
-    public Main() {
-        AnsiConsole.systemInstall();
-    }
-
-    public Main(boolean reloaded, boolean autoKill) {
+    private Main(boolean reloaded, boolean autoKill) {
         instance = this;
         this.autoKill = autoKill;
         AnsiConsole.systemInstall();

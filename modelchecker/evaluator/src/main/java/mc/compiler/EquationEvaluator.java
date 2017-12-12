@@ -72,7 +72,6 @@ public class EquationEvaluator {
     }
 
     private boolean testModel(List<ProcessModel> processModels, BlockingQueue<Object> messageQueue, ModelStatus status, OperationNode operation, Context context, com.microsoft.z3.Context z3Context, Map<String, ProcessModel> toRender, String firstId, String secondId, int size) {
-        AutomataOperations automataOperations = new AutomataOperations();
         Interpreter interpreter = new Interpreter();
         try {
             List<Automaton> automata = new ArrayList<>();

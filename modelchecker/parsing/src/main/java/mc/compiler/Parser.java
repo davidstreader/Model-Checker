@@ -8,6 +8,7 @@ import mc.Constant;
 import mc.compiler.ast.*;
 import mc.compiler.token.*;
 import mc.exceptions.CompilationException;
+import mc.plugins.IProcessFunction;
 import mc.util.Location;
 import mc.util.expr.Expression;
 import mc.util.expr.ExpressionEvaluator;
@@ -15,10 +16,16 @@ import mc.util.expr.ExpressionPrinter;
 
 import java.util.*;
 
+import static mc.util.Utils.instantiateClass;
+
 /**
  * Created by sheriddavi on 30/01/17.
  */
 public class Parser {
+
+    //Plugin
+    private static Map<String,Class<? extends IProcessFunction>> functions = new HashMap<>();
+
 
     private List<Token> tokens;
     private List<ProcessNode> processes;
@@ -745,6 +752,7 @@ public class Parser {
         Set<String> flags = new HashSet<>();
 
         while (!(peekToken() instanceof CloseBraceToken)) {
+
             if (!(peekToken() instanceof ActionToken)) {
                 throw constructException("Expecting to parse a flag but received \"" + peekToken().toString() + "\"");
             }
@@ -1691,7 +1699,11 @@ public class Parser {
         return constructException(message, location);
     }
 
-    private CompilationException constructException(String message, Location location) {
+    private static CompilationException constructException(String message, Location location) {
         return new CompilationException(Parser.class, message, location);
+    }
+
+    public static void registerFunction(Class<? extends IProcessFunction> clazz){
+        functions.put(instantiateClass(clazz).getFunctionName().toLowerCase(),clazz);
     }
 }
