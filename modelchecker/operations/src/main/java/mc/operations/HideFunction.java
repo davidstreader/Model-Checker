@@ -1,12 +1,15 @@
 package mc.operations;
 
 import com.microsoft.z3.Context;
+import mc.Constant;
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessFunction;
 import mc.process_models.automata.Automaton;
+import mc.process_models.automata.operations.AutomataLabeller;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 public class HideFunction implements IProcessFunction{
@@ -38,7 +41,7 @@ public class HideFunction implements IProcessFunction{
      */
     @Override
     public int getNumberArguments() {
-        return 0;
+        return 1;
     }
 
     /**
@@ -51,6 +54,18 @@ public class HideFunction implements IProcessFunction{
      */
     @Override
     public Automaton compose(String id, Set<String> flags, Context context, Automaton... automata) throws CompilationException {
-        return null;
+
+        Automaton automaton = automata[0].copy();
+        Set<String> alphabet = automaton.getAlphabet();
+        if (automaton.getAlphabetBeforeHiding() == null)
+            automaton.setAlphabetBeforeHiding(new HashSet<>(automaton.getAlphabet()));
+        for (String action : flags) {
+            if (alphabet.contains(action)) {
+                automaton.relabelEdges(action, Constant.HIDDEN);
+            } else {
+                throw new CompilationException(getClass(), "Unable to find action " + action + " for hiding.", null);
+            }
+        }
+        return new AbstractionFunction().compose(id,Collections.emptySet(),context,automaton);
     }
 }
