@@ -354,7 +354,7 @@ public class Expander {
         ASTNode node = nodes.pop();
         while(!nodes.isEmpty()){
             ASTNode nextNode = nodes.pop();
-            node = new CompositeNode(nextNode, node, astNode.getLocation());
+            node = new CompositeNode("||",nextNode, node, astNode.getLocation());
         }
 
         return node;

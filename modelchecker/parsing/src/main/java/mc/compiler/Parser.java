@@ -10,6 +10,7 @@ import mc.compiler.ast.*;
 import mc.compiler.token.*;
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessFunction;
+import mc.plugins.IProcessInfixFunction;
 import mc.util.Location;
 import mc.util.expr.Expression;
 import mc.util.expr.ExpressionEvaluator;
@@ -25,7 +26,8 @@ import static mc.util.Utils.instantiateClass;
 public class Parser {
 
     //Plugin
-    private static Map<String,Class<? extends IProcessFunction>> functions = new HashMap<>();
+    private static Map<String,Class<? extends IProcessFunction>>           functions = new HashMap<>();
+    private static Map<String,Class<? extends IProcessInfixFunction>> infixFunctions = new HashMap<>();
 
 
     private List<Token> tokens;
@@ -584,10 +586,14 @@ public class Parser {
             process = new ProcessRootNode(process, label, relabel, hiding, process.getLocation());
         }
 
-        if (peekToken() instanceof OrToken) {
-            nextToken(); // gobble the '||' token
-            ASTNode process2 = parseComposite();
-            process = new CompositeNode(process, process2, constructLocation(start));
+        for (String key : infixFunctions.keySet()) {
+            System.out.println(peekToken().toString());
+            if (peekToken().toString().equals(key)) {
+                nextToken(); // gobble the '||' token
+                ASTNode process2 = parseComposite();
+                process = new CompositeNode(key,process, process2, constructLocation(start));
+                break;
+            }
         }
 
         return process;
@@ -714,6 +720,12 @@ public class Parser {
         List<ASTNode> processes = new ArrayList<>();
         for(int i=0; i < functionDefinition.getNumberArguments(); i++){
             processes.add(parseComposite());
+            if(i != functionDefinition.getNumberArguments()-1)
+                if (!(nextToken() instanceof CommaToken)) {
+                    Token error = tokens.get(index - 1);
+                    throw constructException("expecting to parse \",\" but received \"" + error.toString() + "\"", error.getLocation());
+                }
+
         }
 
         // ensure that the next token is a ')' token
@@ -1706,5 +1718,9 @@ public class Parser {
 
     public static void registerFunction(Class<? extends IProcessFunction> clazz){
         functions.put(instantiateClass(clazz).getFunctionName().toLowerCase(),clazz);
+    }
+
+    public static void registerInfixFunction(Class<? extends IProcessInfixFunction> clazz){
+        infixFunctions.put(instantiateClass(clazz).getNotation().toLowerCase(),clazz);
     }
 }

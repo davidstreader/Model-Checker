@@ -208,8 +208,8 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         if(!(model1 instanceof Automaton) || !(model2 instanceof Automaton))
             throw new CompilationException(getClass(),"Expecting an automaton, received: "+model1.getClass().getSimpleName()+","+model2.getClass().getSimpleName(),astNode.getLocation());
 
-        Automaton comp = instantiateClass(infixFunctions.get("||")).compose(model1.getId() + "||" + model2.getId(),
-                (Automaton)model1,(Automaton)model2);
+        Automaton comp = instantiateClass(infixFunctions.get(astNode.getOperation()))
+                .compose(model1.getId() + astNode.getOperation() + model2.getId(), (Automaton)model1,(Automaton)model2);
         AutomatonNode oldRoot = automaton.addAutomaton(comp);
         automaton.combineNodes(currentNode, oldRoot,context);
 

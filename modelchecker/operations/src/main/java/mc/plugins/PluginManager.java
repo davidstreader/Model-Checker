@@ -65,6 +65,9 @@ public class PluginManager {
 
         //register the {@code X||Y} style functions to the interpreter
         getInfixFunctions().forEach(AutomatonInterpreter::addInfixFunction);
+        getInfixFunctions().forEach(Lexer::registerInfixFunction);
+        getInfixFunctions().forEach(Parser::registerInfixFunction);
+
         //register the operations functions to the interpreter
         getInfixOperations().forEach(OperationEvaluator::addOperations);
         //register the operations functions to the equation generator

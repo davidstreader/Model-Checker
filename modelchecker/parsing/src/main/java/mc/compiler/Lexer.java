@@ -3,6 +3,7 @@ package mc.compiler;
 import mc.compiler.token.*;
 import mc.exceptions.LexerException;
 import mc.plugins.IProcessFunction;
+import mc.plugins.IProcessInfixFunction;
 import mc.util.Location;
 
 import java.util.*;
@@ -13,15 +14,15 @@ public class Lexer {
 
 	private int index;
 
-    private Set<String> processTypes;
-    private static Set<String> functions = new HashSet<>();
+    private static Set<String> processTypes   = new HashSet<>(Arrays.asList("automata", "petrinet"));;
+    private static Set<String>      functions = new HashSet<>();
+    private static Set<String> infixFunctions = new HashSet<>();
 
 	// used for constructing locations of tokens
 	private int line;
 	private int column;
 
     public Lexer(){
-        processTypes = new HashSet<>(Arrays.asList("automata", "petrinet"));
     }
 
 	public List<Token> tokenise(String code) throws LexerException{
@@ -142,6 +143,26 @@ public class Lexer {
 	}
 
 	private Token constructSymbolToken(char[] characters) throws LexerException{
+		Location start = new Location(line, column, line, column + 2,index,index+2);
+		tokens:for (String infixToken : infixFunctions) {
+			for (int i = 0; i < infixToken.length(); i++) {
+				if(index+i >= characters.length || characters[index+i] != infixToken.charAt(i))
+					continue tokens;
+			}
+			try {
+				Token t = parseNonInfixSymbolToken(characters);
+				if(t.toString().equals(infixToken))
+				    return t;
+				index -= t.toString().length();
+			} catch(LexerException ignored) {}
+
+			index += infixToken.length();
+			return new InfixFunctionToken(infixToken,start);
+		}
+		return parseNonInfixSymbolToken(characters);
+	}
+
+	private Token parseNonInfixSymbolToken(char[] characters) throws LexerException{
 		if(characters[index] == '.'){
 			if(index < characters.length - 1 && characters[index + 1] == '.'){
 				Location location = new Location(line, column, line, column + 2,index,index+2);
@@ -209,10 +230,10 @@ public class Lexer {
 			}
 		}
 		else if (characters[index] == '#') {
-            Location location = new Location(line, column, line, column++,index,index+1);
-            index++;
-            return new TraceEquivalentTypeToken(location);
-        }
+			Location location = new Location(line, column, line, column++,index,index+1);
+			index++;
+			return new TraceEquivalentTypeToken(location);
+		}
 		else if(characters[index] == '~'){
 			if(index < characters.length - 1 && characters[index + 1] == '>'){
 				Location location = new Location(line, column, line, column + 2,index,index+2);
@@ -365,6 +386,7 @@ public class Lexer {
 		throw new LexerException("Found invalid character '" + characters[index] + "' (" + line + ":" + column + ")");
 	}
 
+
 	private void gobbleComments(char[] characters){
 		while(index < characters.length - 1){
 			if(characters[index] == '/' && characters[index + 1] == '/'){
@@ -441,5 +463,9 @@ public class Lexer {
 
 	public static void registerFunction(Class<? extends IProcessFunction> function) {
         functions.add(instantiateClass(function).getFunctionName().toLowerCase());
+    }
+
+    public static void registerInfixFunction(Class<? extends IProcessInfixFunction> function){
+        infixFunctions.add(instantiateClass(function).getNotation());
     }
 }

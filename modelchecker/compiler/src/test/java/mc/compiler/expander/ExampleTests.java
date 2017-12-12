@@ -223,7 +223,7 @@ public class ExampleTests extends ExpanderTests {
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode sequence1 = constructSequenceNode(new String[]{"a", "b", "c"}, terminal);
         SequenceNode sequence2 = constructSequenceNode(new String[]{"x", "y", "z"}, terminal);
-        CompositeNode composite = constructCompositeNode(sequence1, sequence2);
+        CompositeNode composite = constructCompositeNode("||", sequence1, sequence2);
 
         ProcessNode expected = new ProcessNode("automata", "Parallel", composite, new ArrayList<>(), null);
 
@@ -241,7 +241,7 @@ public class ExampleTests extends ExpanderTests {
         SequenceNode sequence1 = constructSequenceNode(new String[]{"a", "m", "c"}, terminal);
         SequenceNode sequence2 = constructSequenceNode(new String[]{"x", "m", "z"}, terminal);
         HidingNode hiding = new HidingNode("includes", new SetNode(new ArrayList<>(Collections.singletonList("m")), null), null);
-        CompositeNode composite = constructCompositeNode(sequence1, sequence2);
+        CompositeNode composite = constructCompositeNode("||", sequence1, sequence2);
         ProcessRootNode root = new ProcessRootNode(composite, null, null, hiding, null);
 
         ProcessNode expected = new ProcessNode("automata", "Parallel2", root, new ArrayList<>(), null);
@@ -266,7 +266,7 @@ public class ExampleTests extends ExpanderTests {
         // B2
         ProcessRootNode root1 = new ProcessRootNode(ident, "one", null, null, null);
         ProcessRootNode root2 = new ProcessRootNode(ident, "two", null, null, null);
-        CompositeNode composite1 = constructCompositeNode(root1, root2);
+        CompositeNode composite1 = constructCompositeNode("||", root1, root2);
         expected.add(new ProcessNode("automata", "B2", composite1, localProcesses, null));
 
         // B3
@@ -274,7 +274,7 @@ public class ExampleTests extends ExpanderTests {
         ProcessRootNode root3 = new ProcessRootNode(ident, "one", new RelabelNode(new ArrayList<>(Collections.singletonList(element1)), null), null, null);
         RelabelElementNode element2 = new RelabelElementNode("move", "two.in", null);
         ProcessRootNode root4 = new ProcessRootNode(ident, "two", new RelabelNode(new ArrayList<>(Collections.singletonList(element2)), null), null, null);
-        CompositeNode composite2 = constructCompositeNode(root3, root4);
+        CompositeNode composite2 = constructCompositeNode("||", root3, root4);
         expected.add(new ProcessNode("automata", "B3", composite2, localProcesses, null));
 
         // B4
@@ -375,7 +375,7 @@ public class ExampleTests extends ExpanderTests {
         ProcessRootNode root1 = new ProcessRootNode(new IdentifierNode("Worker", null), "[1]", null, null, null);
         ProcessRootNode root2 = new ProcessRootNode(new IdentifierNode("Worker", null), "[2]", null, null, null);
         ProcessRootNode root3 = new ProcessRootNode(new IdentifierNode("Worker", null), "[3]", null, null, null);
-        CompositeNode composite = constructCompositeNode(root1, constructCompositeNode(root2, root3));
+        CompositeNode composite = constructCompositeNode("||", root1, constructCompositeNode("||", root2, root3));
         expected.add(new ProcessNode("automata", "Workers", composite, emptyLocal, null));
 
         // Farmer
@@ -388,7 +388,7 @@ public class ExampleTests extends ExpanderTests {
         expected.add(new ProcessNode("automata", "Farmer", new IdentifierNode("F[1]", null), localProcesses, null));
 
         // Farm
-        CompositeNode composite2 = constructCompositeNode(new IdentifierNode("Farmer", null), new IdentifierNode("Workers", null));
+        CompositeNode composite2 = constructCompositeNode("||", new IdentifierNode("Farmer", null), new IdentifierNode("Workers", null));
         expected.add(new ProcessNode("automata", "Farm", composite2, emptyLocal, null));
 
 

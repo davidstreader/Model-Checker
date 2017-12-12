@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 /**
@@ -222,7 +223,7 @@ public class ExampleTests extends ReferenceReplacerTests {
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode sequence1 = constructSequenceNode(new String[]{"a", "b", "c"}, terminal);
         SequenceNode sequence2 = constructSequenceNode(new String[]{"x", "y", "z"}, terminal);
-        CompositeNode composite = constructCompositeNode(sequence1, sequence2);
+        CompositeNode composite = constructCompositeNode("||", sequence1, sequence2);
         composite.addReference("Parallel");
 
         ProcessNode expected = new ProcessNode("automata", "Parallel", composite, new ArrayList<>(), null);
@@ -241,7 +242,7 @@ public class ExampleTests extends ReferenceReplacerTests {
         SequenceNode sequence1 = constructSequenceNode(new String[]{"a", "m", "c"}, terminal);
         SequenceNode sequence2 = constructSequenceNode(new String[]{"x", "m", "z"}, terminal);
         HidingNode hiding = new HidingNode("includes", new SetNode(new ArrayList<>(Collections.singletonList("m")), null), null);
-        CompositeNode composite = constructCompositeNode(sequence1, sequence2);
+        CompositeNode composite = constructCompositeNode("||", sequence1, sequence2);
         composite.addReference("Parallel2");
         ProcessRootNode root = new ProcessRootNode(composite, null, null, hiding, null);
 
@@ -267,7 +268,7 @@ public class ExampleTests extends ReferenceReplacerTests {
         // B2
         ProcessRootNode root1 = new ProcessRootNode(new IdentifierNode("Buff", null), "one", null, null, null);
         ProcessRootNode root2 = new ProcessRootNode(new IdentifierNode("Buff", null), "two", null, null, null);
-        CompositeNode composite1 = constructCompositeNode(root1, root2);
+        CompositeNode composite1 = constructCompositeNode("||", root1, root2);
         composite1.addReference("B2");
         expected.add(new ProcessNode("automata", "B2", composite1, localProcesses, null));
 
@@ -276,7 +277,7 @@ public class ExampleTests extends ReferenceReplacerTests {
         ProcessRootNode root3 = new ProcessRootNode(new IdentifierNode("Buff", null), "one", new RelabelNode(new ArrayList<>(Collections.singletonList(element1)), null), null, null);
         RelabelElementNode element2 = new RelabelElementNode("move", "two.in", null);
         ProcessRootNode root4 = new ProcessRootNode(new IdentifierNode("Buff", null), "two", new RelabelNode(new ArrayList<>(Collections.singletonList(element2)), null), null, null);
-        CompositeNode composite2 = constructCompositeNode(root3, root4);
+        CompositeNode composite2 = constructCompositeNode("||", root3, root4);
         composite2.addReference("B3");
         expected.add(new ProcessNode("automata", "B3", composite2, localProcesses, null));
 
@@ -378,7 +379,7 @@ public class ExampleTests extends ReferenceReplacerTests {
         ProcessRootNode root1 = new ProcessRootNode(new IdentifierNode("Worker", null), "[1]", null, null, null);
         ProcessRootNode root2 = new ProcessRootNode(new IdentifierNode("Worker", null), "[2]", null, null, null);
         ProcessRootNode root3 = new ProcessRootNode(new IdentifierNode("Worker", null), "[3]", null, null, null);
-        CompositeNode composite = constructCompositeNode(root1, constructCompositeNode(root2, root3));
+        CompositeNode composite = constructCompositeNode("||", root1, constructCompositeNode("||", root2, root3));
         composite.addReference("Workers");
         expected.add(new ProcessNode("automata", "Workers", composite, emptyLocal, null));
 
@@ -393,14 +394,12 @@ public class ExampleTests extends ReferenceReplacerTests {
         expected.add(new ProcessNode("automata", "Farmer", sequence4, emptyLocal, null));
 
         // Farm
-        CompositeNode composite2 = constructCompositeNode(new IdentifierNode("Farmer", null), new IdentifierNode("Workers", null));
+        CompositeNode composite2 = constructCompositeNode("||", new IdentifierNode("Farmer", null), new IdentifierNode("Workers", null));
         composite2.addReference("Farm");
         expected.add(new ProcessNode("automata", "Farm", composite2, emptyLocal, null));
 
 
-        if(!expected.equals(nodes)){
-            fail("expecting process node lists to be equivalent");
-        }
+        assertEquals(expected,nodes);
     }
 
     private String constructFarmInput(){

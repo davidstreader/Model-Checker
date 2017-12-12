@@ -34,15 +34,15 @@ public abstract class TestBase {
     	return new ChoiceNode(process1, process2, null);
     }
 
-    public CompositeNode constructCompositeNode(String[] sequence1, String[] sequence2){
+    public CompositeNode constructCompositeNode(String operation, String[] sequence1, String[] sequence2){
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode node1 = constructSequenceNode(sequence1, terminal);
         SequenceNode node2 = constructSequenceNode(sequence2, terminal);
-        return new CompositeNode(node1, node2, null);
+        return new CompositeNode(operation, node1, node2, null);
     }
 
-    public CompositeNode constructCompositeNode(ASTNode process1, ASTNode process2){
-    	return new CompositeNode(process1, process2, null);
+    public CompositeNode constructCompositeNode(String operation, ASTNode process1, ASTNode process2){
+    	return new CompositeNode(operation,process1, process2, null);
     }
 
 
