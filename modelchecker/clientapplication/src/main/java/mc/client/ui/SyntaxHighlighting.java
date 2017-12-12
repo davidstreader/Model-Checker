@@ -47,21 +47,20 @@ public class SyntaxHighlighting {
     static final String PAREN_PATTERN = "\\(|\\)";
     static final String BRACE_PATTERN = "\\{|\\}";
     static final String BRACKET_PATTERN = "\\[|\\]";
-    //TODO: fix the comment to show when comments dont end
-    static final String COMMENT_PATTERN = "(?:\\/\\/[^\n]*)|(?:/\\*.*?\\*/)";
+    static final String COMMENT_PATTERN = "(?://[^\n]*)|(?:/\\*.*?\\*/)|(?:/\\*(?!\\*/).*)";
 
     static final Pattern PATTERN = Pattern.compile(
-            "(?<COMMENT>" + COMMENT_PATTERN + ")"+
-                    "|(?<PROCESSTYPE>" + PROCESSTYPES_PATTERN + ")" +
-                    "|(?<FUNCTION>" + FUNCTIONS_PATTERN + ")" +
-                    "|(?<TERMINAL>" + TERMINALS_PATTERN + ")" +
-                    "|(?<KEYWORD>" + KEYWORDS_PATTERN + ")" +
-                    "|(?<SYMBOL>" + SYMBOLS + ")" +
-                    "|(?<OPERATOR>" + OPERATORS + ")" +
-                    "|(?<OPERATION>" + OPERATIONS + ")" +
-                    "|(?<ACTIONLABEL>" + ACTION_LABEL_PATTERN + ")" +
-                    "|(?<IDENTIFER>" + IDENT_PATTERN + ")" +
-                    "|(?<INT>" + INT_PATTERN + ")"
+            "(?<COMMENT>" + COMMENT_PATTERN + ")"
+                    + "|(?<PROCESSTYPE>" + PROCESSTYPES_PATTERN + ")"
+                    + "|(?<FUNCTION>" + FUNCTIONS_PATTERN + ")"
+                    + "|(?<TERMINAL>" + TERMINALS_PATTERN + ")"
+                    + "|(?<KEYWORD>" + KEYWORDS_PATTERN + ")"
+                    + "|(?<SYMBOL>" + SYMBOLS + ")"
+                    + "|(?<OPERATOR>" + OPERATORS + ")"
+                    + "|(?<OPERATION>" + OPERATIONS + ")"
+                    + "|(?<ACTIONLABEL>" + ACTION_LABEL_PATTERN + ")"
+                    + "|(?<IDENTIFER>" + IDENT_PATTERN + ")"
+                    + "|(?<INT>" + INT_PATTERN + ")"
                     + "|(?<PAREN>" + PAREN_PATTERN + ")"
                     + "|(?<BRACE>" + BRACE_PATTERN + ")"
                     + "|(?<BRACKET>" + BRACKET_PATTERN + ")"
