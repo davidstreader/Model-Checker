@@ -47,7 +47,8 @@ public class SyntaxHighlighting {
     static final String PAREN_PATTERN = "\\(|\\)";
     static final String BRACE_PATTERN = "\\{|\\}";
     static final String BRACKET_PATTERN = "\\[|\\]";
-    static final String COMMENT_PATTERN = "\\/\\/[^\n]*";
+    //TODO: fix the comment to show when comments dont end
+    static final String COMMENT_PATTERN = "(?:\\/\\/[^\n]*)|(?:/\\*.*?\\*/)";
 
     static final Pattern PATTERN = Pattern.compile(
             "(?<COMMENT>" + COMMENT_PATTERN + ")"+
@@ -64,6 +65,7 @@ public class SyntaxHighlighting {
                     + "|(?<PAREN>" + PAREN_PATTERN + ")"
                     + "|(?<BRACE>" + BRACE_PATTERN + ")"
                     + "|(?<BRACKET>" + BRACKET_PATTERN + ")"
+            , Pattern.DOTALL
     );
 
     static StyleSpans<Collection<String>> computeHighlighting(String text) {
