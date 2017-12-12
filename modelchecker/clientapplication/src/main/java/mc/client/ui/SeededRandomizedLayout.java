@@ -13,14 +13,13 @@ package mc.client.ui;
 
 import java.awt.Dimension;
 import java.awt.geom.Point2D;
-import java.util.Date;
+
 import java.util.HashMap;
 import java.util.Random;
 
 import com.google.common.base.Function;
 
-import edu.uci.ics.jung.algorithms.layout.StaticLayout;
-import lombok.Setter;
+
 import mc.client.graph.GraphNode;
 
 /**
@@ -33,6 +32,7 @@ import mc.client.graph.GraphNode;
  * @param <V> the vertex type
  */
 public class SeededRandomizedLayout<V> implements Function<V,Point2D> {
+
     private Dimension screenDimensions;
 
     private Integer counter = 100;
@@ -69,6 +69,7 @@ public class SeededRandomizedLayout<V> implements Function<V,Point2D> {
 
             int currentSpacing = processModelsPreviousSpacing.get(((GraphNode) v).getAutomata());
             return new Point2D.Double((currentSpacing-200 < 0 )? 0: currentSpacing-200+random.nextDouble() * currentSpacing, 50+random.nextDouble() * screenDimensions.height);
+
 
         } else {return null;}
 
