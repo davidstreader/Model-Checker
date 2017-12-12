@@ -315,24 +315,29 @@ public class Expander {
     }
 
     private FunctionNode expand(FunctionNode astNode, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException {
-        ASTNode process = expand(astNode.getProcess(), variableMap, context);
-        if (astNode.getReferences() != null) {
-            Set<String> unReplacements = (Set<String>) astNode.getReplacements();
-            HashMap<String, Expr> replacements = new HashMap<>();
-            for (String str : unReplacements) {
-                String var = str.substring(0, str.indexOf('='));
-                String exp = str.substring(str.indexOf('=') + 1);
-                Expr expression;
-                if (globalVariableMap.containsKey(exp)) {
-                    expression = globalVariableMap.get(exp);
-                } else {
-                    expression = Expression.constructExpression(exp,astNode.getLocation(), context);
+        List<ASTNode> processes = astNode.getProcesses();
+
+        for (int i = 0; i < processes.size(); i++) {
+            ASTNode process = processes.get(i);
+            process = expand(process, variableMap, context);
+            if (astNode.getReferences() != null) {
+                Set<String> unReplacements = (Set<String>) astNode.getReplacements();
+                HashMap<String, Expr> replacements = new HashMap<>();
+                for (String str : unReplacements) {
+                    String var = str.substring(0, str.indexOf('='));
+                    String exp = str.substring(str.indexOf('=') + 1);
+                    Expr expression;
+                    if (globalVariableMap.containsKey(exp)) {
+                        expression = globalVariableMap.get(exp);
+                    } else {
+                        expression = Expression.constructExpression(exp,astNode.getLocation(), context);
+                    }
+                    replacements.put("$"+var, expression);
                 }
-                replacements.put("$"+var, expression);
+                astNode.setReplacements(replacements);
             }
-            astNode.setReplacements(replacements);
+            astNode.getProcesses().set(i,process);
         }
-        astNode.setProcess(process);
         return astNode;
     }
 

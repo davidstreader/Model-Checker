@@ -124,7 +124,8 @@ public class ExampleTests extends ReferenceReplacerTests {
         ProcessNode bas = new ProcessNode("automata", "Bas", root, localProcesses, null);
 
         // B
-        FunctionNode function = new FunctionNode("abs", new IdentifierNode("Bas", null), null);
+        FunctionNode function = new FunctionNode("abs",
+                Collections.singletonList(new IdentifierNode("Bas", null)), null);
         function.addReference("B");
         ProcessNode b = new ProcessNode("automata", "B", function, localProcesses, null);
 
@@ -287,12 +288,15 @@ public class ExampleTests extends ReferenceReplacerTests {
         expected.add(new ProcessNode("automata", "B4", root5, localProcesses, null));
 
         // B5
-        FunctionNode function1 = new FunctionNode("abs", new IdentifierNode("B4", null), null);
+        FunctionNode function1 = new FunctionNode("abs",
+                Collections.singletonList(new IdentifierNode("B4", null)), null);
+
         function1.addReference("B5");
         expected.add(new ProcessNode("automata", "B5", function1, localProcesses, null));
 
         // B6
-        FunctionNode function2 = new FunctionNode("simp", new IdentifierNode("B5", null), null);
+        FunctionNode function2 = new FunctionNode("simp",
+                Collections.singletonList(new IdentifierNode("B5", null)), null);
         expected.add(new ProcessNode("automata", "B6", function2, localProcesses, null));
         function2.addReference("B6");
 

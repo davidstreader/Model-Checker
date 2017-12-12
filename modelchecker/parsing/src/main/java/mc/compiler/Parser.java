@@ -1,5 +1,6 @@
 package mc.compiler;
 
+import com.google.common.collect.ImmutableSet;
 import com.microsoft.z3.BitVecNum;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
@@ -695,8 +696,10 @@ public class Parser {
         int start = index;
         String type = parseFunctionType();
 
+        IProcessFunction functionDefinition = instantiateClass(functions.get(type));
+
         // check if any flags have been set
-        Set<String> flags = null;
+        Set<String> flags = Collections.emptySet();
         if (peekToken() instanceof OpenBraceToken) {
             flags = parseFlags(type);
         }
@@ -707,7 +710,11 @@ public class Parser {
             throw constructException("expecting to parse \"(\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
-        ASTNode process = parseComposite();
+        //get all the processes to be used in the function
+        List<ASTNode> processes = new ArrayList<>();
+        for(int i=0; i < functionDefinition.getNumberArguments(); i++){
+            processes.add(parseComposite());
+        }
 
         // ensure that the next token is a ')' token
         if (!(nextToken() instanceof CloseParenToken)) {
@@ -715,12 +722,10 @@ public class Parser {
             throw constructException("expecting to parse \")\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
-        FunctionNode function = new FunctionNode(type, process, constructLocation(start));
+        FunctionNode function = new FunctionNode(type, processes, constructLocation(start));
+        function.setFlags(ImmutableSet.copyOf(flags));
 
-        if (type.equals("abs") && flags != null) {
-            processAbstractionFlags(function, flags);
-        }
-
+        //TODO: replace
         if (type.equals("simp") && flags != null) {
             if(function.getReplacements() == null)
                 function.setReplacements(new HashMap<>());
@@ -740,8 +745,6 @@ public class Parser {
         throw constructException("expecting to parse a function type but received \"" + token.toString() + "\"", token.getLocation());
     }
 
-    private Set<String> validAbsFlags = new HashSet<>(Arrays.asList("fair", "unfair"));
-
     private Set<String> parseFlags(String functionType) throws CompilationException, InterruptedException {
 
         if (!(nextToken() instanceof OpenBraceToken)) {
@@ -749,7 +752,10 @@ public class Parser {
             throw constructException("expecting to parse \"{\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
+        ImmutableSet<String> acceptedFlags = ImmutableSet.copyOf(instantiateClass(functions.get(functionType)).getValidFlags());
         Set<String> flags = new HashSet<>();
+
+        boolean wildcard = acceptedFlags.contains("*");
 
         while (!(peekToken() instanceof CloseBraceToken)) {
 
@@ -760,9 +766,11 @@ public class Parser {
             ActionToken token = (ActionToken) nextToken();
             String flag = token.getAction();
 
-            if (!validAbsFlags.contains(flag) && Objects.equals(functionType, "abs")) {
-                throw constructException("\"" + flag + "\" is not a correct flag", token.getLocation());
+            if (!acceptedFlags.contains(flag) && !wildcard) {
+                throw constructException("\"" + flag + "\" is not a correct flag for " + functionType, token.getLocation());
             }
+
+            //TODO: remove this somehow
             if (Objects.equals(functionType, "simp")) {
                 if (!(peekToken() instanceof AssignToken)) {
                     throw constructException("Expecting to parse '=' but received \"" + peekToken().toString() + "\"");
@@ -785,13 +793,6 @@ public class Parser {
         return flags;
     }
 
-    private void processAbstractionFlags(FunctionNode function, Set<String> flags) {
-
-        function.setFair(flags.contains("fair") || !flags.contains("unfair"));
-
-        function.setPruning(flags.contains("prune"));
-    }
-
     private FunctionNode parseCasting() throws CompilationException, InterruptedException {
         int start = index;
         String cast = parseProcessType();
@@ -810,7 +811,7 @@ public class Parser {
             throw constructException("expecting to parse \")\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
-        return new FunctionNode(cast, process, constructLocation(start));
+        return new FunctionNode(cast, Collections.singletonList(process), constructLocation(start));
     }
 
     /**

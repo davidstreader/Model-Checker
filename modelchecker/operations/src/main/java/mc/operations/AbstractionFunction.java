@@ -1,5 +1,6 @@
 package mc.operations;
 
+import com.google.common.collect.ImmutableSet;
 import com.microsoft.z3.Context;
 import mc.Constant;
 import mc.compiler.Guard;
@@ -34,7 +35,7 @@ public class AbstractionFunction implements IProcessFunction{
      */
     @Override
     public Collection<String> getValidFlags() {
-        return Collections.singletonList("unfair");
+        return ImmutableSet.of("unfair","fair");
     }
 
     /**
@@ -57,13 +58,14 @@ public class AbstractionFunction implements IProcessFunction{
      * @return the resulting automaton of the operation
      */
     @Override
-    public Automaton compose(String id, String[] flags, Context context, Automaton... automata) throws CompilationException  {
+    public Automaton compose(String id, Set<String> flags, Context context, Automaton... automata) throws CompilationException  {
         if (automata.length != getNumberArguments())
                 throw new CompilationException(this.getClass(),null);
 
         Automaton automaton = automata[0];
         Automaton abstraction = new Automaton(automaton.getId() + ".abs", !Automaton.CONSTRUCT_ROOT);
-        boolean isFair = !Arrays.asList(flags).contains("unfair");
+
+        boolean isFair = flags.contains("fair") || !flags.contains("unfair");
 
         // add the nodes from the specified automaton to the abstracted representation
         for (AutomatonNode automatonNode : automaton.getNodes()) {

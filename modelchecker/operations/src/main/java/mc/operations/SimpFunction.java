@@ -13,6 +13,7 @@ import mc.process_models.automata.util.ColouringUtil;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 public class SimpFunction implements IProcessFunction{
     /**
@@ -33,7 +34,7 @@ public class SimpFunction implements IProcessFunction{
      */
     @Override
     public Collection<String> getValidFlags() {
-        return Collections.EMPTY_LIST;
+        return Collections.singletonList("*");
     }
 
     /**
@@ -57,7 +58,7 @@ public class SimpFunction implements IProcessFunction{
      * @throws CompilationException when the function fails
      */
     @Override
-    public Automaton compose(String id, String[] flags, Context context, Automaton... automata) throws CompilationException {
+    public Automaton compose(String id, Set<String> flags, Context context, Automaton... automata) throws CompilationException {
         assert automata.length == 1;
 
         //Clone

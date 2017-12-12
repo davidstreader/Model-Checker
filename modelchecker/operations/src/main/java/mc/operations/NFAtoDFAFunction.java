@@ -30,7 +30,7 @@ public class NFAtoDFAFunction implements IProcessFunction{
      */
     @Override
     public Collection<String> getValidFlags() {
-        return Collections.EMPTY_LIST;
+        return Collections.emptySet();
     }
 
     /**
@@ -54,7 +54,7 @@ public class NFAtoDFAFunction implements IProcessFunction{
      * @throws CompilationException when the function fails
      */
     @Override
-    public Automaton compose(String id, String[] flags, Context context, Automaton... automata) throws CompilationException {
+    public Automaton compose(String id, Set<String> flags, Context context, Automaton... automata) throws CompilationException {
         assert automata.length == 1;
         Automaton nfa = automata[0].copy();
         Automaton dfa = new Automaton(id, !Automaton.CONSTRUCT_ROOT);

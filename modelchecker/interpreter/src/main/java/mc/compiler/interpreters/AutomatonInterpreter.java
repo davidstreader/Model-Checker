@@ -225,53 +225,23 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         addAutomaton(currentNode, automaton, next);
     }
     private void interpretFunction(FunctionNode astNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException {
-        interpretProcess(astNode.getProcess(), automaton.getId() + ".fn");
-        ProcessModel model = processStack.pop();
-        if (model == null)
+        List<ProcessModel> models = new ArrayList<>();
+        for (ASTNode p : astNode.getProcesses()) {
+            interpretProcess(p, automaton.getId() + ".fn");
+            models.add(processStack.pop());
+        }
+        if (models.isEmpty())
             throw new CompilationException(getClass(),"Expecting an automaton, received an undefined process.",astNode.getLocation());
 
-        if(! (model instanceof Automaton ) )
-            throw new CompilationException(getClass(),"Expecting an automaton, received a: "+model.getClass().getSimpleName(),astNode.getLocation());
-
-        Automaton aut = (Automaton) model;
-
-        Automaton processed;
-        //TODO: Switch!
-        switch(astNode.getFunction()){
-            case "abs":
-                boolean isFair = astNode.isFair();
-                boolean prune = astNode.needsPruning();
-                String[] flags = new String[1];
-                if(!isFair)
-                    flags[0] = "unfair";
-
-                processed = instantiateClass(functions.get(astNode.getFunction())).compose(model.getId()+".abs",
-                        flags,context,aut);
-                break;
-
-            case "prune":
-                processed = instantiateClass(functions.get(astNode.getFunction())).compose(model.getId()+".simp",
-                        new String[0],context,aut);
-            break;
-
-            case "simp":
-                processed = instantiateClass(functions.get(astNode.getFunction())).compose(model.getId()+".simp",
-                        new String[0],context,aut);
-                break;
-
-            case "safe":
-                // automata cannot contain unreachable states therefore they are always safe
-                processed = ((Automaton)model).copy();
-            break;
-
-            case "nfa2dfa":
-                processed = instantiateClass(functions.get(astNode.getFunction())).compose(model.getId()+".dfa",
-                        new String[0],context,aut);
-             break;
-
-            default:
-                throw new CompilationException(getClass(),"Expecting a known function, received: "+astNode.getFunction(),astNode.getLocation());
+        for(ProcessModel model : models) {
+            if (!(model instanceof Automaton))
+                throw new CompilationException(getClass(), "Expecting an automaton, received a: " + model.getClass().getSimpleName(), astNode.getLocation());
         }
+
+        Automaton[] aut = models.stream().map(Automaton.class::cast).toArray(Automaton[]::new);
+
+        Automaton processed = instantiateClass(functions.get(astNode.getFunction()))
+                                .compose(automaton.getId() + ".fn",astNode.getFlags(),context,aut);
 
         addAutomaton(currentNode, automaton, processed);
     }

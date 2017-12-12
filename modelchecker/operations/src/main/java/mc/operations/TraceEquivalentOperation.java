@@ -5,6 +5,7 @@ import mc.plugins.IOperationInfixFunction;
 import mc.process_models.automata.Automaton;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -40,7 +41,7 @@ public class TraceEquivalentOperation implements IOperationInfixFunction{
         NFAtoDFAFunction func =  new NFAtoDFAFunction();
         return new BisimulationOperation().evaluate(automata.stream().map(a -> {
             try {
-                return func.compose(a.getId(),new String[0],null, a);
+                return func.compose(a.getId(), Collections.emptySet(),null, a);
                 } catch (CompilationException e) {
                 return null;
             }

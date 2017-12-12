@@ -9,7 +9,9 @@ import mc.process_models.automata.AutomatonNode;
 import mc.process_models.automata.operations.AutomataReachability;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class PruneFunction implements IProcessFunction{
@@ -31,7 +33,7 @@ public class PruneFunction implements IProcessFunction{
      */
     @Override
     public Collection<String> getValidFlags() {
-        return null;
+        return Collections.emptySet();
     }
 
     /**
@@ -55,7 +57,7 @@ public class PruneFunction implements IProcessFunction{
      * @throws CompilationException when the function fails
      */
     @Override
-    public Automaton compose(String id, String[] flags, Context context, Automaton... automata) throws CompilationException {
+    public Automaton compose(String id, Set<String> flags, Context context, Automaton... automata) throws CompilationException {
         // find the hidden edges within the automaton
         Automaton automaton = automata[0];
         List<AutomatonEdge> hiddenEdges = automaton.getEdges().stream()

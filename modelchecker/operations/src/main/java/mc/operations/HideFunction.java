@@ -6,6 +6,8 @@ import mc.plugins.IProcessFunction;
 import mc.process_models.automata.Automaton;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
 
 public class HideFunction implements IProcessFunction{
     /**
@@ -26,7 +28,7 @@ public class HideFunction implements IProcessFunction{
      */
     @Override
     public Collection<String> getValidFlags() {
-        return null;
+        return Collections.singleton("*");
     }
 
     /**
@@ -48,7 +50,7 @@ public class HideFunction implements IProcessFunction{
      * @return the resulting automaton of the operation
      */
     @Override
-    public Automaton compose(String id, String[] flags, Context context, Automaton... automata) throws CompilationException {
+    public Automaton compose(String id, Set<String> flags, Context context, Automaton... automata) throws CompilationException {
         return null;
     }
 }

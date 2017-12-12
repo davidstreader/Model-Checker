@@ -5,6 +5,7 @@ import mc.exceptions.CompilationException;
 import mc.process_models.automata.Automaton;
 
 import java.util.Collection;
+import java.util.Set;
 
 /**
  * This interface describes a "function" in the LTS language variant in the use
@@ -43,7 +44,7 @@ public interface IProcessFunction {
      * @return the resulting automaton of the operation
      * @throws CompilationException when the function fails
      */
-    Automaton compose(String id, String[] flags, Context context, Automaton... automata) throws CompilationException;
+    Automaton compose(String id, Set<String> flags, Context context, Automaton... automata) throws CompilationException;
 
     //TODO: Petrinet functions
 }

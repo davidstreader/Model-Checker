@@ -4,6 +4,7 @@ import com.microsoft.z3.Context;
 import mc.compiler.ast.*;
 import mc.util.expr.Expression;
 
+import java.util.Collections;
 import java.util.List;
 
 public abstract class TestBase {
@@ -46,7 +47,7 @@ public abstract class TestBase {
 
 
     public FunctionNode constructFunctionNode(String function, ASTNode process){
-        return new FunctionNode(function, process, null);
+        return new FunctionNode(function, Collections.singletonList(process), null);
     }
 
     public IndexNode constructIndexNode(String variable, int start, int end, ASTNode process){

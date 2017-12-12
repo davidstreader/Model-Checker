@@ -83,7 +83,9 @@ public class OperationEvaluator {
             collectIdentifiers(((CompositeNode) process).getFirstProcess(), ids);
             collectIdentifiers(((CompositeNode) process).getSecondProcess(), ids);
         }
-        if (process instanceof FunctionNode) collectIdentifiers(((FunctionNode) process).getProcess(), ids);
+        if (process instanceof FunctionNode) {
+            ((FunctionNode) process).getProcesses().forEach(p -> collectIdentifiers(p, ids));
+        }
         if (process instanceof IfStatementNode){
             collectIdentifiers(((IfStatementNode) process).getTrueBranch(), ids);
             if (((IfStatementNode) process).hasFalseBranch())
