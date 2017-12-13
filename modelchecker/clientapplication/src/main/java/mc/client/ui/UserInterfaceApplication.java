@@ -8,6 +8,8 @@ import javafx.scene.image.Image;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
+import java.lang.reflect.Method;
+
 public class UserInterfaceApplication extends Application {
 
     /**
@@ -27,6 +29,7 @@ public class UserInterfaceApplication extends Application {
      */
     @Override
     public void start(Stage primaryStage) throws Exception {
+        setMacDockIcon(new Image(getClass().getResourceAsStream("/clientres/icon.jpg")));
         Font.loadFont(getClass().getResource("/clientres/hasklig.otf").toExternalForm(),10);
         Parent root = FXMLLoader.load(getClass().getResource("/clientres/UserInterface.fxml"));
 
@@ -40,5 +43,22 @@ public class UserInterfaceApplication extends Application {
 
     public static void main(String[] args) {
         launch(args);
+    }
+
+    public void setMacDockIcon(Image img) {
+        try
+        {
+            Class<?> applicationClass = Class.forName("com.apple.eawt.Application");
+
+            Method getApplicationMethod = applicationClass.getMethod("getApplication");
+            Method setDockIconMethod = applicationClass.getMethod("setDockIconImage", java.awt.Image.class);
+
+            Object macOSXApplication = getApplicationMethod.invoke(null);
+            setDockIconMethod.invoke(macOSXApplication, img);
+        }
+        catch(Exception e)
+        {
+            // If it doesn't work, just continue
+        }
     }
 }
