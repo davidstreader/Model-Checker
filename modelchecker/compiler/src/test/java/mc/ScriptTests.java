@@ -51,7 +51,7 @@ public class ScriptTests {
         if (operations.size() > 0) {
             for (OperationResult result : operations) {
                 String op = result.getProcess1().getIdent() + ' ' + result.getOperation() + ' ' + result.getProcess2().getIdent();
-                if (shouldFailOperations(file.getName(), op)) {
+                if (shouldFailOperations(file.getName())) {
                     assertTrue("Operation '" + op + "' should fail", Objects.equals(result.getResult(), "false"));
                 } else {
                     assertTrue("Operation '" + op + "' should pass", Objects.equals(result.getResult(), "true"));
@@ -67,11 +67,8 @@ public class ScriptTests {
     private boolean shouldFail(String fileName) {
         return fileName.contains("_fail");
     }
-    private boolean shouldFailOperations(String fileName, String op) {
-        return fileName.contains("failOperations.txt") && Objects.equals(removeANSIEscape(op), "A ~ B");
-    }
-    private String removeANSIEscape(String str) {
-        return str.replaceAll("\u001B\\[[\\d;]*[^\\d;]","");
+    private boolean shouldFailOperations(String fileName) {
+        return fileName.contains("_operationfail");
     }
 
 }
