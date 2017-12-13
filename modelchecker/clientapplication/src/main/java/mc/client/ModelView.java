@@ -132,7 +132,7 @@ public class ModelView implements Observer{
 
         //set the colour of the nodes
         vv.getRenderContext().setVertexFillPaintTransformer(
-                node -> NodeStates.valueOf(node.getNodeTermination()).getColorNodes());
+                node -> NodeStates.valueOf(node.getNodeTermination().toUpperCase()).getColorNodes());
 
 
         //autoscale the graph to fit in the display port
