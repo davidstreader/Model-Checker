@@ -68,7 +68,7 @@ public class SeededRandomizedLayout<V> implements Function<V,Point2D> {
              }
 
             int currentSpacing = processModelsPreviousSpacing.get(((GraphNode) v).getAutomata());
-            return new Point2D.Double((currentSpacing-200 < 0 )? 0: currentSpacing-200+random.nextDouble() * currentSpacing, 50+random.nextDouble() * screenDimensions.height);
+            return new Point2D.Double(((currentSpacing-200 < 0 )? 0: currentSpacing-200)+random.nextDouble() * currentSpacing, 50+random.nextDouble() * screenDimensions.height);
 
 
         } else {return null;}
