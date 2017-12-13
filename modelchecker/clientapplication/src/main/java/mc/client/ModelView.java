@@ -10,6 +10,7 @@ import edu.uci.ics.jung.visualization.control.*;
 import edu.uci.ics.jung.visualization.decorators.EdgeShape;
 import javafx.embed.swing.SwingNode;
 import javafx.geometry.Bounds;
+import javafx.scene.control.ComboBox;
 import lombok.Getter;
 import lombok.Setter;
 import mc.client.graph.AutomataBorderPaintable;
@@ -42,20 +43,17 @@ import static java.util.stream.Collectors.toSet;
 public class ModelView implements Observer{
 
     private Graph<GraphNode,DirectedEdge> graph;
-
-    private Layout<GraphNode,DirectedEdge> layout; // So the user can independantly freeze automata.
-
+    private Layout<GraphNode,DirectedEdge> layout;
+    private SeededRandomizedLayout layoutInitalizer;
     private  VisualizationViewer<GraphNode,DirectedEdge> vv;
+
     private Bounds windowSize;
 
     private DoubleClickHandler massSelect;
 
-    private SeededRandomizedLayout layoutInitalizer;
-
-    private Set<String> automataToDisplay;
-    private SortedSet<String> visibleAutomata;
+    private Set<String> processModelsToDisplay;
+    private SortedSet<String> visibleModels; // Processes that are in the modelsList combox
     private Map<String,Set<GraphNode>> processModels;
-
 
     private CompilationObject compiledResult;
 
@@ -83,14 +81,14 @@ public class ModelView implements Observer{
             throw new IllegalArgumentException("arg object was not of type compilationObject");
 
         compiledResult = (CompilationObject) arg;
-        visibleAutomata = new TreeSet<>(getProcessMap().entrySet().stream()
+        visibleModels = new TreeSet<>(getProcessMap().entrySet().stream()
                 .filter(e -> e.getValue().getProcessType() != ProcessType.AUTOMATA ||
                         ((Automaton)e.getValue()).getNodes().size() <= 40)
                 .map(Map.Entry::getKey)
                 .collect(toSet()));
 
         //remove processes marked at skipped and too large models to display
-        listOfAutomataUpdater.accept(visibleAutomata);
+        listOfAutomataUpdater.accept(visibleModels);
 
         updateLog.accept(compiledResult.getOperationResults(),compiledResult.getEquationResults());
     }
@@ -100,6 +98,7 @@ public class ModelView implements Observer{
      *
      * @return the graph component that is displayed
      */
+
     public VisualizationViewer<GraphNode,DirectedEdge> updateGraph(SwingNode s) {
         if(compiledResult == null)
             return new VisualizationViewer<>(new DAGLayout<>(new DirectedSparseGraph<>()));
@@ -107,7 +106,7 @@ public class ModelView implements Observer{
         layoutInitalizer.setDimensions(new Dimension((int) s.getBoundsInParent().getWidth(), (int) s.getBoundsInParent().getHeight()));
 
         compiledResult.getProcessMap().keySet().stream()
-                .filter(automataToDisplay::contains)
+                .filter(processModelsToDisplay::contains)
                 .map(compiledResult.getProcessMap()::get)
                 .filter(Objects::nonNull)
                 .forEach(this::addProcess);
@@ -118,6 +117,7 @@ public class ModelView implements Observer{
             windowSize = s.getBoundsInParent();
             layout.setSize(new Dimension((int) windowSize.getWidth(), (int) windowSize.getHeight()));
         }
+
 
         // if the font was imported successfully, set the font (the standard font does not display greek symbols
         // (i.e. tau and delta events)
@@ -176,8 +176,6 @@ public class ModelView implements Observer{
             String splitTokens[] = nodeLabel.split("\\.");
             nodeLabel = splitTokens[splitTokens.length-1]; //Remove junk in the label, otherwise it ends up as Test.n1, we only need n1
 
-
-
             GraphNode node = new GraphNode(automata.getId(),nodeLabel,nodeTermination);
             nodeMap.put(n.getId(),node);
 
@@ -195,24 +193,26 @@ public class ModelView implements Observer{
         this.processModels.put(automata.getId(),new HashSet<>(nodeMap.values()));
     }
 
-    public void addDisplayedAutomata(String modelLabel) {
+    /**
+     *
+     * @param modelLabel The name of the model process to be displayed/ added to display
+     */
+    public void addDisplayedModel(String modelLabel) {
         assert compiledResult.getProcessMap().containsKey(modelLabel);
-        assert visibleAutomata.contains(modelLabel);
-        automataToDisplay.add(modelLabel);
-
+        assert visibleModels.contains(modelLabel);
+        processModelsToDisplay.add(modelLabel);
     }
 
     public void clearDisplayed() {
-        automataToDisplay.clear();
+        processModelsToDisplay.clear();
         initalise();
-
     }
 
-    public void addAllAutomata() {
-        automataToDisplay.clear();
+    public void addAllModels() {
+        processModelsToDisplay.clear();
 
-        if(visibleAutomata != null)
-            automataToDisplay.addAll(visibleAutomata);
+        if(visibleModels != null)
+            processModelsToDisplay.addAll(visibleModels);
     }
 
     public void freezeAllCurrentlyDisplayed() {
@@ -232,7 +232,7 @@ public class ModelView implements Observer{
     }
 
     public void freezeProcessModel(String automataLabel) {
-        if(layout != null &&  automataToDisplay.contains(automataLabel)) {
+        if(layout != null &&  processModelsToDisplay.contains(automataLabel)) {
 
             for(GraphNode vertexToLock : processModels.get(automataLabel)) {
                 layout.lock(vertexToLock, true);
@@ -241,7 +241,7 @@ public class ModelView implements Observer{
     }
 
     public void unfreezeProcessModel(String automataLabel) {
-        if(layout != null &&  automataToDisplay.contains(automataLabel)) {
+        if(layout != null &&  processModelsToDisplay.contains(automataLabel)) {
             for(GraphNode vertexToLock : processModels.get(automataLabel)) {
                 layout.lock(vertexToLock, false);
             }
@@ -252,9 +252,11 @@ public class ModelView implements Observer{
         return  compiledResult.getProcessMap();
     }
 
-
+    /**
+     * Resets all graph varaibles and re-adds default blank state.
+     */
     private void initalise()  {
-        automataToDisplay = new HashSet<>();
+        processModelsToDisplay = new HashSet<>();
 
         layoutInitalizer = new SeededRandomizedLayout();
 
