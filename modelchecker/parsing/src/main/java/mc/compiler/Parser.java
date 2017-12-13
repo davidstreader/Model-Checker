@@ -1318,7 +1318,7 @@ public class Parser {
             throw constructException("expecting to parse \".\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
-        OperationNode operation = new OperationNode(type, isNegated, process1, process2, constructLocation(start), equationSettings);
+        OperationNode operation = new OperationNode(type, isNegated, process1, process2, this.constructLocation(start), equationSettings);
         if (isEq) {
             equations.add(operation);
         } else {

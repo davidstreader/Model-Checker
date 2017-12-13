@@ -505,7 +505,10 @@ public class UserInterfaceController implements Initializable {
             compilerOutputDisplay.appendText("\n##Operation Results##\n");
 
         eqRes.forEach(o -> compilerOutputDisplay.appendText(o.getProcess1().getIdent() + " " + o.getOperation() + " " +
-                                                            o.getProcess2().getIdent() + " = " + o.getResult() + "\n"));
+                                                            o.getProcess2().getIdent() + " = " + o.getResult() + "\n" +
+                                                            "Simulations passed: "+ o.getExtra() + "\n"));
+
+
     }
 
 

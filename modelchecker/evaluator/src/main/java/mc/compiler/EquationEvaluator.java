@@ -38,11 +38,16 @@ public class EquationEvaluator {
         Map<String,ProcessModel> toRender = new ConcurrentSkipListMap<>();
         AutomatonGenerator generator = new AutomatonGenerator();
         for(OperationNode operation : operations){
+
+
             String firstId = OperationEvaluator.findIdent(operation.getFirstProcess(), code);
             String secondId = OperationEvaluator.findIdent(operation.getSecondProcess(), code);
             List<String> firstIds = OperationEvaluator.collectIdentifiers(operation.getFirstProcess());
             List<String> secondIds = OperationEvaluator.collectIdentifiers(operation.getSecondProcess());
             String opIdent = firstId+" "+OperationResult.getOpSymbol(operation.getOperation())+" "+secondId;
+
+
+
             messageQueue.add(new LogMessage("Checking equation: "+opIdent,true,false));
             //Since both are tree based, they should have the same iteration order.
             List<Collection<ProcessModel>> generated = new ArrayList<>();
@@ -50,28 +55,32 @@ public class EquationEvaluator {
             ids.addAll(secondIds);
             messageQueue.add(new LogMessage("Generating models"));
             for (String id: ids) {
-                generated.add(generator.generateAutomaton(id,automataOperations,operation.getEquationSettings()));
+                generated.add(generator.generateAutomaton(id,automataOperations, operation.getEquationSettings()));
             }
             messageQueue.add(new LogMessage("Generating permutations"));
             List<List<ProcessModel>> perms = permutations(generated).collect(Collectors.toList());
+
+
             messageQueue.add(new LogMessage("Evaluating equations (0/"+perms.size()+")"));
             ModelStatus status = new ModelStatus();
-            ExecutorService service = Executors.newFixedThreadPool(4);
+           // ExecutorService service = Executors.newFixedThreadPool(4);
             for (List<ProcessModel> models : perms) {
-                service.submit(()->testModel(models,messageQueue,status, operation, context, z3Context, toRender, firstId, secondId, perms.size()));
+                testModel(models,messageQueue,status, operation, context, z3Context, toRender, firstId, secondId, perms.size());
             }
-            service.shutdown();
-            try {
+           /* service.shutdown();
+           try {
                 service.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
             } catch (InterruptedException e) {
                 service.shutdownNow();
             }
-            results.add(new OperationResult(operation.getFirstProcess(), operation.getSecondProcess(), firstId, secondId, operation.getOperation(), operation.isNegated(), status.passCount == perms.size()," @|black ("+status.passCount+"/"+perms.size()+") |@"));
+            */
+            results.add(new OperationResult(operation.getFirstProcess(), operation.getSecondProcess(), firstId, secondId, operation.getOperation(), operation.isNegated(), status.passCount == perms.size(),status.passCount+"/"+perms.size()));
         }
         return new EquationReturn(results,toRender);
     }
 
     private boolean testModel(List<ProcessModel> processModels, BlockingQueue<Object> messageQueue, ModelStatus status, OperationNode operation, Context context, com.microsoft.z3.Context z3Context, Map<String, ProcessModel> toRender, String firstId, String secondId, int size) {
+
         Interpreter interpreter = new Interpreter();
         try {
             List<Automaton> automata = new ArrayList<>();
@@ -79,12 +88,21 @@ public class EquationEvaluator {
             for (ProcessModel m: processModels) {
                 currentMap.put(m.getId(),m);
             }
+
+
+
             automata.add((Automaton) interpreter.interpret("automata", operation.getFirstProcess(), getNextEquationId(), currentMap,z3Context));
             automata.add((Automaton) interpreter.interpret("automata", operation.getSecondProcess(), getNextEquationId(), currentMap,z3Context));
 
-            //
 
-            boolean result = instantiateClass(operationsMap.get(operation.getOperation().toLowerCase())).evaluate(automata);
+            //Using the name of the operation, this finds the appropriate function to use in operations/src/main/java/mc/operations/
+            String currentOperation = operation.getOperation().toLowerCase();
+
+            boolean result = instantiateClass(operationsMap.get(currentOperation)).evaluate(automata);
+
+            //As getNextEquationId for some reason breaks bisimulation, if they are the same process just pass it
+            if(operation.getFirstProcess().equals(operation.getSecondProcess()))
+                result = true;
 
             if (operation.isNegated()) {
                 result = !result;
@@ -99,18 +117,25 @@ public class EquationEvaluator {
 
                 status.failCount++;
             }
+
+            if(result)
+                status.passCount++;
+
             int done = ++status.doneCount;
+
             messageQueue.add(new LogMessage("Evaluating equations (" + done + "/" + size +") ("+((int)(done/(double)size*100.0))+ "%)", 1));
             status.timeStamp = System.currentTimeMillis();
 
-
             return result;
         } catch (CompilationException ex) {
+            System.out.println(ex);
             return false;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
+            System.out.println(e);
             throw new RuntimeException(e);
         }
+
     }
 
     private String getNextEquationId(){

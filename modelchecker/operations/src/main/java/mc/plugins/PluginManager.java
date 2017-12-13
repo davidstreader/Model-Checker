@@ -3,6 +3,7 @@ package mc.plugins;
 
 import com.google.common.collect.ImmutableSet;
 import lombok.Getter;
+import mc.compiler.EquationEvaluator;
 import mc.compiler.Lexer;
 import mc.compiler.OperationEvaluator;
 import mc.compiler.Parser;
@@ -72,6 +73,7 @@ public class PluginManager {
         getInfixOperations().forEach(OperationEvaluator::addOperations);
         //register the operations functions to the equation generator
         getInfixOperations().forEach(AutomatonGenerator::addOperation);
+        getInfixOperations().forEach(EquationEvaluator::addOperations);
     }
 
     public String[] getFunctionList(){

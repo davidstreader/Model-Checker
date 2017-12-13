@@ -62,9 +62,11 @@ public class BisimulationOperation implements IOperationInfixFunction{
                 rootColour = colour;
             }
             else if(rootColour != colour){
+
                 return false;
             }
         }
+
 
         return true;
     }

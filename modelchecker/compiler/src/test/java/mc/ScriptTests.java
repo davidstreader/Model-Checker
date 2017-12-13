@@ -65,7 +65,7 @@ public class ScriptTests {
         return Arrays.stream(new File("tests").listFiles()).map(s -> new Object[]{s.toString(),s}).collect(Collectors.toList());
     }
     private boolean shouldFail(String fileName) {
-        return fileName.contains("fail.txt") || fileName.contains("nonExistantOperation.txt");
+        return fileName.contains("fail");
     }
     private boolean shouldFailOperations(String fileName, String op) {
         return fileName.contains("failOperations.txt") && Objects.equals(removeANSIEscape(op), "A ~ B");
