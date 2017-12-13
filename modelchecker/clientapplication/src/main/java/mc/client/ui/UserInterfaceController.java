@@ -38,9 +38,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 import static mc.client.ui.SyntaxHighlighting.computeHighlighting;
 
 public class UserInterfaceController implements Initializable {
-    private boolean holdHighlighting = false;
+    private boolean holdHighlighting = false; // If there is an compiler issue, highlight the area. Dont keep applying highlighting it wipes it out
     private javafx.stage.Popup autocompleteBox = new javafx.stage.Popup();
-    private ExecutorService executor;
+    private ExecutorService executor; // Runs the highlighting in seperate thread
     private TrieNode<String> completionDictionary;
 
     @FXML private CodeArea userCodeInput;
@@ -93,6 +93,7 @@ public class UserInterfaceController implements Initializable {
         ModelView.getInstance().setListOfAutomataUpdater(this::updateModelsList);
         //register a callback for the output of the log
         ModelView.getInstance().setUpdateLog(this::updateLogText);
+        //So the model viewer can modify the list of processes (For process model selection)
 
 
         //add all the syntax to the completion dictionary
@@ -395,14 +396,14 @@ public class UserInterfaceController implements Initializable {
     private void handleAddSelectedModel(ActionEvent event) {
         if(modelsList.getSelectionModel().getSelectedItem() != null && modelsList.getSelectionModel().getSelectedItem() instanceof String) {
 
-            ModelView.getInstance().addDisplayedAutomata(modelsList.getSelectionModel().getSelectedItem());
+            ModelView.getInstance().addDisplayedModel(modelsList.getSelectionModel().getSelectedItem());
             SwingUtilities.invokeLater(() -> modelDisplay.setContent(ModelView.getInstance().updateGraph(modelDisplay)));
         }
     }
 
     @FXML
     private void handleAddallModels(ActionEvent event) {
-        ModelView.getInstance().addAllAutomata();
+        ModelView.getInstance().addAllModels();
         SwingUtilities.invokeLater(() -> modelDisplay.setContent(ModelView.getInstance().updateGraph(modelDisplay)));
     }
 
@@ -473,8 +474,8 @@ public class UserInterfaceController implements Initializable {
                 compilerOutputDisplay.insertText(0,e.toString() + "\n" + e.getLocation());
 
 
-                //if(compilerIssue.getStartIndex() > 0 && compilerIssue.getStartIndex() < userCodeInput.getText().length())
-                // userCodeInput.setStyleClass(compilerIssue.getStartIndex(), compilerIssue.getEndIndex(), "issue");
+                if(e.getLocation().getStartIndex() > 0 && e.getLocation().getStartIndex() < userCodeInput.getText().length())
+                    userCodeInput.setStyleClass(e.getLocation().getStartIndex(), e.getLocation().getEndIndex(), "issue");
 
             }
         }

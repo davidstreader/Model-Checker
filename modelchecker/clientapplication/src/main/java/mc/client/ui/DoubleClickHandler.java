@@ -3,6 +3,8 @@ package mc.client.ui;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.GraphMouseListener;
 import edu.uci.ics.jung.visualization.picking.PickedState;
+import javafx.scene.control.ComboBox;
+import lombok.Setter;
 import mc.client.graph.DirectedEdge;
 import mc.client.graph.GraphNode;
 
@@ -21,6 +23,7 @@ public class DoubleClickHandler implements GraphMouseListener<GraphNode> {
     public DoubleClickHandler(Map<String, Set<GraphNode>> processModelVertexes_, VisualizationViewer<GraphNode,DirectedEdge> vv_) {
         processModelVertexes = processModelVertexes_;
         vv = vv_;
+
     }
 
     @Override
