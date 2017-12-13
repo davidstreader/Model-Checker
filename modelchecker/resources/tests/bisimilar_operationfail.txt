@@ -1,0 +1,9 @@
+processes {
+	A = (a -> STOP).
+	B = (b -> STOP).
+}
+automata A,B.
+
+operation {
+	A ~ B.
+}
