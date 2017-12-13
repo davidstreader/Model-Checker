@@ -105,6 +105,8 @@ public class EquationEvaluator {
 
 
             return result;
+        } catch (CompilationException ex) {
+            return false;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new RuntimeException(e);
