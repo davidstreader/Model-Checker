@@ -1,7 +1,6 @@
 package mc.client.ui;
 
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.embed.swing.SwingNode;
 import javafx.event.ActionEvent;
@@ -50,7 +49,7 @@ public class UserInterfaceController implements Initializable {
 
     @FXML private SwingNode modelDisplay;
 
-    @FXML private ComboBox modelsList;
+    @FXML private ComboBox<String> modelsList;
 
     private Stage window;
 
@@ -60,6 +59,7 @@ public class UserInterfaceController implements Initializable {
     private boolean dontSaveButton = false;
     private boolean cancel = false;
     private boolean hasBeenSavedBefore = false;
+
     private String buttonName;
 
 
@@ -69,17 +69,11 @@ public class UserInterfaceController implements Initializable {
     private int operationPassLabelValue = 10;
 
 
-    private List<Integer> theOptionChangesForIntegeres = new ArrayList<>();
-
-
     private boolean fairAbstractionSelected = false;
     private boolean autoSaveSelected = false;
     private boolean darkModeSelected = false;
     private boolean pruningSelected = false;
     private boolean liveCompillingSelected = false;
-
-    private List<Boolean> theOptionChangesForBooleans = new ArrayList<>();
-
 
 
     /**
@@ -110,7 +104,7 @@ public class UserInterfaceController implements Initializable {
         userCodeInput.setStyle("-fx-background-color: #32302f;");
         userCodeInput.getStylesheets().add(getClass().getResource("/clientres/automata-keywords.css").toExternalForm());
 
-        ListView popupSelection = new ListView();
+        ListView<String> popupSelection = new ListView<String>();
         popupSelection.setStyle(
                         "-fx-background-color: #f7e1a0;" +
                         "-fx-text-fill:        black;" +
@@ -119,13 +113,13 @@ public class UserInterfaceController implements Initializable {
 
 
         popupSelection.setOnMouseClicked(event -> {
-            String selectedItem = (String)popupSelection.getSelectionModel().getSelectedItem();
+            String selectedItem = popupSelection.getSelectionModel().getSelectedItem();
             actOnSelect(popupSelection, selectedItem);
         });
 
         popupSelection.setOnKeyReleased(event -> {
             if(event.getCode() == KeyCode.ENTER || event.getCode() == KeyCode.TAB) {
-                String selectedItem = (String)popupSelection.getSelectionModel().getSelectedItem();
+                String selectedItem = popupSelection.getSelectionModel().getSelectedItem();
                 actOnSelect(popupSelection, selectedItem);
             }
 
@@ -228,7 +222,7 @@ public class UserInterfaceController implements Initializable {
      * @param popupSelection
      * @param selectedItem
      */
-    private void actOnSelect(ListView popupSelection, String selectedItem) {
+    private void actOnSelect(ListView<String> popupSelection, String selectedItem) {
         if(selectedItem != null) {
 
             String code = userCodeInput.getText();
@@ -314,11 +308,12 @@ public class UserInterfaceController implements Initializable {
 
     @FXML
     private void handleCreateNew(ActionEvent event) throws InterruptedException {
-        buttonName = "New";
         // If the Code Area is not empty which means there are codes that we can save.
+        //buttonName = "New";
+
         if (!(userCodeInput.getText().isEmpty())) {
             // Open a dialogue and give the user three options (SAVE, DON'TSAVE, CANCEL)
-            createSceneFile();
+            createSceneFile("New");
             window.close();
             System.out.println("THIS IS BEFORE ANY OF THE INTERACTION");
             if (saveButton) {
@@ -345,21 +340,17 @@ public class UserInterfaceController implements Initializable {
     @FXML
     private void handleOpen(ActionEvent event) {
         window = new Stage();
-        buttonName = "Open";
-        outerloop:
+        //buttonName = "Open";
         // If the Code Area is not empty which means there are codes that we can save.
         if (!(userCodeInput.getText().isEmpty())) {
             // Open a dialogue and give the user three options (SAVE, DON'TSAVE, CANCEL)
-            createSceneFile();
+            createSceneFile("Open");
             if (saveButton) {
                 setBackFlags();
                 // do these operations when the user click on SAVE button in the dialogue
                 cleanTheCodeArea();
             } else if (dontSaveButton) {
                 setBackFlags();
-            } else {
-                // Close the dialogue if the user clicking on the CANCEL
-                break outerloop;
             }
         } else {
             dontSaveButtonFunctionality();
@@ -404,7 +395,7 @@ public class UserInterfaceController implements Initializable {
     private void handleAddSelectedModel(ActionEvent event) {
         if(modelsList.getSelectionModel().getSelectedItem() != null && modelsList.getSelectionModel().getSelectedItem() instanceof String) {
 
-            ModelView.getInstance().addDisplayedAutomata((String) modelsList.getSelectionModel().getSelectedItem());
+            ModelView.getInstance().addDisplayedAutomata(modelsList.getSelectionModel().getSelectedItem());
             SwingUtilities.invokeLater(() -> modelDisplay.setContent(ModelView.getInstance().updateGraph(modelDisplay)));
         }
     }
@@ -423,7 +414,7 @@ public class UserInterfaceController implements Initializable {
 
     @FXML
     private void handleFreeze(ActionEvent event) {
-        String selecteditem = (String)modelsList.getSelectionModel().getSelectedItem();
+        String selecteditem = modelsList.getSelectionModel().getSelectedItem();
         if(selecteditem != null) {
             ModelView.getInstance().freezeProcessModel(selecteditem);
         }
@@ -431,7 +422,7 @@ public class UserInterfaceController implements Initializable {
 
     @FXML
     private void handleUnfreeze(ActionEvent event) {
-        String selecteditem = (String)modelsList.getSelectionModel().getSelectedItem();
+        String selecteditem = modelsList.getSelectionModel().getSelectedItem();
         if(selecteditem != null) {
             ModelView.getInstance().unfreezeProcessModel(selecteditem);
         }
@@ -439,7 +430,7 @@ public class UserInterfaceController implements Initializable {
 
     @FXML
     private void handleFreezeAll(ActionEvent event) {
-        String selecteditem = (String)modelsList.getSelectionModel().getSelectedItem();
+        String selecteditem = modelsList.getSelectionModel().getSelectedItem();
         if(selecteditem != null) {
             ModelView.getInstance().freezeAllCurrentlyDisplayed();
         }
@@ -447,7 +438,7 @@ public class UserInterfaceController implements Initializable {
 
     @FXML
     private void handleUnfreezeAll(ActionEvent event) {
-        String selecteditem = (String)modelsList.getSelectionModel().getSelectedItem();
+        String selecteditem = modelsList.getSelectionModel().getSelectedItem();
         if(selecteditem != null) {
             ModelView.getInstance().unfreezeAllCurrentlyDisplayed();
         }
@@ -531,11 +522,8 @@ public class UserInterfaceController implements Initializable {
         fileChooser.setTitle("Save file into a directory");
         selectedFile = fileChooser.showSaveDialog(window);
 
-        outerloop:
         try {
-            if (selectedFile == null) {
-                break outerloop;
-            } else {
+            if (selectedFile != null) {
                 readTo = new PrintStream(selectedFile);
                 readTo.println(userCodeInput.getText());
                 readTo = readTheOptionsIntegers(readTo);
@@ -562,11 +550,8 @@ public class UserInterfaceController implements Initializable {
         String theCode = "";
         Scanner scanner;
 
-        outerloop:
         try {
-            if (selectedFile == null) {
-                break outerloop;
-            } else {
+            if (selectedFile != null) {
                 scanner = new Scanner(selectedFile);
                 while (scanner.hasNext() && !scanner.hasNext("lengthEdgeValue:")) {
                     theCode = theCode + scanner.nextLine() + "\n";
@@ -588,54 +573,41 @@ public class UserInterfaceController implements Initializable {
     private GridPane createGrideOptions() {
         final Label lengthEdgeLabel = new Label("Length of the Edge:");
         Slider lengthEdge = createSlider();
-        lengthEdge.valueProperty().addListener(new ChangeListener() {
-            @Override
-            public void changed(ObservableValue arg0, Object arg1, Object arg2) {
-                lengthEdgeValue = (int) lengthEdge.getValue();
-            }
-        });
         lengthEdge.setValue((double) lengthEdgeValue);
+        lengthEdge.valueProperty().addListener((ChangeListener) (arg0, arg1, arg2) -> {
+            lengthEdgeValue = (int) lengthEdge.getValue();
+        });
 
 
         final Label maxNodeLabel = new Label("Automa Max Node:");
         Slider maxNode = createSlider();
-        maxNode.valueProperty().addListener(new ChangeListener() {
-            @Override
-            public void changed(ObservableValue arg0, Object arg1, Object arg2) {
-                maxNodeLabelValue = (int) maxNode.getValue();
-            }
-        });
         maxNode.setValue((double) maxNodeLabelValue);
+        maxNode.valueProperty().addListener((ChangeListener) (arg0, arg1, arg2) -> {
+            maxNodeLabelValue = (int) maxNode.getValue();
+        });
 
 
         final Label operationFailureLabel = new Label("Operation failure count:");
         Slider operationFailure = createSlider();
-        operationFailure.valueProperty().addListener(new ChangeListener() {
-            @Override
-            public void changed(ObservableValue arg0, Object arg1, Object arg2) {
-                operationFailureLabelValue = (int) operationFailure.getValue();
-            }
-        });
         operationFailure.setValue((double) operationFailureLabelValue);
-
+        operationFailure.valueProperty().addListener((ChangeListener) (arg0, arg1, arg2) -> {
+            operationFailureLabelValue = (int) operationFailure.getValue();
+        });
 
         final Label operationPassLabel = new Label("Operation pass count:");
         Slider operationPass = createSlider();
-        operationPass.valueProperty().addListener(new ChangeListener() {
-            @Override
-            public void changed(ObservableValue arg0, Object arg1, Object arg2) {
-                operationPassLabelValue = (int) operationPass.getValue();
-            }
-        });
         operationPass.setValue((double) operationPassLabelValue);
+        operationPass.valueProperty().addListener((ChangeListener) (arg0, arg1, arg2) -> {
+            operationPassLabelValue = (int) operationPass.getValue();
+        });
+
 
         CheckBox fairAbstraction;
+        fairAbstraction = new CheckBox("Fair Abstraction");
+        fairAbstraction.setOnAction(e -> fairAbstractionFunctionality());
         if (!(fairAbstractionSelected)) {
-            fairAbstraction = new CheckBox("Fair Abstraction");
-            fairAbstraction.setOnAction(e -> fairAbstractionFunctionality());
+
         } else {
-            fairAbstraction = new CheckBox("Fair Abstraction");
-            fairAbstraction.setOnAction(e -> fairAbstractionFunctionality());
             fairAbstraction.setSelected(true);
         }
 
@@ -717,39 +689,26 @@ public class UserInterfaceController implements Initializable {
         return grid;
     }
 
-    private GridPane createGrideFile() {
+    private GridPane createBoxForFile(String buttonName) {
         Label label = new Label("Do you want to save changes?");
 
         Button saveButton = createSaveButton();
         Button dontSaveButton = createDontSaveButtonForNew();
         Button cancelButton = createCancelButton();
 
-        if (buttonName.equals("New")) {
-            saveButton = createSaveButton();
-            dontSaveButton = createDontSaveButtonForNew();
-            cancelButton = createCancelButton();
-        } else if (buttonName.equals("Open")) {
-            saveButton = createSaveButtonForOpen();
-            dontSaveButton = createDontSaveButton();
-            cancelButton = createCancelButton();
-        } else if (buttonName.equals("OpenRecent")) {
-            saveButton = createSaveButton();
-            dontSaveButton = createDontSaveButton();
-            cancelButton = createCancelButton();
-        } else if (buttonName.equals("Close")) {
-            saveButton = createSaveButton();
-            dontSaveButton = createDontSaveButtonForNew();
-            cancelButton = createCancelButton();
-        } else if (buttonName.equals("Save")) {
-            saveButton = createSaveButton();
-            dontSaveButton = createDontSaveButton();
-            cancelButton = createCancelButton();
-        } else if (buttonName.equals("SaveAs")) {
-            saveButton = createSaveButton();
-            dontSaveButton = createDontSaveButton();
-            cancelButton = createCancelButton();
-        } else {
-            System.exit(0);
+        switch (buttonName){
+            case "Open":
+                saveButton = createSaveButtonForOpen();
+                break;
+
+            case "Close":
+                dontSaveButton = createDontSaveButtonForNew();
+                break;
+
+            case "Quit":
+                System.exit(0);
+                break;
+            default:
         }
 
         GridPane grid = new GridPane();
@@ -821,9 +780,9 @@ public class UserInterfaceController implements Initializable {
         window.show();
     }
 
-    private void createSceneFile() {
+    private void createSceneFile(String buttonName) {
         window = new Stage();
-        scene = sceneGeneratorFile();
+        scene = sceneGeneratorFile(buttonName);
         window.setScene(scene);
         window.setMaxWidth(460);
         window.setMaxHeight(85);
@@ -849,12 +808,14 @@ public class UserInterfaceController implements Initializable {
     private PrintStream readTheOptionsBooleans(PrintStream readTo) {
         readTo.println();
 
-
-        theOptionChangesForBooleans.add(0, fairAbstractionSelected);
-        theOptionChangesForBooleans.add(1, autoSaveSelected);
-        theOptionChangesForBooleans.add(2, darkModeSelected);
-        theOptionChangesForBooleans.add(3, pruningSelected);
-        theOptionChangesForBooleans.add(4, liveCompillingSelected);
+/*
+        List<Boolean> theOptionChangesForBooleanCheckBoxes = new ArrayList<>();
+        theOptionChangesForBooleanCheckBoxes.add(0, fairAbstractionSelected);
+        theOptionChangesForBooleanCheckBoxes.add(1, autoSaveSelected);
+        theOptionChangesForBooleanCheckBoxes.add(2, darkModeSelected);
+        theOptionChangesForBooleanCheckBoxes.add(3, pruningSelected);
+        theOptionChangesForBooleanCheckBoxes.add(4, liveCompillingSelected);
+*/
 
         readTo.println("fairAbstractionSelected: " + fairAbstractionSelected);
         readTo.println("autoSaveSelected: " + autoSaveSelected);
@@ -869,10 +830,13 @@ public class UserInterfaceController implements Initializable {
     private PrintStream readTheOptionsIntegers(PrintStream readTo) {
         readTo.println();
 
-        theOptionChangesForIntegeres.add(0, lengthEdgeValue);
-        theOptionChangesForIntegeres.add(1, maxNodeLabelValue);
-        theOptionChangesForIntegeres.add(2, operationFailureLabelValue);
-        theOptionChangesForIntegeres.add(3, operationPassLabelValue);
+/*
+        List<Integer> theOptionChangesForIntegereSliders = new ArrayList<>();
+        theOptionChangesForIntegereSliders.add(0, lengthEdgeValue);
+        theOptionChangesForIntegereSliders.add(1, maxNodeLabelValue);
+        theOptionChangesForIntegereSliders.add(2, operationFailureLabelValue);
+        theOptionChangesForIntegereSliders.add(3, operationPassLabelValue);
+*/
 
         readTo.println("lengthEdgeValue: " + lengthEdgeValue);
         readTo.println("maxNodeLabelValue: " + maxNodeLabelValue);
@@ -883,50 +847,41 @@ public class UserInterfaceController implements Initializable {
     }
 
     private void readOptions(Scanner scanner) {
-        if (scanner.hasNext("lengthEdgeValue:")) {
-            scanner.next();
-            lengthEdgeValue = scanner.nextInt();
-        }
 
-        if (scanner.hasNext("maxNodeLabelValue:")) {
-            scanner.next();
-            maxNodeLabelValue = scanner.nextInt();
-        }
+        while (scanner.hasNext()){
+            switch (scanner.next()){
+                case "lengthEdgeValue:":
+                    lengthEdgeValue = scanner.nextInt();
+                    break;
 
-        if (scanner.hasNext("operationFailureLabelValue:")) {
-            scanner.next();
-            operationFailureLabelValue = scanner.nextInt();
-        }
+                case "maxNodeLabelValue:":
+                    maxNodeLabelValue = scanner.nextInt();
+                    break;
 
-        if (scanner.hasNext("operationPassLabelValue:")) {
-            scanner.next();
-            operationPassLabelValue = scanner.nextInt();
-        }
+                case "operationFailureLabelValue:":
+                    operationFailureLabelValue = scanner.nextInt();
+                    break;
 
+                case "operationPassLabelValue:":
+                    operationPassLabelValue = scanner.nextInt();
+                    break;
 
-        if (scanner.hasNext("fairAbstractionSelected:")) {
-            scanner.next();
-            fairAbstractionSelected = scanner.nextBoolean();
-        }
+                case "fairAbstractionSelected:":
+                    fairAbstractionSelected = scanner.nextBoolean();
+                    break;
 
-        if (scanner.hasNext("autoSaveSelected:")) {
-            scanner.next();
-            autoSaveSelected = scanner.nextBoolean();
-        }
+                case "darkModeSelected:":
+                    darkModeSelected = scanner.nextBoolean();
+                    break;
 
-        if (scanner.hasNext("darkModeSelected:")) {
-            scanner.next();
-            darkModeSelected = scanner.nextBoolean();
-        }
+                case "pruningSelected:":
+                    pruningSelected = scanner.nextBoolean();
+                    break;
 
-        if (scanner.hasNext("pruningSelected:")) {
-            scanner.next();
-            pruningSelected = scanner.nextBoolean();
-        }
-
-        if (scanner.hasNext("liveCompillingSelected:")) {
-            scanner.next();
-            liveCompillingSelected = scanner.nextBoolean();
+                case "liveCompillingSelected:":
+                    liveCompillingSelected = scanner.nextBoolean();
+                    break;
+            }
         }
     }
 
@@ -936,8 +891,8 @@ public class UserInterfaceController implements Initializable {
         return scene;
     }
 
-    private Scene sceneGeneratorFile() {
-        GridPane grid = createGrideFile();
+    private Scene sceneGeneratorFile(String buttonName) {
+        GridPane grid = createBoxForFile(buttonName);
         scene = new Scene(grid, 460, 85);
         return scene;
     }
@@ -957,45 +912,34 @@ public class UserInterfaceController implements Initializable {
     }
 
 
-    private void fairAbstractionFunctionality() {
-        fairAbstractionSelected = (!fairAbstractionSelected ? true : false);
-    }
-
+    private void fairAbstractionFunctionality() {fairAbstractionSelected = (!fairAbstractionSelected);}
     private void autoSaveFunctionality() {
-        autoSaveSelected = (!autoSaveSelected ? true : false);
+        autoSaveSelected = (!autoSaveSelected);
     }
-
     private void darkModeFunctionality() {
-        darkModeSelected = (!darkModeSelected ? true : false);
+        darkModeSelected = (!darkModeSelected);
     }
-
     private void pruningFunctionality() {
-        pruningSelected = (!pruningSelected ? true : false);
+        pruningSelected = (!pruningSelected);
     }
-
     private void liveCompilingFunctionality() {
-        liveCompillingSelected = (!liveCompillingSelected ? true : false);
+        liveCompillingSelected = (!liveCompillingSelected);
     }
 
-    public boolean isAutoSaveSelected() {
-        return autoSaveSelected;
-    }
 
+/*    public boolean isAutoSaveSelected() { return autoSaveSelected;}
     public boolean isFairAbstractionSelected() {
         return fairAbstractionSelected;
     }
-
     public boolean isDarkModeSelected() {
         return darkModeSelected;
     }
-
     public boolean isPruningSelected() {
         return pruningSelected;
     }
-
     public boolean isLiveCompillingSelected() {
         return liveCompillingSelected;
-    }
+    }*/
 }
 
 
