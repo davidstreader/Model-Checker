@@ -1,5 +1,7 @@
-package mc.process_models.automata.operations;
+package mc.operations.impl;
 
+import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
 import mc.Constant;
 import mc.compiler.Guard;
 import mc.exceptions.CompilationException;
@@ -10,31 +12,26 @@ import mc.process_models.automata.AutomatonNode;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class AutomataParallelComposition {
+public class ParallelFunction {
 
     private Automaton automaton;
-    private Map<String, List<AutomatonNode>> nodeMap;
+    private Multimap<String, AutomatonNode> nodeMap;
     private Set<String> syncedActions;
     private Set<String> unsyncedActions;
 
-    public Automaton performParallelComposition(String id, Automaton automaton1, Automaton automaton2) throws CompilationException {
+    public Automaton execute(String id, Automaton automaton1, Automaton automaton2) throws CompilationException {
         setup(id);
         // construct the parallel composition of the states from both automata
-        List<AutomatonNode> nodes1 = automaton1.getNodes();
-        List<AutomatonNode> nodes2 = automaton2.getNodes();
-        setupNodes(nodes1, nodes2);
+        setupNodes(automaton1.getNodes(), automaton2.getNodes());
 
         // find the synchronous and non-synchronous actions in both alphabet sets, this means find the edge labels that are the same
-        Set<String> alphabet1 = automaton1.getAlphabet();
-        Set<String> alphabet2 = automaton2.getAlphabet();
-        setupActions(alphabet1, alphabet2);
+        setupActions(automaton1.getAlphabet(), automaton2.getAlphabet());
 
         List<AutomatonEdge> edges1 = automaton1.getEdges();
         List<AutomatonEdge> edges2 = automaton2.getEdges();
         //The edges here are meaning the labeled lines in each of the automata that we are composing
         processUnsyncedActions(edges1, edges2);
         processSyncedActions(edges1, edges2);
-        nodeMap.clear();
         return automaton;
     }
 
@@ -42,47 +39,37 @@ public class AutomataParallelComposition {
         //Setting up all the potentially valid nodes.
         //After this process we remove any inaccessable.
         for(AutomatonNode node1 : nodes1){
-            nodeMap.put(node1.getId(), new ArrayList<>());
 
             for(AutomatonNode node2 : nodes2){
-                nodeMap.putIfAbsent(node2.getId(),new ArrayList<>());
                 String id = createId(node1, node2);
                 AutomatonNode node = automaton.addNode(id);
 
                 // create an intersection of both nodes
-               node.copyProperties(node1.createIntersection(node2));
+                node.copyProperties(node1.createIntersection(node2));
 
                 if(node.isStartNode())
                     automaton.setRoot(node);
-
-
-
-                HashMap<String,Object> varmap = new HashMap<>();
-                if (node1.getVariables() != null) {
-                    varmap.putAll(node1.getVariables());
-                }
-                if (node2.getVariables() != null) {
-                    varmap.putAll(node2.getVariables());
-                }
-                node.setVariables(varmap);
-
-                nodeMap.get(node1.getId()).add(node);
-                nodeMap.get(node2.getId()).add(node);
-
-                if(node2.getTerminal() != null && node2.getTerminal().equals("ERROR") || node1.getTerminal() != null && node1.getTerminal().equals("ERROR"))
+                if("ERROR".equals(node2.getTerminal()) || "ERROR".equals(node1.getTerminal()))
                     node.setTerminal("ERROR");
+
+                HashMap<String,Object> variableMap = new HashMap<>();
+                if (node1.getVariables() != null) variableMap.putAll(node1.getVariables());
+                if (node2.getVariables() != null) variableMap.putAll(node2.getVariables());
+
+                node.setVariables(variableMap);
+
+                nodeMap.put(node1.getId(),node);
+                nodeMap.put(node2.getId(),node);
 
             }
         }
     }
 
     private void setupActions(Set<String> firstAutomataEdgeLabelsList, Set<String> secondAutomataEdgeLabelsList){
-        for(String edgeLabel : firstAutomataEdgeLabelsList){
+        for(String edgeLabel : firstAutomataEdgeLabelsList)
             processAction(edgeLabel, secondAutomataEdgeLabelsList);
-        }
-        for(String edgeLabel : secondAutomataEdgeLabelsList){
+        for(String edgeLabel : secondAutomataEdgeLabelsList)
             processAction(edgeLabel, firstAutomataEdgeLabelsList);
-        }
     }
 
     /**
@@ -130,12 +117,12 @@ public class AutomataParallelComposition {
 
         for(String action : unsyncedActions){
             List<AutomatonEdge> edges = allEdges.stream()
-                .filter(edge -> action.equals(edge.getLabel())) // receivers never get executed
-                .collect(Collectors.toList());
+                    .filter(edge -> action.equals(edge.getLabel())) // receivers never get executed
+                    .collect(Collectors.toList());
 
             for(AutomatonEdge edge : edges){
-                List<AutomatonNode> from = nodeMap.get(edge.getFrom().getId());
-                List<AutomatonNode> to = nodeMap.get(edge.getTo().getId());
+                List<AutomatonNode> from = new ArrayList<>(nodeMap.get(edge.getFrom().getId()));
+                List<AutomatonNode> to =   new ArrayList<>(nodeMap.get(edge.getTo().getId()));
                 for(int i = 0; i < Math.min(from.size(),to.size()); i++){
                     if(from.get(i).isTerminal() && from.get(i).getTerminal().equals("ERROR")) //Dont set any links from terminal error nodes.
                         continue;
@@ -146,16 +133,17 @@ public class AutomataParallelComposition {
         }
     }
 
-    private void processSyncedActions(List<AutomatonEdge> edgesInTheFirst, List<AutomatonEdge> edgesInTheSecond) throws CompilationException {
+    private void processSyncedActions(List<AutomatonEdge> edges1, List<AutomatonEdge> edges2) throws CompilationException {
 
         for(String currentSyncEdgeLabel : syncedActions){
 
-            List<AutomatonEdge> syncedEdges1 = edgesInTheFirst.stream()
-                .filter(edge -> equals(currentSyncEdgeLabel, edge.getLabel()))
-                .collect(Collectors.toList());
-            List<AutomatonEdge> syncedEdges2 = edgesInTheSecond.stream()
-                .filter(edge -> equals(currentSyncEdgeLabel, edge.getLabel()))
-                .collect(Collectors.toList());
+            List<AutomatonEdge> syncedEdges1 = edges1.stream()
+                    .filter(edge -> equals(currentSyncEdgeLabel, edge.getLabel()))
+                    .collect(Collectors.toList());
+
+            List<AutomatonEdge> syncedEdges2 = edges2.stream()
+                    .filter(edge -> equals(currentSyncEdgeLabel, edge.getLabel()))
+                    .collect(Collectors.toList());
 
             for(AutomatonEdge edge1 : syncedEdges1){
                 for(AutomatonEdge edge2 : syncedEdges2){
@@ -229,7 +217,7 @@ public class AutomataParallelComposition {
 
     private void setup(String id){
         this.automaton = new Automaton(id, !Automaton.CONSTRUCT_ROOT);
-        this.nodeMap = new HashMap<>();
+        this.nodeMap = MultimapBuilder.hashKeys().arrayListValues().build();
         this.syncedActions = new HashSet<>();
         this.unsyncedActions = new HashSet<>();
     }

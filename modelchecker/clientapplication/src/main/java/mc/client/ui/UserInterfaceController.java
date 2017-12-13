@@ -1,11 +1,7 @@
 package mc.client.ui;
 
-
-import edu.uci.ics.jung.graph.Graph;
-
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-
 import javafx.concurrent.Task;
 import javafx.embed.swing.SwingNode;
 import javafx.event.ActionEvent;
@@ -23,7 +19,6 @@ import mc.client.ModelView;
 import mc.compiler.Compiler;
 import mc.compiler.OperationResult;
 import mc.exceptions.CompilationException;
-import mc.util.Location;
 import mc.util.expr.Expression;
 import mc.webserver.Context;
 import org.fxmisc.richtext.CodeArea;

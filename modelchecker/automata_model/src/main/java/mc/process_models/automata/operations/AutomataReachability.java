@@ -23,7 +23,7 @@ public class AutomataReachability {
      * @return
      *      -- the processed @code{Automaton}
      */
-    public Automaton removeUnreachableNodes(Automaton automaton){
+    public static Automaton removeUnreachableNodes(Automaton automaton){
         Set<String> visited = new HashSet<>();
         Stack<AutomatonNode> fringe = new Stack<>();
         fringe.push(automaton.getRoot());

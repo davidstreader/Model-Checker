@@ -1,52 +1,44 @@
 package mc.compiler.ast;
 
+import com.google.common.collect.ImmutableSet;
 import com.microsoft.z3.Expr;
 import lombok.Getter;
 import lombok.Setter;
 import mc.util.Location;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 public class FunctionNode extends ASTNode {
 
 	// fields
+    @Getter
 	private String function;
-	private ASTNode process;
+    @Getter
+    @Setter
+	private List<ASTNode> processes;
 
     @Getter
     @Setter
-    private boolean fair = true;
+    private ImmutableSet<String> flags;
 
+    @Getter
+    @Setter
     private boolean prune;
 
     public boolean needsPruning() {
         return prune;
     }
 
-    public void setPruning(boolean prune) {
-        this.prune = prune;
-    }
-
     @Getter
     @Setter
     private Map<String,Expr> replacements;
 
-	public FunctionNode(String function, ASTNode process, Location location){
+	public FunctionNode(String function, List<ASTNode> processes, Location location){
 		super(location);
 		this.function = function;
-		this.process = process;
-	}
-
-	public String getFunction(){
-		return function;
-	}
-
-	public ASTNode getProcess(){
-		return process;
-	}
-
-	public void setProcess(ASTNode process){
-		this.process = process;
+		this.processes = processes;
 	}
 
     public boolean equals(Object obj){
@@ -62,7 +54,7 @@ public class FunctionNode extends ASTNode {
             if(!function.equals(node.getFunction())){
                 return false;
             }
-            return process.equals(node.getProcess());
+            return processes.equals(node.getProcesses());
         }
 
         return false;

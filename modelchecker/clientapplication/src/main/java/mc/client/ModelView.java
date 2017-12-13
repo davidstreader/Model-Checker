@@ -1,6 +1,8 @@
 package mc.client;
 
-import edu.uci.ics.jung.algorithms.layout.*;
+import edu.uci.ics.jung.algorithms.layout.DAGLayout;
+import edu.uci.ics.jung.algorithms.layout.Layout;
+import edu.uci.ics.jung.algorithms.layout.SpringLayout;
 import edu.uci.ics.jung.graph.DirectedSparseGraph;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.graph.util.Context;
@@ -99,6 +101,7 @@ public class ModelView implements Observer{
 
     /**
      * A method to update the graph that is displayed
+     *
      * @return the graph component that is displayed
      */
     public VisualizationViewer<GraphNode,DirectedEdge> updateGraph(SwingNode s) {

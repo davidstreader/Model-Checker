@@ -47,9 +47,10 @@ public class NativesManager {
         //Where to copy the files from in the jar (jars always use /)
         String zipPrefix = "native/"+Utils.getArch();
         if (!new File("native",Utils.getArch()).exists() && Utils.isJar()) {
+            JarFile jarfile = null;
             try {
                 File f =new File(Utils.getJarPath());
-                JarFile jarfile = new JarFile(f);
+                jarfile = new JarFile(f);
                 Enumeration<JarEntry> enu = jarfile.entries();
                 while (enu.hasMoreElements()) {
                     JarEntry je = enu.nextElement();
@@ -71,8 +72,14 @@ public class NativesManager {
                     Files.copy(is,fl.toPath(), StandardCopyOption.REPLACE_EXISTING);
                     is.close();
                 }
+                jarfile.close();
             } catch (IOException ex) {
                 ex.printStackTrace();
+            } finally {
+                if(jarfile != null)
+                    try {
+                        jarfile.close();
+                    } catch(IOException ignored){}
             }
         }
     }

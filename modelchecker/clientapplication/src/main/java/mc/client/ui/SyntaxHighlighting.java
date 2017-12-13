@@ -1,5 +1,6 @@
 package mc.client.ui;
 
+import mc.plugins.PluginManager;
 import org.fxmisc.richtext.model.StyleSpans;
 import org.fxmisc.richtext.model.StyleSpansBuilder;
 
@@ -8,18 +9,20 @@ import java.util.Collections;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Created by bealjaco on 1/12/17.
- */
 public class SyntaxHighlighting {
+
+
+    //initialise the syntax from plugins
+    static {
+        functions = PluginManager.getInstance().getFunctionList();
+    }
+
     static final String[] processTypes = new String[] {
            "processes", "automata", "petrinet", "operation", "equation",
 
     };
 
-    static final String[] functions = new String[] {
-            "abs", "simp", "safe", "nfa2dfa"
-    };
+    static final String[] functions;
 
     static final String[] terminals = new String[] {
             "STOP", "ERROR"
@@ -47,20 +50,21 @@ public class SyntaxHighlighting {
     static final String COMMENT_PATTERN = "(?://[^\n]*)|(?:/\\*.*?\\*/)|(?:/\\*(?!\\*/).*)";
 
     static final Pattern PATTERN = Pattern.compile(
-            "(?<COMMENT>" + COMMENT_PATTERN + ")"+
-                    "|(?<PROCESSTYPE>" + PROCESSTYPES_PATTERN + ")" +
-                    "|(?<FUNCTION>" + FUNCTIONS_PATTERN + ")" +
-                    "|(?<TERMINAL>" + TERMINALS_PATTERN + ")" +
-                    "|(?<KEYWORD>" + KEYWORDS_PATTERN + ")" +
-                    "|(?<SYMBOL>" + SYMBOLS + ")" +
-                    "|(?<OPERATOR>" + OPERATORS + ")" +
-                    "|(?<OPERATION>" + OPERATIONS + ")" +
-                    "|(?<ACTIONLABEL>" + ACTION_LABEL_PATTERN + ")" +
-                    "|(?<IDENTIFER>" + IDENT_PATTERN + ")" +
-                    "|(?<INT>" + INT_PATTERN + ")"
+            "(?<COMMENT>" + COMMENT_PATTERN + ")"
+                    + "|(?<PROCESSTYPE>" + PROCESSTYPES_PATTERN + ")"
+                    + "|(?<FUNCTION>" + FUNCTIONS_PATTERN + ")"
+                    + "|(?<TERMINAL>" + TERMINALS_PATTERN + ")"
+                    + "|(?<KEYWORD>" + KEYWORDS_PATTERN + ")"
+                    + "|(?<SYMBOL>" + SYMBOLS + ")"
+                    + "|(?<OPERATOR>" + OPERATORS + ")"
+                    + "|(?<OPERATION>" + OPERATIONS + ")"
+                    + "|(?<ACTIONLABEL>" + ACTION_LABEL_PATTERN + ")"
+                    + "|(?<IDENTIFER>" + IDENT_PATTERN + ")"
+                    + "|(?<INT>" + INT_PATTERN + ")"
                     + "|(?<PAREN>" + PAREN_PATTERN + ")"
                     + "|(?<BRACE>" + BRACE_PATTERN + ")"
                     + "|(?<BRACKET>" + BRACKET_PATTERN + ")"
+            , Pattern.DOTALL
     );
 
     static StyleSpans<Collection<String>> computeHighlighting(String text) {

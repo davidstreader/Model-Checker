@@ -7,19 +7,22 @@ import mc.compiler.ast.TerminalNode;
 import mc.exceptions.CompilationException;
 import org.junit.Test;
 
+import java.util.Collections;
+
 import static org.junit.Assert.fail;
 
 public class FunctionTests extends ParserTests {
 
-    public FunctionTests() throws InterruptedException {
-    }
+	public FunctionTests() throws InterruptedException {
+	}
 
-    @Test
+	@Test
 	public void correctAbsTest() throws CompilationException, InterruptedException {
 		String input = "processes Test = abs(a -> STOP).\nautomata Test.";
 		ProcessNode node = constructProcessNode(input);
 		SequenceNode sequence = constructSequenceNode(new String[]{"a"}, new TerminalNode("STOP", null));
-		FunctionNode expected = new FunctionNode("abs", sequence, null);
+		FunctionNode expected = new FunctionNode("abs",
+				Collections.singletonList(sequence), null);
 		if(!expected.equals(node.getProcess())){
 			fail("expecting function nodes to be equivalent");
 		}
@@ -30,7 +33,8 @@ public class FunctionTests extends ParserTests {
 		String input = "processes Test = simp(a -> STOP).\nautomata Test.";
 		ProcessNode node = constructProcessNode(input);
 		SequenceNode sequence = constructSequenceNode(new String[]{"a"}, new TerminalNode("STOP", null));
-		FunctionNode expected = new FunctionNode("simp", sequence, null);
+		FunctionNode expected = new FunctionNode("simp",
+				Collections.singletonList(sequence), null);
 		if(!expected.equals(node.getProcess())){
 			fail("expecting function nodes to be equivalent");
 		}
@@ -41,7 +45,8 @@ public class FunctionTests extends ParserTests {
 		String input = "processes Test = safe(a -> STOP).\nautomata Test.";
 		ProcessNode node = constructProcessNode(input);
 		SequenceNode sequence = constructSequenceNode(new String[]{"a"}, new TerminalNode("STOP", null));
-		FunctionNode expected = new FunctionNode("safe", sequence, null);
+		FunctionNode expected = new FunctionNode("safe",
+				Collections.singletonList(sequence), null);
 		if(!expected.equals(node.getProcess())){
 			fail("expecting function nodes to be equivalent");
 		}
@@ -52,7 +57,8 @@ public class FunctionTests extends ParserTests {
 		String input = "processes Test = prune(a -> STOP).\nautomata Test.";
 		ProcessNode node = constructProcessNode(input);
 		SequenceNode sequence = constructSequenceNode(new String[]{"a"}, new TerminalNode("STOP", null));
-		FunctionNode expected = new FunctionNode("prune", sequence, null);
+		FunctionNode expected = new FunctionNode("prune",
+				Collections.singletonList(sequence), null);
 		if(!expected.equals(node.getProcess())){
 			fail("expecting function nodes to be equivalent");
 		}
@@ -63,8 +69,10 @@ public class FunctionTests extends ParserTests {
 		String input = "processes Test = simp(abs(a -> STOP)).\nautomata Test.";
 		ProcessNode node = constructProcessNode(input);
 		SequenceNode sequence = constructSequenceNode(new String[]{"a"}, new TerminalNode("STOP", null));
-		FunctionNode function = new FunctionNode("abs", sequence, null);
-		FunctionNode expected = new FunctionNode("simp", function, null);
+		FunctionNode function = new FunctionNode("abs",
+				Collections.singletonList(sequence), null);
+		FunctionNode expected = new FunctionNode("simp",
+				Collections.singletonList(function), null);
 		if(!expected.equals(node.getProcess())){
 			fail("expecting function nodes to be equivalent");
 		}
@@ -75,9 +83,12 @@ public class FunctionTests extends ParserTests {
 		String input = "processes Test = simp(abs(prune(a -> STOP))).\nautomata Test.";
 		ProcessNode node = constructProcessNode(input);
 		SequenceNode sequence = constructSequenceNode(new String[]{"a"}, new TerminalNode("STOP", null));
-		FunctionNode function1 = new FunctionNode("prune", sequence, null);
-		FunctionNode function2 = new FunctionNode("abs", function1, null);
-		FunctionNode expected = new FunctionNode("simp", function2, null);
+		FunctionNode function1 = new FunctionNode("prune",
+				Collections.singletonList(sequence), null);
+		FunctionNode function2 = new FunctionNode("abs",
+				Collections.singletonList(function1), null);
+		FunctionNode expected = new FunctionNode("simp",
+				Collections.singletonList(function2), null);
 		if(!expected.equals(node.getProcess())){
 			fail("expecting function nodes to be equivalent");
 		}
@@ -88,10 +99,14 @@ public class FunctionTests extends ParserTests {
 		String input = "processes Test = safe(simp(abs(prune(a -> STOP)))).\npetrinet Test.";
 		ProcessNode node = constructProcessNode(input);
 		SequenceNode sequence = constructSequenceNode(new String[]{"a"}, new TerminalNode("STOP", null));
-		FunctionNode function1 = new FunctionNode("prune", sequence, null);
-		FunctionNode function2 = new FunctionNode("abs", function1, null);
-		FunctionNode function3 = new FunctionNode("simp", function2, null);
-		FunctionNode expected = new FunctionNode("safe", function3, null);
+		FunctionNode function1 = new FunctionNode("prune",
+				Collections.singletonList(sequence), null);
+		FunctionNode function2 = new FunctionNode("abs",
+				Collections.singletonList(function1), null);
+		FunctionNode function3 = new FunctionNode("simp",
+				Collections.singletonList(function2), null);
+		FunctionNode expected = new FunctionNode("safe",
+				Collections.singletonList(function3), null);
 		if(!expected.equals(node.getProcess())){
 			fail("expecting function nodes to be equivalent");
 		}

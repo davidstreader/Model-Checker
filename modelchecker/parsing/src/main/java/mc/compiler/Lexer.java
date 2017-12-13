@@ -1,16 +1,22 @@
 package mc.compiler;
 
+import com.google.common.collect.ImmutableSet;
 import mc.compiler.token.*;
 import mc.exceptions.LexerException;
+import mc.plugins.IProcessFunction;
+import mc.plugins.IProcessInfixFunction;
 import mc.util.Location;
 
 import java.util.*;
 
+import static mc.util.Utils.instantiateClass;
+
 public class Lexer {
 
-    private Set<String> displayTypes;
-    private Set<String> castTypes;
-    private Set<String> functions;
+	private static Set<String>      castTypes = ImmutableSet.copyOf(Arrays.asList("TokenRule", "A2P"));;
+	private static Set<String>   displayTypes = ImmutableSet.copyOf(Arrays.asList("automata", "petrinet"));
+    private static Set<String>      functions = new HashSet<>();
+    private static Set<String> infixFunctions = new HashSet<>();
 
 	// used for constructing locations of tokens
 	private int index;
@@ -18,11 +24,6 @@ public class Lexer {
 	private int column;
 
     public Lexer(){
-
-        displayTypes = new HashSet<>(Arrays.asList("automata", "petrinet"));
-        functions = new HashSet<>(Arrays.asList("abs", "simp", "safe", "prune", "nfa2dfa"));
-        castTypes = new HashSet<>(Arrays.asList("TokenRule", "A2P"));
-
     }
 
 	public List<Token> tokenise(String code) throws LexerException{
@@ -150,9 +151,27 @@ public class Lexer {
 	}
 
 	private Token constructSymbolToken(char[] characters) throws LexerException{
+		Location start = new Location(line, column, line, column + 2,index,index+2);
+		tokens:for (String infixToken : infixFunctions) {
+			for (int i = 0; i < infixToken.length(); i++) {
+				if(index+i >= characters.length || characters[index+i] != infixToken.charAt(i))
+					continue tokens;
+			}
+			try {
+				Token t = parseNonInfixSymbolToken(characters);
+				if(t.toString().equals(infixToken))
+				    return t;
+				index -= t.toString().length();
+			} catch(LexerException ignored) {}
 
-        //The more complex operators consisting of 1 or more symbols
-        if(characters[index] == '.'){
+			index += infixToken.length();
+			return new InfixFunctionToken(infixToken,start);
+		}
+		return parseNonInfixSymbolToken(characters);
+	}
+
+	private Token parseNonInfixSymbolToken(char[] characters) throws LexerException{
+		if(characters[index] == '.'){
 			if(index < characters.length - 1 && characters[index + 1] == '.'){
 				Location location = new Location(line, column, line, column + 2,index,index+2);
 				column += 2;
@@ -381,6 +400,7 @@ public class Lexer {
         }
 	}
 
+
 	private void gobbleComments(char[] characters){
 		while(index < characters.length - 1){
 			if(characters[index] == '/' && characters[index + 1] == '/'){
@@ -454,4 +474,12 @@ public class Lexer {
 		line = 1;
 		column = 0;
 	}
+
+	public static void registerFunction(Class<? extends IProcessFunction> function) {
+        functions.add(instantiateClass(function).getFunctionName().toLowerCase());
+    }
+
+    public static void registerInfixFunction(Class<? extends IProcessInfixFunction> function){
+        infixFunctions.add(instantiateClass(function).getNotation());
+    }
 }

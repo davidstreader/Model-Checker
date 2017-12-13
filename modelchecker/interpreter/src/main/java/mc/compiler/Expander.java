@@ -315,24 +315,29 @@ public class Expander {
     }
 
     private FunctionNode expand(FunctionNode astNode, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException {
-        ASTNode process = expand(astNode.getProcess(), variableMap, context);
-        if (astNode.getReferences() != null) {
-            Set<String> unReplacements = (Set<String>) astNode.getReplacements();
-            HashMap<String, Expr> replacements = new HashMap<>();
-            for (String str : unReplacements) {
-                String var = str.substring(0, str.indexOf('='));
-                String exp = str.substring(str.indexOf('=') + 1);
-                Expr expression;
-                if (globalVariableMap.containsKey(exp)) {
-                    expression = globalVariableMap.get(exp);
-                } else {
-                    expression = Expression.constructExpression(exp,astNode.getLocation(), context);
+        List<ASTNode> processes = astNode.getProcesses();
+
+        for (int i = 0; i < processes.size(); i++) {
+            ASTNode process = processes.get(i);
+            process = expand(process, variableMap, context);
+            if (astNode.getReferences() != null) {
+                Set<String> unReplacements = (Set<String>) astNode.getReplacements();
+                HashMap<String, Expr> replacements = new HashMap<>();
+                for (String str : unReplacements) {
+                    String var = str.substring(0, str.indexOf('='));
+                    String exp = str.substring(str.indexOf('=') + 1);
+                    Expr expression;
+                    if (globalVariableMap.containsKey(exp)) {
+                        expression = globalVariableMap.get(exp);
+                    } else {
+                        expression = Expression.constructExpression(exp,astNode.getLocation(), context);
+                    }
+                    replacements.put("$"+var, expression);
                 }
-                replacements.put("$"+var, expression);
+                astNode.setReplacements(replacements);
             }
-            astNode.setReplacements(replacements);
+            astNode.getProcesses().set(i,process);
         }
-        astNode.setProcess(process);
         return astNode;
     }
 
@@ -349,7 +354,7 @@ public class Expander {
         ASTNode node = nodes.pop();
         while(!nodes.isEmpty()){
             ASTNode nextNode = nodes.pop();
-            node = new CompositeNode(nextNode, node, astNode.getLocation());
+            node = new CompositeNode("||",nextNode, node, astNode.getLocation());
         }
 
         return node;
@@ -463,10 +468,9 @@ public class Expander {
 
     private boolean evaluateCondition(BoolExpr condition, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException {
         Map<String, Integer> variables = new HashMap<>();
-        for(String key : variableMap.keySet()){
-            Object value = variableMap.get(key);
-            if(value instanceof Integer){
-                variables.put(key, (Integer)value);
+        for(Map.Entry<String,Object> entry: variableMap.entrySet()){
+            if(entry.getValue() instanceof Integer){
+                variables.put(entry.getKey(), (Integer)entry.getValue());
             }
         }
         return Expression.isSolvable(condition,variables,context);
@@ -521,9 +525,9 @@ public class Expander {
 
     private Map<String, Integer> constructIntegerMap(Map<String, Object> variableMap){
         Map<String, Integer> integerMap = new HashMap<>();
-        for(String key : variableMap.keySet()){
-            if(variableMap.get(key) instanceof Integer){
-                integerMap.put(key, (Integer)variableMap.get(key));
+        for(Map.Entry<String,Object> entry : variableMap.entrySet()){
+            if(entry.getValue() instanceof Integer){
+                integerMap.put(entry.getKey(), (Integer)entry.getValue());
             }
         }
 

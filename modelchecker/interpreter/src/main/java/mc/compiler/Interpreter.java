@@ -20,10 +20,10 @@ import java.util.concurrent.BlockingQueue;
 public class Interpreter {
 
     // fields
-    private AutomatonInterpreter automaton;
+    private AutomatonInterpreter automatonInterpreter;
 
     public Interpreter(){
-        this.automaton = new AutomatonInterpreter();
+        this.automatonInterpreter = new AutomatonInterpreter();
     }
 
     public Map<String, ProcessModel> interpret(AbstractSyntaxTree ast, LocalCompiler localCompiler, BlockingQueue<Object> messageQueue, Context context) throws CompilationException, InterruptedException {
@@ -38,7 +38,7 @@ public class Interpreter {
                     continue;
 
                 case "automata":
-                    model = automaton.interpret(process, processMap, localCompiler, context);
+                    model = automatonInterpreter.interpret(process, processMap, localCompiler, context);
                     model.setLocation(process.getLocation());
                     break;
 
@@ -61,7 +61,7 @@ public class Interpreter {
         ProcessModel model;
         switch(processModelType){
             case "automata":
-                model = automaton.interpret(astNode, identifer, processMap, context);
+                model = automatonInterpreter.interpret(astNode, identifer, processMap, context);
                 break;
             default:
                 throw new CompilationException(getClass(),"Unable to find the process type: "+processModelType);

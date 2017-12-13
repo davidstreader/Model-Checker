@@ -26,7 +26,7 @@ public class ForAllTests extends ExpanderTests {
 
 		ASTNode expected = branches.pop();
 		while(!branches.isEmpty()){
-			expected = constructCompositeNode(branches.pop(), expected);
+			expected = constructCompositeNode("||", branches.pop(), expected);
 		}
 
 		if(!expected.equals(node.getProcess())){
@@ -46,7 +46,7 @@ public class ForAllTests extends ExpanderTests {
 
 		ASTNode expected = branches.pop();
 		while(!branches.isEmpty()){
-			expected = constructCompositeNode(branches.pop(), expected);
+			expected = constructCompositeNode("||", branches.pop(), expected);
 		}
 
 		if(!expected.equals(node.getProcess())){
@@ -65,7 +65,7 @@ public class ForAllTests extends ExpanderTests {
 
 		ASTNode expected = branches.pop();
 		while(!branches.isEmpty()){
-			expected = constructCompositeNode(branches.pop(), expected);
+			expected = constructCompositeNode("||", branches.pop(), expected);
 		}
 
 		if(!expected.equals(node.getProcess())){
@@ -85,7 +85,7 @@ public class ForAllTests extends ExpanderTests {
 
 		ASTNode expected = branches.pop();
 		while(!branches.isEmpty()){
-			expected = constructCompositeNode(branches.pop(), expected);
+			expected = constructCompositeNode("||", branches.pop(), expected);
 		}
 
 		if(!expected.equals(node.getProcess())){
@@ -106,7 +106,7 @@ public class ForAllTests extends ExpanderTests {
 
 		ASTNode expected = branches.pop();
 		while(!branches.isEmpty()){
-			expected = constructCompositeNode(branches.pop(), expected);
+			expected = constructCompositeNode("||", branches.pop(), expected);
 		}
 
 		if(!expected.equals(node.getProcess())){
@@ -126,7 +126,7 @@ public class ForAllTests extends ExpanderTests {
 
 		ASTNode expected = branches.pop();
 		while(!branches.isEmpty()){
-			expected = constructCompositeNode(branches.pop(), expected);
+			expected = constructCompositeNode("||", branches.pop(), expected);
 		}
 
 		if(!expected.equals(node.getProcess())){
@@ -147,7 +147,7 @@ public class ForAllTests extends ExpanderTests {
 
 		ASTNode expected = branches.pop();
 		while(!branches.isEmpty()){
-			expected = constructCompositeNode(branches.pop(), expected);
+			expected = constructCompositeNode("||", branches.pop(), expected);
 		}
 
 		if(!expected.equals(node.getProcess())){
@@ -166,7 +166,7 @@ public class ForAllTests extends ExpanderTests {
 
 		ASTNode expected = branches.pop();
 		while(!branches.isEmpty()){
-			expected = constructCompositeNode(branches.pop(), expected);
+			expected = constructCompositeNode("||", branches.pop(), expected);
 		}
 
 		if(!expected.equals(node.getProcess())){
@@ -186,7 +186,7 @@ public class ForAllTests extends ExpanderTests {
 
 		ASTNode expected = branches.pop();
 		while(!branches.isEmpty()){
-			expected = constructCompositeNode(branches.pop(), expected);
+			expected = constructCompositeNode("||", branches.pop(), expected);
 		}
 
 		if(!expected.equals(node.getProcess())){
@@ -207,7 +207,7 @@ public class ForAllTests extends ExpanderTests {
 
 		ASTNode expected = branches.pop();
 		while(!branches.isEmpty()){
-			expected = constructCompositeNode(branches.pop(), expected);
+			expected = constructCompositeNode("||", branches.pop(), expected);
 		}
 
 		if(!expected.equals(node.getProcess())){

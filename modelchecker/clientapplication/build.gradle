@@ -1,5 +1,6 @@
 dependencies {
     compile project(':compiler')
+    compile project(':operations')
     // https://mvnrepository.com/artifact/org.fxmisc.richtext/richtextfx
     compile group: 'org.fxmisc.richtext', name: 'richtextfx', version: '0.8.1'
 

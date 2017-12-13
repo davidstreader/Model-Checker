@@ -58,7 +58,7 @@ public class SequenceTests extends ExpanderTests {
         String[] sequence = new String[]{"a"};
         String[] sequence1 = new String[]{"a"};
         String[] sequence2 = new String[]{"x"};
-        CompositeNode base = constructCompositeNode(sequence1, sequence2);
+        CompositeNode base = constructCompositeNode("||", sequence1, sequence2);
         SequenceNode expected = constructSequenceNode(sequence, base);
         if(!expected.equals(node.getProcess())){
             fail("expecting the sequence nodes to be equivalent");

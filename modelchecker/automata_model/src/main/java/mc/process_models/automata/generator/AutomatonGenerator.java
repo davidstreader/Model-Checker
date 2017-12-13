@@ -5,6 +5,7 @@ import com.google.common.collect.Sets;
 import lombok.SneakyThrows;
 import mc.compiler.EquationSettings;
 import mc.exceptions.CompilationException;
+import mc.plugins.IOperationInfixFunction;
 import mc.process_models.ProcessModel;
 import mc.process_models.automata.Automaton;
 import mc.process_models.automata.AutomatonEdge;
@@ -15,7 +16,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static mc.util.Utils.instantiateClass;
+
 public class AutomatonGenerator {
+
+    private static Map<String,Class<? extends IOperationInfixFunction>> operations = new HashMap<>();
     public List<ProcessModel> generateAutomaton(String id, AutomataOperations operations, EquationSettings equationSettings) throws CompilationException {
         List<ProcessModel> automata = new ArrayList<>();
         //Generate alphabet for alphabetCount a -> b -> .. -> zz etc
@@ -38,7 +43,7 @@ public class AutomatonGenerator {
             fillLevels(automaton.getRoot(), levels, nodeToLevels, 0);
             Set<Set<AutomatonNode>> rootPowerSet = Sets.powerSet(nodeToLevels.keySet());
             for (ProcessModel b : basic) {
-                if (operations.bisimulation(Arrays.asList((Automaton)b,automaton))) {
+                if (instantiateClass(this.operations.get("BiSimulation")).evaluate(Arrays.asList((Automaton)b,automaton))) {
                     continue root;
                 }
             }
@@ -167,5 +172,10 @@ public class AutomatonGenerator {
         return result;
     }
 
+
+    public static void addOperation(Class<? extends IOperationInfixFunction> clazz){
+        String name = instantiateClass(clazz).getFunctionName();
+        operations.put(name,clazz);
+    }
 
 }

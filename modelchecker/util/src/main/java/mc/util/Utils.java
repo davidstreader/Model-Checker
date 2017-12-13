@@ -42,22 +42,13 @@ public class Utils {
         return null;
     }
 
-    /**
-     * Windows requires a .cmd appended to the node executables, linux does not.
-     * @return ".cmd" on windows or an empty string.
-     */
-    public static String getNPMExtension() {
-        if (isWin()) return ".cmd";
-        return "";
-    }
-
-    public static String getNodeExtension() {
-        if (isWin()) return ".exe";
-        return "";
-    }
-
-    public static String getJavaExecutable() {
-        String javaHome = System.getProperty("java.home");
-        return Paths.get(javaHome,"bin",isJavaw() ? "javaw" : "java").toAbsolutePath().toString();
+    public static <V> V instantiateClass(Class<V> clazz){
+        V instance = null;
+        try {
+            instance = clazz.newInstance();
+        } catch (InstantiationException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        return instance;
     }
 }

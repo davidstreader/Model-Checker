@@ -1,5 +1,6 @@
 package mc.compiler;
 
+import com.google.common.collect.ImmutableSet;
 import com.microsoft.z3.BitVecNum;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
@@ -8,6 +9,8 @@ import mc.Constant;
 import mc.compiler.ast.*;
 import mc.compiler.token.*;
 import mc.exceptions.CompilationException;
+import mc.plugins.IProcessFunction;
+import mc.plugins.IProcessInfixFunction;
 import mc.util.Location;
 import mc.util.expr.Expression;
 import mc.util.expr.ExpressionEvaluator;
@@ -15,10 +18,17 @@ import mc.util.expr.ExpressionPrinter;
 
 import java.util.*;
 
+import static mc.util.Utils.instantiateClass;
+
 /**
  * Created by sheriddavi on 30/01/17.
  */
 public class Parser {
+
+    //Plugin
+    private static Map<String,Class<? extends IProcessFunction>>           functions = new HashMap<>();
+    private static Map<String,Class<? extends IProcessInfixFunction>> infixFunctions = new HashMap<>();
+
 
     private List<Token> tokens;
     private List<ProcessNode> processes;
@@ -35,7 +45,7 @@ public class Parser {
 
     private ExpressionEvaluator expressionEvaluator;
 
-    public Parser() throws InterruptedException {
+    public Parser() {
         processes = new ArrayList<>();
         processIdentifiers = new HashSet<>();
         operations = new ArrayList<>();
@@ -622,10 +632,13 @@ public class Parser {
             process = new ProcessRootNode(process, label, relabel, hiding, process.getLocation());
         }
 
-        if (peekToken() instanceof OrToken) {
-            nextToken(); // gobble the '||' token
-            ASTNode process2 = parseComposite();
-            process = new CompositeNode(process, process2, constructLocation(start));
+        for (String key : infixFunctions.keySet()) {
+            if (peekToken().toString().equals(key)) {
+                nextToken(); // gobble the '||' token
+                ASTNode process2 = parseComposite();
+                process = new CompositeNode(key,process, process2, constructLocation(start));
+                break;
+            }
         }
 
         return process;
@@ -734,8 +747,10 @@ public class Parser {
         int start = index;
         String type = parseFunctionType();
 
+        IProcessFunction functionDefinition = instantiateClass(functions.get(type));
+
         // check if any flags have been set
-        Set<String> flags = null;
+        Set<String> flags = Collections.emptySet();
         if (peekToken() instanceof OpenBraceToken) {
             flags = parseFlags(type);
         }
@@ -746,7 +761,17 @@ public class Parser {
             throw constructException("expecting to parse \"(\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
-        ASTNode process = parseComposite();
+        //get all the processes to be used in the function
+        List<ASTNode> processes = new ArrayList<>();
+        for(int i=0; i < functionDefinition.getNumberArguments(); i++){
+            processes.add(parseComposite());
+            if(i != functionDefinition.getNumberArguments()-1)
+                if (!(nextToken() instanceof CommaToken)) {
+                    Token error = tokens.get(index - 1);
+                    throw constructException("expecting to parse \",\" but received \"" + error.toString() + "\"", error.getLocation());
+                }
+
+        }
 
         // ensure that the next token is a ')' token
         if (!(nextToken() instanceof CloseParenToken)) {
@@ -754,12 +779,10 @@ public class Parser {
             throw constructException("expecting to parse \")\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
-        FunctionNode function = new FunctionNode(type, process, constructLocation(start));
+        FunctionNode function = new FunctionNode(type, processes, constructLocation(start));
+        function.setFlags(ImmutableSet.copyOf(flags));
 
-        if (type.equals("abs") && flags != null) {
-            processAbstractionFlags(function, flags);
-        }
-
+        //TODO: replace
         if (type.equals("simp") && flags != null) {
             if(function.getReplacements() == null)
                 function.setReplacements(new HashMap<>());
@@ -779,8 +802,6 @@ public class Parser {
         throw constructException("expecting to parse a function type but received \"" + token.toString() + "\"", token.getLocation());
     }
 
-    private Set<String> validAbsFlags = new HashSet<>(Arrays.asList("fair", "unfair"));
-
     private Set<String> parseFlags(String functionType) throws CompilationException, InterruptedException {
 
         if (!(nextToken() instanceof OpenBraceToken)) {
@@ -788,9 +809,13 @@ public class Parser {
             throw constructException("expecting to parse \"{\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
+        ImmutableSet<String> acceptedFlags = ImmutableSet.copyOf(instantiateClass(functions.get(functionType)).getValidFlags());
         Set<String> flags = new HashSet<>();
 
+        boolean wildcard = acceptedFlags.contains("*");
+
         while (!(peekToken() instanceof CloseBraceToken)) {
+
             if (!(peekToken() instanceof ActionToken)) {
                 throw constructException("Expecting to parse a flag but received \"" + peekToken().toString() + "\"");
             }
@@ -798,9 +823,11 @@ public class Parser {
             ActionToken token = (ActionToken) nextToken();
             String flag = token.getAction();
 
-            if (!validAbsFlags.contains(flag) && Objects.equals(functionType, "abs")) {
-                throw constructException("\"" + flag + "\" is not a correct flag", token.getLocation());
+            if (!acceptedFlags.contains(flag) && !wildcard) {
+                throw constructException("\"" + flag + "\" is not a correct flag for " + functionType, token.getLocation());
             }
+
+            //TODO: remove this somehow
             if (Objects.equals(functionType, "simp")) {
                 if (!(peekToken() instanceof AssignToken)) {
                     throw constructException("Expecting to parse '=' but received \"" + peekToken().toString() + "\"");
@@ -823,13 +850,6 @@ public class Parser {
         return flags;
     }
 
-    private void processAbstractionFlags(FunctionNode function, Set<String> flags) {
-
-        function.setFair(flags.contains("fair") || !flags.contains("unfair"));
-
-        function.setPruning(flags.contains("prune"));
-    }
-
     private FunctionNode parseCasting() throws CompilationException, InterruptedException {
         int start = index;
         String cast = parseCastType();
@@ -848,7 +868,7 @@ public class Parser {
             throw constructException("expecting to parse \")\" but received \"" + error.toString() + "\"", error.getLocation());
         }
 
-        return new FunctionNode(cast, process, constructLocation(start));
+        return new FunctionNode(cast, Collections.singletonList(process), constructLocation(start));
     }
 
     /**
@@ -1297,6 +1317,7 @@ public class Parser {
             Token error = tokens.get(index - 1);
             throw constructException("expecting to parse \".\" but received \"" + error.toString() + "\"", error.getLocation());
         }
+
         OperationNode operation = new OperationNode(type, isNegated, process1, process2, constructLocation(start), equationSettings);
         if (isEq) {
             equations.add(operation);
@@ -1737,7 +1758,15 @@ public class Parser {
         return constructException(message, location);
     }
 
-    private CompilationException constructException(String message, Location location) {
+    private static CompilationException constructException(String message, Location location) {
         return new CompilationException(Parser.class, message, location);
+    }
+
+    public static void registerFunction(Class<? extends IProcessFunction> clazz){
+        functions.put(instantiateClass(clazz).getFunctionName().toLowerCase(),clazz);
+    }
+
+    public static void registerInfixFunction(Class<? extends IProcessInfixFunction> clazz){
+        infixFunctions.put(instantiateClass(clazz).getNotation().toLowerCase(),clazz);
     }
 }

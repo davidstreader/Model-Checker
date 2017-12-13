@@ -63,7 +63,7 @@ public class IdentifierTests extends ParserTests {
 		ProcessNode node = constructProcessNode(input, 1);
 		IdentifierNode identifier = new IdentifierNode("Test1", null);
 		SequenceNode sequence = constructSequenceNode(new String[]{"b"}, new TerminalNode("STOP", null));
-		CompositeNode expected = new CompositeNode(identifier, sequence, null);
+		CompositeNode expected = new CompositeNode("||", identifier, sequence, null);
 		if(!expected.equals(node.getProcess())){
 			fail("expecting composite nodes to be equilvalent");
 		}
@@ -75,7 +75,7 @@ public class IdentifierTests extends ParserTests {
 		ProcessNode node = constructProcessNode(input, 1);
 		IdentifierNode identifier = new IdentifierNode("Test1", null);
 		SequenceNode sequence = constructSequenceNode(new String[]{"a"}, new TerminalNode("STOP", null));
-		CompositeNode expected = new CompositeNode(sequence, identifier, null);
+		CompositeNode expected = new CompositeNode("||", sequence, identifier, null);
 		if(!expected.equals(node.getProcess())){
 			fail("expecting composite nodes to be equilvalent");
 		}
@@ -87,7 +87,7 @@ public class IdentifierTests extends ParserTests {
 		ProcessNode node = constructProcessNode(input, 2);
 		IdentifierNode identifier1 = new IdentifierNode("Test1", null);
 		IdentifierNode identifier2 = new IdentifierNode("Test2", null);
-		CompositeNode expected = new CompositeNode(identifier1, identifier2, null);
+		CompositeNode expected = new CompositeNode("||", identifier1, identifier2, null);
 		if(!expected.equals(node.getProcess())){
 			fail("expecting composite nodes to be equilvalent");
 		}

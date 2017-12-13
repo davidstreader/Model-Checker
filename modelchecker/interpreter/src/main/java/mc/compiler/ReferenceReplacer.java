@@ -152,8 +152,10 @@ public class ReferenceReplacer {
         return null;
     }
 	private FunctionNode replaceReferences(FunctionNode astNode, String identifier, Map<String, LocalProcessNode> localReferences) throws CompilationException, InterruptedException {
-		ASTNode process = replaceReferences(astNode.getProcess(), identifier, localReferences);
-		astNode.setProcess(process);
+        for (int i = 0; i < astNode.getProcesses().size(); i++) {
+            ASTNode process = replaceReferences(astNode.getProcesses().get(i), identifier, localReferences);
+            astNode.getProcesses().set(i,process);
+        }
 		return astNode;
 	}
 

@@ -940,7 +940,7 @@ public class SequenceTests extends ParserTests {
         String[] sequence = new String[]{"a"};
         String[] sequence1 = new String[]{"a"};
         String[] sequence2 = new String[]{"x"};
-        CompositeNode base = constructCompositeNode(sequence1, sequence2);
+        CompositeNode base = constructCompositeNode("||", sequence1, sequence2);
         SequenceNode expected = constructSequenceNode(sequence, base);
         if(!expected.equals(node.getProcess())){
             fail("expecting the sequence nodes to be equivalent");
@@ -957,7 +957,7 @@ public class SequenceTests extends ParserTests {
         String[] sequence = new String[]{"a"};
         String[] sequence1 = new String[]{"a", "b"};
         String[] sequence2 = new String[]{"x"};
-        CompositeNode base = constructCompositeNode(sequence1, sequence2);
+        CompositeNode base = constructCompositeNode("||", sequence1, sequence2);
         SequenceNode expected = constructSequenceNode(sequence, base);
         if(!expected.equals(node.getProcess())){
             fail("expecting the sequence nodes to be equivalent");
@@ -974,7 +974,7 @@ public class SequenceTests extends ParserTests {
         String[] sequence = new String[]{"a"};
         String[] sequence1 = new String[]{"a"};
         String[] sequence2 = new String[]{"x", "y"};
-        CompositeNode base = constructCompositeNode(sequence1, sequence2);
+        CompositeNode base = constructCompositeNode("||", sequence1, sequence2);
         SequenceNode expected = constructSequenceNode(sequence, base);
         if(!expected.equals(node.getProcess())){
             fail("expecting the sequence nodes to be equivalent");
@@ -991,7 +991,7 @@ public class SequenceTests extends ParserTests {
         String[] sequence = new String[]{"a"};
         String[] sequence1 = new String[]{"a", "b"};
         String[] sequence2 = new String[]{"x", "y"};
-        CompositeNode base = constructCompositeNode(sequence1, sequence2);
+        CompositeNode base = constructCompositeNode("||", sequence1, sequence2);
         SequenceNode expected = constructSequenceNode(sequence, base);
         if(!expected.equals(node.getProcess())){
             fail("expecting the sequence nodes to be equivalent");
@@ -1008,7 +1008,7 @@ public class SequenceTests extends ParserTests {
         String[] sequence = new String[]{"a"};
         String[] sequence1 = new String[]{"a", "b", "c"};
         String[] sequence2 = new String[]{"x"};
-        CompositeNode base = constructCompositeNode(sequence1, sequence2);
+        CompositeNode base = constructCompositeNode("||", sequence1, sequence2);
         SequenceNode expected = constructSequenceNode(sequence, base);
         if(!expected.equals(node.getProcess())){
             fail("expecting the sequence nodes to be equivalent");
@@ -1025,7 +1025,7 @@ public class SequenceTests extends ParserTests {
         String[] sequence = new String[]{"a"};
         String[] sequence1 = new String[]{"a"};
         String[] sequence2 = new String[]{"x", "y", "z"};
-        CompositeNode base = constructCompositeNode(sequence1, sequence2);
+        CompositeNode base = constructCompositeNode("||", sequence1, sequence2);
         SequenceNode expected = constructSequenceNode(sequence, base);
         if(!expected.equals(node.getProcess())){
             fail("expecting the sequence nodes to be equivalent");
@@ -1042,7 +1042,7 @@ public class SequenceTests extends ParserTests {
         String[] sequence = new String[]{"a"};
         String[] sequence1 = new String[]{"a", "b", "c"};
         String[] sequence2 = new String[]{"x", "y"};
-        CompositeNode base = constructCompositeNode(sequence1, sequence2);
+        CompositeNode base = constructCompositeNode("||", sequence1, sequence2);
         SequenceNode expected = constructSequenceNode(sequence, base);
         if(!expected.equals(node.getProcess())){
             fail("expecting the sequence nodes to be equivalent");
@@ -1059,7 +1059,7 @@ public class SequenceTests extends ParserTests {
         String[] sequence = new String[]{"a"};
         String[] sequence1 = new String[]{"a", "b"};
         String[] sequence2 = new String[]{"x", "y", "z"};
-        CompositeNode base = constructCompositeNode(sequence1, sequence2);
+        CompositeNode base = constructCompositeNode("||", sequence1, sequence2);
         SequenceNode expected = constructSequenceNode(sequence, base);
         if(!expected.equals(node.getProcess())){
             fail("expecting the sequence nodes to be equivalent");
@@ -1076,7 +1076,7 @@ public class SequenceTests extends ParserTests {
         String[] sequence = new String[]{"a"};
         String[] sequence1 = new String[]{"a", "b", "c"};
         String[] sequence2 = new String[]{"x", "y", "z"};
-        CompositeNode base = constructCompositeNode(sequence1, sequence2);
+        CompositeNode base = constructCompositeNode("||", sequence1, sequence2);
         SequenceNode expected = constructSequenceNode(sequence, base);
         if(!expected.equals(node.getProcess())){
             fail("expecting the sequence nodes to be equivalent");
@@ -1093,7 +1093,7 @@ public class SequenceTests extends ParserTests {
         String[] sequence = new String[]{"a", "b"};
         String[] sequence1 = new String[]{"a"};
         String[] sequence2 = new String[]{"x"};
-        CompositeNode base = constructCompositeNode(sequence1, sequence2);
+        CompositeNode base = constructCompositeNode("||", sequence1, sequence2);
         SequenceNode expected = constructSequenceNode(sequence, base);
         if(!expected.equals(node.getProcess())){
             fail("expecting the sequence nodes to be equivalent");
@@ -1110,7 +1110,7 @@ public class SequenceTests extends ParserTests {
         String[] sequence = new String[]{"a", "b"};
         String[] sequence1 = new String[]{"a", "b"};
         String[] sequence2 = new String[]{"x"};
-        CompositeNode base = constructCompositeNode(sequence1, sequence2);
+        CompositeNode base = constructCompositeNode("||", sequence1, sequence2);
         SequenceNode expected = constructSequenceNode(sequence, base);
         if(!expected.equals(node.getProcess())){
             fail("expecting the sequence nodes to be equivalent");
@@ -1127,7 +1127,7 @@ public class SequenceTests extends ParserTests {
         String[] sequence = new String[]{"a", "b"};
         String[] sequence1 = new String[]{"a"};
         String[] sequence2 = new String[]{"x", "y"};
-        CompositeNode base = constructCompositeNode(sequence1, sequence2);
+        CompositeNode base = constructCompositeNode("||", sequence1, sequence2);
         SequenceNode expected = constructSequenceNode(sequence, base);
         if(!expected.equals(node.getProcess())){
             fail("expecting the sequence nodes to be equivalent");
@@ -1144,7 +1144,7 @@ public class SequenceTests extends ParserTests {
         String[] sequence = new String[]{"a", "b"};
         String[] sequence1 = new String[]{"a", "b"};
         String[] sequence2 = new String[]{"x", "y"};
-        CompositeNode base = constructCompositeNode(sequence1, sequence2);
+        CompositeNode base = constructCompositeNode("||", sequence1, sequence2);
         SequenceNode expected = constructSequenceNode(sequence, base);
         if(!expected.equals(node.getProcess())){
             fail("expecting the sequence nodes to be equivalent");
@@ -1161,7 +1161,7 @@ public class SequenceTests extends ParserTests {
         String[] sequence = new String[]{"a", "b"};
         String[] sequence1 = new String[]{"a", "b", "c"};
         String[] sequence2 = new String[]{"x"};
-        CompositeNode base = constructCompositeNode(sequence1, sequence2);
+        CompositeNode base = constructCompositeNode("||", sequence1, sequence2);
         SequenceNode expected = constructSequenceNode(sequence, base);
         if(!expected.equals(node.getProcess())){
             fail("expecting the sequence nodes to be equivalent");
@@ -1178,7 +1178,7 @@ public class SequenceTests extends ParserTests {
         String[] sequence = new String[]{"a", "b"};
         String[] sequence1 = new String[]{"a"};
         String[] sequence2 = new String[]{"x", "y", "z"};
-        CompositeNode base = constructCompositeNode(sequence1, sequence2);
+        CompositeNode base = constructCompositeNode("||", sequence1, sequence2);
         SequenceNode expected = constructSequenceNode(sequence, base);
         if(!expected.equals(node.getProcess())){
             fail("expecting the sequence nodes to be equivalent");
@@ -1195,7 +1195,7 @@ public class SequenceTests extends ParserTests {
         String[] sequence = new String[]{"a", "b"};
         String[] sequence1 = new String[]{"a", "b", "c"};
         String[] sequence2 = new String[]{"x", "y"};
-        CompositeNode base = constructCompositeNode(sequence1, sequence2);
+        CompositeNode base = constructCompositeNode("||", sequence1, sequence2);
         SequenceNode expected = constructSequenceNode(sequence, base);
         if(!expected.equals(node.getProcess())){
             fail("expecting the sequence nodes to be equivalent");
@@ -1212,7 +1212,7 @@ public class SequenceTests extends ParserTests {
         String[] sequence = new String[]{"a", "b"};
         String[] sequence1 = new String[]{"a", "b"};
         String[] sequence2 = new String[]{"x", "y", "z"};
-        CompositeNode base = constructCompositeNode(sequence1, sequence2);
+        CompositeNode base = constructCompositeNode("||", sequence1, sequence2);
         SequenceNode expected = constructSequenceNode(sequence, base);
         if(!expected.equals(node.getProcess())){
             fail("expecting the sequence nodes to be equivalent");
@@ -1229,7 +1229,7 @@ public class SequenceTests extends ParserTests {
         String[] sequence = new String[]{"a", "b"};
         String[] sequence1 = new String[]{"a", "b", "c"};
         String[] sequence2 = new String[]{"x", "y", "z"};
-        CompositeNode base = constructCompositeNode(sequence1, sequence2);
+        CompositeNode base = constructCompositeNode("||", sequence1, sequence2);
         SequenceNode expected = constructSequenceNode(sequence, base);
         if(!expected.equals(node.getProcess())){
             fail("expecting the sequence nodes to be equivalent");
@@ -1246,7 +1246,7 @@ public class SequenceTests extends ParserTests {
         String[] sequence = new String[]{"a", "b", "c"};
         String[] sequence1 = new String[]{"a"};
         String[] sequence2 = new String[]{"x"};
-        CompositeNode base = constructCompositeNode(sequence1, sequence2);
+        CompositeNode base = constructCompositeNode("||", sequence1, sequence2);
         SequenceNode expected = constructSequenceNode(sequence, base);
         if(!expected.equals(node.getProcess())){
             fail("expecting the sequence nodes to be equivalent");
@@ -1263,7 +1263,7 @@ public class SequenceTests extends ParserTests {
         String[] sequence = new String[]{"a", "b", "c"};
         String[] sequence1 = new String[]{"a", "b"};
         String[] sequence2 = new String[]{"x"};
-        CompositeNode base = constructCompositeNode(sequence1, sequence2);
+        CompositeNode base = constructCompositeNode("||", sequence1, sequence2);
         SequenceNode expected = constructSequenceNode(sequence, base);
         if(!expected.equals(node.getProcess())){
             fail("expecting the sequence nodes to be equivalent");
@@ -1280,7 +1280,7 @@ public class SequenceTests extends ParserTests {
         String[] sequence = new String[]{"a", "b", "c"};
         String[] sequence1 = new String[]{"a"};
         String[] sequence2 = new String[]{"x", "y"};
-        CompositeNode base = constructCompositeNode(sequence1, sequence2);
+        CompositeNode base = constructCompositeNode("||", sequence1, sequence2);
         SequenceNode expected = constructSequenceNode(sequence, base);
         if(!expected.equals(node.getProcess())){
             fail("expecting the sequence nodes to be equivalent");
@@ -1297,7 +1297,7 @@ public class SequenceTests extends ParserTests {
         String[] sequence = new String[]{"a", "b", "c"};
         String[] sequence1 = new String[]{"a", "b"};
         String[] sequence2 = new String[]{"x", "y"};
-        CompositeNode base = constructCompositeNode(sequence1, sequence2);
+        CompositeNode base = constructCompositeNode("||", sequence1, sequence2);
         SequenceNode expected = constructSequenceNode(sequence, base);
         if(!expected.equals(node.getProcess())){
             fail("expecting the sequence nodes to be equivalent");
@@ -1314,7 +1314,7 @@ public class SequenceTests extends ParserTests {
         String[] sequence = new String[]{"a", "b", "c"};
         String[] sequence1 = new String[]{"a", "b", "c"};
         String[] sequence2 = new String[]{"x"};
-        CompositeNode base = constructCompositeNode(sequence1, sequence2);
+        CompositeNode base = constructCompositeNode("||", sequence1, sequence2);
         SequenceNode expected = constructSequenceNode(sequence, base);
         if(!expected.equals(node.getProcess())){
             fail("expecting the sequence nodes to be equivalent");
@@ -1331,7 +1331,7 @@ public class SequenceTests extends ParserTests {
         String[] sequence = new String[]{"a", "b", "c"};
         String[] sequence1 = new String[]{"a"};
         String[] sequence2 = new String[]{"x", "y", "z"};
-        CompositeNode base = constructCompositeNode(sequence1, sequence2);
+        CompositeNode base = constructCompositeNode("||", sequence1, sequence2);
         SequenceNode expected = constructSequenceNode(sequence, base);
         if(!expected.equals(node.getProcess())){
             fail("expecting the sequence nodes to be equivalent");
@@ -1348,7 +1348,7 @@ public class SequenceTests extends ParserTests {
         String[] sequence = new String[]{"a", "b", "c"};
         String[] sequence1 = new String[]{"a", "b", "c"};
         String[] sequence2 = new String[]{"x", "y"};
-        CompositeNode base = constructCompositeNode(sequence1, sequence2);
+        CompositeNode base = constructCompositeNode("||", sequence1, sequence2);
         SequenceNode expected = constructSequenceNode(sequence, base);
         if(!expected.equals(node.getProcess())){
             fail("expecting the sequence nodes to be equivalent");
@@ -1365,7 +1365,7 @@ public class SequenceTests extends ParserTests {
         String[] sequence = new String[]{"a", "b", "c"};
         String[] sequence1 = new String[]{"a", "b"};
         String[] sequence2 = new String[]{"x", "y", "z"};
-        CompositeNode base = constructCompositeNode(sequence1, sequence2);
+        CompositeNode base = constructCompositeNode("||", sequence1, sequence2);
         SequenceNode expected = constructSequenceNode(sequence, base);
         if(!expected.equals(node.getProcess())){
             fail("expecting the sequence nodes to be equivalent");
@@ -1382,7 +1382,7 @@ public class SequenceTests extends ParserTests {
         String[] sequence = new String[]{"a", "b", "c"};
         String[] sequence1 = new String[]{"a", "b", "c"};
         String[] sequence2 = new String[]{"x", "y", "z"};
-        CompositeNode base = constructCompositeNode(sequence1, sequence2);
+        CompositeNode base = constructCompositeNode("||", sequence1, sequence2);
         SequenceNode expected = constructSequenceNode(sequence, base);
         if(!expected.equals(node.getProcess())){
             fail("expecting the sequence nodes to be equivalent");
@@ -1399,7 +1399,7 @@ public class SequenceTests extends ParserTests {
         String[] sequence = new String[]{"a", "b", "c", "d"};
         String[] sequence1 = new String[]{"a"};
         String[] sequence2 = new String[]{"x"};
-        CompositeNode base = constructCompositeNode(sequence1, sequence2);
+        CompositeNode base = constructCompositeNode("||", sequence1, sequence2);
         SequenceNode expected = constructSequenceNode(sequence, base);
         if(!expected.equals(node.getProcess())){
             fail("expecting the sequence nodes to be equivalent");
@@ -1416,7 +1416,7 @@ public class SequenceTests extends ParserTests {
         String[] sequence = new String[]{"a", "b", "c", "d"};
         String[] sequence1 = new String[]{"a", "b"};
         String[] sequence2 = new String[]{"x"};
-        CompositeNode base = constructCompositeNode(sequence1, sequence2);
+        CompositeNode base = constructCompositeNode("||", sequence1, sequence2);
         SequenceNode expected = constructSequenceNode(sequence, base);
         if(!expected.equals(node.getProcess())){
             fail("expecting the sequence nodes to be equivalent");
@@ -1433,7 +1433,7 @@ public class SequenceTests extends ParserTests {
         String[] sequence = new String[]{"a", "b", "c", "d"};
         String[] sequence1 = new String[]{"a"};
         String[] sequence2 = new String[]{"x", "y"};
-        CompositeNode base = constructCompositeNode(sequence1, sequence2);
+        CompositeNode base = constructCompositeNode("||", sequence1, sequence2);
         SequenceNode expected = constructSequenceNode(sequence, base);
         if(!expected.equals(node.getProcess())){
             fail("expecting the sequence nodes to be equivalent");
@@ -1450,7 +1450,7 @@ public class SequenceTests extends ParserTests {
         String[] sequence = new String[]{"a", "b", "c", "d"};
         String[] sequence1 = new String[]{"a", "b"};
         String[] sequence2 = new String[]{"x", "y"};
-        CompositeNode base = constructCompositeNode(sequence1, sequence2);
+        CompositeNode base = constructCompositeNode("||", sequence1, sequence2);
         SequenceNode expected = constructSequenceNode(sequence, base);
         if(!expected.equals(node.getProcess())){
             fail("expecting the sequence nodes to be equivalent");
@@ -1467,7 +1467,7 @@ public class SequenceTests extends ParserTests {
         String[] sequence = new String[]{"a", "b", "c", "d"};
         String[] sequence1 = new String[]{"a", "b", "c"};
         String[] sequence2 = new String[]{"x"};
-        CompositeNode base = constructCompositeNode(sequence1, sequence2);
+        CompositeNode base = constructCompositeNode("||", sequence1, sequence2);
         SequenceNode expected = constructSequenceNode(sequence, base);
         if(!expected.equals(node.getProcess())){
             fail("expecting the sequence nodes to be equivalent");
@@ -1484,7 +1484,7 @@ public class SequenceTests extends ParserTests {
         String[] sequence = new String[]{"a", "b", "c", "d"};
         String[] sequence1 = new String[]{"a"};
         String[] sequence2 = new String[]{"x", "y", "z"};
-        CompositeNode base = constructCompositeNode(sequence1, sequence2);
+        CompositeNode base = constructCompositeNode("||", sequence1, sequence2);
         SequenceNode expected = constructSequenceNode(sequence, base);
         if(!expected.equals(node.getProcess())){
             fail("expecting the sequence nodes to be equivalent");
@@ -1501,7 +1501,7 @@ public class SequenceTests extends ParserTests {
         String[] sequence = new String[]{"a", "b", "c", "d"};
         String[] sequence1 = new String[]{"a", "b", "c"};
         String[] sequence2 = new String[]{"x", "y"};
-        CompositeNode base = constructCompositeNode(sequence1, sequence2);
+        CompositeNode base = constructCompositeNode("||", sequence1, sequence2);
         SequenceNode expected = constructSequenceNode(sequence, base);
         if(!expected.equals(node.getProcess())){
             fail("expecting the sequence nodes to be equivalent");
@@ -1518,7 +1518,7 @@ public class SequenceTests extends ParserTests {
         String[] sequence = new String[]{"a", "b", "c", "d"};
         String[] sequence1 = new String[]{"a", "b"};
         String[] sequence2 = new String[]{"x", "y", "z"};
-        CompositeNode base = constructCompositeNode(sequence1, sequence2);
+        CompositeNode base = constructCompositeNode("||", sequence1, sequence2);
         SequenceNode expected = constructSequenceNode(sequence, base);
         if(!expected.equals(node.getProcess())){
             fail("expecting the sequence nodes to be equivalent");
@@ -1535,7 +1535,7 @@ public class SequenceTests extends ParserTests {
         String[] sequence = new String[]{"a", "b", "c", "d"};
         String[] sequence1 = new String[]{"a", "b", "c"};
         String[] sequence2 = new String[]{"x", "y", "z"};
-        CompositeNode base = constructCompositeNode(sequence1, sequence2);
+        CompositeNode base = constructCompositeNode("||", sequence1, sequence2);
         SequenceNode expected = constructSequenceNode(sequence, base);
         if(!expected.equals(node.getProcess())){
             fail("expecting the sequence nodes to be equivalent");
@@ -1552,7 +1552,7 @@ public class SequenceTests extends ParserTests {
         String[] sequence = new String[]{"a", "b", "c", "d", "e"};
         String[] sequence1 = new String[]{"a"};
         String[] sequence2 = new String[]{"x"};
-        CompositeNode base = constructCompositeNode(sequence1, sequence2);
+        CompositeNode base = constructCompositeNode("||", sequence1, sequence2);
         SequenceNode expected = constructSequenceNode(sequence, base);
         if(!expected.equals(node.getProcess())){
             fail("expecting the sequence nodes to be equivalent");
@@ -1569,7 +1569,7 @@ public class SequenceTests extends ParserTests {
         String[] sequence = new String[]{"a", "b", "c", "d", "e"};
         String[] sequence1 = new String[]{"a", "b"};
         String[] sequence2 = new String[]{"x"};
-        CompositeNode base = constructCompositeNode(sequence1, sequence2);
+        CompositeNode base = constructCompositeNode("||", sequence1, sequence2);
         SequenceNode expected = constructSequenceNode(sequence, base);
         if(!expected.equals(node.getProcess())){
             fail("expecting the sequence nodes to be equivalent");
@@ -1586,7 +1586,7 @@ public class SequenceTests extends ParserTests {
         String[] sequence = new String[]{"a", "b", "c", "d", "e"};
         String[] sequence1 = new String[]{"a"};
         String[] sequence2 = new String[]{"x", "y"};
-        CompositeNode base = constructCompositeNode(sequence1, sequence2);
+        CompositeNode base = constructCompositeNode("||", sequence1, sequence2);
         SequenceNode expected = constructSequenceNode(sequence, base);
         if(!expected.equals(node.getProcess())){
             fail("expecting the sequence nodes to be equivalent");
@@ -1603,7 +1603,7 @@ public class SequenceTests extends ParserTests {
         String[] sequence = new String[]{"a", "b", "c", "d", "e"};
         String[] sequence1 = new String[]{"a", "b"};
         String[] sequence2 = new String[]{"x", "y"};
-        CompositeNode base = constructCompositeNode(sequence1, sequence2);
+        CompositeNode base = constructCompositeNode("||", sequence1, sequence2);
         SequenceNode expected = constructSequenceNode(sequence, base);
         if(!expected.equals(node.getProcess())){
             fail("expecting the sequence nodes to be equivalent");
@@ -1620,7 +1620,7 @@ public class SequenceTests extends ParserTests {
         String[] sequence = new String[]{"a", "b", "c", "d", "e"};
         String[] sequence1 = new String[]{"a", "b", "c"};
         String[] sequence2 = new String[]{"x"};
-        CompositeNode base = constructCompositeNode(sequence1, sequence2);
+        CompositeNode base = constructCompositeNode("||", sequence1, sequence2);
         SequenceNode expected = constructSequenceNode(sequence, base);
         if(!expected.equals(node.getProcess())){
             fail("expecting the sequence nodes to be equivalent");
@@ -1637,7 +1637,7 @@ public class SequenceTests extends ParserTests {
         String[] sequence = new String[]{"a", "b", "c", "d", "e"};
         String[] sequence1 = new String[]{"a"};
         String[] sequence2 = new String[]{"x", "y", "z"};
-        CompositeNode base = constructCompositeNode(sequence1, sequence2);
+        CompositeNode base = constructCompositeNode("||", sequence1, sequence2);
         SequenceNode expected = constructSequenceNode(sequence, base);
         if(!expected.equals(node.getProcess())){
             fail("expecting the sequence nodes to be equivalent");
@@ -1654,7 +1654,7 @@ public class SequenceTests extends ParserTests {
         String[] sequence = new String[]{"a", "b", "c", "d", "e"};
         String[] sequence1 = new String[]{"a", "b", "c"};
         String[] sequence2 = new String[]{"x", "y"};
-        CompositeNode base = constructCompositeNode(sequence1, sequence2);
+        CompositeNode base = constructCompositeNode("||", sequence1, sequence2);
         SequenceNode expected = constructSequenceNode(sequence, base);
         if(!expected.equals(node.getProcess())){
             fail("expecting the sequence nodes to be equivalent");
@@ -1671,7 +1671,7 @@ public class SequenceTests extends ParserTests {
         String[] sequence = new String[]{"a", "b", "c", "d", "e"};
         String[] sequence1 = new String[]{"a", "b"};
         String[] sequence2 = new String[]{"x", "y", "z"};
-        CompositeNode base = constructCompositeNode(sequence1, sequence2);
+        CompositeNode base = constructCompositeNode("||", sequence1, sequence2);
         SequenceNode expected = constructSequenceNode(sequence, base);
         if(!expected.equals(node.getProcess())){
             fail("expecting the sequence nodes to be equivalent");
@@ -1688,7 +1688,7 @@ public class SequenceTests extends ParserTests {
         String[] sequence = new String[]{"a", "b", "c", "d", "e"};
         String[] sequence1 = new String[]{"a", "b", "c"};
         String[] sequence2 = new String[]{"x", "y", "z"};
-        CompositeNode base = constructCompositeNode(sequence1, sequence2);
+        CompositeNode base = constructCompositeNode("||", sequence1, sequence2);
         SequenceNode expected = constructSequenceNode(sequence, base);
         if(!expected.equals(node.getProcess())){
             fail("expecting the sequence nodes to be equivalent");

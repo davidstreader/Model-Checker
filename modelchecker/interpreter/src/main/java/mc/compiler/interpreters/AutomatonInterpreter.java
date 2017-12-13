@@ -6,21 +6,29 @@ import mc.compiler.Guard;
 import mc.compiler.LocalCompiler;
 import mc.compiler.ast.*;
 import mc.exceptions.CompilationException;
+import mc.plugins.IOperationInfixFunction;
+import mc.plugins.IProcessFunction;
+import mc.plugins.IProcessInfixFunction;
 import mc.process_models.ProcessModel;
 import mc.process_models.automata.Automaton;
 import mc.process_models.automata.AutomatonNode;
 import mc.process_models.automata.operations.AutomataOperations;
 
 import java.util.*;
+import java.util.logging.Logger;
+
+import static mc.util.Utils.instantiateClass;
 
 public class AutomatonInterpreter implements ProcessModelInterpreter {
 
     private AutomataOperations operations;
 
+    private static Map<String, Class<? extends IProcessFunction>>        functions       = new HashMap<>();
+    private static Map<String, Class<? extends IProcessInfixFunction>>   infixFunctions  = new HashMap<>();
+
     private Map<String, ProcessModel> processMap;
     private Map<String, AutomatonNode> referenceMap;
     private Stack<ProcessModel> processStack;
-    private List<Automaton> combinedProcesses;
     private VariableSetNode variables;
     private LocalCompiler compiler;
     private Set<String> variableList;
@@ -81,7 +89,6 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
                 ProcessModel model = processMap.get(reference);
                 processStack.push(model);
             }
-            combinedProcesses.add((Automaton) processStack.peek());
         }
         else if(astNode instanceof ProcessRootNode){
             ProcessRootNode root = (ProcessRootNode)astNode;
@@ -144,7 +151,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
             interpretNode((IdentifierNode)astNode, automaton, currentNode);
         }
         else if(astNode instanceof FunctionNode){
-            interpretNode((FunctionNode)astNode, automaton, currentNode);
+            interpretFunction((FunctionNode)astNode, automaton, currentNode);
         }
         else if(astNode instanceof TerminalNode){
             interpretNode((TerminalNode)astNode, automaton, currentNode);
@@ -201,7 +208,8 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         if(!(model1 instanceof Automaton) || !(model2 instanceof Automaton))
             throw new CompilationException(getClass(),"Expecting an automaton, received: "+model1.getClass().getSimpleName()+","+model2.getClass().getSimpleName(),astNode.getLocation());
 
-        Automaton comp = operations.parallelComposition(automaton.getId(), ((Automaton)model1).copy(), ((Automaton)model2).copy());
+        Automaton comp = instantiateClass(infixFunctions.get(astNode.getOperation()))
+                .compose(model1.getId() + astNode.getOperation() + model2.getId(), (Automaton)model1,(Automaton)model2);
         AutomatonNode oldRoot = automaton.addAutomaton(comp);
         automaton.combineNodes(currentNode, oldRoot,context);
 
@@ -216,43 +224,24 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         Automaton next = ((Automaton)model).copy();
         addAutomaton(currentNode, automaton, next);
     }
-    private void interpretNode(FunctionNode astNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException {
-        interpretProcess(astNode.getProcess(), automaton.getId() + ".fn");
-        ProcessModel model = processStack.pop();
-        if (model == null)
+    private void interpretFunction(FunctionNode astNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException {
+        List<ProcessModel> models = new ArrayList<>();
+        for (ASTNode p : astNode.getProcesses()) {
+            interpretProcess(p, automaton.getId() + ".fn");
+            models.add(processStack.pop());
+        }
+        if (models.isEmpty())
             throw new CompilationException(getClass(),"Expecting an automaton, received an undefined process.",astNode.getLocation());
 
-        if(! (model instanceof Automaton ) )
-            throw new CompilationException(getClass(),"Expecting an automaton, received a: "+model.getClass().getSimpleName(),astNode.getLocation());
-
-        Automaton processed;
-        switch(astNode.getFunction()){
-            case "abs":
-                boolean isFair = astNode.isFair();
-                boolean prune = astNode.needsPruning();
-                processed = operations.abstraction(((Automaton)model).copy(), isFair, prune,context);
-             break;
-
-            case "prune":
-                 processed = operations.prune(((Automaton)model).copy(),context);
-            break;
-
-            case "simp":
-                 processed = operations.simplification(((Automaton)model).copy(),astNode.getReplacements(),context);
-             break;
-
-            case "safe":
-                // automata cannot contain unreachable states therefore they are always safe
-                processed = ((Automaton)model).copy();
-            break;
-
-            case "nfa2dfa":
-                    processed = operations.nfaToDFA(labelAutomaton(((Automaton)model)).copy());
-             break;
-
-            default:
-                throw new CompilationException(getClass(),"Expecting a known function, received: "+astNode.getFunction(),astNode.getLocation());
+        for(ProcessModel model : models) {
+            if (!(model instanceof Automaton))
+                throw new CompilationException(getClass(), "Expecting an automaton, received a: " + model.getClass().getSimpleName(), astNode.getLocation());
         }
+
+        Automaton[] aut = models.stream().map(Automaton.class::cast).toArray(Automaton[]::new);
+
+        Automaton processed = instantiateClass(functions.get(astNode.getFunction()))
+                                .compose(automaton.getId() + ".fn",astNode.getFlags(),context,aut);
 
         addAutomaton(currentNode, automaton, processed);
     }
@@ -347,6 +336,19 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     private void reset(){
         this.referenceMap = new HashMap<>();
         this.processStack = new Stack<>();
-        combinedProcesses = new ArrayList<>();
     }
+
+    public static void addFunction(Class<? extends IProcessFunction> clazz){
+
+        String name = instantiateClass(clazz).getFunctionName();
+        Logger.getLogger(AutomatonInterpreter.class.getSimpleName()).info("LOADED " + name + " FUNCTION PLUGIN");
+        functions.put(name,clazz);
+    }
+
+    public static void addInfixFunction(Class<? extends IProcessInfixFunction> clazz){
+        String name = instantiateClass(clazz).getNotation();
+        Logger.getLogger(AutomatonInterpreter.class.getSimpleName()).info("LOADED " + name + " FUNCTION PLUGIN");
+        infixFunctions.put(name,clazz);
+    }
+
 }

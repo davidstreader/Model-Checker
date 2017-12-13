@@ -22,6 +22,7 @@ public class PassThroughCommandManager extends CommandManager {
       PrintStream stream = new PrintStream(Main.getInstance().getSubProcess().getOutputStream());
       stream.println(command);
       stream.flush();
+      stream.close();
     }
   }
 }
