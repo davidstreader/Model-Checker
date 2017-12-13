@@ -1,15 +1,13 @@
 package mc.client;
 
+
 import edu.uci.ics.jung.algorithms.layout.DAGLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
-import edu.uci.ics.jung.algorithms.layout.SpringLayout;
 import edu.uci.ics.jung.graph.DirectedSparseGraph;
 import edu.uci.ics.jung.graph.Graph;
-import edu.uci.ics.jung.graph.util.Context;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.*;
 import edu.uci.ics.jung.visualization.decorators.EdgeShape;
-import edu.uci.ics.jung.visualization.renderers.Renderer;
 import javafx.embed.swing.SwingNode;
 import javafx.geometry.Bounds;
 import lombok.Getter;
@@ -20,7 +18,6 @@ import mc.client.graph.GraphNode;
 import mc.client.graph.NodeStates;
 import mc.client.ui.DoubleClickHandler;
 import mc.client.ui.SeededRandomizedLayout;
-
 import mc.client.ui.SpringlayoutBase;
 import mc.compiler.CompilationObject;
 import mc.compiler.CompilationObservable;
@@ -28,7 +25,6 @@ import mc.compiler.OperationResult;
 import mc.process_models.ProcessModel;
 import mc.process_models.ProcessType;
 import mc.process_models.automata.Automaton;
-
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -57,7 +53,7 @@ public class ModelView implements Observer{
     private SeededRandomizedLayout layoutInitalizer;
 
     private Set<String> automataToDisplay;
-    private Set<String> visibleAutomata;
+    private SortedSet<String> visibleAutomata;
     private Map<String,Set<GraphNode>> processModels;
 
 
@@ -87,11 +83,11 @@ public class ModelView implements Observer{
             throw new IllegalArgumentException("arg object was not of type compilationObject");
 
         compiledResult = (CompilationObject) arg;
-        visibleAutomata = getProcessMap().entrySet().stream()
+        visibleAutomata = new TreeSet<>(getProcessMap().entrySet().stream()
                 .filter(e -> e.getValue().getProcessType() != ProcessType.AUTOMATA ||
                         ((Automaton)e.getValue()).getNodes().size() <= 40)
                 .map(Map.Entry::getKey)
-                .collect(toSet());
+                .collect(toSet()));
 
         //remove processes marked at skipped and too large models to display
         listOfAutomataUpdater.accept(visibleAutomata);
@@ -214,7 +210,9 @@ public class ModelView implements Observer{
 
     public void addAllAutomata() {
         automataToDisplay.clear();
-        automataToDisplay.addAll(visibleAutomata);
+
+        if(visibleAutomata != null)
+            automataToDisplay.addAll(visibleAutomata);
     }
 
     public void freezeAllCurrentlyDisplayed() {
