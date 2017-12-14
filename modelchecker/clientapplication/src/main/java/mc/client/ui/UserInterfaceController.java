@@ -582,7 +582,6 @@ public class UserInterfaceController implements Initializable {
             lengthEdgeValue = (int) lengthEdge.getValue();
         });
 
-
         final Label maxNodeLabel = new Label("Automa Max Node:");
         Slider maxNode = createSlider();
         maxNode.setValue((double) maxNodeLabelValue);

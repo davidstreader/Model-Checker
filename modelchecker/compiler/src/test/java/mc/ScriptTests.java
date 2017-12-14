@@ -38,15 +38,16 @@ public class ScriptTests {
         List<OperationResult> operations = Collections.emptyList();
         try (Context context = Expression.mkCtx()) {
             operations = compiler.compile(String.join("\n", Files.readAllLines(file.toPath())),new FakeContext(),context,new PrintQueue()).getOperationResults();
-            if (shouldFail(file.getName())) {
+            if (shouldFail(file.getName()))
                 fail("Test script: " + file.getName() + " should not compile!");
-            }
+
         } catch (Exception ex) {
             ex.printStackTrace();
             if (!shouldFail(file.getName())) {
                 fail("Test script: " + file.getName() + " should compile! error: "+ex.getLocalizedMessage());
             }
         }
+
 
         if (operations.size() > 0) {
             for (OperationResult result : operations) {
@@ -56,8 +57,8 @@ public class ScriptTests {
                 } else {
                     assertTrue("Operation '" + op + "' should pass", Objects.equals(result.getResult(), "true"));
                 }
-
             }
+
         }
     }
     @Parameterized.Parameters(name = "{0}")
@@ -66,6 +67,7 @@ public class ScriptTests {
     }
     private boolean shouldFail(String fileName) {
         return fileName.contains("_fail");
+
     }
     private boolean shouldFailOperations(String fileName) {
         return fileName.contains("_operationfail");
