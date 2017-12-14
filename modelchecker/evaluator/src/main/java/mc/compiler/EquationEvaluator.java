@@ -127,9 +127,6 @@ public class EquationEvaluator {
             status.timeStamp = System.currentTimeMillis();
 
             return result;
-        } catch (CompilationException ex) {
-            System.out.println(ex);
-            return false;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             System.out.println(e);

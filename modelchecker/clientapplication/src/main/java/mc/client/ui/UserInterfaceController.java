@@ -52,29 +52,25 @@ public class UserInterfaceController implements Initializable {
     @FXML private ComboBox<String> modelsList;
 
     private Stage window;
-
-
     private Scene scene;
+
     private boolean saveButton = false;
     private boolean dontSaveButton = false;
     private boolean cancel = false;
     private boolean hasBeenSavedBefore = false;
 
-    private String buttonName;
 
-
+    // fields for keep tracking the value of the OPTIONS
     private int lengthEdgeValue = 10;
     private int maxNodeLabelValue = 10;
     private int operationFailureLabelValue = 10;
     private int operationPassLabelValue = 10;
-
-
     private boolean fairAbstractionSelected = false;
     private boolean autoSaveSelected = false;
     private boolean darkModeSelected = false;
     private boolean pruningSelected = false;
     private boolean liveCompillingSelected = false;
-
+    // fields for keep tracking the value of the OPTIONS
 
     /**
      * Called to initialize a controller after its root element has been
@@ -310,38 +306,24 @@ public class UserInterfaceController implements Initializable {
     @FXML
     private void handleCreateNew(ActionEvent event) throws InterruptedException {
         // If the Code Area is not empty which means there are codes that we can save.
-        //buttonName = "New";
-
         if (!(userCodeInput.getText().isEmpty())) {
             // Open a dialogue and give the user three options (SAVE, DON'TSAVE, CANCEL)
             createSceneFile("New");
-            window.close();
-            System.out.println("THIS IS BEFORE ANY OF THE INTERACTION");
             if (saveButton) {
                 setBackFlags();
                 // do these operations when the user click on SAVE button in the dialogue
                 hasBeenSavedBefore = true;
                 cleanTheCodeArea();
-
-
             } else if (dontSaveButton) {
-                window.close();
                 // do these operations when the user click on DON'TSAVE button in the dialogue
                 cleanTheCodeArea();
-
-            } else {
-                // Close the dialogue if the user clicking on the CANCEL
-                window.close();
             }
-
         }
-        window.close();
     }
 
     @FXML
     private void handleOpen(ActionEvent event) {
         window = new Stage();
-        //buttonName = "Open";
         // If the Code Area is not empty which means there are codes that we can save.
         if (!(userCodeInput.getText().isEmpty())) {
             // Open a dialogue and give the user three options (SAVE, DON'TSAVE, CANCEL)
@@ -512,8 +494,6 @@ public class UserInterfaceController implements Initializable {
     }
 
 
-
-
     private boolean saveButtonFunctionality() {
         dontSaveButton = false;
         cancel = false;
@@ -577,83 +557,65 @@ public class UserInterfaceController implements Initializable {
     private GridPane createGrideOptions() {
         final Label lengthEdgeLabel = new Label("Length of the Edge:");
         Slider lengthEdge = createSlider();
-        lengthEdge.setValue((double) lengthEdgeValue);
         lengthEdge.valueProperty().addListener((ChangeListener) (arg0, arg1, arg2) -> {
             lengthEdgeValue = (int) lengthEdge.getValue();
         });
+        lengthEdge.setValue((double) lengthEdgeValue);
+
 
         final Label maxNodeLabel = new Label("Automa Max Node:");
         Slider maxNode = createSlider();
-        maxNode.setValue((double) maxNodeLabelValue);
         maxNode.valueProperty().addListener((ChangeListener) (arg0, arg1, arg2) -> {
             maxNodeLabelValue = (int) maxNode.getValue();
         });
+        maxNode.setValue((double) maxNodeLabelValue);
 
 
         final Label operationFailureLabel = new Label("Operation failure count:");
         Slider operationFailure = createSlider();
-        operationFailure.setValue((double) operationFailureLabelValue);
         operationFailure.valueProperty().addListener((ChangeListener) (arg0, arg1, arg2) -> {
             operationFailureLabelValue = (int) operationFailure.getValue();
         });
+        operationFailure.setValue((double) operationFailureLabelValue);
+
 
         final Label operationPassLabel = new Label("Operation pass count:");
         Slider operationPass = createSlider();
-        operationPass.setValue((double) operationPassLabelValue);
         operationPass.valueProperty().addListener((ChangeListener) (arg0, arg1, arg2) -> {
             operationPassLabelValue = (int) operationPass.getValue();
         });
+        operationPass.setValue((double) operationPassLabelValue);
 
-
-        CheckBox fairAbstraction;
-        fairAbstraction = new CheckBox("Fair Abstraction");
+        CheckBox fairAbstraction = new CheckBox("Fair Abstraction");
         fairAbstraction.setOnAction(e -> fairAbstractionFunctionality());
-        if (!(fairAbstractionSelected)) {
-
-        } else {
+        if (fairAbstractionSelected) {
             fairAbstraction.setSelected(true);
         }
 
-        CheckBox autoSave;
-        if (!(autoSaveSelected)) {
-            autoSave = new CheckBox("Autosave");
-            autoSave.setOnAction(e -> autoSaveFunctionality());
-        } else {
-            autoSave = new CheckBox("Autosave");
-            autoSave.setOnAction(e -> autoSaveFunctionality());
+        CheckBox autoSave = new CheckBox("Autosave");
+        autoSave.setOnAction(e -> autoSaveFunctionality());
+        if (autoSaveSelected) {
             autoSave.setSelected(true);
         }
 
-        CheckBox darkMode;
-        if (!(darkModeSelected)) {
-            darkMode = new CheckBox("Dark Mode");
-            darkMode.setOnAction(e -> darkModeFunctionality());
-        } else {
-            darkMode = new CheckBox("Dark Mode");
-            darkMode.setOnAction(e -> darkModeFunctionality());
+        CheckBox darkMode = new CheckBox("Dark Mode");
+        darkMode.setOnAction(e -> darkModeFunctionality());
+        if (darkModeSelected) {
             darkMode.setSelected(true);
-
         }
 
-        CheckBox pruning;
-        if (!(pruningSelected)) {
-            pruning = new CheckBox("Pruning");
-            pruning.setOnAction(e -> pruningFunctionality());
-        } else {
-            pruning = new CheckBox("Pruning");
-            pruning.setOnAction(e -> pruningFunctionality());
+        CheckBox pruning = new CheckBox("Pruning");
+        pruning.setOnAction(e -> pruningFunctionality());
+        if (pruningSelected) {
             pruning.setSelected(true);
         }
 
-        CheckBox liveCompilling;
-        if (!(liveCompillingSelected)) {
-            liveCompilling = new CheckBox("Live Compilling");
-            liveCompilling.setOnAction(e -> liveCompilingFunctionality());
-        } else {
-            liveCompilling = new CheckBox("Live Compilling");
-            liveCompilling.setOnAction(e -> liveCompilingFunctionality());
+        CheckBox liveCompilling = new CheckBox("Live Compilling");
+        liveCompilling.setOnAction(e -> liveCompilingFunctionality());
+        if (liveCompillingSelected) {
             liveCompilling.setSelected(true);
         }
+
 
         Button closeButton = new Button("Close");
         closeButton.setOnAction(e -> window.close());
@@ -692,26 +654,27 @@ public class UserInterfaceController implements Initializable {
         return grid;
     }
 
-    private GridPane createBoxForFile(String buttonName) {
+    private GridPane createGrideFile(String buttonName) {
         Label label = new Label("Do you want to save changes?");
-
         Button saveButton = createSaveButton();
-        Button dontSaveButton = createDontSaveButtonForNew();
+        Button dontSaveButton = createDontSaveButton();
         Button cancelButton = createCancelButton();
 
         switch (buttonName){
+            case "New":
+                dontSaveButton = createDontSaveButtonForNew();
+                break;
             case "Open":
                 saveButton = createSaveButtonForOpen();
                 break;
-
             case "Close":
                 dontSaveButton = createDontSaveButtonForNew();
                 break;
-
             case "Quit":
                 System.exit(0);
                 break;
             default:
+                break;
         }
 
         GridPane grid = new GridPane();
@@ -812,12 +775,13 @@ public class UserInterfaceController implements Initializable {
         readTo.println();
 
 /*
-        List<Boolean> theOptionChangesForBooleanCheckBoxes = new ArrayList<>();
-        theOptionChangesForBooleanCheckBoxes.add(0, fairAbstractionSelected);
-        theOptionChangesForBooleanCheckBoxes.add(1, autoSaveSelected);
-        theOptionChangesForBooleanCheckBoxes.add(2, darkModeSelected);
-        theOptionChangesForBooleanCheckBoxes.add(3, pruningSelected);
-        theOptionChangesForBooleanCheckBoxes.add(4, liveCompillingSelected);
+        ArrayList<Boolean> theOptionChangesForBooleans = new ArrayList<>();
+
+        theOptionChangesForBooleans.add(0, fairAbstractionSelected);
+        theOptionChangesForBooleans.add(1, autoSaveSelected);
+        theOptionChangesForBooleans.add(2, darkModeSelected);
+        theOptionChangesForBooleans.add(3, pruningSelected);
+        theOptionChangesForBooleans.add(4, liveCompillingSelected);
 */
 
         readTo.println("fairAbstractionSelected: " + fairAbstractionSelected);
@@ -832,13 +796,13 @@ public class UserInterfaceController implements Initializable {
 
     private PrintStream readTheOptionsIntegers(PrintStream readTo) {
         readTo.println();
-
 /*
-        List<Integer> theOptionChangesForIntegereSliders = new ArrayList<>();
-        theOptionChangesForIntegereSliders.add(0, lengthEdgeValue);
-        theOptionChangesForIntegereSliders.add(1, maxNodeLabelValue);
-        theOptionChangesForIntegereSliders.add(2, operationFailureLabelValue);
-        theOptionChangesForIntegereSliders.add(3, operationPassLabelValue);
+        ArrayList<Integer> theOptionChangesForIntegeres = new ArrayList<>();
+
+        theOptionChangesForIntegeres.add(0, lengthEdgeValue);
+        theOptionChangesForIntegeres.add(1, maxNodeLabelValue);
+        theOptionChangesForIntegeres.add(2, operationFailureLabelValue);
+        theOptionChangesForIntegeres.add(3, operationPassLabelValue);
 */
 
         readTo.println("lengthEdgeValue: " + lengthEdgeValue);
@@ -851,36 +815,32 @@ public class UserInterfaceController implements Initializable {
 
     private void readOptions(Scanner scanner) {
 
-        while (scanner.hasNext()){
-            switch (scanner.next()){
+        while (scanner.hasNext()) {
+            switch (scanner.next()) {
                 case "lengthEdgeValue:":
                     lengthEdgeValue = scanner.nextInt();
                     break;
-
                 case "maxNodeLabelValue:":
                     maxNodeLabelValue = scanner.nextInt();
                     break;
-
                 case "operationFailureLabelValue:":
                     operationFailureLabelValue = scanner.nextInt();
                     break;
-
                 case "operationPassLabelValue:":
                     operationPassLabelValue = scanner.nextInt();
                     break;
-
                 case "fairAbstractionSelected:":
                     fairAbstractionSelected = scanner.nextBoolean();
                     break;
-
+                case "autoSaveSelected:":
+                    autoSaveSelected = scanner.nextBoolean();
+                    break;
                 case "darkModeSelected:":
                     darkModeSelected = scanner.nextBoolean();
                     break;
-
                 case "pruningSelected:":
                     pruningSelected = scanner.nextBoolean();
                     break;
-
                 case "liveCompillingSelected:":
                     liveCompillingSelected = scanner.nextBoolean();
                     break;
@@ -895,7 +855,7 @@ public class UserInterfaceController implements Initializable {
     }
 
     private Scene sceneGeneratorFile(String buttonName) {
-        GridPane grid = createBoxForFile(buttonName);
+        GridPane grid = createGrideFile(buttonName);
         scene = new Scene(grid, 460, 85);
         return scene;
     }
@@ -915,37 +875,43 @@ public class UserInterfaceController implements Initializable {
     }
 
 
-    private void fairAbstractionFunctionality() {fairAbstractionSelected = (!fairAbstractionSelected);}
+    private void fairAbstractionFunctionality() {
+        fairAbstractionSelected = (!fairAbstractionSelected);
+    }
+
     private void autoSaveFunctionality() {
         autoSaveSelected = (!autoSaveSelected);
     }
+
     private void darkModeFunctionality() {
         darkModeSelected = (!darkModeSelected);
     }
+
     private void pruningFunctionality() {
         pruningSelected = (!pruningSelected);
     }
+
     private void liveCompilingFunctionality() {
         liveCompillingSelected = (!liveCompillingSelected);
     }
 
+/*    public boolean isAutoSaveSelected() {
+        return autoSaveSelected;
+    }
 
-/*    public boolean isAutoSaveSelected() { return autoSaveSelected;}
     public boolean isFairAbstractionSelected() {
         return fairAbstractionSelected;
     }
+
     public boolean isDarkModeSelected() {
         return darkModeSelected;
     }
+
     public boolean isPruningSelected() {
         return pruningSelected;
     }
+
     public boolean isLiveCompillingSelected() {
         return liveCompillingSelected;
     }*/
 }
-
-
-
-
-
