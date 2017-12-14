@@ -494,7 +494,7 @@ public class UserInterfaceController implements Initializable {
     }
 
 
-    private boolean saveButtonFunctionality() {
+    private void saveButtonFunctionality() {
         dontSaveButton = false;
         cancel = false;
         saveButton = true;
@@ -519,7 +519,6 @@ public class UserInterfaceController implements Initializable {
             System.out.println(message);
         }
         window.close();
-        return true;
     }
 
     private void dontSaveButtonFunctionality() {
