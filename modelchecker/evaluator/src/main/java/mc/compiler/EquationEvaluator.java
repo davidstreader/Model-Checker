@@ -67,19 +67,19 @@ public class EquationEvaluator {
             for (List<ProcessModel> models : perms) {
                 testModel(models,messageQueue,status, operation, context, z3Context, toRender, firstId, secondId, perms.size());
             }
-           /* service.shutdown();
-           try {
-                service.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-            } catch (InterruptedException e) {
-                service.shutdownNow();
-            }
-            */
+          // service.shutdown();
+         //  try {
+         //       service.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+        //    } catch (InterruptedException e) {
+         //       service.shutdownNow();
+         //   }
+
             results.add(new OperationResult(operation.getFirstProcess(), operation.getSecondProcess(), firstId, secondId, operation.getOperation(), operation.isNegated(), status.passCount == perms.size(),status.passCount+"/"+perms.size()));
         }
         return new EquationReturn(results,toRender);
     }
 
-    private boolean testModel(List<ProcessModel> processModels, BlockingQueue<Object> messageQueue, ModelStatus status, OperationNode operation, Context context, com.microsoft.z3.Context z3Context, Map<String, ProcessModel> toRender, String firstId, String secondId, int size) {
+    private boolean testModel(List<ProcessModel> processModels, BlockingQueue<Object> messageQueue, ModelStatus status, OperationNode operation, Context context, com.microsoft.z3.Context z3Context, Map<String, ProcessModel> toRender, String firstId, String secondId, int size)  throws CompilationException {
 
         Interpreter interpreter = new Interpreter();
         try {
