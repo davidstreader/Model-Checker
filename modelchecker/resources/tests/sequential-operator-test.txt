@@ -1,0 +1,17 @@
+processes {
+      Seq = a->b->STOP=>c->d->STOP.
+    UnSeq = a->b->c->d->STOP.
+
+      Seq2 = X=>c->d->STOP,
+            X = (a -> STOP | b -> STOP).
+    UnSeq2 = a->X|b->X,
+            X = c->d->STOP.
+}
+automata Seq,UnSeq,Seq2,UnSeq2.
+
+operation {
+
+    Seq  ~ UnSeq.
+    Seq2 ~ UnSeq2.
+
+}

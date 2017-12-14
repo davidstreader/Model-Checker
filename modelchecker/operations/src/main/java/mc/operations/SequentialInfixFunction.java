@@ -70,6 +70,10 @@ public class SequentialInfixFunction implements IProcessInfixFunction {
                 .filter(n -> "STOP".equals(n.getTerminal()))
                 .collect(Collectors.toList());
 
+        //if there are no stop nodes, we cannot glue them together
+        if(stopNodes.isEmpty())
+            return sequence;
+
         automaton2.getNodes().forEach(node -> {
             AutomatonNode newNode = sequence.addNode();
             newNode.copyProperties(node);
