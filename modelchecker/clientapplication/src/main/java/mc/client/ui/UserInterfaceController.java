@@ -773,16 +773,6 @@ public class UserInterfaceController implements Initializable {
     private PrintStream readTheOptionsBooleans(PrintStream readTo) {
         readTo.println();
 
-/*
-        ArrayList<Boolean> theOptionChangesForBooleans = new ArrayList<>();
-
-        theOptionChangesForBooleans.add(0, fairAbstractionSelected);
-        theOptionChangesForBooleans.add(1, autoSaveSelected);
-        theOptionChangesForBooleans.add(2, darkModeSelected);
-        theOptionChangesForBooleans.add(3, pruningSelected);
-        theOptionChangesForBooleans.add(4, liveCompillingSelected);
-*/
-
         readTo.println("fairAbstractionSelected: " + fairAbstractionSelected);
         readTo.println("autoSaveSelected: " + autoSaveSelected);
         readTo.println("darkModeSelected: " + darkModeSelected);
@@ -795,14 +785,6 @@ public class UserInterfaceController implements Initializable {
 
     private PrintStream readTheOptionsIntegers(PrintStream readTo) {
         readTo.println();
-/*
-        ArrayList<Integer> theOptionChangesForIntegeres = new ArrayList<>();
-
-        theOptionChangesForIntegeres.add(0, lengthEdgeValue);
-        theOptionChangesForIntegeres.add(1, maxNodeLabelValue);
-        theOptionChangesForIntegeres.add(2, operationFailureLabelValue);
-        theOptionChangesForIntegeres.add(3, operationPassLabelValue);
-*/
 
         readTo.println("lengthEdgeValue: " + lengthEdgeValue);
         readTo.println("maxNodeLabelValue: " + maxNodeLabelValue);
@@ -853,6 +835,11 @@ public class UserInterfaceController implements Initializable {
         return scene;
     }
 
+    /**
+     *
+     * @param buttonName
+     * @return
+     */
     private Scene sceneGeneratorFile(String buttonName) {
         GridPane grid = createGrideFile(buttonName);
         scene = new Scene(grid, 460, 85);
@@ -865,6 +852,10 @@ public class UserInterfaceController implements Initializable {
         cancel = false;
     }
 
+    /**
+     * This function is responsible to delete all the code in the userCodeInput.
+     * It starts deleting from the initial index to the length of the code.
+     */
     private void cleanTheCodeArea() {
         dontSaveButton = true;
         String length = userCodeInput.getText();
