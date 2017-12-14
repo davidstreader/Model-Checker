@@ -556,7 +556,7 @@ public class UserInterfaceController implements Initializable {
     private GridPane createGrideOptions() {
         final Label lengthEdgeLabel = new Label("Length of the Edge:");
         Slider lengthEdge = createSlider();
-        lengthEdge.valueProperty().addListener((ChangeListener) (arg0, arg1, arg2) -> {
+        lengthEdge.valueProperty().addListener((arg0, arg1, arg2) -> {
             lengthEdgeValue = (int) lengthEdge.getValue();
         });
         lengthEdge.setValue((double) lengthEdgeValue);
@@ -564,7 +564,7 @@ public class UserInterfaceController implements Initializable {
 
         final Label maxNodeLabel = new Label("Automa Max Node:");
         Slider maxNode = createSlider();
-        maxNode.valueProperty().addListener((ChangeListener) (arg0, arg1, arg2) -> {
+        maxNode.valueProperty().addListener((arg0, arg1, arg2) -> {
             maxNodeLabelValue = (int) maxNode.getValue();
         });
         maxNode.setValue((double) maxNodeLabelValue);
@@ -572,7 +572,7 @@ public class UserInterfaceController implements Initializable {
 
         final Label operationFailureLabel = new Label("Operation failure count:");
         Slider operationFailure = createSlider();
-        operationFailure.valueProperty().addListener((ChangeListener) (arg0, arg1, arg2) -> {
+        operationFailure.valueProperty().addListener( (arg0, arg1, arg2) -> {
             operationFailureLabelValue = (int) operationFailure.getValue();
         });
         operationFailure.setValue((double) operationFailureLabelValue);
@@ -580,7 +580,7 @@ public class UserInterfaceController implements Initializable {
 
         final Label operationPassLabel = new Label("Operation pass count:");
         Slider operationPass = createSlider();
-        operationPass.valueProperty().addListener((ChangeListener) (arg0, arg1, arg2) -> {
+        operationPass.valueProperty().addListener( (arg0, arg1, arg2) -> {
             operationPassLabelValue = (int) operationPass.getValue();
         });
         operationPass.setValue((double) operationPassLabelValue);
@@ -611,9 +611,7 @@ public class UserInterfaceController implements Initializable {
 
         CheckBox liveCompilling = new CheckBox("Live Compilling");
         liveCompilling.setOnAction(e -> liveCompilingFunctionality());
-        if (liveCompillingSelected) {
-            liveCompilling.setSelected(true);
-        }
+        liveCompilling.setSelected(liveCompillingSelected);
 
 
         Button closeButton = new Button("Close");
