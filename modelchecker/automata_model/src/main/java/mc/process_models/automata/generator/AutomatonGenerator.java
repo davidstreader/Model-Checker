@@ -42,11 +42,10 @@ public class AutomatonGenerator {
             HashMap<AutomatonNode, Integer> nodeToLevels = new HashMap<>();
             fillLevels(automaton.getRoot(), levels, nodeToLevels, 0);
             Set<Set<AutomatonNode>> rootPowerSet = Sets.powerSet(nodeToLevels.keySet());
-            for (ProcessModel b : basic) {
-                if (instantiateClass(this.operations.get("BiSimulation")).evaluate(Arrays.asList((Automaton)b,automaton))) {
+            for (ProcessModel b : basic)
+                if (instantiateClass(this.operations.get("BiSimulation")).evaluate(Arrays.asList((Automaton)b,automaton)))
                     continue root;
-                }
-            }
+
             basic.add(automaton.copy());
             if (equationSettings.isAlphabet()) {
                 applyAlphabet(automaton,alphabet).forEach(s -> addToSet(edges,automata,s, equationSettings.getMaxTransitionCount()));
@@ -85,10 +84,9 @@ public class AutomatonGenerator {
     private void addToSet(Set<Set<AutomatonEdge>> edges, List<ProcessModel> automata, Automaton a, int maxTransitions) {
         if (a.getEdgeCount() > maxTransitions) return;
         Set<AutomatonEdge> edgeSet = new HashSet<>(a.getEdges());
-        if (!edges.contains(edgeSet)) {
-            edges.add(edgeSet);
+
+        if (edges.add(edgeSet))
             automata.add(a);
-        }
     }
     private Stream<Automaton> addEdgesBelow(Automaton automaton, AutomatonNode node, Set<Set<AutomatonNode>> powerSet, int level) throws CompilationException {
         List<Automaton> automata = new ArrayList<>();

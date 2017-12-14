@@ -3,54 +3,18 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% HEADER
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\documentclass[a4paper,twoside,10pt]{article}
+\documentclass[]{article}
 \setlength{\oddsidemargin}{1pt} 
 \setlength{\evensidemargin}{1pt}
 \usepackage{amssymb,mathtools,tikz}
 \usepackage {stmaryrd}
-
 \usepackage[ligature, inference]{semantic}
 \textwidth=16cm
 \marginparwidth = 5pt
 \oddsidemargin = 1pt
-% Alternative Options:
-%	Paper Size: a4paper / a5paper / b5paper / letterpaper / legalpaper / executivepaper
-% Duplex: oneside / de
-% Base Font Size: 10pt / 11pt / 12pt
 
-%\def\Rightarrowfill@{\arrowfill@\Relbar\Relbar\Rightarrow}
+\include{d&s-defs}
 
-%\newcommand{\yrightarrow}[2][]{\ext@arrow 0359\Rightarrowfill@{#1}{#2}}
-
-
-
-\newcommand {\sref} [1] {Section~\ref{sec:#1}}
-
-\newcommand {\Emath}[0]{\ensuremath{\mathbb E}}
-\newtheorem {mypdef}      {Definition}
-
-
-\newcommand{\anscolor}{\color{blue}} 
-%\newcommand{\anscolor}{\color{white}}
-
-\newcommand{\comment}[1]{{\anscolor #1}}  %PRINT with OUT comments 
-%\newcommand{\answer}[1]{}  %PRINT with OUT answers 
-\newcommand{\answer}[1]{\protect{\large {\anscolor #1}}} %PRINT WITH answers 
-%\newcommand{\astar}[1]{}  %PRINT with OUT answers 
-\newcommand{\astar}[1]{\protect{\large {\anscolor #1}}} %PRINT WITH answers 
-
-\newcommand {\aro} [3]
-{\ensuremath{{#1}{\stackrel{#2}{\longrightarrow}}{#3} }}
-\newcommand {\Aro} [3]
-{\ensuremath{{#1}{\stackrel{#2}{\Longrightarrow}}{#3} }}
-
-\newcommand {\aroel}[3] {\ensuremath{
-\settowidth{\dslen}{\hbox {${#2}$}}
-{#1}\buildrel {#2\hspace{-0.5ex}} \over {\hbox to \dslen{\rightarrowfill}}{\hspace{-0.5ex}#3} }}
-
-
-\newcommand {\arop}
-[4]{\ensuremath{{#1}{\stackrel{#2}{\longrightarrow}_{#4}}{#3} }}
 
 
 
@@ -58,11 +22,7 @@
 \newcommand {\Arx}[4] {\ensuremath{
 {#1}\buildrel \langle{#2},{#4}\rangle \over {\Rightarrowfill{#2}{#4}}}{#3} }
 
-\newcommand {\Arop} [4] 
-{\ensuremath{{#1}{{\stackrel{#2}{\Longrightarrow}}_{#4}}{#3} }}
-
-
-%% Language %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \usepackage[USenglish]{babel} %francais, polish, spanish, ...
 %\usepackage[T1]{fontenc}
 %\usepackage[ansinew]{inputenc}
@@ -247,7 +207,23 @@ Our approach requires the distinction between what is in the interface of a proc
 
 In the tool we introduce process names will  start with an upper case letter whereas event names will start with a lower case letter.
 
-Sequential processes are defined using a simple process algebra $\Sigma =\{Act, ->, |, STOP\}$ the operational semantics of the defined process definition will be rendered as an automata by enclosing the definition in \verb$automata { ... }$ as shown in the examples below.  We will frequently omit the \verb$automata { ... }$ as any number of process definitions may be included with in the brackets \verb${...}$.
+Sequential processes are defined using a simple process algebra $\Sigma =\{Act, ->, |, STOP\}$ the operational semantics of the defined process definition will be rendered as an automata.
+
+%\begin{mypdef} 
+{\color{blue} \emph{{\bf An automata} is a tuple  $\sf A \triangleq (N_A,S_A,T_A,\alpha_A)$  where:
+\begin{description}
+\item[$\sf N_A$] is the set of automata nodes,
+\item[$\sf S_A$] is the set of  start nodes $\sf S_A\subseteq N_A$
+\item[$\sf T_A$] is the set of transitions, triples $(n,a,m)$ where $\sf a\in \alpha_A$ and $\sf \{n,m\}\subseteq N_A$
+\item[$\sf \alpha_A$] is the alphabet of the process, the set of events in the processes $\{a:\arop{n}{a}{m}{A}\}\subseteq \alpha_A$
+\end{description}
+}}
+$\Box$
+
+%\end{mypdef} 
+
+
+Processes definitions are enclosed in \verb$processes { ... }$ as shown in the examples below.  We will frequently omit the \verb$processes { ... }$. The processes that are to be displayed as automata  appear as a list \verb$automata A,Ap.$.
 
 
 
@@ -533,9 +509,9 @@ In other words one process, {\sf P},  diverging will not effect the events of a 
 
 To accommodate this label nodes on a $\tau$ loop as divergent and require that parallel composition preserves divergence. This has the effect of allowing divergence of {\sf P} to block the events of {\sf Q}.
 
-{\color{red} bug to be fixed
+{\color{red} bug to be checked}
 \noindent\begin{center}
-\begin{minipage}{0.4\textwidth}
+\begin{minipage}{0.3\textwidth}
 \begin{verbatim}
 automata {
 S* = a->X,
@@ -546,14 +522,13 @@ One = abs{unfair}(O).
 T* = abs{unfair}(Simple).
 Two = T||(d->STOP).
 }
-\end{verbatim}
-\end{minipage}
-
- \includegraphics[scale=0.3]{OneTwo.png} \end{center}
-
+\end{verbatim}\end{minipage}
+\begin{minipage}{0.5\textwidth}
+\includegraphics[scale=0.3]{OneTwo.png} 
+\end{minipage}\end{center}
 Pragmatically divergence and deadlock are rarely wanted and their existence merely indicate that the definitions are erroneous. In such situations it is unimportant how we model divergence as it will be removed. In situations where we do want to model process with deadlock  or divergent behaviour then we need to be more careful.
 
-}
+
 Frequently we are interested in how a system behaves when errors occur but when errors occur is rarely determined exactly. Hence modelling a systems correct and error behaviour will introduce some probabilistic or non deterministic behaviour. Hiding both errors and their handling may introduce divergence and this may be best interpreted \emph{fairly}.
 
  
@@ -945,12 +920,26 @@ The \verb$Farmer$  process is far from ideal in some regards.
 
 \section{Petri Nets  {\color{red} 2b added 2017}}
 {\color{red}
-Need to introduce the {\bf location of transitions} of a  automata. Parallel processes have disjoint locations. Sequential processes, choice and action prefixing have identical locations.  The {\sf hide}ing preserves the location of all observed transitions.
+
 
 What we refer to as a Petri Net is actually an extension of Petri Nets with labels on the  transition.  This appear in the literature under the name of the \emph{Box calculus}. Our definition of parallel composition is not a part of main stream Petri Nets but a part of the Box calculus.  
 
-Up until now  we have not distinguished between a process specification $\mathcal{A}$ written in our language  and its semantics displayed  as an automata {\sf A}.  Now that we define a Petri Net semantics for  the same language will define 
-a function {\sf Petri} that constructs a Petri Net with event labelled transitions from a process specification $\mathcal{P}$.  We will  writte  ${\sf Petri(\mathcal{P})}$.
+{\color{blue}
+\emph{{\bf A Petri Net} is a tuple  $\sf A \triangleq (P_A,S_A,T_A,Arcs_A,\alpha_A,Name_A)$  where:
+\begin{description}
+\item[$\sf P_A$] is the set of places,
+\item[$\sf S_A$] is the set of  initial  Markings $\sf M_A\subseteq S_A$ where a Marking is  a set of placess $\sf M_A\subseteq P_A$
+\item[$\sf T_A$] is the set of transitions 
+\item[$\sf Edges_A$] Edges join node to transitions and transitions to nodes. There can be multiple places joined to a single transition and multiple transition joined to a single place. 
+\newline
+$\sf Edges_A\subseteq \{(p,t): p\in P_A, t\in T_A \}  \cup \{(t,p): p\in P_A, t\in T_A \}$
+\item[$\sf \alpha_A$] is the alphabet of the process
+\item[$Name_A$] a transition naming function $\sf Name_A:T_A\rightarrow \alpha_A$
+\end{description}
+}
+$\Box$
+}
+
 
  \subsection{Appearance}
  Nets have  Places, large circles,  not nodes and the initial state of a Petri Net is a set of places each  \emph{marked} with a  token, a small black circle. The transitions are represented by Boxes and event names. Arcs are added from \emph{pre place}, ${\sf\bullet t}$ to the Box of transition {\sf t}  and from transition {\sf t} Box  to \emph{post place} ${\sf t\bullet}$.
@@ -996,6 +985,7 @@ We can compute, {\sf PTokenRule},  a \emph{partial Token Rule} that takes a set 
 \subsection{From Automata to Petri Nets}
 Building Petri Nets from automata with located transitions {\sf LA2PN} works as follows:
 
+{\bf Suggestion 1 *The direct assault is Not So Good*} 
 Note the Interleaving Merge of {\bf N processes} builds  an Automata that is an {\bf N-dimensional} cube. The first thing you need to do is identify the start and end "corners". 
 
 \vspace{1em} \begin{minipage}{0.2\textwidth}
@@ -1013,7 +1003,7 @@ S= A||B.
 
 In the above example the start and end corners are marked with blue and green nodes. But this is because the "cubes" are the whole automata. What is required is to find these cubes. 
 
-{\bf Suggestion 1 *Not So Good*}  Let {\sf Loc(A) = 1, Loc(B)=2} in above.   Add the root {\sf 0} to the TODO list. For each element in TODO list compute the surfaces if  we have  two transitions with disjoint location leaving  so compute $\sf \{0,1,2,4\}$. Remove $\sf 0$ from the TODO list and add nodes ${\sf \{1,2,4\}}$ to the TODO list.  When 
+ Let {\sf Loc(A) = 1, Loc(B)=2} in above.   Add the root {\sf 0} to the TODO list. For each element in TODO list compute the surfaces if  we have  two transitions with disjoint location leaving  so compute $\sf \{0,1,2,4\}$. Remove $\sf 0$ from the TODO list and add nodes ${\sf \{1,2,4\}}$ to the TODO list.  When 
 $\arop{n}{\_}{x}{l}$,  $\arop{m}{\_}{x}{k}$, ${\sf  l \notin Loc(Next(n))}$ and ${\sf  k \notin Loc(Next(m))}$ then {\sf x} is ${\sf \{1,2\}}$ end!
 
 Question with {\sf n} distinct locations, $\sf \{1,2,3,4,\ldots n\}$ ?
@@ -1022,11 +1012,15 @@ Question with {\sf n} distinct locations, $\sf \{1,2,3,4,\ldots n\}$ ?
 \end{enumerate}
 Having done this the cubes can be converted into Petri Nets and joined together.
 
-{\bf Suggestion 2 *Looks Good*} Step 1 approximation build separate Nets one for each location, duplicating synchronised events. Where {\bf twists} occur make cross product of places.
+{\bf Suggestion 2 *Looks Good*} Step 1 approximation build separate Nets one for each location, splitting the  synchronised events into components. Where {\bf twists} occur make cross product of places.
 
 Note we glue automata together by glueing two nodes together and with Petri Nets we need to glue to markings together. This is done by building the cross product of  two sets of tokens.
 
+{\bf Suggestion 3}   Define a Location space where each location is a subset of primitive locations. Build a Place for each primitive location an start adding transitions by adding pre arcs for each primitive. Th e post arcs are added to new Places of each primitive  location. When the automata returns to an existing state  glue the corresponding Markings together.   
 
+Simplify the Net  by pruning merging identical Places then by pruning identical Transitions.  Review!
+
+{\bf Some  tests:}
 \[{\sf A\sim  TokenRule(LA2PN(A))}\]
 
 \subsection{Indexed Petri Nets}
