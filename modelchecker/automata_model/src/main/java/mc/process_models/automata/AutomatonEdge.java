@@ -75,7 +75,4 @@ public class AutomatonEdge extends ProcessModelObject {
         return result;
     }
 
-
-
-
 }
