@@ -52,7 +52,8 @@ public class Expander {
         identMap.clear();
         if (process.hasVariableSet())
             hiddenVariables = process.getVariables().getVariables();
-        else hiddenVariables = Collections.emptySet();
+        else
+            hiddenVariables = Collections.emptySet();
         Map<String, Object> variableMap = new HashMap<>();
         for (LocalProcessNode node : process.getLocalProcesses()) {
             identMap.put(node.getIdentifier(),new ArrayList<>());
@@ -344,7 +345,7 @@ public class Expander {
 
     private IdentifierNode expand(IdentifierNode astNode, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException {
         String identifier = processVariables(astNode.getIdentifier(), variableMap, astNode.getLocation(), context);
-        astNode.setIdentifer(identifier);
+        astNode.setIdentifier(identifier);
         return astNode;
     }
 

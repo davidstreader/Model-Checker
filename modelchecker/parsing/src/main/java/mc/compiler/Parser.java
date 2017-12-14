@@ -713,7 +713,7 @@ public class Parser {
             IdentifierNode identifier = parseIdentifier();
 
             if (peekToken() instanceof OpenBracketToken) {
-                identifier.setIdentifer(identifier.getIdentifier() + parseIndices());
+                identifier.setIdentifier(identifier.getIdentifier() + parseIndices());
             }
 
             return identifier;

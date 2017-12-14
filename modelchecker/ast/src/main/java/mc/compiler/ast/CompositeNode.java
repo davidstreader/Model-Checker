@@ -1,17 +1,13 @@
 package mc.compiler.ast;
 
+import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
 import mc.util.Location;
-@ToString
-@Getter
-@Setter
+
+@Data
 @EqualsAndHashCode(callSuper=true)
 public class CompositeNode extends ASTNode {
 
-	// fields
 	private ASTNode firstProcess;
 	private ASTNode secondProcess;
 	private String  operation;
@@ -22,5 +18,4 @@ public class CompositeNode extends ASTNode {
 		this.firstProcess  = firstProcess;
 		this.secondProcess = secondProcess;
 	}
-
 }

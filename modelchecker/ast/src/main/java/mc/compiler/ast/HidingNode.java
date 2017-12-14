@@ -1,10 +1,13 @@
 package mc.compiler.ast;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import mc.util.Location;
 
+@Data
+@EqualsAndHashCode(callSuper = true)
 public class HidingNode extends ASTNode {
 
-	// fields
 	private String type;
 	private SetNode set;
 
@@ -13,35 +16,4 @@ public class HidingNode extends ASTNode {
 		this.type = type;
 		this.set = set;
 	}
-
-	public String getType(){
-		return type;
-	}
-
-	public SetNode getSet(){
-		return set;
-	}
-
-    public void setSet(SetNode set){
-        this.set = set;
-    }
-
-    public boolean equals(Object obj){
-        boolean result = super.equals(obj);
-        if(!result){
-            return false;
-        }
-        if(obj == this){
-            return true;
-        }
-        if(obj instanceof HidingNode){
-            HidingNode node = (HidingNode)obj;
-            if(!type.equals(node.getType())){
-                return false;
-            }
-            return set.equals(node.getSet());
-        }
-
-        return false;
-    }
 }

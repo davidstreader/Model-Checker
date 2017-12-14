@@ -2,6 +2,7 @@ package mc.compiler.ast;
 
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
+import lombok.Getter;
 import lombok.ToString;
 import mc.util.Location;
 
@@ -9,15 +10,14 @@ import mc.util.Location;
 @ToString
 public class IfStatementNode extends ASTNode {
 
-    // fields
-    private BoolExpr condition;
-    private ASTNode trueBranch;
-    private ASTNode falseBranch;
-    private Context z3Context;
-
+    @Getter private BoolExpr condition;
+    @Getter private ASTNode trueBranch;
+    @Getter private ASTNode falseBranch;
+            private Context z3Context;
 
     /**
      * The set up structure for handling if statements
+     *
      * @param condition     The boolean expression that determines if the true branch occurs
      * @param trueBranch    The branch directly after the "then", what happens when "condition" is true
      * @param location      Where in the code this appears
@@ -32,7 +32,8 @@ public class IfStatementNode extends ASTNode {
     }
 
     /**
-     *  This function is an extension of the basic if .. then, with the addition of else.
+     * This function is an extension of the basic if .. then, with the addition of else.
+     *
      * @param condition     The boolean expression that determines if the true branch or false branch occurs
      * @param trueBranch    The branch directly after the "then", what happens when "condition" is true
      * @param falseBranch   The else branch, what happens if condition is false
@@ -45,20 +46,6 @@ public class IfStatementNode extends ASTNode {
         this.trueBranch = trueBranch;
         this.falseBranch = falseBranch;
         this.z3Context = z3Context;
-    }
-
-
-
-    public BoolExpr getCondition(){
-        return condition;
-    }
-
-    public ASTNode getTrueBranch(){
-        return trueBranch;
-    }
-
-    public ASTNode getFalseBranch(){
-        return falseBranch;
     }
 
     public boolean hasFalseBranch(){ return falseBranch != null; }
@@ -87,5 +74,4 @@ public class IfStatementNode extends ASTNode {
 
         return false;
     }
-
 }

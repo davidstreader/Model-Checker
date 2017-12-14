@@ -1,14 +1,17 @@
 package mc.compiler.ast;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import mc.util.Location;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Data
+@EqualsAndHashCode(callSuper = true)
 public class SetNode extends ASTNode {
 
-	// fields
 	private List<String> set;
     private Map<Integer, RangesNode> rangeMap;
 
@@ -22,37 +25,5 @@ public class SetNode extends ASTNode {
         super(location);
         this.set = set;
         this.rangeMap = new HashMap<>();
-    }
-
-	public List<String> getSet(){
-		return set;
-	}
-
-	public void setSet(List<String> set){
-		this.set = set;
-	}
-
-    public Map<Integer, RangesNode> getRangeMap(){
-        return rangeMap;
-    }
-
-    public boolean equals(Object obj){
-        boolean result = super.equals(obj);
-        if(!result){
-            return false;
-        }
-        if(obj == this){
-            return true;
-        }
-        if(obj instanceof SetNode){
-            SetNode node = (SetNode)obj;
-            if(!rangeMap.equals(node.getRangeMap())){
-                return false;
-            }
-
-            return set.equals(node.getSet());
-        }
-
-        return false;
     }
 }

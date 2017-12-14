@@ -12,20 +12,26 @@ public class ReferenceReplacer {
 
 	private Set<String> globalReferences;
 	private Set<String> references;
+	private Set<String> globalRequirements;
 
     public ReferenceReplacer(){
         globalReferences = new HashSet<>();
         references = new HashSet<>();
+        globalRequirements = new HashSet<>();
     }
 
 	public AbstractSyntaxTree replaceReferences(AbstractSyntaxTree ast, BlockingQueue<Object> messageQueue) throws CompilationException, InterruptedException {
 		reset();
 
 		List<ProcessNode> processes = ast.getProcesses();
+		if(ast.getProcessHierarchy() == null)
+			ast.setProcessHierarchy(new ProcessHierarchy());
 
         for (ProcessNode process : processes) {
+        	globalRequirements.clear();
             replaceReferences(process, messageQueue);
-        }
+            ast.getProcessHierarchy().getDependencies().putAll(process.getIdentifier(),globalRequirements);
+		}
 
 		return ast;
 	}
@@ -131,6 +137,7 @@ public class ReferenceReplacer {
 		}
 		// check if the identifier is referencing a global process
 		else if(globalReferences.contains(reference)){
+			globalRequirements.add(reference);
 			return astNode;
 		}
         throw new CompilationException(getClass(),"Unable to find reference for node: "+reference,astNode.getLocation());
@@ -172,5 +179,6 @@ public class ReferenceReplacer {
 	private void reset() {
 		globalReferences.clear();
 		references.clear();
+		globalRequirements.clear();
 	}
 }
