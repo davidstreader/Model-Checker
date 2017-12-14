@@ -29,7 +29,7 @@ public class PetriNetEdge extends ProcessModelObject {
     }
 
     public String toString(){
-        String builder = "edge{\n" +
+/*        String builder = "edge{\n" +
                 "\tid:" + getId() + "\n" +
                 "\tlabel:" + label + "\n" +
                 "\tfrom:" + from.getId() + "\n" +
@@ -37,7 +37,8 @@ public class PetriNetEdge extends ProcessModelObject {
                 "\tmetadata:" + getGuard() + "\n" +
                 "}";
 
-        return builder;
+        return builder;*/
+        return "";
     }
 
 

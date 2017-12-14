@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 public class PetriNet /*extends ProcessModelObject implements ProcessModel */{
-    private PetriNetTransitions root;
+/*    private PetriNetTransitions root;
     private Map<String, PetriNetTransitions> nodeMap;
     private Map<String, PetriNetEdge> edgeMap;
     private Map<String, List<PetriNetEdge>> alphabet;
@@ -41,5 +41,5 @@ public class PetriNet /*extends ProcessModelObject implements ProcessModel */{
         this.alphabet = new HashMap<>();
         this.nodeId = 0;
         this.edgeId = 0;
-    }
+    }*/
 }
