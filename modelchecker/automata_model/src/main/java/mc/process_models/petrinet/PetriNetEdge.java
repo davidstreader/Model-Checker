@@ -4,7 +4,6 @@ package mc.process_models.petrinet;
 import lombok.Getter;
 import lombok.Setter;
 import mc.process_models.ProcessModelObject;
-import mc.process_models.automata.AutomatonEdge;
 
 
 public class PetriNetEdge extends ProcessModelObject {

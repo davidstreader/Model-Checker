@@ -74,8 +74,8 @@
                                                 <Button layoutX="613.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleClearGraph" text="Clear" />
                                                 <Button layoutX="675.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleFreeze" text="Freeze automata" />
                                                 <Button layoutX="812.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleUnfreeze" text="Unfreeze automata" />
-                                                <Button layoutX="959.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleFreezeAll" text="Freeze all" />
-                                                <Button layoutX="1072.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleUnfreezeAll" text="Unfreeze all" />
+                                                <Button layoutX="964.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleFreezeAll" text="Freeze all" />
+                                                <Button layoutX="1052.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleUnfreezeAll" text="Unfreeze all" />
                                             </children>
 
                                         </AnchorPane>
