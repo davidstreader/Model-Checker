@@ -1,7 +1,11 @@
 package mc.compiler.token;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import mc.util.Location;
 
+@Data
+@EqualsAndHashCode(callSuper = true)
 public class IntegerToken extends Token {
 	
 	private int integer;
@@ -10,25 +14,9 @@ public class IntegerToken extends Token {
 		super(location);
 		this.integer = integer;
 	}
-	
-	public int getInteger(){
-		return integer;
-	}
 
-	public boolean equals(Object obj){
-		if(obj == this){
-			return true;
-		}
-		if(obj instanceof IntegerToken){
-			IntegerToken token = (IntegerToken)obj;
-			return integer == token.getInteger();
-		}
-
-		return false;
-	}
-
+	@Override
 	public String toString(){
 		return "" + integer;
 	}
-	
 }

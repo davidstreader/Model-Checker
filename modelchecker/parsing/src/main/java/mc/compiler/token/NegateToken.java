@@ -1,19 +1,19 @@
 package mc.compiler.token;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import mc.util.Location;
 
+@Data
+@EqualsAndHashCode(callSuper = true)
 public class NegateToken extends OperatorToken {
 
 	public NegateToken(Location location){
 		super(location);
 	}
 
-	public boolean equals(Object obj){
-		return obj instanceof NegateToken;
-	}
-
+	@Override
 	public String toString(){
 		return "!";
 	}
-
 }

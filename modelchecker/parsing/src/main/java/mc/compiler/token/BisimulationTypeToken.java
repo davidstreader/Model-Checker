@@ -1,19 +1,19 @@
 package mc.compiler.token;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import mc.util.Location;
 
+@Data
+@EqualsAndHashCode(callSuper = true)
 public class BisimulationTypeToken extends OperationTypeToken {
-	
-	public BisimulationTypeToken(Location location){
+
+	public BisimulationTypeToken(Location location) {
 		super(location);
 	}
 
-	public boolean equals(Object obj){
-		return obj instanceof BisimulationTypeToken;
-	}
-
-	public String toString(){
+	@Override
+	public String toString() {
 		return "~";
 	}
-	
 }

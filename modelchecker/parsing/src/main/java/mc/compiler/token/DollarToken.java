@@ -1,19 +1,19 @@
 package mc.compiler.token;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import mc.util.Location;
 
+@Data
+@EqualsAndHashCode(callSuper = true)
 public class DollarToken extends SymbolToken {
 
 	public DollarToken(Location location){
 		super(location);
 	}
 
-	public boolean equals(Object obj){
-		return obj instanceof DollarToken;
-	}
-
+	@Override
 	public String toString(){
 		return "$";
 	}
-
 }

@@ -1,7 +1,11 @@
 package mc.compiler.token;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import mc.util.Location;
 
+@Data
+@EqualsAndHashCode(callSuper = true)
 public class ActionToken extends Token {
 
 	private String action;
@@ -11,24 +15,8 @@ public class ActionToken extends Token {
 		this.action = action;
 	}
 
-	public String getAction(){
-		return action;
-	}
-
-	public boolean equals(Object obj){
-		if(obj == this){
-			return true;
-		}
-		if(obj instanceof ActionToken){
-			ActionToken token = (ActionToken)obj;
-			return action.equals(token.getAction());
-		}
-
-		return false;
-	}
-
+	@Override
 	public String toString(){
 		return action;
 	}
-
 }

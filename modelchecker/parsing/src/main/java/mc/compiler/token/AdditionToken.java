@@ -1,17 +1,18 @@
 package mc.compiler.token;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import mc.util.Location;
 
+@Data
+@EqualsAndHashCode(callSuper = true)
 public class AdditionToken extends OperatorToken {
 
 	public AdditionToken(Location location){
 		super(location);
 	}
 
-	public boolean equals(Object obj){
-		return obj instanceof AdditionToken;
-	}
-
+	@Override
 	public String toString(){
 		return "+";
 	}

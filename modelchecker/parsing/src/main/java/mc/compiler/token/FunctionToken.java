@@ -1,34 +1,22 @@
 package mc.compiler.token;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import mc.util.Location;
 
+@Data
+@EqualsAndHashCode(callSuper = true)
 public class FunctionToken extends Token {
 
-	private String function;
+	private final String function;
 
 	public FunctionToken(String function, Location location){
 		super(location);
 		this.function = function;
 	}
 
-	public String getFunction(){
-		return function;
-	}
-
-	public boolean equals(Object obj){
-		if(obj == this){
-			return true;
-		}
-		if(obj instanceof FunctionToken){
-			FunctionToken token = (FunctionToken)obj;
-			return function.equals(token.getFunction());
-		}
-
-		return false;
-	}
-
+	@Override
 	public String toString(){
 		return function;
 	}
-
 }

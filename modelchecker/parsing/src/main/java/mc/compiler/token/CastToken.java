@@ -1,17 +1,22 @@
 package mc.compiler.token;
-import lombok.Getter;
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import mc.util.Location;
-/**
- * Created by smithjord3 on 6/12/17.
- */
+
+@Data
+@EqualsAndHashCode(callSuper = true)
 public class CastToken extends Token{
 
-    @Getter
     private String castType;
 
-    public CastToken( String type, Location loc) {
+    public CastToken(String type, Location loc) {
         super(loc);
         castType = type;
     }
 
+    @Override
+    public String toString(){
+        return castType;
+    }
 }

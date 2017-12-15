@@ -1,37 +1,25 @@
 package mc.compiler.token;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import mc.util.Location;
 
 /**
  * Identifier token is any variable starting with an uppercase letter.
  */
+@Data
+@EqualsAndHashCode(callSuper = true)
 public class IdentifierToken extends Token {
 
-	private String identifier;
+	private final String identifier;
 
 	public IdentifierToken(String identifier, Location location){
 		super(location);
 		this.identifier = identifier;
 	}
 
-	public String getIdentifier(){
-		return identifier;
-	}
-
-	public boolean equals(Object obj){
-		if(obj == this){
-			return true;
-		}
-		if(obj instanceof IdentifierToken){
-			IdentifierToken token = (IdentifierToken)obj;
-			return identifier.equals(token.getIdentifier());
-		}
-
-		return false;
-	}
-
+	@Override
 	public String toString(){
 		return identifier;
 	}
-
 }

@@ -1,19 +1,19 @@
 package mc.compiler.token;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import mc.util.Location;
 
+@Data
+@EqualsAndHashCode(callSuper = true)
 public class GreaterThanToken extends OperatorToken {
 
 	public GreaterThanToken(Location location){
 		super(location);
 	}
 
-	public boolean equals(Object obj){
-		return obj instanceof GreaterThanToken;
-	}
-
+	@Override
 	public String toString(){
 		return ">";
 	}
-
 }

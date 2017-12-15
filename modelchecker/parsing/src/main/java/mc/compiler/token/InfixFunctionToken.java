@@ -1,9 +1,11 @@
 package mc.compiler.token;
 
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import mc.util.Location;
 
-@EqualsAndHashCode
+@Data
+@EqualsAndHashCode(callSuper = true)
 public class InfixFunctionToken extends Token{
 
     private String label;
