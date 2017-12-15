@@ -9,7 +9,7 @@
  * "license.txt" or
  * https://github.com/jrtom/jung/blob/master/LICENSE for a description.
  */
-package mc.client.ui;
+package mc.client.graph;
 
 import java.awt.Dimension;
 import java.awt.geom.Point2D;

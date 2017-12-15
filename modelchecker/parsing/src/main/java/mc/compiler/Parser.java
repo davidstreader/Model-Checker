@@ -1317,7 +1317,7 @@ public class Parser {
                     throw constructException("MaxTransitions not set in equation settings", error.getLocation());
                 }
 
-                break; // Breaks parsing of the settings for equation
+                break; // Ends parsing of the settings for equation
             }
 
             if(!(nextToken() instanceof CommaToken)) {
