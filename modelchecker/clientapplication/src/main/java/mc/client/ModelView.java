@@ -7,10 +7,8 @@ import edu.uci.ics.jung.graph.DirectedSparseGraph;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.*;
-import edu.uci.ics.jung.visualization.decorators.EdgeShape;
 import javafx.embed.swing.SwingNode;
 import javafx.geometry.Bounds;
-import javafx.scene.control.ComboBox;
 import lombok.Getter;
 import lombok.Setter;
 import mc.client.graph.AutomataBorderPaintable;
@@ -18,6 +16,7 @@ import mc.client.graph.DirectedEdge;
 import mc.client.graph.GraphNode;
 import mc.client.graph.NodeStates;
 import mc.client.ui.DoubleClickHandler;
+import mc.client.ui.EdgeShape;
 import mc.client.ui.SeededRandomizedLayout;
 import mc.client.ui.SpringlayoutBase;
 import mc.compiler.CompilationObject;
@@ -57,7 +56,8 @@ public class ModelView implements Observer{
 
     private CompilationObject compiledResult;
 
-    private static final Font sourceCodePro;
+    public static final Font sourceCodePro;
+
 
     @Setter
     private Consumer<Collection<String>> listOfAutomataUpdater;
@@ -215,6 +215,9 @@ public class ModelView implements Observer{
             processModelsToDisplay.addAll(visibleModels);
     }
 
+    /**
+     * All functions below deal with "freezing" vertexes, this means to disallow the layout algoirthm to act upon the vertexes
+     */
     public void freezeAllCurrentlyDisplayed() {
         if(layout != null ) {
             for(String processModeName : processModels.keySet())
@@ -248,7 +251,7 @@ public class ModelView implements Observer{
         }
     }
 
-    public Map<String, ProcessModel> getProcessMap() {
+    private Map<String, ProcessModel> getProcessMap() {
         return  compiledResult.getProcessMap();
     }
 
@@ -292,12 +295,11 @@ public class ModelView implements Observer{
         vv.getRenderContext().setEdgeLabelTransformer(DirectedEdge::getLabel);
 
         // Sets edges as lines
-        vv.getRenderContext().setEdgeShapeTransformer(EdgeShape.line(graph));
+        vv.getRenderContext().setEdgeShapeTransformer(EdgeShape.mixedLineCurve(graph));
 
 
 
         processModels = new HashMap<>();
-
     }
 
 

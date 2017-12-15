@@ -4,7 +4,9 @@ import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.visualization.MultiLayerTransformer;
 import edu.uci.ics.jung.visualization.VisualizationServer;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
+import javafx.scene.text.Text;
 import lombok.RequiredArgsConstructor;
+import mc.client.ModelView;
 
 import java.awt.*;
 import java.awt.geom.Point2D;
@@ -47,7 +49,8 @@ public class AutomataBorderPaintable implements VisualizationServer.Paintable{
             g.setColor(Color.BLACK);
             g.draw(rect);
 
-            g.drawString(key, (int) boundingBox.getX(), (int) boundingBox.getY());
+            g.drawString(key, (int) (rect.getBounds2D().getX()+rect.getBounds2D().getWidth()/2-(0.5*key.length()/2)),
+                              (int) rect.getBounds2D().getY()+20);
         });
 
     }
