@@ -49,6 +49,7 @@ public class AutomataBorderPaintable implements VisualizationServer.Paintable{
             g.setColor(Color.BLACK);
             g.draw(rect);
 
+
             g.drawString(key, (int) (rect.getBounds2D().getX()+rect.getBounds2D().getWidth()/2-(0.5*key.length()/2)),
                               (int) rect.getBounds2D().getY()+20);
         });
