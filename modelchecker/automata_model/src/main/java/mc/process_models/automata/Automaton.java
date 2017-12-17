@@ -405,7 +405,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("automaton:{\n");
+        builder.append(getId()+"=automaton:{\n");
         builder.append("\tnodes:{\n");
         for (AutomatonNode node : nodeMap.values()) {
             builder.append("\t\t").append(node.getId());

@@ -51,13 +51,33 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
 
         Automaton automaton = ((Automaton)processStack.pop()).copy();
 
-        if(processNode.hasRelabels()){
-            processRelabelling(automaton, processNode.getRelabels());
-        }
+        System.out.println(automaton);
 
-        if(processNode.hasHiding()){
+
+        //Set the id correctly if there is a processes like this: C = B., otherwise it just takes Bs id.
+        if(!automaton.getId().equals(processNode.getIdentifier()))
+            automaton.setId(processNode.getIdentifier());
+
+        //Rename the nodes if they dont match the automata name. (Happens if we are assigning one process to another)
+        // It is not a parallel composition
+        automaton.getNodes().stream().filter(currentNode -> currentNode.getId().contains(".")
+                                                            && !currentNode.getId().contains("||")
+                                                            && !currentNode.getId().contains("abs"))
+                                     .forEach(currentNode -> {
+            String idElements[] = currentNode.getId().split("\\.");
+            if (!idElements[0].equals(processNode.getIdentifier())) {
+                idElements[0] = processNode.getIdentifier();
+                currentNode.setId(String.join(".", idElements));
+            }
+        });
+
+        if(processNode.hasRelabels())
+            processRelabelling(automaton, processNode.getRelabels());
+
+
+        if(processNode.hasHiding())
             processHiding(automaton, processNode.getHiding());
-        }
+
 
         return labelAutomaton(automaton);
     }
@@ -338,6 +358,11 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         this.processStack = new Stack<>();
     }
 
+
+
+    /**
+        Functions for instantiating the plugin manager functions
+     */
     public static void addFunction(Class<? extends IProcessFunction> clazz){
 
         String name = instantiateClass(clazz).getFunctionName();

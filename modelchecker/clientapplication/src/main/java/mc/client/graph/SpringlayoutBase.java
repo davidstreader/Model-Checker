@@ -181,7 +181,8 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
                 double vy = p1.getY() - p2.getY();
                 double len = Math.sqrt(vx * vx + vy * vy);
 
-                double desiredLen = 100;
+                double desiredLen =  120;
+
 
                 // round from zero, if needed [zero would be Bad.].
                 len = (len == 0) ? .0001 : len;
