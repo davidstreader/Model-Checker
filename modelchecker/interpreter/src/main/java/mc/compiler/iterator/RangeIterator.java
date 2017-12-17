@@ -18,7 +18,7 @@ public class RangeIterator implements IndexIterator<Integer> {
 
     @Override
     public Integer next(){
-        if(current+1 < end)
+        if(hasNext())
             return current++;
         throw new NoSuchElementException();
     }

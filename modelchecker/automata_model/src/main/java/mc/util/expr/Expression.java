@@ -79,9 +79,9 @@ public class Expression {
                     Expr[] consts = new Expr[subMap.size()];
                     Expr[] replacements = new Expr[subMap.size()];
                     int i =0;
-                    for (String c : subMap.keySet()) {
-                        consts[i] = key.thread.mkBVConst(c,32);
-                        replacements[i++] = key.thread.mkBV(subMap.get(c),32);
+                    for (Map.Entry<String,Integer> c : subMap.entrySet()) {
+                        consts[i] = key.thread.mkBVConst(c.getKey(),32);
+                        replacements[i++] = key.thread.mkBV(c.getValue(),32);
                     }
                     Expr t = expr.substitute(consts,replacements);
                     if (Thread.currentThread().isInterrupted()) {
@@ -134,19 +134,19 @@ public class Expression {
         if (subMap == null) return expr;
 
         int numberNull = 0;
-        for (String c : subMap.keySet())
-            if(subMap.get(c) == null)
+        for (Expr c : subMap.values())
+            if(c == null)
                 numberNull++;
 
 
         Expr[] consts = new Expr[subMap.size()-numberNull];
         Expr[] replacements = new Expr[subMap.size()-numberNull];
         int i =0;
-        for (String c : subMap.keySet()) {
-            if(subMap.get(c) == null)
+        for (Map.Entry<String,Expr> entry : subMap.entrySet()) {
+            if(entry.getValue() == null)
                 continue;
-            consts[i] = ctx.mkBVConst(c,32);
-            replacements[i++] = subMap.get(c);
+            consts[i] = ctx.mkBVConst(entry.getKey(),32);
+            replacements[i++] = entry.getValue();
         }
         T t = (T) expr.substitute(consts,replacements);
         if (Thread.currentThread().isInterrupted()) {

@@ -38,7 +38,7 @@ public class OperationResult {
     }
     @AllArgsConstructor
     @Getter
-    public class OperationProcess {
+    public static class OperationProcess {
         private String ident;
         private Location location;
     }

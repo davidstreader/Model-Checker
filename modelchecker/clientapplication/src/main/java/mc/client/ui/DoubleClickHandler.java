@@ -1,5 +1,6 @@
 package mc.client.ui;
 
+import com.google.common.collect.Multimap;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.GraphMouseListener;
 import edu.uci.ics.jung.visualization.picking.PickedState;
@@ -17,10 +18,10 @@ import java.util.Set;
  */
 public class DoubleClickHandler implements GraphMouseListener<GraphNode> {
     private long startTime = -1;
-    private Map<String, Set<GraphNode>> processModelVertexes;
+    private Multimap<String, GraphNode> processModelVertexes;
     private VisualizationViewer<GraphNode,DirectedEdge> vv;
 
-    public DoubleClickHandler(Map<String, Set<GraphNode>> processModelVertexes_, VisualizationViewer<GraphNode,DirectedEdge> vv_) {
+    public DoubleClickHandler(Multimap<String, GraphNode> processModelVertexes_, VisualizationViewer<GraphNode,DirectedEdge> vv_) {
         processModelVertexes = processModelVertexes_;
         vv = vv_;
 
@@ -61,7 +62,7 @@ public class DoubleClickHandler implements GraphMouseListener<GraphNode> {
 
     }
 
-    public void updateProcessModelList(Map<String, Set<GraphNode>> processModels) {
+    public void updateProcessModelList(Multimap<String, GraphNode> processModels) {
         processModelVertexes = processModels;
     }
 }

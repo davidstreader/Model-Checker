@@ -2,7 +2,9 @@ package mc.compiler;
 
 import com.google.common.collect.Lists;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
+import lombok.SneakyThrows;
 import mc.compiler.ast.OperationNode;
 import mc.exceptions.CompilationException;
 import mc.plugins.IOperationInfixFunction;
@@ -79,60 +81,51 @@ public class EquationEvaluator {
         return new EquationReturn(results,toRender);
     }
 
+    @SneakyThrows(value = InterruptedException.class)
     private boolean testModel(List<ProcessModel> processModels, BlockingQueue<Object> messageQueue, ModelStatus status, OperationNode operation, Context context, com.microsoft.z3.Context z3Context, Map<String, ProcessModel> toRender, String firstId, String secondId, int size)  throws CompilationException {
 
         Interpreter interpreter = new Interpreter();
-        try {
-            List<Automaton> automata = new ArrayList<>();
-            Map<String, ProcessModel> currentMap = new HashMap<>();
-            for (ProcessModel m: processModels) {
-                currentMap.put(m.getId(),m);
-            }
-
-
-
-            automata.add((Automaton) interpreter.interpret("automata", operation.getFirstProcess(), getNextEquationId(), currentMap,z3Context));
-            automata.add((Automaton) interpreter.interpret("automata", operation.getSecondProcess(), getNextEquationId(), currentMap,z3Context));
-
-
-            //Using the name of the operation, this finds the appropriate function to use in operations/src/main/java/mc/operations/
-            String currentOperation = operation.getOperation().toLowerCase();
-
-            boolean result = instantiateClass(operationsMap.get(currentOperation)).evaluate(automata);
-
-            //As getNextEquationId for some reason breaks bisimulation, if they are the same process just pass it
-            if(operation.getFirstProcess().equals(operation.getSecondProcess()))
-                result = true;
-
-            if (operation.isNegated()) {
-                result = !result;
-            }
-            if (!result && status.failCount < context.getFailCount()) {
-                String id2 = "op"+(status.id++)+": (";
-                toRender.put(id2+firstId+")",automata.get(0));
-                toRender.put(id2+secondId+")",automata.get(1));
-
-                for (Map.Entry<String,ProcessModel> entry: currentMap.entrySet() )
-                    toRender.put(id2+entry.getKey()+")",entry.getValue());
-
-                status.failCount++;
-            }
-
-            if(result)
-                status.passCount++;
-
-            int done = ++status.doneCount;
-
-            messageQueue.add(new LogMessage("Evaluating equations (" + done + "/" + size +") ("+((int)(done/(double)size*100.0))+ "%)", 1));
-            status.timeStamp = System.currentTimeMillis();
-
-            return result;
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            System.out.println(e);
-            throw new RuntimeException(e);
+        List<Automaton> automata = new ArrayList<>();
+        Map<String, ProcessModel> currentMap = new HashMap<>();
+        for (ProcessModel m: processModels) {
+            currentMap.put(m.getId(),m);
         }
 
+        automata.add((Automaton) interpreter.interpret("automata", operation.getFirstProcess(), getNextEquationId(), currentMap,z3Context));
+        automata.add((Automaton) interpreter.interpret("automata", operation.getSecondProcess(), getNextEquationId(), currentMap,z3Context));
+
+        //Using the name of the operation, this finds the appropriate function to use in operations/src/main/java/mc/operations/
+        String currentOperation = operation.getOperation().toLowerCase();
+
+        boolean result = instantiateClass(operationsMap.get(currentOperation)).evaluate(automata);
+
+        //As getNextEquationId for some reason breaks bisimulation, if they are the same process just pass it
+        if(operation.getFirstProcess().equals(operation.getSecondProcess()))
+            result = true;
+
+        if (operation.isNegated()) {
+            result = !result;
+        }
+        if (!result && status.failCount < context.getFailCount()) {
+            String id2 = "op"+(status.id++)+": (";
+            toRender.put(id2+firstId+")",automata.get(0));
+            toRender.put(id2+secondId+")",automata.get(1));
+
+            for (Map.Entry<String,ProcessModel> entry: currentMap.entrySet() )
+                toRender.put(id2+entry.getKey()+")",entry.getValue());
+
+            status.failCount++;
+        }
+
+        if(result)
+            status.passCount++;
+
+        int done = ++status.doneCount;
+
+        messageQueue.add(new LogMessage("Evaluating equations (" + done + "/" + size +") ("+((int)(done/(double)size*100.0))+ "%)", 1));
+        status.timeStamp = System.currentTimeMillis();
+
+        return result;
     }
 
     private String getNextEquationId(){
@@ -167,6 +160,7 @@ public class EquationEvaluator {
         Map<String,ProcessModel> toRender;
     }
 
+    @Data
     private static class ModelStatus {
         int passCount;
         int failCount;

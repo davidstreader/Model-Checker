@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.ToString;
 import mc.util.Location;
 
+import java.util.Objects;
+
 
 @ToString
 public class IfStatementNode extends ASTNode {
@@ -48,8 +50,17 @@ public class IfStatementNode extends ASTNode {
         this.z3Context = z3Context;
     }
 
-    public boolean hasFalseBranch(){ return falseBranch != null; }
+    public boolean hasFalseBranch(){
+        return falseBranch != null;
+    }
 
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(super.hashCode(), condition, trueBranch, falseBranch);
+    }
+
+    @Override
     public boolean equals(Object obj){
         boolean result = super.equals(obj);
         if(!result){

@@ -46,8 +46,7 @@ public class UserInterfaceApplication extends Application {
     }
 
     public void setMacDockIcon(Image img) {
-        try
-        {
+        try {
             Class<?> applicationClass = Class.forName("com.apple.eawt.Application");
 
             Method getApplicationMethod = applicationClass.getMethod("getApplication");
@@ -56,9 +55,8 @@ public class UserInterfaceApplication extends Application {
             Object macOSXApplication = getApplicationMethod.invoke(null);
             setDockIconMethod.invoke(macOSXApplication, img);
         }
-        catch(Exception e)
-        {
-            // If it doesn't work, just continue
+        catch(Exception ignored) {
+
         }
     }
 }

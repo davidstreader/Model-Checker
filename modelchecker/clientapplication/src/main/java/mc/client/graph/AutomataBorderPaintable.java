@@ -1,26 +1,23 @@
 package mc.client.graph;
 
+import com.google.common.collect.Multimap;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.visualization.MultiLayerTransformer;
 import edu.uci.ics.jung.visualization.VisualizationServer;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
-import javafx.scene.text.Text;
 import lombok.RequiredArgsConstructor;
-import mc.client.ModelView;
 
 import java.awt.*;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
 
 @RequiredArgsConstructor
 public class AutomataBorderPaintable implements VisualizationServer.Paintable{
 
     private final VisualizationViewer<GraphNode, DirectedEdge> vv;
-    private final Map<String,Set<GraphNode>> automata;
+    private final Multimap<String,GraphNode> automata;
 
     @Override
     public void paint(Graphics g_) {
@@ -34,7 +31,7 @@ public class AutomataBorderPaintable implements VisualizationServer.Paintable{
                 .getMultiLayerTransformer();
 
 
-        automata.forEach((key, value) -> {
+        automata.asMap().forEach((key, value) -> {
             Rectangle2D boundingBox = computeBoundingBox(value, layout, transform);
 
             double d = 80;
