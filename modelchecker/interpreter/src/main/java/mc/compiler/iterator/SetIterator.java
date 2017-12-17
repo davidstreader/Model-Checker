@@ -1,6 +1,7 @@
 package mc.compiler.iterator;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 
 public class SetIterator implements IndexIterator<String> {
@@ -16,7 +17,9 @@ public class SetIterator implements IndexIterator<String> {
 
     @Override
     public String next() {
-        return set.get(index++);
+        if(hasNext())
+            return set.get(index++);
+        throw new NoSuchElementException();
     }
 
     @Override

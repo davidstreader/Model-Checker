@@ -1,6 +1,5 @@
 package mc.compiler;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.collect.ImmutableSet;
 import com.microsoft.z3.BitVecNum;
 import com.microsoft.z3.BoolExpr;

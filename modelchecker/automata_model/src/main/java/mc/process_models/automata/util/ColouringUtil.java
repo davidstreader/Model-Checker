@@ -122,7 +122,6 @@ public class ColouringUtil {
     private List<Colour> constructColouring(AutomatonNode node){
         Set<Colour> colouringSet = new HashSet<>();
 
-        int from = node.getColour();
         node.getOutgoingEdges()
                 .forEach(edge -> colouringSet.add(new Colour(edge.getTo().getColour(),edge.getLabel(), node)));
         List<Colour> colouring = new ArrayList<>(colouringSet);

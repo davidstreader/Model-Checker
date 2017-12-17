@@ -56,7 +56,6 @@ public class UserInterfaceController implements Initializable {
 
     private boolean saveButton = false;
     private boolean dontSaveButton = false;
-    private boolean cancel = false;
     private boolean hasBeenSavedBefore = false;
 
 
@@ -350,7 +349,6 @@ public class UserInterfaceController implements Initializable {
     private void handleFileClose(ActionEvent event) {
         if (!(userCodeInput.getText().equals(""))) {
             saveButtonFunctionality();
-            System.exit(0);
         }
         System.exit(0);
     }
@@ -497,7 +495,6 @@ public class UserInterfaceController implements Initializable {
 
     private void saveButtonFunctionality() {
         dontSaveButton = false;
-        cancel = false;
         saveButton = true;
         FileChooser fileChooser;
         PrintStream readTo;
@@ -509,7 +506,7 @@ public class UserInterfaceController implements Initializable {
 
         try {
             if (selectedFile != null) {
-                readTo = new PrintStream(selectedFile);
+                readTo = new PrintStream(selectedFile,"UTF-8");
                 readTo.println(userCodeInput.getText());
                 readTo = readTheOptionsIntegers(readTo);
                 readTo = readTheOptionsBooleans(readTo);
@@ -525,7 +522,6 @@ public class UserInterfaceController implements Initializable {
     private void dontSaveButtonFunctionality() {
         saveButton = false;
         dontSaveButton = true;
-        cancel = false;
         FileChooser fileChooser = new FileChooser();
         fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("TXT", "*.txt"));
         fileChooser.setTitle("Open Resource File");
@@ -536,10 +532,12 @@ public class UserInterfaceController implements Initializable {
 
         try {
             if (selectedFile != null) {
-                scanner = new Scanner(selectedFile);
+                scanner = new Scanner(selectedFile,"UTF-8");
+                StringBuilder codeBuilder = new StringBuilder();
                 while (scanner.hasNext() && !scanner.hasNext("lengthEdgeValue:")) {
-                    theCode = theCode + scanner.nextLine() + "\n";
+                    codeBuilder.append(scanner.nextLine()).append("\n");
                 }
+                theCode = codeBuilder.toString();
                 readOptions(scanner);
                 scanner.close();
                 String length = userCodeInput.getText();
@@ -670,9 +668,6 @@ public class UserInterfaceController implements Initializable {
                 break;
             case "Quit":
                 System.exit(0);
-                break;
-            default:
-                break;
         }
 
         GridPane grid = new GridPane();
@@ -728,7 +723,6 @@ public class UserInterfaceController implements Initializable {
     private void cancelButtonFunctionality() {
         saveButton = false;
         dontSaveButton = false;
-        cancel = true;
         window.close();
     }
 
@@ -824,6 +818,8 @@ public class UserInterfaceController implements Initializable {
                 case "liveCompillingSelected:":
                     liveCompillingSelected = scanner.nextBoolean();
                     break;
+                default:
+                    throw new NoSuchElementException();
             }
         }
     }
@@ -848,7 +844,6 @@ public class UserInterfaceController implements Initializable {
     private void setBackFlags() {
         saveButton = false;
         dontSaveButton = false;
-        cancel = false;
     }
 
     /**

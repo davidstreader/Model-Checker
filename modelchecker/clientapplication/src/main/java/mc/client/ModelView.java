@@ -1,6 +1,8 @@
 package mc.client;
 
 
+import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
 import edu.uci.ics.jung.algorithms.layout.DAGLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.graph.DirectedSparseGraph;
@@ -52,7 +54,7 @@ public class ModelView implements Observer{
 
     private Set<String> processModelsToDisplay;
     private SortedSet<String> visibleModels; // Processes that are in the modelsList combox
-    private Map<String,Set<GraphNode>> processModels;
+    private Multimap<String,GraphNode> processModels;
 
     private CompilationObject compiledResult;
 
@@ -194,7 +196,7 @@ public class ModelView implements Observer{
             graph.addEdge(new DirectedEdge(e.getLabel(),UUID.randomUUID().toString()),from,to);
         });
 
-        this.processModels.put(automata.getId(),new HashSet<>(nodeMap.values()));
+        this.processModels.replaceValues(automata.getId(),nodeMap.values());
     }
 
     /**
@@ -305,7 +307,7 @@ public class ModelView implements Observer{
 
 
 
-        processModels = new HashMap<>();
+        processModels = MultimapBuilder.hashKeys().hashSetValues().build();
     }
 
 

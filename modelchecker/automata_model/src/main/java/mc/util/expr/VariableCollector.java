@@ -20,11 +20,11 @@ public class VariableCollector {
         //Get just the variables from the map
         HashMap<String, Integer> varMap = new HashMap<>();
         if (variableMap != null) {
-            for (String key : variableMap.keySet()) {
-                if (variableMap.get(key) instanceof Integer) {
-                    varMap.put(key, (Integer) variableMap.get(key));
+            variableMap.forEach((key,value)->{
+                if (value instanceof Integer) {
+                    varMap.put(key, (Integer)value);
                 }
-            }
+            });
         }
         //Map from used variables to list of variables and their values
         Map<String,Integer> newVarMap = new HashMap<>();
