@@ -446,6 +446,7 @@ public class UserInterfaceController implements Initializable {
                 // Within the compile function the code is then told to update an observer
                 codeCompiler.compile(userCode, new Context(), Expression.mkCtx(), new LinkedBlockingQueue<>());
 
+
                 compilerOutputDisplay.insertText(0,"Compiling completed sucessfully!");
             } catch (InterruptedException e) {
                 e.printStackTrace();

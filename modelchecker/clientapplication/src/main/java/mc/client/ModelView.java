@@ -58,7 +58,7 @@ public class ModelView implements Observer{
 
     private CompilationObject compiledResult;
 
-    public static final Font sourceCodePro;
+    private static final Font sourceCodePro;
 
 
     @Setter
@@ -83,6 +83,7 @@ public class ModelView implements Observer{
             throw new IllegalArgumentException("arg object was not of type compilationObject");
 
         compiledResult = (CompilationObject) arg;
+
         visibleModels = new TreeSet<>(getProcessMap().entrySet().stream()
                 .filter(e -> e.getValue().getProcessType() != ProcessType.AUTOMATA ||
                         ((Automaton)e.getValue()).getNodes().size() <= 40)
@@ -93,6 +94,8 @@ public class ModelView implements Observer{
         listOfAutomataUpdater.accept(visibleModels);
 
         updateLog.accept(compiledResult.getOperationResults(),compiledResult.getEquationResults());
+
+
     }
 
     /**
@@ -106,6 +109,7 @@ public class ModelView implements Observer{
             return new VisualizationViewer<>(new DAGLayout<>(new DirectedSparseGraph<>()));
 
         layoutInitalizer.setDimensions(new Dimension((int) s.getBoundsInParent().getWidth(), (int) s.getBoundsInParent().getHeight()));
+
 
         compiledResult.getProcessMap().keySet().stream()
                 .filter(processModelsToDisplay::contains)
@@ -139,12 +143,12 @@ public class ModelView implements Observer{
         //This draws the boxes around the automata
         vv.addPreRenderPaintable(new AutomataBorderPaintable(vv,this.processModels));
 
+
         return vv;
     }
 
     private void addProcess(ProcessModel p){
-        if(processModels.containsKey(p.getId())) // Dont re-add things that are already there...
-            return;
+
 
         switch (p.getProcessType()){
             case AUTOMATA:
@@ -175,9 +179,10 @@ public class ModelView implements Observer{
             //Make sure we are using a human reable label, the parallel compositions fill Id with long strings.
             String nodeLabel = (n.getId().contains("||"))? Integer.toString(n.getLabelNumber()) : n.getId();
 
-            String splitTokens[] = nodeLabel.split("\\.");
-            nodeLabel = splitTokens[splitTokens.length-1]; //Remove junk in the label, otherwise it ends up as Test.n1, we only need n1
-
+            if(!nodeLabel.contains("abs")) {
+                String splitTokens[] = nodeLabel.split("\\.");
+                nodeLabel = splitTokens[splitTokens.length - 1]; //Remove junk in the label, otherwise it ends up as Test.n1, we only need n1
+            }
             GraphNode node = new GraphNode(automata.getId(),nodeLabel,nodeTermination);
             nodeMap.put(n.getId(),node);
 
@@ -237,7 +242,9 @@ public class ModelView implements Observer{
     }
 
     public void freezeProcessModel(String automataLabel) {
-        if(layout != null &&  processModelsToDisplay.contains(automataLabel)) {
+
+
+        if(layout != null &&  automataLabel != null && processModelsToDisplay.contains(automataLabel)) {
 
             for(GraphNode vertexToLock : processModels.get(automataLabel)) {
                 layout.lock(vertexToLock, true);
@@ -246,7 +253,7 @@ public class ModelView implements Observer{
     }
 
     public void unfreezeProcessModel(String automataLabel) {
-        if(layout != null &&  processModelsToDisplay.contains(automataLabel)) {
+        if(layout != null &&  automataLabel != null && processModelsToDisplay.contains(automataLabel)) {
             for(GraphNode vertexToLock : processModels.get(automataLabel)) {
                 layout.lock(vertexToLock, false);
             }

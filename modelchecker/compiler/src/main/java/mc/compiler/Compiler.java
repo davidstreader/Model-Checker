@@ -55,7 +55,7 @@ public class Compiler {
          *  Then it expands it to, P1 = a->b->c->x. If it needs it
          */
         ast = replacer.replaceReferences(ast, messageQueue);
-        System.out.println(ast.getProcessHierarchy().getDependencies());
+        System.out.println("Hierarchy of processes: " + ast.getProcessHierarchy().getDependencies());
         Map<String, ProcessModel> processMap = interpreter.interpret(ast, new LocalCompiler(processNodeMap, expander, replacer,messageQueue),messageQueue,z3Context);
 
         List<OperationResult> opResults = evaluator.evaluateOperations(ast.getOperations(), processMap, interpreter, code,z3Context);

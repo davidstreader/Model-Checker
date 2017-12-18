@@ -171,6 +171,7 @@ public class EdgeShape<V,E> {
                         continue;
 
                     if(graph.getIncidentVertices(edge).contains(second)) {
+
                         return new QuadCurve().apply(e);
                     }
                 }
@@ -181,6 +182,7 @@ public class EdgeShape<V,E> {
                         continue;
 
                     if(graph.getIncidentVertices(edge).contains(first)) {
+
                         return new QuadCurve().apply(e);
                     }
                 }

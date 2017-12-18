@@ -50,13 +50,20 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
 
         Automaton automaton = ((Automaton)processStack.pop()).copy();
 
-        if(processNode.hasRelabels()){
-            processRelabelling(automaton, processNode.getRelabels());
-        }
 
-        if(processNode.hasHiding()){
+        //Set the id correctly if there is a processes like this: C = B., otherwise it just takes Bs id.
+        if(!automaton.getId().equals(processNode.getIdentifier()))
+           automaton.setId(processNode.getIdentifier());
+
+
+
+        if(processNode.hasRelabels())
+            processRelabelling(automaton, processNode.getRelabels());
+
+
+        if(processNode.hasHiding())
             processHiding(automaton, processNode.getHiding());
-        }
+
 
         return labelAutomaton(automaton);
     }
@@ -337,6 +344,11 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         this.processStack = new Stack<>();
     }
 
+
+
+    /**
+        Functions for instantiating the plugin manager functions
+     */
     public static void addFunction(Class<? extends IProcessFunction> clazz){
 
         String name = instantiateClass(clazz).getFunctionName();
