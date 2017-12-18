@@ -65,6 +65,8 @@ public class AbstractionFunction implements IProcessFunction{
         Automaton automaton = automata[0];
         Automaton abstraction = new Automaton(automaton.getId() + ".abs", !Automaton.CONSTRUCT_ROOT);
 
+
+
         boolean isFair = flags.contains("fair") || !flags.contains("unfair");
 
         // add the nodes from the specified automaton to the abstracted representation

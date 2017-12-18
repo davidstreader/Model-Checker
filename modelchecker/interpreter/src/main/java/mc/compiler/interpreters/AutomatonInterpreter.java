@@ -61,8 +61,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         //Rename the nodes if they dont match the automata name. (Happens if we are assigning one process to another)
         // It is not a parallel composition
         automaton.getNodes().stream().filter(currentNode -> currentNode.getId().contains(".")
-                                                            && !currentNode.getId().contains("||")
-                                                            && !currentNode.getId().contains("abs"))
+                                                            && !currentNode.getId().contains("||"))
                                      .forEach(currentNode -> {
             String idElements[] = currentNode.getId().split("\\.");
             if (!idElements[0].equals(processNode.getIdentifier())) {
