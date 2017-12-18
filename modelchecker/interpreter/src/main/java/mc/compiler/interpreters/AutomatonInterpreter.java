@@ -51,24 +51,12 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
 
         Automaton automaton = ((Automaton)processStack.pop()).copy();
 
-        System.out.println(automaton);
-
 
         //Set the id correctly if there is a processes like this: C = B., otherwise it just takes Bs id.
         if(!automaton.getId().equals(processNode.getIdentifier()))
-            automaton.setId(processNode.getIdentifier());
+           automaton.setId(processNode.getIdentifier());
 
-        //Rename the nodes if they dont match the automata name. (Happens if we are assigning one process to another)
-        // It is not a parallel composition
-        automaton.getNodes().stream().filter(currentNode -> currentNode.getId().contains(".")
-                                                            && !currentNode.getId().contains("||"))
-                                     .forEach(currentNode -> {
-            String idElements[] = currentNode.getId().split("\\.");
-            if (!idElements[0].equals(processNode.getIdentifier())) {
-                idElements[0] = processNode.getIdentifier();
-                currentNode.setId(String.join(".", idElements));
-            }
-        });
+
 
         if(processNode.hasRelabels())
             processRelabelling(automaton, processNode.getRelabels());
