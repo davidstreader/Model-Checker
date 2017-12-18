@@ -1,4 +1,4 @@
-package mc.process_models.automata.generator;
+package mc.processmodels.automata.generator;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -8,6 +8,6 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class BinaryNode {
-    BinaryNode left;
-    BinaryNode right;
+  BinaryNode left;
+  BinaryNode right;
 }

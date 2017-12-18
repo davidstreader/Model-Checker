@@ -1,7 +1,7 @@
 package mc.plugins;
 
 import mc.exceptions.CompilationException;
-import mc.process_models.automata.Automaton;
+import mc.processmodels.automata.Automaton;
 
 import java.util.Collection;
 

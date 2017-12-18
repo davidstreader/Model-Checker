@@ -6,7 +6,7 @@ import mc.compiler.ast.AbstractSyntaxTree;
 import mc.compiler.ast.ProcessNode;
 import mc.compiler.interpreters.AutomatonInterpreter;
 import mc.exceptions.CompilationException;
-import mc.process_models.ProcessModel;
+import mc.processmodels.ProcessModel;
 import mc.util.LogAST;
 
 import java.util.LinkedHashMap;

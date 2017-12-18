@@ -1,70 +1,72 @@
 package mc.operations;
 
 import com.microsoft.z3.Context;
-import mc.Constant;
-import mc.exceptions.CompilationException;
-import mc.plugins.IProcessFunction;
-import mc.process_models.automata.Automaton;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import mc.Constant;
+import mc.exceptions.CompilationException;
+import mc.plugins.IProcessFunction;
+import mc.processmodels.automata.Automaton;
 
-public class HideFunction implements IProcessFunction{
-    /**
-     * Gets the method name when it is called (e.g. {@code abs} in {@code abs(A)})
-     *
-     * @return the name of the function
-     */
-    @Override
-    public String getFunctionName() {
-        return "hide";
+public class HideFunction implements IProcessFunction {
+  /**
+   * Gets the method name when it is called (e.g. {@code abs} in {@code abs(A)}).
+   *
+   * @return the name of the function
+   */
+  @Override
+  public String getFunctionName() {
+    return "hide";
+  }
+
+  /**
+   * Get the available flags for the function described by this interface (e.g. {@code unfair} in
+   * {@code abs{unfair}(A)}.
+   *
+   * @return a collection of available flags (note, no variables may be flags)
+   */
+  @Override
+  public Collection<String> getValidFlags() {
+    return Collections.singleton("*");
+  }
+
+  /**
+   * Gets the number of automata to parse into the function.
+   *
+   * @return the number of arguments
+   */
+  @Override
+  public int getNumberArguments() {
+    return 1;
+  }
+
+  /**
+   * Execute the function on automata.
+   *
+   * @param id       the id of the resulting automaton
+   * @param flags    the flags given by the function (e.g. {@code unfair} in {@code abs{unfair}(A)}
+   * @param automata a variable number of automata taken in by the function
+   * @return the resulting automaton of the operation
+   */
+  @Override
+  public Automaton compose(String id, Set<String> flags, Context context, Automaton... automata)
+      throws CompilationException {
+
+    Automaton automaton = automata[0].copy();
+    Set<String> alphabet = automaton.getAlphabet();
+    if (automaton.getAlphabetBeforeHiding() == null) {
+      automaton.setAlphabetBeforeHiding(new HashSet<>(automaton.getAlphabet()));
     }
-
-    /**
-     * Get the available flags for the function described by this interface (e.g. {@code unfair} in
-     * {@code abs{unfair}(A)}
-     *
-     * @return a collection of available flags (note, no variables may be flags)
-     */
-    @Override
-    public Collection<String> getValidFlags() {
-        return Collections.singleton("*");
+    for (String action : flags) {
+      if (alphabet.contains(action)) {
+        automaton.relabelEdges(action, Constant.HIDDEN);
+      } else {
+        throw new CompilationException(getClass(), "Unable to find action " + action
+            + " for hiding.", null);
+      }
     }
-
-    /**
-     * Gets the number of automata to parse into the function
-     *
-     * @return the number of arguments
-     */
-    @Override
-    public int getNumberArguments() {
-        return 1;
-    }
-
-    /**
-     * Execute the function on automata
-     *
-     * @param id       the id of the resulting automaton
-     * @param flags    the flags given by the function (e.g. {@code unfair} in {@code abs{unfair}(A)}
-     * @param automata a variable number of automata taken in by the function
-     * @return the resulting automaton of the operation
-     */
-    @Override
-    public Automaton compose(String id, Set<String> flags, Context context, Automaton... automata) throws CompilationException {
-
-        Automaton automaton = automata[0].copy();
-        Set<String> alphabet = automaton.getAlphabet();
-        if (automaton.getAlphabetBeforeHiding() == null)
-            automaton.setAlphabetBeforeHiding(new HashSet<>(automaton.getAlphabet()));
-        for (String action : flags) {
-            if (alphabet.contains(action)) {
-                automaton.relabelEdges(action, Constant.HIDDEN);
-            } else {
-                throw new CompilationException(getClass(), "Unable to find action " + action + " for hiding.", null);
-            }
-        }
-        return new AbstractionFunction().compose(id,Collections.emptySet(),context,automaton);
-    }
+    return new AbstractionFunction().compose(id, Collections.emptySet(), context, automaton);
+  }
 }

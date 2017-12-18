@@ -24,9 +24,9 @@ import mc.client.graph.SpringlayoutBase;
 import mc.compiler.CompilationObject;
 import mc.compiler.CompilationObservable;
 import mc.compiler.OperationResult;
-import mc.process_models.ProcessModel;
-import mc.process_models.ProcessType;
-import mc.process_models.automata.Automaton;
+import mc.processmodels.ProcessModel;
+import mc.processmodels.ProcessType;
+import mc.processmodels.automata.Automaton;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;

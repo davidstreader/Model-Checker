@@ -5,7 +5,7 @@ import mc.compiler.LocalCompiler;
 import mc.compiler.ast.ASTNode;
 import mc.compiler.ast.ProcessNode;
 import mc.exceptions.CompilationException;
-import mc.process_models.ProcessModel;
+import mc.processmodels.ProcessModel;
 
 import java.util.Map;
 

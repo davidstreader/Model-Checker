@@ -1,15 +1,7 @@
-package mc.process_models.petrinet;
+package mc.processmodels.petrinet;
 
 
-import mc.process_models.ProcessModel;
-import mc.process_models.ProcessModelObject;
-import mc.process_models.ProcessType;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-public class PetriNet /*extends ProcessModelObject implements ProcessModel */{
+public class PetriNet /*extends ProcessModelObject implements ProcessModel */ {
 /*    private PetriNetTransitions root;
     private Map<String, PetriNetTransitions> nodeMap;
     private Map<String, PetriNetEdge> edgeMap;

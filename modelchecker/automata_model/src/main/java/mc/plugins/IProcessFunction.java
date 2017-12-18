@@ -2,7 +2,7 @@ package mc.plugins;
 
 import com.microsoft.z3.Context;
 import mc.exceptions.CompilationException;
-import mc.process_models.automata.Automaton;
+import mc.processmodels.automata.Automaton;
 
 import java.util.Collection;
 import java.util.Set;

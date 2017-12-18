@@ -4,15 +4,13 @@ import com.microsoft.z3.Context;
 import mc.compiler.ast.*;
 import mc.exceptions.CompilationException;
 import mc.plugins.IOperationInfixFunction;
-import mc.process_models.ProcessModel;
-import mc.process_models.automata.Automaton;
-import mc.process_models.automata.operations.AutomataOperations;
+import mc.processmodels.ProcessModel;
+import mc.processmodels.automata.Automaton;
+import mc.processmodels.automata.operations.AutomataOperations;
 import mc.util.Location;
 
 import java.util.*;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 import static mc.util.Utils.instantiateClass;
 

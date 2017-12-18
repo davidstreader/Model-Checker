@@ -8,10 +8,10 @@ import lombok.SneakyThrows;
 import mc.compiler.ast.OperationNode;
 import mc.exceptions.CompilationException;
 import mc.plugins.IOperationInfixFunction;
-import mc.process_models.ProcessModel;
-import mc.process_models.automata.Automaton;
-import mc.process_models.automata.generator.AutomatonGenerator;
-import mc.process_models.automata.operations.AutomataOperations;
+import mc.processmodels.ProcessModel;
+import mc.processmodels.automata.Automaton;
+import mc.processmodels.automata.generator.AutomatonGenerator;
+import mc.processmodels.automata.operations.AutomataOperations;
 import mc.webserver.Context;
 import mc.webserver.LogMessage;
 

@@ -2,7 +2,7 @@ package mc.compiler;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import mc.process_models.ProcessModel;
+import mc.processmodels.ProcessModel;
 
 import java.util.List;
 import java.util.Map;

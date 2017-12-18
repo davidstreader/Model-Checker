@@ -4,7 +4,7 @@ import mc.compiler.ast.AbstractSyntaxTree;
 import mc.compiler.ast.ProcessNode;
 import mc.compiler.token.Token;
 import mc.exceptions.CompilationException;
-import mc.process_models.ProcessModel;
+import mc.processmodels.ProcessModel;
 import mc.webserver.Context;
 
 import java.util.HashMap;
