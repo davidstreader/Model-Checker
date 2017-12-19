@@ -94,7 +94,7 @@ public class AbstractionFunction implements IProcessFunction {
     List<AutomatonNode> toRemove = new ArrayList<>();
     // construct observable edges to replace the unobservable edges
     for (AutomatonEdge hiddenEdge : hiddenEdges) {
-      AutomatonNode b = constructEdgeOnlyTau(abstraction, hiddenEdge, isFair, context);
+      AutomatonNode b = constructEdgeOnlyTau(abstraction, hiddenEdge);
       toRemove.add(b);
       try {
         constructOutgoingObservableEdges(abstraction, hiddenEdge, isFair, context);
@@ -111,8 +111,7 @@ public class AbstractionFunction implements IProcessFunction {
     return AutomataReachability.removeUnreachableNodes(abstraction);
   }
 
-  private AutomatonNode constructEdgeOnlyTau(Automaton abstraction, AutomatonEdge hiddenEdge,
-                                             boolean isFair, Context context)
+  private AutomatonNode constructEdgeOnlyTau(Automaton abstraction, AutomatonEdge hiddenEdge)
       throws CompilationException {
 
     if (!hiddenEdge.getFrom().getOutgoingEdges().stream().allMatch(AutomatonEdge::isHidden)) {
@@ -258,6 +257,9 @@ public class AbstractionFunction implements IProcessFunction {
   }
 
   private void addEdge(Automaton abstraction, AutomatonEdge edge) throws CompilationException {
+
+
+
     AutomatonNode from = abstraction.getNode(edge.getFrom().getId() + ".abs");
     AutomatonNode to = abstraction.getNode(edge.getTo().getId() + ".abs");
     abstraction.addEdge(edge.getLabel(), from, to, edge.getGuard());

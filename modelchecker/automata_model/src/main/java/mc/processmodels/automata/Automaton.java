@@ -425,6 +425,9 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
       if (node == root) {
         builder.append("(root)");
       }
+      if(node.isTerminal()) {
+        builder.append(node.getTerminal());
+      }
       builder.append("\n");
     }
     builder.append("\t}\n\tedges:{\n");

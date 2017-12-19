@@ -66,9 +66,11 @@ public class AutomatonNode extends ProcessModelObject {
     this.terminal = fromThisNode.getTerminal();
     this.startNode = fromThisNode.isStartNode();
     this.colour = fromThisNode.getColour();
-    this.references = fromThisNode.getReferences();
+
     this.labelNumber = fromThisNode.getLabelNumber();
+
     this.guard = fromThisNode.getGuard();
+    this.references = fromThisNode.getReferences();
     this.variables = fromThisNode.getVariables();
   }
 
@@ -177,7 +179,15 @@ public class AutomatonNode extends ProcessModelObject {
     List<AutomatonEdge> incoming = getIncomingEdges();
 
     builder.append("node{\n");
-    builder.append("\tid:").append(getId()).append("\n");
+    builder.append("\tid:").append(getId());
+    if(isTerminal()) {
+      builder.append(" (").append(getTerminal()).append(")");
+    }
+
+    if(isStartNode()) {
+      builder.append(" (START)");
+    }
+    builder.append("\n");
     builder.append("\tincoming:{");
     for (int i = 0; i < incoming.size(); i++) {
       builder.append(incoming.get(i).getId());

@@ -1,8 +1,7 @@
 package mc.processmodels.automata.operations;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Stack;
+import java.util.*;
+
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
@@ -21,19 +20,39 @@ public class AutomataReachability {
    * @return -- the processed @code{Automaton}
    */
   public static Automaton removeUnreachableNodes(Automaton automaton) {
+
+
     Set<String> visited = new HashSet<>();
     Stack<AutomatonNode> fringe = new Stack<>();
     fringe.push(automaton.getRoot());
+
+
     // find the reachable nodes within the specified automaton
     while (!fringe.isEmpty()) {
       AutomatonNode current = fringe.pop();
 
+
+
       // push the neighbouring nodes from the current node to the fringe
       // if they have not already been visited
-      current.getOutgoingEdges().stream()
-          .map(AutomatonEdge::getTo)
-          .filter(node -> !visited.contains(node.getId()))
-          .forEach(fringe::push);
+    //  current.getOutgoingEdges().stream()
+      //    .map(AutomatonEdge::getTo)
+     //     .filter(node -> !visited.contains(node.getId()))
+      //    .forEach(fringe::push);
+      List<AutomatonEdge> edgesToRemove = new ArrayList<>();
+      for(AutomatonEdge e : current.getOutgoingEdges()) {
+        if(!automaton.getNodes().contains(e.getTo())) {
+          edgesToRemove.add(e);
+          continue;
+        }
+
+        if(!visited.contains(e.getTo().getId())) {
+          fringe.push(e.getTo());
+        }
+      }
+      automaton.getEdges().removeAll(edgesToRemove);
+      current.getOutgoingEdges().remove(edgesToRemove);
+
 
       // mark the current node as being visited
       visited.add(current.getId());
@@ -48,6 +67,9 @@ public class AutomataReachability {
     automaton.getNodes().stream()
         .filter(node -> node.getOutgoingEdges().size() == 0 && !node.isTerminal())
         .forEach(node -> node.setTerminal("STOP"));
+
+
+
 
     return automaton;
   }
