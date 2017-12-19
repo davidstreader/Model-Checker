@@ -1,0 +1,10 @@
+processes {
+    X = a->STOP.
+    A = b->X|c->X.
+
+    Test = b->a->STOP|c->a->STOP.
+}
+automata X,A,Test.
+operation {
+    Test~A.
+}

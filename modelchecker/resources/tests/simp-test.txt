@@ -1,0 +1,10 @@
+processes {
+    A = b->a->STOP.
+    Test = simp(b->a->STOP|c->a->STOP).
+}
+
+automata A,Test.
+
+operation {
+    A !~ Test.
+}
