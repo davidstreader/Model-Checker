@@ -196,12 +196,7 @@ public class ParallelFunction {
             guard.mergeWith(edge2.getGuard());
           }
 
-          if (guard.hasData()) {
-            automaton.addEdge(currentSyncEdgeLabel, from, to, guard);
-          } else {
-            automaton.addEdge(currentSyncEdgeLabel, from, to, null);
-          }
-
+          automaton.addEdge(currentSyncEdgeLabel, from, to, guard);
 
         }
       }
