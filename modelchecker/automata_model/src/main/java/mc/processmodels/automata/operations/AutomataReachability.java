@@ -35,10 +35,7 @@ public class AutomataReachability {
 
       // push the neighbouring nodes from the current node to the fringe
       // if they have not already been visited
-    //  current.getOutgoingEdges().stream()
-      //    .map(AutomatonEdge::getTo)
-     //     .filter(node -> !visited.contains(node.getId()))
-      //    .forEach(fringe::push);
+      // Also remove any edges that point to objects not in this automaton
       List<AutomatonEdge> edgesToRemove = new ArrayList<>();
       for(AutomatonEdge e : current.getOutgoingEdges()) {
         if(!automaton.getNodes().contains(e.getTo())) {
@@ -51,7 +48,7 @@ public class AutomataReachability {
         }
       }
       automaton.getEdges().removeAll(edgesToRemove);
-      current.getOutgoingEdges().remove(edgesToRemove);
+      current.getOutgoingEdges().removeAll(edgesToRemove);
 
 
       // mark the current node as being visited
