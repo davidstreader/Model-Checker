@@ -1,7 +1,6 @@
 # Model-Checker 
 
-[![Build Status](https://jenkins.tangentmc.net/job/Model-Checker/badge/icon)](https://jenkins.tangentmc.net/job/Model-Checker/)
-
+[![Build Status](https://teamcity.tangentmc.net/app/rest/builds/buildType(id:ModelChecker_Build)/statusIcon)](https://teamcity.tangentmc.net/repository/download/ModelChecker_Build/.lastSuccessful/ModelChecker.jar?guest=1)
 ## Overview
 
 ### Main Application
