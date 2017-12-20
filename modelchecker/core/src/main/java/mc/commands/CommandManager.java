@@ -1,16 +1,14 @@
 package mc.commands;
 
-import mc.Main;
-import mc.util.Utils;
-import org.apache.commons.lang3.StringUtils;
-import org.fusesource.jansi.Ansi;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import mc.Main;
+import mc.util.Utils;
+import org.apache.commons.lang3.StringUtils;
 
 public class CommandManager {
     protected Map<String,Command> commandMap = new HashMap<>();
@@ -33,7 +31,7 @@ public class CommandManager {
             else split = new String[0];
             commandMap.get(cmd).run(split);
         } else {
-            System.out.println(Ansi.ansi().render("@|red Unable to find command |@"));
+            System.out.println("Unable to find command ");
             System.out.println("For a list of commands, type help.");
         }
     }

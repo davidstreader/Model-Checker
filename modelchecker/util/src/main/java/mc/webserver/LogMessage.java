@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import mc.util.Location;
-import org.fusesource.jansi.Ansi;
 
 /**
  * A message to send back to the client
@@ -44,12 +43,9 @@ public class LogMessage {
     protected static String formatLocation(Location location) {
         return "("+location.getLineStart()+":"+location.getColStart()+")";
     }
-    public void render() {
-        this.message = Ansi.ansi().render(message).toString();
-    }
+
     public void printToConsole() {
         message = message.replace("@|black","@|white");
-        render();
         System.out.println(message);
     }
     public boolean hasExpired() {

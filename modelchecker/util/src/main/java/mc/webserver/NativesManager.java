@@ -1,10 +1,5 @@
 package mc.webserver;
 
-import lombok.AllArgsConstructor;
-import mc.util.Utils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,8 +10,10 @@ import java.nio.file.StandardCopyOption;
 import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-
-import static org.fusesource.jansi.Ansi.ansi;
+import lombok.AllArgsConstructor;
+import mc.util.Utils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Manage loading dependencies for bower/node and vulcanize.
@@ -43,7 +40,7 @@ public class NativesManager {
      * we want to the users library folder.
      */
     public void copyNatives() {
-        logger.info(""+ansi().render("@|yellow Copying natives|@"));
+        logger.info("Copying natives");
         //Where to copy the files from in the jar (jars always use /)
         String zipPrefix = "native/"+Utils.getArch();
         if (!new File("native",Utils.getArch()).exists() && Utils.isJar()) {

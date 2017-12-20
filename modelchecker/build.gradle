@@ -61,6 +61,7 @@ subprojects {
         testCompile 'junit:junit:4.12'
         compileOnly 'org.projectlombok:lombok:1.16.12'
         compile     'uk.com.robust-it:cloning:1.9.3'
+        compile     'com.google.guava:guava:21.0'
         compile     'org.apache.commons:commons-lang3:3.5'
         compile     'commons-io:commons-io:2.5'
     }

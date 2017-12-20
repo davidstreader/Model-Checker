@@ -7,9 +7,4 @@ dependencies {
     // https://mvnrepository.com/artifact/net.sf.jung/
     compile group: 'net.sf.jung', name: 'jung-visualization', version: '2.1.1'
     compile group: 'net.sf.jung', name: 'jung-graph-impl', version: '2.1.1'
-
-    // https://mvnrepository.com/artifact/org.apache.commons/commons-collections4
-    compile 'org.apache.commons:commons-collections4:4.1'
-
-
 }
