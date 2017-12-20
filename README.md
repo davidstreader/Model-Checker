@@ -1,6 +1,5 @@
-# Model-Checker 
+# Model-Checker [![Build Status](https://teamcity.tangentmc.net/app/rest/builds/buildType(id:ModelChecker_Build)/statusIcon)](https://teamcity.tangentmc.net/viewType.html?buildTypeId=ModelChecker_Build&guest=1)
 
-[![Build Status](https://teamcity.tangentmc.net/app/rest/builds/buildType(id:ModelChecker_Build)/statusIcon)](https://teamcity.tangentmc.net/repository/download/ModelChecker_Build/.lastSuccessful/ModelChecker.jar?guest=1)
 ## Overview
 
 ### Main Application
@@ -20,10 +19,12 @@ txt file and can upload a previously saved txt file with defined state machines.
 Starting note that this build process has only been tested on Java JDK 8u151.
 
 ## Linux
+
 ```bash 
 $cd modelchecker
 $./gradlew build && java -jar ../ModelChecker.jar
 ```
+
 Please be aware that if you have a web authentication proxy you will need to add arguments to gradlew.
 
 ## Windows
