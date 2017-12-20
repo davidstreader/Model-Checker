@@ -6,5 +6,5 @@ processes {
 }
 automata X,A,Test.
 operation {
-    Test~A.
+    /*Test~A.*/
 }
