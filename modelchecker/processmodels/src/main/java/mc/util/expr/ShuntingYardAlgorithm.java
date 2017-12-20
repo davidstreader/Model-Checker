@@ -4,10 +4,15 @@ import com.microsoft.z3.BitVecExpr;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
+import java.util.Arrays;
+import java.util.EmptyStackException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Stack;
 import mc.exceptions.CompilationException;
 import mc.util.Location;
-
-import java.util.*;
 
 public class ShuntingYardAlgorithm {
 

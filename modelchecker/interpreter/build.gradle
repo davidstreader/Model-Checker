@@ -1,4 +1,4 @@
 dependencies {
     compile project(':ast')
-    compile project(':automata_model')
+    compile project(':processmodels')
 }

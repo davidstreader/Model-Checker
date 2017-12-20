@@ -2,7 +2,6 @@ package mc.util.expr;
 
 import com.microsoft.z3.BitVecNum;
 import com.microsoft.z3.Expr;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;

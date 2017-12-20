@@ -1,9 +1,8 @@
 package mc.plugins;
 
+import java.util.Collection;
 import mc.exceptions.CompilationException;
 import mc.processmodels.automata.Automaton;
-
-import java.util.Collection;
 
 public interface IOperationInfixFunction {
 

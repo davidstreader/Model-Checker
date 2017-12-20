@@ -123,11 +123,10 @@ public class Main {
 
     String nativePath = NativesManager.getNativesDir().toAbsolutePath().toString();
     //Set java.library.path to the native path for windows
-    //Set jansi.passthrough as the parent application will handle the ansi chars, not the child.
     //Set the reloaded flag so that we know that the application has been loaded twice.
     //Set UseG1GC so that ram usage is dropped after peaks
 
-    ProcessBuilder builder = new ProcessBuilder("java", "-Djansi.passthrough=true", "-XX:+UseG1GC", "-Djava.library.path=" + nativePath, "-jar", Utils.getJarPath(), "reloaded");
+    ProcessBuilder builder = new ProcessBuilder("java", "-XX:+UseG1GC", "-Djava.library.path=" + nativePath, "-jar", Utils.getJarPath(), "reloaded");
     Map<String, String> environment = builder.environment();
     //Set the linux native path
     environment.put("LD_LIBRARY_PATH", nativePath);

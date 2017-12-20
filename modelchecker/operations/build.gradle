@@ -1,9 +1,9 @@
 dependencies {
-    compile project(':automata_model')
     compile project(':interpreter')
     compile project(':parsing')
+    compile project(':processmodels')
     // https://mvnrepository.com/artifact/org.reflections/reflections
-    compile group: 'org.reflections', name: 'reflections', version: '0.9.11'
+    compile 'org.reflections:reflections:0.9.11'
     // Z3
     compile fileTree(dir: '../libs', include: ['*.jar'])
 

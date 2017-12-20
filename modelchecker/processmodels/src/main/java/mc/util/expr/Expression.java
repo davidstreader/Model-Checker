@@ -3,14 +3,13 @@ package mc.util.expr;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.microsoft.z3.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.SneakyThrows;
-import mc.compiler.Guard;
-import mc.exceptions.CompilationException;
-import mc.util.Location;
-
+import com.microsoft.z3.BitVecExpr;
+import com.microsoft.z3.BoolExpr;
+import com.microsoft.z3.Context;
+import com.microsoft.z3.Expr;
+import com.microsoft.z3.Solver;
+import com.microsoft.z3.Status;
+import com.microsoft.z3.Z3Object;
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.HashMap;
@@ -19,6 +18,12 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.SneakyThrows;
+import mc.compiler.Guard;
+import mc.exceptions.CompilationException;
+import mc.util.Location;
 
 /**
  * A class that is able to simplify expressions using Z3

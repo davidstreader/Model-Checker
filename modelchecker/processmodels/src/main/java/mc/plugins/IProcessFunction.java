@@ -1,11 +1,10 @@
 package mc.plugins;
 
 import com.microsoft.z3.Context;
-import mc.exceptions.CompilationException;
-import mc.processmodels.automata.Automaton;
-
 import java.util.Collection;
 import java.util.Set;
+import mc.exceptions.CompilationException;
+import mc.processmodels.automata.Automaton;
 
 /**
  * This interface describes a "function" in the LTS language variant in the use

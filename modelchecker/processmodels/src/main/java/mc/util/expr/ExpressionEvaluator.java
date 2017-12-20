@@ -4,9 +4,8 @@ import com.microsoft.z3.BitVecNum;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
 import com.microsoft.z3.IntNum;
-import mc.exceptions.CompilationException;
-
 import java.util.Map;
+import mc.exceptions.CompilationException;
 
 /**
  * Created by sheriddavi on 19/01/17.
