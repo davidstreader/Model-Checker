@@ -72,6 +72,7 @@ public class AutomatonNode extends ProcessModelObject {
     this.guard = fromThisNode.getGuard();
     this.references = fromThisNode.getReferences();
     this.variables = fromThisNode.getVariables();
+
   }
 
   public void copyPropertiesFromASTNode(ASTNode fromThisNode) {
