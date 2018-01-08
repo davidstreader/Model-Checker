@@ -399,6 +399,8 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
           thisAutomataRoot = newNode;
           if(this.root == null)
             this.root = newNode;
+          else
+            newNode.setStartNode(false);
       }
 
         System.out.println(newNode.getId() + " " + newNode);

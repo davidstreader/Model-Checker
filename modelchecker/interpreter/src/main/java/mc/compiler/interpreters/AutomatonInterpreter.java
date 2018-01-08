@@ -35,7 +35,6 @@ import mc.plugins.IProcessFunction;
 import mc.plugins.IProcessInfixFunction;
 import mc.processmodels.ProcessModel;
 import mc.processmodels.automata.Automaton;
-import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.automata.operations.AutomataOperations;
 
@@ -77,7 +76,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
 
 
 
-    //Set the id correctly if there is a processes like this: C = B., otherwise it just takes Bs id.
+    //Set the id correctly if there is a processes like this: C = B., otherwise it just takes B's id.
     if (!automaton.getId().equals(processNode.getIdentifier())) {
       automaton.setId(processNode.getIdentifier());
     }
