@@ -73,17 +73,16 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     Automaton automaton = ((Automaton) processStack.pop()).copy();
 
     //Set the id correctly if there is a processes like this: C = B., otherwise it just takes B's id.
-    if (!automaton.getId().equals(processNode.getIdentifier())) {
+    if (!automaton.getId().equals(processNode.getIdentifier()))
       automaton.setId(processNode.getIdentifier());
-    }
 
-    if (processNode.hasRelabels()) {
+
+    if (processNode.hasRelabels())
       processRelabelling(automaton, processNode.getRelabels());
-    }
 
-    if (processNode.hasHiding()) {
+
+    if (processNode.hasHiding())
       processHiding(automaton, processNode.getHiding());
-    }
 
 
     return labelAutomaton(automaton);
@@ -191,7 +190,8 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     }
 
     AutomatonNode oldRoot = automaton.addAutomaton(model);
-    automaton.combineNodes(currentNode, oldRoot, context);
+    AutomatonNode node = automaton.combineNodes(currentNode, oldRoot, context);
+    updateCurrentNode(currentNode, node);
   }
 
   private void interpretSequence(SequenceNode sequence, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException {
@@ -238,7 +238,8 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     Automaton comp = instantiateClass(infixFunctions.get(astCompositeNode.getOperation()))
         .compose(model1.getId() + astCompositeNode.getOperation() + model2.getId(), (Automaton) model1, (Automaton) model2);
     AutomatonNode oldRoot = automaton.addAutomaton(comp);
-    automaton.combineNodes(currentNode, oldRoot, context);
+    AutomatonNode node = automaton.combineNodes(currentNode, oldRoot, context);
+    updateCurrentNode(currentNode, node);
 
   }
 
@@ -309,13 +310,8 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     }
 
     AutomatonNode node = automaton1.combineNodes(currentNode, oldRoot, context);
-    currentNode.copyProperties(node);
-      currentNode.setId(node.getId());
-      node.getOutgoingEdges().forEach(currentNode::addOutgoingEdge);
-      node.getIncomingEdges().forEach(currentNode::addIncomingEdge);
-
-
-
+    //Combining nodes removes the inital currentNode and oldRoot, as we are still using currentNode, copy the properties of the newly created node across
+    updateCurrentNode(currentNode, node);
 
     references.forEach(id -> referenceMap.put(id, node));
   }
@@ -324,16 +320,16 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     automaton.setAlphabetBeforeHiding(new HashSet<>(automaton.getAlphabet()));
     automaton.setRelabels(relabels.getRelabels());
 
-    for (RelabelElementNode element : relabels.getRelabels()) {
+    for (RelabelElementNode element : relabels.getRelabels())
       automaton.relabelEdges(element.getOldLabel(), element.getNewLabel());
-    }
+
   }
 
   private void processHiding(Automaton automaton, HidingNode hiding) throws CompilationException {
     Set<String> alphabet = automaton.getAlphabet();
-    if (automaton.getAlphabetBeforeHiding() == null) {
+    if (automaton.getAlphabetBeforeHiding() == null)
       automaton.setAlphabetBeforeHiding(new HashSet<>(automaton.getAlphabet()));
-    }
+
     Set<String> hidden = new HashSet<>(hiding.getSet().getSet());
     String type = hiding.getType();
     if (type.equals("includes")) {
@@ -345,11 +341,9 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         }
       }
     } else if (type.equals("excludes")) {
-      for (String action : new ArrayList<>(alphabet)) {
-        if (!hidden.contains(action)) {
-          automaton.relabelEdges(action, Constant.HIDDEN);
-        }
-      }
+      new ArrayList<>(alphabet).stream().filter(action -> !hidden.contains(action)).forEach(action -> {
+        automaton.relabelEdges(action, Constant.HIDDEN);
+      });
     }
   }
 
@@ -363,9 +357,9 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     while (!fringe.isEmpty()) {
       AutomatonNode current = fringe.poll();
 
-      if (visited.contains(current.getId())) {
+      if (visited.contains(current.getId()))
         continue;
-      }
+
 
       current.getOutgoingEdges().forEach(edge -> fringe.offer(edge.getTo()));
       current.setLabelNumber(label++);
@@ -374,6 +368,20 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     }
 
     return automaton;
+  }
+
+  /**
+   * When a new node is created by merging the currentNode and another node, the current node is removed from the
+   * automaton, this rendering it invalid.
+   * This rewrites it to have the id & data of the newly created node.
+   * @param currentNode The current node to update
+   * @param newNodeData The new node created by a combine event
+     */
+  private void updateCurrentNode(AutomatonNode currentNode, AutomatonNode newNodeData) {
+    currentNode.copyProperties(newNodeData);
+    currentNode.setId(newNodeData.getId());
+    newNodeData.getOutgoingEdges().forEach(currentNode::addOutgoingEdge);
+    newNodeData.getIncomingEdges().forEach(currentNode::addIncomingEdge);
   }
 
   private void reset() {
