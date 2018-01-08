@@ -73,8 +73,6 @@ public class Parser {
     functions.put(instantiateClass(clazz).getFunctionName().toLowerCase(), clazz);
   }
 
-  // ACTION LABELS
-
   public static void registerInfixFunction(Class<? extends IProcessInfixFunction> clazz) {
     infixFunctions.put(instantiateClass(clazz).getNotation().toLowerCase(), clazz);
   }

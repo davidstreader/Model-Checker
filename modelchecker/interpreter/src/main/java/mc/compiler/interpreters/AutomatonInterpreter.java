@@ -77,11 +77,9 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
       automaton.setId(processNode.getIdentifier());
     }
 
-
     if (processNode.hasRelabels()) {
       processRelabelling(automaton, processNode.getRelabels());
     }
-
 
     if (processNode.hasHiding()) {
       processHiding(automaton, processNode.getHiding());
@@ -108,6 +106,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     if (astNode instanceof IdentifierNode) {
       String reference = ((IdentifierNode) astNode).getIdentifier();
       if (this.variables != null) {
+
         ProcessNode node = (ProcessNode) compiler.getProcessNodeMap().get(reference).copy();
         //Use the current variable set when recompiling.
         node.setVariables(this.variables);
