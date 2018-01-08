@@ -35,6 +35,7 @@ import mc.plugins.IProcessFunction;
 import mc.plugins.IProcessInfixFunction;
 import mc.processmodels.ProcessModel;
 import mc.processmodels.automata.Automaton;
+import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.automata.operations.AutomataOperations;
 
@@ -67,9 +68,13 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     this.processMap = processMap;
     String identifier = processNode.getIdentifier();
     this.variables = processNode.getVariables();
+
+
     interpretProcess(processNode.getProcess(), identifier);
 
     Automaton automaton = ((Automaton) processStack.pop()).copy();
+
+
 
 
     //Set the id correctly if there is a processes like this: C = B., otherwise it just takes Bs id.
@@ -217,8 +222,13 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
   }
 
   private void interpretNode(ChoiceNode astNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException {
+
+
     interpretNode(astNode.getFirstProcess(), automaton, currentNode);
+
+
     interpretNode(astNode.getSecondProcess(), automaton, currentNode);
+
   }
 
   private void interpretNode(CompositeNode astNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException {
@@ -246,9 +256,11 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
       throw new CompilationException(getClass(), "Unable to find identifier: " + astNode.getIdentifier(), astNode.getLocation());
     }
 
-
     Automaton next = ((Automaton) model).copy();
+
     addAutomaton(currentNode, automaton, next);
+
+
   }
 
   private void interpretFunction(FunctionNode astNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException {
@@ -291,7 +303,9 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
   }
 
   private void addAutomaton(AutomatonNode currentNode, Automaton automaton1, Automaton automaton2) throws CompilationException, InterruptedException {
-    List<String> references = new ArrayList<>();
+
+     List<String> references = new ArrayList<>();
+
 
     if (currentNode.getReferences() != null) {
       references.addAll(currentNode.getReferences());
@@ -299,11 +313,21 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
 
     AutomatonNode oldRoot = automaton1.addAutomaton(automaton2);
 
+
+
     if (oldRoot.getReferences() != null) {
       references.addAll(oldRoot.getReferences());
     }
 
     AutomatonNode node = automaton1.combineNodes(currentNode, oldRoot, context);
+    currentNode.copyProperties(node);
+      currentNode.setId(node.getId());
+      node.getOutgoingEdges().forEach(currentNode::addOutgoingEdge);
+      node.getIncomingEdges().forEach(currentNode::addIncomingEdge);
+
+
+
+
     references.forEach(id -> referenceMap.put(id, node));
   }
 
