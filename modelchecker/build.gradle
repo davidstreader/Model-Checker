@@ -10,13 +10,14 @@ import org.apache.tools.ant.taskdefs.condition.Os
 static getNatives() {
     String ret = "resources/native/"
 
-         if (System.getProperty("os.arch").endsWith("64")) ret += "amd64"
+         if (Os.isFamily(Os.FAMILY_MAC))                   ret += "x86_64"
+    else if (System.getProperty("os.arch").endsWith("64")) ret += "amd64"
     else if (System.getProperty("os.arch").endsWith("86")) ret += "x86"
 
          if (Os.isFamily(Os.FAMILY_WINDOWS)) ret+="-windows"
-    //Mac has a special architecture rule, so this has to be a special case
-    else if (Os.isFamily(Os.FAMILY_MAC)) ret="resources/native/x86_64-macosx"
-         else ret +="-linux"
+    else if (Os.isFamily(Os.FAMILY_MAC))     ret="-macosx"
+    else                                     ret +="-linux"
+
     return ret
 }
 

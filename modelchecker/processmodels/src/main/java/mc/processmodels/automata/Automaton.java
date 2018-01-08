@@ -65,12 +65,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
 
   public Automaton(String id) {
-    super(id, "automata");
-    setupAutomaton();
-
-    // setup the root for this automaton
-    this.root = addNode();
-    root.setStartNode(true);
+    this(id,true);
   }
 
   public Automaton(String id, boolean constructRoot) {
@@ -129,9 +124,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
   }
 
   public List<AutomatonNode> getNodes() {
-    return nodeMap.entrySet().stream()
-        .map(Map.Entry::getValue)
-        .collect(Collectors.toList());
+    return new ArrayList<>(nodeMap.values());
   }
 
   public AutomatonNode getNode(String id) throws CompilationException {
