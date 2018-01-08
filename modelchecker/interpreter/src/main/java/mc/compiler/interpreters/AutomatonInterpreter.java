@@ -229,7 +229,10 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     ProcessModel model1 = processStack.pop();
 
     if (!(model1 instanceof Automaton) || !(model2 instanceof Automaton)) {
-      throw new CompilationException(getClass(), "Expecting an automaton, received: " + model1.getClass().getSimpleName() + "," + model2.getClass().getSimpleName(), astCompositeNode.getLocation());
+      if(model1 == null || model2 == null) // They were not set to be constructed as anything
+        throw new CompilationException(getClass(), "Expecting an automaton in composite " + automaton.getId(), astCompositeNode.getLocation());
+      else
+        throw new CompilationException(getClass(), "Expecting an automaton, received: " + model1.getClass().getSimpleName() + "," + model2.getClass().getSimpleName(), astCompositeNode.getLocation());
     }
 
     Automaton comp = instantiateClass(infixFunctions.get(astCompositeNode.getOperation()))
