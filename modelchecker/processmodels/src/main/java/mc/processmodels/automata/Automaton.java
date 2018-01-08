@@ -141,9 +141,6 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
       return nodeMap.get(id);
     }
 
-      for(StackTraceElement t : Thread.currentThread().getStackTrace())
-          System.out.println(t);
-
     throw new CompilationException(getClass(), "Unable to get the node " + id + " as it does not exist in automaton " + getId(), this.getLocation());
   }
 
@@ -402,8 +399,6 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
           else
             newNode.setStartNode(false);
       }
-
-        System.out.println(newNode.getId() + " " + newNode);
 
     }
 

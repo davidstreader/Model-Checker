@@ -68,13 +68,9 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     String identifier = processNode.getIdentifier();
     this.variables = processNode.getVariables();
 
-
     interpretProcess(processNode.getProcess(), identifier);
 
     Automaton automaton = ((Automaton) processStack.pop()).copy();
-
-
-
 
     //Set the id correctly if there is a processes like this: C = B., otherwise it just takes B's id.
     if (!automaton.getId().equals(processNode.getIdentifier())) {
@@ -169,133 +165,125 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     }
     currentNode.copyPropertiesFromASTNode(astNode);
     if (astNode instanceof ProcessRootNode) {
-      interpretNode((ProcessRootNode) astNode, automaton, currentNode);
+      interpretProcessRoot((ProcessRootNode) astNode, automaton, currentNode);
     } else if (astNode instanceof SequenceNode) {
-      interpretNode((SequenceNode) astNode, automaton, currentNode);
+      interpretSequence((SequenceNode) astNode, automaton, currentNode);
     } else if (astNode instanceof ChoiceNode) {
-      interpretNode((ChoiceNode) astNode, automaton, currentNode);
+      interpretChoice((ChoiceNode) astNode, automaton, currentNode);
     } else if (astNode instanceof CompositeNode) {
-      interpretNode((CompositeNode) astNode, automaton, currentNode);
+      interpretComposite((CompositeNode) astNode, automaton, currentNode);
     } else if (astNode instanceof IdentifierNode) {
-      interpretNode((IdentifierNode) astNode, automaton, currentNode);
+      interpretIdentifier((IdentifierNode) astNode, automaton, currentNode);
     } else if (astNode instanceof FunctionNode) {
       interpretFunction((FunctionNode) astNode, automaton, currentNode);
     } else if (astNode instanceof TerminalNode) {
-      interpretNode((TerminalNode) astNode, automaton, currentNode);
+      interpretTerminalNode((TerminalNode) astNode, currentNode);
     }
   }
 
 
-  private void interpretNode(ProcessRootNode astNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException {
-    interpretProcess(astNode.getProcess(), automaton.getId() + "." + ++subProcessCount);
+  private void interpretProcessRoot(ProcessRootNode astProcessRootNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException {
+    interpretProcess(astProcessRootNode.getProcess(), automaton.getId() + "." + ++subProcessCount);
     Automaton model = ((Automaton) processStack.pop()).copy();
-    processLabellingAndRelabelling(model, astNode);
+    processLabellingAndRelabelling(model, astProcessRootNode);
 
-    if (astNode.hasHiding()) {
-      processHiding(model, astNode.getHiding());
+    if (astProcessRootNode.hasHiding()) {
+      processHiding(model, astProcessRootNode.getHiding());
     }
 
     AutomatonNode oldRoot = automaton.addAutomaton(model);
     automaton.combineNodes(currentNode, oldRoot, context);
   }
 
-  private void interpretNode(SequenceNode astNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException {
-    String action = astNode.getFrom().getAction();
+  private void interpretSequence(SequenceNode sequence, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException {
+    String action = sequence.getFrom().getAction();
 
     AutomatonNode nextNode;
     Guard foundGuard = null;
     if (currentNode.getGuard() != null) {
-      foundGuard = (Guard) astNode.getGuard();
+      foundGuard = (Guard) sequence.getGuard();
       currentNode.setGuard(null);
     }
     // check if the next ast node is a reference node
-    if (astNode.getTo() instanceof ReferenceNode) {
-      ReferenceNode reference = (ReferenceNode) astNode.getTo();
+    if (sequence.getTo() instanceof ReferenceNode) {
+      ReferenceNode reference = (ReferenceNode) sequence.getTo();
       nextNode = referenceMap.get(reference.getReference());
       automaton.addEdge(action, currentNode, nextNode, foundGuard);
     } else {
       nextNode = automaton.addNode();
       automaton.addEdge(action, currentNode, nextNode, foundGuard);
-      interpretNode(astNode.getTo(), automaton, nextNode);
+      interpretNode(sequence.getTo(), automaton, nextNode);
     }
   }
 
-  private void interpretNode(ChoiceNode astNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException {
+  private void interpretChoice(ChoiceNode astChoiceNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException {
 
-
-    interpretNode(astNode.getFirstProcess(), automaton, currentNode);
-
-
-    interpretNode(astNode.getSecondProcess(), automaton, currentNode);
-
+    interpretNode(astChoiceNode.getFirstProcess(), automaton, currentNode);
+    interpretNode(astChoiceNode.getSecondProcess(), automaton, currentNode);
   }
 
-  private void interpretNode(CompositeNode astNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException {
-    interpretProcess(astNode.getFirstProcess(), automaton.getId() + ".pc1");
-    interpretProcess(astNode.getSecondProcess(), automaton.getId() + ".pc2");
+  private void interpretComposite(CompositeNode astCompositeNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException {
+    interpretProcess(astCompositeNode.getFirstProcess(), automaton.getId() + ".pc1");
+    interpretProcess(astCompositeNode.getSecondProcess(), automaton.getId() + ".pc2");
 
     ProcessModel model2 = processStack.pop();
     ProcessModel model1 = processStack.pop();
 
     if (!(model1 instanceof Automaton) || !(model2 instanceof Automaton)) {
-      throw new CompilationException(getClass(), "Expecting an automaton, received: " + model1.getClass().getSimpleName() + "," + model2.getClass().getSimpleName(), astNode.getLocation());
+      throw new CompilationException(getClass(), "Expecting an automaton, received: " + model1.getClass().getSimpleName() + "," + model2.getClass().getSimpleName(), astCompositeNode.getLocation());
     }
 
-    Automaton comp = instantiateClass(infixFunctions.get(astNode.getOperation()))
-        .compose(model1.getId() + astNode.getOperation() + model2.getId(), (Automaton) model1, (Automaton) model2);
+    Automaton comp = instantiateClass(infixFunctions.get(astCompositeNode.getOperation()))
+        .compose(model1.getId() + astCompositeNode.getOperation() + model2.getId(), (Automaton) model1, (Automaton) model2);
     AutomatonNode oldRoot = automaton.addAutomaton(comp);
     automaton.combineNodes(currentNode, oldRoot, context);
 
   }
 
-  private void interpretNode(IdentifierNode astNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException {
+  private void interpretIdentifier(IdentifierNode identifierNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException {
     // check that the reference is to an automaton
-    ProcessModel model = processMap.get(astNode.getIdentifier());
+    ProcessModel model = processMap.get(identifierNode.getIdentifier());
     if (!(model instanceof Automaton)) {
-      throw new CompilationException(getClass(), "Unable to find identifier: " + astNode.getIdentifier(), astNode.getLocation());
+      throw new CompilationException(getClass(), "Unable to find identifier: " + identifierNode.getIdentifier(), identifierNode.getLocation());
     }
 
     Automaton next = ((Automaton) model).copy();
 
     addAutomaton(currentNode, automaton, next);
-
-
   }
 
-  private void interpretFunction(FunctionNode astNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException {
+  private void interpretFunction(FunctionNode astFunctionNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException {
     List<ProcessModel> models = new ArrayList<>();
-    for (ASTNode p : astNode.getProcesses()) {
+    for (ASTNode p : astFunctionNode.getProcesses()) {
       interpretProcess(p, automaton.getId() + ".fn");
       models.add(processStack.pop());
     }
-    if (models.isEmpty()) {
-      throw new CompilationException(getClass(), "Expecting an automaton, received an undefined process.", astNode.getLocation());
-    }
 
-    for (ProcessModel model : models) {
-      if (!(model instanceof Automaton)) {
-        throw new CompilationException(getClass(), "Expecting an automaton, received a: " + model.getClass().getSimpleName(), astNode.getLocation());
-      }
-    }
+    if (models.isEmpty())
+      throw new CompilationException(getClass(), "Expecting an automaton, received an undefined process.", astFunctionNode.getLocation());
+
+    for (ProcessModel model : models)
+      if (!(model instanceof Automaton))
+        throw new CompilationException(getClass(), "Expecting an automaton, received a: " + model.getClass().getSimpleName(), astFunctionNode.getLocation());
 
     Automaton[] aut = models.stream().map(Automaton.class::cast).toArray(Automaton[]::new);
 
-    Automaton processed = instantiateClass(functions.get(astNode.getFunction()))
-        .compose(automaton.getId() + ".fn", astNode.getFlags(), context, aut);
+    Automaton processed = instantiateClass(functions.get(astFunctionNode.getFunction()))
+        .compose(automaton.getId() + ".fn", astFunctionNode.getFlags(), context, aut);
 
     addAutomaton(currentNode, automaton, processed);
   }
 
-  private void interpretNode(TerminalNode astNode, Automaton automaton, AutomatonNode currentNode) {
+  private void interpretTerminalNode(TerminalNode astNode, AutomatonNode currentNode) {
     currentNode.setTerminal(astNode.getTerminal());
   }
 
-  private Automaton processLabellingAndRelabelling(Automaton automaton, ProcessRootNode astNode) throws CompilationException {
-    if (astNode.hasLabel()) {
-      automaton = operations.labelAutomaton(automaton, astNode.getLabel());
+  private Automaton processLabellingAndRelabelling(Automaton automaton, ProcessRootNode astProcessRootNode) throws CompilationException {
+    if (astProcessRootNode.hasLabel()) {
+      automaton = operations.labelAutomaton(automaton, astProcessRootNode.getLabel());
     }
-    if (astNode.hasRelabelSet()) {
-      processRelabelling(automaton, astNode.getRelabelSet());
+    if (astProcessRootNode.hasRelabelSet()) {
+      processRelabelling(automaton, astProcessRootNode.getRelabelSet());
     }
 
     return automaton;
