@@ -134,9 +134,6 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
       return nodeMap.get(id);
     }
 
-      for(StackTraceElement t : Thread.currentThread().getStackTrace())
-          System.out.println(t);
-
     throw new CompilationException(getClass(), "Unable to get the node " + id + " as it does not exist in automaton " + getId(), this.getLocation());
   }
 
@@ -172,7 +169,6 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
   public AutomatonNode combineNodes(AutomatonNode node1, AutomatonNode node2, Context context) throws CompilationException, InterruptedException {
     if (!nodeMap.containsKey(node1.getId())) {
-
       throw new CompilationException(getClass(), node1.getId() + " was not found in the automaton " + getId(), this.getLocation());
     }
     if (!nodeMap.containsKey(node2.getId())) {
@@ -180,6 +176,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
       throw new CompilationException(getClass(), node2.getId() + " was not found in the automaton " + getId(), this.getLocation());
     }
     AutomatonNode node = addNode();
+    System.out.println(node + "\n" + node1 + "\n" + node2 );
 
 
     for (AutomatonEdge edge1 : node1.getIncomingEdges()) {
@@ -392,9 +389,9 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
           thisAutomataRoot = newNode;
           if(this.root == null)
             this.root = newNode;
+          else
+            newNode.setStartNode(false);
       }
-
-        System.out.println(newNode.getId() + " " + newNode);
 
     }
 

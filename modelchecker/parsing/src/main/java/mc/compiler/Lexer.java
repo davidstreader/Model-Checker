@@ -15,7 +15,7 @@ public class Lexer {
 
 	private static Set<String>      castTypes = ImmutableSet.copyOf(Arrays.asList("TokenRule", "A2P"));;
 	private static Set<String>   displayTypes = ImmutableSet.copyOf(Arrays.asList("automata", "petrinet"));
-    private static Set<String>      functions = new HashSet<>();
+    private static Set<String>      functions = new HashSet<>();    //Using reflection to automatically add function ids (strings) to lexer
     private static Set<String> infixFunctions = new HashSet<>();
 
 	// used for constructing locations of tokens
@@ -474,6 +474,7 @@ public class Lexer {
 		line = 1;
 		column = 0;
 	}
+
 
 	public static void registerFunction(Class<? extends IProcessFunction> function) {
         functions.add(instantiateClass(function).getFunctionName().toLowerCase());
