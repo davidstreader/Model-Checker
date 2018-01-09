@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URL;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -447,7 +448,7 @@ public class UserInterfaceController implements Initializable {
                 codeCompiler.compile(userCode, new Context(), Expression.mkCtx(), new LinkedBlockingQueue<>());
 
 
-                compilerOutputDisplay.insertText(0,"Compiling completed sucessfully!");
+                compilerOutputDisplay.insertText(0,"Compiling completed sucessfully!\n"+ new Date().toString());
             } catch (InterruptedException e) {
                 e.printStackTrace();
             } catch (CompilationException e) {
