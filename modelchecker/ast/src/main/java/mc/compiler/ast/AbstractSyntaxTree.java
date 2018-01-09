@@ -8,6 +8,14 @@ import mc.compiler.ProcessHierarchy;
 
 import java.util.List;
 import java.util.Map;
+/**
+ * AbstractSyntaxTree holds a collection of processes, operations and equations to be later used by
+ * the interpreter to create process models and execute operations.
+ *
+ * @see
+ * @author David Sheridan
+ * @author Sanjay Govind
+ */
 @AllArgsConstructor
 @RequiredArgsConstructor
 @Data

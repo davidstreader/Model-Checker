@@ -8,10 +8,10 @@ import mc.util.Location;
 @EqualsAndHashCode(callSuper = true)
 public class IdentifierNode extends ASTNode {
 
-	private String identifier;
+  private String identifier;
 
-	public IdentifierNode(String identifier, Location location){
-		super(location);
-		this.identifier = identifier;
-	}
+  public IdentifierNode(String identifier, Location location) {
+    super(location);
+    this.identifier = identifier;
+  }
 }

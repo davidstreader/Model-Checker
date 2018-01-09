@@ -96,7 +96,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
       throw new InterruptedException();
 
     if (currentNode.hasReferences()) {
-      currentNode.getReferences().forEach(s->referenceMap.put(s,currentNode));
+//      currentNode.getReferences().forEach(s->referenceMap.put(s,currentNode));
     }
   }
 
