@@ -66,19 +66,21 @@ public class Compiler {
 
 
         for(String processesName : processNodeMap.keySet()) { // Find if the dependancies have all been set correctly
-            Set<String> dependencies = ast.getProcessHierarchy().getDependencies(processesName);
-            for(String currentDependency : dependencies) {
-                if(!dependencyMap.get(currentDependency).getType().equals(dependencyMap.get(processesName).getType())) {
-                    if(dependencyMap.get(currentDependency).getType().equals("processes")) {
-                        dependencyMap.get(currentDependency).setType(dependencyMap.get(processesName).getType());
-                    } else if(!dependencyMap.get(processesName).getType().equals("processes")) {
+            Set<String> dependencies = ast.getProcessHierarchy().getDependencies(processesName); // Dependancies for the current process
+            ProcessNode currentProcess = dependencyMap.get(processesName);
+            for(String currentDependencyName : dependencies) {
+                ProcessNode currentDependency = dependencyMap.get(currentDependencyName);
+                if(!currentDependency.getType().equals(currentProcess.getType())) {
+                    if(currentDependency.getType().equals("processes")) {
+                        currentDependency.setType(currentProcess.getType());
+                    } else if(!currentProcess.getType().equals("processes")) {
                         throw new CompilationException(this.getClass(), "Dependecy "
-                                                                        + currentDependency
+                                                                        + currentDependencyName
                                                                         + " for "
                                                                         + processesName
                                                                         + " has mismatched type, expecting \""
-                                                                        + dependencyMap.get(currentDependency).getType()
-                                                                        + "\" got \"" + dependencyMap.get(currentDependency).getType()
+                                                                        + currentProcess.getType()
+                                                                        + "\" got \"" + currentDependency.getType()
                                                                         + "\""
                                                         ,null);
                     }
