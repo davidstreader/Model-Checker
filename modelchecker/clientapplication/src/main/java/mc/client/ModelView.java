@@ -27,6 +27,7 @@ import mc.compiler.OperationResult;
 import mc.processmodels.ProcessModel;
 import mc.processmodels.ProcessType;
 import mc.processmodels.automata.Automaton;
+import org.reflections.vfs.Vfs;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -57,6 +58,8 @@ public class ModelView implements Observer{
     private Multimap<String,GraphNode> processModels;
 
     private CompilationObject compiledResult;
+    private List<String> processesChanged = new ArrayList<>();
+
 
     private static final Font sourceCodePro;
 
@@ -82,6 +85,8 @@ public class ModelView implements Observer{
         if(!(arg instanceof CompilationObject))
             throw new IllegalArgumentException("arg object was not of type compilationObject");
 
+
+        processesChanged.clear();
         compiledResult = (CompilationObject) arg;
 
         visibleModels = new TreeSet<>(getProcessMap().entrySet().stream()
@@ -94,8 +99,6 @@ public class ModelView implements Observer{
         listOfAutomataUpdater.accept(visibleModels);
 
         updateLog.accept(compiledResult.getOperationResults(),compiledResult.getEquationResults());
-
-
     }
 
     /**
@@ -113,6 +116,7 @@ public class ModelView implements Observer{
 
         compiledResult.getProcessMap().keySet().stream()
                 .filter(processModelsToDisplay::contains)
+                .filter(processesChanged::contains)
                 .map(compiledResult.getProcessMap()::get)
                 .filter(Objects::nonNull)
                 .forEach(this::addProcess);
@@ -143,13 +147,11 @@ public class ModelView implements Observer{
         //This draws the boxes around the automata
         vv.addPreRenderPaintable(new AutomataBorderPaintable(vv,this.processModels));
 
-
+        processesChanged.clear();
         return vv;
     }
 
     private void addProcess(ProcessModel p){
-
-
         switch (p.getProcessType()){
             case AUTOMATA:
                 addAutomata((Automaton)p);
@@ -161,14 +163,23 @@ public class ModelView implements Observer{
     }
     /**
      * Add an individual automata to the graph
-     * @param automata the automata object
+     * @param automaton the automata object
      */
-    private void addAutomata(Automaton automata){
+    private void addAutomata(Automaton automaton){
         //make a new "parent" object for the children to be parents of
+        if(processModels.containsKey(automaton.getId())) {
+            for(GraphNode n : processModels.get(automaton.getId())) { // If the automon is already displayed, but modified. Remove all vertexes that are part of it
+                graph.removeVertex(n);
+            }
+
+            processModels.removeAll(automaton.getId());
+        }
+
+
         Map<String,GraphNode> nodeMap = new HashMap<>();
 
         //add all the nodes to the graph
-        automata.getNodes().forEach(n -> {
+        automaton.getNodes().forEach(n -> {
             String nodeTermination = "NOMINAL";
             if(n.isStartNode())
                 nodeTermination = "START";
@@ -183,7 +194,7 @@ public class ModelView implements Observer{
                 String splitTokens[] = nodeLabel.split("\\.");
                 nodeLabel = splitTokens[splitTokens.length - 1]; //Remove junk in the label, otherwise it ends up as Test.n1, we only need n1
             }
-            GraphNode node = new GraphNode(automata.getId(),nodeLabel,nodeTermination);
+            GraphNode node = new GraphNode(automaton.getId(),nodeLabel,nodeTermination);
             nodeMap.put(n.getId(),node);
 
             graph.addVertex(node);
@@ -191,13 +202,14 @@ public class ModelView implements Observer{
 
 
         //add the edges to the graph
-        automata.getEdges().forEach(e -> {
+        automaton.getEdges().forEach(e -> {
             GraphNode to   = nodeMap.get(e.getTo().getId());
             GraphNode from = nodeMap.get(e.getFrom().getId());
             graph.addEdge(new DirectedEdge(e.getLabel(),UUID.randomUUID().toString()),from,to);
         });
 
-        this.processModels.replaceValues(automata.getId(),nodeMap.values());
+
+        this.processModels.replaceValues(automaton.getId(),nodeMap.values());
     }
 
     /**
@@ -207,6 +219,7 @@ public class ModelView implements Observer{
     public void addDisplayedModel(String modelLabel) {
         assert compiledResult.getProcessMap().containsKey(modelLabel);
         assert visibleModels.contains(modelLabel);
+
         processModelsToDisplay.add(modelLabel);
     }
 
@@ -217,6 +230,7 @@ public class ModelView implements Observer{
 
     public void addAllModels() {
         processModelsToDisplay.clear();
+        processesChanged.addAll(compiledResult.getProcessMap().keySet());
 
         if(visibleModels != null)
             processModelsToDisplay.addAll(visibleModels);

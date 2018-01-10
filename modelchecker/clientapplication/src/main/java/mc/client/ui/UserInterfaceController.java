@@ -1,6 +1,5 @@
 package mc.client.ui;
 
-import javafx.beans.value.ChangeListener;
 import javafx.concurrent.Task;
 import javafx.embed.swing.SwingNode;
 import javafx.event.ActionEvent;
@@ -30,7 +29,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URL;
 import java.time.Duration;
-import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
