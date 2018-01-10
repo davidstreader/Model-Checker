@@ -21,7 +21,7 @@ processes {
      
    X =  Y[0][0],
       Y[i:0..2][x:0..2] = (if i<2 then a[x]->Y[i+1][x])${x}.
-    Y = X || Hi.
+   YA = X || Hi.
         
 }
 

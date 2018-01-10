@@ -10,6 +10,7 @@ import mc.webserver.Context;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 
 public class Compiler {
@@ -45,9 +46,13 @@ public class Compiler {
     }
     private CompilationObject compile(AbstractSyntaxTree ast, String code, com.microsoft.z3.Context z3Context, Context context, BlockingQueue<Object> messageQueue) throws CompilationException, InterruptedException {
         HashMap<String,ProcessNode> processNodeMap = new HashMap<>();
+        HashMap<String, ProcessNode> dependencyMap = new HashMap<>();
+
         for (ProcessNode node: ast.getProcesses()) {
             processNodeMap.put(node.getIdentifier(), (ProcessNode) node.copy());
+            dependencyMap.put(node.getIdentifier(), node);
         }
+
         ast = expander.expand(ast, messageQueue, z3Context);
         /** replacer.replaceReferences
          * Expands references i.e Initally we are now at: P1 = a->P2.
@@ -58,6 +63,29 @@ public class Compiler {
 
 
         System.out.println("Hierarchy of processes: " + ast.getProcessHierarchy().getDependencies());
+
+
+        for(String processesName : processNodeMap.keySet()) { // Find if the dependancies have all been set correctly
+            Set<String> dependencies = ast.getProcessHierarchy().getDependencies(processesName);
+            for(String currentDependency : dependencies) {
+                if(!dependencyMap.get(currentDependency).getType().equals(dependencyMap.get(processesName).getType())) {
+                    if(dependencyMap.get(currentDependency).getType().equals("processes")) {
+                        dependencyMap.get(currentDependency).setType(dependencyMap.get(processesName).getType());
+                    } else if(!dependencyMap.get(processesName).getType().equals("processes")) {
+                        throw new CompilationException(this.getClass(), "Dependecy "
+                                                                        + currentDependency
+                                                                        + " for "
+                                                                        + processesName
+                                                                        + " has mismatched type, expecting \""
+                                                                        + dependencyMap.get(currentDependency).getType()
+                                                                        + "\" got \"" + dependencyMap.get(currentDependency).getType()
+                                                                        + "\""
+                                                        ,null);
+                    }
+                }
+            }
+        }
+
         Map<String, ProcessModel> processMap = interpreter.interpret(ast, new LocalCompiler(processNodeMap, expander, replacer,messageQueue),messageQueue,z3Context);
 
         List<OperationResult> opResults = evaluator.evaluateOperations(ast.getOperations(), processMap, interpreter, code,z3Context);

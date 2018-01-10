@@ -221,6 +221,7 @@ public class ModelView implements Observer{
         assert visibleModels.contains(modelLabel);
 
         processModelsToDisplay.add(modelLabel);
+        processesChanged.add(modelLabel);
     }
 
     public void clearDisplayed() {
