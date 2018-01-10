@@ -7,10 +7,7 @@ import mc.exceptions.CompilationException;
 import mc.processmodels.ProcessModel;
 import mc.webserver.Context;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 
 public class Compiler {
@@ -64,7 +61,7 @@ public class Compiler {
 
         System.out.println("Hierarchy of processes: " + ast.getProcessHierarchy().getDependencies());
 
-
+        List<String> processesToRemoveFromDisplay = new ArrayList<>();
         for(String processesName : processNodeMap.keySet()) { // Find if the dependancies have all been set correctly
             Set<String> dependencies = ast.getProcessHierarchy().getDependencies(processesName); // Dependancies for the current process
             ProcessNode currentProcess = dependencyMap.get(processesName);
@@ -73,6 +70,7 @@ public class Compiler {
                 if(!currentDependency.getType().equals(currentProcess.getType())) {
                     if(currentDependency.getType().equals("processes")) {
                         currentDependency.setType(currentProcess.getType());
+                        processesToRemoveFromDisplay.add(currentDependencyName);
                     } else if(!currentProcess.getType().equals("processes")) {
                         throw new CompilationException(this.getClass(), "Dependecy "
                                                                         + currentDependencyName
@@ -93,6 +91,10 @@ public class Compiler {
         List<OperationResult> opResults = evaluator.evaluateOperations(ast.getOperations(), processMap, interpreter, code,z3Context);
         EquationEvaluator.EquationReturn eqResults = eqEvaluator.evaluateEquations(ast.getEquations(), code, context,z3Context,messageQueue);
         processMap.putAll(eqResults.getToRender());
+
+        for(String element : processesToRemoveFromDisplay)
+            if(processMap.containsKey(element))
+                processMap.remove(element);
 
         return new CompilationObject(processMap, opResults, eqResults.getResults());
     }
