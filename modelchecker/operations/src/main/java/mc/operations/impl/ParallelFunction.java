@@ -49,6 +49,7 @@ public class ParallelFunction {
     //The edges here are meaning the labeled lines in each of the automata that we are composing
     processUnsyncedActions(edges1, edges2);
     processSyncedActions(edges1, edges2);
+
     return automaton;
   }
 
@@ -65,20 +66,20 @@ public class ParallelFunction {
         // create an intersection of both nodes
         node.copyProperties(node1.createIntersection(node2));
 
-        if (node.isStartNode()) {
+        if (node.isStartNode())
           automaton.setRoot(node);
-        }
-        if ("ERROR".equals(node2.getTerminal()) || "ERROR".equals(node1.getTerminal())) {
+
+        if ("ERROR".equals(node2.getTerminal()) || "ERROR".equals(node1.getTerminal()))
           node.setTerminal("ERROR");
-        }
+
 
         HashMap<String, Object> variableMap = new HashMap<>();
-        if (node1.getVariables() != null) {
+        if (node1.getVariables() != null)
           variableMap.putAll(node1.getVariables());
-        }
-        if (node2.getVariables() != null) {
+
+        if (node2.getVariables() != null)
           variableMap.putAll(node2.getVariables());
-        }
+
 
         node.setVariables(variableMap);
 
@@ -153,9 +154,9 @@ public class ParallelFunction {
         List<AutomatonNode> to = new ArrayList<>(nodeMap.get(edge.getTo().getId()));
         for (int i = 0; i < Math.min(from.size(), to.size()); i++) {
           //Dont set any links from terminal error nodes.
-          if (from.get(i).isTerminal() && from.get(i).getTerminal().equals("ERROR")) {
+          if (from.get(i).isTerminal() && from.get(i).getTerminal().equals("ERROR"))
             continue;
-          }
+
 
           automaton.addEdge(edge.getLabel(), from.get(i), to.get(i),
               edge.getGuard()).setGuard(edge.getGuard());

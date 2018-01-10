@@ -1,6 +1,5 @@
 package mc.client.ui;
 
-import javafx.beans.value.ChangeListener;
 import javafx.concurrent.Task;
 import javafx.embed.swing.SwingNode;
 import javafx.event.ActionEvent;
@@ -447,7 +446,7 @@ public class UserInterfaceController implements Initializable {
                 codeCompiler.compile(userCode, new Context(), Expression.mkCtx(), new LinkedBlockingQueue<>());
 
 
-                compilerOutputDisplay.insertText(0,"Compiling completed sucessfully!");
+                compilerOutputDisplay.insertText(0,"Compiling completed sucessfully!\n"+ new Date().toString());
             } catch (InterruptedException e) {
                 e.printStackTrace();
             } catch (CompilationException e) {

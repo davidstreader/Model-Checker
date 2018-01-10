@@ -1,8 +1,6 @@
 package mc.client;
 
 
-import static java.util.stream.Collectors.toCollection;
-
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import edu.uci.ics.jung.algorithms.layout.DAGLayout;
@@ -22,6 +20,7 @@ import java.awt.FontFormatException;
 import java.awt.RenderingHints;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,6 +35,7 @@ import java.util.TreeSet;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import javafx.embed.swing.SwingNode;
 import javafx.geometry.Bounds;
 import lombok.Getter;
@@ -74,6 +74,8 @@ public class ModelView implements Observer {
   private Multimap<String, GraphNode> processModels;
 
   private CompilationObject compiledResult;
+  private List<String> processesChanged = new ArrayList<>();
+
 
   private static final Font sourceCodePro;
 
@@ -99,24 +101,24 @@ public class ModelView implements Observer {
       throw new IllegalArgumentException("arg object was not of type compilationObject");
     }
 
+
+    processesChanged.clear();
     compiledResult = (CompilationObject) arg;
 
     visibleModels = getProcessMap().entrySet().stream()
         .filter(e -> e.getValue().getProcessType() != ProcessType.AUTOMATA ||
             ((Automaton) e.getValue()).getNodes().size() <= 40)
         .map(Map.Entry::getKey)
-        .collect(toCollection(TreeSet::new));
+        .collect(Collectors.toCollection(TreeSet::new));
 
     //remove processes marked at skipped and too large models to display
     listOfAutomataUpdater.accept(visibleModels);
 
     updateLog.accept(compiledResult.getOperationResults(), compiledResult.getEquationResults());
-
-
   }
 
   /**
-   * A method to update the graph that is displayed.
+   * A method to update the graph that is displayed
    *
    * @return the graph component that is displayed
    */
@@ -126,11 +128,13 @@ public class ModelView implements Observer {
       return new VisualizationViewer<>(new DAGLayout<>(new DirectedSparseGraph<>()));
     }
 
-    layoutInitalizer.setDimensions(new Dimension((int) s.getBoundsInParent().getWidth(), (int) s.getBoundsInParent().getHeight()));
+    layoutInitalizer.setDimensions(new Dimension((int) s.getBoundsInParent().getWidth(),
+        (int) s.getBoundsInParent().getHeight()));
 
 
     compiledResult.getProcessMap().keySet().stream()
         .filter(processModelsToDisplay::contains)
+        .filter(processesChanged::contains)
         .map(compiledResult.getProcessMap()::get)
         .filter(Objects::nonNull)
         .forEach(this::addProcess);
@@ -143,7 +147,8 @@ public class ModelView implements Observer {
     }
 
 
-    // if the font was imported successfully, set the font (the standard font does not display greek symbols
+    // if the font was imported successfully, set the font
+    // (the standard font does not display greek symbols)
     // (i.e. tau and delta events)
     if (sourceCodePro != null) {
       vv.getRenderContext().setEdgeFontTransformer(e -> sourceCodePro);
@@ -161,13 +166,11 @@ public class ModelView implements Observer {
     //This draws the boxes around the automata
     vv.addPreRenderPaintable(new AutomataBorderPaintable(vv, this.processModels));
 
-
+    processesChanged.clear();
     return vv;
   }
 
   private void addProcess(ProcessModel p) {
-
-
     switch (p.getProcessType()) {
       case AUTOMATA:
         addAutomata((Automaton) p);
@@ -181,14 +184,25 @@ public class ModelView implements Observer {
   /**
    * Add an individual automata to the graph
    *
-   * @param automata the automata object
+   * @param automaton the automata object
    */
-  private void addAutomata(Automaton automata) {
+  private void addAutomata(Automaton automaton) {
     //make a new "parent" object for the children to be parents of
+    if (processModels.containsKey(automaton.getId())) {
+      // If the automaton is already displayed, but modified.
+      // Remove all vertexes that are part of it
+      for (GraphNode n : processModels.get(automaton.getId())) {
+        graph.removeVertex(n);
+      }
+
+      processModels.removeAll(automaton.getId());
+    }
+
+
     Map<String, GraphNode> nodeMap = new HashMap<>();
 
     //add all the nodes to the graph
-    automata.getNodes().forEach(n -> {
+    automaton.getNodes().forEach(n -> {
       String nodeTermination = "NOMINAL";
       if (n.isStartNode()) {
         nodeTermination = "START";
@@ -198,14 +212,17 @@ public class ModelView implements Observer {
       }
       nodeTermination = nodeTermination.toLowerCase();
 
-      //Make sure we are using a human reable label, the parallel compositions fill Id with long strings.
-      String nodeLabel = (n.getId().contains("||")) ? Integer.toString(n.getLabelNumber()) : n.getId();
+      //Make sure we are using a human readable label,
+      //the parallel compositions fill Id with long strings.
+      String nodeLabel = (n.getId().contains("||"))
+          ? Integer.toString(n.getLabelNumber()) : n.getId();
 
       if (!nodeLabel.contains("abs")) {
         String splitTokens[] = nodeLabel.split("\\.");
-        nodeLabel = splitTokens[splitTokens.length - 1]; //Remove junk in the label, otherwise it ends up as Test.n1, we only need n1
+        //Remove junk in the label, otherwise it ends up as Test.n1, we only need n1;
+        nodeLabel = splitTokens[splitTokens.length - 1];
       }
-      GraphNode node = new GraphNode(automata.getId(), nodeLabel, nodeTermination);
+      GraphNode node = new GraphNode(automaton.getId(), nodeLabel, nodeTermination);
       nodeMap.put(n.getId(), node);
 
       graph.addVertex(node);
@@ -213,21 +230,23 @@ public class ModelView implements Observer {
 
 
     //add the edges to the graph
-    automata.getEdges().forEach(e -> {
+    automaton.getEdges().forEach(e -> {
       GraphNode to = nodeMap.get(e.getTo().getId());
       GraphNode from = nodeMap.get(e.getFrom().getId());
       graph.addEdge(new DirectedEdge(e.getLabel(), UUID.randomUUID().toString()), from, to);
     });
 
-    this.processModels.replaceValues(automata.getId(), nodeMap.values());
+
+    this.processModels.replaceValues(automaton.getId(), nodeMap.values());
   }
 
   /**
-   * @param modelLabel The name of the model process to be displayed/ added to display
+   * @param modelLabel The name of the model process to be displayed / added to display.
    */
   public void addDisplayedModel(String modelLabel) {
     assert compiledResult.getProcessMap().containsKey(modelLabel);
     assert visibleModels.contains(modelLabel);
+
     processModelsToDisplay.add(modelLabel);
   }
 
@@ -238,6 +257,7 @@ public class ModelView implements Observer {
 
   public void addAllModels() {
     processModelsToDisplay.clear();
+    processesChanged.addAll(compiledResult.getProcessMap().keySet());
 
     if (visibleModels != null) {
       processModelsToDisplay.addAll(visibleModels);
@@ -245,7 +265,8 @@ public class ModelView implements Observer {
   }
 
   /**
-   * All functions below deal with "freezing" vertexes, this means to disallow the layout algoirthm to act upon the vertexes
+   * All functions below deal with "freezing" vertexes, this means to disallow the layout algorithm
+   * to act upon the vertexes.
    */
   public void freezeAllCurrentlyDisplayed() {
     if (layout != null) {
@@ -291,7 +312,7 @@ public class ModelView implements Observer {
   }
 
   /**
-   * Resets all graph variables and re-adds default blank state.
+   * Resets all graph varaibles and re-adds default blank state.
    */
   private void initalise() {
     processModelsToDisplay = new HashSet<>();
@@ -341,7 +362,7 @@ public class ModelView implements Observer {
   private static ModelView instance = new ModelView();
 
   /**
-   * Enforcing Singleton
+   * Enforcing Singleton.
    */
   private ModelView() {
     CompilationObservable.getInstance().addObserver(this);

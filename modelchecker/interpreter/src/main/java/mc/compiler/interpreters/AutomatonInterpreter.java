@@ -235,6 +235,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         throw new CompilationException(getClass(), "Expecting an automaton, received: " + model1.getClass().getSimpleName() + "," + model2.getClass().getSimpleName(), astCompositeNode.getLocation());
     }
 
+
     Automaton comp = instantiateClass(infixFunctions.get(astCompositeNode.getOperation()))
         .compose(model1.getId() + astCompositeNode.getOperation() + model2.getId(), (Automaton) model1, (Automaton) model2);
     AutomatonNode oldRoot = automaton.addAutomaton(comp);

@@ -41,9 +41,11 @@ public class InfixParallelFunction implements IProcessInfixFunction {
   @Override
   public Automaton compose(String id, Automaton automaton1, Automaton automaton2)
       throws CompilationException {
+
     //use this secondary function in new object, as without mutable state the function
     // becomes **very** hard to properly compose without a wild mess of lambdas.
+
     return AutomataReachability.removeUnreachableNodes(new ParallelFunction()
-        .execute(id, automaton1, automaton2));
+            .execute(id, automaton1, automaton2));
   }
 }

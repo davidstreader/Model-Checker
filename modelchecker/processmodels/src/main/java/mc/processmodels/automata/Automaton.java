@@ -176,7 +176,6 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
       throw new CompilationException(getClass(), node2.getId() + " was not found in the automaton " + getId(), this.getLocation());
     }
     AutomatonNode node = addNode();
-    System.out.println(node + "\n" + node1 + "\n" + node2 );
 
 
     for (AutomatonEdge edge1 : node1.getIncomingEdges()) {
