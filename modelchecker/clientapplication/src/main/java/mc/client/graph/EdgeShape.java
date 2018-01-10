@@ -40,7 +40,9 @@ import edu.uci.ics.jung.visualization.decorators.ParallelEdgeShapeTransformer;
  *
  * Modified 15/12/2017 to automatically adjust from line to curve to stop overlapping of labels/edges
  *
- * @author Tom Nelson, Jordan Smith
+ * @author Tom Nelson
+ * @author Jordan Smith
+ * @author Jacob Beal
  * @param <V> the vertex type
  * @param <E> the edge type
  */
@@ -164,6 +166,12 @@ public class EdgeShape<V,E> {
                 V second = Vertexes.get(1);
 
 
+                //If there are two parallel lines
+                V fst = graph.getEndpoints(e).getFirst();
+                V tail = graph.getEndpoints(e).getSecond();
+                System.out.println(graph.getOutEdges(fst).size());
+
+
                 //If the second vertex appears in any other edges from the first node then make it a curve
                 ArrayList<E> firstNodeEdges = new ArrayList<>(graph.getOutEdges(first));
                 for(E edge : firstNodeEdges) {
@@ -171,7 +179,6 @@ public class EdgeShape<V,E> {
                         continue;
 
                     if(graph.getIncidentVertices(edge).contains(second)) {
-
                         return new QuadCurve().apply(e);
                     }
                 }
