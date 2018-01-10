@@ -2,6 +2,7 @@ package mc.operations;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import mc.exceptions.CompilationException;
@@ -9,6 +10,7 @@ import mc.plugins.IProcessInfixFunction;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
+import mc.processmodels.automata.operations.AutomataReachability;
 
 public class SequentialInfixFunction implements IProcessInfixFunction {
   /**
@@ -48,7 +50,7 @@ public class SequentialInfixFunction implements IProcessInfixFunction {
     Map<String, AutomatonNode> automata2nodes = new HashMap<>();
 
     //copy node1 nodes across
-    automaton1.getNodes().forEach(node -> {
+    AutomataReachability.removeUnreachableNodes(automaton1).getNodes().forEach(node -> {
       try {
         AutomatonNode newNode = sequence.addNode();
         newNode.copyProperties(node);
@@ -70,12 +72,13 @@ public class SequentialInfixFunction implements IProcessInfixFunction {
         .filter(n -> "STOP".equals(n.getTerminal()))
         .collect(Collectors.toList());
 
+    stopNodes.forEach(System.out::println);
     //if there are no stop nodes, we cannot glue them together
     if (stopNodes.isEmpty()) {
       return sequence;
     }
 
-    automaton2.getNodes().forEach(node -> {
+    AutomataReachability.removeUnreachableNodes(automaton2).getNodes().forEach(node -> {
       AutomatonNode newNode = sequence.addNode();
       newNode.copyProperties(node);
 
@@ -87,13 +90,19 @@ public class SequentialInfixFunction implements IProcessInfixFunction {
         // replace it with the start node of automata2
         for (AutomatonNode stopNode : stopNodes) {
           for (AutomatonEdge edge : stopNode.getIncomingEdges()) {
-            edge.setTo(newNode);
-            stopNode.removeIncomingEdge(edge);
+            AutomatonNode origin = edge.getFrom();
+            try {
+              sequence.addEdge(edge.getLabel(), origin, newNode,
+                  edge.getGuard() == null ? null : edge.getGuard().copy());
+            } catch (CompilationException e) {
+              e.printStackTrace();
+            }
           }
-          sequence.removeNode(stopNode);
         }
       }
     });
+    stopNodes.stream().map(AutomatonNode::getIncomingEdges).flatMap(List::stream).forEach(sequence::removeEdge);
+    stopNodes.forEach(sequence::removeNode);
 
     copyAutomataEdges(sequence, automaton2, automata2nodes);
 
