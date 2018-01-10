@@ -3,12 +3,14 @@ package mc.processmodels.automata;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import mc.Constant;
 import mc.compiler.Guard;
 import mc.processmodels.ProcessModelObject;
 import mc.processmodels.automata.serializers.JSONEdgeSerializer;
 
 @JsonSerialize(using = JSONEdgeSerializer.class)
+@ToString
 public class AutomatonEdge extends ProcessModelObject {
 
   @Getter
