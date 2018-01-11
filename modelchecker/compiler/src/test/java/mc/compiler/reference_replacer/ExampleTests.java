@@ -325,7 +325,7 @@ public class ExampleTests extends ReferenceReplacerTests {
 
     @Test
     public void correctMoneyTestExample() throws CompilationException, InterruptedException {
-        String input = "const Coins = 3 processes Money = C[1], C[i:1..Coins] = (when (i < Coins) coin -> C[i + 1] | when (i == Coins) coin -> C[1]).\nautomata Money.";
+        String input = "const Coins = 3. processes Money = C[1], C[i:1..Coins] = (when (i < Coins) coin -> C[i + 1] | when (i == Coins) coin -> C[1]).\nautomata Money.";
         ProcessNode node = constructProcessNode(input);
 
         SequenceNode sequence1 = constructSequenceNode(new String[]{"coin"}, new ReferenceNode("Money.C[1]", null));
@@ -345,7 +345,7 @@ public class ExampleTests extends ReferenceReplacerTests {
 
     @Test
     public void correctLockTestExample() throws CompilationException, InterruptedException {
-        String input = "const Locks = 2 processes Lock = ([i:1..Locks].setLock -> L[i]), L[j:1..Locks] = ([i:1..Locks].enter -> (when (i == j) open -> close -> L[j] | when (i != j) error -> Lock)).\nautomata Lock.";
+        String input = "const Locks = 2. processes Lock = ([i:1..Locks].setLock -> L[i]), L[j:1..Locks] = ([i:1..Locks].enter -> (when (i == j) open -> close -> L[j] | when (i != j) error -> Lock)).\nautomata Lock.";
         ProcessNode node = constructProcessNode(input);
 
         SequenceNode sequence1 = constructSequenceNode(new String[]{"[1].enter", "open", "close"}, new ReferenceNode("Lock.L[1]", null));
@@ -408,7 +408,7 @@ public class ExampleTests extends ReferenceReplacerTests {
     }
 
     private String constructFarmInput(){
-        return "const W = 3 " +
+        return "const W = 3. " +
             "processes {" +
             "Worker = (getTask -> doTask -> Worker)." +
             "Workers = (forall [i:1..W] ([i]:Worker))." +

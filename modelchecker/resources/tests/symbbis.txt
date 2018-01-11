@@ -1,5 +1,5 @@
-const N = 2
-const M = 4
+const N = 2.
+const M = 4.
 processes {
 
 Test = (a-> X | b->Z),

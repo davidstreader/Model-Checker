@@ -1,4 +1,4 @@
-const N = 2
+const N = 2.
 processes {
 A = a->B,
     B = (b->A | c->A).

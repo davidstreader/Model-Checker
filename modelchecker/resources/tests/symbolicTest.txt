@@ -1,7 +1,7 @@
 /* Check that equivalent processes defined in different ways are equivalent when constructed */
 
-const M = 3
-const N = 2
+const M = 3.
+const N = 2.
 processes {
     Exp = C[0][0],
         C[i:0..M][j:0..M] = (if i < M then coin -> C[i + 1][j] else 

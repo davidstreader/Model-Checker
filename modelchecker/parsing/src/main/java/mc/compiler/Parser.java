@@ -381,6 +381,11 @@ public class Parser {
     int start = index;
     int value = parseSimpleExpression();
 
+    if(!(nextToken() instanceof DotToken)) {
+      Token error = tokens.get(index - 1);
+      throw constructException("expecting to parse \".\" but received \"" + error.toString() + "\"", error.getLocation());
+    }
+
     ConstNode node = new ConstNode(value, constructLocation(start));
     constantMap.put(identifier.getIdentifier(), node);
   }

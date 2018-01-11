@@ -314,7 +314,7 @@ public class ExampleTests extends ExpanderTests {
 
     @Test
     public void correctMoneyTestProcessTypes() throws CompilationException, InterruptedException {
-        String input = "const Coins = 3 processes Money = C[1], C[i:1..Coins] = (when (i < Coins) coin -> C[i + 1] | when (i == Coins) coin -> C[1]).\nautomata Money.";
+        String input = "const Coins = 3. processes Money = C[1], C[i:1..Coins] = (when (i < Coins) coin -> C[i + 1] | when (i == Coins) coin -> C[1]).\nautomata Money.";
         ProcessNode node = constructProcessNode(input);
 
         IndexNode index = new IndexNode("$i", new RangeNode(1, 3, null), null, null);
@@ -337,7 +337,7 @@ public class ExampleTests extends ExpanderTests {
 
     @Test
     public void correctLockTestProcessTypes() throws CompilationException, InterruptedException {
-        String input = "const Locks = 2 processes Lock = ([i:1..Locks].setLock -> L[i]), L[j:1..Locks] = ([i:1..Locks].enter -> (when (i == j) open -> close -> L[j] | when (i != j) error -> Lock)).\nautomata Lock.";
+        String input = "const Locks = 2. processes Lock = ([i:1..Locks].setLock -> L[i]), L[j:1..Locks] = ([i:1..Locks].enter -> (when (i == j) open -> close -> L[j] | when (i != j) error -> Lock)).\nautomata Lock.";
         ProcessNode node = constructProcessNode(input);
 
         SequenceNode mainSequence1 = constructSequenceNode(new String[]{"[1].setLock"}, new IdentifierNode("L[1]", null));
@@ -401,7 +401,7 @@ public class ExampleTests extends ExpanderTests {
     }
 
     private String constructFarmInput(){
-        return "const W = 3 " +
+        return "const W = 3. " +
                 "processes {" +
                 "Worker = (getTask -> doTask -> Worker)." +
                 "Workers = (forall [i:1..W] ([i]:Worker))." +

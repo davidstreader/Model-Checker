@@ -292,7 +292,7 @@ public class IndexTests extends ParserTests {
 
     @Test
     public void correctConstIndexRangeTest_1() throws CompilationException, InterruptedException {
-        String input = "const N = 1 processes Test = ([N..2] -> STOP).\nautomata Test.";
+        String input = "const N = 1. processes Test = ([N..2] -> STOP).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
         String variable = "$v0";
         int start = 1;
@@ -307,7 +307,7 @@ public class IndexTests extends ParserTests {
 
     @Test
     public void correctConstIndexRangeTest_2() throws CompilationException, InterruptedException {
-        String input = "const N = 1 processes Test = ([i:N..2] -> STOP).\nautomata Test.";
+        String input = "const N = 1. processes Test = ([i:N..2] -> STOP).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
         String variable = "$i";
         int start = 1;
@@ -322,7 +322,7 @@ public class IndexTests extends ParserTests {
 
     @Test
     public void correctConstIndexRangeTest_3() throws CompilationException, InterruptedException {
-        String input = "const N = 2 processes Test = ([1..N] -> STOP).\nautomata Test.";
+        String input = "const N = 2. processes Test = ([1..N] -> STOP).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
         String variable = "$v0";
         int start = 1;
@@ -337,7 +337,7 @@ public class IndexTests extends ParserTests {
 
     @Test
     public void correctConstIndexRangeTest_4() throws CompilationException, InterruptedException {
-        String input = "const N = 2 processes Test = ([i:1..N] -> STOP).\nautomata Test.";
+        String input = "const N = 2. processes Test = ([i:1..N] -> STOP).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
         String variable = "$i";
         int start = 1;
@@ -352,7 +352,7 @@ public class IndexTests extends ParserTests {
 
     @Test
     public void correctConstIndexRangeTest_5() throws CompilationException, InterruptedException {
-        String input = "const N = 1 const M = 2 processes Test = ([N..M] -> STOP).\nautomata Test.";
+        String input = "const N = 1. const M = 2. processes Test = ([N..M] -> STOP).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
         String variable = "$v0";
         int start = 1;
@@ -367,7 +367,7 @@ public class IndexTests extends ParserTests {
 
     @Test
     public void correctConstIndexRangeTest_6() throws CompilationException, InterruptedException {
-        String input = "const N = 1 const M = 2 processes Test = ([i:N..M] -> STOP).\nautomata Test.";
+        String input = "const N = 1. const M = 2. processes Test = ([i:N..M] -> STOP).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
         String variable = "$i";
         int start = 1;
@@ -382,7 +382,7 @@ public class IndexTests extends ParserTests {
 
     @Test
     public void correctConstIndexRangeTest_7() throws CompilationException, InterruptedException {
-        String input = "const N = 1 processes Test = ([N..1 + 1] -> STOP).\nautomata Test.";
+        String input = "const N = 1. processes Test = ([N..1 + 1] -> STOP).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
         String variable = "$v0";
         int start = 1;
@@ -397,7 +397,7 @@ public class IndexTests extends ParserTests {
 
     @Test
     public void correctConstIndexRangeTest_8() throws CompilationException, InterruptedException {
-        String input = "const N = 1 processes Test = ([i:N..1 + 1] -> STOP).\nautomata Test.";
+        String input = "const N = 1. processes Test = ([i:N..1 + 1] -> STOP).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
         String variable = "$i";
         int start = 1;
@@ -412,7 +412,7 @@ public class IndexTests extends ParserTests {
 
     @Test
     public void correctConstIndexRangeTest_9() throws CompilationException, InterruptedException {
-        String input = "const N = 1 + 1 processes Test = ([1..N] -> STOP).\nautomata Test.";
+        String input = "const N = 1 + 1. processes Test = ([1..N] -> STOP).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
         String variable = "$v0";
         int start = 1;
@@ -427,7 +427,7 @@ public class IndexTests extends ParserTests {
 
     @Test
     public void correctConstIndexRangeTest_10() throws CompilationException, InterruptedException {
-        String input = "const N = 1 + 1 processes Test = ([i:1..N] -> STOP).\nautomata Test.";
+        String input = "const N = 1 + 1. processes Test = ([i:1..N] -> STOP).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
         String variable = "$i";
         int start = 1;
@@ -442,7 +442,7 @@ public class IndexTests extends ParserTests {
 
     @Test
     public void correctConstIndexRangeTest_11() throws CompilationException, InterruptedException {
-        String input = "const N = 2 + 3 const M = 11 - 4 processes Test = ([N..M] -> STOP).\nautomata Test.";
+        String input = "const N = 2 + 3. const M = 11 - 4. processes Test = ([N..M] -> STOP).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
         String variable = "$v0";
         int start = 5;
@@ -457,7 +457,7 @@ public class IndexTests extends ParserTests {
 
     @Test
     public void correctConstIndexRangeTest_12() throws CompilationException, InterruptedException {
-        String input = "const N = 2 + 3 const M = 11 - 4 processes Test = ([i:N..M] -> STOP).\nautomata Test.";
+        String input = "const N = 2 + 3. const M = 11 - 4. processes Test = ([i:N..M] -> STOP).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
         String variable = "$i";
         int start = 5;

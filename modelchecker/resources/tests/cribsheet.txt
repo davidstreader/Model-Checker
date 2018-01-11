@@ -1,6 +1,6 @@
-const Coins = 4
-const Locks = 2
-const W = 3
+const Coins = 4.
+const Locks = 2.
+const W = 3.
 
 processes {
     Simple = (takeTea -> STOP).
