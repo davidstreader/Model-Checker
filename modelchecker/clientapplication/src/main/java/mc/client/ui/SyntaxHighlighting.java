@@ -24,7 +24,7 @@ public class SyntaxHighlighting {
 
     static final String[] functions;
 
-    static final String[] terminals = new String[] {
+    private static final String[] terminals = new String[] {
             "STOP", "ERROR"
     };
 
@@ -32,24 +32,25 @@ public class SyntaxHighlighting {
             "const", "range", "set", "if", "then", "else", "when", "forall"
     };
 
-    static final String PROCESSTYPES_PATTERN = "\\b(" + String.join("|", processTypes) + ")\\b";
-    static final String FUNCTIONS_PATTERN = "\\b(" + String.join("|", functions) + ")\\b";
-    static final String TERMINALS_PATTERN = "\\b(" + String.join("|", terminals) + ")\\b";
-    static final String KEYWORDS_PATTERN = "\\b(" + String.join("|", keywords) + ")\\b";
+    private static final String PROCESSTYPES_PATTERN = "\\b(" + String.join("|", processTypes) + ")\\b";
+    private static final String FUNCTIONS_PATTERN = "\\b(" + String.join("|", functions) + ")\\b";
+    private static final String TERMINALS_PATTERN = "\\b(" + String.join("|", terminals) + ")\\b";
+    private static final String KEYWORDS_PATTERN = "\\b(" + String.join("|", keywords) + ")\\b";
 
-    static final String SYMBOLS = "\\.\\.|\\.|,|:|\\[|\\]|\\(|\\)|->|~>|\\\\|@|\\$|\\?";
-    static final String OPERATORS = "\\|\\||\\||&&|&|\\^|==|=|!=|<<|<=|<|>>|>=|>|\\+|-|\\*|\\/|%|!|\\?";
-    static final String OPERATIONS = "~|#";
-    static final String ACTION_LABEL_PATTERN = "[a-z][A-Za-z0-9_]*";
-    static final String IDENT_PATTERN = "[A-Z][A-Za-z0-9_]*\\*?";
-    static final String INT_PATTERN = "[0-9]+";
+    private static final String SYMBOLS = "\\.\\.|\\.|,|:|\\[|\\]|\\(|\\)|->|~>|\\\\|@|\\$|\\?";
+    private static final String OPERATORS = "\\|\\||\\||&&|&|\\^|==|=|!=|<<|<=|<|>>|>=|>|\\+|-|\\*|\\/|%|!|\\?";
+    private static final String OPERATIONS = "~|#";
+    private static final String ACTION_LABEL_PATTERN = "[a-z][A-Za-z0-9_]*";
+    private static final String IDENT_PATTERN = "[A-Z][A-Za-z0-9_]*\\*?";
+    private static final String INT_PATTERN = "[0-9]+";
 
-    static final String PAREN_PATTERN = "\\(|\\)";
-    static final String BRACE_PATTERN = "\\{|\\}";
-    static final String BRACKET_PATTERN = "\\[|\\]";
-    static final String COMMENT_PATTERN = "(?://[^\n]*)|(?:/\\*.*?\\*/)|(?:/\\*(?!\\*/).*)";
+    private static final String PAREN_PATTERN = "\\(|\\)";
+    private static final String BRACE_PATTERN = "\\{|\\}";
+    private static final String BRACKET_PATTERN = "\\[|\\]";
+    private static final String COMMENT_PATTERN = "(?://[^\n]*)|(?:/\\*.*?\\*/)|(?:/\\*(?!\\*/).*)";
+    private static final String STRING_PATTERN = "\"([^\"\\\\]|\\\\.)*\"";
 
-    static final Pattern PATTERN = Pattern.compile(
+    private static final Pattern PATTERN = Pattern.compile(
             "(?<COMMENT>" + COMMENT_PATTERN + ")"
                     + "|(?<PROCESSTYPE>" + PROCESSTYPES_PATTERN + ")"
                     + "|(?<FUNCTION>" + FUNCTIONS_PATTERN + ")"
@@ -64,6 +65,7 @@ public class SyntaxHighlighting {
                     + "|(?<PAREN>" + PAREN_PATTERN + ")"
                     + "|(?<BRACE>" + BRACE_PATTERN + ")"
                     + "|(?<BRACKET>" + BRACKET_PATTERN + ")"
+                    + "|(?<STRING>"+STRING_PATTERN + ")"
             , Pattern.DOTALL
     );
 
@@ -86,31 +88,33 @@ public class SyntaxHighlighting {
                     styleClass = "terminalStop";
                 else
                     styleClass = "terminalError";
-            } else if(matcher.group("KEYWORD") != null) {
+            } else if (matcher.group("KEYWORD") != null) {
                 styleClass = "keyword";
-            }else if(matcher.group("SYMBOL") != null) {
+            } else if (matcher.group("SYMBOL") != null) {
                 styleClass = "symbol";
-            } else if(matcher.group("OPERATOR") != null) {
+            } else if (matcher.group("OPERATOR") != null) {
                 styleClass = "operator";
-            } else if(matcher.group("OPERATION") != null) {
+            } else if (matcher.group("OPERATION") != null) {
                 styleClass = "operation";
-            } else if(matcher.group("ACTIONLABEL") != null) {
+            } else if (matcher.group("ACTIONLABEL") != null) {
                 styleClass = "actionLabel";
-            } else if(matcher.group("IDENTIFER") != null) {
+            } else if (matcher.group("IDENTIFER") != null) {
                 styleClass = "identifier";
-            } else if(matcher.group("INT") != null) {
+            } else if (matcher.group("INT") != null) {
                 styleClass = "number";
-            } else if(matcher.group("PAREN") != null) {
+            } else if (matcher.group("PAREN") != null) {
                 styleClass = "paren";
 
-            } else if(matcher.group("BRACE") != null) {
+            } else if (matcher.group("BRACE") != null) {
                 styleClass = "brace";
 
-            }else if(matcher.group("BRACKET") != null) {
+            } else if (matcher.group("BRACKET") != null) {
                 styleClass = "bracket";
 
-            } else if(matcher.group("COMMENT") != null) {
+            } else if (matcher.group("COMMENT") != null) {
                 styleClass = "comment";
+            } else if(matcher.group("STRING") != null) {
+                styleClass = "string";
             } else {
                 styleClass = null;
             }

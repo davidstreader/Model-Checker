@@ -102,3 +102,7 @@
     -fx-underline: true;
     -fx-stroke: red;
 }
+
+.string {
+    -fx-fill: #b8bb26;
+}

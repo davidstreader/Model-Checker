@@ -451,7 +451,9 @@ public class UserInterfaceController implements Initializable {
                 e.printStackTrace();
             } catch (CompilationException e) {
                 holdHighlighting = true;
-                compilerOutputDisplay.insertText(0,e.toString() + "\n" + e.getLocation());
+                compilerOutputDisplay.insertText(0,e.toString() );
+                if(e.getLocation() != null)
+                     compilerOutputDisplay.appendText("\n"+e.getLocation());
 
 
                 if(e.getLocation().getStartIndex() > 0 && e.getLocation().getStartIndex() < userCodeInput.getText().length())
