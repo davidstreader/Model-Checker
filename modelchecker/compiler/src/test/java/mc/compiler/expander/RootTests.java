@@ -110,7 +110,7 @@ public class RootTests extends ExpanderTests {
 
     @Test
     public void correctExpandedRelabelSetTest_6() throws CompilationException, InterruptedException {
-        String input = "range N = 1..2 processes Test = (a -> STOP)/{[i:N].test/[i]}.\nautomata Test.";
+        String input = "range N = 1..2. processes Test = (a -> STOP)/{[i:N].test/[i]}.\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"a"}, terminal);
@@ -128,7 +128,7 @@ public class RootTests extends ExpanderTests {
 
     @Test
     public void correctExpandedRelabelSetTest_7() throws CompilationException, InterruptedException {
-        String input = "range N = 1..3 processes Test = (a -> STOP)/{[i:N].test/[i]}.\nautomata Test.";
+        String input = "range N = 1..3. processes Test = (a -> STOP)/{[i:N].test/[i]}.\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"a"}, terminal);

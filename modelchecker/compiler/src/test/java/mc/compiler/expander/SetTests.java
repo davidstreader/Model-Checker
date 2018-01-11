@@ -243,7 +243,7 @@ public class SetTests extends ExpanderTests {
 
     @Test
     public void correctConstantSetExpansionTest_4() throws InterruptedException {
-        String input = "range N = 1..2 processes Test = ([i:{[N]}] -> STOP).\nautomata Test.";
+        String input = "range N = 1..2. processes Test = ([i:{[N]}] -> STOP).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
 
         Stack<ASTNode> branches = new Stack<>();
@@ -262,7 +262,7 @@ public class SetTests extends ExpanderTests {
 
     @Test
     public void correctConstantSetExpansionTest_5() throws InterruptedException {
-        String input = "const N = 1. range RANGE = N..2 processes Test = ([i:{[RANGE]}] -> STOP).\nautomata Test.";
+        String input = "const N = 1. range RANGE = N..2. processes Test = ([i:{[RANGE]}] -> STOP).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
 
         Stack<ASTNode> branches = new Stack<>();
@@ -281,7 +281,7 @@ public class SetTests extends ExpanderTests {
 
     @Test
     public void correctConstantSetExpansionTest_6() throws InterruptedException {
-        String input = "const M = 2. range RANGE = 1..M processes Test = ([i:{[RANGE]}] -> STOP).\nautomata Test.";
+        String input = "const M = 2. range RANGE = 1..M. processes Test = ([i:{[RANGE]}] -> STOP).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
 
         Stack<ASTNode> branches = new Stack<>();
@@ -300,7 +300,7 @@ public class SetTests extends ExpanderTests {
 
     @Test
     public void correctConstantSetExpansionTest_7() throws InterruptedException {
-        String input = "const N = 1. const M = 2. range RANGE = N..M processes Test = ([i:{[RANGE]}] -> STOP).\nautomata Test.";
+        String input = "const N = 1. const M = 2. range RANGE = N..M. processes Test = ([i:{[RANGE]}] -> STOP).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
 
         Stack<ASTNode> branches = new Stack<>();

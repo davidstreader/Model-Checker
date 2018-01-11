@@ -109,7 +109,7 @@ public class ForAllTests extends ParserTests {
 
     @Test
     public void correctForAllTest_6() throws CompilationException, InterruptedException {
-        String input = "range N = 1..2 processes Test = (forall [i:N] ([i]:(a -> STOP))).\n" +
+        String input = "range N = 1..2. processes Test = (forall [i:N] ([i]:(a -> STOP))).\n" +
                 "automata Test.";
         ProcessNode node = constructProcessNode(input);
         TerminalNode terminal = new TerminalNode("STOP", null);
@@ -126,7 +126,7 @@ public class ForAllTests extends ParserTests {
 
     @Test
     public void correctForAllTest_7() throws CompilationException, InterruptedException {
-        String input = "range N = 1..3 processes Test = (forall [i:N] ([i]:(a -> STOP))).\n" +
+        String input = "range N = 1..3. processes Test = (forall [i:N] ([i]:(a -> STOP))).\n" +
                 "automata Test.";
         ProcessNode node = constructProcessNode(input);
         TerminalNode terminal = new TerminalNode("STOP", null);

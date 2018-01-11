@@ -237,7 +237,7 @@ public class SetTests extends ParserTests {
 
     @Test
     public void correctConstantIndexedSetTest_4() throws CompilationException, InterruptedException {
-        String input = "range N = 1..2 processes Test = ([i:{[N]}] -> STOP).\nautomata Test.";
+        String input = "range N = 1..2. processes Test = ([i:{[N]}] -> STOP).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
 
         SequenceNode sequence = constructSequenceNode(new String[]{"[$i]"}, new TerminalNode("STOP", null));
@@ -256,7 +256,7 @@ public class SetTests extends ParserTests {
 
     @Test
     public void correctConstantIndexedSetTest_5() throws CompilationException, InterruptedException {
-        String input = "const N = 1. range RANGE = N..2 processes Test = ([i:{[RANGE]}] -> STOP).\nautomata Test.";
+        String input = "const N = 1. range RANGE = N..2. processes Test = ([i:{[RANGE]}] -> STOP).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
 
         SequenceNode sequence = constructSequenceNode(new String[]{"[$i]"}, new TerminalNode("STOP", null));
@@ -275,7 +275,7 @@ public class SetTests extends ParserTests {
 
     @Test
     public void correctConstantIndexedSetTest_6() throws CompilationException, InterruptedException {
-        String input = "const M = 2. range RANGE = 1..M processes Test = ([i:{[RANGE]}] -> STOP).\nautomata Test.";
+        String input = "const M = 2. range RANGE = 1..M. processes Test = ([i:{[RANGE]}] -> STOP).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
 
         SequenceNode sequence = constructSequenceNode(new String[]{"[$i]"}, new TerminalNode("STOP", null));
@@ -294,7 +294,7 @@ public class SetTests extends ParserTests {
 
     @Test
     public void correctConstantIndexedSetTest_7() throws CompilationException, InterruptedException {
-        String input = "const N = 1. const M = 2. range RANGE = N..M processes Test = ([i:{[RANGE]}] -> STOP).\nautomata Test.";
+        String input = "const N = 1. const M = 2. range RANGE = N..M. processes Test = ([i:{[RANGE]}] -> STOP).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
 
         SequenceNode sequence = constructSequenceNode(new String[]{"[$i]"}, new TerminalNode("STOP", null));

@@ -116,7 +116,7 @@ public class ForAllTests extends ExpanderTests {
 
 	@Test
 	public void correctForAllExpansionTest_6() throws InterruptedException {
-		String input = "range N = 1..2 processes Test = (forall [i:N] ([i]:(a -> STOP))).\n" +
+		String input = "range N = 1..2. processes Test = (forall [i:N] ([i]:(a -> STOP))).\n" +
 				"automata Test.";
 		ProcessNode node = constructProcessNode(input);
 		TerminalNode terminal = new TerminalNode("STOP", null);
@@ -136,7 +136,7 @@ public class ForAllTests extends ExpanderTests {
 
 	@Test
 	public void correctForAllExpansionTest_7() throws InterruptedException {
-		String input = "range N = 1..3 processes Test = (forall [i:N] ([i]:(a -> STOP))).\n" +
+		String input = "range N = 1..3. processes Test = (forall [i:N] ([i]:(a -> STOP))).\n" +
 				"automata Test.";
 		ProcessNode node = constructProcessNode(input);
 		TerminalNode terminal = new TerminalNode("STOP", null);
