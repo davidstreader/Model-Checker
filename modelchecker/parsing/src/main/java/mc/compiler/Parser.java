@@ -443,6 +443,12 @@ public class Parser {
     }
 
     SetNode set = parseSet();
+
+    if(!(nextToken() instanceof DotToken)) {
+      Token error = tokens.get(index - 1);
+      throw constructException("expecting to parse \".\" but received \"" + error.toString() + "\"", error.getLocation());
+    }
+
     constantMap.put(identifier.getIdentifier(), set);
   }
 

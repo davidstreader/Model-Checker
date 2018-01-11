@@ -143,7 +143,7 @@ public class ForAllTests extends ParserTests {
 
     @Test
     public void correctForAllTest_8() throws CompilationException, InterruptedException {
-        String input = "set N = {a} processes Test = (forall [i:N] ([i]:(a -> STOP))).\n" +
+        String input = "set N = {a}. processes Test = (forall [i:N] ([i]:(a -> STOP))).\n" +
                 "automata Test.";
         ProcessNode node = constructProcessNode(input);
         TerminalNode terminal = new TerminalNode("STOP", null);
@@ -161,7 +161,7 @@ public class ForAllTests extends ParserTests {
 
     @Test
     public void correctForAllTest_9() throws CompilationException, InterruptedException {
-        String input = "set N = {a, b} processes Test = (forall [i:N] ([i]:(a -> STOP))).\n" +
+        String input = "set N = {a, b}. processes Test = (forall [i:N] ([i]:(a -> STOP))).\n" +
                 "automata Test.";
         ProcessNode node = constructProcessNode(input);
         TerminalNode terminal = new TerminalNode("STOP", null);
@@ -179,7 +179,7 @@ public class ForAllTests extends ParserTests {
 
     @Test
     public void correctForAllTest_10() throws CompilationException, InterruptedException {
-        String input = "set N = {a, b, c} processes Test = (forall [i:N] ([i]:(a -> STOP))).\n" +
+        String input = "set N = {a, b, c}. processes Test = (forall [i:N] ([i]:(a -> STOP))).\n" +
                 "automata Test.";
         ProcessNode node = constructProcessNode(input);
         TerminalNode terminal = new TerminalNode("STOP", null);

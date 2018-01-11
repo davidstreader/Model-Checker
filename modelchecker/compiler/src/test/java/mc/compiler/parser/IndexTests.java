@@ -472,7 +472,7 @@ public class IndexTests extends ParserTests {
 
     @Test
     public void correctConstIndexListTest_1() throws CompilationException, InterruptedException {
-        String input = "set N = {a} processes Test = ([N] -> STOP).\nautomata Test.";
+        String input = "set N = {a}. processes Test = ([N] -> STOP).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
         String variable = "$v0";
         List<String> set = new ArrayList<>();
@@ -487,7 +487,7 @@ public class IndexTests extends ParserTests {
 
     @Test
     public void correctConstIndexListTest_2() throws CompilationException, InterruptedException {
-        String input = "set N = {a} processes Test = ([i:N] -> STOP).\nautomata Test.";
+        String input = "set N = {a}. processes Test = ([i:N] -> STOP).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
         String variable = "$i";
         List<String> set = new ArrayList<>();
@@ -502,7 +502,7 @@ public class IndexTests extends ParserTests {
 
     @Test
     public void correctConstIndexListTest_3() throws CompilationException, InterruptedException {
-        String input = "set N = {a, b} processes Test = ([N] -> STOP).\nautomata Test.";
+        String input = "set N = {a, b}. processes Test = ([N] -> STOP).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
         String variable = "$v0";
         List<String> set = new ArrayList<>();
@@ -518,7 +518,7 @@ public class IndexTests extends ParserTests {
 
     @Test
     public void correctConstIndexListTest_4() throws CompilationException, InterruptedException {
-        String input = "set N = {a, b} processes Test = ([i:N] -> STOP).\nautomata Test.";
+        String input = "set N = {a, b}. processes Test = ([i:N] -> STOP).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
         String variable = "$i";
         List<String> set = new ArrayList<>();
@@ -534,7 +534,7 @@ public class IndexTests extends ParserTests {
 
     @Test
     public void correctConstIndexListTest_5() throws CompilationException, InterruptedException {
-        String input = "set N = {a, b, c} processes Test = ([N] -> STOP).\nautomata Test.";
+        String input = "set N = {a, b, c}. processes Test = ([N] -> STOP).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
         String variable = "$v0";
         List<String> set = new ArrayList<>();
@@ -551,7 +551,7 @@ public class IndexTests extends ParserTests {
 
     @Test
     public void correctConstIndexListTest_6() throws CompilationException, InterruptedException {
-        String input = "set N = {a, b, c} processes Test = ([i:N] -> STOP).\nautomata Test.";
+        String input = "set N = {a, b, c}. processes Test = ([i:N] -> STOP).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
         String variable = "$i";
         List<String> set = new ArrayList<>();

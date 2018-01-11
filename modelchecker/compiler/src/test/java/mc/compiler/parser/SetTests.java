@@ -313,7 +313,7 @@ public class SetTests extends ParserTests {
 
     @Test
     public void correctConstantIndexedSetTest_8() throws CompilationException, InterruptedException {
-        String input = "set N = {[1..2]} processes Test = ([i:N] -> STOP).\nautomata Test.";
+        String input = "set N = {[1..2]}. processes Test = ([i:N] -> STOP).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
 
         SequenceNode sequence = constructSequenceNode(new String[]{"[$i]"}, new TerminalNode("STOP", null));

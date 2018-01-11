@@ -319,7 +319,7 @@ public class SetTests extends ExpanderTests {
 
     @Test
     public void correctConstantSetExpansionTest_8() throws InterruptedException {
-        String input = "set N = {[1..2]} processes Test = ([i:N] -> STOP).\nautomata Test.";
+        String input = "set N = {[1..2]}. processes Test = ([i:N] -> STOP).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
 
         Stack<ASTNode> branches = new Stack<>();
