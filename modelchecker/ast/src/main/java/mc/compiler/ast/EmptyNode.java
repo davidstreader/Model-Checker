@@ -6,8 +6,10 @@ import lombok.EqualsAndHashCode;
 /**
  * A dummy node, for testing purposes only.
  *
- * @see ASTNode
+ * @author David Sheridan
  * @author Sanjay Govind
+ * @author Jacob Beal
+ * @see ASTNode
  */
 @EqualsAndHashCode(callSuper = true)
 @Data

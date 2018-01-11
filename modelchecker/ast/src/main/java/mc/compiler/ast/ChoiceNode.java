@@ -10,10 +10,10 @@ import mc.util.Location;
  * <p>
  * Syntax: {@code Choice :: Process "|" Process}
  *
+ * @author Jacob Beal
  * @see ASTNode
  * @see FunctionNode
  * @see CompositeNode
- * @author Jacob Beal
  */
 @Data
 @EqualsAndHashCode(callSuper = true)

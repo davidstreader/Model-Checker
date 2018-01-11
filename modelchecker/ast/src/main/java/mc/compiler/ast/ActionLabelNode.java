@@ -11,10 +11,10 @@ import mc.util.Location;
  * <p>
  * This node is only used within other nodes, and is rarely accessed outside of the AST itself
  *
+ * @author Jacob Beal
  * @see mc.compiler.Expander
  * @see InterruptNode
  * @see SequenceNode
- * @author Jacob Beal
  */
 @Data
 @EqualsAndHashCode(callSuper = false)

@@ -18,10 +18,12 @@ import mc.util.Location;
  * ASTNode is the superclass of ASTNode implementations, it provides helper and common functions to
  * the specific implementation.
  *
+ * @author David Sheridan
+ * @author Sanjay Govind
+ * @author Jacob Beal
  * @see AbstractSyntaxTree
  * @see mc.compiler.Parser
  * @see mc.compiler.Interpreter
- * @author Jacob Beal
  */
 @EqualsAndHashCode(exclude = {"location", "modelVariables", "guard"})
 public abstract class ASTNode implements Serializable {

@@ -7,9 +7,11 @@ import mc.util.Location;
 /**
  * The ConstNode represents a numerical literal value within the code.
  *
+ * @author David Sheridan
+ * @author Sanjay Govind
+ * @author Jacob Beal
  * @see ASTNode
  * @see IdentifierNode
- * @author Jacob Beal
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -23,7 +25,7 @@ public class ConstNode extends ASTNode {
   /**
    * This initialises an instance of the node.
    *
-   * @param value the numerical value of the node {@link #value}
+   * @param value    the numerical value of the node {@link #value}
    * @param location the location in the code where this occurs {@link ASTNode#location}
    */
   public ConstNode(int value, Location location) {

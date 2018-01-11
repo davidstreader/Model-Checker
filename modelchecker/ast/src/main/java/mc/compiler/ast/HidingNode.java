@@ -11,10 +11,11 @@ import mc.util.Location;
  * <p>
  * e.g. {@code A = (b->STOP)\{b}}
  *
- * @see SetNode
- * @see ProcessRootNode
  * @author Sanjay Govind
  * @author David Sheridan
+ * @author Jacob Beal
+ * @see SetNode
+ * @see ProcessRootNode
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -32,9 +33,9 @@ public class HidingNode extends ASTNode {
   /**
    * Instantiates a new instance of HidingNode.
    *
-   * @param type the mode of hiding used,
-   *             valid inputs are {@code includes} and {@code excludes} {@link #type}
-   * @param set  a set node containing the values of the labels to hide {@link #set}
+   * @param type     the mode of hiding used,
+   *                 valid inputs are {@code includes} and {@code excludes} {@link #type}
+   * @param set      a set node containing the values of the labels to hide {@link #set}
    * @param location the location within the users code where this node is {@link ASTNode#location}
    */
   public HidingNode(String type, SetNode set, Location location) {

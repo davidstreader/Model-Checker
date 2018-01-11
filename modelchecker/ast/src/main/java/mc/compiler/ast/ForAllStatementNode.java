@@ -13,10 +13,10 @@ import mc.util.Location;
  * <p>
  * The grammar for this is: {@code FORALL :: "forall" RANGE PROCESS.}
  *
+ * @author Jacob Beal
  * @see CompositeNode
  * @see ASTNode
  * @see mc.compiler.Expander
- * @author Jacob Beal
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -34,8 +34,8 @@ public class ForAllStatementNode extends ASTNode {
   /**
    * Instantiate a new instance of ForAllNode.
    *
-   * @param ranges The range upon which this node shall apply {@link #ranges}
-   * @param process The process that shall be used to create the composition {@link #process}
+   * @param ranges   The range upon which this node shall apply {@link #ranges}
+   * @param process  The process that shall be used to create the composition {@link #process}
    * @param location The location within the users code where this
    *                 node is located {@link ASTNode#location}
    */

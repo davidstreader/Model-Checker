@@ -19,11 +19,11 @@ import mc.util.Location;
  * The gramatical style of these functions are
  * {@code FUNCTION:: FUNCTIONNAME ["{" ARGUMENTS "}"]"("(PROCESS ", ")* PROCESS")"}
  *
- * @see mc.plugins.IProcessFunction
- * @see ASTNode
  * @author Sanjay Govind
  * @author David Sheridan
  * @author Jacob Beal
+ * @see mc.plugins.IProcessFunction
+ * @see ASTNode
  */
 @Data
 @EqualsAndHashCode(callSuper = true, exclude = {"processes", "flags", "prune", "replacements"})
@@ -59,10 +59,10 @@ public class FunctionNode extends ASTNode {
   /**
    * Initialise a new instance of the function node.
    *
-   * @param function the name of the function (e.g. {@code simp}) which is used to lookup
-   *                 the correct operation to perform {@link #function}.
+   * @param function  the name of the function (e.g. {@code simp}) which is used to lookup
+   *                  the correct operation to perform {@link #function}.
    * @param processes the process arguments of the function {@link #processes}.
-   * @param location the location of the function within the users code {@link ASTNode#location}
+   * @param location  the location of the function within the users code {@link ASTNode#location}
    */
   public FunctionNode(String function, List<ASTNode> processes, Location location) {
     super(location);
