@@ -7,7 +7,8 @@ import mc.util.Location;
 /**
  * HidingNode stores the alphabet of the labels of the transitions to hide.
  * <p>
- * HidingNode appears the following gramatically {@code PROCESS\{(LABEL, )* LABEL}}
+ * HidingNode appears the following gramatically {@code PROCESS("\"|"@")"{"(LABEL "," )* LABEL"}"}
+ *
  * <p>
  * e.g. {@code A = (b->STOP)\{b}}
  *

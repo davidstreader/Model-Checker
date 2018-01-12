@@ -454,7 +454,7 @@ public class Parser {
 
     SetNode set = parseSet();
 
-    if(!(nextToken() instanceof DotToken)) {
+    if (!(nextToken() instanceof DotToken)) {
       Token error = tokens.get(index - 1);
       throw constructException("expecting to parse \".\" but received \"" + error.toString() + "\"", error.getLocation());
     }
@@ -1202,8 +1202,13 @@ public class Parser {
     if (nextToken() instanceof AtToken) {
       type = "excludes";
     }
-
-    SetNode set = parseSet();
+    SetNode set;
+    //TODO: make already given sets work
+//    if(peekToken() instanceof IdentifierToken) {
+//      set = nextToken();
+//    } else {
+      set = parseSet();
+//    }
 
     return new HidingNode(type, set, constructLocation(start));
   }
