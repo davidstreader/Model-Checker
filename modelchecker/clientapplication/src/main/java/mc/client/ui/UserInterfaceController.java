@@ -43,20 +43,18 @@ public class UserInterfaceController implements Initializable {
     private TrieNode<String> completionDictionary;
 
     @FXML private CodeArea userCodeInput;
-
     @FXML private TextArea compilerOutputDisplay;
-
     @FXML private SwingNode modelDisplay;
-
     @FXML private ComboBox<String> modelsList;
 
     private Stage window;
     private Scene scene;
 
-    private boolean saveButton = false;
-    private boolean dontSaveButton = false;
-    private boolean hasBeenSavedBefore = false;
+    private List<File> recentFiles = new ArrayList<File>();
+    private File thisFile;
 
+    private boolean beenSaved = false;
+    private boolean hasntBeenSaved = false;
 
     // fields for keep tracking the value of the OPTIONS
     private int lengthEdgeValue = 10;
@@ -307,12 +305,12 @@ public class UserInterfaceController implements Initializable {
         if (!(userCodeInput.getText().isEmpty())) {
             // Open a dialogue and give the user three options (SAVE, DON'TSAVE, CANCEL)
             createSceneFile("New");
-            if (saveButton) {
+            if (beenSaved) {
                 setBackFlags();
                 // do these operations when the user click on SAVE button in the dialogue
-                hasBeenSavedBefore = true;
+                beenSaved = true;
                 cleanTheCodeArea();
-            } else if (dontSaveButton) {
+            } else if (hasntBeenSaved) {
                 // do these operations when the user click on DON'TSAVE button in the dialogue
                 cleanTheCodeArea();
             }
@@ -326,11 +324,11 @@ public class UserInterfaceController implements Initializable {
         if (!(userCodeInput.getText().isEmpty())) {
             // Open a dialogue and give the user three options (SAVE, DON'TSAVE, CANCEL)
             createSceneFile("Open");
-            if (saveButton) {
+            if (beenSaved) {
                 setBackFlags();
                 // do these operations when the user click on SAVE button in the dialogue
                 cleanTheCodeArea();
-            } else if (dontSaveButton) {
+            } else if (hasntBeenSaved) {
                 setBackFlags();
             }
         } else {
@@ -341,7 +339,9 @@ public class UserInterfaceController implements Initializable {
 
     @FXML
     private void handleOpenRecentAction(ActionEvent event) {
-        /**/
+        for(File file: recentFiles){
+            System.out.println(file.getName());
+        }
     }
 
     @FXML
@@ -355,8 +355,10 @@ public class UserInterfaceController implements Initializable {
     @FXML
     private void handleSave(ActionEvent event) {
         window = new Stage();
-        if (!(hasBeenSavedBefore)) {
+        if (!(beenSaved)) {
             saveButtonFunctionality();
+        }else{
+            updateTheSelectedFile(thisFile);
         }
     }
 
@@ -495,8 +497,8 @@ public class UserInterfaceController implements Initializable {
 
 
     private void saveButtonFunctionality() {
-        dontSaveButton = false;
-        saveButton = true;
+        hasntBeenSaved = false;
+        beenSaved = true;
         FileChooser fileChooser;
         PrintStream readTo;
         File selectedFile;
@@ -507,26 +509,43 @@ public class UserInterfaceController implements Initializable {
 
         try {
             if (selectedFile != null) {
-                readTo = new PrintStream(selectedFile,"UTF-8");
+                readTo = new PrintStream(selectedFile, "UTF-8");
                 readTo.println(userCodeInput.getText());
                 readTo = readTheOptionsIntegers(readTo);
                 readTo = readTheOptionsBooleans(readTo);
                 readTo.close();
-                hasBeenSavedBefore = true;
             }
         } catch (IOException message) {
             System.out.println(message);
         }
+
+        thisFile = selectedFile;
+        recentFiles.add(selectedFile);
         window.close();
     }
 
+    private void updateTheSelectedFile(File updateSelecetedFile) {
+        PrintStream readTo;
+        try {
+            if (updateSelecetedFile != null) {
+                readTo = new PrintStream(updateSelecetedFile, "UTF-8");
+                readTo.println(userCodeInput.getText());
+                readTo = readTheOptionsIntegers(readTo);
+                readTo = readTheOptionsBooleans(readTo);
+                readTo.close();
+            }
+        } catch (IOException message) {
+            System.out.println(message);
+        }
+    }
+
+
     private void dontSaveButtonFunctionality() {
-        saveButton = false;
-        dontSaveButton = true;
+        beenSaved = false;
+        hasntBeenSaved = true;
         FileChooser fileChooser = new FileChooser();
         fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("TXT", "*.txt"));
         fileChooser.setTitle("Open Resource File");
-
         File selectedFile = fileChooser.showOpenDialog(window);
         String theCode = "";
         Scanner scanner;
@@ -550,6 +569,7 @@ public class UserInterfaceController implements Initializable {
             System.out.println(message);
         }
 
+        recentFiles.add(selectedFile);
         window.close();
     }
 
@@ -722,8 +742,8 @@ public class UserInterfaceController implements Initializable {
     }
 
     private void cancelButtonFunctionality() {
-        saveButton = false;
-        dontSaveButton = false;
+        beenSaved = false;
+        hasntBeenSaved = false;
         window.close();
     }
 
@@ -843,8 +863,8 @@ public class UserInterfaceController implements Initializable {
     }
 
     private void setBackFlags() {
-        saveButton = false;
-        dontSaveButton = false;
+        beenSaved = false;
+        hasntBeenSaved = false;
     }
 
     /**
@@ -852,7 +872,7 @@ public class UserInterfaceController implements Initializable {
      * It starts deleting from the initial index to the length of the code.
      */
     private void cleanTheCodeArea() {
-        dontSaveButton = true;
+        hasntBeenSaved = true;
         String length = userCodeInput.getText();
         int size = length.length();
         userCodeInput.deleteText(0, size);
