@@ -15,8 +15,8 @@ static getNatives() {
     else if (System.getProperty("os.arch").endsWith("86")) ret += "x86"
 
          if (Os.isFamily(Os.FAMILY_WINDOWS)) ret+="-windows"
-    else if (Os.isFamily(Os.FAMILY_MAC))     ret="-macosx"
-    else                                     ret +="-linux"
+    else if (Os.isFamily(Os.FAMILY_MAC))     ret+="-macosx"
+    else                                     ret+="-linux"
 
     return ret
 }
