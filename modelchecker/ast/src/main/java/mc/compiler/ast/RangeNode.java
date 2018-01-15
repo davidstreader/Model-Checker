@@ -12,6 +12,7 @@ import mc.util.Location;
  * @author David Sheridan
  * @author Sanjay Govind
  * @author Jacob Beal
+ * @see ASTNode
  * @see RangesNode
  */
 @Data
@@ -19,11 +20,21 @@ import mc.util.Location;
 public class RangeNode extends ASTNode {
 
   /**
-   * 
+   * The starting number in the range.
    */
   private int start;
+  /**
+   * The ending number in the range.
+   */
   private int end;
 
+  /**
+   * Instantiate a new RangeNode.
+   *
+   * @param start    the starting number in the range {@link #start}
+   * @param end      the ending number in the range {@link #end}
+   * @param location the location of the RangeNode within the users code {@link ASTNode#location}
+   */
   public RangeNode(int start, int end, Location location) {
     super(location);
     this.start = start;

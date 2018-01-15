@@ -1,19 +1,34 @@
 package mc.compiler.ast;
 
+import java.util.Set;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import mc.util.Location;
 
-import java.util.Set;
-
+/**
+ * This is used only in symbolic representation, in particular with index freezing.
+ *
+ * @author David Sheridan
+ * @author Sanjay Govind
+ * @see RangesNode
+ */
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class VariableSetNode extends ASTNode {
 
-    private final Set<String> variables;
+  /**
+   * The variables to be frozen.
+   */
+  private final Set<String> variables;
 
-    public VariableSetNode(Set<String> variables, Location location){
-        super(location);
-        this.variables = variables;
-    }
+  /**
+   * Initialise a new instance of VariableSetNode.
+   *
+   * @param variables the variables to be frozen {@link #variables}
+   * @param location  where within the users code where this node appears {@link ASTNode#location}
+   */
+  public VariableSetNode(Set<String> variables, Location location) {
+    super(location);
+    this.variables = variables;
+  }
 }
