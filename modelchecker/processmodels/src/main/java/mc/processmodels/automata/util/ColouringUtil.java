@@ -41,7 +41,8 @@ public class ColouringUtil {
       Set<String> visited = new HashSet<>();
 
       Queue<AutomatonNode> fringe = new LinkedList<>();
-      fringe.offer(automaton.getRoot());
+
+      automaton.getRoot().forEach(fringe::offer);
 
       while (!fringe.isEmpty() && !Thread.currentThread().isInterrupted()) {
         AutomatonNode current = fringe.poll();

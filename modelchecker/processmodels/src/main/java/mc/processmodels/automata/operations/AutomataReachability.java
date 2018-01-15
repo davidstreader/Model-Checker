@@ -27,7 +27,7 @@ public class AutomataReachability {
 
     Set<String> visited = new HashSet<>();
     Stack<AutomatonNode> fringe = new Stack<>();
-    fringe.push(automaton.getRoot());
+    automaton.getRoot().forEach(fringe::push);
 
 
     // find the reachable nodes within the specified automaton
@@ -35,18 +35,17 @@ public class AutomataReachability {
       AutomatonNode current = fringe.pop();
 
 
-
       // push the neighbouring nodes from the current node to the fringe
       // if they have not already been visited
       // Also remove any edges that point to objects not in this automaton
       List<AutomatonEdge> edgesToRemove = new ArrayList<>();
-      for(AutomatonEdge e : current.getOutgoingEdges()) {
-        if(!automaton.getNodes().contains(e.getTo())) {
+      for (AutomatonEdge e : current.getOutgoingEdges()) {
+        if (!automaton.getNodes().contains(e.getTo())) {
           edgesToRemove.add(e);
           continue;
         }
 
-        if(!visited.contains(e.getTo().getId())) {
+        if (!visited.contains(e.getTo().getId())) {
           fringe.push(e.getTo());
         }
       }
@@ -67,8 +66,6 @@ public class AutomataReachability {
     automaton.getNodes().stream()
         .filter(node -> node.getOutgoingEdges().size() == 0 && !node.isTerminal())
         .forEach(node -> node.setTerminal("STOP"));
-
-
 
 
     return automaton;

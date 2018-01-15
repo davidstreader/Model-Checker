@@ -18,7 +18,7 @@ public class AutomataLabeller {
       AutomatonNode newNode = labelled.addNode(label + ":" + node.getId());
       newNode.copyProperties(node);
       if (newNode.isStartNode()) {
-        labelled.setRoot(newNode);
+        labelled.addRoot(newNode);
       }
     }
 

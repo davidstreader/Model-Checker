@@ -251,7 +251,7 @@ public class AbstractionFunction implements IProcessFunction {
 
     newNode.copyProperties(node);
     if (newNode.isStartNode()) {
-      abstraction.setRoot(newNode);
+      abstraction.addRoot(newNode);
     }
 
   }

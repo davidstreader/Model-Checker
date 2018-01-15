@@ -3,6 +3,9 @@ package mc.operations;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
+import java.util.stream.Collectors;
 import mc.exceptions.CompilationException;
 import mc.plugins.IOperationInfixFunction;
 import mc.processmodels.automata.Automaton;
@@ -43,7 +46,7 @@ public class BisimulationOperation implements IOperationInfixFunction {
     Multimap<Integer, ColouringUtil.Colour> colourMap = MultimapBuilder.hashKeys()
         .arrayListValues()
         .build();
-    int rootColour = Integer.MIN_VALUE;
+    Set<Integer> rootColour = Collections.emptySet();
 
     ColouringUtil colourer = new ColouringUtil();
     for (Automaton automaton : automata) {
@@ -52,17 +55,18 @@ public class BisimulationOperation implements IOperationInfixFunction {
       }
       colourer.performColouring(automaton, colourMap);
 
-      AutomatonNode root = automaton.getRoot();
-      int colour = root.getColour();
+      Set<AutomatonNode> root = automaton.getRoot();
 
-      if (rootColour == Integer.MIN_VALUE) {
-        rootColour = colour;
-      } else if (rootColour != colour) {
+      Set<Integer> colourSet = root.stream()
+          .map(AutomatonNode::getColour)
+          .collect(Collectors.toSet());
 
+      if (rootColour.isEmpty()) {
+        rootColour = colourSet;
+      } else if (!rootColour.equals(colourSet)) {
         return false;
       }
     }
-
 
     return true;
   }

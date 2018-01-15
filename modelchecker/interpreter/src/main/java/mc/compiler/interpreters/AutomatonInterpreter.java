@@ -139,7 +139,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
       automaton.setVariables(variableList);
       automaton.setVariablesLocation(astNode.getLocation());
 
-      interpretNode(astNode, automaton, automaton.getRoot());
+      interpretNode(astNode, automaton, new ArrayList<>(automaton.getRoot()).get(0));
       processStack.push(automaton);
     }
   }
@@ -352,7 +352,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     Set<String> visited = new HashSet<>();
 
     Queue<AutomatonNode> fringe = new LinkedList<>();
-    fringe.offer(automaton.getRoot());
+    automaton.getRoot().forEach(fringe::offer);
 
     int label = 0;
     while (!fringe.isEmpty()) {

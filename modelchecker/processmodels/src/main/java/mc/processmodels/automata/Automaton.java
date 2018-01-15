@@ -1,9 +1,10 @@
 package mc.processmodels.automata;
 
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.microsoft.z3.Context;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -25,7 +26,8 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
   public static final boolean CONSTRUCT_ROOT = true;
 
 
-  private AutomatonNode root;
+  @Getter
+  private Set<AutomatonNode> root;
   private Map<String, AutomatonNode> nodeMap;
   private Map<String, AutomatonEdge> edgeMap;
   private Map<String, List<AutomatonEdge>> alphabet;
@@ -67,17 +69,18 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
 
   public Automaton(String id) {
-    this(id,true);
+    this(id, true);
   }
 
   public Automaton(String id, boolean constructRoot) {
     super(id, "automata");
     setupAutomaton();
+    this.root = new HashSet<>();
 
     // only construct a root node if specified to do so
     if (constructRoot) {
-      this.root = addNode();
-      root.setStartNode(true);
+      root.add(addNode());
+      root.forEach(r -> r.setStartNode(true));
     }
   }
 
@@ -103,26 +106,25 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     this.edgeId = 0;
   }
 
-  public AutomatonNode getRoot() {
-    return root;
-  }
-
-  public void setRoot(AutomatonNode root) throws CompilationException {
+  public void addRoot(AutomatonNode newRootNode) throws CompilationException {
     // check the the new root is defined
-    if (root == null) {
-      throw new CompilationException(getClass(), "Unable to set the root node to null", this.getLocation());
+    if (newRootNode == null) {
+      throw new CompilationException(getClass(), "Unable to set the root node to null",
+          this.getLocation());
     }
 
     // check that the new root is part of this automaton
-    if (!nodeMap.containsKey(root.getId())) {
-      throw new CompilationException(getClass(), "Unable to set the root node to " + root.getId() + ", as the root is not a part of this automaton", this.getLocation());
+    if (!nodeMap.containsKey(newRootNode.getId())) {
+      throw new CompilationException(getClass(), "Unable to set the root node to "
+          + newRootNode.getId() + ", as the root is not a part of this automaton",
+          this.getLocation());
     }
 
-    this.root = root;
+    this.root.add(newRootNode);
   }
 
-  public String getRootId() {
-    return root.getId();
+  public Set<String> getRootId() {
+    return root.stream().map(AutomatonNode::getId).collect(Collectors.toSet());
   }
 
   public List<AutomatonNode> getNodes() {
@@ -207,7 +209,8 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
 
     if (node1.isStartNode() || node2.isStartNode()) {
-      setRoot(node);
+      root.removeAll(Arrays.asList(node1, node2));
+      root.add(node);
       node.setStartNode(true);
     }
 
@@ -377,30 +380,31 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
   }
 
   public AutomatonNode addAutomaton(Automaton automaton) throws CompilationException {
-    int num = (int)Math.floor(Math.random()*100);
+    int num = (int) Math.floor(Math.random() * 100);
     AutomatonNode thisAutomataRoot = null;
     for (AutomatonNode node : automaton.getNodes()) {
 
-      AutomatonNode newNode = addNode(node.getId()+num);
+      AutomatonNode newNode = addNode(node.getId() + num);
 
       newNode.copyProperties(node);
       if (newNode.isStartNode()) {
-          thisAutomataRoot = newNode;
-          if(this.root == null)
-            this.root = newNode;
-          else
-            newNode.setStartNode(false);
+        thisAutomataRoot = newNode;
+        if (this.root == null || root.size() == 0) {
+          this.root = new HashSet<>();
+          root.add(newNode);
+        } else {
+          newNode.setStartNode(false);
+        }
       }
 
     }
 
 
-
     for (AutomatonEdge edge : automaton.getEdges()) {
-      AutomatonNode from = getNode(edge.getFrom().getId()+num);
-      AutomatonNode to = getNode(edge.getTo().getId()+num);
+      AutomatonNode from = getNode(edge.getFrom().getId() + num);
+      AutomatonNode to = getNode(edge.getTo().getId() + num);
 
-      this.addEdge(edge.getId()+num, edge.getLabel(), from, to, edge.getGuard());
+      this.addEdge(edge.getId() + num, edge.getLabel(), from, to, edge.getGuard());
 
     }
     if (thisAutomataRoot == null) {
@@ -427,7 +431,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
       if (node == root) {
         builder.append("(root)");
       }
-      if(node.isTerminal()) {
+      if (node.isTerminal()) {
         builder.append("(").append(node.getTerminal()).append(")");
       }
       builder.append("\n");
@@ -450,7 +454,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
       AutomatonNode newNode = copy.addNode(node.getId());
       newNode.copyProperties(node);
       if (newNode.isStartNode()) {
-        copy.setRoot(newNode);
+        copy.addRoot(newNode);
       }
 
     }
@@ -468,7 +472,6 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
     return copy;
   }
-
 
   public ProcessType getProcessType() {
     return ProcessType.AUTOMATA;
