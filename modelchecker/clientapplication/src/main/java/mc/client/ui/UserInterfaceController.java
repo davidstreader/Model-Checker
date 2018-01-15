@@ -1,5 +1,9 @@
 package mc.client.ui;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.embed.swing.SwingNode;
 import javafx.event.ActionEvent;
@@ -10,6 +14,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -42,15 +47,19 @@ public class UserInterfaceController implements Initializable {
     private ExecutorService executor; // Runs the highlighting in seperate thread
     private TrieNode<String> completionDictionary;
 
-    @FXML private CodeArea userCodeInput;
-    @FXML private TextArea compilerOutputDisplay;
-    @FXML private SwingNode modelDisplay;
-    @FXML private ComboBox<String> modelsList;
+    @FXML
+    private CodeArea userCodeInput;
+    @FXML
+    private TextArea compilerOutputDisplay;
+    @FXML
+    private SwingNode modelDisplay;
+    @FXML
+    private ComboBox<String> modelsList;
 
     private Stage window;
     private Scene scene;
 
-    private List<File> recentFiles = new ArrayList<File>();
+    private List<String> recentFiles = new ArrayList<String>();
     private File thisFile;
 
     private boolean beenSaved = false;
@@ -99,7 +108,7 @@ public class UserInterfaceController implements Initializable {
 
         ListView<String> popupSelection = new ListView<String>();
         popupSelection.setStyle(
-                        "-fx-background-color: #f7e1a0;" +
+                "-fx-background-color: #f7e1a0;" +
                         "-fx-text-fill:        black;" +
                         "-fx-padding:          5;"
         );
@@ -111,7 +120,7 @@ public class UserInterfaceController implements Initializable {
         });
 
         popupSelection.setOnKeyReleased(event -> {
-            if(event.getCode() == KeyCode.ENTER || event.getCode() == KeyCode.TAB) {
+            if (event.getCode() == KeyCode.ENTER || event.getCode() == KeyCode.TAB) {
                 String selectedItem = popupSelection.getSelectionModel().getSelectedItem();
                 actOnSelect(popupSelection, selectedItem);
             }
@@ -119,12 +128,10 @@ public class UserInterfaceController implements Initializable {
         });
 
 
-
         autocompleteBox.getContent().add(popupSelection);
         autocompleteBox.setAutoHide(true);
 
         executor = Executors.newSingleThreadExecutor();
-
 
 
         userCodeInput.setParagraphGraphicFactory(LineNumberFactory.get(userCodeInput)); // Add line numbers
@@ -134,12 +141,12 @@ public class UserInterfaceController implements Initializable {
         });
 
         userCodeInput.richChanges() // Set up syntax highlighting in another thread as regex finding can take a while.
-                .filter(ch -> !ch.getInserted().equals(ch.getRemoved()) &&  !holdHighlighting) // Hold highlighting if we have an issue and have highlighted it, otherwise it gets wiped.
+                .filter(ch -> !ch.getInserted().equals(ch.getRemoved()) && !holdHighlighting) // Hold highlighting if we have an issue and have highlighted it, otherwise it gets wiped.
                 .successionEnds(Duration.ofMillis(20))
                 .supplyTask(this::computeHighlightingAsync)
                 .awaitLatest(userCodeInput.richChanges())
                 .filterMap(t -> {
-                    if(t.isSuccess()) {
+                    if (t.isSuccess()) {
                         return Optional.of(t.get());
                     } else {
                         t.getFailure().printStackTrace();
@@ -153,87 +160,90 @@ public class UserInterfaceController implements Initializable {
                 .filter(ch -> ch.getInserted().getText().length() == 1)
                 .subscribe((change) -> { // Hook for detecting user input, used for autocompletion as that happens quickly.
 
-                if (change.getRemoved().getText().length() == 0) {  // If this isnt a backspace character
+                    if (change.getRemoved().getText().length() == 0) {  // If this isnt a backspace character
 
-                    String currentUserCode = userCodeInput.getText();
+                        String currentUserCode = userCodeInput.getText();
 
-                    if (userCodeInput.getCaretPosition() < currentUserCode.length()) {
+                        if (userCodeInput.getCaretPosition() < currentUserCode.length()) {
 
-                        char currentCharacter = userCodeInput.getText().charAt(userCodeInput.getCaretPosition());
-                        switch (currentCharacter) {
-                            case '\n':
-                            case '\t':
-                            case ' ': { // If the user has broken off a word, dont continue autocompleting it.
-                                autocompleteBox.hide();
+                            char currentCharacter = userCodeInput.getText().charAt(userCodeInput.getCaretPosition());
+                            switch (currentCharacter) {
+                                case '\n':
+                                case '\t':
+                                case ' ': { // If the user has broken off a word, dont continue autocompleting it.
+                                    autocompleteBox.hide();
 
-                                popupSelection.getItems().clear();
-                            }
-                            break;
+                                    popupSelection.getItems().clear();
+                                }
+                                break;
 
-                            default: {
-                                popupSelection.getItems().clear();
-                                String currentWord = getWordAtIndex(userCodeInput.getCaretPosition());
-                                if (currentWord.length() > 0) {
-                                    ArrayList<String> list = completionDictionary.getId(currentWord);
+                                default: {
+                                    popupSelection.getItems().clear();
+                                    String currentWord = getWordAtIndex(userCodeInput.getCaretPosition());
+                                    if (currentWord.length() > 0) {
+                                        ArrayList<String> list = completionDictionary.getId(currentWord);
 
-                                    if (list.size() != 0) {
-                                        popupSelection.getItems().addAll(list);
-                                        popupSelection.getSelectionModel().select(0);
+                                        if (list.size() != 0) {
+                                            popupSelection.getItems().addAll(list);
+                                            popupSelection.getSelectionModel().select(0);
 
-                                        if(userCodeInput.getCaretBounds().isPresent())
-                                            autocompleteBox.show(userCodeInput, userCodeInput.getCaretBounds()
-                                                    .get().getMinX(), userCodeInput.getCaretBounds().get().getMaxY());
+                                            if (userCodeInput.getCaretBounds().isPresent())
+                                                autocompleteBox.show(userCodeInput, userCodeInput.getCaretBounds()
+                                                        .get().getMinX(), userCodeInput.getCaretBounds().get().getMaxY());
 
-                                    } else { // If we dont have any autocomplete suggestions dont show the box
+                                        } else { // If we dont have any autocomplete suggestions dont show the box
+                                            autocompleteBox.hide();
+
+                                        }
+                                    } else {
                                         autocompleteBox.hide();
 
                                     }
-                                } else {
-                                    autocompleteBox.hide();
 
                                 }
-
+                                break;
                             }
-                            break;
                         }
+
+                    } else { // Handles if there is a backspace
+                        popupSelection.getItems().clear();
+                        autocompleteBox.hide();
+
                     }
 
-                } else { // Handles if there is a backspace
-                    popupSelection.getItems().clear();
-                    autocompleteBox.hide();
+                    holdHighlighting = false;
 
-                }
-
-            holdHighlighting = false;
-
-        });
+                });
 
     }
 
     /**
      * This is a helper function to add an insert
+     *
      * @param popupSelection
      * @param selectedItem
      */
     private void actOnSelect(ListView<String> popupSelection, String selectedItem) {
-        if(selectedItem != null) {
+        if (selectedItem != null) {
 
             String code = userCodeInput.getText();
-            int wordPosition = userCodeInput.getCaretPosition()-1; // we know where the user word is, but we dont know the start or end
+            int wordPosition = userCodeInput.getCaretPosition() - 1; // we know where the user word is, but we dont know the start or end
 
             int start;
-            for(start = wordPosition;
-                start > 0 &&
-                        !Character.isWhitespace(code.charAt(start-1)) &&
-                        Character.isLetterOrDigit(userCodeInput.getText().charAt(start-1));
-                start--);
+            for (start = wordPosition;
+                 start > 0 &&
+                         !Character.isWhitespace(code.charAt(start - 1)) &&
+                         Character.isLetterOrDigit(userCodeInput.getText().charAt(start - 1));
+                 start--)
+                ;
 
             int end;
-            for(end = wordPosition;
-                end < code.length() &&
-                        !Character.isWhitespace(code.charAt(end)) &&
-                        Character.isLetterOrDigit(userCodeInput.getText().charAt(end));
-                end++);
+            for (end = wordPosition;
+                 end < code.length() &&
+                         !Character.isWhitespace(code.charAt(end)) &&
+                         Character.isLetterOrDigit(userCodeInput.getText().charAt(end));
+                 end++)
+                ;
 
 
             userCodeInput.replaceText(start, end, selectedItem);
@@ -273,7 +283,8 @@ public class UserInterfaceController implements Initializable {
              index >= 0 &&
                      !Character.isWhitespace(text.charAt(index)) &&
                      Character.isLetterOrDigit(userCodeInput.getText().charAt(index));
-             index--);
+             index--)
+            ;
 
         // get prefix and startIndex of word
         String prefix = text.substring(index + 1, text.length());
@@ -283,7 +294,8 @@ public class UserInterfaceController implements Initializable {
              index < userCodeInput.getLength() &&
                      !Character.isWhitespace(userCodeInput.getText().charAt(index)) &&
                      Character.isLetterOrDigit(userCodeInput.getText().charAt(index));
-             index++);
+             index++)
+            ;
 
         String suffix = userCodeInput.getText().substring(pos, index);
 
@@ -339,9 +351,25 @@ public class UserInterfaceController implements Initializable {
 
     @FXML
     private void handleOpenRecentAction(ActionEvent event) {
-        for(File file: recentFiles){
-            System.out.println(file.getName());
-        }
+        window = new Stage();
+        ChoiceBox cb = new ChoiceBox();
+
+
+ /*       cb.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                cb.setValue(recentFiles(newValue.toString()));
+            }
+        });*/
+
+        cb.setItems(FXCollections.observableArrayList(recentFiles));
+
+
+        VBox layout = new VBox(cb);
+        scene = new Scene(layout, 200, 200);
+        window.setScene(scene);
+        window.initModality(Modality.APPLICATION_MODAL);
+        window.showAndWait();
     }
 
     @FXML
@@ -357,7 +385,7 @@ public class UserInterfaceController implements Initializable {
         window = new Stage();
         if (!(beenSaved)) {
             saveButtonFunctionality();
-        }else{
+        } else {
             updateTheSelectedFile(thisFile);
         }
     }
@@ -375,7 +403,7 @@ public class UserInterfaceController implements Initializable {
 
     @FXML
     private void handleAddSelectedModel(ActionEvent event) {
-        if(modelsList.getSelectionModel().getSelectedItem() != null && modelsList.getSelectionModel().getSelectedItem() instanceof String) {
+        if (modelsList.getSelectionModel().getSelectedItem() != null && modelsList.getSelectionModel().getSelectedItem() instanceof String) {
 
             ModelView.getInstance().addDisplayedModel(modelsList.getSelectionModel().getSelectedItem());
             SwingUtilities.invokeLater(() -> modelDisplay.setContent(ModelView.getInstance().updateGraph(modelDisplay)));
@@ -397,7 +425,7 @@ public class UserInterfaceController implements Initializable {
     @FXML
     private void handleFreeze(ActionEvent event) {
         String selecteditem = modelsList.getSelectionModel().getSelectedItem();
-        if(selecteditem != null) {
+        if (selecteditem != null) {
             ModelView.getInstance().freezeProcessModel(selecteditem);
         }
     }
@@ -405,7 +433,7 @@ public class UserInterfaceController implements Initializable {
     @FXML
     private void handleUnfreeze(ActionEvent event) {
         String selecteditem = modelsList.getSelectionModel().getSelectedItem();
-        if(selecteditem != null) {
+        if (selecteditem != null) {
             ModelView.getInstance().unfreezeProcessModel(selecteditem);
         }
     }
@@ -413,7 +441,7 @@ public class UserInterfaceController implements Initializable {
     @FXML
     private void handleFreezeAll(ActionEvent event) {
         String selecteditem = modelsList.getSelectionModel().getSelectedItem();
-        if(selecteditem != null) {
+        if (selecteditem != null) {
             ModelView.getInstance().freezeAllCurrentlyDisplayed();
         }
     }
@@ -421,7 +449,7 @@ public class UserInterfaceController implements Initializable {
     @FXML
     private void handleUnfreezeAll(ActionEvent event) {
         String selecteditem = modelsList.getSelectionModel().getSelectedItem();
-        if(selecteditem != null) {
+        if (selecteditem != null) {
             ModelView.getInstance().unfreezeAllCurrentlyDisplayed();
         }
     }
@@ -436,7 +464,7 @@ public class UserInterfaceController implements Initializable {
     @FXML
     private void handleCompileRequest(ActionEvent event) {
         String userCode = userCodeInput.getText();
-        if(!userCode.isEmpty()) {
+        if (!userCode.isEmpty()) {
             compilerOutputDisplay.clear();
             modelsList.getItems().clear();
 
@@ -448,17 +476,17 @@ public class UserInterfaceController implements Initializable {
                 codeCompiler.compile(userCode, new Context(), Expression.mkCtx(), new LinkedBlockingQueue<>());
 
 
-                compilerOutputDisplay.insertText(0,"Compiling completed sucessfully!\n"+ new Date().toString());
+                compilerOutputDisplay.insertText(0, "Compiling completed sucessfully!\n" + new Date().toString());
             } catch (InterruptedException e) {
                 e.printStackTrace();
             } catch (CompilationException e) {
                 holdHighlighting = true;
-                compilerOutputDisplay.insertText(0,e.toString() );
-                if(e.getLocation() != null)
-                     compilerOutputDisplay.appendText("\n"+e.getLocation());
+                compilerOutputDisplay.insertText(0, e.toString());
+                if (e.getLocation() != null)
+                    compilerOutputDisplay.appendText("\n" + e.getLocation());
 
 
-                if(e.getLocation().getStartIndex() > 0 && e.getLocation().getStartIndex() < userCodeInput.getText().length())
+                if (e.getLocation().getStartIndex() > 0 && e.getLocation().getStartIndex() < userCodeInput.getText().length())
                     userCodeInput.setStyleClass(e.getLocation().getStartIndex(), e.getLocation().getEndIndex(), "issue");
 
             }
@@ -470,27 +498,28 @@ public class UserInterfaceController implements Initializable {
 
     /**
      * This recieves a list of all valid models and registers them with the combobox
+     *
      * @param models a collection of the processIDs of all valid models
      */
-    private void updateModelsList(Collection<String> models){
+    private void updateModelsList(Collection<String> models) {
         modelsList.getItems().clear();
         models.forEach(modelsList.getItems()::add);
         modelsList.getSelectionModel().selectFirst();
     }
 
-    private void updateLogText(List<OperationResult> opRes, List<OperationResult> eqRes){
-        if(opRes.size() > 0)
+    private void updateLogText(List<OperationResult> opRes, List<OperationResult> eqRes) {
+        if (opRes.size() > 0)
             compilerOutputDisplay.appendText("\n##Operation Results##\n");
 
         opRes.forEach(o -> compilerOutputDisplay.appendText(o.getProcess1().getIdent() + " " + o.getOperation() + " " +
-                                                            o.getProcess2().getIdent() + " = " + o.getResult() + "\n"));
+                o.getProcess2().getIdent() + " = " + o.getResult() + "\n"));
 
-        if(eqRes.size() > 0)
+        if (eqRes.size() > 0)
             compilerOutputDisplay.appendText("\n##Operation Results##\n");
 
         eqRes.forEach(o -> compilerOutputDisplay.appendText(o.getProcess1().getIdent() + " " + o.getOperation() + " " +
-                                                            o.getProcess2().getIdent() + " = " + o.getResult() + "\n" +
-                                                            "Simulations passed: "+ o.getExtra() + "\n"));
+                o.getProcess2().getIdent() + " = " + o.getResult() + "\n" +
+                "Simulations passed: " + o.getExtra() + "\n"));
 
 
     }
@@ -520,7 +549,7 @@ public class UserInterfaceController implements Initializable {
         }
 
         thisFile = selectedFile;
-        recentFiles.add(selectedFile);
+        recentFiles.add(selectedFile.getName());
         window.close();
     }
 
@@ -552,7 +581,7 @@ public class UserInterfaceController implements Initializable {
 
         try {
             if (selectedFile != null) {
-                scanner = new Scanner(selectedFile,"UTF-8");
+                scanner = new Scanner(selectedFile, "UTF-8");
                 StringBuilder codeBuilder = new StringBuilder();
                 while (scanner.hasNext() && !scanner.hasNext("lengthEdgeValue:")) {
                     codeBuilder.append(scanner.nextLine()).append("\n");
@@ -569,7 +598,7 @@ public class UserInterfaceController implements Initializable {
             System.out.println(message);
         }
 
-        recentFiles.add(selectedFile);
+        recentFiles.add(selectedFile.getName());
         window.close();
     }
 
@@ -592,7 +621,7 @@ public class UserInterfaceController implements Initializable {
 
         final Label operationFailureLabel = new Label("Operation failure count:");
         Slider operationFailure = createSlider();
-        operationFailure.valueProperty().addListener( (arg0, arg1, arg2) -> {
+        operationFailure.valueProperty().addListener((arg0, arg1, arg2) -> {
             operationFailureLabelValue = (int) operationFailure.getValue();
         });
         operationFailure.setValue((double) operationFailureLabelValue);
@@ -600,7 +629,7 @@ public class UserInterfaceController implements Initializable {
 
         final Label operationPassLabel = new Label("Operation pass count:");
         Slider operationPass = createSlider();
-        operationPass.valueProperty().addListener( (arg0, arg1, arg2) -> {
+        operationPass.valueProperty().addListener((arg0, arg1, arg2) -> {
             operationPassLabelValue = (int) operationPass.getValue();
         });
         operationPass.setValue((double) operationPassLabelValue);
@@ -677,7 +706,7 @@ public class UserInterfaceController implements Initializable {
         Button dontSaveButton = createDontSaveButton();
         Button cancelButton = createCancelButton();
 
-        switch (buttonName){
+        switch (buttonName) {
             case "New":
                 dontSaveButton = createDontSaveButtonForNew();
                 break;
@@ -852,7 +881,6 @@ public class UserInterfaceController implements Initializable {
     }
 
     /**
-     *
      * @param buttonName
      * @return
      */
