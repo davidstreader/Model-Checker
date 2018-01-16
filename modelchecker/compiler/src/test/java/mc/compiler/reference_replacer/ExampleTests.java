@@ -25,6 +25,7 @@ public class ExampleTests extends ReferenceReplacerTests {
     }
 
     public ExampleTests() throws InterruptedException {
+
     }
 
     @Test

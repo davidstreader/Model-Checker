@@ -62,8 +62,8 @@ public class Compiler {
         System.out.println("Hierarchy of processes: " + ast.getProcessHierarchy().getDependencies());
 
         List<String> processesToRemoveFromDisplay = new ArrayList<>();
-        for(String processesName : processNodeMap.keySet()) { // Find if the dependancies have all been set correctly
-            Set<String> dependencies = ast.getProcessHierarchy().getDependencies(processesName); // Dependancies for the current process
+        for(String processesName : processNodeMap.keySet()) { // Find if the dependencies have all been set correctly
+            Set<String> dependencies = ast.getProcessHierarchy().getDependencies(processesName); // Dependencies for the current process
             ProcessNode currentProcess = dependencyMap.get(processesName);
             for(String currentDependencyName : dependencies) {
                 ProcessNode currentDependency = dependencyMap.get(currentDependencyName);
@@ -87,10 +87,10 @@ public class Compiler {
         }
 
         Map<String, ProcessModel> processMap = interpreter.interpret(ast, new LocalCompiler(processNodeMap, expander, replacer,messageQueue),messageQueue,z3Context);
-
         List<OperationResult> opResults = evaluator.evaluateOperations(ast.getOperations(), processMap, interpreter, code,z3Context);
-        EquationEvaluator.EquationReturn eqResults = eqEvaluator.evaluateEquations(ast.getEquations(), code, context,z3Context,messageQueue);
+        EquationEvaluator.EquationReturn eqResults = eqEvaluator.evaluateEquations(new ArrayList<>(processMap.values()), ast.getEquations(), code, context, z3Context, messageQueue);
         processMap.putAll(eqResults.getToRender());
+
 
         for(String element : processesToRemoveFromDisplay)
             if(processMap.containsKey(element))
