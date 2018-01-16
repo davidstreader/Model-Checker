@@ -30,3 +30,11 @@ processes {
 automata C3,Test3.
 //ensure manually constructed is not different to using identifiers
 operation C3 ~ Test3.
+
+processes {
+	A4 = a->STOP+b->STOP.
+	B4 = c->A.
+	Test4 = c->STOP=>A4.
+}
+automata B4,Test4.
+operation B4 ~ Test4.

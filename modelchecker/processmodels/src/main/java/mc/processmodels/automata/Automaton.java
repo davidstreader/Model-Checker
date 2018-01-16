@@ -174,7 +174,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     if (!nodeMap.containsKey(node1.getId())) {
       throw new CompilationException(getClass(), node1.getId() + " was not found in the automaton " + getId(), this.getLocation());
     }
-    for(AutomatonNode node2: nodes2) {
+    for (AutomatonNode node2: nodes2) {
       if (!nodeMap.containsKey(node2.getId())) {
         throw new CompilationException(getClass(), node2.getId() + " was not found in the automaton " + getId(), this.getLocation());
       }
@@ -182,8 +182,8 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
     Set<AutomatonNode> returnNodes = new HashSet<>();
 
-    for(AutomatonNode nodeToMerge : nodes2) {
-      AutomatonNode node = addNode();
+    for (AutomatonNode nodeToMerge : nodes2) {
+      AutomatonNode newNode = addNode();
 
       for (AutomatonEdge edge1 : node1.getIncomingEdges()) {
         for (AutomatonEdge edge2 : nodeToMerge.getIncomingEdges()) {
@@ -197,35 +197,54 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
         }
       }
       // add the incoming and outgoing edges from both nodes to the combined nodes
-      processIncomingEdges(node, node1);
-      processIncomingEdges(node, nodeToMerge);
-      processOutgoingEdges(node, node1);
-      processOutgoingEdges(node, nodeToMerge);
+      copyEdges(newNode,node1);
+      copyEdges(newNode,nodeToMerge);
       // create a union of the metadata from both nodes
-      node.copyProperties(node1);
-      node.copyProperties(nodeToMerge);
+      newNode.copyProperties(node1);
+      newNode.copyProperties(nodeToMerge);
 
-      node.setVariables(null); // Remove the variables
+      System.out.println(newNode);
+
+      newNode.setVariables(null); // Remove the variables
       if (node1.getVariables() != null && nodeToMerge.getVariables() != null) {
         if (node1.getVariables().equals(nodeToMerge.getVariables())) {
-          node.setVariables(node1.getVariables());
+          newNode.setVariables(node1.getVariables());
         }
       }
 
 
-      if (node1.isStartNode() || nodeToMerge.isStartNode()) {
+      if (node1.isStartNode()) {
         root.removeAll(Arrays.asList(node1, nodeToMerge));
-        root.add(node);
-        node.setStartNode(true);
+        root.add(newNode);
+        newNode.setStartNode(true);
       }
 
-      returnNodes.add(node);
+      returnNodes.add(newNode);
     }
 
     removeNode(node1);
     nodes2.forEach(this::removeNode);
 
     return returnNodes;
+  }
+
+  private void copyEdges(AutomatonNode newNode, AutomatonNode oldNode) throws CompilationException {
+
+    for (AutomatonEdge e : oldNode.getIncomingEdges()) {
+      Guard newGuard = null;
+      if (e.getGuard() != null) {
+        newGuard = e.getGuard().copy();
+      }
+      addEdge(e.getLabel(),e.getFrom(),newNode,newGuard);
+    }
+
+    for (AutomatonEdge e : oldNode.getOutgoingEdges()) {
+      Guard newGuard = null;
+      if (e.getGuard() != null) {
+        newGuard = e.getGuard().copy();
+      }
+      addEdge(e.getLabel(),newNode,e.getTo(),newGuard);
+    }
   }
 
   public AutomatonNode combineNodes(AutomatonNode node1, AutomatonNode node2, Context context) throws CompilationException, InterruptedException {

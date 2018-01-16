@@ -2,8 +2,12 @@ package mc.compiler.interpreters;
 
 import static mc.util.Utils.instantiateClass;
 
+import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
 import com.microsoft.z3.Context;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -46,7 +50,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
   private static Map<String, Class<? extends IProcessInfixFunction>> infixFunctions = new HashMap<>();
 
   private Map<String, ProcessModel> processMap;
-  private Map<String, AutomatonNode> referenceMap;
+  private Multimap<String, AutomatonNode> referenceMap;
   private Stack<ProcessModel> processStack;
   private VariableSetNode variables;
   private LocalCompiler compiler;
@@ -151,7 +155,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     // check if the current ast node has a reference attached
     if (astNode.hasReferences()) {
       for (String reference : astNode.getReferences()) {
-        referenceMap.put(reference, currentNode);
+        referenceMap.replaceValues(reference, Collections.singletonList(currentNode));
       }
 
       currentNode.setReferences(astNode.getReferences());
@@ -209,8 +213,12 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     // check if the next ast node is a reference node
     if (sequence.getTo() instanceof ReferenceNode) {
       ReferenceNode reference = (ReferenceNode) sequence.getTo();
-      nextNode = referenceMap.get(reference.getReference());
-      automaton.addEdge(action, currentNode, nextNode, foundGuard);
+      Collection<AutomatonNode> nextNodes = referenceMap.get(reference.getReference());
+
+      for (AutomatonNode node : nextNodes) {
+        automaton.addEdge(action, currentNode, node, foundGuard);
+      }
+
     } else {
       nextNode = automaton.addNode();
       automaton.addEdge(action, currentNode, nextNode, foundGuard);
@@ -307,21 +315,20 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     }
 
     Set<AutomatonNode> oldRoots = automaton1.addAutomaton(automaton2);
+    Set<AutomatonNode> node = automaton1.combineNondeterministic(currentNode, oldRoots, context);
 
 
-
-    for(AutomatonNode oldRoot: oldRoots) {
+    for (AutomatonNode oldRoot: oldRoots) {
       if (oldRoot.getReferences() != null) {
         references.addAll(oldRoot.getReferences());
       }
     }
 
-    Set<AutomatonNode> node = automaton1.combineNondeterministic(currentNode, oldRoots, context);
     //Combining nodes removes the inital currentNode and oldRoot, as we are still using currentNode, copy the properties of the newly created node across
 //    updateCurrentNode(currentNode, node);
 
       //TODO:
-    references.forEach(id -> referenceMap.put(id, new ArrayList<>(node).get(0)));
+    references.forEach(id -> referenceMap.replaceValues(id, new ArrayList<>(node).subList(0,0)));
   }
 
   private void processRelabelling(Automaton automaton, RelabelNode relabels) {
@@ -393,7 +400,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
   }
 
   private void reset() {
-    this.referenceMap = new HashMap<>();
+    this.referenceMap = MultimapBuilder.hashKeys().hashSetValues().build();
     this.processStack = new Stack<>();
   }
 
