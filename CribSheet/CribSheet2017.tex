@@ -1,8 +1,5 @@
-%
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% HEADER
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% SAVE ME %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \documentclass[]{article}
 \setlength{\oddsidemargin}{1pt}
 \setlength{\evensidemargin}{1pt}
@@ -301,20 +298,44 @@ Are  {\sf VM}  and {\sf VMx}  equivalent processes?  Before you can answer this 
 
 But what if you were interacting with these processes and you wanted \verb|coffee| then  with the first machine you could always insert a \verb|coin| than push the \verb|coffeeBtn| and you would be able to get your \verb|coffee|. In contrast with the second machine after inserting the \verb|coin| you would not be able to push the \verb|coffBtn|. Hence you would be able to distinguish the two processes. It is this notion of indistinguishable by any test that we are interested in here.
 
-{\color{red}
-\subsection{Internal  Choice $\Box$}
+
+\subsection{Properties of Choice}
+ Choice is symmetric in that \verb$X|Y$ is equal to \verb$Y|X$. In what follows we write process equality as $\sim$ and hence:
+ \[\sf X|Y\sim Y|X\qquad X|(Y|Z)\sim (X|Y)|Z\]
+ details about, $\sim$,  process equality follow much later. 
+
+The Choice between two identical processes is no real choice and hence:
+\[\sf X|X\sim X\qquad X|STOP \sim X\]
+Meaning has been  given to Processes in the form of an Axiomatic Algebraic semantics see \cite{BaW90}. Here we give meaning to processes by defining their operational behaviour as automata. From the details of what constitutes an automata we can see that the above equalities hold for our semantics. Looking at the same thing the other way in \cite{BaW90} they first define the algebraic properties of processes and then show the automata satisfy them.
+
+{
+\subsection{Internal  Choice $+$}
 Defined in CSP and ATP but not in ACP nor CCS.
 Used to represent a process that internally, with no external involvement, can choose to behave like either process. Consequently such a process can not be guaranteed to behave like either of the processes.
 
 The relation between the two definitions of choice is captured by the axioms:
 
-\begin{center}
-\verb@(a->A@$ \Box $\verb@a->B)@$ \sim$\verb@(a->A|a->B)@$ \sim $\verb@(a->(A@$\Box $\verb@B))@
-\end{center}
+
+\[\sf (a->A+a->B)\sim (a->A|a->B)\sim (a->(A+B))\]
 
 Internal choice is best modelled by allowing automata to have a set of start states. Using a set of start states  facilitates the modelling of processes  with either  probabilistic choice or  \emph{active} actions.
 
 }
+\subsection{Sequential composition}
+
+Two processes can be composed in sequence using \verb|=>|   and sequential composition satisfies:
+
+\[\sf ((a->STOP)=>A) \sim (a->A),\qquad
+X=>(Y=>Z) \sim (X=>Y)=>Z\]
+
+\[\sf (STOP=>A) \sim A, \qquad (A=>STOP) \sim A \]
+
+\[\sf (X|Y)=>Z \sim (X=>Z)| (Y=>Z), \qquad 
+(X+Y)=>Z \sim (X=>Z)+ (Y=>Z)\] 
+
+\[W=>(X+Y) \sim (W=>X)+ (W=>Y) \sim (W=>X)| (W=>Y)\]
+
+
 \subsection{Properties of Choice}
  Choice is symmetric in that \verb$X|Y$ is equal to \verb$Y|X$. In what follows we write process equality as $\sim$ and hence:
  \[X|Y\sim Y|X\]
@@ -322,9 +343,6 @@ Internal choice is best modelled by allowing automata to have a set of start sta
  \[X|(Y|Z)\sim (X|Y)|Z\]
  details about, $\sim$,  process equality follow much later.
 
-The Choice between two identical processes is no real choice and hence:
-\[X|X\sim X\]
-Meaning has been  given to Processes in the form of an Axiomatic Algebraic semantics see \cite{BaW90}. Here we give meaning to processes by defining their operational behaviour as automata. From the details of what constitutes an automata we can see that the above equalities hold for our semantics. Looking at the same thing the other way in \cite{BaW90} they first define the algebraic properties of processes and then show the automata satisfy them.
 
 \subsection{Non terminating processes}
 We call the set of know  processes  the  \emph{Process name space}.   Initially the  \emph{Process name space} is \verb${STOP}$.    Each process definition \verb$P1 = ...$ adds the the defined process \verb$P1$ to the name space.
@@ -591,17 +609,15 @@ Another  effect of synchronization   is to reduce the size of the reachable stat
 \subsection{Broadcast event synchronisation}
 In the previous section when events from two processes synchronised  the the synchronising events from both processes were treated the same, both could block the other process. This style of synchronisation captures real events such as {\sf pushing a button} I cannot push a button that is not there or is frozen nor can  button on a vending machine be pushed if  I am not prepared  to push it. Both me and the vending machine must wait for the other to be ready before the {\sf buttonPush} event can occur.
 
+
 \begin{center}\verb$(a -> broadcast! -> c -> STOP)||(x -> broadcast? -> y -> STOP)$
 
 	\includegraphics[scale=0.5]{bcast.jpg} \end{center}
 
-Other events are not like this see {\sf broadcast!}  above these events cannot be blocked by a process not being ready for them. Real examples include:  I can send an email even if you are not ready to read it. A traffic light  is green even if no one is observing it.  We  model such events by defining event pairs  that model the unblocking \emph{send} events and separately \emph{receive} events.
 
-Non-blocking send events can further be decomposed into:
-\begin{description}
-\item[point to point] Emails are often messages from one person to one other  unique person.
-\item[multicast] A traffic light can be seen by many cars.
-\end{description}
+
+
+Other events are not like a {\sf broadcast!}  events cannot be blocked by a process not being ready for them. Real examples include:  I can send an email even if you are not ready to read it. A traffic light  is green even if no one is observing it.  Such interactions  by defined with  \emph{\bf unblocking send} events and \emph{receive} events.
 
 \hspace{\fill}
 \begin{tabular}{ll}
@@ -614,13 +630,34 @@ I see the green light & {\sf green?}
 \end{tabular}
 \hspace{\fill}
 
-Note: if you are not listening you might miss the warning and if you are not looking you might not see the green light.
 
-Two {\sf broadcast!} events or two {\sf braodcast?} events will synchronise just like normal hand shake events.
 
-Considering systems containing separate processes for  {\sf Cars} and {\sf Traffic Lights} we often need to consider the case when the {\sf Traffic Lights} are unique but there are many {\sf Cars}.  If we could introduce fake {\sf Traffic Lights}  then it would be hard to guarantee any properties of the system.
+Non-blocking send events can be decomposed into:
+\begin{description}
+\item[point to point] Emails are often messages from one person to one other  unique person.
+\item[multicast] A traffic light can be seen by many cars.
+\end{description}
 
-We need to understand how events interact in our formal model so that we can accurately capture  the world w are modelling.
+The point to point interaction can  defined with: 
+
+
+
+\begin{center}\verb$(start -> broadcast! -> halt -> STOP)||(pull -> broadcast? -> push -> STOP)$
+\end{center}
+The automata  can be seen  below:
+\begin{center}	
+	\includegraphics[scale=0.5]{bcast.jpg} \end{center}
+	
+	
+	
+Note: if you are not listening you might miss the warning and if you are not looking you might not see the green light. Listening/looking is formalised as being in a state from which the receive event is enabled. We model processes so that if you are listening/looking then you will hear/see the broadcast event.
+
+
+
+Considering systems containing separate processes for  {\sf Cars} and {\sf Traffic Lights} we often need to consider the case when the {\sf Traffic Lights} are unique but there are many {\sf Cars}.  The {\sf Cars} do not interact but if two cars are both looking then they will both see the green light when it is on.
+
+Consequently wo  {\sf braodcast?} events will not synchronise  like  hand shake events but behave as shown below:
+
 
 
 
@@ -1577,24 +1614,29 @@ Consequently if we were to add shared state to the processes our tool uses then 
 \newpage
 \section{Syntax}
 
-Summary of event syntax:
-
-\vspace{1ex}
-\begin{tabular}{|c|c|l|} \hline  & symbol & meaning\\ \hline
+\noindent 
+ Processes are first defined then any you wish to view as an automata appear in the list  see below:
+\begin{minipage}{0.2\textwidth}
+\begin{verbatim}
+const  Max = 2
+processes  {  
+A = a ->STOP.
+B = b -> STOP.
+C = A || B }
+automata B,C.
+ \end{verbatim}
+ \end{minipage}
+\begin{minipage}{0.65\textwidth}
+\begin{tabular}{|c|c|l|} \hline Event type & Symbol & Meaning\\ \hline
 handshake  & {\tt a } & {\sf a} synchronises with {\sf a}   both must be ready\\ \hline
 non blocking send   & {\sf a!}  & need not wait - can not be blocked\\ \hline
 receive   & {\sf a?}  & waits for {\sf a!} synchronises to become {\sf a!} \\ \hline
 
 \end{tabular}
+\end{minipage}
 
-\vspace{2ex}\noindent For indexed automata first but a bound on the size of any index \verb$Max$ with
+\noindent In above three processes are defined but only two displayed.  The constant Max is bound to the value 2.
 
-\noindent\verb$const  Max = 2$ \\
-
-\noindent Summary of the syntax used to define processes. process \verb|A| may be defined: \verb|A = <def>| or if you wish to suppress the rendering of the  automata then you can use: \verb|A* = <def>|  Definitions of  automata must be enclosed within:
-
-\begin{verbatim}automata  \{   ...   \}\end{verbatim}
-There are always many ways to define any interesting  automata  but some simple examples should help.
 
 \vspace{2ex}\begin{tabular}{|c|l|l|} \hline
 & atomic & indexed \\ \hline
@@ -1618,6 +1660,8 @@ Hiding & \verb$P\{act}$ & \verb$P\{act[i:0..N]}$ \\ \hline %\hline
 \begin{tabular}{|c|c|l|}
 \hline abstraction  & {\tt abs(P)} & fair removal of $\tau$ events \\
 \hline abstraction  & {\tt abs\{unfair\}(P)} & unfair  removal of $\tau$ events \\ \hline
+\hline hiding  & {\sf hide\{S\}(P)} & $\sf \triangleq  abs(P\backslash \{S\})$ \\ \hline
+\hline keep  & {\sf P\@\{s\}} & $\sf \triangleq  hideAct- s\})$ \\ \hline
 simplification  & {\tt simp(P) } & for the simplification of automata \\ \hline
 hiding index \verb|x| &\verb|R = R1${x}|&  builds symbolic automata \\ \hline
 \end{tabular}
