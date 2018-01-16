@@ -69,7 +69,7 @@ public class ParallelFunction {
         node.copyProperties(node1.createIntersection(node2));
 
         if (node.isStartNode())
-          automaton.setRoot(node);
+          automaton.addRoot(node);
 
         if ("ERROR".equals(node2.getTerminal()) || "ERROR".equals(node1.getTerminal()))
           node.setTerminal("ERROR");

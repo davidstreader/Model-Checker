@@ -1,4 +1,4 @@
-package mc.operations;
+package mc.operations.functions.infix;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -57,7 +57,7 @@ public class SequentialInfixFunction implements IProcessInfixFunction {
         automata1nodes.put(node.getId(), newNode);
 
         if (newNode.isStartNode()) {
-          sequence.setRoot(newNode);
+          sequence.addRoot(newNode);
         }
 
       } catch (CompilationException e) {

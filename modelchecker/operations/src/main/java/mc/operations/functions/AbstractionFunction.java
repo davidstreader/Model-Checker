@@ -1,4 +1,4 @@
-package mc.operations;
+package mc.operations.functions;
 
 import com.google.common.collect.ImmutableSet;
 import com.microsoft.z3.Context;
@@ -251,7 +251,7 @@ public class AbstractionFunction implements IProcessFunction {
 
     newNode.copyProperties(node);
     if (newNode.isStartNode()) {
-      abstraction.setRoot(newNode);
+      abstraction.addRoot(newNode);
     }
 
   }

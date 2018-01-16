@@ -1,4 +1,4 @@
-package mc.operations;
+package mc.operations.functions;
 
 import com.microsoft.z3.Context;
 import java.util.ArrayList;
@@ -73,6 +73,7 @@ public class NFtoDFconvFunction implements IProcessFunction {
     Set<String> visited = new HashSet<>();
 
     Stack<Set<String>> fringe = new Stack<>();
+
     fringe.push(constructClosure(nfa.getRoot(), stateMap));
 
     Set<String> alphabet = nfa.getAlphabet();
@@ -92,7 +93,8 @@ public class NFtoDFconvFunction implements IProcessFunction {
       AutomatonNode node = nodeMap.get(idNode);
 
       if (!processedRoot) {
-        dfa.setRoot(node);
+        dfa.getRoot().clear();
+        dfa.addRoot(node);
         node.setStartNode(true);
         processedRoot = true;
       }
@@ -125,13 +127,13 @@ public class NFtoDFconvFunction implements IProcessFunction {
     return dfa;
   }
 
-  private Set<String> constructClosure(AutomatonNode node, Map<Set<String>,
+  private Set<String> constructClosure(Collection<AutomatonNode> node, Map<Set<String>,
       List<AutomatonNode>> stateMap) {
     Set<String> states = new HashSet<>();
     List<AutomatonNode> nodes = new ArrayList<>();
 
     Stack<AutomatonNode> fringe = new Stack<>();
-    fringe.push(node);
+    node.forEach(fringe::push);
 
     while (!fringe.isEmpty()) {
       AutomatonNode current = fringe.pop();

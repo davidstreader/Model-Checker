@@ -1,14 +1,16 @@
-package mc.operations;
+package mc.operations.functions;
 
 import com.microsoft.z3.Context;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
+import mc.Constant;
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessFunction;
 import mc.processmodels.automata.Automaton;
 
-public class SafeFunction implements IProcessFunction {
+public class HideFunction implements IProcessFunction {
   /**
    * Gets the method name when it is called (e.g. {@code abs} in {@code abs(A)}).
    *
@@ -16,7 +18,7 @@ public class SafeFunction implements IProcessFunction {
    */
   @Override
   public String getFunctionName() {
-    return "safe";
+    return "hide";
   }
 
   /**
@@ -27,7 +29,7 @@ public class SafeFunction implements IProcessFunction {
    */
   @Override
   public Collection<String> getValidFlags() {
-    return Collections.emptySet();
+    return Collections.singleton("*");
   }
 
   /**
@@ -45,15 +47,26 @@ public class SafeFunction implements IProcessFunction {
    *
    * @param id       the id of the resulting automaton
    * @param flags    the flags given by the function (e.g. {@code unfair} in {@code abs{unfair}(A)}
-   * @param context  the z3 context for executing expressions
    * @param automata a variable number of automata taken in by the function
    * @return the resulting automaton of the operation
-   * @throws CompilationException when the function fails
    */
   @Override
   public Automaton compose(String id, Set<String> flags, Context context, Automaton... automata)
       throws CompilationException {
-    assert automata.length == 1;
-    return automata[0].copy();
+
+    Automaton automaton = automata[0].copy();
+    Set<String> alphabet = automaton.getAlphabet();
+    if (automaton.getAlphabetBeforeHiding() == null) {
+      automaton.setAlphabetBeforeHiding(new HashSet<>(automaton.getAlphabet()));
+    }
+    for (String action : flags) {
+      if (alphabet.contains(action)) {
+        automaton.relabelEdges(action, Constant.HIDDEN);
+      } else {
+        throw new CompilationException(getClass(), "Unable to find action " + action
+            + " for hiding.", null);
+      }
+    }
+    return new AbstractionFunction().compose(id, Collections.emptySet(), context, automaton);
   }
 }

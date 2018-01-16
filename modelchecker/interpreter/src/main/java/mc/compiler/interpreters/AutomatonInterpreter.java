@@ -139,7 +139,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
       automaton.setVariables(variableList);
       automaton.setVariablesLocation(astNode.getLocation());
 
-      interpretNode(astNode, automaton, automaton.getRoot());
+      interpretNode(astNode, automaton, new ArrayList<>(automaton.getRoot()).get(0));
       processStack.push(automaton);
     }
   }
@@ -189,9 +189,12 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
       processHiding(model, astProcessRootNode.getHiding());
     }
 
-    AutomatonNode oldRoot = automaton.addAutomaton(model);
-    AutomatonNode node = automaton.combineNodes(currentNode, oldRoot, context);
-    updateCurrentNode(currentNode, node);
+
+    Set<AutomatonNode> oldRoot = automaton.addAutomaton(model);
+    Set<AutomatonNode> nodes = automaton.combineNondeterministic(currentNode, oldRoot, context);
+//    AutomatonNode oldRoot = automaton.addAutomaton(model);
+//    AutomatonNode node = automaton.combineNodes(currentNode, oldRoot, context);
+//    updateCurrentNode(currentNode, node);
   }
 
   private void interpretSequence(SequenceNode sequence, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException {
@@ -238,9 +241,10 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
 
     Automaton comp = instantiateClass(infixFunctions.get(astCompositeNode.getOperation()))
         .compose(model1.getId() + astCompositeNode.getOperation() + model2.getId(), (Automaton) model1, (Automaton) model2);
-    AutomatonNode oldRoot = automaton.addAutomaton(comp);
-    AutomatonNode node = automaton.combineNodes(currentNode, oldRoot, context);
-    updateCurrentNode(currentNode, node);
+
+    Set<AutomatonNode> oldRoot = automaton.addAutomaton(comp);
+    Set<AutomatonNode> nodes = automaton.combineNondeterministic(currentNode, oldRoot, context);
+//    updateCurrentNode(currentNode, node);
 
   }
 
@@ -302,19 +306,22 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
       references.addAll(currentNode.getReferences());
     }
 
-    AutomatonNode oldRoot = automaton1.addAutomaton(automaton2);
+    Set<AutomatonNode> oldRoots = automaton1.addAutomaton(automaton2);
 
 
 
-    if (oldRoot.getReferences() != null) {
-      references.addAll(oldRoot.getReferences());
+    for(AutomatonNode oldRoot: oldRoots) {
+      if (oldRoot.getReferences() != null) {
+        references.addAll(oldRoot.getReferences());
+      }
     }
 
-    AutomatonNode node = automaton1.combineNodes(currentNode, oldRoot, context);
+    Set<AutomatonNode> node = automaton1.combineNondeterministic(currentNode, oldRoots, context);
     //Combining nodes removes the inital currentNode and oldRoot, as we are still using currentNode, copy the properties of the newly created node across
-    updateCurrentNode(currentNode, node);
+//    updateCurrentNode(currentNode, node);
 
-    references.forEach(id -> referenceMap.put(id, node));
+    //TODO;
+    references.forEach(id -> referenceMap.put(id, new ArrayList<>(node).get(0)));
   }
 
   private void processRelabelling(Automaton automaton, RelabelNode relabels) {
@@ -352,7 +359,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     Set<String> visited = new HashSet<>();
 
     Queue<AutomatonNode> fringe = new LinkedList<>();
-    fringe.offer(automaton.getRoot());
+    automaton.getRoot().forEach(fringe::offer);
 
     int label = 0;
     while (!fringe.isEmpty()) {

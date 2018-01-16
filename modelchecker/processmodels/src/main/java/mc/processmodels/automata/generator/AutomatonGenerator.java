@@ -24,6 +24,10 @@ import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.automata.operations.AutomataOperations;
 
+/**
+ * @see <a href="https://blogs.msdn.microsoft.com/ericlippert/2010/04/22/every-tree-there-is/">
+ *   Every Tree There Is - Fabulous Adventures In Coding</a>
+ */
 public class AutomatonGenerator {
 
   private static Map<String, Class<? extends IOperationInfixFunction>> operations = new HashMap<>();
@@ -48,11 +52,11 @@ public class AutomatonGenerator {
     root:
     for (BinaryNode treeNode : t) {
       Automaton automaton = new Automaton(id, false);
-      automaton.setRoot(binToAutomata(automaton, new BinaryNode(treeNode, null), 0));
-      automaton.getRoot().setStartNode(true);
+      automaton.addRoot(binToAutomata(automaton, new BinaryNode(treeNode, null), 0));
+      automaton.getRoot().forEach(n -> n.setStartNode(true));
       HashMap<Integer, List<AutomatonNode>> levels = new HashMap<>();
       HashMap<AutomatonNode, Integer> nodeToLevels = new HashMap<>();
-      fillLevels(automaton.getRoot(), levels, nodeToLevels, 0);
+      fillLevels(new ArrayList<>(automaton.getRoot()).get(0), levels, nodeToLevels, 0);
       Set<Set<AutomatonNode>> rootPowerSet = Sets.powerSet(nodeToLevels.keySet());
       for (ProcessModel b : basic) {
         if (instantiateClass(this.operations.get("BiSimulation")).evaluate(Arrays.asList((Automaton) b, automaton))) {

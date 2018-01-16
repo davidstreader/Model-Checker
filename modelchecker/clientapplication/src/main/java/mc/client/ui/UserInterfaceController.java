@@ -59,11 +59,13 @@ public class UserInterfaceController implements Initializable {
     private Stage window;
     private Scene scene;
 
+    // for keep tracking of the files user has opened recently.
     private List<String> recentFiles = new ArrayList<String>();
+    // for keep updating the file that has already been saved.
     private File thisFile;
-
     private boolean beenSaved = false;
     private boolean hasntBeenSaved = false;
+
 
     // fields for keep tracking the value of the OPTIONS
     private int lengthEdgeValue = 10;
@@ -385,9 +387,10 @@ public class UserInterfaceController implements Initializable {
         window = new Stage();
         if (!(beenSaved)) {
             saveButtonFunctionality();
-        } else {
+        } else if (thisFile != null) {
             updateTheSelectedFile(thisFile);
         }
+
     }
 
     @FXML
@@ -527,7 +530,6 @@ public class UserInterfaceController implements Initializable {
 
     private void saveButtonFunctionality() {
         hasntBeenSaved = false;
-        beenSaved = true;
         FileChooser fileChooser;
         PrintStream readTo;
         File selectedFile;
@@ -543,13 +545,13 @@ public class UserInterfaceController implements Initializable {
                 readTo = readTheOptionsIntegers(readTo);
                 readTo = readTheOptionsBooleans(readTo);
                 readTo.close();
+                recentFiles.add(selectedFile.getName());
+                thisFile = selectedFile;
+                beenSaved = true;
             }
         } catch (IOException message) {
             System.out.println(message);
         }
-
-        thisFile = selectedFile;
-        recentFiles.add(selectedFile.getName());
         window.close();
     }
 
@@ -593,12 +595,13 @@ public class UserInterfaceController implements Initializable {
                 int size = length.length();
                 userCodeInput.deleteText(0, size);
                 userCodeInput.replaceSelection(theCode);
+                recentFiles.add(selectedFile.getName());
+                thisFile = selectedFile;
             }
         } catch (IOException message) {
             System.out.println(message);
         }
 
-        recentFiles.add(selectedFile.getName());
         window.close();
     }
 
