@@ -66,7 +66,7 @@ The naming convention for these tests are:
 
 Other Build related tests are stored within `modelchecker/compiler/src/test/`
 
-##How to report a bug
+## How to report a bug
 
 To report a bug, we recommend leaving an issue on the `github` repository.
 
@@ -97,3 +97,8 @@ Please consider the following when filing an improvement request:
 - Provide specific examples of why this improvement would be good
 - Describe the current behaviour, and compare this
 - Include screenshots/mockups if possible
+
+## CribSheet
+
+Please reflect any changes you make into the `CribSheet` directory, and the
+LaTeX language description.
