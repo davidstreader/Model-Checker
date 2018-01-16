@@ -169,6 +169,65 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     return true;
   }
 
+  public Set<AutomatonNode> combineNondeterministic(AutomatonNode node1, Set<AutomatonNode> nodes2, Context context) throws CompilationException, InterruptedException {
+
+    if (!nodeMap.containsKey(node1.getId())) {
+      throw new CompilationException(getClass(), node1.getId() + " was not found in the automaton " + getId(), this.getLocation());
+    }
+    for(AutomatonNode node2: nodes2) {
+      if (!nodeMap.containsKey(node2.getId())) {
+        throw new CompilationException(getClass(), node2.getId() + " was not found in the automaton " + getId(), this.getLocation());
+      }
+    }
+
+    Set<AutomatonNode> returnNodes = new HashSet<>();
+
+    for(AutomatonNode nodeToMerge : nodes2) {
+      AutomatonNode node = addNode();
+
+      for (AutomatonEdge edge1 : node1.getIncomingEdges()) {
+        for (AutomatonEdge edge2 : nodeToMerge.getIncomingEdges()) {
+          processGuards(edge1, edge2, context);
+        }
+      }
+
+      for (AutomatonEdge edge1 : node1.getOutgoingEdges()) {
+        for (AutomatonEdge edge2 : nodeToMerge.getOutgoingEdges()) {
+          processGuards(edge1, edge2, context);
+        }
+      }
+      // add the incoming and outgoing edges from both nodes to the combined nodes
+      processIncomingEdges(node, node1);
+      processIncomingEdges(node, nodeToMerge);
+      processOutgoingEdges(node, node1);
+      processOutgoingEdges(node, nodeToMerge);
+      // create a union of the metadata from both nodes
+      node.copyProperties(node1);
+      node.copyProperties(nodeToMerge);
+
+      node.setVariables(null); // Remove the variables
+      if (node1.getVariables() != null && nodeToMerge.getVariables() != null) {
+        if (node1.getVariables().equals(nodeToMerge.getVariables())) {
+          node.setVariables(node1.getVariables());
+        }
+      }
+
+
+      if (node1.isStartNode() || nodeToMerge.isStartNode()) {
+        root.removeAll(Arrays.asList(node1, nodeToMerge));
+        root.add(node);
+        node.setStartNode(true);
+      }
+
+      returnNodes.add(node);
+    }
+
+    removeNode(node1);
+    nodes2.forEach(this::removeNode);
+
+    return returnNodes;
+  }
+
   public AutomatonNode combineNodes(AutomatonNode node1, AutomatonNode node2, Context context) throws CompilationException, InterruptedException {
     if (!nodeMap.containsKey(node1.getId())) {
       throw new CompilationException(getClass(), node1.getId() + " was not found in the automaton " + getId(), this.getLocation());
@@ -379,17 +438,19 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     return alphabet.keySet();
   }
 
-  public AutomatonNode addAutomaton(Automaton automaton) throws CompilationException {
+  public Set<AutomatonNode> addAutomaton(Automaton automaton) throws CompilationException {
     int num = (int) Math.floor(Math.random() * 100);
-    AutomatonNode thisAutomataRoot = null;
+    boolean hasRoot = !(this.root == null || this.root.size() == 0);
+
+    Set<AutomatonNode> thisAutomataRoot = new HashSet<>();
     for (AutomatonNode node : automaton.getNodes()) {
 
       AutomatonNode newNode = addNode(node.getId() + num);
 
       newNode.copyProperties(node);
       if (newNode.isStartNode()) {
-        thisAutomataRoot = newNode;
-        if (this.root == null || root.size() == 0) {
+        thisAutomataRoot.add(newNode);
+        if (!hasRoot) {
           this.root = new HashSet<>();
           root.add(newNode);
         } else {
@@ -407,7 +468,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
       this.addEdge(edge.getId() + num, edge.getLabel(), from, to, edge.getGuard());
 
     }
-    if (thisAutomataRoot == null) {
+    if (thisAutomataRoot.isEmpty()) {
       throw new CompilationException(getClass(), "There was no root found while trying to add an automaton");
     }
     return thisAutomataRoot;
