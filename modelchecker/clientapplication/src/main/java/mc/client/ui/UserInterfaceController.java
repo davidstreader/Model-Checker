@@ -24,15 +24,20 @@ import mc.compiler.OperationResult;
 import mc.exceptions.CompilationException;
 import mc.util.expr.Expression;
 import mc.webserver.Context;
+import org.apache.commons.io.FileUtils;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
 import org.fxmisc.richtext.model.StyleSpans;
 
 import javax.swing.*;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URL;
+import java.nio.channels.FileChannel;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -60,9 +65,10 @@ public class UserInterfaceController implements Initializable {
     private Scene scene;
 
     // for keep tracking of the files user has opened recently.
-    private List<String> recentFiles = new ArrayList<String>();
+    private Set<File> recentFiles = new HashSet<>();
     // for keep updating the file that has already been saved.
     private File thisFile;
+    //
     private boolean beenSaved = false;
     private boolean hasntBeenSaved = false;
 
@@ -354,24 +360,79 @@ public class UserInterfaceController implements Initializable {
     @FXML
     private void handleOpenRecentAction(ActionEvent event) {
         window = new Stage();
-        ChoiceBox cb = new ChoiceBox();
+        String path;
+        ChoiceBox<File> cb = new ChoiceBox<File>();
 
-
- /*       cb.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                cb.setValue(recentFiles(newValue.toString()));
+        try {
+            if (!recentFiles.isEmpty()) {
+                for (File fileName : recentFiles) {
+                    path = "openrecents/" + fileName.getName();
+                    File f = new File(path);
+                    f.getParentFile().mkdirs();
+                    f.createNewFile();
+                    FileUtils.copyFile(fileName, f);
+                }
+            } else {
+                openPreviousFiles();
             }
-        });*/
+        } catch (IOException message) {
+            System.out.println(message);
+        }
+
 
         cb.setItems(FXCollections.observableArrayList(recentFiles));
-
 
         VBox layout = new VBox(cb);
         scene = new Scene(layout, 200, 200);
         window.setScene(scene);
         window.initModality(Modality.APPLICATION_MODAL);
         window.showAndWait();
+        openTheRecentFile(cb.getValue());
+
+    }
+
+    private void openPreviousFiles() {
+        File folder = new File("openrecents/");
+        File[] listOfFiles = folder.listFiles();
+        for (int i = 0; i < listOfFiles.length; i++) {
+            if (listOfFiles[i].isFile()) {
+                // Files
+                if (listOfFiles[i].getName().endsWith(".txt")) {
+                    recentFiles.add(listOfFiles[i]);
+                } else if (listOfFiles[i].isDirectory()) {
+                    // Directories
+                    recentFiles.add(listOfFiles[i]);
+                }
+            }
+        }
+    }
+
+    private void openTheRecentFile(File choiceBoxValue) {
+        if (choiceBoxValue != null) {
+            String theCode = "";
+            Scanner scanner;
+            try {
+                if (choiceBoxValue != null) {
+                    scanner = new Scanner(choiceBoxValue, "UTF-8");
+                    StringBuilder codeBuilder = new StringBuilder();
+                    while (scanner.hasNext() && !scanner.hasNext("lengthEdgeValue:")) {
+                        codeBuilder.append(scanner.nextLine()).append("\n");
+                    }
+                    theCode = codeBuilder.toString();
+                    readOptions(scanner);
+                    scanner.close();
+                    String length = userCodeInput.getText();
+                    int size = length.length();
+                    userCodeInput.deleteText(0, size);
+                    userCodeInput.replaceSelection(theCode);
+                    recentFiles.add(choiceBoxValue);
+                    thisFile = choiceBoxValue;
+                }
+            } catch (IOException message) {
+                System.out.println(message);
+            }
+        }
+
     }
 
     @FXML
@@ -557,9 +618,9 @@ public class UserInterfaceController implements Initializable {
                 readTo.println(userCodeInput.getText());
                 readTo = readTheOptionsIntegers(readTo);
                 readTo = readTheOptionsBooleans(readTo);
-                readTo.close();
-                recentFiles.add(selectedFile.getName());
+                recentFiles.add(selectedFile);
                 thisFile = selectedFile;
+                readTo.close();
                 beenSaved = true;
             }
         } catch (IOException message) {
@@ -608,7 +669,7 @@ public class UserInterfaceController implements Initializable {
                 int size = length.length();
                 userCodeInput.deleteText(0, size);
                 userCodeInput.replaceSelection(theCode);
-                recentFiles.add(selectedFile.getName());
+                recentFiles.add(selectedFile);
                 thisFile = selectedFile;
             }
         } catch (IOException message) {

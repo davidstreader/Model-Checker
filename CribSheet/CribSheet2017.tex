@@ -226,7 +226,7 @@ Processes definitions are enclosed in \verb$processes { ... }$ as shown in the e
 
 A simplest  process is \verb$STOP$ the process that dose nothing.  The more interesting  but very  basic processes that we discuss consist of a  finite state space and  transitions labelled with  atomic events.
 
-\subsubsection{Event prefixing }
+\subsection{Event prefixing }
 A simple process that performs  a single event  and stops can be built by prefixing  an event \verb$takeTea$ to the  \verb$STOP$ process using the \verb$->$ operator  by the command:
 
 \noindent\hspace{\fill} \begin{minipage}{0.4\textwidth}
@@ -260,7 +260,7 @@ automata {
 
 %\verb$$  \hspace{1em}\includegraphics[scale=0.15]{Two.jpg} \end{center}
 
-\subsubsection{Event choice}
+\subsection{Event choice}
 A vending machine that has two buttons one for coffee the other for tea offers the user the \emph{choice} to push either button. We model this using the \emph{choice operator} \verb$_|_$.
 
 
@@ -271,7 +271,7 @@ A vending machine that has two buttons one for coffee the other for tea offers t
 
 \noindent this automata {\bf \it branches} at the  initial node.
 
-\subsection{Non deterministic processes} \label{sec:ndfa}
+\subsubsection{Non deterministic processes} \label{sec:ndfa}
 The two processes {\sf VM}  and {\sf VMx} both represent a vending machine that offers two drinks, {\sf tea} and {\sf coffee} after a coin is inserted. The two  terms are different and they are represented by  different automata.
 
 \noindent\begin{center}
@@ -299,7 +299,7 @@ Are  {\sf VM}  and {\sf VMx}  equivalent processes?  Before you can answer this 
 But what if you were interacting with these processes and you wanted \verb|coffee| then  with the first machine you could always insert a \verb|coin| than push the \verb|coffeeBtn| and you would be able to get your \verb|coffee|. In contrast with the second machine after inserting the \verb|coin| you would not be able to push the \verb|coffBtn|. Hence you would be able to distinguish the two processes. It is this notion of indistinguishable by any test that we are interested in here.
 
 
-\subsection{Properties of Choice}
+\subsubsection{Properties of Choice}
  Choice is symmetric in that \verb$X|Y$ is equal to \verb$Y|X$. In what follows we write process equality as $\sim$ and hence:
  \[\sf X|Y\sim Y|X\qquad X|(Y|Z)\sim (X|Y)|Z\]
  details about, $\sim$,  process equality follow much later. 
@@ -316,9 +316,17 @@ Used to represent a process that internally, with no external involvement, can c
 The relation between the two definitions of choice is captured by the axioms:
 
 
-\[\sf (a->A+a->B)\sim (a->A|a->B)\sim (a->(A+B))\]
+\[\sf (a->A+a->B) =_F (a->A|a->B) =_F (a->(A+B))\]
+
+{\color{red} NOT bisim need to use testing or Failure equality!}
 
 Internal choice is best modelled by allowing automata to have a set of start states. Using a set of start states  facilitates the modelling of processes  with either  probabilistic choice or  \emph{active} actions.
+
+\subsubsection{Properties of Internal Choice}
+ Choice is symmetric in that \verb$X+Y$ is equal to \verb$Y|X$. In what follows we write process equality as $\sim$ and hence:
+ \[\sf X+Y\sim Y+X \qquad X+(Y+Z)\sim (X+Y)+Z\]
+ 
+ 
 
 }
 \subsection{Sequential composition}
@@ -333,15 +341,10 @@ X=>(Y=>Z) \sim (X=>Y)=>Z\]
 \[\sf (X|Y)=>Z \sim (X=>Z)| (Y=>Z), \qquad 
 (X+Y)=>Z \sim (X=>Z)+ (Y=>Z)\] 
 
-\[W=>(X+Y) \sim (W=>X)+ (W=>Y) \sim (W=>X)| (W=>Y)\]
+\[\sf W=>(X+Y) \sim (W=>X)+ (W=>Y) \sim (W=>X)| (W=>Y)\]
 
 
-\subsection{Properties of Choice}
- Choice is symmetric in that \verb$X|Y$ is equal to \verb$Y|X$. In what follows we write process equality as $\sim$ and hence:
- \[X|Y\sim Y|X\]
- similarly we have:
- \[X|(Y|Z)\sim (X|Y)|Z\]
- details about, $\sim$,  process equality follow much later.
+
 
 
 \subsection{Non terminating processes}

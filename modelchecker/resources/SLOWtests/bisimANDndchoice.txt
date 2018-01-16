@@ -1,0 +1,41 @@
+processes {
+/* Bisim needs changing to glue these roots together.
+
+In place of equivalent color sets USE equality of 
+
+Union of the colered events (name, color(post)) leaving any root node
+*/
+
+One2 = a->STOP.
+One5 = b->STOP.
+
+Y = One2 => ( One5 + One2).
+Y1 = (One2 =>  One5 )+ (One2 => One2). 
+
+Z =  (s->STOP)=>Y1.
+W = (s->Y1).
+}
+
+automata Y,Y1, Z,W.
+
+operation {
+
+(One2 => ( One5 + One2)) ~ ((One2 =>  One5 )+ (One2 => One2)).
+
+(s->STOP)=>Y1 ~ (s->Y1).
+
+One2=> (One5=>One2) ~
+
+}
+
+
+lengthEdgeValue: 10
+maxNodeLabelValue: 10
+operationFailureLabelValue: 10
+operationPassLabelValue: 10
+
+fairAbstractionSelected: false
+autoSaveSelected: false
+darkModeSelected: false
+pruningSelected: false
+liveCompillingSelected: false
