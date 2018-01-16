@@ -7,4 +7,4 @@ processes {
     B4 = simp(B3).
 }
 
-automata Buff,B2,B3,B4. 
+automata Buff,B2,B3,B4.

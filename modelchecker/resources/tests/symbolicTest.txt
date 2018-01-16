@@ -4,25 +4,25 @@ const M = 3.
 const N = 2.
 processes {
     Exp = C[0][0],
-        C[i:0..M][j:0..M] = (if i < M then coin -> C[i + 1][j] else 
+        C[i:0..M][j:0..M] = (if i < M then coin -> C[i + 1][j] else
                              if j<M then bang -> C[0][j+1]).
-                             
-     Hj = Exp${j}.  // y symbolic 
-     Hi = Exp${i}.  // 
+
+     Hj = Exp${j}.  // y symbolic
+     Hi = Exp${i}.  //
      Gi = Hi${}.  // Nice feature
      Gj = Hj${}.
-     
+
     Ex3 = C[0][0][0],
         C[i:0..M][j:0..N][k:0..N] =
-                (if i < M then coin -> C[i + 1][j][k] else 
+                (if i < M then coin -> C[i + 1][j][k] else
                              if j<N then bang -> C[0][j+1][k]).
-    Fi = Ex3${i}. 
-     
-     
+    Fi = Ex3${i}.
+
+
    X =  Y[0][0],
       Y[i:0..2][x:0..2] = (if i<2 then a[x]->Y[i+1][x])${x}.
    YA = X || Hi.
-        
+
 }
 
 automata Exp.

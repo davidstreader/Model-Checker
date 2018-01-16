@@ -4,7 +4,7 @@
 %% HEADER
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \documentclass[]{article}
-\setlength{\oddsidemargin}{1pt} 
+\setlength{\oddsidemargin}{1pt}
 \setlength{\evensidemargin}{1pt}
 \usepackage{amssymb,mathtools,tikz}
 \usepackage {stmaryrd}
@@ -83,12 +83,12 @@ Here we are interested in programs that interact with the world around them and 
 
 
 
-To help formalise this we  model programs that can themselves be concurrent. The class of such concurrent programs is very varied  and many distinct styles of analysis appear in the literature.  We find it helpful to decompose these concurrent programs into two broad, overlapping,  classes \emph{State based} and \emph{Event based}.  
+To help formalise this we  model programs that can themselves be concurrent. The class of such concurrent programs is very varied  and many distinct styles of analysis appear in the literature.  We find it helpful to decompose these concurrent programs into two broad, overlapping,  classes \emph{State based} and \emph{Event based}.
 
 Here we  formally model interactive processes by first formally capturing their operational behaviour and then defining  process equivalence on the operational semantics. Equality  has the following properties:
 \begin{enumerate}
 \item it is a reflexive, symmetric and transitive relation,
-\item equal processes can be substituted and 
+\item equal processes can be substituted and
 \item equal processes can not  be distinguished.
 \end{enumerate}
 
@@ -97,14 +97,14 @@ We will use automata, Labeled Transition Systems LTS, to model the operational b
 
 
 
- 
 
-By concurrent state based programs interact by sharing memory and concurrent event based programs interact by sharing events. Our event based programs  are commonly referred to as \emph{processes}. On the one hand the same real world object  can be formalised  in a state based or event based fashion and on the other hand different languages implement shared memory of shared events as primitive.   
+
+By concurrent state based programs interact by sharing memory and concurrent event based programs interact by sharing events. Our event based programs  are commonly referred to as \emph{processes}. On the one hand the same real world object  can be formalised  in a state based or event based fashion and on the other hand different languages implement shared memory of shared events as primitive.
 
 We believe that state based models can be implemented on event based primitives and event based models can be implemented on state based primitives.  The usefulness of having different styles to formalise the same thing is that different  objects are easier to formalise with each of the styles.
 
 \section{A practical  approach to formalisation}
-Theory has an internal virtue in  supporting the exploration of the consequences of a small set of assumptions. In addition it gives confidence in adopting analytic methods in a practical setting.  Nonetheless their are circumstances where  we are not interested in a \emph{theoretical ideal} if our gaol is to provide sound usable tools for the analysis of systems. 
+Theory has an internal virtue in  supporting the exploration of the consequences of a small set of assumptions. In addition it gives confidence in adopting analytic methods in a practical setting.  Nonetheless their are circumstances where  we are not interested in a \emph{theoretical ideal} if our gaol is to provide sound usable tools for the analysis of systems.
 
 
 Our primary style of modelling can be described as based on \emph{hand shake events} and as is common we call such programs processes. We consider CSP, CCS and ACP as all using  hand shake events and like here make the following assumptions:
@@ -115,16 +115,16 @@ Our primary style of modelling can be described as based on \emph{hand shake eve
 \item an observable event in one process can require the existence of another process to be ready to perform a \emph{related event} before it is executed. This results in a branching structure and would require the use of branching temporal logic if one decided to use logic to specify the details of a processes behaviour.
 
 \item an event is either \emph{observable and blockable}  or \emph{unobservable and unblockable} (Note the DES community separate out these properties and hence have four types of event)
- 
+
  \item we abstract away details about one event \emph{causing} a related event to occur. Consequently all events in a set of related events are treated equally (Note modelling causality between synchronising events has been shown to  be useful when relating handshake events with broadcast events)
- 
+
 \item a process can be in a state where it is prepared to perform any event from some set of events. How this is achieved is not specified but is a programming language primitive in Ada rendezvous, Occam events and Go events.
 
-\item we adopt the interleaving assumption - parallel processes can be thought equivalent to sequential process 
+\item we adopt the interleaving assumption - parallel processes can be thought equivalent to sequential process
 \end{enumerate}
 
 
-Although it is interesting to have a sound and complete inference system to reason about programs it should be borne in mind that there is no one universally  agreed upon notion of equality between interacting systems and hence putting lot of effort into constructing  complete inference system may be of little practical use.  What we believe to be of greater practical importance than completeness is that the inference system is 
+Although it is interesting to have a sound and complete inference system to reason about programs it should be borne in mind that there is no one universally  agreed upon notion of equality between interacting systems and hence putting lot of effort into constructing  complete inference system may be of little practical use.  What we believe to be of greater practical importance than completeness is that the inference system is
 
 \emph{
 \begin{center}
@@ -138,9 +138,9 @@ Although it is interesting to have a sound and complete inference system to reas
 \end{minipage}
 \end{center}}
 
-Both B and Event-B  use of forward simulation and not backward simulation  hence are inherently incomplete with respect to refinement and yet  can be of practical use. 
+Both B and Event-B  use of forward simulation and not backward simulation  hence are inherently incomplete with respect to refinement and yet  can be of practical use.
 
-Here we are less concerned with representing systems exclusively as process terms and constructing a sound and complete set of axioms  than in defining sound algorithms for the rewriting of the operational semantics of processes. This can be seen as what in the literature is called \emph{Visual verification}. 
+Here we are less concerned with representing systems exclusively as process terms and constructing a sound and complete set of axioms  than in defining sound algorithms for the rewriting of the operational semantics of processes. This can be seen as what in the literature is called \emph{Visual verification}.
 
 \subsection{Approaches}
 The {\bf B and  Event-B approach } is to start with an abstract specification of the System as a whole. This can be stepwise refined until sufficient detail has been provided and then the detailed System can be decomposed into the \emph{Process} of interest plus the \emph{Context} it has been designed to work in.
@@ -149,7 +149,7 @@ Two practical aspects of this approach are:
 \begin{enumerate}
 \item the abstract and more detailed concrete models are built by hand, one is not constructed form the other (not correct by construction), then the relation between the two models is verified. Thus the method can be applied in both directions, analysis by refinement and by abstraction.
 \item The models defined at each level can be deterministic. The retrieve relation between the two models introduces non determinism that is removed by verifying the relation is a refinement.
-\end{enumerate} 
+\end{enumerate}
 
 This approach could be described as supporting hierarchical specifications. That is each level in the hierarchy  consists of one or more specification given at the same level of detail whereas between levels the specifications are of the same thing but given at differing levels of detail. Frequently an abstract specification can be constructed from a more detailed specification by the  abstraction of some detail. In our simple models that contain only atomic events this means the abstraction of some of the events.
 
@@ -160,7 +160,7 @@ Frequently for processes we wish to build it is easier to decompose the specific
 \begin{enumerate}
 \item specify the behaviour of the context in which the program will run
 \item specify the behaviour of the system as a whole, that is specify the behaviour of the program and the context running together
-\end{enumerate} 
+\end{enumerate}
 
 
 
@@ -168,13 +168,13 @@ Because we have parallel composition as a first class citezen  we can further re
 
 {\color{red}
 \begin{description}
-\item[Private public] To build understandable models they need to be small. We show how to \emph{abstract} the private component while preserving the public behaviour. 
-\item[Finite state approximations] for pragmatic reasons we favour fast push button analysis over techniques that require a high degree of human time and expertise. 
-\item[Visual verification] Specifying properties of interacting systems  is hard and in practice engineers  are reluctant to spend a lot of time learning languages that may not be helpful. 
+\item[Private public] To build understandable models they need to be small. We show how to \emph{abstract} the private component while preserving the public behaviour.
+\item[Finite state approximations] for pragmatic reasons we favour fast push button analysis over techniques that require a high degree of human time and expertise.
+\item[Visual verification] Specifying properties of interacting systems  is hard and in practice engineers  are reluctant to spend a lot of time learning languages that may not be helpful.
 \item[Operational semantics] provides a simple mapping between state based and event based systems.
 \item[Testing semantics] provides confidence in the situations for which  out definitions of equality and refinement are safe to use.
 
-\item[Robust semantics] People frequently think in different ways about the same system depending upon the task at hand.  Formalising our semantics in a variety of styles  helps do this with some confidence.  
+\item[Robust semantics] People frequently think in different ways about the same system depending upon the task at hand.  Formalising our semantics in a variety of styles  helps do this with some confidence.
 
 \item [Extensions via theory morphisms] Each of our formalisms admit  a logical interpretation where refinement is implication. The construction of Galois connections between these formalisms offers us a great deal of flexibility.  \begin{enumerate}
 \item  selecting different formalisms at different point in the development
@@ -188,7 +188,7 @@ Because we have parallel composition as a first class citezen  we can further re
 \section{State based interaction}
 Concurrent programs that interact by sharing variables have been formalised in many distinct ways. Here guarded actions similarly to both TLA+  and Event B.  This has the benefit of making the  connection  event based interaction, as formalised by process algebras, easier to formalise.
 
-Our state based programs will be called {\bf modules} and contain a set of named, \emph{guarded} {\bf actions}. The module contains a set of variables  that each action may reference. 
+Our state based programs will be called {\bf modules} and contain a set of named, \emph{guarded} {\bf actions}. The module contains a set of variables  that each action may reference.
 
 \section{Event based interaction}
 We model two styles of  event based interaction, the first  is based on the hand shake synchronisation of   process algebras and the second is based on the broadcast synchronisation of IOA automata. The syntax used to index processes is taken from LTSA.
@@ -209,7 +209,7 @@ In the tool we introduce process names will  start with an upper case letter whe
 
 Sequential processes are defined using a simple process algebra $\Sigma =\{Act, ->, |, STOP\}$ the operational semantics of the defined process definition will be rendered as an automata.
 
-%\begin{mypdef} 
+%\begin{mypdef}
 {\color{blue} \emph{{\bf An automata} is a tuple  $\sf A \triangleq (N_A,S_A,T_A,\alpha_A)$  where:
 \begin{description}
 \item[$\sf N_A$] is the set of automata nodes,
@@ -220,7 +220,7 @@ Sequential processes are defined using a simple process algebra $\Sigma =\{Act, 
 }}
 $\Box$
 
-%\end{mypdef} 
+%\end{mypdef}
 
 
 Processes definitions are enclosed in \verb$processes { ... }$ as shown in the examples below.  We will frequently omit the \verb$processes { ... }$. The processes that are to be displayed as automata  appear as a list \verb$automata A,Ap.$.
@@ -236,20 +236,20 @@ A simple process that performs  a single event  and stops can be built by prefix
 \begin{verbatim}
 automata {
   Simple = (takeTea->STOP).
-}\end{verbatim} 
+}\end{verbatim}
 \end{minipage}
 \begin{minipage}{0.25\textwidth}\includegraphics[scale=0.15]{Simple.jpg}\end{minipage}\hspace{\fill}
 
-\noindent  Every process we define can be represented by a transition labeled automata. The events, like  \verb$takeTea$,  have an informal meaning (semantics) given by relating them to  some  real world event. We can prefix  a second event  
+\noindent  Every process we define can be represented by a transition labeled automata. The events, like  \verb$takeTea$,  have an informal meaning (semantics) given by relating them to  some  real world event. We can prefix  a second event
 
 \noindent\begin{center}  \begin{minipage}{0.45\textwidth}
-\verb$Two = (teaButton->takeTea->STOP).$ 
+\verb$Two = (teaButton->takeTea->STOP).$
 
 \verb$Two = (teaButton->Simple).$   \end{minipage}\begin{minipage}{0.45\textwidth}\includegraphics[scale=0.15]{Two.jpg}\end{minipage}\end{center}
 
 The two definitions of \verb|Two| produce the same automata. If you only want to see \verb|Two| then you can suppress the production of the initial automata \verb|Simple| by add \verb|*| as a suffix to the name:
 
-\noindent\begin{center}  
+\noindent\begin{center}
 \begin{minipage}{0.45\textwidth}\begin{verbatim}
 automata {
   Simple* = (takeTea->STOP).
@@ -262,30 +262,30 @@ automata {
 
 
 %\verb$$  \hspace{1em}\includegraphics[scale=0.15]{Two.jpg} \end{center}
- 
+
 \subsubsection{Event choice}
 A vending machine that has two buttons one for coffee the other for tea offers the user the \emph{choice} to push either button. We model this using the \emph{choice operator} \verb$_|_$.
 
- 
-  
-\noindent\begin{center}  \verb$CM = (teaButton->takeTea->STOP|coffeeButton->takeCoffee->STOP).$ 
+
+
+\noindent\begin{center}  \verb$CM = (teaButton->takeTea->STOP|coffeeButton->takeCoffee->STOP).$
 
 \includegraphics[scale=0.15]{CM.jpg}\end{center}
 
 \noindent this automata {\bf \it branches} at the  initial node.
 
 \subsection{Non deterministic processes} \label{sec:ndfa}
-The two processes {\sf VM}  and {\sf VMx} both represent a vending machine that offers two drinks, {\sf tea} and {\sf coffee} after a coin is inserted. The two  terms are different and they are represented by  different automata. 
+The two processes {\sf VM}  and {\sf VMx} both represent a vending machine that offers two drinks, {\sf tea} and {\sf coffee} after a coin is inserted. The two  terms are different and they are represented by  different automata.
 
 \noindent\begin{center}
 \begin{minipage}{0.8\textwidth}
 \begin{center}\begin{verbatim}
-automata 
+automata
 {
   VM = coin->((teaBtn->tea-> STOP)|(coffeeBtn->coffee->STOP)).
   Vmx = (coin->teaBtn->tea-> STOP)|(coin->coffeeBtn->coffee->STOP).
 }
-\end{verbatim} 
+\end{verbatim}
 %\end{minipage}
 %\begin{minipage}{0.6\textwidth}
 \includegraphics[scale=0.4]{ND.png}
@@ -320,7 +320,7 @@ Internal choice is best modelled by allowing automata to have a set of start sta
  \[X|Y\sim Y|X\]
  similarly we have:
  \[X|(Y|Z)\sim (X|Y)|Z\]
- details about, $\sim$,  process equality follow much later. 
+ details about, $\sim$,  process equality follow much later.
 
 The Choice between two identical processes is no real choice and hence:
 \[X|X\sim X\]
@@ -329,7 +329,7 @@ Meaning has been  given to Processes in the form of an Axiomatic Algebraic seman
 \subsection{Non terminating processes}
 We call the set of know  processes  the  \emph{Process name space}.   Initially the  \emph{Process name space} is \verb${STOP}$.    Each process definition \verb$P1 = ...$ adds the the defined process \verb$P1$ to the name space.
 
-Processes consist of a set of states, an initial state  and a set of event labelled state transitions. Given  a process has a set of states and a set of transitions it is reasonable that the process can be \emph{conceptual identified} with its initial state. 
+Processes consist of a set of states, an initial state  and a set of event labelled state transitions. Given  a process has a set of states and a set of transitions it is reasonable that the process can be \emph{conceptual identified} with its initial state.
 
 
 Clearly any state \verb$S$ in process \verb|P1| could also  be \emph{conceptual identified}  with the the process consisting of the same set of states and transitions but with initial state \verb$S$.  We use this idea to define non terminating processes.  By allowing any valid process to be used where \verb${STOP}$ has been used we can define non terminating or cyclic processes.
@@ -354,7 +354,7 @@ To build events that do not terminate we can replace \verb$STOP$ with the name o
 \begin{verbatim}
 P = (a->Q ),
   Q = (b->P|c->Q).
-\end{verbatim} 
+\end{verbatim}
 \end{minipage}
 \begin{minipage}{0.25\textwidth}\includegraphics[scale=0.15]{P.jpg}
 \end{minipage}
@@ -377,73 +377,73 @@ For the above automata node {\sf 0} we name \verb$TrRed$ and  node {\sf 1} we na
 \begin{verbatim}
 TrRed = (red->TrRed | turnGreen ->TrGreen),
   TrGreen = (green->TrGreen|turnRed->TrRed).
-\end{verbatim} 
+\end{verbatim}
 \end{minipage}\end{center}
 
   The result of this construction is the definition of the first process \verb$TrRed$, all other processes, in this case just  \verb$TrGreen$, are  {\bf \it local} definitions.
 
 \section{Semantics of processes with atomic events}
- Distinct automata can be used to  represent exactly the same process. We formalise this be defining a semantic equivalence  of automata.  The question as to what automata should be equated and how do you justify you notion of equality we leave to later. Here we are going to introduce to very different notions of process equality that are widely used and widely discussed in the literature. 
- 
- 
- 
- 
+ Distinct automata can be used to  represent exactly the same process. We formalise this be defining a semantic equivalence  of automata.  The question as to what automata should be equated and how do you justify you notion of equality we leave to later. Here we are going to introduce to very different notions of process equality that are widely used and widely discussed in the literature.
+
+
+
+
  \subsection{Complete Trace equality}\label{sec:Trc}
  The trace semantics of a process are the set of executions the process can undertake.
- 
- Complete finite traces must end in state from which not event can occur: 
+
+ Complete finite traces must end in state from which not event can occur:
  \[Tr_{Fin}({\sf P}) \triangleq \{ tr : \exists n : \aro{S_{\sf P} }{tr}{n}\land \pi(n)=\emptyset\}\]
- 
+
  Infinite traces  do not end:
  \[Tr_{Inf}({\sf P}) \triangleq \{ tr :  \aro{S_{\sf P} }{tr}{}\}\]
- 
- The  complete traces of a process 
- 
+
+ The  complete traces of a process
+
  \[Tr_c \triangleq Tr_{Fin}\cup Tr_{inf}\]
- 
+
  Complete trace equality:
- 
+
  \[{\sf P} =_{Tr_c} {\sf Q} \triangleq Tr_c({\sf P}) = Tr_c({\sf Q})\]
- 
-Trace equality dose not distinguish deterministic processes from non deterministic processes  and hence the two processes in \sref{ndfa} are identified. 
+
+Trace equality dose not distinguish deterministic processes from non deterministic processes  and hence the two processes in \sref{ndfa} are identified.
  \subsection{Bisimulation}\label{sec:biscol}
-  A bisimulation  $\sim$ is relation on the nodes of an automata  that is  symmetric  $n\sim m\Rightarrow m\sim n$  and  
- 
+  A bisimulation  $\sim$ is relation on the nodes of an automata  that is  symmetric  $n\sim m\Rightarrow m\sim n$  and
+
  \[ n\sim m \land \aro{n}{a}{n'}\Rightarrow \exists m' . \aro{m}{a}{m'} \land n'\sim m' \]
- 
- Two processes {\sf P} and {\sf Q} are bisimular if and only if there is a bisimultaion relation that relate their start nodes, ${\sf P_S\sim Q_S}$. 
- 
- Bisimulation equivalence is much finer than complete trace equality and  only equate processes that could not possibly be distinguished.  
- Consequently the two processes in \sref{ndfa} are not bisimular (bisimulation equivalent). 
- 
+
+ Two processes {\sf P} and {\sf Q} are bisimular if and only if there is a bisimultaion relation that relate their start nodes, ${\sf P_S\sim Q_S}$.
+
+ Bisimulation equivalence is much finer than complete trace equality and  only equate processes that could not possibly be distinguished.
+ Consequently the two processes in \sref{ndfa} are not bisimular (bisimulation equivalent).
+
  To help us understand how bisimulation equivalence works we give a simple co-inductive algorithm to compute the maximal  bisimulation relation  using a node colouring where  nodes with the same colour  are related.
 
 \begin{center}\begin{minipage}{0.7\textwidth}
 
  {\bf 1.} Initially colour all nodes with the same colour.
- 
+
 {\bf 2.} Repeatedly recolour the nodes using
      \begin{center}
      $Col_{i+1}(n) \triangleq \{(a,Col_i(m)) .\aro{n}{a}{m}\}$
-     \end{center} 
+     \end{center}
 
 {\bf 3.} \hspace{0.25in} stop when  the recolouring changes nothing.
 \begin{center}
      $Col_{i+1}(n) =Col_{i+1}(m) \Leftrightarrow Col_{i}(n) =Col_{i}(m)$
-     \end{center} 
+     \end{center}
 
 \end{minipage} \end{center}
 
- The maximal bisimulation relation that  can be computed very quickly and  bisimular nodes, nodes with the same colour, can be identified to produce a simpler automata. . 
+ The maximal bisimulation relation that  can be computed very quickly and  bisimular nodes, nodes with the same colour, can be identified to produce a simpler automata. .
  Using this colouring algorithm it is easy to see the result of applying  bisimulation simplification to simple automata.
- 
+
  This algorithm can be applied to many automata at the same time and can be used to compute an equivalence   class on a set of   automata.
  Bisimulation has  attractive mathematical properties, is easy to compute and has proven to be of practical use. Consequently bisimulation relations have been defined on many different structures.
- 
+
 Both these equivalences are congruent with respect to our process operators (substitution of equivalent processes).
 \[ A\sim B \Rightarrow A||P\sim A||P\]
 \[ A =_{Tr_{c}}  B  \Rightarrow  A||P =_{Tr_{c}}  A||P\]
- 
+
 \section{Event hiding and process simplification}
 Our process language can be used both to specify \emph{implementations}  of  processes and more abstract \emph{specifications}.  Our tool is designed to support the approach popularised by Event B. Both the abstract specification and the more concrete implementation are specified in the same language.  The tool then checks that the implementation is a \emph{refinement} of the specification.
 
@@ -458,54 +458,54 @@ See following example:
 \begin{minipage}{0.45\textwidth}
 \noindent\begin{center}\verb$Basic = (a->(t->b->STOP | c->STOP))\{t}.$
 
- \includegraphics[scale=0.4]{BasicTau.png} 
- \end{center} 
+ \includegraphics[scale=0.4]{BasicTau.png}
+ \end{center}
  \end{minipage}\hspace{\fill}
 \begin{minipage}{0.45\textwidth}
 \noindent\begin{center}
 \verb$B = abs(Basic).$
- \includegraphics[scale=0.6]{Basic.png} 
- \end{center} 
+ \includegraphics[scale=0.6]{Basic.png}
+ \end{center}
  \end{minipage}
- 
+
  In the above example \verb|abs| introduces two observable events:
-\begin{center} 
+\begin{center}
  \begin{minipage}{0.7\textwidth}
  \begin{enumerate}
- \item ${\sf \aro{0}{a}{2}}$  in place of  the event sequence ${\sf \aro{0}{a}{1}}$  and  ${\sf \aro{1}{\tau}{2}} $ 
- \item ${\sf \aro{1}{b}{4}}$  in place of  the event sequence ${\sf \aro{1}{\tau}{2}}$  and  ${\sf \aro{2}{b}{4}} $ 
- \end{enumerate} 
+ \item ${\sf \aro{0}{a}{2}}$  in place of  the event sequence ${\sf \aro{0}{a}{1}}$  and  ${\sf \aro{1}{\tau}{2}} $
+ \item ${\sf \aro{1}{b}{4}}$  in place of  the event sequence ${\sf \aro{1}{\tau}{2}}$  and  ${\sf \aro{2}{b}{4}} $
+ \end{enumerate}
    \end{minipage}
- \end{center} 
-  
- 
+ \end{center}
+
+
  The \verb|abs(_)|  operator abstract away the {\sf tau} events. To cope with cases where many $\tau$ events can be executed one after the other we first define  $\Aro{x}{\tau}{y}$.
-  
-  A sequence of zero or more $\tau$ events 
+
+  A sequence of zero or more $\tau$ events
   \[\Aro{x}{\tau}{y} \triangleq \exists i\geq 0 : \exists n_1,n_2,..n_i :\aro{x}{\tau}{n_1}, \aro{n_1}{\tau}{n_2}\ldots \aro{n_i}{\tau}{y}\]
    can be  executed unseen and are represented as $\Aro{x}{\tau}{y}$. When $i=0$ we have $\Aro{x}{\tau}{x}$ for any $x$.
- 
- 
+
+
  Abstraction constructs, $\Aro{x}{\sf a}{y}$ the observable semantics:
- 
-   
-   \[\Aro{x}{\sf a}{y}  \triangleq \exists u,v :   \Aro{x}{\sf \tau}{u} \land  \aro{u}{\sf a}{v}  \land \Aro{v}{\sf \tau}{y} 
+
+
+   \[\Aro{x}{\sf a}{y}  \triangleq \exists u,v :   \Aro{x}{\sf \tau}{u} \land  \aro{u}{\sf a}{v}  \land \Aro{v}{\sf \tau}{y}
  \]
 
- 
+
  \subsection{Event hiding and non terminating processes }
- 
+
  The literature is divided on how to hide $\tau$ events that loop.  CSP  refers to these processes with $\tau$ loops  as \emph{diverging} and models them as having potentially \emph{chaotic} behaviour. CCS   and Discrete Event Systems DES, assumes them to be benign as simply prunes them. Here we offer both options. The CSP option assumes that the system can behave \emph{unfairly} and the CCS option assumes the system behaves \emph{fairly}.
- 
- 
- 
- The command \verb|abs(_)| is based on the fair assumption and \verb|abs{unfair}(_)| is based on the unfair assumption. 
- 
 
 
-With the unfair assumption congruence with respect to interleaving parallel composition requires some care because the relation  between events from parallel components is \emph{fair}. That is to say the infinite execution of an event from on process can not prevent the parallel process executing an unrelated event. 
 
-In other words one process, {\sf P},  diverging will not effect the events of a second process, {\sf Q},  running in parallel whereas with the unfair assumption it can block other events on {\sf P}. But with interleaving composition ${\sf P\parallel Q}$ the events of {\sf P} and {\sf Q} can no longer be distinguished. 
+ The command \verb|abs(_)| is based on the fair assumption and \verb|abs{unfair}(_)| is based on the unfair assumption.
+
+
+
+With the unfair assumption congruence with respect to interleaving parallel composition requires some care because the relation  between events from parallel components is \emph{fair}. That is to say the infinite execution of an event from on process can not prevent the parallel process executing an unrelated event.
+
+In other words one process, {\sf P},  diverging will not effect the events of a second process, {\sf Q},  running in parallel whereas with the unfair assumption it can block other events on {\sf P}. But with interleaving composition ${\sf P\parallel Q}$ the events of {\sf P} and {\sf Q} can no longer be distinguished.
 
 To accommodate this label nodes on a $\tau$ loop as divergent and require that parallel composition preserves divergence. This has the effect of allowing divergence of {\sf P} to block the events of {\sf Q}.
 
@@ -524,14 +524,14 @@ Two = T||(d->STOP).
 }
 \end{verbatim}\end{minipage}
 \begin{minipage}{0.5\textwidth}
-\includegraphics[scale=0.3]{OneTwo.png} 
+\includegraphics[scale=0.3]{OneTwo.png}
 \end{minipage}\end{center}
 Pragmatically divergence and deadlock are rarely wanted and their existence merely indicate that the definitions are erroneous. In such situations it is unimportant how we model divergence as it will be removed. In situations where we do want to model process with deadlock  or divergent behaviour then we need to be more careful.
 
 
 Frequently we are interested in how a system behaves when errors occur but when errors occur is rarely determined exactly. Hence modelling a systems correct and error behaviour will introduce some probabilistic or non deterministic behaviour. Hiding both errors and their handling may introduce divergence and this may be best interpreted \emph{fairly}.
 
- 
+
 \section{Concurrent Processes }
 So far we have have defined sequential processes but now we wish to define how two sequential processes behave when they are both run together. This is modelled using the parallel composition operator $\_\parallel\_$.
 Two processes run in parallel can only interact via event synchronisation How this is defined depends upon the interpretation you wish to give your events. In what follows we consider two distinct styles of events, hand shake events as found in CSP and CCS as well as broadcast events as found in IOA.
@@ -542,12 +542,12 @@ Two processes run in parallel can only interact via event synchronisation and ev
 
 Below we have two processes each with three events and no two event have the same name hence the event from each process can be {\bf interleaved} in any way.
 
- \begin{center} 
+ \begin{center}
  % \fbox{
 \begin{minipage}{0.4\textwidth}
 \begin{verbatim}
 P = ((a->b->c->STOP) || (x->y->z->STOP)).
-\end{verbatim} 
+\end{verbatim}
 \end{minipage}
 \includegraphics[scale=0.2]{par.jpg}
 \end{center}
@@ -555,44 +555,44 @@ This definition of parallel composition equates parallel processes with a single
 
 
 
-Without synchronization  two processes   are independent and hence their events interleave and the state space of the composition of the processes is the product of the state space of the constituent processes. 
- 
+Without synchronization  two processes   are independent and hence their events interleave and the state space of the composition of the processes is the product of the state space of the constituent processes.
 
-   In the Process tool events from different concurrent processes that have the same name must synchronize and only these events synchronize. That is neither process can  execute the synchronising event on its own.  These  synchronising events are only executed when both processes are ready to execute them. 
+
+   In the Process tool events from different concurrent processes that have the same name must synchronize and only these events synchronize. That is neither process can  execute the synchronising event on its own.  These  synchronising events are only executed when both processes are ready to execute them.
   Below only differs  from the previous process in that the second event in both processes has the same name and hence must  synchronize and the resulting \verb$m$ event is then hidden (renamed $\tau$).
-  
-  
- \begin{center} 
+
+
+ \begin{center}
 \begin{minipage}{0.5\textwidth}
 \begin{verbatim}
 P = ((a->m->c->STOP) || (x->m->z->STOP))\{m}.
-\end{verbatim} 
-\end{minipage}  
+\end{verbatim}
+\end{minipage}
 
 \includegraphics[scale=0.5]{Sync.png}
 
 \end{center}
 
-\noindent Event synchronization is the only mechanism for concurrent process interaction and because of event synchronisation we know: 
+\noindent Event synchronization is the only mechanism for concurrent process interaction and because of event synchronisation we know:
 
 \begin{quote}
 {\bf If you can see and event you can synchronize with it and you can block it.}
 \end{quote}
 
 
- 
- 
- 
- Hence the only way  the  control the order of two events from different concurrent   processes is to introduce a synchronizing event. In above the \verb$a$ event and the \verb$z$ event are from different concurrent processes in the interleaving example either could occur first. Whereas in the synchronization of the \verb$m$ events forces the \verb$a$ event to occur before the \verb$z$. 
- 
+
+
+
+ Hence the only way  the  control the order of two events from different concurrent   processes is to introduce a synchronizing event. In above the \verb$a$ event and the \verb$z$ event are from different concurrent processes in the interleaving example either could occur first. Whereas in the synchronization of the \verb$m$ events forces the \verb$a$ event to occur before the \verb$z$.
+
 Another  effect of synchronization   is to reduce the size of the reachable state space of the automata. Note the first two events {\bf a} and {\bf x} can be performed in either order but only when both {\bf a} and {\bf x} have been performed and both processes are ready to perform {\bf b} dose the {\bf b}  event actually get performed.
 
 
 \subsection{Broadcast event synchronisation}
-In the previous section when events from two processes synchronised  the the synchronising events from both processes were treated the same, both could block the other process. This style of synchronisation captures real events such as {\sf pushing a button} I cannot push a button that is not there or is frozen nor can  button on a vending machine be pushed if  I am not prepared  to push it. Both me and the vending machine must wait for the other to be ready before the {\sf buttonPush} event can occur. 
+In the previous section when events from two processes synchronised  the the synchronising events from both processes were treated the same, both could block the other process. This style of synchronisation captures real events such as {\sf pushing a button} I cannot push a button that is not there or is frozen nor can  button on a vending machine be pushed if  I am not prepared  to push it. Both me and the vending machine must wait for the other to be ready before the {\sf buttonPush} event can occur.
 
 \begin{center}\verb$(a -> broadcast! -> c -> STOP)||(x -> broadcast? -> y -> STOP)$
-	
+
 	\includegraphics[scale=0.5]{bcast.jpg} \end{center}
 
 Other events are not like this see {\sf broadcast!}  above these events cannot be blocked by a process not being ready for them. Real examples include:  I can send an email even if you are not ready to read it. A traffic light  is green even if no one is observing it.  We  model such events by defining event pairs  that model the unblocking \emph{send} events and separately \emph{receive} events.
@@ -628,7 +628,7 @@ We need to understand how events interact in our formal model so that we can acc
 Frequently when we are thinking of one process it is natural to give an event a particular name. But, when considered from the perspective of another process that may interact with it this name might be confusing. Consequently we introduce ways to rename events.
 Finally we show how bisimulation colouring can be used to simplify processes. To aid understanding we will consider a simple buffer example in the following.
 \subsection{Labelling Processes}
-In the following example we make use of a one place buffer \verb$Buf$ is a process that when empty can receive some thing \verb$in$ and when full can return it \verb$out$. 
+In the following example we make use of a one place buffer \verb$Buf$ is a process that when empty can receive some thing \verb$in$ and when full can return it \verb$out$.
 \noindent\begin{center} \includegraphics[scale=0.15]{Buf.jpg} \end{center}
 By labelling  processes  \verb$one:Buf$ the tool  labels all events in the process \verb$one.in$ and \verb$one.out$.
 
@@ -636,7 +636,7 @@ Using process labelling we can make two differently label copies of a process an
 
 
 \noindent\begin{center}\verb$B2=(one:Buf||two:Buf).$\end{center}
-  
+
 \noindent\begin{center} \includegraphics[scale=0.15]{B2.jpg} \end{center}
 
 
@@ -647,12 +647,12 @@ If two events from processes run in parallel have the same name they, and only t
 \end{quote}
 
 
-We force the synchronisation of the output from buffer \verb$one$ with the input to buffer \verb$two$ by event renaming.  
+We force the synchronisation of the output from buffer \verb$one$ with the input to buffer \verb$two$ by event renaming.
 
-  
+
 \noindent\begin{center}\verb$B3 = (one:Buf/{move/one.out}||two:Buf/{move/two.in}).$\end{center}
-  
-\noindent\begin{center} \includegraphics[scale=0.15]{B3.jpg} \end{center} 
+
+\noindent\begin{center} \includegraphics[scale=0.15]{B3.jpg} \end{center}
 
 Note that the result is much simpler than the interleaving as the \verb$move$ event now can only occur when {\bf both} buffers are able to perform it.
 
@@ -664,12 +664,12 @@ We can go further and hide the \verb$move$ event  by applying \verb$_\{move}$ Th
 \begin{minipage}{0.45\textwidth}
 \noindent\begin{center}\verb$B4 = B3\{move}.$
 
- \includegraphics[scale=0.15]{B4.jpg} \end{center} 
+ \includegraphics[scale=0.15]{B4.jpg} \end{center}
  \end{minipage}
 \begin{minipage}{0.45\textwidth}
 \noindent\begin{center}\verb$B5 = abs(B3\{move}).$
 
- \includegraphics[scale=0.15]{B5.jpg} \end{center} 
+ \includegraphics[scale=0.15]{B5.jpg} \end{center}
  \end{minipage}
 
 The \verb$tau$ events  can be removed by {\bf abstraction}, (the application of \verb$abs(_)$) otherwise known as building the \emph{observational} semantics.  With a little effort nodes, 1 and 2 in \verb$B5$ can be seen to be  essentially the same.  They are actually bisimular but we will not be going into details here. These nodes can be identified to produce a simpler but equivalent automata by the application of \verb$simp(_)$.
@@ -678,25 +678,25 @@ The \verb$tau$ events  can be removed by {\bf abstraction}, (the application of 
 
 \noindent\begin{center}\verb$B6 = simp(abs(B3\{move})).$
 
- \includegraphics[scale=0.15]{B6.jpg} \end{center} 
-   
+ \includegraphics[scale=0.15]{B6.jpg} \end{center}
+
 
 Event hiding is commonly, but not exclusively,   used to model private  communication.
 
 \section{Testing and equality}
 In this section we are going to introduce  a very generic notion of equality, testing equality. This can be applied to to any set of things all they need is an operator to compose them and a definition of how to observer them, here the set of things is our set of processes, the operator to compose then is parallel composition and finally when we observer a process all we can see is the complete trace of events that are executed.
 
-When a non-deterministic system is tested it is placed in some context and the combination of the system and text context is executed, but this test must be run a number of times and the set of observations (results) recorded.  
-%Later when probabilistic systems are tested all we change is that in place of recording the set of observations what is recorded is the frequency with which the observations are made. 
+When a non-deterministic system is tested it is placed in some context and the combination of the system and text context is executed, but this test must be run a number of times and the set of observations (results) recorded.
+%Later when probabilistic systems are tested all we change is that in place of recording the set of observations what is recorded is the frequency with which the observations are made.
 
 
-Our processes, {\sf E},  are taken from a set of processes $\Emath$. A context, ${\sf \_\parallel X}$, consists of a process, ${\sf X}\in \Emath$,  run in parallel with the process under test. Let  $\Xi\triangleq \{\_\parallel X | X\in \Emath\}$ be  the set of all contexts. 
+Our processes, {\sf E},  are taken from a set of processes $\Emath$. A context, ${\sf \_\parallel X}$, consists of a process, ${\sf X}\in \Emath$,  run in parallel with the process under test. Let  $\Xi\triangleq \{\_\parallel X | X\in \Emath\}$ be  the set of all contexts.
 Placing  {\sf E} in context {\sf X} can be   written as  $[{\sf E}]_{\sf X}$ or as ${\sf X\parallel E}$.   A single experiment consists of observing a single execution of $[{\sf E}]_{\sf X}$ and  results in a single trace, taken from a set of possible observations $Tr^c$, being recorded.
 For non deterministic processes the experiment must be repeated and a set of observations $Tr^c$, being recorded.
 
 A specification can be  interpreted as a \emph{contract} consisting of the \emph{assumption} that the process will be placed only in one of the specified contexts $\Xi$ and a \emph{guarantee} that the observation of its behaviour will be one of the observations defined by the mapping $O: \Emath \rightarrow\Xi\rightarrow \wp Tr^c$.  The mapping $O$ defines what can be observed  for all processes in any of the assumed contexts. Hence for any fixed $\Xi$  we have a definition of the semantic equivalence of processes.
 
-\emph{Definition} 
+\emph{Definition}
 
 %Let $\Xi$ be a set of contexts each of which the processes ${\sf A}, {\sf C} \in \Emath$ can communicate privately with, and let $O: \Emath \rightarrow\Xi\rightarrow \wp \Obsmath$ be a function which returns a set of observations, \ie\ a subset of $Tr^c$. Then, the relational semantics of a process ${\sf A}$ is a subset of $\Xi \times Tr^c$.
 \[
@@ -713,7 +713,7 @@ and equality is
 %\footnote{The definitions in this section are taken from \cite{ReS09} where they have been applied to both state-based and event-based models.}
 
 Let $\Emath$ be the set of LTS and $Tr^c$ be the complete traces of an automata  then all we need to define to fix our definition of testing equality is the definition of $\parallel$ parallel composition.
-\hspace{\fill}$\Box$ 
+\hspace{\fill}$\Box$
 
 In what follows we will define parallel composition between handshake events  and  another definition of parallel composition for broadcast events.  Using parallel composition for \emph{handshake events} the above definition of testing equality has been shown to be the same as the well known \emph{Failure equality} from CSP.  Whereas using parallel composition between \emph{broadcast events} the above definition of testing equality corresponds to the well known \emph{quiescent trace} equality.
 
@@ -721,22 +721,22 @@ In what follows we will define parallel composition between handshake events  an
 \section{Indexed Process definitions}
 
 
-Basic process definitions you have seen so far a fixed finite set of states. This accurately reflects  many situations very well and allows easy and complete push button verification. Alternatively when what you are modelling has infinite state or an unknown state size you could use symbolic models but verification  frequently requires  input from a domain expert and is very time consuming. 
+Basic process definitions you have seen so far a fixed finite set of states. This accurately reflects  many situations very well and allows easy and complete push button verification. Alternatively when what you are modelling has infinite state or an unknown state size you could use symbolic models but verification  frequently requires  input from a domain expert and is very time consuming.
 
-The approach adopted here is to define both states and events using an index and limit the size of the index by a parameter.  Prior to using a parameter it must be declared and given a fixed value. A finite state approximation of indexed process can be built and size of the approximation can be changed by changing the declared value of the parameter. 
+The approach adopted here is to define both states and events using an index and limit the size of the index by a parameter.  Prior to using a parameter it must be declared and given a fixed value. A finite state approximation of indexed process can be built and size of the approximation can be changed by changing the declared value of the parameter.
 
 \subsection{The small world assumption}
 
 Most program bugs can be found while restricting variables to range over a small domain. Using this assumption we  model processes with variables by indexing the processes and restricting the indexes to range over a small domain. Having done this the variables in the state can be removed by instantiating the variables with values from the small domain.
 
-More than one parameter can be used to define a process.  Once all the parameters are fixed you are back to a basic process with a finite set of states and events. 
+More than one parameter can be used to define a process.  Once all the parameters are fixed you are back to a basic process with a finite set of states and events.
 Processes can be indexed in different ways to achieve  conceptually different things. The first we consider is how to build a process of parametrised    size,  the second is to model events that input or output data and finally how to model a parametrised number of concurrent processes.
 
 \subsection{State indexing}
 
 We can define a process consisting of an  an unknown number of states. To do this we must index the local states (or local processes).
 We will consider a simple \verb|Purse| that can contain a number of \verb|coin|s. We define the \verb|Purse| based on a parameter \verb|N| that depicts its size.
-\noindent\begin{center} 
+\noindent\begin{center}
 Automata for a \verb|Purse| that can contain 3 coins.
 
 \includegraphics[scale=0.15]{Purse.jpg} \end{center}
@@ -754,13 +754,13 @@ automata {
 Purse = P[0],
  P[c:0..N] = (when c<N  coin -> P[c+1] |
              when c>0  spend -> P[c-1]).
-}\end{verbatim} 
+}\end{verbatim}
 \end{minipage}\end{center}
 
-The first line \verb|Purse = P[0],| defines that the purse is initially empty then  the definition \verb$P[c:1..N] =$    defines the \verb$N$ processes \verb$P[1],P[2]$ and \verb$P[3]$ 
+The first line \verb|Purse = P[0],| defines that the purse is initially empty then  the definition \verb$P[c:1..N] =$    defines the \verb$N$ processes \verb$P[1],P[2]$ and \verb$P[3]$
 
 
-The term \verb$P[c:1..N]$ on the left of the equality can be thought of  as assigning a value to a variable \verb$c$. The term \verb$P[c+1]$  on the right of the equality reads the value in the variable and then  "returns" to the purse in a new state where "c:=c+1".  
+The term \verb$P[c:1..N]$ on the left of the equality can be thought of  as assigning a value to a variable \verb$c$. The term \verb$P[c+1]$  on the right of the equality reads the value in the variable and then  "returns" to the purse in a new state where "c:=c+1".
 
 On the right hand side of the equality we define guarded events:
 \begin{center}\verb$when(c<N) coin->C[c+1]$ \end{center}
@@ -772,21 +772,21 @@ The \verb|if...then...else| command is very like the choice between two \verb|wa
 \begin{center}\begin{minipage}{0.5\textwidth}
 \begin{verbatim}
 PurseIf = P[0],
-  P[c:0..N] =  
-   (if (c < N) then  addcoin-> P[c+1] 
-    else    P[0] ).\end{verbatim} 
+  P[c:0..N] =
+   (if (c < N) then  addcoin-> P[c+1]
+    else    P[0] ).\end{verbatim}
 \end{minipage}
 \begin{minipage}{0.45\textwidth}
 \includegraphics[scale=0.15]{PurseIf.jpg}
 \end{minipage}\end{center}
 
-Where as if we use a process that is not event prefixed in a \verb|when| command, see example below, then it fails to parse. 
+Where as if we use a process that is not event prefixed in a \verb|when| command, see example below, then it fails to parse.
 \begin{center}\begin{minipage}{0.5\textwidth}
 \begin{verbatim}
 PurseW = P[0],
-  P[c:0..N] =  
+  P[c:0..N] =
    (when (c < N)   addcoin-> P[c+1] |
-   when (c >= N)   P[0] ).\end{verbatim} 
+   when (c >= N)   P[0] ).\end{verbatim}
 \end{minipage}\end{center}
 }
 
@@ -794,20 +794,20 @@ PurseW = P[0],
 
 \subsection{Event indexing}
 
-An indexed event  can be used to model events that input or output values. 
+An indexed event  can be used to model events that input or output values.
 
-A one place buffer that can accept as input a number from the range \verb$1..N$ and then must out put that value is can be represented by an automata with \verb$N+1$ states. 
+A one place buffer that can accept as input a number from the range \verb$1..N$ and then must out put that value is can be represented by an automata with \verb$N+1$ states.
 
 \noindent\begin{center} \includegraphics[scale=0.3]{BufI.jpg} \end{center}
 
-The buffer is  defined by: 
+The buffer is  defined by:
 \begin{center}\verb$Buf = input[v:1..N] -> out[v]->Buf.$\end{center}
 
 The event \verb$input[v:1..N]$  {\bf declares} a new variable \verb|v|  and when it executes  it  {\bf inputs} a value that is assigned to the variable.  The subsequent event \verb|out[v]|  refers to the previously declared variable  \verb|v| and when it is executed it {\bf outputs} the value held in it. So information flows from the \verb|input| event to the \verb|out| event and hence the names.
 
 
 \subsection{Cars Example}
-This example requires  both state and event indexing.  
+This example requires  both state and event indexing.
 \begin{quotation}
 \emph{A car can travel at different speeds and can accelerate at different rates. But no matter how hard it tries to accelerate it can never go beyond its maximum speed.}
 \end{quotation}
@@ -820,52 +820,52 @@ In this example the car is indexed by its \verb|speed| and  the number on the no
 const N = 3
 automata }
 Car = C[0],
- C[speed:0..N] = 
-   (when speed<N  accelerate[a:1..N-1]  -> 
-        ( if (speed+a<N) then C[speed+a] 
+ C[speed:0..N] =
+   (when speed<N  accelerate[a:1..N-1]  ->
+        ( if (speed+a<N) then C[speed+a]
            else C[N])
     | when speed>0 brake -> C[speed-1]).
-}\end{verbatim} 
+}\end{verbatim}
 \end{minipage}
 \begin{minipage}{0.35\textwidth}
- \includegraphics[scale=0.15]{Car.jpg} 
+ \includegraphics[scale=0.15]{Car.jpg}
  \end{minipage}
 
-In the example above the {\sf Car} has a maximum speed of {\sf 3} and a maximum acceleration od {\sf 2}. But when the {\sf Car} has speed of {\sf 2} the effect of accelerating at {\sf 2} is only to change the speed by {\sf 1}. 
+In the example above the {\sf Car} has a maximum speed of {\sf 3} and a maximum acceleration od {\sf 2}. But when the {\sf Car} has speed of {\sf 2} the effect of accelerating at {\sf 2} is only to change the speed by {\sf 1}.
 
  \subsection{From Natural Language to indexed process model}
  Natural languages are expressive but ambiguous.  Added to which we are interested in describing event based models and there is no one universal way to describe such systems. This leads to many problems, some of which can be overcome by breaking the task of formalising these informal specifications into some simple steps.
- 
 
- 
- {\bf Step 1} find indexes and  indexed states 
- 
+
+
+ {\bf Step 1} find indexes and  indexed states
+
  {\bf Step 2} find indexed events
- 
+
  {\bf Step 3} find all events
- 
+
  {\bf Step 4} build automata
 either sketch and code or code and view.
- 
+
  {\bf Step 5} inspect the automata and validate it against specification
-   
+
 \noindent We will demonstrate this with a simple example of a lockable door.
 
 \begin{quote}
-{\it Closed doors are always locked. The door starts closed. The lock can hold any of  a number of  codes.  To open you need to input the correct code and after opening the door can only close. Inputting the wrong code is an error and the door returns its start state. Before using the door the code must be set.  
+{\it Closed doors are always locked. The door starts closed. The lock can hold any of  a number of  codes.  To open you need to input the correct code and after opening the door can only close. Inputting the wrong code is an error and the door returns its start state. Before using the door the code must be set.
 
-You may assume that only an administrator can set the code  where as any one may use the door by entering codes but such distinctions are not part of the model. 
+You may assume that only an administrator can set the code  where as any one may use the door by entering codes but such distinctions are not part of the model.
 }
-\end{quote}   
-   
+\end{quote}
+
 {\bf Step 1} When the numbers of states or events is not fixed but is dependent upon some parameter then you need to build what we call an indexed  process. The parameter is an index and in our example this is the {\sf code} the lock uses. As the code needs to be stored by the Lock we need indexed states \verb|L[j:1..N]|.
 
 {\bf Step 2} There are two indexed events \verb|setlock[k:1..N]| to set the state of the Lock and \verb|enter[ji:1..N]| to enter a code when trying to open the door.
 
-{\bf Step 3} The list of all events: \verb|open,close,error,enter[]| and \verb|setlock[]| 
+{\bf Step 3} The list of all events: \verb|open,close,error,enter[]| and \verb|setlock[]|
 
 {\bf Step 4} Automata when \verb|N==2|
- 
+
 \noindent\begin{center} \includegraphics[scale=0.24]{Lock.jpg} \end{center}
 
 This is defined by:
@@ -873,9 +873,9 @@ This is defined by:
 \hspace{1in}\begin{minipage}{0.3\textwidth}
 \begin{verbatim}
 Lock = (setlock[k:1..N] -> L[k]),
-L[j:1..N] = (enter[i:1..N] -> 
+L[j:1..N] = (enter[i:1..N] ->
                    ( when (i==j) open ->close->L[j]
-                   | when(i!=j) error->Lock)).   \end{verbatim} 
+                   | when(i!=j) error->Lock)).   \end{verbatim}
 \end{minipage}
 
 
@@ -883,26 +883,26 @@ L[j:1..N] = (enter[i:1..N] ->
 
 
 
-  \subsection{Indexing concurrent processes.} 
+  \subsection{Indexing concurrent processes.}
   This means producing an indexed number of concurrent processes but has been implemented in a very restricted. As implemented the indexed process can only communicate with processes that are running in parallel with them. Alas they cannot communicate with each other.
-  
-  
-  If you want \verb$N Worker$ processes, each  labeled with \verb$[1],[2],...[N]$ 
-   
+
+
+  If you want \verb$N Worker$ processes, each  labeled with \verb$[1],[2],...[N]$
+
  \begin{center}\begin{minipage}{0.55\textwidth}
 \begin{verbatim}
 Worker = (getTask -> doTask -> Worker).
 Workers = (forall [i:1..N] ([i]:Worker)).
-   \end{verbatim} 
+   \end{verbatim}
 \end{minipage}\begin{minipage}{0.4\textwidth}
 \begin{center}\includegraphics[scale=0.3]{Worker.jpg}\end{center}
 \end{minipage}
 
 \includegraphics[scale=0.3]{Workers.jpg}
 \end{center}
- 
+
  We can add a \verb$Farmer$ process to hand out the \verb$Task$s to the \verb$Worker$s in order. Then  build a \verb$Farm$ composed of the \verb$Farmer$ and the \verb$Workers$.
- 
+
 \begin{center}\begin{minipage}{0.55\textwidth}
 \begin{verbatim}
  Farmer = F[1],
@@ -910,7 +910,7 @@ Workers = (forall [i:1..N] ([i]:Worker)).
              | when (i>=N) [i].getTask->F[1]).
 
 Farm = (Farmer || Workers).
-   \end{verbatim} 
+   \end{verbatim}
 \end{minipage}\begin{minipage}{0.4\textwidth}
 \begin{center}\includegraphics[scale=0.275]{Farmer.jpg}\end{center}
 \end{minipage}
@@ -922,15 +922,15 @@ The \verb$Farmer$  process is far from ideal in some regards.
 {\color{red}
 
 
-What we refer to as a Petri Net is actually an extension of Petri Nets with labels on the  transition.  This appear in the literature under the name of the \emph{Box calculus}. Our definition of parallel composition is not a part of main stream Petri Nets but a part of the Box calculus.  
+What we refer to as a Petri Net is actually an extension of Petri Nets with labels on the  transition.  This appear in the literature under the name of the \emph{Box calculus}. Our definition of parallel composition is not a part of main stream Petri Nets but a part of the Box calculus.
 
 {\color{blue}
 \emph{{\bf A Petri Net} is a tuple  $\sf A \triangleq (P_A,S_A,T_A,Arcs_A,\alpha_A,Name_A)$  where:
 \begin{description}
 \item[$\sf P_A$] is the set of places,
 \item[$\sf S_A$] is the set of  initial  Markings $\sf M_A\subseteq S_A$ where a Marking is  a set of placess $\sf M_A\subseteq P_A$
-\item[$\sf T_A$] is the set of transitions 
-\item[$\sf Edges_A$] Edges join node to transitions and transitions to nodes. There can be multiple places joined to a single transition and multiple transition joined to a single place. 
+\item[$\sf T_A$] is the set of transitions
+\item[$\sf Edges_A$] Edges join node to transitions and transitions to nodes. There can be multiple places joined to a single transition and multiple transition joined to a single place.
 \newline
 $\sf Edges_A\subseteq \{(p,t): p\in P_A, t\in T_A \}  \cup \{(t,p): p\in P_A, t\in T_A \}$
 \item[$\sf \alpha_A$] is the alphabet of the process
@@ -944,7 +944,7 @@ $\Box$
  \subsection{Appearance}
  Nets have  Places, large circles,  not nodes and the initial state of a Petri Net is a set of places each  \emph{marked} with a  token, a small black circle. The transitions are represented by Boxes and event names. Arcs are added from \emph{pre place}, ${\sf\bullet t}$ to the Box of transition {\sf t}  and from transition {\sf t} Box  to \emph{post place} ${\sf t\bullet}$.
 
-Finite state Petri Nets  like finite state automata can be  approximation of potential infinite sate processes. The location of the Petri net transitions is the same as that for Automata. 
+Finite state Petri Nets  like finite state automata can be  approximation of potential infinite sate processes. The location of the Petri net transitions is the same as that for Automata.
 
 There is a simple relation between finite state sequential automata and finite state Petri Nets. In addition the definition of event hiding and event renaming   on Petri Nets and its relation to event hiding and event renaming   on  automata is quite obvious.
 
@@ -952,7 +952,7 @@ There is a simple relation between finite state sequential automata and finite s
 
 Our tool takes process specifications $\mathcal{P}$ and builds finite state automata {\sf P}. But now we want to build Petri Nets from specification ${\sf Petri(\mathcal{P})}$. The operations defined on atomic processes can be lifted to operations on Petri Nets.
 
-Parallel merge of two processes, parallel composition with no synchronisation is just the union of the component nets. Hence automata node is represented by a marking. That is a pair of places, one element of the pair taken from each component process. Thus each place represents the state of one of the component processes. Each process can be give a unique location and then each node annotated with the location of its process. 
+Parallel merge of two processes, parallel composition with no synchronisation is just the union of the component nets. Hence automata node is represented by a marking. That is a pair of places, one element of the pair taken from each component process. Thus each place represents the state of one of the component processes. Each process can be give a unique location and then each node annotated with the location of its process.
 The start node corresponds to the the pair of initially marked places.
 
 Event synchronisation of $t_1$, $\aro{\bullet t_1}{a}{t_1\bullet}$ and $t_2$, $\aro{\bullet t_2}{a}{t_2\bullet}$ is a new transition $t_3$ with the same name and with pre places the union of the component transitions pre places. The post places are constructed similarly.
@@ -962,22 +962,22 @@ Event synchronisation of $t_1$, $\aro{\bullet t_1}{a}{t_1\bullet}$ and $t_2$, $\
 
 
 \subsection{Token Rule}
- 
+
 
  We define \verb|TokenRule| that maps Petri Nets to atomic processes and must preserve the transition  locations.  These are the same automata that would have been constructed had we built the automata directly from our process language, hence we have:
 
-\[{\sf TokenRule(Petri(\mathcal{A}))\sim  \mathcal{A}}\]  
+\[{\sf TokenRule(Petri(\mathcal{A}))\sim  \mathcal{A}}\]
 
 Let us write {\sf A} and {\sf B} for Petri Nets. We have   lifted   operations ${\sf Op_a}$ on automata to   operations ${\sf Op_n}$ on Petri Nets  so that they obey  the following algebraic rules:
 
-\[{\sf TokenRule({\sf A}\parallel_n {\sf B})\sim  (TokenRule({\sf A})\parallel TokenRule({\sf B})) }\]  
+\[{\sf TokenRule({\sf A}\parallel_n {\sf B})\sim  (TokenRule({\sf A})\parallel TokenRule({\sf B})) }\]
 
-\[{\sf TokenRule({\sf A}\$\{x\}) \sim  (TokenRule({\sf A}))\$\{x\}  \qquad     TokenRule(abs({\sf A}))\sim  abs_n(TokenRule({\sf A})) }\]  
+\[{\sf TokenRule({\sf A}\$\{x\}) \sim  (TokenRule({\sf A}))\$\{x\}  \qquad     TokenRule(abs({\sf A}))\sim  abs_n(TokenRule({\sf A})) }\]
 
 
 The \verb|TokenRule|  builds an automata from a Petri Net by executing transitions of the Petri Net.  A Petri Net transition can only  be executed when all its pre places are marked. When the transition is executed the tokens on its pre places are removed and tokens are placed on the transitions post places.
 
-Above explains how an atomic specification can be used to build a Finite State Petri Net, FSPN.  The construction of FSPN from indexed specifications  proceeds by constructing the FSPN for each sequential process analogously to the construction of finite state automata. 
+Above explains how an atomic specification can be used to build a Finite State Petri Net, FSPN.  The construction of FSPN from indexed specifications  proceeds by constructing the FSPN for each sequential process analogously to the construction of finite state automata.
 
 We can compute, {\sf PTokenRule},  a \emph{partial Token Rule} that takes a set of process names that must be converted into an automaton  prior to applying $\_\parallel_n\_$ to build a Petri Net from the newly built sequential Net and the remaining Petri Nets.
 
@@ -985,8 +985,8 @@ We can compute, {\sf PTokenRule},  a \emph{partial Token Rule} that takes a set 
 \subsection{From Automata to Petri Nets}
 Building Petri Nets from automata with located transitions {\sf LA2PN} works as follows:
 
-{\bf Suggestion 1 *The direct assault is Not So Good*} 
-Note the Interleaving Merge of {\bf N processes} builds  an Automata that is an {\bf N-dimensional} cube. The first thing you need to do is identify the start and end "corners". 
+{\bf Suggestion 1 *The direct assault is Not So Good*}
+Note the Interleaving Merge of {\bf N processes} builds  an Automata that is an {\bf N-dimensional} cube. The first thing you need to do is identify the start and end "corners".
 
 \vspace{1em} \begin{minipage}{0.2\textwidth}
 \begin{verbatim}
@@ -995,15 +995,15 @@ A=a->(b->STOP|
 B=aa->(bb->STOP|
           cc->STOP).
 S= A||B.
-  \end{verbatim} 
+  \end{verbatim}
 \end{minipage}
 \begin{minipage}{0.6\textwidth}
 \begin{center}\includegraphics[scale=0.4]{Surface.png}\end{center}
 \end{minipage}
 
-In the above example the start and end corners are marked with blue and green nodes. But this is because the "cubes" are the whole automata. What is required is to find these cubes. 
+In the above example the start and end corners are marked with blue and green nodes. But this is because the "cubes" are the whole automata. What is required is to find these cubes.
 
- Let {\sf Loc(A) = 1, Loc(B)=2} in above.   Add the root {\sf 0} to the TODO list. For each element in TODO list compute the surfaces if  we have  two transitions with disjoint location leaving  so compute $\sf \{0,1,2,4\}$. Remove $\sf 0$ from the TODO list and add nodes ${\sf \{1,2,4\}}$ to the TODO list.  When 
+ Let {\sf Loc(A) = 1, Loc(B)=2} in above.   Add the root {\sf 0} to the TODO list. For each element in TODO list compute the surfaces if  we have  two transitions with disjoint location leaving  so compute $\sf \{0,1,2,4\}$. Remove $\sf 0$ from the TODO list and add nodes ${\sf \{1,2,4\}}$ to the TODO list.  When
 $\arop{n}{\_}{x}{l}$,  $\arop{m}{\_}{x}{k}$, ${\sf  l \notin Loc(Next(n))}$ and ${\sf  k \notin Loc(Next(m))}$ then {\sf x} is ${\sf \{1,2\}}$ end!
 
 Question with {\sf n} distinct locations, $\sf \{1,2,3,4,\ldots n\}$ ?
@@ -1016,7 +1016,7 @@ Having done this the cubes can be converted into Petri Nets and joined together.
 
 Note we glue automata together by glueing two nodes together and with Petri Nets we need to glue to markings together. This is done by building the cross product of  two sets of tokens.
 
-{\bf Suggestion 3}   Define a Location space where each location is a subset of primitive locations. Build a Place for each primitive location an start adding transitions by adding pre arcs for each primitive. Th e post arcs are added to new Places of each primitive  location. When the automata returns to an existing state  glue the corresponding Markings together.   
+{\bf Suggestion 3}   Define a Location space where each location is a subset of primitive locations. Build a Place for each primitive location an start adding transitions by adding pre arcs for each primitive. Th e post arcs are added to new Places of each primitive  location. When the automata returns to an existing state  glue the corresponding Markings together.
 
 Simplify the Net  by pruning merging identical Places then by pruning identical Transitions.  Review!
 
@@ -1028,52 +1028,52 @@ Simplify the Net  by pruning merging identical Places then by pruning identical 
 Indexed, specifications can be turned into FSPN in two quite separate ways. For a sequential indexed process $\mathcal{P_I}$ :
 \begin{enumerate}
 \item expand the  index $\mathcal{I}$ converting $\mathcal{P_I}$ into  a sequential FSPN
-\item turn the index $\mathcal{I}$ into a FSPN and the sequential process $\mathcal{P}$  into another  then build, $\mathcal{P}\parallel_n \mathcal{I}$,  net parallel composition of  the process and the index. 
+\item turn the index $\mathcal{I}$ into a FSPN and the sequential process $\mathcal{P}$  into another  then build, $\mathcal{P}\parallel_n \mathcal{I}$,  net parallel composition of  the process and the index.
 \end{enumerate}
 Both options and be applied to  {\sf PTokenRule} the partial expansion of a net into an automata.
 All options  should result in interleaving equivalent Petri Nets.
 
 Can we define Petri Net bisimulation so that:
 
-\[{\sf Petri(\mathcal{A}\parallel \mathcal{B} ) \sim_n  (Petri(\mathcal{A}))\parallel_n Petri(\mathcal{B}))   }\]  
+\[{\sf Petri(\mathcal{A}\parallel \mathcal{B} ) \sim_n  (Petri(\mathcal{A}))\parallel_n Petri(\mathcal{B}))   }\]
 
-\[{\sf Petri(\mathcal{A}\$\{x\}) \sim_n  (Petri(\mathcal{A}))\$\{x\}  \qquad     Petri(abs(\mathcal{A}))\sim_n  abs_n(Petri(\mathcal{A})) }\]  
+\[{\sf Petri(\mathcal{A}\$\{x\}) \sim_n  (Petri(\mathcal{A}))\$\{x\}  \qquad     Petri(abs(\mathcal{A}))\sim_n  abs_n(Petri(\mathcal{A})) }\]
 
 
 \subsection{Hiding and simplifying  Nets}
 Tow options
 \begin{enumerate}
 \item define abstraction and bisimulation on nets OR
-\item use {\sf LA2P} the mapping from located automata to Petri Nets. 
+\item use {\sf LA2P} the mapping from located automata to Petri Nets.
 \end{enumerate}
 An advantage of using located Automata and Nets is that event refinement can be defined.
 
 }
 \section{ Symbolic Processes  {\color{red} mostly 2b added 2017}}
-Simple process specifications, those with out indexes, are "atomic" specifications that produce atomic automata.   An atomic  automata has atomic transitions with  a single atomic name and  a finite set of  atomic  nodes each   representing  one state.  
+Simple process specifications, those with out indexes, are "atomic" specifications that produce atomic automata.   An atomic  automata has atomic transitions with  a single atomic name and  a finite set of  atomic  nodes each   representing  one state.
 
 Indexed process specifications represent processes with variables, the indexes, and may be infinite state. The indexed specifications are expanded to a finite state approximation of the underlying and potentially infinite state automata. They do this using defined bounds such as \verb|const N = 4|.
 
 
-Alternatively we could define symbolic automata, automata with variables.   
+Alternatively we could define symbolic automata, automata with variables.
 The state of  the process, represented by a symbolic automata, is   the pair $(n,\mu)$ where $\mu$ is an  evaluation i.e. a mapping from variables to values and n is a node of the automata.
 
 \[\mu: Var \rightarrow Val\]
-Hence the node of a symbolic transition only tells you part of the state of the process. When a event of a symbolic process is actually executed the state of the process both moves from the pre-node of the transition to the post-node of the transition and the evaluation of the variable changes as defined by the assignment.  Symbolic execution represents a whole set of actual executions. 
+Hence the node of a symbolic transition only tells you part of the state of the process. When a event of a symbolic process is actually executed the state of the process both moves from the pre-node of the transition to the post-node of the transition and the evaluation of the variable changes as defined by the assignment.  Symbolic execution represents a whole set of actual executions.
 
-The symbolic  transitions need  to be annotated  with its name plus a boolean guard and an assignment. Let a transition  ${\sf t1 \triangleq (n1,g1,ev1,a1,m1)}$  be represented as   
-\[{\sf n1\xrightarrow{\text{\sf g1,ev1,a1}} m1}.\] 
+The symbolic  transitions need  to be annotated  with its name plus a boolean guard and an assignment. Let a transition  ${\sf t1 \triangleq (n1,g1,ev1,a1,m1)}$  be represented as
+\[{\sf n1\xrightarrow{\text{\sf g1,ev1,a1}} m1}.\]
 Both the guards {\sf g1} and assignments {\sf a1} may contain the process variables.  Note symbolic Petri Nets can be built by adding the variables from a process to the places that represent the state of that process.
 
 Our tool takes process specifications $\mathcal{P}$ and,  by default, builds finite state automata {\sf P}. But now we want to prevent the expansion of indexes and build symbolic automata  from the specification ${\sf \mathcal{P}\$\{x\}}$.
 
 The execution of a guarded  event  can only occur when the guard is true  and then the assignments of the transition are applied hence building another evaluation. Two  essential functions needed in the definition of the application of assignments {\sf a}, writen  $\_@{\sf a}$ are:
 \begin{enumerate}
-\item syntactic substitution and 
-\item simplification. 
+\item syntactic substitution and
+\item simplification.
 \end{enumerate}
 
-Simplification certainly needs to be out soured to proof services as  many decades of work has gone into developing such algorithms. And doing this allows for the development of theories of specific data types that include both their definition and the proof of rules of inference used in simplification. Essential this provides an extensible proof engine.  
+Simplification certainly needs to be out soured to proof services as  many decades of work has gone into developing such algorithms. And doing this allows for the development of theories of specific data types that include both their definition and the proof of rules of inference used in simplification. Essential this provides an extensible proof engine.
 
 Syntactic substitution look easy but  either you need to; hard bake in the language the data types used or out source both  parsing and substitution. \emph{Initially hard bake in integers, lists and sets?}
 
@@ -1097,7 +1097,7 @@ In our notation $  \{x:=F(x,y)\}@\{y:=G(x,y)\}  \triangleq  \{x:=F(x,y), y:=G(F(
 {\bf Closely related to Petri net Construction and Token Rule.}
 
 The default interpretation, semantics, of an indexed process definition is its finite state expansion using the declared values of the parameters. An alternative interpretation is to not expand some indexes but to leave them as unknown and define symbolic events.
- 
+
 
 \begin{minipage}{0.55\textwidth}
 \begin{verbatim}
@@ -1105,13 +1105,13 @@ S1 = X[0],
   X[x:0..N]=(when (x<N) out[x]->X[x+1]|
               when (x==N) stop->STOP).
 S = S1${x}.
-   \end{verbatim} 
- \vspace{-2em}{\color{red} 
+   \end{verbatim}
+ \vspace{-2em}{\color{red}
  \begin{enumerate}
  \item assignment \verb|x:=x+1| is missing
  \item presentation order \emph{guard name assignment}
  \item \verb|2| should be \verb|N| and \verb|$x| should be \verb|x|
- \end{enumerate} }  
+ \end{enumerate} }
 \end{minipage}\begin{minipage}{0.4\textwidth}
 \begin{center}\includegraphics[scale=0.2]{VarBug.jpg}\end{center}
 \end{minipage}
@@ -1128,8 +1128,8 @@ R1 = input[y:0..N] -> X[y],
 R = R1${x}.
 T = R1${x,y}.
 S = R1${y}.
-   \end{verbatim} 
-   
+   \end{verbatim}
+
  \vspace{-3em}{\color{red}\begin{enumerate}
    \item \verb|S = R1${y}|  currently fails to build.
    \end{enumerate}
@@ -1145,15 +1145,15 @@ In the above example both indexes {\sf x} and {\sf y} are needed.
 \begin{verbatim}
 Lift = L[0][0],
   L[x:0..N][to:0..N] = btnto[i:0..N] -> L[x][i]  |
-       when (x!=to) move ->L[to][to]. 
-  \end{verbatim} 
-  
+       when (x!=to) move ->L[to][to].
+  \end{verbatim}
+
 All three Indexes {\sf x}, {\sf to} and {\sf i}  are needed.
 \end{minipage}
 \begin{minipage}{0.4\textwidth}
 \begin{center}\includegraphics[scale=0.12]{Lix.jpg}\end{center}
 \end{minipage}
- 
+
 
 
 Need a symbolic expansion mapping,  \verb|S2A|  that takes as input a symbolic  automata and returns an atomic automata.
@@ -1166,11 +1166,11 @@ Need a symbolic expansion mapping,  \verb|S2A|  that takes as input a symbolic  
 \begin{verbatim}
 R = R1${x}.
 T = S2A(R{x}).
-\end{verbatim} 
+\end{verbatim}
 \end{minipage}
 \end{center}
- 
-The result of expanding all variables should be the same as building the atomic automata from  scratch, hence \verb|R|$\sim$\verb|T| in above. (Note building from the automata/Petri Net allows interacting with the diagram)  
+
+The result of expanding all variables should be the same as building the atomic automata from  scratch, hence \verb|R|$\sim$\verb|T| in above. (Note building from the automata/Petri Net allows interacting with the diagram)
 
 
 
@@ -1192,14 +1192,14 @@ Buf2b = (b:Buf1data)/{b.move[x:1..N]/b.input[x]}.
 B2indexed = Buf2a||Buf2b.
 Bu2x = B2indexed${x}.
 }
-   \end{verbatim} 
+   \end{verbatim}
 \end{minipage}\begin{minipage}{0.35\textwidth}
 \begin{center}\includegraphics[scale=0.17]{hideB.jpg}\end{center}
 \end{minipage}
 
-The two place buffer that, in each place can only hold the number 1. 
+The two place buffer that, in each place can only hold the number 1.
 
-What I do not understand is how \verb|B2indexed| dose not have event  \verb|a.output[1]| but  
+What I do not understand is how \verb|B2indexed| dose not have event  \verb|a.output[1]| but
 \verb|Bu2x = B2indexed${x}.| dose?
 
 
@@ -1212,7 +1212,7 @@ const N = 3
 automata {
 Buf1data = input[i:1..N] -> F[i],
    F[d:1..N] = output[d] -> Buf1data.
- 
+
 Buf2a = (a:Buf1data)/{b.move[x:1..N]/a.output[x]}.
 Buf2b = (b:Buf1data)/{b.move[x:1..N]/b.input[x]}.
 
@@ -1220,20 +1220,20 @@ Buf2data* = Buf2a||Buf2b.
 Buf2 = simp(abs(Buf2data\{b.move[x:1..N]})).
 //B2 = Buf2${x}.
 B2indexed = (Buf2a||Buf2b)\{b.move[q:1..N]}.
-Temp = B2indexed /{input/a.input[x:1..N], 
+Temp = B2indexed /{input/a.input[x:1..N],
                    output/b.output[x:1..N]}.
 BestGuess = simp(abs(Temp)).
 //Bu2x = B2indexed${x}.
 }
 operation {  Bu2x ~ BestGuess.}
-   \end{verbatim} 
+   \end{verbatim}
 \end{minipage}\begin{minipage}{0.4\textwidth}
 \begin{center}\includegraphics[scale=0.15]{BestGuess.jpg}
 
 \includegraphics[scale=0.17]{HideBuf2.jpg}\end{center}
 \end{minipage}
 
-The two place buffer that, in each place can hold a number from $\{1,2,3\}$ is defined and displayed.  It is not as easy to see that it is a buffer as I wild like and if we could \emph{freeze} the data in each place we might have simpler visual representation. 
+The two place buffer that, in each place can hold a number from $\{1,2,3\}$ is defined and displayed.  It is not as easy to see that it is a buffer as I wild like and if we could \emph{freeze} the data in each place we might have simpler visual representation.
 
 
 This will require some work to achieve.  One tracking  indexes so that we know what indexes exist in a process. For example what indexes are in \verb|Buf2| defined above? Hence what should we write
@@ -1244,19 +1244,19 @@ This will require some work to achieve.  One tracking  indexes so that we know w
 
 
 \subsection{Symbolic 2 Atomic mapping S2A}
-Symbolic execution  is the obvious way  to  map \verb|S2A|  Symbolic Processes  to  Atomic Processes.  
+Symbolic execution  is the obvious way  to  map \verb|S2A|  Symbolic Processes  to  Atomic Processes.
 
-\[{\sf S2A(A\$\{x\})\sim  A }\]  
+\[{\sf S2A(A\$\{x\})\sim  A }\]
 
-State contains  an evaluation of the variables. 
+State contains  an evaluation of the variables.
 
 
-All you need to do is build a new node for each distinct evaluation reached. 
+All you need to do is build a new node for each distinct evaluation reached.
 
  \begin{quote}
  Add  the set of initial evaluations to a "to do list" and repeatedly:
- 
- \emph{Remove the top node from the to do list and evaluate the boolean guard of each  symbolic event and those that evaluate to true you apply the assignment to compute the new reachable state. If the new state already exists then add the transition ending at the corresponding  node else add the state.  When  all events of the selected node have been processed either select the next node on the to do list else if the list is empty terminate.  } 
+
+ \emph{Remove the top node from the to do list and evaluate the boolean guard of each  symbolic event and those that evaluate to true you apply the assignment to compute the new reachable state. If the new state already exists then add the transition ending at the corresponding  node else add the state.  When  all events of the selected node have been processed either select the next node on the to do list else if the list is empty terminate.  }
  \end{quote}
 
 
@@ -1272,7 +1272,7 @@ Reasoning about symbolic systems is problematic as they are infinite state and c
 \subsection{Symbolic parallel composition $\_\parallel_s\_$}
 The operations defined on atomic processes can be lifted to operations on symbolic processes. We first define \verb|S2A| that maps symbolic process to atomic processes and then lift  the atomic  operation ${\sf Op_a}$ to the symbolic operation ${\sf Op_s}$ so that:
 
-\[{\sf S2A(Op_s(A,B))\sim  Op_a(S2A(A),S2A(B)) }\]  
+\[{\sf S2A(Op_s(A,B))\sim  Op_a(S2A(A),S2A(B)) }\]
 
 Symbolic parallel composition $\_\parallel_s\_$ is an extension of  atomic parallel composition $\_\parallel\_$ where:
 \begin{enumerate}
@@ -1290,8 +1290,8 @@ We need to  compute $\sf t1: t2$  the transition representing the execution of $
 
 %$ \AroL{1}{2222222}{3}{4} $
 
-% $\AroL{\sf n}{\text{g1,ev1,a1}}{m}{x} $  
- 
+% $\AroL{\sf n}{\text{g1,ev1,a1}}{m}{x} $
+
 % ${\sf m\yrightarrow{\text{b2,ev2,a2 }} o}$
 
 \begin{center}\begin{minipage}{0.75\textwidth}
@@ -1301,7 +1301,7 @@ We need to  compute $\sf t1: t2$  the transition representing the execution of $
 }
 {{\sf n\xRightarrow{\text{$\sf g1\land g_2@a_1,ev1,a1@a_2$}}p }}
 \end{minipage}
-\qquad 
+\qquad
 \begin{minipage}{0.75\textwidth}
 \inference[$\tau: t_2$:]
 {
@@ -1323,14 +1323,14 @@ We can construct tests from:
 \subsection{Symbolic simplification}
 We certainly want property:
 \[{\sf S2A(simp(P))\sim simp(S2A(P))}\]
-this could certainly be achieved if symbolic bisimulation simply matched transitions $t1$ and $t2$ by 
+this could certainly be achieved if symbolic bisimulation simply matched transitions $t1$ and $t2$ by
 \[t1_b\Leftrightarrow t2_b \land t1_{en}= t2_{en} \land t1_a\Leftrightarrow t2_a.\]
 It might be possible to further simplify the symbolic automata while preserving the stated property.
 
 
 \section{Symbolic Petri Nets {\color{red} 2b added 2017}}
 
-The symbolic Petri Nets  are an \emph{orthogonal} combination of the symbolic extension to automata and the construction of Petri Nets rather than automata. Thus we have a square with finite automata, finite Petri Nets, symbolic automata and symbolic Petri Nets on the corners. Mappings between adjacent edges  are functions that should preserve the semantics of the processes, be monotonic with respect to refinement and congruent with respect to the operators. 
+The symbolic Petri Nets  are an \emph{orthogonal} combination of the symbolic extension to automata and the construction of Petri Nets rather than automata. Thus we have a square with finite automata, finite Petri Nets, symbolic automata and symbolic Petri Nets on the corners. Mappings between adjacent edges  are functions that should preserve the semantics of the processes, be monotonic with respect to refinement and congruent with respect to the operators.
 
 
 
@@ -1347,8 +1347,8 @@ The symbolic Petri Nets  are an \emph{orthogonal} combination of the symbolic ex
 
 \end{tikzpicture}\end{minipage}
 \begin{minipage}{0.4\textwidth}
-\[{\sf S2A(Petri(\mathcal{A}\$\{x\}))\sim  Petri(\mathcal{A}) }\]  
-\[{\sf TokenRule(Petri(\mathcal{A}\$\{x\}))\sim  \mathcal{A}\$\{x\}}\]  
+\[{\sf S2A(Petri(\mathcal{A}\$\{x\}))\sim  Petri(\mathcal{A}) }\]
+\[{\sf TokenRule(Petri(\mathcal{A}\$\{x\}))\sim  \mathcal{A}\$\{x\}}\]
 \end{minipage}
 \end{center}
 
@@ -1370,7 +1370,7 @@ We have seen the partial expansion of both Petri Nets and of symbolic automata a
 
 \begin{center}  \begin{minipage}{0.5\textwidth}
 \begin{verbatim}CM = (teaButton->takeTea->STOP
-       |coffeeButton->takeCoffee->STOP).\end{verbatim} 
+       |coffeeButton->takeCoffee->STOP).\end{verbatim}
 \end{minipage}
 \begin{minipage}{0.45\textwidth}\includegraphics[scale=0.15]{CM.jpg}
 \end{minipage}\end{center}
@@ -1383,33 +1383,33 @@ Introduce a variable \verb|St| to distinguish different processes (nodes).
      var St:0..N;
      init = St:=0;
      events =
-       when(St==0) teaButton->St:= 1 
+       when(St==0) teaButton->St:= 1
       |when(St==0) coffeeButton->St:= 2
       |when(St==1) takeTea->St:=3
       |when(St==2) takeCoffee->St:= 4.
- \end{verbatim} 
- \end{minipage} 
+ \end{verbatim}
+ \end{minipage}
  \begin{minipage}{0.45\textwidth}
  \begin{verbatim}
  CM = const N;
     var cnt:0..N;
     init = cnt:=1;
-     teaButton = when(St==0) St:=1 
+     teaButton = when(St==0) St:=1
      coffeeButton = when(St == 0)  St:=2
      takeTea = when(St == 1)  St:=3
      takeCoffee =when(St == 2)  St:=4.
-   \end{verbatim} 
- 
- \end{minipage} 
- 
+   \end{verbatim}
+
+ \end{minipage}
+
 
 
 
 \begin{enumerate}
 \item \verb|C[1]| into initialise first index to \verb|1|
-\item  \verb|C[cnt:1..N] = ...|  into declaration of \verb|cnt| at first index and rhs as process definition  
-\item \verb|C[cnt+1]| into  process after \verb|cnt:=cnt+1|. 
-\end{enumerate}   
+\item  \verb|C[cnt:1..N] = ...|  into declaration of \verb|cnt| at first index and rhs as process definition
+\item \verb|C[cnt+1]| into  process after \verb|cnt:=cnt+1|.
+\end{enumerate}
 
 \begin{center}\begin{minipage}{0.45\textwidth}
 \begin{verbatim}
@@ -1417,75 +1417,75 @@ Money = const N;
     var cnt:0..N;
     init = cnt:=1;
     events =
-      when(cnt<N) coin -> cnt:=cnt+1 
+      when(cnt<N) coin -> cnt:=cnt+1
      |when(cnt==N) coin -> cnt:=1.
-\end{verbatim} 
-\end{minipage} 
+\end{verbatim}
+\end{minipage}
 \begin{minipage}{0.45\textwidth}
 \begin{verbatim}
 Money = const N;
    var cnt:0..N;
    init = cnt:=1;
-   coin = when(cnt<N) cnt:=cnt+1 
+   coin = when(cnt<N) cnt:=cnt+1
          |when(cnt==N) cnt:=1.
-  \end{verbatim} 
+  \end{verbatim}
 \end{minipage} \end{center}
 }
 \newpage
 \section{Semantic equivalence  of processes}
 One of the key questions is:  what automata should be equated and how do you justify you notion of equality? Before we try to answer this we need to remember what equality means.
- 
+
  \subsection{Classic notions of equality}   A equality is a relation between  items from some domain, here we are interested in process equality so the domain is the set of all processes. Equality has the following properties:
  \begin{enumerate}
- \item an equivalence relation, a reflexive, symmetric and transitive relation 
+ \item an equivalence relation, a reflexive, symmetric and transitive relation
  \item substitutive and
  \item where equivalent objects are indistinguishable.
- \end{enumerate}  
- 
+ \end{enumerate}
+
 Indistinguishable processes  can be formalised as \emph{testing equivalent}. Substitutive can be formalised are congruent w.r.t. process operators, from a practical perspective the most important being parallel composition.
- 
- 
+
+
  \subsection{Complete Trace equality}
  See \sref{Trc} for details.
- 
+
  This can be computed by the well documented \emph{Subset Construction} that computes a Deterministic automata from a non deterministic automata. and then applying the  bisimulation  algorithm discussed in \sref{biscol}
- 
+
  \subsection{Failure equality}
  The Failure semantics of a process consists of a set of Failures. A Failure  is a pair consisting of a trace and a Refusal set $(tr,R)$.
- 
+
  \[ Fail({\sf P}) = \{(\rho ,R) : \aro{S_{\sf P}}{\rho}{n} \land R \subseteq \overline{ \pi(n) } \}\]
  If you execute a process in parallel with a context then the context can:
  \begin{enumerate}
  \item \emph{see} the trace of execution and
  \item when the execution stops it can infer that the process refuses to perform any of the events that the context is offering.
- \end{enumerate}    
+ \end{enumerate}
  Processes are \emph{Failure} equivalent if the have the same set of Failures.
  \[{\sf P}=_F{\sf Q} = Fail({\sf P}) = Fail({\sf Q})\]
- 
- Failure refinement, $\sqsubseteq_F$ 
+
+ Failure refinement, $\sqsubseteq_F$
   \[{\sf P}\sqsubseteq_F{\sf Q} = Fail({\sf P}) \supseteq Fail({\sf Q})\]
 One of the most important aspects of Failure semantics is that failure refinement is the same as testing refinement using parallel composition for handshake events, $\sqsubseteq_{Ths}$ .
   \[{\sf P}\sqsubseteq_F{\sf Q} = {\sf P}\sqsubseteq_{Ths}{\sf Q} \]
- 
- 
+
+
  \subsection{Bisimulation}
   See \sref{biscol}  for details.
-  
+
  \subsection{Some practical considerations}
  Bisimulation is strictly stronger that Failure equality which in turn is strictly stronger than Complete trace equality.
- 
+
  \[{\sf P}\sim {\sf Q} \Rightarrow {\sf P}=_F {\sf Q} \Rightarrow {\sf P}=_{Tr^c} {\sf Q} \]
- 
+
 \noindent  A deterministic process {\sf P} is failure equivalent to another process only when it is bisimular to it.
- 
+
  \[det({\sf P}) \Rightarrow ({\sf P}\sim {\sf Q} \Leftrightarrow {\sf P}=_F {\sf Q} ) \]
 Consequently if one process is deterministic then failure equality, refinement can be computed easily be computing bisimulation.
 
 Weak equalities, refinements  can be computed  by first computing the weak semantics and then, computing the strong equality or  refinement
  on the weak semantics we have the weak semantics on the original automata. A useful analytic technique is to  start with a detailed deterministic process,  hide some events and simplify the process using bisimulation.   This builds a more abstract representation that may well be deterministic, if it is not deterministic this tells you some thing about your detailed process.
- 
- 
- 
+
+
+
 
 \section{TLA+  Overview}
 In what follows we will refer to a formal step that moves from an abstract specification to  more concrete specification  as a refinement step and the reverse step as an abstraction step.
@@ -1496,7 +1496,7 @@ The basic building blocks of TLA+ are  Modules. Modules contain two basic compon
 
 TLA+ has no parallel composition operator Modules are commonly defined to model both the process under construction and the world around it.  In Process algebra an observable event needs to synchronise with its counterpart in another process, as such the two component events can be thought of as \emph{half events}. This is not true for the actions of  TLA+.
 
-Assignment is defined as a predicate by introducing primed representation of pre state. This way \verb$x:=x+1$ becomes \verb$x'= x+1$.  Converting as much as you can into predicates  makes  the use of a theorem prover more effective. 
+Assignment is defined as a predicate by introducing primed representation of pre state. This way \verb$x:=x+1$ becomes \verb$x'= x+1$.  Converting as much as you can into predicates  makes  the use of a theorem prover more effective.
 
 \emph{\bf Actions} consist of a guard and a set of assignments. Consequently  the semantics of an action can be given as a named relation over the lifted state, $State^{\bot}$.
 To facilitate reasoning actions are defined as  a conjunction of predicates. Hence an action is a named predicate.
@@ -1504,26 +1504,26 @@ To facilitate reasoning actions are defined as  a conjunction of predicates. Hen
 
 
 
-To define a TLA+ action that sends data we write \verb|Send(d)| and  
+To define a TLA+ action that sends data we write \verb|Send(d)| and
 \[{\sf Next \triangleq \big(\exists d\in Data : Send(d)\big) \land Rcv }\]
-Although this action resides solely on the sending process it may be in a Module that specifies both the sending and the receiving processes. 
-The receiving action makes no explicit reference to the value \verb|d| because TLA+ uses shared memory all that need happen is that 
+Although this action resides solely on the sending process it may be in a Module that specifies both the sending and the receiving processes.
+The receiving action makes no explicit reference to the value \verb|d| because TLA+ uses shared memory all that need happen is that
 \[ {\sf Send(d) \triangleq var' = d\land \ldots}\]
 the sending event stores the data sent in a variable and then the receiving event is free to read it.
 
 
 \emph{\bf Modules} declare constants, variables and inner Modules
- The variables are \emph{public} in that they are visible to an outer Module.  
+ The variables are \emph{public} in that they are visible to an outer Module.
  We can define the behaviour of a Module using a \emph{\sf Next} state predicate and an \emph{\sf Init} predicate
- 
- \[{\sf Spec \triangleq Init \land Next}\]
- 
- Note the {\sf Next} predicate is the critical component that defines what next step the Module can take given its current state.
- 
- The  variables in a Module can be hidden, made \emph{private} as we will see shortly.
- 
 
-A module \verb|N| can declare a predefined module  \verb|Chan| 
+ \[{\sf Spec \triangleq Init \land Next}\]
+
+ Note the {\sf Next} predicate is the critical component that defines what next step the Module can take given its current state.
+
+ The  variables in a Module can be hidden, made \emph{private} as we will see shortly.
+
+
+A module \verb|N| can declare a predefined module  \verb|Chan|
 \[\verb|InChan| \triangleq  \verb|INSTANCE Chan|\ldots\]
 
 
@@ -1535,7 +1535,7 @@ A module \verb|N| can declare a predefined module  \verb|Chan|
 
 \subsection{Partial specifications}
 To create partial specifications that is to leave some thing unspecified define what is to be unspecified  as a parameter.  This is the same as  indexed processes.
- 
+
 Let us assume that Module \verb|Chan| contains a variable \verb|q|. Now we can declare a parametrised Module \verb|Chan(q)| where the parameter will instantiate \verb|Chan|s variable \verb|q|
 \[\verb|Inner(q)| \triangleq  \verb|INSTANCE Chan|\ldots\]
 
@@ -1544,13 +1544,13 @@ Another use of parametrised Modules is  when to hide a variable or put another w
 For example if we want the variable \verb|q| of the inner module \verb|Chan| to be \emph{private} then we also declare
 %\[\verb|Inner(q)| \triangleq  \verb|INSTANCE Chan|\ldots\]
 \[\sf Spec \triangleq \exists q : Chan!(q)!Spec\]
-Note this kind of variable hiding is not a  mainstream idiom of TLA+ but is essential to our visual verification: 
+Note this kind of variable hiding is not a  mainstream idiom of TLA+ but is essential to our visual verification:
 
 \begin{quote}
 \emph{In fact, for most applications, there's no need to hide variables in the specication.} \cite[page 41]{TLA}
-\end{quote} 
-If  the declared modules state is treated as private, not accessed directly then the action \verb|get| is a superposition refinement of the action \verb|input|. Hence with some restrictions  \verb|INSTANCE| can be used to define superposition refinement between modules (Event-B).   
- 
+\end{quote}
+If  the declared modules state is treated as private, not accessed directly then the action \verb|get| is a superposition refinement of the action \verb|input|. Hence with some restrictions  \verb|INSTANCE| can be used to define superposition refinement between modules (Event-B).
+
 Modules with private state are like processes, actions are like process events and a modules \emph{Init} action can take the place of a processes start state.
 
 \subsection{Composition and Decomposition of specifications}
@@ -1563,14 +1563,14 @@ TLA+ formalises the behaviour of  composition to two Modules as the disjunction 
 Process algebras are built from  of a set of events and process operators.
 
 
-A binary process operator  is a bit like a parent module declaring as an instance two child modules.  Such a declaration must give the parent access to the state of the child but  the child modules will be private to the parent.  In particular both the state and actions of the children can not be seen outside of the parent.  
+A binary process operator  is a bit like a parent module declaring as an instance two child modules.  Such a declaration must give the parent access to the state of the child but  the child modules will be private to the parent.  In particular both the state and actions of the children can not be seen outside of the parent.
 
 Process algebraic parallel composition  is a binary process operator.
 Event synchronisation can be formalised by introducing an action that contains the conjunction of the two synchronised actions. Non synchronised child events are either lifted to the parent  by introducing a parent action that simply includes the child action or can be blocked by not lifting them.
 
 
 
-In TLA+ there is no counterpart to event hiding or testing equivalence. TLA+ makes use of temporal logic to specify the behaviour of a Module there is no ability to hide parts of an implementation or  detailed specification  to build a more abstract specification. 
+In TLA+ there is no counterpart to event hiding or testing equivalence. TLA+ makes use of temporal logic to specify the behaviour of a Module there is no ability to hide parts of an implementation or  detailed specification  to build a more abstract specification.
 Consequently if we were to add shared state to the processes our tool uses then the style of analysis would eb quite different to that in TLA+.
 
 
@@ -1600,9 +1600,9 @@ There are always many ways to define any interesting  automata  but some simple 
 & atomic & indexed \\ \hline
 Prefixing & \verb$A = act->P$ &  \verb$if (i<N) then (act[i]->P[i+1]) else P[0]$ \\ \hline
   & &  \verb$Money = C[1], $ \\
-  & & \verb$C[i:1..N] = (when(i<N) coin->C[i+1]$ \\ 
+  & & \verb$C[i:1..N] = (when(i<N) coin->C[i+1]$ \\
        &   & \hspace{1.7cm} \verb$ |when(i==N) coin->C[1]).$ \\ \hline
-Choice  &  \verb$A = a->P|b->Q$  &\verb$Farmer = ([i:0..N].task ->W[i]),$ \\ 
+Choice  &  \verb$A = a->P|b->Q$  &\verb$Farmer = ([i:0..N].task ->W[i]),$ \\
     &   &\hspace{0.7cm}\verb$W[i:0..N] = ([i].end->Farmer).$ \\ \hline
 Labeling & \verb$lab:P$ &  see below \\ \hline
 Parallel &  \verb$A = (P||Q)$ & \verb$Workers = (forall [i:0..N] ([i]:Worker)).$ \\ \hline
@@ -1615,8 +1615,8 @@ Hiding & \verb$P\{act}$ & \verb$P\{act[i:0..N]}$ \\ \hline %\hline
 \vspace{2ex}\noindent For processing automata:
 
 \vspace{2ex}
-\begin{tabular}{|c|c|l|} 
-\hline abstraction  & {\tt abs(P)} & fair removal of $\tau$ events \\ 
+\begin{tabular}{|c|c|l|}
+\hline abstraction  & {\tt abs(P)} & fair removal of $\tau$ events \\
 \hline abstraction  & {\tt abs\{unfair\}(P)} & unfair  removal of $\tau$ events \\ \hline
 simplification  & {\tt simp(P) } & for the simplification of automata \\ \hline
 hiding index \verb|x| &\verb|R = R1${x}|&  builds symbolic automata \\ \hline
@@ -1728,8 +1728,8 @@ Rob~J. van Glabbeek.
 
 
 
- 
-\newpage    
+
+\newpage
 
 
 \section{Tool Development}
@@ -1740,9 +1740,9 @@ The event based tool has been used for teaching but greater support in terms of 
 
 \begin{center}\begin{minipage}{0.7\textwidth}
 \emph{\begin{enumerate}
-\item Algorithm design + documentation + Review  
-\item Code review prior to committing 
-\item Public Interfaces  Java Docs + documentation  
+\item Algorithm design + documentation + Review
+\item Code review prior to committing
+\item Public Interfaces  Java Docs + documentation
 \end{enumerate}}
 \end{minipage}
 \end{center}
@@ -1751,7 +1751,7 @@ The event based tool has been used for teaching but greater support in terms of 
 A process specification $\mathcal{P}$  is input as text and automata {\sf P} is built. The specification contains  various operations $\_\parallel\_$, ${\sf abs(\_)}$, ${\sf simp(\_)}$,  ${\sf \_\backslash\{evt\}}$, ${\sf \_/\{new/ old\}}$ ...
 Are these defined as automata to automata mappings or as specification to automata mappings?
 
-%\end{minipage} } 
+%\end{minipage} }
 
 
 
@@ -1761,35 +1761,35 @@ Are these defined as automata to automata mappings or as specification to automa
 
 \begin{enumerate}
 \item Process variables will help speed up test construction.
-\item Asynchronous architecture with  processing  in a docker containers 
-\item {\sf Build hierarchy of processes }   where the leaves are defined without reference to other processes. and where child processes are directly used in the construction of the parent. 
+\item Asynchronous architecture with  processing  in a docker containers
+\item {\sf Build hierarchy of processes }   where the leaves are defined without reference to other processes. and where child processes are directly used in the construction of the parent.
  Needed for flexible construction - of  symbolic automata and Net options
-\item Compile each process separately  and only recompile if that part of the document has changed. {\bf Could use JEdit  in place of web?} 
+\item Compile each process separately  and only recompile if that part of the document has changed. {\bf Could use JEdit  in place of web?}
 
 \item  Isabelle  is now designed for \emph{proof as a service}  with Isabelle running in docker containers in the background.  Alas this appears to be work in progress and we might have to stick to Z3 at the moment.
 \end{enumerate}
- 
+
 
 
 
 \begin{center}{\bf \Huge  TODO }\end{center}
 \begin{enumerate}
-\item {\bf *** Design Considerations ***}  
+\item {\bf *** Design Considerations ***}
 
 \begin{enumerate}
-\item Interface for Automata  made public and documented. 
+\item Interface for Automata  made public and documented.
 \item Support for plugin style development.
 \item efficient immutable state so that processing can be performed asynchronously!
 \item docker containers!
-\end{enumerate} 
+\end{enumerate}
 
 \item {\bf **start** Bug fixes:}
 \begin{enumerate}
 \item abstraction
 \item broadcast
 \item Add process location and local divergent state.  Then  use in unfair abstraction.
-\item change  the \verb|when| command to be more like the \verb|if...then| command see previously 
-\item Index hiding   $P\$\{x\}$ fix bugs for \emph{leaf} processes see above 
+\item change  the \verb|when| command to be more like the \verb|if...then| command see previously
+\item Index hiding   $P\$\{x\}$ fix bugs for \emph{leaf} processes see above
 
 
 \end{enumerate}
@@ -1818,23 +1818,23 @@ Having completed this add:
 \item probabilistic choice (may well postpone till later)
 \end{enumerate}
 
-\item {\bf **start** Add   Petri Nets}, 
+\item {\bf **start** Add   Petri Nets},
 \begin{enumerate}
 \item compile to Petri Net {\sf Petri} (and location)  The tool takes as input process specifications and by default builds finite state automata as approximations.   The function {\sf Petri} can be applied to a process specification where it must build Nets for all processes below it in the {\sf Process Hierarchy}.   Define $\_\parallel_n\_$ on Petri Nets initially only for hand shake synchronisation.
 
 \item to define choice between parallel composition define the {\bf Cross product of two sets of Places}. Consider example \verb$(A||B)|(P||Q)$
 
-\item Implement Token Rule to build automata {\sf TokenRule} 
+\item Implement Token Rule to build automata {\sf TokenRule}
 \end{enumerate}
-Test using equalities: $\sf \forall {\sf P} : P  \sim  TokenRule(Petri(P))$ 
+Test using equalities: $\sf \forall {\sf P} : P  \sim  TokenRule(Petri(P))$
 
 $\sf \forall {\sf P, Q} : P\parallel Q  \sim  TokenRule(Petri(P)\parallel_n Petri(Q))$
 
- As a side effect this will speed up parallel composition. 
+ As a side effect this will speed up parallel composition.
 
 \item {\bf Symbolic processes closely related to Petri Nets shown above :}
 \begin{enumerate}
-\item Define $\_\parallel\_$ on symbolic processes.  Integrated with Petri Nets. To  apply index hiding  after abstraction need to track indexes 
+\item Define $\_\parallel\_$ on symbolic processes.  Integrated with Petri Nets. To  apply index hiding  after abstraction need to track indexes
 
 \item Define {\sf S2A} a function that maps symbolic processes to atomic processes.
 
@@ -1842,7 +1842,7 @@ $\sf \forall {\sf P, Q} : P\parallel Q  \sim  TokenRule(Petri(P)\parallel_n Petr
 
 \item Use Isabelle in place of Z3  {\bf but only if headless Isabelle ready}
 \end{enumerate}
-Test like Petri Nets using equalities: $\sf \forall {\sf P} : P  \sim  S2A(P\$\{x\})$ 
+Test like Petri Nets using equalities: $\sf \forall {\sf P} : P  \sim  S2A(P\$\{x\})$
 
 $\sf \forall {\sf P, Q} : P\parallel Q  \sim  S2A(P\$\{x\}\parallel Q\$\{y\})$
 
@@ -1861,7 +1861,7 @@ $\sf \forall {\sf P, Q} : P\parallel Q  \sim  S2A(P\$\{x\}\parallel Q\$\{y\})$
    For set of places $R $ let $pre(R) = \{t: t\bullet \cap R \neq \emptyset\}$ and let $post(R) = \{t: \bullet t \cap R \neq \emptyset\}$
 
 \begin{enumerate}
-\item for transition $r$ such that $name(r) = \tau$ 
+\item for transition $r$ such that $name(r) = \tau$
 
 \item  \hspace{0.5cm} if $(\forall t\bullet t \in pre(r\bullet) \rightarrow name(t)=\tau) \land (\forall s\bullet s\in post(\bullet t) \rightarrow name(s)=\tau)$
 \item \hspace{1cm} Replace $r\bullet, pre(r\bullet), post(r \bullet)$ with $\{\aro{\bullet x}{\tau}{y\bullet} : x\in pre(r\bullet),\land y\in post(r\bullet)\}$
@@ -1883,11 +1883,11 @@ Tested using $abs(P) =_F fabs(P)$
  \item  keep appending to console output and add button to clear.
 \item debugging tool tips when you hover over:
  \begin{enumerate}
- \item events $\Rightarrow$ evaluation of variables in scope 
- \item  nodes $\Rightarrow$ evaluation of variables in scope 
+ \item events $\Rightarrow$ evaluation of variables in scope
+ \item  nodes $\Rightarrow$ evaluation of variables in scope
  \end{enumerate}
- 
- \end{enumerate} 
+
+ \end{enumerate}
 
 \item {\bf Compute Failure semantics} needed for example below.
 
@@ -1906,31 +1906,31 @@ Tested using $abs(P) =_F fabs(P)$
 
 \item Isabelle extension overview:
 \begin{enumerate}
-\item Isar text  managed by Jedit (JEdit is a plugin  extensible editor designed for the construction of IDEs). Isabelle/Scala is used to manage to the JEdit 
+\item Isar text  managed by Jedit (JEdit is a plugin  extensible editor designed for the construction of IDEs). Isabelle/Scala is used to manage to the JEdit
 
-\item Could define functions, bisimulation, abstraction, automata building in Isabelle 
+\item Could define functions, bisimulation, abstraction, automata building in Isabelle
 
 \item Could keep the algorithms in Java and just use Isabelle to do symbolic to atomic conversion.
 \end{enumerate}
 
-\item {\bf Gui to define event renaming and synchronisation - needs Petri Nets} 
+\item {\bf Gui to define event renaming and synchronisation - needs Petri Nets}
 \item {\bf Syntax alternatives?}  Variables are currently named and can be read but writing to  variable is done by writing to the index at the same location at which the variable is declared.
 
 Alternatively  declare variables in a process and:
  \begin{enumerate}
- \item s and use a  common variable assignment syntax \verb|x := x+1| or 
+ \item s and use a  common variable assignment syntax \verb|x := x+1| or
  \item use  Z specification style primed variables for post state \verb|x' = x+1|
  \end{enumerate}
 
-\item {\bf Add Process invariants}, need to look at TLA+ syntax / parsing + import libraries 
+\item {\bf Add Process invariants}, need to look at TLA+ syntax / parsing + import libraries
 
 \item Support for SDN may be TLA+
 
 \end{enumerate}
 
- \subsection{Link with TLA+} 
+ \subsection{Link with TLA+}
  \noindent\begin{center}\begin{minipage}{0.45\textwidth}
- TLA+ has 
+ TLA+ has
   \begin{enumerate}
   \item Theories + data types
   \item syntactic substitution
@@ -1944,127 +1944,127 @@ Alternatively  declare variables in a process and:
    \item parallel composition + synchronisation
    \item abstraction
    \item simplification  bisim + failure + trace
-    
+
    \end{enumerate}
  \end{minipage}
  \end{center}
- 
- 
+
+
   {\bf Stepped development of a Bridge between TLA+ and PA.}
- 
- 
-  
+
+
+
  \begin{description}
  \item[Step Zero] sequential processes with atomic events to TLA and back. Not sure if this should be to TLA text or parse tree!
- 
+
  \begin{enumerate}
- 
- \item \verb|P2M|: $Process \rightarrow Module$ Process mapped to Module with additional State variable. 
- 
- This will add the ability to check process satisfies temporal logic specification 
- 
+
+ \item \verb|P2M|: $Process \rightarrow Module$ Process mapped to Module with additional State variable.
+
+ This will add the ability to check process satisfies temporal logic specification
+
  \item \verb|M2P|: $Module \rightarrow Process $ Module mapped to atomic automata using built in expansion
- 
+
 
  \end{enumerate}
-  
-   {\bf Add tests to test directory for any atomic processes P:    
+
+   {\bf Add tests to test directory for any atomic processes P:
     \begin{enumerate}
     \item  \verb|M2P|(\verb|P2M|(P)) $\sim$ P
-    \end{enumerate}  
+    \end{enumerate}
     }
-    {\bf Tests added to repository can be refactored by adding new versions of P.} (Might be worth defining algebra over process variables and set of processes to instantiate process variables)   
-    
+    {\bf Tests added to repository can be refactored by adding new versions of P.} (Might be worth defining algebra over process variables and set of processes to instantiate process variables)
+
     \item[Step One] Define $\parallel_M$, parallel composition of TLA+ modules:
-     
+
      \begin{enumerate}
-     
-     \item  Component modules as INSTANCE declaration.  
-     
+
+     \item  Component modules as INSTANCE declaration.
+
      \item Event synchronisation defined as conjunction of component actions
-     
+
      \item default lifting of non synchronising actions.
-     
-     
-    
+
+
+
      \end{enumerate}
-      
-       {\bf Add tests for any atomic processes P and Q:    
+
+       {\bf Add tests for any atomic processes P and Q:
         \begin{enumerate}
         \item  \verb|M2P| (\verb|P2M|(P) $\parallel_M$ \verb|P2M|(Q)) $\sim$ P$\parallel$Q
-        \end{enumerate}  
+        \end{enumerate}
         }
-          
-    
+
+
 \item [Second step]  Change PA with indexed state and events   to make use of TLA+ numbers
 \begin{enumerate}
  \item add import statement to PA
- \item{change  PA  to use  TLA code for parsing and  simplification of numbers:}   
- 
+ \item{change  PA  to use  TLA code for parsing and  simplification of numbers:}
+
 \end{enumerate}
 
  {\bf Add tests} using indexed processes
 
-\item [Third  (2a) ]{\bf Code   \verb|M2sP| based on \verb|M2P| but to return a symbolic numeric process: }  
+\item [Third  (2a) ]{\bf Code   \verb|M2sP| based on \verb|M2P| but to return a symbolic numeric process: }
 \begin{enumerate}
 \item \verb|M2sP|: $Module \rightarrow Process $ Module mapped to symbolic  automata.
- 
-\end{enumerate} 
- {\bf For any symbolic processes P and Q use TESTS:  }  
+
+\end{enumerate}
+ {\bf For any symbolic processes P and Q use TESTS:  }
     \begin{enumerate}
     \item  \verb|M2sP|(\verb|P2M|(P)) $\sim$ P
     \item  \verb|M2sP| (\verb|P2M|(P) $\parallel$ \verb|P2M|(Q)) $\sim$ P$\parallel$Q
-    \end{enumerate}  
+    \end{enumerate}
 
 \item [Forth step]  {\bf use existing TLA code to add data theories to PA }
 \begin{enumerate}
  \item extend   PA to parse theories and display
- \item extend  \verb|M2sP| and \verb|P2M|  
+ \item extend  \verb|M2sP| and \verb|P2M|
 \end{enumerate}
 
 \item [Fith (3a) step]  add symbolic abstraction to  PA
 \begin{enumerate}
- \item{\bf  implement $sabs(\_)$ symbolic abstraction  using TLA+ code: }   
- \item add tests  
- 
+ \item{\bf  implement $sabs(\_)$ symbolic abstraction  using TLA+ code: }
+ \item add tests
+
  $S2A\{x\}(sabs(P\$\{x\})) \sim abs(P)$
 \end{enumerate}
 
 \item [Sixth (3b) step]  add symbolic bisimulation   PA
 \begin{enumerate}
- \item{\bf  implement $ssimp(\_)$ symbolic bisimulation  using TLA+ code: }   
- \item add tests  
- 
+ \item{\bf  implement $ssimp(\_)$ symbolic bisimulation  using TLA+ code: }
+ \item add tests
+
  $S2A\{x\}(ssimp(P\$\{x\})) \sim simp(P)$
 \end{enumerate}
 
 \end{description}
-   
 
- 
-  
+
+
+
 Bits and pieces.
-  
+
   \begin{enumerate}
-  \item Find TLA+ parse tree for module, $TLA_{PT}$ 
+  \item Find TLA+ parse tree for module, $TLA_{PT}$
   \item build  a $TLA_{PT}$ for a Petri Net
   \item Find TLA+ term evaluation (tree for an action)
- 
+
  \item computation options:
- 
+
 \noindent\begin{center}\begin{minipage}{0.45\textwidth}
-\begin{enumerate} 
+\begin{enumerate}
  \item implement  symbolic abstraction
  \item implement symbolic equality
  \item expand
- \end{enumerate} 
+ \end{enumerate}
  \end{minipage}
   \begin{minipage}{0.45\textwidth}
  \begin{enumerate}
-  \item expand  
+  \item expand
   \item atomic abstraction
   \item atomic  equality
-  \end{enumerate} 
+  \end{enumerate}
  \end{minipage}\end{center}
  \end{enumerate}
 
@@ -2075,26 +2075,26 @@ Below is a list of interesting projects  that could be SWEN302/489  or even MSc 
 
 \begin{enumerate}
 
-{\bf 
+{\bf
 \item Add support for Event B style reasoning.
 \item Add probabilistic choice.
 
 \item Add the ability to model check  algebraic rules by generating "all" process models of a fixed size and verifying the rules against these processes.
 \item Add interrupts.  see after "$\backslash$end\{documnet\}"
 \item Add hierarchical processes (where the state of one process becomes a whole process)
- the result will be  include adding signals that will  better model interrupts. 
+ the result will be  include adding signals that will  better model interrupts.
 \item Add event refinement
-\item Add $\delta$ events - unobservable and blocked + model known 
+\item Add $\delta$ events - unobservable and blocked + model known
 \item Code generate from the models
 
 \begin{enumerate}
 \item The Go programming language has Go routines that can communicate via  the CSP style event synchronisation that we use here. Consequently might be an easy target language for code  generation.
- 
+
 \item Java code -  and apply the specification mining tool to rebuild the automata
 \item Ada code -  and use SPARK Ada theorem prover to symbolically  verify the indexed models for all values of the index
 \end{enumerate}
 }
-\end{enumerate} 
+\end{enumerate}
 
 
 
@@ -2108,12 +2108,12 @@ Below is a list of interesting projects  that could be SWEN302/489  or even MSc 
 \subsection{Need for failure semantics(Not a bug)}
 \begin{verbatim}
 automata {
-/* Question is 2 place buffer with: two faulty  one place bufferes 
+/* Question is 2 place buffer with: two faulty  one place bufferes
    = 2 place buffer with: one faulty  and one good one place buffers?
-*/  
+*/
 FA = (zero.in ->(zero.out->FA|drop->FA) | one.in ->(one.out->FA|drop->FA )).
 FAs = simp(abs(FA\{drop})).
-FB = (zero.in.[d:0..N] ->(zero.out.[d]->FB|drop->FB) | 
+FB = (zero.in.[d:0..N] ->(zero.out.[d]->FB|drop->FB) |
       one.in.[e:0..N] ->(one.out.[e]->FB|drop->FB ))\{drop}.
 FBs = simp(abs(FB)).
 
@@ -2129,17 +2129,17 @@ OneS =  simp(abs(One)).
 operation {
 One !~Two.
 One # Two.
-/* these are not bisimular  but are trace equivalent  
+/* these are not bisimular  but are trace equivalent
 Let One->a.one.in -> X1 and  Two->a.one.in -> X2 where X1!=One and X2!=Two
-   Now X1 can not forget the input "one" where as X2 can. 
+   Now X1 can not forget the input "one" where as X2 can.
    But are they failure equivalent?
 */
 }
 \end{verbatim}
 
- 
+
  \end{document}
- 
+
 \section{\color{red} Interrupts currently not available}
 {\color{red} Another type of event that is common in computer systems are interrupts. If a processes is running and an interrupt occurs the process stops no matter what state it is in and the interrupt is executed.
 
@@ -2149,7 +2149,7 @@ In the {\sf Car} process below the event {\sf brake} is an interrupt. {\sf Car} 
 \begin{minipage}{0.4\textwidth}
 \begin{verbatim}
 Steer = goLeft->goRight->Steer.
-Car  = Steer~>brake~>slow->STOP.  \end{verbatim} 
+Car  = Steer~>brake~>slow->STOP.  \end{verbatim}
 \end{minipage}
 \begin{minipage}{0.4\textwidth}
 \includegraphics[scale=0.4]{InterruptCar.png}
@@ -2157,8 +2157,8 @@ Car  = Steer~>brake~>slow->STOP.  \end{verbatim}
 %\hspace{\fill}
 
 
- The interrupt can be hidden. Or put another way we can remove the interrupt and express the same behaviour but at the expense of adding one {\sf brake} event per state in the original process. In this example, there are only two states in the original {\sf Steer} process. 
- 
+ The interrupt can be hidden. Or put another way we can remove the interrupt and express the same behaviour but at the expense of adding one {\sf brake} event per state in the original process. In this example, there are only two states in the original {\sf Steer} process.
+
 
 \noindent\begin{center}\begin{minipage}{0.3\textwidth}
 \includegraphics[scale=0.4]{InterruptCarHide.png}
@@ -2172,7 +2172,6 @@ As the number of states in the initial process increases the clutter in the diag
 \subsection{Restart} after the interrupt has finished the original process should restart from its initial state!
 
 }
- 
- 
- 
- 
+
+
+

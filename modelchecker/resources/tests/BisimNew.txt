@@ -2,18 +2,18 @@ const N = 2.
 processes {
 A = a->B,
     B = (b->A | c->A).
-Ap = A || A.    
+Ap = A || A.
 
 B = a -> C,
     C = (b->B | c->STOP).
-Bp = B || B.   
+Bp = B || B.
 ABp = A || B.
 D = aaa -> C,
     C = (bb->STOP | cc->STOP).
-Dp = D || D.   
+Dp = D || D.
 X = red -> Y,
    Y = (red ->Y|red ->X).
-Z = simp(X). 
+Z = simp(X).
 W = red->W.
 
 Q = a->a->a->b->STOP.
@@ -30,7 +30,7 @@ operation {
 Ap~ A.
 Bp~B.
 Dp ~ D.
-ABp ~ B. 
+ABp ~ B.
 
 P!~Q.
 W ~ Z.

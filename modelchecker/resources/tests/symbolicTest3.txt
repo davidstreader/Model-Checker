@@ -5,7 +5,7 @@ Im = C[0][0],
                             when j<N  bang -> C[0][j+1] |
                             when j==N xxx -> C[0][0]).
 
-Imi = Im${i}.   
+Imi = Im${i}.
 Imj = Im${j}.
 Ii = Imi${}.
 Ij = Imj${}.

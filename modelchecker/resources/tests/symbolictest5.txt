@@ -44,7 +44,7 @@ Newx = simp(Hopex).
 Nextx = Hopex${}.  // expand after hiding
 }
 
-automata Im, Atomic, Hope, Hh, Imi, New, Next, Nn. 
+automata Im, Atomic, Hope, Hh, Imi, New, Next, Nn.
 automata Imj, Newj, Nextj, Ii.
 automata Imk, Newk, Nextk, Ij.
 automata CIm, X, Xm, Imx, Imex, Hopex, Newx, Nextx.

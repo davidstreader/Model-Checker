@@ -8,7 +8,7 @@ processes {
      C = abs(A).
  }
  automata A,B,C.
- 
+
  operation {
      A # B.
  }

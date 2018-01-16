@@ -2,15 +2,15 @@ const N = 2.
 processes {
 A = a->B,
     B = (b->A | c->A).
-Ap = A || A.    
+Ap = A || A.
 
 B = a -> C,
     C = (b->B | c->STOP).
-Bp = B || B.   
+Bp = B || B.
 ABp = A || B.
 D = aaa -> C,
     C = (bb->STOP | cc->STOP).
-Dp = D || D.   
+Dp = D || D.
 }
 automata A,Ap.
 automata B,Bp.
@@ -21,5 +21,5 @@ operation {
 Ap~ A.
 Bp~B.
 Dp ~ D.
-ABp ~ B. 
+ABp ~ B.
 }
