@@ -2,8 +2,12 @@ package mc.compiler.interpreters;
 
 import static mc.util.Utils.instantiateClass;
 
+import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
 import com.microsoft.z3.Context;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -46,13 +50,14 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
   private static Map<String, Class<? extends IProcessInfixFunction>> infixFunctions = new HashMap<>();
 
   private Map<String, ProcessModel> processMap;
-  private Map<String, AutomatonNode> referenceMap;
+  private Multimap<String, AutomatonNode> referenceMap;
   private Stack<ProcessModel> processStack;
   private VariableSetNode variables;
   private LocalCompiler compiler;
   private Set<String> variableList;
   private Context context;
   private int subProcessCount = 0;
+  private Set<AutomatonNode> subProcessStartNodes;
 
   public AutomatonInterpreter() {
     this.operations = new AutomataOperations();
@@ -151,7 +156,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     // check if the current ast node has a reference attached
     if (astNode.hasReferences()) {
       for (String reference : astNode.getReferences()) {
-        referenceMap.put(reference, currentNode);
+        referenceMap.replaceValues(reference, Collections.singletonList(currentNode));
       }
 
       currentNode.setReferences(astNode.getReferences());
@@ -194,6 +199,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     Set<AutomatonNode> nodes = automaton.combineNondeterministic(currentNode, oldRoot, context);
 //    AutomatonNode oldRoot = automaton.addAutomaton(model);
 //    AutomatonNode node = automaton.combineNodes(currentNode, oldRoot, context);
+    subProcessStartNodes = nodes;
 //    updateCurrentNode(currentNode, node);
   }
 
@@ -209,8 +215,12 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     // check if the next ast node is a reference node
     if (sequence.getTo() instanceof ReferenceNode) {
       ReferenceNode reference = (ReferenceNode) sequence.getTo();
-      nextNode = referenceMap.get(reference.getReference());
-      automaton.addEdge(action, currentNode, nextNode, foundGuard);
+      Collection<AutomatonNode> nextNodes = referenceMap.get(reference.getReference());
+
+      for (AutomatonNode node : nextNodes) {
+        automaton.addEdge(action, currentNode, node, foundGuard);
+      }
+
     } else {
       nextNode = automaton.addNode();
       automaton.addEdge(action, currentNode, nextNode, foundGuard);
@@ -221,6 +231,15 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
   private void interpretChoice(ChoiceNode astChoiceNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException {
 
     interpretNode(astChoiceNode.getFirstProcess(), automaton, currentNode);
+
+    //This is a special case whereby the currentNode is deleted by adding a process that destroys
+    //the value of the currentNode
+    if (!automaton.getNodes().contains(currentNode)) {
+      for (AutomatonNode automatonNode : subProcessStartNodes) {
+        interpretNode(astChoiceNode.getSecondProcess(), automaton, automatonNode);
+      }
+      return;
+    }
     interpretNode(astChoiceNode.getSecondProcess(), automaton, currentNode);
   }
 
@@ -243,8 +262,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         .compose(model1.getId() + astCompositeNode.getOperation() + model2.getId(), (Automaton) model1, (Automaton) model2);
 
     Set<AutomatonNode> oldRoot = automaton.addAutomaton(comp);
-    Set<AutomatonNode> nodes = automaton.combineNondeterministic(currentNode, oldRoot, context);
-//    updateCurrentNode(currentNode, node);
+    subProcessStartNodes = automaton.combineNondeterministic(currentNode, oldRoot, context);
 
   }
 
@@ -307,21 +325,21 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     }
 
     Set<AutomatonNode> oldRoots = automaton1.addAutomaton(automaton2);
+    subProcessStartNodes = automaton1.combineNondeterministic(currentNode, oldRoots, context);
 
 
-
-    for(AutomatonNode oldRoot: oldRoots) {
+    for (AutomatonNode oldRoot: oldRoots) {
       if (oldRoot.getReferences() != null) {
         references.addAll(oldRoot.getReferences());
       }
     }
 
-    Set<AutomatonNode> node = automaton1.combineNondeterministic(currentNode, oldRoots, context);
     //Combining nodes removes the inital currentNode and oldRoot, as we are still using currentNode, copy the properties of the newly created node across
-//    updateCurrentNode(currentNode, node);
 
       //TODO:
-    references.forEach(id -> referenceMap.put(id, new ArrayList<>(node).get(0)));
+
+    references.forEach(id -> referenceMap.replaceValues(id, new ArrayList<>(subProcessStartNodes)
+        .subList(0,0)));
   }
 
   private void processRelabelling(Automaton automaton, RelabelNode relabels) {
@@ -378,28 +396,13 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     return automaton;
   }
 
-  /**
-   * When a new node is created by merging the currentNode and another node, the current node is removed from the
-   * automaton, this rendering it invalid.
-   * This rewrites it to have the id & data of the newly created node.
-   * @param currentNode The current node to update
-   * @param newNodeData The new node created by a combine event
-     */
-  private void updateCurrentNode(AutomatonNode currentNode, AutomatonNode newNodeData) {
-    currentNode.copyProperties(newNodeData);
-    currentNode.setId(newNodeData.getId());
-    newNodeData.getOutgoingEdges().forEach(currentNode::addOutgoingEdge);
-    newNodeData.getIncomingEdges().forEach(currentNode::addIncomingEdge);
-  }
-
   private void reset() {
-    this.referenceMap = new HashMap<>();
+    this.referenceMap = MultimapBuilder.hashKeys().hashSetValues().build();
     this.processStack = new Stack<>();
   }
 
-
   /**
-   * Functions for instantiating the plugin manager functions
+   * Functions for instantiating the plugin manager functions.
    */
   public static void addFunction(Class<? extends IProcessFunction> clazz) {
 

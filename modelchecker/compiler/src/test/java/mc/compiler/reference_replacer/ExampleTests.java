@@ -2,6 +2,8 @@ package mc.compiler.reference_replacer;
 
 import mc.compiler.ast.*;
 import mc.exceptions.CompilationException;
+import mc.plugins.PluginManager;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -16,6 +18,11 @@ import static org.junit.Assert.fail;
  * Created by sheriddavi on 15/02/17.
  */
 public class ExampleTests extends ReferenceReplacerTests {
+
+    @BeforeClass
+    public static void initialise(){
+        PluginManager.getInstance().registerPlugins();
+    }
 
     public ExampleTests() throws InterruptedException {
     }
