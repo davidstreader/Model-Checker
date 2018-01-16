@@ -7,7 +7,7 @@ import mc.util.Location;
 public abstract class Token {
 
 	private Location location;
-	
+
 	public Token(Location location){
 		this.location = location;
 	}

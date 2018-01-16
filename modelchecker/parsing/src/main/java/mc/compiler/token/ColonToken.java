@@ -7,7 +7,7 @@ import mc.util.Location;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class ColonToken extends SymbolToken {
-	
+
 	public ColonToken(Location location){
 		super(location);
 	}

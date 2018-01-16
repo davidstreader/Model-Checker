@@ -7,7 +7,7 @@ import mc.util.Location;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class AssignToken extends SymbolToken {
-	
+
 	public AssignToken(Location location){
 		super(location);
 	}

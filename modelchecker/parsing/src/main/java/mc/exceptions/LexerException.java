@@ -9,5 +9,5 @@ public class LexerException extends CompilationException {
 	public LexerException(String message){
 		super(Lexer.class, "LexerException: " + message, null);
 	}
-	
+
 }

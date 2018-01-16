@@ -8,9 +8,38 @@ import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
 
+/**
+ * This covers the "internal choice" function.
+ * This is a way that introduces non-determinism into the processes.
+ * <p>
+ * If this is introduced without a prefix, this will lead to multiple start nodes.
+ * <p>
+ * e.g. {@code A = B+C.}
+ * <p>
+ * <pre>
+ * B   C
+ * </pre>
+ * However, if there are transitions that lead into the internal choice, it duplicates these
+ * connections, creating a nondeterministic choice between the two processes provided
+ * <p>
+ * e.g. {@code A = b->C+D.}
+ * <p>
+ * <pre>
+ *           ROOT
+ *          /    \
+ *         b      b
+ *        /       \
+ *       C         D
+ * </pre>
+ *
+ * @author Jacob Beal
+ * @see Automaton
+ * @see mc.compiler.interpreters.AutomatonInterpreter
+ */
 public class InternalChoiceInfixFunction implements IProcessInfixFunction {
+
   /**
-   * A method of tracking the function
+   * A method of tracking the function.
    *
    * @return The Human-Readable form of the function name
    */
@@ -20,7 +49,7 @@ public class InternalChoiceInfixFunction implements IProcessInfixFunction {
   }
 
   /**
-   * The form which the function will appear when composed in the text
+   * The form which the function will appear when composed in the text.
    *
    * @return the textual notation of the infix function
    */
@@ -38,7 +67,9 @@ public class InternalChoiceInfixFunction implements IProcessInfixFunction {
    * @return the resulting automaton of the operation
    */
   @Override
-  public Automaton compose(String id, Automaton automaton1, Automaton automaton2) throws CompilationException {
+  public Automaton compose(String id, Automaton automaton1, Automaton automaton2)
+      throws CompilationException {
+
     Automaton choice = new Automaton(id, !Automaton.CONSTRUCT_ROOT);
 
     choice.addAutomaton(automaton1);
@@ -49,7 +80,7 @@ public class InternalChoiceInfixFunction implements IProcessInfixFunction {
       AutomatonNode newN = choice.addNode();
       automaton2NodeMap.put(n, newN);
       newN.copyProperties(n);
-      if(n.isStartNode()){
+      if (n.isStartNode()) {
         newN.setStartNode(true);
       }
     });

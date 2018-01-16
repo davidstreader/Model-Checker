@@ -320,7 +320,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     //Combining nodes removes the inital currentNode and oldRoot, as we are still using currentNode, copy the properties of the newly created node across
 //    updateCurrentNode(currentNode, node);
 
-    //TODO;
+      //TODO:
     references.forEach(id -> referenceMap.put(id, new ArrayList<>(node).get(0)));
   }
 

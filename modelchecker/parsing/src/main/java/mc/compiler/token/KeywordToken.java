@@ -7,7 +7,7 @@ import mc.util.Location;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public abstract class KeywordToken extends Token {
-	
+
 	public KeywordToken(Location location){
 		super(location);
 	}

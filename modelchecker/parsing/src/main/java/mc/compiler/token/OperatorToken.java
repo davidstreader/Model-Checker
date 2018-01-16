@@ -7,7 +7,7 @@ import mc.util.Location;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public abstract class OperatorToken extends Token {
-	
+
 	public OperatorToken(Location location){
 		super(location);
 	}

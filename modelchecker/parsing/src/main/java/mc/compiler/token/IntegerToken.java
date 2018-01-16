@@ -7,9 +7,9 @@ import mc.util.Location;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class IntegerToken extends Token {
-	
+
 	private int integer;
-	
+
 	public IntegerToken(int integer, Location location){
 		super(location);
 		this.integer = integer;

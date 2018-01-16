@@ -7,9 +7,9 @@ import mc.util.Location;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public abstract class TerminalToken extends Token {
-	
+
 	public TerminalToken(Location location){
 		super(location);
 	}
-	
+
 }
