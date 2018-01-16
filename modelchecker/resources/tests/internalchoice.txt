@@ -1,0 +1,32 @@
+processes {
+    A1 = b->STOP.
+    B1 = c->STOP+d->STOP.
+    C1 = A1=>B1.
+
+    Test1 = (b->c->STOP |
+             b->d->STOP ).
+}
+automata C1, Test1.
+
+//ensure that the sequential operator respects internal choice.
+operation C1 ~ Test1.
+
+processes {
+    A2 = a->STOP+b->STOP.
+    Test2 = b->STOP+a->STOP.
+}
+automata A2,Test2.
+//ensure that order of choice is irrelevant to bisimulation
+//and that it works with multiple start nodes
+operation A2 ~ Test2.
+
+processes {
+    A3 = a->b->STOP||c->d->STOP.
+    B3 = a->b->c->d->STOP.
+    C3 = A3+B3.
+
+    Test3 = (a->b->c->d->STOP) + a->b->STOP||c->d->STOP.
+}
+automata C3,Test3.
+//ensure manually constructed is not different to using identifiers
+operation C3 ~ Test3.
