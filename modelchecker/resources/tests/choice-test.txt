@@ -5,6 +5,13 @@ processes {
     Test = b->a->STOP|c->a->STOP.
 }
 automata X,A,Test.
-operation {
-    Test~A.
+operation Test~A.
+
+processes {
+	A2 = a->STOP.
+	B2 = b->STOP.
+	C2 = A2|B2.
+    Test2 = (a->STOP)|(b->STOP).
 }
+automata C2, Test2.
+operation Test2 ~ C2.

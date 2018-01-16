@@ -172,11 +172,11 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
   public Set<AutomatonNode> combineNondeterministic(AutomatonNode node1, Set<AutomatonNode> nodes2, Context context) throws CompilationException, InterruptedException {
 
     if (!nodeMap.containsKey(node1.getId())) {
-      throw new CompilationException(getClass(), node1.getId() + " was not found in the automaton " + getId(), this.getLocation());
+      throw new CompilationException(getClass(), node1.getId() + "test1 was not found in the automaton " + getId(), this.getLocation());
     }
     for (AutomatonNode node2: nodes2) {
       if (!nodeMap.containsKey(node2.getId())) {
-        throw new CompilationException(getClass(), node2.getId() + " was not found in the automaton " + getId(), this.getLocation());
+        throw new CompilationException(getClass(), node2.getId() + "test2 was not found in the automaton " + getId(), this.getLocation());
       }
     }
 
@@ -249,11 +249,11 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
   public AutomatonNode combineNodes(AutomatonNode node1, AutomatonNode node2, Context context) throws CompilationException, InterruptedException {
     if (!nodeMap.containsKey(node1.getId())) {
-      throw new CompilationException(getClass(), node1.getId() + " was not found in the automaton " + getId(), this.getLocation());
+      throw new CompilationException(getClass(), node1.getId() + "test3 was not found in the automaton " + getId(), this.getLocation());
     }
     if (!nodeMap.containsKey(node2.getId())) {
 
-      throw new CompilationException(getClass(), node2.getId() + " was not found in the automaton " + getId(), this.getLocation());
+      throw new CompilationException(getClass(), node2.getId() + "test4 was not found in the automaton " + getId(), this.getLocation());
     }
     AutomatonNode node = addNode();
 
