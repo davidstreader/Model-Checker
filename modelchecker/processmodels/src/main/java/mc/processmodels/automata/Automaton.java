@@ -343,7 +343,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     // remove references to this edge
     edge.getFrom().removeOutgoingEdge(edge);
     edge.getTo().removeIncomingEdge(edge);
-
+System.out.println("Removing Edge " + edge.toString());
     edgeMap.remove(edge.getId());
     return true;
   }
