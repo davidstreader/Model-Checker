@@ -33,7 +33,7 @@ operation C3 ~ Test3.
 
 processes {
 	A4 = a->STOP+b->STOP.
-	B4 = c->A.
+	B4 = c->A4.
 	Test4 = c->STOP=>A4.
 }
 automata B4,Test4.
