@@ -1,4 +1,4 @@
-package mc.operations;
+package mc.operations.functions;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;

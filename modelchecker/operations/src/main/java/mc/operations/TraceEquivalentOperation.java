@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import mc.exceptions.CompilationException;
+import mc.operations.functions.NFtoDFconvFunction;
 import mc.plugins.IOperationInfixFunction;
 import mc.processmodels.automata.Automaton;
 

@@ -1,4 +1,4 @@
-package mc.operations;
+package mc.operations.functions.infix;
 
 import java.util.Collection;
 import java.util.HashMap;

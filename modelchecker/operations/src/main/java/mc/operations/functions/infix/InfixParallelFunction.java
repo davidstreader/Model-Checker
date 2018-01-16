@@ -1,4 +1,4 @@
-package mc.operations;
+package mc.operations.functions.infix;
 
 import lombok.Value;
 import mc.exceptions.CompilationException;

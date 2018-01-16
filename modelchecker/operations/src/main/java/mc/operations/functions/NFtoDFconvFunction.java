@@ -1,4 +1,4 @@
-package mc.operations;
+package mc.operations.functions;
 
 import com.microsoft.z3.Context;
 import java.util.ArrayList;
