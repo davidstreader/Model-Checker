@@ -830,8 +830,9 @@ On the right hand side of the equality we define guarded events:
 \begin{center}\verb$when(c<N) coin->C[c+1]$ \end{center}
 the \verb$coin$ event  will only occur when the guard is true, \verb|c<N| and the event  ends at node \verb$C[c+1]$.  {\bf Note a guard  only applies to one event.}  Each time you add a choice you need to add any required  guard.
 
-{\color{red}
-The \verb|if...then...else| command is very like the choice between two \verb|wait| commands with an exception.  Notice how the else part of the if command is not prefixed with an event and it parses and produces the automata displayed.
+
+The command {\color{red} \verb|when(c<N) P[0]...| }  uses process {\sf P[0]} that is not event prefixed. Hence will this command not compile.
+Whereas  \verb|if...then...else  P[0]| will compile and produces the automata displayed.
 
 \begin{center}\begin{minipage}{0.5\textwidth}
 \begin{verbatim}
@@ -840,23 +841,24 @@ PurseIf = P[0],
    (if (c < N) then  addcoin-> P[c+1]
     else    P[0] ).\end{verbatim}
 \end{minipage}
-\begin{minipage}{0.45\textwidth}
+\begin{minipage}{0.3\textwidth}
 \includegraphics[scale=0.15]{PurseIf.jpg}
 \end{minipage}\end{center}
 
-Where as if we use a process that is not event prefixed in a \verb|when| command, see example below, then it fails to parse.
-\begin{center}\begin{minipage}{0.5\textwidth}
-\begin{verbatim}
-PurseW = P[0],
-  P[c:0..N] =
-   (when (c < N)   addcoin-> P[c+1] |
-   when (c >= N)   P[0] ).\end{verbatim}
-\end{minipage}\end{center}
-}
 
 
+%{\color{red} \begin{center}\begin{minipage}{0.5\textwidth}
+%\begin{verbatim}
+%PurseW = P[0],
+%  P[c:0..N] =
+%   (when (c < N)   addcoin-> P[c+1] |
+%   when (c >= N)   P[0] ).\end{verbatim}
+%\end{minipage}\end{center}}
 
-\subsection{Event indexing}
+
+In \sref{EventIx} we will make use of this property of \verb|if| to simplify the definition of process. An interesying exercise is to try to define the process with out using the \verb|if| command.
+
+\subsection{Event indexing} \label{sec:EventIx}
 
 An indexed event  can be used to model events that input or output values.
 
@@ -1677,6 +1679,7 @@ Labeling & \verb$lab:P$ &  see below \\ \hline
 Parallel &  \verb$A = (P||Q)$ & \verb$Workers = (forall [i:0..N] ([i]:Worker)).$ \\ \hline
 Relabeling & \verb$P/{new/old}$ &  \verb$P/{new[i:0..N]/old[i]}$ \\ \hline
 Hiding & \verb$P\{act}$ & \verb$P\{act[i:0..N]}$ \\ \hline %\hline
+Keep  & {\sf P\{s\}}  $\sf \triangleq  P\backslash \{Act- s\}$ & \\ \hline
 %abstraction  & \multicolumn{2}{c|}{\tt abs(P)}  \\ \hline
 %simplification  & \multicolumn{2}{c|}{\tt simp(P) } \\ \hline
 \end{tabular}
@@ -1686,9 +1689,8 @@ Hiding & \verb$P\{act}$ & \verb$P\{act[i:0..N]}$ \\ \hline %\hline
 \vspace{2ex}
 \begin{tabular}{|c|c|l|}
 \hline abstraction  & {\tt abs(P)} & fair removal of $\tau$ events \\
-\hline abstraction  & {\tt abs\{unfair\}(P)} & unfair  removal of $\tau$ events \\ \hline
+\hline abstraction  & {\tt abs\{unfair\}(P)} & unfair  removal of $\tau$ events \\ 
 \hline hiding  & {\sf hide\{S\}(P)} & $\sf \triangleq  abs(P\backslash \{S\})$ \\ \hline
-\hline keep  & {\sf P\@\{s\}} & $\sf \triangleq  hideAct- s\})$ \\ \hline
 simplification  & {\tt simp(P) } & for the simplification of automata \\ \hline
 hiding index \verb|x| &\verb|R = R1${x}|&  builds symbolic automata \\ \hline
 \end{tabular}
