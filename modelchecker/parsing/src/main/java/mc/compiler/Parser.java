@@ -1279,9 +1279,12 @@ public class Parser {
     Boolean alphabet = null; // These are of Object type so we can for sure *know* that the user hasnt set them.
     Integer nodeCount = null, alphabetCount = null, maxTransitionCount = null;
 
+
+
     while (true) {
       if ((peekToken()) instanceof IdentifierToken) {
         String settingName = ((IdentifierToken) nextToken()).getIdentifier();
+
 
         if (!(nextToken() instanceof AssignToken)) {
           Token error = tokens.get(index - 1);
@@ -1338,10 +1341,14 @@ public class Parser {
       } else {
         Token error = tokens.get(index - 1);
         throw constructException("expected equation settings Identifier (ApplyAlphabet, NumberNodes, AlphabetCount, MaxTransitions) got \"" + error.toString() + "\"", error.getLocation());
+
       }
+
+
 
       if ((peekToken() instanceof CloseParenToken)) {
         nextToken();
+
 
         Token error = tokens.get(index - 1);
         if (alphabet == null) {
@@ -1354,8 +1361,10 @@ public class Parser {
           throw constructException("MaxTransitions not set in equation settings", error.getLocation());
         }
 
+
         break; // Ends parsing of the settings for equation
       }
+
 
       if (!(nextToken() instanceof CommaToken)) {
         Token error = tokens.get(index - 1);
@@ -1363,11 +1372,10 @@ public class Parser {
       }
     }
 
-
     if (!(peekToken() instanceof OpenBraceToken)) {
-      parseSingleOperation(true, new EquationSettings(alphabet, nodeCount, alphabetCount, maxTransitionCount));
+      parseSingleOperation(true,  new EquationSettings(alphabet, nodeCount, alphabetCount, maxTransitionCount));
     } else {
-      parseOperationBlock(true, new EquationSettings(alphabet, nodeCount, alphabetCount, maxTransitionCount));
+      parseOperationBlock(true,  new EquationSettings(alphabet, nodeCount, alphabetCount, maxTransitionCount));
     }
   }
 

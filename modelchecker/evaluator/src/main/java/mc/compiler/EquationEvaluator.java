@@ -58,7 +58,14 @@ public class EquationEvaluator {
 
             if(processes.size() > 0) {
 
-                int totalPermutations = (int)Math.pow(processes.size(), firstIds.size()+secondIds.size());
+
+
+                List<String> testingSpace = new ArrayList<>(); // The total number of unqiue automaton in the equation
+                firstIds.stream().filter(id -> !testingSpace.contains(id)).forEach(testingSpace::add);
+                secondIds.stream().filter(id -> !testingSpace.contains(id)).forEach(testingSpace::add);
+                System.out.println("Num processes: " + processes.size() + " idsSize: " + testingSpace.size());
+
+                int totalPermutations = (int)Math.pow(processes.size(), testingSpace.size());
                 ArrayList<String> failures = testUserdefinedModel(processes, status, operation, context, firstIds, secondIds, z3Context);
 
                 results.add(new OperationResult(operation.getFirstProcess(), operation.getSecondProcess(), firstId,
@@ -82,7 +89,6 @@ public class EquationEvaluator {
                 messageQueue.add(new LogMessage("Evaluating equations (0/" + perms.size() + ")"));
 
 
-                System.out.println(firstId + " " + secondId);
 
                 for (List<ProcessModel> models : perms)
                     testGeneratedModel(models, messageQueue, status, operation, context, z3Context, toRender, firstId, secondId, perms.size());
@@ -204,7 +210,7 @@ public class EquationEvaluator {
 
            if(status.failCount > context.getFailCount() ) {
                 //If we've failed too many tests;
-                return failedEquations;
+               return failedEquations;
            }
 
             status.doneCount++;
