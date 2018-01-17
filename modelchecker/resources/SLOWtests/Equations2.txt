@@ -19,7 +19,7 @@ W = (s->Y1).
 
 automata Y,Y1, X, Z,W.
 
-operation {
+equation (ApplyAlphabet=true, NumberNodes=2, AlphabetCount=2, MaxTransitions=2) {
 
 (X => ( Z + Y)) ~ ((X =>  Z )+ (X => Y)).
 
@@ -28,6 +28,7 @@ operation {
 X=> (Y=>Z) ~ (X=>Y)=>Z .
 
 }
+
 
 
 lengthEdgeValue: 10
