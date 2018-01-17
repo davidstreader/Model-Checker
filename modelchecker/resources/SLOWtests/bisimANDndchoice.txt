@@ -24,7 +24,7 @@ operation {
 
 (s->STOP)=>Y1 ~ (s->Y1).
 
-One2=> (One5=>One2) ~
+One2=> (One5=>One2) ~ (One2=> One5)=>One2.
 
 }
 
