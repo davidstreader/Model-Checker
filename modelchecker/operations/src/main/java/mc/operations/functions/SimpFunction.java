@@ -2,10 +2,12 @@ package mc.operations.functions;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.MultimapBuilder;
 import com.microsoft.z3.Context;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessFunction;
@@ -65,9 +67,8 @@ public class SimpFunction implements IProcessFunction {
     Automaton automaton = automata[0].copy();
 
     ColouringUtil colourer = new ColouringUtil();
-    Multimap<Integer, ColouringUtil.Colour> colourMap = MultimapBuilder.hashKeys()
-                                                                       .arrayListValues()
-                                                                       .build();
+    Map<Integer, List<ColouringUtil.ColourComponent>> colourMap = new HashMap<>();
+
     Multimap<Integer, AutomatonNode> nodeColours = colourer.performColouring(automaton, colourMap);
 
     for (Collection<AutomatonNode> value : nodeColours.asMap().values()) {

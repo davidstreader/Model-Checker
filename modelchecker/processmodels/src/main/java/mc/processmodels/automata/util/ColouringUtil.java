@@ -1,13 +1,14 @@
 package mc.processmodels.automata.util;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.MultimapBuilder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import lombok.AllArgsConstructor;
@@ -25,10 +26,10 @@ public class ColouringUtil {
   private static final int ERROR_COLOUR = -1;
   private int nextColourId = 1;
 
-  public Multimap<Integer, AutomatonNode> performColouring(Automaton automaton, Multimap<Integer, Colour> colourMap) {
+  public Multimap<Integer, AutomatonNode> performColouring(Automaton automaton, Map<Integer, List<ColourComponent>> colourMap) {
     int lastColourCount = 1;
     performInitialColouring(automaton);
-    Multimap<Integer, AutomatonNode> nodeColours = MultimapBuilder.hashKeys().arrayListValues().build();
+    Multimap<Integer, AutomatonNode> nodeColours = ArrayListMultimap.create();
     boolean runTwice = true;
 
     while (runTwice || nodeColours.size() != lastColourCount && !Thread.currentThread().isInterrupted()) {
@@ -66,13 +67,13 @@ public class ColouringUtil {
         }
 
         // construct a colouring for the current node
-        List<Colour> colouring = constructColouring(current);
+        List<ColourComponent> colouring = constructColouring(current);
 
         // check if this colouring already exists
         int colourId = Integer.MIN_VALUE;
 
         for (int id : colourMap.keySet()) {
-          Collection<Colour> oldColouring = colourMap.get(id);
+          Collection<ColourComponent> oldColouring = colourMap.get(id);
           if (colouring.equals(oldColouring)) {
             colourId = id;
             break;
@@ -81,7 +82,7 @@ public class ColouringUtil {
 
         if (colourId == Integer.MIN_VALUE) {
           colourId = getNextColourId();
-          colourMap.replaceValues(colourId, colouring);
+          colourMap.put(colourId, colouring);
         }
 
         if (!nodeColours.containsKey(colourId)) {
@@ -123,29 +124,29 @@ public class ColouringUtil {
     }
   }
 
-  private List<Colour> constructColouring(AutomatonNode node) {
-    Set<Colour> colouringSet = new HashSet<>();
+  private List<ColourComponent> constructColouring(AutomatonNode node) {
+    Set<ColourComponent> colouringSet = new HashSet<>();
 
     node.getOutgoingEdges()
-        .forEach(edge -> colouringSet.add(new Colour(edge.getTo().getColour(), edge.getLabel(), node)));
-    List<Colour> colouring = new ArrayList<>(colouringSet);
+        .forEach(edge -> colouringSet.add(new ColourComponent(edge.getTo().getColour(), edge.getLabel(), node)));
+    List<ColourComponent> colouring = new ArrayList<>(colouringSet);
     Collections.sort(colouring);
     return colouring;
   }
 
-  private int getNextColourId() {
+  public int getNextColourId() {
     return nextColourId++;
   }
 
   @ToString
   @AllArgsConstructor
   @EqualsAndHashCode(exclude = {"node"})
-  public static class Colour implements Comparable<Colour> {
+  public static class ColourComponent implements Comparable<ColourComponent> {
     public int to;
     public String action;
     public AutomatonNode node;
 
-    public int compareTo(Colour col) {
+    public int compareTo(ColourComponent col) {
       if (to < col.to) {
         return -1;
       }

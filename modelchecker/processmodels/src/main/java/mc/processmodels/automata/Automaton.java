@@ -203,7 +203,6 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
       newNode.copyProperties(node1);
       newNode.copyProperties(nodeToMerge);
 
-      System.out.println(newNode);
 
       newNode.setVariables(null); // Remove the variables
       if (node1.getVariables() != null && nodeToMerge.getVariables() != null) {
@@ -424,7 +423,6 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     // remove references to this edge
     edge.getFrom().removeOutgoingEdge(edge);
     edge.getTo().removeIncomingEdge(edge);
-System.out.println("Removing Edge " + edge.toString());
     edgeMap.remove(edge.getId());
     return true;
   }

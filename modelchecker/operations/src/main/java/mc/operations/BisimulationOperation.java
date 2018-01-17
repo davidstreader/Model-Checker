@@ -1,9 +1,14 @@
 package mc.operations;
 
-import com.google.common.collect.Multimap;
-import com.google.common.collect.MultimapBuilder;
+import static mc.processmodels.automata.util.ColouringUtil.ColourComponent;
+
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import mc.exceptions.CompilationException;
@@ -43,10 +48,8 @@ public class BisimulationOperation implements IOperationInfixFunction {
   @Override
   public boolean evaluate(Collection<Automaton> automata) throws CompilationException {
 
-    Multimap<Integer, ColouringUtil.Colour> colourMap = MultimapBuilder.hashKeys()
-        .arrayListValues()
-        .build();
-    Set<Integer> rootColour = Collections.emptySet();
+    Map<Integer, List<ColourComponent>> colourMap = new HashMap<>();
+    int rootColour = Integer.MIN_VALUE;
 
     ColouringUtil colourer = new ColouringUtil();
     for (Automaton automaton : automata) {
@@ -57,13 +60,39 @@ public class BisimulationOperation implements IOperationInfixFunction {
 
       Set<AutomatonNode> root = automaton.getRoot();
 
-      Set<Integer> colourSet = root.stream()
+      List<ColourComponent> colourSet = root.stream()
           .map(AutomatonNode::getColour)
-          .collect(Collectors.toSet());
+          .map(colourMap::get)
+          .filter(Objects::nonNull)
+          .flatMap(List::stream)
+          .distinct()
+          .sorted()
+          .collect(Collectors.toList());
 
-      if (rootColour.isEmpty()) {
-        rootColour = colourSet;
-      } else if (!rootColour.equals(colourSet)) {
+//      System.out.println(automaton.getId());
+//      System.out.println(colourSet);
+
+      int col = Integer.MIN_VALUE;
+
+      for (Map.Entry<Integer, List<ColourComponent>> colour : colourMap.entrySet()) {
+        List<ColourComponent> colSet = new ArrayList<>(colour.getValue());
+        Collections.sort(colSet);
+
+        if (colSet.equals(colourSet)) {
+          col = colour.getKey();
+          break;
+        }
+      }
+//      System.out.println(col);
+
+      if (col == Integer.MIN_VALUE) {
+        col = colourer.getNextColourId();
+        colourMap.put(col, colourSet);
+      }
+
+      if (rootColour == Integer.MIN_VALUE) {
+        rootColour = col;
+      } else if (rootColour != col) {
         return false;
       }
     }

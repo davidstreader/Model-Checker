@@ -38,3 +38,13 @@ processes {
 }
 automata B4,Test4.
 operation B4 ~ Test4.
+
+/* Test of Bisimulation changes*/
+
+processes {
+    A5 = a->STOP+b->STOP.
+    Test5 = (a->STOP |
+             b->STOP ).
+}
+automata A5, Test5.
+operation A5 ~ Test5.
