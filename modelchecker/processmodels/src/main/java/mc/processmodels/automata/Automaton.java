@@ -203,7 +203,6 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
       newNode.copyProperties(node1);
       newNode.copyProperties(nodeToMerge);
 
-
       newNode.setVariables(null); // Remove the variables
       if (node1.getVariables() != null && nodeToMerge.getVariables() != null) {
         if (node1.getVariables().equals(nodeToMerge.getVariables())) {

@@ -34,55 +34,77 @@ public class EquationEvaluator {
         this.automataOperations = new AutomataOperations();
     }
 
-    public EquationReturn evaluateEquations(List<OperationNode> operations, String code, Context context, com.microsoft.z3.Context z3Context, BlockingQueue<Object> messageQueue) throws CompilationException {
+    public EquationReturn evaluateEquations(List<ProcessModel> processes, List<OperationNode> operations, String code, Context context, com.microsoft.z3.Context z3Context, BlockingQueue<Object> messageQueue) throws CompilationException {
         reset();
         List<OperationResult> results = new ArrayList<>();
         Map<String,ProcessModel> toRender = new ConcurrentSkipListMap<>();
+
+
         AutomatonGenerator generator = new AutomatonGenerator();
-        for(OperationNode operation : operations){
+        for (OperationNode operation : operations) {
+            ModelStatus status = new ModelStatus();
+            //Generic ids defined in the equation block
+            /*eg
+                equation(...) {
+                    X~Y.
+                }
 
-
+                where X and Y are the automaton/process
+             */
             String firstId = OperationEvaluator.findIdent(operation.getFirstProcess(), code);
             String secondId = OperationEvaluator.findIdent(operation.getSecondProcess(), code);
             List<String> firstIds = OperationEvaluator.collectIdentifiers(operation.getFirstProcess());
             List<String> secondIds = OperationEvaluator.collectIdentifiers(operation.getSecondProcess());
-            String opIdent = firstId+" "+OperationResult.getOpSymbol(operation.getOperation())+" "+secondId;
+
+            if(processes.size() > 0) {
 
 
 
-            messageQueue.add(new LogMessage("Checking equation: "+opIdent,true,false));
-            //Since both are tree based, they should have the same iteration order.
-            List<Collection<ProcessModel>> generated = new ArrayList<>();
-            Set<String> ids = new TreeSet<>(firstIds);
-            ids.addAll(secondIds);
-            messageQueue.add(new LogMessage("Generating models"));
-            for (String id: ids) {
-                generated.add(generator.generateAutomaton(id,automataOperations, operation.getEquationSettings()));
+                List<String> testingSpace = new ArrayList<>(); // The total number of unqiue automaton places in the equation
+                firstIds.stream().filter(id -> !testingSpace.contains(id)).forEach(testingSpace::add);
+                secondIds.stream().filter(id -> !testingSpace.contains(id)).forEach(testingSpace::add);
+
+                int totalPermutations = (int)Math.pow(processes.size(), testingSpace.size());
+                ArrayList<String> failures = testUserdefinedModel(processes, testingSpace, status , operation, context, z3Context);
+
+                results.add(new OperationResult(operation.getFirstProcess(), operation.getSecondProcess(), firstId,
+                            secondId, operation.getOperation(), failures, operation.isNegated(), status.passCount == totalPermutations,
+                            status.passCount + "/" + totalPermutations));
+
+            } else {
+
+                //Since both are tree based, they should have the same iteration order.
+                List<Collection<ProcessModel>> generated = new ArrayList<>();
+                Set<String> ids = new TreeSet<>(firstIds);
+                ids.addAll(secondIds);
+                messageQueue.add(new LogMessage("Generating models"));
+                for (String id : ids)
+                    generated.add(generator.generateAutomaton(id, automataOperations, operation.getEquationSettings()));
+
+                messageQueue.add(new LogMessage("Generating permutations"));
+                List<List<ProcessModel>> perms = permutations(generated).collect(Collectors.toList());
+
+
+                messageQueue.add(new LogMessage("Evaluating equations (0/" + perms.size() + ")"));
+
+
+
+                for (List<ProcessModel> models : perms)
+                    testGeneratedModel(models, messageQueue, status, operation, context, z3Context, toRender, firstId, secondId, perms.size());
+
+
+                results.add(new OperationResult(operation.getFirstProcess(), operation.getSecondProcess(), firstId,
+                            secondId, operation.getOperation(), null ,operation.isNegated(), status.passCount == perms.size(),
+                            status.passCount + "/" + perms.size()));
+
             }
-            messageQueue.add(new LogMessage("Generating permutations"));
-            List<List<ProcessModel>> perms = permutations(generated).collect(Collectors.toList());
-
-
-            messageQueue.add(new LogMessage("Evaluating equations (0/"+perms.size()+")"));
-            ModelStatus status = new ModelStatus();
-           // ExecutorService service = Executors.newFixedThreadPool(4);
-            for (List<ProcessModel> models : perms) {
-                testModel(models,messageQueue,status, operation, context, z3Context, toRender, firstId, secondId, perms.size());
-            }
-          // service.shutdown();
-         //  try {
-         //       service.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-        //    } catch (InterruptedException e) {
-         //       service.shutdownNow();
-         //   }
-
-            results.add(new OperationResult(operation.getFirstProcess(), operation.getSecondProcess(), firstId, secondId, operation.getOperation(), operation.isNegated(), status.passCount == perms.size(),status.passCount+"/"+perms.size()));
         }
+
         return new EquationReturn(results,toRender);
     }
 
     @SneakyThrows(value = InterruptedException.class)
-    private boolean testModel(List<ProcessModel> processModels, BlockingQueue<Object> messageQueue, ModelStatus status, OperationNode operation, Context context, com.microsoft.z3.Context z3Context, Map<String, ProcessModel> toRender, String firstId, String secondId, int size)  throws CompilationException {
+    private boolean testGeneratedModel(List<ProcessModel> processModels, BlockingQueue<Object> messageQueue, ModelStatus status, OperationNode operation, Context context, com.microsoft.z3.Context z3Context, Map<String, ProcessModel> toRender, String firstId, String secondId, int size)  throws CompilationException {
 
         Interpreter interpreter = new Interpreter();
         List<Automaton> automata = new ArrayList<>();
@@ -103,9 +125,9 @@ public class EquationEvaluator {
         if(operation.getFirstProcess().equals(operation.getSecondProcess()))
             result = true;
 
-        if (operation.isNegated()) {
+        if (operation.isNegated())
             result = !result;
-        }
+
         if (!result && status.failCount < context.getFailCount()) {
             String id2 = "op"+(status.id++)+": (";
             toRender.put(id2+firstId+")",automata.get(0));
@@ -126,6 +148,111 @@ public class EquationEvaluator {
         status.timeStamp = System.currentTimeMillis();
 
         return result;
+    }
+
+    private ArrayList<String> testUserdefinedModel(List<ProcessModel> models, List<String> testingSpace, ModelStatus status,
+                                                   OperationNode operation, Context context, com.microsoft.z3.Context z3Context)
+            throws CompilationException {
+
+        ArrayList<String> failedEquations = new ArrayList<>();
+
+        Interpreter interpreter = new Interpreter();
+
+        if(testingSpace.size() > 3)
+            throw new CompilationException(getClass(),"Too many variables defined in equation block (>3)");
+
+        if(testingSpace.size() > models.size())
+            throw new CompilationException(getClass(),"Not enough defined automaton to fill test space");
+
+        HashMap<String, ProcessModel> idMap = new HashMap<>(); // Which model substitutes for which equation automaton
+        for(String currentId : testingSpace) // Set up starting state
+            idMap.put(currentId, models.get(0));
+
+        HashMap<String, Integer> indexMap = new HashMap<>(); // Stops us having to search for the model each time with a loop
+        for(int i = 0; i < models.size(); i++)
+            indexMap.put(models.get(i).getId(),i);
+
+
+        while(true) {
+
+            ArrayList<Automaton> createdAutomaton = new ArrayList<>();
+            try {
+                createdAutomaton.add((Automaton) interpreter.interpret("automata", operation.getFirstProcess(), getNextEquationId(), idMap, z3Context));
+                createdAutomaton.add((Automaton) interpreter.interpret("automata", operation.getSecondProcess(), getNextEquationId(), idMap, z3Context));
+            } catch(InterruptedException e) {
+                return failedEquations;
+            }
+
+
+            //Using the name of the operation, this finds the appropriate function to use in operations/src/main/java/mc/operations/
+            String currentOperation = operation.getOperation().toLowerCase();
+
+            boolean result = instantiateClass(operationsMap.get(currentOperation)).evaluate(createdAutomaton);
+
+            //As getNextEquationId for some reason breaks bisimulation, if they are the same process just pass it
+            if(operation.getFirstProcess().equals(operation.getSecondProcess())) {
+                result = true;
+            }
+
+            if (operation.isNegated()) {
+                result = !result;
+            }
+
+            if(result) {
+                status.passCount++;
+            } else {
+                status.failCount++;
+                String failOutput = "";
+                for(String key : idMap.keySet())
+                    failOutput += "$"+key + "=" + idMap.get(key).getId() + ", ";
+
+                failedEquations.add(failOutput);
+            }
+
+
+           if(status.failCount > context.getFailCount() ) {
+                //If we've failed too many tests;
+               return failedEquations;
+           }
+
+            status.doneCount++;
+
+            status.timeStamp = System.currentTimeMillis();
+
+
+            //if all elements in the map are the same final element in models, then end the test.
+            boolean done = true;
+            for(ProcessModel val : idMap.values())
+                if(!val.equals(models.get(models.size()-1))) {
+                    done = false;
+                    break;
+                }
+
+            if(done) {
+                return failedEquations;
+            }
+
+            //Generate new permutation of provided models
+            for(String currentId : testingSpace) {
+
+                if(idMap.get(currentId).equals(models.get(models.size()-1))) {
+                    if (testingSpace.get(testingSpace.size() - 1).equals(currentId)) {
+
+                        break;
+                    } else {
+                        idMap.put(currentId, models.get(0));
+                    }
+                } else {
+                    int modelIndex = indexMap.get(idMap.get(currentId).getId());
+                    modelIndex++;
+
+                    idMap.put(currentId, models.get(modelIndex));
+                    break;
+                }
+            }
+
+        }
+
     }
 
     private String getNextEquationId(){

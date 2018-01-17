@@ -61,7 +61,7 @@ public class OperationEvaluator {
             if (operation.isNegated()) {
                 result = !result;
             }
-            results.add(new OperationResult(operation.getFirstProcess(),operation.getSecondProcess(), firstId, secondId, operation.getOperation(), operation.isNegated(), result,""));
+            results.add(new OperationResult(operation.getFirstProcess(),operation.getSecondProcess(), firstId, secondId, operation.getOperation(), null,operation.isNegated(), result,""));
         }
         return results;
     }
@@ -71,8 +71,16 @@ public class OperationEvaluator {
         collectIdentifiers(process,ids);
         return ids;
     }
+
+    /**
+     *  A recursive search for finding identifiers in an ast
+     * @param process the ast node that has identifiers in it that are to be collected
+     * @param ids the returned collection
+     */
     private static void collectIdentifiers(ASTNode process, List<String> ids) {
-        if (process instanceof IdentifierNode) ids.add(((IdentifierNode) process).getIdentifier());
+        if (process instanceof IdentifierNode)
+            ids.add(((IdentifierNode) process).getIdentifier());
+
         if (process instanceof ChoiceNode) {
             collectIdentifiers(((ChoiceNode) process).getFirstProcess(), ids);
             collectIdentifiers(((ChoiceNode) process).getSecondProcess(), ids);
@@ -89,7 +97,9 @@ public class OperationEvaluator {
             if (((IfStatementNode) process).hasFalseBranch())
                 collectIdentifiers(((IfStatementNode) process).getFalseBranch(), ids);
         }
-        if (process instanceof SequenceNode) collectIdentifiers(((SequenceNode) process).getTo(), ids);
+
+        if (process instanceof SequenceNode)
+            collectIdentifiers(((SequenceNode) process).getTo(), ids);
     }
 
     static String findIdent(ASTNode firstProcess, String code) {

@@ -89,7 +89,7 @@ public class ExpressionPrinter {
         if(expression.isBVSGE()){
             return "("+lhs+">="+rhs+")";
         }
-        System.out.println(expression);
+
         throw new IllegalArgumentException("");
     }
 

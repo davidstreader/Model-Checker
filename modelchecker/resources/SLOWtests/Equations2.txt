@@ -9,6 +9,7 @@ Union of the colered events (name, color(post)) leaving any root node
 One2 = a->STOP.
 One5 = b->STOP.
 
+X = (c->STOP| d->ERROR).
 Y = One2 => ( One5 + One2).
 Y1 = (One2 =>  One5 )+ (One2 => One2). 
 
@@ -16,15 +17,15 @@ Z =  (s->STOP)=>Y1.
 W = (s->Y1).
 }
 
-automata Y,Y1, Z,W.
+automata Y,Y1, X, Z,W.
 
 equation (ApplyAlphabet=true, NumberNodes=2, AlphabetCount=2, MaxTransitions=2) {
 
-(One2 => ( One5 + One2)) ~ ((One2 =>  One5 )+ (One2 => One2)).
+(X => ( Z + Y)) ~ ((X =>  Z )+ (X => Y)).
 
-(s->STOP)=>Y1 ~ (s->Y1).
+(s->STOP)=>X ~ (s->X).
 
-One2=> (One5=>One2) ~ (One2=> One5)=>One2.
+X=> (Y=>Z) ~ (X=>Y)=>Z .
 
 }
 

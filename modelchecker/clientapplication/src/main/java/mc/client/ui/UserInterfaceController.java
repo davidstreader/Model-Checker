@@ -524,7 +524,7 @@ public class UserInterfaceController implements Initializable {
         creatSceneOptions();
     }
 
-    //TODO: make this a better concurrent process
+    //TODO: make this a concurrent process
     @FXML
     private void handleCompileRequest(ActionEvent event) {
         String userCode = userCodeInput.getText();
@@ -535,23 +535,23 @@ public class UserInterfaceController implements Initializable {
             try {
                 Compiler codeCompiler = new Compiler();
 
-                // This follows the observer pattern.
-                // Within the compile function the code is then told to update an observer
                 codeCompiler.compile(userCode, new Context(), Expression.mkCtx(), new LinkedBlockingQueue<>());
 
+                // This follows the observer pattern.
+                // Within the compile function the code is then told to update an observer
+                compilerOutputDisplay.insertText(0,"Compiling completed sucessfully!\n"+ new Date().toString());
 
-                compilerOutputDisplay.insertText(0, "Compiling completed sucessfully!\n" + new Date().toString());
             } catch (InterruptedException e) {
                 e.printStackTrace();
             } catch (CompilationException e) {
                 holdHighlighting = true;
                 compilerOutputDisplay.insertText(0, e.toString());
-                if (e.getLocation() != null)
+                if (e.getLocation() != null) {
                     compilerOutputDisplay.appendText("\n" + e.getLocation());
 
-
-                if (e.getLocation().getStartIndex() > 0 && e.getLocation().getStartIndex() < userCodeInput.getText().length())
-                    userCodeInput.setStyleClass(e.getLocation().getStartIndex(), e.getLocation().getEndIndex(), "issue");
+                    if (e.getLocation().getStartIndex() > 0 && e.getLocation().getStartIndex() < userCodeInput.getText().length())
+                        userCodeInput.setStyleClass(e.getLocation().getStartIndex(), e.getLocation().getEndIndex(), "issue");
+                }
 
             }
         }
@@ -578,12 +578,25 @@ public class UserInterfaceController implements Initializable {
         opRes.forEach(o -> compilerOutputDisplay.appendText(o.getProcess1().getIdent() + " " + o.getOperation() + " " +
                 o.getProcess2().getIdent() + " = " + o.getResult() + "\n"));
 
-        if (eqRes.size() > 0)
+        if (eqRes.size() > 0) {
             compilerOutputDisplay.appendText("\n##Operation Results##\n");
 
-        eqRes.forEach(o -> compilerOutputDisplay.appendText(o.getProcess1().getIdent() + " " + o.getOperation() + " " +
-                o.getProcess2().getIdent() + " = " + o.getResult() + "\n" +
-                "Simulations passed: " + o.getExtra() + "\n"));
+
+            for (OperationResult result : eqRes) {
+                compilerOutputDisplay.appendText(result.getProcess1().getIdent() + " " + result.getOperation() + " "+
+                                                 result.getProcess2().getIdent() + " = " + result.getResult() + "\n");
+
+
+                if(result.getFailures().size() > 0) {
+                    compilerOutputDisplay.appendText("\tFailing Combinations: \n");
+
+                    for (String failure : result.getFailures())
+                        compilerOutputDisplay.appendText("\t\t"+failure + "\n");
+                }
+
+                compilerOutputDisplay.appendText("\tSimulations passed: " + result.getExtra() + "\n");
+            }
+        }
 
 
     }
