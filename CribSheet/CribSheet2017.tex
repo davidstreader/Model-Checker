@@ -446,24 +446,49 @@ Trace equality dose not distinguish deterministic processes from non determinist
 {\bf 2.} Repeatedly recolour the nodes using
      \begin{center}
      $Col_{i+1}(n) \triangleq \{(a,Col_i(m)) .\aro{n}{a}{m}\}$
+     
      \end{center}
 
 {\bf 3.} \hspace{0.25in} stop when  the recolouring changes nothing.
 \begin{center}
      $Col_{i+1}(n) =Col_{i+1}(m) \Leftrightarrow Col_{i}(n) =Col_{i}(m)$
+ 
+      {\sf Colour map} $\sf Col(n) \mapsto \{(a,Col(m)) .\aro{n}{a}{m}\}$
      \end{center}
 
 \end{minipage} \end{center}
 
- The maximal bisimulation relation that  can be computed very quickly and  bisimular nodes, nodes with the same colour, can be identified to produce a simpler automata. .
+ The maximal bisimulation relation that  can be computed very quickly and  bisimular nodes, nodes with the same colour, can be identified to produce a simpler automata. 
  Using this colouring algorithm it is easy to see the result of applying  bisimulation simplification to simple automata.
 
  This algorithm can be applied to many automata at the same time and can be used to compute an equivalence   class on a set of   automata.
+ To cope with the multiple start states we first compute the bisimulation colouring and {\sf Colour Map}. Then two processes, {\sf A} and {\sf B}  are bisimular if and only if 
+ 
+ \[ \sf  A\sim B \triangleq \bigcup_{s\in A_S} Col(s)  = \bigcup_{s\in B_S} Col(s) \]
+ 
  Bisimulation has  attractive mathematical properties, is easy to compute and has proven to be of practical use. Consequently bisimulation relations have been defined on many different structures.
 
 Both these equivalences are congruent with respect to our process operators (substitution of equivalent processes).
 \[ A\sim B \Rightarrow A||P\sim A||P\]
 \[ A =_{Tr_{c}}  B  \Rightarrow  A||P =_{Tr_{c}}  A||P\]
+
+
+\subsection{Failure Semantics}
+This denotational semantics is taken from \cite{CSP} where it has been applied to processes with hand shake events. It has been shown to correspond to a natural notion of Testing semantics in \cite{}.
+
+\[ \sf Fail(A) \triangleq \big\{(t,R) . \arop{s}{t}{n}{A} \land R \subseteq (Act -\pi(n)) \big\}\]
+
+\[\sf A=_F B \triangleq Fail(A) = Fail(B)\]
+
+
+\subsection{Quiescent Trace semantics}
+This denotational semantics is taken from \cite{IOA} where it has been applied to processes with broadcast events. It has been shown to correspond to a natural notion of Testing semantics in {\sf ?}.
+
+\[ \sf Qtr(A) \triangleq \big\{t . \arop{s}{t}{n}{A} \land \pi(n) \cap Act_{!} = \emptyset \big\}\]
+
+\[\sf A=_{Qtr} B \triangleq Qtr(A) = Qtr(B)\]
+
+Note $ \sf A=_F B \Rightarrow A=_{Qtr} B$
 
 \section{Event hiding and process simplification}
 Our process language can be used both to specify \emph{implementations}  of  processes and more abstract \emph{specifications}.  Our tool is designed to support the approach popularised by Event B. Both the abstract specification and the more concrete implementation are specified in the same language.  The tool then checks that the implementation is a \emph{refinement} of the specification.
@@ -641,16 +666,10 @@ Non-blocking send events can be decomposed into:
 \item[multicast] A traffic light can be seen by many cars.
 \end{description}
 
-The point to point interaction can  defined with: 
 
 
 
-\begin{center}\verb$(start -> broadcast! -> halt -> STOP)||(pull -> broadcast? -> push -> STOP)$
-\end{center}
-The automata  can be seen  below:
-\begin{center}	
-	\includegraphics[scale=0.5]{bcast.jpg} \end{center}
-	
+
 	
 	
 Note: if you are not listening you might miss the warning and if you are not looking you might not see the green light. Listening/looking is formalised as being in a state from which the receive event is enabled. We model processes so that if you are listening/looking then you will hear/see the broadcast event.
@@ -662,7 +681,12 @@ Considering systems containing separate processes for  {\sf Cars} and {\sf Traff
 Consequently wo  {\sf braodcast?} events will not synchronise  like  hand shake events but behave as shown below:
 
 
-
+\begin{center}\verb$(start -> broadcast? -> halt -> STOP)||(pull -> broadcast? -> push -> STOP)$
+\end{center}
+The automata  can be seen  below:
+\begin{center}	
+	\includegraphics[scale=0.5]{BcastPar2.png} \end{center}
+	
 
 \section{ Renaming events and simplifying Processes}
 Frequently when we are thinking of one process it is natural to give an event a particular name. But, when considered from the perspective of another process that may interact with it this name might be confusing. Consequently we introduce ways to rename events.
@@ -755,7 +779,7 @@ and equality is
 Let $\Emath$ be the set of LTS and $Tr^c$ be the complete traces of an automata  then all we need to define to fix our definition of testing equality is the definition of $\parallel$ parallel composition.
 \hspace{\fill}$\Box$
 
-In what follows we will define parallel composition between handshake events  and  another definition of parallel composition for broadcast events.  Using parallel composition for \emph{handshake events} the above definition of testing equality has been shown to be the same as the well known \emph{Failure equality} from CSP.  Whereas using parallel composition between \emph{broadcast events} the above definition of testing equality corresponds to the well known \emph{quiescent trace} equality.
+We have defined parallel composition between handshake events  and  another definition of parallel composition for broadcast events.  Using parallel composition for {\sf handshake events} the above definition of testing equality has been shown to be the same as the well known {\sf Failure equality} from CSP.  Whereas using parallel composition between {\sf broadcast events} the above definition of testing equality corresponds to the well known {\sf quiescent trace} equality.
 
 
 \section{Indexed Process definitions}
