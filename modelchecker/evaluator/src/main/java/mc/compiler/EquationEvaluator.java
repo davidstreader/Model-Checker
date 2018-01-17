@@ -60,13 +60,12 @@ public class EquationEvaluator {
 
 
 
-                List<String> testingSpace = new ArrayList<>(); // The total number of unqiue automaton in the equation
+                List<String> testingSpace = new ArrayList<>(); // The total number of unqiue automaton places in the equation
                 firstIds.stream().filter(id -> !testingSpace.contains(id)).forEach(testingSpace::add);
                 secondIds.stream().filter(id -> !testingSpace.contains(id)).forEach(testingSpace::add);
-                System.out.println("Num processes: " + processes.size() + " idsSize: " + testingSpace.size());
 
                 int totalPermutations = (int)Math.pow(processes.size(), testingSpace.size());
-                ArrayList<String> failures = testUserdefinedModel(processes, status, operation, context, firstIds, secondIds, z3Context);
+                ArrayList<String> failures = testUserdefinedModel(processes, testingSpace, status , operation, context, z3Context);
 
                 results.add(new OperationResult(operation.getFirstProcess(), operation.getSecondProcess(), firstId,
                             secondId, operation.getOperation(), failures, operation.isNegated(), status.passCount == totalPermutations,
@@ -151,15 +150,13 @@ public class EquationEvaluator {
         return result;
     }
 
-    private ArrayList<String> testUserdefinedModel(List<ProcessModel> models, ModelStatus status, OperationNode operation, Context context,
-                                         List<String> firstIds, List<String> secondIds,com.microsoft.z3.Context z3Context)  throws CompilationException {
+    private ArrayList<String> testUserdefinedModel(List<ProcessModel> models, List<String> testingSpace, ModelStatus status,
+                                                   OperationNode operation, Context context, com.microsoft.z3.Context z3Context)
+            throws CompilationException {
 
         ArrayList<String> failedEquations = new ArrayList<>();
 
         Interpreter interpreter = new Interpreter();
-        List<String> testingSpace = new ArrayList<>(); // The total number of unqiue automaton in the equation
-        firstIds.stream().filter(id -> !testingSpace.contains(id)).forEach(testingSpace::add);
-        secondIds.stream().filter(id -> !testingSpace.contains(id)).forEach(testingSpace::add);
 
         if(testingSpace.size() > 3)
             throw new CompilationException(getClass(),"Too many variables defined in equation block (>3)");
@@ -167,19 +164,24 @@ public class EquationEvaluator {
         if(testingSpace.size() > models.size())
             throw new CompilationException(getClass(),"Not enough defined automaton to fill test space");
 
-        HashMap<String, ProcessModel> idMap = new HashMap<>();
+        HashMap<String, ProcessModel> idMap = new HashMap<>(); // Which model substitutes for which equation automaton
         for(String currentId : testingSpace) // Set up starting state
             idMap.put(currentId, models.get(0));
+
+        HashMap<String, Integer> indexMap = new HashMap<>(); // Stops us having to search for the model each time with a loop
+        for(int i = 0; i < models.size(); i++)
+            indexMap.put(models.get(i).getId(),i);
 
 
         while(true) {
 
             ArrayList<Automaton> createdAutomaton = new ArrayList<>();
             try {
-
                 createdAutomaton.add((Automaton) interpreter.interpret("automata", operation.getFirstProcess(), getNextEquationId(), idMap, z3Context));
                 createdAutomaton.add((Automaton) interpreter.interpret("automata", operation.getSecondProcess(), getNextEquationId(), idMap, z3Context));
-            } catch(InterruptedException e) {}
+            } catch(InterruptedException e) {
+                return failedEquations;
+            }
 
 
             //Using the name of the operation, this finds the appropriate function to use in operations/src/main/java/mc/operations/
@@ -241,11 +243,7 @@ public class EquationEvaluator {
                         idMap.put(currentId, models.get(0));
                     }
                 } else {
-                    int modelIndex;
-                    for(modelIndex = 0; modelIndex < models.size(); modelIndex++)
-                        if(models.get(modelIndex).equals(idMap.get(currentId)))
-                            break;
-
+                    int modelIndex = indexMap.get(idMap.get(currentId).getId());
                     modelIndex++;
 
                     idMap.put(currentId, models.get(modelIndex));
