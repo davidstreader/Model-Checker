@@ -174,20 +174,22 @@ public class EquationEvaluator {
 
 
         while(true) {
-
+            boolean interperateFail = false;
             ArrayList<Automaton> createdAutomaton = new ArrayList<>();
             try {
                 createdAutomaton.add((Automaton) interpreter.interpret("automata", operation.getFirstProcess(), getNextEquationId(), idMap, z3Context));
                 createdAutomaton.add((Automaton) interpreter.interpret("automata", operation.getSecondProcess(), getNextEquationId(), idMap, z3Context));
             } catch(InterruptedException e) {
                 return failedEquations;
+            } catch(CompilationException e) {
+                interperateFail = true;
             }
 
 
             //Using the name of the operation, this finds the appropriate function to use in operations/src/main/java/mc/operations/
             String currentOperation = operation.getOperation().toLowerCase();
 
-            boolean result = instantiateClass(operationsMap.get(currentOperation)).evaluate(createdAutomaton);
+            boolean result = !interperateFail && instantiateClass(operationsMap.get(currentOperation)).evaluate(createdAutomaton);
 
             //As getNextEquationId for some reason breaks bisimulation, if they are the same process just pass it
             if(operation.getFirstProcess().equals(operation.getSecondProcess())) {
