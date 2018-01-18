@@ -1808,8 +1808,8 @@ Rob~J. van Glabbeek.
 \section{Tool Development}
 Currently toll builds finite state automata. Needs options to build  symbolic automata, finite state Petri Nets and symbolic Petri Nets.
 
-\subsection{Quality Code}
-The event based tool has been used for teaching but greater support in terms of functionality and debugging needed. Support for improved code quality and ease of extension needed.
+{\bf \large Quality Code}
+The equation processor allows algebraic equational rules to be checked by building a set of test processes and then instantiating each variable to generate a ground equality that can be validated.  We currently use this to generate thousands of tests. This has improved the code quality significantly. 
 
 \begin{center}\begin{minipage}{0.7\textwidth}
 \emph{\begin{enumerate}
@@ -1820,11 +1820,10 @@ The event based tool has been used for teaching but greater support in terms of 
 \end{minipage}
 \end{center}
 
-%\emph {\hspace{2cm}\begin{minipage}{0.7\textwidth}
-A process specification $\mathcal{P}$  is input as text and automata {\sf P} is built. The specification contains  various operations $\_\parallel\_$, ${\sf abs(\_)}$, ${\sf simp(\_)}$,  ${\sf \_\backslash\{evt\}}$, ${\sf \_/\{new/ old\}}$ ...
-Are these defined as automata to automata mappings or as specification to automata mappings?
-
-%\end{minipage} }
+\begin{enumerate}
+\item Interface for Automata  made public and documented.
+\item Support for plug-in style development.
+\end{enumerate}
 
 
 
@@ -1833,11 +1832,8 @@ Are these defined as automata to automata mappings or as specification to automa
 \subsection{Technical  overview} Ongoing review and discussion!
 
 \begin{enumerate}
-\item Process variables will help speed up test construction.
 \item Asynchronous architecture with  processing  in a docker containers
-\item {\sf Build hierarchy of processes }   where the leaves are defined without reference to other processes. and where child processes are directly used in the construction of the parent.
- Needed for flexible construction - of  symbolic automata and Net options
-\item Compile each process separately  and only recompile if that part of the document has changed. {\bf Could use JEdit  in place of web?}
+\item Compile each process separately  and only recompile if that part of the document has changed. 
 
 \item  Isabelle  is now designed for \emph{proof as a service}  with Isabelle running in docker containers in the background.  Alas this appears to be work in progress and we might have to stick to Z3 at the moment.
 \end{enumerate}
@@ -1845,47 +1841,16 @@ Are these defined as automata to automata mappings or as specification to automa
 
 
 
-\begin{center}{\bf \Huge  TODO }\end{center}
-\begin{enumerate}
-\item {\bf *** Design Considerations ***}
+\subsection{TODO}
 
 \begin{enumerate}
-\item Interface for Automata  made public and documented.
-\item Support for plugin style development.
-\item efficient immutable state so that processing can be performed asynchronously!
-\item docker containers!
-\end{enumerate}
-
-\item {\bf **start** Bug fixes:}
-\begin{enumerate}
-\item abstraction
-\item broadcast
-\item Add process location and local divergent state.  Then  use in unfair abstraction.
-\item change  the \verb|when| command to be more like the \verb|if...then| command see previously
-\item Index hiding   $P\$\{x\}$ fix bugs for \emph{leaf} processes see above
-
-
-\end{enumerate}
 
 
 
-\item {\bf **start**}  Build a  {\sf Process Hierarchy} (probably from the abstract syntax tree) where the leaves are defined without reference to other processes. and where child processes are directly used in the construction of the parent. Branch at parallel composition hiding and renaming. Other operators may be added later!
 
-In the hierarchy record all event names that have been abstracted.
 
-Build a hierarchy of refinements annotated by the hidden events. This is interesting as it is the first step in recording  design decisions.
 
-\item {\bf  **start** Process variables \verb|X$|} There are many algebraic equalities between processes, such as  \verb|X$+Y$ ~ Y$+X$| that are true for all processes. Hence define a set of {\sf n} processes in a directory and use these to substitute the variables \verb|X$| and \verb|Y$|, thus generating   ${\sf n^2}$ tests.
-
-Just writing {\sf X} equalities we will  have ${\sf Xn^2}$ tests  and as many of our extensions have many algebraic properties  the saving in time setting up tests could be very considerable.
-
-\item Add {\bf set of start states and internal choice} $\Box$  this will require the amendment of:
-\begin{enumerate}
-\item  external choice \verb$_|_$
-\item  \verb|abs(_)|
-\item \verb|simp(_)|
-\end{enumerate}
-Having completed this add:
+\item Add 
 \begin{enumerate}
 \item co-events
 \item probabilistic choice (may well postpone till later)

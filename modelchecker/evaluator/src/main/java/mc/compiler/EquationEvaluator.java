@@ -112,7 +112,7 @@ public class EquationEvaluator {
         for (ProcessModel m: processModels) {
             currentMap.put(m.getId(),m);
         }
-
+// interpreter input AST ouputs automata
         automata.add((Automaton) interpreter.interpret("automata", operation.getFirstProcess(), getNextEquationId(), currentMap,z3Context));
         automata.add((Automaton) interpreter.interpret("automata", operation.getSecondProcess(), getNextEquationId(), currentMap,z3Context));
 
@@ -122,9 +122,10 @@ public class EquationEvaluator {
         boolean result = instantiateClass(operationsMap.get(currentOperation)).evaluate(automata);
 
         //As getNextEquationId for some reason breaks bisimulation, if they are the same process just pass it
-        if(operation.getFirstProcess().equals(operation.getSecondProcess()))
+        if(operation.getFirstProcess().equals(operation.getSecondProcess())) {
+            System.out.println("Equation Evaluator fucked" + automata.toString());
             result = true;
-
+        }
         if (operation.isNegated())
             result = !result;
 
@@ -153,7 +154,7 @@ public class EquationEvaluator {
     private ArrayList<String> testUserdefinedModel(List<ProcessModel> models, List<String> testingSpace, ModelStatus status,
                                                    OperationNode operation, Context context, com.microsoft.z3.Context z3Context)
             throws CompilationException {
-
+//System.out.println("Pingo ");
         ArrayList<String> failedEquations = new ArrayList<>();
 
         Interpreter interpreter = new Interpreter();
@@ -190,6 +191,8 @@ public class EquationEvaluator {
             String currentOperation = operation.getOperation().toLowerCase();
 
             boolean result = !interperateFail && instantiateClass(operationsMap.get(currentOperation)).evaluate(createdAutomaton);
+            //System.out.println("  Pingo 1 "+  createdAutomaton.get(0).toString());
+            //System.out.println("  Pingo 2 "+  createdAutomaton.get(1).toString());
 
             //As getNextEquationId for some reason breaks bisimulation, if they are the same process just pass it
             if(operation.getFirstProcess().equals(operation.getSecondProcess())) {

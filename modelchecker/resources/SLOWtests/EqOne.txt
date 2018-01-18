@@ -1,0 +1,32 @@
+processes {
+
+
+X = a->STOP.
+Y = b->STOP.
+Z = c->STOP.
+
+}
+
+automata X,Y,Z.
+
+equation (ApplyAlphabet=true, NumberNodes=2, AlphabetCount=2, MaxTransitions=2) {
+
+//(X => ( Z + Y)) ~ ((X =>  Z )+ (X => Y)).
+
+(s->STOP)=>X ~ (s->X).
+
+X=> (Y=>Z) ~ (X=>Y)=>Z .
+
+}
+
+
+lengthEdgeValue: 10
+maxNodeLabelValue: 10
+operationFailureLabelValue: 10
+operationPassLabelValue: 10
+
+fairAbstractionSelected: false
+autoSaveSelected: false
+darkModeSelected: false
+pruningSelected: false
+liveCompillingSelected: false

@@ -15,7 +15,7 @@ public abstract class ProcessModelObject implements Serializable {
   // fields
   @Getter
   @Setter
-  private String id;
+  private String id;  // name
   @Getter
   private String type;
 
