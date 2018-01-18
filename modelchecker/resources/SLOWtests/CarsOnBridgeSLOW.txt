@@ -56,7 +56,7 @@ M3to1 = simp(nfa2dfa(abs(M3/{ml2is/ml2br,is2ml/br2ml}\{br2is,is2br}))).
 
 M3to2 = simp(nfa2dfa(abs(M3))).
 }
-automata M3to1,M3to1.
+automata M3to1,M3to2.
 operation{
 M1 ~ M3to1.   // sanity check - debugging step
 M2 ~ M3to2.  //M3 is a complete trace refinement of M2
@@ -124,15 +124,16 @@ C[mlis:0..Max+1][is:0..Max+1][isml:0..Max+1][mls:0..1][iss:0..1] =
 | when (mls==1 &&(mlis +isml+ is == (Max-1))) ml2br.[j:1..Cnum].off->ml.turnRed->
                                      C[mlis+1][is][isml][0][iss]
 
+// only one cart can be on the sensor at a time 
 
 | when (mlis> 0 && is<=Max)  
-                    br2is.[j:1..Cnum].off->C[mlis-1][is+1][isml][mls][iss]
-// only one cart can be on the sensor at a time                    
+       br2is.[j:1..Cnum].off->C[mlis-1][is+1][isml][mls][iss]                 
 | when (iss == 0) is2br.[j:1..Cnum].on -> C[mlis][is][isml][mls][1]
 | when (iss == 1 &&(is>0 && isml <= Max))   
                     is2br.[j:1..Cnum].off->C[mlis][is-1][isml+1][mls][0]
 | when (isml > 0)   br2ml.[j:1..Cnum].off->C[mlis][is][isml-1][mls][iss]
- ).
+
+).
 
  // | when (mlis == Max)    [j:1..Cnum].ml2br ->failMLis->STOP
 // | when (isml == Max)    [j:1..Cnum].is2br ->failISml->STOP
@@ -156,7 +157,7 @@ Cars = (forall [i:1..Cnum]  ([i]:Car))/{ml2br.[i:1..Cnum].on/[i].ml2br.on,
         br2ml.[i:1..Cnum].on/[i].br2ml.on,    br2is.[i:1..Cnum].on/[i].br2is.on,
         ml.[i:1..Cnum].green/[i].ml.green, istl.[i:1..Cnum].green/[i].istl.green}.
 
-/*
+
 M4 = (Controller ||  ml2br:Sensor||br2is:Sensor|| br2ml:Sensor||is2br:Sensor||
          TLml || 
          TLis ||  Cars ).  // ml[i:1..Cnum].red/[i].ml.red,
@@ -178,14 +179,14 @@ M4to2 = simp(nfa2dfa(abs(M4/{is2br/[i:1..Cnum].is2br,
    
 M4to1 = simp(nfa2dfa(abs(M4to2/{ml2is/ml2br,is2ml/br2ml}\{br2is,is2br}))).
 
-*/
+
 }
-automata Car, Controller.
-/*automata M4to1,M4to1
+//automata Car, Controller.
+automata M4to1,M4to1
 operation{
 M1 ~ M4to1.  // sanity - debugging
 M2 ~ M4to2.  // M4 is a complete trace refinement of M2
-} */
+} 
 
 
 lengthEdgeValue: 10
