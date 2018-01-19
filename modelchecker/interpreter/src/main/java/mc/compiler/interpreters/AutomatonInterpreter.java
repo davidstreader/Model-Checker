@@ -180,7 +180,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     } else if (astNode instanceof FunctionNode) {
       interpretFunction((FunctionNode) astNode, automaton, currentNode);
     } else if (astNode instanceof TerminalNode) {
-      interpretTerminalNode((TerminalNode) astNode, currentNode);
+      interpretTerminalNode((TerminalNode) astNode, automaton, currentNode);
     }
   }
 
@@ -197,10 +197,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
 
     Set<AutomatonNode> oldRoot = automaton.addAutomaton(model);
     Set<AutomatonNode> nodes = automaton.combineNondeterministic(currentNode, oldRoot, context);
-//    AutomatonNode oldRoot = automaton.addAutomaton(model);
-//    AutomatonNode node = automaton.combineNodes(currentNode, oldRoot, context);
     subProcessStartNodes = nodes;
-//    updateCurrentNode(currentNode, node);
   }
 
   private void interpretSequence(SequenceNode sequence, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException {
@@ -216,12 +213,12 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     if (sequence.getTo() instanceof ReferenceNode) {
       ReferenceNode reference = (ReferenceNode) sequence.getTo();
       Collection<AutomatonNode> nextNodes = referenceMap.get(reference.getReference());
-
       for (AutomatonNode node : nextNodes) {
         automaton.addEdge(action, currentNode, node, foundGuard);
       }
 
     } else {
+
       nextNode = automaton.addNode();
       automaton.addEdge(action, currentNode, nextNode, foundGuard);
       interpretNode(sequence.getTo(), automaton, nextNode);
@@ -235,7 +232,9 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     //This is a special case whereby the currentNode is deleted by adding a process that destroys
     //the value of the currentNode
     if (!automaton.getNodes().contains(currentNode)) {
+
       for (AutomatonNode automatonNode : subProcessStartNodes) {
+
         interpretNode(astChoiceNode.getSecondProcess(), automaton, automatonNode);
       }
       return;
@@ -300,8 +299,10 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     addAutomaton(currentNode, automaton, processed);
   }
 
-  private void interpretTerminalNode(TerminalNode astNode, AutomatonNode currentNode) {
+  private void interpretTerminalNode(TerminalNode astNode, Automaton automaton, AutomatonNode currentNode) {
+
     currentNode.setTerminal(astNode.getTerminal());
+
   }
 
   private Automaton processLabellingAndRelabelling(Automaton automaton, ProcessRootNode astProcessRootNode) throws CompilationException {
@@ -325,8 +326,8 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     }
 
     Set<AutomatonNode> oldRoots = automaton1.addAutomaton(automaton2);
-    subProcessStartNodes = automaton1.combineNondeterministic(currentNode, oldRoots, context);
 
+    subProcessStartNodes = automaton1.combineNondeterministic(currentNode, oldRoots, context);
 
     for (AutomatonNode oldRoot: oldRoots) {
       if (oldRoot.getReferences() != null) {
@@ -340,6 +341,8 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
 
     references.forEach(id -> referenceMap.replaceValues(id, new ArrayList<>(subProcessStartNodes)
         .subList(0,0)));
+
+
   }
 
   private void processRelabelling(Automaton automaton, RelabelNode relabels) {

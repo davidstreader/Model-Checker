@@ -15,7 +15,7 @@ import mc.processmodels.ProcessModelObject;
 /**
  * Created by sheriddavi on 24/01/17.
  */
-@ToString
+
 public class AutomatonNode extends ProcessModelObject {
 
   // fields
@@ -177,39 +177,38 @@ public class AutomatonNode extends ProcessModelObject {
     return false;
   }
 
-//  public String toString() {
-//    StringBuilder builder = new StringBuilder();
-//    List<AutomatonEdge> incoming = getIncomingEdges();
-//
-//    builder.append("node{\n");
-//    builder.append("\tid:").append(getId());
-//    if(isTerminal()) {
-//      builder.append(" (").append(getTerminal()).append(")");
-//    }
-//
-//    if(isStartNode()) {
-//      builder.append(" (START)");
-//    }
-//    builder.append("\n");
-//    builder.append("\tincoming:{");
-//    for (int i = 0; i < incoming.size(); i++) {
-//      builder.append(incoming.get(i).getId());
-//      if (i < incoming.size() - 1) {
-//        builder.append(", ");
-//      }
-//    }
-//    builder.append("}\n");
-//
-//    builder.append("\toutgoing:{");
-//    List<AutomatonEdge> outgoing = getOutgoingEdges();
-//    for (int i = 0; i < outgoing.size(); i++) {
-//      builder.append(outgoing.get(i).getId());
-//      if (i < outgoing.size() - 1) {
-//        builder.append(", ");
-//      }
-//    }
-//    builder.append("}\n}");
-//
-//    return builder.toString();
-//  }
+  public String toString() {
+   StringBuilder builder = new StringBuilder();
+   List<AutomatonEdge> incoming = getIncomingEdges();
+
+    builder.append("node{\n");
+    builder.append("\tid:").append(getId());
+    if(isTerminal()) {
+      builder.append(" (").append(getTerminal()).append(")");
+    }
+
+    if(isStartNode()) {
+      builder.append(" (START)");
+    }
+    builder.append("\n");
+   builder.append("\tincoming:{");
+   for (int i = 0; i < incoming.size(); i++) {
+     builder.append(incoming.get(i).getId());
+       builder.append(", ");
+
+    }
+    builder.append("}\n");
+
+  builder.append("\toutgoing:{");
+   List<AutomatonEdge> outgoing = getOutgoingEdges();
+   for (int i = 0; i < outgoing.size(); i++) {
+    builder.append(outgoing.get(i).getId());
+    if (i < outgoing.size() - 1) {
+       builder.append(", ");
+     }
+   }
+    builder.append("}\n}");
+
+   return builder.toString();
+ }
 }
