@@ -14,6 +14,7 @@ import edu.uci.ics.jung.visualization.control.PickingGraphMousePlugin;
 import edu.uci.ics.jung.visualization.control.PluggableGraphMouse;
 import edu.uci.ics.jung.visualization.control.ScalingGraphMousePlugin;
 import edu.uci.ics.jung.visualization.control.TranslatingGraphMousePlugin;
+import edu.uci.ics.jung.visualization.renderers.Renderer;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontFormatException;
@@ -45,6 +46,7 @@ import mc.client.graph.DirectedEdge;
 import mc.client.graph.EdgeShape;
 import mc.client.graph.GraphNode;
 import mc.client.graph.NodeStates;
+import mc.client.graph.NodeType;
 import mc.client.graph.SeededRandomizedLayout;
 import mc.client.graph.SpringlayoutBase;
 import mc.client.ui.DoubleClickHandler;
@@ -54,6 +56,7 @@ import mc.compiler.OperationResult;
 import mc.processmodels.ProcessModel;
 import mc.processmodels.ProcessType;
 import mc.processmodels.automata.Automaton;
+import mc.processmodels.petrinet.Petrinet;
 
 /**
  * Created by bealjaco on 29/11/17.
@@ -156,8 +159,7 @@ public class ModelView implements Observer {
     }
 
     //set the colour of the nodes
-    vv.getRenderContext().setVertexFillPaintTransformer(
-        node -> NodeStates.valueOf(node.getNodeTermination().toUpperCase()).getColorNodes());
+    vv.getRenderContext().setVertexFillPaintTransformer(n -> n.getNodeTermination().getColorNodes());
 
 
     //autoscale the graph to fit in the display port
@@ -176,7 +178,7 @@ public class ModelView implements Observer {
         addAutomata((Automaton) p);
         break;
       case PETRINET:
-        //TODO
+        addPetrinet((Petrinet) p);
         break;
     }
   }
@@ -203,14 +205,14 @@ public class ModelView implements Observer {
 
     //add all the nodes to the graph
     automaton.getNodes().forEach(n -> {
-      String nodeTermination = "NOMINAL";
+
+      NodeStates nodeTermination = NodeStates.NOMINAL;
       if (n.isStartNode()) {
-        nodeTermination = "START";
+        nodeTermination = NodeStates.START;
       }
       if (n.isTerminal()) {
-        nodeTermination = n.getTerminal();
+        nodeTermination = NodeStates.valueOf(n.getTerminal().toUpperCase());
       }
-      nodeTermination = nodeTermination.toLowerCase();
 
       //Make sure we are using a human readable label,
       //the parallel compositions fill Id with long strings.
@@ -222,7 +224,8 @@ public class ModelView implements Observer {
         //Remove junk in the label, otherwise it ends up as Test.n1, we only need n1;
         nodeLabel = splitTokens[splitTokens.length - 1];
       }
-      GraphNode node = new GraphNode(automaton.getId(), nodeLabel, nodeTermination);
+      GraphNode node = new GraphNode(automaton.getId(), nodeLabel,
+          nodeTermination, NodeType.AUTOMATA_NODE, nodeLabel);
       nodeMap.put(n.getId(), node);
 
       graph.addVertex(node);
@@ -238,6 +241,53 @@ public class ModelView implements Observer {
 
 
     this.processModels.replaceValues(automaton.getId(), nodeMap.values());
+  }
+
+  private void addPetrinet(Petrinet petri) {
+    //make a new "parent" object for the children to be parents of
+    if (processModels.containsKey(petri.getId())) {
+      // If the automaton is already displayed, but modified.
+      // Remove all vertexes that are part of it
+      for (GraphNode n : processModels.get(petri.getId())) {
+        graph.removeVertex(n);
+      }
+
+      processModels.removeAll(petri.getId());
+    }
+
+    Map<String, GraphNode> nodeMap = new HashMap<>();
+
+    petri.getPlaces().values().forEach(place -> {
+      NodeStates nodeTermination = NodeStates.NOMINAL;
+      if (place.isTerminal()) {
+        nodeTermination = NodeStates.valueOf(place.getTerminal().toUpperCase());
+      }
+
+      if (place.isStart()) {
+        nodeTermination = NodeStates.START;
+      }
+
+      GraphNode node = new GraphNode(petri.getId(), place.getId(),
+          nodeTermination, NodeType.PETRINET_PLACE, "");
+      nodeMap.put(place.getId(), node);
+      graph.addVertex(node);
+    });
+
+    petri.getTransitions().values().forEach(transition -> {
+      GraphNode node = new GraphNode(petri.getId(), transition.getId(),
+          NodeStates.NOMINAL, NodeType.PETRINET_TRANSITION, transition.getLabel());
+      nodeMap.put(transition.getId(), node);
+
+    });
+
+    petri.getEdges().values().forEach(edge -> {
+      DirectedEdge nodeEdge = new DirectedEdge("", UUID.randomUUID().toString());
+      graph.addEdge(nodeEdge, nodeMap.get(edge.getFrom().getId()),
+          nodeMap.get(edge.getTo().getId()));
+
+    });
+
+    this.processModels.replaceValues(petri.getId(), nodeMap.values());
   }
 
   /**
@@ -348,8 +398,12 @@ public class ModelView implements Observer {
 
 
     //label the nodes
-    vv.getRenderContext().setVertexLabelTransformer(GraphNode::getNodeId);
+    vv.getRenderContext().setVertexLabelTransformer(GraphNode::getLabel);
     vv.getRenderContext().setEdgeLabelTransformer(DirectedEdge::getLabel);
+
+    //set the shape
+    vv.getRenderContext().setVertexShapeTransformer(n -> n.getType().getNodeShape());
+    vv.getRenderer().getVertexLabelRenderer().setPosition(Renderer.VertexLabel.Position.CNTR);
 
     // Sets edges as lines
     vv.getRenderContext().setEdgeShapeTransformer(EdgeShape.mixedLineCurve(graph));

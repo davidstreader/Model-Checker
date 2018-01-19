@@ -405,7 +405,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
   }
 
   /**
-   * Functions for instantiating the plugin manager functions.
+   * Functions for instantiating the plugin manager function
    */
   public static void addFunction(Class<? extends IProcessFunction> clazz) {
 

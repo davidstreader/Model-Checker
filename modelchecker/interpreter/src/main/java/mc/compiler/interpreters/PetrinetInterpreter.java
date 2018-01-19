@@ -1,6 +1,8 @@
 package mc.compiler.interpreters;
 
 import com.microsoft.z3.Context;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -11,18 +13,21 @@ import mc.compiler.ast.ASTNode;
 import mc.compiler.ast.IdentifierNode;
 import mc.compiler.ast.ProcessNode;
 import mc.compiler.ast.ProcessRootNode;
+import mc.compiler.ast.ReferenceNode;
+import mc.compiler.ast.SequenceNode;
+import mc.compiler.ast.TerminalNode;
 import mc.compiler.ast.VariableSetNode;
 import mc.exceptions.CompilationException;
 import mc.processmodels.ProcessModel;
-import mc.processmodels.automata.Automaton;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetPlace;
+import mc.processmodels.petrinet.components.PetriNetTransition;
 
 public class PetrinetInterpreter implements ProcessModelInterpreter {
 
   Context context;
 
-  Map<String, PetriNetPlace> referenceMap = new HashMap<>();
+  Map<String, Set<PetriNetPlace>> referenceMap = new HashMap<>();
   Map<String, ProcessModel> processMap = new HashMap<>();
   Stack<Petrinet> processStack = new Stack<>();
   LocalCompiler compiler;
@@ -40,12 +45,26 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     String identifier = processNode.getIdentifier();
     this.variables = processNode.getVariables();
 
-    return null;
+    interpretProcess(processNode.getProcess(), identifier);
+
+    Petrinet petrinet = ((Petrinet) processStack.pop()).copy();
+
+    //TODO:
+    return petrinet;
   }
 
   @Override
   public ProcessModel interpret(ASTNode astNode, String identifier, Map<String, ProcessModel> processMap, Context context) throws CompilationException, InterruptedException {
-    return null;
+    reset();
+    this.context = context;
+    this.processMap = processMap;
+
+    interpretProcess(astNode, identifier);
+
+    Petrinet petrinet = ((Petrinet) processStack.pop()).copy();
+
+    //TODO:
+    return petrinet;
   }
 
 
@@ -75,7 +94,9 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
       processStack.push(petrinet);
       return;
     }
-    Petrinet petrinet = new Petrinet(identifier);
+    Petrinet petrinet = new Petrinet(identifier, true);
+
+    PetriNetPlace currentPlace = new ArrayList<>(petrinet.getRoots()).get(0);
 
     if (variables != null) {
       petrinet.setHiddenVariables(variables.getVariables());
@@ -87,18 +108,57 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
 
     //Interpret Node
     //TODO: Interpreting
+    interpretASTNode(astNode, petrinet, currentPlace);
     processStack.push(petrinet);
   }
 
-
-  private void interpretASTNode(ASTNode currentNode, Automaton automaton) throws CompilationException, InterruptedException {
-    if(Thread.currentThread().isInterrupted())
+  private void interpretASTNode(ASTNode currentNode, Petrinet petri, PetriNetPlace currentPlace)
+      throws CompilationException, InterruptedException {
+    if (Thread.currentThread().isInterrupted()) {
       throw new InterruptedException();
+    }
 
-    if (currentNode.hasReferences()) {
-//      currentNode.getReferences().forEach(s->referenceMap.put(s,currentNode));
+    if (currentNode instanceof SequenceNode) {
+      interpretSequence((SequenceNode) currentNode, petri, currentPlace);
+    }
+    if (currentNode instanceof TerminalNode) {
+      interpretTerminal((TerminalNode) currentNode, petri, currentPlace);
+    }
+
+  }
+
+
+  private void interpretSequence(SequenceNode seq, Petrinet petri, PetriNetPlace currentPlace) throws CompilationException, InterruptedException {
+    String action = seq.getFrom().getAction();
+
+
+    if (seq.getTo() instanceof ReferenceNode) {
+      ReferenceNode ref = (ReferenceNode) seq.getTo();
+      Collection<PetriNetPlace> nextPlaces = referenceMap.get(ref.getReference());
+
+      for (PetriNetPlace nextPlace : nextPlaces) {
+        PetriNetTransition transition = petri.addTransition(action);
+
+        petri.addEdge(transition, currentPlace);
+        petri.addEdge(nextPlace, transition);
+      }
+
+      //do something
+    } else {
+      PetriNetPlace nextPlace = petri.addPlace();
+      PetriNetTransition transition = petri.addTransition(action);
+
+      petri.addEdge(transition, currentPlace);
+      petri.addEdge(nextPlace, transition);
+      System.out.println(petri);
+      interpretASTNode(seq.getTo(), petri, nextPlace);
     }
   }
+
+  private void interpretTerminal(TerminalNode term, Petrinet petri, PetriNetPlace currentPlace) throws CompilationException {
+    currentPlace.setTerminal(term.getTerminal());
+  }
+
 
   public void reset() {
     referenceMap.clear();
