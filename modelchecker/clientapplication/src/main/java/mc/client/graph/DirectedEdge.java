@@ -9,6 +9,6 @@ import lombok.Data;
 @AllArgsConstructor
 @Data
 public class DirectedEdge {
-    public final String label;
-    public final String uuid;
+  public final String label;
+  public final String uuid;
 }

@@ -26,4 +26,12 @@ public class PetriNetEdge extends ProcessModelObject {
     this.to = to;
   }
 
+  public String toString() {
+    return "edge{\n"
+        + "\tid:" + getId() + "\n"
+        + "\tfrom:" + from.getId() + "\n"
+        + "\tto:" + to.getId() + "\n"
+        + "}";
+
+  }
 }

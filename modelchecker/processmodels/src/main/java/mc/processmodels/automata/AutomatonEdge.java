@@ -1,6 +1,7 @@
 package mc.processmodels.automata;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -46,13 +47,14 @@ public class AutomatonEdge extends ProcessModelObject {
   }
 
   public String toString() {
-    String builder = "edge{\n" +
-        "\tid:" + getId() + "\n" +
-        "\tlabel:" + label + "\n" +
-        "\tfrom:" + from.getId() + "\n" +
-        "\tto:" + to.getId() + "\n" +
-        "\tmetadata:" + getGuard() + "\n" +
-        "}";
+    String builder = "edge{\n"
+        + "\tid:" + getId() + "\n"
+        + "\tlabel:" + label + "\n"
+        + "\tfrom:" + from.getId() + "\n"
+        + "\tto:" + to.getId() + "\n"
+        + "\tmetadata:" + getGuard()
+        + "\n"
+        + "}";
 
     return builder;
   }
@@ -79,10 +81,7 @@ public class AutomatonEdge extends ProcessModelObject {
 
   @Override
   public int hashCode() {
-    int result = label.hashCode();
-    result = 31 * result + from.getId().hashCode();
-    result = 31 * result + to.getId().hashCode();
-    return result;
+    return Objects.hash(label,from.getId(),to.getId());
   }
 
 }
