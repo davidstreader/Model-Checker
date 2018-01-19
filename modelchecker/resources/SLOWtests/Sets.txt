@@ -1,0 +1,23 @@
+set S = {one, two}.
+set R = {[1..3],[4..5]}.
+processes {
+
+P = x.[R]->(a->STOP).
+
+Q = Qp[3], 
+  Qp[q:1..3] = when (q>1) go->Qp[q-1] |
+               when (q==1) go-> STOP.
+}
+
+automata P,Q.
+
+lengthEdgeValue: 10
+maxNodeLabelValue: 10
+operationFailureLabelValue: 10
+operationPassLabelValue: 10
+
+fairAbstractionSelected: false
+autoSaveSelected: false
+darkModeSelected: false
+pruningSelected: false
+liveCompillingSelected: false
