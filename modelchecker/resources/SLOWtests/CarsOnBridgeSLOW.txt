@@ -182,7 +182,7 @@ M4to1 = simp(nfa2dfa(abs(M4to2/{ml2is/ml2br,is2ml/br2ml}\{br2is,is2br}))).
 
 }
 //automata Car, Controller.
-automata M4to1,M4to1
+automata M4to1,M4to1.
 operation{
 M1 ~ M4to1.  // sanity - debugging
 M2 ~ M4to2.  // M4 is a complete trace refinement of M2
