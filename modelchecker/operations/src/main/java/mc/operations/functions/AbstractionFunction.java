@@ -69,119 +69,86 @@ public class AbstractionFunction implements IProcessFunction {
       throw new CompilationException(this.getClass(), null);
     }
 
-    Automaton automaton = automata[0];
-    Automaton abstraction = new Automaton(automaton.getId() + ".abs", !Automaton.CONSTRUCT_ROOT);
+    Automaton abstraction = automata[0].copy();
+    // Automaton abstraction = new Automaton(automaton.getId() + ".abs", !Automaton.CONSTRUCT_ROOT);
 
     boolean isFair = flags.contains("fair") || !flags.contains("unfair");
-    System.out.println(isFair);
-    // add the nodes from the specified automaton to the abstracted representation
-    for (AutomatonNode automatonNode : automaton.getNodes()) {
-      addNode(abstraction, automatonNode);
-    }
 
-    // only add the observable edges from the specified automaton to the abstracted representation
-    for (AutomatonEdge automatonEdge : automaton.getEdges()) {
-      if (!automatonEdge.isHidden()) {
-        addEdge(abstraction, automatonEdge);
-      }
-    }
+    //System.out.println("Abs in " +abstraction.toString());
+
+
 
     // retrieve the unobservable edges from the specified automaton
-    List<AutomatonEdge> hiddenEdges = automaton.getEdges().stream()
-        .filter(AutomatonEdge::isHidden)
-        .collect(Collectors.toList());
+    List<AutomatonEdge> hiddenEdges = abstraction.getEdges().stream()
+            .filter(AutomatonEdge::isHidden)
+            .collect(Collectors.toList());
 
-    List<AutomatonNode> toRemove = new ArrayList<>();
     // construct observable edges to replace the unobservable edges
-    for (AutomatonEdge hiddenEdge : hiddenEdges) {
-      AutomatonNode b = constructEdgeOnlyTau(abstraction, hiddenEdge);
-      toRemove.add(b);
-      try {
-        constructOutgoingObservableEdges(abstraction, hiddenEdge, isFair, context);
-        constructIncomingObservableEdges(abstraction, hiddenEdge, isFair, context);
-      } catch (InterruptedException ignored) {
-        throw new CompilationException(this.getClass(), null);
-      }
-    }
-    toRemove.forEach(s -> {
-      if (s != null) {
-        abstraction.removeNode(s);
-      }
-    });
-    return AutomataReachability.removeUnreachableNodes(abstraction);
-  }
+    while (!hiddenEdges.isEmpty()) {
+      //System.out.println("Todo "+ hiddenEdges.size());
+      //for (AutomatonEdge hiddenEdge : hiddenEdges) {
+      AutomatonEdge hiddenEdge = hiddenEdges.get(0);
+//      AutomatonNode b = constructEdgeOnlyTau(abstraction, hiddenEdge);
+//      toRemove.add(b);
+      //System.out.println("removing "+hiddenEdge.toString());
+      hiddenEdges.remove(hiddenEdge);
+      abstraction.removeEdge(hiddenEdge);
 
-  private AutomatonNode constructEdgeOnlyTau(Automaton abstraction, AutomatonEdge hiddenEdge)
-      throws CompilationException {
-
-
-    if (!hiddenEdge.getFrom().getOutgoingEdges().stream().allMatch(AutomatonEdge::isHidden)) {
-      return null;
-    }
-    if (hiddenEdge.getFrom().isStartNode()) {
-      return null;
-    }
-    AutomatonNode to = abstraction.getNode(hiddenEdge.getTo().getId() + ".abs");
-    if (hiddenEdge.getTo() == hiddenEdge.getFrom()) {
-      return null;
-    }
-    List<AutomatonEdge> incomingObservableEdges = hiddenEdge.getFrom().getIncomingEdges().stream()
-        .filter(edge -> !edge.isHidden())
-        .collect(Collectors.toList());
-    for (AutomatonEdge edge : incomingObservableEdges) {
-      AutomatonNode from = abstraction.getNode(edge.getFrom().getId() + ".abs");
-      abstraction.addEdge(edge.getLabel(), from, to, from.getGuard());
-    }
-    return abstraction.getNode(hiddenEdge.getFrom().getId() + ".abs");
-  }
-
-  private void constructOutgoingObservableEdges(Automaton abstraction, AutomatonEdge hiddenEdge,
-                                                boolean isFair, Context context)
-      throws CompilationException, InterruptedException {
-    Guard hiddenGuard = hiddenEdge.getGuard();
-    List<AutomatonEdge> incomingObservableEdges = hiddenEdge.getFrom().getIncomingEdges().stream()
-        .filter(edge -> !edge.isHidden())
-        .collect(Collectors.toList());
-
-    List<AutomatonNode> outgoingNodes = new ArrayList<>();
-    Set<String> visited = new HashSet<>();
-    Stack<AutomatonEdge> fringe = new Stack<>();
-    fringe.push(hiddenEdge);
-
-    while (!fringe.isEmpty()) {
-      AutomatonEdge current = fringe.pop();
-
-      // if the tau path returns to the specified hidden edge then there is a tau loop
-      if (visited.contains(current.getId()) && current == hiddenEdge) {
-        // if abstraction is not fair, need to specify that process could
-        // deadlock in an infinite tau loop
+      if (hiddenEdge.getFrom().equals(hiddenEdge.getTo())) {
         if (!isFair) {
           AutomatonNode deadlockNode = abstraction.addNode();
           deadlockNode.setTerminal("ERROR");
 
-          AutomatonNode from = abstraction.getNode(hiddenEdge.getFrom().getId() + ".abs");
-          abstraction.addEdge(Constant.DEADLOCK, from, deadlockNode, null);
+          abstraction.addEdge(Constant.DEADLOCK, hiddenEdge.getFrom(),
+                  deadlockNode, null);
+        } else {
+          if (hiddenEdge.getFrom().getOutgoingEdges().size() == 0) {
+            hiddenEdge.getFrom().setTerminal("STOP");
+          }
         }
 
-        // edge has already been processed
-        continue;
       }
-      //Check if an edge has already been processed.
-      if (visited.contains(current.getId())) {
-        continue;
+
+      try {
+        if (hiddenEdge.getTo().isTerminal()) {
+          hiddenEdge.getFrom().setTerminal(hiddenEdge.getTo().getTerminal());
+        }
+        //  if (hiddenEdge.getFrom().isStartNode()  ) {
+        //    hiddenEdge.getTo().setStartNode(true);
+        //  }
+
+        hiddenEdges.addAll(
+                constructOutgoingEdges(abstraction, hiddenEdge, isFair, context));
+
+        hiddenEdges.addAll(
+                constructIncomingEdges(abstraction, hiddenEdge, isFair, context));
+      } catch (InterruptedException ignored) {
+        throw new CompilationException(this.getClass(), null);
       }
-      List<AutomatonEdge> outgoingEdges = current.getTo().getOutgoingEdges();
-
-      outgoingNodes.add(abstraction.getNode(current.getTo().getId() + ".abs"));
-      outgoingEdges.stream()
-          .filter(AutomatonEdge::isHidden)
-          .forEach(fringe::push);
-
-      visited.add(current.getId());
+      //System.out.println("One done "+ hiddenEdges.size());
     }
+    //   toRemove.forEach(s -> {
+    //     if (s != null) {
+    //      abstraction.removeNode(s);
+    //     }
+    //  });
+//    return AutomataReachability.removeUnreachableNodes(abstraction);
+    return abstraction;
+  }
 
-    for (AutomatonEdge edge : incomingObservableEdges) {
-      AutomatonNode from = abstraction.getNode(edge.getFrom().getId() + ".abs");
+
+
+  private List<AutomatonEdge> constructOutgoingEdges(Automaton abstraction, AutomatonEdge hiddenEdge,
+                                                     boolean isFair, Context context)
+          throws CompilationException, InterruptedException {
+    Guard hiddenGuard = hiddenEdge.getGuard();
+    List<AutomatonEdge> incomingEdges = hiddenEdge.getFrom().getIncomingEdges();
+    List<AutomatonEdge> hiddenAdded = new ArrayList<AutomatonEdge>();
+
+    AutomatonNode to = hiddenEdge.getTo();
+    for (AutomatonEdge edge : incomingEdges) {
+      AutomatonNode from = edge.getFrom();
+
       Guard fromGuard = from.getGuard();
       Guard outGuard = null;
       if (fromGuard != null && hiddenGuard == null) {
@@ -191,41 +158,33 @@ public class AbstractionFunction implements IProcessFunction {
       } else if (fromGuard != null) {
         outGuard = Expression.combineGuards(hiddenGuard, fromGuard, context);
       }
-      for (AutomatonNode to : outgoingNodes) {
-          abstraction.addEdge(edge.getLabel(), from, to, outGuard);
+      //if edge dose not exist add it
+      if (abstraction.getEdge(edge.getLabel(), from, to) == null) {
+        AutomatonEdge added;
+        if (outGuard != null) {
+          added = abstraction.addEdge(edge.getLabel(), from, to, outGuard);
+        } else {
+          added = abstraction.addEdge(edge.getLabel(), from, to, null);
+        }
+        if (added.isHidden()) {
+          hiddenAdded.add(added);
+          //System.out.println("hidden");
+        }
+        //System.out.println("Added " + added.toString());
       }
     }
+    return hiddenAdded;
   }
 
-  private void constructIncomingObservableEdges(Automaton abstraction, AutomatonEdge hiddenEdge,
-                                                boolean isFair, Context context)
-      throws CompilationException, InterruptedException {
+  private List<AutomatonEdge> constructIncomingEdges(Automaton abstraction, AutomatonEdge hiddenEdge,
+                                                     boolean isFair, Context context)
+          throws CompilationException, InterruptedException {
     Guard hiddenGuard = hiddenEdge.getGuard();
-    List<AutomatonEdge> outgoingObservableEdges = hiddenEdge.getTo().getOutgoingEdges().stream()
-        .filter(edge -> !edge.isHidden())
-        .collect(Collectors.toList());
-
-    List<AutomatonNode> incomingNodes = new ArrayList<>();
-    Set<String> visited = new HashSet<>();
-    Stack<AutomatonEdge> fringe = new Stack<>();
-    fringe.push(hiddenEdge);
-
-    while (!fringe.isEmpty()) {
-      AutomatonEdge current = fringe.pop();
-
-      List<AutomatonEdge> incomingEdges = current.getFrom().getIncomingEdges();
-
-      incomingNodes.add(abstraction.getNode(current.getFrom().getId() + ".abs"));
-
-      incomingEdges.stream()
-          .filter(edge -> edge.isHidden() && !visited.contains(edge.getId()))
-          .forEach(fringe::push);
-
-      visited.add(current.getId());
-    }
-
-    for (AutomatonEdge edge : outgoingObservableEdges) {
-      AutomatonNode to = abstraction.getNode(edge.getTo().getId() + ".abs");
+    List<AutomatonEdge> outgoingEdges = hiddenEdge.getTo().getOutgoingEdges();
+    List<AutomatonEdge> hiddenAdded = new ArrayList<AutomatonEdge>();
+    AutomatonNode from = hiddenEdge.getFrom();
+    for (AutomatonEdge edge : outgoingEdges) {
+      AutomatonNode to = edge.getTo();
       Guard toGuard = to.getGuard();
       Guard outGuard = null;
       if (toGuard != null && hiddenGuard == null) {
@@ -235,10 +194,17 @@ public class AbstractionFunction implements IProcessFunction {
       } else if (toGuard != null) {
         outGuard = Expression.combineGuards(hiddenGuard, toGuard, context);
       }
-      for (AutomatonNode from : incomingNodes) {
-        abstraction.addEdge(edge.getLabel(), from, to, outGuard);
+      // if not all ready there add edge
+      if (abstraction.getEdge(edge.getLabel(), from, to) == null) {
+        AutomatonEdge added = abstraction.addEdge(edge.getLabel(), from, to, outGuard);
+        if (added.isHidden()) {
+          hiddenAdded.add(added);
+          //System.out.println("hidden");
+        }
+        //System.out.println("Added " + added.toString());
       }
     }
+    return hiddenAdded;
   }
 
   private void addNode(Automaton abstraction, AutomatonNode node) throws CompilationException {

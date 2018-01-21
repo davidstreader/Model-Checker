@@ -75,10 +75,11 @@ public class SimpFunction implements IProcessFunction {
       if (value.size() < 2) {
         continue;
       }
-
+//System.out.println("Simp "+ automaton.toString());
       AutomatonNode mergedNode = Iterables.get(value, 0);
 
       for (AutomatonNode automatonNode : value) {
+        if (automatonNode.equals(mergedNode)) {continue;};
         try {
           mergedNode = automaton.combineNodes(mergedNode, automatonNode, context);
         } catch (InterruptedException ignored) {
