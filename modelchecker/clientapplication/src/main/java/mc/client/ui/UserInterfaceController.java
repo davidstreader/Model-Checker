@@ -1,9 +1,7 @@
 package mc.client.ui;
 
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
+
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.embed.swing.SwingNode;
 import javafx.event.ActionEvent;
@@ -31,13 +29,9 @@ import org.fxmisc.richtext.model.StyleSpans;
 
 import javax.swing.*;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URL;
-import java.nio.channels.FileChannel;
-import java.nio.file.FileSystems;
-import java.nio.file.Path;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -162,6 +156,7 @@ public class UserInterfaceController implements Initializable {
                     }
                 })
                 .subscribe(this::applyHighlighting);
+
 
         userCodeInput.richChanges()
                 .filter(ch -> !ch.getInserted().equals(ch.getRemoved()) && ch.getInserted().getStyleOfChar(0).isEmpty())
@@ -544,6 +539,8 @@ public class UserInterfaceController implements Initializable {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             } catch (CompilationException e) {
+                e.printStackTrace();
+
                 holdHighlighting = true;
                 compilerOutputDisplay.insertText(0, e.toString());
                 if (e.getLocation() != null) {
@@ -579,7 +576,7 @@ public class UserInterfaceController implements Initializable {
                 o.getProcess2().getIdent() + " = " + o.getResult() + "\n"));
 
         if (eqRes.size() > 0) {
-            compilerOutputDisplay.appendText("\n##Operation Results##\n");
+            compilerOutputDisplay.appendText("\n##Equation Results##\n");
 
 
             for (OperationResult result : eqRes) {

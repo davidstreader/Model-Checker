@@ -121,11 +121,6 @@ public class EquationEvaluator {
 
         boolean result = instantiateClass(operationsMap.get(currentOperation)).evaluate(automata);
 
-        //As getNextEquationId for some reason breaks bisimulation, if they are the same process just pass it
-        if(operation.getFirstProcess().equals(operation.getSecondProcess())) {
-            System.out.println("Equation Evaluator fucked" + automata.toString());
-            result = true;
-        }
         if (operation.isNegated())
             result = !result;
 
@@ -178,6 +173,7 @@ public class EquationEvaluator {
             boolean interperateFail = false;
             ArrayList<Automaton> createdAutomaton = new ArrayList<>();
             try {
+
                 createdAutomaton.add((Automaton) interpreter.interpret("automata", operation.getFirstProcess(), getNextEquationId(), idMap, z3Context));
                 createdAutomaton.add((Automaton) interpreter.interpret("automata", operation.getSecondProcess(), getNextEquationId(), idMap, z3Context));
             } catch(InterruptedException e) {
@@ -191,13 +187,6 @@ public class EquationEvaluator {
             String currentOperation = operation.getOperation().toLowerCase();
 
             boolean result = !interperateFail && instantiateClass(operationsMap.get(currentOperation)).evaluate(createdAutomaton);
-            //System.out.println("  Pingo 1 "+  createdAutomaton.get(0).toString());
-            //System.out.println("  Pingo 2 "+  createdAutomaton.get(1).toString());
-
-            //As getNextEquationId for some reason breaks bisimulation, if they are the same process just pass it
-            if(operation.getFirstProcess().equals(operation.getSecondProcess())) {
-                result = true;
-            }
 
             if (operation.isNegated()) {
                 result = !result;
@@ -205,7 +194,11 @@ public class EquationEvaluator {
 
             if(result) {
                 status.passCount++;
+                System.out.println("Operation: " + currentOperation + " succeeded between " + createdAutomaton.toString() );
             } else {
+                System.out.println("Operation: " + currentOperation + " failed between " + createdAutomaton.toString() );
+
+
                 status.failCount++;
                 String failOutput = "";
                 for(String key : idMap.keySet())

@@ -1,0 +1,33 @@
+processes {
+A1 = a->b->a->A1. // False
+A1b = simp(abs(abs(A1\{a}))).
+A = a->b->a->a->A. //False
+Ab = simp(abs(abs(A\{a}))).
+A3 = a->a->b->A3.  //True
+A3b = simp(abs(abs(A3\{a}))).
+A2 = b->a->a->A2.  //True
+A2b = simp(abs(abs(A2\{a}))).
+
+
+Goal = b->Goal.
+}
+
+automata A,Ab,A1b,A2b,A3b,  Goal.
+operation {
+Goal ~ Ab.
+Goal ~ A1b.
+Goal ~ A2b.
+Goal ~ A3b.
+}
+
+
+lengthEdgeValue: 10
+maxNodeLabelValue: 10
+operationFailureLabelValue: 10
+operationPassLabelValue: 10
+
+fairAbstractionSelected: false
+autoSaveSelected: false
+darkModeSelected: false
+pruningSelected: false
+liveCompillingSelected: false

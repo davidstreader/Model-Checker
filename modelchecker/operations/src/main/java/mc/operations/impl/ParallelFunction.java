@@ -59,6 +59,10 @@ public class ParallelFunction {
                           throws CompilationException {
     //Setting up all the potentially valid nodes.
     //After this process we remove any inaccessable.
+
+    //System.out.println("Parallel comp");
+    //System.out.println("nodes1 "+nodes1.toString());
+    //System.out.println("nodes2 "+nodes2.toString());
     for (AutomatonNode node1 : nodes1) {
 
       for (AutomatonNode node2 : nodes2) {
@@ -213,7 +217,7 @@ public class ParallelFunction {
   }
 
   private String createId(AutomatonNode node1, AutomatonNode node2) {
-    return node1.getId().hashCode() + "||" + node2.getId().hashCode();
+    return node1.getId() + "||" + node2.getId();
   }
 
   private boolean containsReceiver(String broadcaster, Set<String> receivers) {

@@ -1,8 +1,8 @@
 package mc.processmodels.petrinet;
 
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.MultimapBuilder;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -24,19 +24,18 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
 
   private Map<String, PetriNetPlace> places = new HashMap<>();
   private Map<String, PetriNetTransition> transitions = new HashMap<>();
-  private Multimap<String, PetriNetTransition> alphabet = MultimapBuilder.hashKeys()
-      .arrayListValues()
-      .build();
+  private Multimap<String, PetriNetTransition> alphabet = ArrayListMultimap.create();
+
   private Map<String, PetriNetEdge> edges = new HashMap<>();
   private Set<PetriNetPlace> roots = new HashSet<>();
   private Set<RelabelElementNode> relabels = new HashSet<>();
 
   private HidingNode hiding;
   private Set<String> hiddenVariables = new HashSet<>();
-  private Location    hiddenVariablesLocation;
+  private Location hiddenVariablesLocation;
 
   private Set<String> variables = new HashSet<>();
-  private Location    variablesLocation;
+  private Location variablesLocation;
 
   private Location location;
   private String id;
@@ -48,12 +47,13 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     this(id, true);
   }
 
-  public Petrinet(String id, boolean constructRoot){
+  public Petrinet(String id, boolean constructRoot) {
     super(id, "Petrinet");
     this.id = id;
-    if(constructRoot){
-      PetriNetPlace  origin = addPlace();
-      //TODO:
+    if (constructRoot) {
+      PetriNetPlace origin = addPlace();
+      origin.setStart(true);
+      roots.add(origin);
     }
   }
 
@@ -64,35 +64,47 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
   }
 
   public PetriNetPlace addPlace() {
-    String id = this.id + ":" + placeId++;
+    String id = this.id + ":p:" + placeId++;
     PetriNetPlace place = new PetriNetPlace(id);
     places.put(id, place);
     return place;
   }
 
   public PetriNetTransition addTransition(String label) {
-    String id = this.id + ":" + transitionId++;
+    String id = this.id + ":t:" + transitionId++;
     PetriNetTransition transition = new PetriNetTransition(id, label);
     transitions.put(id, transition);
+    alphabet.put(label,transition);
     return transition;
   }
 
-  public void addEdge(PetriNetTransition to, PetriNetPlace from) throws CompilationException {
-    if (transitions.containsValue(to) && places.containsValue(from)) {
-      String id = this.id + ":" + edgeId++;
-      PetriNetEdge edge = new PetriNetEdge(id, to, from);
-      edges.put(id, edge);
+  public PetriNetEdge addEdge(PetriNetTransition to, PetriNetPlace from) throws CompilationException {
+    if (!transitions.containsValue(to) || !places.containsValue(from)) {
+      throw new CompilationException(getClass(), "Cannot add an edge to an object not inside the petrinet");
     }
-    throw new CompilationException(getClass(), "Cannot add an edge to an object not inside the petrinet");
+    if(to == null || from == null)
+      throw new CompilationException(getClass(),"Either " + to + " or " + from + "are null");
+
+    String id = this.id + ":e:" + edgeId++;
+
+    PetriNetEdge edge = new PetriNetEdge(id, to, from);
+    to.getIncoming().add(edge);
+    from.getOutgoing().add(edge);
+    edges.put(id, edge);
+    return edge;
   }
 
-  public void addEdge(PetriNetPlace to, PetriNetTransition from) throws CompilationException {
-    if (transitions.containsValue(to) && places.containsValue(from)) {
-      String id = this.id + ":" + edgeId++;
-      PetriNetEdge edge = new PetriNetEdge(id, to, from);
-      edges.put(id, edge);
+  public PetriNetEdge addEdge(PetriNetPlace to, PetriNetTransition from) throws CompilationException {
+    if (!transitions.containsValue(from) || !places.containsValue(to)) {
+      throw new CompilationException(getClass(), "Cannot add an edge to an object not inside the petrinet");
     }
-    throw new CompilationException(getClass(), "Cannot add an edge to an object not inside the petrinet");
+
+    String id = this.id + ":" + edgeId++;
+    PetriNetEdge edge = new PetriNetEdge(id, to, from);
+    to.getIncoming().add(edge);
+    from.getOutgoing().add(edge);
+    edges.put(id, edge);
+    return edge;
   }
 
   @Override
@@ -100,4 +112,9 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     return ProcessType.PETRINET;
   }
 
+
+  @Override
+  public Petrinet copy() throws CompilationException {
+    return (Petrinet) super.copy();
+  }
 }
