@@ -14,15 +14,3 @@ automata Buff,B2,B3,B4, B2test.
 operation {
 B2~ B2test.
 }
-
-
-lengthEdgeValue: 10
-maxNodeLabelValue: 10
-operationFailureLabelValue: 10
-operationPassLabelValue: 10
-
-fairAbstractionSelected: false
-autoSaveSelected: false
-darkModeSelected: false
-pruningSelected: false
-liveCompillingSelected: false
