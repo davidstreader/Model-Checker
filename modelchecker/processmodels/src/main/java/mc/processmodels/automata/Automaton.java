@@ -237,16 +237,12 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
       if (e.getGuard() != null) {
         newGuard = e.getGuard().copy();
       }
-<<<<<<< HEAD
-      addEdge(e.getLabel(), e.getFrom(), newNode, newGuard);
-=======
 
       if(!e.getFrom().equals(oldNode)) {
         addEdge(e.getLabel(), e.getFrom(), newNode, newGuard);
       } else { // If the node links to itself
         addEdge(e.getLabel(), newNode, newNode, newGuard);
       }
->>>>>>> b49c3dc25835854e944408c6d24daa3a009fb429
     }
 
     for (AutomatonEdge e : oldNode.getOutgoingEdges()) {
@@ -254,16 +250,13 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
       if (e.getGuard() != null) {
         newGuard = e.getGuard().copy();
       }
-<<<<<<< HEAD
-      addEdge(e.getLabel(), newNode, e.getTo(), newGuard);
-=======
 
       if(!e.getTo().equals(oldNode)) {
         addEdge(e.getLabel(), newNode, e.getTo(), newGuard);
       } else {
         addEdge(e.getLabel(), newNode, newNode, newGuard);
       }
->>>>>>> b49c3dc25835854e944408c6d24daa3a009fb429
+
     }
   }
 
