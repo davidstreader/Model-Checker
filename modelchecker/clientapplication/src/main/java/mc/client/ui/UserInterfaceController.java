@@ -324,10 +324,10 @@ public class UserInterfaceController implements Initializable {
                 setBackFlags();
                 // do these operations when the user click on SAVE button in the dialogue
                 beenSaved = true;
-                cleanTheCodeArea();
+                clearCodeArea();
             } else if (hasntBeenSaved) {
                 // do these operations when the user click on DON'TSAVE button in the dialogue
-                cleanTheCodeArea();
+                clearCodeArea();
             }
         }
     }
@@ -342,7 +342,7 @@ public class UserInterfaceController implements Initializable {
             if (beenSaved) {
                 setBackFlags();
                 // do these operations when the user click on SAVE button in the dialogue
-                cleanTheCodeArea();
+                clearCodeArea();
             } else if (hasntBeenSaved) {
                 setBackFlags();
             }
@@ -626,11 +626,11 @@ public class UserInterfaceController implements Initializable {
         window.close();
     }
 
-    private void updateTheSelectedFile(File updateSelecetedFile) {
+    private void updateTheSelectedFile(File updateSelectedFile) {
         PrintStream readTo;
         try {
-            if (updateSelecetedFile != null) {
-                readTo = new PrintStream(updateSelecetedFile, "UTF-8");
+            if (updateSelectedFile != null) {
+                readTo = new PrintStream(updateSelectedFile, "UTF-8");
                 readTo.println(userCodeInput.getText());
                 readTo = readTheOptionsIntegers(readTo);
                 readTo = readTheOptionsBooleans(readTo);
@@ -679,62 +679,58 @@ public class UserInterfaceController implements Initializable {
     private GridPane createGrideOptions() {
         final Label lengthEdgeLabel = new Label("Length of the Edge:");
         Slider lengthEdge = createSlider();
-        lengthEdge.valueProperty().addListener((arg0, arg1, arg2) -> {
-            lengthEdgeValue = (int) lengthEdge.getValue();
-        });
         lengthEdge.setValue((double) lengthEdgeValue);
-
+        lengthEdge.valueProperty().addListener((arg0, OldValue, NewValue) -> {
+            lengthEdgeValue = NewValue.intValue();
+        });
 
         final Label maxNodeLabel = new Label("Automa Max Node:");
         Slider maxNode = createSlider();
-        maxNode.valueProperty().addListener((arg0, arg1, arg2) -> {
-            maxNodeLabelValue = (int) maxNode.getValue();
-        });
         maxNode.setValue((double) maxNodeLabelValue);
-
+        maxNode.valueProperty().addListener((arg0, OldValue, NewValue) -> {
+            maxNodeLabelValue = NewValue.intValue();
+        });
 
         final Label operationFailureLabel = new Label("Operation failure count:");
         Slider operationFailure = createSlider();
-        operationFailure.valueProperty().addListener((arg0, arg1, arg2) -> {
-            operationFailureLabelValue = (int) operationFailure.getValue();
-        });
         operationFailure.setValue((double) operationFailureLabelValue);
+        operationFailure.valueProperty().addListener((arg0, OldValue, NewValue) -> {
+            operationFailureLabelValue = NewValue.intValue();
+        });
+
 
 
         final Label operationPassLabel = new Label("Operation pass count:");
         Slider operationPass = createSlider();
-        operationPass.valueProperty().addListener((arg0, arg1, arg2) -> {
-            operationPassLabelValue = (int) operationPass.getValue();
-        });
         operationPass.setValue((double) operationPassLabelValue);
+        operationPass.valueProperty().addListener((arg0, OldValue, NewValue) -> {
+            operationPassLabelValue = NewValue.intValue();
+        });
+
 
         CheckBox fairAbstraction = new CheckBox("Fair Abstraction");
-        fairAbstraction.setOnAction(e -> fairAbstractionFunctionality());
-        if (fairAbstractionSelected) {
-            fairAbstraction.setSelected(true);
-        }
+        fairAbstraction.setSelected(fairAbstractionSelected);
+        fairAbstraction.setOnAction(e -> fairAbstractionSelected = !fairAbstractionSelected);
+
 
         CheckBox autoSave = new CheckBox("Autosave");
-        autoSave.setOnAction(e -> autoSaveFunctionality());
-        if (autoSaveSelected) {
-            autoSave.setSelected(true);
-        }
+        autoSave.setSelected(autoSaveSelected);
+        autoSave.setOnAction(e -> autoSaveSelected = (!autoSaveSelected));
+
+
 
         CheckBox darkMode = new CheckBox("Dark Mode");
-        darkMode.setOnAction(e -> darkModeFunctionality());
-        if (darkModeSelected) {
-            darkMode.setSelected(true);
-        }
+        darkMode.setSelected(darkModeSelected);
+        darkMode.setOnAction(e ->  darkModeSelected = (!darkModeSelected));
 
         CheckBox pruning = new CheckBox("Pruning");
-        pruning.setOnAction(e -> pruningFunctionality());
-        if (pruningSelected) {
-            pruning.setSelected(true);
-        }
+        pruning.setSelected(pruningSelected);
+        pruning.setOnAction(e ->  pruningSelected = (!pruningSelected));
 
         CheckBox liveCompilling = new CheckBox("Live Compilling");
-        liveCompilling.setOnAction(e -> liveCompilingFunctionality());
         liveCompilling.setSelected(liveCompillingSelected);
+        liveCompilling.setOnAction(e -> liveCompillingSelected = (!liveCompillingSelected));
+
 
 
         Button closeButton = new Button("Close");
@@ -774,7 +770,7 @@ public class UserInterfaceController implements Initializable {
         return grid;
     }
 
-    private GridPane createGrideFile(String buttonName) {
+    private GridPane createFileLayout(String buttonName) {
         Label label = new Label("Do you want to save changes?");
         Button saveButton = createSaveButton();
         Button dontSaveButton = createDontSaveButton();
@@ -833,7 +829,7 @@ public class UserInterfaceController implements Initializable {
     private Button createDontSaveButtonForNew() {
         Button dontSaveTemp = new Button();
         dontSaveTemp.setText("Don'tSave");
-        dontSaveTemp.setOnAction(e -> cleanTheCodeArea());
+        dontSaveTemp.setOnAction(e -> clearCodeArea());
         return dontSaveTemp;
     }
 
@@ -959,7 +955,7 @@ public class UserInterfaceController implements Initializable {
      * @return
      */
     private Scene sceneGeneratorFile(String buttonName) {
-        GridPane grid = createGrideFile(buttonName);
+        GridPane grid = createFileLayout(buttonName);
         scene = new Scene(grid, 460, 85);
         return scene;
     }
@@ -973,52 +969,11 @@ public class UserInterfaceController implements Initializable {
      * This function is responsible to delete all the code in the userCodeInput.
      * It starts deleting from the initial index to the length of the code.
      */
-    private void cleanTheCodeArea() {
+    private void clearCodeArea() {
         hasntBeenSaved = true;
-        String length = userCodeInput.getText();
-        int size = length.length();
-        userCodeInput.deleteText(0, size);
+        userCodeInput.clear();
         this.window.close();
     }
 
 
-    private void fairAbstractionFunctionality() {
-        fairAbstractionSelected = (!fairAbstractionSelected);
-    }
-
-    private void autoSaveFunctionality() {
-        autoSaveSelected = (!autoSaveSelected);
-    }
-
-    private void darkModeFunctionality() {
-        darkModeSelected = (!darkModeSelected);
-    }
-
-    private void pruningFunctionality() {
-        pruningSelected = (!pruningSelected);
-    }
-
-    private void liveCompilingFunctionality() {
-        liveCompillingSelected = (!liveCompillingSelected);
-    }
-
-/*    public boolean isAutoSaveSelected() {
-        return autoSaveSelected;
-    }
-
-    public boolean isFairAbstractionSelected() {
-        return fairAbstractionSelected;
-    }
-
-    public boolean isDarkModeSelected() {
-        return darkModeSelected;
-    }
-
-    public boolean isPruningSelected() {
-        return pruningSelected;
-    }
-
-    public boolean isLiveCompillingSelected() {
-        return liveCompillingSelected;
-    }*/
 }
