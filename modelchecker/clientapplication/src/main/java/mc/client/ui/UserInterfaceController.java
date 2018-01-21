@@ -6,6 +6,7 @@ import javafx.concurrent.Task;
 import javafx.embed.swing.SwingNode;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
@@ -16,6 +17,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 import mc.client.ModelView;
 import mc.compiler.Compiler;
 import mc.compiler.OperationResult;
@@ -224,8 +226,8 @@ public class UserInterfaceController implements Initializable {
     /**
      * This is a helper function to add an insert
      *
-     * @param popupSelection
-     * @param selectedItem
+     * @param popupSelection reference to the popup contents to be cleared as a selection has been made
+     * @param selectedItem  the selection from the popup autocomplete box to be put in place of current text
      */
     private void actOnSelect(ListView<String> popupSelection, String selectedItem) {
         if (selectedItem != null) {
@@ -317,6 +319,7 @@ public class UserInterfaceController implements Initializable {
 
     @FXML
     private void handleCreateNew(ActionEvent event) throws InterruptedException {
+
         // If the Code Area is not empty which means there are codes that we can save.
         if (!(userCodeInput.getText().isEmpty())) {
             // Open a dialogue and give the user three options (SAVE, DON'TSAVE, CANCEL)
@@ -405,7 +408,7 @@ public class UserInterfaceController implements Initializable {
 
     private void openTheRecentFile(File choiceBoxValue) {
         if (choiceBoxValue != null) {
-            String theCode = "";
+
             Scanner scanner;
             try {
                 if (choiceBoxValue != null) {
@@ -414,13 +417,14 @@ public class UserInterfaceController implements Initializable {
                     while (scanner.hasNext() && !scanner.hasNext("lengthEdgeValue:")) {
                         codeBuilder.append(scanner.nextLine()).append("\n");
                     }
-                    theCode = codeBuilder.toString();
+                    String theCode = codeBuilder.toString();
                     readOptions(scanner);
+
                     scanner.close();
-                    String length = userCodeInput.getText();
-                    int size = length.length();
-                    userCodeInput.deleteText(0, size);
+
+                    userCodeInput.clear();
                     userCodeInput.replaceSelection(theCode);
+
                     recentFiles.add(choiceBoxValue);
                     currentOpenFile = choiceBoxValue;
                 }
@@ -441,11 +445,10 @@ public class UserInterfaceController implements Initializable {
 
     @FXML
     private void handleSave(ActionEvent event) {
-        window = new Stage();
-        if (!(beenSaved)) {
+        if (currentOpenFile == null) {
             saveButtonFunctionality();
-        } else if (currentOpenFile != null) {
-            updateTheSelectedFile(currentOpenFile);
+        } else {
+            saveChangesToCurrentFile();
         }
 
     }
@@ -523,6 +526,7 @@ public class UserInterfaceController implements Initializable {
     //TODO: make this a concurrent process
     @FXML
     private void handleCompileRequest(ActionEvent event) {
+
         String userCode = userCodeInput.getText();
         if (!userCode.isEmpty()) {
             compilerOutputDisplay.clear();
@@ -556,9 +560,8 @@ public class UserInterfaceController implements Initializable {
     }
 
 
-    //helpers for ModelView
-
     /**
+     * Helpers for ModelView
      * This recieves a list of all valid models and registers them with the combobox
      *
      * @param models a collection of the processIDs of all valid models
@@ -601,66 +604,59 @@ public class UserInterfaceController implements Initializable {
 
 
     private void saveButtonFunctionality() {
-        hasntBeenSaved = false;
-        FileChooser fileChooser;
-        PrintStream readTo;
-        File selectedFile;
-        fileChooser = new FileChooser();
+
+        FileChooser fileChooser = new FileChooser();
+
         fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("TXT", "*.txt"));
         fileChooser.setTitle("Save file into a directory");
-        selectedFile = fileChooser.showSaveDialog(window);
+
+        File selectedFile = fileChooser.showSaveDialog(new Stage());
 
         try {
             if (selectedFile != null) {
-                readTo = new PrintStream(selectedFile, "UTF-8");
-                readTo.println(userCodeInput.getText());
-                readTo = writeOptionsSettingsIntegers(readTo);
-                readTo = writeOptionsSettingsBooleans(readTo);
+                PrintStream writeStream = new PrintStream(selectedFile, "UTF-8");
+                writeStream.println(userCodeInput.getText());
+                writeStream = writeOptionsSettingsIntegers(writeStream);
+                writeStream = writeOptionsSettingsBooleans(writeStream);
                 recentFiles.add(selectedFile);
                 currentOpenFile = selectedFile;
-                readTo.close();
-                beenSaved = true;
+                writeStream.close();
             }
         } catch (IOException message) {
             System.out.println(message);
         }
-        window.close();
     }
 
-    private void updateTheSelectedFile(File updateSelectedFile) {
-        PrintStream readTo;
+    private void saveChangesToCurrentFile() {
         try {
-            if (updateSelectedFile != null) {
-                readTo = new PrintStream(updateSelectedFile, "UTF-8");
-                readTo.println(userCodeInput.getText());
-                readTo = writeOptionsSettingsIntegers(readTo);
-                readTo = writeOptionsSettingsBooleans(readTo);
-                readTo.close();
+            if (currentOpenFile != null) {
+                PrintStream writeTo = new PrintStream(currentOpenFile, "UTF-8");
+                writeTo.println(userCodeInput.getText());
+                writeTo = writeOptionsSettingsIntegers(writeTo);
+                writeTo = writeOptionsSettingsBooleans(writeTo);
+                writeTo.close();
             }
         } catch (IOException message) {
             System.out.println(message);
         }
     }
 
-
+    //TODO rewrite this as its function doesnt work properly
     private void dontSaveButtonFunctionality() {
-        beenSaved = false;
-        hasntBeenSaved = true;
+
         FileChooser fileChooser = new FileChooser();
         fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("TXT", "*.txt"));
         fileChooser.setTitle("Open Resource File");
         File selectedFile = fileChooser.showOpenDialog(window);
-        String theCode;
-        Scanner scanner;
 
         try {
             if (selectedFile != null) {
-                scanner = new Scanner(selectedFile, "UTF-8");
+                Scanner scanner = new Scanner(selectedFile, "UTF-8");
                 StringBuilder codeBuilder = new StringBuilder();
                 while (scanner.hasNext() && !scanner.hasNext("lengthEdgeValue:")) {
                     codeBuilder.append(scanner.nextLine()).append("\n");
                 }
-                theCode = codeBuilder.toString();
+                String theCode = codeBuilder.toString();
                 readOptions(scanner);
                 scanner.close();
 
