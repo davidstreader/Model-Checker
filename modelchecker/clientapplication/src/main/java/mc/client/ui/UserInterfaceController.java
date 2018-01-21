@@ -60,8 +60,9 @@ public class UserInterfaceController implements Initializable {
 
     // for keep tracking of the files user has opened recently.
     private Set<File> recentFiles = new HashSet<>();
-    // for keep updating the file that has already been saved.
-    private File thisFile;
+
+    // for keep track of the file that has already been saved.
+    private File currentOpenFile;
     //
     private boolean beenSaved = false;
     private boolean hasntBeenSaved = false;
@@ -421,7 +422,7 @@ public class UserInterfaceController implements Initializable {
                     userCodeInput.deleteText(0, size);
                     userCodeInput.replaceSelection(theCode);
                     recentFiles.add(choiceBoxValue);
-                    thisFile = choiceBoxValue;
+                    currentOpenFile = choiceBoxValue;
                 }
             } catch (IOException message) {
                 System.out.println(message);
@@ -443,8 +444,8 @@ public class UserInterfaceController implements Initializable {
         window = new Stage();
         if (!(beenSaved)) {
             saveButtonFunctionality();
-        } else if (thisFile != null) {
-            updateTheSelectedFile(thisFile);
+        } else if (currentOpenFile != null) {
+            updateTheSelectedFile(currentOpenFile);
         }
 
     }
@@ -613,10 +614,10 @@ public class UserInterfaceController implements Initializable {
             if (selectedFile != null) {
                 readTo = new PrintStream(selectedFile, "UTF-8");
                 readTo.println(userCodeInput.getText());
-                readTo = readTheOptionsIntegers(readTo);
-                readTo = readTheOptionsBooleans(readTo);
+                readTo = writeOptionsSettingsIntegers(readTo);
+                readTo = writeOptionsSettingsBooleans(readTo);
                 recentFiles.add(selectedFile);
-                thisFile = selectedFile;
+                currentOpenFile = selectedFile;
                 readTo.close();
                 beenSaved = true;
             }
@@ -632,8 +633,8 @@ public class UserInterfaceController implements Initializable {
             if (updateSelectedFile != null) {
                 readTo = new PrintStream(updateSelectedFile, "UTF-8");
                 readTo.println(userCodeInput.getText());
-                readTo = readTheOptionsIntegers(readTo);
-                readTo = readTheOptionsBooleans(readTo);
+                readTo = writeOptionsSettingsIntegers(readTo);
+                readTo = writeOptionsSettingsBooleans(readTo);
                 readTo.close();
             }
         } catch (IOException message) {
@@ -649,7 +650,7 @@ public class UserInterfaceController implements Initializable {
         fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("TXT", "*.txt"));
         fileChooser.setTitle("Open Resource File");
         File selectedFile = fileChooser.showOpenDialog(window);
-        String theCode = "";
+        String theCode;
         Scanner scanner;
 
         try {
@@ -662,12 +663,12 @@ public class UserInterfaceController implements Initializable {
                 theCode = codeBuilder.toString();
                 readOptions(scanner);
                 scanner.close();
-                String length = userCodeInput.getText();
-                int size = length.length();
-                userCodeInput.deleteText(0, size);
+
+                userCodeInput.clear();
+
                 userCodeInput.replaceSelection(theCode);
                 recentFiles.add(selectedFile);
-                thisFile = selectedFile;
+                currentOpenFile = selectedFile;
             }
         } catch (IOException message) {
             System.out.println(message);
@@ -676,7 +677,7 @@ public class UserInterfaceController implements Initializable {
         window.close();
     }
 
-    private GridPane createGrideOptions() {
+    private GridPane createOptionsDialogueLayout() {
         final Label lengthEdgeLabel = new Label("Length of the Edge:");
         Slider lengthEdge = createSlider();
         lengthEdge.setValue((double) lengthEdgeValue);
@@ -848,7 +849,7 @@ public class UserInterfaceController implements Initializable {
 
     private void creatSceneOptions() {
         window = new Stage();
-        scene = sceneGeneratorOptions();
+        scene = sceneGeneratorOptionsDialogueLayout();
         window.setScene(scene);
         window.setMaxWidth(350);
         window.setMaxHeight(410);
@@ -860,7 +861,7 @@ public class UserInterfaceController implements Initializable {
 
     private void createSceneFile(String buttonName) {
         window = new Stage();
-        scene = sceneGeneratorFile(buttonName);
+        scene = sceneGeneratorFileDialogueLayout(buttonName);
         window.setScene(scene);
         window.setMaxWidth(460);
         window.setMaxHeight(85);
@@ -883,28 +884,28 @@ public class UserInterfaceController implements Initializable {
         return slider;
     }
 
-    private PrintStream readTheOptionsBooleans(PrintStream readTo) {
-        readTo.println();
+    private PrintStream writeOptionsSettingsBooleans(PrintStream writeTo) {
+        writeTo.println();
 
-        readTo.println("fairAbstractionSelected: " + fairAbstractionSelected);
-        readTo.println("autoSaveSelected: " + autoSaveSelected);
-        readTo.println("darkModeSelected: " + darkModeSelected);
-        readTo.println("pruningSelected: " + pruningSelected);
-        readTo.println("liveCompillingSelected: " + liveCompillingSelected);
+        writeTo.println("fairAbstractionSelected: " + fairAbstractionSelected);
+        writeTo.println("autoSaveSelected: " + autoSaveSelected);
+        writeTo.println("darkModeSelected: " + darkModeSelected);
+        writeTo.println("pruningSelected: " + pruningSelected);
+        writeTo.println("liveCompillingSelected: " + liveCompillingSelected);
 
-        return readTo;
+        return writeTo;
     }
 
 
-    private PrintStream readTheOptionsIntegers(PrintStream readTo) {
-        readTo.println();
+    private PrintStream writeOptionsSettingsIntegers(PrintStream writeTo) {
+        writeTo.println();
 
-        readTo.println("lengthEdgeValue: " + lengthEdgeValue);
-        readTo.println("maxNodeLabelValue: " + maxNodeLabelValue);
-        readTo.println("operationFailureLabelValue: " + operationFailureLabelValue);
-        readTo.println("operationPassLabelValue: " + operationPassLabelValue);
+        writeTo.println("lengthEdgeValue: " + lengthEdgeValue);
+        writeTo.println("maxNodeLabelValue: " + maxNodeLabelValue);
+        writeTo.println("operationFailureLabelValue: " + operationFailureLabelValue);
+        writeTo.println("operationPassLabelValue: " + operationPassLabelValue);
 
-        return readTo;
+        return writeTo;
     }
 
     private void readOptions(Scanner scanner) {
@@ -944,8 +945,8 @@ public class UserInterfaceController implements Initializable {
         }
     }
 
-    private Scene sceneGeneratorOptions() {
-        GridPane grid = createGrideOptions();
+    private Scene sceneGeneratorOptionsDialogueLayout() {
+        GridPane grid = createOptionsDialogueLayout();
         scene = new Scene(grid, 500, 100);
         return scene;
     }
@@ -954,7 +955,7 @@ public class UserInterfaceController implements Initializable {
      * @param buttonName
      * @return
      */
-    private Scene sceneGeneratorFile(String buttonName) {
+    private Scene sceneGeneratorFileDialogueLayout(String buttonName) {
         GridPane grid = createFileLayout(buttonName);
         scene = new Scene(grid, 460, 85);
         return scene;
