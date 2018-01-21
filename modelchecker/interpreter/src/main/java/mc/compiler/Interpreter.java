@@ -28,7 +28,7 @@ public class Interpreter {
 
     List<ProcessNode> processes = ast.getProcesses();
     for (ProcessNode process : processes) {
-      messageQueue.add(new LogAST("Interpreting:", process));
+      System.out.print("\nBuilding " + process.getType() + " " + process.getIdentifier() + "...");
       ProcessModel model;
       switch (process.getType()) {
         case "processes": // If it is not a automata or petrinet then construct it (Its a non-drawn process)
@@ -47,6 +47,8 @@ public class Interpreter {
         default:
           throw new CompilationException(getClass(), "Unable to find the process type: " + process.getType());
       }
+
+      System.out.print("Done!");
 
       processMap.put(process.getIdentifier(), model);
     }

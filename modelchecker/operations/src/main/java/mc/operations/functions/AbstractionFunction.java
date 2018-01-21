@@ -73,7 +73,7 @@ public class AbstractionFunction implements IProcessFunction {
     Automaton abstraction = new Automaton(automaton.getId() + ".abs", !Automaton.CONSTRUCT_ROOT);
 
     boolean isFair = flags.contains("fair") || !flags.contains("unfair");
-
+    System.out.println(isFair);
     // add the nodes from the specified automaton to the abstracted representation
     for (AutomatonNode automatonNode : automaton.getNodes()) {
       addNode(abstraction, automatonNode);
@@ -113,6 +113,7 @@ public class AbstractionFunction implements IProcessFunction {
 
   private AutomatonNode constructEdgeOnlyTau(Automaton abstraction, AutomatonEdge hiddenEdge)
       throws CompilationException {
+
 
     if (!hiddenEdge.getFrom().getOutgoingEdges().stream().allMatch(AutomatonEdge::isHidden)) {
       return null;
@@ -191,13 +192,7 @@ public class AbstractionFunction implements IProcessFunction {
         outGuard = Expression.combineGuards(hiddenGuard, fromGuard, context);
       }
       for (AutomatonNode to : outgoingNodes) {
-        if (outGuard != null) {
           abstraction.addEdge(edge.getLabel(), from, to, outGuard);
-        } else {
-          abstraction.addEdge(edge.getLabel(), from, to, null);
-        }
-
-
       }
     }
   }
