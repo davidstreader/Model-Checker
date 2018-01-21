@@ -1,0 +1,33 @@
+processes {
+Simple = (a->r->r->x->STOP).
+Sr = abs(Simple\{r}).
+/*
+Z = (a->l->Z|b->(r->x->STOP|y->STOP)).
+Yl = abs(Z\{l}).
+Ylr = abs(Yl\{r}).
+Yr = abs(Z\{r}).
+Yrl = abs(Yl\{r}).
+Y = abs(Z\{r,l}).
+*/
+}
+
+automata Sr,Simple.
+
+/*
+operation {
+Y~Yrl.
+Y~Ylr.
+Ylr~Yrl.
+}*/
+
+
+lengthEdgeValue: 10
+maxNodeLabelValue: 10
+operationFailureLabelValue: 10
+operationPassLabelValue: 10
+
+fairAbstractionSelected: false
+autoSaveSelected: false
+darkModeSelected: false
+pruningSelected: false
+liveCompillingSelected: false
