@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.microsoft.z3.Context;
 
 
@@ -223,31 +224,21 @@ public class AbstractionFunction implements IProcessFunction {
 
     List<AutomatonNode> nodes = abstraction.getNodes();
 
+
     for (AutomatonNode n: nodes ) {
       boolean del = true;
-      for (AutomatonEdge e : n.getOutgoingEdges()) {
+      for (AutomatonEdge e : Iterables.concat(n.getIncomingEdges(),n.getOutgoingEdges())) {
         if (!e.isHidden()) {
           del = false;
           break;
         }
       }
 
-      if (del) {
-        for (AutomatonEdge e : n.getIncomingEdges()) {
-          if (!e.isHidden()) {
+      if (n.isStartNode() || n.getOutgoingEdges().size() == 0) {
             del = false;
-            break;
-          }
-        }
-        if (del) {
-          if (n.isStartNode() || n.getOutgoingEdges().size() == 0) {
-            del = false;
-          }
-        }
       }
+
       if (del) {
-        List<AutomatonEdge> old = new ArrayList<>(n.getOutgoingEdges());
-        old.addAll(n.getIncomingEdges());
         try {
           for (AutomatonEdge second : n.getOutgoingEdges()) {
             for (AutomatonEdge first : n.getIncomingEdges()) {
@@ -256,9 +247,7 @@ public class AbstractionFunction implements IProcessFunction {
             }
           }
 
-          old.forEach(abstraction::removeEdge);
-
-          abstraction.removeNode(n);
+        abstraction.removeNode(n);  // tides up all the edges
         } catch (InterruptedException ignored) {
           throw new CompilationException(this.getClass(), null);
         }

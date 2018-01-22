@@ -165,7 +165,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     edges.addAll(node.getOutgoingEdges());
     edges.stream()
       .map(ProcessModelObject::getId)
-      .forEach(id -> edgeMap.remove(id));
+      .forEach(this::removeEdge);
     nodeMap.remove(node.getId());
     return true;
   }
