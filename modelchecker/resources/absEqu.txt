@@ -1,0 +1,33 @@
+processes {
+Z = (a->l->Z|b->(r->x->STOP|y->STOP)).
+Z1 = (a->l->l->Z|b->(r->x->STOP|y->STOP)).
+Z2 = (l->l->a->Z|b->(r->x->STOP|y->STOP)).
+Z3 = (l->a->Z|b->(r->r->x->STOP|y->STOP)).
+
+
+}
+automata Z, Z1,Z2,Z3.
+operation {
+abs(Z\{r,l}) ~ abs(abs(Z\{l})\{r}).
+abs(Z\{r,l}) ~ abs(abs(Z\{r})\{l}).
+}
+
+equation (ApplyAlphabet=true, NumberNodes=2, AlphabetCount=2, MaxTransitions=2) {
+
+abs(X\{r,l}) ~ abs(abs(X\{l})\{r}).
+
+}
+ 
+
+
+
+lengthEdgeValue: 10
+maxNodeLabelValue: 10
+operationFailureLabelValue: 10
+operationPassLabelValue: 10
+
+fairAbstractionSelected: false
+autoSaveSelected: false
+darkModeSelected: false
+pruningSelected: false
+liveCompillingSelected: false
