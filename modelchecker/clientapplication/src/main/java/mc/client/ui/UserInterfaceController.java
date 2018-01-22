@@ -1,30 +1,25 @@
 package mc.client.ui;
 
-
-import javafx.collections.FXCollections;
 import javafx.concurrent.Task;
 import javafx.embed.swing.SwingNode;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.Window;
 import mc.client.ModelView;
 import mc.compiler.Compiler;
 import mc.compiler.OperationResult;
 import mc.exceptions.CompilationException;
 import mc.util.expr.Expression;
 import mc.webserver.Context;
-import org.apache.commons.io.FileUtils;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
 import org.fxmisc.richtext.model.StyleSpans;
@@ -57,14 +52,18 @@ public class UserInterfaceController implements Initializable {
     @FXML
     private ComboBox<String> modelsList;
 
+    @FXML
+    private Menu openRecentTab;
+
+
     private Stage window;
     private Scene scene;
 
     // for keep tracking of the files user has opened recently.
-    private Set<File> recentFiles = new HashSet<>();
-
-    // for keep track of the file that has already been saved.
-    private File currentOpenFile;
+    private Set<File> openedRecent = new HashSet<>();
+    private Set<File> openedPreviously = new HashSet<>();
+    // for keep updating the file that has already been saved.
+    private File currentOpenFileFile;
     //
     private boolean beenSaved = false;
     private boolean hasntBeenSaved = false;
@@ -160,7 +159,6 @@ public class UserInterfaceController implements Initializable {
                 })
                 .subscribe(this::applyHighlighting);
 
-
         userCodeInput.richChanges()
                 .filter(ch -> !ch.getInserted().equals(ch.getRemoved()) && ch.getInserted().getStyleOfChar(0).isEmpty())
                 .filter(ch -> ch.getInserted().getText().length() == 1)
@@ -221,13 +219,14 @@ public class UserInterfaceController implements Initializable {
 
                 });
 
+        openPreviousFiles(openedPreviously);
     }
 
     /**
      * This is a helper function to add an insert
      *
-     * @param popupSelection reference to the popup contents to be cleared as a selection has been made
-     * @param selectedItem  the selection from the popup autocomplete box to be put in place of current text
+     * @param popupSelection
+     * @param selectedItem
      */
     private void actOnSelect(ListView<String> popupSelection, String selectedItem) {
         if (selectedItem != null) {
@@ -319,7 +318,6 @@ public class UserInterfaceController implements Initializable {
 
     @FXML
     private void handleCreateNew(ActionEvent event) throws InterruptedException {
-
         // If the Code Area is not empty which means there are codes that we can save.
         if (!(userCodeInput.getText().isEmpty())) {
             // Open a dialogue and give the user three options (SAVE, DON'TSAVE, CANCEL)
@@ -328,10 +326,10 @@ public class UserInterfaceController implements Initializable {
                 setBackFlags();
                 // do these operations when the user click on SAVE button in the dialogue
                 beenSaved = true;
-                clearCodeArea();
+                cleanTheCodeArea();
             } else if (hasntBeenSaved) {
                 // do these operations when the user click on DON'TSAVE button in the dialogue
-                clearCodeArea();
+                cleanTheCodeArea();
             }
         }
     }
@@ -346,7 +344,7 @@ public class UserInterfaceController implements Initializable {
             if (beenSaved) {
                 setBackFlags();
                 // do these operations when the user click on SAVE button in the dialogue
-                clearCodeArea();
+                cleanTheCodeArea();
             } else if (hasntBeenSaved) {
                 setBackFlags();
             }
@@ -358,81 +356,90 @@ public class UserInterfaceController implements Initializable {
 
     @FXML
     private void handleOpenRecentAction(ActionEvent event) {
-        window = new Stage();
-        String path;
         ChoiceBox<File> cb = new ChoiceBox<File>();
+        removeMenuItem();//TODO WTF WTF WTF
+        removeMenuItem();//TODO WTF WTF WTF
+        removeMenuItem();//TODO WTF WTF WTF
+        removeMenuItem();//TODO WTF WTF WTF
+        removeMenuItem();//TODO WTF WTF WTF
 
-        try {
-            if (!recentFiles.isEmpty()) {
-                for (File fileName : recentFiles) {
-                    path = "openrecents/" + fileName.getName();
-                    File f = new File(path);
-                    f.getParentFile().mkdirs();
-                    f.createNewFile();
-                    FileUtils.copyFile(fileName, f);
-                }
-            } else {
-                openPreviousFiles();
-            }
-        } catch (IOException message) {
-            System.out.println(message);
-        }
-
-
-        cb.setItems(FXCollections.observableArrayList(recentFiles));
-
-        VBox layout = new VBox(cb);
-        scene = new Scene(layout, 200, 200);
-        window.setScene(scene);
-        window.initModality(Modality.APPLICATION_MODAL);
-        window.showAndWait();
-        openTheRecentFile(cb.getValue());
+        addMenuItem();
 
     }
 
-    private void openPreviousFiles() {
-        File folder = new File("openrecents/");
-        File[] listOfFiles = folder.listFiles();
-        for (int i = 0; i < listOfFiles.length; i++) {
-            if (listOfFiles[i].isFile()) {
-                // Files
-                if (listOfFiles[i].getName().endsWith(".txt")) {
-                    recentFiles.add(listOfFiles[i]);
-                } else if (listOfFiles[i].isDirectory()) {
-                    // Directories
-                    recentFiles.add(listOfFiles[i]);
-                }
+
+    private void addMenuItem() {
+        if (this.openedRecent.size() < openedPreviously.size()) {
+            for (File fl : this.openedPreviously) {
+
+
+                MenuItem menu = new MenuItem(fl.getName());
+
+                menu.setOnAction(new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(ActionEvent e) {
+                        openTheRecentFile(fl);
+                    }
+                });
+                openRecentTab.getItems().add(0, menu);
+
             }
         }
+
+
+        for (File fl : this.openedRecent) {
+            //
+
+            MenuItem menu = new MenuItem(fl.getName());
+
+            menu.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent e) {
+                    openTheRecentFile(fl);
+                }
+            });
+            openRecentTab.getItems().add(0, menu);
+        }
+    }
+
+
+    private void removeMenuItem() {
+        for (int i = 0; i < openRecentTab.getItems().size(); i++) {
+            openRecentTab.getItems().remove(openRecentTab.getItems().get(i));
+        }
+    }
+
+
+    private void openPreviousFiles(Set<File> openedPreviously) {
+        File folder = new File("openrecents/");
+        File[] listOfFiles = folder.listFiles();
+
+        if (listOfFiles != null) {
+            openedPreviously.addAll(Arrays.asList(listOfFiles));
+        }
+
     }
 
     private void openTheRecentFile(File choiceBoxValue) {
-        if (choiceBoxValue != null) {
-
-            Scanner scanner;
             try {
                 if (choiceBoxValue != null) {
-                    scanner = new Scanner(choiceBoxValue, "UTF-8");
+                    Scanner scanner = new Scanner(choiceBoxValue, "UTF-8");
                     StringBuilder codeBuilder = new StringBuilder();
                     while (scanner.hasNext() && !scanner.hasNext("lengthEdgeValue:")) {
                         codeBuilder.append(scanner.nextLine()).append("\n");
                     }
                     String theCode = codeBuilder.toString();
                     readOptions(scanner);
-
                     scanner.close();
 
                     userCodeInput.clear();
                     userCodeInput.replaceSelection(theCode);
-
-                    recentFiles.add(choiceBoxValue);
-                    currentOpenFile = choiceBoxValue;
+                    openedRecent.add(choiceBoxValue);
+                    currentOpenFileFile = choiceBoxValue;
                 }
             } catch (IOException message) {
                 System.out.println(message);
             }
-        }
-
     }
 
     @FXML
@@ -445,10 +452,11 @@ public class UserInterfaceController implements Initializable {
 
     @FXML
     private void handleSave(ActionEvent event) {
-        if (currentOpenFile == null) {
+        window = new Stage();
+        if (!(beenSaved)) {
             saveButtonFunctionality();
-        } else {
-            saveChangesToCurrentFile();
+        } else if (currentOpenFileFile != null) {
+            updateTheSelectedFile(currentOpenFileFile);
         }
 
     }
@@ -523,10 +531,9 @@ public class UserInterfaceController implements Initializable {
         creatSceneOptions();
     }
 
-    //TODO: make this a concurrent process
+    //TODO: make this a better concurrent process
     @FXML
     private void handleCompileRequest(ActionEvent event) {
-
         String userCode = userCodeInput.getText();
         if (!userCode.isEmpty()) {
             compilerOutputDisplay.clear();
@@ -535,17 +542,15 @@ public class UserInterfaceController implements Initializable {
             try {
                 Compiler codeCompiler = new Compiler();
 
-                codeCompiler.compile(userCode, new Context(), Expression.mkCtx(), new LinkedBlockingQueue<>());
-
                 // This follows the observer pattern.
                 // Within the compile function the code is then told to update an observer
-                compilerOutputDisplay.insertText(0,"Compiling completed sucessfully!\n"+ new Date().toString());
+                codeCompiler.compile(userCode, new Context(), Expression.mkCtx(), new LinkedBlockingQueue<>());
 
+
+                compilerOutputDisplay.insertText(0, "Compiling completed sucessfully!\n" + new Date().toString());
             } catch (InterruptedException e) {
                 e.printStackTrace();
             } catch (CompilationException e) {
-                e.printStackTrace();
-
                 holdHighlighting = true;
                 compilerOutputDisplay.insertText(0, e.toString());
                 if (e.getLocation() != null) {
@@ -554,14 +559,14 @@ public class UserInterfaceController implements Initializable {
                     if (e.getLocation().getStartIndex() > 0 && e.getLocation().getStartIndex() < userCodeInput.getText().length())
                         userCodeInput.setStyleClass(e.getLocation().getStartIndex(), e.getLocation().getEndIndex(), "issue");
                 }
-
             }
         }
     }
 
 
+    //helpers for ModelView
+
     /**
-     * Helpers for ModelView
      * This recieves a list of all valid models and registers them with the combobox
      *
      * @param models a collection of the processIDs of all valid models
@@ -579,61 +584,66 @@ public class UserInterfaceController implements Initializable {
         opRes.forEach(o -> compilerOutputDisplay.appendText(o.getProcess1().getIdent() + " " + o.getOperation() + " " +
                 o.getProcess2().getIdent() + " = " + o.getResult() + "\n"));
 
+
+
         if (eqRes.size() > 0) {
             compilerOutputDisplay.appendText("\n##Equation Results##\n");
 
-
             for (OperationResult result : eqRes) {
-                compilerOutputDisplay.appendText(result.getProcess1().getIdent() + " " + result.getOperation() + " "+
-                                                 result.getProcess2().getIdent() + " = " + result.getResult() + "\n");
+                compilerOutputDisplay.appendText(result.getProcess1().getIdent() + " " + result.getOperation() + " " +
+                        result.getProcess2().getIdent() + " = " + result.getResult() + "\n");
 
 
-                if(result.getFailures().size() > 0) {
+                if (result.getFailures().size() > 0) {
                     compilerOutputDisplay.appendText("\tFailing Combinations: \n");
 
                     for (String failure : result.getFailures())
-                        compilerOutputDisplay.appendText("\t\t"+failure + "\n");
+                        compilerOutputDisplay.appendText("\t\t" + failure + "\n");
                 }
 
                 compilerOutputDisplay.appendText("\tSimulations passed: " + result.getExtra() + "\n");
+
             }
         }
-
 
     }
 
 
     private void saveButtonFunctionality() {
+        hasntBeenSaved = false;
 
         FileChooser fileChooser = new FileChooser();
-
         fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("TXT", "*.txt"));
         fileChooser.setTitle("Save file into a directory");
-
-        File selectedFile = fileChooser.showSaveDialog(new Stage());
+        File selectedFile = fileChooser.showSaveDialog(window);
 
         try {
             if (selectedFile != null) {
-                PrintStream writeStream = new PrintStream(selectedFile, "UTF-8");
-                writeStream.println(userCodeInput.getText());
-                writeStream = writeOptionsSettingsIntegers(writeStream);
-                writeStream = writeOptionsSettingsBooleans(writeStream);
-                recentFiles.add(selectedFile);
-                currentOpenFile = selectedFile;
-                writeStream.close();
+                PrintStream writeTo = new PrintStream(selectedFile, "UTF-8");
+                writeTo.println(userCodeInput.getText());
+                writeTo = readTheOptionsIntegers(writeTo);
+                writeTo = readTheOptionsBooleans(writeTo);
+                if (openedRecent.size() < 5) {
+                    openedRecent.add(selectedFile);
+                }
+                currentOpenFileFile = selectedFile;
+                writeTo.close();
+                beenSaved = true;
             }
         } catch (IOException message) {
             System.out.println(message);
         }
+        window.close();
     }
 
-    private void saveChangesToCurrentFile() {
+    private void updateTheSelectedFile(File updateSelectedFile) {
+        PrintStream writeTo;
         try {
-            if (currentOpenFile != null) {
-                PrintStream writeTo = new PrintStream(currentOpenFile, "UTF-8");
+            if (updateSelectedFile != null) {
+                writeTo = new PrintStream(updateSelectedFile, "UTF-8");
                 writeTo.println(userCodeInput.getText());
-                writeTo = writeOptionsSettingsIntegers(writeTo);
-                writeTo = writeOptionsSettingsBooleans(writeTo);
+                writeTo = readTheOptionsIntegers(writeTo);
+                writeTo = readTheOptionsBooleans(writeTo);
                 writeTo.close();
             }
         } catch (IOException message) {
@@ -641,9 +651,10 @@ public class UserInterfaceController implements Initializable {
         }
     }
 
-    //TODO rewrite this as its function doesnt work properly
-    private void dontSaveButtonFunctionality() {
 
+    private void dontSaveButtonFunctionality() {
+        beenSaved = false;
+        hasntBeenSaved = true;
         FileChooser fileChooser = new FileChooser();
         fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("TXT", "*.txt"));
         fileChooser.setTitle("Open Resource File");
@@ -661,38 +672,43 @@ public class UserInterfaceController implements Initializable {
                 scanner.close();
 
                 userCodeInput.clear();
-
                 userCodeInput.replaceSelection(theCode);
-                recentFiles.add(selectedFile);
-                currentOpenFile = selectedFile;
+                if (openedRecent.size() < 5) {
+                    openedRecent.add(selectedFile);
+                }
+                currentOpenFileFile = selectedFile;
             }
         } catch (IOException message) {
             System.out.println(message);
         }
 
-        window.close();
+        window.close(); // TODO remove this type of code.
     }
 
-    private GridPane createOptionsDialogueLayout() {
+    private GridPane createGrideOptions() {
         final Label lengthEdgeLabel = new Label("Length of the Edge:");
         Slider lengthEdge = createSlider();
         lengthEdge.setValue((double) lengthEdgeValue);
-        lengthEdge.valueProperty().addListener((arg0, OldValue, NewValue) -> {
-            lengthEdgeValue = NewValue.intValue();
+        lengthEdge.valueProperty().addListener((arg0, arg1, arg2) -> {
+            lengthEdgeValue = (int) lengthEdge.getValue();
         });
+
+
 
         final Label maxNodeLabel = new Label("Automa Max Node:");
         Slider maxNode = createSlider();
         maxNode.setValue((double) maxNodeLabelValue);
-        maxNode.valueProperty().addListener((arg0, OldValue, NewValue) -> {
-            maxNodeLabelValue = NewValue.intValue();
+        maxNode.valueProperty().addListener((arg0, arg1, arg2) -> {
+            maxNodeLabelValue = (int) maxNode.getValue();
         });
+
+
 
         final Label operationFailureLabel = new Label("Operation failure count:");
         Slider operationFailure = createSlider();
         operationFailure.setValue((double) operationFailureLabelValue);
-        operationFailure.valueProperty().addListener((arg0, OldValue, NewValue) -> {
-            operationFailureLabelValue = NewValue.intValue();
+        operationFailure.valueProperty().addListener((arg0, arg1, arg2) -> {
+            operationFailureLabelValue = (int) operationFailure.getValue();
         });
 
 
@@ -700,21 +716,18 @@ public class UserInterfaceController implements Initializable {
         final Label operationPassLabel = new Label("Operation pass count:");
         Slider operationPass = createSlider();
         operationPass.setValue((double) operationPassLabelValue);
-        operationPass.valueProperty().addListener((arg0, OldValue, NewValue) -> {
-            operationPassLabelValue = NewValue.intValue();
+        operationPass.valueProperty().addListener((arg0, arg1, arg2) -> {
+            operationPassLabelValue = (int) operationPass.getValue();
         });
 
 
         CheckBox fairAbstraction = new CheckBox("Fair Abstraction");
         fairAbstraction.setSelected(fairAbstractionSelected);
-        fairAbstraction.setOnAction(e -> fairAbstractionSelected = !fairAbstractionSelected);
-
+        fairAbstraction.setOnAction(e -> fairAbstractionSelected = (!fairAbstractionSelected));
 
         CheckBox autoSave = new CheckBox("Autosave");
         autoSave.setSelected(autoSaveSelected);
         autoSave.setOnAction(e -> autoSaveSelected = (!autoSaveSelected));
-
-
 
         CheckBox darkMode = new CheckBox("Dark Mode");
         darkMode.setSelected(darkModeSelected);
@@ -722,7 +735,8 @@ public class UserInterfaceController implements Initializable {
 
         CheckBox pruning = new CheckBox("Pruning");
         pruning.setSelected(pruningSelected);
-        pruning.setOnAction(e ->  pruningSelected = (!pruningSelected));
+        pruning.setOnAction(e -> pruningSelected = (!pruningSelected));
+
 
         CheckBox liveCompilling = new CheckBox("Live Compilling");
         liveCompilling.setSelected(liveCompillingSelected);
@@ -767,7 +781,7 @@ public class UserInterfaceController implements Initializable {
         return grid;
     }
 
-    private GridPane createFileLayout(String buttonName) {
+    private GridPane createGrideFile(String buttonName) {
         Label label = new Label("Do you want to save changes?");
         Button saveButton = createSaveButton();
         Button dontSaveButton = createDontSaveButton();
@@ -826,7 +840,7 @@ public class UserInterfaceController implements Initializable {
     private Button createDontSaveButtonForNew() {
         Button dontSaveTemp = new Button();
         dontSaveTemp.setText("Don'tSave");
-        dontSaveTemp.setOnAction(e -> clearCodeArea());
+        dontSaveTemp.setOnAction(e -> cleanTheCodeArea());
         return dontSaveTemp;
     }
 
@@ -845,7 +859,7 @@ public class UserInterfaceController implements Initializable {
 
     private void creatSceneOptions() {
         window = new Stage();
-        scene = sceneGeneratorOptionsDialogueLayout();
+        scene = sceneGeneratorOptions();
         window.setScene(scene);
         window.setMaxWidth(350);
         window.setMaxHeight(410);
@@ -857,7 +871,7 @@ public class UserInterfaceController implements Initializable {
 
     private void createSceneFile(String buttonName) {
         window = new Stage();
-        scene = sceneGeneratorFileDialogueLayout(buttonName);
+        scene = sceneGeneratorFile(buttonName);
         window.setScene(scene);
         window.setMaxWidth(460);
         window.setMaxHeight(85);
@@ -880,7 +894,7 @@ public class UserInterfaceController implements Initializable {
         return slider;
     }
 
-    private PrintStream writeOptionsSettingsBooleans(PrintStream writeTo) {
+    private PrintStream readTheOptionsBooleans(PrintStream writeTo) {
         writeTo.println();
 
         writeTo.println("fairAbstractionSelected: " + fairAbstractionSelected);
@@ -893,7 +907,7 @@ public class UserInterfaceController implements Initializable {
     }
 
 
-    private PrintStream writeOptionsSettingsIntegers(PrintStream writeTo) {
+    private PrintStream readTheOptionsIntegers(PrintStream writeTo) {
         writeTo.println();
 
         writeTo.println("lengthEdgeValue: " + lengthEdgeValue);
@@ -941,8 +955,8 @@ public class UserInterfaceController implements Initializable {
         }
     }
 
-    private Scene sceneGeneratorOptionsDialogueLayout() {
-        GridPane grid = createOptionsDialogueLayout();
+    private Scene sceneGeneratorOptions() {
+        GridPane grid = createGrideOptions();
         scene = new Scene(grid, 500, 100);
         return scene;
     }
@@ -951,8 +965,8 @@ public class UserInterfaceController implements Initializable {
      * @param buttonName
      * @return
      */
-    private Scene sceneGeneratorFileDialogueLayout(String buttonName) {
-        GridPane grid = createFileLayout(buttonName);
+    private Scene sceneGeneratorFile(String buttonName) {
+        GridPane grid = createGrideFile(buttonName);
         scene = new Scene(grid, 460, 85);
         return scene;
     }
@@ -966,11 +980,10 @@ public class UserInterfaceController implements Initializable {
      * This function is responsible to delete all the code in the userCodeInput.
      * It starts deleting from the initial index to the length of the code.
      */
-    private void clearCodeArea() {
+    private void cleanTheCodeArea() {
         hasntBeenSaved = true;
         userCodeInput.clear();
         this.window.close();
     }
-
 
 }

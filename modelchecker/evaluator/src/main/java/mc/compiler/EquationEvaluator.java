@@ -170,7 +170,7 @@ public class EquationEvaluator {
 
 
         while(true) {
-            boolean interperateFail = false;
+            boolean interpretFail = false;
             ArrayList<Automaton> createdAutomaton = new ArrayList<>();
             try {
 
@@ -179,14 +179,14 @@ public class EquationEvaluator {
             } catch(InterruptedException e) {
                 return failedEquations;
             } catch(CompilationException e) {
-                interperateFail = true;
+                interpretFail = true;
             }
 
 
             //Using the name of the operation, this finds the appropriate function to use in operations/src/main/java/mc/operations/
             String currentOperation = operation.getOperation().toLowerCase();
 
-            boolean result = !interperateFail && instantiateClass(operationsMap.get(currentOperation)).evaluate(createdAutomaton);
+            boolean result = !interpretFail && instantiateClass(operationsMap.get(currentOperation)).evaluate(createdAutomaton);
 
             if (operation.isNegated()) {
                 result = !result;
