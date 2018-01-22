@@ -242,12 +242,12 @@ public class AbstractionFunction implements IProcessFunction {
         try {
           for (AutomatonEdge second : n.getOutgoingEdges()) {
             for (AutomatonEdge first : n.getIncomingEdges()) {
-              abstraction.addEdge(Constant.HIDDEN, first.getFrom(), second.getTo(),
+                abstraction.addEdge(Constant.HIDDEN, first.getFrom(), second.getTo(),
                 cbGuards(first, second, context));
             }
           }
 
-        abstraction.removeNode(n);  // tides up all the edges
+        abstraction.removeNode(n);  // tidies up all the edges
         } catch (InterruptedException ignored) {
           throw new CompilationException(this.getClass(), null);
         }
@@ -258,18 +258,18 @@ public class AbstractionFunction implements IProcessFunction {
 
     private Guard cbGuards(AutomatonEdge from, AutomatonEdge to, Context context)
       throws CompilationException, InterruptedException  {
-      Guard outGuard = null;
+      Guard outGuard;
       Guard fromGuard =   from.getGuard();
-      Guard toGuard =   to.getGuard();
-      if (fromGuard == null) {
+      Guard toGuard   =   to.getGuard();
+
+      if(fromGuard != null && toGuard != null)
+        outGuard = Expression.combineGuards(toGuard, fromGuard, context);
+      else if(fromGuard == null) {
         outGuard = toGuard;
       } else {
-        if (toGuard == null) {
-          outGuard = fromGuard;
-        } else {
-          Expression.combineGuards(toGuard, fromGuard, context);
-        }
+        outGuard = fromGuard;
       }
+
     return outGuard;
   }
 
