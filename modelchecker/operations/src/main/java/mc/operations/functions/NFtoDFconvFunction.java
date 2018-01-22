@@ -68,6 +68,7 @@ public class NFtoDFconvFunction implements IProcessFunction {
     Automaton nfa = automata[0].copy();
     Automaton dfa = new Automaton(id, !Automaton.CONSTRUCT_ROOT);
 
+    //  maps internal rpresentation to actual set of nodes
     Map<Set<String>, List<AutomatonNode>> stateMap = new HashMap<>();
     Map<String, AutomatonNode> nodeMap = new HashMap<>();
     Set<String> visited = new HashSet<>();
@@ -92,7 +93,7 @@ public class NFtoDFconvFunction implements IProcessFunction {
       }
       AutomatonNode node = nodeMap.get(idNode);
 
-      if (!processedRoot) {
+      if (!processedRoot) { // then this is node is the root
         dfa.getRoot().clear();
         dfa.addRoot(node);
         node.setStartNode(true);
@@ -127,6 +128,12 @@ public class NFtoDFconvFunction implements IProcessFunction {
     return dfa;
   }
 
+  /**
+   *
+   * @param node
+   * @param stateMap
+   * @return  internal reprentation of new node
+   */
   private Set<String> constructClosure(Collection<AutomatonNode> node, Map<Set<String>,
       List<AutomatonNode>> stateMap) {
     Set<String> states = new HashSet<>();
@@ -159,6 +166,13 @@ public class NFtoDFconvFunction implements IProcessFunction {
     return states;
   }
 
+  /**
+   *
+   * @param nodes  set of nodes that become new node
+   * @param action action of events leaving set of nodes and new node
+   * @param stateMap
+   * @return  set of node ids that represent the  new node
+   */
   private Set<String> constructStateSet(List<AutomatonNode> nodes, String action, Map<Set<String>,
       List<AutomatonNode>> stateMap) {
     Set<String> states = new HashSet<>();
@@ -199,6 +213,11 @@ public class NFtoDFconvFunction implements IProcessFunction {
     return identifier + constructLabel(nodes);
   }
 
+  /**
+   *
+   * @param nodes set of nodes n1,n2
+   * @return  a string of the set of nodes "{n1,n1}"
+   */
   private String constructLabel(List<AutomatonNode> nodes) {
     Set<String> labelSet = new HashSet<>();
     for (AutomatonNode node : nodes) {

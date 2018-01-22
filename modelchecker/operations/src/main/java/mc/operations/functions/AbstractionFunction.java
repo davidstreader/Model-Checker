@@ -117,9 +117,7 @@ public class AbstractionFunction implements IProcessFunction {
         if (hiddenEdge.getTo().isTerminal()) {
           hiddenEdge.getFrom().setTerminal(hiddenEdge.getTo().getTerminal());
         }
-        //  if (hiddenEdge.getFrom().isStartNode()  ) {
-        //    hiddenEdge.getTo().setStartNode(true);
-        //  }
+
 
         hiddenEdges.addAll(
                 constructOutgoingEdges(abstraction, hiddenEdge, isFair, context));
