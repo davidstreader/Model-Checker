@@ -140,22 +140,20 @@ public class AbstractionFunction implements IProcessFunction {
       AutomatonNode from = edge.getFrom();
 
       Guard fromGuard = from.getGuard();
-      Guard outGuard = null;
-      if (fromGuard != null && hiddenGuard == null) {
-        outGuard = fromGuard;
-      } else if (fromGuard == null && hiddenGuard != null) {
-        outGuard = hiddenGuard;
-      } else if (fromGuard != null) {
+      Guard outGuard;
+
+      if(fromGuard != null && hiddenGuard != null)
         outGuard = Expression.combineGuards(hiddenGuard, fromGuard, context);
+      else if(fromGuard != null) {
+        outGuard = fromGuard;
+      } else {
+        outGuard = hiddenGuard;
       }
+
       //if edge doesn't exist add it
       if (abstraction.getEdge(edge.getLabel(), from, to) == null) {
-        AutomatonEdge added;
-        if (outGuard != null) {
-          added = abstraction.addEdge(edge.getLabel(), from, to, outGuard);
-        } else {
-          added = abstraction.addEdge(edge.getLabel(), from, to, null);
-        }
+        AutomatonEdge added = abstraction.addEdge(edge.getLabel(), from, to, outGuard);
+
         if (added.isHidden()) {
           hiddenAdded.add(added);
         }
@@ -184,20 +182,21 @@ public class AbstractionFunction implements IProcessFunction {
     for (AutomatonEdge edge : outgoingEdges) {
       AutomatonNode to = edge.getTo();
       Guard toGuard = to.getGuard();
-      Guard outGuard = null;
-      if (toGuard != null && hiddenGuard == null) {
-        outGuard = toGuard;
-      } else if (toGuard == null && hiddenGuard != null) {
-        outGuard = hiddenGuard;
-      } else if (toGuard != null) {
-        outGuard = Expression.combineGuards(hiddenGuard, toGuard, context);
+      Guard newAbstractionEdgeGuard;
+
+      if(toGuard != null && hiddenGuard != null)
+        newAbstractionEdgeGuard = Expression.combineGuards(hiddenGuard, toGuard, context);
+      else if(toGuard != null) {
+        newAbstractionEdgeGuard = toGuard;
+      } else {
+        newAbstractionEdgeGuard = hiddenGuard;
       }
+
       // if not already there add edge
       if (abstraction.getEdge(edge.getLabel(), from, to) == null) {
-        AutomatonEdge added = abstraction.addEdge(edge.getLabel(), from, to, outGuard);
+        AutomatonEdge added = abstraction.addEdge(edge.getLabel(), from, to, newAbstractionEdgeGuard);
         if (added.isHidden()) {
           hiddenAdded.add(added);
-
         }
       }
     }
