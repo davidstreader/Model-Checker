@@ -3,7 +3,6 @@ package mc.client.ui;
 import javafx.concurrent.Task;
 import javafx.embed.swing.SwingNode;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
@@ -368,12 +367,7 @@ public class UserInterfaceController implements Initializable {
 
                 MenuItem menu = new MenuItem(fl.getName());
 
-                menu.setOnAction(new EventHandler<ActionEvent>() {
-                    @Override
-                    public void handle(ActionEvent e) {
-                        openTheRecentFile(fl);
-                    }
-                });
+                menu.setOnAction(e -> openRecentFile(fl));
                 openRecentTab.getItems().add(0, menu);
 
             }
@@ -385,12 +379,7 @@ public class UserInterfaceController implements Initializable {
 
             MenuItem menu = new MenuItem(fl.getName());
 
-            menu.setOnAction(new EventHandler<ActionEvent>() {
-                @Override
-                public void handle(ActionEvent e) {
-                    openTheRecentFile(fl);
-                }
-            });
+            menu.setOnAction(e -> openRecentFile(fl));
             openRecentTab.getItems().add(0, menu);
         }
     }
@@ -406,7 +395,7 @@ public class UserInterfaceController implements Initializable {
 
     }
 
-    private void openTheRecentFile(File choiceBoxValue) {
+    private void openRecentFile(File choiceBoxValue) {
             try {
                 if (choiceBoxValue != null) {
                     Scanner scanner = new Scanner(choiceBoxValue, "UTF-8");
@@ -514,7 +503,7 @@ public class UserInterfaceController implements Initializable {
 
     @FXML
     private void handOptionsRequest(ActionEvent event) {
-        creatSceneOptions();
+        createSceneOptions();
     }
 
     //TODO: make this a better concurrent process
@@ -843,7 +832,7 @@ public class UserInterfaceController implements Initializable {
         window.close();
     }
 
-    private void creatSceneOptions() {
+    private void createSceneOptions() {
         window = new Stage();
         scene = sceneGeneratorOptions();
         window.setScene(scene);
