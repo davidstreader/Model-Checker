@@ -10,7 +10,7 @@ import mc.compiler.Lexer;
 import mc.compiler.OperationEvaluator;
 import mc.compiler.Parser;
 import mc.compiler.interpreters.AutomatonInterpreter;
-import mc.processmodels.automata.generator.AutomatonGenerator;
+
 import mc.util.Utils;
 import org.reflections.Reflections;
 
@@ -77,7 +77,6 @@ public class PluginManager {
     //register the operations functions to the interpreter
     getInfixOperations().forEach(OperationEvaluator::addOperations);
     //register the operations functions to the equation generator
-    getInfixOperations().forEach(AutomatonGenerator::addOperation);
     getInfixOperations().forEach(EquationEvaluator::addOperations);
   }
 

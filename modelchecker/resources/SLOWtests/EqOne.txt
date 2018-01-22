@@ -9,7 +9,7 @@ Z = c->STOP.
 
 automata X,Y,Z.
 
-equation (ApplyAlphabet=true, NumberNodes=2, AlphabetCount=2, MaxTransitions=2) {
+equation {
 
 //(X => ( Z + Y)) ~ ((X =>  Z )+ (X => Y)).
 

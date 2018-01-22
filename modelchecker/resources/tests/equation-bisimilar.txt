@@ -1,3 +1,8 @@
-equation (ApplyAlphabet=true, NumberNodes=2, AlphabetCount=2, MaxTransitions=2) {
+processes {
+	X = t->STOP.
+}
+automata X.
+
+equation {
 	X~X.
 }

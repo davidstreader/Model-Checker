@@ -18,7 +18,7 @@ W = (s->Y1).
 
 automata Y,Y1, Z,W.
 
-equation (ApplyAlphabet=true, NumberNodes=2, AlphabetCount=2, MaxTransitions=2) {
+equation {
 
 (One2 => ( One5 + One2)) ~ ((One2 =>  One5 )+ (One2 => One2)).
 
