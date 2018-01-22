@@ -429,11 +429,11 @@ public class UserInterfaceController implements Initializable {
     @FXML
     private void handleOpenRecentAction(ActionEvent event) {
         ChoiceBox<File> cb = new ChoiceBox<File>();
-        removeMenuItem();
-        removeMenuItem();
-        removeMenuItem();
-        removeMenuItem();
-        removeMenuItem();
+        removeMenuItem();//TODO WTF WTF WTF
+        removeMenuItem();//TODO WTF WTF WTF
+        removeMenuItem();//TODO WTF WTF WTF
+        removeMenuItem();//TODO WTF WTF WTF
+        removeMenuItem();//TODO WTF WTF WTF
 
         addMenuItem();
 
@@ -632,13 +632,12 @@ public class UserInterfaceController implements Initializable {
             } catch (CompilationException e) {
                 holdHighlighting = true;
                 compilerOutputDisplay.insertText(0, e.toString());
-                if (e.getLocation() != null)
+                if (e.getLocation() != null) {
                     compilerOutputDisplay.appendText("\n" + e.getLocation());
 
-
-                if (e.getLocation().getStartIndex() > 0 && e.getLocation().getStartIndex() < userCodeInput.getText().length())
-                    userCodeInput.setStyleClass(e.getLocation().getStartIndex(), e.getLocation().getEndIndex(), "issue");
-
+                    if (e.getLocation().getStartIndex() > 0 && e.getLocation().getStartIndex() < userCodeInput.getText().length())
+                        userCodeInput.setStyleClass(e.getLocation().getStartIndex(), e.getLocation().getEndIndex(), "issue");
+                }
             }
         }
     }
@@ -664,13 +663,27 @@ public class UserInterfaceController implements Initializable {
         opRes.forEach(o -> compilerOutputDisplay.appendText(o.getProcess1().getIdent() + " " + o.getOperation() + " " +
                 o.getProcess2().getIdent() + " = " + o.getResult() + "\n"));
 
-        if (eqRes.size() > 0)
-            compilerOutputDisplay.appendText("\n##Operation Results##\n");
 
-        eqRes.forEach(o -> compilerOutputDisplay.appendText(o.getProcess1().getIdent() + " " + o.getOperation() + " " +
-                o.getProcess2().getIdent() + " = " + o.getResult() + "\n" +
-                "Simulations passed: " + o.getExtra() + "\n"));
 
+        if (eqRes.size() > 0) {
+            compilerOutputDisplay.appendText("\n##Equation Results##\n");
+
+            for (OperationResult result : eqRes) {
+                compilerOutputDisplay.appendText(result.getProcess1().getIdent() + " " + result.getOperation() + " " +
+                        result.getProcess2().getIdent() + " = " + result.getResult() + "\n");
+
+
+                if (result.getFailures().size() > 0) {
+                    compilerOutputDisplay.appendText("\tFailing Combinations: \n");
+
+                    for (String failure : result.getFailures())
+                        compilerOutputDisplay.appendText("\t\t" + failure + "\n");
+                }
+
+                compilerOutputDisplay.appendText("\tSimulations passed: " + result.getExtra() + "\n");
+
+            }
+        }
 
     }
 
