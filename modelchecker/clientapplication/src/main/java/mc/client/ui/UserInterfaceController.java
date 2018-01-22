@@ -1,23 +1,21 @@
 package mc.client.ui;
 
-
 import javafx.collections.FXCollections;
 import javafx.concurrent.Task;
 import javafx.embed.swing.SwingNode;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.DragEvent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.Window;
 import mc.client.ModelView;
 import mc.compiler.Compiler;
 import mc.compiler.OperationResult;
@@ -57,14 +55,19 @@ public class UserInterfaceController implements Initializable {
     @FXML
     private ComboBox<String> modelsList;
 
+    @FXML
+    private Menu openRecentTab;
+
+
     private Stage window;
     private Scene scene;
 
     // for keep tracking of the files user has opened recently.
-    private Set<File> recentFiles = new HashSet<>();
-
-    // for keep track of the file that has already been saved.
-    private File currentOpenFile;
+    private Set<File> openedRecent = new HashSet<>();
+    private Set<File> openedPreviously = new HashSet<>();
+    // for keep updating the file that has already been saved.
+    private File thisFile;
+    private int counter = 0;
     //
     private boolean beenSaved = false;
     private boolean hasntBeenSaved = false;
@@ -160,7 +163,6 @@ public class UserInterfaceController implements Initializable {
                 })
                 .subscribe(this::applyHighlighting);
 
-
         userCodeInput.richChanges()
                 .filter(ch -> !ch.getInserted().equals(ch.getRemoved()) && ch.getInserted().getStyleOfChar(0).isEmpty())
                 .filter(ch -> ch.getInserted().getText().length() == 1)
@@ -221,13 +223,14 @@ public class UserInterfaceController implements Initializable {
 
                 });
 
+        openPreviousFiles(openedPreviously);
     }
 
     /**
      * This is a helper function to add an insert
      *
-     * @param popupSelection reference to the popup contents to be cleared as a selection has been made
-     * @param selectedItem  the selection from the popup autocomplete box to be put in place of current text
+     * @param popupSelection
+     * @param selectedItem
      */
     private void actOnSelect(ListView<String> popupSelection, String selectedItem) {
         if (selectedItem != null) {
@@ -319,7 +322,6 @@ public class UserInterfaceController implements Initializable {
 
     @FXML
     private void handleCreateNew(ActionEvent event) throws InterruptedException {
-
         // If the Code Area is not empty which means there are codes that we can save.
         if (!(userCodeInput.getText().isEmpty())) {
             // Open a dialogue and give the user three options (SAVE, DON'TSAVE, CANCEL)
@@ -328,10 +330,10 @@ public class UserInterfaceController implements Initializable {
                 setBackFlags();
                 // do these operations when the user click on SAVE button in the dialogue
                 beenSaved = true;
-                clearCodeArea();
+                cleanTheCodeArea();
             } else if (hasntBeenSaved) {
                 // do these operations when the user click on DON'TSAVE button in the dialogue
-                clearCodeArea();
+                cleanTheCodeArea();
             }
         }
     }
@@ -346,7 +348,7 @@ public class UserInterfaceController implements Initializable {
             if (beenSaved) {
                 setBackFlags();
                 // do these operations when the user click on SAVE button in the dialogue
-                clearCodeArea();
+                cleanTheCodeArea();
             } else if (hasntBeenSaved) {
                 setBackFlags();
             }
@@ -355,60 +357,146 @@ public class UserInterfaceController implements Initializable {
         }
 
     }
-
-    @FXML
-    private void handleOpenRecentAction(ActionEvent event) {
-        window = new Stage();
-        String path;
-        ChoiceBox<File> cb = new ChoiceBox<File>();
-
-        try {
-            if (!recentFiles.isEmpty()) {
-                for (File fileName : recentFiles) {
-                    path = "openrecents/" + fileName.getName();
-                    File f = new File(path);
-                    f.getParentFile().mkdirs();
-                    f.createNewFile();
-                    FileUtils.copyFile(fileName, f);
-                }
-            } else {
-                openPreviousFiles();
+/*
+    private void checkTheDuplicatesWithMenuItems(Set<File> theUniqueFiles) {
+        File folder = new File("openrecents/");
+        File[] listOfFiles = folder.listFiles();
+        for (File file : listOfFiles) {
+            if (!theUniqueFiles.contains(file)) {
+                theUniqueFiles.add(file);
             }
+        }
+        String path;
+        try {
+            for (File file : theUniqueFiles) {
+                openRecentTab.getItems().add(0, new MenuItem(file.getName()));
+                path = "openrecents/" + file.getName();
+                File newFolder = new File(path);
+                newFolder.getParentFile().mkdirs();
+                newFolder.createNewFile();
+                FileUtils.copyFile(file, newFolder);
+                counter++;
+
+            }
+
         } catch (IOException message) {
             System.out.println(message);
         }
+    }*/
 
-
-        cb.setItems(FXCollections.observableArrayList(recentFiles));
-
-        VBox layout = new VBox(cb);
-        scene = new Scene(layout, 200, 200);
-        window.setScene(scene);
-        window.initModality(Modality.APPLICATION_MODAL);
-        window.showAndWait();
-        openTheRecentFile(cb.getValue());
-
-    }
-
-    private void openPreviousFiles() {
+/*
+    private void checkTheDuplicateFiles() {
+*/
+/*        Set<File> theUniqueFiles = new HashSet<>();
         File folder = new File("openrecents/");
         File[] listOfFiles = folder.listFiles();
-        for (int i = 0; i < listOfFiles.length; i++) {
-            if (listOfFiles[i].isFile()) {
-                // Files
-                if (listOfFiles[i].getName().endsWith(".txt")) {
-                    recentFiles.add(listOfFiles[i]);
-                } else if (listOfFiles[i].isDirectory()) {
-                    // Directories
-                    recentFiles.add(listOfFiles[i]);
+
+        if (listOfFiles != null) {
+            for (File file : listOfFiles) {
+                for (File tempFile : openedRecent) {
+                    if (file.getName().endsWith(".txt")) {
+                        if (!(file.getName().equals(tempFile.getName()))) {
+                            theUniqueFiles.add(tempFile);
+                        }
+                    }
+                }
+            }
+        } else {
+            for (File file : listOfFiles) {
+                for (File tempFile : openedRecent) {
+                    theUniqueFiles.add(tempFile);
                 }
             }
         }
+
+        for (File file : theUniqueFiles) {
+            System.out.println(file.getName());
+        }
+        for (int i = 0; i < listOfFiles.length; i++) {
+            theUniqueFiles.add(listOfFiles[i]);
+        }
+        for (File file : theUniqueFiles) {
+            System.out.println(file.getName());
+        }
+
+        checkTheDuplicatesWithMenuItems(theUniqueFiles);*//*
+
+
+    }
+*/
+
+
+    @FXML
+    private void handleOpenRecentAction(ActionEvent event) {
+        ChoiceBox<File> cb = new ChoiceBox<File>();
+        removeMenuItem();
+        removeMenuItem();
+        removeMenuItem();
+        removeMenuItem();
+        removeMenuItem();
+
+        addMenuItem();
+
+    }
+
+
+    private void addMenuItem() {
+        if (this.openedRecent.size() < openedPreviously.size()) {
+            for (File fl : this.openedPreviously) {
+
+
+                MenuItem menu = new MenuItem(fl.getName());
+
+                menu.setOnAction(new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(ActionEvent e) {
+                        openTheRecentFile(fl);
+                    }
+                });
+                openRecentTab.getItems().add(0, menu);
+
+            }
+        }
+
+
+        for (File fl : this.openedRecent) {
+            //
+
+            MenuItem menu = new MenuItem(fl.getName());
+
+            menu.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent e) {
+                    openTheRecentFile(fl);
+                }
+            });
+            openRecentTab.getItems().add(0, menu);
+        }
+    }
+
+
+    private void removeMenuItem() {
+        for (int i = 0; i < openRecentTab.getItems().size(); i++) {
+            openRecentTab.getItems().remove(openRecentTab.getItems().get(i));
+        }
+    }
+
+
+    private void openPreviousFiles(Set<File> openedPreviously) {
+        File folder = new File("openrecents/");
+        File[] listOfFiles = folder.listFiles();
+
+        if (listOfFiles != null) {
+            for (int i = 0; i < listOfFiles.length; i++) {
+                openedPreviously.add(listOfFiles[i]);
+            }
+        }
+
     }
 
     private void openTheRecentFile(File choiceBoxValue) {
         if (choiceBoxValue != null) {
-
+            String theCode = "";
             Scanner scanner;
             try {
                 if (choiceBoxValue != null) {
@@ -417,22 +505,20 @@ public class UserInterfaceController implements Initializable {
                     while (scanner.hasNext() && !scanner.hasNext("lengthEdgeValue:")) {
                         codeBuilder.append(scanner.nextLine()).append("\n");
                     }
-                    String theCode = codeBuilder.toString();
+                    theCode = codeBuilder.toString();
                     readOptions(scanner);
-
                     scanner.close();
-
-                    userCodeInput.clear();
+                    String length = userCodeInput.getText();
+                    int size = length.length();
+                    userCodeInput.deleteText(0, size);
                     userCodeInput.replaceSelection(theCode);
-
-                    recentFiles.add(choiceBoxValue);
-                    currentOpenFile = choiceBoxValue;
+                    openedRecent.add(choiceBoxValue);
+                    thisFile = choiceBoxValue;
                 }
             } catch (IOException message) {
                 System.out.println(message);
             }
         }
-
     }
 
     @FXML
@@ -445,10 +531,11 @@ public class UserInterfaceController implements Initializable {
 
     @FXML
     private void handleSave(ActionEvent event) {
-        if (currentOpenFile == null) {
+        window = new Stage();
+        if (!(beenSaved)) {
             saveButtonFunctionality();
-        } else {
-            saveChangesToCurrentFile();
+        } else if (thisFile != null) {
+            updateTheSelectedFile(thisFile);
         }
 
     }
@@ -523,10 +610,9 @@ public class UserInterfaceController implements Initializable {
         creatSceneOptions();
     }
 
-    //TODO: make this a concurrent process
+    //TODO: make this a better concurrent process
     @FXML
     private void handleCompileRequest(ActionEvent event) {
-
         String userCode = userCodeInput.getText();
         if (!userCode.isEmpty()) {
             compilerOutputDisplay.clear();
@@ -535,33 +621,32 @@ public class UserInterfaceController implements Initializable {
             try {
                 Compiler codeCompiler = new Compiler();
 
-                codeCompiler.compile(userCode, new Context(), Expression.mkCtx(), new LinkedBlockingQueue<>());
-
                 // This follows the observer pattern.
                 // Within the compile function the code is then told to update an observer
-                compilerOutputDisplay.insertText(0,"Compiling completed sucessfully!\n"+ new Date().toString());
+                codeCompiler.compile(userCode, new Context(), Expression.mkCtx(), new LinkedBlockingQueue<>());
 
+
+                compilerOutputDisplay.insertText(0, "Compiling completed sucessfully!\n" + new Date().toString());
             } catch (InterruptedException e) {
                 e.printStackTrace();
             } catch (CompilationException e) {
-                e.printStackTrace();
-
                 holdHighlighting = true;
                 compilerOutputDisplay.insertText(0, e.toString());
-                if (e.getLocation() != null) {
+                if (e.getLocation() != null)
                     compilerOutputDisplay.appendText("\n" + e.getLocation());
 
-                    if (e.getLocation().getStartIndex() > 0 && e.getLocation().getStartIndex() < userCodeInput.getText().length())
-                        userCodeInput.setStyleClass(e.getLocation().getStartIndex(), e.getLocation().getEndIndex(), "issue");
-                }
+
+                if (e.getLocation().getStartIndex() > 0 && e.getLocation().getStartIndex() < userCodeInput.getText().length())
+                    userCodeInput.setStyleClass(e.getLocation().getStartIndex(), e.getLocation().getEndIndex(), "issue");
 
             }
         }
     }
 
 
+    //helpers for ModelView
+
     /**
-     * Helpers for ModelView
      * This recieves a list of all valid models and registers them with the combobox
      *
      * @param models a collection of the processIDs of all valid models
@@ -579,92 +664,90 @@ public class UserInterfaceController implements Initializable {
         opRes.forEach(o -> compilerOutputDisplay.appendText(o.getProcess1().getIdent() + " " + o.getOperation() + " " +
                 o.getProcess2().getIdent() + " = " + o.getResult() + "\n"));
 
-        if (eqRes.size() > 0) {
-            compilerOutputDisplay.appendText("\n##Equation Results##\n");
+        if (eqRes.size() > 0)
+            compilerOutputDisplay.appendText("\n##Operation Results##\n");
 
-
-            for (OperationResult result : eqRes) {
-                compilerOutputDisplay.appendText(result.getProcess1().getIdent() + " " + result.getOperation() + " "+
-                                                 result.getProcess2().getIdent() + " = " + result.getResult() + "\n");
-
-
-                if(result.getFailures().size() > 0) {
-                    compilerOutputDisplay.appendText("\tFailing Combinations: \n");
-
-                    for (String failure : result.getFailures())
-                        compilerOutputDisplay.appendText("\t\t"+failure + "\n");
-                }
-
-                compilerOutputDisplay.appendText("\tSimulations passed: " + result.getExtra() + "\n");
-            }
-        }
+        eqRes.forEach(o -> compilerOutputDisplay.appendText(o.getProcess1().getIdent() + " " + o.getOperation() + " " +
+                o.getProcess2().getIdent() + " = " + o.getResult() + "\n" +
+                "Simulations passed: " + o.getExtra() + "\n"));
 
 
     }
 
 
     private void saveButtonFunctionality() {
-
-        FileChooser fileChooser = new FileChooser();
-
+        hasntBeenSaved = false;
+        FileChooser fileChooser;
+        PrintStream readTo;
+        File selectedFile;
+        fileChooser = new FileChooser();
         fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("TXT", "*.txt"));
         fileChooser.setTitle("Save file into a directory");
-
-        File selectedFile = fileChooser.showSaveDialog(new Stage());
+        selectedFile = fileChooser.showSaveDialog(window);
 
         try {
             if (selectedFile != null) {
-                PrintStream writeStream = new PrintStream(selectedFile, "UTF-8");
-                writeStream.println(userCodeInput.getText());
-                writeStream = writeOptionsSettingsIntegers(writeStream);
-                writeStream = writeOptionsSettingsBooleans(writeStream);
-                recentFiles.add(selectedFile);
-                currentOpenFile = selectedFile;
-                writeStream.close();
+                readTo = new PrintStream(selectedFile, "UTF-8");
+                readTo.println(userCodeInput.getText());
+                readTo = readTheOptionsIntegers(readTo);
+                readTo = readTheOptionsBooleans(readTo);
+                if (openedRecent.size() < 5) {
+                    openedRecent.add(selectedFile);
+                }
+                thisFile = selectedFile;
+                readTo.close();
+                beenSaved = true;
             }
         } catch (IOException message) {
             System.out.println(message);
         }
+        window.close();
     }
 
-    private void saveChangesToCurrentFile() {
+    private void updateTheSelectedFile(File updateSelecetedFile) {
+        PrintStream readTo;
         try {
-            if (currentOpenFile != null) {
-                PrintStream writeTo = new PrintStream(currentOpenFile, "UTF-8");
-                writeTo.println(userCodeInput.getText());
-                writeTo = writeOptionsSettingsIntegers(writeTo);
-                writeTo = writeOptionsSettingsBooleans(writeTo);
-                writeTo.close();
+            if (updateSelecetedFile != null) {
+                readTo = new PrintStream(updateSelecetedFile, "UTF-8");
+                readTo.println(userCodeInput.getText());
+                readTo = readTheOptionsIntegers(readTo);
+                readTo = readTheOptionsBooleans(readTo);
+                readTo.close();
             }
         } catch (IOException message) {
             System.out.println(message);
         }
     }
 
-    //TODO rewrite this as its function doesnt work properly
-    private void dontSaveButtonFunctionality() {
 
+    private void dontSaveButtonFunctionality() {
+        beenSaved = false;
+        hasntBeenSaved = true;
         FileChooser fileChooser = new FileChooser();
         fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("TXT", "*.txt"));
         fileChooser.setTitle("Open Resource File");
         File selectedFile = fileChooser.showOpenDialog(window);
+        String theCode = "";
+        Scanner scanner;
 
         try {
             if (selectedFile != null) {
-                Scanner scanner = new Scanner(selectedFile, "UTF-8");
+                scanner = new Scanner(selectedFile, "UTF-8");
                 StringBuilder codeBuilder = new StringBuilder();
                 while (scanner.hasNext() && !scanner.hasNext("lengthEdgeValue:")) {
                     codeBuilder.append(scanner.nextLine()).append("\n");
                 }
-                String theCode = codeBuilder.toString();
+                theCode = codeBuilder.toString();
                 readOptions(scanner);
                 scanner.close();
-
-                userCodeInput.clear();
-
+                String length = userCodeInput.getText();
+                int size = length.length();
+                userCodeInput.deleteText(0, size);
                 userCodeInput.replaceSelection(theCode);
-                recentFiles.add(selectedFile);
-                currentOpenFile = selectedFile;
+                if (openedRecent.size() < 5) {
+                    openedRecent.add(selectedFile);
+                }
+                thisFile = selectedFile;
             }
         } catch (IOException message) {
             System.out.println(message);
@@ -673,61 +756,65 @@ public class UserInterfaceController implements Initializable {
         window.close();
     }
 
-    private GridPane createOptionsDialogueLayout() {
+    private GridPane createGrideOptions() {
         final Label lengthEdgeLabel = new Label("Length of the Edge:");
         Slider lengthEdge = createSlider();
-        lengthEdge.setValue((double) lengthEdgeValue);
-        lengthEdge.valueProperty().addListener((arg0, OldValue, NewValue) -> {
-            lengthEdgeValue = NewValue.intValue();
+        lengthEdge.valueProperty().addListener((arg0, arg1, arg2) -> {
+            lengthEdgeValue = (int) lengthEdge.getValue();
         });
+        lengthEdge.setValue((double) lengthEdgeValue);
+
 
         final Label maxNodeLabel = new Label("Automa Max Node:");
         Slider maxNode = createSlider();
-        maxNode.setValue((double) maxNodeLabelValue);
-        maxNode.valueProperty().addListener((arg0, OldValue, NewValue) -> {
-            maxNodeLabelValue = NewValue.intValue();
+        maxNode.valueProperty().addListener((arg0, arg1, arg2) -> {
+            maxNodeLabelValue = (int) maxNode.getValue();
         });
+        maxNode.setValue((double) maxNodeLabelValue);
+
 
         final Label operationFailureLabel = new Label("Operation failure count:");
         Slider operationFailure = createSlider();
-        operationFailure.setValue((double) operationFailureLabelValue);
-        operationFailure.valueProperty().addListener((arg0, OldValue, NewValue) -> {
-            operationFailureLabelValue = NewValue.intValue();
+        operationFailure.valueProperty().addListener((arg0, arg1, arg2) -> {
+            operationFailureLabelValue = (int) operationFailure.getValue();
         });
-
+        operationFailure.setValue((double) operationFailureLabelValue);
 
 
         final Label operationPassLabel = new Label("Operation pass count:");
         Slider operationPass = createSlider();
-        operationPass.setValue((double) operationPassLabelValue);
-        operationPass.valueProperty().addListener((arg0, OldValue, NewValue) -> {
-            operationPassLabelValue = NewValue.intValue();
+        operationPass.valueProperty().addListener((arg0, arg1, arg2) -> {
+            operationPassLabelValue = (int) operationPass.getValue();
         });
-
+        operationPass.setValue((double) operationPassLabelValue);
 
         CheckBox fairAbstraction = new CheckBox("Fair Abstraction");
-        fairAbstraction.setSelected(fairAbstractionSelected);
-        fairAbstraction.setOnAction(e -> fairAbstractionSelected = !fairAbstractionSelected);
-
+        fairAbstraction.setOnAction(e -> fairAbstractionFunctionality());
+        if (fairAbstractionSelected) {
+            fairAbstraction.setSelected(true);
+        }
 
         CheckBox autoSave = new CheckBox("Autosave");
-        autoSave.setSelected(autoSaveSelected);
-        autoSave.setOnAction(e -> autoSaveSelected = (!autoSaveSelected));
-
-
+        autoSave.setOnAction(e -> autoSaveFunctionality());
+        if (autoSaveSelected) {
+            autoSave.setSelected(true);
+        }
 
         CheckBox darkMode = new CheckBox("Dark Mode");
-        darkMode.setSelected(darkModeSelected);
-        darkMode.setOnAction(e ->  darkModeSelected = (!darkModeSelected));
+        darkMode.setOnAction(e -> darkModeFunctionality());
+        if (darkModeSelected) {
+            darkMode.setSelected(true);
+        }
 
         CheckBox pruning = new CheckBox("Pruning");
-        pruning.setSelected(pruningSelected);
-        pruning.setOnAction(e ->  pruningSelected = (!pruningSelected));
+        pruning.setOnAction(e -> pruningFunctionality());
+        if (pruningSelected) {
+            pruning.setSelected(true);
+        }
 
         CheckBox liveCompilling = new CheckBox("Live Compilling");
+        liveCompilling.setOnAction(e -> liveCompilingFunctionality());
         liveCompilling.setSelected(liveCompillingSelected);
-        liveCompilling.setOnAction(e -> liveCompillingSelected = (!liveCompillingSelected));
-
 
 
         Button closeButton = new Button("Close");
@@ -767,7 +854,7 @@ public class UserInterfaceController implements Initializable {
         return grid;
     }
 
-    private GridPane createFileLayout(String buttonName) {
+    private GridPane createGrideFile(String buttonName) {
         Label label = new Label("Do you want to save changes?");
         Button saveButton = createSaveButton();
         Button dontSaveButton = createDontSaveButton();
@@ -826,7 +913,7 @@ public class UserInterfaceController implements Initializable {
     private Button createDontSaveButtonForNew() {
         Button dontSaveTemp = new Button();
         dontSaveTemp.setText("Don'tSave");
-        dontSaveTemp.setOnAction(e -> clearCodeArea());
+        dontSaveTemp.setOnAction(e -> cleanTheCodeArea());
         return dontSaveTemp;
     }
 
@@ -845,7 +932,7 @@ public class UserInterfaceController implements Initializable {
 
     private void creatSceneOptions() {
         window = new Stage();
-        scene = sceneGeneratorOptionsDialogueLayout();
+        scene = sceneGeneratorOptions();
         window.setScene(scene);
         window.setMaxWidth(350);
         window.setMaxHeight(410);
@@ -857,7 +944,7 @@ public class UserInterfaceController implements Initializable {
 
     private void createSceneFile(String buttonName) {
         window = new Stage();
-        scene = sceneGeneratorFileDialogueLayout(buttonName);
+        scene = sceneGeneratorFile(buttonName);
         window.setScene(scene);
         window.setMaxWidth(460);
         window.setMaxHeight(85);
@@ -880,28 +967,28 @@ public class UserInterfaceController implements Initializable {
         return slider;
     }
 
-    private PrintStream writeOptionsSettingsBooleans(PrintStream writeTo) {
-        writeTo.println();
+    private PrintStream readTheOptionsBooleans(PrintStream readTo) {
+        readTo.println();
 
-        writeTo.println("fairAbstractionSelected: " + fairAbstractionSelected);
-        writeTo.println("autoSaveSelected: " + autoSaveSelected);
-        writeTo.println("darkModeSelected: " + darkModeSelected);
-        writeTo.println("pruningSelected: " + pruningSelected);
-        writeTo.println("liveCompillingSelected: " + liveCompillingSelected);
+        readTo.println("fairAbstractionSelected: " + fairAbstractionSelected);
+        readTo.println("autoSaveSelected: " + autoSaveSelected);
+        readTo.println("darkModeSelected: " + darkModeSelected);
+        readTo.println("pruningSelected: " + pruningSelected);
+        readTo.println("liveCompillingSelected: " + liveCompillingSelected);
 
-        return writeTo;
+        return readTo;
     }
 
 
-    private PrintStream writeOptionsSettingsIntegers(PrintStream writeTo) {
-        writeTo.println();
+    private PrintStream readTheOptionsIntegers(PrintStream readTo) {
+        readTo.println();
 
-        writeTo.println("lengthEdgeValue: " + lengthEdgeValue);
-        writeTo.println("maxNodeLabelValue: " + maxNodeLabelValue);
-        writeTo.println("operationFailureLabelValue: " + operationFailureLabelValue);
-        writeTo.println("operationPassLabelValue: " + operationPassLabelValue);
+        readTo.println("lengthEdgeValue: " + lengthEdgeValue);
+        readTo.println("maxNodeLabelValue: " + maxNodeLabelValue);
+        readTo.println("operationFailureLabelValue: " + operationFailureLabelValue);
+        readTo.println("operationPassLabelValue: " + operationPassLabelValue);
 
-        return writeTo;
+        return readTo;
     }
 
     private void readOptions(Scanner scanner) {
@@ -941,8 +1028,8 @@ public class UserInterfaceController implements Initializable {
         }
     }
 
-    private Scene sceneGeneratorOptionsDialogueLayout() {
-        GridPane grid = createOptionsDialogueLayout();
+    private Scene sceneGeneratorOptions() {
+        GridPane grid = createGrideOptions();
         scene = new Scene(grid, 500, 100);
         return scene;
     }
@@ -951,8 +1038,8 @@ public class UserInterfaceController implements Initializable {
      * @param buttonName
      * @return
      */
-    private Scene sceneGeneratorFileDialogueLayout(String buttonName) {
-        GridPane grid = createFileLayout(buttonName);
+    private Scene sceneGeneratorFile(String buttonName) {
+        GridPane grid = createGrideFile(buttonName);
         scene = new Scene(grid, 460, 85);
         return scene;
     }
@@ -966,11 +1053,52 @@ public class UserInterfaceController implements Initializable {
      * This function is responsible to delete all the code in the userCodeInput.
      * It starts deleting from the initial index to the length of the code.
      */
-    private void clearCodeArea() {
+    private void cleanTheCodeArea() {
         hasntBeenSaved = true;
-        userCodeInput.clear();
+        String length = userCodeInput.getText();
+        int size = length.length();
+        userCodeInput.deleteText(0, size);
         this.window.close();
     }
 
 
+    private void fairAbstractionFunctionality() {
+        fairAbstractionSelected = (!fairAbstractionSelected);
+    }
+
+    private void autoSaveFunctionality() {
+        autoSaveSelected = (!autoSaveSelected);
+    }
+
+    private void darkModeFunctionality() {
+        darkModeSelected = (!darkModeSelected);
+    }
+
+    private void pruningFunctionality() {
+        pruningSelected = (!pruningSelected);
+    }
+
+    private void liveCompilingFunctionality() {
+        liveCompillingSelected = (!liveCompillingSelected);
+    }
+
+/*    public boolean isAutoSaveSelected() {
+        return autoSaveSelected;
+    }
+
+    public boolean isFairAbstractionSelected() {
+        return fairAbstractionSelected;
+    }
+
+    public boolean isDarkModeSelected() {
+        return darkModeSelected;
+    }
+
+    public boolean isPruningSelected() {
+        return pruningSelected;
+    }
+
+    public boolean isLiveCompillingSelected() {
+        return liveCompillingSelected;
+    }*/
 }

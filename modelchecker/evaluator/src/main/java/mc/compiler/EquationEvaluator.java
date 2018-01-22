@@ -178,8 +178,6 @@ public class EquationEvaluator {
                 createdAutomaton.add((Automaton) interpreter.interpret("automata", operation.getSecondProcess(), getNextEquationId(), idMap, z3Context));
             } catch(InterruptedException e) {
                 return failedEquations;
-            } catch(CompilationException e) {
-                interperateFail = true;
             }
 
 

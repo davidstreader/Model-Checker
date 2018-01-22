@@ -15,7 +15,7 @@
                     <items>
                         <MenuItem mnemonicParsing="false" onAction="#handleCreateNew" text="New" />
                         <MenuItem mnemonicParsing="false" onAction="#handleOpen" text="Open…" />
-                        <Menu mnemonicParsing="false" onAction="#handleOpenRecentAction" text="Open Recent" />
+                        <Menu fx:id="openRecentTab" mnemonicParsing="false" onAction="#handleOpenRecentAction" text="Open Recent" />
                         <SeparatorMenuItem mnemonicParsing="false" />
                         <MenuItem mnemonicParsing="false" onAction="#handleFileClose" text="Close" />
                         <MenuItem mnemonicParsing="false" onAction="#handleSave" text="Save" />
