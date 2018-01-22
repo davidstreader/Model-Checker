@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 import mc.compiler.Guard;
 import mc.compiler.ast.ASTNode;
 import mc.processmodels.ProcessModelObject;
@@ -53,7 +52,7 @@ public class AutomatonNode extends ProcessModelObject {
 
   @Getter
   @Setter
-  private Map<String, Object> variables = new HashMap<String, Object>();
+  private Map<String, Object> variables = new HashMap<>();
 
 
   public AutomatonNode(String id) {

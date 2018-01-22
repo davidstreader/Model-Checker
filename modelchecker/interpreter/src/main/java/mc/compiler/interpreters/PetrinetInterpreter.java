@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.Stack;
 import mc.compiler.LocalCompiler;
 import mc.compiler.ast.ASTNode;
+import mc.compiler.ast.ChoiceNode;
 import mc.compiler.ast.IdentifierNode;
 import mc.compiler.ast.ProcessNode;
 import mc.compiler.ast.ProcessRootNode;
@@ -36,7 +37,9 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
   VariableSetNode variables;
 
   @Override
-  public ProcessModel interpret(ProcessNode processNode, Map<String, ProcessModel> processMap, LocalCompiler localCompiler, Context context) throws CompilationException, InterruptedException {
+  public ProcessModel interpret(ProcessNode processNode, Map<String, ProcessModel> processMap,
+                                LocalCompiler localCompiler, Context context)
+      throws CompilationException, InterruptedException {
     reset();
     this.compiler = compiler;
     this.context = context;
@@ -54,7 +57,9 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
   }
 
   @Override
-  public ProcessModel interpret(ASTNode astNode, String identifier, Map<String, ProcessModel> processMap, Context context) throws CompilationException, InterruptedException {
+  public ProcessModel interpret(ASTNode astNode, String identifier,
+                                Map<String, ProcessModel> processMap, Context context)
+      throws CompilationException, InterruptedException {
     reset();
     this.context = context;
     this.processMap = processMap;
@@ -68,7 +73,8 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
   }
 
 
-  private void interpretProcess(ASTNode astNode, String identifier) throws CompilationException, InterruptedException {
+  private void interpretProcess(ASTNode astNode, String identifier)
+      throws CompilationException, InterruptedException {
     if (astNode instanceof IdentifierNode) {
       String reference = ((IdentifierNode) astNode).getIdentifier();
       if (variables != null) {
@@ -88,8 +94,8 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
       interpretProcess(root.getProcess(), identifier);
       Petrinet petrinet = processStack.pop();
       //TODO: Relabel
-//      petrinet =
-//      if(root.hasHiding())
+      //petrinet =
+      //if(root.hasHiding())
 
       processStack.push(petrinet);
       return;
@@ -120,15 +126,21 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
 
     if (currentNode instanceof SequenceNode) {
       interpretSequence((SequenceNode) currentNode, petri, currentPlace);
+      return;
     }
     if (currentNode instanceof TerminalNode) {
       interpretTerminal((TerminalNode) currentNode, petri, currentPlace);
+      return;
+    }
+    if (currentNode instanceof ChoiceNode) {
+      interpretChoice((ChoiceNode) currentNode, petri, currentPlace);
     }
 
   }
 
 
-  private void interpretSequence(SequenceNode seq, Petrinet petri, PetriNetPlace currentPlace) throws CompilationException, InterruptedException {
+  private void interpretSequence(SequenceNode seq, Petrinet petri, PetriNetPlace currentPlace)
+      throws CompilationException, InterruptedException {
     String action = seq.getFrom().getAction();
 
 
@@ -155,8 +167,14 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     }
   }
 
-  private void interpretTerminal(TerminalNode term, Petrinet petri, PetriNetPlace currentPlace) throws CompilationException {
+  private void interpretTerminal(TerminalNode term, Petrinet petri, PetriNetPlace currentPlace) {
     currentPlace.setTerminal(term.getTerminal());
+  }
+
+  private void interpretChoice(ChoiceNode choice, Petrinet petri, PetriNetPlace currentPlace)
+      throws CompilationException, InterruptedException {
+    interpretASTNode(choice.getFirstProcess(),petri,currentPlace);
+    interpretASTNode(choice.getSecondProcess(),petri,currentPlace);
   }
 
 

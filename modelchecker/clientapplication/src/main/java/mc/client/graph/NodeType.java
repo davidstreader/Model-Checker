@@ -9,9 +9,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Getter
 public enum NodeType {
-  AUTOMATA_NODE(new Ellipse2D.Double(-10, -10, 20,20)),
-  PETRINET_PLACE(new Ellipse2D.Double(-10, -10, 20,20)),
-  PETRINET_TRANSITION(new Rectangle(-10, -10, 20,20));
+  AUTOMATA_NODE(new Ellipse2D.Double(-20, -20, 40,40)),
+  PETRINET_PLACE(new Ellipse2D.Double(-20, -20, 40,40)),
+  PETRINET_TRANSITION(new Rectangle(-20, -20, 40,40));
 
   private final Shape nodeShape;
 }
