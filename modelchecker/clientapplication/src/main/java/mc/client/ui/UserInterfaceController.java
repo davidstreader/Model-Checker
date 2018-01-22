@@ -98,7 +98,7 @@ public class UserInterfaceController implements Initializable {
         ModelView.getInstance().setListOfAutomataUpdater(this::updateModelsList);
         //register a callback for the output of the log
         ModelView.getInstance().setUpdateLog(this::updateLogText);
-        //So the model viewer can modify the list of processes (For process model selection)
+
 
 
         //add all the syntax to the completion dictionary
@@ -110,7 +110,7 @@ public class UserInterfaceController implements Initializable {
         userCodeInput.setStyle("-fx-background-color: #32302f;");
         userCodeInput.getStylesheets().add(getClass().getResource("/clientres/automata-keywords.css").toExternalForm());
 
-        ListView<String> popupSelection = new ListView<String>();
+        ListView<String> popupSelection = new ListView<>();
         popupSelection.setStyle(
                 "-fx-background-color: #f7e1a0;" +
                         "-fx-text-fill:        black;" +
@@ -356,15 +356,8 @@ public class UserInterfaceController implements Initializable {
 
     @FXML
     private void handleOpenRecentAction(ActionEvent event) {
-        ChoiceBox<File> cb = new ChoiceBox<File>();
-        removeMenuItem();//TODO WTF WTF WTF
-        removeMenuItem();//TODO WTF WTF WTF
-        removeMenuItem();//TODO WTF WTF WTF
-        removeMenuItem();//TODO WTF WTF WTF
-        removeMenuItem();//TODO WTF WTF WTF
-
+        openRecentTab.getItems().clear();
         addMenuItem();
-
     }
 
 
@@ -399,13 +392,6 @@ public class UserInterfaceController implements Initializable {
                 }
             });
             openRecentTab.getItems().add(0, menu);
-        }
-    }
-
-
-    private void removeMenuItem() {
-        for (int i = 0; i < openRecentTab.getItems().size(); i++) {
-            openRecentTab.getItems().remove(openRecentTab.getItems().get(i));
         }
     }
 

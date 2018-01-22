@@ -102,7 +102,6 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
 
     Automaton automaton = ((Automaton) processStack.pop()).copy();
 
-
     return labelAutomaton(automaton);
   }
 
@@ -229,6 +228,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
 
     interpretNode(astChoiceNode.getFirstProcess(), automaton, currentNode);
 
+
     //This is a special case whereby the currentNode is deleted by adding a process that destroys
     //the value of the currentNode
     if (!automaton.getNodes().contains(currentNode)) {
@@ -300,9 +300,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
   }
 
   private void interpretTerminalNode(TerminalNode astNode, Automaton automaton, AutomatonNode currentNode) {
-
     currentNode.setTerminal(astNode.getTerminal());
-
   }
 
   private Automaton processLabellingAndRelabelling(Automaton automaton, ProcessRootNode astProcessRootNode) throws CompilationException {
