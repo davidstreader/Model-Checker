@@ -23,6 +23,11 @@ public class PetriNetPlace extends ProcessModelObject {
     return terminal != null && terminal.length() > 0;
   }
 
+  public void copyProperties(PetriNetPlace toCopy) {
+    start = toCopy.start;
+    terminal = toCopy.terminal;
+  }
+
   public String toString() {
     StringBuilder builder = new StringBuilder();
 

@@ -2,7 +2,6 @@ package mc.compiler.ast;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import mc.compiler.EquationSettings;
 import mc.util.Location;
 
 /**
@@ -38,10 +37,6 @@ public class OperationNode extends ASTNode {
    * The second process to be operated on.
    */
   private ASTNode secondProcess;
-  /**
-   * The preferences for the operations.
-   */
-  private EquationSettings equationSettings;
 
   /**
    * Instantitate a new Operation Node.
@@ -52,16 +47,13 @@ public class OperationNode extends ASTNode {
    * @param secondProcess    the second process to be operated on {@link #secondProcess}
    * @param location         the location within the users code where this takes
    *                         place {@link ASTNode#location}
-   * @param equationSettings the settings for the operations evaluation {@link #equationSettings}
    */
   public OperationNode(String operation, boolean isNegated, ASTNode firstProcess,
-                       ASTNode secondProcess, Location location,
-                       EquationSettings equationSettings) {
+                       ASTNode secondProcess, Location location) {
     super(location);
     this.operation = operation;
     this.negated = isNegated;
     this.firstProcess = firstProcess;
     this.secondProcess = secondProcess;
-    this.equationSettings = equationSettings;
   }
 }
