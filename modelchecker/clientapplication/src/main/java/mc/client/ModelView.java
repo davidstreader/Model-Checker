@@ -214,18 +214,8 @@ public class ModelView implements Observer {
         nodeTermination = NodeStates.valueOf(n.getTerminal().toUpperCase());
       }
 
-      //Make sure we are using a human readable label,
-      //the parallel compositions fill Id with long strings.
-      String nodeLabel = (n.getId().contains("||"))
-          ? Integer.toString(n.getLabelNumber()) : n.getId();
-
-      if (!nodeLabel.contains("abs")) {
-        String splitTokens[] = nodeLabel.split("\\.");
-        //Remove junk in the label, otherwise it ends up as Test.n1, we only need n1;
-        nodeLabel = splitTokens[splitTokens.length - 1];
-      }
-      GraphNode node = new GraphNode(automaton.getId(), nodeLabel,
-          nodeTermination, NodeType.AUTOMATA_NODE, nodeLabel);
+      GraphNode node = new GraphNode(automaton.getId(), n.getId(), nodeTermination,
+          NodeType.AUTOMATA_NODE, "" + n.getLabelNumber());
       nodeMap.put(n.getId(), node);
 
       graph.addVertex(node);
