@@ -2,13 +2,11 @@ package mc.operations.functions;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import com.google.common.base.Functions;
+
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.microsoft.z3.Context;
-
 
 
 import mc.Constant;
@@ -18,12 +16,8 @@ import mc.plugins.IProcessFunction;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
-import mc.processmodels.automata.operations.AutomataReachability;
-import mc.util.expr.Expression;
 
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import mc.util.expr.Expression;
 
 public class AbstractionFunction implements IProcessFunction {
 
@@ -67,17 +61,14 @@ public class AbstractionFunction implements IProcessFunction {
    * @param context  the z3 context to access the stuff
    * @return the resulting automaton of the operation
    */
-  //@Override
+  @Override
   public Automaton compose(String id, Set<String> flags,
                            Context context, Automaton... automata) throws CompilationException {
-    //System.out.println("compose");
-
     if (automata.length != getNumberArguments()) {
       throw new CompilationException(this.getClass(), null);
     }
-//must copy automata else B in  A= abs(B ) may change
-    //Automaton abstraction = automata[0].copy();
-    Automaton abstraction = pruneHiddenNodes(id,flags, context, automata);
+
+    Automaton abstraction = pruneHiddenNodes(context, automata);
     boolean isFair = flags.contains("fair") || !flags.contains("unfair");
 
     // retrieve the unobservable edges from the specified automaton
@@ -85,14 +76,10 @@ public class AbstractionFunction implements IProcessFunction {
             .filter(AutomatonEdge::isHidden)
             .collect(Collectors.toList());
 
-    // construct  edges to replace the unobservable edges
+    //Construct  edges to replace the unobservable edges
     while (!hiddenEdges.isEmpty()) {
-      //System.out.println("Todo "+ hiddenEdges.size());
-      //for (AutomatonEdge hiddenEdge : hiddenEdges) {
       AutomatonEdge hiddenEdge = hiddenEdges.get(0);
-//      AutomatonNode b = constructEdgeOnlyTau(abstraction, hiddenEdge);
-//      toRemove.add(b);
-      //System.out.println("removing "+hiddenEdge.toString());
+
       hiddenEdges.remove(hiddenEdge);
       abstraction.removeEdge(hiddenEdge);
 
@@ -117,26 +104,17 @@ public class AbstractionFunction implements IProcessFunction {
         if (hiddenEdge.getTo().isTerminal()) {
           hiddenEdge.getFrom().setTerminal(hiddenEdge.getTo().getTerminal());
         }
-        //  if (hiddenEdge.getFrom().isStartNode()  ) {
-        //    hiddenEdge.getTo().setStartNode(true);
-        //  }
+
 
         hiddenEdges.addAll(
-                constructOutgoingEdges(abstraction, hiddenEdge, isFair, context));
+                constructOutgoingEdges(abstraction, hiddenEdge, context));
 
         hiddenEdges.addAll(
-                constructIncomingEdges(abstraction, hiddenEdge, isFair, context));
+                constructIncomingEdges(abstraction, hiddenEdge, context));
       } catch (InterruptedException ignored) {
         throw new CompilationException(this.getClass(), null);
       }
-      //System.out.println("One done "+ hiddenEdges.size());
     }
-    //   toRemove.forEach(s -> {
-    //     if (s != null) {
-    //      abstraction.removeNode(s);
-    //     }
-    //  });
-//    return AutomataReachability.removeUnreachableNodes(abstraction);
     return abstraction;
   }
 
@@ -144,7 +122,6 @@ public class AbstractionFunction implements IProcessFunction {
    *
    * @param abstraction  automaton
    * @param hiddenEdge   to be removed
-   * @param isFair
    * @param context    Symbolic
    * @return list of new hidden edges
    * @throws CompilationException
@@ -152,38 +129,34 @@ public class AbstractionFunction implements IProcessFunction {
    * adds  n-a->m when  n-a->x and x-tau->m to abstraction
    */
   private List<AutomatonEdge> constructOutgoingEdges(Automaton abstraction, AutomatonEdge hiddenEdge,
-                                                     boolean isFair, Context context)
+                                                     Context context)
           throws CompilationException, InterruptedException {
     Guard hiddenGuard = hiddenEdge.getGuard();
     List<AutomatonEdge> incomingEdges = hiddenEdge.getFrom().getIncomingEdges();
-    List<AutomatonEdge> hiddenAdded = new ArrayList<AutomatonEdge>();
+    List<AutomatonEdge> hiddenAdded = new ArrayList<>();
 
     AutomatonNode to = hiddenEdge.getTo();
     for (AutomatonEdge edge : incomingEdges) {
       AutomatonNode from = edge.getFrom();
 
       Guard fromGuard = from.getGuard();
-      Guard outGuard = null;
-      if (fromGuard != null && hiddenGuard == null) {
-        outGuard = fromGuard;
-      } else if (fromGuard == null && hiddenGuard != null) {
-        outGuard = hiddenGuard;
-      } else if (fromGuard != null) {
+      Guard outGuard;
+
+      if(fromGuard != null && hiddenGuard != null)
         outGuard = Expression.combineGuards(hiddenGuard, fromGuard, context);
+      else if(fromGuard != null) {
+        outGuard = fromGuard;
+      } else {
+        outGuard = hiddenGuard;
       }
-      //if edge dose not exist add it
+
+      //if edge doesn't exist add it
       if (abstraction.getEdge(edge.getLabel(), from, to) == null) {
-        AutomatonEdge added;
-        if (outGuard != null) {
-          added = abstraction.addEdge(edge.getLabel(), from, to, outGuard);
-        } else {
-          added = abstraction.addEdge(edge.getLabel(), from, to, null);
-        }
+        AutomatonEdge added = abstraction.addEdge(edge.getLabel(), from, to, outGuard);
+
         if (added.isHidden()) {
           hiddenAdded.add(added);
-          //System.out.println("hidden");
         }
-        //System.out.println("Added " + added.toString());
       }
     }
     return hiddenAdded;
@@ -193,7 +166,6 @@ public class AbstractionFunction implements IProcessFunction {
    *
    * @param abstraction  automaton
    * @param hiddenEdge   to be removed
-   * @param isFair
    * @param context   to do with symbolic events
    * @return list of new hidden edges
    * @throws CompilationException
@@ -201,74 +173,49 @@ public class AbstractionFunction implements IProcessFunction {
    * adds  n-a->m when  n-tau->x and x-a->m  to abstraction
    */
   private List<AutomatonEdge> constructIncomingEdges(Automaton abstraction, AutomatonEdge hiddenEdge,
-                                                     boolean isFair, Context context)
+                                                      Context context)
           throws CompilationException, InterruptedException {
     Guard hiddenGuard = hiddenEdge.getGuard();
     List<AutomatonEdge> outgoingEdges = hiddenEdge.getTo().getOutgoingEdges();
-    List<AutomatonEdge> hiddenAdded = new ArrayList<AutomatonEdge>();
+    List<AutomatonEdge> hiddenAdded = new ArrayList<>();
     AutomatonNode from = hiddenEdge.getFrom();
     for (AutomatonEdge edge : outgoingEdges) {
       AutomatonNode to = edge.getTo();
       Guard toGuard = to.getGuard();
-      Guard outGuard = null;
-      if (toGuard != null && hiddenGuard == null) {
-        outGuard = toGuard;
-      } else if (toGuard == null && hiddenGuard != null) {
-        outGuard = hiddenGuard;
-      } else if (toGuard != null) {
-        outGuard = Expression.combineGuards(hiddenGuard, toGuard, context);
+      Guard newAbstractionEdgeGuard;
+
+      if(toGuard != null && hiddenGuard != null)
+        newAbstractionEdgeGuard = Expression.combineGuards(hiddenGuard, toGuard, context);
+      else if(toGuard != null) {
+        newAbstractionEdgeGuard = toGuard;
+      } else {
+        newAbstractionEdgeGuard = hiddenGuard;
       }
-      // if not all ready there add edge
+
+      // if not already there add edge
       if (abstraction.getEdge(edge.getLabel(), from, to) == null) {
-        AutomatonEdge added = abstraction.addEdge(edge.getLabel(), from, to, outGuard);
+        AutomatonEdge added = abstraction.addEdge(edge.getLabel(), from, to, newAbstractionEdgeGuard);
         if (added.isHidden()) {
           hiddenAdded.add(added);
-          //System.out.println("hidden");
         }
-        //System.out.println("Added " + added.toString());
       }
     }
     return hiddenAdded;
   }
 
-  private void addNode(Automaton abstraction, AutomatonNode node) throws CompilationException {
-    AutomatonNode newNode = abstraction.addNode(node.getId() + ".abs");
-
-    newNode.copyProperties(node);
-    if (newNode.isStartNode()) {
-      abstraction.addRoot(newNode);
-    }
-
-  }
-
-  private void addEdge(Automaton abstraction, AutomatonEdge edge) throws CompilationException {
-
-
-
-    AutomatonNode from = abstraction.getNode(edge.getFrom().getId() + ".abs");
-    AutomatonNode to = abstraction.getNode(edge.getTo().getId() + ".abs");
-    abstraction.addEdge(edge.getLabel(), from, to, edge.getGuard());
-  }
-
-
-
   /**
    *
-   * @param id
-   * @param flags
-   * @param context
-   * @param automata
+   * @param context The structure linking to z3
+   * @param automata  The automaton to prune
    * @throws CompilationException
    * prunes any node that is only connected by hidden events
    *    This method solely acts as an accelerator and is only valid for
    *    Testing / Failure  semamtics
    */
 
-  public Automaton  pruneHiddenNodes(String id, Set<String> flags,
-  Context context, Automaton... automata)
+  private Automaton  pruneHiddenNodes( Context context, Automaton... automata)
     throws CompilationException
   {
-//System.out.println("pruneHiddenNodes");
   if (automata.length != getNumberArguments()) {
     throw new CompilationException(this.getClass(), null);
   }
@@ -276,48 +223,33 @@ public class AbstractionFunction implements IProcessFunction {
 
     List<AutomatonNode> nodes = abstraction.getNodes();
 
+
     for (AutomatonNode n: nodes ) {
       boolean del = true;
-      for (AutomatonEdge e : n.getOutgoingEdges()) {
+      for (AutomatonEdge e : Iterables.concat(n.getIncomingEdges(),n.getOutgoingEdges())) {
         if (!e.isHidden()) {
           del = false;
           break;
         }
       }
-      if (del) {
-        for (AutomatonEdge e : n.getIncomingEdges()) {
-          if (!e.isHidden()) {
+
+      if (n.isStartNode() || n.getOutgoingEdges().size() == 0) {
             del = false;
-            break;
-          }
-        }
-        if (del) {
-          if (n.isStartNode() || n.getOutgoingEdges().size() == 0) {
-            del = false;
-          }
-        }
       }
+
       if (del) {
-        //System.out.println("Pruning " + n.getId());
-        List<AutomatonEdge> old = new ArrayList<AutomatonEdge>(n.getOutgoingEdges());
-        old.addAll(n.getIncomingEdges());
         try {
           for (AutomatonEdge second : n.getOutgoingEdges()) {
             for (AutomatonEdge first : n.getIncomingEdges()) {
-              abstraction.addEdge(Constant.HIDDEN, first.getFrom(), second.getTo(),
+                abstraction.addEdge(Constant.HIDDEN, first.getFrom(), second.getTo(),
                 cbGuards(first, second, context));
-              //System.out.println("Adding " + first.getFrom().getId() + "-t->" + second.getTo().getId());
             }
           }
 
-          for (AutomatonEdge e : old) {
-            abstraction.removeEdge(e);
-          }
-          abstraction.removeNode(n);
+        abstraction.removeNode(n);  // tidies up all the edges
         } catch (InterruptedException ignored) {
           throw new CompilationException(this.getClass(), null);
         }
-      } else {//System.out.println("Skipping "+ n.getId());
       }
     }
   return abstraction;
@@ -325,18 +257,18 @@ public class AbstractionFunction implements IProcessFunction {
 
     private Guard cbGuards(AutomatonEdge from, AutomatonEdge to, Context context)
       throws CompilationException, InterruptedException  {
-      Guard outGuard = null;
+      Guard outGuard;
       Guard fromGuard =   from.getGuard();
-      Guard toGuard =   to.getGuard();
-      if (fromGuard == null) {
+      Guard toGuard   =   to.getGuard();
+
+      if(fromGuard != null && toGuard != null)
+        outGuard = Expression.combineGuards(toGuard, fromGuard, context);
+      else if(fromGuard == null) {
         outGuard = toGuard;
       } else {
-        if (toGuard == null) {
-          outGuard = fromGuard;
-        } else {
-          Expression.combineGuards(toGuard, fromGuard, context);
-        }
+        outGuard = fromGuard;
       }
+
     return outGuard;
   }
 

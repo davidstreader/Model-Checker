@@ -25,7 +25,7 @@ Z = One4.
 automata One1,One2,One3,One4,One5,One6.
 automata Two1,Two2,Two3,Two4,Two5,Two6,Two7,Two8.
 automata X,Y,Z.
-equation (ApplyAlphabet=true, NumberNodes=2, AlphabetCount=2, MaxTransitions=2) {
+equation {
 //X|Y ~ Y|X.
 //X|(Y|Z) ~ (X|Y)|Z.
 
@@ -46,14 +46,3 @@ X=>STOP ~ X.
 
 }
 
-
-lengthEdgeValue: 10
-maxNodeLabelValue: 10
-operationFailureLabelValue: 10
-operationPassLabelValue: 10
-
-fairAbstractionSelected: false
-autoSaveSelected: false
-darkModeSelected: false
-pruningSelected: false
-liveCompillingSelected: false

@@ -1272,110 +1272,11 @@ public class Parser {
       Token error = tokens.get(index - 1);
       throw constructException("expecting to parse \"equation\" but received \"" + error.toString() + "\"", error.getLocation());
     }
-    if (!(nextToken() instanceof OpenParenToken)) {
-      Token error = tokens.get(index - 1);
-      throw constructException("expecting to parse \"(\" but received \"" + error.toString() + "\"", error.getLocation());
-    }
-    Boolean alphabet = null; // These are of Object type so we can for sure *know* that the user hasnt set them.
-    Integer nodeCount = null, alphabetCount = null, maxTransitionCount = null;
-
-
-
-    while (true) {
-      if ((peekToken()) instanceof IdentifierToken) {
-        String settingName = ((IdentifierToken) nextToken()).getIdentifier();
-
-
-        if (!(nextToken() instanceof AssignToken)) {
-          Token error = tokens.get(index - 1);
-          throw constructException("expecting assignment of variable, received \"" + error.toString() + "\"", error.getLocation());
-        }
-
-        switch (settingName.toLowerCase()) {
-
-          case "applyalphabet": {
-            if (!(peekToken().toString().equals("true") || peekToken().toString().equals("false"))) {
-              Token error = tokens.get(index);
-              throw constructException("expecting to parse \"true or false\" but received \"" + error.toString() + "\"", error.getLocation());
-            }
-            alphabet = Boolean.parseBoolean(nextToken().toString());
-          }
-          break;
-
-          case "numbernodes": {
-            if (!(peekToken() instanceof IntegerToken)) {
-              Token error = tokens.get(index);
-              throw constructException("expecting to parse an integer but received \"" + error.toString() + "\"", error.getLocation());
-            }
-            nodeCount = ((IntegerToken) nextToken()).getInteger();
-          }
-          break;
-
-          case "alphabetcount": {
-            if (!(peekToken() instanceof IntegerToken)) {
-              Token error = tokens.get(index);
-              throw constructException("expecting to parse an integer but received \"" + error.toString() + "\"", error.getLocation());
-            }
-            alphabetCount = ((IntegerToken) nextToken()).getInteger();
-          }
-          break;
-
-          case "maxtransitions": {
-            if (!(peekToken() instanceof IntegerToken)) {
-              Token error = tokens.get(index);
-              throw constructException("expecting to parse an integer but received \"" + error.toString() + "\"", error.getLocation());
-            }
-            maxTransitionCount = ((IntegerToken) nextToken()).getInteger();
-
-          }
-          break;
-
-          default: {
-            Token error = tokens.get(index - 2);
-            throw constructException("unrecognized setting variable for equations block, got \"" + error.toString() + "\"", error.getLocation());
-          }
-
-        }
-
-
-      } else {
-        Token error = tokens.get(index - 1);
-        throw constructException("expected equation settings Identifier (ApplyAlphabet, NumberNodes, AlphabetCount, MaxTransitions) got \"" + error.toString() + "\"", error.getLocation());
-
-      }
-
-
-
-      if ((peekToken() instanceof CloseParenToken)) {
-        nextToken();
-
-
-        Token error = tokens.get(index - 1);
-        if (alphabet == null) {
-          throw constructException("ApplyAlphabet not set in equation settings", error.getLocation());
-        } else if (nodeCount == null) {
-          throw constructException("NumberNodes not set in equation settings", error.getLocation());
-        } else if (alphabetCount == null) {
-          throw constructException("AlphabetCount not set in equation settings", error.getLocation());
-        } else if (maxTransitionCount == null) {
-          throw constructException("MaxTransitions not set in equation settings", error.getLocation());
-        }
-
-
-        break; // Ends parsing of the settings for equation
-      }
-
-
-      if (!(nextToken() instanceof CommaToken)) {
-        Token error = tokens.get(index - 1);
-        throw constructException("expected \",\" between equation settings got \"" + error.toString() + "\"", error.getLocation());
-      }
-    }
 
     if (!(peekToken() instanceof OpenBraceToken)) {
-      parseSingleOperation(true,  new EquationSettings(alphabet, nodeCount, alphabetCount, maxTransitionCount));
+      parseSingleOperation(true);
     } else {
-      parseOperationBlock(true,  new EquationSettings(alphabet, nodeCount, alphabetCount, maxTransitionCount));
+      parseOperationBlock(true);
     }
   }
 
@@ -1386,15 +1287,15 @@ public class Parser {
     }
 
     if (!(peekToken() instanceof OpenBraceToken)) {
-      parseSingleOperation(false, null);
+      parseSingleOperation(false);
     } else {
-      parseOperationBlock(false, null);
+      parseOperationBlock(false);
     }
   }
 
   // EXPRESSIONS
 
-  private void parseSingleOperation(boolean isEq, EquationSettings equationSettings) throws CompilationException, InterruptedException {
+  private void parseSingleOperation(boolean isEq) throws CompilationException, InterruptedException {
     int start = index;
     ASTNode process1 = parseComposite();
 
@@ -1414,7 +1315,7 @@ public class Parser {
       throw constructException("expecting to parse \".\" but received \"" + error.toString() + "\"", error.getLocation());
     }
 
-    OperationNode operation = new OperationNode(type, isNegated, process1, process2, this.constructLocation(start), equationSettings);
+    OperationNode operation = new OperationNode(type, isNegated, process1, process2, this.constructLocation(start));
     if (isEq) {
       equations.add(operation);
     } else {
@@ -1422,14 +1323,14 @@ public class Parser {
     }
   }
 
-  private void parseOperationBlock(boolean isEq, EquationSettings equationSettings) throws CompilationException, InterruptedException {
+  private void parseOperationBlock(boolean isEq) throws CompilationException, InterruptedException {
     if (!(nextToken() instanceof OpenBraceToken)) {
       Token error = tokens.get(index - 1);
       throw constructException("expecting to parse \"{\" but received \"" + error.toString() + "\"", error.getLocation());
     }
 
     while (!(peekToken() instanceof CloseBraceToken)) {
-      parseSingleOperation(isEq, equationSettings);
+      parseSingleOperation(isEq);
     }
 
     if (!(nextToken() instanceof CloseBraceToken)) {
