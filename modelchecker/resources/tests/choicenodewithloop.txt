@@ -1,0 +1,8 @@
+processes {
+	T = a->T.
+	D = e->STOP.
+
+	F = T|D.
+}
+
+automata F.

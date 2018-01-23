@@ -47,11 +47,11 @@ public class ParallelFunction {
 
     List<AutomatonEdge> edges1 = automaton1.getEdges();
     List<AutomatonEdge> edges2 = automaton2.getEdges();
+
     //The edges here are meaning the labeled lines in each of the automata that we are composing
     processUnsyncedActions(edges1, edges2);
-//    System.out.println("dstr Ping " + automaton1.toString());
     processSyncedActions(edges1, edges2);
-//    System.out.println("dstr Ping");
+
     return automaton;
   }
 
@@ -60,9 +60,6 @@ public class ParallelFunction {
     //Setting up all the potentially valid nodes.
     //After this process we remove any inaccessable.
 
-    //System.out.println("Parallel comp");
-    //System.out.println("nodes1 "+nodes1.toString());
-    //System.out.println("nodes2 "+nodes2.toString());
     for (AutomatonNode node1 : nodes1) {
 
       for (AutomatonNode node2 : nodes2) {
@@ -134,10 +131,9 @@ public class ParallelFunction {
       if (!containsBroadcaster(edgeLabel, listEdgeLabels)) {
         if (containsReceiver(edgeLabel, listEdgeLabels)) {
           syncedActions.add(edgeLabel);
-          unsyncedActions.add(edgeLabel);  //both needed synced will delete some
-        } else {
-          unsyncedActions.add(edgeLabel);
         }
+
+        unsyncedActions.add(edgeLabel);
       }
     } else if (listEdgeLabels.contains(edgeLabel)) {
       syncedActions.add(edgeLabel);
@@ -155,8 +151,8 @@ public class ParallelFunction {
       List<AutomatonEdge> edges = allEdges.stream()
           .filter(edge -> action.equals(edge.getLabel() ) ) // receivers never get executed
           .collect(Collectors.toList());
-//got the list of unsynced edges in edges
-//  nodeMap one input node to each  node-pair that contains it
+          //got the list of unsynced edges in edges
+          //  nodeMap one input node to each  node-pair that contains it
       for (AutomatonEdge edge : edges) {
         List<AutomatonNode> from = new ArrayList<>(nodeMap.get(edge.getFrom().getId()));
         List<AutomatonNode> to = new ArrayList<>(nodeMap.get(edge.getTo().getId()));
@@ -189,8 +185,8 @@ public class ParallelFunction {
       for (AutomatonEdge edge1 : syncedEdges1) {
         for (AutomatonEdge edge2 : syncedEdges2) {
           AutomatonNode from = automaton.getNode(createId(edge1.getFrom(), edge2.getFrom()));
-  //broadcast events that sync  (a! - a?)  or (a? - a?)
-//          System.out.println("Synced 1 = "+ edge1.getLabel() + "  2 = " + edge2.getLabel());
+
+          //broadcast events that sync  (a! - a?)  or (a? - a?)
           if (edge1.getLabel().endsWith("!") || edge2.getLabel().endsWith("!")||
             (edge1.getLabel().endsWith("?") && edge2.getLabel().endsWith("?"))) {
             // any edges from the from node are broadcasted and should get replaced by the synced
