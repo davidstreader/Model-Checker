@@ -2,12 +2,15 @@ package mc.processmodels.petrinet;
 
 
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.StreamSupport;
 import lombok.Data;
+import lombok.SneakyThrows;
 import mc.compiler.ast.HidingNode;
 import mc.compiler.ast.RelabelElementNode;
 import mc.exceptions.CompilationException;
@@ -74,7 +77,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     String id = this.id + ":t:" + transitionId++;
     PetriNetTransition transition = new PetriNetTransition(id, label);
     transitions.put(id, transition);
-    alphabet.put(label,transition);
+    alphabet.put(label, transition);
     return transition;
   }
 
@@ -82,8 +85,9 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     if (!transitions.containsValue(to) || !places.containsValue(from)) {
       throw new CompilationException(getClass(), "Cannot add an edge to an object not inside the petrinet");
     }
-    if(to == null || from == null)
-      throw new CompilationException(getClass(),"Either " + to + " or " + from + "are null");
+    if (to == null || from == null) {
+      throw new CompilationException(getClass(), "Either " + to + " or " + from + "are null");
+    }
 
     String id = this.id + ":e:" + edgeId++;
 
@@ -105,6 +109,112 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     from.getOutgoing().add(edge);
     edges.put(id, edge);
     return edge;
+  }
+
+
+  public void removePlace(PetriNetPlace place) throws CompilationException {
+    if (!places.values().contains(place)) {
+      throw new CompilationException(getClass(), "Cannot remove a place that is not part of"
+          + "the petrinet");
+    }
+    for (PetriNetEdge edge : Iterables.concat(place.getIncoming(), place.getOutgoing())) {
+      removeEdge(edge);
+    }
+    places.remove(place.getId());
+  }
+
+  public void removeTransititon(PetriNetTransition transition) throws CompilationException {
+    if (!transitions.values().contains(transition)) {
+      throw new CompilationException(getClass(), "Cannot remove a transition that is not part of"
+          + "the petrinet");
+    }
+    for (PetriNetEdge edge : Iterables.concat(transition.getIncoming(), transition.getOutgoing())) {
+      removeEdge(edge);
+    }
+    transitions.remove(transition.getId());
+    alphabet.remove(transition.getLabel(),transition);
+  }
+
+  public void removeEdge(PetriNetEdge edge) throws CompilationException {
+    if (!edges.values().contains(edge)) {
+      throw new CompilationException(getClass(), "Cannot remove an edge that is not part of"
+          + "the petrinet");
+    }
+    if (edge.getTo() instanceof PetriNetTransition) {
+      ((PetriNetTransition)edge.getTo()).getIncoming().remove(edge);
+      ((PetriNetPlace)edge.getFrom()).getOutgoing().remove(edge);
+    } else {
+      ((PetriNetPlace)edge.getTo()).getIncoming().remove(edge);
+      ((PetriNetTransition)edge.getFrom()).getOutgoing().remove(edge);
+    }
+
+    edges.remove(edge.getId());
+  }
+
+  @SneakyThrows(value = {CompilationException.class})
+  public Set<PetriNetPlace> addPetrinet(Petrinet petriToAdd) {
+    Set<PetriNetPlace> roots = new HashSet<>();
+    Map<PetriNetPlace, PetriNetPlace> placeMap = new HashMap<>();
+    Map<PetriNetTransition, PetriNetTransition> transitionMap = new HashMap<>();
+
+    for (PetriNetPlace place : petriToAdd.getPlaces().values()) {
+      PetriNetPlace newPlace = addPlace();
+      newPlace.copyProperties(place);
+
+      if (place.isStart()) {
+        newPlace.setStart(false);
+        roots.add(newPlace);
+      }
+
+      placeMap.put(place, newPlace);
+    }
+
+    for (PetriNetTransition transition : petriToAdd.getTransitions().values()) {
+      PetriNetTransition newTransition = addTransition(transition.getLabel());
+      transitionMap.put(transition, newTransition);
+    }
+
+    for (PetriNetEdge edge : petriToAdd.getEdges().values()) {
+      if (edge.getFrom() instanceof PetriNetPlace) {
+        addEdge(transitionMap.get(edge.getTo()), placeMap.get(edge.getFrom()));
+      } else {
+        addEdge(placeMap.get(edge.getTo()), transitionMap.get(edge.getFrom()));
+      }
+    }
+    return roots;
+  }
+
+  public void gluePlaces(Set<PetriNetPlace> set1, Set<PetriNetPlace> set2)
+      throws CompilationException {
+    if (!StreamSupport.stream(Iterables.concat(set1, set2).spliterator(), false)
+        .allMatch(places::containsValue)) {
+      throw new CompilationException(getClass(), "Cannot glue places together that are not part"
+          + "of the same automaton");
+    }
+
+    Multimap<PetriNetPlace,PetriNetPlace> products = ArrayListMultimap.create();
+    for (PetriNetPlace place1 : set1) {
+      for (PetriNetPlace place2 : set2) {
+        PetriNetPlace newPlace = addPlace();
+        products.put(place1,newPlace);
+        products.put(place2,newPlace);
+      }
+    }
+
+    for (PetriNetPlace place: Iterables.concat(set1,set2)) {
+      for (PetriNetPlace product : products.get(place)) {
+        for (PetriNetEdge edge : place.getIncoming()) {
+          product.getIncoming().add(addEdge(product,(PetriNetTransition)edge.getFrom()));
+        }
+        for (PetriNetEdge edge : place.getOutgoing()) {
+          product.getIncoming().add(addEdge((PetriNetTransition)edge.getTo(),product));
+        }
+      }
+    }
+
+    for (PetriNetPlace place : Iterables.concat(set1, set2)) {
+      removePlace(place);
+    }
   }
 
   @Override

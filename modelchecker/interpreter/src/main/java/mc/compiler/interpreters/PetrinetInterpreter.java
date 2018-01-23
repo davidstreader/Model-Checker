@@ -3,8 +3,10 @@ package mc.compiler.interpreters;
 import com.microsoft.z3.Context;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
@@ -134,6 +136,10 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     }
     if (currentNode instanceof ChoiceNode) {
       interpretChoice((ChoiceNode) currentNode, petri, currentPlace);
+      return;
+    }
+    if (currentNode instanceof IdentifierNode) {
+      interpretIdentifier((IdentifierNode) currentNode, petri, currentPlace);
     }
 
   }
@@ -162,7 +168,6 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
 
       petri.addEdge(transition, currentPlace);
       petri.addEdge(nextPlace, transition);
-      System.out.println(petri);
       interpretASTNode(seq.getTo(), petri, nextPlace);
     }
   }
@@ -175,6 +180,29 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
       throws CompilationException, InterruptedException {
     interpretASTNode(choice.getFirstProcess(),petri,currentPlace);
     interpretASTNode(choice.getSecondProcess(),petri,currentPlace);
+  }
+
+  private void interpretIdentifier(IdentifierNode identifier, Petrinet petri,
+                                   PetriNetPlace currentPlace)
+      throws CompilationException, InterruptedException {
+    ProcessModel model = processMap.get(identifier.getIdentifier());
+    if (!(model instanceof Petrinet)) {
+      throw new CompilationException(getClass(), "Unable to find petrinet for identifier: "
+          + identifier.getIdentifier(),identifier.getLocation());
+    }
+    Petrinet copy = ((Petrinet) model).copy();
+    addPetrinet(currentPlace, copy, petri);
+  }
+
+
+  private void addPetrinet(PetriNetPlace currentPlace, Petrinet petrinetToAdd, Petrinet master)
+      throws CompilationException, InterruptedException {
+    List<String> references = new ArrayList<>();
+    //TODO: References
+
+    Set<PetriNetPlace> places = master.addPetrinet(petrinetToAdd);
+    master.gluePlaces(Collections.singleton(currentPlace),places);
+
   }
 
 
