@@ -16,6 +16,7 @@ import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.automata.util.ColouringUtil;
 
 public class SimpFunction implements IProcessFunction {
+  private static final int BASE_COLOUR = 1;
   /**
    * Gets the method name when it is called (e.g. {@code abs} in {@code abs(A)}).
    *
@@ -68,8 +69,11 @@ public class SimpFunction implements IProcessFunction {
 
     ColouringUtil colourer = new ColouringUtil();
     Map<Integer, List<ColouringUtil.ColourComponent>> colourMap = new HashMap<>();
-
-    Multimap<Integer, AutomatonNode> nodeColours = colourer.performColouring(automaton, colourMap);
+    Map<AutomatonNode,Integer> initialColour = new HashMap<AutomatonNode,Integer>();
+    for(AutomatonNode n: automaton.getNodes()){
+      initialColour.put(n,BASE_COLOUR);cd 
+    }
+    Multimap<Integer, AutomatonNode> nodeColours = colourer.performColouring(automaton, colourMap,initialColour);
 
     for (Collection<AutomatonNode> value : nodeColours.asMap().values()) {
       if (value.size() < 2) {

@@ -67,6 +67,6 @@ public class HideFunction implements IProcessFunction {
             + " for hiding.", null);
       }
     }
-    return new AbstractionFunction().compose(id, Collections.emptySet(), context, automaton);
+    return new   AbstractionFunction().compose(id, Collections.emptySet(), context, automaton);
   }
 }
