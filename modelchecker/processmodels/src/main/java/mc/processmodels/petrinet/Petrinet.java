@@ -4,8 +4,11 @@ package mc.processmodels.petrinet;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.StreamSupport;
@@ -67,18 +70,25 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
   }
 
   public PetriNetPlace addPlace() {
-    String id = this.id + ":p:" + placeId++;
+    return addPlace(this.id + ":p:" + placeId++);
+  }
+
+  public PetriNetPlace addPlace(String id) {
     PetriNetPlace place = new PetriNetPlace(id);
     places.put(id, place);
     return place;
+
   }
 
-  public PetriNetTransition addTransition(String label) {
-    String id = this.id + ":t:" + transitionId++;
+  public PetriNetTransition addTransition(String id, String label) {
     PetriNetTransition transition = new PetriNetTransition(id, label);
     transitions.put(id, transition);
     alphabet.put(label, transition);
     return transition;
+  }
+
+  public PetriNetTransition addTransition(String label) {
+    return addTransition(id + ":t:" + transitionId++, label);
   }
 
   public PetriNetEdge addEdge(PetriNetTransition to, PetriNetPlace from) throws CompilationException {
@@ -132,7 +142,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
       removeEdge(edge);
     }
     transitions.remove(transition.getId());
-    alphabet.remove(transition.getLabel(),transition);
+    alphabet.remove(transition.getLabel(), transition);
   }
 
   public void removeEdge(PetriNetEdge edge) throws CompilationException {
@@ -141,11 +151,11 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
           + "the petrinet");
     }
     if (edge.getTo() instanceof PetriNetTransition) {
-      ((PetriNetTransition)edge.getTo()).getIncoming().remove(edge);
-      ((PetriNetPlace)edge.getFrom()).getOutgoing().remove(edge);
+      ((PetriNetTransition) edge.getTo()).getIncoming().remove(edge);
+      ((PetriNetPlace) edge.getFrom()).getOutgoing().remove(edge);
     } else {
-      ((PetriNetPlace)edge.getTo()).getIncoming().remove(edge);
-      ((PetriNetTransition)edge.getFrom()).getOutgoing().remove(edge);
+      ((PetriNetPlace) edge.getTo()).getIncoming().remove(edge);
+      ((PetriNetTransition) edge.getFrom()).getOutgoing().remove(edge);
     }
 
     edges.remove(edge.getId());
@@ -192,28 +202,38 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
           + "of the same automaton");
     }
 
-    Multimap<PetriNetPlace,PetriNetPlace> products = ArrayListMultimap.create();
+    Multimap<PetriNetPlace, PetriNetPlace> products = ArrayListMultimap.create();
     for (PetriNetPlace place1 : set1) {
       for (PetriNetPlace place2 : set2) {
         PetriNetPlace newPlace = addPlace();
-        products.put(place1,newPlace);
-        products.put(place2,newPlace);
+        products.put(place1, newPlace);
+        products.put(place2, newPlace);
       }
     }
 
-    for (PetriNetPlace place: Iterables.concat(set1,set2)) {
+    for (PetriNetPlace place : Iterables.concat(set1, set2)) {
       for (PetriNetPlace product : products.get(place)) {
         for (PetriNetEdge edge : place.getIncoming()) {
-          product.getIncoming().add(addEdge(product,(PetriNetTransition)edge.getFrom()));
+          product.getIncoming().add(addEdge(product, (PetriNetTransition) edge.getFrom()));
         }
         for (PetriNetEdge edge : place.getOutgoing()) {
-          product.getIncoming().add(addEdge((PetriNetTransition)edge.getTo(),product));
+          product.getIncoming().add(addEdge((PetriNetTransition) edge.getTo(), product));
         }
       }
     }
 
     for (PetriNetPlace place : Iterables.concat(set1, set2)) {
       removePlace(place);
+    }
+  }
+
+  public void relabelTransitions(String oldLabel, String newLabel) {
+    List<PetriNetTransition> transitions = new ArrayList<>(alphabet.get(oldLabel));
+    alphabet.replaceValues(oldLabel, Collections.emptyList());
+
+    for (PetriNetTransition transition : transitions) {
+      transition.setLabel(newLabel);
+      alphabet.put(newLabel, transition);
     }
   }
 
