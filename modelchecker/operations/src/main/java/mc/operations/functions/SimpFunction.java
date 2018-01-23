@@ -71,7 +71,7 @@ public class SimpFunction implements IProcessFunction {
     Map<Integer, List<ColouringUtil.ColourComponent>> colourMap = new HashMap<>();
     Map<AutomatonNode,Integer> initialColour = new HashMap<AutomatonNode,Integer>();
     for(AutomatonNode n: automaton.getNodes()){
-      initialColour.put(n,BASE_COLOUR);cd 
+      initialColour.put(n,BASE_COLOUR);
     }
     Multimap<Integer, AutomatonNode> nodeColours = colourer.performColouring(automaton, colourMap,initialColour);
 
