@@ -19,6 +19,7 @@ import mc.processmodels.automata.util.ColouringUtil;
 
 public class BisimulationOperation implements IOperationInfixFunction {
 
+
   /**
    * A method of tracking the function.
    *
@@ -48,6 +49,7 @@ public class BisimulationOperation implements IOperationInfixFunction {
   @Override
   public boolean evaluate(Collection<Automaton> automata) throws CompilationException {
 
+    final int BASE_COLOUR = 1;
     Map<Integer, List<ColourComponent>> colourMap = new HashMap<>();
     int rootColour = Integer.MIN_VALUE;
 
@@ -56,7 +58,11 @@ public class BisimulationOperation implements IOperationInfixFunction {
       if (Thread.currentThread().isInterrupted()) {
         return false;
       }
-      colourer.performColouring(automaton, colourMap);
+      Map<AutomatonNode,Integer> initialColour = new HashMap<AutomatonNode,Integer>();
+      for(AutomatonNode n: automaton.getNodes()){
+        initialColour.put(n,BASE_COLOUR);
+      }
+      colourer.performColouring(automaton, colourMap,initialColour);
 
       Set<AutomatonNode> root = automaton.getRoot();
 

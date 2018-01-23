@@ -26,9 +26,22 @@ public class ColouringUtil {
   private static final int ERROR_COLOUR = -1;
   private int nextColourId = 1;
 
-  public Multimap<Integer, AutomatonNode> performColouring(Automaton automaton, Map<Integer, List<ColourComponent>> colourMap) {
+  /**
+   *
+   * @param automaton  input and output
+   * @param colourMap  not sure if used? but makes sence if second automata to be colourd
+   * @return           again not sure if used
+   *
+   * The nodes of the automaton hold colour and these are set
+   *   -- colourMap from Nodecolor to list of colorComponents
+   *   -- nodeColours  maps colours to nodes
+   */
+  public Multimap<Integer, AutomatonNode> performColouring
+                          (Automaton automaton,
+                           Map<Integer, List<ColourComponent>> colourMap,
+                           Map<AutomatonNode,Integer> initialColour) {
     int lastColourCount = 1;
-    performInitialColouring(automaton);
+    performInitialColouring(automaton, initialColour);
     Multimap<Integer, AutomatonNode> nodeColours = ArrayListMultimap.create();
     boolean runTwice = true;
 
@@ -98,7 +111,7 @@ public class ColouringUtil {
         visited.add(current.getId());
       }
 
-      // apply colours to the nodes
+      // apply colours to the nodes  end of each iteration
       for (int colourId : nodeColours.keySet()) {
         nodeColours.get(colourId).forEach(node -> node.setColour(colourId));
       }
@@ -108,7 +121,13 @@ public class ColouringUtil {
     return nodeColours;
   }
 
-  private void performInitialColouring(Automaton automaton) {
+  private void performInitialColouring(Automaton automaton,
+                                       Map<AutomatonNode,Integer> initialColour) {
+    System.out.println("performInitialColouring");
+    if (initialColour ==null) {System.out.println("NULL");}
+    for (AutomatonNode n : initialColour.keySet()){
+      System.out.println(" "+n.getId()+" "+initialColour.get(n).toString());
+    }
     List<AutomatonNode> nodes = automaton.getNodes();
     for (AutomatonNode node : nodes) {
       if (node.isTerminal()) {
@@ -119,11 +138,15 @@ public class ColouringUtil {
           node.setColour(ERROR_COLOUR);
         }
       } else {
-        node.setColour(BASE_COLOUR);
+//        node.setColour(BASE_COLOUR);
+        node.setColour(initialColour.get(node));
       }
     }
   }
 
+  /*
+     uses the color held on the automaton nodes
+   */
   private List<ColourComponent> constructColouring(AutomatonNode node) {
     Set<ColourComponent> colouringSet = new HashSet<>();
 
