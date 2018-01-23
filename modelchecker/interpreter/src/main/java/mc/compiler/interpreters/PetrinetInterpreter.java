@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.Stack;
 import mc.Constant;
@@ -145,6 +146,14 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
       throw new InterruptedException();
     }
 
+    if (currentNode.hasReferences()) {
+      for (String ref : currentNode.getReferences()) {
+        referenceMap.put(ref,new HashSet<>(Collections.singleton(currentPlace)));
+      }
+
+      currentPlace.setReferences(currentNode.getReferences());
+    }
+
     if (currentNode instanceof ProcessRootNode) {
       interpretProcessRoot((ProcessRootNode) currentNode, petri, currentPlace);
       return;
@@ -176,6 +185,11 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     if (seq.getTo() instanceof ReferenceNode) {
       ReferenceNode ref = (ReferenceNode) seq.getTo();
       Collection<PetriNetPlace> nextPlaces = referenceMap.get(ref.getReference());
+
+      if (nextPlaces == null) {
+        throw new CompilationException(getClass(),
+            "The automata attempted to enter an invalid reference", seq.getTo().getLocation());
+      }
 
       for (PetriNetPlace nextPlace : nextPlaces) {
         PetriNetTransition transition = petri.addTransition(action);
@@ -236,9 +250,19 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
       throws CompilationException {
     List<String> references = new ArrayList<>();
     //TODO: References
+    if (currentPlace.getReferences() != null) {
+      references.addAll(currentPlace.getReferences());
+    }
 
     Set<PetriNetPlace> places = master.addPetrinet(petrinetToAdd);
-    master.gluePlaces(Collections.singleton(currentPlace), places);
+    Set<PetriNetPlace> newStart = master.gluePlaces(Collections.singleton(currentPlace), places);
+
+    places.stream()
+        .map(PetriNetPlace::getReferences)
+        .filter(Objects::nonNull)
+        .forEach(references::addAll);
+
+    references.forEach(id -> referenceMap.replace(id, newStart));
   }
 
   private Petrinet processLabellingAndRelabelling(Petrinet petri, ProcessRootNode processRoot)

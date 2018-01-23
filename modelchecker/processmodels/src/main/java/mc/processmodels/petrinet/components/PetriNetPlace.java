@@ -10,10 +10,11 @@ import mc.processmodels.ProcessModelObject;
 @Data
 public class PetriNetPlace extends ProcessModelObject {
 
-  Set<PetriNetEdge> incoming = new HashSet<>();
-  Set<PetriNetEdge> outgoing = new HashSet<>();
-  boolean start;
-  String terminal;
+  private Set<PetriNetEdge> incoming = new HashSet<>();
+  private Set<PetriNetEdge> outgoing = new HashSet<>();
+  private boolean start;
+  private String terminal;
+  private Set<String> references;
 
   public PetriNetPlace(String id) {
     super(id, "PetriNetPlace");

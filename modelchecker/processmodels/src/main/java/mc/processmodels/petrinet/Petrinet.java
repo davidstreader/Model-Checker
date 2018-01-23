@@ -194,7 +194,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     return roots;
   }
 
-  public void gluePlaces(Set<PetriNetPlace> set1, Set<PetriNetPlace> set2)
+  public Set<PetriNetPlace> gluePlaces(Set<PetriNetPlace> set1, Set<PetriNetPlace> set2)
       throws CompilationException {
     if (!StreamSupport.stream(Iterables.concat(set1, set2).spliterator(), false)
         .allMatch(places::containsValue)) {
@@ -225,6 +225,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     for (PetriNetPlace place : Iterables.concat(set1, set2)) {
       removePlace(place);
     }
+    return new HashSet<>(products.values());
   }
 
   public void relabelTransitions(String oldLabel, String newLabel) {
