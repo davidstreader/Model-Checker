@@ -7,6 +7,7 @@ import mc.plugins.IProcessInfixFunction;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
+import mc.processmodels.petrinet.Petrinet;
 
 /**
  * This covers the "internal choice" function.
@@ -92,5 +93,19 @@ public class InternalChoiceInfixFunction implements IProcessInfixFunction {
 
 
     return choice;
+  }
+
+  /**
+   * TODO:
+   * Execute the function.
+   *
+   * @param id        the id of the resulting petrinet
+   * @param petrinet1 the first  petrinet in the function (e.g. {@code A} in {@code A||B})
+   * @param petrinet2 the second petrinet in the function (e.g. {@code B} in {@code A||B})
+   * @return the resulting petrinet of the operation
+   */
+  @Override
+  public Petrinet compose(String id, Petrinet petrinet1, Petrinet petrinet2) throws CompilationException {
+    return null;
   }
 }

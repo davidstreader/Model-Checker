@@ -11,6 +11,7 @@ import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.automata.operations.AutomataReachability;
+import mc.processmodels.petrinet.Petrinet;
 
 public class SequentialInfixFunction implements IProcessInfixFunction {
   /**
@@ -129,4 +130,17 @@ public class SequentialInfixFunction implements IProcessInfixFunction {
     });
   }
 
+  /**
+   * TODO:
+   * Execute the function.
+   *
+   * @param id        the id of the resulting petrinet
+   * @param petrinet1 the first  petrinet in the function (e.g. {@code A} in {@code A||B})
+   * @param petrinet2 the second petrinet in the function (e.g. {@code B} in {@code A||B})
+   * @return the resulting petrinet of the operation
+   */
+  @Override
+  public Petrinet compose(String id, Petrinet petrinet1, Petrinet petrinet2) throws CompilationException {
+    return null;
+  }
 }

@@ -17,6 +17,7 @@ import mc.plugins.IProcessFunction;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
+import mc.processmodels.petrinet.Petrinet;
 
 public class NFtoDFconvFunction implements IProcessFunction {
   /**
@@ -241,5 +242,21 @@ public class NFtoDFconvFunction implements IProcessFunction {
     builder.append("}");
 
     return builder.toString();
+  }
+
+  /**
+   * TODO:
+   * Execute the function on one or more petrinet.
+   *
+   * @param id        the id of the resulting petrinet
+   * @param flags     the flags given by the function (e.g. {@code unfair} in {@code abs{unfair}(A)}
+   * @param context
+   * @param petrinets the variable number of petrinets taken in by the function
+   * @return the resulting petrinet of the operation
+   * @throws CompilationException when the function fails
+   */
+  @Override
+  public Petrinet compose(String id, Set<String> flags, Context context, Petrinet... petrinets) throws CompilationException {
+    return null;
   }
 }

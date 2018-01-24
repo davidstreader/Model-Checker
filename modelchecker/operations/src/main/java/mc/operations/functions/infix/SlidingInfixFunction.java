@@ -13,6 +13,7 @@ import mc.exceptions.CompilationException;
 import mc.plugins.IProcessInfixFunction;
 import mc.processmodels.ProcessModel;
 import mc.processmodels.automata.Automaton;
+import mc.processmodels.petrinet.Petrinet;
 
 /**
  * The sliding infix function is a "decaying choice" or "sliding choice" operation.
@@ -80,5 +81,19 @@ public class SlidingInfixFunction implements IProcessInfixFunction {
       throw new CompilationException(getClass(), "Interrupted in compilation!");
     }
 
+  }
+
+  /**
+   * TODO:
+   * Execute the function.
+   *
+   * @param id        the id of the resulting petrinet
+   * @param petrinet1 the first  petrinet in the function (e.g. {@code A} in {@code A||B})
+   * @param petrinet2 the second petrinet in the function (e.g. {@code B} in {@code A||B})
+   * @return the resulting petrinet of the operation
+   */
+  @Override
+  public Petrinet compose(String id, Petrinet petrinet1, Petrinet petrinet2) throws CompilationException {
+    return null;
   }
 }

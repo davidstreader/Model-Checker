@@ -6,6 +6,7 @@ import mc.operations.impl.ParallelFunction;
 import mc.plugins.IProcessInfixFunction;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.operations.AutomataReachability;
+import mc.processmodels.petrinet.Petrinet;
 
 @Value
 public class InfixParallelFunction implements IProcessInfixFunction {
@@ -47,5 +48,20 @@ public class InfixParallelFunction implements IProcessInfixFunction {
 
     return AutomataReachability.removeUnreachableNodes(new ParallelFunction()
             .execute(id, automaton1, automaton2));
+  }
+
+  /**
+   * TODO:
+   * Execute the function.
+   *
+   * @param id        the id of the resulting petrinet
+   * @param petrinet1 the first  petrinet in the function (e.g. {@code A} in {@code A||B})
+   * @param petrinet2 the second petrinet in the function (e.g. {@code B} in {@code A||B})
+   * @return the resulting petrinet of the operation
+   */
+  @Override
+  public Petrinet compose(String id, Petrinet petrinet1, Petrinet petrinet2) throws CompilationException {
+
+    return null;
   }
 }
