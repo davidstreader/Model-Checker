@@ -731,6 +731,11 @@ public class Parser {
     }
 
     // ensure that the next token is a '->' token
+
+    if (peekToken() instanceof ColonToken) {
+      index = start;
+      return parseComposite();
+    }
     if (!(nextToken() instanceof SequenceToken)) {
       Token error = tokens.get(index - 1);
       throw constructException("expecting to parse \"->\" but received \"" + error.toString() + "\"", error.getLocation());
