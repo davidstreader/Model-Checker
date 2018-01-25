@@ -11,6 +11,7 @@ import mc.compiler.OperationEvaluator;
 import mc.compiler.Parser;
 import mc.compiler.interpreters.AutomatonInterpreter;
 
+import mc.compiler.interpreters.PetrinetInterpreter;
 import mc.util.Utils;
 import org.reflections.Reflections;
 
@@ -73,6 +74,7 @@ public class PluginManager {
     getInfixFunctions().forEach(AutomatonInterpreter::addInfixFunction);
     getInfixFunctions().forEach(Lexer::registerInfixFunction);
     getInfixFunctions().forEach(Parser::registerInfixFunction);
+    getInfixFunctions().forEach(PetrinetInterpreter::addInfixFunction);
 
     //register the operations functions to the interpreter
     getInfixOperations().forEach(OperationEvaluator::addOperations);

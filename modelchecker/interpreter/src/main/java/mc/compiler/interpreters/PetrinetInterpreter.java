@@ -11,31 +11,25 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.Stack;
+import java.util.logging.Logger;
+
 import mc.Constant;
 import mc.compiler.LocalCompiler;
-import mc.compiler.ast.ASTNode;
-import mc.compiler.ast.ChoiceNode;
-import mc.compiler.ast.HidingNode;
-import mc.compiler.ast.IdentifierNode;
-import mc.compiler.ast.ProcessNode;
-import mc.compiler.ast.ProcessRootNode;
-import mc.compiler.ast.ReferenceNode;
-import mc.compiler.ast.RelabelElementNode;
-import mc.compiler.ast.RelabelNode;
-import mc.compiler.ast.SequenceNode;
-import mc.compiler.ast.TerminalNode;
-import mc.compiler.ast.VariableSetNode;
+import mc.compiler.ast.*;
 import mc.exceptions.CompilationException;
+import mc.plugins.IProcessInfixFunction;
 import mc.processmodels.ProcessModel;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
 import mc.processmodels.petrinet.utils.PetrinetLabeller;
 
+import static mc.util.Utils.instantiateClass;
+
 public class PetrinetInterpreter implements ProcessModelInterpreter {
 
+  static Map<String, Class<? extends IProcessInfixFunction>> infixFunctions = new HashMap<>();
   Context context;
-
   Map<String, Set<PetriNetPlace>> referenceMap = new HashMap<>();
   Map<String, ProcessModel> processMap = new HashMap<>();
   Stack<Petrinet> processStack = new Stack<>();
@@ -135,7 +129,6 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     petrinet.setVariablesLocation(astNode.getLocation());
 
     //Interpret Node
-    //TODO: Interpreting
     interpretASTNode(astNode, petrinet, currentPlace);
     processStack.push(petrinet);
   }
@@ -172,6 +165,10 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     }
     if (currentNode instanceof IdentifierNode) {
       interpretIdentifier((IdentifierNode) currentNode, petri, currentPlace);
+      return;
+    }
+    if (currentNode instanceof CompositeNode) {
+      interpretComposite((CompositeNode) currentNode, petri, currentPlace);
     }
 
   }
@@ -245,6 +242,32 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     addPetrinet(currentPlace, copy, petri);
   }
 
+  private void interpretComposite(CompositeNode composite, Petrinet petri,
+                                  PetriNetPlace currentPlace)
+      throws CompilationException, InterruptedException {
+    interpretProcess(composite.getFirstProcess(), petri.getId() + ".pc1");
+    interpretProcess(composite.getSecondProcess(),petri.getId() + ".pc2");
+
+    ProcessModel model2 = processStack.pop();
+    ProcessModel model1 = processStack.pop();
+
+    if (!(model1 instanceof Petrinet) || !(model2 instanceof Petrinet)) {
+      if(model1 == null || model2 == null) // They were not set to be constructed as anything
+        throw new CompilationException(getClass(), "Expecting a petrinet in composite "
+            + petri.getId(), composite.getLocation());
+      else
+        throw new CompilationException(getClass(), "Expecting an automaton, received: "
+            + model1.getClass().getSimpleName() + "," + model2.getClass().getSimpleName(),
+            composite.getLocation());
+    }
+
+
+    Petrinet comp = instantiateClass(infixFunctions.get(composite.getOperation()))
+        .compose(model1.getId() + composite.getOperation() + model2.getId(), (Petrinet) model1,
+            (Petrinet) model2);
+    addPetrinet(currentPlace,comp,petri);
+  }
+
 
   private void addPetrinet(PetriNetPlace currentPlace, Petrinet petrinetToAdd, Petrinet master)
       throws CompilationException {
@@ -312,5 +335,12 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
   public void reset() {
     referenceMap.clear();
     processStack.clear();
+  }
+
+  public static void addInfixFunction(Class<? extends IProcessInfixFunction> clazz) {
+    String name = instantiateClass(clazz).getNotation();
+    Logger.getLogger(AutomatonInterpreter.class.getSimpleName())
+        .info("LOADED " + name + " FUNCTION PLUGIN");
+    infixFunctions.put(name, clazz);
   }
 }

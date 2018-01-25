@@ -66,6 +66,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
   public void addRoot(PetriNetPlace place) {
     if (places.values().contains(place)) {
       roots.add(place);
+      place.setStart(true);
     }
   }
 
