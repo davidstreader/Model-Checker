@@ -469,11 +469,11 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
   public AutomatonEdge getEdge(String label, AutomatonNode from, AutomatonNode to) {
     for (AutomatonEdge edge : edgeMap.values()) {
-      if (edge.getTo() == to && edge.getFrom() == from && edge.getId() == label) {
+      if (edge.getTo() == to && edge.getFrom() == from && edge.getId().equals(label)) {
         return edge;
       }
     }
-    //edgeMap.forEach((k,v)->System.out.println("Key : " + k + " Value : " + v));
+
     return null;
   }
 
