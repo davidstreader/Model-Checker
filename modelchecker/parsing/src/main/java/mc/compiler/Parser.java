@@ -1345,15 +1345,8 @@ public class Parser {
   }
 
   private String parseOperationType() throws CompilationException {
-    if (peekToken() instanceof BisimulationTypeToken) {
-      nextToken();
-      return "bisimulation";
-    }
-    if (peekToken() instanceof TraceEquivalentTypeToken) {
-      nextToken();
-      return "traceEquivalent";
-    }
-    throw constructException("expecting to parse an operation type but received \"" + peekToken().toString() + "\"");
+    return nextToken().toString();
+    //    throw constructException("expecting to parse an operation type but received \"" + peekToken().toString() + "\"");
   }
 
   private String parseExpression() throws CompilationException, InterruptedException {
