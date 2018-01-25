@@ -17,7 +17,7 @@ import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
 
-public class ParallelFunction {
+public class AutomataParallelFunction {
 
   private Automaton automaton;
   private Multimap<String, AutomatonNode> nodeMap;

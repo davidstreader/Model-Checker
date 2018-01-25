@@ -2,7 +2,7 @@ package mc.operations.functions.infix;
 
 import lombok.Value;
 import mc.exceptions.CompilationException;
-import mc.operations.impl.ParallelFunction;
+import mc.operations.impl.AutomataParallelFunction;
 import mc.plugins.IProcessInfixFunction;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.operations.AutomataReachability;
@@ -46,7 +46,7 @@ public class InfixParallelFunction implements IProcessInfixFunction {
     //use this secondary function in new object, as without mutable state the function
     // becomes **very** hard to properly compose without a wild mess of lambdas.
 
-    return AutomataReachability.removeUnreachableNodes(new ParallelFunction()
+    return AutomataReachability.removeUnreachableNodes(new AutomataParallelFunction()
             .execute(id, automaton1, automaton2));
   }
 
@@ -61,7 +61,6 @@ public class InfixParallelFunction implements IProcessInfixFunction {
    */
   @Override
   public Petrinet compose(String id, Petrinet petrinet1, Petrinet petrinet2) throws CompilationException {
-
     return null;
   }
 }
