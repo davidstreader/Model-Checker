@@ -2,12 +2,9 @@ package mc.processmodels.conversion;
 
 
 import mc.exceptions.CompilationException;
-import mc.processmodels.ProcessModel;
-import mc.processmodels.ProcessModelObject;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.petrinet.Petrinet;
-import mc.processmodels.petrinet.components.PetriNetEdge;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
 
@@ -43,8 +40,6 @@ public class tokenRule {
             }
 
             Set<PetriNetTransition> satisfiedPostTransitions = satisfiedTransitions(currentMarking);
-
-            System.out.println("Current Marking: " + currentMarking + "\n Satisfies: " + satisfiedPostTransitions);
 
             if(satisfiedPostTransitions.size() == 0)
                nodeMap.get(currentMarking).setTerminal("STOP");

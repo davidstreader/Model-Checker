@@ -258,7 +258,7 @@ public class ModelView implements Observer {
       }
 
       GraphNode node = new GraphNode(petri.getId(), place.getId(),
-          nodeTermination, NodeType.PETRINET_PLACE, place.getId());
+          nodeTermination, NodeType.PETRINET_PLACE, "");
       nodeMap.put(place.getId(), node);
       graph.addVertex(node);
     });
@@ -271,7 +271,7 @@ public class ModelView implements Observer {
     });
 
     petri.getEdges().values().forEach(edge -> {
-      DirectedEdge nodeEdge = new DirectedEdge(edge.getId(), UUID.randomUUID().toString());
+      DirectedEdge nodeEdge = new DirectedEdge("", UUID.randomUUID().toString());
       graph.addEdge(nodeEdge, nodeMap.get(edge.getFrom().getId()),
           nodeMap.get(edge.getTo().getId()));
 
