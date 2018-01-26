@@ -39,7 +39,7 @@ public class tokenRule {
             Set<PetriNetPlace> currentMarking = toDo.pop();
 
             Set<PetriNetTransition> satisfiedPostTransitions = satisfiedTransitions(currentMarking);
-            if(satisfiedPostTransitions.size() == 0);
+            if(satisfiedPostTransitions.size() == 0)
                nodeMap.get(currentMarking).setTerminal("STOP");
 
 
