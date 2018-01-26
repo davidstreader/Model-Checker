@@ -8,14 +8,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import mc.compiler.ast.ASTNode;
-import mc.compiler.ast.ChoiceNode;
-import mc.compiler.ast.CompositeNode;
-import mc.compiler.ast.FunctionNode;
-import mc.compiler.ast.IdentifierNode;
-import mc.compiler.ast.IfStatementNode;
-import mc.compiler.ast.OperationNode;
-import mc.compiler.ast.SequenceNode;
+
+import mc.compiler.ast.*;
 import mc.exceptions.CompilationException;
 import mc.plugins.IOperationInfixFunction;
 import mc.processmodels.ProcessModel;
@@ -94,7 +88,9 @@ public class OperationEvaluator {
    * @param ids     the returned collection
    */
   private static void collectIdentifiers(ASTNode process, List<String> ids) {
+    System.out.println(process.getClass().getName());
     if (process instanceof IdentifierNode) {
+
       ids.add(((IdentifierNode) process).getIdentifier());
     }
 
@@ -109,6 +105,10 @@ public class OperationEvaluator {
     if (process instanceof FunctionNode) {
       ((FunctionNode) process).getProcesses().forEach(p -> collectIdentifiers(p, ids));
     }
+    if(process instanceof ProcessRootNode) {
+      collectIdentifiers(((ProcessRootNode)process).getProcess(), ids);
+    }
+
     if (process instanceof IfStatementNode) {
       collectIdentifiers(((IfStatementNode) process).getTrueBranch(), ids);
       if (((IfStatementNode) process).hasFalseBranch()) {
