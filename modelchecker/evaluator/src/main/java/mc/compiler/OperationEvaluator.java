@@ -129,7 +129,7 @@ public class OperationEvaluator {
       lines[0] = lines[0].substring(loc.getColStart() - 1);
       lines[lines.length - 1] = lines[lines.length - 1].substring(0, loc.getColEnd() - 2);
     } else {
-      lines[0] = lines[0].substring(loc.getColStart(), loc.getColEnd());
+      lines[0] = lines[0].substring(loc.getColStart(), loc.getColEnd()+1);
     }
     return String.join("", lines);
   }

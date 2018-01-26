@@ -113,7 +113,7 @@ public class EquationEvaluator {
         createdAutomaton.add((Automaton) interpreter.interpret("automata", operation.getSecondProcess(), getNextEquationId(), idMap, z3Context));
       } catch (InterruptedException e) {
         return failedEquations;
-      } catch (CompilationException e) {
+      } catch (Exception e) {
         interpretFail = true;
       }
 
@@ -134,8 +134,15 @@ public class EquationEvaluator {
         System.out.println("Operation: " + currentOperation + " failed between " + createdAutomaton.toString());
 
 
+
+
         status.failCount++;
         String failOutput = "";
+
+
+        if(interpretFail)
+            failOutput += "Exception ";
+
         for (String key : idMap.keySet()) {
           failOutput += "$" + key + "=" + idMap.get(key).getId() + ", ";
         }
