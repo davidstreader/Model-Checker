@@ -1,5 +1,7 @@
 package mc.compiler.interpreters;
 
+import static mc.util.Utils.instantiateClass;
+
 import com.microsoft.z3.Context;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -11,12 +13,23 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.Stack;
-import java.util.logging.Logger;
-
 import mc.Constant;
 import mc.compiler.LocalCompiler;
-import mc.compiler.ast.*;
+import mc.compiler.ast.ASTNode;
+import mc.compiler.ast.ChoiceNode;
+import mc.compiler.ast.CompositeNode;
+import mc.compiler.ast.HidingNode;
+import mc.compiler.ast.IdentifierNode;
+import mc.compiler.ast.ProcessNode;
+import mc.compiler.ast.ProcessRootNode;
+import mc.compiler.ast.ReferenceNode;
+import mc.compiler.ast.RelabelElementNode;
+import mc.compiler.ast.RelabelNode;
+import mc.compiler.ast.SequenceNode;
+import mc.compiler.ast.TerminalNode;
+import mc.compiler.ast.VariableSetNode;
 import mc.exceptions.CompilationException;
+import mc.plugins.IProcessFunction;
 import mc.plugins.IProcessInfixFunction;
 import mc.processmodels.ProcessModel;
 import mc.processmodels.petrinet.Petrinet;
@@ -24,11 +37,10 @@ import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
 import mc.processmodels.petrinet.utils.PetrinetLabeller;
 
-import static mc.util.Utils.instantiateClass;
-
 public class PetrinetInterpreter implements ProcessModelInterpreter {
 
   static Map<String, Class<? extends IProcessInfixFunction>> infixFunctions = new HashMap<>();
+  static Map<String, Class<? extends IProcessFunction>> functions = new HashMap<>();
   Context context;
   Map<String, Set<PetriNetPlace>> referenceMap = new HashMap<>();
   Map<String, ProcessModel> processMap = new HashMap<>();
@@ -107,10 +119,10 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
       interpretProcess(root.getProcess(), identifier);
       Petrinet petrinet = processStack.pop();
 
-      petrinet = processLabellingAndRelabelling(petrinet,root);
+      petrinet = processLabellingAndRelabelling(petrinet, root);
 
       if (root.hasHiding()) {
-        processHiding(petrinet,root.getHiding());
+        processHiding(petrinet, root.getHiding());
       }
 
       processStack.push(petrinet);
@@ -141,7 +153,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
 
     if (currentNode.hasReferences()) {
       for (String ref : currentNode.getReferences()) {
-        referenceMap.put(ref,new HashSet<>(Collections.singleton(currentPlace)));
+        referenceMap.put(ref, new HashSet<>(Collections.singleton(currentPlace)));
       }
 
       currentPlace.setReferences(currentNode.getReferences());
@@ -227,7 +239,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
       processHiding(model, processRoot.getHiding());
     }
 
-    addPetrinet(currentPlace,model,petri);
+    addPetrinet(currentPlace, model, petri);
   }
 
   private void interpretIdentifier(IdentifierNode identifier, Petrinet petri,
@@ -246,26 +258,21 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
                                   PetriNetPlace currentPlace)
       throws CompilationException, InterruptedException {
     interpretProcess(composite.getFirstProcess(), petri.getId() + ".pc1");
-    interpretProcess(composite.getSecondProcess(),petri.getId() + ".pc2");
+    interpretProcess(composite.getSecondProcess(), petri.getId() + ".pc2");
 
     ProcessModel model2 = processStack.pop();
     ProcessModel model1 = processStack.pop();
 
-    if (!(model1 instanceof Petrinet) || !(model2 instanceof Petrinet)) {
-      if(model1 == null || model2 == null) // They were not set to be constructed as anything
-        throw new CompilationException(getClass(), "Expecting a petrinet in composite "
-            + petri.getId(), composite.getLocation());
-      else
-        throw new CompilationException(getClass(), "Expecting an automaton, received: "
-            + model1.getClass().getSimpleName() + "," + model2.getClass().getSimpleName(),
-            composite.getLocation());
+    if (model1 == null || model2 == null) {
+      throw new CompilationException(getClass(), "Expecting a petrinet in composite "
+          + petri.getId(), composite.getLocation());
     }
 
 
     Petrinet comp = instantiateClass(infixFunctions.get(composite.getOperation()))
         .compose(model1.getId() + composite.getOperation() + model2.getId(), (Petrinet) model1,
             (Petrinet) model2);
-    addPetrinet(currentPlace,comp,petri);
+    addPetrinet(currentPlace, comp, petri);
   }
 
 
@@ -306,7 +313,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     for (RelabelElementNode r : relabelSet.getRelabels()) {
       if (!petri.getAlphabet().keySet().contains(r.getOldLabel())) {
         throw new CompilationException(getClass(), "Cannot find action" + r.getOldLabel()
-            + "to relabel.",relabelSet.getLocation());
+            + "to relabel.", relabelSet.getLocation());
       }
       petri.relabelTransitions(r.getOldLabel(), r.getNewLabel());
     }
@@ -324,7 +331,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
         }
 
       }
-      //exlcudes syntax (@)
+      //excludes syntax (@)
     } else {
       new ArrayList<>(petri.getAlphabet().keySet()).stream()
           .filter(k -> !hiding.getSet().getSet().contains(k))
@@ -335,12 +342,5 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
   public void reset() {
     referenceMap.clear();
     processStack.clear();
-  }
-
-  public static void addInfixFunction(Class<? extends IProcessInfixFunction> clazz) {
-    String name = instantiateClass(clazz).getNotation();
-    Logger.getLogger(AutomatonInterpreter.class.getSimpleName())
-        .info("LOADED " + name + " FUNCTION PLUGIN");
-    infixFunctions.put(name, clazz);
   }
 }

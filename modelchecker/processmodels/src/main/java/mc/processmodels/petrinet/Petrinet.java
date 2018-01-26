@@ -8,9 +8,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import lombok.Data;
 import lombok.SneakyThrows;
@@ -33,7 +36,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
   private Multimap<String, PetriNetTransition> alphabet = ArrayListMultimap.create();
 
   private Map<String, PetriNetEdge> edges = new HashMap<>();
-  private Set<PetriNetPlace> roots = new HashSet<>();
+  private Set<PetriNetPlace> roots = new LinkedHashSet<>();
   private Set<RelabelElementNode> relabels = new HashSet<>();
 
   private HidingNode hiding;
@@ -124,13 +127,24 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
 
 
   public void removePlace(PetriNetPlace place) throws CompilationException {
-    if (!places.values().contains(place)) {
+    if (!places.containsValue(place)) {
       throw new CompilationException(getClass(), "Cannot remove a place that is not part of"
           + "the petrinet");
     }
     for (PetriNetEdge edge : Iterables.concat(place.getIncoming(), place.getOutgoing())) {
       removeEdge(edge);
     }
+    if (place.isStart() || roots.contains(place)) {
+      //TODO: There is alot of weirdness going on with this set
+      //Code:
+      //processes A = (b->STOP||c->STOP).
+      //petrinet A.
+      roots = roots.stream().filter(((Predicate<PetriNetPlace>) place::equals).negate()).collect(Collectors.toSet());
+//      System.out.println(roots.contains(place));
+//      System.out.println(roots.remove(place));
+//      roots.stream().map(place::equals).forEach(System.out::println);
+    }
+
     places.remove(place.getId());
   }
 
@@ -209,6 +223,10 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
         PetriNetPlace newPlace = addPlace();
         products.put(place1, newPlace);
         products.put(place2, newPlace);
+        newPlace.intersectionOf(place1,place2);
+        if (place1.isStart() || place2.isStart()) {
+          newPlace.setStart(true);
+        }
       }
     }
 
@@ -226,6 +244,9 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     for (PetriNetPlace place : Iterables.concat(set1, set2)) {
       removePlace(place);
     }
+
+    products.values().stream().filter(PetriNetPlace::isStart).forEach(this::addRoot);
+    System.out.println(roots);
     return new HashSet<>(products.values());
   }
 

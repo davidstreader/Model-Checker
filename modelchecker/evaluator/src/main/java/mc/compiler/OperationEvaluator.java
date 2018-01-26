@@ -8,7 +8,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 import mc.compiler.ast.ASTNode;
 import mc.compiler.ast.ChoiceNode;
 import mc.compiler.ast.CompositeNode;
@@ -32,7 +31,7 @@ public class OperationEvaluator {
   private int operationId;
 
   private AutomataOperations automataOperations;
-  private static Map<String, Class<? extends IOperationInfixFunction>> operationsMap = new HashMap<>();
+  static Map<String, Class<? extends IOperationInfixFunction>> operationsMap = new HashMap<>();
 
   public OperationEvaluator() {
     this.automataOperations = new AutomataOperations();
@@ -142,12 +141,4 @@ public class OperationEvaluator {
   private void reset() {
     operationId = 0;
   }
-
-
-  public static void addOperations(Class<? extends IOperationInfixFunction> clazz) {
-    String name = instantiateClass(clazz).getNotation();
-    Logger.getLogger(OperationEvaluator.class.getSimpleName()).info("LOADED " + name + " FUNCTION PLUGIN");
-    operationsMap.put(name.toLowerCase(), clazz);
-  }
-
 }

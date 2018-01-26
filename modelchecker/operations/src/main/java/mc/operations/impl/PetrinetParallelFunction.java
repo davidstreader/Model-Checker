@@ -1,11 +1,8 @@
 package mc.operations.impl;
 
-import com.google.common.collect.Iterables;
-
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-
 import mc.Constant;
 import mc.processmodels.petrinet.Petrinet;
 
@@ -17,7 +14,7 @@ public class PetrinetParallelFunction {
   public static Petrinet compose(Petrinet p1, Petrinet p2) {
     clear();
     setupActions(p1, p2);
-    Petrinet composition = new Petrinet(p1.getId() + "||" + p2.getId(),false);
+    Petrinet composition = new Petrinet(p1.getId() + "||" + p2.getId(), false);
     composition.addPetrinet(p1).forEach(composition::addRoot);
     composition.addPetrinet(p2).forEach(composition::addRoot);
     return composition;

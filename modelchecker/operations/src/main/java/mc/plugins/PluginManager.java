@@ -3,12 +3,9 @@ package mc.plugins;
 import com.google.common.collect.ImmutableSet;
 import java.util.Objects;
 import lombok.Getter;
-import mc.compiler.EquationEvaluator;
-import mc.compiler.Lexer;
-import mc.compiler.OperationEvaluator;
-import mc.compiler.Parser;
-import mc.compiler.interpreters.AutomatonInterpreter;
-import mc.compiler.interpreters.PetrinetInterpreter;
+import mc.compiler.EvaluatorFunctionRegister;
+import mc.compiler.ParserFunctionRegister;
+import mc.compiler.interpreters.InterpreterFunctionRegister;
 import mc.util.Utils;
 import org.reflections.Reflections;
 
@@ -63,21 +60,16 @@ public class PluginManager {
    */
   public void registerPlugins() {
     //register the {@code f(x)} style functions to the interpreter
-    getFunctions().forEach(AutomatonInterpreter::addFunction);
-    getFunctions().forEach(Lexer::registerFunction);
-    getFunctions().forEach(Parser::registerFunction);
+    getFunctions().forEach(InterpreterFunctionRegister::registerFunction);
+    getFunctions().forEach(ParserFunctionRegister::registerFunction);
 
     //register the {@code X||Y} style functions to the interpreter
-    getInfixFunctions().forEach(AutomatonInterpreter::addInfixFunction);
-    getInfixFunctions().forEach(Lexer::registerInfixFunction);
-    getInfixFunctions().forEach(Parser::registerInfixFunction);
-    getInfixFunctions().forEach(PetrinetInterpreter::addInfixFunction);
+    getInfixFunctions().forEach(InterpreterFunctionRegister::registerInfixFunction);
+    getInfixFunctions().forEach(ParserFunctionRegister::registerInfixFunction);
 
     //register the operations functions to the interpreter
-    getInfixOperations().forEach(OperationEvaluator::addOperations);
-    //register the operations functions to the equation generator
-    getInfixOperations().forEach(EquationEvaluator::addOperations);
-    getInfixOperations().forEach(Lexer::registerOperation);
+    getInfixOperations().forEach(ParserFunctionRegister::registerOperation);
+    getInfixOperations().forEach(EvaluatorFunctionRegister::registerOperation);
   }
 
   /**

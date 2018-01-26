@@ -16,7 +16,6 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.Stack;
-import java.util.logging.Logger;
 import mc.Constant;
 import mc.compiler.Guard;
 import mc.compiler.LocalCompiler;
@@ -46,8 +45,8 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
 
   private AutomataOperations operations;
 
-  private static Map<String, Class<? extends IProcessFunction>> functions = new HashMap<>();
-  private static Map<String, Class<? extends IProcessInfixFunction>> infixFunctions = new HashMap<>();
+  static Map<String, Class<? extends IProcessFunction>> functions = new HashMap<>();
+  static Map<String, Class<? extends IProcessInfixFunction>> infixFunctions = new HashMap<>();
 
   private Map<String, ProcessModel> processMap;
   private Multimap<String, AutomatonNode> referenceMap;
@@ -333,7 +332,8 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
       }
     }
 
-    //Combining nodes removes the inital currentNode and oldRoot, as we are still using currentNode, copy the properties of the newly created node across
+    //Combining nodes removes the inital currentNode and oldRoot, as we are still using currentNode,
+    //copy the properties of the newly created node across
 
       //TODO:
 
@@ -400,22 +400,6 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
   private void reset() {
     this.referenceMap = MultimapBuilder.hashKeys().hashSetValues().build();
     this.processStack = new Stack<>();
-  }
-
-  /**
-   * Functions for instantiating the plugin manager function
-   */
-  public static void addFunction(Class<? extends IProcessFunction> clazz) {
-
-    String name = instantiateClass(clazz).getFunctionName();
-    Logger.getLogger(AutomatonInterpreter.class.getSimpleName()).info("LOADED " + name + " FUNCTION PLUGIN");
-    functions.put(name, clazz);
-  }
-
-  public static void addInfixFunction(Class<? extends IProcessInfixFunction> clazz) {
-    String name = instantiateClass(clazz).getNotation();
-    Logger.getLogger(AutomatonInterpreter.class.getSimpleName()).info("LOADED " + name + " FUNCTION PLUGIN");
-    infixFunctions.put(name, clazz);
   }
 
 }

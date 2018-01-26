@@ -27,7 +27,7 @@ public class EquationEvaluator {
 
   private int equationId;
 
-  private static Map<String, Class<? extends IOperationInfixFunction>> operationsMap = new HashMap<>();
+  static Map<String, Class<? extends IOperationInfixFunction>> operationsMap = new HashMap<>();
 
   public EquationEvaluator() {
 
@@ -233,10 +233,4 @@ public class EquationEvaluator {
     int doneCount;
     long timeStamp;
   }
-
-  public static void addOperations(Class<? extends IOperationInfixFunction> clazz) {
-    String name = instantiateClass(clazz).getNotation();
-    operationsMap.put(name.toLowerCase(), clazz);
-  }
-
 }
