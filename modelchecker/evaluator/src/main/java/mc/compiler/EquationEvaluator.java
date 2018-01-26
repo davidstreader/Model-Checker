@@ -105,23 +105,22 @@ public class EquationEvaluator {
 
 
     while (true) {
-      boolean interpretFail = false;
+      String exceptionInformation = "";
       ArrayList<Automaton> createdAutomaton = new ArrayList<>();
       try {
 
         createdAutomaton.add((Automaton) interpreter.interpret("automata", operation.getFirstProcess(), getNextEquationId(), idMap, z3Context));
         createdAutomaton.add((Automaton) interpreter.interpret("automata", operation.getSecondProcess(), getNextEquationId(), idMap, z3Context));
-      } catch (InterruptedException e) {
-        return failedEquations;
       } catch (Exception e) {
-        interpretFail = true;
+        e.printStackTrace();
+        exceptionInformation = e.getClass().getSimpleName();
       }
 
 
       //Using the name of the operation, this finds the appropriate function to use in operations/src/main/java/mc/operations/
       String currentOperation = operation.getOperation().toLowerCase();
 
-      boolean result = !interpretFail && instantiateClass(operationsMap.get(currentOperation)).evaluate(createdAutomaton);
+      boolean result = exceptionInformation.length() == 0 && instantiateClass(operationsMap.get(currentOperation)).evaluate(createdAutomaton);
 
       if (operation.isNegated()) {
         result = !result;
@@ -134,14 +133,12 @@ public class EquationEvaluator {
         System.out.println("Operation: " + currentOperation + " failed between " + createdAutomaton.toString());
 
 
-
-
         status.failCount++;
         String failOutput = "";
 
 
-        if(interpretFail)
-            failOutput += "Exception ";
+        if(exceptionInformation.length() > 0)
+            failOutput += exceptionInformation + " ";
 
         for (String key : idMap.keySet()) {
           failOutput += "$" + key + "=" + idMap.get(key).getId() + ", ";

@@ -88,7 +88,6 @@ public class OperationEvaluator {
    * @param ids     the returned collection
    */
   private static void collectIdentifiers(ASTNode process, List<String> ids) {
-    System.out.println(process.getClass().getName());
     if (process instanceof IdentifierNode) {
 
       ids.add(((IdentifierNode) process).getIdentifier());
