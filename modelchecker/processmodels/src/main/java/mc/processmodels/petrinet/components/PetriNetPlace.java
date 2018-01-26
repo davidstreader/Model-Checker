@@ -40,6 +40,7 @@ public class PetriNetPlace extends ProcessModelObject {
       builder.append("\tTermination: ").append(getTerminal());
     }
     builder.append("\tid:").append(getId());
+
     builder.append("\n");
     builder.append("\tincoming:{");
 
