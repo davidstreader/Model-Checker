@@ -57,6 +57,11 @@ public class Interpreter {
       System.out.print("Done!");
 
       processMap.put(process.getIdentifier(), model);
+      if(model instanceof Petrinet) {
+        Automaton createdAutomaton = tokenRule((Petrinet) model);
+        processMap.put(createdAutomaton.getId(), createdAutomaton);
+      }
+
     }
 
 

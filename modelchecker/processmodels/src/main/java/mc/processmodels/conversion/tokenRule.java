@@ -24,6 +24,7 @@ public class tokenRule {
         Automaton outputAutomaton = new Automaton(convertFrom.getId()+" automata", false);
 
         Map<Set<PetriNetPlace>, AutomatonNode> nodeMap = new HashMap<>();
+
         AutomatonNode root = outputAutomaton.addNode();
         root.setStartNode(true);
         outputAutomaton.addRoot(root);
@@ -33,39 +34,44 @@ public class tokenRule {
         Stack<Set<PetriNetPlace>> toDo = new Stack<>();
         toDo.push(convertFrom.getRoots());
 
-        Set<PetriNetTransition> previouslyVisitiedTransitions = new HashSet<>();
-
+        Set<Set<PetriNetPlace>> previouslyVisitiedPlaces = new HashSet<>();
+        int nodesCreated = 1;
         while(!toDo.isEmpty()) {
             Set<PetriNetPlace> currentMarking = toDo.pop();
+            if(previouslyVisitiedPlaces.contains(currentMarking)) {
+                continue;
+            }
 
             Set<PetriNetTransition> satisfiedPostTransitions = satisfiedTransitions(currentMarking);
+
+            System.out.println("Current Marking: " + currentMarking + "\n Satisfies: " + satisfiedPostTransitions);
+
             if(satisfiedPostTransitions.size() == 0)
                nodeMap.get(currentMarking).setTerminal("STOP");
 
 
             for(PetriNetTransition transition : satisfiedPostTransitions) {
-                if(previouslyVisitiedTransitions.contains(transition))
-                    continue;
+
 
                 Set<PetriNetPlace> newMarking = new HashSet<>(currentMarking);
                 newMarking.removeAll(pre(transition)); // Clear out the places in the current marking which are moving token
 
                 newMarking.addAll(transition.getOutgoing().stream()
-                          .map(outEdge -> (PetriNetPlace) outEdge.getTo()).collect(Collectors.toList()));
+                        .map(outEdge -> (PetriNetPlace) outEdge.getTo()).collect(Collectors.toList()));
 
 
-                if(!nodeMap.containsKey(newMarking))
-                        toDo.add(newMarking);
+                if (!nodeMap.containsKey(newMarking)) {
+                    AutomatonNode newNode = outputAutomaton.addNode();
+                    newNode.setLabelNumber(nodesCreated);
+                    nodeMap.put(newMarking, newNode);
+                    toDo.add(newMarking);
+                    nodesCreated++;
+                }
+                outputAutomaton.addEdge(transition.getLabel(), nodeMap.get(currentMarking), nodeMap.get(newMarking), null);
 
-
-
-                AutomatonNode newNode = outputAutomaton.addNode();
-                outputAutomaton.addEdge(transition.getLabel(), nodeMap.get(currentMarking), newNode, null);
-
-                nodeMap.put(newMarking, newNode);
-
-               previouslyVisitiedTransitions.add(transition);
             }
+
+            previouslyVisitiedPlaces.add(currentMarking);
 
         }
 
@@ -74,10 +80,10 @@ public class tokenRule {
         return outputAutomaton;
     }
 
-    static private Set<PetriNetTransition> satisfiedTransitions(Set<PetriNetPlace> currentPlace) {
-        Set<PetriNetTransition> potentialTransitions = post(currentPlace);
+    static private Set<PetriNetTransition> satisfiedTransitions(Set<PetriNetPlace> currentMarking) {
+        Set<PetriNetTransition> potentialTransitions = post(currentMarking);
 
-        return potentialTransitions.stream().filter(transition -> currentPlace.containsAll(pre(transition))).collect(Collectors.toSet());
+        return potentialTransitions.stream().filter(transition -> currentMarking.containsAll(pre(transition))).collect(Collectors.toSet());
     }
 
 
