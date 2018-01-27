@@ -315,7 +315,6 @@ public class UserInterfaceController implements Initializable {
                 if(selectedFile == null) {
 
                     FileChooser chooser = new FileChooser();
-                    chooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("TXT", "*.txt"));
                     chooser.setTitle("Save file");
                     selectedFile = chooser.showSaveDialog(modelDisplay.getScene().getWindow());
                 }
@@ -354,6 +353,7 @@ public class UserInterfaceController implements Initializable {
         } else {
             currentOpenFile = null;
             userCodeInput.clear();
+            modified = false;
         }
 
         UserInterfaceApplication.getPrimaryStage().setTitle("Process Modeller - New File");
@@ -366,7 +366,6 @@ public class UserInterfaceController implements Initializable {
         }
 
         FileChooser openDialog = new FileChooser();
-        openDialog.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("TXT", "*.txt"));
         openDialog.setTitle("Open file");
         File selectedFile = openDialog.showOpenDialog(modelDisplay.getScene().getWindow());
 
@@ -404,7 +403,6 @@ public class UserInterfaceController implements Initializable {
 
         if(selectedFile == null) {
             FileChooser chooser = new FileChooser();
-            chooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("TXT", "*.txt"));
             chooser.setTitle("Save file");
             selectedFile = chooser.showSaveDialog(modelDisplay.getScene().getWindow());
         }
@@ -429,7 +427,6 @@ public class UserInterfaceController implements Initializable {
     @FXML
     private void handleSaveAs(ActionEvent event) {
         FileChooser chooser = new FileChooser();
-        chooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("TXT", "*.txt"));
         chooser.setTitle("Save as");
         File selectedFile = chooser.showSaveDialog(modelDisplay.getScene().getWindow());
 
