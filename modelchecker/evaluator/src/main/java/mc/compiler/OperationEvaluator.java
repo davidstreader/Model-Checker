@@ -8,15 +8,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
-import mc.compiler.ast.ASTNode;
-import mc.compiler.ast.ChoiceNode;
-import mc.compiler.ast.CompositeNode;
-import mc.compiler.ast.FunctionNode;
-import mc.compiler.ast.IdentifierNode;
-import mc.compiler.ast.IfStatementNode;
-import mc.compiler.ast.OperationNode;
-import mc.compiler.ast.SequenceNode;
+
+import mc.compiler.ast.*;
 import mc.exceptions.CompilationException;
 import mc.plugins.IOperationInfixFunction;
 import mc.processmodels.ProcessModel;
@@ -32,7 +25,7 @@ public class OperationEvaluator {
   private int operationId;
 
   private AutomataOperations automataOperations;
-  private static Map<String, Class<? extends IOperationInfixFunction>> operationsMap = new HashMap<>();
+  static Map<String, Class<? extends IOperationInfixFunction>> operationsMap = new HashMap<>();
 
   public OperationEvaluator() {
     this.automataOperations = new AutomataOperations();
@@ -96,6 +89,7 @@ public class OperationEvaluator {
    */
   private static void collectIdentifiers(ASTNode process, List<String> ids) {
     if (process instanceof IdentifierNode) {
+
       ids.add(((IdentifierNode) process).getIdentifier());
     }
 
@@ -110,6 +104,10 @@ public class OperationEvaluator {
     if (process instanceof FunctionNode) {
       ((FunctionNode) process).getProcesses().forEach(p -> collectIdentifiers(p, ids));
     }
+    if(process instanceof ProcessRootNode) {
+      collectIdentifiers(((ProcessRootNode)process).getProcess(), ids);
+    }
+
     if (process instanceof IfStatementNode) {
       collectIdentifiers(((IfStatementNode) process).getTrueBranch(), ids);
       if (((IfStatementNode) process).hasFalseBranch()) {
@@ -130,7 +128,7 @@ public class OperationEvaluator {
       lines[0] = lines[0].substring(loc.getColStart() - 1);
       lines[lines.length - 1] = lines[lines.length - 1].substring(0, loc.getColEnd() - 2);
     } else {
-      lines[0] = lines[0].substring(loc.getColStart(), loc.getColEnd());
+      lines[0] = lines[0].substring(loc.getColStart(), loc.getColEnd()+1);
     }
     return String.join("", lines);
   }
@@ -142,12 +140,4 @@ public class OperationEvaluator {
   private void reset() {
     operationId = 0;
   }
-
-
-  public static void addOperations(Class<? extends IOperationInfixFunction> clazz) {
-    String name = instantiateClass(clazz).getNotation();
-    Logger.getLogger(OperationEvaluator.class.getSimpleName()).info("LOADED " + name + " FUNCTION PLUGIN");
-    operationsMap.put(name.toLowerCase(), clazz);
-  }
-
 }

@@ -27,7 +27,7 @@ public class EquationEvaluator {
 
   private int equationId;
 
-  private static Map<String, Class<? extends IOperationInfixFunction>> operationsMap = new HashMap<>();
+  static Map<String, Class<? extends IOperationInfixFunction>> operationsMap = new HashMap<>();
 
   public EquationEvaluator() {
 
@@ -105,23 +105,22 @@ public class EquationEvaluator {
 
 
     while (true) {
-      boolean interpretFail = false;
+      String exceptionInformation = "";
       ArrayList<Automaton> createdAutomaton = new ArrayList<>();
       try {
 
         createdAutomaton.add((Automaton) interpreter.interpret("automata", operation.getFirstProcess(), getNextEquationId(), idMap, z3Context));
         createdAutomaton.add((Automaton) interpreter.interpret("automata", operation.getSecondProcess(), getNextEquationId(), idMap, z3Context));
-      } catch (InterruptedException e) {
-        return failedEquations;
-      } catch (CompilationException e) {
-        interpretFail = true;
+      } catch (Exception e) {
+        e.printStackTrace();
+        exceptionInformation = e.getClass().getSimpleName();
       }
 
 
       //Using the name of the operation, this finds the appropriate function to use in operations/src/main/java/mc/operations/
       String currentOperation = operation.getOperation().toLowerCase();
 
-      boolean result = !interpretFail && instantiateClass(operationsMap.get(currentOperation)).evaluate(createdAutomaton);
+      boolean result = exceptionInformation.length() == 0 && instantiateClass(operationsMap.get(currentOperation)).evaluate(createdAutomaton);
 
       if (operation.isNegated()) {
         result = !result;
@@ -136,6 +135,11 @@ public class EquationEvaluator {
 
         status.failCount++;
         String failOutput = "";
+
+
+        if(exceptionInformation.length() > 0)
+            failOutput += exceptionInformation + " ";
+
         for (String key : idMap.keySet()) {
           failOutput += "$" + key + "=" + idMap.get(key).getId() + ", ";
         }
@@ -233,10 +237,4 @@ public class EquationEvaluator {
     int doneCount;
     long timeStamp;
   }
-
-  public static void addOperations(Class<? extends IOperationInfixFunction> clazz) {
-    String name = instantiateClass(clazz).getNotation();
-    operationsMap.put(name.toLowerCase(), clazz);
-  }
-
 }

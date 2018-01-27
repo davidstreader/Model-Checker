@@ -29,6 +29,19 @@ public class PetriNetPlace extends ProcessModelObject {
     terminal = toCopy.terminal;
   }
 
+  public void intersectionOf(PetriNetPlace place1, PetriNetPlace place2) {
+    if (place1.isStart() && place2.isStart()) {
+      start = true;
+    }
+    if (place1.isTerminal() && place2.isTerminal()) {
+      terminal = "STOP";
+    }
+
+    if ("ERROR".equalsIgnoreCase(place1.getTerminal()) || "ERROR".equalsIgnoreCase(place2.getTerminal())) {
+      terminal = "ERROR";
+    }
+  }
+
   public String toString() {
     StringBuilder builder = new StringBuilder();
 
@@ -40,6 +53,7 @@ public class PetriNetPlace extends ProcessModelObject {
       builder.append("\tTermination: ").append(getTerminal());
     }
     builder.append("\tid:").append(getId());
+
     builder.append("\n");
     builder.append("\tincoming:{");
 
@@ -57,4 +71,5 @@ public class PetriNetPlace extends ProcessModelObject {
 
     return builder.toString();
   }
+
 }

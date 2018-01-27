@@ -1,7 +1,5 @@
 package mc.compiler;
 
-import static mc.util.Utils.instantiateClass;
-
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import java.util.ArrayList;
@@ -11,18 +9,15 @@ import java.util.List;
 import java.util.Set;
 import mc.compiler.token.*;
 import mc.exceptions.LexerException;
-import mc.plugins.IOperationInfixFunction;
-import mc.plugins.IProcessFunction;
-import mc.plugins.IProcessInfixFunction;
 import mc.util.Location;
 
 public class Lexer {
 
   private static Set<String> castTypes = ImmutableSet.copyOf(Arrays.asList("TokenRule", "A2P"));
   private static Set<String> displayTypes = ImmutableSet.copyOf(Arrays.asList("automata", "petrinet"));
-  private static Set<String> functions = new HashSet<>();    //Using reflection to automatically add function ids (strings) to lexer
-  private static Set<String> infixFunctions = new HashSet<>();
-  private static Set<String> operationFunctions = new HashSet<>();
+  static Set<String> functions = new HashSet<>();    //Using reflection to automatically add function ids (strings) to lexer
+  static Set<String> infixFunctions = new HashSet<>();
+  static Set<String> operationFunctions = new HashSet<>();
 
   // used for constructing locations of tokens
   private int index;
@@ -462,17 +457,5 @@ public class Lexer {
     index = 0;
     line = 1;
     column = 0;
-  }
-
-
-  public static void registerFunction(Class<? extends IProcessFunction> function) {
-    functions.add(instantiateClass(function).getFunctionName().toLowerCase());
-  }
-
-  public static void registerInfixFunction(Class<? extends IProcessInfixFunction> function) {
-    infixFunctions.add(instantiateClass(function).getNotation());
-  }
-  public static void registerOperation(Class<? extends IOperationInfixFunction> function) {
-    operationFunctions.add(instantiateClass(function).getNotation());
   }
 }

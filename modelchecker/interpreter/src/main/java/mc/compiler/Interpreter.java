@@ -12,7 +12,11 @@ import mc.compiler.interpreters.AutomatonInterpreter;
 import mc.compiler.interpreters.PetrinetInterpreter;
 import mc.exceptions.CompilationException;
 import mc.processmodels.ProcessModel;
+import mc.processmodels.automata.Automaton;
+import mc.processmodels.petrinet.Petrinet;
 import mc.util.LogAST;
+
+import static mc.processmodels.conversion.tokenRule.tokenRule;
 
 /**
  * Created by sheriddavi on 24/01/17.
@@ -31,7 +35,7 @@ public class Interpreter {
       System.out.print("\nBuilding " + process.getType() + " " + process.getIdentifier() + "...");
       ProcessModel model;
       switch (process.getType()) {
-        case "processes": // If it is not a automata or petrinet then construct it (Its a non-drawn process)
+        case "processes": // If it is not a automata or petrinet then dont construct it (Its a non-drawn process)
           continue;
 
         case "automata":
@@ -39,9 +43,11 @@ public class Interpreter {
           model.setLocation(process.getLocation());
           break;
 
-        case "petrinet": // Not implemented yet.
+        case "petrinet":
           model = petrinetInterpreter.interpret(process, processMap, localCompiler, context);
           model.setLocation(process.getLocation());
+
+
           break;
 
         default:

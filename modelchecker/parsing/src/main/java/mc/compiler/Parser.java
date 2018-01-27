@@ -32,8 +32,8 @@ import mc.util.expr.ExpressionPrinter;
 public class Parser {
 
   //Plugin
-  private static Map<String, Class<? extends IProcessFunction>> functions = new HashMap<>();
-  private static Map<String, Class<? extends IProcessInfixFunction>> infixFunctions = new HashMap<>();
+  static Map<String, Class<? extends IProcessFunction>> functions = new HashMap<>();
+  static Map<String, Class<? extends IProcessInfixFunction>> infixFunctions = new HashMap<>();
 
 
   private List<Token> tokens;
@@ -67,14 +67,6 @@ public class Parser {
 
   private static CompilationException constructException(String message, Location location) {
     return new CompilationException(Parser.class, message, location);
-  }
-
-  public static void registerFunction(Class<? extends IProcessFunction> clazz) {
-    functions.put(instantiateClass(clazz).getFunctionName().toLowerCase(), clazz);
-  }
-
-  public static void registerInfixFunction(Class<? extends IProcessInfixFunction> clazz) {
-    infixFunctions.put(instantiateClass(clazz).getNotation().toLowerCase(), clazz);
   }
 
   public AbstractSyntaxTree parse(List<Token> tokens, Context context) throws CompilationException, InterruptedException {

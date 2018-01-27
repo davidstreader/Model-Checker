@@ -7,10 +7,15 @@ import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.lang.reflect.Method;
 
 public class UserInterfaceApplication extends Application {
+    @Getter
+    @Setter
+    static private Stage primaryStage;
 
     /**
      * The main entry point for all JavaFX applications.
@@ -21,19 +26,20 @@ public class UserInterfaceApplication extends Application {
      * NOTE: This method is called on the JavaFX Application Thread.
      * </p>
      *
-     * @param primaryStage the primary stage for this application, onto which
+     * @param primaryStage_ the primary stage for this application, onto which
      *                     the application scene can be set. The primary stage will be embedded in
      *                     the browser if the application was launched as an applet.
      *                     Applications may create other stages, if needed, but they will not be
      *                     primary stages and will not be embedded in the browser.
      */
     @Override
-    public void start(Stage primaryStage) throws Exception {
+    public void start(Stage primaryStage_) throws Exception {
+        primaryStage = primaryStage_;
         setMacDockIcon(new Image(getClass().getResourceAsStream("/clientres/icon.jpg")));
-        Font.loadFont(getClass().getResource("/clientres/hasklig.otf").toExternalForm(),10);
+        Font.loadFont(getClass().getResource("/clientres/hasklig.otf").toExternalForm(), 10);
         Parent root = FXMLLoader.load(getClass().getResource("/clientres/UserInterface.fxml"));
 
-        primaryStage.setTitle("Automata Modeller");
+        primaryStage.setTitle("Process Modeller");
         Scene windowScene = new Scene(root, 1000, 700);
         primaryStage.setScene(windowScene);
         primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/clientres/icon.jpg")));
