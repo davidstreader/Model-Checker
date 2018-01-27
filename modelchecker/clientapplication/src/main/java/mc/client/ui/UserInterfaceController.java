@@ -12,6 +12,7 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.GridPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
@@ -53,7 +54,12 @@ public class UserInterfaceController implements Initializable {
     private SwingNode modelDisplay;
     @FXML
     private ComboBox<String> modelsList;
-
+    @FXML
+    private MenuItem newMenuItem;
+    @FXML
+    private MenuItem openMenuItem;
+    @FXML
+    private MenuItem saveMenuItem;
     @FXML
     private Menu openRecentTab;
 
@@ -81,6 +87,10 @@ public class UserInterfaceController implements Initializable {
         //register a callback for the output of the log
         ModelView.getInstance().setUpdateLog(this::updateLogText);
 
+
+        newMenuItem.setAccelerator(KeyCombination.keyCombination("Ctrl+N"));
+        saveMenuItem.setAccelerator(KeyCombination.keyCombination("Ctrl+S"));
+        openMenuItem.setAccelerator(KeyCombination.keyCombination("Ctrl+O"));
 
 
         //add all the syntax to the completion dictionary
