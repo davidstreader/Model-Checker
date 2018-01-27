@@ -2,7 +2,14 @@ package mc.operations;
 
 import static mc.processmodels.automata.util.ColouringUtil.ColourComponent;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import mc.exceptions.CompilationException;
 import mc.plugins.IOperationInfixFunction;
@@ -10,7 +17,7 @@ import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.automata.util.ColouringUtil;
 
-public class BisimulationOperation implements IOperationInfixFunction {
+public class FO implements IOperationInfixFunction {
 
 
   /**
@@ -20,7 +27,7 @@ public class BisimulationOperation implements IOperationInfixFunction {
    */
   @Override
   public String getFunctionName() {
-    return "BiSimulation";
+    return "FOtest";
   }
 
   /**
@@ -30,7 +37,7 @@ public class BisimulationOperation implements IOperationInfixFunction {
    */
   @Override
   public String getNotation() {
-    return "~";
+    return "++";
   }
 
   /**

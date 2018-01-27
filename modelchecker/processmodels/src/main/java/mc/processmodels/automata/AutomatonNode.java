@@ -15,10 +15,10 @@ import mc.processmodels.ProcessModelObject;
  * Created by sheriddavi on 24/01/17.
  */
 
-public class AutomatonNode extends ProcessModelObject {
+public class AutomatonNode extends ProcessModelObject implements Comparable<AutomatonNode>
+{
 
   // fields
-
   private Map<String, AutomatonEdge> incomingEdges;
   private Map<String, AutomatonEdge> outgoingEdges;
 
@@ -60,6 +60,7 @@ public class AutomatonNode extends ProcessModelObject {
     this.label = null;
     incomingEdges = new HashMap<>();
     outgoingEdges = new HashMap<>();
+    this.colour = 999;
   }
 
 
@@ -157,7 +158,9 @@ public class AutomatonNode extends ProcessModelObject {
   public List<AutomatonEdge> getOutgoingEdges() {
     return new ArrayList<>(outgoingEdges.values());
   }
-
+/*
+   ALAS nodes and edges do not have unique keys!
+ */
   public boolean addOutgoingEdge(AutomatonEdge edge) {
     if (!outgoingEdges.containsKey(edge.getId())) {
       outgoingEdges.put(edge.getId(), edge);
@@ -175,7 +178,9 @@ public class AutomatonNode extends ProcessModelObject {
 
     return false;
   }
-
+  public String myString() {
+   return "nd "+ this.getId()+" col "+ this.colour;
+  }
   public String toString() {
    StringBuilder builder = new StringBuilder();
    List<AutomatonEdge> incoming = getIncomingEdges();
@@ -210,4 +215,16 @@ public class AutomatonNode extends ProcessModelObject {
 
    return builder.toString();
  }
+
+  public int compareTo(AutomatonNode nd) {
+//System.out.println(this.getId()+" "+nd.getId()+" ** "+
+//                    this.getLabel()+" "+nd.getLabel());
+    int xout = this.getId().compareTo(nd.getId());
+    if (xout == 0  && this.getLabel()  != null && nd.getLabel() != null) {
+      xout = this.getLabel().compareTo(nd.getLabel());
+    }
+//    System.out.println(" xout = "+xout);
+    return xout;
+
+  }
 }

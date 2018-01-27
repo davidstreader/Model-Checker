@@ -11,7 +11,7 @@ import mc.processmodels.ProcessModelObject;
 import mc.processmodels.automata.serializers.JSONEdgeSerializer;
 
 @JsonSerialize(using = JSONEdgeSerializer.class)
-@ToString
+//@ToString
 public class AutomatonEdge extends ProcessModelObject {
 
   @Getter
@@ -44,6 +44,10 @@ public class AutomatonEdge extends ProcessModelObject {
 
   public boolean isDeadlocked() {
     return label.equals(Constant.DEADLOCK);
+  }
+
+  public String myString(){
+    return getId()+" "+from.getId()+"-"+label+"->"+to.getId();
   }
 
   public String toString() {
