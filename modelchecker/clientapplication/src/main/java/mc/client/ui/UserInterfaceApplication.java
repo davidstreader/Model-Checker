@@ -60,12 +60,13 @@ public class UserInterfaceApplication extends Application {
         ArrayList<String> filePaths = controller.getRecentFilePaths();
 
         try {
-
-            BufferedWriter writer = new BufferedWriter(new FileWriter("settings.conf"));
+            System.out.print("\nwriting settings file...");
+            BufferedWriter writer = new BufferedWriter(new FileWriter("recentfiles.conf"));
             for(String filePath : filePaths)
                 writer.write(filePath+"\n");
 
             writer.close();
+            System.out.print("Done\n");
 
         } catch(IOException e)  {
             e.printStackTrace();
