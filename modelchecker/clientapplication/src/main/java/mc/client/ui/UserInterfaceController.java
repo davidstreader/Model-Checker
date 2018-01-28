@@ -7,16 +7,11 @@ import javafx.embed.swing.SwingNode;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.geometry.Insets;
-import javafx.scene.Node;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCombination;
-import javafx.scene.layout.GridPane;
+
 import javafx.stage.FileChooser;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
 import mc.client.ModelView;
 import mc.compiler.Compiler;
 import mc.compiler.OperationResult;
@@ -79,6 +74,8 @@ public class UserInterfaceController implements Initializable {
      */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+
+
         // Have to initalise it or there is a delay between the graph becoming ready and actually displaying things
         SwingUtilities.invokeLater(() -> modelDisplay.setContent(ModelView.getInstance().updateGraph(modelDisplay)));
 
@@ -87,7 +84,7 @@ public class UserInterfaceController implements Initializable {
         //register a callback for the output of the log
         ModelView.getInstance().setUpdateLog(this::updateLogText);
 
-
+        //Add the key combinations
         newMenuItem.setAccelerator(KeyCombination.keyCombination("Ctrl+N"));
         saveMenuItem.setAccelerator(KeyCombination.keyCombination("Ctrl+S"));
         openMenuItem.setAccelerator(KeyCombination.keyCombination("Ctrl+O"));
@@ -306,105 +303,130 @@ public class UserInterfaceController implements Initializable {
         return prefix;
     }
 
-    private void saveUserChanges() {
-        Alert save = new Alert(Alert.AlertType.NONE);
+    private boolean saveUserChanges() {
+        if(modified) {
 
-        save.setTitle("Current file is modified");
-        save.setContentText("Would you like to save changes?");
+            Alert save = new Alert(Alert.AlertType.NONE);
 
-        ButtonType confirmSave = new ButtonType("Save", ButtonBar.ButtonData.YES);
-        ButtonType dismissSave = new ButtonType("Dont save", ButtonBar.ButtonData.NO);
-        ButtonType cancelOperation = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
-        save.getButtonTypes().setAll(confirmSave, dismissSave, cancelOperation);
+            save.setTitle("Current file is modified");
+            save.setContentText("Would you like to save changes?");
 
-        save.showAndWait().ifPresent(type -> {
+            ButtonType confirmSave = new ButtonType("Save", ButtonBar.ButtonData.YES);
+            ButtonType dismissSave = new ButtonType("Dont save", ButtonBar.ButtonData.NO);
+            ButtonType cancelOperation = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+            save.getButtonTypes().setAll(confirmSave, dismissSave, cancelOperation);
 
-            if(type == confirmSave) {
+            save.showAndWait();
+
+            ButtonType result = save.getResult();
+            if (result == confirmSave) {
                 File selectedFile = currentOpenFile;
 
-                if(selectedFile == null) {
+                if (selectedFile == null) {
 
                     FileChooser chooser = new FileChooser();
                     chooser.setTitle("Save file");
                     selectedFile = chooser.showSaveDialog(modelDisplay.getScene().getWindow());
                 }
 
-                if(selectedFile != null) { // Can still be null if they dont select anything in the saveDialog
+                if (selectedFile != null) { // Can still be null if they dont select anything in the saveDialog
                     try {
                         PrintStream writeTo = new PrintStream(selectedFile, "UTF-8");
                         writeTo.println(userCodeInput.getText());
                         writeTo.close();
 
-                        currentOpenFile = null;
-                        userCodeInput.clear();
-                        UserInterfaceApplication.getPrimaryStage().setTitle("Process Modeller - New File");
-
-                    }  catch (IOException message) {
+                    } catch (IOException message) {
                         Alert saveFailed = new Alert(Alert.AlertType.ERROR);
                         saveFailed.setTitle("Error encountered when saving file");
                         saveFailed.setContentText("Error: " + message.getMessage());
 
-                        saveFailed.getButtonTypes().setAll(new ButtonType("Okay",ButtonBar.ButtonData.CANCEL_CLOSE));
+                        saveFailed.getButtonTypes().setAll(new ButtonType("Okay", ButtonBar.ButtonData.CANCEL_CLOSE));
                     }
                 }
 
-            } else if(type == dismissSave) {
-                currentOpenFile = null;
-                userCodeInput.clear();
-                UserInterfaceApplication.getPrimaryStage().setTitle("Process Modeller - New File");
+            } else if (result != dismissSave) {
+                return false;
             }
-        });
+        }
+
+        return true;
     }
+
+
 
     @FXML
     private void handleCreateNew(ActionEvent event) {
-        if(modified) {
-            saveUserChanges();
-        } else {
+        if(saveUserChanges()) {
             currentOpenFile = null;
             userCodeInput.clear();
             modified = false;
+            UserInterfaceApplication.getPrimaryStage().setTitle("Process Modeller - New File");
         }
+    }
 
-        UserInterfaceApplication.getPrimaryStage().setTitle("Process Modeller - New File");
+    private void openFile(File fileToOpen) {
+
+        if( saveUserChanges() ) {
+
+            if (fileToOpen == null) {
+                FileChooser openDialog = new FileChooser();
+                openDialog.setTitle("Open file");
+                File selectedFile = openDialog.showOpenDialog(modelDisplay.getScene().getWindow());
+
+                if (selectedFile != null) {
+                    try {
+                        String data = Files.toString(selectedFile, Charsets.UTF_8);
+                        userCodeInput.replaceText(data);
+                        currentOpenFile = selectedFile;
+                        UserInterfaceApplication.getPrimaryStage().setTitle("Process Modeller - " + currentOpenFile.getName());
+                        modified = false;
+                    } catch (IOException e) {
+                        Alert saveFailed = new Alert(Alert.AlertType.ERROR);
+                        saveFailed.setTitle("Error encountered when reading file");
+                        saveFailed.setContentText("Error: " + e.getMessage());
+
+                        saveFailed.getButtonTypes().setAll(new ButtonType("Okay", ButtonBar.ButtonData.CANCEL_CLOSE));
+                        saveFailed.show();
+                    }
+                }
+
+            } else {
+                try {
+                    String data = Files.toString(fileToOpen, Charsets.UTF_8);
+                    userCodeInput.replaceText(data);
+                    currentOpenFile = fileToOpen;
+                    UserInterfaceApplication.getPrimaryStage().setTitle("Process Modeller - " + currentOpenFile.getName());
+                    modified = false;
+                } catch (Exception e) {
+                    Alert saveFailed = new Alert(Alert.AlertType.ERROR);
+
+                    saveFailed.setTitle("Error encountered when reading file");
+                    saveFailed.setContentText("Error: " + e.getMessage());
+
+                    saveFailed.getButtonTypes().setAll(new ButtonType("Okay", ButtonBar.ButtonData.CANCEL_CLOSE));
+                    saveFailed.show();
+                }
+
+            }
+
+
+        }
     }
 
     @FXML
     private void handleOpen(ActionEvent event) {
-        if(modified) {
-            saveUserChanges();
-        }
-
-        FileChooser openDialog = new FileChooser();
-        openDialog.setTitle("Open file");
-        File selectedFile = openDialog.showOpenDialog(modelDisplay.getScene().getWindow());
-
-        if(selectedFile != null) {
-            try {
-                String data = Files.toString(selectedFile, Charsets.UTF_8);
-                userCodeInput.replaceText(data);
-                currentOpenFile = selectedFile;
-                UserInterfaceApplication.getPrimaryStage().setTitle("Process Modeller - " + currentOpenFile.getName());
-                modified = false;
-            } catch(IOException e ) {
-                Alert saveFailed = new Alert(Alert.AlertType.ERROR);
-                saveFailed.setTitle("Error encountered when reading file");
-                saveFailed.setContentText("Error: " + e.getMessage());
-
-                saveFailed.getButtonTypes().setAll(new ButtonType("Okay",ButtonBar.ButtonData.CANCEL_CLOSE));
-            }
-        }
-
-
+        openFile(null);
     }
 
     @FXML
     private void handleFileClose(ActionEvent event) {
-        if(modified) {
-            saveUserChanges();
-        }
+        if(saveUserChanges()) {
+            userCodeInput.clear();
+            currentOpenFile = null;
+            modified = false;
 
-        UserInterfaceApplication.getPrimaryStage().setTitle("Process Modeller - New File");
+            UserInterfaceApplication.getPrimaryStage().setTitle("Process Modeller - New File");
+        }
     }
 
     @FXML
@@ -424,15 +446,17 @@ public class UserInterfaceController implements Initializable {
                 modified = false;
                 currentOpenFile = selectedFile;
                 UserInterfaceApplication.getPrimaryStage().setTitle("Process Modeller - " + currentOpenFile.getName());
-            } catch(IOException e ) {
+            } catch (IOException e) {
                 Alert saveFailed = new Alert(Alert.AlertType.ERROR);
                 saveFailed.setTitle("Error encountered when saving file");
                 saveFailed.setContentText("Error: " + e.getMessage());
 
-                saveFailed.getButtonTypes().setAll(new ButtonType("Okay",ButtonBar.ButtonData.CANCEL_CLOSE));
+                saveFailed.getButtonTypes().setAll(new ButtonType("Okay", ButtonBar.ButtonData.CANCEL_CLOSE));
             }
         }
     }
+
+
 
     @FXML
     private void handleSaveAs(ActionEvent event) {
@@ -461,18 +485,10 @@ public class UserInterfaceController implements Initializable {
 
     @FXML
     private void handleQuit(ActionEvent event) {
-        if(modified) {
-            saveUserChanges();
+        if(saveUserChanges()) {
+            System.exit(0);
         }
-
-        System.exit(0);
     }
-
-    @FXML
-    private void handleOpenRecentAction(ActionEvent event) {
-
-    }
-
 
 
     @FXML

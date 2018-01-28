@@ -39,7 +39,7 @@ public class UserInterfaceApplication extends Application {
         Font.loadFont(getClass().getResource("/clientres/hasklig.otf").toExternalForm(), 10);
         Parent root = FXMLLoader.load(getClass().getResource("/clientres/UserInterface.fxml"));
 
-        primaryStage.setTitle("Process Modeller");
+        primaryStage.setTitle("Process Modeller - New File");
         Scene windowScene = new Scene(root, 1000, 700);
         primaryStage.setScene(windowScene);
         primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/clientres/icon.jpg")));
@@ -51,7 +51,7 @@ public class UserInterfaceApplication extends Application {
         launch(args);
     }
 
-    public void setMacDockIcon(Image img) {
+    private void setMacDockIcon(Image img) {
         try {
             Class<?> applicationClass = Class.forName("com.apple.eawt.Application");
 
