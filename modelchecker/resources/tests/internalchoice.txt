@@ -47,4 +47,15 @@ processes {
              b->STOP ).
 }
 automata A5, Test5.
-operation A5 ~ Test5.
+operation A5 !~ Test5.
+
+processes {
+    A6 = a->STOP+a->STOP.
+    Test6 = (a->STOP |
+             a->STOP ).
+}
+automata A6, Test6.
+operation A6 ~ Test6.
+
+
+

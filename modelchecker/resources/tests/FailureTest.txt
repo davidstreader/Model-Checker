@@ -1,0 +1,38 @@
+processes {
+A = a->b->STOP|a->c->STOP|a->(b->STOP|c->STOP).
+B = a->b->STOP|a->c->STOP.
+C = a->(b->STOP|c->STOP).
+
+Al = a->b->Al|a->c->Al|a->(b->Al|c->Al).
+Bl = a->b->Bl|a->c->Bl.
+
+Aa = a->s->b->STOP|a->s->c->STOP|a->s->(b->STOP|c->STOP).
+Ba = s->a->b->STOP|a->c->STOP.
+
+Bs = a->s->b->STOP|a->c->STOP.
+
+
+L= a->a->X|a->b->STOP|a->(a->Y|b->STOP), 
+    Y= a->Y,
+    X=a->X.
+Ll = a->a->a->a->X|a->b->STOP,
+    X=a->X.
+}
+automata A,B,C,Al,Bl,Aa,Ba,Bs,L,Ll.
+
+operation {
+A!~B.
+
+A*B.
+
+A!*C.
+Al!~Bl.
+Al*Bl.
+
+Aa!*Ba.
+Aa!~Bs.
+Aa*Bs.
+
+L!~Ll.
+L*Ll.
+}

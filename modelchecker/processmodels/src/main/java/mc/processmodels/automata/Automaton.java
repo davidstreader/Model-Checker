@@ -148,7 +148,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
     return addNode(id);
   }
-
+//  As  public  two nodes with the same id can be added
   public AutomatonNode addNode(String id) {
     AutomatonNode node = new AutomatonNode(id);
     nodeMap.put(id, node);
@@ -566,11 +566,13 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
   }
 
   public String toString() {
+    String tempto = "";
+    String tempfrom = "";
     StringBuilder builder = new StringBuilder();
-    builder.append("automaton:{\n");
+    builder.append("automaton:" + this.getId()+"{\n");
     builder.append("\tnodes:{\n");
     for (AutomatonNode node : nodeMap.values()) {
-      builder.append("\t\t").append(node.getId());
+      builder.append("\t\t").append(node.getId()).append(" c= "+ node.getColour()+" ");
       if (node == root) {
         builder.append("(root)");
       }
@@ -587,7 +589,13 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     }
     builder.append("\t}\n\tedges:{\n");
     for (AutomatonEdge edge : edgeMap.values()) {
-      builder.append("\t\t").append(edge.getFrom().getId()).append(" -").append(edge.getLabel()).append("> ").append(edge.getTo().getId()).append("\n");
+      if(!nodeMap.containsValue(edge.getTo())) {tempto="NOT TO ";}else{tempto="";}
+      if(!nodeMap.containsValue(edge.getFrom())) {tempfrom="NOT From ";}else{tempfrom="";}
+      builder.append("\t\t").append(tempfrom+edge.getFrom().getId()+" "+edge.getFrom().getColour()).
+           append(" -").append(edge.getLabel()).append("> ").
+           append(tempto+edge.getTo().getId()+" col "+edge.getTo().getColour()).
+           append("\n");
+
     }
     builder.append("\t}\n}");
 
@@ -596,6 +604,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
   public Automaton copy() throws CompilationException {
     Automaton copy = new Automaton(getId(), !CONSTRUCT_ROOT);
+
     copy.nodeId = nodeId;
     copy.edgeId = edgeId;
     List<AutomatonNode> nodes = getNodes();
@@ -611,8 +620,18 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     List<AutomatonEdge> edges = getEdges();
     for (AutomatonEdge edge : edges) {
       AutomatonNode from = copy.getNode(edge.getFrom().getId());
-      AutomatonNode to = copy.getNode(edge.getTo().getId());
-      copy.addEdge(edge.getId(), edge.getLabel(), from, to, edge.getGuard());
+      AutomatonNode to =   copy.getNode(edge.getTo().getId());
+      /*
+      if (!nodeMap.containsKey(from.getId())) {
+        System.out.println("from failure " + from.myString());
+      }else{if (nodeMap.get(from.getId()) != from) {System.out.println("FromFail");}
+      }
+      if (!nodeMap.containsKey(to.getId())) { System.out.println("to failure "+to.myString());
+      }else{if (nodeMap.get(to.getId()) != to) {System.out.println("ToFail");}
+      }
+      */
+          copy.addEdge(edge.getId(), edge.getLabel(), from, to, edge.getGuard());
+
     }
 
     copy.copyProperties(this);

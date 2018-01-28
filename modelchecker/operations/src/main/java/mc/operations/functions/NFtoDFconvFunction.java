@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Collectors;
+
+import mc.BuildAcceptanceGraphs;
 import mc.Constant;
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessFunction;
@@ -64,10 +66,9 @@ public class NFtoDFconvFunction implements IProcessFunction {
   @Override
   public Automaton compose(String id, Set<String> flags, Context context, Automaton... automata)
       throws CompilationException {
-    System.out.println("Pingo1");
-    BuildAcceptanceGraphs ba = new BuildAcceptanceGraphs();
-    ba.compose(id,flags,context,automata);
-    System.out.println("Pingo2");
+    //BuildAcceptanceGraphs ba = new BuildAcceptanceGraphs();
+    //ba.compose(id,flags,context,automata);
+    //System.out.println("Pingo2");
     assert automata.length == 1;
     Automaton nfa = automata[0].copy();
     Automaton dfa = new Automaton(id, !Automaton.CONSTRUCT_ROOT);
@@ -129,6 +130,7 @@ public class NFtoDFconvFunction implements IProcessFunction {
     dfa.getNodes().stream()
         .filter(node -> node.getOutgoingEdges().isEmpty())
         .forEach(node -> node.setTerminal("STOP"));
+    System.out.println("built dfa " +dfa.toString());
     return dfa;
   }
 
