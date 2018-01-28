@@ -12,6 +12,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCombination;
 
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
 import mc.client.ModelView;
 import mc.compiler.Compiler;
 import mc.compiler.OperationResult;
@@ -315,6 +316,8 @@ public class UserInterfaceController implements Initializable {
             ButtonType dismissSave = new ButtonType("Dont save", ButtonBar.ButtonData.NO);
             ButtonType cancelOperation = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
             save.getButtonTypes().setAll(confirmSave, dismissSave, cancelOperation);
+            save.initModality(Modality.APPLICATION_MODAL); /* *** */
+            save.initOwner(modelDisplay.getScene().getWindow());
 
             save.showAndWait();
 
@@ -364,58 +367,43 @@ public class UserInterfaceController implements Initializable {
         }
     }
 
-    private void openFile(File fileToOpen) {
+    private void openFile() {
 
-        if( saveUserChanges() ) {
-
-            if (fileToOpen == null) {
+        if (saveUserChanges()) {
+            try {
                 FileChooser openDialog = new FileChooser();
                 openDialog.setTitle("Open file");
                 File selectedFile = openDialog.showOpenDialog(modelDisplay.getScene().getWindow());
-
+                String data;
                 if (selectedFile != null) {
-                    try {
-                        String data = Files.toString(selectedFile, Charsets.UTF_8);
-                        userCodeInput.replaceText(data);
-                        currentOpenFile = selectedFile;
-                        UserInterfaceApplication.getPrimaryStage().setTitle("Process Modeller - " + currentOpenFile.getName());
-                        modified = false;
-                    } catch (IOException e) {
-                        Alert saveFailed = new Alert(Alert.AlertType.ERROR);
-                        saveFailed.setTitle("Error encountered when reading file");
-                        saveFailed.setContentText("Error: " + e.getMessage());
+                    data = Files.toString(selectedFile, Charsets.UTF_8);
 
-                        saveFailed.getButtonTypes().setAll(new ButtonType("Okay", ButtonBar.ButtonData.CANCEL_CLOSE));
-                        saveFailed.show();
-                    }
-                }
-
-            } else {
-                try {
-                    String data = Files.toString(fileToOpen, Charsets.UTF_8);
                     userCodeInput.replaceText(data);
-                    currentOpenFile = fileToOpen;
+                    currentOpenFile = selectedFile;
                     UserInterfaceApplication.getPrimaryStage().setTitle("Process Modeller - " + currentOpenFile.getName());
                     modified = false;
-                } catch (Exception e) {
-                    Alert saveFailed = new Alert(Alert.AlertType.ERROR);
-
-                    saveFailed.setTitle("Error encountered when reading file");
-                    saveFailed.setContentText("Error: " + e.getMessage());
-
-                    saveFailed.getButtonTypes().setAll(new ButtonType("Okay", ButtonBar.ButtonData.CANCEL_CLOSE));
-                    saveFailed.show();
                 }
 
+            } catch (IOException e) {
+                Alert saveFailed = new Alert(Alert.AlertType.ERROR);
+                saveFailed.setTitle("Error encountered when reading file");
+                saveFailed.setContentText("Error: " + e.getMessage());
+                e.printStackTrace();
+
+                saveFailed.getButtonTypes().setAll(new ButtonType("Okay", ButtonBar.ButtonData.CANCEL_CLOSE));
+                saveFailed.initModality(Modality.APPLICATION_MODAL);
+                saveFailed.initOwner(modelDisplay.getScene().getWindow());
+                saveFailed.show();
             }
-
-
         }
     }
 
+
+
+
     @FXML
     private void handleOpen(ActionEvent event) {
-        openFile(null);
+        openFile();
     }
 
     @FXML
