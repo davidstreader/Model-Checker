@@ -13,6 +13,7 @@ import javafx.scene.input.KeyCombination;
 
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
+import lombok.Getter;
 import mc.client.ModelView;
 import mc.compiler.Compiler;
 import mc.compiler.OperationResult;
@@ -24,9 +25,7 @@ import org.fxmisc.richtext.LineNumberFactory;
 import org.fxmisc.richtext.model.StyleSpans;
 
 import javax.swing.*;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
+import java.io.*;
 import java.net.URL;
 import java.time.Duration;
 import java.util.*;
@@ -64,6 +63,11 @@ public class UserInterfaceController implements Initializable {
     private File currentOpenFile = null;
     private boolean modified = false;
 
+    @Getter
+    private ArrayList<String> recentFilePaths = new ArrayList<>();
+    private Integer maxNodes = 40;
+    private Float maxEdgeLength = 120.0f;
+
 
     /**
      * Called to initialize a controller after its root element has been
@@ -76,6 +80,19 @@ public class UserInterfaceController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 
+        try {
+            //Load settings
+            BufferedReader bufferedReader = new BufferedReader(new FileReader(new File("recentfiles.conf")));
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                if(!line.isEmpty())
+                addRecentFile(line);
+            }
+            bufferedReader.close();
+
+        } catch(IOException e) {
+            System.out.println("Error reading the settings file.");
+        }
 
         // Have to initalise it or there is a delay between the graph becoming ready and actually displaying things
         SwingUtilities.invokeLater(() -> modelDisplay.setContent(ModelView.getInstance().updateGraph(modelDisplay)));
@@ -89,6 +106,9 @@ public class UserInterfaceController implements Initializable {
         newMenuItem.setAccelerator(KeyCombination.keyCombination("Ctrl+N"));
         saveMenuItem.setAccelerator(KeyCombination.keyCombination("Ctrl+S"));
         openMenuItem.setAccelerator(KeyCombination.keyCombination("Ctrl+O"));
+
+        //So the controller can save the settings we perhaps generate, we need to give it a reference to here
+        UserInterfaceApplication.setController(this);
 
 
         //add all the syntax to the completion dictionary
@@ -120,7 +140,6 @@ public class UserInterfaceController implements Initializable {
             }
 
         });
-
 
         autocompleteBox.getContent().add(popupSelection);
         autocompleteBox.setAutoHide(true);
@@ -367,21 +386,28 @@ public class UserInterfaceController implements Initializable {
         }
     }
 
-    private void openFile() {
+    private void openFile(String filePath) {
 
         if (saveUserChanges()) {
             try {
-                FileChooser openDialog = new FileChooser();
-                openDialog.setTitle("Open file");
-                File selectedFile = openDialog.showOpenDialog(modelDisplay.getScene().getWindow());
-                String data;
+                File selectedFile;
+
+                if(filePath != null) {
+                    selectedFile = new File(filePath);
+                } else {
+                    FileChooser openDialog = new FileChooser();
+                    openDialog.setTitle("Open file");
+                    selectedFile = openDialog.showOpenDialog(modelDisplay.getScene().getWindow());
+                }
+
                 if (selectedFile != null) {
-                    data = Files.toString(selectedFile, Charsets.UTF_8);
+                    String data = Files.toString(selectedFile, Charsets.UTF_8);
 
                     userCodeInput.replaceText(data);
                     currentOpenFile = selectedFile;
                     UserInterfaceApplication.getPrimaryStage().setTitle("Process Modeller - " + currentOpenFile.getName());
                     modified = false;
+                    addRecentFile(selectedFile.getAbsolutePath());
                 }
 
             } catch (IOException e) {
@@ -403,7 +429,7 @@ public class UserInterfaceController implements Initializable {
 
     @FXML
     private void handleOpen(ActionEvent event) {
-        openFile();
+        openFile(null);
     }
 
     @FXML
@@ -434,6 +460,7 @@ public class UserInterfaceController implements Initializable {
                 modified = false;
                 currentOpenFile = selectedFile;
                 UserInterfaceApplication.getPrimaryStage().setTitle("Process Modeller - " + currentOpenFile.getName());
+                addRecentFile(selectedFile.getAbsolutePath());
             } catch (IOException e) {
                 Alert saveFailed = new Alert(Alert.AlertType.ERROR);
                 saveFailed.setTitle("Error encountered when saving file");
@@ -459,6 +486,8 @@ public class UserInterfaceController implements Initializable {
                 currentOpenFile = selectedFile;
                 UserInterfaceApplication.getPrimaryStage().setTitle("Process Modeller - " + currentOpenFile.getName());
                 modified = false;
+                addRecentFile(selectedFile.getAbsolutePath());
+
             } catch (IOException e) {
                 Alert saveFailed = new Alert(Alert.AlertType.ERROR);
                 saveFailed.setTitle("Error encountered when saving file");
@@ -474,7 +503,7 @@ public class UserInterfaceController implements Initializable {
     @FXML
     private void handleQuit(ActionEvent event) {
         if(saveUserChanges()) {
-            System.exit(0);
+           UserInterfaceApplication.getPrimaryStage().hide();
         }
     }
 
@@ -611,6 +640,26 @@ public class UserInterfaceController implements Initializable {
                 compilerOutputDisplay.appendText("\tSimulations passed: " + result.getExtra() + "\n");
 
             }
+        }
+
+    }
+
+    private void addRecentFile(String filePath) {
+        if(!recentFilePaths.contains(filePath)) {
+                while(recentFilePaths.size() > 5) { // Incase someone adds a shit ton of entries into the settings file
+                    recentFilePaths.remove(0);
+                }
+
+
+
+            recentFilePaths.add(filePath);
+
+            MenuItem newItem = new MenuItem(filePath);
+            newItem.setOnAction(e -> {
+                openFile(filePath);
+            });
+
+            openRecentTab.getItems().add(newItem);
         }
 
     }
