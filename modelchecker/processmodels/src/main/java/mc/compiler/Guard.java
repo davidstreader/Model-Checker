@@ -60,8 +60,20 @@ public class Guard implements Serializable {
       return "";
     }
     return rmPrefix(ExpressionPrinter.printExpression(guard, Collections.emptyMap()));
-  }
 
+  }
+  public String myString(){
+    String var = "var = ";
+    for(String s: variables.keySet()){
+      var = var+s+"="+variables.get(s).toString();
+    }
+    String nxt = next.stream().reduce("",(x,y)-> x+" "+y+" ");
+    String nm = "nextMap = ";
+    for(String s: nextMap.keySet()){
+      nm = nm+s+" "+nextMap.get(s)+" ";
+    }
+    return " guard "+ guard +" "+ var + nxt+ nm;
+  }
   /**
    * Get the
    * @return

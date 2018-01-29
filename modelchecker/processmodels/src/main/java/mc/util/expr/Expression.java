@@ -120,10 +120,19 @@ public class Expression {
         for (String str: first.getNextMap().keySet()) {
             subMap.put(str,constructExpression(first.getNextMap().get(str),null, ctx));
         }
-        BoolExpr secondGuard = second.getGuard();
-        //Substitute every value from the subMap into the second guard.
-        secondGuard = substitute(secondGuard,subMap,ctx);
-        ret.setGuard(ctx.mkAnd(first.getGuard(), secondGuard));
+        if (second.getGuard() == null) {
+            ret.setGuard(first.getGuard());
+        } else {
+            if (first.getGuard() == null) {
+                ret.setGuard(second.getGuard());
+            }else {
+                BoolExpr secondGuard = second.getGuard();
+                //Substitute every value from the subMap into the second guard.
+                secondGuard = substitute(secondGuard,subMap,ctx);
+                ret.setGuard(ctx.mkAnd(first.getGuard(), secondGuard));
+            }
+        }
+
         return ret;
     }
 

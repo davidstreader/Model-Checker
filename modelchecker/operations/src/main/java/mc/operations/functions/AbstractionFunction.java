@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+
 public class AbstractionFunction implements IProcessFunction {
 
  /**
@@ -68,13 +69,15 @@ public class AbstractionFunction implements IProcessFunction {
    throw new CompilationException(this.getClass(), null);
   }
   Automaton startA = automata[0].copy();
+  String Aname = startA.getId();
   //System.out.println("start "+ startA.toString());
-  //System.out.println("Starting with "+startA.getNodes().size()+" nodes");
+  System.out.println("Abstraction "+Aname+" Starting with "+startA.getNodes().size()+" nodes");
   Automaton abstraction = pruneHiddenNodes(context, startA);
-  //System.out.println("Pruned to "+abstraction.getNodes().size()+" nodes");
+  System.out.println(Aname+" Pruned  to "+abstraction.getNodes().size()+" nodes");
 
-  //System.out.println("Start merge loops of size 2 "+abstraction.toString());
-  mergeloopsOfSize2(context,abstraction);
+ mergeloopsOfSize2(context,abstraction);
+  System.out.println(Aname+" Merge loops returns "+abstraction.getNodes().size()+" nodes");
+
 /*try{
   System.out.print("merge ended");
   System.in.read();
@@ -230,7 +233,7 @@ public class AbstractionFunction implements IProcessFunction {
    if (abstraction.getEdge(edge.getLabel(), from, to) == null) {
     AutomatonEdge added = abstraction.addEdge(edge.getLabel(), from, to, newAbstractionEdgeGuard);
     if (added.isHidden()) {
-     System.out.println("tau->a-> added "+added.myString());
+//     System.out.println("tau->a-> added "+added.myString());
      hiddenAdded.add(added);
     }
    }
@@ -356,12 +359,12 @@ public class AbstractionFunction implements IProcessFunction {
   Guard outGuard;
   Guard fromGuard =   from.getGuard();
   Guard toGuard   =   to.getGuard();
-
+if (context == null) {System.out.println("Context = null");return null;}
   if(fromGuard != null && toGuard != null)
    outGuard = Expression.combineGuards(toGuard, fromGuard, context);
-  else if(fromGuard == null) {
+  else if(toGuard != null) {
    outGuard = toGuard;
-  } else {
+  } else  {
    outGuard = fromGuard;
   }
 

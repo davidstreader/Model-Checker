@@ -596,6 +596,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
         ).
            append("-").append(edge.getLabel()).append(">").
            append(tempto+edge.getTo().getId()+" col "+edge.getTo().getColour()).
+           append(edge.getGuard() == null ? "null" : edge.getGuard().myString()).
            append("\n");
 
     }

@@ -36,6 +36,7 @@ public class Interpreter {
         case "automata":
           model = automatonInterpreter.interpret(process, processMap, localCompiler, context);
           model.setLocation(process.getLocation());
+          //System.out.println(model);
           break;
 
         case "petrinet":
