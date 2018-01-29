@@ -21,20 +21,18 @@ Ll = a->a->a->a->X|a->b->STOP,
 automata A,B,C,Al,Bl,Aa,Ba,Bs,L,Ll.
 
 operation {
-A!~B.
+A !~B.
+A *B.
+A !*C.
+Al !~Bl.
+Al *Bl.
 
-A*B.
+Aa !*Ba.
+Aa !~Bs.
+Aa *Bs.
 
-A!*C.
-Al!~Bl.
-Al*Bl.
-
-Aa!*Ba.
-Aa!~Bs.
-//Aa*Bs.
-
-L!~Ll.
-L*Ll.
+L !~Ll.
+L *Ll.
 }
 
 processes {
@@ -63,6 +61,7 @@ Goal = b->Goal.
 automata Z1,W1,Q1,Goal.
 
 operation {
-Goal~ W1.
+Goal ~ W1.
 Goal ~ W.
 }
+
