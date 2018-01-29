@@ -65,7 +65,7 @@ public class PetriNetPlace extends ProcessModelObject {
 
     builder.append("place{\n");
     if (isStart()) {
-      builder.append("\tStarting Place");
+      builder.append("\tStarting Place\n");
     }
     if (isTerminal()) {
       builder.append("\tTermination: ").append(getTerminal());
