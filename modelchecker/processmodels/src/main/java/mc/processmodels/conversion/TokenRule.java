@@ -1,15 +1,18 @@
 package mc.processmodels.conversion;
 
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
+import java.util.stream.Collectors;
 import mc.exceptions.CompilationException;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 
 /**
@@ -51,10 +54,11 @@ public class TokenRule {
 
 
         Set<PetriNetPlace> newMarking = new HashSet<>(currentMarking);
-        newMarking.removeAll(pre(transition)); // Clear out the places in the current marking which are moving token
+        newMarking.removeAll(transition.pre()); // Clear out the places in the current marking which are moving token
 
         newMarking.addAll(transition.getOutgoing().stream()
-            .map(outEdge -> (PetriNetPlace) outEdge.getTo()).collect(Collectors.toList()));
+            .map(outEdge -> (PetriNetPlace) outEdge.getTo())
+            .collect(Collectors.toList()));
 
 
         if (!nodeMap.containsKey(newMarking)) {
@@ -65,38 +69,25 @@ public class TokenRule {
           nodesCreated++;
         }
         outputAutomaton.addEdge(transition.getLabel(), nodeMap.get(currentMarking), nodeMap.get(newMarking), null);
-
       }
-
       previouslyVisitiedPlaces.add(currentMarking);
-
     }
-
-
     return outputAutomaton;
   }
 
   private static Set<PetriNetTransition> satisfiedTransitions(Set<PetriNetPlace> currentMarking) {
-    Set<PetriNetTransition> potentialTransitions = post(currentMarking);
-
-    return potentialTransitions.stream().filter(transition -> currentMarking.containsAll(pre(transition))).collect(Collectors.toSet());
+    return post(currentMarking).stream()
+        .filter(transition -> currentMarking.containsAll(transition.pre()))
+        .collect(Collectors.toSet());
   }
 
 
   private static Set<PetriNetTransition> post(Set<PetriNetPlace> currentMarking) {
-    Set<PetriNetTransition> output = new HashSet<>();
-
-
-    for (PetriNetPlace place : currentMarking) {
-      output.addAll(place.getOutgoing().stream().map(outgoingEdge -> (PetriNetTransition) outgoingEdge.getTo()).collect(Collectors.toList()));
-    }
-
-    return output;
+    return currentMarking.stream()
+        .map(PetriNetPlace::post)
+        .flatMap(Set::stream)
+        .distinct()
+        .collect(Collectors.toSet());
   }
-
-  private static Set<PetriNetPlace> pre(PetriNetTransition transtionToGetPrePlaces) {
-    return transtionToGetPrePlaces.getIncoming().stream().map(incomingEdge -> (PetriNetPlace) incomingEdge.getFrom()).collect(Collectors.toSet());
-  }
-
 
 }
