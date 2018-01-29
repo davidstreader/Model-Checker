@@ -53,7 +53,7 @@ public class PetriNetPlace extends ProcessModelObject {
   }
 
   public Set<PetriNetTransition> post() {
-    return incoming.stream()
+    return outgoing.stream()
         .map(PetriNetEdge::getTo)
         .map(PetriNetTransition.class::cast)
         .distinct()

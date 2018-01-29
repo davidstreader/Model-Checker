@@ -131,7 +131,10 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
       throw new CompilationException(getClass(), "Cannot remove a place that is not part of"
           + "the petrinet");
     }
-    for (PetriNetEdge edge : Iterables.concat(place.getIncoming(), place.getOutgoing())) {
+    Set<PetriNetEdge> toRemove = new HashSet<>();
+    toRemove.addAll(place.getIncoming());
+    toRemove.addAll(place.getOutgoing());
+    for (PetriNetEdge edge : toRemove) {
       removeEdge(edge);
     }
     if (place.isStart() || roots.contains(place)) {
