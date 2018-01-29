@@ -144,7 +144,7 @@ int cnt = 0;
     cnt++;
     dfa.addEdge(action, poped, nextdfa, null);
 
-System.out.println("addEdge "+ poped.getId()+"-"+action+"->"+nextdfa.getId());
+//System.out.println("addEdge "+ poped.getId()+"-"+action+"->"+nextdfa.getId());
    }
 
 
@@ -350,10 +350,10 @@ System.out.println("addEdge "+ poped.getId()+"-"+action+"->"+nextdfa.getId());
 
  private void printnode2AcceptanceSets(){
 
-  System.out.println("Acceptance Sets");
+/*  System.out.println("Acceptance Sets");
   for (AutomatonNode nd : node2AcceptanceSets.keySet()) {
    System.out.println(" "+nd.getId()+"  "+node2AcceptanceSets.get(nd));
-  }
+  }*/
  }
 
  private boolean AcceptanceSubSet(List<Set<String>> a1, List<Set<String>> a2){

@@ -47,8 +47,11 @@ public class AutomatonEdge extends ProcessModelObject {
   }
 
   public String myString(){
-    return getId()+" "+from.getId()+"-"+label+"->"+to.getId();
+    return from.getId()+"-"+label+"->"+to.getId();
   }
+/*  public String myString(){
+    return getId()+" "+from.getId()+"-"+label+"->"+to.getId();
+  } */
 
   public String toString() {
     String builder = "edge{\n"

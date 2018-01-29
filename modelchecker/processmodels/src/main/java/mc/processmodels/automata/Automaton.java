@@ -591,8 +591,10 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     for (AutomatonEdge edge : edgeMap.values()) {
       if(!nodeMap.containsValue(edge.getTo())) {tempto="NOT TO ";}else{tempto="";}
       if(!nodeMap.containsValue(edge.getFrom())) {tempfrom="NOT From ";}else{tempfrom="";}
-      builder.append("\t\t").append(tempfrom+edge.getFrom().getId()+" "+edge.getFrom().getColour()).
-           append(" -").append(edge.getLabel()).append("> ").
+      builder.append("\t\t").append(tempfrom+edge.getFrom().getId()
+        //+" "+edge.getFrom().getColour()
+        ).
+           append("-").append(edge.getLabel()).append(">").
            append(tempto+edge.getTo().getId()+" col "+edge.getTo().getColour()).
            append("\n");
 
