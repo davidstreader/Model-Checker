@@ -12,11 +12,6 @@ import mc.compiler.interpreters.AutomatonInterpreter;
 import mc.compiler.interpreters.PetrinetInterpreter;
 import mc.exceptions.CompilationException;
 import mc.processmodels.ProcessModel;
-import mc.processmodels.automata.Automaton;
-import mc.processmodels.petrinet.Petrinet;
-import mc.util.LogAST;
-
-import static mc.processmodels.conversion.tokenRule.tokenRule;
 
 /**
  * Created by sheriddavi on 24/01/17.

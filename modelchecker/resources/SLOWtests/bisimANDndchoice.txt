@@ -28,15 +28,3 @@ One2=> (One5=>One2) ~ (One2=> One5)=>One2.
 
 }
 
-
-
-lengthEdgeValue: 10
-maxNodeLabelValue: 10
-operationFailureLabelValue: 10
-operationPassLabelValue: 10
-
-fairAbstractionSelected: false
-autoSaveSelected: false
-darkModeSelected: false
-pruningSelected: false
-liveCompillingSelected: false

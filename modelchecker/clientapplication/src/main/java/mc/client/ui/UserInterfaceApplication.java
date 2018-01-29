@@ -10,12 +10,19 @@ import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 
 public class UserInterfaceApplication extends Application {
     @Getter
     @Setter
     static private Stage primaryStage;
+
+    @Setter
+    static private UserInterfaceController controller;
 
     /**
      * The main entry point for all JavaFX applications.
@@ -37,21 +44,45 @@ public class UserInterfaceApplication extends Application {
         primaryStage = primaryStage_;
         setMacDockIcon(new Image(getClass().getResourceAsStream("/clientres/icon.jpg")));
         Font.loadFont(getClass().getResource("/clientres/hasklig.otf").toExternalForm(), 10);
+
         Parent root = FXMLLoader.load(getClass().getResource("/clientres/UserInterface.fxml"));
 
-        primaryStage.setTitle("Process Modeller");
+        primaryStage.setTitle("Process Modeller - New File");
         Scene windowScene = new Scene(root, 1000, 700);
         primaryStage.setScene(windowScene);
         primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/clientres/icon.jpg")));
         primaryStage.show();
-        primaryStage.setOnHiding(e -> System.exit(0));
     }
+
+    @Override
+    public void stop() {
+
+        ArrayList<String> filePaths = controller.getRecentFilePaths();
+
+        try {
+            System.out.print("\nwriting settings file...");
+            BufferedWriter writer = new BufferedWriter(new FileWriter("recentfiles.conf"));
+            for(String filePath : filePaths)
+                writer.write(filePath+"\n");
+
+            writer.close();
+            System.out.print("Done\n");
+
+        } catch(IOException e)  {
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+
+        System.exit(0);
+    }
+
 
     public static void main(String[] args) {
         launch(args);
     }
 
-    public void setMacDockIcon(Image img) {
+    private void setMacDockIcon(Image img) {
         try {
             Class<?> applicationClass = Class.forName("com.apple.eawt.Application");
 

@@ -18,16 +18,3 @@ abs(X\{r,l}) ~ abs(abs(X\{l})\{r}).
 
 }
  
-
-
-
-lengthEdgeValue: 10
-maxNodeLabelValue: 10
-operationFailureLabelValue: 10
-operationPassLabelValue: 10
-
-fairAbstractionSelected: false
-autoSaveSelected: false
-darkModeSelected: false
-pruningSelected: false
-liveCompillingSelected: false

@@ -3,6 +3,8 @@ package mc.processmodels.petrinet.components;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import mc.processmodels.ProcessModelObject;
@@ -18,6 +20,22 @@ public class PetriNetTransition extends ProcessModelObject {
   public PetriNetTransition(String id, String label) {
     super(id, "node");
     this.label = label;
+  }
+
+  public Set<PetriNetPlace> pre() {
+    return incoming.stream()
+        .map(PetriNetEdge::getFrom)
+        .map(PetriNetPlace.class::cast)
+        .distinct()
+        .collect(Collectors.toSet());
+  }
+
+  public Set<PetriNetPlace> post() {
+    return outgoing.stream()
+        .map(PetriNetEdge::getTo)
+        .map(PetriNetPlace.class::cast)
+        .distinct()
+        .collect(Collectors.toSet());
   }
 
   public String toString() {

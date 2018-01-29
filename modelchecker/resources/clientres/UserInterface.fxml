@@ -13,12 +13,12 @@
             <menus>
                 <Menu mnemonicParsing="false" text="File">
                     <items>
-                        <MenuItem mnemonicParsing="false" onAction="#handleCreateNew" text="New" />
-                        <MenuItem mnemonicParsing="false" onAction="#handleOpen" text="Open…" />
-                        <Menu fx:id="openRecentTab" mnemonicParsing="false" onAction="#handleOpenRecentAction" text="Open Recent" />
+                        <MenuItem fx:id="newMenuItem" mnemonicParsing="false" onAction="#handleCreateNew" text="New" />
+                        <MenuItem fx:id="openMenuItem" mnemonicParsing="false" onAction="#handleOpen" text="Open…" />
+                        <Menu fx:id="openRecentTab" mnemonicParsing="false" text="Open Recent" />
                         <SeparatorMenuItem mnemonicParsing="false" />
                         <MenuItem mnemonicParsing="false" onAction="#handleFileClose" text="Close" />
-                        <MenuItem mnemonicParsing="false" onAction="#handleSave" text="Save" />
+                        <MenuItem fx:id="saveMenuItem" mnemonicParsing="false" onAction="#handleSave" text="Save" />
                         <MenuItem mnemonicParsing="false" onAction="#handleSaveAs" text="Save As…" />
                         <SeparatorMenuItem mnemonicParsing="false" />
                         <MenuItem mnemonicParsing="false" onAction="#handleQuit" text="Quit" />
