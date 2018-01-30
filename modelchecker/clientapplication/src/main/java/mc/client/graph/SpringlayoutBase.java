@@ -20,6 +20,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
 import edu.uci.ics.jung.algorithms.layout.AbstractLayout;
+import edu.uci.ics.jung.algorithms.layout.SpringLayout2;
 import edu.uci.ics.jung.algorithms.layout.util.RandomLocationTransformer;
 import edu.uci.ics.jung.algorithms.util.IterativeContext;
 import edu.uci.ics.jung.graph.Graph;
@@ -39,8 +40,8 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
 
     private double stretch = 0.70;
     private int repulsion_range_sq = 100 * 100;
-    private double force_multiplier = 1.0 / 3.0;
-    private Integer linkLength = 120;
+    private double force_multiplier = 1;
+    private Function<? super E, Integer> lengthFunction;
     private boolean done = false;
 
     private LoadingCache<V, SpringVertexData> springVertexData =
@@ -52,15 +53,27 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
 
 
     /**
+     * Constructor for a SpringLayout for a raw graph with associated
+     * dimension--the input knows how big the graph is. Defaults to the unit
+     * length function.
+     * @param g the graph on which the layout algorithm is to operate
+     */
+    @SuppressWarnings("unchecked")
+    public SpringlayoutBase(Graph<V,E> g) {
+        this(g, (Function<E,Integer>)Functions.<Integer>constant(120));
+    }
+
+    /**
      * Constructor for a SpringLayout for a raw graph with associated component.
      *
      * @param g the graph on which the layout algorithm is to operate
+     * @param length_function provides a length for each edge
      */
-    public SpringlayoutBase(Graph<V,E> g)
+    public SpringlayoutBase(Graph<V,E> g, Function<? super E, Integer> length_function)
     {
         super(g);
+        this.lengthFunction = length_function;
     }
-
     /**
      * @return the current value for the stretch parameter
      */
@@ -123,10 +136,6 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
 
     public void initialize() {}
 
-    public void setLinkLength(Integer length_ ) {
-        linkLength = length_;
-    }
-
     /**
      * Relaxation step. Moves all nodes a smidge.
      */
@@ -165,8 +174,8 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
                 double vy = p1.getY() - p2.getY();
                 double len = Math.sqrt(vx * vx + vy * vy);
 
-                double desiredLen = linkLength;
 
+                double desiredLen = lengthFunction.apply(e);
 
                 // round from zero, if needed [zero would be Bad.].
                 len = (len == 0) ? .0001 : len;
