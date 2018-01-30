@@ -72,7 +72,7 @@ public class Compiler {
       for (String currentDependencyName : dependencies) {
         ProcessNode currentDependency = dependencyMap.get(currentDependencyName);
         if (!currentDependency.getType().equals(currentProcess.getType())) {
-          if (currentDependency.getType().equals("processes")) {
+          if (currentDependency.getType().size() == 0) {
             currentDependency.setType(currentProcess.getType());
             processesToRemoveFromDisplay.add(currentDependencyName);
           }

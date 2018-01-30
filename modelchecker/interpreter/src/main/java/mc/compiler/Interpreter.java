@@ -11,6 +11,7 @@ import mc.compiler.ast.ProcessNode;
 import mc.compiler.interpreters.AutomatonInterpreter;
 import mc.compiler.interpreters.PetrinetInterpreter;
 import mc.exceptions.CompilationException;
+import mc.processmodels.MultiProcessModel;
 import mc.processmodels.ProcessModel;
 
 /**
@@ -28,26 +29,30 @@ public class Interpreter {
     List<ProcessNode> processes = ast.getProcesses();
     for (ProcessNode process : processes) {
       System.out.print("\nBuilding " + process.getType() + " " + process.getIdentifier() + "...");
-      ProcessModel model;
-      switch (process.getType()) {
-        case "processes": // If it is not a automata or petrinet then dont construct it (Its a non-drawn process)
-          continue;
+      ProcessModel model = null;
 
-        case "automata":
-          model = automatonInterpreter.interpret(process, processMap, localCompiler, context);
-          model.setLocation(process.getLocation());
-          //System.out.println(model);
-          break;
+      if (process.getType().size() > 1) {
+        model = new MultiProcessModel(process.getIdentifier());
+        model.setLocation(process.getLocation());
+      }
 
-        case "petrinet":
-          model = petrinetInterpreter.interpret(process, processMap, localCompiler, context);
-          model.setLocation(process.getLocation());
-
-
-          break;
-
-        default:
-          throw new CompilationException(getClass(), "Unable to find the process type: " + process.getType());
+      if(process.getType().contains("automata")) {
+        ProcessModel modelAut = automatonInterpreter.interpret(process, processMap, localCompiler, context);
+        modelAut.setLocation(process.getLocation());
+        if(model == null) {
+          model = modelAut;
+        } else {
+          ((MultiProcessModel)model).addProcess(modelAut);
+        }
+      }
+      if(process.getType().contains("petrinet")) {
+        ProcessModel modelPetri = petrinetInterpreter.interpret(process, processMap, localCompiler, context);
+        modelPetri.setLocation(process.getLocation());
+        if(model == null) {
+          model = modelPetri;
+        } else {
+          ((MultiProcessModel)model).addProcess(modelPetri);
+        }
       }
 
       System.out.print("Done!");

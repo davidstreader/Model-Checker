@@ -259,6 +259,9 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     ProcessModel model2 = processStack.pop();
     ProcessModel model1 = processStack.pop();
 
+    model1 = model1.getProcessType().convertTo(AUTOMATA,model1);
+    model2 = model2.getProcessType().convertTo(AUTOMATA,model2);
+
     if (!(model1 instanceof Automaton) || !(model2 instanceof Automaton)) {
       if(model1 == null || model2 == null) // They were not set to be constructed as anything
         throw new CompilationException(getClass(), "Expecting an automaton in composite " + automaton.getId(), astCompositeNode.getLocation());

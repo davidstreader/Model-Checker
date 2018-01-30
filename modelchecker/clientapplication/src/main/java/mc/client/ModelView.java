@@ -54,6 +54,7 @@ import mc.client.ui.SettingsController;
 import mc.compiler.CompilationObject;
 import mc.compiler.CompilationObservable;
 import mc.compiler.OperationResult;
+import mc.processmodels.MultiProcessModel;
 import mc.processmodels.ProcessModel;
 import mc.processmodels.ProcessType;
 import mc.processmodels.automata.Automaton;
@@ -116,6 +117,40 @@ public class ModelView implements Observer {
 
     processesChanged.clear();
     compiledResult = (CompilationObject) arg;
+    new HashMap<>();
+
+    Set<Map.Entry<String, MultiProcessModel>> toExpand = compiledResult.getProcessMap().entrySet()
+        .stream()
+        .filter(e -> e.getValue() instanceof MultiProcessModel)
+        .map(e -> new Map.Entry<String, MultiProcessModel>() {
+          @Override
+          public String getKey() {
+            return e.getKey();
+          }
+
+          @Override
+          public MultiProcessModel getValue() {
+            return (MultiProcessModel) e.getValue();
+          }
+
+          @Override
+          public MultiProcessModel setValue(MultiProcessModel value) {
+            return null;
+          }
+        })
+        .collect(Collectors.toSet());
+
+    for (Map.Entry<String, MultiProcessModel> mpm : toExpand) {
+      for (ProcessType pt : ProcessType.values()) {
+        if (mpm.getValue().hasProcess(pt)) {
+          String name = mpm.getKey() + " (" + pt.name().toLowerCase() + ")";
+          mpm.getValue().getProcess(pt).setId(name);
+          compiledResult.getProcessMap().put(name, mpm.getValue().getProcess(pt));
+        }
+      }
+    }
+
+    toExpand.stream().map(Map.Entry::getKey).forEach(compiledResult.getProcessMap()::remove);
 
     visibleModels = getProcessMap().entrySet().stream()
         .filter(e -> e.getValue().getProcessType() != ProcessType.AUTOMATA ||
@@ -376,7 +411,7 @@ public class ModelView implements Observer {
     ((SpringlayoutBase) layout).setStretch(0.8);
     ((SpringlayoutBase) layout).setRepulsionRange(1000);
 
-    if(settings != null) {
+    if (settings != null) {
       ((SpringlayoutBase) layout).setLinkLength(settings.getLinkageLength());
     }
 

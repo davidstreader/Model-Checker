@@ -373,7 +373,7 @@ public class Parser {
     int start = index;
     int value = parseSimpleExpression();
 
-    if(!(nextToken() instanceof DotToken)) {
+    if (!(nextToken() instanceof DotToken)) {
       Token error = tokens.get(index - 1);
       throw constructException("expecting to parse \".\" but received \"" + error.toString() + "\"", error.getLocation());
     }
@@ -414,7 +414,7 @@ public class Parser {
 
     int endValue = parseSimpleExpression();
 
-    if(!(nextToken() instanceof DotToken)) {
+    if (!(nextToken() instanceof DotToken)) {
       Token error = tokens.get(index - 1);
       throw constructException("expecting to parse \".\" but received \"" + error.toString() + "\"", error.getLocation());
     }
@@ -498,8 +498,10 @@ public class Parser {
       localProcesses.add(parseLocalProcessDefinition(localIdentifiers));
     }
 
-    //Dont set ProcessNode type just yet as that will be done when, or if we encounter a display node that sets it.
-    ProcessNode processNode = new ProcessNode("processes", identifier.getIdentifier(), process, localProcesses, constructLocation(start));
+    //Dont set ProcessNode type just yet as that will be done when,
+    //or if we encounter a display node that sets it.
+    ProcessNode processNode = new ProcessNode(identifier.getIdentifier(), process, localProcesses,
+        constructLocation(start));
 
     // check if a relabel set has been defined
     if (peekToken() instanceof DivisionToken) {
@@ -595,14 +597,7 @@ public class Parser {
 
     for (ProcessNode node : processes) {
       if (node.getIdentifier().equals(((IdentifierToken) token).getIdentifier())) {
-
-       if(node.getType().equals("processes")) { // If it hasnt already been set as a constructible type
-         node.setType(currentDisplayType.getProcessType());
-       } else {
-         throw constructException("Conversion between automaton and petrinet types not yet supported \"" + token.toString() + "\"", token.getLocation());
-
-       }
-
+        node.addType(currentDisplayType.getProcessType());
         contained = true;
         break;
       }
@@ -623,8 +618,7 @@ public class Parser {
 
       for (ProcessNode node : processes) {
         if (node.getIdentifier().equals(((IdentifierToken) token).getIdentifier())) {
-
-          node.setType(currentDisplayType.getProcessType());
+          node.addType(currentDisplayType.getProcessType());
           contained = true;
           break;
         }
@@ -1211,7 +1205,7 @@ public class Parser {
 //    if(peekToken() instanceof IdentifierToken) {
 //      set = nextToken();
 //    } else {
-      set = parseSet();
+    set = parseSet();
 //    }
 
     return new HidingNode(type, set, constructLocation(start));

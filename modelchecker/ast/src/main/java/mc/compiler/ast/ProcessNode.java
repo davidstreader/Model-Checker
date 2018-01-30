@@ -1,6 +1,8 @@
 package mc.compiler.ast;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import mc.util.Location;
@@ -23,7 +25,7 @@ public class ProcessNode extends ASTNode {
    * <p>
    * Valid variables are "processes", "automata" and "petrinet"
    */
-  private String type;
+  private Set<String> type;
 
   /**
    * The identifier for this process (i.e. the name).
@@ -61,17 +63,15 @@ public class ProcessNode extends ASTNode {
    * <p>
    * This is for use with no hiding node.
    *
-   * @param type           The type of process this is. This can be either {@code processes},
-   *                       {@code automata}, or {@code petrinet}. {@link #type}
    * @param identifier     the "name" for the process. {@link #identifier}
    * @param process        the actual process itself. {@link #process}
    * @param localProcesses the subprocesses of the current process. {@link #localProcesses}
    * @param location       the location this process is within the users code.
    *                       {@link ASTNode#location}
    */
-  public ProcessNode(String type, String identifier, ASTNode process,
+  public ProcessNode(String identifier, ASTNode process,
                      List<LocalProcessNode> localProcesses, Location location) {
-    this(type, identifier, process, localProcesses, null, location);
+    this(identifier, process, localProcesses, null, location);
   }
 
   /**
@@ -79,8 +79,6 @@ public class ProcessNode extends ASTNode {
    * <p>
    * This is for use with a hiding node.
    *
-   * @param type           The type of process this is. This can be either {@code processes},
-   *                       {@code automata}, or {@code petrinet}. {@link #type}
    * @param identifier     the "name" for the process. {@link #identifier}
    * @param process        the actual process itself. {@link #process}
    * @param localProcesses the subprocesses of the current process. {@link #localProcesses}
@@ -89,16 +87,20 @@ public class ProcessNode extends ASTNode {
    * @param location       the location this process is within the users code.
    *                       {@link ASTNode#location}
    */
-  public ProcessNode(String type, String identifier, ASTNode process,
-                     List<LocalProcessNode> localProcesses, HidingNode hiding, Location location) {
+  public ProcessNode(String identifier, ASTNode process, List<LocalProcessNode> localProcesses,
+                     HidingNode hiding, Location location) {
     super(location);
-    this.type = type;
+    this.type = new HashSet<>();
     this.identifier = identifier;
     this.process = process;
     this.localProcesses = localProcesses;
     this.hiding = hiding;
     variables = null;
     interrupt = null;
+  }
+
+  public boolean addType(String type) {
+    return this.type.add(type);
   }
 
   public boolean hasRelabels() {

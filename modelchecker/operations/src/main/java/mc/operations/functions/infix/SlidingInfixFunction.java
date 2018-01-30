@@ -69,7 +69,8 @@ public class SlidingInfixFunction implements IProcessInfixFunction {
 
     ChoiceNode choice = new ChoiceNode(nondeterministicChoice, aut2, null);
 
-    ProcessNode process = new ProcessNode("automata", id, choice, Collections.emptyList(), null);
+    ProcessNode process = new ProcessNode(id, choice, Collections.emptyList(), null);
+    process.addType("automata");
     Map<String, ProcessModel> processesDefined = new HashMap<>();
     processesDefined.put("P", automaton1);
     processesDefined.put("Q", automaton2);

@@ -6,6 +6,8 @@ public interface ProcessModel {
 
   String getId();
 
+  void setId(String id);
+
   ProcessType getProcessType();
 
   Location getLocation();
