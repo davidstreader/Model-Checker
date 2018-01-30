@@ -117,7 +117,7 @@ public class ModelView implements Observer {
 
     processesChanged.clear();
     compiledResult = (CompilationObject) arg;
-    new HashMap<>();
+
 
     Set<Map.Entry<String, MultiProcessModel>> toExpand = compiledResult.getProcessMap().entrySet()
         .stream()
@@ -151,7 +151,6 @@ public class ModelView implements Observer {
     }
 
     toExpand.stream().map(Map.Entry::getKey).forEach(compiledResult.getProcessMap()::remove);
-
     visibleModels = getProcessMap().entrySet().stream()
         .filter(e -> e.getValue().getProcessType() != ProcessType.AUTOMATA ||
             ((Automaton) e.getValue()).getNodes().size() <= settings.getMaxNodes())

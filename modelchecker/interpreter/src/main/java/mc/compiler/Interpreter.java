@@ -30,28 +30,30 @@ public class Interpreter {
     for (ProcessNode process : processes) {
       System.out.print("\nBuilding " + process.getType() + " " + process.getIdentifier() + "...");
       ProcessModel model = null;
-
+      if (process.getType().size() == 0) {
+        continue;
+      }
       if (process.getType().size() > 1) {
         model = new MultiProcessModel(process.getIdentifier());
         model.setLocation(process.getLocation());
       }
 
-      if(process.getType().contains("automata")) {
+      if (process.getType().contains("automata")) {
         ProcessModel modelAut = automatonInterpreter.interpret(process, processMap, localCompiler, context);
         modelAut.setLocation(process.getLocation());
-        if(model == null) {
+        if (model == null) {
           model = modelAut;
         } else {
-          ((MultiProcessModel)model).addProcess(modelAut);
+          ((MultiProcessModel) model).addProcess(modelAut);
         }
       }
-      if(process.getType().contains("petrinet")) {
+      if (process.getType().contains("petrinet")) {
         ProcessModel modelPetri = petrinetInterpreter.interpret(process, processMap, localCompiler, context);
         modelPetri.setLocation(process.getLocation());
-        if(model == null) {
+        if (model == null) {
           model = modelPetri;
         } else {
-          ((MultiProcessModel)model).addProcess(modelPetri);
+          ((MultiProcessModel) model).addProcess(modelPetri);
         }
       }
 

@@ -71,9 +71,10 @@ public class Compiler {
       ProcessNode currentProcess = dependencyMap.get(processesName);
       for (String currentDependencyName : dependencies) {
         ProcessNode currentDependency = dependencyMap.get(currentDependencyName);
-        if (!currentDependency.getType().equals(currentProcess.getType())) {
+
+        if (!currentDependency.getType().containsAll(currentProcess.getType())) {
           if (currentDependency.getType().size() == 0) {
-            currentDependency.setType(currentProcess.getType());
+            currentDependency.getType().addAll(currentProcess.getType());
             processesToRemoveFromDisplay.add(currentDependencyName);
           }
           //else if (!currentProcess.getType().equals("processes")) {
@@ -97,7 +98,6 @@ public class Compiler {
     processMap.putAll(eqResults.getToRender());
 
     processesToRemoveFromDisplay.stream().filter(processMap::containsKey).forEach(processMap::remove);
-
 
     return new CompilationObject(processMap, opResults, eqResults.getResults());
   }
