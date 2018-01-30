@@ -37,6 +37,15 @@ import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
 import mc.processmodels.petrinet.utils.PetrinetLabeller;
 
+/**
+ * This class interprets a process, and returns a petrinet model as a result.
+ *
+ * @author Jacob Beal
+ * @see AutomatonInterpreter
+ * @see mc.processmodels.petrinet.Petrinet
+ * @see PetriNetPlace
+ * @see PetriNetTransition
+ */
 public class PetrinetInterpreter implements ProcessModelInterpreter {
 
   static Map<String, Class<? extends IProcessInfixFunction>> infixFunctions = new HashMap<>();

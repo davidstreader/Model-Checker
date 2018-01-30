@@ -1,5 +1,6 @@
 package mc.compiler.interpreters;
 
+import static mc.processmodels.ProcessType.AUTOMATA;
 import static mc.util.Utils.instantiateClass;
 
 import com.google.common.collect.Multimap;
@@ -36,14 +37,10 @@ import mc.compiler.ast.VariableSetNode;
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessFunction;
 import mc.plugins.IProcessInfixFunction;
-import mc.processmodels.MultiProcessModel;
 import mc.processmodels.ProcessModel;
-import mc.processmodels.ProcessType;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.automata.operations.AutomataOperations;
-import mc.processmodels.conversion.TokenRule;
-import mc.processmodels.petrinet.Petrinet;
 
 public class AutomatonInterpreter implements ProcessModelInterpreter {
 
@@ -78,17 +75,17 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
 
     interpretProcess(processNode.getProcess(), identifier);
 
-    Automaton automaton;
     ProcessModel pm = processStack.pop();
-    if (pm instanceof MultiProcessModel) {
-      automaton = ((Automaton)((MultiProcessModel) pm).getProcess(ProcessType.AUTOMATA));
-    } else if (pm instanceof Petrinet) {
-      automaton = TokenRule.tokenRule((Petrinet)pm);
-    } else if (pm instanceof Automaton) {
-      automaton = (Automaton)pm;
-    } else {
-      throw new CompilationException(getClass(),"Unknown process type received");
-    }
+    Automaton automaton = pm.getProcessType().convertTo(AUTOMATA,pm);
+//    if (pm instanceof MultiProcessModel) {
+//      automaton = ((Automaton)((MultiProcessModel) pm).getProcess(ProcessType.AUTOMATA));
+//    } else if (pm instanceof Petrinet) {
+//      automaton = TokenRule.tokenRule((Petrinet)pm);
+//    } else if (pm instanceof Automaton) {
+//      automaton = (Automaton)pm;
+//    } else {
+//      throw new CompilationException(getClass(),"Unknown process type received");
+//    }
 
     //Set the id correctly if there is a processes like this: C = B., otherwise it just takes B's id.
     if (!automaton.getId().equals(processNode.getIdentifier()))
@@ -281,13 +278,13 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
   private void interpretIdentifier(IdentifierNode identifierNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException {
     // check that the reference is to an automaton
     ProcessModel model = processMap.get(identifierNode.getIdentifier());
-    Automaton next;
+    Automaton next = model.getProcessType().convertTo(AUTOMATA,model);
 
-    if (model instanceof Petrinet) {
-      next = TokenRule.tokenRule((Petrinet) model);
-    } else {
-      next = ((Automaton) model).copy();
-    }
+//    if (model instanceof Petrinet) {
+//      next = TokenRule.tokenRule((Petrinet) model);
+//    } else {
+//      next = ((Automaton) model).copy();
+//    }
 
     addAutomaton(currentNode, automaton, next);
   }

@@ -326,3 +326,5 @@ gradle-app.setting
 
 classes/
 native/
+
+/modelchecker/recentfiles.conf
