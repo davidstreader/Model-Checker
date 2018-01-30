@@ -592,9 +592,17 @@ public class Parser {
     }
 
     boolean contained = false;
+
     for (ProcessNode node : processes) {
       if (node.getIdentifier().equals(((IdentifierToken) token).getIdentifier())) {
-        node.setType(currentDisplayType.getProcessType());
+
+       if(node.getType().equals("processes")) { // If it hasnt already been set as a constructible type
+         node.setType(currentDisplayType.getProcessType());
+       } else {
+         throw constructException("Conversion between automaton and petrinet types not yet supported \"" + token.toString() + "\"", token.getLocation());
+
+       }
+
         contained = true;
         break;
       }
@@ -615,7 +623,6 @@ public class Parser {
 
       for (ProcessNode node : processes) {
         if (node.getIdentifier().equals(((IdentifierToken) token).getIdentifier())) {
-
 
           node.setType(currentDisplayType.getProcessType());
           contained = true;

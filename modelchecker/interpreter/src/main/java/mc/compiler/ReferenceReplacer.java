@@ -134,9 +134,7 @@ public class ReferenceReplacer {
         addReference(node, localReference);
 
         if (astNode.hasReferences()) {
-          for (String r : astNode.getReferences()) {
-            node.addReference(r);
-          }
+          astNode.getReferences().forEach(node::addReference);
         }
 
         return replaceReferences(node, identifier, localReferences);

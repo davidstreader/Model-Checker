@@ -37,40 +37,28 @@ import mc.client.graph.GraphNode;
  */
 public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements IterativeContext {
 
-    protected double stretch = 0.70;
-    protected Function<? super E, Integer> lengthFunction;
-    protected int repulsion_range_sq = 100 * 100;
-    protected double force_multiplier = 1.0 / 3.0;
-    protected boolean done = false;
+    private double stretch = 0.70;
+    private int repulsion_range_sq = 100 * 100;
+    private double force_multiplier = 1.0 / 3.0;
+    private Integer linkLength = 120;
+    private boolean done = false;
 
-    protected LoadingCache<V, SpringVertexData> springVertexData =
+    private LoadingCache<V, SpringVertexData> springVertexData =
             CacheBuilder.newBuilder().build(new CacheLoader<V, SpringVertexData>() {
                 public SpringVertexData load(V vertex) {
                     return new SpringVertexData();
                 }
             });
 
-    /**
-     * Constructor for a SpringLayout for a raw graph with associated
-     * dimension--the input knows how big the graph is. Defaults to the unit
-     * length function.
-     * @param g the graph on which the layout algorithm is to operate
-     */
-    @SuppressWarnings("unchecked")
-    public SpringlayoutBase(Graph<V,E> g) {
-        this(g, (Function<E,Integer>)Functions.<Integer>constant(30));
-    }
 
     /**
      * Constructor for a SpringLayout for a raw graph with associated component.
      *
      * @param g the graph on which the layout algorithm is to operate
-     * @param length_function provides a length for each edge
      */
-    public SpringlayoutBase(Graph<V,E> g, Function<? super E, Integer> length_function)
+    public SpringlayoutBase(Graph<V,E> g)
     {
         super(g);
-        this.lengthFunction = length_function;
     }
 
     /**
@@ -82,7 +70,7 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
 
     @Override
     public void setSize(Dimension size) {
-        if(initialized == false)
+        if(!initialized)
             setInitializer(new RandomLocationTransformer<V>(size));
         super.setSize(size);
     }
@@ -118,10 +106,6 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
         this.repulsion_range_sq = range * range;
     }
 
-    public double getForceMultiplier() {
-        return force_multiplier;
-    }
-
     /**
      * Sets the force multiplier for this instance.  This value is used to
      * specify how strongly an edge "wants" to be its default length
@@ -137,10 +121,10 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
         this.force_multiplier = force;
     }
 
-    public void initialize() {
+    public void initialize() {}
 
-
-
+    public void setLinkLength(Integer length_ ) {
+        linkLength = length_;
     }
 
     /**
@@ -167,7 +151,7 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
         moveNodes();
     }
 
-    protected void relaxEdges() {
+    private void relaxEdges() {
         try {
             for(E e : getGraph().getEdges()) {
                 Pair<V> endpoints = getGraph().getEndpoints(e);
@@ -181,7 +165,7 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
                 double vy = p1.getY() - p2.getY();
                 double len = Math.sqrt(vx * vx + vy * vy);
 
-                double desiredLen =  120;
+                double desiredLen = linkLength;
 
 
                 // round from zero, if needed [zero would be Bad.].
@@ -209,7 +193,7 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
         }
     }
 
-    protected void calculateRepulsion() {
+    private void calculateRepulsion() {
         try {
             for (V v : getGraph().getVertices()) {
                 if (isLocked(v)) continue;
@@ -248,7 +232,7 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
         }
     }
 
-    protected void moveNodes()
+    private void moveNodes()
     {
         synchronized (getSize()) {
             try {
@@ -272,17 +256,17 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
         }
     }
 
-    protected static class SpringVertexData {
-        protected double edgedx;
-        protected double edgedy;
-        protected double repulsiondx;
-        protected double repulsiondy;
+    private static class SpringVertexData {
+        private double edgedx;
+        private double edgedy;
+        private double repulsiondx;
+        private double repulsiondy;
 
         /** movement speed, x */
-        protected double dx;
+        private double dx;
 
         /** movement speed, y */
-        protected double dy;
+        private double dy;
     }
 
 

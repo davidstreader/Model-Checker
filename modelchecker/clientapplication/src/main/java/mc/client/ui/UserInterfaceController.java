@@ -6,13 +6,17 @@ import javafx.concurrent.Task;
 import javafx.embed.swing.SwingNode;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCombination;
 
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
+import javafx.stage.Stage;
 import lombok.Getter;
 import mc.client.ModelView;
 import mc.compiler.Compiler;
@@ -38,8 +42,9 @@ import static mc.client.ui.SyntaxHighlighting.computeHighlighting;
 public class UserInterfaceController implements Initializable {
     private boolean holdHighlighting = false; // If there is an compiler issue, highlight the area. Dont keep applying highlighting it wipes it out
     private javafx.stage.Popup autocompleteBox = new javafx.stage.Popup();
-    private ExecutorService executor; // Runs the highlighting in seperate thread
+    private ExecutorService executor; // Runs the highlighting in separate thread
     private TrieNode<String> completionDictionary;
+    private SettingsController settingsController;
 
     @FXML
     private CodeArea userCodeInput;
@@ -65,8 +70,6 @@ public class UserInterfaceController implements Initializable {
 
     @Getter
     private ArrayList<String> recentFilePaths = new ArrayList<>();
-    private Integer maxNodes = 40;
-    private Float maxEdgeLength = 120.0f;
 
 
     /**
@@ -81,7 +84,7 @@ public class UserInterfaceController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
 
         try {
-            //Load settings
+            //Load recent files
             BufferedReader bufferedReader = new BufferedReader(new FileReader(new File("recentfiles.conf")));
             String line;
             while ((line = bufferedReader.readLine()) != null) {
@@ -94,7 +97,11 @@ public class UserInterfaceController implements Initializable {
             System.out.println("Error reading the settings file.");
         }
 
-        // Have to initalise it or there is a delay between the graph becoming ready and actually displaying things
+        settingsController = new SettingsController();
+
+        ModelView.getInstance().setSettings(settingsController);
+
+        // Have to initialise it or there is a delay between the graph becoming ready and actually displaying things
         SwingUtilities.invokeLater(() -> modelDisplay.setContent(ModelView.getInstance().updateGraph(modelDisplay)));
 
         //register a callback for whenever the list of automata is changed
@@ -173,6 +180,7 @@ public class UserInterfaceController implements Initializable {
                 .filter(ch -> ch.getInserted().getText().length() == 1)
                 .subscribe((change) -> { // Hook for detecting user input, used for autocompletion as that happens quickly.
                     modified = true;
+                    holdHighlighting = false;
                     if (change.getRemoved().getText().length() == 0) {  // If this isnt a backspace character
 
                         String currentUserCode = userCodeInput.getText();
@@ -221,10 +229,9 @@ public class UserInterfaceController implements Initializable {
                     } else { // Handles if there is a backspace
                         popupSelection.getItems().clear();
                         autocompleteBox.hide();
-
                     }
 
-                    holdHighlighting = false;
+
 
                 });
     }
@@ -382,6 +389,7 @@ public class UserInterfaceController implements Initializable {
             currentOpenFile = null;
             userCodeInput.clear();
             modified = false;
+            holdHighlighting = false;
             UserInterfaceApplication.getPrimaryStage().setTitle("Process Modeller - New File");
         }
     }
@@ -407,6 +415,7 @@ public class UserInterfaceController implements Initializable {
                     currentOpenFile = selectedFile;
                     UserInterfaceApplication.getPrimaryStage().setTitle("Process Modeller - " + currentOpenFile.getName());
                     modified = false;
+                    holdHighlighting = false;
                     addRecentFile(selectedFile.getAbsolutePath());
                 }
 
@@ -563,14 +572,34 @@ public class UserInterfaceController implements Initializable {
 
 
     @FXML
-    private void handOptionsRequest(ActionEvent event) {
+    private void handleOptions(ActionEvent event) {
 
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/clientres/SettingsInterface.fxml"));
+
+        loader.setController(settingsController);
+        try {
+            Stage settingsStage = new Stage();
+            settingsStage.setTitle("Settings");
+
+            Scene windowScene = new Scene(loader.load(), 402, 326);
+            settingsStage.setScene(windowScene);
+
+            settingsController.setWindow(settingsStage.getScene().getWindow());
+            settingsStage.initOwner(UserInterfaceApplication.getPrimaryStage());
+            settingsStage.initModality(Modality.APPLICATION_MODAL);
+            settingsStage.setResizable(false);
+            settingsStage.show();
+
+        } catch(IOException ignored) {
+            System.out.println(ignored);
+        }
     }
 
     //TODO: make this a better concurrent process
     @FXML
     private void handleCompileRequest(ActionEvent event) {
         String userCode = userCodeInput.getText();
+
         if (!userCode.isEmpty()) {
             compilerOutputDisplay.clear();
             modelsList.getItems().clear();

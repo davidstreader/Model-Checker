@@ -50,6 +50,7 @@ import mc.client.graph.NodeType;
 import mc.client.graph.SeededRandomizedLayout;
 import mc.client.graph.SpringlayoutBase;
 import mc.client.ui.DoubleClickHandler;
+import mc.client.ui.SettingsController;
 import mc.compiler.CompilationObject;
 import mc.compiler.CompilationObservable;
 import mc.compiler.OperationResult;
@@ -82,12 +83,20 @@ public class ModelView implements Observer {
 
   private static final Font sourceCodePro;
 
+  @Setter
+  private SettingsController settings; // COntains linkage length and max nodes
+
 
   @Setter
   private Consumer<Collection<String>> listOfAutomataUpdater;
   @Setter
   private BiConsumer<List<OperationResult>, List<OperationResult>> updateLog;
 
+  @Setter
+  private Integer maxNodes = 40;
+
+  @Setter
+  private Integer linkageLength = 120;
 
   /**
    * This method is called whenever the observed object is changed. An
@@ -110,7 +119,7 @@ public class ModelView implements Observer {
 
     visibleModels = getProcessMap().entrySet().stream()
         .filter(e -> e.getValue().getProcessType() != ProcessType.AUTOMATA ||
-            ((Automaton) e.getValue()).getNodes().size() <= 40)
+            ((Automaton) e.getValue()).getNodes().size() <= settings.getMaxNodes())
         .map(Map.Entry::getKey)
         .collect(Collectors.toCollection(TreeSet::new));
 
@@ -366,6 +375,10 @@ public class ModelView implements Observer {
     layout = new SpringlayoutBase<>(graph);
     ((SpringlayoutBase) layout).setStretch(0.8);
     ((SpringlayoutBase) layout).setRepulsionRange(1000);
+
+    if(settings != null) {
+      ((SpringlayoutBase) layout).setLinkLength(settings.getLinkageLength());
+    }
 
     layout.setInitializer(layoutInitalizer);
 

@@ -96,12 +96,8 @@ public class Compiler {
     EquationEvaluator.EquationReturn eqResults = eqEvaluator.evaluateEquations(new ArrayList<>(processMap.values()), ast.getEquations(), code, context, z3Context, messageQueue);
     processMap.putAll(eqResults.getToRender());
 
+    processesToRemoveFromDisplay.stream().filter(processMap::containsKey).forEach(processMap::remove);
 
-    for (String element : processesToRemoveFromDisplay) {
-      if (processMap.containsKey(element)) {
-        processMap.remove(element);
-      }
-    }
 
     return new CompilationObject(processMap, opResults, eqResults.getResults());
   }
