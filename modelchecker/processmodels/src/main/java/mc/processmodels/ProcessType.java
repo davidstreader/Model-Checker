@@ -84,7 +84,7 @@ public enum ProcessType {
       return (R) pm;
     }
     //
-    if (canConvertTo(convertTo)) {
+    if (!canConvertTo(convertTo)) {
       throw new CompilationException(ProcessType.class,
           "Cannot convert " + this + " to a " + convertTo);
     }
