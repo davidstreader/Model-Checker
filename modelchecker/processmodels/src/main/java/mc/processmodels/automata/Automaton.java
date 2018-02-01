@@ -1,5 +1,6 @@
 package mc.processmodels.automata;
 
+import lombok.experimental.var;
 import mc.processmodels.ProcessModelObject;
 import com.microsoft.z3.Context;
 import java.util.ArrayList;
@@ -44,9 +45,14 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
   @Setter
   private HidingNode hiding;
 
+  /**
+   * use this to decide what guards and assignments to use+display
+   * details will appear on edges even if not needed
+   */
   @Getter
   @Setter
   private Set<String> hiddenVariables;
+
 
   @Getter
   @Setter
@@ -570,9 +576,25 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     String tempfrom = "";
     StringBuilder builder = new StringBuilder();
     builder.append("automaton:" + this.getId()+"{\n");
-    builder.append("\tnodes:{\n");
+    if (this.hiddenVariables != null) {
+      builder.append("\thiddenVar:{");
+      for (String var : this.hiddenVariables) {
+        builder.append(", " + var);
+      }
+    }
+    if (this.variables != null) {
+      builder.append("}\n\tvariables:{");
+      for (String var : this.variables) {
+        builder.append(", " + var);
+      }
+    }
+    builder.append("}\n\tnodes:{\n");
     for (AutomatonNode node : nodeMap.values()) {
-      builder.append("\t\t").append(node.getId()).append(" c= "+ node.getColour()+" ");
+      builder.append("\t\t").append(node.getId()).
+                             append(" c= "+ node.getColour()).toString();
+      if (node.getGuard() !=null) {
+        builder.append(" g= "+ node.getGuard().myString());
+      }
       if (node == root) {
         builder.append("(root)");
       }

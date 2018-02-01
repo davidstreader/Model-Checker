@@ -26,6 +26,9 @@ public class AutomatonEdge extends ProcessModelObject {
   @Setter
   private AutomatonNode to;
 
+  /**
+   *
+   */
   @Getter
   @Setter
   private Guard guard;

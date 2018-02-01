@@ -29,12 +29,16 @@ public class Expander {
 
   private final Pattern VAR_PATTERN = Pattern.compile("\\$[a-z][a-zA-Z0-9_]*");
 
+  // symbolic evaluation
   private Map<String, Expr> globalVariableMap;
+
+
   private ExpressionEvaluator evaluator = new ExpressionEvaluator();
   private Map<String, List<String>> identMap = new HashMap<>();
   private Set<String> hiddenVariables = new HashSet<>();
 
-  public AbstractSyntaxTree expand(AbstractSyntaxTree ast, BlockingQueue<Object> messageQueue, Context context) throws CompilationException, InterruptedException {
+  public AbstractSyntaxTree expand(AbstractSyntaxTree ast, BlockingQueue<Object> messageQueue, Context context)
+    throws CompilationException, InterruptedException {
     globalVariableMap = ast.getVariableMap();
 
     List<ProcessNode> processes = ast.getProcesses();
@@ -55,7 +59,17 @@ public class Expander {
     return ast;
   }
 
-  public ProcessNode expand(ProcessNode process, BlockingQueue<Object> messageQueue, Context context) throws CompilationException, InterruptedException {
+  /**
+   * Expand ProcessNode (AST for one process)
+   * @param process
+   * @param messageQueue
+   * @param context
+   * @return
+   * @throws CompilationException
+   * @throws InterruptedException
+   */
+  public ProcessNode expand(ProcessNode process, BlockingQueue<Object> messageQueue, Context context)
+    throws CompilationException, InterruptedException {
     messageQueue.add(new LogAST("Expanding:", process));
     identMap.clear();
     if (process.hasVariableSet()) {
@@ -79,7 +93,10 @@ public class Expander {
     return process;
   }
 
-  private List<LocalProcessNode> expandLocalProcesses(List<LocalProcessNode> localProcesses, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException {
+  private List<LocalProcessNode> expandLocalProcesses(List<LocalProcessNode> localProcesses,
+                                                      Map<String, Object> variableMap,
+                                                      Context context)
+    throws CompilationException, InterruptedException {
     List<LocalProcessNode> newLocalProcesses = new ArrayList<>();
     for (LocalProcessNode localProcess : localProcesses) {
       if (localProcess.getRanges() == null) {
@@ -94,7 +111,11 @@ public class Expander {
     return newLocalProcesses;
   }
 
-  private List<LocalProcessNode> expandLocalProcesses(LocalProcessNode localProcess, Map<String, Object> variableMap, List<IndexNode> ranges, int index, Context context) throws CompilationException, InterruptedException {
+  private List<LocalProcessNode> expandLocalProcesses(LocalProcessNode localProcess,
+                                                      Map<String, Object> variableMap,
+                                                      List<IndexNode> ranges, int index,
+                                                      Context context)
+    throws CompilationException, InterruptedException {
     List<LocalProcessNode> newLocalProcesses = new ArrayList<>();
     if (index < ranges.size()) {
       IndexNode range = ranges.get(index);
@@ -121,7 +142,8 @@ public class Expander {
     return newLocalProcesses;
   }
 
-  private ASTNode expand(ASTNode astNode, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException {
+  private ASTNode expand(ASTNode astNode, Map<String, Object> variableMap, Context context)
+    throws CompilationException, InterruptedException {
     if (Thread.currentThread().isInterrupted()) {
       throw new InterruptedException();
     }
@@ -508,7 +530,7 @@ public class Expander {
   }
 
   private boolean containsHidden(Expr ex) {
-    //If there is an and inside this expression, then don't check its variables as it is added on its own.
+    //If there is an "and" inside this expression, then don't check its variables as it is added on its own.
     if (ex.isAnd()) {
       return false;
     }

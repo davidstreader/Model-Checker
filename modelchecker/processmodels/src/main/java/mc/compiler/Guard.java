@@ -32,7 +32,7 @@ import mc.util.expr.ExpressionEvaluator;
 import mc.util.expr.ExpressionPrinter;
 import mc.util.expr.VariableCollector;
 
-@Setter
+@Setter  // build all setters?
 @AllArgsConstructor
 @ToString
 @NoArgsConstructor
@@ -40,12 +40,22 @@ public class Guard implements Serializable {
   //Don't serialize these getters as we serialize the below methods instead.
   @Getter(onMethod = @__(@JsonIgnore))
   BoolExpr guard;
+  // this is the boolean guard for input to Z3
+
+  /**
+   *the field variables is actuall an evaluation, a variable 2 value mapping
+   * this is the pre state evaluation
+   */
   @Getter(onMethod = @__(@JsonIgnore))
   Map<String, Integer> variables = new HashMap<>();
+
+
   @Getter(onMethod = @__(@JsonIgnore))
   List<String> next = new ArrayList<>();
+
   @Getter(onMethod = @__(@JsonIgnore))
   Map<String, String> nextMap = new HashMap<>();
+
   @Getter
   private boolean shouldDisplay = false;
   private Set<String> hiddenVariables = new HashSet<>();
@@ -65,7 +75,7 @@ public class Guard implements Serializable {
   public String myString(){
     String var = "var = ";
     for(String s: variables.keySet()){
-      var = var+s+"="+variables.get(s).toString();
+      var = var+s+"=>"+variables.get(s).toString();
     }
     String nxt = next.stream().reduce("",(x,y)-> x+" "+y+" ");
     String nm = "nextMap = ";

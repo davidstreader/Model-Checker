@@ -34,7 +34,8 @@ public class ReferenceReplacer {
     globalRequirements = new HashSet<>();
   }
 
-  public AbstractSyntaxTree replaceReferences(AbstractSyntaxTree ast, BlockingQueue<Object> messageQueue) throws CompilationException, InterruptedException {
+  public AbstractSyntaxTree replaceReferences(AbstractSyntaxTree ast, BlockingQueue<Object> messageQueue)
+    throws CompilationException, InterruptedException {
     reset();
 
     List<ProcessNode> processes = ast.getProcesses();

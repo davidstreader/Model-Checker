@@ -24,6 +24,7 @@ import mc.compiler.ProcessHierarchy;
 @Data
 public class AbstractSyntaxTree {
   /**
+   * an AST for whole file not just one process
    * Processes contains the concrete syntax trees for the processes defined in the users code.
    */
   private final List<ProcessNode> processes;
@@ -42,6 +43,9 @@ public class AbstractSyntaxTree {
 
   /**
    * TODO: find out how this is used.
+   * should be a symbolic evaluation  variable to Z3 expression.
+   * Now if this is built by the expansion then a similar construction
+   * should be built on a symbolic automata or symbolic petri net!
    */
   private final Map<String, Expr> variableMap;
 

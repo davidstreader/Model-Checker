@@ -13,10 +13,7 @@ import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.petrinet.Petrinet;
 import mc.util.expr.Expression;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -68,6 +65,7 @@ public class AbstractionFunction implements IProcessFunction {
   if (automata.length != getNumberArguments()) {
    throw new CompilationException(this.getClass(), null);
   }
+  Set<AutomatonEdge> processesed = new HashSet<>();
   Automaton startA = automata[0].copy();
   String Aname = startA.getId();
   //System.out.println("start "+ startA.toString());
@@ -94,6 +92,9 @@ public class AbstractionFunction implements IProcessFunction {
   //Construct  edges to replace the unobservable edges
   while (!hiddenEdges.isEmpty()) {
    AutomatonEdge hiddenEdge = hiddenEdges.get(0);
+   if (processesed.contains(hiddenEdge)) {continue;}
+   processesed.add(hiddenEdge); // ensures termination
+
    hiddenEdges.remove(hiddenEdge);
    abstraction.removeEdge(hiddenEdge);
    //System.out.println("Removing "+ hiddenEdge.myString());
@@ -176,7 +177,7 @@ public class AbstractionFunction implements IProcessFunction {
    Guard outGuard;
 
    if (fromGuard != null && hiddenGuard != null) {
-    outGuard = Expression.combineGuards(hiddenGuard, fromGuard, context);
+    outGuard = Expression.combineGuards( fromGuard, hiddenGuard, context);
    } else if (fromGuard != null) {
     outGuard = fromGuard;
    } else {
@@ -298,6 +299,13 @@ public class AbstractionFunction implements IProcessFunction {
           abstraction.combineNodes(edge.getFrom(), edge.getTo(), context);
         } else {
   */
+
+ /**
+  *
+  * @param context
+  * @param autoIN  In and Out
+  * @throws CompilationException
+  */
  private void mergeloopsOfSize2 ( Context context, Automaton autoIN)
    throws CompilationException {
   //System.out.println("start");
@@ -307,12 +315,21 @@ public class AbstractionFunction implements IProcessFunction {
   }
 
  }
+
+ /**
+  *
+  * @param context   Z3
+  * @param autoIN  In and Out
+  * @return
+  * @throws CompilationException
+  *
+  * Initiall used  to ensure termination of abstraction algorithm But
+  * caused problems with symbolic transitions
+  */
  private boolean  mergeloop( Context context, Automaton autoIN)
    throws CompilationException
  {
-
   List<AutomatonEdge> edges = autoIN.getEdges();
-
 
   for(AutomatonEdge edge: edges) {
    //System.out.println("edge "+edge.myString());

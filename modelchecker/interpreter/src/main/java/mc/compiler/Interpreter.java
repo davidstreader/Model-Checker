@@ -14,6 +14,8 @@ import mc.exceptions.CompilationException;
 import mc.processmodels.MultiProcessModel;
 import mc.processmodels.ProcessModel;
 
+import javax.xml.soap.SOAPPart;
+
 /**
  * Created by sheriddavi on 24/01/17.
  */
@@ -56,7 +58,7 @@ public class Interpreter {
           ((MultiProcessModel) model).addProcess(modelPetri);
         }
       }
-
+      System.out.println(model.toString());
       System.out.print("Done!");
 
       processMap.put(process.getIdentifier(), model);
