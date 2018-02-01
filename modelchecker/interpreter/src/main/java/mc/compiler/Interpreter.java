@@ -13,6 +13,9 @@ import mc.compiler.interpreters.PetrinetInterpreter;
 import mc.exceptions.CompilationException;
 import mc.processmodels.MultiProcessModel;
 import mc.processmodels.ProcessModel;
+import mc.processmodels.ProcessType;
+import mc.processmodels.conversion.TokenRule;
+import mc.processmodels.petrinet.Petrinet;
 
 /**
  * Created by sheriddavi on 24/01/17.
@@ -38,15 +41,6 @@ public class Interpreter {
         model.setLocation(process.getLocation());
       }
 
-      if (process.getType().contains("automata")) {
-        ProcessModel modelAut = automatonInterpreter.interpret(process, processMap, localCompiler, context);
-        modelAut.setLocation(process.getLocation());
-        if (model == null) { // If the model is not comprised of multiple types
-          model = modelAut;
-        } else {
-          ((MultiProcessModel) model).addProcess(modelAut);
-        }
-      }
       if (process.getType().contains("petrinet")) {
         ProcessModel modelPetri = petrinetInterpreter.interpret(process, processMap, localCompiler, context);
         modelPetri.setLocation(process.getLocation());
@@ -56,6 +50,23 @@ public class Interpreter {
           ((MultiProcessModel) model).addProcess(modelPetri);
         }
       }
+
+      if (process.getType().contains("automata")) {
+        ProcessModel modelAut;
+        if(process.getType().contains("petrinet")) {
+          modelAut = TokenRule.tokenRule((Petrinet) ((MultiProcessModel)model).getProcess(ProcessType.PETRINET));
+        } else {
+          modelAut = automatonInterpreter.interpret(process, processMap, localCompiler, context);
+        }
+
+        modelAut.setLocation(process.getLocation());
+        if (model == null) { // If the model is not comprised of multiple types
+          model = modelAut;
+        } else {
+          ((MultiProcessModel) model).addProcess(modelAut);
+        }
+      }
+
 
       System.out.print("Done!");
 

@@ -54,7 +54,6 @@ import mc.client.ui.SettingsController;
 import mc.compiler.CompilationObject;
 import mc.compiler.CompilationObservable;
 import mc.compiler.OperationResult;
-import mc.exceptions.CompilationException;
 import mc.processmodels.MultiProcessModel;
 import mc.processmodels.ProcessModel;
 import mc.processmodels.ProcessType;
@@ -430,7 +429,7 @@ public class ModelView implements Observer {
     vv.setGraphMouse(gm);
 
     massSelect = new DoubleClickHandler(processModels, vv);
-    vv.addGraphMouseListener(massSelect);
+    vv.addMouseListener(massSelect);
 
 
     //label the nodes
@@ -443,7 +442,6 @@ public class ModelView implements Observer {
 
     // Sets edges as lines
     vv.getRenderContext().setEdgeShapeTransformer(EdgeShape.mixedLineCurve(graph));
-
 
     processModels = MultimapBuilder.hashKeys().hashSetValues().build();
   }
