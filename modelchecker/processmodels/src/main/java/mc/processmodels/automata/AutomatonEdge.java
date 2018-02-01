@@ -1,10 +1,11 @@
 package mc.processmodels.automata;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 import mc.Constant;
 import mc.compiler.Guard;
 import mc.processmodels.ProcessModelObject;
@@ -13,6 +14,8 @@ import mc.processmodels.automata.serializers.JSONEdgeSerializer;
 @JsonSerialize(using = JSONEdgeSerializer.class)
 //@ToString
 public class AutomatonEdge extends ProcessModelObject {
+
+  private Set<String> automatonLocation = new HashSet<>();
 
   @Getter
   @Setter
@@ -47,6 +50,14 @@ public class AutomatonEdge extends ProcessModelObject {
 
   public boolean isDeadlocked() {
     return label.equals(Constant.DEADLOCK);
+  }
+
+  public Set<String> getOwnerLocation() {
+    return new HashSet<>(automatonLocation);
+  }
+
+  public boolean addOwnerLocation(String owner) {
+    return automatonLocation.add(owner);
   }
 
   public String myString(){

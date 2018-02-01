@@ -8,13 +8,19 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import mc.compiler.ast.*;
+import mc.compiler.ast.ASTNode;
+import mc.compiler.ast.ChoiceNode;
+import mc.compiler.ast.CompositeNode;
+import mc.compiler.ast.FunctionNode;
+import mc.compiler.ast.IdentifierNode;
+import mc.compiler.ast.IfStatementNode;
+import mc.compiler.ast.OperationNode;
+import mc.compiler.ast.ProcessRootNode;
+import mc.compiler.ast.SequenceNode;
 import mc.exceptions.CompilationException;
 import mc.plugins.IOperationInfixFunction;
 import mc.processmodels.ProcessModel;
 import mc.processmodels.automata.Automaton;
-import mc.processmodels.automata.operations.AutomataOperations;
 import mc.util.Location;
 
 /**
@@ -24,12 +30,7 @@ public class OperationEvaluator {
 
   private int operationId;
 
-  private AutomataOperations automataOperations;
   static Map<String, Class<? extends IOperationInfixFunction>> operationsMap = new HashMap<>();
-
-  public OperationEvaluator() {
-    this.automataOperations = new AutomataOperations();
-  }
 
   public List<OperationResult> evaluateOperations(List<OperationNode> operations,
                                                   Map<String, ProcessModel> processMap, Interpreter interpreter,

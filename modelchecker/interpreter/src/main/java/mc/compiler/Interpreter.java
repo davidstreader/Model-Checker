@@ -43,7 +43,7 @@ public class Interpreter {
       if (process.getType().contains("automata")) {
         ProcessModel modelAut = automatonInterpreter.interpret(process, processMap, localCompiler, context);
         modelAut.setLocation(process.getLocation());
-        if (model == null) {
+        if (model == null) { // If the model is not comprised of multiple types
           model = modelAut;
         } else {
           ((MultiProcessModel) model).addProcess(modelAut);
@@ -52,7 +52,7 @@ public class Interpreter {
       if (process.getType().contains("petrinet")) {
         ProcessModel modelPetri = petrinetInterpreter.interpret(process, processMap, localCompiler, context);
         modelPetri.setLocation(process.getLocation());
-        if (model == null) {
+        if (model == null) { // If the model is not comprised of multiple types
           model = modelPetri;
         } else {
           ((MultiProcessModel) model).addProcess(modelPetri);
@@ -74,6 +74,11 @@ public class Interpreter {
       case "automata":
         model = automatonInterpreter.interpret(astNode, identifer, processMap, context);
         break;
+
+      case "petrinet":
+        model = petrinetInterpreter.interpret(astNode, identifer, processMap, context);
+        break;
+
       default:
         throw new CompilationException(getClass(), "Unable to find the process type: " + processModelType);
     }

@@ -69,19 +69,12 @@ public class AbstractionFunction implements IProcessFunction {
   Automaton startA = automata[0].copy();
   String Aname = startA.getId();
   //System.out.println("start "+ startA.toString());
-  System.out.println("Abstraction "+Aname+" Starting with "+startA.getNodes().size()+" nodes");
+
   Automaton abstraction = pruneHiddenNodes(context, startA);
-  System.out.println(Aname+" Pruned  to "+abstraction.getNodes().size()+" nodes");
+
 
  mergeloopsOfSize2(context,abstraction);
-  System.out.println(Aname+" Merge loops returns "+abstraction.getNodes().size()+" nodes");
 
-/*try{
-  System.out.print("merge ended");
-  System.in.read();
-} catch (IOException e) {
-  System.out.println(e.toString());
-}*/
   boolean isFair = flags.contains("fair") || !flags.contains("unfair");
 
   // retrieve the unobservable edges from the specified automaton

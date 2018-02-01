@@ -65,7 +65,7 @@ public class Guard implements Serializable {
    *
    * @return The guard as a string, or an empty string if none exists.
    */
-  public String getGuardStr() throws CompilationException {
+  public String getGuardStr()  {
     if (guard == null || hiddenVariables.isEmpty()) {
       return "";
     }
@@ -170,7 +170,8 @@ public class Guard implements Serializable {
     if (next.isEmpty() || hiddenVariables.isEmpty()) {
       return "";
     }
-    return rmPrefix(String.join(",", next));
+
+    return rmPrefix(String.join(",", next)).split("%")[0];
   }
 
   /**

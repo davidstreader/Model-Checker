@@ -103,33 +103,27 @@ public class Compiler {
       ProcessNode currentProcess = dependencyMap.get(processesName);
       for (String currentDependencyName : dependencies) {
         ProcessNode currentDependency = dependencyMap.get(currentDependencyName);
-
-        if (!currentDependency.getType().containsAll(currentProcess.getType())) {
-          if (currentDependency.getType().size() == 0) {
-            currentDependency.getType().addAll(currentProcess.getType());
-            processesToRemoveFromDisplay.add(currentDependencyName);
-          }
-          //else if (!currentProcess.getType().equals("processes")) {
-          //  throw new CompilationException(this.getClass(), "Dependecy "
-          //      + currentDependencyName
-          //      + " for "
-          //      + processesName
-          //      + " has mismatched type, expecting \""
-          //      + currentProcess.getType()
-          //      + "\" got \"" + currentDependency.getType()
-          //      + "\""
-          //      , null);
-          //}
+        if (currentDependency.getType().size() == 0) {
+          currentDependency.getType().addAll(currentProcess.getType());
+          processesToRemoveFromDisplay.add(currentDependencyName);
         }
       }
     }
 
-    Map<String, ProcessModel> processMap = interpreter.interpret(ast, new LocalCompiler(processNodeMap, expander, replacer, messageQueue), messageQueue, z3Context);
-    List<OperationResult> opResults = evaluator.evaluateOperations(ast.getOperations(), processMap, interpreter, code, z3Context);
-    EquationEvaluator.EquationReturn eqResults = eqEvaluator.evaluateEquations(new ArrayList<>(processMap.values()), ast.getEquations(), code, context, z3Context, messageQueue);
+    Map<String, ProcessModel> processMap = interpreter.interpret(ast,
+        new LocalCompiler(processNodeMap, expander, replacer, messageQueue),
+        messageQueue, z3Context);
+    List<OperationResult> opResults = evaluator.evaluateOperations(ast.getOperations(), processMap,
+        interpreter, code, z3Context);
+    EquationEvaluator.EquationReturn eqResults = eqEvaluator.evaluateEquations(
+        new ArrayList<>(processMap.values()), ast.getEquations(),
+        code, context, z3Context, messageQueue);
+
     processMap.putAll(eqResults.getToRender());
 
-    processesToRemoveFromDisplay.stream().filter(processMap::containsKey).forEach(processMap::remove);
+    processesToRemoveFromDisplay.stream()
+        .filter(processMap::containsKey)
+        .forEach(processMap::remove);
 
     return new CompilationObject(processMap, opResults, eqResults.getResults());
   }

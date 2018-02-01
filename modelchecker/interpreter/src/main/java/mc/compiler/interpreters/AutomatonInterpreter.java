@@ -40,11 +40,9 @@ import mc.plugins.IProcessInfixFunction;
 import mc.processmodels.ProcessModel;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonNode;
-import mc.processmodels.automata.operations.AutomataOperations;
+import mc.processmodels.automata.operations.AutomataLabeller;
 
 public class AutomatonInterpreter implements ProcessModelInterpreter {
-
-  private AutomataOperations operations;
 
   static Map<String, Class<? extends IProcessFunction>> functions = new HashMap<>();
   static Map<String, Class<? extends IProcessInfixFunction>> infixFunctions = new HashMap<>();
@@ -60,7 +58,6 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
   private Set<AutomatonNode> subProcessStartNodes;
 
   public AutomatonInterpreter() {
-    this.operations = new AutomataOperations();
     reset();
   }
 
@@ -76,7 +73,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     interpretProcess(processNode.getProcess(), identifier);
 
     ProcessModel pm = processStack.pop();
-    Automaton automaton = pm.getProcessType().convertTo(AUTOMATA,pm);
+    Automaton automaton = ((Automaton) pm.getProcessType().convertTo(AUTOMATA,pm)).copy();
 //    if (pm instanceof MultiProcessModel) {
 //      automaton = ((Automaton)((MultiProcessModel) pm).getProcess(ProcessType.AUTOMATA));
 //    } else if (pm instanceof Petrinet) {
@@ -110,7 +107,8 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
 
     interpretProcess(astNode, identifier);
 
-    Automaton automaton = ((Automaton) processStack.pop()).copy();
+    ProcessModel pm = processStack.pop();
+    Automaton automaton = ((Automaton) pm.getProcessType().convertTo(AUTOMATA,pm)).copy();
 
     return labelAutomaton(automaton);
   }
@@ -134,7 +132,9 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
       ProcessRootNode root = (ProcessRootNode) astNode;
 
       interpretProcess(root.getProcess(), identifier);
-      Automaton automaton = ((Automaton) processStack.pop()).copy();
+
+      ProcessModel pm = processStack.pop();
+      Automaton automaton = ((Automaton) pm.getProcessType().convertTo(AUTOMATA,pm)).copy();
 
       automaton = processLabellingAndRelabelling(automaton, root);
       if (root.hasHiding()) {
@@ -320,7 +320,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
 
   private Automaton processLabellingAndRelabelling(Automaton automaton, ProcessRootNode astProcessRootNode) throws CompilationException {
     if (astProcessRootNode.hasLabel()) {
-      automaton = operations.labelAutomaton(automaton, astProcessRootNode.getLabel());
+      automaton = AutomataLabeller.labelAutomaton(automaton, astProcessRootNode.getLabel());
     }
     if (astProcessRootNode.hasRelabelSet()) {
       processRelabelling(automaton, astProcessRootNode.getRelabelSet());

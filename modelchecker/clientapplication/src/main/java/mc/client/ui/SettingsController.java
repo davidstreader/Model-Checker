@@ -57,6 +57,16 @@ public class SettingsController implements Initializable{
     public void initialize(URL location, ResourceBundle resources) {
         maxNodesSlider.setValue(maxNodes);
         linkageLengthSlider.setValue(linkageLength);
+
+        maxNodesSlider.valueProperty().addListener((arg0, arg1, newVal) -> {
+            maxNodes = newVal.intValue();
+        });
+
+
+        linkageLengthSlider.valueProperty().addListener((arg0, arg1, newVal) -> {
+            linkageLength = newVal.intValue();
+        });
+
     }
 
     public SettingsController(Integer numNodes, Integer linkageLength_) {

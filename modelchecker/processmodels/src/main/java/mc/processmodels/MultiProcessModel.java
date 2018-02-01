@@ -42,7 +42,7 @@ public class MultiProcessModel extends ProcessModelObject implements ProcessMode
 
   @Override
   public ProcessType getProcessType() {
-    return null;
+    return ProcessType.MULTI_PROCESS;
   }
 
   @Override
