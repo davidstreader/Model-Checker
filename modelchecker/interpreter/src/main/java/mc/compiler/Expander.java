@@ -28,6 +28,10 @@ import mc.util.expr.VariableCollector;
 public class Expander {
 
   private final Pattern VAR_PATTERN = Pattern.compile("\\$[a-z][a-zA-Z0-9_]*");
+/*
+  Expanding replaces varaibles over  ranges with atomic processes
+ */
+
 
   // symbolic evaluation
   private Map<String, Expr> globalVariableMap;

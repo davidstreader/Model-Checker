@@ -48,6 +48,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
   /**
    * use this to decide what guards and assignments to use+display
    * details will appear on edges even if not needed
+   * Atomic automaton = null or size 0
    */
   @Getter
   @Setter
@@ -74,6 +75,9 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
   @Setter
   private List<RelabelElementNode> relabels;
 
+  public boolean isSymbolic(){
+    return (hiddenVariables != null &&  hiddenVariables.size() >0);
+  }
 
   public Automaton(String id) {
     this(id, true);
@@ -409,12 +413,15 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     throw new CompilationException(getClass(), "Edge " + id + " was not found in the automaton " + getId(), this.getLocation());
   }
 
-  public AutomatonEdge addEdge(String label, AutomatonNode from, AutomatonNode to, Guard currentEdgesGuard) throws CompilationException {
+  public AutomatonEdge addEdge(String label, AutomatonNode from, AutomatonNode to,
+                               Guard currentEdgesGuard)
+    throws CompilationException {
     String id = getNextEdgeId();
     return addEdge(id, label, from, to, currentEdgesGuard);
   }
 
-  public AutomatonEdge addEdge(String id, String label, AutomatonNode from, AutomatonNode to, Guard currentEdgesGuard) throws CompilationException {
+  public AutomatonEdge addEdge(String id, String label, AutomatonNode from, AutomatonNode to,
+                               Guard currentEdgesGuard) throws CompilationException {
     // check that the nodes have been defined
 
     if (from == null) {

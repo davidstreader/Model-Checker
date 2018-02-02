@@ -11,7 +11,8 @@ import mc.processmodels.automata.AutomatonNode;
  */
 public class AutomataLabeller {
 
-  public static Automaton labelAutomaton(Automaton automaton, String label) throws CompilationException {
+  public static Automaton labelAutomaton(Automaton automaton, String label)
+    throws CompilationException {
     Automaton labelled = new Automaton(label + ":" + automaton.getId(), !Automaton.CONSTRUCT_ROOT);
     List<AutomatonNode> nodes = automaton.getNodes();
     for (AutomatonNode node : nodes) {

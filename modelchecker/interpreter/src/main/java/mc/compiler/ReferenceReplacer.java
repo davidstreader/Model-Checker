@@ -28,6 +28,11 @@ public class ReferenceReplacer {
   private Set<String> references;
   private Set<String> globalRequirements;
 
+  /** replacer.replaceReferences  LOCAL Referances NOT Global Referances
+   * Expands references i.e Initally we are now at: P1 = a->P2,
+   *                                                P2 = b->c->x.
+   *  Then it expands it to, P1 = a->b->c->x. If it needs it
+   */
   public ReferenceReplacer() {
     globalReferences = new HashSet<>();
     references = new HashSet<>();
@@ -37,7 +42,7 @@ public class ReferenceReplacer {
   public AbstractSyntaxTree replaceReferences(AbstractSyntaxTree ast, BlockingQueue<Object> messageQueue)
     throws CompilationException, InterruptedException {
     reset();
-
+//System.out.println("replace Ref");
     List<ProcessNode> processes = ast.getProcesses();
     if (ast.getProcessHierarchy() == null) {
       ast.setProcessHierarchy(new ProcessHierarchy());
@@ -46,7 +51,8 @@ public class ReferenceReplacer {
     for (ProcessNode process : processes) {
       globalRequirements.clear();
       replaceReferences(process, messageQueue);
-      ast.getProcessHierarchy().getDependencies().putAll(process.getIdentifier(), globalRequirements);
+      ast.getProcessHierarchy().getDependencies().
+        putAll(process.getIdentifier(), globalRequirements);
     }
 
     return ast;
@@ -56,6 +62,7 @@ public class ReferenceReplacer {
   //Because of that it is public, and it should NOT be reset.
   public ProcessNode replaceReferences(ProcessNode process, BlockingQueue<Object> messageQueue) throws CompilationException, InterruptedException {
     references.clear();
+//System.out.println("Replacing ");
     messageQueue.add(new LogAST("Replacing references:", process));
     String identifier = process.getIdentifier();
     addReference(process.getProcess(), identifier);
@@ -64,6 +71,7 @@ public class ReferenceReplacer {
     List<LocalProcessNode> localProcesses = process.getLocalProcesses();
     for (LocalProcessNode localProcess : localProcesses) {
       String localIdentifier = identifier + "." + localProcess.getIdentifier();
+//System.out.println("Replacing "+ localIdentifier);
       localReferences.put(localIdentifier, localProcess);
     }
 

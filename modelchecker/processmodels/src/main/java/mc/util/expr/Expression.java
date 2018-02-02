@@ -138,7 +138,7 @@ public class Expression {
                 ret.setGuard(ctx.mkAnd(first.getGuard(), secondGuard));
             }
         }
-
+System.out.println(first.myString()+" - "+second.myString()+ " -> "+ret.myString());
         return ret;
     }
 

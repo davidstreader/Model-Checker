@@ -27,9 +27,9 @@ public class Compiler {
     this.lexer = new Lexer();
     parser = new Parser();
     this.expander = new Expander();
-    this.replacer = new ReferenceReplacer();
-    this.interpreter = new Interpreter();
-    this.eqEvaluator = new EquationEvaluator();
+    this.replacer = new ReferenceReplacer();  // AST to AST
+    this.interpreter = new Interpreter();     // AST to Automaton or Petri Net
+    this.eqEvaluator = new EquationEvaluator();  // equation evaluation calls
     this.evaluator = new OperationEvaluator();
   }
 
@@ -38,8 +38,8 @@ public class Compiler {
    * @param code   sourse code input
    * @param context
    * @param z3Context
-   * @param messageQueue  used to implement concurret exect\ution
-   * @return  name -> aut/Petri Net
+   * @param messageQueue  used to implement concurret execution
+   * @return  name - > aut Petri Net
    * @throws CompilationException
    * @throws InterruptedException
    *
