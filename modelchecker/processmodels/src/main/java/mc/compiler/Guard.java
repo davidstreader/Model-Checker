@@ -7,6 +7,7 @@ import static mc.util.expr.Expression.substitute;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
+import com.google.common.reflect.TypeToken;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
@@ -43,13 +44,13 @@ public class Guard implements Serializable {
   // this is the boolean guard for input to Z3
 
   /**
-   *the field variables is actuall an evaluation, a variable 2 value mapping
+   * the field variables is actuall an evaluation, a variable 2 value mapping
    * this is the pre state evaluation
    */
   @Getter(onMethod = @__(@JsonIgnore))
   Map<String, Integer> variables = new HashMap<>();
 
-
+// next "i:=2"
   @Getter(onMethod = @__(@JsonIgnore))
   List<String> next = new ArrayList<>();
 
@@ -73,12 +74,12 @@ public class Guard implements Serializable {
 
   }
   public String myString(){
-    String var = "var = ";
+    String var = "var =";
     for(String s: variables.keySet()){
-      var = var+s+"=>"+variables.get(s).toString();
+      var = " "+var+s+" => "+variables.get(s).toString();
     }
-    String nxt = next.stream().reduce("",(x,y)-> x+" "+y+" ");
-    String nm = "nextMap = ";
+    String nxt = getNextStr();
+    String nm = "nextMap= ";
     for(String s: nextMap.keySet()){
       nm = nm+s+" "+nextMap.get(s)+" ";
     }
@@ -177,10 +178,11 @@ public class Guard implements Serializable {
   /**
    * Parse an identifier and turn it into a list of variable assignments.
    *
-   * @param identifier        The identifier
+   * @param identifier        The identifier  Could be "C[$i][j+1][4]"
    * @param globalVariableMap The global variable map
    * @param identMap          A map from identifiers to a list of the variables in them
    *                          (L[$i] = L -> [$i])
+   * Method changes state of Guard .nextMap  and .next
    */
   public void parseNext(String identifier, Map<String, Expr> globalVariableMap,
                         Map<String, List<String>> identMap, Location location)
@@ -244,9 +246,42 @@ public class Guard implements Serializable {
   public boolean hasData() {
     return guard != null || !variables.isEmpty() || !next.isEmpty();
   }
+// Worrying OLD copy was Shallow copy!
+  public Guard shalowcopy() {
+    return new Guard(guard, variables,
+                     next, nextMap,
+                     shouldDisplay, hiddenVariables);
+  }
 
+  /**
+   *
+   * @return   a deep copy
+   */
   public Guard copy() {
-    return new Guard(guard, variables, next, nextMap, shouldDisplay, hiddenVariables);
+    // One way to clone - deep copy  is to serialise and unserialise
+    Guard newG = new Guard();
+    BoolExpr newguard = guard;  // I think this is Imutable
+    Map<String, Integer> newvariables = new HashMap<>();
+    List<String> newnext = new ArrayList<>();
+    Map<String, String> newnextMap = new HashMap<>();
+    boolean newshouldDisplay = shouldDisplay;
+    Set<String> newhiddenVariables = new HashSet<>();
+
+
+    for(String k: variables.keySet()){
+      Integer newi = new Integer(variables.get(k));
+      newvariables.put(k,newi);
+    }
+    for(int i=0; i<next.size();i++){
+      newnext.add(next.get(i));
+    }
+    for(String k: nextMap.keySet()){
+      newnextMap.put(k,nextMap.get(k));
+    }
+    newhiddenVariables.addAll(hiddenVariables);
+
+
+    return newG;
   }
 
   public Guard(BoolExpr guard, Map<String, Integer> variables, Set<String> hiddenVariables) {

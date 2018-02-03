@@ -26,6 +26,8 @@ public class LocalProcessNode extends ASTNode {
 
   /**
    * The "label" of the process.
+   *     C[$i][2][$k] implies variable $i and $k are symbolic
+   *     variable j is expanded for automata node where j=2
    */
   private String identifier;
   /**

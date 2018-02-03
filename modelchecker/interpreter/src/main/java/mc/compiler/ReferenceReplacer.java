@@ -32,6 +32,7 @@ public class ReferenceReplacer {
    * Expands references i.e Initally we are now at: P1 = a->P2,
    *                                                P2 = b->c->x.
    *  Then it expands it to, P1 = a->b->c->x. If it needs it
+   *
    */
   public ReferenceReplacer() {
     globalReferences = new HashSet<>();

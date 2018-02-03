@@ -30,6 +30,7 @@ public class Expander {
   private final Pattern VAR_PATTERN = Pattern.compile("\\$[a-z][a-zA-Z0-9_]*");
 /*
   Expanding replaces varaibles over  ranges with atomic processes
+  Sets Guards on AST
  */
 
 
@@ -39,7 +40,7 @@ public class Expander {
 
   private ExpressionEvaluator evaluator = new ExpressionEvaluator();
   private Map<String, List<String>> identMap = new HashMap<>();
-  private Set<String> hiddenVariables = new HashSet<>();
+  private Set<String> hiddenVariables = new HashSet<>();  // C${i,k} symbolic variables i and k
 
   public AbstractSyntaxTree expand(AbstractSyntaxTree ast, BlockingQueue<Object> messageQueue, Context context)
     throws CompilationException, InterruptedException {
@@ -115,14 +116,23 @@ public class Expander {
     return newLocalProcesses;
   }
 
+  /* const M = 2.
+    This expands C[i:0..M][j:0..M]  using ranges List<IndexNode> =
+              [ ($i, start=0, end=2),($j, start=0, end=2)]
+
+   */
   private List<LocalProcessNode> expandLocalProcesses(LocalProcessNode localProcess,
                                                       Map<String, Object> variableMap,
                                                       List<IndexNode> ranges, int index,
                                                       Context context)
     throws CompilationException, InterruptedException {
+//System.out.println("  expandLocalProcesses  ranges "+ranges.size()+
+//                   "globalVariables "+globalVariableMap.size()+
+//                   "hiddenVariables "+ hiddenVariables.size()) ;
     List<LocalProcessNode> newLocalProcesses = new ArrayList<>();
     if (index < ranges.size()) {
       IndexNode range = ranges.get(index);
+//System.out.println("   range "+range.toString());
       IndexIterator iterator = IndexIterator.construct(expand(range, context));
       String variable = range.getVariable();
       if (!hiddenVariables.contains(variable.substring(1))) {
@@ -131,7 +141,7 @@ public class Expander {
           variableMap.put(variable, iterator.next());
           newLocalProcesses.addAll(expandLocalProcesses((LocalProcessNode) localProcess.copy(), variableMap, ranges, index + 1, context));
         }
-      } else {
+      } else { // $i is a hidden variable in  C${i}.
         localProcess.setIdentifier(localProcess.getIdentifier() + "[" + variable + "]");
         newLocalProcesses.addAll(expandLocalProcesses((LocalProcessNode) localProcess.copy(), variableMap, ranges, index + 1, context));
       }
@@ -142,7 +152,10 @@ public class Expander {
       clone.setProcess(root);
       newLocalProcesses.add(clone);
     }
-
+/*System.out.println("return expandLocalProcesses");
+    for(int i = 0; newLocalProcesses.size()>i ;i++){
+      System.out.println("  "+i+" "+ newLocalProcesses.get(i).toString());
+    }*/
     return newLocalProcesses;
   }
 
@@ -238,7 +251,10 @@ public class Expander {
     return range;
   }
 
-  private SequenceNode expand(SequenceNode astNode, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException {
+  private SequenceNode expand(SequenceNode astNode,
+                              Map<String, Object> variableMap,
+                              Context context)
+    throws CompilationException, InterruptedException {
     //add a guard to every sequenceNode. This will only contain next data.
     Guard guard = new Guard();
     if (astNode.getTo() instanceof IdentifierNode) {

@@ -58,8 +58,8 @@ public class Interpreter {
           ((MultiProcessModel) model).addProcess(modelPetri);
         }
       }
-      System.out.println(model.toString());
       System.out.print("Done!");
+      System.out.println("Built "+ model.toString());
 
       processMap.put(process.getIdentifier(), model);
     }

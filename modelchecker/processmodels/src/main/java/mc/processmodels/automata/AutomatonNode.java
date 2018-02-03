@@ -179,7 +179,8 @@ public class AutomatonNode extends ProcessModelObject implements Comparable<Auto
     return false;
   }
   public String myString() {
-   return "nd "+ this.getId()+" col "+ this.colour;
+
+    return "nd "+ this.getId()+" col "+ this.colour+" G= "+getGuard();
   }
   public String toString() {
    StringBuilder builder = new StringBuilder();
@@ -194,7 +195,10 @@ public class AutomatonNode extends ProcessModelObject implements Comparable<Auto
     if(isStartNode()) {
       builder.append(" (START)");
     }
-    builder.append("\n");
+    if (isTerminal()) {
+      builder.append(" (").append(getTerminal()).append(")");
+    }
+    builder.append(" g= "+getGuard()+"\n");
    builder.append("\tincoming:{");
    for (int i = 0; i < incoming.size(); i++) {
      builder.append(incoming.get(i).getId());

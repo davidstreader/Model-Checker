@@ -25,8 +25,8 @@ public class Compiler {
 
   public Compiler() throws InterruptedException {
     this.lexer = new Lexer();
-    parser = new Parser();
-    this.expander = new Expander();
+    parser = new Parser();  // Symbolic guards set up on the AST
+    this.expander = new Expander();  // sets Guards on AST
     this.replacer = new ReferenceReplacer();  // AST to AST
     this.interpreter = new Interpreter();     // AST to Automaton or Petri Net
     this.eqEvaluator = new EquationEvaluator();  // equation evaluation calls

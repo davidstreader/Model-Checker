@@ -601,7 +601,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
                              append(" c= "+ node.getColour()).toString();
       if (node.getGuard() !=null) {
         builder.append(" g= "+ node.getGuard().myString());
-      }
+      } else {builder.append(" Guard=null");}
       if (node == root) {
         builder.append("(root)");
       }
