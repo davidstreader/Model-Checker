@@ -27,6 +27,8 @@ import mc.util.Location;
 
 /**
  * A class that is able to simplify expressions using Z3
+ *   java class Expr  is a Z3  class
+ * Makes use of Google cashing  see https://github.com/google/guava/wiki/CachesExplained
  */
 public class Expression {
     @Data
@@ -55,6 +57,7 @@ public class Expression {
                     return solve(expr,key.thread);
                 }
             });
+
     private static LoadingCache<Substitute, Boolean> solved = CacheBuilder.newBuilder()
         .maximumSize(1000)
         .expireAfterWrite(1, TimeUnit.SECONDS)
@@ -96,13 +99,16 @@ public class Expression {
                 }
             });
     /**
-     * Combine two guards together
+     * Combine two guards together  -b1--a1->-b2--a2->
+     *    Hoare Logic b2@a1 is the precondition of program a1 with post condition b2
      * @param first The first guard
      * @param second The second guard
      * @return A logical and of both guards, with the next variables substituted from the first into the second.
+     *         b1/\ b2@a1
      * @throws CompilationException
      */
-    public static Guard combineGuards(Guard first, Guard second, Context ctx) throws CompilationException, InterruptedException {
+    public static Guard combineGuards(Guard first, Guard second, Context ctx)
+      throws CompilationException, InterruptedException {
         //Create a new guard
         Guard ret = new Guard();
         //Start with variables from the second guard
@@ -110,12 +116,12 @@ public class Expression {
         //Replace all the variables from the second guard with ones from the first guard
         ret.getVariables().putAll(first.getVariables());
         ret.setNext(second.getNext());
-        //If there are next variables that exist in the first map that have not been edited by the second, add them.
+        // next variables that exist in the first map that have not been edited by the second, add them.
         for (String s: first.getNext()) {
             if (!second.getNextMap().containsKey(s.split("\\W")[0]))
                 ret.getNext().add(s);
         }
-        //convert the next variables into a series of expressions.
+        //convert the next variables into a series of Z3 expressions.
         HashMap<String,Expr> subMap = new HashMap<>();
         for (String str: first.getNextMap().keySet()) {
             subMap.put(str,constructExpression(first.getNextMap().get(str),null, ctx));
@@ -132,7 +138,7 @@ public class Expression {
                 ret.setGuard(ctx.mkAnd(first.getGuard(), secondGuard));
             }
         }
-
+System.out.println(first.myString()+" - "+second.myString()+ " -> "+ret.myString());
         return ret;
     }
 
@@ -188,7 +194,20 @@ public class Expression {
             throw new CompilationException(Expression.class,"Error occurred while solving: "+ExpressionPrinter.printExpression(expr));
         }
     }
-    private static Expr constructExpression(String expression, Map<String, String> variableMap, Location location, Context context) throws InterruptedException, CompilationException {
+
+    /**
+     *
+     * @param expression
+     * @param variableMap
+     * @param location
+     * @param context
+     * @return  aZ3 expression
+     * @throws InterruptedException
+     * @throws CompilationException
+     */
+    private static Expr constructExpression(String expression, Map<String, String> variableMap,
+                                            Location location, Context context)
+      throws InterruptedException, CompilationException {
         Pattern regex = Pattern.compile("(\\$v.+\\b)");
         Matcher matcher = regex.matcher(expression);
         while (matcher.find()) {
@@ -198,12 +217,15 @@ public class Expression {
             expression = expression.replace(matcher.group(0),variableMap.get(matcher.group(0)));
             matcher = regex.matcher(expression);
         }
+        // parsing infixed maths to postfixed or AST -- Expr extends AST
         ShuntingYardAlgorithm sya = new ShuntingYardAlgorithm(context);
         return sya.convert(expression, location);
     }
+
     public static Expr constructExpression(String s, Location location, Context context) throws InterruptedException, CompilationException {
         return constructExpression(s, Collections.emptyMap(), location, context);
     }
+
     static BitVecExpr mkBV(int i, Context ctx) throws InterruptedException {
         return ctx.mkBV(i,32);
     }

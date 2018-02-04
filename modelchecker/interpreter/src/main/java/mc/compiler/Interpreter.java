@@ -19,6 +19,8 @@ import mc.processmodels.conversion.TokenRule;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 
+import javax.xml.soap.SOAPPart;
+
 /**
  * Created by sheriddavi on 24/01/17.
  */
@@ -72,8 +74,8 @@ public class Interpreter {
         }
       }
 
-
       System.out.print("Done!");
+      System.out.println("Built "+ model.toString());
 
       processMap.put(process.getIdentifier(), model);
     }

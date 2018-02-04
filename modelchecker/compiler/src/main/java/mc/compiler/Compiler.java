@@ -25,27 +25,58 @@ public class Compiler {
 
   public Compiler() throws InterruptedException {
     this.lexer = new Lexer();
-    parser = new Parser();
-    this.expander = new Expander();
-    this.replacer = new ReferenceReplacer();
-    this.interpreter = new Interpreter();
-    this.eqEvaluator = new EquationEvaluator();
+    parser = new Parser();  // Symbolic guards set up on the AST
+    this.expander = new Expander();  // sets Guards on AST
+    this.replacer = new ReferenceReplacer();  // AST to AST
+    this.interpreter = new Interpreter();     // AST to Automaton or Petri Net
+    this.eqEvaluator = new EquationEvaluator();  // equation evaluation calls
     this.evaluator = new OperationEvaluator();
   }
 
+  /**
+   *
+   * @param code   sourse code input
+   * @param context
+   * @param z3Context
+   * @param messageQueue  used to implement concurret execution
+   * @return  name - > aut Petri Net
+   * @throws CompilationException
+   * @throws InterruptedException
+   *
+   * lex parse compile
+   */
 
-  public CompilationObject compile(String code, Context context, com.microsoft.z3.Context z3Context, BlockingQueue<Object> messageQueue) throws CompilationException, InterruptedException {
+  public CompilationObject compile(String code,
+                                   Context context, com.microsoft.z3.Context z3Context,
+                                   BlockingQueue<Object> messageQueue)
+    throws CompilationException, InterruptedException {
     List<Token> codeInput = lexer.tokenise(code);
     AbstractSyntaxTree structedCode = parser.parse(codeInput, z3Context);
 
-    CompilationObject compilerOutput = compile(structedCode, code, z3Context, context, messageQueue);
+    CompilationObject compilerOutput = compile(structedCode, code,
+              z3Context, context, messageQueue);
 
     CompilationObservable.getInstance().updateClient(compilerOutput);
 
     return compilerOutput;
   }
 
-  private CompilationObject compile(AbstractSyntaxTree ast, String code, com.microsoft.z3.Context z3Context, Context context, BlockingQueue<Object> messageQueue) throws CompilationException, InterruptedException {
+  /**
+   *
+   * @param ast
+   * @param code
+   * @param z3Context
+   * @param context
+   * @param messageQueue
+   * @return
+   * @throws CompilationException
+   * @throws InterruptedException
+   */
+
+  private CompilationObject compile(AbstractSyntaxTree ast, String code,
+                                    com.microsoft.z3.Context z3Context, Context context,
+                                    BlockingQueue<Object> messageQueue)
+    throws CompilationException, InterruptedException {
     HashMap<String, ProcessNode> processNodeMap = new HashMap<>();
     HashMap<String, ProcessNode> dependencyMap = new HashMap<>();
 
@@ -66,7 +97,8 @@ public class Compiler {
     System.out.println("Hierarchy of processes: " + ast.getProcessHierarchy().getDependencies());
 
     List<String> processesToRemoveFromDisplay = new ArrayList<>();
-    for (String processesName : processNodeMap.keySet()) { // Find if the dependencies have all been set correctly
+    for (String processesName : processNodeMap.keySet()) {
+      // Find if the dependencies have all been set correctly
       Set<String> dependencies = ast.getProcessHierarchy().getDependencies(processesName); // Dependencies for the current process
       ProcessNode currentProcess = dependencyMap.get(processesName);
       for (String currentDependencyName : dependencies) {

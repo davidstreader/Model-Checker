@@ -28,13 +28,22 @@ import mc.util.expr.VariableCollector;
 public class Expander {
 
   private final Pattern VAR_PATTERN = Pattern.compile("\\$[a-z][a-zA-Z0-9_]*");
+/*
+  Expanding replaces varaibles over  ranges with atomic processes
+  Sets Guards on AST
+ */
 
+
+  // symbolic evaluation
   private Map<String, Expr> globalVariableMap;
+
+
   private ExpressionEvaluator evaluator = new ExpressionEvaluator();
   private Map<String, List<String>> identMap = new HashMap<>();
-  private Set<String> hiddenVariables = new HashSet<>();
+  private Set<String> hiddenVariables = new HashSet<>();  // C${i,k} symbolic variables i and k
 
-  public AbstractSyntaxTree expand(AbstractSyntaxTree ast, BlockingQueue<Object> messageQueue, Context context) throws CompilationException, InterruptedException {
+  public AbstractSyntaxTree expand(AbstractSyntaxTree ast, BlockingQueue<Object> messageQueue, Context context)
+    throws CompilationException, InterruptedException {
     globalVariableMap = ast.getVariableMap();
 
     List<ProcessNode> processes = ast.getProcesses();
@@ -55,7 +64,17 @@ public class Expander {
     return ast;
   }
 
-  public ProcessNode expand(ProcessNode process, BlockingQueue<Object> messageQueue, Context context) throws CompilationException, InterruptedException {
+  /**
+   * Expand ProcessNode (AST for one process)
+   * @param process
+   * @param messageQueue
+   * @param context
+   * @return
+   * @throws CompilationException
+   * @throws InterruptedException
+   */
+  public ProcessNode expand(ProcessNode process, BlockingQueue<Object> messageQueue, Context context)
+    throws CompilationException, InterruptedException {
     messageQueue.add(new LogAST("Expanding:", process));
     identMap.clear();
     if (process.hasVariableSet()) {
@@ -79,7 +98,10 @@ public class Expander {
     return process;
   }
 
-  private List<LocalProcessNode> expandLocalProcesses(List<LocalProcessNode> localProcesses, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException {
+  private List<LocalProcessNode> expandLocalProcesses(List<LocalProcessNode> localProcesses,
+                                                      Map<String, Object> variableMap,
+                                                      Context context)
+    throws CompilationException, InterruptedException {
     List<LocalProcessNode> newLocalProcesses = new ArrayList<>();
     for (LocalProcessNode localProcess : localProcesses) {
       if (localProcess.getRanges() == null) {
@@ -94,10 +116,23 @@ public class Expander {
     return newLocalProcesses;
   }
 
-  private List<LocalProcessNode> expandLocalProcesses(LocalProcessNode localProcess, Map<String, Object> variableMap, List<IndexNode> ranges, int index, Context context) throws CompilationException, InterruptedException {
+  /* const M = 2.
+    This expands C[i:0..M][j:0..M]  using ranges List<IndexNode> =
+              [ ($i, start=0, end=2),($j, start=0, end=2)]
+
+   */
+  private List<LocalProcessNode> expandLocalProcesses(LocalProcessNode localProcess,
+                                                      Map<String, Object> variableMap,
+                                                      List<IndexNode> ranges, int index,
+                                                      Context context)
+    throws CompilationException, InterruptedException {
+//System.out.println("  expandLocalProcesses  ranges "+ranges.size()+
+//                   "globalVariables "+globalVariableMap.size()+
+//                   "hiddenVariables "+ hiddenVariables.size()) ;
     List<LocalProcessNode> newLocalProcesses = new ArrayList<>();
     if (index < ranges.size()) {
       IndexNode range = ranges.get(index);
+//System.out.println("   range "+range.toString());
       IndexIterator iterator = IndexIterator.construct(expand(range, context));
       String variable = range.getVariable();
       if (!hiddenVariables.contains(variable.substring(1))) {
@@ -106,7 +141,7 @@ public class Expander {
           variableMap.put(variable, iterator.next());
           newLocalProcesses.addAll(expandLocalProcesses((LocalProcessNode) localProcess.copy(), variableMap, ranges, index + 1, context));
         }
-      } else {
+      } else { // $i is a hidden variable in  C${i}.
         localProcess.setIdentifier(localProcess.getIdentifier() + "[" + variable + "]");
         newLocalProcesses.addAll(expandLocalProcesses((LocalProcessNode) localProcess.copy(), variableMap, ranges, index + 1, context));
       }
@@ -117,11 +152,15 @@ public class Expander {
       clone.setProcess(root);
       newLocalProcesses.add(clone);
     }
-
+/*System.out.println("return expandLocalProcesses");
+    for(int i = 0; newLocalProcesses.size()>i ;i++){
+      System.out.println("  "+i+" "+ newLocalProcesses.get(i).toString());
+    }*/
     return newLocalProcesses;
   }
 
-  private ASTNode expand(ASTNode astNode, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException {
+  private ASTNode expand(ASTNode astNode, Map<String, Object> variableMap, Context context)
+    throws CompilationException, InterruptedException {
     if (Thread.currentThread().isInterrupted()) {
       throw new InterruptedException();
     }
@@ -212,7 +251,10 @@ public class Expander {
     return range;
   }
 
-  private SequenceNode expand(SequenceNode astNode, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException {
+  private SequenceNode expand(SequenceNode astNode,
+                              Map<String, Object> variableMap,
+                              Context context)
+    throws CompilationException, InterruptedException {
     //add a guard to every sequenceNode. This will only contain next data.
     Guard guard = new Guard();
     if (astNode.getTo() instanceof IdentifierNode) {
@@ -508,7 +550,7 @@ public class Expander {
   }
 
   private boolean containsHidden(Expr ex) {
-    //If there is an and inside this expression, then don't check its variables as it is added on its own.
+    //If there is an "and" inside this expression, then don't check its variables as it is added on its own.
     if (ex.isAnd()) {
       return false;
     }

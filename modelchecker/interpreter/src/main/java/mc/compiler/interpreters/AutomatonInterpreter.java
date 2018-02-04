@@ -42,6 +42,10 @@ import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.automata.operations.AutomataLabeller;
 
+/**
+ * Builds automata from AST assumes
+ *   non symbolic (non hidden) variables have been expanded in the AST
+ */
 public class AutomatonInterpreter implements ProcessModelInterpreter {
 
   static Map<String, Class<? extends IProcessFunction>> functions = new HashMap<>();
@@ -208,13 +212,19 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     Set<AutomatonNode> nodes = automaton.combineNondeterministic(currentNode, oldRoot, context);
     subProcessStartNodes = nodes;
   }
+/*
+  Only place Edges are added  Guard is on AST node SequenceNode
+  Only place Nodes are added
+ */
 
-  private void interpretSequence(SequenceNode sequence, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException {
+  private void interpretSequence(SequenceNode sequence, Automaton automaton,
+                                 AutomatonNode currentNode)
+      throws CompilationException, InterruptedException {
     String action = sequence.getFrom().getAction();
 
     AutomatonNode nextNode;
     Guard foundGuard = null;
-    if (currentNode.getGuard() != null) {
+    if (currentNode.getGuard() != null) {  // WHY do this?
       foundGuard = (Guard) sequence.getGuard();
       currentNode.setGuard(null);
     }

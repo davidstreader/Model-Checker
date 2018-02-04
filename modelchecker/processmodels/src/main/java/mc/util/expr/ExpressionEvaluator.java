@@ -9,6 +9,7 @@ import mc.exceptions.CompilationException;
 
 /**
  * Created by sheriddavi on 19/01/17.
+ * Interpretor and Parsing  evaluate expressions in symbolic processes
  */
 public class ExpressionEvaluator {
 

@@ -9,6 +9,8 @@ import mc.util.Location;
 
 /**
  * ProcessNode holds a global process used in the code.
+ * Looks more like a part of an AST holds information about relabeling and
+ * hiding yet to be done
  *
  * @author David Sheridan
  * @author Sanjay Govind

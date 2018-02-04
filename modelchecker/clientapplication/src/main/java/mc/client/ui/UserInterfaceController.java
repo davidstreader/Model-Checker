@@ -88,12 +88,12 @@ public class UserInterfaceController implements Initializable {
             BufferedReader bufferedReader = new BufferedReader(new FileReader(new File("recentfiles.conf")));
             String line;
             while ((line = bufferedReader.readLine()) != null) {
-                if(!line.isEmpty())
-                addRecentFile(line);
+                if (!line.isEmpty())
+                    addRecentFile(line);
             }
             bufferedReader.close();
 
-        } catch(IOException e) {
+        } catch (IOException e) {
             System.out.println("Error reading the settings file.");
         }
 
@@ -232,7 +232,6 @@ public class UserInterfaceController implements Initializable {
                     }
 
 
-
                 });
     }
 
@@ -331,7 +330,7 @@ public class UserInterfaceController implements Initializable {
     }
 
     private boolean saveUserChanges() {
-        if(modified) {
+        if (modified) {
 
             Alert save = new Alert(Alert.AlertType.NONE);
 
@@ -382,10 +381,9 @@ public class UserInterfaceController implements Initializable {
     }
 
 
-
     @FXML
     private void handleCreateNew(ActionEvent event) {
-        if(saveUserChanges()) {
+        if (saveUserChanges()) {
             currentOpenFile = null;
             userCodeInput.clear();
             modified = false;
@@ -400,7 +398,7 @@ public class UserInterfaceController implements Initializable {
             try {
                 File selectedFile;
 
-                if(filePath != null) {
+                if (filePath != null) {
                     selectedFile = new File(filePath);
                 } else {
                     FileChooser openDialog = new FileChooser();
@@ -434,8 +432,6 @@ public class UserInterfaceController implements Initializable {
     }
 
 
-
-
     @FXML
     private void handleOpen(ActionEvent event) {
         openFile(null);
@@ -443,7 +439,7 @@ public class UserInterfaceController implements Initializable {
 
     @FXML
     private void handleFileClose(ActionEvent event) {
-        if(saveUserChanges()) {
+        if (saveUserChanges()) {
             userCodeInput.clear();
             currentOpenFile = null;
             modified = false;
@@ -456,13 +452,13 @@ public class UserInterfaceController implements Initializable {
     private void handleSave(ActionEvent event) {
         File selectedFile = currentOpenFile;
 
-        if(selectedFile == null) {
+        if (selectedFile == null) {
             FileChooser chooser = new FileChooser();
             chooser.setTitle("Save file");
             selectedFile = chooser.showSaveDialog(modelDisplay.getScene().getWindow());
         }
 
-        if(selectedFile != null) {
+        if (selectedFile != null) {
             try {
                 PrintStream writeTo = new PrintStream(selectedFile, "UTF-8");
                 writeTo.println(userCodeInput.getText());
@@ -481,14 +477,13 @@ public class UserInterfaceController implements Initializable {
     }
 
 
-
     @FXML
     private void handleSaveAs(ActionEvent event) {
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Save as");
         File selectedFile = chooser.showSaveDialog(modelDisplay.getScene().getWindow());
 
-        if(selectedFile != null) {
+        if (selectedFile != null) {
             try {
                 PrintStream writeTo = new PrintStream(selectedFile, "UTF-8");
                 writeTo.println(userCodeInput.getText());
@@ -511,8 +506,8 @@ public class UserInterfaceController implements Initializable {
 
     @FXML
     private void handleQuit(ActionEvent event) {
-        if(saveUserChanges()) {
-           UserInterfaceApplication.getPrimaryStage().hide();
+        if (saveUserChanges()) {
+            UserInterfaceApplication.getPrimaryStage().hide();
         }
     }
 
@@ -590,7 +585,7 @@ public class UserInterfaceController implements Initializable {
             settingsStage.setResizable(false);
             settingsStage.show();
 
-        } catch(IOException ignored) {
+        } catch (IOException ignored) {
             System.out.println(ignored);
         }
     }
@@ -650,7 +645,6 @@ public class UserInterfaceController implements Initializable {
                 o.getProcess2().getIdent() + " = " + o.getResult() + "\n"));
 
 
-
         if (eqRes.size() > 0) {
             compilerOutputDisplay.appendText("\n##Equation Results##\n");
 
@@ -674,11 +668,10 @@ public class UserInterfaceController implements Initializable {
     }
 
     private void addRecentFile(String filePath) {
-        if(!recentFilePaths.contains(filePath)) {
-                while(recentFilePaths.size() > 5) { // Incase someone adds a shit ton of entries into the settings file
-                    recentFilePaths.remove(0);
-                }
-
+        if (!recentFilePaths.contains(filePath)) {
+            while (recentFilePaths.size() > 5) { // Incase someone adds a shit ton of entries into the settings file
+                recentFilePaths.remove(0);
+            }
 
 
             recentFilePaths.add(filePath);

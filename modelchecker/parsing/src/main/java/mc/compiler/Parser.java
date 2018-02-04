@@ -25,8 +25,7 @@ import mc.util.Location;
 import mc.util.expr.Expression;
 import mc.util.expr.ExpressionEvaluator;
 import mc.util.expr.ExpressionPrinter;
-
-/**
+/*
  * Created by sheriddavi on 30/01/17.
  */
 public class Parser {
@@ -640,7 +639,9 @@ public class Parser {
 
     return ((CastToken) token).getCastType();
   }
+/*
 
+ */
   private ASTNode parseComposite() throws CompilationException, InterruptedException {
     int start = index;
 
@@ -692,6 +693,8 @@ public class Parser {
     return process;
   }
 
+  //could be  pingo -> C[i+1][0]..
+
   private ASTNode parseLocalProcess() throws CompilationException, InterruptedException {
     if (peekToken() instanceof OpenParenToken) {
 
@@ -723,12 +726,13 @@ public class Parser {
       Collections.reverse(ranges);
     }
 
-    // ensure that the next token is a '->' token
 
+// ensure that the next token is a ':' token
     if (peekToken() instanceof ColonToken) {
       index = start;
       return parseComposite();
     }
+// ensure that the next token is a '->' token
     if (!(nextToken() instanceof SequenceToken)) {
       Token error = tokens.get(index - 1);
       throw constructException("expecting to parse \"->\" but received \"" + error.toString() + "\"", error.getLocation());
@@ -957,7 +961,7 @@ public class Parser {
       throw constructException("expecting to parse \"when\" but received \"" + error.toString() + "\"", error.getLocation());
     }
 
-
+//parse boolean
     int start = index;
     String expr = parseExpression();
 
@@ -971,7 +975,7 @@ public class Parser {
       throw constructException("expecting to parse a boolean statement but received \"" + ExpressionPrinter.printExpression(expression) + "\"", constructLocation(start));
     }
 
-
+//parse local process -- could be ping->P[i+1][0]...
     ASTNode trueBranch = parseLocalProcess();
     return new IfStatementNode((BoolExpr) expression, trueBranch, constructLocation(start), context);
   }
@@ -1072,7 +1076,9 @@ public class Parser {
 
     return new RangesNode(ranges, constructLocation(start));
   }
+/*
 
+ */
   private String parseProcessLabel() throws CompilationException {
     StringBuilder builder = new StringBuilder();
 

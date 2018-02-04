@@ -1,5 +1,6 @@
 package mc.processmodels.automata;
 
+import lombok.experimental.var;
 import mc.processmodels.ProcessModelObject;
 import com.microsoft.z3.Context;
 import java.util.ArrayList;
@@ -44,9 +45,15 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
   @Setter
   private HidingNode hiding;
 
+  /**
+   * use this to decide what guards and assignments to use+display
+   * details will appear on edges even if not needed
+   * Atomic automaton = null or size 0
+   */
   @Getter
   @Setter
   private Set<String> hiddenVariables;
+
 
   @Getter
   @Setter
@@ -68,6 +75,9 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
   @Setter
   private List<RelabelElementNode> relabels;
 
+  public boolean isSymbolic(){
+    return (hiddenVariables != null &&  hiddenVariables.size() >0);
+  }
 
   public Automaton(String id) {
     this(id, true);
@@ -403,12 +413,15 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     throw new CompilationException(getClass(), "Edge " + id + " was not found in the automaton " + getId(), this.getLocation());
   }
 
-  public AutomatonEdge addEdge(String label, AutomatonNode from, AutomatonNode to, Guard currentEdgesGuard) throws CompilationException {
+  public AutomatonEdge addEdge(String label, AutomatonNode from, AutomatonNode to,
+                               Guard currentEdgesGuard)
+    throws CompilationException {
     String id = getNextEdgeId();
     return addEdge(id, label, from, to, currentEdgesGuard);
   }
 
-  public AutomatonEdge addEdge(String id, String label, AutomatonNode from, AutomatonNode to, Guard currentEdgesGuard) throws CompilationException {
+  public AutomatonEdge addEdge(String id, String label, AutomatonNode from, AutomatonNode to,
+                               Guard currentEdgesGuard) throws CompilationException {
     // check that the nodes have been defined
 
     if (from == null) {
@@ -570,9 +583,25 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     String tempfrom = "";
     StringBuilder builder = new StringBuilder();
     builder.append("automaton:" + this.getId()+"{\n");
-    builder.append("\tnodes:{\n");
+    if (this.hiddenVariables != null) {
+      builder.append("\thiddenVar:{");
+      for (String var : this.hiddenVariables) {
+        builder.append(", " + var);
+      }
+    }
+    if (this.variables != null) {
+      builder.append("}\n\tvariables:{");
+      for (String var : this.variables) {
+        builder.append(", " + var);
+      }
+    }
+    builder.append("}\n\tnodes:{\n");
     for (AutomatonNode node : nodeMap.values()) {
-      builder.append("\t\t").append(node.getId()).append(" c= "+ node.getColour()+" ");
+      builder.append("\t\t").append(node.getId()).
+                             append(" c= "+ node.getColour()).toString();
+      if (node.getGuard() !=null) {
+        builder.append(" g= "+ node.getGuard().myString());
+      } else {builder.append(" Guard=null");}
       if (node == root) {
         builder.append("(root)");
       }

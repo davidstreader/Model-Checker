@@ -21,6 +21,7 @@ public class IdentifierNode extends ASTNode {
 
   /**
    * The name of the process or constant.
+   * Could be "C[$i][j+1][4]"  and may be parsed in Guard.java
    */
   private String identifier;
 

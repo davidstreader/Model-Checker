@@ -5,5 +5,4 @@ dependencies {
     compile project(':parsing')
     compile project(':processmodels')
     compile 'com.google.code.gson:gson:2.8.0'
-    compile 'ch.qos.logback:logback-classic:1.+'
 }
