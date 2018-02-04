@@ -55,7 +55,17 @@ public class Interpreter {
         }
       }
 
-      if (process.getType().contains("automata")) {
+
+      if(process.getType().contains("forcedautomata")) {
+        ProcessModel modelAut = automatonInterpreter.interpret(process, processMap, localCompiler, context);
+        modelAut.setLocation(process.getLocation());
+        if (model == null) { // If the model is not comprised of multiple types
+          model = modelAut;
+        } else {
+          ((MultiProcessModel) model).addProcess(modelAut);
+        }
+        System.out.println("Forced");
+      } else if (process.getType().contains("automata")) {
         ProcessModel modelAut;
         HashMap<AutomatonNode, Set<PetriNetPlace>> nodeToMarking = new HashMap<>();
         HashMap<Set<PetriNetPlace>, AutomatonNode> markingToNode = new HashMap<>();
@@ -87,6 +97,7 @@ public class Interpreter {
   public ProcessModel interpret(String processModelType, ASTNode astNode, String identifer, Map<String, ProcessModel> processMap, Context context) throws CompilationException, InterruptedException {
     ProcessModel model;
     switch (processModelType) {
+      case "forcedautomata":
       case "automata":
         model = automatonInterpreter.interpret(astNode, identifer, processMap, context);
         break;

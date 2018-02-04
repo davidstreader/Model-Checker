@@ -18,7 +18,7 @@ public class SyntaxHighlighting {
     }
 
     static final String[] processTypes = new String[] {
-           "processes", "automata", "petrinet", "operation", "equation",
+           "processes", "automata", "forcedautomata" ,"petrinet", "operation", "equation",
 
     };
 

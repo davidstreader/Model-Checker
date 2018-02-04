@@ -53,7 +53,7 @@ public class DoubleClickHandler implements MouseListener {
         if (currentNodeClicked != null) {
 
             if (!currentlyColored.containsKey(currentNodeClicked)) { // If we've clicked on a new node
-                for(GraphNode currentColoredNode : currentlyColored.keySet())
+                for (GraphNode currentColoredNode : currentlyColored.keySet())
                     currentColoredNode.setNodeColor(currentlyColored.get(currentColoredNode)); // Reset the previous to unselected state
 
                 currentlyColored.clear();
@@ -62,34 +62,38 @@ public class DoubleClickHandler implements MouseListener {
                 currentNodeClicked.setNodeColor(NodeStates.SELECT); // Before setting it with the selected state
 
                 //If this node/place has a mapping associated with it select those also.
-                if(!(currentNodeClicked.getRepresentedFeature() instanceof PetriNetTransition) && mappings.containsKey(currentNodeClicked.getProcessModelId())) {
+
+
+                if (!(currentNodeClicked.getRepresentedFeature() instanceof PetriNetTransition) && mappings.containsKey(currentNodeClicked.getProcessModelId())) {
 
                     Mapping thisMapping = mappings.get(currentNodeClicked.getProcessModelId());
-                    Collection<GraphNode> vertexes = vv.getGraphLayout().getGraph().getVertices();
+                    if (thisMapping != null) {
+                        Collection<GraphNode> vertexes = vv.getGraphLayout().getGraph().getVertices();
 
-                    if(currentNodeClicked.getRepresentedFeature() instanceof AutomatonNode) {
-                        Map<AutomatonNode, Set<PetriNetPlace>> mapping = thisMapping.getNodeToMarking();
+                        if (currentNodeClicked.getRepresentedFeature() instanceof AutomatonNode) {
+                            Map<AutomatonNode, Set<PetriNetPlace>> mapping = thisMapping.getNodeToMarking();
 
-                        for(PetriNetPlace place  : mapping.get(currentNodeClicked.getRepresentedFeature())) {
-                             // N^2, might be a problem for larger displays
-                            for(GraphNode g : vertexes)
-                                if(place == g.getRepresentedFeature()) {
-                                    currentlyColored.put(g, g.getNodeColor());
-                                    g.setNodeColor(NodeStates.SELECT);
-                                    break;
-                                }
-                        }
-                    } else if(currentNodeClicked.getRepresentedFeature() instanceof PetriNetPlace) {
-                        Map<Set<PetriNetPlace>, AutomatonNode> mapping = thisMapping.getMarkingToNode();
-
-                        for(Set<PetriNetPlace> marking : mapping.keySet()) {
-                            if(marking.contains(currentNodeClicked.getRepresentedFeature()))
-                                for(GraphNode g : vertexes)
-                                    if(mapping.get(marking) == g.getRepresentedFeature()) {
+                            for (PetriNetPlace place : mapping.get(currentNodeClicked.getRepresentedFeature())) {
+                                // N^2, might be a problem for larger displays
+                                for (GraphNode g : vertexes)
+                                    if (place == g.getRepresentedFeature()) {
                                         currentlyColored.put(g, g.getNodeColor());
                                         g.setNodeColor(NodeStates.SELECT);
                                         break;
                                     }
+                            }
+                        } else if (currentNodeClicked.getRepresentedFeature() instanceof PetriNetPlace) {
+                            Map<Set<PetriNetPlace>, AutomatonNode> mapping = thisMapping.getMarkingToNode();
+
+                            for (Set<PetriNetPlace> marking : mapping.keySet()) {
+                                if (marking.contains(currentNodeClicked.getRepresentedFeature()))
+                                    for (GraphNode g : vertexes)
+                                        if (mapping.get(marking) == g.getRepresentedFeature()) {
+                                            currentlyColored.put(g, g.getNodeColor());
+                                            g.setNodeColor(NodeStates.SELECT);
+                                            break;
+                                        }
+                            }
                         }
                     }
 
@@ -110,7 +114,7 @@ public class DoubleClickHandler implements MouseListener {
             }
 
         } else { // IF we've clicked, but it isnt on a node
-            for(GraphNode currentColoredNode : currentlyColored.keySet())
+            for (GraphNode currentColoredNode : currentlyColored.keySet())
                 currentColoredNode.setNodeColor(currentlyColored.get(currentColoredNode)); // Reset the previous to unselected state
 
             currentlyColored.clear();
