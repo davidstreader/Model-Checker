@@ -14,6 +14,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 
 public class UserInterfaceApplication extends Application {
@@ -57,13 +58,14 @@ public class UserInterfaceApplication extends Application {
     @Override
     public void stop() {
 
-        ArrayList<String> filePaths = controller.getRecentFilePaths();
+        ArrayDeque<String> filePaths = controller.getRecentFilePaths();
 
         try {
             System.out.print("\nwriting settings file...");
             BufferedWriter writer = new BufferedWriter(new FileWriter("recentfiles.conf"));
-            for(String filePath : filePaths)
-                writer.write(filePath+"\n");
+
+            while(!filePaths.isEmpty())
+                writer.write(filePaths.pollLast()+"\n");
 
             writer.close();
             System.out.print("Done\n");

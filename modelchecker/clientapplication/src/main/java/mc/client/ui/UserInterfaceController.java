@@ -69,7 +69,7 @@ public class UserInterfaceController implements Initializable {
     private boolean modified = false;
 
     @Getter
-    private ArrayList<String> recentFilePaths = new ArrayList<>();
+    private ArrayDeque<String> recentFilePaths = new ArrayDeque<>();
 
 
     /**
@@ -688,18 +688,24 @@ public class UserInterfaceController implements Initializable {
     private void addRecentFile(String filePath) {
         if (!recentFilePaths.contains(filePath)) {
             while (recentFilePaths.size() > 5) { // Incase someone adds a shit ton of entries into the settings file
-                recentFilePaths.remove(0);
+                recentFilePaths.pollLast();
             }
 
 
-            recentFilePaths.add(filePath);
+            recentFilePaths.offerFirst(filePath);
 
-            MenuItem newItem = new MenuItem(filePath);
-            newItem.setOnAction(e -> {
-                openFile(filePath);
-            });
 
-            openRecentTab.getItems().add(newItem);
+
+
+            openRecentTab.getItems().clear();
+
+            for(String path : recentFilePaths) {
+                MenuItem newItem = new MenuItem(path);
+                newItem.setOnAction(e -> {
+                    openFile(path);
+                });
+                openRecentTab.getItems().add(newItem);
+            }
         }
 
     }
