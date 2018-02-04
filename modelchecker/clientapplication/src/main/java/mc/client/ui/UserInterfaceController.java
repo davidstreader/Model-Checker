@@ -369,6 +369,9 @@ public class UserInterfaceController implements Initializable {
                         saveFailed.setContentText("Error: " + message.getMessage());
 
                         saveFailed.getButtonTypes().setAll(new ButtonType("Okay", ButtonBar.ButtonData.CANCEL_CLOSE));
+                        saveFailed.initModality(Modality.APPLICATION_MODAL);
+                        saveFailed.initOwner(modelDisplay.getScene().getWindow());
+                        saveFailed.show();
                     }
                 }
 
@@ -421,7 +424,6 @@ public class UserInterfaceController implements Initializable {
                 Alert saveFailed = new Alert(Alert.AlertType.ERROR);
                 saveFailed.setTitle("Error encountered when reading file");
                 saveFailed.setContentText("Error: " + e.getMessage());
-                e.printStackTrace();
 
                 saveFailed.getButtonTypes().setAll(new ButtonType("Okay", ButtonBar.ButtonData.CANCEL_CLOSE));
                 saveFailed.initModality(Modality.APPLICATION_MODAL);
@@ -471,7 +473,11 @@ public class UserInterfaceController implements Initializable {
                 saveFailed.setTitle("Error encountered when saving file");
                 saveFailed.setContentText("Error: " + e.getMessage());
 
+                saveFailed.initModality(Modality.APPLICATION_MODAL);
+                saveFailed.initOwner(modelDisplay.getScene().getWindow());
+
                 saveFailed.getButtonTypes().setAll(new ButtonType("Okay", ButtonBar.ButtonData.CANCEL_CLOSE));
+                saveFailed.show();
             }
         }
     }
@@ -497,7 +503,11 @@ public class UserInterfaceController implements Initializable {
                 saveFailed.setTitle("Error encountered when saving file");
                 saveFailed.setContentText("Error: " + e.getMessage());
 
+                saveFailed.initModality(Modality.APPLICATION_MODAL);
+                saveFailed.initOwner(modelDisplay.getScene().getWindow());
+
                 saveFailed.getButtonTypes().setAll(new ButtonType("Okay", ButtonBar.ButtonData.CANCEL_CLOSE));
+                saveFailed.show();
             }
 
         }
@@ -585,8 +595,16 @@ public class UserInterfaceController implements Initializable {
             settingsStage.setResizable(false);
             settingsStage.show();
 
-        } catch (IOException ignored) {
-            System.out.println(ignored);
+        } catch (IOException e) {
+            Alert optionsLayoutLoadFailed = new Alert(Alert.AlertType.ERROR);
+            optionsLayoutLoadFailed.setTitle("Error encountered when loading options panel layout");
+            optionsLayoutLoadFailed.setContentText("Error: " + e.getMessage());
+
+            optionsLayoutLoadFailed.initModality(Modality.APPLICATION_MODAL);
+            optionsLayoutLoadFailed.initOwner(modelDisplay.getScene().getWindow());
+
+            optionsLayoutLoadFailed.getButtonTypes().setAll(new ButtonType("Okay", ButtonBar.ButtonData.CANCEL_CLOSE));
+            optionsLayoutLoadFailed.show();
         }
     }
 
