@@ -53,7 +53,7 @@ public enum ProcessType {
    * Cannot be done statically as Enums don't allow this behaviour.
    */
   private static void init() {
-    PETRINET_CONVERSIONS.put(AUTOMATA, TokenRule::tokenRule);
+    PETRINET_CONVERSIONS.put(AUTOMATA, TokenRule::tokenRule); // For inline construction of automaton
     MULTIPROCESS_CONVERSIONS.put(AUTOMATA, p -> p.getProcess(AUTOMATA));
     MULTIPROCESS_CONVERSIONS.put(PETRINET, p -> p.getProcess(PETRINET));
 

@@ -19,9 +19,6 @@ import java.util.Random;
 
 import com.google.common.base.Function;
 
-
-import mc.client.graph.GraphNode;
-
 /**
  * Provides a random vertex location within the bounds of the Dimension property.
  * This provides a random location for unmapped vertices
@@ -62,12 +59,12 @@ public class SeededRandomizedLayout<V> implements Function<V,Point2D> {
     public Point2D apply(V v) {
         if(v instanceof GraphNode) {
             Random random = new Random(v.hashCode());
-            if(!processModelsPreviousSpacing.containsKey(((GraphNode) v).getAutomata())) { // If we are adding a new process model
-                processModelsPreviousSpacing.put(((GraphNode) v).getAutomata(), counter);
+            if(!processModelsPreviousSpacing.containsKey(((GraphNode) v).getProcessModelId())) { // If we are adding a new process model
+                processModelsPreviousSpacing.put(((GraphNode) v).getProcessModelId(), counter);
                 counter += 200;
              }
 
-            int currentSpacing = processModelsPreviousSpacing.get(((GraphNode) v).getAutomata());
+            int currentSpacing = processModelsPreviousSpacing.get(((GraphNode) v).getProcessModelId());
             return new Point2D.Double(((currentSpacing-200 < 0 )? 0: currentSpacing-200)+random.nextDouble() * currentSpacing, 50+random.nextDouble() * screenDimensions.height);
 
 

@@ -35,24 +35,31 @@ import mc.processmodels.petrinet.components.PetriNetTransition;
  */
 public class TokenRule {
 
+
+
+  public static Automaton tokenRule(Petrinet convertFrom){
+    return tokenRule(convertFrom, new HashMap<>(), new HashMap<>());
+  }
   /**
    * This method statically converts from a Petrinet to an Automaton visualisation of a given
    * process.
    *
    * @param convertFrom the petrinet that is converted from.
+   * @param markingToNodeMap the mapping from the marking to an automaton node, used for display
+   * @param nodeToMarkingMap the mapping from node to marking
    * @return The automaton that is equivalent to {@code convertFrom} petrinet.
    */
   @SneakyThrows(value = {CompilationException.class})
-  public static Automaton tokenRule(Petrinet convertFrom) {
+  public static Automaton tokenRule(Petrinet convertFrom, Map<Set<PetriNetPlace>, AutomatonNode> markingToNodeMap, Map<AutomatonNode, Set<PetriNetPlace> > nodeToMarkingMap) {
     Automaton outputAutomaton = new Automaton(convertFrom.getId() + " automata",
         false);
-    Map<Set<PetriNetPlace>, AutomatonNode> nodeMap = new HashMap<>();
 
     AutomatonNode root = outputAutomaton.addNode();
     root.setStartNode(true);
     outputAutomaton.addRoot(root);
 
-    nodeMap.put(convertFrom.getRoots(), root);
+    markingToNodeMap.put(convertFrom.getRoots(), root);
+    nodeToMarkingMap.put(root, convertFrom.getRoots());
 
     Stack<Set<PetriNetPlace>> toDo = new Stack<>();
     toDo.push(convertFrom.getRoots());
@@ -69,7 +76,7 @@ public class TokenRule {
       Set<PetriNetTransition> satisfiedPostTransitions = satisfiedTransitions(currentMarking);
 
       if (satisfiedPostTransitions.size() == 0) {
-        nodeMap.get(currentMarking).setTerminal("STOP");
+        markingToNodeMap.get(currentMarking).setTerminal("STOP");
       }
 
 
@@ -84,15 +91,16 @@ public class TokenRule {
             .map(PetriNetPlace.class::cast)
             .collect(Collectors.toList()));
 
-        if (!nodeMap.containsKey(newMarking)) {
+        if (!markingToNodeMap.containsKey(newMarking)) {
           AutomatonNode newNode = outputAutomaton.addNode();
           newNode.setLabelNumber(nodesCreated++);
-          nodeMap.put(newMarking, newNode);
+          markingToNodeMap.put(newMarking, newNode);
+          nodeToMarkingMap.put(newNode, newMarking);
           toDo.add(newMarking);
         }
 
-        outputAutomaton.addEdge(transition.getLabel(), nodeMap.get(currentMarking),
-            nodeMap.get(newMarking), null);
+        outputAutomaton.addEdge(transition.getLabel(), markingToNodeMap.get(currentMarking),
+            markingToNodeMap.get(newMarking), null);
       }
       previouslyVisitedPlaces.add(currentMarking);
     }

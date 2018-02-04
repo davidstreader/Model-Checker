@@ -1,59 +1,42 @@
 package mc.client.ui;
 
+import com.google.common.collect.Collections2;
 import com.google.common.collect.Multimap;
 import edu.uci.ics.jung.algorithms.layout.GraphElementAccessor;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
-import edu.uci.ics.jung.visualization.control.GraphMouseListener;
 import edu.uci.ics.jung.visualization.picking.PickedState;
-import javafx.scene.control.ComboBox;
-import lombok.Setter;
 import mc.client.graph.DirectedEdge;
 import mc.client.graph.GraphNode;
 import mc.client.graph.NodeStates;
-import mc.client.graph.NodeType;
+import mc.processmodels.Mapping;
+import mc.processmodels.automata.Automaton;
+import mc.processmodels.automata.AutomatonNode;
+import mc.processmodels.petrinet.components.PetriNetPlace;
+import mc.processmodels.petrinet.components.PetriNetTransition;
 
-import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Point2D;
-import java.util.Map;
-import java.util.Set;
+import java.lang.reflect.Array;
+import java.util.*;
 
 /**
  * Created by smithjord3 on 12/12/17.
  */
 public class DoubleClickHandler implements MouseListener {
+    private Map<String, Mapping> mappings;
     private Multimap<String, GraphNode> processModelVertexes;
-    private VisualizationViewer<GraphNode,DirectedEdge> vv;
-    private NodeStates previousState = null;
-    private GraphNode previousModified = null;
+    private VisualizationViewer<GraphNode, DirectedEdge> vv;
+
+    private Map<GraphNode, NodeStates> currentlyColored = new HashMap<>();
 
 
-    /**
-     * Transform the point to the coordinate system in the
-     * VisualizationViewer, then use either PickSuuport
-     * (if available) or Layout to find a Vertex
-     * @param point
-     * @return
-     */
-    private GraphNode getVertex(Point2D point) {
-        // adjust for scale and offset in the VisualizationViewer
-        Point2D p = point;
-        //vv.getRenderContext().getBasicTransformer().inverseViewTransform(point);
-        GraphElementAccessor<GraphNode, DirectedEdge> pickSupport = vv.getPickSupport();
-        Layout<GraphNode, DirectedEdge> layout = vv.getGraphLayout();
-        GraphNode v = null;
-        if(pickSupport != null) {
-            v = pickSupport.getVertex(layout, p.getX(), p.getY());
-        }
-        return v;
-    }
-
-    public DoubleClickHandler(Multimap<String, GraphNode> processModelVertexes_, VisualizationViewer<GraphNode,DirectedEdge> vv_) {
+    public DoubleClickHandler(Multimap<String, GraphNode> processModelVertexes_, VisualizationViewer<GraphNode, DirectedEdge> vv_,
+                              Map<String, Mapping> nodeAndMarkingMappings) {
         processModelVertexes = processModelVertexes_;
         vv = vv_;
-
+        mappings = nodeAndMarkingMappings;
     }
 
     public void updateProcessModelList(Multimap<String, GraphNode> processModels) {
@@ -69,20 +52,53 @@ public class DoubleClickHandler implements MouseListener {
         GraphNode currentNodeClicked = getVertex(e.getPoint());
         if (currentNodeClicked != null) {
 
+            if (!currentlyColored.containsKey(currentNodeClicked)) { // If we've clicked on a new node
+                for(GraphNode currentColoredNode : currentlyColored.keySet())
+                    currentColoredNode.setNodeColor(currentlyColored.get(currentColoredNode)); // Reset the previous to unselected state
 
+                currentlyColored.clear();
 
-            if(previousModified != currentNodeClicked) { // If we've clicked on a new node
-                if(previousModified != null) {
-                    previousModified.setNodeTermination(previousState); // Reset the previous to unselected state
+                currentlyColored.put(currentNodeClicked, currentNodeClicked.getNodeColor());// Store the node, and the state
+                currentNodeClicked.setNodeColor(NodeStates.SELECT); // Before setting it with the selected state
+
+                //If this node/place has a mapping associated with it select those also.
+                if(!(currentNodeClicked.getRepresentedFeature() instanceof PetriNetTransition) && mappings.containsKey(currentNodeClicked.getProcessModelId())) {
+
+                    Mapping thisMapping = mappings.get(currentNodeClicked.getProcessModelId());
+                    Collection<GraphNode> vertexes = vv.getGraphLayout().getGraph().getVertices();
+
+                    if(currentNodeClicked.getRepresentedFeature() instanceof AutomatonNode) {
+                        Map<AutomatonNode, Set<PetriNetPlace>> mapping = thisMapping.getNodeToMarking();
+
+                        for(PetriNetPlace place  : mapping.get(currentNodeClicked.getRepresentedFeature())) {
+                             // N^2, might be a problem for larger displays
+                            for(GraphNode g : vertexes)
+                                if(place == g.getRepresentedFeature()) {
+                                    currentlyColored.put(g, g.getNodeColor());
+                                    g.setNodeColor(NodeStates.SELECT);
+                                    break;
+                                }
+                        }
+                    } else if(currentNodeClicked.getRepresentedFeature() instanceof PetriNetPlace) {
+                        Map<Set<PetriNetPlace>, AutomatonNode> mapping = thisMapping.getMarkingToNode();
+
+                        for(Set<PetriNetPlace> marking : mapping.keySet()) {
+                            if(marking.contains(currentNodeClicked.getRepresentedFeature()))
+                                for(GraphNode g : vertexes)
+                                    if(mapping.get(marking) == g.getRepresentedFeature()) {
+                                        currentlyColored.put(g, g.getNodeColor());
+                                        g.setNodeColor(NodeStates.SELECT);
+                                        break;
+                                    }
+                        }
+                    }
+
                 }
 
-                previousModified = currentNodeClicked; // Store the node
-                previousState = currentNodeClicked.getNodeTermination(); // And the state
-                currentNodeClicked.setNodeTermination(NodeStates.SELECT); // Before setting it with the selected state
             }
 
 
-            String processName = currentNodeClicked.getAutomata();
+            String processName = currentNodeClicked.getProcessModelId();
             if (processModelVertexes.containsKey(processName)) {
                 PickedState<GraphNode> pickedVertexState = vv.getPickedVertexState(); // The graph has 'picking' support.
                 // So we can just add them to the picked list,
@@ -94,11 +110,10 @@ public class DoubleClickHandler implements MouseListener {
             }
 
         } else { // IF we've clicked, but it isnt on a node
-            if(previousModified != null) {  // And the previous node isnt null
-                previousModified.setNodeTermination(previousState); // Reset the state
-                previousModified = null;
-                previousState = null;
-            }
+            for(GraphNode currentColoredNode : currentlyColored.keySet())
+                currentColoredNode.setNodeColor(currentlyColored.get(currentColoredNode)); // Reset the previous to unselected state
+
+            currentlyColored.clear();
         }
     }
 
@@ -107,7 +122,6 @@ public class DoubleClickHandler implements MouseListener {
      */
     @Override
     public void mousePressed(MouseEvent e) {
-
     }
 
     /**
@@ -115,7 +129,6 @@ public class DoubleClickHandler implements MouseListener {
      */
     @Override
     public void mouseReleased(MouseEvent e) {
-
     }
 
     /**
@@ -123,14 +136,31 @@ public class DoubleClickHandler implements MouseListener {
      */
     @Override
     public void mouseEntered(MouseEvent e) {
-
     }
 
     /**
      * Invoked when the mouse exits a component.
      */
     @Override
-    public void mouseExited(MouseEvent e){
+    public void mouseExited(MouseEvent e) {
+    }
 
+    /**
+     * Transform the point to the coordinate system in the
+     * VisualizationViewer, then use either PickSuuport
+     * (if available) or Layout to find a Vertex
+     *
+     * @return The vertex that was clicked on
+     */
+    private GraphNode getVertex(Point2D point) {
+        // adjust for scale and offset in the VisualizationViewer
+        //vv.getRenderContext().getBasicTransformer().inverseViewTransform(point);
+        GraphElementAccessor<GraphNode, DirectedEdge> pickSupport = vv.getPickSupport();
+        Layout<GraphNode, DirectedEdge> layout = vv.getGraphLayout();
+        GraphNode v = null;
+        if (pickSupport != null) {
+            v = pickSupport.getVertex(layout, point.getX(), point.getY());
+        }
+        return v;
     }
 }

@@ -4,15 +4,22 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import java.util.EnumMap;
 import java.util.Map;
+
+import lombok.Getter;
 import mc.util.Location;
 
 public class MultiProcessModel extends ProcessModelObject implements ProcessModel {
+
 
   private Map<ProcessType,ProcessModel> processes = new EnumMap<>(ProcessType.class);
   private static Multimap<ProcessType,ProcessType> conversions = MultimapBuilder
       .enumKeys(ProcessType.class)
       .arrayListValues()
       .build();
+
+  @Getter
+  private Mapping processNodesMapping;
+
 
 
   public MultiProcessModel(String id) {
@@ -26,6 +33,15 @@ public class MultiProcessModel extends ProcessModelObject implements ProcessMode
       return;
     }
     processes.put(pm.getProcessType(),pm);
+  }
+
+
+    /**
+     *  This method is for the case where we have converted one type to another, it gives us the mapping of which node
+     *  is responsible for what, and visa versa for markings to node.
+     */
+  public void addProcessesMapping(Mapping pnm) {
+    processNodesMapping = pnm;
   }
 
   public boolean hasProcess(ProcessType type) {

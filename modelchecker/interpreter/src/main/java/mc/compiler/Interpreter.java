@@ -1,9 +1,8 @@
 package mc.compiler;
 
 import com.microsoft.z3.Context;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import mc.compiler.ast.ASTNode;
 import mc.compiler.ast.AbstractSyntaxTree;
@@ -11,11 +10,14 @@ import mc.compiler.ast.ProcessNode;
 import mc.compiler.interpreters.AutomatonInterpreter;
 import mc.compiler.interpreters.PetrinetInterpreter;
 import mc.exceptions.CompilationException;
+import mc.processmodels.Mapping;
 import mc.processmodels.MultiProcessModel;
 import mc.processmodels.ProcessModel;
 import mc.processmodels.ProcessType;
+import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.conversion.TokenRule;
 import mc.processmodels.petrinet.Petrinet;
+import mc.processmodels.petrinet.components.PetriNetPlace;
 
 /**
  * Created by sheriddavi on 24/01/17.
@@ -53,8 +55,10 @@ public class Interpreter {
 
       if (process.getType().contains("automata")) {
         ProcessModel modelAut;
+        HashMap<AutomatonNode, Set<PetriNetPlace>> nodeToMarking = new HashMap<>();
+        HashMap<Set<PetriNetPlace>, AutomatonNode> markingToNode = new HashMap<>();
         if(process.getType().contains("petrinet")) {
-          modelAut = TokenRule.tokenRule((Petrinet) ((MultiProcessModel)model).getProcess(ProcessType.PETRINET));
+          modelAut = TokenRule.tokenRule((Petrinet) ((MultiProcessModel)model).getProcess(ProcessType.PETRINET), markingToNode, nodeToMarking);
         } else {
           modelAut = automatonInterpreter.interpret(process, processMap, localCompiler, context);
         }
@@ -64,6 +68,7 @@ public class Interpreter {
           model = modelAut;
         } else {
           ((MultiProcessModel) model).addProcess(modelAut);
+          ((MultiProcessModel) model).addProcessesMapping(new Mapping(nodeToMarking, markingToNode));
         }
       }
 
