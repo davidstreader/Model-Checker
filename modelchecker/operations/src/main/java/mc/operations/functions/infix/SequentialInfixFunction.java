@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessInfixFunction;
@@ -12,6 +13,7 @@ import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.automata.operations.AutomataReachability;
 import mc.processmodels.petrinet.Petrinet;
+import mc.processmodels.petrinet.components.PetriNetPlace;
 
 public class SequentialInfixFunction implements IProcessInfixFunction {
   /**
@@ -102,12 +104,44 @@ public class SequentialInfixFunction implements IProcessInfixFunction {
         }
       }
     });
-    stopNodes.stream().map(AutomatonNode::getIncomingEdges).flatMap(List::stream).forEach(sequence::removeEdge);
+    stopNodes.stream().map(AutomatonNode::getIncomingEdges)
+        .flatMap(List::stream)
+        .forEach(sequence::removeEdge);
     stopNodes.forEach(sequence::removeNode);
 
     copyAutomataEdges(sequence, automaton2, automata2nodes);
 
     return sequence;
+  }
+
+  /**
+   * TODO:
+   * Execute the function.
+   *
+   * @param id        the id of the resulting petrinet
+   * @param petrinet1 the first  petrinet in the function (e.g. {@code A} in {@code A||B})
+   * @param petrinet2 the second petrinet in the function (e.g. {@code B} in {@code A||B})
+   * @return the resulting petrinet of the operation
+   */
+  @Override
+  public Petrinet compose(String id, Petrinet petrinet1, Petrinet petrinet2)
+      throws CompilationException {
+
+    Petrinet composition = new Petrinet(id, false);
+
+    composition.addPetrinet(petrinet1).forEach(p -> {
+      p.setStart(true);
+      composition.addRoot(p);
+    });
+
+    Set<PetriNetPlace> stopNodes = composition.getPlaces().values().stream()
+        .filter(PetriNetPlace::isTerminal)
+        .filter(p -> p.getTerminal().equalsIgnoreCase("STOP"))
+        .collect(Collectors.toSet());
+
+    Set<PetriNetPlace> startOfP2 = composition.addPetrinet(petrinet2);
+    composition.gluePlaces(stopNodes, startOfP2);
+    return composition;
   }
 
   /**
@@ -123,24 +157,11 @@ public class SequentialInfixFunction implements IProcessInfixFunction {
       try {
         AutomatonNode fromNode = nodeMap.get(e.getFrom().getId());
         AutomatonNode toNode = nodeMap.get(e.getTo().getId());
-        writeAutomaton.addEdge(e.getLabel(), fromNode, toNode, e.getGuard(),true);
+        writeAutomaton.addEdge(e.getLabel(), fromNode, toNode, e.getGuard(), true);
       } catch (CompilationException e1) {
         e1.printStackTrace();
       }
     });
   }
 
-  /**
-   * TODO:
-   * Execute the function.
-   *
-   * @param id        the id of the resulting petrinet
-   * @param petrinet1 the first  petrinet in the function (e.g. {@code A} in {@code A||B})
-   * @param petrinet2 the second petrinet in the function (e.g. {@code B} in {@code A||B})
-   * @return the resulting petrinet of the operation
-   */
-  @Override
-  public Petrinet compose(String id, Petrinet petrinet1, Petrinet petrinet2) throws CompilationException {
-    return null;
-  }
 }
