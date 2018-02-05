@@ -617,34 +617,60 @@ public class UserInterfaceController implements Initializable {
             compilerOutputDisplay.clear();
             modelsList.getItems().clear();
 
-            try {
-                Compiler codeCompiler = new Compiler();
 
-                // This follows the observer pattern.
-                // Within the compile function the code is then told to update an observer
 
+
+            compilerOutputDisplay.appendText("Starting build..." + "\n");
+
+            Thread buildThread = new Thread(() -> {
                 BlockingQueue<Object> messageLog = new LinkedBlockingQueue<>();
+                try {
+                    // This follows the observer pattern.
+                    // Within the compile function the code is then told to update an observer
+                    Compiler codeCompiler = new Compiler();
 
-                compilerOutputDisplay.appendText("Starting build..." + "\n");
 
-                codeCompiler.compile(userCode, new Context(), Expression.mkCtx(), messageLog);
+                    Thread logThread = new Thread(() -> {
+                        while (true) {
+                            if (!messageLog.isEmpty()) {
+                                LogAST t = ((LogAST) messageLog.poll());
+                                Platform.runLater(() -> compilerOutputDisplay.appendText(t.getMessage()+"\n"));
+                            }
+                        }
+                    });
 
-                while (!messageLog.isEmpty())
-                    compilerOutputDisplay.appendText(((LogAST) messageLog.poll()).getMessage() + "\n");
+                    logThread.setDaemon(true);
+                    logThread.start();
 
-                compilerOutputDisplay.appendText("Compiling completed sucessfully!\n" + new Date().toString());
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (CompilationException e) {
-                holdHighlighting = true;
-                compilerOutputDisplay.insertText(0, e.toString());
-                if (e.getLocation() != null) {
-                    compilerOutputDisplay.appendText("\n" + e.getLocation());
 
-                    if (e.getLocation().getStartIndex() > 0 && e.getLocation().getStartIndex() < userCodeInput.getText().length())
-                        userCodeInput.setStyleClass(e.getLocation().getStartIndex(), e.getLocation().getEndIndex(), "issue");
+                    codeCompiler.compile(userCode, new Context(), Expression.mkCtx(), messageLog);
+
+
+                    Platform.runLater(() -> compilerOutputDisplay.appendText("Compiling completed sucessfully!\n" + new Date().toString()));
+                    logThread.stop();
+
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (CompilationException e) {
+
+                    Platform.runLater(() -> {
+                        holdHighlighting = true;
+                        compilerOutputDisplay.appendText(e.toString());
+                        if (e.getLocation() != null) {
+                            compilerOutputDisplay.appendText("\n" + e.getLocation());
+
+                            if (e.getLocation().getStartIndex() > 0 && e.getLocation().getStartIndex() < userCodeInput.getText().length())
+                                userCodeInput.setStyleClass(e.getLocation().getStartIndex(), e.getLocation().getEndIndex(), "issue");
+                        }
+                    });
                 }
-            }
+
+            });
+
+            buildThread.setDaemon(true);
+            buildThread.start();
+
+
         }
     }
 
