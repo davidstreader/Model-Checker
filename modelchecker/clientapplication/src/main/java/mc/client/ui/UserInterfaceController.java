@@ -20,6 +20,8 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import lombok.Getter;
 import mc.client.ModelView;
+import mc.compiler.CompilationObject;
+import mc.compiler.CompilationObservable;
 import mc.compiler.Compiler;
 import mc.compiler.OperationResult;
 import mc.exceptions.CompilationException;
@@ -643,10 +645,12 @@ public class UserInterfaceController implements Initializable {
                     logThread.start();
 
 
-                    codeCompiler.compile(userCode, new Context(), Expression.mkCtx(), messageLog);
+                    CompilationObject compilerOutput = codeCompiler.compile(userCode, new Context(), Expression.mkCtx(), messageLog);
 
-
-                    Platform.runLater(() -> compilerOutputDisplay.appendText("Compiling completed sucessfully!\n" + new Date().toString()));
+                    Platform.runLater(() -> {
+                        CompilationObservable.getInstance().updateClient(compilerOutput);
+                        compilerOutputDisplay.appendText("Compiling completed sucessfully!\n" + new Date().toString());
+                    });
                     logThread.stop();
 
                 } catch (InterruptedException e) {

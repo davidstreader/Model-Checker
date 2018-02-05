@@ -53,12 +53,10 @@ public class Compiler {
     List<Token> codeInput = lexer.tokenise(code);
     AbstractSyntaxTree structedCode = parser.parse(codeInput, z3Context);
 
-    CompilationObject compilerOutput = compile(structedCode, code,
-              z3Context, context, messageQueue);
 
-    CompilationObservable.getInstance().updateClient(compilerOutput);
 
-    return compilerOutput;
+    return compile(structedCode, code,
+            z3Context, context, messageQueue);
   }
 
   /**

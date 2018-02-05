@@ -13,7 +13,7 @@ public class CompilationObservable extends Observable {
     private CompilationObservable(){}
 
     //package-private
-    void updateClient(CompilationObject c){
+    public void updateClient(CompilationObject c){
         setChanged();
         notifyObservers(c);
     }
