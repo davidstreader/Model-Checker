@@ -1,5 +1,7 @@
 package mc.processmodels.automata;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -10,6 +12,8 @@ import mc.compiler.Guard;
 import mc.processmodels.ProcessModelObject;
 
 public class AutomatonEdge extends ProcessModelObject {
+
+  private static final String INTERSECTION = "^";
 
   private Set<String> automatonLocation = new HashSet<>();
 
@@ -100,6 +104,14 @@ public class AutomatonEdge extends ProcessModelObject {
   @Override
   public int hashCode() {
     return Objects.hash(label,from.getId(),to.getId());
+  }
+
+  public static Multimap<String, String> createIntersection(Set<String> owners1,
+                                                            Set<String> owners2) {
+    Multimap<String, String> table = ArrayListMultimap.create();
+    owners1.forEach(o1 -> owners2.forEach(o2 -> table.put(o1,o1 + INTERSECTION + o2)));
+    owners1.forEach(o1 -> owners2.forEach(o2 -> table.put(o2,o1 + INTERSECTION + o2)));
+    return table;
   }
 
 }
