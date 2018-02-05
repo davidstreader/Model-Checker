@@ -82,8 +82,12 @@ public class AutomatonNode extends ProcessModelObject implements Comparable<Auto
       this.variables = fromThisNode.getModelVariables();
     }
 
-
-    this.guard = (Guard) fromThisNode.getGuard();
+//Needs a deep copy
+    if (fromThisNode.getGuard() != null) {
+      this.guard = ((Guard) fromThisNode.getGuard()).copy();
+    } else {
+      this.guard = null;
+    }
   }
 
   /**

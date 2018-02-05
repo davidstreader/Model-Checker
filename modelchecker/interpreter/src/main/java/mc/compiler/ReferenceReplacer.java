@@ -43,7 +43,7 @@ public class ReferenceReplacer {
   public AbstractSyntaxTree replaceReferences(AbstractSyntaxTree ast, BlockingQueue<Object> messageQueue)
     throws CompilationException, InterruptedException {
     reset();
-//System.out.println("replace Ref");
+
     List<ProcessNode> processes = ast.getProcesses();
     if (ast.getProcessHierarchy() == null) {
       ast.setProcessHierarchy(new ProcessHierarchy());
@@ -63,7 +63,7 @@ public class ReferenceReplacer {
   //Because of that it is public, and it should NOT be reset.
   public ProcessNode replaceReferences(ProcessNode process, BlockingQueue<Object> messageQueue) throws CompilationException, InterruptedException {
     references.clear();
-//System.out.println("Replacing ");
+//System.out.println("START Process Replacing ");
     messageQueue.add(new LogAST("Replacing references:", process));
     String identifier = process.getIdentifier();
     addReference(process.getProcess(), identifier);
@@ -82,7 +82,11 @@ public class ReferenceReplacer {
     return process;
   }
 
-  private ASTNode replaceReferences(ASTNode astNode, String identifier, Map<String, LocalProcessNode> localReferences) throws CompilationException, InterruptedException {
+  private ASTNode replaceReferences(ASTNode astNode,
+                                    String identifier,
+                                    Map<String, LocalProcessNode> localReferences)
+    throws CompilationException, InterruptedException {
+
     if (Thread.currentThread().isInterrupted()) {
       throw new InterruptedException();
     }

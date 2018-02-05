@@ -34,7 +34,10 @@ public class Expander {
  */
 
 
-  // symbolic evaluation
+  /*  $v1 ->  $i = 1 , $v2 -> $i=2 , $v3 -> $j < 0 ,
+   Only seen booleans. And are used temporarliy in IndentifyerNode.identifyer  C[$v2][$v3]
+   until expanded to C[2][$k]  where k is a hidden variable
+    */
   private Map<String, Expr> globalVariableMap;
 
 
@@ -45,7 +48,12 @@ public class Expander {
   public AbstractSyntaxTree expand(AbstractSyntaxTree ast, BlockingQueue<Object> messageQueue, Context context)
     throws CompilationException, InterruptedException {
     globalVariableMap = ast.getVariableMap();
-
+/*
+System.out.print("expand start \n global vars set up befor expansion ");
+for (String k: globalVariableMap.keySet()){
+  System.out.print(" "+k+" -> "+globalVariableMap.get(k).toString());
+} System.out.print("\n");
+*/
     List<ProcessNode> processes = ast.getProcesses();
     for (ProcessNode process : processes) {
       expand(process, messageQueue, context);
@@ -102,8 +110,10 @@ public class Expander {
                                                       Map<String, Object> variableMap,
                                                       Context context)
     throws CompilationException, InterruptedException {
+   // System.out.println("expandLocalProcesses");
     List<LocalProcessNode> newLocalProcesses = new ArrayList<>();
     for (LocalProcessNode localProcess : localProcesses) {
+      //if (localProcess.getGuard()!=null) {System.out.println("  guard "+((Guard) localProcess.getGuard()).myString());}
       if (localProcess.getRanges() == null) {
         ASTNode root = expand(localProcess.getProcess(), variableMap, context);
         localProcess.setProcess(root);
@@ -119,16 +129,22 @@ public class Expander {
   /* const M = 2.
     This expands C[i:0..M][j:0..M]  using ranges List<IndexNode> =
               [ ($i, start=0, end=2),($j, start=0, end=2)]
-
+    Atomic processes have no hidden variables and
+    LocaProcess identifyer all leteral C[0][3]
+    Symbolic processes
    */
   private List<LocalProcessNode> expandLocalProcesses(LocalProcessNode localProcess,
                                                       Map<String, Object> variableMap,
                                                       List<IndexNode> ranges, int index,
                                                       Context context)
     throws CompilationException, InterruptedException {
-//System.out.println("  expandLocalProcesses  ranges "+ranges.size()+
-//                   "globalVariables "+globalVariableMap.size()+
-//                   "hiddenVariables "+ hiddenVariables.size()) ;
+/*System.out.println("  expandLocalProcesses  ranges "+ranges.size()+
+                   " globalVariables "+globalVariableMap.size()+
+                   " hiddenVariables "+ hiddenVariables.size()) ;
+    for(String k: globalVariableMap.keySet()) {
+System.out.print(" "+k+" -> "+globalVariableMap.get(k)) ;
+    } System.out.println(" end ");
+*/
     List<LocalProcessNode> newLocalProcesses = new ArrayList<>();
     if (index < ranges.size()) {
       IndexNode range = ranges.get(index);
@@ -152,10 +168,12 @@ public class Expander {
       clone.setProcess(root);
       newLocalProcesses.add(clone);
     }
+
+//Global variables $v1,$v2,... are now replaced by  1,$k,...
 /*System.out.println("return expandLocalProcesses");
     for(int i = 0; newLocalProcesses.size()>i ;i++){
       System.out.println("  "+i+" "+ newLocalProcesses.get(i).toString());
-    }*/
+    } */
     return newLocalProcesses;
   }
 
@@ -164,6 +182,7 @@ public class Expander {
     if (Thread.currentThread().isInterrupted()) {
       throw new InterruptedException();
     }
+//System.out.println("EXPAND "+astNode.toString());
     if (astNode instanceof ProcessRootNode) {
       astNode = expand((ProcessRootNode) astNode, variableMap, context);
     } else if (astNode instanceof ActionLabelNode) {
@@ -189,6 +208,8 @@ public class Expander {
     HashMap<String, Object> tmpVarMap = new HashMap<>(variableMap);
     tmpVarMap.keySet().removeIf(s -> hiddenVariables.contains(s.substring(1)));
     astNode.setModelVariables(tmpVarMap);
+    //System.out.println("tmpVarMap size = "+tmpVarMap.keySet().size());
+
     return astNode;
   }
 
@@ -256,16 +277,19 @@ public class Expander {
                               Context context)
     throws CompilationException, InterruptedException {
     //add a guard to every sequenceNode. This will only contain next data.
+
     Guard guard = new Guard();
     if (astNode.getTo() instanceof IdentifierNode) {
-      //Parse the next values from this IdentifierNode
+      //Parse the next values from this IdentifierNode Set up guard on astNode
       guard.parseNext(((IdentifierNode) astNode.getTo()).getIdentifier(), globalVariableMap, identMap, astNode.getTo().getLocation());
       //There were next values, so assign to the metadata
       if (guard.hasData()) {
         astNode.setGuard(guard);
       }
     }
+    //nextMap and next is set on astNode Guard!
     ActionLabelNode from = expand(astNode.getFrom(), variableMap, context);
+
     ASTNode to = expand(astNode.getTo(), variableMap, context);
     astNode.setFrom(from);
     astNode.setTo(to);

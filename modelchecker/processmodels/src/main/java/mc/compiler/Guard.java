@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
+
+import com.rits.cloning.Cloner;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -44,16 +46,17 @@ public class Guard implements Serializable {
   // this is the boolean guard for input to Z3
 
   /**
-   * the field variables is actuall an evaluation, a variable 2 value mapping
-   * this is the pre state evaluation
+   * the field variables is actualy an evaluation, a variable 2 literal mapping
+   * only used for variables that are not hidden
    */
   @Getter(onMethod = @__(@JsonIgnore))
   Map<String, Integer> variables = new HashMap<>();
 
-// next "i:=2"
+// next Assignment "i:=2"  Only needed for hidden variables
   @Getter(onMethod = @__(@JsonIgnore))
   List<String> next = new ArrayList<>();
 
+// nextMap Assignment $v5 -> $i-1,  $v6 -> $j+1 Only needed for hidden variables"
   @Getter(onMethod = @__(@JsonIgnore))
   Map<String, String> nextMap = new HashMap<>();
 
@@ -74,16 +77,16 @@ public class Guard implements Serializable {
 
   }
   public String myString(){
-    String var = "var =";
+    String var = "var = ";
     for(String s: variables.keySet()){
-      var = " "+var+s+" => "+variables.get(s).toString();
+      var = var+" "+s+" => "+variables.get(s).toString()+" ";
     }
-    String nxt = getNextStr();
-    String nm = "nextMap= ";
+    String nxt = next.toString();
+    String nm = " nextMap "+nextMap.size()+ " = ";
     for(String s: nextMap.keySet()){
       nm = nm+s+" "+nextMap.get(s)+" ";
     }
-    return " guard "+ guard +" "+ var + nxt+ nm;
+    return " guard "+ guard +" "+ var +" next= "+ nxt+ nm;
   }
   /**
    * Get the
@@ -141,8 +144,9 @@ public class Guard implements Serializable {
 
   /**
    * Get the variable list as a string, used for serialization.
-   *
+   *  NEVER USED!
    * @return The variable list as a string, or an empty string if none exists.
+   * SIDE EFFECT! removes hidden variables from variables
    */
   public String getVarStr() {
     if (guard == null) {
@@ -163,7 +167,7 @@ public class Guard implements Serializable {
   }
 
   /**
-   * Get the next variable list as a string, used for serialization.
+   * Only called in ModelView
    *
    * @return The next variable list as a string, or an empty string if none exists.
    */
@@ -215,7 +219,7 @@ public class Guard implements Serializable {
         }
         nextMap.put(var, printed);
         next.add(variable + ":=" + rmPrefix(printed));
-        break;
+
       } else if (var.matches("\\d+")) {
         String varName = varNames.get(vars.indexOf(var));
         next.removeIf(s -> s.matches(varName + "\\W.*"));
@@ -223,12 +227,21 @@ public class Guard implements Serializable {
         nextMap.put(var, varName);
       }
     }
+/*System.out.print("parseNext next as string"+ next.toString()+"\n");
+    for(String k: nextMap.keySet()) {
+      System.out.print(" "+k+" -> "+ nextMap.get(k)+", ");
+    } System.out.print(" nextMap end \n");
+System.out.print("parseNext "+ myString()+"\n"); */
   }
 
   private static String rmPrefix(String str) {
     return str.replace("$", "");
   }
 
+  /**
+   *
+   * @param guard
+   */
   public void mergeWith(Guard guard) {
     if (guard.guard != null) {
       this.guard = guard.guard;
@@ -238,6 +251,7 @@ public class Guard implements Serializable {
     this.next.removeIf(t -> next.stream()
         .anyMatch(s -> Pattern.compile(s.split("\\W")[0] + "\\W").matcher(t).find()));
     this.next.addAll(guard.next);
+    this.nextMap.putAll(guard.getNextMap());
     this.hiddenVariables.addAll(guard.hiddenVariables);
     hiddenVariables.removeAll(variables.keySet());
   }
@@ -246,42 +260,52 @@ public class Guard implements Serializable {
   public boolean hasData() {
     return guard != null || !variables.isEmpty() || !next.isEmpty();
   }
-// Worrying OLD copy was Shallow copy!
+
+
+  /* Worrying OLD copy was Shallow copy!
   public Guard shalowcopy() {
     return new Guard(guard, variables,
                      next, nextMap,
                      shouldDisplay, hiddenVariables);
-  }
+  } */
 
   /**
    *
    * @return   a deep copy
    */
   public Guard copy() {
-    // One way to clone - deep copy  is to serialise and unserialise
-    Guard newG = new Guard();
-    BoolExpr newguard = guard;  // I think this is Imutable
-    Map<String, Integer> newvariables = new HashMap<>();
-    List<String> newnext = new ArrayList<>();
-    Map<String, String> newnextMap = new HashMap<>();
-    boolean newshouldDisplay = shouldDisplay;
-    Set<String> newhiddenVariables = new HashSet<>();
-
-
-    for(String k: variables.keySet()){
-      Integer newi = new Integer(variables.get(k));
-      newvariables.put(k,newi);
-    }
-    for(int i=0; i<next.size();i++){
-      newnext.add(next.get(i));
-    }
-    for(String k: nextMap.keySet()){
-      newnextMap.put(k,nextMap.get(k));
-    }
-    newhiddenVariables.addAll(hiddenVariables);
-
-
-    return newG;
+    Cloner cloner = new Cloner();
+    cloner.dontClone(BoolExpr.class);
+    return cloner.deepClone(this);
+//    // One way to clone - deep copy  is to serialise and unserialise
+//    //Guard newG = new Guard();
+//    System.out.print("copy start");
+//    BoolExpr newguard = guard;  // I think this is Imutable
+//    Map<String, Integer> newvariables = new HashMap<>();
+//    List<String> newnext = new ArrayList<>();
+//    Map<String, String> newnextMap = new HashMap<>();
+//    boolean newshouldDisplay = shouldDisplay;
+//    Set<String> newhiddenVariables = new HashSet<>();
+//
+//
+//    for(String k: variables.keySet()){
+//      Integer newi = new Integer(variables.get(k));
+//      newvariables.put(k,newi);
+//    }
+//    for(int i=0; i<next.size();i++){
+//      newnext.add(next.get(i));
+//    }
+//    for(String k: nextMap.keySet()){
+//      newnextMap.put(k,nextMap.get(k));
+//    }
+//    newhiddenVariables.addAll(hiddenVariables);
+//
+//    Guard newG = new Guard(newguard,newvariables,newhiddenVariables);
+//    newG.setNext(newnext);
+//    newG.setNextMap(newnextMap);
+//    newG.setShouldDisplay(newshouldDisplay);
+//System.out.print("copy Guard "+ newG.myString());
+//    return newG;
   }
 
   public Guard(BoolExpr guard, Map<String, Integer> variables, Set<String> hiddenVariables) {
