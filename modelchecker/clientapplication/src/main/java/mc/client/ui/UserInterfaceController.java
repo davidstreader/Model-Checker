@@ -2,6 +2,7 @@ package mc.client.ui;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
+import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.embed.swing.SwingNode;
 import javafx.event.ActionEvent;
@@ -22,6 +23,7 @@ import mc.client.ModelView;
 import mc.compiler.Compiler;
 import mc.compiler.OperationResult;
 import mc.exceptions.CompilationException;
+import mc.util.LogAST;
 import mc.util.expr.Expression;
 import mc.webserver.Context;
 import org.fxmisc.richtext.CodeArea;
@@ -33,9 +35,7 @@ import java.io.*;
 import java.net.URL;
 import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.*;
 
 import static mc.client.ui.SyntaxHighlighting.computeHighlighting;
 
@@ -69,7 +69,7 @@ public class UserInterfaceController implements Initializable {
     private boolean modified = false;
 
     @Getter
-    private ArrayList<String> recentFilePaths = new ArrayList<>();
+    private ArrayDeque<String> recentFilePaths = new ArrayDeque<>();
 
 
     /**
@@ -88,12 +88,12 @@ public class UserInterfaceController implements Initializable {
             BufferedReader bufferedReader = new BufferedReader(new FileReader(new File("recentfiles.conf")));
             String line;
             while ((line = bufferedReader.readLine()) != null) {
-                if(!line.isEmpty())
-                addRecentFile(line);
+                if (!line.isEmpty())
+                    addRecentFile(line);
             }
             bufferedReader.close();
 
-        } catch(IOException e) {
+        } catch (IOException e) {
             System.out.println("Error reading the settings file.");
         }
 
@@ -232,7 +232,6 @@ public class UserInterfaceController implements Initializable {
                     }
 
 
-
                 });
     }
 
@@ -331,7 +330,7 @@ public class UserInterfaceController implements Initializable {
     }
 
     private boolean saveUserChanges() {
-        if(modified) {
+        if (modified) {
 
             Alert save = new Alert(Alert.AlertType.NONE);
 
@@ -370,6 +369,9 @@ public class UserInterfaceController implements Initializable {
                         saveFailed.setContentText("Error: " + message.getMessage());
 
                         saveFailed.getButtonTypes().setAll(new ButtonType("Okay", ButtonBar.ButtonData.CANCEL_CLOSE));
+                        saveFailed.initModality(Modality.APPLICATION_MODAL);
+                        saveFailed.initOwner(modelDisplay.getScene().getWindow());
+                        saveFailed.show();
                     }
                 }
 
@@ -382,10 +384,9 @@ public class UserInterfaceController implements Initializable {
     }
 
 
-
     @FXML
     private void handleCreateNew(ActionEvent event) {
-        if(saveUserChanges()) {
+        if (saveUserChanges()) {
             currentOpenFile = null;
             userCodeInput.clear();
             modified = false;
@@ -400,7 +401,7 @@ public class UserInterfaceController implements Initializable {
             try {
                 File selectedFile;
 
-                if(filePath != null) {
+                if (filePath != null) {
                     selectedFile = new File(filePath);
                 } else {
                     FileChooser openDialog = new FileChooser();
@@ -423,7 +424,6 @@ public class UserInterfaceController implements Initializable {
                 Alert saveFailed = new Alert(Alert.AlertType.ERROR);
                 saveFailed.setTitle("Error encountered when reading file");
                 saveFailed.setContentText("Error: " + e.getMessage());
-                e.printStackTrace();
 
                 saveFailed.getButtonTypes().setAll(new ButtonType("Okay", ButtonBar.ButtonData.CANCEL_CLOSE));
                 saveFailed.initModality(Modality.APPLICATION_MODAL);
@@ -434,8 +434,6 @@ public class UserInterfaceController implements Initializable {
     }
 
 
-
-
     @FXML
     private void handleOpen(ActionEvent event) {
         openFile(null);
@@ -443,7 +441,7 @@ public class UserInterfaceController implements Initializable {
 
     @FXML
     private void handleFileClose(ActionEvent event) {
-        if(saveUserChanges()) {
+        if (saveUserChanges()) {
             userCodeInput.clear();
             currentOpenFile = null;
             modified = false;
@@ -456,13 +454,13 @@ public class UserInterfaceController implements Initializable {
     private void handleSave(ActionEvent event) {
         File selectedFile = currentOpenFile;
 
-        if(selectedFile == null) {
+        if (selectedFile == null) {
             FileChooser chooser = new FileChooser();
             chooser.setTitle("Save file");
             selectedFile = chooser.showSaveDialog(modelDisplay.getScene().getWindow());
         }
 
-        if(selectedFile != null) {
+        if (selectedFile != null) {
             try {
                 PrintStream writeTo = new PrintStream(selectedFile, "UTF-8");
                 writeTo.println(userCodeInput.getText());
@@ -475,11 +473,14 @@ public class UserInterfaceController implements Initializable {
                 saveFailed.setTitle("Error encountered when saving file");
                 saveFailed.setContentText("Error: " + e.getMessage());
 
+                saveFailed.initModality(Modality.APPLICATION_MODAL);
+                saveFailed.initOwner(modelDisplay.getScene().getWindow());
+
                 saveFailed.getButtonTypes().setAll(new ButtonType("Okay", ButtonBar.ButtonData.CANCEL_CLOSE));
+                saveFailed.show();
             }
         }
     }
-
 
 
     @FXML
@@ -488,7 +489,7 @@ public class UserInterfaceController implements Initializable {
         chooser.setTitle("Save as");
         File selectedFile = chooser.showSaveDialog(modelDisplay.getScene().getWindow());
 
-        if(selectedFile != null) {
+        if (selectedFile != null) {
             try {
                 PrintStream writeTo = new PrintStream(selectedFile, "UTF-8");
                 writeTo.println(userCodeInput.getText());
@@ -502,7 +503,11 @@ public class UserInterfaceController implements Initializable {
                 saveFailed.setTitle("Error encountered when saving file");
                 saveFailed.setContentText("Error: " + e.getMessage());
 
+                saveFailed.initModality(Modality.APPLICATION_MODAL);
+                saveFailed.initOwner(modelDisplay.getScene().getWindow());
+
                 saveFailed.getButtonTypes().setAll(new ButtonType("Okay", ButtonBar.ButtonData.CANCEL_CLOSE));
+                saveFailed.show();
             }
 
         }
@@ -511,8 +516,8 @@ public class UserInterfaceController implements Initializable {
 
     @FXML
     private void handleQuit(ActionEvent event) {
-        if(saveUserChanges()) {
-           UserInterfaceApplication.getPrimaryStage().hide();
+        if (saveUserChanges()) {
+            UserInterfaceApplication.getPrimaryStage().hide();
         }
     }
 
@@ -590,8 +595,16 @@ public class UserInterfaceController implements Initializable {
             settingsStage.setResizable(false);
             settingsStage.show();
 
-        } catch(IOException ignored) {
-            System.out.println(ignored);
+        } catch (IOException e) {
+            Alert optionsLayoutLoadFailed = new Alert(Alert.AlertType.ERROR);
+            optionsLayoutLoadFailed.setTitle("Error encountered when loading options panel layout");
+            optionsLayoutLoadFailed.setContentText("Error: " + e.getMessage());
+
+            optionsLayoutLoadFailed.initModality(Modality.APPLICATION_MODAL);
+            optionsLayoutLoadFailed.initOwner(modelDisplay.getScene().getWindow());
+
+            optionsLayoutLoadFailed.getButtonTypes().setAll(new ButtonType("Okay", ButtonBar.ButtonData.CANCEL_CLOSE));
+            optionsLayoutLoadFailed.show();
         }
     }
 
@@ -609,10 +622,17 @@ public class UserInterfaceController implements Initializable {
 
                 // This follows the observer pattern.
                 // Within the compile function the code is then told to update an observer
-                codeCompiler.compile(userCode, new Context(), Expression.mkCtx(), new LinkedBlockingQueue<>());
 
+                BlockingQueue<Object> messageLog = new LinkedBlockingQueue<>();
 
-                compilerOutputDisplay.insertText(0, "Compiling completed sucessfully!\n" + new Date().toString());
+                compilerOutputDisplay.appendText("Starting build..." + "\n");
+
+                codeCompiler.compile(userCode, new Context(), Expression.mkCtx(), messageLog);
+
+                while (!messageLog.isEmpty())
+                    compilerOutputDisplay.appendText(((LogAST) messageLog.poll()).getMessage() + "\n");
+
+                compilerOutputDisplay.appendText("Compiling completed sucessfully!\n" + new Date().toString());
             } catch (InterruptedException e) {
                 e.printStackTrace();
             } catch (CompilationException e) {
@@ -650,7 +670,6 @@ public class UserInterfaceController implements Initializable {
                 o.getProcess2().getIdent() + " = " + o.getResult() + "\n"));
 
 
-
         if (eqRes.size() > 0) {
             compilerOutputDisplay.appendText("\n##Equation Results##\n");
 
@@ -674,21 +693,24 @@ public class UserInterfaceController implements Initializable {
     }
 
     private void addRecentFile(String filePath) {
-        if(!recentFilePaths.contains(filePath)) {
-                while(recentFilePaths.size() > 5) { // Incase someone adds a shit ton of entries into the settings file
-                    recentFilePaths.remove(0);
-                }
+        if (!recentFilePaths.contains(filePath)) {
+            while (recentFilePaths.size() > 5) { // Incase someone adds a shit ton of entries into the settings file
+                recentFilePaths.pollLast();
+            }
 
 
+            recentFilePaths.offerFirst(filePath);
 
-            recentFilePaths.add(filePath);
 
-            MenuItem newItem = new MenuItem(filePath);
-            newItem.setOnAction(e -> {
-                openFile(filePath);
-            });
+            openRecentTab.getItems().clear();
 
-            openRecentTab.getItems().add(newItem);
+            for (String path : recentFilePaths) {
+                MenuItem newItem = new MenuItem(path);
+                newItem.setOnAction(e -> {
+                    openFile(path);
+                });
+                openRecentTab.getItems().add(newItem);
+            }
         }
 
     }

@@ -20,12 +20,10 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
 import edu.uci.ics.jung.algorithms.layout.AbstractLayout;
-import edu.uci.ics.jung.algorithms.layout.SpringLayout2;
 import edu.uci.ics.jung.algorithms.layout.util.RandomLocationTransformer;
 import edu.uci.ics.jung.algorithms.util.IterativeContext;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.graph.util.Pair;
-import mc.client.graph.GraphNode;
 
 /**
  * The SpringLayout package represents a visualization of a set of nodes. The
@@ -212,7 +210,7 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
                 double dx = 0, dy = 0;
 
                 for (V v2 : getGraph().getVertices()) {
-                    if (v == v2 || !((GraphNode)v).getAutomata().equals(((GraphNode)v2).getAutomata())) continue;
+                    if (v == v2 || !((GraphNode)v).getProcessModelId().equals(((GraphNode)v2).getProcessModelId())) continue;
                     Point2D p = apply(v);
                     Point2D p2 = apply(v2);
                     if(p == null || p2 == null) continue;

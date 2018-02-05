@@ -14,7 +14,7 @@ import mc.util.Location;
 public class Lexer {
 
   private static Set<String> castTypes = ImmutableSet.copyOf(Arrays.asList("TokenRule", "A2P"));
-  private static Set<String> displayTypes = ImmutableSet.copyOf(Arrays.asList("automata", "petrinet"));
+  private static Set<String> displayTypes = ImmutableSet.copyOf(Arrays.asList("automata", "forcedautomata","petrinet"));
   static Set<String> functions = new HashSet<>();    //Using reflection to automatically add function ids (strings) to lexer
   static Set<String> infixFunctions = new HashSet<>();
   static Set<String> operationFunctions = new HashSet<>();

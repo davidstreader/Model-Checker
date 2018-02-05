@@ -47,7 +47,7 @@ public class BisimulationOperation implements IOperationInfixFunction {
     int rootColour = Integer.MIN_VALUE;
 
     ColouringUtil colourer = new ColouringUtil();
-    // coloring first automata builds colourMap  tyhat is used when coloring next automata
+    // coloring first automata builds colourMap  that is used when coloring next automata
     for (Automaton automaton : automata) {
       if (Thread.currentThread().isInterrupted()) {
         return false;
@@ -83,9 +83,9 @@ public class BisimulationOperation implements IOperationInfixFunction {
           break;
         }
       }
-      System.out.println(automaton.getId()+"in Bisim Op "+
-        automaton.getRoot().stream().map(n->((Integer)n.getColour()).toString()).
-          collect(Collectors.joining(", ")));
+      //System.out.println(automaton.getId()+"in Bisim Op "+
+     //   automaton.getRoot().stream().map(n->((Integer)n.getColour()).toString()).
+      //    collect(Collectors.joining(", ")));
 
       if (col == Integer.MIN_VALUE) {
         col = colourer.getNextColourId();

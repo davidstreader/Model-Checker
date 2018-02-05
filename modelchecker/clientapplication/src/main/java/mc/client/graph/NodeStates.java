@@ -14,7 +14,8 @@ public enum NodeStates {
     START   (Color.GREEN),
     STOP    (Color.BLUE),
     ERROR   (Color.RED),
-    NOMINAL (Color.LIGHT_GRAY);
+    NOMINAL (Color.LIGHT_GRAY),
 
+    SELECT  (Color.CYAN);
     private final Color colorNodes;
 }
