@@ -18,6 +18,7 @@ import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.conversion.TokenRule;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetPlace;
+import mc.util.LogAST;
 
 import javax.xml.soap.SOAPPart;
 
@@ -35,6 +36,9 @@ public class Interpreter {
 
     List<ProcessNode> processes = ast.getProcesses();
     for (ProcessNode process : processes) {
+
+
+
       System.out.print("\nBuilding " + process.getType() + " " + process.getIdentifier() + "...");
       ProcessModel model = null;
       if (process.getType().size() == 0) {
@@ -64,7 +68,7 @@ public class Interpreter {
         } else {
           ((MultiProcessModel) model).addProcess(modelAut);
         }
-        System.out.println("Forced");
+
       } else if (process.getType().contains("automata")) {
         ProcessModel modelAut;
         HashMap<AutomatonNode, Set<PetriNetPlace>> nodeToMarking = new HashMap<>();
@@ -85,6 +89,9 @@ public class Interpreter {
       }
 
       System.out.print("Done!");
+
+      messageQueue.add(new LogAST("Built:", process));
+
       System.out.println("Built "+ model.toString());
 
       processMap.put(process.getIdentifier(), model);

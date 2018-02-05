@@ -2,6 +2,7 @@ package mc.client.ui;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
+import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.embed.swing.SwingNode;
 import javafx.event.ActionEvent;
@@ -22,6 +23,7 @@ import mc.client.ModelView;
 import mc.compiler.Compiler;
 import mc.compiler.OperationResult;
 import mc.exceptions.CompilationException;
+import mc.util.LogAST;
 import mc.util.expr.Expression;
 import mc.webserver.Context;
 import org.fxmisc.richtext.CodeArea;
@@ -33,9 +35,7 @@ import java.io.*;
 import java.net.URL;
 import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.*;
 
 import static mc.client.ui.SyntaxHighlighting.computeHighlighting;
 
@@ -622,10 +622,17 @@ public class UserInterfaceController implements Initializable {
 
                 // This follows the observer pattern.
                 // Within the compile function the code is then told to update an observer
-                codeCompiler.compile(userCode, new Context(), Expression.mkCtx(), new LinkedBlockingQueue<>());
 
+                BlockingQueue<Object> messageLog = new LinkedBlockingQueue<>();
 
-                compilerOutputDisplay.insertText(0, "Compiling completed sucessfully!\n" + new Date().toString());
+                compilerOutputDisplay.appendText("Starting build..." + "\n");
+
+                codeCompiler.compile(userCode, new Context(), Expression.mkCtx(), messageLog);
+
+                while (!messageLog.isEmpty())
+                    compilerOutputDisplay.appendText(((LogAST) messageLog.poll()).getMessage() + "\n");
+
+                compilerOutputDisplay.appendText("Compiling completed sucessfully!\n" + new Date().toString());
             } catch (InterruptedException e) {
                 e.printStackTrace();
             } catch (CompilationException e) {
@@ -695,11 +702,9 @@ public class UserInterfaceController implements Initializable {
             recentFilePaths.offerFirst(filePath);
 
 
-
-
             openRecentTab.getItems().clear();
 
-            for(String path : recentFilePaths) {
+            for (String path : recentFilePaths) {
                 MenuItem newItem = new MenuItem(path);
                 newItem.setOnAction(e -> {
                     openFile(path);

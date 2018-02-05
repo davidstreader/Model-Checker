@@ -38,7 +38,7 @@ public class Compiler {
    * @param code   sourse code input
    * @param context
    * @param z3Context
-   * @param messageQueue  used to implement concurret execution
+   * @param messageQueue  used to implement concurrent logging while executing
    * @return  name - > aut Petri Net
    * @throws CompilationException
    * @throws InterruptedException
