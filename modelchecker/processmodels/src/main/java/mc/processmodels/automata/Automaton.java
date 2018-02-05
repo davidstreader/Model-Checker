@@ -265,7 +265,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
       AutomatonEdge ed;
       if (!e.getTo().equals(oldNode)) {
-        ed = addEdge(e.getLabel(), e.getFrom(), newNode, newGuard, false);
+        ed = addEdge(e.getLabel(), newNode, e.getTo(), newGuard, false);
       } else { // If the node links to itself
         ed = addEdge(e.getLabel(), newNode, newNode, newGuard, false);
       }
