@@ -48,12 +48,7 @@ public class Expander {
   public AbstractSyntaxTree expand(AbstractSyntaxTree ast, BlockingQueue<Object> messageQueue, Context context)
     throws CompilationException, InterruptedException {
     globalVariableMap = ast.getVariableMap();
-/*
-System.out.print("expand start \n global vars set up befor expansion ");
-for (String k: globalVariableMap.keySet()){
-  System.out.print(" "+k+" -> "+globalVariableMap.get(k).toString());
-} System.out.print("\n");
-*/
+
     List<ProcessNode> processes = ast.getProcesses();
     for (ProcessNode process : processes) {
       expand(process, messageQueue, context);
@@ -110,10 +105,8 @@ for (String k: globalVariableMap.keySet()){
                                                       Map<String, Object> variableMap,
                                                       Context context)
     throws CompilationException, InterruptedException {
-   // System.out.println("expandLocalProcesses");
     List<LocalProcessNode> newLocalProcesses = new ArrayList<>();
     for (LocalProcessNode localProcess : localProcesses) {
-      //if (localProcess.getGuard()!=null) {System.out.println("  guard "+((Guard) localProcess.getGuard()).myString());}
       if (localProcess.getRanges() == null) {
         ASTNode root = expand(localProcess.getProcess(), variableMap, context);
         localProcess.setProcess(root);
@@ -138,17 +131,9 @@ for (String k: globalVariableMap.keySet()){
                                                       List<IndexNode> ranges, int index,
                                                       Context context)
     throws CompilationException, InterruptedException {
-/*System.out.println("  expandLocalProcesses  ranges "+ranges.size()+
-                   " globalVariables "+globalVariableMap.size()+
-                   " hiddenVariables "+ hiddenVariables.size()) ;
-    for(String k: globalVariableMap.keySet()) {
-System.out.print(" "+k+" -> "+globalVariableMap.get(k)) ;
-    } System.out.println(" end ");
-*/
     List<LocalProcessNode> newLocalProcesses = new ArrayList<>();
     if (index < ranges.size()) {
       IndexNode range = ranges.get(index);
-//System.out.println("   range "+range.toString());
       IndexIterator iterator = IndexIterator.construct(expand(range, context));
       String variable = range.getVariable();
       if (!hiddenVariables.contains(variable.substring(1))) {
@@ -169,11 +154,6 @@ System.out.print(" "+k+" -> "+globalVariableMap.get(k)) ;
       newLocalProcesses.add(clone);
     }
 
-//Global variables $v1,$v2,... are now replaced by  1,$k,...
-/*System.out.println("return expandLocalProcesses");
-    for(int i = 0; newLocalProcesses.size()>i ;i++){
-      System.out.println("  "+i+" "+ newLocalProcesses.get(i).toString());
-    } */
     return newLocalProcesses;
   }
 
@@ -182,7 +162,6 @@ System.out.print(" "+k+" -> "+globalVariableMap.get(k)) ;
     if (Thread.currentThread().isInterrupted()) {
       throw new InterruptedException();
     }
-//System.out.println("EXPAND "+astNode.toString());
     if (astNode instanceof ProcessRootNode) {
       astNode = expand((ProcessRootNode) astNode, variableMap, context);
     } else if (astNode instanceof ActionLabelNode) {
@@ -208,7 +187,6 @@ System.out.print(" "+k+" -> "+globalVariableMap.get(k)) ;
     HashMap<String, Object> tmpVarMap = new HashMap<>(variableMap);
     tmpVarMap.keySet().removeIf(s -> hiddenVariables.contains(s.substring(1)));
     astNode.setModelVariables(tmpVarMap);
-    //System.out.println("tmpVarMap size = "+tmpVarMap.keySet().size());
 
     return astNode;
   }
