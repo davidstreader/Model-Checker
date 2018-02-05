@@ -619,9 +619,6 @@ public class UserInterfaceController implements Initializable {
             compilerOutputDisplay.clear();
             modelsList.getItems().clear();
 
-
-
-
             compilerOutputDisplay.appendText("Starting build..." + "\n");
 
             Thread buildThread = new Thread(() -> {
@@ -633,22 +630,27 @@ public class UserInterfaceController implements Initializable {
 
 
                     Thread logThread = new Thread(() -> {
-                        while (true) {
+                        while (true) { // Realitively expensive spinning lock
+
                             if (!messageLog.isEmpty()) {
                                 LogAST t = ((LogAST) messageLog.poll());
                                 Platform.runLater(() -> compilerOutputDisplay.appendText(t.getMessage()+"\n"));
                             }
+                            try {
+                                Thread.sleep(10); // To stop free spinning eating cpu
+                            } catch(InterruptedException e) {}
                         }
                     });
 
-                    logThread.setDaemon(true);
+                    logThread.setDaemon(true); // Means the thread doesnt hang the appication on close
                     logThread.start();
 
 
+                    //Keep the actual compilition outside the javafx thread otherwise we get hanging
                     CompilationObject compilerOutput = codeCompiler.compile(userCode, new Context(), Expression.mkCtx(), messageLog);
 
                     Platform.runLater(() -> {
-                        CompilationObservable.getInstance().updateClient(compilerOutput);
+                        CompilationObservable.getInstance().updateClient(compilerOutput); // If this is run outside the fx thread then exceptions occur and weirdness with threads updating combox box and whatnot
                         compilerOutputDisplay.appendText("Compiling completed sucessfully!\n" + new Date().toString());
                     });
                     logThread.stop();
@@ -657,7 +659,7 @@ public class UserInterfaceController implements Initializable {
                     e.printStackTrace();
                 } catch (CompilationException e) {
 
-                    Platform.runLater(() -> {
+                    Platform.runLater(() -> { // Update anything that goes wrong on the main fx thread.
                         holdHighlighting = true;
                         compilerOutputDisplay.appendText(e.toString());
                         if (e.getLocation() != null) {
