@@ -1,6 +1,5 @@
 package mc.processmodels.automata;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -9,10 +8,7 @@ import lombok.Setter;
 import mc.Constant;
 import mc.compiler.Guard;
 import mc.processmodels.ProcessModelObject;
-import mc.processmodels.automata.serializers.JSONEdgeSerializer;
 
-@JsonSerialize(using = JSONEdgeSerializer.class)
-//@ToString
 public class AutomatonEdge extends ProcessModelObject {
 
   private Set<String> automatonLocation = new HashSet<>();

@@ -5,7 +5,6 @@ import static mc.util.expr.Expression.getContextFrom;
 import static mc.util.expr.Expression.isSolvable;
 import static mc.util.expr.Expression.substitute;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
@@ -38,13 +37,13 @@ import mc.util.expr.VariableCollector;
 @NoArgsConstructor
 public class Guard implements Serializable {
   //Don't serialize these getters as we serialize the below methods instead.
-  @Getter(onMethod = @__(@JsonIgnore))
+  @Getter
   BoolExpr guard;
-  @Getter(onMethod = @__(@JsonIgnore))
+  @Getter
   Map<String, Integer> variables = new HashMap<>();
-  @Getter(onMethod = @__(@JsonIgnore))
+  @Getter
   List<String> next = new ArrayList<>();
-  @Getter(onMethod = @__(@JsonIgnore))
+  @Getter
   Map<String, String> nextMap = new HashMap<>();
   @Getter
   private boolean shouldDisplay = false;
@@ -55,27 +54,30 @@ public class Guard implements Serializable {
    *
    * @return The guard as a string, or an empty string if none exists.
    */
-  public String getGuardStr()  {
+  public String getGuardStr() {
     if (guard == null || hiddenVariables.isEmpty()) {
       return "";
     }
     return rmPrefix(ExpressionPrinter.printExpression(guard, Collections.emptyMap()));
 
   }
-  public String myString(){
+
+  public String myString() {
     String var = "var = ";
-    for(String s: variables.keySet()){
-      var = var+s+"="+variables.get(s).toString();
+    for (String s : variables.keySet()) {
+      var = var + s + "=" + variables.get(s).toString();
     }
-    String nxt = next.stream().reduce("",(x,y)-> x+" "+y+" ");
+    String nxt = next.stream().reduce("", (x, y) -> x + " " + y + " ");
     String nm = "nextMap = ";
-    for(String s: nextMap.keySet()){
-      nm = nm+s+" "+nextMap.get(s)+" ";
+    for (String s : nextMap.keySet()) {
+      nm = nm + s + " " + nextMap.get(s) + " ";
     }
-    return " guard "+ guard +" "+ var + nxt+ nm;
+    return " guard " + guard + " " + var + nxt + nm;
   }
+
   /**
    * Get the
+   *
    * @return
    * @throws CompilationException
    * @throws InterruptedException
@@ -230,7 +232,6 @@ public class Guard implements Serializable {
     hiddenVariables.removeAll(variables.keySet());
   }
 
-  @JsonIgnore
   public boolean hasData() {
     return guard != null || !variables.isEmpty() || !next.isEmpty();
   }
