@@ -64,11 +64,15 @@ public class UserInterfaceController implements Initializable {
     private MenuItem saveMenuItem;
     @FXML
     private Menu openRecentTab;
+    @FXML
+    private Button compileButton;
 
 
     // for keep updating the file that has already been saved.
     private File currentOpenFile = null;
     private boolean modified = false;
+
+    private Thread buildThread = new Thread();
 
     @Getter
     private ArrayDeque<String> recentFilePaths = new ArrayDeque<>();
@@ -616,66 +620,79 @@ public class UserInterfaceController implements Initializable {
         String userCode = userCodeInput.getText();
 
         if (!userCode.isEmpty()) {
-            compilerOutputDisplay.clear();
-            modelsList.getItems().clear();
 
-            compilerOutputDisplay.appendText("Starting build..." + "\n");
+            if(buildThread.isAlive()) {
+                buildThread.stop();
+                compilerOutputDisplay.appendText("Build cancelled" + "\n");
+                compileButton.setText("Compile");
 
-            Thread buildThread = new Thread(() -> {
-                BlockingQueue<Object> messageLog = new LinkedBlockingQueue<>();
-                try {
-                    // This follows the observer pattern.
-                    // Within the compile function the code is then told to update an observer
-                    Compiler codeCompiler = new Compiler();
+            } else {
+
+                compilerOutputDisplay.appendText("Starting build..." + "\n");
+
+                compilerOutputDisplay.clear();
+                modelsList.getItems().clear();
+
+                buildThread = new Thread(() -> {
+                    BlockingQueue<Object> messageLog = new LinkedBlockingQueue<>();
+                    try {
+                        // This follows the observer pattern.
+                        // Within the compile function the code is then told to update an observer
+                        Compiler codeCompiler = new Compiler();
 
 
-                    Thread logThread = new Thread(() -> {
-                        while (true) { // Realitively expensive spinning lock
+                        Thread logThread = new Thread(() -> {
+                            while (true) { // Realitively expensive spinning lock
 
-                            if (!messageLog.isEmpty()) {
-                                LogAST t = ((LogAST) messageLog.poll());
-                                Platform.runLater(() -> compilerOutputDisplay.appendText(t.getMessage()+"\n"));
+                                if (!messageLog.isEmpty()) {
+                                    LogAST t = ((LogAST) messageLog.poll());
+                                    Platform.runLater(() -> compilerOutputDisplay.appendText(t.getMessage() + "\n"));
+                                }
+                                try {
+                                    Thread.sleep(10); // To stop free spinning eating cpu
+                                } catch (InterruptedException e) {
+                                }
                             }
-                            try {
-                                Thread.sleep(10); // To stop free spinning eating cpu
-                            } catch(InterruptedException e) {}
-                        }
-                    });
+                        });
 
-                    logThread.setDaemon(true); // Means the thread doesnt hang the appication on close
-                    logThread.start();
+                        logThread.setDaemon(true); // Means the thread doesnt hang the appication on close
+                        logThread.start();
 
 
-                    //Keep the actual compilition outside the javafx thread otherwise we get hanging
-                    CompilationObject compilerOutput = codeCompiler.compile(userCode, new Context(), Expression.mkCtx(), messageLog);
+                        //Keep the actual compilition outside the javafx thread otherwise we get hanging
+                        CompilationObject compilerOutput = codeCompiler.compile(userCode, new Context(), Expression.mkCtx(), messageLog);
 
-                    Platform.runLater(() -> {
-                        CompilationObservable.getInstance().updateClient(compilerOutput); // If this is run outside the fx thread then exceptions occur and weirdness with threads updating combox box and whatnot
-                        compilerOutputDisplay.appendText("Compiling completed sucessfully!\n" + new Date().toString());
-                    });
-                    logThread.stop();
+                        Platform.runLater(() -> {
+                            CompilationObservable.getInstance().updateClient(compilerOutput); // If this is run outside the fx thread then exceptions occur and weirdness with threads updating combox box and whatnot
+                            compilerOutputDisplay.appendText("Compiling completed sucessfully!\n" + new Date().toString());
+                            compileButton.setText("Compile");
+                        });
+                        logThread.stop();
 
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (CompilationException e) {
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } catch (CompilationException e) {
 
-                    Platform.runLater(() -> { // Update anything that goes wrong on the main fx thread.
-                        holdHighlighting = true;
-                        compilerOutputDisplay.appendText(e.toString());
-                        if (e.getLocation() != null) {
-                            compilerOutputDisplay.appendText("\n" + e.getLocation());
+                        Platform.runLater(() -> { // Update anything that goes wrong on the main fx thread.
+                            holdHighlighting = true;
+                            compilerOutputDisplay.appendText(e.toString());
+                            if (e.getLocation() != null) {
+                                compilerOutputDisplay.appendText("\n" + e.getLocation());
 
-                            if (e.getLocation().getStartIndex() > 0 && e.getLocation().getStartIndex() < userCodeInput.getText().length())
-                                userCodeInput.setStyleClass(e.getLocation().getStartIndex(), e.getLocation().getEndIndex(), "issue");
-                        }
-                    });
-                }
+                                if (e.getLocation().getStartIndex() > 0 && e.getLocation().getStartIndex() < userCodeInput.getText().length())
+                                    userCodeInput.setStyleClass(e.getLocation().getStartIndex(), e.getLocation().getEndIndex(), "issue");
+                            }
+                        });
+                    }
 
-            });
+                });
 
-            buildThread.setDaemon(true);
-            buildThread.start();
+                buildThread.setDaemon(true);
+                buildThread.start();
 
+                compileButton.setText("Stop Build");
+
+            }
 
         }
     }
