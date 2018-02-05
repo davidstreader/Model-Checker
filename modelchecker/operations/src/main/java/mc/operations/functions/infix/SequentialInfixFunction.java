@@ -1,9 +1,11 @@
 package mc.operations.functions.infix;
 
+import com.google.common.collect.Multimap;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessInfixFunction;
@@ -12,6 +14,7 @@ import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.automata.operations.AutomataReachability;
 import mc.processmodels.petrinet.Petrinet;
+import mc.processmodels.petrinet.components.PetriNetPlace;
 
 public class SequentialInfixFunction implements IProcessInfixFunction {
   /**
@@ -45,6 +48,8 @@ public class SequentialInfixFunction implements IProcessInfixFunction {
   @Override
   public Automaton compose(String id, Automaton automaton1, Automaton automaton2) {
     Automaton sequence = new Automaton(id, !Automaton.CONSTRUCT_ROOT);
+    Multimap<String,String> setOfOwners = AutomatonEdge.createIntersection(automaton1.getOwners(),
+        automaton2.getOwners());
 
     //store a map to the nodes so id can be ignored
     Map<String, AutomatonNode> automata1nodes = new HashMap<>();
@@ -66,7 +71,7 @@ public class SequentialInfixFunction implements IProcessInfixFunction {
       }
     });
 
-    copyAutomataEdges(sequence, automaton1, automata1nodes);
+    copyAutomataEdges(sequence, automaton1, automata1nodes,setOfOwners);
 
     //get the stop nodes such that they can be replaced
     Collection<AutomatonNode> stopNodes = sequence.getNodes().stream()
@@ -94,7 +99,7 @@ public class SequentialInfixFunction implements IProcessInfixFunction {
             AutomatonNode origin = edge.getFrom();
             try {
               sequence.addEdge(edge.getLabel(), origin, newNode,
-                  edge.getGuard() == null ? null : edge.getGuard().copy());
+                  edge.getGuard() == null ? null : edge.getGuard().copy(), true);
             } catch (CompilationException e) {
               e.printStackTrace();
             }
@@ -102,12 +107,50 @@ public class SequentialInfixFunction implements IProcessInfixFunction {
         }
       }
     });
-    stopNodes.stream().map(AutomatonNode::getIncomingEdges).flatMap(List::stream).forEach(sequence::removeEdge);
+    stopNodes.stream().map(AutomatonNode::getIncomingEdges)
+        .flatMap(List::stream)
+        .forEach(sequence::removeEdge);
     stopNodes.forEach(sequence::removeNode);
 
-    copyAutomataEdges(sequence, automaton2, automata2nodes);
+    copyAutomataEdges(sequence, automaton2, automata2nodes,setOfOwners);
 
     return sequence;
+  }
+
+  /**
+   * Execute the function.
+   *
+   * @param id        the id of the resulting petrinet
+   * @param petrinet1 the first  petrinet in the function (e.g. {@code A} in {@code A||B})
+   * @param petrinet2 the second petrinet in the function (e.g. {@code B} in {@code A||B})
+   * @return the resulting petrinet of the operation
+   */
+  @Override
+  public Petrinet compose(String id, Petrinet petrinet1, Petrinet petrinet2)
+      throws CompilationException {
+
+    //create an empty petrinet
+    Petrinet composition = new Petrinet(id, false);
+
+    //add the first petrinet to the sequential composition
+    //add the start nodes of petrinet1 as start nodes for the composition petrinet
+    composition.addPetrinet(petrinet1).forEach(p -> {
+      p.setStart(true);
+      composition.addRoot(p);
+    });
+
+    //get the STOP states (not ERROR) places
+    Set<PetriNetPlace> stopNodes = composition.getPlaces().values().stream()
+        .filter(PetriNetPlace::isTerminal)
+        .filter(p -> p.getTerminal().equalsIgnoreCase("STOP"))
+        .collect(Collectors.toSet());
+
+    //add the second petrinet
+    Set<PetriNetPlace> startOfP2 = composition.addPetrinet(petrinet2);
+    //merge the end of petri1 with the start of petri2
+    composition.gluePlaces(stopNodes, startOfP2);
+
+    return composition;
   }
 
   /**
@@ -118,29 +161,26 @@ public class SequentialInfixFunction implements IProcessInfixFunction {
    * @param nodeMap        the mapping of the ids to AutomatonNodes
    */
   private void copyAutomataEdges(Automaton writeAutomaton, Automaton readAutomaton,
-                                 Map<String, AutomatonNode> nodeMap) {
+                                 Map<String, AutomatonNode> nodeMap,
+                                 Multimap<String,String> edgeOwnersMap) {
     readAutomaton.getEdges().forEach(e -> {
       try {
         AutomatonNode fromNode = nodeMap.get(e.getFrom().getId());
         AutomatonNode toNode = nodeMap.get(e.getTo().getId());
-        writeAutomaton.addEdge(e.getLabel(), fromNode, toNode, e.getGuard());
+        writeAutomaton.addOwnersToEdge(
+            writeAutomaton.addEdge(e.getLabel(), fromNode, toNode, e.getGuard(),
+                false), getEdgeOwnersFromProduct(e.getOwnerLocation(),edgeOwnersMap));
       } catch (CompilationException e1) {
         e1.printStackTrace();
       }
     });
   }
 
-  /**
-   * TODO:
-   * Execute the function.
-   *
-   * @param id        the id of the resulting petrinet
-   * @param petrinet1 the first  petrinet in the function (e.g. {@code A} in {@code A||B})
-   * @param petrinet2 the second petrinet in the function (e.g. {@code B} in {@code A||B})
-   * @return the resulting petrinet of the operation
-   */
-  @Override
-  public Petrinet compose(String id, Petrinet petrinet1, Petrinet petrinet2) throws CompilationException {
-    return null;
+  private Set<String> getEdgeOwnersFromProduct(Set<String> edgeOwners,
+                                               Multimap<String,String> productSpace) {
+    return edgeOwners.stream().map(productSpace::get)
+        .flatMap(Collection::stream)
+        .collect(Collectors.toSet());
   }
+
 }

@@ -142,7 +142,7 @@ int cnt = 0;
     }
 
     cnt++;
-    dfa.addEdge(action, poped, nextdfa, null);
+    dfa.addEdge(action, poped, nextdfa, null, true);
 
 //System.out.println("addEdge "+ poped.getId()+"-"+action+"->"+nextdfa.getId());
    }

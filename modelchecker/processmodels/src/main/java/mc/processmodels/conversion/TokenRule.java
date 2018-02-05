@@ -100,7 +100,7 @@ public class TokenRule {
         }
 
         outputAutomaton.addEdge(transition.getLabel(), markingToNodeMap.get(currentMarking),
-            markingToNodeMap.get(newMarking), null);
+            markingToNodeMap.get(newMarking), null, false);
       }
       previouslyVisitedPlaces.add(currentMarking);
     }

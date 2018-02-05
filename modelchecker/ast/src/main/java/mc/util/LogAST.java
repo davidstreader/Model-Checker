@@ -7,7 +7,7 @@ import mc.webserver.LogMessage;
  * Created by bealjaco on 24/11/17.
  */
 public class LogAST extends LogMessage {
-    public LogAST(String function, ProcessNode process) {
-        super(function+" "+process.getIdentifier()+" "+ formatLocation(process.getLocation())+" ",true,false,null,-1,Thread.currentThread());
-    }
+  public LogAST(String function, ProcessNode process) {
+    super(function + " " + process.getIdentifier() + " " + formatLocation(process.getLocation()) + " ", true, false, null, -1, Thread.currentThread());
+  }
 }

@@ -5,12 +5,11 @@ import static mc.util.expr.Expression.getContextFrom;
 import static mc.util.expr.Expression.isSolvable;
 import static mc.util.expr.Expression.substitute;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
-import com.google.common.reflect.TypeToken;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
+import com.rits.cloning.Cloner;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,8 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
-
-import com.rits.cloning.Cloner;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -40,24 +37,24 @@ import mc.util.expr.VariableCollector;
 @ToString
 @NoArgsConstructor
 public class Guard implements Serializable {
-  //Don't serialize these getters as we serialize the below methods instead.
-  @Getter(onMethod = @__(@JsonIgnore))
-  BoolExpr guard;
+
   // this is the boolean guard for input to Z3
+  @Getter
+  BoolExpr guard;
 
   /**
-   * the field variables is actualy an evaluation, a variable 2 literal mapping
+   * the field variables is actually an evaluation, a variable 2 literal mapping
    * only used for variables that are not hidden
    */
-  @Getter(onMethod = @__(@JsonIgnore))
+  @Getter
   Map<String, Integer> variables = new HashMap<>();
 
-// next Assignment "i:=2"  Only needed for hidden variables
-  @Getter(onMethod = @__(@JsonIgnore))
+  // next Assignment "i:=2"  Only needed for hidden variables
+  @Getter
   List<String> next = new ArrayList<>();
 
-// nextMap Assignment $v5 -> $i-1,  $v6 -> $j+1 Only needed for hidden variables"
-  @Getter(onMethod = @__(@JsonIgnore))
+  // nextMap Assignment $v5 -> $i-1,  $v6 -> $j+1 Only needed for hidden variables"
+  @Getter
   Map<String, String> nextMap = new HashMap<>();
 
   @Getter
@@ -69,27 +66,30 @@ public class Guard implements Serializable {
    *
    * @return The guard as a string, or an empty string if none exists.
    */
-  public String getGuardStr()  {
+  public String getGuardStr() {
     if (guard == null || hiddenVariables.isEmpty()) {
       return "";
     }
     return rmPrefix(ExpressionPrinter.printExpression(guard, Collections.emptyMap()));
 
   }
-  public String myString(){
+
+  public String myString() {
     String var = "var = ";
-    for(String s: variables.keySet()){
-      var = var+" "+s+" => "+variables.get(s).toString()+" ";
+    for (String s : variables.keySet()) {
+      var = var + s + "=" + variables.get(s).toString();
     }
-    String nxt = next.toString();
-    String nm = " nextMap "+nextMap.size()+ " = ";
-    for(String s: nextMap.keySet()){
-      nm = nm+s+" "+nextMap.get(s)+" ";
+    String nxt = next.stream().reduce("", (x, y) -> x + " " + y + " ");
+    String nm = "nextMap = ";
+    for (String s : nextMap.keySet()) {
+      nm = nm + s + " " + nextMap.get(s) + " ";
     }
-    return " guard "+ guard +" "+ var +" next= "+ nxt+ nm;
+    return " guard " + guard + " " + var + nxt + nm;
   }
+
   /**
    * Get the
+   *
    * @return
    * @throws CompilationException
    * @throws InterruptedException
@@ -256,7 +256,6 @@ System.out.print("parseNext "+ myString()+"\n"); */
     hiddenVariables.removeAll(variables.keySet());
   }
 
-  @JsonIgnore
   public boolean hasData() {
     return guard != null || !variables.isEmpty() || !next.isEmpty();
   }

@@ -1,6 +1,7 @@
 package mc.compiler;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +12,7 @@ import mc.compiler.ast.ProcessNode;
 import mc.compiler.token.Token;
 import mc.exceptions.CompilationException;
 import mc.processmodels.ProcessModel;
+import mc.processmodels.automata.Automaton;
 import mc.webserver.Context;
 
 public class Compiler {
@@ -121,11 +123,26 @@ public class Compiler {
 
     processMap.putAll(eqResults.getToRender());
 
+    printLocations(processMap.values());
+
     processesToRemoveFromDisplay.stream()
         .filter(processMap::containsKey)
         .forEach(processMap::remove);
 
     return new CompilationObject(processMap, opResults, eqResults.getResults());
+  }
+
+
+  /**
+   * TODO: Remove this test.
+   * @param processModels the processmodels in the current build cycle.
+   */
+  private static void printLocations(Collection<ProcessModel> processModels) {
+    processModels.stream()
+        .filter(Automaton.class::isInstance)
+        .map(Automaton.class::cast)
+        .map(a -> "owners for " + a.getId() + " are: " + a.getOwners())
+        .forEach(System.out::println);
   }
 
 }

@@ -11,8 +11,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Collectors;
-
-import mc.BuildAcceptanceGraphs;
 import mc.Constant;
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessFunction;
@@ -119,7 +117,7 @@ public class NFtoDFconvFunction implements IProcessFunction {
         }
         AutomatonNode nextNode = nodeMap.get(nextId);
 
-        dfa.addEdge(action, node, nextNode, null);
+        dfa.addEdge(action, node, nextNode, null, true);
 
         fringe.push(nextStates);
       }

@@ -2,14 +2,13 @@ package mc.operations.impl;
 
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
-
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import mc.Constant;
 import mc.compiler.Guard;
 import mc.exceptions.CompilationException;
@@ -24,6 +23,8 @@ public class AutomataParallelFunction {
           // maps one input node to the set of pair nodes
   private Set<String> syncedActions;
   private Set<String> unsyncedActions;
+  private Automaton automaton1;
+  private Automaton automaton2;
 
   /**
    * This composes two processes together.
@@ -38,6 +39,10 @@ public class AutomataParallelFunction {
                            throws CompilationException {
 
     setup(id);
+
+    this.automaton1 = automaton1;
+    this.automaton2 = automaton2;
+
     // construct the parallel composition of the states from both automata
     setupNodes(automaton1.getNodes(), automaton2.getNodes());
 
@@ -149,10 +154,11 @@ public class AutomataParallelFunction {
 
     for (String action : unsyncedActions) {
       List<AutomatonEdge> edges = allEdges.stream()
-          .filter(edge -> action.equals(edge.getLabel() ) ) // receivers never get executed
+          .filter(edge -> action.equals(edge.getLabel())) // receivers never get executed
           .collect(Collectors.toList());
           //got the list of unsynced edges in edges
           //  nodeMap one input node to each  node-pair that contains it
+
       for (AutomatonEdge edge : edges) {
         List<AutomatonNode> from = new ArrayList<>(nodeMap.get(edge.getFrom().getId()));
         List<AutomatonNode> to = new ArrayList<>(nodeMap.get(edge.getTo().getId()));
@@ -162,8 +168,18 @@ public class AutomataParallelFunction {
             continue;
 
           // adds some !a and ?a edges that will be deleted in processSyncedActions
-          automaton.addEdge(edge.getLabel(), from.get(i), to.get(i),
-              edge.getGuard()).setGuard(edge.getGuard());
+          AutomatonEdge newEdge = automaton.addEdge(edge.getLabel(), from.get(i), to.get(i),
+              edge.getGuard(), false);
+
+          Collection<String> ownersToAdd;
+
+          if (edges1.contains(edge)) {
+            ownersToAdd = getOwners(edge,automaton1);
+          } else {
+            ownersToAdd = getOwners(edge,automaton2);
+          }
+          automaton.addOwnersToEdge(newEdge,ownersToAdd);
+
         }
       }
     }
@@ -205,11 +221,26 @@ public class AutomataParallelFunction {
             guard.mergeWith(edge2.getGuard());
           }
 
-          automaton.addEdge(currentSyncEdgeLabel, from, to, guard);
+          AutomatonEdge newEdge = automaton.addEdge(currentSyncEdgeLabel, from, to, guard, false);
 
+          Set<String> ownersToAdd = new HashSet<>();
+          ownersToAdd.addAll(getOwners(edge1,automaton1));
+          ownersToAdd.addAll(getOwners(edge2,automaton2));
+          automaton.addOwnersToEdge(newEdge,ownersToAdd);
         }
       }
     }
+  }
+
+  private static Set<String> getOwners(AutomatonEdge edge, Automaton owner) {
+    Set<String> ownersToAdd = new HashSet<>();
+    if (edge.getOwnerLocation().contains(Automaton.DEFAULT_OWNER)) {
+      ownersToAdd.add(owner.getId());
+
+    } else {
+      ownersToAdd.addAll(edge.getOwnerLocation());
+    }
+    return ownersToAdd;
   }
 
   private String createId(AutomatonNode node1, AutomatonNode node2) {
