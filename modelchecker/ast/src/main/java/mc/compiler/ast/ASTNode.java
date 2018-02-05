@@ -14,6 +14,7 @@ import lombok.Getter;
 import lombok.Setter;
 import mc.util.Location;
 
+
 /**
  * ASTNode is the superclass of ASTNode implementations, it provides helper and common functions to
  * the specific implementation.
@@ -48,6 +49,7 @@ public abstract class ASTNode implements Serializable {
     references = null;
     this.location = location;
   }
+
 
   /**
    * Stores text references to local states.

@@ -26,7 +26,7 @@ public class Compiler {
   public Compiler() throws InterruptedException {
     this.lexer = new Lexer();
     parser = new Parser();  // Symbolic guards set up on the AST
-    this.expander = new Expander();  // sets Guards on AST
+    this.expander = new Expander();  // sets Guards on AST and expands non-hidden variables
     this.replacer = new ReferenceReplacer();  // AST to AST
     this.interpreter = new Interpreter();     // AST to Automaton or Petri Net
     this.eqEvaluator = new EquationEvaluator();  // equation evaluation calls
@@ -51,10 +51,10 @@ public class Compiler {
                                    BlockingQueue<Object> messageQueue)
     throws CompilationException, InterruptedException {
     List<Token> codeInput = lexer.tokenise(code);
-    AbstractSyntaxTree structedCode = parser.parse(codeInput, z3Context);
+    AbstractSyntaxTree ast = parser.parse(codeInput, z3Context);
 
-    CompilationObject compilerOutput = compile(structedCode, code,
-              z3Context, context, messageQueue);
+    CompilationObject compilerOutput = compile(ast, code,
+                   z3Context, context, messageQueue);
 
     CompilationObservable.getInstance().updateClient(compilerOutput);
 
@@ -84,9 +84,11 @@ public class Compiler {
       processNodeMap.put(node.getIdentifier(), (ProcessNode) node.copy());
       dependencyMap.put(node.getIdentifier(), node);
     }
-
+/*
+   Expand the non hidden variables (indexes) and return an ast
+ */
     ast = expander.expand(ast, messageQueue, z3Context);
-    /** replacer.replaceReferences
+    /* replacer.replaceReferences
      * Expands references i.e Initally we are now at: P1 = a->P2.
      *                                                P2 = b->c->x.
      *  Then it expands it to, P1 = a->b->c->x. If it needs it
@@ -113,8 +115,10 @@ public class Compiler {
     Map<String, ProcessModel> processMap = interpreter.interpret(ast,
         new LocalCompiler(processNodeMap, expander, replacer, messageQueue),
         messageQueue, z3Context);
+
     List<OperationResult> opResults = evaluator.evaluateOperations(ast.getOperations(), processMap,
         interpreter, code, z3Context);
+
     EquationEvaluator.EquationReturn eqResults = eqEvaluator.evaluateEquations(
         new ArrayList<>(processMap.values()), ast.getEquations(),
         code, context, z3Context, messageQueue);

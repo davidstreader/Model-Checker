@@ -65,7 +65,11 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     reset();
   }
 
-  public ProcessModel interpret(ProcessNode processNode, Map<String, ProcessModel> processMap, LocalCompiler compiler, Context context) throws CompilationException, InterruptedException {
+  public ProcessModel interpret(ProcessNode processNode,
+                                Map<String, ProcessModel> processMap,
+                                LocalCompiler compiler,
+                                Context context)
+    throws CompilationException, InterruptedException {
     reset();
     this.context = context;
     this.compiler = compiler;
@@ -77,7 +81,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     interpretProcess(processNode.getProcess(), identifier);
 
     ProcessModel pm = processStack.pop();
-    Automaton automaton = ((Automaton) pm.getProcessType().convertTo(AUTOMATA,pm)).copy();
+    Automaton automaton = ((Automaton) pm.getProcessType().convertTo(AUTOMATA, pm)).copy();
 //    if (pm instanceof MultiProcessModel) {
 //      automaton = ((Automaton)((MultiProcessModel) pm).getProcess(ProcessType.AUTOMATA));
 //    } else if (pm instanceof Petrinet) {
@@ -104,7 +108,11 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     return labelAutomaton(automaton);
   }
 
-  public ProcessModel interpret(ASTNode astNode, String identifier, Map<String, ProcessModel> processMap, Context context) throws CompilationException, InterruptedException {
+  public ProcessModel interpret(ASTNode astNode,
+                                String identifier,
+                                Map<String, ProcessModel> processMap,
+                                Context context)
+    throws CompilationException, InterruptedException {
     reset();
     this.context = context;
     this.processMap = processMap;
@@ -112,7 +120,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     interpretProcess(astNode, identifier);
 
     ProcessModel pm = processStack.pop();
-    Automaton automaton = ((Automaton) pm.getProcessType().convertTo(AUTOMATA,pm)).copy();
+    Automaton automaton = ((Automaton) pm.getProcessType().convertTo(AUTOMATA, pm)).copy();
 
     return labelAutomaton(automaton);
   }
@@ -138,7 +146,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
       interpretProcess(root.getProcess(), identifier);
 
       ProcessModel pm = processStack.pop();
-      Automaton automaton = ((Automaton) pm.getProcessType().convertTo(AUTOMATA,pm)).copy();
+      Automaton automaton = ((Automaton) pm.getProcessType().convertTo(AUTOMATA, pm)).copy();
 
       automaton = processLabellingAndRelabelling(automaton, root);
       if (root.hasHiding()) {
@@ -166,6 +174,12 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     if (Thread.currentThread().isInterrupted()) {
       throw new InterruptedException();
     }
+    if (astNode.getGuard() != null) {
+      System.out.println("start REPLAC " + astNode.toString()+
+        " g= " + ((Guard) astNode.getGuard()).myString());
+    } else {
+      System.out.println("start REPLACE "+ astNode.toString()+ " g=null " );
+    }
     // check if the current ast node has a reference attached
     if (astNode.hasReferences()) {
       for (String reference : astNode.getReferences()) {
@@ -180,6 +194,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
       currentNode.setVariables(varMap);
     }
     currentNode.copyPropertiesFromASTNode(astNode);
+
     if (astNode instanceof ProcessRootNode) {
       interpretProcessRoot((ProcessRootNode) astNode, automaton, currentNode);
     } else if (astNode instanceof SequenceNode) {
@@ -195,6 +210,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     } else if (astNode instanceof TerminalNode) {
       interpretTerminalNode((TerminalNode) astNode, automaton, currentNode);
     }
+
   }
 
 
@@ -213,14 +229,25 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     subProcessStartNodes = nodes;
   }
 /*
+  Sequenc node is astNode and has guard set on it
   Only place Edges are added  Guard is on AST node SequenceNode
   Only place Nodes are added
  */
 
   private void interpretSequence(SequenceNode sequence, Automaton automaton,
                                  AutomatonNode currentNode)
-      throws CompilationException, InterruptedException {
+    throws CompilationException, InterruptedException {
+
     String action = sequence.getFrom().getAction();
+  if (currentNode.getGuard()!=null && sequence.getGuard()!= null && currentNode.getGuard()==sequence.getGuard()){
+    System.out.println("OPPS!");
+  }
+    if (currentNode !=null && currentNode.getGuard()!=null){
+System.out.print("interpretSequence  current"+currentNode.getGuard().myString()+"\n");
+    } else {System.out.print("interpretSequence current = null\n");}
+    if (sequence!=null && (Guard) sequence.getGuard()!= null){
+System.out.print("interpretSequence  sequence" + ((Guard) sequence.getGuard()).myString() + "\n");
+    } else {System.out.print("interpretSequence sequence = null\n");}
 
     AutomatonNode nextNode;
     Guard foundGuard = null;
@@ -229,6 +256,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
       currentNode.setGuard(null);
     }
     // check if the next ast node is a reference node
+    // edge from currentNode to nextNode
     if (sequence.getTo() instanceof ReferenceNode) {
       ReferenceNode reference = (ReferenceNode) sequence.getTo();
       Collection<AutomatonNode> nextNodes = referenceMap.get(reference.getReference());

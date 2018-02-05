@@ -423,7 +423,11 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
   public AutomatonEdge addEdge(String id, String label, AutomatonNode from, AutomatonNode to,
                                Guard currentEdgesGuard) throws CompilationException {
     // check that the nodes have been defined
-
+    if (currentEdgesGuard == null) {
+      System.out.print("addEdge guard null \n");
+    } else {
+      System.out.print("addEdge guard " + currentEdgesGuard.myString() + "\n");
+    }
     if (from == null) {
       throw new CompilationException(getClass(), "Unable to add the specified edge as the source was null.", this.getLocation());
     }
