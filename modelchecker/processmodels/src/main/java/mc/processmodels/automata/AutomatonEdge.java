@@ -53,8 +53,12 @@ public class AutomatonEdge extends ProcessModelObject {
     return new HashSet<>(automatonLocation);
   }
 
-  public boolean addOwnerLocation(String owner) {
+  boolean addOwnerLocation(String owner) {
     return automatonLocation.add(owner);
+  }
+
+  boolean removeOwnerLocation(String owner) {
+    return automatonLocation.remove(owner);
   }
 
   public String myString(){

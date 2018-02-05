@@ -54,7 +54,6 @@ import mc.client.ui.SettingsController;
 import mc.compiler.CompilationObject;
 import mc.compiler.CompilationObservable;
 import mc.compiler.OperationResult;
-import mc.exceptions.CompilationException;
 import mc.processmodels.MultiProcessModel;
 import mc.processmodels.ProcessModel;
 import mc.processmodels.ProcessType;
@@ -265,9 +264,13 @@ public class ModelView implements Observer {
       automaton.getEdges().forEach(e -> {
         GraphNode to = nodeMap.get(e.getTo().getId());
         GraphNode from = nodeMap.get(e.getFrom().getId());
+        String label = e.getLabel();
+        label = label + " " + ((e.getGuard() != null) ?
+            e.getGuard().getGuardStr() + " " + e.getGuard().getNextStr(): "");
 
+        label = label + "owners = [" + e.getOwnerLocation() + "]";
 
-        graph.addEdge(new DirectedEdge(e.getLabel() + " " + ((e.getGuard() != null) ? e.getGuard().getGuardStr() + " " + e.getGuard().getNextStr(): ""), UUID.randomUUID().toString()), from, to);
+        graph.addEdge(new DirectedEdge(label, UUID.randomUUID().toString()), from, to);
       });
 
 

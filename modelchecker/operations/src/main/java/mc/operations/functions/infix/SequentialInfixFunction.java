@@ -94,7 +94,7 @@ public class SequentialInfixFunction implements IProcessInfixFunction {
             AutomatonNode origin = edge.getFrom();
             try {
               sequence.addEdge(edge.getLabel(), origin, newNode,
-                  edge.getGuard() == null ? null : edge.getGuard().copy());
+                  edge.getGuard() == null ? null : edge.getGuard().copy(), true);
             } catch (CompilationException e) {
               e.printStackTrace();
             }
@@ -123,7 +123,7 @@ public class SequentialInfixFunction implements IProcessInfixFunction {
       try {
         AutomatonNode fromNode = nodeMap.get(e.getFrom().getId());
         AutomatonNode toNode = nodeMap.get(e.getTo().getId());
-        writeAutomaton.addEdge(e.getLabel(), fromNode, toNode, e.getGuard());
+        writeAutomaton.addEdge(e.getLabel(), fromNode, toNode, e.getGuard(),true);
       } catch (CompilationException e1) {
         e1.printStackTrace();
       }
