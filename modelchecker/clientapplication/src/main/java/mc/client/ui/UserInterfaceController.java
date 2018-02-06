@@ -640,7 +640,6 @@ public class UserInterfaceController implements Initializable {
                         // Within the compile function the code is then told to update an observer
                         Compiler codeCompiler = new Compiler();
 
-
                         Thread logThread = new Thread(() -> {
                             while (true) { // Realitively expensive spinning lock
 
@@ -665,7 +664,6 @@ public class UserInterfaceController implements Initializable {
                         Platform.runLater(() -> {
                             CompilationObservable.getInstance().updateClient(compilerOutput); // If this is run outside the fx thread then exceptions occur and weirdness with threads updating combox box and whatnot
                             compilerOutputDisplay.appendText("Compiling completed sucessfully!\n" + new Date().toString());
-                            compileButton.setText("Compile");
                         });
                         logThread.stop();
 
@@ -674,16 +672,21 @@ public class UserInterfaceController implements Initializable {
                     } catch (CompilationException e) {
 
                         Platform.runLater(() -> { // Update anything that goes wrong on the main fx thread.
+
                             holdHighlighting = true;
                             compilerOutputDisplay.appendText(e.toString());
                             if (e.getLocation() != null) {
                                 compilerOutputDisplay.appendText("\n" + e.getLocation());
-
                                 if (e.getLocation().getStartIndex() > 0 && e.getLocation().getStartIndex() < userCodeInput.getText().length())
                                     userCodeInput.setStyleClass(e.getLocation().getStartIndex(), e.getLocation().getEndIndex(), "issue");
                             }
                         });
                     }
+
+                    Platform.runLater(() -> {
+                        compileButton.setText("Compile");
+                    });
+
 
                 });
 
