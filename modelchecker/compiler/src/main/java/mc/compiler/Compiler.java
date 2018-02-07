@@ -138,7 +138,7 @@ public class Compiler {
     processModels.stream()
         .filter(Automaton.class::isInstance)
         .map(Automaton.class::cast)
-        .map(a -> "owners for " + a.getId() + " are: " + a.getOwners())
+        .map(a -> "Owners for " + a.getId() + " are: " + a.getOwners())
         .forEach(System.out::println);
   }
 

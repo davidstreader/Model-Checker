@@ -83,7 +83,8 @@ public class AutomatonEdge extends ProcessModelObject {
         + "\tlabel:" + label + "\n"
         + "\tfrom:" + from.getId() + "\n"
         + "\tto:" + to.getId() + "\n"
-        + "\tmetadata:" + getGuard()
+        + "\tmetadata:" + getGuard() + "\n"
+        + "\t owners: " + getOwnerLocation() + "\n"
         + "\n"
         + "}";
 

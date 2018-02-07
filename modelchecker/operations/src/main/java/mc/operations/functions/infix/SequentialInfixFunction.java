@@ -78,7 +78,6 @@ public class SequentialInfixFunction implements IProcessInfixFunction {
         .filter(n -> "STOP".equals(n.getTerminal()))
         .collect(Collectors.toList());
 
-
     //if there are no stop nodes, we cannot glue them together
     if (stopNodes.isEmpty()) {
       return sequence;
@@ -98,8 +97,10 @@ public class SequentialInfixFunction implements IProcessInfixFunction {
           for (AutomatonEdge edge : stopNode.getIncomingEdges()) {
             AutomatonNode origin = edge.getFrom();
             try {
-              sequence.addEdge(edge.getLabel(), origin, newNode,
-                  edge.getGuard() == null ? null : edge.getGuard().copy(), true);
+              sequence.addOwnersToEdge(
+                  sequence.addEdge(edge.getLabel(), origin, newNode,
+                      edge.getGuard() == null ? null : edge.getGuard().copy(),
+                      false), edge.getOwnerLocation());
             } catch (CompilationException e) {
               e.printStackTrace();
             }

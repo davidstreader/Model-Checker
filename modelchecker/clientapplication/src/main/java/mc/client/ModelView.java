@@ -268,7 +268,6 @@ public class ModelView implements Observer {
       GraphNode to = nodeMap.get(e.getTo().getId());
       GraphNode from = nodeMap.get(e.getFrom().getId());
       String label = e.getLabel();
-
       //label = label + " " + ((e.getGuard() != null) ?
       //    e.getGuard().getGuardStr() + " " + e.getGuard().getNextStr() : "");
 

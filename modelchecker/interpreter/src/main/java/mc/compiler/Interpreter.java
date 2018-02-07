@@ -1,8 +1,11 @@
 package mc.compiler;
 
 import com.microsoft.z3.Context;
-
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 
 import mc.compiler.ast.ASTNode;
@@ -21,8 +24,6 @@ import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.util.LogAST;
 import mc.util.expr.Expression;
-
-import javax.xml.soap.SOAPPart;
 
 /**
  * Created by sheriddavi on 24/01/17.
@@ -94,9 +95,8 @@ public class Interpreter {
 
             processMap.put(process.getIdentifier(), model);
         }
-
-
         return processMap;
+
     }
 
     public ProcessModel interpret(String processModelType, ASTNode astNode, String identifer, Map<String, ProcessModel> processMap, Context context) throws CompilationException, InterruptedException {
