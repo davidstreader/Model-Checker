@@ -64,7 +64,7 @@ public class FailureEquivalence implements IOperationInfixFunction {
   int rootColour = Integer.MIN_VALUE;
 
   Map<AutomatonNode,Integer> initialColour = new HashMap<AutomatonNode,Integer>();
-System.out.println("Failure start");
+//System.out.println("Failure start");
   /*
   Set up Acceptance Graphs and initial colouring on the automata nodes
   */
@@ -78,9 +78,9 @@ System.out.println("Failure start");
    AcceptanceGraph ag = new AcceptanceGraph ("dfa-"+a.getId(), a);
    //System.out.println("Start ag "+ ag.toString());
    color = ag.colorNodes(cmap, ag.getNode2AcceptanceSets(),color); //reuse of color map essential
-   System.out.println("Just colored "+ ag.getA().toString());
+   //System.out.println("Just colored "+ ag.getA().toString());
 
-   this.printColorMap(cmap);
+   //this.printColorMap(cmap);
  // System.out.println("Adding "+ ag.getA().getId());
    ags.add(ag);
    for(AutomatonNode nd : ag.getA().getNodes()){
@@ -90,7 +90,7 @@ System.out.println("Failure start");
   }
  // System.out.println("Failure initial color end");
   if (!consistentColor(ags)){return false;};
-  System.out.println("Initial color consistent");
+  //System.out.println("Initial color consistent");
 
 /*
    If the acceptance coloring is not a bisimulation look not further and fail
@@ -180,7 +180,7 @@ System.out.println("Failure start");
   } */
   outerloop:
   for(AutomatonNode n : nodes) {
-   System.out.println("node "+n.getId()+" col "+ n.getColour());
+ //  System.out.println("node "+n.getId()+" col "+ n.getColour());
    List<ColourComponent> cc = cu.constructColouring(n);
    print_cc(cc);
    for(Integer colKey: colDef.keySet()){

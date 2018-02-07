@@ -69,9 +69,6 @@ public class BisimulationOperation implements IOperationInfixFunction {
           .sorted()
           .collect(Collectors.toList());
 
-//      System.out.println(automaton.getId());
-//      System.out.println(colourSet);
-
       int col = Integer.MIN_VALUE;
 
       for (Map.Entry<Integer, List<ColourComponent>> colour : colourMap.entrySet()) {
@@ -83,18 +80,15 @@ public class BisimulationOperation implements IOperationInfixFunction {
           break;
         }
       }
-      //System.out.println(automaton.getId()+"in Bisim Op "+
-     //   automaton.getRoot().stream().map(n->((Integer)n.getColour()).toString()).
-      //    collect(Collectors.joining(", ")));
 
       if (col == Integer.MIN_VALUE) {
         col = colourer.getNextColourId();
         colourMap.put(col, colourSet);
       }
 
-      if (rootColour == Integer.MIN_VALUE) { //first time
+      if (rootColour == Integer.MIN_VALUE) { //Coloring first automaton, i.e first loop
         rootColour = col;
-      } else if (rootColour != col) {  //second time
+      } else if (rootColour != col) {   //comparison between this current automaton and the first
         return false;
       }
     }

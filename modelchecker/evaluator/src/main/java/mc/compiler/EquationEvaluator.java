@@ -124,11 +124,7 @@ public class EquationEvaluator {
 
       if (result) {
         status.passCount++;
-        System.out.println("Operation: " + currentOperation + " succeeded between " + createdAutomaton.toString());
       } else {
-        System.out.println("Operation: " + currentOperation + " failed between " + createdAutomaton.toString());
-
-
         status.failCount++;
         String failOutput = "";
 

@@ -37,8 +37,9 @@ public class ScriptTests {
         List<OperationResult> operations = Collections.emptyList();
         try (Context context = Expression.mkCtx()) {
             operations = compiler.compile(String.join("\n", Files.readAllLines(file.toPath())),context,new PrintQueue()).getOperationResults();
-            if (shouldFail(file.getName()))
+            if (shouldFail(file.getName())) {
                 fail("Test script: " + file.getName() + " should not compile!");
+            }
 
         } catch (Exception ex) {
             ex.printStackTrace();

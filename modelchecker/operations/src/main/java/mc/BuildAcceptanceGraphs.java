@@ -31,13 +31,13 @@ public class BuildAcceptanceGraphs {
   public AcceptanceGraph composeAG(String id, Automaton nfa)
       throws CompilationException {
 
-    System.out.println("Starting accept");
+
     Map<AutomatonNode, List<Set<String>>> node2AcceptanceSets =
         new HashMap<AutomatonNode, List<Set<String>>>();
     Map<AutomatonNode, Set<String>> nfanode2ASet = new HashMap<AutomatonNode, Set<String>>();
     Automaton acceptGraph = new Automaton(id, !Automaton.CONSTRUCT_ROOT);
     nfanode2ASet = build_nfanode2ASet(nfa);
-    System.out.println("built nfanode2ASet");
+
 
     Map<Set<String>, List<AutomatonNode>> stateMap = new HashMap<>();
     Map<String, AutomatonNode> nodeMap = new HashMap<>();
@@ -70,7 +70,7 @@ public class BuildAcceptanceGraphs {
         }
       }
       node2AcceptanceSets.put(node, acceptance);
-      System.out.println("Adding " + id.toString() + " " + acceptance);
+
 
       if (!processedRoot) {  // so must be root!
         acceptGraph.getRoot().clear();
@@ -87,8 +87,8 @@ public class BuildAcceptanceGraphs {
         }
         String nextId = nfa.getId() + constructLabel(stateMap.get(nextStates));
         //String nextId = constructNodeId(stateMap.get(nextStates), nfa.getId());
-        System.out.println("built " + nextId.toString());
-// only build new dfa node if it has not already been built
+
+        // only build new dfa node if it has not already been built
         if (!nodeMap.containsKey(nextId)) {
           nodeMap.put(nextId, acceptGraph.addNode());
         }
@@ -105,7 +105,7 @@ public class BuildAcceptanceGraphs {
     acceptGraph.getNodes().stream()
         .filter(node -> node.getOutgoingEdges().isEmpty())
         .forEach(node -> node.setTerminal("STOP"));
-    printnode2AcceptanceSets(node2AcceptanceSets);
+    //printnode2AcceptanceSets(node2AcceptanceSets);
     AcceptanceGraph ag = new AcceptanceGraph(nfa, node2AcceptanceSets);
     ag.setA(acceptGraph);
     ag.setNode2AcceptanceSets(node2AcceptanceSets);
@@ -197,9 +197,7 @@ public class BuildAcceptanceGraphs {
    * Side effect build the acceptance set and store in node2AcceptanceSets
    */
   private String constructNodeId(List<AutomatonNode> nodes, String identifier) {
-    String id = identifier + constructLabel(nodes);
-
-    return id;
+    return identifier + constructLabel(nodes);
   }
 
   /**
@@ -240,16 +238,12 @@ public class BuildAcceptanceGraphs {
           map(AutomatonEdge::getLabel).
           collect(Collectors.toSet());
       nfanode2ASet.put(n, as);
-      System.out.println("++ " + n.getLabel() + " " + nfanode2ASet.get(n).toString());
+
     }
     return nfanode2ASet;
   }
 
   private void printnode2AcceptanceSets(Map<AutomatonNode, List<Set<String>>> node2AcceptanceSets) {
-    //System.out.println("nfa Sets");
-    //for (AutomatonNode n : nfanode2ASet.keySet()){
-    //  System.out.println(" "+n.getLabel()+" "+nfanode2ASet.get(n).toString() );
-    //}
 
     System.out.println("Acceptance Sets");
     for (AutomatonNode nd : node2AcceptanceSets.keySet()) {

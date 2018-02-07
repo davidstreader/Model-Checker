@@ -25,21 +25,21 @@ public class Compiler {
   private Parser parser;
 
   public Compiler() throws InterruptedException {
-    this.lexer = new Lexer();
-    parser = new Parser();  // Symbolic guards set up on the AST
-    this.expander = new Expander();  // sets Guards on AST and expands non-hidden variables
-    this.replacer = new ReferenceReplacer();  // AST to AST
-    this.interpreter = new Interpreter();     // AST to Automaton or Petri Net
-    this.eqEvaluator = new EquationEvaluator();  // equation evaluation calls
-    this.evaluator = new OperationEvaluator();
+    this.lexer = new Lexer();                     //Tokenises the string input
+    this.parser = new Parser();                   // AST created and Symbolic guards set up on the AST
+    this.expander = new Expander();               // sets Guards on AST and expands non-hidden variables
+    this.replacer = new ReferenceReplacer();      // AST to AST
+    this.interpreter = new Interpreter();         // AST to Automaton or PetriNet
+    this.eqEvaluator = new EquationEvaluator();   // Runs user created models through tests, permutating them. I.e A ~ B, with models D = t->STOP. V = f->STOP. would generate D ~ D, D ~ V, V ~ D, V  ~ V.
+    this.evaluator = new OperationEvaluator();    // Tests set user models without permutation
   }
 
   /**
    *
-   * @param code   sourse code input
-   * @param z3Context
+   * @param code          Source code text input
+   * @param z3Context     z3 context for evaluation of code
    * @param messageQueue  used to implement concurrent logging while executing
-   * @return  name - > aut Petri Net
+   * @return              Returns a compilation object which is comprised of the results of any tests and the constructed models for display
    * @throws CompilationException
    * @throws InterruptedException
    *
@@ -59,11 +59,11 @@ public class Compiler {
 
   /**
    *
-   * @param ast
-   * @param code
-   * @param z3Context
-   * @param messageQueue
-   * @return
+   * @param ast           The abstract syntax tree returned by the parser
+   * @param code          The users code as a non-formatted string
+   * @param z3Context     z3 Context for evaluating
+   * @param messageQueue  thread safe blocking queue for logging
+   * @return              Returns a compilation object which is comprised of the results of any tests and the constructed models for display
    * @throws CompilationException
    * @throws InterruptedException
    */
@@ -125,8 +125,6 @@ public class Compiler {
     processesToRemoveFromDisplay.stream()
         .filter(processMap::containsKey)
         .forEach(processMap::remove);
-
-
 
     return new CompilationObject(processMap, opResults, eqResults.getResults());
   }

@@ -116,7 +116,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
 
     ProcessModel pm = processStack.pop();
     Automaton automaton = ((Automaton) pm.getProcessType().convertTo(AUTOMATA, pm)).copy();
-    automaton.getEdges().forEach(e -> System.out.println("owners of " + e.getId() + " are " + e.getOwnerLocation()));
+    //automaton.getEdges().forEach(e -> System.out.println("owners of " + e.getId() + " are " + e.getOwnerLocation()));
 
     return labelAutomaton(automaton);
   }
@@ -162,7 +162,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
       automaton.setVariablesLocation(astNode.getLocation());
 
       interpretNode(astNode, automaton, new ArrayList<>(automaton.getRoot()).get(0));
-      System.out.println("PUSH" + automaton.getId() + " has owners " + automaton.getOwners());
+      //System.out.println("PUSH" + automaton.getId() + " has owners " + automaton.getOwners());
       processStack.push(automaton);
     }
   }
@@ -171,12 +171,12 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     if (Thread.currentThread().isInterrupted()) {
       throw new InterruptedException();
     }
-    if (astNode.getGuard() != null) {
-      System.out.println("start REPLAC " + astNode.toString()+
-        " g= " + ((Guard) astNode.getGuard()).myString());
-    } else {
-      System.out.println("start REPLACE "+ astNode.toString()+ " g=null " );
-    }
+//    if (astNode.getGuard() != null) {
+//     // System.out.println("start REPLAC " + astNode.toString()+
+//      //  " g= " + ((Guard) astNode.getGuard()).myString());
+//    } else {
+//     // System.out.println("start REPLACE "+ astNode.toString()+ " g=null " );
+//    }
     // check if the current ast node has a reference attached
     if (astNode.hasReferences()) {
       for (String reference : astNode.getReferences()) {
@@ -235,15 +235,15 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     throws CompilationException, InterruptedException {
 
     String action = sequence.getFrom().getAction();
-  if (currentNode.getGuard()!=null && sequence.getGuard()!= null && currentNode.getGuard()==sequence.getGuard()){
-    System.out.println("OPPS!");
-  }
-    if (currentNode !=null && currentNode.getGuard()!=null){
-System.out.print("interpretSequence  current"+currentNode.getGuard().myString()+"\n");
-    } else {System.out.print("interpretSequence current = null\n");}
-    if (sequence!=null && (Guard) sequence.getGuard()!= null){
-System.out.print("interpretSequence  sequence" + ((Guard) sequence.getGuard()).myString() + "\n");
-    } else {System.out.print("interpretSequence sequence = null\n");}
+//  if (currentNode.getGuard()!=null && sequence.getGuard()!= null && currentNode.getGuard()==sequence.getGuard()){
+//    System.out.println("OPPS!");
+//  }
+//    if (currentNode !=null && currentNode.getGuard()!=null){
+//System.out.print("interpretSequence  current"+currentNode.getGuard().myString()+"\n");
+//    } else {System.out.print("interpretSequence current = null\n");}
+//    if (sequence!=null && (Guard) sequence.getGuard()!= null){
+//System.out.print("interpretSequence  sequence" + ((Guard) sequence.getGuard()).myString() + "\n");
+//    } else {System.out.print("interpretSequence sequence = null\n");}
 
     AutomatonNode nextNode;
     Guard foundGuard = null;
@@ -298,8 +298,7 @@ System.out.print("interpretSequence  sequence" + ((Guard) sequence.getGuard()).m
     model2 = model2.getProcessType().convertTo(AUTOMATA, model2);
 
     if (!(model1 instanceof Automaton) || !(model2 instanceof Automaton)) {
-      if (model1 == null || model2 == null) // They were not set to be constructed as anything
-      {
+      if (model1 == null || model2 == null){ // They were not set to be constructed as anything
         throw new CompilationException(getClass(), "Expecting an automaton in composite " + automaton.getId(), astCompositeNode.getLocation());
       } else {
         throw new CompilationException(getClass(), "Expecting an automaton, received: " + model1.getClass().getSimpleName() + "," + model2.getClass().getSimpleName(), astCompositeNode.getLocation());

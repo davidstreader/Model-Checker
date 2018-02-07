@@ -92,8 +92,6 @@ public class Interpreter {
 
             messageQueue.add(new LogAST("Built:", process));
 
-            System.out.println("Built " + model.toString());
-
             processMap.put(process.getIdentifier(), model);
         }
 
