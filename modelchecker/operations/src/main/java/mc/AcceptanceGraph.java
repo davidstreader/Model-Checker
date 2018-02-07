@@ -18,7 +18,7 @@ public class AcceptanceGraph {
 
  @Getter
  @Setter
- private Automaton a;
+ private Automaton automaton;
  @Getter
  @Setter
  private Map<AutomatonNode, List<Set<String>> > node2AcceptanceSets =
@@ -155,7 +155,7 @@ int cnt = 0;
     .forEach(nodey -> nodey.setTerminal("STOP"));
   printnode2AcceptanceSets(dfaNode2ASet);
 
-  this.setA(dfa);
+  this.getAutomaton(dfa);
   this.setNode2AcceptanceSets(dfaNode2ASet);
   this.toString();
 //  System.out.println("Ending AcceptanceGraph Constructor ");
@@ -310,7 +310,7 @@ int cnt = 0;
  // System.out.println("ColorNodes start int= "+color);
  // System.out.println("n2as "+n2as.toString());
  boolean found = false;
- for (AutomatonNode nd : this.getA().getNodes()) {
+ for (AutomatonNode nd : this.getAutomaton().getNodes()) {
 //  System.out.println("nd "+nd.myString());
   List<Set<String>> acept = n2as.get(nd);
 //  System.out.println("accept "+acept.toString());
@@ -380,14 +380,14 @@ int cnt = 0;
    Constructor
   */
  AcceptanceGraph(Automaton ain, Map<AutomatonNode, List<Set<String>> > n2as) {
-   a=ain;
-  node2AcceptanceSets = n2as;
+  this.automaton           = ain;
+  this.node2AcceptanceSets = n2as;
  }
 
  public String toString() {
-  if (this.getA() == null) {System.out.println("AcceptanceGraph aut = null");}
+  if (this.getAutomaton() == null) {System.out.println("AcceptanceGraph aut = null");}
   if (this.getNode2AcceptanceSets() == null) {System.out.println("AcceptanceGraph n2ac = null");}
-   return "Acceptance Graph  \n  "+this.getA().toString()+" "+
+   return "Acceptance Graph  \n  "+this.getAutomaton().toString()+" "+
            this.node2ac_toString()+" End Acceptance Graph \n";
 
  }
