@@ -153,14 +153,8 @@ System.out.println(first.myString()+" - "+second.myString()+ " -> "+ret.myString
     public static <T extends Expr> T substitute(T expr, Map<String, Expr> subMap, Context ctx) {
         if (subMap == null) return expr;
 
-        int numberNull = 0;
-        for (Expr c : subMap.values())
-            if(c == null)
-                numberNull++;
-
-
-        Expr[] consts = new Expr[subMap.size()-numberNull];
-        Expr[] replacements = new Expr[subMap.size()-numberNull];
+        Expr[] consts = new Expr[subMap.size()];
+        Expr[] replacements = new Expr[subMap.size()];
         int i =0;
         for (Map.Entry<String,Expr> entry : subMap.entrySet()) {
             if(entry.getValue() == null)
@@ -198,16 +192,16 @@ System.out.println(first.myString()+" - "+second.myString()+ " -> "+ret.myString
 
     /**
      *
-     * @param expression
+     * @param expression        The logical expression as a string to construct
      * @param variableMap
      * @param location
-     * @param context
+     * @param z3Context
      * @return  aZ3 expression
      * @throws InterruptedException
      * @throws CompilationException
      */
     private static Expr constructExpression(String expression, Map<String, String> variableMap,
-                                            Location location, Context context)
+                                            Location location, Context z3Context)
       throws InterruptedException, CompilationException {
         Pattern regex = Pattern.compile("(\\$v.+\\b)");
         Matcher matcher = regex.matcher(expression);
@@ -219,7 +213,7 @@ System.out.println(first.myString()+" - "+second.myString()+ " -> "+ret.myString
             matcher = regex.matcher(expression);
         }
         // parsing infixed maths to postfixed or AST -- Expr extends AST
-        ShuntingYardAlgorithm sya = new ShuntingYardAlgorithm(context);
+        ShuntingYardAlgorithm sya = new ShuntingYardAlgorithm(z3Context);
         return sya.convert(expression, location);
     }
 

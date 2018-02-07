@@ -13,11 +13,11 @@ import java.util.Locale;
 
 import static mc.util.OSUtils.OSType.*;
 
-public final class OSUtils {
+final class OSUtils {
     /**
      * types of Operating Systems
      */
-    public enum OSType {
+    enum OSType {
         Windows, MacOS, Linux, Other
     };
 
@@ -30,7 +30,7 @@ public final class OSUtils {
      *
      * @returns - the operating system detected
      */
-    public static OSType getOperatingSystemType() {
+     static OSType getOperatingSystemType() {
         if (detectedOS == null) {
             String OS = System.getProperty("os.name", "generic").toLowerCase(Locale.ENGLISH);
             if ((OS.contains("mac")) || (OS.contains("darwin"))) {
