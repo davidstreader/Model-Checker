@@ -83,7 +83,7 @@ public class FailureEquivalence implements IOperationInfixFunction {
             //this.printColorMap(cmap);
             // System.out.println("Adding "+ ag.getA().getId());
             ags.add(ag);
-            for (AutomatonNode nd : ag.getA().getNodes()) {
+            for (AutomatonNode nd : ag.getAutomaton().getNodes()) {
                 initialColour.put(nd, nd.getColour());
             }
             //System.out.println(ag.toString());
@@ -108,9 +108,9 @@ public class FailureEquivalence implements IOperationInfixFunction {
             }
 
             //This computes bisimulation  based on the initial coloring input
-            colourer.performColouring(ag.getA(), colourMap, initialColour);
+            colourer.performColouring(ag.getAutomaton(), colourMap, initialColour);
 
-            Set<AutomatonNode> root = ag.getA().getRoot();
+            Set<AutomatonNode> root = ag.getAutomaton().getRoot();
 
             List<ColourComponent> colourSet = root.stream()
                     .map(AutomatonNode::getColour)
@@ -143,7 +143,7 @@ public class FailureEquivalence implements IOperationInfixFunction {
             }
 
             if (rootColour == Integer.MIN_VALUE) { //first
-                bag.composeAG(ags.get(i).getA().getId(), ags.get(i).getA());
+                bag.composeAG(ags.get(i).getAutomaton().getId(), ags.get(i).getAutomaton());
                 rootColour = col;
             } else if (rootColour != col) {  //second
 
@@ -171,7 +171,7 @@ public class FailureEquivalence implements IOperationInfixFunction {
         List<AutomatonNode> nodes = new ArrayList<>();
         Map<Integer, List<ColourComponent>> colDef = new TreeMap<Integer, List<ColourComponent>>();
         for (AcceptanceGraph ag : ags) {
-            nodes.addAll(ag.getA().getNodes());
+            nodes.addAll(ag.getAutomaton().getNodes());
         }
 
         for (AutomatonNode n : nodes) {

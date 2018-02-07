@@ -155,9 +155,9 @@ int cnt = 0;
     .forEach(nodey -> nodey.setTerminal("STOP"));
   printnode2AcceptanceSets(dfaNode2ASet);
 
-  this.getAutomaton(dfa);
+  this.setAutomaton(dfa);
   this.setNode2AcceptanceSets(dfaNode2ASet);
-  this.toString();
+
 //  System.out.println("Ending AcceptanceGraph Constructor ");
  }
 

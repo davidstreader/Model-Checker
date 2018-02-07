@@ -107,7 +107,7 @@ public class BuildAcceptanceGraphs {
         .forEach(node -> node.setTerminal("STOP"));
     //printnode2AcceptanceSets(node2AcceptanceSets);
     AcceptanceGraph ag = new AcceptanceGraph(nfa, node2AcceptanceSets);
-    ag.setA(acceptGraph);
+    ag.setAutomaton(acceptGraph);
     ag.setNode2AcceptanceSets(node2AcceptanceSets);
     return ag;
   }
