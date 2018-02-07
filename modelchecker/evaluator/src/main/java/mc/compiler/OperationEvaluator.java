@@ -101,6 +101,12 @@ public class OperationEvaluator {
     if (process instanceof CompositeNode) {
       collectIdentifiers(((CompositeNode) process).getFirstProcess(), ids);
       collectIdentifiers(((CompositeNode) process).getSecondProcess(), ids);
+//        int numberNull = 0;
+//        for (Expr c : subMap.values())
+//            if(c == null)
+//                numberNull++;
+//
+//        System.out.println("NUmber null" + numberNull);
     }
     if (process instanceof FunctionNode) {
       ((FunctionNode) process).getProcesses().forEach(p -> collectIdentifiers(p, ids));

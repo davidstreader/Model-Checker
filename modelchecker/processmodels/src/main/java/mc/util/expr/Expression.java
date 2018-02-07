@@ -117,10 +117,7 @@ public class Expression {
         ret.getVariables().putAll(first.getVariables());
         ret.setNext(second.getNext());
         // next variables that exist in the first map that have not been edited by the second, add them.
-        for (String s: first.getNext()) {
-            if (!second.getNextMap().containsKey(s.split("\\W")[0]))
-                ret.getNext().add(s);
-        }
+        first.getNext().stream().filter(s -> !second.getNextMap().containsKey(s.split("\\W")[0])).forEach(s -> ret.getNext().add(s));
         //convert the next variables into a series of Z3 expressions.
         HashMap<String,Expr> subMap = new HashMap<>();
         for (String str: first.getNextMap().keySet()) {
@@ -138,7 +135,7 @@ public class Expression {
                 ret.setGuard(ctx.mkAnd(first.getGuard(), secondGuard));
             }
         }
-System.out.println(first.myString()+" - "+second.myString()+ " -> "+ret.myString());
+        //System.out.println(first.myString()+" - "+second.myString()+ " -> "+ret.myString());
         return ret;
     }
 

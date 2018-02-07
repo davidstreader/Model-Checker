@@ -6,8 +6,6 @@ import java.util.concurrent.TimeUnit;
 import lombok.Getter;
 import lombok.Setter;
 import mc.client.ui.UserInterfaceApplication;
-import mc.commands.CommandManager;
-import mc.commands.PassThroughCommandManager;
 import mc.plugins.PluginManager;
 import mc.util.Utils;
 import mc.util.NativesManager;
@@ -15,9 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Main {
-
-  @Getter
-  private CommandManager commandManager;
 
   @Getter
   private Process subProcess;
@@ -41,18 +36,16 @@ public class Main {
     //If this is a sub process, or we are running with a console, don't start the gui.
     //Start the server if we aren't running from a jar or are in a sub process
     if (!Utils.isJar() || reloaded) {
-      commandManager = new CommandManager(this);
 
       PluginManager.getInstance().registerPlugins();
 
       UserInterfaceApplication.main(new String[0]);
       //Listen for commands
-      commandManager.registerInput();
+
       Logger logger = LoggerFactory.getLogger(Main.class);
       logger.info("Started Server!");
       return;
     }
-    commandManager = new PassThroughCommandManager(this);
     //Start the wrapped process with all the native libraries added.
     spawnProcess(createWrappedProcess());
   }
@@ -62,7 +55,7 @@ public class Main {
    *
    * @param builder a ProcessBuilder
    */
-  public void spawnProcess(ProcessBuilder builder) {
+  private void spawnProcess(ProcessBuilder builder) {
     if (stopped) {
       return;
     }
@@ -119,8 +112,7 @@ public class Main {
    * Since the jar is normally not started with the libraries loaded, we can just load it again with the libraries
    * in place.
    */
-  public ProcessBuilder createWrappedProcess() {
-
+  private ProcessBuilder createWrappedProcess() {
     String nativePath = NativesManager.getNativesDir().toAbsolutePath().toString();
     //Set java.library.path to the native path for windows
     //Set the reloaded flag so that we know that the application has been loaded twice.
