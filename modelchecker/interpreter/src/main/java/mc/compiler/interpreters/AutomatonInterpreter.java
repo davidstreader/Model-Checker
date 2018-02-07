@@ -170,7 +170,6 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
       automaton.setVariablesLocation(astNode.getLocation());
 
       interpretNode(astNode, automaton, new ArrayList<>(automaton.getRoot()).get(0));
-      System.out.println("PUSH" + automaton.getId() + " has owners " + automaton.getOwners());
       processStack.push(automaton);
     }
   }

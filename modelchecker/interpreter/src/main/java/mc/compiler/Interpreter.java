@@ -1,8 +1,11 @@
 package mc.compiler;
 
 import com.microsoft.z3.Context;
-
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import mc.compiler.ast.ASTNode;
 import mc.compiler.ast.AbstractSyntaxTree;
@@ -19,8 +22,6 @@ import mc.processmodels.conversion.TokenRule;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.util.LogAST;
-
-import javax.xml.soap.SOAPPart;
 
 /**
  * Created by sheriddavi on 24/01/17.
@@ -92,7 +93,7 @@ public class Interpreter {
 
       messageQueue.add(new LogAST("Built:", process));
 
-      System.out.println("Built "+ model.toString());
+      System.out.println("Built " + model);
 
       processMap.put(process.getIdentifier(), model);
     }

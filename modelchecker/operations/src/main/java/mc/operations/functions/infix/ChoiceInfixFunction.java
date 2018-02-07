@@ -29,7 +29,7 @@ public class ChoiceInfixFunction /*implements IProcessInfixFunction*/ {
    * @return the textual notation of the infix function
    */
   public String getNotation() {
-    return "[]";
+    return "<>";
   }
 
   /**
