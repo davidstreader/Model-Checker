@@ -6,13 +6,14 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 import mc.exceptions.CompilationException;
+import mc.plugins.IProcessInfixFunction;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.automata.operations.AutomataReachability;
 import mc.processmodels.petrinet.Petrinet;
 
-public class ChoiceInfixFunction /*implements IProcessInfixFunction*/ {
+public class ChoiceInfixFunction implements IProcessInfixFunction {
 
   /**
    * A method of tracking the function
@@ -29,7 +30,7 @@ public class ChoiceInfixFunction /*implements IProcessInfixFunction*/ {
    * @return the textual notation of the infix function
    */
   public String getNotation() {
-    return "<>";
+    return "[]";
   }
 
   /**
@@ -118,7 +119,6 @@ public class ChoiceInfixFunction /*implements IProcessInfixFunction*/ {
   private void copyAutomataEdges(Automaton writeAutomaton, Automaton readAutomaton,
                                  Multimap<String, AutomatonNode> nodeMap,
                                  Multimap<String,String> edgeOwnersMap) {
-    System.out.println(writeAutomaton.getNodes());
     readAutomaton.getEdges().forEach(e -> {
       try {
         for (AutomatonNode fromNode : nodeMap.get(e.getFrom().getId())) {
