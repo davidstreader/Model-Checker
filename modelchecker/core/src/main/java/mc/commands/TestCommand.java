@@ -9,7 +9,6 @@ import java.util.Objects;
 import mc.compiler.OperationResult;
 import mc.util.PrintQueue;
 import mc.util.expr.Expression;
-import mc.webserver.FakeContext;
 
 public class TestCommand implements Command {
   @Override
@@ -33,8 +32,8 @@ public class TestCommand implements Command {
       }
 
       List<OperationResult> operations = Collections.emptyList();
-      try (Context context = Expression.mkCtx()) {
-        operations = compiler.compile(String.join("\n", Files.readAllLines(file.toPath())), new FakeContext(), context, new PrintQueue()).getOperationResults();
+      try (Context z3Context = Expression.mkCtx()) {
+        operations = compiler.compile(String.join("\n", Files.readAllLines(file.toPath())), z3Context, new PrintQueue()).getOperationResults();
         System.out.println("File `" + file.getName() + "`: COMPILED ");
       } catch (Exception ex) {
         System.out.println("File `" + file.getName() + "`: FAILED");

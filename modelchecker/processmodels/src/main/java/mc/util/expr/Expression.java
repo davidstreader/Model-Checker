@@ -185,6 +185,7 @@ System.out.println(first.myString()+" - "+second.myString()+ " -> "+ret.myString
     public static Context mkCtx() throws InterruptedException {
         HashMap<String, String> cfg = new HashMap<>();
         cfg.put("model", "true");
+
         return new Context(cfg);
     }
     private static boolean solve(BoolExpr expr, Context ctx) throws CompilationException, InterruptedException {

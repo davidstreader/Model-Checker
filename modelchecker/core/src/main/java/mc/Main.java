@@ -10,7 +10,7 @@ import mc.commands.CommandManager;
 import mc.commands.PassThroughCommandManager;
 import mc.plugins.PluginManager;
 import mc.util.Utils;
-import mc.webserver.NativesManager;
+import mc.util.NativesManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

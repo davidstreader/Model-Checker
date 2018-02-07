@@ -2,16 +2,13 @@ package mc.compiler;
 
 import static mc.util.Utils.instantiateClass;
 
-import com.google.common.collect.Lists;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentSkipListMap;
-import java.util.stream.Stream;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -20,7 +17,6 @@ import mc.exceptions.CompilationException;
 import mc.plugins.IOperationInfixFunction;
 import mc.processmodels.ProcessModel;
 import mc.processmodels.automata.Automaton;
-import mc.webserver.Context;
 
 
 public class EquationEvaluator {
@@ -33,7 +29,7 @@ public class EquationEvaluator {
 
   }
 
-  public EquationReturn evaluateEquations(List<ProcessModel> processes, List<OperationNode> operations, String code, Context context, com.microsoft.z3.Context z3Context, BlockingQueue<Object> messageQueue) throws CompilationException {
+  public EquationReturn evaluateEquations(List<ProcessModel> processes, List<OperationNode> operations, String code, com.microsoft.z3.Context z3Context, BlockingQueue<Object> messageQueue) throws CompilationException {
     reset();
     List<OperationResult> results = new ArrayList<>();
     Map<String, ProcessModel> toRender = new ConcurrentSkipListMap<>();
@@ -61,7 +57,7 @@ public class EquationEvaluator {
         secondIds.stream().filter(id -> !testingSpace.contains(id)).forEach(testingSpace::add);
 
         int totalPermutations = (int) Math.pow(processes.size(), testingSpace.size());
-        ArrayList<String> failures = testUserdefinedModel(processes, testingSpace, status, operation, context, z3Context);
+        ArrayList<String> failures = testUserdefinedModel(processes, testingSpace, status, operation, z3Context);
 
         results.add(new OperationResult(operation.getFirstProcess(), operation.getSecondProcess(), firstId,
             secondId, operation.getOperation(), failures, operation.isNegated(), status.passCount == totalPermutations,
@@ -77,7 +73,7 @@ public class EquationEvaluator {
 
 
   private ArrayList<String> testUserdefinedModel(List<ProcessModel> models, List<String> testingSpace, ModelStatus status,
-                                                 OperationNode operation, Context context, com.microsoft.z3.Context z3Context)
+                                                 OperationNode operation, com.microsoft.z3.Context z3Context)
       throws CompilationException {
 
     ArrayList<String> failedEquations = new ArrayList<>();
@@ -148,7 +144,7 @@ public class EquationEvaluator {
       }
 
 
-      if (status.failCount > context.getFailCount()) {
+      if (status.failCount > 2) {
         //If we've failed too many tests;
         return failedEquations;
       }
@@ -200,26 +196,6 @@ public class EquationEvaluator {
 
   private void reset() {
     equationId = 0;
-  }
-
-  private <T> Stream<List<T>> permutations(List<Collection<T>> collections) {
-    if (collections == null || collections.isEmpty()) {
-      return Stream.empty();
-    } else {
-      return permutationsImpl(collections, 0, new LinkedList<>());
-    }
-  }
-
-  private static <T> Stream<List<T>> permutationsImpl(List<Collection<T>> ori, int d, List<T> current) {
-    if (d == ori.size()) {
-      return Stream.of(current);
-    }
-    Collection<T> currentCollection = ori.get(d);
-    return currentCollection.parallelStream().flatMap(map -> {
-      List<T> copy = Lists.newLinkedList(current);
-      copy.add(map);
-      return permutationsImpl(ori, d + 1, copy);
-    });
   }
 
   @Getter

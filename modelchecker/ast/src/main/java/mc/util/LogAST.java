@@ -1,7 +1,6 @@
 package mc.util;
 
 import mc.compiler.ast.ProcessNode;
-import mc.webserver.LogMessage;
 
 /**
  * Created by bealjaco on 24/11/17.

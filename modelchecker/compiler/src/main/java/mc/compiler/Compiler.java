@@ -13,7 +13,6 @@ import mc.compiler.token.Token;
 import mc.exceptions.CompilationException;
 import mc.processmodels.ProcessModel;
 import mc.processmodels.automata.Automaton;
-import mc.webserver.Context;
 
 public class Compiler {
   // fields
@@ -38,7 +37,6 @@ public class Compiler {
   /**
    *
    * @param code   sourse code input
-   * @param context
    * @param z3Context
    * @param messageQueue  used to implement concurrent logging while executing
    * @return  name - > aut Petri Net
@@ -49,14 +47,14 @@ public class Compiler {
    */
 
   public CompilationObject compile(String code,
-                                   Context context, com.microsoft.z3.Context z3Context,
+                                   com.microsoft.z3.Context z3Context,
                                    BlockingQueue<Object> messageQueue)
     throws CompilationException, InterruptedException {
     List<Token> codeInput = lexer.tokenise(code);
     AbstractSyntaxTree ast = parser.parse(codeInput, z3Context);
 
     return compile(ast, code,
-            z3Context, context, messageQueue);
+            z3Context, messageQueue);
   }
 
   /**
@@ -64,7 +62,6 @@ public class Compiler {
    * @param ast
    * @param code
    * @param z3Context
-   * @param context
    * @param messageQueue
    * @return
    * @throws CompilationException
@@ -72,7 +69,7 @@ public class Compiler {
    */
 
   private CompilationObject compile(AbstractSyntaxTree ast, String code,
-                                    com.microsoft.z3.Context z3Context, Context context,
+                                    com.microsoft.z3.Context z3Context,
                                     BlockingQueue<Object> messageQueue)
     throws CompilationException, InterruptedException {
     HashMap<String, ProcessNode> processNodeMap = new HashMap<>();
@@ -119,7 +116,7 @@ public class Compiler {
 
     EquationEvaluator.EquationReturn eqResults = eqEvaluator.evaluateEquations(
         new ArrayList<>(processMap.values()), ast.getEquations(),
-        code, context, z3Context, messageQueue);
+        code, z3Context, messageQueue);
 
     processMap.putAll(eqResults.getToRender());
 
@@ -128,6 +125,8 @@ public class Compiler {
     processesToRemoveFromDisplay.stream()
         .filter(processMap::containsKey)
         .forEach(processMap::remove);
+
+
 
     return new CompilationObject(processMap, opResults, eqResults.getResults());
   }

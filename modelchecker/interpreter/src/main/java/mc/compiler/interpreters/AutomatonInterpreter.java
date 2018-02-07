@@ -41,6 +41,7 @@ import mc.processmodels.ProcessModel;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.automata.operations.AutomataLabeller;
+import mc.util.expr.Expression;
 
 /**
  * Builds automata from AST assumes
@@ -82,15 +83,6 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
 
     ProcessModel pm = processStack.pop();
     Automaton automaton = ((Automaton) pm.getProcessType().convertTo(AUTOMATA, pm)).copy();
-//    if (pm instanceof MultiProcessModel) {
-//      automaton = ((Automaton)((MultiProcessModel) pm).getProcess(ProcessType.AUTOMATA));
-//    } else if (pm instanceof Petrinet) {
-//      automaton = TokenRule.tokenRule((Petrinet)pm);
-//    } else if (pm instanceof Automaton) {
-//      automaton = (Automaton)pm;
-//    } else {
-//      throw new CompilationException(getClass(),"Unknown process type received");
-//    }
 
     //Set the id correctly if there is a processes like this: C = B., otherwise it just takes B's id.
     if (!automaton.getId().equals(processNode.getIdentifier())) {

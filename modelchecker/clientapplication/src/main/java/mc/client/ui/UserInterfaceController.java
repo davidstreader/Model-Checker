@@ -9,7 +9,6 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
@@ -27,7 +26,6 @@ import mc.compiler.OperationResult;
 import mc.exceptions.CompilationException;
 import mc.util.LogAST;
 import mc.util.expr.Expression;
-import mc.webserver.Context;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
 import org.fxmisc.richtext.model.StyleSpans;
@@ -659,7 +657,7 @@ public class UserInterfaceController implements Initializable {
 
 
                         //Keep the actual compilition outside the javafx thread otherwise we get hanging
-                        CompilationObject compilerOutput = codeCompiler.compile(userCode, new Context(), Expression.mkCtx(), messageLog);
+                        CompilationObject compilerOutput = codeCompiler.compile(userCode, Expression.mkCtx(), messageLog);
 
                         Platform.runLater(() -> {
                             CompilationObservable.getInstance().updateClient(compilerOutput); // If this is run outside the fx thread then exceptions occur and weirdness with threads updating combox box and whatnot

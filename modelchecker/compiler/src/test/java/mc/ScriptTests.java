@@ -6,7 +6,6 @@ import mc.exceptions.CompilationException;
 import mc.plugins.PluginManager;
 import mc.util.PrintQueue;
 import mc.util.expr.Expression;
-import mc.webserver.FakeContext;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,7 +36,7 @@ public class ScriptTests {
         mc.compiler.Compiler compiler = new mc.compiler.Compiler();
         List<OperationResult> operations = Collections.emptyList();
         try (Context context = Expression.mkCtx()) {
-            operations = compiler.compile(String.join("\n", Files.readAllLines(file.toPath())),new FakeContext(),context,new PrintQueue()).getOperationResults();
+            operations = compiler.compile(String.join("\n", Files.readAllLines(file.toPath())),context,new PrintQueue()).getOperationResults();
             if (shouldFail(file.getName()))
                 fail("Test script: " + file.getName() + " should not compile!");
 
@@ -63,7 +62,12 @@ public class ScriptTests {
     }
     @Parameterized.Parameters(name = "{0}")
     public static Collection<Object[]> data() {
-        return Arrays.stream(new File("tests").listFiles()).map(s -> new Object[]{s.toString(),s}).collect(Collectors.toList());
+        File[] testDirectoryFiles = new File("tests").listFiles();
+        if(testDirectoryFiles != null)
+            return Arrays.stream(testDirectoryFiles).map(s -> new Object[]{s.toString(),s}).collect(Collectors.toList());
+        else
+            return null;
+
     }
     private boolean shouldFail(String fileName) {
         return fileName.contains("_fail");
