@@ -9,8 +9,7 @@ import mc.client.ui.UserInterfaceApplication;
 import mc.plugins.PluginManager;
 import mc.util.Utils;
 import mc.util.NativesManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 
 public class Main {
 
@@ -42,10 +41,9 @@ public class Main {
       UserInterfaceApplication.main(new String[0]);
       //Listen for commands
 
-      Logger logger = LoggerFactory.getLogger(Main.class);
-      logger.info("Started Server!");
       return;
     }
+
     //Start the wrapped process with all the native libraries added.
     spawnProcess(createWrappedProcess());
   }
