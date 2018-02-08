@@ -333,7 +333,7 @@ public class UserInterfaceController implements Initializable {
         return prefix;
     }
 
-    private boolean saveUserChanges() {
+     boolean saveUserChanges() {
         if (modified) {
 
             Alert save = new Alert(Alert.AlertType.NONE);
@@ -379,7 +379,7 @@ public class UserInterfaceController implements Initializable {
                     }
                 }
 
-            } else if (result != dismissSave) {
+            } else if (result != dismissSave) { // If the user has pressed cancel
                 return false;
             }
         }

@@ -319,12 +319,6 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     ProcessModel model = processMap.get(identifierNode.getIdentifier());
     Automaton next = model.getProcessType().convertTo(AUTOMATA, model);
 
-//    if (model instanceof Petrinet) {
-//      next = TokenRule.tokenRule((Petrinet) model);
-//    } else {
-//      next = ((Automaton) model).copy();
-//    }
-
     addAutomaton(currentNode, automaton, next);
   }
 
