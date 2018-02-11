@@ -16,7 +16,9 @@ txt file and can upload a previously saved txt file with defined state machines.
 ### Building / Distributing
 
 -----------------------
-Starting note that this build process has only been tested on Java JDK 8u151.
+Starting note that this build process has been tested on Java JDK 8.0_25
+If you are using Intelij to develop the software import the project as a Gradel project
+https://stackoverflow.com/questions/20379958/how-to-use-an-existing-gradle-project-in-intellij-idea-13-14
 
 ## Linux
 
