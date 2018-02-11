@@ -44,11 +44,16 @@ repository.
 
 -----------------------
 
-Lexer -> Parser -> Interpreter -> Evaluator -> Graphical Display
+Lexer -> Parser -> Expander> Replacer > Interpreter -> Evaluator -> Graphical Display
 
 The lexer produces a list of Tokens from the input code given via the interface,
 this list is then passed to the Parser.  The Parser produces an AST (Abstract
-syntax tree) which is then used by the interperator to build automata diagrams.
+syntax tree)  The Expander replaces indexes with finite state approximations and outputs a new AST. 
+The Replacer removes references to Locally defined processes building a final AST.
+
+The final AST is then used by the interperator to build process models, automata diagrams or  petri Nets.
+
+Functions parallel composition, choice and sequential composition map pairs of automata/ Petri Nets to a resulting automata/ Petri Net.
 Finally the evaluator first tests the operations (Which are similar to tests),
 then it moves onto testing equations which is done by generating different
 automata and the applying the user created automata to test if it works over a
