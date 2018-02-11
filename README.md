@@ -38,8 +38,12 @@ $cd modelchecker
 $./gradlew.bat build
 $java -jar ../ModelChecker.jar
 ```
+## Mac OS
 
-These will build a jar file `ModelChecker.jar` in the root folder of the
+Works jusr the same as  Linux
+
+
+All three  will build a jar file `ModelChecker.jar` in the root folder of the
 repository.
 
 ### Overall Structure
