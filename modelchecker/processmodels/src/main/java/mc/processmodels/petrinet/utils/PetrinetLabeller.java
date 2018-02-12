@@ -39,15 +39,16 @@ public final class PetrinetLabeller {
     petri.getTransitions().values().forEach(t -> labelled.addTransition(label + ":" + t.getId(),
         label + ":" + t.getLabel()));
 
+
     for (PetriNetEdge edge : petri.getEdges().values()) {
       if (edge.getTo() instanceof PetriNetTransition) {
         PetriNetTransition to = labelled.getTransitions().get(label + ":" + edge.getTo().getId());
         PetriNetPlace from = labelled.getPlaces().get(label + ":" + edge.getFrom().getId());
-        labelled.addEdge(to,from);
+        labelled.addEdge(to,from, edge.getOwners());
       } else {
         PetriNetPlace to = labelled.getPlaces().get(label + ":" + edge.getTo().getId());
         PetriNetTransition from = labelled.getTransitions().get(label + ":" + edge.getFrom().getId());
-        labelled.addEdge(to,from);
+        labelled.addEdge(to,from, edge.getOwners());
       }
     }
 

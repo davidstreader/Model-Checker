@@ -73,6 +73,7 @@ public class TokenRule {
         continue;
       }
 
+
       Set<PetriNetTransition> satisfiedPostTransitions = satisfiedTransitions(currentMarking);
 
       if (satisfiedPostTransitions.size() == 0) {
@@ -82,6 +83,7 @@ public class TokenRule {
 
       for (PetriNetTransition transition : satisfiedPostTransitions) {
         Set<PetriNetPlace> newMarking = new HashSet<>(currentMarking);
+
 
         // Clear out the places in the current marking which are moving token
         newMarking.removeAll(transition.pre());
