@@ -25,10 +25,31 @@ public class PetrinetParallelFunction {
 
   public static Petrinet compose(Petrinet p1, Petrinet p2) {
     clear();
+
+    for(String eId : p1.getEdges().keySet()) {
+      Set<String> owners = p1.getEdges().get(eId).getOwners();
+      if(owners.contains(Petrinet.DEFAULT_OWNER)) {
+        owners.clear();
+      }
+
+      owners.add(p1.getId());
+    }
+
+    for(String eId : p2.getEdges().keySet()) {
+      Set<String> owners = p2.getEdges().get(eId).getOwners();
+      if(owners.contains(Petrinet.DEFAULT_OWNER)) {
+        owners.clear();
+      }
+
+      owners.add(p2.getId());
+    }
+
+
     setupActions(p1, p2);
     Petrinet composition = new Petrinet(p1.getId() + "||" + p2.getId(), false);
     addPetrinet(composition,p1).forEach(composition::addRoot);
     addPetrinet(composition,p2).forEach(composition::addRoot);
+
     setupSynchronisedActions(p1, p2, composition);
     return composition;
   }
@@ -81,25 +102,28 @@ public class PetrinetParallelFunction {
 
       for (PetriNetTransition t1 : p1Pair) {
         for (PetriNetTransition t2 : p2Pair) {
-          Set<PetriNetPlace> pre = Stream.of(t1, t2)
-              .map(PetriNetTransition::pre)
-              .flatMap(Set::stream)
-              .distinct()
-              .collect(Collectors.toSet());
-          Set<PetriNetPlace> post = Stream.of(t1, t2)
-              .map(PetriNetTransition::post)
-              .flatMap(Set::stream)
-              .distinct()
-              .collect(Collectors.toSet());
+
+
+          Set<PetriNetEdge> outgoingEdges = new HashSet<>();
+          outgoingEdges.addAll(t1.getOutgoing());
+          outgoingEdges.addAll(t2.getOutgoing());
+
+          Set<PetriNetEdge> incomingEdges = new HashSet<>();
+          incomingEdges.addAll(t1.getIncoming());
+          incomingEdges.addAll(t2.getIncoming());
 
           PetriNetTransition newTrans = comp.addTransition(action);
 
-          for (PetriNetPlace prePlace : pre) {
-            comp.addEdge(newTrans, prePlace);
+
+          for(PetriNetEdge outE : outgoingEdges) {
+            comp.addEdge((PetriNetPlace) outE.getTo(), newTrans, outE.getOwners());
           }
-          for (PetriNetPlace postPlace : post) {
-            comp.addEdge(postPlace, newTrans);
+
+          for(PetriNetEdge inE : incomingEdges) {
+            comp.addEdge(newTrans, (PetriNetPlace) inE.getFrom(), inE.getOwners());
           }
+
+
         }
       }
 
@@ -144,6 +168,8 @@ public class PetrinetParallelFunction {
 
   @SneakyThrows(value = {CompilationException.class})
   public static Set<PetriNetPlace> addPetrinet(Petrinet addTo, Petrinet petriToAdd) {
+
+
     Set<PetriNetPlace> roots = new HashSet<>();
     Map<PetriNetPlace, PetriNetPlace> placeMap = new HashMap<>();
     Map<PetriNetTransition, PetriNetTransition> transitionMap = new HashMap<>();
@@ -166,10 +192,11 @@ public class PetrinetParallelFunction {
     }
 
     for (PetriNetEdge edge : petriToAdd.getEdges().values()) {
+
       if (edge.getFrom() instanceof PetriNetPlace) {
-        addTo.addEdge(transitionMap.get(edge.getTo()), placeMap.get(edge.getFrom()));
+        addTo.addEdge(transitionMap.get(edge.getTo()), placeMap.get(edge.getFrom()), edge.getOwners());
       } else {
-        addTo.addEdge(placeMap.get(edge.getTo()), transitionMap.get(edge.getFrom()));
+        addTo.addEdge(placeMap.get(edge.getTo()), transitionMap.get(edge.getFrom()), edge.getOwners());
       }
     }
 

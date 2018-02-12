@@ -199,6 +199,8 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
       throws CompilationException, InterruptedException {
     String action = seq.getFrom().getAction();
 
+    Set<String> fakeOwner = new HashSet<>();
+    fakeOwner.add(Petrinet.DEFAULT_OWNER);
 
     if (seq.getTo() instanceof ReferenceNode) {
       ReferenceNode ref = (ReferenceNode) seq.getTo();
@@ -206,14 +208,15 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
 
       if (nextPlaces == null) {
         throw new CompilationException(getClass(),
-            "The automata attempted to enter an invalid reference", seq.getTo().getLocation());
+            "The petrinet attempted to enter an invalid reference", seq.getTo().getLocation());
       }
 
       for (PetriNetPlace nextPlace : nextPlaces) {
         PetriNetTransition transition = petri.addTransition(action);
 
-        petri.addEdge(transition, currentPlace);
-        petri.addEdge(nextPlace, transition);
+
+        petri.addEdge(transition, currentPlace, fakeOwner);
+        petri.addEdge(nextPlace, transition, fakeOwner);
       }
 
       //do something
@@ -221,8 +224,8 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
       PetriNetPlace nextPlace = petri.addPlace();
       PetriNetTransition transition = petri.addTransition(action);
 
-      petri.addEdge(transition, currentPlace);
-      petri.addEdge(nextPlace, transition);
+      petri.addEdge(transition, currentPlace, fakeOwner);
+      petri.addEdge(nextPlace, transition, fakeOwner);
       interpretASTNode(seq.getTo(), petri, nextPlace);
     }
   }
@@ -281,6 +284,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     Petrinet comp = instantiateClass(infixFunctions.get(composite.getOperation()))
         .compose(model1.getId() + composite.getOperation() + model2.getId(), (Petrinet) model1,
             (Petrinet) model2);
+
     addPetrinet(currentPlace, comp, petri);
   }
 
@@ -294,6 +298,9 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     }
 
     Set<PetriNetPlace> places = master.addPetrinet(petrinetToAdd);
+
+    System.out.println(master);
+
     Set<PetriNetPlace> newStart = master.gluePlaces(Collections.singleton(currentPlace), places);
 
     places.stream()
@@ -302,6 +309,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
         .forEach(references::addAll);
 
     references.forEach(id -> referenceMap.replace(id, newStart));
+
   }
 
   private Petrinet processLabellingAndRelabelling(Petrinet petri, ProcessRootNode processRoot)

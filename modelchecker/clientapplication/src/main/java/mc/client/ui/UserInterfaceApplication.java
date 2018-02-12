@@ -57,25 +57,24 @@ public class UserInterfaceApplication extends Application {
 
     @Override
     public void stop() {
+        if (controller.saveUserChanges()) {
 
-        ArrayDeque<String> filePaths = controller.getRecentFilePaths();
+            ArrayDeque<String> filePaths = controller.getRecentFilePaths();
+            try {
+                System.out.print("\nwriting settings file...");
+                BufferedWriter writer = new BufferedWriter(new FileWriter("recentfiles.conf"));
 
-        try {
-            System.out.print("\nwriting settings file...");
-            BufferedWriter writer = new BufferedWriter(new FileWriter("recentfiles.conf"));
+                while (!filePaths.isEmpty())
+                    writer.write(filePaths.pollLast() + "\n");
 
-            while(!filePaths.isEmpty())
-                writer.write(filePaths.pollLast()+"\n");
+                writer.close();
+                System.out.print("Done\n");
 
-            writer.close();
-            System.out.print("Done\n");
-
-        } catch(IOException e)  {
-            e.printStackTrace();
-            System.exit(1);
+            } catch (IOException e) {
+                e.printStackTrace();
+                System.exit(1);
+            }
         }
-
-
         System.exit(0);
     }
 
