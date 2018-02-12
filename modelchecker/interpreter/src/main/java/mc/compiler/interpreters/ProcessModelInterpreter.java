@@ -14,7 +14,15 @@ import java.util.Map;
  */
 public interface ProcessModelInterpreter {
 
-    ProcessModel interpret(ProcessNode processNode, Map<String, ProcessModel> processMap, LocalCompiler localCompiler, Context context) throws CompilationException, InterruptedException;
+    ProcessModel interpret(ProcessNode processNode,
+                           Map<String, ProcessModel> processMap,
+                         // LocalCompiler localCompiler,
+                           Context context)
+      throws CompilationException, InterruptedException;
 
-    ProcessModel interpret(ASTNode astNode, String identifier, Map<String, ProcessModel> processMap, Context context) throws CompilationException, InterruptedException;
+    ProcessModel interpret(ASTNode astNode,
+                           String identifier,
+                           Map<String, ProcessModel> processMap,
+                           Context context)
+      throws CompilationException, InterruptedException;
 }

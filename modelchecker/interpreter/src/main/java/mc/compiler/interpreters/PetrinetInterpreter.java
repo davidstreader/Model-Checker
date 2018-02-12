@@ -60,11 +60,13 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
   VariableSetNode variables;
 
   @Override
-  public ProcessModel interpret(ProcessNode processNode, Map<String, ProcessModel> processMap,
-                                LocalCompiler localCompiler, Context context)
+  public ProcessModel interpret(ProcessNode processNode,
+                                Map<String, ProcessModel> processMap,
+                              //  LocalCompiler localCompiler,
+                                Context context)
       throws CompilationException, InterruptedException {
     reset();
-    this.compiler = compiler;
+    //this.compiler = compiler;
     this.context = context;
     variableList = new HashSet<>();
     this.processMap = processMap;
@@ -110,15 +112,9 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
       throws CompilationException, InterruptedException {
     if (astNode instanceof IdentifierNode) {
       String reference = ((IdentifierNode) astNode).getIdentifier();
-      if (variables != null) {
-        ProcessNode node = (ProcessNode) compiler.getProcessNodeMap().get(reference).copy();
-        node.setVariables(variables);
-        node = compiler.compile(node, context);
-        ProcessModel model = new PetrinetInterpreter().interpret(node, processMap, compiler, context);
-        processStack.push((Petrinet) model);
-      } else {
+
         processStack.push((Petrinet) processMap.get(reference));
-      }
+
       return;
     }
 

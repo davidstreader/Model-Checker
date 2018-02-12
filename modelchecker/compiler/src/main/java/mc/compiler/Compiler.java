@@ -121,7 +121,7 @@ public class Compiler {
     }
 
     Map<String, ProcessModel> processMap = interpreter.interpret(ast,
-        new LocalCompiler(processNodeMap, expander, replacer, messageQueue),
+        //new LocalCompiler(processNodeMap, expander, replacer, messageQueue),
         messageQueue, z3Context);
 
     System.out.println("after operation interpretation");

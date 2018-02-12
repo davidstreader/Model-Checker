@@ -77,7 +77,11 @@ public class SlidingInfixFunction implements IProcessInfixFunction {
 
     AutomatonInterpreter interpreter = new AutomatonInterpreter();
     try {
-      return (Automaton) interpreter.interpret(process, processesDefined, null, null);
+      return (Automaton) interpreter.interpret(
+         process,
+         processesDefined,
+       // null,
+        null);
     } catch (InterruptedException e) {
       throw new CompilationException(getClass(), "Interrupted in compilation!");
     }
