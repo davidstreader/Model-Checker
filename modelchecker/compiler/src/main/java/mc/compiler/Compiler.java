@@ -35,6 +35,7 @@ public class Compiler {
   }
 
   /**
+   * ONLY public method lexes-> parses to build AST then compiles the AST
    *
    * @param code          Source code text input
    * @param z3Context     z3 context for evaluation of code
@@ -53,12 +54,15 @@ public class Compiler {
     List<Token> codeInput = lexer.tokenise(code);
     AbstractSyntaxTree ast = parser.parse(codeInput, z3Context);
 
+    System.out.println("AST after parsing ");
+    System.out.println(ast.toString());
+
     return compile(ast, code,
             z3Context, messageQueue);
   }
 
   /**
-   *
+   * ONLY start point for building automata
    * @param ast           The abstract syntax tree returned by the parser
    * @param code          The users code as a non-formatted string
    * @param z3Context     z3 Context for evaluating
@@ -81,15 +85,24 @@ public class Compiler {
     }
 /*
    Expand the non hidden variables (indexes) and return an ast
+   NOTE changes the ast in undefined way BUT this is required for the replacer to work
  */
     ast = expander.expand(ast, messageQueue, z3Context);
     /* replacer.replaceReferences
      * Expands references i.e Initally we are now at: P1 = a->P2.
      *                                                P2 = b->c->x.
      *  Then it expands it to, P1 = a->b->c->x. If it needs it
+     *  BEWARE expanding an prune events that are not needed for the finite state
+     *  size chosen  hence symbolic processes must eb built prior to expansion!
      */
+
+    System.out.println("AST after expanding");
+    System.out.println(ast.processesToString());
+
     ast = replacer.replaceReferences(ast, messageQueue);
 
+    System.out.println("AST after replacer");
+    System.out.println(ast.processesToString());
 
     System.out.println("Hierarchy of processes: " + ast.getProcessHierarchy().getDependencies());
 
@@ -110,6 +123,8 @@ public class Compiler {
     Map<String, ProcessModel> processMap = interpreter.interpret(ast,
         new LocalCompiler(processNodeMap, expander, replacer, messageQueue),
         messageQueue, z3Context);
+
+    System.out.println("after operation interpretation");
 
     List<OperationResult> opResults = evaluator.evaluateOperations(ast.getOperations(), processMap,
         interpreter, code, z3Context);

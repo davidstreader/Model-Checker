@@ -99,8 +99,11 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
       processHiding(automaton, processNode.getHiding());
     }
 
+  automaton = labelAutomaton(automaton);
+    System.out.println("automaton "+ automaton.getId()+ " built");
+    System.out.println(automaton.toString());
 
-    return labelAutomaton(automaton);
+    return automaton;
   }
 
   public ProcessModel interpret(ASTNode astNode,
@@ -121,8 +124,17 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     return labelAutomaton(automaton);
   }
 
-  private void interpretProcess(ASTNode astNode, String identifier) throws CompilationException, InterruptedException {
+  /**
+   * saves  automata - models - to the processStack
+   * @param astNode
+   * @param identifier
+   * @throws CompilationException
+   * @throws InterruptedException
+   */
+  private void interpretProcess(ASTNode astNode, String identifier)
+        throws CompilationException, InterruptedException {
     if (astNode instanceof IdentifierNode) {
+
       String reference = ((IdentifierNode) astNode).getIdentifier();
       if (this.variables != null) {
 
@@ -137,6 +149,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         processStack.push(model);
       }
     } else if (astNode instanceof ProcessRootNode) {
+      // automata already on stact so pop it off  relabel and push back on stack
       ProcessRootNode root = (ProcessRootNode) astNode;
 
       interpretProcess(root.getProcess(), identifier);
@@ -167,6 +180,14 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     }
   }
 
+  /**
+   * Recursivly interpret AST nodes
+   * @param astNode
+   * @param automaton
+   * @param currentNode
+   * @throws CompilationException
+   * @throws InterruptedException
+   */
   private void interpretNode(ASTNode astNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException {
     if (Thread.currentThread().isInterrupted()) {
       throw new InterruptedException();

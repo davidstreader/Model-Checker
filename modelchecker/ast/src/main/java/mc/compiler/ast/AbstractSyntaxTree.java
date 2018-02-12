@@ -54,4 +54,12 @@ public class AbstractSyntaxTree {
    * propagation of process types, and may be used in the future for parallel compilation.
    */
   private ProcessHierarchy processHierarchy = null;
+
+  public String processesToString() {
+    String out = "";
+     for(ProcessNode pn: this.processes) {
+       out = out + pn.toString()+ " ";
+     }
+     return out;
+  }
 }

@@ -40,7 +40,8 @@ public class ProcessNode extends ASTNode {
   private ASTNode process;
 
   /**
-   * The sub-processes data.
+   * The sub-processes data. One for each of the local processes
+   * Only one for an indexed process after Parsing
    */
   private List<LocalProcessNode> localProcesses;
 
