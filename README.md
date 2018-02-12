@@ -16,7 +16,9 @@ txt file and can upload a previously saved txt file with defined state machines.
 ### Building / Distributing
 
 -----------------------
-Starting note that this build process has only been tested on Java JDK 8u151.
+Starting note that this build process has been tested on Java JDK 8.0_25
+If you are using Intelij to develop the software import the project as a Gradel project
+https://stackoverflow.com/questions/20379958/how-to-use-an-existing-gradle-project-in-intellij-idea-13-14
 
 ## Linux
 
@@ -36,19 +38,28 @@ $cd modelchecker
 $./gradlew.bat build
 $java -jar ../ModelChecker.jar
 ```
+## Mac OS
 
-These will build a jar file `ModelChecker.jar` in the root folder of the
+Works jusr the same as  Linux
+
+
+All three  will build a jar file `ModelChecker.jar` in the root folder of the
 repository.
 
 ### Overall Structure
 
 -----------------------
 
-Lexer -> Parser -> Interpreter -> Evaluator -> Graphical Display
+Lexer -> Parser -> Expander> Replacer > Interpreter -> Evaluator -> Graphical Display
 
 The lexer produces a list of Tokens from the input code given via the interface,
 this list is then passed to the Parser.  The Parser produces an AST (Abstract
-syntax tree) which is then used by the interperator to build automata diagrams.
+syntax tree)  The Expander replaces indexes with finite state approximations and outputs a new AST. 
+The Replacer removes references to Locally defined processes building a final AST.
+
+The final AST is then used by the interperator to build process models, automata diagrams or  petri Nets.
+
+Functions parallel composition, choice and sequential composition map pairs of automata/ Petri Nets to a resulting automata/ Petri Net.
 Finally the evaluator first tests the operations (Which are similar to tests),
 then it moves onto testing equations which is done by generating different
 automata and the applying the user created automata to test if it works over a
