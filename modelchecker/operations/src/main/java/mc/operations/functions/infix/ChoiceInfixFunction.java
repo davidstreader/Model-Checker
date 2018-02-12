@@ -41,15 +41,15 @@ public class ChoiceInfixFunction implements IProcessInfixFunction {
    * @param automaton2 the second automaton in the function (e.g. {@code B} in {@code A||B})
    * @return the resulting automaton of the operation
    */
-  public Automaton compose(String id, Automaton automaton1, Automaton automaton2) throws CompilationException {
+  public Automaton compose(String id, Automaton automaton1, Automaton automaton2)
+      throws CompilationException {
 
     if (automaton1.getRoot().size() > 1 && automaton2.getRoot().size() > 1) {
       return new InternalChoiceInfixFunction().compose(id,automaton1,automaton2);
     }
 
     Automaton composition = new Automaton(id, !Automaton.CONSTRUCT_ROOT);
-    Multimap<String,String> setOfOwners = AutomatonEdge.createIntersection(automaton1.getOwners(),
-        automaton2.getOwners());
+    Multimap<String,String> setOfOwners = AutomatonEdge.createIntersection(automaton1, automaton2);
 
     //store a map to the nodes so id can be ignored
     Multimap<String, AutomatonNode> automata1nodes = ArrayListMultimap.create();

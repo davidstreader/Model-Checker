@@ -5,10 +5,12 @@ import com.google.common.collect.Multimap;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.Setter;
 import mc.Constant;
 import mc.compiler.Guard;
+import mc.exceptions.CompilationException;
 import mc.processmodels.ProcessModelObject;
 
 public class AutomatonEdge extends ProcessModelObject {
@@ -64,11 +66,11 @@ public class AutomatonEdge extends ProcessModelObject {
     return automatonLocation.remove(owner);
   }
 
-  public String myString(){
+  public String myString() {
     String out = "";
     if (guard != null) {
       out = from.getId() + "-" + label + "->" + to.getId() + " " + guard.myString();
-    }else {
+    } else {
       out = from.getId() + "-" + label + "->" + to.getId() + " null guard";
     }
     return out;
@@ -113,15 +115,47 @@ public class AutomatonEdge extends ProcessModelObject {
 
   @Override
   public int hashCode() {
-    return Objects.hash(label,from.getId(),to.getId());
+    return Objects.hash(label, from.getId(), to.getId());
   }
 
-  public static Multimap<String, String> createIntersection(Set<String> owners1,
-                                                            Set<String> owners2) {
+  public static Multimap<String, String> createIntersection(Automaton automaton1,
+                                                            Automaton automaton2) {
+    Set<String> preowners1 = automaton1.getOwners();
+    Set<String> preowners2 = automaton2.getOwners();
+
+    Set<String> intersection = new HashSet<>(preowners1);
+    intersection.retainAll(preowners2);
+
+    if (intersection.size() > 0) {
+      relabelOwners(automaton1,"._1");
+      relabelOwners(automaton2,"._2");
+      preowners1 = automaton1.getOwners();
+      preowners2 = automaton2.getOwners();
+    }
+
+    //tricking the lambda expressions to evaluate
+    Set<String> owners1 = preowners1;
+    Set<String> owners2 = preowners2;
+
     Multimap<String, String> table = ArrayListMultimap.create();
-    owners1.forEach(o1 -> owners2.forEach(o2 -> table.put(o1,o1 + INTERSECTION + o2)));
-    owners1.forEach(o1 -> owners2.forEach(o2 -> table.put(o2,o1 + INTERSECTION + o2)));
+    owners1.forEach(o1 -> owners2.forEach(o2 -> table.put(o1, o1 + INTERSECTION + o2)));
+    owners1.forEach(o1 -> owners2.forEach(o2 -> table.put(o2, o1 + INTERSECTION + o2)));
     return table;
+  }
+
+  private static void relabelOwners(Automaton aut, String label) {
+    aut.getEdges().forEach(e -> {
+
+      Set<String> owners = e.getOwnerLocation().stream()
+          .map(o -> o + label)
+          .collect(Collectors.toSet());
+      Set<String> toRemove = new HashSet<>(e.getOwnerLocation());
+      toRemove.forEach(o -> aut.removeOwnerFromEdge(e, o));
+      try {
+        aut.addOwnersToEdge(e, owners);
+      } catch (CompilationException ignored) {
+      }
+    });
   }
 
 }

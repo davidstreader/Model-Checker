@@ -48,8 +48,7 @@ public class SequentialInfixFunction implements IProcessInfixFunction {
   @Override
   public Automaton compose(String id, Automaton automaton1, Automaton automaton2) {
     Automaton sequence = new Automaton(id, !Automaton.CONSTRUCT_ROOT);
-    Multimap<String,String> setOfOwners = AutomatonEdge.createIntersection(automaton1.getOwners(),
-        automaton2.getOwners());
+    Multimap<String,String> setOfOwners = AutomatonEdge.createIntersection(automaton1, automaton2);
 
     //store a map to the nodes so id can be ignored
     Map<String, AutomatonNode> automata1nodes = new HashMap<>();
