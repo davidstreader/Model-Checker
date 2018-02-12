@@ -175,11 +175,6 @@ public class PruneFunction implements IProcessFunction {
     for (PetriNetTransition t : transitionsToRemove) {
       petri.removeTransititon(t);
     }
-    System.out.println("PRUNED:");
-    System.out.println(petri);
-    System.out.println("=====");
-    System.out.println(placesToRemove);
-    System.out.println(transitionsToRemove);
     return petri;
   }
 
