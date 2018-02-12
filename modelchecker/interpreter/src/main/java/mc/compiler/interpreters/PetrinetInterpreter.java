@@ -18,6 +18,7 @@ import mc.compiler.LocalCompiler;
 import mc.compiler.ast.ASTNode;
 import mc.compiler.ast.ChoiceNode;
 import mc.compiler.ast.CompositeNode;
+import mc.compiler.ast.FunctionNode;
 import mc.compiler.ast.HidingNode;
 import mc.compiler.ast.IdentifierNode;
 import mc.compiler.ast.ProcessNode;
@@ -191,6 +192,9 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     if (currentNode instanceof CompositeNode) {
       interpretComposite((CompositeNode) currentNode, petri, currentPlace);
     }
+    if (currentNode instanceof FunctionNode) {
+      interpretFunction((FunctionNode) currentNode, petri, currentPlace);
+    }
 
   }
 
@@ -288,6 +292,26 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     addPetrinet(currentPlace, comp, petri);
   }
 
+  private void interpretFunction(FunctionNode func, Petrinet petri, PetriNetPlace currentPlace)
+      throws CompilationException, InterruptedException {
+    List<Petrinet> models = new ArrayList<>();
+    for (ASTNode p : func.getProcesses()) {
+      interpretProcess(p, petri.getId() + ".fn");
+      models.add(processStack.pop());
+    }
+
+    if (models.isEmpty()) {
+      throw new CompilationException(getClass(),
+          "Expecting a petrinet, received an undefined process.", func.getLocation());
+    }
+
+    Petrinet[] petris = models.stream().map(Petrinet.class::cast).toArray(Petrinet[]::new);
+
+    Petrinet processed = instantiateClass(functions.get(func.getFunction()))
+        .compose(petri.getId() + ".fn", func.getFlags(), context, petris);
+
+    addPetrinet(currentPlace, processed, petri);
+  }
 
   private void addPetrinet(PetriNetPlace currentPlace, Petrinet petrinetToAdd, Petrinet master)
       throws CompilationException {
@@ -298,8 +322,6 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     }
 
     Set<PetriNetPlace> places = master.addPetrinet(petrinetToAdd);
-
-    System.out.println(master);
 
     Set<PetriNetPlace> newStart = master.gluePlaces(Collections.singleton(currentPlace), places);
 

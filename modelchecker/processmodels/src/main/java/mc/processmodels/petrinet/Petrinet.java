@@ -169,7 +169,10 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
       throw new CompilationException(getClass(), "Cannot remove a transition that is not part of"
           + "the petrinet");
     }
-    for (PetriNetEdge edge : Iterables.concat(transition.getIncoming(), transition.getOutgoing())) {
+    Set<PetriNetEdge> toRemove = new HashSet<>(transition.getIncoming());
+    toRemove.addAll(transition.getOutgoing());
+
+    for (PetriNetEdge edge : toRemove) {
       removeEdge(edge);
     }
     transitions.remove(transition.getId());
