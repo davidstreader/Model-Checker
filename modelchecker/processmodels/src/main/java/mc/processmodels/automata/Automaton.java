@@ -505,6 +505,8 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
       addOwnerToEdge(edge, DEFAULT_OWNER);
     }
 
+
+
     return edge;
   }
 

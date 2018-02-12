@@ -18,6 +18,7 @@ import mc.compiler.LocalCompiler;
 import mc.compiler.ast.ASTNode;
 import mc.compiler.ast.ChoiceNode;
 import mc.compiler.ast.CompositeNode;
+import mc.compiler.ast.FunctionNode;
 import mc.compiler.ast.HidingNode;
 import mc.compiler.ast.IdentifierNode;
 import mc.compiler.ast.ProcessNode;
@@ -187,6 +188,9 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     if (currentNode instanceof CompositeNode) {
       interpretComposite((CompositeNode) currentNode, petri, currentPlace);
     }
+    if (currentNode instanceof FunctionNode) {
+      interpretFunction((FunctionNode) currentNode, petri, currentPlace);
+    }
 
   }
 
@@ -195,6 +199,8 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
       throws CompilationException, InterruptedException {
     String action = seq.getFrom().getAction();
 
+    Set<String> fakeOwner = new HashSet<>();
+    fakeOwner.add(Petrinet.DEFAULT_OWNER);
 
     if (seq.getTo() instanceof ReferenceNode) {
       ReferenceNode ref = (ReferenceNode) seq.getTo();
@@ -202,14 +208,15 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
 
       if (nextPlaces == null) {
         throw new CompilationException(getClass(),
-            "The automata attempted to enter an invalid reference", seq.getTo().getLocation());
+            "The petrinet attempted to enter an invalid reference", seq.getTo().getLocation());
       }
 
       for (PetriNetPlace nextPlace : nextPlaces) {
         PetriNetTransition transition = petri.addTransition(action);
 
-        petri.addEdge(transition, currentPlace);
-        petri.addEdge(nextPlace, transition);
+
+        petri.addEdge(transition, currentPlace, fakeOwner);
+        petri.addEdge(nextPlace, transition, fakeOwner);
       }
 
       //do something
@@ -217,8 +224,8 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
       PetriNetPlace nextPlace = petri.addPlace();
       PetriNetTransition transition = petri.addTransition(action);
 
-      petri.addEdge(transition, currentPlace);
-      petri.addEdge(nextPlace, transition);
+      petri.addEdge(transition, currentPlace, fakeOwner);
+      petri.addEdge(nextPlace, transition, fakeOwner);
       interpretASTNode(seq.getTo(), petri, nextPlace);
     }
   }
@@ -277,9 +284,30 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     Petrinet comp = instantiateClass(infixFunctions.get(composite.getOperation()))
         .compose(model1.getId() + composite.getOperation() + model2.getId(), (Petrinet) model1,
             (Petrinet) model2);
+
     addPetrinet(currentPlace, comp, petri);
   }
 
+  private void interpretFunction(FunctionNode func, Petrinet petri, PetriNetPlace currentPlace)
+      throws CompilationException, InterruptedException {
+    List<Petrinet> models = new ArrayList<>();
+    for (ASTNode p : func.getProcesses()) {
+      interpretProcess(p, petri.getId() + ".fn");
+      models.add(processStack.pop());
+    }
+
+    if (models.isEmpty()) {
+      throw new CompilationException(getClass(),
+          "Expecting a petrinet, received an undefined process.", func.getLocation());
+    }
+
+    Petrinet[] petris = models.stream().map(Petrinet.class::cast).toArray(Petrinet[]::new);
+
+    Petrinet processed = instantiateClass(functions.get(func.getFunction()))
+        .compose(petri.getId() + ".fn", func.getFlags(), context, petris);
+
+    addPetrinet(currentPlace, processed, petri);
+  }
 
   private void addPetrinet(PetriNetPlace currentPlace, Petrinet petrinetToAdd, Petrinet master)
       throws CompilationException {
@@ -290,6 +318,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     }
 
     Set<PetriNetPlace> places = master.addPetrinet(petrinetToAdd);
+
     Set<PetriNetPlace> newStart = master.gluePlaces(Collections.singleton(currentPlace), places);
 
     places.stream()
@@ -298,6 +327,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
         .forEach(references::addAll);
 
     references.forEach(id -> referenceMap.replace(id, newStart));
+
   }
 
   private Petrinet processLabellingAndRelabelling(Petrinet petri, ProcessRootNode processRoot)
