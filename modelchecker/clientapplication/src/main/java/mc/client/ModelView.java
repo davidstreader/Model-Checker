@@ -269,7 +269,7 @@ public class ModelView implements Observer {
       GraphNode from = nodeMap.get(e.getFrom().getId());
       String label = e.getLabel();
 
-      graph.addEdge(new DirectedEdge(label , UUID.randomUUID().toString()), from, to);
+      graph.addEdge(new DirectedEdge(label + e.getOwnerLocation() , UUID.randomUUID().toString()), from, to);
     });
 
     this.processModels.replaceValues(automaton.getId(), nodeMap.values());
