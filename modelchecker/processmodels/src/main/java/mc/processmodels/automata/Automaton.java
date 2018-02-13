@@ -654,7 +654,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     String tempto = "";
     String tempfrom = "";
     StringBuilder builder = new StringBuilder();
-    builder.append("automaton:" + this.getId() + "{\n");
+    builder.append("automaton("+getId()+"):" + this.getId() + "{\n");
     if (this.hiddenVariables != null) {
       builder.append("\thiddenVar:{");
       for (String var : this.hiddenVariables) {
@@ -670,18 +670,19 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     builder.append("}\n\tnodes:{\n");
     for (AutomatonNode node : nodeMap.values()) {
       builder.append("\t\t").append(node.getId())
-          .append(" c= " + node.getColour()).toString();
+          .append(" (c= " + node.getColour())
+          .append(")");
       if (node.getGuard() != null) {
-        builder.append(" g= " + node.getGuard().myString());
+        builder.append(" (g= " + node.getGuard().myString());
       } else {
-        builder.append(" Guard=null");
+        builder.append(" (Guard=null) ");
       }
       if (node == root) {
-        builder.append("(root)");
+        builder.append(" (root)");
       }
 
       if (node.isStartNode()) {
-        builder.append("(Start)");
+        builder.append(" (Start)");
 
       }
 
@@ -706,8 +707,8 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
           //+" "+edge.getFrom().getColour()
       ).
           append("-").append(edge.getLabel()).append(">").
-          append(tempto + edge.getTo().getId() + " col " + edge.getTo().getColour()).
-          append(edge.getGuard() == null ? "null" : edge.getGuard().myString()).
+          append(tempto + edge.getTo().getId() + " (col " + edge.getTo().getColour()+")").
+          append(edge.getGuard() == null ? " (Guard=null)" : edge.getGuard().myString()).
           append("\n");
 
     }

@@ -47,6 +47,10 @@ public class PetrinetParallelFunction {
 
     setupActions(p1, p2);
     Petrinet composition = new Petrinet(p1.getId() + "||" + p2.getId(), false);
+    composition.getOwners().clear();
+    composition.getOwners().addAll(p1.getOwners());
+    composition.getOwners().addAll(p2.getOwners());
+
     addPetrinet(composition,p1).forEach(composition::addRoot);
     addPetrinet(composition,p2).forEach(composition::addRoot);
 
