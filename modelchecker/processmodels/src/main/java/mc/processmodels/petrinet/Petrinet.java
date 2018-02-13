@@ -88,7 +88,6 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     PetriNetPlace place = new PetriNetPlace(id);
     places.put(id, place);
     return place;
-
   }
 
   public PetriNetTransition addTransition(String id, String label) {
@@ -147,6 +146,8 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     Set<PetriNetEdge> toRemove = new HashSet<>();
     toRemove.addAll(place.getIncoming());
     toRemove.addAll(place.getOutgoing());
+    toRemove = toRemove.stream().filter(edges::containsValue).collect(Collectors.toSet());
+
     for (PetriNetEdge edge : toRemove) {
       removeEdge(edge);
     }
@@ -155,7 +156,8 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
       //Code:
       //processes A = (b->STOP||c->STOP).
       //petrinet A.
-      roots = roots.stream().filter(((Predicate<PetriNetPlace>) place::equals).negate()).collect(Collectors.toSet());
+      roots = roots.stream().filter(((Predicate<PetriNetPlace>) place::equals).negate())
+          .collect(Collectors.toSet());
 //      System.out.println(roots.contains(place));
 //      System.out.println(roots.remove(place));
 //      roots.stream().map(place::equals).forEach(System.out::println);
@@ -164,13 +166,16 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     places.remove(place.getId());
   }
 
-  public void removeTransititon(PetriNetTransition transition) throws CompilationException {
+  public void removeTransition(PetriNetTransition transition) throws CompilationException {
     if (!transitions.values().contains(transition)) {
       throw new CompilationException(getClass(), "Cannot remove a transition that is not part of"
           + "the petrinet");
     }
     Set<PetriNetEdge> toRemove = new HashSet<>(transition.getIncoming());
+
     toRemove.addAll(transition.getOutgoing());
+
+    toRemove = toRemove.stream().filter(edges::containsValue).collect(Collectors.toSet());
 
     for (PetriNetEdge edge : toRemove) {
       removeEdge(edge);
@@ -182,7 +187,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
   public void removeEdge(PetriNetEdge edge) throws CompilationException {
     if (!edges.values().contains(edge)) {
       throw new CompilationException(getClass(), "Cannot remove an edge that is not part of"
-          + "the petrinet");
+          + " the petrinet");
     }
     if (edge.getTo() instanceof PetriNetTransition) {
       ((PetriNetTransition) edge.getTo()).getIncoming().remove(edge);

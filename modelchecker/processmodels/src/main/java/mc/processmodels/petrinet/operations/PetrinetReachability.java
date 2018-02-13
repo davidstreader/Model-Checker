@@ -11,6 +11,7 @@ import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
 
 public final class PetrinetReachability {
+
   public static Petrinet removeUnreachableStates(Petrinet petri) throws CompilationException {
     petri = petri.copy();
     Stack<Set<PetriNetPlace>> toDo = new Stack<>();
@@ -22,14 +23,15 @@ public final class PetrinetReachability {
 
     while (!toDo.isEmpty()) {
       Set<PetriNetPlace> currentMarking = toDo.pop();
-
       visitedPlaces.addAll(currentMarking);
 
       if (previouslyVisitedPlaces.contains(currentMarking)) {
         continue;
       }
 
-
+      System.out.println("MARKING: ");
+      System.out.println(currentMarking);
+      System.out.println(post(currentMarking));
       Set<PetriNetTransition> satisfiedPostTransitions = satisfiedTransitions(currentMarking);
 
       for (PetriNetTransition transition : satisfiedPostTransitions) {
@@ -46,7 +48,7 @@ public final class PetrinetReachability {
             .map(PetriNetPlace.class::cast)
             .collect(Collectors.toList()));
 
-        if (!visitedPlaces.contains(newMarking)) {
+        if (!previouslyVisitedPlaces.contains(newMarking)) {
           toDo.add(newMarking);
         }
       }
@@ -61,7 +63,7 @@ public final class PetrinetReachability {
       petri.removePlace(p);
     }
     for (PetriNetTransition t : transitionsToRemove) {
-      petri.removeTransititon(t);
+      petri.removeTransition(t);
     }
     return petri;
   }

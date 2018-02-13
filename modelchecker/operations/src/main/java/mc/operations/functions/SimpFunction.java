@@ -15,6 +15,7 @@ import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.automata.util.ColouringUtil;
 import mc.processmodels.petrinet.Petrinet;
+import mc.processmodels.petrinet.operations.PetrinetSimp;
 
 public class SimpFunction implements IProcessFunction {
   private static final int BASE_COLOUR = 1;
@@ -110,6 +111,7 @@ public class SimpFunction implements IProcessFunction {
    */
   @Override
   public Petrinet compose(String id, Set<String> flags, Context context, Petrinet... petrinets) throws CompilationException {
-    return null;
+    assert petrinets.length == 1;
+    return PetrinetSimp.simplify(petrinets[0].copy());
   }
 }

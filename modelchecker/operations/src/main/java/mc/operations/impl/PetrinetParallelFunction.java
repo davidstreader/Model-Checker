@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import lombok.SneakyThrows;
 import mc.Constant;
 import mc.exceptions.CompilationException;
@@ -94,10 +93,10 @@ public class PetrinetParallelFunction {
   private static void setupSynchronisedActions(Petrinet p1, Petrinet p2, Petrinet comp) {
     for (String action : synchronisedActions) {
 
-      Set<PetriNetTransition> p1Pair = new HashSet<>(p1.getAlphabet().get(action)).stream()
+      Set<PetriNetTransition> p1Pair = p1.getAlphabet().get(action).stream()
           .map(t -> petriTransMap.get(p1).get(t)).collect(Collectors.toSet());
 
-      Set<PetriNetTransition> p2Pair = new HashSet<>(p2.getAlphabet().get(action)).stream()
+      Set<PetriNetTransition> p2Pair = p2.getAlphabet().get(action).stream()
           .map(t -> petriTransMap.get(p2).get(t)).collect(Collectors.toSet());
 
       for (PetriNetTransition t1 : p1Pair) {
@@ -122,13 +121,11 @@ public class PetrinetParallelFunction {
           for(PetriNetEdge inE : incomingEdges) {
             comp.addEdge(newTrans, (PetriNetPlace) inE.getFrom(), inE.getOwners());
           }
-
-
         }
       }
 
       for (PetriNetTransition oldTrans : Iterables.concat(p1Pair, p2Pair)) {
-        comp.removeTransititon(oldTrans);
+        comp.removeTransition(oldTrans);
       }
 
     }
