@@ -13,6 +13,7 @@ import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.automata.operations.AutomataReachability;
 import mc.processmodels.petrinet.Petrinet;
+import mc.processmodels.petrinet.operations.PetrinetReachability;
 
 public class PruneFunction implements IProcessFunction {
   /**
@@ -116,7 +117,9 @@ public class PruneFunction implements IProcessFunction {
    * @throws CompilationException when the function fails
    */
   @Override
-  public Petrinet compose(String id, Set<String> flags, Context context, Petrinet... petrinets) throws CompilationException {
-    return null;
+  public Petrinet compose(String id, Set<String> flags, Context context, Petrinet... petrinets)
+      throws CompilationException {
+    assert petrinets.length == 1;
+    return PetrinetReachability.removeUnreachableStates(petrinets[0]);
   }
 }

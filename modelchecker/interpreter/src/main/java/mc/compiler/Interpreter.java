@@ -32,8 +32,10 @@ public class Interpreter {
   private AutomatonInterpreter automatonInterpreter = new AutomatonInterpreter();
   private PetrinetInterpreter petrinetInterpreter = new PetrinetInterpreter();
 
-  public Map<String, ProcessModel> interpret(AbstractSyntaxTree ast, LocalCompiler localCompiler,
-                                             BlockingQueue<Object> messageQueue, Context context)
+  public Map<String, ProcessModel> interpret(AbstractSyntaxTree ast,
+                                            // LocalCompiler localCompiler,
+                                             BlockingQueue<Object> messageQueue,
+                                             Context context)
       throws CompilationException, InterruptedException {
 
     Map<String, ProcessModel> processMap = new LinkedHashMap<>();
@@ -52,7 +54,10 @@ public class Interpreter {
       }
 
       if (process.getType().contains("petrinet")) {
-        ProcessModel modelPetri = petrinetInterpreter.interpret(process, processMap, localCompiler, context);
+        ProcessModel modelPetri = petrinetInterpreter.interpret(process,
+                    processMap,
+                //    localCompiler,
+                    context);
         modelPetri.setLocation(process.getLocation());
         if (model == null) { // If the model is not comprised of multiple types
           model = modelPetri;
@@ -64,8 +69,10 @@ public class Interpreter {
 
       if (process.getType().contains("forcedautomata")) {
 
-        ProcessModel modelAut = automatonInterpreter.interpret(process, processMap,
-            localCompiler, context);
+        ProcessModel modelAut = automatonInterpreter.interpret(process,
+             processMap,
+         //   localCompiler,
+              context);
 
         modelAut.setLocation(process.getLocation());
         if (model == null) { // If the model is not comprised of multiple types
@@ -83,7 +90,10 @@ public class Interpreter {
               (Petrinet) ((MultiProcessModel) model)
                   .getProcess(ProcessType.PETRINET), markingToNode, nodeToMarking);
         } else {
-          modelAut = automatonInterpreter.interpret(process, processMap, localCompiler, context);
+          modelAut = automatonInterpreter.interpret(process,
+                 processMap,
+             //    localCompiler,
+                 context);
         }
 
         modelAut.setLocation(process.getLocation());
@@ -106,8 +116,11 @@ public class Interpreter {
 
   }
 
-  public ProcessModel interpret(String processModelType, ASTNode astNode, String identifer,
-                                Map<String, ProcessModel> processMap, Context context)
+  public ProcessModel interpret(String processModelType,
+                                ASTNode astNode,
+                                String identifer,
+                                Map<String, ProcessModel> processMap,
+                                Context context)
       throws CompilationException, InterruptedException {
     ProcessModel model;
     switch (processModelType) {

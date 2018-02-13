@@ -19,6 +19,8 @@ import java.util.Set;
 import java.util.Stack;
 import mc.Constant;
 import mc.compiler.Guard;
+//import mc.compiler.LocalCompiler;
+
 import mc.compiler.LocalCompiler;
 import mc.compiler.ast.ASTNode;
 import mc.compiler.ast.ChoiceNode;
@@ -68,12 +70,12 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
 
   public ProcessModel interpret(ProcessNode processNode,
                                 Map<String, ProcessModel> processMap,
-                                LocalCompiler compiler,
+                               // LocalCompiler compiler,
                                 Context context)
     throws CompilationException, InterruptedException {
     reset();
     this.context = context;
-    this.compiler = compiler;
+    //this.compiler = compiler;
     this.variableList = new HashSet<>();
     this.processMap = processMap;
     String identifier = processNode.getIdentifier();
@@ -99,8 +101,11 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
       processHiding(automaton, processNode.getHiding());
     }
 
+  automaton = labelAutomaton(automaton);
+    System.out.println("automaton "+ automaton.getId()+ " built");
+    System.out.println(automaton.toString());
 
-    return labelAutomaton(automaton);
+    return automaton;
   }
 
   public ProcessModel interpret(ASTNode astNode,
@@ -121,22 +126,29 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     return labelAutomaton(automaton);
   }
 
-  private void interpretProcess(ASTNode astNode, String identifier) throws CompilationException, InterruptedException {
+  /**
+   * saves  automata - models - to the processStack
+   * @param astNode
+   * @param identifier
+   * @throws CompilationException
+   * @throws InterruptedException
+   */
+  private void interpretProcess(ASTNode astNode, String identifier)
+        throws CompilationException, InterruptedException {
     if (astNode instanceof IdentifierNode) {
-      String reference = ((IdentifierNode) astNode).getIdentifier();
-      if (this.variables != null) {
 
-        ProcessNode node = (ProcessNode) compiler.getProcessNodeMap().get(reference).copy();
-        //Use the current variable set when recompiling.
-        node.setVariables(this.variables);
-        node = compiler.compile(node, context);
-        ProcessModel model = new AutomatonInterpreter().interpret(node, this.processMap, compiler, context);
+      String reference = ((IdentifierNode) astNode).getIdentifier();
+          ProcessModel model = processMap.get(reference);
         processStack.push(model);
-      } else {
-        ProcessModel model = processMap.get(reference);
-        processStack.push(model);
-      }
+
     } else if (astNode instanceof ProcessRootNode) {
+      System.out.println("WHY ProcessRootNode Node "+ astNode.toString());
+     /* try {
+        System.in.read();
+      }catch (Exception e) {
+        System.out.println("Read ERROR "+e.toString());
+      }*/
+     // automata already on stact so pop it off  relabel and push back on stack
       ProcessRootNode root = (ProcessRootNode) astNode;
 
       interpretProcess(root.getProcess(), identifier);
@@ -167,6 +179,14 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     }
   }
 
+  /**
+   * Recursivly interpret AST nodes
+   * @param astNode
+   * @param automaton
+   * @param currentNode
+   * @throws CompilationException
+   * @throws InterruptedException
+   */
   private void interpretNode(ASTNode astNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException {
     if (Thread.currentThread().isInterrupted()) {
       throw new InterruptedException();

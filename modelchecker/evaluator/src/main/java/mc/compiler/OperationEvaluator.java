@@ -33,7 +33,8 @@ public class OperationEvaluator {
   static Map<String, Class<? extends IOperationInfixFunction>> operationsMap = new HashMap<>();
 
   public List<OperationResult> evaluateOperations(List<OperationNode> operations,
-                                                  Map<String, ProcessModel> processMap, Interpreter interpreter,
+                                                  Map<String, ProcessModel> processMap,
+                                                  Interpreter interpreter,
                                                   String code, Context context)
       throws CompilationException, InterruptedException {
     reset();
@@ -72,6 +73,8 @@ public class OperationEvaluator {
         result = !result;
       }
       results.add(new OperationResult(operation.getFirstProcess(), operation.getSecondProcess(), firstId, secondId, operation.getOperation(), null, operation.isNegated(), result, ""));
+
+      System.out.println("operation "+ firstId+" "+operation.getOperation()+" "+secondId);
     }
     return results;
   }

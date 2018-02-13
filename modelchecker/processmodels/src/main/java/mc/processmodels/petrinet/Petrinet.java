@@ -4,7 +4,6 @@ package mc.processmodels.petrinet;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -16,7 +15,6 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-
 import lombok.Data;
 import lombok.SneakyThrows;
 import mc.compiler.ast.HidingNode;
@@ -171,7 +169,10 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
             throw new CompilationException(getClass(), "Cannot remove a transition that is not part of"
                     + "the petrinet");
         }
-        for (PetriNetEdge edge : Iterables.concat(transition.getIncoming(), transition.getOutgoing())) {
+        Set<PetriNetEdge> toRemove = new HashSet<>(transition.getIncoming());
+        toRemove.addAll(transition.getOutgoing());
+
+        for (PetriNetEdge edge : toRemove) {
             removeEdge(edge);
         }
         transitions.remove(transition.getId());
@@ -220,15 +221,15 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
         }
 
         for (PetriNetEdge edge : petriToAdd.getEdges().values()) {
-            Set<String> currentEdgeOwners = new HashSet<>();
+            Set<String> postFixed = new HashSet<>();
 
-            currentEdgeOwners.addAll(edge.getOwners());
-            owners.addAll(currentEdgeOwners);
+            postFixed.addAll(edge.getOwners());
+            owners.addAll(postFixed);
 
             if (edge.getFrom() instanceof PetriNetPlace) {
-                addEdge(transitionMap.get(edge.getTo()), placeMap.get(edge.getFrom()), currentEdgeOwners);
+                addEdge(transitionMap.get(edge.getTo()), placeMap.get(edge.getFrom()), postFixed);
             } else {
-                addEdge(placeMap.get(edge.getTo()), transitionMap.get(edge.getFrom()), currentEdgeOwners);
+                addEdge(placeMap.get(edge.getTo()), transitionMap.get(edge.getFrom()), postFixed);
             }
         }
         return roots;
@@ -248,7 +249,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
                 PetriNetPlace newPlace = addPlace();
                 products.put(place1, newPlace);
                 products.put(place2, newPlace);
-                newPlace.intersectionOf(place1, place2);
+                newPlace.intersectionOf(place1,place2);
                 if (place1.isStart() || place2.isStart()) {
                     newPlace.setStart(true);
                 }
@@ -271,7 +272,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
         }
 
         products.values().stream().filter(PetriNetPlace::isStart).forEach(this::addRoot);
-
+        System.out.println(roots);
         return new HashSet<>(products.values());
     }
 
