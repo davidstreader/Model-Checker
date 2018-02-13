@@ -1,0 +1,11 @@
+processes{
+A = a->STOP.
+B = b->STOP.
+
+C = (A||B).
+}
+
+automata C.
+
+
+
