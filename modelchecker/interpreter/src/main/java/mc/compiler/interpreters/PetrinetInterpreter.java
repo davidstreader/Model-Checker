@@ -14,7 +14,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.Stack;
 import mc.Constant;
-import mc.compiler.LocalCompiler;
 import mc.compiler.ast.ASTNode;
 import mc.compiler.ast.ChoiceNode;
 import mc.compiler.ast.CompositeNode;
@@ -55,7 +54,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
   Map<String, Set<PetriNetPlace>> referenceMap = new HashMap<>();
   Map<String, ProcessModel> processMap = new HashMap<>();
   Stack<Petrinet> processStack = new Stack<>();
-  LocalCompiler compiler;
+  //LocalCompiler compiler;
   Set<String> variableList;
   int subProcessCount = 0;
   VariableSetNode variables;
@@ -307,6 +306,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
         .compose(petri.getId() + ".fn", func.getFlags(), context, petris);
 
     addPetrinet(currentPlace, processed, petri);
+
   }
 
   private void addPetrinet(PetriNetPlace currentPlace, Petrinet petrinetToAdd, Petrinet master)

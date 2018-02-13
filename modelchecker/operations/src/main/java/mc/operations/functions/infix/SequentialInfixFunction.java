@@ -1,11 +1,8 @@
 package mc.operations.functions.infix;
 
 import com.google.common.collect.Multimap;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+
+import java.util.*;
 import java.util.stream.Collectors;
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessInfixFunction;
@@ -54,6 +51,8 @@ public class SequentialInfixFunction implements IProcessInfixFunction {
     Map<String, AutomatonNode> automata1nodes = new HashMap<>();
     Map<String, AutomatonNode> automata2nodes = new HashMap<>();
 
+
+
     //copy node1 nodes across
     AutomataReachability.removeUnreachableNodes(automaton1).getNodes().forEach(node -> {
       try {
@@ -93,6 +92,11 @@ public class SequentialInfixFunction implements IProcessInfixFunction {
         // for every stop node of automata1, get the edges that go into it
         // replace it with the start node of automata2
         for (AutomatonNode stopNode : stopNodes) {
+          if(stopNode.getIncomingEdges().size() == 0) {// If automaton 1 is only a stop node
+            newNode.setStartNode(true);
+          }
+
+
           for (AutomatonEdge edge : stopNode.getIncomingEdges()) {
             AutomatonNode origin = edge.getFrom();
             try {
@@ -129,8 +133,34 @@ public class SequentialInfixFunction implements IProcessInfixFunction {
   public Petrinet compose(String id, Petrinet petrinet1, Petrinet petrinet2)
       throws CompilationException {
 
+
+    if (petrinet1.getOwners().contains(Petrinet.DEFAULT_OWNER)) {
+      petrinet1.getOwners().clear();
+
+      for (String eId : petrinet1.getEdges().keySet()) {
+        Set<String> owner = new HashSet<>();
+        owner.add(petrinet1.getId());
+        petrinet1.getEdges().get(eId).setOwners(owner);
+      }
+    }
+
+    if (petrinet2.getOwners().contains(Petrinet.DEFAULT_OWNER)) {
+      petrinet2.getOwners().clear();
+
+      for (String eId : petrinet2.getEdges().keySet()) {
+        Set<String> owner = new HashSet<>();
+        owner.add(petrinet2.getId());
+        petrinet2.getEdges().get(eId).setOwners(owner);
+      }
+    }
+
     //create an empty petrinet
     Petrinet composition = new Petrinet(id, false);
+
+    composition.getOwners().clear();
+
+    composition.getOwners().addAll(petrinet1.getOwners());
+    composition.getOwners().addAll(petrinet2.getOwners());
 
     //add the first petrinet to the sequential composition
     //add the start nodes of petrinet1 as start nodes for the composition petrinet

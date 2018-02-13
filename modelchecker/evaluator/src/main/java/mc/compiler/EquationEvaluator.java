@@ -112,7 +112,6 @@ public class EquationEvaluator {
         exceptionInformation = e.getClass().getSimpleName();
       }
 
-
       //Using the name of the operation, this finds the appropriate function to use in operations/src/main/java/mc/operations/
       String currentOperation = operation.getOperation().toLowerCase();
 

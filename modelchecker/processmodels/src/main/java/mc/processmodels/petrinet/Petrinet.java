@@ -132,8 +132,6 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     from.getOutgoing().add(edge);
 
     edges.put(id, edge);
-
-
     return edge;
   }
 
@@ -172,11 +170,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
           + "the petrinet");
     }
     Set<PetriNetEdge> toRemove = new HashSet<>(transition.getIncoming());
-
     toRemove.addAll(transition.getOutgoing());
-
-    toRemove = toRemove.stream().filter(edges::containsValue).collect(Collectors.toSet());
-
     for (PetriNetEdge edge : toRemove) {
       removeEdge(edge);
     }
@@ -187,7 +181,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
   public void removeEdge(PetriNetEdge edge) throws CompilationException {
     if (!edges.values().contains(edge)) {
       throw new CompilationException(getClass(), "Cannot remove an edge that is not part of"
-          + " the petrinet");
+          + "the petrinet");
     }
     if (edge.getTo() instanceof PetriNetTransition) {
       ((PetriNetTransition) edge.getTo()).getIncoming().remove(edge);
@@ -254,7 +248,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
         PetriNetPlace newPlace = addPlace();
         products.put(place1, newPlace);
         products.put(place2, newPlace);
-        newPlace.intersectionOf(place1,place2);
+        newPlace.intersectionOf(place1, place2);
         if (place1.isStart() || place2.isStart()) {
           newPlace.setStart(true);
         }

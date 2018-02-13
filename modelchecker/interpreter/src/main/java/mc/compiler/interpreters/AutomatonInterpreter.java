@@ -21,7 +21,6 @@ import mc.Constant;
 import mc.compiler.Guard;
 //import mc.compiler.LocalCompiler;
 
-import mc.compiler.LocalCompiler;
 import mc.compiler.ast.ASTNode;
 import mc.compiler.ast.ChoiceNode;
 import mc.compiler.ast.CompositeNode;
@@ -43,7 +42,6 @@ import mc.processmodels.ProcessModel;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.automata.operations.AutomataLabeller;
-import mc.util.expr.Expression;
 
 /**
  * Builds automata from AST assumes
@@ -58,7 +56,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
   private Multimap<String, AutomatonNode> referenceMap;
   private Stack<ProcessModel> processStack;
   private VariableSetNode variables;
-  private LocalCompiler compiler;
+  //private LocalCompiler compiler;
   private Set<String> variableList;
   private Context context;
   private int subProcessCount = 0;
@@ -308,6 +306,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
   }
 
   private void interpretComposite(CompositeNode astCompositeNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException {
+
     interpretProcess(astCompositeNode.getFirstProcess(), automaton.getId() + ".pc1");
     interpretProcess(astCompositeNode.getSecondProcess(), automaton.getId() + ".pc2");
 
@@ -315,7 +314,9 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     ProcessModel model1 = processStack.pop();
 
     model1 = model1.getProcessType().convertTo(AUTOMATA, model1);
+
     model2 = model2.getProcessType().convertTo(AUTOMATA, model2);
+
 
     if (!(model1 instanceof Automaton) || !(model2 instanceof Automaton)) {
       if (model1 == null || model2 == null){ // They were not set to be constructed as anything
@@ -328,6 +329,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
 
     Automaton comp = instantiateClass(infixFunctions.get(astCompositeNode.getOperation()))
         .compose(model1.getId() + astCompositeNode.getOperation() + model2.getId(), (Automaton) model1, (Automaton) model2);
+
 
     Set<AutomatonNode> oldRoot = automaton.addAutomaton(comp);
     subProcessStartNodes = automaton.combineNondeterministic(currentNode, oldRoot, context);

@@ -1,0 +1,15 @@
+processes {
+A = t->STOP||r->STOP.
+
+B = x->STOP.
+
+C = B=>A.
+}
+
+automata A,B,C.
+
+operation {
+A !~ B.
+}
+
+
