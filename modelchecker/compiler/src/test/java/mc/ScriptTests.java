@@ -1,6 +1,8 @@
 package mc;
 
 import com.microsoft.z3.Context;
+import com.sun.corba.se.spi.orb.Operation;
+import mc.compiler.CompilationObject;
 import mc.compiler.OperationResult;
 import mc.exceptions.CompilationException;
 import mc.plugins.PluginManager;
@@ -35,8 +37,12 @@ public class ScriptTests {
         if (file.getName().endsWith("results.txt") || !file.getName().endsWith("txt")) return;
         mc.compiler.Compiler compiler = new mc.compiler.Compiler();
         List<OperationResult> operations = Collections.emptyList();
+        List<OperationResult> equations = Collections.emptyList();
         try (Context context = Expression.mkCtx()) {
-            operations = compiler.compile(String.join("\n", Files.readAllLines(file.toPath())),context,new PrintQueue()).getOperationResults();
+            CompilationObject outputResults = compiler.compile(String.join("\n", Files.readAllLines(file.toPath())),context,new PrintQueue());
+
+            operations = outputResults.getOperationResults();
+            equations = outputResults.getEquationResults();
             if (shouldFail(file.getName())) {
                 fail("Test script: " + file.getName() + " should not compile!");
             }
@@ -59,6 +65,17 @@ public class ScriptTests {
                 }
             }
 
+        }
+
+        if(equations.size() > 0) {
+            for(OperationResult result : equations) {
+                String op = result.getProcess1().getIdent() + ' ' + result.getOperation() + ' ' + result.getProcess2().getIdent();
+                if (shouldFailOperations(file.getName())) {
+                    assertTrue("Equation '" + op + "' should fail", Objects.equals(result.getResult(), "false"));
+                } else {
+                    assertTrue("Equation '" + op + "' should pass", Objects.equals(result.getResult(), "true"));
+                }
+            }
         }
     }
     @Parameterized.Parameters(name = "{0}")
