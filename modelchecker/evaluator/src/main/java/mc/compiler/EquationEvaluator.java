@@ -106,7 +106,6 @@ public class EquationEvaluator {
       try {
 
         createdAutomaton.add((Automaton) interpreter.interpret("automata", operation.getFirstProcess(), getNextEquationId(), idMap, z3Context));
-        System.out.println(createdAutomaton);
         createdAutomaton.add((Automaton) interpreter.interpret("automata", operation.getSecondProcess(), getNextEquationId(), idMap, z3Context));
       } catch (Exception e) {
         e.printStackTrace();
