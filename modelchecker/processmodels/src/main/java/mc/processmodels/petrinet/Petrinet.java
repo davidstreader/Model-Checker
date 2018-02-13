@@ -123,14 +123,15 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     if (!transitions.containsValue(from) || !places.containsValue(to)) {
       throw new CompilationException(getClass(), "Cannot add an edge to an object not inside the petrinet");
     }
+    if (to == null || from == null) {
+      throw new CompilationException(getClass(), "Either " + to + " or " + from + "are null");
+    }
 
-    String id = this.id + ":" + edgeId++;
+    String id = this.id + ":e:" + edgeId++;
     PetriNetEdge edge = new PetriNetEdge(id, to, from);
     edge.setOwners(owner);
-
     to.getIncoming().add(edge);
     from.getOutgoing().add(edge);
-
     edges.put(id, edge);
     return edge;
   }
@@ -171,6 +172,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     }
     Set<PetriNetEdge> toRemove = new HashSet<>(transition.getIncoming());
     toRemove.addAll(transition.getOutgoing());
+
     for (PetriNetEdge edge : toRemove) {
       removeEdge(edge);
     }
@@ -190,7 +192,6 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
       ((PetriNetPlace) edge.getTo()).getIncoming().remove(edge);
       ((PetriNetTransition) edge.getFrom()).getOutgoing().remove(edge);
     }
-
     edges.remove(edge.getId());
   }
 
@@ -234,7 +235,8 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     return roots;
   }
 
-  public Set<PetriNetPlace> gluePlaces(Set<PetriNetPlace> set1, Set<PetriNetPlace> set2)
+  public Set<PetriNetPlace> gluePlaces
+      (Set<PetriNetPlace> set1, Set<PetriNetPlace> set2)
       throws CompilationException {
     if (!StreamSupport.stream(Iterables.concat(set1, set2).spliterator(), false)
         .allMatch(places::containsValue)) {
