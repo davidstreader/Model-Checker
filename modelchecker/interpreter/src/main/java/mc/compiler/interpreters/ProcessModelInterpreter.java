@@ -1,7 +1,6 @@
 package mc.compiler.interpreters;
 
 import com.microsoft.z3.Context;
-import mc.compiler.LocalCompiler;
 import mc.compiler.ast.ASTNode;
 import mc.compiler.ast.ProcessNode;
 import mc.exceptions.CompilationException;

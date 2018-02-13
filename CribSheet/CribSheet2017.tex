@@ -1701,10 +1701,13 @@ hiding index \verb|x| &\verb|R = R1${x}|&  builds symbolic automata \\ \hline
 
 \vspace{2ex}
 \begin{tabular}{|c|c|l|}\hline
-equality   & $A\sim B$  & A and B are bisimular\\ \hline
-inequality   & $A!\sim B$  & A and B are not bisimular\\ \hline
-equality   & $A\# B$  & A and B are complete trace equivalent\\ \hline
-inequality   & $A!\# B$  & A and B are not complete trace equivalent\\ \hline
+Bisimular   & $\sf A\sim B$  & A and B are bisimular\\ \hline
+    & $\sf A !\sim B$  &  not bisimular\\ \hline
+Complete Tr   & $\sf A\# B$  & A and B are complete trace equivalent\\ \hline
+     & $\sf A !\# B$  &  not complete trace equivalent\\ \hline 
+     
+Failure   & $\sf A* B$  & A and B are failure equivalent\\ \hline
+       & $\sf A !* B$  &  not failure equivalent\\ \hline \hline
 fair divergence  & & remove all $\tau$ loops \\ \hline
 not fair divergence  & & replace $\tau$ loops  with deadlock\\ \hline
 \end{tabular}

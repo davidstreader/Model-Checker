@@ -21,7 +21,6 @@ import mc.Constant;
 import mc.compiler.Guard;
 //import mc.compiler.LocalCompiler;
 
-import mc.compiler.LocalCompiler;
 import mc.compiler.ast.ASTNode;
 import mc.compiler.ast.ChoiceNode;
 import mc.compiler.ast.CompositeNode;
@@ -43,7 +42,6 @@ import mc.processmodels.ProcessModel;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.automata.operations.AutomataLabeller;
-import mc.util.expr.Expression;
 
 /**
  * Builds automata from AST assumes
@@ -58,7 +56,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
   private Multimap<String, AutomatonNode> referenceMap;
   private Stack<ProcessModel> processStack;
   private VariableSetNode variables;
-  private LocalCompiler compiler;
+  //private LocalCompiler compiler;
   private Set<String> variableList;
   private Context context;
   private int subProcessCount = 0;
