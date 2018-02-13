@@ -595,6 +595,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
   }
 
   public Set<AutomatonNode> addAutomaton(Automaton automaton) throws CompilationException {
+
     int num = (int) Math.floor(Math.random() * 100);
     boolean hasRoot = !(this.root == null || this.root.size() == 0);
 

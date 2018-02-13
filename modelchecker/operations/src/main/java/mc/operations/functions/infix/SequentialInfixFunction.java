@@ -51,6 +51,8 @@ public class SequentialInfixFunction implements IProcessInfixFunction {
     Map<String, AutomatonNode> automata1nodes = new HashMap<>();
     Map<String, AutomatonNode> automata2nodes = new HashMap<>();
 
+
+
     //copy node1 nodes across
     AutomataReachability.removeUnreachableNodes(automaton1).getNodes().forEach(node -> {
       try {
@@ -90,6 +92,11 @@ public class SequentialInfixFunction implements IProcessInfixFunction {
         // for every stop node of automata1, get the edges that go into it
         // replace it with the start node of automata2
         for (AutomatonNode stopNode : stopNodes) {
+          if(stopNode.getIncomingEdges().size() == 0) {// If automaton 1 is only a stop node
+            newNode.setStartNode(true);
+          }
+
+
           for (AutomatonEdge edge : stopNode.getIncomingEdges()) {
             AutomatonNode origin = edge.getFrom();
             try {
