@@ -4,16 +4,11 @@ package mc.processmodels.petrinet;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import lombok.Data;
 import lombok.SneakyThrows;
@@ -247,7 +242,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
         Multimap<PetriNetPlace, PetriNetPlace> products = ArrayListMultimap.create();
         for (PetriNetPlace place1 : set1) {
             for (PetriNetPlace place2 : set2) {
-                PetriNetPlace newPlace = addPlace();
+                PetriNetPlace newPlace = this.addPlace();
                 products.put(place1, newPlace);
                 products.put(place2, newPlace);
                 newPlace.intersectionOf(place1, place2);
@@ -257,23 +252,75 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
             }
         }
 
+
+
         for (PetriNetPlace place : Iterables.concat(set1, set2)) {
             for (PetriNetPlace product : products.get(place)) {
                 for (PetriNetEdge edge : place.getIncoming()) {
-                    product.getIncoming().add(addEdge(product, (PetriNetTransition) edge.getFrom(), edge.getOwners()));
+                    product.getIncoming().add(addEdge(product, (PetriNetTransition) edge.getFrom(), new HashSet<>(edge.getOwners())));
                 }
                 for (PetriNetEdge edge : place.getOutgoing()) {
-                    product.getOutgoing().add(addEdge((PetriNetTransition) edge.getTo(), product, edge.getOwners()));
+
+                    product.getOutgoing().add(addEdge((PetriNetTransition) edge.getTo(), product, new HashSet<>(edge.getOwners())));
                 }
             }
         }
+
+        Map<Set<String>, Set<String>> combinationsTable = new HashMap<>();
+        Set<PetriNetPlace> petrinetPlaces = new HashSet<>(products.values());
+        for(PetriNetPlace currentPlace : petrinetPlaces) {
+            Set<String> currentCombination = new HashSet<>();
+            for(PetriNetEdge inEdge : currentPlace.getIncoming()) {
+              Set<String> newInEdgeOwners = new HashSet<>();
+              for(PetriNetEdge outEdge : currentPlace.getOutgoing()) {
+
+
+                newInEdgeOwners.addAll(outEdge.getOwners());
+
+                Set<String> newOutEdgeOwners = new HashSet<>( outEdge.getOwners());
+                newOutEdgeOwners.addAll(inEdge.getOwners());
+
+                outEdge.setOwners(newOutEdgeOwners);
+              }
+
+                newInEdgeOwners.addAll( inEdge.getOwners() );
+                inEdge.setOwners(newInEdgeOwners);
+
+                currentCombination.addAll(newInEdgeOwners);
+
+                owners.addAll(newInEdgeOwners);
+            }
+
+            System.out.println("Current combo: " + currentCombination);
+
+            for(String owner : currentCombination) {
+                Set<String> ownerSet = new HashSet<>(Collections.singleton(owner));
+                if(!combinationsTable.containsKey(ownerSet)) {
+                    combinationsTable.put(ownerSet, new HashSet<>());
+                }
+
+                combinationsTable.get(ownerSet).addAll(currentCombination);
+            }
+
+
+
+        }
+
+        System.out.println(combinationsTable.toString());
+
+        this.getEdges().values().stream().filter(edge -> combinationsTable.containsKey(edge.getOwners())).forEach(edge -> {
+            edge.setOwners(combinationsTable.get(new HashSet<>(edge.getOwners())));
+        });
+
+
+
 
         for (PetriNetPlace place : Iterables.concat(set1, set2)) {
             removePlace(place);
         }
 
         products.values().stream().filter(PetriNetPlace::isStart).forEach(this::addRoot);
-        System.out.println(roots);
+
         return new HashSet<>(products.values());
     }
 
