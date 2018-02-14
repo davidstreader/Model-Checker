@@ -319,7 +319,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
 
     Set<PetriNetPlace> places = master.addPetrinet(petrinetToAdd);
 
-    Set<PetriNetPlace> newStart = master.gluePlaces(Collections.singleton(currentPlace), places);
+    Set<PetriNetPlace> newStart = master.gluePlaces(Collections.singleton(currentPlace), places, petrinetToAdd.getOwners());
 
     places.stream()
         .map(PetriNetPlace::getReferences)

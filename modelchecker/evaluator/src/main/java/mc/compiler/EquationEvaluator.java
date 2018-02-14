@@ -109,11 +109,12 @@ public class EquationEvaluator {
         createdAutomaton.add((Automaton) interpreter.interpret("automata", operation.getSecondProcess(), getNextEquationId(), idMap, z3Context));
       } catch (Exception e) {
         e.printStackTrace();
-        exceptionInformation = e.getClass().getSimpleName();
+        exceptionInformation = e.getClass().getName();
       }
 
       //Using the name of the operation, this finds the appropriate function to use in operations/src/main/java/mc/operations/
       String currentOperation = operation.getOperation().toLowerCase();
+
 
       boolean result = exceptionInformation.length() == 0 && instantiateClass(operationsMap.get(currentOperation)).evaluate(createdAutomaton);
 
@@ -129,7 +130,7 @@ public class EquationEvaluator {
 
 
         if(exceptionInformation.length() > 0)
-            failOutput += exceptionInformation + " ";
+            failOutput += exceptionInformation + "\n";
 
         for (String key : idMap.keySet()) {
           failOutput += "$" + key + "=" + idMap.get(key).getId() + ", ";
@@ -139,7 +140,7 @@ public class EquationEvaluator {
       }
 
 
-      if (status.failCount > 2) {
+      if (status.failCount > 0) {
         //If we've failed too many tests;
         return failedEquations;
       }

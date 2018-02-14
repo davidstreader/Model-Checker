@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import lombok.Data;
 import lombok.SneakyThrows;
@@ -201,6 +202,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
         Map<PetriNetPlace, PetriNetPlace> placeMap = new HashMap<>();
         Map<PetriNetTransition, PetriNetTransition> transitionMap = new HashMap<>();
         owners.remove(Petrinet.DEFAULT_OWNER);
+        owners.add(this.getId());
 
 
         for (PetriNetPlace place : petriToAdd.getPlaces().values()) {
@@ -221,6 +223,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
         }
 
         for (PetriNetEdge edge : petriToAdd.getEdges().values()) {
+            System.out.println("Edge("+petriToAdd.getId()+"): " + edge);
             Set<String> postFixed = new HashSet<>();
 
             postFixed.addAll(edge.getOwners());
@@ -232,10 +235,11 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
                 addEdge(placeMap.get(edge.getTo()), transitionMap.get(edge.getFrom()), postFixed);
             }
         }
+
         return roots;
     }
 
-    public Set<PetriNetPlace> gluePlaces(Set<PetriNetPlace> set1, Set<PetriNetPlace> set2)
+    public Set<PetriNetPlace> gluePlaces(Set<PetriNetPlace> set1, Set<PetriNetPlace> set2, Set<String> petrinetOwners)
             throws CompilationException {
         if (!StreamSupport.stream(Iterables.concat(set1, set2).spliterator(), false)
                 .allMatch(places::containsValue)) {
@@ -246,7 +250,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
         Multimap<PetriNetPlace, PetriNetPlace> products = ArrayListMultimap.create();
         for (PetriNetPlace place1 : set1) {
             for (PetriNetPlace place2 : set2) {
-                PetriNetPlace newPlace = addPlace();
+                PetriNetPlace newPlace = this.addPlace();
                 products.put(place1, newPlace);
                 products.put(place2, newPlace);
                 newPlace.intersectionOf(place1,place2);
@@ -256,8 +260,10 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
             }
         }
 
+
         for (PetriNetPlace place : Iterables.concat(set1, set2)) {
             for (PetriNetPlace product : products.get(place)) {
+
                 for (PetriNetEdge edge : place.getIncoming()) {
                     product.getIncoming().add(addEdge(product, (PetriNetTransition) edge.getFrom(), edge.getOwners()));
                 }
@@ -267,12 +273,28 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
             }
         }
 
+        /*
+        Set<PetriNetPlace> productNodes = new HashSet<>(products.values());
+        for(PetriNetPlace product : productNodes) {
+
+            for(PetriNetEdge oe : product.getOutgoing()) {
+                for(PetriNetEdge ie : product.getIncoming()) {
+
+
+                }
+            }
+
+
+        }
+        */
+
+
         for (PetriNetPlace place : Iterables.concat(set1, set2)) {
             removePlace(place);
         }
 
         products.values().stream().filter(PetriNetPlace::isStart).forEach(this::addRoot);
-        System.out.println(roots);
+
         return new HashSet<>(products.values());
     }
 

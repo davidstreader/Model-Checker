@@ -5,6 +5,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
+
+import mc.exceptions.CompilationException;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
@@ -22,9 +24,9 @@ public class AutomataReachability {
    * @param automaton -- the @code{Automaton} to find unreachable @code{AutomatonNodes} for
    * @return -- the processed @code{Automaton}
    */
-  public static Automaton removeUnreachableNodes(Automaton automaton) {
+  public static Automaton removeUnreachableNodes(Automaton automaton) throws CompilationException{
 
-
+    automaton = automaton.copy();
     Set<String> visited = new HashSet<>();
     Stack<AutomatonNode> fringe = new Stack<>();
     automaton.getRoot().forEach(fringe::push);
@@ -61,6 +63,7 @@ public class AutomataReachability {
     automaton.getNodes().stream()
         .filter(node -> !visited.contains(node.getId()))
         .forEach(automaton::removeNode);
+
 
     // make sure all terminal nodes are marked as terminal nodes
     automaton.getNodes().stream()

@@ -54,8 +54,7 @@ public class Compiler {
     List<Token> codeInput = lexer.tokenise(code);
     AbstractSyntaxTree ast = parser.parse(codeInput, z3Context);
 
-    System.out.println("AST after parsing ");
-    System.out.println(ast.toString());
+
 
     return compile(ast, code,
             z3Context, messageQueue);
@@ -96,13 +95,9 @@ public class Compiler {
      *  size chosen  hence symbolic processes must eb built prior to expansion!
      */
 
-    System.out.println("AST after expanding");
-    System.out.println(ast.processesToString());
+
 
     ast = replacer.replaceReferences(ast, messageQueue);
-
-    System.out.println("AST after replacer");
-    System.out.println(ast.processesToString());
 
     System.out.println("Hierarchy of processes: " + ast.getProcessHierarchy().getDependencies());
 

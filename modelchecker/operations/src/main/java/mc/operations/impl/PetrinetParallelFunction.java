@@ -32,7 +32,7 @@ public class PetrinetParallelFunction {
         owners.clear();
       }
 
-      owners.add(p1.getId());
+      p1.getEdges().get(eId).getOwners().add(p1.getId());
     }
 
     for(String eId : p2.getEdges().keySet()) {
@@ -41,8 +41,9 @@ public class PetrinetParallelFunction {
         owners.clear();
       }
 
-      owners.add(p2.getId());
+      p2.getEdges().get(eId).getOwners().add(p2.getId());
     }
+
 
 
     setupActions(p1, p2);
@@ -55,6 +56,8 @@ public class PetrinetParallelFunction {
     addPetrinet(composition,p2).forEach(composition::addRoot);
 
     setupSynchronisedActions(p1, p2, composition);
+
+
     return composition;
   }
 

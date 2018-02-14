@@ -732,7 +732,7 @@ public class UserInterfaceController implements Initializable {
                     compilerOutputDisplay.appendText("\tFailing Combinations: \n");
 
                     for (String failure : result.getFailures())
-                        compilerOutputDisplay.appendText("\t\t" + failure + "\n");
+                        compilerOutputDisplay.appendText("\t\t" + failure + " " );
                 }
 
                 compilerOutputDisplay.appendText("\tSimulations passed: " + result.getExtra() + "\n");

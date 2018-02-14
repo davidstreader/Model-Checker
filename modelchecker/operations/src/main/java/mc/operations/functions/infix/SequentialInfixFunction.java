@@ -12,6 +12,7 @@ import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.automata.operations.AutomataReachability;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetPlace;
+import sun.nio.cs.ext.COMPOUND_TEXT;
 
 public class SequentialInfixFunction implements IProcessInfixFunction {
   /**
@@ -43,8 +44,9 @@ public class SequentialInfixFunction implements IProcessInfixFunction {
    * @return the resulting automaton of the operation
    */
   @Override
-  public Automaton compose(String id, Automaton automaton1, Automaton automaton2) {
+  public Automaton compose(String id, Automaton automaton1, Automaton automaton2) throws CompilationException {
     Automaton sequence = new Automaton(id, !Automaton.CONSTRUCT_ROOT);
+
     Multimap<String,String> setOfOwners = AutomatonEdge.createIntersection(automaton1, automaton2);
 
     //store a map to the nodes so id can be ignored
@@ -52,11 +54,11 @@ public class SequentialInfixFunction implements IProcessInfixFunction {
     Map<String, AutomatonNode> automata2nodes = new HashMap<>();
 
 
-
     //copy node1 nodes across
     AutomataReachability.removeUnreachableNodes(automaton1).getNodes().forEach(node -> {
       try {
         AutomatonNode newNode = sequence.addNode();
+
         newNode.copyProperties(node);
         automata1nodes.put(node.getId(), newNode);
 
@@ -69,7 +71,10 @@ public class SequentialInfixFunction implements IProcessInfixFunction {
       }
     });
 
-    copyAutomataEdges(sequence, automaton1, automata1nodes,setOfOwners);
+
+
+    copyAutomataEdges(sequence, automaton1, automata1nodes, setOfOwners);
+
 
     //get the stop nodes such that they can be replaced
     Collection<AutomatonNode> stopNodes = sequence.getNodes().stream()
@@ -178,7 +183,7 @@ public class SequentialInfixFunction implements IProcessInfixFunction {
     //add the second petrinet
     Set<PetriNetPlace> startOfP2 = composition.addPetrinet(petrinet2);
     //merge the end of petri1 with the start of petri2
-    composition.gluePlaces(stopNodes, startOfP2);
+    composition.gluePlaces(stopNodes, startOfP2, petrinet2.getOwners());
 
     return composition;
   }
@@ -192,18 +197,17 @@ public class SequentialInfixFunction implements IProcessInfixFunction {
    */
   private void copyAutomataEdges(Automaton writeAutomaton, Automaton readAutomaton,
                                  Map<String, AutomatonNode> nodeMap,
-                                 Multimap<String,String> edgeOwnersMap) {
-    readAutomaton.getEdges().forEach(e -> {
-      try {
-        AutomatonNode fromNode = nodeMap.get(e.getFrom().getId());
-        AutomatonNode toNode = nodeMap.get(e.getTo().getId());
+                                 Multimap<String,String> edgeOwnersMap) throws CompilationException{
+
+
+    for(AutomatonEdge readEdge : readAutomaton.getEdges()) {
+      AutomatonNode fromNode = nodeMap.get(readEdge.getFrom().getId());
+      AutomatonNode toNode = nodeMap.get(readEdge.getTo().getId());
         writeAutomaton.addOwnersToEdge(
-            writeAutomaton.addEdge(e.getLabel(), fromNode, toNode, e.getGuard(),
-                false), getEdgeOwnersFromProduct(e.getOwnerLocation(),edgeOwnersMap));
-      } catch (CompilationException e1) {
-        e1.printStackTrace();
-      }
-    });
+                writeAutomaton.addEdge(readEdge.getLabel(), fromNode, toNode, readEdge.getGuard(), false),
+                getEdgeOwnersFromProduct(readEdge.getOwnerLocation(), edgeOwnersMap)
+        );
+    }
   }
 
   private Set<String> getEdgeOwnersFromProduct(Set<String> edgeOwners,

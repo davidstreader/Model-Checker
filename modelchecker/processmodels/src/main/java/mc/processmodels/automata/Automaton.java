@@ -444,6 +444,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     }
 
     if (to == null) {
+      System.out.println(from);
       throw new CompilationException(getClass(),
           "Unable to add the specified edge as the destination was null.", this.getLocation());
     }

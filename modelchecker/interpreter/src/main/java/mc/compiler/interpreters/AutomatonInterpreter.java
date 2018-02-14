@@ -100,8 +100,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     }
 
   automaton = labelAutomaton(automaton);
-    System.out.println("automaton "+ automaton.getId()+ " built");
-    System.out.println(automaton.toString());
+
 
     return automaton;
   }
@@ -140,7 +139,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         processStack.push(model);
 
     } else if (astNode instanceof ProcessRootNode) {
-      System.out.println("WHY ProcessRootNode Node "+ astNode.toString());
+
      /* try {
         System.in.read();
       }catch (Exception e) {
