@@ -1,11 +1,8 @@
 package mc.operations.impl;
 
 import com.google.common.collect.Iterables;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+
+import java.util.*;
 import java.util.stream.Collectors;
 import lombok.SneakyThrows;
 import mc.Constant;
@@ -110,11 +107,11 @@ public class PetrinetParallelFunction {
         for (PetriNetTransition t2 : p2Pair) {
 
 
-          Set<PetriNetEdge> outgoingEdges = new HashSet<>();
+          Set<PetriNetEdge> outgoingEdges = new LinkedHashSet<>();
           outgoingEdges.addAll(t1.getOutgoing());
           outgoingEdges.addAll(t2.getOutgoing());
 
-          Set<PetriNetEdge> incomingEdges = new HashSet<>();
+          Set<PetriNetEdge> incomingEdges = new LinkedHashSet<>();
           incomingEdges.addAll(t1.getIncoming());
           incomingEdges.addAll(t2.getIncoming());
 

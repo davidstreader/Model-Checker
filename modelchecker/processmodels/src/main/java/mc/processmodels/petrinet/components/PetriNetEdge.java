@@ -7,15 +7,14 @@ import lombok.Getter;
 import mc.processmodels.ProcessModelObject;
 import mc.processmodels.petrinet.Petrinet;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class PetriNetEdge extends ProcessModelObject {
 
 
-  private Set<String> owners = new HashSet<>();
+  private Set<String> owners = new LinkedHashSet<>();
 
   private ProcessModelObject from;
 
@@ -37,7 +36,7 @@ public class PetriNetEdge extends ProcessModelObject {
   }
 
   public void addOwner(String ownerName) {
-    owners.add(ownerName);
+     owners.add(ownerName);
   }
 
   public void removeOwner(String name) {

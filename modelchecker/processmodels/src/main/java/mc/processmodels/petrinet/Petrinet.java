@@ -257,27 +257,27 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
         for (PetriNetPlace place : Iterables.concat(set1, set2)) {
             for (PetriNetPlace product : products.get(place)) {
                 for (PetriNetEdge edge : place.getIncoming()) {
-                    product.getIncoming().add(addEdge(product, (PetriNetTransition) edge.getFrom(), new HashSet<>(edge.getOwners())));
+                    product.getIncoming().add(addEdge(product, (PetriNetTransition) edge.getFrom(), new LinkedHashSet<>(edge.getOwners())));
                 }
                 for (PetriNetEdge edge : place.getOutgoing()) {
 
-                    product.getOutgoing().add(addEdge((PetriNetTransition) edge.getTo(), product, new HashSet<>(edge.getOwners())));
+                    product.getOutgoing().add(addEdge((PetriNetTransition) edge.getTo(), product, new LinkedHashSet<>(edge.getOwners())));
                 }
             }
         }
 
         Map<Set<String>, Set<String>> combinationsTable = new HashMap<>();
-        Set<PetriNetPlace> petrinetPlaces = new HashSet<>(products.values());
+        Set<PetriNetPlace> petrinetPlaces = new LinkedHashSet<>(products.values());
         for(PetriNetPlace currentPlace : petrinetPlaces) {
-            Set<String> currentCombination = new HashSet<>();
+            Set<String> currentCombination = new LinkedHashSet<>();
             for(PetriNetEdge inEdge : currentPlace.getIncoming()) {
-              Set<String> newInEdgeOwners = new HashSet<>();
+              Set<String> newInEdgeOwners = new LinkedHashSet<>();
               for(PetriNetEdge outEdge : currentPlace.getOutgoing()) {
 
 
                 newInEdgeOwners.addAll(outEdge.getOwners());
 
-                Set<String> newOutEdgeOwners = new HashSet<>( outEdge.getOwners());
+                Set<String> newOutEdgeOwners = new LinkedHashSet<>( outEdge.getOwners());
                 newOutEdgeOwners.addAll(inEdge.getOwners());
 
                 outEdge.setOwners(newOutEdgeOwners);
@@ -291,12 +291,11 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
                 owners.addAll(newInEdgeOwners);
             }
 
-            System.out.println("Current combo: " + currentCombination);
 
             for(String owner : currentCombination) {
-                Set<String> ownerSet = new HashSet<>(Collections.singleton(owner));
+                Set<String> ownerSet = new LinkedHashSet<>(Collections.singleton(owner));
                 if(!combinationsTable.containsKey(ownerSet)) {
-                    combinationsTable.put(ownerSet, new HashSet<>());
+                    combinationsTable.put(ownerSet, new LinkedHashSet<>());
                 }
 
                 combinationsTable.get(ownerSet).addAll(currentCombination);
@@ -306,10 +305,8 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
 
         }
 
-        System.out.println(combinationsTable.toString());
-
         this.getEdges().values().stream().filter(edge -> combinationsTable.containsKey(edge.getOwners())).forEach(edge -> {
-            edge.setOwners(combinationsTable.get(new HashSet<>(edge.getOwners())));
+            edge.setOwners(combinationsTable.get(new LinkedHashSet<>(edge.getOwners())));
         });
 
 
