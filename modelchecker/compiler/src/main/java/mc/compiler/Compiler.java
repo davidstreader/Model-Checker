@@ -96,10 +96,10 @@ public class Compiler {
      */
 
 
-
     ast = replacer.replaceReferences(ast, messageQueue);
 
-    System.out.println("Hierarchy of processes: " + ast.getProcessHierarchy().getDependencies());
+
+//    System.out.println("Hierarchy of processes: " + ast.getProcessHierarchy().getDependencies());
 
     List<String> processesToRemoveFromDisplay = new ArrayList<>();
     for (String processesName : processNodeMap.keySet()) {
@@ -119,7 +119,7 @@ public class Compiler {
         //new LocalCompiler(processNodeMap, expander, replacer, messageQueue),
         messageQueue, z3Context);
 
-    System.out.println("after operation interpretation");
+//    System.out.println("after operation interpretation");
 
     List<OperationResult> opResults = evaluator.evaluateOperations(ast.getOperations(), processMap,
         interpreter, code, z3Context);

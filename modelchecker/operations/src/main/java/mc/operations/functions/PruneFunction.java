@@ -120,6 +120,6 @@ public class PruneFunction implements IProcessFunction {
   public Petrinet compose(String id, Set<String> flags, Context context, Petrinet... petrinets)
       throws CompilationException {
     assert petrinets.length == 1;
-    return PetrinetReachability.removeUnreachableStates(petrinets[0]);
+    return PetrinetReachability.removeUnreachableStates(petrinets[0].copy());
   }
 }

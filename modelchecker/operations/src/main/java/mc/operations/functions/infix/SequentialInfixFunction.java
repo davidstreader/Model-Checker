@@ -183,7 +183,7 @@ public class SequentialInfixFunction implements IProcessInfixFunction {
     //add the second petrinet
     Set<PetriNetPlace> startOfP2 = composition.addPetrinet(petrinet2);
     //merge the end of petri1 with the start of petri2
-    composition.gluePlaces(stopNodes, startOfP2, petrinet2.getOwners());
+    composition.gluePlaces(stopNodes, startOfP2);
 
     return composition;
   }

@@ -17,7 +17,9 @@ import mc.processmodels.Mapping;
 import mc.processmodels.MultiProcessModel;
 import mc.processmodels.ProcessModel;
 import mc.processmodels.ProcessType;
+import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonNode;
+import mc.processmodels.conversion.OwnersRule;
 import mc.processmodels.conversion.TokenRule;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetPlace;
@@ -69,7 +71,7 @@ public class Interpreter {
 
       if (process.getType().contains("forcedautomata")) {
 
-        ProcessModel modelAut = automatonInterpreter.interpret(process,
+        Automaton modelAut = (Automaton) automatonInterpreter.interpret(process,
              processMap,
          //   localCompiler,
               context);
@@ -79,6 +81,7 @@ public class Interpreter {
           model = modelAut;
         } else {
           ((MultiProcessModel) model).addProcess(modelAut);
+          ((MultiProcessModel) model).addProcess(OwnersRule.ownersRule(modelAut));
         }
 
       } else if (process.getType().contains("automata")) {

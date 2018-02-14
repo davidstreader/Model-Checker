@@ -75,7 +75,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
 
     interpretProcess(processNode.getProcess(), identifier);
 
-    Petrinet petrinet = ((Petrinet) processStack.pop()).copy();
+    Petrinet petrinet = processStack.pop().copy();
 
     if (!petrinet.getId().equalsIgnoreCase(processNode.getIdentifier())) {
       petrinet.setId(processNode.getIdentifier());
@@ -319,7 +319,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
 
     Set<PetriNetPlace> places = master.addPetrinet(petrinetToAdd);
 
-    Set<PetriNetPlace> newStart = master.gluePlaces(Collections.singleton(currentPlace), places, petrinetToAdd.getOwners());
+    Set<PetriNetPlace> newStart = master.gluePlaces(Collections.singleton(currentPlace), places);
 
     places.stream()
         .map(PetriNetPlace::getReferences)
