@@ -5,22 +5,33 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Collectors;
 import lombok.Builder;
+import lombok.SneakyThrows;
 import mc.exceptions.CompilationException;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
+import mc.processmodels.automata.util.OwnersRuleColouring;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
 
 public class OwnersRule {
 
-  public static Petrinet ownersRule(Automaton a) throws CompilationException {
-
+  /**
+   * This converts a deterministic automata to a petrinet.
+   *
+   * TODO: Make this conversion work for NFA
+   * @param a The automaton to be converted
+   * @return a petrinet representation fo the automaton
+   */
+  @SneakyThrows( {CompilationException.class})
+  public static Petrinet ownersRule(Automaton a) {
+    a = OwnersRuleColouring.colour(a);
     Petrinet petri = new Petrinet(a.getId(), false);
 
     //Create the separate "tracks" for each owner.
@@ -54,6 +65,18 @@ public class OwnersRule {
       for (AutomatonEdge edge : outEdges) {
         String label = edge.getLabel();
         Set<String> owners = edge.getOwnerLocation();
+
+        boolean transitionExists = owners.stream()
+            .map(loc.currentMarking::get)
+            .filter(Objects::nonNull)
+            .map(PetriNetPlace::post)
+            .allMatch(set ->
+                set.stream().map(PetriNetTransition::getLabel).anyMatch(l -> l.equals(label))
+            );
+
+        if (transitionExists) {
+          continue;
+        }
         PetriNetTransition transition = petri.addTransition(label);
         Set<PetriNetPlace> ownersToTransition = owners.stream()
             .map(loc.currentMarking::get)
@@ -65,17 +88,17 @@ public class OwnersRule {
 
         if (visitedAutomataNodes.contains(edge.getTo())) {
           for (PetriNetPlace outPlace : locationCorolation.get(edge.getTo())) {
-            petri.addEdge(outPlace,transition,owners);
+            petri.addEdge(outPlace, transition, owners);
           }
           continue;
         }
 
-        Map<String,PetriNetPlace> outPlaces = new HashMap<>();
-        owners.forEach(o -> outPlaces.put(o,petri.addPlace()));
+        Map<String, PetriNetPlace> outPlaces = new HashMap<>();
+        owners.forEach(o -> outPlaces.put(o, petri.addPlace()));
 
 
         for (Map.Entry<String, PetriNetPlace> outPlace : outPlaces.entrySet()) {
-          petri.addEdge(outPlace.getValue(),transition, Collections.singleton(outPlace.getKey()));
+          petri.addEdge(outPlace.getValue(), transition, Collections.singleton(outPlace.getKey()));
         }
 
         //new Token

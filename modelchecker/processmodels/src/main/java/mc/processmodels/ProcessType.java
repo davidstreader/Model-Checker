@@ -1,11 +1,13 @@
 package mc.processmodels;
 
+import java.security.acl.Owner;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 import mc.exceptions.CompilationException;
 import mc.processmodels.automata.Automaton;
+import mc.processmodels.conversion.OwnersRule;
 import mc.processmodels.conversion.TokenRule;
 import mc.processmodels.petrinet.Petrinet;
 
@@ -54,6 +56,7 @@ public enum ProcessType {
    */
   private static void init() {
     PETRINET_CONVERSIONS.put(AUTOMATA, TokenRule::tokenRule); // For inline construction of automaton
+    AUTOMATA_CONVERSIONS.put(AUTOMATA, OwnersRule::ownersRule);
     MULTIPROCESS_CONVERSIONS.put(AUTOMATA, p -> p.getProcess(AUTOMATA));
     MULTIPROCESS_CONVERSIONS.put(PETRINET, p -> p.getProcess(PETRINET));
 
