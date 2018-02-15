@@ -31,7 +31,7 @@ public class OwnersRule {
    * @param a The automaton to be converted
    * @return a petrinet representation fo the automaton
    */
-  @SneakyThrows( {CompilationException.class})
+  @SneakyThrows({CompilationException.class})
   public static Petrinet ownersRule(Automaton a) {
     a = OwnersRuleColouring.colour(a);
     Petrinet petri = new Petrinet(a.getId(), false);
@@ -72,23 +72,52 @@ public class OwnersRule {
           .distinct()
           .collect(Collectors.toSet());
 
+      edge:
       for (AutomatonEdge edge : outEdges) {
         String label = edge.getLabel();
         Set<String> owners = edge.getOwnerLocation();
 
-        boolean transitionExists = owners.stream()
+        List<Set<PetriNetTransition>> children = owners.stream()
             //get the positions this transition is coming from
             .map(loc.currentMarking::get)
             .filter(Objects::nonNull)
             //get any children of these post positions
             .map(PetriNetPlace::post)
             //ensure that each of the children have a transition with the same label
+            .collect(Collectors.toList());
+
+        //this is the rough check whether there is an existing transition of the same name
+        boolean transitionExists = !children.isEmpty() && children.stream()
             .allMatch(set ->
                 set.stream().map(PetriNetTransition::getLabel).anyMatch(l -> l.equals(label))
             );
 
         if (transitionExists) {
-          continue;
+          //check for a transition in common
+          Set<PetriNetTransition> commonTransitions = new HashSet<>(children.get(0));
+          for (Set<PetriNetTransition> t : children) {
+            commonTransitions.retainAll(t);
+          }
+
+          for (PetriNetTransition t : commonTransitions) {
+            //if one of the transitions in common is the correct transition
+            if (t.getLabel().equals(label)) {
+              HashMap<String, PetriNetPlace> newMarking = new HashMap<>(loc.currentMarking);
+
+              t.getOutgoing().forEach(e ->
+                  e.getOwners().forEach(o -> newMarking.put(o,(PetriNetPlace)e.getTo()))
+              );
+
+              //add the new position to the stack to iterate through
+              fringe.push(Location.builder()
+                  .currentMarking(newMarking)
+                  .automatonLocation(Collections.singleton(edge.getTo()))
+                  .build());
+
+              //break out of the loop for this edge
+              continue edge;
+            }
+          }
         }
         PetriNetTransition transition = petri.addTransition(label);
 
