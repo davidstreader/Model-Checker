@@ -1014,10 +1014,7 @@ public class Parser {
         return new TerminalNode("STOP", token.getLocation());
       }
 
-      // only other form of terminal is error so we can assume that the token is an error token
-      ActionLabelNode deadlock = new ActionLabelNode(Constant.DEADLOCK, token.getLocation());
-      TerminalNode terminal = new TerminalNode("ERROR", token.getLocation());
-      return new SequenceNode(deadlock, terminal, token.getLocation());
+      return new TerminalNode("ERROR", token.getLocation());
     }
 
     throw constructException("expecting to parse a terminal but received \"" + token.toString() + "\"", token.getLocation());

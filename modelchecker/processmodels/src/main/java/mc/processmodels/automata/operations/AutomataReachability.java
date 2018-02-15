@@ -68,7 +68,7 @@ public class AutomataReachability {
     // make sure all terminal nodes are marked as terminal nodes
     automaton.getNodes().stream()
         .filter(node -> node.getOutgoingEdges().size() == 0 && !node.isTerminal())
-        .forEach(node -> node.setTerminal("STOP"));
+        .forEach(node -> node.setTerminal("ERROR"));
 
 
     return automaton;
