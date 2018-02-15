@@ -45,7 +45,7 @@ public class Interpreter {
     List<ProcessNode> processes = ast.getProcesses();
     for (ProcessNode process : processes) {
 
-      System.out.print("\nBuilding " + process.getType() + " " + process.getIdentifier() + "...");
+      //System.out.print("\nBuilding " + process.getType() + " " + process.getIdentifier() + "...");
       ProcessModel model = null;
       if (process.getType().size() == 0) {
         continue;

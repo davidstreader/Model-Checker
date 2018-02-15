@@ -82,6 +82,8 @@ public class Compiler {
       processNodeMap.put(node.getIdentifier(), (ProcessNode) node.copy());
       dependencyMap.put(node.getIdentifier(), node);
     }
+
+    //System.out.println("Before Expanding "+ast.toString());
 /*
    Expand the non hidden variables (indexes) and return an ast
    NOTE changes the ast in undefined way BUT this is required for the replacer to work
@@ -95,7 +97,7 @@ public class Compiler {
      *  size chosen  hence symbolic processes must eb built prior to expansion!
      */
 
-
+    //System.out.println("After Expanding "+ast.toString());
     ast = replacer.replaceReferences(ast, messageQueue);
 
 
@@ -119,7 +121,8 @@ public class Compiler {
         //new LocalCompiler(processNodeMap, expander, replacer, messageQueue),
         messageQueue, z3Context);
 
-//    System.out.println("after operation interpretation");
+    System.out.println("after operation interpretation");
+
 
     List<OperationResult> opResults = evaluator.evaluateOperations(ast.getOperations(), processMap,
         interpreter, code, z3Context);

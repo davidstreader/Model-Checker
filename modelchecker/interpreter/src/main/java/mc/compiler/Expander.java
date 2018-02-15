@@ -278,10 +278,15 @@ public class Expander {
     ASTNode process1 = expand(astNode.getFirstProcess(), variableMap, context);
     ASTNode process2 = expand(astNode.getSecondProcess(), variableMap, context);
 
-    // check if either one of the branches is empty
-    if (process1 instanceof EmptyNode || process1 instanceof TerminalNode) {
+    // check if either one of the branches is empty  Terminal is not empty!
+  /*  if (process1 instanceof EmptyNode || process1 instanceof TerminalNode) {
       return process2;
     } else if (process2 instanceof EmptyNode || process2 instanceof TerminalNode) {
+      return process1;
+    }*/
+    if (process1 instanceof EmptyNode) {
+      return process2;
+    } else if (process2 instanceof EmptyNode ) {
       return process1;
     }
 
@@ -295,9 +300,9 @@ public class Expander {
     ASTNode process2 = expand(astNode.getSecondProcess(), variableMap, context);
 
     // check if either one of the branches is empty
-    if (process1 instanceof EmptyNode || process1 instanceof TerminalNode) {
+    if (process1 instanceof EmptyNode ) {
       return process2;
-    } else if (process2 instanceof EmptyNode || process2 instanceof TerminalNode) {
+    } else if (process2 instanceof EmptyNode ) {
       return process1;
     }
 
