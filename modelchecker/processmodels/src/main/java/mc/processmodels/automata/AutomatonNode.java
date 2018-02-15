@@ -54,7 +54,6 @@ public class AutomatonNode extends ProcessModelObject implements Comparable<Auto
   @Setter
   private Map<String, Object> variables = new HashMap<>();
 
-
   public AutomatonNode(String id) {
     super(id, "node");
     this.label = null;
