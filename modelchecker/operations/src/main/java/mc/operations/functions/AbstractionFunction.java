@@ -3,11 +3,8 @@ package mc.operations.functions;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.microsoft.z3.Context;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+
+import java.util.*;
 import java.util.stream.Collectors;
 import mc.Constant;
 import mc.compiler.Guard;
@@ -17,6 +14,9 @@ import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.petrinet.Petrinet;
+import mc.processmodels.petrinet.components.PetriNetEdge;
+import mc.processmodels.petrinet.components.PetriNetPlace;
+import mc.processmodels.petrinet.components.PetriNetTransition;
 import mc.util.expr.Expression;
 
 
@@ -417,5 +417,35 @@ public class AbstractionFunction implements IProcessFunction {
   @Override
   public Petrinet compose(String id, Set<String> flags, Context context, Petrinet... petrinets) throws CompilationException {
     return null;
+  }
+
+  private PetriNetTransition mergeTransitions(Petrinet toModify, PetriNetTransition t1, PetriNetTransition t2) throws CompilationException{
+    PetriNetTransition output = toModify.addTransition(t1.getId() + " merge " + t2.getId(), t1.getLabel() + "," + t2.getLabel());
+
+
+    Set<PetriNetPlace> inputPlaces = new HashSet<>(t1.pre());
+    Set<PetriNetPlace> outputPlaces = new HashSet<>(t2.post());
+
+    Set<PetriNetPlace> t2InputPlaces = new HashSet<>(t2.pre());
+
+
+    //If t1 post place isnt one of t2s inputs then add it to output set
+    outputPlaces.addAll(t1.post().stream().filter(postPlace -> !t2InputPlaces.contains(postPlace)).collect(Collectors.toList()));
+
+    t2InputPlaces.removeAll(t1.post());
+
+    inputPlaces.addAll(t2InputPlaces);
+
+
+    for(PetriNetPlace inputPlace : inputPlaces) {
+      toModify.addEdge(output, inputPlace, new HashSet<>(Collections.singleton(Petrinet.DEFAULT_OWNER)));
+    }
+
+    for(PetriNetPlace outputPlace : outputPlaces) {
+      toModify.addEdge(outputPlace, output, new HashSet<>(Collections.singleton(Petrinet.DEFAULT_OWNER)));
+    }
+
+
+    return output;
   }
 }
