@@ -1,6 +1,5 @@
 package mc.processmodels;
 
-import java.security.acl.Owner;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -56,7 +55,7 @@ public enum ProcessType {
    */
   private static void init() {
     PETRINET_CONVERSIONS.put(AUTOMATA, TokenRule::tokenRule); // For inline construction of automaton
-    AUTOMATA_CONVERSIONS.put(AUTOMATA, OwnersRule::ownersRule);
+    AUTOMATA_CONVERSIONS.put(PETRINET, OwnersRule::ownersRule);
     MULTIPROCESS_CONVERSIONS.put(AUTOMATA, p -> p.getProcess(AUTOMATA));
     MULTIPROCESS_CONVERSIONS.put(PETRINET, p -> p.getProcess(PETRINET));
 
@@ -67,6 +66,15 @@ public enum ProcessType {
 
   private Map conversion = null;
   public final Class<? extends ProcessModel> type;
+
+  @SuppressWarnings("unchecked")
+  public Map<ProcessType, Function<? extends ProcessModel, ? extends ProcessModel>> getConversionMap() {
+    if (conversion == null) {
+      init();
+      conversion = conversionsPossible.get(this);
+    }
+    return conversion;
+  }
 
   /**
    * This function returns a process model,

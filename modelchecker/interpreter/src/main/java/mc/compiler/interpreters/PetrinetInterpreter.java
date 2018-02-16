@@ -14,9 +14,11 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.Stack;
 import mc.Constant;
+import mc.compiler.Interpreter;
 import mc.compiler.ast.ASTNode;
 import mc.compiler.ast.ChoiceNode;
 import mc.compiler.ast.CompositeNode;
+import mc.compiler.ast.ConversionNode;
 import mc.compiler.ast.FunctionNode;
 import mc.compiler.ast.HidingNode;
 import mc.compiler.ast.IdentifierNode;
@@ -32,6 +34,7 @@ import mc.exceptions.CompilationException;
 import mc.plugins.IProcessFunction;
 import mc.plugins.IProcessInfixFunction;
 import mc.processmodels.ProcessModel;
+import mc.processmodels.ProcessType;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
@@ -51,9 +54,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
   static Map<String, Class<? extends IProcessInfixFunction>> infixFunctions = new HashMap<>();
   static Map<String, Class<? extends IProcessFunction>> functions = new HashMap<>();
   Context context;
-  Map<String, Set<PetriNetPlace>> referenceMap = new HashMap<>();
-  Map<String, ProcessModel> processMap = new HashMap<>();
-  Stack<Petrinet> processStack = new Stack<>();
+  Map<String, Set<PetriNetPlace>> referenceMap = new HashMap<>(); Map<String, ProcessModel> processMap = new HashMap<>(); Stack<Petrinet> processStack = new Stack<>();
   //LocalCompiler compiler;
   Set<String> variableList;
   int subProcessCount = 0;
@@ -62,7 +63,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
   @Override
   public ProcessModel interpret(ProcessNode processNode,
                                 Map<String, ProcessModel> processMap,
-                              //  LocalCompiler localCompiler,
+                                //  LocalCompiler localCompiler,
                                 Context context)
       throws CompilationException, InterruptedException {
     reset();
@@ -113,7 +114,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     if (astNode instanceof IdentifierNode) {
       String reference = ((IdentifierNode) astNode).getIdentifier();
 
-        processStack.push((Petrinet) processMap.get(reference));
+      processStack.push((Petrinet) processMap.get(reference));
 
       return;
     }
@@ -141,8 +142,11 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
       petrinet.setHiddenVariables(variables.getVariables());
       petrinet.setHiddenVariablesLocation(variables.getLocation());
     }
-
+    if (variableList == null) {
+      variableList = new HashSet<>();
+    }
     petrinet.getVariables().addAll(variableList);
+
     petrinet.setVariablesLocation(astNode.getLocation());
 
     //Interpret Node
@@ -186,9 +190,14 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     }
     if (currentNode instanceof CompositeNode) {
       interpretComposite((CompositeNode) currentNode, petri, currentPlace);
+      return;
     }
     if (currentNode instanceof FunctionNode) {
       interpretFunction((FunctionNode) currentNode, petri, currentPlace);
+      return;
+    }
+    if (currentNode instanceof ConversionNode) {
+      interpretConversion((ConversionNode) currentNode, petri, currentPlace);
     }
 
   }
@@ -309,6 +318,18 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
 
   }
 
+  private void interpretConversion(ConversionNode conv, Petrinet petri,
+                                   PetriNetPlace currentPlace)
+      throws CompilationException, InterruptedException {
+    ProcessType to = ProcessType.valueOf(conv.to.toUpperCase());
+    ProcessType from = ProcessType.valueOf(conv.from.toUpperCase());
+
+    ProcessModel pm = new Interpreter().interpret(conv.from, conv.getProcess(),
+        petri.getId() + ".pc" + subProcessCount++, processMap, context);
+
+    addPetrinet(currentPlace, petri, pm.getProcessType().convertTo(to, pm));
+  }
+
   private void addPetrinet(PetriNetPlace currentPlace, Petrinet petrinetToAdd, Petrinet master)
       throws CompilationException {
     List<String> references = new ArrayList<>();
@@ -316,6 +337,9 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     if (currentPlace.getReferences() != null) {
       references.addAll(currentPlace.getReferences());
     }
+
+    System.out.println(petrinetToAdd);
+    System.out.println("==============");
 
     Set<PetriNetPlace> places = master.addPetrinet(petrinetToAdd);
 
