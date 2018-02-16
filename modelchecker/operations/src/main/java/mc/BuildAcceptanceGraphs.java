@@ -29,13 +29,13 @@ public class BuildAcceptanceGraphs  {
     public AcceptanceGraph composeAG(String id,   Automaton nfa)
             throws CompilationException {
 
-        System.out.println("Starting accept");
+        //System.out.println("Starting accept");
         Map<AutomatonNode, List<Set<String>> > node2AcceptanceSets =
                 new HashMap<AutomatonNode, List<Set<String>> >();
         Map<AutomatonNode, Set<String> > nfanode2ASet = new HashMap<AutomatonNode, Set<String> >();
         Automaton acceptGraph = new Automaton(id, !Automaton.CONSTRUCT_ROOT);
         nfanode2ASet = build_nfanode2ASet(nfa);
-        System.out.println("built nfanode2ASet");
+        //System.out.println("built nfanode2ASet");
 
         Map<Set<String>, List<AutomatonNode>> stateMap = new HashMap<>();
         Map<String, AutomatonNode> nodeMap = new HashMap<>();
@@ -68,7 +68,7 @@ public class BuildAcceptanceGraphs  {
                 }
             }
             node2AcceptanceSets.put(node,acceptance);
-            System.out.println("Adding "+ id.toString()+" "+ acceptance);
+            //System.out.println("Adding "+ id.toString()+" "+ acceptance);
 
             if (!processedRoot) {  // so must be root!
                 acceptGraph.getRoot().clear();
@@ -85,7 +85,7 @@ public class BuildAcceptanceGraphs  {
                 }
                 String nextId = nfa.getId() + constructLabel(stateMap.get(nextStates));
                 //String nextId = constructNodeId(stateMap.get(nextStates), nfa.getId());
-                System.out.println("built "+ nextId.toString());
+                //System.out.println("built "+ nextId.toString());
 // only build new dfa node if it has not already been built
                 if (!nodeMap.containsKey(nextId)) {
                     nodeMap.put(nextId, acceptGraph.addNode());
@@ -103,7 +103,7 @@ public class BuildAcceptanceGraphs  {
         acceptGraph.getNodes().stream()
                 .filter(node -> node.getOutgoingEdges().isEmpty())
                 .forEach(node -> node.setTerminal("STOP"));
-        printnode2AcceptanceSets(node2AcceptanceSets);
+       // printnode2AcceptanceSets(node2AcceptanceSets);
         AcceptanceGraph ag = new AcceptanceGraph(nfa,node2AcceptanceSets);
         ag.setA(acceptGraph);
         ag.setNode2AcceptanceSets(node2AcceptanceSets);
@@ -157,7 +157,7 @@ public class BuildAcceptanceGraphs  {
         Set<String> states = new HashSet<>();
         List<AutomatonNode> nextNodes = new ArrayList<>();
         Set<String> visited = new HashSet<>();
-        System.out.println("starting constructStateSet");
+        //System.out.println("starting constructStateSet");
 
         Stack<AutomatonNode> fringe = new Stack<>();
         nodes.forEach(fringe::push);
@@ -186,7 +186,7 @@ public class BuildAcceptanceGraphs  {
         if (!stateMap.containsKey(states)) {
             stateMap.put(states, nextNodes);
         }
-        System.out.println("ending constructStateSet");
+        //System.out.println("ending constructStateSet");
         return states;
     }
 
@@ -244,6 +244,7 @@ public class BuildAcceptanceGraphs  {
                     collect(Collectors.toSet());
             nfanode2ASet.put(n,as);
            // System.out.println("++ "+n.getLabel()+" "+nfanode2ASet.get(n).toString() );
+
         }
         return nfanode2ASet;
     }

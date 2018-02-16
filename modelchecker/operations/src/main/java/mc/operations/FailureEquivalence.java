@@ -78,9 +78,9 @@ public class FailureEquivalence implements IOperationInfixFunction {
             AcceptanceGraph ag = new AcceptanceGraph ("dfa-"+a.getId(), a);
             //System.out.println("Start ag "+ ag.toString());
             color = ag.colorNodes(cmap, ag.getNode2AcceptanceSets(),color); //reuse of color map essential
-            System.out.println("Just colored "+ ag.getA().toString());
+           // System.out.println("Just colored "+ ag.getA().toString());
 
-            this.printColorMap(cmap);
+          //  this.printColorMap(cmap);
             // System.out.println("Adding "+ ag.getA().getId());
             ags.add(ag);
             for(AutomatonNode nd : ag.getA().getNodes()){
@@ -90,7 +90,7 @@ public class FailureEquivalence implements IOperationInfixFunction {
         }
         // System.out.println("Failure initial color end");
         if (!consistentColor(ags)){return false;};
-        System.out.println("Initial color consistent");
+        //System.out.println("Initial color consistent");
 
 /*
    If the acceptance coloring is not a bisimulation look not further and fail
@@ -178,11 +178,13 @@ public class FailureEquivalence implements IOperationInfixFunction {
    }
    System.out.println(".");
   } */
+
+  
         outerloop:
         for(AutomatonNode n : nodes) {
-            System.out.println("node "+n.getId()+" col "+ n.getColour());
+          //  System.out.println("node "+n.getId()+" col "+ n.getColour());
             List<ColourComponent> cc = cu.constructColouring(n);
-            print_cc(cc);
+           // print_cc(cc);
             for(Integer colKey: colDef.keySet()){
                 if (colDef.get(colKey).equals(cc)) {
                     if (!colKey.equals(n.getColour())) {

@@ -984,13 +984,13 @@ Farm = (Farmer || Workers).
 
 The \verb$Farmer$  process is far from ideal in some regards.
 
-\section{Petri Nets  {\color{red} 2b added 2017}}
-{\color{red}
+\section{Petri Nets }
+
 
 
 What we refer to as a Petri Net is actually an extension of Petri Nets with labels on the  transition.  This appear in the literature under the name of the \emph{Box calculus}. Our definition of parallel composition is not a part of main stream Petri Nets but a part of the Box calculus.
 
-{\color{blue}
+
 \emph{{\bf A Petri Net} is a tuple  $\sf A \triangleq (P_A,S_A,T_A,Arcs_A,\alpha_A,Name_A)$  where:
 \begin{description}
 \item[$\sf P_A$] is the set of places,
@@ -1004,7 +1004,7 @@ $\sf Edges_A\subseteq \{(p,t): p\in P_A, t\in T_A \}  \cup \{(t,p): p\in P_A, t\
 \end{description}
 }
 $\Box$
-}
+
 
 
  \subsection{Appearance}
@@ -1091,19 +1091,12 @@ Simplify the Net  by pruning merging identical Places then by pruning identical 
 
 \subsection{Indexed Petri Nets}
 
-Indexed, specifications can be turned into FSPN in two quite separate ways. For a sequential indexed process $\mathcal{P_I}$ :
-\begin{enumerate}
-\item expand the  index $\mathcal{I}$ converting $\mathcal{P_I}$ into  a sequential FSPN
-\item turn the index $\mathcal{I}$ into a FSPN and the sequential process $\mathcal{P}$  into another  then build, $\mathcal{P}\parallel_n \mathcal{I}$,  net parallel composition of  the process and the index.
-\end{enumerate}
-Both options and be applied to  {\sf PTokenRule} the partial expansion of a net into an automata.
-All options  should result in interleaving equivalent Petri Nets.
+Indexed, specifications can be turned into finite state Petri Nets, FSPN just as they are turned into finite state automata
 
-Can we define Petri Net bisimulation so that:
 
 \[{\sf Petri(\mathcal{A}\parallel \mathcal{B} ) \sim_n  (Petri(\mathcal{A}))\parallel_n Petri(\mathcal{B}))   }\]
 
-\[{\sf Petri(\mathcal{A}\$\{x\}) \sim_n  (Petri(\mathcal{A}))\$\{x\}  \qquad     Petri(abs(\mathcal{A}))\sim_n  abs_n(Petri(\mathcal{A})) }\]
+\[{\sf      Petri(abs(\mathcal{A}))\sim_n  abs_n(Petri(\mathcal{A})) }\]
 
 
 \subsection{Hiding and simplifying  Nets}
@@ -1114,390 +1107,8 @@ Tow options
 \end{enumerate}
 An advantage of using located Automata and Nets is that event refinement can be defined.
 
-}
-\section{ Symbolic Processes  {\color{red} mostly 2b added 2017}}
-Simple process specifications, those with out indexes, are "atomic" specifications that produce atomic automata.   An atomic  automata has atomic transitions with  a single atomic name and  a finite set of  atomic  nodes each   representing  one state.
 
-Indexed process specifications represent processes with variables, the indexes, and may be infinite state. The indexed specifications are expanded to a finite state approximation of the underlying and potentially infinite state automata. They do this using defined bounds such as \verb|const N = 4|.
 
-
-Alternatively we could define symbolic automata, automata with variables.
-The state of  the process, represented by a symbolic automata, is   the pair $(n,\mu)$ where $\mu$ is an  evaluation i.e. a mapping from variables to values and n is a node of the automata.
-
-\[\mu: Var \rightarrow Val\]
-Hence the node of a symbolic transition only tells you part of the state of the process. When a event of a symbolic process is actually executed the state of the process both moves from the pre-node of the transition to the post-node of the transition and the evaluation of the variable changes as defined by the assignment.  Symbolic execution represents a whole set of actual executions.
-
-The symbolic  transitions need  to be annotated  with its name plus a boolean guard and an assignment. Let a transition  ${\sf t1 \triangleq (n1,g1,ev1,a1,m1)}$  be represented as
-\[{\sf n1\xrightarrow{\text{\sf g1,ev1,a1}} m1}.\]
-Both the guards {\sf g1} and assignments {\sf a1} may contain the process variables.  Note symbolic Petri Nets can be built by adding the variables from a process to the places that represent the state of that process.
-
-Our tool takes process specifications $\mathcal{P}$ and,  by default, builds finite state automata {\sf P}. But now we want to prevent the expansion of indexes and build symbolic automata  from the specification ${\sf \mathcal{P}\$\{x\}}$.
-
-The execution of a guarded  event  can only occur when the guard is true  and then the assignments of the transition are applied hence building another evaluation. Two  essential functions needed in the definition of the application of assignments {\sf a}, writen  $\_@{\sf a}$ are:
-\begin{enumerate}
-\item syntactic substitution and
-\item simplification.
-\end{enumerate}
-
-Simplification certainly needs to be out soured to proof services as  many decades of work has gone into developing such algorithms. And doing this allows for the development of theories of specific data types that include both their definition and the proof of rules of inference used in simplification. Essential this provides an extensible proof engine.
-
-Syntactic substitution look easy but  either you need to; hard bake in the language the data types used or out source both  parsing and substitution. \emph{Initially hard bake in integers, lists and sets?}
-
-Reasoning about symbolic processes requires that we can concatenate sequential transitions. This can be achieved using  two basic standard techniques, \emph{symbolic execution} and backward reasoning via \emph{Hoare Logic}. Hoare Logic tells us how to compute the weakest precondition prior to an assignment ${\sf ass}$ of  a post condition ${\sf bg}$ and is written  ${\sf bg@ass}$.  Whereas symbolic execution tell us how to combine the sequential execution of two assignments ${\sf a1}$ and then ${\sf a2}$ into a single assignment that is written ${\sf a1@a_2}$
-
-Let assignment ${\sf ass}$ be a set of assignments all applied in parallel $\{x:=E,y:=F\}$ and let semicolon be used to compose assignments sequentially.
-
-Compute the weakest precondition of an assignment for a known post condition:
-\[ \{P[E/x]\} x:=E \{P\} \]
-In our notation the precondition  $P@\{x:=E\}\triangleq P[E/x]$
-
-Use symbolic execution to remove the sequencing of assignments.
-
-\[ x:=F(x,y); y:=G(x,y)  = \{x:=F(x,y), y:=G(F(x,y),y)\}\]
-
-In our notation $  \{x:=F(x,y)\}@\{y:=G(x,y)\}  \triangleq  \{x:=F(x,y), y:=G(F(x,y),y)\}$
-
-
-\section{ Index freezing   (z3  -  headless Isabelle)}
-
-{\bf Closely related to Petri net Construction and Token Rule.}
-
-The default interpretation, semantics, of an indexed process definition is its finite state expansion using the declared values of the parameters. An alternative interpretation is to not expand some indexes but to leave them as unknown and define symbolic events.
-
-
-\begin{minipage}{0.55\textwidth}
-\begin{verbatim}
-S1 = X[0],
-  X[x:0..N]=(when (x<N) out[x]->X[x+1]|
-              when (x==N) stop->STOP).
-S = S1${x}.
-   \end{verbatim}
- \vspace{-2em}{\color{red}
- \begin{enumerate}
- \item assignment \verb|x:=x+1| is missing
- \item presentation order \emph{guard name assignment}
- \item \verb|2| should be \verb|N| and \verb|$x| should be \verb|x|
- \end{enumerate} }
-\end{minipage}\begin{minipage}{0.4\textwidth}
-\begin{center}\includegraphics[scale=0.2]{VarBug.jpg}\end{center}
-\end{minipage}
-
-
-
-For the parallel composition of indexed processes we will need to $\alpha$ convert index names to prevent name clashes. This can be achieved by profixing an index name with its process name, hence \verb|x| above would become \verb|S1.x|
-
-\vspace{1em} \begin{minipage}{0.55\textwidth}
-\begin{verbatim}
-R1 = input[y:0..N] -> X[y],
-  X[x:0..N] = (when (x<N) out[x] -> X[x+1]|
-              when (x==N) stop ->STOP).
-R = R1${x}.
-T = R1${x,y}.
-S = R1${y}.
-   \end{verbatim}
-
- \vspace{-3em}{\color{red}\begin{enumerate}
-   \item \verb|S = R1${y}|  currently fails to build.
-   \end{enumerate}
-   }
-\end{minipage}
-\begin{minipage}{0.4\textwidth}
-\begin{center}\includegraphics[scale=0.2]{VarBug2.jpg}\end{center}
-\end{minipage}
-
-In the above example both indexes {\sf x} and {\sf y} are needed.
-
-\vspace{1em} \begin{minipage}{0.55\textwidth}
-\begin{verbatim}
-Lift = L[0][0],
-  L[x:0..N][to:0..N] = btnto[i:0..N] -> L[x][i]  |
-       when (x!=to) move ->L[to][to].
-  \end{verbatim}
-
-All three Indexes {\sf x}, {\sf to} and {\sf i}  are needed.
-\end{minipage}
-\begin{minipage}{0.4\textwidth}
-\begin{center}\includegraphics[scale=0.12]{Lix.jpg}\end{center}
-\end{minipage}
-
-
-
-Need a symbolic expansion mapping,  \verb|S2A|  that takes as input a symbolic  automata and returns an atomic automata.
-
-
-
-
-\begin{center}
-\begin{minipage}{0.3\textwidth}
-\begin{verbatim}
-R = R1${x}.
-T = S2A(R{x}).
-\end{verbatim}
-\end{minipage}
-\end{center}
-
-The result of expanding all variables should be the same as building the atomic automata from  scratch, hence \verb|R|$\sim$\verb|T| in above. (Note building from the automata/Petri Net allows interacting with the diagram)
-
-
-
-
-\subsection{Need for index freezing }
-{\color{red}
-
-\begin{minipage}{0.55\textwidth}
-{\bf Take a look at the examples} below.
-
-\begin{verbatim}
-const N = 1
-automata {
-Buf1data = input[i:1..N] -> F[i],
-   F[d:1..N] = output[d] -> Buf1data.
-Buf2a = (a:Buf1data)/{b.move[x:1..N]/a.output[x]}.
-Buf2b = (b:Buf1data)/{b.move[x:1..N]/b.input[x]}.
-
-B2indexed = Buf2a||Buf2b.
-Bu2x = B2indexed${x}.
-}
-   \end{verbatim}
-\end{minipage}\begin{minipage}{0.35\textwidth}
-\begin{center}\includegraphics[scale=0.17]{hideB.jpg}\end{center}
-\end{minipage}
-
-The two place buffer that, in each place can only hold the number 1.
-
-What I do not understand is how \verb|B2indexed| dose not have event  \verb|a.output[1]| but
-\verb|Bu2x = B2indexed${x}.| dose?
-
-
-
-{\bf A more complex example} is:
-
-\begin{minipage}{0.55\textwidth}
-\begin{verbatim}
-const N = 3
-automata {
-Buf1data = input[i:1..N] -> F[i],
-   F[d:1..N] = output[d] -> Buf1data.
-
-Buf2a = (a:Buf1data)/{b.move[x:1..N]/a.output[x]}.
-Buf2b = (b:Buf1data)/{b.move[x:1..N]/b.input[x]}.
-
-Buf2data* = Buf2a||Buf2b.
-Buf2 = simp(abs(Buf2data\{b.move[x:1..N]})).
-//B2 = Buf2${x}.
-B2indexed = (Buf2a||Buf2b)\{b.move[q:1..N]}.
-Temp = B2indexed /{input/a.input[x:1..N],
-                   output/b.output[x:1..N]}.
-BestGuess = simp(abs(Temp)).
-//Bu2x = B2indexed${x}.
-}
-operation {  Bu2x ~ BestGuess.}
-   \end{verbatim}
-\end{minipage}\begin{minipage}{0.4\textwidth}
-\begin{center}\includegraphics[scale=0.15]{BestGuess.jpg}
-
-\includegraphics[scale=0.17]{HideBuf2.jpg}\end{center}
-\end{minipage}
-
-The two place buffer that, in each place can hold a number from $\{1,2,3\}$ is defined and displayed.  It is not as easy to see that it is a buffer as I wild like and if we could \emph{freeze} the data in each place we might have simpler visual representation.
-
-
-This will require some work to achieve.  One tracking  indexes so that we know what indexes exist in a process. For example what indexes are in \verb|Buf2| defined above? Hence what should we write
-
-\verb|B2 = Buf2${x}|
-}
-
-
-
-\subsection{Symbolic 2 Atomic mapping S2A}
-Symbolic execution  is the obvious way  to  map \verb|S2A|  Symbolic Processes  to  Atomic Processes.
-
-\[{\sf S2A(A\$\{x\})\sim  A }\]
-
-State contains  an evaluation of the variables.
-
-
-All you need to do is build a new node for each distinct evaluation reached.
-
- \begin{quote}
- Add  the set of initial evaluations to a "to do list" and repeatedly:
-
- \emph{Remove the top node from the to do list and evaluate the boolean guard of each  symbolic event and those that evaluate to true you apply the assignment to compute the new reachable state. If the new state already exists then add the transition ending at the corresponding  node else add the state.  When  all events of the selected node have been processed either select the next node on the to do list else if the list is empty terminate.  }
- \end{quote}
-
-
-
-
-Reasoning about symbolic systems is problematic as they are infinite state and consequently frequently require a degree of theorem proving. A vast amount of work has gone into both push button theorem proving and interactive theorem proving over the recent years.  Yet push button theorem needs to be a lot stronger and interactive theorem proving a lot easier.
-
-{\bf To code with data structures, such as lists and records,  needs headless Isabelle.}  Initially we will only have Z3 and are restricted to integers.  For data structures  we need rules for rewriting, simplifying, the data structures. These rules constitute a \emph{Theory} of the data structure and as they are heavily reused are defined and stored on file. Thus a procedure should import them  not define them.
-
-
-
-
-\subsection{Symbolic parallel composition $\_\parallel_s\_$}
-The operations defined on atomic processes can be lifted to operations on symbolic processes. We first define \verb|S2A| that maps symbolic process to atomic processes and then lift  the atomic  operation ${\sf Op_a}$ to the symbolic operation ${\sf Op_s}$ so that:
-
-\[{\sf S2A(Op_s(A,B))\sim  Op_a(S2A(A),S2A(B)) }\]
-
-Symbolic parallel composition $\_\parallel_s\_$ is an extension of  atomic parallel composition $\_\parallel\_$ where:
-\begin{enumerate}
-\item the nodes have a union of the indexes, suitably renamed to prevent name clashing
-\item synchronising transitions have guards the conjunction of the component guards and assignments the union of the component assignments.
-\end{enumerate}
-
-
-\subsection{Symbolic abstraction}
-
-
-Let a transition  ${\sf t1 \triangleq (n1,g1,ev1,a1,m1)}$  be represented as   ${\sf n1\xrightarrow{\text{\sf g1,ev1,a1}} m1}$. We may refer to {\sf n1}  as ${\sf t1_{pre}}$,  to {\sf m1}  as ${\sf t1_{post}}$ and refer to {\sf e1}  as ${\sf t1_{en}}$.
-
-We need to  compute $\sf t1: t2$  the transition representing the execution of $\sf t1$ followed by $\sf t2$.  The execution of two transitions one after the other only occurs if the port node of the first transition is the pre-node of the second transition.
-
-%$ \AroL{1}{2222222}{3}{4} $
-
-% $\AroL{\sf n}{\text{g1,ev1,a1}}{m}{x} $
-
-% ${\sf m\yrightarrow{\text{b2,ev2,a2 }} o}$
-
-\begin{center}\begin{minipage}{0.75\textwidth}
-\inference[$t_1: \tau$:]
-{
-{\sf n\xrightarrow{\text{\sf g1,ev1,a1}} m} \quad  {\sf m\xrightarrow{\text{\sf g2,$\tau$ ,a2 }} p}
-}
-{{\sf n\xRightarrow{\text{$\sf g1\land g_2@a_1,ev1,a1@a_2$}}p }}
-\end{minipage}
-\qquad
-\begin{minipage}{0.75\textwidth}
-\inference[$\tau: t_2$:]
-{
-{\sf n\xrightarrow{\text{\sf g1,$\tau$,a1}} m} \quad  {\sf m\xrightarrow{\text{\sf g2,ev2 ,a2 }} p}
-}
-{{\sf n\xRightarrow{\text{$ \sf g1\land g_2@a_1,ev2,a1@a_2$}}p }}
-\end{minipage}\end{center}
-
-
-The guard ${\sf g2}$ is the post condition to transition ${\sf t_1}$ hence to compute the weakest precondition we need to apply Hoare Logic thus compute ${\sf g_2@a_1}$  which we add as a conjunction to the guard of ${\sf t1}$.  Thus  if ${\sf t1_{pre} = t2_{post}}$   we can add the transition :
-\[t1: t2 = \sf (t1_{pre}, t1_g\land t2_g@t1_a , t1_{en}:t2_{en}, t2_a@t1_a, t2_{post})\]
-but if  ${\sf t1_g\land t2_g@t1_a\neq False}$ then this transition can never be executed and hence can be removed with out effecting the behaviour of the process.
-
-We can construct tests from:
-\[{\sf S2A(abs(P))\sim abs(S2A(P))}\]
-
-
-
-\subsection{Symbolic simplification}
-We certainly want property:
-\[{\sf S2A(simp(P))\sim simp(S2A(P))}\]
-this could certainly be achieved if symbolic bisimulation simply matched transitions $t1$ and $t2$ by
-\[t1_b\Leftrightarrow t2_b \land t1_{en}= t2_{en} \land t1_a\Leftrightarrow t2_a.\]
-It might be possible to further simplify the symbolic automata while preserving the stated property.
-
-
-\section{Symbolic Petri Nets {\color{red} 2b added 2017}}
-
-The symbolic Petri Nets  are an \emph{orthogonal} combination of the symbolic extension to automata and the construction of Petri Nets rather than automata. Thus we have a square with finite automata, finite Petri Nets, symbolic automata and symbolic Petri Nets on the corners. Mappings between adjacent edges  are functions that should preserve the semantics of the processes, be monotonic with respect to refinement and congruent with respect to the operators.
-
-
-
-\begin{center}
-\begin{minipage}{0.4\textwidth}\begin{tikzpicture}
-\coordinate [label=right:{\sf A}] (A) at (3,0);
-\coordinate [label=left:{$\sf Petri(\mathcal{A})$}] (B) at (0,0);
-\coordinate [label=right:{$\sf Symb(\mathcal{A})$}] (C) at (3,2);
-\coordinate [label=left:{$\sf Petri(Symb(\mathcal{A}))$}] (D) at (0,2);
-\draw [line width=0.6mm,<-](A) -- (B) node [midway,above,sloped] {\sf TokenRule};
-\draw [line width=0.6mm,<-](C) -- (D) node [very thick,midway,above,sloped] {\sf TokenRule};
-\draw [line width=0.6mm,<-](A) -- (C) node [midway,right] {\sf S2A};
-\draw [line width=0.6mm,<-](B) -- (D) node [midway,right] {\sf S2A};
-
-\end{tikzpicture}\end{minipage}
-\begin{minipage}{0.4\textwidth}
-\[{\sf S2A(Petri(\mathcal{A}\$\{x\}))\sim  Petri(\mathcal{A}) }\]
-\[{\sf TokenRule(Petri(\mathcal{A}\$\{x\}))\sim  \mathcal{A}\$\{x\}}\]
-\end{minipage}
-\end{center}
-
-Index freezing prevents the building of  finite state approximations of the index and instead builds a symbolic process. The construction ${\sf Symb(\_)}$ freezes all indexes but in the above square could be replaces by the more general index freezing ${\sf  \_\$\{x,..\}}$ of any set of indexes.
-
-We have seen the partial expansion of both Petri Nets and of symbolic automata an clearly this can be generalised to a partial expansion of Symbolic Petri Nets.
-
-\newpage
-{\color{red}
-\section{Statefull syntax}
-\begin{enumerate}
-\item Declare constants in each process
-\item Declare variables in each process
-\item Process = process name, indexed process or {\bf assignment statements}
-\item {\bf guard event $->$ process} OR  {\bf event = guard  process}
-\end{enumerate}
-
-\subsection{Translation:}
-
-\begin{center}  \begin{minipage}{0.5\textwidth}
-\begin{verbatim}CM = (teaButton->takeTea->STOP
-       |coffeeButton->takeCoffee->STOP).\end{verbatim}
-\end{minipage}
-\begin{minipage}{0.45\textwidth}\includegraphics[scale=0.15]{CM.jpg}
-\end{minipage}\end{center}
-
-Introduce a variable \verb|St| to distinguish different processes (nodes).
-
-\noindent\begin{minipage}{0.5\textwidth}
- \begin{verbatim}
- CM = const N;
-     var St:0..N;
-     init = St:=0;
-     events =
-       when(St==0) teaButton->St:= 1
-      |when(St==0) coffeeButton->St:= 2
-      |when(St==1) takeTea->St:=3
-      |when(St==2) takeCoffee->St:= 4.
- \end{verbatim}
- \end{minipage}
- \begin{minipage}{0.45\textwidth}
- \begin{verbatim}
- CM = const N;
-    var cnt:0..N;
-    init = cnt:=1;
-     teaButton = when(St==0) St:=1
-     coffeeButton = when(St == 0)  St:=2
-     takeTea = when(St == 1)  St:=3
-     takeCoffee =when(St == 2)  St:=4.
-   \end{verbatim}
-
- \end{minipage}
-
-
-
-
-\begin{enumerate}
-\item \verb|C[1]| into initialise first index to \verb|1|
-\item  \verb|C[cnt:1..N] = ...|  into declaration of \verb|cnt| at first index and rhs as process definition
-\item \verb|C[cnt+1]| into  process after \verb|cnt:=cnt+1|.
-\end{enumerate}
-
-\begin{center}\begin{minipage}{0.45\textwidth}
-\begin{verbatim}
-Money = const N;
-    var cnt:0..N;
-    init = cnt:=1;
-    events =
-      when(cnt<N) coin -> cnt:=cnt+1
-     |when(cnt==N) coin -> cnt:=1.
-\end{verbatim}
-\end{minipage}
-\begin{minipage}{0.45\textwidth}
-\begin{verbatim}
-Money = const N;
-   var cnt:0..N;
-   init = cnt:=1;
-   coin = when(cnt<N) cnt:=cnt+1
-         |when(cnt==N) cnt:=1.
-  \end{verbatim}
-\end{minipage} \end{center}
-}
-\newpage
 \section{Semantic equivalence  of processes}
 One of the key questions is:  what automata should be equated and how do you justify you notion of equality? Before we try to answer this we need to remember what equality means.
 
@@ -1511,12 +1122,12 @@ One of the key questions is:  what automata should be equated and how do you jus
 Indistinguishable processes  can be formalised as \emph{testing equivalent}. Substitutive can be formalised are congruent w.r.t. process operators, from a practical perspective the most important being parallel composition.
 
 
- \subsection{Complete Trace equality}
+ \subsection{Complete Trace equality   $=_{Tr^c}$ or in the tool {\sf \_\#\_} }
  See \sref{Trc} for details.
 
  This can be computed by the well documented \emph{Subset Construction} that computes a Deterministic automata from a non deterministic automata. and then applying the  bisimulation  algorithm discussed in \sref{biscol}
 
- \subsection{Failure equality}
+ \subsection{Failure equality  $=_{F}$ or in the tool {\sf \_*\_}  }
  The Failure semantics of a process consists of a set of Failures. A Failure  is a pair consisting of a trace and a Refusal set $(tr,R)$.
 
  \[ Fail({\sf P}) = \{(\rho ,R) : \aro{S_{\sf P}}{\rho}{n} \land R \subseteq \overline{ \pi(n) } \}\]
@@ -1537,7 +1148,36 @@ One of the most important aspects of Failure semantics is that failure refinemen
  \subsection{Bisimulation}
   See \sref{biscol}  for details.
 
- \subsection{Some practical considerations}
+ \subsection{Example processes}
+ Process equalities can be checked by the tool by defining operations after the processes have been defined and the automata built. Not equivalence is defined by prefixing one of the equality operators with a {\sf !}.
+ 
+\noindent\begin{minipage}{0.35\textwidth}
+\begin{verbatim}
+processes {
+ A=(a->b->STOP|a->c->STOP).
+ B=a->(b->STOP|c->STOP).
+ C=(a->b->STOP|a->c->STOP| 
+       a->(b->STOP|c->STOP)).
+ }
+ automata A,B.
+ operation {
+  A # B. A !* B.
+  A * C. A !~ c.
+ }
+  \end{verbatim}
+\end{minipage}
+\begin{minipage}{0.6\textwidth}
+\includegraphics[scale=0.27]{FailureTrace.png}
+\end{minipage}
+ 
+ The operations state that {\sf A} and {\sf B} are trace equivalent but not failure equivalent. Whereas {\sf A} and {\sf C} are Failure equivalent but not bisimular equivalent. 
+ 
+ {\sf A} might perform an {\sf a} event and then fail, when offered to synchronise with a {\sf b} event.  In contrast whenever {\sf B} performs an {\sf a} event it will never refuse to perform an {\sf b} event. Consequently the two processes are distinguishable by testing.
+ 
+ Although {\sf A} and {\sf C} are not bisimular equivalent they can not be distinguished by any test.
+ 
+ 
+ Some relations between equalities  can be used to  understand certain aspects of the equivalences.
  Bisimulation is strictly stronger that Failure equality which in turn is strictly stronger than Complete trace equality.
 
  \[{\sf P}\sim {\sf Q} \Rightarrow {\sf P}=_F {\sf Q} \Rightarrow {\sf P}=_{Tr^c} {\sf Q} \]
@@ -2178,6 +1818,402 @@ Let One->a.one.in -> X1 and  Two->a.one.in -> X2 where X1!=One and X2!=Two
 }
 \end{verbatim}
 
+
+
+\newpage
+{\color{red}
+\section{Statefull syntax}
+\begin{enumerate}
+\item Declare constants in each process
+\item Declare variables in each process
+\item Process = process name, indexed process or {\bf assignment statements}
+\item {\bf guard event $->$ process} OR  {\bf event = guard  process}
+\end{enumerate}
+
+\subsection{Translation:}
+
+\begin{center}  \begin{minipage}{0.5\textwidth}
+\begin{verbatim}CM = (teaButton->takeTea->STOP
+       |coffeeButton->takeCoffee->STOP).\end{verbatim}
+\end{minipage}
+\begin{minipage}{0.45\textwidth}\includegraphics[scale=0.15]{CM.jpg}
+\end{minipage}\end{center}
+
+Introduce a variable \verb|St| to distinguish different processes (nodes).
+
+\noindent\begin{minipage}{0.5\textwidth}
+ \begin{verbatim}
+ CM = const N;
+     var St:0..N;
+     init = St:=0;
+     events =
+       when(St==0) teaButton->St:= 1
+      |when(St==0) coffeeButton->St:= 2
+      |when(St==1) takeTea->St:=3
+      |when(St==2) takeCoffee->St:= 4.
+ \end{verbatim}
+ \end{minipage}
+ \begin{minipage}{0.45\textwidth}
+ \begin{verbatim}
+ CM = const N;
+    var cnt:0..N;
+    init = cnt:=1;
+     teaButton = when(St==0) St:=1
+     coffeeButton = when(St == 0)  St:=2
+     takeTea = when(St == 1)  St:=3
+     takeCoffee =when(St == 2)  St:=4.
+   \end{verbatim}
+
+ \end{minipage}
+
+
+
+
+\begin{enumerate}
+\item \verb|C[1]| into initialise first index to \verb|1|
+\item  \verb|C[cnt:1..N] = ...|  into declaration of \verb|cnt| at first index and rhs as process definition
+\item \verb|C[cnt+1]| into  process after \verb|cnt:=cnt+1|.
+\end{enumerate}
+
+\begin{center}\begin{minipage}{0.45\textwidth}
+\begin{verbatim}
+Money = const N;
+    var cnt:0..N;
+    init = cnt:=1;
+    events =
+      when(cnt<N) coin -> cnt:=cnt+1
+     |when(cnt==N) coin -> cnt:=1.
+\end{verbatim}
+\end{minipage}
+\begin{minipage}{0.45\textwidth}
+\begin{verbatim}
+Money = const N;
+   var cnt:0..N;
+   init = cnt:=1;
+   coin = when(cnt<N) cnt:=cnt+1
+         |when(cnt==N) cnt:=1.
+  \end{verbatim}
+\end{minipage} \end{center}
+}
+
+
+\section{ Symbolic Processes  {\color{red} mostly 2b added 2017}}
+Simple process specifications, those with out indexes, are "atomic" specifications that produce atomic automata.   An atomic  automata has atomic transitions with  a single atomic name and  a finite set of  atomic  nodes each   representing  one state.
+
+Indexed process specifications represent processes with variables, the indexes, and may be infinite state. The indexed specifications are expanded to a finite state approximation of the underlying and potentially infinite state automata. They do this using defined bounds such as \verb|const N = 4|.
+
+
+Alternatively we could define symbolic automata, automata with variables.
+The state of  the process, represented by a symbolic automata, is   the pair $(n,\mu)$ where $\mu$ is an  evaluation i.e. a mapping from variables to values and n is a node of the automata.
+
+\[\mu: Var \rightarrow Val\]
+Hence the node of a symbolic transition only tells you part of the state of the process. When a event of a symbolic process is actually executed the state of the process both moves from the pre-node of the transition to the post-node of the transition and the evaluation of the variable changes as defined by the assignment.  Symbolic execution represents a whole set of actual executions.
+
+The symbolic  transitions need  to be annotated  with its name plus a boolean guard and an assignment. Let a transition  ${\sf t1 \triangleq (n1,g1,ev1,a1,m1)}$  be represented as
+\[{\sf n1\xrightarrow{\text{\sf g1,ev1,a1}} m1}.\]
+Both the guards {\sf g1} and assignments {\sf a1} may contain the process variables.  Note symbolic Petri Nets can be built by adding the variables from a process to the places that represent the state of that process.
+
+Our tool takes process specifications $\mathcal{P}$ and,  by default, builds finite state automata {\sf P}. But now we want to prevent the expansion of indexes and build symbolic automata  from the specification ${\sf \mathcal{P}\$\{x\}}$.
+
+The execution of a guarded  event  can only occur when the guard is true  and then the assignments of the transition are applied hence building another evaluation. Two  essential functions needed in the definition of the application of assignments {\sf a}, writen  $\_@{\sf a}$ are:
+\begin{enumerate}
+\item syntactic substitution and
+\item simplification.
+\end{enumerate}
+
+Simplification certainly needs to be out soured to proof services as  many decades of work has gone into developing such algorithms. And doing this allows for the development of theories of specific data types that include both their definition and the proof of rules of inference used in simplification. Essential this provides an extensible proof engine.
+
+Syntactic substitution look easy but  either you need to; hard bake in the language the data types used or out source both  parsing and substitution. \emph{Initially hard bake in integers, lists and sets?}
+
+Reasoning about symbolic processes requires that we can concatenate sequential transitions. This can be achieved using  two basic standard techniques, \emph{symbolic execution} and backward reasoning via \emph{Hoare Logic}. Hoare Logic tells us how to compute the weakest precondition prior to an assignment ${\sf ass}$ of  a post condition ${\sf bg}$ and is written  ${\sf bg@ass}$.  Whereas symbolic execution tell us how to combine the sequential execution of two assignments ${\sf a1}$ and then ${\sf a2}$ into a single assignment that is written ${\sf a1@a_2}$
+
+Let assignment ${\sf ass}$ be a set of assignments all applied in parallel $\{x:=E,y:=F\}$ and let semicolon be used to compose assignments sequentially.
+
+Compute the weakest precondition of an assignment for a known post condition:
+\[ \{P[E/x]\} x:=E \{P\} \]
+In our notation the precondition  $P@\{x:=E\}\triangleq P[E/x]$
+
+Use symbolic execution to remove the sequencing of assignments.
+
+\[ x:=F(x,y); y:=G(x,y)  = \{x:=F(x,y), y:=G(F(x,y),y)\}\]
+
+In our notation $  \{x:=F(x,y)\}@\{y:=G(x,y)\}  \triangleq  \{x:=F(x,y), y:=G(F(x,y),y)\}$
+
+
+\section{ Index freezing   (z3  -  headless Isabelle)}
+
+{\bf Closely related to Petri net Construction and Token Rule.}
+
+The default interpretation, semantics, of an indexed process definition is its finite state expansion using the declared values of the parameters. An alternative interpretation is to not expand some indexes but to leave them as unknown and define symbolic events.
+
+
+\begin{minipage}{0.55\textwidth}
+\begin{verbatim}
+S1 = X[0],
+  X[x:0..N]=(when (x<N) out[x]->X[x+1]|
+              when (x==N) stop->STOP).
+S = S1${x}.
+   \end{verbatim}
+ \vspace{-2em}{\color{red}
+ \begin{enumerate}
+ \item assignment \verb|x:=x+1| is missing
+ \item presentation order \emph{guard name assignment}
+ \item \verb|2| should be \verb|N| and \verb|$x| should be \verb|x|
+ \end{enumerate} }
+\end{minipage}\begin{minipage}{0.4\textwidth}
+\begin{center}\includegraphics[scale=0.2]{VarBug.jpg}\end{center}
+\end{minipage}
+
+
+
+For the parallel composition of indexed processes we will need to $\alpha$ convert index names to prevent name clashes. This can be achieved by profixing an index name with its process name, hence \verb|x| above would become \verb|S1.x|
+
+\vspace{1em} \begin{minipage}{0.55\textwidth}
+\begin{verbatim}
+R1 = input[y:0..N] -> X[y],
+  X[x:0..N] = (when (x<N) out[x] -> X[x+1]|
+              when (x==N) stop ->STOP).
+R = R1${x}.
+T = R1${x,y}.
+S = R1${y}.
+   \end{verbatim}
+
+ \vspace{-3em}{\color{red}\begin{enumerate}
+   \item \verb|S = R1${y}|  currently fails to build.
+   \end{enumerate}
+   }
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{center}\includegraphics[scale=0.2]{VarBug2.jpg}\end{center}
+\end{minipage}
+
+In the above example both indexes {\sf x} and {\sf y} are needed.
+
+\vspace{1em} \begin{minipage}{0.55\textwidth}
+\begin{verbatim}
+Lift = L[0][0],
+  L[x:0..N][to:0..N] = btnto[i:0..N] -> L[x][i]  |
+       when (x!=to) move ->L[to][to].
+  \end{verbatim}
+
+All three Indexes {\sf x}, {\sf to} and {\sf i}  are needed.
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{center}\includegraphics[scale=0.12]{Lix.jpg}\end{center}
+\end{minipage}
+
+
+
+Need a symbolic expansion mapping,  \verb|S2A|  that takes as input a symbolic  automata and returns an atomic automata.
+
+
+
+
+\begin{center}
+\begin{minipage}{0.3\textwidth}
+\begin{verbatim}
+R = R1${x}.
+T = S2A(R{x}).
+\end{verbatim}
+\end{minipage}
+\end{center}
+
+The result of expanding all variables should be the same as building the atomic automata from  scratch, hence \verb|R|$\sim$\verb|T| in above. (Note building from the automata/Petri Net allows interacting with the diagram)
+
+
+
+
+\subsection{Need for index freezing }
+{\color{red}
+
+\begin{minipage}{0.55\textwidth}
+{\bf Take a look at the examples} below.
+
+\begin{verbatim}
+const N = 1
+automata {
+Buf1data = input[i:1..N] -> F[i],
+   F[d:1..N] = output[d] -> Buf1data.
+Buf2a = (a:Buf1data)/{b.move[x:1..N]/a.output[x]}.
+Buf2b = (b:Buf1data)/{b.move[x:1..N]/b.input[x]}.
+
+B2indexed = Buf2a||Buf2b.
+Bu2x = B2indexed${x}.
+}
+   \end{verbatim}
+\end{minipage}\begin{minipage}{0.35\textwidth}
+\begin{center}\includegraphics[scale=0.17]{hideB.jpg}\end{center}
+\end{minipage}
+
+The two place buffer that, in each place can only hold the number 1.
+
+What I do not understand is how \verb|B2indexed| dose not have event  \verb|a.output[1]| but
+\verb|Bu2x = B2indexed${x}.| dose?
+
+
+
+{\bf A more complex example} is:
+
+\begin{minipage}{0.55\textwidth}
+\begin{verbatim}
+const N = 3
+automata {
+Buf1data = input[i:1..N] -> F[i],
+   F[d:1..N] = output[d] -> Buf1data.
+
+Buf2a = (a:Buf1data)/{b.move[x:1..N]/a.output[x]}.
+Buf2b = (b:Buf1data)/{b.move[x:1..N]/b.input[x]}.
+
+Buf2data* = Buf2a||Buf2b.
+Buf2 = simp(abs(Buf2data\{b.move[x:1..N]})).
+//B2 = Buf2${x}.
+B2indexed = (Buf2a||Buf2b)\{b.move[q:1..N]}.
+Temp = B2indexed /{input/a.input[x:1..N],
+                   output/b.output[x:1..N]}.
+BestGuess = simp(abs(Temp)).
+//Bu2x = B2indexed${x}.
+}
+operation {  Bu2x ~ BestGuess.}
+   \end{verbatim}
+\end{minipage}\begin{minipage}{0.4\textwidth}
+\begin{center}\includegraphics[scale=0.15]{BestGuess.jpg}
+
+\includegraphics[scale=0.17]{HideBuf2.jpg}\end{center}
+\end{minipage}
+
+The two place buffer that, in each place can hold a number from $\{1,2,3\}$ is defined and displayed.  It is not as easy to see that it is a buffer as I wild like and if we could \emph{freeze} the data in each place we might have simpler visual representation.
+
+
+This will require some work to achieve.  One tracking  indexes so that we know what indexes exist in a process. For example what indexes are in \verb|Buf2| defined above? Hence what should we write
+
+\verb|B2 = Buf2${x}|
+}
+
+
+
+\subsection{Symbolic 2 Atomic mapping S2A}
+Symbolic execution  is the obvious way  to  map \verb|S2A|  Symbolic Processes  to  Atomic Processes.
+
+\[{\sf S2A(A\$\{x\})\sim  A }\]
+
+State contains  an evaluation of the variables.
+
+
+All you need to do is build a new node for each distinct evaluation reached.
+
+ \begin{quote}
+ Add  the set of initial evaluations to a "to do list" and repeatedly:
+
+ \emph{Remove the top node from the to do list and evaluate the boolean guard of each  symbolic event and those that evaluate to true you apply the assignment to compute the new reachable state. If the new state already exists then add the transition ending at the corresponding  node else add the state.  When  all events of the selected node have been processed either select the next node on the to do list else if the list is empty terminate.  }
+ \end{quote}
+
+
+
+
+Reasoning about symbolic systems is problematic as they are infinite state and consequently frequently require a degree of theorem proving. A vast amount of work has gone into both push button theorem proving and interactive theorem proving over the recent years.  Yet push button theorem needs to be a lot stronger and interactive theorem proving a lot easier.
+
+{\bf To code with data structures, such as lists and records,  needs headless Isabelle.}  Initially we will only have Z3 and are restricted to integers.  For data structures  we need rules for rewriting, simplifying, the data structures. These rules constitute a \emph{Theory} of the data structure and as they are heavily reused are defined and stored on file. Thus a procedure should import them  not define them.
+
+
+
+
+\subsection{Symbolic parallel composition $\_\parallel_s\_$}
+The operations defined on atomic processes can be lifted to operations on symbolic processes. We first define \verb|S2A| that maps symbolic process to atomic processes and then lift  the atomic  operation ${\sf Op_a}$ to the symbolic operation ${\sf Op_s}$ so that:
+
+\[{\sf S2A(Op_s(A,B))\sim  Op_a(S2A(A),S2A(B)) }\]
+
+Symbolic parallel composition $\_\parallel_s\_$ is an extension of  atomic parallel composition $\_\parallel\_$ where:
+\begin{enumerate}
+\item the nodes have a union of the indexes, suitably renamed to prevent name clashing
+\item synchronising transitions have guards the conjunction of the component guards and assignments the union of the component assignments.
+\end{enumerate}
+
+
+\subsection{Symbolic abstraction}
+
+
+Let a transition  ${\sf t1 \triangleq (n1,g1,ev1,a1,m1)}$  be represented as   ${\sf n1\xrightarrow{\text{\sf g1,ev1,a1}} m1}$. We may refer to {\sf n1}  as ${\sf t1_{pre}}$,  to {\sf m1}  as ${\sf t1_{post}}$ and refer to {\sf e1}  as ${\sf t1_{en}}$.
+
+We need to  compute $\sf t1: t2$  the transition representing the execution of $\sf t1$ followed by $\sf t2$.  The execution of two transitions one after the other only occurs if the port node of the first transition is the pre-node of the second transition.
+
+%$ \AroL{1}{2222222}{3}{4} $
+
+% $\AroL{\sf n}{\text{g1,ev1,a1}}{m}{x} $
+
+% ${\sf m\yrightarrow{\text{b2,ev2,a2 }} o}$
+
+\begin{center}\begin{minipage}{0.75\textwidth}
+\inference[$t_1: \tau$:]
+{
+{\sf n\xrightarrow{\text{\sf g1,ev1,a1}} m} \quad  {\sf m\xrightarrow{\text{\sf g2,$\tau$ ,a2 }} p}
+}
+{{\sf n\xRightarrow{\text{$\sf g1\land g_2@a_1,ev1,a1@a_2$}}p }}
+\end{minipage}
+\qquad
+\begin{minipage}{0.75\textwidth}
+\inference[$\tau: t_2$:]
+{
+{\sf n\xrightarrow{\text{\sf g1,$\tau$,a1}} m} \quad  {\sf m\xrightarrow{\text{\sf g2,ev2 ,a2 }} p}
+}
+{{\sf n\xRightarrow{\text{$ \sf g1\land g_2@a_1,ev2,a1@a_2$}}p }}
+\end{minipage}\end{center}
+
+
+The guard ${\sf g2}$ is the post condition to transition ${\sf t_1}$ hence to compute the weakest precondition we need to apply Hoare Logic thus compute ${\sf g_2@a_1}$  which we add as a conjunction to the guard of ${\sf t1}$.  Thus  if ${\sf t1_{pre} = t2_{post}}$   we can add the transition :
+\[t1: t2 = \sf (t1_{pre}, t1_g\land t2_g@t1_a , t1_{en}:t2_{en}, t2_a@t1_a, t2_{post})\]
+but if  ${\sf t1_g\land t2_g@t1_a\neq False}$ then this transition can never be executed and hence can be removed with out effecting the behaviour of the process.
+
+We can construct tests from:
+\[{\sf S2A(abs(P))\sim abs(S2A(P))}\]
+
+
+
+\subsection{Symbolic simplification}
+We certainly want property:
+\[{\sf S2A(simp(P))\sim simp(S2A(P))}\]
+this could certainly be achieved if symbolic bisimulation simply matched transitions $t1$ and $t2$ by
+\[t1_b\Leftrightarrow t2_b \land t1_{en}= t2_{en} \land t1_a\Leftrightarrow t2_a.\]
+It might be possible to further simplify the symbolic automata while preserving the stated property.
+
+
+\section{Symbolic Petri Nets {\color{red} 2b added 2017}}
+
+
+The symbolic Petri Nets  are an \emph{orthogonal} combination of the symbolic extension to automata and the construction of Petri Nets rather than automata. Thus we have a square with finite automata, finite Petri Nets, symbolic automata and symbolic Petri Nets on the corners. Mappings between adjacent edges  are functions that should preserve the semantics of the processes, be monotonic with respect to refinement and congruent with respect to the operators.
+
+
+
+\begin{center}
+\begin{minipage}{0.4\textwidth}\begin{tikzpicture}
+\coordinate [label=right:{\sf A}] (A) at (3,0);
+\coordinate [label=left:{$\sf Petri(\mathcal{A})$}] (B) at (0,0);
+\coordinate [label=right:{$\sf Symb(\mathcal{A})$}] (C) at (3,2);
+\coordinate [label=left:{$\sf Petri(Symb(\mathcal{A}))$}] (D) at (0,2);
+\draw [line width=0.6mm,<-](A) -- (B) node [midway,above,sloped] {\sf TokenRule};
+\draw [line width=0.6mm,<-](C) -- (D) node [very thick,midway,above,sloped] {\sf TokenRule};
+\draw [line width=0.6mm,<-](A) -- (C) node [midway,right] {\sf S2A};
+\draw [line width=0.6mm,<-](B) -- (D) node [midway,right] {\sf S2A};
+
+\end{tikzpicture}\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\[{\sf S2A(Petri(\mathcal{A}\$\{x\}))\sim  Petri(\mathcal{A}) }\]
+\[{\sf TokenRule(Petri(\mathcal{A}\$\{x\}))\sim  \mathcal{A}\$\{x\}}\]
+\end{minipage}
+\end{center}
+
+Index freezing prevents the building of  finite state approximations of the index and instead builds a symbolic process. The construction ${\sf Symb(\_)}$ freezes all indexes but in the above square could be replaces by the more general index freezing ${\sf  \_\$\{x,..\}}$ of any set of indexes.
+
+We have seen the partial expansion of both Petri Nets and of symbolic automata an clearly this can be generalised to a partial expansion of Symbolic Petri Nets.
+
+\subsection{Indexed Petri Nets}
+
+Indexed, specifications can be turned into FSPN in two quite separate ways. For a sequential indexed process $\mathcal{P_I}$ :
+\begin{enumerate}
+\item expand the  index $\mathcal{I}$ converting $\mathcal{P_I}$ into  a sequential FSPN
+\item turn the index $\mathcal{I}$ into a FSPN and the sequential process $\mathcal{P}$  into another  then build, $\mathcal{P}\parallel_n \mathcal{I}$,  net parallel composition of  the process and the index.
+\end{enumerate}
+Both options can be applied to  {\sf PTokenRule} the partial expansion of a net into an automata.
+All options  should result in interleaving equivalent Petri Nets.
 
  \end{document}
 

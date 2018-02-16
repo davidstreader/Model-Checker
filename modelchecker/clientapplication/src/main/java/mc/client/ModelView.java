@@ -269,7 +269,7 @@ public class ModelView implements Observer {
       GraphNode from = nodeMap.get(e.getFrom().getId());
       String label = e.getLabel();
 
-      graph.addEdge(new DirectedEdge(label + e.getOwnerLocation() , UUID.randomUUID().toString()), from, to);
+      graph.addEdge(new DirectedEdge(label + "" , UUID.randomUUID().toString()), from, to);
     });
 
     this.processModels.replaceValues(automaton.getId(), nodeMap.values());
@@ -313,7 +313,7 @@ public class ModelView implements Observer {
     });
 
     petri.getEdges().values().forEach(edge -> {
-      DirectedEdge nodeEdge = new DirectedEdge(edge.getOwners().toString(), UUID.randomUUID().toString());
+      DirectedEdge nodeEdge = new DirectedEdge("", UUID.randomUUID().toString());
       graph.addEdge(nodeEdge, nodeMap.get(edge.getFrom().getId()),
           nodeMap.get(edge.getTo().getId()));
 
