@@ -70,7 +70,7 @@ public class InternalChoiceInfixFunction implements IProcessInfixFunction {
   @Override
   public Automaton compose(String id, Automaton automaton1, Automaton automaton2)
       throws CompilationException {
-
+    System.out.println("COMPOSE +");//Never get clled with STOP+P
     Automaton choice = new Automaton(id, !Automaton.CONSTRUCT_ROOT);
 
     choice.addAutomaton(automaton1);
@@ -78,11 +78,13 @@ public class InternalChoiceInfixFunction implements IProcessInfixFunction {
     Map<AutomatonNode, AutomatonNode> automaton2NodeMap = new HashMap<>();
 
     automaton2.getNodes().forEach(n -> {
+      System.out.println("Adding "+ n.toString());
       AutomatonNode newN = choice.addNode();
       automaton2NodeMap.put(n, newN);
       newN.copyProperties(n);
       if (n.isStartNode()) {
         newN.setStartNode(true);
+        System.out.println("new is start" + newN.toString());
       }
     });
 

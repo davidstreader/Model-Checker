@@ -4,13 +4,13 @@ processes {
 S = x->S|a->STOP.
 R = x->STOP.
 Good = S||R.
-SR = (a->STOP|x->a->STOP).
+SR = (a->ERROR|x->a->STOP).
 
 //Broadcast  Fail  initial a lost by ||
 Sb = x!->Sb|a->STOP.
 Rb = x?->STOP.
 Bug = Sb||Rb.
-SbRb = (a->STOP|x!->X),
+SbRb = (a->ERROR|x!->X),
      X = (x!->X|a->STOP).
 
 Sbb = x?->Sbb|a->STOP.
@@ -30,3 +30,4 @@ Bug ~ SbRb.
 Bugb ~ SbbRbb.
 Good ~ SR.
 }
+

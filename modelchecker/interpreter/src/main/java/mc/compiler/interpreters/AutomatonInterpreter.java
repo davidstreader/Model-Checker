@@ -71,7 +71,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
 
   public ProcessModel interpret(ProcessNode processNode,
                                 Map<String, ProcessModel> processMap,
-                               // LocalCompiler compiler,
+                                // LocalCompiler compiler,
                                 Context context)
     throws CompilationException, InterruptedException {
     reset();
@@ -102,7 +102,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
       processHiding(automaton, processNode.getHiding());
     }
 
-  automaton = labelAutomaton(automaton);
+    automaton = labelAutomaton(automaton);
 
 
     return automaton;
@@ -122,7 +122,8 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     ProcessModel pm = processStack.pop();
     Automaton automaton = ((Automaton) pm.getProcessType().convertTo(AUTOMATA, pm)).copy();
     //automaton.getEdges().forEach(e -> System.out.println("owners of " + e.getId() + " are " + e.getOwnerLocation()));
-
+    //System.out.println("AutomatonInterperter");
+    //System.out.println(automaton.toString());
     return labelAutomaton(automaton);
   }
 
@@ -311,8 +312,16 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     interpretNode(astChoiceNode.getSecondProcess(), automaton, currentNode);
   }
 
+  /**
+   * All infixed notation  || | => +
+   * @param astCompositeNode
+   * @param automaton
+   * @param currentNode
+   * @throws CompilationException
+   * @throws InterruptedException
+   */
   private void interpretComposite(CompositeNode astCompositeNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException {
-
+    //System.out.println("interpretComposite \n\n");
     interpretProcess(astCompositeNode.getFirstProcess(), automaton.getId() + ".pc1");
     interpretProcess(astCompositeNode.getSecondProcess(), automaton.getId() + ".pc2");
 
@@ -332,7 +341,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
       }
     }
 
-
+    //System.out.println(astCompositeNode.getOperation());
     Automaton comp = instantiateClass(infixFunctions.get(astCompositeNode.getOperation()))
         .compose(model1.getId() + astCompositeNode.getOperation() + model2.getId(), (Automaton) model1, (Automaton) model2);
 

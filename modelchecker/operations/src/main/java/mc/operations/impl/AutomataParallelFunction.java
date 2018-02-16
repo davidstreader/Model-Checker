@@ -73,11 +73,16 @@ public class AutomataParallelFunction {
 
         // create an intersection of both nodes
         node.copyProperties(node1.createIntersection(node2));
+        node.setTerminal(null);
+
+        if(node1.isTerminal() && node1.getTerminal().equals("STOP") && node2.isTerminal() && node2.getTerminal().equals("STOP"))
+          node.setTerminal("STOP");
+
 
         if (node.isStartNode())
           automaton.addRoot(node);
 
-        if ("ERROR".equals(node2.getTerminal()) || "ERROR".equals(node1.getTerminal()))
+        if ("ERROR".equals(node2.getTerminal()) || "ERROR".equals(node1.getTerminal()) )
           node.setTerminal("ERROR");
 
 

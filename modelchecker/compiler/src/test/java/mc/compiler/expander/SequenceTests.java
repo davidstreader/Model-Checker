@@ -29,7 +29,7 @@ public class SequenceTests extends ExpanderTests {
     public void correctSequenceToTerminalTest_2() throws InterruptedException {
         String input = "processes Test = (a -> ERROR).\nautomata Test.";
         ProcessNode node = constructProcessNode(input);
-        String[] sequence = new String[]{"a", Constant.DEADLOCK};
+        String[] sequence = new String[]{"a"};
         TerminalNode terminal = new TerminalNode("ERROR", null);
         SequenceNode expected = constructSequenceNode(sequence, terminal);
         if(!expected.equals(node.getProcess())){

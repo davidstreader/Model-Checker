@@ -5,7 +5,7 @@ A = a->B,
 Ap = A || A.
 
 B = a -> C,
-    C = (b->B | c->STOP).
+    C = (b->B | c->ERROR).
 Bp = B || B.
 ABp = A || B.
 D = aaa -> C,
@@ -35,3 +35,4 @@ ABp ~ B.
 P!~Q.
 W ~ Z.
 }
+
