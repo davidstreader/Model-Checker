@@ -243,7 +243,7 @@ public class BuildAcceptanceGraphs  {
                     map(AutomatonEdge::getLabel).
                     collect(Collectors.toSet());
             nfanode2ASet.put(n,as);
-            System.out.println("++ "+n.getLabel()+" "+nfanode2ASet.get(n).toString() );
+           // System.out.println("++ "+n.getLabel()+" "+nfanode2ASet.get(n).toString() );
         }
         return nfanode2ASet;
     }
