@@ -64,7 +64,7 @@ public class FailureEquivalence implements IOperationInfixFunction {
         int rootColour = Integer.MIN_VALUE;
 
         Map<AutomatonNode,Integer> initialColour = new HashMap<AutomatonNode,Integer>();
-        System.out.println("Failure start");
+      //  System.out.println("Failure start");
   /*
   Set up Acceptance Graphs and initial colouring on the automata nodes
   */
@@ -141,7 +141,7 @@ public class FailureEquivalence implements IOperationInfixFunction {
 
             if (rootColour == Integer.MIN_VALUE) { //first
                 bag.composeAG(ags.get(i).getA().getId(),ags.get(i).getA());
-                rootColour = col;
+                rootColour  = col;
             } else if (rootColour != col) {  //second
 
                 return false;
@@ -179,7 +179,7 @@ public class FailureEquivalence implements IOperationInfixFunction {
    System.out.println(".");
   } */
 
-  
+
         outerloop:
         for(AutomatonNode n : nodes) {
           //  System.out.println("node "+n.getId()+" col "+ n.getColour());

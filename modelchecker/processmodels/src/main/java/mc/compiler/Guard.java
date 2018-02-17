@@ -25,6 +25,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import mc.compiler.NodeUtils;
 import mc.exceptions.CompilationException;
 import mc.processmodels.automata.AutomatonNode;
 import mc.util.Location;
@@ -269,42 +270,14 @@ System.out.print("parseNext "+ myString()+"\n"); */
   } */
 
   /**
-   *
+   *  Assume BoolExpr is immutable
    * @return   a deep copy
    */
   public Guard copy() {
     Cloner cloner = new Cloner();
     cloner.dontClone(BoolExpr.class);
     return cloner.deepClone(this);
-//    // One way to clone - deep copy  is to serialise and unserialise
-//    //Guard newG = new Guard();
-//    System.out.print("copy start");
-//    BoolExpr newguard = guard;  // I think this is Imutable
-//    Map<String, Integer> newvariables = new HashMap<>();
-//    List<String> newnext = new ArrayList<>();
-//    Map<String, String> newnextMap = new HashMap<>();
-//    boolean newshouldDisplay = shouldDisplay;
-//    Set<String> newhiddenVariables = new HashSet<>();
-//
-//
-//    for(String k: variables.keySet()){
-//      Integer newi = new Integer(variables.get(k));
-//      newvariables.put(k,newi);
-//    }
-//    for(int i=0; i<next.size();i++){
-//      newnext.add(next.get(i));
-//    }
-//    for(String k: nextMap.keySet()){
-//      newnextMap.put(k,nextMap.get(k));
-//    }
-//    newhiddenVariables.addAll(hiddenVariables);
-//
-//    Guard newG = new Guard(newguard,newvariables,newhiddenVariables);
-//    newG.setNext(newnext);
-//    newG.setNextMap(newnextMap);
-//    newG.setShouldDisplay(newshouldDisplay);
-//System.out.print("copy Guard "+ newG.myString());
-//    return newG;
+
   }
 
   public Guard(BoolExpr guard, Map<String, Integer> variables, Set<String> hiddenVariables) {

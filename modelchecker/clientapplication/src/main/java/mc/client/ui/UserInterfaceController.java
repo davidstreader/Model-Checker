@@ -25,6 +25,7 @@ import mc.compiler.Compiler;
 import mc.compiler.OperationResult;
 import mc.exceptions.CompilationException;
 import mc.util.LogAST;
+import mc.util.LogMessage;
 import mc.util.expr.Expression;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
@@ -642,7 +643,7 @@ public class UserInterfaceController implements Initializable {
                             while (true) { // Realitively expensive spinning lock
 
                                 if (!messageLog.isEmpty()) {
-                                    LogAST t = ((LogAST) messageLog.poll());
+                                    LogMessage t = ((LogMessage) messageLog.poll());
                                     Platform.runLater(() -> compilerOutputDisplay.appendText(t.getMessage() + "\n"));
                                 }
                                 try {

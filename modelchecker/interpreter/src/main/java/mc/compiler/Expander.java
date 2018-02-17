@@ -76,7 +76,7 @@ public class Expander {
    * @throws CompilationException
    * @throws InterruptedException
    */
-  public ProcessNode expand(ProcessNode process, BlockingQueue<Object> messageQueue, Context context)
+  private ProcessNode expand(ProcessNode process, BlockingQueue<Object> messageQueue, Context context)
     throws CompilationException, InterruptedException {
     messageQueue.add(new LogAST("Expanding:", process));
     identMap.clear();

@@ -12,7 +12,10 @@ import java.util.Set;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+//import mc.compiler.Guard;  // Can not resolve symbol Guard  NO IDEA why
+//import modelchecker.processmodels.src.main.java.mc.compiler.Guard
 import mc.util.Location;
+
 
 
 /**
@@ -23,8 +26,7 @@ import mc.util.Location;
  * @author Sanjay Govind
  * @author Jacob Beal
  * @see AbstractSyntaxTree
- * @see mc.compiler.Parser
- * @see mc.compiler.Interpreter
+ *
  */
 @EqualsAndHashCode(exclude = {"location", "modelVariables", "guard"})
 public abstract class ASTNode implements Serializable {
@@ -38,7 +40,9 @@ public abstract class ASTNode implements Serializable {
   private HashMap<String, Object> modelVariables;
   @Getter
   @Setter
-  private Object guard;
+  private Object guard;  //NASTY fix for "can not resolve symbol" Guard in import
+  //private Guard guard;
+  // Beware guard Object is a  Guard that contains both a guard and the Assignments
 
   /**
    * Instantiate an instance of ASTNode.

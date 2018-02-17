@@ -48,7 +48,7 @@ public class AutomatonNode extends ProcessModelObject implements Comparable<Auto
 
   @Getter
   @Setter
-  private Guard guard;
+  private mc.compiler.Guard guard;
 
   @Getter
   @Setter

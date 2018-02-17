@@ -7,6 +7,8 @@ import mc.compiler.ast.ProcessNode;
  */
 public class LogAST extends LogMessage {
   public LogAST(String function, ProcessNode process) {
-    super(function + " " + process.getIdentifier() + " " + formatLocation(process.getLocation()) + " ", true, false, null, -1, Thread.currentThread());
+    super(function + " " + process.getIdentifier() + " " +
+          formatLocation(process.getLocation()) + " ", true, false, null,
+          -1, Thread.currentThread());
   }
 }

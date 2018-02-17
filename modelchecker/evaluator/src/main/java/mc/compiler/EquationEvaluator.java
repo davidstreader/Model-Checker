@@ -17,6 +17,7 @@ import mc.exceptions.CompilationException;
 import mc.plugins.IOperationInfixFunction;
 import mc.processmodels.ProcessModel;
 import mc.processmodels.automata.Automaton;
+import mc.util.LogMessage;
 
 
 public class EquationEvaluator {
@@ -57,7 +58,7 @@ public class EquationEvaluator {
         secondIds.stream().filter(id -> !testingSpace.contains(id)).forEach(testingSpace::add);
 
         int totalPermutations = (int) Math.pow(processes.size(), testingSpace.size());
-        ArrayList<String> failures = testUserdefinedModel(processes, testingSpace, status, operation, z3Context);
+        ArrayList<String> failures = testUserdefinedModel(processes, testingSpace, status, operation, z3Context, messageQueue);
 
         results.add(new OperationResult(operation.getFirstProcess(), operation.getSecondProcess(), firstId,
             secondId, operation.getOperation(), failures, operation.isNegated(), status.passCount == totalPermutations,
@@ -73,7 +74,7 @@ public class EquationEvaluator {
 
 
   private ArrayList<String> testUserdefinedModel(List<ProcessModel> models, List<String> testingSpace, ModelStatus status,
-                                                 OperationNode operation, com.microsoft.z3.Context z3Context)
+                                                 OperationNode operation, com.microsoft.z3.Context z3Context, BlockingQueue<Object> messageQueue)
       throws CompilationException {
 
     ArrayList<String> failedEquations = new ArrayList<>();
@@ -81,7 +82,7 @@ public class EquationEvaluator {
     Interpreter interpreter = new Interpreter();
 
     if (testingSpace.size() > 3) {
-      throw new CompilationException(getClass(), "Too many variables defined in equation block (>3)");
+      messageQueue.add(new LogMessage("With this many variables you'll be waiting the rest of your life for this to complete.... good luck"));
     }
 
     if (testingSpace.size() > models.size()) {

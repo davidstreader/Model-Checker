@@ -24,6 +24,7 @@ public class Compiler {
   private EquationEvaluator eqEvaluator;
   private Parser parser;
 
+
   public Compiler() throws InterruptedException {
     this.lexer = new Lexer();                     //Tokenises the string input
     this.parser = new Parser();                   // AST created and Symbolic guards set up on the AST
@@ -121,7 +122,7 @@ public class Compiler {
         //new LocalCompiler(processNodeMap, expander, replacer, messageQueue),
         messageQueue, z3Context);
 
-    System.out.println("after operation interpretation");
+    //System.out.println("after operation interpretation");
 
 
     List<OperationResult> opResults = evaluator.evaluateOperations(ast.getOperations(), processMap,
@@ -133,7 +134,7 @@ public class Compiler {
 
     processMap.putAll(eqResults.getToRender());
 
-    printLocations(processMap.values());
+   // printLocations(processMap.values());
 
     processesToRemoveFromDisplay.stream()
         .filter(processMap::containsKey)

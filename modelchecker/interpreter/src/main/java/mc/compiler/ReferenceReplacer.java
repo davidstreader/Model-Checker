@@ -61,7 +61,7 @@ public class ReferenceReplacer {
 
   //We can use this to replace references after the initial ast is compiled.
   //Because of that it is public, and it should NOT be reset.
-  public ProcessNode replaceReferences(ProcessNode process, BlockingQueue<Object> messageQueue) throws CompilationException, InterruptedException {
+  private ProcessNode replaceReferences(ProcessNode process, BlockingQueue<Object> messageQueue) throws CompilationException, InterruptedException {
     references.clear();
 //System.out.println("START Process Replacing ");
     messageQueue.add(new LogAST("Replacing references:", process));
