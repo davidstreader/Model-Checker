@@ -232,6 +232,7 @@ public class ModelView implements Observer {
    * @param automaton the automata object
    */
   private void addAutomata(Automaton automaton) {
+   System.out.println("ModelView addAutomata");
     //make a new "parent" object for the children to be parents of
     if (processModels.containsKey(automaton.getId())) {
       // If the automaton is already displayed, but modified.
@@ -239,7 +240,7 @@ public class ModelView implements Observer {
       for (GraphNode n : processModels.get(automaton.getId())) {
         graph.removeVertex(n);
       }
- System.out.println("ModelView \n "+ automaton.toString());
+
       processModels.removeAll(automaton.getId());
 
     }
@@ -274,6 +275,7 @@ public class ModelView implements Observer {
     });
 
     this.processModels.replaceValues(automaton.getId(), nodeMap.values());
+System.out.println("ModelView \n "+ automaton.toString());
   }
 
   private void addPetrinet(Petrinet petri) {

@@ -38,8 +38,9 @@ D * E.
 D # E.
 
 F ~ G.
-F * G.
+F !* G.  // adding a c->STOP from root and they are clearly distinct
 F # G.
 
 }
+
 

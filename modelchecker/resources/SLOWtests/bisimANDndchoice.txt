@@ -1,30 +1,41 @@
 processes {
-/* Bisim needs changing to glue these roots together.
-
-In place of equivalent color sets USE equality of 
-
-Union of the colered events (name, color(post)) leaving any root node
+/* Done
 */
+Zero1 = STOP.
+Zero2 = ERROR.
 
+One1 = a->One1.
 One2 = a->STOP.
+One3 = a->ERROR.
+One4 = b->One4.
 One5 = b->STOP.
+One6 = b->ERROR.
 
-Y = One2 => ( One5 + One2).
-Y1 = (One2 =>  One5 )+ (One2 => One2). 
+Two1 = a->b->STOP.
+Two2 = a->Two2|a->STOP.
+Two3 = a->Two3|b->STOP.
+Two4 = a->b->Two4.
+Two5 = a->STOP|b->STOP.
+Two6 = a->ERROR| a->STOP.
+Two7 = a->ERROR|b->STOP.
+Two8 = a->X|b->X, X = STOP.
+ Two9 = (a->STOP + b->STOP).
 
-Z =  (s->STOP)=>Y1.
-W = (s->Y1).
+Q = Two6+One1.
+P = One1+Two6.
 }
 
-automata Y,Y1, Z,W.
-
+automata P,Q.
+/*
+automata One1,One2,One3,One4,One5,One6..
+automata Two1,Two2,Two3,Two4,Two5,Two6,Two7,Two8,Two9. 
 equation {
 
-(One2 => ( One5 + One2)) ~ ((One2 =>  One5 )+ (One2 => One2)).
+(X => (Y+Z)) # ((X =>  Y )+ (X => Z)).
+(s->STOP)=>Y ~ (s->Y).
+X+Y ~ Y+X.
+(X+Y)=>Z ~ ((X=>Z) + (Y=>X)).
 
-(s->STOP)=>Y1 ~ (s->Y1).
+} */
 
-One2=> (One5=>One2) ~ (One2=> One5)=>One2.
-
-}
 

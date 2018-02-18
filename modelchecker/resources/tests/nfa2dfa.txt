@@ -1,6 +1,6 @@
 processes {
- A = a->STOP|a->a->a->STOP .
-B = nfa2dfa(A).
+ A = a->STOP|a->a->a->STOP . // After a [[STOP],[a]]
+ B = nfa2dfa(A).             // after a [STOP,A]
  C = a->a->a->STOP.
 
 
@@ -14,11 +14,13 @@ E = nfa2dfa(D).
  operation {
    B !# C.
    B # A.
-B * A.
+   B !* A.  
 E !# A.
 E # D.
-E * D.
+E !* D.
  }
+
+
 
 
 

@@ -41,6 +41,7 @@ public class AcceptanceGraph {
         // System.out.println("Starting accept");
         Map<AutomatonNode, List<Set<String>> > dfaNode2ASet =
                 new HashMap<AutomatonNode, List<Set<String>> >();
+        //The acceptance sets should contain "STOP" "ROOT"
         Map<AutomatonNode, Set<String> > nfaNode2A = new HashMap<AutomatonNode, Set<String> >();
         Automaton dfa = new Automaton(id, !Automaton.CONSTRUCT_ROOT);
         nfaNode2A = build_nfanode2ASet(nfa);
@@ -153,12 +154,12 @@ public class AcceptanceGraph {
         dfa.getNodes().stream()
                 .filter(nodex -> nodex.getOutgoingEdges().isEmpty())
                 .forEach(nodey -> nodey.setTerminal("STOP"));
-        printnode2AcceptanceSets(dfaNode2ASet);
+        printnode2AcceptanceSets(dfaNode2ASet, nfaNode2A);
 
         this.setA(dfa);
         this.setNode2AcceptanceSets(dfaNode2ASet);
         this.toString();
-//  System.out.println("Ending AcceptanceGraph Constructor ");
+  System.out.println("Ending AcceptanceGraph Constructor ");
     }
 
 
@@ -270,7 +271,7 @@ public class AcceptanceGraph {
     /**
      *
      * @param a automaton
-     *   This computes the map nfanode2ASe
+     *   This computes the map nfanode2ASe note needs to respect Start and STOP
      */
     private Map<AutomatonNode, Set<String> > build_nfanode2ASet(Automaton a){
         Map<AutomatonNode, Set<String> > nfanode2ASet = new HashMap<AutomatonNode, Set<String> >();
@@ -279,21 +280,25 @@ public class AcceptanceGraph {
                     distinct().
                     map(AutomatonEdge::getLabel).
                     collect(Collectors.toSet());
+            if (n.isTerminal()) {as.add("STOP");}
+            if (n.isStartNode()) {as.add("Start");}
             nfanode2ASet.put(n,as);
         }
         return nfanode2ASet;
     }
-    private void printnode2AcceptanceSets(Map<AutomatonNode, List<Set<String>> > node2AcceptanceSets){
-        //System.out.println("nfa Sets");
-        //for (AutomatonNode n : nfanode2ASet.keySet()){
-        //  System.out.println(" "+n.getLabel()+" "+nfanode2ASet.get(n).toString() );
-        //}
+    private void printnode2AcceptanceSets(
+      Map<AutomatonNode, List<Set<String>> > node2AcceptanceSets,
+    Map<AutomatonNode, Set<String> >nfanode2ASet) {
+        System.out.println("nfa Sets");
+        for (AutomatonNode n : nfanode2ASet.keySet()){
+          System.out.println(" "+n.getId()+" "+nfanode2ASet.get(n).toString() );
+        }
 
-/*  System.out.println("Acceptance Sets");
+  System.out.println("Acceptance Sets");
   for (AutomatonNode nd : node2AcceptanceSets.keySet()) {
    System.out.println(" "+nd.getId()+"  "+node2AcceptanceSets.get(nd));
   }
-*/
+
     }
 
     /**
