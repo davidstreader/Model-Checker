@@ -239,8 +239,9 @@ public class ModelView implements Observer {
       for (GraphNode n : processModels.get(automaton.getId())) {
         graph.removeVertex(n);
       }
-
+ System.out.println("ModelView \n "+ automaton.toString());
       processModels.removeAll(automaton.getId());
+
     }
 
 

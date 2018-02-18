@@ -51,6 +51,7 @@ public class NFtoDFconvFunction implements IProcessFunction {
     return 1;
   }
 
+  boolean dfaTerminating = false;
   /**
    * Execute the function on automata.
    *
@@ -71,17 +72,18 @@ public class NFtoDFconvFunction implements IProcessFunction {
     Automaton nfa = automata[0].copy();
     Automaton dfa = new Automaton(id, !Automaton.CONSTRUCT_ROOT);
 
-    //  maps internal rpresentation to actual set of nodes
+    //  maps internal representation to actual set of nodes
     Map<Set<String>, List<AutomatonNode>> stateMap = new HashMap<>();
     Map<String, AutomatonNode> nodeMap = new HashMap<>();
     Set<String> visited = new HashSet<>();
 
     Stack<Set<String>> fringe = new Stack<>();
 
+//build set of nfa nodes used to constuct a the dfa root  dfa node
     fringe.push(constructClosure(nfa.getRoot(), stateMap));
 
     Set<String> alphabet = nfa.getAlphabet();
-    alphabet.remove(Constant.HIDDEN);
+    //alphabet.remove(Constant.HIDDEN);
 
     boolean processedRoot = false;
     while (!fringe.isEmpty()) {
@@ -91,19 +93,25 @@ public class NFtoDFconvFunction implements IProcessFunction {
       if (visited.contains(idNode)) {
         continue;
       }
-      if (!nodeMap.containsKey(idNode)) {
+      if (!nodeMap.containsKey(idNode)) { //set up nodeMap and add node to dfa
         nodeMap.put(idNode, dfa.addNode(idNode));
-      }
-      AutomatonNode node = nodeMap.get(idNode);
 
-      if (!processedRoot) { // then this is node is the root
+      }
+      AutomatonNode node = nodeMap.get(idNode);  //build dfa node
+
+      if (!processedRoot) { // then this  node is the root
         dfa.getRoot().clear();
         dfa.addRoot(node);
         node.setStartNode(true);
         processedRoot = true;
+        //if one root nfa is terminal so is the dfa root
+        if (nfa.getRoot().stream().anyMatch(e -> e.isTerminal()) ) {
+          dfa.getNode(idNode).setTerminal("STOP");
+        }
       }
 
       for (String action : alphabet) {
+
         Set<String> nextStates = constructStateSet(stateMap.get(states), action, stateMap);
 
         if (nextStates.isEmpty()) {
@@ -114,8 +122,13 @@ public class NFtoDFconvFunction implements IProcessFunction {
 
         if (!nodeMap.containsKey(nextId)) {
           nodeMap.put(nextId, dfa.addNode(nextId));
+          if (stateMap.get(nextStates).stream().anyMatch(e -> e.isTerminal()) ) {
+            dfa.getNode(nextId).setTerminal("STOP");
+          }
         }
         AutomatonNode nextNode = nodeMap.get(nextId);
+
+
 
         dfa.addEdge(action, node, nextNode, null, true);
 
@@ -135,7 +148,7 @@ public class NFtoDFconvFunction implements IProcessFunction {
   /**
    *
    * @param node
-   * @param stateMap
+   * @param stateMap  input output
    * @return  internal reprentation of new node
    */
   private Set<String> constructClosure(Collection<AutomatonNode> node, Map<Set<String>,
@@ -174,7 +187,7 @@ public class NFtoDFconvFunction implements IProcessFunction {
    *
    * @param nodes  set of nodes that become new node
    * @param action action of events leaving set of nodes and new node
-   * @param stateMap
+   * @param stateMap  input output
    * @return  set of node ids that represent the  new node
    */
   private Set<String> constructStateSet(List<AutomatonNode> nodes, String action, Map<Set<String>,
@@ -198,8 +211,6 @@ public class NFtoDFconvFunction implements IProcessFunction {
         if (action.equals(edge.getLabel())) {
           states.add(edge.getTo().getId());
           nextNodes.add(edge.getTo());
-        } else if (edge.getLabel().equals(Constant.HIDDEN)) {
-          fringe.push(edge.getTo());
         }
       }
 
@@ -213,6 +224,12 @@ public class NFtoDFconvFunction implements IProcessFunction {
     return states;
   }
 
+  /**
+   *
+   * @param nodes  input
+   * @param identifier  input
+   * @return
+   */
   private String constructNodeId(List<AutomatonNode> nodes, String identifier) {
     return identifier + constructLabel(nodes);
   }
