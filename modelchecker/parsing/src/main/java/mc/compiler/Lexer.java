@@ -138,6 +138,12 @@ public class Lexer {
 
       case "forall":
         return new ForAllToken(location);
+
+      case "tokenRule":
+        return new TokenRuleToken(location);
+
+      case "ownersRule":
+        return new OwnersRuleToken(location);
     }
 
     if (Character.isUpperCase(stringToToken.charAt(0))) {

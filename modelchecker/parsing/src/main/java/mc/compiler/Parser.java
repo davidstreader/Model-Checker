@@ -760,6 +760,8 @@ public class Parser {
       }
 
       return identifier;
+    } else if (peekToken() instanceof OwnersRuleToken || peekToken() instanceof TokenRuleToken) {
+      return parseConversion();
     } else if (peekToken() instanceof FunctionToken) {
       return parseFunction();
     } else if (peekToken() instanceof CastToken) {
@@ -786,8 +788,18 @@ public class Parser {
     throw constructException("expecting to parse a base local process but received \"" + peekToken().toString() + "\"");
   }
 
+  private ConversionNode parseConversion() throws CompilationException, InterruptedException {
+    int start = index;
+    String type = nextToken().toString();
+    String from = ConversionNode.nameMap.get(type).get(0);
+    String to = ConversionNode.nameMap.get(type).get(1);
+    ASTNode process = parseComposite();
+    return new ConversionNode(from, to, process,constructLocation(start));
+  }
+
   private FunctionNode parseFunction() throws CompilationException, InterruptedException {
     int start = index;
+
     String type = parseFunctionType();
 
     IProcessFunction functionDefinition = instantiateClass(functions.get(type));

@@ -19,11 +19,11 @@ import java.util.Set;
 import java.util.Stack;
 import mc.Constant;
 import mc.compiler.Guard;
-//import mc.compiler.LocalCompiler;
-
+import mc.compiler.Interpreter;
 import mc.compiler.ast.ASTNode;
 import mc.compiler.ast.ChoiceNode;
 import mc.compiler.ast.CompositeNode;
+import mc.compiler.ast.ConversionNode;
 import mc.compiler.ast.FunctionNode;
 import mc.compiler.ast.HidingNode;
 import mc.compiler.ast.IdentifierNode;
@@ -39,9 +39,12 @@ import mc.exceptions.CompilationException;
 import mc.plugins.IProcessFunction;
 import mc.plugins.IProcessInfixFunction;
 import mc.processmodels.ProcessModel;
+import mc.processmodels.ProcessType;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.automata.operations.AutomataLabeller;
+
+//import mc.compiler.LocalCompiler;
 
 /**
  * Builds automata from AST assumes
@@ -203,9 +206,11 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
 
       currentNode.setReferences(astNode.getReferences());
     }
-    if (astNode.getModelVariables() != null) {
+    if (astNode.getModelVariables() != null && !astNode.getModelVariables().keySet().isEmpty()) {
       Map<String, Object> varMap = astNode.getModelVariables();
-      varMap.keySet().stream().map(s -> s.substring(1)).forEach(variableList::add);
+      varMap.keySet().stream()
+          .map(s -> s.substring(1))
+          .forEach(variableList::add);
       currentNode.setVariables(varMap);
     }
     currentNode.copyPropertiesFromASTNode(astNode);
@@ -224,6 +229,8 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
       interpretFunction((FunctionNode) astNode, automaton, currentNode);
     } else if (astNode instanceof TerminalNode) {
       interpretTerminalNode((TerminalNode) astNode, automaton, currentNode);
+    } else if (astNode instanceof ConversionNode) {
+      interpretConversion((ConversionNode) astNode, automaton, currentNode);
     }
 
   }
@@ -379,6 +386,17 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
 
   private void interpretTerminalNode(TerminalNode astNode, Automaton automaton, AutomatonNode currentNode) {
     currentNode.setTerminal(astNode.getTerminal());
+  }
+
+  private void interpretConversion(ConversionNode conv, Automaton automaton,
+                                   AutomatonNode currentNode)
+      throws CompilationException, InterruptedException {
+    ProcessType to = ProcessType.valueOf(conv.to.toUpperCase());
+    ProcessType from = ProcessType.valueOf(conv.from.toUpperCase());
+
+    ProcessModel pm = new Interpreter().interpret(conv.from,conv.getProcess(),
+            automaton.getId() + ".pc" + subProcessCount++,processMap,context);
+    addAutomaton(currentNode, automaton, pm.getProcessType().convertTo(to,pm));
   }
 
   private Automaton processLabellingAndRelabelling(Automaton automaton, ProcessRootNode astProcessRootNode) throws CompilationException {

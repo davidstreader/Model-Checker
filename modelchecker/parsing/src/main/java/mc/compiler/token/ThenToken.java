@@ -8,12 +8,12 @@ import mc.util.Location;
 @EqualsAndHashCode(callSuper = true)
 public class ThenToken extends KeywordToken {
 
-	public ThenToken(Location location){
-		super(location);
-	}
+  public ThenToken(Location location) {
+    super(location);
+  }
 
-	@Override
-	public String toString(){
-		return "then";
-	}
+  @Override
+  public String toString() {
+    return "then";
+  }
 }
