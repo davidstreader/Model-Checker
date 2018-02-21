@@ -1,22 +1,32 @@
 processes {
-A1 = a->b->a->A1. // False
+//KEEP all of these they sorted out subtle bugs
+A1 = a->b->a->A1. 
 A1b = simp(abs(A1\{a})).
-A = a->b->a->a->A. //False
+
+A = a->b->a->a->A. 
 Ab = simp(abs(A\{a})).
+
 A3 = a->a->b->A3.  //True
 A3b = simp(abs(A3\{a})).
+
 A2 = b->a->a->A2.  //True
 A2b = simp(abs(A2\{a})).
 
-
-Goal = b->Goal.
+// NOTE initially no special concern was placed on  the START state
+OLDGoal = b->OLDGoal.
+Goal = b->Goal|b->X, X = b->X|b->Goal.
 }
 
-automata A,Ab,A1b,A2b,A3b,  Goal.
+automata A,Ab,A1b,A1.
+automata A2,A2b,A3,A3b.
+automata Goal,OLDGoal.
+
 operation {
 Goal ~ Ab.
 Goal ~ A1b.
 Goal ~ A2b.
 Goal ~ A3b.
 }
+
+
 

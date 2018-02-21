@@ -426,6 +426,16 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     throw new CompilationException(getClass(), "Edge " + id + " was not found in the automaton " + getId(), this.getLocation());
   }
 
+  /**
+   *   does not add duplicate  from- label to
+   * @param label
+   * @param from
+   * @param to
+   * @param currentEdgesGuard
+   * @param addDefaultOwner
+   * @return
+   * @throws CompilationException
+   */
   public AutomatonEdge addEdge(String label, AutomatonNode from, AutomatonNode to,
                                Guard currentEdgesGuard, boolean addDefaultOwner)
       throws CompilationException {
@@ -433,7 +443,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     return addEdge(id, label, from, to, currentEdgesGuard, addDefaultOwner);
   }
 
-  public AutomatonEdge addEdge(String id, String label, AutomatonNode from, AutomatonNode to,
+  private AutomatonEdge addEdge(String id, String label, AutomatonNode from, AutomatonNode to,
                                Guard currentEdgesGuard, boolean addDefaultOwner)
       throws CompilationException {
 

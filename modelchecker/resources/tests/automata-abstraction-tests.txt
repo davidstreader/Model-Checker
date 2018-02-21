@@ -71,7 +71,7 @@ processes {
     Loop = (a -> A),
         A = (x -> A)\{x}.
     AbsLoop = abs(Loop).
-    EqLoop = (a -> STOP).
+    EqLoop = (a -> ERROR).
 }
 
 automata Loop,AbsLoop,EqLoop.
@@ -82,7 +82,7 @@ processes {
     Loop2 = (a -> x -> Loop2)\{x}.
     AbsLoop2 = abs(Loop2).
     EqLoop2 = (a -> EqLoop2 | a -> A),
-        A = (a -> A).
+        A = (a -> A|a->EqLoop2).
 }
 
 automata Loop2,AbsLoop2,EqLoop2.
@@ -166,4 +166,5 @@ processes {
 
 automata Buff,Buff2,AbsBuff,EqBuff.
 operation AbsBuff ~ EqBuff.
+
 

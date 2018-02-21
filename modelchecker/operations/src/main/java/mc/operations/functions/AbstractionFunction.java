@@ -71,12 +71,14 @@ public class AbstractionFunction implements IProcessFunction {
     Set<AutomatonEdge> processesed = new HashSet<>();
     Automaton startA = automata[0].copy();
     String Aname = startA.getId();
-    //System.out.println("start "+ startA.toString());
+    System.out.println("start "+ startA.toString());
 
     Automaton abstraction = pruneHiddenNodes(context, startA);
 
+    System.out.println("pruned "+ abstraction.toString());
 
     mergeloopsOfSize2(context, abstraction);
+    System.out.println("merged "+ abstraction.toString());
 
     boolean isFair = flags.contains("fair") || !flags.contains("unfair");
 
@@ -106,7 +108,8 @@ public class AbstractionFunction implements IProcessFunction {
               deadlockNode, null, true);
         } else {
           if (hiddenEdge.getFrom().getOutgoingEdges().size() == 0) {
-            hiddenEdge.getFrom().setTerminal("STOP");
+            if (!hiddenEdge.getFrom().isTerminal())
+                 hiddenEdge.getFrom().setTerminal("ERROR");
           }
         }
         hiddenEdges.remove(hiddenEdge);
@@ -147,6 +150,7 @@ public class AbstractionFunction implements IProcessFunction {
         //  throw new CompilationException(this.getClass(), null);
       }
     }
+    System.out.println("final "+ abstraction.toString());
 
     return abstraction;
   }
@@ -157,7 +161,11 @@ public class AbstractionFunction implements IProcessFunction {
    * @param context     Symbolic
    * @return list of new hidden edges
    * @throws CompilationException
-   * @throws InterruptedException adds  n-a->m when  n-a->x and x-tau->m to abstraction
+   * @throws InterruptedException
+   *
+   * adds  n-a->m when  n-a->x and x-tau->m to abstraction
+   * note if n-a->m and m-tau->n  then n-a->n will be added
+   *    and m-a->n is added
    */
   private List<AutomatonEdge> constructOutgoingEdges(Automaton abstraction, AutomatonEdge hiddenEdge,
                                                      Context context)
@@ -195,7 +203,10 @@ public class AbstractionFunction implements IProcessFunction {
         //if edge doesn't exist add it
         if (abstraction.getEdge(edge.getLabel(), from, to) == null) {
           added = abstraction.addEdge(edge.getLabel(), from, to, null, true);
-
+          System.out.println("Outgoing add "+added.myString());
+        if (from.getId().equals(to.getId()) && !edge.isHidden()) {
+          abstraction.addEdge(edge.getLabel(), hiddenEdge.getFrom(), hiddenEdge.getTo(), null, true);
+        }
         }
       }
       //System.out.println("symb = "+symbolic+" a->tau-> added " + added.myString());
@@ -252,6 +263,10 @@ public class AbstractionFunction implements IProcessFunction {
         // if not already there add edge
         if (abstraction.getEdge(edge.getLabel(), from, to) == null) {
           added = abstraction.addEdge(edge.getLabel(), from, to, null, true);
+          System.out.println("Incoming add "+added.myString());
+          if (from.getId().equals(to.getId()) && !edge.isHidden()) {
+            abstraction.addEdge(edge.getLabel(), hiddenEdge.getFrom(), hiddenEdge.getTo(), null, true);
+          }
         }
       }
       //System.out.println("symb = "+symbolic+" tau->a-> added " + added.myString());
