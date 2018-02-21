@@ -10,7 +10,8 @@ processes {
       X = (out->B2test|in->out->X).
 }
 
-automata Buff,B2,B3,B4, B2test.
+automata B2,B2test.
 operation {
-B2~ B2test.
+B2 ~ B2test.
 }
+

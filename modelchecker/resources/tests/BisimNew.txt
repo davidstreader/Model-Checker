@@ -14,7 +14,7 @@ Dp = D || D.
 X = red -> Y,
    Y = (red ->Y|red ->X).
 Z = simp(X).
-W = red->W.
+
 
 Q = a->a->a->b->STOP.
 P = a->a->b->STOP.
@@ -24,7 +24,7 @@ automata A,Ap.
 automata B,Bp.
 automata ABp.
 automata D,Dp.
-automata X,Z,W,Q,P.
+automata X,Z,Q,P.
 
 operation {
 Ap~ A.
@@ -33,6 +33,7 @@ Dp ~ D.
 ABp ~ B.
 
 P!~Q.
-W ~ Z.
+X ~ Z.
 }
+
 

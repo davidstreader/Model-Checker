@@ -3,15 +3,13 @@ package mc.operations.functions;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.microsoft.z3.Context;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+
+import java.util.*;
+
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessFunction;
 import mc.processmodels.automata.Automaton;
+import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.automata.util.ColouringUtil;
 import mc.processmodels.petrinet.Petrinet;
@@ -69,24 +67,42 @@ public class SimpFunction implements IProcessFunction {
     //Clone
     Automaton automaton = automata[0].copy();
 
+   ArrayList<AutomatonEdge> edges = new ArrayList<>();
+   ArrayList<AutomatonNode> nodes = new ArrayList<>();
+
+    edges.addAll(automaton.getEdges());
+    nodes.addAll(automaton.getNodes());
+
     ColouringUtil colourer = new ColouringUtil();
     Map<Integer, List<ColouringUtil.ColourComponent>> colourMap = new HashMap<>();
-    Map<AutomatonNode,Integer> initialColour = new HashMap<AutomatonNode,Integer>();
-    for(AutomatonNode n: automaton.getNodes()){
-      initialColour.put(n,BASE_COLOUR);
-    }
-    Multimap<Integer, AutomatonNode> nodeColours = colourer.performColouring(automaton, colourMap,initialColour);
 
-    for (Collection<AutomatonNode> value : nodeColours.asMap().values()) {
+    colourer.performInitialColouring(nodes);
+    colourer.doColouring(edges, nodes);
+    System.out.println("SIMP colour "+ automaton.getId());
+
+   Map<Integer,List<AutomatonNode>> colour2nodes = new HashMap<>();
+
+// System.out.println("SIMP merge "+ automaton.getId());
+     for(AutomatonNode nd: nodes) {
+       if (colour2nodes.containsKey(nd.getColour()) ) {
+        colour2nodes.get(nd.getColour()).add(nd);
+       } else {
+        colour2nodes.put(nd.getColour(), new ArrayList<AutomatonNode>(Arrays.asList(nd)));
+       }
+     }
+
+
+   for (Collection<AutomatonNode> value : colour2nodes.values()) {
       if (value.size() < 2) {
         continue;
       }
-//System.out.println("Simp "+ automaton.toString());
+//System.out.println("Simp "+ automaton.getId());
       AutomatonNode mergedNode = Iterables.get(value, 0);
 
       for (AutomatonNode automatonNode : value) {
         if (automatonNode.equals(mergedNode)) {continue;};
         try {
+ // System.out.println("Merging "+mergedNode.getId()+" " + automatonNode.getId());
           mergedNode = automaton.combineNodes(mergedNode, automatonNode, context);
         } catch (InterruptedException ignored) {
           throw new CompilationException(getClass(), "INTERRUPTED EXCEPTION");

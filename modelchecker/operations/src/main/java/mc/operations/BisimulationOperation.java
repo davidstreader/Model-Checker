@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import mc.exceptions.CompilationException;
 import mc.plugins.IOperationInfixFunction;
 import mc.processmodels.automata.Automaton;
+import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.automata.util.ColouringUtil;
 
@@ -42,55 +43,49 @@ public class BisimulationOperation implements IOperationInfixFunction {
   @Override
   public boolean evaluate(Collection<Automaton> automata) throws CompilationException {
 
-    final int BASE_COLOUR = 1;
+   ArrayList<AutomatonEdge> edges = new ArrayList<>();
+   ArrayList<AutomatonNode> nodes = new ArrayList<>();
+
+   final int BASE_COLOUR = 1;
+
+    int i =0;
+    for(Automaton a: automata){
+     //System.out.println(i++ +" "+ a.getId());
+     edges.addAll(a.getEdges());
+     nodes.addAll(a.getNodes());
+    }
+   Set<Integer> root_colors = new TreeSet<Integer>();
+   Set<Integer> first_colors = new TreeSet<Integer>();
     Map<Integer, List<ColourComponent>> colourMap = new HashMap<>();
-    int rootColour = Integer.MIN_VALUE;
+    //int rootColour = Integer.MIN_VALUE;
 
-    ColouringUtil colourer = new ColouringUtil();
-    // coloring first automata builds colourMap  that is used when coloring next automata
-    for (Automaton automaton : automata) {
-      if (Thread.currentThread().isInterrupted()) {
-        return false;
-      }
-      Map<AutomatonNode,Integer> initialColour = new HashMap<AutomatonNode,Integer>();
-      for(AutomatonNode n: automaton.getNodes()){
-        initialColour.put(n,BASE_COLOUR);
-      }
-      colourer.performColouring(automaton, colourMap,initialColour);
+    // set up the initial colouring ( on the nodes)
+   ColouringUtil colourer = new ColouringUtil();
+   colourer.performInitialColouring(nodes);
+   colourer.doColouring(edges, nodes); // uses initial colouring on nodes
 
+
+   i = 0;
+   for(Automaton automaton: automata){
       Set<AutomatonNode> root = automaton.getRoot();
 
-      List<ColourComponent> colourSet = root.stream()
-          .map(AutomatonNode::getColour)
-          .map(colourMap::get)
-          .filter(Objects::nonNull)
-          .flatMap(List::stream)
-          .distinct()
-          .sorted()
-          .collect(Collectors.toList());
-
-      int col = Integer.MIN_VALUE;
-
-      for (Map.Entry<Integer, List<ColourComponent>> colour : colourMap.entrySet()) {
-        List<ColourComponent> colSet = new ArrayList<>(colour.getValue());
-        Collections.sort(colSet);
-
-        if (colSet.equals(colourSet)) {
-          col = colour.getKey();
-          break;
+     if (i ==0){
+        for(AutomatonNode n : root) {
+          first_colors.add(n.getColour());
         }
-      }
-
-      if (col == Integer.MIN_VALUE) {
-        col = colourer.getNextColourId();
-        colourMap.put(col, colourSet);
-      }
-
-      if (rootColour == Integer.MIN_VALUE) { //Coloring first automaton, i.e first loop
-        rootColour = col;
-      } else if (rootColour != col) {   //comparison between this current automaton and the first
-        return false;
-      }
+ // System.out.println("Aut "+ automaton.getId()+ " first col "+ first_colors);
+        i++;
+      } else {
+        for (AutomatonNode n : root) {
+         root_colors.add(n.getColour());
+        }
+ // System.out.println("Aut "+ automaton.getId()+ " root col "+ root_colors);
+        if (root_colors.equals(first_colors)) {   //comparison between this current automaton and the first
+           return true;
+        } else {
+           return false;
+        }
+     }
     }
 
     return true;

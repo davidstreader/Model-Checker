@@ -2,17 +2,10 @@ package mc.processmodels.automata.util;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
+
+import java.util.*;
+
+import com.google.common.collect.TreeMultimap;
 import lombok.ToString;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
@@ -24,162 +17,205 @@ public class ColouringUtil {
   private static final int BASE_COLOUR = 1;
   private static final int STOP_COLOUR = 0;
   private static final int ERROR_COLOUR = -1;
+  private static final int ROOT_COLOUR = -2;
+  private static final int ROOT_STOP_COLOUR = -3;
+  private static final int ROOT_ERROR_COLOUR = -4;
   private int nextColourId = 1;
+  private Map<AutomatonNode,Integer> oldColours = new TreeMap<AutomatonNode,Integer>();
 
-  /**
-   *
-   * @param automaton  input and output
-   * @param colourMap  defines what a colour is and can be set by coloring one automata
-   *                   then used when coloring a second automata
-   * @return           again not sure if used
-   *
-   * The nodes of the automaton hold colour and these are set
-   *   -- colourMap from Nodecolor to list of colorComponents
-   *   -- nodeColours  maps colours to nodes
-   *         COMPUTEs BISIMULATION COLORing
-   */
-  public Multimap<Integer, AutomatonNode> performColouring
-                          (Automaton automaton,
-                           Map<Integer, List<ColourComponent>> colourMap,
-                           Map<AutomatonNode,Integer> initialColour) {
-    int lastColourCount = 1;
-    performInitialColouring(automaton, initialColour);
-    Multimap<Integer, AutomatonNode> nodeColours = ArrayListMultimap.create();
-    boolean runTwice = true;
+  public void doColouring
+    (List<AutomatonEdge>  edges,
+     List<AutomatonNode> nodes) {
 
-  /*  System.out.println("Starting performColouring "+ automaton.toString());
-System.out.print("ColorMap [\n");
-for (Integer n: colourMap.keySet()) {
-  System.out.print(n+" -> "+ colourMap.get(n).toString()+"\n ");
-} System.out.println(" ]");
-*/
-    while (runTwice || nodeColours.size() != lastColourCount && !Thread.currentThread().isInterrupted()) {
-      if (nodeColours.size() == lastColourCount) {
-        runTwice = false;
-      }
+    Map< AutomatonNode,Integer> nextCol = new TreeMap< AutomatonNode,Integer>();
 
-      lastColourCount = nodeColours.size();
-      nodeColours.clear();
-      Set<String> visited = new HashSet<>();
 
-      Queue<AutomatonNode> fringe = new LinkedList<>();
+    /* Set up initial color on nodes
+       Repeatedly color the nodes (in parallel) based on last color
+                         DO NOT change color one node ta a time
+        for each node nd compute nd_colPI
+          if nd_colPI is defined in PI
+            if nd_col = PI(nd_colPI)
+                continue
+            else
+                ERROR!
+          else
+             newCol in nd and in PI
 
-      automaton.getRoot().forEach(fringe::offer);
+       stop only if each old color maps to only one colourPI
+     */
 
-      while (!fringe.isEmpty() && !Thread.currentThread().isInterrupted()) {
-        AutomatonNode current = fringe.poll();
+      // Repeatedly
+    int test = 0;
+    boolean go = true;
+    while (go && test < 10) {
+        test++;
+     Map<String, Integer> pi = new TreeMap<String, Integer>();
+     // build fresh pi each iteration
 
-        // check if the current node has been visited
-        if (visited.contains(current.getId())) {
-          continue;
-        }
+     //    for each node nd
+        for (AutomatonNode nd : nodes) {
+ /*   System.out.print("nextCol= {");
+    for(AutomatonNode ndd : nextCol.keySet()) {
+      System.out.print(ndd.getId()+"->"+nextCol.get(ndd)+" ");
+    } System.out.println("}");*/
+          List<ColourComponent> ndpi = new ArrayList<ColourComponent>(buildpi(nd, edges, nodes));
+          //      if nd_colorPI defined in PI
 
-        // check if the current node is a terminal
-        if (current.isTerminal()) {
-          String terminal = current.getTerminal();
-          if (terminal.equals("STOP")) {
-            nodeColours.put(STOP_COLOUR, current);
-          } else if (terminal.equals("ERROR")) {
-            nodeColours.put(ERROR_COLOUR, current);
+ //  System.out.println(" PI = "+ piToString(pi));
+          String ndpiString = CCSString(ndpi);
+ //  System.out.println("For node "+ nd.getId()+" Look for "+ ndpiString);
+          if (pi.containsKey(ndpiString)) {
+            //        if nd_col = PI(nd_colPI)
+            nextCol.put(nd,pi.get(ndpiString));
+            if (pi.get(ndpiString).equals(nextCol.get(nd))) {
+              //            continue
+              continue;
+              //        else
+            } else {
+              //            ERROR!
+            }
+          } else {
+              //         newCol in nd and in PI
+
+              nextCol.put(nd,getNextColourId());
+   //         System.out.println("NOT found Adding to next "+ nd.getId() +"->"+ nextCol.get(nd));
+   //         System.out.println("                     pi "+ ndpiString);
+              pi.put(ndpiString, nextCol.get(nd));
+              continue;
+            }
+          }
+     //   apply the new colours to the nodes
+ //    System.out.println("REcolor Nodes");
+     for(AutomatonNode nd : nextCol.keySet()){
+      nd.setColour(nextCol.get(nd));
+     }
+  /*   for(AutomatonNode nd : nextCol.keySet()){
+      System.out.println("set node "+ nd.getId()+" col "+nd.getColour()+
+        "   newPi "+CCSString(buildpi(nd, edges, nodes)));
+     }*/
+
+      //if one of the old colours has more than one new color pi then keep going
+          go = false;
+          Map<Integer,String> reversepi = new TreeMap<Integer, String>();
+          for(AutomatonNode nd: nodes){
+            if (reversepi.containsKey(nd.getColour()) ) {
+              if (!reversepi.get(nd.getColour()).equals(CCSString(buildpi(nd, edges, nodes)) )) {
+                go = true;
+ //   System.out.println("Keep Going"+reversepi.get(nd.getColour())+" != "+CCSString(buildpi(nd, edges, nodes)));
+                break;
+              } else {
+  //             System.out.println(nd.getId()+ " "+nd.getColour()+" "+CCSString(buildpi(nd, edges, nodes)));
+              }
+            } else {
+             reversepi.put(nd.getColour(), CCSString(buildpi(nd, edges, nodes) ));
+            // System.out.println("Termination Check Add "+nd.getColour()+"->"+
+            //   CCSString(buildpi(nd, edges, nodes) ));
+            }
           }
 
-          visited.add(current.getId());
-          continue;
-        }
+  /*   System.out.print("ReversePI {");
+     for(Integer k: reversepi.keySet()){
+      System.out.print(k+"->"+reversepi.get(k)+" ");
+     } System.out.println("}");*/
+    }
 
-        // construct a colouring for the current node
-        List<ColourComponent> colouring = constructColouring(current);
-//System.out.println(">>>col "+ colouring.toString());
-        // check if this colouring already exists
-        int colourId = Integer.MIN_VALUE;
+    return;
+  }
 
-        for (int id : colourMap.keySet()) {
-          List<ColourComponent> oldColouring = colourMap.get(id);
- // System.out.print("oldcol "+ oldColouring.toString());
-  //Beware .eualaity failed - might be to do with Collection List clash
-  // So I hard coded colorEquality
-          if (colorEquality(colouring,oldColouring)) {
-            colourId = id;
-            break;
+  private List<ColourComponent> buildpi (AutomatonNode nd,
+                                List<AutomatonEdge>  edges,
+                                List<AutomatonNode>  nodes){
+   ArrayList<ColourComponent> ccs = new ArrayList<ColourComponent>();
+   if (nd.isStartNode()) {
+    ccs.add(new ColourComponent(nd.getColour(), "Start",999));
+   }
+   if (nd.isTerminal()) {
+    if (nd.getTerminal().equals("STOP")){
+     ccs.add(new ColourComponent(nd.getColour(), "STOP", 999));
+    } else {
+     ccs.add(new ColourComponent(nd.getColour(), "ERROR",999));
+    }
+   }
+
+      for(AutomatonEdge ed : edges) {
+        if (ed.getFrom().equals(nd)) {
+         ColourComponent cc = new ColourComponent(ed.getFrom().getColour(), ed.getLabel(),ed.getTo().getColour());
+          boolean add = true;
+          for(ColourComponent c: ccs){
+           if (c.action.equals(cc.action) && c.to==cc.to) {add = false;break;}
           }
-          //System.out.println("*No");
+          if (add) ccs.add(cc);
         }
-
-        if (colourId == Integer.MIN_VALUE) {
-          colourId = getNextColourId();
-          colourMap.put(colourId, colouring);
-//  System.out.println("new "+colourId+" -> "+ colouring.toString());
-        }
-
-        if (!nodeColours.containsKey(colourId)) {
-          nodeColours.replaceValues(colourId, new ArrayList<>());
-        }
-        nodeColours.get(colourId).add(current);
-
-        current.getOutgoingEdges().stream()
-            .map(AutomatonEdge::getTo)
-            .filter(node -> !visited.contains(node.getId()))
-            .forEach(fringe::offer);
-
-        visited.add(current.getId());
       }
 
-      // apply colours to the nodes  end of each iteration
-      for (int colourId : nodeColours.keySet()) {
-        nodeColours.get(colourId).forEach(node -> node.setColour(colourId));
-      }
+    Collections.sort(ccs);
+  // System.out.println("Sorted ndpi "+ CCSString(ccs));
+   return ccs;
+    }
+
+
+
+ public Map<AutomatonNode,Integer> performInitialColouring(List<AutomatonNode> nodes) {
+  //   System.out.println("performInitialColouring");
+
+  Map<AutomatonNode,Integer> initialColour = new HashMap<AutomatonNode,Integer>();
+  for (AutomatonNode node : nodes) {
+   // check if the current node is a terminal and or Start
+   node.setColour(BASE_COLOUR);
+   if (node.isTerminal()) {
+    String terminal = node.getTerminal();
+    if (terminal.equals("STOP")) {
+     if (node.isStartNode()) {
+      node.setColour(ROOT_STOP_COLOUR);
+     } else {
+      node.setColour(STOP_COLOUR);
+     }
+    } else if (terminal.equals("ERROR")) {
+     if (node.isStartNode()) {
+      node.setColour(ROOT_ERROR_COLOUR);
+     } else {
+      node.setColour(ERROR_COLOUR);
+     }
 
     }
- //   System.out.println("Ending performColouring "+ automaton.toString());
+    } else if (node.isStartNode()) {
+    node.setColour(ROOT_COLOUR);
 
-    return nodeColours;
+   }
   }
-
-  private void performInitialColouring(Automaton automaton,
-                                       Map<AutomatonNode,Integer> initialColour) {
- //   System.out.println("performInitialColouring");
-    if (initialColour ==null) {System.out.println("NULL");}
-/*
-    for (AutomatonNode n : initialColour.keySet()){
-      System.out.println(" "+n.getId()+" "+initialColour.get(n).toString());
-    }
-*/
-    List<AutomatonNode> nodes = automaton.getNodes();
-    for (AutomatonNode node : nodes) {
-      if (node.isTerminal()) {
-        String terminal = node.getTerminal();
-        if (terminal.equals("STOP")) {
-          node.setColour(STOP_COLOUR);
-        } else if (terminal.equals("ERROR")) {
-          node.setColour(ERROR_COLOUR);
-        }
-      } else {
-//        node.setColour(BASE_COLOUR);
-        node.setColour(initialColour.get(node));
-      }
-    }
+  for (AutomatonNode node : nodes) {
+   initialColour.put(node,node.getColour());
+//   System.out.println("initialCol "+node.getId()+"->"+node.getColour());
   }
+  return initialColour;
+ }
+
+
+
+
 
   /*
      uses the color held on the automaton nodes
      Because the initial colouring need not be the total relation
-     We need to check that the two nodes are initiall colour equal
+     We need to check that the two nodes are initial colour equal
+     ONLY USED IN Failure equ
    */
   public List<ColourComponent> constructColouring(AutomatonNode node) {
     Set<ColourComponent> colouringSet = new HashSet<>();
-    colouringSet.add(new ColourComponent(node.getColour(), "****"));
+    //colouringSet.add(new ColourComponent(node.getColour(), "****"));
     node.getOutgoingEdges()
         .forEach(edge -> {
           boolean add = true;
-          ColourComponent newColC = new ColourComponent(edge.getTo().getColour(), edge.getLabel());
+          ColourComponent newColC = new ColourComponent(edge.getFrom().getColour(), edge.getLabel(),edge.getTo().getColour());
           for(ColourComponent cc :colouringSet) {
             if (cc.equals(newColC)){add = false;}
           }
           if (add) {
             colouringSet.add(newColC);
+          //  System.out.println("Adding From "+ node.getId()+ " To "+ edge.getTo().getId()+
+          //                     " col "+edge.getTo().getColour() );
           }
-        //System.out.println("To node "+ edge.getTo().getId()+
-         //                  " col "+edge.getTo().getColour() );
         });
     List<ColourComponent> colouring = new ArrayList<>(colouringSet);
     Collections.sort(colouring);
@@ -190,7 +226,7 @@ for (Integer n: colourMap.keySet()) {
     return nextColourId++;
   }
 
-  public boolean colorEquality(List<ColourComponent> c1,List<ColourComponent> c2){
+  public boolean colorComponentEquality(List<ColourComponent> c1, List<ColourComponent> c2){
 
     if (c1.size() != c2.size()) {return false;}
     for(int ix = 0; ix<c1.size(); ix++) {
@@ -200,35 +236,87 @@ for (Integer n: colourMap.keySet()) {
     return true;
   }
 
+  private Map<AutomatonNode,Integer> setOldColours(Multimap<Integer, AutomatonNode> nodeColours){
+    Map<AutomatonNode,Integer> oCols = new TreeMap<AutomatonNode,Integer>();
+    for (Integer k: nodeColours.asMap().keySet()) {
+      for(AutomatonNode n : nodeColours.get(k)){
+        oCols.put(n,k);
+      }
+    }
+    return oCols;
+  }
+  private boolean colEquality(Map<AutomatonNode,Integer> old,Map<AutomatonNode,Integer> now){
+  /*  System.out.print("colEquality old { ");
+    for(AutomatonNode n: old.keySet()) {
+      System.out.print(n.getId()+"-"+old.get(n)+ " ");
+    } System.out.println(" }");
+    System.out.print("colEquality now { ");
+    for(AutomatonNode n: now.keySet()) {
+      System.out.print(n.getId()+"-"+now.get(n)+ " ");
+    } System.out.println(" }");*/
+    boolean b = true;
+    for(AutomatonNode n: now.keySet()){
+      if (!now.containsKey(n) || old.get(n) != now.get(n)){
+        return false;
+      }
+    }
+    return b;
+  }
+
+
   @ToString
   //@AllArgsConstructor
   public static class ColourComponent implements Comparable<ColourComponent> {
-    public int to;
-    public String action;
-    public ColourComponent(int toin, String actionin){
+   public int from;
+   public int to;
+   public String action;
+    public ColourComponent(int fromin, String actionin, int toin){
+      from = fromin;
       to = toin;
       action = actionin;
     }
+
+
+
+    public static int compareTo(ColourComponent c1,ColourComponent c2){
+      return c1.compareTo(c2);
+    }
     public int compareTo(ColourComponent col) {
-      if (to < col.to) {
-        return -1;
-      }
-      if (to > col.to) {
-        return 1;
-      }
-      return action.compareTo(col.action);
+     //System.out.print("PINGO");
+      if (from < col.from) return -1;
+      if (from > col.from) return +1;
+      if (from == col.from) {
+       if (to < col.to) return -1;
+       if (to > col.to) return +1;
+       if (to == col.to) {
+        return (action.compareTo(col.action));
+       }  else {return 0;} // unreachable
+      } else {return 0;}  // unreachable
+
     }
     public boolean equ(ColourComponent col){
-      return action.equals(col.action) && to==col.to;
+      return action.equals(col.action) && to==col.to && from==col.from;
     }
     public String myString(){
       return action+" "+to;
     }
 
+
+
     public boolean equals(ColourComponent col){
-      boolean ok = action.equals(col.action) && to==col.to;
+      boolean ok = action.equals(col.action) && to==col.to && from==col.from;
       //System.out.println("colcomp eq "+ ok);
       return ok;
     }
+  }
+  public String CCSString(List<ColourComponent> ccs) {
+    String s ="{ ";
+    for(ColourComponent cc : ccs){ s = s+cc.from+" "+ cc.action+" "+ cc.to+" ";}
+    return s+" }";
+  }
+  public String piToString(Map<String, Integer> pi) {
+    String s ="{ ";
+    for(String k : pi.keySet()){ s = s+k+"-> "+pi.get(k);}
+    return s+" }";
   }
 }

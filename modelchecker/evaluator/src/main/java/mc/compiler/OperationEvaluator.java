@@ -43,30 +43,30 @@ public class OperationEvaluator {
 
       String firstId = findIdent(operation.getFirstProcess(), code);
       String secondId = findIdent(operation.getSecondProcess(), code);
-
+  System.out.println("first "+firstId+ "  second "+ secondId);
       List<String> firstIds = collectIdentifiers(operation.getFirstProcess());
       List<String> secondIds = collectIdentifiers(operation.getSecondProcess());
 
       List<Automaton> automata = new ArrayList<>();
       List<String> missing = new ArrayList<>(firstIds);
 
-      missing.addAll(secondIds);
+      missing.addAll(secondIds);  // all process ids
       missing.removeAll(processMap.keySet());
 
       if (!missing.isEmpty()) {
         throw new CompilationException(OperationEvaluator.class, "Identifier " + missing.get(0) + " not found!", operation.getLocation());
       }
-
+// process ids all valid - in processMap
       automata.add((Automaton) interpreter.interpret("automata", operation.getFirstProcess(), getNextOperationId(), processMap, context));
       automata.add((Automaton) interpreter.interpret("automata", operation.getSecondProcess(), getNextOperationId(), processMap, context));
-
-
+// built all automata processs
+  System.out.println("oper "+ operation.getOperation().toLowerCase());
       IOperationInfixFunction funct = instantiateClass(operationsMap.get(operation.getOperation().toLowerCase()));
       if (funct == null) {
         throw new CompilationException(getClass(), "The given operation is invaid: "
             + operation.getOperation(), operation.getLocation());
       }
-
+//now evaluate the operation
       boolean result = funct.evaluate(automata);
 
       if (operation.isNegated()) {
@@ -130,6 +130,12 @@ public class OperationEvaluator {
     }
   }
 
+  /**
+   *
+   * @param firstProcess
+   * @param code
+   * @return
+   */
   static String findIdent(ASTNode firstProcess, String code) {
     Location loc = firstProcess.getLocation();
     String[] lines = code.split("\\n");

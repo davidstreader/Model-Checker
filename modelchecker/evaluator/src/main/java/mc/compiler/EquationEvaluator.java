@@ -30,12 +30,16 @@ public class EquationEvaluator {
 
   }
 
-  public EquationReturn evaluateEquations(List<ProcessModel> processes, List<OperationNode> operations, String code, com.microsoft.z3.Context z3Context, BlockingQueue<Object> messageQueue) throws CompilationException {
+  public EquationReturn evaluateEquations(List<ProcessModel> processes,
+                                          List<OperationNode> operations,
+                                          String code, com.microsoft.z3.Context z3Context, BlockingQueue<Object> messageQueue)
+    throws CompilationException {
     reset();
     List<OperationResult> results = new ArrayList<>();
     Map<String, ProcessModel> toRender = new ConcurrentSkipListMap<>();
 
-
+    System.out.println("precess   cnt"+processes.size());
+    System.out.println("operation cnt"+operations.size());
     for (OperationNode operation : operations) {
       ModelStatus status = new ModelStatus();
       //Generic ids defined in the equation block
@@ -58,7 +62,8 @@ public class EquationEvaluator {
         secondIds.stream().filter(id -> !testingSpace.contains(id)).forEach(testingSpace::add);
 
         int totalPermutations = (int) Math.pow(processes.size(), testingSpace.size());
-        ArrayList<String> failures = testUserdefinedModel(processes, testingSpace, status, operation, z3Context, messageQueue);
+        ArrayList<String> failures = testUserdefinedModel(processes, testingSpace,
+                           status, operation, z3Context, messageQueue);
 
         results.add(new OperationResult(operation.getFirstProcess(), operation.getSecondProcess(), firstId,
             secondId, operation.getOperation(), failures, operation.isNegated(), status.passCount == totalPermutations,
@@ -73,8 +78,21 @@ public class EquationEvaluator {
   }
 
 
-  private ArrayList<String> testUserdefinedModel(List<ProcessModel> models, List<String> testingSpace, ModelStatus status,
-                                                 OperationNode operation, com.microsoft.z3.Context z3Context, BlockingQueue<Object> messageQueue)
+  /**
+   *
+   * @param models       Automaton  used for ONCE only replacement of Variables
+   * @param testingSpace Variables in equation
+   * @param status
+   * @param operation  holds two processes and name of operation
+   * @param z3Context
+   * @param messageQueue
+   * @return
+   * @throws CompilationException
+   */
+  private ArrayList<String> testUserdefinedModel(List<ProcessModel> models,
+                                                 List<String> testingSpace,
+                                                 ModelStatus status,
+            OperationNode operation, com.microsoft.z3.Context z3Context, BlockingQueue<Object> messageQueue)
       throws CompilationException {
 
     ArrayList<String> failedEquations = new ArrayList<>();
@@ -94,8 +112,9 @@ public class EquationEvaluator {
     {
       idMap.put(currentId, models.get(0));
     }
-
-    HashMap<String, Integer> indexMap = new HashMap<>(); // Stops us having to search for the model each time with a loop
+// build automaton name to index
+// Stops us having to search for the model each time with a loop
+    HashMap<String, Integer> indexMap = new HashMap<>();
     for (int i = 0; i < models.size(); i++) {
       indexMap.put(models.get(i).getId(), i);
     }
@@ -117,7 +136,8 @@ public class EquationEvaluator {
       String currentOperation = operation.getOperation().toLowerCase();
 
 
-      boolean result = exceptionInformation.length() == 0 && instantiateClass(operationsMap.get(currentOperation)).evaluate(createdAutomaton);
+      boolean result = exceptionInformation.length() == 0 &&
+                       instantiateClass(operationsMap.get(currentOperation)).evaluate(createdAutomaton);
 
       if (operation.isNegated()) {
         result = !result;

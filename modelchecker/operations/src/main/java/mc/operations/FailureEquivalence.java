@@ -68,7 +68,7 @@ public class FailureEquivalence implements IOperationInfixFunction {
   /*
   Set up Acceptance Graphs and initial colouring on the automata nodes
   */
-        ColouringUtil colourer = new ColouringUtil();
+        //ColouringUtil colourer = new ColouringUtil();
         Map<Integer, List<Set<String>>> cmap = new TreeMap<Integer, List<Set<String>>>();
 
         for (Automaton automaton : automata) {
@@ -96,55 +96,42 @@ public class FailureEquivalence implements IOperationInfixFunction {
    If the acceptance coloring is not a bisimulation look not further and fail
    Now compute the bisimulation coloring of the DFA in the Acceptance graphs
  */
-        // build initial colouring from the automata
+        // build node and edge lists
+        ArrayList<AutomatonEdge> edges = new ArrayList<>();
+        ArrayList<AutomatonNode> nodes = new ArrayList<>();
+        for(AcceptanceGraph a: ags){
+            //System.out.println(i++ +" "+ a.getId());
+            edges.addAll(a.getA().getEdges());
+            nodes.addAll(a.getA().getNodes());
+        }
+        // set up the initial colouring ( on the nodes)
+        ColouringUtil colourer = new ColouringUtil();
+        colourer.performInitialColouring(nodes);
+        colourer.doColouring(edges, nodes); // uses initial colouring on nodes
 
+        Set<Integer> root_colors = new TreeSet<Integer>();
+        Set<Integer> first_colors = new TreeSet<Integer>();
         int i = 0;
-        for (AcceptanceGraph ag : ags) {
-            if (Thread.currentThread().isInterrupted()) {
-                return false;
-            }
+        for(AcceptanceGraph a: ags){
+            Automaton automaton = a.getA();
+            Set<AutomatonNode> root = automaton.getRoot();
 
-            //This computes bisimulation  based on the initial coloring input
-            colourer.performColouring(ag.getA(), colourMap,initialColour);
-
-            Set<AutomatonNode> root = ag.getA().getRoot();
-
-            List<ColourComponent> colourSet = root.stream()
-                    .map(AutomatonNode::getColour)
-                    .map(colourMap::get)
-                    .filter(Objects::nonNull)
-                    .flatMap(List::stream)
-                    .distinct()
-                    .sorted()
-                    .collect(Collectors.toList());
-
-//      System.out.println(automaton.getId());
-//      System.out.println(colourSet);
-
-            int col = Integer.MIN_VALUE;
-
-            for (Map.Entry<Integer, List<ColourComponent>> colour : colourMap.entrySet()) {
-                List<ColourComponent> colSet = new ArrayList<>(colour.getValue());
-                Collections.sort(colSet);
-
-                if (colSet.equals(colourSet)) {
-                    col = colour.getKey();
-                    break;
+            if (i ==0){
+                for(AutomatonNode n : root) {
+                    first_colors.add(n.getColour());
                 }
-            }
-//      System.out.println(col);
-
-            if (col == Integer.MIN_VALUE) {
-                col = colourer.getNextColourId();
-                colourMap.put(col, colourSet);
-            }
-
-            if (rootColour == Integer.MIN_VALUE) { //first
-                bag.composeAG(ags.get(i).getA().getId(),ags.get(i).getA());
-                rootColour  = col;
-            } else if (rootColour != col) {  //second
-
-                return false;
+                // System.out.println("Aut "+ automaton.getId()+ " first col "+ first_colors);
+                i++;
+            } else {
+                for (AutomatonNode n : root) {
+                    root_colors.add(n.getColour());
+                }
+                // System.out.println("Aut "+ automaton.getId()+ " root col "+ root_colors);
+                if (root_colors.equals(first_colors)) {   //comparison between this current automaton and the first
+                    return true;
+                } else {
+                    return false;
+                }
             }
         }
 
