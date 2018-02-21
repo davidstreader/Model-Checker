@@ -1,0 +1,45 @@
+  processes {
+        A = (a -> b? -> c -> STOP || x -> b! -> z -> STOP).
+
+        ExpectedA = (x -> B | a -> x -> C),
+            B = (a -> C | b! -> (a -> z -> ERROR | z -> a -> ERROR)),
+            C = (b! -> (c -> z -> STOP | z -> c -> STOP)).
+
+        B = (B||C),
+            B = (a?->b->c!->STOP),
+            C = (a!->x->c?->STOP).
+
+        ExpectedB = (a! -> (b -> B | x -> b -> C)),
+            B = (x -> C | c! -> x -> ERROR),
+            C = (c! -> STOP).
+
+               C = (a -> b? -> c -> STOP || x -> b? -> z -> STOP).
+
+        ExpectedC = (a -> B | x -> C),
+            B = (x -> D | b? -> BB),
+            BB = (c-> x -> B1| x-> Nw),
+            B1 = (b?->F),
+            New = b?->G,
+            Nw = b?->E| c->B1,
+            C = (a -> D | b? -> (z-> a-> New|(a->(b?->E|z->New)))),
+            D = (b? -> E),
+            E = (c -> F | z -> G),
+            F = (z -> H),
+            G = (c -> H),
+            H = (STOP).
+
+    }
+
+    automata A,ExpectedA.
+
+   automata B,ExpectedB.
+
+    automata C,ExpectedC.
+
+    operation {
+        A ~ ExpectedA.
+       B ~ ExpectedB.
+        C ~ ExpectedC.
+    }
+
+

@@ -1,0 +1,26 @@
+processes {
+P = (p->STOP).
+Q = (q->STOP).
+R = r->STOP.
+S = s->STOP.
+
+X  = P+R.
+Y  = P|R.
+Z = (P|>R).
+Z1 = R+(P|R).
+Z2 = (P+STOP)|R.
+Zinc = P+STOP.  // Bug in +  Zinc should not be same as P
+Copper = STOP+P.
+}
+//petrinet A.
+automata X,Y,Z,Z1,Z2,Zinc,Copper.
+
+operation {
+X #Y.
+X !*Y.
+Z ~Z1.
+Z *Z1.
+Z ~Z2.
+Z #Z2.
+}
+

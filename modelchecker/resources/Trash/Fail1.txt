@@ -1,0 +1,35 @@
+processes {
+Zero1 = STOP.
+
+
+One2 = a->STOP.
+
+
+One5 = b->STOP.
+
+
+Two1 = a->b->STOP.
+
+
+Two5 = a->STOP|b->STOP.
+
+Two8 = a->X|b->X, X = STOP.
+//  Two9 = (a->STOP + b->STOP).
+
+}
+automata One2,One5.
+automata Two1,Two5,Two8.
+
+
+operation {
+One2=>(One5|One2) !* (One2=>One5)|(One2=>One2).
+}
+
+
+
+
+
+
+
+
+

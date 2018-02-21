@@ -1,0 +1,43 @@
+const N = 2.
+processes {
+
+
+
+
+S = a->S| a->a->a->X,
+   X = a->X.
+S1 = simp(S).
+T = a->T| a->X,
+   X = a->X.
+T1 = simp(T).
+
+W = a->(a->b->STOP|a->c->STOP).
+X = (a->(a->b->STOP|a->c->STOP))|(a->(a->b->STOP|a->c->STOP)).
+X1 = simp(X).
+
+B = a->X, X= a->X.
+C = a->(a->X|a->a->a->Y), X= a->X,Y=(a->X|a->Y).
+C1 = simp(C).
+
+E = a->X,X= b->X.
+F = a->X| a->b->b->Y, X= b->X, Y=b->Y.
+F1= simp(F).
+}
+
+
+automata S1,T1,W,X1,C1,B,E,F1, X,C,S,F.
+
+operation {
+S1 ~ T1.
+X1 ~ W.
+B ~ C.
+E ~ F1.
+}
+
+
+
+
+
+
+
+

@@ -1,0 +1,17 @@
+processes {
+P = (p->STOP).
+
+
+
+Zinc = (STOP)+P.  // Bug in +  Zinc should not be same as P
+Copper = P+(STOP).
+}
+//petrinet A.
+automata Zinc, Copper.
+
+operation {
+Zinc~Copper.
+}
+
+
+

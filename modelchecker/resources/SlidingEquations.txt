@@ -1,0 +1,32 @@
+processes {
+P = (p->STOP).
+Q = (x->STOP).
+R = r->STOP.
+S = s->STOP.
+
+T1 = simp((P|>Q)|| (Q|>Q)).
+T2 = simp( (P||Q) |> ( (Q|| (Q|>Q)) + ((P|>Q)|| Q) ) ).
+
+T3 = simp(((P|>Q)||(R|>S))).
+T4 = simp( (P||R) |> ( (Q|| (R|>S)) + ((P|>Q)|| S) ) ).
+}
+//petrinet A.
+automata T1,T2,T3,T4.
+
+operation {
+T3 #T4.
+T1 #T2.
+//((P|>Q)||(R|>S)) # ((P||R) |> ( ( Q|| (R|>S)) + ((P|>Q)|| S) )).
+
+//((P|>Q)||(Q|>Q)) # ((P||Q) |> ( ( Q|| (Q|>Q)) + ((P|>Q)|| Q) )).
+}
+
+
+equation {
+
+//((P|>Q)||(R|>S)) # ((P||R) |> ( ( Q|| (R|>S)) + ((P|>Q)|| S) )).
+}
+
+
+
+

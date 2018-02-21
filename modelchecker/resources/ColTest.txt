@@ -1,0 +1,36 @@
+const N = 2.
+processes {
+
+
+Q = a->a->a->b->Q.
+P = a->a->a->b->P.
+R = a->a->b->R.
+
+S = a->S| a->a->a->X,
+   X = a->X.
+T = a->T| a->X,
+   X = a->X.
+U = a->U.
+
+V = a->a->b->STOP| a->a->c->STOP.
+W = a->(a->b->STOP|a->c->STOP).
+X = (a->(a->b->STOP|a->c->STOP))|(a->(a->b->STOP|a->c->STOP)).
+}
+
+
+automata Q,P,R,S,T,U,V,W,X.
+
+operation {
+P ~ Q.
+P !~ R.
+S ~ T.
+T !~ U.
+V !~ W.
+X ~ W.
+}
+
+
+
+
+
+

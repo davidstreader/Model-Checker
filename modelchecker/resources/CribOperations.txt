@@ -1,0 +1,13 @@
+processes {
+A = (a->b->STOP| a->c->STOP).
+B = a->(b->STOP |c->STOP).
+C =(a->b->STOP| a->c->STOP | a->(b->STOP |c->STOP)).
+}
+automata A,B,C.
+operation {
+ A !* B. 
+ A # B. 
+}
+
+
+

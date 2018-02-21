@@ -1,0 +1,24 @@
+const N = 2.
+processes {
+
+T = a->T| a->X,
+   X = a->X.
+U = a->U.
+
+W = a->(a->b->STOP|a->c->STOP).
+X = (a->(a->b->STOP|a->c->STOP))|(a->(a->b->STOP|a->c->STOP)).
+}
+
+
+automata T,U,W,X.
+
+operation {
+T !~ U.
+X ~ W.
+}
+
+
+
+
+
+

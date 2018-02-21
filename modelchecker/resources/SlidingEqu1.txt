@@ -1,0 +1,47 @@
+processes {
+Zero1 = STOP.
+Zero2 = ERROR.
+
+One1 = a->One1.
+One2 = a->STOP.
+One3 = a->ERROR.
+One4 = b->One4.
+One5 = b->STOP.
+One6 = b->ERROR.
+
+Two1 = a->b->STOP.
+Two2 = a->Two2|a->STOP.
+Two3 = a->Two3|b->STOP.
+Two4 = a->b->Two4.
+Two5 = a->STOP|b->STOP.
+Two6 = a->ERROR| a->STOP.
+Two7 = a->ERROR|b->STOP.
+Two8 = a->X|b->X, X = STOP.
+//  Two9 = (a->STOP + b->STOP).
+
+T1 = (One5|>One1)|*|(One5|>One1).
+T2 = (One5 |*|One5 ) |> ( ( One1|*| (One5|>One1)) + ((One5|>One1)|*| One1) ).
+T3 = (One5 |*|One5 ) |> ( One1|*| (One5|>One1)).
+
+
+}
+automata T1,T2,T3.
+//automata One1,One2,One3,One4,One5,One6.
+//automata Two1,Two2,Two3,Two4,Two5,Two6,Two7,Two8.
+
+
+operation {
+T2 # T3.
+T1 # T2.
+}
+equation {
+
+//X # (X|| (X|>X)).
+
+//((P|>Q)|*|(R|>S)) # ( (P|*|R) |> ( ( Q|*| (R|>S)) + ((P|>Q)|*| S) ) ).
+}
+
+
+
+
+
