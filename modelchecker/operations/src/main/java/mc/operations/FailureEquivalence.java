@@ -75,6 +75,7 @@ public class FailureEquivalence implements IOperationInfixFunction {
             //System.out.println("Start auto "+ automaton.toString());
             Automaton a = automaton.copy();
             //System.out.println("Start copy "+ a.toString());
+            // build nfa and then dfa for second parameter "a"
             AcceptanceGraph ag = new AcceptanceGraph ("dfa-"+a.getId(), a);
             //System.out.println("Start ag "+ ag.toString());
             color = ag.colorNodes(cmap, ag.getNode2AcceptanceSets(),color); //reuse of color map essential
@@ -104,11 +105,19 @@ public class FailureEquivalence implements IOperationInfixFunction {
             edges.addAll(a.getA().getEdges());
             nodes.addAll(a.getA().getNodes());
         }
+        System.out.print("Initial node Color {");
+        for(AutomatonNode nd : nodes) {
+            System.out.print(nd.getId()+"->"+nd.getColour()+" ");
+        } System.out.println("}");
         // set up the initial colouring ( on the nodes)
         ColouringUtil colourer = new ColouringUtil();
-        colourer.performInitialColouring(nodes);
+        //colourer.performInitialColouring(nodes);
         colourer.doColouring(edges, nodes); // uses initial colouring on nodes
 
+        System.out.print("Final node Color {");
+        for(AutomatonNode nd : nodes) {
+            System.out.print(nd.getId()+"->"+nd.getColour()+" ");
+        } System.out.println("}");
         Set<Integer> root_colors = new TreeSet<Integer>();
         Set<Integer> first_colors = new TreeSet<Integer>();
         int i = 0;

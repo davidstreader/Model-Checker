@@ -311,13 +311,13 @@ public class AcceptanceGraph {
                               Map<AutomatonNode, List<Set<String>> > n2as,
                               Integer color) {
         //Map<AutomatonNode, List<Set<String>> > n2as = new TreeMap<>();
-        // System.out.println("ColorNodes start int= "+color);
-        // System.out.println("n2as "+n2as.toString());
+         //System.out.println("ColorNodes start int= "+color);
+         //System.out.println("n2as "+n2as.toString());
         boolean found = false;
         for (AutomatonNode nd : this.getA().getNodes()) {
 //  System.out.println("nd "+nd.myString());
             List<Set<String>> acept = n2as.get(nd);
-//  System.out.println("accept "+acept.toString());
+  //System.out.println("node "+nd.getId()+ " accept "+acept.toString());
             found = false;
 //    System.out.println(cmap.toString());
             for (int i : cmap.keySet()) {
@@ -325,7 +325,7 @@ public class AcceptanceGraph {
                 //    System.out.println("reading cmap  "+cmap.get(i));
 
                 if (AcceptanceSetEquality(cmap.get(i),acept)) {
-                    //     System.out.println("found "+ cmap.get(i).toString());
+                         //System.out.println("found "+ cmap.get(i).toString());
                     nd.setColour(i);
                     found = true;
                     break;
@@ -334,10 +334,10 @@ public class AcceptanceGraph {
             if (!found) {
                 color=color+1;
                 nd.setColour(color);
-//     System.out.println("New cmap "+acept.toString()+" "+ color);
+     //System.out.println("New cmap "+acept.toString()+" "+ color);
                 cmap.put(color, acept);
             }
-//    System.out.println("nodes " +nd.getId()+" has color "+ nd.getColour());
+    System.out.println("node " +nd.getId()+" has color "+ nd.getColour());
         }
 //  System.out.println("ColorNodes end col = "+color);
         return color;

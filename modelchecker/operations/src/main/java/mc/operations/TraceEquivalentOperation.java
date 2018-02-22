@@ -1,5 +1,6 @@
 package mc.operations;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
@@ -39,6 +40,21 @@ public class TraceEquivalentOperation implements IOperationInfixFunction {
   @Override
   public boolean evaluate(Collection<Automaton> automata) throws CompilationException {
     NFtoDFconvFunction func = new NFtoDFconvFunction();
+
+    ArrayList<Automaton> nfas = new ArrayList<>();
+    for (Automaton a : automata) {
+      try {
+        nfas.add(
+          func.compose(a.getId(), Collections.emptySet(), null, a)
+        );
+      } catch (CompilationException e) {
+        System.out.println("PINGO"+ e.toString());
+      }
+    }
+    BisimulationOperation bo = new BisimulationOperation();
+    boolean r = bo.evaluate(nfas);
+
+   /*
     return new BisimulationOperation().evaluate(automata.stream().map(a -> {
       try {
         return func.compose(a.getId(), Collections.emptySet(), null, a);
@@ -47,6 +63,9 @@ public class TraceEquivalentOperation implements IOperationInfixFunction {
       }
     }).filter(Objects::nonNull).collect(Collectors.toList()));
 
+*/
 
+    return r;
   }
+
 }
