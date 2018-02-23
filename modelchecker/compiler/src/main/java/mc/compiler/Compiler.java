@@ -128,6 +128,9 @@ public class Compiler {
     List<OperationResult> opResults = evaluator.evaluateOperations(ast.getOperations(), processMap,
         interpreter, code, z3Context);
 
+    // system currently has memory hence EE can give different results each time
+    // still has memory problem with many permutations
+    this.eqEvaluator = new EquationEvaluator(); // need to reset equationEvaluator else !!!!
     EquationEvaluator.EquationReturn eqResults = eqEvaluator.evaluateEquations(
         new ArrayList<>(processMap.values()), ast.getEquations(),
         code, z3Context, messageQueue);

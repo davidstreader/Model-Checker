@@ -26,7 +26,7 @@ public class AutomataReachability {
    */
   public static Automaton removeUnreachableNodes(Automaton automaton) throws CompilationException{
 
-    automaton = automaton.copy();
+    //automaton = automaton.copy();  THIS was usless and now relabels the nodes
     Set<String> visited = new HashSet<>();
     Stack<AutomatonNode> fringe = new Stack<>();
     automaton.getRoot().forEach(fringe::push);

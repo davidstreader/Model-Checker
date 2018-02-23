@@ -120,7 +120,9 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     interpretProcess(astNode, identifier);
 
     ProcessModel pm = processStack.pop();
-    Automaton automaton = ((Automaton) pm.getProcessType().convertTo(AUTOMATA, pm)).copy();
+  //  Automaton automaton = ((Automaton) pm.getProcessType().convertTo(AUTOMATA, pm)).copy();
+    Automaton auto = ((Automaton) pm.getProcessType().convertTo(AUTOMATA, pm));
+    Automaton automaton = auto.copy();
     //automaton.getEdges().forEach(e -> System.out.println("owners of " + e.getId() + " are " + e.getOwnerLocation()));
     //System.out.println("AutomatonInterperter");
     //System.out.println(automaton.toString());
@@ -144,11 +146,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
 
     } else if (astNode instanceof ProcessRootNode) {
 
-     /* try {
-        System.in.read();
-      }catch (Exception e) {
-        System.out.println("Read ERROR "+e.toString());
-      }*/
+
      // automata already on stact so pop it off  relabel and push back on stack
       ProcessRootNode root = (ProcessRootNode) astNode;
 
@@ -160,7 +158,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
       automaton = processLabellingAndRelabelling(automaton, root);
       if (root.hasHiding()) {
         processHiding(automaton, root.getHiding());
-        automaton.setHiding(root.getHiding());
+    //    automaton.setHiding(root.getHiding());
       }
 
       processStack.push(automaton);
@@ -192,12 +190,6 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     if (Thread.currentThread().isInterrupted()) {
       throw new InterruptedException();
     }
-//    if (astNode.getGuard() != null) {
-//     // System.out.println("start REPLAC " + astNode.toString()+
-//      //  " g= " + ((Guard) astNode.getGuard()).myString());
-//    } else {
-//     // System.out.println("start REPLACE "+ astNode.toString()+ " g=null " );
-//    }
     // check if the current ast node has a reference attached
     if (astNode.hasReferences()) {
       for (String reference : astNode.getReferences()) {

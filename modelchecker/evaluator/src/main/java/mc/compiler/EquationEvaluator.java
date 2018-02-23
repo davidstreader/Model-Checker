@@ -30,6 +30,16 @@ public class EquationEvaluator {
 
   }
 
+  /**
+   *
+   * @param processes  a list of automaton defined
+   * @param operations  a list of the operations - one for each equation
+   * @param code        used for error reporting
+   * @param z3Context
+   * @param messageQueue
+   * @return   The EquationReturn - list of results
+   * @throws CompilationException
+   */
   public EquationReturn evaluateEquations(List<ProcessModel> processes,
                                           List<OperationNode> operations,
                                           String code, com.microsoft.z3.Context z3Context, BlockingQueue<Object> messageQueue)
@@ -38,16 +48,15 @@ public class EquationEvaluator {
     List<OperationResult> results = new ArrayList<>();
     Map<String, ProcessModel> toRender = new ConcurrentSkipListMap<>();
 
-    System.out.println("precess   cnt"+processes.size());
-    System.out.println("operation cnt"+operations.size());
+
     for (OperationNode operation : operations) {
+      // ONCE per equation! NOTE the state space needs to be clean
       ModelStatus status = new ModelStatus();
       //Generic ids defined in the equation block
             /*eg
-                equation(...) {
+                equation {
                     X~Y.
                 }
-
                 where X and Y are the automaton/process
              */
       String firstId = OperationEvaluator.findIdent(operation.getFirstProcess(), code);
@@ -60,13 +69,15 @@ public class EquationEvaluator {
         List<String> testingSpace = new ArrayList<>(); // The total number of unqiue automaton places in the equation
         firstIds.stream().filter(id -> !testingSpace.contains(id)).forEach(testingSpace::add);
         secondIds.stream().filter(id -> !testingSpace.contains(id)).forEach(testingSpace::add);
-
+// at this point we have the list of variables and
+        // the list of process ASTs defined
         int totalPermutations = (int) Math.pow(processes.size(), testingSpace.size());
         ArrayList<String> failures = testUserdefinedModel(processes, testingSpace,
                            status, operation, z3Context, messageQueue);
 
-        results.add(new OperationResult(operation.getFirstProcess(), operation.getSecondProcess(), firstId,
-            secondId, operation.getOperation(), failures, operation.isNegated(), status.passCount == totalPermutations,
+        results.add(new OperationResult(operation.getFirstProcess(), operation.getSecondProcess(),
+             firstId, secondId, operation.getOperation(),
+             failures, operation.isNegated(), status.passCount == totalPermutations,
             status.passCount + "/" + totalPermutations));
 
       } else {
@@ -80,10 +91,10 @@ public class EquationEvaluator {
 
   /**
    *
-   * @param models       Automaton  used for ONCE only replacement of Variables
-   * @param testingSpace Variables in equation
+   * @param models       This is the list of defined processes
+   * @param testingSpace Variables in equation  X|Y~Y|X has testingSpace=[X,Y]
    * @param status
-   * @param operation  holds two processes and name of operation
+   * @param operation  ONE Equation - operation = two processes and name of operation
    * @param z3Context
    * @param messageQueue
    * @return
@@ -92,41 +103,45 @@ public class EquationEvaluator {
   private ArrayList<String> testUserdefinedModel(List<ProcessModel> models,
                                                  List<String> testingSpace,
                                                  ModelStatus status,
-            OperationNode operation, com.microsoft.z3.Context z3Context, BlockingQueue<Object> messageQueue)
+                                                OperationNode operation,
+                                                 com.microsoft.z3.Context z3Context, BlockingQueue<Object> messageQueue)
       throws CompilationException {
 
     ArrayList<String> failedEquations = new ArrayList<>();
+ // moved to inside while loop    Interpreter interpreter = new Interpreter();
 
-    Interpreter interpreter = new Interpreter();
-
+//*** I think this could be moved to before call
     if (testingSpace.size() > 3) {
       messageQueue.add(new LogMessage("With this many variables you'll be waiting the rest of your life for this to complete.... good luck"));
     }
-
     if (testingSpace.size() > models.size()) {
       throw new CompilationException(getClass(), "Not enough defined automaton to fill test space");
     }
 
-    HashMap<String, ProcessModel> idMap = new HashMap<>(); // Which model substitutes for which equation automaton
-    for (String currentId : testingSpace) // Set up starting state
-    {
-      idMap.put(currentId, models.get(0));
-    }
-// build automaton name to index
-// Stops us having to search for the model each time with a loop
+// build Map automaton name -> index in models
+// Stops us having to search for the model each time with a loop (
+    //Could be done once not once per Equation
     HashMap<String, Integer> indexMap = new HashMap<>();
     for (int i = 0; i < models.size(); i++) {
       indexMap.put(models.get(i).getId(), i);
     }
+//***
 
+    HashMap<String, ProcessModel> idMap = new HashMap<>(); // Which model substitutes for which equation automaton
+    for (String variableId : testingSpace) // Set up starting map all variables replaced by the first model
+    { idMap.put(variableId, models.get(0));}
 
     while (true) {
+      //Once per process combination
+
+
+      Interpreter interpreter = new Interpreter(); // build the automata from the AST
       String exceptionInformation = "";
       ArrayList<Automaton> createdAutomaton = new ArrayList<>();
       try {
-
         createdAutomaton.add((Automaton) interpreter.interpret("automata", operation.getFirstProcess(), getNextEquationId(), idMap, z3Context));
         createdAutomaton.add((Automaton) interpreter.interpret("automata", operation.getSecondProcess(), getNextEquationId(), idMap, z3Context));
+
       } catch (Exception e) {
         e.printStackTrace();
         exceptionInformation = e.getClass().getName();
@@ -135,42 +150,32 @@ public class EquationEvaluator {
       //Using the name of the operation, this finds the appropriate function to use in operations/src/main/java/mc/operations/
       String currentOperation = operation.getOperation().toLowerCase();
 
+ boolean temp = instantiateClass(operationsMap.get(currentOperation)).evaluate(createdAutomaton);
+      boolean result = exceptionInformation.length() == 0 && temp;
 
-      boolean result = exceptionInformation.length() == 0 &&
-                       instantiateClass(operationsMap.get(currentOperation)).evaluate(createdAutomaton);
 
-      if (operation.isNegated()) {
-        result = !result;
-      }
+      if (operation.isNegated()) { result = !result; }
 
       if (result) {
         status.passCount++;
       } else {
+
         status.failCount++;
         String failOutput = "";
 
-
         if(exceptionInformation.length() > 0)
             failOutput += exceptionInformation + "\n";
-
         for (String key : idMap.keySet()) {
           failOutput += "$" + key + "=" + idMap.get(key).getId() + ", ";
         }
-
         failedEquations.add(failOutput);
       }
 
-
-      if (status.failCount > 0) {
-        //If we've failed too many tests;
-        return failedEquations;
-      }
+//If we've failed too many tests;
+      if (status.failCount > 0) { return failedEquations;}  // end by failure
 
       status.doneCount++;
-
       status.timeStamp = System.currentTimeMillis();
-
-
       //if all elements in the map are the same final element in models, then end the test.
       boolean done = true;
       for (ProcessModel val : idMap.values()) {
@@ -179,29 +184,25 @@ public class EquationEvaluator {
           break;
         }
       }
-
-      if (done) {
-        return failedEquations;
-      }
+      if (done) { return failedEquations; }  //end of process permutations
 
       //Generate new permutation of provided models
-      for (String currentId : testingSpace) {
-
-        if (idMap.get(currentId).equals(models.get(models.size() - 1))) {
-          if (testingSpace.get(testingSpace.size() - 1).equals(currentId)) {
-
+      for (String variableId : testingSpace) {
+        if (idMap.get(variableId).equals(models.get(models.size() - 1))) {
+          if (testingSpace.get(testingSpace.size() - 1).equals(variableId)) {
             break;
           } else {
-            idMap.put(currentId, models.get(0));
+            idMap.put(variableId, models.get(0));
           }
         } else {
-          int modelIndex = indexMap.get(idMap.get(currentId).getId());
+          int modelIndex = indexMap.get(idMap.get(variableId).getId());
           modelIndex++;
-
-          idMap.put(currentId, models.get(modelIndex));
-          break;
+          idMap.put(variableId, models.get(modelIndex));
+// System.out.println("Changing " +variableId+"->"+models.get(modelIndex).getId());
+          break;  // only change one variable
         }
       }
+
 
     }
 
@@ -219,7 +220,7 @@ public class EquationEvaluator {
   @AllArgsConstructor
   static class EquationReturn {
     List<OperationResult> results;
-    Map<String, ProcessModel> toRender;
+    Map<String, ProcessModel> toRender;  // I can find no where this is being writen to!
   }
 
   @Data

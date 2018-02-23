@@ -47,10 +47,10 @@ public class BisimulationOperation implements IOperationInfixFunction {
    ArrayList<AutomatonNode> nodes = new ArrayList<>();
 
    final int BASE_COLOUR = 1;
-
+ //  System.out.println("Bisim evaluate");
     int i =0;
     for(Automaton a: automata){
-     //System.out.println(i++ +" "+ a.getId());
+  //   System.out.println(i++ +" "+ a.toString());
      edges.addAll(a.getEdges());
      nodes.addAll(a.getNodes());
     }
@@ -67,6 +67,7 @@ public class BisimulationOperation implements IOperationInfixFunction {
 
    i = 0;
    for(Automaton automaton: automata){
+ //   System.out.println(automaton.toString());
       Set<AutomatonNode> root = automaton.getRoot();
 
      if (i ==0){

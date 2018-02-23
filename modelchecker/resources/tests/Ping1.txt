@@ -1,6 +1,6 @@
 processes {
-Zero1 = STOP.
-Zero2 = ERROR.
+//Zero1 = STOP.
+//Zero2 = ERROR.
 
 One1 = a->One1.
 One2 = a->STOP.
@@ -32,6 +32,7 @@ operation {
 T1 ~ T2.
 
 }
+
 
 
 

@@ -53,7 +53,8 @@ public class SequentialInfixFunction implements IProcessInfixFunction {
     Map<String, AutomatonNode> automata1nodes = new HashMap<>();
     Map<String, AutomatonNode> automata2nodes = new HashMap<>();
 
-
+  //  System.out.println("Sequence aut1 "+ automaton1.toString());
+  //  System.out.println("Sequence aut2 "+ automaton2.toString());
     //copy node1 nodes across
     AutomataReachability.removeUnreachableNodes(automaton1).getNodes().forEach(node -> {
       try {
@@ -71,7 +72,7 @@ public class SequentialInfixFunction implements IProcessInfixFunction {
       }
     });
 
-
+  //  System.out.println("Sequence 1 "+sequence.toString());
 
     copyAutomataEdges(sequence, automaton1, automata1nodes, setOfOwners);
 
@@ -85,7 +86,7 @@ public class SequentialInfixFunction implements IProcessInfixFunction {
     if (stopNodes.isEmpty()) {
       return sequence;
     }
-
+//below copies the automaton hence renames the nodes
     AutomataReachability.removeUnreachableNodes(automaton2).getNodes().forEach(node -> {
       AutomatonNode newNode = sequence.addNode();
       newNode.copyProperties(node);
@@ -116,13 +117,15 @@ public class SequentialInfixFunction implements IProcessInfixFunction {
         }
       }
     });
+
     stopNodes.stream().map(AutomatonNode::getIncomingEdges)
         .flatMap(List::stream)
         .forEach(sequence::removeEdge);
     stopNodes.forEach(sequence::removeNode);
+   // System.out.println("Sequence 2 "+ automaton2.toString());
 
     copyAutomataEdges(sequence, automaton2, automata2nodes,setOfOwners);
-
+ //   System.out.println("End Seq   "+sequence.toString());
     return sequence;
   }
 

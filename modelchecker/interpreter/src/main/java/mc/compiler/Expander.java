@@ -78,7 +78,7 @@ public class Expander {
    */
   private ProcessNode expand(ProcessNode process, BlockingQueue<Object> messageQueue, Context context)
     throws CompilationException, InterruptedException {
-    messageQueue.add(new LogAST("Expanding:", process));
+   // messageQueue.add(new LogAST("Expanding:", process));
     identMap.clear();
     if (process.hasVariableSet()) {
       hiddenVariables = process.getVariables().getVariables();

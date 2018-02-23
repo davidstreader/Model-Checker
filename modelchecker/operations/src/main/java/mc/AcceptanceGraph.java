@@ -159,7 +159,7 @@ public class AcceptanceGraph {
         this.setA(dfa);
         this.setNode2AcceptanceSets(dfaNode2ASet);
         this.toString();
-  System.out.println("Ending AcceptanceGraph Constructor ");
+//  System.out.println("Ending AcceptanceGraph Constructor ");
     }
 
 
@@ -289,15 +289,15 @@ public class AcceptanceGraph {
     private void printnode2AcceptanceSets(
       Map<AutomatonNode, List<Set<String>> > node2AcceptanceSets,
     Map<AutomatonNode, Set<String> >nfanode2ASet) {
-        System.out.println("nfa Sets");
+      /*  System.out.println("nfa Sets");
         for (AutomatonNode n : nfanode2ASet.keySet()){
           System.out.println(" "+n.getId()+" "+nfanode2ASet.get(n).toString() );
-        }
+        }*/
 
-  System.out.println("Acceptance Sets");
+/*  System.out.println("Acceptance Sets");
   for (AutomatonNode nd : node2AcceptanceSets.keySet()) {
    System.out.println(" "+nd.getId()+"  "+node2AcceptanceSets.get(nd));
-  }
+  } */
 
     }
 
@@ -337,7 +337,7 @@ public class AcceptanceGraph {
      //System.out.println("New cmap "+acept.toString()+" "+ color);
                 cmap.put(color, acept);
             }
-    System.out.println("node " +nd.getId()+" has color "+ nd.getColour());
+ //   System.out.println("node " +nd.getId()+" has color "+ nd.getColour());
         }
 //  System.out.println("ColorNodes end col = "+color);
         return color;

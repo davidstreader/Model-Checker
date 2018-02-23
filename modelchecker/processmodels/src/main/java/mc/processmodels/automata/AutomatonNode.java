@@ -76,6 +76,9 @@ public class AutomatonNode extends ProcessModelObject implements Comparable<Auto
 
   }
 
+  public boolean equalId(AutomatonNode nd) {
+    return this.getId().equals(nd.getId());
+  }
   public void copyPropertiesFromASTNode(ASTNode fromThisNode) {
     if (fromThisNode.getModelVariables() != null) {
       this.variables = fromThisNode.getModelVariables();

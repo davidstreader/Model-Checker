@@ -64,7 +64,7 @@ public class ReferenceReplacer {
   private ProcessNode replaceReferences(ProcessNode process, BlockingQueue<Object> messageQueue) throws CompilationException, InterruptedException {
     references.clear();
 //System.out.println("START Process Replacing ");
-    messageQueue.add(new LogAST("Replacing references:", process));
+    //messageQueue.add(new LogAST("Replacing references:", process));
     String identifier = process.getIdentifier();
     addReference(process.getProcess(), identifier);
 

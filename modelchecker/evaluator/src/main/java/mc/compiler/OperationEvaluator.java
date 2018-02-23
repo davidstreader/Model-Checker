@@ -32,13 +32,26 @@ public class OperationEvaluator {
 
   static Map<String, Class<? extends IOperationInfixFunction>> operationsMap = new HashMap<>();
 
-  public List<OperationResult> evaluateOperations(List<OperationNode> operations,
+ /**
+  *
+  * @param operations  one per equation in the operation section
+  * @param processMap  name to processe map used to replace referances in operands
+  * @param interpreter
+  * @param code      I think this is only used to place cursor where error occurrs
+  * @param context   Z3 context
+  * @return
+  * @throws CompilationException
+  * @throws InterruptedException
+  */
+ public List<OperationResult> evaluateOperations(List<OperationNode> operations,
                                                   Map<String, ProcessModel> processMap,
                                                   Interpreter interpreter,
                                                   String code, Context context)
       throws CompilationException, InterruptedException {
     reset();
     List<OperationResult> results = new ArrayList<>();
+
+    //input  from AST
     for (OperationNode operation : operations) {
 
       String firstId = findIdent(operation.getFirstProcess(), code);

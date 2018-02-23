@@ -48,10 +48,11 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
   @Setter
   private Location location;
 
+  /*
   @Getter
   @Setter
-  private HidingNode hiding;
-
+  private HidingNode hiding;  //WHAT THE HELL is part of the AST doing here?
+*/
   /**
    * use this to decide what guards and assignments to use+display
    * details will appear on edges even if not needed
@@ -104,7 +105,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
   public void copyProperties(Automaton fromThisautomata) {
     this.location = fromThisautomata.getLocation();
-    this.hiding = fromThisautomata.getHiding();
+   // this.hiding = fromThisautomata.getHiding();
     this.hiddenVariables = fromThisautomata.getHiddenVariables();
     this.hiddenVariablesLocation = fromThisautomata.getHiddenVariablesLocation();
 
@@ -449,14 +450,24 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
     // check that the nodes have been defined
     if (from == null) {
+
+      System.out.println("id = "+id+" label "+label+ " to "+to);
       throw new CompilationException(getClass(),
-          "Unable to add the specified edge as the source was null.", this.getLocation());
+        "Unable to add the specified edge as the source was null.\n"+this.toString()+"\n",
+           this.getLocation());
     }
 
     if (to == null) {
-      System.out.println(from);
+    /*
+      System.out.println("id = "+id+" label "+label+ " from "+from);
+      System.out.println("Stack trace:");
+      StackTraceElement[] stackTraces = Thread.currentThread().getStackTrace();
+      for (int i = 1; i < stackTraces.length; i++) {
+        System.out.println(stackTraces[i]);
+      } */
       throw new CompilationException(getClass(),
-          "Unable to add the specified edge as the destination was null.", this.getLocation());
+        "Unable to add the specified edge as the destination was null.\n"+this.toString()+"\n",
+          this.getLocation());
     }
     // check that the nodes are part of this automaton
     if (!nodeMap.containsKey(from.getId())) {
@@ -480,24 +491,25 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     if (e != null) {
       return e;
     }
+    /* Must be redundent  for atomic abutomaon see above
+    //Not identical edge but other edges with same from to and label?
     List<AutomatonEdge> edges = from.getOutgoingEdges().stream()
-        .filter(edge -> edge.getLabel().equals(label) && edge.getTo().getId().equals(to.getId()))
+        .filter(edge -> edge.getLabel().equals(label) &&
+                        edge.getTo().getId().equals(to.getId()))
         .collect(Collectors.toList());
 
     if (edges.size() > 0) {
       for (AutomatonEdge edge : edges) {
-
         if (edge.getGuard() == null && currentEdgesGuard == null) {
           return edge;
         }
-
-
         if (edge.getGuard() != null && edge.getGuard().equals(currentEdgesGuard)) {
           return edge;
         }
       }
-    }
+    } */
 
+//OK this edge is to be built and added
     AutomatonEdge edge = new AutomatonEdge(id, label, from, to);
     edge.setGuard(currentEdgesGuard);
 
@@ -523,7 +535,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
   public AutomatonEdge getEdge(String label, AutomatonNode from, AutomatonNode to) {
     for (AutomatonEdge edge : edgeMap.values()) {
-      if (edge.getTo() == to && edge.getFrom() == from && edge.getId().equals(label)) {
+      if (edge.getTo().equals(to) && edge.getFrom().equals(from) && edge.getId().equals(label)) {
         return edge;
       }
     }
@@ -605,9 +617,17 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     return alphabet.keySet();
   }
 
+  /**
+   *
+   * @param automaton input data  to be added to this automaton
+   * @return
+   * @throws CompilationException
+   */
+
   public Set<AutomatonNode> addAutomaton(Automaton automaton) throws CompilationException {
 
-    int num = (int) Math.floor(Math.random() * 100);
+  //  int num = (int) Math.floor(Math.random() * 100);
+    Map<AutomatonNode, AutomatonNode> reNode = new HashMap<>();
     boolean hasRoot = !(this.root == null || this.root.size() == 0);
 
     // If there is some special location data in prefix, we add all of them synchronously to
@@ -621,10 +641,9 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
     Set<AutomatonNode> thisAutomataRoot = new HashSet<>();
     for (AutomatonNode node : automaton.getNodes()) {
-
-
-      AutomatonNode newNode = addNode(node.getId() + num);
-
+      // AutomatonNode newNode = addNode(node.getId() + num); // THIS is NUTS
+      AutomatonNode newNode = addNode();
+      reNode.put(node,newNode);
       newNode.copyProperties(node);
       if (newNode.isStartNode()) {
         thisAutomataRoot.add(newNode);
@@ -635,15 +654,14 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
           newNode.setStartNode(false);
         }
       }
-
     }
 
 
     for (AutomatonEdge edge : automaton.getEdges()) {
-      AutomatonNode from = getNode(edge.getFrom().getId() + num);
-      AutomatonNode to = getNode(edge.getTo().getId() + num);
+      AutomatonNode from = reNode.get(edge.getFrom());
+      AutomatonNode to = reNode.get(edge.getTo());
       addOwnersToEdge(
-          addEdge(edge.getId() + num, edge.getLabel(), from, to, edge.getGuard(), false),
+          addEdge( edge.getLabel(), from, to, edge.getGuard(), false),
           edge.getOwnerLocation());
     }
     if (thisAutomataRoot.isEmpty()) {
@@ -731,43 +749,39 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
   public Automaton copy() throws CompilationException {
     Automaton copy = new Automaton(getId(), !CONSTRUCT_ROOT);
-
-    copy.nodeId = nodeId;
-    copy.edgeId = edgeId;
+//New node objects but with same Id causes problems where unique ids assumed!
+    // compute bisim between two automata that nodes with same Id
+    copy.nodeId = 0;
+    copy.edgeId = 0;
+    Map<AutomatonNode,AutomatonNode> reNode = new HashMap<>();
+ //   System.out.println("Starting copy of "+this.toString());
     List<AutomatonNode> nodes = getNodes();
     for (AutomatonNode node : nodes) {
-      AutomatonNode newNode = copy.addNode(node.getId());
+      AutomatonNode newNode = copy.addNode();
+      reNode.put(node,newNode);
+  //    System.out.println(" reNode "+node.getId()+"->"+newNode.getId());
       newNode.copyProperties(node);
       if (newNode.isStartNode()) {
         copy.addRoot(newNode);
       }
-
     }
 
     List<AutomatonEdge> edges = getEdges();
     for (AutomatonEdge edge : edges) {
-      AutomatonNode from = copy.getNode(edge.getFrom().getId());
-      AutomatonNode to = copy.getNode(edge.getTo().getId());
-      /*
-      if (!nodeMap.containsKey(from.getId())) {
-        System.out.println("from failure " + from.myString());
-      }else{if (nodeMap.get(from.getId()) != from) {System.out.println("FromFail");}
-      }
-      if (!nodeMap.containsKey(to.getId())) { System.out.println("to failure "+to.myString());
-      }else{if (nodeMap.get(to.getId()) != to) {System.out.println("ToFail");}
-      }
-      */
+  //    System.out.println(" edge "+edge.myString());
+      AutomatonNode from = reNode.get(edge.getFrom());
+      AutomatonNode to = reNode.get(edge.getTo());
 
-      //Change to make copies retain the edge labels
-      copy.addOwnersToEdge(
-          copy.addEdge(edge.getId(), edge.getLabel(), from, to, edge.getGuard(), false),
+      //Change to make copies re id the edge
+      AutomatonEdge xedge =  copy.addEdge(edge.getLabel(),
+        from, to, edge.getGuard(), false);
+   //   System.out.println("  Adding "+xedge.myString());
+      copy.addOwnersToEdge(xedge,
           edge.getOwnerLocation());
-
+   //   System.out.println("End of adding Edge"+xedge.myString());
     }
-
     copy.copyProperties(this);
-
-
+  //  System.out.println("copy Ends "+copy.toString());
     return copy;
   }
 
