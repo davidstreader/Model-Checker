@@ -90,4 +90,9 @@ public class PetriNetPlace extends ProcessModelObject {
     return builder.toString();
   }
 
+  public String myString(){
+    return this.getId()+
+      this.getIncoming().stream().map(ed->ed.getId()).reduce(" in  ",(x,y)->x+" "+y)+
+      this.getOutgoing().stream().map(ed->ed.getId()).reduce(" out ",(x,y)->x+" "+y);
+  }
 }

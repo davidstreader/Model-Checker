@@ -75,7 +75,8 @@ public class AutomataParallelFunction {
         node.copyProperties(node1.createIntersection(node2));
         node.setTerminal(null);
 
-        if(node1.isTerminal() && node1.getTerminal().equals("STOP") && node2.isTerminal() && node2.getTerminal().equals("STOP"))
+        if(node1.isTerminal() && node1.getTerminal().equals("STOP") &&
+          node2.isTerminal() && node2.getTerminal().equals("STOP"))
           node.setTerminal("STOP");
 
 
@@ -194,7 +195,6 @@ public class AutomataParallelFunction {
                                     throws CompilationException {
 
     for (String currentSyncEdgeLabel : syncedActions) {
-
       List<AutomatonEdge> syncedEdges1 = edges1.stream()
           .filter(edge -> equals(currentSyncEdgeLabel, edge.getLabel()))
           .collect(Collectors.toList());

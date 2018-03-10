@@ -56,7 +56,7 @@ public class OperationEvaluator {
 
       String firstId = findIdent(operation.getFirstProcess(), code);
       String secondId = findIdent(operation.getSecondProcess(), code);
-  System.out.println("first "+firstId+ "  second "+ secondId);
+  //System.out.println("first "+firstId+ "  second "+ secondId);
       List<String> firstIds = collectIdentifiers(operation.getFirstProcess());
       List<String> secondIds = collectIdentifiers(operation.getSecondProcess());
 
@@ -73,7 +73,7 @@ public class OperationEvaluator {
       automata.add((Automaton) interpreter.interpret("automata", operation.getFirstProcess(), getNextOperationId(), processMap, context));
       automata.add((Automaton) interpreter.interpret("automata", operation.getSecondProcess(), getNextOperationId(), processMap, context));
 // built all automata processs
-  System.out.println("oper "+ operation.getOperation().toLowerCase());
+  //System.out.println("oper "+ operation.getOperation().toLowerCase());
       IOperationInfixFunction funct = instantiateClass(operationsMap.get(operation.getOperation().toLowerCase()));
       if (funct == null) {
         throw new CompilationException(getClass(), "The given operation is invaid: "
@@ -87,7 +87,7 @@ public class OperationEvaluator {
       }
       results.add(new OperationResult(operation.getFirstProcess(), operation.getSecondProcess(), firstId, secondId, operation.getOperation(), null, operation.isNegated(), result, ""));
 
-      System.out.println("operation "+ firstId+" "+operation.getOperation()+" "+secondId);
+      //System.out.println("operation "+ firstId+" "+operation.getOperation()+" "+secondId);
     }
     return results;
   }

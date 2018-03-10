@@ -1,14 +1,8 @@
 package mc.processmodels.automata;
 
 import com.microsoft.z3.Context;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+
+import java.util.*;
 import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.Setter;
@@ -788,4 +782,81 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
   public ProcessType getProcessType() {
     return ProcessType.AUTOMATA;
   }
+
+  public AutomatonEdge square(AutomatonEdge e,AutomatonEdge ed) {
+    if (!e.getFrom().getId().equals(ed.getFrom().getId())) {
+      System.out.println("\nSQUARE ERROR edges "+e.myString()+ " "+ed.myString()+"\n");
+      return null;
+    }
+    for(AutomatonEdge par: e.getTo().getOutgoingEdges()) {
+      if (!par.getLabel().equals(ed.getLabel())) continue;
+      if (!par.getOwnerLocation().equals(ed.getOwnerLocation()))  continue;
+      for(AutomatonEdge par2: ed.getTo().getOutgoingEdges()) {
+        if (!par2.getLabel().equals(e.getLabel())) continue;
+        if (!par2.getOwnerLocation().equals(e.getOwnerLocation()))  continue;
+        if (par2.getTo().equals(par.getTo())) {
+          System.out.println("Square "+par.myString());
+          return par;
+        }
+      }
+    }
+    return null;
+  }
+  public String myString(Collection<AutomatonEdge> edges) {
+    String out = " {";
+    for(AutomatonEdge e: edges){
+      out=out+e.myString()+" ** ";
+    }
+    return out+"}";
+  }
+
+  /**
+   * @param ed
+   * @return the edges parallel to ed
+   */
+  public  Set<AutomatonEdge> parallelSet(AutomatonEdge ed) {
+    Set<String> edOwn = ed.getOwnerLocation();
+    //AutomatonEdge ed
+    Set<AutomatonNode> visited = new HashSet<>();
+    Set<AutomatonEdge> parallel = new HashSet<>();
+    Stack<AutomatonNode> fringe = new Stack<>();
+    Map<AutomatonNode, AutomatonEdge> selectPar  = new HashMap<>();
+
+    parallel.add(ed);
+    fringe.push(ed.getFrom());
+    selectPar.putIfAbsent(ed.getFrom(), ed);
+    //System.out.println("PAR selectPar "+ed.myString());
+//
+    while (!fringe.isEmpty()) {  //all nodes in slice
+      AutomatonNode current = fringe.pop();
+      // System.out.println(" While node " + current.getId()+ " size "+current.getOutgoingEdges().size());
+      for (AutomatonEdge edge : current.getOutgoingEdges()) { // all edges leaving outer node
+        // System.out.println("select "+myString(selectPar.values()));
+        ed = selectPar.get(current);  // must find what is papellel to the known edge
+
+        // System.out.println(" PAR latest " + ed.myString() + " test " + edge.myString());
+//if not parallel continue
+        for (String own : edge.getOwnerLocation()) {
+          if (edOwn.contains(own)) continue;
+        }
+//if not square continue
+        AutomatonEdge next = this.square(edge, ed);
+        if (next != null) { // Is square
+          parallel.add(next);
+          selectPar.putIfAbsent(next.getFrom(), next);
+          // System.out.println("  PAR add to selectPar " + next.myString());
+          if (!visited.contains(next.getFrom())) {
+            //  System.out.println(" PAR add to slice " + next.getFrom().getId());
+            fringe.push(next.getFrom());
+          }
+        }
+        visited.add(current);
+      }
+    }
+    //  System.out.println("  PAR returns " + this.myString(parallel));
+
+    return parallel;
+  }
 }
+
+

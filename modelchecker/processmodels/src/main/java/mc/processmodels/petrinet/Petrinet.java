@@ -56,6 +56,26 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
   private int transitionId = 0;
   private int edgeId = 0;
 
+  /**
+   * Simply for easy of visualisation when testing
+   * @return
+   */
+  public String myString(){
+    StringBuilder sb = new StringBuilder();
+    sb.append(" " + this.getId()+ " root {");
+    sb.append(this.getRoots().stream().map(x-> x.getId()).reduce("",(x,y)->x+" "+y));
+    sb.append(this.getPlaces().keySet().stream().reduce("\n"+
+      getPlaces().size()+" places ",(x,y)->x+" "+y));
+    sb.append(this.getTransitions().keySet().stream().reduce("\n" +
+      getTransitions().size()+ " transitions ",(x,y)->x+" "+y));
+    sb.append(this.getTransitions().values().stream().map(tr-> tr.myString()+"\n").reduce("\n" +
+      "",(x,y)->x+" "+y));
+    return sb.toString();
+  }
+
+
+
+
   public Petrinet(String id) {
     this(id, true);
   }

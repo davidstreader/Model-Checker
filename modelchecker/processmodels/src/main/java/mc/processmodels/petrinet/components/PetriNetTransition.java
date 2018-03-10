@@ -61,4 +61,17 @@ public class PetriNetTransition extends ProcessModelObject {
 
     return builder.toString();
   }
+
+  public String myString(){
+    StringBuilder builder = new StringBuilder();
+
+    for (PetriNetEdge edge : getIncoming()) {
+      builder.append(edge.getFrom().getId()+",");
+    }
+    builder.append("-"+label+"->");
+    for (PetriNetEdge edge : getOutgoing()) {
+      builder.append(edge.getTo().getId()+",");
+    }
+    return builder.toString();
+  }
 }
