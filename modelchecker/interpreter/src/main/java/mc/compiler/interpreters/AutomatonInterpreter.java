@@ -383,6 +383,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
   private void interpretConversion(ConversionNode conv, Automaton automaton,
                                    AutomatonNode currentNode)
       throws CompilationException, InterruptedException {
+    System.out.println("(AUTO) interpretConversion start "+automaton.toString());
     ProcessType to = ProcessType.valueOf(conv.to.toUpperCase());
     ProcessType from = ProcessType.valueOf(conv.from.toUpperCase());
 

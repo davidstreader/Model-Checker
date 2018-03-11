@@ -4,14 +4,8 @@ package mc.processmodels.petrinet;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -73,7 +67,9 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     return sb.toString();
   }
 
-
+public String myString(Collection<PetriNetPlace> mark){
+    return mark.stream().map(x->x.myString()).reduce("{", (x,y)->x+" "+y)+"}";
+}
 
 
   public Petrinet(String id) {
@@ -226,15 +222,14 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     for (PetriNetPlace place : petriToAdd.getPlaces().values()) {
       PetriNetPlace newPlace = addPlace();
       newPlace.copyProperties(place);
-
-      if (place.isStart()) {
-        newPlace.setStart(false);
-        roots.add(newPlace);
-      }
-
       placeMap.put(place, newPlace);
     }
-
+    //System.out.println("addPetri root"+ myString(petriToAdd.getRoots()));
+    for(PetriNetPlace rpl : petriToAdd.getRoots()){
+      roots.add(placeMap.get(rpl));
+      this.addRoot(placeMap.get(rpl));
+      //System.out.println("addin root "+placeMap.get(rpl).getId());
+    }
     for (PetriNetTransition transition : petriToAdd.getTransitions().values()) {
       PetriNetTransition newTransition = addTransition(transition.getLabel());
       transitionMap.put(transition, newTransition);
@@ -247,13 +242,15 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
       owners.addAll(postFixed);
 
       if (edge.getFrom() instanceof PetriNetPlace) {
-        addEdge(transitionMap.get(edge.getTo()), placeMap.get(edge.getFrom()), postFixed);
+        addEdge(placeMap.get(edge.getFrom()),transitionMap.get(edge.getTo()),  postFixed);
       } else {
-        addEdge(placeMap.get(edge.getTo()), transitionMap.get(edge.getFrom()), postFixed);
+        addEdge(transitionMap.get(edge.getFrom()),placeMap.get(edge.getTo()),  postFixed);
       }
     }
+
     return roots;
   }
+
 
   public Set<PetriNetPlace> gluePlaces
       (Set<PetriNetPlace> set1, Set<PetriNetPlace> set2)
@@ -358,7 +355,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     return ProcessType.PETRINET;
   }
 
-
+//clones
   @Override
   public Petrinet copy() throws CompilationException {
     return (Petrinet) super.copy();

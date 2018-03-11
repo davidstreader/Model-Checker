@@ -157,21 +157,21 @@ public class OwnersRule {
       }
       System.out.println(petri.myString());
       System.out.println("END of OWNER "+own);
-      subNets.push(petri.copy());  // Clones
-      petri = new Petrinet(a.getId(), false);
+      //subNets.push(petri.copy());  // Clones
+      //petri = new Petrinet(a.getId(), false);
     }
     System.out.println("\n   OWNERS Rule Stacked "+subNets.size()+"    *********");
     Petrinet build = new Petrinet(a.getId(), false);
-    if (!subNets.isEmpty()) {
+   /* if (!subNets.isEmpty()) {
       build = subNets.pop();
     }
     while(!subNets.isEmpty()) {
       //build = PetrinetParallelFunction.compose(build, subNets.pop());
-    }
+    } */
 
 
-    System.out.println("\n  OWNERS Rule END "+build.myString()+"\n  *********\n");
-    return build;
+    System.out.println("\n  OWNERS Rule END "+petri.myString()+"\n  *********\n");
+    return petri;
   }
 
   @SneakyThrows({CompilationException.class})
@@ -309,86 +309,6 @@ to prevent two b transitions being added either all three b events need ot be ma
 or nd->Marking needs to be constructed to prevent trans being added twice
 
  */
-  /**
-   * This converts a deterministic automata to a petrinet.
-   * <p>
-   * stackit: Make this conversion work for NFA
-   *
-   * @param a The automaton to be converted
-   * @return a petrinet representation fo the automaton
-   */
-  @SneakyThrows({CompilationException.class})
-  public static  Petrinet OLDownersRule(Automaton a) {
-    clean();
-    System.out.println("ownersRule " + a.toString());
-    Petrinet petri = new Petrinet(a.getId(), false);
-
-    List<AutomatonNode> visited = new ArrayList<>();
-//       Setup = for all roots nodes rnd
-//             + rnd->newMarking + aToDo
-    for(AutomatonNode r : a.getRoot()) {
-      Map<String, PetriNetPlace> mark= new HashMap<>();
-      for(String o: a.getOwners()) {
-        PetriNetPlace p = petri.addPlace();
-        mark.putIfAbsent(o,p);
-        petri.addRoot(p);
-      }
-      aN2Marking.putIfAbsent(r,mark);
-      todo.todoPush(r);
-      System.out.println("MARK start"+ r.getId()+"->"+aN2Marking.get(r).toString());
-
-      //System.out.println("Pushing aTODO "+ r.myString());
-    }
-//       While aTodo  != {}
-    //System.out.println("aToDo "+ todo.todoSize());
-    List<AutomatonEdge> aEdges = a.getEdges();
-    while (!todo.todoIsEmpty()) {
-//             Cutternt = aToDo.top
-      AutomatonNode curent = todo.todoPop();
-      if (ndProcessed.contains(curent)) continue;
-      ndProcessed.add(curent);
-     /*  System.out.println("CURRENT "+curent.getId()+
-        " OUTedges "+curent.getOutgoingEdges().size()); */
-      PetriNetTransition tran = null;
-      //                for each edge from Current
-      for(AutomatonEdge edge: curent.getOutgoingEdges()) {
-        todo.todoPush(edge.getTo());
-        System.out.println(" >1 edge " + edge.myString());
-        //       if edge not processed
-        if (processed.containsKey(edge.getId()))  continue;
-        processed.putIfAbsent(edge.getId(),edge);
-        System.out.println(" >2 edge " + edge.myString());
-        Map<String, PetriNetPlace> toMarking =  // build second node and Place
-          deltaMarking(edge,petri);
-        System.out.println(" >3 edge " + edge.myString());
-        printaN2Marking();
-        // compute pushout marking if any exist!
-        findSquare(edge,a,petri); // this will build aN2Marking for the forth node in square
-        printaN2Marking();
-        //        build parSet for edge
-        Set<AutomatonEdge> parSet = a.parallelSet(edge);
-        System.out.println(" parSet "+a.myString(parSet));
-        //        mark all in parset as processed
-        for(AutomatonEdge e:parSet) {
-          processed.putIfAbsent(e.getId(),e);
-        }
-//        build transition
-        tran = petri.addTransition(edge.getLabel());
-        for (String o : edge.getOwnerLocation()) {
-          petri.addEdge( aN2Marking.get(curent).get(o), tran, Collections.singleton(o));
-        }
-        for (String o : edge.getOwnerLocation()) {
-          petri.addEdge(tran,
-            aN2Marking.get(edge.getTo()).get(o),
-            Collections.singleton(o));
-        }
-        System.out.println(" > For edge " + edge.myString() + " ADD tran " + tran.myString());
-      }
-    }
-    System.out.println("OWNERS Rule END "+petri.myString());
-    return petri;
-  }
-
 
 
   private static String mark2String(Map<String, PetriNetPlace> mark){
