@@ -10,6 +10,7 @@ import mc.exceptions.CompilationException;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
+import mc.processmodels.automata.operations.PetrinetParallelFunction;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
@@ -67,7 +68,7 @@ public class OwnersRule {
       toDo.add(root);
       while (!toDo.isEmpty()) {
         AutomatonNode nd = toDo.pop();
-        System.out.println("WHILE "+nd.getId());
+        //System.out.println("WHILE "+nd.getId());
 
         if (done.contains(nd)) continue;
         done.add(nd);
@@ -88,13 +89,14 @@ public class OwnersRule {
         toDo.remove(nd);
       }
       System.out.println(printPhase2(phase2));
+      //TODO construct the transitive closure for three+ nets
       System.out.println("stackit rewrite rewrites");
       System.out.println("\n");
 
       toDo = new Stack<>();
       done = new HashSet<>();
       Set<AutomatonEdge> edgeDone = new HashSet<>();
-      System.out.println("  OWNER 2 = " + own);
+      //System.out.println("  OWNER 2 = " + own);
       Map<AutomatonNode,PetriNetPlace> nd2Pl = new HashMap<>();
       toDo.add(root);
       //PetriNetPlace rp = petri.addPlace();
@@ -103,7 +105,7 @@ public class OwnersRule {
       boolean first = true;
       while (!toDo.isEmpty()) {
         AutomatonNode nd = toDo.pop();
-        System.out.println("WHILE 2 "+nd.getId()+" "+printVisited(nd2Pl));
+        //System.out.println("WHILE 2 "+nd.getId()+" "+printVisited(nd2Pl));
         if (done.contains(nd)) continue;
         done.add(nd);
 
@@ -114,14 +116,14 @@ public class OwnersRule {
 
           if (ed.getOwnerLocation().contains(own)) {
             //apply state change
-            System.out.println(printPhase2(phase2));
+            //System.out.println(printPhase2(phase2));
             AutomatonNode nd1 = ed.getFrom();
             AutomatonNode nd2 = ed.getTo();
 
             if (phase2.containsKey(nd1)) nd1 = phase2.get(nd1);
             if (phase2.containsKey(nd2)) nd2 = phase2.get(nd2);
             AutomatonEdge temp = new AutomatonEdge(ed.getId(), ed.getLabel(), nd1,nd2);
-            System.out.println("     STATE |> "+ temp.myString());
+            //System.out.println("     STATE |> "+ temp.myString());
             //if not processed add transition
             if (!edgeDone.contains(temp)) {
               edgeDone.add(temp);
@@ -157,21 +159,21 @@ public class OwnersRule {
       }
       System.out.println(petri.myString());
       System.out.println("END of OWNER "+own);
-      //subNets.push(petri.copy());  // Clones
-      //petri = new Petrinet(a.getId(), false);
+      subNets.push(petri.copy());  // Clones
+      petri = new Petrinet(a.getId(), false);
     }
     System.out.println("\n   OWNERS Rule Stacked "+subNets.size()+"    *********");
     Petrinet build = new Petrinet(a.getId(), false);
-   /* if (!subNets.isEmpty()) {
+    if (!subNets.isEmpty()) {
       build = subNets.pop();
     }
     while(!subNets.isEmpty()) {
-      //build = PetrinetParallelFunction.compose(build, subNets.pop());
-    } */
+      build = PetrinetParallelFunction.compose(build, subNets.pop());
+    }
 
 
-    System.out.println("\n  OWNERS Rule END "+petri.myString()+"\n  *********\n");
-    return petri;
+    System.out.println("\n  OWNERS Rule END "+build.myString()+"\n  *********\n");
+    return build;
   }
 
   @SneakyThrows({CompilationException.class})

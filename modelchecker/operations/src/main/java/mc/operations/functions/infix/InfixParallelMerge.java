@@ -2,9 +2,8 @@ package mc.operations.functions.infix;
 
 import lombok.Value;
 import mc.exceptions.CompilationException;
-import mc.operations.impl.AutomataParallelFunction;
 import mc.operations.impl.AutomataParallelMerge;
-import mc.operations.impl.PetrinetParallelFunction;
+import mc.processmodels.automata.operations.PetrinetParallelFunction;
 import mc.plugins.IProcessInfixFunction;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.operations.AutomataReachability;

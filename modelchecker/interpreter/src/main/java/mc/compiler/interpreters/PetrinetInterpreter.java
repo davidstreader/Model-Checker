@@ -334,7 +334,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     addPetrinet(currentPlace, petri, pm.getProcessType().convertTo(to, pm));
     */
       //System.out.println("currentPlace "+currentPlace.getId());
-    System.out.println("interpretConversion start "+petri.myString());
+    //System.out.println("interpretConversion start "+petri.myString());
     ProcessType to = ProcessType.valueOf(conv.to.toUpperCase());
     ProcessType from = ProcessType.valueOf(conv.from.toUpperCase());
 
@@ -343,7 +343,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     Petrinet temp = new Petrinet(petri.getId(), false);
 
     Petrinet p = addPetrinet(currentPlace, pm.getProcessType().convertTo(to, pm), temp).copy();
-    System.out.println("interpretConversion  ends "+p.myString());  //GOOD
+    //System.out.println("interpretConversion  ends "+p.myString());  //GOOD
     return p;
 
   }
@@ -354,8 +354,8 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     t.printStackTrace();
 
     //System.out.println("currentPlace "+currentPlace.getId());
-    System.out.println("toAdd "+petrinetToAdd.myString());
-    System.out.println("master "+ master.myString());
+    //System.out.println("toAdd "+petrinetToAdd.myString());
+    //System.out.println("master "+ master.myString());
     //assert  master.hasPlace(currentPlace) : "addPetrinet "+currentPlace.getId();
     List<String> references = new ArrayList<>();
     //TODO: References
@@ -363,12 +363,12 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
       references.addAll(currentPlace.getReferences());
     }
 
-    System.out.println(petrinetToAdd.myString());
-    System.out.println("====addPetrinet======== "+ petrinetToAdd.getId());
+    //System.out.println(petrinetToAdd.myString());
+    //System.out.println("====addPetrinet======== "+ petrinetToAdd.getId());
 
     Set<PetriNetPlace> places = master.addPetrinet(petrinetToAdd);
-    System.out.println(master.myString());
-    System.out.println("====masterPetrinet======== "+ master.getId());
+    //System.out.println(master.myString());
+    //System.out.println("====masterPetrinet======== "+ master.getId());
 
 
     places.stream()

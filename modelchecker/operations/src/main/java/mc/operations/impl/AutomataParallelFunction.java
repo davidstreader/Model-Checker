@@ -191,31 +191,33 @@ public class AutomataParallelFunction {
     }
   }
 
+
   private void processSyncedActions(List<AutomatonEdge> edges1, List<AutomatonEdge> edges2)
-                                    throws CompilationException {
+    throws CompilationException {
+    //System.out.println("Synced 1"+ automaton1.getOwners());
+    //System.out.println("Synced 2"+ automaton2.getOwners());
 
     for (String currentSyncEdgeLabel : syncedActions) {
+      //System.out.println("Synced "+currentSyncEdgeLabel);
       List<AutomatonEdge> syncedEdges1 = edges1.stream()
-          .filter(edge -> equals(currentSyncEdgeLabel, edge.getLabel()))
-          .collect(Collectors.toList());
+        .filter(edge -> equals(currentSyncEdgeLabel, edge.getLabel()))
+        .collect(Collectors.toList());
 
       List<AutomatonEdge> syncedEdges2 = edges2.stream()
-          .filter(edge -> equals(currentSyncEdgeLabel, edge.getLabel()))
-          .collect(Collectors.toList());
-
+        .filter(edge -> equals(currentSyncEdgeLabel, edge.getLabel()))
+        .collect(Collectors.toList());
       for (AutomatonEdge edge1 : syncedEdges1) {
         for (AutomatonEdge edge2 : syncedEdges2) {
           AutomatonNode from = automaton.getNode(createId(edge1.getFrom(), edge2.getFrom()));
-
           //broadcast events that sync  (a! - a?)  or (a? - a?)
           if (edge1.getLabel().endsWith("!") || edge2.getLabel().endsWith("!")||
             (edge1.getLabel().endsWith("?") && edge2.getLabel().endsWith("?"))) {
             // any edges from the from node are broadcasted and should get replaced by the synced
             // transition. Remove any edges that have ! or ? at the end.
             from.getOutgoingEdges().stream()
-                .filter(e -> ( e.getLabel().equals(edge1.getLabel()) ||
-                               e.getLabel().equals(edge2.getLabel()) ))
-                .forEach(edge -> automaton.removeEdge(edge.getId()));
+              .filter(e -> ( e.getLabel().equals(edge1.getLabel()) ||
+                e.getLabel().equals(edge2.getLabel()) ))
+              .forEach(edge -> automaton.removeEdge(edge.getId()));
           }
           AutomatonNode to = automaton.getNode(createId(edge1.getTo(), edge2.getTo()));
           Guard guard = new Guard();
@@ -226,8 +228,8 @@ public class AutomataParallelFunction {
             guard.mergeWith(edge2.getGuard());
           }
 
-          AutomatonEdge newEdge = automaton.addEdge(currentSyncEdgeLabel, from, to, guard, false);
-
+          AutomatonEdge newEdge = automaton.addEdge(currentSyncEdgeLabel, from, to,
+            guard, false);
           Set<String> ownersToAdd = new HashSet<>();
           ownersToAdd.addAll(getOwners(edge1,automaton1));
           ownersToAdd.addAll(getOwners(edge2,automaton2));
@@ -235,6 +237,7 @@ public class AutomataParallelFunction {
         }
       }
     }
+    //System.out.println("SYNCED END");
   }
 
   private static Set<String> getOwners(AutomatonEdge edge, Automaton owner) {

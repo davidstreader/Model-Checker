@@ -14,7 +14,7 @@ import java.util.*;
 public class PetriNetEdge extends ProcessModelObject {
 
 
-  private Set<String> owners = new LinkedHashSet<>();
+  private Set<String> owners = new TreeSet<>();
 
   private ProcessModelObject from;
 
@@ -36,7 +36,14 @@ public class PetriNetEdge extends ProcessModelObject {
   }
 
   public void addOwner(String ownerName) {
-     owners.add(ownerName);
+    owners.add(ownerName);
+  }
+  public void addOwners(Set<String> ownersName) {
+    System.out.println(this.owners.toString());
+    for(String o: ownersName) {
+      System.out.println("o "+o);
+      owners.add(o);
+    }
   }
 
   public void removeOwner(String name) {
@@ -52,5 +59,10 @@ public class PetriNetEdge extends ProcessModelObject {
         + "\towner/s:" + owners + "\n"
         + "}";
 
+  }
+  public String myString(){
+    String out =  "edge "+this.getId()+" * "+from.getId()+"->"+to.getId()+" own ";
+    for (String o: owners){out = out +o+" ";}
+    return out+"\n";
   }
 }

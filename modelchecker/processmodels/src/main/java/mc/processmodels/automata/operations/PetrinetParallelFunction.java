@@ -1,4 +1,4 @@
-package mc.operations.impl;
+package mc.processmodels.automata.operations;
 
 import com.google.common.collect.Iterables;
 
@@ -22,15 +22,21 @@ public class PetrinetParallelFunction {
   public static Petrinet compose(Petrinet p1, Petrinet p2) {
     clear();
 
+    System.out.println("p1 "+p1.myString());
+    System.out.println("p2 "+p2.myString());
     for(String eId : p1.getEdges().keySet()) {
+
       Set<String> owners = p1.getEdges().get(eId).getOwners();
       if(owners.contains(Petrinet.DEFAULT_OWNER)) {
         owners.clear();
       }
+      System.out.println("eId "+eId);
+      System.out.println(p1.getOwners());
+      //p1.getEdges().get(eId).getOwners().add(p1.getId());
 
-      p1.getEdges().get(eId).getOwners().add(p1.getId());
+      p1.getEdges().get(eId).addOwners(p1.getOwners());
     }
-
+    System.out.println("pingo");
     for(String eId : p2.getEdges().keySet()) {
       Set<String> owners = p2.getEdges().get(eId).getOwners();
       if(owners.contains(Petrinet.DEFAULT_OWNER)) {
