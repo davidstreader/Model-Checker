@@ -131,6 +131,7 @@ public class OwnersRule {
               if (!nd2Pl.containsKey(nd1)) {
                 next = petri.addPlace();
                 nd2Pl.putIfAbsent(nd1, next);
+                if (nd1.isTerminal())  next.setTerminal(nd1.getTerminal());
               } else {
                 next = nd2Pl.get(nd1);
               }
@@ -142,13 +143,14 @@ public class OwnersRule {
               if (!nd2Pl.containsKey(nd2)) {
                 toNode = petri.addPlace();
                 nd2Pl.putIfAbsent(nd2, toNode);
+                if (nd2.isTerminal())  next.setTerminal(nd2.getTerminal());
               } else {
                 toNode = nd2Pl.get(nd2);
               }
 
               PetriNetTransition tran = petri.addTransition(ed.getLabel());
-              petri.addEdge(next,tran,Collections.singleton(own));
-              petri.addEdge(tran,toNode,Collections.singleton(own));
+              petri.addEdge(tran,next,Collections.singleton(own));
+              petri.addEdge(toNode,tran,Collections.singleton(own));
               System.out.println(tran.myString());
             }
           } else {
@@ -158,15 +160,13 @@ public class OwnersRule {
         toDo.remove(nd);
       }
       System.out.println(petri.myString());
-      System.out.println("END of OWNER "+own);
+      System.out.println("END of OWNER valid = "+petri.validatePNet());
       subNets.push(petri.copy());  // Clones
       petri = new Petrinet(a.getId(), false);
     }
     System.out.println("\n   OWNERS Rule Stacked "+subNets.size()+"    *********");
     Petrinet build = new Petrinet(a.getId(), false);
-    if (!subNets.isEmpty()) {
-      build = subNets.pop();
-    }
+    if (!subNets.isEmpty()) { build = subNets.pop(); }
     while(!subNets.isEmpty()) {
       build = PetrinetParallelFunction.compose(build, subNets.pop());
     }

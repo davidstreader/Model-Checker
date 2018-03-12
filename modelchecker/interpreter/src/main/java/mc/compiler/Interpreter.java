@@ -60,6 +60,7 @@ public class Interpreter {
                     processMap,
                 //    localCompiler,
                     context);
+        //System.out.println("XXX "+((Petrinet) modelPetri).myString());
         modelPetri.setLocation(process.getLocation());
         if (model == null) { // If the model is not comprised of multiple types
           model = modelPetri;
@@ -114,6 +115,7 @@ public class Interpreter {
 
       messageQueue.add(new LogAST("Built:", process));
 
+      //System.out.println("XXX "+((Petrinet) model).myString());
       processMap.put(process.getIdentifier(), model);
     }
     return processMap;

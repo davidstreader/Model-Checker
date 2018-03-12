@@ -674,6 +674,18 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     return getId() + ".e" + edgeId++;
   }
 
+  public String myString(){
+    StringBuilder sb = new StringBuilder();
+    sb.append("Aut "+this.getId()+ "root ");
+      for(AutomatonNode r: root){
+      sb.append(r.getId()+" ");
+      }
+     sb.append("\n own"+ owners.stream().reduce("{",(x,y)->x+" "+y)+"}");
+    for(AutomatonEdge ed: getEdges()){
+      sb.append(ed.myString()+"\n");
+    }
+    return sb.toString();
+  }
   public String toString() {
     String tempto = "";
     String tempfrom = "";

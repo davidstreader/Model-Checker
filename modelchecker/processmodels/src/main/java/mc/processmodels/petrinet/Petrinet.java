@@ -50,6 +50,116 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
   private int transitionId = 0;
   private int edgeId = 0;
 
+  public boolean  rootContains(PetriNetPlace pl){
+
+    return roots.stream().
+       filter(x->x.getId().equals(pl.getId())).
+       collect(Collectors.toSet()).size() == 1;
+
+  }
+  /**  USE this when DEBUGGIN
+   * Not sure what data consistancy is intended or assumed
+   * This method should act both in assertions and as documentation
+   * No 2 Transitions should have the same Id
+   * No 2 (atomic) Transitions should have the same pre, post sets and label
+   * @return
+   */
+  public boolean validatePNet(){
+    boolean ok = true;
+     for (PetriNetPlace r : roots) {
+       if( !r.isStart()) {
+         System.out.println("Root " + r.getId() + " not Start ");
+         ok = false;
+       }
+     }
+     for(PetriNetPlace p : this.getPlaces().values()){
+       if (p.isStart() && !rootContains(p)) {
+         System.out.println("Start "+p.getId()+" is not Root");
+         ok = false;
+       }
+     }
+
+    for (String k: transitions.keySet()){
+      String id = transitions.get(k).getId();
+      if (!id.equals(k)) {
+        System.out.println("transition key "+k+" not trasitionid "+id);
+        ok = false;
+      }
+      boolean match = true;
+      for(PetriNetEdge ed: transitions.get(k).getIncoming()){
+        if (!ed.getTo().getId().equals(id)) {
+          System.out.println(" Incoming transition edge "+ed.myString()+ " not matched "+id);
+          match = false;
+        }
+      } ok = ok && match;
+      for(PetriNetEdge ed: transitions.get(k).getIncoming()){
+        if (!ed.getTo().getId().equals(id)) {
+          System.out.println(" Incoming transition edge "+ed.myString()+ " not matched "+id);
+          match = false;
+        }
+      } ok = ok && match;
+    }
+
+    ok = ok &&
+      places.keySet().stream().
+        map(x->places.get(x).getId().equals(x))
+        .reduce(ok, (x,y)->x&&y);
+    if (ok) System.out.println(this.getId()+" Valid");
+    else {
+      System.out.println(this.getId() + " NOT VALID");
+      System.out.println(this.myString());
+    }
+    return ok;
+  }
+
+  public void setRoot2Start(){
+   this.setRoots( getPlaces().values().stream().
+      filter(x->x.isStart()).
+      collect(Collectors.toSet()));
+  }
+  public boolean tranExists(Collection<PetriNetPlace> pre,
+                            Collection<PetriNetPlace> post,
+                            String label) {
+    System.out.print("pre { ");
+    for(PetriNetPlace p: pre) {
+      System.out.print(p.getId()+" ");
+    }System.out.print("}");
+    System.out.print(" "+label);
+    System.out.print(" post { ");
+    for(PetriNetPlace p: post) {
+      System.out.print(p.getId()+" ");
+    }System.out.println("}");
+
+    for(PetriNetTransition tr: this.getTransitions().values()) {
+      System.out.println("Exists "+tr.myString());
+      if (this.prePlaces(tr).equals(pre) &&
+        this.postPlaces(tr).equals(post) &&
+        tr.getLabel().equals(label) ) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public Set<PetriNetPlace> prePlaces(PetriNetTransition tr){
+    Set<PetriNetPlace> pre = new HashSet<>();
+    for(PetriNetEdge edge: tr.getIncoming()){
+      pre.add((PetriNetPlace) edge.getFrom());
+    }
+    return pre;
+  }
+  public Set<PetriNetPlace> postPlaces(PetriNetTransition tr){
+    Set<PetriNetPlace> post = new HashSet<>();
+    for(PetriNetEdge edge: tr.getOutgoing()){
+      post.add((PetriNetPlace) edge.getFrom());
+    }
+    return post;
+  }
+  public boolean hasPlace(PetriNetPlace p){
+    return places.containsValue(p);
+  }
+
+
   /**
    * Simply for easy of visualisation when testing
    * @return
@@ -57,13 +167,19 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
   public String myString(){
     StringBuilder sb = new StringBuilder();
     sb.append(" " + this.getId()+ " root {");
-    sb.append(this.getRoots().stream().map(x-> x.getId()).reduce("",(x,y)->x+" "+y));
+    sb.append(this.getRoots().stream().map(x-> x.getId()).reduce("",(x,y)->x+" "+y)+"}");
+    sb.append(this.getPlaces().values().stream().
+      filter(x->x.isTerminal()).
+      map(x->(x.getId()+"=>"+x.getTerminal())).
+      reduce("{",(x,y)->x+" "+y)+"}" );
+
     sb.append(this.getPlaces().keySet().stream().reduce("\n"+
       getPlaces().size()+" places ",(x,y)->x+" "+y));
     sb.append(this.getTransitions().keySet().stream().reduce("\n" +
       getTransitions().size()+ " transitions ",(x,y)->x+" "+y));
-    sb.append(this.getTransitions().values().stream().map(tr-> tr.myString()+"\n").reduce("\n" +
-      "",(x,y)->x+" "+y));
+    sb.append(this.getTransitions().values().stream().
+      map(tr-> tr.myString()+"\n").
+      reduce("\n",(x,y)->x+" "+y));
     return sb.toString();
   }
 
@@ -242,9 +358,9 @@ public String myString(Collection<PetriNetPlace> mark){
       owners.addAll(postFixed);
 
       if (edge.getFrom() instanceof PetriNetPlace) {
-        addEdge(placeMap.get(edge.getFrom()),transitionMap.get(edge.getTo()),  postFixed);
+        addEdge(transitionMap.get(edge.getTo()), placeMap.get(edge.getFrom()),  postFixed);
       } else {
-        addEdge(transitionMap.get(edge.getFrom()),placeMap.get(edge.getTo()),  postFixed);
+        addEdge(placeMap.get(edge.getTo()), transitionMap.get(edge.getFrom()),  postFixed);
       }
     }
 

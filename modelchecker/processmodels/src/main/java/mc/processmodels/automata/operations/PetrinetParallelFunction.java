@@ -25,30 +25,26 @@ public class PetrinetParallelFunction {
     System.out.println("p1 "+p1.myString());
     System.out.println("p2 "+p2.myString());
     for(String eId : p1.getEdges().keySet()) {
-
       Set<String> owners = p1.getEdges().get(eId).getOwners();
       if(owners.contains(Petrinet.DEFAULT_OWNER)) {
-        owners.clear();
+        owners = Collections.singleton(p1.getId());
       }
       System.out.println("eId "+eId);
       System.out.println(p1.getOwners());
       //p1.getEdges().get(eId).getOwners().add(p1.getId());
-
-      p1.getEdges().get(eId).addOwners(p1.getOwners());
+      p1.getEdges().get(eId).setOwners(owners);
     }
-    System.out.println("pingo");
     for(String eId : p2.getEdges().keySet()) {
       Set<String> owners = p2.getEdges().get(eId).getOwners();
       if(owners.contains(Petrinet.DEFAULT_OWNER)) {
-        owners.clear();
+        owners= Collections.singleton(p2.getId());;
       }
-
-      p2.getEdges().get(eId).getOwners().add(p2.getId());
+      p2.getEdges().get(eId).setOwners(owners);
     }
 
 
-
     setupActions(p1, p2);
+
     Petrinet composition = new Petrinet(p1.getId() + "||" + p2.getId(), false);
     composition.getOwners().clear();
     composition.getOwners().addAll(p1.getOwners());
@@ -112,7 +108,6 @@ public class PetrinetParallelFunction {
       for (PetriNetTransition t1 : p1Pair) {
         for (PetriNetTransition t2 : p2Pair) {
 
-
           Set<PetriNetEdge> outgoingEdges = new LinkedHashSet<>();
           outgoingEdges.addAll(t1.getOutgoing());
           outgoingEdges.addAll(t2.getOutgoing());
@@ -122,10 +117,8 @@ public class PetrinetParallelFunction {
           incomingEdges.addAll(t2.getIncoming());
 
           PetriNetTransition newTrans = comp.addTransition(action);
-
-
           for(PetriNetEdge outE : outgoingEdges) {
-            comp.addEdge((PetriNetPlace) outE.getTo(), newTrans, outE.getOwners());
+            comp.addEdge( (PetriNetPlace) outE.getTo(), newTrans, outE.getOwners());
           }
 
           for(PetriNetEdge inE : incomingEdges) {
@@ -175,9 +168,11 @@ public class PetrinetParallelFunction {
 
   @SneakyThrows(value = {CompilationException.class})
   public static Set<PetriNetPlace> addPetrinet(Petrinet addTo, Petrinet petriToAdd) {
-
-
-    Set<PetriNetPlace> roots = new HashSet<>();
+    addTo.validatePNet();
+    petriToAdd.validatePNet();
+    System.out.println("IN AddTo "+addTo.myString());
+    System.out.println("IN ToAdd "+petriToAdd.myString());
+    Set<PetriNetPlace> roots = addTo.getRoots();
     Map<PetriNetPlace, PetriNetPlace> placeMap = new HashMap<>();
     Map<PetriNetTransition, PetriNetTransition> transitionMap = new HashMap<>();
 
@@ -186,29 +181,34 @@ public class PetrinetParallelFunction {
       newPlace.copyProperties(place);
 
       if (place.isStart()) {
-        newPlace.setStart(false);
+        newPlace.setStart(true);
         roots.add(newPlace);
       }
 
       placeMap.put(place, newPlace);
     }
-
     for (PetriNetTransition transition : petriToAdd.getTransitions().values()) {
       PetriNetTransition newTransition = addTo.addTransition(transition.getLabel());
       transitionMap.put(transition, newTransition);
     }
 
     for (PetriNetEdge edge : petriToAdd.getEdges().values()) {
-
+      //System.out.println(edge.myString());
       if (edge.getFrom() instanceof PetriNetPlace) {
-        addTo.addEdge(transitionMap.get(edge.getTo()), placeMap.get(edge.getFrom()), edge.getOwners());
+        //System.out.println("tran "+transitionMap.get(edge.getTo()).myString());
+        addTo.addEdge( transitionMap.get(edge.getTo()), placeMap.get(edge.getFrom()), edge.getOwners());
       } else {
-        addTo.addEdge(placeMap.get(edge.getTo()), transitionMap.get(edge.getFrom()), edge.getOwners());
+        //System.out.println("place "+placeMap.get(edge.getTo()).myString());
+        addTo.addEdge( placeMap.get(edge.getTo()), transitionMap.get(edge.getFrom()), edge.getOwners());
       }
     }
-
+    //System.out.println("one2");
+     addTo.setRoots(roots);
     petriTransMap.put(petriToAdd, transitionMap);
     petriPlaceMap.put(petriToAdd, placeMap);
+
+    addTo.validatePNet();
+    System.out.println("OUT AddedTo "+addTo.myString());
     return roots;
   }
 }

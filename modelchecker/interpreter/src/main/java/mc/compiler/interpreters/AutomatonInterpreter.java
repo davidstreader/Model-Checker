@@ -51,7 +51,7 @@ import mc.processmodels.automata.operations.AutomataLabeller;
  *   non symbolic (non hidden) variables have been expanded in the AST
  */
 public class AutomatonInterpreter implements ProcessModelInterpreter {
-
+//TODO  Interpreter is  HACK  to be completely refactored
   static Map<String, Class<? extends IProcessFunction>> functions = new HashMap<>();
   static Map<String, Class<? extends IProcessInfixFunction>> infixFunctions = new HashMap<>();
 
@@ -286,9 +286,13 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     }
   }
 
+  //STRANGE  Hack
   private void interpretChoice(ChoiceNode astChoiceNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException {
 
+    System.out.println(astChoiceNode.getFirstProcess());
+    System.out.println("XX "+automaton.toString());
     interpretNode(astChoiceNode.getFirstProcess(), automaton, currentNode);
+    System.out.println("XX XX "+automaton.toString());
 
 
     //This is a special case whereby the currentNode is deleted by adding a process that destroys
@@ -298,10 +302,14 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
       for (AutomatonNode automatonNode : subProcessStartNodes) {
 
         interpretNode(astChoiceNode.getSecondProcess(), automaton, automatonNode);
+        System.out.println("X??XX "+automaton.toString());
       }
       return;
     }
+    System.out.println(astChoiceNode.getSecondProcess());
     interpretNode(astChoiceNode.getSecondProcess(), automaton, currentNode);
+    System.out.println("XX XX "+automaton.toString());
+
   }
 
   /**
