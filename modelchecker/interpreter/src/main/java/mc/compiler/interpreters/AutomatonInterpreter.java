@@ -289,10 +289,10 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
   //STRANGE  Hack
   private void interpretChoice(ChoiceNode astChoiceNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException {
 
-    System.out.println(astChoiceNode.getFirstProcess());
-    System.out.println("XX "+automaton.toString());
+  //  System.out.println(astChoiceNode.getFirstProcess());
+  //  System.out.println("XX "+automaton.toString());
     interpretNode(astChoiceNode.getFirstProcess(), automaton, currentNode);
-    System.out.println("XX XX "+automaton.toString());
+  //  System.out.println("XX XX "+automaton.toString());
 
 
     //This is a special case whereby the currentNode is deleted by adding a process that destroys
@@ -302,13 +302,13 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
       for (AutomatonNode automatonNode : subProcessStartNodes) {
 
         interpretNode(astChoiceNode.getSecondProcess(), automaton, automatonNode);
-        System.out.println("X??XX "+automaton.toString());
+   //     System.out.println("X??XX "+automaton.toString());
       }
       return;
     }
-    System.out.println(astChoiceNode.getSecondProcess());
+  //  System.out.println(astChoiceNode.getSecondProcess());
     interpretNode(astChoiceNode.getSecondProcess(), automaton, currentNode);
-    System.out.println("XX XX "+automaton.toString());
+  //  System.out.println("XX XX "+automaton.toString());
 
   }
 
@@ -391,7 +391,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
   private void interpretConversion(ConversionNode conv, Automaton automaton,
                                    AutomatonNode currentNode)
       throws CompilationException, InterruptedException {
-    System.out.println("(AUTO) interpretConversion start "+automaton.toString());
+  //  System.out.println("(AUTO) interpretConversion start "+automaton.toString());
     ProcessType to = ProcessType.valueOf(conv.to.toUpperCase());
     ProcessType from = ProcessType.valueOf(conv.from.toUpperCase());
 

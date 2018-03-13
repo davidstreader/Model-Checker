@@ -17,6 +17,25 @@ public class PetriNetTransition extends ProcessModelObject {
   Set<PetriNetEdge> incoming = new HashSet<>();
   Set<PetriNetEdge> outgoing = new HashSet<>();
 
+  public void removeEdge(PetriNetEdge ed){
+    //this seems clumsy but many shorter version failed
+    Set<PetriNetEdge> xin = new HashSet<>();
+    for(PetriNetEdge edi: incoming){
+      if (!edi.getId().equals(ed.getId())) {
+        xin.add(edi);
+      }
+    }
+    Set<PetriNetEdge> xout = new HashSet<>();
+    for(PetriNetEdge edi: outgoing){
+      if (!edi.getId().equals(ed.getId())) {
+        xout.add(edi);
+      }
+    }
+    incoming = xin;
+    outgoing = xout;
+
+    //System.out.println("removed in "+incoming.size()+" removed out "+outgoing.size());
+  }
   public PetriNetTransition(String id, String label) {
     super(id, "node");
     this.label = label;
@@ -64,7 +83,7 @@ public class PetriNetTransition extends ProcessModelObject {
 
   public String myString(){
     StringBuilder builder = new StringBuilder();
-
+    builder.append(getId()+" ");
     for (PetriNetEdge edge : getIncoming()) {
       builder.append(edge.getFrom().getId()+",");
     }

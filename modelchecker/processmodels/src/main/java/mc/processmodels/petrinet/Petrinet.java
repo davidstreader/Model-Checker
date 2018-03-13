@@ -183,10 +183,15 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     return sb.toString();
   }
 
-public String myString(Collection<PetriNetPlace> mark){
-    return mark.stream().map(x->x.myString()).reduce("{", (x,y)->x+" "+y)+"}";
+public static String marking2String(Collection<PetriNetPlace> mark){
+  //return mark.stream().map(x->x.myString()).reduce("{", (x,y)->x+" "+y)+"}";
+  return mark.stream().map(x->x.getId()).reduce("{", (x,y)->x+" "+y)+"}";
 }
 
+  public static String trans2String(Collection<PetriNetTransition> mark){
+    //return mark.stream().map(x->x.myString()).reduce("{", (x,y)->x+" "+y)+"}";
+    return mark.stream().map(x->x.getId()).reduce("{", (x,y)->x+" "+y)+"}";
+  }
 
   public Petrinet(String id) {
     this(id, true);
@@ -205,6 +210,16 @@ public String myString(Collection<PetriNetPlace> mark){
     }
   }
 
+  public void mySetRoots(Set<PetriNetPlace> pls) {
+    for(PetriNetPlace pl: places.values()){
+      if (pls.contains(pl)) {
+        pl.setStart(true);
+      } else {
+        pl.setStart(false);
+      }
+    }
+    setRoot2Start();
+  }
   public void addRoot(PetriNetPlace place) {
     if (places.values().contains(place)) {
       roots.add(place);
@@ -274,14 +289,18 @@ public String myString(Collection<PetriNetPlace> mark){
       throw new CompilationException(getClass(), "Cannot remove a place that is not part of"
           + "the petrinet");
     }
+    System.out.println("Removing "+place.getId());
     Set<PetriNetEdge> toRemove = new HashSet<>();
     toRemove.addAll(place.getIncoming());
     toRemove.addAll(place.getOutgoing());
     toRemove = toRemove.stream().filter(edges::containsValue).collect(Collectors.toSet());
-
+for(PetriNetEdge p: toRemove){ System.out.println(p.myString());}
+    System.out.println("**");
     for (PetriNetEdge edge : toRemove) {
+      //System.out.println("remove  "+ edge.myString());
       removeEdge(edge);
     }
+
     if (place.isStart() || roots.contains(place)) {
       //TODO: There is alot of weirdness going on with this set
       //Code:
@@ -295,6 +314,7 @@ public String myString(Collection<PetriNetPlace> mark){
     }
 
     places.remove(place.getId());
+    System.out.println("REMOVED "+place.getId()+ " so CHECK "+myString());
   }
 
   public void removeTransition(PetriNetTransition transition) throws CompilationException {
@@ -309,7 +329,7 @@ public String myString(Collection<PetriNetPlace> mark){
       removeEdge(edge);
     }
     transitions.remove(transition.getId());
-    alphabet.remove(transition.getLabel(), transition);
+    // Opps alphabet.remove(transition.getLabel(), transition);
   }
 
   public void removeEdge(PetriNetEdge edge) throws CompilationException {
@@ -317,14 +337,16 @@ public String myString(Collection<PetriNetPlace> mark){
       throw new CompilationException(getClass(), "Cannot remove an edge that is not part of"
           + "the petrinet");
     }
-    if (edge.getTo() instanceof PetriNetTransition) {
-      ((PetriNetTransition) edge.getTo()).getIncoming().remove(edge);
-      ((PetriNetPlace) edge.getFrom()).getOutgoing().remove(edge);
+
+   if (edge.getTo() instanceof PetriNetTransition) {
+      ((PetriNetTransition) edge.getTo()).removeEdge(edge);
+      ((PetriNetPlace) edge.getFrom()).removeEdge(edge);
     } else {
-      ((PetriNetPlace) edge.getTo()).getIncoming().remove(edge);
-      ((PetriNetTransition) edge.getFrom()).getOutgoing().remove(edge);
+      ((PetriNetPlace) edge.getTo()).removeEdge(edge);
+      ((PetriNetTransition) edge.getFrom()).removeEdge(edge);
     }
     edges.remove(edge.getId());
+    System.out.println("removedEdge "+this.myString());
   }
 
   @SneakyThrows(value = {CompilationException.class})
@@ -371,12 +393,22 @@ public String myString(Collection<PetriNetPlace> mark){
   public Set<PetriNetPlace> gluePlaces
       (Set<PetriNetPlace> set1, Set<PetriNetPlace> set2)
       throws CompilationException {
-    if (!StreamSupport.stream(Iterables.concat(set1, set2).spliterator(), false)
-        .allMatch(places::containsValue)) {
+    System.out.println("\n GLUE  START"+myString());
+  for(PetriNetPlace pl : set1){
+    if (!places.containsValue(pl)){
       new RuntimeException().printStackTrace();
-      throw new CompilationException(getClass(), "Cannot glue places together that are not part"
-          + " of the same petrinet");
+      throw new CompilationException(getClass(), "set1 node "+ pl.getId()+ " not part"
+        + " of the petrinet");
     }
+  }
+    for(PetriNetPlace pl : set2){
+      if (!places.containsValue(pl)){
+        new RuntimeException().printStackTrace();
+        throw new CompilationException(getClass(), "set2 node "+ pl.getId()+ " not part"
+          + " of the petrinet");
+      }
+    }
+
 
     Multimap<PetriNetPlace, PetriNetPlace> products = ArrayListMultimap.create();
     for (PetriNetPlace place1 : set1) {
@@ -394,6 +426,7 @@ public String myString(Collection<PetriNetPlace> mark){
 
     for (PetriNetPlace place : Iterables.concat(set1, set2)) {
       for (PetriNetPlace product : products.get(place)) {
+
         for (PetriNetEdge edge : place.getIncoming()) {
           product.getIncoming().add(addEdge(product, (PetriNetTransition) edge.getFrom(), new LinkedHashSet<>(edge.getOwners())));
         }
@@ -448,11 +481,15 @@ public String myString(Collection<PetriNetPlace> mark){
 
 
     for (PetriNetPlace place : Iterables.concat(set1, set2)) {
+      System.out.println("Trying to remove "+place.getId());
       removePlace(place);
+      System.out.println("Check places" +Petrinet.marking2String(places.values()));
     }
 
     products.values().stream().filter(PetriNetPlace::isStart).forEach(this::addRoot);
 
+    System.out.println("GLUE END "+ this.myString());
+    System.out.println("GLUE END");
     return new HashSet<>(products.values());
   }
 

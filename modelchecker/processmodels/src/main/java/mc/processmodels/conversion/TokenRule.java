@@ -53,6 +53,8 @@ public class TokenRule {
   public static Automaton tokenRule(Petrinet convertFrom, Map<Set<PetriNetPlace>, AutomatonNode> markingToNodeMap, Map<AutomatonNode, Set<PetriNetPlace> > nodeToMarkingMap) {
     Automaton outputAutomaton = new Automaton(convertFrom.getId() + " automata",
         false);
+    System.out.println("\nTOKEN RULE \n STARTING "+convertFrom.myString());
+    convertFrom.validatePNet();
 
     AutomatonNode root = outputAutomaton.addNode();
     root.setStartNode(true);
@@ -69,22 +71,23 @@ public class TokenRule {
 
     while (!toDo.isEmpty()) {
       Set<PetriNetPlace> currentMarking = toDo.pop();
+      System.out.println("Starting "+previouslyVisitedPlaces.size()+
+         " "+Petrinet.marking2String(currentMarking));
       if (previouslyVisitedPlaces.contains(currentMarking)) {
+        System.out.println("Visted!");
         continue;
       }
 
-
       Set<PetriNetTransition> satisfiedPostTransitions = satisfiedTransitions(currentMarking);
-
+      System.out.println("Processing "+Petrinet.marking2String(currentMarking)+
+      " trans "+satisfiedPostTransitions.size());
       if (satisfiedPostTransitions.size() == 0) {
         markingToNodeMap.get(currentMarking).setTerminal("STOP");
       }
 
-
       for (PetriNetTransition transition : satisfiedPostTransitions) {
+        System.out.println("Next tran "+transition.myString());
         Set<PetriNetPlace> newMarking = new HashSet<>(currentMarking);
-
-
         // Clear out the places in the current marking which are moving token
         newMarking.removeAll(transition.pre());
 
@@ -92,6 +95,7 @@ public class TokenRule {
             .map(PetriNetEdge::getTo)
             .map(PetriNetPlace.class::cast)
             .collect(Collectors.toList()));
+        System.out.println("newMarking "+ Petrinet.marking2String(newMarking));
 
         if (!markingToNodeMap.containsKey(newMarking)) {
           AutomatonNode newNode = outputAutomaton.addNode();
@@ -103,8 +107,10 @@ public class TokenRule {
 
         outputAutomaton.addEdge(transition.getLabel(), markingToNodeMap.get(currentMarking),
             markingToNodeMap.get(newMarking), null, false);
+        System.out.println(" automaton now "+outputAutomaton.myString());
       }
       previouslyVisitedPlaces.add(currentMarking);
+      System.out.println("ENDing "+previouslyVisitedPlaces.size()+"  "+Petrinet.marking2String(currentMarking));
     }
     return outputAutomaton;
   }

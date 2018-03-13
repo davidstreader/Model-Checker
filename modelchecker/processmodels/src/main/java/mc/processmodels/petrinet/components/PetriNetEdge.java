@@ -61,7 +61,7 @@ public class PetriNetEdge extends ProcessModelObject {
 
   }
   public String myString(){
-    String out =  "edge "+this.getId()+" * "+from.getId()+"->"+to.getId()+" own ";
+    String out =  "edge "+this.getId()+" from "+from.getId()+" -> "+to.getId()+" own ";
     for (String o: owners){out = out +o+" ";}
     return out+"\n";
   }

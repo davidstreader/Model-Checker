@@ -133,10 +133,10 @@ public class SequentialInfixFunction implements IProcessInfixFunction {
         .flatMap(List::stream)
         .forEach(sequence::removeEdge);
     stopNodes.forEach(sequence::removeNode);
-    System.out.println("Sequence 2 "+ automaton2.toString());
+   // System.out.println("Sequence 2 "+ automaton2.toString());
 
     copyAutomataEdges(sequence, automaton2, automata2nodes,setOfOwners);
-    System.out.println("End Seq   "+sequence.toString());
+  //  System.out.println("End Seq   "+sequence.toString());
     return sequence;
   }
 
@@ -144,19 +144,21 @@ public class SequentialInfixFunction implements IProcessInfixFunction {
    * Execute the function.
    *
    * @param id        the id of the resulting petrinet
-   * @param petrinet1 the first  petrinet in the function (e.g. {@code A} in {@code A||B})
-   * @param petrinet2 the second petrinet in the function (e.g. {@code B} in {@code A||B})
+   * @param net1 the first  petrinet in the function (e.g. {@code A} in {@code A||B})
+   * @param net2 the second petrinet in the function (e.g. {@code B} in {@code A||B})
    * @return the resulting petrinet of the operation
    */
   @Override
-  public Petrinet compose(String id, Petrinet petrinet1, Petrinet petrinet2)
+  public Petrinet compose(String id, Petrinet net1, Petrinet net2)
       throws CompilationException {
-    System.out.println("petri1 "+petrinet1.myString());
-    System.out.println("petri2 "+petrinet2.myString());
-
+    System.out.println("\n\nPETRI1 "+net1.myString());
+    net1.validatePNet();
+    System.out.println("PETRI2 "+net2.myString());
+    net2.validatePNet();
+   Petrinet petrinet1 = net1.copy();
+   Petrinet petrinet2 = net2.copy();
     if (petrinet1.getOwners().contains(Petrinet.DEFAULT_OWNER)) {
       petrinet1.getOwners().clear();
-
       for (String eId : petrinet1.getEdges().keySet()) {
         Set<String> owner = new HashSet<>();
         owner.add(petrinet1.getId());
@@ -166,28 +168,26 @@ public class SequentialInfixFunction implements IProcessInfixFunction {
 
     if (petrinet2.getOwners().contains(Petrinet.DEFAULT_OWNER)) {
       petrinet2.getOwners().clear();
-
       for (String eId : petrinet2.getEdges().keySet()) {
         Set<String> owner = new HashSet<>();
         owner.add(petrinet2.getId());
         petrinet2.getEdges().get(eId).setOwners(owner);
       }
     }
-
     //create an empty petrinet
     Petrinet composition = new Petrinet(id, false);
 
     composition.getOwners().clear();
-
     composition.getOwners().addAll(petrinet1.getOwners());
     composition.getOwners().addAll(petrinet2.getOwners());
 
     //add the first petrinet to the sequential composition
     //add the start nodes of petrinet1 as start nodes for the composition petrinet
-    composition.addPetrinet(petrinet1).forEach(p -> {
-      p.setStart(true);
-      composition.addRoot(p);
-    });
+
+    composition.addPetrinet(petrinet1);
+    Set<PetriNetPlace> startof1 =  composition.getRoots().
+       stream().collect(Collectors.toSet());  // content copy
+    System.out.println("Start1 "+Petrinet.marking2String(startof1));
 
     //get the STOP states (not ERROR) places
     Set<PetriNetPlace> stopNodes = composition.getPlaces().values().stream()
@@ -195,14 +195,43 @@ public class SequentialInfixFunction implements IProcessInfixFunction {
         .filter(p -> p.getTerminal().equalsIgnoreCase("STOP"))
         .collect(Collectors.toSet());
 
-    //add the second petrinet
-    Set<PetriNetPlace> startOfP2 = composition.addPetrinet(petrinet2);
+    //add the second petrinet;
+
+    composition.addPetrinet(petrinet2);
+    System.out.println("Start1 "+Petrinet.marking2String(startof1));
+    Set<PetriNetPlace> startOfP2 = new HashSet<>();
+    for(PetriNetPlace pl: composition.getRoots()) {
+      System.out.println(pl.myString());
+      if (!startof1.contains(pl)){
+        startOfP2.add(pl);
+      }
+    }
+    System.out.println("temp "+Petrinet.marking2String(composition.getRoots()));
+  composition.mySetRoots(startof1);
+
     System.out.println(startOfP2.stream().
       map(x->x.getId()).
       reduce("startOf2 {",(x,y)->x+" "+y)+"}");
+    System.out.println(stopNodes.stream().
+      map(x->x.getId()).
+      reduce("stopNodes {",(x,y)->x+" "+y)+"}");
+
     //merge the end of petri1 with the start of petri2
     composition.gluePlaces(stopNodes, startOfP2);
-    System.out.println("Sequential OUT "+ composition.myString());
+    stopNodes.addAll(startOfP2);
+    for(PetriNetPlace pl: stopNodes){
+      System.out.println("checking "+pl.getId());
+      for (PetriNetPlace plo: composition.getPlaces().values()) {
+        System.out.println("   checking "+plo.getId());
+        if (plo.getId().equals(pl.getId())) {
+          System.out.println("remove " + plo.getId());
+          composition.removePlace(plo);
+        }
+      }
+    }
+
+    System.out.println("SEQUENTIAL OUT "+ composition.myString()+"\n\n");
+    composition.validatePNet();
     return composition;
   }
 

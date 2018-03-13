@@ -18,6 +18,25 @@ public class PetriNetPlace extends ProcessModelObject {
   private String terminal;
   private Set<String> references;
 
+  public void removeEdge(PetriNetEdge ed){
+    //this seems clumsy but many shorter version failed
+    Set<PetriNetEdge> xin = new HashSet<>();
+    for(PetriNetEdge edi: incoming){
+      if (!edi.getId().equals(ed.getId())) {
+        xin.add(edi);
+      }
+    }
+    Set<PetriNetEdge> xout = new HashSet<>();
+    for(PetriNetEdge edi: outgoing){
+      if (!edi.getId().equals(ed.getId())) {
+        xout.add(edi);
+      }
+    }
+    incoming = xin;
+    outgoing = xout;
+
+    //System.out.println("removed in "+incoming.size()+" removed out "+outgoing.size());
+  }
   public PetriNetPlace(String id) {
     super(id, "PetriNetPlace");
   }
@@ -91,7 +110,7 @@ public class PetriNetPlace extends ProcessModelObject {
   }
 
   public String myString(){
-    return this.getId()+
+    return "Place "+this.getId()+
       this.getIncoming().stream().map(ed->ed.getId()).reduce(" in  ",(x,y)->x+" "+y)+
       this.getOutgoing().stream().map(ed->ed.getId()).reduce(" out ",(x,y)->x+" "+y);
   }

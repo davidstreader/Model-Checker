@@ -82,7 +82,7 @@ public class Interpreter {
           model = modelAut;
         } else {
           ((MultiProcessModel) model).addProcess(modelAut);
-          System.out.println("WHAT THE HELL\n");
+        //  System.out.println("WHAT THE HELL\n");
           ((MultiProcessModel) model).addProcess(OwnersRule.ownersRule(modelAut));
         }
 
@@ -111,7 +111,7 @@ public class Interpreter {
         }
       }
 
-      System.out.print("Done!");
+     // System.out.print("Done!");
 
       messageQueue.add(new LogAST("Built:", process));
 
@@ -132,13 +132,13 @@ public class Interpreter {
     switch (processModelType) {
       case "forcedautomata":
       case "automata":
-        System.out.println("***** interpret automata" );
+       // System.out.println("***** interpret automata" );
         model = automatonInterpreter.interpret(astNode, identifer, processMap, context);
-        System.out.println(model.toString());
+      //  System.out.println(model.toString());
         break;
 
       case "petrinet":
-        System.out.println("***** interpret petrinet" );
+      //  System.out.println("***** interpret petrinet" );
         model = petrinetInterpreter.interpret(astNode, identifer, processMap, context);
 
         break;

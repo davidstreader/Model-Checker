@@ -22,15 +22,15 @@ public class PetrinetParallelFunction {
   public static Petrinet compose(Petrinet p1, Petrinet p2) {
     clear();
 
-    System.out.println("p1 "+p1.myString());
-    System.out.println("p2 "+p2.myString());
+   // System.out.println("p1 "+p1.myString());
+   // System.out.println("p2 "+p2.myString());
     for(String eId : p1.getEdges().keySet()) {
       Set<String> owners = p1.getEdges().get(eId).getOwners();
       if(owners.contains(Petrinet.DEFAULT_OWNER)) {
         owners = Collections.singleton(p1.getId());
       }
-      System.out.println("eId "+eId);
-      System.out.println(p1.getOwners());
+    //  System.out.println("eId "+eId);
+    //  System.out.println(p1.getOwners());
       //p1.getEdges().get(eId).getOwners().add(p1.getId());
       p1.getEdges().get(eId).setOwners(owners);
     }
@@ -170,8 +170,8 @@ public class PetrinetParallelFunction {
   public static Set<PetriNetPlace> addPetrinet(Petrinet addTo, Petrinet petriToAdd) {
     addTo.validatePNet();
     petriToAdd.validatePNet();
-    System.out.println("IN AddTo "+addTo.myString());
-    System.out.println("IN ToAdd "+petriToAdd.myString());
+   // System.out.println("IN AddTo "+addTo.myString());
+   // System.out.println("IN ToAdd "+petriToAdd.myString());
     Set<PetriNetPlace> roots = addTo.getRoots();
     Map<PetriNetPlace, PetriNetPlace> placeMap = new HashMap<>();
     Map<PetriNetTransition, PetriNetTransition> transitionMap = new HashMap<>();
@@ -208,7 +208,7 @@ public class PetrinetParallelFunction {
     petriPlaceMap.put(petriToAdd, placeMap);
 
     addTo.validatePNet();
-    System.out.println("OUT AddedTo "+addTo.myString());
+  //  System.out.println("OUT AddedTo "+addTo.myString());
     return roots;
   }
 }
