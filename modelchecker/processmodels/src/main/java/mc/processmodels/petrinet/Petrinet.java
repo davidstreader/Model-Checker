@@ -120,7 +120,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
   public boolean tranExists(Collection<PetriNetPlace> pre,
                             Collection<PetriNetPlace> post,
                             String label) {
-    System.out.print("pre { ");
+  /*  System.out.print("pre { ");
     for(PetriNetPlace p: pre) {
       System.out.print(p.getId()+" ");
     }System.out.print("}");
@@ -128,10 +128,10 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     System.out.print(" post { ");
     for(PetriNetPlace p: post) {
       System.out.print(p.getId()+" ");
-    }System.out.println("}");
+    }System.out.println("}"); */
 
     for(PetriNetTransition tr: this.getTransitions().values()) {
-      System.out.println("Exists "+tr.myString());
+     //System.out.println("Exists "+tr.myString());
       if (this.prePlaces(tr).equals(pre) &&
         this.postPlaces(tr).equals(post) &&
         tr.getLabel().equals(label) ) {
@@ -182,7 +182,20 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
       reduce("\n",(x,y)->x+" "+y));
     return sb.toString();
   }
-
+  public static Petrinet stopNet(){
+    Petrinet stop = new Petrinet("stop");
+    for(PetriNetPlace p : stop.getPlaces().values()) {
+      p.setTerminal("STOP");
+    };
+    return stop;
+  }
+  public static Petrinet errorNet(){
+    Petrinet error = new Petrinet("error");
+    for(PetriNetPlace p : error.getPlaces().values()) {
+      p.setTerminal("ERROR");
+    };
+    return error;
+  }
 public static String marking2String(Collection<PetriNetPlace> mark){
   //return mark.stream().map(x->x.myString()).reduce("{", (x,y)->x+" "+y)+"}";
   return mark.stream().map(x->x.getId()).reduce("{", (x,y)->x+" "+y)+"}";
@@ -241,16 +254,26 @@ public static String marking2String(Collection<PetriNetPlace> mark){
     PetriNetTransition transition = new PetriNetTransition(id, label);
     transitions.put(id, transition);
     alphabet.put(label, transition);
+    //System.out.println("added "+transition.getId());
+    //System.out.println("Check "+ myString());
     return transition;
   }
 
   public PetriNetTransition addTransition(String label) {
+
     return addTransition(id + ":t:" + transitionId++, label);
   }
 
   public PetriNetEdge addEdge(PetriNetTransition to, PetriNetPlace from, Set<String> owner) throws CompilationException {
-    if (!transitions.containsValue(to) || !places.containsValue(from)) {
-      throw new CompilationException(getClass(), "Cannot add an edge to an object not inside the petrinet");
+    //System.out.println("addEdge from "+from.getId()+ " to "+to.getId());
+    //System.out.println("in net "+myString());
+    if (!transitions.containsValue(to) ) {
+      throw new CompilationException(getClass(), "Cannot add an edge to transition "+
+        to.getId()+" in  petrinet");
+    }
+    if (!places.containsValue(from)) {
+      throw new CompilationException(getClass(), "Cannot add an edge from Place "+
+        from.getId()+" not inside the petrinet");
     }
     if (to == null || from == null) {
       throw new CompilationException(getClass(), "Either " + to + " or " + from + "are null");
@@ -263,23 +286,32 @@ public static String marking2String(Collection<PetriNetPlace> mark){
     to.getIncoming().add(edge);
     from.getOutgoing().add(edge);
     edges.put(id, edge);
+    System.out.println("addEdgePT done "+edge.myString());
     return edge;
   }
 
   public PetriNetEdge addEdge(PetriNetPlace to, PetriNetTransition from, Set<String> owner) throws CompilationException {
-    if (!transitions.containsValue(from) || !places.containsValue(to)) {
-      throw new CompilationException(getClass(), "Cannot add an edge to an object not inside the petrinet");
+
+    //System.out.println("addEdge from "+from.getId()+ " to "+to.getId());
+    if (!transitions.containsValue(from) ) {
+      throw new CompilationException(getClass(), "Cannot add an edge from transition "+
+                          from.getId()+" in  petrinet");
+    }
+    if (!places.containsValue(to)) {
+      throw new CompilationException(getClass(), "Cannot add an edge to Place "+
+                         to.getId()+" not inside the petrinet");
     }
     if (to == null || from == null) {
       throw new CompilationException(getClass(), "Either " + to + " or " + from + "are null");
     }
-
+    //System.out.println("XXX");
     String id = this.id + ":e:" + edgeId++;
     PetriNetEdge edge = new PetriNetEdge(id, to, from);
     edge.setOwners(owner);
     to.getIncoming().add(edge);
     from.getOutgoing().add(edge);
     edges.put(id, edge);
+System.out.println("addEdgeTP done "+edge.myString());
     return edge;
   }
 
@@ -289,13 +321,11 @@ public static String marking2String(Collection<PetriNetPlace> mark){
       throw new CompilationException(getClass(), "Cannot remove a place that is not part of"
           + "the petrinet");
     }
-    System.out.println("Removing "+place.getId());
+   //System.out.println("Removing "+place.getId());
     Set<PetriNetEdge> toRemove = new HashSet<>();
     toRemove.addAll(place.getIncoming());
     toRemove.addAll(place.getOutgoing());
     toRemove = toRemove.stream().filter(edges::containsValue).collect(Collectors.toSet());
-for(PetriNetEdge p: toRemove){ System.out.println(p.myString());}
-    System.out.println("**");
     for (PetriNetEdge edge : toRemove) {
       //System.out.println("remove  "+ edge.myString());
       removeEdge(edge);
@@ -314,7 +344,7 @@ for(PetriNetEdge p: toRemove){ System.out.println(p.myString());}
     }
 
     places.remove(place.getId());
-    System.out.println("REMOVED "+place.getId()+ " so CHECK "+myString());
+   //System.out.println("REMOVED "+place.getId()+ " so CHECK "+myString());
   }
 
   public void removeTransition(PetriNetTransition transition) throws CompilationException {
@@ -346,7 +376,7 @@ for(PetriNetEdge p: toRemove){ System.out.println(p.myString());}
       ((PetriNetTransition) edge.getFrom()).removeEdge(edge);
     }
     edges.remove(edge.getId());
-    System.out.println("removedEdge "+this.myString());
+    //System.out.println("removedEdge "+this.myString());
   }
 
   @SneakyThrows(value = {CompilationException.class})
@@ -394,7 +424,9 @@ for(PetriNetEdge p: toRemove){ System.out.println(p.myString());}
       (Set<PetriNetPlace> set1, Set<PetriNetPlace> set2)
       throws CompilationException {
     System.out.println("\n GLUE  START"+myString());
-  for(PetriNetPlace pl : set1){
+    System.out.println("s1 "+ Petrinet.marking2String(set1));
+    System.out.println("s2 "+ Petrinet.marking2String(set2));
+    for(PetriNetPlace pl : set1){
     if (!places.containsValue(pl)){
       new RuntimeException().printStackTrace();
       throw new CompilationException(getClass(), "set1 node "+ pl.getId()+ " not part"
@@ -481,9 +513,9 @@ for(PetriNetEdge p: toRemove){ System.out.println(p.myString());}
 
 
     for (PetriNetPlace place : Iterables.concat(set1, set2)) {
-      System.out.println("Trying to remove "+place.getId());
+      //System.out.println("Trying to remove "+place.getId());
       removePlace(place);
-      System.out.println("Check places" +Petrinet.marking2String(places.values()));
+      //System.out.println("Check places" +Petrinet.marking2String(places.values()));
     }
 
     products.values().stream().filter(PetriNetPlace::isStart).forEach(this::addRoot);

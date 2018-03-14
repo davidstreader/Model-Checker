@@ -14,7 +14,7 @@ public final class PetrinetReachability {
 
   public static Petrinet removeUnreachableStates(Petrinet petri) throws CompilationException {
 
-    System.out.println("Reachability "+petri.myString());
+    //System.out.println("Reachability "+petri.myString());
     petri = petri.copy();
     Stack<Set<PetriNetPlace>> toDo = new Stack<>();
     toDo.push(petri.getRoots());
@@ -25,15 +25,15 @@ public final class PetrinetReachability {
 
     while (!toDo.isEmpty()) {
       Set<PetriNetPlace> currentMarking = toDo.pop();
-      System.out.println("Visited "+Petrinet.marking2String(currentMarking));
+      //System.out.println("Visited "+Petrinet.marking2String(currentMarking));
       visitedPlaces.addAll(currentMarking);
 
       if (previouslyVisitedPlaces.contains(currentMarking)) {
         continue;
       }
 
-      System.out.println("MARKING: "+Petrinet.marking2String(currentMarking));
-      System.out.println("Post "+Petrinet.trans2String(post(currentMarking)));
+      //System.out.println("MARKING: "+Petrinet.marking2String(currentMarking));
+      //System.out.println("Post "+Petrinet.trans2String(post(currentMarking)));
       Set<PetriNetTransition> satisfiedPostTransitions = satisfiedTransitions(currentMarking);
 
       for (PetriNetTransition transition : satisfiedPostTransitions) {
@@ -57,8 +57,8 @@ public final class PetrinetReachability {
     }
     Set<PetriNetPlace> placesToRemove = new HashSet<>(petri.getPlaces().values());
     placesToRemove.removeAll(visitedPlaces);
-    System.out.println("All Vis "+Petrinet.marking2String(visitedPlaces));
-    System.out.println("All Rem "+Petrinet.marking2String(placesToRemove));
+    //System.out.println("All Vis "+Petrinet.marking2String(visitedPlaces));
+    //System.out.println("All Rem "+Petrinet.marking2String(placesToRemove));
     Set<PetriNetTransition> transitionsToRemove = new HashSet<> (petri.getTransitions().values());
     transitionsToRemove.removeAll(visitedTransitions);
 
@@ -68,8 +68,8 @@ public final class PetrinetReachability {
     for (PetriNetTransition t : transitionsToRemove) {
       petri.removeTransition(t);
     }
-  
-    System.out.println("REACH  end "+ petri.myString()+"REACH END \n");
+
+    //System.out.println("REACH  end "+ petri.myString()+"REACH END \n");
     return petri;
   }
 
