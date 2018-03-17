@@ -34,6 +34,8 @@ public class Interpreter {
   private AutomatonInterpreter automatonInterpreter = new AutomatonInterpreter();
   private PetrinetInterpreter petrinetInterpreter = new PetrinetInterpreter();
 
+//TODO  Document or remove this Design  HACK1
+  //ONLY called from compiler  HACK other palces call the method below
   public Map<String, ProcessModel> interpret(AbstractSyntaxTree ast,
                                             // LocalCompiler localCompiler,
                                              BlockingQueue<Object> messageQueue,
@@ -54,7 +56,7 @@ public class Interpreter {
         model = new MultiProcessModel(process.getIdentifier());
         model.setLocation(process.getLocation());
       }
-
+//***** TWO way to interpret  WHY?
       if (process.getType().contains("petrinet")) {
         ProcessModel modelPetri = petrinetInterpreter.interpret(process,
                     processMap,
@@ -121,7 +123,7 @@ public class Interpreter {
     return processMap;
 
   }
-
+//called from outside compiler - including PetriNetInterpretor  conversion!
   public ProcessModel interpret(String processModelType,
                                 ASTNode astNode,
                                 String identifer,
@@ -137,7 +139,7 @@ public class Interpreter {
       //  System.out.println(model.toString());
         break;
 
-      case "petrinet":
+      case "petrinet":  //****
       //  System.out.println("***** interpret petrinet" );
         model = petrinetInterpreter.interpret(astNode, identifer, processMap, context);
 

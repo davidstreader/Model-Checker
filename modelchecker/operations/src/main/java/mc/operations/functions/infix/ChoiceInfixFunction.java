@@ -3,6 +3,7 @@ package mc.operations.functions.infix;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 import mc.exceptions.CompilationException;
@@ -11,7 +12,10 @@ import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.automata.operations.AutomataReachability;
+import mc.processmodels.automata.operations.ChoiceFun;
+import mc.processmodels.automata.operations.SequentialInfixFun;
 import mc.processmodels.petrinet.Petrinet;
+import mc.processmodels.petrinet.components.PetriNetPlace;
 
 public class ChoiceInfixFunction implements IProcessInfixFunction {
 
@@ -99,14 +103,16 @@ public class ChoiceInfixFunction implements IProcessInfixFunction {
    * Execute the function.
    *
    * @param id        the id of the resulting petrinet
-   * @param petrinet1 the first  petrinet in the function (e.g. {@code A} in {@code A||B})
-   * @param petrinet2 the second petrinet in the function (e.g. {@code B} in {@code A||B})
+   * @param net1 the first  petrinet in the function (e.g. {@code A} in {@code A||B})
+   * @param net2 the second petrinet in the function (e.g. {@code B} in {@code A||B})
    * @return the resulting petrinet of the operation
    */
 //  @Override
-  public Petrinet compose(String id, Petrinet petrinet1, Petrinet petrinet2)
+  public Petrinet compose(String id, Petrinet net1, Petrinet net2)
       throws CompilationException {
-    return null;
+    ChoiceFun sf = new ChoiceFun();
+    Petrinet choice = sf.compose(id,net1,net2);
+    return choice;
   }
 
   /**

@@ -35,6 +35,8 @@ public abstract class ASTNode implements Serializable {
   @Getter
   private Set<String> references;
   @Getter
+  private Set<String> fromReferences;
+  @Getter
   private Location location;
   @Getter
   @Setter
@@ -67,6 +69,12 @@ public abstract class ASTNode implements Serializable {
       references = new HashSet<>();
     }
     references.add(reference);
+  }
+  public void addFromReference(String reference) {
+    if (fromReferences == null) {
+      fromReferences = new HashSet<>();
+    }
+    fromReferences.add(reference);
   }
 
   /**

@@ -1,22 +1,18 @@
 package mc.operations.functions.infix;
 
-import mc.plugins.IProcessInfixFunction;/*
-/* BOTH AUTOMATON and PETRI NET*/
-
-import mc.plugins.IProcessInfixFunction;
 import com.google.common.collect.Multimap;
-
-import java.util.*;
-import java.util.stream.Collectors;
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessInfixFunction;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.automata.operations.AutomataReachability;
+import mc.processmodels.automata.operations.SequentialInfixFun;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetPlace;
-import sun.nio.cs.ext.COMPOUND_TEXT;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class SequentialInfixFunction implements IProcessInfixFunction {
   /**
@@ -49,99 +45,17 @@ public class SequentialInfixFunction implements IProcessInfixFunction {
    */
   @Override
   public Automaton compose(String id, Automaton automaton1, Automaton automaton2) throws CompilationException {
-    //System.out.println("\n *********************\n");
-    //System.out.println("a1 "+automaton1.myString());
-    //System.out.println("a2 "+automaton2.myString());
-    Automaton sequence = new Automaton(id, !Automaton.CONSTRUCT_ROOT);
-
-    Multimap<String,String> setOfOwners = AutomatonEdge.createIntersection(automaton1, automaton2);
-
-    //store a map to the nodes so id can be ignored
-    Map<String, AutomatonNode> automata1nodes = new HashMap<>();
-    Map<String, AutomatonNode> automata2nodes = new HashMap<>();
-
-  //  System.out.println("Sequence aut1 "+ automaton1.toString());
-  //  System.out.println("Sequence aut2 "+ automaton2.toString());
-    //copy node1 nodes across
-    AutomataReachability.removeUnreachableNodes(automaton1).getNodes().forEach(node -> {
-      try {
-        AutomatonNode newNode = sequence.addNode();
-
-        newNode.copyProperties(node);
-        automata1nodes.put(node.getId(), newNode);
-
-        if (newNode.isStartNode()) {
-          sequence.addRoot(newNode);
-        }
-
-      } catch (CompilationException e) {
-        e.printStackTrace();
-      }
-    });
-
-  //  System.out.println("Sequence 1 "+sequence.toString());
-
-    copyAutomataEdges(sequence, automaton1, automata1nodes, setOfOwners);
-
-
-    //get the stop nodes such that they can be replaced
-    Collection<AutomatonNode> stopNodes = sequence.getNodes().stream()
-        .filter(n -> "STOP".equals(n.getTerminal()))
-        .collect(Collectors.toList());
-
-    //if there are no stop nodes, we cannot glue them together
-    if (stopNodes.isEmpty()) {
-      return sequence;
-    }
-    /*System.out.print("stopNodes "+stopNodes.stream().
-         map(x->x.getId()).reduce("{",(x,y)->x=x+" "+y)+"}"); */
-
-//below copies the automaton hence renames the nodes
-    AutomataReachability.removeUnreachableNodes(automaton2).getNodes().forEach(node -> {
-      AutomatonNode newNode = sequence.addNode();
-      newNode.copyProperties(node);
-
-      automata2nodes.put(node.getId(), newNode);
-
-      if (newNode.isStartNode()) {
-        newNode.setStartNode(false);
-        // for every stop node of automata1, get the edges that go into it
-        // replace it with the start node of automata2
-        for (AutomatonNode stopNode : stopNodes) {
-          if(stopNode.getIncomingEdges().size() == 0) {// If automaton 1 is only a stop node
-            newNode.setStartNode(true);
-          }
-
-
-          for (AutomatonEdge edge : stopNode.getIncomingEdges()) {
-            AutomatonNode origin = edge.getFrom();
-     //System.out.println("last "+edge.myString());
-            try {
-              sequence.addOwnersToEdge(
-                  sequence.addEdge(edge.getLabel(), origin, newNode,
-                      edge.getGuard() == null ? null : edge.getGuard().copy(),
-                      false), edge.getOwnerLocation());
-            } catch (CompilationException e) {
-              e.printStackTrace();
-            }
-          }
-        }
-      }
-    });
-
-    stopNodes.stream().map(AutomatonNode::getIncomingEdges)
-        .flatMap(List::stream)
-        .forEach(sequence::removeEdge);
-    stopNodes.forEach(sequence::removeNode);
-   // System.out.println("Sequence 2 "+ automaton2.toString());
-
-    copyAutomataEdges(sequence, automaton2, automata2nodes,setOfOwners);
+   SequentialInfixFun sf = new SequentialInfixFun();
+   Automaton seq = sf.compose(id,automaton1,automaton2);
   //  System.out.println("End Seq   "+sequence.toString());
-    return sequence;
+    return seq;
   }
 
   /**
-   * Execute the function.
+   * clone the nets
+   * remove STOP from net1 Places and Start from net2 Places
+   * glue
+   * reset root from start.
    *
    * @param id        the id of the resulting petrinet
    * @param net1 the first  petrinet in the function (e.g. {@code A} in {@code A||B})
@@ -151,88 +65,9 @@ public class SequentialInfixFunction implements IProcessInfixFunction {
   @Override
   public Petrinet compose(String id, Petrinet net1, Petrinet net2)
       throws CompilationException {
-    System.out.println("\n\nPETRI1 "+net1.myString());
-    net1.validatePNet();
-    System.out.println("PETRI2 "+net2.myString());
-    net2.validatePNet();
-   Petrinet petrinet1 = net1.copy();
-   Petrinet petrinet2 = net2.copy();
-    if (petrinet1.getOwners().contains(Petrinet.DEFAULT_OWNER)) {
-      petrinet1.getOwners().clear();
-      for (String eId : petrinet1.getEdges().keySet()) {
-        Set<String> owner = new HashSet<>();
-        owner.add(petrinet1.getId());
-        petrinet1.getEdges().get(eId).setOwners(owner);
-      }
-    }
-
-    if (petrinet2.getOwners().contains(Petrinet.DEFAULT_OWNER)) {
-      petrinet2.getOwners().clear();
-      for (String eId : petrinet2.getEdges().keySet()) {
-        Set<String> owner = new HashSet<>();
-        owner.add(petrinet2.getId());
-        petrinet2.getEdges().get(eId).setOwners(owner);
-      }
-    }
-    //create an empty petrinet
-    Petrinet composition = new Petrinet(id, false);
-
-    composition.getOwners().clear();
-    composition.getOwners().addAll(petrinet1.getOwners());
-    composition.getOwners().addAll(petrinet2.getOwners());
-
-    //add the first petrinet to the sequential composition
-    //add the start nodes of petrinet1 as start nodes for the composition petrinet
-
-    composition.addPetrinet(petrinet1);
-    Set<PetriNetPlace> startof1 =  composition.getRoots().
-       stream().collect(Collectors.toSet());  // content copy
-    System.out.println("Start1 "+Petrinet.marking2String(startof1));
-
-    //get the STOP states (not ERROR) places
-    Set<PetriNetPlace> stopNodes = composition.getPlaces().values().stream()
-        .filter(PetriNetPlace::isTerminal)
-        .filter(p -> p.getTerminal().equalsIgnoreCase("STOP"))
-        .collect(Collectors.toSet());
-
-    //add the second petrinet;
-
-    composition.addPetrinet(petrinet2);
-    System.out.println("Start1 "+Petrinet.marking2String(startof1));
-    Set<PetriNetPlace> startOfP2 = new HashSet<>();
-    for(PetriNetPlace pl: composition.getRoots()) {
-      System.out.println(pl.myString());
-      if (!startof1.contains(pl)){
-        startOfP2.add(pl);
-      }
-    }
-    System.out.println("temp "+Petrinet.marking2String(composition.getRoots()));
-  composition.mySetRoots(startof1);
-
-    System.out.println(startOfP2.stream().
-      map(x->x.getId()).
-      reduce("startOf2 {",(x,y)->x+" "+y)+"}");
-    System.out.println(stopNodes.stream().
-      map(x->x.getId()).
-      reduce("stopNodes {",(x,y)->x+" "+y)+"}");
-
-    //merge the end of petri1 with the start of petri2
-    composition.gluePlaces(stopNodes, startOfP2);
-    stopNodes.addAll(startOfP2);
-    for(PetriNetPlace pl: stopNodes){
-      System.out.println("checking "+pl.getId());
-      for (PetriNetPlace plo: composition.getPlaces().values()) {
-        System.out.println("   checking "+plo.getId());
-        if (plo.getId().equals(pl.getId())) {
-          System.out.println("remove " + plo.getId());
-          composition.removePlace(plo);
-        }
-      }
-    }
-
-    System.out.println("SEQUENTIAL OUT "+ composition.myString()+"\n\n");
-    composition.validatePNet();
-    return composition;
+   SequentialInfixFun sf = new SequentialInfixFun();
+   Petrinet seq = sf.compose(id,net1,net2);
+   return  seq;
   }
 
   /**

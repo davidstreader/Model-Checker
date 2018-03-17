@@ -19,11 +19,13 @@ import mc.compiler.ast.ProcessNode;
 import mc.compiler.ast.ProcessRootNode;
 import mc.compiler.ast.ReferenceNode;
 import mc.compiler.ast.SequenceNode;
+import mc.compiler.interpreters.PetrinetInterpreter;
 import mc.exceptions.CompilationException;
+import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.util.LogAST;
 
 public class ReferenceReplacer {
-
+  private static String indent = "";
   private Set<String> globalReferences;
   private Set<String> references;
   private Set<String> globalRequirements;
@@ -33,6 +35,9 @@ public class ReferenceReplacer {
    *                                                P2 = b->c->x.
    *  Then it expands it to, P1 = a->b->c->x. If it needs it
    *
+   * TODO NOTE currenlty we assume single Place markings to extend to any Marking each reference
+   * would need to be unique at the point of adding the reference. Henc allowing us to distinguish
+   * two nodes in same marking from two nodes in different markings
    */
   public ReferenceReplacer() {
     globalReferences = new HashSet<>();
@@ -90,19 +95,32 @@ public class ReferenceReplacer {
     if (Thread.currentThread().isInterrupted()) {
       throw new InterruptedException();
     }
+    ReferenceReplacer.indent = ReferenceReplacer.indent.concat("-");
+    String className = astNode.getClass().getSimpleName();
+    System.out.println("RRast "+ ReferenceReplacer.indent + className+
+      " refs "+astNode.getReferences()+" from "+astNode.getFromReferences());
+
     if (astNode instanceof ProcessRootNode) {
-      return replaceReferences((ProcessRootNode) astNode, identifier, localReferences);
+      astNode = replaceReferences((ProcessRootNode) astNode, identifier, localReferences);
     } else if (astNode instanceof SequenceNode) {
-      return replaceReferences((SequenceNode) astNode, identifier, localReferences);
+      astNode = replaceReferences((SequenceNode) astNode, identifier, localReferences);
     } else if (astNode instanceof ChoiceNode) {
-      return replaceReferences((ChoiceNode) astNode, identifier, localReferences);
+      astNode = replaceReferences((ChoiceNode) astNode, identifier, localReferences);
     } else if (astNode instanceof CompositeNode) {
-      return replaceReferences((CompositeNode) astNode, identifier, localReferences);
+      astNode = replaceReferences((CompositeNode) astNode, identifier, localReferences);
     } else if (astNode instanceof IdentifierNode) {
-      return replaceReferences((IdentifierNode) astNode, identifier, localReferences);
+      //System.out.println("Pingo RR I");
+      astNode = replaceReferences((IdentifierNode) astNode, identifier, localReferences);
+      //System.out.println("Ident  refs "+astNode.getReferences());
+
     } else if (astNode instanceof FunctionNode) {
-      return replaceReferences((FunctionNode) astNode, identifier, localReferences);
+      astNode = replaceReferences((FunctionNode) astNode, identifier, localReferences);
     }
+
+    if (ReferenceReplacer.indent.length()> 1)
+      ReferenceReplacer.indent = ReferenceReplacer.indent.substring(1);
+
+    System.out.println("RRast<"+ ReferenceReplacer.indent + className+" "+astNode.getReferences());
 
     return astNode;
   }
@@ -135,13 +153,17 @@ public class ReferenceReplacer {
     return astNode;
   }
 
-  private ASTNode replaceReferences(IdentifierNode astNode, String identifier, Map<String, LocalProcessNode> localReferences) throws CompilationException, InterruptedException {
+  private ASTNode replaceReferences(IdentifierNode astNode, String identifier,
+                                    Map<String, LocalProcessNode> localReferences) throws CompilationException, InterruptedException {
+    //System.out.println("RR IdentifierNode "+ astNode.getIdentifier());
     String reference = astNode.getIdentifier();
     String localReference = findLocalReference(identifier + "." + reference, localReferences);
     // check if the identifier is referencing a local process
-    if (localReference != null) {
+    if (localReference != null && localReference.length()>0) {
       // check if this local process has been referenced before
       if (references.contains(localReference)) {
+        //this is where identifier is used
+        System.out.println("OLD ping "+localReference);
         return new ReferenceNode(localReference, astNode.getLocation());
       } else {
         ASTNode node = localReferences.get(localReference).getProcess();
@@ -150,17 +172,20 @@ public class ReferenceReplacer {
         if (astNode.hasReferences()) {
           astNode.getReferences().forEach(node::addReference);
         }
-
+        //this is where identifier is defined
+        System.out.println("New ping "+localReference);
         return replaceReferences(node, identifier, localReferences);
       }
     }
     // check if the identifier is referencing itself
     else if (reference.equals(identifier)) {
+      astNode.addFromReference(identifier);
       return new ReferenceNode(identifier, astNode.getLocation());
     }
     // check if the identifier is referencing a global process
     else if (globalReferences.contains(reference)) {
       globalRequirements.add(reference);
+      astNode.addFromReference(identifier);
       return astNode;
     }
     throw new CompilationException(getClass(), "Unable to find reference for node: " + reference, astNode.getLocation());

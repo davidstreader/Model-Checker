@@ -52,6 +52,9 @@ public class ProcessRootNode extends ASTNode {
   public ProcessRootNode(ASTNode process, String label, RelabelNode relabels,
                          HidingNode hiding, Location location) {
     super(location);
+    //System.out.println("ProcessRootNode BUILT");
+    //Throwable t = new Throwable();  t.printStackTrace();
+
     this.process = process;
     this.label = label;
     this.relabelSet = relabels;
