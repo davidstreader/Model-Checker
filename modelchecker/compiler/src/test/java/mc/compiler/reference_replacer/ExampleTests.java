@@ -128,7 +128,7 @@ public class ExampleTests extends ReferenceReplacerTests {
       fail("expecting process nodes to be equivalent");
     }
   }
-
+/*
   @Test
   public void correctBasicAbstractionTestExample() throws CompilationException, InterruptedException {
     List<ProcessNode> nodes = constructProcessList(constructBasicTestInput());
@@ -166,7 +166,7 @@ public class ExampleTests extends ReferenceReplacerTests {
       fail("expecting process node lists to be equivalent");
     }
   }
-
+*/
   private String constructBasicTestInput() {
     return "processes {" +
         "Basic = (a -> (t -> b -> STOP | c -> STOP))." +
@@ -290,6 +290,7 @@ public class ExampleTests extends ReferenceReplacerTests {
     }
   }
 
+  /*
   @Test
   public void correctBufferTestExample() throws CompilationException, InterruptedException {
     List<ProcessNode> nodes = constructProcessList(constructBufferInput());
@@ -355,7 +356,7 @@ public class ExampleTests extends ReferenceReplacerTests {
     }
 
   }
-
+*/
   private String constructBufferInput() {
     return "processes {" +
         "Buff = (in -> out -> Buff)." +
@@ -415,7 +416,7 @@ public class ExampleTests extends ReferenceReplacerTests {
       fail("expecting process nodes to be equivalent");
     }
   }
-
+/*
   @Test
   public void correctFarmTestExample() throws CompilationException, InterruptedException {
     List<ProcessNode> nodes = constructProcessList(constructFarmInput());
@@ -462,7 +463,7 @@ public class ExampleTests extends ReferenceReplacerTests {
 
     assertEquals(expected, nodes);
   }
-
+*/
   private String constructFarmInput() {
     return "const W = 3. " +
         "processes {" +
