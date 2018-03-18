@@ -36,7 +36,7 @@ public class Compiler {
   }
 
   /**
-   * ONLY public method lexes-> parses to build AST then compiles the AST
+   * ONLY PUBLIC METHOD lexes-> parses to build AST then compiles the AST
    *
    * @param code          Source code text input
    * @param z3Context     z3 context for evaluation of code
@@ -52,13 +52,11 @@ public class Compiler {
                                    com.microsoft.z3.Context z3Context,
                                    BlockingQueue<Object> messageQueue)
     throws CompilationException, InterruptedException {
+    //LEX ->PARSE->COMPILE
     List<Token> codeInput = lexer.tokenise(code);
     AbstractSyntaxTree ast = parser.parse(codeInput, z3Context);
 
-
-
-    return compile(ast, code,
-            z3Context, messageQueue);
+    return compile(ast, code,  z3Context, messageQueue);
   }
 
   /**
@@ -102,7 +100,7 @@ public class Compiler {
     ast = replacer.replaceReferences(ast, messageQueue);
 
 
-//    System.out.println("Hierarchy of processes: " + ast.getProcessHierarchy().getDependencies());
+    System.out.println("Hierarchy of processes: " + ast.getProcessHierarchy().getDependencies());
 
     List<String> processesToRemoveFromDisplay = new ArrayList<>();
     for (String processesName : processNodeMap.keySet()) {
@@ -117,7 +115,7 @@ public class Compiler {
         }
       }
     }
-
+//builds process and processMap
     Map<String, ProcessModel> processMap = interpreter.interpret(ast,
         //new LocalCompiler(processNodeMap, expander, replacer, messageQueue),
         messageQueue, z3Context);

@@ -26,7 +26,7 @@ import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.util.LogAST;
 
 /**
- * Created by sheriddavi on 24/01/17.
+ * BUILDS Processes and stores them in Map<String, ProcessModel>.
  */
 public class Interpreter {
 
@@ -35,6 +35,7 @@ public class Interpreter {
   private PetrinetInterpreter petrinetInterpreter = new PetrinetInterpreter();
 
 //TODO  Document or remove this Design  HACK1
+  // This is where what is build is decided
   //ONLY called from compiler  HACK other palces call the method below
   public Map<String, ProcessModel> interpret(AbstractSyntaxTree ast,
                                             // LocalCompiler localCompiler,
@@ -43,25 +44,27 @@ public class Interpreter {
       throws CompilationException, InterruptedException {
 
     Map<String, ProcessModel> processMap = new LinkedHashMap<>();
-
+//build the processes
     List<ProcessNode> processes = ast.getProcesses();
+    System.out.println("AST processes "+ processes.stream().map(x->x.getIdentifier()).
+      reduce("{",(x,y)->x+" "+y)+"}");
     for (ProcessNode process : processes) {
 
-      //System.out.print("\nBuilding " + process.getType() + " " + process.getIdentifier() + "...");
+ System.out.print("Building " + process.getType() + " " + process.getIdentifier() + "...");
       ProcessModel model = null;
       if (process.getType().size() == 0) {
+ System.out.println("skip");
         continue;
       }
       if (process.getType().size() > 1) {
         model = new MultiProcessModel(process.getIdentifier());
         model.setLocation(process.getLocation());
       }
-//***** TWO way to interpret  WHY?
+//***** TWO ways to interpret  WHY?
       if (process.getType().contains("petrinet")) {
+ System.out.println("Build PetriNet "+ process.getIdentifier());
         ProcessModel modelPetri = petrinetInterpreter.interpret(process,
-                    processMap,
-                //    localCompiler,
-                    context);
+                    processMap, context);
         //System.out.println("XXX "+((Petrinet) modelPetri).myString());
         modelPetri.setLocation(process.getLocation());
         if (model == null) { // If the model is not comprised of multiple types
@@ -89,14 +92,17 @@ public class Interpreter {
         }
 
       } else if (process.getType().contains("automata")) {
+ System.out.print("Build automata "+ process.getIdentifier());
         ProcessModel modelAut;
         HashMap<AutomatonNode, Set<PetriNetPlace>> nodeToMarking = new HashMap<>();
         HashMap<Set<PetriNetPlace>, AutomatonNode> markingToNode = new HashMap<>();
         if (process.getType().contains("petrinet")) {
+ System.out.println(" FROM petriNet");
           modelAut = TokenRule.tokenRule(
               (Petrinet) ((MultiProcessModel) model)
                   .getProcess(ProcessType.PETRINET), markingToNode, nodeToMarking);
         } else {
+ System.out.println(" Directly");
           modelAut = automatonInterpreter.interpret(process,
                  processMap,
              //    localCompiler,
@@ -113,12 +119,14 @@ public class Interpreter {
         }
       }
 
-     // System.out.print("Done!");
 
       messageQueue.add(new LogAST("Built:", process));
 
       //System.out.println("XXX "+((Petrinet) model).myString());
+
       processMap.put(process.getIdentifier(), model);
+      System.out.println("Compiler Interpreter Done! "+ processMap.keySet());
+
     }
     return processMap;
 
@@ -134,13 +142,13 @@ public class Interpreter {
     switch (processModelType) {
       case "forcedautomata":
       case "automata":
-       // System.out.println("***** interpret automata" );
+    System.out.println("***** interpret automata" );
         model = automatonInterpreter.interpret(astNode, identifer, processMap, context);
       //  System.out.println(model.toString());
         break;
 
       case "petrinet":  //****
-      //  System.out.println("***** interpret petrinet" );
+   System.out.println("***** interpret petrinet" );
         model = petrinetInterpreter.interpret(astNode, identifer, processMap, context);
 
         break;

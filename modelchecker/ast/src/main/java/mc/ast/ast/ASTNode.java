@@ -33,9 +33,9 @@ import mc.util.Location;
 public abstract class ASTNode implements Serializable {
 
   @Getter
-  private Set<String> references;
+  private Set<String> references = new HashSet<>();
   @Getter
-  private Set<String> fromReferences;
+  private Set<String> fromReferences  = new HashSet<>();
   @Getter
   private Location location;
   @Getter
@@ -53,7 +53,7 @@ public abstract class ASTNode implements Serializable {
    * @param location the location within the users code of the node {@link #location}
    */
   public ASTNode(Location location) {
-    references = null;
+    references = new HashSet<>();
     this.location = location;
   }
 
@@ -65,15 +65,13 @@ public abstract class ASTNode implements Serializable {
    * @see #references
    */
   public void addReference(String reference) {
-    if (references == null) {
-      references = new HashSet<>();
-    }
+    if (references == null)  references = new HashSet<>();
+
     references.add(reference);
   }
   public void addFromReference(String reference) {
-    if (fromReferences == null) {
-      fromReferences = new HashSet<>();
-    }
+    if (fromReferences == null)  fromReferences = new HashSet<>();
+
     fromReferences.add(reference);
   }
 
@@ -84,7 +82,7 @@ public abstract class ASTNode implements Serializable {
    * @see #references
    */
   public boolean hasReferences() {
-    return references != null;
+    return (references != null && references.size()>1);
   }
 
   /**

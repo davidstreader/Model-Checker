@@ -111,8 +111,8 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
                                 Context context)
       throws CompilationException, InterruptedException {
     reset();
-    //this.compiler = compiler;
-    System.out.println("interpret START "+ processNode.getIdentifier());
+    //called onec per Global process
+    System.out.println("interpret START "+ processNode.getIdentifier()+" pMap "+ processMap.keySet());
     this.context = context;
     variableList = new HashSet<>();
     this.processMap = processMap;
@@ -140,7 +140,8 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     if (processNode.hasHiding()) {
       processHiding(petrinet, processNode.getHiding());
     }
-    System.out.println("interpret ENDS");
+    System.out.println("interpret ENDS "+ processNode.getIdentifier() +
+                           " "+processMap.keySet().toString());
 
       //   System.out.println("Interpretor "+petrinet.myString());
     return petrinet;
@@ -161,28 +162,35 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
                                 Map<String, ProcessModel> processMap, Context context)
       throws CompilationException, InterruptedException {
     reset();
-    System.out.println("INTerpret START "+identifier);
+    System.out.println("INTerpret START "+identifier+" pMap "+ processMap.keySet());
       this.context = context;
     this.processMap = processMap;
 
     interpretProcess(astNode, identifier);
 
     Petrinet petrinet = ((Petrinet) processStack.pop()).copy();
-    //System.out.println("INTerpret ends building  "+ petrinet.myString());
+    System.out.println("INTerpret END  "+ identifier);
     return petrinet;
   }
 
-
+  /**
+   *   Processes are pushed onto the stack FROM processMap
+   * @param astNode
+   * @param identifier
+   * @throws CompilationException
+   * @throws InterruptedException
+   */
   private void interpretProcess(ASTNode astNode, String identifier)
       throws CompilationException, InterruptedException {
     //prity print AST
     PetrinetInterpreter.indent = PetrinetInterpreter.indent.concat("-");
     String className = astNode.getClass().getSimpleName();
     System.out.println("iPro "+ PetrinetInterpreter.indent + className);
-//
+//  go and get the process  but if process is not of the correct type CRASH?
     if (astNode instanceof IdentifierNode) {
       System.out.println("*** interpretProcess IdentifierNode");
       String reference = ((IdentifierNode) astNode).getIdentifier();
+  System.out.println("stack petri "+processMap.get(reference).getId()+" FROM processMap");
       processStack.push((Petrinet) processMap.get(reference));
 
     }else if (astNode instanceof ProcessRootNode) {
@@ -196,6 +204,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
       if (root.hasHiding()) {
         processHiding(petrinet, root.getHiding());
       }
+      System.out.println("stack petri "+petrinet.getId());
       processStack.push(petrinet);
 
     }  else {
@@ -218,15 +227,17 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
 
       //Interpret Node
       petrinet = interpretASTNode(astNode, petrinet, currentPlace);
-      for(PetriNetPlace pl:petrinet.getRoots()){
-        pl.addRefefances(astNode.getReferences());
+      if (astNode.getReferences() != null) {
+        for (PetriNetPlace pl : petrinet.getRoots()) {
+          pl.addRefefances(astNode.getReferences());
+        }
       }
-      //  System.out.println("interpretProcess petri "+petrinet.myString());
       petrinet = tree2net(petrinet);
+      System.out.println("stack petri "+petrinet.getId());
       processStack.push(petrinet);
     }
-
-    System.out.println("iPro<"+ PetrinetInterpreter.indent + className+" "+ " ref " +
+if (astNode.getReferences() == null) System.out.println("astNode.getReferences() = null");
+ else   System.out.println("iPro<"+ PetrinetInterpreter.indent + className+" "+ " ref " +
       astNode.getReferences().toString());
     if (PetrinetInterpreter.indent.length()> 1)
       PetrinetInterpreter.indent = PetrinetInterpreter.indent.substring(1);
@@ -325,8 +336,8 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
       //System.out.println("OUTSIDE of interpretConversion petri "+petri.myString());
 
     }
-    //Previously Markings are added as references
-    // Current marking needs to be glued to the referenced marking
+    // Build Stop node with FromRef  (Ref addded by RefReplacer)
+    // At end of interpretation tree2net will glued FromRef to Ref
     else if (currentNode instanceof ReferenceNode) {
       String ref = ((ReferenceNode)currentNode).getReference();
       System.out.println("RRef "+ref);
@@ -334,6 +345,8 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
         petri = Petrinet.stopNet(ref);
       }
     }
+
+
     //prity print
     if (PetrinetInterpreter.indent.length()> 1)
       PetrinetInterpreter.indent = PetrinetInterpreter.indent.substring(1);
@@ -421,7 +434,8 @@ return ret;
   private void interpretIdentifier(IdentifierNode identifier, Petrinet petri,
                                    PetriNetPlace currentPlace)
       throws CompilationException, InterruptedException {
-    System.out.println("IDENTIFIER "+ identifier.getFromReferences());
+    System.out.println("IDENTIFIER  for "+ identifier.getFromReferences() +
+                       " get "+ identifier.getIdentifier());
   //  currentPlace = petri.getPlaces().get(currentPlace.getId());//only match on "id"
     ProcessModel model = processMap.get(identifier.getIdentifier());
     if (!(model instanceof Petrinet)) {
@@ -492,15 +506,7 @@ return ret;
                                    PetriNetPlace currentPlace)
       throws CompilationException, InterruptedException {
   //  currentPlace = petri.getPlaces().get(currentPlace.getId());//only match on "id"
- /*   ProcessType to = ProcessType.valueOf(conv.to.toUpperCase());
-    ProcessType from = ProcessType.valueOf(conv.from.toUpperCase());
 
-    ProcessModel pm = new Interpreter().interpret(conv.from, conv.getProcess(),
-        petri.getId() + ".pc" + subProcessCount++, processMap, context);
-
-    addPetrinet(currentPlace, petri, pm.getProcessType().convertTo(to, pm));
-    */
-      //System.out.println("currentPlace "+currentPlace.getId());
     //System.out.println("interpretConversion start "+petri.myString());
     ProcessType to = ProcessType.valueOf(conv.to.toUpperCase());
     ProcessType from = ProcessType.valueOf(conv.from.toUpperCase());
@@ -601,5 +607,7 @@ master.validatePNet();
     referenceSet.clear();
     processStack.clear();
     sid = 0;
+    indent = "";
+    subProcessCount = 0;
   }
 }
