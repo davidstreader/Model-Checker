@@ -17,8 +17,7 @@ import mc.util.Location;
  * @author Jacob Beal
  * @see ASTNode
  * @see ProcessNode
- * @see mc.compiler.Expander
- * @see mc.compiler.ReferenceReplacer
+ *
  */
 @Data
 @EqualsAndHashCode(callSuper = true)

@@ -27,6 +27,10 @@ import mc.util.LogAST;
 
 /**
  * BUILDS Processes and stores them in Map<String, ProcessModel>.
+ * When both petriNets and Automata are built then ONE entry in process Model
+ * a MultiProcessModel object is stored with mapping between nodes and places
+ *
+ * Alas currently This dose not work with global subprocesses
  */
 public class Interpreter {
 
@@ -44,28 +48,30 @@ public class Interpreter {
       throws CompilationException, InterruptedException {
 
     Map<String, ProcessModel> processMap = new LinkedHashMap<>();
-//build the processes
+// build all  processes including global sub processes
+//      BUT .getType tells us which to build
     List<ProcessNode> processes = ast.getProcesses();
     System.out.println("AST processes "+ processes.stream().map(x->x.getIdentifier()).
       reduce("{",(x,y)->x+" "+y)+"}");
     for (ProcessNode process : processes) {
 
- System.out.print("Building " + process.getType() + " " + process.getIdentifier() + "...");
+ System.out.print("Building " + process.getType() + " " + process.getIdentifier() + " ... ");
       ProcessModel model = null;
       if (process.getType().size() == 0) {
  System.out.println("skip");
         continue;
       }
+
       if (process.getType().size() > 1) {
         model = new MultiProcessModel(process.getIdentifier());
         model.setLocation(process.getLocation());
       }
 //***** TWO ways to interpret  WHY?
       if (process.getType().contains("petrinet")) {
- System.out.println("Build PetriNet "+ process.getIdentifier());
         ProcessModel modelPetri = petrinetInterpreter.interpret(process,
                     processMap, context);
-        //System.out.println("XXX "+((Petrinet) modelPetri).myString());
+       System.out.println("Built PetriNet "+ modelPetri.getId());// process.getIdentifier());
+
         modelPetri.setLocation(process.getLocation());
         if (model == null) { // If the model is not comprised of multiple types
           model = modelPetri;
@@ -78,10 +84,8 @@ public class Interpreter {
       if (process.getType().contains("forcedautomata")) {
 
         Automaton modelAut = (Automaton) automatonInterpreter.interpret(process,
-             processMap,
-         //   localCompiler,
-              context);
-
+             processMap, context);
+       System.out.println("Built Automata "+modelAut.getId());
         modelAut.setLocation(process.getLocation());
         if (model == null) { // If the model is not comprised of multiple types
           model = modelAut;
@@ -122,10 +126,13 @@ public class Interpreter {
 
       messageQueue.add(new LogAST("Built:", process));
 
-      //System.out.println("XXX "+((Petrinet) model).myString());
+      System.out.println("C I model "+ model.getId()+" "+
+          model.getProcessType().toString());
 
       processMap.put(process.getIdentifier(), model);
-      System.out.println("Compiler Interpreter Done! "+ processMap.keySet());
+     System.out.println("Process Map "+processMap.keySet().stream().
+       map(x->x+ " " + processMap.get(x).getProcessType()).reduce("",(x,y)->x+"->"+y));
+      System.out.println("Compiler Interpreter DONE! "+ processMap.keySet());
 
     }
     return processMap;
@@ -142,13 +149,13 @@ public class Interpreter {
     switch (processModelType) {
       case "forcedautomata":
       case "automata":
-    System.out.println("***** interpret automata" );
+    //System.out.println("***** interpret automata" );
         model = automatonInterpreter.interpret(astNode, identifer, processMap, context);
       //  System.out.println(model.toString());
         break;
 
       case "petrinet":  //****
-   System.out.println("***** interpret petrinet" );
+   //System.out.println("***** interpret petrinet" );
         model = petrinetInterpreter.interpret(astNode, identifer, processMap, context);
 
         break;

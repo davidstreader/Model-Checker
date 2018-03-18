@@ -95,10 +95,11 @@ public class ReferenceReplacer {
     if (Thread.currentThread().isInterrupted()) {
       throw new InterruptedException();
     }
-    ReferenceReplacer.indent = ReferenceReplacer.indent.concat("-");
+    // Debugging do not remove
+/*    ReferenceReplacer.indent = ReferenceReplacer.indent.concat("-");
     String className = astNode.getClass().getSimpleName();
     System.out.println("RRast "+ ReferenceReplacer.indent + className+
-      " refs "+astNode.getReferences()+" from "+astNode.getFromReferences());
+      " refs "+astNode.getReferences()+" from "+astNode.getFromReferences()); */
 
     if (astNode instanceof ProcessRootNode) {
       astNode = replaceReferences((ProcessRootNode) astNode, identifier, localReferences);
@@ -117,11 +118,11 @@ public class ReferenceReplacer {
       astNode = replaceReferences((FunctionNode) astNode, identifier, localReferences);
     }
 
-    if (ReferenceReplacer.indent.length()> 1)
+    //Debugging do not remove
+ /*   if (ReferenceReplacer.indent.length()> 1)
       ReferenceReplacer.indent = ReferenceReplacer.indent.substring(1);
-
     System.out.println("RRast<"+ ReferenceReplacer.indent + className+" "+astNode.getReferences());
-
+*/
     return astNode;
   }
 

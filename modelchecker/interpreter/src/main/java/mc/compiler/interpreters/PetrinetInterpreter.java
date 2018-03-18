@@ -190,9 +190,16 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     if (astNode instanceof IdentifierNode) {
       System.out.println("*** interpretProcess IdentifierNode");
       String reference = ((IdentifierNode) astNode).getIdentifier();
-  System.out.println("stack petri "+processMap.get(reference).getId()+" FROM processMap");
-      processStack.push((Petrinet) processMap.get(reference));
 
+      // FAIL point
+  System.out.println("stack petri "+processMap.get(reference).getId()+" "+
+   processMap.get(reference).getProcessType().toString());
+  if (processMap.get(reference).getProcessType().equals(ProcessType.MULTI_PROCESS)) {
+    processStack.push( processMap.get(reference).getProcessType().
+       convertTo(ProcessType.PETRINET, processMap.get(reference))); //What a way to extact  a net
+  } else {
+    processStack.push((Petrinet) processMap.get(reference));
+  }
     }else if (astNode instanceof ProcessRootNode) {
       System.out.println("*** interpretProcess ProcessRootNode");
       ProcessRootNode root = (ProcessRootNode) astNode;
