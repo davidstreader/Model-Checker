@@ -1,8 +1,11 @@
 package mc.processmodels.automata;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import com.microsoft.z3.Context;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.Setter;
@@ -37,7 +40,9 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
   private int nodeId;
   private int edgeId;
-
+  @Getter
+  private int ownerId;
+  private static final String INTERSECTION = "^";
   @Getter
   @Setter
   private Location location;
@@ -76,6 +81,46 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
   @Getter
   @Setter
   private List<RelabelElementNode> relabels;
+
+  public static Multimap<String, String> ownerProduct(Automaton automaton1,
+                                                            Automaton automaton2) {
+    Set<String> preowners1 = automaton1.getOwners();
+    Set<String> preowners2 = automaton2.getOwners();
+//If the automata share soem location relabel
+    Set<String> intersection = new HashSet<>(preowners1);
+    intersection.retainAll(preowners2);
+    if (intersection.size() > 0) {
+      relabelOwners(automaton1,"._1");
+      relabelOwners(automaton2,"._2");
+      preowners1 = automaton1.getOwners();
+      preowners2 = automaton2.getOwners();
+    }
+
+    //tricking the lambda expressions to evaluate
+    Set<String> owners1 = preowners1;
+    Set<String> owners2 = preowners2;
+
+    Multimap<String, String> table = ArrayListMultimap.create();
+    owners1.forEach(o1 -> owners2.forEach(o2 -> table.put(o1, o1 + INTERSECTION + o2)));
+    owners1.forEach(o1 -> owners2.forEach(o2 -> table.put(o2, o1 + INTERSECTION + o2)));
+    return table;
+  }
+
+  public static void relabelOwners(Automaton aut, String label) {
+    aut.getEdges().forEach(e -> {
+
+      Set<String> owners = e.getOwnerLocation().stream()
+        .map(o -> o + label)
+        .collect(Collectors.toSet());
+      Set<String> toRemove = new HashSet<>(e.getOwnerLocation());
+      toRemove.forEach(o -> aut.removeOwnerFromEdge(e, o));
+      try {
+        aut.addOwnersToEdge(e, owners);
+      } catch (CompilationException ignored) {
+      }
+    });
+  }
+
 
   public boolean isSymbolic() {
     return (hiddenVariables != null && hiddenVariables.size() > 0);
@@ -759,6 +804,18 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     // compute bisim between two automata that nodes with same Id
     copy.nodeId = 0;
     copy.edgeId = 0;
+    copy.ownerId = 0;
+    Map<String,String> ownersMap = new TreeMap<>();
+    //System.out.println("COPY "+ this.getId());
+    for (String s: getOwners()){
+      ownerId++;
+      ownersMap.putIfAbsent(s, ((Integer) ownerId).toString());
+      //System.out.println("ownersMap "+ s+"->"+ownersMap.get(s));
+    }
+
+    owners =  ownersMap.values().stream().collect(Collectors.toSet());
+
+
     Map<AutomatonNode,AutomatonNode> reNode = new HashMap<>();
  //   System.out.println("Starting copy of "+this.toString());
     List<AutomatonNode> nodes = getNodes();
@@ -783,11 +840,11 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
         from, to, edge.getGuard(), false);
    //   System.out.println("  Adding "+xedge.myString());
       copy.addOwnersToEdge(xedge,
-          edge.getOwnerLocation());
-   //   System.out.println("End of adding Edge"+xedge.myString());
+          edge.getOwnerLocation().stream().map(x->ownersMap.get(x)).collect(Collectors.toSet()));
+      //System.out.println("End of adding Edge"+xedge.myString());
     }
     copy.copyProperties(this);
-  //  System.out.println("copy Ends "+copy.toString());
+    //System.out.println("copy Ends "+copy.myString());
     return copy;
   }
 

@@ -30,7 +30,7 @@ import mc.util.LogAST;
  * When both petriNets and Automata are built then ONE entry in process Model
  * a MultiProcessModel object is stored with mapping between nodes and places
  *
- * Alas currently This dose not work with global subprocesses
+ * TODO referance, from GUI, the net and automata in MultiProcessModel
  */
 public class Interpreter {
 

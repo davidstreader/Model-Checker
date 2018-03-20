@@ -76,6 +76,13 @@ public class AutomatonNode extends ProcessModelObject implements Comparable<Auto
 
   }
 
+  public AutomatonNode copyNode(){
+    AutomatonNode nd = new AutomatonNode(this.getId());
+    nd.copyProperties(this);
+    nd.outgoingEdges = outgoingEdges;
+    nd.incomingEdges = incomingEdges;
+    return nd;
+  }
   public boolean equalId(AutomatonNode nd) {
     return this.getId().equals(nd.getId());
   }

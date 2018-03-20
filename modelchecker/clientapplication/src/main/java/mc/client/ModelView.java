@@ -275,7 +275,7 @@ public class ModelView implements Observer {
     });
 
     this.processModels.replaceValues(automaton.getId(), nodeMap.values());
-System.out.println("ModelView \n "+ automaton.toString());
+System.out.println("ModelView \n "+ automaton.myString());
   }
 
   private void addPetrinet(Petrinet petri) {

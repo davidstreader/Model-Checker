@@ -71,7 +71,6 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
 
   public ProcessModel interpret(ProcessNode processNode,
                                 Map<String, ProcessModel> processMap,
-                                // LocalCompiler compiler,
                                 Context context)
     throws CompilationException, InterruptedException {
     reset();
@@ -162,6 +161,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
       }
 
       processStack.push(automaton);
+      System.out.println("Aut Built1 "+ automaton.myString());
     } else {
       Automaton automaton = new Automaton(identifier);
       if (variables != null) {
@@ -175,7 +175,9 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
       interpretNode(astNode, automaton, new ArrayList<>(automaton.getRoot()).get(0));
 
       processStack.push(automaton);
+      System.out.println("Aut Built2 "+ automaton.myString());
     }
+
   }
 
   /**
@@ -340,7 +342,11 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
         throw new CompilationException(getClass(), "Expecting an automaton, received: " + model1.getClass().getSimpleName() + "," + model2.getClass().getSimpleName(), astCompositeNode.getLocation());
       }
     }
-
+    Automaton.relabelOwners((Automaton) model1,"._1");
+    Automaton.relabelOwners((Automaton) model2,"._2");
+    System.out.println("Composition "+astCompositeNode.getOperation());
+    System.out.println(((Automaton) model1).myString());
+    System.out.println(((Automaton) model2).myString());
     //System.out.println(astCompositeNode.getOperation());
     Automaton comp = instantiateClass(infixFunctions.get(astCompositeNode.getOperation()))
         .compose(model1.getId() + astCompositeNode.getOperation() + model2.getId(), (Automaton) model1, (Automaton) model2);

@@ -7,6 +7,7 @@ import mc.processmodels.automata.operations.PetrinetParallelFunction;
 import mc.plugins.IProcessInfixFunction;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.operations.AutomataReachability;
+import mc.processmodels.automata.operations.PetrinetParallelMergeFunction;
 import mc.processmodels.petrinet.Petrinet;
 
 @Value
@@ -62,6 +63,6 @@ public class InfixParallelMerge implements IProcessInfixFunction {
    */
   @Override
   public Petrinet compose(String id, Petrinet petrinet1, Petrinet petrinet2) throws CompilationException {
-    return PetrinetParallelFunction.compose(petrinet1,petrinet2);
+    return PetrinetParallelMergeFunction.compose(petrinet1,petrinet2);
   }
 }

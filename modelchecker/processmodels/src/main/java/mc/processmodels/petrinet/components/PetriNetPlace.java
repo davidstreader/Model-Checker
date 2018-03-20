@@ -56,6 +56,14 @@ public class PetriNetPlace extends ProcessModelObject {
     return terminal != null && terminal.length() > 0;
   }
 
+  public PetriNetPlace copyPlace() {
+    PetriNetPlace out = new PetriNetPlace(this.getId());
+    out.copyProperties(this);
+    out.setOutgoing(this.getOutgoing());
+    out.setIncoming(this.getIncoming());
+    return out;
+
+  }
   public void copyProperties(PetriNetPlace toCopy) {
     start = toCopy.start;
     terminal = toCopy.terminal;
@@ -125,6 +133,8 @@ public class PetriNetPlace extends ProcessModelObject {
   public String myString(){
     return "Place "+this.getId()+ " r "+references.toString()+" f "+fromReferences.toString()+
       this.getIncoming().stream().map(ed->ed.getId()).reduce(" in  ",(x,y)->x+" "+y)+
-      this.getOutgoing().stream().map(ed->ed.getId()).reduce(" out ",(x,y)->x+" "+y);
+      this.getOutgoing().stream().map(ed->ed.getId()).reduce(" out ",(x,y)->x+" "+y) +
+      " end "+this.getTerminal()+ " st "+ this.isStart()
+      ;
   }
 }

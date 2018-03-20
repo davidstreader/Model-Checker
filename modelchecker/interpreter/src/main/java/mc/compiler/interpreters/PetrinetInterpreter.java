@@ -191,9 +191,10 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
       System.out.println("*** interpretProcess IdentifierNode");
       String reference = ((IdentifierNode) astNode).getIdentifier();
 
-      // FAIL point
+
   System.out.println("stack petri "+processMap.get(reference).getId()+" "+
    processMap.get(reference).getProcessType().toString());
+  //extract the net from the MULTI_
   if (processMap.get(reference).getProcessType().equals(ProcessType.MULTI_PROCESS)) {
     processStack.push( processMap.get(reference).getProcessType().
        convertTo(ProcessType.PETRINET, processMap.get(reference))); //What a way to extact  a net
@@ -239,6 +240,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
           pl.addRefefances(astNode.getReferences());
         }
       }
+      System.out.println("*** "+petrinet.myString());
       petrinet = tree2net(petrinet);
       System.out.println("stack petri "+petrinet.getId());
       processStack.push(petrinet);
@@ -271,7 +273,7 @@ if (astNode.getReferences() == null) System.out.println("astNode.getReferences()
 
         //System.out.println(pl2.myString());
         if(pl1.getReferences().containsAll(pl2.getFromReferences())){
-          //System.out.println("Joining "+pl1.getId()+" "+pl2.getId());
+          System.out.println("Joining "+pl1.getId()+" "+pl2.getId());
           pl2.setTerminal("");
           petri.gluePlaces(Collections.singleton(pl1), Collections.singleton(pl2));
         }
@@ -465,7 +467,7 @@ return ret;
   private Petrinet interpretComposite(CompositeNode composite, Petrinet petri)
       throws CompilationException, InterruptedException {
 
-  //  System.out.println("interpretCOMPOSITE "+composite.toString());
+    System.out.println("interpretCOMPOSITE "+composite.toString());
     interpretProcess(composite.getFirstProcess(), petri.getId() + ".pc1");
     interpretProcess(composite.getSecondProcess(), petri.getId() + ".pc2");
 

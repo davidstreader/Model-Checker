@@ -57,7 +57,9 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
        collect(Collectors.toSet()).size() == 1;
 
   }
-  /**  USE this when DEBUGGIN
+  /**
+   * TODO add alphabet  + clean up alphabet!
+   * USE this when DEBUGGIN
    * Not sure what data consistancy is intended or assumed
    * This method should act both in assertions and as documentation
    * No 2 Transitions should have the same Id
@@ -75,6 +77,13 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
      for(PetriNetPlace p : this.getPlaces().values()){
        if (p.isStart() && !rootContains(p)) {
          System.out.println("Start "+p.getId()+" is not Root");
+         ok = false;
+       }
+     }
+
+     for(PetriNetTransition t: getTransitions().values()) {
+       if (!alphabet.containsKey(t.getLabel())){
+         System.out.println("Transition "+t.getId()+" - "+t.getLabel()+" not in alphabet");
          ok = false;
        }
      }
@@ -167,8 +176,10 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
    */
   public String myString(){
     StringBuilder sb = new StringBuilder();
-    sb.append(" " + this.getId()+ " root {");
-    sb.append(this.getRoots().stream().map(x-> x.getId()).reduce("",(x,y)->x+" "+y)+"}");
+    sb.append(" " + this.getId()+ " alpha " +alphabet.size()+ " {"+
+     alphabet.keySet() + "} root {");
+    sb.append(this.getRoots().stream().map(x->x.getId()).reduce("",(x,y)->x+" "+y)+"}");
+
     sb.append(this.getPlaces().values().stream().
       filter(x->x.isTerminal()).
       map(x->(x.getId()+"=>"+x.getTerminal())).
@@ -185,6 +196,9 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     sb.append(this.getTransitions().values().stream().
       map(tr-> "\n"+tr.myString()).
       reduce("",(x,y)-> x+" "+y));
+
+    sb.append(this.getEdges().values().stream().map(ed-> "\n"+ed.myString()).
+      reduce("",(x,y)-> x+" "+y));
     return sb.toString();
   }
   public static Petrinet oneEventNet(String event)throws CompilationException{
@@ -195,6 +209,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     PetriNetTransition tr = eventNet.addTransition(event);
     eventNet.addEdge(end,tr, Collections.singleton(DEFAULT_OWNER));
     eventNet.addEdge(tr, start, Collections.singleton(DEFAULT_OWNER));
+
     end.setTerminal("STOP");
   //  System.out.println("oneEventNet "+eventNet.myString());
     return eventNet;
@@ -352,6 +367,8 @@ public static String marking2String(Collection<PetriNetPlace> mark){
 
   public void removePlace(PetriNetPlace place) throws CompilationException {
     if (!places.containsValue(place)) {
+      Throwable t = new Throwable();
+      t.printStackTrace();
       throw new CompilationException(getClass(), "Cannot remove a place that is not part of"
           + "the petrinet");
     }
@@ -451,7 +468,8 @@ public static String marking2String(Collection<PetriNetPlace> mark){
         addEdge(placeMap.get(edge.getTo()), transitionMap.get(edge.getFrom()),  postFixed);
       }
     }
-
+    System.out.println("addPetri");
+    this.validatePNet();
     return roots;
   }
 
@@ -464,7 +482,7 @@ public static String marking2String(Collection<PetriNetPlace> mark){
     this.places.putAll(petriToJoin.getPlaces());
     this.transitions.putAll(petriToJoin.getTransitions());
     this.edges.putAll(petriToJoin.getEdges());
-
+    this.alphabet.putAll(petriToJoin.getAlphabet());
     return;
   }
 
@@ -570,8 +588,8 @@ public static String marking2String(Collection<PetriNetPlace> mark){
     });
 
     for (PetriNetPlace place : Iterables.concat(set1, set2)) {
-      //System.out.println("Trying to remove "+place.getId());
-      removePlace(place);
+      System.out.println("Trying to remove "+place.getId());
+      if (getPlaces().values().contains(place)) removePlace(place);
       //System.out.println("Check places" +Petrinet.marking2String(places.values()));
     }
 

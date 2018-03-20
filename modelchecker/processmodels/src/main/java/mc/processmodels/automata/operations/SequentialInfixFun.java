@@ -35,8 +35,10 @@ public class SequentialInfixFun {
     //System.out.println("a2 "+automaton2.myString());
     Automaton sequence = new Automaton(id, !Automaton.CONSTRUCT_ROOT);
 
-    Multimap<String,String> setOfOwners = AutomatonEdge.createIntersection(automaton1, automaton2);
+    Multimap<String,String> setOfOwners = Automaton.ownerProduct(automaton1, automaton2);
 
+   System.out.println("setOfOwners "+setOfOwners.toString());
+   System.out.println("*******");
     //store a map to the nodes so id can be ignored
     Map<String, AutomatonNode> automata1nodes = new HashMap<>();
     Map<String, AutomatonNode> automata2nodes = new HashMap<>();
@@ -135,9 +137,9 @@ public class SequentialInfixFun {
 
   public Petrinet compose(String id, Petrinet net1, Petrinet net2)
       throws CompilationException {
-//    System.out.println("=>PETRI1 "+net1.myString());
+    System.out.println("=>PETRI1 "+net1.myString());
     net1.validatePNet();
-//    System.out.println("=>PETRI2 "+net2.myString());
+    System.out.println("=>PETRI2 "+net2.myString());
     net2.validatePNet();
    Petrinet petrinet1 = net1.copy();
    Petrinet petrinet2 = net2.copy();
@@ -145,8 +147,8 @@ public class SequentialInfixFun {
    for(PetriNetPlace pl: petrinet1.getPlaces().values()){
      if ((pl.getTerminal() != null) && pl.getTerminal().equals("STOP")) {
       stopNodes.add(pl);
+     }
       pl.setTerminal("");
-     } else if (pl.getTerminal() == null) pl.setTerminal("");
    }
    Set<PetriNetPlace> startOfP2 = new HashSet<>();
    for(PetriNetPlace pl2: petrinet2.getPlaces().values()){
@@ -198,7 +200,7 @@ public class SequentialInfixFun {
  //   System.out.println("Glue over "+ composition.myString());
     composition.setRoot2Start();
 
- //   System.out.println("SEQUENTIAL OUT "+ composition.myString()+"\n");
+    System.out.println("SEQUENTIAL OUT "+ composition.myString());
     composition.validatePNet();
     return composition;
   }

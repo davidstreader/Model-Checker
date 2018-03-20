@@ -11,9 +11,12 @@ import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.automata.operations.PetrinetParallelFunction;
+import mc.processmodels.automata.operations.PetrinetParallelMergeFunction;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
+import mc.processmodels.petrinet.operations.PetrinetReachability;
+
 //import mc.operations.impl.PetrinetParallelFunction;
 public class OwnersRule {
 
@@ -31,16 +34,24 @@ public class OwnersRule {
 
   /**
    * This converts a deterministic automata to a petrinet.
-   * <p>
-   * stackit: Make this conversion work for NFA
+   * For each owner O1 project the automata to a SLICE automata(Net)
+   * i.e. a net built from  edges with owners containing O1
    *
-   * @param a The automaton to be converted
+   * Build the final net  as the parallel composition of all the slices!
+   *
+   * TODO: Make this conversion work for NFA
+   *
+   * @param ain The automaton to be converted
    * @return a petrinet representation fo the automaton
    */
   @SneakyThrows({CompilationException.class})
-  public static  Petrinet ownersRule(Automaton a) {
+  public static  Petrinet ownersRule(Automaton ain) {
     clean();
-    System.out.println("OWNERSRule " + a.toString());
+    Automaton a = ain.copy(); // smaller Ids make debugging easier
+
+    Throwable t = new Throwable();
+    t.printStackTrace();
+    System.out.println("OWNERSRule " + a.myString());
     Petrinet petri = new Petrinet(a.getId(), false);
     PetriNetPlace p = null;
     AutomatonNode root = null;
@@ -55,17 +66,20 @@ public class OwnersRule {
     }
     Stack<Petrinet> subNets = new Stack<>();
 /*
-   From one Place for each distinct node we need
-   one Place for each set of nodes in a slice!
+   Build,one for each owner,  projection mappings from nodes to a  SLICE
     */
 
     for (String own : a.getOwners()) {
       Automaton small = new Automaton("Small",false);
       Stack<AutomatonNode> toDo = new Stack<>();
       Set<AutomatonNode> done = new HashSet<>();
+      /*
+      Build the projection onto each SLICE
+       */
       Map<AutomatonNode, AutomatonNode> phase2 = new TreeMap<>();
-      System.out.println("\n  OWNER 1 = " + own);
+      //System.out.println("\n  OWNER 1 = " + own);
       toDo.add(root);
+      //first build a one step mapping towards the slice
       while (!toDo.isEmpty()) {
         AutomatonNode nd = toDo.pop();
         //System.out.println("WHILE "+nd.getId());
@@ -75,10 +89,10 @@ public class OwnersRule {
 
         for (AutomatonEdge ed : nd.getOutgoingEdges()) {
           toDo.push(ed.getTo());
-          System.out.println("    EDGE "+ed.myString()+" own "+own);
+          //System.out.println("    EDGE "+ed.myString()+" own "+own);
 
           if (ed.getOwnerLocation().contains(own)) {
-            System.out.println("    State change "+ ed.getTo().getId());
+            //System.out.println("    State change "+ ed.getTo().getId());
             //small.addEdge(ed.getLabel(),ed.getFrom(),ed.getTo(),ed.getGuard(),true);
           } else {
             // In Slice so no change in Place
@@ -88,10 +102,10 @@ public class OwnersRule {
         }
         toDo.remove(nd);
       }
+      System.out.println("***********");
       System.out.println(printPhase2(phase2));
-      //TODO construct the transitive closure for three+ nets
-      System.out.println("stackit rewrite rewrites");
-      System.out.println("\n");
+      //TODO construct the transitive closure ending at the slice
+      System.out.println("STACKIT rewrite rewrites");
 
       toDo = new Stack<>();
       done = new HashSet<>();
@@ -99,9 +113,9 @@ public class OwnersRule {
       //System.out.println("  OWNER 2 = " + own);
       Map<AutomatonNode,PetriNetPlace> nd2Pl = new HashMap<>();
       toDo.add(root);
-      //PetriNetPlace rp = petri.addPlace();
-      //nd2Pl.put(root, rp);
-      //petri.addRoot(rp);
+      /*  if (nd2Pl.containsKey(root)) {
+          next = nd2Pl.get(root);
+        }*/
       boolean first = true;
       while (!toDo.isEmpty()) {
         AutomatonNode nd = toDo.pop();
@@ -115,52 +129,73 @@ public class OwnersRule {
           System.out.println("    Start 2 "+ed.myString()+" own "+own);
 
           if (ed.getOwnerLocation().contains(own)) {
-            //apply state change
-            //System.out.println(printPhase2(phase2));
-            AutomatonNode nd1 = ed.getFrom();
-            AutomatonNode nd2 = ed.getTo();
+            System.out.println("Staring "+ ed.getId());
+            AutomatonNode nd1 = new AutomatonNode("1");
+            AutomatonNode nd2 = new AutomatonNode("2");
 
-            if (phase2.containsKey(nd1)) nd1 = phase2.get(nd1);
-            if (phase2.containsKey(nd2)) nd2 = phase2.get(nd2);
+            if (phase2.containsKey(ed.getFrom())) nd1 = phase2.get(ed.getFrom());
+            else nd1 = ed.getFrom();
+            if (phase2.containsKey(ed.getTo())) nd2 = phase2.get(ed.getTo());
+            else nd2 = ed.getTo();
+     System.out.println("nd1 -> "+nd1.getId()+"  nd2 -> "+nd2.getId());
             AutomatonEdge temp = new AutomatonEdge(ed.getId(), ed.getLabel(), nd1,nd2);
             //System.out.println("     STATE |> "+ temp.myString());
             //if not processed add transition
             if (!edgeDone.contains(temp)) {
               edgeDone.add(temp);
-              PetriNetPlace next = null;
+              PetriNetPlace fromPlace = null;
               if (!nd2Pl.containsKey(nd1)) {
-                next = petri.addPlace();
-                nd2Pl.putIfAbsent(nd1, next);
-                if (nd1.isTerminal())  next.setTerminal(nd1.getTerminal());
+                fromPlace = petri.addPlace();
+                nd2Pl.putIfAbsent(nd1, fromPlace);
+                if (phase2.containsKey(nd1)) {
+                  nd2Pl.putIfAbsent(phase2.get(nd1), fromPlace);
+                  System.out.println("ADDing "+phase2.get(nd1).getId()+"->"+fromPlace.getId());
+                }
+                System.out.println("ADDing "+nd1.getId()+"->"+fromPlace.getId());
+                if (nd1.isTerminal()) {
+                  fromPlace.setTerminal(nd1.getTerminal());
+                  //System.out.println("1 SET "+nd1.getId()+"TERMINAL ->"+next.myString());
+                }
               } else {
-                next = nd2Pl.get(nd1);
+                fromPlace = nd2Pl.get(nd1);
               }
               if (first) {
                 petri.addRoot(nd2Pl.get(nd1));
                 first = false;
               }
-              PetriNetPlace toNode = null;
+              PetriNetPlace toPlace = null;
               if (!nd2Pl.containsKey(nd2)) {
-                toNode = petri.addPlace();
-                nd2Pl.putIfAbsent(nd2, toNode);
-                if (nd2.isTerminal())  next.setTerminal(nd2.getTerminal());
+                toPlace = petri.addPlace();
+                nd2Pl.putIfAbsent(nd2, toPlace);
+                if (phase2.containsKey(nd2)) {
+                  nd2Pl.putIfAbsent(phase2.get(nd2), toPlace);
+                  System.out.println("ADDing "+phase2.get(nd2).getId()+"->"+toPlace.getId());
+                }
+                System.out.println("ADDing "+nd2.getId()+"->"+toPlace.getId());
+                if (nd2.isTerminal())  {
+                  toPlace.setTerminal(nd2.getTerminal());
+                  //System.out.println("2 SET "+nd2.getId()+"TERMINAL ->"+toNode.myString());
+                }
               } else {
-                toNode = nd2Pl.get(nd2);
+                toPlace = nd2Pl.get(nd2);
               }
 
               PetriNetTransition tran = petri.addTransition(ed.getLabel());
-              petri.addEdge(tran,next,Collections.singleton(own));
-              petri.addEdge(toNode,tran,Collections.singleton(own));
-              System.out.println(tran.myString());
+              petri.addEdge(tran,fromPlace,Collections.singleton(own));
+              petri.addEdge(toPlace,tran,Collections.singleton(own));
+              System.out.println("Adding "+ tran.myString());
+            } else {
+              System.out.println("Done "+ ed.myString());
             }
           } else {
-            // In Slice so skip
+            System.out.println("Skip "+ ed.myString());
           }
         }
         toDo.remove(nd);
       }
-      System.out.println(petri.myString());
-      System.out.println("END of OWNER valid = "+petri.validatePNet());
+      //System.out.println(petri.myString());
+      System.out.println("END of OWNER valid = "+petri.myString());
+      petri = PetrinetReachability.removeUnreachableStates(petri);
       subNets.push(petri.copy());  // Clones
       petri = new Petrinet(a.getId(), false);
     }
@@ -168,113 +203,18 @@ public class OwnersRule {
     Petrinet build = new Petrinet(a.getId(), false);
     if (!subNets.isEmpty()) { build = subNets.pop(); }
     while(!subNets.isEmpty()) {
+     // build = PetrinetParallelMergeFunction.compose(build, subNets.pop());  //Debuging
       build = PetrinetParallelFunction.compose(build, subNets.pop());
+    //  build = subNets.pop();  //for debugging
     }
 
 
-    System.out.println("\n  OWNERS Rule END "+build.myString()+"\n  *********\n");
+    System.out.println("  OWNERS Rule *END "+build.myString());
+    build = PetrinetReachability.removeUnreachableStates(build);
+    System.out.println("reach *END "+build.myString());
     return build;
   }
 
-  @SneakyThrows({CompilationException.class})
-  public static  Petrinet XXownersRule(Automaton a) {
-    clean();
-    System.out.println("OWNERSRule " + a.toString());
-    Petrinet petri = new Petrinet(a.getId(), false);
-    PetriNetPlace p = null;
-    Stack<AutomatonNode> toDo = new Stack<>();
-    AutomatonNode root = null;
-
-//       Setup = for all roots nodes rnd
-//             + rnd->newMarking + aToDo
-    for(AutomatonNode r : a.getRoot()) {
-      for(String o: a.getOwners()) {
-        root = r;
-        break;
-      }
-    }
-/*
-   From one Place for each distinct node we need
-   one Place for each set of nodes in a slice!
-    */
-
-    for (String own : a.getOwners()) {
-      Set<AutomatonNode> done = new HashSet<>();
-      Map<AutomatonNode, PetriNetPlace> visited = new TreeMap<>();
-      Map<PetriNetPlace, PetriNetPlace> phase2 = new TreeMap<>();
-      System.out.println("\n  OWNEROWNER = " + own);
-      p = petri.addPlace();
-      petri.addRoot(p);
-      toDo.add(root);
-      visited.putIfAbsent(root,p);
-      while (!toDo.isEmpty()) {
-        PetriNetPlace toNode = p;
-        PetriNetTransition tran;
-        AutomatonNode nd = toDo.pop();
-        System.out.println("WHILE "+nd.getId());
-
-        if (done.contains(nd)) continue;
-        done.add(nd);
-        PetriNetPlace next;
-        System.out.println("Vis "+printVisited(visited));
-        if (visited.containsKey(nd)) {
-          next = visited.get(nd);
-          System.out.println("  Found "+nd.getId()+"->"+visited.get(nd).getId());
-        }  else {
-          next = petri.addPlace();
-          visited.putIfAbsent(nd,next);
-          System.out.println("  Visted "+nd.getId()+"->"+visited.get(nd).getId());
-        }
-
-        for (AutomatonEdge ed : nd.getOutgoingEdges()) {
-          toDo.push(ed.getTo());
-
-          System.out.println("    EDGE "+ed.myString()+" own "+own);
-
-          if (ed.getOwnerLocation().contains(own)) {
-            System.out.println("    State change "+ ed.getTo().getId());
-            tran = petri.addTransition(ed.getLabel());
-            System.out.println("    vis "+printVisited(visited)+ "  look for "+ ed.getTo().getId());
-            if (visited.containsKey(ed.getTo())) {
-              toNode = visited.get(ed.getTo());
-              System.out.println("Found "+nd.getId()+"->"+toNode.getId() );
-            }
-            else {
-              System.out.println(" NOT Found");
-              toNode = petri.addPlace();
-              visited.putIfAbsent(ed.getTo(),toNode);
-              System.out.println("VISITED 1 "+ed.getTo().getId()+"->"+toNode.getId());
-              System.out.println("Vis "+printVisited(visited));
-            }
-            System.out.println("Trn "+tran.myString());
-            System.out.println("next "+next.myString());
-            System.out.println("toNode "+toNode.myString());
-            petri.addEdge(next,tran,Collections.singleton(own));
-            petri.addEdge(tran,toNode,Collections.singleton(own));
-            System.out.println("Built "+tran.myString());
-          } else {
-            // In Slice so no change in Place
-            if (toNode == null) {
-              System.out.println("ownersRule: toNode null should not be posible!");
-            } else {
-              visited.putIfAbsent(ed.getTo(),visited.get(nd));
-              System.out.println("VISITED 2 "+ed.getTo().getId()+"->"+visited.get(nd).getId());
-              System.out.println("Vis "+printVisited(visited));
-              //if (visited.containsKey(ed.getTo()))
-              phase2.putIfAbsent(visited.get(nd), visited.get(ed.getTo()));
-              System.out.println("phase2 ");
-            }
-          }
-        }
-        toDo.remove(nd);
-      }
-      System.out.println("\n OWNER "+own);
-      //System.out.println(printPhase2(phase2));
-      System.out.println("\n\n");
-    }
-    System.out.println("OWNERS Rule END "+petri.myString());
-    return petri;
-  }
 
   private static String printVisited(Map<AutomatonNode, PetriNetPlace> v){
     String out = "Visited {";
@@ -286,31 +226,12 @@ public class OwnersRule {
   private static String printPhase2(Map<AutomatonNode, AutomatonNode> v){
     String out = "PHASE2 {";
     for(AutomatonNode nd: v.keySet()){
-      out = out +" "+nd.getId()+"->"+v.get(nd).getId()+",";
+      out = out +" "+nd.getId()+"->"+v.get(nd).getId()+" T "+v.get(nd).isTerminal()+",";
     }
     return out+"}";
   }
 
-  /*
-O2Place == Map(owner->Place), Markings == O2Place.values()
-   Setup = for all roots nodes rnd
-         + rnd->newMarking + aToDo
-   While aTodo  != {}
-         curernt = aToDo.top
-         if current processed skip
-            for each edge from Current
-               push edge.getTo to aToDo
-               if edge not processed
-                  build parSet for edge
-                  mark all in parset as processed
-                  build transition
 
-with a->c->STOP || b->STOP
-
-to prevent two b transitions being added either all three b events need ot be marked as done
-or nd->Marking needs to be constructed to prevent trans being added twice
-
- */
 
 
   private static String mark2String(Map<String, PetriNetPlace> mark){
@@ -328,7 +249,7 @@ or nd->Marking needs to be constructed to prevent trans being added twice
                                                            Petrinet petri){
     //printaN2Marking();
 
-    System.out.println("delta edge "+edge.myString());
+    //System.out.println("delta edge "+edge.myString());
     AutomatonNode oldnd = edge.getFrom();
     AutomatonNode newnd = edge.getTo();
     Set<String> owner = edge.getOwnerLocation();
@@ -338,7 +259,7 @@ or nd->Marking needs to be constructed to prevent trans being added twice
 
     aN2Marking.putIfAbsent(newnd,buildFrom(aN2Marking.get(oldnd),owner,petri));
     todo.todoPush(newnd);
-    System.out.println("MARK delta"+ newnd.getId()+"->"+aN2Marking.get(newnd).toString());
+    //System.out.println("MARK delta"+ newnd.getId()+"->"+aN2Marking.get(newnd).toString());
 
     /* System.out.print(" |>  New "+newnd.getId()+"->{");
      for(PetriNetPlace pl:aN2Marking.get(newnd).values() ){
@@ -361,7 +282,7 @@ or nd->Marking needs to be constructed to prevent trans being added twice
   private static  Map<String, PetriNetPlace> buildFrom(Map<String, PetriNetPlace> oldMark,
                                                        Set<String> ownerSet,
                                                        Petrinet petri){
-    System.out.print("BuildFrom "+mark2String(oldMark));
+    //System.out.print("BuildFrom "+mark2String(oldMark));
     Map<String, PetriNetPlace> newMark = new HashMap<>();
     for(String o: oldMark.keySet()){
       if (ownerSet.contains(o)){
@@ -370,7 +291,7 @@ or nd->Marking needs to be constructed to prevent trans being added twice
         newMark.putIfAbsent(o,oldMark.get(o));
       }
     }
-    System.out.println(" New "+mark2String(newMark));
+    //System.out.println(" New "+mark2String(newMark));
     return newMark;
   }
 
@@ -379,15 +300,15 @@ or nd->Marking needs to be constructed to prevent trans being added twice
   private static   void findSquare(AutomatonEdge currentEdge, Automaton a,
                                    Petrinet petri) throws CompilationException {
     Set<AutomatonEdge> fromSet = new HashSet<>(currentEdge.getFrom().getOutgoingEdges());
-    System.out.println("findSquare "+currentEdge.myString());
+    //System.out.println("findSquare "+currentEdge.myString());
     for(AutomatonEdge edge: fromSet){
-      System.out.println("  find   edge "+edge.myString());
+      //System.out.println("  find   edge "+edge.myString());
 
       Set<String> cap = currentEdge.getOwnerLocation();
       cap.retainAll(edge.getOwnerLocation());
       if (cap.isEmpty()){  //concurrent edges
         deltaMarking(edge,petri);  // third node in square
-        System.out.println(" found "+edge.getTo().getId()+" "+currentEdge.myString());
+        //System.out.println(" found "+edge.getTo().getId()+" "+currentEdge.myString());
         setTo(edge.getTo(),currentEdge,petri,a);
         return;
       }
@@ -422,7 +343,7 @@ or nd->Marking needs to be constructed to prevent trans being added twice
         }
         // may already be defined
         if (aN2Marking.containsKey(edge.getTo())) {
-          System.out.println("MARK Forth node clash "+aN2Marking.get(edge.getTo())+" XX "+newMark.toString());
+          //System.out.println("MARK Forth node clash "+aN2Marking.get(edge.getTo())+" XX "+newMark.toString());
           //make colletions disjoint
           Set<PetriNetPlace> set1 = new HashSet<>();
           for(PetriNetPlace pl: aN2Marking.get(edge.getTo()).values() ) {
@@ -434,11 +355,11 @@ or nd->Marking needs to be constructed to prevent trans being added twice
             if(aN2Marking.get(edge.getTo()).values().contains(pl)) continue;
             set2.add(pl);
           }
-          System.out.println("Forth node clash "+set1.toString()+" YY "+set2.toString());
+          //System.out.println("Forth node clash "+set1.toString()+" YY "+set2.toString());
           petri.gluePlaces(set1,set2 );
           return;
         } else {
-          System.out.println("MARK Forth node fresh "+aN2Marking.get(ed.getTo())+" XX "+newMark.toString());
+          //System.out.println("MARK Forth node fresh "+aN2Marking.get(ed.getTo())+" XX "+newMark.toString());
           aN2Marking.putIfAbsent(ed.getTo(), newMark);
         }
       }

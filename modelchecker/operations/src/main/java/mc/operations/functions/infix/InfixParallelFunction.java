@@ -62,6 +62,7 @@ public class InfixParallelFunction implements IProcessInfixFunction {
    */
   @Override
   public Petrinet compose(String id, Petrinet petrinet1, Petrinet petrinet2) throws CompilationException {
+    //System.out.println("infixparallel");
     return PetrinetParallelFunction.compose(petrinet1,petrinet2);
   }
 }

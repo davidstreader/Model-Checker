@@ -56,7 +56,7 @@ public class AutomataParallelFunction {
     //The edges here are meaning the labeled lines in each of the automata that we are composing
     processUnsyncedActions(edges1, edges2);
     processSyncedActions(edges1, edges2);
-
+    System.out.println("Par END "+automaton.myString());
     return automaton;
   }
 

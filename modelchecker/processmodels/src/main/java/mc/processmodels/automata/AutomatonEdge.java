@@ -69,9 +69,11 @@ public class AutomatonEdge extends ProcessModelObject {
   public String myString() {
     String out = "";
     if (guard != null) {
-      out = from.getId() + "-" + label + "->" + to.getId() + " " + guard.myString();
+      out = from.getId() + "-" + label + "->" + to.getId() + " " +
+             guard.myString() + " o "+getOwnerLocation();
     } else {
-      out = from.getId() + "-" + label + "->" + to.getId() + " null guard";
+      out = from.getId() + "-" + label + "->" + to.getId() +
+           " null guard"+ " o "+getOwnerLocation();
     }
     return out;
   }
@@ -116,6 +118,9 @@ public class AutomatonEdge extends ProcessModelObject {
     return Objects.hash(label, from.getId(), to.getId());
   }
 
+  /*
+  NOT a clue what this is trying to do!
+   */
   public static Multimap<String, String> createIntersection(Automaton automaton1,
                                                             Automaton automaton2) {
     Set<String> preowners1 = automaton1.getOwners();

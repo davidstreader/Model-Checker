@@ -82,7 +82,14 @@ public class TokenRule {
       //System.out.println("Processing "+Petrinet.marking2String(currentMarking)+
       //" trans "+satisfiedPostTransitions.size());
       if (satisfiedPostTransitions.size() == 0) {
-        markingToNodeMap.get(currentMarking).setTerminal("STOP");
+        boolean stop = true;
+        for (PetriNetPlace pl: currentMarking) {
+          if (!pl.getTerminal().equals("STOP")) stop = false;
+        }
+        if (stop)
+          markingToNodeMap.get(currentMarking).setTerminal("STOP");
+        else
+          markingToNodeMap.get(currentMarking).setTerminal("ERROR");
       }
 
       for (PetriNetTransition transition : satisfiedPostTransitions) {
