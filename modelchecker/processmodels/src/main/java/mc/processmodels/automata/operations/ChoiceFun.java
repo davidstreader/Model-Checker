@@ -188,6 +188,13 @@ public class ChoiceFun {
    composition.gluePlaces(startOfP1, startOfP2 );
    composition.setRoot2Start();
 
+   Set<PetriNetPlace> end1 = petrinet1.getPlaces().values().stream()
+     .filter(x->x.isTerminal()).collect(Collectors.toSet());
+   Set<PetriNetPlace> end2 = petrinet2.getPlaces().values().stream()
+     .filter(x->x.isTerminal()).collect(Collectors.toSet());
+ System.out.println("end1 "+end1 + " end2 "+end2);
+   composition.gluePlaces(end1, end2 );
+
    //System.out.println("Add OUT "+ composition.myString()+"\n");
    composition.validatePNet();
    return composition;

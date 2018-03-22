@@ -88,6 +88,7 @@ public class OwnersRule {
        System.out.println("Clump " + clump.stream().map(x -> x.getId() + ", ").collect(Collectors.joining()));
        for (AutomatonNode n : clump) {
         if (!nd2Pl.containsKey(n)) nd2Pl.put(n, added);
+        if (n.isTerminal()&& n.getTerminal().equals("STOP")) added.setTerminal("STOP");
        }
       }
       Set<AutomatonNode> next = nd.getIncomingEdges().stream().map(ed -> ed.getFrom()).collect(Collectors.toSet());
@@ -131,7 +132,7 @@ public class OwnersRule {
     Petrinet build = new Petrinet(a.getId(), false);
     while(!subNets.isEmpty()) {
      System.out.println(subNets.size()+" Adding");
-      //build = PetrinetParallelMergeFunction.compose(build, subNets.pop());  //Debuging
+     // build = PetrinetParallelMergeFunction.compose(build, subNets.pop());  //Debuging
       build = PetrinetParallelFunction.compose(build, subNets.pop());
     //  build = subNets.pop();  //for debugging
     }
@@ -139,7 +140,7 @@ public class OwnersRule {
 
     System.out.println("  OWNERS Rule *END "+build.myString());
     build = PetrinetReachability.removeUnreachableStates(build);
-    System.out.println("reach *END "+build.myString());
+    //System.out.println("reach *END "+build.myString());
     return build;
   }
 
@@ -307,31 +308,50 @@ public class OwnersRule {
     }
   }
 
-  private static  void markStopPlaces(Petrinet p) {
-    p.getPlaces().values().stream()
-      .filter(pl -> pl.getOutgoing().size() == 0)
-      .filter(((Predicate<PetriNetPlace>) PetriNetPlace::isTerminal).negate())
-      .forEach(pl -> pl.setTerminal("STOP"));
-  }
+
 
 
 private static Set<AutomatonNode> reach(Automaton a, AutomatonNode ndi, String own) {
    Set<AutomatonNode> reached = new HashSet<>();
-   reached.add(ndi);
+
    Stack<AutomatonNode> sofar = new Stack<>();
    sofar.push(ndi);
 
    while(!sofar.isEmpty()) {
     AutomatonNode nd = sofar.pop();
-    System.out.println("reaching "+nd.getId());
+//System.out.println("reachfrom "+nd.getId());
     if(reached.contains(nd)) continue;
     reached.add(nd);
+
+    Set<AutomatonNode> union = new HashSet<>();
+    for(AutomatonEdge ed: nd.getIncomingEdges()){
+
+     if(!ed.getOwnerLocation().contains(own)){
+      if(!reached.contains(ed.getFrom())) {
+       union.add(ed.getFrom());
+       sofar.push(ed.getFrom());
+      }
+     }
+    }
+    for(AutomatonEdge ed: nd.getOutgoingEdges()){
+
+     if(!ed.getOwnerLocation().contains(own)){
+      if(!reached.contains(ed.getTo())) {
+       union.add(ed.getTo());
+       sofar.push(ed.getTo());
+      }
+     }
+    }
+/*
     Set<AutomatonNode> union = new HashSet<>(nd.getOutgoingEdges().stream().
       filter(ed->!ed.getOwnerLocation().contains(own)).map(e->e.getTo()).collect(Collectors.toSet()));
+
     union.addAll(nd.getIncomingEdges().stream().
       filter(ed->!ed.getOwnerLocation().contains(own)).map(e->e.getFrom()).collect(Collectors.toSet()));
- System.out.println("Union "+ union.stream().map(x->x.getId()+", ").collect(Collectors.joining()));
+    */
+ //System.out.println("All "+ union.stream().map(x->x.getId()+", ").collect(Collectors.joining()));
     reached.addAll(union);
+
    }
 
    return reached;

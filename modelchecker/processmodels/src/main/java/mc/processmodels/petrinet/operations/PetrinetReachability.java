@@ -144,9 +144,15 @@ public final class PetrinetReachability {
       .collect(Collectors.toSet());
   }
   private static Set<PetriNetPlace> peer(PetriNetPlace current) {
-    return current.post().stream()
+
+    Set<PetriNetPlace> union = new HashSet<>(current.post().stream()
       .map(PetriNetTransition::pre).flatMap(Set::stream)
-      .distinct().collect(Collectors.toSet());
+      .distinct().collect(Collectors.toSet()));
+
+    union.addAll(current.pre().stream()
+      .map(PetriNetTransition::post).flatMap(Set::stream)
+      .distinct().collect(Collectors.toSet()));
+    return union;
   }
   private static Set<PetriNetTransition> peerT(PetriNetTransition current) {
     return current.post().stream()
@@ -185,14 +191,15 @@ public final class PetrinetReachability {
       if (work.get(ed1) != null ) ed1.setOwners(work.get(ed1));
       else System.out.println("WHAT work.get("+ed1.getId()+") = null");
     }
-
   }
+
+  //Doing the work
   private static void mergeTrans(PetriNetTransition p1,  PetriNetTransition p2){
     Map<PetriNetEdge,Set<String>> work = new HashMap<PetriNetEdge,Set<String>>();
     Set<String> union = new HashSet<String>();
     for (PetriNetEdge ed1: p1.getOutgoing()) {
       for (PetriNetEdge ed2 : p2.getOutgoing()) {
-        System.out.println(ed1.myString()+" -- "+ ed2.myString());
+ //System.out.println(ed1.myString()+" -- "+ ed2.myString());
         if (!ed1.getId().equals(ed2.getId()) &&  ed1.getTo().equals(ed2.getTo())) {
           union.addAll(ed1.getOwners());
           union.addAll(ed2.getOwners());
@@ -208,7 +215,7 @@ public final class PetrinetReachability {
     for (PetriNetEdge ed1: p1.getIncoming()) {
       for (PetriNetEdge ed2: p2.getIncoming()){
         if (!ed1.getId().equals(ed2.getId()) && ed1.getTo().equals(ed2.getTo())){
-          System.out.println(ed1.myString()+" -- "+ ed2.myString());
+  //System.out.println(ed1.myString()+" -- "+ ed2.myString());
           union.addAll(ed1.getOwners());
           union.addAll(ed2.getOwners());
           work.put(ed1,union);

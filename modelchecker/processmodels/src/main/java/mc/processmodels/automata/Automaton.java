@@ -725,8 +725,8 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
       for(AutomatonNode r: root){
       sb.append(r.getId()+" ");
       }
-     sb.append(" own" + owners+"\n");
-    for(AutomatonNode nd: getNodes()){ sb.append(nd.myString());}
+     sb.append(" own" + owners+ "nodes "+getNodes().size()+" edges "+getEdges().size()+"\n");
+    for(AutomatonNode nd: getNodes()){ sb.append(nd.myString()+"\n");}
     for(AutomatonEdge ed: getEdges()){
       sb.append(ed.myString()+"\n");
     }
