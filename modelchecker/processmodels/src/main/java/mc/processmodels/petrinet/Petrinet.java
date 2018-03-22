@@ -50,6 +50,12 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
   private int transitionId = 0;
   private int edgeId = 0;
 
+
+  public void deTagTransitions() {
+    for(PetriNetTransition tr: getTransitions().values()) {
+      tr.setLabel(tr.getLabel().split("\\.")[0]);
+    }
+  }
   public boolean  rootContains(PetriNetPlace pl){
 
     return roots.stream().
@@ -232,9 +238,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
   }
   public static Petrinet errorNet(){
     Petrinet error = new Petrinet("error");
-    for(PetriNetPlace p : error.getPlaces().values()) {
-      p.setTerminal("ERROR");
-    };
+
     return error;
   }
 public static String marking2String(Collection<PetriNetPlace> mark){

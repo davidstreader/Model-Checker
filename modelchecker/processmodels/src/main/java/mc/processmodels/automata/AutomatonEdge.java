@@ -70,10 +70,10 @@ public class AutomatonEdge extends ProcessModelObject {
     String out = "";
     if (guard != null) {
       out = from.getId() + "-" + label + "->" + to.getId() + " " +
-             guard.myString() + " o "+getOwnerLocation();
+             guard.myString() + " o "+automatonLocation;
     } else {
       out = from.getId() + "-" + label + "->" + to.getId() +
-           " null guard"+ " o "+getOwnerLocation();
+           " null guard"+ " o "+automatonLocation;
     }
     return out;
   }

@@ -27,7 +27,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
    * An underscore prevents any collisions.
    */
   public static final String DEFAULT_OWNER = "_default";
-
+  public static int tagid = 0;
 
   @Getter
   private Set<AutomatonNode> root;
@@ -721,11 +721,12 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
   public String myString(){
     StringBuilder sb = new StringBuilder();
-    sb.append("Aut "+this.getId()+ "root ");
+    sb.append("Aut "+this.getId()+ " root ");
       for(AutomatonNode r: root){
       sb.append(r.getId()+" ");
       }
-     sb.append("\n own"+ owners.stream().reduce("{",(x,y)->x+" "+y)+"}");
+     sb.append(" own" + owners+"\n");
+    for(AutomatonNode nd: getNodes()){ sb.append(nd.myString());}
     for(AutomatonEdge ed: getEdges()){
       sb.append(ed.myString()+"\n");
     }
@@ -877,6 +878,12 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
       out=out+e.myString()+" ** ";
     }
     return out+"}";
+  }
+
+  public void tagEvents() {
+    for(AutomatonEdge ed: getEdges()) {
+      ed.setLabel(ed.getLabel()+"."+tagid++);
+    }
   }
 
   /**
