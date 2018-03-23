@@ -71,14 +71,14 @@ public class AbstractionFunction implements IProcessFunction {
     Set<AutomatonEdge> processesed = new HashSet<>();
     Automaton startA = automata[0].copy();
     String Aname = startA.getId();
-  //  System.out.println("start "+ startA.toString());
+    System.out.println("Abs start "+ startA.myString());
 
     Automaton abstraction = pruneHiddenNodes(context, startA);
 
-  //  System.out.println("pruned "+ abstraction.toString());
+    System.out.println("Abs pruned "+ abstraction.myString());
 
     mergeloopsOfSize2(context, abstraction);
-   // System.out.println("merged "+ abstraction.toString());
+    System.out.println("Abs merged "+ abstraction.myString());
 
     boolean isFair = flags.contains("fair") || !flags.contains("unfair");
 
@@ -156,7 +156,7 @@ public class AbstractionFunction implements IProcessFunction {
         //  throw new CompilationException(this.getClass(), null);
       }
     }
- //   System.out.println("final "+ abstraction.toString());
+    System.out.println("Abs final "+ abstraction.myString());
 
     return abstraction;
   }
@@ -224,7 +224,7 @@ public class AbstractionFunction implements IProcessFunction {
         hiddenAdded.add(added);
       }
     }
- //   System.out.println("endof Outgoing "+hiddenAdded.toString());
+ //   System.out.println("endof Outgoing "+hiddenAdded.myString());
     return hiddenAdded;
   }
 
@@ -305,7 +305,7 @@ public class AbstractionFunction implements IProcessFunction {
 
 
     Automaton abstraction = autoIN.copy();
-//System.out.println("prune "+ abstraction.toString());
+System.out.println("prune "+ abstraction.myString());
     List<AutomatonNode> nodes = abstraction.getNodes();
 
 

@@ -21,9 +21,9 @@ public class PetrinetParallelFunction {
 
   public static Petrinet compose(Petrinet p1, Petrinet p2) {
     clear();
-    System.out.println(p1.myString());
-    System.out.println(p2.myString());
-    System.out.println("PETRINETPARALLELFUNCTION");
+    //System.out.println(p1.myString());
+    //System.out.println(p2.myString());
+    //System.out.println("PETRINETPARALLELFUNCTION");
    // System.out.println("p1 "+p1.myString());
    // System.out.println("p2 "+p2.myString());
     for(String eId : p1.getEdges().keySet()) {
@@ -64,8 +64,8 @@ public class PetrinetParallelFunction {
   private static void setupActions(Petrinet p1, Petrinet p2) {
     Set<String> actions1 = p1.getAlphabet().keySet();
     Set<String> actions2 = p2.getAlphabet().keySet();
-    System.out.println("actions1 "+actions1);
-    System.out.println("actions2 "+actions2);
+    //System.out.println("actions1 "+actions1);
+    //System.out.println("actions2 "+actions2);
     actions1.forEach(a -> setupAction(a, actions2));
     actions2.forEach(a -> setupAction(a, actions1));
   }
@@ -94,9 +94,9 @@ public class PetrinetParallelFunction {
       }
     } else if (otherPetrinetActions.contains(action)) {
       synchronisedActions.add(action);
-   System.out.println("Sync "+ action);
+   //System.out.println("Sync "+ action);
     } else {
-      System.out.println("Unsync "+ action);
+      //System.out.println("Unsync "+ action);
       unsynchedActions.add(action);
     }
   }
@@ -113,7 +113,7 @@ public class PetrinetParallelFunction {
 
       for (PetriNetTransition t1 : p1Pair) {
         for (PetriNetTransition t2 : p2Pair) {
-  System.out.println("t1 "+ t1.getId()+ " , t2 "+t2.getId());
+  //System.out.println("t1 "+ t1.getId()+ " , t2 "+t2.getId());
           Set<PetriNetEdge> outgoingEdges = new LinkedHashSet<>();
           outgoingEdges.addAll(t1.getOutgoing());
           outgoingEdges.addAll(t2.getOutgoing());

@@ -164,7 +164,7 @@ public class ReferenceReplacer {
       // check if this local process has been referenced before
       if (references.contains(localReference)) {
         //this is where identifier is used
-        System.out.println("OLD ping "+localReference);
+        //System.out.println("OLD ping "+localReference);
         return new ReferenceNode(localReference, astNode.getLocation());
       } else {
         ASTNode node = localReferences.get(localReference).getProcess();
@@ -174,7 +174,7 @@ public class ReferenceReplacer {
           astNode.getReferences().forEach(node::addReference);
         }
         //this is where identifier is defined
-        System.out.println("New ping "+localReference);
+        //System.out.println("New ping "+localReference);
         return replaceReferences(node, identifier, localReferences);
       }
     }

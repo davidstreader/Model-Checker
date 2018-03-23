@@ -25,7 +25,7 @@ import mc.util.Location;
 @Data
 public class Petrinet extends ProcessModelObject implements ProcessModel {
   public static final String DEFAULT_OWNER = "_default";
-
+  public static int netId = 0;
 
   private Map<String, PetriNetPlace> places = new HashMap<>();
   private Map<String, PetriNetTransition> transitions = new HashMap<>();
@@ -86,13 +86,13 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
          ok = false;
        }
      }
-
+/*
      for(PetriNetTransition t: getTransitions().values()) {
        if (!alphabet.containsKey(t.getLabel())){
          System.out.println("Transition "+t.getId()+" - "+t.getLabel()+" not in alphabet");
          ok = false;
        }
-     }
+     } */
 
     for (String k: transitions.keySet()){
       String id = transitions.get(k).getId();
@@ -217,7 +217,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     eventNet.addEdge(tr, start, Collections.singleton(DEFAULT_OWNER));
 
     end.setTerminal("STOP");
-  //  System.out.println("oneEventNet "+eventNet.myString());
+    System.out.println("oneEventNet "+eventNet.myString());
     return eventNet;
   }
   // called from interpretor
@@ -228,12 +228,11 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
   // called from interpretor when local reference needs to be used
   public static Petrinet stopNet(String ref){
       Petrinet stop = new Petrinet("stop");
-
+//?? when are the places added??
     for(PetriNetPlace p : stop.getPlaces().values()) {
       p.addFromRefefances( new HashSet(Collections.singleton(ref)));
       p.setTerminal("STOP");
     }
-  //  System.out.println("stopNet "+stop.myString());
     return stop;
   }
   public static Petrinet errorNet(){
@@ -257,9 +256,8 @@ public static String marking2String(Collection<PetriNetPlace> mark){
 
   public Petrinet(String id, boolean constructRoot) {
     super(id, "Petrinet");
-    this.id = id;
+    this.id = id+Petrinet.netId++;
     this.owners.add(DEFAULT_OWNER);
-
 
     if (constructRoot) {
       PetriNetPlace origin = addPlace();
@@ -286,11 +284,11 @@ public static String marking2String(Collection<PetriNetPlace> mark){
   }
 
   public PetriNetPlace addPlace() {
-    return addPlace(this.id + ":p:" + placeId++);
+    return addPlace(this.id +":p:" + placeId++);
   }
 
   public PetriNetPlace addGluePlace() {
-    PetriNetPlace p = addPlace(getId()+":G:" + placeId++);
+    PetriNetPlace p = addPlace(this.id+":G:" + placeId++);
     p.setStart(false);
     p.setTerminal("");
     return p;

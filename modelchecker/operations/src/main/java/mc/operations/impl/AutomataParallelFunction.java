@@ -56,7 +56,7 @@ public class AutomataParallelFunction {
     //The edges here are meaning the labeled lines in each of the automata that we are composing
     processUnsyncedActions(edges1, edges2);
     processSyncedActions(edges1, edges2);
-    System.out.println("Par END "+automaton.myString());
+ //   System.out.println("Par END "+automaton.myString());
     return automaton;
   }
 
@@ -82,8 +82,8 @@ public class AutomataParallelFunction {
 
         if (node.isStartNode())
           automaton.addRoot(node);
-
-        if ("ERROR".equals(node2.getTerminal()) || "ERROR".equals(node1.getTerminal()) )
+// Errors are local not Global
+        if ("ERROR".equals(node2.getTerminal()) && "ERROR".equals(node1.getTerminal()) )
           node.setTerminal("ERROR");
 
 
@@ -170,8 +170,10 @@ public class AutomataParallelFunction {
         List<AutomatonNode> to = new ArrayList<>(nodeMap.get(edge.getTo().getId()));
         for (int i = 0; i < Math.min(from.size(), to.size()); i++) {
           //Dont set any links from terminal error nodes.
+
+        /* ERROR is local not Global
           if (from.get(i).isTerminal() && from.get(i).getTerminal().equals("ERROR"))
-            continue;
+            continue; */
 
           // adds some !a and ?a edges that will be deleted in processSyncedActions
           AutomatonEdge newEdge = automaton.addEdge(edge.getLabel(), from.get(i), to.get(i),

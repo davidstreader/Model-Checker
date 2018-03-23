@@ -37,8 +37,7 @@ public class SequentialInfixFun {
 
     Multimap<String,String> setOfOwners = Automaton.ownerProduct(automaton1, automaton2);
 
-   System.out.println("setOfOwners "+setOfOwners.toString());
-   System.out.println("*******");
+   //System.out.println("setOfOwners "+setOfOwners.toString());
     //store a map to the nodes so id can be ignored
     Map<String, AutomatonNode> automata1nodes = new HashMap<>();
     Map<String, AutomatonNode> automata2nodes = new HashMap<>();
@@ -137,9 +136,9 @@ public class SequentialInfixFun {
 
   public Petrinet compose(String id, Petrinet net1, Petrinet net2)
       throws CompilationException {
-    System.out.println("=>PETRI1 "+net1.myString());
+    //System.out.println("=>PETRI1 "+net1.myString());
     net1.validatePNet();
-    System.out.println("=>PETRI2 "+net2.myString());
+    //System.out.println("=>PETRI2 "+net2.myString());
     net2.validatePNet();
    Petrinet petrinet1 = net1.copy();
    Petrinet petrinet2 = net2.copy();
@@ -200,7 +199,7 @@ public class SequentialInfixFun {
  //   System.out.println("Glue over "+ composition.myString());
     composition.setRoot2Start();
 
-    System.out.println("SEQUENTIAL OUT "+ composition.myString());
+   // System.out.println("SEQUENTIAL OUT "+ composition.myString());
     composition.validatePNet();
     return composition;
   }

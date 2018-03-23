@@ -73,6 +73,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
                                 Map<String, ProcessModel> processMap,
                                 Context context)
     throws CompilationException, InterruptedException {
+   //System.out.println("START interp ");
     reset();
     this.context = context;
     //this.compiler = compiler;
@@ -85,24 +86,27 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
 
     ProcessModel pm = processStack.pop();
     Automaton automaton = ((Automaton) pm.getProcessType().convertTo(AUTOMATA, pm)).copy();
-
+   //System.out.println("START interp "+automaton.myString());
     //Set the id correctly if there is a processes like this: C = B., otherwise it just takes B's id.
     if (!automaton.getId().equals(processNode.getIdentifier())) {
       automaton.setId(processNode.getIdentifier());
     }
 
-
+   //System.out.println(">>XX>> lab start "+automaton.myString());
     if (processNode.hasRelabels()) {
       processRelabelling(automaton, processNode.getRelabels());
     }
 
+   //System.out.println(">>XX>> lab end   "+automaton.myString());
 
     if (processNode.hasHiding()) {
       processHiding(automaton, processNode.getHiding());
     }
+   //System.out.println(">>XX>> hide end  "+automaton.myString());
 
-    automaton = labelAutomaton(automaton);
+    automaton = labelAutomaton(automaton); //ok
 
+   //System.out.println(">>XX>> ???? end  "+automaton.myString());
 
     return automaton;
   }
@@ -137,16 +141,18 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
    */
   private void interpretProcess(ASTNode astNode, String identifier)
         throws CompilationException, InterruptedException {
+   //System.out.println("astNode "+astNode.toString());
     if (astNode instanceof IdentifierNode) {
-
+     //System.out.println("astNode IdentifierNode");
       String reference = ((IdentifierNode) astNode).getIdentifier();
           ProcessModel model = processMap.get(reference);
         processStack.push(model);
 
     } else if (astNode instanceof ProcessRootNode) {
+     //System.out.println("astNode ProcessRootNode");
 
 
-     // automata already on stact so pop it off  relabel and push back on stack
+      // automata already on stact so pop it off  relabel and push back on stack
       ProcessRootNode root = (ProcessRootNode) astNode;
 
       interpretProcess(root.getProcess(), identifier);
@@ -154,6 +160,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
       ProcessModel pm = processStack.pop();
       Automaton automaton = ((Automaton) pm.getProcessType().convertTo(AUTOMATA, pm)).copy();
 
+     //System.out.println("Aut Built0 "+ automaton.myString());
       automaton = processLabellingAndRelabelling(automaton, root);
       if (root.hasHiding()) {
         processHiding(automaton, root.getHiding());
@@ -161,8 +168,9 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
       }
 
       processStack.push(automaton);
-      System.out.println("Aut Built1 "+ automaton.myString());
+     //System.out.println("Aut Built1 "+ automaton.myString());
     } else {
+     //System.out.println("astNode else");
       Automaton automaton = new Automaton(identifier);
       if (variables != null) {
         automaton.setHiddenVariables(variables.getVariables());
@@ -173,9 +181,9 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
       automaton.setVariablesLocation(astNode.getLocation());
 
       interpretNode(astNode, automaton, new ArrayList<>(automaton.getRoot()).get(0));
-
+     //System.out.println("pushing "+automaton.myString());
       processStack.push(automaton);
-      System.out.println("Aut Built2 "+ automaton.myString());
+  //    System.out.println("Aut Built2 "+ automaton.myString());
     }
 
   }
@@ -192,6 +200,8 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     if (Thread.currentThread().isInterrupted()) {
       throw new InterruptedException();
     }
+    String className = currentNode.getClass().getSimpleName();
+   //System.out.println("WHAT "+className);
     // check if the current ast node has a reference attached
     if (astNode.hasReferences()) {
       for (String reference : astNode.getReferences()) {
@@ -344,9 +354,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     }
     Automaton.relabelOwners((Automaton) model1,"._1");
     Automaton.relabelOwners((Automaton) model2,"._2");
-    System.out.println("Composition "+astCompositeNode.getOperation());
-    System.out.println(((Automaton) model1).myString());
-    System.out.println(((Automaton) model2).myString());
+
     //System.out.println(astCompositeNode.getOperation());
     Automaton comp = instantiateClass(infixFunctions.get(astCompositeNode.getOperation()))
         .compose(model1.getId() + astCompositeNode.getOperation() + model2.getId(), (Automaton) model1, (Automaton) model2);

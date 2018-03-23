@@ -13,6 +13,7 @@ public class AutomataLabeller {
 
   public static Automaton labelAutomaton(Automaton automaton, String label)
     throws CompilationException {
+    System.out.println("INPUT "+automaton.myString());
     Automaton labelled = new Automaton(label + ":" + automaton.getId(), !Automaton.CONSTRUCT_ROOT);
     List<AutomatonNode> nodes = automaton.getNodes();
     for (AutomatonNode node : nodes) {
@@ -32,7 +33,6 @@ public class AutomataLabeller {
           edge.getOwnerLocation());
 
     }
-
 
     labelled.copyProperties(automaton);
 

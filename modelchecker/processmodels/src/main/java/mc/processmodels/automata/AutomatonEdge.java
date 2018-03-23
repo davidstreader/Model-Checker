@@ -17,6 +17,7 @@ public class AutomatonEdge extends ProcessModelObject {
 
   private static final String INTERSECTION = "^";
 
+  @Setter
   private Set<String> automatonLocation = new HashSet<>();
 
   @Getter
