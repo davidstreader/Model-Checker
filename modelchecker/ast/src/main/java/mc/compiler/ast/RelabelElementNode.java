@@ -2,6 +2,7 @@ package mc.compiler.ast;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import mc.ast.ast.*;
 import mc.util.Location;
 
 /**
@@ -23,6 +24,7 @@ public class RelabelElementNode extends ASTNode {
    */
   private String newLabel;
 
+  private IdentifierNode newProcess;
   /**
    * The old name for the transition after the application of the relabel.
    */
@@ -39,7 +41,13 @@ public class RelabelElementNode extends ASTNode {
     this.oldLabel = oldLabel;
     ranges = null;
   }
-
+  public RelabelElementNode(IdentifierNode newPro, String oldLabel, Location location) {
+    super(location);
+    System.out.println("RelabelEl IdNode");
+    this.oldLabel = oldLabel;
+    this.newProcess = newPro;
+    ranges = null;
+  }
   public boolean hasRanges() {
     return ranges != null;
   }

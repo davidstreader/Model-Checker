@@ -34,6 +34,7 @@ import mc.processmodels.automata.operations.SequentialInfixFun;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
+import mc.processmodels.petrinet.operations.RefineFun;
 import mc.processmodels.petrinet.utils.PetrinetLabeller;
 
 /**
@@ -107,7 +108,6 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
   @Override
   public ProcessModel interpret(ProcessNode processNode,
                                 Map<String, ProcessModel> processMap,
-                                //  LocalCompiler localCompiler,
                                 Context context)
       throws CompilationException, InterruptedException {
     reset();
@@ -118,12 +118,12 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     this.processMap = processMap;
     String identifier = processNode.getIdentifier();
     this.variables = processNode.getVariables();
-
+System.out.println("processNode "+ processNode.getProcess().toString());
     interpretProcess(processNode.getProcess(), identifier);
 
     Petrinet petrinet = processStack.pop().copy();
 
-    //System.out.println("Just Built "+petrinet.myString());
+    System.out.println("Just Built "+petrinet.myString());
     //System.out.println("Ref "+ referenceSet.toString());
 
    // System.out.println("Poped "+petrinet.myString());
@@ -133,6 +133,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     //System.out.println("Poped1 "+petrinet.myString());
 
     if (processNode.hasRelabels()) {
+      System.out.println("WWWWWWWWWWW");
       processRelabelling(petrinet, processNode.getRelabels());
     }
     //System.out.println("Poped2 "+petrinet.myString());
@@ -182,32 +183,30 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
   private void interpretProcess(ASTNode astNode, String identifier)
       throws CompilationException, InterruptedException {
     //prity print AST
+    System.out.println("interpretProcess astNode IS " +astNode.toString());
     PetrinetInterpreter.indent = PetrinetInterpreter.indent.concat("-");
     String className = astNode.getClass().getSimpleName();
-    //System.out.println("iPro "+ PetrinetInterpreter.indent + className);
+    System.out.println("iPro "+ PetrinetInterpreter.indent + className);
 //  go and get the process  but if process is not of the correct type CRASH?
     if (astNode instanceof IdentifierNode) {
-      //System.out.println("*** interpretProcess IdentifierNode");
       String reference = ((IdentifierNode) astNode).getIdentifier();
+      System.out.println("*** interpretProcess IdentifierNode "+ reference);
 
-
-  //System.out.println("stack petri "+processMap.get(reference).getId()+" "+
-   //processMap.get(reference).getProcessType().toString());
-  //extract the net from the MULTI_
-  if (processMap.get(reference).getProcessType().equals(ProcessType.MULTI_PROCESS)) {
-    processStack.push( processMap.get(reference).getProcessType().
-       convertTo(ProcessType.PETRINET, processMap.get(reference))); //What a way to extact  a net
-  } else {
-    processStack.push((Petrinet) processMap.get(reference));
-  }
+    if (processMap.get(reference).getProcessType().equals(ProcessType.MULTI_PROCESS)) {
+      processStack.push( processMap.get(reference).getProcessType().
+        convertTo(ProcessType.PETRINET, processMap.get(reference))); //What a way to extact  a net
+    } else {
+      processStack.push((Petrinet) processMap.get(reference));
+    }
+ System.out.println("got Net "+processStack.peek().getId()+" from Map");
     }else if (astNode instanceof ProcessRootNode) {
-      //System.out.println("*** interpretProcess ProcessRootNode");
+      System.out.println("*** interpretProcess ProcessRootNode");
       ProcessRootNode root = (ProcessRootNode) astNode;
 
       interpretProcess(root.getProcess(), identifier);
       Petrinet petrinet = processStack.pop();
       petrinet = processLabellingAndRelabelling(petrinet, root);
-
+System.out.println("TO stack petri "+petrinet.getId());
       if (root.hasHiding()) {
         processHiding(petrinet, root.getHiding());
       }
@@ -215,7 +214,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
       processStack.push(petrinet);
 
     }  else {
-      //System.out.println("*** interpretProcess ELSE");
+      System.out.println("*** interpretProcess ELSE");
       Petrinet petrinet = new Petrinet(identifier, true);
 
       PetriNetPlace currentPlace = new ArrayList<>(petrinet.getRoots()).get(0);
@@ -239,15 +238,18 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
           pl.addRefefances(astNode.getReferences());
         }
       }
-      //System.out.println("*** "+petrinet.myString());
+      System.out.println("*** "+petrinet.myString());
       petrinet = tree2net(petrinet);
-      //System.out.println("stack petri "+petrinet.getId());
+      System.out.println("stack petri "+petrinet.getId());
       processStack.push(petrinet);
     }
-if (astNode.getReferences() == null) System.out.println("astNode.getReferences() = null");
+if (astNode.getReferences() == null) {
+  System.out.println("astNode.getReferences() = null");
+  //Throwable t = new Throwable(); t.printStackTrace();
+}
  else   System.out.println("iPro<"+ PetrinetInterpreter.indent + className+" "+ " ref " +
       astNode.getReferences().toString());
-    if (PetrinetInterpreter.indent.length()> 1)
+    if (PetrinetInterpreter.indent.length()> 0)
       PetrinetInterpreter.indent = PetrinetInterpreter.indent.substring(1);
 
     return;
@@ -356,7 +358,7 @@ if (astNode.getReferences() == null) System.out.println("astNode.getReferences()
 
 
     //prity print
-    if (PetrinetInterpreter.indent.length()> 1)
+    if (PetrinetInterpreter.indent.length()> 0)
       PetrinetInterpreter.indent = PetrinetInterpreter.indent.substring(1);
     if (currentNode.getReferences()!=null) {
       System.out.println("AST<" + PetrinetInterpreter.indent + className + " ref " +
@@ -427,10 +429,12 @@ return ret;
   private void interpretProcessRoot(ProcessRootNode processRoot, Petrinet petri,
                                     PetriNetPlace currentPlace)
       throws CompilationException, InterruptedException {
+    System.out.println("Interpreting Root");
   //  currentPlace = petri.getPlaces().get(currentPlace.getId());//only match on "id"
     interpretProcess(processRoot.getProcess(), petri.getId() + "." + ++subProcessCount);
     Petrinet model = ((Petrinet) processStack.pop()).copy();
-    model = processLabellingAndRelabelling(model, processRoot);
+
+      model = processLabellingAndRelabelling(model, processRoot);
 
     if (processRoot.hasHiding()) {
       processHiding(model, processRoot.getHiding());
@@ -555,8 +559,8 @@ return ret;
     Set<PetriNetPlace> places = master.addPetrinet(petrinetToAdd);
     //System.out.println(master.myString());
     //System.out.println("====masterPetrinet======== "+ master.getId());
-master.validatePNet();
-
+   master.validatePNet();
+//add referances to Root Places
     places.stream()
       .map(PetriNetPlace::getReferences)
       .filter(Objects::nonNull)
@@ -567,27 +571,61 @@ master.validatePNet();
   }
 
   private Petrinet processLabellingAndRelabelling(Petrinet petri, ProcessRootNode processRoot)
-      throws CompilationException {
+      throws CompilationException, InterruptedException {
+
+    System.out.println("HAS L " + processRoot.hasLabel() + " has P "+processRoot.hasNewProcess());
     if (processRoot.hasLabel()) {
+      System.out.println("processLabellingAndRelabelling "+processRoot.getLabel());
       petri = PetrinetLabeller.labelPetrinet(petri, processRoot.getLabel());
     }
 
-    if (processRoot.hasRelabelSet()) {
-      processRelabelling(petri, processRoot.getRelabelSet());
-    }
 
+    if (processRoot.hasRelabelSet()) {
+//processes both renaming and refinement
+      petri = processRelabelling(petri, processRoot.getRelabelSet());
+    }
     return petri;
   }
 
-  private void processRelabelling(Petrinet petri, RelabelNode relabelSet)
+  private Petrinet processRelabelling(Petrinet petri, RelabelNode relabelSet)
       throws CompilationException {
-    for (RelabelElementNode r : relabelSet.getRelabels()) {
-      if (!petri.getAlphabet().keySet().contains(r.getOldLabel())) {
-        throw new CompilationException(getClass(), "Cannot find action" + r.getOldLabel()
-            + "to relabel.", relabelSet.getLocation());
-      }
-      petri.relabelTransitions(r.getOldLabel(), r.getNewLabel());
+    System.out.print("INTERPRET processRelabelling "+petri.myString());
+    String s = "";
+    for(String k: processMap.keySet()) {
+      s = "processMap \n    "+k+"->"+processMap.get(k).getId()+","+processMap.get(k).getProcessType();
     }
+    System.out.println(s);
+
+    for (RelabelElementNode r : relabelSet.getRelabels()) {
+      System.out.println("r = "+r.toString());
+
+      if (r.getNewLabel() != null) {
+        System.out.println();
+        if (!petri.getAlphabet().keySet().contains(r.getOldLabel())) {
+          throw new CompilationException(getClass(), "Cannot find action" + r.getOldLabel()
+            + "to relabel.", relabelSet.getLocation());
+        }
+        petri.relabelTransitions(r.getOldLabel(), r.getNewLabel());
+      }
+      if(r.getNewProcess() != null) {
+        System.out.println("REFINEing from processRelabelling "+
+            r.getNewProcess().getIdentifier()+"/"+r.getOldLabel() );
+        System.out.println(petri.myString());
+        Petrinet newPet;
+        RefineFun rf = new RefineFun();
+        if (processMap.get(r.getNewProcess().getIdentifier()).getProcessType().
+          equals(ProcessType.MULTI_PROCESS)) {
+          newPet = ( processMap.get(r.getNewProcess().getIdentifier()).getProcessType().
+            convertTo(ProcessType.PETRINET, processMap.get(r.getNewProcess().getIdentifier()))); //What a way to extact  a net
+        } else {
+          newPet = ((Petrinet) processMap.get(r.getNewProcess().getIdentifier()));
+        }
+        petri = rf.compose("Ref",r.getOldLabel(),petri,newPet);
+      } else {
+        System.out.println("No Reinement data?");
+      }
+    }
+    return petri;
   }
 
   private void processHiding(Petrinet petri, HidingNode hiding) throws CompilationException {

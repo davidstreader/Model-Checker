@@ -4,6 +4,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import mc.util.Location;
 
+
+
 /**
  * ProcessRootNode contains a composite process within an existing process.
  * (i.e. {@code B} in {@code A=B\{c}})
@@ -13,7 +15,7 @@ import mc.util.Location;
  * @author Jacob Beal
  * @see ProcessNode
  * @see CompositeNode
- * @see mc.compiler.Parser
+ * @see
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -34,7 +36,7 @@ public class ProcessRootNode extends ASTNode {
    * The relabels that are to be done on this process.
    */
   private RelabelNode relabelSet;
-
+ // private IdentifierNode newProcess;
   /**
    * The hiding that happens on this process.
    */
@@ -77,6 +79,14 @@ public class ProcessRootNode extends ASTNode {
    */
   public boolean hasRelabelSet() {
     return relabelSet != null;
+  }
+
+  public boolean hasNewProcess() {
+    boolean bo = false;
+    if (relabelSet != null) bo = relabelSet.getRelabels().stream().
+      map(x->x.getNewProcess()!=null).
+      reduce(false,(x,y)->x||y);
+    return bo;
   }
 
   /**

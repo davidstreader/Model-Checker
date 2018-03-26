@@ -18,8 +18,10 @@ public class PetriNetPlace extends ProcessModelObject {
   private Set<PetriNetEdge> outgoing = new HashSet<>();
   private boolean start;
   private String terminal = "";
+  //Used by interpretor to convert Petri Tree into Cyclic Net
+  // Place with ref "X" will be glued to other Place with "X" fromRef
   private Set<String> references = new LinkedHashSet<>();
-  private Set<String> fromReferences = new LinkedHashSet<>();
+  private Set<String> fromReferences = new LinkedHashSet<>();  // prior to gluing only on Leaf
 
   public void addRefefances(Set<String> inrefs){
     references.addAll(inrefs);

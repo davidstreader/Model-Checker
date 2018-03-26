@@ -78,6 +78,7 @@ public class Compiler {
     HashMap<String, ProcessNode> dependencyMap = new HashMap<>();
 
     for (ProcessNode node : ast.getProcesses()) {
+      System.out.println("Compiler Start node = "+ node.toString());
       processNodeMap.put(node.getIdentifier(), (ProcessNode) node.copy());
       dependencyMap.put(node.getIdentifier(), node);
     }
@@ -94,6 +95,9 @@ public class Compiler {
      *  Then it expands it to, P1 = a->b->c->x. If it needs it
      *  BEWARE expanding an prune events that are not needed for the finite state
      *  size chosen  hence symbolic processes must eb built prior to expansion!
+     *
+     *  This is not needed in the petrinet interpreter Hence when we ditch the automata
+     *  interprter we may be able to ditch the ref replacer
      */
 
     //System.out.println("After Expanding "+ast.toString());
@@ -116,8 +120,10 @@ public class Compiler {
       }
     }
 //builds process and processMap
+    System.out.println("Entering interpreter "+
+      ast.getProcesses().stream().map(x->"\n"+x.getIdentifier()+"->"+x.getType())
+        .reduce("",(x,y)->x+" "+y));
     Map<String, ProcessModel> processMap = interpreter.interpret(ast,
-        //new LocalCompiler(processNodeMap, expander, replacer, messageQueue),
         messageQueue, z3Context);
 
     //System.out.println("after operation interpretation");

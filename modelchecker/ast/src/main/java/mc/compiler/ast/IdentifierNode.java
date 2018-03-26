@@ -13,7 +13,6 @@ import mc.util.Location;
  * @author David Sheridan
  * @author Sanjay Govind
  * @see ReferenceNode
- * @see mc.compiler.ReferenceReplacer
  */
 @Data
 @EqualsAndHashCode(callSuper = true)

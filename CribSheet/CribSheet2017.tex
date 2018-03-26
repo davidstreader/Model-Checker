@@ -1016,7 +1016,22 @@ There is a simple relation between finite state sequential automata and finite s
 
 
 
-Our tool takes process specifications $\mathcal{P}$ and builds finite state automata {\sf P}. But now we want to build Petri Nets from specification ${\sf Petri(\mathcal{P})}$. The operations defined on atomic processes can be lifted to operations on Petri Nets.
+Our tool takes process specifications $\mathcal{P}$ and builds finite state automata {\sf P}. But in addition it can build Petri Nets from specification ${\sf Petri(\mathcal{P})}$.  PertiNets provide a richer process model than automata in that automata.
+\begin{center}\begin{minipage}{0.2\textwidth}
+\begin{verbatim}
+ A = a->STOP.
+ B = b ->STOP.
+ C = A||B.
+   \end{verbatim}
+\end{minipage}\begin{minipage}{0.75\textwidth}
+\begin{center}\includegraphics[scale=0.375]{NetsAB.png}
+\includegraphics[scale=0.4]{NetInt.png}\end{center}
+\end{minipage}
+\end{center}
+Two simple processes run in parallel are represented by a single process composed of the interleaving of the events. Whereas a Petri Net can be used to capture the concurrency  with a net that has two {\\sf tokens} or to model the  interleaving with a Net having a single token. 
+
+
+The operations defined on atomic processes can be lifted to operations on Petri Nets.
 
 Parallel merge of two processes, parallel composition with no synchronisation is just the union of the component nets. Hence automata node is represented by a marking. That is a pair of places, one element of the pair taken from each component process. Thus each place represents the state of one of the component processes. Each process can be give a unique location and then each node annotated with the location of its process.
 The start node corresponds to the the pair of initially marked places.
@@ -1030,7 +1045,13 @@ Event synchronisation of $t_1$, $\aro{\bullet t_1}{a}{t_1\bullet}$ and $t_2$, $\
 \subsection{Token Rule}
 
 
- We define \verb|TokenRule| that maps Petri Nets to atomic processes and must preserve the transition  locations.  These are the same automata that would have been constructed had we built the automata directly from our process language, hence we have:
+ We define \verb|TokenRule| that maps Petri Nets to automata.  A transition can only be executed when all its pre places are marked and the result of firing a transition is to move the tokens from the pre places to the post places.
+ 
+ This can easily be extended to allow a set of transitions to be executed at the same time when the multi-set union of the places are marked. Thus Petri Nets offer a {\sf true concurrent } semantics of processes.
+ 
+ 
+ 
+  These are the same automata that would have been constructed had we built the automata directly from our process language, hence we have:
 
 \[{\sf TokenRule(Petri(\mathcal{A}))\sim  \mathcal{A}}\]
 
@@ -1041,71 +1062,93 @@ Let us write {\sf A} and {\sf B} for Petri Nets. We have   lifted   operations $
 \[{\sf TokenRule({\sf A}\$\{x\}) \sim  (TokenRule({\sf A}))\$\{x\}  \qquad     TokenRule(abs({\sf A}))\sim  abs_n(TokenRule({\sf A})) }\]
 
 
-The \verb|TokenRule|  builds an automata from a Petri Net by executing transitions of the Petri Net.  A Petri Net transition can only  be executed when all its pre places are marked. When the transition is executed the tokens on its pre places are removed and tokens are placed on the transitions post places.
+As defined Petri Nets are semantically richer that automata as they tell us more about processes than automata can. But they do not capture everything from our process language see below:
 
-Above explains how an atomic specification can be used to build a Finite State Petri Net, FSPN.  The construction of FSPN from indexed specifications  proceeds by constructing the FSPN for each sequential process analogously to the construction of finite state automata.
+\begin{minipage}{0.25\textwidth}
+\begin{verbatim}
+P = (a->x->b->STOP || 
+       r->x->t->STOP).
+Q = (a->x->t->STOP || 
+     r->x->b->STOP).
+  \end{verbatim}
+\end{minipage}\begin{minipage}{0.7\textwidth}
+\begin{center}\includegraphics[scale=0.4]{EquNets.png}\end{center}
+\end{minipage}
 
-We can compute, {\sf PTokenRule},  a \emph{partial Token Rule} that takes a set of process names that must be converted into an automaton  prior to applying $\_\parallel_n\_$ to build a Petri Net from the newly built sequential Net and the remaining Petri Nets.
+In the example above the processes \verb|P| and \verb|Q| are not the same as the events \verb|b| and \verb|t| \emph{belong} to different processes and this information is lost in the Petri Net semantics.
 
+We can extend both automata and Petri Nets to record the location, or ownership, of evens.  This way we have located automata are equivalent to located Petri Nets.
 
 \subsection{From Automata to Petri Nets}
-Building Petri Nets from automata with located transitions {\sf LA2PN} works as follows:
+Building Petri Nets from automata with located transitions {\sf Owners Rule} works as follows:
 
-{\bf Suggestion 1 *The direct assault is Not So Good*}
-Note the Interleaving Merge of {\bf N processes} builds  an Automata that is an {\bf N-dimensional} cube. The first thing you need to do is identify the start and end "corners".
 
-\vspace{1em} \begin{minipage}{0.2\textwidth}
+
+
+{\bf Automata alone do not preserve concurrency information.}  By recording 
+
+
+ Define a Location space where each location is a subset of primitive locations. Build a Place for each primitive location {\sf own} by building a projection of  the automata onto the location. In essence events at a location containing {\sf own} are preserved all other events are hidden. Finally the set of projected automata can be composed in parallel synchronising only the events that have been projected for the same underlying event. 
+ 
+ The algorithm we use is:
+ \begin{verbatim}
+for each primative location O  
+push rootnode onto stack
+ while stack not empty
+   pop node from stack 
+   if not processed  
+     collect set S of all nodes connected (undirected) by edges not at O
+     build Place  and mapping from all nodes in S to Place
+     for all nodes connected by edges at O push toNode onto Stack
+push rootnode onto stack
+ while stack not empty
+   pop node from stack 
+    if not processed  
+     for all nodes connected by edges at O build transition between mapped Places        
+ \end{verbatim}
+ 
+ The round trip from an automata to a Petri Net (Owner Rule) and back  (Token Rule) produces a bisimilarly  equivalent automata. This has been tested for thousands of automata.
+
+\subsection*{Two semanticly equivalent ways to view the same process}
+The advantage of being able to model the same process in two quite distinct styles allows us to define operations on one and project them to the other.
+
+Process equivalences, bisimulation, failures equality and complete trace equality can all be defined on automata and easily extended to our {\sf located automata} by the simple trick of viewing the location s a part of the event name.
+
+Whereas event refinement can be defined on Petri Nets.  Because of the addition of location the two models are equivalent but nonetheless trying to define event refinement on located automata or testing equivalence on Petri Nets is far from easy.  Several definitions of process equality have been defined on Petri Net semantics but they are difficult to understand and very hard to compare thurer ly. 
+
+
+\subsection*{Event Refinement}
+We can define how to refine a single  event in a process (PetriNet) into a whole process (Petri Net). 
+
+A more interesting example is given below.
+
+\noindent
+\begin{minipage}{0.25\textwidth}
 \begin{verbatim}
-A=a->(b->STOP|
-          c->STOP).
-B=aa->(bb->STOP|
-          cc->STOP).
-S= A||B.
+A1 = yy->A1.
+D = d->STOP||e->STOP.
+C = A1/{D/yy}.
   \end{verbatim}
+\end{minipage}\begin{minipage}{0.7\textwidth}
+\begin{center}\includegraphics[scale=0.4]{Wings.png}\end{center}
 \end{minipage}
-\begin{minipage}{0.6\textwidth}
-\begin{center}\includegraphics[scale=0.4]{Surface.png}\end{center}
-\end{minipage}
 
-In the above example the start and end corners are marked with blue and green nodes. But this is because the "cubes" are the whole automata. What is required is to find these cubes.
-
- Let {\sf Loc(A) = 1, Loc(B)=2} in above.   Add the root {\sf 0} to the TODO list. For each element in TODO list compute the surfaces if  we have  two transitions with disjoint location leaving  so compute $\sf \{0,1,2,4\}$. Remove $\sf 0$ from the TODO list and add nodes ${\sf \{1,2,4\}}$ to the TODO list.  When
-$\arop{n}{\_}{x}{l}$,  $\arop{m}{\_}{x}{k}$, ${\sf  l \notin Loc(Next(n))}$ and ${\sf  k \notin Loc(Next(m))}$ then {\sf x} is ${\sf \{1,2\}}$ end!
-
-Question with {\sf n} distinct locations, $\sf \{1,2,3,4,\ldots n\}$ ?
-\begin{enumerate}
-\item split into location {\sf 1} and locations $\sf \{2,3,4,\ldots n\}$ and build two Petri nets then split the Petri Net for locations $\sf \{2,3,4,\ldots n\}$.
-\end{enumerate}
-Having done this the cubes can be converted into Petri Nets and joined together.
-
-{\bf Suggestion 2 *Looks Good*} Step 1 approximation build separate Nets one for each location, splitting the  synchronised events into components. Where {\bf twists} occur make cross product of places.
-
-Note we glue automata together by glueing two nodes together and with Petri Nets we need to glue to markings together. This is done by building the cross product of  two sets of tokens.
-
-{\bf Suggestion 3}   Define a Location space where each location is a subset of primitive locations. Build a Place for each primitive location an start adding transitions by adding pre arcs for each primitive. Th e post arcs are added to new Places of each primitive  location. When the automata returns to an existing state  glue the corresponding Markings together.
-
-Simplify the Net  by pruning merging identical Places then by pruning identical Transitions.  Review!
-
-{\bf Some  tests:}
-\[{\sf A\sim  TokenRule(LA2PN(A))}\]
-
-\subsection{Indexed Petri Nets}
-
-Indexed, specifications can be turned into finite state Petri Nets, FSPN just as they are turned into finite state automata
+To check your intuitions about Petri Nets ask your self it the two \emph{"wings"} places which are always marked are just an artefact of our algorithm and are semantically redundant or not?
 
 
-\[{\sf Petri(\mathcal{A}\parallel \mathcal{B} ) \sim_n  (Petri(\mathcal{A}))\parallel_n Petri(\mathcal{B}))   }\]
-
-\[{\sf      Petri(abs(\mathcal{A}))\sim_n  abs_n(Petri(\mathcal{A})) }\]
 
 
-\subsection{Hiding and simplifying  Nets}
-Tow options
+
+\subsection{Advantages of mixed semantics}
+Petri Nets can be very much smaller than automata and also  support event refinement. Automata support a rich set of equivalences that can be justified by plausible testing semantics and easily represent reachability of events. 
+
+
+Two options for the  Hiding and simplifying  Nets
 \begin{enumerate}
 \item define abstraction and bisimulation on nets OR
-\item use {\sf LA2P} the mapping from located automata to Petri Nets.
+\item Use the {\bf Token Rule} to map a Petri Net to an Automata, simplify the automata and then use {\sf Owners Rule } to map the result  back  to Petri Nets.
 \end{enumerate}
-An advantage of using located Automata and Nets is that event refinement can be defined.
+
 
 
 
