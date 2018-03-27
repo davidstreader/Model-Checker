@@ -276,7 +276,7 @@ if (astNode.getReferences() == null) {
         if(pl1.getReferences().containsAll(pl2.getFromReferences())){
           //System.out.println("Joining "+pl1.getId()+" "+pl2.getId());
           pl2.setTerminal("");
-          petri.gluePlaces(Collections.singleton(pl1), Collections.singleton(pl2));
+          petri.gluePlaces(Collections.singleton(pl1), Collections.singleton(pl2), true);
         }
       }
     }
@@ -556,12 +556,21 @@ return ret;
     //System.out.println("====addPetrinet======== "+ petrinetToAdd.getId());
 
     //System.out.println("====masterPetrinet======== "+ master.getId());
-    Set<PetriNetPlace> places = master.addPetrinet(petrinetToAdd);
+    Set<PetriNetPlace> oldRoot = master.getRoots();
+    Map<PetriNetPlace,PetriNetPlace> mapping = master.addPetrinet(petrinetToAdd);
+    System.out.println("Mapping  \n" +
+      mapping.keySet().stream().map(x->"  "+x.getId()+"->"+mapping.get(x).getId()+"\n")
+        .collect(Collectors.joining()));
+    //System.out.println("oldRoot "+oldRoot.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
+    //Set<PetriNetPlace> places = oldRoot.stream().map(x->mapping.get(x)).collect(Collectors.toSet());
+
     //System.out.println(master.myString());
     //System.out.println("====masterPetrinet======== "+ master.getId());
    master.validatePNet();
+    System.out.println("master = "+master.myString());
+    System.out.println("places = "+oldRoot.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
 //add referances to Root Places
-    places.stream()
+    oldRoot.stream()
       .map(PetriNetPlace::getReferences)
       .filter(Objects::nonNull)
       .forEach(references::addAll);

@@ -61,8 +61,11 @@ public class RefineFun {
     for (PetriNetPlace pl2 : petrinet2.getPlaces().values()) {
      if (pl2.isStart()) {
       startOfP2.add(pl2);
+      pl2.setStart(false);
      }
     }
+    petrinet2.setRoots(Collections.emptySet());
+
     /*Do the owners
     if (petrinet1.getOwners().contains(Petrinet.DEFAULT_OWNER)) {
      petrinet1.getOwners().clear();
@@ -86,31 +89,33 @@ public class RefineFun {
     composition.getOwners().addAll(petrinet1.getOwners());
     composition.getOwners().addAll(petrinet2.getOwners());
 
-    //prior to Gluing join the nets (do not add as that changes the names
+    //prior to Gluing join the nets (do not add as that changes the ids)
+    //composition.joinPetrinet(petrinet2);   FAILS with A/{A/x}
 
-    composition.joinPetrinet(petrinet2);
+    Map<PetriNetPlace, PetriNetPlace> mapping = composition.addPetrinetNoOwner(petrinet2);
+    Set<PetriNetPlace> newstart2 = startOfP2.stream().map(x->mapping.get(x)).collect(Collectors.toSet());
 
 
     //merge the end of petri1 with the start of petri2
 System.out.println("PRE   "+ tr.pre().stream().map(x->x.getId()+" ").collect(Collectors.joining())
-               +" \n start "+ startOfP2.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
-    composition.gluePlaces(preEvents, startOfP2);
+               +" \n start "+ newstart2.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
+
+    composition.gluePlaces(preEvents, newstart2, true);
 
     Set<PetriNetPlace> end2 = petrinet2.getPlaces().values().stream()
       .filter(x -> x.isTerminal()).collect(Collectors.toSet());
+    Set<PetriNetPlace> newend2 = end2.stream().map(x->mapping.get(x)).collect(Collectors.toSet());
 
     for (PetriNetPlace pl2 : petrinet2.getPlaces().values()) {
-     if (pl2.isStart()) {
       pl2.setTerminal("");
-      pl2.setStart(false);
-     }
+
     }
     postEvents =  tr.post();
     System.out.println("POST  " +
       tr.post().stream().map(x->x.getId()+" ").collect(Collectors.joining()) +
                     " \n end2 " +
            end2.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
-    composition.gluePlaces(postEvents, end2);
+    composition.gluePlaces(postEvents, newend2, false);
 
     composition.setRoot2Start();
 

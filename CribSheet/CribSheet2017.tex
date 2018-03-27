@@ -580,29 +580,48 @@ Frequently we are interested in how a system behaves when errors occur but when 
 
 \section{Concurrent Processes }
 So far we have have defined sequential processes but now we wish to define how two sequential processes behave when they are both run together. This is modelled using the parallel composition operator $\_\parallel\_$.
+
+
 Two processes run in parallel can only interact via event synchronisation How this is defined depends upon the interpretation you wish to give your events. In what follows we consider two distinct styles of events, hand shake events as found in CSP and CCS as well as broadcast events as found in IOA.
 
-\subsection{Handshake synchronisation }
 
 Two processes run in parallel can only interact via event synchronisation and events on only synchronise with other event having the same name.
 
-Below we have two processes each with three events and no two event have the same name hence the event from each process can be {\bf interleaved} in any way.
+Below left  the parallel composition of two simple processes \verb!(a->STOP||b->STOP) ! is shown to be semantically equivalent to a single  sequential process \verb!(a->b->STOP|b->a->STOP)!. The ability to replace parallel processes with sequential process greatly simplifies their analysis.
 
+% \begin{center}
+ %\fbox{
+ \begin{minipage}{0.37\textwidth}
  \begin{center}
- % \fbox{
-\begin{minipage}{0.4\textwidth}
+ \begin{verbatim}
+  (a->STOP||b->STOP) ~ 
+  (a->b->STOP|b->a->STOP)
+ \end{verbatim}
+ \includegraphics[scale=0.5]{Interleave.png}
+ \end{center}
+ \end{minipage}
+\begin{minipage}{0.6\textwidth}
+\begin{minipage} {0.4\textwidth}
 \begin{verbatim}
-P = ((a->b->c->STOP) || (x->y->z->STOP)).
+
+     P = ((a->b->c->STOP)||(x->y->z->STOP)).
 \end{verbatim}
 \end{minipage}
+
 \includegraphics[scale=0.2]{par.jpg}
-\end{center}
+\end{minipage}
+
+%\end{center}
+
+Above right we have two processes each with three events and no two event have the same name hence the event from each process can be {\bf interleaved} in any way.
+
 This definition of parallel composition equates parallel processes with a single sequential process. As such some aspects  of real parallel processes are lost. Some times this  equality is referred to as being based upon the \emph{interleaving assumption}.
 
 
 
 Without synchronization  two processes   are independent and hence their events interleave and the state space of the composition of the processes is the product of the state space of the constituent processes.
 
+\subsection{Handshake synchronisation }
 
    In the Process tool events from different concurrent processes that have the same name must synchronize and only these events synchronize. That is neither process can  execute the synchronising event on its own.  These  synchronising events are only executed when both processes are ready to execute them.
   Below only differs  from the previous process in that the second event in both processes has the same name and hence must  synchronize and the resulting \verb$m$ event is then hidden (renamed $\tau$).
@@ -988,7 +1007,8 @@ The \verb$Farmer$  process is far from ideal in some regards.
 
 
 
-What we refer to as a Petri Net is actually an extension of Petri Nets with labels on the  transition.  This appear in the literature under the name of the \emph{Box calculus}. Our definition of parallel composition is not a part of main stream Petri Nets but a part of the Box calculus.
+What we refer to as a Petri Net is actually an extension of Petri Nets with labels on the  transition.  This appear in the literature under the name of the \emph{Box calculus}.  Net semantics differ from automata significantly in that they offer a {\bf non interleaving} interpretation of parallel processes. Such semantics are frequently referred to as a {bf true concurrency} semantics.
+We adopt a definition of parallel composition that originates in the Box calculus and is not a part of main stream Petri Nets.
 
 
 \emph{{\bf A Petri Net} is a tuple  $\sf A \triangleq (P_A,S_A,T_A,Arcs_A,\alpha_A,Name_A)$  where:

@@ -142,6 +142,16 @@ public class SequentialInfixFun {
     net2.validatePNet();
    Petrinet petrinet1 = net1.copy();
    Petrinet petrinet2 = net2.copy();
+   System.out.println("=>PETRI1 "+petrinet1.myString());
+   System.out.println("=>PETRI2 "+petrinet2.myString());
+   if (petrinet1 == petrinet2) {
+    System.out.println("\n SAME NETS PROBLEM");
+   }
+   for(PetriNetPlace pl1: petrinet1.getPlaces().values()){
+    for(PetriNetPlace pl2: petrinet2.getPlaces().values()){
+     if (pl1==pl2) System.out.println("\n SAME PLACES PROBLEM");
+    }
+   }
    Set<PetriNetPlace> stopNodes = new HashSet<>();
    for(PetriNetPlace pl: petrinet1.getPlaces().values()){
      if ((pl.getTerminal() != null) && pl.getTerminal().equals("STOP")) {
@@ -149,13 +159,17 @@ public class SequentialInfixFun {
      }
       pl.setTerminal("");
    }
+
    Set<PetriNetPlace> startOfP2 = new HashSet<>();
    for(PetriNetPlace pl2: petrinet2.getPlaces().values()){
      if (pl2.isStart()) {
       startOfP2.add(pl2);
-      pl2.setStart(false);
      }
+    pl2.setStart(false);
    }
+   petrinet2.setRoots(Collections.emptySet());// adding Petri looks to the Root not the Places
+   //System.out.println("SHOULD HAVE NO START "+petrinet2.myString());
+
     if (petrinet1.getOwners().contains(Petrinet.DEFAULT_OWNER)) {
       petrinet1.getOwners().clear();
       for (String eId : petrinet1.getEdges().keySet()) {
@@ -184,22 +198,24 @@ public class SequentialInfixFun {
     //add the start nodes of petrinet1 as start nodes for the composition petrinet
 
     composition.joinPetrinet(petrinet1);
-   // System.out.println("Joined net 1 "+composition.myString());
+    System.out.println("Joined net 1 "+composition.myString());
 
 
     //add the second petrinet;
   // System.out.println("stopNodes "+ Petrinet.marking2String(stopNodes));
   // System.out.println("startNodes "+ Petrinet.marking2String(startOfP2));
-   composition.joinPetrinet(petrinet2);
-  // System.out.println("Joined net 2 "+composition.myString());
+   Map<PetriNetPlace, PetriNetPlace> mapping = composition.addPetrinetNoOwner(petrinet2);
+  // composition.joinPetrinet(petrinet2);  FAILS with netA=>netA
+   System.out.println("Joined net 2 "+composition.myString());
 
 
     //merge the end of petri1 with the start of petri2
-    composition.gluePlaces(stopNodes, startOfP2 );
+    composition.gluePlaces(stopNodes, startOfP2.stream().
+          map(x->mapping.get(x)).collect(Collectors.toSet()), true);
  //   System.out.println("Glue over "+ composition.myString());
     composition.setRoot2Start();
 
-   // System.out.println("SEQUENTIAL OUT "+ composition.myString());
+    System.out.println("SEQUENTIAL OUT "+ composition.myString());
     composition.validatePNet();
     return composition;
   }

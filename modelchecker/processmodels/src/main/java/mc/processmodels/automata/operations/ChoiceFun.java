@@ -185,7 +185,7 @@ public class ChoiceFun {
 
 
    //merge the end of petri1 with the start of petri2
-   composition.gluePlaces(startOfP1, startOfP2 );
+   composition.gluePlaces(startOfP1, startOfP2 ,true);
    composition.setRoot2Start();
 
    Set<PetriNetPlace> end1 = petrinet1.getPlaces().values().stream()
@@ -193,7 +193,7 @@ public class ChoiceFun {
    Set<PetriNetPlace> end2 = petrinet2.getPlaces().values().stream()
      .filter(x->x.isTerminal()).collect(Collectors.toSet());
  System.out.println("end1 "+end1 + " end2 "+end2);
-   composition.gluePlaces(end1, end2 );
+   composition.gluePlaces(end1, end2 ,false);
 
    //System.out.println("Add OUT "+ composition.myString()+"\n");
    composition.validatePNet();
