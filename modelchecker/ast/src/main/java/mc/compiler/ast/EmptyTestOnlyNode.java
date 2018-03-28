@@ -13,12 +13,12 @@ import lombok.EqualsAndHashCode;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class EmptyNode extends ASTNode {
+public class EmptyTestOnlyNode extends ASTNode {
 
   /**
    * Initialise the Node.
    */
-  public EmptyNode() {
+  public EmptyTestOnlyNode() {
     super(null);
   }
 }

@@ -1,4 +1,4 @@
-package mc.ast.ast;
+package mc.compiler.ast;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -7,7 +7,7 @@ import mc.util.Location;
 /**
  * IndexNode stores the current state of a process through a range, or set operation.
  * <p>
- * This
+ * This is evaluated in Expander NOT Interpreter
  *
  * @author David Sheridan
  * @author Sanjay Govind
@@ -19,7 +19,7 @@ import mc.util.Location;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class IndexNode extends ASTNode {
+public class IndexExpNode extends ASTNode {
 
   /**
    * The name of the variable used within this indexing operation.
@@ -45,7 +45,7 @@ public class IndexNode extends ASTNode {
    * @param process  The process which is being iterated through {@link #process}
    * @param location The location which this is within the users code {@link ASTNode#location}
    */
-  public IndexNode(String variable, ASTNode range, ASTNode process, Location location) {
+  public IndexExpNode(String variable, ASTNode range, ASTNode process, Location location) {
     super(location);
     this.variable = variable;
     this.range = range;

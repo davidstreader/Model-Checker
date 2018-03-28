@@ -12,7 +12,7 @@ import mc.compiler.ast.CompositeNode;
 import mc.compiler.ast.FunctionNode;
 import mc.compiler.ast.HidingNode;
 import mc.compiler.ast.IdentifierNode;
-import mc.compiler.ast.IndexNode;
+import mc.compiler.ast.IndexExpNode;
 import mc.compiler.ast.LocalProcessNode;
 import mc.compiler.ast.ProcessNode;
 import mc.compiler.ast.ProcessRootNode;
@@ -358,7 +358,7 @@ public class ExampleTests extends ExpanderTests {
     String input = "const Coins = 3. processes Money = C[1], C[i:1..Coins] = (when (i < Coins) coin -> C[i + 1] | when (i == Coins) coin -> C[1]).\nautomata Money.";
     ProcessNode node = constructProcessNode(input);
 
-    IndexNode index = new IndexNode("$i", new RangeNode(1, 3, null), null, null);
+    IndexExpNode index = new IndexExpNode("$i", new RangeNode(1, 3, null), null, null);
     RangesNode range = new RangesNode(new ArrayList<>(Collections.singletonList(index)), null);
 
     List<LocalProcessNode> localProcesses = new ArrayList<>();
@@ -386,7 +386,7 @@ public class ExampleTests extends ExpanderTests {
     SequenceNode mainSequence2 = constructSequenceNode(new String[] {"[2].setLock"}, new IdentifierNode("L[2]", null));
     ChoiceNode mainChoice = constructChoiceNode(mainSequence1, mainSequence2);
 
-    RangesNode range = new RangesNode(new ArrayList<>(Collections.singletonList(new IndexNode("$j", new RangeNode(1, 2, null), null, null))), null);
+    RangesNode range = new RangesNode(new ArrayList<>(Collections.singletonList(new IndexExpNode("$j", new RangeNode(1, 2, null), null, null))), null);
     List<LocalProcessNode> localProcesses = new ArrayList<>();
     SequenceNode sequence1 = constructSequenceNode(new String[] {"[1].enter", "open", "close"}, new IdentifierNode("L[1]", null));
     SequenceNode sequence2 = constructSequenceNode(new String[] {"[2].enter", "error"}, new IdentifierNode("Lock", null));
@@ -429,7 +429,7 @@ public class ExampleTests extends ExpanderTests {
     expected.add(pn);
 
     // Farmer
-    IndexNode index = new IndexNode("$i", new RangeNode(1, 3, null), null, null);
+    IndexExpNode index = new IndexExpNode("$i", new RangeNode(1, 3, null), null, null);
     RangesNode range = new RangesNode(new ArrayList<>(Collections.singletonList(index)), null);
     List<LocalProcessNode> localProcesses = new ArrayList<>();
     localProcesses.add(new LocalProcessNode("F[1]", range, constructSequenceNode(new String[] {"[1].getTask"}, new IdentifierNode("F[2]", null)), null));

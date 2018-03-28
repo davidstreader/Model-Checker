@@ -25,7 +25,7 @@ public class RangesNode extends ASTNode {
   /**
    * These are the several states within the range.
    */
-  private List<IndexNode> ranges;
+  private List<IndexExpNode> ranges;
 
   /**
    * Instantiate a new RangesNode.
@@ -33,7 +33,7 @@ public class RangesNode extends ASTNode {
    * @param ranges the distinct states within the range. {@link #ranges}
    * @param location the location of the RangesNode within users code {@link ASTNode#location}
    */
-  public RangesNode(List<IndexNode> ranges, Location location) {
+  public RangesNode(List<IndexExpNode> ranges, Location location) {
     super(location);
     this.ranges = ranges;
   }

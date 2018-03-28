@@ -1,6 +1,6 @@
 package mc.compiler.parser;
 
-import mc.compiler.ast.IndexNode;
+import mc.compiler.ast.IndexExpNode;
 import mc.compiler.ast.ProcessNode;
 import mc.compiler.ast.SequenceNode;
 import mc.compiler.ast.TerminalNode;
@@ -29,7 +29,7 @@ public class IndexTests extends ParserTests {
         int end = 2;
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"[" + variable + "]"}, terminal);
-        IndexNode index = constructIndexNode(variable, start, end, process);
+        IndexExpNode index = constructIndexNode(variable, start, end, process);
         if(!index.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
         }
@@ -44,7 +44,7 @@ public class IndexTests extends ParserTests {
         int end = 2;
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"[" + variable + "]"}, terminal);
-        IndexNode index = constructIndexNode(variable, start, end, process);
+        IndexExpNode index = constructIndexNode(variable, start, end, process);
         if(!index.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
         }
@@ -59,7 +59,7 @@ public class IndexTests extends ParserTests {
         int end = 2;
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"[" + variable + "]"}, terminal);
-        IndexNode index = constructIndexNode(variable, start, end, process);
+        IndexExpNode index = constructIndexNode(variable, start, end, process);
         if(!index.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
         }
@@ -74,7 +74,7 @@ public class IndexTests extends ParserTests {
         int end = 2;
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"[" + variable + "]"}, terminal);
-        IndexNode index = constructIndexNode(variable, start, end, process);
+        IndexExpNode index = constructIndexNode(variable, start, end, process);
         if(!index.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
         }
@@ -89,7 +89,7 @@ public class IndexTests extends ParserTests {
         int end = 5;
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"[" + variable + "]"}, terminal);
-        IndexNode index = constructIndexNode(variable, start, end, process);
+        IndexExpNode index = constructIndexNode(variable, start, end, process);
         if(!index.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
         }
@@ -104,7 +104,7 @@ public class IndexTests extends ParserTests {
         int end = 5;
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"[" + variable + "]"}, terminal);
-        IndexNode index = constructIndexNode(variable, start, end, process);
+        IndexExpNode index = constructIndexNode(variable, start, end, process);
         if(!index.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
         }
@@ -119,7 +119,7 @@ public class IndexTests extends ParserTests {
         int end = 7;
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"[" + variable + "]"}, terminal);
-        IndexNode index = constructIndexNode(variable, start, end, process);
+        IndexExpNode index = constructIndexNode(variable, start, end, process);
         if(!index.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
         }
@@ -134,7 +134,7 @@ public class IndexTests extends ParserTests {
         int end = 7;
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"[" + variable + "]"}, terminal);
-        IndexNode index = constructIndexNode(variable, start, end, process);
+        IndexExpNode index = constructIndexNode(variable, start, end, process);
         if(!index.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
         }
@@ -149,7 +149,7 @@ public class IndexTests extends ParserTests {
         set.add("a");
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"[" + variable + "]"}, terminal);
-        IndexNode index = constructIndexNode(variable, set, process);
+        IndexExpNode index = constructIndexNode(variable, set, process);
         if(!index.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
         }
@@ -164,7 +164,7 @@ public class IndexTests extends ParserTests {
         set.add("a");
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"[" + variable + "]"}, terminal);
-        IndexNode index = constructIndexNode(variable, set, process);
+        IndexExpNode index = constructIndexNode(variable, set, process);
         if(!index.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
         }
@@ -180,7 +180,7 @@ public class IndexTests extends ParserTests {
         set.add("b");
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"[" + variable + "]"}, terminal);
-        IndexNode index = constructIndexNode(variable, set, process);
+        IndexExpNode index = constructIndexNode(variable, set, process);
         if(!index.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
         }
@@ -196,7 +196,7 @@ public class IndexTests extends ParserTests {
         set.add("b");
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"[" + variable + "]"}, terminal);
-        IndexNode index = constructIndexNode(variable, set, process);
+        IndexExpNode index = constructIndexNode(variable, set, process);
         if(!index.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
         }
@@ -213,7 +213,7 @@ public class IndexTests extends ParserTests {
         set.add("c");
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"[" + variable + "]"}, terminal);
-        IndexNode index = constructIndexNode(variable, set, process);
+        IndexExpNode index = constructIndexNode(variable, set, process);
         if(!index.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
         }
@@ -230,7 +230,7 @@ public class IndexTests extends ParserTests {
         set.add("c");
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"[" + variable + "]"}, terminal);
-        IndexNode index = constructIndexNode(variable, set, process);
+        IndexExpNode index = constructIndexNode(variable, set, process);
         if(!index.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
         }
@@ -243,8 +243,8 @@ public class IndexTests extends ParserTests {
         ProcessNode node = constructProcessNode(input);
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"[$v0][$v1]"}, terminal);
-        IndexNode index2 = constructIndexNode("$v1", 3, 4, process);
-        IndexNode index1 = constructIndexNode("$v0", 1, 2, index2);
+        IndexExpNode index2 = constructIndexNode("$v1", 3, 4, process);
+        IndexExpNode index1 = constructIndexNode("$v0", 1, 2, index2);
         if(!index1.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
         }
@@ -256,8 +256,8 @@ public class IndexTests extends ParserTests {
         ProcessNode node = constructProcessNode(input);
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"[$i][$v0]"}, terminal);
-        IndexNode index2 = constructIndexNode("$v0", 3, 4, process);
-        IndexNode index1 = constructIndexNode("$i", 1, 2, index2);
+        IndexExpNode index2 = constructIndexNode("$v0", 3, 4, process);
+        IndexExpNode index1 = constructIndexNode("$i", 1, 2, index2);
         if(!index1.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
         }
@@ -269,8 +269,8 @@ public class IndexTests extends ParserTests {
         ProcessNode node = constructProcessNode(input);
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"[$v0][$j]"}, terminal);
-        IndexNode index2 = constructIndexNode("$j", 3, 4, process);
-        IndexNode index1 = constructIndexNode("$v0", 1, 2, index2);
+        IndexExpNode index2 = constructIndexNode("$j", 3, 4, process);
+        IndexExpNode index1 = constructIndexNode("$v0", 1, 2, index2);
         if(!index1.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
         }
@@ -282,8 +282,8 @@ public class IndexTests extends ParserTests {
         ProcessNode node = constructProcessNode(input);
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"[$i][$j]"}, terminal);
-        IndexNode index2 = constructIndexNode("$j", 3, 4, process);
-        IndexNode index1 = constructIndexNode("$i", 1, 2, index2);
+        IndexExpNode index2 = constructIndexNode("$j", 3, 4, process);
+        IndexExpNode index1 = constructIndexNode("$i", 1, 2, index2);
         if(!index1.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
         }
@@ -299,7 +299,7 @@ public class IndexTests extends ParserTests {
         int end = 2;
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"[" + variable + "]"}, terminal);
-        IndexNode index = constructIndexNode(variable, start, end, process);
+        IndexExpNode index = constructIndexNode(variable, start, end, process);
         if(!index.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
         }
@@ -314,7 +314,7 @@ public class IndexTests extends ParserTests {
         int end = 2;
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"[" + variable + "]"}, terminal);
-        IndexNode index = constructIndexNode(variable, start, end, process);
+        IndexExpNode index = constructIndexNode(variable, start, end, process);
         if(!index.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
         }
@@ -329,7 +329,7 @@ public class IndexTests extends ParserTests {
         int end = 2;
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"[" + variable + "]"}, terminal);
-        IndexNode index = constructIndexNode(variable, start, end, process);
+        IndexExpNode index = constructIndexNode(variable, start, end, process);
         if(!index.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
         }
@@ -344,7 +344,7 @@ public class IndexTests extends ParserTests {
         int end = 2;
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"[" + variable + "]"}, terminal);
-        IndexNode index = constructIndexNode(variable, start, end, process);
+        IndexExpNode index = constructIndexNode(variable, start, end, process);
         if(!index.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
         }
@@ -359,7 +359,7 @@ public class IndexTests extends ParserTests {
         int end = 2;
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"[" + variable + "]"}, terminal);
-        IndexNode index = constructIndexNode(variable, start, end, process);
+        IndexExpNode index = constructIndexNode(variable, start, end, process);
         if(!index.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
         }
@@ -374,7 +374,7 @@ public class IndexTests extends ParserTests {
         int end = 2;
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"[" + variable + "]"}, terminal);
-        IndexNode index = constructIndexNode(variable, start, end, process);
+        IndexExpNode index = constructIndexNode(variable, start, end, process);
         if(!index.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
         }
@@ -389,7 +389,7 @@ public class IndexTests extends ParserTests {
         int end = 2;
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"[" + variable + "]"}, terminal);
-        IndexNode index = constructIndexNode(variable, start, end, process);
+        IndexExpNode index = constructIndexNode(variable, start, end, process);
         if(!index.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
         }
@@ -404,7 +404,7 @@ public class IndexTests extends ParserTests {
         int end = 2;
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"[" + variable + "]"}, terminal);
-        IndexNode index = constructIndexNode(variable, start, end, process);
+        IndexExpNode index = constructIndexNode(variable, start, end, process);
         if(!index.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
         }
@@ -419,7 +419,7 @@ public class IndexTests extends ParserTests {
         int end = 2;
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"[" + variable + "]"}, terminal);
-        IndexNode index = constructIndexNode(variable, start, end, process);
+        IndexExpNode index = constructIndexNode(variable, start, end, process);
         if(!index.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
         }
@@ -434,7 +434,7 @@ public class IndexTests extends ParserTests {
         int end = 2;
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"[" + variable + "]"}, terminal);
-        IndexNode index = constructIndexNode(variable, start, end, process);
+        IndexExpNode index = constructIndexNode(variable, start, end, process);
         if(!index.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
         }
@@ -449,7 +449,7 @@ public class IndexTests extends ParserTests {
         int end = 7;
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"[" + variable + "]"}, terminal);
-        IndexNode index = constructIndexNode(variable, start, end, process);
+        IndexExpNode index = constructIndexNode(variable, start, end, process);
         if(!index.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
         }
@@ -464,7 +464,7 @@ public class IndexTests extends ParserTests {
         int end = 7;
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"[" + variable + "]"}, terminal);
-        IndexNode index = constructIndexNode(variable, start, end, process);
+        IndexExpNode index = constructIndexNode(variable, start, end, process);
         if(!index.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
         }
@@ -479,7 +479,7 @@ public class IndexTests extends ParserTests {
         set.add("a");
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"[" + variable + "]"}, terminal);
-        IndexNode index = constructIndexNode(variable, set, process);
+        IndexExpNode index = constructIndexNode(variable, set, process);
         if(!index.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
         }
@@ -494,7 +494,7 @@ public class IndexTests extends ParserTests {
         set.add("a");
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"[" + variable + "]"}, terminal);
-        IndexNode index = constructIndexNode(variable, set, process);
+        IndexExpNode index = constructIndexNode(variable, set, process);
         if(!index.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
         }
@@ -510,7 +510,7 @@ public class IndexTests extends ParserTests {
         set.add("b");
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"[" + variable + "]"}, terminal);
-        IndexNode index = constructIndexNode(variable, set, process);
+        IndexExpNode index = constructIndexNode(variable, set, process);
         if(!index.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
         }
@@ -526,7 +526,7 @@ public class IndexTests extends ParserTests {
         set.add("b");
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"[" + variable + "]"}, terminal);
-        IndexNode index = constructIndexNode(variable, set, process);
+        IndexExpNode index = constructIndexNode(variable, set, process);
         if(!index.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
         }
@@ -543,7 +543,7 @@ public class IndexTests extends ParserTests {
         set.add("c");
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"[" + variable + "]"}, terminal);
-        IndexNode index = constructIndexNode(variable, set, process);
+        IndexExpNode index = constructIndexNode(variable, set, process);
         if(!index.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
         }
@@ -560,7 +560,7 @@ public class IndexTests extends ParserTests {
         set.add("c");
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode process = constructSequenceNode(new String[]{"[" + variable + "]"}, terminal);
-        IndexNode index = constructIndexNode(variable, set, process);
+        IndexExpNode index = constructIndexNode(variable, set, process);
         if(!index.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
         }

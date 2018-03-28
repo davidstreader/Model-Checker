@@ -13,7 +13,7 @@ import mc.compiler.ast.ChoiceNode;
 import mc.compiler.ast.CompositeNode;
 import mc.compiler.ast.FunctionNode;
 import mc.compiler.ast.IdentifierNode;
-import mc.compiler.ast.IfStatementNode;
+import mc.compiler.ast.IfStatementExpNode;
 import mc.compiler.ast.OperationNode;
 import mc.compiler.ast.ProcessRootNode;
 import mc.compiler.ast.SequenceNode;
@@ -131,10 +131,10 @@ public class OperationEvaluator {
       collectIdentifiers(((ProcessRootNode)process).getProcess(), ids);
     }
 
-    if (process instanceof IfStatementNode) {
-      collectIdentifiers(((IfStatementNode) process).getTrueBranch(), ids);
-      if (((IfStatementNode) process).hasFalseBranch()) {
-        collectIdentifiers(((IfStatementNode) process).getFalseBranch(), ids);
+    if (process instanceof IfStatementExpNode) {
+      collectIdentifiers(((IfStatementExpNode) process).getTrueBranch(), ids);
+      if (((IfStatementExpNode) process).hasFalseBranch()) {
+        collectIdentifiers(((IfStatementExpNode) process).getFalseBranch(), ids);
       }
     }
 

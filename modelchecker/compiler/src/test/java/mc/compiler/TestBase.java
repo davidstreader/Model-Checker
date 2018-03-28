@@ -50,13 +50,13 @@ public abstract class TestBase {
         return new FunctionNode(function, Collections.singletonList(process), null);
     }
 
-    public IndexNode constructIndexNode(String variable, int start, int end, ASTNode process){
+    public IndexExpNode constructIndexNode(String variable, int start, int end, ASTNode process){
         RangeNode range = new RangeNode(start, end, null);
-        return new IndexNode(variable, range, process, null);
+        return new IndexExpNode(variable, range, process, null);
     }
 
-    public IndexNode constructIndexNode(String variable, List<String> set, ASTNode process){
+    public IndexExpNode constructIndexNode(String variable, List<String> set, ASTNode process){
         SetNode node = new SetNode(set, null);
-        return new IndexNode(variable, node, process, null);
+        return new IndexExpNode(variable, node, process, null);
     }
 }

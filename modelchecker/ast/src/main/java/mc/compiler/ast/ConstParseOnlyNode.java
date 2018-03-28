@@ -1,4 +1,4 @@
-package mc.ast.ast;
+package mc.compiler.ast;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -15,7 +15,7 @@ import mc.util.Location;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class ConstNode extends ASTNode {
+public class ConstParseOnlyNode extends ASTNode {
 
   /**
    * The numeric value associated with the node.
@@ -28,7 +28,7 @@ public class ConstNode extends ASTNode {
    * @param value    the numerical value of the node {@link #value}
    * @param location the location in the code where this occurs {@link ASTNode#location}
    */
-  public ConstNode(int value, Location location) {
+  public ConstParseOnlyNode(int value, Location location) {
     super(location);
     this.value = value;
   }

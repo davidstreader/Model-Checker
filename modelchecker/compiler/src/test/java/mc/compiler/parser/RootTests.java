@@ -164,7 +164,7 @@ public class RootTests extends ParserTests {
         }
     }
 
-    
+
 
     private RelabelNode constructRelabelSet(String oldLabel){
         RelabelElementNode element = new RelabelElementNode("b", oldLabel, null);

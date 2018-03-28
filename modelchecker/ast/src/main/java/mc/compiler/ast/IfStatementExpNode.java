@@ -1,4 +1,4 @@
-package mc.ast.ast;
+package mc.compiler.ast;
 
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
@@ -8,11 +8,15 @@ import lombok.ToString;
 import mc.util.Location;
 
 /**
+ *
  * This covers an "if" statement, or a "when" statement, for conditional transitions.
  * <p>
  * Gramatically there are two forms:
  * IFSTMT :: "if" BOOLEAN_EXPR then PROCESS ["else" PROCESS]
  * IFSTMT :: "when" BOOLEAN_EXPR PROCESS
+ *
+ * When building processses evaluated in Expander NOT in Interpreter.
+ * Also evaluated in operations
  *
  * @author David Sheridan
  * @author Sanjay Govind
@@ -21,7 +25,7 @@ import mc.util.Location;
  * @see mc.compiler.Parser
  */
 @ToString
-public class IfStatementNode extends ASTNode {
+public class IfStatementExpNode extends ASTNode {
 
   @Getter
   private BoolExpr condition;
@@ -42,8 +46,8 @@ public class IfStatementNode extends ASTNode {
    * @param z3Context  The z3 context for evaluating the boolean
    *                   expression passed {@link #z3Context}
    */
-  public IfStatementNode(BoolExpr condition, ASTNode trueBranch,
-                         Location location, Context z3Context) {
+  public IfStatementExpNode(BoolExpr condition, ASTNode trueBranch,
+                            Location location, Context z3Context) {
     super(location);
     this.condition = condition;
     this.trueBranch = trueBranch;
@@ -65,8 +69,8 @@ public class IfStatementNode extends ASTNode {
    * @param z3Context   The z3 context for evaluating the boolean
    *                    expression passed {@link #z3Context}
    */
-  public IfStatementNode(BoolExpr condition, ASTNode trueBranch, ASTNode falseBranch,
-                         Location location, Context z3Context) {
+  public IfStatementExpNode(BoolExpr condition, ASTNode trueBranch, ASTNode falseBranch,
+                            Location location, Context z3Context) {
     super(location);
     this.condition = condition;
     this.trueBranch = trueBranch;
@@ -97,8 +101,8 @@ public class IfStatementNode extends ASTNode {
     if (obj == this) {
       return true;
     }
-    if (obj instanceof IfStatementNode) {
-      IfStatementNode node = (IfStatementNode) obj;
+    if (obj instanceof IfStatementExpNode) {
+      IfStatementExpNode node = (IfStatementExpNode) obj;
       if (z3Context.mkEq(condition, node.getCondition()).simplify().isFalse()) {
         return false;
       }

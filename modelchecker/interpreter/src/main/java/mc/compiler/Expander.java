@@ -19,7 +19,6 @@ import mc.compiler.ast.*;
 import mc.compiler.iterator.IndexIterator;
 import mc.exceptions.CompilationException;
 import mc.util.Location;
-import mc.util.LogAST;
 import mc.util.expr.Expression;
 import mc.util.expr.ExpressionEvaluator;
 import mc.util.expr.ExpressionPrinter;
@@ -89,7 +88,7 @@ public class Expander {
     for (LocalProcessNode node : process.getLocalProcesses()) {
       identMap.put(node.getIdentifier(), new ArrayList<>());
       if (node.getRanges() != null) {
-        for (IndexNode in : node.getRanges().getRanges()) {
+        for (IndexExpNode in : node.getRanges().getRanges()) {
           identMap.get(node.getIdentifier()).add(in.getVariable());
         }
       }
@@ -128,12 +127,12 @@ public class Expander {
    */
   private List<LocalProcessNode> expandLocalProcesses(LocalProcessNode localProcess,
                                                       Map<String, Object> variableMap,
-                                                      List<IndexNode> ranges, int index,
+                                                      List<IndexExpNode> ranges, int index,
                                                       Context context)
     throws CompilationException, InterruptedException {
     List<LocalProcessNode> newLocalProcesses = new ArrayList<>();
     if (index < ranges.size()) {
-      IndexNode range = ranges.get(index);
+      IndexExpNode range = ranges.get(index);
       IndexIterator iterator = IndexIterator.construct(expand(range, context));
       String variable = range.getVariable();
       if (!hiddenVariables.contains(variable.substring(1))) {
@@ -166,16 +165,16 @@ public class Expander {
       astNode = expand((ProcessRootNode) astNode, variableMap, context);
     } else if (astNode instanceof ActionLabelNode) {
       astNode = expand((ActionLabelNode) astNode, variableMap, context);
-    } else if (astNode instanceof IndexNode) {
-      astNode = expand((IndexNode) astNode, variableMap, context);
+    } else if (astNode instanceof IndexExpNode) {
+      astNode = expand((IndexExpNode) astNode, variableMap, context);
     } else if (astNode instanceof SequenceNode) {
       astNode = expand((SequenceNode) astNode, variableMap, context);
     } else if (astNode instanceof ChoiceNode) {
       astNode = expand((ChoiceNode) astNode, variableMap, context);
     } else if (astNode instanceof CompositeNode) {
       astNode = expand((CompositeNode) astNode, variableMap, context);
-    } else if (astNode instanceof IfStatementNode) {
-      astNode = expand((IfStatementNode) astNode, variableMap, context);
+    } else if (astNode instanceof IfStatementExpNode) {
+      astNode = expand((IfStatementExpNode) astNode, variableMap, context);
     } else if (astNode instanceof FunctionNode) {
       astNode = expand((FunctionNode) astNode, variableMap, context);
     } else if (astNode instanceof IdentifierNode) {
@@ -217,7 +216,7 @@ public class Expander {
     return astNode;
   }
 
-  private ASTNode expand(IndexNode astNode, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException {
+  private ASTNode expand(IndexExpNode astNode, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException {
     IndexIterator iterator = IndexIterator.construct(expand(astNode, context));
     Stack<ASTNode> iterations = new Stack<>();
     while (iterator.hasNext()) {
@@ -235,11 +234,11 @@ public class Expander {
     return node;
   }
 
-  private ASTNode expand(IndexNode astNode, Context context) throws CompilationException, InterruptedException {
+  private ASTNode expand(IndexExpNode astNode, Context context) throws CompilationException, InterruptedException {
     // expand out nested indices
     ASTNode range = astNode;
-    while (range instanceof IndexNode) {
-      range = ((IndexNode) range).getRange();
+    while (range instanceof IndexExpNode) {
+      range = ((IndexExpNode) range).getRange();
     }
 
     //if the range is a set then it may need expanding
@@ -284,9 +283,9 @@ public class Expander {
     } else if (process2 instanceof EmptyNode || process2 instanceof TerminalNode) {
       return process1;
     }*/
-    if (process1 instanceof EmptyNode) {
+    if (process1 instanceof EmptyTestOnlyNode) {
       return process2;
-    } else if (process2 instanceof EmptyNode ) {
+    } else if (process2 instanceof EmptyTestOnlyNode) {
       return process1;
     }
 
@@ -300,9 +299,9 @@ public class Expander {
     ASTNode process2 = expand(astNode.getSecondProcess(), variableMap, context);
 
     // check if either one of the branches is empty
-    if (process1 instanceof EmptyNode ) {
+    if (process1 instanceof EmptyTestOnlyNode) {
       return process2;
-    } else if (process2 instanceof EmptyNode ) {
+    } else if (process2 instanceof EmptyTestOnlyNode) {
       return process1;
     }
 
@@ -311,7 +310,7 @@ public class Expander {
     return astNode;
   }
 
-  private ASTNode expand(IfStatementNode astNode, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException {
+  private ASTNode expand(IfStatementExpNode astNode, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException {
     VariableCollector collector = new VariableCollector();
     Map<String, Integer> vars = collector.getVariables(astNode.getCondition(), variableMap);
     Guard trueGuard = new Guard(astNode.getCondition(), vars, hiddenVariables);
@@ -347,12 +346,12 @@ public class Expander {
       if (astNode.hasFalseBranch() && hiddenVariableFound) {
         ASTNode falseBranch2 = astNode.getFalseBranch();
         //See if we can find an else with no if tied to it
-        while (falseBranch2 instanceof IfStatementNode) {
-          vars = collector.getVariables(((IfStatementNode) falseBranch2).getCondition(), hiddenVariables.stream().collect(Collectors.toMap(s -> "$" + s, s -> 0)));
+        while (falseBranch2 instanceof IfStatementExpNode) {
+          vars = collector.getVariables(((IfStatementExpNode) falseBranch2).getCondition(), hiddenVariables.stream().collect(Collectors.toMap(s -> "$" + s, s -> 0)));
           if (vars.keySet().stream().map(s -> s.substring(1)).anyMatch(s -> hiddenVariables.contains(s))) {
             break;
           }
-          falseBranch2 = ((IfStatementNode) falseBranch2).getFalseBranch();
+          falseBranch2 = ((IfStatementExpNode) falseBranch2).getFalseBranch();
         }
         //One was found, we must include it as it is possible for there to be hidden variables that can go through that branch.
         if (falseBranch2 != null) {
@@ -363,7 +362,7 @@ public class Expander {
     } else if (astNode.hasFalseBranch()) {
       return falseBranch;
     }
-    return new EmptyNode();
+    return new EmptyTestOnlyNode();
   }
 
   private FunctionNode expand(FunctionNode astNode, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException {
@@ -412,11 +411,11 @@ public class Expander {
     return node;
   }
 
-  private Stack<ASTNode> expand(ASTNode process, Map<String, Object> variableMap, List<IndexNode> ranges, int index, Context context) throws CompilationException, InterruptedException {
+  private Stack<ASTNode> expand(ASTNode process, Map<String, Object> variableMap, List<IndexExpNode> ranges, int index, Context context) throws CompilationException, InterruptedException {
     Stack<ASTNode> nodes = new Stack<>();
 
     if (index < ranges.size()) {
-      IndexNode node = ranges.get(index);
+      IndexExpNode node = ranges.get(index);
       IndexIterator iterator = IndexIterator.construct(expand(node, context));
       String variable = node.getVariable();
 
@@ -447,11 +446,11 @@ public class Expander {
     return new RelabelNode(relabels, relabel.getLocation());
   }
 
-  private List<RelabelElementNode> expand(RelabelElementNode element, Map<String, Object> variableMap, List<IndexNode> ranges, int index, Context context) throws CompilationException, InterruptedException {
+  private List<RelabelElementNode> expand(RelabelElementNode element, Map<String, Object> variableMap, List<IndexExpNode> ranges, int index, Context context) throws CompilationException, InterruptedException {
     List<RelabelElementNode> elements = new ArrayList<>();
 
     if (index < ranges.size()) {
-      IndexNode node = ranges.get(index);
+      IndexExpNode node = ranges.get(index);
       IndexIterator iterator = IndexIterator.construct(expand(node, context));
       String variable = node.getVariable();
 
@@ -489,10 +488,10 @@ public class Expander {
     return new SetNode(newActions, set.getLocation());
   }
 
-  private List<String> expand(String action, Map<String, Object> variableMap, List<IndexNode> ranges, int index, Context context) throws CompilationException, InterruptedException {
+  private List<String> expand(String action, Map<String, Object> variableMap, List<IndexExpNode> ranges, int index, Context context) throws CompilationException, InterruptedException {
     List<String> actions = new ArrayList<>();
     if (index < ranges.size()) {
-      IndexNode node = ranges.get(index);
+      IndexExpNode node = ranges.get(index);
       IndexIterator iterator = IndexIterator.construct(expand(node, context));
       String variable = node.getVariable();
 
@@ -508,7 +507,7 @@ public class Expander {
   }
 
   //Get the location from a ranges node.
-  private Location getFullRangeLocation(List<IndexNode> ranges) {
+  private Location getFullRangeLocation(List<IndexExpNode> ranges) {
     Location start = ranges.get(0).getLocation();
     Location end = ranges.get(ranges.size() - 1).getLocation();
     return new Location(start.getLineStart(), start.getColStart(), end.getLineEnd(), end.getColEnd(), start.getStartIndex(), end.getEndIndex());

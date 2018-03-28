@@ -27,7 +27,7 @@ public class ForAllTests extends ParserTests {
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode sequence = constructSequenceNode(new String[]{"a"}, terminal);
         ProcessRootNode process = new ProcessRootNode(sequence, "[$i]", null, null, null);
-        IndexNode index = new IndexNode("$i", new RangeNode(1, 2, null), null, null);
+        IndexExpNode index = new IndexExpNode("$i", new RangeNode(1, 2, null), null, null);
         RangesNode ranges = new RangesNode(Collections.singletonList(index), null);
         ForAllStatementNode expected = new ForAllStatementNode(ranges, process, null);
 
@@ -44,7 +44,7 @@ public class ForAllTests extends ParserTests {
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode sequence = constructSequenceNode(new String[]{"a"}, terminal);
         ProcessRootNode process = new ProcessRootNode(sequence, "[$i]", null, null, null);
-        IndexNode index = new IndexNode("$i", new RangeNode(1, 3, null), null, null);
+        IndexExpNode index = new IndexExpNode("$i", new RangeNode(1, 3, null), null, null);
         RangesNode ranges = new RangesNode(Collections.singletonList(index), null);
         ForAllStatementNode expected = new ForAllStatementNode(ranges, process, null);
 
@@ -62,7 +62,7 @@ public class ForAllTests extends ParserTests {
         SequenceNode sequence = constructSequenceNode(new String[]{"a"}, terminal);
         ProcessRootNode process = new ProcessRootNode(sequence, "[$i]", null, null, null);
         List<String> set = new ArrayList<>(Collections.singletonList("a"));
-        IndexNode index = new IndexNode("$i", new SetNode(set, null), null, null);
+        IndexExpNode index = new IndexExpNode("$i", new SetNode(set, null), null, null);
         RangesNode ranges = new RangesNode(Collections.singletonList(index), null);
         ForAllStatementNode expected = new ForAllStatementNode(ranges, process, null);
 
@@ -80,7 +80,7 @@ public class ForAllTests extends ParserTests {
         SequenceNode sequence = constructSequenceNode(new String[]{"a"}, terminal);
         ProcessRootNode process = new ProcessRootNode(sequence, "[$i]", null, null, null);
         List<String> set = new ArrayList<>(Arrays.asList("a", "b"));
-        IndexNode index = new IndexNode("$i", new SetNode(set, null), null, null);
+        IndexExpNode index = new IndexExpNode("$i", new SetNode(set, null), null, null);
         RangesNode ranges = new RangesNode(Collections.singletonList(index), null);
         ForAllStatementNode expected = new ForAllStatementNode(ranges, process, null);
 
@@ -98,7 +98,7 @@ public class ForAllTests extends ParserTests {
         SequenceNode sequence = constructSequenceNode(new String[]{"a"}, terminal);
         ProcessRootNode process = new ProcessRootNode(sequence, "[$i]", null, null, null);
         List<String> set = new ArrayList<>(Arrays.asList("a", "b", "c"));
-        IndexNode index = new IndexNode("$i", new SetNode(set, null), null, null);
+        IndexExpNode index = new IndexExpNode("$i", new SetNode(set, null), null, null);
         RangesNode ranges = new RangesNode(Collections.singletonList(index), null);
         ForAllStatementNode expected = new ForAllStatementNode(ranges, process, null);
 
@@ -115,7 +115,7 @@ public class ForAllTests extends ParserTests {
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode sequence = constructSequenceNode(new String[]{"a"}, terminal);
         ProcessRootNode process = new ProcessRootNode(sequence, "[$i]", null, null, null);
-        IndexNode index = new IndexNode("$i", new RangeNode(1, 2, null), null, null);
+        IndexExpNode index = new IndexExpNode("$i", new RangeNode(1, 2, null), null, null);
         RangesNode ranges = new RangesNode(Collections.singletonList(index), null);
         ForAllStatementNode expected = new ForAllStatementNode(ranges, process, null);
 
@@ -132,7 +132,7 @@ public class ForAllTests extends ParserTests {
         TerminalNode terminal = new TerminalNode("STOP", null);
         SequenceNode sequence = constructSequenceNode(new String[]{"a"}, terminal);
         ProcessRootNode process = new ProcessRootNode(sequence, "[$i]", null, null, null);
-        IndexNode index = new IndexNode("$i", new RangeNode(1, 3, null), null, null);
+        IndexExpNode index = new IndexExpNode("$i", new RangeNode(1, 3, null), null, null);
         RangesNode ranges = new RangesNode(Collections.singletonList(index), null);
         ForAllStatementNode expected = new ForAllStatementNode(ranges, process, null);
 
@@ -150,7 +150,7 @@ public class ForAllTests extends ParserTests {
         SequenceNode sequence = constructSequenceNode(new String[]{"a"}, terminal);
         ProcessRootNode process = new ProcessRootNode(sequence, "[$i]", null, null, null);
         List<String> set = new ArrayList<>(Collections.singletonList("a"));
-        IndexNode index = new IndexNode("$i", new SetNode(set, null), null, null);
+        IndexExpNode index = new IndexExpNode("$i", new SetNode(set, null), null, null);
         RangesNode ranges = new RangesNode(Collections.singletonList(index), null);
         ForAllStatementNode expected = new ForAllStatementNode(ranges, process, null);
 
@@ -168,7 +168,7 @@ public class ForAllTests extends ParserTests {
         SequenceNode sequence = constructSequenceNode(new String[]{"a"}, terminal);
         ProcessRootNode process = new ProcessRootNode(sequence, "[$i]", null, null, null);
         List<String> set = new ArrayList<>(Arrays.asList("a", "b"));
-        IndexNode index = new IndexNode("$i", new SetNode(set, null), null, null);
+        IndexExpNode index = new IndexExpNode("$i", new SetNode(set, null), null, null);
         RangesNode ranges = new RangesNode(Collections.singletonList(index), null);
         ForAllStatementNode expected = new ForAllStatementNode(ranges, process, null);
 
@@ -186,7 +186,7 @@ public class ForAllTests extends ParserTests {
         SequenceNode sequence = constructSequenceNode(new String[]{"a"}, terminal);
         ProcessRootNode process = new ProcessRootNode(sequence, "[$i]", null, null, null);
         List<String> set = new ArrayList<>(Arrays.asList("a", "b", "c"));
-        IndexNode index = new IndexNode("$i", new SetNode(set, null), null, null);
+        IndexExpNode index = new IndexExpNode("$i", new SetNode(set, null), null, null);
         RangesNode ranges = new RangesNode(Collections.singletonList(index), null);
         ForAllStatementNode expected = new ForAllStatementNode(ranges, process, null);
 
