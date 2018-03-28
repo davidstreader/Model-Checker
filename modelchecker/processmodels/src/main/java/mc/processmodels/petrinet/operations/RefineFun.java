@@ -5,7 +5,6 @@ import mc.exceptions.CompilationException;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
-import mc.processmodels.automata.operations.AutomataReachability;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
@@ -64,7 +63,7 @@ public class RefineFun {
       pl2.setStart(false);
      }
     }
-    petrinet2.setRoots(Collections.emptySet());
+    petrinet2.setRoot(Collections.emptySet());
 
     /*Do the owners
     if (petrinet1.getOwners().contains(Petrinet.DEFAULT_OWNER)) {

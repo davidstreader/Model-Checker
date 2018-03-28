@@ -52,8 +52,8 @@ public class PetrinetParallelFunction {
     composition.getOwners().addAll(p1.getOwners());
     composition.getOwners().addAll(p2.getOwners());
 
-    addPetrinet(composition,p1).forEach(composition::addRoot);
-    addPetrinet(composition,p2).forEach(composition::addRoot);
+    addPetrinet(composition,p1).forEach(composition::addFirstRoot);
+    addPetrinet(composition,p2).forEach(composition::addFirstRoot);
 
     setupSynchronisedActions(p1, p2, composition);
 
@@ -178,7 +178,7 @@ public class PetrinetParallelFunction {
     petriToAdd.validatePNet();
    // System.out.println("IN AddTo "+addTo.myString());
    // System.out.println("IN ToAdd "+petriToAdd.myString());
-    Set<PetriNetPlace> roots = addTo.getRoots();
+    Set<PetriNetPlace> roots = addTo.getRoot();
     Map<PetriNetPlace, PetriNetPlace> placeMap = new HashMap<>();
     Map<PetriNetTransition, PetriNetTransition> transitionMap = new HashMap<>();
 
@@ -209,7 +209,7 @@ public class PetrinetParallelFunction {
       }
     }
     //System.out.println("one2");
-     addTo.setRoots(roots);
+     addTo.setRoot(roots);
     petriTransMap.put(petriToAdd, transitionMap);
     petriPlaceMap.put(petriToAdd, placeMap);
 

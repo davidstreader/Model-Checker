@@ -1,5 +1,5 @@
 processes {
-/* Bisim needs changing to glue these roots together.
+/* Bisim needs changing to glue these root together.
 
 In place of equivalent color sets USE equality of 
 

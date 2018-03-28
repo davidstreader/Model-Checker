@@ -15,7 +15,7 @@ public final class PetrinetReachability {
 
     petri = petri.copy();
     Stack<Set<PetriNetPlace>> toDo = new Stack<>();
-    toDo.push(petri.getRoots());
+    toDo.push(petri.getRoot());
 
     Set<Set<PetriNetPlace>> previouslyVisitedPlaces = new HashSet<>();
     Set<PetriNetPlace> visitedPlaces = new HashSet<>();

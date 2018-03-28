@@ -1,8 +1,6 @@
 package mc.processmodels.automata.operations;
 
-import com.google.common.collect.Iterables;
 import lombok.SneakyThrows;
-import mc.Constant;
 import mc.exceptions.CompilationException;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetEdge;
@@ -10,7 +8,6 @@ import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class PetrinetParallelMergeFunction {
 
@@ -50,8 +47,8 @@ public class PetrinetParallelMergeFunction {
     composition.getOwners().addAll(p1.getOwners());
     composition.getOwners().addAll(p2.getOwners());
 
-    addPetrinet(composition,p1).forEach(composition::addRoot);
-    addPetrinet(composition,p2).forEach(composition::addRoot);
+    addPetrinet(composition,p1).forEach(composition::addFirstRoot);
+    addPetrinet(composition,p2).forEach(composition::addFirstRoot);
 
     //setupSynchronisedActions(p1, p2, composition);
 
@@ -91,7 +88,7 @@ public class PetrinetParallelMergeFunction {
     petriToAdd.validatePNet();
    // System.out.println("IN AddTo "+addTo.myString());
    // System.out.println("IN ToAdd "+petriToAdd.myString());
-    Set<PetriNetPlace> roots = addTo.getRoots();
+    Set<PetriNetPlace> roots = addTo.getRoot();
     Map<PetriNetPlace, PetriNetPlace> placeMap = new HashMap<>();
     Map<PetriNetTransition, PetriNetTransition> transitionMap = new HashMap<>();
 
@@ -122,7 +119,7 @@ public class PetrinetParallelMergeFunction {
       }
     }
     //System.out.println("one2");
-     addTo.setRoots(roots);
+     addTo.setRoot(roots);
     petriTransMap.put(petriToAdd, transitionMap);
     petriPlaceMap.put(petriToAdd, placeMap);
 

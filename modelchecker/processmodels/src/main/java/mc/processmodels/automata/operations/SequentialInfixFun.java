@@ -1,22 +1,15 @@
 package mc.processmodels.automata.operations;
 
-import mc.plugins.IProcessInfixFunction;/*
-/* BOTH AUTOMATON and PETRI NET*/
-
-import mc.plugins.IProcessInfixFunction;
 import com.google.common.collect.Multimap;
 
 import java.util.*;
 import java.util.stream.Collectors;
 import mc.exceptions.CompilationException;
-import mc.plugins.IProcessInfixFunction;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
-import mc.processmodels.automata.operations.AutomataReachability;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetPlace;
-import sun.nio.cs.ext.COMPOUND_TEXT;
 
 public class SequentialInfixFun {
 
@@ -136,9 +129,9 @@ public class SequentialInfixFun {
 
   public Petrinet compose(String id, Petrinet net1, Petrinet net2)
       throws CompilationException {
-    //System.out.println("=>PETRI1 "+net1.myString());
+    System.out.println("=>PETRI1 "+net1.myString());
     net1.validatePNet();
-    //System.out.println("=>PETRI2 "+net2.myString());
+    System.out.println("=>PETRI2 "+net2.myString());
     net2.validatePNet();
    Petrinet petrinet1 = net1.copy();
    Petrinet petrinet2 = net2.copy();
@@ -167,7 +160,7 @@ public class SequentialInfixFun {
      }
     pl2.setStart(false);
    }
-   petrinet2.setRoots(Collections.emptySet());// adding Petri looks to the Root not the Places
+   petrinet2.setRoot(Collections.emptySet());// adding Petri looks to the Root not the Places
    //System.out.println("SHOULD HAVE NO START "+petrinet2.myString());
 
     if (petrinet1.getOwners().contains(Petrinet.DEFAULT_OWNER)) {

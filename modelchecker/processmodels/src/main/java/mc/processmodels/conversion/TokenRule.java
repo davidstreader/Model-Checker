@@ -61,11 +61,11 @@ public class TokenRule {
     root.setStartNode(true);
     outputAutomaton.addRoot(root);
 
-    markingToNodeMap.put(convertFrom.getRoots(), root);
-    nodeToMarkingMap.put(root, convertFrom.getRoots());
+    markingToNodeMap.put(convertFrom.getRoot(), root);
+    nodeToMarkingMap.put(root, convertFrom.getRoot());
 
     Stack<Set<PetriNetPlace>> toDo = new Stack<>();
-    toDo.push(convertFrom.getRoots());
+    toDo.push(convertFrom.getRoot());
 
     Set<Set<PetriNetPlace>> previouslyVisitedPlaces = new HashSet<>();
     int nodesCreated = 1;

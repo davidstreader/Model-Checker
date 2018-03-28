@@ -58,7 +58,7 @@ public class OwnersRule {
     PetriNetPlace p = null;
     AutomatonNode root = null;
 
-//       Setup = for all roots nodes rnd
+//       Setup = for all root nodes rnd
 //             + rnd->newMarking + aToDo
    root = a.getRoot().iterator().next();
 
@@ -83,7 +83,7 @@ public class OwnersRule {
       processed.add(nd);
       if (!nd2Pl.containsKey(nd)) {
        PetriNetPlace added = petri.addPlace();
-       if (first) petri.addRoot(added);
+       if (first) petri.addFirstRoot(added);
        first = false;
        Set<AutomatonNode> clump = reach(ain, nd, own);
        //System.out.println("Clump " + clump.stream().map(x -> x.getId() + ", ").collect(Collectors.joining()));

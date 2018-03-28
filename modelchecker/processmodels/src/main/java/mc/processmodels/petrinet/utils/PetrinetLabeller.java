@@ -32,7 +32,7 @@ public final class PetrinetLabeller {
       PetriNetPlace newPlace = labelled.addPlace(label + ":" + p.getId());
       newPlace.copyProperties(p);
       if (p.isStart()) {
-        labelled.addRoot(newPlace);
+        labelled.addFirstRoot(newPlace);
       }
     });
 
