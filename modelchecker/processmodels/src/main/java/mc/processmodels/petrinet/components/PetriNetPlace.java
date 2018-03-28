@@ -22,6 +22,7 @@ public class PetriNetPlace extends ProcessModelObject {
   // Place with ref "X" will be glued to other Place with "X" fromRef
   private Set<String> references = new LinkedHashSet<>();
   private Set<String> fromReferences = new LinkedHashSet<>();  // prior to gluing only on Leaf
+  private Set<String> owners  = new LinkedHashSet<>();  //Owners of stop Net
 
   public void addRefefances(Set<String> inrefs){
     references.addAll(inrefs);
@@ -48,6 +49,11 @@ public class PetriNetPlace extends ProcessModelObject {
 
     //System.out.println("removed in "+incoming.size()+" removed out "+outgoing.size());
   }
+
+  public Set<String> getOwners(){
+    return owners;
+  }
+  public void setOwners(Set<String> s) {owners = s;}
   public PetriNetPlace(String id) {
 
     super(id, "PetriNetPlace");  //Beware id structure used else where
@@ -71,6 +77,7 @@ public class PetriNetPlace extends ProcessModelObject {
     terminal = toCopy.terminal;
     references = toCopy.references;
     fromReferences = toCopy.fromReferences;
+    owners = new HashSet<>(toCopy.owners);
   }
 
   public void intersectionOf(PetriNetPlace place1, PetriNetPlace place2) {
@@ -136,6 +143,7 @@ public class PetriNetPlace extends ProcessModelObject {
     return "Place "+this.getId()+ " r "+references.toString()+" f "+fromReferences.toString()+
       this.getIncoming().stream().map(ed->ed.getId()).reduce(" in  ",(x,y)->x+" "+y)+
       this.getOutgoing().stream().map(ed->ed.getId()).reduce(" out ",(x,y)->x+" "+y) +
+      " own "+getOwners()+
       " end "+this.getTerminal()+ " st "+ this.isStart()
       ;
   }

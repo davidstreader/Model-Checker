@@ -35,6 +35,7 @@ public class OwnersRule {
 
   /**
    * This converts a deterministic automata to a petrinet.
+   * Works for nondet processes TODO extend to initial nondet. A * B
    * For each owner O1 project the automata to a SLICE automata(Net)
    * i.e. a net built from  edges with owners containing O1
    *
@@ -52,7 +53,7 @@ public class OwnersRule {
     a.tagEvents();
     //Throwable t = new Throwable();
     //t.printStackTrace();
-    //System.out.println("\nOWNERSRule " + a.myString());
+   //System.out.println("\nOWNERSRule " + a.myString());
 
     PetriNetPlace p = null;
     AutomatonNode root = null;
@@ -131,16 +132,17 @@ public class OwnersRule {
     //System.out.println("\n   OWNERS Rule Stacked "+subNets.size()+"    *********");
     Petrinet build = new Petrinet(a.getId(), false);
     while(!subNets.isEmpty()) {
-     //System.out.println(subNets.size()+" Adding");
+    //System.out.println(subNets.size()+" Adding");
     //  build = PetrinetParallelMergeFunction.compose(build, subNets.pop());  //Debuging
       build = PetrinetParallelFunction.compose(build, subNets.pop());
     //  build = subNets.pop();  //for debugging
+    //System.out.println("  While "+build.myString());
     }
      build.deTagTransitions();
 
-    //System.out.println("  OWNERS Rule *END "+build.myString());
+   //System.out.println("OWNERS Rule *END "+build.myString());
     build = PetrinetReachability.removeUnreachableStates(build);
-    //System.out.println("reach *END "+build.myString());
+   //System.out.println("reach *END "+build.myString());
     return build;
   }
 
@@ -178,7 +180,7 @@ public class OwnersRule {
 
 
   private static  void printaN2Marking() {
-    System.out.println("aN2Marking");
+   //System.out.println("aN2Marking");
     for(AutomatonNode nd : aN2Marking.keySet()) {
       System.out.println("  "+nd.getId()+" =>> ");
       for (String k:  aN2Marking.get(nd).keySet()){
@@ -230,7 +232,7 @@ private static Set<AutomatonNode> reach(Automaton a, AutomatonNode ndi, String o
 
     public void todoPush(AutomatonNode nd) {
       if (stackit.contains(nd)) {
-        System.out.println("stackit Duplicate "+nd.myString());
+        //System.out.println("stackit Duplicate "+nd.myString());
         return;
       } else {
         stackit.push(nd);

@@ -123,7 +123,7 @@ System.out.println("processNode "+ processNode.getProcess().toString());
 
     Petrinet petrinet = processStack.pop().copy();
 
-    System.out.println("Just Built "+petrinet.myString());
+   //System.out.println("Just Built "+petrinet.myString());
     //System.out.println("Ref "+ referenceSet.toString());
 
    // System.out.println("Poped "+petrinet.myString());
@@ -133,7 +133,7 @@ System.out.println("processNode "+ processNode.getProcess().toString());
     //System.out.println("Poped1 "+petrinet.myString());
 
     if (processNode.hasRelabels()) {
-      System.out.println("WWWWWWWWWWW");
+     //System.out.println("WWWWWWWWWWW");
       processRelabelling(petrinet, processNode.getRelabels());
     }
     //System.out.println("Poped2 "+petrinet.myString());
@@ -183,14 +183,14 @@ System.out.println("processNode "+ processNode.getProcess().toString());
   private void interpretProcess(ASTNode astNode, String identifier)
       throws CompilationException, InterruptedException {
     //prity print AST
-    System.out.println("interpretProcess astNode IS " +astNode.toString());
+   //System.out.println("interpretProcess astNode IS " +astNode.toString());
     PetrinetInterpreter.indent = PetrinetInterpreter.indent.concat("-");
     String className = astNode.getClass().getSimpleName();
     System.out.println("iPro "+ PetrinetInterpreter.indent + className);
 //  go and get the process  but if process is not of the correct type CRASH?
     if (astNode instanceof IdentifierNode) {
       String reference = ((IdentifierNode) astNode).getIdentifier();
-      System.out.println("*** interpretProcess IdentifierNode "+ reference);
+     //System.out.println("*** interpretProcess IdentifierNode "+ reference);
 
     if (processMap.get(reference).getProcessType().equals(ProcessType.MULTI_PROCESS)) {
       processStack.push( processMap.get(reference).getProcessType().
@@ -198,9 +198,9 @@ System.out.println("processNode "+ processNode.getProcess().toString());
     } else {
       processStack.push((Petrinet) processMap.get(reference));
     }
- System.out.println("got Net "+processStack.peek().getId()+" from Map");
+//System.out.println("got Net "+processStack.peek().getId()+" from Map");
     }else if (astNode instanceof ProcessRootNode) {
-      System.out.println("*** interpretProcess ProcessRootNode");
+     //System.out.println("*** interpretProcess ProcessRootNode");
       ProcessRootNode root = (ProcessRootNode) astNode;
 
       interpretProcess(root.getProcess(), identifier);
@@ -214,7 +214,7 @@ System.out.println("TO stack petri "+petrinet.getId());
       processStack.push(petrinet);
 
     }  else {
-      System.out.println("*** interpretProcess ELSE");
+     //System.out.println("*** interpretProcess ELSE");
       Petrinet petrinet = new Petrinet(identifier, true);
 
       PetriNetPlace currentPlace = new ArrayList<>(petrinet.getRoots()).get(0);
@@ -238,13 +238,13 @@ System.out.println("TO stack petri "+petrinet.getId());
           pl.addRefefances(astNode.getReferences());
         }
       }
-      System.out.println("*** "+petrinet.myString());
+     //System.out.println("*** "+petrinet.myString());
       petrinet = tree2net(petrinet);
-      System.out.println("stack petri "+petrinet.getId());
+     //System.out.println("stack petri "+petrinet.getId());
       processStack.push(petrinet);
     }
 if (astNode.getReferences() == null) {
-  System.out.println("astNode.getReferences() = null");
+ //System.out.println("astNode.getReferences() = null");
   //Throwable t = new Throwable(); t.printStackTrace();
 }
  else   System.out.println("iPro<"+ PetrinetInterpreter.indent + className+" "+ " ref " +
@@ -305,12 +305,12 @@ if (astNode.getReferences() == null) {
 //prity print AST
     PetrinetInterpreter.indent = PetrinetInterpreter.indent.concat("-");
     String className = currentNode.getClass().getSimpleName();
-    if (currentNode.getReferences() != null) {
+ /*   if (currentNode.getReferences() != null) {
       System.out.println("AST " + PetrinetInterpreter.indent + className +
         " refs " + currentNode.getReferences());
     } else {
       System.out.println("AST " + PetrinetInterpreter.indent + className);
-    }
+    } */
 //
 //UNprefixed use of Global Processes W in Z = W/{w}  NOT in Z = a->W;
     if (currentNode instanceof ProcessRootNode) {
@@ -429,7 +429,7 @@ return ret;
   private void interpretProcessRoot(ProcessRootNode processRoot, Petrinet petri,
                                     PetriNetPlace currentPlace)
       throws CompilationException, InterruptedException {
-    System.out.println("Interpreting Root");
+   //System.out.println("Interpreting Root");
   //  currentPlace = petri.getPlaces().get(currentPlace.getId());//only match on "id"
     interpretProcess(processRoot.getProcess(), petri.getId() + "." + ++subProcessCount);
     Petrinet model = ((Petrinet) processStack.pop()).copy();
@@ -558,17 +558,17 @@ return ret;
     //System.out.println("====masterPetrinet======== "+ master.getId());
     Set<PetriNetPlace> oldRoot = master.getRoots();
     Map<PetriNetPlace,PetriNetPlace> mapping = master.addPetrinet(petrinetToAdd);
-    System.out.println("Mapping  \n" +
+  /*  System.out.println("Mapping  \n" +
       mapping.keySet().stream().map(x->"  "+x.getId()+"->"+mapping.get(x).getId()+"\n")
-        .collect(Collectors.joining()));
+        .collect(Collectors.joining()));*/
     //System.out.println("oldRoot "+oldRoot.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
     //Set<PetriNetPlace> places = oldRoot.stream().map(x->mapping.get(x)).collect(Collectors.toSet());
 
     //System.out.println(master.myString());
     //System.out.println("====masterPetrinet======== "+ master.getId());
    master.validatePNet();
-    System.out.println("master = "+master.myString());
-    System.out.println("places = "+oldRoot.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
+   //System.out.println("master = "+master.myString());
+   //System.out.println("places = "+oldRoot.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
 //add referances to Root Places
     oldRoot.stream()
       .map(PetriNetPlace::getReferences)
@@ -582,9 +582,9 @@ return ret;
   private Petrinet processLabellingAndRelabelling(Petrinet petri, ProcessRootNode processRoot)
       throws CompilationException, InterruptedException {
 
-    System.out.println("HAS L " + processRoot.hasLabel() + " has P "+processRoot.hasNewProcess());
+   //System.out.println("HAS L " + processRoot.hasLabel() + " has P "+processRoot.hasNewProcess());
     if (processRoot.hasLabel()) {
-      System.out.println("processLabellingAndRelabelling "+processRoot.getLabel());
+     //System.out.println("processLabellingAndRelabelling "+processRoot.getLabel());
       petri = PetrinetLabeller.labelPetrinet(petri, processRoot.getLabel());
     }
 
@@ -598,18 +598,18 @@ return ret;
 
   private Petrinet processRelabelling(Petrinet petri, RelabelNode relabelSet)
       throws CompilationException {
-    System.out.print("INTERPRET processRelabelling "+petri.myString());
+   //System.out.print("INTERPRET processRelabelling "+petri.myString());
     String s = "";
     for(String k: processMap.keySet()) {
       s = "processMap \n    "+k+"->"+processMap.get(k).getId()+","+processMap.get(k).getProcessType();
     }
-    System.out.println(s);
+   //System.out.println(s);
 
     for (RelabelElementNode r : relabelSet.getRelabels()) {
-      System.out.println("r = "+r.toString());
+     //System.out.println("r = "+r.toString());
 
       if (r.getNewLabel() != null) {
-        System.out.println();
+       //System.out.println();
         if (!petri.getAlphabet().keySet().contains(r.getOldLabel())) {
           throw new CompilationException(getClass(), "Cannot find action" + r.getOldLabel()
             + "to relabel.", relabelSet.getLocation());
@@ -617,9 +617,9 @@ return ret;
         petri.relabelTransitions(r.getOldLabel(), r.getNewLabel());
       }
       if(r.getNewProcess() != null) {
-        System.out.println("REFINEing from processRelabelling "+
+        /*System.out.println("REFINEing from processRelabelling "+
             r.getNewProcess().getIdentifier()+"/"+r.getOldLabel() );
-        System.out.println(petri.myString());
+        System.out.println(petri.myString()); */
         Petrinet newPet;
         RefineFun rf = new RefineFun();
         if (processMap.get(r.getNewProcess().getIdentifier()).getProcessType().
@@ -631,7 +631,7 @@ return ret;
         }
         petri = rf.compose("Ref",r.getOldLabel(),petri,newPet);
       } else {
-        System.out.println("No Reinement data?");
+        //System.out.println("No Reinement data?");
       }
     }
     return petri;

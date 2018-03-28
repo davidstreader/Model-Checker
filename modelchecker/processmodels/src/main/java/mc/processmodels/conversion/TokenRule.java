@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import lombok.SneakyThrows;
 import mc.exceptions.CompilationException;
 import mc.processmodels.automata.Automaton;
+import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetEdge;
@@ -111,14 +112,17 @@ public class TokenRule {
           nodeToMarkingMap.put(newNode, newMarking);
           toDo.add(newMarking);
         }
-
+        Set<String> own =  convertFrom.getTranOwners(transition);
+        AutomatonEdge ed =
         outputAutomaton.addEdge(transition.getLabel(), markingToNodeMap.get(currentMarking),
             markingToNodeMap.get(newMarking), null, false);
+        ed.setAutomatonLocation(own);
         //System.out.println(" automaton now "+outputAutomaton.myString());
       }
       previouslyVisitedPlaces.add(currentMarking);
       //System.out.println("ENDing "+previouslyVisitedPlaces.size()+"  "+Petrinet.marking2String(currentMarking));
     }
+    //System.out.println("Token Out "+outputAutomaton.myString());
     return outputAutomaton;
   }
 

@@ -192,9 +192,10 @@ public class ChoiceFun {
      .filter(x->x.isTerminal()).collect(Collectors.toSet());
    Set<PetriNetPlace> end2 = petrinet2.getPlaces().values().stream()
      .filter(x->x.isTerminal()).collect(Collectors.toSet());
- System.out.println("end1 "+end1 + " end2 "+end2);
-   composition.gluePlaces(end1, end2 ,false);
-
+ //System.out.println("end1 "+end1 + " end2 "+end2);
+ if (end1.size() > 0 && end2.size()>0) {
+     composition.gluePlaces(end1, end2, false);
+ }
    //System.out.println("Add OUT "+ composition.myString()+"\n");
    composition.validatePNet();
    return composition;

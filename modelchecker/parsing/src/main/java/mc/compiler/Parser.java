@@ -106,7 +106,7 @@ public class Parser {
   private IdentifierNode parseIdentifier() throws CompilationException {
     Token token = nextToken();
     if (token instanceof IdentifierToken) {
-      System.out.println("parse Identifyer "+((IdentifierToken) token).getIdentifier());
+     //System.out.println("parse Identifyer "+((IdentifierToken) token).getIdentifier());
       IdentifierToken identifier = (IdentifierToken) token;
       return new IdentifierNode(identifier.getIdentifier(), identifier.getLocation());
     }
@@ -505,7 +505,7 @@ public class Parser {
 
     // check if a relabel set has been defined
     if (peekToken() instanceof DivisionToken) {
-      System.out.println("Division Token");
+     //System.out.println("Division Token");
       processNode.setRelabels(parseRelabel());
     }
 
@@ -587,7 +587,7 @@ public class Parser {
     if (!(token instanceof DisplayTypeToken)) {
       throw constructException("expecting to parse a display type but received \"" + token.toString() + "\"", token.getLocation());
     }
-    System.out.println("parseDisplayType "+ token.toString());
+   //System.out.println("parseDisplayType "+ token.toString());
     DisplayTypeToken currentDisplayType = (DisplayTypeToken) token;
 
     token = nextToken();
@@ -658,7 +658,7 @@ public class Parser {
     RelabelNode relabel = null;
     if (peekToken() instanceof DivisionToken) {
       relabel = parseRelabel();
-      System.out.println("GOT YOU relabel = "+ relabel.getRelabels());
+     //System.out.println("GOT YOU relabel = "+ relabel.getRelabels());
     }
 
     HidingNode hiding = null;
@@ -1170,7 +1170,7 @@ public class Parser {
 
     while (!(peekToken() instanceof CloseBraceToken)) {
       RelabelElementNode element = parseRelabelElement();
-      System.out.println("element = "+element);
+     //System.out.println("element = "+element);
       if (rangeStart < actionRanges.size()) {
         List<IndexNode> ranges = new ArrayList<>(actionRanges.subList(rangeStart, actionRanges.size()));
         actionRanges = new ArrayList<>(actionRanges.subList(0, rangeStart));
@@ -1179,7 +1179,7 @@ public class Parser {
       }
 
       relabels.add(element);
-      System.out.println("element = "+element);
+     //System.out.println("element = "+element);
       if (peekToken() instanceof CommaToken) {
         nextToken();
       }
@@ -1196,12 +1196,12 @@ public class Parser {
 
   private RelabelElementNode parseRelabelElement() throws CompilationException, InterruptedException {
 
-    System.out.println("Parsing relabeling ");
+   //System.out.println("Parsing relabeling ");
     int start = index;
     RelabelElementNode rel;
     if (peekToken() instanceof ActionToken) {
 
-      System.out.println("Action");
+     //System.out.println("Action");
       ActionLabelNode newLabel = parseActionLabel();
       if (!(nextToken() instanceof DivisionToken)) {
         Token error = tokens.get(index - 1);
@@ -1212,7 +1212,7 @@ public class Parser {
         oldLabel.getAction(), constructLocation(start));
     } else if (peekToken() instanceof IdentifierToken) {
 
-      System.out.println("Identifier");
+     //System.out.println("Identifier");
       IdentifierNode identifier = parseIdentifier();
       if (!(nextToken() instanceof DivisionToken)) {
         Token error = tokens.get(index - 1);
@@ -1223,12 +1223,12 @@ public class Parser {
       ActionLabelNode oldLabel = parseActionLabel();
       rel = new RelabelElementNode(identifier,
         oldLabel.getAction(), constructLocation(start));
-      System.out.println("parseRelabel "+identifier.getIdentifier()+" and "+ oldLabel.getAction());
+     //System.out.println("parseRelabel "+identifier.getIdentifier()+" and "+ oldLabel.getAction());
     } else {
       throw constructException("expecting to event or Process not " +nextToken().toString());
     }
 
-    System.out.println("parseRelabelElement() end "+rel.getOldLabel()+"->"+rel.getNewProcess());
+   //System.out.println("parseRelabelElement() end "+rel.getOldLabel()+"->"+rel.getNewProcess());
     return rel;
   }
 
