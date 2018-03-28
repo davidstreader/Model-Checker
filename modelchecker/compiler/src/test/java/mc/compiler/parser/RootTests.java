@@ -164,22 +164,7 @@ public class RootTests extends ParserTests {
         }
     }
 
-    @Test
-    public void correctIndexedRelabelSetTest_1() throws CompilationException, InterruptedException {
-        String input = "processes Test = (a -> STOP)/{[i:1..2].test/[i]}.\nautomata Test.";
-        ProcessNode node = constructProcessNode(input);
-        TerminalNode terminal = new TerminalNode("STOP", null);
-        SequenceNode process = constructSequenceNode(new String[]{"a"}, terminal);
-
-        IndexNode index = new IndexNode("$i", new RangeNode(1, 2, null), null, null);
-        RangesNode range = new RangesNode(new ArrayList<>(Collections.singletonList(index)), null);
-        RelabelNode relabel = constructRelabelSet(range);
-
-        ProcessRootNode expected = new ProcessRootNode(process, null, relabel, null, null);
-        if(!expected.equals(node.getProcess())){
-            fail("expecting process root nodes to be equivalent");
-        }
-    }
+    
 
     private RelabelNode constructRelabelSet(String oldLabel){
         RelabelElementNode element = new RelabelElementNode("b", oldLabel, null);
