@@ -128,10 +128,10 @@ public class ChoiceFun {
 
   public Petrinet compose(String id, Petrinet net1, Petrinet net2)
     throws CompilationException {
-   /* System.out.println("[]PETRI1 "+net1.myString());
+    //System.out.println("[]PETRI1 "+net1.myString());
    net1.validatePNet();
-   System.out.println("[]PETRI2 "+net2.myString());
-   net2.validatePNet();*/
+   //System.out.println("[]PETRI2 "+net2.myString());
+   net2.validatePNet();
    //clone nets
    Petrinet petrinet1 = net1.copy();
    Petrinet petrinet2 = net2.copy();
@@ -179,14 +179,10 @@ public class ChoiceFun {
 
 
    //add the second petrinet;
-   //System.out.println("start1 "+ Petrinet.marking2String(startOfP1));
-   //System.out.println("start2 "+ Petrinet.marking2String(startOfP2));
    composition.joinPetrinet(petrinet2);
-
-
-   //merge the end of petri1 with the start of petri2
+    //merge the end of petri1 with the start of petri2
    composition.gluePlaces(startOfP1, startOfP2 ,true);
-   composition.setRoot2Start();
+   composition.setRootFromStart();
 
    Set<PetriNetPlace> end1 = petrinet1.getPlaces().values().stream()
      .filter(x->x.isTerminal()).collect(Collectors.toSet());
@@ -196,6 +192,7 @@ public class ChoiceFun {
  if (end1.size() > 0 && end2.size()>0) {
      composition.gluePlaces(end1, end2, false);
  }
+    composition.setRootFromStart();
    //System.out.println("Add OUT "+ composition.myString()+"\n");
    composition.validatePNet();
    return composition;

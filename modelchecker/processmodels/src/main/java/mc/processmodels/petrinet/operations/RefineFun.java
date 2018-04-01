@@ -91,7 +91,9 @@ public class RefineFun {
     //prior to Gluing join the nets (do not add as that changes the ids)
     //composition.joinPetrinet(petrinet2);   FAILS with A/{A/x}
 
-    Map<PetriNetPlace, PetriNetPlace> mapping = composition.addPetrinetNoOwner(petrinet2);
+    Map<PetriNetPlace, PetriNetPlace> mapping = null;
+
+      composition.addPetrinetNoOwner(petrinet2,"Ref");
     Set<PetriNetPlace> newstart2 = startOfP2.stream().map(x->mapping.get(x)).collect(Collectors.toSet());
 
 
@@ -116,7 +118,7 @@ System.out.println("PRE   "+ tr.pre().stream().map(x->x.getId()+" ").collect(Col
            end2.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
     composition.gluePlaces(postEvents, newend2, false);
 
-    composition.setRoot2Start();
+    composition.setRootFromStart();
 
     composition.removeTransition(tr);
     composition.validatePNet();

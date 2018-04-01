@@ -1011,21 +1011,23 @@ What we refer to as a Petri Net is actually an extension of Petri Nets with labe
 We adopt a definition of parallel composition that originates in the Box calculus and is not a part of main stream Petri Nets.
 
 
-\emph{{\bf A Petri Net} is a tuple  $\sf A \triangleq (P_A,S_A,T_A,Arcs_A,\alpha_A,Name_A)$  where:
+\emph{{\bf A Petri Net} is a tuple  $\sf A \triangleq (P_A,S_A,T_A,Arcs_A,\alpha_A)$  where:
 \begin{description}
 \item[$\sf P_A$] is the set of places,
-\item[$\sf S_A$] is the set of  initial  Markings $\sf M_A\subseteq S_A$ where a Marking is  a set of placess $\sf M_A\subseteq P_A$
+\item[$\sf S_A$] is a  set of  initial  Markings, where a Marking is  a set of places  $\sf M_A\subseteq P_A$ and hence $S_A \subseteq 2^{P_A}$
+\item[$\sf E_A$] is a  set of final  Markings $E_A \subseteq 2^{P_A}$
 \item[$\sf T_A$] is the set of transitions
 \item[$\sf Edges_A$] Edges join node to transitions and transitions to nodes. There can be multiple places joined to a single transition and multiple transition joined to a single place.
 \newline
 $\sf Edges_A\subseteq \{(p,t): p\in P_A, t\in T_A \}  \cup \{(t,p): p\in P_A, t\in T_A \}$
 \item[$\sf \alpha_A$] is the alphabet of the process
-\item[$Name_A$] a transition naming function $\sf Name_A:T_A\rightarrow \alpha_A$
+
 \end{description}
 }
 $\Box$
 
-
+Let us note by introducing an internal choice operator we need to have a set on initial markings else we would need to alter the semantics of $\tau$ event from that used in CCS. (Although CSP dose exactly this we have decided not to.) The introduction of  sequential composition as well as action prefixing is facilitated by the explicit definition of successful termination.  
+For convenience  we define $Name_A$ a transition naming function $\sf Name_A:T_A\rightarrow \alpha_A$
 
  \subsection{Appearance}
  Nets have  Places, large circles,  not nodes and the initial state of a Petri Net is a set of places each  \emph{marked} with a  token, a small black circle. The transitions are represented by Boxes and event names. Arcs are added from \emph{pre place}, ${\sf\bullet t}$ to the Box of transition {\sf t}  and from transition {\sf t} Box  to \emph{post place} ${\sf t\bullet}$.

@@ -11,11 +11,28 @@ import mc.processmodels.petrinet.components.PetriNetTransition;
 public final class PetrinetReachability {
 
   public static Petrinet removeUnreachableStates(Petrinet petri) throws CompilationException {
-
+    System.out.println("UnReach " + petri.myString());
 
     petri = petri.copy();
+
     Stack<Set<PetriNetPlace>> toDo = new Stack<>();
-    toDo.push(petri.getRoot());
+
+    for(Set<String> rt : petri.getRoots()){
+      Set<PetriNetPlace> rtP = new HashSet<>();
+        for (String name : rt) {
+          System.out.println("Key Set "+petri.getPlaces().keySet());
+          System.out.println("key "+name);
+          PetriNetPlace pl = petri.getPlaces().get(name);
+          if (pl == null) System.out.println("null");
+          else System.out.println(pl.myString());
+          rtP.add(pl);
+        }
+      System.out.println("pushing set size "+rtP.size()+ rtP.toString());
+      toDo.push(rtP);
+    }
+
+
+    //Stack<Set<PetriNetPlace>> toDo = new Stack<>();
 
     Set<Set<PetriNetPlace>> previouslyVisitedPlaces = new HashSet<>();
     Set<PetriNetPlace> visitedPlaces = new HashSet<>();
@@ -23,7 +40,8 @@ public final class PetrinetReachability {
 
     while (!toDo.isEmpty()) {
       Set<PetriNetPlace> currentMarking = toDo.pop();
-      //System.out.println("Visited "+Petrinet.marking2String(currentMarking));
+
+      System.out.println("Visited "+ currentMarking.toString());
       visitedPlaces.addAll(currentMarking);
 
       if (previouslyVisitedPlaces.contains(currentMarking)) {

@@ -17,12 +17,14 @@ public class PetriNetPlace extends ProcessModelObject {
   private Set<PetriNetEdge> incoming = new HashSet<>();
   private Set<PetriNetEdge> outgoing = new HashSet<>();
   private boolean start;
+  private Set<Integer> startNos = new LinkedHashSet<>();
   private String terminal = "";
   //Used by interpretor to convert Petri Tree into Cyclic Net
   // Place with ref "X" will be glued to other Place with "X" fromRef
   private Set<String> references = new LinkedHashSet<>();
   private Set<String> fromReferences = new LinkedHashSet<>();  // prior to gluing only on Leaf
   private Set<String> owners  = new LinkedHashSet<>();  //Owners of stop Net
+
 
   public void addRefefances(Set<String> inrefs){
     references.addAll(inrefs);
@@ -49,20 +51,31 @@ public class PetriNetPlace extends ProcessModelObject {
 
     //System.out.println("removed in "+incoming.size()+" removed out "+outgoing.size());
   }
-
+  public void addStartNo(int i){
+    System.out.println(this.getId()+" startNos " + startNos + " adding "+i);
+    Set<Integer> Nos = new HashSet<>();
+    for(Integer n : startNos) {
+      Nos.add(n);
+    }
+    Nos.add(i);
+    //boolean b = startNos.add( new Integer(i));
+    //System.out.println("succss = "+b);
+    startNos = Nos;
+  }
   public Set<String> getOwners(){
     return owners;
   }
   public void setOwners(Set<String> s) {owners = s;}
   public PetriNetPlace(String id) {
-
     super(id, "PetriNetPlace");  //Beware id structure used else where
-
+    startNos = new LinkedHashSet<>();
   }
 
   public boolean isTerminal() {
     return terminal != null && terminal.length() > 0;
   }
+  public boolean isSTOP() { return terminal != null && terminal.equals("STOP");}
+
 
   public PetriNetPlace copyPlace() {
     PetriNetPlace out = new PetriNetPlace(this.getId());
@@ -78,6 +91,7 @@ public class PetriNetPlace extends ProcessModelObject {
     references = toCopy.references;
     fromReferences = toCopy.fromReferences;
     owners = new HashSet<>(toCopy.owners);
+    startNos = toCopy.getStartNos();
   }
 
   public void intersectionOf(PetriNetPlace place1, PetriNetPlace place2) {
@@ -144,7 +158,7 @@ public class PetriNetPlace extends ProcessModelObject {
       this.getIncoming().stream().map(ed->ed.getId()).reduce(" in  ",(x,y)->x+" "+y)+
       this.getOutgoing().stream().map(ed->ed.getId()).reduce(" out ",(x,y)->x+" "+y) +
       " own "+getOwners()+
-      " end "+this.getTerminal()+ " st "+ this.isStart()
+      " end "+this.getTerminal()+ " st "+ this.isStart()+ " "+this.startNos
       ;
   }
 }
