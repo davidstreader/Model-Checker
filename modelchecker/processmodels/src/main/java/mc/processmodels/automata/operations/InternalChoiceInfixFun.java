@@ -9,6 +9,7 @@ import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * This covers the "internal choice" function.
@@ -144,6 +145,12 @@ public class InternalChoiceInfixFun implements IProcessInfixFunction {
         System.out.println(pl+" rooted");
       }
     }
+
+    Set<String> end1 = petrinet1.getPlaces().values().stream().
+      filter(x->x.isSTOP()).map(x->x.getId()). collect(Collectors.toSet());
+    Set<String> end2 = petrinet2.getPlaces().values().stream().
+      filter(x->x.isSTOP()).map(x->x.getId()).collect(Collectors.toSet());
+     choice.glueNames(end1,end2);
     choice.setRootFromStart();
     return choice;
   }

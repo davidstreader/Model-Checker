@@ -11,6 +11,7 @@ import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetEdge;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
+import mc.processmodels.petrinet.operations.PetrinetReachability;
 
 public class PetrinetParallelFunction {
 
@@ -18,14 +19,15 @@ public class PetrinetParallelFunction {
   private static Set<String> synchronisedActions;
   private static Map<Petrinet, Map<PetriNetPlace, PetriNetPlace>> petriPlaceMap;
   private static Map<Petrinet, Map<PetriNetTransition, PetriNetTransition>> petriTransMap;
+  private static final String tag1 = "*P1";
+  private static final String tag2 = "*P2";
 
-  public static Petrinet compose(Petrinet p1, Petrinet p2) {
+  public static Petrinet compose(Petrinet p1, Petrinet p2)
+    throws CompilationException {
     clear();
-    //System.out.println(p1.myString());
-    //System.out.println(p2.myString());
-    //System.out.println("PETRINETPARALLELFUNCTION");
-   // System.out.println("p1 "+p1.myString());
-   // System.out.println("p2 "+p2.myString());
+    System.out.println("\nPETRINETPARALLELFUNCTION");
+    //System.out.println("|| NET1 "+p1.myString()+ "\n");
+    //System.out.println("|| NET2 "+p2.myString()+ "\n");
     for(String eId : p1.getEdges().keySet()) {
       Set<String> owners = p1.getEdges().get(eId).getOwners();
       if(owners.contains(Petrinet.DEFAULT_OWNER)) {
@@ -52,15 +54,39 @@ public class PetrinetParallelFunction {
     composition.getOwners().addAll(p1.getOwners());
     composition.getOwners().addAll(p2.getOwners());
 
-    addPetrinet(composition,p1).forEach(composition::addFirstRoot);
-    addPetrinet(composition,p2).forEach(composition::addFirstRoot);
+    List<Set<String>> roots = buildRoots(p1,p2);
+    composition.addPetrinetNoOwner(p1,tag1);
+    composition.addPetrinetNoOwner(p2,tag2);
+    composition.setRoots(roots);
+    composition.setStartFromRoot();
 
+    //System.out.println("look at root "+composition.myString());
     setupSynchronisedActions(p1, p2, composition);
 
-
+    composition = PetrinetReachability.removeUnreachableStates(composition);
+    System.out.println("END of PAR "+composition.myString()+ "\n");
     return composition;
   }
 
+  private static List<Set<String>> buildRoots(Petrinet net1,Petrinet net2) {
+    System.out.println("Building Roots");
+    List<Set<String>> out = new ArrayList<>();
+     for(Set<String> m1: net1.getRoots()) {
+       for(Set<String> m2: net2.getRoots()) {
+         out.add(buildMark(m1,m2));
+       }
+     }
+    System.out.println("New Roots "+out);
+     return out;
+  }
+
+  private static Set<String> buildMark(Set<String> m1, Set<String> m2){
+    Set<String> out = new HashSet<>();
+    out.addAll(m1.stream().map(x->x+tag1).collect(Collectors.toSet()));
+    out.addAll(m2.stream().map(x->x+tag2).collect(Collectors.toSet()));
+System.out.println("Next root "+out);
+    return out;
+  }
   private static void setupActions(Petrinet p1, Petrinet p2) {
     Set<String> actions1 = p1.getAlphabet().keySet();
     Set<String> actions2 = p2.getAlphabet().keySet();
@@ -104,7 +130,7 @@ public class PetrinetParallelFunction {
   @SneakyThrows(value = {CompilationException.class})
   private static void setupSynchronisedActions(Petrinet p1, Petrinet p2, Petrinet comp) {
     for (String action : synchronisedActions) {
-
+      //System.out.println("START Of Sync");
       Set<PetriNetTransition> p1Pair = p1.getAlphabet().get(action).stream()
           .map(t -> petriTransMap.get(p1).get(t)).collect(Collectors.toSet());
 
@@ -138,6 +164,7 @@ public class PetrinetParallelFunction {
       }
 
     }
+    //System.out.println("END Of Sync");
   }
 
   private static boolean containsReceiverOf(String broadcaster, Collection<String> otherPetrinet) {
@@ -172,50 +199,5 @@ public class PetrinetParallelFunction {
     petriTransMap = new HashMap<>();
   }
 
-  @SneakyThrows(value = {CompilationException.class})
-  public static Set<PetriNetPlace> addPetrinet(Petrinet addTo, Petrinet petriToAdd) {
-    addTo.validatePNet();
-    petriToAdd.validatePNet();
-   // System.out.println("IN AddTo "+addTo.myString());
-   // System.out.println("IN ToAdd "+petriToAdd.myString());
-    Set<PetriNetPlace> roots = addTo.getRoot();
-    Map<PetriNetPlace, PetriNetPlace> placeMap = new HashMap<>();
-    Map<PetriNetTransition, PetriNetTransition> transitionMap = new HashMap<>();
-
-    for (PetriNetPlace place : petriToAdd.getPlaces().values()) {
-      PetriNetPlace newPlace = addTo.addPlace();
-      newPlace.copyProperties(place);
-
-      if (place.isStart()) {
-        newPlace.setStart(true);
-        roots.add(newPlace);
-      }
-
-      placeMap.put(place, newPlace);
-    }
-    for (PetriNetTransition transition : petriToAdd.getTransitions().values()) {
-      PetriNetTransition newTransition = addTo.addTransition(transition.getLabel());
-      transitionMap.put(transition, newTransition);
-    }
-
-    for (PetriNetEdge edge : petriToAdd.getEdges().values()) {
-      //System.out.println(edge.myString());
-      if (edge.getFrom() instanceof PetriNetPlace) {
-        //System.out.println("tran "+transitionMap.get(edge.getTo()).myString());
-        addTo.addEdge( transitionMap.get(edge.getTo()), placeMap.get(edge.getFrom()), edge.getOwners());
-      } else {
-        //System.out.println("place "+placeMap.get(edge.getTo()).myString());
-        addTo.addEdge( placeMap.get(edge.getTo()), transitionMap.get(edge.getFrom()), edge.getOwners());
-      }
-    }
-    //System.out.println("one2");
-     addTo.setRoot(roots);
-    petriTransMap.put(petriToAdd, transitionMap);
-    petriPlaceMap.put(petriToAdd, placeMap);
-
-    addTo.validatePNet();
-  //  System.out.println("OUT AddedTo "+addTo.myString());
-    return roots;
-  }
 }
 

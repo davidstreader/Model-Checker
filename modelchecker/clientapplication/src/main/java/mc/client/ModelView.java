@@ -252,6 +252,7 @@ public class ModelView implements Observer {
     automaton.getNodes().forEach(n -> {
 
       NodeStates nodeTermination = NodeStates.NOMINAL;
+
       if (n.isStartNode()) {
         nodeTermination = NodeStates.START;
       }
@@ -300,6 +301,10 @@ System.out.println("ModelView \n "+ automaton.myString());
 
       if (place.isStart()) {
         nodeTermination = NodeStates.START;
+        if (place.getMaxStartNo()==2)
+          nodeTermination = NodeStates.START1;
+        else if (place.getMaxStartNo()==3)
+          nodeTermination = NodeStates.START2;
       }
 
       GraphNode node = new GraphNode(petri.getId(), place.getId(),

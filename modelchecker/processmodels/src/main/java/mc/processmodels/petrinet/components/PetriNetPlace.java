@@ -1,9 +1,6 @@
 package mc.processmodels.petrinet.components;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import lombok.Data;
@@ -25,7 +22,14 @@ public class PetriNetPlace extends ProcessModelObject {
   private Set<String> fromReferences = new LinkedHashSet<>();  // prior to gluing only on Leaf
   private Set<String> owners  = new LinkedHashSet<>();  //Owners of stop Net
 
-
+  public int getMaxStartNo (){
+    int out;
+    Optional<Integer> i  = startNos.stream().max(Integer::compare);
+    if (i.isPresent()) out = i.get();
+    else out = 0;
+System.out.println("getMaxStartNo for " + getId()+" is "+out);
+    return out;
+  }
   public void addRefefances(Set<String> inrefs){
     references.addAll(inrefs);
   }

@@ -132,21 +132,21 @@ public class SequentialInfixFun {
   public Petrinet compose(String id, Petrinet net1, Petrinet net2)
     throws CompilationException {
     String name = net1.getId() + "=>" + net2.getId();
-    System.out.println("=>PETRI1 "+net1.myString());
+   //System.out.println("=>PETRI1 "+net1.myString());
     net1.validatePNet();
-    System.out.println("=>PETRI2 "+net2.myString());
+   //System.out.println("=>PETRI2 "+net2.myString());
     net2.validatePNet();
     Stack<Petrinet> netStack = new Stack<>();
     ///LOOP
     List<Set<String>> p2roots = net2.getRoots();
     int i = p2roots.size();
-    System.out.println("ROOTS " + i);
+   //System.out.println("ROOTS " + i);
     for (Set<String> rt : net2.getRoots()) {
-      System.out.println("\n "+i+" rt = "+rt);
+     //System.out.println("\n "+i+" rt = "+rt);
       Petrinet petrinet1 = net1.copy();
       Petrinet petrinet2 = net2.copy();
-      System.out.println("In1=> " + petrinet1.myString());
-      System.out.println("=>In2 " + petrinet2.myString());
+     //System.out.println("In1=> " + petrinet1.myString());
+     //System.out.println("=>In2 " + petrinet2.myString());
       if (petrinet1 == petrinet2) {
         System.out.println("\n SAME NETS PROBLEM\n");
       }
@@ -169,28 +169,30 @@ public class SequentialInfixFun {
       composition.getOwners().addAll(petrinet1.getOwners());
       composition.getOwners().addAll(petrinet2.getOwners());
 
-      System.out.println("Root names " + p2roots);
+     //System.out.println("Root names " + p2roots);
       String tag = "*S" + i;
       //add the first petrinet to the sequential composition
       composition.addPetrinetNoOwner(petrinet1, tag);
       Set<String> nextEnd = composition.getPlaces().values().stream()
         .filter(x -> x.isSTOP()).map(x -> x.getId()).collect(Collectors.toSet());
-      System.out.println("nextEnd from "+composition.myString());
+     //System.out.println("nextEnd from "+composition.myString());
       composition.getPlaces().values().stream().forEach(x->x.setTerminal(""));
       composition.setRootFromStart();
 
 
-      System.out.println("Loop rt = " + rt);
-      System.out.println("ROOTS " + tag);
+     //System.out.println("Loop rt = " + rt);
+     //System.out.println("ROOTS " + tag);
       i--;
       Set<String> taggedrt = rt.stream().map(x->x+tag).collect(Collectors.toSet());
 
       composition.addPetrinetNoOwner(petrinet2, tag); //replace objects tags names IGNORE root
-      System.out.println("composition " + i + " = " + composition.myString());
-      System.out.println(i + " ROOT = " + taggedrt + "  END = " + nextEnd);
+     //System.out.println("composition " + i + " = " + composition.myString());
+     //System.out.println(i + " ROOT = " + taggedrt + "  END = " + nextEnd);
 
       composition.glueNames(nextEnd, taggedrt);
+     //System.out.println("\nGlue OVER \n"+ composition.myString()+"\n");
       composition.setRootFromStart();
+     //System.out.println("\nTO STACK \n"+ composition.myString()+"\n");
       netStack.push(composition.copy());
     }
     //now we have a stack of i nets   Ai=>Bi
@@ -199,15 +201,17 @@ public class SequentialInfixFun {
     Petrinet sequential = netStack.pop();
     int pi = 1;
     while (!netStack.empty()) {
+
+
       sequential = internalChoice.compose("=>" + pi++, sequential, netStack.pop());
-      System.out.println("SEQing " + sequential.myString());
-      System.out.println("SEQing OVER");
+     //System.out.println("SEQing " + sequential.myString());
+     //System.out.println("SEQing OVER");
     }
 
     sequential = PetrinetReachability.removeUnreachableStates(sequential);
     //Petrinet seq = new Petrinet(id, false);
     //seq.addPetrinet(sequential);  // renumbers the ids
-    System.out.println("FINAL " +sequential.myString());
+   //System.out.println("FINAL " +sequential.myString());
     //sequential.validatePNet();
     return sequential;
   }
