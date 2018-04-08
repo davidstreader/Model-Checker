@@ -39,7 +39,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
 
   private List<Set<String>> roots = new ArrayList<>();
   //private List<Set<String>> rootNames = new ArrayList<>();
-  private Set<PetriNetPlace> root ;
+  //private Set<PetriNetPlace> root ;
   private Map<String, PetriNetEdge> edges = new HashMap<>();
   private Set<RelabelElementNode> relabels = new HashSet<>();
 
@@ -59,8 +59,22 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
   private int edgeId = 0;
   private int ownersId = 0;
 
+  public boolean terminates() {
+   Set<String> ending = places.values().stream().filter(PetriNetPlace::isTerminal).
+        map(x->x.getOwners()).flatMap(Set::stream).collect(Collectors.toSet());
+    System.out.println("terminates e "+ ending+ " p "+ getOwners());
+     return getOwners().equals(ending);
+  }
+
   public List<Set<String>> getRootNames(){
     return roots;
+  }
+  public List<Set<PetriNetPlace>> getRootPlacess(){
+    List<Set<PetriNetPlace>> out = new ArrayList<>();
+    for(Set<String> markNames :roots) {
+      out.add(markNames.stream().map(x->places.get(x)).collect(Collectors.toSet()));
+    }
+    return out;
   }
   public int nextRootNo () {
     return roots.size();
@@ -120,7 +134,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     boolean ok = true;
 
      for (PetriNetPlace r : getAllRoots()) {
-       if( !r.isStart()) {
+       if((r==null) || !r.isStart()) {
          //System.out.println("Root " + r.getId() + " not Start ");
          ok = false;
        }
@@ -139,8 +153,10 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
      for (int i =0 ; i< roots.size(); i++) {
        Set<String> fail = roots.get(i);
        for (String pl : fail) {
-         if (!places.get(pl).isStart() || !places.get(pl).getStartNos().contains(pl)) {
-           System.out.println("Not Start " + pl + " " + i);
+         if ( places.get(pl) == null ||
+             !places.get(pl).isStart() ||
+             !places.get(pl).getStartNos().contains(i+1)) {
+           System.out.println("Not Start " + pl + " index " + (i+1));
            ok = false;
          }
        }
@@ -181,8 +197,9 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     // if (ok) //System.out.println(this.getId()+" Valid");
 
       if (!ok) {
-      //System.out.println(this.getId() + " NOT VALID");
-      //System.out.println(this.myString());
+      Throwable t = new Throwable();
+      t.printStackTrace();
+      System.out.println("SORT IT OUT \n"+this.myString()+"\nSORT OUT ABOVE\n");
     }
     return ok;
   }
@@ -201,20 +218,20 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
   Multimap<Integer, String>  rootBuilder = LinkedHashMultimap.create();
     Set<String> starts = getPlaces().values().stream().
       filter(x->x.isStart()).map(x->x.getId()).collect(Collectors.toSet());
-   //System.out.println("setRootFromStart() "+ starts.stream().collect(Collectors.joining()));
+   System.out.println("setRootFromStart() "+ starts.stream().collect(Collectors.joining()));
    for (String pl : starts){
      for (Integer i : places.get(pl).getStartNos()) {
         rootBuilder.put(i,pl);
-      //System.out.println("rBuilder "+i+"->"+pl);
+      System.out.println("rBuilder "+i+"->"+pl);
      }
    }
 
    List<Set<String>> rout = new ArrayList<>();
-    for (Integer i :rootBuilder.keySet()){
+    for (Integer i :rootBuilder.keySet().stream().sorted().collect(Collectors.toSet()) ){
       rout.add((Set<String>) rootBuilder.get(i));
      //System.out.println("roots "+ i +" "+rootBuilder.get(i).stream().collect(Collectors.joining()));
     }
-   //System.out.println("END "+ rout);
+   System.out.println("END "+ rout);
     roots = rout;
     /*System.out.println("ROOT set to "+root.stream()
       .map(r->r.getId()+" ").collect(Collectors.joining()) ); */
@@ -306,6 +323,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
       reduce("",(x,y)-> x+" "+y));
     return sb.toString();
   }
+
   public void setRootPlace(PetriNetPlace r){
     Set<String> rt = Collections.singleton(r.getId());
     List<Set<String>> rts = new ArrayList<Set<String>>();
@@ -327,7 +345,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     eventNet.setOwners(Collections.singleton(DEFAULT_OWNER));
     end.setTerminal("STOP");
     eventNet.reown();
-    //System.out.println("oneEventNet "+eventNet.myString());
+ System.out.println("oneEventNet "+eventNet.myString());
     return eventNet;
   }
   // called from interpretor
@@ -569,9 +587,10 @@ public static String marking2String(Collection<PetriNetPlace> mark){
    * @return  the mapping from the old to new Places
    */
   @SneakyThrows(value = {CompilationException.class})
-  public Map<PetriNetPlace, PetriNetPlace> addPetrinet(Petrinet petriToAdd) {
-    Set<PetriNetPlace> rts = new HashSet<>();
+  public Map<PetriNetTransition, PetriNetTransition> addPetrinet(Petrinet petriToAdd) {
+    //Set<PetriNetPlace> rts = new HashSet<>();
     Map<PetriNetPlace, PetriNetPlace> placeMap = new HashMap<>();
+    Map<String,String> nameMap = new HashMap<>();
     Map<PetriNetTransition, PetriNetTransition> transitionMap = new HashMap<>();
     owners.remove(Petrinet.DEFAULT_OWNER);
 
@@ -579,12 +598,17 @@ public static String marking2String(Collection<PetriNetPlace> mark){
       PetriNetPlace newPlace = addPlace();
       newPlace.copyProperties(place);
       placeMap.put(place, newPlace);
+      nameMap.put(place.getId(), newPlace.getId());
     }
-    //System.out.println("addPetri rt"+ myString(petriToAdd.getRoot()));
-    for(PetriNetPlace rpl : petriToAdd.getRoot()){
-      rts.add(placeMap.get(rpl));
-      this.addFirstRoot(placeMap.get(rpl));
-      //System.out.println("addin root "+placeMap.get(rpl).getId());
+    System.out.println("this " +getRoots() + " addPetri rt "+ petriToAdd.getRoots());
+    for(Set<String> roots: petriToAdd.getRootNames()) {
+      Set<String> next = new HashSet<>();
+      for (String rpl : roots) {
+        //rts.add(placeMap.get(rpl));
+        next.add(nameMap.get(rpl));
+        //System.out.println("addin root "+placeMap.get(rpl).getId());
+      }
+      addRoot(next);
     }
     for (PetriNetTransition transition : petriToAdd.getTransitions().values()) {
       PetriNetTransition newTransition = addTransition(transition.getLabel());
@@ -607,13 +631,15 @@ public static String marking2String(Collection<PetriNetPlace> mark){
     }
     //System.out.println("addPetri");
     this.validatePNet();
-    return placeMap;
+    System.out.println("addPetrinet "+ roots);
+    return transitionMap;
   }
 
   @SneakyThrows(value = {CompilationException.class})
-  public void addPetrinetNoOwner(Petrinet petriToAdd, String tag) {
+  public Map<PetriNetTransition, PetriNetTransition> addPetrinetNoOwner(Petrinet petriToAdd, String tag) {
    //System.out.println("Start of add "+myString());
     Map<PetriNetPlace, PetriNetPlace> placeMap = new HashMap<>();
+    Map<String,String> nameMap = new HashMap<>();
     Map<PetriNetTransition, PetriNetTransition> transitionMap = new HashMap<>();
     //owners.remove(Petrinet.DEFAULT_OWNER);
 
@@ -621,6 +647,7 @@ public static String marking2String(Collection<PetriNetPlace> mark){
       PetriNetPlace newPlace = addPlace(place.getId()+tag);
       newPlace.copyProperties(place);
       placeMap.put(place, newPlace);
+      nameMap.put(place.getId(),newPlace.getId());
      //System.out.println("placeMap "+place.getId()+"->"+newPlace.getId());
     }
 
@@ -647,11 +674,15 @@ public static String marking2String(Collection<PetriNetPlace> mark){
         addEdge(places.get(edge.getTo().getId()+tag), transitionMap.get(edge.getFrom()),  edge.getOwners());
       }
     }
-    //System.out.println("addPetri");
+    this.setRoots(petriToAdd.getRoots().stream().map(x->markUpGrade(x,nameMap)).collect(Collectors.toList()));
+System.out.println("addPetri "+ this.myString());
     //Net not always valid!
-    return;
+    return transitionMap;
   }
 
+  public Set<String> markUpGrade(Set<String> mark, Map<String,String> nameMap){
+    return mark.stream().map(x->nameMap.get(x)).collect(Collectors.toSet());
+  }
   public void joinPetrinet(Petrinet petriToJoin) {
     Map<PetriNetPlace, PetriNetPlace> placeMap = new HashMap<>();
     Map<PetriNetTransition, PetriNetTransition> transitionMap = new HashMap<>();
@@ -662,6 +693,7 @@ public static String marking2String(Collection<PetriNetPlace> mark){
     this.transitions.putAll(petriToJoin.getTransitions());
     this.edges.putAll(petriToJoin.getEdges());
     this.alphabet.putAll(petriToJoin.getAlphabet());
+    this.roots.addAll(petriToJoin.getRoots());  // new 4 [] will it break other ops?
     return;
   }
 
@@ -708,13 +740,10 @@ System.out.println("TR "+tr.myString());
    * @param m2
    * @throws CompilationException
    */
-  public Multimap<PetriNetPlace, PetriNetPlace>  glueNames (Set<String> m1, Set<String> m2)
+  public Map<String,String>  glueNames (Set<String> m1, Set<String> m2)
     throws CompilationException {
     Set<PetriNetPlace> net1 = m1.stream().map(x-> places.get(x)).collect(Collectors.toSet());
     Set<PetriNetPlace> net2 = m2.stream().map(x-> places.get(x)).collect(Collectors.toSet());
-
-    //System.out.println(net1.toString());
-    //System.out.println(net2.toString());
 
     return this.gluePlaces(net1,net2, true);
   }
@@ -740,7 +769,7 @@ System.out.println("TR "+tr.myString());
    * @return  mapping from old places to set of net places
    * @throws CompilationException
    */
-  public Multimap<PetriNetPlace, PetriNetPlace> gluePlaces
+  public Map<String,String> gluePlaces
       (Set<PetriNetPlace> set1, Set<PetriNetPlace> set2, boolean changeOwner)
       throws CompilationException {
   //System.out.println("\n GLUE  START \n"+myString());
@@ -784,7 +813,8 @@ System.out.println("TR "+tr.myString());
 
 
 
-
+    // we lack the root count to compute the new root numbers
+    Map<String,String> prodNames = new HashMap<>();
     Multimap<PetriNetPlace, PetriNetPlace> products = ArrayListMultimap.create();
     for (PetriNetPlace place1 : set1) {
       for (PetriNetPlace place2 : set2) {
@@ -792,10 +822,13 @@ System.out.println("TR "+tr.myString());
  //System.out.println("Glue "+place1.getId()+" with "+place2.getId()+" = "+newPlace.getId());
         products.put(place1, newPlace);
         products.put(place2, newPlace);
-       //System.out.println("poducts "+place1.getId()+", "+place2.getId()+"-->"+newPlace.getId());
+      //System.out.println("poducts "+place1.getId()+", "+place2.getId()+"-->"+newPlace.getId());
         //newPlace.intersectionOf(place1, place2);
         if (place1.isStart() && place2.isStart()) {
-          System.out.println("Gluing 2 START states BAD "+place1.getId()+" "+place2.getId());
+          prodNames.put(place1.getId()+MAPLET+place2.getId(), newPlace.getId());
+          prodNames.put(place2.getId()+MAPLET+place1.getId(), newPlace.getId());
+         //System.out.println("Gluing ForChoice  "+place1.getId()+MAPLET+place2.getId()+" -> "+prodNames.get(place1.getId()+MAPLET+place2.getId()));
+          newPlace.setStart(true);
         }
         if (place1.isStart()) {
           newPlace.setStartNos(place1.getStartNos());
@@ -817,7 +850,7 @@ System.out.println("TR "+tr.myString());
       }
     }
 
-
+   //System.out.println("PROD "+ prodNames);
 //Owners used as key to combinationsTable after it is built
     // How do we cope with second glueing
    //System.out.println(myString());
@@ -877,8 +910,9 @@ System.out.println("TR "+tr.myString());
     //products.values().stream().distinct()
     //  .filter(PetriNetPlace::isStart).forEach(this::addFirstRoot);
   //System.out.println("GLUE END "+ this.myString());
-  //System.out.println("GLUE END");
-    return products;
+   //System.out.println("PROD "+ prodNames);
+ //System.out.println("GLUE END");
+    return prodNames;
   }
 
 

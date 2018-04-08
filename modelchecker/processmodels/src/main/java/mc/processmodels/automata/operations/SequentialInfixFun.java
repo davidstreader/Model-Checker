@@ -26,9 +26,9 @@ public class SequentialInfixFun {
    * @return the resulting automaton of the operation
    */
   public Automaton compose(String id, Automaton automaton1, Automaton automaton2) throws CompilationException {
-    //System.out.println("\n *********************\n");
-    //System.out.println("a1 "+automaton1.myString());
-    //System.out.println("a2 "+automaton2.myString());
+    System.out.println("\n *********************\n");
+    System.out.println("a1 "+automaton1.myString());
+    System.out.println("a2 "+automaton2.myString());
     Automaton sequence = new Automaton(id, !Automaton.CONSTRUCT_ROOT);
 
     Multimap<String, String> setOfOwners = Automaton.ownerProduct(automaton1, automaton2);
@@ -114,6 +114,7 @@ public class SequentialInfixFun {
     // System.out.println("Sequence 2 "+ automaton2.toString());
 
     copyAutomataEdges(sequence, automaton2, automata2nodes, setOfOwners);
+
     //  System.out.println("End Seq   "+sequence.toString());
     return sequence;
   }
@@ -141,79 +142,87 @@ public class SequentialInfixFun {
     List<Set<String>> p2roots = net2.getRoots();
     int i = p2roots.size();
    //System.out.println("ROOTS " + i);
-    for (Set<String> rt : net2.getRoots()) {
-     //System.out.println("\n "+i+" rt = "+rt);
-      Petrinet petrinet1 = net1.copy();
-      Petrinet petrinet2 = net2.copy();
-     //System.out.println("In1=> " + petrinet1.myString());
-     //System.out.println("=>In2 " + petrinet2.myString());
-      if (petrinet1 == petrinet2) {
-        System.out.println("\n SAME NETS PROBLEM\n");
-      }
-      for (PetriNetPlace pl1 : petrinet1.getPlaces().values()) {
-        for (PetriNetPlace pl2 : petrinet2.getPlaces().values()) {
-          if (pl1 == pl2) System.out.println("\n SAME PLACES PROBLEM\n");
+    Petrinet sequential;
+    if (net1.terminates()) {
+      for (Set<String> rt : net2.getRoots()) {
+        //System.out.println("\n "+i+" rt = "+rt);
+        Petrinet petrinet1 = net1.copy();
+        Petrinet petrinet2 = net2.copy();
+        //System.out.println("In1=> " + petrinet1.myString());
+        //System.out.println("=>In2 " + petrinet2.myString());
+        if (petrinet1 == petrinet2) {
+          System.out.println("\n SAME NETS PROBLEM\n");
         }
+        for (PetriNetPlace pl1 : petrinet1.getPlaces().values()) {
+          for (PetriNetPlace pl2 : petrinet2.getPlaces().values()) {
+            if (pl1 == pl2) System.out.println("\n SAME PLACES PROBLEM\n");
+          }
+        }
+        Petrinet composition = new Petrinet(id, false);
+        composition.getOwners().clear();
+        composition.getOwners().addAll(petrinet1.getOwners());
+
+
+        Set<String> stopNodes = new HashSet<>();
+
+        for (PetriNetPlace pl : petrinet2.getPlaces().values()) {
+          pl.setStart(false);
+        }
+        petrinet2.clearRoots();
+        //System.out.println("SHOULD HAVE NO START "+petrinet2.myString());
+
+        composition.getOwners().addAll(petrinet2.getOwners());
+
+        //System.out.println("Root names " + p2roots);
+        String tag = "*S" + i;
+        //add the first petrinet to the sequential composition
+        composition.addPetrinetNoOwner(petrinet1, tag);
+        Set<String> nextEnd = composition.getPlaces().values().stream()
+          .filter(x -> x.isSTOP()).map(x -> x.getId()).collect(Collectors.toSet());
+        //System.out.println("nextEnd from "+composition.myString());
+        composition.getPlaces().values().stream().forEach(x -> x.setTerminal(""));
+        composition.setRootFromStart();
+
+
+        //System.out.println("Loop rt = " + rt);
+        //System.out.println("ROOTS " + tag);
+        i--;
+        Set<String> taggedrt = rt.stream().map(x -> x + tag).collect(Collectors.toSet());
+
+        composition.addPetrinetNoOwner(petrinet2, tag); //replace objects tags names IGNORE root
+        //System.out.println("composition " + i + " = " + composition.myString());
+        //System.out.println(i + " ROOT = " + taggedrt + "  END = " + nextEnd);
+
+        composition.glueNames(nextEnd, taggedrt);
+        //System.out.println("\nGlue OVER \n"+ composition.myString()+"\n");
+        composition.setRootFromStart();
+        //System.out.println("\nTO STACK \n"+ composition.myString()+"\n");
+        netStack.push(composition.copy());
       }
+      //now we have a stack of i nets   Ai=>Bi
+      //  we need to compose these with internal choice
+      InternalChoiceInfixFun internalChoice = new InternalChoiceInfixFun();
+      sequential = netStack.pop();
+      int pi = 1;
+      while (!netStack.empty()) {
 
-      Set<String> stopNodes = new HashSet<>();
 
-      for (PetriNetPlace pl : petrinet2.getPlaces().values()) {
-        pl.setStart(false);
+        sequential = internalChoice.compose("=>" + pi++, sequential, netStack.pop());
+        //System.out.println("SEQing " + sequential.myString());
+        //System.out.println("SEQing OVER");
       }
-      petrinet2.clearRoots();
-      //System.out.println("SHOULD HAVE NO START "+petrinet2.myString());
-      Petrinet composition = new Petrinet(id, false);
-
-      composition.getOwners().clear();
-      composition.getOwners().addAll(petrinet1.getOwners());
-      composition.getOwners().addAll(petrinet2.getOwners());
-
-     //System.out.println("Root names " + p2roots);
-      String tag = "*S" + i;
-      //add the first petrinet to the sequential composition
-      composition.addPetrinetNoOwner(petrinet1, tag);
-      Set<String> nextEnd = composition.getPlaces().values().stream()
-        .filter(x -> x.isSTOP()).map(x -> x.getId()).collect(Collectors.toSet());
-     //System.out.println("nextEnd from "+composition.myString());
-      composition.getPlaces().values().stream().forEach(x->x.setTerminal(""));
-      composition.setRootFromStart();
-
-
-     //System.out.println("Loop rt = " + rt);
-     //System.out.println("ROOTS " + tag);
-      i--;
-      Set<String> taggedrt = rt.stream().map(x->x+tag).collect(Collectors.toSet());
-
-      composition.addPetrinetNoOwner(petrinet2, tag); //replace objects tags names IGNORE root
-     //System.out.println("composition " + i + " = " + composition.myString());
-     //System.out.println(i + " ROOT = " + taggedrt + "  END = " + nextEnd);
-
-      composition.glueNames(nextEnd, taggedrt);
-     //System.out.println("\nGlue OVER \n"+ composition.myString()+"\n");
-      composition.setRootFromStart();
-     //System.out.println("\nTO STACK \n"+ composition.myString()+"\n");
-      netStack.push(composition.copy());
-    }
-    //now we have a stack of i nets   Ai=>Bi
-    //  we need to compose these with internal choice
-    InternalChoiceInfixFun internalChoice = new InternalChoiceInfixFun();
-    Petrinet sequential = netStack.pop();
-    int pi = 1;
-    while (!netStack.empty()) {
-
-
-      sequential = internalChoice.compose("=>" + pi++, sequential, netStack.pop());
-     //System.out.println("SEQing " + sequential.myString());
-     //System.out.println("SEQing OVER");
+      sequential = PetrinetReachability.removeUnreachableStates(sequential);
+      sequential.setRootFromStart();
+      //Petrinet seq = new Petrinet(id, false);
+      //seq.addPetrinet(sequential);  // renumbers the ids
+      //System.out.println("FINAL " +sequential.myString());
+      sequential.validatePNet();
+      return sequential;
+    } else {
+    // net1 dose not terminate so returne only net1
+      return net1.copy();
     }
 
-    sequential = PetrinetReachability.removeUnreachableStates(sequential);
-    //Petrinet seq = new Petrinet(id, false);
-    //seq.addPetrinet(sequential);  // renumbers the ids
-   //System.out.println("FINAL " +sequential.myString());
-    //sequential.validatePNet();
-    return sequential;
   }
 
   /**

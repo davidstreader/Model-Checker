@@ -45,7 +45,6 @@ public class AutomataParallelFunction {
 
     // construct the parallel composition of the states from both automata
     setupNodes(automaton1.getNodes(), automaton2.getNodes());
-
     // find the synchronous and non-synchronous actions in both alphabet sets
     // this means find the edge labels that are the same
     setupActions(automaton1.getAlphabet(), automaton2.getAlphabet());
@@ -55,10 +54,14 @@ public class AutomataParallelFunction {
 
     //The edges here are meaning the labeled lines in each of the automata that we are composing
     processUnsyncedActions(edges1, edges2);
+
     processSyncedActions(edges1, edges2);
- //   System.out.println("Par END "+automaton.myString());
+
+    //System.out.println("Par END "+automaton.myString());
     return automaton;
   }
+
+
 
   private void setupNodes(List<AutomatonNode> nodes1, List<AutomatonNode> nodes2)
                           throws CompilationException {

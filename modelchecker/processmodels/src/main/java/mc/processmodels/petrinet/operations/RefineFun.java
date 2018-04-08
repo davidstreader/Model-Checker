@@ -63,7 +63,7 @@ public class RefineFun {
       pl2.setStart(false);
      }
     }
-    petrinet2.setRoot(Collections.emptySet());
+    //petrinet2.setRoot(Collections.emptySet());
 
     /*Do the owners
     if (petrinet1.getOwners().contains(Petrinet.DEFAULT_OWNER)) {

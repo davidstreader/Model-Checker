@@ -1,10 +1,6 @@
 package mc.processmodels.conversion;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
+import java.util.*;
 import java.util.stream.Collectors;
 import lombok.SneakyThrows;
 import mc.exceptions.CompilationException;
@@ -51,21 +47,31 @@ public class TokenRule {
    * @return The automaton that is equivalent to {@code convertFrom} petrinet.
    */
   @SneakyThrows(value = {CompilationException.class})
-  public static Automaton tokenRule(Petrinet convertFrom, Map<Set<PetriNetPlace>, AutomatonNode> markingToNodeMap, Map<AutomatonNode, Set<PetriNetPlace> > nodeToMarkingMap) {
+  public static Automaton tokenRule(Petrinet convertFrom, Map<Set<PetriNetPlace>, AutomatonNode> markingToNodeMap,
+                                    Map<AutomatonNode, Set<PetriNetPlace> > nodeToMarkingMap) {
     Automaton outputAutomaton = new Automaton(convertFrom.getId() + " automata",
         false);
-   //System.out.println("\nTOKEN RULE \n STARTING "+convertFrom.myString());
+  //System.out.println("\nTOKEN RULE \n STARTING "+convertFrom.myString());
     convertFrom.validatePNet();
 
-    AutomatonNode root = outputAutomaton.addNode();
-    root.setStartNode(true);
-    outputAutomaton.addRoot(root);
+   //System.out.println(convertFrom.getRoots());
+    List<Set<PetriNetPlace>> rootsPlaces = new ArrayList<Set<PetriNetPlace>>();
 
-    markingToNodeMap.put(convertFrom.getRoot(), root);
-    nodeToMarkingMap.put(root, convertFrom.getRoot());
+    for(Set<String> rnames: convertFrom.getRoots()) {
+     //System.out.println("rnames "+ rnames);
+      AutomatonNode root = outputAutomaton.addNode();
+      root.setStartNode(true);
+      outputAutomaton.addRoot(root);
+      Set<PetriNetPlace> rts = rnames.stream().
+        map(x-> convertFrom.getPlaces().get(x)).collect(Collectors.toSet());
+      rootsPlaces.add(rts);
+      markingToNodeMap.put(rts, root);
+      nodeToMarkingMap.put(root, rts);
+    }
 
+   //System.out.println("rootsPlaces "+ rootsPlaces);
     Stack<Set<PetriNetPlace>> toDo = new Stack<>();
-    toDo.push(convertFrom.getRoot());
+    toDo.addAll(rootsPlaces);
 
     Set<Set<PetriNetPlace>> previouslyVisitedPlaces = new HashSet<>();
     int nodesCreated = 1;
@@ -122,7 +128,7 @@ public class TokenRule {
       previouslyVisitedPlaces.add(currentMarking);
       //System.out.println("ENDing "+previouslyVisitedPlaces.size()+"  "+Petrinet.marking2String(currentMarking));
     }
-    //System.out.println("Token Out "+outputAutomaton.myString());
+   //System.out.println("Token Out "+outputAutomaton.myString());
     return outputAutomaton;
   }
 

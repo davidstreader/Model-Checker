@@ -310,17 +310,23 @@ Meaning has been  given to Processes in the form of an Axiomatic Algebraic seman
 
 {
 \subsection{Internal  Choice $+$}
-Defined in CSP and ATP but not in ACP nor CCS.
+
+
 Used to represent a process that internally, with no external involvement, can choose to behave like either process. Consequently such a process can not be guaranteed to behave like either of the processes.
 
 The relation between the two definitions of choice is captured by the axioms:
 
 
-\[\sf (a->A+a->B) =_F (a->A|a->B) =_F (a->(A+B))\]
+\hspace{\fill}\verb$ (a->A+a->B) =_F (a->A|a->B) =_F (a->(A+B))$\hspace{\fill}
 
 {\color{red} NOT bisim need to use testing or Failure equality!}
 
-Internal choice is best modelled by allowing automata to have a set of start states. Using a set of start states  facilitates the modelling of processes  with either  probabilistic choice or  \emph{active} actions.
+Defined in CSP and ATP but not in ACP nor CCS. Whereas neither CSP nor ATP make central use of automata to visualise processes but both ACP and CCS do.
+
+Internal choice can be modelled by allowing automata to have a set of start states.  Thus \verb$(a->STOP)+(b->STOP)$ is a automata with two posible start states.
+
+
+Using a set of start states  facilitates the modelling of processes  with either  probabilistic choice or  \emph{active} actions.
 
 \subsubsection{Properties of Internal Choice}
  Choice is symmetric in that \verb$X+Y$ is equal to \verb$Y|X$. In what follows we write process equality as $\sim$ and hence:
@@ -333,17 +339,19 @@ Internal choice is best modelled by allowing automata to have a set of start sta
 
 Two processes can be composed in sequence using \verb|=>|   and sequential composition satisfies:
 
-\[\sf ((a->STOP)=>A) \sim (a->A),\qquad
-X=>(Y=>Z) \sim (X=>Y)=>Z\]
+\begin{center}
+\verb$ ((a->STOP)=>A) ~ (a->A)  X=>(Y=>Z) ~ (X=>Y)=>Z$
 
-\[\sf (STOP=>A) \sim A, \qquad (A=>STOP) \sim A \]
+\verb$ (STOP=>A) ~ A,  (A=>STOP) ~ A $
 
-\[\sf (X|Y)=>Z \sim (X=>Z)| (Y=>Z), \qquad 
-(X+Y)=>Z \sim (X=>Z)+ (Y=>Z)\] 
+\verb$ (X|Y)=>Z ~ (X=>Z)| (Y=>Z),  (X+Y)=>Z ~ (X=>Z)+ (Y=>Z)$
 
-\[\sf W=>(X+Y) \sim (W=>X)+ (W=>Y) \sim (W=>X)| (W=>Y)\]
+\verb$ W=>(X+Y) ~ (W=>X)+ (W=>Y) ~ (W=>X)| (W=>Y)$
+\end{center}
 
+\subsection{Representation and mixing internal choice with sequential composition}
 
+The  process \verb$(s->t->STOP)=>(a->STOP)+(b->STOP)$ is interesting in that the internal choice is made after the \verb$t$ event. Where as  process in the  \verb$(s->t->a->STOP)+(s->t->b->STOP)$ it  is made before the \verb$s$ event. But neither can be distinguished by any test. They are failure semantics equivalent. Hence how you choose to represent them is a matter of taste.
 
 
 
@@ -1011,7 +1019,7 @@ What we refer to as a Petri Net is actually an extension of Petri Nets with labe
 We adopt a definition of parallel composition that originates in the Box calculus and is not a part of main stream Petri Nets.
 
 
-\emph{{\bf A Petri Net} is a tuple  $\sf A \triangleq (P_A,S_A,T_A,Arcs_A,\alpha_A)$  where:
+\emph{\bf A Petri Net} is a tuple  $\sf A \triangleq (P_A,S_A,T_A,Arcs_A,\alpha_A)$  where:
 \begin{description}
 \item[$\sf P_A$] is the set of places,
 \item[$\sf S_A$] is a  set of  initial  Markings, where a Marking is  a set of places  $\sf M_A\subseteq P_A$ and hence $S_A \subseteq 2^{P_A}$
@@ -1023,7 +1031,7 @@ $\sf Edges_A\subseteq \{(p,t): p\in P_A, t\in T_A \}  \cup \{(t,p): p\in P_A, t\
 \item[$\sf \alpha_A$] is the alphabet of the process
 
 \end{description}
-}
+
 $\Box$
 
 Let us note by introducing an internal choice operator we need to have a set on initial markings else we would need to alter the semantics of $\tau$ event from that used in CCS. (Although CSP dose exactly this we have decided not to.) The introduction of  sequential composition as well as action prefixing is facilitated by the explicit definition of successful termination.  

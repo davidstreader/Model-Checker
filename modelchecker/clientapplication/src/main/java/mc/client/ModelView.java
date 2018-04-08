@@ -305,6 +305,8 @@ System.out.println("ModelView \n "+ automaton.myString());
           nodeTermination = NodeStates.START1;
         else if (place.getMaxStartNo()==3)
           nodeTermination = NodeStates.START2;
+        else if (place.getMaxStartNo()==4)
+          nodeTermination = NodeStates.START3;
       }
 
       GraphNode node = new GraphNode(petri.getId(), place.getId(),

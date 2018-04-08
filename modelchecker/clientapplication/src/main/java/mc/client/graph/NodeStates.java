@@ -14,7 +14,8 @@ import java.awt.*;
 public enum NodeStates {
     START   (Color.GREEN),
     START1  (new Color(5,240,5,90)),
-    START2  (new Color(10,220,10,80)),
+    START2  (new Color(0,200,10,80)),
+    START3  (new Color(10,180,0,80)),
     STOP    (Color.BLUE),
     ERROR   (Color.RED),
     NOMINAL (Color.LIGHT_GRAY),

@@ -181,7 +181,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
       automaton.setVariablesLocation(astNode.getLocation());
 
       interpretNode(astNode, automaton, new ArrayList<>(automaton.getRoot()).get(0));
-     //System.out.println("pushing "+automaton.myString());
+     System.out.println("pushing "+automaton.myString());
       processStack.push(automaton);
   //    System.out.println("Aut Built2 "+ automaton.myString());
     }

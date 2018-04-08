@@ -53,14 +53,11 @@ public class OwnersRule {
     a.tagEvents();
     //Throwable t = new Throwable();
     //t.printStackTrace();
-   //System.out.println("\nOWNERSRule " + a.myString());
-
+   System.out.println("\nOWNERSRule " + a.myString());
     PetriNetPlace p = null;
-    AutomatonNode root = null;
+    //AutomatonNode root = null;
 
-//       Setup = for all root nodes rnd
-//             + rnd->newMarking + aToDo
-   root = a.getRoot().iterator().next();
+   //root = a.getRoot().iterator().next();
 
     Stack<Petrinet> subNets = new Stack<>();
 /*
@@ -72,7 +69,7 @@ public class OwnersRule {
      Petrinet petri = new Petrinet(a.getId(), false);
      Stack<AutomatonNode> toDo = new Stack<>();
      Stack<AutomatonNode> processed = new Stack<>();
-     toDo.add(root);
+     toDo.addAll(a.getRoot());
      //BUILD the nd2Pl Mapp
      Map<AutomatonNode, PetriNetPlace> nd2Pl = new HashMap<>();
      boolean first = true;
@@ -100,7 +97,7 @@ public class OwnersRule {
      //Use the nd2Pl Mapp to build the projected automaton
      toDo.clear();
      processed.clear();
-     toDo.push(root);
+     toDo.addAll(a.getRoot());
      while (!toDo.isEmpty()) {
       AutomatonNode nd = toDo.pop();
       //System.out.println("Start 2 nd " + nd.getId());
@@ -122,27 +119,28 @@ public class OwnersRule {
        }
       }
      }
-      //System.out.println(petri.myString());
+      System.out.println("Unreach Next "+petri.myString());
       //System.out.println("Slice Net = " + petri.myString());
       petri = PetrinetReachability.removeUnreachableStates(petri);
+      System.out.println("Pushing Net "+petri.myString());
       subNets.push(petri.copy());  // Clones
       //System.out.println(subNets.size()+ " Slice Net ");
 
     }
-    //System.out.println("\n   OWNERS Rule Stacked "+subNets.size()+"    *********");
-    Petrinet build = new Petrinet(a.getId(), false);
+    System.out.println("\n   OWNERS Rule Stacked "+subNets.size()+"    *********");
+    Petrinet build = subNets.pop();
     while(!subNets.isEmpty()) {
     //System.out.println(subNets.size()+" Adding");
     //  build = PetrinetParallelMergeFunction.compose(build, subNets.pop());  //Debuging
       build = PetrinetParallelFunction.compose(build, subNets.pop());
     //  build = subNets.pop();  //for debugging
-    //System.out.println("  While "+build.myString());
+    System.out.println("  While "+build.myString());
     }
      build.deTagTransitions();
 
    //System.out.println("OWNERS Rule *END "+build.myString());
     build = PetrinetReachability.removeUnreachableStates(build);
-   //System.out.println("reach *END "+build.myString());
+   System.out.println("reach *END "+build.myString());
     return build;
   }
 
