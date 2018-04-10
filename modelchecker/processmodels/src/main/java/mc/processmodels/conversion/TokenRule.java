@@ -58,7 +58,7 @@ public class TokenRule {
     List<Set<PetriNetPlace>> rootsPlaces = new ArrayList<Set<PetriNetPlace>>();
 
     for(Set<String> rnames: convertFrom.getRoots()) {
-     //System.out.println("rnames "+ rnames);
+    //System.out.println("rnames "+ rnames);
       AutomatonNode root = outputAutomaton.addNode();
       root.setStartNode(true);
       outputAutomaton.addRoot(root);
@@ -69,7 +69,7 @@ public class TokenRule {
       nodeToMarkingMap.put(root, rts);
     }
 
-   //System.out.println("rootsPlaces "+ rootsPlaces);
+  //System.out.println("rootsPlaces "+ rootsPlaces);
     Stack<Set<PetriNetPlace>> toDo = new Stack<>();
     toDo.addAll(rootsPlaces);
 
@@ -84,8 +84,8 @@ public class TokenRule {
         //System.out.println("Visted!");
         continue;
       }
-
-      Set<PetriNetTransition> satisfiedPostTransitions = satisfiedTransitions(currentMarking);
+      //System.out.println("currentMarking "+currentMarking);
+      Set<PetriNetTransition> satisfiedPostTransitions = satisfiedTransitions(currentMarking); //88
       //System.out.println("Processing "+Petrinet.marking2String(currentMarking)+
       //" trans "+satisfiedPostTransitions.size());
       if (satisfiedPostTransitions.size() == 0) {
@@ -133,7 +133,7 @@ public class TokenRule {
   }
 
   private static Set<PetriNetTransition> satisfiedTransitions(Set<PetriNetPlace> currentMarking) {
-    return post(currentMarking).stream()
+    return post(currentMarking).stream() //88
         .filter(transition -> currentMarking.containsAll(transition.pre()))
         .distinct()
         .collect(Collectors.toSet());
@@ -141,11 +141,16 @@ public class TokenRule {
 
 
   private static Set<PetriNetTransition> post(Set<PetriNetPlace> currentMarking) {
-    return currentMarking.stream()
-        .map(PetriNetPlace::post)
-        .flatMap(Set::stream)
-        .distinct()
-        .collect(Collectors.toSet());
+    if (currentMarking == null) return Collections.EMPTY_SET;
+    Set<PetriNetTransition> out = new HashSet<>();
+    for (PetriNetPlace pl : currentMarking){
+      //System.out.println(pl);
+      //System.out.println(pl.post());
+      if (pl.post()!= null && pl.post().size()>0)
+          out.addAll(pl.post().stream().collect(Collectors.toSet()));
+    }
+    if (out == null) return Collections.EMPTY_SET;
+    else  return out;
   }
 
 }

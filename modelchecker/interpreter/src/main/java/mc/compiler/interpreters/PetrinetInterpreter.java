@@ -348,8 +348,8 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
   else if (currentNode instanceof ConversionNode) {
   //System.out.println("Before 349 ConversionNode START "+petri.myString());
    petri = interpretConversion((ConversionNode) currentNode, petri, currentPlace);
-   Throwable t = new Throwable();
-   t.printStackTrace();
+   //Throwable t = new Throwable();
+   //t.printStackTrace();
   //System.out.println("349 OUTSIDE of interpretConversion petri "+petri.myString());
 
   }

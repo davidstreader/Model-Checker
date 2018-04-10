@@ -13,6 +13,7 @@ import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.automata.operations.PetrinetParallelFunction;
 import mc.processmodels.automata.operations.PetrinetParallelMergeFunction;
+import mc.processmodels.automata.operations.SequentialInfixFun;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
@@ -34,14 +35,17 @@ public class OwnersRule {
   }
 
   /**
-   * This converts a deterministic automata to a petrinet.
-   * Works for nondet processes TODO extend to initial nondet. A * B
+   * This converts an automata to a petrinet.
    * For each owner O1 project the automata to a SLICE automata(Net)
    * i.e. a net built from  edges with owners containing O1
    *
    * Build the final net  as the parallel composition of all the slices!
    *
-   * TODO: Make this conversion work for NFA
+   * Internal choice introduces multiple start states NOT EASY to code directly
+   * So
+   *    1. to automata A add initial event S*=>A now only one start state.
+   *    2. proceed as before
+   *    3. remove S* to reveal the multiple start states.
    *
    * @param ain The automaton to be converted
    * @return a petrinet representation fo the automaton
@@ -49,15 +53,22 @@ public class OwnersRule {
   @SneakyThrows({CompilationException.class})
   public static  Petrinet ownersRule(Automaton ain) {
     clean();
-    Automaton a = ain.copy(); // smaller Ids make debugging easier
+   // 1. to automata A add initial event S*=>A now only one start state.
+    Automaton star = Automaton.singleEventAutomata("single" , "S*");
+    SequentialInfixFun sif = new SequentialInfixFun();
+    Automaton ai  = sif.compose("S*"+ain.getId(), star, ain);
+  //System.out.println("owners S* "+ai.myString());
+   // 2. proceed as before
+    Automaton a = ai.copy(); // smaller Ids make debugging easier
     a.tagEvents();
-    //Throwable t = new Throwable();
-    //t.printStackTrace();
-   System.out.println("\nOWNERSRule " + a.myString());
-    PetriNetPlace p = null;
-    //AutomatonNode root = null;
+   //System.out.println("\nOWNERS Stared Rule " + a.myString());
 
-   //root = a.getRoot().iterator().next();
+    PetriNetPlace p = null;
+    AutomatonNode root = null;
+
+//       Setup = for all roots nodes rnd
+//             + rnd->newMarking + aToDo
+   root = a.getRoot().iterator().next();
 
     Stack<Petrinet> subNets = new Stack<>();
 /*
@@ -67,9 +78,10 @@ public class OwnersRule {
     for (String own : a.getOwners()) {
      //System.out.println("\n >>Owner "+ own);
      Petrinet petri = new Petrinet(a.getId(), false);
+     petri.setOwners(Collections.singleton(own));
      Stack<AutomatonNode> toDo = new Stack<>();
      Stack<AutomatonNode> processed = new Stack<>();
-     toDo.addAll(a.getRoot());
+     toDo.add(root);
      //BUILD the nd2Pl Mapp
      Map<AutomatonNode, PetriNetPlace> nd2Pl = new HashMap<>();
      boolean first = true;
@@ -80,7 +92,12 @@ public class OwnersRule {
       processed.add(nd);
       if (!nd2Pl.containsKey(nd)) {
        PetriNetPlace added = petri.addPlace();
-       if (first) petri.addFirstRoot(added);
+
+       if (first) {
+         petri.addRoot(Collections.singleton(added.getId()));
+         added.setStart(true);
+         added.getStartNos().add(1);
+       }
        first = false;
        Set<AutomatonNode> clump = reach(ain, nd, own);
        //System.out.println("Clump " + clump.stream().map(x -> x.getId() + ", ").collect(Collectors.joining()));
@@ -97,7 +114,8 @@ public class OwnersRule {
      //Use the nd2Pl Mapp to build the projected automaton
      toDo.clear();
      processed.clear();
-     toDo.addAll(a.getRoot());
+     toDo.push(root);
+     //System.out.println("Half way "+petri.myString());
      while (!toDo.isEmpty()) {
       AutomatonNode nd = toDo.pop();
       //System.out.println("Start 2 nd " + nd.getId());
@@ -119,32 +137,68 @@ public class OwnersRule {
        }
       }
      }
-      System.out.println("Unreach Next "+petri.myString());
-      //System.out.println("Slice Net = " + petri.myString());
-      petri = PetrinetReachability.removeUnreachableStates(petri);
-      System.out.println("Pushing Net "+petri.myString());
-      subNets.push(petri.copy());  // Clones
+      //System.out.println(petri.myString());
+     //System.out.println("\nSlice Net = " + petri.myString());
+      petri = PetrinetReachability.removeUnreachableStates(petri).copy();
+     //System.out.println("\npushing "+petri.myString());
+      subNets.push(petri);  // Clones
       //System.out.println(subNets.size()+ " Slice Net ");
 
     }
-    System.out.println("\n   OWNERS Rule Stacked "+subNets.size()+"    *********");
+   //System.out.println("\n   OWNERS Rule Stacked "+subNets.size()+"    *********");
     Petrinet build = subNets.pop();
     while(!subNets.isEmpty()) {
-    //System.out.println(subNets.size()+" Adding");
+     //System.out.println(subNets.size()+" Adding");
     //  build = PetrinetParallelMergeFunction.compose(build, subNets.pop());  //Debuging
       build = PetrinetParallelFunction.compose(build, subNets.pop());
     //  build = subNets.pop();  //for debugging
-    System.out.println("  While "+build.myString());
     }
      build.deTagTransitions();
 
-   //System.out.println("OWNERS Rule *END "+build.myString());
+   //System.out.println("\n  OWNERS Rule *END "+build.myString());
     build = PetrinetReachability.removeUnreachableStates(build);
-   System.out.println("reach *END "+build.myString());
+   //System.out.println("reach *END "+build.myString());
+
+    //3. remove S* to reveal the multiple start states.
+    build = stripStar(build);
     return build;
   }
 
-
+  private static Petrinet stripStar(Petrinet pout) throws CompilationException {
+   //System.out.println("\n Strip Star pout "+pout.myString());
+   Set<String> roots = pout.getRoots().stream().
+        flatMap(Set::stream).collect(Collectors.toSet());
+ //System.out.println("stripStar root"+roots);
+   pout.getRootPlacess().clear();
+   if (roots.size()!=1) {
+     Throwable t = new Throwable();
+     t.printStackTrace();
+    //System.out.println("Owner build failed. Strip start failure "+pout.myString());
+     throw new CompilationException(pout.getClass(),
+       "Owner build failed. Strip start failure "+pout.myString());
+   }
+   String rs = roots.iterator().next();
+   //System.out.println("rs = "+rs);
+   List<Set<String>> newRoots = new ArrayList<>();
+   Integer rindx = 1;
+   for (PetriNetTransition tr: pout.getPlaces().get(rs).post()) {
+    //System.out.println("trans "+tr.myString());
+     Set<String> rtpost = tr.post().stream().map(x->x.getId()).collect(Collectors.toSet());
+     newRoots.add(rtpost);
+     pout.removeTransition(tr);
+     for(String plname : rtpost){
+       PetriNetPlace pl =  pout.getPlaces().get(plname);
+       pl.addStartNo(rindx);
+       pl.setStart(true);
+     }
+     rindx++;
+   }
+   pout.removePlace(pout.getPlaces().get(rs));
+   pout.setRoots(newRoots);
+   //pout.setStartFromRoot();
+   //System.out.println("StripStar OUT"+pout.myString()+"\n");
+   return pout;
+}
   private static String printVisited(Map<AutomatonNode, PetriNetPlace> v){
     String out = "Visited {";
     for(AutomatonNode nd: v.keySet()){
@@ -178,9 +232,9 @@ public class OwnersRule {
 
 
   private static  void printaN2Marking() {
-   //System.out.println("aN2Marking");
+  System.out.println("aN2Marking");
     for(AutomatonNode nd : aN2Marking.keySet()) {
-      System.out.println("  "+nd.getId()+" =>> ");
+    System.out.println("  "+nd.getId()+" =>> ");
       for (String k:  aN2Marking.get(nd).keySet()){
         System.out.println("    "+k+" own2place "+aN2Marking.get(nd).get(k).myString()); ;
       }
@@ -230,7 +284,7 @@ private static Set<AutomatonNode> reach(Automaton a, AutomatonNode ndi, String o
 
     public void todoPush(AutomatonNode nd) {
       if (stackit.contains(nd)) {
-        //System.out.println("stackit Duplicate "+nd.myString());
+        System.out.println("stackit Duplicate "+nd.myString());
         return;
       } else {
         stackit.push(nd);

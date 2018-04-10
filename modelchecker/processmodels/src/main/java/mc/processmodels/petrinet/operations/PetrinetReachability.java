@@ -11,23 +11,23 @@ import mc.processmodels.petrinet.components.PetriNetTransition;
 
 public final class PetrinetReachability {
 
-  public static Petrinet removeUnreachableStates(Petrinet petri) throws CompilationException {
+  public static Petrinet removeUnreachableStates(Petrinet pet) throws CompilationException {
    //System.out.println("\n UNREACH " + petri.myString());
 
-    petri = petri.copy();
+    Petrinet petri = pet.copy();
 
     Stack<Set<PetriNetPlace>> toDo = new Stack<>();
 
     for (Set<String> rt : petri.getRoots()) {
       Set<PetriNetPlace> rtP = new HashSet<>();
       for (String name : rt) {
-        //System.out.println("Key Set "+petri.getPlaces().keySet());
-        //System.out.println("key "+name);
+       //System.out.println("Key Set "+petri.getPlaces().keySet());
+       //System.out.println("key "+name);
         PetriNetPlace pl = petri.getPlaces().get(name);
-
         rtP.add(pl);
       }
-     //System.out.println("pushing root size " + rtP.size() +" "+ rtP.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
+/*System.out.println("pushing root size " + rtP.size() +" "+
+       rtP.stream().map(x->x.getId()+" ").collect(Collectors.joining()));*/
       toDo.push(rtP);
     }
 
@@ -46,10 +46,11 @@ public final class PetrinetReachability {
       if (previouslyVisitedPlaces.contains(currentMarking)) {
         continue;
       }
-
-      //System.out.println("MARKING: "+Petrinet.marking2String(currentMarking));
+/*if (currentMarking==null) System.out.println("currentMarking == null");
+      else
+      System.out.println("MARKING: "+Petrinet.marking2String(currentMarking)); */
       //System.out.println("Post "+Petrinet.trans2String(post(currentMarking)));
-      Set<PetriNetTransition> satisfiedPostTransitions = satisfiedTransitions(currentMarking);
+      Set<PetriNetTransition> satisfiedPostTransitions = satisfiedTransitions(currentMarking); //**
 
       for (PetriNetTransition transition : satisfiedPostTransitions) {
         //System.out.println(transition.myString()+"  Marking "+Petrinet.marking2String(currentMarking));
@@ -134,7 +135,7 @@ public final class PetrinetReachability {
   }
 
   private static Set<PetriNetTransition> satisfiedTransitions(Set<PetriNetPlace> currentMarking) {
-    return post(currentMarking).stream()
+    return post(currentMarking).stream() //**
       .filter(transition -> currentMarking.containsAll(transition.pre()))
       .distinct()
       .collect(Collectors.toSet());
@@ -146,7 +147,7 @@ public final class PetrinetReachability {
       .map(PetriNetPlace::post)
       .flatMap(Set::stream)
       .distinct()
-      .collect(Collectors.toSet());
+      .collect(Collectors.toSet()); //**
   }
 
   private static Set<PetriNetTransition> pre(Set<PetriNetPlace> currentMarking) {

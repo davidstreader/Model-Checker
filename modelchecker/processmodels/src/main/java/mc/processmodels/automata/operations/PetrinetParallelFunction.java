@@ -33,8 +33,8 @@ public class PetrinetParallelFunction  {
       if(owners.contains(Petrinet.DEFAULT_OWNER)) {
         owners = Collections.singleton(p1.getId());
       }
-    //  System.out.println("eId "+eId);
-    //  System.out.println(p1.getOwners());
+    //System.out.println("eId "+eId);
+    //System.out.println(p1.getOwners());
       //p1.getEdges().get(eId).getOwners().add(p1.getId());
       p1.getEdges().get(eId).setOwners(owners);
     }
@@ -55,6 +55,7 @@ public class PetrinetParallelFunction  {
     composition.getOwners().addAll(p2.getOwners());
 
     List<Set<String>> roots = buildRoots(p1,p2);
+
     petriTransMap.putAll(composition.addPetrinetNoOwner(p1,tag1));
     petriTransMap.putAll(composition.addPetrinetNoOwner(p2,tag2));
     composition.setRoots(roots);
@@ -64,7 +65,7 @@ public class PetrinetParallelFunction  {
 
     composition = PetrinetReachability.removeUnreachableStates(composition);
 
-   //System.out.println("PAR end "+composition.myString());
+   //System.out.println("\n   PAR end "+composition.myString());
     return composition;
   }
 
@@ -187,7 +188,7 @@ public class PetrinetParallelFunction  {
     //addTo.validatePNet();
     //petriToAdd.validatePNet();
    //System.out.println("IN AddTo "+addTo.myString());
-   // System.out.println("IN ToAdd "+petriToAdd.myString());
+   //System.out.println("IN ToAdd "+petriToAdd.myString());
     List<Set<String>> roots = addTo.getRoots();
    //System.out.println("roots "+roots);
     Map<PetriNetPlace, PetriNetPlace> placeMap = new HashMap<>();
@@ -226,7 +227,7 @@ public class PetrinetParallelFunction  {
     petriPlaceMap.put(petriToAdd, placeMap);
 
     //addTo.validatePNet();
-  //  System.out.println("OUT AddedTo "+addTo.myString());
+  //System.out.println("OUT AddedTo "+addTo.myString());
     return roots;
   }
 
@@ -244,7 +245,7 @@ public class PetrinetParallelFunction  {
         out.add(buildMark(m1,m2));
       }
     }
-   //System.out.println("New Roots "+out);
+  //System.out.println("New buildRoots "+out);
     return out;
   }
 

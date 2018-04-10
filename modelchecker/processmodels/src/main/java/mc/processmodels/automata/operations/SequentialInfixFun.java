@@ -26,9 +26,9 @@ public class SequentialInfixFun {
    * @return the resulting automaton of the operation
    */
   public Automaton compose(String id, Automaton automaton1, Automaton automaton2) throws CompilationException {
-    System.out.println("\n *********************\n");
-    System.out.println("a1 "+automaton1.myString());
-    System.out.println("a2 "+automaton2.myString());
+   //System.out.println("\n *********************");
+   //System.out.println("a1 "+automaton1.myString());
+   //System.out.println("a2 "+automaton2.myString());
     Automaton sequence = new Automaton(id, !Automaton.CONSTRUCT_ROOT);
 
     Multimap<String, String> setOfOwners = Automaton.ownerProduct(automaton1, automaton2);
@@ -38,26 +38,25 @@ public class SequentialInfixFun {
     Map<String, AutomatonNode> automata1nodes = new HashMap<>();
     Map<String, AutomatonNode> automata2nodes = new HashMap<>();
 
-    //  System.out.println("Sequence aut1 "+ automaton1.toString());
-    //  System.out.println("Sequence aut2 "+ automaton2.toString());
+    // //System.out.println("Sequence aut1 "+ automaton1.toString());
+    // //System.out.println("Sequence aut2 "+ automaton2.toString());
     //copy node1 nodes across
     AutomataReachability.removeUnreachableNodes(automaton1).getNodes().forEach(node -> {
-      try {
-        AutomatonNode newNode = sequence.addNode();
 
+      try {
+       //System.out.println("1 adding "+node.myString());
+        AutomatonNode newNode = sequence.addNode();
         newNode.copyProperties(node);
         automata1nodes.put(node.getId(), newNode);
-
         if (newNode.isStartNode()) {
           sequence.addRoot(newNode);
         }
-
       } catch (CompilationException e) {
         e.printStackTrace();
       }
     });
 
-    //  System.out.println("Sequence 1 "+sequence.toString());
+     //System.out.println("Sequence 1 "+sequence.myString());
 
     copyAutomataEdges(sequence, automaton1, automata1nodes, setOfOwners);
 
@@ -66,21 +65,20 @@ public class SequentialInfixFun {
     Collection<AutomatonNode> stopNodes = sequence.getNodes().stream()
       .filter(n -> "STOP".equals(n.getTerminal()))
       .collect(Collectors.toList());
-
+   /*System.out.print("stopNodes "+stopNodes.stream().
+      map(x->x.getId()).reduce("{",(x,y)->x=x+" "+y)+"}");*/
     //if there are no stop nodes, we cannot glue them together
     if (stopNodes.isEmpty()) {
       return sequence;
     }
-    /*System.out.print("stopNodes "+stopNodes.stream().
-         map(x->x.getId()).reduce("{",(x,y)->x=x+" "+y)+"}"); */
+
 
 //below copies the automaton hence renames the nodes
     AutomataReachability.removeUnreachableNodes(automaton2).getNodes().forEach(node -> {
+     //System.out.println("2 adding "+node.myString());
       AutomatonNode newNode = sequence.addNode();
       newNode.copyProperties(node);
-
       automata2nodes.put(node.getId(), newNode);
-
       if (newNode.isStartNode()) {
         newNode.setStartNode(false);
         // for every stop node of automata1, get the edges that go into it
@@ -111,11 +109,11 @@ public class SequentialInfixFun {
       .flatMap(List::stream)
       .forEach(sequence::removeEdge);
     stopNodes.forEach(sequence::removeNode);
-    // System.out.println("Sequence 2 "+ automaton2.toString());
+ //System.out.println("automaton2  "+ automaton2.myString());
 
     copyAutomataEdges(sequence, automaton2, automata2nodes, setOfOwners);
 
-    //  System.out.println("End Seq   "+sequence.toString());
+     //System.out.println("End Seq   "+sequence.myString());
     return sequence;
   }
 
@@ -133,29 +131,29 @@ public class SequentialInfixFun {
   public Petrinet compose(String id, Petrinet net1, Petrinet net2)
     throws CompilationException {
     String name = net1.getId() + "=>" + net2.getId();
-   //System.out.println("=>PETRI1 "+net1.myString());
+  //System.out.println("=>PETRI1 "+net1.myString());
     net1.validatePNet();
-   //System.out.println("=>PETRI2 "+net2.myString());
+  //System.out.println("=>PETRI2 "+net2.myString());
     net2.validatePNet();
     Stack<Petrinet> netStack = new Stack<>();
     ///LOOP
     List<Set<String>> p2roots = net2.getRoots();
     int i = p2roots.size();
-   //System.out.println("ROOTS " + i);
+  //System.out.println("ROOTS " + i);
     Petrinet sequential;
     if (net1.terminates()) {
       for (Set<String> rt : net2.getRoots()) {
-        //System.out.println("\n "+i+" rt = "+rt);
+       //System.out.println("\n "+i+" rt = "+rt);
         Petrinet petrinet1 = net1.copy();
         Petrinet petrinet2 = net2.copy();
-        //System.out.println("In1=> " + petrinet1.myString());
-        //System.out.println("=>In2 " + petrinet2.myString());
+       //System.out.println("In1=> " + petrinet1.myString());
+       //System.out.println("=>In2 " + petrinet2.myString());
         if (petrinet1 == petrinet2) {
-          System.out.println("\n SAME NETS PROBLEM\n");
+         System.out.println("\n SAME NETS PROBLEM\n");
         }
         for (PetriNetPlace pl1 : petrinet1.getPlaces().values()) {
           for (PetriNetPlace pl2 : petrinet2.getPlaces().values()) {
-            if (pl1 == pl2) System.out.println("\n SAME PLACES PROBLEM\n");
+            if (pl1 == pl2)System.out.println("\n SAME PLACES PROBLEM\n");
           }
         }
         Petrinet composition = new Petrinet(id, false);
@@ -169,7 +167,7 @@ public class SequentialInfixFun {
           pl.setStart(false);
         }
         petrinet2.clearRoots();
-        //System.out.println("SHOULD HAVE NO START "+petrinet2.myString());
+       //System.out.println("SHOULD HAVE NO START "+petrinet2.myString());
 
         composition.getOwners().addAll(petrinet2.getOwners());
 
@@ -179,7 +177,7 @@ public class SequentialInfixFun {
         composition.addPetrinetNoOwner(petrinet1, tag);
         Set<String> nextEnd = composition.getPlaces().values().stream()
           .filter(x -> x.isSTOP()).map(x -> x.getId()).collect(Collectors.toSet());
-        //System.out.println("nextEnd from "+composition.myString());
+       //System.out.println("nextEnd from "+composition.myString());
         composition.getPlaces().values().stream().forEach(x -> x.setTerminal(""));
         composition.setRootFromStart();
 
@@ -191,12 +189,12 @@ public class SequentialInfixFun {
 
         composition.addPetrinetNoOwner(petrinet2, tag); //replace objects tags names IGNORE root
         //System.out.println("composition " + i + " = " + composition.myString());
-        //System.out.println(i + " ROOT = " + taggedrt + "  END = " + nextEnd);
+       //System.out.println(i + " ROOT = " + taggedrt + "  END = " + nextEnd);
 
         composition.glueNames(nextEnd, taggedrt);
-        //System.out.println("\nGlue OVER \n"+ composition.myString()+"\n");
+       ////System.out.println("\nGlue OVER \n"+ composition.myString()+"\n");
         composition.setRootFromStart();
-        //System.out.println("\nTO STACK \n"+ composition.myString()+"\n");
+       ////System.out.println("\nTO STACK \n"+ composition.myString()+"\n");
         netStack.push(composition.copy());
       }
       //now we have a stack of i nets   Ai=>Bi
@@ -208,14 +206,14 @@ public class SequentialInfixFun {
 
 
         sequential = internalChoice.compose("=>" + pi++, sequential, netStack.pop());
-        //System.out.println("SEQing " + sequential.myString());
-        //System.out.println("SEQing OVER");
+        ////System.out.println("SEQing " + sequential.myString());
+        ////System.out.println("SEQing OVER");
       }
       sequential = PetrinetReachability.removeUnreachableStates(sequential);
       sequential.setRootFromStart();
       //Petrinet seq = new Petrinet(id, false);
       //seq.addPetrinet(sequential);  // renumbers the ids
-      //System.out.println("FINAL " +sequential.myString());
+      ////System.out.println("FINAL " +sequential.myString());
       sequential.validatePNet();
       return sequential;
     } else {

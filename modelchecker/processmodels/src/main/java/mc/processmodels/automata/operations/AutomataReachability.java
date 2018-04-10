@@ -35,7 +35,7 @@ public class AutomataReachability {
     // find the reachable nodes within the specified automaton
     while (!fringe.isEmpty()) {
       AutomatonNode current = fringe.pop();
-      System.out.println("fringe "+current.getId());
+     //System.out.println("fringe "+current.getId());
 
       // push the neighbouring nodes from the current node to the fringe
       // if they have not already been visited

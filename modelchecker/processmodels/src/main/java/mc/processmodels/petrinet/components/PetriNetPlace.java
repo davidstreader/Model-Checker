@@ -27,7 +27,7 @@ public class PetriNetPlace extends ProcessModelObject {
     Optional<Integer> i  = startNos.stream().max(Integer::compare);
     if (i.isPresent()) out = i.get();
     else out = 0;
-System.out.println("getMaxStartNo for " + getId()+" is "+out);
+  //System.out.println("getMaxStartNo for " + getId()+" is "+out);
     return out;
   }
   public void addRefefances(Set<String> inrefs){
@@ -56,7 +56,7 @@ System.out.println("getMaxStartNo for " + getId()+" is "+out);
     //System.out.println("removed in "+incoming.size()+" removed out "+outgoing.size());
   }
   public void addStartNo(int i){
-    System.out.println(this.getId()+" startNos " + startNos + " adding "+i);
+   //System.out.println(this.getId()+" startNos " + startNos + " adding "+i);
     Set<Integer> Nos = new HashSet<>();
     for(Integer n : startNos) {
       Nos.add(n);

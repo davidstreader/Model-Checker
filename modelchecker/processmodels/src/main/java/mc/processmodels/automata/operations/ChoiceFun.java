@@ -122,7 +122,7 @@ public class ChoiceFun {
    *   SaiSbj  =  Sai TIMES Sbj
    * When A and B have only one root   RA [] RB =  Sa1 TIMES Sb1
    *  Sai and Saj are not always disjoint when i!=j see  a||(x+y)
-
+      for each pair of roots Ri, Rj build a Ri[]Rj processes
    *  (x+y)[]c has two c events one offered with an x evnent the other with the y event
    *  (x+y)[](a+b) had four root nodes and 8 events 2 of each x,y,a,b
    *
@@ -134,20 +134,26 @@ public class ChoiceFun {
 
   public Petrinet compose(String id, Petrinet net1, Petrinet net2)
     throws CompilationException {
-    //System.out.println("[]PETRI1 "+net1.myString());
+    System.out.println("[]PETRI1 "+net1.myString());
     net1.validatePNet();
-    //System.out.println("[]PETRI2 "+net2.myString());
+    System.out.println("[]PETRI2 "+net2.myString());
     net2.validatePNet();
+    Stack<Set<String> > endStack = new Stack<>(); // for the end markings of each Ri[]Rj
     List<Set<String>> newRoots = new ArrayList<>();
-    System.out.println("CCCCHOICE " +net1.getRoots().size() +" X " +net2.getRoots().size());
+    System.out.println("[]CHOICE " +net1.getRoots().size() +" X " +net2.getRoots().size());
     Petrinet composition = new Petrinet(id, false);
+    composition.getOwners().clear();
+    //for each pair of roots Ri, Rj build a Ri[]Rj processes
     for (int i = 0; i < net1.getRoots().size(); i++) {
       for (int j = 0; j < net2.getRoots().size(); j++) {
         Petrinet petrinet1 = new Petrinet(id, false);
         Petrinet petrinet2 = new Petrinet(id, false);
         //clone nets
-        petrinet1.addPetrinetNoOwner(net1,"C1."+(i+j));
-        petrinet2.addPetrinetNoOwner(net2,"C2."+(i+j));
+        petrinet1.addPetrinet(net1);
+        petrinet2.addPetrinet(net2);
+        System.out.println("i "+i+"  j "+j);
+        System.out.println("[]net1 "+net1.myString());
+        System.out.println("[]net2 "+net2.myString());
 // build set for gluing (leave the start ON
         System.out.println("petrinet1.getRoots() "+petrinet1.getRoots());
         System.out.println("petrinet2.getRoots() "+petrinet2.getRoots());
@@ -163,7 +169,6 @@ public class ChoiceFun {
             forEach(x -> x.setTerminal(""));
         } */
 
-        composition.getOwners().clear();
         composition.getOwners().addAll(petrinet1.getOwners());
         composition.getOwners().addAll(petrinet2.getOwners());
         //prior to Gluing join the nets (do not add as that changes the names
@@ -172,7 +177,7 @@ public class ChoiceFun {
         //add the second petrinet;
         composition.joinPetrinet(petrinet2);
         composition.setRoots(new ArrayList<>());
-        System.out.println("\nafter Join " + composition.myString() + "\n");
+        System.out.println("\n[]after Join " + composition.myString() + "\n");
         //merge the end of petri1 with the start of petri2
         Map<String, String> s2s =
           composition.glueNames(startOfP1, startOfP2);
@@ -187,27 +192,45 @@ public class ChoiceFun {
 
 
         // composition.setStartFromRoot();
-        System.out.println("\nbefore Glue END " +petrinet1.terminates() +petrinet2.terminates() + composition.myString() + "\n");
-        if (petrinet1.terminates() && petrinet2.terminates()) {//Sugar  end1 or end2 will be set to size 0
+        //composition = PetrinetReachability.removeUnreachableStates(composition);
+        System.out.println("\n[]before Glue END " +net1.terminates()+" " +net2.terminates() + " "+composition.myString() + "\n");
+        if (net1.terminates() && net2.terminates()) {//Sugar  end1 or end2 will be set to size 0
           Set<PetriNetPlace> end1 = petrinet1.getPlaces().values().stream()
             .filter(x -> x.isTerminal()).collect(Collectors.toSet());
           Set<PetriNetPlace> end2 = petrinet2.getPlaces().values().stream()
             .filter(x -> x.isTerminal()).collect(Collectors.toSet());
   System.out.println("\nend1 "+end1 + " end2 "+end2+"\n");
           if (end1.size() > 0 && end2.size() > 0) {
-            composition.gluePlaces(end1, end2, false);
+            //glue the Ri, Ri end markings
+            Map<String,String>  endn = composition.gluePlaces(end1, end2, false);
+            System.out.println(endn.values().stream().
+               map(x->x+"->"+endn.get(x)+" ").collect(Collectors.joining()));
+            Set<String> endSet = endn.values().stream().collect(Collectors.toSet());
+            endStack.push(endSet);
+            System.out.println("PUSHED endSet "+endSet);
           }
-          System.out.println("\nafter Glue End  " + composition.myString() + "\n");
+          System.out.println("\n[]after Glue End  " + composition.myString() + "\n");
         }
       }
     }
 
-    System.out.println("\nFINAL newRoots " + newRoots);
+    // glue each Ri[]Rj end together
+    System.out.println("endStack "+ endStack.toString());
+    if (endStack.size() > 1) {
+      Set<String> base = endStack.pop();
+      System.out.println("base "+base);
+      while (endStack.size() > 0) {
+        Set<String> next = endStack.pop();
+        System.out.println("next "+next);
+         composition.glueNames(base,next);
+      }
+    }
+    System.out.println("\n[]FINAL newRoots " + newRoots);
     System.out.println("before setting root "+ composition.myString()+"\n");
     composition.setRoots(newRoots);
     composition.setStartFromRoot();
 
-    System.out.println("Add OUT "+ composition.myString()+"\n");
+    System.out.println("[]Add OUT "+ composition.myString()+"\n");
     composition = PetrinetReachability.removeUnreachableStates(composition);
     //System.out.println("Add OUT "+ composition.myString()+"\n");
     composition.validatePNet();

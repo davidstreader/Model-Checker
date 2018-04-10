@@ -153,6 +153,7 @@ if (net1.terminates() && net2.terminates()) {
   choice.glueNames(end1, end2);
 }
     choice.setRootFromStart();
+    System.out.println("choice "+choice.myString());
     return choice;
   }
 }
