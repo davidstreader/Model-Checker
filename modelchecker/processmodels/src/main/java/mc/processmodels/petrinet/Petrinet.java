@@ -66,7 +66,82 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     owners.add(o);
   }
 
+  /**
+   * Choice joins two nets then initiallly  glues the start marking of the two nets.
+   * This sets up the owner ship of the the joint nets.
+   * To keep nets "simple" we want to have a single STOP marking. This can be acheived by
+   * gluing together the two end markings. BUT building the ownership of such a net is problematic!
+   * Alternatively (1) split and node with more than one owner. Now you have two marking each with
+   * one place per owner and that same set of owners. (2) "Glue" the markings together by identifying pairs
+   * of places with the same owner. Then (3) simplify.
+   */
+  public Set<String> secondGlueing(Set<PetriNetPlace> end1, Set<PetriNetPlace> end2)
+  throws CompilationException {
+    //1. split nodes so each has single owner
+    System.out.println("\nStarting secondGlueing");
+    List<Set<PetriNetPlace>> ends = new ArrayList<>();
+    ends.add(new HashSet<>(end1)); ends.add(new HashSet<>(end2));
+    for(int j= 0;j<2;j++) {
+      int i = 1;
+      for (PetriNetPlace pl : ends.get(j)) {
+        if (pl.getOwners().size() <= 1) continue;
+        System.out.println(pl.myString());
+        Set<String> owners = new HashSet<>(pl.getOwners());
+        boolean first = true;
+        for (String o : owners) {
+          if (first) {
+            first = false;
+            pl.setOwners(Collections.singleton(o));
+            System.out.println("New " + pl.myString());
+            continue;
+          } else {
+            PetriNetPlace newPlace = addPlace(pl.getId() + "s" + i++);
+            ends.get(j).add(newPlace);
+            newPlace.copyProperties(pl);
 
+            for(PetriNetEdge ed: pl.getIncoming()){
+              PetriNetEdge ednew = addEdge( newPlace,(PetriNetTransition) ed.getFrom(),ed.getOwners());
+              ((PetriNetTransition) ed.getFrom()).removeEdge(ed);
+            }
+            newPlace.setOwners(Collections.singleton(o));
+            System.out.println("Added " + newPlace.myString() +" to "+j);
+          }
+        }
+      }
+    }
+    System.out.println("secondGlueing places split "+myString()+"\n");
+    //2. merge nodes with same owner
+    for(PetriNetPlace pl1: ends.get(0)){// end Changed
+      for(PetriNetPlace pl2:ends.get(1)){
+   System.out.println(pl1.getId()+" "+pl1.getOwners()+ " ++ "+pl2.getId()+" "+pl2.getOwners());
+        if(pl1.getOwners().equals(pl2.getOwners())){
+          pl1.getIncoming().addAll(pl2.getIncoming());
+          for(PetriNetEdge ed: pl2.getIncoming()){
+            PetriNetEdge ednew = addEdge(pl1, (PetriNetTransition) ed.getFrom(), ed.getOwners());
+            System.out.println("    new ed "+ednew.myString());
+          }
+  System.out.println("  remove   "+pl2.myString()+ "\n  merge with "+pl1.myString());
+          removePlace(pl2);
+        }
+      }
+    }
+    //3. simplify
+    Set<String> out = end1.stream().map(x->x.getId()).collect(Collectors.toSet());
+   System.out.println("out = "+out);
+   System.out.println("END of secondGlueing "+myString()+"\nEND of secondGlueing\n");
+  return out;
+}
+
+
+public void rebuildAlphabet(){
+  Multimap<String, PetriNetTransition> alpha = ArrayListMultimap.create();
+  for(String s : alphabet.keySet()){
+    for (PetriNetTransition tr: alphabet.get(s)){
+      alpha.put(s,tr);
+    }
+  }
+  alphabet = alpha;
+  }
   public boolean terminates() {
    //System.out.println("termination \n"+ places.values().stream().
    //      map(x->x.getId()+"->"+x.getOwners().toString()+"\n  ").collect(Collectors.joining()));
@@ -765,7 +840,11 @@ System.out.println("TR "+tr.myString());
   }
 
 
-  /*
+  /* Glueing works for the Net marking to Autom  node mapping
+     Ownership needed on the Automata  to build the Automa to Net mapping "OwnersRule'
+     Should we compute the owners seperatly on Nets OR  build the Net and
+     compute the Owners from the Net structure.
+
   1. Build map  from oldOwner to set of newOwners "o1 = o1^o2a, o1^o2b"
   2. Apply mapping to Petrinet
   3. Rebuild owners of a PetriNet (simplify by removing "^"  may be  "o1,o2 => ox")
@@ -788,10 +867,10 @@ System.out.println("TR "+tr.myString());
   public Map<String,String> gluePlaces
       (Set<PetriNetPlace> set1, Set<PetriNetPlace> set2, boolean changeOwner)
       throws CompilationException {
-  //System.out.println("\n GLUE  START \n"+myString());
+  System.out.println("\n\n GLUE  START \n"+myString());
 
-  //System.out.println("s1 "+ Petrinet.marking2String(set1));
-  //System.out.println("s2 "+ Petrinet.marking2String(set2));
+  System.out.println("s1 "+ Petrinet.marking2String(set1));
+  System.out.println("s2 "+ Petrinet.marking2String(set2));
 
     for(PetriNetPlace pl : set1){
       if (!places.containsValue(pl)){
@@ -815,17 +894,16 @@ System.out.println("TR "+tr.myString());
       flatMap(Set::stream).distinct().collect(Collectors.toSet());
     Set<String> owns2 = set2.stream().map(x->x.getOwners()).
       flatMap(Set::stream).distinct().collect(Collectors.toSet());
-  //System.out.println("owns1 "+owns1);
-  //System.out.println("owns2 "+owns2);
+  System.out.println("owns1 "+owns1+ "  owns2 "+owns2);
     for(String o1:owns1) {
       for (String o2 : owns2) {
-        combinationsTable.put(o1, o1+MAPLET+o2);
+        combinationsTable.put(o1, o1+MAPLET+o2);//Assumes disjoint ownership!
         combinationsTable.put(o2, o1+MAPLET+o2);
       }
     }
-   /*System.out.println("GlueOwners "+ combinationsTable.keySet().stream().
+   System.out.println("GlueOwners Table "+ combinationsTable.keySet().stream().
       map(x->x+"->"+combinationsTable.get(x)+", ").
-      collect(Collectors.joining())+ " "); */
+      collect(Collectors.joining())+ " ");
 
 
 
@@ -835,7 +913,7 @@ System.out.println("TR "+tr.myString());
     for (PetriNetPlace place1 : set1) {
       for (PetriNetPlace place2 : set2) {
         PetriNetPlace newPlace = this.addGluePlace();
- //System.out.println("Glue "+place1.getId()+" with "+place2.getId()+" = "+newPlace.getId());
+ System.out.println("Glue "+place1.getId()+" with "+place2.getId()+" = "+newPlace.getId());
         products.put(place1, newPlace);
         products.put(place2, newPlace);
         prodNames.put(place1.getId()+MAPLET+place2.getId(), newPlace.getId());
@@ -867,8 +945,8 @@ System.out.println("TR "+tr.myString());
     }
 
    //System.out.println("PROD "+ prodNames);
-//Owners used as key to combinationsTable after it is built
-    // How do we cope with second glueing
+//To build the new owners old owners used as key to combinationsTable after it is built
+    // How do we cope with second glueing??
    //System.out.println(myString());
    //System.out.println("places  "+places.keySet());
    //System.out.println("product "+products.keySet().stream().map(x->x.getId()).collect(Collectors.joining()));
@@ -890,10 +968,10 @@ System.out.println("TR "+tr.myString());
 //Built MultiMap now replace Net owners
 
   //System.out.println("So far "+ myString());
- //System.out.println("owners = "+owners);
+ System.out.println("owners = "+owners);
     owners =  owners.stream().map(x->combinationsTable.get(x)).
             flatMap(Collection::stream).collect(Collectors.toSet());
- //System.out.println("owners = "+owners);
+ System.out.println("owners = "+owners);
 
     for(PetriNetEdge edge: getEdges().values()){
       Set<String> U = new HashSet<>(combinationsTable.keySet());
@@ -927,7 +1005,7 @@ System.out.println("TR "+tr.myString());
     //  .filter(PetriNetPlace::isStart).forEach(this::addFirstRoot);
   //System.out.println("GLUE END "+ this.myString());
    //System.out.println("PROD "+ prodNames);
- //System.out.println("GLUE END");
+ System.out.println("GLUE END\n\n");
     return prodNames;
   }
 

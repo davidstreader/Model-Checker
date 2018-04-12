@@ -24,9 +24,11 @@ public class PetrinetParallelFunction  {
 
   public static Petrinet compose(Petrinet p1, Petrinet p2) throws CompilationException {
     clear();
-   //System.out.println("PETRINETPARALLELFUNCTION");
-   //System.out.println("p1 "+p1.myString());
-   //System.out.println("p2 "+p2.myString());
+    p1.rebuildAlphabet(); p2.rebuildAlphabet();
+   //System.out.println("\nPETRINETPARALLELFUNCTION");
+   //System.out.println("\np1 "+p1.myString());
+   //System.out.println("\np2 "+p2.myString());
+
 
     for(String eId : p1.getEdges().keySet()) {
       Set<String> owners = p1.getEdges().get(eId).getOwners();
@@ -115,7 +117,7 @@ public class PetrinetParallelFunction  {
 
 
     for (String action : synchronisedActions) {
-
+   //System.out.println("Sync action "+action);
       Set<PetriNetTransition> p1Pair = p1.getAlphabet().get(action).stream()
           .map(t -> petriTransMap.get(t)).collect(Collectors.toSet());
 
@@ -124,7 +126,9 @@ public class PetrinetParallelFunction  {
 
       for (PetriNetTransition t1 : p1Pair) {
         for (PetriNetTransition t2 : p2Pair) {
-  //System.out.println("t1 "+ t1.getId()+ " , t2 "+t2.getId());
+          if (t1==null) {System.out.println("t1==null");continue;}
+          if (t2==null) {System.out.println("t2==null");continue;}
+  //System.out.println("t1 "+ t1.myString()+ " , t2 "+t2.myString());
           Set<PetriNetEdge> outgoingEdges = new LinkedHashSet<>();
           outgoingEdges.addAll(t1.getOutgoing());
           outgoingEdges.addAll(t2.getOutgoing());
@@ -145,7 +149,7 @@ public class PetrinetParallelFunction  {
       }
 
       for (PetriNetTransition oldTrans : Iterables.concat(p1Pair, p2Pair)) {
-        comp.removeTransition(oldTrans);
+        if (comp.getTransitions().containsValue(oldTrans))  comp.removeTransition(oldTrans);
       }
 
     }

@@ -128,7 +128,7 @@ public class TokenRule {
       previouslyVisitedPlaces.add(currentMarking);
       //System.out.println("ENDing "+previouslyVisitedPlaces.size()+"  "+Petrinet.marking2String(currentMarking));
     }
-   //System.out.println("Token Out "+outputAutomaton.myString());
+   System.out.println("Token Out "+outputAutomaton.myString());
     return outputAutomaton;
   }
 

@@ -89,10 +89,12 @@ public class InternalChoiceInfixFun implements IProcessInfixFunction {
      //   System.out.println("new is start" + newN.toString());
       }
     });
-
-    for (AutomatonEdge e : automaton2.getEdges()) {
-      choice.addEdge(e.getLabel(), automaton2NodeMap.get(e.getFrom()),
-          automaton2NodeMap.get(e.getTo()), e.getGuard() == null ? null : e.getGuard().copy(), false);
+// Building ownership very complex   SO start with Petri Net
+    for (AutomatonEdge ed : automaton2.getEdges()) {
+     AutomatonEdge ednew = choice.addEdge(ed.getLabel(),
+          automaton2NodeMap.get(ed.getFrom()),
+          automaton2NodeMap.get(ed.getTo()),
+          ed.getGuard() == null ? null : ed.getGuard().copy(), false);
     }
 
 
@@ -117,8 +119,8 @@ public class InternalChoiceInfixFun implements IProcessInfixFunction {
     net2.validatePNet();
     Petrinet petrinet1 = net1.copy();
     Petrinet petrinet2 = net2.copy();
-    System.out.println("+PETRI1 "+petrinet1.myString());
-    System.out.println("+PETRI2 "+petrinet2.myString());
+    //System.out.println("+PETRI1 "+petrinet1.myString());
+    //System.out.println("+PETRI2 "+petrinet2.myString());
     if (petrinet1 == petrinet2) {
       System.out.println("\n SAME NETS PROBLEM");
     }
@@ -133,7 +135,7 @@ public class InternalChoiceInfixFun implements IProcessInfixFunction {
     choice.joinPetrinet(petrinet2);
     //add new root set to choice net find next choice No
     int nextRootNo = petrinet1.nextRootNo();
-    System.out.println("next Root "+ nextRootNo);
+    //System.out.println("next Root "+ nextRootNo);
     List<Set<String>> rots = new ArrayList<>( petrinet2.getRoots());
     petrinet2.clearRoots();
     for(int i = 0; i< rots.size();i++) {
@@ -142,7 +144,7 @@ public class InternalChoiceInfixFun implements IProcessInfixFunction {
       choice.addRoot(rt);
       for(String pl : rt) {
         petrinet2.getPlace(pl).addStartNo(nextRootNo);
-        System.out.println(pl+" rooted");
+        //System.out.println(pl+" rooted");
       }
     }
 if (net1.terminates() && net2.terminates()) {
@@ -153,7 +155,7 @@ if (net1.terminates() && net2.terminates()) {
   choice.glueNames(end1, end2);
 }
     choice.setRootFromStart();
-    System.out.println("choice "+choice.myString());
+    //System.out.println("choice "+choice.myString());
     return choice;
   }
 }

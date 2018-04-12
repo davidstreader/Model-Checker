@@ -199,13 +199,15 @@ public class ChoiceFun {
             .filter(x -> x.isTerminal()).collect(Collectors.toSet());
           Set<PetriNetPlace> end2 = petrinet2.getPlaces().values().stream()
             .filter(x -> x.isTerminal()).collect(Collectors.toSet());
-  System.out.println("\nend1 "+end1 + " end2 "+end2+"\n");
+  System.out.println("\nend1 "+end1.stream().map(x->x.getId()+" ").collect(Collectors.joining()) +
+                     " end2 "+end2.stream().map(x->x.getId()+" ").collect(Collectors.joining())+"\n");
           if (end1.size() > 0 && end2.size() > 0) {
             //glue the Ri, Ri end markings
-            Map<String,String>  endn = composition.gluePlaces(end1, end2, false);
-            System.out.println(endn.values().stream().
+            //Map<String,String>  endn = composition.gluePlaces(end1, end2, false);
+            Set<String>  endSet = composition.secondGlueing(end1, end2);
+            /*System.out.println(endn.values().stream().
                map(x->x+"->"+endn.get(x)+" ").collect(Collectors.joining()));
-            Set<String> endSet = endn.values().stream().collect(Collectors.toSet());
+            Set<String> endSet = endn.values().stream().collect(Collectors.toSet()); */
             endStack.push(endSet);
             System.out.println("PUSHED endSet "+endSet);
           }

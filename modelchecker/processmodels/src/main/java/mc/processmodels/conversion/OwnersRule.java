@@ -57,11 +57,11 @@ public class OwnersRule {
     Automaton star = Automaton.singleEventAutomata("single" , "S*");
     SequentialInfixFun sif = new SequentialInfixFun();
     Automaton ai  = sif.compose("S*"+ain.getId(), star, ain);
-  //System.out.println("owners S* "+ai.myString());
+  System.out.println("owners S* "+ai.myString());
    // 2. proceed as before
     Automaton a = ai.copy(); // smaller Ids make debugging easier
     a.tagEvents();
-   //System.out.println("\nOWNERS Stared Rule " + a.myString());
+   System.out.println("\nOWNERS Stared Rule " + a.myString());
 
     PetriNetPlace p = null;
     AutomatonNode root = null;
@@ -76,7 +76,7 @@ public class OwnersRule {
     */
    //System.out.println("Owners " + a.getOwners());
     for (String own : a.getOwners()) {
-     //System.out.println("\n >>Owner "+ own);
+     System.out.println("\n >>Owner "+ own);
      Petrinet petri = new Petrinet(a.getId(), false);
      petri.setOwners(Collections.singleton(own));
      Stack<AutomatonNode> toDo = new Stack<>();
@@ -87,7 +87,7 @@ public class OwnersRule {
      boolean first = true;
      while (!toDo.isEmpty()) {
       AutomatonNode nd = toDo.pop();
-      //System.out.println("Start nd " + nd.getId());
+      System.out.println("Start nd " + nd.getId());
       if (processed.contains(nd)) continue;
       processed.add(nd);
       if (!nd2Pl.containsKey(nd)) {
@@ -109,13 +109,13 @@ public class OwnersRule {
       Set<AutomatonNode> next = nd.getIncomingEdges().stream().map(ed -> ed.getFrom()).collect(Collectors.toSet());
       next.addAll(nd.getOutgoingEdges().stream().map(ed -> ed.getTo()).collect(Collectors.toSet()));
       toDo.addAll(next);
-      //System.out.println("Next " + next.stream().map(x -> x.getId() + ", ").collect(Collectors.joining()));
+      System.out.println("Next " + next.stream().map(x -> x.getId() + ", ").collect(Collectors.joining()));
      }
      //Use the nd2Pl Mapp to build the projected automaton
      toDo.clear();
      processed.clear();
      toDo.push(root);
-     //System.out.println("Half way "+petri.myString());
+     System.out.println("Half way "+petri.myString());
      while (!toDo.isEmpty()) {
       AutomatonNode nd = toDo.pop();
       //System.out.println("Start 2 nd " + nd.getId());
@@ -138,29 +138,30 @@ public class OwnersRule {
       }
      }
       //System.out.println(petri.myString());
-     //System.out.println("\nSlice Net = " + petri.myString());
-      petri = PetrinetReachability.removeUnreachableStates(petri).copy();
-     //System.out.println("\npushing "+petri.myString());
+     System.out.println("\nSlice Net = " + petri.myString());
+      //petri = PetrinetReachability.removeUnreachableStates(petri).copy();
+     System.out.println("\npushing "+petri.myString());
       subNets.push(petri);  // Clones
       //System.out.println(subNets.size()+ " Slice Net ");
 
     }
-   //System.out.println("\n   OWNERS Rule Stacked "+subNets.size()+"    *********");
+   System.out.println("\n   OWNERS Rule Stacked "+subNets.size()+"    *********");
     Petrinet build = subNets.pop();
     while(!subNets.isEmpty()) {
      //System.out.println(subNets.size()+" Adding");
-    //  build = PetrinetParallelMergeFunction.compose(build, subNets.pop());  //Debuging
+      //build = PetrinetParallelMergeFunction.compose(build, subNets.pop());  //Debuging
       build = PetrinetParallelFunction.compose(build, subNets.pop());
     //  build = subNets.pop();  //for debugging
     }
      build.deTagTransitions();
 
-   //System.out.println("\n  OWNERS Rule *END "+build.myString());
+   System.out.println("  before reach  "+build.myString());
     build = PetrinetReachability.removeUnreachableStates(build);
-   //System.out.println("reach *END "+build.myString());
+   System.out.println("reach *END "+build.myString());
 
     //3. remove S* to reveal the multiple start states.
     build = stripStar(build);
+    System.out.println("\n  OWNERS Rule *END "+build.myString());
     return build;
   }
 
@@ -170,19 +171,27 @@ public class OwnersRule {
         flatMap(Set::stream).collect(Collectors.toSet());
  //System.out.println("stripStar root"+roots);
    pout.getRootPlacess().clear();
+    String rs = "";
+    Set<PetriNetTransition> toStrip= new HashSet<>();
    if (roots.size()!=1) {
+     System.out.println("WARNING  root size = "+roots.size()+ " other than for testing should be 1");
      Throwable t = new Throwable();
      t.printStackTrace();
-    //System.out.println("Owner build failed. Strip start failure "+pout.myString());
+    /*System.out.println("Owner build failed. Strip start failure "+pout.myString());
      throw new CompilationException(pout.getClass(),
-       "Owner build failed. Strip start failure "+pout.myString());
+       "Owner build failed. Strip start failure "+pout.myString()); */
+     Set<String> allRoots = pout.getAllRoots().stream().map(x->x.getId()).collect(Collectors.toSet());
+     toStrip = allRoots.stream().map(x->pout.getPlaces().get(x)).map(x->x.post()).
+       flatMap(Set::stream).collect(Collectors.toSet());
+   } else {
+     rs = roots.iterator().next();
+     toStrip = pout.getPlaces().get(rs).post();
    }
-   String rs = roots.iterator().next();
    //System.out.println("rs = "+rs);
    List<Set<String>> newRoots = new ArrayList<>();
    Integer rindx = 1;
-   for (PetriNetTransition tr: pout.getPlaces().get(rs).post()) {
-    //System.out.println("trans "+tr.myString());
+   for (PetriNetTransition tr: toStrip) {
+    System.out.println("trans "+tr.myString());
      Set<String> rtpost = tr.post().stream().map(x->x.getId()).collect(Collectors.toSet());
      newRoots.add(rtpost);
      pout.removeTransition(tr);
@@ -193,7 +202,7 @@ public class OwnersRule {
      }
      rindx++;
    }
-   pout.removePlace(pout.getPlaces().get(rs));
+   if (pout.getPlaces().keySet().contains(rs)) pout.removePlace(pout.getPlaces().get(rs));
    pout.setRoots(newRoots);
    //pout.setStartFromRoot();
    //System.out.println("StripStar OUT"+pout.myString()+"\n");
