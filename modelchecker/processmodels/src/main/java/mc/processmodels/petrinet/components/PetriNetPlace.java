@@ -70,6 +70,18 @@ public class PetriNetPlace extends ProcessModelObject {
     return owners;
   }
   public void setOwners(Set<String> s) {owners = s;}
+  public void addOwner(String ownerName) {
+    //System.out.println("addOwner "+ownerName);
+    owners.add(ownerName);
+    //System.out.println("X");
+  }
+  public void addOwners(Set<String> ownersName) {
+    //System.out.println(this.owners.toString());
+    for(String o: ownersName) {
+      //System.out.println("o "+o);
+      owners.add(o);
+    }
+  }
   public PetriNetPlace(String id) {
     super(id, "PetriNetPlace");  //Beware id structure used else where
     startNos = new LinkedHashSet<>();

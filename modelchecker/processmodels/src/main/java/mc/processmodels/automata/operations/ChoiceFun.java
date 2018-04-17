@@ -35,8 +35,8 @@ public class ChoiceFun {
     Map<String, AutomatonNode> automata1nodes = new HashMap<>();
     Map<String, AutomatonNode> automata2nodes = new HashMap<>();
 
-  //  System.out.println("Sequence aut1 "+ automaton1.toString());
-  //  System.out.println("Sequence aut2 "+ automaton2.toString());
+  //System.out.println("Sequence aut1 "+ automaton1.toString());
+  //System.out.println("Sequence aut2 "+ automaton2.toString());
     //copy node1 nodes across
     AutomataReachability.removeUnreachableNodes(automaton1).getNodes().forEach(node -> {
       try {
@@ -54,7 +54,7 @@ public class ChoiceFun {
       }
     });
 
-  //  System.out.println("Sequence 1 "+sequence.toString());
+  //System.out.println("Sequence 1 "+sequence.toString());
 
     copyAutomataEdges(sequence, automaton1, automata1nodes, setOfOwners);
 
@@ -108,10 +108,10 @@ public class ChoiceFun {
         .flatMap(List::stream)
         .forEach(sequence::removeEdge);
     stopNodes.forEach(sequence::removeNode);
-   // System.out.println("Sequence 2 "+ automaton2.toString());
+   //System.out.println("Sequence 2 "+ automaton2.toString());
 
     copyAutomataEdges(sequence, automaton2, automata2nodes,setOfOwners);
-  //  System.out.println("End Seq   "+sequence.toString());
+  //System.out.println("End Seq   "+sequence.toString());
     return sequence;
   }
 
@@ -134,13 +134,13 @@ public class ChoiceFun {
 
   public Petrinet compose(String id, Petrinet net1, Petrinet net2)
     throws CompilationException {
-    System.out.println("[]PETRI1 "+net1.myString());
+    //System.out.println("[]PETRI1 "+net1.myString());
     net1.validatePNet();
-    System.out.println("[]PETRI2 "+net2.myString());
+    //System.out.println("[]PETRI2 "+net2.myString());
     net2.validatePNet();
     Stack<Set<String> > endStack = new Stack<>(); // for the end markings of each Ri[]Rj
     List<Set<String>> newRoots = new ArrayList<>();
-    System.out.println("[]CHOICE " +net1.getRoots().size() +" X " +net2.getRoots().size());
+    //System.out.println("[]CHOICE " +net1.getRoots().size() +" X " +net2.getRoots().size());
     Petrinet composition = new Petrinet(id, false);
     composition.getOwners().clear();
     //for each pair of roots Ri, Rj build a Ri[]Rj processes
@@ -151,15 +151,15 @@ public class ChoiceFun {
         //clone nets
         petrinet1.addPetrinet(net1);
         petrinet2.addPetrinet(net2);
-        System.out.println("i "+i+"  j "+j);
-        System.out.println("[]net1 "+net1.myString());
-        System.out.println("[]net2 "+net2.myString());
+        //System.out.println("i "+i+"  j "+j);
+        //System.out.println("[]net1 "+net1.myString());
+        //System.out.println("[]net2 "+net2.myString());
 // build set for gluing (leave the start ON
-        System.out.println("petrinet1.getRoots() "+petrinet1.getRoots());
-        System.out.println("petrinet2.getRoots() "+petrinet2.getRoots());
+        //System.out.println("petrinet1.getRoots() "+petrinet1.getRoots());
+        //System.out.println("petrinet2.getRoots() "+petrinet2.getRoots());
         Set<String> startOfP1 = petrinet1.getRoots().get(i);
         Set<String> startOfP2 = petrinet2.getRoots().get(j);
-   System.out.println( "\nstartOfP1 "+ startOfP1 +"  startOfP2 "+ startOfP2+"\n");
+   //System.out.println( "\nstartOfP1 "+ startOfP1 +"  startOfP2 "+ startOfP2+"\n");
        /* if (!petrinet1.terminates()) {
           petrinet1.getPlaces().values().stream().filter(PetriNetPlace::isTerminal).
             forEach(x -> x.setTerminal(""));
@@ -177,30 +177,30 @@ public class ChoiceFun {
         //add the second petrinet;
         composition.joinPetrinet(petrinet2);
         composition.setRoots(new ArrayList<>());
-        System.out.println("\n[]after Join " + composition.myString() + "\n");
+        //System.out.println("\n[]after Join " + composition.myString() + "\n");
         //merge the end of petri1 with the start of petri2
         Map<String, String> s2s =
           composition.glueNames(startOfP1, startOfP2);
-        System.out.println("\n glueMapping \n" +
-          s2s.keySet().stream().map(x -> x + "->" + s2s.get(x) + "\n").collect(Collectors.joining()) + "\n");
+        //System.out.println("\n glueMapping \n" +
+        //  s2s.keySet().stream().map(x -> x + "->" + s2s.get(x) + "\n").collect(Collectors.joining()) + "\n");
 
 
         newRoots.add((buildMark(startOfP1,startOfP2).stream().
                    map(x->s2s.get(x)).collect(Collectors.toSet())));
 
-        System.out.println("newRoots " + newRoots);
+        //System.out.println("newRoots " + newRoots);
 
 
         // composition.setStartFromRoot();
         //composition = PetrinetReachability.removeUnreachableStates(composition);
-        System.out.println("\n[]before Glue END " +net1.terminates()+" " +net2.terminates() + " "+composition.myString() + "\n");
+        //System.out.println("\n[]before Glue END " +net1.terminates()+" " +net2.terminates() + " "+composition.myString() + "\n");
         if (net1.terminates() && net2.terminates()) {//Sugar  end1 or end2 will be set to size 0
           Set<PetriNetPlace> end1 = petrinet1.getPlaces().values().stream()
             .filter(x -> x.isTerminal()).collect(Collectors.toSet());
           Set<PetriNetPlace> end2 = petrinet2.getPlaces().values().stream()
             .filter(x -> x.isTerminal()).collect(Collectors.toSet());
-  System.out.println("\nend1 "+end1.stream().map(x->x.getId()+" ").collect(Collectors.joining()) +
-                     " end2 "+end2.stream().map(x->x.getId()+" ").collect(Collectors.joining())+"\n");
+  /*System.out.println("\nend1 "+end1.stream().map(x->x.getId()+" ").collect(Collectors.joining()) +
+                     " end2 "+end2.stream().map(x->x.getId()+" ").collect(Collectors.joining())+"\n"); */
           if (end1.size() > 0 && end2.size() > 0) {
             //glue the Ri, Ri end markings
             //Map<String,String>  endn = composition.gluePlaces(end1, end2, false);
@@ -209,30 +209,30 @@ public class ChoiceFun {
                map(x->x+"->"+endn.get(x)+" ").collect(Collectors.joining()));
             Set<String> endSet = endn.values().stream().collect(Collectors.toSet()); */
             endStack.push(endSet);
-            System.out.println("PUSHED endSet "+endSet);
+            //System.out.println("PUSHED endSet "+endSet);
           }
-          System.out.println("\n[]after Glue End  " + composition.myString() + "\n");
+          //System.out.println("\n[]after Glue End  " + composition.myString() + "\n");
         }
       }
     }
 
     // glue each Ri[]Rj end together
-    System.out.println("endStack "+ endStack.toString());
+    //System.out.println("endStack "+ endStack.toString());
     if (endStack.size() > 1) {
       Set<String> base = endStack.pop();
-      System.out.println("base "+base);
+      //System.out.println("base "+base);
       while (endStack.size() > 0) {
         Set<String> next = endStack.pop();
-        System.out.println("next "+next);
+        //System.out.println("next "+next);
          composition.glueNames(base,next);
       }
     }
-    System.out.println("\n[]FINAL newRoots " + newRoots);
-    System.out.println("before setting root "+ composition.myString()+"\n");
+    //System.out.println("\n[]FINAL newRoots " + newRoots);
+    //System.out.println("before setting root "+ composition.myString()+"\n");
     composition.setRoots(newRoots);
     composition.setStartFromRoot();
 
-    System.out.println("[]Add OUT "+ composition.myString()+"\n");
+    //System.out.println("[]Add OUT "+ composition.myString()+"\n");
     composition = PetrinetReachability.removeUnreachableStates(composition);
     //System.out.println("Add OUT "+ composition.myString()+"\n");
     composition.validatePNet();
@@ -276,26 +276,26 @@ public class ChoiceFun {
    * @return the multiRoot for parallel composition of the nets
    */
   private static List<Set<String>> buildRoots(Petrinet net1,Petrinet net2) {
-    System.out.println("Building Roots");
+    //System.out.println("Building Roots");
     List<Set<String>> out = new ArrayList<>();
     for(Set<String> m1: net1.getRoots()) {
       for(Set<String> m2: net2.getRoots()) {
         out.add(buildMark(m1,m2));
       }
     }
-    System.out.println("New Roots "+out);
+    //System.out.println("New Roots "+out);
     return out;
   }
 
   private static Set<String> buildMark(Set<String> m1, Set<String> m2){
-    System.out.println("buildMark " +m1+" "+m2);
+    //System.out.println("buildMark " +m1+" "+m2);
     Set<String> out = new HashSet<>();
     for(String s1:m1){
       for(String s2:m2){
         out.add(s1+MAPLET+s2);
       }
     }
-    System.out.println("Next root "+out);
+    //System.out.println("Next root "+out);
     return out;
   }
 }

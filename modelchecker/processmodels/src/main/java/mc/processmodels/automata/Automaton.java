@@ -261,6 +261,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
   public AutomatonNode addNode(String id) {
     AutomatonNode node = new AutomatonNode(id);
     nodeMap.put(id, node);
+    //System.out.println("adding "+ node.myString());
     return node;
   }
 

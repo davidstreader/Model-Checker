@@ -50,7 +50,7 @@ public class MultiProcessModel extends ProcessModelObject implements ProcessMode
 
   public ProcessModel getProcess(ProcessType type) {
     if (!hasProcess(type)) {
-      //TODO: provide automatic conversion between types
+      //TODO always build both automata and PetriNets
     }
     return processes.get(type);
   }

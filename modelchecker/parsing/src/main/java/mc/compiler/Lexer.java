@@ -57,6 +57,7 @@ public class Lexer {
         tokens.add(token);
       }
     }
+    System.out.println(tokens.toString());
     return tokens;
   }
 

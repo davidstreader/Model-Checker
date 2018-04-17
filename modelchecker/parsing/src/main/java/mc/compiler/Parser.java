@@ -79,7 +79,7 @@ public class Parser {
         parseProcessesDefinition();
       } else if (token instanceof ConstToken) {
         parseConstDefinition();
-      } else if (token instanceof DisplayTypeToken) {
+      } else if (token instanceof DisplayTypeToken) {  //might be dead code
         parseDisplayType();
       } else if (token instanceof RangeToken) {
         parseRangeDefinition();
@@ -587,7 +587,7 @@ public class Parser {
     if (!(token instanceof DisplayTypeToken)) {
       throw constructException("expecting to parse a display type but received \"" + token.toString() + "\"", token.getLocation());
     }
-   //System.out.println("parseDisplayType "+ token.toString());
+System.out.println("parseDisplayType "+ token.toString());
     DisplayTypeToken currentDisplayType = (DisplayTypeToken) token;
 
     token = nextToken();

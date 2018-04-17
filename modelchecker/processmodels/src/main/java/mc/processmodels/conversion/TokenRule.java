@@ -49,6 +49,7 @@ public class TokenRule {
   @SneakyThrows(value = {CompilationException.class})
   public static Automaton tokenRule(Petrinet convertFrom, Map<Set<PetriNetPlace>, AutomatonNode> markingToNodeMap,
                                     Map<AutomatonNode, Set<PetriNetPlace> > nodeToMarkingMap) {
+
     Automaton outputAutomaton = new Automaton(convertFrom.getId() + " automata",
         false);
   //System.out.println("\nTOKEN RULE \n STARTING "+convertFrom.myString());
@@ -60,6 +61,7 @@ public class TokenRule {
     for(Set<String> rnames: convertFrom.getRoots()) {
     //System.out.println("rnames "+ rnames);
       AutomatonNode root = outputAutomaton.addNode();
+      //System.out.println("root "+root.myString());
       root.setStartNode(true);
       outputAutomaton.addRoot(root);
       Set<PetriNetPlace> rts = rnames.stream().
@@ -67,6 +69,7 @@ public class TokenRule {
       rootsPlaces.add(rts);
       markingToNodeMap.put(rts, root);
       nodeToMarkingMap.put(root, rts);
+      //System.out.println("root "+root.myString());
     }
 
   //System.out.println("rootsPlaces "+ rootsPlaces);
@@ -128,7 +131,7 @@ public class TokenRule {
       previouslyVisitedPlaces.add(currentMarking);
       //System.out.println("ENDing "+previouslyVisitedPlaces.size()+"  "+Petrinet.marking2String(currentMarking));
     }
-   System.out.println("Token Out "+outputAutomaton.myString());
+   //System.out.println("Token Out "+outputAutomaton.myString());
     return outputAutomaton;
   }
 
