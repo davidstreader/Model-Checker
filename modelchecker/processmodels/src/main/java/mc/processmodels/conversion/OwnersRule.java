@@ -131,8 +131,8 @@ public class OwnersRule {
        if (ed.getOwnerLocation().contains(own)) {
         //System.out.println("Staring " + ed.getId());
         PetriNetTransition tran = petri.addTransition(ed.getLabel());
-        petri.addEdge(tran, nd2Pl.get(ed.getFrom()), Collections.singleton(own));
-        petri.addEdge(nd2Pl.get(ed.getTo()), tran, Collections.singleton(own));
+        petri.addEdge(tran, nd2Pl.get(ed.getFrom()));
+        petri.addEdge(nd2Pl.get(ed.getTo()), tran);
         //System.out.println("Adding " + tran.myString());
        } else {
         //System.out.println("par edge " + ed.myString());

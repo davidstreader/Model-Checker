@@ -96,7 +96,6 @@ public final class PetrinetReachability {
           pl.post().equals(pl1.post()) && pl.pre().equals(pl1.pre())) {
           //System.out.println("Merge "+pl.getId()+" with "+pl1.getId());
           if (!togo.contains(pl) && !togo.contains(pl1)) {
-            mergePlaces(pl, pl1);
             togo.add(pl1);
           }
 
@@ -109,18 +108,19 @@ public final class PetrinetReachability {
 
    /*
   If two transitions have  incoming and outgoing edges to the same Places then they can be merged
-  This means that the owners must be merged.
+
  */
     Set<PetriNetTransition> togoT = new HashSet<>();
     for (PetriNetTransition pl : petri.getTransitions().values()) {
       for (PetriNetTransition pl1 : peerT(pl)) {
 
         if (!pl.getId().equals(pl1.getId()) &&
-          pl.post().equals(pl1.post()) && pl.pre().equals(pl1.pre())
-          && pl.getLabel().equals(pl1.getLabel())) {
+          pl.post().equals(pl1.post()) &&
+          pl.pre().equals(pl1.pre()) &&
+          pl.getOwners().equals(pl1.getOwners()) &&
+          pl.getLabel().equals(pl1.getLabel())) {
           //System.out.println("Merge "+pl.getId()+" with "+pl1.getId());
           if (!togoT.contains(pl) && !togoT.contains(pl1)) {
-            mergeTrans(pl, pl1);
             togoT.add(pl1);
           }
 
@@ -176,73 +176,7 @@ public final class PetrinetReachability {
       .distinct().collect(Collectors.toSet());
   }
 
-  private static void mergePlaces(PetriNetPlace p1, PetriNetPlace p2) {
-    Map<PetriNetEdge, Set<String>> work = new HashMap<PetriNetEdge, Set<String>>();
-    Set<String> union = new HashSet<String>();
-    for (PetriNetEdge ed1 : p1.getOutgoing()) {
-      for (PetriNetEdge ed2 : p2.getOutgoing()) {
-        //System.out.println(ed1.myString()+" -- "+ ed2.myString());
-        if (!ed1.getId().equals(ed2.getId()) && ed1.getTo().equals(ed2.getTo())) {
-          union.addAll(ed1.getOwners());
-          union.addAll(ed2.getOwners());
-          work.put(ed1, union);
-        }
-      }
-    }
-    for (PetriNetEdge ed1 : p1.getOutgoing()) {
-      if (work.get(ed1) != null) ed1.setOwners(work.get(ed1));
-      //else System.out.println("WHAT work.get("+ed1.getId()+") = null");
-    }
-    work.clear();
-    for (PetriNetEdge ed1 : p1.getIncoming()) {
-      for (PetriNetEdge ed2 : p2.getIncoming()) {
-        if (!ed1.getId().equals(ed2.getId()) && ed1.getTo().equals(ed2.getTo())) {
-          //System.out.println(ed1.myString()+" -- "+ ed2.myString());
-          union.addAll(ed1.getOwners());
-          union.addAll(ed2.getOwners());
-          work.put(ed1, union);
-        }
-      }
-    }
-    for (PetriNetEdge ed1 : p1.getIncoming()) {
-      if (work.get(ed1) != null) ed1.setOwners(work.get(ed1));
-      //else System.out.println("WHAT work.get("+ed1.getId()+") = null");
-    }
-  }
 
-  //Doing the work
-  private static void mergeTrans(PetriNetTransition p1, PetriNetTransition p2) {
-    Map<PetriNetEdge, Set<String>> work = new HashMap<PetriNetEdge, Set<String>>();
-    Set<String> union = new HashSet<String>();
-    for (PetriNetEdge ed1 : p1.getOutgoing()) {
-      for (PetriNetEdge ed2 : p2.getOutgoing()) {
-        //System.out.println(ed1.myString()+" -- "+ ed2.myString());
-        if (!ed1.getId().equals(ed2.getId()) && ed1.getTo().equals(ed2.getTo())) {
-          union.addAll(ed1.getOwners());
-          union.addAll(ed2.getOwners());
-          work.put(ed1, union);
-        }
-      }
-    }
-    for (PetriNetEdge ed1 : p1.getOutgoing()) {
-      if (work.get(ed1) != null) ed1.setOwners(work.get(ed1));
-      //else System.out.println("WHAT work.get("+ed1.getId()+") = null");
-    }
-    work.clear();
-    for (PetriNetEdge ed1 : p1.getIncoming()) {
-      for (PetriNetEdge ed2 : p2.getIncoming()) {
-        if (!ed1.getId().equals(ed2.getId()) && ed1.getTo().equals(ed2.getTo())) {
-          //System.out.println(ed1.myString()+" -- "+ ed2.myString());
-          union.addAll(ed1.getOwners());
-          union.addAll(ed2.getOwners());
-          work.put(ed1, union);
-        }
-      }
-    }
-    for (PetriNetEdge ed1 : p1.getIncoming()) {
-      if (work.get(ed1) != null) ed1.setOwners(work.get(ed1));
-      //else System.out.println("WHAT work.get("+ed1.getId()+") = null");
-    }
 
-  }
+
 }

@@ -352,7 +352,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     if (pl1.getReferences().containsAll(pl2.getFromReferences())) {
      //System.out.println("Joining "+pl1.getId()+" "+pl2.getId());
      pl2.setTerminal("");
-     petri.gluePlaces(Collections.singleton(pl1), Collections.singleton(pl2), true);
+     petri.gluePlaces(Collections.singleton(pl1), Collections.singleton(pl2));
     }
    }
   }

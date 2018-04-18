@@ -53,6 +53,7 @@ public class RefineFun {
       Petrinet petrinet2 = net2.copy();  // need new copy each event
 // build set for gluing (leave the start ON
       Set<PetriNetPlace> preEvents = tr.pre();
+
       Set<PetriNetPlace> postEvents = tr.post();
       System.out.println("pre " + preEvents.stream().map(x -> x.getId() + " ").collect(Collectors.joining()) +
         "  post " + postEvents.stream().map(x -> x.getId() + " ").collect(Collectors.joining()));
@@ -69,8 +70,7 @@ public class RefineFun {
 
 
       composition.getOwners().clear();
-      composition.getOwners().addAll(petrinet1.getOwners());
-      composition.getOwners().addAll(petrinet2.getOwners());
+
 
       //prior to Gluing join the nets (do not add as that changes the ids)
       //composition.joinPetrinet(petrinet2);   FAILS with A/{A/x}
@@ -83,12 +83,12 @@ public class RefineFun {
         PetriNetPlace cpl = composition.getPlace(plk + tag);
         PetriNetPlace pl = petrinet2.getPlace(plk);
         mapping.put(pl, cpl);
-        System.out.println("mapping\n   " + pl.myString() + " -> \n  " + mapping.get(pl).myString());
+        //System.out.println("mapping\n   " + pl.myString() + " -> \n  " + mapping.get(pl).myString());
       }
 
       Set<PetriNetPlace> newstart2 = startOfP2.stream().map(x -> mapping.get(x)).collect(Collectors.toSet());
 
-      System.out.println("newstart2 " + newstart2.stream().map(x -> x.myString() + " ").collect(Collectors.joining()));
+      System.out.println("newstart2 " + newstart2.stream().map(x -> x.getId() + " ").collect(Collectors.joining()));
 
       //merge the end of petri1 with the start of petri2
       System.out.println("PRE   " + tr.pre().stream().map(x -> x.getId() + " ").collect(Collectors.joining())
@@ -96,16 +96,9 @@ public class RefineFun {
       //Fix the owners on the post places of the transition.
       //while gluing th the initial places
       System.out.println("tr = "+tr.myString());
-      /*Map<PetriNetPlace, Set<String>> oldOwners = new HashMap<>();
-      for(PetriNetPlace pl : tr.post()){
-        oldOwners.put(pl,pl.getOwners());
-      } */
-      composition.glueFirstPlaces(preEvents, newstart2);
-      /*for(PetriNetPlace pl: oldOwners.keySet()){
-        pl.setOwners(oldOwners.get(pl));
-        System.out.println("set Owners "+pl.myString());
-      }*/
 
+      composition.glueOwners(tr.getOwners(),petrinet2.getOwners() );
+      composition.gluePlaces(preEvents, newstart2);
 
       Set<PetriNetPlace> end2 = petrinet2.getPlaces().values().stream()
         .filter(x -> x.isTerminal()).collect(Collectors.toSet());
@@ -113,7 +106,6 @@ public class RefineFun {
 
       for (PetriNetPlace pl2 : petrinet2.getPlaces().values()) {
         pl2.setTerminal("");
-
       }
 
       postEvents = tr.post();
@@ -121,9 +113,10 @@ public class RefineFun {
         tr.post().stream().map(x -> x.getId() + " ").collect(Collectors.joining()) +
         " \n end2 " +
         end2.stream().map(x -> x.getId() + " ").collect(Collectors.joining()));
-
-
-      composition.glueSecondPlaces(postEvents, newend2);
+      System.out.println("tr.getOwners() "+tr.getOwners());
+      System.out.println("petrinet2.getOwners() "+petrinet2.getOwners());
+      composition.glueOwners(tr.getOwners(),petrinet2.getOwners() );
+      composition.gluePlaces(postEvents, newend2);
 
       composition.setRootFromStart();
     }
@@ -140,33 +133,7 @@ public class RefineFun {
   }
 
 
- /**
-   * Copies the edges from one automata to another.
-   *
-   * @param writeAutomaton the automata that will have the edges copied to it
-   * @param readAutomaton  the automata that will have the edges copied from it
-   * @param nodeMap        the mapping of the ids to AutomatonNodes
-   */
-  private void copyAutomataEdges(Automaton writeAutomaton, Automaton readAutomaton,
-                                 Map<String, AutomatonNode> nodeMap,
-                                 Multimap<String,String> edgeOwnersMap) throws CompilationException{
 
 
-    for(AutomatonEdge readEdge : readAutomaton.getEdges()) {
-      AutomatonNode fromNode = nodeMap.get(readEdge.getFrom().getId());
-      AutomatonNode toNode = nodeMap.get(readEdge.getTo().getId());
-        writeAutomaton.addOwnersToEdge(
-                writeAutomaton.addEdge(readEdge.getLabel(), fromNode, toNode, readEdge.getGuard(), false),
-                getEdgeOwnersFromProduct(readEdge.getOwnerLocation(), edgeOwnersMap)
-        );
-    }
-  }
-
-  private Set<String> getEdgeOwnersFromProduct(Set<String> edgeOwners,
-                                               Multimap<String,String> productSpace) {
-    return edgeOwners.stream().map(productSpace::get)
-        .flatMap(Collection::stream)
-        .collect(Collectors.toSet());
-  }
 
 }

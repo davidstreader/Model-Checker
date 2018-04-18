@@ -30,23 +30,8 @@ public class PetrinetParallelFunction  {
    //System.out.println("\np2 "+p2.myString());
 
 
-    for(String eId : p1.getEdges().keySet()) {
-      Set<String> owners = p1.getEdges().get(eId).getOwners();
-      if(owners.contains(Petrinet.DEFAULT_OWNER)) {
-        owners = Collections.singleton(p1.getId());
-      }
-    //System.out.println("eId "+eId);
-    //System.out.println(p1.getOwners());
-      //p1.getEdges().get(eId).getOwners().add(p1.getId());
-      p1.getEdges().get(eId).setOwners(owners);
-    }
-    for(String eId : p2.getEdges().keySet()) {
-      Set<String> owners = p2.getEdges().get(eId).getOwners();
-      if(owners.contains(Petrinet.DEFAULT_OWNER)) {
-        owners= Collections.singleton(p2.getId());;
-      }
-      p2.getEdges().get(eId).setOwners(owners);
-    }
+
+
 
 
     setupActions(p1, p2);
@@ -139,11 +124,11 @@ public class PetrinetParallelFunction  {
 
           PetriNetTransition newTrans = comp.addTransition(action);
           for(PetriNetEdge outE : outgoingEdges) {
-            comp.addEdge( (PetriNetPlace) outE.getTo(), newTrans, outE.getOwners());
+            comp.addEdge( (PetriNetPlace) outE.getTo(), newTrans);
           }
 
           for(PetriNetEdge inE : incomingEdges) {
-            comp.addEdge(newTrans, (PetriNetPlace) inE.getFrom(), inE.getOwners());
+            comp.addEdge(newTrans, (PetriNetPlace) inE.getFrom());
           }
         }
       }
@@ -217,10 +202,10 @@ public class PetrinetParallelFunction  {
       //System.out.println(edge.myString());
       if (edge.getFrom() instanceof PetriNetPlace) {
         //System.out.println("tran "+transitionMap.get(edge.getTo()).myString());
-        addTo.addEdge( transitionMap.get(edge.getTo()), placeMap.get(edge.getFrom()), edge.getOwners());
+        addTo.addEdge( transitionMap.get(edge.getTo()), placeMap.get(edge.getFrom()));
       } else {
         //System.out.println("place "+placeMap.get(edge.getTo()).myString());
-        addTo.addEdge( placeMap.get(edge.getTo()), transitionMap.get(edge.getFrom()), edge.getOwners());
+        addTo.addEdge( placeMap.get(edge.getTo()), transitionMap.get(edge.getFrom()));
       }
     }
    //System.out.println("toAdd roots"+petriToAdd.getRoots());

@@ -141,12 +141,17 @@ public class SequentialInfixFun {
     int i = p2roots.size();
   //System.out.println("ROOTS " + i);
     Petrinet sequential;
+    System.out.println("\n Seq"+ net1.myString());
     if (net1.terminates()) {
       for (Set<String> rt : net2.getRoots()) {
        //System.out.println("\n "+i+" rt = "+rt);
+        Set<String> own1 = new HashSet<>();
+        Set<String> own2 = new HashSet<>();
         Petrinet petrinet1 = net1.copy();
         Petrinet petrinet2 = net2.copy();
-       //System.out.println("In1=> " + petrinet1.myString());
+        own1.addAll(petrinet1.getOwners());
+        own2.addAll(petrinet2.getOwners());
+        //System.out.println("In1=> " + petrinet1.myString());
        //System.out.println("=>In2 " + petrinet2.myString());
         if (petrinet1 == petrinet2) {
          System.out.println("\n SAME NETS PROBLEM\n");
@@ -158,10 +163,6 @@ public class SequentialInfixFun {
         }
         Petrinet composition = new Petrinet(id, false);
         composition.getOwners().clear();
-        composition.getOwners().addAll(petrinet1.getOwners());
-
-
-        Set<String> stopNodes = new HashSet<>();
 
         for (PetriNetPlace pl : petrinet2.getPlaces().values()) {
           pl.setStart(false);
@@ -169,12 +170,11 @@ public class SequentialInfixFun {
         petrinet2.clearRoots();
        //System.out.println("SHOULD HAVE NO START "+petrinet2.myString());
 
-        composition.getOwners().addAll(petrinet2.getOwners());
-
         //System.out.println("Root names " + p2roots);
         String tag = "*S" + i;
         //add the first petrinet to the sequential composition
         composition.addPetrinetNoOwner(petrinet1, tag);
+
         Set<String> nextEnd = composition.getPlaces().values().stream()
           .filter(x -> x.isSTOP()).map(x -> x.getId()).collect(Collectors.toSet());
        //System.out.println("nextEnd from "+composition.myString());
@@ -191,7 +191,9 @@ public class SequentialInfixFun {
         //System.out.println("composition " + i + " = " + composition.myString());
        //System.out.println(i + " ROOT = " + taggedrt + "  END = " + nextEnd);
 
+        composition.glueOwners(own1,own2);
         composition.glueNames(nextEnd, taggedrt);
+
        ////System.out.println("\nGlue OVER \n"+ composition.myString()+"\n");
         composition.setRootFromStart();
        ////System.out.println("\nTO STACK \n"+ composition.myString()+"\n");

@@ -121,7 +121,7 @@ public class TokenRule {
           nodeToMarkingMap.put(newNode, newMarking);
           toDo.add(newMarking);
         }
-        Set<String> own =  convertFrom.getTranOwners(transition);
+        Set<String> own =  transition.getOwners();
         AutomatonEdge ed =
         outputAutomaton.addEdge(transition.getLabel(), markingToNodeMap.get(currentMarking),
             markingToNodeMap.get(newMarking), null, false);

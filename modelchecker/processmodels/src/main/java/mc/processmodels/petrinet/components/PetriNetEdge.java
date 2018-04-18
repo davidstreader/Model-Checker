@@ -14,8 +14,6 @@ import java.util.*;
 public class PetriNetEdge extends ProcessModelObject {
 
 
-  private Set<String> owners = new HashSet<>();
-
   private ProcessModelObject from;
 
   private ProcessModelObject to;
@@ -24,7 +22,6 @@ public class PetriNetEdge extends ProcessModelObject {
     super(id, "petrinetEdge");
     this.from = from;
     this.to = to;
-    this.addOwner(Petrinet.DEFAULT_OWNER);
 
   }
 
@@ -32,25 +29,9 @@ public class PetriNetEdge extends ProcessModelObject {
     super(id, "petrinetEdge");
     this.from = from;
     this.to = to;
-    this.addOwner(Petrinet.DEFAULT_OWNER);
   }
 
-  public void addOwner(String ownerName) {
-    //System.out.println("addOwner "+ownerName);
-    owners.add(ownerName);
-    //System.out.println("X");
-  }
-  public void addOwners(Set<String> ownersName) {
-    //System.out.println(this.owners.toString());
-    for(String o: ownersName) {
-      //System.out.println("o "+o);
-      owners.add(o);
-    }
-  }
 
-  public void removeOwner(String name) {
-    owners.remove(name);
-  }
 
 
   public String toString() {
@@ -58,12 +39,11 @@ public class PetriNetEdge extends ProcessModelObject {
         + "\tid:" + getId() + "\n"
         + "\tfrom:" + from.getId() + "\n"
         + "\tto:" + to.getId() + "\n"
-        + "\towner/s:" + owners + "\n"
         + "}";
 
   }
   public String myString(){
-    String out =  "edge "+this.getId()+" from "+from.getId()+" -> "+to.getId()+" owners "+ owners;
+    String out =  "edge "+this.getId()+" from "+from.getId()+" -> "+to.getId();
     //for (String o: owners){out = out +o+" ";}
     return out;
   }

@@ -28,35 +28,9 @@ public class PetrinetParallelMergeFunction {
     System.out.println("\nPETRINETPARALLEL MERGE");
     System.out.println("|| NET1 "+p1.myString()+ "\n");
     System.out.println("|| NET2 "+p2.myString()+ "\n");
-    for(String eId : p1.getEdges().keySet()) {
-      Set<String> owners = p1.getEdges().get(eId).getOwners();
-      if(owners.contains(Petrinet.DEFAULT_OWNER)) {
-        owners = Collections.singleton(p1.getId());
-      }
-      p1.getEdges().get(eId).setOwners(owners);
-      System.out.println(p1.getEdges().get(eId).myString());
-    }
-    //below should not be needed as this should not occur!
-    if (p1.getOwners().contains(Petrinet.DEFAULT_OWNER))
-      p1.setOwners(p1.getEdges().values().stream().
-        flatMap(x->x.getOwners().stream()).collect(Collectors.toSet()));
 
-    System.out.println("p1.getOwners()"+ p1.getOwners());
-    for(String eId : p2.getEdges().keySet()) {
-      Set<String> owners = p2.getEdges().get(eId).getOwners();
-      if(owners.contains(Petrinet.DEFAULT_OWNER)) {
-        owners= Collections.singleton(p2.getId());;
-      }
-      p2.getEdges().get(eId).setOwners(owners);
-      System.out.println(p2.getEdges().get(eId).myString());
-    }
-    Set<String> out2 = new HashSet<>();
-    if (p2.getOwners().contains(Petrinet.DEFAULT_OWNER)) {
-      for (PetriNetEdge ed : p2.getEdges().values()) {
-        out2.addAll(ed.getOwners());
-      }
-    }
-    p2.setOwners(out2.stream().distinct().collect(Collectors.toSet()));
+
+
 
     System.out.println("p2.getOwners()"+ p2.getOwners());
 
