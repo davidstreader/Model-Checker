@@ -10,6 +10,7 @@ import mc.processmodels.petrinet.Petrinet;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 public class A2P2A implements IProcessFunction {
@@ -31,7 +32,7 @@ public class A2P2A implements IProcessFunction {
    */
   @Override
   public Collection<String> getValidFlags() {
-    return Collections.emptySet();
+    return new HashSet<>();
   }
 
   /**
@@ -62,12 +63,11 @@ public class A2P2A implements IProcessFunction {
     //System.out.println("Pingo2");
     assert automata.length == 1;
     Automaton inputA = automata[0].copy();
-    Petrinet pn = new Petrinet(id+".p");
-    Automaton  aut = new Automaton(id, false);
 
  //   pn = PetrinetReachability.removeUnreachableStates( OwnersRule.ownersRule(inputA));
-    pn = OwnersRule.ownersRule(inputA);
-    aut = TokenRule.tokenRule(pn) ;
+    Petrinet  pn = OwnersRule.ownersRule(inputA);
+
+    Automaton aut = TokenRule.tokenRule(pn) ;
     //System.out.println("SECOND token "+aut.myString());
 
     return aut;

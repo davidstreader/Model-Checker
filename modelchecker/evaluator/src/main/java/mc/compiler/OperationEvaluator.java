@@ -105,9 +105,10 @@ public class OperationEvaluator {
           convertTo(ProcessType.AUTOMATA, processMap.get(pnets.get(0).getId()))); //What a way to extact  a net
         if (firstA2P2A==true) {
           //System.out.println("****1p1");
+
           A2P2A a2p = new A2P2A();
           newAut =  a2p.compose(pnets.get(0).getId()+"1a",
-            Collections.emptySet(), context, newAut);
+            new HashSet<String>(), context, newAut);
 
           //System.out.println("****1p2"+newAut.myString()+"\n");
         }
@@ -126,7 +127,7 @@ public class OperationEvaluator {
           //System.out.println("p1");
           A2P2A a2p = new A2P2A();
            newAut =  a2p.compose(pnets.get(1).getId()+"2a",
-                       Collections.emptySet(), context, newAut);
+             new HashSet<String>(), context, newAut);
           //System.out.println("p2 a2p2a "+newAut.myString());
         }
 

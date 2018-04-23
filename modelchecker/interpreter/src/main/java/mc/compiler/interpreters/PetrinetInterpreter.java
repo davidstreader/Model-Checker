@@ -3,7 +3,8 @@ package mc.compiler.interpreters;
 import static mc.util.Utils.instantiateClass;
 
 import com.microsoft.z3.Context;
-
+import com.google.common.collect.Multiset;
+import com.google.common.collect.HashMultiset;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -140,8 +141,9 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     ((MultiProcessModel) model).addProcess(modelPetri);
 //2. build automata via TokenRule (may be redundent as may have been pre built)
     ProcessModel modelAut;
-    HashMap<AutomatonNode, Set<PetriNetPlace>> nodeToMarking = new HashMap<>();
-    HashMap<Set<PetriNetPlace>, AutomatonNode> markingToNode = new HashMap<>();
+    HashMap<AutomatonNode, Multiset<PetriNetPlace>> nodeToMarking =
+      new HashMap<>();
+    HashMap<Multiset<PetriNetPlace>, AutomatonNode> markingToNode = new HashMap<>();
     //System.out.println("Pong");
     modelAut = TokenRule.tokenRule(
       (Petrinet) ((MultiProcessModel) model)
@@ -172,8 +174,8 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     Petrinet modelPetri = processStack.pop().copy();
     ((MultiProcessModel) model).addProcess(modelPetri);
     ProcessModel modelAut;
-    HashMap<AutomatonNode, Set<PetriNetPlace>> nodeToMarking = new HashMap<>();
-    HashMap<Set<PetriNetPlace>, AutomatonNode> markingToNode = new HashMap<>();
+    HashMap<AutomatonNode, Multiset<PetriNetPlace>> nodeToMarking = new HashMap<>();
+    HashMap<Multiset<PetriNetPlace>, AutomatonNode> markingToNode = new HashMap<>();
       /*
         Token rule works here but can not be called from petrinetInterpreter
        */
@@ -365,12 +367,17 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
  private Petrinet interpretASTNode(ASTNode currentNode)
    throws CompilationException, InterruptedException {
   Petrinet fake = new Petrinet("FAKE");
+  fake.setOwners(Collections.singleton(Petrinet.DEFAULT_OWNER));
   PetriNetPlace fakePl = new PetriNetPlace("fake");
+  fakePl.setOwners(Collections.singleton(Petrinet.DEFAULT_OWNER));
+  System.out.println("fake petri "+fake.myString());
   return interpretASTNode(currentNode, fake, fakePl);
  }
 
  private Petrinet interpretASTNode(ASTNode currentNode, Petrinet petri, PetriNetPlace currentPlace)
    throws CompilationException, InterruptedException {
+System.out.println("ASTNode "+petri.myString()+" "+ currentPlace.myString());
+  System.out.println("ASTNode " + currentNode.getClass().getSimpleName());
 
   if (Thread.currentThread().isInterrupted()) {
    throw new InterruptedException();
@@ -478,10 +485,11 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
   String lab = seq.getFrom().getAction(); // Now unique see Petrinet.netId
   Petrinet ev = Petrinet.oneEventNet(lab);
   Petrinet petri = interpretASTNode(seq.getTo());  //initially the STOP net
-
+  System.out.println("petri "+petri.myString());
+  System.out.println("ev "+ev.myString());
   SequentialInfixFun sif = new SequentialInfixFun();
   Petrinet ret = sif.compose(lab, ev, petri);
-//System.out.println("SEQUENCE end "+ ret.myString());
+System.out.println("SEQUENCE end "+ ret.myString());
   return ret;
  }
 

@@ -82,7 +82,7 @@ public class Expander {
     if (process.hasVariableSet()) {
       hiddenVariables = process.getVariables().getVariables();
     } else {
-      hiddenVariables = Collections.emptySet();
+      hiddenVariables = new HashSet<>();
     }
     Map<String, Object> variableMap = new HashMap<>();
     for (LocalProcessNode node : process.getLocalProcesses()) {

@@ -1,5 +1,6 @@
 package mc.processmodels;
 
+import com.google.common.collect.Multiset;
 import lombok.Getter;
 import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.petrinet.components.PetriNetPlace;
@@ -15,12 +16,12 @@ import java.util.Set;
 
 public class Mapping {
     @Getter
-    private Map<AutomatonNode, Set<PetriNetPlace>> nodeToMarking = new HashMap<>();
+    private Map<AutomatonNode, Multiset<PetriNetPlace>> nodeToMarking = new HashMap<>();
 
     @Getter
-    private Map<Set<PetriNetPlace>, AutomatonNode > markingToNode = new HashMap<>();
+    private Map<Multiset<PetriNetPlace>, AutomatonNode > markingToNode = new HashMap<>();
 
-    public Mapping(Map<AutomatonNode, Set<PetriNetPlace>> nodeToMarking_, Map<Set<PetriNetPlace>, AutomatonNode > markingToNode_) {
+    public Mapping(Map<AutomatonNode, Multiset<PetriNetPlace>> nodeToMarking_, Map<Multiset<PetriNetPlace>, AutomatonNode > markingToNode_) {
         nodeToMarking = nodeToMarking_;
         markingToNode = markingToNode_;
     }

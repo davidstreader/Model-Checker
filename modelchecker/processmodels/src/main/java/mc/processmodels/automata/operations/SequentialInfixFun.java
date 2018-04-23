@@ -141,7 +141,7 @@ public class SequentialInfixFun {
     int i = p2roots.size();
   //System.out.println("ROOTS " + i);
     Petrinet sequential;
-    System.out.println("\n Seq"+ net1.myString());
+    //System.out.println("\n Seq"+ net1.myString());
     if (net1.terminates()) {
       for (Set<String> rt : net2.getRoots()) {
        //System.out.println("\n "+i+" rt = "+rt);
@@ -162,7 +162,7 @@ public class SequentialInfixFun {
           }
         }
         Petrinet composition = new Petrinet(id, false);
-        composition.getOwners().clear();
+        composition.setOwners(new HashSet<>());
 
         for (PetriNetPlace pl : petrinet2.getPlaces().values()) {
           pl.setStart(false);
@@ -192,9 +192,10 @@ public class SequentialInfixFun {
        //System.out.println(i + " ROOT = " + taggedrt + "  END = " + nextEnd);
 
         composition.glueOwners(own1,own2);
+
         composition.glueNames(nextEnd, taggedrt);
 
-       ////System.out.println("\nGlue OVER \n"+ composition.myString()+"\n");
+       //System.out.println("\nGlue OVER \n"+ composition.myString()+"\n");
         composition.setRootFromStart();
        ////System.out.println("\nTO STACK \n"+ composition.myString()+"\n");
         netStack.push(composition.copy());
@@ -208,18 +209,20 @@ public class SequentialInfixFun {
 
 
         sequential = internalChoice.compose("=>" + pi++, sequential, netStack.pop());
-        ////System.out.println("SEQing " + sequential.myString());
+        //System.out.println("SEQing " + sequential.myString());
         ////System.out.println("SEQing OVER");
       }
       sequential = PetrinetReachability.removeUnreachableStates(sequential);
       sequential.setRootFromStart();
       //Petrinet seq = new Petrinet(id, false);
       //seq.addPetrinet(sequential);  // renumbers the ids
-      ////System.out.println("FINAL " +sequential.myString());
+      //System.out.println("FINAL " +sequential.myString());
       sequential.validatePNet();
+      sequential.reown();
       return sequential;
     } else {
     // net1 dose not terminate so returne only net1
+      net1.reown();
       return net1.copy();
     }
 

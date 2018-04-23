@@ -20,6 +20,19 @@ public class PetriNetPlace extends ProcessModelObject {
   // Place with ref "X" will be glued to other Place with "X" fromRef
   private Set<String> references = new LinkedHashSet<>();
   private Set<String> fromReferences = new LinkedHashSet<>();  // prior to gluing only on Leaf
+  private Set<String> owners = new HashSet<>();  // this is only needed in event Refinement
+  public void addOwner(String ownerName) {
+    //System.out.println("addOwner "+ownerName);
+    owners.add(ownerName);
+    //System.out.println("X");
+  }
+  public void addOwners(Set<String> ownersName) {
+    //System.out.println(this.owners.toString());
+    for(String o: ownersName) {
+      //System.out.println("o "+o);
+      owners.add(o);
+    }
+  }
 
   public int getMaxStartNo (){
     int out;
@@ -78,20 +91,14 @@ public class PetriNetPlace extends ProcessModelObject {
   public boolean isSTOP() { return terminal != null && terminal.equals("STOP");}
 
 
-  public PetriNetPlace copyPlace() {
-    PetriNetPlace out = new PetriNetPlace(this.getId());
-    out.copyProperties(this);
-    out.setOutgoing(this.getOutgoing());
-    out.setIncoming(this.getIncoming());
-    return out;
 
-  }
   public void copyProperties(PetriNetPlace toCopy) {
     start = toCopy.start;
     terminal = toCopy.terminal;
     references = toCopy.references;
     fromReferences = toCopy.fromReferences;
     startNos = toCopy.getStartNos();
+    owners = toCopy.owners;
   }
 
   public void intersectionOf(PetriNetPlace place1, PetriNetPlace place2) {
@@ -157,7 +164,8 @@ public class PetriNetPlace extends ProcessModelObject {
     return "Place "+this.getId()+ " r "+references.toString()+" f "+fromReferences.toString()+
       this.getIncoming().stream().map(ed->ed.getId()).reduce(" in  ",(x,y)->x+" "+y)+
       this.getOutgoing().stream().map(ed->ed.getId()).reduce(" out ",(x,y)->x+" "+y) +
-      " end "+this.getTerminal()+ " st "+ this.isStart()+ " "+this.startNos
+      " end "+this.getTerminal()+ " st "+ this.isStart()+ " "+this.startNos +
+      " own "+ this.owners
       ;
   }
 }

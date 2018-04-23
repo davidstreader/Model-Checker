@@ -2,6 +2,7 @@ package mc.client.ui;
 
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Multiset;
 import edu.uci.ics.jung.algorithms.layout.GraphElementAccessor;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
@@ -71,7 +72,7 @@ public class DoubleClickHandler implements MouseListener {
                         Collection<GraphNode> vertexes = vv.getGraphLayout().getGraph().getVertices();
 
                         if (currentNodeClicked.getRepresentedFeature() instanceof AutomatonNode) {
-                            Map<AutomatonNode, Set<PetriNetPlace>> mapping = thisMapping.getNodeToMarking();
+                            Map<AutomatonNode, Multiset<PetriNetPlace>> mapping = thisMapping.getNodeToMarking();
 
                             for (PetriNetPlace place : mapping.get(currentNodeClicked.getRepresentedFeature())) {
                                 // N^2, might be a problem for larger displays
@@ -83,9 +84,9 @@ public class DoubleClickHandler implements MouseListener {
                                     }
                             }
                         } else if (currentNodeClicked.getRepresentedFeature() instanceof PetriNetPlace) {
-                            Map<Set<PetriNetPlace>, AutomatonNode> mapping = thisMapping.getMarkingToNode();
+                            Map<Multiset<PetriNetPlace>, AutomatonNode> mapping = thisMapping.getMarkingToNode();
 
-                            for (Set<PetriNetPlace> marking : mapping.keySet()) {
+                            for (Multiset<PetriNetPlace> marking : mapping.keySet()) {
                                 if (marking.contains(currentNodeClicked.getRepresentedFeature()))
                                     for (GraphNode g : vertexes)
                                         if (mapping.get(marking) == g.getRepresentedFeature()) {

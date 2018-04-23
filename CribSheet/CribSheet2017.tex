@@ -1079,7 +1079,35 @@ Event synchronisation of $t_1$, $\aro{\bullet t_1}{a}{t_1\bullet}$ and $t_2$, $\
 
 
 
-\subsection{Token Rule}
+
+\subsection{From Process specifications to Petri Nets}
+We use \verb|Proc|, a simple process language to specify the processes we are interested in. The Automata semantics of the operations of the language can be given by, or at least characterised by, gluing pairs of automata nodes together. A single automata node is represented by a marking of a Net.  Consequently by  defining how to \emph{glue together two markings} we have a definition of the basic process operations on Nets.
+
+
+\begin{center}\begin{minipage}{0.6\textwidth}
+\begin{verbatim}
+A = (a->STOP||b->STOP) => (s->STOP||t->STOP).
+B = (a->STOP||b->STOP) [] (s->STOP||t->STOP).
+  \end{verbatim}
+\end{minipage}\end{center}
+
+The sequential composition of two processes, when viewed as an automata  can be built by gluing together the end node of the automata of the first process with the start node of the automata of the second automata, see automata \verb|A| below.
+
+\begin{center}\begin{minipage}{0.9\textwidth}
+\includegraphics[scale=0.4]{SeqNets.png}
+\end{minipage}\end{center}
+
+
+The gluing together of the end marking  of the first Petri Net with the start marking of the second Petri Nets is achieved by the building the {\sf product of the two sets of places} see Petri Net \verb|A| above. 
+
+Choice of two Petri nets can be built by applying the same gluing function but in this case to the start markings of both operands. 
+\begin{center}\begin{minipage}{0.9\textwidth}
+\includegraphics[scale=0.4]{ChoiceNets.png}
+\end{minipage}\end{center}
+
+Both for technical ease and to build more compact representations we have chosen to glue the end marking together. This way all automata/ Petri Nets have a single end state/marking.
+
+\subsection{Token Rule - from Petri Nets to Automata}
 
 
  We define \verb|TokenRule| that maps Petri Nets to automata.  A transition can only be executed when all its pre places are marked and the result of firing a transition is to move the tokens from the pre places to the post places.
@@ -1116,11 +1144,7 @@ In the example above the processes \verb|P| and \verb|Q| are not the same as the
 
 We can extend both automata and Petri Nets to record the location, or ownership, of evens.  This way we have located automata are equivalent to located Petri Nets.
 
-\subsection{From Process specifications to Petri Nets}
-We use \verb|Proc|, a simple process language to specify the processes we are interested in. The Automata semantics of the operations of the language are given by gluing pairs of automata nodes together. A single automata node is represented by a marking of a Net.  Consequently by  defining how to \emph{glue together two markings} we have a definition of the basic process operations on Nets.
-
-
-\subsection{From Automata to Petri Nets}
+\subsection{Owners Rule - from Automata to Petri Nets}
 Building Petri Nets from automata with located transitions {\sf Owners Rule} works as follows:
 
 
@@ -1170,40 +1194,70 @@ Whereas event refinement can be defined on Petri Nets.  Because of the addition 
 \subsection*{Event Refinement}
 We can define how to refine a single  event in a process (PetriNet) into a whole process (Petri Net). 
 
-A more interesting example is given below.
+An  interesting example given below shows that event refinement can construct nets with markings that are finite multi sets. Such nets are referred to as {\sf n-safe nets}. Up to now all nets have been {\sf one-safe nets} sometimes referred to as predicate nets as you can interpret each place as a predicate and the marking of the place as the assertion that the predicate is true.
 
-\noindent
+
 \begin{minipage}{0.25\textwidth}
 \begin{verbatim}
-A1 = yy->A1.
-D = d->STOP||e->STOP.
-C = A1/{D/yy}.
+B=b->B.
+E=((s->STOP) || B). 
+D = c->STOP||c1->STOP.
+X = E/{D/b}.
   \end{verbatim}
 \end{minipage}\begin{minipage}{0.7\textwidth}
-\begin{center}\includegraphics[scale=0.4]{Wings.png}\end{center}
+\begin{center}
+\includegraphics[scale=0.4]{Xwings.png}\end{center}
 \end{minipage}
+
+The execution of either \verb|c| or \verb|c1|, in Petri Net \verb|X| above will result in two tokens on the same place. That is \verb|X| is not one-safe.
 
 To check your intuitions about Petri Nets ask your self it the two \emph{"wings"} places which are always marked are just an artefact of our algorithm and are semantically redundant or not?
 
 
+Having built the Petri Net by refining a loop event we can apply the token rule to build the automata (annotated with event owners) and then apply the OwnersRule to rebuild a Petri Nets.
+\begin{minipage}{0.25\textwidth}
+\begin{verbatim}
+B=b->B.
+E=((s->STOP) || B). 
+C=c->STOP.
+C1=c1->STOP.
+D=(C||C1).
+X=E/{D/b}.
+Y=ownersRule(X).
+  \end{verbatim}
+\end{minipage}\begin{minipage}{0.7\textwidth}
+\begin{center}\includegraphics[scale=0.4]{Ywings.png}\end{center}
+\end{minipage}
+
+Interestingly the definition of the Owners Rule, as defined,  dose not rebuild the n-safe net we started from but builds a semantically equivalent net that is 1-safe, see above. It would be interesting to consider if the algorithm could be amended to build n-safe nets.
+
+That the Owners Rule converts n-safe nets into "equivalent" one-safe nets can as a surprise and hence prompts the questions: is the rule correct? and what do we mean by correct?
+
+There are a vast number of interleaving process equivalences in the literature and as non-interleaving semantics are much richer  even more non-interleaving semantics can be defined. Here we justify our semantic equivalence by the construction of a plausible, in our opinion,  testing semantics. We wish to enrich our interleaving semantics to capture the non-interleaving behaviour while not loosing the testing semantics defined on automata. To achieve this we extend the event semantics to model the ownership (or location) of the events. By this we can model processes both as automata and as Petri Nets and we have the {\sf Token Rule} to build the automata from the Petri Net and the {\sf Owners Rule} to build the Petri Net from the automata.
+
+Much work has been undertaken to define a non-interleaving semantics on Petri Nets. It can be seen form the literature that there are many ways to  construct semantics equivalences  based on the shape of  Petri nets.   But we have neither found nor can construct such a definition that would equate the Petri Nets \verb|X| and \verb|Y|  given above/
+
+\subsection{Advantages of the mixed semantics of owned events}
+The semantics of processes,  where events are annotated with ownership,
+can be represented  both as automata and  as Petri Nets. Properties can be defined on which ever semantics is most natural and then \emph{lifted} to the other semantics. 
+
+Petri Nets can be very much smaller than automata and make concurrency easily seen.   
+Petri Nets also  support event refinement whereas it can not be defined on the unowned interleaving semantics of automata. 
+
+Automata support a rich set of equivalences that can be justified by plausible testing semantics and existing definitions of event hiding and simplification can readily be applied to the automata annotated with ownership. Further reachability is largely obscured by Petri Nets and easy to see in automata.
+
+\begin{minipage}{0.9\textwidth}
+\begin{center}\includegraphics[scale=0.4]{ReachNets.png}\end{center}
+\end{minipage}
+
+ In the Petri Net \verb|S| above the events \verb|y| and \verb|c| are unreachable. This is immediately apparent when converted to an automata \verb|S|. Applying the OwnersRule to the automata builds the Petri Net \verb|R| in which the unreachable events do not appear.
 
 
 
-\subsection{Advantages of mixed semantics}
-Processes 
-can be viewed both as automata and as Petri Nets. Different properties can be more readily seen in each of the semantics.
+Because we can freely map between Petri Nets and Automata that are annotated with Ownership we can construct definitions, and implementations on which ever is easier and then map the result to other.  For example 
+ Use the {\bf Token Rule} to map a Petri Net to an Automata then  simplify the automata and use {\sf Owners Rule } to map the result  back  to Petri Nets.
 
-Petri Nets can be very much smaller than automata and make concurrency easily seen. Whereas reachability is largely obscured by Petri Nets and easy to see in automata. 
-
-Petri Nets also  support event refinement whereas  automata support a rich set of equivalences that can be justified by plausible testing semantics. 
-
-
-Two options for the  Hiding and simplifying  Nets
-\begin{enumerate}
-\item define abstraction and bisimulation on nets OR
-\item Use the {\bf Token Rule} to map a Petri Net to an Automata, simplify the automata and then use {\sf Owners Rule } to map the result  back  to Petri Nets.
-\end{enumerate}
-
+Using {\sf owned event} semantics we can \emph{lift} failure semantics from automata to Petri Nets
 
 
 

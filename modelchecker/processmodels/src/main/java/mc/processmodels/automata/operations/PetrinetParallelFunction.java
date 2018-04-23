@@ -26,8 +26,8 @@ public class PetrinetParallelFunction  {
     clear();
     p1.rebuildAlphabet(); p2.rebuildAlphabet();
    //System.out.println("\nPETRINETPARALLELFUNCTION");
-   //System.out.println("\np1 "+p1.myString());
-   //System.out.println("\np2 "+p2.myString());
+   System.out.println("\n ||p1 "+p1.myString());
+   System.out.println("\n ||p2 "+p2.myString());
 
 
 
@@ -50,9 +50,10 @@ public class PetrinetParallelFunction  {
 
     setupSynchronisedActions(p1, p2, composition);
 
-    composition = PetrinetReachability.removeUnreachableStates(composition);
-
-   //System.out.println("\n   PAR end "+composition.myString());
+    //composition = PetrinetReachability.removeUnreachableStates(composition);
+     composition.reown();
+     assert composition.validatePNet():"parallel comp post condition ";
+   System.out.println("\n   PAR end "+composition.myString());
     return composition;
   }
 
@@ -99,8 +100,6 @@ public class PetrinetParallelFunction  {
   @SneakyThrows(value = {CompilationException.class})
   private static void setupSynchronisedActions(Petrinet p1, Petrinet p2, Petrinet comp) {
 
-
-
     for (String action : synchronisedActions) {
    //System.out.println("Sync action "+action);
       Set<PetriNetTransition> p1Pair = p1.getAlphabet().get(action).stream()
@@ -123,6 +122,9 @@ public class PetrinetParallelFunction  {
           incomingEdges.addAll(t2.getIncoming());
 
           PetriNetTransition newTrans = comp.addTransition(action);
+          newTrans.clearOwners();
+          newTrans.addOwners(t1.getOwners());
+          newTrans.addOwners(t2.getOwners());
           for(PetriNetEdge outE : outgoingEdges) {
             comp.addEdge( (PetriNetPlace) outE.getTo(), newTrans);
           }

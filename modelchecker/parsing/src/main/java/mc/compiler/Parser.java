@@ -809,7 +809,7 @@ System.out.println("parseDisplayType "+ token.toString());
     IProcessFunction functionDefinition = instantiateClass(functions.get(type));
 
     // check if any flags have been set
-    Set<String> flags = Collections.emptySet();
+    Set<String> flags = new HashSet<>();
     if (peekToken() instanceof OpenBraceToken) {
       flags = parseFlags(type);
     }

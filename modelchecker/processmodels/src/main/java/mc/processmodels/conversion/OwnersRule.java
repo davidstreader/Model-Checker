@@ -52,7 +52,7 @@ public class OwnersRule {
    */
   @SneakyThrows({CompilationException.class})
   public static  Petrinet ownersRule(Automaton ain) {
-    //System.out.println("OwnersRule automata "+ain.getId()+" ");
+    System.out.println("OwnersRule initial automata "+ain.getId()+" ");
     //Throwable t = new Throwable(); t.printStackTrace();
     clean();
    // 1. to automata A add initial event S*=>A now only one start state.
@@ -65,7 +65,6 @@ public class OwnersRule {
     a.tagEvents();
    //System.out.println("\nOWNERS Stared Rule " + a.myString());
 
-    PetriNetPlace p = null;
     AutomatonNode root = null;
 
 //       Setup = for all roots nodes rnd
@@ -94,7 +93,7 @@ public class OwnersRule {
       processed.add(nd);
       if (!nd2Pl.containsKey(nd)) {
        PetriNetPlace added = petri.addPlace();
-
+       added.setOwners(Collections.singleton(own));
        if (first) {
          petri.addRoot(Collections.singleton(added.getId()));
          added.setStart(true);
@@ -133,6 +132,7 @@ public class OwnersRule {
         PetriNetTransition tran = petri.addTransition(ed.getLabel());
         petri.addEdge(tran, nd2Pl.get(ed.getFrom()));
         petri.addEdge(nd2Pl.get(ed.getTo()), tran);
+        tran.setOwners(Collections.singleton(own));
         //System.out.println("Adding " + tran.myString());
        } else {
         //System.out.println("par edge " + ed.myString());
@@ -164,6 +164,7 @@ public class OwnersRule {
     //3. remove S* to reveal the multiple start states.
     build = stripStar(build);
     //System.out.println("\n  OWNERS Rule *END "+build.myString());
+    assert(build.validatePNet()): "OwnersRule End";
     return build;
   }
 

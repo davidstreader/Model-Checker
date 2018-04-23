@@ -2,6 +2,9 @@ package mc.processmodels.conversion;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multiset;
 import lombok.SneakyThrows;
 import mc.exceptions.CompilationException;
 import mc.processmodels.automata.Automaton;
@@ -47,14 +50,15 @@ public class TokenRule {
    * @return The automaton that is equivalent to {@code convertFrom} petrinet.
    */
   @SneakyThrows(value = {CompilationException.class})
-  public static Automaton tokenRule(Petrinet convertFrom, Map<Set<PetriNetPlace>, AutomatonNode> markingToNodeMap,
-                                    Map<AutomatonNode, Set<PetriNetPlace> > nodeToMarkingMap) {
+  public static Automaton tokenRule(Petrinet convertFrom,
+                                    Map<Multiset<PetriNetPlace>, AutomatonNode> markingToNodeMap,
+                                    Map<AutomatonNode, Multiset<PetriNetPlace> > nodeToMarkingMap) {
 
     Automaton outputAutomaton = new Automaton(convertFrom.getId() + " automata",
         false);
   //System.out.println("\nTOKEN RULE \n STARTING "+convertFrom.myString());
-    convertFrom.validatePNet();
-
+    assert convertFrom.validatePNet(): "Token precondition";
+   outputAutomaton.setOwners(convertFrom.getOwners());
    //System.out.println(convertFrom.getRoots());
     List<Set<PetriNetPlace>> rootsPlaces = new ArrayList<Set<PetriNetPlace>>();
 
@@ -67,24 +71,33 @@ public class TokenRule {
       Set<PetriNetPlace> rts = rnames.stream().
         map(x-> convertFrom.getPlaces().get(x)).collect(Collectors.toSet());
       rootsPlaces.add(rts);
-      markingToNodeMap.put(rts, root);
-      nodeToMarkingMap.put(root, rts);
+      Multiset<PetriNetPlace> rtms = HashMultiset.create(rts);
+      markingToNodeMap.put(rtms, root);
+      nodeToMarkingMap.put(root, rtms);
       //System.out.println("root "+root.myString());
     }
 
   //System.out.println("rootsPlaces "+ rootsPlaces);
-    Stack<Set<PetriNetPlace>> toDo = new Stack<>();
-    toDo.addAll(rootsPlaces);
+    Stack<Multiset<PetriNetPlace>> toDo = new Stack<>();
+    for(Set<PetriNetPlace> rs: rootsPlaces) {
+      toDo.add(HashMultiset.create(rs));
+    }
 
-    Set<Set<PetriNetPlace>> previouslyVisitedPlaces = new HashSet<>();
+    Set<Multiset<PetriNetPlace>> previouslyVisitedPlaces = new HashSet<>();
     int nodesCreated = 1;
-
+int j = 0; //without these 2 LofC loop never terminates!
     while (!toDo.isEmpty()) {
-      Set<PetriNetPlace> currentMarking = toDo.pop();
-      //System.out.println("Starting "+previouslyVisitedPlaces.size()+
-      //   " "+Petrinet.marking2String(currentMarking));
+if(j++>50) {System.out.println("\n\nEND j = "+j+"\n\n");break;} // second LofC  NEVER Called - looks redundent!
+      Multiset<PetriNetPlace> currentMarking = toDo.pop();
+ //System.out.print("\nStarting  prev " +previouslyVisitedPlaces.size()+"todo "+toDo.size()+  " \n");
+    /*  for(PetriNetPlace pl :currentMarking){
+         //System.out.print(pl.getId()+" ");
+      } */
+       //System.out.println("");
+   //System.out.println("currentMarking "+currentMarking.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
+
       if (previouslyVisitedPlaces.contains(currentMarking)) {
-        //System.out.println("Visted!");
+        System.out.println("Visted!");
         continue;
       }
       //System.out.println("currentMarking "+currentMarking);
@@ -102,17 +115,20 @@ public class TokenRule {
           markingToNodeMap.get(currentMarking).setTerminal("ERROR");
       }
 
+      //System.out.println("satisfiedPostTransitions "+ satisfiedPostTransitions.size());
       for (PetriNetTransition transition : satisfiedPostTransitions) {
-        //System.out.println("Next tran "+transition.myString());
-        Set<PetriNetPlace> newMarking = new HashSet<>(currentMarking);
+        //System.out.println("Next tran "+satisfiedPostTransitions.size()+" "+transition.getId());
+         Multiset<PetriNetPlace> newMarking = HashMultiset.create(currentMarking);
         // Clear out the places in the current marking which are moving token
-        newMarking.removeAll(transition.pre());
-
+        for(PetriNetPlace pl : transition.pre()){
+          newMarking.remove(pl);
+        }
+   //System.out.println("newMarking1 "+newMarking.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
         newMarking.addAll(transition.getOutgoing().stream()
             .map(PetriNetEdge::getTo)
             .map(PetriNetPlace.class::cast)
             .collect(Collectors.toList()));
-        //System.out.println("newMarking "+ Petrinet.marking2String(newMarking));
+   //System.out.println("newMarking "+newMarking.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
 
         if (!markingToNodeMap.containsKey(newMarking)) {
           AutomatonNode newNode = outputAutomaton.addNode();
@@ -129,13 +145,13 @@ public class TokenRule {
         //System.out.println(" automaton now "+outputAutomaton.myString());
       }
       previouslyVisitedPlaces.add(currentMarking);
-      //System.out.println("ENDing "+previouslyVisitedPlaces.size()+"  "+Petrinet.marking2String(currentMarking));
+  //System.out.println("Add to Previous "+previouslyVisitedPlaces.size()+"  "+currentMarking.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
     }
    //System.out.println("Token Out "+outputAutomaton.myString());
     return outputAutomaton;
   }
 
-  private static Set<PetriNetTransition> satisfiedTransitions(Set<PetriNetPlace> currentMarking) {
+  private static Set<PetriNetTransition> satisfiedTransitions(Multiset<PetriNetPlace> currentMarking) {
     return post(currentMarking).stream() //88
         .filter(transition -> currentMarking.containsAll(transition.pre()))
         .distinct()
@@ -143,7 +159,7 @@ public class TokenRule {
   }
 
 
-  private static Set<PetriNetTransition> post(Set<PetriNetPlace> currentMarking) {
+  private static Set<PetriNetTransition> post(Multiset<PetriNetPlace> currentMarking) {
     if (currentMarking == null) return Collections.EMPTY_SET;
     Set<PetriNetTransition> out = new HashSet<>();
     for (PetriNetPlace pl : currentMarking){

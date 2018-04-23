@@ -1,10 +1,8 @@
 package mc.operations.functions;
 
 import com.microsoft.z3.Context;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+
+import java.util.*;
 import java.util.stream.Collectors;
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessFunction;
@@ -34,7 +32,7 @@ public class PruneFunction implements IProcessFunction {
    */
   @Override
   public Collection<String> getValidFlags() {
-    return Collections.emptySet();
+    return new HashSet<>();
   }
 
   /**

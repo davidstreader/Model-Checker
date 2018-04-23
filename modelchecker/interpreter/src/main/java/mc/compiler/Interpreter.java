@@ -1,5 +1,6 @@
 package mc.compiler;
 
+import com.google.common.collect.Multiset;
 import com.microsoft.z3.Context;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -57,7 +58,7 @@ public class Interpreter {
                                              Context context)
       throws CompilationException, InterruptedException {
 
-    System.out.print("Who calls interpret? ");Throwable t = new Throwable();t.printStackTrace();
+    //System.out.print("Who calls interpret? ");Throwable t = new Throwable();t.printStackTrace();
     Map<String, ProcessModel> processMap = new LinkedHashMap<>();
 // build all  processes including global sub processes
 //      BUT .getType tells us which to build
@@ -66,27 +67,27 @@ public class Interpreter {
     //  reduce("{",(x,y)->x+" "+y)+"}");
     for (ProcessNode process : processes) { //BUILDING ALL PROCESSES
        // NOW interprets PetriNets and uses Token Rule to build Automata
- System.out.println("  Interpreter Building " + process.getIdentifier() + " ... "+ process.getType().toString());
+ //System.out.println("  Interpreter Building " + process.getIdentifier() + " ... "+ process.getType().toString());
       ProcessModel model = null;
         model = new MultiProcessModel(process.getIdentifier());
         model.setLocation(process.getLocation());
 // Conversion nodes cannot be processed here!
         ProcessModel modelPetri = petrinetInterpreter.interpret(process,
                     processMap, context);
-  System.out.println("Built PetriNet "+ modelPetri.getId());// process.getIdentifier());
+  //System.out.println("Built PetriNet "+ modelPetri.getId());// process.getIdentifier());
 
         modelPetri.setLocation(process.getLocation());
         ((MultiProcessModel) model).addProcess(modelPetri);
         ProcessModel modelAut;
-        HashMap<AutomatonNode, Set<PetriNetPlace>> nodeToMarking = new HashMap<>();
-        HashMap<Set<PetriNetPlace>, AutomatonNode> markingToNode = new HashMap<>();
+        HashMap<AutomatonNode, Multiset<PetriNetPlace>> nodeToMarking = new HashMap<>();
+        HashMap<Multiset<PetriNetPlace>, AutomatonNode> markingToNode = new HashMap<>();
       /*
         Token rule works here but can not be called from petrinetInterpreter
        */
           modelAut = TokenRule.tokenRule(
               (Petrinet) ((MultiProcessModel) model)
                   .getProcess(ProcessType.PETRINET), markingToNode, nodeToMarking);
-   System.out.println("Built automata with tokenRule "+ process.getIdentifier());
+   //System.out.println("Built automata with tokenRule "+ ((Automaton) modelAut).myString());
 
           ((MultiProcessModel) model).addProcess(modelAut);
           ((MultiProcessModel) model)

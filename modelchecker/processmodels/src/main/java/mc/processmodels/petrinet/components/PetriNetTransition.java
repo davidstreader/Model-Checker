@@ -28,6 +28,9 @@ public class PetriNetTransition extends ProcessModelObject {
       //System.out.println("o "+o);
       owners.add(o);
     }
+  }public void clearOwners() {
+      owners = new HashSet<>();
+
   }
   public void removeEdge(PetriNetEdge ed){
     //this seems clumsy but many shorter version failed

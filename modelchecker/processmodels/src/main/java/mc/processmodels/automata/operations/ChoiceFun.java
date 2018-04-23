@@ -134,10 +134,10 @@ public class ChoiceFun {
 
   public Petrinet compose(String id, Petrinet net1, Petrinet net2)
     throws CompilationException {
-    System.out.println("[]PETRI1 "+net1.myString());
-    net1.validatePNet();
+    //System.out.println("[]PETRI1 "+net1.myString());
+    assert net1.validatePNet():"choice precondition net1";
     //System.out.println("[]PETRI2 "+net2.myString());
-    net2.validatePNet();
+    assert net2.validatePNet():"choice precondition net2";
     Stack<Set<String> > endStack = new Stack<>(); // for the end markings of each Ri[]Rj
     List<Set<String>> newRoots = new ArrayList<>();
     //System.out.println("[]CHOICE " +net1.getRoots().size() +" X " +net2.getRoots().size());
@@ -151,7 +151,7 @@ public class ChoiceFun {
         //clone nets
         petrinet1.addPetrinet(net1);
         petrinet2.addPetrinet(net2);
-    System.out.println("petrinet1 " +petrinet1.myString());
+    //System.out.println("petrinet1 " +petrinet1.myString());
         Set<String> startOfP1 = petrinet1.getRoots().get(i);
         Set<String> startOfP2 = petrinet2.getRoots().get(j);
    //System.out.println( "\nstartOfP1 "+ startOfP1 +"  startOfP2 "+ startOfP2+"\n");
@@ -165,14 +165,14 @@ public class ChoiceFun {
         } */
         Set<String> own1 = petrinet1.getOwners();
         Set<String> own2 = petrinet2.getOwners();
-        System.out.println("\n own1 "+own1+ " own2 "+own2);
+        //System.out.println("\n own1 "+own1+ " own2 "+own2);
         //prior to Gluing join the nets (do not add as that changes the names
-        System.out.println("\n P1.owners "+petrinet1.getOwners());
+        //System.out.println("\n P1.owners "+petrinet1.getOwners());
         composition.joinPetrinet(petrinet1);
-        System.out.println("comp.owners "+composition.getOwners());
+        //System.out.println("comp.owners "+composition.getOwners());
         //add the second petrinet;
         composition.joinPetrinet(petrinet2);
-        System.out.println("comp.owners "+composition.getOwners());
+        //System.out.println("comp.owners "+composition.getOwners());
         composition.setRoots(new ArrayList<>());
         //System.out.println("\n[]after Join " + composition.myString() + "\n");
         //merge the end of petri1 with the start of petri2
@@ -233,8 +233,9 @@ public class ChoiceFun {
 
     //System.out.println("[]Add OUT "+ composition.myString()+"\n");
     composition = PetrinetReachability.removeUnreachableStates(composition);
-    //System.out.println("Add OUT "+ composition.myString()+"\n");
-    composition.validatePNet();
+    //System.out.println("\n[] OUT "+ composition.myString()+"\n");
+    composition.reown();
+    assert composition.validatePNet(): "choice post condition";
     return composition;
   }
 
