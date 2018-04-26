@@ -112,7 +112,7 @@ public class RefineFun {
         .filter(x -> x.isTerminal()).collect(Collectors.toSet());
       Set<PetriNetPlace> newend2 = end2.stream().map(x -> mapping.get(x)).collect(Collectors.toSet());
 
-      for (PetriNetPlace pl2 : petrinet2.getPlaces().values()) {
+      for (PetriNetPlace pl2 : newend2) {
         pl2.setTerminal("");
       }
 
@@ -158,7 +158,7 @@ public class RefineFun {
     }
     composition.validatePNet();
 
-
+    composition = PetrinetReachability.removeUnreachableStates(composition);
     System.out.println("Refine OUT "+ composition.myString()+"\n");
 
     return composition;
