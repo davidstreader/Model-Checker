@@ -1,0 +1,53 @@
+processes {
+Zero1 = STOP.
+Zero2 = ERROR.
+
+One1 = a->One1.
+One2 = a->STOP.
+One3 = a->ERROR.
+One4 = b->One4.
+One5 = b->STOP.
+One6 = b->ERROR.
+
+Two1 = a->b->STOP.
+Two2 = a->Two2|a->STOP.
+Two3 = a->Two3|b->STOP.
+Two4 = a->b->Two4.
+Two5 = a->STOP|b->STOP.
+Two6 = a->ERROR| a->STOP.
+Two7 = a->ERROR|b->STOP.
+Two8 = a->X|b->X, X = STOP.
+
+}
+/* Use of both causes Petri nets to be built and 
+then th tokenRule applied
+*/
+automata One1,One2,One3,One4,One5,One6.
+petrinet One1,One2,One3,One4,One5,One6.
+automata Two1,Two2,Two3,Two4,Two5,Two6,Two7,Two8.
+petrinet Two1,Two2,Two3,Two4,Two5,Two6,Two7,Two8.
+
+equation {
+X|Y ~ Y|X.
+X|(Y|Z) ~ (X|Y)|Z.
+
+X|| Y ~ Y||X.
+
+X||STOP ~ X.
+//X||X ~ X.  THIS IS NOT TRUE  see Two2||Two2
+
+//(X=>Y)|| (Z=>Y) * (X||Z)=>Y.  // Not true  NOTE One2||One1 != One2
+
+(a->STOP)=>X ~ a->X.
+X=>STOP ~ X.
+STOP=>X ~ X.
+
+(X|Y)=>Z * (X=>Z) | (Y=>Z).
+
+// X=>(Y|Z) * (X=>Y)|(X=>Z).  NO should not be true
+
+}
+
+
+
+

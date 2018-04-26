@@ -1,0 +1,16 @@
+processes {
+P = x->STOP||y->STOP.
+Q = a->b->STOP.
+Qp  = Q/{P/b}.
+//Aa = tokenRule(Qp).
+//Ap = ownersRule(Aa).
+//Aa = tokenRule(Ap).
+
+
+}
+petrinet P,Qp.
+//automata Aa.
+
+
+
+

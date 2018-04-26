@@ -1,0 +1,24 @@
+processes {
+A = a->STOP.
+B = xx->STOP||A.
+
+A1 = yy->A1.
+D = d->STOP||e->STOP.
+// need to add B to Hierarchy of process hence to set type
+C = (A=>(x->STOP))/{D/x}.
+}
+petrinet C, D,A1.
+automata C,D,A1.
+
+
+
+
+
+
+
+
+
+
+
+
+

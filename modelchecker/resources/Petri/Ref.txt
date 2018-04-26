@@ -1,0 +1,7 @@
+processes {
+A = a->b->c->STOP.
+R = r->STOP||s->STOP.
+
+N = A/{R/b}.
+M = ownersRule(N).
+}

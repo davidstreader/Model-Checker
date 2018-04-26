@@ -1,0 +1,37 @@
+processes {
+
+A = a->STOP.
+B = b->STOP.
+Ac = c->STOP.
+C = A||B.
+D = a->b->D.
+D1 = (a->x->b->STOP||c->x->d->STOP).
+D2 = (X||c->x->d->STOP),
+    X = a->x->b->X.
+
+F = Ac=>C.
+E = C|(d->STOP).
+
+}
+
+automata A,B,C,D,D1,F,E.
+
+equation {
+ X ~ a2p2a(X).
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

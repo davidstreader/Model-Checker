@@ -1,0 +1,28 @@
+processes {
+
+//A = a->STOP.
+// A1 = a1->STOP.
+
+B = b->B.
+E = ((s->STOP) || B). 
+C = c->STOP.
+C1 = c1->STOP.
+D = (C||C1).
+//F = (e->STOP||e1->STOP).
+X = E/{D/b}.
+Y = ownersRule(X).
+
+}
+
+operation {
+//X ~ a2p2a(X). 
+//Y ~ a2p2a(Y).
+} 
+
+
+
+
+
+
+
+

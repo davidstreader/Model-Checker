@@ -1,0 +1,23 @@
+processes {
+
+A = a->STOP.
+B = b->STOP.
+C = c->C.
+/*
+Z = A[]C.
+X = tokenRule(Z).
+Y = a2p2a(X).
+*/
+}
+automata A,B,C.
+//automata X,Y.
+//operation { X ~ Y. }
+
+equation {
+
+(X=>Y) ~ a2p2a(a2p2a(X=>Y)).
+}
+
+
+
+

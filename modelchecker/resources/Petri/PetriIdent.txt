@@ -1,0 +1,18 @@
+processes {
+A = a->STOP.
+
+Z = (z->STOP)|A.
+
+  
+}
+
+petrinet  Z .
+/*petrinet Xp.
+
+operation {
+ B  ~ Xa.
+}
+*/
+
+
+
