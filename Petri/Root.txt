@@ -1,0 +1,31 @@
+processes {
+ B = (x->STOP) + (y->STOP).
+ C = (a->STOP)+(b->STOP).
+
+D = (s->x->s->STOP) ||(t->x->t->STOP).
+}
+
+petrinet D.
+
+/*
+B = bb -> STOP.
+A = a->STOP.
+
+C = (a->STOP)+(b->STOP).
+
+D = (x->STOP)||C.
+
+E = (y->STOP) => (D => (s->STOP)). 
+
+F = ((y->STOP) => D) => (s->STOP). 
+}
+
+
+petrinet A,B,C,D,E,F.
+
+*/
+
+
+
+
+
