@@ -1,0 +1,33 @@
+processes {
+
+
+Z = w-> b -> STOP.
+
+Y =  a->b->Y.
+
+Q = Y || Z.
+
+P = ownersRule(Q).
+Pt = tokenRule(P).
+}
+
+automata Q, Pt.
+petrinet P.
+
+operation {
+Pt ~ Q.
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,32 @@
+processes {
+A = a->A.
+B = b->STOP.
+C = c->STOP.
+
+E = B=>(A||C).
+}
+
+petrinet E.
+
+automata E.
+
+//forcedautomata E.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

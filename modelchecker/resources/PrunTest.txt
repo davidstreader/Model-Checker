@@ -1,0 +1,34 @@
+processes {
+
+A1 = a->a->A1.
+B1 = b->STOP.
+C1 = c->STOP.
+
+
+
+W = C1=>(A1||B1).
+V = ownersRule(W).
+U = prune(V).
+
+}
+
+//petrinet Ax. //, Ax. //,B,Bl,Blp.
+
+petrinet  V,U.
+
+automata W.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

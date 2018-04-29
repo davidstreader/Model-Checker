@@ -1,0 +1,25 @@
+processes {
+
+//W = w->X, X = x->X.
+ W = w->v->X|alt->Y,
+     X= x->y->X,
+     Y = end->STOP|again->Y.
+
+//Z = a->z->W .
+//Z = a->W.
+//Z = W\{w}.
+//Z =  (a->b->Z|x->W).
+}
+
+
+petrinet W .
+
+
+
+
+
+
+
+
+
+

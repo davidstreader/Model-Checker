@@ -1,0 +1,19 @@
+processes {
+
+A = a->STOP.
+B = b ->c->d->STOP.
+
+Z = z->STOP.
+X = B/{ii/c}.
+  
+}
+
+petrinet  B,X.
+/*petrinet Xp.
+
+operation {
+ B  ~ Xa.
+}
+*/
+
+
