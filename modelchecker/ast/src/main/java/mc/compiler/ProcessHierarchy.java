@@ -37,7 +37,7 @@ public class ProcessHierarchy {
         Deque<String> dependenciesQueue = new ArrayDeque<>();
         Set<String>   dependenciesSet   = new HashSet<>();
         if(!dependencies.containsKey(string))
-            return Collections.emptySet();
+            return new HashSet<>();
         dependenciesQueue.offer(string);
         //DFS search of graph beneath a component
         while(!dependenciesQueue.isEmpty()){

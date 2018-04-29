@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import mc.Constant;
+
 import mc.compiler.ast.*;
 import mc.compiler.token.*;
 import mc.exceptions.CompilationException;
@@ -42,7 +42,7 @@ public class Parser {
   private List<OperationNode> equations;
   private Map<String, Expr> variableMap;
   private Map<String, ASTNode> constantMap;
-  private List<IndexNode> actionRanges;
+  private List<IndexExpNode> actionRanges;
   private Set<String> definedVariables;
   private int index;
   private int variableId;
@@ -79,7 +79,7 @@ public class Parser {
         parseProcessesDefinition();
       } else if (token instanceof ConstToken) {
         parseConstDefinition();
-      } else if (token instanceof DisplayTypeToken) {
+      } else if (token instanceof DisplayTypeToken) {  //might be dead code
         parseDisplayType();
       } else if (token instanceof RangeToken) {
         parseRangeDefinition();
@@ -144,7 +144,7 @@ public class Parser {
           }
 
           ASTNode constant = constantMap.get(identifier);
-          if (constant instanceof ConstNode) {
+          if (constant instanceof ConstParseOnlyNode) {
             variable = parseActionRangeOrExpression();
           } else {
             variable = parseActionRange();
@@ -222,7 +222,7 @@ public class Parser {
 
       ASTNode constant = constantMap.get(identifier.getIdentifier());
 
-      if (constant instanceof ConstNode) {
+      if (constant instanceof ConstParseOnlyNode) {
         throw constructException("expecting a range or set constant but received a const", identifier.getLocation());
       }
 
@@ -233,7 +233,7 @@ public class Parser {
       range = parseRange();
     }
 
-    IndexNode indexNode = new IndexNode(variable, range, null, constructLocation(start));
+    IndexExpNode indexNode = new IndexExpNode(variable, range, null, constructLocation(start));
     actionRanges.add(indexNode);
 
     return variable;
@@ -321,7 +321,7 @@ public class Parser {
       ActionLabelNode action = parseActionLabel();
 
       if (rangeStart < actionRanges.size()) {
-        List<IndexNode> ranges = new ArrayList<>(actionRanges.subList(rangeStart, actionRanges.size()));
+        List<IndexExpNode> ranges = new ArrayList<>(actionRanges.subList(rangeStart, actionRanges.size()));
         actionRanges = new ArrayList<>(actionRanges.subList(0, rangeStart));
         RangesNode range = new RangesNode(ranges, action.getLocation());
         rangeMap.put(set.size(), range);
@@ -378,7 +378,7 @@ public class Parser {
       throw constructException("expecting to parse \".\" but received \"" + error.toString() + "\"", error.getLocation());
     }
 
-    ConstNode node = new ConstNode(value, constructLocation(start));
+    ConstParseOnlyNode node = new ConstParseOnlyNode(value, constructLocation(start));
     constantMap.put(identifier.getIdentifier(), node);
   }
 
@@ -587,7 +587,7 @@ public class Parser {
     if (!(token instanceof DisplayTypeToken)) {
       throw constructException("expecting to parse a display type but received \"" + token.toString() + "\"", token.getLocation());
     }
-   //System.out.println("parseDisplayType "+ token.toString());
+System.out.println("parseDisplayType "+ token.toString());
     DisplayTypeToken currentDisplayType = (DisplayTypeToken) token;
 
     token = nextToken();
@@ -723,7 +723,7 @@ public class Parser {
     int rangeStart = actionRanges.size();
     ActionLabelNode from = parseActionLabel();
 
-    List<IndexNode> ranges = new ArrayList<>();
+    List<IndexExpNode> ranges = new ArrayList<>();
     if (rangeStart < actionRanges.size()) {
       ranges.addAll(actionRanges.subList(rangeStart, actionRanges.size()));
       actionRanges = new ArrayList<>(actionRanges.subList(0, rangeStart));
@@ -745,7 +745,7 @@ public class Parser {
     ASTNode to = parseLocalProcess();
 
     ASTNode node = new SequenceNode(from, to, constructLocation(start));
-    for (IndexNode range : ranges) {
+    for (IndexExpNode range : ranges) {
       range.setProcess(node);
       node = range;
     }
@@ -809,7 +809,7 @@ public class Parser {
     IProcessFunction functionDefinition = instantiateClass(functions.get(type));
 
     // check if any flags have been set
-    Set<String> flags = Collections.emptySet();
+    Set<String> flags = new HashSet<>();
     if (peekToken() instanceof OpenBraceToken) {
       flags = parseFlags(type);
     }
@@ -934,7 +934,7 @@ public class Parser {
     return new FunctionNode(cast, Collections.singletonList(process), constructLocation(start));
   }
 
-  private IfStatementNode parseIfStatement() throws CompilationException, InterruptedException {
+  private IfStatementExpNode parseIfStatement() throws CompilationException, InterruptedException {
     // ensure that the next token is a 'if' token
     if (!(nextToken() instanceof IfToken)) {
       Token error = tokens.get(index - 1);
@@ -963,13 +963,13 @@ public class Parser {
     if (peekToken() instanceof ElseToken) {
       nextToken(); // gobble the 'then' token
       ASTNode falseBranch = parseLocalProcess();
-      return new IfStatementNode((BoolExpr) expression, trueBranch, falseBranch, constructLocation(start), context);
+      return new IfStatementExpNode((BoolExpr) expression, trueBranch, falseBranch, constructLocation(start), context);
     }
 
-    return new IfStatementNode((BoolExpr) expression, trueBranch, constructLocation(start), context);
+    return new IfStatementExpNode((BoolExpr) expression, trueBranch, constructLocation(start), context);
   }
 
-  private IfStatementNode parseWhenStatement() throws CompilationException, InterruptedException {
+  private IfStatementExpNode parseWhenStatement() throws CompilationException, InterruptedException {
     // ensure that the next token is a 'when' token
 
     if (!(nextToken() instanceof WhenToken)) {
@@ -993,7 +993,7 @@ public class Parser {
 
 //parse local process -- could be ping->P[i+1][0]...
     ASTNode trueBranch = parseLocalProcess();
-    return new IfStatementNode((BoolExpr) expression, trueBranch, constructLocation(start), context);
+    return new IfStatementExpNode((BoolExpr) expression, trueBranch, constructLocation(start), context);
   }
 
   private ForAllStatementNode parseForAllStatement() throws CompilationException, InterruptedException {
@@ -1084,7 +1084,7 @@ public class Parser {
       }
     }
 
-    List<IndexNode> ranges = new ArrayList<>(actionRanges.subList(rangeStart, actionRanges.size()));
+    List<IndexExpNode> ranges = new ArrayList<>(actionRanges.subList(rangeStart, actionRanges.size()));
     actionRanges = new ArrayList<>(actionRanges.subList(0, rangeStart));
 
     return new RangesNode(ranges, constructLocation(start));
@@ -1172,7 +1172,7 @@ public class Parser {
       RelabelElementNode element = parseRelabelElement();
      //System.out.println("element = "+element);
       if (rangeStart < actionRanges.size()) {
-        List<IndexNode> ranges = new ArrayList<>(actionRanges.subList(rangeStart, actionRanges.size()));
+        List<IndexExpNode> ranges = new ArrayList<>(actionRanges.subList(rangeStart, actionRanges.size()));
         actionRanges = new ArrayList<>(actionRanges.subList(0, rangeStart));
 
         element.setRanges(new RangesNode(ranges, element.getLocation()));
@@ -1459,14 +1459,14 @@ public class Parser {
 
       // check that the constant referenced is a const (integer value)
       ASTNode constant = constantMap.get(identifier);
-      if (!(constant instanceof ConstNode)) {
+      if (!(constant instanceof ConstParseOnlyNode)) {
         String type = (constant instanceof RangeNode) ? "range" : "set";
         Token error = tokens.get(index - 1);
         throw constructException("expecting a const but received a " + type, error.getLocation());
 
       }
 
-      int value = ((ConstNode) constant).getValue();
+      int value = ((ConstParseOnlyNode) constant).getValue();
       expression.add("" + value);
     } else if (token instanceof OpenParenToken) {
       expression.add("(");
@@ -1581,13 +1581,13 @@ public class Parser {
 
       // check that the constant referenced is a const (integer value)
       ASTNode constant = constantMap.get(identifier);
-      if (!(constant instanceof ConstNode)) {
+      if (!(constant instanceof ConstParseOnlyNode)) {
         String type = (constant instanceof RangeNode) ? "range" : "set";
         Token error = tokens.get(index - 1);
         throw constructException("expecting a const but received a " + type, error.getLocation());
       }
 
-      int value = ((ConstNode) constant).getValue();
+      int value = ((ConstParseOnlyNode) constant).getValue();
       expression.add("" + value);
     } else if (token instanceof OpenParenToken) {
       expression.add("(");

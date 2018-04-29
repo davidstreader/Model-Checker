@@ -32,7 +32,7 @@ public final class PetrinetLabeller {
       PetriNetPlace newPlace = labelled.addPlace(label + ":" + p.getId());
       newPlace.copyProperties(p);
       if (p.isStart()) {
-        labelled.addRoot(newPlace);
+        labelled.addFirstRoot(newPlace);
       }
     });
 
@@ -44,11 +44,11 @@ public final class PetrinetLabeller {
       if (edge.getTo() instanceof PetriNetTransition) {
         PetriNetTransition to = labelled.getTransitions().get(label + ":" + edge.getTo().getId());
         PetriNetPlace from = labelled.getPlaces().get(label + ":" + edge.getFrom().getId());
-        labelled.addEdge(to,from, edge.getOwners());
+        labelled.addEdge(to,from);
       } else {
         PetriNetPlace to = labelled.getPlaces().get(label + ":" + edge.getTo().getId());
         PetriNetTransition from = labelled.getTransitions().get(label + ":" + edge.getFrom().getId());
-        labelled.addEdge(to,from, edge.getOwners());
+        labelled.addEdge(to,from);
       }
     }
 

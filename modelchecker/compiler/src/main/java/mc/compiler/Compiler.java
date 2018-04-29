@@ -78,7 +78,7 @@ public class Compiler {
     HashMap<String, ProcessNode> dependencyMap = new HashMap<>();
 
     for (ProcessNode node : ast.getProcesses()) {
-      System.out.println("Compiler Start node = "+ node.toString());
+      System.out.println("Compiler Start node = "+ node.getIdentifier());
       processNodeMap.put(node.getIdentifier(), (ProcessNode) node.copy());
       dependencyMap.put(node.getIdentifier(), node);
     }
@@ -120,7 +120,7 @@ public class Compiler {
       }
     }
 //builds process and processMap
-    System.out.println("Entering interpreter "+
+    System.out.println("Entering interpreter with ast for processes -> Types "+
       ast.getProcesses().stream().map(x->"\n"+x.getIdentifier()+"->"+x.getType())
         .reduce("",(x,y)->x+" "+y));
     Map<String, ProcessModel> processMap = interpreter.interpret(ast,

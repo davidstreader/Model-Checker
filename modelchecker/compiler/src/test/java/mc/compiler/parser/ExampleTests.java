@@ -14,8 +14,8 @@ import mc.compiler.ast.ForAllStatementNode;
 import mc.compiler.ast.FunctionNode;
 import mc.compiler.ast.HidingNode;
 import mc.compiler.ast.IdentifierNode;
-import mc.compiler.ast.IfStatementNode;
-import mc.compiler.ast.IndexNode;
+import mc.compiler.ast.IfStatementExpNode;
+import mc.compiler.ast.IndexExpNode;
 import mc.compiler.ast.LocalProcessNode;
 import mc.compiler.ast.ProcessNode;
 import mc.compiler.ast.ProcessRootNode;
@@ -357,14 +357,14 @@ public class ExampleTests extends ParserTests {
     ProcessNode node = constructProcessNode(input);
 
     List<LocalProcessNode> localProcesses = new ArrayList<>();
-    IndexNode index = new IndexNode("$i", new RangeNode(1, 3, null), null, null);
+    IndexExpNode index = new IndexExpNode("$i", new RangeNode(1, 3, null), null, null);
     RangesNode range = new RangesNode(new ArrayList<>(Collections.singletonList(index)), null);
     BoolExpr expr1 = context.mkBVSLT(context.mkBVConst("$i", 32), context.mkBV(3, 32));
     SequenceNode sequence1 = constructSequenceNode(new String[] {"coin"}, new IdentifierNode("C[$v1]", null));
-    IfStatementNode branch1 = new IfStatementNode(expr1, sequence1, null, context);
+    IfStatementExpNode branch1 = new IfStatementExpNode(expr1, sequence1, null, context);
     BoolExpr expr2 = context.mkEq(context.mkBVConst("$i", 32), context.mkBV(3, 32));
     SequenceNode sequence2 = constructSequenceNode(new String[] {"coin"}, new IdentifierNode("C[1]", null));
-    IfStatementNode branch2 = new IfStatementNode(expr2, sequence2, null, context);
+    IfStatementExpNode branch2 = new IfStatementExpNode(expr2, sequence2, null, context);
     ChoiceNode choice = constructChoiceNode(branch1, branch2);
 
     localProcesses.add(new LocalProcessNode("C", range, choice, null));
@@ -383,7 +383,7 @@ public class ExampleTests extends ParserTests {
     ProcessNode node = constructProcessNode(input);
 
     SequenceNode mainSequence = constructSequenceNode(new String[] {"[$i].setLock"}, new IdentifierNode("L[$i]", null));
-    IndexNode mainIndex = new IndexNode("$i", new RangeNode(1, 2, null), mainSequence, null);
+    IndexExpNode mainIndex = new IndexExpNode("$i", new RangeNode(1, 2, null), mainSequence, null);
 
     List<LocalProcessNode> localProcesses = new ArrayList<>();
 
@@ -391,16 +391,16 @@ public class ExampleTests extends ParserTests {
     BitVecExpr j = context.mkBVConst("$i", 32);
     BoolExpr expr1 = context.mkEq(i, j);
     SequenceNode sequence1 = constructSequenceNode(new String[] {"open", "close"}, new IdentifierNode("L[$j]", null));
-    IfStatementNode branch1 = new IfStatementNode(expr1, sequence1, null, context);
+    IfStatementExpNode branch1 = new IfStatementExpNode(expr1, sequence1, null, context);
     BoolExpr expr2 = context.mkNot(context.mkEq(i, j));
     SequenceNode sequence2 = constructSequenceNode(new String[] {"error"}, new IdentifierNode("Lock", null));
-    IfStatementNode branch2 = new IfStatementNode(expr2, sequence2, null, context);
+    IfStatementExpNode branch2 = new IfStatementExpNode(expr2, sequence2, null, context);
     ChoiceNode choice = constructChoiceNode(branch1, branch2);
 
     SequenceNode localSequence = constructSequenceNode(new String[] {"[$i].enter"}, choice);
-    IndexNode localIndex = new IndexNode("$i", new RangeNode(1, 2, null), localSequence, null);
+    IndexExpNode localIndex = new IndexExpNode("$i", new RangeNode(1, 2, null), localSequence, null);
 
-    RangesNode range = new RangesNode(new ArrayList<>(Collections.singletonList(new IndexNode("$j", new RangeNode(1, 2, null), null, null))), null);
+    RangesNode range = new RangesNode(new ArrayList<>(Collections.singletonList(new IndexExpNode("$j", new RangeNode(1, 2, null), null, null))), null);
     localProcesses.add(new LocalProcessNode("L", range, localIndex, null));
 
     ProcessNode expected = new ProcessNode("Lock", mainIndex, localProcesses, null);
@@ -425,7 +425,7 @@ public class ExampleTests extends ParserTests {
     expected.add(pn);
 
     // Workers
-    IndexNode index = new IndexNode("$i", new RangeNode(1, 3, null), null, null);
+    IndexExpNode index = new IndexExpNode("$i", new RangeNode(1, 3, null), null, null);
     RangesNode range = new RangesNode(new ArrayList<>(Collections.singletonList(index)), null);
     ProcessRootNode root1 = new ProcessRootNode(new IdentifierNode("Worker", null), "[$i]", null, null, null);
     ForAllStatementNode forall = new ForAllStatementNode(range, root1, null);
@@ -437,10 +437,10 @@ public class ExampleTests extends ParserTests {
     List<LocalProcessNode> localProcesses = new ArrayList<>();
     BoolExpr expr1 = context.mkBVSLT(context.mkBVConst("$i", 32), context.mkBV(3, 32));
     SequenceNode sequence2 = constructSequenceNode(new String[] {"[$i].getTask"}, new IdentifierNode("F[$v1]", null));
-    IfStatementNode branch1 = new IfStatementNode(expr1, sequence2, null, context);
+    IfStatementExpNode branch1 = new IfStatementExpNode(expr1, sequence2, null, context);
     BoolExpr expr2 = context.mkBVSGT(context.mkBVConst("$i", 32), context.mkBV(3, 32));
     SequenceNode sequence3 = constructSequenceNode(new String[] {"[$i].getTask"}, new IdentifierNode("F[1]", null));
-    IfStatementNode branch2 = new IfStatementNode(expr2, sequence3, null, context);
+    IfStatementExpNode branch2 = new IfStatementExpNode(expr2, sequence3, null, context);
     ChoiceNode choice = constructChoiceNode(branch1, branch2);
     localProcesses.add(new LocalProcessNode("F", range, choice, null));
     pn = new ProcessNode("Farmer", new IdentifierNode("F[1]", null), localProcesses, null);

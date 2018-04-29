@@ -38,7 +38,7 @@ public class NFtoDFconvFunction implements IProcessFunction {
    */
   @Override
   public Collection<String> getValidFlags() {
-    return Collections.emptySet();
+    return new HashSet<>();
   }
 
   /**

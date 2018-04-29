@@ -2,7 +2,7 @@ package mc.compiler.ast;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import mc.ast.ast.*;
+
 import mc.util.Location;
 
 /**

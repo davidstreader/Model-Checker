@@ -29,7 +29,7 @@ public class SyntaxHighlighting {
     };
 
     static final String[] keywords = new String[] {
-            "const", "range", "set", "if", "then", "else", "when", "forall"
+            "const", "range", "set", "if", "then", "else", "when", "forall","ownersRule","tokenRule","a2p2a",
     };
 
     private static final String PROCESSTYPES_PATTERN = "\\b(" + String.join("|", processTypes) + ")\\b";

@@ -1,9 +1,6 @@
 package mc.operations;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 import mc.exceptions.CompilationException;
 import mc.operations.functions.NFtoDFconvFunction;
@@ -45,7 +42,7 @@ public class TraceEquivalentOperation implements IOperationInfixFunction {
     for (Automaton a : automata) {
       try {
         nfas.add(
-          func.compose(a.getId(), Collections.emptySet(), null, a)
+          func.compose(a.getId(), new HashSet<>(), null, a)
         );
       } catch (CompilationException e) {
         System.out.println("PINGO"+ e.toString());
@@ -57,7 +54,7 @@ public class TraceEquivalentOperation implements IOperationInfixFunction {
    /*
     return new BisimulationOperation().evaluate(automata.stream().map(a -> {
       try {
-        return func.compose(a.getId(), Collections.emptySet(), null, a);
+        return func.compose(a.getId(), new HashSet<>(), null, a);
       } catch (CompilationException e) {
         return null;
       }

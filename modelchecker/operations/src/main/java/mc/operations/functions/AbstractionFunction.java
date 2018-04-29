@@ -466,11 +466,11 @@ System.out.println("prune "+ abstraction.myString());
 
 
     for(PetriNetPlace inputPlace : inputPlaces) {
-      toModify.addEdge(output, inputPlace, new HashSet<>(Collections.singleton(Petrinet.DEFAULT_OWNER)));
+      toModify.addEdge(output, inputPlace);
     }
 
     for(PetriNetPlace outputPlace : outputPlaces) {
-      toModify.addEdge(outputPlace, output, new HashSet<>(Collections.singleton(Petrinet.DEFAULT_OWNER)));
+      toModify.addEdge(outputPlace, output);
     }
 
 

@@ -1,7 +1,7 @@
 package mc.compiler.iterator;
 
 import mc.compiler.ast.ASTNode;
-import mc.compiler.ast.IndexNode;
+import mc.compiler.ast.IndexExpNode;
 import mc.compiler.ast.RangeNode;
 import mc.compiler.ast.SetNode;
 
@@ -11,8 +11,8 @@ import java.util.Iterator;
 public interface IndexIterator<E> extends Iterator<E> {
 
     static IndexIterator construct(ASTNode astNode){
-        while(astNode instanceof IndexNode){
-            astNode = ((IndexNode)astNode).getRange();
+        while(astNode instanceof IndexExpNode){
+            astNode = ((IndexExpNode)astNode).getRange();
         }
 
         if(astNode instanceof RangeNode){

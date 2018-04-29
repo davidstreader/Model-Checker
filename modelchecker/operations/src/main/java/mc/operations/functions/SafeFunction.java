@@ -3,6 +3,7 @@ package mc.operations.functions;
 import com.microsoft.z3.Context;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessFunction;
@@ -28,7 +29,7 @@ public class SafeFunction implements IProcessFunction {
    */
   @Override
   public Collection<String> getValidFlags() {
-    return Collections.emptySet();
+    return new HashSet<>();
   }
 
   /**

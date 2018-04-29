@@ -16,7 +16,22 @@ public class PetriNetTransition extends ProcessModelObject {
   String label;
   Set<PetriNetEdge> incoming = new HashSet<>();
   Set<PetriNetEdge> outgoing = new HashSet<>();
+  Set<String> owners = new HashSet<>();
+  public void addOwner(String ownerName) {
+    //System.out.println("addOwner "+ownerName);
+    owners.add(ownerName);
+    //System.out.println("X");
+  }
+  public void addOwners(Set<String> ownersName) {
+    //System.out.println(this.owners.toString());
+    for(String o: ownersName) {
+      //System.out.println("o "+o);
+      owners.add(o);
+    }
+  }public void clearOwners() {
+      owners = new HashSet<>();
 
+  }
   public void removeEdge(PetriNetEdge ed){
     //this seems clumsy but many shorter version failed
     Set<PetriNetEdge> xin = new HashSet<>();
@@ -91,6 +106,8 @@ public class PetriNetTransition extends ProcessModelObject {
     for (PetriNetEdge edge : getOutgoing()) {
       builder.append(edge.getTo().getId()+",");
     }
+    builder.append(" own "+this.getOwners());
+
     return builder.toString();
   }
 }

@@ -23,12 +23,12 @@ public class SetTests extends ParserTests {
 
         SequenceNode sequence = constructSequenceNode(new String[]{"[$i]"}, new TerminalNode("STOP", null));
         Map<Integer, RangesNode> indexMap = new HashMap<>();
-        IndexNode index = new IndexNode("$v0", new RangeNode(1, 2, null), null, null);
+        IndexExpNode index = new IndexExpNode("$v0", new RangeNode(1, 2, null), null, null);
         indexMap.put(0, new RangesNode(new ArrayList<>(Collections.singletonList(index)), null));
 
         SetNode set = new SetNode(new ArrayList<>(Collections.singletonList("[$v0]")), indexMap, null);
 
-        IndexNode expected = new IndexNode("$i", set, sequence, null);
+        IndexExpNode expected = new IndexExpNode("$i", set, sequence, null);
 
         if(!expected.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
@@ -42,12 +42,12 @@ public class SetTests extends ParserTests {
 
         SequenceNode sequence = constructSequenceNode(new String[]{"[$i]"}, new TerminalNode("STOP", null));
         Map<Integer, RangesNode> indexMap = new HashMap<>();
-        IndexNode index = new IndexNode("$v0", new RangeNode(10, 15, null), null, null);
+        IndexExpNode index = new IndexExpNode("$v0", new RangeNode(10, 15, null), null, null);
         indexMap.put(0, new RangesNode(new ArrayList<>(Collections.singletonList(index)), null));
 
         SetNode set = new SetNode(new ArrayList<>(Collections.singletonList("[$v0]")), indexMap, null);
 
-        IndexNode expected = new IndexNode("$i", set, sequence, null);
+        IndexExpNode expected = new IndexExpNode("$i", set, sequence, null);
 
         if(!expected.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
@@ -61,14 +61,14 @@ public class SetTests extends ParserTests {
 
         SequenceNode sequence = constructSequenceNode(new String[]{"[$i]"}, new TerminalNode("STOP", null));
         Map<Integer, RangesNode> indexMap = new HashMap<>();
-        IndexNode index1 = new IndexNode("$v0", new RangeNode(1, 2, null), null, null);
-        IndexNode index2 = new IndexNode("$v1", new RangeNode(3, 4, null), null, null);
+        IndexExpNode index1 = new IndexExpNode("$v0", new RangeNode(1, 2, null), null, null);
+        IndexExpNode index2 = new IndexExpNode("$v1", new RangeNode(3, 4, null), null, null);
         indexMap.put(0, new RangesNode(new ArrayList<>(Collections.singletonList(index1)), null));
         indexMap.put(1, new RangesNode(new ArrayList<>(Collections.singletonList(index2)), null));
 
         SetNode set = new SetNode(new ArrayList<>(Arrays.asList("[$v0]", "[$v1]")), indexMap, null);
 
-        IndexNode expected = new IndexNode("$i", set, sequence, null);
+        IndexExpNode expected = new IndexExpNode("$i", set, sequence, null);
 
         if(!expected.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
@@ -82,14 +82,14 @@ public class SetTests extends ParserTests {
 
         SequenceNode sequence = constructSequenceNode(new String[]{"[$i]"}, new TerminalNode("STOP", null));
         Map<Integer, RangesNode> indexMap = new HashMap<>();
-        IndexNode index1 = new IndexNode("$v0", new RangeNode(1, 3, null), null, null);
-        IndexNode index2 = new IndexNode("$v1", new RangeNode(3, 4, null), null, null);
+        IndexExpNode index1 = new IndexExpNode("$v0", new RangeNode(1, 3, null), null, null);
+        IndexExpNode index2 = new IndexExpNode("$v1", new RangeNode(3, 4, null), null, null);
         indexMap.put(0, new RangesNode(new ArrayList<>(Collections.singletonList(index1)), null));
         indexMap.put(1, new RangesNode(new ArrayList<>(Collections.singletonList(index2)), null));
 
         SetNode set = new SetNode(new ArrayList<>(Arrays.asList("[$v0]", "[$v1]")), indexMap, null);
 
-        IndexNode expected = new IndexNode("$i", set, sequence, null);
+        IndexExpNode expected = new IndexExpNode("$i", set, sequence, null);
 
         if(!expected.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
@@ -103,12 +103,12 @@ public class SetTests extends ParserTests {
 
         SequenceNode sequence = constructSequenceNode(new String[]{"[$i]"}, new TerminalNode("STOP", null));
         Map<Integer, RangesNode> indexMap = new HashMap<>();
-        IndexNode index = new IndexNode("$v0", new RangeNode(1, 2, null), null, null);
+        IndexExpNode index = new IndexExpNode("$v0", new RangeNode(1, 2, null), null, null);
         indexMap.put(0, new RangesNode(new ArrayList<>(Collections.singletonList(index)), null));
 
         SetNode set = new SetNode(new ArrayList<>(Arrays.asList("[$v0]", "a", "b")), indexMap, null);
 
-        IndexNode expected = new IndexNode("$i", set, sequence, null);
+        IndexExpNode expected = new IndexExpNode("$i", set, sequence, null);
 
         if(!expected.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
@@ -122,12 +122,12 @@ public class SetTests extends ParserTests {
 
         SequenceNode sequence = constructSequenceNode(new String[]{"[$i]"}, new TerminalNode("STOP", null));
         Map<Integer, RangesNode> indexMap = new HashMap<>();
-        IndexNode index = new IndexNode("$v0", new RangeNode(1, 2, null), null, null);
+        IndexExpNode index = new IndexExpNode("$v0", new RangeNode(1, 2, null), null, null);
         indexMap.put(1, new RangesNode(new ArrayList<>(Collections.singletonList(index)), null));
 
         SetNode set = new SetNode(new ArrayList<>(Arrays.asList("a", "[$v0]", "b")), indexMap, null);
 
-        IndexNode expected = new IndexNode("$i", set, sequence, null);
+        IndexExpNode expected = new IndexExpNode("$i", set, sequence, null);
 
         if(!expected.equals(node.getProcess())){
             fail("expecting choice nodes to be equivalent");
@@ -141,12 +141,12 @@ public class SetTests extends ParserTests {
 
         SequenceNode sequence = constructSequenceNode(new String[]{"[$i]"}, new TerminalNode("STOP", null));
         Map<Integer, RangesNode> indexMap = new HashMap<>();
-        IndexNode index = new IndexNode("$v0", new RangeNode(1, 2, null), null, null);
+        IndexExpNode index = new IndexExpNode("$v0", new RangeNode(1, 2, null), null, null);
         indexMap.put(2, new RangesNode(new ArrayList<>(Collections.singletonList(index)), null));
 
         SetNode set = new SetNode(new ArrayList<>(Arrays.asList("a", "b", "[$v0]")), indexMap, null);
 
-        IndexNode expected = new IndexNode("$i", set, sequence, null);
+        IndexExpNode expected = new IndexExpNode("$i", set, sequence, null);
 
         if(!expected.equals(node.getProcess())){
             fail("expecting choice nodes to be equivalent");
@@ -160,18 +160,18 @@ public class SetTests extends ParserTests {
 
         SequenceNode sequence = constructSequenceNode(new String[]{"[$i]"}, new TerminalNode("STOP", null));
         Map<Integer, RangesNode> indexMap1 = new HashMap<>();
-        IndexNode index1 = new IndexNode("$v1", new RangeNode(1, 2, null), null, null);
+        IndexExpNode index1 = new IndexExpNode("$v1", new RangeNode(1, 2, null), null, null);
         indexMap1.put(0, new RangesNode(new ArrayList<>(Collections.singletonList(index1)), null));
 
         SetNode set1 = new SetNode(new ArrayList<>(Collections.singletonList("[$v1]")), indexMap1, null);
 
         Map<Integer, RangesNode> indexMap2 = new HashMap<>();
-        IndexNode index2 = new IndexNode("$v0", set1, null, null);
+        IndexExpNode index2 = new IndexExpNode("$v0", set1, null, null);
         indexMap2.put(0, new RangesNode(new ArrayList<>(Collections.singletonList(index2)), null));
 
         SetNode set2 = new SetNode(new ArrayList<>(Collections.singletonList("[$v0]")), indexMap2, null);
 
-        IndexNode expected = new IndexNode("$i", set2, sequence, null);
+        IndexExpNode expected = new IndexExpNode("$i", set2, sequence, null);
 
         if(!expected.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
@@ -185,12 +185,12 @@ public class SetTests extends ParserTests {
 
         SequenceNode sequence = constructSequenceNode(new String[]{"[$i]"}, new TerminalNode("STOP", null));
         Map<Integer, RangesNode> indexMap = new HashMap<>();
-        IndexNode index = new IndexNode("$v0", new RangeNode(1, 2, null), null, null);
+        IndexExpNode index = new IndexExpNode("$v0", new RangeNode(1, 2, null), null, null);
         indexMap.put(0, new RangesNode(new ArrayList<>(Collections.singletonList(index)), null));
 
         SetNode set = new SetNode(new ArrayList<>(Collections.singletonList("[$v0]")), indexMap, null);
 
-        IndexNode expected = new IndexNode("$i", set, sequence, null);
+        IndexExpNode expected = new IndexExpNode("$i", set, sequence, null);
 
         if(!expected.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
@@ -204,12 +204,12 @@ public class SetTests extends ParserTests {
 
         SequenceNode sequence = constructSequenceNode(new String[]{"[$i]"}, new TerminalNode("STOP", null));
         Map<Integer, RangesNode> indexMap = new HashMap<>();
-        IndexNode index = new IndexNode("$v0", new RangeNode(1, 2, null), null, null);
+        IndexExpNode index = new IndexExpNode("$v0", new RangeNode(1, 2, null), null, null);
         indexMap.put(0, new RangesNode(new ArrayList<>(Collections.singletonList(index)), null));
 
         SetNode set = new SetNode(new ArrayList<>(Collections.singletonList("[$v0]")), indexMap, null);
 
-        IndexNode expected = new IndexNode("$i", set, sequence, null);
+        IndexExpNode expected = new IndexExpNode("$i", set, sequence, null);
 
         if(!expected.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
@@ -223,12 +223,12 @@ public class SetTests extends ParserTests {
 
         SequenceNode sequence = constructSequenceNode(new String[]{"[$i]"}, new TerminalNode("STOP", null));
         Map<Integer, RangesNode> indexMap = new HashMap<>();
-        IndexNode index = new IndexNode("$v0", new RangeNode(1, 2, null), null, null);
+        IndexExpNode index = new IndexExpNode("$v0", new RangeNode(1, 2, null), null, null);
         indexMap.put(0, new RangesNode(new ArrayList<>(Collections.singletonList(index)), null));
 
         SetNode set = new SetNode(new ArrayList<>(Collections.singletonList("[$v0]")), indexMap, null);
 
-        IndexNode expected = new IndexNode("$i", set, sequence, null);
+        IndexExpNode expected = new IndexExpNode("$i", set, sequence, null);
 
         if(!expected.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
@@ -242,12 +242,12 @@ public class SetTests extends ParserTests {
 
         SequenceNode sequence = constructSequenceNode(new String[]{"[$i]"}, new TerminalNode("STOP", null));
         Map<Integer, RangesNode> indexMap = new HashMap<>();
-        IndexNode index = new IndexNode("$v0", new RangeNode(1, 2, null), null, null);
+        IndexExpNode index = new IndexExpNode("$v0", new RangeNode(1, 2, null), null, null);
         indexMap.put(0, new RangesNode(new ArrayList<>(Collections.singletonList(index)), null));
 
         SetNode set = new SetNode(new ArrayList<>(Collections.singletonList("[$v0]")), indexMap, null);
 
-        IndexNode expected = new IndexNode("$i", set, sequence, null);
+        IndexExpNode expected = new IndexExpNode("$i", set, sequence, null);
 
         if(!expected.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
@@ -261,12 +261,12 @@ public class SetTests extends ParserTests {
 
         SequenceNode sequence = constructSequenceNode(new String[]{"[$i]"}, new TerminalNode("STOP", null));
         Map<Integer, RangesNode> indexMap = new HashMap<>();
-        IndexNode index = new IndexNode("$v0", new RangeNode(1, 2, null), null, null);
+        IndexExpNode index = new IndexExpNode("$v0", new RangeNode(1, 2, null), null, null);
         indexMap.put(0, new RangesNode(new ArrayList<>(Collections.singletonList(index)), null));
 
         SetNode set = new SetNode(new ArrayList<>(Collections.singletonList("[$v0]")), indexMap, null);
 
-        IndexNode expected = new IndexNode("$i", set, sequence, null);
+        IndexExpNode expected = new IndexExpNode("$i", set, sequence, null);
 
         if(!expected.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
@@ -280,12 +280,12 @@ public class SetTests extends ParserTests {
 
         SequenceNode sequence = constructSequenceNode(new String[]{"[$i]"}, new TerminalNode("STOP", null));
         Map<Integer, RangesNode> indexMap = new HashMap<>();
-        IndexNode index = new IndexNode("$v0", new RangeNode(1, 2, null), null, null);
+        IndexExpNode index = new IndexExpNode("$v0", new RangeNode(1, 2, null), null, null);
         indexMap.put(0, new RangesNode(new ArrayList<>(Collections.singletonList(index)), null));
 
         SetNode set = new SetNode(new ArrayList<>(Collections.singletonList("[$v0]")), indexMap, null);
 
-        IndexNode expected = new IndexNode("$i", set, sequence, null);
+        IndexExpNode expected = new IndexExpNode("$i", set, sequence, null);
 
         if(!expected.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
@@ -299,12 +299,12 @@ public class SetTests extends ParserTests {
 
         SequenceNode sequence = constructSequenceNode(new String[]{"[$i]"}, new TerminalNode("STOP", null));
         Map<Integer, RangesNode> indexMap = new HashMap<>();
-        IndexNode index = new IndexNode("$v0", new RangeNode(1, 2, null), null, null);
+        IndexExpNode index = new IndexExpNode("$v0", new RangeNode(1, 2, null), null, null);
         indexMap.put(0, new RangesNode(new ArrayList<>(Collections.singletonList(index)), null));
 
         SetNode set = new SetNode(new ArrayList<>(Collections.singletonList("[$v0]")), indexMap, null);
 
-        IndexNode expected = new IndexNode("$i", set, sequence, null);
+        IndexExpNode expected = new IndexExpNode("$i", set, sequence, null);
 
         if(!expected.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");
@@ -318,12 +318,12 @@ public class SetTests extends ParserTests {
 
         SequenceNode sequence = constructSequenceNode(new String[]{"[$i]"}, new TerminalNode("STOP", null));
         Map<Integer, RangesNode> indexMap = new HashMap<>();
-        IndexNode index = new IndexNode("$v0", new RangeNode(1, 2, null), null, null);
+        IndexExpNode index = new IndexExpNode("$v0", new RangeNode(1, 2, null), null, null);
         indexMap.put(0, new RangesNode(new ArrayList<>(Collections.singletonList(index)), null));
 
         SetNode set = new SetNode(new ArrayList<>(Collections.singletonList("[$v0]")), indexMap, null);
 
-        IndexNode expected = new IndexNode("$i", set, sequence, null);
+        IndexExpNode expected = new IndexExpNode("$i", set, sequence, null);
 
         if(!expected.equals(node.getProcess())){
             fail("expecting index nodes to be equivalent");

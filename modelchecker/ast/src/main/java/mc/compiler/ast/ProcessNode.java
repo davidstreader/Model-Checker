@@ -24,8 +24,8 @@ public class ProcessNode extends ASTNode {
 
   /**
    * What kind of process this is.
-   * <p>
-   * Valid variables are "processes", "automata" and "petrinet"
+   * if empty interpreter will not build
+   * Valid variables are "forcedautomata", "automata" and "petrinet"
    */
   private Set<String> type;
 

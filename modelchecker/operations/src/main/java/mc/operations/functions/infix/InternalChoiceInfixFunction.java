@@ -1,13 +1,19 @@
 package mc.operations.functions.infix;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.List;
+
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessInfixFunction;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
+import mc.processmodels.automata.operations.InternalChoiceInfixFun;
 import mc.processmodels.petrinet.Petrinet;
+import mc.processmodels.petrinet.components.PetriNetPlace;
 
 /**
  * This covers the "internal choice" function.
@@ -102,12 +108,14 @@ public class InternalChoiceInfixFunction implements IProcessInfixFunction {
    * Execute the function.
    *
    * @param id        the id of the resulting petrinet
-   * @param petrinet1 the first  petrinet in the function (e.g. {@code A} in {@code A||B})
-   * @param petrinet2 the second petrinet in the function (e.g. {@code B} in {@code A||B})
+   * @param net1 the first  petrinet in the function (e.g. {@code A} in {@code A||B})
+   * @param net2 the second petrinet in the function (e.g. {@code B} in {@code A||B})
    * @return the resulting petrinet of the operation
    */
   @Override
-  public Petrinet compose(String id, Petrinet petrinet1, Petrinet petrinet2) throws CompilationException {
-    return null;
+  public Petrinet compose(String id, Petrinet net1, Petrinet net2) throws CompilationException {
+    InternalChoiceInfixFun internalChoice = new InternalChoiceInfixFun();
+
+    return internalChoice.compose(id,net1,net2);
   }
 }
