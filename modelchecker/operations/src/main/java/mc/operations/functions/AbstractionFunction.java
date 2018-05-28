@@ -10,6 +10,7 @@ import mc.Constant;
 import mc.compiler.Guard;
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessFunction;
+import mc.processmodels.MultiProcessModel;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
@@ -55,6 +56,9 @@ public class AbstractionFunction implements IProcessFunction {
 
   /**
    * Execute the abstraction on automata.  tau loops in input expected and removed
+   * CCS style keep n-tau->m where TauEnd(m)
+   * TauEnd(x) <=> x-/-tau-> OR
+   *               x-tau->y and y in TauLoop and all n in TauLoop n-a->m => n-a->m in TauLoop
    *
    * @param id       the id of the resulting automaton
    * @param flags    the flags given by the function (e.g. {@code unfair} in {@code abs{unfair}(A)}
@@ -71,14 +75,14 @@ public class AbstractionFunction implements IProcessFunction {
     Set<AutomatonEdge> processesed = new HashSet<>();
     Automaton startA = automata[0].copy();
     String Aname = startA.getId();
-    System.out.println("Abs start "+ startA.myString());
+    //System.out.println("Abs start "+ startA.myString());
 
     Automaton abstraction = pruneHiddenNodes(context, startA);
 
-    System.out.println("Abs pruned "+ abstraction.myString());
+    //System.out.println("Abs pruned "+ abstraction.myString());
 
     mergeloopsOfSize2(context, abstraction);
-    System.out.println("Abs merged "+ abstraction.myString());
+    //System.out.println("Abs merged "+ abstraction.myString());
 
     boolean isFair = flags.contains("fair") || !flags.contains("unfair");
 
@@ -90,8 +94,9 @@ public class AbstractionFunction implements IProcessFunction {
     //Construct  edges to replace the unobservable edges
     while (!hiddenEdges.isEmpty()) {
       AutomatonEdge hiddenEdge = hiddenEdges.get(0);
+      //System.out.println("hiddenEdge "+hiddenEdge.myString());
       if (processesed.contains(hiddenEdge)) {
-        System.out.println("WHY "+ hiddenEdge.myString());
+        //System.out.println("WHY "+ hiddenEdge.myString());
         hiddenEdges.remove(hiddenEdge);
         continue;
       }
@@ -156,6 +161,12 @@ public class AbstractionFunction implements IProcessFunction {
         //  throw new CompilationException(this.getClass(), null);
       }
     }
+    // abstraction might remove some locations
+    Set<String> ow = new TreeSet<>();
+    for(AutomatonEdge edge: abstraction.getEdges()){
+        ow.addAll(edge.getOwnerLocation());
+    }
+    abstraction.setOwners(ow);
     System.out.println("Abs final "+ abstraction.myString());
 
     return abstraction;
@@ -185,14 +196,14 @@ public class AbstractionFunction implements IProcessFunction {
     AutomatonNode to = hiddenEdge.getTo();
     for (AutomatonEdge edge : incomingEdges) {
 
-   //   System.out.println("\t"+edge.myString());
+      //System.out.println("\tedge "+edge.myString());
       AutomatonNode from = edge.getFrom();
 
       Guard fromGuard = edge.getGuard();
       //System.out.println("Edge Guard "+ from.getGuard());
       Guard outGuard;
 
-      AutomatonEdge added = new AutomatonEdge("fake", "fake", from, to);
+      AutomatonEdge added = null;
       if (symbolic) {
         Guard newAbstractionEdgeGuard;
         if (fromGuard != null && hiddenGuard != null) {
@@ -202,7 +213,9 @@ public class AbstractionFunction implements IProcessFunction {
         } else {
           outGuard = hiddenGuard;
         }
-        added = abstraction.addEdge(edge.getLabel(), from, to, outGuard, true);
+        added = abstraction.addEdge(edge.getLabel(), from, to, outGuard, false);
+        abstraction.addOwnersToEdge(added,hiddenEdge.getOwnerLocation() );
+        abstraction.addOwnersToEdge(added,edge.getOwnerLocation() );
       } else { // Atomic automaton
         if (edge.isHidden()&& edge.getFrom().getId().equals(edge.getTo().getId())) {
           System.out.println("ERROR hidden loops should NOT be added!");
@@ -210,11 +223,16 @@ public class AbstractionFunction implements IProcessFunction {
         }
         //if new edge exists it will not be added by addEdge
 
-        added = abstraction.addEdge(edge.getLabel(), from, to, null, true);
-      //  System.out.println("Outgoing add "+added.myString());
+        added = abstraction.addEdge(edge.getLabel(), from, to, null, false);
+        abstraction.addOwnersToEdge(added,hiddenEdge.getOwnerLocation() );
+        abstraction.addOwnersToEdge(added,edge.getOwnerLocation() );
+
+
         // n->tau->m m-a->n n-tau->m one tau used twice!
         if (from.getId().equals(to.getId()) && !edge.isHidden()) {
-          abstraction.addEdge(edge.getLabel(), hiddenEdge.getFrom(), hiddenEdge.getTo(), null, true);
+          abstraction.addEdge(edge.getLabel(), hiddenEdge.getFrom(), hiddenEdge.getTo(), null, false);
+          abstraction.addOwnersToEdge(added,hiddenEdge.getOwnerLocation() );
+          abstraction.addOwnersToEdge(added,edge.getOwnerLocation() );
         }
 
       }
@@ -223,7 +241,9 @@ public class AbstractionFunction implements IProcessFunction {
         //System.out.println("\tHidden a->tau-> added " + added.myString());
         hiddenAdded.add(added);
       }
+      //System.out.println("Outgoing add "+added.myString());
     }
+
  //   System.out.println("endof Outgoing "+hiddenAdded.myString());
     return hiddenAdded;
   }
@@ -249,12 +269,12 @@ public class AbstractionFunction implements IProcessFunction {
     AutomatonNode from = hiddenEdge.getFrom();
     for (AutomatonEdge edge : outgoingEdges) {
 
-   //   System.out.println("\t"+edge.myString());
+      //System.out.println("\tedge "+edge.myString());
       AutomatonNode to = edge.getTo();
       Guard toGuard = edge.getGuard();
 //.println("Edge Guard "+ edge.getGuard());
 
-      AutomatonEdge added = new AutomatonEdge("fake", "fake", from, to);
+      AutomatonEdge added = null;
       if (symbolic) {
         Guard newAbstractionEdgeGuard;
         if (toGuard != null && hiddenGuard != null) {
@@ -264,19 +284,25 @@ public class AbstractionFunction implements IProcessFunction {
         } else {
           newAbstractionEdgeGuard = hiddenGuard;
         }
-        added = abstraction.addEdge(edge.getLabel(), from, to, newAbstractionEdgeGuard, true);
-
+        added = abstraction.addEdge(edge.getLabel(), from, to, newAbstractionEdgeGuard, false);
+        abstraction.addOwnersToEdge(added,hiddenEdge.getOwnerLocation() );
+        abstraction.addOwnersToEdge(added,edge.getOwnerLocation() );
       } else {  // Atomic edge
         // if loop do nothing
         if (edge.isHidden()&& edge.getFrom().getId().equals(edge.getTo().getId())) {
           continue;
         }
         // if edge already in automaton  add edge willnot add it!
-          added = abstraction.addEdge(edge.getLabel(), from, to, null, true);
+          added = abstraction.addEdge(edge.getLabel(), from, to, null, false);
+        abstraction.addOwnersToEdge(added,hiddenEdge.getOwnerLocation() );
+        abstraction.addOwnersToEdge(added,edge.getOwnerLocation() );
+          added.getOwnerLocation().addAll(hiddenEdge.getOwnerLocation());
         //  System.out.println("Incoming add "+added.myString());
         // n->tau->m m-a->n n-tau->m one tau used twice!
           if (from.getId().equals(to.getId()) && !edge.isHidden()) {
-            abstraction.addEdge(edge.getLabel(), hiddenEdge.getFrom(), hiddenEdge.getTo(), null, true);
+            abstraction.addEdge(edge.getLabel(), hiddenEdge.getFrom(), hiddenEdge.getTo(), null, false);
+            abstraction.addOwnersToEdge(added,hiddenEdge.getOwnerLocation() );
+            abstraction.addOwnersToEdge(added,edge.getOwnerLocation() );
           }
 
       }
@@ -285,9 +311,10 @@ public class AbstractionFunction implements IProcessFunction {
         //System.out.println("\tHidden tau->a-> added "+added.myString());
         hiddenAdded.add(added);
       }
+      //System.out.println("Incoming add "+added.myString());
     }
-    String x = hiddenAdded.stream().map(e->e.myString()).collect(Collectors.joining());
-  //  System.out.println("endof Incoming "+x);
+    //String x = hiddenAdded.stream().map(e->e.myString()).collect(Collectors.joining());
+    //System.out.println("endof Incoming "+x);
 
     return hiddenAdded;
   }
@@ -305,7 +332,7 @@ public class AbstractionFunction implements IProcessFunction {
 
 
     Automaton abstraction = autoIN.copy();
-System.out.println("prune "+ abstraction.myString());
+//System.out.println("prune "+ abstraction.myString());
     List<AutomatonNode> nodes = abstraction.getNodes();
 
 
@@ -431,21 +458,7 @@ System.out.println("prune "+ abstraction.myString());
   }
 
 
-  /**
-   * TODO:
-   * Execute the function on one or more petrinet.
-   *
-   * @param id        the id of the resulting petrinet
-   * @param flags     the flags given by the function (e.g. {@code unfair} in {@code abs{unfair}(A)}
-   * @param context
-   * @param petrinets the variable number of petrinets taken in by the function
-   * @return the resulting petrinet of the operation
-   * @throws CompilationException when the function fails
-   */
-  @Override
-  public Petrinet compose(String id, Set<String> flags, Context context, Petrinet... petrinets) throws CompilationException {
-    return null;
-  }
+
 
   private PetriNetTransition mergeTransitions(Petrinet toModify, PetriNetTransition t1, PetriNetTransition t2) throws CompilationException{
     PetriNetTransition output = toModify.addTransition(t1.getId() + " merge " + t2.getId(), t1.getId() + "," + t2.getLabel());
@@ -476,4 +489,76 @@ System.out.println("prune "+ abstraction.myString());
 
     return output;
   }
+
+  /**
+   * TODO:
+   * Execute the function on one or more petrinet.
+   *
+   * @param id        the id of the resulting petrinet
+   * @param flags     the flags given by the function (e.g. {@code unfair} in {@code abs{unfair}(A)}
+   * @param context
+   * @param petrinets the variable number of petrinets taken in by the function
+   * @return the resulting petrinet of the operation
+   * @throws CompilationException when the function fails
+   */
+  @Override
+  public Petrinet compose(String id, Set<String> flags, Context context, Petrinet... petrinets) throws CompilationException {
+    /*
+    For each tau transition t
+      For each *t node n
+         For each tr . n in tr*
+           add tr;t
+      Symetric
+      remove t
+     */
+    assert petrinets.length == 1;
+    Petrinet petri = petrinets[0].copy();
+    List<PetriNetTransition> hidden = petri.getTransitions().values().stream().
+            filter(x->x.getLabel().equals("tau")).collect(Collectors.toList());
+
+    for(PetriNetTransition t: hidden) {
+      System.out.println("Pre "+t.getId());
+      for(PetriNetPlace pretau: t.pre()) {
+        for(PetriNetTransition tr: pretau.pre()){
+          System.out.println("pre hiding "+tr.getLabel()+" "+t.getId());
+          PetriNetTransition newtr =  petri.addTransition(tr.getLabel());
+          for(PetriNetPlace pl : tr.pre()){
+            petri.addEdge(pl,newtr);
+          }
+          for(PetriNetPlace pl : t.pre()){
+
+            if (!pl.getId().equals(pretau.getId())) {
+              petri.addEdge(pl,newtr);
+              System.out.println("edge "+ newtr.getId()+" "+pl.getId());
+            }
+          }
+        }
+      }
+    }
+    for(PetriNetTransition t: hidden) {
+      System.out.println("Post "+t.getId());
+      for(PetriNetPlace posttau: t.post()) {
+        for(PetriNetTransition tr: posttau.post()){
+          System.out.println("post hiding "+t.getId() +" " +tr.getLabel());
+          PetriNetTransition newtr =  petri.addTransition(tr.getLabel());
+          for(PetriNetPlace pl : tr.post()){
+            petri.addEdge(newtr, pl);
+          }
+          for(PetriNetPlace pl : t.post()){
+
+            if (!pl.getId().equals(posttau.getId())) {
+              petri.addEdge(newtr,pl);
+              System.out.println("edge "+newtr.getId()+" "+ pl.getId());
+            }
+          }
+        }
+      }
+    }
+    return null;
+  }
+  @Override
+  public MultiProcessModel compose(String id, Set<String> flags, Context context, MultiProcessModel... multiProcess) throws CompilationException {
+    return null;
+  }
+
 }

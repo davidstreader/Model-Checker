@@ -37,7 +37,8 @@ public class MultiProcessModel extends ProcessModelObject implements ProcessMode
 
 
     /**
-     *  This method is for the case where we have converted one type to another, it gives us the mapping of which node
+     *  This method is for the case where we have converted one type to another,
+     *  it gives us the mapping of which node
      *  is responsible for what, and visa versa for markings to node.
      */
   public void addProcessesMapping(Mapping pnm) {

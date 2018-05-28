@@ -2,7 +2,7 @@ package mc.util;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import mc.util.Location;
+import java.io.Serializable;
 
 /**
  * A message to send back to the client

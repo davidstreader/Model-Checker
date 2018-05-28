@@ -18,7 +18,7 @@ public class AutomatonEdge extends ProcessModelObject {
   private static final String INTERSECTION = "^";
 
   @Setter
-  private Set<String> automatonLocation = new HashSet<>();
+  private Set<String> edgeOwners = new HashSet<>();
 
   @Getter
   @Setter
@@ -56,25 +56,25 @@ public class AutomatonEdge extends ProcessModelObject {
   }
 
   public Set<String> getOwnerLocation() {
-    return new HashSet<>(automatonLocation);
+    return new HashSet<>(edgeOwners);
   }
 
   boolean addOwnerLocation(String owner) {
-    return automatonLocation.add(owner);
+    return edgeOwners.add(owner);
   }
 
   boolean removeOwnerLocation(String owner) {
-    return automatonLocation.remove(owner);
+    return edgeOwners.remove(owner);
   }
 
   public String myString() {
     String out = "";
     if (guard != null) {
       out = from.getId() + "-" + label + "->" + to.getId() + " " +
-             guard.myString() + " o "+automatonLocation;
+             guard.myString() + " o "+edgeOwners;
     } else {
       out = from.getId() + "-" + label + "->" + to.getId() +
-           " null guard"+ " o "+automatonLocation;
+           " null guard"+ " o "+edgeOwners;
     }
     return out;
   }

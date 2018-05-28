@@ -232,7 +232,7 @@ public class ModelView implements Observer {
    * @param automaton the automata object
    */
   private void addAutomata(Automaton automaton) {
-   System.out.println("ModelView addAutomata");
+   //System.out.println("ModelView addAutomata");
     //make a new "parent" object for the children to be parents of
     if (processModels.containsKey(automaton.getId())) {
       // If the automaton is already displayed, but modified.
@@ -276,7 +276,7 @@ public class ModelView implements Observer {
     });
 
     this.processModels.replaceValues(automaton.getId(), nodeMap.values());
-System.out.println("ModelView \n "+ automaton.myString());
+//System.out.println("ModelView \n "+ automaton.myString());
   }
 
   private void addPetrinet(Petrinet petri) {

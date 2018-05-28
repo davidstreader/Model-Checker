@@ -26,8 +26,8 @@ public class PetrinetParallelFunction  {
     clear();
     p1.rebuildAlphabet(); p2.rebuildAlphabet();
    //System.out.println("\nPETRINETPARALLELFUNCTION");
-   System.out.println("\n ||p1 "+p1.myString());
-   System.out.println("\n ||p2 "+p2.myString());
+   //System.out.println("\n ||p1 "+p1.myString());
+   //System.out.println("\n ||p2 "+p2.myString());
 
 
 
@@ -53,7 +53,7 @@ public class PetrinetParallelFunction  {
     //composition = PetrinetReachability.removeUnreachableStates(composition);
      composition.reown();
      assert composition.validatePNet():"parallel comp post condition ";
-   System.out.println("\n   PAR end "+composition.myString());
+   //System.out.println("\n   PAR end "+composition.myString());
     return composition;
   }
 

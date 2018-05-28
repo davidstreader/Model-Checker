@@ -1,0 +1,27 @@
+processes {
+
+//S = (a->STOP||b->STOP)=>(x->STOP||z->STOP).
+A  = (a->b->c->STOP||x->b->y->STOP)\{b}.  //278
+Ad = (a->b->c->STOP||x->b->y->STOP)\{b}.  //278
+Aabs = abs(A). 
+//B = Aabs.
+//Bsimp = simp(B).
+
+//C = f->(g->STOP).  ///No root node
+//Bad = b->(a->STOP/{c/a}).  //521 InterpretRoot
+//BOK = (b->STOP)=>(a->STOP/{c/a}).  //278  Entry point InterpretProcess
+//Ok = b->(a->STOP).  // No root node
+}
+
+
+
+
+
+
+
+
+
+
+
+
+

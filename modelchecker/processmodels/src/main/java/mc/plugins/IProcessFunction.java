@@ -6,6 +6,7 @@ import java.util.Set;
 import mc.exceptions.CompilationException;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.petrinet.Petrinet;
+import mc.processmodels.MultiProcessModel;
 
 /**
  * This interface describes a "function" in the LTS language variant in the use.
@@ -66,4 +67,8 @@ public interface IProcessFunction {
    * @throws CompilationException when the function fails
    */
   Petrinet compose(String id, Set<String> flags, Context context, Petrinet... petrinets) throws CompilationException;
+
+  MultiProcessModel compose(String id, Set<String> flags, Context context, MultiProcessModel... multiProcess) throws CompilationException;
+
+
 }

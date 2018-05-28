@@ -3,6 +3,7 @@ package mc.operations.functions;
 import com.microsoft.z3.Context;
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessFunction;
+import mc.processmodels.MultiProcessModel;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.conversion.OwnersRule;
 import mc.processmodels.conversion.TokenRule;
@@ -92,6 +93,9 @@ public class A2P2A implements IProcessFunction {
   public Petrinet compose(String id, Set<String> flags, Context context, Petrinet... petrinets) throws CompilationException {
     return null;
   }
-
+  @Override
+  public MultiProcessModel compose(String id, Set<String> flags, Context context, MultiProcessModel... multiProcess) throws CompilationException {
+    return null;
+  }
 
 }

@@ -65,10 +65,11 @@ public class SequentialInfixFun {
     Collection<AutomatonNode> stopNodes = sequence.getNodes().stream()
       .filter(n -> "STOP".equals(n.getTerminal()))
       .collect(Collectors.toList());
-   /*System.out.print("stopNodes "+stopNodes.stream().
-      map(x->x.getId()).reduce("{",(x,y)->x=x+" "+y)+"}");*/
+   System.out.print("stopNodes "+stopNodes.stream().
+      map(x->x.getId()).reduce("{",(x,y)->x=x+" "+y)+"}");
     //if there are no stop nodes, we cannot glue them together
     if (stopNodes.isEmpty()) {
+      System.out.println("EMPTY STOP!");
       return sequence;
     }
 
@@ -113,7 +114,7 @@ public class SequentialInfixFun {
 
     copyAutomataEdges(sequence, automaton2, automata2nodes, setOfOwners);
 
-     //System.out.println("End Seq   "+sequence.myString());
+     System.out.println("End Seq   "+sequence.myString());
     return sequence;
   }
 

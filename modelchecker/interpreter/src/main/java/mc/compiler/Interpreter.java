@@ -12,6 +12,8 @@ import mc.compiler.ast.ASTNode;
 import mc.compiler.ast.AbstractSyntaxTree;
 import mc.compiler.ast.ConversionNode;
 import mc.compiler.ast.ProcessNode;
+import mc.compiler.ast.FunctionNode;
+
 import mc.compiler.interpreters.AutomatonInterpreter;
 import mc.compiler.interpreters.PetrinetInterpreter;
 import mc.exceptions.CompilationException;
@@ -50,8 +52,8 @@ public class Interpreter {
   private PetrinetInterpreter petrinetInterpreter = new PetrinetInterpreter();
 
 //TODO  Document
-  // This is called once an builds all proesses
-  //ONLY called from compiler
+  // This is called once and builds all proesses
+  // ONLY called from compiler
   public Map<String, ProcessModel> interpret(AbstractSyntaxTree ast,
                                             // LocalCompiler localCompiler,
                                              BlockingQueue<Object> messageQueue,
@@ -66,17 +68,34 @@ public class Interpreter {
     //System.out.println("AST processes "+ processes.stream().map(x->x.getIdentifier()).
     //  reduce("{",(x,y)->x+" "+y)+"}");
     for (ProcessNode process : processes) { //BUILDING ALL PROCESSES
-       // NOW interprets PetriNets and uses Token Rule to build Automata
+
  //System.out.println("  Interpreter Building " + process.getIdentifier() + " ... "+ process.getType().toString());
-      ProcessModel model = null;
+        ProcessModel model = null;
         model = new MultiProcessModel(process.getIdentifier());
         model.setLocation(process.getLocation());
-// Conversion nodes cannot be processed here!
-        ProcessModel modelPetri = petrinetInterpreter.interpret(process,
-                    processMap, context);
-  //System.out.println("Built PetriNet "+ modelPetri.getId());// process.getIdentifier());
+
+        //Either build petri first OR build automata FIRST
+// Build petrinets (then build automata)
+        String className = process.getProcess().getClass().getSimpleName();
+        //System.out.println("className "+className);
+        ProcessModel modelPetri = null;
+        if (process.getProcess() instanceof FunctionNode) { //interpretASTAutNode
+            if(((FunctionNode) process.getProcess()).getFunction().equals("abs")) {
+               //PetriNet p =  petrinetInterpreter.interpretASTNode(process.getProcess(),process.getIdentifier());
+            }
+            Automaton modelAut = null;
+            modelAut = petrinetInterpreter.interpretASTAutNode(process.getProcess(),process.getIdentifier());
+
+            modelPetri =  OwnersRule.ownersRule( modelAut);
+            ((MultiProcessModel) model).addProcess(modelAut); //debugging
+            ((MultiProcessModel) model).addProcess(modelPetri);
+        } else {
+            modelPetri = petrinetInterpreter.interpret(process, processMap, context);
+
+  System.out.println("Built PetriNet "+ modelPetri.getId());// process.getIdentifier());
 
         modelPetri.setLocation(process.getLocation());
+
         ((MultiProcessModel) model).addProcess(modelPetri);
         ProcessModel modelAut;
         HashMap<AutomatonNode, Multiset<PetriNetPlace>> nodeToMarking = new HashMap<>();
@@ -92,12 +111,11 @@ public class Interpreter {
           ((MultiProcessModel) model).addProcess(modelAut);
           ((MultiProcessModel) model)
               .addProcessesMapping(new Mapping(nodeToMarking, markingToNode));
+        }
 
       messageQueue.add(new LogAST("Built:", process));
 
-      //System.out.println("C I model "+ model.getId()+" "+
-      //    model.getProcessType().toString());
-
+      //SAVE MultiProcess in processMap
       processMap.put(process.getIdentifier(), model);
      /*System.out.println("Process Map "+processMap.keySet().stream().
        map(x->x+ " " + processMap.get(x).getProcessType()).reduce("",(x,y)->x+"->"+y));
@@ -130,7 +148,7 @@ public class Interpreter {
     switch (processModelType) {
       case "forcedautomata":
       case "automata":
-    System.out.println("TO REMOVE interpret type SWITCH to "+processModelType);
+    //System.out.println("TO REMOVE interpret type SWITCH to "+processModelType);
 
         //System.out.println("***** interpret automata" );
         model = automatonInterpreter.interpret(astNode, identifer, processMap, context);
@@ -138,7 +156,7 @@ public class Interpreter {
         break;
 
       case "petrinet":  //****
-   System.out.println("Interpreter.interpret still P net" );
+   //System.out.println("Interpreter.interpret still P net" );
         model = petrinetInterpreter.interpret(astNode, identifer, processMap, context);
 
         break;

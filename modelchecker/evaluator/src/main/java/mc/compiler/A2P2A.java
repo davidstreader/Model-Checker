@@ -3,6 +3,7 @@ package mc.compiler;
 import com.microsoft.z3.Context;
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessFunction;
+import mc.processmodels.MultiProcessModel;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
@@ -97,5 +98,9 @@ public class A2P2A implements IProcessFunction {
     return null;
   }
 
+  @Override
+  public MultiProcessModel compose(String id, Set<String> flags, Context context, MultiProcessModel... multiProcess) throws CompilationException {
+    return null;
+  }
 
 }

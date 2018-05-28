@@ -108,7 +108,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     owners =  ownersMap.values().stream().collect(Collectors.toSet());
     for (AutomatonEdge edge : getEdges()) {
       //   //System.out.println(" edge "+edge.myString());
-      edge.setAutomatonLocation(
+      edge.setEdgeOwners(
         edge.getOwnerLocation().stream().map(x->ownersMap.get(x)).collect(Collectors.toSet()));
 
     }

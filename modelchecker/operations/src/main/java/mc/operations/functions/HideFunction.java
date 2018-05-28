@@ -8,6 +8,7 @@ import java.util.Set;
 import mc.Constant;
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessFunction;
+import mc.processmodels.MultiProcessModel;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.petrinet.Petrinet;
 
@@ -84,6 +85,10 @@ public class HideFunction implements IProcessFunction {
    */
   @Override
   public Petrinet compose(String id, Set<String> flags, Context context, Petrinet... petrinets) throws CompilationException {
+    return null;
+  }
+  @Override
+  public MultiProcessModel compose(String id, Set<String> flags, Context context, MultiProcessModel... multiProcess) throws CompilationException {
     return null;
   }
 }

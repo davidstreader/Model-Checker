@@ -141,7 +141,7 @@ if(j++>50) {System.out.println("\n\nEND j = "+j+"\n\n");break;} // second LofC  
         AutomatonEdge ed =
         outputAutomaton.addEdge(transition.getLabel(), markingToNodeMap.get(currentMarking),
             markingToNodeMap.get(newMarking), null, false);
-        ed.setAutomatonLocation(own);
+        ed.setEdgeOwners(own);
         //System.out.println(" automaton now "+outputAutomaton.myString());
       }
       previouslyVisitedPlaces.add(currentMarking);

@@ -8,6 +8,7 @@ import java.util.*;
 
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessFunction;
+import mc.processmodels.MultiProcessModel;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
@@ -111,6 +112,7 @@ public class SimpFunction implements IProcessFunction {
 
       value.forEach(automaton::removeNode);
     }
+      System.out.println("Simp out "+automaton.myString()+"\n");
     return automaton;
   }
 
@@ -130,4 +132,8 @@ public class SimpFunction implements IProcessFunction {
     assert petrinets.length == 1;
     return PetrinetSimp.simplify(petrinets[0].copy());
   }
+    @Override
+    public MultiProcessModel compose(String id, Set<String> flags, Context context, MultiProcessModel... multiProcess) throws CompilationException {
+        return null;
+    }
 }

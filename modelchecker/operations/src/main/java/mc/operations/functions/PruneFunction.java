@@ -6,6 +6,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessFunction;
+import mc.processmodels.MultiProcessModel;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
@@ -119,5 +120,9 @@ public class PruneFunction implements IProcessFunction {
       throws CompilationException {
     assert petrinets.length == 1;
     return PetrinetReachability.removeUnreachableStates(petrinets[0].copy());
+  }
+  @Override
+  public MultiProcessModel compose(String id, Set<String> flags, Context context, MultiProcessModel... multiProcess) throws CompilationException {
+    return null;
   }
 }
