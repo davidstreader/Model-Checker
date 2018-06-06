@@ -65,8 +65,8 @@ public class SequentialInfixFun {
     Collection<AutomatonNode> stopNodes = sequence.getNodes().stream()
       .filter(n -> "STOP".equals(n.getTerminal()))
       .collect(Collectors.toList());
-   System.out.print("stopNodes "+stopNodes.stream().
-      map(x->x.getId()).reduce("{",(x,y)->x=x+" "+y)+"}");
+   /*System.out.print("stopNodes "+stopNodes.stream().
+      map(x->x.getId()).reduce("{",(x,y)->x=x+" "+y)+"}"); */
     //if there are no stop nodes, we cannot glue them together
     if (stopNodes.isEmpty()) {
       System.out.println("EMPTY STOP!");
@@ -114,7 +114,7 @@ public class SequentialInfixFun {
 
     copyAutomataEdges(sequence, automaton2, automata2nodes, setOfOwners);
 
-     System.out.println("End Seq   "+sequence.myString());
+     //System.out.println("End Seq   "+sequence.myString());
     return sequence;
   }
 
@@ -132,9 +132,9 @@ public class SequentialInfixFun {
   public Petrinet compose(String id, Petrinet net1, Petrinet net2)
     throws CompilationException {
     String name = net1.getId() + "=>" + net2.getId();
-  //System.out.println("=>PETRI1 "+net1.myString());
+  System.out.println("=>PETRI1 "+net1.myString());
     net1.validatePNet();
-  //System.out.println("=>PETRI2 "+net2.myString());
+  System.out.println("=>PETRI2 "+net2.myString());
     net2.validatePNet();
     Stack<Petrinet> netStack = new Stack<>();
     ///LOOP

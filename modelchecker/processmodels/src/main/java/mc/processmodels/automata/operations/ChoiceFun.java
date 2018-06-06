@@ -149,8 +149,8 @@ public class ChoiceFun {
         Petrinet petrinet1 = new Petrinet(id, false);
         Petrinet petrinet2 = new Petrinet(id, false);
         //clone nets
-        petrinet1.addPetrinet(net1);
-        petrinet2.addPetrinet(net2);
+        petrinet1.addPetrinet(net1, false); //Roots to be rebuilt
+        petrinet2.addPetrinet(net2,false);
     //System.out.println("petrinet1 " +petrinet1.myString());
         Set<String> startOfP1 = petrinet1.getRoots().get(i);
         Set<String> startOfP2 = petrinet2.getRoots().get(j);

@@ -79,10 +79,9 @@ public class Interpreter {
         String className = process.getProcess().getClass().getSimpleName();
         //System.out.println("className "+className);
         ProcessModel modelPetri = null;
-        if (process.getProcess() instanceof FunctionNode) { //interpretASTAutNode
-            if(((FunctionNode) process.getProcess()).getFunction().equals("abs")) {
-               //PetriNet p =  petrinetInterpreter.interpretASTNode(process.getProcess(),process.getIdentifier());
-            }
+        if (process.getProcess() instanceof FunctionNode &&
+                !(((FunctionNode) process.getProcess()).getFunction().equals("abs") ||
+                   ((FunctionNode) process.getProcess()).getFunction().equals("simp"))) { //interpretASTAutNode
             Automaton modelAut = null;
             modelAut = petrinetInterpreter.interpretASTAutNode(process.getProcess(),process.getIdentifier());
 
@@ -92,18 +91,20 @@ public class Interpreter {
         } else {
             modelPetri = petrinetInterpreter.interpret(process, processMap, context);
 
-  System.out.println("Built PetriNet "+ modelPetri.getId());// process.getIdentifier());
+  //System.out.println("Built PetriNet "+ ((Petrinet)  modelPetri).myString());// process.getIdentifier());
 
         modelPetri.setLocation(process.getLocation());
 
         ((MultiProcessModel) model).addProcess(modelPetri);
-        ProcessModel modelAut;
+
+
         HashMap<AutomatonNode, Multiset<PetriNetPlace>> nodeToMarking = new HashMap<>();
         HashMap<Multiset<PetriNetPlace>, AutomatonNode> markingToNode = new HashMap<>();
       /*
         Token rule works here but can not be called from petrinetInterpreter
        */
-          modelAut = TokenRule.tokenRule(
+            //System.out.println("interp 3 "+ ((Petrinet) modelPetri).myString()); //FAIL
+         ProcessModel modelAut = TokenRule.tokenRule(
               (Petrinet) ((MultiProcessModel) model)
                   .getProcess(ProcessType.PETRINET), markingToNode, nodeToMarking);
    //System.out.println("Built automata with tokenRule "+ ((Automaton) modelAut).myString());
@@ -118,8 +119,9 @@ public class Interpreter {
       //SAVE MultiProcess in processMap
       processMap.put(process.getIdentifier(), model);
      /*System.out.println("Process Map "+processMap.keySet().stream().
-       map(x->x+ " " + processMap.get(x).getProcessType()).reduce("",(x,y)->x+"->"+y));
-      System.out.println("Compiler Interpreter DONE! "+ processMap.keySet()); */
+       map(x->x+ " " + processMap.get(x).getProcessType()+ " "+ processMap.get(x).getId()).
+             reduce("",(x,y)->x+"->"+y)); */
+      //System.out.println("Compiler Interpreter DONE! "+ processMap.keySet());
 
     }
     return processMap;

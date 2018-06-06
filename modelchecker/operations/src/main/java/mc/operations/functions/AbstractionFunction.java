@@ -511,50 +511,131 @@ public class AbstractionFunction implements IProcessFunction {
       Symetric
       remove t
      */
+    System.out.println("\nPetri abstraction!\n");
+
     assert petrinets.length == 1;
     Petrinet petri = petrinets[0].copy();
+    System.out.println("Start "+petri.myString());
     List<PetriNetTransition> hidden = petri.getTransitions().values().stream().
-            filter(x->x.getLabel().equals("tau")).collect(Collectors.toList());
+            filter(x->x.getLabel().equals(Constant.HIDDEN)).collect(Collectors.toList());
+    while(!hidden.isEmpty()) {
+      hidetaus(hidden, petri);
+    }
+    hidden = petri.getTransitions().values().stream().
+            filter(x->x.getLabel().equals(Constant.HIDDEN)).collect(Collectors.toList());
 
-    for(PetriNetTransition t: hidden) {
-      System.out.println("Pre "+t.getId());
-      for(PetriNetPlace pretau: t.pre()) {
-        for(PetriNetTransition tr: pretau.pre()){
-          System.out.println("pre hiding "+tr.getLabel()+" "+t.getId());
-          PetriNetTransition newtr =  petri.addTransition(tr.getLabel());
-          for(PetriNetPlace pl : tr.pre()){
+    petri.rebuildAlphabet();
+    System.out.println("Petri abs returns "+petri.myString());
+    return petri;
+  }
+
+  /*
+  hiding of one safe nets results in unreachable n-safe transitions!
+  hiding of n-safe nets!
+   */
+
+  private void hidetaus(List<PetriNetTransition> hidden, Petrinet petri)throws CompilationException {
+    Set<String> original = new TreeSet<>();
+      for(String id: petri.getTransitions().keySet()){
+        original.add(id);  //Beware of pointers do not simplify
+      } //restrict abstraction to original
+    System.out.println("\nhiding "+hidden.size());
+    System.out.println("original "+ original+"\n");
+    List<PetriNetTransition> next = new ArrayList<>();
+    for(PetriNetTransition t2: hidden) {     // second transition
+      System.out.println("Pre t2 = "+t2.myString());
+      for(PetriNetPlace pretau: t2.pre()) {
+        for(PetriNetTransition tr1: pretau.pre()){    //first transition
+          if (tr1.getId().equals(t2.getId())) continue;
+          if (!original.contains(tr1.getId())) continue;
+       System.out.println("   tr1 = "+tr1.getId());
+          Set<PetriNetPlace> newpre =      t2.pre();  //ORDER critical
+                             newpre.removeAll(tr1.post());
+                             if (newpre.removeAll(tr1.pre())) continue; //overlap implies newpre a multiset
+                             newpre.addAll(tr1.pre());
+
+          Set<PetriNetPlace> newpost = tr1.post(); //ORDER critical
+                             newpost.removeAll(t2.pre());
+                             if (newpost.removeAll(t2.post())) continue;
+                             newpost.addAll(t2.post());
+
+          if (petri.tranExists(newpre,newpost,tr1.getLabel())) {
+            continue;}
+          PetriNetTransition newtr =  petri.addTransition(tr1.getLabel());
+
+          //System.out.println("  newtr "+newtr.myString());
+
+          newtr.setOwners(tr1.getOwners());
+          for(PetriNetPlace pl : newpre){
+            //System.out.println("edge "+pl.getId()+"<-"+tr.getLabel()+"-"+newtr.getId());
+            petri.addEdge(newtr,pl);
+          }
+          for(PetriNetPlace pl : newpost){
+            //if (!pl.getId().equals(pretau.getId())) {
             petri.addEdge(pl,newtr);
+            //System.out.println("edge "+ newtr.getId()+"<-"+tr.getLabel()+"-"+pl.getId());
+            //}
           }
-          for(PetriNetPlace pl : t.pre()){
-
-            if (!pl.getId().equals(pretau.getId())) {
-              petri.addEdge(pl,newtr);
-              System.out.println("edge "+ newtr.getId()+" "+pl.getId());
-            }
+          if (newtr.getLabel().equals(Constant.HIDDEN)) {
+            if (!next.contains(newtr)) next.add(newtr);
           }
+      System.out.println("  ADDed "+newtr.myString());
         }
       }
-    }
-    for(PetriNetTransition t: hidden) {
-      System.out.println("Post "+t.getId());
-      for(PetriNetPlace posttau: t.post()) {
-        for(PetriNetTransition tr: posttau.post()){
-          System.out.println("post hiding "+t.getId() +" " +tr.getLabel());
-          PetriNetTransition newtr =  petri.addTransition(tr.getLabel());
-          for(PetriNetPlace pl : tr.post()){
-            petri.addEdge(newtr, pl);
-          }
-          for(PetriNetPlace pl : t.post()){
 
-            if (!pl.getId().equals(posttau.getId())) {
-              petri.addEdge(newtr,pl);
-              System.out.println("edge "+newtr.getId()+" "+ pl.getId());
-            }
+    }
+    System.out.println("POST "+original);
+    for(PetriNetTransition t1: hidden) {
+      System.out.println("Post "+t1.getId());
+      for(PetriNetPlace posttau: t1.post()) {
+        for(PetriNetTransition tr2: posttau.post()){
+          if (tr2.getId().equals(t1.getId())) continue;
+          if (!original.contains(tr2.getId())) continue; //do not abstract against recently add transitions
+          System.out.println("  tr2 "+tr2.getId());
+          Set<PetriNetPlace> newpre = tr2.pre();    //ORDER critical
+                             newpre.removeAll(t1.post());
+                             if (newpre.removeAll(t1.pre())) continue;
+                             newpre.addAll(t1.pre());
+
+          Set<PetriNetPlace> newpost = t1.post();    //ORDER critical
+                             newpost.removeAll(tr2.pre());
+                             if (newpost.removeAll(tr2.post())) continue;
+                             newpost.addAll(tr2.post());
+
+          if (petri.tranExists(newpre,newpost,tr2.getLabel()))  continue;
+          //System.out.println("    "+tr.myString());
+          PetriNetTransition newtr =  petri.addTransition(tr2.getLabel());
+          //System.out.println("newtr "+newtr.myString());
+
+          newtr.setOwners(tr2.getOwners());
+          for(PetriNetPlace pl : newpost){
+            petri.addEdge(pl,newtr);
+            //System.out.println("edge "+ newtr.getId()+"<-"+tr.getLabel()+"-"+pl.getId());
           }
+          for(PetriNetPlace pl : newpre){
+            // if (!pl.getId().equals(posttau.getId())) {
+            petri.addEdge(newtr,pl);
+            //System.out.println("edge "+pl.getId()+"<-"+tr.getLabel()+"-"+newtr.getId());
+            // }
+          }
+          if (newtr.getLabel().equals(Constant.HIDDEN)) {
+            if (!next.contains(newtr))  next.add(newtr);
+          }
+          System.out.println("ADDed "+newtr.myString());
         }
       }
+
     }
-    return null;
+    for(PetriNetTransition tr: hidden){
+      System.out.println("Removing "+tr.myString());
+      petri.removeTransition(tr);
+    }
+    hidden.clear();
+    for(PetriNetTransition tr: next){
+      hidden.add(tr);
+    }
+    System.out.println("hidetaus returns "+hidden.size()+" in "+petri.myString());
+    return ;
   }
   @Override
   public MultiProcessModel compose(String id, Set<String> flags, Context context, MultiProcessModel... multiProcess) throws CompilationException {

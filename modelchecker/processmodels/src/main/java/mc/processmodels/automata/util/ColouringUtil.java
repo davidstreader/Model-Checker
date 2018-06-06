@@ -215,7 +215,7 @@ public class ColouringUtil {
   return colouring;
  }
 
- public int getNextColourId() {
+ private int getNextColourId() {
   return nextColourId++;
  }
 
@@ -264,6 +264,7 @@ public class ColouringUtil {
  }
 
 
+ //ColourComponent for an event is the triple <FromColour, label, ToColour>
  @ToString
  //@AllArgsConstructor
  public static class ColourComponent implements Comparable<ColourComponent> {

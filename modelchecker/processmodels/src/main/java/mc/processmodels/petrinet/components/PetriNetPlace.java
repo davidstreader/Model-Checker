@@ -9,11 +9,12 @@ import mc.processmodels.ProcessModelObject;
 
 @EqualsAndHashCode(callSuper = true, exclude = {"incoming", "outgoing"})
 @Data
-public class PetriNetPlace extends ProcessModelObject {
+public class PetriNetPlace extends ProcessModelObject implements Comparable<PetriNetPlace> {
   private static int sid = 0;
   private Set<PetriNetEdge> incoming = new HashSet<>();
   private Set<PetriNetEdge> outgoing = new HashSet<>();
   private boolean start;
+  private int colour = 0;
   private Set<Integer> startNos = new LinkedHashSet<>();
   private String terminal = "";
   //Used by interpretor to convert Petri Tree into Cyclic Net
@@ -21,6 +22,29 @@ public class PetriNetPlace extends ProcessModelObject {
   private Set<String> references = new LinkedHashSet<>();
   private Set<String> fromReferences = new LinkedHashSet<>();  // prior to gluing only on Leaf
   private Set<String> owners = new HashSet<>();  // this is only needed in event Refinement
+
+  public boolean hasIncoming(PetriNetTransition tr) {
+
+    for (PetriNetEdge ed: incoming) {
+      System.out.println(ed.getFrom().getId() + " ? "+ tr.getId());
+      if (ed.getFrom().getId().equals(tr.getId())) {
+        return true;
+      }
+    }
+    return false;
+  }
+  public boolean hasOutgoing(PetriNetTransition tr) {
+    for (PetriNetEdge ed: incoming) {
+    System.out.println(ed.getTo().getId() + " ? "+ tr.getId());
+    if (ed.getTo().getId().equals(tr.getId())) {
+      return true;
+    }
+  }
+    return false;
+  }
+  public int compareTo(PetriNetPlace p){
+    return getId().compareTo(p.getId());
+  }
   public void addOwner(String ownerName) {
     //System.out.println("addOwner "+ownerName);
     owners.add(ownerName);
@@ -161,11 +185,12 @@ public class PetriNetPlace extends ProcessModelObject {
   }
 
   public String myString(){
-    return "Place "+this.getId()+ " r "+references.toString()+" f "+fromReferences.toString()+
+    return "Place "+this.getId()+ " ref "+references.toString()+" fromref "+fromReferences.toString()+
       this.getIncoming().stream().map(ed->ed.getId()).reduce(" in  ",(x,y)->x+" "+y)+
       this.getOutgoing().stream().map(ed->ed.getId()).reduce(" out ",(x,y)->x+" "+y) +
       " end "+this.getTerminal()+ " st "+ this.isStart()+ " "+this.startNos +
-      " own "+ this.owners
+      " own="+ this.owners +
+      " col="+ this.getColour()
       ;
   }
 }

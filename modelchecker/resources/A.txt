@@ -1,9 +1,17 @@
 processes {
 
-//S = (a->STOP||b->STOP)=>(x->STOP||z->STOP).
-A  = (a->b->c->STOP||x->b->y->STOP)\{b}.  //278
-Ad = (a->b->c->STOP||x->b->y->STOP)\{b}.  //278
-Aabs = abs(A). 
+
+
+S = (a->X),
+  X= b->X|c->STOP.
+A = x->b->y->STOP.
+
+Ca = (A||S)\{b}.
+C = abs((A||S)\{b}).
+
+//A  = (a->b->c->d->STOP||x->b->c->y->STOP)\{b,c}.  //278
+//Ad = (a->b->c->STOP||x->b->y->STOP)\{b}.  //278
+//Aabs = abs(A). 
 //B = Aabs.
 //Bsimp = simp(B).
 
@@ -12,16 +20,5 @@ Aabs = abs(A).
 //BOK = (b->STOP)=>(a->STOP/{c/a}).  //278  Entry point InterpretProcess
 //Ok = b->(a->STOP).  // No root node
 }
-
-
-
-
-
-
-
-
-
-
-
 
 

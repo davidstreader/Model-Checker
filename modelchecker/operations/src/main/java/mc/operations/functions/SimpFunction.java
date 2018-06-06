@@ -130,7 +130,8 @@ public class SimpFunction implements IProcessFunction {
   @Override
   public Petrinet compose(String id, Set<String> flags, Context context, Petrinet... petrinets) throws CompilationException {
     assert petrinets.length == 1;
-    return PetrinetSimp.simplify(petrinets[0].copy());
+
+    return PetrinetSimp.colSimp(petrinets[0].copy());
   }
     @Override
     public MultiProcessModel compose(String id, Set<String> flags, Context context, MultiProcessModel... multiProcess) throws CompilationException {

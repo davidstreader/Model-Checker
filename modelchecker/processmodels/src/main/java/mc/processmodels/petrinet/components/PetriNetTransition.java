@@ -17,6 +17,10 @@ public class PetriNetTransition extends ProcessModelObject {
   Set<PetriNetEdge> incoming = new HashSet<>();
   Set<PetriNetEdge> outgoing = new HashSet<>();
   Set<String> owners = new HashSet<>();
+
+  public boolean equals(PetriNetTransition tr){
+    return this.getId().equals(tr.getId());
+  }
   public void addOwner(String ownerName) {
     //System.out.println("addOwner "+ownerName);
     owners.add(ownerName);

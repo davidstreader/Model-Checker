@@ -26,8 +26,8 @@ public final class PetrinetReachability {
         PetriNetPlace pl = petri.getPlaces().get(name);
         rtP.add(pl);
       }
-/*System.out.println("pushing root size " + rtP.size() +" "+
-       rtP.stream().map(x->x.getId()+" ").collect(Collectors.joining()));*/
+//System.out.println("pushing root size " + rtP.size() +" "+
+    //   rtP.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
       toDo.push(rtP);
     }
 

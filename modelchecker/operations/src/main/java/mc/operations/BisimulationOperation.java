@@ -67,7 +67,7 @@ public class BisimulationOperation implements IOperationInfixFunction {
 
    i = 0;
    for(Automaton automaton: automata){
- //   System.out.println(automaton.toString());
+    //System.out.println("bisim ~ "+ automaton.myString());
       Set<AutomatonNode> root = automaton.getRoot();
 
      if (i ==0){
