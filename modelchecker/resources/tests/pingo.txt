@@ -1,12 +1,12 @@
 processes {
     X = a->STOP.
-    A = b->X|c->X.
+    A = b->X.
 
-    Test = b->a->STOP|c->a->STOP.
+  //  Test = b->a->STOP.
 }
 
-operation Test ~ A.
-
+//operation Test ~ A.
+/*
 processes {
 	A2 = a->STOP.
 	B2 = b->STOP.
@@ -15,4 +15,5 @@ processes {
 }
 
 operation Test2 ~ C2.
+*/
 

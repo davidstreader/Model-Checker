@@ -5,4 +5,5 @@ processes {
 	F = T|D.
 }
 
-automata F.
+
+

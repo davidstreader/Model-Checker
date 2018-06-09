@@ -200,7 +200,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
 //below pushes a petri net onto the process stack
   interpretProcess(processNode.getProcess(), identifier);
 
-  Petrinet petrinet = processStack.pop().copy();
+  Petrinet petrinet = processStack.pop().reId();
   //System.out.println("\nPetriInterp Poped "+petrinet.myString());
  //System.out.println("Just Built "+petrinet.myString());
   //System.out.println("Ref "+ referenceSet.toString());
@@ -287,7 +287,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
    interpretProcess(root.getProcess(), identifier); //RECURSIVE CALL the process is an ASTNode
                                                     // build new petri net and push on the stack
 
-   Petrinet petrinet = processStack.pop();
+   Petrinet petrinet = processStack.pop().reId();
    //System.out.println("\n*** ProcessRootNode poped petri "+petrinet.myString());
 
    petrinet = processLabellingAndRelabelling(petrinet, root); //888888
@@ -347,15 +347,15 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
   //Map<Set<PetriNetPlace>,Set<PetriNetPlace>> marking2Marking = new HashMap<>();
   //Map<PetriNetPlace,PetriNetPlace> marking2Marking = new HashMap<>();
   // filter ref or fromRef places
-  System.out.println("\nTree2Net START"+petri.getId());
+  //System.out.println("\nTree2Net START"+petri.getId());
   Set<PetriNetPlace> plsRef =
           petri.getPlaces().values().stream().
                   filter(x -> x.getReferences().size() > 0 ).collect(Collectors.toSet());
   Set<PetriNetPlace> plsFrom =
           petri.getPlaces().values().stream().
                   filter(x->x.getFromReferences().size() > 0).collect(Collectors.toSet());
-  System.out.println("refR"+plsRef.stream().map(x->x.getId()).reduce("** ",(x,y)->x+" "+y));
-  System.out.println("refF"+plsFrom.stream().map(x->x.getId()).reduce("** ",(x,y)->x+" "+y));
+  //System.out.println("refR"+plsRef.stream().map(x->x.getId()).reduce("** ",(x,y)->x+" "+y));
+  //System.out.println("refF"+plsFrom.stream().map(x->x.getId()).reduce("** ",(x,y)->x+" "+y));
   // glue pairs of places where one has a ref and the other the same fromRef
   for (PetriNetPlace pl1 : plsRef) {
   //System.out.println("Ref  "+pl1.myString());
@@ -377,7 +377,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
           filter(x -> x.getReferences().size() > 0 ).forEach(x->x.setReferences(new LinkedHashSet<>()));
   petri.getPlaces().values().stream().
           filter(x -> x.getFromReferences().size() > 0 ).forEach(x->x.setFromReferences(new LinkedHashSet<>()));
- System.out.println("Tree2Net "+petri.myString()+"\n");
+ //System.out.println("Tree2Net "+petri.myString()+"\n");
   //
   return petri;
  }
@@ -387,10 +387,13 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
  private Petrinet interpretASTNode(ASTNode currentNode)
    throws CompilationException, InterruptedException {
   Petrinet fake = new Petrinet("Atom");
-  fake.setOwners(Collections.singleton(Petrinet.DEFAULT_OWNER));
+  /*fake.setOwners(Collections.singleton(Petrinet.DEFAULT_OWNER));
   PetriNetPlace fakePl =   fake.addPlace("fake");
   fakePl.setOwners(Collections.singleton(Petrinet.DEFAULT_OWNER));
-  System.out.println("fake petri "+fake.myString());
+  Set<String> r = new HashSet<>();
+  r.add(fakePl.getId());
+  fake.addRoot(r);*/
+  //System.out.println("Atom builder "+fake.myString());
   return interpretASTNode(currentNode, fake);
  }
 
@@ -442,7 +445,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
   }
   //Use ProcessMap to get petriNet for W  BOTH in Z = W/{w} and Z = a->W;
   else if (currentNode instanceof IdentifierNode) { //currentPlace -> addpetriNet
-   interpretIdentifier((IdentifierNode) currentNode, petri);
+   petri = interpretIdentifier((IdentifierNode) currentNode);
   }
   // TokenRule to automata(if needed) then apply function and OwnersRule to Net
   //functions  nfa2dfa, prune, simp, abs,  .... are function on automata!
@@ -451,7 +454,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
   }
   // tokenRule and ownersRule
   else if (currentNode instanceof ConversionNode) { //currentPlace -> addpetriNet
-  System.out.println("PetriNetCoversion ConversionNode START "+petri.myString());
+  //System.out.println("PetriNetCoversion ConversionNode START "+petri.myString());
    petri = interpretConversion((ConversionNode) currentNode, petri);
    //Throwable t = new Throwable();
    //t.printStackTrace();
@@ -599,7 +602,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
   //  currentPlace = petri.getPlaces().get(currentPlace.getId());//only match on "id"
   interpretProcess(processRoot.getProcess(), petri.getId() + "." + ++subProcessCount);
 
-  Petrinet model = ((Petrinet) processStack.pop()).copy();
+  Petrinet model = ((Petrinet) processStack.pop()).reId();
   //System.out.println("model "+model.myString());
   model = processLabellingAndRelabelling(model, processRoot);
 
@@ -610,9 +613,9 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
   addPetrinet( model, petri, true);//NOT sure but currently works with root
  }
 
- private void interpretIdentifier(IdentifierNode identifier, Petrinet petri)
+ private Petrinet interpretIdentifier(IdentifierNode identifier)
    throws CompilationException, InterruptedException {
-  System.out.println("interpet Start "+ identifier.getIdentifier()+" & "+ petri.myString());
+  System.out.println("interpet Start "+ identifier.getIdentifier());
   //System.out.println("IDENTIFIER  for "+ identifier.getFromReferences() +" get "+ identifier.getIdentifier());
   //  currentPlace = petri.getPlaces().get(currentPlace.getId());//only match on "id"
   ProcessModel model = processMap.get(identifier.getIdentifier());
@@ -629,9 +632,13 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
   }
   copy = copy.reId();
   if (copy==null) { throw new CompilationException(getClass(), "Expecting a multiProcess in composite "
-          + petri.getId(), identifier.getLocation());}
+          , identifier.getLocation());}
 
-  addPetrinet( copy, petri, false); //Root not needed
+  //petri.addPetrinet(copy, false);      //Root not needed
+  //petri = copy;
+  //System.out.println("interpretId End "+copy.myString());
+  //addPetrinet( copy, petri, false); //Root not needed
+  return copy;
  }
 
  private Automaton interpretAutIdentifier(IdentifierNode identifier, String id)
@@ -785,7 +792,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
  private Petrinet addPetrinet(//PetriNetPlace currentPlace,
                               Petrinet petrinetToAdd, Petrinet master, boolean withRoot)
    throws CompilationException {
-  System.out.println("====masterPetrinet======== "+ master.myString());
+  System.out.println("====masterPetrinet======== "+ withRoot+ " "+master.myString());
   System.out.println("====petrinetToAdd ======== "+ petrinetToAdd.myString());
   //Throwable t = new Throwable(); t.printStackTrace();
   //System.out.println("currentPlace "+currentPlace.getId());
@@ -799,7 +806,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
 
   List<Set<String>> oldRoot = master.getRoots();
   master.addPetrinet(petrinetToAdd, withRoot);
-    //System.out.println("====masterPetrinet======== "+ master.myString());
+    System.out.println("====masterPetrinet======== "+ master.myString());
   if (withRoot) master.validatePNet();
   //System.out.println("master = "+master.myString());
   //add referances to Root Places ? adding to ArrayList I think redundent
@@ -874,6 +881,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     if (petri.getAlphabet().keySet().contains(hidden)) {
      petri.relabelTransitions(hidden, Constant.HIDDEN);
     } else {
+     System.out.println(petri.myString());
      throw new CompilationException(getClass(), "Could not find " + hidden + " action to hide",
        hiding.getLocation());
     }

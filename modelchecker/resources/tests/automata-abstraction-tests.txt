@@ -5,13 +5,11 @@ processes { // Defining all the processes we are going to use.
 // basic abstraction
     Basic = (a -> b -> c -> STOP)\{b}.
     AbsBasic = abs(Basic).
-    EqBasic = (a -> c -> Stop | a -> c -> Stop),
-        Stop = (STOP).
+    EqBasic = (a -> c -> STOP | a -> c -> STOP).
 
 }
 
-automata AbsBasic,EqBasic,Basic. //Set the constructs to be created as Automata
-operation AbsBasic ~ EqBasic. // Do the operation
+operation AbsBasic ~ EqBasic.
 
 
 processes {
@@ -21,7 +19,6 @@ processes {
     EqBasic2 = (b -> c -> STOP).
 }
 
-automata Basic2,AbsBasic2,EqBasic2.
 operation AbsBasic2 ~ EqBasic2.
 
 
@@ -32,18 +29,16 @@ processes {
     EqBasic3 = (a -> (b -> STOP | b -> STOP)).
 }
 
-automata Basic3,AbsBasic3,EqBasic3.
 operation AbsBasic3 ~ EqBasic3.
 
 processes {
 //Multiple hidden actions
     Multi = (a -> b -> c -> d -> STOP)\{b, c}.
     AbsMulti = abs(Multi).
-    EqMulti = (a -> d -> Stop | a -> d -> Stop | a -> d -> Stop),
-        Stop = (STOP).
+    EqMulti = (a -> d -> STOP | a -> d -> STOP | a -> d -> STOP).
 }
 
-automata Multi,AbsMulti,EqMulti.
+
 operation AbsMulti ~ EqMulti.
 
 processes {
@@ -53,7 +48,7 @@ processes {
     EqMulti2 = (c -> d -> STOP).
 }
 
-automata Multi2,AbsMulti2,EqMulti2.
+
 operation AbsMulti2 ~ EqMulti2.
 
 processes {
@@ -63,7 +58,7 @@ processes {
     EqMulti3 = (a -> (b -> STOP | b -> STOP | b -> STOP)).
 }
 
-automata Multi3,AbsMulti3,EqMulti3.
+
 operation AbsMulti3 ~ EqMulti3.
 
 processes {
@@ -74,7 +69,7 @@ processes {
     EqLoop = (a -> ERROR).
 }
 
-automata Loop,AbsLoop,EqLoop.
+
 operation AbsLoop ~ EqLoop.
 
 processes {
@@ -85,7 +80,7 @@ processes {
         A = (a -> A|a->EqLoop2).
 }
 
-automata Loop2,AbsLoop2,EqLoop2.
+
 operation AbsLoop2 ~ EqLoop2.
 
 processes {
@@ -95,7 +90,7 @@ processes {
     EqLoop3 = (a -> c -> EqLoop3 | a -> c -> EqLoop3).
 }
 
-automata Loop3,AbsLoop3,EqLoop3.
+
 operation AbsLoop3 ~ EqLoop3.
 
 processes {
@@ -112,7 +107,7 @@ processes {
         Stop = (STOP).
 }
 
-automata Concurrent,AbsConcurrent,EqConcurrent.
+
 operation AbsConcurrent ~ EqConcurrent.
 
 processes {
@@ -137,7 +132,7 @@ Concurrent2 = (a -> b -> c -> STOP || x -> y -> z -> STOP)\{b}.
         Stop = (STOP).
 }
 
-automata Concurrent2,AbsConcurrent2,EqConcurrent2.
+
 operation AbsConcurrent2 ~ EqConcurrent2.
 
 processes {
@@ -150,7 +145,7 @@ processes {
         Stop = (STOP).
 }
 
-automata Example, AbsExample,EqExample.
+
 operation AbsExample ~ EqExample.
 
 processes {
@@ -164,7 +159,9 @@ processes {
         C = (a.in -> B | b.out -> EqBuff).
 }
 
-automata Buff,Buff2,AbsBuff,EqBuff.
+
 operation AbsBuff ~ EqBuff.
+
+
 
 

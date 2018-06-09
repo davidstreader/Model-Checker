@@ -6,16 +6,16 @@ processes {
     Test1 = (b->c->STOP |
              b->d->STOP ).
 }
-automata C1, Test1.
 
-//ensure that the sequential operator respects internal choice.
-operation C1 ~ Test1.
+
+//  C1 * Test1  BUT not bisim
+operation C1 !~ Test1.
 
 processes {
     A2 = a->STOP+b->STOP.
     Test2 = b->STOP+a->STOP.
 }
-automata A2,Test2.
+
 //ensure that order of choice is irrelevant to bisimulation
 //and that it works with multiple start nodes
 operation A2 ~ Test2.
@@ -27,7 +27,7 @@ processes {
 
     Test3 = (a->b->c->d->STOP) + a->b->STOP||c->d->STOP.
 }
-automata C3,Test3.
+
 //ensure manually constructed is not different to using identifiers
 operation C3 ~ Test3.
 
@@ -36,7 +36,7 @@ processes {
 	B4 = c->A4.
 	Test4 = c->STOP=>A4.
 }
-automata B4,Test4.
+
 operation B4 ~ Test4.
 
 /* Test of Bisimulation changes*/
@@ -46,7 +46,7 @@ processes {
     Test5 = (a->STOP |
              b->STOP ).
 }
-automata A5, Test5.
+
 operation A5 !~ Test5.
 
 processes {
@@ -54,8 +54,9 @@ processes {
     Test6 = (a->STOP |
              a->STOP ).
 }
-automata A6, Test6.
+
 operation A6 ~ Test6.
+
 
 
 

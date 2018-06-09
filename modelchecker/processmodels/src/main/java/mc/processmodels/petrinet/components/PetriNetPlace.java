@@ -15,7 +15,7 @@ public class PetriNetPlace extends ProcessModelObject implements Comparable<Petr
   private Set<PetriNetEdge> outgoing = new HashSet<>();
   private boolean start;
   private int colour = 0;
-  private Set<Integer> startNos = new LinkedHashSet<>();
+  private Set<Integer> startNos = new LinkedHashSet<>(); //Propably to hard to maintain so recompute when needed
   private String terminal = "";
   //Used by interpretor to convert Petri Tree into Cyclic Net
   // Place with ref "X" will be glued to other Place with "X" fromRef

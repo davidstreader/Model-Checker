@@ -90,7 +90,7 @@ int j = 0; //without these 2 LofC loop never terminates!
     while (!toDo.isEmpty()) {
 if(j++>50) {System.out.println("\n\nTokenRule Failure Looping = "+j+"\n\n");break;} // second LofC  NEVER Called - looks redundent!
         Multiset<PetriNetPlace> currentMarking = toDo.pop();
-        System.out.println("currentMarking "+currentMarking.stream().map(x->x.getId()+", ").collect(Collectors.joining()));
+        //System.out.println("currentMarking "+currentMarking.stream().map(x->x.getId()+", ").collect(Collectors.joining()));
 
         //System.out.print("\nStarting  prev " +previouslyVisitedPlaces.size()+" todo "+toDo.size()+  " \n");
     /*  for(PetriNetPlace pl :currentMarking){
@@ -108,20 +108,21 @@ if(j++>50) {System.out.println("\n\nTokenRule Failure Looping = "+j+"\n\n");brea
       //System.out.println("Processing "+Petrinet.marking2String(currentMarking)+
       //" trans "+satisfiedPostTransitions.size());
       if (satisfiedPostTransitions.size() == 0) {
-        boolean stop = true;
+          markingToNodeMap.get(currentMarking).setTerminal("STOP"); // Error states must be marked with a delta
+     /*   boolean stop = true;
         for (PetriNetPlace pl: currentMarking) {
           if (!pl.getTerminal().equals("STOP")) stop = false;
         }
         if (stop)
           markingToNodeMap.get(currentMarking).setTerminal("STOP");
         else
-          markingToNodeMap.get(currentMarking).setTerminal("ERROR");
+          markingToNodeMap.get(currentMarking).setTerminal("ERROR"); */
       }
  //System.out.println("currentMarking1 "+currentMarking.stream().map(x->x.getId()+", ").collect(Collectors.joining()));
 
       //System.out.println("satisfiedPostTransitions "+ satisfiedPostTransitions.size());
       for (PetriNetTransition transition : satisfiedPostTransitions) {
-        System.out.println("transition "+transition.myString());
+        //System.out.println("transition "+transition.myString());
           //System.out.println("outgoing "+transition.getOutgoing().size());
          Multiset<PetriNetPlace> newMarking = HashMultiset.create(currentMarking);
           //System.out.println("newMarking1 "+newMarking.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
@@ -150,9 +151,9 @@ if(j++>50) {System.out.println("\n\nTokenRule Failure Looping = "+j+"\n\n");brea
         outputAutomaton.addEdge(transition.getLabel(), markingToNodeMap.get(currentMarking),
             markingToNodeMap.get(newMarking), null, false);
         ed.setEdgeOwners(own);
-        System.out.println(" automaton now "+outputAutomaton.myString());
+        //System.out.println(" automaton now "+outputAutomaton.myString());
       }
-System.out.println("currentMarking2 "+currentMarking.stream().map(x->x.getId()+", ").collect(Collectors.joining()));
+ //System.out.println("currentMarking2 "+currentMarking.stream().map(x->x.getId()+", ").collect(Collectors.joining()));
 
         if (!previouslyVisitedPlaces.contains(currentMarking)) { previouslyVisitedPlaces.add(currentMarking);}
         //System.out.println("todo size "+toDo.size());

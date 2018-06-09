@@ -1,0 +1,15 @@
+processes {
+//KEEP all of these they sorted out subtle bugs
+ 
+A1x  = a->b->c->A1x. 
+CA = abs(A1x\{a,c}).
+ 
+}
+
+
+
+
+
+
+
+

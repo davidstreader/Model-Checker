@@ -514,7 +514,7 @@ public class AbstractionFunction implements IProcessFunction {
     System.out.println("\nPetri abstraction!\n");
 
     assert petrinets.length == 1;
-    Petrinet petri = petrinets[0].copy();
+    Petrinet petri = petrinets[0].reId();
     System.out.println("Start "+petri.myString());
     List<PetriNetTransition> hidden = petri.getTransitions().values().stream().
             filter(x->x.getLabel().equals(Constant.HIDDEN)).collect(Collectors.toList());
@@ -530,25 +530,29 @@ public class AbstractionFunction implements IProcessFunction {
   }
 
   /*
-  hiding of one safe nets results in unreachable n-safe transitions!
+  hiding of ALL existing TAU TRANSITION
+  hiding in one safe nets results in unreachable n-safe transitions!
   hiding of n-safe nets!
    */
 
   private void hidetaus(List<PetriNetTransition> hidden, Petrinet petri)throws CompilationException {
-    Set<String> original = new TreeSet<>();
+    System.out.println("\nhiding "+hidden.size());
+
+    List<PetriNetTransition> next = new ArrayList<>();
+    //adding -a->*-tau->
+    for(PetriNetTransition t2: hidden) {    // hide each existing tau (may add new taus for later hiding
+      Set<String> original = new TreeSet<>();
       for(String id: petri.getTransitions().keySet()){
         original.add(id);  //Beware of pointers do not simplify
       } //restrict abstraction to original
-    System.out.println("\nhiding "+hidden.size());
-    System.out.println("original "+ original+"\n");
-    List<PetriNetTransition> next = new ArrayList<>();
-    for(PetriNetTransition t2: hidden) {     // second transition
-      System.out.println("Pre t2 = "+t2.myString());
+      System.out.println("original "+ original+"\n");
+
+      System.out.println("START t2 = "+t2.myString());
       for(PetriNetPlace pretau: t2.pre()) {
         for(PetriNetTransition tr1: pretau.pre()){    //first transition
           if (tr1.getId().equals(t2.getId())) continue;
           if (!original.contains(tr1.getId())) continue;
-       System.out.println("   tr1 = "+tr1.getId());
+       //System.out.println("   tr1 = "+tr1.getId());
           Set<PetriNetPlace> newpre =      t2.pre();  //ORDER critical
                              newpre.removeAll(tr1.post());
                              if (newpre.removeAll(tr1.pre())) continue; //overlap implies newpre a multiset
@@ -579,25 +583,26 @@ public class AbstractionFunction implements IProcessFunction {
           if (newtr.getLabel().equals(Constant.HIDDEN)) {
             if (!next.contains(newtr)) next.add(newtr);
           }
-      System.out.println("  ADDed "+newtr.myString());
+      System.out.println("  ADDed-pre "+newtr.myString());
         }
       }
 
-    }
-    System.out.println("POST "+original);
-    for(PetriNetTransition t1: hidden) {
-      System.out.println("Post "+t1.getId());
-      for(PetriNetPlace posttau: t1.post()) {
+  //  }
+    //adding -tau->*-a->
+    //System.out.println("POST "+original);
+  //  for(PetriNetTransition t2: hidden) {
+      System.out.println("Post "+t2.getId());
+      for(PetriNetPlace posttau: t2.post()) {
         for(PetriNetTransition tr2: posttau.post()){
-          if (tr2.getId().equals(t1.getId())) continue;
+          if (tr2.getId().equals(t2.getId())) continue;
           if (!original.contains(tr2.getId())) continue; //do not abstract against recently add transitions
-          System.out.println("  tr2 "+tr2.getId());
+          //System.out.println("  tr2 "+tr2.getId());
           Set<PetriNetPlace> newpre = tr2.pre();    //ORDER critical
-                             newpre.removeAll(t1.post());
-                             if (newpre.removeAll(t1.pre())) continue;
-                             newpre.addAll(t1.pre());
+                             newpre.removeAll(t2.post());
+                             if (newpre.removeAll(t2.pre())) continue;
+                             newpre.addAll(t2.pre());
 
-          Set<PetriNetPlace> newpost = t1.post();    //ORDER critical
+          Set<PetriNetPlace> newpost = t2.post();    //ORDER critical
                              newpost.removeAll(tr2.pre());
                              if (newpost.removeAll(tr2.post())) continue;
                              newpost.addAll(tr2.post());
@@ -621,20 +626,64 @@ public class AbstractionFunction implements IProcessFunction {
           if (newtr.getLabel().equals(Constant.HIDDEN)) {
             if (!next.contains(newtr))  next.add(newtr);
           }
-          System.out.println("ADDed "+newtr.myString());
+          System.out.println("  ADDed-post "+newtr.myString());
+        }
+      }
+
+   // }
+    //adding n-a->*  for loop n-tau->* and *-a->n
+   // for(PetriNetTransition t1: hidden) {
+      System.out.println("Loop "+t2.getId());
+      for(PetriNetPlace posttau: t2.post()) {
+        for(PetriNetTransition tr2: posttau.post()){
+          //System.out.println("LOOP "+t1.myString()+ " "+tr2.myString());
+          if (tr2.getId().equals(t2.getId())) continue;
+          Set<PetriNetPlace> overlap = new HashSet<>();
+          overlap.addAll(t2.pre());
+          overlap.retainAll(tr2.post());
+          //System.out.println("overlap "+overlap.size());
+          if (overlap.size()!=t2.pre().size()) continue;  // only add loop taus if pre=post
+          if (!original.contains(t2.getId())) continue;
+          if (!original.contains(tr2.getId())) continue; //do not abstract against recently add transitions
+          //System.out.println("  tr2 "+tr2.myString());
+          Set<PetriNetPlace> newpre = tr2.post();
+          Set<PetriNetPlace> newpost =tr2.pre();
+
+          //System.out.println(petri.myString());
+          if (petri.tranExists(newpre,newpost,tr2.getLabel()))  continue;
+          //System.out.println("  **  ");
+          PetriNetTransition newtr =  petri.addTransition(tr2.getLabel());
+          //System.out.println("newtr "+newtr.myString());
+
+          newtr.setOwners(tr2.getOwners());
+          for(PetriNetPlace pl : newpost){
+            petri.addEdge(pl,newtr);
+            //System.out.println("edge "+ newtr.getId()+"<-"+tr.getLabel()+"-"+pl.getId());
+          }
+          for(PetriNetPlace pl : newpre){
+            // if (!pl.getId().equals(posttau.getId())) {
+            petri.addEdge(newtr,pl);
+            //System.out.println("edge "+pl.getId()+"<-"+tr.getLabel()+"-"+newtr.getId());
+            // }
+          }
+          if (newtr.getLabel().equals(Constant.HIDDEN)) {
+            if (!next.contains(newtr))  next.add(newtr);
+          }
+          System.out.println("ADDed-loop "+newtr.myString());
         }
       }
 
     }
     for(PetriNetTransition tr: hidden){
-      System.out.println("Removing "+tr.myString());
+      //System.out.println("Removing "+tr.myString());
       petri.removeTransition(tr);
     }
     hidden.clear();
     for(PetriNetTransition tr: next){
+      //System.out.println("  Adding "+ tr.myString());
       hidden.add(tr);
     }
-    System.out.println("hidetaus returns "+hidden.size()+" in "+petri.myString());
+    System.out.println("hidetaus returns "+hidden.size()+" in "+petri.getId());
     return ;
   }
   @Override

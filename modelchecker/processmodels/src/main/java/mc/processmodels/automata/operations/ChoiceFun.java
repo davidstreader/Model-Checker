@@ -134,9 +134,9 @@ public class ChoiceFun {
 
   public Petrinet compose(String id, Petrinet net1, Petrinet net2)
     throws CompilationException {
-    //System.out.println("[]PETRI1 "+net1.myString());
+    System.out.println("[]PETRI1 "+net1.myString());
     assert net1.validatePNet():"choice precondition net1";
-    //System.out.println("[]PETRI2 "+net2.myString());
+    System.out.println("[]PETRI2 "+net2.myString());
     assert net2.validatePNet():"choice precondition net2";
     Stack<Set<String> > endStack = new Stack<>(); // for the end markings of each Ri[]Rj
     List<Set<String>> newRoots = new ArrayList<>();
@@ -149,8 +149,8 @@ public class ChoiceFun {
         Petrinet petrinet1 = new Petrinet(id, false);
         Petrinet petrinet2 = new Petrinet(id, false);
         //clone nets
-        petrinet1.addPetrinet(net1, false); //Roots to be rebuilt
-        petrinet2.addPetrinet(net2,false);
+        petrinet1.addPetrinet(net1, true); //Roots to be rebuilt
+        petrinet2.addPetrinet(net2,true);  // needed tempotarly
     //System.out.println("petrinet1 " +petrinet1.myString());
         Set<String> startOfP1 = petrinet1.getRoots().get(i);
         Set<String> startOfP2 = petrinet2.getRoots().get(j);
@@ -198,8 +198,8 @@ public class ChoiceFun {
             .filter(x -> x.isTerminal()).collect(Collectors.toSet());
           Set<PetriNetPlace> end2 = petrinet2.getPlaces().values().stream()
             .filter(x -> x.isTerminal()).collect(Collectors.toSet());
-  /*System.out.println("\nend1 "+end1.stream().map(x->x.getId()+" ").collect(Collectors.joining()) +
-                     " end2 "+end2.stream().map(x->x.getId()+" ").collect(Collectors.joining())+"\n"); */
+  System.out.println("\nend1 "+end1.stream().map(x->x.getId()+" ").collect(Collectors.joining()) +
+                     " end2 "+end2.stream().map(x->x.getId()+" ").collect(Collectors.joining())+"\n");
           if (end1.size() > 0 && end2.size() > 0) {
             //glue the Ri, Ri end markings
             Map<String,String>  endn = composition.gluePlaces(end1, end2);
@@ -208,7 +208,7 @@ public class ChoiceFun {
                map(x->x+"->"+endn.get(x)+" ").collect(Collectors.joining()));
             Set<String> endSet = endn.values().stream().collect(Collectors.toSet()); */
             endStack.push(endSet);
-            //System.out.println("PUSHED endSet "+endSet);
+            System.out.println("PUSHED endSet "+endSet);
           }
           //System.out.println("\n[]after Glue End  " + composition.myString() + "\n");
         }
@@ -233,7 +233,7 @@ public class ChoiceFun {
 
     //System.out.println("[]Add OUT "+ composition.myString()+"\n");
     composition = PetrinetReachability.removeUnreachableStates(composition);
-    //System.out.println("\n[] OUT "+ composition.myString()+"\n");
+    System.out.println("\n[] OUT "+ composition.myString()+"\n");
     composition.reown();
     assert composition.validatePNet(): "choice post condition";
     return composition;

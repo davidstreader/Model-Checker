@@ -62,7 +62,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
 
 
   public Petrinet reId() throws CompilationException {
-    System.out.println("\nreId "+this.myString()+"\n");
+    //System.out.println("\nreId "+this.myString()+"\n");
     Petrinet petri =  new Petrinet(getId(),false);
 
     Set<String> owns = new HashSet<>();
@@ -77,13 +77,13 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
        }
      }
      for(PetriNetTransition tr: transitions.values()){
-       System.out.println(tr.myString());
+       //System.out.println(tr.myString());
       PetriNetTransition newtr = petri.addTransition(tr.getLabel());
       transIdMap.put(tr.getId(),newtr.getId());
       newtr.addOwners(tr.getOwners());
        for(String tro: tr.getOwners()){
          if (!owns.contains(tro)) owns.add(tro);
-         System.out.println("  tro "+tro+" owns"+owns);
+         //System.out.println("  tro "+tro+" owns"+owns);
        }
      }
      petri.setOwners(owns);
@@ -100,7 +100,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
      }
      petri.reown();
      petri.setRootFromStart();
-    System.out.println("\nReid end "+petri.myString()+"\n");
+    //System.out.println("\nReid end "+petri.myString()+"\n");
      return petri;
   }
 
@@ -218,6 +218,7 @@ public void rebuildAlphabet(){
 
      for (PetriNetPlace r : getAllRoots()) {
        if((r==null) || !r.isStart()) {
+         System.out.println(r.myString());
          System.out.println("Root " + r.getId() + " not Start ");
          ok = false;
        }
@@ -434,7 +435,7 @@ public void rebuildAlphabet(){
     eventNet.addOwner(DEFAULT_OWNER);
     end.setTerminal("STOP");
     eventNet.reown();
-//System.out.println("oneEventNet "+eventNet.myString());
+//System.out.println("\noneEventNet "+eventNet.myString());
     return eventNet;
   }
   // called from interpretor
@@ -457,6 +458,7 @@ public void rebuildAlphabet(){
       p.setStartNos(new HashSet<>()); p.addStartNo(1);
       stop.setRootPlace(p);
     stop.reown();
+    //System.out.println("\nstopNet "+stop.myString());
     return stop;
   }
   public static Petrinet errorNet(){
@@ -686,7 +688,7 @@ public static String marking2String(Collection<PetriNetPlace> mark){
    */
   @SneakyThrows(value = {CompilationException.class})
   public Map<PetriNetTransition, PetriNetTransition> addPetrinet(Petrinet petriToAdd, boolean withRoot) {
-    //Set<PetriNetPlace> rts = new HashSet<>();
+    System.out.println("\nAdd Petri this "+ this.myString()+ "toAdd "+ petriToAdd.getId());
     Map<PetriNetPlace, PetriNetPlace> placeMap = new HashMap<>();
     nameMap = new HashMap<>();
     Map<PetriNetTransition, PetriNetTransition> transitionMap = new HashMap<>();
@@ -698,6 +700,7 @@ public static String marking2String(Collection<PetriNetPlace> mark){
       PetriNetPlace newPlace = addPlace();
       newPlace.setOwners(place.getOwners());
       newPlace.copyProperties(place);
+      if (!withRoot) newPlace.setStart(false);
       placeMap.put(place, newPlace);
       nameMap.put(place.getId(), newPlace.getId());
     }
@@ -712,7 +715,7 @@ public static String marking2String(Collection<PetriNetPlace> mark){
         }
         addRoot(next);
       }
-    } else setRoots(new LinkedList<>());
+    }
 
     for (PetriNetTransition transition : petriToAdd.getTransitions().values()) {
       PetriNetTransition newTransition = addTransition(transition.getLabel());
@@ -733,7 +736,7 @@ public static String marking2String(Collection<PetriNetPlace> mark){
     }
     //System.out.println("addPetri");
     if (withRoot) this.validatePNet();  //cannot do this when root not finished
-   //System.out.println("addPetrinet "+ roots);
+   //System.out.println("addPetrinet END "+ this.myString()+"\n");
     return transitionMap;
   }
 //TODO is this needed any more
@@ -792,8 +795,7 @@ public static String marking2String(Collection<PetriNetPlace> mark){
     return mark.stream().map(x->nameMap.get(x)).collect(Collectors.toSet());
   }
   public void joinPetrinet(Petrinet petriToJoin) {
-    Map<PetriNetPlace, PetriNetPlace> placeMap = new HashMap<>();
-    Map<PetriNetTransition, PetriNetTransition> transitionMap = new HashMap<>();
+
 
 
     this.owners.addAll(petriToJoin.getOwners());

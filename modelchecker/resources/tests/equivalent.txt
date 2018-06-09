@@ -18,7 +18,6 @@ processes {
         C = (coin -> LPMoney).
 }
 
-automata IfMoney1, IfMoney2, WhenMoney, LoopMoney, LPMoney.
 
 operation {
     IfMoney1 ~ IfMoney2.
@@ -26,3 +25,4 @@ operation {
     IfMoney2 ~ WhenMoney.
     LoopMoney ~ LPMoney.
 }
+

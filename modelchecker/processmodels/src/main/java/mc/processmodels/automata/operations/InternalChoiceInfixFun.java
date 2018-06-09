@@ -117,8 +117,10 @@ public class InternalChoiceInfixFun implements IProcessInfixFunction {
     net1.validatePNet();
     //System.out.println("+PETRI2 "+net2.myString());
     net2.validatePNet();
-    Petrinet petrinet1 = net1.copy();
-    Petrinet petrinet2 = net2.copy();
+    Petrinet petrinet1 = net1.reId();
+    Petrinet petrinet2 = net2.reId();
+    List<Set<PetriNetPlace>> root1 = net1.getRootPlacess();
+    List<Set<PetriNetPlace>> root2 = net2.getRootPlacess();
     //System.out.println("+PETRI1 "+petrinet1.myString());
     //System.out.println("+PETRI2 "+petrinet2.myString());
     if (petrinet1 == petrinet2) {
@@ -129,12 +131,17 @@ public class InternalChoiceInfixFun implements IProcessInfixFunction {
         if (pl1==pl2) System.out.println("\n SAME PLACES PROBLEM");
       }
     }
-    Petrinet choice = new Petrinet(id, false);
-    choice.joinPetrinet(petrinet1);
-    choice.setRoots(net1.getRoots());
-    choice.joinPetrinet(petrinet2);
+    //Petrinet choice = new Petrinet(id, false);
+    petrinet2.joinPetrinet(petrinet1);
+
+    //The root is now that of external choice
+    Petrinet choice = petrinet2;
+    choice.getRootPlacess().clear();
+    choice.getRootPlacess().addAll(root1);
+    choice.getRootPlacess().addAll(root2);
+    System.out.println("**Choice "+choice.myString());
     //add new root set to choice net find next choice No
-    int nextRootNo = petrinet1.nextRootNo();
+   /* int nextRootNo = petrinet1.nextRootNo();
     //System.out.println("next Root "+ nextRootNo);
     List<Set<String>> rots = new ArrayList<>( petrinet2.getRoots());
     petrinet2.clearRoots();
@@ -146,7 +153,7 @@ public class InternalChoiceInfixFun implements IProcessInfixFunction {
         petrinet2.getPlace(pl).addStartNo(nextRootNo);
         //System.out.println(pl+" rooted");
       }
-    }
+    } */
 if (net1.terminates() && net2.terminates()) {
   Set<String> end1 = petrinet1.getPlaces().values().stream().
     filter(x -> x.isSTOP()).map(x -> x.getId()).collect(Collectors.toSet());
@@ -154,7 +161,7 @@ if (net1.terminates() && net2.terminates()) {
     filter(x -> x.isSTOP()).map(x -> x.getId()).collect(Collectors.toSet());
   choice.glueNames(end1, end2);
 }
-    choice.setRootFromStart();
+    choice.setStartFromRoot();
     //System.out.println("choice "+choice.myString());
     return choice;
   }

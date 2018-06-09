@@ -25,13 +25,15 @@ T1 = One2=>(One2+One1).
 T2 = (One2=>One2)|(One2=>One1).
 }
 
-automata T1,T2.
+
 
 operation {
 
-T1 ~ T2.
+T1 !~ T2.
 
 }
+
+
 
 
 

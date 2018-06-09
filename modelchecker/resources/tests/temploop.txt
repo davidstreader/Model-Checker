@@ -1,6 +1,6 @@
 processes {
 //KEEP all of these they sorted out subtle bugs
-A1o = a->b->a->A1o. 
+/*A1o = a->b->a->A1o. 
 A1 = a->b->a->A1. 
 A1b = simp(abs(A1\{a})).
 
@@ -8,11 +8,18 @@ A1os = s->X, X= a->b->a->X.
 A1s   = s->X, X= a->b->a->X. 
 A1bs = simp(abs(A1s\{a})).
 
+*/
+W =   a->X, X=b->a->X. 
+Wo =  a->X, X=b->a->X. 
+Wa  = abs(Wo\{a}).
 
 
-A = a->b->a->a->A. 
-Ab = simp(abs(A\{a})).
+A =   b->a->A. 
+Ao =  b->a->Ao. 
+Aa = abs(Ao\{a}).
 
+
+/*
 A3 = a->a->b->A3.  //True
 A3b = simp(abs(A3\{a})).
 
@@ -26,19 +33,20 @@ Gl = b->Gl|b->X, X = b->X|b->Gl.
 
 Goals = s->Y, Y= b->Y|b->X, X = b->X|b->Y.
 Gls   = s->Y, Y= b->Y|b->X, X = b->X|b->Y.
-}
+*/
+} 
 
+/*
 operation {
 
 Goals ~ A1bs.
-Goal ~ A1b.
+Goal !~ A1b.
 
 Goal ~ Ab.
 Goal ~ A2b.
 Goal ~ A3b. 
 }
-
-
+*/
 
 
 
