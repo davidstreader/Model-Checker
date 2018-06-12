@@ -21,6 +21,7 @@ import mc.compiler.token.*;
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessFunction;
 import mc.plugins.IProcessInfixFunction;
+import mc.processmodels.ProcessType;
 import mc.util.Location;
 import mc.util.expr.Expression;
 import mc.util.expr.ExpressionEvaluator;
@@ -467,6 +468,11 @@ public class Parser {
     }
   }
 
+  /**
+   * parsing a single process def " A = a->STOP"
+   * @throws CompilationException
+   * @throws InterruptedException
+   */
   private void parseSingleProcessDefinition() throws CompilationException, InterruptedException {
     int start = index;
     IdentifierNode identifier = parseIdentifier();
@@ -483,11 +489,12 @@ public class Parser {
     }
 
     // ensure that the next token is the '=' token
-    if (!(nextToken() instanceof AssignToken)) {
+    if (!(peekToken() instanceof AssignToken)) {
       Token error = tokens.get(index - 1);
       throw constructException("expecting to parse \"=\" but received \"" + error.toString() + "\"", error.getLocation());
     }
 
+    AssignToken  at = (AssignToken) nextToken();
     ASTNode process = parseComposite();
 
     List<LocalProcessNode> localProcesses = new ArrayList<>();
@@ -502,6 +509,11 @@ public class Parser {
     //or if we encounter a display node that sets it.
     ProcessNode processNode = new ProcessNode(identifier.getIdentifier(), process, localProcesses,
         constructLocation(start));
+    // "P = term"  build petrinet  and "P =A term" build  automata
+    if (at.getPType().equals(ProcessType.AUTOMATA))  // lexer sets type of AssignToken
+         processNode.getType().add("automata");
+    else if (at.getPType().equals(ProcessType.PETRINET))
+      processNode.getType().add("petrinet");
 
     // check if a relabel set has been defined
     if (peekToken() instanceof DivisionToken) {

@@ -21,6 +21,8 @@ import mc.util.Location;
 /**
  * ASTNode is the superclass of ASTNode implementations, it provides helper and common functions to
  * the specific implementation.
+ * THIS IS A CRAP DESIGN - all the important information is now hidden. Makes testing
+ * very hard!
  *
  * @author David Sheridan
  * @author Sanjay Govind

@@ -17,9 +17,11 @@ import mc.compiler.ast.ProcessRootNode;
 import mc.compiler.ast.SequenceNode;
 import mc.exceptions.CompilationException;
 import mc.plugins.IOperationInfixFunction;
+import mc.processmodels.MultiProcessModel;
 import mc.processmodels.ProcessModel;
 import mc.processmodels.ProcessType;
 import mc.processmodels.automata.Automaton;
+import mc.processmodels.conversion.TokenRule;
 import mc.processmodels.petrinet.Petrinet;
 import mc.util.Location;
 
@@ -53,11 +55,11 @@ public class OperationEvaluator {
 
     //input  from AST
     for (OperationNode operation : operations) {
-      //System.out.println("starting Operation "+ operation.toString());
+      System.out.println("*********starting Operation "+ operation.getOperation());
       boolean secondA2P2A = false; boolean firstA2P2A = false;
       if (operation.getSecondProcess() instanceof FunctionNode &&
         ((FunctionNode) operation.getSecondProcess()).getFunction().equals("a2p2a")) {
-        //System.out.println("2 DO the a2p2a");
+        System.out.println("2 DO the a2p2a");
         secondA2P2A = true;
         operation.setSecondProcess(((FunctionNode) operation.getSecondProcess()).getProcesses().get(0));
       }
@@ -67,12 +69,15 @@ public class OperationEvaluator {
         firstA2P2A = true;
         operation.setFirstProcess(((FunctionNode) operation.getFirstProcess()).getProcesses().get(0));
       }
+
       String firstId = findIdent(operation.getFirstProcess(), code);
       String secondId = findIdent(operation.getSecondProcess(), code);
-  //System.out.println("evaluateOperations  first "+firstId+ "  second "+ secondId);
+  //System.out.println("********evaluateOperations  first "+firstId+ "  second "+ secondId);
+
       List<String> firstIds = collectIdentifiers(operation.getFirstProcess());
       List<String> secondIds = collectIdentifiers(operation.getSecondProcess());
-      //System.out.println("second "+operation.getSecondProcess().toString());
+      //System.out.println("***second "+operation.getSecondProcess().toString());
+
       List<Automaton> automata = new ArrayList<>();
       List<Petrinet> pnets = new ArrayList<>();
       List<String> missing = new ArrayList<>(firstIds);
@@ -85,35 +90,46 @@ public class OperationEvaluator {
       }
 // process ids all valid - in processMap
       //if (operation.getSecondProcess()().)
-      pnets.add((Petrinet) interpreter.interpret("petrinet", operation.getFirstProcess(), getNextOperationId(), processMap, context));
-      pnets.add((Petrinet) interpreter.interpret("petrinet", operation.getSecondProcess(), getNextOperationId(), processMap, context));
-      //automata.add((Automaton) interpreter.interpret("automata", operation.getFirstProcess(), getNextOperationId(), processMap, context));
-      //automata.add((Automaton) interpreter.interpret("automata", operation.getSecondProcess()(), getNextOperationId(), processMap, context));
-// built all automata processs
+      Petrinet one = (Petrinet) interpreter.interpret("petrinet",
+              operation.getFirstProcess(), getNextOperationId(), processMap, context);
+      pnets.add(one);
+      //System.out.println("\n**One "+one.getId());
+      Petrinet two = (Petrinet) interpreter.interpret("petrinet",
+              operation.getSecondProcess(), getNextOperationId(), processMap, context);
+      //System.out.println("\n**Two "+two.getId());
+      pnets.add(two);
+
   //System.out.println("oper "+ operation.getOperation().toLowerCase());
+      //System.out.println("Map "+OperationEvaluator.operationsMap.keySet());
       IOperationInfixFunction funct = instantiateClass(operationsMap.get(operation.getOperation().toLowerCase()));
+      System.out.println("Funct "+funct.getFunctionName());
       if (funct == null) {
         throw new CompilationException(getClass(), "The given operation is invaid: "
             + operation.getOperation(), operation.getLocation());
       }
 //now convert to Aut
       // on first operand apply a2p2a if needed
-      Automaton newAut;
+        //System.out.println("processMap.keySet() "+processMap.keySet());
+        //System.out.println(pnets.get(0).getId());
+        //System.out.println(processMap.get(pnets.get(0).getId()).getProcessType());
+      Automaton newAut = null;
       if (processMap.get(pnets.get(0).getId()).getProcessType().
         equals(ProcessType.MULTI_PROCESS)) {
         newAut = (processMap.get(pnets.get(0).getId()).getProcessType().
           convertTo(ProcessType.AUTOMATA, processMap.get(pnets.get(0).getId()))); //What a way to extact  a net
         if (firstA2P2A==true) {
           //System.out.println("****1p1");
-
           A2P2A a2p = new A2P2A();
           newAut =  a2p.compose(pnets.get(0).getId()+"1a",
             new HashSet<String>(), context, newAut);
-
           //System.out.println("****1p2"+newAut.myString()+"\n");
         }
       } else {
-        newAut = ((Automaton) processMap.get(pnets.get(0).getId()));
+          ProcessModel pm =   processMap.get(pnets.get(0).getId());
+          if (pm instanceof Automaton)   newAut = ((Automaton) pm);
+          else if (pm instanceof Petrinet) newAut = TokenRule.tokenRule((Petrinet) pm);
+          else if (pm instanceof MultiProcessModel) newAut =
+                  (Automaton) ((MultiProcessModel) pm).getProcess(ProcessType.AUTOMATA);
       }
 
       automata.add(newAut); //Add first automata
@@ -130,9 +146,12 @@ public class OperationEvaluator {
              new HashSet<String>(), context, newAut);
           //System.out.println("p2 a2p2a "+newAut.myString());
         }
-
       } else {
-        newAut = ((Automaton) processMap.get(pnets.get(1).getId()));
+          ProcessModel pm =   processMap.get(pnets.get(0).getId());
+          if (pm instanceof Automaton)   newAut = ((Automaton) pm);
+          else if (pm instanceof Petrinet) newAut = TokenRule.tokenRule((Petrinet) pm);
+          else if (pm instanceof MultiProcessModel) newAut =
+                  (Automaton) ((MultiProcessModel) pm).getProcess(ProcessType.AUTOMATA);
       }
       automata.add(newAut); // Add second automata
 
@@ -148,12 +167,14 @@ public class OperationEvaluator {
 
       //System.out.println("operation "+ firstId+" "+operation.getOperation()+" "+secondId);
     }
+     System.out.println("operation Evaluation processmap "+processMap.size());
     return results;
   }
 
   static List<String> collectIdentifiers(ASTNode process) {
     List<String> ids = new ArrayList<>();
     collectIdentifiers(process, ids);
+      System.out.println("OperationEvaluator Found "+ids);
     return ids;
   }
 

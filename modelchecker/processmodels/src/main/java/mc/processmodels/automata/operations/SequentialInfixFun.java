@@ -133,21 +133,21 @@ public class SequentialInfixFun {
             throws CompilationException {
         net1 = net1.reId(); net2=net2.reId();
 
-        System.out.println("=>PETRI1 "+ id+" "+net1.myString());
+        //System.out.println("=>PETRI1 "+ id+" "+net1.myString());
         net1.validatePNet();
-        System.out.println("=>PETRI2 "+ id+" "+net2.myString());
+        //System.out.println("=>PETRI2 "+ id+" "+net2.myString());
         net2.validatePNet();
         Stack<Petrinet> netStack = new Stack<>();
         ///LOOP
         //List<Set<String>> p2roots = net2.getRoots();
         int i = net2.getRoots().size();
-        System.out.println("ROOTS " + i);
+        //System.out.println("ROOTS " + i);
         Petrinet sequential;
         //System.out.println("\n Seq"+ net1.myString());
         if (net1.terminates()) {
 
             for (Set<String> rt : net2.getRoots()) {
-                System.out.println("   START "+i+" root = "+rt);
+                //System.out.println("   START "+i+" root = "+rt);
                 Petrinet composition = new Petrinet(id, false);
                 Set<String> own1 = new HashSet<>();
                 Set<String> own2 = new HashSet<>();
@@ -202,20 +202,20 @@ public class SequentialInfixFun {
                 //System.out.println("\nGlue OVER \n"+ composition.myString()+"\n");
                 composition.setRootFromStart();
                 composition = PetrinetReachability.removeUnreachableStates(composition);
-                System.out.println("    TO STACK "+i+" "+ composition.myString()+"\n");
+                //System.out.println("    TO STACK "+i+" "+ composition.myString()+"\n");
                 netStack.push(composition.copy());
             }
             //now we have a stack of i nets   Ai=>Bi
             //  we need to compose these with internal choice
             InternalChoiceInfixFun internalChoice = new InternalChoiceInfixFun();
             sequential = netStack.pop();
-            System.out.println("  sequentiual "+sequential.myString());
+            //System.out.println("  sequentiual "+sequential.myString());
             int pi = 1;
             while (!netStack.empty()) {
                 Petrinet nextP = netStack.pop();
-                System.out.println("  next "+nextP.myString());
+                //System.out.println("  next "+nextP.myString());
                 sequential = internalChoice.compose("=>" + pi++, sequential, nextP);
-                System.out.println("SEQing " + sequential.myString());
+                //System.out.println("SEQing " + sequential.myString());
                 ////System.out.println("SEQing OVER");
             }
             sequential = PetrinetReachability.removeUnreachableStates(sequential);
@@ -225,7 +225,7 @@ public class SequentialInfixFun {
             //System.out.println("FINAL " +sequential.myString());
             sequential.validatePNet();
             sequential.reown();
-            System.out.println("=> END "+sequential.myString());
+            //System.out.println("=> END "+sequential.myString());
             return sequential;
         } else {
             // net1 dose not terminate so returne only net1

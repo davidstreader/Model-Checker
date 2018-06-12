@@ -56,7 +56,7 @@ public class TokenRule {
 
     Automaton outputAutomaton = new Automaton(convertFrom.getId() + " automata",
         false);
-      System.out.println("\nTOKEN RULE \n STARTING "+convertFrom.getId());
+      System.out.println("\nTOKEN RULE  STARTING "+convertFrom.getId());
 
       assert convertFrom.validatePNet(): "Token precondition";
    outputAutomaton.setOwners(convertFrom.getOwners());
@@ -159,7 +159,7 @@ if(j++>50) {System.out.println("\n\nTokenRule Failure Looping = "+j+"\n\n");brea
         //System.out.println("todo size "+toDo.size());
   //System.out.println("Add to Previous "+previouslyVisitedPlaces.size()+"  "+currentMarking.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
     }
-   System.out.println("Token Out "+outputAutomaton.myString());
+   //System.out.println("Token Out "+outputAutomaton.myString());
     return outputAutomaton;
   }
 

@@ -15,12 +15,13 @@ import java.util.stream.Collectors;
 
 public class PetrinetParallelMergeFunction {
 
-  private static Set<String> unsynchedActions;
-  private static Set<String> synchronisedActions;
+  //private static Set<String> unsynchedActions;
+  //private static Set<String> synchronisedActions;
   private static Map<Petrinet, Map<PetriNetPlace, PetriNetPlace>> petriPlaceMap;
   private static Map<Petrinet, Map<PetriNetTransition, PetriNetTransition>> petriTransMap;
   private static final String tag1 = "*P1";
   private static final String tag2 = "*P2";
+
 
   public static Petrinet compose(Petrinet p1, Petrinet p2)
     throws CompilationException {
@@ -34,7 +35,7 @@ public class PetrinetParallelMergeFunction {
 
     System.out.println("p2.getOwners()"+ p2.getOwners());
 
-    setupActions(p1, p2);
+    //setupActions(p1, p2);
 
     Petrinet composition = new Petrinet(p1.getId() + "||" + p2.getId(), false);
     composition.getOwners().clear();
@@ -53,6 +54,7 @@ public class PetrinetParallelMergeFunction {
     System.out.println("END of PAR "+composition.myString()+ "\n");
     return composition;
   }
+
 
   /**
    *
@@ -79,6 +81,7 @@ public class PetrinetParallelMergeFunction {
     System.out.println("Next root "+out);
     return out;
   }
+  /*
   private static void setupActions(Petrinet p1, Petrinet p2) {
     Set<String> actions1 = p1.getAlphabet().keySet();
     Set<String> actions2 = p2.getAlphabet().keySet();
@@ -95,12 +98,12 @@ public class PetrinetParallelMergeFunction {
   }
 
 
-
+*/
 
 
   private static void clear() {
-    unsynchedActions = new HashSet<>();
-    synchronisedActions = new HashSet<>();
+    //unsynchedActions = new HashSet<>();
+    //synchronisedActions = new HashSet<>();
     petriPlaceMap = new HashMap<>();
     petriTransMap = new HashMap<>();
   }

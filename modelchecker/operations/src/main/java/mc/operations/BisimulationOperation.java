@@ -10,6 +10,8 @@ import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.automata.util.ColouringUtil;
+import mc.processmodels.petrinet.Petrinet;
+import mc.processmodels.petrinet.utils.PetriColouring;
 
 public class BisimulationOperation implements IOperationInfixFunction {
 
@@ -92,4 +94,27 @@ public class BisimulationOperation implements IOperationInfixFunction {
     return true;
   }
 
+    public boolean evaluateP(Collection<Petrinet> petrinets) throws CompilationException {
+      assert petrinets.size() == 2;
+        String tag1 = "*P1";
+        String tag2 = "*P2";
+      Iterator<Petrinet> ip = petrinets.iterator();
+      Petrinet p1 = ip.next();
+      Petrinet p2 = ip.next();
+        System.out.println("p1 root "+p1.getRoots());
+        System.out.println("p2 root "+p2.getRoots());
+        Petrinet composition = new Petrinet(p1.getId() + "COL" + p2.getId(), false);
+        composition.getOwners().clear();
+        composition.getOwners().addAll(p1.getOwners());
+        composition.getOwners().addAll(p2.getOwners());
+
+        composition.addPetrinetNoOwner(p1,"");
+        composition.addPetrinetNoOwner(p2,"");
+        System.out.println("composition root "+composition.getRoots());
+        PetriColouring pc = new PetriColouring();
+        Map<String, Integer> ic = pc.initColour(composition);
+        pc.doColour(composition, ic);
+
+    return true;
+    }
 }

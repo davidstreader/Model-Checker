@@ -31,19 +31,21 @@ import mc.util.LogAST;
 
 /**
  * BUILDS Processes and stores them in Map<String, ProcessModel>.
- * When both petriNets and Automata are built then ONE entry in process Model
- * a MultiProcessModel object is stored with mapping between nodes and places
- * Ditch the Automata Interpreter!
- *    Every thing is --- MuitiProcess(P) = (Pp,Pa)
- * 1. All specs P=.. Perti Interpret to Pp then Token Rule to Pa  Tick
- * 2.   P = ownersRule(Q).  from Qa build Pp then Token to Pa     T
- * 3.   P = TokenRule(Q).   from Qp build Pa then Owners to Pp
- * 4.   P = a2p2a(Q).  from Qa Owners to build Pp then Token to Pa
- * 5.   A ~ B  Use Aa ~ Ba                                        Tick
- * 6.   P = simp/abs(Q).    first Pa= abs(Qa) then Owners to Pp
- * 7.   S = P{Q/a}    first Sp =  Pp{Qp/A}  then Token to Sa
+ * Both petriNets and Automata are built and a MultiProcessModel is stored in processMap
+ * MultiProcessModel = (Pp,Pa,mapping) with a mapping between nodes and places
  *
- * Control of what is to be displaid ?
+ *    MuitiProcess(P) = (Pp,Pa)
+ * 1. All specs P = term  apply PertiInterpret to build Pp then Token Rule to Pa  - save (Pp,Pa)
+ * 1a. P =A term  apply automataInterpret to build Pa the OwnersRule to Pp - save (Pp,Pa)
+ * 2. Define all operators with params Pp,Pa or (Pp,Pa)  and return Pp or Pa
+ * 3. The three element of an operation P = Q  can each be either Petri or Automata
+ * 3 (1,3).   Term T  use interpretPetri(T) for Aut(T) use interpretAutomata(T)
+ * 3 (2).   T ~ R  Use  T ~p R  for T ~A B use ~a
+ *
+ * The parser could set the type of the AST ProcessNode acording to "Aut" and "=A".
+ * Both "~" and "~A" ...  can be added infixfunctions!
+ *
+ * A = term  adds (Ap,Aa) to processMap  this is then displaied - less hierarchy
  */
 public class Interpreter {
 
@@ -52,7 +54,7 @@ public class Interpreter {
   private PetrinetInterpreter petrinetInterpreter = new PetrinetInterpreter();
 
 //TODO  Document
-  // This is called once and builds all proesses
+  // This is called once from the compiler and builds all proesses
   // ONLY called from compiler
   public Map<String, ProcessModel> interpret(AbstractSyntaxTree ast,
                                             // LocalCompiler localCompiler,
@@ -60,16 +62,16 @@ public class Interpreter {
                                              Context context)
       throws CompilationException, InterruptedException {
 
-    //System.out.print("Who calls interpret? ");Throwable t = new Throwable();t.printStackTrace();
+    System.out.print("Who calls interpret Y? ");//Throwable t = new Throwable();t.printStackTrace();
     Map<String, ProcessModel> processMap = new LinkedHashMap<>();
 // build all  processes including global sub processes
-//      BUT .getType tells us which to build
+//    .getType tells us which to build ** .identifier its name  ** .process its definition
     List<ProcessNode> processes = ast.getProcesses();
     //System.out.println("AST processes "+ processes.stream().map(x->x.getIdentifier()).
     //  reduce("{",(x,y)->x+" "+y)+"}");
     for (ProcessNode process : processes) { //BUILDING ALL PROCESSES
 
- //System.out.println("  Interpreter Building " + process.getIdentifier() + " ... "+ process.getType().toString());
+        System.out.println("  Interpreter Building " + process.getIdentifier() + " ... "+ process.getType().toString());
         ProcessModel model = null;
         model = new MultiProcessModel(process.getIdentifier());
         model.setLocation(process.getLocation());
@@ -79,19 +81,11 @@ public class Interpreter {
         String className = process.getProcess().getClass().getSimpleName();
         //System.out.println("className "+className);
         ProcessModel modelPetri = null;
-        if (process.getProcess() instanceof FunctionNode &&
-                !(((FunctionNode) process.getProcess()).getFunction().equals("abs") ||
-                   ((FunctionNode) process.getProcess()).getFunction().equals("simp"))) { //interpretASTAutNode
-            Automaton modelAut = null;
-            modelAut = petrinetInterpreter.interpretASTAutNode(process.getProcess(),process.getIdentifier());
+        if (process.getType().contains("petrinet")) { //interpretASTAutNode
 
-            modelPetri =  OwnersRule.ownersRule( modelAut);
-            ((MultiProcessModel) model).addProcess(modelAut); //debugging
-            ((MultiProcessModel) model).addProcess(modelPetri);
-        } else {
             modelPetri = petrinetInterpreter.interpret(process, processMap, context);
 
-  //System.out.println("Built PetriNet "+ ((Petrinet)  modelPetri).myString());// process.getIdentifier());
+            System.out.println("Interpreter Built Petri "+ modelPetri.getId());
 
         modelPetri.setLocation(process.getLocation());
 
@@ -100,10 +94,7 @@ public class Interpreter {
 
         HashMap<AutomatonNode, Multiset<PetriNetPlace>> nodeToMarking = new HashMap<>();
         HashMap<Multiset<PetriNetPlace>, AutomatonNode> markingToNode = new HashMap<>();
-      /*
-        Token rule works here but can not be called from petrinetInterpreter
-       */
-            //System.out.println("interp 3 "+ ((Petrinet) modelPetri).myString()); //FAIL
+
          ProcessModel modelAut = TokenRule.tokenRule(
               (Petrinet) ((MultiProcessModel) model)
                   .getProcess(ProcessType.PETRINET), markingToNode, nodeToMarking);
@@ -112,9 +103,32 @@ public class Interpreter {
           ((MultiProcessModel) model).addProcess(modelAut);
           ((MultiProcessModel) model)
               .addProcessesMapping(new Mapping(nodeToMarking, markingToNode));
+        } else if (process.getType().contains("automata")) { //interpretASTAutNode
+
+            Automaton  aut = (Automaton) automatonInterpreter.interpret(process, processMap, context);
+            modelPetri =  OwnersRule.ownersRule(aut);
+
+            System.out.println("Interpreter Built Automata "+ aut.getId());
+
+            modelPetri.setLocation(process.getLocation());
+
+            ((MultiProcessModel) model).addProcess(modelPetri);
+
+
+            HashMap<AutomatonNode, Multiset<PetriNetPlace>> nodeToMarking = new HashMap<>();
+            HashMap<Multiset<PetriNetPlace>, AutomatonNode> markingToNode = new HashMap<>();
+
+            ProcessModel modelAut = TokenRule.tokenRule(
+                    (Petrinet) ((MultiProcessModel) model)
+                            .getProcess(ProcessType.PETRINET), markingToNode, nodeToMarking);
+            //System.out.println("Built automata with tokenRule "+ ((Automaton) modelAut).myString());
+
+            ((MultiProcessModel) model).addProcess(modelAut);
+            ((MultiProcessModel) model)
+                    .addProcessesMapping(new Mapping(nodeToMarking, markingToNode));
         }
 
-      messageQueue.add(new LogAST("Built:", process));
+        messageQueue.add(new LogAST("Built:", process));
 
       //SAVE MultiProcess in processMap
       processMap.put(process.getIdentifier(), model);
@@ -124,6 +138,7 @@ public class Interpreter {
       //System.out.println("Compiler Interpreter DONE! "+ processMap.keySet());
 
     }
+      System.out.println("End of inteterpret Y ");
     return processMap;
 
   }
@@ -144,7 +159,7 @@ public class Interpreter {
                                 Context context)
       throws CompilationException, InterruptedException {
 
-    System.out.println("\n CALLing interpret "+ processModelType+" "+astNode.toString()+" \n");
+    System.out.println("\n CALLing interpret X  "+ processModelType+" "+astNode.toString()+" \n");
     //TODO Multy Keep to Petri Interpret!
     ProcessModel model;
     switch (processModelType) {
@@ -167,7 +182,7 @@ public class Interpreter {
         throw new CompilationException(getClass(), "Unable to find the process type: "
             + processModelType);
     }
-
+      System.out.println("End of Interpret  "+ model.getId());
     return model;
   }
 }

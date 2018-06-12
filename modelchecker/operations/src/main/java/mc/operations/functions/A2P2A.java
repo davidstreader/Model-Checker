@@ -1,18 +1,21 @@
+//package mc.compiler.functions;
 package mc.operations.functions;
 
 import com.microsoft.z3.Context;
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessFunction;
 import mc.processmodels.MultiProcessModel;
+import mc.processmodels.ProcessType;
 import mc.processmodels.automata.Automaton;
+import mc.processmodels.automata.AutomatonEdge;
+import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.conversion.OwnersRule;
 import mc.processmodels.conversion.TokenRule;
 import mc.processmodels.petrinet.Petrinet;
+import mc.processmodels.petrinet.operations.PetrinetReachability;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class A2P2A implements IProcessFunction {
   /**
@@ -60,16 +63,19 @@ public class A2P2A implements IProcessFunction {
   @Override
   public Automaton compose(String id, Set<String> flags, Context context,
                            Automaton... automata)
-      throws CompilationException {
+          throws CompilationException {
     //System.out.println("Pingo2");
     assert automata.length == 1;
     Automaton inputA = automata[0].copy();
+    inputA.setId(inputA.getId()+".2a");
+    Petrinet pn = new Petrinet(id+".p",false);
 
- //   pn = PetrinetReachability.removeUnreachableStates( OwnersRule.ownersRule(inputA));
-    Petrinet  pn = OwnersRule.ownersRule(inputA);
-
-    Automaton aut = TokenRule.tokenRule(pn) ;
-    //System.out.println("SECOND token "+aut.myString());
+    //   pn = PetrinetReachability.removeUnreachableStates( OwnersRule.ownersRule(inputA));
+    //System.out.println("A2p2a input "+ inputA.myString());
+    pn.addPetrinet(OwnersRule.ownersRule(inputA), true); //root needed
+    //System.out.println("\n p in a2P2a "+pn.myString());
+    Automaton   aut = TokenRule.tokenRule(pn) ;
+    //System.out.println("\n End a in a2p2A "+aut.myString());
 
     return aut;
   }
@@ -90,12 +96,31 @@ public class A2P2A implements IProcessFunction {
    * @throws CompilationException when the function fails
    */
   @Override
-  public Petrinet compose(String id, Set<String> flags, Context context, Petrinet... petrinets) throws CompilationException {
-    return null;
+  public Petrinet compose(String id, Set<String> flags, Context context, Petrinet... petrinets)
+          throws CompilationException {
+    System.out.println("A2P2A input Petrinet");
+    assert petrinets.length == 1;
+    Petrinet inputP = petrinets[0].copy();
+    Automaton   aut = TokenRule.tokenRule(inputP) ;
+    Petrinet p = OwnersRule.ownersRule(aut);
+    //System.out.println("\n p in a2P2a "+pn.myString());
+    TokenRule.tokenRule(p) ;
+    return p;
   }
+
   @Override
-  public MultiProcessModel compose(String id, Set<String> flags, Context context, MultiProcessModel... multiProcess) throws CompilationException {
-    return null;
+  public MultiProcessModel compose(String id, Set<String> flags, Context context, MultiProcessModel... multiProcess)
+          throws CompilationException {
+    System.out.println("A2P2A  input MultiProcessModel");
+    assert multiProcess.length ==  1;
+    MultiProcessModel m = multiProcess[0];
+    Automaton  aut = (Automaton) m.getProcess(ProcessType.AUTOMATA);
+    Petrinet p = OwnersRule.ownersRule(aut);
+    Automaton   a = TokenRule.tokenRule(p) ;
+    MultiProcessModel mNew = new MultiProcessModel(aut.getId());
+    mNew.addProcess(p);
+    mNew.addProcess(a);
+    return mNew;
   }
 
 }

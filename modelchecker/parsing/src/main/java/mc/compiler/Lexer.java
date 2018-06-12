@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 import mc.compiler.token.*;
 import mc.exceptions.LexerException;
+import mc.processmodels.ProcessType;
 import mc.util.Location;
 
 public class Lexer {
@@ -234,12 +235,20 @@ public class Lexer {
         index++;
         return new BitAndToken(location);
       }
+      // "P = term"  build petrinet  and "P =A term" build  automata
     } else if (characters[index] == '=') {
       if (index < characters.length - 1 && characters[index + 1] == '=') {
         Location location = new Location(line, column, line, column + 2, index, index + 2);
         column += 2;
         index += 2;
         return new EqualityToken(location);
+      } else  if (index < characters.length - 1 && characters[index + 1] == 'A') {
+        Location location = new Location(line, column, line, column + 2, index, index + 2);
+        column += 2;
+        index += 2;
+        AssignToken at = new AssignToken(location);
+        at.setPType(ProcessType.AUTOMATA);
+        return at;
       } else {
         Location location = new Location(line, column, line, column++, index, index + 1);
         index++;

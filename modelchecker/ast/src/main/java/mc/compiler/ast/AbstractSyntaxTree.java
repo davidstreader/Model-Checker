@@ -26,6 +26,7 @@ public class AbstractSyntaxTree {
   /**
    * an AST for whole file not just one process
    * Processes contains the concrete syntax trees for the processes defined in the users code.
+   * A ProcessNode is an AST for a single process
    */
   private final List<ProcessNode> processes;
 

@@ -29,13 +29,13 @@ public class ProcessNode extends ASTNode {
    */
   private Set<String> type;
 
-  /**
+  /**  P1 = (a->STOP);  P1 is the identifier
    * The identifier for this process (i.e. the name).
    */
   private String identifier;
 
   /**
-   * The process data.
+   * The process data. P1 = (a->STOP);  processdata = (a->STOP)
    */
   private ASTNode process;
 

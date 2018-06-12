@@ -42,11 +42,11 @@ public class PetrinetParallelFunction  {
     List<Set<String>> roots = buildRoots(p1,p2);
 
     petriTransMap.putAll(composition.addPetrinetNoOwner(p1,tag1));
-    System.out.println("par "+ composition.myString());
+    //System.out.println("par "+ composition.myString());
     petriTransMap.putAll(composition.addPetrinetNoOwner(p2,tag2));
     composition.setRoots(roots);
     composition.setStartFromRoot();
-    System.out.println("par "+ composition.myString());
+    //System.out.println("par "+ composition.myString());
     setupSynchronisedActions(p1, p2, composition);
 
     //composition = PetrinetReachability.removeUnreachableStates(composition);
@@ -100,7 +100,7 @@ public class PetrinetParallelFunction  {
   private static void setupSynchronisedActions(Petrinet p1, Petrinet p2, Petrinet comp) {
 
     for (String action : synchronisedActions) {
-   System.out.println("Sync action "+action);
+   //System.out.println("Sync action "+action);
       Set<PetriNetTransition> p1Pair = p1.getAlphabet().get(action).stream()
           .map(t -> petriTransMap.get(t)).collect(Collectors.toSet());
 
@@ -111,7 +111,7 @@ public class PetrinetParallelFunction  {
         for (PetriNetTransition t2 : p2Pair) {
           if (t1==null) {System.out.println("t1==null");continue;}
           if (t2==null) {System.out.println("t2==null");continue;}
-  System.out.println("t1 "+ t1.myString()+ " , t2 "+t2.myString());
+  //System.out.println("t1 "+ t1.myString()+ " , t2 "+t2.myString());
           Set<PetriNetEdge> outgoingEdges = new LinkedHashSet<>();
           outgoingEdges.addAll(t1.getOutgoing());
           outgoingEdges.addAll(t2.getOutgoing());
@@ -132,18 +132,18 @@ public class PetrinetParallelFunction  {
           for(PetriNetEdge inE : incomingEdges) {
             comp.addEdge(newTrans, (PetriNetPlace) inE.getFrom());
           }
-     System.out.println("newTrans "+newTrans.myString());
+     //System.out.println("newTrans "+newTrans.myString());
         }
       }
 
       for (PetriNetTransition oldTrans : Iterables.concat(p1Pair, p2Pair)) {
         if (comp.getTransitions().containsValue(oldTrans))  {
-      System.out.println("removing "+oldTrans.myString());
+      //System.out.println("removing "+oldTrans.myString());
           comp.removeTransition(oldTrans);}
       }
 
     }
-    System.out.println("Sync END "+comp.myString());
+    //System.out.println("Sync END "+comp.myString());
   }
 
   private static boolean containsReceiverOf(String broadcaster, Collection<String> otherPetrinet) {

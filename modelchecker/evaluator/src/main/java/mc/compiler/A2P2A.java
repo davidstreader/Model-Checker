@@ -4,6 +4,7 @@ import com.microsoft.z3.Context;
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessFunction;
 import mc.processmodels.MultiProcessModel;
+import mc.processmodels.ProcessType;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
@@ -23,7 +24,7 @@ public class A2P2A implements IProcessFunction {
    */
   @Override
   public String getFunctionName() {
-    return "a2p2a";
+    return "NOTinUSE";
   }
 
   /**
@@ -94,13 +95,41 @@ public class A2P2A implements IProcessFunction {
    * @throws CompilationException when the function fails
    */
   @Override
-  public Petrinet compose(String id, Set<String> flags, Context context, Petrinet... petrinets) throws CompilationException {
-    return null;
+  public Petrinet compose(String id, Set<String> flags, Context context, Petrinet... petrinets)
+          throws CompilationException {
+    System.out.println("A2P2A input Petrinet");
+    assert petrinets.length == 1;
+    Petrinet inputP = petrinets[0].copy();
+    inputP.setId(inputP.getId()+".2a");
+    Automaton   at = TokenRule.tokenRule(inputP) ;
+
+    //   pn = PetrinetReachability.removeUnreachableStates( OwnersRule.ownersRule(inputA));
+    //System.out.println("A2p2a input "+ inputA.myString());
+    Petrinet p = OwnersRule.ownersRule(at); //root needed
+    //System.out.println("\n p in a2P2a "+pn.myString());
+     TokenRule.tokenRule(p) ;
+    return p;
   }
 
   @Override
-  public MultiProcessModel compose(String id, Set<String> flags, Context context, MultiProcessModel... multiProcess) throws CompilationException {
-    return null;
+  public MultiProcessModel compose(String id, Set<String> flags, Context context, MultiProcessModel... multiProcess)
+          throws CompilationException {
+    System.out.println("A2P2A  input MultiProcessModel");
+    assert multiProcess.length == 1;
+    MultiProcessModel inputM = multiProcess[0];
+
+
+    Automaton inputA = (Automaton) inputM.getProcess(ProcessType.AUTOMATA);
+
+    //   pn = PetrinetReachability.removeUnreachableStates( OwnersRule.ownersRule(inputA));
+    //System.out.println("A2p2a input "+ inputA.myString());
+    Petrinet p = OwnersRule.ownersRule(inputA); //root needed
+    //System.out.println("\n p in a2P2a "+pn.myString());
+    Automaton   a = TokenRule.tokenRule(p) ;
+    MultiProcessModel m = new MultiProcessModel(inputA.getId());
+    m.addProcess(p);
+    m.addProcess(a);
+    return m;
   }
 
 }

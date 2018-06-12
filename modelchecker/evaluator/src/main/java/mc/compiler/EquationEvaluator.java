@@ -84,7 +84,7 @@ public class EquationEvaluator {
         throw new CompilationException(getClass(), "No processes defined for equation block to work with");
       }
     }
-
+      System.out.println("Equation processes size "+processes.size());
     return new EquationReturn(results, toRender);
   }
 

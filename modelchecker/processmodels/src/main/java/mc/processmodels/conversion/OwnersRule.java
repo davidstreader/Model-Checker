@@ -163,7 +163,7 @@ public class OwnersRule {
 
     //3. remove S* to reveal the multiple start states.
     build = stripStar(build);
-    System.out.println("\n  OWNERS Rule *END "+build.myString());
+    //System.out.println("\n  OWNERS Rule *END "+build.myString());
     assert(build.validatePNet()): "OwnersRule End";
     return build;
   }
