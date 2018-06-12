@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import mc.util.Location;
 
+
 /**
  * This represents an infix operation, for within the operations.
  * <p>
@@ -38,6 +39,9 @@ public class OperationNode extends ASTNode {
    */
   private ASTNode secondProcess;
 
+  private String firstProcessType = "petrinet";
+  private String secondProcessType = "petrinet";
+  private String operationType = "petrinet";
   /**
    * Instantitate a new Operation Node.
    *

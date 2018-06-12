@@ -146,6 +146,8 @@ public class Lexer {
 
       case "ownersRule":
         return new OwnersRuleToken(location);
+      case "aut":
+        return new AutomatonToken(location);
     }
 
     if (Character.isUpperCase(stringToToken.charAt(0))) {

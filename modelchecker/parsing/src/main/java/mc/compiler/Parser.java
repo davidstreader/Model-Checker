@@ -71,6 +71,7 @@ public class Parser {
 
   public AbstractSyntaxTree parse(List<Token> tokens, Context context) throws CompilationException, InterruptedException {
     reset();
+    System.out.println("Parse "+ tokens);
     this.tokens = tokens;
     this.context = context;
 
@@ -1333,6 +1334,11 @@ System.out.println("parseDisplayType "+ token.toString());
     }
   }
 
+  /**
+   * Parsing  "operations" { A ~ B;}
+   * @throws CompilationException
+   * @throws InterruptedException
+   */
   private void parseOperation() throws CompilationException, InterruptedException {
     if (!(nextToken() instanceof OperationToken)) {
       Token error = tokens.get(index - 1);
@@ -1346,10 +1352,16 @@ System.out.println("parseDisplayType "+ token.toString());
     }
   }
 
-  // EXPRESSIONS
+  // parse "A ~ B"  AST add OperationNode to "operations" as side effect
+  // "Aut(A)" stores the type automaton on Operation node
 
   private void parseSingleOperation(boolean isEq) throws CompilationException, InterruptedException {
     int start = index;
+    boolean firstAut = false; boolean secondAut = false;
+    if (peekToken() instanceof AutomatonToken) {
+      firstAut = true;
+      nextToken();
+    }
     ASTNode process1 = parseComposite();
 
     boolean isNegated = false;
@@ -1360,6 +1372,10 @@ System.out.println("parseDisplayType "+ token.toString());
 
     String type = parseOperationType();
 
+    if (peekToken() instanceof AutomatonToken) {
+      secondAut = true;
+      nextToken();
+    }
     ASTNode process2 = parseComposite();
 
     // ensure that the next token is a '.' token
@@ -1369,6 +1385,8 @@ System.out.println("parseDisplayType "+ token.toString());
     }
 
     OperationNode operation = new OperationNode(type, isNegated, process1, process2, this.constructLocation(start));
+    if(firstAut)  operation.setFirstProcessType("automaton");
+    if(secondAut) operation.setSecondProcessType("automaton");
     if (isEq) {
       equations.add(operation);
     } else {

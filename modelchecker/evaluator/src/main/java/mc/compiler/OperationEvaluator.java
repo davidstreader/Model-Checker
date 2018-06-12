@@ -35,7 +35,7 @@ public class OperationEvaluator {
   static Map<String, Class<? extends IOperationInfixFunction>> operationsMap = new HashMap<>();
 
  /**
-  *
+  * This is an interpreter Called from Compiler
   * @param operations  one per equation in the operation section
   * @param processMap  name to processe map used to replace referances in operands
   * @param interpreter
@@ -55,7 +55,8 @@ public class OperationEvaluator {
 
     //input  from AST
     for (OperationNode operation : operations) {
-      System.out.println("*********starting Operation "+ operation.getOperation());
+      System.out.println("*********starting Operation "+ operation.getFirstProcessType() + " "+
+                            operation.getOperation()+"  "+operation.getSecondProcessType());
       boolean secondA2P2A = false; boolean firstA2P2A = false;
       if (operation.getSecondProcess() instanceof FunctionNode &&
         ((FunctionNode) operation.getSecondProcess()).getFunction().equals("a2p2a")) {

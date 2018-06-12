@@ -30,6 +30,8 @@ import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.util.LogAST;
 
 /**
+ * Compiler applies Interpreter  to processes {...} and seperatly
+ *     applies OperationEvaluator to operation {...} that calls Interpreter
  * BUILDS Processes and stores them in Map<String, ProcessModel>.
  * Both petriNets and Automata are built and a MultiProcessModel is stored in processMap
  * MultiProcessModel = (Pp,Pa,mapping) with a mapping between nodes and places
