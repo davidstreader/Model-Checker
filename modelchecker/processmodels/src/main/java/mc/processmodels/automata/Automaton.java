@@ -20,6 +20,10 @@ import mc.util.Location;
 import mc.util.expr.Expression;
 
 public class Automaton extends ProcessModelObject implements ProcessModel {
+  /**
+   * When refactored BEWARE of stack of pointers not stack of MODELS
+   */
+
 
   public static final boolean CONSTRUCT_ROOT = true;
   /**
@@ -705,7 +709,10 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
   }
 
   public Set<String> getAlphabet() {
-    return alphabet.keySet();
+    Set<String> out = this.getEdges().stream().map(x->x.getLabel()).collect(Collectors.toSet());
+
+    return out;
+    //return alphabet.keySet();
   }
 
   /**
@@ -777,6 +784,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
       for(AutomatonNode r: root){
       sb.append(r.getId()+" ");
       }
+      sb.append("alpa "+this.alphabet.keySet()+" ");
      sb.append(" own" + owners+ "nodes "+getNodes().size()+" edges "+getEdges().size()+"\n");
     for(AutomatonNode nd: getNodes()){ sb.append(nd.myString()+"\n");}
     for(AutomatonEdge ed: getEdges()){

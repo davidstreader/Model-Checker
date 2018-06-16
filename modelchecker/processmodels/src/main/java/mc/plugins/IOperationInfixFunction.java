@@ -2,7 +2,9 @@ package mc.plugins;
 
 import java.util.Collection;
 import mc.exceptions.CompilationException;
+import mc.processmodels.ProcessModel;
 import mc.processmodels.automata.Automaton;
+import mc.processmodels.petrinet.Petrinet;
 
 public interface IOperationInfixFunction {
 
@@ -20,12 +22,19 @@ public interface IOperationInfixFunction {
    */
   String getNotation();
 
+  /**
+   * Interpreter uses this now evaluate requires generic ProcedssModel
+   * @return  the type of the operation
+   */
+  String getOperationType();
 
   /**
    * Evaluate the function.
    *
-   * @param automata the automata in the function (e.g. {@code A} and {@code B} in {@code A ~ B})
+   * @param thing the automata or PetriNet in the function (e.g. {@code A} and {@code B} in {@code A ~ B})
    * @return whether or not the automata provided pass the testing semantics.
    */
-  boolean evaluate(Collection<Automaton> automata) throws CompilationException;
+  boolean  evaluate(Collection<ProcessModel> thing/*automata*/) throws CompilationException;
+
+  // boolean evaluate(Collection<Petrinet> petrinets) throws CompilationException;
 }

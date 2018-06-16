@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
+import mc.Constant;
 import mc.exceptions.CompilationException;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
@@ -42,6 +43,7 @@ public class AutomataReachability {
       // Also remove any edges that point to objects not in this automaton
       List<AutomatonEdge> edgesToRemove = new ArrayList<>();
       for (AutomatonEdge e : current.getOutgoingEdges()) {
+        if (e.getLabel().equals(Constant.DEADLOCK)) continue;
         if (!automaton.getNodes().contains(e.getTo())) {
           edgesToRemove.add(e);
           continue;
@@ -65,7 +67,7 @@ public class AutomataReachability {
         .forEach(automaton::removeNode);
 
 
-    // make sure all terminal nodes are marked as terminal nodes
+    // terminal nodes not marked with "STOP" are marked "ERROR"
     automaton.getNodes().stream()
         .filter(node -> node.getOutgoingEdges().size() == 0 && !node.isTerminal())
         .forEach(node -> node.setTerminal("ERROR"));

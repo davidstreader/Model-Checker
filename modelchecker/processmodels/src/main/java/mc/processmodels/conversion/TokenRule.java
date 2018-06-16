@@ -54,8 +54,8 @@ public class TokenRule {
                                     Map<Multiset<PetriNetPlace>, AutomatonNode> markingToNodeMap,
                                     Map<AutomatonNode, Multiset<PetriNetPlace> > nodeToMarkingMap) {
 
-    Automaton outputAutomaton = new Automaton(convertFrom.getId() + " automata",
-        false);
+    Automaton outputAutomaton = new Automaton(convertFrom.getId() + "-token" //+ " automata"
+            ,false);
       System.out.println("\nTOKEN RULE  STARTING "+convertFrom.getId());
 
       assert convertFrom.validatePNet(): "Token precondition";
@@ -108,7 +108,13 @@ if(j++>50) {System.out.println("\n\nTokenRule Failure Looping = "+j+"\n\n");brea
       //System.out.println("Processing "+Petrinet.marking2String(currentMarking)+
       //" trans "+satisfiedPostTransitions.size());
       if (satisfiedPostTransitions.size() == 0) {
-          markingToNodeMap.get(currentMarking).setTerminal("STOP"); // Error states must be marked with a delta
+          currentMarking.stream().forEach(x->{System.out.print(x.getId()+"->"+x.getTerminal());});
+          //if (currentMarking.stream().map(x->x.getTerminal().equals("STOP")).reduce(true,(x,y)->x&&y))
+          if (currentMarking.stream().map(x->x.isTerminal()).reduce(true,(x,y)->x&&y))
+          markingToNodeMap.get(currentMarking).setTerminal("STOP");
+          else
+              markingToNodeMap.get(currentMarking).setTerminal("ERROR");
+          //All terminal Places must be "STOP"
      /*   boolean stop = true;
         for (PetriNetPlace pl: currentMarking) {
           if (!pl.getTerminal().equals("STOP")) stop = false;

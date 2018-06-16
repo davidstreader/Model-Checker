@@ -58,7 +58,7 @@ public class OwnersRule {
    // 1. to automata A add initial event S*=>A now only one start state.
     Automaton star = Automaton.singleEventAutomata("single" , "S*");
     SequentialInfixFun sif = new SequentialInfixFun();
-    Automaton ai  = sif.compose("S*"+ain.getId(), star, ain);
+    Automaton ai  = sif.compose(ain.getId(), star, ain);
   //System.out.println("owners S* "+ai.myString());
    // 2. proceed as before
     Automaton a = ai.copy(); // smaller Ids make debugging easier
@@ -162,9 +162,9 @@ public class OwnersRule {
    //System.out.println("reach *END "+build.myString());
 
     //3. remove S* to reveal the multiple start states.
-    build = stripStar(build);
+    stripStar(build);
     //System.out.println("\n  OWNERS Rule *END "+build.myString());
-    assert(build.validatePNet()): "OwnersRule End";
+    //assert(build.validatePNet(): "OwnersRule End");
     return build;
   }
 

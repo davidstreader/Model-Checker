@@ -22,6 +22,7 @@ import mc.exceptions.CompilationException;
 import mc.plugins.IProcessFunction;
 import mc.plugins.IProcessInfixFunction;
 import mc.processmodels.ProcessType;
+import mc.processmodels.automata.AutomatonNode;
 import mc.util.Location;
 import mc.util.expr.Expression;
 import mc.util.expr.ExpressionEvaluator;
@@ -496,6 +497,10 @@ public class Parser {
     }
 
     AssignToken  at = (AssignToken) nextToken();
+    if (peekToken()  instanceof AutomatonToken) {
+      at.setPType(ProcessType.AUTOMATA);
+      nextToken();
+    }
     ASTNode process = parseComposite();
 
     List<LocalProcessNode> localProcesses = new ArrayList<>();
@@ -766,6 +771,12 @@ System.out.println("parseDisplayType "+ token.toString());
     return node;
   }
 
+  /**
+   *
+   * @return
+   * @throws CompilationException
+   * @throws InterruptedException
+   */
   private ASTNode parseBaseLocalProcess() throws CompilationException, InterruptedException {
     if (peekToken() instanceof TerminalToken) {
       return parseTerminal();
@@ -1385,8 +1396,8 @@ System.out.println("parseDisplayType "+ token.toString());
     }
 
     OperationNode operation = new OperationNode(type, isNegated, process1, process2, this.constructLocation(start));
-    if(firstAut)  operation.setFirstProcessType("automaton");
-    if(secondAut) operation.setSecondProcessType("automaton");
+    if(firstAut)  operation.setFirstProcessType("automata");
+    if(secondAut) operation.setSecondProcessType("automata");
     if (isEq) {
       equations.add(operation);
     } else {

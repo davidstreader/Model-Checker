@@ -244,7 +244,7 @@ public class Lexer {
         column += 2;
         index += 2;
         return new EqualityToken(location);
-      } else  if (index < characters.length - 1 && characters[index + 1] == 'A') {
+      } else  if (index < characters.length - 1 && characters[index + 1] == 'a') {
         Location location = new Location(line, column, line, column + 2, index, index + 2);
         column += 2;
         index += 2;

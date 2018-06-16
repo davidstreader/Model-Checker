@@ -194,7 +194,7 @@ public class AutomatonNode extends ProcessModelObject implements Comparable<Auto
   public String myString() {
 
     return "node "+ this.getId()+" col "+ this.colour+" G= "+getGuard()+
-           "term "+getTerminal() + " start "+isStartNode();
+           " term "+getTerminal() + " start "+isStartNode();
   }
   public String toString() {
    StringBuilder builder = new StringBuilder();

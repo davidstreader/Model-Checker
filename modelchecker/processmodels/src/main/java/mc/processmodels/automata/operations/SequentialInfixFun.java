@@ -2,7 +2,7 @@ package mc.processmodels.automata.operations;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-
+import com.rits.cloning.Cloner;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -21,16 +21,18 @@ public class SequentialInfixFun {
      * Execute the function.
      *
      * @param id         the id of the resulting automaton
-     * @param automaton1 the first  automaton in the function (e.g. {@code A} in {@code A||B})
-     * @param automaton2 the second automaton in the function (e.g. {@code B} in {@code A||B})
+     * @param a1 the first  automaton in the function (e.g. {@code A} in {@code A||B})
+     * @param a2 the second automaton in the function (e.g. {@code B} in {@code A||B})
      * @return the resulting automaton of the operation
      */
-    public Automaton compose(String id, Automaton automaton1, Automaton automaton2) throws CompilationException {
+    public Automaton compose(String id, Automaton a1, Automaton a2) throws CompilationException {
         //System.out.println("\n *********************");
         //System.out.println("a1 "+automaton1.myString());
         //System.out.println("a2 "+automaton2.myString());
         Automaton sequence = new Automaton(id, !Automaton.CONSTRUCT_ROOT);
-
+        Cloner cloner=new Cloner();
+        Automaton automaton1 = cloner.deepClone(a1);
+        Automaton automaton2 = cloner.deepClone(a2);
         Multimap<String, String> setOfOwners = Automaton.ownerProduct(automaton1, automaton2);
 
         //System.out.println("setOfOwners "+setOfOwners.toString());
@@ -119,6 +121,7 @@ public class SequentialInfixFun {
     }
 
     /**
+     * Assumes Single End marking
      * A=>B   where B has roots Br1,Br2,.. Must build copies  A1,A2,..
      * The net A=>B is the union of B,A1,A2,...  and has roots A1r,A2r, ..
      * (the roots can not be glued together because of the case when Ar overlaps with Ae)

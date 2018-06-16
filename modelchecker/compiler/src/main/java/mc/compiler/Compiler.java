@@ -126,17 +126,17 @@ public class Compiler {
     Map<String, ProcessModel> processMap = interpreter.interpret(ast,
         messageQueue, z3Context);
 
-    //System.out.println("after operation interpretation");
-
+    System.out.println("****before operation evaluation "+processMap.size());
 
     List<OperationResult> opResults = evaluator.evaluateOperations(ast.getOperations(), processMap,
         interpreter, code, z3Context);
+    System.out.println("****after operation evaluation "+processMap.size());
 
     // system currently has memory hence EE can give different results each time
     // still has memory problem with many permutations
     this.eqEvaluator = new EquationEvaluator(); // need to reset equationEvaluator else !!!!
     EquationEvaluator.EquationReturn eqResults = eqEvaluator.evaluateEquations(
-        new ArrayList<>(processMap.values()), ast.getEquations(),
+        processMap, ast.getEquations(),
         code, z3Context, messageQueue);
 
     processMap.putAll(eqResults.getToRender());

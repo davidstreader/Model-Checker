@@ -48,7 +48,7 @@ public class PetriColouring {
         for(String pid: initCol.keySet()){
             PetriNetPlace pl = petri.getPlaces().get(pid);
             pl.setColour(initCol.get(pid));
-            System.out.println("place "+pl.getId()+" col "+pl.getColour());
+            //System.out.println("place "+pl.getId()+" col "+pl.getColour());
         }
         int colSize = 1;
         while(true) {
@@ -57,7 +57,7 @@ public class PetriColouring {
                 for (PetriNetTransition tr : pl.post()) {
                     colPi.add(new PetriColourComponent(tr));  //uses .equals()
                 }
-        System.out.println("colPi  "+pl.getId()+"->"+  colPi.toString());
+        //System.out.println("colPi  "+pl.getId()+"->"+  colPi.toString());
                 boolean fnd = false;
                 for(Set<PetriColourComponent> found : colPiMap.keySet()){
                     //System.out.println(" check  "+found.toString());
@@ -73,22 +73,22 @@ public class PetriColouring {
                 System.out.println("ColPiMap "+ colPi.toString()+"->>"+pl.getId());
                 colPi = new TreeSet<>();
             }
-            System.out.println("*****colSize = "+colSize+ " colPiMap.keySet().size() "+colPiMap.keySet().size());
-            System.out.println("colPiMap keys "+
-                    colPiMap.keySet().stream().map(x->x.toString()).reduce("",(x,y)->x+y+" "));
+            //System.out.println("*****colSize = "+colSize+ " colPiMap.keySet().size() "+colPiMap.keySet().size());
+            /*System.out.println("colPiMap keys "+
+                    colPiMap.keySet().stream().map(x->x.toString()).reduce("",(x,y)->x+y+" ")); */
             if  (colSize == colPiMap.keySet().size()) break;
             colSize = colPiMap.keySet().size();
-            System.out.println("ColPi built");
+            //System.out.println("ColPi built");
             //reColour places
             nextColourId = 1;
             //boolean terminate = true;
             for (Set<PetriColourComponent> k : colPiMap.keySet()) {
-                System.out.println(k+" -> "+colPiMap.get(k).size());
+                //System.out.println(k+" -> "+colPiMap.get(k).size());
                 int cnt = 0;
                 for (PetriNetPlace pl : colPiMap.get(k)) {
                     pl.setColour(nextColourId);
                     cnt++;
-                    System.out.println(pl.myString());
+                    //System.out.println(pl.myString());
                 }
                 //if (cnt >1) terminate = false;
                 nextColourId++;
@@ -97,9 +97,9 @@ public class PetriColouring {
 
             //if (terminate || (colSize == colPiMap.size())) break;
             colPiMap = ArrayListMultimap.create();
-            System.out.println("NEXT "+colSize);
+            //System.out.println("NEXT "+colSize);
         }
-        System.out.println("COLOURing ENDS");
+        //System.out.println("COLOURing ENDS");
     }
 
     public class PetriColourComponent implements Comparable<PetriColourComponent>{
@@ -108,15 +108,17 @@ public class PetriColouring {
         private Set<String> owners = new TreeSet();
         private Set<Integer> to = new TreeSet();
        public String getLabel(){return label;}
-       public String getOwnLabel() {
-           return label+"." +owners.stream().reduce("", (x,y)->x+y+" ");
-       }
-       public String getToCol(){
+
+        public String getOwnLabel() {
+            return label+"." +owners.stream().reduce("", (x,y)->x+y+" ");
+        }
+        public String getToCol(){
            return to.stream().map(x->x.toString()).reduce("", (x,y)->x+y+" ");
        }
 
        public int compareTo(PetriColourComponent pcc){
-           int x = getOwnLabel().compareTo(pcc.getOwnLabel());
+           //int x = getOwnLabel().compareTo(pcc.getOwnLabel());
+           int x = getLabel().compareTo(pcc.getLabel());
            if (x != 0 )return x;
            return getToCol().compareTo(pcc.getToCol());
         }
@@ -133,5 +135,8 @@ public class PetriColouring {
         public boolean equals(PetriColourComponent pcc) {
            return this.compareTo(pcc) == 0;
         }
+    }
+    public Set<Integer> markColor(Set<PetriNetPlace> mark){
+        return mark.stream().map(x->x.getColour()).collect(Collectors.toSet());
     }
 }

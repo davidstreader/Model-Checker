@@ -6,6 +6,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import mc.exceptions.CompilationException;
 import mc.plugins.IOperationInfixFunction;
+import mc.processmodels.ProcessModel;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
@@ -16,105 +17,87 @@ import mc.processmodels.petrinet.utils.PetriColouring;
 public class BisimulationOperation implements IOperationInfixFunction {
 
 
-  /**
-   * A method of tracking the function.
-   *
-   * @return The Human-Readable form of the function name
-   */
-  @Override
-  public String getFunctionName() {
-    return "BiSimulation";
-  }
-
-  /**
-   * The form which the function will appear when composed in the text.
-   *
-   * @return the textual notation of the infix function
-   */
-  @Override
-  public String getNotation() {
-    return "~";
-  }
-
-  /**
-   * Evaluate the function.
-   *
-   * @param automata the list of automata being compared
-   * @return the resulting automaton of the operation
-   */
-  @Override
-  public boolean evaluate(Collection<Automaton> automata) throws CompilationException {
-
-   ArrayList<AutomatonEdge> edges = new ArrayList<>();
-   ArrayList<AutomatonNode> nodes = new ArrayList<>();
-
-   final int BASE_COLOUR = 1;
- //  System.out.println("Bisim evaluate");
-    int i =0;
-    for(Automaton a: automata){
-  //   System.out.println(i++ +" "+ a.toString());
-     edges.addAll(a.getEdges());
-     nodes.addAll(a.getNodes());
-    }
-   Set<Integer> root_colors = new TreeSet<Integer>();
-   Set<Integer> first_colors = new TreeSet<Integer>();
-    Map<Integer, List<ColourComponent>> colourMap = new HashMap<>();
-    //int rootColour = Integer.MIN_VALUE;
-
-    // set up the initial colouring ( on the nodes)
-   ColouringUtil colourer = new ColouringUtil();
-   colourer.performInitialColouring(nodes);
-   colourer.doColouring(edges, nodes); // uses initial colouring on nodes
-
-
-   i = 0;
-   for(Automaton automaton: automata){
-    //System.out.println("bisim ~ "+ automaton.myString());
-      Set<AutomatonNode> root = automaton.getRoot();
-
-     if (i ==0){
-        for(AutomatonNode n : root) {
-          first_colors.add(n.getColour());
-        }
- // System.out.println("Aut "+ automaton.getId()+ " first col "+ first_colors);
-        i++;
-      } else {
-        for (AutomatonNode n : root) {
-         root_colors.add(n.getColour());
-        }
- // System.out.println("Aut "+ automaton.getId()+ " root col "+ root_colors);
-        if (root_colors.equals(first_colors)) {   //comparison between this current automaton and the first
-           return true;
-        } else {
-           return false;
-        }
-     }
+    /**
+     * A method of tracking the function.
+     *
+     * @return The Human-Readable form of the function name
+     */
+    @Override
+    public String getFunctionName() {
+        return "BiSimulation";
     }
 
-    return true;
-  }
+    /**
+     * The form which the function will appear when composed in the text.
+     *
+     * @return the textual notation of the infix function
+     */
+    @Override
+    public String getNotation() {
+        return "~p";
+    }
+    @Override
+    public String getOperationType(){return "petrinet";}
 
-    public boolean evaluateP(Collection<Petrinet> petrinets) throws CompilationException {
-      assert petrinets.size() == 2;
-        String tag1 = "*P1";
-        String tag2 = "*P2";
-      Iterator<Petrinet> ip = petrinets.iterator();
-      Petrinet p1 = ip.next();
-      Petrinet p2 = ip.next();
-        System.out.println("p1 root "+p1.getRoots());
-        System.out.println("p2 root "+p2.getRoots());
-        Petrinet composition = new Petrinet(p1.getId() + "COL" + p2.getId(), false);
-        composition.getOwners().clear();
-        composition.getOwners().addAll(p1.getOwners());
-        composition.getOwners().addAll(p2.getOwners());
+    /**
+     * Evaluate the function.  we can pass the function auto OR petri
+     *
+     * @param processModels the list of automata / PetriNets being compared
+     * @return the resulting automaton of the operation
+     */
+    @Override
+    public boolean evaluate(Collection<ProcessModel> processModels) throws CompilationException {
 
-        composition.addPetrinetNoOwner(p1,"");
-        composition.addPetrinetNoOwner(p2,"");
-        System.out.println("composition root "+composition.getRoots());
-        PetriColouring pc = new PetriColouring();
-        Map<String, Integer> ic = pc.initColour(composition);
-        pc.doColour(composition, ic);
+        if (processModels.iterator().next() instanceof Petrinet) {
+            System.out.println("Bisimulation on Petri Nets");
+            processModels.stream().forEach(x->{  System.out.println(x.getId());});
+            String tag1 = "*P1";
+            String tag2 = "*P2";
+            Iterator<ProcessModel> ip = processModels.iterator();
+            Petrinet p1 = (Petrinet) ip.next();
+            Petrinet p2 = (Petrinet) ip.next();
+            //System.out.println("p1 root " + p1.getRoots());
+            //System.out.println("p2 root " + p2.getRoots());
+            Petrinet composition = new Petrinet(p1.getId() + "COL" + p2.getId(), false);
+            composition.getOwners().clear();
+            composition.getOwners().addAll(p1.getOwners());
+            composition.getOwners().addAll(p2.getOwners());
 
-    return true;
+            composition.addPetrinetNoOwner(p1, "");
+            composition.addPetrinetNoOwner(p2, "");
+            //System.out.println("composition root " + composition.getRoots());
+            PetriColouring pc = new PetriColouring();
+            Map<String, Integer> ic = pc.initColour(composition);
+            pc.doColour(composition, ic);
+
+            List<Set<Integer>> r1cs = new ArrayList<>();
+            for(Set<String> m: p1.getRoots()) {
+                r1cs.add(m.stream().map(x->composition.getPlace(x).getColour()).collect(Collectors.toSet()));
+            }
+            List<Set<Integer>> r2cs = new ArrayList<>();
+            for(Set<String> m: p2.getRoots()) {
+                r2cs.add(m.stream().map(x->composition.getPlace(x).getColour()).collect(Collectors.toSet()));
+            }
+            System.out.println("Root cols "+r1cs+" ** "+r2cs);
+            boolean found = true;
+            for(Set<Integer> r1c :r1cs){
+                found = false;
+                for(Set<Integer> r2c :r2cs){
+                    if (r1c.equals(r2c)) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) break;
+            }
+            return found;
+        }
+
+        System.out.printf("\nBisimulation semantics expecting PetriNets but found " + processModels.iterator().next().getClass()+"\n");
+        System.out.println(processModels.iterator().next().getId());
+        Throwable t = new Throwable();
+        t.printStackTrace();
+        return false;
     }
 }
+

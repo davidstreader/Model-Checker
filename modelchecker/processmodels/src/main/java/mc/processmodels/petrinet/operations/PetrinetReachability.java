@@ -3,6 +3,7 @@ package mc.processmodels.petrinet.operations;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import mc.Constant;
 import mc.exceptions.CompilationException;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetEdge;
@@ -59,6 +60,7 @@ public final class PetrinetReachability {
                            Petrinet.marking2String(transition.pre())+" + "+
                            Petrinet.marking2String(transition.post())); */
         // new =  current - pre + post
+        if (transition.getLabel().equals(Constant.DEADLOCK)) continue;
         Set<PetriNetPlace> newMarking = new HashSet<>(currentMarking);
         newMarking.removeAll(transition.pre());
         newMarking.addAll(transition.post());

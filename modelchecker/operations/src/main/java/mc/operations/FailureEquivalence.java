@@ -9,6 +9,7 @@ import mc.AcceptanceGraph;
 import mc.BuildAcceptanceGraphs;
 import mc.exceptions.CompilationException;
 import mc.plugins.IOperationInfixFunction;
+import mc.processmodels.ProcessModel;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
@@ -39,112 +40,120 @@ public class FailureEquivalence implements IOperationInfixFunction {
     public String getNotation() {
         return "*";
     }
-
+    @Override
+    public String getOperationType(){return "automata";}
     /**
      * Evaluate the function.
      *
-     * @param automata the list of automata being compared
+     * @param processModels the list of automata being compared
      * @return the resulting automaton of the operation
-     *
+     * <p>
      * Failure equality is II-bisimulation of acceptance graphs
-     *   1. build the acceptance graphs for each automata
-     *          a dfa + node to set of acceptance sets map
-     *   2. Color the nodes of the dfa acording to acceptance set equality
-     *     initialise bisimulation coloring with the newly built coloring
+     * 1. build the acceptance graphs for each automata
+     * a dfa + node to set of acceptance sets map
+     * 2. Color the nodes of the dfa acording to acceptance set equality
+     * initialise bisimulation coloring with the newly built coloring
      */
     @Override
-    public boolean evaluate(Collection<Automaton> automata) throws CompilationException {
+    public boolean evaluate(Collection<ProcessModel> processModels) throws CompilationException {
+        if (processModels.iterator().next() instanceof Automaton) {
+            BuildAcceptanceGraphs bag = new BuildAcceptanceGraphs();
+            ArrayList<AcceptanceGraph> ags = new ArrayList<AcceptanceGraph>();
+            final int BASE_COLOUR = 1;
+            Integer color = BASE_COLOUR; // is updated  by ag.colorNodes
+            //maps node colour to the set of color compnents
+            Map<Integer, List<ColourComponent>> colourMap = new HashMap<>();
+            int rootColour = Integer.MIN_VALUE;
 
-        BuildAcceptanceGraphs bag = new BuildAcceptanceGraphs();
-        ArrayList<AcceptanceGraph> ags = new ArrayList<AcceptanceGraph>();
-        final int BASE_COLOUR = 1;
-        Integer color = BASE_COLOUR; // is updated  by ag.colorNodes
-        //maps node colour to the set of color compnents
-        Map<Integer, List<ColourComponent>> colourMap = new HashMap<>();
-        int rootColour = Integer.MIN_VALUE;
-
-        Map<AutomatonNode,Integer> initialColour = new HashMap<AutomatonNode,Integer>();
-      //  System.out.println("Failure start");
+            Map<AutomatonNode, Integer> initialColour = new HashMap<AutomatonNode, Integer>();
+            //  System.out.println("Failure start");
   /*
   Set up Acceptance Graphs and initial colouring on the automata nodes
   */
-        //ColouringUtil colourer = new ColouringUtil();
-        Map<Integer, List<Set<String>>> cmap = new TreeMap<Integer, List<Set<String>>>();
+            //ColouringUtil colourer = new ColouringUtil();
+            Map<Integer, List<Set<String>>> cmap = new TreeMap<Integer, List<Set<String>>>();
 
-        for (Automaton automaton : automata) {
-            //System.out.println("Start auto "+ automaton.toString());
-            Automaton a = automaton.copy();
-            //System.out.println("Start copy "+ a.toString());
-            // build nfa and then dfa for second parameter "a"
-            AcceptanceGraph ag = new AcceptanceGraph ("dfa-"+a.getId(), a);
-            //System.out.println("Start ag "+ ag.toString());
-            color = ag.colorNodes(cmap, ag.getNode2AcceptanceSets(),color); //reuse of color map essential
-           // System.out.println("Just colored "+ ag.getA().toString());
+            for (ProcessModel pm : processModels) {
+                //System.out.println("Start auto "+ automaton.toString());
+                Automaton a = (Automaton) pm;
+                //System.out.println("Start copy "+ a.toString());
+                // build nfa and then dfa for second parameter "a"
+                AcceptanceGraph ag = new AcceptanceGraph("dfa-" + a.getId(), a);
+                //System.out.println("Start ag "+ ag.toString());
+                color = ag.colorNodes(cmap, ag.getNode2AcceptanceSets(), color); //reuse of color map essential
+                // System.out.println("Just colored "+ ag.getA().toString());
 
-          //  this.printColorMap(cmap);
-            // System.out.println("Adding "+ ag.getA().getId());
-            ags.add(ag);
-            for(AutomatonNode nd : ag.getA().getNodes()){
-                initialColour.put(nd,nd.getColour());
+                //  this.printColorMap(cmap);
+                // System.out.println("Adding "+ ag.getA().getId());
+                ags.add(ag);
+                for (AutomatonNode nd : ag.getA().getNodes()) {
+                    initialColour.put(nd, nd.getColour());
+                }
+                //System.out.println(ag.toString());
             }
-            //System.out.println(ag.toString());
-        }
-        // System.out.println("Failure initial color end");
-        if (!consistentColor(ags)){return false;};
-        //System.out.println("Initial color consistent");
+            // System.out.println("Failure initial color end");
+            if (!consistentColor(ags)) {
+                return false;
+            }
+            ;
+            //System.out.println("Initial color consistent");
 
 /*
    If the acceptance coloring is not a bisimulation look not further and fail
    Now compute the bisimulation coloring of the DFA in the Acceptance graphs
  */
-        // build node and edge lists
-        ArrayList<AutomatonEdge> edges = new ArrayList<>();
-        ArrayList<AutomatonNode> nodes = new ArrayList<>();
-        for(AcceptanceGraph a: ags){
-            //System.out.println(i++ +" "+ a.getId());
-            edges.addAll(a.getA().getEdges());
-            nodes.addAll(a.getA().getNodes());
-        }
+            // build node and edge lists
+            ArrayList<AutomatonEdge> edges = new ArrayList<>();
+            ArrayList<AutomatonNode> nodes = new ArrayList<>();
+            for (AcceptanceGraph a : ags) {
+                //System.out.println(i++ +" "+ a.getId());
+                edges.addAll(a.getA().getEdges());
+                nodes.addAll(a.getA().getNodes());
+            }
      /*   System.out.print("Initial node Color {");
         for(AutomatonNode nd : nodes) {
             System.out.print(nd.getId()+"->"+nd.getColour()+" ");
         } System.out.println("}"); */
-        // set up the initial colouring ( on the nodes)
-        ColouringUtil colourer = new ColouringUtil();
-        //colourer.performInitialColouring(nodes);
-        colourer.doColouring(edges, nodes); // uses initial colouring on nodes
+            // set up the initial colouring ( on the nodes)
+            ColouringUtil colourer = new ColouringUtil();
+            //colourer.performInitialColouring(nodes);
+            colourer.doColouring(edges, nodes); // uses initial colouring on nodes
 
      /*   System.out.print("Final node Color {");
         for(AutomatonNode nd : nodes) {
             System.out.print(nd.getId()+"->"+nd.getColour()+" ");
         } System.out.println("}"); */
-        Set<Integer> root_colors = new TreeSet<Integer>();
-        Set<Integer> first_colors = new TreeSet<Integer>();
-        int i = 0;
-        for(AcceptanceGraph a: ags){
-            Automaton automaton = a.getA();
-            Set<AutomatonNode> root = automaton.getRoot();
+            Set<Integer> root_colors = new TreeSet<Integer>();
+            Set<Integer> first_colors = new TreeSet<Integer>();
+            int i = 0;
+            for (AcceptanceGraph a : ags) {
+                Automaton automaton = a.getA();
+                Set<AutomatonNode> root = automaton.getRoot();
 
-            if (i ==0){
-                for(AutomatonNode n : root) {
-                    first_colors.add(n.getColour());
-                }
-                // System.out.println("Aut "+ automaton.getId()+ " first col "+ first_colors);
-                i++;
-            } else {
-                for (AutomatonNode n : root) {
-                    root_colors.add(n.getColour());
-                }
-                // System.out.println("Aut "+ automaton.getId()+ " root col "+ root_colors);
-                if (root_colors.equals(first_colors)) {   //comparison between this current automaton and the first
-                    return true;
+                if (i == 0) {
+                    for (AutomatonNode n : root) {
+                        first_colors.add(n.getColour());
+                    }
+                    // System.out.println("Aut "+ automaton.getId()+ " first col "+ first_colors);
+                    i++;
                 } else {
-                    return false;
+                    for (AutomatonNode n : root) {
+                        root_colors.add(n.getColour());
+                    }
+                    // System.out.println("Aut "+ automaton.getId()+ " root col "+ root_colors);
+                    if (root_colors.equals(first_colors)) {   //comparison between this current automaton and the first
+                        return true;
+                    } else {
+                        return false;
+                    }
                 }
             }
-        }
 
-        return true;
+            return true;
+        }
+        System.out.printf("\nFailure semantics not defined for type " + processModels.iterator().next().getClass()+"\n");
+    return false;
+
     }
     private void printColorMap(Map<Integer, List<Set<String>>> cmap) {
         for(Integer ckey : cmap.keySet()) {

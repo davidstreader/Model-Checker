@@ -62,9 +62,9 @@ public class ColouringUtil {
     List<ColourComponent> ndpi = new ArrayList<ColourComponent>(buildpi(nd, edges, nodes));
     //      if nd_colorPI defined in PI
 
-    // System.out.println(" PI = "+ piToString(pi));
+    //System.out.println(" PI = "+ piToString(pi));
     String ndpiString = CCSString(ndpi);
-    // System.out.println("For node "+ nd.getId()+" Look for "+ ndpiString);
+    //System.out.println("For node "+ nd.getId()+" Look for "+ ndpiString);
     if (pi.containsKey(ndpiString)) {
      //        if nd_col = PI(nd_colPI)
      nextCol.put(nd, pi.get(ndpiString));
@@ -79,14 +79,14 @@ public class ColouringUtil {
      //         newCol in nd and in PI
 
      nextCol.put(nd, getNextColourId());
-     //         System.out.println("NOT found Adding to next "+ nd.getId() +"->"+ nextCol.get(nd));
-     //         System.out.println("                     pi "+ ndpiString);
+     //System.out.println("NOT found Adding to next "+ nd.getId() +"->"+ nextCol.get(nd));
+     //System.out.println("                     pi "+ ndpiString);
      pi.put(ndpiString, nextCol.get(nd));
      continue;
     }
    }
    //   apply the new colours to the nodes
-   //   System.out.println("REcolor Nodes");
+   //System.out.println("REcolor Nodes");
    for (AutomatonNode nd : nextCol.keySet()) {
     nd.setColour(nextCol.get(nd));
    }
@@ -102,14 +102,14 @@ public class ColouringUtil {
     if (reversepi.containsKey(nd.getColour())) {
      if (!reversepi.get(nd.getColour()).equals(CCSString(buildpi(nd, edges, nodes)))) {
       go = true;
-      //   System.out.println("Keep Going"+reversepi.get(nd.getColour())+" != "+CCSString(buildpi(nd, edges, nodes)));
+      //System.out.println("Keep Going"+reversepi.get(nd.getColour())+" != "+CCSString(buildpi(nd, edges, nodes)));
       break;
      } else {
-      //             System.out.println(nd.getId()+ " "+nd.getColour()+" "+CCSString(buildpi(nd, edges, nodes)));
+      //System.out.println(nd.getId()+ " "+nd.getColour()+" "+CCSString(buildpi(nd, edges, nodes)));
      }
     } else {
      reversepi.put(nd.getColour(), CCSString(buildpi(nd, edges, nodes)));
-     //   System.out.println("Termination Check Add "+nd.getColour()+"->"+
+     //System.out.println("Termination Check Add "+nd.getColour()+"->"+
      //     CCSString(buildpi(nd, edges, nodes) ));
     }
    }
@@ -153,13 +153,13 @@ public class ColouringUtil {
   }
 
   Collections.sort(ccs);
-  // System.out.println("Sorted ndpi "+ CCSString(ccs));
+  //System.out.println("Sorted ndpi "+ CCSString(ccs));
   return ccs;
  }
 
 
  public Map<AutomatonNode, Integer> performInitialColouring(List<AutomatonNode> nodes) {
-  //   System.out.println("performInitialColouring");
+  //System.out.println("performInitialColouring");
 
   Map<AutomatonNode, Integer> initialColour = new HashMap<AutomatonNode, Integer>();
   for (AutomatonNode node : nodes) {
@@ -180,7 +180,7 @@ public class ColouringUtil {
   }
   for (AutomatonNode node : nodes) {
    initialColour.put(node, node.getColour());
-//   System.out.println("initialCol "+node.getId()+"->"+node.getColour());
+//System.out.println("initialCol "+node.getId()+"->"+node.getColour());
   }
   return initialColour;
  }
@@ -206,7 +206,7 @@ public class ColouringUtil {
      }
      if (add) {
       colouringSet.add(newColC);
-      //  System.out.println("Adding From "+ node.getId()+ " To "+ edge.getTo().getId()+
+      //System.out.println("Adding From "+ node.getId()+ " To "+ edge.getTo().getId()+
       //                     " col "+edge.getTo().getColour() );
      }
     });

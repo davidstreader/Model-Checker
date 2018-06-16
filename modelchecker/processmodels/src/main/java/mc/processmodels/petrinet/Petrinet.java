@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.val;
+import mc.Constant;
 import mc.compiler.ast.HidingNode;
 import mc.compiler.ast.RelabelElementNode;
 import mc.exceptions.CompilationException;
@@ -461,7 +462,7 @@ public void rebuildAlphabet(){
     //System.out.println("\nstopNet "+stop.myString());
     return stop;
   }
-  public static Petrinet errorNet(){
+  public static Petrinet errorNet()throws CompilationException{
     Petrinet error = new Petrinet("error");
     error.setOwners(new HashSet<>()); error.addOwner(DEFAULT_OWNER);
     PetriNetPlace p  = error.getPlaces().values().iterator().next();
@@ -469,7 +470,17 @@ public void rebuildAlphabet(){
     p.setOwners(new HashSet<>()); p.addOwner(DEFAULT_OWNER);
     p.setStartNos(new HashSet<>()); p.addStartNo(1);
     error.setRootPlace(p);
+    PetriNetPlace end = error.addPlace();
+    end.setOwners(new HashSet<>()); end.addOwner(DEFAULT_OWNER);
+    PetriNetTransition tr = error.addTransition(Constant.DEADLOCK);
+    tr.setOwners(new HashSet<>()); tr.addOwner(DEFAULT_OWNER);
+    error.addEdge(end,tr);
+    error.addEdge(tr, p);
+    error.setOwners(new HashSet<>());
+    error.addOwner(DEFAULT_OWNER);
+    end.setTerminal("ERROR");
     error.reown();
+
     return error;
   }
 public static String marking2String(Collection<PetriNetPlace> mark){

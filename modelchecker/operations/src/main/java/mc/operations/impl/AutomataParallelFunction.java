@@ -42,7 +42,7 @@ public class AutomataParallelFunction {
 
     this.automaton1 = automaton1;
     this.automaton2 = automaton2;
-
+    System.out.println( automaton1.getAlphabet()+" OR "+ automaton1.getAlphabet());
     // construct the parallel composition of the states from both automata
     setupNodes(automaton1.getNodes(), automaton2.getNodes());
     // find the synchronous and non-synchronous actions in both alphabet sets
@@ -86,7 +86,7 @@ public class AutomataParallelFunction {
         if (node.isStartNode())
           automaton.addRoot(node);
 // Errors are local not Global
-        if ("ERROR".equals(node2.getTerminal()) && "ERROR".equals(node1.getTerminal()) )
+        if ("ERROR".equals(node2.getTerminal()) || "ERROR".equals(node1.getTerminal()) )
           node.setTerminal("ERROR");
 
 

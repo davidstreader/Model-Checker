@@ -188,7 +188,7 @@ public class PetriNetPlace extends ProcessModelObject implements Comparable<Petr
     return "Place "+this.getId()+ " ref "+references.toString()+" fromref "+fromReferences.toString()+
       this.getIncoming().stream().map(ed->ed.getId()).reduce(" in  ",(x,y)->x+" "+y)+
       this.getOutgoing().stream().map(ed->ed.getId()).reduce(" out ",(x,y)->x+" "+y) +
-      " end "+this.getTerminal()+ " st "+ this.isStart()+ " "+this.startNos +
+      " end "+this.getTerminal()+ " "+this.isTerminal()+ " start "+ this.isStart()+ " "+this.startNos +
       " own="+ this.owners +
       " col="+ this.getColour()
       ;

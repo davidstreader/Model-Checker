@@ -64,7 +64,7 @@ public class Interpreter {
                                              Context context)
       throws CompilationException, InterruptedException {
 
-    System.out.print("Who calls interpret Y? ");//Throwable t = new Throwable();t.printStackTrace();
+    //System.out.print("Who calls interpret Y? ");//Throwable t = new Throwable();t.printStackTrace();
     Map<String, ProcessModel> processMap = new LinkedHashMap<>();
 // build all  processes including global sub processes
 //    .getType tells us which to build ** .identifier its name  ** .process its definition
@@ -87,7 +87,7 @@ public class Interpreter {
 
             modelPetri = petrinetInterpreter.interpret(process, processMap, context);
 
-            System.out.println("Interpreter Built Petri "+ modelPetri.getId());
+            //System.out.println("Interpreter Built Petri "+ modelPetri.getId());
 
         modelPetri.setLocation(process.getLocation());
 
@@ -110,12 +110,12 @@ public class Interpreter {
             Automaton  aut = (Automaton) automatonInterpreter.interpret(process, processMap, context);
             modelPetri =  OwnersRule.ownersRule(aut);
 
-            System.out.println("Interpreter Built Automata "+ aut.getId());
+            //System.out.println("Interpreter Built Automata "+ aut.getId());
 
             modelPetri.setLocation(process.getLocation());
 
             ((MultiProcessModel) model).addProcess(modelPetri);
-
+/*
 
             HashMap<AutomatonNode, Multiset<PetriNetPlace>> nodeToMarking = new HashMap<>();
             HashMap<Multiset<PetriNetPlace>, AutomatonNode> markingToNode = new HashMap<>();
@@ -128,6 +128,9 @@ public class Interpreter {
             ((MultiProcessModel) model).addProcess(modelAut);
             ((MultiProcessModel) model)
                     .addProcessesMapping(new Mapping(nodeToMarking, markingToNode));
+  */
+            ((MultiProcessModel) model).addProcess(aut);
+
         }
 
         messageQueue.add(new LogAST("Built:", process));
@@ -141,9 +144,20 @@ public class Interpreter {
 
     }
       System.out.println("End of inteterpret Y ");
+
+      processMap.values().stream().forEach(pm->{
+          System.out.println("\nPetri Net");
+          System.out.println(
+                  ((Petrinet) ((MultiProcessModel) pm).getProcess(ProcessType.PETRINET)).myString());
+          System.out.println("Automata");
+          System.out.println(
+                  ((Automaton) ((MultiProcessModel) pm).getProcess(ProcessType.AUTOMATA)).myString());
+      });
+
     return processMap;
 
   }
+
   /**
     called from  operation / equation evaluation and conversions
 
@@ -161,7 +175,7 @@ public class Interpreter {
                                 Context context)
       throws CompilationException, InterruptedException {
 
-    System.out.println("\n CALLing interpret X  "+ processModelType+" "+astNode.toString()+" \n");
+    //System.out.println("\n CALLing interpret X  "+ processModelType+" "+astNode.toString()+" \n");
     //TODO Multy Keep to Petri Interpret!
     ProcessModel model;
     switch (processModelType) {
@@ -171,11 +185,11 @@ public class Interpreter {
 
         //System.out.println("***** interpret automata" );
         model = automatonInterpreter.interpret(astNode, identifer, processMap, context);
-      //  System.out.println(model.toString());
+      //System.out.println(model.toString());
         break;
 
       case "petrinet":  //****
-   //System.out.println("Interpreter.interpret still P net" );
+   System.out.println("Interpreter.interpret still P net" +identifer+" "+astNode.toString());
         model = petrinetInterpreter.interpret(astNode, identifer, processMap, context);
 
         break;
@@ -184,7 +198,7 @@ public class Interpreter {
         throw new CompilationException(getClass(), "Unable to find the process type: "
             + processModelType);
     }
-      System.out.println("End of Interpret  "+ model.getId());
+      //System.out.println("End of Interpret  "+ model.getId());
     return model;
   }
 }

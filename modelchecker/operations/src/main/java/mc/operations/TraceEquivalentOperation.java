@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 import mc.exceptions.CompilationException;
 import mc.operations.functions.NFtoDFconvFunction;
 import mc.plugins.IOperationInfixFunction;
+import mc.processmodels.ProcessModel;
 import mc.processmodels.automata.Automaton;
 
 public class TraceEquivalentOperation implements IOperationInfixFunction {
@@ -27,29 +28,32 @@ public class TraceEquivalentOperation implements IOperationInfixFunction {
   public String getNotation() {
     return "#";
   }
-
+  @Override
+  public String getOperationType(){return "automata";}
   /**
    * Evaluate the function.
    *
-   * @param automata automaton in the function (e.g. {@code A} in {@code A ~ B})
+   * @param processModels automaton in the function (e.g. {@code A} in {@code A ~ B})
    * @return the resulting automaton of the operation
    */
   @Override
-  public boolean evaluate(Collection<Automaton> automata) throws CompilationException {
-    NFtoDFconvFunction func = new NFtoDFconvFunction();
+  public boolean evaluate(Collection<ProcessModel> processModels) throws CompilationException {
+    if (processModels.iterator().next() instanceof Automaton) {
+      NFtoDFconvFunction func = new NFtoDFconvFunction();
 
-    ArrayList<Automaton> nfas = new ArrayList<>();
-    for (Automaton a : automata) {
-      try {
-        nfas.add(
-          func.compose(a.getId(), new HashSet<>(), null, a)
-        );
-      } catch (CompilationException e) {
-        System.out.println("PINGO"+ e.toString());
+      ArrayList<ProcessModel> nfas = new ArrayList<>();
+      for (ProcessModel pm : processModels) {
+        Automaton a = (Automaton) pm;
+        try {
+          nfas.add(
+                  func.compose(a.getId(), new HashSet<>(), null, a)
+          );
+        } catch (CompilationException e) {
+          System.out.println("PINGO" + e.toString());
+        }
       }
-    }
-    BisimulationOperation bo = new BisimulationOperation();
-    boolean r = bo.evaluate(nfas);
+      BisimulationOperation bo = new BisimulationOperation();
+      boolean r = bo.evaluate(  nfas);
 
    /*
     return new BisimulationOperation().evaluate(automata.stream().map(a -> {
@@ -62,7 +66,9 @@ public class TraceEquivalentOperation implements IOperationInfixFunction {
 
 */
 
-    return r;
+      return r;
+    }
+    System.out.printf("\nTrace semantics not defined for type " + processModels.iterator().next().getClass()+"\n");
+    return false;
   }
-
 }

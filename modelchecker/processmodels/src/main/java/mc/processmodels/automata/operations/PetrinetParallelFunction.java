@@ -126,7 +126,7 @@ public class PetrinetParallelFunction  {
           newTrans.addOwners(t2.getOwners());
           for(PetriNetEdge outE : outgoingEdges) {
             PetriNetEdge ed =  comp.addEdge( (PetriNetPlace) outE.getTo(), newTrans);
-            System.out.println("adding "+ed.myString());
+            //System.out.println("adding "+ed.myString());
           }
 
           for(PetriNetEdge inE : incomingEdges) {
