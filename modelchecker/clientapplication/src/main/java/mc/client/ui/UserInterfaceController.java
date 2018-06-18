@@ -587,7 +587,7 @@ public class UserInterfaceController implements Initializable {
 
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/clientres/SettingsInterface.fxml"));
 
-        loader.setController(settingsController);
+        loader.setController(settingsController); //links to  SettingsController.java
         try {
             Stage settingsStage = new Stage();
             settingsStage.setTitle("Settings");
@@ -597,7 +597,8 @@ public class UserInterfaceController implements Initializable {
 
             settingsController.setWindow(settingsStage.getScene().getWindow());
             settingsStage.initOwner(UserInterfaceApplication.getPrimaryStage());
-            settingsStage.initModality(Modality.APPLICATION_MODAL);
+            //settingsStage.initModality(Modality.APPLICATION_MODAL);
+            settingsStage.initModality(Modality.NONE);
             settingsStage.setResizable(false);
             settingsStage.show();
 

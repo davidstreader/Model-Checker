@@ -66,7 +66,7 @@ import mc.processmodels.petrinet.Petrinet;
  */
 public class ModelView implements Observer {
 
-  private Graph<GraphNode, DirectedEdge> graph;
+  private Graph<GraphNode, DirectedEdge> graph;  //Used by graph layout algorithm
   private Layout<GraphNode, DirectedEdge> layout;
   private SeededRandomizedLayout layoutInitalizer;
   private VisualizationViewer<GraphNode, DirectedEdge> vv;
@@ -276,9 +276,15 @@ public class ModelView implements Observer {
     });
 
     this.processModels.replaceValues(automaton.getId(), nodeMap.values());
+    ((SpringlayoutBase) layout).setAneal(0);
 //System.out.println("ModelView \n "+ automaton.myString());
   }
 
+
+  /**
+   * Adding a PetriNet to the observed Graph
+   * @param petri
+   */
   private void addPetrinet(Petrinet petri) {
     //make a new "parent" object for the children to be parents of
     if (processModels.containsKey(petri.getId())) {
@@ -330,6 +336,7 @@ public class ModelView implements Observer {
     });
 
     this.processModels.replaceValues(petri.getId(), nodeMap.values());
+    ((SpringlayoutBase) layout).setAneal(0);
   }
 
   /**
@@ -366,6 +373,7 @@ public class ModelView implements Observer {
       for (String processModeName : processModels.keySet()) {
         for (GraphNode vertexToLock : processModels.get(processModeName)) {
           layout.lock(vertexToLock, true);
+
         }
       }
     }
@@ -376,6 +384,7 @@ public class ModelView implements Observer {
       for (String processModeName : processModels.keySet()) {
         for (GraphNode vertexToLock : processModels.get(processModeName)) {
           layout.lock(vertexToLock, false);
+
         }
       }
     }
@@ -414,9 +423,13 @@ public class ModelView implements Observer {
 
     graph = new DirectedSparseMultigraph<>();
 
-    //apply a layout to the graph
+    //apply a layout to the graph Note the linkageLength changes the layout in real time
 
-    layout = new SpringlayoutBase<>(graph, e -> settings.getLinkageLength());
+    layout = new SpringlayoutBase<>(graph,
+            x -> settings.getLinkageLength(),
+            x -> settings.getRepulse(),
+            x -> settings.getSpeed(),
+            x -> settings.getSpring(),settings);
 
 
     ((SpringlayoutBase) layout).setStretch(0.8);

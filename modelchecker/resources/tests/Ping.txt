@@ -1,38 +1,4 @@
 processes {
-Zero1 = STOP.
-Zero2 = ERROR.
 
-One1 = a->One1.
-One2 = a->STOP.
-One3 = a->ERROR.
-One4 = b->One4.
-One5 = b->STOP.
-One6 = b->ERROR.
-
-Two1 = a->b->STOP.
-Two2 = a->Two2|a->STOP.
-Two3 = a->Two3|b->STOP.
-Two4 = a->b->Two4.
-Two5 = a->STOP|b->STOP.
-Two6 = a->ERROR| a->STOP.
-Two7 = a->ERROR|b->STOP.
-Two8 = a->X|b->X, X = STOP.
-Two9 = a->Two2|a->ERROR.
-Two10 = a->Two3|b->ERROR.
-
-
-X = Two3 |*| One2.
-
-Y = One2  |*| One2.
-
-
+X = a->b->X.
 }
-automata X,Y.
-
-operation {
-
-}
-
-
-
-

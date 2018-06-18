@@ -13,11 +13,16 @@
             <Slider fx:id="maxNodesSlider" layoutX="178.0" layoutY="71.0" max="200.0" showTickLabels="true" showTickMarks="true" value="40.0" />
             <Slider fx:id="linkageLengthSlider" layoutX="178.0" layoutY="147.0" max="300.0" min="50.0" showTickLabels="true" showTickMarks="true" value="120.0" />
             <Label layoutX="19.0" layoutY="71.0" text="Max number of nodes" />
-            <Label layoutX="59.0" layoutY="147.0" text="Linkage length" />
-            <Button layoutX="19.0" layoutY="280.0" mnemonicParsing="false" onAction="#handleSettingsConfirmation" prefHeight="32.0" prefWidth="79.0" text="Confirm" />
-            <Button layoutX="304.0" layoutY="280.0" mnemonicParsing="false" onAction="#handleResetSettings" prefHeight="32.0" prefWidth="79.0" text="Reset" />
-            <Slider fx:id="stretch" blockIncrement="0.1" layoutX="185.0" layoutY="215.0" majorTickUnit="0.25" max="0.5" minorTickCount="50" showTickLabels="true" showTickMarks="true" value="0.75" />
-            <Label layoutX="81.0" layoutY="215.0" text="Stretch" />
+             <Label layoutX="59.0" layoutY="147.0" text="Linkage length" />
+             <Button layoutX="19.0" layoutY="500.0" mnemonicParsing="false" onAction="#handleSettingsConfirmation" prefHeight="32.0" prefWidth="79.0" text="Confirm" />
+            <Button layoutX="304.0" layoutY="500.0" mnemonicParsing="false" onAction="#handleResetSettings" prefHeight="32.0" prefWidth="79.0" text="Reset" />
+            <Slider fx:id="speedSlider" layoutX="185.0" layoutY="210.0" max="50.0" min="0" showTickLabels="true" showTickMarks="true" value="10.0" />
+            <Label layoutX="81.0" layoutY="210.0" text="Speed" />
+            <Slider fx:id="repulseSlider" layoutX="178.0" layoutY="285.0" max="1000.0" min="1" showTickLabels="true" showTickMarks="true" value="100.0" />
+            <Label layoutX="59.0" layoutY="285.0" text="Repulsion" />
+             <Slider fx:id="springSlider" layoutX="178.0" layoutY="355.0" max="1000.0" min="0" showTickLabels="true" showTickMarks="true" value="50.0" />
+             <Label layoutX="59.0" layoutY="355.0" text="Spring" />
+
          </children>
     </AnchorPane>
   </children>

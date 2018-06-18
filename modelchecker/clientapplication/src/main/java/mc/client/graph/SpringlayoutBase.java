@@ -24,6 +24,7 @@ import edu.uci.ics.jung.algorithms.layout.util.RandomLocationTransformer;
 import edu.uci.ics.jung.algorithms.util.IterativeContext;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.graph.util.Pair;
+import mc.client.ui.SettingsController;
 
 /**
  * The SpringLayout package represents a visualization of a set of nodes. The
@@ -40,8 +41,12 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
     private int repulsion_range_sq = 100 * 100;
     private double force_multiplier = 1;
     private Function<? super E, Integer> lengthFunction;
+    private Function<? super V, Integer> repulseFunction;
+    private Function<? super E, Integer> springFunction;
+    private Function<? super V, Integer> speedFunction;
     private boolean done = false;
-
+    private int aneal = 100;
+    private SettingsController settings;
     private LoadingCache<V, SpringVertexData> springVertexData =
             CacheBuilder.newBuilder().build(new CacheLoader<V, SpringVertexData>() {
                 public SpringVertexData load(V vertex) {
@@ -57,8 +62,11 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
      * @param g the graph on which the layout algorithm is to operate
      */
     @SuppressWarnings("unchecked")
-    public SpringlayoutBase(Graph<V,E> g) {
-        this(g, (Function<E,Integer>)Functions.<Integer>constant(120));
+    public SpringlayoutBase(Graph<V,E> g, SettingsController s) {
+        this(g, (Function<E,Integer>)Functions.<Integer>constant(120),
+                (Function<V,Integer>)Functions.<Integer>constant(120),
+                (Function<V,Integer>)Functions.<Integer>constant(10),
+                (Function<E,Integer>)Functions.<Integer>constant(10),s);
     }
 
     /**
@@ -67,10 +75,17 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
      * @param g the graph on which the layout algorithm is to operate
      * @param length_function provides a length for each edge
      */
-    public SpringlayoutBase(Graph<V,E> g, Function<? super E, Integer> length_function)
+    public SpringlayoutBase(Graph<V,E> g,
+                            Function<? super E, Integer> length_function,
+                            Function<? super V, Integer> repulse_function,
+                            Function<? super V, Integer> speed_function,
+                            Function<? super E, Integer> spring_function,SettingsController s)
     {
         super(g);
         this.lengthFunction = length_function;
+        this.repulseFunction = repulse_function;
+        this.speedFunction = speed_function;
+        this.springFunction = spring_function;
     }
     /**
      * @return the current value for the stretch parameter
@@ -78,6 +93,7 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
     public double getStretch() {
         return stretch;
     }
+    public void setAneal(int a){aneal = a;}
 
     @Override
     public void setSize(Dimension size) {
@@ -148,6 +164,7 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
                 svd.dy /= 4;
                 svd.edgedx = svd.edgedy = 0;
                 svd.repulsiondx = svd.repulsiondy = 0;
+
             }
         } catch(ConcurrentModificationException cme) {
             step();
@@ -156,6 +173,10 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
         relaxEdges();
         calculateRepulsion();
         moveNodes();
+        if (aneal%10 == 0) {
+            //System.out.println("aneal "+aneal);
+            }
+        aneal--;
     }
 
     private void relaxEdges() {
@@ -164,7 +185,7 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
                 Pair<V> endpoints = getGraph().getEndpoints(e);
                 V v1 = endpoints.getFirst();
                 V v2 = endpoints.getSecond();
-
+                if (isLocked(v1)) continue;
                 Point2D p1 = apply(v1);
                 Point2D p2 = apply(v2);
                 if(p1 == null || p2 == null) continue;
@@ -174,13 +195,14 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
 
 
                 double desiredLen = lengthFunction.apply(e);
+                double spring = (springFunction.apply(e)/10);
 
                 // round from zero, if needed [zero would be Bad.].
                 len = (len == 0) ? .0001 : len;
 
-                double f = force_multiplier * (desiredLen - len) / len;
+                double f = spring * (desiredLen - len) / len;
 
-                f = f * Math.pow(stretch, (getGraph().degree(v1) + getGraph().degree(v2) - 2));
+                //f = f * Math.pow(stretch, (getGraph().degree(v1) + getGraph().degree(v2) - 2));
 
                 // the actual movement distance 'dx' is the force multiplied by the
                 // distance to go.
@@ -194,6 +216,9 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
                 v1D.edgedy += dy;
                 v2D.edgedx += -dx;
                 v2D.edgedy += -dy;
+               System.out.println(String.format("**Edge"+((GraphNode) v1).getNodeId()+
+                        " dx %1.2f  dy %1.2f ",v1D.edgedx ,v1D.edgedy));
+
             }
         } catch(ConcurrentModificationException cme) {
             relaxEdges();
@@ -204,11 +229,12 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
         try {
             for (V v : getGraph().getVertices()) {
                 if (isLocked(v)) continue;
-
+                System.out.println("Repulse "+((GraphNode) v).getNodeId()  );
+                double repulse = (repulseFunction.apply(v) *100);
                 SpringVertexData svd = springVertexData.getUnchecked(v);
                 if(svd == null) continue;
                 double dx = 0, dy = 0;
-
+                //System.out.printf("rep %1.2f \n", repulse);
                 for (V v2 : getGraph().getVertices()) {
                     if (v == v2 || !((GraphNode)v).getProcessModelId().equals(((GraphNode)v2).getProcessModelId())) continue;
                     Point2D p = apply(v);
@@ -218,21 +244,25 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
                     double vy = p.getY() - p2.getY();
                     double distanceSq = p.distanceSq(p2);
                     if (distanceSq == 0) {
-                        dx += Math.random();
-                        dy += Math.random();
+                        dx += Math.random()*100;
+                        dy += Math.random()*100;
                     } else if (distanceSq < repulsion_range_sq) {
-                        double factor = 1;
+                        //double factor = 3;
 
-                        dx += factor * vx / distanceSq;
-                        dy += factor * vy / distanceSq;
+                        dx += repulse * vx / distanceSq;
+                        dy += repulse * vy / distanceSq;
                     }
                 }
-                double dlen = dx * dx + dy * dy;
+                svd.repulsiondx += dx;
+                svd.repulsiondy += dy;
+                System.out.printf("Repulse "+((GraphNode) v).getNodeId() +" x %1.2f  y %1.2f \n", svd.repulsiondx, svd.repulsiondx);
+             /*   double dlen = dx * dx + dy * dy;
                 if (dlen > 0) {
                     dlen = Math.sqrt(dlen) / 2;
                     svd.repulsiondx += dx / dlen;
                     svd.repulsiondy += dy / dlen;
-                }
+                } */
+              //  System.out.println(String.format("**Node "+((GraphNode) v).getNodeId()+"  dx %1.2f",dx));
             }
         } catch(ConcurrentModificationException cme) {
             calculateRepulsion();
@@ -243,25 +273,39 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
     {
         synchronized (getSize()) {
             try {
+                double speed = speedFunction.apply(getGraph().getVertices().iterator().next());
                 for (V v : getGraph().getVertices()) {
                     if (isLocked(v)) continue;
                     SpringVertexData vd = springVertexData.getUnchecked(v);
                     if(vd == null) continue;
                     Point2D xyd = apply(v);
 
-                    vd.dx += vd.repulsiondx + vd.edgedx;
-                    vd.dy += vd.repulsiondy + vd.edgedy;
-
-                    // keeps nodes from moving any faster than 5 per time unit
-                    xyd.setLocation(xyd.getX()+Math.max(-5, Math.min(5, vd.dx)),
-                            xyd.getY()+Math.max(-5, Math.min(5, vd.dy)));
+                    //slow down osications
+                    double newdx = vd.repulsiondx + vd.edgedx;
+                    if ((newdx> 0 && vd.dx < 0 )|| (newdx< 0 && vd.dx > 0)) newdx= newdx/2;
+                    vd.dx += newdx;
+                    double newdy = vd.repulsiondy + vd.edgedy;
+                    if ((newdy> 0 && vd.dy < 0 )|| (newdy< 0 && vd.dy > 0)) newdy= newdy/2;
+                    vd.dx += newdx;
+                    vd.dy += newdy;
+                    //respond to the  configured speed
+                    if (vd.dx>speed) System.out.println(String.format("over speed %1.2f", vd.dx));
+                    // keeps nodes from moving any faster than "speed" per time unit
+                    xyd.setLocation(xyd.getX()+Math.max(-speed, Math.min(speed, vd.dx)),
+                            xyd.getY()+Math.max(-speed, Math.min(speed, vd.dy)));
+                   /*System.out.println(String.format("**SO "+((GraphNode) v).getNodeId()+
+                                    "  vd.repulsiondx %1.2f  vd.edgedx %1.2f",
+                                       vd.repulsiondx,vd.edgedx)); */
+                    System.out.printf("Moving "+((GraphNode) v).getNodeId() +" x %1.2f  y %1.2f \n" , vd.dx, vd.dy );
 
                 }
+
             } catch(ConcurrentModificationException cme) {
                 moveNodes();
             }
         }
     }
+
 
     private static class SpringVertexData {
         private double edgedx;
