@@ -276,7 +276,7 @@ public class ModelView implements Observer {
     });
 
     this.processModels.replaceValues(automaton.getId(), nodeMap.values());
-    ((SpringlayoutBase) layout).setAneal(0);
+
 //System.out.println("ModelView \n "+ automaton.myString());
   }
 
@@ -336,7 +336,7 @@ public class ModelView implements Observer {
     });
 
     this.processModels.replaceValues(petri.getId(), nodeMap.values());
-    ((SpringlayoutBase) layout).setAneal(0);
+
   }
 
   /**
@@ -426,10 +426,11 @@ public class ModelView implements Observer {
     //apply a layout to the graph Note the linkageLength changes the layout in real time
 
     layout = new SpringlayoutBase<>(graph,
-            x -> settings.getLinkageLength(),
+            x -> settings.getMaxNodes(),
+            x -> settings.getSpring(),
             x -> settings.getRepulse(),
-            x -> settings.getSpeed(),
-            x -> settings.getSpring(),settings);
+            x -> settings.getStep(),
+            x -> settings.getDelay());
 
 
     ((SpringlayoutBase) layout).setStretch(0.8);

@@ -15,10 +15,10 @@ import java.util.ResourceBundle;
  */
 public class SettingsController implements Initializable{
     private Integer maxNodes = 40;
-    private Integer linkageLength = 120;
+    private Integer delay = 10;
     private Integer repulse = 10;
-    private Integer speed = 10;
-    private Integer spring = 10;
+    private Integer spring = 25;
+    private Integer step = 10;
 
     @Setter
     private Window window;
@@ -27,7 +27,7 @@ public class SettingsController implements Initializable{
     private Slider maxNodesSlider;
 
     @FXML
-    private Slider linkageLengthSlider;
+    private Slider delaySlider;
 
     @FXML
     private Slider repulseSlider;
@@ -35,11 +35,11 @@ public class SettingsController implements Initializable{
     private Slider springSlider;
 
     @FXML
-    private Slider speedSlider;
+    private Slider stepSlider;
 
     @FXML
     private void handleSettingsConfirmation(ActionEvent e) {
-        linkageLength = (int)linkageLengthSlider.getValue();
+        delay = (int)delaySlider.getValue();
         maxNodes = (int)maxNodesSlider.getValue();
 
         window.hide();
@@ -48,43 +48,42 @@ public class SettingsController implements Initializable{
     @FXML
     private void handleResetSettings(ActionEvent e) {
         maxNodesSlider.setValue(40);
-        linkageLengthSlider.setValue(120);
+        stepSlider.setValue(120);
         repulseSlider.setValue(10);
         springSlider.setValue(10);
-        speedSlider.setValue(10);
-        maxNodes = 40;
-        linkageLength = 120;
+        delaySlider.setValue(10);
+
     }
 
     public Integer getMaxNodes() {
         return maxNodes;
     }
 
-    public Integer getLinkageLength() {
-        return linkageLength;
+    public Integer getDelay() {
+        return delay;
     }
     public Integer getRepulse() {
         return repulse;
     }
-    public Integer getSpeed() {
-        return speed;
-    }
     public Integer getSpring() {
         return spring;
+    }
+    public Integer getStep() {
+        return (step);
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         maxNodesSlider.setValue(maxNodes);
-        linkageLengthSlider.setValue(linkageLength);
+        delaySlider.setValue(delay);
 
         maxNodesSlider.valueProperty().addListener((arg0, arg1, newVal) -> {
             maxNodes = newVal.intValue();
         });
 
 
-        linkageLengthSlider.valueProperty().addListener((arg0, arg1, newVal) -> {
-            linkageLength = newVal.intValue();
+        delaySlider.valueProperty().addListener((arg0, arg1, newVal) -> {
+            delay = newVal.intValue();
         });
         repulseSlider.valueProperty().addListener((arg0, arg1, newVal) -> {
             repulse = newVal.intValue();
@@ -94,18 +93,14 @@ public class SettingsController implements Initializable{
             spring = newVal.intValue();
 
         });
-        speedSlider.valueProperty().addListener((arg0, arg1, newVal) -> {
-            speed = newVal.intValue();
+        stepSlider.valueProperty().addListener((arg0, arg1, newVal) -> {
+            step = newVal.intValue();
 
         });
 
     }
 
-    public SettingsController(Integer numNodes, Integer linkageLength_,Integer repulse_) {
-        maxNodes = numNodes;
-        linkageLength = linkageLength_;
-        repulse = repulse_;
-    }
+
 
     public SettingsController() {
 

@@ -6,22 +6,22 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox prefHeight="326.0" prefWidth="402.0" xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1">
+<VBox prefHeight="326.0" prefWidth="402.0" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1">
   <children>
     <AnchorPane maxHeight="-1.0" maxWidth="-1.0" prefHeight="335.0" prefWidth="537.0" VBox.vgrow="ALWAYS">
          <children>
-            <Slider fx:id="maxNodesSlider" layoutX="178.0" layoutY="71.0" max="200.0" showTickLabels="true" showTickMarks="true" value="40.0" />
-            <Slider fx:id="linkageLengthSlider" layoutX="178.0" layoutY="147.0" max="300.0" min="50.0" showTickLabels="true" showTickMarks="true" value="120.0" />
-            <Label layoutX="19.0" layoutY="71.0" text="Max number of nodes" />
-             <Label layoutX="59.0" layoutY="147.0" text="Linkage length" />
-             <Button layoutX="19.0" layoutY="500.0" mnemonicParsing="false" onAction="#handleSettingsConfirmation" prefHeight="32.0" prefWidth="79.0" text="Confirm" />
-            <Button layoutX="304.0" layoutY="500.0" mnemonicParsing="false" onAction="#handleResetSettings" prefHeight="32.0" prefWidth="79.0" text="Reset" />
-            <Slider fx:id="speedSlider" layoutX="185.0" layoutY="210.0" max="50.0" min="0" showTickLabels="true" showTickMarks="true" value="10.0" />
-            <Label layoutX="81.0" layoutY="210.0" text="Speed" />
-            <Slider fx:id="repulseSlider" layoutX="178.0" layoutY="285.0" max="1000.0" min="1" showTickLabels="true" showTickMarks="true" value="100.0" />
-            <Label layoutX="59.0" layoutY="285.0" text="Repulsion" />
-             <Slider fx:id="springSlider" layoutX="178.0" layoutY="355.0" max="1000.0" min="0" showTickLabels="true" showTickMarks="true" value="50.0" />
-             <Label layoutX="59.0" layoutY="355.0" text="Spring" />
+            <Slider fx:id="maxNodesSlider" layoutX="178.0" layoutY="33.0" max="200.0" showTickLabels="true" showTickMarks="true" value="40.0" />
+             <Label layoutX="22.0" layoutY="33.0" text="Max number of nodes" />
+
+             <Slider fx:id="springSlider" layoutX="178.0" layoutY="86.0" min="1" max="100" showTickLabels="true" showTickMarks="true" value="50.0" />
+             <Label layoutX="127.0" layoutY="86.0" text="Spring" />
+             <Slider fx:id="delaySlider" layoutX="185.0" layoutY="234.0" max="5000" min="50" showTickLabels="true" showTickMarks="true" value="100" />
+             <Label layoutX="115.0" layoutY="236.0" prefHeight="0.0" prefWidth="35.0" text="Delay" />
+            <Button layoutX="22.0" layoutY="177.0" mnemonicParsing="false" onAction="#handleResetSettings" prefHeight="32.0" prefWidth="79.0" text="Reset" />
+            <Slider fx:id="stepSlider" layoutX="171.0" layoutY="184.0" min="1" max="100" showTickLabels="true" showTickMarks="true" value="10" />
+            <Label layoutX="133.0" layoutY="184.0" text="Step" />
+            <Slider fx:id="repulseSlider" layoutX="178.0" layoutY="130.0" min="1" max="100" showTickLabels="true" showTickMarks="true" value="25" />
+            <Label layoutX="103.0" layoutY="130.0" text="Repulsion" />
 
          </children>
     </AnchorPane>
