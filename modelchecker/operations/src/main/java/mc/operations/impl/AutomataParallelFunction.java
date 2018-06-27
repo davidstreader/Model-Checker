@@ -19,7 +19,7 @@ import mc.processmodels.automata.AutomatonNode;
 public class AutomataParallelFunction {
 
   private Automaton automaton;
-  private Multimap<String, AutomatonNode> nodeMap;
+  private Multimap<String, AutomatonNode> nodeMap; //old nodeId to new node
           // maps one input node to the set of pair nodes
   private Set<String> syncedActions;
   private Set<String> unsyncedActions;
@@ -42,7 +42,7 @@ public class AutomataParallelFunction {
 
     this.automaton1 = automaton1;
     this.automaton2 = automaton2;
-    System.out.println( automaton1.getAlphabet()+" OR "+ automaton1.getAlphabet());
+    System.out.println( "Parallel \n"+automaton1.myString()+" \n "+ automaton2.myString());
     // construct the parallel composition of the states from both automata
     setupNodes(automaton1.getNodes(), automaton2.getNodes());
     // find the synchronous and non-synchronous actions in both alphabet sets
@@ -53,7 +53,7 @@ public class AutomataParallelFunction {
     List<AutomatonEdge> edges2 = automaton2.getEdges();
 
     //The edges here are meaning the labeled lines in each of the automata that we are composing
-    processUnsyncedActions(edges1, edges2);
+    processUnsyncedActions(edges1, edges2);//MUST be added before Synced
 
     processSyncedActions(edges1, edges2);
 
@@ -61,7 +61,9 @@ public class AutomataParallelFunction {
     return automaton;
   }
 
-
+/*
+    n^2  on state space -OhDear
+ */
 
   private void setupNodes(List<AutomatonNode> nodes1, List<AutomatonNode> nodes2)
                           throws CompilationException {
@@ -121,10 +123,9 @@ public class AutomataParallelFunction {
    * Function produces two lists of unsynced and synced actions so we can later merge
    * diagram elements together.
    *
-   * @param edgeLabel      The edge to test whether it is in the other automatas edgelist
+   * @param edgeLabel      b! in process one/two
    *                       (i.e what we can combine)
-   * @param listEdgeLabels The edge list with which we are searching for things that match edgeLabel
-   *                       so we can sync them.
+   * @param listEdgeLabels alphbet of process two/one
    */
   private void processAction(String edgeLabel, Set<String> listEdgeLabels) {
     // if action is hidden or deadlocked it is always unsynced
@@ -133,7 +134,7 @@ public class AutomataParallelFunction {
 
       // broadcasting actions are always unsynced
     } else if (edgeLabel.endsWith("!")) {
-      if (containsReceiver(edgeLabel, listEdgeLabels)) {
+      if (containsReceiver(edgeLabel, listEdgeLabels)) {  // containsReceiver == if "b!" and "{..b?..}"
         syncedActions.add(edgeLabel);
       }
       if (containsBroadcaster(edgeLabel, listEdgeLabels)) {
@@ -147,7 +148,7 @@ public class AutomataParallelFunction {
           syncedActions.add(edgeLabel);
         }
 
-        unsyncedActions.add(edgeLabel);
+        unsyncedActions.add(edgeLabel);  //unsynced b!
       }
     } else if (listEdgeLabels.contains(edgeLabel)) {
       syncedActions.add(edgeLabel);
@@ -155,46 +156,46 @@ public class AutomataParallelFunction {
       unsyncedActions.add(edgeLabel);
     }
   }
+/*
+    all edges input
+ */
+private void processUnsyncedActions(List<AutomatonEdge> edges1, List<AutomatonEdge> edges2)
+        throws CompilationException {
+  List<AutomatonEdge> allEdges = new ArrayList<>(edges1);
+  allEdges.addAll(edges2);
+  System.out.println("unSynced "+unsyncedActions);
+// consider each unsynced name one at a time
+  for (String action : unsyncedActions) {
+    System.out.println("unsync "+action);
+    List<AutomatonEdge> unsyncedges = allEdges.stream()
+            .filter(edge -> action.equals(edge.getLabel())) // receivers never get executed
+            .collect(Collectors.toList());
+    //got the list of unsynced edges in edges
+    //  nodeMap one input node to each  node-pair that contains it
+// for each edge that is unsynced
+    for (AutomatonEdge edge : unsyncedges) {
+      List<AutomatonNode> from = new ArrayList<>(nodeMap.get(edge.getFrom().getId()));
+      List<AutomatonNode> to = new ArrayList<>(nodeMap.get(edge.getTo().getId()));
+      // assert from.size() == to.size()
+      for (int i = 0; i < Math.min(from.size(), to.size()); i++) {
+        //Dont set any links from terminal error nodes.
+        // adds some !a and ?a edges that will be deleted in processSyncedActions
+        AutomatonEdge newEdge = automaton.addEdge(edge.getLabel(), from.get(i), to.get(i),
+                edge.getGuard(), false,false);
 
-  private void processUnsyncedActions(List<AutomatonEdge> edges1, List<AutomatonEdge> edges2)
-                                      throws CompilationException {
-    List<AutomatonEdge> allEdges = new ArrayList<>(edges1);
-    allEdges.addAll(edges2);
+        Collection<String> ownersToAdd;
 
-    for (String action : unsyncedActions) {
-      List<AutomatonEdge> edges = allEdges.stream()
-          .filter(edge -> action.equals(edge.getLabel())) // receivers never get executed
-          .collect(Collectors.toList());
-          //got the list of unsynced edges in edges
-          //  nodeMap one input node to each  node-pair that contains it
-
-      for (AutomatonEdge edge : edges) {
-        List<AutomatonNode> from = new ArrayList<>(nodeMap.get(edge.getFrom().getId()));
-        List<AutomatonNode> to = new ArrayList<>(nodeMap.get(edge.getTo().getId()));
-        for (int i = 0; i < Math.min(from.size(), to.size()); i++) {
-          //Dont set any links from terminal error nodes.
-
-        /* ERROR is local not Global
-          if (from.get(i).isTerminal() && from.get(i).getTerminal().equals("ERROR"))
-            continue; */
-
-          // adds some !a and ?a edges that will be deleted in processSyncedActions
-          AutomatonEdge newEdge = automaton.addEdge(edge.getLabel(), from.get(i), to.get(i),
-              edge.getGuard(), false);
-
-          Collection<String> ownersToAdd;
-
-          if (edges1.contains(edge)) {
-            ownersToAdd = getOwners(edge,automaton1);
-          } else {
-            ownersToAdd = getOwners(edge,automaton2);
-          }
-          automaton.addOwnersToEdge(newEdge,ownersToAdd);
-
+        if (edges1.contains(edge)) {
+          ownersToAdd = getOwners(edge,automaton1);
+        } else {
+          ownersToAdd = getOwners(edge,automaton2);
         }
+        automaton.addOwnersToEdge(newEdge,ownersToAdd);
+        System.out.println("adding "+newEdge.myString());
       }
     }
   }
+}
 
 
   private void processSyncedActions(List<AutomatonEdge> edges1, List<AutomatonEdge> edges2)
@@ -203,7 +204,7 @@ public class AutomataParallelFunction {
     //System.out.println("Synced 2"+ automaton2.getOwners());
 
     for (String currentSyncEdgeLabel : syncedActions) {
-      //System.out.println("Synced "+currentSyncEdgeLabel);
+      System.out.println("Synced "+currentSyncEdgeLabel);
       List<AutomatonEdge> syncedEdges1 = edges1.stream()
         .filter(edge -> equals(currentSyncEdgeLabel, edge.getLabel()))
         .collect(Collectors.toList());
@@ -213,8 +214,10 @@ public class AutomataParallelFunction {
         .collect(Collectors.toList());
       for (AutomatonEdge edge1 : syncedEdges1) {
         for (AutomatonEdge edge2 : syncedEdges2) {
+          System.out.println("edge1 "+edge1.myString());
+          System.out.println("edge2 "+edge2.myString());
           AutomatonNode from = automaton.getNode(createId(edge1.getFrom(), edge2.getFrom()));
-          //broadcast events that sync  (a! - a?)  or (a? - a?)
+          //broadcast events that sync  (a! - a?) (a? - a!) or (a? - a?)
           if (edge1.getLabel().endsWith("!") || edge2.getLabel().endsWith("!")||
             (edge1.getLabel().endsWith("?") && edge2.getLabel().endsWith("?"))) {
             // any edges from the from node are broadcasted and should get replaced by the synced
@@ -223,6 +226,41 @@ public class AutomataParallelFunction {
               .filter(e -> ( e.getLabel().equals(edge1.getLabel()) ||
                 e.getLabel().equals(edge2.getLabel()) ))
               .forEach(edge -> automaton.removeEdge(edge.getId()));
+            // Mark as optional any "unsynced"  b! originating from the same node as the synced b!
+            // Care needed because of a->b!->c || x->y  has unsynced b! that is not optional
+            if (edge1.getLabel().endsWith("!")) {
+              System.out.println("edge1 "+edge1.myString());
+              List<AutomatonNode> fromOptional = new ArrayList<>(nodeMap.get(edge1.getFrom().getId()));
+              for(AutomatonNode nd: fromOptional) {
+                System.out.println("  **nd "+nd.myString());
+                for(AutomatonEdge ed: nd.getOutgoingEdges()){
+
+                  String name = edge1.getLabel();
+                  //name = name.substring(0,name.length() - 1)+"?";
+                  System.out.println("  **2ed "+ed.myString() + " name= "+name);
+                  if (ed.getLabel().equals(name)) {
+                    ed.setOptionalEdge(true);
+                    System.out.println("|| Optional edge "+ed.myString());
+                  }
+                }
+              }
+            }
+            if (edge2.getLabel().endsWith("!")) {
+              System.out.println("edge2 "+edge2.myString());
+              List<AutomatonNode> fromOptional = new ArrayList<>(nodeMap.get(edge2.getFrom().getId()));
+              for(AutomatonNode nd: fromOptional) {
+                System.out.println(" **nd "+nd.myString());
+                for(AutomatonEdge ed: nd.getOutgoingEdges()){
+                  String name = edge2.getLabel();
+                  //name = name.substring(0,name.length() - 1)+"?";
+                  System.out.println("  **2ed "+ed.myString() + " name= "+name);
+                  if (ed.getLabel().equals(name)) {
+                    ed.setOptionalEdge(true);
+                    System.out.println("|| Optional edge "+ed.myString());
+                  }
+                }
+              }
+            }
           }
           AutomatonNode to = automaton.getNode(createId(edge1.getTo(), edge2.getTo()));
           Guard guard = new Guard();
@@ -232,13 +270,21 @@ public class AutomataParallelFunction {
           if (edge2.getGuard() != null) {
             guard.mergeWith(edge2.getGuard());
           }
-
+// The new synced edge
           AutomatonEdge newEdge = automaton.addEdge(currentSyncEdgeLabel, from, to,
-            guard, false);
+            guard, false,false);
+          //setup the optional Owners for broadcast events - non blocking send USED in Owners Rule
+          if (edge1.getLabel().endsWith("?") && edge2.getLabel().endsWith("!")) {
+            newEdge.getOptionalOwners().addAll(edge1.getOwnerLocation());
+          }
+           else if (edge2.getLabel().endsWith("?") && edge1.getLabel().endsWith("!")) {
+            newEdge.getOptionalOwners().addAll(edge2.getOwnerLocation());
+          }
           Set<String> ownersToAdd = new HashSet<>();
           ownersToAdd.addAll(getOwners(edge1,automaton1));
           ownersToAdd.addAll(getOwners(edge2,automaton2));
           automaton.addOwnersToEdge(newEdge,ownersToAdd);
+
         }
       }
     }
@@ -260,6 +306,7 @@ public class AutomataParallelFunction {
     return node1.getId() + "||" + node2.getId();
   }
 
+  //  if "b!" and "{..b?..}"
   private boolean containsReceiver(String broadcaster, Set<String> receivers) {
     String broadcastAction = broadcaster.substring(0, broadcaster.length() - 1);
     for (String potentialReceiver : receivers) {

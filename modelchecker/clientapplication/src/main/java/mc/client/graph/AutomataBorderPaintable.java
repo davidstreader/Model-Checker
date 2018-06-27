@@ -34,7 +34,7 @@ public class AutomataBorderPaintable implements VisualizationServer.Paintable{
         automata.asMap().forEach((key, value) -> {
             Rectangle2D boundingBox = computeBoundingBox(value, layout, transform);
 
-            double d = 80;
+            double d = 40;
             Shape rect = new RoundRectangle2D.Double(
                     boundingBox.getMinX() - d,
                     boundingBox.getMinY() - d,

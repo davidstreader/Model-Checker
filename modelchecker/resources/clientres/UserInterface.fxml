@@ -6,7 +6,7 @@
 <?import javafx.scene.text.Font?>
 <?import org.fxmisc.richtext.CodeArea?>
 <?import org.fxmisc.flowless.VirtualizedScrollPane?>
-
+<?import javafx.scene.canvas.Canvas?>
 <VBox prefHeight="700.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="mc.client.ui.UserInterfaceController">
     <children>
         <MenuBar VBox.vgrow="NEVER">
@@ -80,6 +80,33 @@
 
                                         </AnchorPane>
                                         <SwingNode fx:id="modelDisplay" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="46.0" />
+                                    </children>
+                                </AnchorPane>
+                            </content>
+                        </Tab>
+                        <Tab text="My models">
+                            <content>
+                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                    <children>
+                                        <AnchorPane prefHeight="46.0" prefWidth="1000.0" style="-fx-background-color: #BFBFBF;" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                            <children>
+                                                <ComboBox fx:id="modelList" layoutX="208.0" layoutY="10.0" prefWidth="150.0" AnchorPane.leftAnchor="208.0" />
+                                                <Label layoutX="59.0" layoutY="13.0" text="Process models:" AnchorPane.leftAnchor="59.0">
+                                                    <font>
+                                                        <Font size="17.0" />
+                                                    </font>
+                                                </Label>
+                                                <Button layoutX="385.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleAddSelectedModel" text="Add model" AnchorPane.leftAnchor="385.0" />
+                                                <Button layoutX="486.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleAddallModels" text="Add all models" />
+                                                <Button layoutX="613.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleClearGraph" text="Clear" />
+                                                <Button layoutX="675.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleFreeze" text="Freeze model" />
+                                                <Button layoutX="812.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleUnfreeze" text="Unfreeze model" />
+                                                <Button layoutX="964.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleFreezeAll" text="Freeze all" />
+                                                <Button layoutX="1052.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleUnfreezeAll" text="Unfreeze all" />
+                                            </children>
+
+                                        </AnchorPane>
+                                        <SwingNode fx:id="newDisplay" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="46.0" />
                                     </children>
                                 </AnchorPane>
                             </content>

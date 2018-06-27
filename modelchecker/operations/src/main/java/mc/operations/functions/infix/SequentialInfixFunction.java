@@ -86,7 +86,7 @@ public class SequentialInfixFunction implements IProcessInfixFunction {
       AutomatonNode fromNode = nodeMap.get(readEdge.getFrom().getId());
       AutomatonNode toNode = nodeMap.get(readEdge.getTo().getId());
         writeAutomaton.addOwnersToEdge(
-                writeAutomaton.addEdge(readEdge.getLabel(), fromNode, toNode, readEdge.getGuard(), false),
+                writeAutomaton.addEdge(readEdge.getLabel(), fromNode, toNode, readEdge.getGuard(), false,readEdge.getOptionalEdge()),
                 getEdgeOwnersFromProduct(readEdge.getOwnerLocation(), edgeOwnersMap)
         );
     }

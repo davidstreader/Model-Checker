@@ -92,7 +92,7 @@ public class BuildAcceptanceGraphs  {
                 }
                 AutomatonNode nextNode = nodeMap.get(nextId);
 
-                acceptGraph.addEdge(action, node, nextNode, null, true);
+                acceptGraph.addEdge(action, node, nextNode, null, true,false);
 
                 fringe.push(nextStates);  // states to be processed
             }

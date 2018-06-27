@@ -112,7 +112,7 @@ public class AbstractionFunction implements IProcessFunction {
           deadlockNode.setTerminal("ERROR");
 
           abstraction.addEdge(Constant.DEADLOCK, hiddenEdge.getFrom(),
-              deadlockNode, null, true);
+              deadlockNode, null, true,false);
         } else {
           if (hiddenEdge.getFrom().getOutgoingEdges().size() == 0) {
             if (!hiddenEdge.getFrom().isTerminal())
@@ -213,7 +213,7 @@ public class AbstractionFunction implements IProcessFunction {
         } else {
           outGuard = hiddenGuard;
         }
-        added = abstraction.addEdge(edge.getLabel(), from, to, outGuard, false);
+        added = abstraction.addEdge(edge.getLabel(), from, to, outGuard, false,edge.getOptionalEdge());
         abstraction.addOwnersToEdge(added,hiddenEdge.getOwnerLocation() );
         abstraction.addOwnersToEdge(added,edge.getOwnerLocation() );
       } else { // Atomic automaton
@@ -223,14 +223,14 @@ public class AbstractionFunction implements IProcessFunction {
         }
         //if new edge exists it will not be added by addEdge
 
-        added = abstraction.addEdge(edge.getLabel(), from, to, null, false);
+        added = abstraction.addEdge(edge.getLabel(), from, to, null, false,edge.getOptionalEdge());
         abstraction.addOwnersToEdge(added,hiddenEdge.getOwnerLocation() );
         abstraction.addOwnersToEdge(added,edge.getOwnerLocation() );
 
 
         // n->tau->m m-a->n n-tau->m one tau used twice!
         if (from.getId().equals(to.getId()) && !edge.isHidden()) {
-          abstraction.addEdge(edge.getLabel(), hiddenEdge.getFrom(), hiddenEdge.getTo(), null, false);
+          abstraction.addEdge(edge.getLabel(), hiddenEdge.getFrom(), hiddenEdge.getTo(), null, false,edge.getOptionalEdge());
           abstraction.addOwnersToEdge(added,hiddenEdge.getOwnerLocation() );
           abstraction.addOwnersToEdge(added,edge.getOwnerLocation() );
         }
@@ -284,7 +284,7 @@ public class AbstractionFunction implements IProcessFunction {
         } else {
           newAbstractionEdgeGuard = hiddenGuard;
         }
-        added = abstraction.addEdge(edge.getLabel(), from, to, newAbstractionEdgeGuard, false);
+        added = abstraction.addEdge(edge.getLabel(), from, to, newAbstractionEdgeGuard, false,edge.getOptionalEdge());
         abstraction.addOwnersToEdge(added,hiddenEdge.getOwnerLocation() );
         abstraction.addOwnersToEdge(added,edge.getOwnerLocation() );
       } else {  // Atomic edge
@@ -293,14 +293,14 @@ public class AbstractionFunction implements IProcessFunction {
           continue;
         }
         // if edge already in automaton  add edge willnot add it!
-          added = abstraction.addEdge(edge.getLabel(), from, to, null, false);
+          added = abstraction.addEdge(edge.getLabel(), from, to, null, false,edge.getOptionalEdge());
         abstraction.addOwnersToEdge(added,hiddenEdge.getOwnerLocation() );
         abstraction.addOwnersToEdge(added,edge.getOwnerLocation() );
           added.getOwnerLocation().addAll(hiddenEdge.getOwnerLocation());
         //  System.out.println("Incoming add "+added.myString());
         // n->tau->m m-a->n n-tau->m one tau used twice!
           if (from.getId().equals(to.getId()) && !edge.isHidden()) {
-            abstraction.addEdge(edge.getLabel(), hiddenEdge.getFrom(), hiddenEdge.getTo(), null, false);
+            abstraction.addEdge(edge.getLabel(), hiddenEdge.getFrom(), hiddenEdge.getTo(), null, false,edge.getOptionalEdge());
             abstraction.addOwnersToEdge(added,hiddenEdge.getOwnerLocation() );
             abstraction.addOwnersToEdge(added,edge.getOwnerLocation() );
           }
@@ -354,7 +354,7 @@ public class AbstractionFunction implements IProcessFunction {
           for (AutomatonEdge second : n.getOutgoingEdges()) {
             for (AutomatonEdge first : n.getIncomingEdges()) {
               abstraction.addEdge(Constant.HIDDEN, first.getFrom(), second.getTo(),
-                  cbGuards(first, second, context), true);
+                  cbGuards(first, second, context), true,first.getOptionalEdge());
             }
           }
 
@@ -460,35 +460,6 @@ public class AbstractionFunction implements IProcessFunction {
 
 
 
-  private PetriNetTransition mergeTransitions(Petrinet toModify, PetriNetTransition t1, PetriNetTransition t2) throws CompilationException{
-    PetriNetTransition output = toModify.addTransition(t1.getId() + " merge " + t2.getId(), t1.getId() + "," + t2.getLabel());
-
-
-    Set<PetriNetPlace> inputPlaces = new HashSet<>(t1.pre());
-    Set<PetriNetPlace> outputPlaces = new HashSet<>(t2.post());
-
-    Set<PetriNetPlace> t2InputPlaces = new HashSet<>(t2.pre());
-
-
-    //If t1 post place isnt one of t2s inputs then add it to output set
-    outputPlaces.addAll(t1.post().stream().filter(postPlace -> !t2InputPlaces.contains(postPlace)).collect(Collectors.toList()));
-
-    t2InputPlaces.removeAll(t1.post());
-
-    inputPlaces.addAll(t2InputPlaces);
-
-
-    for(PetriNetPlace inputPlace : inputPlaces) {
-      toModify.addEdge(output, inputPlace);
-    }
-
-    for(PetriNetPlace outputPlace : outputPlaces) {
-      toModify.addEdge(outputPlace, output);
-    }
-
-
-    return output;
-  }
 
   /**
    * TODO:
@@ -572,11 +543,11 @@ public class AbstractionFunction implements IProcessFunction {
           newtr.setOwners(tr1.getOwners());
           for(PetriNetPlace pl : newpre){
             //System.out.println("edge "+pl.getId()+"<-"+tr.getLabel()+"-"+newtr.getId());
-            petri.addEdge(newtr,pl);
+            petri.addEdge(newtr,pl,false); // BEWARE NOT for broadcast
           }
           for(PetriNetPlace pl : newpost){
             //if (!pl.getId().equals(pretau.getId())) {
-            petri.addEdge(pl,newtr);
+            petri.addEdge(pl,newtr,false); // BEWARE NOT for broadcast
             //System.out.println("edge "+ newtr.getId()+"<-"+tr.getLabel()+"-"+pl.getId());
             //}
           }
@@ -614,12 +585,12 @@ public class AbstractionFunction implements IProcessFunction {
 
           newtr.setOwners(tr2.getOwners());
           for(PetriNetPlace pl : newpost){
-            petri.addEdge(pl,newtr);
+            petri.addEdge(pl,newtr,false); // BEWARE NOT for broadcast
             //System.out.println("edge "+ newtr.getId()+"<-"+tr.getLabel()+"-"+pl.getId());
           }
           for(PetriNetPlace pl : newpre){
             // if (!pl.getId().equals(posttau.getId())) {
-            petri.addEdge(newtr,pl);
+            petri.addEdge(newtr,pl,false); // BEWARE NOT for broadcast
             //System.out.println("edge "+pl.getId()+"<-"+tr.getLabel()+"-"+newtr.getId());
             // }
           }
@@ -657,12 +628,12 @@ public class AbstractionFunction implements IProcessFunction {
 
           newtr.setOwners(tr2.getOwners());
           for(PetriNetPlace pl : newpost){
-            petri.addEdge(pl,newtr);
+            petri.addEdge(pl,newtr,false); // BEWARE NOT for broadcast
             //System.out.println("edge "+ newtr.getId()+"<-"+tr.getLabel()+"-"+pl.getId());
           }
           for(PetriNetPlace pl : newpre){
             // if (!pl.getId().equals(posttau.getId())) {
-            petri.addEdge(newtr,pl);
+            petri.addEdge(newtr,pl,false); // BEWARE NOT for broadcast
             //System.out.println("edge "+pl.getId()+"<-"+tr.getLabel()+"-"+newtr.getId());
             // }
           }

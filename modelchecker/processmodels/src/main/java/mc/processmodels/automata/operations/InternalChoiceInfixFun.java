@@ -94,7 +94,7 @@ public class InternalChoiceInfixFun implements IProcessInfixFunction {
      AutomatonEdge ednew = choice.addEdge(ed.getLabel(),
           automaton2NodeMap.get(ed.getFrom()),
           automaton2NodeMap.get(ed.getTo()),
-          ed.getGuard() == null ? null : ed.getGuard().copy(), false);
+          ed.getGuard() == null ? null : ed.getGuard().copy(), false,ed.getOptionalEdge());
     }
 
 

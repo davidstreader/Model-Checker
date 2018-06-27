@@ -120,7 +120,7 @@ public class AutomataParallelMerge {
 
           // adds some !a and ?a edges that will be deleted in processSyncedActions
           AutomatonEdge newEdge = automaton.addEdge(edge.getLabel(), from.get(i), to.get(i),
-              edge.getGuard(), false);
+              edge.getGuard(), false,edge.getOptionalEdge());
 
           Collection<String> ownersToAdd;
 

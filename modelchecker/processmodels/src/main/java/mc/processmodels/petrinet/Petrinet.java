@@ -10,9 +10,7 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import lombok.Data;
-import lombok.SneakyThrows;
-import lombok.val;
+import lombok.*;
 import mc.Constant;
 import mc.compiler.ast.HidingNode;
 import mc.compiler.ast.RelabelElementNode;
@@ -25,7 +23,7 @@ import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
 import mc.util.Location;
 
-@Data
+//@Data
 public class Petrinet extends ProcessModelObject implements ProcessModel {
   public static final String DEFAULT_OWNER = "_default";
   public static final String MAPLET = "^";
@@ -35,30 +33,71 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
    THE Ids ARE UNIQIE
  */
   public Map<String,String> nameMap = new HashMap<>();
+
+  @Getter
+  @Setter
   private Map<String, PetriNetPlace> places = new HashMap<>();
+  @Getter
+  @Setter
   private Map<String, PetriNetTransition> transitions = new HashMap<>();
+  @Getter
+  @Setter
   private Multimap<String, PetriNetTransition> alphabet = ArrayListMultimap.create();
 
+  @Getter
+  @Setter
   private List<Set<String>> roots = new ArrayList<>();
   //private List<Set<String>> rootNames = new ArrayList<>();
   //private Set<PetriNetPlace> root ;
+  @Getter
+  @Setter
   private Map<String, PetriNetEdge> edges = new HashMap<>();
+  @Getter
+  @Setter
   private Set<RelabelElementNode> relabels = new HashSet<>();
+  @Getter
+  @Setter
   private Multimap<String, String> combinationsTable = ArrayListMultimap.create(); // Glue function owners map
+  @Getter
+  @Setter
   private HidingNode hiding;
+  @Getter
+  @Setter
   private Set<String> hiddenVariables = new HashSet<>();
+
+  @Getter
+  @Setter
   private Location hiddenVariablesLocation;
 
+  @Getter
+  @Setter
   private Set<String> owners = new HashSet<>();
 
+  @Getter
+  @Setter
   private Set<String> variables = new HashSet<>();
+
+  @Getter
+  @Setter
   private Location variablesLocation;
 
+  @Getter
+  @Setter
   private Location location;
+  @Getter
+  @Setter
   private String id;
+  @Getter
+  @Setter
   private int placeId = 0;
+  @Getter
+  @Setter
   private int transitionId = 0;
+  @Getter
+  @Setter
   private int edgeId = 0;
+  @Getter
+  @Setter
   private int ownersId = 0;
 
 
@@ -92,11 +131,11 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
       if (ed.getFrom() instanceof PetriNetPlace ) {
         PetriNetTransition to = petri.getTransitions().get(transIdMap.get(ed.getTo().getId()));
         PetriNetPlace from = petri.getPlace(placeIdMap.get(ed.getFrom().getId()));
-        PetriNetEdge newed = petri.addEdge(to, from);
+        PetriNetEdge newed = petri.addEdge(to, from,ed.getOptional());
       } else {
         PetriNetPlace to = petri.getPlace(placeIdMap.get(ed.getTo().getId()));
         PetriNetTransition from = petri.getTransitions().get(transIdMap.get(ed.getFrom().getId()));
-        PetriNetEdge newed = petri.addEdge(to, from);
+        PetriNetEdge newed = petri.addEdge(to, from,ed.getOptional());
       }
      }
      petri.reown();
@@ -430,8 +469,8 @@ public void rebuildAlphabet(){
     end.setOwners(new HashSet<>()); end.addOwner(DEFAULT_OWNER);
     PetriNetTransition tr = eventNet.addTransition(event);
     tr.setOwners(new HashSet<>()); tr.addOwner(DEFAULT_OWNER);
-    eventNet.addEdge(end,tr);
-    eventNet.addEdge(tr, start);
+    eventNet.addEdge(end,tr,false);
+    eventNet.addEdge(tr, start,false);
     eventNet.setOwners(new HashSet<>());
     eventNet.addOwner(DEFAULT_OWNER);
     end.setTerminal("STOP");
@@ -474,8 +513,8 @@ public void rebuildAlphabet(){
     end.setOwners(new HashSet<>()); end.addOwner(DEFAULT_OWNER);
     PetriNetTransition tr = error.addTransition(Constant.DEADLOCK);
     tr.setOwners(new HashSet<>()); tr.addOwner(DEFAULT_OWNER);
-    error.addEdge(end,tr);
-    error.addEdge(tr, p);
+    error.addEdge(end,tr,false);
+    error.addEdge(tr, p,false);
     error.setOwners(new HashSet<>());
     error.addOwner(DEFAULT_OWNER);
     end.setTerminal("ERROR");
@@ -560,7 +599,7 @@ public static String marking2String(Collection<PetriNetPlace> mark){
     return addTransition(id + ":t:" + transitionId++, label);
   }
 
-  public PetriNetEdge addEdge(PetriNetTransition to, PetriNetPlace from)
+  public PetriNetEdge addEdge(PetriNetTransition to, PetriNetPlace from, boolean op)
     throws CompilationException {
    //System.out.println("adding Edge to "+to.toString()+ "  from "+from.toString());
     //System.out.println("addEdge from "+from.getId()+ " to "+to.getId());
@@ -584,10 +623,11 @@ public static String marking2String(Collection<PetriNetPlace> mark){
     from.getOutgoing().add(edge);
     edges.put(id, edge);
     //System.out.println("addEdgePT done "+edge.myString());
+    edge.setOptional(op);
     return edge;
   }
 
-  public PetriNetEdge addEdge(PetriNetPlace to, PetriNetTransition from) throws CompilationException {
+  public PetriNetEdge addEdge(PetriNetPlace to, PetriNetTransition from, boolean op) throws CompilationException {
 
    //System.out.println("addingEdge from "+from.getId()+ " to "+to.getId());
    //System.out.println("trans "+transitions.keySet().stream().map(x->x+"->"+transitions.get(x).getId()).collect(Collectors.joining()));
@@ -614,6 +654,7 @@ public static String marking2String(Collection<PetriNetPlace> mark){
     to.getIncoming().add(edge);
     from.getOutgoing().add(edge);
     edges.put(id, edge);
+    edge.setOptional(op);
 //System.out.println("addEdgeTP done "+edge.myString());
     return edge;
   }
@@ -737,11 +778,11 @@ public static String marking2String(Collection<PetriNetPlace> mark){
     for (PetriNetEdge edge : petriToAdd.getEdges().values()) {
       if (edge.getFrom() instanceof PetriNetPlace) {
         PetriNetEdge ed =
-          addEdge(transitionMap.get(edge.getTo()), placeMap.get(edge.getFrom()));
+          addEdge(transitionMap.get(edge.getTo()), placeMap.get(edge.getFrom()),edge.getOptional());
        //System.out.println("addEdge "+ed.myString());
       } else {
         PetriNetEdge ed =
-          addEdge(placeMap.get(edge.getTo()), transitionMap.get(edge.getFrom()));
+          addEdge(placeMap.get(edge.getTo()), transitionMap.get(edge.getFrom()),edge.getOptional());
        //System.out.println("addEdge "+ed.myString());
       }
     }
@@ -788,11 +829,11 @@ public static String marking2String(Collection<PetriNetPlace> mark){
      //System.out.println("edge "+edge.myString());
       if (edge.getFrom() instanceof PetriNetPlace) {
   //System.out.println("edging "+transitionMap.get(edge.getTo())+" "+places.get(edge.getFrom().getId()+tag));
-        addEdge(transitionMap.get(edge.getTo()), places.get(edge.getFrom().getId()+tag));
+        addEdge(transitionMap.get(edge.getTo()), places.get(edge.getFrom().getId()+tag),edge.getOptional());
       } else {
   //System.out.println("edgeing "+ places.get(edge.getTo().getId()+tag) +
    //     "  "+transitionMap.get(edge.getFrom()));
-        addEdge(places.get(edge.getTo().getId()+tag), transitionMap.get(edge.getFrom()));
+        addEdge(places.get(edge.getTo().getId()+tag), transitionMap.get(edge.getFrom()),edge.getOptional());
       }
     }
     this.getRoots().addAll(petriToAdd.getRoots().stream().map(x->markUpGrade(x,nameMap)).collect(Collectors.toList()));
@@ -841,11 +882,11 @@ public static String marking2String(Collection<PetriNetPlace> mark){
        PetriNetTransition newtr =  addTransition(tr.getId()+"*"+i ,tr.getLabel());
        for(PetriNetEdge ed : tr.getOutgoing()){
 
-         addEdge(plMapping.get(ed.getTo()),newtr);
+         addEdge(plMapping.get(ed.getTo()),newtr,ed.getOptional());
        }
        for(PetriNetEdge ed : tr.getIncoming()){
         //System.out.println("ed + "+ ed.myString());
-         addEdge(newtr ,((PetriNetPlace) ed.getFrom()));
+         addEdge(newtr ,((PetriNetPlace) ed.getFrom()),ed.getOptional());
        }
 //System.out.println("     "+tr.getId()+"=>"+newtr.getId());
      }
@@ -1044,7 +1085,7 @@ public static String marking2String(Collection<PetriNetPlace> mark){
           /* Need Incoming/Outgoing to be a set */
           PetriNetTransition from = (PetriNetTransition) edge.getFrom();
           if (!product.hasIncoming(from)) {
-            product.getIncoming().add(addEdge(product, from));
+            product.getIncoming().add(addEdge(product, from,edge.getOptional()));
             //System.out.println("X "+edge.myString());
           }
         }
@@ -1052,7 +1093,7 @@ public static String marking2String(Collection<PetriNetPlace> mark){
          //System.out.println("Y "+edge.myString());
           PetriNetTransition to = (PetriNetTransition) edge.getTo();
           if (!product.hasOutgoing(to))
-             product.getOutgoing().add(addEdge(to, product));
+             product.getOutgoing().add(addEdge(to, product,edge.getOptional()));
         }
       }
     }

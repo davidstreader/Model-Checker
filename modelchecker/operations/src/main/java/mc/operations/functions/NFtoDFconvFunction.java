@@ -131,7 +131,7 @@ public class NFtoDFconvFunction implements IProcessFunction {
 
 
 
-        dfa.addEdge(action, node, nextNode, null, true);
+        dfa.addEdge(action, node, nextNode, null, true,false);
 
         fringe.push(nextStates);
       }

@@ -231,7 +231,7 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
                 double len = Math.sqrt(vx * vx + vy * vy);
 
                 Integer spring =  springFunction.apply(d); // Needs to be within the forLoop!
-                System.out.println("spring "+spring);
+                //System.out.println("spring "+spring);
 
 
 
@@ -353,8 +353,7 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
 
                // Oscilation suppression
 
-                    System.out.printf("*change "+((GraphNode) v).getNodeId()+" deltax %1.2f   at x %1.2f  \n",
-                            newx-xyd.getX(), xyd.getX());
+                    //System.out.printf("*change step "+step+"    deltax %1.2f   at x %1.2f  \n", deltax, xyd.getX());
 
                     xyd.setLocation(newx, newy);
 

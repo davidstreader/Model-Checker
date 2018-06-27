@@ -67,6 +67,23 @@ public class PetriNetTransition extends ProcessModelObject {
         .distinct()
         .collect(Collectors.toSet());
   }
+  public Set<PetriNetPlace> preNonBlocking() {
+    return incoming.stream()
+            .filter(ed->!ed.getOptional())
+            .map(PetriNetEdge::getFrom)
+
+            .map(PetriNetPlace.class::cast)
+            .distinct()
+            .collect(Collectors.toSet());
+
+  }public Set<String> optionalOwners() {  //TokenRule
+    return incoming.stream()
+            .filter(ed->ed.getOptional())
+            .map(PetriNetEdge::getFrom)
+            .map(x->((PetriNetPlace)x).getOwners())
+            .flatMap(x->x.stream())
+            .collect(Collectors.toSet());
+  }
 
   public Set<PetriNetPlace> post() {
     return outgoing.stream()
@@ -111,7 +128,6 @@ public class PetriNetTransition extends ProcessModelObject {
       builder.append(edge.getTo().getId()+",");
     }
     builder.append(" own "+this.getOwners());
-
-    return builder.toString();
+     return builder.toString();
   }
 }

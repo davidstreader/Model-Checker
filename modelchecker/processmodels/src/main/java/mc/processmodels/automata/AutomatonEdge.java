@@ -32,6 +32,14 @@ public class AutomatonEdge extends ProcessModelObject {
   @Setter
   private AutomatonNode to;
 
+  /*Edge built from send event NOT synchronising with receive event
+     when there exist receive events in parallel process
+   */
+  private boolean optionalEdge = false;
+
+  @Getter
+  @Setter
+  private Set<String> optionalOwners = new HashSet<>();
   /**
    *
    */
@@ -47,6 +55,8 @@ public class AutomatonEdge extends ProcessModelObject {
     this.to = to;
   }
 
+  public boolean getOptionalEdge(){return optionalEdge;}
+  public void setOptionalEdge(boolean  b){optionalEdge = b;}
   public boolean isHidden() {
     return label.equals(Constant.HIDDEN);
   }
@@ -71,10 +81,10 @@ public class AutomatonEdge extends ProcessModelObject {
     String out = "";
     if (guard != null) {
       out = from.getId() + "-" + label + "->" + to.getId() + " " +
-             guard.myString() + " o "+edgeOwners;
+             guard.myString() + " o= "+edgeOwners+ " optional= "+optionalEdge;
     } else {
       out = from.getId() + "-" + label + "->" + to.getId() +
-           " null guard"+ " o "+edgeOwners;
+           " guard null "+ " o= "+edgeOwners + " optional= "+optionalEdge;
     }
     return out;
   }

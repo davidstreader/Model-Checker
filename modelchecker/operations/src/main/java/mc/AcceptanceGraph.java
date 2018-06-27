@@ -143,7 +143,7 @@ public class AcceptanceGraph {
                 }
 
                 cnt++;
-                dfa.addEdge(action, poped, nextdfa, null, true);
+                dfa.addEdge(action, poped, nextdfa, null, true,false);
 
 //System.out.println("addEdge "+ poped.getId()+"-"+action+"->"+nextdfa.getId());
             }

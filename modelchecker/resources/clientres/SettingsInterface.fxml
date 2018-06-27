@@ -13,14 +13,14 @@
             <Slider fx:id="maxNodesSlider" layoutX="178.0" layoutY="33.0" max="200.0" showTickLabels="true" showTickMarks="true" value="40.0" />
              <Label layoutX="22.0" layoutY="33.0" text="Max number of nodes" />
 
-             <Slider fx:id="springSlider" layoutX="178.0" layoutY="86.0" min="1" max="100" showTickLabels="true" showTickMarks="true" value="50.0" />
+             <Slider fx:id="springSlider" layoutX="178.0" layoutY="86.0" min="1" max="100" showTickLabels="true" showTickMarks="true" value="50" />
              <Label layoutX="127.0" layoutY="86.0" text="Spring" />
              <Slider fx:id="delaySlider" layoutX="185.0" layoutY="234.0" max="5000" min="50" showTickLabels="true" showTickMarks="true" value="100" />
              <Label layoutX="115.0" layoutY="236.0" prefHeight="0.0" prefWidth="35.0" text="Delay" />
             <Button layoutX="22.0" layoutY="177.0" mnemonicParsing="false" onAction="#handleResetSettings" prefHeight="32.0" prefWidth="79.0" text="Reset" />
-            <Slider fx:id="stepSlider" layoutX="171.0" layoutY="184.0" min="1" max="100" showTickLabels="true" showTickMarks="true" value="10" />
+            <Slider fx:id="stepSlider" layoutX="171.0" layoutY="184.0" min="1" max="500" showTickLabels="true" showTickMarks="true" value="10" />
             <Label layoutX="133.0" layoutY="184.0" text="Step" />
-            <Slider fx:id="repulseSlider" layoutX="178.0" layoutY="130.0" min="1" max="100" showTickLabels="true" showTickMarks="true" value="25" />
+            <Slider fx:id="repulseSlider" layoutX="178.0" layoutY="130.0" min="1" max="100" showTickLabels="true" showTickMarks="true" value="50" />
             <Label layoutX="103.0" layoutY="130.0" text="Repulsion" />
 
          </children>

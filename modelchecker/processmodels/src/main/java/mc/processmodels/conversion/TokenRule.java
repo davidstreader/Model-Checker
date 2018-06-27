@@ -22,6 +22,15 @@ import mc.processmodels.petrinet.components.PetriNetTransition;
  * This is to be used such that the conversion between the two can be completed, and for being able
  * to make petrinets and automata interoperable within process definitions.
  *
+ * For hand shake events the token rule is:
+ *    A transition t is fired, and produces an automata event, only when its pre places, *t, are all marked. When a transition
+ *    is fired the tokens on the preplaces *t are removed and places on the post places t* are added.
+ * For brodcast events the behaviour of a send event b! can not be blocked by the lack of a synchronising receive event b?
+ *    Synchronised send-receive transitions are labeled b! and the edges added because of the synchronising b? event are marked as "optional"
+ *    Thus Let *t = {1,2} where edge 2->t is optional and  t* = {3,4} where edge t->4 is optional behaves:
+ *       If {1,2} is marked then after t is fired {3,4} is marked.
+ *       Elseif {1} is marked then after t is fired {3} is marked.
+ *
  * @author Jordan Smith
  * @author David Streader
  * @author Jacob Beal
@@ -35,7 +44,7 @@ import mc.processmodels.petrinet.components.PetriNetTransition;
  */
 public class TokenRule {
 
-
+  private static int stateSizeBound = 100;
 
   public static Automaton tokenRule(Petrinet convertFrom){
     return tokenRule(convertFrom, new HashMap<>(), new HashMap<>());
@@ -56,7 +65,7 @@ public class TokenRule {
 
     Automaton outputAutomaton = new Automaton(convertFrom.getId() + "-token" //+ " automata"
             ,false);
-      System.out.println("\nTOKEN RULE  STARTING "+convertFrom.getId());
+      System.out.println("\nTOKEN RULE  STARTING "+convertFrom.myString());
 
       assert convertFrom.validatePNet(): "Token precondition";
    outputAutomaton.setOwners(convertFrom.getOwners());
@@ -88,9 +97,9 @@ public class TokenRule {
     int nodesCreated = 1;
 int j = 0; //without these 2 LofC loop never terminates!
     while (!toDo.isEmpty()) {
-if(j++>50) {System.out.println("\n\nTokenRule Failure Looping = "+j+"\n\n");break;} // second LofC  NEVER Called - looks redundent!
+if(j++> stateSizeBound) {System.out.println("\n\nTokenRule Failure Looping = "+j+"\n\n");break;} // second LofC  NEVER Called - looks redundent!
         Multiset<PetriNetPlace> currentMarking = toDo.pop();
-        //System.out.println("currentMarking "+currentMarking.stream().map(x->x.getId()+", ").collect(Collectors.joining()));
+        System.out.println("currentMarking "+currentMarking.stream().map(x->x.getId()+", ").collect(Collectors.joining()));
 
         //System.out.print("\nStarting  prev " +previouslyVisitedPlaces.size()+" todo "+toDo.size()+  " \n");
     /*  for(PetriNetPlace pl :currentMarking){
@@ -114,65 +123,76 @@ if(j++>50) {System.out.println("\n\nTokenRule Failure Looping = "+j+"\n\n");brea
           markingToNodeMap.get(currentMarking).setTerminal("STOP");
           else
               markingToNodeMap.get(currentMarking).setTerminal("ERROR");
-          //All terminal Places must be "STOP"
-     /*   boolean stop = true;
-        for (PetriNetPlace pl: currentMarking) {
-          if (!pl.getTerminal().equals("STOP")) stop = false;
-        }
-        if (stop)
-          markingToNodeMap.get(currentMarking).setTerminal("STOP");
-        else
-          markingToNodeMap.get(currentMarking).setTerminal("ERROR"); */
+
       }
  //System.out.println("currentMarking1 "+currentMarking.stream().map(x->x.getId()+", ").collect(Collectors.joining()));
 
       //System.out.println("satisfiedPostTransitions "+ satisfiedPostTransitions.size());
       for (PetriNetTransition transition : satisfiedPostTransitions) {
-        //System.out.println("transition "+transition.myString());
+        System.out.println("  Satisfied transition "+transition.myString());
           //System.out.println("outgoing "+transition.getOutgoing().size());
          Multiset<PetriNetPlace> newMarking = HashMultiset.create(currentMarking);
           //System.out.println("newMarking1 "+newMarking.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
           //System.out.println("newMarking1 "+newMarking.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
         // Clear out the places in the current marking which are moving token
-        for(PetriNetPlace pl : transition.pre()){
+
+          /* get owners of the optional Places not marked*/
+          Multiset<PetriNetPlace> opunMarked = HashMultiset.create(transition.pre());
+          opunMarked.removeAll(currentMarking);
+          Set<String> opOwn = opunMarked.stream()
+                   .map(x->x.getOwners())
+                   .flatMap(x->x.stream())
+                   .collect(Collectors.toSet());
+          System.out.println("  opOwn "+opOwn);
+        for(PetriNetPlace pl : transition.pre()){  // includes optional preplaces
           newMarking.remove(pl);
         }
+          System.out.println("newMarking "+newMarking.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
+
+          /* filter out the post places of owners with  unmarked preplaces*/
+
           //System.out.println("outgoing "+transition.getOutgoing().size());
    //System.out.println("newMarking1 "+newMarking.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
         newMarking.addAll(transition.getOutgoing().stream()
+                .filter(ed->!((ed.getOptional() &&
+                        opOwn.containsAll(((PetriNetPlace)ed.getTo()).getOwners())  )))    //
             .map(PetriNetEdge::getTo)
             .map(PetriNetPlace.class::cast)
             .collect(Collectors.toList()));
-   //System.out.println("newMarking "+newMarking.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
+   System.out.println("newMarking "+newMarking.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
 
         if (!markingToNodeMap.containsKey(newMarking)) {
           AutomatonNode newNode = outputAutomaton.addNode();
           newNode.setLabelNumber(nodesCreated++);
           markingToNodeMap.put(newMarking, newNode);
           nodeToMarkingMap.put(newNode, newMarking);
-          if (!toDo.contains(newMarking)) toDo.add(newMarking);
+          if (!toDo.contains(newMarking)) {
+              toDo.add(newMarking);
+              System.out.println("  toDo Add Marking "+newMarking.stream().map(x->x.getId()+" ").collect(Collectors.joining()));}
         }
         Set<String> own =  transition.getOwners();
         AutomatonEdge ed =
         outputAutomaton.addEdge(transition.getLabel(), markingToNodeMap.get(currentMarking),
-            markingToNodeMap.get(newMarking), null, false);
+            markingToNodeMap.get(newMarking), null, false,false);
         ed.setEdgeOwners(own);
-        //System.out.println(" automaton now "+outputAutomaton.myString());
+        System.out.println("  adding edge "+ed.myString());
       }
  //System.out.println("currentMarking2 "+currentMarking.stream().map(x->x.getId()+", ").collect(Collectors.joining()));
 
         if (!previouslyVisitedPlaces.contains(currentMarking)) { previouslyVisitedPlaces.add(currentMarking);}
-        //System.out.println("todo size "+toDo.size());
+        System.out.println("todo size "+toDo.size());
   //System.out.println("Add to Previous "+previouslyVisitedPlaces.size()+"  "+currentMarking.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
     }
-   //System.out.println("Token Out "+outputAutomaton.myString());
+   System.out.println("Token Rule Out "+outputAutomaton.myString());
     return outputAutomaton;
   }
 
+
   private static Set<PetriNetTransition> satisfiedTransitions(Multiset<PetriNetPlace> currentMarking) {
       Set<PetriNetTransition> out = post(currentMarking).stream() //88
-        .filter(transition -> currentMarking.containsAll(transition.pre()))
-        .distinct()
+            //  .filter(transition -> currentMarking.containsAll(transition.pre()))
+              .filter(transition -> currentMarking.containsAll(transition.preNonBlocking())) // drops the optional preplaces
+              .distinct()
         .collect(Collectors.toSet());
       //System.out.println(out.stream().map(x->x.getId()).reduce("satisfied ",(x,y)->x+y+" "));
       return out;

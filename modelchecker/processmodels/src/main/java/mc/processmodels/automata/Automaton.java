@@ -187,7 +187,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
       Guard g = new Guard();
       AutomatonNode s = a.addNode();
       AutomatonNode e = a.addNode();
-      a.addEdge(event, s,e,g, true);
+      a.addEdge(event, s,e,g, true,false);
       s.setStartNode(true);
       a.addRoot(s);
       e.setTerminal("STOP");
@@ -354,12 +354,12 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
       AutomatonEdge ed;
       if (!e.getFrom().equals(oldNode)) {
-        ed = addEdge(e.getLabel(), e.getFrom(), newNode, newGuard, false);
+        ed = addEdge(e.getLabel(), e.getFrom(), newNode, newGuard, false,e.getOptionalEdge());
       } else { // If the node links to itself
-        ed = addEdge(e.getLabel(), newNode, newNode, newGuard, false);
+        ed = addEdge(e.getLabel(), newNode, newNode, newGuard, false,e.getOptionalEdge());
       }
       addOwnersToEdge(ed, e.getOwnerLocation());
-
+      ed.setOptionalEdge(e.getOptionalEdge());
     }
 
     for (AutomatonEdge e : oldNode.getOutgoingEdges()) {
@@ -370,11 +370,12 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
       AutomatonEdge ed;
       if (!e.getTo().equals(oldNode)) {
-        ed = addEdge(e.getLabel(), newNode, e.getTo(), newGuard, false);
+        ed = addEdge(e.getLabel(), newNode, e.getTo(), newGuard, false,e.getOptionalEdge());
       } else { // If the node links to itself
-        ed = addEdge(e.getLabel(), newNode, newNode, newGuard, false);
+        ed = addEdge(e.getLabel(), newNode, newNode, newGuard, false,e.getOptionalEdge());
       }
       addOwnersToEdge(ed, e.getOwnerLocation());
+      ed.setOptionalEdge(e.getOptionalEdge());
 
     }
   }
@@ -533,14 +534,14 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
    * @throws CompilationException
    */
   public AutomatonEdge addEdge(String label, AutomatonNode from, AutomatonNode to,
-                               Guard currentEdgesGuard, boolean addDefaultOwner)
+                               Guard currentEdgesGuard, boolean addDefaultOwner, boolean opt)
       throws CompilationException {
     String id = getNextEdgeId();
-    return addEdge(id, label, from, to, currentEdgesGuard, addDefaultOwner);
+    return addEdge(id, label, from, to, currentEdgesGuard, addDefaultOwner, opt);
   }
 
   private AutomatonEdge addEdge(String id, String label, AutomatonNode from, AutomatonNode to,
-                               Guard currentEdgesGuard, boolean addDefaultOwner)
+                               Guard currentEdgesGuard, boolean addDefaultOwner, boolean opt)
       throws CompilationException {
 
     // check that the nodes have been defined
@@ -623,7 +624,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
       addOwnerToEdge(edge, DEFAULT_OWNER);
     }
 
-
+    edge.setOptionalEdge(opt);
 
     return edge;
   }
@@ -759,7 +760,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
       AutomatonNode from = reNode.get(edge.getFrom());
       AutomatonNode to = reNode.get(edge.getTo());
       addOwnersToEdge(
-          addEdge( edge.getLabel(), from, to, edge.getGuard(), false),
+          addEdge( edge.getLabel(), from, to, edge.getGuard(), false, edge.getOptionalEdge()),
           edge.getOwnerLocation());
     }
     if (thisAutomataRoot.isEmpty()) {
@@ -909,7 +910,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
       //Change to make copies re id the edge
       AutomatonEdge xedge =  copy.addEdge(edge.getLabel(),
-        from, to, edge.getGuard(), false);
+        from, to, edge.getGuard(), false,edge.getOptionalEdge());
    //System.out.println("  Adding "+xedge.myString());
       Set<String> os = edge.getOwnerLocation();
  //System.out.print("os "+os);
@@ -920,6 +921,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
       }
      //System.out.println(" newos "+ newos);
       copy.addOwnersToEdge(xedge,newos);
+      xedge.setOptionalEdge(edge.getOptionalEdge());
       //System.out.println("End of adding Edge"+xedge.myString());
     }
     copy.copyProperties(this);

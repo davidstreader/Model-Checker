@@ -21,7 +21,7 @@ public class PetriNetPlace extends ProcessModelObject implements Comparable<Petr
   // Place with ref "X" will be glued to other Place with "X" fromRef
   private Set<String> references = new LinkedHashSet<>();
   private Set<String> fromReferences = new LinkedHashSet<>();  // prior to gluing only on Leaf
-  private Set<String> owners = new HashSet<>();  // this is only needed in event Refinement
+  private Set<String> owners = new HashSet<>();  // this is needed in event Refinement and broadcast events
 
   public boolean hasIncoming(PetriNetTransition tr) {
 

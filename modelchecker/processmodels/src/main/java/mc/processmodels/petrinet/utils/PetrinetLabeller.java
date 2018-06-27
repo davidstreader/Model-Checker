@@ -44,11 +44,11 @@ public final class PetrinetLabeller {
       if (edge.getTo() instanceof PetriNetTransition) {
         PetriNetTransition to = labelled.getTransitions().get(label + ":" + edge.getTo().getId());
         PetriNetPlace from = labelled.getPlaces().get(label + ":" + edge.getFrom().getId());
-        labelled.addEdge(to,from);
+        labelled.addEdge(to,from,edge.getOptional());
       } else {
         PetriNetPlace to = labelled.getPlaces().get(label + ":" + edge.getTo().getId());
         PetriNetTransition from = labelled.getTransitions().get(label + ":" + edge.getFrom().getId());
-        labelled.addEdge(to,from);
+        labelled.addEdge(to,from,edge.getOptional());
       }
     }
 

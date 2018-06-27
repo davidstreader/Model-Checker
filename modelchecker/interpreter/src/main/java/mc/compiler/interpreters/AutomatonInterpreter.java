@@ -311,13 +311,13 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
       ReferenceNode reference = (ReferenceNode) sequence.getTo();
       Collection<AutomatonNode> nextNodes = referenceMap.get(reference.getReference());
       for (AutomatonNode node : nextNodes) {
-        automaton.addEdge(action, currentNode, node, foundGuard, true);
+        automaton.addEdge(action, currentNode, node, foundGuard, true,false);
       }
 
     } else {
 
       nextNode = automaton.addNode();
-      automaton.addEdge(action, currentNode, nextNode, foundGuard, true);
+      automaton.addEdge(action, currentNode, nextNode, foundGuard, true,false);
 
       interpretNode(sequence.getTo(), automaton, nextNode);
     }

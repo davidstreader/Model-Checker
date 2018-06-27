@@ -47,6 +47,10 @@ public class OwnersRule {
    *    2. proceed as before
    *    3. remove S* to reveal the multiple start states.
    *
+   * For synchronised broadcast events petri transitions have "optional" listening
+   *    coresponding automata events  are marked as optional
+   *    and are ignored in this construction
+   *
    * @param ain The automaton to be converted
    * @return a petrinet representation fo the automaton
    */
@@ -75,7 +79,7 @@ public class OwnersRule {
 /*
    Build,one for each owner,  projection mappings from nodes to a  SLICE
     */
-   //System.out.println("Owners " + a.getOwners());
+   System.out.println("Owners START " + a.myString()+"\n");
     for (String own : a.getOwners()) {
      //System.out.println("\n >>Owner "+ own);
      Petrinet petri = new Petrinet(a.getId(), false);
@@ -124,14 +128,17 @@ public class OwnersRule {
       processed.add(nd);
 
       for (AutomatonEdge ed : nd.getOutgoingEdges()) {
+          System.out.println("    Start 2 " + ed.myString() + " own " + own);
+          // optional send events May not be needed
+          if (ed.getOptionalEdge()) continue;
        toDo.push(ed.getTo());
        //System.out.println("    Start 2 " + ed.myString() + " own " + own);
 
        if (ed.getOwnerLocation().contains(own)) {
         //System.out.println("Staring " + ed.getId());
         PetriNetTransition tran = petri.addTransition(ed.getLabel());
-        petri.addEdge(tran, nd2Pl.get(ed.getFrom()));
-        petri.addEdge(nd2Pl.get(ed.getTo()), tran);
+        petri.addEdge(tran, nd2Pl.get(ed.getFrom()),ed.getOptionalEdge());
+        petri.addEdge(nd2Pl.get(ed.getTo()), tran,ed.getOptionalEdge());
         tran.setOwners(Collections.singleton(own));
         //System.out.println("Adding " + tran.myString());
        } else {
@@ -140,7 +147,7 @@ public class OwnersRule {
       }
      }
       //System.out.println(petri.myString());
-     //System.out.println("\nSlice Net = " + petri.myString());
+     System.out.println("\nSlice Net = " + petri.myString());
       //petri = PetrinetReachability.removeUnreachableStates(petri).copy();
      //System.out.println("\npushing "+petri.myString());
       subNets.push(petri);  // Clones
@@ -154,6 +161,7 @@ public class OwnersRule {
       //build = PetrinetParallelMergeFunction.compose(build, subNets.pop());  //Debuging
       build = PetrinetParallelFunction.compose(build, subNets.pop());
     //  build = subNets.pop();  //for debugging
+        System.out.println("Build "+ build.myString());
     }
      build.deTagTransitions();
 
@@ -163,7 +171,7 @@ public class OwnersRule {
 
     //3. remove S* to reveal the multiple start states.
     stripStar(build);
-    //System.out.println("\n  OWNERS Rule *END "+build.myString());
+    System.out.println("\n  OWNERS Rule *END "+build.myString());
     //assert(build.validatePNet(): "OwnersRule End");
     return build;
   }

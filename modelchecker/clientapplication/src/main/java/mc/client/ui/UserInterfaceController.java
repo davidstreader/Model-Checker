@@ -25,13 +25,14 @@ import mc.compiler.CompilationObservable;
 import mc.compiler.Compiler;
 import mc.compiler.OperationResult;
 import mc.exceptions.CompilationException;
+import mc.processmodels.ProcessModel;
 import mc.util.LogAST;
 import mc.util.LogMessage;
 import mc.util.expr.Expression;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
 import org.fxmisc.richtext.model.StyleSpans;
-
+import mc.client.graph.GraphView;
 import javax.swing.*;
 import java.io.*;
 import java.net.URL;
@@ -54,6 +55,8 @@ public class UserInterfaceController implements Initializable {
     private TextArea compilerOutputDisplay;
     @FXML
     private SwingNode modelDisplay;
+    @FXML
+    private SwingNode newDisplay;
     @FXML
     private ComboBox<String> modelsList;
     @FXML
@@ -109,6 +112,7 @@ public class UserInterfaceController implements Initializable {
 
         // Have to initialise it or there is a delay between the graph becoming ready and actually displaying things
         SwingUtilities.invokeLater(() -> modelDisplay.setContent(ModelView.getInstance().updateGraph(modelDisplay)));
+        // SO the Swing node can be used as a canvas  HOW?
 
         //register a callback for whenever the list of automata is changed
         ModelView.getInstance().setListOfAutomataUpdater(this::updateModelsList);
@@ -534,6 +538,11 @@ public class UserInterfaceController implements Initializable {
 
             ModelView.getInstance().addDisplayedModel(modelsList.getSelectionModel().getSelectedItem());
             SwingUtilities.invokeLater(() -> modelDisplay.setContent(ModelView.getInstance().updateGraph(modelDisplay)));
+
+            ProcessModel pm = ModelView.getInstance().getProcess(modelsList.getSelectionModel().getSelectedItem());
+
+          //  GraphView gv = new GraphView(pm);
+            // SwingUtilities.invokeLater(() -> newDisplay.setContent(gv.display(newDisplay)));
         }
     }
 

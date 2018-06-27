@@ -18,6 +18,15 @@ public class PetriNetEdge extends ProcessModelObject {
 
   private ProcessModelObject to;
 
+  /*
+    Optional is when a transition is the result of broadcast synchronisation
+     (The petri Net equivalence to adding listening loop is to add transitions with wings Pn<-->Tr)
+     to prevent clutter we use "Optional" edges and build the Token rule to add the listening loops
+   */
+  private boolean  optional = false;
+  public void setOptional(boolean b){ optional = b;}
+  public boolean getOptional(){return optional;}
+
   public PetriNetEdge(String id, PetriNetPlace to, PetriNetTransition from) {
     super(id, "petrinetEdge");
     this.from = from;
@@ -43,7 +52,7 @@ public class PetriNetEdge extends ProcessModelObject {
 
   }
   public String myString(){
-    String out =  "edge "+this.getId()+" from "+from.getId()+" -> "+to.getId();
+    String out =  "Edge "+this.getId()+" from "+from.getId()+" -> "+to.getId()+" optional= "+optional;
     //for (String o: owners){out = out +o+" ";}
     return out;
   }

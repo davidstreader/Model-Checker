@@ -60,6 +60,10 @@ import mc.processmodels.ProcessModel;
 import mc.processmodels.ProcessType;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.petrinet.Petrinet;
+import mc.processmodels.petrinet.components.PetriNetEdge;
+
+import java.awt.BasicStroke;
+import java.awt.Stroke;
 
 /**
  * Created by bealjaco on 29/11/17.
@@ -96,6 +100,9 @@ public class ModelView implements Observer {
   @Setter
   private BiConsumer<List<OperationResult>, List<OperationResult>> updateLog;
 
+  public ProcessModel getProcess(String id) {
+    return compiledResult.getProcessMap().get(id);
+  }
   /**
    * This method is called whenever the observed object is changed. An
    * application calls an <tt>Observable</tt> object's
@@ -111,11 +118,11 @@ public class ModelView implements Observer {
       throw new IllegalArgumentException("arg object was not of type compilationObject");
     }
 
-
     processesChanged.clear();
     compiledResult = (CompilationObject) arg;
 
 
+    // UG Map.Entry  collection of Key,Value pairs
     Set<Map.Entry<String, MultiProcessModel>> toExpand = compiledResult.getProcessMap().entrySet()
         .stream()
         .filter(e -> e.getValue() instanceof MultiProcessModel)
@@ -137,7 +144,7 @@ public class ModelView implements Observer {
         })
         .collect(Collectors.toSet());
 
-
+//  printing (automata) and (petrinet)
     mappings.clear();
     for (Map.Entry<String, MultiProcessModel> mpm : toExpand) {
       for (ProcessType pt : ProcessType.values()) {
@@ -199,6 +206,7 @@ public class ModelView implements Observer {
     if (sourceCodePro != null) {
       vv.getRenderContext().setEdgeFontTransformer(e -> sourceCodePro);
       vv.getRenderContext().setVertexFontTransformer(e -> sourceCodePro);
+
     }
 
     //set the colour of the nodes
@@ -240,11 +248,8 @@ public class ModelView implements Observer {
       for (GraphNode n : processModels.get(automaton.getId())) {
         graph.removeVertex(n);
       }
-
       processModels.removeAll(automaton.getId());
-
     }
-
 
     Map<String, GraphNode> nodeMap = new HashMap<>();
 
@@ -327,13 +332,31 @@ public class ModelView implements Observer {
       nodeMap.put(transition.getId(), node);
 
     });
+     boolean toggel = true;
+    float dash[] = { 10.0f };
+     for (PetriNetEdge edge: petri.getEdges().values()) {
+       if (toggel) {
 
-    petri.getEdges().values().forEach(edge -> {
+         vv.getRenderContext().setEdgeStrokeTransformer(e -> new BasicStroke(4.0f, BasicStroke.CAP_BUTT,
+                 BasicStroke.JOIN_MITER, 10.0f, dash, 1.0f));
+       } else {
+         vv.getRenderContext().setEdgeStrokeTransformer(e -> new BasicStroke(2.0f, BasicStroke.CAP_BUTT,
+                 BasicStroke.JOIN_MITER, 10.0f, dash, 0.0f));
+       }
+       toggel = !toggel;
+       DirectedEdge nodeEdge = new DirectedEdge("", UUID.randomUUID().toString());
+       graph.addEdge(nodeEdge, nodeMap.get(edge.getFrom().getId()),
+               nodeMap.get(edge.getTo().getId()));
+     }
+   /* petri.getEdges().values().forEach(edge -> {
+        vv.getRenderContext().setEdgeStrokeTransformer(e -> new BasicStroke(4.0f, BasicStroke.CAP_BUTT,
+                BasicStroke.JOIN_MITER, 10.0f, dash, 1.0f));
+
       DirectedEdge nodeEdge = new DirectedEdge("", UUID.randomUUID().toString());
       graph.addEdge(nodeEdge, nodeMap.get(edge.getFrom().getId()),
           nodeMap.get(edge.getTo().getId()));
 
-    });
+    }); */
 
     this.processModels.replaceValues(petri.getId(), nodeMap.values());
 
@@ -459,7 +482,8 @@ public class ModelView implements Observer {
     //label the nodes
     vv.getRenderContext().setVertexLabelTransformer(GraphNode::getLabel);
     vv.getRenderContext().setEdgeLabelTransformer(DirectedEdge::getLabel);
-
+    //vv.getRenderContext().setEdgeArrowStrokeTransformer(edgeStroke);
+    //vv.getRenderContext().setEdgeStrokeTransformer(e->edgeStroke);
     //set the shape
     vv.getRenderContext().setVertexShapeTransformer(n -> n.getType().getNodeShape());
     vv.getRenderer().getVertexLabelRenderer().setPosition(Renderer.VertexLabel.Position.CNTR);
@@ -494,4 +518,6 @@ public class ModelView implements Observer {
     }
     sourceCodePro = source;
   }
+
+
 }
