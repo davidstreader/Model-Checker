@@ -1,0 +1,7 @@
+processes {
+
+A = (a->b->c->A |b->c->STOP).
+B = (x->y->B).
+
+C= A||B.
+}

@@ -1,0 +1,8 @@
+processes
+{
+ I = (a->STOP) + (b->STOP)  .
+}
+
+
+
+

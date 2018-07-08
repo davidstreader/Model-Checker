@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox prefHeight="626.0" prefWidth="402.0" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1">
+  <children>
+    <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="-1.0" prefHeight="635.0" prefWidth="537.0" VBox.vgrow="ALWAYS">
+         <children>
+            <Slider fx:id="maxNodesSlider" layoutX="178.0" layoutY="113.0" max="200.0" showTickLabels="true" showTickMarks="true" value="40.0" />
+             <Label layoutX="30.0" layoutY="124.0" text="Max number of nodes" />
+             <Slider fx:id="decaySlider" layoutX="178.0" layoutY="212.0" max="10.0" min="0" showTickLabels="true" showTickMarks="true" value="5.0" />
+             <Label layoutX="119.0" layoutY="212.0" text="Decay" />
+            <Button layoutX="14.0" layoutY="189.0" mnemonicParsing="false" onAction="#handleResetSettings" prefHeight="17.0" prefWidth="79.0" text="Reset" />
+            <Slider fx:id="speedSlider" layoutX="178.0" layoutY="151.0" max="100.0" min="1" showTickLabels="true" showTickMarks="true" value="10.0" />
+            <Label layoutX="120.0" layoutY="162.0" text="Brake" />
+            <Slider fx:id="repulseSlider" layoutX="178.0" layoutY="67.0" max="1000.0" min="10" showTickLabels="true" showTickMarks="true" value="100" />
+            <Label layoutX="90.0" layoutY="78.0" text="Repulsion" />
+             <Slider fx:id="springSlider" layoutX="178.0" layoutY="19.0" max="30.0" min="1" showTickLabels="true" showTickMarks="true" value="5" />
+             <Label layoutX="118.0" layoutY="30.0" text="Spring" />
+            <Slider fx:id="delaySlider" layoutX="170.0" layoutY="294.0" max="5000.0" min="10.0" minWidth="-Infinity" showTickLabels="true" showTickMarks="true" value="100.0" />
+            <Label layoutX="118.0" layoutY="294.0" text="Delay" />
+            <Slider id="dampenSlider" fx:id="driftSlider" layoutX="170.0" layoutY="250.0" showTickLabels="true" showTickMarks="true" value="10.0" />
+            <Label layoutX="95.0" layoutY="250.0" text="Dampen" />
+
+         </children>
+    </AnchorPane>
+
+  </children>
+</VBox>

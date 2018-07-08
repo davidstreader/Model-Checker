@@ -1,0 +1,23 @@
+processes {
+
+
+A =  a->b->c->b->A.
+B =   b->B.
+C = a->(A||B)\{b}.
+
+Ca = (A||B)\{b}.
+D = simp(abs(C)).
+
+E = simp(ownersRule(D)).
+
+}
+
+
+
+
+
+
+
+
+
+

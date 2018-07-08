@@ -1,0 +1,23 @@
+  processes {
+   //     A = aut(a -> b? -> c -> STOP || x -> b! -> z -> STOP).
+  A = aut(a -> s!->b->STOP || x -> s?-> y-> STOP). // aut || dose not define ownership correctly Hence broadcast will not work!
+  B = a2p2a(A).
+  P = (a -> s!->b->STOP || x -> s?-> y-> STOP).
+  Q = a2p2a(P).
+
+
+//   B = (a -> s!->b->STOP || x -> s! ->y-> STOP).
+//  C = (a -> s?->b->STOP || x -> s? -> y-> STOP).
+
+    }
+
+ 
+operation {
+
+ P ~ Q.
+A ~ B.
+
+}
+
+
+

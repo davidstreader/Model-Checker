@@ -1,0 +1,13 @@
+
+processes {
+A = a->B,
+    B = (b->A | c->A).
+Ap = A || A.
+}
+
+
+
+
+ 
+
+

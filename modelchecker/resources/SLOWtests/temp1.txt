@@ -1,0 +1,18 @@
+processes {
+
+//A = a->STOP.
+Aa = a->Aa.
+
+D = (a->STOP+Aa)=>a->STOP.
+E = (a->STOP =>a->STOP) + (Aa =>a->STOP).
+}
+
+operation {
+//(A+Aa)=>A ~ (A=>A)+(Aa=>A).
+E ~ D.
+}
+
+
+
+
+

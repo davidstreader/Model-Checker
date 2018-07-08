@@ -1,0 +1,24 @@
+  processes {
+        A = (a -> b? -> c -> STOP || x -> b! -> z -> STOP).
+
+        NOTExpectedA = (x -> B | a -> x -> C),
+            B = (a -> C | b! -> (a -> z -> ERROR | z -> a -> ERROR)),
+            C = (b! -> (c -> z -> STOP | z -> c -> STOP)).
+/* Beware ownership essential in the semantics of  broadcast comunication
+   Hence interleaving expansion fails
+*/
+    ExpandedA = a2p2a(A).
+       
+
+    }
+
+   
+
+    operation {
+        A ~  ExpandedA.
+      
+    }
+
+
+
+
