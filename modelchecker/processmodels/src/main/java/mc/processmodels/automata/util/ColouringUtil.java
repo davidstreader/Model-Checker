@@ -119,7 +119,11 @@ public class ColouringUtil {
       System.out.print(k+"->"+reversepi.get(k)+" ");
      } System.out.println("}"); */
   }
-
+  System.out.println("++Colouring");
+ for (AutomatonNode nd: nodes){
+  System.out.println(nd.myString());
+ }
+  System.out.println("++Colouring");
   return;
  }
 

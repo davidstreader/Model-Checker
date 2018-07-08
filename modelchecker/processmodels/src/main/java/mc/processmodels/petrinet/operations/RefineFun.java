@@ -40,19 +40,19 @@ public class RefineFun {
     net2.validatePNet();
 
     //clone nets
-    Petrinet petrinet1 = net1.copy();
+    Petrinet petrinet1 = net1.reId("1");
     Set<PetriNetTransition> trs = petrinet1.getTransitions().values().stream().
       filter(t->t.getLabel()!= null && t.getLabel().equals(act)).
       collect(Collectors.toSet());
     System.out.println("Trans = "+trs.stream().map(x->x.myString()+"\n").collect(Collectors.joining()));
     //create an empty petrinet
     Petrinet composition = new Petrinet(id, false);
-    composition.joinPetrinet(petrinet1);
-
+    //composition.joinPetrinet(petrinet1);
+      composition.addPetrinet(petrinet1,true);
     for(PetriNetTransition tr: trs) {
       //petrinet1.removeTransition(tr);
       System.out.println("Tran " + tr.myString());
-      Petrinet petrinet2 = net2.copy();  // need new copy each event
+      Petrinet petrinet2 = net2.reId("2");  // need new copy each event
 // build set for gluing (leave the start ON
       Set<PetriNetPlace> preEvents = tr.pre();
       Set<PetriNetPlace> prePostEvents = tr.pre();

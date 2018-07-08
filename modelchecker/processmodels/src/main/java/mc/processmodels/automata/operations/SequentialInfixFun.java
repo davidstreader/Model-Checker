@@ -71,7 +71,7 @@ public class SequentialInfixFun {
       map(x->x.getId()).reduce("{",(x,y)->x=x+" "+y)+"}"); */
         //if there are no stop nodes, we cannot glue them together
         if (stopNodes.isEmpty()) {
-            System.out.println("EMPTY STOP!");
+            //System.out.println("EMPTY STOP!");
             return sequence;
         }
 
@@ -127,19 +127,23 @@ public class SequentialInfixFun {
      * (the roots can not be glued together because of the case when Ar overlaps with Ae)
      *
      * @param id   the id of the resulting petrinet
-     * @param net1 the first  petrinet in the function (e.g. {@code A} in {@code A||B})
-     * @param net2 the second petrinet in the function (e.g. {@code B} in {@code A||B})
+     * @param n1 the first  petrinet in the function (e.g. {@code A} in {@code A||B})
+     * @param n2 the second petrinet in the function (e.g. {@code B} in {@code A||B})
      * @return the resulting petrinet of the operation
      */
 
-    public Petrinet compose(String id, Petrinet net1, Petrinet net2)
+    public Petrinet compose(String id, Petrinet n1, Petrinet n2)
             throws CompilationException {
-        net1 = net1.reId(); net2=net2.reId();
 
-        //System.out.println("=>PETRI1 "+ id+" "+net1.myString());
-        net1.validatePNet();
-        //System.out.println("=>PETRI2 "+ id+" "+net2.myString());
-        net2.validatePNet();
+        //System.out.println("=>PETRI1 "+ id+" "+n1.myString());
+        n1.validatePNet();
+        //System.out.println("=>PETRI2 "+ id+" "+n2.myString());
+
+
+        n2.validatePNet();
+        Petrinet net1 = n1.reId("1");
+        Petrinet net2=n2.reId("2"); // the tag "2" ensures unique ids in nets
+
         Stack<Petrinet> netStack = new Stack<>();
         ///LOOP
         //List<Set<String>> p2roots = net2.getRoots();
@@ -160,12 +164,11 @@ public class SequentialInfixFun {
                 own2.addAll(petrinet2.getOwners());
                 //System.out.println("In1=> " + petrinet1.myString());
                 //System.out.println("=>In2 " + petrinet2.myString());
-                if (petrinet1 == petrinet2) {
-                    System.out.println("\n SAME NETS PROBLEM\n");
+                if (petrinet1 == petrinet2) {System.out.println("\n SAME NETS PROBLEM\n");
                 }
                 for (PetriNetPlace pl1 : petrinet1.getPlaces().values()) {
                     for (PetriNetPlace pl2 : petrinet2.getPlaces().values()) {
-                        if (pl1 == pl2)System.out.println("\n SAME PLACES PROBLEM\n");
+                        if (pl1.getId().equals(pl2.getId()))System.out.println("\n SAME PLACES PROBLEM\n");
                     }
                 }
 
@@ -202,7 +205,7 @@ public class SequentialInfixFun {
 
                 composition.glueNames(nextEnd, taggedrt);
 
-                //System.out.println("\nGlue OVER \n"+ composition.myString()+"\n");
+                //System.out.println("\nGlue namesOVER \n"+ composition.myString()+"\n");
                 composition.setRootFromStart();
                 composition = PetrinetReachability.removeUnreachableStates(composition);
                 //System.out.println("    TO STACK "+i+" "+ composition.myString()+"\n");
@@ -212,29 +215,27 @@ public class SequentialInfixFun {
             //  we need to compose these with internal choice
             InternalChoiceInfixFun internalChoice = new InternalChoiceInfixFun();
             sequential = netStack.pop();
-            //System.out.println("  sequentiual "+sequential.myString());
+            //System.out.println("  pop sequentiual "+sequential.myString());
             int pi = 1;
             while (!netStack.empty()) {
                 Petrinet nextP = netStack.pop();
                 //System.out.println("  next "+nextP.myString());
                 sequential = internalChoice.compose("=>" + pi++, sequential, nextP);
-                //System.out.println("SEQing " + sequential.myString());
+                //System.out.println("  poping " + sequential.myString());
                 ////System.out.println("SEQing OVER");
             }
+            //System.out.println("=> part "+sequential.myString());
             sequential = PetrinetReachability.removeUnreachableStates(sequential);
             sequential.setRootFromStart();
             //Petrinet seq = new Petrinet(id, false);
             //seq.addPetrinet(sequential);  // renumbers the ids
             //System.out.println("FINAL " +sequential.myString());
             sequential.validatePNet();
-            sequential.reown();
             //System.out.println("=> END "+sequential.myString());
             return sequential;
         } else {
             // net1 dose not terminate so returne only net1
-            net1.reown();
-
-            return net1.reId();
+            return net1.reId("");
         }
 
     }

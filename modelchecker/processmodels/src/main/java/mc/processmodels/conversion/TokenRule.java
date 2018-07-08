@@ -99,7 +99,7 @@ int j = 0; //without these 2 LofC loop never terminates!
     while (!toDo.isEmpty()) {
 if(j++> stateSizeBound) {System.out.println("\n\nTokenRule Failure Looping = "+j+"\n\n");break;} // second LofC  NEVER Called - looks redundent!
         Multiset<PetriNetPlace> currentMarking = toDo.pop();
-        System.out.println("currentMarking "+currentMarking.stream().map(x->x.getId()+", ").collect(Collectors.joining()));
+        //System.out.println("currentMarking "+currentMarking.stream().map(x->x.getId()+", ").collect(Collectors.joining()));
 
         //System.out.print("\nStarting  prev " +previouslyVisitedPlaces.size()+" todo "+toDo.size()+  " \n");
     /*  for(PetriNetPlace pl :currentMarking){
@@ -129,7 +129,7 @@ if(j++> stateSizeBound) {System.out.println("\n\nTokenRule Failure Looping = "+j
 
       //System.out.println("satisfiedPostTransitions "+ satisfiedPostTransitions.size());
       for (PetriNetTransition transition : satisfiedPostTransitions) {
-        System.out.println("  Satisfied transition "+transition.myString());
+        //System.out.println("  Satisfied transition "+transition.myString());
           //System.out.println("outgoing "+transition.getOutgoing().size());
          Multiset<PetriNetPlace> newMarking = HashMultiset.create(currentMarking);
           //System.out.println("newMarking1 "+newMarking.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
@@ -143,11 +143,11 @@ if(j++> stateSizeBound) {System.out.println("\n\nTokenRule Failure Looping = "+j
                    .map(x->x.getOwners())
                    .flatMap(x->x.stream())
                    .collect(Collectors.toSet());
-          System.out.println("  opOwn "+opOwn);
+          //System.out.println("  opOwn "+opOwn);
         for(PetriNetPlace pl : transition.pre()){  // includes optional preplaces
           newMarking.remove(pl);
         }
-          System.out.println("newMarking "+newMarking.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
+          //System.out.println("newMarking "+newMarking.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
 
           /* filter out the post places of owners with  unmarked preplaces*/
 
@@ -159,7 +159,7 @@ if(j++> stateSizeBound) {System.out.println("\n\nTokenRule Failure Looping = "+j
             .map(PetriNetEdge::getTo)
             .map(PetriNetPlace.class::cast)
             .collect(Collectors.toList()));
-   System.out.println("newMarking "+newMarking.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
+   //System.out.println("newMarking "+newMarking.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
 
         if (!markingToNodeMap.containsKey(newMarking)) {
           AutomatonNode newNode = outputAutomaton.addNode();
@@ -168,22 +168,23 @@ if(j++> stateSizeBound) {System.out.println("\n\nTokenRule Failure Looping = "+j
           nodeToMarkingMap.put(newNode, newMarking);
           if (!toDo.contains(newMarking)) {
               toDo.add(newMarking);
-              System.out.println("  toDo Add Marking "+newMarking.stream().map(x->x.getId()+" ").collect(Collectors.joining()));}
+              //System.out.println("  toDo Add Marking "+newMarking.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
+              }
         }
         Set<String> own =  transition.getOwners();
         AutomatonEdge ed =
         outputAutomaton.addEdge(transition.getLabel(), markingToNodeMap.get(currentMarking),
             markingToNodeMap.get(newMarking), null, false,false);
         ed.setEdgeOwners(own);
-        System.out.println("  adding edge "+ed.myString());
+        //System.out.println("  adding edge "+ed.myString());
       }
  //System.out.println("currentMarking2 "+currentMarking.stream().map(x->x.getId()+", ").collect(Collectors.joining()));
 
         if (!previouslyVisitedPlaces.contains(currentMarking)) { previouslyVisitedPlaces.add(currentMarking);}
-        System.out.println("todo size "+toDo.size());
+        //System.out.println("todo size "+toDo.size());
   //System.out.println("Add to Previous "+previouslyVisitedPlaces.size()+"  "+currentMarking.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
     }
-   System.out.println("Token Rule Out "+outputAutomaton.myString());
+   //System.out.println("Token Rule Out "+outputAutomaton.myString());
     return outputAutomaton;
   }
 

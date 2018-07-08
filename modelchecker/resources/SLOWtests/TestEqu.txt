@@ -1,7 +1,5 @@
 processes {
 
-Zero1 = STOP.
-Zero2 = ERROR.
 
 One1 = a->One1.
 One2 = a->STOP.
@@ -14,58 +12,45 @@ Two1 = a->b->STOP.
 Two2 = a->Two2|a->STOP.
 Two3 = a->Two3|b->STOP.
 Two4 = a->b->Two4.
+
 Two5 = a->STOP|b->STOP.
 Two6 = a->ERROR| a->STOP.
 Two7 = a->ERROR|b->STOP.
 Two8 = a->X|b->X, X = STOP.
-Two9 = (a->STOP + b->STOP).
 
-//Bug 1 choice or Sequential with STOP  All look good
-A =  One2|STOP.
-B = One2.
-C= STOP=>One2.
-
-//Failure not bisim  Two1=>(One3+One2) ~(Two1=>One3)+ (Two1=>One2).
-
-// Bug 2 (One2|One2)=>Two1 ~ (One2=>Two1) | (One2=>Two1)
-// Both look the same
-D = (One2|One2)=>Two1.
-E = (One2=>Two1).
 
 }
-automata One1,One2,One3,One4,One5,One6. 
-//automata One1,One4.
-automata Two1,Two2,Two3,Two4,Two5,Two6,Two7,Two8,Two9.
-//automata A, B, C.
-//automata D,E.
+
 
 operation {
-One1|STOP ~ One1.
-STOP=> One1 ~ One1.
+
 }
 
 equation {
 X|Y ~ Y|X.
 X|(Y|Z) ~ (X|Y)|Z.
-X|STOP ~ X.
+//X|STOP ~ X.
 X|X ~ X.
 
 X+Y ~  Y+X.
 
 (a->STOP)=>X ~ a->X.
 X=>(Y=>Z)  ~ (X=>Y)=>Z.
-X=>STOP ~ X.
-STOP=>X ~ X.
 
-(X|Y)=>Z ~ (X=>Z) | (Y=>Z).
+
+(X|Y)=>Z ~ (X=>Z) | (Y=>Z).  
 (X+Y)=>Z ~ (X=>Z) + (Y=>Z).
 
 //  X=>(Y+W) ~(X=>Y)+ (X=>W).  Failure equality not bisim
-(X=>Y)+ (X=>W) ~ (X=>Y)| (X=>W).
+(X=>Y)+ (X=>W) * (X=>Y)| (X=>W).  //NOT bisim
 
 X|| Y ~ Y||X.
-X||STOP ~ X.
-X||X ~ X.
+//X||STOP ~ X.
+//X||X ~ X.  //NOT true for Non deterministic processes
 
 
 }
+
+
+
+

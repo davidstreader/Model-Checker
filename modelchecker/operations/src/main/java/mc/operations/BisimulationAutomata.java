@@ -99,7 +99,7 @@ import mc.processmodels.petrinet.utils.PetriColouring;
                         for (AutomatonNode n : root) {
                             root_colors.add(n.getColour());
                         }
-                        //System.out.println("Aut "+ automaton.getId()+ " root col "+ root_colors);
+                        System.out.println("Aut "+ automaton.getId()+ " root col "+ root_colors);
                         if (root_colors.equals(first_colors)) {   //comparison between this current automaton and the first
                             return true;
                         } else {

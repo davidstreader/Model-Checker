@@ -24,8 +24,8 @@ public class PetrinetParallelFunction  {
 
   public static Petrinet compose(Petrinet pi1, Petrinet pi2) throws CompilationException {
     clear();
-    Petrinet p1 = pi1.reId();
-    Petrinet p2 = pi2.reId();
+    Petrinet p1 = pi1.reId("1");
+    Petrinet p2 = pi2.reId("2");
     p1.rebuildAlphabet(); p2.rebuildAlphabet();
 
    System.out.println("\nPETRINETPARALLELFUNCTION");
@@ -51,7 +51,7 @@ public class PetrinetParallelFunction  {
     setupSynchronisedActions(p1, p2, composition);
     System.out.println("  synced  \n "+ composition.myString());
     //composition = PetrinetReachability.removeUnreachableStates(composition);
-     composition.reId();
+     composition.reId("");
      assert composition.validatePNet():"parallel comp post condition ";
    System.out.println("\n   PAR end "+composition.myString());
     return composition;

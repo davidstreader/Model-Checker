@@ -485,7 +485,7 @@ public class AbstractionFunction implements IProcessFunction {
     System.out.println("\nPetri abstraction!\n");
 
     assert petrinets.length == 1;
-    Petrinet petri = petrinets[0].reId();
+    Petrinet petri = petrinets[0].reId("");
     System.out.println("Start "+petri.myString());
     List<PetriNetTransition> hidden = petri.getTransitions().values().stream().
             filter(x->x.getLabel().equals(Constant.HIDDEN)).collect(Collectors.toList());

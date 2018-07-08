@@ -142,7 +142,7 @@ public class NFtoDFconvFunction implements IProcessFunction {
     dfa.getNodes().stream()
         .filter(node -> node.getOutgoingEdges().isEmpty())
         .forEach(node -> node.setTerminal("STOP"));
-    //System.out.println("built dfa " +dfa.toString());
+    System.out.println("built dfa " +dfa.getId());
     return dfa;
   }
 

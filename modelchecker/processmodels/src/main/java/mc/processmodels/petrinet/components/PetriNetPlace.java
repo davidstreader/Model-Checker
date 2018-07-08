@@ -26,7 +26,7 @@ public class PetriNetPlace extends ProcessModelObject implements Comparable<Petr
   public boolean hasIncoming(PetriNetTransition tr) {
 
     for (PetriNetEdge ed: incoming) {
-      System.out.println(ed.getFrom().getId() + " ? "+ tr.getId());
+      //System.out.println(ed.getFrom().getId() + " ? "+ tr.getId());
       if (ed.getFrom().getId().equals(tr.getId())) {
         return true;
       }
@@ -35,7 +35,7 @@ public class PetriNetPlace extends ProcessModelObject implements Comparable<Petr
   }
   public boolean hasOutgoing(PetriNetTransition tr) {
     for (PetriNetEdge ed: incoming) {
-    System.out.println(ed.getTo().getId() + " ? "+ tr.getId());
+    //System.out.println(ed.getTo().getId() + " ? "+ tr.getId());
     if (ed.getTo().getId().equals(tr.getId())) {
       return true;
     }

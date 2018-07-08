@@ -202,7 +202,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
            processNode.getIdentifier() + " "+ processNode.getType()+"\n"); */
   interpretProcess(processNode.getProcess(), identifier);
 
-  Petrinet petrinet = processStack.pop().reId();
+  Petrinet petrinet = processStack.pop().reId("");
   //System.out.println("\nPetriInterp Poped "+petrinet.myString());
  //System.out.println("Just Built "+petrinet.myString());
   //System.out.println("Ref "+ referenceSet.toString());
@@ -290,7 +290,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
    interpretProcess(root.getProcess(), identifier); //RECURSIVE CALL the process is an ASTNode
                                                     // build new petri net and push on the stack
 
-   Petrinet petrinet = processStack.pop().reId();
+   Petrinet petrinet = processStack.pop().reId("");
    //System.out.println("\n*** ProcessRootNode poped petri "+petrinet.myString());
 
    petrinet = processLabellingAndRelabelling(petrinet, root); //888888
@@ -613,7 +613,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
   //  currentPlace = petri.getPlaces().get(currentPlace.getId());//only match on "id"
   interpretProcess(processRoot.getProcess(), petri.getId() + "." + ++subProcessCount);
 
-  Petrinet model = ((Petrinet) processStack.pop()).reId();
+  Petrinet model = ((Petrinet) processStack.pop()).reId("");
   //System.out.println("model "+model.myString());
   model = processLabellingAndRelabelling(model, processRoot);
 
@@ -641,7 +641,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
   } else {
      copy = ((Petrinet) model).copy();
   }
-  copy = copy.reId();
+  copy = copy.reId("");
   if (copy==null) { throw new CompilationException(getClass(), "Expecting a multiProcess in composite "
           , identifier.getLocation());}
 

@@ -26,7 +26,7 @@ public class TraceEquivalentOperation implements IOperationInfixFunction {
    */
   @Override
   public String getNotation() {
-    return "#";
+    return "**";
   }
   @Override
   public String getOperationType(){return "automata";}
@@ -52,7 +52,7 @@ public class TraceEquivalentOperation implements IOperationInfixFunction {
           System.out.println("PINGO" + e.toString());
         }
       }
-      BisimulationOperation bo = new BisimulationOperation();
+      BisimulationAutomata bo = new BisimulationAutomata();
       boolean r = bo.evaluate(  nfas);
 
    /*

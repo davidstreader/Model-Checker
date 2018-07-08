@@ -113,14 +113,23 @@ public class InternalChoiceInfixFun implements IProcessInfixFunction {
   @Override
   public Petrinet compose(String id, Petrinet net1, Petrinet net2) throws CompilationException {
 
-    //System.out.println("+PETRI1 "+net1.myString());
+    System.out.println(id+" +PETRI1 "+net1.myString());
     net1.validatePNet();
-    //System.out.println("+PETRI2 "+net2.myString());
+    System.out.println(id+" +PETRI2 "+net2.myString());
     net2.validatePNet();
-    Petrinet petrinet1 = net1.reId();
-    Petrinet petrinet2 = net2.reId();
-    List<Set<PetriNetPlace>> root1 = net1.getRootPlacess();
-    List<Set<PetriNetPlace>> root2 = net2.getRootPlacess();
+    System.out.println("ok");
+    Petrinet petrinet1 = net1.reId("1");
+    Petrinet petrinet2 = net2.reId("2");
+    Set<String> o1 = new HashSet<>();
+    for(String el: petrinet1.getOwners()){
+      o1.add(el);
+    }
+    Set<String> o2 = new HashSet<>();
+    for(String el: petrinet2.getOwners()){
+      o2.add(el);
+    }
+    List<Set<PetriNetPlace>> root1 = petrinet1.getRootPlacess();
+    List<Set<PetriNetPlace>> root2 = petrinet2.getRootPlacess();
     //System.out.println("+PETRI1 "+petrinet1.myString());
     //System.out.println("+PETRI2 "+petrinet2.myString());
     if (petrinet1 == petrinet2) {
@@ -128,18 +137,36 @@ public class InternalChoiceInfixFun implements IProcessInfixFunction {
     }
     for(PetriNetPlace pl1: petrinet1.getPlaces().values()){
       for(PetriNetPlace pl2: petrinet2.getPlaces().values()){
-        if (pl1==pl2) System.out.println("\n SAME PLACES PROBLEM");
+        if (pl1.getId().equals(pl2.getId())) System.out.println("\n SAME PLACES PROBLEM");
       }
     }
+    Set<String> twoEnd = petrinet2.getPlaces().values().stream()
+            .filter(x -> x.isSTOP()).map(x -> x.getId()).collect(Collectors.toSet());
+    Set<PetriNetPlace> end2 = new HashSet<>();
+    for(String k: twoEnd){
+      end2.add(petrinet2.getPlaces().get(k));
+    }
     //Petrinet choice = new Petrinet(id, false);
-    petrinet2.joinPetrinet(petrinet1);
+    //petrinet2.joinPetrinet(petrinet1);
+    petrinet2.addPetrinet(petrinet1,true);
+
+    Set<String> oneEnd = petrinet2.getPlaces().values().stream()
+            .filter(x -> x.isSTOP()).map(x -> x.getId()).collect(Collectors.toSet());
+    oneEnd.removeAll(twoEnd);
+    Set<PetriNetPlace> end1 = new HashSet<>();
+    //System.out.println("**PreEnd "+petrinet2.myString());
+    for(String k: twoEnd){
+      end1.add(petrinet2.getPlaces().get(k));
+    }
+    //System.out.println("**PostEnd "+petrinet2.myString());
+    System.out.println("oneE "+ oneEnd+"  twoE "+ twoEnd);
 
     //The root is now that of external choice
     Petrinet choice = petrinet2;
     choice.getRootPlacess().clear();
     choice.getRootPlacess().addAll(root1);
     choice.getRootPlacess().addAll(root2);
-    System.out.println("**Choice "+choice.myString());
+    System.out.println("**Choice "+choice.myString());  //distinct owners
     //add new root set to choice net find next choice No
    /* int nextRootNo = petrinet1.nextRootNo();
     //System.out.println("next Root "+ nextRootNo);
@@ -154,15 +181,17 @@ public class InternalChoiceInfixFun implements IProcessInfixFunction {
         //System.out.println(pl+" rooted");
       }
     } */
-if (net1.terminates() && net2.terminates()) {
-  Set<String> end1 = petrinet1.getPlaces().values().stream().
-    filter(x -> x.isSTOP()).map(x -> x.getId()).collect(Collectors.toSet());
-  Set<String> end2 = petrinet2.getPlaces().values().stream().
-    filter(x -> x.isSTOP()).map(x -> x.getId()).collect(Collectors.toSet());
-  choice.glueNames(end1, end2);
-}
+    choice.glueOwners(o1,o2); //Need to identify the owners prior to glueing the Places
+    if (net1.terminates() && net2.terminates()) {  //do NOT use petrinet2 it has changed
+      System.out.println("Both ");
+        choice.glueNames(oneEnd, twoEnd);
+    } //else if (net1.terminates()){
+
+   // }
+    System.out.println("**choice  "+choice.myString());
+
     choice.setStartFromRoot();
-    //System.out.println("choice "+choice.myString());
+    System.out.println("**choice RETURNS "+choice.myString());
     return choice;
   }
 }

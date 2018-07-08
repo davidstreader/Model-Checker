@@ -332,18 +332,14 @@ public class ModelView implements Observer {
       nodeMap.put(transition.getId(), node);
 
     });
-     boolean toggel = true;
+
     float dash[] = { 10.0f };
      for (PetriNetEdge edge: petri.getEdges().values()) {
-       if (toggel) {
 
-         vv.getRenderContext().setEdgeStrokeTransformer(e -> new BasicStroke(4.0f, BasicStroke.CAP_BUTT,
-                 BasicStroke.JOIN_MITER, 10.0f, dash, 1.0f));
-       } else {
          vv.getRenderContext().setEdgeStrokeTransformer(e -> new BasicStroke(2.0f, BasicStroke.CAP_BUTT,
                  BasicStroke.JOIN_MITER, 10.0f, dash, 0.0f));
-       }
-       toggel = !toggel;
+
+
        DirectedEdge nodeEdge = new DirectedEdge("", UUID.randomUUID().toString());
        graph.addEdge(nodeEdge, nodeMap.get(edge.getFrom().getId()),
                nodeMap.get(edge.getTo().getId()));
