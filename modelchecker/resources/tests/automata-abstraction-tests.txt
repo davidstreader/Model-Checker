@@ -21,7 +21,7 @@ processes {
 
 operation AbsBasic2 ~ EqBasic2.
 
-
+/*
 processes {
 //Abstract the last action
     Basic3 = (a -> b -> c -> STOP)\{c}.
@@ -29,8 +29,8 @@ processes {
     EqBasic3 = (a -> (b -> STOP | b -> STOP)).
 }
 
-operation AbsBasic3 ~ EqBasic3.
-
+operation AbsBasic3 ~ EqBasic3.  // Needs cong w.r.t => []
+*/
 processes {
 //Multiple hidden actions
     Multi = (a -> b -> c -> d -> STOP)\{b, c}.
@@ -59,7 +59,8 @@ processes {
 }
 
 
-operation AbsMulti3 ~ EqMulti3.
+//operation AbsMulti3 ~ EqMulti3.  // cong w.r.t. [] =>
+
 
 processes {
 // Action hidden to form a tau loop (assumes fair abstraction)
@@ -70,7 +71,7 @@ processes {
 }
 
 
-operation AbsLoop ~ EqLoop.
+//operation AbsLoop * EqLoop.  // delta
 
 processes {
 // abstract a looped process with a hidden action
@@ -102,47 +103,22 @@ processes {
         B = (a -> C | a -> D),
         C = (c -> E | z -> F),
         D = (c -> E | z -> F),
-        E = (z -> Stop),
-        F = (c -> Stop),
-        Stop = (STOP).
+        E = (z -> STOP),
+        F = (c -> STOP).
 }
 
 
-operation AbsConcurrent ~ EqConcurrent.
-
-processes {
-// abstracting a single action in a concurrent process
-Concurrent2 = (a -> b -> c -> STOP || x -> y -> z -> STOP)\{b}.
-    AbsConcurrent2 = abs(Concurrent2).
-    EqConcurrent2 = (a -> A | a -> B | x -> D),
-        A = (c -> C | x -> E | x -> F),
-        B = (c -> C | x -> F),
-        C = (x -> G),
-        D = (a -> E | a -> F | y -> H),
-        E = (c -> G | y -> I | y -> J),
-        F = (c -> G | y -> J),
-        G = (y -> K),
-        H = (a -> I | a -> J | z -> L),
-        I = (c -> K | z -> M | z -> N),
-        J = (c -> K | z -> N),
-        K = (z -> Stop),
-        L = (a -> M | a -> N),
-        M = (c -> Stop),
-        N = (c -> Stop),
-        Stop = (STOP).
-}
+operation AbsConcurrent * EqConcurrent.
 
 
-operation AbsConcurrent2 ~ EqConcurrent2.
 
 processes {
 // abstraction example from the crib sheet
     Example = (a -> (x -> b -> STOP | c -> STOP))\{x}.
     AbsExample = abs(Example).
     EqExample = (a -> A | a -> B),
-        A = (c -> STOP | b -> Stop),
-        B = (b -> Stop),
-        Stop = (STOP).
+        A = (c -> STOP | b -> STOP),
+        B = (b -> STOP).
 }
 
 
@@ -161,6 +137,7 @@ processes {
 
 
 operation AbsBuff ~ EqBuff.
+
 
 
 

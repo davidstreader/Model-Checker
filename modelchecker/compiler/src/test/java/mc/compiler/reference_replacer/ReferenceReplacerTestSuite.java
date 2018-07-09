@@ -6,7 +6,7 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 
 @Suite.SuiteClasses({
-        ExampleTests.class
+     //   ExampleTests.class
 })
 public class ReferenceReplacerTestSuite {
 }

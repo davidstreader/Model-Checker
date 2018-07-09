@@ -6,7 +6,7 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 
 @Suite.SuiteClasses({
-        ProcessTypeTests.class,
+       ProcessTypeTests.class,
         KeywordTests.class,
         FunctionTests.class,
         OperatorTests.class,

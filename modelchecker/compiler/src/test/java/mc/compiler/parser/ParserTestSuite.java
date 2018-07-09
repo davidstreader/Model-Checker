@@ -13,7 +13,7 @@ import org.junit.runners.Suite;
         ForAllTests.class,
         RootTests.class,
         SetTests.class,
-        ExampleTests.class
+      //  ExampleTests.class
 })
 
 /**

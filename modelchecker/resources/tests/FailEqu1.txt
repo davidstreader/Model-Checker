@@ -29,18 +29,15 @@ X|(Y|Z) * (X|Y)|Z.
 
 X|| Y * Y||X.
 
-X||STOP * X.
-X||X * X.
 
 //(X=>Y)| (Z=>Y) * (X|Z)=>Y.  // Tree ONLY
 
 (a->STOP)=>X * a->X.
-X=>STOP * X.
-STOP=>X ~ X.
 
  X=>(Y+Z) * (X=>Y)|(X=>Z).
 
 }
+
 
 
 
