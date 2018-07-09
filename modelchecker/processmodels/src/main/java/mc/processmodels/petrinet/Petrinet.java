@@ -739,7 +739,7 @@ public static String marking2String(Collection<PetriNetPlace> mark){
     from.getOutgoing().add(edge);
     edges.put(id, edge);
     edge.setOptional(op);
-System.out.println("addEdgeTP done "+edge.myString());
+ //System.out.println("addEdgeTP done "+edge.myString());
     return edge;
   }
 
@@ -978,7 +978,7 @@ System.out.println("addEdgeTP done "+edge.myString());
    * @param owns2
    */
  public void glueOwners(Set<String> owns1, Set<String> owns2) {
-   System.out.println("\n** glueOwners Start o1 "+owns1+" o2 "+owns2);
+   //System.out.println("\n** glueOwners Start o1 "+owns1+" o2 "+owns2);
    combinationsTable = ArrayListMultimap.create();
    String setAsString;
    for (String o1 : owns1) {
@@ -1000,11 +1000,11 @@ System.out.println("addEdgeTP done "+edge.myString());
        if (!found) combinationsTable.put(o2, setAsString);
      }
    }
-   System.out.println("GlueOwners Table "+ " \n"+ combinationsTable.keySet().stream().
+   /*System.out.println("GlueOwners Table "+ " \n"+ combinationsTable.keySet().stream().
      map(x->x+"->"+combinationsTable.get(x)+", \n").
-     collect(Collectors.joining())+ " ");
+     collect(Collectors.joining())+ " "); */
 
-   System.out.println("owners = "+owners);
+   //System.out.println("owners = "+owners);
    Set<String> newOwners = new HashSet<>();
    for(String o:owners) {
      if(combinationsTable.keySet().contains(o)){
@@ -1014,7 +1014,7 @@ System.out.println("addEdgeTP done "+edge.myString());
      }
    }
    owners = newOwners;
-   System.out.println("newOwner = "+owners);
+   //System.out.println("newOwner = "+owners);
 
    for (PetriNetTransition tr : getTransitions().values()) {
 
@@ -1027,7 +1027,7 @@ System.out.println("addEdgeTP done "+edge.myString());
          flatMap(Collection::stream).collect(Collectors.toSet()));
        tr.addOwners(V);
      }
-     System.out.println("  tr "+tr.myString());
+     //System.out.println("  tr "+tr.myString());
    }
    for (PetriNetPlace pl : getPlaces().values()) {
 
@@ -1040,9 +1040,9 @@ System.out.println("addEdgeTP done "+edge.myString());
          flatMap(Collection::stream).collect(Collectors.toSet()));
        pl.addOwners(V);
      }
-     System.out.println("  pl "+pl.myString());
+     //System.out.println("  pl "+pl.myString());
    }
-   System.out.println("**glueOwners END "+myString()+"\n");
+   //System.out.println("**glueOwners END "+myString()+"\n");
  }
   /**
    * Because of the need clone the objects change only the Ids are fixed.
@@ -1124,7 +1124,7 @@ System.out.println("addEdgeTP done "+edge.myString());
         inter.retainAll(place2.getOwners());
         newPlace.setOwners(inter);
 
- System.out.println("*** Glue "+place1.myString()+"\n     with "+place2.myString()+" = \n     "+newPlace.myString());
+ //System.out.println("*** Glue "+place1.myString()+"\n     with "+place2.myString()+" = \n     "+newPlace.myString());
         products.put(place1, newPlace);
         products.put(place2, newPlace);
         prodNames.put(place1.getId()+MAPLET+place2.getId(), newPlace.getId());

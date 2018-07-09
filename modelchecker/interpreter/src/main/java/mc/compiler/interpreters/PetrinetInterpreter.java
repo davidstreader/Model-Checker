@@ -459,7 +459,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
   //functions  nfa2dfa, prune, simp, abs,  .... are function on automata!
   else if (currentNode instanceof FunctionNode) {
    info = ((FunctionNode) currentNode).getFunction() ;
-   System.out.println(info);
+   //System.out.println(info);
    petri = interpretFunction((FunctionNode) currentNode, petri);
   }
   // tokenRule and ownersRule

@@ -55,10 +55,7 @@ public class ColouringUtil {
 
    //    for each node nd
    for (AutomatonNode nd : nodes) {
- /*   System.out.print("nextCol= {");
-    for(AutomatonNode ndd : nextCol.keySet()) {
-      System.out.print(ndd.getId()+"->"+nextCol.get(ndd)+" ");
-    } System.out.println("}");*/
+
     List<ColourComponent> ndpi = new ArrayList<ColourComponent>(buildpi(nd, edges, nodes));
     //      if nd_colorPI defined in PI
 
@@ -90,10 +87,7 @@ public class ColouringUtil {
    for (AutomatonNode nd : nextCol.keySet()) {
     nd.setColour(nextCol.get(nd));
    }
-  /*   for(AutomatonNode nd : nextCol.keySet()){
-      System.out.println("set node "+ nd.getId()+" col "+nd.getColour()+
-        "   newPi "+CCSString(buildpi(nd, edges, nodes)));
-     }*/
+
 
    //if one of the old colours has more than one new color pi then keep going
    go = false;
@@ -114,16 +108,14 @@ public class ColouringUtil {
     }
    }
 
- /*    System.out.print("ReversePI {");
-     for(Integer k: reversepi.keySet()){
-      System.out.print(k+"->"+reversepi.get(k)+" ");
-     } System.out.println("}"); */
+ /*System.out.print("ReversePI {");
+     for(Integer k: reversepi.keySet())
+      {System.out.print(k+"->"+reversepi.get(k)+" ");
+     }System.out.println("}"); */
   }
-  System.out.println("++Colouring");
- for (AutomatonNode nd: nodes){
-  System.out.println(nd.myString());
- }
-  System.out.println("++Colouring");
+  //System.out.println("++Colouring");
+
+  //System.out.println("++Colouring");
   return;
  }
 
@@ -250,14 +242,7 @@ public class ColouringUtil {
  }
 
  private boolean colEquality(Map<AutomatonNode, Integer> old, Map<AutomatonNode, Integer> now) {
-  /*  System.out.print("colEquality old { ");
-    for(AutomatonNode n: old.keySet()) {
-      System.out.print(n.getId()+"-"+old.get(n)+ " ");
-    } System.out.println(" }");
-    System.out.print("colEquality now { ");
-    for(AutomatonNode n: now.keySet()) {
-      System.out.print(n.getId()+"-"+now.get(n)+ " ");
-    } System.out.println(" }");*/
+
   boolean b = true;
   for (AutomatonNode n : now.keySet()) {
    if (!now.containsKey(n) || old.get(n) != now.get(n)) {

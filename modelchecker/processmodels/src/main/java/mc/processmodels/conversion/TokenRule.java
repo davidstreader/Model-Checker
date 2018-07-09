@@ -65,7 +65,7 @@ public class TokenRule {
 
     Automaton outputAutomaton = new Automaton(convertFrom.getId() + "-token" //+ " automata"
             ,false);
-      System.out.println("\nTOKEN RULE  STARTING "+convertFrom.myString());
+      //System.out.println("\nTOKEN RULE  STARTING "+convertFrom.myString());
 
       assert convertFrom.validatePNet(): "Token precondition";
    outputAutomaton.setOwners(convertFrom.getOwners());

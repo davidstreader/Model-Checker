@@ -113,11 +113,11 @@ public class InternalChoiceInfixFun implements IProcessInfixFunction {
   @Override
   public Petrinet compose(String id, Petrinet net1, Petrinet net2) throws CompilationException {
 
-    System.out.println(id+" +PETRI1 "+net1.myString());
+    //System.out.println(id+" +PETRI1 "+net1.myString());
     net1.validatePNet();
-    System.out.println(id+" +PETRI2 "+net2.myString());
+    //System.out.println(id+" +PETRI2 "+net2.myString());
     net2.validatePNet();
-    System.out.println("ok");
+    //System.out.println("ok");
     Petrinet petrinet1 = net1.reId("1");
     Petrinet petrinet2 = net2.reId("2");
     Set<String> o1 = new HashSet<>();
@@ -159,14 +159,14 @@ public class InternalChoiceInfixFun implements IProcessInfixFunction {
       end1.add(petrinet2.getPlaces().get(k));
     }
     //System.out.println("**PostEnd "+petrinet2.myString());
-    System.out.println("oneE "+ oneEnd+"  twoE "+ twoEnd);
+    //System.out.println("oneE "+ oneEnd+"  twoE "+ twoEnd);
 
     //The root is now that of external choice
     Petrinet choice = petrinet2;
     choice.getRootPlacess().clear();
     choice.getRootPlacess().addAll(root1);
     choice.getRootPlacess().addAll(root2);
-    System.out.println("**Choice "+choice.myString());  //distinct owners
+    //System.out.println("**Choice "+choice.myString());  //distinct owners
     //add new root set to choice net find next choice No
    /* int nextRootNo = petrinet1.nextRootNo();
     //System.out.println("next Root "+ nextRootNo);
@@ -183,15 +183,15 @@ public class InternalChoiceInfixFun implements IProcessInfixFunction {
     } */
     choice.glueOwners(o1,o2); //Need to identify the owners prior to glueing the Places
     if (net1.terminates() && net2.terminates()) {  //do NOT use petrinet2 it has changed
-      System.out.println("Both ");
+      //System.out.println("Both ");
         choice.glueNames(oneEnd, twoEnd);
     } //else if (net1.terminates()){
 
    // }
-    System.out.println("**choice  "+choice.myString());
+    //System.out.println("**choice  "+choice.myString());
 
     choice.setStartFromRoot();
-    System.out.println("**choice RETURNS "+choice.myString());
+    //System.out.println("**choice RETURNS "+choice.myString());
     return choice;
   }
 }
