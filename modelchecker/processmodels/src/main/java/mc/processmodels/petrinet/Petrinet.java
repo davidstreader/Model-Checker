@@ -824,16 +824,16 @@ public static String marking2String(Collection<PetriNetPlace> mark){
    */
   @SneakyThrows(value = {CompilationException.class})
   public Map<PetriNetTransition, PetriNetTransition> addPetrinet(Petrinet petriToAdd, boolean withRoot) {
-    //System.out.println("\nAdd Petri this "+ this.myString()+ "toAdd "+ petriToAdd.getId());
+    System.out.println("\nAdd Petri this "+ this.myString()+ "toAdd "+ petriToAdd.myString());
     Map<PetriNetPlace, PetriNetPlace> placeMap = new HashMap<>();
     nameMap = new HashMap<>();
     Map<PetriNetTransition, PetriNetTransition> transitionMap = new HashMap<>();
     //System.out.println("Owners "+owners +" to remove "+ DEFAULT_OWNER);
     if (owners.contains(DEFAULT_OWNER)) {owners = new HashSet<>();}
     //owners.remove(DEFAULT_OWNER);  FAILS ?
-    owners.addAll(petriToAdd.getOwners());
+    owners.addAll(petriToAdd.getOwners());  //assumes disjoint owners
     for (PetriNetPlace place : petriToAdd.getPlaces().values()) {
-      PetriNetPlace newPlace = addPlace();
+      PetriNetPlace newPlace = addPlace();  //new id
       newPlace.setOwners(place.getOwners());
       newPlace.copyProperties(place);
       if (!withRoot) newPlace.setStart(false);
@@ -1088,10 +1088,10 @@ public static String marking2String(Collection<PetriNetPlace> mark){
   public Map<String,String> gluePlaces
       (Set<PetriNetPlace> set1, Set<PetriNetPlace> set2)
       throws CompilationException {
-  //System.out.println("\n\n GLUE  START \n"+myString());
+   System.out.println("\n\n GLUE  START \n"+myString());
 
-  //System.out.println("s1 "+ Petrinet.marking2String(set1));
-  //System.out.println("s2 "+ Petrinet.marking2String(set2));
+  System.out.println("s1 "+ Petrinet.marking2String(set1));
+  System.out.println("s2 "+ Petrinet.marking2String(set2));
 
     for(PetriNetPlace pl : set1){
       if (!places.containsValue(pl)){

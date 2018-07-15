@@ -1,15 +1,23 @@
 processes {
 P = x->STOP||y->STOP.
-Q = a->b->STOP.
-Qp  = Q/{P/b}.
-//Aa = tokenRule(Qp).
-//Ap = ownersRule(Aa).
-//Aa = tokenRule(Ap).
+Q = a->b->b->STOP.
+RefQb  = Q/{P/b}.
+DefQb = a->P=>P=>STOP.
 
+R = a->(b->STOP|b->c->STOP).
+RefRb = R/{P/b}.
+DefRb = a->((x->STOP||y->STOP)[](x->STOP||y->STOP)=>(c->STOP)).
 
+S = a->b->c->S.
+DefSb = (a->STOP)=>(P)=>(c->DefSb).  //Need to find a way to stop this OR!
+RefSb = S/{P/b}.
 }
-petrinet P,Qp.
-//automata Aa.
+operation {
+DefQb ~ RefQb.
+DefRb ~ RefRb.
+//DefSb ~ RefSb.
+}
+
 
 
 
