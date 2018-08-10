@@ -1,27 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Slider?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox prefHeight="326.0" prefWidth="402.0" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1">
+<VBox prefHeight="326.0" prefWidth="402.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
   <children>
     <AnchorPane maxHeight="-1.0" maxWidth="-1.0" prefHeight="335.0" prefWidth="537.0" VBox.vgrow="ALWAYS">
          <children>
-            <Slider fx:id="maxNodesSlider" layoutX="178.0" layoutY="33.0" max="200.0" showTickLabels="true" showTickMarks="true" value="40.0" />
-             <Label layoutX="22.0" layoutY="33.0" text="Max number of nodes" />
+            <Slider fx:id="maxNodesSlider" layoutX="224.0" layoutY="31.0" max="200.0" showTickLabels="true" showTickMarks="true" value="40.0" />
+             <Label layoutX="81.0" layoutY="31.0" text="Max number of nodes" />
 
-             <Slider fx:id="springSlider" layoutX="178.0" layoutY="86.0" min="1" max="100" showTickLabels="true" showTickMarks="true" value="50" />
-             <Label layoutX="127.0" layoutY="86.0" text="Spring" />
-             <Slider fx:id="delaySlider" layoutX="185.0" layoutY="234.0" max="5000" min="50" showTickLabels="true" showTickMarks="true" value="100" />
-             <Label layoutX="115.0" layoutY="236.0" prefHeight="0.0" prefWidth="35.0" text="Delay" />
-            <Button layoutX="22.0" layoutY="177.0" mnemonicParsing="false" onAction="#handleResetSettings" prefHeight="32.0" prefWidth="79.0" text="Reset" />
-            <Slider fx:id="stepSlider" layoutX="171.0" layoutY="184.0" min="1" max="500" showTickLabels="true" showTickMarks="true" value="10" />
-            <Label layoutX="133.0" layoutY="184.0" text="Step" />
-            <Slider fx:id="repulseSlider" layoutX="178.0" layoutY="130.0" min="1" max="100" showTickLabels="true" showTickMarks="true" value="50" />
-            <Label layoutX="103.0" layoutY="130.0" text="Repulsion" />
+             <Slider fx:id="springSlider" layoutX="224.0" layoutY="84.0" max="100" min="1" showTickLabels="true" showTickMarks="true" value="50" />
+             <Label layoutX="174.0" layoutY="87.0" text="Spring" />
+             <Slider fx:id="delaySlider" blockIncrement="0.0" layoutX="224.0" layoutY="234.0" majorTickUnit="1.0" max="10.0" minorTickCount="0" showTickLabels="true" showTickMarks="true" value="2.0" />
+             <Label layoutX="177.0" layoutY="234.0" prefHeight="0.0" prefWidth="35.0" text="Delay" />
+            <Button layoutX="22.0" layoutY="79.0" mnemonicParsing="false" onAction="#handleResetSettings" prefHeight="32.0" prefWidth="79.0" text="Reset" />
+            <Slider fx:id="stepSlider" blockIncrement="0.0" layoutX="224.0" layoutY="182.0" max="1000.0" min="10.0" showTickLabels="true" showTickMarks="true" value="100.0" />
+            <Label layoutX="172.0" layoutY="182.0" text="Step" />
+            <Slider fx:id="repulseSlider" layoutX="224.0" layoutY="128.0" max="100" min="1" showTickLabels="true" showTickMarks="true" value="50" />
+            <Label layoutX="156.0" layoutY="128.0" text="Repulsion" />
+            <CheckBox fx:id="Own" layoutX="26.0" layoutY="136.0" mnemonicParsing="false" text="Owners" />
+            <CheckBox fx:id="Col" layoutX="26.0" layoutY="166.0" mnemonicParsing="false" text="Color" />
 
          </children>
     </AnchorPane>

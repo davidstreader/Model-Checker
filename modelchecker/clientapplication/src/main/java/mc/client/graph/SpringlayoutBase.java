@@ -46,7 +46,9 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
     private Function<Object, Integer> repulseFunction;
     private Function<Object, Integer> springFunction;
     private Function<Object, Integer> delayFunction;
-    private Function<Object, Integer> stepFunction;
+    private Function<Object, Integer> stepFunction;  // small step = fast ; large step = slow
+    private Function<Object, Boolean> isShowCol;
+    private Function<Object, Boolean> isShowOwn;
     private boolean done = false;
 
     private LoadingCache<V, SpringVertexData> springVertexData =
@@ -66,11 +68,13 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
     @SuppressWarnings("unchecked")
     public SpringlayoutBase(Graph<V,E> g) {
         this(g
-                , (Function<Object,Integer>)Functions.<Integer>constant(100)
                 , (Function<Object,Integer>)Functions.<Integer>constant(50)
-                , (Function<Object,Integer>)Functions.<Integer>constant(25)
+                , (Function<Object,Integer>)Functions.<Integer>constant(50)
+                , (Function<Object,Integer>)Functions.<Integer>constant(50)
+                , (Function<Object,Integer>)Functions.<Integer>constant(2)
                 , (Function<Object,Integer>)Functions.<Integer>constant(100)
-                , (Function<Object,Integer>)Functions.<Integer>constant(10)
+          , (Function<Object,Boolean>)Functions.<Boolean>constant( false)
+          , (Function<Object,Boolean>)Functions.<Boolean>constant( false)
         );}
 
     /**
@@ -88,15 +92,20 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
             , Function<Object, Integer> repulse_function
             , Function<Object, Integer> step_function
             , Function<Object, Integer> delay_function
+      , Function<Object, Boolean> isShowOwners
+      , Function<Object, Boolean> isShowCol
     )
     {
         super(g);
+        //Dummy d = new Dummy();
         this.maxNodesFunction = maxNodes_function;
         this.springFunction = spring_function;
         this.repulseFunction = repulse_function;
         this.stepFunction = step_function;
         this.delayFunction = delay_function;
-
+        this.isShowCol = isShowCol;
+        this.isShowOwn = isShowOwners;
+        //System.out.printf("STARTing sF %1.2f sD  %1.2f\n",springFunction.apply(d),delayFunction.apply(d));
         /*System.out.println("\n\n\n\n    ******OK STARTING  ");
         Throwable t = new Throwable();
         t.printStackTrace();
@@ -183,7 +192,8 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
                 // svd.dx /= 4;
                 // svd.dy /= 4;
                 svd.dx = svd.dy = 0;
-                svd.oldx = svd.oldy = 0;
+                //svd.count = 0;
+                //svd.oldx = svd.oldy = 0;
                 svd.edgedx = svd.edgedy = 0;
                 svd.repulsiondx = svd.repulsiondy = 0;
                 delay = delayFunction.apply(d);
@@ -211,7 +221,7 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
 
     }
 
-    private void springEdges() {
+    private void springEdges() {  // uses locations from getGraph  changes springVertex data
         Dummy d = new Dummy();
         double delta = 0.0001;
         try {
@@ -232,12 +242,7 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
 
                 Integer spring =  springFunction.apply(d); // Needs to be within the forLoop!
                 //System.out.println("spring "+spring);
-
-
-
-                // round from zero, if needed [zero would be Bad.].
-                len = (len == 0) ? delta : len;
-
+               // round from zero, if needed [zero would be Bad.].
                 double f = (spring.doubleValue()); // * (desiredLen.doubleValue() - len) / len;
                 //System.out.printf(" spring %1.2f\n", spring.doubleValue());
 
@@ -245,7 +250,7 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
                 // distance to go.
                 double dx = f * vx;
                 double dy = f * vy;
-                //System.out.printf("spring "+((GraphNode) v1).getNodeId()+" vx  %1.2f vy  %1.2f  f %1.2f \n",vx, vy,f);
+       //System.out.printf("spring "+((GraphNode) v1).getNodeId()+" vx  %1.2f vy  %1.2f  f %1.2f \n",vx, vy,f);
                 SpringVertexData v1D, v2D;
                 v1D = springVertexData.getUnchecked(v1);
                 v2D = springVertexData.getUnchecked(v2);
@@ -270,8 +275,6 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
             for (V v : getGraph().getVertices()) {
                 if (isLocked(v)) continue;
                 Integer repel =  repulseFunction.apply(d);
-
-
                 double f = repel.doubleValue()*100;
 
                 SpringVertexData svd = springVertexData.getUnchecked(v);
@@ -289,19 +292,20 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
                     if (distanceSq == 0) {
                         dx += Math.random();
                         dy += Math.random();
+    //System.out.println("distance = 0 "+((GraphNode) v).getLabel()+ " "+ ((GraphNode) v2).getLabel());
                     } //else if (distanceSq < repulsion_range_sq) {
-                    dx += f*f * vx / (distanceSq * distance);
-                    dy += f*f * vy / (distanceSq * distance);
-                    // }
-                    /*System.out.printf("REP "+((GraphNode) v).getNodeId()+" rdx  %1.2f rdy  %1.2f \n",
-                            svd.repulsiondx, svd.repulsiondy);
-                    System.out.printf("REP "+((GraphNode) v).getNodeId()+"  dx  %1.2f  dy  %1.2f   dis  %1.2f \n",
-                            dx, dy, distanceSq); */
+                    else {
+                       dx += f*f * vx / (distanceSq * distance);
+                       dy += f*f * vy / (distanceSq * distance);
+                     }
+
                 }
-                svd.repulsiondx += dx;
-                svd.repulsiondy += dy;
-                /*System.out.printf("REP "+((GraphNode) v).getNodeId()+" rdx  %1.2f rdy  %1.2f \n",
-                        svd.repulsiondx, svd.repulsiondy);*/
+                svd.repulsiondx = dx;  //this is repulsion for vertex v
+                svd.repulsiondy = dy;
+             /*   System.out.printf("REP "+((GraphNode) v).getNodeId()+" rdx  %1.3f rdy  %1.3f \n",
+                  svd.repulsiondx, svd.repulsiondy);
+                System.out.printf("SPR "+((GraphNode) v).getNodeId()+" sdx  %1.3f sdy  %1.3f \n",
+                  svd.edgedx, svd.edgedy); */
               /*  double dlen = dx * dx + dy * dy;
                 if (dlen > 0) {
                     dlen = Math.sqrt(dlen) / 2;
@@ -309,7 +313,9 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
                     svd.repulsiondy += dy / dlen;
                 }*/
             }
+
         } catch(ConcurrentModificationException cme) {
+            System.out.println("Exception??");
             calculateRepulsion();
         }
     }
@@ -328,29 +334,32 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
 
                 for (V v : getGraph().getVertices()) {
                     double step =  stepFunction.apply(d);
+                    double delay =  delayFunction.apply(d);
 
-                   // System.out.printf("StepO %1.2f \n",stepO);
+                    //System.out.printf("StepO %1.2f \n",stepO);
                     if (isLocked(v)) continue;
                     SpringVertexData vd = springVertexData.getUnchecked(v);
+                    double cnt = vd.count++;
+                    //if (cnt > 100) continue;  //TESTING
                     if(vd == null) continue;
                     Point2D xyd = apply(v);  // gets location
                     double oldx = xyd.getX();
                     double oldy = xyd.getY();
 
-                    if (((Double) vd.repulsiondx).isNaN()) vd.repulsiondx = 0.1;
-                    if (((Double) vd.repulsiondy).isNaN()) vd.repulsiondy = 0.1;
-                    vd.dx += vd.repulsiondx + vd.edgedx;
-                    vd.dy += vd.repulsiondy + vd.edgedy;
+                   // if (((Double) vd.repulsiondx).isNaN()) vd.repulsiondx = 0.1;
+                   // if (((Double) vd.repulsiondy).isNaN()) vd.repulsiondy = 0.1;
+                    vd.dx = vd.repulsiondx + vd.edgedx;
+                    vd.dy = vd.repulsiondy + vd.edgedy;
 
-                    //System.out.printf("**move "+((GraphNode) v).getNodeId()+" oldx %1.2f %1.2f oldy %1.2f %1.2f \n",
-                    //  oldx, xyd.getX(), oldy,xyd.getY());
-                    //System.out.printf("**REP "+((GraphNode) v).getNodeId()+" rep.dx %1.2f  rep.dy %1.2f \n",vd.repulsiondx, vd.repulsiondy);
-                    //System.out.printf("**EDG "+((GraphNode) v).getNodeId()+" edg.dx %1.2f  edg.dy %1.2f \n",vd.edgedx, vd.edgedy);
-                    double deltax = Math.max(-50, Math.min(50, vd.dx)); // keeps nodes from moving any faster than 5 per time unit
-                    double deltay = Math.max(-50, Math.min(50, vd.dy));
-                    double newx = oldx + (deltax/step);
-                    double newy = oldy + (deltay/step);
+     //System.out.printf("** "+((GraphNode) v).getNodeId()+" vd.dx %1.4f  vd.dy %1.4f \n",vd.dx, vd.dy);
+     //System.out.printf("**REP "+((GraphNode) v).getNodeId()+" rep.dx %1.2f  rep.dy %1.2f \n",vd.repulsiondx, vd.repulsiondy);
+     //System.out.printf("**EDG "+((GraphNode) v).getNodeId()+" edg.dx %1.2f  edg.dy %1.2f \n",vd.edgedx, vd.edgedy);
+                    double deltax =  Math.max(-50,(Math.min( 50, vd.dx/(step+(cnt*delay))))) ; // keeps nodes from moving any faster than 5 per time unit
+                    double deltay =  Math.max(-50,(Math.min( 50,vd.dy/(step+(cnt*delay)))));
+                    double newx = oldx + (deltax);
+                    double newy = oldy + (deltay);
 
+     //System.out.printf(((GraphNode) v).getNodeId()+ " cnt %1.2f  deltax  %1.5f deltay  %1.5f\n", cnt , deltax, deltay);
                // Oscilation suppression
 
                     //System.out.printf("*change step "+step+"    deltax %1.2f   at x %1.2f  \n", deltax, xyd.getX());
@@ -380,8 +389,8 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
         /** movement speed, y */
         private double dy;
 
-        private double oldx;
-        private double oldy;
+        private double count = 0;
+        //private double oldy;
 
     }
 
@@ -417,6 +426,8 @@ public class SpringlayoutBase<V, E> extends AbstractLayout<V,E> implements Itera
      * No effect.
      */
     public void reset() {
+
+
     }
 
     public class Dummy {

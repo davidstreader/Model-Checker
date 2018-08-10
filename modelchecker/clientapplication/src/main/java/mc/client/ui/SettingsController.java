@@ -3,6 +3,7 @@ package mc.client.ui;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Slider;
 import javafx.stage.Window;
 import lombok.Setter;
@@ -15,11 +16,12 @@ import java.util.ResourceBundle;
  */
 public class SettingsController implements Initializable{
     private Integer maxNodes = 40;
-    private Integer delay = 10;
-    private Integer repulse = 10;
-    private Integer spring = 25;
-    private Integer step = 10;
-
+    private Integer delay = 2;
+    private Integer repulse = 50;
+    private Integer spring = 50;
+    private Integer step = 150;
+    private boolean showOwners = false;
+    private boolean showColor = false;
     @Setter
     private Window window;
 
@@ -37,6 +39,19 @@ public class SettingsController implements Initializable{
     @FXML
     private Slider stepSlider;
 
+
+    @FXML private CheckBox Own = new CheckBox();
+    @FXML private CheckBox Col = new CheckBox();
+
+
+
+    private void handleButtonAction(ActionEvent e) {
+
+        showOwners = Own.isSelected();
+        showColor = Col.isSelected();
+        //System.out.println("Owners = "+showOwners+"  Col = "+isShowColor());
+    }
+
     @FXML
     private void handleSettingsConfirmation(ActionEvent e) {
         delay = (int)delaySlider.getValue();
@@ -48,10 +63,10 @@ public class SettingsController implements Initializable{
     @FXML
     private void handleResetSettings(ActionEvent e) {
         maxNodesSlider.setValue(40);
-        stepSlider.setValue(120);
-        repulseSlider.setValue(10);
-        springSlider.setValue(10);
-        delaySlider.setValue(10);
+        stepSlider.setValue(150);
+        repulseSlider.setValue(50);
+        springSlider.setValue(50);
+        delaySlider.setValue(2);
 
     }
 
@@ -70,6 +85,14 @@ public class SettingsController implements Initializable{
     }
     public Integer getStep() {
         return (step);
+    }
+
+    public boolean isShowColor() {
+        return showColor;
+    }
+
+    public boolean isShowOwners() {
+        return showOwners;
     }
 
     @Override
@@ -97,6 +120,7 @@ public class SettingsController implements Initializable{
             step = newVal.intValue();
 
         });
+        Own.setOnAction(e -> handleButtonAction(e));
 
     }
 

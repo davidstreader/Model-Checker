@@ -8,6 +8,7 @@ import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.graph.DirectedSparseGraph;
 import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
 import edu.uci.ics.jung.graph.Graph;
+import edu.uci.ics.jung.graph.util.EdgeType;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.CrossoverScalingControl;
 import edu.uci.ics.jung.visualization.control.PickingGraphMousePlugin;
@@ -61,12 +62,18 @@ import mc.processmodels.ProcessType;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetEdge;
+import mc.processmodels.petrinet.components.PetriNetPlace;
+import mc.processmodels.petrinet.components.PetriNetTransition;
 
 import java.awt.BasicStroke;
 import java.awt.Stroke;
 
 /**
  * Created by bealjaco on 29/11/17.
+ * Currently called by UseInterfaceController  FMX App
+ * and uses  one Graph for all automata and Petri Nets
+ *
+ * Both will need to be ditched
  */
 public class ModelView implements Observer {
 
@@ -261,6 +268,7 @@ public class ModelView implements Observer {
       if (n.isStartNode()) {
         nodeTermination = NodeStates.START;
       }
+      
       if (n.isTerminal()) {
         nodeTermination = NodeStates.valueOf(n.getTerminal().toUpperCase());
       }
@@ -318,17 +326,35 @@ public class ModelView implements Observer {
           nodeTermination = NodeStates.START2;
         else if (place.getMaxStartNo()==4)
           nodeTermination = NodeStates.START3;
+        else if (place.getMaxStartNo()==5)
+          nodeTermination = NodeStates.START4;
+        else if (place.getMaxStartNo()==6)
+          nodeTermination = NodeStates.START5;
       }
-
+      //System.out.println("Owners setting "+ settings.isShowOwners());
+      String lab="." ;
+      if (settings.isShowOwners()) {
+        //System.out.println("Owners added");
+        for(String o:place.getOwners()){lab+=o;}
+      } else {
+        lab = "";
+      }
+      //System.out.println("lab = "+lab);
       GraphNode node = new GraphNode(petri.getId(), place.getId(),
-          nodeTermination, NodeType.PETRINET_PLACE, "", place);
+          nodeTermination, NodeType.PETRINET_PLACE, lab, place);
       nodeMap.put(place.getId(), node);
       graph.addVertex(node);
     });
 
     petri.getTransitions().values().forEach(transition -> {
+      String lab=transition.getLabel()+".";
+      if (settings.isShowOwners()) {
+        for(String o:transition.getOwners()){lab+=o;}
+      } else {
+        lab = transition.getLabel();
+      }
       GraphNode node = new GraphNode(petri.getId(), transition.getId(),
-          NodeStates.NOMINAL, NodeType.PETRINET_TRANSITION, transition.getLabel(), transition);
+          NodeStates.NOMINAL, NodeType.PETRINET_TRANSITION, lab, transition);
       nodeMap.put(transition.getId(), node);
 
     });
@@ -338,9 +364,14 @@ public class ModelView implements Observer {
 
          vv.getRenderContext().setEdgeStrokeTransformer(e -> new BasicStroke(2.0f, BasicStroke.CAP_BUTT,
                  BasicStroke.JOIN_MITER, 10.0f, dash, 0.0f));
+      // EdgeType et = EdgeType.DIRECTED;
+       String lab = "";
+       if (edge.getOptional()) {
+        // et = EdgeType.UNDIRECTED;//NICE try but fails
+         lab = "Opt";
+       }
+       DirectedEdge nodeEdge = new DirectedEdge(lab, UUID.randomUUID().toString());
 
-
-       DirectedEdge nodeEdge = new DirectedEdge("", UUID.randomUUID().toString());
        graph.addEdge(nodeEdge, nodeMap.get(edge.getFrom().getId()),
                nodeMap.get(edge.getTo().getId()));
      }
@@ -449,7 +480,10 @@ public class ModelView implements Observer {
             x -> settings.getSpring(),
             x -> settings.getRepulse(),
             x -> settings.getStep(),
-            x -> settings.getDelay());
+            x -> settings.getDelay(),
+            x -> settings.isShowOwners(),
+            x->settings.isShowColor()
+    );
 
 
     ((SpringlayoutBase) layout).setStretch(0.8);

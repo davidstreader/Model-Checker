@@ -15,14 +15,15 @@ import java.io.Serializable;
 public class Location implements Serializable {
 
 	// fields
-	private int lineStart;
+ @Getter
+ private int lineStart;
 	private int colStart;
 	private int lineEnd;
 	private int colEnd;
 	private int startIndex;
     private int endIndex;
 
-    public Location(Location start, Location end){
+  public Location(Location start, Location end){
         this.lineStart = start.getLineStart();
         this.colStart = start.getColStart();
         this.lineEnd = end.getLineEnd();

@@ -30,9 +30,9 @@ public class LogMessage {
     this.thread = Thread.currentThread();
   }
 
-  public LogMessage(String message, boolean clear, boolean error) {
+/*  public LogMessage(String message, boolean clear, boolean error) {
     this(message, clear, error, null, -1, Thread.currentThread());
-  }
+  }*/
 
   public LogMessage(String message, int clearAmt) {
     this(message);

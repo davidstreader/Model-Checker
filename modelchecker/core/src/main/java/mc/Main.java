@@ -25,6 +25,15 @@ public class Main {
   private boolean autoKill = false;
   @Getter
   private static Main instance;
+/*
+   Starting point  Stuff here to allow auto restarting the process if it crashes!
+ */
+  public static void main(String[] args) {
+    //The easiest way to tell if we have reloaded the application is to set a flag.
+    boolean reloaded = (args.length > 0 && args[0].equals("reloaded"));
+    boolean autoKill = (args.length > 0 && args[0].equals("autoKill"));
+    new Main(reloaded, autoKill);
+  }
 
   private Main(boolean reloaded, boolean autoKill) {
     instance = this;
@@ -35,12 +44,9 @@ public class Main {
     //If this is a sub process, or we are running with a console, don't start the gui.
     //Start the server if we aren't running from a jar or are in a sub process
     if (!Utils.isJar() || reloaded) {
-
       PluginManager.getInstance().registerPlugins();
-
       UserInterfaceApplication.main(new String[0]);
       //Listen for commands
-
       return;
     }
 
@@ -99,16 +105,11 @@ public class Main {
     Runtime.getRuntime().halt(0);
   }
 
-  public static void main(String[] args) {
-    //The easiest way to tell if we have reloaded the application is to set a flag.
-    boolean reloaded = (args.length > 0 && args[0].equals("reloaded"));
-    boolean autoKill = (args.length > 0 && args[0].equals("autoKill"));
-    new Main(reloaded, autoKill);
-  }
 
   /**
    * Since the jar is normally not started with the libraries loaded, we can just load it again with the libraries
    * in place.
+   * ProcessBuilder is oracles platform independent library to manage a process
    */
   private ProcessBuilder createWrappedProcess() {
     String nativePath = NativesManager.getNativesDir().toAbsolutePath().toString();
@@ -124,6 +125,7 @@ public class Main {
     environment.put("PATH", nativePath);
     //Set the mac native path
     environment.put("DYLD_LIBRARY_PATH", nativePath);
+    System.out.println("\n\n*******\n "+builder.command()+"\n*******\n");
     return builder;
   }
 

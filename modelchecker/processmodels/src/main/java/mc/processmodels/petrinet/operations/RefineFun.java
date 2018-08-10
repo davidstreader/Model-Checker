@@ -23,7 +23,15 @@ public class RefineFun {
    * remove STOP from net1 Places and Start from net2 Places
    * glue
    * reset root from start.
-   * Fails with parallel merge of the transition to be refined! (owners Fail)
+   * Fails with parallel merge of the transition to be refined!
+   *
+   *
+   * One glue start Places and then glue End Places - this defines new owners for the New Places
+   * + builds OldOwner -> NewOwner Mapping
+   * and finally  Adjust ownership of remaining Places  o1 |-> o1^o2, o1^o1
+   * When Start and End overlap Adjust must be called twice as mapping
+   * o1^o2 |-> o1^o2^o1, o1^o2^o2
+   *
    *
    * @param id        the id of the resulting petrinet
    * @param act  the action label to be refined
@@ -75,7 +83,6 @@ public class RefineFun {
      // composition.addPetrinetNoOwner(petrinet2, tag);
       System.out.println("composition = " + composition.myString());
 
-      composition.glueOwners(tr.getOwners(),petrinet2.getOwners() );
       //Need to rebuild the root and end
         Set<PetriNetPlace> startOfP2 = composition.getPlaces().
                 values().stream().filter(x->(x.isStart()&& !x.getId().startsWith("1:") )).collect(Collectors.toSet());
@@ -85,9 +92,11 @@ public class RefineFun {
                 values().stream().filter(x->(x.isTerminal()&& !x.getId().startsWith("1:") )).collect(Collectors.toSet());
         System.out.println("****endOfP2 "+ endOfP2.stream().
                 map(x->(x.getId()+" ")).collect(Collectors.joining()));
-
+      for(PetriNetPlace pl: startOfP2) {pl.setStart(false);}
+        composition.glueOwners(tr.getOwners(),petrinet2.getOwners() );
         composition.gluePlaces(preEvents, startOfP2); //newstart2);
-     System.out.println("Ref one Glue above");
+
+     System.out.println("composition after START glue "+composition.myString());
 
 
       for (PetriNetPlace pl2 : endOfP2){
@@ -95,15 +104,25 @@ public class RefineFun {
       }
 
       postEvents = tr.post();
-      System.out.println("POST  " +
-        tr.post().stream().map(x -> x.getId() + " ").collect(Collectors.joining()) +
-        " \n endOfP2 " +
-        endOfP2.stream().map(x -> x.getId() + " ").collect(Collectors.joining()));
+      Set<String> postTrOwn = new HashSet<>();
+      for(PetriNetPlace pl: postEvents) {
+        postTrOwn.addAll(pl.getOwners());
+      }
+      Set<String> endOfP2Own = new HashSet<>();
+      for(PetriNetPlace pl: endOfP2) {
+        endOfP2Own.addAll(pl.getOwners());
+      }
+
+      System.out.println("*=* Owners POST  " +
+        postTrOwn +
+        " \n*=* Owners endOfP2 " +
+        endOfP2Own);
 
       // for X-a->Y where X and Y disjoint  redo same owners computation
       // need  cross product of owners of intersection of pre(tr) post(tr)
       // (a,b)Cross(a,b) = {aa,ab,bb}
       //else tis the owners from past cross product
+      /*
       System.out.println("\npetrinet2.getOwners() "+petrinet2.getOwners());
 
       Set<String> newPet2 = new HashSet<>();
@@ -122,11 +141,11 @@ public class RefineFun {
         }
       }
       petrinet2.setOwners(newOwners);
-
-      System.out.println("\ntr.getOwners() "+tr.getOwners());
-      System.out.println("petrinet2.getOwners() "+petrinet2.getOwners()+"\n");
-      //composition.glueOwners(tr.getOwners(),petrinet2.getOwners() );
+      */
+      composition.glueOwners(postTrOwn,endOfP2Own );
       composition.gluePlaces(postEvents, endOfP2);
+     // composition.glueOwners(tr.getOwners(),petrinet2.getOwners() );
+
       System.out.println("composition.getOwners() "+composition.getOwners());
       composition.setRootFromStart();
     }
