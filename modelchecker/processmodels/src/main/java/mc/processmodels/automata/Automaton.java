@@ -33,8 +33,15 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
   public static final String DEFAULT_OWNER = "_default";
   public static int tagid = 0;
 
-  @Getter
-  private Set<AutomatonNode> root;
+
+  private List<AutomatonNode> root;
+  public Set<AutomatonNode> getRoot(){
+    return root.stream().collect(Collectors.toSet());
+  }
+  public List<AutomatonNode> getRootList(){
+    return root.stream().collect(Collectors.toList());
+  }
+
   private Map<String, AutomatonNode> nodeMap;
   private Map<String, AutomatonEdge> edgeMap;
   private Map<String, List<AutomatonEdge>> alphabet;
@@ -172,7 +179,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
   public Automaton(String id, boolean constructRoot) {
     super(id, "automata");
     setupAutomaton();
-    this.root = new HashSet<>();
+    this.root = new ArrayList<>();
 
     // only construct a root node if specified to do so
     if (constructRoot) {
@@ -183,7 +190,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
   public static Automaton  singleEventAutomata(String id, String event) throws CompilationException {
     Automaton a = new Automaton(id,false);
       a.setupAutomaton();
-      a.root = new HashSet<>();
+      a.root = new ArrayList<>();
       Guard g = new Guard();
       AutomatonNode s = a.addNode();
       AutomatonNode e = a.addNode();
@@ -747,7 +754,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
       if (newNode.isStartNode()) {
         thisAutomataRoot.add(newNode);
         if (!hasRoot) {
-          this.root = new HashSet<>();
+          this.root = new ArrayList<>();
           root.add(newNode);
         } else {
           newNode.setStartNode(false);

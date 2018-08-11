@@ -17,7 +17,7 @@ import java.util.ResourceBundle;
 public class SettingsController implements Initializable{
     private Integer maxNodes = 40;
     private Integer delay = 2;
-    private Integer repulse = 50;
+    private Integer repulse = 25;
     private Integer spring = 50;
     private Integer step = 150;
     private boolean showOwners = false;
@@ -64,7 +64,7 @@ public class SettingsController implements Initializable{
     private void handleResetSettings(ActionEvent e) {
         maxNodesSlider.setValue(40);
         stepSlider.setValue(150);
-        repulseSlider.setValue(50);
+        repulseSlider.setValue(25);
         springSlider.setValue(50);
         delaySlider.setValue(2);
 

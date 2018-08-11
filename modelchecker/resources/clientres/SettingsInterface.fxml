@@ -23,7 +23,7 @@
             <Button layoutX="22.0" layoutY="79.0" mnemonicParsing="false" onAction="#handleResetSettings" prefHeight="32.0" prefWidth="79.0" text="Reset" />
             <Slider fx:id="stepSlider" blockIncrement="0.0" layoutX="224.0" layoutY="182.0" max="1000.0" min="10.0" showTickLabels="true" showTickMarks="true" value="100.0" />
             <Label layoutX="172.0" layoutY="182.0" text="Step" />
-            <Slider fx:id="repulseSlider" layoutX="224.0" layoutY="128.0" max="100" min="1" showTickLabels="true" showTickMarks="true" value="50" />
+            <Slider fx:id="repulseSlider" layoutX="224.0" layoutY="128.0" max="100" min="1" showTickLabels="true" showTickMarks="true" value="25.0" />
             <Label layoutX="156.0" layoutY="128.0" text="Repulsion" />
             <CheckBox fx:id="Own" layoutX="26.0" layoutY="136.0" mnemonicParsing="false" text="Owners" />
             <CheckBox fx:id="Col" layoutX="26.0" layoutY="166.0" mnemonicParsing="false" text="Color" />

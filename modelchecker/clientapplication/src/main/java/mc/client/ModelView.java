@@ -268,7 +268,19 @@ public class ModelView implements Observer {
       if (n.isStartNode()) {
         nodeTermination = NodeStates.START;
       }
-      
+      if (n.isStartNode()) {
+        nodeTermination = NodeStates.START;
+        if (automaton.getRootList().size() > 1 &&n.getId().equals(automaton.getRootList().get(1).getId()))
+          nodeTermination = NodeStates.START1;
+        else if (automaton.getRootList().size() > 2 && n.getId().equals(automaton.getRootList().get(2).getId()))
+          nodeTermination = NodeStates.START2;
+        else if (automaton.getRootList().size() > 3 && n.getId().equals(automaton.getRootList().get(3).getId()))
+          nodeTermination = NodeStates.START3;
+        else if (automaton.getRootList().size() > 4 && n.getId().equals(automaton.getRootList().get(4).getId()))
+          nodeTermination = NodeStates.START4;
+        else if (automaton.getRootList().size() > 5 && n.getId().equals(automaton.getRootList().get(5).getId()))
+          nodeTermination = NodeStates.START5;
+      }
       if (n.isTerminal()) {
         nodeTermination = NodeStates.valueOf(n.getTerminal().toUpperCase());
       }
@@ -320,10 +332,12 @@ public class ModelView implements Observer {
 
       if (place.isStart()) {
         nodeTermination = NodeStates.START;
-        if (place.getMaxStartNo()==2)
+        if (place.getMaxStartNo()==2) {
           nodeTermination = NodeStates.START1;
-        else if (place.getMaxStartNo()==3)
+        }
+        else if (place.getMaxStartNo()==3) {
           nodeTermination = NodeStates.START2;
+        }
         else if (place.getMaxStartNo()==4)
           nodeTermination = NodeStates.START3;
         else if (place.getMaxStartNo()==5)

@@ -33,13 +33,13 @@ public class FailureEquivalence implements IOperationInfixFunction {
 
     /**
      * The form which the function will appear when composed in the text.
-     *
+     *  Currently must be lowercase
      * @return the textual notation of the infix function
      */
     @Override
     public String getNotation() {
-        return "*";
-    }
+        return "=f";
+    } //must be lowercase
     @Override
     public String getOperationType(){return "automata";}
     /**
@@ -56,8 +56,15 @@ public class FailureEquivalence implements IOperationInfixFunction {
      */
     @Override
     public boolean evaluate(Collection<ProcessModel> processModels) throws CompilationException {
-        if (processModels.iterator().next() instanceof Automaton) {
-            BuildAcceptanceGraphs bag = new BuildAcceptanceGraphs();
+
+        return evaluate(processModels,true);
+    }
+
+        public boolean evaluate(Collection<ProcessModel> processModels,boolean equ) throws CompilationException {
+            System.out.println("Failure Equ Start "+ equ+" "+processModels.stream().
+               map(x->x.getId()).reduce((x,y)->x+" "+y));
+            if (processModels.iterator().next() instanceof Automaton) {
+            //BuildAcceptanceGraphs bag = new BuildAcceptanceGraphs();
             ArrayList<AcceptanceGraph> ags = new ArrayList<AcceptanceGraph>();
             final int BASE_COLOUR = 1;
             Integer color = BASE_COLOUR; // is updated  by ag.colorNodes
@@ -71,20 +78,22 @@ public class FailureEquivalence implements IOperationInfixFunction {
   Set up Acceptance Graphs and initial colouring on the automata nodes
   */
             //ColouringUtil colourer = new ColouringUtil();
+            // Holds definition of what a color means
             Map<Integer, List<Set<String>>> cmap = new TreeMap<Integer, List<Set<String>>>();
 
             for (ProcessModel pm : processModels) {
-                //System.out.println("Start auto "+ automaton.toString());
+                System.out.println("Start auto "+ pm.getId());
                 Automaton a = (Automaton) pm;
                 //System.out.println("Start copy "+ a.toString());
                 // build nfa and then dfa for second parameter "a"
                 AcceptanceGraph ag = new AcceptanceGraph("dfa-" + a.getId(), a);
-                //System.out.println("Start ag "+ ag.toString());
-                color = ag.colorNodes(cmap, ag.getNode2AcceptanceSets(), color); //reuse of color map essential
-                // System.out.println("Just colored "+ ag.getA().toString());
+        System.out.println("Start ag "+equ + ag.toString());
+                //Color the acceptance graph - result in cmap
+                color = ag.colorNodes(cmap, ag.getNode2AcceptanceSets(), color, equ); //reuse of color map essential
+         System.out.println("Just colored "+ ag.getA().myString());
 
                 //  this.printColorMap(cmap);
-                // System.out.println("Adding "+ ag.getA().getId());
+                // construct the initial coloring for the bisimulation
                 ags.add(ag);
                 for (AutomatonNode nd : ag.getA().getNodes()) {
                     initialColour.put(nd, nd.getColour());
@@ -116,7 +125,9 @@ public class FailureEquivalence implements IOperationInfixFunction {
         } System.out.println("}"); */
             // set up the initial colouring ( on the nodes)
             ColouringUtil colourer = new ColouringUtil();
-            //colourer.performInitialColouring(nodes);
+            //Computes a bsimulation coloring on the accepance graph
+            //this elevates any inequality to to root hence only the root
+            //coloring needs be checked at the end
             colourer.doColouring(edges, nodes); // uses initial colouring on nodes
 
      /*   System.out.print("Final node Color {");

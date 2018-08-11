@@ -23,6 +23,14 @@ public class ColouringUtil {
  private int nextColourId = 1;
  //private Map<AutomatonNode,Integer> oldColours = new TreeMap<AutomatonNode,Integer>();
 
+ /**
+  * computs a bisimulation coloring. Starting from an initial coloring
+  * Bisimulation starts with all nodes the same color
+  * Failure equivalence uses acceptance set equality
+  * Failure refinement uses acceptance subset
+  * @param edges
+  * @param nodes
+  */
  public void doColouring
    (List<AutomatonEdge> edges,
     List<AutomatonNode> nodes) {

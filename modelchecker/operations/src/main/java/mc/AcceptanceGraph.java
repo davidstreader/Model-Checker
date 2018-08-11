@@ -306,26 +306,35 @@ public class AcceptanceGraph {
      * @param cmap  defines the colour in terms of a set of acceptance sets
      *              first time this should be an empty map
      *              colouring subsequent Acceptance graph should reuse the old cmap
+     * @param equ true compute equality false compute refinement
+     *  returns the last color used (for coloring more than one ag
      */
     public Integer colorNodes(Map<Integer, List<Set<String>>> cmap,
                               Map<AutomatonNode, List<Set<String>> > n2as,
-                              Integer color) {
+                              Integer color,
+                              boolean equ) {
         //Map<AutomatonNode, List<Set<String>> > n2as = new TreeMap<>();
-         //System.out.println("ColorNodes start int= "+color);
+         System.out.println("ColorNodes start color = "+color);
+        System.out.println(this.toString());
+        System.out.println("*********");
          //System.out.println("n2as "+n2as.toString());
         boolean found = false;
         for (AutomatonNode nd : this.getA().getNodes()) {
-//  System.out.println("nd "+nd.myString());
             List<Set<String>> acept = n2as.get(nd);
-  //System.out.println("node "+nd.getId()+ " accept "+acept.toString());
+  System.out.println("node "+nd.myString()+ " accept "+acept.toString());
             found = false;
 //    System.out.println(cmap.toString());
             for (int i : cmap.keySet()) {
                 //    System.out.println("reading cmap  "+i+" ");
                 //    System.out.println("reading cmap  "+cmap.get(i));
 
-                if (AcceptanceSetEquality(cmap.get(i),acept)) {
+                if (equ== true && AcceptanceSetEquality(cmap.get(i),acept)) {
                          //System.out.println("found "+ cmap.get(i).toString());
+                    nd.setColour(i);
+                    found = true;
+                    break;
+                } else if (equ== false && AcceptanceSubSet(acept,cmap.get(i))) {
+          System.out.println("subset found "+ cmap.get(i).toString());
                     nd.setColour(i);
                     found = true;
                     break;
@@ -334,10 +343,10 @@ public class AcceptanceGraph {
             if (!found) {
                 color=color+1;
                 nd.setColour(color);
-     //System.out.println("New cmap "+acept.toString()+" "+ color);
+     System.out.println("New cmap "+acept.toString()+" "+ color);
                 cmap.put(color, acept);
             }
- //   System.out.println("node " +nd.getId()+" has color "+ nd.getColour());
+    System.out.println("node " +nd.getId()+" has color "+ nd.getColour());
         }
 //  System.out.println("ColorNodes end col = "+color);
         return color;
@@ -372,6 +381,7 @@ public class AcceptanceGraph {
             }  // if one true then inner loop true
             if (ok == false) {break;} //if one iner false then outer false
         }  //outer only true if all inner loops true
+    System.out.println("Sub set a1 "+a1+"  a2 "+a2+"  returns "+ok);
         return ok;
     }
 
@@ -391,7 +401,7 @@ public class AcceptanceGraph {
     public String toString() {
         if (this.getA() == null) {System.out.println("AcceptanceGraph aut = null");}
         if (this.getNode2AcceptanceSets() == null) {System.out.println("AcceptanceGraph n2ac = null");}
-        return "Acceptance Graph  \n  "+this.getA().toString()+" "+
+        return "Acceptance Graph  \n  "+this.getA().myString()+" "+
                 this.node2ac_toString()+" End Acceptance Graph \n";
 
     }

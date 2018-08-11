@@ -127,6 +127,7 @@ public class OperationEvaluator {
             throws CompilationException, InterruptedException {
         List<ProcessModel> processModels = new ArrayList<>();
         boolean r = false;
+        //System.out.println("evalOp "+operation.getOperation());
         IOperationInfixFunction funct = instantiateClass(operationsMap.get(operation.getOperation().toLowerCase()));
         //System.out.println("Funct " + funct.getFunctionName()+" "+ processMap.size());
         if (funct == null) {

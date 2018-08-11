@@ -63,7 +63,7 @@ public class PetriNetPlace extends ProcessModelObject implements Comparable<Petr
     Optional<Integer> i  = startNos.stream().max(Integer::compare);
     if (i.isPresent()) out = i.get();
     else out = 0;
-  //System.out.println("getMaxStartNo for " + getId()+" is "+out);
+  System.out.println("getMaxStartNo for " + getId()+" is "+out);
     return out;
   }
   public void addRefefances(Set<String> inrefs){
