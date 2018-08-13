@@ -137,10 +137,15 @@ public final class PetrinetReachability {
   }
 
   private static Set<PetriNetTransition> satisfiedTransitions(Set<PetriNetPlace> currentMarking) {
-    return post(currentMarking).stream() //**
+    Set<PetriNetTransition> out = new HashSet<>();
+    for(PetriNetTransition tr: post(currentMarking)){
+      if (currentMarking.containsAll(tr.pre())) out.add(tr);
+    }
+    return out;
+ /*   return post(currentMarking).stream() //**
       .filter(transition -> currentMarking.containsAll(transition.pre()))
       .distinct()
-      .collect(Collectors.toSet());
+      .collect(Collectors.toSet());*/
   }
 
 

@@ -29,6 +29,9 @@ public class AutomatonNode extends ProcessModelObject implements Comparable<Auto
   @Getter
   @Setter
   private boolean startNode;
+  @Getter
+  @Setter
+  private boolean endNode;
 
   @Getter
   @Setter
@@ -144,6 +147,9 @@ public class AutomatonNode extends ProcessModelObject implements Comparable<Auto
 
   public boolean isTerminal() {
     return terminal != null && terminal.length() > 0;
+  }
+  public boolean isSTOP() {
+    return terminal != null && terminal.equals("STOP");
   }
 
   public List<AutomatonEdge> getIncomingEdges() {

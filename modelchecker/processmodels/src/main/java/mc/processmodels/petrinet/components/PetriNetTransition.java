@@ -7,15 +7,42 @@ import java.util.stream.Collectors;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 import mc.processmodels.ProcessModelObject;
 
 @EqualsAndHashCode(callSuper = true, exclude = {"incoming", "outgoing"})
-@Data
-public class PetriNetTransition extends ProcessModelObject {
 
+public class PetriNetTransition extends ProcessModelObject {
+  @Getter
+  @Setter
   String label;
+  @Getter
+  @Setter
   Set<PetriNetEdge> incoming = new HashSet<>();
+  public Set<PetriNetEdge> copyIncoming() {
+    //System.out.println("in size "+incoming.size());
+    Set<PetriNetEdge> out = new HashSet<>();
+    for(PetriNetEdge ed: incoming){
+      //System.out.println("ed "+ed.myString());
+      out.add(ed);
+    }
+    return out;
+  }
+  @Getter
+  @Setter
   Set<PetriNetEdge> outgoing = new HashSet<>();
+  public Set<PetriNetEdge> copyOutgoing() {
+    //System.out.println("out size "+outgoing.size());
+    Set<PetriNetEdge> out = new HashSet<>();
+    for(PetriNetEdge ed: outgoing){
+      //System.out.println("ed "+ed.myString());
+      out.add(ed);
+    }
+    return out;
+  }
+  @Getter
+  @Setter
   Set<String> owners = new HashSet<>();
 
   public boolean equals(PetriNetTransition tr){
@@ -61,11 +88,22 @@ public class PetriNetTransition extends ProcessModelObject {
   }
 
   public Set<PetriNetPlace> pre() {
-    return incoming.stream()
+    //System.out.println(incoming.size());
+    Set<PetriNetPlace> out = new HashSet<>();
+    if (incoming.size()==0) return out;
+    for(PetriNetEdge ed: incoming){
+      //System.out.println("ed "+ed.myString());
+      PetriNetPlace p = (PetriNetPlace) ed.getFrom();
+      //System.out.println(p.getId());
+      out.add(p);
+    }
+    //System.out.println("out.size "+out.size());
+    return out;
+  /*  return incoming.stream()
         .map(PetriNetEdge::getFrom)
         .map(PetriNetPlace.class::cast)
         .distinct()
-        .collect(Collectors.toSet());
+        .collect(Collectors.toSet()); */
   }
   public Set<PetriNetPlace> preNonBlocking() {
     return incoming.stream()

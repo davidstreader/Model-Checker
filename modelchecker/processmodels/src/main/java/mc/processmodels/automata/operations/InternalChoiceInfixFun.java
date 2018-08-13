@@ -140,58 +140,25 @@ public class InternalChoiceInfixFun implements IProcessInfixFunction {
         if (pl1.getId().equals(pl2.getId())) System.out.println("\n SAME PLACES PROBLEM");
       }
     }
-    Set<String> twoEnd = petrinet2.getPlaces().values().stream()
-            .filter(x -> x.isSTOP()).map(x -> x.getId()).collect(Collectors.toSet());
-    Set<PetriNetPlace> end2 = new HashSet<>();
-    for(String k: twoEnd){
-      end2.add(petrinet2.getPlaces().get(k));
-    }
+
     //Petrinet choice = new Petrinet(id, false);
     //petrinet2.joinPetrinet(petrinet1);
-    petrinet2.addPetrinet(petrinet1,true);
+    petrinet2.addPetrinetNoOwner(petrinet1,"");
+    System.out.println("Internal "+petrinet2.myString());
 
-    Set<String> oneEnd = petrinet2.getPlaces().values().stream()
-            .filter(x -> x.isSTOP()).map(x -> x.getId()).collect(Collectors.toSet());
-    oneEnd.removeAll(twoEnd);
-    Set<PetriNetPlace> end1 = new HashSet<>();
-    //System.out.println("**PreEnd "+petrinet2.myString());
-    for(String k: twoEnd){
-      end1.add(petrinet2.getPlaces().get(k));
-    }
-    //System.out.println("**PostEnd "+petrinet2.myString());
-    //System.out.println("oneE "+ oneEnd+"  twoE "+ twoEnd);
 
     //The root is now that of external choice
     Petrinet choice = petrinet2;
     choice.getRootPlacess().clear();
     choice.getRootPlacess().addAll(root1);
     choice.getRootPlacess().addAll(root2);
-    //System.out.println("**Choice "+choice.myString());  //distinct owners
-    //add new root set to choice net find next choice No
-   /* int nextRootNo = petrinet1.nextRootNo();
-    //System.out.println("next Root "+ nextRootNo);
-    List<Set<String>> rots = new ArrayList<>( petrinet2.getRoots());
-    petrinet2.clearRoots();
-    for(int i = 0; i< rots.size();i++) {
-      nextRootNo++;
-      Set<String> rt = rots.get(i);
-      choice.addRoot(rt);
-      for(String pl : rt) {
-        petrinet2.getPlace(pl).addStartNo(nextRootNo);
-        //System.out.println(pl+" rooted");
-      }
-    } */
-    choice.glueOwners(o1,o2); //Need to identify the owners prior to glueing the Places
-    if (net1.terminates() && net2.terminates()) {  //do NOT use petrinet2 it has changed
-      //System.out.println("Both ");
-        choice.glueNames(oneEnd, twoEnd);
-    } //else if (net1.terminates()){
 
-   // }
-    //System.out.println("**choice  "+choice.myString());
+
+    choice.glueOwners(o1,o2); //Need to identify the owners prior to glueing the Places
 
     choice.setStartFromRoot();
-    //System.out.println("**choice RETURNS "+choice.myString());
+    choice.setEndFromNet();
+    System.out.println("**choice + RETURNS "+choice.myString());
     return choice;
   }
 }

@@ -346,6 +346,13 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
   return;
  }
 
+ /**
+  * Interpreter first builds a "tree like" acyclic Petri Net with referances attched to (single Place) markings.
+  * This method builds cyclic Petei Nets by glueing some leaves back to the refenanced Places
+  * @param petri
+  * @return
+  * @throws CompilationException
+  */
  private Petrinet tree2net(Petrinet petri) throws CompilationException {
   //Map<Set<PetriNetPlace>,Set<PetriNetPlace>> marking2Marking = new HashMap<>();
   //Map<PetriNetPlace,PetriNetPlace> marking2Marking = new HashMap<>();

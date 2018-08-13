@@ -65,7 +65,7 @@ public class TokenRule {
 
     Automaton outputAutomaton = new Automaton(convertFrom.getId() + "-token" //+ " automata"
             ,false);
-      //System.out.println("\nTOKEN RULE  STARTING "+convertFrom.myString());
+      System.out.println("\nTOKEN RULE  STARTING "+convertFrom.myString());
 
       assert convertFrom.validatePNet(): "Token precondition";
    outputAutomaton.setOwners(convertFrom.getOwners());
@@ -119,8 +119,10 @@ if(j++> stateSizeBound) {System.out.println("\n\nTokenRule Failure Looping = "+j
       if (satisfiedPostTransitions.size() == 0) {
           currentMarking.stream().forEach(x->{System.out.print(x.getId()+"->"+x.getTerminal());});
           //if (currentMarking.stream().map(x->x.getTerminal().equals("STOP")).reduce(true,(x,y)->x&&y))
-          if (currentMarking.stream().map(x->x.isTerminal()).reduce(true,(x,y)->x&&y))
-          markingToNodeMap.get(currentMarking).setTerminal("STOP");
+          if (currentMarking.stream().map(x->x.isSTOP()).reduce(true,(x,y)->x&&y)) {
+            markingToNodeMap.get(currentMarking).setTerminal("STOP");
+           // outputAutomaton.getEndList().add(markingToNodeMap.get(currentMarking).getId());
+          }
           else
               markingToNodeMap.get(currentMarking).setTerminal("ERROR");
 
@@ -183,8 +185,21 @@ if(j++> stateSizeBound) {System.out.println("\n\nTokenRule Failure Looping = "+j
         if (!previouslyVisitedPlaces.contains(currentMarking)) { previouslyVisitedPlaces.add(currentMarking);}
         //System.out.println("todo size "+toDo.size());
   //System.out.println("Add to Previous "+previouslyVisitedPlaces.size()+"  "+currentMarking.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
+    }  //Built  Automata now set End list to be the same as the Petri EndList
+    //Map<Multiset<PetriNetPlace>, AutomatonNode> markingToNodeMap
+
+  for (Set<String> mark: convertFrom.getEnds()) {
+    Set<PetriNetPlace> mk = mark.stream().map(x->convertFrom.getPlaces().get(x)).collect(Collectors.toSet());
+
+    Multiset<PetriNetPlace> mkm = HashMultiset.create(mk);
+    System.out.print("\n** End Multiset ");mkm.stream().forEach(x-> System.out.print(x.getId()+", ")); System.out.println("");
+    if (!markingToNodeMap.containsKey(mkm)) {
+      System.out.println(" ERROR "+ mark+ "NOT found ");
     }
-   //System.out.println("Token Rule Out "+outputAutomaton.myString());
+     outputAutomaton.addEnd(markingToNodeMap.get(mkm).getId());
+  }
+
+   System.out.println("Token Rule Out "+outputAutomaton.myString());
     return outputAutomaton;
   }
 

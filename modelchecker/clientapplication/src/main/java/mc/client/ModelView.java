@@ -265,9 +265,7 @@ public class ModelView implements Observer {
 
       NodeStates nodeTermination = NodeStates.NOMINAL;
 
-      if (n.isStartNode()) {
-        nodeTermination = NodeStates.START;
-      }
+
       if (n.isStartNode()) {
         nodeTermination = NodeStates.START;
         if (automaton.getRootList().size() > 1 &&n.getId().equals(automaton.getRootList().get(1).getId()))
@@ -283,6 +281,19 @@ public class ModelView implements Observer {
       }
       if (n.isTerminal()) {
         nodeTermination = NodeStates.valueOf(n.getTerminal().toUpperCase());
+      }
+      if (n.isSTOP()) {
+        nodeTermination = NodeStates.STOP;
+        if (automaton.getEndList().size() > 1 &&n.getId().equals(automaton.getEndList().get(1)))
+          nodeTermination = NodeStates.STOP1;
+        else if (automaton.getEndList().size() > 2 && n.getId().equals(automaton.getEndList().get(2)))
+          nodeTermination = NodeStates.STOP2;
+        else if (automaton.getEndList().size() > 3 && n.getId().equals(automaton.getEndList().get(3)))
+          nodeTermination = NodeStates.STOP3;
+        else if (automaton.getEndList().size() > 4 && n.getId().equals(automaton.getEndList().get(4)))
+          nodeTermination = NodeStates.STOP4;
+        else if (automaton.getEndList().size() > 5 && n.getId().equals(automaton.getEndList().get(5)))
+          nodeTermination = NodeStates.STOP5;
       }
 
       GraphNode node = new GraphNode(automaton.getId(), n.getId(), nodeTermination,
@@ -328,6 +339,21 @@ public class ModelView implements Observer {
       NodeStates nodeTermination = NodeStates.NOMINAL;
       if (place.isTerminal()) {
         nodeTermination = NodeStates.valueOf(place.getTerminal().toUpperCase());
+      }
+      if (place.isSTOP()) {
+        nodeTermination = NodeStates.STOP;
+        if (place.getMaxEndNo()==2) {
+          nodeTermination = NodeStates.STOP1;
+        }
+        else if (place.getMaxEndNo()==3) {
+          nodeTermination = NodeStates.STOP2;
+        }
+        else if (place.getMaxEndNo()==4)
+          nodeTermination = NodeStates.STOP3;
+        else if (place.getMaxEndNo()==5)
+          nodeTermination = NodeStates.STOP4;
+        else if (place.getMaxEndNo()==6)
+          nodeTermination = NodeStates.STOP5;
       }
 
       if (place.isStart()) {

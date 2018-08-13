@@ -19,8 +19,8 @@ public class PetrinetParallelFunction  {
   private static Set<String> synchronisedActions;
   private static Map<Petrinet, Map<PetriNetPlace, PetriNetPlace>> petriPlaceMap;
   private static Map<PetriNetTransition, PetriNetTransition> petriTransMap;
-  private static final String tag1 = "*P1";
-  private static final String tag2 = "*P2";
+  //private static final String tag1 = ""; //"*P1";
+  //private static final String tag2 = ""; //"*P2";
 
   public static Petrinet compose(Petrinet pi1, Petrinet pi2) throws CompilationException {
     clear();
@@ -28,9 +28,9 @@ public class PetrinetParallelFunction  {
     Petrinet p2 = pi2.reId("2");
     p1.rebuildAlphabet(); p2.rebuildAlphabet();
 
-   //System.out.println("\nPETRINETPARALLELFUNCTION");
-   //System.out.println("\n ||p1 "+p1.myString());
-   //System.out.println("\n ||p2 "+p2.myString()+"\n");
+   System.out.println("     PETRINETPARALLELFUNCTION");
+   System.out.println(" ||p1 "+p1.myString());
+   System.out.println(" ||p2 "+p2.myString()+"\n");
 
     setupActions(p1, p2);
     //System.out.println("  synchronisedActions "+synchronisedActions);
@@ -41,11 +41,15 @@ public class PetrinetParallelFunction  {
 
     List<Set<String>> roots = buildRoots(p1,p2);
 
-    petriTransMap.putAll(composition.addPetrinetNoOwner(p1,tag1));
+    petriTransMap.putAll(composition.addPetrinetNoOwner(p1,""));  //Tag not needed as reId dose this
     //System.out.println("par "+ composition.myString());
-    petriTransMap.putAll(composition.addPetrinetNoOwner(p2,tag2)); //adds unsynchronised transitions
+    petriTransMap.putAll(composition.addPetrinetNoOwner(p2,"")); //adds unsynchronised transitions
     composition.setRoots(roots);
+    composition.setEnds(buildEnds(p1.getEnds(),p2.getEnds()));
+    System.out.println("half "+composition.myString()+"\nhalf END");
     composition.setStartFromRoot();
+    composition.setEndFromNet();
+    System.out.println("half "+composition.myString()+"\nhalf END");
     //System.out.println("  SoFar unsynced \n"+ composition.myString());
     //System.out.println("  synchronisedActions "+synchronisedActions);
     setupSynchronisedActions(p1, p2, composition);
@@ -53,10 +57,21 @@ public class PetrinetParallelFunction  {
     //composition = PetrinetReachability.removeUnreachableStates(composition);
      composition.reId("");
      assert composition.validatePNet():"parallel comp post condition ";
-   //System.out.println("\n   PAR end "+composition.myString());
+   System.out.println("\n   PAR end "+composition.myString());
     return composition;
   }
-
+  private static List<Set<String>> buildEnds(List<Set<String>> p1, List<Set<String>> p2){
+    List<Set<String>> out = new ArrayList<>();
+    for(Set<String> e1: p1){
+      for(Set<String> e2: p2){
+        Set<String> o = new HashSet<>() ;
+        o.addAll(e1);
+        o.addAll(e2);
+        out.add( o );
+      }
+    }
+    return out;
+  }
   private static void setupActions(Petrinet p1, Petrinet p2) {
     Set<String> actions1 = p1.getAlphabet().keySet();
     Set<String> actions2 = p2.getAlphabet().keySet();
@@ -277,8 +292,8 @@ public class PetrinetParallelFunction  {
 
   private static Set<String> buildMark(Set<String> m1, Set<String> m2){
     Set<String> out = new HashSet<>();
-    out.addAll(m1.stream().map(x->x+tag1).collect(Collectors.toSet()));
-    out.addAll(m2.stream().map(x->x+tag2).collect(Collectors.toSet()));
+    out.addAll(m1);
+    out.addAll(m2);
    //System.out.println("Next root "+out);
     return out;
   }

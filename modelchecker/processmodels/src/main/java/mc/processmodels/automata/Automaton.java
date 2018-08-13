@@ -42,6 +42,14 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     return root.stream().collect(Collectors.toList());
   }
 
+  private List<String> end;
+  public List<String> getEndList(){ return end;}
+  public void setEndList(List<String> e){
+     for(String nd:e){
+       end.add(nd);
+     }
+  }
+
   private Map<String, AutomatonNode> nodeMap;
   private Map<String, AutomatonEdge> edgeMap;
   private Map<String, List<AutomatonEdge>> alphabet;
@@ -180,7 +188,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     super(id, "automata");
     setupAutomaton();
     this.root = new ArrayList<>();
-
+    this.end = new ArrayList<>();
     // only construct a root node if specified to do so
     if (constructRoot) {
       root.add(addNode());
@@ -228,10 +236,9 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
   public void addRoot(AutomatonNode newRootNode) throws CompilationException {
     // check the the new root is defined
     if (newRootNode == null) {
-      throw new CompilationException(getClass(), "Unable to set the root node to null",
+      throw new CompilationException(getClass(), "Unable to add null to root",
           this.getLocation());
     }
-
     // check that the new root is part of this automaton
     if (!nodeMap.containsKey(newRootNode.getId())) {
       throw new CompilationException(getClass(), "Unable to set the root node to "
@@ -240,6 +247,22 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     }
 
     this.root.add(newRootNode);
+  }
+
+  public void addEnd(String newEndNode) throws CompilationException {
+    // check the the new root is defined
+    if (newEndNode == null) {
+      throw new CompilationException(getClass(), "Unable to add null to end",
+        this.getLocation());
+    }
+    // check that the new root is part of this automaton
+    if (!nodeMap.containsKey(newEndNode)) {
+      throw new CompilationException(getClass(), "Unable to set the root node to "
+        + newEndNode + ", as the root is not a part of this automaton",
+        this.getLocation());
+    }
+
+    this.end.add(newEndNode);
   }
 
   public Set<String> getRootId() {
@@ -792,6 +815,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
       for(AutomatonNode r: root){
       sb.append(r.getId()+" ");
       }
+      sb.append("end "+end);
       sb.append("alpa "+this.alphabet.keySet()+" ");
      sb.append(" own" + owners+ "nodes "+getNodes().size()+" edges "+getEdges().size()+"\n");
     for(AutomatonNode nd: getNodes()){ sb.append(nd.myString()+"\n");}

@@ -52,7 +52,7 @@ public class DoubleClickHandler implements MouseListener {
     public void mouseClicked(MouseEvent e) {
         GraphNode currentNodeClicked = getVertex(e.getPoint());
         if (currentNodeClicked != null) {
-            System.out.println("Clicked on "+ currentNodeClicked.getNodeId());
+            //System.out.println("Clicked on "+ currentNodeClicked.getNodeId());
             if (!currentlyColored.containsKey(currentNodeClicked)) { // If we've clicked on a new node
                 for (GraphNode currentColoredNode : currentlyColored.keySet())
                     currentColoredNode.setNodeColor(currentlyColored.get(currentColoredNode)); // Reset the previous to unselected state
