@@ -178,12 +178,15 @@ public class Parser {
     }
 
     // check if this action label has been specified as either a broadcaster or a receiver
-    if (peekToken() instanceof NegateToken || peekToken() instanceof QuestionMarkToken) {
+    if (peekToken() instanceof NegateToken || peekToken() instanceof QuestionMarkToken
+      || peekToken() instanceof ExclOrToken) {
       Token token = nextToken();
       if (token instanceof NegateToken) {
         builder.append("!");
-      } else {
+      } else if (token instanceof QuestionMarkToken) {
         builder.append("?");
+      } else {
+        builder.append("^");
       }
     }
 
@@ -1359,14 +1362,46 @@ System.out.println("parseDisplayType "+ token.toString());
     if (!(peekToken() instanceof OpenBraceToken)) {
       parseSingleOperation(false);
     } else {
-      parseOperationBlock(false);
+      parseOperationBlock(false);  // "{ ...  }
     }
   }
 
   // parse "A ~ B"  AST add OperationNode to "operations" as side effect
   // "Aut(A)" stores the type automaton on Operation node
+  // isEq diferentiates operations from equations
 
   private void parseSingleOperation(boolean isEq) throws CompilationException, InterruptedException {
+    System.out.println("parseSingleOperation "+ peekToken().toString());
+
+    int start = index;
+    OperationNode firstOperation = parseSOperation(isEq);
+
+    OperationNode operation;
+    if ((peekToken() instanceof ImpliesToken)) {
+      System.out.println("implies"+nextToken().toString());
+      OperationNode secondOperation = parseSOperation(isEq);
+      operation = new ImpliesNode(firstOperation, secondOperation,this.constructLocation(start));
+    } else {
+      operation = firstOperation;
+    }
+// ensure that the next token is a '.' token
+    if (!(nextToken() instanceof DotToken)) {
+      Token error = tokens.get(index - 1);
+      throw constructException("expecting to parse \".\" but received \"" + error.toString() + "\"", error.getLocation());
+    }
+    if (isEq) {
+      equations.add(operation);
+    } else {
+      operations.add(operation);
+    }
+  }
+
+  // parse "A ~ B"  AST returns an  OperationNode
+  // isEq diferentiates operations from equations
+
+  private OperationNode parseSOperation(boolean isEq) throws CompilationException, InterruptedException {
+    System.out.println("parseSOperation "+ peekToken().toString());
+
     int start = index;
     boolean firstAut = false; boolean secondAut = false;
     if (peekToken() instanceof AutomatonToken) {
@@ -1380,32 +1415,27 @@ System.out.println("parseDisplayType "+ token.toString());
       nextToken();
       isNegated = true;
     }
-
-    String type = parseOperationType();
-
+    String type = parseOperationType();  // nextToken.toString()
     if (peekToken() instanceof AutomatonToken) {
       secondAut = true;
       nextToken();
     }
     ASTNode process2 = parseComposite();
 
-    // ensure that the next token is a '.' token
-    if (!(nextToken() instanceof DotToken)) {
-      Token error = tokens.get(index - 1);
-      throw constructException("expecting to parse \".\" but received \"" + error.toString() + "\"", error.getLocation());
-    }
+    OperationNode firstOperation = null;
+
+
 
     OperationNode operation = new OperationNode(type, isNegated, process1, process2, this.constructLocation(start));
     if(firstAut)  operation.setFirstProcessType("automata");
     if(secondAut) operation.setSecondProcessType("automata");
-    if (isEq) {
-      equations.add(operation);
-    } else {
-      operations.add(operation);
-    }
+
+    return operation;
   }
 
   private void parseOperationBlock(boolean isEq) throws CompilationException, InterruptedException {
+    System.out.println("parseOperationBlock "+ peekToken().toString());
+
     if (!(nextToken() instanceof OpenBraceToken)) {
       Token error = tokens.get(index - 1);
       throw constructException("expecting to parse \"{\" but received \"" + error.toString() + "\"", error.getLocation());

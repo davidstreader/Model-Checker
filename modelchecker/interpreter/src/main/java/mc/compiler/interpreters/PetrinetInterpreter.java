@@ -712,6 +712,9 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
   //addPetrinet( comp, petri);
  }
 
+ /*
+ The application of some dynamically loaded function
+  */
  private Petrinet interpretFunction(FunctionNode func, Petrinet petri)
    throws CompilationException, InterruptedException {
   List<Petrinet> models = new ArrayList<>();

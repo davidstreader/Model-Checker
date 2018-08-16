@@ -62,6 +62,7 @@ import mc.processmodels.petrinet.utils.PetriColouring;
                 //System.out.println("Bisim evaluate");
                 int i = 0; String firstId = "";
                 for (ProcessModel pm : processModels) {
+                    //System.out.println("  "+i+"  "+((Automaton)pm ).myString());
                     if (i==0) firstId = pm.getId();
                     else if (firstId.equals(pm.getId())) {
                         //System.out.println("automata bisim same ids "+firstId);

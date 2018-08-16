@@ -20,10 +20,8 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import lombok.Getter;
 import mc.client.ModelView;
-import mc.compiler.CompilationObject;
-import mc.compiler.CompilationObservable;
+import mc.compiler.*;
 import mc.compiler.Compiler;
-import mc.compiler.OperationResult;
 import mc.exceptions.CompilationException;
 import mc.processmodels.ProcessModel;
 import mc.util.LogAST;
@@ -118,6 +116,7 @@ public class UserInterfaceController implements Initializable {
         ModelView.getInstance().setListOfAutomataUpdater(this::updateModelsList);
         //register a callback for the output of the log
         ModelView.getInstance().setUpdateLog(this::updateLogText);
+        ModelView.getInstance().setUpdateImpLog(this::updateImpLogText);
 
         //Add the key combinations
         newMenuItem.setAccelerator(KeyCombination.keyCombination("Ctrl+N"));
@@ -672,7 +671,8 @@ public class UserInterfaceController implements Initializable {
                         CompilationObject compilerOutput = codeCompiler.compile(userCode, Expression.mkCtx(), messageLog);
 
                         Platform.runLater(() -> {
-                            CompilationObservable.getInstance().updateClient(compilerOutput); // If this is run outside the fx thread then exceptions occur and weirdness with threads updating combox box and whatnot
+                            CompilationObservable.getInstance().updateClient(compilerOutput);
+                            // If this is run outside the fx thread then exceptions occur and weirdness with threads updating combox box and whatnot
                             compilerOutputDisplay.appendText("Compiling completed sucessfully!\n" + new Date().toString());
                         });
                         logThread.stop();
@@ -753,6 +753,42 @@ public class UserInterfaceController implements Initializable {
         }
 
     }
+
+    private void updateImpLogText(List<ImpliesResult> impRes, List<ImpliesResult> eqimpRes) {
+        if (impRes.size() > 0)
+            compilerOutputDisplay.appendText("\n##Operation Results##\n");
+
+        impRes.forEach(o -> compilerOutputDisplay.appendText(
+          o.getOp1().getProcess1().getIdent() + " " + o.getOp1().getOperation() + " " +
+          o.getOp1().getProcess2().getIdent() + " = " + o.getOp1().getResult() + "==>"+
+            o.getOp2().getProcess1().getIdent() + " " + o.getOp2().getOperation() + " " +
+            o.getOp2().getProcess2().getIdent() + " = " + o.getOp2().getResult()+ " is "+
+            o.isRes()+ "\n"));
+
+
+        if (eqimpRes.size() > 0) {
+            compilerOutputDisplay.appendText("\n##Equation Results##\n");
+/*
+            for (ImpliesResult result : eqRes) {
+                compilerOutputDisplay.appendText(result.getProcess1().getIdent() + " " + result.getOperation() + " " +
+                  result.getProcess2().getIdent() + " = " + result.getResult() + "\n");
+
+
+                if (result.getFailures().size() > 0) {
+                    compilerOutputDisplay.appendText("\tFailing Combinations: \n");
+
+                    for (String failure : result.getFailures())
+                        compilerOutputDisplay.appendText("\t\t" + failure + " " );
+                }
+
+                compilerOutputDisplay.appendText("\tSimulations passed: " + result.getExtra() + "\n");
+
+            }
+            */
+        }
+
+    }
+
 
     private void addRecentFile(String filePath) {
         if (!recentFilePaths.contains(filePath)) {

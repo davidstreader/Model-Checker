@@ -2,6 +2,8 @@ package mc.plugins;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.Objects;
+import java.util.logging.Logger;
+
 import lombok.Getter;
 import mc.compiler.EvaluatorFunctionRegister;
 import mc.compiler.ParserFunctionRegister;
@@ -57,18 +59,41 @@ public class PluginManager {
   /**
    * This function calls the relevant parts of the parser and
    * provides the requisite class files to the parser.
+   * NOTE:
+   *     the dynamically loaded functions can be defined for both
+   *     automata and PetriNets the processing of a particular Node by the Interpreter
+   *     controlls if the PetriNet or the automata version is applied
    */
   public void registerPlugins() {
     //register the {@code f(x)} style functions to the interpreter
+    StringBuilder sb = new StringBuilder();
+    for (String f: getFunctionList()){
+      sb.append(f+",");
+    }
+    Logger.getLogger(InterpreterFunctionRegister.class.getSimpleName())
+      .info("**LOADED " + sb.toString() + " FUNCTION PLUGIN");
     getFunctions().forEach(InterpreterFunctionRegister::registerFunction);
     getFunctions().forEach(ParserFunctionRegister::registerFunction);
 
+    sb = new StringBuilder();
+    for (String f: getInfixFunctionList()){
+      sb.append(f+",");
+    }
+    Logger.getLogger(InterpreterFunctionRegister.class.getSimpleName())
+      .info("**LOADED " + sb.toString() + " InfixFUNCTION PLUGIN");
     //register the {@code X||Y} style functions to the interpreter
     getInfixFunctions().forEach(InterpreterFunctionRegister::registerInfixFunction);
     getInfixFunctions().forEach(ParserFunctionRegister::registerInfixFunction);
 
     //register the operations functions to the interpreter
     getInfixOperations().forEach(ParserFunctionRegister::registerOperation);
+
+    sb = new StringBuilder();
+    for (String f: getInfixFunctionList()){
+      sb.append(f+",");
+    }
+    Logger.getLogger(InterpreterFunctionRegister.class.getSimpleName())
+      .info("**LOADED " + sb.toString() + " InfixFUNCTION PLUGIN evaluator");
     getInfixOperations().forEach(EvaluatorFunctionRegister::registerOperation);
   }
 
@@ -85,5 +110,12 @@ public class PluginManager {
         .map(String::toLowerCase)
         .toArray(String[]::new);
   }
-
+  public String[] getInfixFunctionList() {
+    return getInfixFunctions().stream()
+      .map(Utils::instantiateClass)
+      .filter(Objects::nonNull)
+      .map(IProcessInfixFunction::getFunctionName)
+      .map(String::toLowerCase)
+      .toArray(String[]::new);
+  }
 }

@@ -55,12 +55,16 @@ public class Expander {
 
     List<OperationNode> operations = ast.getOperations();
     for (OperationNode operation : operations) {
-      Map<String, Object> variableMap = new HashMap<>();
-      ASTNode process1 = expand(operation.getFirstProcess(), variableMap, context);
-      ASTNode process2 = expand(operation.getSecondProcess(), variableMap, context);
+      if (operation instanceof ImpliesNode) {
+        System.out.println("expander ==>");
+      } else {
+        Map<String, Object> variableMap = new HashMap<>();
+        ASTNode process1 = expand(operation.getFirstProcess(), variableMap, context);
+        ASTNode process2 = expand(operation.getSecondProcess(), variableMap, context);
 
-      operation.setFirstProcess(process1);
-      operation.setSecondProcess(process2);
+        operation.setFirstProcess(process1);
+        operation.setSecondProcess(process2);
+      }
     }
 
     return ast;

@@ -40,6 +40,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
   @Getter
   @Setter
   private Map<String, PetriNetTransition> transitions = new HashMap<>();
+  //Map from alphabet to transition with that label USED in parallel composition
   @Getter
   @Setter
   private Multimap<String, PetriNetTransition> alphabet = ArrayListMultimap.create();
@@ -780,6 +781,22 @@ public static String marking2String(Collection<PetriNetPlace> mark){
 
   //  return addTransition(id + ":t:" + transitionId++, label);
     return addTransition( "t:" + transitionId++, label);
+  }
+  public PetriNetTransition addTransition(Set<PetriNetPlace> pre,String label,Set<PetriNetPlace> post)
+    throws CompilationException {
+
+    //  return addTransition(id + ":t:" + transitionId++, label);
+    PetriNetTransition tr =  addTransition( "t:" + transitionId++, label);
+    Set<String> own = new HashSet<>();
+    for(PetriNetPlace pl: pre){
+      this.addEdge(pl,tr, false);
+      own.addAll(pl.getOwners());
+    }
+    for(PetriNetPlace pl: post){
+      this.addEdge(tr,pl, false);
+    }
+    tr.setOwners(own);
+    return tr;
   }
 /*
 Adds edge with new Id

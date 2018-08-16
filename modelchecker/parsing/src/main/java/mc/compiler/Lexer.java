@@ -240,10 +240,17 @@ public class Lexer {
       // "P = term"  build petrinet  and "P =A term" build  automata
     } else if (characters[index] == '=') {
       if (index < characters.length - 1 && characters[index + 1] == '=') {
-        Location location = new Location(line, column, line, column + 2, index, index + 2);
-        column += 2;
-        index += 2;
-        return new EqualityToken(location);
+        if (index < characters.length - 2 && characters[index + 2] == '>') {
+          Location location = new Location(line, column, line, column + 3, index, index + 3);
+          column += 3;
+          index += 3;
+          return new ImpliesToken(location);
+        } else {
+          Location location = new Location(line, column, line, column + 2, index, index + 2);
+          column += 2;
+          index += 2;
+          return new EqualityToken(location);
+        }
       } else  if (index < characters.length - 1 && characters[index + 1] == 'a') {
         Location location = new Location(line, column, line, column + 2, index, index + 2);
         column += 2;

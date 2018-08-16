@@ -15,7 +15,7 @@ import mc.processmodels.petrinet.operations.PetrinetReachability;
 
 public class PetrinetParallelFunction  {
 
-  private static Set<String> unsynchedActions;
+  //private static Set<String> unsynchedActions;
   private static Set<String> synchronisedActions;
   private static Map<Petrinet, Map<PetriNetPlace, PetriNetPlace>> petriPlaceMap;
   private static Map<PetriNetTransition, PetriNetTransition> petriTransMap;
@@ -28,10 +28,9 @@ public class PetrinetParallelFunction  {
     Petrinet p2 = pi2.reId("2");
     p1.rebuildAlphabet(); p2.rebuildAlphabet();
 
-   System.out.println("     PETRINETPARALLELFUNCTION");
-   System.out.println(" ||p1 "+p1.myString());
-   System.out.println(" ||p2 "+p2.myString()+"\n");
+   System.out.println("     PETRINETPARALLELFUNCTION"+" ||p1 "+p1.getId()+" ||p2 "+p2.getId());
 
+   //builds synchronisedActions set
     setupActions(p1, p2);
     //System.out.println("  synchronisedActions "+synchronisedActions);
     Petrinet composition = new Petrinet(p1.getId()  + p2.getId(), false);
@@ -46,10 +45,10 @@ public class PetrinetParallelFunction  {
     petriTransMap.putAll(composition.addPetrinetNoOwner(p2,"")); //adds unsynchronised transitions
     composition.setRoots(roots);
     composition.setEnds(buildEnds(p1.getEnds(),p2.getEnds()));
-    System.out.println("half "+composition.myString()+"\nhalf END");
+    //System.out.println("half "+composition.myString()+"\nhalf END");
     composition.setStartFromRoot();
     composition.setEndFromNet();
-    System.out.println("half "+composition.myString()+"\nhalf END");
+    //System.out.println("half "+composition.myString()+"\nhalf END");
     //System.out.println("  SoFar unsynced \n"+ composition.myString());
     //System.out.println("  synchronisedActions "+synchronisedActions);
     setupSynchronisedActions(p1, p2, composition);
@@ -57,7 +56,7 @@ public class PetrinetParallelFunction  {
     //composition = PetrinetReachability.removeUnreachableStates(composition);
      composition.reId("");
      assert composition.validatePNet():"parallel comp post condition ";
-   System.out.println("\n   PAR end "+composition.myString());
+   //System.out.println("\n   PAR end "+composition.myString());
     return composition;
   }
   private static List<Set<String>> buildEnds(List<Set<String>> p1, List<Set<String>> p2){
@@ -72,6 +71,10 @@ public class PetrinetParallelFunction  {
     }
     return out;
   }
+
+  /*
+  Adds actions to synchronisedActions.
+   */
   private static void setupActions(Petrinet p1, Petrinet p2) {
     Set<String> actions1 = p1.getAlphabet().keySet();
     Set<String> actions2 = p2.getAlphabet().keySet();
@@ -94,7 +97,14 @@ public class PetrinetParallelFunction  {
       } else if (containsBroadcasterOf(action, otherPetrinetActions)) {
         synchronisedActions.add(action);
       }
-    } else if (otherPetrinetActions.contains(action)) {
+    } else if (action.endsWith("^")) {
+       String passiveAction = action.substring(0, action.length() - 1);
+
+       if (otherPetrinetActions.contains(passiveAction)) {
+         synchronisedActions.add(action);
+         //synchronisedActions.add(passiveAction);
+       }
+     }else if (otherPetrinetActions.contains(action)) {
       synchronisedActions.add(action);
    //System.out.println("Sync "+ action);
     }
@@ -110,7 +120,7 @@ public class PetrinetParallelFunction  {
       Set<PetriNetTransition> p2Pair = p2.getAlphabet().get(action).stream()
               .map(t -> petriTransMap.get(t)).collect(Collectors.toSet());
 
-      replaceActions(p1Pair, p2Pair, comp, action, false);
+      replaceActions(p1Pair, p2Pair, comp, action, false); //handshake on label equality
 
       if (action.endsWith("!")) {
         String sync = action.substring(0, action.length() - 1)+"?";
@@ -126,11 +136,27 @@ public class PetrinetParallelFunction  {
                 .map(t -> petriTransMap.get(t)).collect(Collectors.toSet());
         replaceActions(p1P, p2P, comp, action, true);
       }
+      else if (action.endsWith("^")) {
+        String sync = action.substring(0, action.length() - 1);
+
+        Set<PetriNetTransition> p1P = p1.getAlphabet().get(action).stream()
+          .map(t -> petriTransMap.get(t)).collect(Collectors.toSet());
+        Set<PetriNetTransition> p2P = p2.getAlphabet().get(sync).stream()
+          .map(t -> petriTransMap.get(t)).collect(Collectors.toSet());
+        replaceActions(p1P, p2P, comp, action, true);
+        p1P = p1.getAlphabet().get(sync).stream()
+          .map(t -> petriTransMap.get(t)).collect(Collectors.toSet());
+        p2P = p2.getAlphabet().get(action).stream()
+          .map(t -> petriTransMap.get(t)).collect(Collectors.toSet());
+        replaceActions(p1P, p2P, comp, action, true);
+      }
       //System.out.println("Sync END "+comp.myString());
     }
   }
 
-
+/*
+   Replace each pair of synchronising transitions with their combined transition
+ */
   private static void replaceActions(Set<PetriNetTransition> p1_ , Set<PetriNetTransition> p2_ ,
                                      Petrinet comp, String action,boolean optional)
   throws  CompilationException {
@@ -215,7 +241,7 @@ public class PetrinetParallelFunction  {
   }
 
   private static void clear() {
-    unsynchedActions = new HashSet<>();
+    //unsynchedActions = new HashSet<>();
     synchronisedActions = new HashSet<>();
     petriPlaceMap = new HashMap<>();
     petriTransMap = new HashMap<>();

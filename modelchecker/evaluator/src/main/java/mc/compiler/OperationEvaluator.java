@@ -7,15 +7,7 @@ import com.microsoft.z3.Context;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import mc.compiler.ast.ASTNode;
-import mc.compiler.ast.ChoiceNode;
-import mc.compiler.ast.CompositeNode;
-import mc.compiler.ast.FunctionNode;
-import mc.compiler.ast.IdentifierNode;
-import mc.compiler.ast.IfStatementExpNode;
-import mc.compiler.ast.OperationNode;
-import mc.compiler.ast.ProcessRootNode;
-import mc.compiler.ast.SequenceNode;
+import mc.compiler.ast.*;
 import mc.exceptions.CompilationException;
 import mc.plugins.IOperationInfixFunction;
 import mc.processmodels.MultiProcessModel;
@@ -37,7 +29,8 @@ public class OperationEvaluator {
 
     static Map<String, Class<? extends IOperationInfixFunction>> operationsMap = new HashMap<>();
     private final String automata = "automata";
-
+    private List<ImpliesResult>  impRes = new ArrayList<>();
+    List<ImpliesResult> getImpRes() {return  impRes;}
     /**
      * This is the interpreter  for operations (equations) Called from Compiler
      * @param operations  one per equation in the operation section
@@ -58,10 +51,13 @@ public class OperationEvaluator {
         List<OperationResult> results = new ArrayList<>();
         //input  from AST
         for (OperationNode operation : operations) {
-
-            results.add(evaluateOperation(operation,processMap,
-                    interpreter,
-                    code, context));
+            Result r = evaluateOperation(operation,processMap,
+              interpreter,code, context);
+            if (r instanceof OperationResult) {
+                results.add((OperationResult)r);
+            } else if (r instanceof ImpliesResult) {
+                impRes.add((ImpliesResult)r) ;
+            }
         }
         //System.out.println("***operation Evaluation processmap "+processMap.size());
         return results;
@@ -78,22 +74,43 @@ public class OperationEvaluator {
      * @throws CompilationException
      * @throws InterruptedException
      */
-    public OperationResult evaluateOperation(OperationNode operation,
+    public Result evaluateOperation(OperationNode operation,
                                              Map<String, ProcessModel> processMap,
                                              Interpreter interpreter,
                                              String code, Context context) throws CompilationException, InterruptedException {
 
-        //input  from AST
+        Result or;
+        if (operation instanceof ImpliesNode) {
+
+            OperationNode o1 =  (OperationNode) ((ImpliesNode) operation).getFirstOperation();
+            OperationNode o2 =  (OperationNode) ((ImpliesNode) operation).getSecondOperation();
+            OperationResult  or1 = evaluateOp(o1,processMap, interpreter,code, context);
+            OperationResult  or2 = evaluateOp(o2,processMap, interpreter,code, context);
+            or = new ImpliesResult(or1,or2);
+            System.out.println("or1 res "+or1.isRes()+"or2 res "+or2.isRes());
+       } else {
+
+           or = evaluateOp(operation,
+             processMap,
+             interpreter,
+             code, context);
+       }
+       return or;
+    }
+
+    public OperationResult evaluateOp(OperationNode operation,
+          Map<String, ProcessModel> processMap,
+          Interpreter interpreter,
+          String code, Context context) throws CompilationException, InterruptedException {
+
+            //input  from AST
         boolean r = false;
         String firstId = findIdent(operation.getFirstProcess(), code);
         String secondId = findIdent(operation.getSecondProcess(), code);
 
-
-
         List<String> firstIds = collectIdentifiers(operation.getFirstProcess());
         List<String> secondIds = collectIdentifiers(operation.getSecondProcess());
         //System.out.println("***second "+operation.getSecondProcess().toString());
-
 
         List<String> missing = new ArrayList<>(firstIds);
         missing.addAll(secondIds);  // all process ids
@@ -103,15 +120,7 @@ public class OperationEvaluator {
         }
 //******
         r = evalOp(operation,processMap,interpreter,context);
-        //System.out.println("operation "+ firstId+" "+operation.getOperation()+" "+secondId+" "+r);
-        //Add type to funct so we can pass the correct parameters
-//*********
-        //now evaluate the operation
-
-
-
-
-        //System.out.println("operation "+ firstId+" "+operation.getOperation()+" "+secondId+" "+r);
+  System.out.println("evaluateOp "+ firstId+" "+operation.getOperation()+" "+secondId+" "+r);
         OperationResult result = new OperationResult(operation.getFirstProcess(),
                 operation.getSecondProcess(), firstId, secondId,
                 operation.getOperation(), null, operation.isNegated(), r, "");
@@ -164,15 +173,6 @@ public class OperationEvaluator {
                         operation.getFirstProcess(), getNextOperationId(), processMap, context);
                 processModels.add(OwnersRule.ownersRule( two));
             }
-
-            //System.out.println("oper "+ operation.getOperation().toLowerCase());
-            //Add type to funct so we can pass the correct parameters
-
-//now convert to Aut
-            // on first operand apply a2p2a if needed
-            //System.out.println("processMap.keySet() "+processMap.keySet());
-            //System.out.println(pnets.get(0).getId());
-            //System.out.println(processMap.get(pnets.get(0).getId()).getProcessType());
 
             r = funct.evaluate(processModels);
             if (operation.isNegated()) { r = !r; }

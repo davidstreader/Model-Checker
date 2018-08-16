@@ -42,11 +42,13 @@ public class AcceptanceGraph {
         Map<AutomatonNode, List<Set<String>> > dfaNode2ASet =
                 new HashMap<AutomatonNode, List<Set<String>> >();
         //The acceptance sets should contain "STOP" "ROOT"
+        // nfa nodes to its acceptance set
         Map<AutomatonNode, Set<String> > nfaNode2A = new HashMap<AutomatonNode, Set<String> >();
         Automaton dfa = new Automaton(id, !Automaton.CONSTRUCT_ROOT);
         nfaNode2A = build_nfanode2ASet(nfa);
 //  System.out.println("built nfaNode2A");
 
+        //maps one dfa node to a set of nfa nodes (nfaNode2A maps nfa node to acceptance set)
         Map<AutomatonNode, Set<AutomatonNode>> dfa2nfaSet = new HashMap<>(); //dfa 2 nfa
         //Map<String, AutomatonNode> nodeMap = new HashMap<>();
         Set<AutomatonNode> visited = new HashSet<>(); //set of dfa nodes
@@ -55,23 +57,18 @@ public class AcceptanceGraph {
 //set up root node
         //Set<AutomatonNode> dfaRoot =constructClosure(nfa.getRoot(), dfa2nfaSet); //add to dfa2nfaSet
         //Set<AutomatonNode> dfaRoot =constructClosure(nfa.getRoot());
-        for(AutomatonNode nfaRoot :nfa.getRoot() ) {
+        for(AutomatonNode nfaRoot :nfa.getRoot() ) { // more than one root from "+"
             AutomatonNode drt = dfa.addNode();
             dfa.addRoot(drt);
-            Set<AutomatonNode> dr= new HashSet<AutomatonNode>();
             Set<AutomatonNode> nr= new HashSet<AutomatonNode>();
-            nr.add(nfaRoot);  // one dfa root maps to a singelon set of nfa roots
+            nr.add(nfaRoot);  // one dfa root maps to a set of nfa roots
             dfa2nfaSet.put(drt,nr);
-        }
+        }// note this dfa has more than one root node!
         for(AutomatonNode dfaRoot :dfa.getRoot() ) {
             fringe.push(dfaRoot);
             dfa2nfaSet.put(dfaRoot,nfa.getRoot() );
-//   System.out.println("pushed");
+//System.out.println("pushed");
         }
-        //String idNode = nfa.getId() + constructLabel(dfa2nfaSet.get(first));
-        //System.out.println("idNode "+idNode+" visited "+ visited.toString());
-        // nodeMap records the set of nfa nodes used to build a  dfa node
-
 
 
         Set<String> alphabet = nfa.getAlphabet();
@@ -80,31 +77,18 @@ public class AcceptanceGraph {
         boolean processedRoot = false;
         while (!fringe.isEmpty() && cnt < 30) {
             AutomatonNode poped = fringe.pop();
-
-
             visited.add(poped);
 
-
-
-            List<Set<String>> acceptance = new LinkedList<>();
+           List<Set<String>> acceptance = new LinkedList<>();
             for(AutomatonNode n : dfa2nfaSet.get(poped)) {// get the nfa nodes making this dfa node
-//    System.out.println("nfa node "+n.myString());
+//System.out.println("nfa node "+n.myString());
                 if (!acceptance.contains(nfaNode2A.get(n))) {
                     acceptance.add(nfaNode2A.get(n));
                 }
             }
-//   System.out.println(acceptance.toString());
+//System.out.println(acceptance.toString());
             dfaNode2ASet.put(poped,acceptance);
             //System.out.println("Adding "+ poped.myString()+" "+ acceptance.toString());
-
-   /*
-   if (!processedRoot) {  // so must be root!
-    dfa.getRoot().clear();
-    dfa.addRoot(node);
-    node.setStartNode(true);
-    processedRoot = true;
-   } */
-
             for (String action : alphabet) {
                 Set<AutomatonNode> nextStates = constructStateSet(dfa2nfaSet.get(poped), action);
                 AutomatonNode nextdfa = null;
@@ -117,80 +101,56 @@ public class AcceptanceGraph {
                         break;
                     }
                 }
- /*   if (nextdfa == null){
-      System.out.println("dfa2nfa Corruption");
-      System.out.println("dfa2nfa      "+ dfa2nfaSet.toString());
-      System.out.println("looking for  "+ nextStates.toString());
-      break;
-    } */
-                //String nextId = nfa.getId() + constructLabel(dfa2nfaSet.get(nextStates));
-                //String nextId = constructNodeId(dfa2nfaSet.get(nextStates), nfa.getId());
-                //System.out.println("nextId = "+ nextId);
-
 // only build new dfa node if it has not already been built
-
                 if (nextdfa == null) {
 
                     nextdfa = dfa.addNode();
                     dfa2nfaSet.put(nextdfa,nextStates );
                     //Set<String> nextSt =constructClosure(nfa.getRoot(), dfa2nfaSet); //add to dfa2nfaSet
                     fringe.push(nextdfa);
-                    //String idNext = nfa.getId() + constructLabel(dfa2nfaSet.get(nextdfa));
-                    //System.out.println("idNext "+idNext+" "+ visited.toString());
-                    // nodeMap records the set of nfa nodes used to build a  dfa node
-
-                    //fringe.push(nextStates);  // states to be processed
+                   //fringe.push(nextStates);  // states to be processed
                 }
 
                 cnt++;
                 dfa.addEdge(action, poped, nextdfa, null, true,false);
-
-//System.out.println("addEdge "+ poped.getId()+"-"+action+"->"+nextdfa.getId());
             }
-
-
         }
 
         dfa.getNodes().stream()
                 .filter(nodex -> nodex.getOutgoingEdges().isEmpty())
                 .forEach(nodey -> nodey.setTerminal("STOP"));
+        System.out.println("Testing");
         printnode2AcceptanceSets(dfaNode2ASet, nfaNode2A);
+        Map<AutomatonNode, List<Set<String>> > dfaNode2ASetNew = activeActionCorrection(dfaNode2ASet);
+        System.out.println("Next");
+      printnode2AcceptanceSets(dfaNode2ASetNew, nfaNode2A);
+// refactor the acceptance sets adding [a^] where needed
 
         this.setA(dfa);
-        this.setNode2AcceptanceSets(dfaNode2ASet);
+        this.setNode2AcceptanceSets(dfaNode2ASetNew);
         this.toString();
-//  System.out.println("Ending AcceptanceGraph Constructor ");
+//System.out.println("Ending AcceptanceGraph Constructor ");
     }
+// [{a,b^},{c^}] ==> [{a,b^},{c^},{b^}]
+private Map<AutomatonNode, List<Set<String>> > activeActionCorrection(Map<AutomatonNode, List<Set<String>> > nd2Ac) {
+    Map<AutomatonNode, List<Set<String>> > out = new HashMap<>();
+    for (AutomatonNode nd: nd2Ac.keySet()){
+        List<Set<String>> asout = new ArrayList<>();
+        for(Set<String> as: nd2Ac.get(nd)){
+            if (as.size() >1) {for(String a:as){
+                if (a.endsWith("^")){
+                    Set<String> s = new HashSet<String>();
+                    s.add(a);
+                    asout.add(s);
+                }
+            }}
+            asout.add(as);
+        }
+        out.put(nd,asout);
+    }
+ return out;
+}
 
-
-/*
- private Set<AutomatonNode> constructClosure(Collection<AutomatonNode> node
- ) {
-  Set<String> states = new HashSet<>();
-  List<AutomatonNode> nodes = new ArrayList<>();
-
-  Stack<AutomatonNode> fringe = new Stack<>();
-  node.forEach(fringe::push);
-
-  while (!fringe.isEmpty()) {
-   AutomatonNode current = fringe.pop();
-
-   if (states.contains(current.getId())) {
-    continue;
-   }
-
-   states.add(current.getId());
-   nodes.add(current);
-
-   List<AutomatonEdge> edges = current.getOutgoingEdges().stream()
-     .filter(AutomatonEdge::isHidden)
-     .collect(Collectors.toList());
-
-   edges.forEach(edge -> fringe.push(edge.getTo()));
-  }
-  return states;
- }
- */
 
     /**
      *
@@ -271,7 +231,7 @@ public class AcceptanceGraph {
     /**
      *
      * @param a automaton
-     *   This computes the map nfanode2ASe note needs to respect Start and STOP
+     *   This computes the map nfanode2ASet note needs to respect Start and STOP
      */
     private Map<AutomatonNode, Set<String> > build_nfanode2ASet(Automaton a){
         Map<AutomatonNode, Set<String> > nfanode2ASet = new HashMap<AutomatonNode, Set<String> >();
@@ -286,18 +246,18 @@ public class AcceptanceGraph {
         }
         return nfanode2ASet;
     }
-    private void printnode2AcceptanceSets(
+private void printnode2AcceptanceSets(
       Map<AutomatonNode, List<Set<String>> > node2AcceptanceSets,
     Map<AutomatonNode, Set<String> >nfanode2ASet) {
-      /*  System.out.println("nfa Sets");
+      System.out.println("nfa Sets");
         for (AutomatonNode n : nfanode2ASet.keySet()){
           System.out.println(" "+n.getId()+" "+nfanode2ASet.get(n).toString() );
-        }*/
+        }
 
-/*  System.out.println("Acceptance Sets");
+System.out.println("Acceptance Sets");
   for (AutomatonNode nd : node2AcceptanceSets.keySet()) {
    System.out.println(" "+nd.getId()+"  "+node2AcceptanceSets.get(nd));
-  } */
+  }
 
     }
 
@@ -316,7 +276,7 @@ public class AcceptanceGraph {
         //Map<AutomatonNode, List<Set<String>> > n2as = new TreeMap<>();
          System.out.println("ColorNodes start color = "+color);
         System.out.println(this.toString());
-        System.out.println("*********");
+        System.out.println("*****Color Start****");
          //System.out.println("n2as "+n2as.toString());
         boolean found = false;
         for (AutomatonNode nd : this.getA().getNodes()) {
@@ -346,7 +306,7 @@ public class AcceptanceGraph {
      System.out.println("New cmap "+acept.toString()+" "+ color);
                 cmap.put(color, acept);
             }
-    System.out.println("node " +nd.getId()+" has color "+ nd.getColour());
+    //System.out.println("node " +nd.getId()+" has color "+ nd.getColour());
         }
 //  System.out.println("ColorNodes end col = "+color);
         return color;
@@ -402,7 +362,7 @@ public class AcceptanceGraph {
         if (this.getA() == null) {System.out.println("AcceptanceGraph aut = null");}
         if (this.getNode2AcceptanceSets() == null) {System.out.println("AcceptanceGraph n2ac = null");}
         return "Acceptance Graph  \n  "+this.getA().myString()+" "+
-                this.node2ac_toString()+" End Acceptance Graph \n";
+                this.node2ac_toString()+"\n End Acceptance Graph ";
 
     }
 }

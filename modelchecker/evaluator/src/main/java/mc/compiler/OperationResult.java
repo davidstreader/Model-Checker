@@ -15,12 +15,13 @@ import mc.util.Location;
  * }
  */
 @Getter
-public class OperationResult {
+public class OperationResult extends Result {
 
   private OperationProcess process1;
   private OperationProcess process2;
   private String operation;
   private String result;
+  private boolean res;
   private String extra;
   private ArrayList<String> failures;
 
@@ -32,6 +33,7 @@ public class OperationResult {
     this.process2 = new OperationProcess(ident2, process2.getLocation());
     this.operation = (negated ? "!" : "") + operation;
     this.result = result + "";
+    res = result;
     this.extra = extra;
     this.failures = failedOps;
   }

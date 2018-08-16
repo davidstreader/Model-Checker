@@ -60,4 +60,8 @@ public class OperationNode extends ASTNode {
     this.firstProcess = firstProcess;
     this.secondProcess = secondProcess;
   }
+  public OperationNode(Location location) {
+    super(location);
+    this.operation = "==>";
+  }
 }
