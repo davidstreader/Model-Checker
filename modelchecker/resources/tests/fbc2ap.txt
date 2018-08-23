@@ -1,0 +1,44 @@
+processes {
+//A = a->STOP.
+A = c!->x!->d?->STOP.
+B = q!->x?->e?->STOP.
+C = fbc2ap(A||B).
+
+X = d!->(x?->STOP||y?->STOP).
+Y = fbc2ap(X).
+X1 = d?->(x!->STOP||y!->e?->STOP).
+Y1 = fbc2ap(X1).
+/*
+D = a->x->b->STOP.
+R = C||D. */
+}
+/*operation{
+C ~ A.
+}
+equation {
+X =f Y.
+}
+8/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

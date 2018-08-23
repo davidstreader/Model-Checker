@@ -1,0 +1,21 @@
+processes {
+A = a->(b->STOP|c->STOP).
+B = a?->(b?->STOP|c?->STOP).
+
+F = fap2bc(A).
+G = revap2bc( F).
+X = revap2bc( fap2bc(A)).
+//H =  fap2bc(fbc2ap(B)).
+
+I = revap2bc(B).
+J= fap2bc(I).
+}
+
+operation {
+X ~ G.
+}
+
+
+
+
+
