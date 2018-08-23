@@ -63,9 +63,9 @@ public class TokenRule {
                                     Map<Multiset<PetriNetPlace>, AutomatonNode> markingToNodeMap,
                                     Map<AutomatonNode, Multiset<PetriNetPlace> > nodeToMarkingMap) {
 
-    Automaton outputAutomaton = new Automaton(convertFrom.getId() + "-token" //+ " automata"
+    Automaton outputAutomaton = new Automaton(convertFrom.getId()  //+ " automata"
             ,false);
-      System.out.println("\nTOKEN RULE  STARTING "+convertFrom.myString());
+      System.out.println("\nTOKEN RULE  STARTING "+convertFrom.getId());
 
       assert convertFrom.validatePNet(): "Token precondition";
    outputAutomaton.setOwners(convertFrom.getOwners());
@@ -117,7 +117,7 @@ if(j++> stateSizeBound) {System.out.println("\n\nTokenRule Failure Looping = "+j
       //System.out.println("Processing "+Petrinet.marking2String(currentMarking)+
       //" trans "+satisfiedPostTransitions.size());
       if (satisfiedPostTransitions.size() == 0) {
-          currentMarking.stream().forEach(x->{System.out.print(x.getId()+"->"+x.getTerminal());});
+         // currentMarking.stream().forEach(x->{System.out.print(x.getId()+"->"+x.getTerminal());});
           //if (currentMarking.stream().map(x->x.getTerminal().equals("STOP")).reduce(true,(x,y)->x&&y))
           if (currentMarking.stream().map(x->x.isSTOP()).reduce(true,(x,y)->x&&y)) {
             markingToNodeMap.get(currentMarking).setTerminal("STOP");
@@ -192,19 +192,20 @@ if(j++> stateSizeBound) {System.out.println("\n\nTokenRule Failure Looping = "+j
     Set<PetriNetPlace> mk = mark.stream().map(x->convertFrom.getPlaces().get(x)).collect(Collectors.toSet());
 
     Multiset<PetriNetPlace> mkm = HashMultiset.create(mk);
-    System.out.print("\n** End Multiset ");mkm.stream().forEach(x-> System.out.print(x.getId()+", ")); System.out.println("");
+    //System.out.print("\n** End Multiset ");mkm.stream().forEach(x->System.out.print(x.getId()+", "));System.out.println("");
     if (!markingToNodeMap.containsKey(mkm)) {
-      System.out.println(" ERROR "+ mark+ "NOT found ");
+      System.out.println(" ERROR "+ mark+ " NOT found ");
     }
+    //System.out.println("out "+outputAutomaton.myString());
      outputAutomaton.addEnd(markingToNodeMap.get(mkm).getId());
   }
 
-   System.out.println("Token Rule Out "+outputAutomaton.myString());
+   System.out.println("Token Rule END"); //Out "+outputAutomaton.myString());
     return outputAutomaton;
   }
 
 
-  private static Set<PetriNetTransition> satisfiedTransitions(Multiset<PetriNetPlace> currentMarking) {
+  public static Set<PetriNetTransition> satisfiedTransitions(Multiset<PetriNetPlace> currentMarking) {
       Set<PetriNetTransition> out = post(currentMarking).stream() //88
             //  .filter(transition -> currentMarking.containsAll(transition.pre()))
               .filter(transition -> currentMarking.containsAll(transition.preNonBlocking())) // drops the optional preplaces

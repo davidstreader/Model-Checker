@@ -1,15 +1,18 @@
 package mc.operations.functions;
 
+import com.google.common.collect.Multiset;
 import com.microsoft.z3.Context;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-import mc.Constant;
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessFunction;
 import mc.processmodels.MultiProcessModel;
+import mc.processmodels.ProcessType;
 import mc.processmodels.automata.Automaton;
+import mc.processmodels.automata.AutomatonNode;
+import mc.processmodels.conversion.TokenRule;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
@@ -61,7 +64,15 @@ public class GaloisAP2BC implements IProcessFunction {
 
     return null;
   }
+  @Override
+  public Petrinet compose(String id, Set<String> flags, Context context, Petrinet... petrinets) throws CompilationException {
+    System.out.println("GaloisAP2BC");
+    Petrinet p = petrinets[0].reId("");
+    MultiProcessModel model = GaloisBC2AP.buildmpmFromPetri(p);
+    Map<Multiset<PetriNetPlace>, AutomatonNode> markingToNode = model.getProcessNodesMapping().getMarkingToNode();
 
+    return composeM(id,flags,context, markingToNode, ((Petrinet) model.getProcess(ProcessType.PETRINET)));
+  }
   /**  Automata
    * Replace b^ with  R-bt!->x, x-ba?->E, x-br?->R
    * Replace b  with  R-bt?->y, y-ba!->E
@@ -75,53 +86,58 @@ public class GaloisAP2BC implements IProcessFunction {
    * @return the resulting petrinet of the operation
    * @throws CompilationException when the function fails
    */
-  @Override
-  public Petrinet compose(String id, Set<String> flags, Context context, Petrinet... petrinets) throws CompilationException {
-    Petrinet petrinet = petrinets[0].reId("Gal");
-    Set<String> alphabetListen = petrinet.getAlphabet().keySet().stream().filter(x->x.endsWith("?")).collect(Collectors.toSet());
 
-    for (PetriNetPlace pl : petrinet.getPlaces().values()){
-      Set<String> nextListen=  pl.post().stream().map(x->x.getLabel()).filter(x->x.endsWith("?")).collect(Collectors.toSet());
-      Set<String> toAdd = alphabetListen.stream().filter(x-> ! nextListen.contains(x)).collect(Collectors.toSet());
-      for(String lab: toAdd) {
-        PetriNetPlace z = petrinet.addPlace();
-        Set<PetriNetPlace> zset = new HashSet<>();
-        zset.add(z);
+  public Petrinet composeM(String id, Set<String> flags, Context context, Map<Multiset<PetriNetPlace>, AutomatonNode> markingToNode, Petrinet... petrinets) throws CompilationException {
+    Petrinet petrinet = petrinets[0];
+    System.out.println("********ap2bc "+petrinet.myString());
 
 
-      }
-    }
 
 
-    for(PetriNetTransition tr: petrinet.getTransitions().values()){
+    Set<PetriNetTransition> todo = petrinet.getTransitions().values().stream().collect(Collectors.toSet());
+    System.out.println(todo.
+      stream().map(x->x.myString()).reduce("",(x,y)->x+y+"\n"));
+
+    for(PetriNetTransition tr: todo){
+        System.out.println("*2* "+tr.myString());
       String lab = tr.getLabel();
       if (lab.endsWith("^")) {
         String prefix = lab.substring(0,lab.length()-1);
         PetriNetPlace x = petrinet.addPlace();
         Set<PetriNetPlace> xset = new HashSet<>();
         xset.add(x);
-        petrinet.addTransition(tr.pre(), prefix + lab+"t!", xset );
-        petrinet.addTransition(xset, prefix + lab+"r?", tr.pre() );
-        petrinet.addTransition(xset, prefix + lab+"a?", tr.post() );
+        petrinet.addTransition(tr.pre(), prefix + ".t!", xset );
+        //petrinet.addTransition(xset, prefix + ".r?", tr.pre() );
+        petrinet.addTransition(xset, prefix + "?", tr.post() );
         petrinet.removeTransition(tr);
-
-      } else if (lab.endsWith("?")) {
-        String prefix = lab.substring(0,lab.length()-1);
+        System.out.println("1."+petrinet.myString());
+      } else if (!(lab.endsWith("!")||lab.endsWith("?"))) {
+        //String prefix = lab.substring(0,lab.length()-1);
         PetriNetPlace y = petrinet.addPlace();
         Set<PetriNetPlace> yset = new HashSet<>();
         yset.add(y);
-        petrinet.addTransition(tr.pre(), prefix + lab+"t?", yset );
-        petrinet.addTransition(yset, prefix + lab+"a!", tr.post() );
+        petrinet.addTransition(tr.pre(), lab +".t?", yset );
+        petrinet.addTransition(yset, lab +"!", tr.post() );
         petrinet.removeTransition(tr);
+        System.out.println("2."+petrinet.myString());
       }
 
     }
+
+    System.out.println(petrinet.getId()+" is valid "+petrinet.validatePNet());
+    System.out.println("ap2bc end "+petrinet.myString());
     return   petrinet;
 
   }
+
   @Override
   public MultiProcessModel compose(String id, Set<String> flags, Context context, MultiProcessModel... multiProcess) throws CompilationException {
-    return null;
+    MultiProcessModel model = multiProcess[0].reId("Gal");
+    Petrinet petrinet = (Petrinet) multiProcess[0].getProcess(ProcessType.PETRINET);
+    Map<Multiset<PetriNetPlace>, AutomatonNode> markingToNode =
+      multiProcess[0].getProcessNodesMapping().getMarkingToNode();
+    this.composeM(id,flags,context,markingToNode,petrinet);
+    return model;
   }
 }
 

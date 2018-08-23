@@ -3,6 +3,7 @@ package mc.plugins;
 import com.microsoft.z3.Context;
 import java.util.Collection;
 import java.util.Set;
+
 import mc.exceptions.CompilationException;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.petrinet.Petrinet;

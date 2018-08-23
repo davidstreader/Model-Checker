@@ -1,7 +1,6 @@
 package mc.operations.functions;
 
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Multimap;
 import com.microsoft.z3.Context;
 
 import java.util.*;
@@ -78,12 +77,12 @@ public class SimpFunction implements IProcessFunction {
     Map<Integer, List<ColouringUtil.ColourComponent>> colourMap = new HashMap<>();
 
     colourer.performInitialColouring(nodes);
-    colourer.doColouring(edges, nodes);
-    System.out.println("SIMP colour "+ automaton.getId());
+    colourer.doColouring(nodes);
+    //System.out.println("SIMP colour "+ automaton.getId());
 
    Map<Integer,List<AutomatonNode>> colour2nodes = new HashMap<>();
 
-// System.out.println("SIMP merge "+ automaton.getId());
+//System.out.println("SIMP merge "+ automaton.getId());
      for(AutomatonNode nd: nodes) {
        if (colour2nodes.containsKey(nd.getColour()) ) {
         colour2nodes.get(nd.getColour()).add(nd);
@@ -103,7 +102,7 @@ public class SimpFunction implements IProcessFunction {
       for (AutomatonNode automatonNode : value) {
         if (automatonNode.equals(mergedNode)) {continue;};
         try {
- // System.out.println("Merging "+mergedNode.getId()+" " + automatonNode.getId());
+ //System.out.println("Merging "+mergedNode.getId()+" " + automatonNode.getId());
           mergedNode = automaton.combineNodes(mergedNode, automatonNode, context);
         } catch (InterruptedException ignored) {
           throw new CompilationException(getClass(), "INTERRUPTED EXCEPTION");
@@ -112,7 +111,7 @@ public class SimpFunction implements IProcessFunction {
 
       value.forEach(automaton::removeNode);
     }
-      System.out.println("Simp out "+automaton.myString()+"\n");
+      //System.out.println("Simp out "+automaton.myString()+"\n");
     return automaton;
   }
 

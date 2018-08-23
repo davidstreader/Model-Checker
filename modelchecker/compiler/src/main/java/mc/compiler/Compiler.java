@@ -78,7 +78,7 @@ public class Compiler {
     HashMap<String, ProcessNode> dependencyMap = new HashMap<>();
 
     for (ProcessNode node : ast.getProcesses()) {
-      System.out.println("Compiler Start node = "+ node.getIdentifier());
+      System.out.println("**COMPILER** Compiler Start node = "+ node.getIdentifier());
       processNodeMap.put(node.getIdentifier(), (ProcessNode) node.copy());
       dependencyMap.put(node.getIdentifier(), node);
     }
@@ -104,7 +104,7 @@ public class Compiler {
     ast = replacer.replaceReferences(ast, messageQueue);
 
 
-    System.out.println("Hierarchy of processes: " + ast.getProcessHierarchy().getDependencies());
+    System.out.println("**COMPILER** Hierarchy of processes: " + ast.getProcessHierarchy().getDependencies());
 
     List<String> processesToRemoveFromDisplay = new ArrayList<>();
     for (String processesName : processNodeMap.keySet()) {
@@ -120,18 +120,18 @@ public class Compiler {
       }
     }
 //builds process and processMap
-    System.out.println("Entering interpreter with ast for processes -> Types "+
+    System.out.println("**COMPILER** Entering interpreter with ast for processes -> Types "+
       ast.getProcesses().stream().map(x->"\n"+x.getIdentifier()+"->"+x.getType())
         .reduce("",(x,y)->x+" "+y));
     Map<String, ProcessModel> processMap = interpreter.interpret(ast,
         messageQueue, z3Context);
 
-    System.out.println("****before operation evaluation "+processMap.size());
+    System.out.println("**COMPILER** before operation evaluation "+processMap.size());
 
     List<OperationResult> opResults = evaluator.evaluateOperations(ast.getOperations(), processMap,
         interpreter, code, z3Context);
     List<ImpliesResult> impResults = evaluator.getImpRes();
-    System.out.println("****after operation evaluation "+processMap.size()+ " imp "+impResults.size());
+    System.out.println("**COMPILER** after operation evaluation "+processMap.size()+ " imp "+impResults.size());
 
     // system currently has memory hence EE can give different results each time
     // still has memory problem with many permutations

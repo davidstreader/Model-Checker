@@ -80,6 +80,7 @@ public class OperationEvaluator {
                                              String code, Context context) throws CompilationException, InterruptedException {
 
         Result or;
+        //Galois Connection needs implication
         if (operation instanceof ImpliesNode) {
 
             OperationNode o1 =  (OperationNode) ((ImpliesNode) operation).getFirstOperation();

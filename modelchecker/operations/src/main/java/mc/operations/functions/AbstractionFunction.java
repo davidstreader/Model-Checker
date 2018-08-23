@@ -15,7 +15,6 @@ import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.petrinet.Petrinet;
-import mc.processmodels.petrinet.components.PetriNetEdge;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
 import mc.util.expr.Expression;
@@ -62,8 +61,8 @@ public class AbstractionFunction implements IProcessFunction {
    *
    * @param id       the id of the resulting automaton
    * @param flags    the flags given by the function (e.g. {@code unfair} in {@code abs{unfair}(A)}
-   * @param automata a variable number of automata taken in by the function
    * @param context  the z3 context to access the stuff
+   * @param automata a variable number of automata taken in by the function
    * @return the resulting automaton of the operation
    */
   @Override
@@ -75,7 +74,7 @@ public class AbstractionFunction implements IProcessFunction {
     Set<AutomatonEdge> processesed = new HashSet<>();
     Automaton startA = automata[0].copy();
     String Aname = startA.getId();
-    //System.out.println("Abs start "+ startA.myString());
+    System.out.println("automata Abs start "+ startA.getId());
 
     Automaton abstraction = pruneHiddenNodes(context, startA);
 
@@ -167,7 +166,7 @@ public class AbstractionFunction implements IProcessFunction {
         ow.addAll(edge.getOwnerLocation());
     }
     abstraction.setOwners(ow);
-    System.out.println("Abs final "+ abstraction.myString());
+    System.out.println("Abs final "+ abstraction.getId());
 
     return abstraction;
   }
@@ -486,7 +485,7 @@ public class AbstractionFunction implements IProcessFunction {
 
     assert petrinets.length == 1;
     Petrinet petri = petrinets[0].reId("");
-    System.out.println("Start "+petri.myString());
+    //System.out.println("Start "+petri.myString());
     List<PetriNetTransition> hidden = petri.getTransitions().values().stream().
             filter(x->x.getLabel().equals(Constant.HIDDEN)).collect(Collectors.toList());
     while(!hidden.isEmpty()) {
@@ -496,7 +495,7 @@ public class AbstractionFunction implements IProcessFunction {
             filter(x->x.getLabel().equals(Constant.HIDDEN)).collect(Collectors.toList());
 
     petri.rebuildAlphabet();
-    System.out.println("Petri abs returns "+petri.myString());
+    //System.out.println("Petri abs returns "+petri.myString());
     return petri;
   }
 
@@ -507,7 +506,7 @@ public class AbstractionFunction implements IProcessFunction {
    */
 
   private void hidetaus(List<PetriNetTransition> hidden, Petrinet petri)throws CompilationException {
-    System.out.println("\nhiding "+hidden.size());
+    //System.out.println("\nhiding "+hidden.size());
 
     List<PetriNetTransition> next = new ArrayList<>();
     //adding -a->*-tau->
@@ -516,9 +515,9 @@ public class AbstractionFunction implements IProcessFunction {
       for(String id: petri.getTransitions().keySet()){
         original.add(id);  //Beware of pointers do not simplify
       } //restrict abstraction to original
-      System.out.println("original "+ original+"\n");
+      //System.out.println("original "+ original+"\n");
 
-      System.out.println("START t2 = "+t2.myString());
+      //System.out.println("START t2 = "+t2.myString());
       for(PetriNetPlace pretau: t2.pre()) {
         for(PetriNetTransition tr1: pretau.pre()){    //first transition
           if (tr1.getId().equals(t2.getId())) continue;
@@ -554,7 +553,7 @@ public class AbstractionFunction implements IProcessFunction {
           if (newtr.getLabel().equals(Constant.HIDDEN)) {
             if (!next.contains(newtr)) next.add(newtr);
           }
-      System.out.println("  ADDed-pre "+newtr.myString());
+      //System.out.println("  ADDed-pre "+newtr.myString());
         }
       }
 
@@ -562,7 +561,7 @@ public class AbstractionFunction implements IProcessFunction {
     //adding -tau->*-a->
     //System.out.println("POST "+original);
   //  for(PetriNetTransition t2: hidden) {
-      System.out.println("Post "+t2.getId());
+      //System.out.println("Post "+t2.getId());
       for(PetriNetPlace posttau: t2.post()) {
         for(PetriNetTransition tr2: posttau.post()){
           if (tr2.getId().equals(t2.getId())) continue;
@@ -597,14 +596,14 @@ public class AbstractionFunction implements IProcessFunction {
           if (newtr.getLabel().equals(Constant.HIDDEN)) {
             if (!next.contains(newtr))  next.add(newtr);
           }
-          System.out.println("  ADDed-post "+newtr.myString());
+          //System.out.println("  ADDed-post "+newtr.myString());
         }
       }
 
    // }
     //adding n-a->*  for loop n-tau->* and *-a->n
    // for(PetriNetTransition t1: hidden) {
-      System.out.println("Loop "+t2.getId());
+      //System.out.println("Loop "+t2.getId());
       for(PetriNetPlace posttau: t2.post()) {
         for(PetriNetTransition tr2: posttau.post()){
           //System.out.println("LOOP "+t1.myString()+ " "+tr2.myString());
@@ -640,7 +639,7 @@ public class AbstractionFunction implements IProcessFunction {
           if (newtr.getLabel().equals(Constant.HIDDEN)) {
             if (!next.contains(newtr))  next.add(newtr);
           }
-          System.out.println("ADDed-loop "+newtr.myString());
+          //System.out.println("ADDed-loop "+newtr.myString());
         }
       }
 
@@ -654,7 +653,7 @@ public class AbstractionFunction implements IProcessFunction {
       //System.out.println("  Adding "+ tr.myString());
       hidden.add(tr);
     }
-    System.out.println("hidetaus returns "+hidden.size()+" in "+petri.getId());
+    //System.out.println("hidetaus returns "+hidden.size()+" in "+petri.getId());
     return ;
   }
   @Override

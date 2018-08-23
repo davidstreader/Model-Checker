@@ -1,17 +1,28 @@
 package mc.operations.functions;
 
+import com.google.common.collect.Multiset;
 import com.microsoft.z3.Context;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-import mc.Constant;
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessFunction;
+import mc.processmodels.Mapping;
 import mc.processmodels.MultiProcessModel;
+import mc.processmodels.ProcessModel;
+import mc.processmodels.ProcessType;
 import mc.processmodels.automata.Automaton;
+import mc.processmodels.automata.AutomatonNode;
+import mc.processmodels.conversion.TokenRule;
 import mc.processmodels.petrinet.Petrinet;
+import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
+
+/*
+Need to add this as a function on  MultiProcessModel if going to reuse the Markings
+shortcut is to recompute reachability
+ */
 
 public class GaloisBC2AP implements IProcessFunction {
   /**
@@ -21,7 +32,7 @@ public class GaloisBC2AP implements IProcessFunction {
    */
   @Override
   public String getFunctionName() {
-    return "fap2bc";
+    return "fbc2ap";
   }
 
   /**
@@ -56,23 +67,37 @@ public class GaloisBC2AP implements IProcessFunction {
   @Override
   public Automaton compose(String id, Set<String> flags, Context context, Automaton... automata)
     throws CompilationException {
-
-    Automaton automaton = automata[0].copy();
-    Set<String> alphabet = automaton.getAlphabet();
-    if (automaton.getAlphabetBeforeHiding() == null) {
-      automaton.setAlphabetBeforeHiding(new HashSet<>(automaton.getAlphabet()));
-    }
-    for (String action : flags) {
-      if (alphabet.contains(action)) {
-        automaton.relabelEdges(action, Constant.HIDDEN);
-      } else {
-        throw new CompilationException(getClass(), "Unable to find action " + action
-          + " for hiding.", null);
-      }
-    }
-    return new   AbstractionFunction().compose(id, new HashSet<>(), context, automaton);
+ return null;
   }
 
+ /*
+     If called only with a petri Net  then use token rule to build reachable markings stored in MultiModel
+     then call MultiModel
+  */
+ @Override
+  public Petrinet compose(String id, Set<String> flags, Context context, Petrinet... petrinets) throws CompilationException {
+
+   MultiProcessModel model = buildmpmFromPetri(petrinets[0].reId(""));
+   Map<Multiset<PetriNetPlace>, AutomatonNode> markingToNode = model.getProcessNodesMapping().getMarkingToNode();
+
+    return composeM(id,flags,context,markingToNode,petrinets);
+  }
+/* CODE COPIED FROM Interpreter */
+  public static MultiProcessModel buildmpmFromPetri(Petrinet pet){
+
+    MultiProcessModel model = new MultiProcessModel(pet.getId());
+    //System.out.println("Interpreter Built Petri "+ modelPetri.getId());
+    model.addProcess(pet);
+    HashMap<AutomatonNode, Multiset<PetriNetPlace>> nodeToMarking = new HashMap<>();
+    HashMap<Multiset<PetriNetPlace>, AutomatonNode> markingToNode = new HashMap<>();
+
+    ProcessModel modelAut = TokenRule.tokenRule(
+      (Petrinet) model.getProcess(ProcessType.PETRINET), markingToNode, nodeToMarking);
+
+    model.addProcess(modelAut);
+    model.addProcessesMapping(new Mapping(nodeToMarking, markingToNode));
+    return model;
+  }
   /**
    * Petri Nets  relabel transitions b! to b^  and b? to b
    * Add listening loops to a Petri Net
@@ -87,25 +112,86 @@ public class GaloisBC2AP implements IProcessFunction {
    * @return the resulting petrinet of the operation
    * @throws CompilationException when the function fails
    */
-  @Override
-  public Petrinet compose(String id, Set<String> flags, Context context, Petrinet... petrinets) throws CompilationException {
-    System.out.println("GaloisBC2AP");
-    Throwable t = new Throwable();
-    t.printStackTrace();
-    Petrinet petrinet = petrinets[0].reId("Gal");
+
+    public Petrinet composeM(String id, Set<String> flags, Context context, Map<Multiset<PetriNetPlace>, AutomatonNode> markingToNode, Petrinet... petrinets) throws CompilationException {
+    Petrinet petrinet = petrinets[0];// .reId("Gal"); //Done earlier to reId  markingToNode
+      System.out.println("GaloisBC2AP "+ petrinet.myString());
     for(PetriNetTransition tr: petrinet.getTransitions().values()){
         tr.setLabel(reLabel(tr.getLabel()));
       System.out.println(" tr "+ tr.getId()+ " => "+tr.getLabel());
     }
-    Set<String> alphabet = petrinet.getAlphabet().keySet().stream().filter(x->x.endsWith("?")).collect(Collectors.toSet());
 
-/*
-   Add listening loops to a Petri Net?
-   for each listening transition
-      for all reachable Markings subset to location of transition
-          add listening loop on resulting subMarkings
+/*       Add listening loops to a Petri Net?
+   build a mapping from  listening label 2 owners
+   For each marking
+         find set of satisfied listening transitions
+         foreach listening label with no transition enabled
+            add transition loop from places owned by lablel
+
  */
+//build a mapping from  listening label 2 owners
+      Map<String, Set<String>> listener2Owners = buildListener2Owners(petrinet);
+
+//  For each marking
+   for (Multiset<PetriNetPlace> mark: markingToNode.keySet()){
+     System.out.println("** Marking "+Petrinet.marking2String(mark));
+//      find set of satisfied listening transitions
+     Set<String> trlist =TokenRule.satisfiedTransitions(mark).
+                                 stream().filter(x->!x.getLabel().endsWith("^")).
+                                 map(x->x.getLabel()).collect(Collectors.toSet());
+     System.out.println("** trlist "+trlist);
+     // set of listening labels with no transitions enabled
+     Set<String> trNotlist = listener2Owners.keySet().
+       stream().filter(x->!trlist.contains(x)).collect(Collectors.toSet());
+     //find the Places no owned by listening label
+     System.out.println("** trNotList "+trNotlist);
+     for(String lab: trNotlist){
+       System.out.println("**** lab "+lab);
+       Set<PetriNetPlace> trprenew = mark.stream().
+         filter(x->listener2Owners.get(lab).containsAll(x.getOwners())).
+         collect(Collectors.toSet());
+       System.out.println("**** "+trprenew.stream().map(x->x.getId()+" "+x.getOwners()+" ")
+                  .reduce("",(x,y)->x+y));
+       if(trprenew.size()>0) {
+         PetriNetTransition t = petrinet.addTransition(trprenew,lab,trprenew);
+         System.out.println("**** "+t.myString());
+       } else {
+         System.out.println("ownership ERROR add "+lab+ " transition");
+       }
+    }
+
+   }
     return   petrinet;
+  }
+
+
+  public static Map<String, Set<String>> buildListener2Owners(Petrinet petrinet) {
+    //Set<String>  listeners = new HashSet<>();
+    Map<String, Set<String>> listener2Owners = new HashMap<>();
+    for(PetriNetTransition tr: petrinet.getTransitions().values().
+      stream().filter(x->!x.getLabel().endsWith("^")).
+      collect(Collectors.toSet())) {
+      System.out.println("*** listener "+tr.myString());
+      if (listener2Owners.keySet().contains(tr.getLabel())) {
+        if (!listener2Owners.get(tr.getLabel()).equals(tr.getOwners())) {
+          System.out.println("ERROR in owners of transitions labeled "+tr.getLabel()+
+            listener2Owners.get(tr.getLabel())+ " "+ tr.getOwners()
+          );
+        }
+      } else {
+        listener2Owners.put(tr.getLabel(),tr.getOwners());
+        //listeners.add(tr.getLabel());
+        System.out.println("*** put ("+tr.getLabel()+","+tr.getOwners()+")");
+      }
+    }
+    return listener2Owners;
+  }
+
+  private Set<PetriNetTransition> noListener(Petrinet petrinet, Multiset<PetriNetPlace> mark){
+
+    return petrinet.getTransitions().values().stream()
+      .filter(x->( x.getLabel().endsWith("?") && !mark.containsAll(x.pre())))
+      .collect(Collectors.toSet());
   }
   private String reLabel(String ac){
     System.out.print("reLabel "+ ac);
@@ -114,12 +200,20 @@ public class GaloisBC2AP implements IProcessFunction {
     else if (ac.endsWith("?")) {
       return ac.substring(0, ac.length() - 1);
     }
+
     return ac;
   }
-
+/*
+    This is needed to obtain the pre computed markingToNode
+ */
 
   @Override
   public MultiProcessModel compose(String id, Set<String> flags, Context context, MultiProcessModel... multiProcess) throws CompilationException {
+    MultiProcessModel model = multiProcess[0].reId("Gal");
+   Petrinet petrinet = (Petrinet) multiProcess[0].getProcess(ProcessType.PETRINET);
+    Map<Multiset<PetriNetPlace>, AutomatonNode> markingToNode =
+          multiProcess[0].getProcessNodesMapping().getMarkingToNode();
+    this.composeM(id,flags,context,markingToNode,petrinet);
     return null;
   }
 }

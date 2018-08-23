@@ -5,10 +5,16 @@ import com.google.common.collect.MultimapBuilder;
 import java.util.EnumMap;
 import java.util.Map;
 
+import com.google.common.collect.Multiset;
 import lombok.Getter;
+import mc.exceptions.CompilationException;
+import mc.processmodels.automata.Automaton;
+import mc.processmodels.automata.AutomatonNode;
+import mc.processmodels.petrinet.Petrinet;
+import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.util.Location;
 
-public class MultiProcessModel extends ProcessModelObject implements ProcessModel {
+public class MultiProcessModel extends ProcessModelObject implements ProcessModel  {
 
 
   private Map<ProcessType,ProcessModel> processes = new EnumMap<>(ProcessType.class);
@@ -20,7 +26,17 @@ public class MultiProcessModel extends ProcessModelObject implements ProcessMode
   @Getter
   private Mapping processNodesMapping;
 
+  public MultiProcessModel reId(String tag)  throws  CompilationException{
 
+      MultiProcessModel mod = new MultiProcessModel(getId() + tag);
+      mod.addProcess(((Petrinet) this.processes.get(ProcessType.PETRINET)).reId(tag));
+      mod.addProcess((Automaton) this.processes.get(ProcessType.AUTOMATA));
+      mod.processNodesMapping =  Mapping.reId(this.processNodesMapping,tag);
+
+
+      return mod;
+
+  }
 
   public MultiProcessModel(String id) {
     super(id, "multiProcess");
@@ -62,6 +78,7 @@ public class MultiProcessModel extends ProcessModelObject implements ProcessMode
     return ProcessType.MULTI_PROCESS;
   }
 
+  //I think this is all void now Automata less important than PetriNets
   @Override
   public Location getLocation() {
     return null;

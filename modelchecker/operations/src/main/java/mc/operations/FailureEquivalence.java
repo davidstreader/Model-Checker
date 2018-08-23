@@ -3,10 +3,8 @@ package mc.operations;
 import static mc.processmodels.automata.util.ColouringUtil.ColourComponent;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import mc.AcceptanceGraph;
-import mc.BuildAcceptanceGraphs;
 import mc.exceptions.CompilationException;
 import mc.plugins.IOperationInfixFunction;
 import mc.processmodels.ProcessModel;
@@ -128,7 +126,7 @@ public class FailureEquivalence implements IOperationInfixFunction {
             //Computes a bsimulation coloring on the accepance graph
             //this elevates any inequality to to root hence only the root
             //coloring needs be checked at the end
-            colourer.doColouring(edges, nodes); // uses initial colouring on nodes
+            colourer.doColouring(nodes); // uses initial colouring on nodes
 
      /*   System.out.print("Final node Color {");
         for(AutomatonNode nd : nodes) {

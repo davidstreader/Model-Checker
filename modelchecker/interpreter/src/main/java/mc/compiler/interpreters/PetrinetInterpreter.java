@@ -4,7 +4,7 @@ import static mc.util.Utils.instantiateClass;
 
 import com.microsoft.z3.Context;
 import com.google.common.collect.Multiset;
-import com.google.common.collect.HashMultiset;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -195,6 +195,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
    } else {
     System.out.println("\nOops! \n");
    }
+   System.out.println("CONVERSION end in petrinet interpreter");
   }
 //below pushes a petri net onto the process stack
 
@@ -255,7 +256,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
   return petrinet;
  }
 
- /**
+ /** Process Identifier and Root node that rest are recursivly processed
   * RECURSIVLY call down the AST
   * Processes are pushed onto the stack FROM processMap
   * Must be private as stricctly SIDE EFFECT method
@@ -276,7 +277,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
    String reference = ((IdentifierNode) astNode).getIdentifier();
    //System.out.println("*** interpretProcess IdentifierNode "+ reference);
    if (processMap.get(reference).getProcessType().equals(ProcessType.MULTI_PROCESS)) {
-    //System.out.println("MultiProcess -> PN");
+    System.out.println("interpretProcess GETS *********** MULTI_PROCESS -> PN");
     processStack.push(processMap.get(reference).getProcessType().
       convertTo(ProcessType.PETRINET, processMap.get(reference))); //What a way to extact  a net
    } else {
@@ -397,12 +398,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
  private Petrinet interpretASTNode(ASTNode currentNode)
    throws CompilationException, InterruptedException {
   Petrinet fake = new Petrinet("Atom");
-  /*fake.setOwners(Collections.singleton(Petrinet.DEFAULT_OWNER));
-  PetriNetPlace fakePl =   fake.addPlace("fake");
-  fakePl.setOwners(Collections.singleton(Petrinet.DEFAULT_OWNER));
-  Set<String> r = new HashSet<>();
-  r.add(fakePl.getId());
-  fake.addRoot(r);*/
+
   //System.out.println("Atom builder "+fake.myString());
   return interpretASTNode(currentNode, fake);
  }
@@ -419,10 +415,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
   if (Thread.currentThread().isInterrupted()) {
    throw new InterruptedException();
   }
-  // if (currentNode.hasReferences()) {
-  // currentPlace.addRefefances(currentNode.getReferences());
-  //System.out.println("Node refs "+ currentNode.getReferences());
-  //  }
+
 
 //prity print AST
   String info = "";
@@ -496,7 +489,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
   if (currentNode.getReferences() != null) {
    System.out.println("AST<" + PetrinetInterpreter.indent + className + " ref " +
      currentNode.getReferences().toString()+ " info "+info);
-
+  // System.out.println(petri.myString());
    for (PetriNetPlace pl : petri.getAllRoots()) {
     if (currentNode.getReferences().size()>0) {
      pl.addRefefances(currentNode.getReferences());
@@ -511,10 +504,12 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
   return petri;
  }
 
-
+/*
+Builds an Automata
+ */
  public Automaton interpretASTAutNode(ASTNode currentNode, String id)
          throws CompilationException, InterruptedException {
-  //System.out.println("ASTAutNode " + currentNode.getClass().getSimpleName());
+  System.out.println("ASTAutNode " + currentNode.getClass().getSimpleName());
 
   if (Thread.currentThread().isInterrupted()) {
    throw new InterruptedException();
@@ -717,6 +712,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
   */
  private Petrinet interpretFunction(FunctionNode func, Petrinet petri)
    throws CompilationException, InterruptedException {
+  System.out.println("InterpertFunction "+func.getFunction());
   List<Petrinet> models = new ArrayList<>();
   for (ASTNode p : func.getProcesses()) {
    interpretProcess(p, petri.getId() + ".fn");
@@ -735,16 +731,20 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
 
   Petrinet processed = instantiateClass(functions.get(func.getFunction()))
     .compose(petri.getId() + ".fn", func.getFlags(), context, petris);
+  if (processed==null) {
+   throw new CompilationException(getClass(),
+     "Returned null. Check if this function should only be used in operations and equations!", func.getLocation());
+  }
   //   //System.out.println("processed FUNCTION "+processed.myString());
   //addPetrinet( processed, petri);
-  //System.out.println("interpret FUNCTION "+petri.myString());
+  System.out.println("interpretFUNCTION end "+processed.getId());
   return processed;
  }
 
  private Automaton interpretAbsFunction(FunctionNode func, String id)
          throws CompilationException, InterruptedException {
   Automaton models = null;
-  //System.out.println("ABS "+ func.getFunction()+ " process "+func.getProcesses().get(0).toString());
+  System.out.println("interpretAbsFunction "+ func.getFunction()); //+ " process "+func.getProcesses().get(0).);
 
   ASTNode p = func.getProcesses().get(0);
    //interpretProcess(p, id + ".fn");  //Recursive Call

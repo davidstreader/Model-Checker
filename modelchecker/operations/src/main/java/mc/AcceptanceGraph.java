@@ -232,6 +232,7 @@ private Map<AutomatonNode, List<Set<String>> > activeActionCorrection(Map<Automa
      *
      * @param a automaton
      *   This computes the map nfanode2ASet note needs to respect Start and STOP
+     *          Builds the ready set or  Acceptance Set
      */
     private Map<AutomatonNode, Set<String> > build_nfanode2ASet(Automaton a){
         Map<AutomatonNode, Set<String> > nfanode2ASet = new HashMap<AutomatonNode, Set<String> >();

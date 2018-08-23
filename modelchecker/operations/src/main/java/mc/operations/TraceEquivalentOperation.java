@@ -1,7 +1,7 @@
 package mc.operations;
 
 import java.util.*;
-import java.util.stream.Collectors;
+
 import mc.exceptions.CompilationException;
 import mc.operations.functions.NFtoDFconvFunction;
 import mc.plugins.IOperationInfixFunction;
@@ -26,7 +26,7 @@ public class TraceEquivalentOperation implements IOperationInfixFunction {
    */
   @Override
   public String getNotation() {
-    return "**";
+    return "=t";
   }
   @Override
   public String getOperationType(){return "automata";}

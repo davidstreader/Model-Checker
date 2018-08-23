@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Collectors;
-import mc.Constant;
+
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessFunction;
 import mc.processmodels.MultiProcessModel;

@@ -80,7 +80,7 @@ public class OwnersRule {
 /*
    Build,one for each owner,  projection mappings from nodes to a  SLICE
     */
-    System.out.println("Owners START " + a.myString() + "\n");
+    //System.out.println("Owners START " + a.myString() + "\n");
     for (String own : a.getOwners()) {
       //System.out.println("\n >>Owner "+ own);
       Petrinet petri = new Petrinet(a.getId(), false);
@@ -155,7 +155,7 @@ public class OwnersRule {
         }
       }
       //System.out.println(petri.myString());
-      System.out.println("\nSlice Net = " + petri.myString());
+      //System.out.println("\nSlice Net = " + petri.myString());
       //petri = PetrinetReachability.removeUnreachableStates(petri).copy();
       //System.out.println("\npushing "+petri.myString());
       petri.setEndFromPlace();
@@ -170,7 +170,7 @@ public class OwnersRule {
       //build = PetrinetParallelMergeFunction.compose(build, subNets.pop());  //Debuging
       build = PetrinetParallelFunction.compose(build, subNets.pop());
       //  build = subNets.pop();  //for debugging
-      System.out.println("Build " + build.myString());
+      //System.out.println("Build " + build.myString());
     }
     build.deTagTransitions();
 
@@ -180,7 +180,7 @@ public class OwnersRule {
 
     //3. remove S* to reveal the multiple start states.
     stripStar(build);
-    System.out.println("\n  OWNERS Rule *END " + build.myString());
+    System.out.println("  OWNERS Rule *END " + build.getId());
     //assert(build.validatePNet(): "OwnersRule End");
     return build;
   }

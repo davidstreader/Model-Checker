@@ -18,25 +18,25 @@ public class PetrinetSimp {
     Petrinet petri = p.copy();
     PetriColouring pc = new PetriColouring();
     Map<String, Integer> ic = pc.initColour(p);
-    System.out.println("doSimp START "+petri.myString());
+    System.out.println("petri doSimp START "+petri.getId());
     pc.doColour(petri, ic);
     Multimap<Integer,PetriNetPlace> col2Place = ArrayListMultimap.create();
     //Set<PetriNetPlace> pls = new HashSet<>(petri.getPlaces().values());
     for (PetriNetPlace pl : petri.getPlaces().values()) {
       col2Place.put(pl.getColour(),pl);
     }
-    System.out.println(c2PtoString(col2Place));
+    //System.out.println(c2PtoString(col2Place));
     String base = null;
     Map<String,String> prodNames =  null;
     for(Integer c : col2Place.keySet()){
       Collection<PetriNetPlace> cPl = col2Place.get(c);
       if (cPl.size()<= 1) continue;
-      System.out.println("Col = "+ c);
+      //System.out.println("Col = "+ c);
       Iterator<PetriNetPlace> itColPl =  cPl.iterator();
       PetriNetPlace basePnP = itColPl.next();
       while(itColPl.hasNext()){
         PetriNetPlace  g = itColPl.next();
-        System.out.println("Gluing "+ basePnP.getId()+ " - "+g.getId());
+        //System.out.println("Gluing "+ basePnP.getId()+ " - "+g.getId());
         prodNames =
            petri.gluePlaces(Collections.singleton(g), Collections.singleton(basePnP));
         base = prodNames.values().iterator().next();
@@ -45,7 +45,7 @@ public class PetrinetSimp {
 
     }
     petri.setRootFromStart();
-    System.out.println("Colour Simp End "+petri.myString());
+    //System.out.println("Colour Simp End "+petri.getId());
     petri = PetrinetReachability.removeUnreachableStates(petri);
     return petri;
   }

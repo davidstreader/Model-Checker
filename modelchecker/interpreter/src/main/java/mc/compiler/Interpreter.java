@@ -88,25 +88,21 @@ public class Interpreter {
             modelPetri = petrinetInterpreter.interpret(process, processMap, context);
 
             //System.out.println("Interpreter Built Petri "+ modelPetri.getId());
-
+/*  one line below
         modelPetri.setLocation(process.getLocation());
-
         ((MultiProcessModel) model).addProcess(modelPetri);
-
-
         HashMap<AutomatonNode, Multiset<PetriNetPlace>> nodeToMarking = new HashMap<>();
         HashMap<Multiset<PetriNetPlace>, AutomatonNode> markingToNode = new HashMap<>();
-
-         ProcessModel modelAut = TokenRule.tokenRule(
+        ProcessModel modelAut = TokenRule.tokenRule(
               (Petrinet) ((MultiProcessModel) model)
                   .getProcess(ProcessType.PETRINET), markingToNode, nodeToMarking);
-   //System.out.println("Built automata with tokenRule "+ ((Automaton) modelAut).myString());
-
           ((MultiProcessModel) model).addProcess(modelAut);
           ((MultiProcessModel) model)
               .addProcessesMapping(new Mapping(nodeToMarking, markingToNode));
+          */
+      model = buildmpmFromPetri((Petrinet) modelPetri);
         } else if (process.getType().contains("automata")) { //interpretASTAutNode
-
+          System.out.println("WARNING INterpreting automata");
             Automaton  aut = (Automaton) automatonInterpreter.interpret(process, processMap, context);
             modelPetri =  OwnersRule.ownersRule(aut);
 
@@ -145,19 +141,35 @@ public class Interpreter {
     }
       System.out.println("End of inteterpret Y ");
 
-      processMap.values().stream().forEach(pm->{
+    /*  processMap.values().stream().forEach(pm->{
           System.out.println("\nPetri Net");
           System.out.println(
                   ((Petrinet) ((MultiProcessModel) pm).getProcess(ProcessType.PETRINET)).myString());
           System.out.println("Automata");
           System.out.println(
                   ((Automaton) ((MultiProcessModel) pm).getProcess(ProcessType.AUTOMATA)).myString());
-      });
+      }); */
 
     return processMap;
 
   }
 
+/* Copy of code in Galois.... */
+  public MultiProcessModel buildmpmFromPetri(Petrinet pet){
+
+    MultiProcessModel model = new MultiProcessModel(pet.getId());
+      //System.out.println("Interpreter Built Petri "+ modelPetri.getId());
+      model.addProcess(pet);
+     HashMap<AutomatonNode, Multiset<PetriNetPlace>> nodeToMarking = new HashMap<>();
+     HashMap<Multiset<PetriNetPlace>, AutomatonNode> markingToNode = new HashMap<>();
+
+      ProcessModel modelAut = TokenRule.tokenRule(
+        (Petrinet) model.getProcess(ProcessType.PETRINET), markingToNode, nodeToMarking);
+
+      model.addProcess(modelAut);
+      model.addProcessesMapping(new Mapping(nodeToMarking, markingToNode));
+      return model;
+  }
   /**
     called from  operation / equation evaluation and conversions
 

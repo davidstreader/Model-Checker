@@ -6,15 +6,11 @@ import mc.plugins.IProcessFunction;
 import mc.processmodels.MultiProcessModel;
 import mc.processmodels.ProcessType;
 import mc.processmodels.automata.Automaton;
-import mc.processmodels.automata.AutomatonEdge;
-import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.conversion.OwnersRule;
 import mc.processmodels.conversion.TokenRule;
 import mc.processmodels.petrinet.Petrinet;
-import mc.processmodels.petrinet.operations.PetrinetReachability;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class A2P2A implements IProcessFunction {
   /**

@@ -42,7 +42,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     return root.stream().collect(Collectors.toList());
   }
 
-  private List<String> end;
+  private List<String> end = new ArrayList<>();
   public List<String> getEndList(){ return end;}
   public void setEndList(List<String> e){
      for(String nd:e){

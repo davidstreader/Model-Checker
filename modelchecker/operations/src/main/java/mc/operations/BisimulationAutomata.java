@@ -13,8 +13,6 @@ import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.automata.util.ColouringUtil;
-import mc.processmodels.petrinet.Petrinet;
-import mc.processmodels.petrinet.utils.PetriColouring;
 
     public class BisimulationAutomata implements IOperationInfixFunction {
 
@@ -52,7 +50,7 @@ import mc.processmodels.petrinet.utils.PetriColouring;
          */
         @Override
         public boolean evaluate(Collection<ProcessModel> processModels) throws CompilationException {
-            //System.out.println("Bisimulation on Automaton "+processIds(processModels));
+            System.out.println("Bisimulation on Automaton "+processIds(processModels));
             if (processModels.iterator().next() instanceof Automaton) {
 
                 ArrayList<AutomatonEdge> edges = new ArrayList<>();
@@ -81,7 +79,7 @@ import mc.processmodels.petrinet.utils.PetriColouring;
                 // set up the initial colouring ( on the nodes)
                 ColouringUtil colourer = new ColouringUtil();
                 colourer.performInitialColouring(nodes);
-                colourer.doColouring(edges, nodes); // uses initial colouring on nodes
+                colourer.doColouring(nodes); // uses initial colouring on nodes
 
 
                 i = 0;
@@ -100,14 +98,17 @@ import mc.processmodels.petrinet.utils.PetriColouring;
                         for (AutomatonNode n : root) {
                             root_colors.add(n.getColour());
                         }
+                        boolean result = false;
                         //System.out.println("Aut "+ automaton.getId()+ " root col "+ root_colors);
                         if (root_colors.equals(first_colors)) {   //comparison between this current automaton and the first
-                            return true;
-                        } else {
-                            return false;
+                            result = true;
                         }
+                        System.out.println("Bisim "+result);
+                        return result;
                     }
                 }
+
+
                 return true;
             }
             System.out.println("\nBisimulation expecting automaton But found " + processModels.iterator().next().getClass()+"\n");
