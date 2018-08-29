@@ -1,7 +1,4 @@
 processes {
-//Zero1 = STOP.
-//Zero2 = ERROR.
-
 One1 = a->One1.
 One2 = a->STOP.
 One3 = a->ERROR.
@@ -16,7 +13,7 @@ Two4 = a->b->Two4.
 Two5 = a->STOP|b->STOP.
 Two6 = a->ERROR| a->STOP.
 Two7 = a->ERROR|b->STOP.
-Two8 = a->X|b->X, X = STOP.
+Two8 = a->STOP|b->STOP.
 Two9 = a->Two2|a->ERROR.
 Two10 = a->Two3|b->ERROR.
 
@@ -24,22 +21,15 @@ Two10 = a->Two3|b->ERROR.
 
 
 equation {
-X|Y * Y|X.
-X|(Y|Z) * (X|Y)|Z.
+X[]Y =f Y[]X.
+X[](Y[]Z) =f (X[]Y)[]Z.
 
-X|| Y * Y||X.
-
-
+//X|| Y =f Y||X.
 //(X=>Y)| (Z=>Y) * (X|Z)=>Y.  // Tree ONLY
+(a->STOP)=>X =f a->X.
 
-(a->STOP)=>X * a->X.
-
- X=>(Y+Z) * (X=>Y)|(X=>Z).
-
+ X=>(Y+Z) =f (X=>Y)[](X=>Z).
 }
-
-
-
 
 
 

@@ -6,6 +6,7 @@ import com.microsoft.z3.Context;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import mc.Constant;
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessFunction;
 import mc.processmodels.MultiProcessModel;
@@ -74,10 +75,9 @@ public class GaloisAP2BC implements IProcessFunction {
     return composeM(id,flags,context, markingToNode, ((Petrinet) model.getProcess(ProcessType.PETRINET)));
   }
   /**  Automata
-   * Replace b^ with  R-bt!->x, x-ba?->E, x-br?->R
-   * Replace b  with  R-bt?->y, y-ba!->E
-   *  if b notin pi(n)  add  n-bt?->z, z-br!->n
-   *      Last requirement on PetriNets is a refinment of ading "listening loops"
+   * Replace b^ with  R-b.t!->x, x-b?->E,
+   * Replace b  with  R-b.t?->y, y-b!->E
+   *
    *
    * @param id        the id of the resulting petrinet
    * @param flags     the flags given by the function (e.g. {@code unfair} in {@code abs{unfair}(A)}
@@ -101,14 +101,14 @@ public class GaloisAP2BC implements IProcessFunction {
     for(PetriNetTransition tr: todo){
         System.out.println("*2* "+tr.myString());
       String lab = tr.getLabel();
-      if (lab.endsWith("^")) {
+      if (lab.endsWith(Constant.ACTIVE)) {
         String prefix = lab.substring(0,lab.length()-1);
         PetriNetPlace x = petrinet.addPlace();
         Set<PetriNetPlace> xset = new HashSet<>();
         xset.add(x);
-        petrinet.addTransition(tr.pre(), prefix + ".t!", xset );
+        petrinet.addTransition(tr.pre(), prefix + ".t"+ Constant.BROADCASTSoutput, xset );
         //petrinet.addTransition(xset, prefix + ".r?", tr.pre() );
-        petrinet.addTransition(xset, prefix + "?", tr.post() );
+        petrinet.addTransition(xset, prefix + Constant.BROADCASTSinput, tr.post() );
         petrinet.removeTransition(tr);
         System.out.println("1."+petrinet.myString());
       } else if (!(lab.endsWith("!")||lab.endsWith("?"))) {
@@ -116,8 +116,8 @@ public class GaloisAP2BC implements IProcessFunction {
         PetriNetPlace y = petrinet.addPlace();
         Set<PetriNetPlace> yset = new HashSet<>();
         yset.add(y);
-        petrinet.addTransition(tr.pre(), lab +".t?", yset );
-        petrinet.addTransition(yset, lab +"!", tr.post() );
+        petrinet.addTransition(tr.pre(), lab +".t"+ Constant.BROADCASTSinput, yset );
+        petrinet.addTransition(yset, lab + Constant.BROADCASTSoutput, tr.post() );
         petrinet.removeTransition(tr);
         System.out.println("2."+petrinet.myString());
       }
@@ -139,5 +139,8 @@ public class GaloisAP2BC implements IProcessFunction {
     this.composeM(id,flags,context,markingToNode,petrinet);
     return model;
   }
+
+
+
 }
 

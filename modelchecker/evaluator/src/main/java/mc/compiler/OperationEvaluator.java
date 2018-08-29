@@ -5,6 +5,7 @@ import static mc.util.Utils.instantiateClass;
 import com.microsoft.z3.Context;
 
 import java.util.*;
+import java.util.concurrent.BlockingQueue;
 import java.util.stream.Collectors;
 
 import mc.compiler.ast.*;
@@ -19,9 +20,11 @@ import mc.processmodels.conversion.TokenRule;
 import mc.processmodels.conversion.OwnersRule;
 import mc.processmodels.petrinet.Petrinet;
 import mc.util.Location;
+import mc.util.LogMessage;
 
 /**
  * Created by sheriddavi on 27/01/17.
+ * Interpreter for Operations and Equations
  */
 public class OperationEvaluator {
 
@@ -31,12 +34,13 @@ public class OperationEvaluator {
     private final String automata = "automata";
     private List<ImpliesResult>  impRes = new ArrayList<>();
     List<ImpliesResult> getImpRes() {return  impRes;}
+
     /**
      * This is the interpreter  for operations (equations) Called from Compiler
      * @param operations  one per equation in the operation section
      * @param processMap  name to processe map used to replace referances in operands
      * @param interpreter
-     * @param code      I think this is only used to place cursor where error occurrs
+     * @param code      Program code used to place cursor where an error occurrs
      * @param context   Z3 context
      * @return
      * @throws CompilationException
@@ -45,18 +49,19 @@ public class OperationEvaluator {
     public List<OperationResult> evaluateOperations(List<OperationNode> operations,
                                                     Map<String, ProcessModel> processMap,
                                                     Interpreter interpreter,
-                                                    String code, Context context)
+                                                    String code, Context context,
+                                                    BlockingQueue<Object> messageQueue)
             throws CompilationException, InterruptedException {
         reset();
         List<OperationResult> results = new ArrayList<>();
         //input  from AST
         for (OperationNode operation : operations) {
             Result r = evaluateOperation(operation,processMap,
-              interpreter,code, context);
+              interpreter,code, context,messageQueue);
             if (r instanceof OperationResult) {
                 results.add((OperationResult)r);
             } else if (r instanceof ImpliesResult) {
-                impRes.add((ImpliesResult)r) ;
+                impRes.add((ImpliesResult)r) ;  //  A<f B ==>> ping(A)<q ping(B)
             }
         }
         //System.out.println("***operation Evaluation processmap "+processMap.size());
@@ -77,7 +82,8 @@ public class OperationEvaluator {
     public Result evaluateOperation(OperationNode operation,
                                              Map<String, ProcessModel> processMap,
                                              Interpreter interpreter,
-                                             String code, Context context) throws CompilationException, InterruptedException {
+                                             String code, Context context,
+                                    BlockingQueue<Object> messageQueue) throws CompilationException, InterruptedException {
 
         Result or;
         //Galois Connection needs implication
@@ -85,8 +91,8 @@ public class OperationEvaluator {
 
             OperationNode o1 =  (OperationNode) ((ImpliesNode) operation).getFirstOperation();
             OperationNode o2 =  (OperationNode) ((ImpliesNode) operation).getSecondOperation();
-            OperationResult  or1 = evaluateOp(o1,processMap, interpreter,code, context);
-            OperationResult  or2 = evaluateOp(o2,processMap, interpreter,code, context);
+            OperationResult  or1 = evaluateOp(o1,processMap, interpreter,code, context,messageQueue);
+            OperationResult  or2 = evaluateOp(o2,processMap, interpreter,code, context,messageQueue);
             or = new ImpliesResult(or1,or2);
             System.out.println("or1 res "+or1.isRes()+"or2 res "+or2.isRes());
        } else {
@@ -94,24 +100,26 @@ public class OperationEvaluator {
            or = evaluateOp(operation,
              processMap,
              interpreter,
-             code, context);
+             code, context,messageQueue);
        }
        return or;
     }
-
+/*
+   wrapper to evaluation that sets up error location and storing of results
+ */
     public OperationResult evaluateOp(OperationNode operation,
           Map<String, ProcessModel> processMap,
           Interpreter interpreter,
-          String code, Context context) throws CompilationException, InterruptedException {
+          String code, Context context,BlockingQueue<Object> messageQueue) throws CompilationException, InterruptedException {
 
             //input  from AST
         boolean r = false;
-        String firstId = findIdent(operation.getFirstProcess(), code);
+        String firstId = findIdent(operation.getFirstProcess(), code); //parsing for error feedback
         String secondId = findIdent(operation.getSecondProcess(), code);
 
         List<String> firstIds = collectIdentifiers(operation.getFirstProcess());
         List<String> secondIds = collectIdentifiers(operation.getSecondProcess());
-        //System.out.println("***second "+operation.getSecondProcess().toString());
+        System.out.println("***ids firstId " +firstIds+ "second "+secondIds);
 
         List<String> missing = new ArrayList<>(firstIds);
         missing.addAll(secondIds);  // all process ids
@@ -125,19 +133,42 @@ public class OperationEvaluator {
         OperationResult result = new OperationResult(operation.getFirstProcess(),
                 operation.getSecondProcess(), firstId, secondId,
                 operation.getOperation(), null, operation.isNegated(), r, "");
-
+        //dstr  instant message experiment
+        if (result.isRes() ) {
+            messageQueue.add(new LogMessage("\n" + firstId + " " + operation.getOperation()+
+                                            " " + secondId +"  passed"));
+        }
         return result;
     }
-
-
+    /*
+    Used in Galois connections to build a Domain of implicit listening events
+    Consider (a!->b?-STOP <q a!->STOP) both processes have implicit b? loops even though
+    a!->STOP has no b? event
+     */
+    public Set<String> getListeningEvents(Collection<ProcessModel> processModels){
+        //Set up the list of all listening events from BOTH processes
+        Set<String> listeningEvents = new TreeSet<>();
+        for (ProcessModel pm : processModels) {
+            //System.out.println("Start auto "+ pm.getId());
+            Automaton a = (Automaton) pm;
+            listeningEvents.addAll(a.getAlphabet().stream().
+              filter(x->x.endsWith("?")).collect(Collectors.toSet()));
+        }
+        return listeningEvents;
+    }
+/*
+ Finally finally evaluating the dynamically loaded operation  func
+ Called from EquationEvaluator as well as OperationEvaluator
+ */
     public boolean evalOp(OperationNode operation,
                           Map<String, ProcessModel> processMap,
                           Interpreter interpreter,
                           Context context)
             throws CompilationException, InterruptedException {
         List<ProcessModel> processModels = new ArrayList<>();
+
         boolean r = false;
-        //System.out.println("evalOp "+operation.getOperation());
+        System.out.println("evalOp "+operation.getOperation());
         IOperationInfixFunction funct = instantiateClass(operationsMap.get(operation.getOperation().toLowerCase()));
         //System.out.println("Funct " + funct.getFunctionName()+" "+ processMap.size());
         if (funct == null) {
@@ -154,7 +185,7 @@ public class OperationEvaluator {
             String ps = processMap.values().stream().map(x->x.getId()).collect(Collectors.joining(" "));
             //System.out.println("Evaluate petrinet operation pMap "+ps);
             //System.out.println();
-// Convert to PetriuNets were needed
+// Convert operands to PetriNets were needed and store in processModels
             if (operation.getFirstProcessType().equals("petrinet")) {
                 Petrinet one = (Petrinet) interpreter.interpret("petrinet",
                         operation.getFirstProcess(), getNextOperationId(), processMap, context);
@@ -174,14 +205,14 @@ public class OperationEvaluator {
                         operation.getFirstProcess(), getNextOperationId(), processMap, context);
                 processModels.add(OwnersRule.ownersRule( two));
             }
-
-            r = funct.evaluate(processModels);
+            Set<String> temp = new TreeSet<>(); // getListeningEvents(processModels);
+            r = funct.evaluate(temp,context,processModels);  //actually evaluating the operation
             if (operation.isNegated()) { r = !r; }
 
         } else if (funct.getOperationType().equals(automata)) {
             //System.out.println("Evaluate automaton operation "+operation.getFirstProcessType()+ " "+operation.getSecondProcessType());
 
-// Convert to PetriuNets were needed
+// Convert to PetriNets were needed
             if (operation.getFirstProcessType().equals("petrinet")) {
                 Petrinet one = (Petrinet) interpreter.interpret("petrinet",
                         operation.getFirstProcess(), getNextOperationId(), processMap, context);
@@ -204,7 +235,8 @@ public class OperationEvaluator {
             }
             //System.out.println("*2*"+((Automaton) processModels.get(1)).myString());
             //System.out.println("oper "+ operation.getOperation().toLowerCase());
-            r = funct.evaluate(processModels);
+            Set<String> temp = new TreeSet<>(); // getListeningEvents(processModels);
+            r = funct.evaluate(temp,context,processModels);
             if (operation.isNegated()) { r = !r; }
 
         } else {

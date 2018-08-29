@@ -108,14 +108,14 @@ public class AbstractionFunction implements IProcessFunction {
       if (hiddenEdge.getFrom().equals(hiddenEdge.getTo())) {
         if (!isFair) {
           AutomatonNode deadlockNode = abstraction.addNode();
-          deadlockNode.setTerminal("ERROR");
+          deadlockNode.setTerminal(Constant.ERROR);
 
           abstraction.addEdge(Constant.DEADLOCK, hiddenEdge.getFrom(),
               deadlockNode, null, true,false);
         } else {
           if (hiddenEdge.getFrom().getOutgoingEdges().size() == 0) {
             if (!hiddenEdge.getFrom().isTerminal())
-                 hiddenEdge.getFrom().setTerminal("ERROR");
+                 hiddenEdge.getFrom().setTerminal(Constant.ERROR);
           }
         }
         hiddenEdges.remove(hiddenEdge);
@@ -660,5 +660,25 @@ public class AbstractionFunction implements IProcessFunction {
   public MultiProcessModel compose(String id, Set<String> flags, Context context, MultiProcessModel... multiProcess) throws CompilationException {
     return null;
   }
+/*
+   Galois connections introduces events with suffix  .t! and .t?  that need to be abstracted away
+   prior to computing quiescent tract refinement.
+   This is called from TraceWorks
+      TraceWorks has parameter stating which trace refinement to compute
+ */
+  public Automaton GaloisBCabs (String id, Set<String> flags, Context context, Automaton ain)
+     throws CompilationException {
 
+    Automaton a = ain.copy();
+    for(AutomatonEdge ed: a.getEdges()) {
+      if (ed.getLabel().endsWith(".t!") || ed.getLabel().endsWith(".t?"))
+        ed.setLabel(Constant.HIDDEN);
+    }
+    Automaton[] as = new Automaton[1];
+    as[0] = a;
+    Automaton out =  this.compose(id, flags, context, as);
+
+    System.out.println("GaloisBCabs "+out.myString());
+    return out;
+  }
 }

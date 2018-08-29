@@ -89,7 +89,7 @@ public class RefineFun {
         System.out.println("****startOfP2 "+ startOfP2.stream().
                 map(x->(x.getId()+" ")).collect(Collectors.joining()));
         Set<PetriNetPlace> endOfP2 = composition.getPlaces().
-                values().stream().filter(x->(x.isTerminal()&& !x.getId().startsWith("1:") )).collect(Collectors.toSet());
+                values().stream().filter(x->(x.isSTOP()&& !x.getId().startsWith("1:") )).collect(Collectors.toSet());
         System.out.println("****endOfP2 "+ endOfP2.stream().
                 map(x->(x.getId()+" ")).collect(Collectors.joining()));
       for(PetriNetPlace pl: startOfP2) {pl.setStart(false);}

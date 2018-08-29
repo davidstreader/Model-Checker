@@ -1,15 +1,21 @@
 processes {
-//KEEP all of these they sorted out subtle bugs
- 
-A1x  = a->b->c->A1x. 
-CA = abs(A1x\{a,c}).
- 
+
+X = a!->b?->STOP.
+Y = a!->STOP.
+//Px= revap2bc(X) .
+//Py = revap2bc(Y).
+}
+alphabet { a?, b?}
+
+operation {
+//X <q Y.
+//revap2bc(X) <f revap2bc(Y).
+//O1 <q A ==> revap2bc(O1) <f revap2bc(A).
 }
 
+equation{
 
-
-
-
+} 
 
 
 

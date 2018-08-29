@@ -7,6 +7,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import mc.Constant;
 import mc.compiler.token.*;
 import mc.exceptions.LexerException;
 import mc.processmodels.ProcessType;
@@ -107,14 +109,16 @@ public class Lexer {
     switch (stringToToken) {
       case "operation":
         return new OperationToken(location);
+      case "alphabet":
+        return new AlphabetToken(location);
 
       case "equation":
         return new EquationToken(location);
 
-      case "STOP":
+      case Constant.STOP:
         return new StopToken(location);
 
-      case "ERROR":
+      case Constant.ERROR:
         return new ErrorToken(location);
 
       case "const":

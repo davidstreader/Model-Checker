@@ -1,6 +1,8 @@
 package mc.plugins;
 
 import java.util.Collection;
+import java.util.Set;
+import com.microsoft.z3.Context;
 import mc.exceptions.CompilationException;
 import mc.processmodels.ProcessModel;
 import mc.processmodels.automata.Automaton;
@@ -34,7 +36,8 @@ public interface IOperationInfixFunction {
    * @param thing the automata or PetriNet in the function (e.g. {@code A} and {@code B} in {@code A ~ B})
    * @return whether or not the automata provided pass the testing semantics.
    */
-  boolean  evaluate(Collection<ProcessModel> thing/*automata*/) throws CompilationException;
+  boolean  evaluate(Set<String> flags,
+                    Context context,Collection<ProcessModel> thing/*automata*/) throws CompilationException;
 
   // boolean evaluate(Collection<Petrinet> petrinets) throws CompilationException;
 }

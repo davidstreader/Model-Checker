@@ -15,7 +15,7 @@ import mc.processmodels.ProcessModelObject;
 
 public class AutomatonEdge extends ProcessModelObject {
 
-  private static final String INTERSECTION = "^";
+  //private static final String INTERSECTION = "^";
 
   @Setter
   private Set<String> edgeOwners = new HashSet<>();
@@ -152,8 +152,8 @@ public class AutomatonEdge extends ProcessModelObject {
     Set<String> owners2 = preowners2;
 
     Multimap<String, String> table = ArrayListMultimap.create();
-    owners1.forEach(o1 -> owners2.forEach(o2 -> table.put(o1, o1 + INTERSECTION + o2)));
-    owners1.forEach(o1 -> owners2.forEach(o2 -> table.put(o2, o1 + INTERSECTION + o2)));
+    owners1.forEach(o1 -> owners2.forEach(o2 -> table.put(o1, o1 + Constant.ACTIVE + o2)));
+    owners1.forEach(o1 -> owners2.forEach(o2 -> table.put(o2, o1 + Constant.ACTIVE + o2)));
     return table;
   }
 

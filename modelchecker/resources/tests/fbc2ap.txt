@@ -1,41 +1,32 @@
 processes {
-//A = a->STOP.
-A = c!->x!->d?->STOP.
-B = q!->x?->e?->STOP.
-C = fbc2ap(A||B).
+A = a!->b?->STOP.
+B = fbc2ap(A).
+C = revbc2ap(B).
 
-X = d!->(x?->STOP||y?->STOP).
-Y = fbc2ap(X).
+S = a^->b->STOP.
+T = revbc2ap(S).
+U = fbc2ap(T).
+//A = c!->x!->d?->STOP.
+//B = q!->x?->e?->STOP.
+//C = A||B.
+//D = fbc2ap(C).
+//E = revbc2ap(D).
+/*D  = d!->(x?->STOP||y?->STOP).
+
+
+
 X1 = d?->(x!->STOP||y!->e?->STOP).
 Y1 = fbc2ap(X1).
-/*
-D = a->x->b->STOP.
-R = C||D. */
+
+*/
 }
-/*operation{
-C ~ A.
+operation{
+C <q A.
+A <q C.
+
+S <f U.
+U <f S.
 }
-equation {
-X =f Y.
-}
-8/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

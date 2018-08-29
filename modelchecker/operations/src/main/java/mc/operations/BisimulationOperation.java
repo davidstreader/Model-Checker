@@ -4,6 +4,8 @@ import static mc.processmodels.automata.util.ColouringUtil.ColourComponent;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+import com.microsoft.z3.Context;
 import mc.exceptions.CompilationException;
 import mc.plugins.IOperationInfixFunction;
 import mc.processmodels.ProcessModel;
@@ -46,7 +48,8 @@ public class BisimulationOperation implements IOperationInfixFunction {
      * @return the resulting automaton of the operation
      */
     @Override
-    public boolean evaluate(Collection<ProcessModel> processModels) throws CompilationException {
+    public boolean evaluate(Set<String> flags,
+                            Context context, Collection<ProcessModel> processModels) throws CompilationException {
 
         if (processModels.iterator().next() instanceof Petrinet) {
             System.out.println("Bisimulation on Petri Nets");

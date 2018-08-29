@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
+import mc.Constant;
 import mc.compiler.Guard;
 import mc.compiler.ast.ASTNode;
 import mc.processmodels.ProcessModelObject;
@@ -149,7 +150,10 @@ public class AutomatonNode extends ProcessModelObject implements Comparable<Auto
     return terminal != null && terminal.length() > 0;
   }
   public boolean isSTOP() {
-    return terminal != null && terminal.equals("STOP");
+    return terminal != null && terminal.equals(Constant.STOP);
+  }
+  public boolean isERROR() {
+    return terminal != null && terminal.equals(Constant.ERROR);
   }
 
   public List<AutomatonEdge> getIncomingEdges() {
@@ -247,7 +251,7 @@ public class AutomatonNode extends ProcessModelObject implements Comparable<Auto
     if (xout == 0  && this.getLabel()  != null && nd.getLabel() != null) {
       xout = this.getLabel().compareTo(nd.getLabel());
     }
-//    System.out.println(" xout = "+xout);
+   //System.out.println(" xout = "+xout);
     return xout;
 
   }

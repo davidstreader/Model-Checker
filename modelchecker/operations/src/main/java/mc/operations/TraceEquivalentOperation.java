@@ -2,6 +2,7 @@ package mc.operations;
 
 import java.util.*;
 
+import com.microsoft.z3.Context;
 import mc.exceptions.CompilationException;
 import mc.operations.functions.NFtoDFconvFunction;
 import mc.plugins.IOperationInfixFunction;
@@ -37,7 +38,7 @@ public class TraceEquivalentOperation implements IOperationInfixFunction {
    * @return the resulting automaton of the operation
    */
   @Override
-  public boolean evaluate(Collection<ProcessModel> processModels) throws CompilationException {
+  public boolean evaluate(Set<String> flags, Context context,  Collection<ProcessModel> processModels) throws CompilationException {
     if (processModels.iterator().next() instanceof Automaton) {
       NFtoDFconvFunction func = new NFtoDFconvFunction();
 
@@ -53,7 +54,7 @@ public class TraceEquivalentOperation implements IOperationInfixFunction {
         }
       }
       BisimulationAutomata bo = new BisimulationAutomata();
-      boolean r = bo.evaluate(  nfas);
+      boolean r = bo.evaluate(flags,context,  nfas);
 
    /*
     return new BisimulationOperation().evaluate(automata.stream().map(a -> {

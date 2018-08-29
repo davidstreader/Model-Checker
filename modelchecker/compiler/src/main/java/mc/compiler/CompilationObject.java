@@ -11,6 +11,7 @@ import java.util.Map;
 @AllArgsConstructor
 /**
  *  This class is a return type for the calculations regarding diagram creation and operation output.
+ *  Used to pass information from the back end to be displayed
  */
 public class CompilationObject {
     /**

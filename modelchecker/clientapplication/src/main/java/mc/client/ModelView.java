@@ -102,7 +102,7 @@ public class ModelView implements Observer {
   @Setter
   private SettingsController settings; // Contains linkage length and max nodes
 
-
+//Consumer is a Function with void Return type set by the UserInterfaceController
   @Setter
   private Consumer<Collection<String>> listOfAutomataUpdater;
   @Setter
@@ -177,6 +177,7 @@ public class ModelView implements Observer {
     //remove processes marked at skipped and too large models to display
     listOfAutomataUpdater.accept(visibleModels);
 
+    //Calls the function(Consumer) attached to the updateLog
     updateLog.accept(compiledResult.getOperationResults(), compiledResult.getEquationResults());
     updateImpLog.accept(compiledResult.getImpliesResults(), compiledResult.getImpliesResults());
   }
@@ -298,6 +299,8 @@ public class ModelView implements Observer {
           nodeTermination = NodeStates.STOP4;
         else if (automaton.getEndList().size() > 5 && n.getId().equals(automaton.getEndList().get(5)))
           nodeTermination = NodeStates.STOP5;
+      } else if (n.isERROR()) {
+        nodeTermination = NodeStates.ERROR;
       }
 
       GraphNode node = new GraphNode(automaton.getId(), n.getId(), nodeTermination,
@@ -358,6 +361,8 @@ public class ModelView implements Observer {
           nodeTermination = NodeStates.STOP4;
         else if (place.getMaxEndNo()==6)
           nodeTermination = NodeStates.STOP5;
+      } else if (place.isERROR()) {
+        nodeTermination = NodeStates.ERROR;
       }
 
       if (place.isStart()) {

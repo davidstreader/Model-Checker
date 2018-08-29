@@ -6,6 +6,8 @@ import static mc.processmodels.automata.util.ColouringUtil.ColourComponent;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+import com.microsoft.z3.Context;
 import mc.exceptions.CompilationException;
 import mc.plugins.IOperationInfixFunction;
 import mc.processmodels.ProcessModel;
@@ -49,7 +51,7 @@ import mc.processmodels.automata.util.ColouringUtil;
          * @return the resulting automaton of the operation
          */
         @Override
-        public boolean evaluate(Collection<ProcessModel> processModels) throws CompilationException {
+        public boolean evaluate(Set<String> flags, Context context, Collection<ProcessModel> processModels) throws CompilationException {
             System.out.println("Bisimulation on Automaton "+processIds(processModels));
             if (processModels.iterator().next() instanceof Automaton) {
 
@@ -67,7 +69,6 @@ import mc.processmodels.automata.util.ColouringUtil;
                         return true;
                     }
                     Automaton a = (Automaton) pm;
-                    //System.out.println(i++ +" "+ a.toString());
                     edges.addAll(a.getEdges());
                     nodes.addAll(a.getNodes());
                 }
@@ -79,6 +80,7 @@ import mc.processmodels.automata.util.ColouringUtil;
                 // set up the initial colouring ( on the nodes)
                 ColouringUtil colourer = new ColouringUtil();
                 colourer.performInitialColouring(nodes);
+
                 colourer.doColouring(nodes); // uses initial colouring on nodes
 
 
@@ -92,18 +94,15 @@ import mc.processmodels.automata.util.ColouringUtil;
                         for (AutomatonNode n : root) {
                             first_colors.add(n.getColour());
                         }
-                        //System.out.println("Aut "+ automaton.getId()+ " first col "+ first_colors);
                         i++;
                     } else {
                         for (AutomatonNode n : root) {
                             root_colors.add(n.getColour());
                         }
                         boolean result = false;
-                        //System.out.println("Aut "+ automaton.getId()+ " root col "+ root_colors);
                         if (root_colors.equals(first_colors)) {   //comparison between this current automaton and the first
                             result = true;
                         }
-                        System.out.println("Bisim "+result);
                         return result;
                     }
                 }

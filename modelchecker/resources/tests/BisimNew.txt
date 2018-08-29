@@ -1,10 +1,8 @@
 const N = 2.
 processes {
 
-
-
 U = red->E,E = blue->E.
-/*Ua = red->E,E = blue->E.
+Ua = red->E,E = blue->E[]blue->STOP.
 V = red->E, E= red->E.
 X = red -> Y,
    Y = (red ->Y|red ->X).
@@ -13,22 +11,20 @@ Xa = red -> Y,
 Z = simp(X).
 
 Y = red-> E , E = red->E|red->red->E|red->red->red->E.
-*/
-W = U || U.
-}
 
+W = U || U.
+Wa = U || Ua.
+}
 
 operation {
 
-/*X ~ Z.
+X ~ Z.
 X ~ Xa.
-V ~ Y. */
+V ~ Y. 
 W ~ U.
+U !~ Y.
+U ! ~ Ua.
+W ! ~ Wa.
 }
-
-
-
-
-
 
 

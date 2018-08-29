@@ -29,6 +29,15 @@ public class AbstractSyntaxTree {
    * A ProcessNode is an AST for a single process
    */
   private final List<ProcessNode> processes;
+  /**
+   * Needed in the construction of Galos connections. Defines a global alphabet of listening events
+   * Broadcast processes have "implicit" listening loops and this is taken into account in
+   * 1. parallel composition
+   * 2. quiescent trace equality
+   * But it was easier to build a global Domain for the BC2AP Galois mapping  than perform a two phase
+   * Interpretation, the first to build the sey of listening events on both relevent processes.
+   */
+  private final List<ActionLabelNode> alphabet;
 
   /**
    * Operations contains concrete syntax trees for the evaluations defined by the users code,

@@ -61,7 +61,8 @@ public class Interpreter {
   public Map<String, ProcessModel> interpret(AbstractSyntaxTree ast,
                                             // LocalCompiler localCompiler,
                                              BlockingQueue<Object> messageQueue,
-                                             Context context)
+                                             Context context,
+                                             Set<String> alpha)
       throws CompilationException, InterruptedException {
 
     //System.out.print("Who calls interpret Y? ");//Throwable t = new Throwable();t.printStackTrace();
@@ -85,25 +86,14 @@ public class Interpreter {
         ProcessModel modelPetri = null;
         if (process.getType().contains("petrinet")) { //interpretASTAutNode
 
-            modelPetri = petrinetInterpreter.interpret(process, processMap, context);
+            modelPetri = petrinetInterpreter.interpret(process, processMap, context,alpha);
 
             //System.out.println("Interpreter Built Petri "+ modelPetri.getId());
-/*  one line below
-        modelPetri.setLocation(process.getLocation());
-        ((MultiProcessModel) model).addProcess(modelPetri);
-        HashMap<AutomatonNode, Multiset<PetriNetPlace>> nodeToMarking = new HashMap<>();
-        HashMap<Multiset<PetriNetPlace>, AutomatonNode> markingToNode = new HashMap<>();
-        ProcessModel modelAut = TokenRule.tokenRule(
-              (Petrinet) ((MultiProcessModel) model)
-                  .getProcess(ProcessType.PETRINET), markingToNode, nodeToMarking);
-          ((MultiProcessModel) model).addProcess(modelAut);
-          ((MultiProcessModel) model)
-              .addProcessesMapping(new Mapping(nodeToMarking, markingToNode));
-          */
+
       model = buildmpmFromPetri((Petrinet) modelPetri);
         } else if (process.getType().contains("automata")) { //interpretASTAutNode
-          System.out.println("WARNING INterpreting automata");
-            Automaton  aut = (Automaton) automatonInterpreter.interpret(process, processMap, context);
+          System.out.println("\n\nWARNING INTERPRETING AUTOMATA\n");
+ /*           Automaton  aut = (Automaton) automatonInterpreter.interpret(process, processMap, context);
             modelPetri =  OwnersRule.ownersRule(aut);
 
             //System.out.println("Interpreter Built Automata "+ aut.getId());
@@ -125,7 +115,7 @@ public class Interpreter {
             ((MultiProcessModel) model)
                     .addProcessesMapping(new Mapping(nodeToMarking, markingToNode));
   */
-            ((MultiProcessModel) model).addProcess(aut);
+   //         ((MultiProcessModel) model).addProcess(aut);
 
         }
 

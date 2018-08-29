@@ -7,6 +7,7 @@ import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetPlace;
+import mc.processmodels.petrinet.components.PetriNetTransition;
 import mc.processmodels.petrinet.operations.PetrinetReachability;
 
 import java.util.*;
@@ -24,95 +25,8 @@ public class ChoiceFun {
    * @return the resulting automaton of the operation
    */
   public Automaton compose(String id, Automaton automaton1, Automaton automaton2) throws CompilationException {
-    //System.out.println("\n *********************\n");
-    //System.out.println("a1 "+automaton1.myString());
-    //System.out.println("a2 "+automaton2.myString());
-    Automaton sequence = new Automaton(id, !Automaton.CONSTRUCT_ROOT);
 
-    Multimap<String,String> setOfOwners = AutomatonEdge.createIntersection(automaton1, automaton2);
-
-    //store a map to the nodes so id can be ignored
-    Map<String, AutomatonNode> automata1nodes = new HashMap<>();
-    Map<String, AutomatonNode> automata2nodes = new HashMap<>();
-
-  //System.out.println("Sequence aut1 "+ automaton1.toString());
-  //System.out.println("Sequence aut2 "+ automaton2.toString());
-    //copy node1 nodes across
-    AutomataReachability.removeUnreachableNodes(automaton1).getNodes().forEach(node -> {
-      try {
-        AutomatonNode newNode = sequence.addNode();
-
-        newNode.copyProperties(node);
-        automata1nodes.put(node.getId(), newNode);
-
-        if (newNode.isStartNode()) {
-          sequence.addRoot(newNode);
-        }
-
-      } catch (CompilationException e) {
-        e.printStackTrace();
-      }
-    });
-
-  //System.out.println("Sequence 1 "+sequence.toString());
-
-    copyAutomataEdges(sequence, automaton1, automata1nodes, setOfOwners);
-
-
-    //get the stop nodes such that they can be replaced
-    Collection<AutomatonNode> stopNodes = sequence.getNodes().stream()
-        .filter(n -> "STOP".equals(n.getTerminal()))
-        .collect(Collectors.toList());
-
-    //if there are no stop nodes, we cannot glue them together
-    if (stopNodes.isEmpty()) {
-      return sequence;
-    }
-    /*System.out.print("stopNodes "+stopNodes.stream().
-         map(x->x.getId()).reduce("{",(x,y)->x=x+" "+y)+"}"); */
-
-//below copies the automaton hence renames the nodes
-    AutomataReachability.removeUnreachableNodes(automaton2).getNodes().forEach(node -> {
-      AutomatonNode newNode = sequence.addNode();
-      newNode.copyProperties(node);
-
-      automata2nodes.put(node.getId(), newNode);
-
-      if (newNode.isStartNode()) {
-        newNode.setStartNode(false);
-        // for every stop node of automata1, get the edges that go into it
-        // replace it with the start node of automata2
-        for (AutomatonNode stopNode : stopNodes) {
-          if(stopNode.getIncomingEdges().size() == 0) {// If automaton 1 is only a stop node
-            newNode.setStartNode(true);
-          }
-
-
-          for (AutomatonEdge edge : stopNode.getIncomingEdges()) {
-            AutomatonNode origin = edge.getFrom();
-     //System.out.println("last "+edge.myString());
-            try {
-              AutomatonEdge e = sequence.addEdge(edge.getLabel(), origin, newNode,
-                      edge.getGuard() == null ? null : edge.getGuard().copy(),
-                      false,edge.getOptionalEdge());
-              sequence.addOwnersToEdge(e, edge.getOwnerLocation());
-            } catch (CompilationException e) {
-              e.printStackTrace();
-            }
-          }
-        }
-      }
-    });
-
-    stopNodes.stream().map(AutomatonNode::getIncomingEdges)
-        .flatMap(List::stream)
-        .forEach(sequence::removeEdge);
-    stopNodes.forEach(sequence::removeNode);
-   //System.out.println("Sequence 2 "+ automaton2.toString());
-
-    copyAutomataEdges(sequence, automaton2, automata2nodes,setOfOwners);
-  //System.out.println("End Seq   "+sequence.toString());
-    return sequence;
+    return null;
   }
 
   /**
@@ -135,12 +49,12 @@ public class ChoiceFun {
 
   public Petrinet compose(String id, Petrinet n1, Petrinet n2)
     throws CompilationException {
-    System.out.println("[] n1 = "+n1.myString());
+    //System.out.println("[] n1 = "+n1.myString());
     Petrinet net1 = n1.reId("1");
     Set<String> own1 = net1.getOwners();
     List<Set<String>> oneEnd = net1.getEnds();
-    System.out.println("[] function Start");
-    System.out.println("oneEnd "+oneEnd);
+    //System.out.println("[] function Start");
+    //System.out.println("oneEnd "+oneEnd);
 
     Petrinet net2 = n2.reId("2");
     Set<String> own2 = net2.getOwners();
@@ -156,10 +70,10 @@ public class ChoiceFun {
        }
        twoRoots.add(newrs);
      }
-    System.out.println("twoRoot "+twoRoots);
+    //System.out.println("twoRoot "+twoRoots);
     List<Set<String>> twoEnd = net2.getEnds();
 
-    System.out.println("twoEnd "+twoEnd);
+    //System.out.println("twoEnd "+twoEnd);
 
     net2.joinNet(net1);  // concats end2 and end1
     net2.setEndFromNet();
@@ -171,7 +85,7 @@ public class ChoiceFun {
         newrs.add(r);
       }
       oneRoots.add(newrs);
-    } System.out.println("oneRoot " +oneRoots);
+    } //System.out.println("oneRoot " +oneRoots);
 
 
     net2.glueOwners(own1,own2);
@@ -194,16 +108,16 @@ public class ChoiceFun {
         }
         Map<String, String> s2s =net2.gluePlaces(newr1, newr2, false);
 
-        System.out.println("\n glueMapping \n" +
-          s2s.keySet().stream().map(x -> x + "->" + s2s.get(x) + "\n").collect(Collectors.joining()));
+        /*System.out.println("\n glueMapping \n" +
+          s2s.keySet().stream().map(x -> x + "->" + s2s.get(x) + "\n").collect(Collectors.joining())); */
         Set<String> newr = s2s.values().stream().collect(Collectors.toSet());
         newRoots.add(newr);
-        System.out.println("newRoots "+newRoots);
+        //System.out.println("newRoots "+newRoots);
       }
 
         net2.setRoots(newRoots);
         net2.setStartFromRoot();
-        System.out.println("[]after Glueing start  " + net2.myString() + "\n");
+        //System.out.println("[]after Glueing start  " + net2.myString() + "\n");
     }
     List<Set<String>> newList = new ArrayList<Set<String>>(twoRoots);
     newList.addAll(oneRoots);
@@ -213,17 +127,23 @@ public class ChoiceFun {
         toGo.add(r);
       }
     }
-    System.out.println(net2.myString());
-    System.out.println("Removing "+toGo);
+    //System.out.println(net2.myString());
+    //System.out.println("Removing "+toGo);
     for(String pl: toGo) {
-        net2.removePlace(net2.getPlace(pl));
+      PetriNetPlace place = net2.getPlace(pl);
+      Set<PetriNetTransition> goaway = place.pre();
+      goaway.addAll(place.post());
+        net2.removePlace(place);
+        for(PetriNetTransition t: goaway){
+          net2.removeTransition(t);
+        }
 
     }
 
 
-    System.out.println("[]Add OUT "+ net2.myString("edges")+"\n");
+    //System.out.println("[]Add OUT "+ net2.myString("edges")+"\n");
     net2 = PetrinetReachability.removeUnreachableStates(net2);
-    System.out.println("\n[] OUT "+ net2.myString()+"\n");
+    //System.out.println("\n[] OUT "+ net2.myString()+"\n");
     //net2.reId("");
     assert net2.validatePNet(): "choice post condition";
     return net2;

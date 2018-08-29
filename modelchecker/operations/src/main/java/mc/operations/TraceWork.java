@@ -1,9 +1,11 @@
 package mc.operations;
 
 import lombok.Getter;
+import mc.Constant;
 import mc.TraceType;
 import mc.compiler.ast.AutomataNode;
 import mc.exceptions.CompilationException;
+import mc.operations.functions.AbstractionFunction;
 import mc.operations.functions.NFtoDFconvFunction;
 import mc.processmodels.ProcessModel;
 import mc.processmodels.automata.Automaton;
@@ -14,18 +16,26 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class TraceWork {
-
+/*
+   compute trace refinement (subset) for trace, complete trace and quiescent trace
+   Note QuiescentTrace calls GaloisBCabs to abstract all .t! and .t?
+ */
   public boolean evaluate(Collection<ProcessModel> processModels, TraceType tt) throws CompilationException {
     if (processModels.iterator().next() instanceof Automaton) {
-      NFtoDFconvFunction func = new NFtoDFconvFunction();
-
+      NFtoDFconvFunction nfa2dfafunc = new NFtoDFconvFunction();
+      AbstractionFunction absfunc = new AbstractionFunction();
       ArrayList<ProcessModel> nfas = new ArrayList<>();
       for (ProcessModel pm : processModels) {
         Automaton a = (Automaton) pm;
         try {
-          nfas.add(
-            func.compose(a.getId(), new HashSet<>(), null, a)
-          );
+          Automaton  temp ;
+          if (tt.equals(TraceType.QuiescentTrace)) {
+            temp = absfunc.GaloisBCabs(a.getId(), new HashSet<>(), null, a);
+            temp = nfa2dfafunc.compose(a.getId(), new HashSet<>(), null, temp);
+          }  else {
+            temp = nfa2dfafunc.compose(a.getId(), new HashSet<>(), null, a);
+          }
+          nfas.add( temp );
         } catch (CompilationException e) {
           System.out.println("PINGO" + e.toString());
         }
@@ -59,7 +69,7 @@ public class TraceWork {
             if NodePair(x1,x2) and x1-a->y1 and x2-a->y2 then NodePair(y1,y2)
         If NodePair(nd1,nd2) implies Ready(n1) subset Ready(n2)
      */
-      System.out.println("<t" + r1.getId()+ " "+ r2.getId());
+      System.out.println("<t or <q" + r1.getId()+ " "+ r2.getId());
       boolean b = traceSubset(new NodePair(r1,r2),a1Next,a2Next,p);
       System.out.println("Trace Refinement type "+ tt+" "+ a1.getId()+"<<"+a2.getId()+" "+b);
       return b;
@@ -113,6 +123,8 @@ public class TraceWork {
 
   /*
     Build the ready set for each node (used as test in recursive traceSubset)
+    This is NOT used to take the next step
+    This will call the recursive quiescentNext for tt QuiescentTrace
    */
   private Map<AutomatonNode, NextMap > build_readyMap(Automaton a, TraceType tt){
     System.out.println("Build Ready Map");

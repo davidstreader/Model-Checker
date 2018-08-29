@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import mc.Constant;
 import mc.processmodels.ProcessModelObject;
 
 @EqualsAndHashCode(callSuper = true, exclude = {"incoming", "outgoing"})
@@ -151,7 +152,8 @@ public class PetriNetPlace extends ProcessModelObject implements Comparable<Petr
   public boolean isTerminal() {
     return terminal != null && terminal.length() > 0;
   }
-  public boolean isSTOP() { return terminal != null && terminal.equals("STOP");}
+  public boolean isSTOP() { return terminal != null && terminal.equals(Constant.STOP);}
+  public boolean isERROR() { return terminal != null && terminal.equals(Constant.ERROR);}
 
 
 

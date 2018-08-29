@@ -77,7 +77,8 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
 
   public ProcessModel interpret(ProcessNode processNode,
                                 Map<String, ProcessModel> processMap,
-                                Context context)
+                                Context context,
+                                Set<String> alpha)
     throws CompilationException, InterruptedException {
    //System.out.println("START interp ");
     reset();

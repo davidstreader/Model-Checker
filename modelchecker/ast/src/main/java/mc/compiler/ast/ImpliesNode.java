@@ -43,6 +43,7 @@ public class ImpliesNode extends OperationNode {
     super(location);
     this.firstOperation = firstOperation;
     this.secondOperation = secondOperation;
+    System.out.println("implies Locagtion "+location.toString());
   }
 }
 

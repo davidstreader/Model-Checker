@@ -29,6 +29,7 @@ public class OperationResult extends Result {
                          String operation, ArrayList<String> failedOps,
                          boolean negated, boolean result, String extra)
     throws CompilationException {
+    System.out.println("OperationResult "+ ident1+" "+process1.getLocation().toString());
     this.process1 = new OperationProcess(ident1, process1.getLocation());
     this.process2 = new OperationProcess(ident2, process2.getLocation());
     this.operation = (negated ? "!" : "") + operation;
@@ -36,6 +37,7 @@ public class OperationResult extends Result {
     res = result;
     this.extra = extra;
     this.failures = failedOps;
+    System.out.println("OperationResult "+ this.process1.getIdent()+" "+this.process2.getIdent());
   }
 
   @AllArgsConstructor

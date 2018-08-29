@@ -71,32 +71,82 @@ public class RevAP2BC implements IProcessFunction {
     return null;
   }
 
-  /*
-      If called only with a petri Net  then use token rule to build reachable markings stored in MultiModel
-      then call MultiModel
+  /*  Add lisening Loops - for events in flags
+      abstract all *.t! and *.t?
+      convert b? to b^ and b! to b
    */
-  @Override
+   @Override
   public Petrinet compose(String id, Set<String> flags, Context context, Petrinet... petrinets) throws CompilationException {
 
-   Petrinet petrinet = petrinets[0].reId("Rev") ;
+    Petrinet x = petrinets[0].reId("G");
+    MultiProcessModel model = buildmpmFromPetri(x);
+    Map<Multiset<PetriNetPlace>, AutomatonNode> markingToNode = model.getProcessNodesMapping().getMarkingToNode();
+    //Map<AutomatonNode, Multiset<PetriNetPlace> > nodeToMarking = model.getProcessNodesMapping().getNodeToMarking();
+
+    return composeM(id,flags,context,markingToNode,x);
+  }
+
+  public Petrinet composeM(String id, Set<String> flags, Context context,
+                           Map<Multiset<PetriNetPlace>, AutomatonNode> markingToNode,
+                           Petrinet petrinet) throws CompilationException {
+
+   //Petrinet petrinet = petrinets[0].reId("Rev") ;
     System.out.println("Rev start "+petrinet.myString());
    for(PetriNetTransition tr : petrinet.getTransitions().values()) {
      String prefix1 = tr.getLabel().substring(0,tr.getLabel().length()-1);
      if (tr.getLabel().endsWith(".t?") ||
          tr.getLabel().endsWith(".t!")    ) tr.setLabel(Constant.HIDDEN);
-     else if (tr.getLabel().endsWith("?") ) tr.setLabel(prefix1+"^");
+     else if (tr.getLabel().endsWith("?") ) tr.setLabel(prefix1+Constant.ACTIVE);
      else if (tr.getLabel().endsWith("!") ) tr.setLabel(prefix1);
 
    }
-    AbstractionFunction ab = new AbstractionFunction();
-    Petrinet[] p = new Petrinet[]{petrinet};
-
+    Set<String> listeners = flags.stream().filter(x->x.endsWith("?")).collect(Collectors.toSet());
+    buildListeningLoops(markingToNode,listeners,petrinet);
    // petrinet = ab.compose(id,flags,context,p);
     System.out.println(petrinet.myString()+ "Rev end ");
     return petrinet;
   }
+  public static  void buildListeningLoops(Map<Multiset<PetriNetPlace>, AutomatonNode> markingToNode,
+                                          Set<String> listeners, Petrinet petrinet)
+    throws CompilationException{
+    //  For each marking
+    for (Multiset<PetriNetPlace> markM: markingToNode.keySet()){
+      Set<PetriNetPlace> mark = markM.elementSet();
+      System.out.println("** Marking "+Petrinet.marking2String(mark));
+//      find set of satisfied listening transitions
+      Set<String> trlist =TokenRule.satisfiedTransitions(markM).
+        stream().filter(x->!x.getLabel().endsWith("^")).
+        map(x->x.getLabel()).collect(Collectors.toSet());
+      System.out.println("** trlist "+trlist);
+      // set of listening labels with no transitions enabled
+      Set<String> trNotlist = listeners.
+        stream().filter(x->!trlist.contains(x)).collect(Collectors.toSet());
+      //find the Places no owned by listening label
+      System.out.println("** trNotList "+trNotlist);
+      for(String lab: trNotlist){
+          PetriNetTransition t = petrinet.addTransition(mark,lab,mark);
+          System.out.println("**adding** "+t.myString());
+      }
+    }
 
+  }
 
+  /* CODE COPIED FROM Interpreter */
+  public static MultiProcessModel buildmpmFromPetri(Petrinet pet){
+
+    MultiProcessModel model = new MultiProcessModel(pet.getId());
+    //System.out.println("Interpreter Built Petri "+ modelPetri.getId());
+    model.addProcess(pet);
+    HashMap<AutomatonNode, Multiset<PetriNetPlace>> nodeToMarking = new HashMap<>();
+    HashMap<Multiset<PetriNetPlace>, AutomatonNode> markingToNode = new HashMap<>();
+
+    ProcessModel modelAut = TokenRule.tokenRule(
+      (Petrinet) model.getProcess(ProcessType.PETRINET), markingToNode, nodeToMarking);
+
+    model.addProcess(modelAut);
+    model.addProcessesMapping(new Mapping(nodeToMarking, markingToNode));
+    return model;
+  }
 
 /*
     This is needed to obtain the pre computed markingToNode

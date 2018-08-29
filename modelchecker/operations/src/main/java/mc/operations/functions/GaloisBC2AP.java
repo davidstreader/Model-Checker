@@ -1,5 +1,6 @@
 package mc.operations.functions;
 
+import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import com.microsoft.z3.Context;
 
@@ -77,10 +78,12 @@ public class GaloisBC2AP implements IProcessFunction {
  @Override
   public Petrinet compose(String id, Set<String> flags, Context context, Petrinet... petrinets) throws CompilationException {
 
-   MultiProcessModel model = buildmpmFromPetri(petrinets[0].reId(""));
+   Petrinet x = petrinets[0].reId("G");
+   MultiProcessModel model = buildmpmFromPetri(x);
    Map<Multiset<PetriNetPlace>, AutomatonNode> markingToNode = model.getProcessNodesMapping().getMarkingToNode();
+   //Map<AutomatonNode, Multiset<PetriNetPlace> > nodeToMarking = model.getProcessNodesMapping().getNodeToMarking();
 
-    return composeM(id,flags,context,markingToNode,petrinets);
+   return composeM(id,flags,context,markingToNode,x);
   }
 /* CODE COPIED FROM Interpreter */
   public static MultiProcessModel buildmpmFromPetri(Petrinet pet){
@@ -99,7 +102,7 @@ public class GaloisBC2AP implements IProcessFunction {
     return model;
   }
   /**
-   * Petri Nets  relabel transitions b! to b^  and b? to b
+   * Petri Nets  relabeltransitions b! to b^  and b? to b
    * Add listening loops to a Petri Net
    *    for each listening transition
    *       for all reachable Markings subset to location of transition
@@ -108,19 +111,19 @@ public class GaloisBC2AP implements IProcessFunction {
    * @param id        the id of the resulting petrinet
    * @param flags     the flags given by the function (e.g. {@code unfair} in {@code abs{unfair}(A)}
    * @param context
-   * @param petrinets the variable number of petrinets taken in by the function
+   * @param petrinet the variable number of petrinets taken in by the function
    * @return the resulting petrinet of the operation
    * @throws CompilationException when the function fails
    */
 
-    public Petrinet composeM(String id, Set<String> flags, Context context, Map<Multiset<PetriNetPlace>, AutomatonNode> markingToNode, Petrinet... petrinets) throws CompilationException {
-    Petrinet petrinet = petrinets[0];// .reId("Gal"); //Done earlier to reId  markingToNode
-      System.out.println("GaloisBC2AP "+ petrinet.myString());
+    public Petrinet composeM(String id, Set<String> flags, Context context, Map<Multiset<PetriNetPlace>, AutomatonNode> markingToNode, Petrinet petrinet) throws CompilationException {
+      System.out.println("GaloisBC2AP "+ petrinet.getId());
+
+
     for(PetriNetTransition tr: petrinet.getTransitions().values()){
         tr.setLabel(reLabel(tr.getLabel()));
-      System.out.println(" tr "+ tr.getId()+ " => "+tr.getLabel());
+      //System.out.println("Relabeled "+tr.myString());
     }
-
 /*       Add listening loops to a Petri Net?
    build a mapping from  listening label 2 owners
    For each marking
@@ -134,27 +137,24 @@ public class GaloisBC2AP implements IProcessFunction {
 
 //  For each marking
    for (Multiset<PetriNetPlace> mark: markingToNode.keySet()){
-     System.out.println("** Marking "+Petrinet.marking2String(mark));
+     //System.out.println("** Marking "+Petrinet.marking2String(mark));
 //      find set of satisfied listening transitions
      Set<String> trlist =TokenRule.satisfiedTransitions(mark).
                                  stream().filter(x->!x.getLabel().endsWith("^")).
                                  map(x->x.getLabel()).collect(Collectors.toSet());
-     System.out.println("** trlist "+trlist);
+     //System.out.println("** trlist "+trlist);
      // set of listening labels with no transitions enabled
      Set<String> trNotlist = listener2Owners.keySet().
        stream().filter(x->!trlist.contains(x)).collect(Collectors.toSet());
      //find the Places no owned by listening label
-     System.out.println("** trNotList "+trNotlist);
+     //System.out.println("** trNotList "+trNotlist);
      for(String lab: trNotlist){
-       System.out.println("**** lab "+lab);
        Set<PetriNetPlace> trprenew = mark.stream().
          filter(x->listener2Owners.get(lab).containsAll(x.getOwners())).
          collect(Collectors.toSet());
-       System.out.println("**** "+trprenew.stream().map(x->x.getId()+" "+x.getOwners()+" ")
-                  .reduce("",(x,y)->x+y));
        if(trprenew.size()>0) {
          PetriNetTransition t = petrinet.addTransition(trprenew,lab,trprenew);
-         System.out.println("**** "+t.myString());
+         //System.out.println("**** "+t.myString());
        } else {
          System.out.println("ownership ERROR add "+lab+ " transition");
        }
@@ -171,7 +171,7 @@ public class GaloisBC2AP implements IProcessFunction {
     for(PetriNetTransition tr: petrinet.getTransitions().values().
       stream().filter(x->!x.getLabel().endsWith("^")).
       collect(Collectors.toSet())) {
-      System.out.println("*** listener "+tr.myString());
+      //System.out.println("*** listener "+tr.myString());
       if (listener2Owners.keySet().contains(tr.getLabel())) {
         if (!listener2Owners.get(tr.getLabel()).equals(tr.getOwners())) {
           System.out.println("ERROR in owners of transitions labeled "+tr.getLabel()+
@@ -181,7 +181,7 @@ public class GaloisBC2AP implements IProcessFunction {
       } else {
         listener2Owners.put(tr.getLabel(),tr.getOwners());
         //listeners.add(tr.getLabel());
-        System.out.println("*** put ("+tr.getLabel()+","+tr.getOwners()+")");
+        //System.out.println("*** put ("+tr.getLabel()+","+tr.getOwners()+")");
       }
     }
     return listener2Owners;
@@ -194,14 +194,17 @@ public class GaloisBC2AP implements IProcessFunction {
       .collect(Collectors.toSet());
   }
   private String reLabel(String ac){
-    System.out.print("reLabel "+ ac);
-    if (ac.endsWith("!"))
-      return ac.substring(0,ac.length()-1)+"^";
-    else if (ac.endsWith("?")) {
-      return ac.substring(0, ac.length() - 1);
-    }
 
-    return ac;
+    String back;
+    if (ac.endsWith("!"))
+      back = ac.substring(0,ac.length()-1)+"^";
+    else if (ac.endsWith("?")) {
+      back = ac.substring(0, ac.length() - 1);
+    } else {
+      back = ac;
+    }
+    //System.out.println("reLabel "+ ac+" to "+ back);
+    return back;
   }
 /*
     This is needed to obtain the pre computed markingToNode

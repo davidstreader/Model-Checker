@@ -70,7 +70,7 @@ public class AutomataReachability {
     // terminal nodes not marked with "STOP" are marked "ERROR"
     automaton.getNodes().stream()
         .filter(node -> node.getOutgoingEdges().size() == 0 && !node.isTerminal())
-        .forEach(node -> node.setTerminal("ERROR"));
+        .forEach(node -> node.setTerminal(Constant.ERROR));
 
 
     return automaton;

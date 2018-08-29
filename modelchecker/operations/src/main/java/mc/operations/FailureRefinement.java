@@ -6,6 +6,7 @@ import static mc.processmodels.automata.util.ColouringUtil.ColourComponent;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.microsoft.z3.Context;
 import mc.AcceptanceGraph;
 //import mc.BuildAcceptanceGraphs;
 import mc.exceptions.CompilationException;
@@ -56,7 +57,7 @@ import mc.processmodels.automata.util.ColouringUtil;
      * initialise bisimulation coloring with the newly built coloring
      */
     @Override
-    public boolean evaluate(Collection<ProcessModel> processModels) throws CompilationException {
+    public boolean evaluate(Set<String> flags, Context context, Collection<ProcessModel> processModels) throws CompilationException {
       FailureEquivalence fe = new FailureEquivalence();
       return fe.evaluate(processModels,false);
     }

@@ -85,19 +85,19 @@ public class PetrinetParallelFunction  {
   }
 
   private static void setupAction(String action, Set<String> otherPetrinetActions) {
-     if (action.endsWith("!")) {
+     if (action.endsWith(Constant.BROADCASTSoutput)) {
       if (containsReceiverOf(action, otherPetrinetActions)) {
         synchronisedActions.add(action);
       } else if (containsBroadcasterOf(action, otherPetrinetActions)) {
         synchronisedActions.add(action);
       }
-    } else if (action.endsWith("?")) {
+    } else if (action.endsWith(Constant.BROADCASTSinput)) {
       if (containsReceiverOf(action, otherPetrinetActions)) {
         synchronisedActions.add(action);
       } else if (containsBroadcasterOf(action, otherPetrinetActions)) {
         synchronisedActions.add(action);
       }
-    } else if (action.endsWith("^")) {
+    } else if (action.endsWith(Constant.ACTIVE)) {
        String passiveAction = action.substring(0, action.length() - 1);
 
        if (otherPetrinetActions.contains(passiveAction)) {
@@ -122,8 +122,8 @@ public class PetrinetParallelFunction  {
 
       replaceActions(p1Pair, p2Pair, comp, action, false); //handshake on label equality
 
-      if (action.endsWith("!")) {
-        String sync = action.substring(0, action.length() - 1)+"?";
+      if (action.endsWith(Constant.BROADCASTSoutput)) {
+        String sync = action.substring(0, action.length() - 1)+Constant.BROADCASTSinput;
 
         Set<PetriNetTransition> p1P = p1.getAlphabet().get(action).stream()
                 .map(t -> petriTransMap.get(t)).collect(Collectors.toSet());
@@ -136,7 +136,7 @@ public class PetrinetParallelFunction  {
                 .map(t -> petriTransMap.get(t)).collect(Collectors.toSet());
         replaceActions(p1P, p2P, comp, action, true);
       }
-      else if (action.endsWith("^")) {
+      else if (action.endsWith(Constant.ACTIVE)) {
         String sync = action.substring(0, action.length() - 1);
 
         Set<PetriNetTransition> p1P = p1.getAlphabet().get(action).stream()
@@ -188,7 +188,7 @@ public class PetrinetParallelFunction  {
           for(PetriNetEdge outE : outgoingEdges) { // outgoing from transition
             //System.out.println("out "+outE.myString());
             PetriNetEdge ed =  comp.addEdge( (PetriNetPlace) outE.getTo(), newTrans,outE.getOptional());
-           if (((PetriNetTransition) outE.getFrom()).getLabel().endsWith("?") && optional) {
+           if (((PetriNetTransition) outE.getFrom()).getLabel().endsWith(Constant.BROADCASTSinput) && optional) {
               ed.setOptional(true);
             }
             //System.out.println("    adding "+ed.myString());
@@ -197,7 +197,7 @@ public class PetrinetParallelFunction  {
           for(PetriNetEdge inE : incomingEdges) { // incoming to transition
             //System.out.println("in  "+inE.myString());
             PetriNetEdge ed = comp.addEdge(newTrans, (PetriNetPlace) inE.getFrom(),inE.getOptional());
-            if (((PetriNetTransition) inE.getTo()).getLabel().endsWith("?")&& optional) {
+            if (((PetriNetTransition) inE.getTo()).getLabel().endsWith(Constant.BROADCASTSinput)&& optional) {
               ed.setOptional(true);
             }
             //System.out.println("    adding "+ed.myString());
@@ -217,7 +217,7 @@ public class PetrinetParallelFunction  {
 
   private static boolean containsReceiverOf(String broadcaster, Collection<String> otherPetrinet) {
     for (String reciever : otherPetrinet) {
-      if (reciever.endsWith("?")) {
+      if (reciever.endsWith(Constant.BROADCASTSinput)) {
         if (reciever.substring(0, reciever.length() - 1).equals(broadcaster.substring(0, broadcaster.length() - 1))) {
           return true;
         }
@@ -229,7 +229,7 @@ public class PetrinetParallelFunction  {
   private static boolean containsBroadcasterOf(String broadcaster, Set<String> otherPetrinet) {
     String broadcastAction = broadcaster.substring(0, broadcaster.length() - 1);
     for (String receiver : otherPetrinet) {
-      if (receiver.endsWith("!")) {
+      if (receiver.endsWith(Constant.BROADCASTSoutput)) {
         String action = receiver.substring(0, receiver.length() - 1);
         if (action.equals(broadcastAction)) {
           return true;

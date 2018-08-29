@@ -3,6 +3,7 @@ package mc.operations;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.microsoft.z3.Context;
 import lombok.Getter;
 import mc.TraceType;
 import mc.exceptions.CompilationException;
@@ -43,7 +44,9 @@ public class QuiescentRefinement implements IOperationInfixFunction {
    * @return the resulting automaton of the operation
    */
   @Override
-  public boolean evaluate(Collection<ProcessModel> processModels) throws CompilationException {
+  public boolean evaluate(Set<String> flags, Context context, Collection<ProcessModel> processModels) throws CompilationException {
+
+
     TraceWork tw = new TraceWork();
     return tw.evaluate(processModels, TraceType.QuiescentTrace);
   }

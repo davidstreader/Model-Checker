@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import lombok.SneakyThrows;
+import mc.Constant;
 import mc.exceptions.CompilationException;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
@@ -124,7 +125,7 @@ if(j++> stateSizeBound) {System.out.println("\n\nTokenRule Failure Looping = "+j
            // outputAutomaton.getEndList().add(markingToNodeMap.get(currentMarking).getId());
           }
           else
-              markingToNodeMap.get(currentMarking).setTerminal("ERROR");
+              markingToNodeMap.get(currentMarking).setTerminal(Constant.ERROR);
 
       }
  //System.out.println("currentMarking1 "+currentMarking.stream().map(x->x.getId()+", ").collect(Collectors.joining()));
@@ -200,7 +201,7 @@ if(j++> stateSizeBound) {System.out.println("\n\nTokenRule Failure Looping = "+j
      outputAutomaton.addEnd(markingToNodeMap.get(mkm).getId());
   }
 
-   System.out.println("Token Rule END"); //Out "+outputAutomaton.myString());
+   //System.out.println("Token Rule END"); //Out "+outputAutomaton.myString());
     return outputAutomaton;
   }
 

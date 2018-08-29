@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import mc.Constant;
 import mc.compiler.ast.*;
 import mc.compiler.token.*;
 import mc.exceptions.CompilationException;
@@ -42,6 +43,7 @@ public class Parser {
   private Set<String> processIdentifiers;
   private List<OperationNode> operations;
   private List<OperationNode> equations;
+  private List<ActionLabelNode> alphabet;
   private Map<String, Expr> variableMap;
   private Map<String, ASTNode> constantMap;
   private List<IndexExpNode> actionRanges;
@@ -57,6 +59,7 @@ public class Parser {
     processIdentifiers = new HashSet<>();
     operations = new ArrayList<>();
     equations = new ArrayList<>();
+    alphabet = new ArrayList<>();
     variableMap = new HashMap<>();
     constantMap = new HashMap<>();
     actionRanges = new ArrayList<>();
@@ -90,6 +93,8 @@ public class Parser {
         parseSetDefinition();
       } else if (token instanceof OperationToken) {
         parseOperation();
+      }else if (token instanceof AlphabetToken) {
+        parseAlphabet();
       } else if (token instanceof EquationToken) {
         parseEquation();
       } else {
@@ -97,7 +102,7 @@ public class Parser {
       }
     }
 
-    return new AbstractSyntaxTree(processes, operations, equations, variableMap);
+    return new AbstractSyntaxTree(processes, alphabet, operations, equations, variableMap);
   }
 
   /**
@@ -182,11 +187,11 @@ public class Parser {
       || peekToken() instanceof ExclOrToken) {
       Token token = nextToken();
       if (token instanceof NegateToken) {
-        builder.append("!");
+        builder.append(Constant.BROADCASTSoutput);
       } else if (token instanceof QuestionMarkToken) {
-        builder.append("?");
+        builder.append(Constant.BROADCASTSinput);
       } else {
-        builder.append("^");
+        builder.append(Constant.ACTIVE);
       }
     }
 
@@ -1054,10 +1059,10 @@ System.out.println("parseDisplayType "+ token.toString());
     Token token = nextToken();
     if (token instanceof TerminalToken) {
       if (token instanceof StopToken) {
-        return new TerminalNode("STOP", token.getLocation());
+        return new TerminalNode(Constant.STOP, token.getLocation());
       }
 
-      return new TerminalNode("ERROR", token.getLocation());
+      return new TerminalNode(Constant.ERROR, token.getLocation());
     }
 
     throw constructException("expecting to parse a terminal but received \"" + token.toString() + "\"", token.getLocation());
@@ -1348,6 +1353,37 @@ System.out.println("parseDisplayType "+ token.toString());
     }
   }
 
+  private void parseAlphabet() throws CompilationException, InterruptedException {
+    if (!(nextToken() instanceof AlphabetToken)) {
+      Token error = tokens.get(index - 1);
+      throw constructException("expecting to parse \"alphabet\" but received \"" + error.toString() + "\"", error.getLocation());
+    }
+
+    if (!(peekToken() instanceof OpenBraceToken)) {
+      alphabet.add( parseActionLabel()) ;
+    } else {
+      parseAlphabetBlock(false);  // "{ ...  }
+    }
+  }
+  private void parseAlphabetBlock(boolean isEq) throws CompilationException, InterruptedException {
+    System.out.println("parseAlphabetBlock "+ peekToken().toString());
+
+    if (!(nextToken() instanceof OpenBraceToken)) {
+      Token error = tokens.get(index - 1);
+      throw constructException("expecting to parse \"{\" but received \"" + error.toString() + "\"", error.getLocation());
+    }
+
+    while (!(peekToken() instanceof CloseBraceToken)) {
+      alphabet.add(parseActionLabel());
+      if ((peekToken() instanceof CommaToken)) nextToken();
+      else   break;
+    }
+
+    if (!(nextToken() instanceof CloseBraceToken)) {
+      Token error = tokens.get(index - 1);
+      throw constructException("expecting to parse \"}\" but received \"" + error.toString() + "\"", error.getLocation());
+    }
+  }
   /**
    * Parsing  "operations" { A ~ B;}
    * @throws CompilationException
@@ -1365,6 +1401,7 @@ System.out.println("parseDisplayType "+ token.toString());
       parseOperationBlock(false);  // "{ ...  }
     }
   }
+
 
   // parse "A ~ B"  AST add OperationNode to "operations" as side effect
   // "Aut(A)" stores the type automaton on Operation node

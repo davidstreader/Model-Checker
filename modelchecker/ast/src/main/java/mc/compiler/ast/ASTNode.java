@@ -87,6 +87,9 @@ public abstract class ASTNode implements Serializable {
     return references != null;
   }
 
+  public String toString(){
+    return "ASTNode "+ location.toString()+" "+ modelVariables.keySet();
+  }
   /**
    * Clone the current Node.
    *

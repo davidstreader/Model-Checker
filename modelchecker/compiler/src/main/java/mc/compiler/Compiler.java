@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
+import java.util.stream.Collectors;
+
 import mc.compiler.ast.AbstractSyntaxTree;
 import mc.compiler.ast.ProcessNode;
 import mc.compiler.token.Token;
@@ -119,17 +121,20 @@ public class Compiler {
         }
       }
     }
+    //store alphabet
+    Set<String> alpha = ast.getAlphabet().stream().map(x->x.getAction()).collect(Collectors.toSet());
 //builds process and processMap
     System.out.println("**COMPILER** Entering interpreter with ast for processes -> Types "+
       ast.getProcesses().stream().map(x->"\n"+x.getIdentifier()+"->"+x.getType())
         .reduce("",(x,y)->x+" "+y));
     Map<String, ProcessModel> processMap = interpreter.interpret(ast,
-        messageQueue, z3Context);
+        messageQueue, z3Context,alpha);
 
     System.out.println("**COMPILER** before operation evaluation "+processMap.size());
 
-    List<OperationResult> opResults = evaluator.evaluateOperations(ast.getOperations(), processMap,
-        interpreter, code, z3Context);
+    List<OperationResult> opResults = evaluator.evaluateOperations(
+      ast.getOperations(), processMap,
+        interpreter, code, z3Context, messageQueue);
     List<ImpliesResult> impResults = evaluator.getImpRes();
     System.out.println("**COMPILER** after operation evaluation "+processMap.size()+ " imp "+impResults.size());
 
