@@ -12,6 +12,7 @@ import mc.Constant;
 import mc.compiler.Guard;
 import mc.exceptions.CompilationException;
 import mc.processmodels.ProcessModelObject;
+import mc.processmodels.petrinet.Petrinet;
 
 public class AutomatonEdge extends ProcessModelObject {
 
@@ -59,6 +60,9 @@ public class AutomatonEdge extends ProcessModelObject {
   public void setOptionalEdge(boolean  b){optionalEdge = b;}
   public boolean isHidden() {
     return label.equals(Constant.HIDDEN);
+  }
+  public boolean isObservableHidden() {
+    return label.equals(Constant.HIDDEN) && (getTo().isExternal() == getFrom().isExternal());
   }
 
   public boolean isDeadlocked() {

@@ -637,9 +637,9 @@ public class UserInterfaceController implements Initializable {
 
             } else {
 
+                compilerOutputDisplay.clear();
                 compilerOutputDisplay.appendText("Starting build..." + "\n");
 
-                compilerOutputDisplay.clear();
                 modelsList.getItems().clear();
 
                 buildThread = new Thread(() -> {

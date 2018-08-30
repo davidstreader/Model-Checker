@@ -3,8 +3,10 @@ package mc.operations;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.google.common.collect.ImmutableSet;
 import com.microsoft.z3.Context;
 import lombok.Getter;
+import mc.Constant;
 import mc.TraceType;
 import mc.exceptions.CompilationException;
 import mc.operations.functions.NFtoDFconvFunction;
@@ -24,6 +26,10 @@ public class TraceRefinement implements IOperationInfixFunction {
   @Override
   public String getFunctionName() {
     return "TraceRefinement";
+  }
+  @Override
+  public Collection<String> getValidFlags(){
+    return ImmutableSet.of(Constant.UNFAIR, Constant.FAIR, Constant.CONGURENT);
   }
 
   /**
@@ -46,7 +52,7 @@ public class TraceRefinement implements IOperationInfixFunction {
   @Override
   public boolean evaluate(Set<String> flags, Context context, Collection<ProcessModel> processModels) throws CompilationException {
     TraceWork tw = new TraceWork();
-    return tw.evaluate(processModels, TraceType.CompleteTrace);
+    return tw.evaluate(flags,processModels, TraceType.CompleteTrace);
   }
 }
 

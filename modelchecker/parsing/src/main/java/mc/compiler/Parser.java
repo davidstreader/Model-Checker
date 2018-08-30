@@ -7,19 +7,14 @@ import com.microsoft.z3.BitVecNum;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+
+import java.util.*;
 
 import mc.Constant;
 import mc.compiler.ast.*;
 import mc.compiler.token.*;
 import mc.exceptions.CompilationException;
+import mc.plugins.IOperationInfixFunction;
 import mc.plugins.IProcessFunction;
 import mc.plugins.IProcessInfixFunction;
 import mc.processmodels.ProcessType;
@@ -36,6 +31,7 @@ public class Parser {
   //Plugin
   static Map<String, Class<? extends IProcessFunction>> functions = new HashMap<>();
   static Map<String, Class<? extends IProcessInfixFunction>> infixFunctions = new HashMap<>();
+  static Map<String, Class<? extends IOperationInfixFunction>> operationFunctions = new HashMap<>();
 
 
   private List<Token> tokens;
@@ -696,12 +692,14 @@ System.out.println("parseDisplayType "+ token.toString());
     if (label != null || relabel != null || hiding != null) {
       process = new ProcessRootNode(process, label, relabel, hiding, process.getLocation());
     }
-
+// seems to be operators returning processes
     for (String key : infixFunctions.keySet()) {
+      //System.out.println("Parse infixFunction looking for "+ key);
       if (peekToken().toString().equals(key)) {
         nextToken(); // gobble the '||' token
         ASTNode process2 = parseComposite();
         process = new CompositeNode(key, process, process2, constructLocation(start));
+        System.out.println("***Parse infixFunction "+ key);
         break;
       }
     }
@@ -845,7 +843,7 @@ System.out.println("parseDisplayType "+ token.toString());
     if (peekToken() instanceof OpenBraceToken) {
       flags = parseFlags(type);
     }
-
+    System.out.println("*************   parsing function "+type+" flags "+flags);
     // ensure that the next token is a '(' token
     if (!(nextToken() instanceof OpenParenToken)) {
       Token error = tokens.get(index - 1);
@@ -888,9 +886,13 @@ System.out.println("parseDisplayType "+ token.toString());
     return function;
   }
 
+  /*
+  Not infix <f ....
+   */
   private String parseFunctionType() throws CompilationException {
     Token token = nextToken();
     if (token instanceof FunctionToken) {
+      //System.out.println("Parser "+((FunctionToken) token).getFunction());
       return ((FunctionToken) token).getFunction();
     }
 
@@ -903,8 +905,22 @@ System.out.println("parseDisplayType "+ token.toString());
       Token error = tokens.get(index - 1);
       throw constructException("expecting to parse \"{\" but received \"" + error.toString() + "\"", error.getLocation());
     }
+    System.out.println("parseFlags "+ functionType);
+    ImmutableSet<String> acceptedFlags;
+    System.out.println("Find "+functionType+ " in -funs "+functions.keySet() +
+                       " -infuns "+infixFunctions.keySet()+
+                        " -ops "+operationFunctions.keySet());
 
-    ImmutableSet<String> acceptedFlags = ImmutableSet.copyOf(instantiateClass(functions.get(functionType)).getValidFlags());
+    if (functions.keySet().contains(functionType)) {
+      acceptedFlags = ImmutableSet.copyOf(instantiateClass(functions.get(functionType)).getValidFlags());
+    } else if (infixFunctions.keySet().contains(functionType)) {
+      acceptedFlags = ImmutableSet.copyOf(instantiateClass(infixFunctions.get(functionType)).getValidFlags());
+    } else if (operationFunctions.keySet().contains(functionType)) {
+      acceptedFlags = ImmutableSet.copyOf(instantiateClass(operationFunctions.get(functionType)).getValidFlags());
+    } else {
+      System.out.println("NOT FOUND  " + functionType  );
+      acceptedFlags = ImmutableSet.copyOf(new HashSet<>());
+    }
     Set<String> flags = new HashSet<>();
 
     boolean wildcard = acceptedFlags.contains("*");
@@ -1412,13 +1428,14 @@ System.out.println("parseDisplayType "+ token.toString());
 
     int start = index;
     OperationNode firstOperation = parseSOperation(isEq);
-
+ System.out.println("Parsed Operation "+ firstOperation.getOperation());
     OperationNode operation;
     if ((peekToken() instanceof ImpliesToken)) {
       System.out.println("implies"+nextToken().toString());
       OperationNode secondOperation = parseSOperation(isEq);
       operation = new ImpliesNode(firstOperation, secondOperation,this.constructLocation(start));
     } else {
+
       operation = firstOperation;
     }
 // ensure that the next token is a '.' token
@@ -1437,7 +1454,7 @@ System.out.println("parseDisplayType "+ token.toString());
   // isEq diferentiates operations from equations
 
   private OperationNode parseSOperation(boolean isEq) throws CompilationException, InterruptedException {
-    System.out.println("parseSOperation "+ peekToken().toString());
+
 
     int start = index;
     boolean firstAut = false; boolean secondAut = false;
@@ -1453,6 +1470,11 @@ System.out.println("parseDisplayType "+ token.toString());
       isNegated = true;
     }
     String type = parseOperationType();  // nextToken.toString()
+// check if any flags have been set
+    Set<String> flags = new HashSet<>();
+    if (peekToken() instanceof OpenBraceToken) {
+      flags = parseFlags(type);
+    }
     if (peekToken() instanceof AutomatonToken) {
       secondAut = true;
       nextToken();
@@ -1463,10 +1485,10 @@ System.out.println("parseDisplayType "+ token.toString());
 
 
 
-    OperationNode operation = new OperationNode(type, isNegated, process1, process2, this.constructLocation(start));
+    OperationNode operation = new OperationNode(type, isNegated, ImmutableSet.copyOf(flags), process1, process2, this.constructLocation(start));
     if(firstAut)  operation.setFirstProcessType("automata");
     if(secondAut) operation.setSecondProcessType("automata");
-
+    System.out.println("=====  parseSOperation "+ type+" op "+operation.getOperation());
     return operation;
   }
 

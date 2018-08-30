@@ -41,6 +41,7 @@ public class FunctionNode extends ASTNode {
   private List<ASTNode> processes;
   /**
    * The arguments put into the function curly brace syntax.
+   * Currently fixed at Compile Time - this includes the fixed alphabet of listeners
    *
    * @see mc.plugins.IProcessFunction#getValidFlags()
    */
@@ -68,5 +69,6 @@ public class FunctionNode extends ASTNode {
     super(location);
     this.function = function;
     this.processes = new ArrayList<>(processes);
+
   }
 }

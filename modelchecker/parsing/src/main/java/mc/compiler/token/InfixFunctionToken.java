@@ -13,6 +13,7 @@ public class InfixFunctionToken extends Token{
     public InfixFunctionToken(String label, Location location) {
         super(location);
         this.label = label;
+
     }
 
     @Override

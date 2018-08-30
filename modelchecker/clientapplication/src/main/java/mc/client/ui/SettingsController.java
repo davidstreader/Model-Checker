@@ -7,6 +7,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.Slider;
 import javafx.stage.Window;
 import lombok.Setter;
+import mc.Constant;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -22,6 +23,7 @@ public class SettingsController implements Initializable{
     private Integer step = 150;
     private boolean showOwners = false;
     private boolean showColor = false;
+    private boolean Congruance = false;
     @Setter
     private Window window;
 
@@ -42,6 +44,7 @@ public class SettingsController implements Initializable{
 
     @FXML private CheckBox Own = new CheckBox();
     @FXML private CheckBox Col = new CheckBox();
+    @FXML private CheckBox Cong = new CheckBox();
 
 
 
@@ -49,6 +52,7 @@ public class SettingsController implements Initializable{
 
         showOwners = Own.isSelected();
         showColor = Col.isSelected();
+        Congruance = Cong.isSelected();
         //System.out.println("Owners = "+showOwners+"  Col = "+isShowColor());
     }
 

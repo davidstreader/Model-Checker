@@ -6,9 +6,11 @@ import static mc.processmodels.automata.util.ColouringUtil.ColourComponent;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.google.common.collect.ImmutableSet;
 import com.microsoft.z3.Context;
 import mc.AcceptanceGraph;
 //import mc.BuildAcceptanceGraphs;
+import mc.Constant;
 import mc.exceptions.CompilationException;
 import mc.plugins.IOperationInfixFunction;
 import mc.processmodels.ProcessModel;
@@ -41,6 +43,10 @@ import mc.processmodels.automata.util.ColouringUtil;
     @Override
     public String getNotation() {
       return "<f";
+    }
+    @Override
+    public Collection<String> getValidFlags(){
+      return ImmutableSet.of(Constant.UNFAIR, Constant.FAIR, Constant.CONGURENT);
     }
     @Override
     public String getOperationType(){return "automata";}

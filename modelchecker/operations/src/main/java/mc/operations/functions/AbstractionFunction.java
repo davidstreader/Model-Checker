@@ -40,7 +40,7 @@ public class AbstractionFunction implements IProcessFunction {
    */
   @Override
   public Collection<String> getValidFlags() {
-    return ImmutableSet.of("unfair", "fair");
+    return ImmutableSet.of(Constant.UNFAIR, Constant.FAIR, Constant.CONGURENT);
   }
 
   /**
@@ -59,6 +59,9 @@ public class AbstractionFunction implements IProcessFunction {
    * TauEnd(x) <=> x-/-tau-> OR
    *               x-tau->y and y in TauLoop and all n in TauLoop n-a->m => n-a->m in TauLoop
    *
+   * Abstraction for cong ==> keep taus that bridge the gap between internal and external nodes
+   *  not cong ==> remove all taus
+   *
    * @param id       the id of the resulting automaton
    * @param flags    the flags given by the function (e.g. {@code unfair} in {@code abs{unfair}(A)}
    * @param context  the z3 context to access the stuff
@@ -74,16 +77,16 @@ public class AbstractionFunction implements IProcessFunction {
     Set<AutomatonEdge> processesed = new HashSet<>();
     Automaton startA = automata[0].copy();
     String Aname = startA.getId();
-    System.out.println("automata Abs start "+ startA.getId());
-
-    Automaton abstraction = pruneHiddenNodes(context, startA);
+    System.out.println("automata Abs start "+ startA.getId()+ " flags "+flags);
+    boolean cong = flags.contains(Constant.CONGURENT);
+    Automaton abstraction = pruneHiddenNodes(context, startA, cong);
 
     //System.out.println("Abs pruned "+ abstraction.myString());
 
     mergeloopsOfSize2(context, abstraction);
     //System.out.println("Abs merged "+ abstraction.myString());
 
-    boolean isFair = flags.contains("fair") || !flags.contains("unfair");
+    boolean isFair = flags.contains(Constant.FAIR) || !flags.contains(Constant.UNFAIR);
 
     // retrieve the unobservable edges from the specified automaton
     List<AutomatonEdge> hiddenEdges = abstraction.getEdges().stream()
@@ -93,17 +96,24 @@ public class AbstractionFunction implements IProcessFunction {
     //Construct  edges to replace the unobservable edges
     while (!hiddenEdges.isEmpty()) {
       AutomatonEdge hiddenEdge = hiddenEdges.get(0);
-      //System.out.println("hiddenEdge "+hiddenEdge.myString());
+      System.out.println("hiddenEdge "+hiddenEdge.myString());
       if (processesed.contains(hiddenEdge)) {
         //System.out.println("WHY "+ hiddenEdge.myString());
         hiddenEdges.remove(hiddenEdge);
         continue;
       }
       processesed.add(hiddenEdge); // ensures termination
-
+// for congruence keep taus that bridge internal and external nodes
       hiddenEdges.remove(hiddenEdge);
-      abstraction.removeEdge(hiddenEdge);
-      //System.out.println("Removing "+ hiddenEdge.myString());
+      if (!cong ||
+           ( (hiddenEdge.getTo().isStartNode()== hiddenEdge.getFrom().isStartNode()) &&
+             (hiddenEdge.getTo().isSTOP()== hiddenEdge.getFrom().isSTOP()) &&
+             (hiddenEdge.getTo().isERROR()== hiddenEdge.getFrom().isERROR()))
+          ) {
+        System.out.println("Remove "+ hiddenEdge.myString());
+        abstraction.removeEdge(hiddenEdge);
+      }
+
       List<AutomatonEdge> temp = new ArrayList<AutomatonEdge>();
       if (hiddenEdge.getFrom().equals(hiddenEdge.getTo())) {
         if (!isFair) {
@@ -114,7 +124,7 @@ public class AbstractionFunction implements IProcessFunction {
               deadlockNode, null, true,false);
         } else {
           if (hiddenEdge.getFrom().getOutgoingEdges().size() == 0) {
-            if (!hiddenEdge.getFrom().isTerminal())
+            if (!hiddenEdge.getFrom().isSTOP())
                  hiddenEdge.getFrom().setTerminal(Constant.ERROR);
           }
         }
@@ -166,7 +176,7 @@ public class AbstractionFunction implements IProcessFunction {
         ow.addAll(edge.getOwnerLocation());
     }
     abstraction.setOwners(ow);
-    System.out.println("Abs final "+ abstraction.getId());
+    System.out.println("Abs final "+ abstraction.myString());
 
     return abstraction;
   }
@@ -240,7 +250,7 @@ public class AbstractionFunction implements IProcessFunction {
         //System.out.println("\tHidden a->tau-> added " + added.myString());
         hiddenAdded.add(added);
       }
-      //System.out.println("Outgoing add "+added.myString());
+      System.out.println("Outgoing add "+added.myString());
     }
 
  //   System.out.println("endof Outgoing "+hiddenAdded.myString());
@@ -310,7 +320,7 @@ public class AbstractionFunction implements IProcessFunction {
         //System.out.println("\tHidden tau->a-> added "+added.myString());
         hiddenAdded.add(added);
       }
-      //System.out.println("Incoming add "+added.myString());
+      System.out.println("Incoming add "+added.myString());
     }
     //String x = hiddenAdded.stream().map(e->e.myString()).collect(Collectors.joining());
     //System.out.println("endof Incoming "+x);
@@ -326,7 +336,7 @@ public class AbstractionFunction implements IProcessFunction {
    *                              Testing / Failure  semamtics
    */
 
-  private Automaton pruneHiddenNodes(Context context, Automaton autoIN)
+  private Automaton pruneHiddenNodes(Context context, Automaton autoIN, boolean cong)
       throws CompilationException {
 
 
@@ -338,7 +348,7 @@ public class AbstractionFunction implements IProcessFunction {
     for (AutomatonNode n : nodes) {
       boolean del = true;
       for (AutomatonEdge e : Iterables.concat(n.getIncomingEdges(), n.getOutgoingEdges())) {
-        if (!e.isHidden()) {
+        if (!e.isHidden() || e.isObservableHidden()) {
           del = false;
           break;
         }
@@ -481,7 +491,7 @@ public class AbstractionFunction implements IProcessFunction {
       Symetric
       remove t
      */
-    System.out.println("\nPetri abstraction!\n");
+    System.out.println("\nPetri abstraction! flags "+flags+ "\n");
 
     assert petrinets.length == 1;
     Petrinet petri = petrinets[0].reId("");
@@ -489,7 +499,7 @@ public class AbstractionFunction implements IProcessFunction {
     List<PetriNetTransition> hidden = petri.getTransitions().values().stream().
             filter(x->x.getLabel().equals(Constant.HIDDEN)).collect(Collectors.toList());
     while(!hidden.isEmpty()) {
-      hidetaus(hidden, petri);
+      hidetaus(hidden, petri,flags);
     }
     hidden = petri.getTransitions().values().stream().
             filter(x->x.getLabel().equals(Constant.HIDDEN)).collect(Collectors.toList());
@@ -505,9 +515,9 @@ public class AbstractionFunction implements IProcessFunction {
   hiding of n-safe nets!
    */
 
-  private void hidetaus(List<PetriNetTransition> hidden, Petrinet petri)throws CompilationException {
+  private void hidetaus(List<PetriNetTransition> hidden, Petrinet petri, Set<String> flags)throws CompilationException {
     //System.out.println("\nhiding "+hidden.size());
-
+    boolean cong = flags.contains(Constant.CONGURENT);
     List<PetriNetTransition> next = new ArrayList<>();
     //adding -a->*-tau->
     for(PetriNetTransition t2: hidden) {    // hide each existing tau (may add new taus for later hiding
@@ -519,7 +529,7 @@ public class AbstractionFunction implements IProcessFunction {
 
       //System.out.println("START t2 = "+t2.myString());
       for(PetriNetPlace pretau: t2.pre()) {
-        for(PetriNetTransition tr1: pretau.pre()){    //first transition
+        for(PetriNetTransition tr1: pretau.pre()){    //PRE transition
           if (tr1.getId().equals(t2.getId())) continue;
           if (!original.contains(tr1.getId())) continue;
        //System.out.println("   tr1 = "+tr1.getId());
@@ -645,8 +655,12 @@ public class AbstractionFunction implements IProcessFunction {
 
     }
     for(PetriNetTransition tr: hidden){
-      //System.out.println("Removing "+tr.myString());
-      petri.removeTransition(tr);
+      if (!cong ||
+         (Petrinet.isMarkingExternal(tr.pre()) == Petrinet.isMarkingExternal(tr.post())))
+         {
+           System.out.println("Removing "+tr.myString());
+           petri.removeTransition(tr);
+      }
     }
     hidden.clear();
     for(PetriNetTransition tr: next){
@@ -668,7 +682,7 @@ public class AbstractionFunction implements IProcessFunction {
  */
   public Automaton GaloisBCabs (String id, Set<String> flags, Context context, Automaton ain)
      throws CompilationException {
-
+    System.out.println("GaloisBCabs "+flags);
     Automaton a = ain.copy();
     for(AutomatonEdge ed: a.getEdges()) {
       if (ed.getLabel().endsWith(".t!") || ed.getLabel().endsWith(".t?"))
@@ -678,7 +692,7 @@ public class AbstractionFunction implements IProcessFunction {
     as[0] = a;
     Automaton out =  this.compose(id, flags, context, as);
 
-    System.out.println("GaloisBCabs "+out.myString());
+    System.out.println("GaloisBCabs END "+out.myString());
     return out;
   }
 }

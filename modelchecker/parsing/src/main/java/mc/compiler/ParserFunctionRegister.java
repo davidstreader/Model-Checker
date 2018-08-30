@@ -28,8 +28,10 @@ public class ParserFunctionRegister {
 
   public static void registerOperation(Class<? extends IOperationInfixFunction> clazz) {
     String name = instantiateClass(clazz).getNotation();
+    System.out.println("registering Operations "+ name);
    // Logger.getLogger(ParserFunctionRegister.class.getSimpleName())
    //     .info("LOADED " + name + " INFIX FUNCTION PLUGIN");
     Lexer.operationFunctions.add(name);
+    Parser.operationFunctions.put(name,clazz);
   }
 }

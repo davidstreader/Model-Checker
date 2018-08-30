@@ -87,7 +87,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
   Set<String> variableList;
   int subProcessCount = 0;
   VariableSetNode variables;
-
+  Set<String> alpha;
   public String myString(Map<String, Set<PetriNetPlace>> ref) {
     return ref.keySet().stream().
       map(x -> x + " " +
@@ -121,8 +121,9 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     throws CompilationException, InterruptedException {
     reset();
     //called by Interpreter and  Returns a ProcessModel that the Interpreter adds to the processMap
+    this.alpha = alpha;
+    System.out.println("\nPetriinterpret XX START "+ processNode.getIdentifier()+" alpha "+this.alpha);
 
-    //System.out.println("\nPetriinterpret XX START "+ processNode.getIdentifier()+" pMap "+ processMap.keySet());
     this.context = context;
     variableList = new HashSet<>();
     this.processMap = processMap;
@@ -464,8 +465,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     //functions  nfa2dfa, prune, simp, abs,  .... are function on automata!
     else if (currentNode instanceof FunctionNode) {
       info = ((FunctionNode) currentNode).getFunction();
-      //System.out.println(info);
-      petri = interpretFunction((FunctionNode) currentNode, petri);
+      petri = interpretFunction((FunctionNode) currentNode, petri,this.alpha);
     }
     // tokenRule and ownersRule
     else if (currentNode instanceof ConversionNode) { //currentPlace -> addpetriNet
@@ -720,9 +720,9 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
   /*
   The application of some dynamically loaded functions have access to Z3 cotex
    */
-  private Petrinet interpretFunction(FunctionNode func, Petrinet petri)
+  private Petrinet interpretFunction(FunctionNode func, Petrinet petri, Set<String> alpha)
     throws CompilationException, InterruptedException {
-    System.out.println("InterpertFunction " + func.getFunction());
+    System.out.println("InterpertFunction " + func.getFunction()+" "+alpha);
     List<Petrinet> models = new ArrayList<>();
     for (ASTNode p : func.getProcesses()) {
       interpretProcess(p, petri.getId() + ".fn");
@@ -735,9 +735,11 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     }
 
     Petrinet[] petris = models.stream().map(Petrinet.class::cast).toArray(Petrinet[]::new);
-
+    Set<String> alphaFlags = new TreeSet<>();
+    alphaFlags.addAll(alpha);  // add the listening events for revAP2BC
+    alphaFlags.addAll(func.getFlags());
     Petrinet processed = instantiateClass(functions.get(func.getFunction()))
-      .compose(petri.getId() + ".fn", func.getFlags(), context, petris);
+      .compose(petri.getId() + ".fn", alphaFlags, context, petris);
     if (processed == null) {
       throw new CompilationException(getClass(),
         "Returned null. Check if this function should only be used in operations and equations!", func.getLocation());

@@ -4,6 +4,8 @@ import mc.exceptions.CompilationException;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.petrinet.Petrinet;
 
+import java.util.Collection;
+
 /**
  * Classes implementing this type located in the {@code mc.operations} package are loaded at run
  * time as infix functions for use in the code.
@@ -31,7 +33,7 @@ public interface IProcessInfixFunction {
    */
   String getNotation();
 
-
+  Collection<String> getValidFlags();
   /**
    * Execute the function.
    *

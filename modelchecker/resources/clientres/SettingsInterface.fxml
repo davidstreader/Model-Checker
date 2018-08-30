@@ -27,8 +27,10 @@
             <Label layoutX="156.0" layoutY="128.0" text="Repulsion" />
             <CheckBox fx:id="Own" layoutX="26.0" layoutY="136.0" mnemonicParsing="false" text="Owners" />
             <CheckBox fx:id="Col" layoutX="26.0" layoutY="166.0" mnemonicParsing="false" text="Color" />
+            <CheckBox fx:id="Cong" layoutX="26.0" layoutY="199.0" mnemonicParsing="false" text="Cong" />
 
          </children>
     </AnchorPane>
+      <CheckBox mnemonicParsing="false" text="CheckBox" />
   </children>
 </VBox>

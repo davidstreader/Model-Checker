@@ -155,7 +155,7 @@ public class AutomatonNode extends ProcessModelObject implements Comparable<Auto
   public boolean isERROR() {
     return terminal != null && terminal.equals(Constant.ERROR);
   }
-
+  public boolean isExternal() { return isERROR() || isSTOP() ||isStartNode();}
   public List<AutomatonEdge> getIncomingEdges() {
     return new ArrayList<>(incomingEdges.values());
   }

@@ -694,11 +694,25 @@ if (edin.equals("edge")) {
 
     return error;
   }
-public static String marking2String(Collection<PetriNetPlace> mark){
-  //return mark.stream().map(x->x.myString()).reduce("{", (x,y)->x+" "+y)+"}";
-  if (mark==null) return "null";
-  return mark.stream().map(x->x.getId()).reduce("{", (x,y)->x+" "+y)+"}";
-}
+  public static boolean isMarkingSTOP(Collection<PetriNetPlace> mark){
+    return mark.stream().map(x->x.isSTOP()).reduce(true, (x,y)->x&&y);
+  }
+  public static boolean isMarkingStart(Collection<PetriNetPlace> mark){
+    return mark.stream().map(x->x.isStart()).reduce(true, (x,y)->x&&y);
+  }
+  public static boolean isMarkingERROR(Collection<PetriNetPlace> mark){
+    return mark.stream().map(x->x.isERROR()).reduce(true, (x,y)->x&&y);
+  }
+  public static boolean isMarkingExternal(Collection<PetriNetPlace> mark){
+    return isMarkingERROR(mark)||isMarkingStart(mark)||isMarkingSTOP(mark);
+  }
+
+
+  public static String marking2String(Collection<PetriNetPlace> mark){
+    //return mark.stream().map(x->x.myString()).reduce("{", (x,y)->x+" "+y)+"}";
+    if (mark==null) return "null";
+    return mark.stream().map(x->x.getId()).reduce("{", (x,y)->x+" "+y)+"}";
+  }
 
   public static String trans2String(Collection<PetriNetTransition> mark){
     //return mark.stream().map(x->x.myString()).reduce("{", (x,y)->x+" "+y)+"}";

@@ -1,8 +1,11 @@
 package mc.compiler.ast;
 
+import com.google.common.collect.ImmutableSet;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import mc.util.Location;
+
+import java.util.Set;
 
 
 /**
@@ -31,6 +34,14 @@ public class OperationNode extends ASTNode {
    */
   private boolean negated;
   /**
+   * The arguments put into the function curly brace syntax.
+   * Currently fixed at Compile Time - this includes the fixed alphabet of listeners
+   *
+   * @see mc.plugins.IProcessFunction#getValidFlags()
+   */
+  private ImmutableSet<String> flags;
+
+  /**
    * The first process to be operated on.
    */
   private ASTNode firstProcess;
@@ -52,13 +63,14 @@ public class OperationNode extends ASTNode {
    * @param location         the location within the users code where this takes
    *                         place {@link ASTNode#location}
    */
-  public OperationNode(String operation, boolean isNegated, ASTNode firstProcess,
+  public OperationNode(String operation, boolean isNegated, ImmutableSet<String> flags, ASTNode firstProcess,
                        ASTNode secondProcess, Location location) {
     super(location);
     this.operation = operation;
     this.negated = isNegated;
     this.firstProcess = firstProcess;
     this.secondProcess = secondProcess;
+    this.flags = flags;
   }
   public OperationNode(Location location) {
     super(location);

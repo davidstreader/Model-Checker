@@ -18,10 +18,11 @@ import java.util.stream.Collectors;
 public class TraceWork {
 /*
    compute trace refinement (subset) for trace, complete trace and quiescent trace
-   Note QuiescentTrace calls GaloisBCabs to abstract all .t! and .t?
+   Note QuiescentTrace calls abs to abstract all .t! and .t? that can only be introduced by Galois
  */
-  public boolean evaluate(Collection<ProcessModel> processModels, TraceType tt) throws CompilationException {
+  public boolean evaluate(Set<String> flags,Collection<ProcessModel> processModels, TraceType tt) throws CompilationException {
     if (processModels.iterator().next() instanceof Automaton) {
+
       NFtoDFconvFunction nfa2dfafunc = new NFtoDFconvFunction();
       AbstractionFunction absfunc = new AbstractionFunction();
       ArrayList<ProcessModel> nfas = new ArrayList<>();
@@ -30,7 +31,7 @@ public class TraceWork {
         try {
           Automaton  temp ;
           if (tt.equals(TraceType.QuiescentTrace)) {
-            temp = absfunc.GaloisBCabs(a.getId(), new HashSet<>(), null, a);
+            temp = absfunc.GaloisBCabs(a.getId(), flags, null, a);
             temp = nfa2dfafunc.compose(a.getId(), new HashSet<>(), null, temp);
           }  else {
             temp = nfa2dfafunc.compose(a.getId(), new HashSet<>(), null, a);
@@ -107,8 +108,8 @@ public class TraceWork {
         //System.out.print(lab+" ");
         AutomatonNode nd1 = a1N.get(np.first).getNcs().get(lab);
         AutomatonNode nd2 = a2N.get(np.second).getNcs().get(lab);
-        if (lab.equals("Start")) continue;
-        if (lab.equals("STOP")) continue;
+        if (lab.equals(Constant.Start)) continue;
+        if (lab.equals(Constant.STOP)) continue;
         if (traceSubset(new NodePair(nd1,nd2),a1N,a2N, processed) == false) return false;
        // i++; if (i>9) break;
       }
@@ -142,7 +143,7 @@ public class TraceWork {
 
       if ((tt.equals(TraceType.CompleteTrace)
        // || tt.equals(TraceType.QuiescentTrace)
-      ) && n.isTerminal()) {as.ncs.put("STOP",n);}  //EEEck
+      ) && n.isSTOP()) {as.ncs.put(Constant.STOP,n);}  //EEEck
       if (n.isStartNode()) {as.ncs.put("Start",n);}
       System.out.println(n.getId()+" > "+as.myString());
       nfanode2ASet.put(n,as);
@@ -154,7 +155,7 @@ public class TraceWork {
    */
   private Set<NextComponent> quiescentNext(AutomatonNode node,Set<AutomatonNode> processed){
      Set<NextComponent> sofar = new TreeSet<>();
-     if (node.isSTOP()) sofar.add(new NextComponent("Stop",node));
+     if (node.isSTOP()) sofar.add(new NextComponent(Constant.STOP,node));
     //System.out.println("quiescentNext "+node.getId());
     for (AutomatonEdge ed: node.getOutgoingEdges()){
       if (!ed.getLabel().endsWith("?"))

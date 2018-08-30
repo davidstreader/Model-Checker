@@ -93,7 +93,7 @@ public class PluginManager {
       sb.append(f+",");
     }
     Logger.getLogger(InterpreterFunctionRegister.class.getSimpleName())
-      .info("**LOADED " + sb.toString() + " InfixFUNCTION PLUGIN evaluator");
+      .info("**LOADED " + sb.toString() + " InfixOPERATION PLUGIN evaluator");
     getInfixOperations().forEach(EvaluatorFunctionRegister::registerOperation);
   }
 

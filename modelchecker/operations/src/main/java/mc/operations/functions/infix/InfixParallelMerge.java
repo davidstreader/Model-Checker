@@ -10,6 +10,9 @@ import mc.processmodels.automata.operations.AutomataReachability;
 import mc.processmodels.automata.operations.PetrinetParallelMergeFunction;
 import mc.processmodels.petrinet.Petrinet;
 
+import java.util.Collection;
+import java.util.HashSet;
+
 @Value
 public class InfixParallelMerge implements IProcessInfixFunction {
 
@@ -22,7 +25,7 @@ public class InfixParallelMerge implements IProcessInfixFunction {
   public String getFunctionName() {
     return "ParallelMerge";
   }
-
+  public Collection<String> getValidFlags(){return new HashSet<>();}
   /**
    * The form which the function will appear when composed in the text.
    *

@@ -117,17 +117,14 @@ if(j++> stateSizeBound) {System.out.println("\n\nTokenRule Failure Looping = "+j
       Set<PetriNetTransition> satisfiedPostTransitions = satisfiedTransitions(currentMarking); //88
       //System.out.println("Processing "+Petrinet.marking2String(currentMarking)+
       //" trans "+satisfiedPostTransitions.size());
-      if (satisfiedPostTransitions.size() == 0) {
-         // currentMarking.stream().forEach(x->{System.out.print(x.getId()+"->"+x.getTerminal());});
-          //if (currentMarking.stream().map(x->x.getTerminal().equals("STOP")).reduce(true,(x,y)->x&&y))
           if (currentMarking.stream().map(x->x.isSTOP()).reduce(true,(x,y)->x&&y)) {
-            markingToNodeMap.get(currentMarking).setTerminal("STOP");
+            markingToNodeMap.get(currentMarking).setTerminal(Constant.STOP);
            // outputAutomaton.getEndList().add(markingToNodeMap.get(currentMarking).getId());
           }
-          else
-              markingToNodeMap.get(currentMarking).setTerminal(Constant.ERROR);
+          else if (currentMarking.stream().map(x->x.isERROR()).reduce(false,(x,y)->x || y)) {
+            markingToNodeMap.get(currentMarking).setTerminal(Constant.ERROR);
+          }
 
-      }
  //System.out.println("currentMarking1 "+currentMarking.stream().map(x->x.getId()+", ").collect(Collectors.joining()));
 
       //System.out.println("satisfiedPostTransitions "+ satisfiedPostTransitions.size());

@@ -1,21 +1,29 @@
 processes {
+T = b->a->b->c->STOP.
+R = T\{b}.
+S = abs{fair}(R).
 
 X = a!->b?->STOP.
 Y = a!->STOP.
-//Px= revap2bc(X) .
-//Py = revap2bc(Y).
+Px= revap2bc{cong}(X) .
+Py = revap2bc{cong}(Y).
 }
-alphabet { a?, b?}
+alphabet {  b?}
 
 operation {
-//X <q Y.
+X <q Y.
+Px <fo Py.
 //revap2bc(X) <f revap2bc(Y).
-//O1 <q A ==> revap2bc(O1) <f revap2bc(A).
+//X <q Y ==> revap2bc(X) <f revap2bc(Y).
 }
-
 equation{
 
 } 
+
+
+
+
+
 
 
 

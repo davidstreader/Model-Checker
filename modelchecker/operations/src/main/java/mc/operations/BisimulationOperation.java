@@ -5,7 +5,9 @@ import static mc.processmodels.automata.util.ColouringUtil.ColourComponent;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.google.common.collect.ImmutableSet;
 import com.microsoft.z3.Context;
+import mc.Constant;
 import mc.exceptions.CompilationException;
 import mc.plugins.IOperationInfixFunction;
 import mc.processmodels.ProcessModel;
@@ -27,6 +29,10 @@ public class BisimulationOperation implements IOperationInfixFunction {
     @Override
     public String getFunctionName() {
         return "BiSimulation";
+    }
+    @Override
+    public Collection<String> getValidFlags(){
+        return ImmutableSet.of(Constant.UNFAIR, Constant.FAIR, Constant.CONGURENT);
     }
 
     /**

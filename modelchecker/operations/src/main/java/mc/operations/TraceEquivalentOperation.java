@@ -2,7 +2,9 @@ package mc.operations;
 
 import java.util.*;
 
+import com.google.common.collect.ImmutableSet;
 import com.microsoft.z3.Context;
+import mc.Constant;
 import mc.exceptions.CompilationException;
 import mc.operations.functions.NFtoDFconvFunction;
 import mc.plugins.IOperationInfixFunction;
@@ -18,6 +20,10 @@ public class TraceEquivalentOperation implements IOperationInfixFunction {
   @Override
   public String getFunctionName() {
     return "TraceEquivalent";
+  }
+  @Override
+  public Collection<String> getValidFlags(){
+    return ImmutableSet.of(Constant.UNFAIR, Constant.FAIR, Constant.CONGURENT);
   }
 
   /**

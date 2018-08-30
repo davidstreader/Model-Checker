@@ -24,7 +24,7 @@ public class SequentialInfixFunction implements IProcessInfixFunction {
   public String getFunctionName() {
     return "sequential";
   }
-
+  public Collection<String> getValidFlags(){return new HashSet<>();}
   /**
    * The form which the function will appear when composed in the text.
    *

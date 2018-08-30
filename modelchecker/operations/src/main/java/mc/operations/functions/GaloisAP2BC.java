@@ -89,19 +89,16 @@ public class GaloisAP2BC implements IProcessFunction {
 
   public Petrinet composeM(String id, Set<String> flags, Context context, Map<Multiset<PetriNetPlace>, AutomatonNode> markingToNode, Petrinet... petrinets) throws CompilationException {
     Petrinet petrinet = petrinets[0];
-    System.out.println("********ap2bc "+petrinet.myString());
-
-
-
+    //System.out.println("********ap2bc "+petrinet.myString());
 
     Set<PetriNetTransition> todo = petrinet.getTransitions().values().stream().collect(Collectors.toSet());
     System.out.println(todo.
       stream().map(x->x.myString()).reduce("",(x,y)->x+y+"\n"));
 
     for(PetriNetTransition tr: todo){
-        System.out.println("*2* "+tr.myString());
+        //System.out.println("*2* "+tr.myString());
       String lab = tr.getLabel();
-      if (lab.endsWith(Constant.ACTIVE)) {
+      if (lab.endsWith(Constant.ACTIVE)) {                //Active
         String prefix = lab.substring(0,lab.length()-1);
         PetriNetPlace x = petrinet.addPlace();
         Set<PetriNetPlace> xset = new HashSet<>();
@@ -110,8 +107,8 @@ public class GaloisAP2BC implements IProcessFunction {
         //petrinet.addTransition(xset, prefix + ".r?", tr.pre() );
         petrinet.addTransition(xset, prefix + Constant.BROADCASTSinput, tr.post() );
         petrinet.removeTransition(tr);
-        System.out.println("1."+petrinet.myString());
-      } else if (!(lab.endsWith("!")||lab.endsWith("?"))) {
+        //System.out.println("1."+petrinet.myString());
+      } else if (!(lab.endsWith("!")||lab.endsWith("?"))) {  //Passive
         //String prefix = lab.substring(0,lab.length()-1);
         PetriNetPlace y = petrinet.addPlace();
         Set<PetriNetPlace> yset = new HashSet<>();
@@ -119,13 +116,13 @@ public class GaloisAP2BC implements IProcessFunction {
         petrinet.addTransition(tr.pre(), lab +".t"+ Constant.BROADCASTSinput, yset );
         petrinet.addTransition(yset, lab + Constant.BROADCASTSoutput, tr.post() );
         petrinet.removeTransition(tr);
-        System.out.println("2."+petrinet.myString());
+        //System.out.println("2."+petrinet.myString());
       }
 
     }
 
-    System.out.println(petrinet.getId()+" is valid "+petrinet.validatePNet());
-    System.out.println("ap2bc end "+petrinet.myString());
+    System.out.println("AP2BC output "+ petrinet.getId()+" is valid "+petrinet.validatePNet());
+    //System.out.println("ap2bc end "+petrinet.myString());
     return   petrinet;
 
   }

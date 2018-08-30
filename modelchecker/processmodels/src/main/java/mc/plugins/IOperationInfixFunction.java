@@ -7,7 +7,10 @@ import mc.exceptions.CompilationException;
 import mc.processmodels.ProcessModel;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.petrinet.Petrinet;
+/*
+        This is for ~, =f, <q, ....
 
+ */
 public interface IOperationInfixFunction {
 
   /**
@@ -17,6 +20,7 @@ public interface IOperationInfixFunction {
    */
   String getFunctionName();
 
+  Collection<String> getValidFlags();
   /**
    * The form which the function will appear when composed in the text.
    *

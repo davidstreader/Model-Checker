@@ -27,7 +27,7 @@ public class ChoiceInfixFunction implements IProcessInfixFunction {
   public String getFunctionName() {
     return "external choice";
   }
-
+  public Collection<String> getValidFlags(){return new HashSet<>();}
   /**
    * The form which the function will appear when composed in the text
    *

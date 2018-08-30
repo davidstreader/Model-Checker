@@ -1,8 +1,7 @@
 package mc.operations.functions.infix;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+
 import mc.compiler.ast.ChoiceNode;
 import mc.compiler.ast.CompositeNode;
 import mc.compiler.ast.IdentifierNode;
@@ -38,7 +37,8 @@ public class SlidingInfixFunction implements IProcessInfixFunction {
   public String getFunctionName() {
     return "slidingFunction";
   }
-
+  @Override
+  public Collection<String> getValidFlags(){return new HashSet<>();}
   /**
    * The form which the function will appear when composed in the text.
    *
@@ -80,7 +80,7 @@ public class SlidingInfixFunction implements IProcessInfixFunction {
       return (Automaton) interpreter.interpret(
          process,
          processesDefined,
-       // null,
+        null,
         null);
     } catch (InterruptedException e) {
       throw new CompilationException(getClass(), "Interrupted in compilation!");

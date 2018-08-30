@@ -60,7 +60,7 @@ public class InternalChoiceInfixFun implements IProcessInfixFunction {
   public String getNotation() {
     return "+";
   }
-
+  public Collection<String> getValidFlags(){return new HashSet<>();}
   /**
    * Execute the function
    *

@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Collectors;
 
+import mc.Constant;
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessFunction;
 import mc.processmodels.MultiProcessModel;
@@ -106,8 +107,8 @@ public class NFtoDFconvFunction implements IProcessFunction {
         node.setStartNode(true);
         processedRoot = true;
         //if one root nfa is terminal so is the dfa root
-        if (nfa.getRoot().stream().anyMatch(e -> e.isTerminal()) ) {
-          dfa.getNode(idNode).setTerminal("STOP");
+        if (nfa.getRoot().stream().anyMatch(e -> e.isSTOP()) ) {
+          dfa.getNode(idNode).setTerminal(Constant.STOP);
         }
       }
 
@@ -123,8 +124,8 @@ public class NFtoDFconvFunction implements IProcessFunction {
 
         if (!nodeMap.containsKey(nextId)) {
           nodeMap.put(nextId, dfa.addNode(nextId));
-          if (stateMap.get(nextStates).stream().anyMatch(e -> e.isTerminal()) ) {
-            dfa.getNode(nextId).setTerminal("STOP");
+          if (stateMap.get(nextStates).stream().anyMatch(e -> e.isSTOP()) ) {
+            dfa.getNode(nextId).setTerminal(Constant.STOP);
           }
         }
         AutomatonNode nextNode = nodeMap.get(nextId);
@@ -139,9 +140,9 @@ public class NFtoDFconvFunction implements IProcessFunction {
       visited.add(idNode);
     }
 
-    dfa.getNodes().stream()
+  /*  dfa.getNodes().stream()
         .filter(node -> node.getOutgoingEdges().isEmpty())
-        .forEach(node -> node.setTerminal("STOP"));
+        .forEach(node -> node.setTerminal(Constant.STOP)); */
     System.out.println("built dfa " +dfa.myString());
     return dfa;
   }

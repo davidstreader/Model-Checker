@@ -3,8 +3,10 @@ package mc.operations;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.google.common.collect.ImmutableSet;
 import com.microsoft.z3.Context;
 import lombok.Getter;
+import mc.Constant;
 import mc.TraceType;
 import mc.exceptions.CompilationException;
 import mc.operations.functions.NFtoDFconvFunction;
@@ -37,6 +39,10 @@ public class QuiescentRefinement implements IOperationInfixFunction {
   }
   @Override
   public String getOperationType(){return "automata";}
+  @Override
+  public Collection<String> getValidFlags(){
+  return ImmutableSet.of(Constant.UNFAIR, Constant.FAIR, Constant.CONGURENT);
+  }
   /**
    * Evaluate the function.
    *
@@ -48,7 +54,7 @@ public class QuiescentRefinement implements IOperationInfixFunction {
 
 
     TraceWork tw = new TraceWork();
-    return tw.evaluate(processModels, TraceType.QuiescentTrace);
+    return tw.evaluate(flags,processModels, TraceType.QuiescentTrace);
   }
 }
 

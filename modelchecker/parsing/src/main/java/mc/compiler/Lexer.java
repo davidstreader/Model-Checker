@@ -160,7 +160,9 @@ public class Lexer {
 
     return new ActionToken(stringToToken, location);
   }
-
+/*
+  Builds Tokens for <q, ...
+ */
   private Token constructSymbolToken(char[] characters) throws LexerException {
     Location start = new Location(line, column, line, column + 2, index, index + 2);
     tokens:

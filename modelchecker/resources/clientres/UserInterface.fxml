@@ -69,13 +69,13 @@
                                                         <Font size="17.0" />
                                                     </font>
                                                 </Label>
-                                                <Button layoutX="385.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleAddSelectedModel" text="Add model" AnchorPane.leftAnchor="385.0" />
-                                                <Button layoutX="486.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleAddallModels" text="Add all models" />
-                                                <Button layoutX="613.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleClearGraph" text="Clear" />
-                                                <Button layoutX="675.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleFreeze" text="Freeze model" />
-                                                <Button layoutX="812.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleUnfreeze" text="Unfreeze model" />
-                                                <Button layoutX="964.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleFreezeAll" text="Freeze all" />
-                                                <Button layoutX="1052.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleUnfreezeAll" text="Unfreeze all" />
+                                                <Button layoutX="385.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleAddSelectedModel" text="Add" AnchorPane.leftAnchor="385.0" />
+                                                <Button layoutX="435.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleAddallModels" text="Add all" />
+                                                <Button layoutX="510.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleClearGraph" text="Clear" />
+                                                <Button layoutX="580.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleFreeze" text="Freeze" />
+                                                <Button layoutX="655.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleUnfreeze" text="Unfreeze" />
+                                                <Button layoutX="740.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleFreezeAll" text="Freeze all" />
+                                                <Button layoutX="830.0" layoutY="10.0" mnemonicParsing="false" onAction="#handleUnfreezeAll" text="Unfreeze all" />
                                             </children>
 
                                         </AnchorPane>

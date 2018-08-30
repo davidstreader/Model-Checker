@@ -9,6 +9,9 @@ import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.operations.AutomataReachability;
 import mc.processmodels.petrinet.Petrinet;
 
+import java.util.Collection;
+import java.util.HashSet;
+
 @Value
 public class InfixParallelFunction implements IProcessInfixFunction {
 
@@ -21,7 +24,7 @@ public class InfixParallelFunction implements IProcessInfixFunction {
   public String getFunctionName() {
     return "Parallel";
   }
-
+  public Collection<String> getValidFlags(){return new HashSet<>();}
   /**
    * The form which the function will appear when composed in the text.
    *

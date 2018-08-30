@@ -1,5 +1,6 @@
 package mc.operations.functions;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multiset;
 import com.microsoft.z3.Context;
 
@@ -23,6 +24,7 @@ import mc.processmodels.petrinet.components.PetriNetTransition;
 /*
 Need to add this as a function on  MultiProcessModel if going to reuse the Markings
 shortcut is to recompute reachability
+
  */
 
 public class RevAP2BC implements IProcessFunction {
@@ -44,7 +46,7 @@ public class RevAP2BC implements IProcessFunction {
    */
   @Override
   public Collection<String> getValidFlags() {
-    return Collections.singleton("*");
+    return ImmutableSet.of(Constant.UNFAIR, Constant.FAIR, Constant.CONGURENT);
   }
 
   /**
@@ -89,10 +91,12 @@ public class RevAP2BC implements IProcessFunction {
   public Petrinet composeM(String id, Set<String> flags, Context context,
                            Map<Multiset<PetriNetPlace>, AutomatonNode> markingToNode,
                            Petrinet petrinet) throws CompilationException {
-
    //Petrinet petrinet = petrinets[0].reId("Rev") ;
-    System.out.println("Rev start "+petrinet.myString());
-   for(PetriNetTransition tr : petrinet.getTransitions().values()) {
+    System.out.println("RevAP2BC start "+petrinet.getId()+ " flags "+flags);
+    Set<String> listeners = flags.stream().filter(x->x.endsWith("?")).collect(Collectors.toSet());
+    buildListeningLoops(markingToNode,listeners,petrinet);
+
+    for(PetriNetTransition tr : petrinet.getTransitions().values()) {
      String prefix1 = tr.getLabel().substring(0,tr.getLabel().length()-1);
      if (tr.getLabel().endsWith(".t?") ||
          tr.getLabel().endsWith(".t!")    ) tr.setLabel(Constant.HIDDEN);
@@ -100,9 +104,7 @@ public class RevAP2BC implements IProcessFunction {
      else if (tr.getLabel().endsWith("!") ) tr.setLabel(prefix1);
 
    }
-    Set<String> listeners = flags.stream().filter(x->x.endsWith("?")).collect(Collectors.toSet());
-    buildListeningLoops(markingToNode,listeners,petrinet);
-   // petrinet = ab.compose(id,flags,context,p);
+    // petrinet = ab.compose(id,flags,context,p);
     System.out.println(petrinet.myString()+ "Rev end ");
     return petrinet;
   }

@@ -16,6 +16,7 @@ import mc.processmodels.MultiProcessModel;
  * Classes that implement this interface are automatically loaded into the compiler at run time if
  * located in {@code mc.operations}.
  *
+ *          This is for abs,  .....   BUT ~, =f, <q, ....
  * @author Jacob Beal
  * @see IProcessInfixFunction
  * @see IProcessFunction

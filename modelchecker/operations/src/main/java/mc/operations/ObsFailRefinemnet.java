@@ -2,7 +2,9 @@ package mc.operations;
 
 import java.util.*;
 
+import com.google.common.collect.ImmutableSet;
 import com.microsoft.z3.Context;
+import mc.Constant;
 import mc.exceptions.CompilationException;
 import mc.operations.functions.AbstractionFunction;
 import mc.plugins.IOperationInfixFunction;
@@ -15,6 +17,10 @@ import mc.processmodels.automata.Automaton;
    */
   public class ObsFailRefinemnet implements IOperationInfixFunction {
 
+  @Override
+  public Collection<String> getValidFlags(){
+    return ImmutableSet.of(Constant.UNFAIR, Constant.FAIR, Constant.CONGURENT);
+  }
 
     /**
      * A method of tracking the function.

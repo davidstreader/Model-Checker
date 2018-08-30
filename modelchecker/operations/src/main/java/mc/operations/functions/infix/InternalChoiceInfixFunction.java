@@ -1,10 +1,6 @@
 package mc.operations.functions.infix;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.List;
+import java.util.*;
 
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessInfixFunction;
@@ -54,7 +50,7 @@ public class InternalChoiceInfixFunction implements IProcessInfixFunction {
   public String getFunctionName() {
     return "internalChoice";
   }
-
+  public Collection<String> getValidFlags(){return new HashSet<>();}
   /**
    * The form which the function will appear when composed in the text.
    *
