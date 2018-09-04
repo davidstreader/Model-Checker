@@ -19,6 +19,6 @@ public class EmptyTestOnlyNode extends ASTNode {
    * Initialise the Node.
    */
   public EmptyTestOnlyNode() {
-    super(null);
+    super(null,"EmptyTest");
   }
 }

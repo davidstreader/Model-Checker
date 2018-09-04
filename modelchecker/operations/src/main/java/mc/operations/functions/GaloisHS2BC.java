@@ -6,6 +6,7 @@ import com.microsoft.z3.Context;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import mc.TraceType;
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessFunction;
 import mc.processmodels.MultiProcessModel;
@@ -54,11 +55,12 @@ public class GaloisHS2BC implements IProcessFunction {
    *
    * @param id       the id of the resulting automaton
    * @param flags    the flags given by the function (e.g. {@code unfair} in {@code abs{unfair}(A)}
+   * @param tt
    * @param automata a variable number of automata taken in by the function
    * @return the resulting automaton of the operation
    */
   @Override
-  public Automaton compose(String id, Set<String> flags, Context context, Automaton... automata)
+  public Automaton compose(String id, Set<String> flags, Context context,  Automaton... automata)
     throws CompilationException {
 
 

@@ -5,6 +5,7 @@ import java.util.*;
 import com.google.common.collect.ImmutableSet;
 import com.microsoft.z3.Context;
 import mc.Constant;
+import mc.TraceType;
 import mc.exceptions.CompilationException;
 import mc.operations.functions.AbstractionFunction;
 import mc.plugins.IOperationInfixFunction;
@@ -57,16 +58,18 @@ import mc.processmodels.automata.Automaton;
      */
     @Override
     public boolean evaluate(Set<String> flags,Context context,Collection<ProcessModel> processModels) throws CompilationException {
+      boolean cong = flags.contains(Constant.CONGURENT);
+
       FailureEquivalence fe = new FailureEquivalence();
       AbstractionFunction abs = new AbstractionFunction();
       List<ProcessModel> as = new ArrayList<>();
       for (ProcessModel pm : processModels) {
         Automaton in = ((Automaton) pm);
-        Automaton a =  abs.compose(in.getId(),flags,context, in);
+        Automaton a =  abs.compose(in.getId(),flags,context,  in);
         as.add(a);
       }
 
-      return fe.evaluate(as,false);
+      return fe.evaluate(as,false,cong);
     }
   }
 

@@ -36,13 +36,13 @@ public class RelabelElementNode extends ASTNode {
   private RangesNode ranges;
 
   public RelabelElementNode(String newLabel, String oldLabel, Location location) {
-    super(location);
+    super(location,"Relabel");
     this.newLabel = newLabel;
     this.oldLabel = oldLabel;
     ranges = null;
   }
   public RelabelElementNode(IdentifierNode newPro, String oldLabel, Location location) {
-    super(location);
+    super(location,"Relabel");
     System.out.println("RelabelEl IdNode");
     this.oldLabel = oldLabel;
     this.newProcess = newPro;

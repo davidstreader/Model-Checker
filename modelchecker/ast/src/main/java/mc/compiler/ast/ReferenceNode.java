@@ -30,7 +30,7 @@ public class ReferenceNode extends ASTNode {
    * @param location  where within the userscode where this node appears. {@link ASTNode#location}
    */
   public ReferenceNode(String reference, Location location) {
-    super(location);
+    super(location,"Reference");
     this.reference = reference;
   }
 }

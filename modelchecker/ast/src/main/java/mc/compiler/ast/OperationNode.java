@@ -5,7 +5,9 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import mc.util.Location;
 
+import java.util.Collections;
 import java.util.Set;
+import java.util.TreeSet;
 
 
 /**
@@ -65,7 +67,7 @@ public class OperationNode extends ASTNode {
    */
   public OperationNode(String operation, boolean isNegated, ImmutableSet<String> flags, ASTNode firstProcess,
                        ASTNode secondProcess, Location location) {
-    super(location);
+    super(location,"Operation");
     this.operation = operation;
     this.negated = isNegated;
     this.firstProcess = firstProcess;
@@ -73,7 +75,9 @@ public class OperationNode extends ASTNode {
     this.flags = flags;
   }
   public OperationNode(Location location) {
-    super(location);
+    super(location,"Operation");
     this.operation = "==>";
+
+    this.flags = ImmutableSet.of("*");
   }
 }

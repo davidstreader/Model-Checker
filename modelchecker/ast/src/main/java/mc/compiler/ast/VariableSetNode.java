@@ -28,7 +28,7 @@ public class VariableSetNode extends ASTNode {
    * @param location  where within the users code where this node appears {@link ASTNode#location}
    */
   public VariableSetNode(Set<String> variables, Location location) {
-    super(location);
+    super(location,"Variable");
     this.variables = variables;
   }
 }

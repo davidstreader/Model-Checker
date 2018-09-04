@@ -5,6 +5,8 @@ import com.microsoft.z3.Context;
 
 import java.util.*;
 
+import mc.Constant;
+import mc.TraceType;
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessFunction;
 import mc.processmodels.MultiProcessModel;
@@ -35,7 +37,7 @@ public class SimpFunction implements IProcessFunction {
    */
   @Override
   public Collection<String> getValidFlags() {
-    return Collections.singletonList("*");
+    return Collections.singletonList(Constant.CONGURENT);
   }
 
   /**
@@ -59,11 +61,11 @@ public class SimpFunction implements IProcessFunction {
    * @throws CompilationException when the function fails
    */
   @Override
-  public Automaton compose(String id, Set<String> flags, Context context, Automaton... automata)
+  public Automaton compose(String id, Set<String> flags, Context context,  Automaton... automata)
       throws CompilationException {
 
     assert automata.length == 1;
-
+    boolean cong = flags.contains(Constant.CONGURENT);
     //Clone
     Automaton automaton = automata[0].copy();
 
@@ -76,8 +78,8 @@ public class SimpFunction implements IProcessFunction {
     ColouringUtil colourer = new ColouringUtil();
     Map<Integer, List<ColouringUtil.ColourComponent>> colourMap = new HashMap<>();
 
-    colourer.performInitialColouring(nodes);
-    colourer.doColouring(nodes);
+    colourer.performInitialColouring(nodes,cong);
+    colourer.doColouring(nodes,cong);
     //System.out.println("SIMP colour "+ automaton.getId());
 
    Map<Integer,List<AutomatonNode>> colour2nodes = new HashMap<>();

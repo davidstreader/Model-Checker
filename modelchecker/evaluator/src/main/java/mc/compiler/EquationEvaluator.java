@@ -30,9 +30,13 @@ public class EquationEvaluator {
   static Map<String, Class<? extends IOperationInfixFunction>> operationsMap = new HashMap<>();
 
   private HashMap<String, Integer> indexMap = new HashMap<>(); //  automaton name -> index in models
-
+  private List<OperationResult> results = new ArrayList<>();
+  private  List<ImpliesResult> impResults = new ArrayList<>();
+  int totalPermutations = 0;
+  List<ProcessModel> processes;
   public EquationEvaluator() {
 
+    impResults = new ArrayList<>();
   }
 
   /**
@@ -50,10 +54,8 @@ public class EquationEvaluator {
                                           BlockingQueue<Object> messageQueue)
     throws CompilationException, InterruptedException {
     reset();
-    List<ProcessModel> processes = processMap.values().stream().collect(Collectors.toList());
+    processes = processMap.values().stream().collect(Collectors.toList());
     String ps = processMap.values().stream().map(x -> x.getId()).collect(Collectors.joining(" "));
-    List<OperationResult> results = new ArrayList<>();
-    List<ImpliesResult> impResults = new ArrayList<>();
     Map<String, ProcessModel> toRender = new ConcurrentSkipListMap<>();
     System.out.println("evaluateEquations " + operations.size() + " processes " + processes.size() + " " + ps);
     // build Map automaton name -> index in models
@@ -61,86 +63,99 @@ public class EquationEvaluator {
     for (int i = 0; i < processes.size(); i++) {
       indexMap.put(processes.get(i).getId(), i);
     }
+    System.out.println("Equation processes size " + processes.size());
 /*
-   For each equation
+   For each equation  once for many ground equation
  */
     for (OperationNode operation : operations) {
-      System.out.println("  op " + operation.getOperation() + " " + operation.getOperationType());
+      System.out.println("XX");
+      if (operation instanceof  ImpliesNode) System.out.println("IMP "+((ImpliesNode) operation).toString());
+      else System.out.println("TREE "+operation.myString());
+      System.out.println("YY");
 
-      // ONCE per equation! NOTE the state space needs to be clean
-      Petrinet.netId = 0;  // hard to debug with long numbers and nothing stored
-      ModelStatus status = new ModelStatus();
-      //Generic ids defined in the equation block
+      evaluateEquation(processMap,operation,code,z3Context,messageQueue);
+    }
+
+    return new EquationReturn(results,impResults, toRender);
+  }
+
+  /*
+  Evaluate a single equation. - Many operations - Many ground equations
+   */
+  public ModelStatus evaluateEquation(Map<String, ProcessModel> processMap,
+                                          OperationNode operation,
+                                          String code, com.microsoft.z3.Context z3Context,
+                                          BlockingQueue<Object> messageQueue)
+    throws CompilationException, InterruptedException {
+    System.out.println("  op " + operation.getOperation() + " eE " + operation.getOperationType());
+   // System.out.println(operation.getFirstProcess().toString());
+    // ONCE per equation! NOTE the state space needs to be clean
+    Petrinet.netId = 0;  // hard to debug with long numbers and nothing stored
+    ModelStatus status = new ModelStatus();
+    //Generic ids defined in the equation block
             /*eg
                 equation {
                     X~Y.
                 }
                 where X and Y are the automaton/process
              */
-      List<String> firstIds = new ArrayList<>();
-      List<String> secondIds;
-      if (operation instanceof ImpliesNode) {
+            /////////WRONG
+    List<String> firstIds = new ArrayList<>();
+    List<String> secondIds;
+    System.out.println("PINGO "+operation.getOperation());
+    if (operation instanceof ImpliesNode) {
+      firstIds = OperationEvaluator.collectIdentifiers(((ImpliesNode) operation).getFirstOperation());
+      secondIds = OperationEvaluator.collectIdentifiers(((ImpliesNode) operation).getSecondOperation());
+    } else {
+      firstIds = OperationEvaluator.collectIdentifiers(operation.getFirstProcess());
+      secondIds = OperationEvaluator.collectIdentifiers(operation.getSecondProcess());
 
-        OperationNode o1 =  (OperationNode) ((ImpliesNode) operation).getFirstOperation();
-        OperationNode o2 =  (OperationNode) ((ImpliesNode) operation).getSecondOperation();
-        firstIds = OperationEvaluator.collectIdentifiers(o1.getFirstProcess());
-        secondIds = OperationEvaluator.collectIdentifiers(o1.getSecondProcess());
-        System.out.println("First "+firstIds+" second "+secondIds);
-      } else {
-        firstIds = OperationEvaluator.collectIdentifiers(operation.getFirstProcess());
-        secondIds = OperationEvaluator.collectIdentifiers(operation.getSecondProcess());
+    }
+    System.out.println("First "+firstIds+" second "+secondIds);
+
+
+      List<String> testingSpace = new ArrayList<>(); // The total number of unqiue  places in the equation
+      firstIds.stream().filter(id -> !testingSpace.contains(id)).forEach(testingSpace::add);
+      secondIds.stream().filter(id -> !testingSpace.contains(id)).forEach(testingSpace::add);
+// at this point we have the list of variables and
+      //*** I think this could be moved to before call
+
+      if (testingSpace.size() > 3) {
+        messageQueue.add(new LogMessage("\nWith this many variables you'll be waiting the rest of your life for this to complete\n.... good luck"));
       }
 
-      if (processes.size() > 0) {
+      int totalPermutations = (int) Math.pow(processes.size(), testingSpace.size());
+      //WORK Done here once per equation many ground equations evaluated
+      ArrayList<String> failures = testUserdefinedModel(processMap, testingSpace,
+        status, operation, z3Context, messageQueue);
 
-        List<String> testingSpace = new ArrayList<>(); // The total number of unqiue  places in the equation
-        firstIds.stream().filter(id -> !testingSpace.contains(id)).forEach(testingSpace::add);
-        secondIds.stream().filter(id -> !testingSpace.contains(id)).forEach(testingSpace::add);
-// at this point we have the list of variables and
-        //*** I think this could be moved to before call
+      // Process the results
+      String firstId;
+      String secondId;
+      if (operation instanceof ImpliesNode) {
+        OperationNode o1 = (OperationNode) ((ImpliesNode) operation).getFirstOperation();
+        firstId = OperationEvaluator.findIdent(o1, code);
+        OperationNode o2 = (OperationNode) ((ImpliesNode) operation).getSecondOperation();
+        secondId = OperationEvaluator.findIdent(o2, code);
+        System.out.println("** op "+operation.getOperation()+" **first " + firstId + " second " + secondId + "\n**");
 
-        if (testingSpace.size() > 3) {
-          messageQueue.add(new LogMessage("\nWith this many variables you'll be waiting the rest of your life for this to complete\n.... good luck"));
-        }
-        if (2 > processes.size()) {
-          throw new CompilationException(getClass(), "Not enough defined automaton to fill test space");
-        }
-        int totalPermutations = (int) Math.pow(processes.size(), testingSpace.size());
-        //WORK Done here
-        ArrayList<String> failures = testUserdefinedModel(processMap, testingSpace,
-          status, operation, z3Context, messageQueue);
-        String firstId;
-        String secondId;
-        if (operation instanceof ImpliesNode) {
-          OperationNode o1 = (OperationNode) ((ImpliesNode) operation).getFirstOperation();
-          firstId = OperationEvaluator.findIdent(o1, code);
-          OperationNode o2 = (OperationNode) ((ImpliesNode) operation).getSecondOperation();
-          secondId = OperationEvaluator.findIdent(o2, code);
-          results.add(new OperationResult(((ImpliesNode) operation).getFirstOperation(), ((ImpliesNode) operation).getSecondOperation(),
-            firstId, secondId, operation.getOperation(),
-            failures, operation.isNegated(), status.passCount == totalPermutations,
-            status.passCount + "/" + totalPermutations));
+        results.add(new OperationResult(((ImpliesNode) operation).getFirstOperation(), ((ImpliesNode) operation).getSecondOperation(),
+          firstId, secondId, operation.getOperation(),
+          failures, operation.isNegated(), status.passCount == totalPermutations,
+          status.passCount + "/" + totalPermutations));
 
-        } else {
-          firstId = OperationEvaluator.findIdent(operation.getFirstProcess(), code);
-          secondId = OperationEvaluator.findIdent(operation.getSecondProcess(), code);
+      } else {
+        firstId = OperationEvaluator.findIdent(operation.getFirstProcess(), code);
+        secondId = OperationEvaluator.findIdent(operation.getSecondProcess(), code);
 
-        System.out.println("\n**\nfirst " + firstId + " second " + secondId + "\n**");
+        System.out.println("** op "+operation.getOperation()+" **first " + firstId + " second " + secondId + "\n**");
         results.add(new OperationResult(operation.getFirstProcess(), operation.getSecondProcess(),
           firstId, secondId, operation.getOperation(),
           failures, operation.isNegated(), status.passCount == totalPermutations,
           status.passCount + "/" + totalPermutations));
       }
-
-      } else {
-        throw new CompilationException(getClass(), "No processes defined for equation block to work with");
-      }
-    }
-    System.out.println("Equation processes size " + processes.size());
-    return new EquationReturn(results,impResults, toRender);
+ return status;
   }
-
-
   /**
    * Called onece per equation
    *
@@ -188,8 +203,7 @@ public class EquationEvaluator {
       Interpreter interpreter = new Interpreter(); // build the automata from the AST
       String exceptionInformation = "";
 
-
-//evaluate the operation
+//evaluate the operation on a ground equation (once per operation)
       if (operation instanceof ImpliesNode) {
 
         OperationNode o1 =  (OperationNode) ((ImpliesNode) operation).getFirstOperation();

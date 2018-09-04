@@ -92,7 +92,7 @@ public class ProcessNode extends ASTNode {
    */
   public ProcessNode(String identifier, ASTNode process, List<LocalProcessNode> localProcesses,
                      HidingNode hiding, Location location) {
-    super(location);
+    super(location,"Process");
     this.type = new HashSet<>();
     this.identifier = identifier;
     this.process = process;

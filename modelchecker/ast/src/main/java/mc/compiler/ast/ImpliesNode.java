@@ -4,6 +4,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import mc.util.Location;
 
+import java.util.Collections;
+
 
 /**
  * This represents an implication. Used to compute Galois connectons
@@ -40,10 +42,16 @@ public class ImpliesNode extends OperationNode {
    */
   public ImpliesNode( ASTNode firstOperation,
                        ASTNode secondOperation, Location location) {
+   // super(location,"Implies");
     super(location);
+    if(firstOperation==null|| secondOperation==null) {
+      Throwable t = new Throwable(); t.printStackTrace();
+      System.out.println("*******************\n\n");
+    }
     this.firstOperation = firstOperation;
     this.secondOperation = secondOperation;
-    System.out.println("implies Locagtion "+location.toString());
+    //this.setFlags(Collections.singletonList("*"));
+    System.out.println("implies Location "+location.toString());
   }
 }
 

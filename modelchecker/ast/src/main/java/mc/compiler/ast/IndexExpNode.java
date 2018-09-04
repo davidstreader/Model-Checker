@@ -46,7 +46,7 @@ public class IndexExpNode extends ASTNode {
    * @param location The location which this is within the users code {@link ASTNode#location}
    */
   public IndexExpNode(String variable, ASTNode range, ASTNode process, Location location) {
-    super(location);
+    super(location,"Index");
     this.variable = variable;
     this.range = range;
     this.process = process;

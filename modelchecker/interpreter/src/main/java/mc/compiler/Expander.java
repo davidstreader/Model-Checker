@@ -88,7 +88,7 @@ public class Expander {
     } else {
       hiddenVariables = new HashSet<>();
     }
-    Map<String, Object> variableMap = new HashMap<>();
+    Map<String, Object> variableMap = new HashMap<>();  // appear to be $i  defined for symbolic processes
     for (LocalProcessNode node : process.getLocalProcesses()) {
       identMap.put(node.getIdentifier(), new ArrayList<>());
       if (node.getRanges() != null) {

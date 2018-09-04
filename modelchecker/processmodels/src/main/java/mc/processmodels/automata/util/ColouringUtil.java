@@ -13,13 +13,13 @@ import mc.processmodels.automata.AutomatonNode;
 public class ColouringUtil {
 
 
-  private static final int BASE_COLOUR = -1;
+  private static final int BASE_COLOUR = 1;
   private static final int STOP_COLOUR = 0;
-  private static final int ERROR_COLOUR = -5;
-  private static final int ROOT_COLOUR = -2;
-  private static final int ROOT_STOP_COLOUR = -3;
-  private static final int ROOT_ERROR_COLOUR = -4;
-  private int nextColourId = 1;
+  private static final int ERROR_COLOUR = 5;
+  private static final int ROOT_COLOUR = 2;
+  private static final int ROOT_STOP_COLOUR = 3;
+  private static final int ROOT_ERROR_COLOUR = 4;
+  private int nextColourId = 7;
   //private Map<AutomatonNode,Integer> oldColours = new TreeMap<AutomatonNode,Integer>();
 
   /**
@@ -31,15 +31,20 @@ public class ColouringUtil {
    *
    */
   public Map<Integer, ColourPi> doColouring
-  (List<AutomatonNode> nodes) throws Error {
-    //System.out.println("doColouring START");
-    Map<String, Integer> nextCol = new TreeMap<String, Integer>();
+  (List<AutomatonNode> nodes, boolean cong) throws Error {
+    System.out.println("doColouring START");
     Map<Integer, ColourPi> col2pi = new TreeMap<>();
-   // Map<ColourPi, Integer> cpi = new TreeMap<ColourPi, Integer>();
+    //Map<ColourPi,Integer> revcolpi = new TreeMap< ColourPi,Integer>();
+    //DONOT USE THIS IT IS NO IMPLEMETED CORRECTLY
+    Map<AutomatonNode, Integer> nextCol = new TreeMap<AutomatonNode, Integer>();  // the next color for each node
+    // Map<ColourPi, Integer> cpi = new TreeMap<ColourPi, Integer>();
     // Repeatedly
     int test = 0;
     boolean go = true;
     while (go) {
+       col2pi = new TreeMap<>();  // NEW color to a colorPi
+      //System.out.println("Start");
+      //nodes.stream().forEach(x->System.out.println(x.getId() + " " + x.getColour() ));
       if (test > 10) {
         System.out.println("ERROR COLOURING automaton");
         Throwable t = new Throwable();
@@ -50,37 +55,48 @@ public class ColouringUtil {
       // build fresh pi each iteration
       //    for each node nd
       for (AutomatonNode nd : nodes) {
-        List<ColourComponent> ndp = new ArrayList<ColourComponent>(buildpi(nd).pi);
+         List<ColourComponent> ndp = new ArrayList<ColourComponent>(buildpi(nd,cong).pi);
         ColourPi nodeColPi =  new ColourPi(ndp);
 
-        if (nodeColPi.isinPi(col2pi)) {
-          //        if nd_col = PI(nd_colPI)
-          nextCol.put(nd.getId(), new Integer (nodeColPi.getCol(col2pi)));
-          System.out.println("found "+nodeColPi.myString()+"->"+nextCol.get(nd.getId()));
-          //System.out.println("Q2 cpi " + this.cpiMapToString(cpi));
-          continue;
+        /*
+         */
+        if (col2pi.keySet().contains(nd.getColour())) {
+          //System.out.println("col2pi contains key "+nd.getColour());
+          if (!col2pi.get(nd.getColour()).equals(nodeColPi)){
+            boolean found = false; Integer foundCol = 0;
+            for(Integer revI: col2pi.keySet()){
+              ColourPi rev = col2pi.get(revI);
+              if (rev.equals(nodeColPi)) {found = true; foundCol = revI; break;}
+            }
+            if (found) {
+              nextCol.put(nd, foundCol);
+              //System.out.println(nodeColPi.myString()+ " Is in revcol");
+            } else {
+              Integer nc = getNextColourId();
+              col2pi.put(nc, nodeColPi);
 
-        } else {
-            //         newCol in nd and in PI
-          System.out.println("Not found " + nodeColPi.myString());
-            nextCol.put(nd.getId(), getNextColourId());
-      //System.out.println("NOT found "+ nodeColPi.myString()+" so Adding to next "+nd.getId()+" -> "+nextCol.get(nd.getId()));
-            col2pi.put(nextCol.get(nd.getId()), nodeColPi);
-           Integer n = new Integer(nextCol.get(nd.getId()));
-          //System.out.println("add "+ nodeColPi.myString()+" -> "+ n);
-          //System.out.println("Q3c cpi " + this.col2piToString(col2pi));
-          col2pi.put(n,nodeColPi);
-          //System.out.println("Q3d cpi " + this.col2piToString(col2pi));
-          System.out.println(" added cpi "+n+" -> "+ nodeColPi.myString());
-          continue;
+              nextCol.put(nd, nc);
+
+              col2pi.keySet().stream().forEach(x->{ System.out.println(x+"->");});
+
+
+            }
+          } else {
+     //System.out.println("DONOTHING Found "+nd.getColour()+"->"+nodeColPi.myString());
           }
+        } else {
+          //System.out.println("col2pi dose NOT contain key "+nd.getColour());
+          col2pi.put(nd.getColour(),nodeColPi);
+          //System.out.println("Setting col " +nd.getColour()+" -> "+nodeColPi.myString());
         }
+
+      }
 
       //   apply the new colours to the nodes
       //System.out.println("REcolor Nodes");
-      for (AutomatonNode nd : nodes) {
-        nd.setColour(nextCol.get(nd.getId()));
-        System.out.println(nd.getId()+" -> "+nd.getColour());
+      for (AutomatonNode nd : nextCol.keySet()) {
+        nd.setColour(nextCol.get(nd));
+        //System.out.println(nd.getId()+" -> "+nd.getColour());
       }
 
       System.out.println("before termination check\n" + this.col2piToString(col2pi));
@@ -88,20 +104,22 @@ public class ColouringUtil {
       go = false;
       Map<Integer, ColourPi> reversepi = new TreeMap<Integer, ColourPi>();
 
-        for (AutomatonNode nd : nodes) {
-          if (reversepi.containsKey(nd.getColour())) {
-          if (!reversepi.get(nd.getColour()).equals(buildpi(nd))) {
+      for (AutomatonNode nd : nodes) {
+        if (reversepi.containsKey(nd.getColour())) {
+          if (!reversepi.get(nd.getColour()).equals(buildpi(nd,cong))) {
             go = true;
-            System.out.println("Keep Going "+reversepi.get(nd.getColour()).myString()+" != "+CCSString(buildpi(nd).pi));
+            //System.out.println("Keep Going "+reversepi.get(nd.getColour()).myString()+" != "+CCSString(buildpi(nd,cong).pi));
             break;
+          } else {
+            //System.out.println("skip "+nd.getId());
           }
         } else {
           //System.out.println(nd.getId()+" -> "+ nd.getColour());
-          reversepi.put(nd.getColour(), buildpi(nd));
-          System.out.println("Termination Check Add "+nd.getColour()+"->"+ reversepi.get(nd.getColour()).myString());
+          reversepi.put(nd.getColour(), buildpi(nd,cong));
+          //System.out.println("Termination Check Add "+nd.getColour()+"->"+ reversepi.get(nd.getColour()).myString());
         }
       }
-      System.out.println("**** "+go);
+      //System.out.println("**** "+go);
 
     }
 
@@ -109,17 +127,18 @@ public class ColouringUtil {
     return col2pi;
   }
 
-  private ColourPi buildpi(AutomatonNode nd) {
+  private ColourPi buildpi(AutomatonNode nd,boolean cong) {
     ArrayList<ColourComponent> ccs = new ArrayList<ColourComponent>();
-    if (nd.isStartNode()) {
-      ccs.add(new ColourComponent(Constant.Start, ROOT_COLOUR));
-    }
+    if (cong) {
+      if (nd.isStartNode()) {
+        ccs.add(new ColourComponent(Constant.Start, ROOT_COLOUR));
+      }
       if (nd.isSTOP()) {
         ccs.add(new ColourComponent(Constant.STOP, STOP_COLOUR));
       } else if (nd.isERROR()) {
         ccs.add(new ColourComponent(Constant.ERROR, ERROR_COLOUR));
       }
-
+    }
 
     for (AutomatonEdge ed : nd.getOutgoingEdges()) {
       if (ed.getFrom().equals(nd)) {
@@ -136,34 +155,33 @@ public class ColouringUtil {
     }
 
     Collections.sort(ccs);
-    //System.out.println("Sorted ndpi "+ CCSString(ccs));
+   // System.out.println("buildpi "+ nd.getId()+" "+  CCSString(ccs));
     return new ColourPi(ccs);
   }
 
 
-  public Map<AutomatonNode, Integer> performInitialColouring(List<AutomatonNode> nodes) {
+  public Map<AutomatonNode, Integer> performInitialColouring(List<AutomatonNode> nodes,boolean cong) {
     //System.out.println("performInitialColouring");
 
     Map<AutomatonNode, Integer> initialColour = new HashMap<AutomatonNode, Integer>();
     for (AutomatonNode node : nodes) {
       // check if the current node is a terminal and or Start
       node.setColour(BASE_COLOUR);
-      if (node.isTerminal()) {
-        String terminal = node.getTerminal();
-        if (terminal.equals("STOP")) {
+      if (cong) {
+        if (node.isSTOP()) {
           if (node.isStartNode()) {
             node.setColour(ROOT_STOP_COLOUR);
           } else {
             node.setColour(STOP_COLOUR);
           }
-        }  //ERROR documentory only
-      } else if (node.isStartNode()) {
-        node.setColour(ROOT_COLOUR);
+        } else if (node.isStartNode()) {
+          node.setColour(ROOT_COLOUR);
+        }
       }
     }
     for (AutomatonNode node : nodes) {
       initialColour.put(node, node.getColour());
-//System.out.println("initialCol "+node.getId()+"->"+node.getColour());
+System.out.println("initialCol "+node.myString());
     }
     return initialColour;
   }
@@ -254,7 +272,7 @@ public class ColouringUtil {
   @ToString
   //@AllArgsConstructor
   public static class ColourComponent implements Comparable<ColourComponent> {
-     public int to;
+    public int to;
     public String action;
 
     public ColourComponent(String actionin, int toin) {
@@ -270,13 +288,13 @@ public class ColouringUtil {
     public int compareTo(ColourComponent col) {
       //System.out.print("PINGO");
 
-        if (to < col.to) return -1;
-        if (to > col.to) return +1;
-        if (to == col.to) {
-          return (action.compareTo(col.action));
-        } else {
-          return 0;
-        } // unreachable
+      if (to < col.to) return -1;
+      if (to > col.to) return +1;
+      if (to == col.to) {
+        return (action.compareTo(col.action));
+      } else {
+        return 0;
+      } // unreachable
     }
 
 
@@ -284,10 +302,10 @@ public class ColouringUtil {
       return action + " " + to;
     }
 
-@Override
+    @Override
     public boolean equals(Object cin) {
       if (!(cin instanceof ColourComponent)) return false;
-       ColourComponent col = (ColourComponent)cin;
+      ColourComponent col = (ColourComponent)cin;
       boolean ok = action.equals(col.action) && to == col.to;
       //System.out.println("colcomp eq "+ ok);
       return ok;
@@ -304,7 +322,7 @@ public class ColouringUtil {
 
         for(int i = 0; i <this.pi.size();i++) {
           if (! (this.pi.get(i).to == cpi.pi.get(i).to)   ||
-              ! (this.pi.get(i).action.equals(cpi.pi.get(i).action))) {
+            ! (this.pi.get(i).action.equals(cpi.pi.get(i).action))) {
             found = false;
             break;
           }
@@ -363,7 +381,7 @@ public class ColouringUtil {
       if ( ! (oin instanceof ColourPi)) return false;
       ColourPi piin = (ColourPi) oin;
       int i = 0;
-      //System.out.println(this.myString()+  "=?=" + piin.myString());
+      System.out.println(this.myString()+  "=?=" + piin.myString());
       if (pi.size()!= piin.pi.size()) {
         //System.out.println(pi.size()+" != "+ piin.pi.size());
         return false;
@@ -372,13 +390,16 @@ public class ColouringUtil {
       for(ColourComponent cc: pi){
         //System.out.printf("i "+i);
         if (! piin.pi.get(i).action.equals(cc.action)) {
-          //System.out.println(piin.pi.get(i).action + "!= "+ cc.action);
-          return false;}
+          //System.out.println(piin.pi.get(i).action + " != "+ cc.action);
+          return false;
+        }
         if ( (piin.pi.get(i).to != cc.to)) {
           //System.out.println(piin.pi.get(i).to +" != "+ cc.to);
-          return false;}
+          return false;
+        }
         i++;
       }
+      //System.out.println(this.myString()+  "==" + piin.myString());
       return true;
     }
 
@@ -397,16 +418,16 @@ public class ColouringUtil {
 
     public String myString(){
       StringBuilder sb = new StringBuilder();
-        sb.append("(");
-        for (ColourComponent cc : this.pi) {
-          sb.append(cc.myString()+", ");
-        }
-       sb.append(")");
+      sb.append("(");
+      for (ColourComponent cc : this.pi) {
+        sb.append(cc.myString()+", ");
+      }
+      sb.append(")");
       return sb.toString();
     }
   }
 
-    public String CCSString(List<ColourComponent> ccs) {
+  public String CCSString(List<ColourComponent> ccs) {
     String s = "{ ";
     for (ColourComponent cc : ccs) {
       s = s +  " " + cc.action + " " + cc.to + " ";

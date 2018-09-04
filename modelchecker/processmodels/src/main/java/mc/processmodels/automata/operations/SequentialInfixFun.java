@@ -225,7 +225,7 @@ public class SequentialInfixFun {
         //seq.addPetrinet(sequential);  // renumbers the ids
         //System.out.println("FINAL " +sequential.myString());
         sequential.validatePNet();
-        System.out.println("=> END "+sequential.getId());
+        //System.out.println("=> END "+sequential.getId());
         return sequential;
 
 

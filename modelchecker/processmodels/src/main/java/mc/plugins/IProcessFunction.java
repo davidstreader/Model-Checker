@@ -4,6 +4,7 @@ import com.microsoft.z3.Context;
 import java.util.Collection;
 import java.util.Set;
 
+import mc.TraceType;
 import mc.exceptions.CompilationException;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.petrinet.Petrinet;
@@ -52,6 +53,7 @@ public interface IProcessFunction {
    *
    * @param id       the id of the resulting automaton
    * @param flags    the flags given by the function (e.g. {@code unfair} in {@code abs{unfair}(A)}
+   * @param tt
    * @param automata a variable number of automata taken in by the function
    * @return the resulting automaton of the operation
    * @throws CompilationException when the function fails

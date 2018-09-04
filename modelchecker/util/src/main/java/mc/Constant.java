@@ -10,6 +10,7 @@ public class Constant {
     public static final String STOP = "STOP";
     public static final String ERROR = "ERROR";
     public static final String Start = "Start";
+    public static final String Quiescent = "Quiescent";
 
     public static final String CONGURENT = "cong";
     public static final String FAIR = "fair";

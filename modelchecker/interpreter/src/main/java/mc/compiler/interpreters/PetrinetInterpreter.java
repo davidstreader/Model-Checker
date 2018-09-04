@@ -9,6 +9,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import mc.Constant;
+import mc.TraceType;
 import mc.compiler.Interpreter;
 import mc.compiler.ast.ASTNode;
 import mc.compiler.ast.ChoiceNode;
@@ -122,7 +123,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     reset();
     //called by Interpreter and  Returns a ProcessModel that the Interpreter adds to the processMap
     this.alpha = alpha;
-    System.out.println("\nPetriinterpret XX START "+ processNode.getIdentifier()+" alpha "+this.alpha);
+    System.out.println("Petri interpret "+ processNode.getIdentifier()+" alpha "+this.alpha);
 
     this.context = context;
     variableList = new HashSet<>();
@@ -282,7 +283,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
       String reference = ((IdentifierNode) astNode).getIdentifier();
       System.out.println("*** interpretProcess IdentifierNode " + reference);
       if (processMap.get(reference).getProcessType().equals(ProcessType.MULTI_PROCESS)) {
-        System.out.println("interpretProcess GETS *********** MULTI_PROCESS -> PN");
+        //System.out.println("interpretProcess GETS *********** MULTI_PROCESS -> PN");
         processStack.push(processMap.get(reference).getProcessType().
           convertTo(ProcessType.PETRINET, processMap.get(reference))); //What a way to extact  a net
       } else {

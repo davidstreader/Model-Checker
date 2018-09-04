@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+
 import lombok.Getter;
 import lombok.Setter;
 import mc.Constant;
@@ -33,7 +35,9 @@ public class AutomatonNode extends ProcessModelObject implements Comparable<Auto
   @Getter
   @Setter
   private boolean endNode;
-
+  @Getter
+  @Setter
+  private boolean quiescent;
   @Getter
   @Setter
   private String terminal;
@@ -66,7 +70,9 @@ public class AutomatonNode extends ProcessModelObject implements Comparable<Auto
     this.colour = 999;
   }
 
-
+public Set<String> readySet(){
+    return getOutgoingEdges().stream().map(x->x.getLabel()).collect(Collectors.toSet());
+}
   public void copyProperties(AutomatonNode fromThisNode) {
     this.terminal = fromThisNode.getTerminal();
     this.startNode = fromThisNode.isStartNode();
@@ -77,7 +83,7 @@ public class AutomatonNode extends ProcessModelObject implements Comparable<Auto
     this.guard = fromThisNode.getGuard();
     this.references = fromThisNode.getReferences();
     this.variables = fromThisNode.getVariables();
-
+    this.quiescent = fromThisNode.quiescent;
   }
 
   public AutomatonNode copyNode(){
@@ -156,6 +162,12 @@ public class AutomatonNode extends ProcessModelObject implements Comparable<Auto
     return terminal != null && terminal.equals(Constant.ERROR);
   }
   public boolean isExternal() { return isERROR() || isSTOP() ||isStartNode();}
+  public boolean isQuiescent() {
+    Set<AutomatonEdge> shouting =
+      outgoingEdges.values().stream().filter(x->!x.getLabel().endsWith(Constant.BROADCASTSinput)).collect(Collectors.toSet());
+    return shouting.size() ==0;
+  }
+
   public List<AutomatonEdge> getIncomingEdges() {
     return new ArrayList<>(incomingEdges.values());
   }
@@ -204,7 +216,7 @@ public class AutomatonNode extends ProcessModelObject implements Comparable<Auto
   public String myString() {
 
     return "node "+ this.getId()+" col "+ this.colour+" G= "+getGuard()+
-           " term "+getTerminal() + " start "+isStartNode();
+           " term "+getTerminal() + " quies "+quiescent+" end "+isSTOP()+" start "+isStartNode();
   }
   public String toString() {
    StringBuilder builder = new StringBuilder();

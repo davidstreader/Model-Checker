@@ -48,7 +48,7 @@ public class IfStatementExpNode extends ASTNode {
    */
   public IfStatementExpNode(BoolExpr condition, ASTNode trueBranch,
                             Location location, Context z3Context) {
-    super(location);
+    super(location,"ifStatment");
     this.condition = condition;
     this.trueBranch = trueBranch;
     falseBranch = null;
@@ -71,7 +71,7 @@ public class IfStatementExpNode extends ASTNode {
    */
   public IfStatementExpNode(BoolExpr condition, ASTNode trueBranch, ASTNode falseBranch,
                             Location location, Context z3Context) {
-    super(location);
+    super(location,"IfStatment");
     this.condition = condition;
     this.trueBranch = trueBranch;
     this.falseBranch = falseBranch;

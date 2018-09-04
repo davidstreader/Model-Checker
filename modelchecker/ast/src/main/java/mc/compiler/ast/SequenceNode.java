@@ -37,7 +37,7 @@ public class SequenceNode extends ASTNode {
    * @param location the location this node is within the users code {@link ASTNode#location}
    */
   public SequenceNode(ActionLabelNode from, ASTNode to, Location location) {
-    super(location);
+    super(location,"Sequence");
     this.from = from;
     this.to = to;
   }

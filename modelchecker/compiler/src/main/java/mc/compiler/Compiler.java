@@ -130,13 +130,13 @@ public class Compiler {
     Map<String, ProcessModel> processMap = interpreter.interpret(ast,
         messageQueue, z3Context,alpha);
 
-    System.out.println("**COMPILER** before operation evaluation "+processMap.size());
+    System.out.println("     **COMPILER** before operation evaluation "+processMap.size());
 
     List<OperationResult> opResults = evaluator.evaluateOperations(
       ast.getOperations(), processMap,
         interpreter, code, z3Context, messageQueue);
     List<ImpliesResult> impResults = evaluator.getImpRes();
-    System.out.println("**COMPILER** after operation evaluation "+processMap.size()+ " imp "+impResults.size());
+    System.out.println("     **COMPILER** before equation evaluation "+processMap.size()+ " op impRes "+impResults.size());
 
     // system currently has memory hence EE can give different results each time
     // still has memory problem with many permutations

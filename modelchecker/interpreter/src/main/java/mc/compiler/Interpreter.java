@@ -74,7 +74,7 @@ public class Interpreter {
     //  reduce("{",(x,y)->x+" "+y)+"}");
     for (ProcessNode process : processes) { //BUILDING ALL PROCESSES
 
-        System.out.println("  Interpreter Building " + process.getIdentifier() + " ... "+ process.getType().toString());
+        //System.out.println("Interpreter Building " + process.getIdentifier() + " ... "+ process.getType().toString());
         ProcessModel model = null;
         model = new MultiProcessModel(process.getIdentifier());
         model.setLocation(process.getLocation());

@@ -551,7 +551,11 @@ public class Parser {
       Token error = tokens.get(index - 1);
       throw constructException("expecting to parse \".\" but received \"" + error.toString() + "\"", error.getLocation());
     }
-
+    if (processNode == null) {
+      Throwable t =new Throwable();
+      t.printStackTrace();
+      System.out.println("\n\nERROR  processNode == null \n\n");
+    }
     processes.add(processNode);
   }
 
@@ -1428,11 +1432,16 @@ System.out.println("parseDisplayType "+ token.toString());
 
     int start = index;
     OperationNode firstOperation = parseSOperation(isEq);
- System.out.println("Parsed Operation "+ firstOperation.getOperation());
+ System.out.println("*** Parsed Operation1 "+isEq+" "+ firstOperation.getOperation()+ " "+
+ firstOperation.getFirstProcess().getName()+" "+firstOperation.getSecondProcess().getName());
     OperationNode operation;
     if ((peekToken() instanceof ImpliesToken)) {
-      System.out.println("implies"+nextToken().toString());
+      System.out.println("implies "+peekToken().toString());
+      nextToken();
       OperationNode secondOperation = parseSOperation(isEq);
+ System.out.println("***cParsed Operation2 "+ secondOperation.getOperation()+ " "+
+   secondOperation.getFirstProcess().getName()+" "+ secondOperation.getSecondProcess().getName());
+
       operation = new ImpliesNode(firstOperation, secondOperation,this.constructLocation(start));
     } else {
 
@@ -1452,18 +1461,24 @@ System.out.println("parseDisplayType "+ token.toString());
 
   // parse "A ~ B"  AST returns an  OperationNode
   // isEq diferentiates operations from equations
+  // Will not work for Equations?
 
   private OperationNode parseSOperation(boolean isEq) throws CompilationException, InterruptedException {
 
-
+    System.out.println("parseSOperation "+isEq);
     int start = index;
     boolean firstAut = false; boolean secondAut = false;
     if (peekToken() instanceof AutomatonToken) {
+      System.out.println("First");
       firstAut = true;
       nextToken();
+    } else {
+      System.out.println("First FAIL "+ peekToken().toString());
     }
     ASTNode process1 = parseComposite();
 
+    if(process1==null) System.out.println("process1==null");
+    else System.out.println("process 1 "+process1.getName());
     boolean isNegated = false;
     if (peekToken() instanceof NegateToken) {
       nextToken();
@@ -1480,10 +1495,8 @@ System.out.println("parseDisplayType "+ token.toString());
       nextToken();
     }
     ASTNode process2 = parseComposite();
-
-    OperationNode firstOperation = null;
-
-
+    if(process1==null) System.out.println("process2==null");
+    else System.out.println("process 2 "+process2.getName());
 
     OperationNode operation = new OperationNode(type, isNegated, ImmutableSet.copyOf(flags), process1, process2, this.constructLocation(start));
     if(firstAut)  operation.setFirstProcessType("automata");

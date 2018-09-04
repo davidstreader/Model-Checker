@@ -47,7 +47,7 @@ public class SequentialInfixFunction implements IProcessInfixFunction {
   public Automaton compose(String id, Automaton automaton1, Automaton automaton2) throws CompilationException {
    SequentialInfixFun sf = new SequentialInfixFun();
    Automaton seq = sf.compose(id,automaton1,automaton2);
-  //  System.out.println("End Seq   "+sequence.toString());
+  //System.out.println("End Seq   "+sequence.toString());
     return seq;
   }
 

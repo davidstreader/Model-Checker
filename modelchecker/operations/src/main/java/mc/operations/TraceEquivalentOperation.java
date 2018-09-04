@@ -5,8 +5,9 @@ import java.util.*;
 import com.google.common.collect.ImmutableSet;
 import com.microsoft.z3.Context;
 import mc.Constant;
+import mc.TraceType;
 import mc.exceptions.CompilationException;
-import mc.operations.functions.NFtoDFconvFunction;
+import mc.operations.functions.Nfa2dfaHS;
 import mc.plugins.IOperationInfixFunction;
 import mc.processmodels.ProcessModel;
 import mc.processmodels.automata.Automaton;
@@ -45,15 +46,26 @@ public class TraceEquivalentOperation implements IOperationInfixFunction {
    */
   @Override
   public boolean evaluate(Set<String> flags, Context context,  Collection<ProcessModel> processModels) throws CompilationException {
+    int ii = 0; String firstId = "";
+    for (ProcessModel pm : processModels) {
+      System.out.println("  Trace "+ii+"  "+pm.getId());
+      if (ii==0) firstId = pm.getId();
+      else if (firstId.equals(pm.getId())) {
+        System.out.println("automata Trace same ids "+firstId);
+        return true;
+      }
+      ii++; //Need this check
+    }
+
     if (processModels.iterator().next() instanceof Automaton) {
-      NFtoDFconvFunction func = new NFtoDFconvFunction();
+      Nfa2dfaHS func = new Nfa2dfaHS();
 
       ArrayList<ProcessModel> nfas = new ArrayList<>();
       for (ProcessModel pm : processModels) {
         Automaton a = (Automaton) pm;
         try {
           nfas.add(
-                  func.compose(a.getId(), new HashSet<>(), null, a)
+                  func.compose(a.getId(), new HashSet<>(), null,  a)
           );
         } catch (CompilationException e) {
           System.out.println("PINGO" + e.toString());

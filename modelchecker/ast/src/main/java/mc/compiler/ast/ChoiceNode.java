@@ -41,7 +41,7 @@ public class ChoiceNode extends ASTNode {
    * @param location      the location of the choice within the users code {@link ASTNode#location}
    */
   public ChoiceNode(ASTNode firstProcess, ASTNode secondProcess, Location location) {
-    super(location);
+    super(location,"Choice");
     this.firstProcess = firstProcess;
     this.secondProcess = secondProcess;
   }

@@ -42,7 +42,7 @@ public class SetNode extends ASTNode {
    * @param location the location of this node within the users code {@link ASTNode#location}
    */
   public SetNode(List<String> set, Map<Integer, RangesNode> rangeMap, Location location) {
-    super(location);
+    super(location,"Set");
     this.set = set;
     this.rangeMap = rangeMap;
   }
@@ -54,7 +54,7 @@ public class SetNode extends ASTNode {
    * @param location the location of this node within the users code {@link ASTNode#location}
    */
   public SetNode(List<String> set, Location location) {
-    super(location);
+    super(location,"Set");
     this.set = set;
     this.rangeMap = new HashMap<>();
   }

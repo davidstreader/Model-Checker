@@ -40,7 +40,7 @@ public class HidingNode extends ASTNode {
    * @param location the location within the users code where this node is {@link ASTNode#location}
    */
   public HidingNode(String type, SetNode set, Location location) {
-    super(location);
+    super(location,"Hiding");
     this.type = type;
     this.set = set;
   }

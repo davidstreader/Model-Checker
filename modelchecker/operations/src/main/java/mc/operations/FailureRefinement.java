@@ -64,7 +64,8 @@ import mc.processmodels.automata.util.ColouringUtil;
      */
     @Override
     public boolean evaluate(Set<String> flags, Context context, Collection<ProcessModel> processModels) throws CompilationException {
+      boolean cong = flags.contains(Constant.CONGURENT);
       FailureEquivalence fe = new FailureEquivalence();
-      return fe.evaluate(processModels,false);
+      return fe.evaluate(processModels,false,cong);
     }
   }

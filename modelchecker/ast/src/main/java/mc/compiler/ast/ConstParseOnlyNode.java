@@ -29,7 +29,7 @@ public class ConstParseOnlyNode extends ASTNode {
    * @param location the location in the code where this occurs {@link ASTNode#location}
    */
   public ConstParseOnlyNode(int value, Location location) {
-    super(location);
+    super(location,"ConstParse");
     this.value = value;
   }
 }

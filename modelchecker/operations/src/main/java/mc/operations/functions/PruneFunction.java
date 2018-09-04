@@ -4,6 +4,8 @@ import com.microsoft.z3.Context;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+import mc.TraceType;
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessFunction;
 import mc.processmodels.MultiProcessModel;
@@ -57,7 +59,7 @@ public class PruneFunction implements IProcessFunction {
    * @throws CompilationException when the function fails
    */
   @Override
-  public Automaton compose(String id, Set<String> flags, Context context, Automaton... automata)
+  public Automaton compose(String id, Set<String> flags, Context context,  Automaton... automata)
       throws CompilationException {
     // find the hidden edges within the automaton
     Automaton automaton = automata[0];

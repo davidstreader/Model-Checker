@@ -34,7 +34,7 @@ public class AcceptanceGraph {
    * @throws CompilationException when the function fails
    */
 
-  public AcceptanceGraph(String id, Automaton nfa)
+  public AcceptanceGraph(String id, Automaton nfa, boolean cong)
     throws CompilationException {
     //Automaton nfa = nfain.copy();  // must copy
     //System.out.println("Starting accept");
@@ -44,7 +44,7 @@ public class AcceptanceGraph {
     // nfa nodes to its acceptance set
     Map<AutomatonNode, Set<String>> nfaNode2A = new HashMap<AutomatonNode, Set<String>>();
     Automaton dfa = new Automaton(id, !Automaton.CONSTRUCT_ROOT);
-    nfaNode2A = build_nfanode2ASet(nfa);
+    nfaNode2A = build_nfanode2ASet(nfa,cong);
     //System.out.println("built nfaNode2A");
 
     //maps one dfa node to a set of nfa nodes (nfaNode2A maps nfa node to acceptance set)
@@ -245,10 +245,11 @@ public class AcceptanceGraph {
 
   /**
    * @param a automaton
-   *          This computes the map nfanode2ASet note needs to respect Start and STOP
+   *          This computes the map nfanode2ASet
+   *          note needs to respect Start and STOP if congruance
    *          Builds the ready set or  Acceptance Set
    */
-  private Map<AutomatonNode, Set<String>> build_nfanode2ASet(Automaton a) {
+  private Map<AutomatonNode, Set<String>> build_nfanode2ASet(Automaton a,boolean cong) {
     //System.out.println(a.myString());
     Map<AutomatonNode, Set<String>> nfanode2ASet = new HashMap<AutomatonNode, Set<String>>();
     for (AutomatonNode n : a.getNodes()) {
@@ -256,11 +257,13 @@ public class AcceptanceGraph {
         distinct().
         map(AutomatonEdge::getLabel).
         collect(Collectors.toSet());
-      if (n.isTerminal()) {
-        as.add("STOP");
-      }
-      if (n.isStartNode()) {
-        as.add("Start");
+      if (cong) {
+        if (n.isSTOP()) {
+          as.add(Constant.STOP);
+        }
+        if (n.isStartNode()) {
+          as.add(Constant.Start);
+        }
       }
       nfanode2ASet.put(n, as);
       //System.out.println("nfa ready "+n.getId()+" -> "+as);
@@ -271,9 +274,9 @@ public class AcceptanceGraph {
   private void printnode2AcceptanceSets(
     Map<AutomatonNode, List<Set<String>>> node2AcceptanceSets,
     Map<AutomatonNode, Set<String>> nfanode2ASet) {
-    //System.out.println("nfa Sets");
+    System.out.println("nfa Sets");
     for (AutomatonNode n : nfanode2ASet.keySet()) {
-      //System.out.println(" "+n.getId()+" "+nfanode2ASet.get(n).toString() );
+      System.out.println(" "+n.getId()+" "+nfanode2ASet.get(n).toString() );
     }
 
  /*System.out.println("Acceptance Sets");

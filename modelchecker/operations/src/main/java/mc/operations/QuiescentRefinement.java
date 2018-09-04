@@ -1,21 +1,14 @@
 package mc.operations;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import com.google.common.collect.ImmutableSet;
 import com.microsoft.z3.Context;
-import lombok.Getter;
 import mc.Constant;
 import mc.TraceType;
 import mc.exceptions.CompilationException;
-import mc.operations.functions.NFtoDFconvFunction;
 import mc.plugins.IOperationInfixFunction;
 import mc.processmodels.ProcessModel;
-import mc.processmodels.automata.Automaton;
-import mc.processmodels.automata.AutomatonEdge;
-import mc.processmodels.automata.AutomatonNode;
-import mc.processmodels.automata.util.ColouringUtil;
 
 public class QuiescentRefinement implements IOperationInfixFunction {
   /**

@@ -29,7 +29,7 @@ public class ActionLabelNode extends ASTNode {
    * @param location the location within the code where this action appears {@link ASTNode#location}
    */
   public ActionLabelNode(String action, Location location) {
-    super(location);
+    super(location,"Label");
     this.action = action;
   }
 }

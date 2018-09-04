@@ -66,7 +66,7 @@ public class FunctionNode extends ASTNode {
    * @param location  the location of the function within the users code {@link ASTNode#location}
    */
   public FunctionNode(String function, List<ASTNode> processes, Location location) {
-    super(location);
+    super(location,"Function");
     this.function = function;
     this.processes = new ArrayList<>(processes);
 

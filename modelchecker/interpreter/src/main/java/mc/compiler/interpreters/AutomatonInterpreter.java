@@ -20,6 +20,7 @@ import java.util.Stack;
 
 import com.rits.cloning.Cloner;
 import mc.Constant;
+import mc.TraceType;
 import mc.compiler.Guard;
 import mc.compiler.Interpreter;
 import mc.compiler.ast.ASTNode;

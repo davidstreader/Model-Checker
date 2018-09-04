@@ -5,6 +5,7 @@ import com.microsoft.z3.Context;
 import java.util.*;
 
 import mc.Constant;
+import mc.TraceType;
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessFunction;
 import mc.processmodels.MultiProcessModel;
@@ -52,7 +53,7 @@ public class HideFunction implements IProcessFunction {
    * @return the resulting automaton of the operation
    */
   @Override
-  public Automaton compose(String id, Set<String> flags, Context context, Automaton... automata)
+  public Automaton compose(String id, Set<String> flags, Context context,  Automaton... automata)
       throws CompilationException {
 
     Automaton automaton = automata[0].copy();
@@ -68,7 +69,7 @@ public class HideFunction implements IProcessFunction {
             + " for hiding.", null);
       }
     }
-    return new   AbstractionFunction().compose(id, new HashSet<>(), context, automaton);
+    return new   AbstractionFunction().compose(id, new HashSet<>(), context,  automaton);
   }
 
   /**

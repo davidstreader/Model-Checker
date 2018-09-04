@@ -133,6 +133,7 @@ public class UserInterfaceController implements Initializable {
         completionDictionary.add(new ArrayList<>(Arrays.asList(SyntaxHighlighting.keywords)));
 
         //add style sheets
+        //userCodeInput.setStyle("-fx-background-color: #32302f;");
         userCodeInput.setStyle("-fx-background-color: #32302f;");
         userCodeInput.getStylesheets().add(getClass().getResource("/clientres/automata-keywords.css").toExternalForm());
 

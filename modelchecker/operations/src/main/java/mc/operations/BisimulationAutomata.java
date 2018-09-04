@@ -58,7 +58,9 @@ import mc.processmodels.automata.util.ColouringUtil;
          */
         @Override
         public boolean evaluate(Set<String> flags, Context context, Collection<ProcessModel> processModels) throws CompilationException {
-            System.out.println("Bisimulation on Automaton "+processIds(processModels));
+            System.out.println("Bisimulation "+flags+ " on Automaton "+processIds(processModels) );
+            boolean cong = flags.contains(Constant.CONGURENT);
+
             if (processModels.iterator().next() instanceof Automaton) {
 
                 ArrayList<AutomatonEdge> edges = new ArrayList<>();
@@ -68,15 +70,16 @@ import mc.processmodels.automata.util.ColouringUtil;
                 //System.out.println("Bisim evaluate");
                 int i = 0; String firstId = "";
                 for (ProcessModel pm : processModels) {
-                    //System.out.println("  "+i+"  "+((Automaton)pm ).myString());
+                    System.out.println("  Bisim "+i+"  "+((Automaton)pm ).myString());
                     if (i==0) firstId = pm.getId();
                     else if (firstId.equals(pm.getId())) {
-                        //System.out.println("automata bisim same ids "+firstId);
+                        System.out.println("automata bisim same ids "+firstId);
                         return true;
                     }
                     Automaton a = (Automaton) pm;
                     edges.addAll(a.getEdges());
                     nodes.addAll(a.getNodes());
+                    i++; //Need this check
                 }
                 Set<Integer> root_colors = new TreeSet<Integer>();
                 Set<Integer> first_colors = new TreeSet<Integer>();
@@ -85,9 +88,9 @@ import mc.processmodels.automata.util.ColouringUtil;
 
                 // set up the initial colouring ( on the nodes)
                 ColouringUtil colourer = new ColouringUtil();
-                colourer.performInitialColouring(nodes);
+                colourer.performInitialColouring(nodes,cong);
 
-                colourer.doColouring(nodes); // uses initial colouring on nodes
+                colourer.doColouring(nodes,cong); // uses initial colouring on nodes
 
 
                 i = 0;

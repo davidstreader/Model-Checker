@@ -31,7 +31,7 @@ public class IdentifierNode extends ASTNode {
    * @param location   the location within the users code, where this node is {@link ASTNode#location}
    */
   public IdentifierNode(String identifier, Location location) {
-    super(location);
+    super(location,"Identifier");
     this.identifier = identifier;
   }
 }

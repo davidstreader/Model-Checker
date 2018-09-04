@@ -1,6 +1,7 @@
 package mc.compiler.token;
 
 import lombok.Data;
+import mc.compiler.ast.*;
 import mc.util.Location;
 
 @Data
@@ -11,4 +12,6 @@ public abstract class Token {
 	public Token(Location location){
 		this.location = location;
 	}
+
+
 }

@@ -49,7 +49,7 @@ public class LocalProcessNode extends ASTNode {
    */
   public LocalProcessNode(String identifier, RangesNode ranges,
                           ASTNode process, Location location) {
-    super(location);
+    super(location,"LocelProcess");
     this.identifier = identifier;
     this.ranges = ranges;
     this.process = process;

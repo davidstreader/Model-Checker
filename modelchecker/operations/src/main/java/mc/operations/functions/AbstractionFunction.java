@@ -7,6 +7,7 @@ import com.microsoft.z3.Context;
 import java.util.*;
 import java.util.stream.Collectors;
 import mc.Constant;
+import mc.TraceType;
 import mc.compiler.Guard;
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessFunction;
@@ -70,7 +71,7 @@ public class AbstractionFunction implements IProcessFunction {
    */
   @Override
   public Automaton compose(String id, Set<String> flags,
-                           Context context, Automaton... automata) throws CompilationException {
+                           Context context,  Automaton... automata) throws CompilationException {
     if (automata.length != getNumberArguments()) {
       throw new CompilationException(this.getClass(), null);
     }
@@ -682,7 +683,7 @@ public class AbstractionFunction implements IProcessFunction {
  */
   public Automaton GaloisBCabs (String id, Set<String> flags, Context context, Automaton ain)
      throws CompilationException {
-    System.out.println("GaloisBCabs "+flags);
+   // System.out.println("GaloisBCabs "+flags);
     Automaton a = ain.copy();
     for(AutomatonEdge ed: a.getEdges()) {
       if (ed.getLabel().endsWith(".t!") || ed.getLabel().endsWith(".t?"))
@@ -690,9 +691,9 @@ public class AbstractionFunction implements IProcessFunction {
     }
     Automaton[] as = new Automaton[1];
     as[0] = a;
-    Automaton out =  this.compose(id, flags, context, as);
+    Automaton out =  this.compose(id, flags, context,  as);
 
-    System.out.println("GaloisBCabs END "+out.myString());
+   // System.out.println("GaloisBCabs END "+out.myString());
     return out;
   }
 }

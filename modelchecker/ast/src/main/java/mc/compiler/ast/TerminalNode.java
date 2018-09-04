@@ -32,7 +32,7 @@ public class TerminalNode extends ASTNode {
    * @param location the location of this token within the users code. {@link ASTNode#location}
    */
   public TerminalNode(String terminal, Location location) {
-    super(location);
+    super(location,"Terminal");
     this.terminal = terminal;
   }
 }

@@ -33,7 +33,7 @@ public class ConversionNode extends ASTNode {
    * @param location the location within the users code of the node {@link #location}
    */
   public ConversionNode(String from, String to, ASTNode process, Location location) {
-    super(location);
+    super(location,"Conversion");
     assert validConversions.contains(from) && validConversions.contains(to);
     this.from = from;
     this.to = to;

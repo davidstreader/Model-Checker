@@ -55,7 +55,7 @@ public class CompositeNode extends ASTNode {
    * @param location      The location of the operation within the code {@link ASTNode#location}
    */
   public CompositeNode(String operation, ASTNode firstProcess, ASTNode secondProcess, Location location) {
-    super(location);
+    super(location,"Composite");
     this.operation = operation;
     this.firstProcess = firstProcess;
     this.secondProcess = secondProcess;

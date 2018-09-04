@@ -36,7 +36,7 @@ public class RangeNode extends ASTNode {
    * @param location the location of the RangeNode within the users code {@link ASTNode#location}
    */
   public RangeNode(int start, int end, Location location) {
-    super(location);
+    super(location,"Range");
     this.start = start;
     this.end = end;
   }

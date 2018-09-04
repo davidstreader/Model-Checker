@@ -62,7 +62,8 @@ public class FailureEquivalence implements IOperationInfixFunction {
      */
     @Override
     public boolean evaluate(Set<String> flags, Context context, Collection<ProcessModel> processModels) throws CompilationException {
-        return evaluate(processModels,true);
+        boolean cong = flags.contains(Constant.CONGURENT);
+        return evaluate(processModels,true,cong);
     }
 
 
@@ -70,9 +71,19 @@ public class FailureEquivalence implements IOperationInfixFunction {
    param equ controls if equality or refinement is being computed
    ONLY used in colouring of Acceptance graph
  */
-        public boolean evaluate(Collection<ProcessModel> processModels,boolean equ)
+        public boolean evaluate(Collection<ProcessModel> processModels,boolean equ,boolean cong)
           throws CompilationException {
-            //System.out.println("Failure Equ Start "+ equ+" "+processModels.stream(). map(x->x.getId()).reduce((x,y)->x+" "+y));
+            int ii = 0; String firstId = "";
+            for (ProcessModel pm : processModels) {
+                System.out.println("  Fail "+ii+"  "+pm.getId());
+                if (ii==0) firstId = pm.getId();
+                else if (firstId.equals(pm.getId())) {
+                    System.out.println("automata Fail same ids "+firstId);
+                    return true;
+                }
+                ii++; //Need this check
+            }
+            System.out.println("Failure Equ Start "+ equ+" "+processModels.stream(). map(x->x.getId()).reduce((x,y)->x+" "+y));
             if (processModels.iterator().next() instanceof Automaton) {
             //BuildAcceptanceGraphs bag = new BuildAcceptanceGraphs();
             ArrayList<AcceptanceGraph> ags = new ArrayList<AcceptanceGraph>();
@@ -96,11 +107,11 @@ public class FailureEquivalence implements IOperationInfixFunction {
                 Automaton a = (Automaton) pm;
                 //System.out.println("Start copy "+ a.toString());
                 // build nfa and then dfa for second parameter "a"
-                AcceptanceGraph ag = new AcceptanceGraph("dfa-" + a.getId(), a);
+                AcceptanceGraph ag = new AcceptanceGraph("dfa-" + a.getId(), a,cong);
         //System.out.println("Start ag "+equ + ag.toString());
                 //Color the acceptance graph - result in cmap
                 color = ag.colorNodes(cmap, ag.getNode2AcceptanceSets(), color, equ); //reuse of color map essential
-         System.out.println("Just colored "+ ag.getA().myString());
+         System.out.println("Just colored acceptance"+ ag.getA().myString());
 
                 //  this.printColorMap(cmap);
                 // construct the initial coloring for the bisimulation
@@ -136,7 +147,7 @@ public class FailureEquivalence implements IOperationInfixFunction {
             //Computes a bsimulation coloring on the accepance graph
             //this elevates any inequality to to root hence only the root
             //coloring needs be checked at the end
-            colourer.doColouring(nodes); // uses initial colouring on node
+            colourer.doColouring(nodes,cong); // uses initial colouring on node
           /*  if (!consistentColor(ags)) {
                 System.out.println("**WARNING** inconsistent");
                     return false;

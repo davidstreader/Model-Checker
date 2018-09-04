@@ -21,16 +21,20 @@ E = a->X,X= b->X.
 F = a->X| a->b->b->Y, X= b->X, Y=b->Y.
 }
 operation {
-P ~ Q.
+P ~{cong} Q.
 P !~ R.
-S ~ T.
-T !~ U.
+S ~{cong} T.
+T ~ U.
+T !~{cong} U.
 V !~ W.
 X ~ W.
 
-A !~ B.
+A ~ B.
+A !~{cong} B.
 B ~ D.
 B ~ C.
 E ~ F.
+E ~{cong} F.
 }
+
 

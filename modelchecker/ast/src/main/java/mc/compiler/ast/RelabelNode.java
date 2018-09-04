@@ -36,7 +36,7 @@ public class RelabelNode extends ASTNode {
    * @param location the location of the node within the users code {@link ASTNode#location}
    */
   public RelabelNode(List<RelabelElementNode> relabels, Location location) {
-    super(location);
+    super(location,"RelabelNode");
     this.relabels = relabels;
   }
 }

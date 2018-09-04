@@ -34,7 +34,7 @@ public class RangesNode extends ASTNode {
    * @param location the location of the RangesNode within users code {@link ASTNode#location}
    */
   public RangesNode(List<IndexExpNode> ranges, Location location) {
-    super(location);
+    super(location,"Ranges");
     this.ranges = ranges;
   }
 }

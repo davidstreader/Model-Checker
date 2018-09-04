@@ -2,6 +2,7 @@
 package mc.operations.functions;
 
 import com.microsoft.z3.Context;
+import mc.TraceType;
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessFunction;
 import mc.processmodels.MultiProcessModel;
@@ -52,13 +53,14 @@ public class A2P2A implements IProcessFunction {
    * @param id       the id of the resulting automaton
    * @param flags    the flags given by the function (e.g. {@code unfair} in {@code abs{unfair}(A)}
    * @param context  the z3 context
+   * @param tt
    * @param automata a variable number of automata taken in by the function
    * @return the resulting automaton of the operation
    * @throws CompilationException when the function fails
    */
   @Override
   public Automaton compose(String id, Set<String> flags, Context context,
-                           Automaton... automata)
+                            Automaton... automata)
           throws CompilationException {
     //System.out.println("Pingo2");
     assert automata.length == 1;

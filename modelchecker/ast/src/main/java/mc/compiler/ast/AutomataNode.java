@@ -27,7 +27,7 @@ public class AutomataNode extends ASTNode {
      * @param location      the location of the choice within the users code {@link ASTNode#location}
      */
     public AutomataNode(ASTNode process, Location location) {
-        super(location);
+        super(location,"Automata");
         this.process = process;
 
     }

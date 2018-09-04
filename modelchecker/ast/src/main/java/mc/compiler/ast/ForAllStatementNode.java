@@ -40,7 +40,7 @@ public class ForAllStatementNode extends ASTNode {
    *                 node is located {@link ASTNode#location}
    */
   public ForAllStatementNode(RangesNode ranges, ASTNode process, Location location) {
-    super(location);
+    super(location,"Forall");
     this.ranges = ranges;
     this.process = process;
   }

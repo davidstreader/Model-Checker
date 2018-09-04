@@ -39,7 +39,7 @@ public class InterruptNode extends ASTNode {
    * @param location the location this token is within the users code {@link ASTNode#location}
    */
   public InterruptNode(ActionLabelNode action, ASTNode process, Location location) {
-    super(location);
+    super(location,"Interupt");
     this.action = action;
     this.process = process;
   }

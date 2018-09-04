@@ -98,8 +98,8 @@ public class ReferenceReplacer {
     // Debugging do not remove
    ReferenceReplacer.indent = ReferenceReplacer.indent.concat("-");
     String className = astNode.getClass().getSimpleName();
-    System.out.println("RRast "+ ReferenceReplacer.indent + className+
-      " refs "+astNode.getReferences()+" from "+astNode.getFromReferences());
+    //System.out.println("RRast "+ ReferenceReplacer.indent + className+
+     // " refs "+astNode.getReferences()+" from "+astNode.getFromReferences());
 
     if (astNode instanceof ProcessRootNode) {
       astNode = replaceReferences((ProcessRootNode) astNode, identifier, localReferences);
@@ -121,7 +121,7 @@ public class ReferenceReplacer {
     //Debugging do not remove
     if (ReferenceReplacer.indent.length()> 1)
       ReferenceReplacer.indent = ReferenceReplacer.indent.substring(1);
-    System.out.println("RRast<"+ ReferenceReplacer.indent + className+" "+astNode.getReferences());
+    //System.out.println("RRast<"+ ReferenceReplacer.indent + className+" "+astNode.getReferences());
 
     return astNode;
   }
