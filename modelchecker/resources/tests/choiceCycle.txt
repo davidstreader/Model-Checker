@@ -1,0 +1,23 @@
+processes {
+Aa = a->Aa.
+Ab = a->Ab|b->STOP.
+Abb = Aa[](b->STOP).
+N = a->a->N.
+Nb = a->a->Nb|b->STOP.
+Nbb = N[](b->STOP).
+}
+operation {
+
+Aa <t{cong} Ab.
+Ab !<t Aa.
+
+N <t{cong} Nb.
+Nb !<t N.
+Nbb <t{cong} Abb.
+Abb !<t Nbb.
+
+}
+
+
+
+

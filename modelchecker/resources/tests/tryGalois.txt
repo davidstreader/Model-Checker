@@ -1,0 +1,49 @@
+processes {
+O1 = a!->X|b?->O1, X = b?->X.
+O2 = a?->STOP. 
+A = a!->b?->X|b?->A, X = b?->X.
+A1 = d?->(x!->STOP|y!->e?->STOP).
+
+
+P= revap2bc(O1) .
+Q = revap2bc(A).
+
+X = a!->b?->STOP.
+Y = a!->STOP.
+Px= revap2bc(X) .
+Py = revap2bc(Y).
+
+X1 = a^->b->STOP.
+Y1 = a^->STOP.
+Px1= fap2bc(P) .
+Py1 = fap2bc(Q).
+Sealy = revap2bc(X).
+Pingo = fap2bc(revap2bc(X)).
+//A2 = (d?->x!->STOP|d?->y!->e?->STOP).
+//N =  fap2bc(revap2bc(O1)).
+/*AX = d?->(x!->STOP|y!->e?->STOP).
+
+X1 = d->(x^->STOP|y^->e->STOP).
+Z = (d?->x!->STOP|d?->y!->e?->STOP).
+*/
+}
+
+alphabet{b?}
+operation {
+//O1 <q A.
+//revap2bc(O1) <f revap2bc(A).
+X <q fap2bc(revap2bc(X)).
+//O1 <q A ==> revap2bc(O1) <f revap2bc(A).
+}
+
+equation{
+//revap2bc(O1) <f revap2bc(A).
+//X <q fap2bc(revap2bc(X)).
+
+//Z <q X ==> revap2bc(Z) <f revap2bc(X). 
+} 
+
+
+
+
+

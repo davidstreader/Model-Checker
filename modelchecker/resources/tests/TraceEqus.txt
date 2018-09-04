@@ -1,0 +1,42 @@
+processes {
+A = a->STOP.
+A1 = a->A1.
+A2 = a->a->STOP.
+A3 = a->a->A3.
+
+B = b->STOP.
+B1 = b->STOP|a->STOP.
+B2 = b->B2|a->STOP.
+
+C = a->b->C.
+C1 = b->c->C1.
+C2 = a->STOP|a->b->C2.
+C3 = a->STOP|b->c->C3.
+
+}
+operation {
+/*A1 ~ A3.
+A1 !~{cong}  A3.
+A1 =t A3.
+A1 ! =t{cong} A3.
+//A3 <t A1.
+//A1 ! =t{cong} A3.
+*/
+}
+equation {
+ X[]Y =t{cong} Y[]X.
+ X[]Y =t Y[]X.
+ X =f Y ==> X =t Y.
+X =f{cong} Y ==> X =t{cong} Y.
+X =t{cong} Y ==>  X =t Y.
+//  X ~ Y ==> X =t{cong} Y.  False
+X =t{cong} Y ==> X[]Z =t{cong} Y[]Z.
+X =t{cong} Y ==> X=>Z =t{cong} Y=>Z.
+} 
+
+
+
+
+
+
+

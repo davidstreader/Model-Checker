@@ -1,0 +1,42 @@
+processes {
+One = e!->x?->STOP.
+O = e!->y?->STOP.
+Two = e!-> STOP.
+/*
+Tap = revap2bc(Two).
+Tagain = fap2bc(Tap).
+Oap = revap2bc(One).
+Oagain = fap2bc(Oap).
+*/
+}
+
+operation {
+One !<q{cong} Two.
+One !<q{cong} O.
+One <q Two.
+//One  !<q{cong} Two.
+//One <q Oagain.
+//One !<q{cong} Oagain.
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

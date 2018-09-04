@@ -1,0 +1,19 @@
+processes {
+A = a->STOP.
+A1 = a->A1.
+
+
+}
+operation {
+//A ~ A.
+A =f A.
+A =f A ==> A =t A1.
+}
+
+
+
+
+
+
+
+

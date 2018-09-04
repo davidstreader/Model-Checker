@@ -1,0 +1,46 @@
+processes {
+One = e!->f?-> STOP.
+Two = e!-> STOP.
+//O = abs{cong}(One\{x}).
+//OO = abs(One\{x}).
+
+Tap = revap2bc(Two).
+Tagain = fap2bc(Tap).
+Oap = revap2bc(One).
+Oagain = fap2bc(Oap).
+//O1 = revap2bc{cong}(O).
+//T = abs{cong}(Two\{x}).
+//TT = abs(Two\{x}).
+/*X = a^->b->STOP.
+Y = a^->STOP.
+X1 = fap2bc( X).
+Y1 = fap2bc( Y). */
+//Px= revap2bc(X1 ).
+//Py = revap2bc(Y1).
+}
+
+operation {
+One !<q{cong} Two.
+One  <q Two.
+One <q Oagain.
+One !<q{cong} Oagain.
+//O <q{cong} T.
+
+//OO <q{cong} TT.
+//X1 <q Y1.
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
