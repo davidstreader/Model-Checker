@@ -1,50 +1,40 @@
 processes {
-Zero1 = STOP.
-Zero2 = ERROR.
 
 One1 = a->One1.
 One2 = a->STOP.
-One3 = a->ERROR.
 One4 = b->One4.
 One5 = b->STOP.
-One6 = b->ERROR.
 
 Two1 = a->b->STOP.
 Two2 = a->Two2|a->STOP.
 Two3 = a->Two3|b->STOP.
 Two4 = a->b->Two4.
 Two5 = a->STOP|b->STOP.
-Two6 = a->ERROR| a->STOP.
-Two7 = a->ERROR|b->STOP.
 Two8 = a->X|b->X, X = STOP.
-Two9 = a->Two2|a->ERROR.
-Two10 = a->Two3|b->ERROR.
 //  Two9 = (a->STOP + b->STOP).
 
 }
-automata One1,One2,One3,One4,One5,One6.
-automata Two1,Two2,Two3,Two4,Two5,Two6,Two7,Two8,Two9,Two10.
+
 
 equation {
-X|Y * Y|X.
-X|(Y|Z) * (X|Y)|Z.
+X|Y <f Y|X.
+X|(Y|Z) <f (X|Y)|Z.
 
-X|| Y * Y||X.
+X|| Y <f Y||X.
 
-X||STOP * X.
-X||X * X.
+X||X <f X.
 
 //(X=>Y)|| (Z=>Y) * (X||Z)=>Y.
 
-(a->STOP)=>X * a->X.
-X=>STOP * X.
-STOP=>X * X.
+(a->STOP)=>X <f a->X.
 
-(X|Y)=>Z * (X=>Z) | (Y=>Z).
+
+(X|Y)=>Z <f (X=>Z) | (Y=>Z).
 
 // X=>(Y+Z) ~ (X=>Y)|(X=>Z).
 
-}
+} 
+
 
 
 

@@ -5,7 +5,6 @@ import java.util.*;
 import com.google.common.collect.ImmutableSet;
 import com.microsoft.z3.Context;
 import mc.Constant;
-import mc.TraceType;
 import mc.exceptions.CompilationException;
 import mc.operations.functions.AbstractionFunction;
 import mc.plugins.IOperationInfixFunction;
@@ -47,6 +46,7 @@ import mc.processmodels.automata.Automaton;
     /**
      * Evaluate the function.
      *
+     * @param alpha
      * @param processModels the list of automata being compared
      * @return the resulting automaton of the operation
      * <p>
@@ -57,7 +57,7 @@ import mc.processmodels.automata.Automaton;
      * initialise bisimulation coloring with the newly built coloring
      */
     @Override
-    public boolean evaluate(Set<String> flags,Context context,Collection<ProcessModel> processModels) throws CompilationException {
+    public boolean evaluate(Set<String> alpha, Set<String> flags, Context context, Collection<ProcessModel> processModels) throws CompilationException {
       boolean cong = flags.contains(Constant.CONGURENT);
 
       FailureEquivalence fe = new FailureEquivalence();

@@ -1,11 +1,6 @@
 package mc.compiler;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.stream.Collectors;
 
@@ -134,7 +129,7 @@ public class Compiler {
 
     List<OperationResult> opResults = evaluator.evaluateOperations(
       ast.getOperations(), processMap,
-        interpreter, code, z3Context, messageQueue);
+        interpreter, code, z3Context, messageQueue, alpha);
     List<ImpliesResult> impResults = evaluator.getImpRes();
     System.out.println("     **COMPILER** before equation evaluation "+processMap.size()+ " op impRes "+impResults.size());
 
@@ -143,7 +138,7 @@ public class Compiler {
     this.eqEvaluator = new EquationEvaluator(); // need to reset equationEvaluator else !!!!
     EquationEvaluator.EquationReturn eqResults = eqEvaluator.evaluateEquations(
         processMap, ast.getEquations(),
-        code, z3Context, messageQueue);
+        code, z3Context, messageQueue, alpha);
 
     processMap.putAll(eqResults.getToRender());
 

@@ -164,6 +164,7 @@ if(j++> stateSizeBound) {System.out.println("\n\nTokenRule Failure Looping = "+j
         if (!markingToNodeMap.containsKey(newMarking)) {
           AutomatonNode newNode = outputAutomaton.addNode();
           newNode.setLabelNumber(nodesCreated++);
+          //System.out.println(" add "+ Petrinet.marking2String(newMarking)+"->"+newNode.getId());
           markingToNodeMap.put(newMarking, newNode);
           nodeToMarkingMap.put(newNode, newMarking);
           if (!toDo.contains(newMarking)) {
@@ -192,10 +193,10 @@ if(j++> stateSizeBound) {System.out.println("\n\nTokenRule Failure Looping = "+j
     Multiset<PetriNetPlace> mkm = HashMultiset.create(mk);
     //System.out.print("\n** End Multiset ");mkm.stream().forEach(x->System.out.print(x.getId()+", "));System.out.println("");
     if (!markingToNodeMap.containsKey(mkm)) {
-      System.out.println(" ERROR "+ mark+ " NOT found ");
+      System.out.println(" Stop not reached "+ mark+ " NOT found ");
+    } else {
+      outputAutomaton.addEnd(markingToNodeMap.get(mkm).getId());
     }
-    //System.out.println("out "+outputAutomaton.myString());
-     outputAutomaton.addEnd(markingToNodeMap.get(mkm).getId());
   }
 
    //System.out.println("Token Rule END"); //Out "+outputAutomaton.myString());

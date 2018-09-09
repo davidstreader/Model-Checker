@@ -39,11 +39,14 @@ public class TraceRefinement implements IOperationInfixFunction {
   /**
    * Evaluate the function.
    *
+   * @param alpha
    * @param processModels automaton in the function (e.g. {@code A} in {@code A ~ B})
    * @return the resulting automaton of the operation
    */
   @Override
-  public boolean evaluate(Set<String> flags, Context context, Collection<ProcessModel> processModels) throws CompilationException {
+  public boolean evaluate(Set<String> alpha, Set<String> flags, Context context, Collection<ProcessModel> processModels) throws CompilationException {
+    ProcessModel[] pms = processModels.toArray(new ProcessModel[processModels.size()]);
+    System.out.println("TraceRefinement "+ alpha +" "+flags+ " "+ pms[0].getId()+ " "+pms[1].getId());
     TraceWork tw = new TraceWork();
     return tw.evaluate(flags,processModels, TraceType.CompleteTrace);
   }

@@ -32,7 +32,7 @@ public class ColouringUtil {
    */
   public Map<Integer, ColourPi> doColouring
   (List<AutomatonNode> nodes, boolean cong) throws Error {
-    System.out.println("doColouring START");
+    //System.out.println("doColouring START");
     Map<Integer, ColourPi> col2pi = new TreeMap<>();
     //Map<ColourPi,Integer> revcolpi = new TreeMap< ColourPi,Integer>();
     //DONOT USE THIS IT IS NO IMPLEMETED CORRECTLY
@@ -45,7 +45,7 @@ public class ColouringUtil {
        col2pi = new TreeMap<>();  // NEW color to a colorPi
       //System.out.println("Start");
       //nodes.stream().forEach(x->System.out.println(x.getId() + " " + x.getColour() ));
-      if (test > 10) {
+      if (test > 50) {
         System.out.println("ERROR COLOURING automaton");
         Throwable t = new Throwable();
         t.printStackTrace();
@@ -77,7 +77,7 @@ public class ColouringUtil {
 
               nextCol.put(nd, nc);
 
-              col2pi.keySet().stream().forEach(x->{ System.out.println(x+"->");});
+              //col2pi.keySet().stream().forEach(x->{System.out.println(x+"->");});
 
 
             }
@@ -99,7 +99,7 @@ public class ColouringUtil {
         //System.out.println(nd.getId()+" -> "+nd.getColour());
       }
 
-      System.out.println("before termination check\n" + this.col2piToString(col2pi));
+      //System.out.println("before termination check\n" + this.col2piToString(col2pi));
       //if two nodes have  same old colour  but differnt new color pi then keep going
       go = false;
       Map<Integer, ColourPi> reversepi = new TreeMap<Integer, ColourPi>();
@@ -123,7 +123,7 @@ public class ColouringUtil {
 
     }
 
-    System.out.println("Colouring\n" + this.col2piToString(col2pi));
+    //System.out.println("Colouring\n" + this.col2piToString(col2pi));
     return col2pi;
   }
 
@@ -155,7 +155,7 @@ public class ColouringUtil {
     }
 
     Collections.sort(ccs);
-   // System.out.println("buildpi "+ nd.getId()+" "+  CCSString(ccs));
+   // //System.out.println("buildpi "+ nd.getId()+" "+  CCSString(ccs));
     return new ColourPi(ccs);
   }
 
@@ -181,7 +181,7 @@ public class ColouringUtil {
     }
     for (AutomatonNode node : nodes) {
       initialColour.put(node, node.getColour());
-System.out.println("initialCol "+node.myString());
+  //System.out.println("initialCol "+node.myString());
     }
     return initialColour;
   }
@@ -381,7 +381,7 @@ System.out.println("initialCol "+node.myString());
       if ( ! (oin instanceof ColourPi)) return false;
       ColourPi piin = (ColourPi) oin;
       int i = 0;
-      System.out.println(this.myString()+  "=?=" + piin.myString());
+      //System.out.println(this.myString()+  "=?=" + piin.myString());
       if (pi.size()!= piin.pi.size()) {
         //System.out.println(pi.size()+" != "+ piin.pi.size());
         return false;

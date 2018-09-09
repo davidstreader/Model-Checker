@@ -11,16 +11,13 @@ import java.util.stream.Collectors;
 import mc.compiler.ast.*;
 import mc.exceptions.CompilationException;
 import mc.plugins.IOperationInfixFunction;
-import mc.processmodels.MultiProcessModel;
 import mc.processmodels.ProcessModel;
 
 import mc.processmodels.automata.Automaton;
-import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.conversion.TokenRule;
 import mc.processmodels.conversion.OwnersRule;
 import mc.processmodels.petrinet.Petrinet;
 import mc.util.Location;
-import mc.util.LogMessage;
 
 /**
  * Created by sheriddavi on 27/01/17.
@@ -34,7 +31,7 @@ public class OperationEvaluator {
     private final String automata = "automata";
     private List<ImpliesResult>  impRes = new ArrayList<>();
     List<ImpliesResult> getImpRes() {return  impRes;}
-
+    Set<String> alpha;
     /**
      * This is the interpreter  for operations (equations) Called from Compiler
      * @param operations  one per equation in the operation section
@@ -42,6 +39,7 @@ public class OperationEvaluator {
      * @param interpreter
      * @param code      Program code used to place cursor where an error occurrs
      * @param context   Z3 context
+     * @param alpha
      * @return
      * @throws CompilationException
      * @throws InterruptedException
@@ -50,14 +48,14 @@ public class OperationEvaluator {
                                                     Map<String, ProcessModel> processMap,
                                                     Interpreter interpreter,
                                                     String code, Context context,
-                                                    BlockingQueue<Object> messageQueue)
+                                                    BlockingQueue<Object> messageQueue, Set<String> alpha)
             throws CompilationException, InterruptedException {
         reset();
         List<OperationResult> results = new ArrayList<>();
         //input  from AST
         for (OperationNode operation : operations) {
             Result r = evaluateOperation(operation,processMap,
-              interpreter,code, context,messageQueue);
+              interpreter,code, context,messageQueue,alpha);
             if (r instanceof OperationResult) {
                 results.add((OperationResult)r);
             } else if (r instanceof ImpliesResult) {
@@ -79,12 +77,13 @@ public class OperationEvaluator {
      * @throws CompilationException
      * @throws InterruptedException
      */
-    public Result evaluateOperation(OperationNode operation,
+    private Result evaluateOperation(OperationNode operation,
                                     Map<String, ProcessModel> processMap,
                                     Interpreter interpreter,
                                     String code,
                                     Context context,
-                                    BlockingQueue<Object> messageQueue) throws CompilationException, InterruptedException {
+                                    BlockingQueue<Object> messageQueue,
+                                     Set<String> alpha) throws CompilationException, InterruptedException {
 
         Result or;
         //Galois Connection needs implication
@@ -92,28 +91,29 @@ public class OperationEvaluator {
 
             OperationNode o1 =  (OperationNode) ((ImpliesNode) operation).getFirstOperation();
             OperationNode o2 =  (OperationNode) ((ImpliesNode) operation).getSecondOperation();
-            OperationResult  or1 = evaluateOp(o1,processMap, interpreter,code, context,messageQueue);
-            OperationResult  or2 = evaluateOp(o2,processMap, interpreter,code, context,messageQueue);
+            OperationResult  or1 = evaluateOp(o1,processMap, interpreter,code, context,messageQueue,alpha);
+            OperationResult  or2 = evaluateOp(o2,processMap, interpreter,code, context,messageQueue,alpha);
             or = new ImpliesResult(or1,or2);
-            System.out.println("implies op eval or1 res "+or1.isRes()+"or2 res "+or2.isRes());
+            //System.out.println("implies op eval or1 res "+or1.isRes()+"or2 res "+or2.isRes());
        } else {
 
            or = evaluateOp(operation,
              processMap,
              interpreter,
-             code, context,messageQueue);
+             code, context,messageQueue,alpha);
        }
        return or;
     }
 /*
    wrapper to evaluation that sets up error location and storing of results
  */
-    public OperationResult evaluateOp(OperationNode operation,
+    private OperationResult evaluateOp(OperationNode operation,
                                       Map<String, ProcessModel> processMap,
                                       Interpreter interpreter,
                                       String code,
                                       Context context,
-                                      BlockingQueue<Object> messageQueue) throws CompilationException, InterruptedException {
+                                      BlockingQueue<Object> messageQueue,
+                                       Set<String> alpha) throws CompilationException, InterruptedException {
 
             //input  from AST
         boolean r = false;
@@ -131,7 +131,7 @@ public class OperationEvaluator {
             throw new CompilationException(OperationEvaluator.class, "Identifier " + missing.get(0) + " not found!", operation.getLocation());
         }
 //******
-        r = evalOp(operation,processMap,interpreter,context);
+        r = evalOp(operation,processMap,interpreter,context,alpha);
   //System.out.println("evaluateOp "+ firstId+" "+operation.getOperation()+" "+secondId+" "+r);
         OperationResult result = new OperationResult(operation.getFirstProcess(),
                 operation.getSecondProcess(), firstId, secondId,
@@ -162,7 +162,8 @@ public class OperationEvaluator {
     public boolean evalOp(OperationNode operation,
                           Map<String, ProcessModel> processMap,
                           Interpreter interpreter,
-                          Context context)
+                          Context context,
+                          Set<String> alpha)
             throws CompilationException, InterruptedException {
         List<ProcessModel> processModels = new ArrayList<>();
         Set<String> flags = operation.getFlags();
@@ -174,9 +175,9 @@ public class OperationEvaluator {
             throw new CompilationException(getClass(), "The given operation is invaid: "
                     + operation.getOperation(), operation.getLocation());
         }
-        System.out.println("*********starting Operation " + operation.getFirstProcessType() + " (" +
+        /*System.out.println("*********starting Operation " + operation.getFirstProcessType() + " (" +
                 operation.getOperation() + "  of type " +
-                funct.getOperationType() + ")  " + operation.getSecondProcessType());
+                funct.getOperationType() + ")  " + operation.getSecondProcessType()); */
 
 
 
@@ -204,11 +205,11 @@ public class OperationEvaluator {
                         operation.getFirstProcess(), getNextOperationId(), processMap, context);
                 processModels.add(OwnersRule.ownersRule( two));
             }
-            r = funct.evaluate(flags,context,processModels);  //actually evaluating the operation
+            r = funct.evaluate(new TreeSet<>(), flags,context,processModels);  //actually evaluating the operation
             if (operation.isNegated()) { r = !r; }
 
         } else if (funct.getOperationType().equals(automata)) {
-            //System.out.println("Evaluate automaton operation "+operation.getFirstProcessType()+ " "+operation.getSecondProcessType());
+            System.out.println("Evaluate automaton operation "+operation.getFirstProcessType()+ " "+operation.getSecondProcessType());
 
 // Convert to PetriNets were needed
             if (operation.getFirstProcessType().equals("petrinet")) {
@@ -224,7 +225,8 @@ public class OperationEvaluator {
             if (operation.getSecondProcessType().equals("petrinet")) {
                 Petrinet two = (Petrinet) interpreter.interpret("petrinet",
                         operation.getSecondProcess(), getNextOperationId(), processMap, context);
-                //System.out.println("\n**Two "+two.getId());
+                System.out.println("\n**Two "+two.getId());
+                System.out.println("\n**Two "+two.myString());
                 processModels.add(TokenRule.tokenRule(two));
             } else if (operation.getSecondProcessType().equals(automata)) {
                 Automaton two = (Automaton) interpreter.interpret(automata,
@@ -233,7 +235,7 @@ public class OperationEvaluator {
             }
             //System.out.println("*2*"+((Automaton) processModels.get(1)).myString());
             //System.out.println("oper "+ operation.getOperation().toLowerCase());
-            r = funct.evaluate(flags,context,processModels);
+            r = funct.evaluate(alpha, flags,context,processModels);
             if (operation.isNegated()) { r = !r; }
 
         } else {
@@ -245,7 +247,7 @@ public class OperationEvaluator {
     static List<String> collectIdentifiers(ASTNode process) {
         List<String> ids = new ArrayList<>();
         if (process==null){
-            System.out.println("process =- null");
+            //System.out.println("process =- null");
             Throwable t = new Throwable();
             t.printStackTrace();
         }
@@ -261,25 +263,25 @@ public class OperationEvaluator {
      * @param ids     the returned collection
      */
     private static void collectIdentifiers(ASTNode process, List<String> ids) {
-       System.out.print("collect "+process.getName()+" **");
+       //System.out.print("collect "+process.getName()+" **");
         if (process instanceof IdentifierNode) {
 
             ids.add(((IdentifierNode) process).getIdentifier());
-            System.out.println(" IdentifierNode");
+            //System.out.println(" IdentifierNode");
         } else if (process instanceof OperationNode){
-            System.out.println(" OperationNode");
+            //System.out.println(" OperationNode");
             collectIdentifiers(((OperationNode) process).getFirstProcess(), ids);
             collectIdentifiers(((OperationNode) process).getSecondProcess(), ids);
         } else if (process instanceof ChoiceNode){
-            System.out.println(" ChoiceNode");
+            //System.out.println(" ChoiceNode");
             collectIdentifiers(((ChoiceNode) process).getFirstProcess(), ids);
             collectIdentifiers(((ChoiceNode) process).getSecondProcess(), ids);
         } else if (process instanceof ImpliesNode){
-            System.out.println(" ImpliesNode");
+            //System.out.println(" ImpliesNode");
             collectIdentifiers(((ImpliesNode) process).getFirstProcess(), ids);
             collectIdentifiers(((ImpliesNode) process).getSecondProcess(), ids);
         } else  if (process instanceof CompositeNode) {
-            System.out.println(" CompositeNode");
+            //System.out.println(" CompositeNode");
             collectIdentifiers(((CompositeNode) process).getFirstProcess(), ids);
             collectIdentifiers(((CompositeNode) process).getSecondProcess(), ids);
 //        int numberNull = 0;
@@ -289,22 +291,22 @@ public class OperationEvaluator {
 //
 //        //System.out.println("NUmber null" + numberNull);
         } else  if (process instanceof FunctionNode) {
-            System.out.println(" FunctionNode");
+            //System.out.println(" FunctionNode");
             ((FunctionNode) process).getProcesses().forEach(p -> collectIdentifiers(p, ids));
         } else if(process instanceof ProcessRootNode) {
-            System.out.println(" ProcessRootNode");
+            //System.out.println(" ProcessRootNode");
             collectIdentifiers(((ProcessRootNode)process).getProcess(), ids);
         } else if (process instanceof IfStatementExpNode) {
-            System.out.println(" IfNode");
+            //System.out.println(" IfNode");
             collectIdentifiers(((IfStatementExpNode) process).getTrueBranch(), ids);
             if (((IfStatementExpNode) process).hasFalseBranch()) {
                 collectIdentifiers(((IfStatementExpNode) process).getFalseBranch(), ids);
             }
         } else if (process instanceof SequenceNode) {
-            System.out.println(" SequenceNode");
+            //System.out.println(" SequenceNode");
             collectIdentifiers(((SequenceNode) process).getTo(), ids);
         }  else {
-            System.out.println(" DO NOT KNOW Node "+ process.getName());
+            //System.out.println(" DO NOT KNOW Node "+ process.getName());
             Throwable t = new Throwable();
             t.printStackTrace();
         }

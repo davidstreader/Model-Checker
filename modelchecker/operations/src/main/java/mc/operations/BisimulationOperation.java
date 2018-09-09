@@ -1,7 +1,5 @@
 package mc.operations;
 
-import static mc.processmodels.automata.util.ColouringUtil.ColourComponent;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -11,10 +9,6 @@ import mc.Constant;
 import mc.exceptions.CompilationException;
 import mc.plugins.IOperationInfixFunction;
 import mc.processmodels.ProcessModel;
-import mc.processmodels.automata.Automaton;
-import mc.processmodels.automata.AutomatonEdge;
-import mc.processmodels.automata.AutomatonNode;
-import mc.processmodels.automata.util.ColouringUtil;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.utils.PetriColouring;
 
@@ -50,16 +44,17 @@ public class BisimulationOperation implements IOperationInfixFunction {
     /**
      * Evaluate the function.  we can pass the function auto OR petri
      *
+     * @param alpha
      * @param processModels the list of automata / PetriNets being compared
      * @return the resulting automaton of the operation
      */
     @Override
-    public boolean evaluate(Set<String> flags,
+    public boolean evaluate(Set<String> alpha, Set<String> flags,
                             Context context, Collection<ProcessModel> processModels) throws CompilationException {
 
         if (processModels.iterator().next() instanceof Petrinet) {
-            System.out.println("Bisimulation on Petri Nets");
-            processModels.stream().forEach(x->{  System.out.println(x.getId());});
+             //System.out.println("Bisimulation on Petri Nets");
+            //processModels.stream().forEach(x->{  System.out.println(x.getId());});
             String tag1 = "*P1";
             String tag2 = "*P2";
             Iterator<ProcessModel> ip = processModels.iterator();
@@ -87,7 +82,7 @@ public class BisimulationOperation implements IOperationInfixFunction {
             for(Set<String> m: p2.getRoots()) {
                 r2cs.add(m.stream().map(x->composition.getPlace(x).getColour()).collect(Collectors.toSet()));
             }
-            System.out.println("Root cols "+r1cs+" ** "+r2cs);
+            //System.out.println("Root cols "+r1cs+" ** "+r2cs);
             boolean found = true;
             for(Set<Integer> r1c :r1cs){
                 found = false;

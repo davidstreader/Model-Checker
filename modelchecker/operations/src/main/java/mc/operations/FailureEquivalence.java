@@ -3,12 +3,12 @@ package mc.operations;
 import static mc.processmodels.automata.util.ColouringUtil.ColourComponent;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import com.google.common.collect.ImmutableSet;
 import com.microsoft.z3.Context;
 import mc.AcceptanceGraph;
 import mc.Constant;
+import mc.TraceType;
 import mc.exceptions.CompilationException;
 import mc.plugins.IOperationInfixFunction;
 import mc.processmodels.ProcessModel;
@@ -51,6 +51,7 @@ public class FailureEquivalence implements IOperationInfixFunction {
     /**
      * Evaluate the function.
      *
+     * @param alpha
      * @param processModels the list of automata being compared
      * @return the resulting automaton of the operation
      * <p>
@@ -61,13 +62,14 @@ public class FailureEquivalence implements IOperationInfixFunction {
      * initialise bisimulation coloring with the newly built coloring
      */
     @Override
-    public boolean evaluate(Set<String> flags, Context context, Collection<ProcessModel> processModels) throws CompilationException {
+    public boolean evaluate(Set<String> alpha, Set<String> flags, Context context, Collection<ProcessModel> processModels) throws CompilationException {
         boolean cong = flags.contains(Constant.CONGURENT);
         return evaluate(processModels,true,cong);
     }
 
 
 /*
+   Called from Failurerefinemnet with equ=false and above with equ=true
    param equ controls if equality or refinement is being computed
    ONLY used in colouring of Acceptance graph
  */
@@ -83,7 +85,7 @@ public class FailureEquivalence implements IOperationInfixFunction {
                 }
                 ii++; //Need this check
             }
-            System.out.println("Failure Equ Start "+ equ+" "+processModels.stream(). map(x->x.getId()).reduce((x,y)->x+" "+y));
+            //System.out.println("Failure Equ Start "+ equ+" "+processModels.stream(). map(x->x.getId()).reduce((x,y)->x+" "+y));
             if (processModels.iterator().next() instanceof Automaton) {
             //BuildAcceptanceGraphs bag = new BuildAcceptanceGraphs();
             ArrayList<AcceptanceGraph> ags = new ArrayList<AcceptanceGraph>();
@@ -108,7 +110,7 @@ public class FailureEquivalence implements IOperationInfixFunction {
                 //System.out.println("Start copy "+ a.toString());
                 // build nfa and then dfa for second parameter "a"
                 AcceptanceGraph ag = new AcceptanceGraph("dfa-" + a.getId(), a,cong);
-        //System.out.println("Start ag "+equ + ag.toString());
+        System.out.println("Start ag "+equ + ag.toString());
                 //Color the acceptance graph - result in cmap
                 color = ag.colorNodes(cmap, ag.getNode2AcceptanceSets(), color, equ); //reuse of color map essential
          System.out.println("Just colored acceptance"+ ag.getA().myString());
@@ -119,7 +121,7 @@ public class FailureEquivalence implements IOperationInfixFunction {
                 for (AutomatonNode nd : ag.getA().getNodes()) {
                     initialColour.put(nd, nd.getColour());
                 }
-                //System.out.println("X"+ag.toString());
+                System.out.println("X"+ag.toString());
             }
             // //System.out.println("Failure initial color end");
 
@@ -152,10 +154,10 @@ public class FailureEquivalence implements IOperationInfixFunction {
                 System.out.println("**WARNING** inconsistent");
                     return false;
             } */
-        System.out.print("Final node Color {");
+        /*System.out.print("Final node Color {");
         for(AutomatonNode nd : nodes) {
             System.out.print(nd.getId()+"->"+nd.getColour()+" ");
-        } System.out.println("}");
+        } System.out.println("}");*/
             Set<Integer> root_colors = new TreeSet<Integer>();
             Set<Integer> first_colors = new TreeSet<Integer>();
             int i = 0;
@@ -184,7 +186,6 @@ public class FailureEquivalence implements IOperationInfixFunction {
                     }
                 }
             }
-
             return true;
         }
         System.out.printf("\nFailure semantics not defined for type " + processModels.iterator().next().getClass()+"\n");
@@ -231,11 +232,5 @@ public class FailureEquivalence implements IOperationInfixFunction {
         return ok;
     }
 
-    private void print_cc(List<ColourComponent> ccs){
-        System.out.print("ccs = {");
-        for(ColourComponent cc : ccs) {
-            System.out.print(cc.myString()+", ");
-        }
-        System.out.println(" }");
-    }
+
 }

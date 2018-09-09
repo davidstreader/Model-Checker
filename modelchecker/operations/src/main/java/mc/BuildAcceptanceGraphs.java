@@ -14,9 +14,6 @@ import mc.processmodels.automata.AutomatonNode;
 public class BuildAcceptanceGraphs  {
 
 
-
-
-
     /**
      * MOVED TO AcceptanceGraph object
      *

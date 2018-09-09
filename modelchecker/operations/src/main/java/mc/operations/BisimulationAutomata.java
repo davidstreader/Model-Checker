@@ -53,12 +53,13 @@ import mc.processmodels.automata.util.ColouringUtil;
         /**                                      automaton
          * Evaluate the function.  we can pass the function auto OR petri
          *
+         * @param alpha
          * @param processModels the list of automata / PetriNets being compared
          * @return the resulting automaton of the operation
          */
         @Override
-        public boolean evaluate(Set<String> flags, Context context, Collection<ProcessModel> processModels) throws CompilationException {
-            System.out.println("Bisimulation "+flags+ " on Automaton "+processIds(processModels) );
+        public boolean evaluate(Set<String> alpha, Set<String> flags, Context context, Collection<ProcessModel> processModels) throws CompilationException {
+            //System.out.println("Bisimulation "+flags+ " on Automaton "+processIds(processModels) );
             boolean cong = flags.contains(Constant.CONGURENT);
 
             if (processModels.iterator().next() instanceof Automaton) {
@@ -70,10 +71,10 @@ import mc.processmodels.automata.util.ColouringUtil;
                 //System.out.println("Bisim evaluate");
                 int i = 0; String firstId = "";
                 for (ProcessModel pm : processModels) {
-                    System.out.println("  Bisim "+i+"  "+((Automaton)pm ).myString());
+                    //System.out.println("  Bisim "+i+"  "+((Automaton)pm ).myString());
                     if (i==0) firstId = pm.getId();
                     else if (firstId.equals(pm.getId())) {
-                        System.out.println("automata bisim same ids "+firstId);
+                        //System.out.println("automata bisim same ids "+firstId);
                         return true;
                     }
                     Automaton a = (Automaton) pm;

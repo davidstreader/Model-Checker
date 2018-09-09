@@ -5,13 +5,13 @@ import java.util.Set;
 import com.microsoft.z3.Context;
 import mc.exceptions.CompilationException;
 import mc.processmodels.ProcessModel;
-import mc.processmodels.automata.Automaton;
-import mc.processmodels.petrinet.Petrinet;
+
 /*
         This is for ~, =f, <q, ....
 
  */
 public interface IOperationInfixFunction {
+
 
   /**
    * A method of tracking the function.
@@ -37,11 +37,12 @@ public interface IOperationInfixFunction {
   /**
    * Evaluate the function.
    *
+   * @param alpha
    * @param thing the automata or PetriNet in the function (e.g. {@code A} and {@code B} in {@code A ~ B})
    * @return whether or not the automata provided pass the testing semantics.
    */
-  boolean  evaluate(Set<String> flags,
-                    Context context,Collection<ProcessModel> thing/*automata*/) throws CompilationException;
+  boolean  evaluate(Set<String> alpha, Set<String> flags,
+                    Context context, Collection<ProcessModel> thing/*automata*/) throws CompilationException;
 
   // boolean evaluate(Collection<Petrinet> petrinets) throws CompilationException;
 }

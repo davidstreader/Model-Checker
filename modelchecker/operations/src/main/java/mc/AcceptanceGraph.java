@@ -134,10 +134,10 @@ public class AcceptanceGraph {
       .filter(nodex -> nodex.getOutgoingEdges().isEmpty())
       .forEach(nodey -> nodey.setTerminal("STOP"));
     //System.out.println("Testing");
-    printnode2AcceptanceSets(dfaNode2ASet, nfaNode2A);
+    //printnode2AcceptanceSets(dfaNode2ASet, nfaNode2A);
     Map<AutomatonNode, List<Set<String>>> dfaNode2ASetNew = activeActionCorrection(dfaNode2ASet);
     //System.out.println("Next");
-    printnode2AcceptanceSets(dfaNode2ASetNew, nfaNode2A);
+    //printnode2AcceptanceSets(dfaNode2ASetNew, nfaNode2A);
 // refactor the acceptance sets adding [a^] where needed
 
     this.setA(dfa);
@@ -279,10 +279,10 @@ public class AcceptanceGraph {
       System.out.println(" "+n.getId()+" "+nfanode2ASet.get(n).toString() );
     }
 
- /*System.out.println("Acceptance Sets");
+ System.out.println("Acceptance Sets");
   for (AutomatonNode nd : node2AcceptanceSets.keySet()) {
-   //System.out.println(" "+nd.getId()+"  "+node2AcceptanceSets.get(nd));
-  } */
+   System.out.println(" "+nd.getId()+"  "+node2AcceptanceSets.get(nd));
+  }
 
   }
 
@@ -318,7 +318,7 @@ public class AcceptanceGraph {
           nd.setColour(i);
           found = true;
           break;
-        } else if (equ == false && AcceptanceSubSet(acept, cmap.get(i))) {
+        } else if (equ == false && AcceptanceGraph.AcceptanceSubSet(acept, cmap.get(i))) {
           //System.out.println("subset found "+ cmap.get(i).toString());
           nd.setColour(i);
           found = true;
@@ -354,27 +354,29 @@ public class AcceptanceGraph {
   }*/
   }
 
-  private boolean AcceptanceSubSet(List<Set<String>> a1, List<Set<String>> a2) {
+  public static boolean AcceptanceSubSet(List<Set<String>> a1, List<Set<String>> a2) {
     boolean ok = false;
     for (Set<String> as1 : a1) {
       ok = false;
       for (Set<String> as2 : a2) {
+
         if (as1.containsAll(as2)) {
           ok = true;
+          System.out.println("as1 "+as1+" ->>- as2 "+as2);
           break;
         }
+        System.out.println("as1 "+as1+" ->NOT>- as2 "+as2);
       }  // if one true then inner loop true
-      if (ok == false) {
-        break;
-      } //if one iner false then outer false
+      if (ok == true) { break; } //if one inner true then outer true
     }  //outer only true if all inner loops true
-    //System.out.println("Sub set a1 "+a1+"  a2 "+a2+"  returns "+ok);
+    System.out.println("a1 "+a1+" ->>- a2 "+a2+"  returns "+ok);
     return ok;
   }
 
-  private boolean AcceptanceSetEquality(List<Set<String>> a1, List<Set<String>> a2) {
-    // //System.out.println("Equ ?  "+ a1.toString() + "  "+ a2.toString());
-    return AcceptanceSubSet(a1, a2) && AcceptanceSubSet(a2, a1);
+  public static boolean AcceptanceSetEquality(List<Set<String>> a1, List<Set<String>> a2) {
+    boolean b = AcceptanceSubSet(a1, a2) && AcceptanceSubSet(a2, a1);
+    System.out.println("Equ ?  "+ a1.toString() + "  "+ a2.toString() +" = "+b);
+    return b;
   }
 
   /*

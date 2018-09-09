@@ -1,6 +1,4 @@
 processes {
-Zero1 = STOP.
-Zero2 = ERROR.
 
 One1 = a->One1.
 One2 = a->STOP.
@@ -45,6 +43,7 @@ STOP=>X ~ X.
 // X=>(Y|Z) * (X=>Y)|(X=>Z).  NO should not be true
 
 }
+
 
 
 

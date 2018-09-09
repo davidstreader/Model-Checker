@@ -18,6 +18,9 @@ Aq = a!->Aq|b?->STOP.
 Xxq = (a!->(a!->Aq))|b?->STOP.
 Yyq = a!->(a!->Aq|b?->STOP).
 Zyq = (a!->(a!->Aq|b?->STOP))|b?->STOP.
+
+Z = a->b->STOP.
+Zz = a->b->STOP|a->STOP.
 }
 operation {
 Aa  <t Xxa.
@@ -32,7 +35,11 @@ Aq  !<t{cong} Zyq.
 Xxq  <t Aq.
 Aq  !<t Xxq.
 
+Zz <t Z.
+Zz !<t{cong} Z.
+
 }
+
 
 
 

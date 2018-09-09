@@ -1,15 +1,11 @@
 package mc.compiler;
 
-import static mc.util.Utils.instantiateClass;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.stream.Collectors;
 
+import com.microsoft.z3.Context;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -18,7 +14,6 @@ import mc.compiler.ast.OperationNode;
 import mc.exceptions.CompilationException;
 import mc.plugins.IOperationInfixFunction;
 import mc.processmodels.ProcessModel;
-import mc.processmodels.automata.Automaton;
 import mc.processmodels.petrinet.Petrinet;
 import mc.util.LogMessage;
 
@@ -45,13 +40,14 @@ public class EquationEvaluator {
    * @param code         used for error reporting
    * @param z3Context
    * @param messageQueue
+   * @param alpha
    * @return The EquationReturn - list of results
    * @throws CompilationException
    */
   public EquationReturn evaluateEquations(Map<String, ProcessModel> processMap,
                                           List<OperationNode> operations,
-                                          String code, com.microsoft.z3.Context z3Context,
-                                          BlockingQueue<Object> messageQueue)
+                                          String code, Context z3Context,
+                                          BlockingQueue<Object> messageQueue, Set<String> alpha)
     throws CompilationException, InterruptedException {
     reset();
     processes = processMap.values().stream().collect(Collectors.toList());
@@ -73,7 +69,7 @@ public class EquationEvaluator {
       else System.out.println("TREE "+operation.myString());
       System.out.println("YY");
 
-      evaluateEquation(processMap,operation,code,z3Context,messageQueue);
+      evaluateEquation(processMap,operation,code,z3Context,messageQueue,alpha);
     }
 
     return new EquationReturn(results,impResults, toRender);
@@ -82,10 +78,11 @@ public class EquationEvaluator {
   /*
   Evaluate a single equation. - Many operations - Many ground equations
    */
-  public ModelStatus evaluateEquation(Map<String, ProcessModel> processMap,
+  private ModelStatus evaluateEquation(Map<String, ProcessModel> processMap,
                                           OperationNode operation,
                                           String code, com.microsoft.z3.Context z3Context,
-                                          BlockingQueue<Object> messageQueue)
+                                          BlockingQueue<Object> messageQueue,
+                                       Set<String> alpha)
     throws CompilationException, InterruptedException {
     System.out.println("  op " + operation.getOperation() + " eE " + operation.getOperationType());
    // System.out.println(operation.getFirstProcess().toString());
@@ -127,7 +124,7 @@ public class EquationEvaluator {
       int totalPermutations = (int) Math.pow(processes.size(), testingSpace.size());
       //WORK Done here once per equation many ground equations evaluated
       ArrayList<String> failures = testUserdefinedModel(processMap, testingSpace,
-        status, operation, z3Context, messageQueue);
+        status, operation, z3Context, messageQueue,alpha);
 
       // Process the results
       String firstId;
@@ -173,7 +170,9 @@ public class EquationEvaluator {
                                                  List<String> testingSpace,
                                                  ModelStatus status,
                                                  OperationNode operation,
-                                                 com.microsoft.z3.Context context, BlockingQueue<Object> messageQueue)
+                                                 com.microsoft.z3.Context context,
+                                                 BlockingQueue<Object> messageQueue,
+                                                 Set<String> alpha)
     throws CompilationException, InterruptedException {
     List<ProcessModel> models = processMap.values().stream().collect(Collectors.toList());
     boolean r = false;
@@ -186,8 +185,8 @@ public class EquationEvaluator {
     System.out.println("testingSpace "+testingSpace);
     for (String variableId : testingSpace) // Set up starting map all variables replaced by the first model
     {
-      idMap.put(variableId, models.get(0));
-      System.out.println("idMap ("+variableId+") = "+idMap.get(variableId));
+      idMap.put(variableId, models.get(0));  // start with all variable having the same model
+      System.out.println("idMap ("+variableId+") = "+ idMap.get(variableId).getId());
     }
     OperationEvaluator oE = new OperationEvaluator();
 
@@ -196,9 +195,9 @@ public class EquationEvaluator {
       //display
       String out = "";
       for (String key : idMap.keySet()) {
-        out += key + "->" + idMap.get(key).getId();
+        out += key + "->" + idMap.get(key).getId()+" ";
       }
-      System.out.println("testUDM " + out);
+      System.out.println("idMap " + out);
       //end display
       Interpreter interpreter = new Interpreter(); // build the automata from the AST
       String exceptionInformation = "";
@@ -208,12 +207,12 @@ public class EquationEvaluator {
 
         OperationNode o1 =  (OperationNode) ((ImpliesNode) operation).getFirstOperation();
         OperationNode o2 =  (OperationNode) ((ImpliesNode) operation).getSecondOperation();
-        boolean  or1 = oE.evalOp(o1,idMap, interpreter, context);
-        boolean  or2 = oE.evalOp(o2,idMap, interpreter, context);
+        boolean  or1 = oE.evalOp(o1,idMap, interpreter, context,alpha);
+        boolean  or2 = oE.evalOp(o2,idMap, interpreter, context,alpha);
         r = (! or1) || or2;  // A -> B  EQUIV  not A OR B
         System.out.println("or1 res "+or1+"or2 res "+or2);
       } else {
-        r = oE.evalOp(operation, idMap, interpreter, context);
+        r = oE.evalOp(operation, idMap, interpreter, context,alpha);
       }
      // r = oE.evalOp(operation, idMap, interpreter, context);
       //System.out.println("operation "+ firstId+" "+operation.getOperation()+" "+secondId+" "+r);

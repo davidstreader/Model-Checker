@@ -28,7 +28,7 @@ public class PetrinetParallelFunction  {
     Petrinet p2 = pi2.reId("2");
     p1.rebuildAlphabet(); p2.rebuildAlphabet();
 
-   System.out.println("     PETRINETPARALLELFUNCTION"+" ||p1 "+p1.getId()+" ||p2 "+p2.getId());
+   //System.out.println("     PETRINET PARALLELFUNCTION"+"  "+p1.getId()+" || "+p2.getId());
 
    //builds synchronisedActions set
     setupActions(p1, p2);
@@ -66,6 +66,7 @@ public class PetrinetParallelFunction  {
         Set<String> o = new HashSet<>() ;
         o.addAll(e1);
         o.addAll(e2);
+        o = o.stream().sorted().collect(Collectors.toSet());
         out.add( o );
       }
     }
@@ -320,6 +321,7 @@ public class PetrinetParallelFunction  {
     Set<String> out = new HashSet<>();
     out.addAll(m1);
     out.addAll(m2);
+    out = out.stream().sorted().collect(Collectors.toSet());
    //System.out.println("Next root "+out);
     return out;
   }

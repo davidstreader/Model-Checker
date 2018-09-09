@@ -5,7 +5,6 @@ import java.util.*;
 import com.google.common.collect.ImmutableSet;
 import com.microsoft.z3.Context;
 import mc.Constant;
-import mc.TraceType;
 import mc.exceptions.CompilationException;
 import mc.operations.functions.Nfa2dfaHS;
 import mc.plugins.IOperationInfixFunction;
@@ -41,17 +40,18 @@ public class TraceEquivalentOperation implements IOperationInfixFunction {
   /**
    * Evaluate the function.
    *
+   * @param alpha
    * @param processModels automaton in the function (e.g. {@code A} in {@code A ~ B})
    * @return the resulting automaton of the operation
    */
   @Override
-  public boolean evaluate(Set<String> flags, Context context,  Collection<ProcessModel> processModels) throws CompilationException {
+  public boolean evaluate(Set<String> alpha, Set<String> flags, Context context, Collection<ProcessModel> processModels) throws CompilationException {
     int ii = 0; String firstId = "";
     for (ProcessModel pm : processModels) {
-      System.out.println("  Trace "+ii+"  "+pm.getId());
+      //System.out.println("  Trace "+ii+"  "+pm.getId());
       if (ii==0) firstId = pm.getId();
       else if (firstId.equals(pm.getId())) {
-        System.out.println("automata Trace same ids "+firstId);
+        //System.out.println("automata Trace same ids "+firstId);
         return true;
       }
       ii++; //Need this check
@@ -68,11 +68,11 @@ public class TraceEquivalentOperation implements IOperationInfixFunction {
                   func.compose(a.getId(), new HashSet<>(), null,  a)
           );
         } catch (CompilationException e) {
-          System.out.println("PINGO" + e.toString());
+          //System.out.println("PINGO" + e.toString());
         }
       }
       BisimulationAutomata bo = new BisimulationAutomata();
-      boolean r = bo.evaluate(flags,context,  nfas);
+      boolean r = bo.evaluate(new TreeSet<>(), flags,context,  nfas);
 
    /*
     return new BisimulationOperation().evaluate(automata.stream().map(a -> {
