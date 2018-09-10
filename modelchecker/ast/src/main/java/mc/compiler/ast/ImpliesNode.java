@@ -53,5 +53,20 @@ public class ImpliesNode extends OperationNode {
     //this.setFlags(Collections.singletonList("*"));
     System.out.println("implies Location "+location.toString());
   }
+  public String myString(){
+    StringBuilder sb = new StringBuilder();
+    if (firstOperation instanceof OperationNode) {
+      sb.append(((OperationNode) firstOperation).myString());
+    } else {
+      sb.append(" first != OperationNode ");
+    }
+    sb.append(" ==> ");
+    if (secondOperation instanceof OperationNode) {
+      sb.append(((OperationNode) secondOperation).myString());
+    } else {
+      sb.append(" second != OperationNode ");
+    }
+    return sb.toString();
+  }
 }
 

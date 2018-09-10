@@ -55,6 +55,8 @@ public class OperationNode extends ASTNode {
   private String firstProcessType = "petrinet";
   private String secondProcessType = "petrinet";
   private String operationType = "petrinet";
+
+  private ForAllStatementNode forAllStatement;
   /**
    * Instantitate a new Operation Node.
    *
@@ -79,5 +81,12 @@ public class OperationNode extends ASTNode {
     this.operation = "==>";
 
     this.flags = ImmutableSet.of("*");
+  }
+
+  public String myString(){
+    StringBuilder sb = new StringBuilder();
+
+    sb.append(firstProcess.getName()+" "+operation+flags+" "+ secondProcess.getName());
+    return sb.toString();
   }
 }

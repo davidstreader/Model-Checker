@@ -61,7 +61,7 @@ public class EquationEvaluator {
     }
     System.out.println("Equation processes size " + processes.size());
 /*
-   For each equation  once for many ground equation
+   For each equation => once for many ground equation
  */
     for (OperationNode operation : operations) {
       System.out.println("XX");
@@ -75,7 +75,18 @@ public class EquationEvaluator {
     return new EquationReturn(results,impResults, toRender);
   }
 
-  /*
+/*  forall{X} P(X,Y,Z)  ==> Q(Y,Z)
+              ==>
+    forall{X}      Q(Y,Z)
+    P(X,Y,Z)
+
+  forall{X} Q(Y,Z)  ==> P(X,Y,Z)
+            forall{X}
+              ==>
+       Q(Y,Z)       P(X,Y,Z)
+
+
+
   Evaluate a single equation. - Many operations - Many ground equations
    */
   private ModelStatus evaluateEquation(Map<String, ProcessModel> processMap,
@@ -89,14 +100,7 @@ public class EquationEvaluator {
     // ONCE per equation! NOTE the state space needs to be clean
     Petrinet.netId = 0;  // hard to debug with long numbers and nothing stored
     ModelStatus status = new ModelStatus();
-    //Generic ids defined in the equation block
-            /*eg
-                equation {
-                    X~Y.
-                }
-                where X and Y are the automaton/process
-             */
-            /////////WRONG
+
     List<String> firstIds = new ArrayList<>();
     List<String> secondIds;
     System.out.println("PINGO "+operation.getOperation());

@@ -3,7 +3,7 @@ package mc.compiler.ast;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import mc.util.Location;
-
+import java.util.List;
 /**
  * a "ForAll" statement, this is a programmatic way of parallel composing multiple processes using
  * event indexing.
@@ -12,6 +12,9 @@ import mc.util.Location;
  * This expands to {@code ForAllTest = (do[1] STOP) || (do[2] -> STOP).}
  * <p>
  * The grammar for this is: {@code FORALL :: "forall" RANGE PROCESS.}
+ *
+ * A second use is controlling the variable expansion in equations
+ * forall{X}(P(X,Y,Z) ) ==> Q(Y,Z)
  *
  * @author Jacob Beal
  * @see CompositeNode
@@ -26,6 +29,10 @@ public class ForAllStatementNode extends ASTNode {
    * The ranges upon which the ForAll statement will apply.
    */
   private RangesNode ranges;
+  /**
+   *
+   */
+  private List<IdentifierNode> variables;
   /**
    * The process that shall be iterated through to compose.
    */
@@ -43,5 +50,9 @@ public class ForAllStatementNode extends ASTNode {
     super(location,"Forall");
     this.ranges = ranges;
     this.process = process;
+  }
+  public ForAllStatementNode(List<IdentifierNode> variables,  Location location) {
+    super(location,"Forall");
+    this.variables = variables;
   }
 }
