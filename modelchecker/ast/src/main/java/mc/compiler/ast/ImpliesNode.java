@@ -55,17 +55,9 @@ public class ImpliesNode extends OperationNode {
   }
   public String myString(){
     StringBuilder sb = new StringBuilder();
-    if (firstOperation instanceof OperationNode) {
-      sb.append(((OperationNode) firstOperation).myString());
-    } else {
-      sb.append(" first != OperationNode ");
-    }
+    sb.append("("+firstOperation.myString());
     sb.append(" ==> ");
-    if (secondOperation instanceof OperationNode) {
-      sb.append(((OperationNode) secondOperation).myString());
-    } else {
-      sb.append(" second != OperationNode ");
-    }
+    sb.append(secondOperation.myString()+")");
     return sb.toString();
   }
 }

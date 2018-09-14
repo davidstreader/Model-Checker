@@ -5,9 +5,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import mc.util.Location;
 
-import java.util.Collections;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -19,7 +18,7 @@ import java.util.TreeSet;
  * @author Sanjay Govind
  * @author Jacob Beal
  * @see ASTNode
- * @see mc.plugins.IOperationInfixFunction
+ *
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -39,7 +38,7 @@ public class OperationNode extends ASTNode {
    * The arguments put into the function curly brace syntax.
    * Currently fixed at Compile Time - this includes the fixed alphabet of listeners
    *
-   * @see mc.plugins.IProcessFunction#getValidFlags()
+   *
    */
   private ImmutableSet<String> flags;
 
@@ -56,7 +55,6 @@ public class OperationNode extends ASTNode {
   private String secondProcessType = "petrinet";
   private String operationType = "petrinet";
 
-  private ForAllStatementNode forAllStatement;
   /**
    * Instantitate a new Operation Node.
    *
@@ -85,8 +83,13 @@ public class OperationNode extends ASTNode {
 
   public String myString(){
     StringBuilder sb = new StringBuilder();
+    // if (firstProcess instanceof )
+    sb.append("("+firstProcess.myString()  + operation );
+    if (flags != null && flags.size()>0) sb.append( flags );
+    sb.append( secondProcess.myString()+")");
 
-    sb.append(firstProcess.getName()+" "+operation+flags+" "+ secondProcess.getName());
     return sb.toString();
   }
+
+
 }

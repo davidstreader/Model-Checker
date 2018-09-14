@@ -66,7 +66,7 @@ public class TokenRule {
 
     Automaton outputAutomaton = new Automaton(convertFrom.getId()  //+ " automata"
             ,false);
-      System.out.println("TOKEN RULE  STARTING "+convertFrom.getId());
+      //System.out.println("TOKEN RULE  STARTING "+convertFrom.getId());
 
       assert convertFrom.validatePNet(): "Token precondition";
    outputAutomaton.setOwners(convertFrom.getOwners());
@@ -193,7 +193,7 @@ if(j++> stateSizeBound) {System.out.println("\n\nTokenRule Failure Looping = "+j
     Multiset<PetriNetPlace> mkm = HashMultiset.create(mk);
     //System.out.print("\n** End Multiset ");mkm.stream().forEach(x->System.out.print(x.getId()+", "));System.out.println("");
     if (!markingToNodeMap.containsKey(mkm)) {
-      System.out.println(" Stop not reached "+ mark+ " NOT found ");
+      //System.out.println(" Stop not reached "+ mark+ " NOT found ");
     } else {
       outputAutomaton.addEnd(markingToNodeMap.get(mkm).getId());
     }

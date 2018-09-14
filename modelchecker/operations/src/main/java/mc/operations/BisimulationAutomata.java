@@ -130,6 +130,10 @@ import mc.processmodels.automata.util.ColouringUtil;
         private String processIds(Collection<ProcessModel> pms) {
             return pms.stream().map(x->x.getId()).collect(Collectors.joining(" "));
         }
+
+        public String myString(){
+            return getNotation();
+        }
     }
 
 

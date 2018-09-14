@@ -362,20 +362,20 @@ public class AcceptanceGraph {
 
         if (as1.containsAll(as2)) {
           ok = true;
-          System.out.println("as1 "+as1+" ->>- as2 "+as2);
+          //System.out.println("as1 "+as1+" ->>- as2 "+as2);
           break;
         }
-        System.out.println("as1 "+as1+" ->NOT>- as2 "+as2);
+        //System.out.println("as1 "+as1+" ->NOT>- as2 "+as2);
       }  // if one true then inner loop true
       if (ok == true) { break; } //if one inner true then outer true
     }  //outer only true if all inner loops true
-    System.out.println("a1 "+a1+" ->>- a2 "+a2+"  returns "+ok);
+    //System.out.println("a1 "+a1+" ->>- a2 "+a2+"  returns "+ok);
     return ok;
   }
 
   public static boolean AcceptanceSetEquality(List<Set<String>> a1, List<Set<String>> a2) {
     boolean b = AcceptanceSubSet(a1, a2) && AcceptanceSubSet(a2, a1);
-    System.out.println("Equ ?  "+ a1.toString() + "  "+ a2.toString() +" = "+b);
+    //System.out.println("Equ ?  "+ a1.toString() + "  "+ a2.toString() +" = "+b);
     return b;
   }
 

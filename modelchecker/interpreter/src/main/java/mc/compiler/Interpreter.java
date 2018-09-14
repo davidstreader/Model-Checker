@@ -129,7 +129,7 @@ public class Interpreter {
       //System.out.println("Compiler Interpreter DONE! "+ processMap.keySet());
 
     }
-      System.out.println("End of inteterpret Y ");
+      //System.out.println("End of inteterpret Y ");
 
     /*  processMap.values().stream().forEach(pm->{
           System.out.println("\nPetri Net");
@@ -191,7 +191,7 @@ public class Interpreter {
         break;
 
       case "petrinet":  //****
-   System.out.println("Interpreter.interpret still P net" +identifer+" "+astNode.toString());
+   //System.out.println("Interpreter.interpret still P net" +identifer+" "+astNode.toString());
         model = petrinetInterpreter.interpret(astNode, identifer, processMap, context);
 
         break;

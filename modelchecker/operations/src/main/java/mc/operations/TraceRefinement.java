@@ -46,7 +46,7 @@ public class TraceRefinement implements IOperationInfixFunction {
   @Override
   public boolean evaluate(Set<String> alpha, Set<String> flags, Context context, Collection<ProcessModel> processModels) throws CompilationException {
     ProcessModel[] pms = processModels.toArray(new ProcessModel[processModels.size()]);
-    System.out.println("TraceRefinement "+ alpha +" "+flags+ " "+ pms[0].getId()+ " "+pms[1].getId());
+    //System.out.println("TraceRefinement "+ alpha +" "+flags+ " "+ pms[0].getId()+ " "+pms[1].getId());
     TraceWork tw = new TraceWork();
     return tw.evaluate(flags,processModels, TraceType.CompleteTrace);
   }

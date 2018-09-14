@@ -9,6 +9,9 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+//import mc.plugins.*;
+//import modelchecker.processmodels.src.main.java.mc.plugins;
+
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -107,67 +110,81 @@ public abstract class ASTNode implements Serializable {
     return cloner.deepClone(this);
   }
 
+
   //For debugging
-  public String myString(){
+  public String wholeString(){
     return myString("","");
   }
   private String myString(String ofset,String sofar) {
     String offset = ofset+">";
     if (this instanceof IdentifierNode) {
       sofar+=(offset+" " + this.getName()+"\n");
-      System.out.println(" IdentifierNode");
+      //System.out.println(" IdentifierNode");
     } else if (this instanceof ImpliesNode){
-      System.out.println(" ImpliesNode");
+
       sofar+=(offset+" " + this.getName()+"\n");
       if (((ImpliesNode)this).getFirstProcess()== null) System.out.println("NULL 1");
-      else((ImpliesNode) this).getFirstProcess().myString(offset,sofar);
+      else sofar+=((ImpliesNode) this).getFirstProcess().myString(offset,sofar);
       if (((ImpliesNode)this).getFirstProcess()== null) System.out.println("NULL 2");
-      else((ImpliesNode) this).getSecondProcess().myString(offset,sofar);
+      else sofar+=((ImpliesNode) this).getSecondProcess().myString(offset,sofar);
+      if (getFromReferences() != null) {
+        //System.out.println(" ImpliesNode  forall "+((ForAllStatementNode)getFromReferences()).getVariables());
+        sofar+= "forall "+((ForAllStatementNode)getFromReferences()).getVariables();
+      } else {
+        //System.out.println(" ImpliesNode");
+        sofar+= " ImpliesNode";
+      }
     } else if (this instanceof OperationNode){
-      System.out.println(" OperationNode");
+      if (getFromReferences() != null) {
+        //System.out.println(" OperationNode  forall "+((ForAllStatementNode)getFromReferences()).getVariables());
+        sofar+= "forall "+((ForAllStatementNode)getFromReferences()).getVariables();
+      } else {
+        //System.out.println(" OperationNode");
+        sofar+= "OperationNode";
+      }
       sofar+=(offset+" " + this.getName()+"\n");
       if (((OperationNode)this).getFirstProcess()== null) System.out.println("NULL 1");
-      else((OperationNode) this).getFirstProcess().myString(offset,sofar);
+      else sofar+=((OperationNode) this).getFirstProcess().myString(offset,sofar);
       if (((OperationNode)this).getFirstProcess()== null) System.out.println("NULL 2");
-      else((OperationNode) this).getSecondProcess().myString(offset,sofar);
+      else sofar+=((OperationNode) this).getSecondProcess().myString(offset,sofar);
 
     } else if (this instanceof ChoiceNode){
-      System.out.println(" ChoiceNode");
+      //System.out.println(" ChoiceNode");
       sofar+=(offset+" " + this.getName()+"\n");
-      ((ChoiceNode) this).getFirstProcess().myString(offset,sofar);
-      ((ChoiceNode) this).getSecondProcess().myString(offset,sofar);
+      sofar+=((ChoiceNode) this).getFirstProcess().myString(offset,sofar);
+      sofar+=((ChoiceNode) this).getSecondProcess().myString(offset,sofar);
 
     } else  if (this instanceof CompositeNode) {
-      System.out.println(" CompositeNode");
+      //System.out.println(" CompositeNode");
       sofar+=(offset+" " + this.getName()+"\n");
     if (((CompositeNode)this).getFirstProcess()== null) System.out.println("NULL 1");
-    else ((CompositeNode) this).getFirstProcess().myString(offset,sofar);
+    else sofar+=((CompositeNode) this).getFirstProcess().myString(offset,sofar);
     if (((CompositeNode)this).getSecondProcess()== null)  System.out.println("NULL 2");
-    else  ((CompositeNode) this).getSecondProcess().myString(offset,sofar);
+    else  sofar+=((CompositeNode) this).getSecondProcess().myString(offset,sofar);
     } else  if (this instanceof FunctionNode) {
-      System.out.println(" FunctionNode");
+      //System.out.println(" FunctionNode");
        sofar+=(offset+" " + this.getName()+"\n");
       for (ASTNode an:  ((FunctionNode) this).getProcesses()) {
-        an.myString(offset,sofar);
+        sofar+=an.myString(offset,sofar);
       };
 
     } else if(this instanceof ProcessRootNode) {
-      System.out.println(" ProcessRootNode");
+      //System.out.println(" ProcessRootNode");
       sofar+=(offset+" " + this.getName()+"\n");
       ((ProcessRootNode) this).getProcess().myString(offset,sofar);
     } else if (this instanceof IfStatementExpNode) {
-       System.out.println(" IfNode");
+       //System.out.println(" IfNode");
       sofar+=(offset+" " + this.getName()+"\n");
-      ((IfStatementExpNode) this).getTrueBranch().myString(offset,sofar);
+      sofar+=((IfStatementExpNode) this).getTrueBranch().myString(offset,sofar);
       if (((IfStatementExpNode) this).hasFalseBranch()) {
         sofar+=(offset+" " + this.getName()+"\n");
-        ((IfStatementExpNode) this).getFalseBranch().myString(offset,sofar);
+        sofar+=((IfStatementExpNode) this).getFalseBranch().myString(offset,sofar);
       }
     } else if (this instanceof SequenceNode) {
       sofar+=(offset+" " + this.getName()+"\n");
-      System.out.println(" SequenceNode");
+     // System.out.println(" SequenceNode");
       sofar+=(offset+" " + this.getName()+ " "+((SequenceNode) this).getFrom().getAction()+"\n");
-      ((SequenceNode) this).getTo().myString(offset,sofar);
+      sofar+=((SequenceNode) this).getTo().myString(offset,sofar);
     }  else {
       sofar+=(offset+" " + this.getName()+"\n");
       System.out.println(" DO NOT KNOW Node "+ this.getName());
@@ -175,5 +192,9 @@ public abstract class ASTNode implements Serializable {
       t.printStackTrace();
     }
 return sofar;
+  }
+
+  public String myString() {
+    return "define for "+ this.getClass().getName();
   }
 }

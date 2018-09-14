@@ -81,7 +81,7 @@ import mc.operations.TraceWork.NextComponent;
             //Automaton temp;
             AcceptanceGraph ag = new AcceptanceGraph("dfa-" + a.getId(), a,cong);
             //temp = nfa2dfaworks.compose(a.getId(), new HashSet<>(), null, TraceType.CompleteTrace, a);
-            System.out.println("ACC "+ag.toString());
+            //System.out.println("ACC "+ag.toString());
             acctgrs.add(ag);
           } catch (CompilationException e) {
             //System.out.println("PINGO" + e.toString());
@@ -102,19 +102,19 @@ import mc.operations.TraceWork.NextComponent;
         // printit(a2Next);
         AutomatonNode r1 = (AutomatonNode) a1.getRoot().toArray()[0];
         AutomatonNode r2 = (AutomatonNode) a2.getRoot().toArray()[0];
-        System.out.println("\nare the Failures of  "+ a1.getId()+" a subset of "+a2.getId());
-        System.out.println("roots " + r1.getId() + " " + r2.getId());
+        //System.out.println("\nare the Failures of  "+ a1.getId()+" a subset of "+a2.getId());
+        //System.out.println("roots " + r1.getId() + " " + r2.getId());
         boolean b;
         b = traceAccSubset(new NodePair(r2, r1), a2Next.getMap(), a1Next.getMap(),
           new ArrayList<>(), cong,acctgrs.get(1),acctgrs.get(0));
         //
-        System.out.println("Failure Refinement " +  " " + a2.getId() + " <f " + a1.getId() + " " + b);
+        //System.out.println("Failure Refinement " +  " " + a2.getId() + " <f " + a1.getId() + " " + b);
 
         TraceEquivalentOperation teo = new TraceEquivalentOperation();
         TraceWork tw = new TraceWork();
         boolean traceme;
         traceme = teo.evaluate(alpha,flags,context,processModels);
-        System.out.println("Trace equality = "+traceme);
+        //System.out.println("Trace equality = "+traceme);
         return b && traceme;
       }
       System.out.printf("\nFailure semantics not defined for type " + processModels.iterator().next().getClass() + "\n");
@@ -135,7 +135,7 @@ import mc.operations.TraceWork.NextComponent;
                                  boolean cong,
                                  AcceptanceGraph ag1,
                                  AcceptanceGraph ag2) {
-    System.out.println("traceAccSubset " + np.first.getId() + " " + np.second.getId() + " ");
+    //System.out.println("traceAccSubset " + np.first.getId() + " " + np.second.getId() + " ");
     /*
        test if acceptance sets are subset
      */
@@ -159,8 +159,8 @@ import mc.operations.TraceWork.NextComponent;
     } else {
       small = a2N.get(np.second).labels().stream().filter(x -> !Constant.external(x)).collect(Collectors.toSet());
     }
-    System.out.println("is "+np.second+" "+ small + " in "+
-                             np.first+" " + a1N.get(np.first).labels());
+    /*System.out.println("is "+np.second+" "+ small + " in "+
+                             np.first+" " + a1N.get(np.first).labels()); */
     if (a1N.get(np.first).labels().containsAll(small)) {
       processed.add(np);
       // b? might not be in in the ready labels but is in the next step label
@@ -176,7 +176,7 @@ import mc.operations.TraceWork.NextComponent;
         // i++; if (i>9) break;
       }
     } else {
-      System.out.println(small + " NOTsubset " + a1N.get(np.first).labels());
+      //System.out.println(small + " NOTsubset " + a1N.get(np.first).labels());
       return false;
     }
     return true;

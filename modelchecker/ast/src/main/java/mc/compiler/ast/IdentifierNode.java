@@ -8,7 +8,7 @@ import mc.util.Location;
  * Stores a reference to a constant, a process or a subprocess.
  * <p>
  * If this is a "LocalReference", or a self reference, this will later be changed in the
- * {@link mc.compiler.ReferenceReplacer}
+ *
  *
  * @author David Sheridan
  * @author Sanjay Govind
@@ -33,5 +33,8 @@ public class IdentifierNode extends ASTNode {
   public IdentifierNode(String identifier, Location location) {
     super(location,"Identifier");
     this.identifier = identifier;
+  }
+  public String myString(){
+    return identifier;
   }
 }

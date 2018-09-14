@@ -45,7 +45,7 @@ public class TraceWork {
         try {
           Automaton temp;
           temp = nfa2dfaworks.compose(a.getId(), new HashSet<>(), null, TraceType.CompleteTrace, a);
-          System.out.println("DFA "+temp.myString());
+          //System.out.println("DFA "+temp.myString());
           dfas.add(temp);
         } catch (CompilationException e) {
           //System.out.println("PINGO" + e.toString());
@@ -94,12 +94,12 @@ public class TraceWork {
                               Map<AutomatonNode, NextMap> a2N,
                               List<NodePair> processed,
                               boolean cong) {
-    System.out.println("traceSubset " + np.first.getId() + " " + np.second.getId() + " ");
+    //System.out.println("traceSubset " + np.first.getId() + " " + np.second.getId() + " ");
     //processed only used to stop algorithm running for ever with cyclic automata
     for (NodePair n : processed) {
       if (n.getFirst().getId().equals(np.getFirst().getId()) &&
         n.getSecond().getId().equals(np.getSecond().getId())) {
-        System.out.println("processed");
+        //System.out.println("processed");
         return true;
       }
     }
@@ -111,9 +111,9 @@ public class TraceWork {
     } else {
       small = a2N.get(np.second).labels().stream().filter(x -> !Constant.external(x)).collect(Collectors.toSet());
     }
-    System.out.println(small + " in " + a1N.get(np.first).labels());
+    //System.out.println(small + " in " + a1N.get(np.first).labels());
     if (a1N.get(np.first).labels().containsAll(small)) {
-      System.out.println("adding "+np.myString());
+      //System.out.println("adding "+np.myString());
       processed.add(np);
       // b? might not be in in the ready labels but is in the next step label
       for (String lab : small) {
@@ -128,7 +128,7 @@ public class TraceWork {
         // i++; if (i>9) break;
       }
     } else {
-      System.out.println(small + " NOTsubset " + a1N.get(np.first).labels());
+      //System.out.println(small + " NOTsubset " + a1N.get(np.first).labels());
       return false;
     }
     return true;

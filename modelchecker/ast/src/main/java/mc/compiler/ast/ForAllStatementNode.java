@@ -3,7 +3,12 @@ package mc.compiler.ast;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import mc.util.Location;
+
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 /**
  * a "ForAll" statement, this is a programmatic way of parallel composing multiple processes using
  * event indexing.
@@ -19,7 +24,7 @@ import java.util.List;
  * @author Jacob Beal
  * @see CompositeNode
  * @see ASTNode
- * @see mc.compiler.Expander
+ *
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -32,7 +37,7 @@ public class ForAllStatementNode extends ASTNode {
   /**
    *
    */
-  private List<IdentifierNode> variables;
+  private List<String> variables = new ArrayList<>();  // bound variables
   /**
    * The process that shall be iterated through to compose.
    */
@@ -51,8 +56,20 @@ public class ForAllStatementNode extends ASTNode {
     this.ranges = ranges;
     this.process = process;
   }
-  public ForAllStatementNode(List<IdentifierNode> variables,  Location location) {
+  public ForAllStatementNode(List<String> variables,  Location location) {
     super(location,"Forall");
     this.variables = variables;
+    System.out.println("Built forall "+variables);
   }
+
+  public String myString(){
+    String out;
+    if (process !=null) {
+      out = process.getName();
+    } else {
+      out = "";
+    }
+    return "forall "+variables+ " "+out;
+  }
+
 }

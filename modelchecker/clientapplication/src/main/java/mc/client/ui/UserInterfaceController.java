@@ -724,7 +724,9 @@ public class UserInterfaceController implements Initializable {
         models.forEach(modelsList.getItems()::add);
         modelsList.getSelectionModel().selectFirst();
     }
-
+/*
+   Display results  of operations and equations!
+ */
     private void updateLogText(List<OperationResult> opRes, List<OperationResult> eqRes) {
         if (opRes.size() > 0)
             compilerOutputDisplay.appendText("\n##Operation Results##\n");

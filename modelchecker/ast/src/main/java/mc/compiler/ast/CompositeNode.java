@@ -12,15 +12,10 @@ import mc.util.Location;
  * <p>
  * An example of this may be {@code A = B||C.}
  *
- * @author Jacob Beal
+ * @author Jacob Beal  - David Streader
  * @see ASTNode
  * @see FunctionNode
- * @see mc.compiler.Parser
- * @see mc.compiler.Expander
- * @see mc.compiler.ReferenceReplacer
- * @see mc.compiler.Interpreter
- * @see mc.plugins.IProcessInfixFunction
- * @see mc.plugins.PluginManager
+ *
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -59,5 +54,12 @@ public class CompositeNode extends ASTNode {
     this.operation = operation;
     this.firstProcess = firstProcess;
     this.secondProcess = secondProcess;
+  }
+  public String myString(){
+    StringBuilder sb = new StringBuilder();
+    sb.append("("+firstProcess.myString());
+    sb.append(operation);
+    sb.append(secondProcess.myString()+")");
+    return sb.toString();
   }
 }

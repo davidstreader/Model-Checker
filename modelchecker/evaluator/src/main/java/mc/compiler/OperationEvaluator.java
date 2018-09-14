@@ -117,13 +117,14 @@ public class OperationEvaluator {
 
             //input  from AST
         boolean r = false;
-        String firstId = findIdent(operation.getFirstProcess(), code); //parsing for error feedback
-        String secondId = findIdent(operation.getSecondProcess(), code);
+        String firstId =  operation.getFirstProcess().myString(); // findIdent(operation.getFirstProcess(), code); //parsing for error feedback
+        String secondId = operation.getSecondProcess().myString(); //findIdent(operation.getSecondProcess(), code);
+
 
         List<String> firstIds = collectIdentifiers(operation.getFirstProcess());
         List<String> secondIds = collectIdentifiers(operation.getSecondProcess());
         //System.out.println("evaluateOp " +operation.getOperation()+ " firstId " +firstIds+ "second "+secondIds);
-
+//bound variable will have been removed.
         List<String> missing = new ArrayList<>(firstIds);
         missing.addAll(secondIds);  // all process ids
         missing.removeAll(processMap.keySet());
@@ -139,25 +140,12 @@ public class OperationEvaluator {
 
         return result;
     }
-    /*
-    Used in Galois connections to build a Domain of implicit listening events
-    Consider (a!->b?-STOP <q a!->STOP) both processes have implicit b? loops even though
-    a!->STOP has no b? event
-     */
-    public Set<String> getListeningEvents(Collection<ProcessModel> processModels){
-        //Set up the list of all listening events from BOTH processes
-        Set<String> listeningEvents = new TreeSet<>();
-        for (ProcessModel pm : processModels) {
-            //System.out.println("Start auto "+ pm.getId());
-            Automaton a = (Automaton) pm;
-            listeningEvents.addAll(a.getAlphabet().stream().
-              filter(x->x.endsWith("?")).collect(Collectors.toSet()));
-        }
-        return listeningEvents;
-    }
+
 /*
  Finally finally evaluating the dynamically loaded operation  func
  Called from EquationEvaluator as well as OperationEvaluator
+
+ EquationEvaluator might require bound variables to be expanded!
  */
     public boolean evalOp(OperationNode operation,
                           Map<String, ProcessModel> processMap,
@@ -165,10 +153,18 @@ public class OperationEvaluator {
                           Context context,
                           Set<String> alpha)
             throws CompilationException, InterruptedException {
+
+
+
         List<ProcessModel> processModels = new ArrayList<>();
         Set<String> flags = operation.getFlags();
         boolean r = false;
-        //System.out.println("evalOp "+operation.getOperation()+ " flags " + operation.getFlags());
+        /*System.out.println("evalOp "+operation.myString());
+        for(String key: processMap.keySet()){
+            System.out.println(key+"->"+processMap.get(key).getId());
+        }*/
+
+
         IOperationInfixFunction funct = instantiateClass(operationsMap.get(operation.getOperation().toLowerCase()));
         //System.out.println("Funct " + funct.getFunctionName()+" "+ processMap.size());
         if (funct == null) {
@@ -198,7 +194,6 @@ public class OperationEvaluator {
             if (operation.getSecondProcessType().equals("petrinet")) {
                 Petrinet two = (Petrinet) interpreter.interpret("petrinet",
                         operation.getSecondProcess(), getNextOperationId(), processMap, context);
-                //System.out.println("\n**Two "+two.getId());
                 processModels.add(two);
             } else if (operation.getSecondProcessType().equals(automata)) {
                 Automaton two = (Automaton) interpreter.interpret(automata,
@@ -209,7 +204,7 @@ public class OperationEvaluator {
             if (operation.isNegated()) { r = !r; }
 
         } else if (funct.getOperationType().equals(automata)) {
-            System.out.println("Evaluate automaton operation "+operation.getFirstProcessType()+ " "+operation.getSecondProcessType());
+            //System.out.println("Evaluate automaton operation "+operation.getFirstProcessType()+ " "+operation.getSecondProcessType());
 
 // Convert to PetriNets were needed
             if (operation.getFirstProcessType().equals("petrinet")) {
@@ -221,19 +216,18 @@ public class OperationEvaluator {
                         operation.getFirstProcess(), getNextOperationId(), processMap, context);
                 processModels.add(one);
             }
-            //System.out.println("*1* "+((Automaton) processModels.get(0)).myString());
+            //System.out.println("processModels *1* "+((Automaton) processModels.get(0)).myString());
             if (operation.getSecondProcessType().equals("petrinet")) {
                 Petrinet two = (Petrinet) interpreter.interpret("petrinet",
                         operation.getSecondProcess(), getNextOperationId(), processMap, context);
-                System.out.println("\n**Two "+two.getId());
-                System.out.println("\n**Two "+two.myString());
+
                 processModels.add(TokenRule.tokenRule(two));
             } else if (operation.getSecondProcessType().equals(automata)) {
                 Automaton two = (Automaton) interpreter.interpret(automata,
                         operation.getSecondProcess(), getNextOperationId(), processMap, context);
                 processModels.add(two);
             }
-            //System.out.println("*2*"+((Automaton) processModels.get(1)).myString());
+            //System.out.println("processModels *2*"+((Automaton) processModels.get(1)).myString());
             //System.out.println("oper "+ operation.getOperation().toLowerCase());
             r = funct.evaluate(alpha, flags,context,processModels);
             if (operation.isNegated()) { r = !r; }
@@ -241,6 +235,9 @@ public class OperationEvaluator {
         } else {
             System.out.println("Bad operation type "+operation.getOperationType());
         }
+        //if (r==false) {
+            System.out.println("                evalOp " + operation.myString()+" " + EquationEvaluator.asString(processMap) + " => " + r);
+       // }
         return r;
     }
 
@@ -252,7 +249,7 @@ public class OperationEvaluator {
             t.printStackTrace();
         }
         collectIdentifiers(process, ids);
-        //System.out.println("OperationEvaluator Found "+ids);
+        //System.out.println("\nOperationEvaluator Found "+ids+"\n");
         return ids;
     }
 
@@ -263,24 +260,39 @@ public class OperationEvaluator {
      * @param ids     the returned collection
      */
     private static void collectIdentifiers(ASTNode process, List<String> ids) {
-       //System.out.print("collect "+process.getName()+" **");
+       //if (process!= null) System.out.println("collectIds in  "+process.wholeString()+"\n **");
         if (process instanceof IdentifierNode) {
+            String id = ((IdentifierNode) process).getIdentifier();
+            if (!ids.contains(id)) ids.add(id);
+            //System.out.println("IdentifierNode "+ id);
+        } else if (process instanceof ForAllNode){
+            // remove bound variables from the operations below the forall
+            //System.out.println("  Bound ");
+            List<String> temp = new ArrayList<>();
+            collectIdentifiers(((ForAllNode) process).getOp(), temp);
+            System.out.println("  from op "+temp);
+            List<String> bound = ((ForAllNode) process).getBound();
+            System.out.println("ForAllNode bound " +bound +  " temp "+temp);
+            temp.removeAll(bound);
+            System.out.println("ForAllNode bound " +bound +  " temp "+temp);
+            ids.addAll(temp);
 
-            ids.add(((IdentifierNode) process).getIdentifier());
-            //System.out.println(" IdentifierNode");
-        } else if (process instanceof OperationNode){
-            //System.out.println(" OperationNode");
-            collectIdentifiers(((OperationNode) process).getFirstProcess(), ids);
-            collectIdentifiers(((OperationNode) process).getSecondProcess(), ids);
-        } else if (process instanceof ChoiceNode){
-            //System.out.println(" ChoiceNode");
-            collectIdentifiers(((ChoiceNode) process).getFirstProcess(), ids);
-            collectIdentifiers(((ChoiceNode) process).getSecondProcess(), ids);
         } else if (process instanceof ImpliesNode){
             //System.out.println(" ImpliesNode");
             collectIdentifiers(((ImpliesNode) process).getFirstProcess(), ids);
             collectIdentifiers(((ImpliesNode) process).getSecondProcess(), ids);
-        } else  if (process instanceof CompositeNode) {
+        } else if (process instanceof OperationNode){
+             //no forall
+                //System.out.println("  No Bound ");
+                collectIdentifiers(((OperationNode) process).getFirstProcess(), ids);
+                collectIdentifiers(((OperationNode) process).getSecondProcess(), ids);
+
+            //System.out.println("operationNode "+ids);
+        } else if (process instanceof ChoiceNode){
+            //System.out.println(" ChoiceNode");
+            collectIdentifiers(((ChoiceNode) process).getFirstProcess(), ids);
+            collectIdentifiers(((ChoiceNode) process).getSecondProcess(), ids);
+        }  else  if (process instanceof CompositeNode) {
             //System.out.println(" CompositeNode");
             collectIdentifiers(((CompositeNode) process).getFirstProcess(), ids);
             collectIdentifiers(((CompositeNode) process).getSecondProcess(), ids);
@@ -306,19 +318,21 @@ public class OperationEvaluator {
             //System.out.println(" SequenceNode");
             collectIdentifiers(((SequenceNode) process).getTo(), ids);
         }  else {
-            //System.out.println(" DO NOT KNOW Node "+ process.getName());
-            Throwable t = new Throwable();
-            t.printStackTrace();
+            if (process==null) {
+                System.out.println("collectId operation = null");
+                Throwable t = new Throwable();
+                t.printStackTrace();
+            } else {
+                System.out.println(" DO NOT KNOW Node " + process.getName());
+            }
         }
 
     }
 
     /**
      *
-     * @param firstProcess
-     * @param code
-     * @return
-     */
+     *
+
     static String findIdent(ASTNode firstProcess, String code) {
         Location loc = firstProcess.getLocation();
         String[] lines = code.split("\\n");
@@ -329,9 +343,14 @@ public class OperationEvaluator {
         } else {
             lines[0] = lines[0].substring(loc.getColStart(), loc.getColEnd()+1);
         }
-        return String.join("", lines);
-    }
 
+        String other = firstProcess.myString();
+        //Beware   A||X <t{cong} C||X  It may be parsing needs to build the string! OR change use of ASTNode
+        String out = String.join("", lines);
+        System.out.println("\nFOR "+other +" findIdent returns "+out);
+        return out;
+    }
+     */
     private String getNextOperationId() {
         return "op" + operationId++;
     }
