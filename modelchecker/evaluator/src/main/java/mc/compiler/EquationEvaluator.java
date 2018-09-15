@@ -205,9 +205,9 @@ public class EquationEvaluator {
 
 
     OperationEvaluator oE = new OperationEvaluator();
-    //int i = 0;
+    int i = 0;
     while (true) { //Once per ground equation (operation)  Assumes && hence short circuit on false
-      //System.out.println("testUserdefinedModel " + i++);
+      System.out.println("testUDM loop " + i++ +" "+ asString(outerFreeVariabelMap));
 
       if (operation instanceof ForAllNode) {    //  FORALL
         System.out.println("Local forALL ");
@@ -236,11 +236,12 @@ public class EquationEvaluator {
           inerfreeVar2Model, true //call test again with expanded variable map
         );
 // must pass
-        System.out.println("Local Status fail " + localStatus.getFailCount() + " passed " + localStatus.passCount);
+        System.out.println("Local Status fail " + localStatus.myString());
         System.out.println("Local Status failure " + failures);
         if (localStatus.failCount > 0) {
           status.setFailCount(localStatus.failCount);  //Fail must return
           // status.setPassCount(localStatus.passCount);  // pass count not passed up term
+          System.out.println("Returning from for setting "+ failures+" " +status.myString());
           return failures;
         } else status.passCount++;
       } else if (operation instanceof ImpliesNode) {    //IMPLIES
@@ -282,18 +283,20 @@ public class EquationEvaluator {
               alpha,     // Only used for broadcast semantics
               outerFreeVariabelMap, false
             );
-            System.out.println("status1 = " + status1.myString());
-            or2 = status1.failCount == 0;
+            System.out.println("Return of status1 = " + status1.myString());
+            or1 = status1.failCount == 0;
             r = (!or1) || or2;  // A -> B  EQUIV  not A OR B
-            status.setFailCount(status1.failCount);
 
+            System.out.println(r + " "+ status.myString());
             // status.setPassCount(status1.passCount); //pass count not passed up tree
-            if (status.failCount > 0) return failures1; //Fail must return
-            else status.passCount++;
+            if (!r) {
+              status.setFailCount(status1.failCount);
+              return failures1; //Fail must return
+            } else status.passCount++;
           }
         } else {  //short circuit evaluate 1 First
           OperationNode o1 = (OperationNode) ((ImpliesNode) operation).getFirstOperation();
-          System.out.println("implies evaluate 1 first " + o1.myString());
+          System.out.println("Implies now evaluate 1 first " + o1.myString());
           List<String> failures1 = testUserdefinedModel(processMap,
             models,
             status1,
@@ -304,7 +307,7 @@ public class EquationEvaluator {
             outerFreeVariabelMap, false
           );
 
-          System.out.println(status1.myString());
+          System.out.println("Eval Implies 1 Returning "+ status1.myString());
           or1 = status1.failCount == 0;
           if (or1 == false) {  //Short Circuit
             System.out.println("Short circuit Implies 1 == false hence return true");
@@ -328,7 +331,8 @@ public class EquationEvaluator {
             r = (!or1) || or2;  // A -> B  EQUIV  not A OR B
             status.setFailCount(status2.failCount);
             //status.setPassCount(status2.passCount);  //pass count not passed up term
-            if (status.failCount > 0) return failures2; //Fail must return
+            if (status2.failCount > 0) return failures2; //Fail must return
+
             else status.passCount++;
           }
         }
@@ -377,10 +381,10 @@ public class EquationEvaluator {
 
       }
       // Success only fall through so generate new permutation
-      System.out.println("Fallthrough " + status.myString()+" "+);
+      System.out.println("Fallthrough " + status.myString()+" updateFV "+updateFreeVariables);
       if (freeVariables.size() == 0) return failedEquations; // called with a ground term so no looping
       if (updateFreeVariables) {
-        if (!(operation instanceof ForAllNode) && !(operation instanceof ImpliesNode)) {
+        //if (!(operation instanceof ForAllNode) && !(operation instanceof ImpliesNode)) {
           //Generate new permutation of provided models
           for (String variableId : freeVariables) {
             //System.out.println("free variable "+variableId+ " -> "+ freeVar2Model.get(variableId).getId());
@@ -400,7 +404,7 @@ public class EquationEvaluator {
               break;  // only change one variable
             }
           }
-        }
+        //}
       } else { // not updating free Vars means do once as part of implies
         return failedEquations;
       }
