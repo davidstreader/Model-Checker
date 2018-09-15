@@ -1,6 +1,7 @@
 package mc.compiler;
 
 import java.util.ArrayList;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import mc.compiler.ast.ASTNode;
@@ -23,10 +24,10 @@ public class OperationResult extends Result {
   private String result;
   private boolean res;
   private String extra;
-  private ArrayList<String> failures;
+  private List<String> failures;
 
   public OperationResult(ASTNode process1, ASTNode process2, String ident1, String ident2,
-                         String operation, ArrayList<String> failedOps,
+                         String operation, List<String> failedOps,
                          boolean negated, boolean result, String extra)
     throws CompilationException {
     System.out.println("OperationResult "+ ident1+" "+process1.getLocation().toString());

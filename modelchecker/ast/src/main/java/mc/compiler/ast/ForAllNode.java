@@ -54,7 +54,7 @@ public class ForAllNode extends OperationNode {
   }
   public String myString(){
     StringBuilder sb = new StringBuilder();
-    sb.append(" forAll");
+    sb.append("forAll");
     if (vars!= null && vars.size()>0) sb.append(vars);
     sb.append(op.myString());
     return sb.toString();

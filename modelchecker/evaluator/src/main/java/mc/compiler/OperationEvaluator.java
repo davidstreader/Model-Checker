@@ -236,7 +236,7 @@ public class OperationEvaluator {
             System.out.println("Bad operation type "+operation.getOperationType());
         }
         //if (r==false) {
-            System.out.println("                evalOp " + operation.myString()+" " + EquationEvaluator.asString(processMap) + " => " + r);
+        //    System.out.println("                evalOp " + operation.myString()+" " + EquationEvaluator.asString(processMap) + " => " + r);
        // }
         return r;
     }
