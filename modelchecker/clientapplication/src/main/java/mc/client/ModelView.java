@@ -54,7 +54,7 @@ import mc.client.ui.DoubleClickHandler;
 import mc.client.ui.SettingsController;
 import mc.compiler.CompilationObject;
 import mc.compiler.CompilationObservable;
-import mc.compiler.ImpliesResult;
+//import mc.compiler.ImpliesResult;
 import mc.compiler.OperationResult;
 import mc.processmodels.Mapping;
 import mc.processmodels.MultiProcessModel;
@@ -107,8 +107,8 @@ public class ModelView implements Observer {
   private Consumer<Collection<String>> listOfAutomataUpdater;
   @Setter
   private BiConsumer<List<OperationResult>, List<OperationResult>> updateLog;
-  @Setter
-  private BiConsumer<List<ImpliesResult>, List<ImpliesResult>> updateImpLog;
+  //@Setter
+  //private BiConsumer<List<ImpliesResult>, List<ImpliesResult>> updateImpLog;
 
   public ProcessModel getProcess(String id) {
     return compiledResult.getProcessMap().get(id);
@@ -179,7 +179,7 @@ public class ModelView implements Observer {
 
     //Calls the function(Consumer) attached to the updateLog
     updateLog.accept(compiledResult.getOperationResults(), compiledResult.getEquationResults());
-    updateImpLog.accept(compiledResult.getImpliesResults(), compiledResult.getImpliesResults());
+  //  updateImpLog.accept(compiledResult.getImpliesResults(), compiledResult.getImpliesResults());
   }
 
   /**

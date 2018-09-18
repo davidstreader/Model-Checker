@@ -274,7 +274,8 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
   private void interpretProcess(ASTNode astNode, String identifier)
     throws CompilationException, InterruptedException {
     //prity print AST
-    //System.out.println("interpretProcess (PN) astNode IS " +astNode.toString());
+    //System.out.println("interpretProcess (PN) astNode IS " +astNode.myString());
+    //System.out.println("processMap keys "+processMap.keySet());
     PetrinetInterpreter.indent = PetrinetInterpreter.indent.concat("-");
     String className = astNode.getClass().getSimpleName();
     //System.out.println("iPro " + PetrinetInterpreter.indent + className);

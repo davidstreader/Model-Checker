@@ -29,8 +29,8 @@ public class OperationEvaluator {
 
     static Map<String, Class<? extends IOperationInfixFunction>> operationsMap = new HashMap<>();
     private final String automata = "automata";
-    private List<ImpliesResult>  impRes = new ArrayList<>();
-    List<ImpliesResult> getImpRes() {return  impRes;}
+    //private List<ImpliesResult>  impRes = new ArrayList<>();
+    //List<ImpliesResult> getImpRes() {return  impRes;}
     Set<String> alpha;
     /**
      * This is the interpreter  for operations (equations) Called from Compiler
@@ -56,11 +56,11 @@ public class OperationEvaluator {
         for (OperationNode operation : operations) {
             Result r = evaluateOperation(operation,processMap,
               interpreter,code, context,messageQueue,alpha);
-            if (r instanceof OperationResult) {
+          //  if (r instanceof OperationResult) {
                 results.add((OperationResult)r);
-            } else if (r instanceof ImpliesResult) {
-                impRes.add((ImpliesResult)r) ;  //  A<f B ==>> ping(A)<q ping(B)
-            }
+          //  } else if (r instanceof ImpliesResult) {
+          //      impRes.add((ImpliesResult)r) ;  //  A<f B ==>> ping(A)<q ping(B)
+          //  }
         }
         //System.out.println("***operation Evaluation processmap "+processMap.size());
         return results;
@@ -93,7 +93,9 @@ public class OperationEvaluator {
             OperationNode o2 =  (OperationNode) ((ImpliesNode) operation).getSecondOperation();
             OperationResult  or1 = evaluateOp(o1,processMap, interpreter,code, context,messageQueue,alpha);
             OperationResult  or2 = evaluateOp(o2,processMap, interpreter,code, context,messageQueue,alpha);
-            or = new ImpliesResult(or1,or2);
+
+           boolean r = !or1.isRes() || or2.isRes();
+            or = new OperationResult(new ArrayList<>(),false,r,"("+or1.isRes()+"->"+or2.isRes()+")",operation);
             //System.out.println("implies op eval or1 res "+or1.isRes()+"or2 res "+or2.isRes());
        } else {
 
@@ -134,9 +136,11 @@ public class OperationEvaluator {
 //******
         r = evalOp(operation,processMap,interpreter,context,alpha);
   //System.out.println("evaluateOp "+ firstId+" "+operation.getOperation()+" "+secondId+" "+r);
-        OperationResult result = new OperationResult(operation.getFirstProcess(),
-                operation.getSecondProcess(), firstId, secondId,
-                operation.getOperation(), null, operation.isNegated(), r, "");
+        OperationResult result = new OperationResult(
+                //operation.getFirstProcess(),
+                //operation.getSecondProcess(), firstId, secondId,
+                //operation.getOperation(),
+          null, operation.isNegated(), r, "",operation);
 
         return result;
     }
@@ -162,7 +166,7 @@ public class OperationEvaluator {
         /*System.out.println("evalOp "+operation.myString());
         for(String key: processMap.keySet()){
             System.out.println(key+"->"+processMap.get(key).getId());
-        }*/
+        } */
 
 
         IOperationInfixFunction funct = instantiateClass(operationsMap.get(operation.getOperation().toLowerCase()));
@@ -236,7 +240,7 @@ public class OperationEvaluator {
             System.out.println("Bad operation type "+operation.getOperationType());
         }
         //if (r==false) {
-        //    System.out.println("                evalOp " + operation.myString()+" " + EquationEvaluator.asString(processMap) + " => " + r);
+            //System.out.println("END    evalOp " + operation.myString()+" " + EquationEvaluator.asString(processMap) + " => " + r);
        // }
         return r;
     }
@@ -260,7 +264,8 @@ public class OperationEvaluator {
      * @param ids     the returned collection
      */
     private static void collectIdentifiers(ASTNode process, List<String> ids) {
-       //if (process!= null) System.out.println("collectIds in  "+process.wholeString()+"\n **");
+       //System.out.println("collectIds in  "+process.wholeString()+"\n **");
+        //System.out.println("collectId "+process.getClass().getSimpleName());
         if (process instanceof IdentifierNode) {
             String id = ((IdentifierNode) process).getIdentifier();
             if (!ids.contains(id)) ids.add(id);
@@ -270,17 +275,17 @@ public class OperationEvaluator {
             //System.out.println("  Bound ");
             List<String> temp = new ArrayList<>();
             collectIdentifiers(((ForAllNode) process).getOp(), temp);
-            System.out.println("  from op "+temp);
+            //System.out.println("  from op "+temp);
             List<String> bound = ((ForAllNode) process).getBound();
-            System.out.println("ForAllNode bound " +bound +  " temp "+temp);
+            //System.out.println("ForAllNode bound " +bound +  " temp "+temp);
             temp.removeAll(bound);
-            System.out.println("ForAllNode bound " +bound +  " temp "+temp);
+            //System.out.println("ForAllNode bound " +bound +  " temp "+temp);
             ids.addAll(temp);
 
         } else if (process instanceof ImpliesNode){
             //System.out.println(" ImpliesNode");
-            collectIdentifiers(((ImpliesNode) process).getFirstProcess(), ids);
-            collectIdentifiers(((ImpliesNode) process).getSecondProcess(), ids);
+            collectIdentifiers(((ImpliesNode) process).getFirstOperation(), ids);
+            collectIdentifiers(((ImpliesNode) process).getSecondOperation(), ids);
         } else if (process instanceof OperationNode){
              //no forall
                 //System.out.println("  No Bound ");
@@ -326,7 +331,7 @@ public class OperationEvaluator {
                 System.out.println(" DO NOT KNOW Node " + process.getName());
             }
         }
-
+        //System.out.println("collectIdentifiers " + process.getClass().getSimpleName()+" "+ ids);
     }
 
     /**

@@ -116,7 +116,7 @@ public class UserInterfaceController implements Initializable {
         ModelView.getInstance().setListOfAutomataUpdater(this::updateModelsList);
         //register a callback for the output of the log
         ModelView.getInstance().setUpdateLog(this::updateLogText);
-        ModelView.getInstance().setUpdateImpLog(this::updateImpLogText);
+        //ModelView.getInstance().setUpdateImpLog(this::updateImpLogText);
 
         //Add the key combinations
         newMenuItem.setAccelerator(KeyCombination.keyCombination("Ctrl+N"));
@@ -731,16 +731,16 @@ public class UserInterfaceController implements Initializable {
         if (opRes.size() > 0)
             compilerOutputDisplay.appendText("\n##Operation Results##\n");
 
-        opRes.forEach(o -> compilerOutputDisplay.appendText(o.getProcess1().getIdent() + " " + o.getOperation() + " " +
-                o.getProcess2().getIdent() + " = " + o.getResult() + "\n"));
+        opRes.forEach(o -> compilerOutputDisplay.appendText(o.getOp().myString() + " = " + o.getResult() + "\n"));
 
 
         if (eqRes.size() > 0) {
             compilerOutputDisplay.appendText("\n##Equation Results##\n");
 
             for (OperationResult result : eqRes) {
-                compilerOutputDisplay.appendText(result.getProcess1().getIdent() + " " + result.getOperation() + " " +
-                        result.getProcess2().getIdent() + " = " + result.getResult() + "\n");
+                //compilerOutputDisplay.appendText(result.getProcess1().getIdent() + " " + result.getOperation() + " " +
+                //  result.getProcess2().getIdent() + " = " + result.getResult() + "\n");
+                compilerOutputDisplay.appendText(result.getOp().myString() + "\n");
 
 
                 if (result.getFailures().size() > 0) {
@@ -756,42 +756,6 @@ public class UserInterfaceController implements Initializable {
         }
 
     }
-
-    private void updateImpLogText(List<ImpliesResult> impRes, List<ImpliesResult> eqimpRes) {
-        if (impRes.size() > 0)
-            compilerOutputDisplay.appendText("\n##Operation Results##\n");
-
-        impRes.forEach(o -> compilerOutputDisplay.appendText(
-          o.getOp1().getProcess1().getIdent() + " " + o.getOp1().getOperation() + " " +
-          o.getOp1().getProcess2().getIdent() + " = " + o.getOp1().getResult() + "==>"+
-            o.getOp2().getProcess1().getIdent() + " " + o.getOp2().getOperation() + " " +
-            o.getOp2().getProcess2().getIdent() + " = " + o.getOp2().getResult()+ " is "+
-            o.isRes()+ "\n"));
-
-
-        if (eqimpRes.size() > 0) {
-            compilerOutputDisplay.appendText("\n##Equation Results##\n");
-/*
-            for (ImpliesResult result : eqRes) {
-                compilerOutputDisplay.appendText(result.getProcess1().getIdent() + " " + result.getOperation() + " " +
-                  result.getProcess2().getIdent() + " = " + result.getResult() + "\n");
-
-
-                if (result.getFailures().size() > 0) {
-                    compilerOutputDisplay.appendText("\tFailing Combinations: \n");
-
-                    for (String failure : result.getFailures())
-                        compilerOutputDisplay.appendText("\t\t" + failure + " " );
-                }
-
-                compilerOutputDisplay.appendText("\tSimulations passed: " + result.getExtra() + "\n");
-
-            }
-            */
-        }
-
-    }
-
 
     private void addRecentFile(String filePath) {
         if (!recentFilePaths.contains(filePath)) {

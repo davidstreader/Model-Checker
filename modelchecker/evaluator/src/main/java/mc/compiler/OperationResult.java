@@ -5,6 +5,7 @@ import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import mc.compiler.ast.ASTNode;
+import mc.compiler.ast.OperationNode;
 import mc.exceptions.CompilationException;
 import mc.util.Location;
 
@@ -18,27 +19,30 @@ import mc.util.Location;
 @Getter
 public class OperationResult extends Result {
 
-  private OperationProcess process1;
-  private OperationProcess process2;
-  private String operation;
+  private OperationNode op;
+  //private OperationProcess process1;
+  //private OperationProcess process2;
+  //private String operation;
   private String result;
   private boolean res;
   private String extra;
   private List<String> failures;
 
-  public OperationResult(ASTNode process1, ASTNode process2, String ident1, String ident2,
-                         String operation, List<String> failedOps,
-                         boolean negated, boolean result, String extra)
+  public OperationResult(//ASTNode process1, ASTNode process2, String ident1, String ident2,
+                         //String operation,
+                         List<String> failedOps,
+                         boolean negated, boolean result, String extra,OperationNode op)
     throws CompilationException {
-    System.out.println("OperationResult "+ ident1+" "+process1.getLocation().toString());
-    this.process1 = new OperationProcess(ident1, process1.getLocation());
-    this.process2 = new OperationProcess(ident2, process2.getLocation());
-    this.operation = (negated ? "!" : "") + operation;
+    System.out.println("OperationResult "+ failures+" "+ op.myString()+ " "+result);
+    //this.process1 = new OperationProcess(ident1, process1.getLocation());
+    //this.process2 = new OperationProcess(ident2, process2.getLocation());
+    //this.operation = (negated ? "!" : "") + operation;
     this.result = result + "";
     res = result;
     this.extra = extra;
     this.failures = failedOps;
-    System.out.println("OperationResult "+ this.process1.getIdent()+" "+this.process2.getIdent());
+    this.op = op;
+
   }
 
   @AllArgsConstructor

@@ -24,5 +24,5 @@ public class CompilationObject {
     private List<OperationResult> operationResults;
 
     private List<OperationResult> equationResults;
-    private List<ImpliesResult> impliesResults;
+    //private List<ImpliesResult> impliesResults;
 }
