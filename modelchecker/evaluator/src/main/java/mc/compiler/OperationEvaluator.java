@@ -95,7 +95,7 @@ public class OperationEvaluator {
             OperationResult  or2 = evaluateOp(o2,processMap, interpreter,code, context,messageQueue,alpha);
 
            boolean r = !or1.isRes() || or2.isRes();
-            or = new OperationResult(new ArrayList<>(),false,r,"("+or1.isRes()+"->"+or2.isRes()+")",operation);
+            or = new OperationResult(new ArrayList<>(),r,"("+or1.isRes()+"->"+or2.isRes()+")",operation);
             //System.out.println("implies op eval or1 res "+or1.isRes()+"or2 res "+or2.isRes());
        } else {
 
@@ -137,10 +137,8 @@ public class OperationEvaluator {
         r = evalOp(operation,processMap,interpreter,context,alpha);
   //System.out.println("evaluateOp "+ firstId+" "+operation.getOperation()+" "+secondId+" "+r);
         OperationResult result = new OperationResult(
-                //operation.getFirstProcess(),
-                //operation.getSecondProcess(), firstId, secondId,
-                //operation.getOperation(),
-          null, operation.isNegated(), r, "",operation);
+
+          null,  r, "",operation);
 
         return result;
     }

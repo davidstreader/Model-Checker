@@ -53,9 +53,8 @@ public class EquationEvaluator {
     throws CompilationException, InterruptedException {
     reset();
     processes = processMap.values().stream().collect(Collectors.toList());
-    String ps = processMap.values().stream().map(x -> x.getId()).collect(Collectors.joining(" "));
     Map<String, ProcessModel> toRender = new ConcurrentSkipListMap<>();
-    System.out.println("evaluateEquations " + operations.size() + " processes " + processes.size() + " " + ps);
+    System.out.println("evaluateEquations " + operations.size() + " processes " + processes.size() + " " + asString(processMap));
     // build Map automaton name -> index in models
 // Stops us having to search for the model each time with a loop (
     for (int i = 0; i < processes.size(); i++) {
@@ -65,13 +64,14 @@ public class EquationEvaluator {
 /*
    For each equation => once for many ground equation
  */
+
     for (OperationNode operation : operations) {
-      System.out.println("XX");
-      if (operation == null) System.out.println("operation==null in evaluateEquations");
-      else System.out.println(operation.myString());
+      if (operation == null) System.out.println("XX operation==null in evaluateEquations");
+      else System.out.println("XX "+operation.myString());
+      Map<String, ProcessModel> pMap = new TreeMap<>();// MUST make copy as changed by call
+      processMap.keySet().stream().forEach(x->pMap.put(x,processMap.get(x)));
 
-
-      evaluateEquation(processMap, operation, code, z3Context, messageQueue, alpha);
+      evaluateEquation(pMap, operation, code, z3Context, messageQueue, alpha);
     }
 
     return new EquationReturn(results,  toRender);
@@ -87,7 +87,7 @@ public class EquationEvaluator {
 
     Evaluate a single equation. - Many operations - Many ground equations
      */
-  private ModelStatus evaluateEquation(Map<String, ProcessModel> processMap,
+  private void evaluateEquation(Map<String, ProcessModel> processMap,
                                        OperationNode operation,
                                        String code, com.microsoft.z3.Context z3Context,
                                        BlockingQueue<Object> messageQueue,
@@ -104,7 +104,7 @@ public class EquationEvaluator {
         ((ForAllNode) operation).getOp(), code, z3Context, messageQueue, alpha);
     } */
     //collect the free variables
-    System.out.println("in  evaluateEquation " + operation.myString());
+    System.out.println("START - evaluateEquation " + operation.myString()+ " "+processMap.keySet());
     List<String> globlFreeVariables = collectFreeVariables(operation, processMap.keySet());
     System.out.println("globalFreeVariables " + globlFreeVariables);
     if (globlFreeVariables.size() > 3) {
@@ -135,12 +135,12 @@ public class EquationEvaluator {
     String secondId;
 
 
-
-      results.add(new OperationResult(failures, operation.isNegated(), status.passCount == totalPermutations,
+    System.out.println("END - evaluateEquation "+ operation.myString()+" "+failures+ " "+status.myString());
+      results.add(new OperationResult(failures, status.passCount == totalPermutations,
         status.passCount + "/" + totalPermutations, operation));
 
 
-    return status;
+    return;
   }
 
 
@@ -217,11 +217,12 @@ public class EquationEvaluator {
           alpha,     // Only used for broadcast semantics never writen to
           inerFreeVariabelMap, true //call test again with expanded variable map
         );
+
 // must pass
         if (localStatus.failCount > 0) {
           status.setFailCount(localStatus.failCount);  //Fail must return
           // status.setPassCount(localStatus.passCount);  // pass count not passed up term
-          System.out.println("Returning from for setting "+ failures+" " +status.myString());
+          System.out.println("Returning from forall "+ failures+" " +status.myString());
           return failures;
         } else status.passCount++;
       } else if (operation instanceof ImpliesNode) {    //IMPLIES
@@ -265,14 +266,14 @@ public class EquationEvaluator {
             );
             //System.out.println("Return of status1 = " + status1.myString());
             or1 = status1.failCount == 0;
-            r = (!or1) || or2;  // A -> B  EQUIV  not A OR B
+            r = (!or1);  // A -> B  EQUIV  not A OR B and B==false
 
             //System.out.println(r + " "+ status.myString());
             // status.setPassCount(status1.passCount); //pass count not passed up tree
-            if (!r) {
-              status.setFailCount(status1.failCount);
-              System.out.println("Failing " + operation.myString() + " " + asString(outerFreeVariabelMap));
-              return failures1; //Fail must return
+            if (!r) {//or1==true and or2==false
+              status.setFailCount(status2.failCount);
+              System.out.println("Failing Implies" + operation.myString() + " " + asString(outerFreeVariabelMap)+" fail "+failures2);
+              return failures2; //Fail must return the failures from 2 NOT 1
             } else status.passCount++;
           }
         } else {  //short circuit evaluate 1 First
@@ -295,7 +296,7 @@ public class EquationEvaluator {
             r = true;
             status.setFailCount(0);
             status.passCount++;
-          } else { //Not shortr Circuit so evaluate other part of Implies
+          } else { //Not short Circuit so evaluate other part of Implies
             OperationNode o2 = (OperationNode) ((ImpliesNode) operation).getSecondOperation();
             //System.out.println("implies now evaluate 2  " + o2.myString());
             List<String> failures2 = testUserdefinedModel(processMap,
@@ -309,11 +310,11 @@ public class EquationEvaluator {
             );
             System.out.println("status2 = " + status2.myString());
             or2 = status2.failCount == 0;
-            r = (!or1) || or2;  // A -> B  EQUIV  not A OR B
+            r = or2;  // A -> B  EQUIV  not A OR B and A==true
             status.setFailCount(status2.failCount);
             //status.setPassCount(status2.passCount);  //pass count not passed up term
             if (status2.failCount > 0) {
-              System.out.println("Failing " + operation.myString() + " " + asString(outerFreeVariabelMap));
+              System.out.println("Failing " + operation.myString() + " " + asString(outerFreeVariabelMap)+" fail "+failures2);
               return failures2; //Fail must return
             }else status.passCount++;
           }
@@ -342,16 +343,17 @@ public class EquationEvaluator {
           String failOutput = "";
           if (exceptionInformation.length() > 0)
             failOutput += exceptionInformation + "\n";
-          for (String key : outerFreeVariabelMap.keySet()) {
+          failOutput += asString(outerFreeVariabelMap);
+         /* for (String key : outerFreeVariabelMap.keySet()) {
             failOutput += key + "=" + outerFreeVariabelMap.get(key).getId() + ", ";
-          }
+          }*/
           failedEquations.add(failOutput);
           System.out.println("failOutput " + failOutput);
         }
 
 //If we've failed too many operation tests;
         if (status.failCount > 0) {
-          System.out.println("Failing " + operation.myString() + " " + asString(outerFreeVariabelMap));
+          System.out.println("Failing " + operation.myString() + " " + failedEquations);
           return failedEquations;
         }  // end by failure
 
@@ -374,7 +376,7 @@ public class EquationEvaluator {
               if (freeVariables.get(freeVariables.size() - 1).equals(variableId)) {
                 //if (freeVariables.get(outerFreeVariabelMap.size() - 1).equals(variableId)) {
                   //System.out.println("Passed All " + operation.myString());
-                return failedEquations;  // stop if last variable points to last model
+                return new ArrayList<>();  // stop if last variable points to last model
               } else {
                 outerFreeVariabelMap.put(variableId, models.get(0)); // reset to first model
                 //System.out.println("YYY Setting "+ variableId+"->"+idMap.get(variableId).getId());

@@ -82,9 +82,12 @@ public class OperationNode extends ASTNode {
   }
 
   public String myString(){
+    String opOut;
+    if (negated) opOut="!"+operation;
+    else opOut=operation;
     StringBuilder sb = new StringBuilder();
     // if (firstProcess instanceof )
-    sb.append("("+firstProcess.myString()  + operation );
+    sb.append("("+firstProcess.myString()  + opOut );
     if (flags != null && flags.size()>0) sb.append( flags );
     sb.append( secondProcess.myString()+")");
 

@@ -1,21 +1,27 @@
 processes {
-A = a->STOP.
-B = xx->STOP||A.
 
-A1 = yy->A1.
-D = d->STOP||e->STOP.
-// need to add B to Hierarchy of process hence to set type
-C = (A=>(x->STOP))/{D/x}.
+C = a->b->C.
+D = a->(b->D|b->STOP).
+
+E = a->E.
+F = a->X,X = a->X.
+
 }
-petrinet C, D,A1.
-automata C,D,A1.
 
-
-
-
-
-
-
+operation {
+//D <t C.
+//C <t D.
+//C =t D.
+D <t{cong} C.
+C !<t{cong} D.
+E <t{cong} F.
+F !<t{cong} E.
+//D <f C.
+// P <t{cong} Q.
+//Q <t{cong} P.
+} 
+equation {
+}
 
 
 

@@ -31,7 +31,7 @@ public class OperationResult extends Result {
   public OperationResult(//ASTNode process1, ASTNode process2, String ident1, String ident2,
                          //String operation,
                          List<String> failedOps,
-                         boolean negated, boolean result, String extra,OperationNode op)
+                         boolean result, String extra,OperationNode op)
     throws CompilationException {
     System.out.println("OperationResult "+ failures+" "+ op.myString()+ " "+result);
     //this.process1 = new OperationProcess(ident1, process1.getLocation());

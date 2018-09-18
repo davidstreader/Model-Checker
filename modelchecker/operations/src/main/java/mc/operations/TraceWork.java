@@ -45,7 +45,7 @@ public class TraceWork {
         try {
           Automaton temp;
           temp = nfa2dfaworks.compose(a.getId(), new HashSet<>(), null, TraceType.CompleteTrace, a);
-          //System.out.println("DFA "+temp.myString());
+          System.out.println("DFA "+temp.myString());
           dfas.add(temp);
         } catch (CompilationException e) {
           //System.out.println("PINGO" + e.toString());
@@ -53,8 +53,8 @@ public class TraceWork {
       }
       Automaton a1 = (Automaton) dfas.get(1);
       Automaton a2 = (Automaton) dfas.get(0);
-      //System.out.println(a1.myString());
-      //System.out.println(a2.myString());
+      System.out.println(a1.myString());
+      System.out.println(a2.myString());
       //System.out.println("Trace Refinement type " + tt + " flags " + flags + " " + a1.getId() + "<<" + a2.getId());
 //Both dfas are built
       a1Next = build_readyMap(a1, tt, cong); //needed to control the simulation
@@ -94,7 +94,7 @@ public class TraceWork {
                               Map<AutomatonNode, NextMap> a2N,
                               List<NodePair> processed,
                               boolean cong) {
-    //System.out.println("traceSubset " + np.first.getId() + " " + np.second.getId() + " ");
+    System.out.println("traceSubset " + np.myString());
     //processed only used to stop algorithm running for ever with cyclic automata
     for (NodePair n : processed) {
       if (n.getFirst().getId().equals(np.getFirst().getId()) &&
@@ -111,26 +111,28 @@ public class TraceWork {
     } else {
       small = a2N.get(np.second).labels().stream().filter(x -> !Constant.external(x)).collect(Collectors.toSet());
     }
-    //System.out.println(small + " in " + a1N.get(np.first).labels());
-    if (a1N.get(np.first).labels().containsAll(small)) {
-      //System.out.println("adding "+np.myString());
+    Set<String> large = a1N.get(np.first).labels().stream().collect(Collectors.toSet());
+    //large = large.stream().filter(x->small.contains(x)).collect(Collectors.toSet());
+    //Set<String> intersect = large.stream().filter(x->small.contains(x)).collect(Collectors.toSet());
+    System.out.println(" is   "+small + " Subset " + large);
+    if (large.containsAll(small)) {
+      //if (a1N.get(np.first).labels().containsAll(small)) {
+        //System.out.println("adding "+np.myString());
       processed.add(np);
       // b? might not be in in the ready labels but is in the next step label
+      boolean notsubset = true;
       for (String lab : small) {
-        //   for(String lab: a2N.get(np.second).labels()){
-        //System.out.print(lab + " ");
-        if (!a1N.get(np.first).labels().contains(lab))
-          return false;
         if (Constant.external(lab)) continue;
+
         AutomatonNode nd1 = a1N.get(np.first).getNcs().get(lab);
         AutomatonNode nd2 = a2N.get(np.second).getNcs().get(lab);
         if (traceSubset(new NodePair(nd1, nd2), a1N, a2N, processed, cong) == false) return false;
-        // i++; if (i>9) break;
       }
     } else {
-      //System.out.println(small + " NOTsubset " + a1N.get(np.first).labels());
+      System.out.println("returns false "+small + " NOTsubset " + large);
       return false;
     }
+    System.out.println("traceSubset "+np.myString()+" returns true");
     return true;
   }
 
@@ -143,9 +145,11 @@ public class TraceWork {
     For non congurance STOP is add recursivly in quiescentNext
    */
   private Nd2NextMap build_readyMap(Automaton a, TraceType tt, boolean cong) {
-    //System.out.println("Build Ready Map "+tt+" cong= " + cong);
+    System.out.println("Build Ready Map "+tt+" cong= " + cong);
+    System.out.println(a.myString());
     Nd2NextMap nfanode2ASet = new Nd2NextMap();
     for (AutomatonNode n : a.getNodes()) {
+      System.out.println("node "+n.myString());
       NextMap as;
       as = new NextMap(n.getOutgoingEdges().stream().
           distinct().
@@ -163,9 +167,10 @@ public class TraceWork {
       if (cong && n.isStartNode()) {
         as.ncs.put(Constant.Start, n);
       }
-      //System.out.println("Next "+n.getId() + " -> " + as.myString());
+      System.out.println("Next "+n.getId() + " -> " + as.myString());
       nfanode2ASet.getMap().put(n, as);
     }
+    System.out.println(nfanode2ASet.myString());
     return nfanode2ASet;
   }
 

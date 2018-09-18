@@ -80,11 +80,18 @@ public class Nfa2dfaWorks {
         }
 
         String nextId = constructNodeId(stateMap.get(nextStates), nfa.getId());
-
+        stateMap.get(nextStates).stream().forEach(x-> System.out.println("next "+x.myString()));
         if (!nodeMap.containsKey(nextId)) {
           nodeMap.put(nextId, dfa.addNode(nextId));
+          System.out.println("nextId "+nextId);
+
           if (stateMap.get(nextStates).stream().anyMatch(e -> e.isSTOP()) ) {
+            System.out.println("STOP "+ nextId);
             dfa.getNode(nextId).setTerminal(Constant.STOP);
+          }
+          if (stateMap.get(nextStates).stream().anyMatch(e -> e.isStartNode()) ) {
+            System.out.println("start "+ nextId);
+            dfa.getNode(nextId).setStartNode(true);
           }
           if (stateMap.get(nextStates).stream().anyMatch(e -> e.isQuiescent()) ) {
             dfa.getNode(nextId).setQuiescent(true);
@@ -105,7 +112,7 @@ public class Nfa2dfaWorks {
   /*  dfa.getNodes().stream()
         .filter(node -> node.getOutgoingEdges().isEmpty())
         .forEach(node -> node.setTerminal(Constant.STOP)); */
-   // System.out.println("built dfa " +dfa.myString());
+    System.out.println("\n built dfa " +dfa.myString()+"\n");
     return dfa;
   }
 
