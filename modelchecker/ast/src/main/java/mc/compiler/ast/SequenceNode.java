@@ -41,4 +41,11 @@ public class SequenceNode extends ASTNode {
     this.from = from;
     this.to = to;
   }
+  public String myString(){
+    StringBuilder sb = new StringBuilder();
+    sb.append("("+from.getAction());
+    sb.append("->");
+    sb.append(to.myString()+")");
+    return sb.toString();
+  }
 }

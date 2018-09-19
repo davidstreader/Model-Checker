@@ -45,7 +45,7 @@ public class TraceWork {
         try {
           Automaton temp;
           temp = nfa2dfaworks.compose(a.getId(), new HashSet<>(), null, TraceType.CompleteTrace, a);
-          System.out.println("DFA "+temp.myString());
+          //System.out.println("DFA "+temp.myString());
           dfas.add(temp);
         } catch (CompilationException e) {
           //System.out.println("PINGO" + e.toString());
@@ -53,26 +53,22 @@ public class TraceWork {
       }
       Automaton a1 = (Automaton) dfas.get(1);
       Automaton a2 = (Automaton) dfas.get(0);
-      System.out.println(a1.myString());
-      System.out.println(a2.myString());
       //System.out.println("Trace Refinement type " + tt + " flags " + flags + " " + a1.getId() + "<<" + a2.getId());
 //Both dfas are built
       a1Next = build_readyMap(a1, tt, cong); //needed to control the simulation
       a2Next = build_readyMap(a2, tt, cong);
       //The nfas are anotated with Ready sets
       //System.out.println(a2.myString());
-      // printit(a2Next);
       AutomatonNode r1 = (AutomatonNode) a1.getRoot().toArray()[0];
       AutomatonNode r2 = (AutomatonNode) a2.getRoot().toArray()[0];
 
       //System.out.println("?" + r1.getId() + " " + r2.getId());
       boolean b;
       b = traceSubset(new NodePair(r2, r1), a2Next.getMap(), a1Next.getMap(), new ArrayList<>(), cong);
-   //   b = traceSubset(new NodePair(r1, r2), a1Next.getMap(), a2Next.getMap(), p, cong);
       //System.out.println("Trace Refinement type " + tt + " " + a1.getId() + "<<" + a2.getId() + " " + b);
       return b;
     }
-    System.out.printf("\nTrace semantics not defined for type " + processModels.iterator().next().getClass() + "\n");
+    //System.out.printf("\nTrace semantics not defined for type " + processModels.iterator().next().getClass() + "\n");
     return false;
   }
 
@@ -94,7 +90,7 @@ public class TraceWork {
                               Map<AutomatonNode, NextMap> a2N,
                               List<NodePair> processed,
                               boolean cong) {
-    System.out.println("traceSubset " + np.myString());
+    //System.out.println("traceSubset " + np.myString());
     //processed only used to stop algorithm running for ever with cyclic automata
     for (NodePair n : processed) {
       if (n.getFirst().getId().equals(np.getFirst().getId()) &&
@@ -114,7 +110,7 @@ public class TraceWork {
     Set<String> large = a1N.get(np.first).labels().stream().collect(Collectors.toSet());
     //large = large.stream().filter(x->small.contains(x)).collect(Collectors.toSet());
     //Set<String> intersect = large.stream().filter(x->small.contains(x)).collect(Collectors.toSet());
-    System.out.println(" is   "+small + " Subset " + large);
+    //System.out.println(" is   "+small + " Subset " + large);
     if (large.containsAll(small)) {
       //if (a1N.get(np.first).labels().containsAll(small)) {
         //System.out.println("adding "+np.myString());
@@ -129,10 +125,10 @@ public class TraceWork {
         if (traceSubset(new NodePair(nd1, nd2), a1N, a2N, processed, cong) == false) return false;
       }
     } else {
-      System.out.println("returns false "+small + " NOTsubset " + large);
+      //System.out.println("returns false "+small + " NOTsubset " + large);
       return false;
     }
-    System.out.println("traceSubset "+np.myString()+" returns true");
+    //System.out.println("traceSubset "+np.myString()+" returns true");
     return true;
   }
 
@@ -145,11 +141,11 @@ public class TraceWork {
     For non congurance STOP is add recursivly in quiescentNext
    */
   private Nd2NextMap build_readyMap(Automaton a, TraceType tt, boolean cong) {
-    System.out.println("Build Ready Map "+tt+" cong= " + cong);
-    System.out.println(a.myString());
+    //System.out.println("Build Ready Map "+tt+" cong= " + cong);
+    //System.out.println(a.myString());
     Nd2NextMap nfanode2ASet = new Nd2NextMap();
     for (AutomatonNode n : a.getNodes()) {
-      System.out.println("node "+n.myString());
+      //System.out.println("node "+n.myString());
       NextMap as;
       as = new NextMap(n.getOutgoingEdges().stream().
           distinct().
@@ -167,10 +163,10 @@ public class TraceWork {
       if (cong && n.isStartNode()) {
         as.ncs.put(Constant.Start, n);
       }
-      System.out.println("Next "+n.getId() + " -> " + as.myString());
+      //System.out.println("Next "+n.getId() + " -> " + as.myString());
       nfanode2ASet.getMap().put(n, as);
     }
-    System.out.println(nfanode2ASet.myString());
+    //System.out.println(nfanode2ASet.myString());
     return nfanode2ASet;
   }
 
@@ -269,48 +265,6 @@ public class TraceWork {
     Map<String, AutomatonNode> ncs = new TreeMap<>();
 
     public NextMap(Set<NextComponent> in) {
-      Map<String, AutomatonNode> out = new TreeMap<>();
-      for (NextComponent nc : in) {
-        out.put(nc.action, nc.getTo());
-      }
-      ncs = out;
-    }
-
-    public void addSTOP(AutomatonNode nd) {
-      ncs.put(Constant.STOP, nd);
-    }
-
-    public Set<String> labels() {
-      return this.ncs.keySet();
-    }
-
-    public boolean equalLabels(NextMap ns) {
-      return this.labels().equals(ns.labels());
-    }
-
-    public boolean subsetLabels(NextMap ns) {
-      return ns.labels().containsAll(this.labels());
-    }
-
-    public String myString() {
-      StringBuilder sb = new StringBuilder();
-      for (String key : ncs.keySet()) {
-        if (ncs.get(key)== null) sb.append(key+"->null");
-        else sb.append(key + "->" + ncs.get(key).getId() + ", ");
-      }
-      return sb.toString();
-    }
-  }
-  /*     Works ONLY for nfa
-   NextMap maps a label to the Automaton node its leads to
-   OR STOP to itself
-  */
-  @Getter
-  public static class NextAccMap {
-
-    Map<String, AutomatonNode> ncs = new TreeMap<>();
-
-    public NextAccMap(Set<NextComponent> in) {
       Map<String, AutomatonNode> out = new TreeMap<>();
       for (NextComponent nc : in) {
         out.put(nc.action, nc.getTo());

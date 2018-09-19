@@ -71,7 +71,7 @@ public class Parser {
 
   public AbstractSyntaxTree parse(List<Token> tokens, Context context) throws CompilationException, InterruptedException {
     reset();
-    System.out.println("Parse "+ tokens);
+    //System.out.println("Parse "+ tokens);
     this.tokens = tokens;
     this.context = context;
 
@@ -706,7 +706,7 @@ System.out.println("parseDisplayType "+ token.toString());
         nextToken(); // gobble the '||' token
         ASTNode process2 = parseComposite();
         process = new CompositeNode(key, process, process2, constructLocation(start));
-        System.out.println("***Parse infixFunction "+ key);
+        //System.out.println("***Parse infixFunction "+ key);
         break;
       }
     }
@@ -850,7 +850,7 @@ System.out.println("parseDisplayType "+ token.toString());
     if (peekToken() instanceof OpenBraceToken) {
       flags = parseFlags(type);
     }
-    System.out.println("*************   parsing function "+type+" flags "+flags);
+    //System.out.println("*************   parsing function "+type+" flags "+flags);
     // ensure that the next token is a '(' token
     if (!(nextToken() instanceof OpenParenToken)) {
       Token error = tokens.get(index - 1);
@@ -912,11 +912,11 @@ System.out.println("parseDisplayType "+ token.toString());
       Token error = tokens.get(index - 1);
       throw constructException("expecting to parse \"{\" but received \"" + error.toString() + "\"", error.getLocation());
     }
-    System.out.println("parseFlags "+ functionType);
+    //System.out.println("parseFlags "+ functionType);
     ImmutableSet<String> acceptedFlags;
-    System.out.println("Find "+functionType+ " in -funs "+functions.keySet() +
+    /*System.out.println("Find "+functionType+ " in -funs "+functions.keySet() +
                        " -infuns "+infixFunctions.keySet()+
-                        " -ops "+operationFunctions.keySet());
+                        " -ops "+operationFunctions.keySet()); */
 
     if (functions.keySet().contains(functionType)) {
       acceptedFlags = ImmutableSet.copyOf(instantiateClass(functions.get(functionType)).getValidFlags());
@@ -1371,7 +1371,7 @@ System.out.println("parseDisplayType "+ token.toString());
 
     if (!(peekToken() instanceof OpenBraceToken)) {
       parseAndStoreSingleOperation(true);
-      System.out.println("P Equ");
+      //System.out.println("P Equ");
     } else {
       parseOperationBlock(true);
     }
@@ -1390,7 +1390,7 @@ System.out.println("parseDisplayType "+ token.toString());
     }
   }
   private void parseAlphabetBlock(boolean isEq) throws CompilationException, InterruptedException {
-    System.out.println("parseAlphabetBlock "+ peekToken().toString());
+    //System.out.println("parseAlphabetBlock "+ peekToken().toString());
 
     if (!(nextToken() instanceof OpenBraceToken)) {
       Token error = tokens.get(index - 1);
@@ -1421,7 +1421,7 @@ System.out.println("parseDisplayType "+ token.toString());
 
     if (!(peekToken() instanceof OpenBraceToken)) {
       parseAndStoreSingleOperation(false);
-      System.out.println("PONG");
+      //System.out.println("PONG");
     } else {
       parseOperationBlock(false);  // "{ ...  }
     }
@@ -1436,7 +1436,7 @@ System.out.println("parseDisplayType "+ token.toString());
   private void parseAndStoreSingleOperation(boolean isEq) throws CompilationException, InterruptedException {
     OperationNode operation = parseSingleOperation(isEq,false);
    // System.out.println("OKOK");
-    if (operation == null) System.out.println("op = null");
+    //if (operation == null) System.out.println("op = null");
     if (isEq) {
       equations.add(operation);
     } else {
@@ -1448,14 +1448,12 @@ System.out.println("parseDisplayType "+ token.toString());
 
     int start = index;
     OperationNode firstOperation = parseSOperation(isEq);  // may return an implies node!
-      //System.out.println("ARE WE HERE ????");
- System.out.println("*** Parsed Operation1 "+firstOperation.myString());
+ //System.out.println("*** Parsed Operation1 "+firstOperation.myString());
     OperationNode operation;
     if ((peekToken() instanceof ImpliesToken)) {
-      System.out.println("implies "+peekToken().toString());
+      //System.out.println("implies "+peekToken().toString());
       nextToken();
       OperationNode secondOperation = parseSOperation(isEq); // may return an implies node!
- System.out.println("*** Parsed Operation2 "+  secondOperation.myString());
 
       operation = new ImpliesNode(firstOperation, secondOperation,this.constructLocation(start));
     } else {
@@ -1476,9 +1474,8 @@ System.out.println("parseDisplayType "+ token.toString());
       }
     }
 
-      //System.out.println("YYY "+forall);
-    if (operation instanceof ImpliesNode)System.out.println(((ImpliesNode)operation).myString());
-    else{System.out.println(operation.myString());}
+  /*  if (operation instanceof ImpliesNode)System.out.println(((ImpliesNode)operation).myString());
+    else{System.out.println(operation.myString());} */
 
     return operation;
   }
@@ -1499,7 +1496,7 @@ System.out.println("parseDisplayType "+ token.toString());
 
       } else {
         OperationNode op = parseForAllVarsAndOp(isEq);
-        System.out.println(">>> "+op.myString());
+        //System.out.println(">>> "+op.myString());
         return op;
       }
     }
@@ -1599,7 +1596,7 @@ System.out.println("parseDisplayType "+ token.toString());
       Token error = tokens.get(index - 1);
       throw constructException("expecting to parse \")\" but received \"" + error.toString() + "\"", error.getLocation());
     }
-    System.out.println("Parsed "+forAllNode.myString());
+    //System.out.println("Parsed "+forAllNode.myString());
     return forAllNode;
   }
 

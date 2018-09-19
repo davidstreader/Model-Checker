@@ -35,4 +35,7 @@ public class TerminalNode extends ASTNode {
     super(location,"Terminal");
     this.terminal = terminal;
   }
+  public String myString(){
+    return terminal;
+  }
 }

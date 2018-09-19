@@ -674,7 +674,7 @@ public class UserInterfaceController implements Initializable {
                         Platform.runLater(() -> {
                             CompilationObservable.getInstance().updateClient(compilerOutput);
                             // If this is run outside the fx thread then exceptions occur and weirdness with threads updating combox box and whatnot
-                            compilerOutputDisplay.appendText("Compiling completed sucessfully!\n" + new Date().toString());
+                            compilerOutputDisplay.appendText("Compiling completed!\n" + new Date().toString());
                         });
                         logThread.stop();
 

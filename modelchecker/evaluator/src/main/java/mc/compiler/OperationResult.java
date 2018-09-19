@@ -33,7 +33,7 @@ public class OperationResult extends Result {
                          List<String> failedOps,
                          boolean result, String extra,OperationNode op)
     throws CompilationException {
-    System.out.println("OperationResult "+ failures+" "+ op.myString()+ " "+result);
+    //System.out.println("OperationResult "+ failures+" "+ op.myString()+ " "+result);
     //this.process1 = new OperationProcess(ident1, process1.getLocation());
     //this.process2 = new OperationProcess(ident2, process2.getLocation());
     //this.operation = (negated ? "!" : "") + operation;

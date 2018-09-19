@@ -75,7 +75,7 @@ public class Compiler {
     HashMap<String, ProcessNode> dependencyMap = new HashMap<>();
 
     for (ProcessNode node : ast.getProcesses()) {
-      System.out.println("**COMPILER** Compiler Start node = "+ node.getIdentifier());
+      //System.out.println("**COMPILER** Compiler Start node = "+ node.getIdentifier());
       processNodeMap.put(node.getIdentifier(), (ProcessNode) node.copy());
       dependencyMap.put(node.getIdentifier(), node);
     }
@@ -119,19 +119,19 @@ public class Compiler {
     //store alphabet
     Set<String> alpha = ast.getAlphabet().stream().map(x->x.getAction()).collect(Collectors.toSet());
 //builds process and processMap
-    System.out.println("**COMPILER** Entering interpreter with ast for processes -> Types "+
+    /*System.out.println("**COMPILER** Entering interpreter with ast for processes -> Types "+
       ast.getProcesses().stream().map(x->"\n"+x.getIdentifier()+"->"+x.getType())
-        .reduce("",(x,y)->x+" "+y));
+        .reduce("",(x,y)->x+" "+y)); */
     Map<String, ProcessModel> processMap = interpreter.interpret(ast,
         messageQueue, z3Context,alpha);
 
-    System.out.println("     **COMPILER** before operation evaluation "+processMap.size());
+    //System.out.println("     **COMPILER** before operation evaluation "+processMap.size());
 
     List<OperationResult> opResults = evaluator.evaluateOperations(
       ast.getOperations(), processMap,
         interpreter, code, z3Context, messageQueue, alpha);
    // List<ImpliesResult> impResults = evaluator.getImpRes();
-   // System.out.println("     **COMPILER** before equation evaluation "+processMap.size()+ " op impRes "+impResults.size());
+   //System.out.println("     **COMPILER** before equation evaluation "+processMap.size()+ " op impRes "+impResults.size());
 
     // system currently has memory hence EE can give different results each time
     // still has memory problem with many permutations

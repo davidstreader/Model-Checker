@@ -123,22 +123,10 @@ public class Interpreter {
 
       //SAVE MultiProcess in processMap
       processMap.put(process.getIdentifier(), model);
-     /*System.out.println("Process Map "+processMap.keySet().stream().
-       map(x->x+ " " + processMap.get(x).getProcessType()+ " "+ processMap.get(x).getId()).
-             reduce("",(x,y)->x+"->"+y)); */
-      //System.out.println("Compiler Interpreter DONE! "+ processMap.keySet());
+
 
     }
       //System.out.println("End of inteterpret Y ");
-
-    /*  processMap.values().stream().forEach(pm->{
-          System.out.println("\nPetri Net");
-          System.out.println(
-                  ((Petrinet) ((MultiProcessModel) pm).getProcess(ProcessType.PETRINET)).myString());
-          System.out.println("Automata");
-          System.out.println(
-                  ((Automaton) ((MultiProcessModel) pm).getProcess(ProcessType.AUTOMATA)).myString());
-      }); */
 
     return processMap;
 

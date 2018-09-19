@@ -1,27 +1,33 @@
 processes {
-T = b->a->b->c->STOP.
-R = T\{b}.
-S = abs{fair}(R).
+Onea = a->STOP.
 
-X = a!->b?->STOP.
-Y = a!->STOP.
-Px= revap2bc{cong}(X) .
-Py = revap2bc{cong}(Y).
+ 
+C = a->b->C.
+D = a->(b->D|b->STOP).
+X = a->b->X.
+Y = a->(b->Y|b->STOP).
+//P = C||D.
+//Q = C||C. 
+
 }
-alphabet {  b?}
 
 operation {
-X <q Y.
-Px <fo Py.
-//revap2bc(X) <f revap2bc(Y).
-//X <q Y ==> revap2bc(X) <f revap2bc(Y).
-}
-equation{
 
+D <f C.
+C <f D.
+X <f C.
+Y <f D.
+// Onea||D <t{cong} Onea||C.
+//Onea||C <t{cong} Onea||D. 
+//C <f D.
+
+//C =f D.
 } 
-
-
-
+equation {
+// X||Y <t{cong} Y||X.
+//Z <f Y ==> forall{X} (X||Z <t{cong} X||Y).
+//forall{X} (X||Y <t{cong} X||Z) ==> Z <f Y.
+}
 
 
 

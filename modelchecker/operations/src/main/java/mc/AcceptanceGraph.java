@@ -133,7 +133,7 @@ public class AcceptanceGraph {
     dfa.getNodes().stream()
       .filter(nodex -> nodex.getOutgoingEdges().isEmpty())
       .forEach(nodey -> nodey.setTerminal("STOP"));
-    //System.out.println("Testing");
+    //System.out.println("So far "+dfa.myString());
     //printnode2AcceptanceSets(dfaNode2ASet, nfaNode2A);
     Map<AutomatonNode, List<Set<String>>> dfaNode2ASetNew = activeActionCorrection(dfaNode2ASet);
     //System.out.println("Next");
@@ -201,7 +201,9 @@ public class AcceptanceGraph {
     }
 
 
-    //System.out.println("ending constructStateSet size "+ nextNodes.size());
+    /*System.out.print("ending constructStateSet size ");
+    nextNodes.stream().forEach(x-> System.out.print(x.getId()+" "));
+    System.out.println("End constructState"); */
     return nextNodes;
   }
 
@@ -250,7 +252,7 @@ public class AcceptanceGraph {
    *          Builds the ready set or  Acceptance Set
    */
   private Map<AutomatonNode, Set<String>> build_nfanode2ASet(Automaton a,boolean cong) {
-    //System.out.println(a.myString());
+    //System.out.println("build_nfanode2ASet");
     Map<AutomatonNode, Set<String>> nfanode2ASet = new HashMap<AutomatonNode, Set<String>>();
     for (AutomatonNode n : a.getNodes()) {
       Set<String> as = n.getOutgoingEdges().stream().
@@ -268,6 +270,7 @@ public class AcceptanceGraph {
       nfanode2ASet.put(n, as);
       //System.out.println("nfa ready "+n.getId()+" -> "+as);
     }
+    //System.out.println("build_nfanode2ASet");
     return nfanode2ASet;
   }
 
@@ -333,7 +336,7 @@ public class AcceptanceGraph {
       }
       //System.out.println("node " +nd.getId()+" has color "+ nd.getColour());
     }
-//  //System.out.println("ColorNodes end col = "+color);
+   //System.out.println("ColorNodes end col = "+color);
     return color;
   }
 
@@ -347,14 +350,14 @@ public class AcceptanceGraph {
 
 
   private void printnode2AcceptanceSets() {
-
-/*  //System.out.println("Acceptance Sets");
+  System.out.println("Acceptance Sets");
   for (AutomatonNode nd : node2AcceptanceSets.keySet()) {
-   //System.out.println(" "+nd.getId()+"  "+node2AcceptanceSets.get(nd));
-  }*/
+   System.out.println(" "+nd.getId()+"  "+node2AcceptanceSets.get(nd));
+  }
   }
 
   public static boolean AcceptanceSubSet(List<Set<String>> a1, List<Set<String>> a2) {
+    //System.out.println("AcceptanceSubSet "+ a1+" Sub "+a2);
     boolean ok = false;
     for (Set<String> as1 : a1) {
       ok = false;
@@ -367,7 +370,7 @@ public class AcceptanceGraph {
         }
         //System.out.println("as1 "+as1+" ->NOT>- as2 "+as2);
       }  // if one true then inner loop true
-      if (ok == true) { break; } //if one inner true then outer true
+      if (ok == false) { break; } //if one inner false then outer false
     }  //outer only true if all inner loops true
     //System.out.println("a1 "+a1+" ->>- a2 "+a2+"  returns "+ok);
     return ok;

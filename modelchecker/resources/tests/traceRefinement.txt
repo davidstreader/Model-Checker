@@ -25,21 +25,20 @@ Zz = a->b->STOP|a->STOP.
 operation {
 Aa  <t Xxa.
 Aa <t Yya.
-Aa  !<t{cong} Xxa.
+Aa  <t{cong} Xxa.
 Xxa  !<t{cong} Aa.
-Aa !<t{cong} Yya.
+Aa  <t{cong} Yya.
 
-Aq  !<t Yyq.
+Aq  <t Yyq.
+Yyq !<t Aq.
 Aq <t Zyq.
-Aq  !<t{cong} Zyq.
-Xxq  <t Aq.
-Aq  !<t Xxq.
+Aq  <t{cong} Zyq.
+Xxq  !<t Aq.
+Aq  <t{cong} Xxq.
 
-Zz <t Z.
-Zz !<t{cong} Z.
+Z <t Zz.
+Z !<t{cong} Zz.
+Z ! =t{cong} Zz.
 
 }
-
-
-
 
