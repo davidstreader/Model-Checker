@@ -425,7 +425,11 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
   }
 
   private void interpretTerminalNode(TerminalNode astNode, Automaton automaton, AutomatonNode currentNode) {
-    currentNode.setTerminal(astNode.getTerminal());
+    if (astNode.getTerminal().equals(Constant.STOP)) currentNode.setStopNode(true);
+    else currentNode.setStopNode(false);
+    if (astNode.getTerminal().equals(Constant.ERROR)) currentNode.setErrorNode(true);
+    else currentNode.setErrorNode(false);
+    //currentNode.setTerminal(astNode.getTerminal());
   }
 
   private void interpretConversion(ConversionNode conv, Automaton automaton,

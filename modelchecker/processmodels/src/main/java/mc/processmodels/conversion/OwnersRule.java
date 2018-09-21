@@ -1,7 +1,6 @@
 package mc.processmodels.conversion;
 
 import java.util.*;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 
@@ -12,7 +11,6 @@ import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.automata.operations.PetrinetParallelFunction;
-import mc.processmodels.automata.operations.PetrinetParallelMergeFunction;
 import mc.processmodels.automata.operations.SequentialInfixFun;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetPlace;
@@ -99,7 +97,7 @@ public class OwnersRule {
         processed.add(nd);
         if (!nd2Pl.containsKey(nd)) {
           PetriNetPlace added = petri.addPlace();
-          if (nd.isEndNode()) {
+          if (nd.isStopNode()) {
             added.addEndNo(endcnt++);
           }
 
@@ -113,7 +111,7 @@ public class OwnersRule {
           //System.out.println("Clump " + clump.stream().map(x -> x.getId() + ", ").collect(Collectors.joining()));
           for (AutomatonNode n : clump) {
             if (!nd2Pl.containsKey(n)) nd2Pl.put(n, added);
-            if (n.isTerminal() && n.getTerminal().equals("STOP")) {
+            if (n.isTerminal() && n.isSTOP()) {
               added.setTerminal("STOP");
               //added.setEndNos(n.getE);
             }

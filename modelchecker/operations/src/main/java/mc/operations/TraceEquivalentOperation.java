@@ -38,7 +38,7 @@ public class TraceEquivalentOperation implements IOperationInfixFunction {
   @Override
   public String getOperationType(){return "automata";}
   /**
-   * Evaluate the function.
+   * Evaluate the trace equality.
    *
    * @param alpha
    * @param processModels automaton in the function (e.g. {@code A} in {@code A ~ B})

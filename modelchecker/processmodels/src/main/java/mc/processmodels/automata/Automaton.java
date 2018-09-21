@@ -205,7 +205,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
       a.addEdge(event, s,e,g, true,false);
       s.setStartNode(true);
       a.addRoot(s);
-      e.setTerminal("STOP");
+      e.setStopNode(true);
       a.reown();
    //System.out.println("Single event Automata " +a.myString());
       return a;
@@ -857,12 +857,12 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
       if (node.isStartNode()) {
         builder.append(" (Start)");
-
+      }
+      if (node.isERROR()) {
+        builder.append(" (ERROR)");
       }
 
-      if (node.isTerminal()) {
-        builder.append("(").append(node.getTerminal()).append(")");
-      }
+
       builder.append("\n");
     }
     builder.append("\t}\n\tedges:{\n");

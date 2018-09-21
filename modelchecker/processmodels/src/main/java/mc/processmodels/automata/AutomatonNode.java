@@ -34,13 +34,14 @@ public class AutomatonNode extends ProcessModelObject implements Comparable<Auto
   private boolean startNode;
   @Getter
   @Setter
-  private boolean endNode;
+  private boolean stopNode;
+  @Getter
+  @Setter
+  private boolean errorNode;
   @Getter
   @Setter
   private boolean quiescent;
-  @Getter
-  @Setter
-  private String terminal;
+
 
   @Getter
   @Setter
@@ -52,7 +53,7 @@ public class AutomatonNode extends ProcessModelObject implements Comparable<Auto
 
   @Getter
   @Setter
-  private int labelNumber;
+  private int labelNumber;  // should allways be unique  used in product
 
   @Getter
   @Setter
@@ -74,8 +75,8 @@ public Set<String> readySet(){
     return getOutgoingEdges().stream().map(x->x.getLabel()).collect(Collectors.toSet());
 }
   public void copyProperties(AutomatonNode fromThisNode) {
-    this.terminal = fromThisNode.getTerminal();
     this.startNode = fromThisNode.isStartNode();
+    this.errorNode = fromThisNode.isErrorNode();
     this.colour = fromThisNode.getColour();
 
     this.labelNumber = fromThisNode.getLabelNumber();
@@ -119,14 +120,13 @@ public Set<String> readySet(){
   public AutomatonNode createIntersection(AutomatonNode withThisNode) {
     AutomatonNode newNode = new AutomatonNode("");
 
-    if (this.terminal != null && withThisNode.getTerminal() != null) {
-      if (this.terminal.equals(withThisNode.getTerminal())) {
-        newNode.setTerminal(this.terminal);
-      }
-    }
+
 
     if (this.startNode == withThisNode.isStartNode()) {
       newNode.setStartNode(this.startNode);
+    }
+    if (this.errorNode == withThisNode.isErrorNode()) {
+      newNode.setErrorNode(this.errorNode);
     }
 
     if (this.colour == withThisNode.getColour()) {
@@ -153,14 +153,12 @@ public Set<String> readySet(){
   }
 
   public boolean isTerminal() {
-    return terminal != null && terminal.length() > 0;
+    return isERROR()|| isSTOP();
   }
   public boolean isSTOP() {
-    return terminal != null && terminal.equals(Constant.STOP);
+    return this.stopNode;
   }
-  public boolean isERROR() {
-    return terminal != null && terminal.equals(Constant.ERROR);
-  }
+  public boolean isERROR() { return this.errorNode;}
   public boolean isExternal() { return isERROR() || isSTOP() ||isStartNode();}
   public boolean isQuiescent() {
     Set<AutomatonEdge> shouting =
@@ -216,7 +214,7 @@ public Set<String> readySet(){
   public String myString() {
 
     return "node "+ this.getId()+" col "+ this.colour+" G= "+getGuard()+
-           " term "+getTerminal() + " quies "+quiescent+" end "+isSTOP()+" start "+isStartNode();
+           " error "+isERROR() + " quies "+quiescent+" end "+isSTOP()+" start "+isStartNode();
   }
   public String toString() {
    StringBuilder builder = new StringBuilder();
@@ -224,15 +222,13 @@ public Set<String> readySet(){
 
     builder.append("node{\n");
     builder.append("\tid:").append(getId());
-    if(isTerminal()) {
-      builder.append(" (").append(getTerminal()).append(")");
-    }
+
 
     if(isStartNode()) {
       builder.append(" (START)");
     }
-    if (isTerminal()) {
-      builder.append(" (").append(getTerminal()).append(")");
+    if (isERROR()) {
+      builder.append(" ERROR ");
     }
     builder.append(" g= "+getGuard()+"\n");
    builder.append("\tincoming:{");

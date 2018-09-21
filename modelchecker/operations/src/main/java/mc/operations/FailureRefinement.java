@@ -62,7 +62,7 @@ public class FailureRefinement implements IOperationInfixFunction {
   Nd2NextMap a2Next = new Nd2NextMap();
 
   /**
-   * Evaluate the function.
+   * Evaluate failure Refinement.
    *
    * @param alpha
    * @param processModels the list of automata being compared
@@ -86,7 +86,7 @@ public class FailureRefinement implements IOperationInfixFunction {
           //Automaton temp;
           AcceptanceGraph ag = new AcceptanceGraph("dfa-" + a.getId(), a, cong);
           //temp = nfa2dfaworks.compose(a.getId(), new HashSet<>(), null, TraceType.CompleteTrace, a);
-          //System.out.println("ACC " + ag.toString());
+          System.out.println("ACC " + ag.toString());
           acctgrs.add(ag);
         } catch (CompilationException e) {
           //System.out.println("PINGO" + e.toString());
@@ -114,12 +114,12 @@ public class FailureRefinement implements IOperationInfixFunction {
         new ArrayList<>(), cong, acctgrs.get(1), acctgrs.get(0));
       //
       //System.out.println("Failure Refinement " +  " " + a2.getId() + " <f " + a1.getId() + " " + b);
-
+//ALERT ALERT  trace equality  fails  T = a->a->STOP   X =  a->(a->X|A->STOP).
       TraceEquivalentOperation teo = new TraceEquivalentOperation();
-      TraceWork tw = new TraceWork();
+      TraceRefinement tref = new TraceRefinement();
       boolean traceme;
-      traceme = teo.evaluate(alpha, flags, context, processModels);
-      //System.out.println("Trace equality = "+traceme);
+      traceme = tref.evaluate(alpha, flags, context, processModels);
+      //System.out.println("Trace refinement = "+traceme);
       return b && traceme;
     }
     System.out.printf("\nFailure semantics not defined for type " + processModels.iterator().next().getClass() + "\n");

@@ -66,7 +66,7 @@ public class SequentialInfixFun {
 
         //get the stop nodes such that they can be replaced
         Collection<AutomatonNode> stopNodes = sequence.getNodes().stream()
-          .filter(n -> "STOP".equals(n.getTerminal()))
+          .filter(n -> n.isSTOP())
           .collect(Collectors.toList());
    /*System.out.print("stopNodes "+stopNodes.stream().
       map(x->x.getId()).reduce("{",(x,y)->x=x+" "+y)+"}"); */

@@ -119,14 +119,14 @@ public class AbstractionFunction implements IProcessFunction {
       if (hiddenEdge.getFrom().equals(hiddenEdge.getTo())) {
         if (!isFair) {
           AutomatonNode deadlockNode = abstraction.addNode();
-          deadlockNode.setTerminal(Constant.ERROR);
+          deadlockNode.setErrorNode(true);
 
           abstraction.addEdge(Constant.DEADLOCK, hiddenEdge.getFrom(),
               deadlockNode, null, true,false);
         } else {
           if (hiddenEdge.getFrom().getOutgoingEdges().size() == 0) {
             if (!hiddenEdge.getFrom().isSTOP())
-                 hiddenEdge.getFrom().setTerminal(Constant.ERROR);
+                 hiddenEdge.getFrom().setErrorNode(true);
           }
         }
         hiddenEdges.remove(hiddenEdge);
@@ -140,10 +140,12 @@ public class AbstractionFunction implements IProcessFunction {
        */
       try {
 
-        if (hiddenEdge.getTo().isTerminal()) {
-          hiddenEdge.getFrom().setTerminal(hiddenEdge.getTo().getTerminal());
-        }
-
+        if (hiddenEdge.getTo().isSTOP()) {
+          hiddenEdge.getFrom().setStopNode(true);
+        } else hiddenEdge.getFrom().setStopNode(false);
+        if (hiddenEdge.getTo().isERROR()) {
+          hiddenEdge.getFrom().setErrorNode(true);
+        } else hiddenEdge.getFrom().setErrorNode(false);
 
 //System.out.println("tau = "+ hiddenEdge.myString());
         //abstraction is both In and OUT

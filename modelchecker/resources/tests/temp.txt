@@ -1,35 +1,25 @@
 processes {
-Onea = a->STOP.
 
+Twoaa = a->a->STOP.
+
+Fouraaab = a->a->a->b->STOP.
  
-C = a->b->C.
-D = a->(b->D|b->STOP).
-X = a->b->X.
-Y = a->(b->Y|b->STOP).
-//P = C||D.
-//Q = C||C. 
 
+E = a->(a->E|a->STOP).
+
+
+//U = E||Fouraaab .
+//V = Twoaa||Fouraaab.
 }
 
 operation {
+E <f Twoaa.
+//U <t{cong} V.
 
-D <f C.
-C <f D.
-X <f C.
-Y <f D.
-// Onea||D <t{cong} Onea||C.
-//Onea||C <t{cong} Onea||D. 
-//C <f D.
-
-//C =f D.
 } 
 equation {
 // X||Y <t{cong} Y||X.
-//Z <f Y ==> forall{X} (X||Z <t{cong} X||Y).
-//forall{X} (X||Y <t{cong} X||Z) ==> Z <f Y.
+//Y <f Z ==> forall{X} (X||Y <t{cong} X||Z).
+//forall{X} (X||Y <t{cong} X||Z) ==> Y <f Z.
 }
-
-
-
-
 

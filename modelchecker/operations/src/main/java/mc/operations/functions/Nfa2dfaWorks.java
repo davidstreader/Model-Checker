@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 
 public class Nfa2dfaWorks {
   /**
-   * Execute the function on automata.
+   * Build a dfa from a nfa
    *
    * @param id       the id of the resulting automaton
    * @param flags    the flags given by the function (e.g. {@code unfair} in {@code abs{unfair}(A)}
@@ -38,46 +38,39 @@ public class Nfa2dfaWorks {
     Map<String, AutomatonNode> nodeMap = new HashMap<>();
     Set<String> visited = new HashSet<>();
 
-    Stack<Set<String>> fringe = new Stack<>();
+    Stack<Set<String>> toDoList = new Stack<>();
 
-//build set of nfa nodes used to constuct a the dfa root  dfa node
-    fringe.push(constructClosure(nfa.getRoot(), stateMap));
+//build set of nfa nodes used to constuct a the single dfa root node
+    toDoList.push(constructClosure(nfa.getRoot(), stateMap));
 
     Set<String> alphabet = nfa.getAlphabet();
     //alphabet.remove(Constant.HIDDEN);
 
     boolean processedRoot = false;
-    while (!fringe.isEmpty()) {
-      Set<String> states = fringe.pop();
+    while (!toDoList.isEmpty()) {  // starts with the set of root nodes
+      Set<String> states = toDoList.pop();
       String idNode = constructNodeId(stateMap.get(states), nfa.getId());
 
-      if (visited.contains(idNode)) {
-        continue;
-      }
+      if (visited.contains(idNode)) { continue;  }  // process dfa node only once
       if (!nodeMap.containsKey(idNode)) { //set up nodeMap and add node to dfa
         nodeMap.put(idNode, dfa.addNode(idNode));
-
       }
-      AutomatonNode node = nodeMap.get(idNode);  //build dfa node
+      AutomatonNode node = nodeMap.get(idNode);  //build new dfa node
 
-      if (!processedRoot) { // then this  node is the root
+      if (!processedRoot) { // if first time through then this  node is the root
         dfa.getRoot().clear();
         dfa.addRoot(node);
         node.setStartNode(true);
         processedRoot = true;
         //if one root nfa is terminal so is the dfa root
         if (nfa.getRoot().stream().anyMatch(e -> e.isSTOP()) ) {
-          dfa.getNode(idNode).setTerminal(Constant.STOP);
+          dfa.getNode(idNode).setStopNode(true);
         }
       }
 
       for (String action : alphabet) {
-
         Set<String> nextStates = constructStateSet(stateMap.get(states), action, stateMap);
-
-        if (nextStates.isEmpty()) {
-          continue;
-        }
+        if (nextStates.isEmpty()) {  continue;  }
 
         String nextId = constructNodeId(stateMap.get(nextStates), nfa.getId());
         //stateMap.get(nextStates).stream().forEach(x-> System.out.println("next "+x.myString()));
@@ -87,12 +80,16 @@ public class Nfa2dfaWorks {
 
           if (stateMap.get(nextStates).stream().anyMatch(e -> e.isSTOP()) ) {
             //System.out.println("STOP "+ nextId);
-            dfa.getNode(nextId).setTerminal(Constant.STOP);
+            dfa.getNode(nextId).setStopNode(true);
+          }if (stateMap.get(nextStates).stream().anyMatch(e -> e.isERROR()) ) {
+            //System.out.println("STOP "+ nextId);
+            dfa.getNode(nextId).setErrorNode(true);
           }
           if (stateMap.get(nextStates).stream().anyMatch(e -> e.isStartNode()) ) {
             //System.out.println("start "+ nextId);
             dfa.getNode(nextId).setStartNode(true);
           }
+
           if (stateMap.get(nextStates).stream().anyMatch(e -> e.isQuiescent()) ) {
             dfa.getNode(nextId).setQuiescent(true);
           }
@@ -103,7 +100,7 @@ public class Nfa2dfaWorks {
 
         dfa.addEdge(action, node, nextNode, null, true,false);
 
-        fringe.push(nextStates);
+        toDoList.push(nextStates);
       }
 
       visited.add(idNode);
@@ -118,7 +115,7 @@ public class Nfa2dfaWorks {
 
   /**
    *
-   * @param node
+   * @param node  root marking
    * @param stateMap  input output
    * @return  internal reprentation of new node
    */
@@ -132,11 +129,9 @@ public class Nfa2dfaWorks {
 
     while (!fringe.isEmpty()) {
       AutomatonNode current = fringe.pop();
-
       if (states.contains(current.getId())) {
         continue;
       }
-
       states.add(current.getId());
       nodes.add(current);
 

@@ -38,7 +38,6 @@ public class TraceWork {
     boolean cong = flags.contains(Constant.CONGURENT);
     if (processModels.iterator().next() instanceof Automaton) {
       Nfa2dfaWorks nfa2dfaworks = new Nfa2dfaWorks();
-      AbstractionFunction absfunc = new AbstractionFunction();
       ArrayList<ProcessModel> dfas = new ArrayList<>();
       for (ProcessModel pm : processModels) {
         Automaton a = (Automaton) pm;
@@ -65,10 +64,12 @@ public class TraceWork {
       //System.out.println("?" + r1.getId() + " " + r2.getId());
       boolean b;
       b = traceSubset(new NodePair(r2, r1), a2Next.getMap(), a1Next.getMap(), new ArrayList<>(), cong);
-      //System.out.println("Trace Refinement type " + tt + " " + a1.getId() + "<<" + a2.getId() + " " + b);
+      System.out.println("Trace Refinement type " + tt + " " + a1.getId() + "<<" + a2.getId() + " " + b);
+      System.out.println(a1.myString());
+      System.out.println(a2.myString());
       return b;
     }
-    //System.out.printf("\nTrace semantics not defined for type " + processModels.iterator().next().getClass() + "\n");
+    System.out.printf("\nTrace semantics not defined for type " + processModels.iterator().next().getClass() + "\n");
     return false;
   }
 
@@ -151,22 +152,25 @@ public class TraceWork {
           distinct().
           map(x -> new NextComponent(x.getLabel(), x.getTo())).
           collect(Collectors.toSet()));
-
+//dfa Node could be BOTH STOP and ERROR
       //System.out.println("cong "+cong+" SOfar "+ n.getId()+" > "+as.myString());
-      if (cong && n.isSTOP()
-        && (tt.equals(TraceType.CompleteTrace))
-        ) {
-        as.ncs.put(Constant.STOP, n);
-        //System.out.println("added "+Constant.STOP);
+      if (cong && (tt.equals(TraceType.CompleteTrace))  ) {
+        if (n.isSTOP()) {
+          as.ncs.put(Constant.STOP, n);
+          //System.out.println("added "+Constant.STOP);
+        } else  if (n.isERROR()) {
+          as.ncs.put(Constant.ERROR, n);  //needed for failure testing
+          System.out.println("\nSETTING "+n.getId()+"  TO ERROR\n");
+        }
       }  //EEEck
 
       if (cong && n.isStartNode()) {
         as.ncs.put(Constant.Start, n);
       }
-      //System.out.println("Next "+n.getId() + " -> " + as.myString());
+      System.out.println("Next "+n.getId() + " -> " + as.myString());
       nfanode2ASet.getMap().put(n, as);
     }
-    //System.out.println(nfanode2ASet.myString());
+    System.out.println(nfanode2ASet.myString());
     return nfanode2ASet;
   }
 

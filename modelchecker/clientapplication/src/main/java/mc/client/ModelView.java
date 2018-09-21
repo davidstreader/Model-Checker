@@ -284,9 +284,7 @@ public class ModelView implements Observer {
         else if (automaton.getRootList().size() > 5 && n.getId().equals(automaton.getRootList().get(5).getId()))
           nodeTermination = NodeStates.START5;
       }
-      if (n.isTerminal()) {
-        nodeTermination = NodeStates.valueOf(n.getTerminal().toUpperCase());
-      }
+
       if (n.isSTOP()) {
         nodeTermination = NodeStates.STOP;
         if (automaton.getEndList().size() > 1 &&n.getId().equals(automaton.getEndList().get(1)))

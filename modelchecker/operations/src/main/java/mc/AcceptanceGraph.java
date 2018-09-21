@@ -87,6 +87,7 @@ public class AcceptanceGraph {
         }
 
       }
+
       //System.out.println(poped.getId()+" -> "+ acceptance.toString());
       dfaNode2ASet.put(poped, acceptance);
       //System.out.println("Adding "+ poped.myString()+" "+ acceptance.toString());
@@ -111,14 +112,14 @@ public class AcceptanceGraph {
           for (AutomatonNode nd : nextStates) {
             if (nd.isERROR()) {
               allSTOP = false;
-              poped.setTerminal(Constant.ERROR);
+              poped.setErrorNode(true);
               break;
             }
             if (!nd.isSTOP()) {
               allSTOP = false;
             }
           }
-          if (allSTOP) poped.setTerminal(Constant.STOP);
+          if (allSTOP) poped.setStopNode(true);
           dfa2nfaSet.put(nextdfa, nextStates);
           //Set<String> nextSt =constructClosure(nfa.getRoot(), dfa2nfaSet); //add to dfa2nfaSet
           dfaNodes.push(nextdfa);
@@ -132,7 +133,7 @@ public class AcceptanceGraph {
 
     dfa.getNodes().stream()
       .filter(nodex -> nodex.getOutgoingEdges().isEmpty())
-      .forEach(nodey -> nodey.setTerminal("STOP"));
+      .forEach(nodey -> nodey.setStopNode(true));
     //System.out.println("So far "+dfa.myString());
     //printnode2AcceptanceSets(dfaNode2ASet, nfaNode2A);
     Map<AutomatonNode, List<Set<String>>> dfaNode2ASetNew = activeActionCorrection(dfaNode2ASet);

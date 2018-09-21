@@ -204,7 +204,7 @@ public class EquationEvaluator {
         for (String b : localBound) {
           inerFreeVariabelMap.put(b, processes.get(0));
         }
-        System.out.println("Evaluate forall  with free var" + asString(inerFreeVariabelMap));
+        System.out.println("Evaluate forall  with free var " + asString(inerFreeVariabelMap));
 
         List<String> failures = testUserdefinedModel(processMap,
           //models,
@@ -267,7 +267,7 @@ public class EquationEvaluator {
             or1 = status1.failCount == 0;
             r = (!or1);  // A -> B  EQUIV  not A OR B and B==false
 
-            //System.out.println(r + " "+ status.myString());
+            System.out.println(" "+ r + " "+ status.myString());
             // status.setPassCount(status1.passCount); //pass count not passed up tree
             if (!r) {//or1==true and or2==false
               status.setFailCount(status2.failCount);

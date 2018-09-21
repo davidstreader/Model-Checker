@@ -68,17 +68,16 @@ public class AutomataParallelMerge {
 
         // create an intersection of both nodes
         node.copyProperties(node1.createIntersection(node2));
-        node.setTerminal(null);
 
         if(node1.isSTOP() && node2.isSTOP())
-          node.setTerminal(Constant.STOP);
+          node.setStopNode(true);
 
 
         if (node.isStartNode())
           automaton.addRoot(node);
 
         if (node2.isERROR() || node1.isERROR())
-          node.setTerminal(Constant.ERROR);
+          node.setErrorNode(true);
 
 
         HashMap<String, Object> variableMap = new HashMap<>();

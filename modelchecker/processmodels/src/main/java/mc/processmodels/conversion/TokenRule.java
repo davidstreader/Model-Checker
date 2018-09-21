@@ -118,11 +118,11 @@ if(j++> stateSizeBound) {System.out.println("\n\nTokenRule Failure Looping = "+j
       //System.out.println("Processing "+Petrinet.marking2String(currentMarking)+
       //" trans "+satisfiedPostTransitions.size());
           if (currentMarking.stream().map(x->x.isSTOP()).reduce(true,(x,y)->x&&y)) {
-            markingToNodeMap.get(currentMarking).setTerminal(Constant.STOP);
+            markingToNodeMap.get(currentMarking).setStopNode(true);
            // outputAutomaton.getEndList().add(markingToNodeMap.get(currentMarking).getId());
           }
           else if (currentMarking.stream().map(x->x.isERROR()).reduce(false,(x,y)->x || y)) {
-            markingToNodeMap.get(currentMarking).setTerminal(Constant.ERROR);
+            markingToNodeMap.get(currentMarking).setErrorNode(true);
           }
 
  //System.out.println("currentMarking1 "+currentMarking.stream().map(x->x.getId()+", ").collect(Collectors.joining()));
@@ -198,7 +198,12 @@ if(j++> stateSizeBound) {System.out.println("\n\nTokenRule Failure Looping = "+j
       outputAutomaton.addEnd(markingToNodeMap.get(mkm).getId());
     }
   }
-
+  //added 20Sept 2018 for Failure Testing
+   for (AutomatonNode nd : outputAutomaton.getNodes()) {
+      if (nd.getOutgoingEdges().size()==0 && !nd.isSTOP()) {
+        nd.setErrorNode(true);
+     }
+   }
    //System.out.println("Token Rule END"); //Out "+outputAutomaton.myString());
     return outputAutomaton;
   }
