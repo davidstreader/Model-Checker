@@ -344,7 +344,7 @@ public class AcceptanceGraph {
   private String node2ac_toString() {
     String outString = "";
     for (AutomatonNode nd : node2AcceptanceSets.keySet()) {
-      outString = outString + ("\n " + nd.getId() + "  " + node2AcceptanceSets.get(nd));
+      outString = outString + ( nd.getId() + "  " + node2AcceptanceSets.get(nd)+"\n ");
     }
     return outString;
   }
@@ -356,24 +356,31 @@ public class AcceptanceGraph {
    System.out.println(" "+nd.getId()+"  "+node2AcceptanceSets.get(nd));
   }
   }
+/*
+   B refines into A
+   Failure refinement => fail(A) subset fail(B)
+         -> Complement(fail(A)) in Accept(A)
+         => a in Accept(A) then exists b in Accept(B) where  b is a subset a
 
+   set of sets  A>>B  means a > b where b is a set in A  and b in B
+ */
   public static boolean AcceptanceSubSet(List<Set<String>> a1, List<Set<String>> a2) {
-    //System.out.println("AcceptanceSubSet "+ a1+" Sub "+a2);
+    System.out.println("START AcceptanceSubSet "+ a2+" Subset of "+a1+"  ?");
     boolean ok = false;
-    for (Set<String> as1 : a1) {
+    for (Set<String> as1 : a1) {       //when as2 is in a2 then    (A)
       ok = false;
-      for (Set<String> as2 : a2) {
+      for (Set<String> as2 : a2) {     // exists as1 in a1 such that   (B)
 
-        if (as1.containsAll(as2)) {
+        if (as1.containsAll(as2)) {    //  as2 is a  subset of as1
           ok = true;
-          //System.out.println("as1 "+as1+" ->>- as2 "+as2);
+          System.out.println("as1 "+as1+" ->- as2 "+as2);
           break;
         }
-        //System.out.println("as1 "+as1+" ->NOT>- as2 "+as2);
+        System.out.println("as1 "+as1+" -NOT>- as2 "+as2);
       }  // if one true then inner loop true
       if (ok == false) { break; } //if one inner false then outer false
     }  //outer only true if all inner loops true
-    //System.out.println("a1 "+a1+" ->>- a2 "+a2+"  returns "+ok);
+    System.out.println("a1 "+a1+" ->>- a2 "+a2+"  returns "+ok);
     return ok;
   }
 
@@ -399,7 +406,7 @@ public class AcceptanceGraph {
       System.out.println("AcceptanceGraph n2ac = null");
     }
     return "**Acceptance Graph  \n  " + this.getA().myString() + " " +
-      this.node2ac_toString() + "\n**End Acceptance Graph ";
+      this.node2ac_toString() + "**End Acceptance Graph ";
 
   }
 }

@@ -1,19 +1,19 @@
 processes {
 
-Twoaa = a->a->STOP.
+Onea = a->STOP|b->Onea.
 
-Fouraaab = a->a->a->b->STOP.
- 
+//Twobb = b->b->STOP|a->Twobb.
 
-E = a->(a->E|a->STOP).
-
-
+Threea = a->a->a->STOP |b->Threea.
 //U = E||Fouraaab .
 //V = Twoaa||Fouraaab.
 }
 
 operation {
-E <f Twoaa.
+Threea <f Onea.
+Onea <f Threea.
+//E <t{cong} Twoaa.
+//Twoaa <t{cong} E.
 //U <t{cong} V.
 
 } 
@@ -22,4 +22,10 @@ equation {
 //Y <f Z ==> forall{X} (X||Y <t{cong} X||Z).
 //forall{X} (X||Y <t{cong} X||Z) ==> Y <f Z.
 }
+
+
+
+
+
+
 
