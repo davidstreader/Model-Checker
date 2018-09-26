@@ -704,8 +704,12 @@ System.out.println("parseDisplayType "+ token.toString());
       //System.out.println("Parse infixFunction looking for "+ key);
       if (peekToken().toString().equals(key)) {
         nextToken(); // gobble the '||' token
+        Set<String> flags = new HashSet<>();
+        if (peekToken() instanceof OpenBraceToken) {
+          flags = parseFlags(key);
+        }
         ASTNode process2 = parseComposite();
-        process = new CompositeNode(key, process, process2, constructLocation(start));
+        process = new CompositeNode(key, process, process2, constructLocation(start),flags);
         //System.out.println("***Parse infixFunction "+ key);
         break;
       }
@@ -897,6 +901,15 @@ System.out.println("parseDisplayType "+ token.toString());
   Not infix <f ....
    */
   private String parseFunctionType() throws CompilationException {
+    Token token = nextToken();
+    if (token instanceof FunctionToken) {
+      //System.out.println("Parser "+((FunctionToken) token).getFunction());
+      return ((FunctionToken) token).getFunction();
+    }
+
+    throw constructException("expecting to parse a function type but received \"" + token.toString() + "\"", token.getLocation());
+  }
+  private String parseinFixFunctionType() throws CompilationException {
     Token token = nextToken();
     if (token instanceof FunctionToken) {
       //System.out.println("Parser "+((FunctionToken) token).getFunction());

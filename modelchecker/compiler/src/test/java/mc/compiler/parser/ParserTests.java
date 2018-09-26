@@ -21,31 +21,5 @@ abstract class ParserTests extends TestBase {
     public ParserTests() throws InterruptedException {
     }
 
-    ProcessNode constructProcessNode(String code, int index) throws InterruptedException {
-        try {
-            List<Token> tokens = lexer.tokenise(code);
-            AbstractSyntaxTree ast = parser.parse(tokens,context);
-            return ast.getProcesses().get(index);
-        } catch (CompilationException e) {
-            e.printStackTrace();
-        }
 
-        return null;
-    }
-
-    ProcessNode constructProcessNode(String code) throws InterruptedException {
-    	return constructProcessNode(code, 0);
-    }
-
-    List<ProcessNode> constructProcessList(String code) throws InterruptedException {
-        try {
-            List<Token> tokens = lexer.tokenise(code);
-            AbstractSyntaxTree ast = parser.parse(tokens,context);
-            return ast.getProcesses();
-        } catch (CompilationException e) {
-            e.printStackTrace();
-        }
-
-        return null;
-    }
 }

@@ -4,6 +4,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import mc.util.Location;
 
+import java.util.Set;
+
 /**
  * CompositeNode represents any infix operation handled in the code.
  * <p>
@@ -42,6 +44,8 @@ public class CompositeNode extends ASTNode {
    */
   private String operation;
 
+  private Set<String> flags;
+
   /**
    * @param operation     the type of operation used (e.g. {@code ||}), specifies
    *                      what is invoked later on{@link #operation}
@@ -49,11 +53,12 @@ public class CompositeNode extends ASTNode {
    * @param secondProcess the second process in the operation {@link #secondProcess}
    * @param location      The location of the operation within the code {@link ASTNode#location}
    */
-  public CompositeNode(String operation, ASTNode firstProcess, ASTNode secondProcess, Location location) {
+  public CompositeNode(String operation, ASTNode firstProcess, ASTNode secondProcess, Location location, Set<String> flags) {
     super(location,"Composite");
     this.operation = operation;
     this.firstProcess = firstProcess;
     this.secondProcess = secondProcess;
+    this.flags = flags;
   }
   public String myString(){
     StringBuilder sb = new StringBuilder();

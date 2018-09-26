@@ -2,6 +2,7 @@ package mc;
 
 import lombok.Getter;
 import lombok.Setter;
+import mc.compiler.Guard;
 import mc.exceptions.CompilationException;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
@@ -28,23 +29,25 @@ public class AcceptanceGraph {
   /**
    * Construct an Acceptance Graph from a nfa
    *
-   * @param id  the id of the resulting automaton
-   * @param nfa an automata taken in by the function
+   * @param id    the id of the resulting automaton
+   * @param nfain an automata taken in by the function
    * @return acceptance graph - dfa + node to set of acceptance sets Map
    * @throws CompilationException when the function fails
    */
 
-  public AcceptanceGraph(String id, Automaton nfa, boolean cong)
+  public AcceptanceGraph(String id, Automaton nfain, boolean cong)
     throws CompilationException {
-    //Automaton nfa = nfain.copy();  // must copy
-    //System.out.println("Starting accept");
+    Automaton nfa = nfain.copy();  // must copy
+    System.out.println("PRE adding ERROR! " + nfa.myString());
+    if (cong) addStartAndSTOP(nfa);
+    System.out.println("Starting Accept input " + nfa.myString() + "\n");
     Map<AutomatonNode, List<Set<String>>> dfaNode2ASet =
       new HashMap<AutomatonNode, List<Set<String>>>();
     //The acceptance sets should contain "STOP" "ROOT"
     // nfa nodes to its acceptance set
     Map<AutomatonNode, Set<String>> nfaNode2A = new HashMap<AutomatonNode, Set<String>>();
     Automaton dfa = new Automaton(id, !Automaton.CONSTRUCT_ROOT);
-    nfaNode2A = build_nfanode2ASet(nfa,cong);
+    nfaNode2A = build_nfanode2ASet(nfa, cong);
     //System.out.println("built nfaNode2A");
 
     //maps one dfa node to a set of nfa nodes (nfaNode2A maps nfa node to acceptance set)
@@ -144,7 +147,31 @@ public class AcceptanceGraph {
     this.setA(dfa);
     this.setNode2AcceptanceSets(dfaNode2ASetNew);
 
-    //System.out.println("Ending AcceptanceGraph Constructor " + this.toString());
+    //System.out.println("Ending AcceptanceGraph Constructor " + dfa.myString());
+  }
+
+  /*
+   if cong add Start and STOP events
+ */
+  public void addStartAndSTOP(Automaton a) throws CompilationException {
+    AutomatonNode ss = a.addNode();
+    Guard g = new Guard();
+    for (AutomatonNode nd : a.getNodes()) {
+      if (nd==ss) continue;
+      System.out.println(nd.getId() + " stop=" + nd.isSTOP() + "  " + nd.getOutgoingEdges().size() + " Err=" + nd.isERROR());
+      if (nd.isSTOP()) {
+        a.addEdge("STOP", nd, ss, g, false, false);
+      }
+      if (!nd.isSTOP() && nd.getOutgoingEdges().size() == 0) {
+        System.out.println("adding ERROR to "+nd.myString());
+        a.addEdge("ERROR", nd, ss, g, false, false);
+      }
+      if (nd.isStartNode())
+        a.addEdge("Start", nd, ss, g, false, false);
+      if (nd.isERROR())
+        a.addEdge("ERROR", nd, ss, g, false, false);
+    }
+
   }
 
 
@@ -252,7 +279,7 @@ public class AcceptanceGraph {
    *          note needs to respect Start and STOP if congruance
    *          Builds the ready set or  Acceptance Set
    */
-  private Map<AutomatonNode, Set<String>> build_nfanode2ASet(Automaton a,boolean cong) {
+  private Map<AutomatonNode, Set<String>> build_nfanode2ASet(Automaton a, boolean cong) {
     //System.out.println("build_nfanode2ASet");
     Map<AutomatonNode, Set<String>> nfanode2ASet = new HashMap<AutomatonNode, Set<String>>();
     for (AutomatonNode n : a.getNodes()) {
@@ -280,13 +307,13 @@ public class AcceptanceGraph {
     Map<AutomatonNode, Set<String>> nfanode2ASet) {
     System.out.println("nfa Sets");
     for (AutomatonNode n : nfanode2ASet.keySet()) {
-      System.out.println(" "+n.getId()+" "+nfanode2ASet.get(n).toString() );
+      System.out.println(" " + n.getId() + " " + nfanode2ASet.get(n).toString());
     }
 
- System.out.println("Acceptance Sets");
-  for (AutomatonNode nd : node2AcceptanceSets.keySet()) {
-   System.out.println(" "+nd.getId()+"  "+node2AcceptanceSets.get(nd));
-  }
+    System.out.println("Acceptance Sets");
+    for (AutomatonNode nd : node2AcceptanceSets.keySet()) {
+      System.out.println(" " + nd.getId() + "  " + node2AcceptanceSets.get(nd));
+    }
 
   }
 
@@ -337,50 +364,57 @@ public class AcceptanceGraph {
       }
       //System.out.println("node " +nd.getId()+" has color "+ nd.getColour());
     }
-   //System.out.println("ColorNodes end col = "+color);
+    //System.out.println("ColorNodes end col = "+color);
     return color;
   }
 
   private String node2ac_toString() {
     String outString = "";
     for (AutomatonNode nd : node2AcceptanceSets.keySet()) {
-      outString = outString + ( nd.getId() + "  " + node2AcceptanceSets.get(nd)+"\n ");
+      outString = outString + (nd.getId() + "  " + node2AcceptanceSets.get(nd) + "\n ");
     }
     return outString;
   }
 
 
   private void printnode2AcceptanceSets() {
-  System.out.println("Acceptance Sets");
-  for (AutomatonNode nd : node2AcceptanceSets.keySet()) {
-   System.out.println(" "+nd.getId()+"  "+node2AcceptanceSets.get(nd));
+    System.out.println("Acceptance Sets");
+    for (AutomatonNode nd : node2AcceptanceSets.keySet()) {
+      System.out.println(" " + nd.getId() + "  " + node2AcceptanceSets.get(nd));
+    }
   }
-  }
-/*
-   B refines into A
-   Failure refinement => fail(A) subset fail(B)
-         -> Complement(fail(A)) in Accept(A)
-         => a in Accept(A) then exists b in Accept(B) where  b is a subset a
 
-   set of sets  A>>B  means a > b where b is a set in A  and b in B
- */
+  /*
+     B refines into A
+     Failure refinement => fail(A) subset fail(B)
+           -> Complement(fail(A)) in Accept(A)
+           => a in Accept(A) then exists b in Accept(B) where  b is a subset a
+
+     set of sets  A>>B  means a > b where b is a set in A  and b in B
+   */
   public static boolean AcceptanceSubSet(List<Set<String>> a1, List<Set<String>> a2) {
-    System.out.println("START AcceptanceSubSet "+ a2+" Subset of "+a1+"  ?");
+    System.out.println(" START AcceptanceSuperSet " + a2 + " a Failure Subset of " + a1 + "  ?");
     boolean ok = false;
-    for (Set<String> as1 : a1) {       //when as2 is in a2 then    (A)
+    breakto:
+    for (Set<String> as2 : a2) {       //FOR ALL as1 is in a1 then    (A)
       ok = false;
-      for (Set<String> as2 : a2) {     // exists as1 in a1 such that   (B)
-
-        if (as1.containsAll(as2)) {    //  as2 is a  subset of as1
+      System.out.println(" as2= "+as2);
+      for (Set<String> as1 : a1) {     // exists as2 in a2 such that   (B)
+        System.out.println("   is as2 " + as2 + " superset of   as1 " + as1);
+        if (as2.containsAll(as1)) {    //  as1 is a  subset of as2
           ok = true;
-          System.out.println("as1 "+as1+" ->- as2 "+as2);
-          break;
+          System.out.println("   as2 " + as2 + " is superset as1 " + as1);
+          break breakto;
         }
-        System.out.println("as1 "+as1+" -NOT>- as2 "+as2);
-      }  // if one true then inner loop true
-      if (ok == false) { break; } //if one inner false then outer false
+        System.out.println("   as2 " + as2 + " NOT superset as1 " + as1);
+      }
+
+      // if one true then inner loop true
+      if (ok == false) {
+        break;
+      } //if one inner false then outer false
     }  //outer only true if all inner loops true
-    System.out.println("a1 "+a1+" ->>- a2 "+a2+"  returns "+ok);
+    System.out.println(" a2 " + a2 + " ->>- a1 " + a1 + "  returns " + ok);
     return ok;
   }
 

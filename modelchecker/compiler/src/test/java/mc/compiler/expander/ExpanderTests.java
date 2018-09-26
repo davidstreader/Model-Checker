@@ -27,28 +27,4 @@ public class ExpanderTests extends TestBase {
     public ExpanderTests() throws InterruptedException {
     }
 
-    ProcessNode constructProcessNode(String code) throws InterruptedException {
-        try{
-            List<Token> tokens = lexer.tokenise(code);
-            AbstractSyntaxTree ast = parser.parse(tokens,context);
-            ast = expander.expand(ast,new PrintQueue(),context);
-            return ast.getProcesses().get(0);
-        }catch(CompilationException e){
-            e.printStackTrace();
-        }
-
-        return null;
-	}
-
-    List<ProcessNode> constructProcessList(String code) throws InterruptedException {
-        try{
-            List<Token> tokens = lexer.tokenise(code);
-            AbstractSyntaxTree ast = parser.parse(tokens,context);
-            return expander.expand(ast,new PrintQueue(),context).getProcesses();
-        }catch(CompilationException e){
-            e.printStackTrace();
-        }
-
-        return null;
-    }
 }

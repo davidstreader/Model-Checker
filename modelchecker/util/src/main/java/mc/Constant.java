@@ -23,5 +23,13 @@ public class Constant {
           lab.equals(Constant.Start) ||
           lab.equals(Constant.ERROR);
     }
+    public static boolean terminal(String lab) {
+        return lab.equals(Constant.DEADLOCK) ||
+          lab.equals(Constant.STOP) ||
+          lab.equals(Constant.ERROR);
+    }
+    public static boolean start(String lab) {
+        return lab.equals(Constant.Start);
+    }
 
 }

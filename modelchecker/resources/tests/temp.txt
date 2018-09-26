@@ -1,27 +1,54 @@
-processes {
-
-Onea = a->STOP|b->Onea.
-
-//Twobb = b->b->STOP|a->Twobb.
-
-Threea = a->a->a->STOP |b->Threea.
-//U = E||Fouraaab .
-//V = Twoaa||Fouraaab.
+processes {     //Oneaa = a->STOP.
+C3 = a->a->C3.
+E3 = a->a->X, X= a->X.
+Onebb = b->STOP|a->Onebb.
+Threeaba = a->b->a->STOP.
+Two = a->b->Two.
+Twoabs = a->b->Twoabs.
+Da  = a->b->Da|a->STOP.
+Dax  = a->b->x->Dax|a->STOP.
+Q = Da ||Onebb.
+P = Twoabs  || Onebb.
 }
-
 operation {
-Threea <f Onea.
-Onea <f Threea.
-//E <t{cong} Twoaa.
-//Twoaa <t{cong} E.
-//U <t{cong} V.
+Twoabs  <f Da. 
+P <t Q.
+P <t{cong} Q.
+Da  <f Twoabs. 
+Q <t P.
+Q <t{cong} P.
+ 
+Twoabs  <f{cong} Da. 
+P <t{cong} Q.
+Da  <f{cong} Twoabs. 
+Q <t{cong} P.
 
-} 
-equation {
-// X||Y <t{cong} Y||X.
-//Y <f Z ==> forall{X} (X||Y <t{cong} X||Z).
-//forall{X} (X||Y <t{cong} X||Z) ==> Y <f Z.
+
+
+//Da <f{cong} Threeaba.  //? FALSE
+//Dax <f{cong} Threeaba.  //? FALSE
+//Twoabs <f{cong} D.  //Correctly FALSE
+//Q <t{cong} P.
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

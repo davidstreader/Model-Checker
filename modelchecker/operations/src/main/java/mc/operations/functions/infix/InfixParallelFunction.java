@@ -10,7 +10,9 @@ import mc.processmodels.automata.operations.AutomataReachability;
 import mc.processmodels.petrinet.Petrinet;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Set;
 
 @Value
 public class InfixParallelFunction implements IProcessInfixFunction {
@@ -24,7 +26,8 @@ public class InfixParallelFunction implements IProcessInfixFunction {
   public String getFunctionName() {
     return "Parallel";
   }
-  public Collection<String> getValidFlags(){return new HashSet<>();}
+  Set<String> valid = Collections.singleton("*");
+  public Collection<String> getValidFlags(){return valid;}
   /**
    * The form which the function will appear when composed in the text.
    *
@@ -66,6 +69,6 @@ public class InfixParallelFunction implements IProcessInfixFunction {
   @Override
   public Petrinet compose(String id, Petrinet petrinet1, Petrinet petrinet2) throws CompilationException {
     //System.out.println("infixparallel");
-    return PetrinetParallelFunction.compose(petrinet1,petrinet2);
+    return PetrinetParallelFunction.compose(petrinet1,petrinet2,valid);
   }
 }

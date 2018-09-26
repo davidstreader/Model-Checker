@@ -36,6 +36,7 @@ public class TraceWork {
   public boolean evaluate(Set<String> flags, Collection<ProcessModel> processModels, TraceType tt) throws CompilationException {
 
     boolean cong = flags.contains(Constant.CONGURENT);
+    boolean complete = tt.equals(TraceType.CompleteTrace);
     if (processModels.iterator().next() instanceof Automaton) {
       Nfa2dfaWorks nfa2dfaworks = new Nfa2dfaWorks();
       ArrayList<ProcessModel> dfas = new ArrayList<>();
@@ -44,7 +45,7 @@ public class TraceWork {
         try {
           Automaton temp;
           temp = nfa2dfaworks.compose(a.getId(), new HashSet<>(), null, TraceType.CompleteTrace, a);
-          //System.out.println("DFA "+temp.myString());
+          System.out.println("DFA " + temp.myString());
           dfas.add(temp);
         } catch (CompilationException e) {
           //System.out.println("PINGO" + e.toString());
@@ -63,7 +64,7 @@ public class TraceWork {
 
       //System.out.println("?" + r1.getId() + " " + r2.getId());
       boolean b;
-      b = traceSubset(new NodePair(r2, r1), a2Next.getMap(), a1Next.getMap(), new ArrayList<>(), cong);
+      b = traceSubset(new NodePair(r2, r1), a2Next.getMap(), a1Next.getMap(), new ArrayList<>(), cong, complete);
       System.out.println("Trace Refinement type " + tt + " " + a1.getId() + "<<" + a2.getId() + " " + b);
       System.out.println(a1.myString());
       System.out.println(a2.myString());
@@ -90,8 +91,9 @@ public class TraceWork {
   private boolean traceSubset(NodePair np, Map<AutomatonNode, NextMap> a1N,
                               Map<AutomatonNode, NextMap> a2N,
                               List<NodePair> processed,
-                              boolean cong) {
-    //System.out.println("traceSubset " + np.myString());
+                              boolean cong,
+                              boolean complete) {
+    System.out.println("traceSubset " + np.myString());
     //processed only used to stop algorithm running for ever with cyclic automata
     for (NodePair n : processed) {
       if (n.getFirst().getId().equals(np.getFirst().getId()) &&
@@ -105,16 +107,18 @@ public class TraceWork {
     Set<String> small;
     if (cong) {
       small = a2N.get(np.second).labels();
+    } else if (complete) {
+      small = a2N.get(np.second).labels().stream().filter(x -> !Constant.start(x)).collect(Collectors.toSet());
     } else {
       small = a2N.get(np.second).labels().stream().filter(x -> !Constant.external(x)).collect(Collectors.toSet());
     }
     Set<String> large = a1N.get(np.first).labels().stream().collect(Collectors.toSet());
     //large = large.stream().filter(x->small.contains(x)).collect(Collectors.toSet());
     //Set<String> intersect = large.stream().filter(x->small.contains(x)).collect(Collectors.toSet());
-    //System.out.println(" is   "+small + " Subset " + large);
+    System.out.println(" is   " + small + " Subset " + large);
     if (large.containsAll(small)) {
       //if (a1N.get(np.first).labels().containsAll(small)) {
-        //System.out.println("adding "+np.myString());
+      //System.out.println("adding "+np.myString());
       processed.add(np);
       // b? might not be in in the ready labels but is in the next step label
       boolean notsubset = true;
@@ -123,16 +127,15 @@ public class TraceWork {
 
         AutomatonNode nd1 = a1N.get(np.first).getNcs().get(lab);
         AutomatonNode nd2 = a2N.get(np.second).getNcs().get(lab);
-        if (traceSubset(new NodePair(nd1, nd2), a1N, a2N, processed, cong) == false) return false;
+        if (traceSubset(new NodePair(nd1, nd2), a1N, a2N, processed, cong, complete) == false) return false;
       }
     } else {
-      //System.out.println("returns false "+small + " NOTsubset " + large);
+      System.out.println("returns false " + small + " NOTsubset " + large);
       return false;
     }
-    //System.out.println("traceSubset "+np.myString()+" returns true");
+    System.out.println("traceSubset " + np.myString() + " returns true");
     return true;
   }
-
 
 
   /*
@@ -142,38 +145,38 @@ public class TraceWork {
     For non congurance STOP is add recursivly in quiescentNext
    */
   private Nd2NextMap build_readyMap(Automaton a, TraceType tt, boolean cong) {
-    //System.out.println("Build Ready Map "+tt+" cong= " + cong);
+    System.out.println("Build Ready Map " + tt + " cong= " + cong);
     //System.out.println(a.myString());
     Nd2NextMap nfanode2ASet = new Nd2NextMap();
     for (AutomatonNode n : a.getNodes()) {
       //System.out.println("node "+n.myString());
       NextMap as;
       as = new NextMap(n.getOutgoingEdges().stream().
-          distinct().
-          map(x -> new NextComponent(x.getLabel(), x.getTo())).
-          collect(Collectors.toSet()));
+        distinct().
+        map(x -> new NextComponent(x.getLabel(), x.getTo())).
+        collect(Collectors.toSet()));
 //dfa Node could be BOTH STOP and ERROR
       //System.out.println("cong "+cong+" SOfar "+ n.getId()+" > "+as.myString());
-      if (cong && (tt.equals(TraceType.CompleteTrace))  ) {
+      if (tt.equals(TraceType.CompleteTrace)) {
         if (n.isSTOP()) {
           as.ncs.put(Constant.STOP, n);
           //System.out.println("added "+Constant.STOP);
-        } else  if (n.isERROR()) {
+        } else if (n.isERROR()) {
           as.ncs.put(Constant.ERROR, n);  //needed for failure testing
-          System.out.println("\nSETTING "+n.getId()+"  TO ERROR\n");
+          System.out.println("\nSETTING " + n.getId() + "  TO ERROR\n");
         }
-      }  //EEEck
-
-      if (cong && n.isStartNode()) {
-        as.ncs.put(Constant.Start, n);
       }
-      System.out.println("Next "+n.getId() + " -> " + as.myString());
+      if (cong)
+        if (n.isStartNode()) {
+          as.ncs.put(Constant.Start, n);
+        }
+
+      System.out.println("Next " + n.getId() + " -> " + as.myString());
       nfanode2ASet.getMap().put(n, as);
     }
     System.out.println(nfanode2ASet.myString());
     return nfanode2ASet;
   }
-
 
 
   @Getter
@@ -237,28 +240,33 @@ public class TraceWork {
   public static class Nd2NextMap {  //Usefull debugging mystring
     Map<AutomatonNode, NextMap> nd2Nextmap;
 
-    public Map<AutomatonNode, NextMap> getMap(){return nd2Nextmap; }
-    public Nd2NextMap(Map<AutomatonNode, NextMap> in ){
-        Map<AutomatonNode, NextMap> nd2nextmap = new TreeMap<AutomatonNode, NextMap>();
-      for (AutomatonNode nd : in.keySet()){
-        nd2nextmap.put(nd,in.get(nd));
+    public Map<AutomatonNode, NextMap> getMap() {
+      return nd2Nextmap;
+    }
+
+    public Nd2NextMap(Map<AutomatonNode, NextMap> in) {
+      Map<AutomatonNode, NextMap> nd2nextmap = new TreeMap<AutomatonNode, NextMap>();
+      for (AutomatonNode nd : in.keySet()) {
+        nd2nextmap.put(nd, in.get(nd));
       }
       this.nd2Nextmap = in;
     }
-    public String myString(){
+
+    public String myString() {
       StringBuilder sb = new StringBuilder();
       for (AutomatonNode key : nd2Nextmap.keySet()) {
-        if (nd2Nextmap.get(key)== null) sb.append(key+"->null");
+        if (nd2Nextmap.get(key) == null) sb.append(key + "->null");
         else sb.append(key.getId() + "=> (" + nd2Nextmap.get(key).myString() + "); ");
       }
       return sb.toString();
     }
 
-  public Nd2NextMap(){
-    //Map<AutomatonNode, NextMap> in = new  TreeMap<AutomatonNode, NextMap> ();
-    this(new  TreeMap<AutomatonNode, NextMap> ()) ;
+    public Nd2NextMap() {
+      //Map<AutomatonNode, NextMap> in = new  TreeMap<AutomatonNode, NextMap> ();
+      this(new TreeMap<AutomatonNode, NextMap>());
     }
   }
+
   /*     Works ONLY for nfa
     NextMap maps a label to the Automaton node its leads to
     OR STOP to itself
@@ -295,7 +303,7 @@ public class TraceWork {
     public String myString() {
       StringBuilder sb = new StringBuilder();
       for (String key : ncs.keySet()) {
-        if (ncs.get(key)== null) sb.append(key+"->null");
+        if (ncs.get(key) == null) sb.append(key + "->null");
         else sb.append(key + "->" + ncs.get(key).getId() + ", ");
       }
       return sb.toString();

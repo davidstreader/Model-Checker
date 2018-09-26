@@ -213,7 +213,7 @@ public Set<String> readySet(){
   }
   public String myString() {
 
-    return "node "+ this.getId()+" col "+ this.colour+" G= "+getGuard()+
+    return "node "+ this.getId()+" col "+ this.colour+" out = "+outgoingEdges.size()+
            " error "+isERROR() + " quies "+quiescent+" end "+isSTOP()+" start "+isStartNode();
   }
   public String toString() {

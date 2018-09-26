@@ -166,7 +166,7 @@ public class OwnersRule {
     while (!subNets.isEmpty()) {
       //System.out.println(subNets.size()+" Adding");
       //build = PetrinetParallelMergeFunction.compose(build, subNets.pop());  //Debuging
-      build = PetrinetParallelFunction.compose(build, subNets.pop());
+      build = PetrinetParallelFunction.compose(build, subNets.pop(),new HashSet<String>());
       //  build = subNets.pop();  //for debugging
       //System.out.println("Build " + build.myString());
     }

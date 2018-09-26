@@ -100,7 +100,7 @@ int j = 0; //without these 2 LofC loop never terminates!
     while (!toDo.isEmpty()) {
 if(j++> stateSizeBound) {System.out.println("\n\nTokenRule Failure Looping = "+j+"\n\n");break;} // second LofC  NEVER Called - looks redundent!
         Multiset<PetriNetPlace> currentMarking = toDo.pop();
-        //System.out.println("currentMarking "+currentMarking.stream().map(x->x.getId()+", ").collect(Collectors.joining()));
+  //System.out.println("currentMarking "+currentMarking.stream().map(x->x.getId()+", ").collect(Collectors.joining()));
 
         //System.out.print("\nStarting  prev " +previouslyVisitedPlaces.size()+" todo "+toDo.size()+  " \n");
     /*  for(PetriNetPlace pl :currentMarking){
@@ -119,6 +119,7 @@ if(j++> stateSizeBound) {System.out.println("\n\nTokenRule Failure Looping = "+j
       //" trans "+satisfiedPostTransitions.size());
           if (currentMarking.stream().map(x->x.isSTOP()).reduce(true,(x,y)->x&&y)) {
             markingToNodeMap.get(currentMarking).setStopNode(true);
+            System.out.println("Mark as STOP "+markingToNodeMap.get(currentMarking).getId());
            // outputAutomaton.getEndList().add(markingToNodeMap.get(currentMarking).getId());
           }
           else if (currentMarking.stream().map(x->x.isERROR()).reduce(false,(x,y)->x || y)) {

@@ -65,7 +65,7 @@ public class SlidingInfixFunction implements IProcessInfixFunction {
     TerminalNode stop = new TerminalNode("STOP", null);
 
     CompositeNode nondeterministicChoice = new CompositeNode(
-        new InternalChoiceInfixFunction().getNotation(), aut1, aut2, null);
+        new InternalChoiceInfixFunction().getNotation(), aut1, aut2, null,new HashSet<>());
 
     ChoiceNode choice = new ChoiceNode(nondeterministicChoice, aut2, null);
 

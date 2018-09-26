@@ -22,7 +22,7 @@ public class PetrinetParallelFunction  {
   //private static final String tag1 = ""; //"*P1";
   //private static final String tag2 = ""; //"*P2";
 
-  public static Petrinet compose(Petrinet pi1, Petrinet pi2) throws CompilationException {
+  public static Petrinet compose(Petrinet pi1, Petrinet pi2,Set<String> flags) throws CompilationException {
     clear();
     Petrinet p1 = pi1.reId("1");
     Petrinet p2 = pi2.reId("2");
@@ -31,7 +31,7 @@ public class PetrinetParallelFunction  {
    //System.out.println("     PETRINET PARALLELFUNCTION"+"  "+p1.getId()+" || "+p2.getId());
 
    //builds synchronisedActions set
-    setupActions(p1, p2);
+    setupActions(p1, p2,flags);
     //System.out.println("  synchronisedActions "+synchronisedActions);
     Petrinet composition = new Petrinet(p1.getId()  + p2.getId(), false);
     composition.getOwners().clear();
@@ -76,13 +76,18 @@ public class PetrinetParallelFunction  {
   /*
   Adds actions to synchronisedActions.
    */
-  private static void setupActions(Petrinet p1, Petrinet p2) {
-    Set<String> actions1 = p1.getAlphabet().keySet();
-    Set<String> actions2 = p2.getAlphabet().keySet();
-    //System.out.println("actions1 "+actions1);
-    //System.out.println("actions2 "+actions2);
-    actions1.forEach(a -> setupAction(a, actions2));
-    actions2.forEach(a -> setupAction(a, actions1));
+  private static void setupActions(Petrinet p1, Petrinet p2,Set<String> flags) {
+    System.out.println("setupActions flags "+ flags);
+    if (flags.size()>0) {
+
+    } else {
+      Set<String> actions1 = p1.getAlphabet().keySet();
+      Set<String> actions2 = p2.getAlphabet().keySet();
+      //System.out.println("actions1 "+actions1);
+      //System.out.println("actions2 "+actions2);
+      actions1.forEach(a -> setupAction(a, actions2));
+      actions2.forEach(a -> setupAction(a, actions1));
+    }
   }
 
   private static void setupAction(String action, Set<String> otherPetrinetActions) {
