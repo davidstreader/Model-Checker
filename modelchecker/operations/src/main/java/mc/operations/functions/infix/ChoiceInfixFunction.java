@@ -13,9 +13,7 @@ import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.automata.operations.AutomataReachability;
 import mc.processmodels.automata.operations.ChoiceFun;
-import mc.processmodels.automata.operations.SequentialInfixFun;
 import mc.processmodels.petrinet.Petrinet;
-import mc.processmodels.petrinet.components.PetriNetPlace;
 
 public class ChoiceInfixFunction implements IProcessInfixFunction {
 
@@ -105,10 +103,11 @@ public class ChoiceInfixFunction implements IProcessInfixFunction {
    * @param id        the id of the resulting petrinet
    * @param net1 the first  petrinet in the function (e.g. {@code A} in {@code A||B})
    * @param net2 the second petrinet in the function (e.g. {@code B} in {@code A||B})
+   * @param flags
    * @return the resulting petrinet of the operation
    */
 //  @Override
-  public Petrinet compose(String id, Petrinet net1, Petrinet net2)
+  public Petrinet compose(String id, Petrinet net1, Petrinet net2, Set<String> flags)
       throws CompilationException {
     ChoiceFun sf = new ChoiceFun();
     Petrinet choice = sf.compose(id,net1,net2);

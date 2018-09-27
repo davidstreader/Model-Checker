@@ -44,6 +44,7 @@ public class TraceWork {
         Automaton a = (Automaton) pm;
         try {
           Automaton temp;
+          System.out.println("TraceWorks "+a.myString());
           temp = nfa2dfaworks.compose(a.getId(), new HashSet<>(), null, TraceType.CompleteTrace, a);
           System.out.println("DFA " + temp.myString());
           dfas.add(temp);
@@ -156,16 +157,18 @@ public class TraceWork {
         map(x -> new NextComponent(x.getLabel(), x.getTo())).
         collect(Collectors.toSet()));
 //dfa Node could be BOTH STOP and ERROR
-      //System.out.println("cong "+cong+" SOfar "+ n.getId()+" > "+as.myString());
+      System.out.println(n.myString());
       if (tt.equals(TraceType.CompleteTrace)) {
         if (n.isSTOP()) {
           as.ncs.put(Constant.STOP, n);
-          //System.out.println("added "+Constant.STOP);
-        } else if (n.isERROR()) {
+          System.out.println("added "+Constant.STOP);
+        }
+        if (n.isERROR()) {
           as.ncs.put(Constant.ERROR, n);  //needed for failure testing
           System.out.println("\nSETTING " + n.getId() + "  TO ERROR\n");
         }
       }
+      System.out.println("cong "+cong+" SOfar "+ n.getId()+" > "+as.myString());
       if (cong)
         if (n.isStartNode()) {
           as.ncs.put(Constant.Start, n);

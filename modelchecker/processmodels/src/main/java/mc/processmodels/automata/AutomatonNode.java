@@ -18,8 +18,7 @@ import mc.processmodels.ProcessModelObject;
  * Created by sheriddavi on 24/01/17.
  */
 
-public class AutomatonNode extends ProcessModelObject implements Comparable<AutomatonNode>
-{
+public class AutomatonNode extends ProcessModelObject implements Comparable<AutomatonNode> {
 
   // fields
   private Map<String, AutomatonEdge> incomingEdges;
@@ -71,12 +70,15 @@ public class AutomatonNode extends ProcessModelObject implements Comparable<Auto
     this.colour = 999;
   }
 
-public Set<String> readySet(){
-    return getOutgoingEdges().stream().map(x->x.getLabel()).collect(Collectors.toSet());
-}
+  public Set<String> readySet() {
+    return getOutgoingEdges().stream().map(x -> x.getLabel()).collect(Collectors.toSet());
+  }
+
   public void copyProperties(AutomatonNode fromThisNode) {
+    //System.out.println("from "+fromThisNode.myString());
     this.startNode = fromThisNode.isStartNode();
-    this.errorNode = fromThisNode.isErrorNode();
+    this.stopNode = fromThisNode.isStopNode();
+    if (fromThisNode.isErrorNode()) this.setErrorNode(true);
     this.colour = fromThisNode.getColour();
 
     this.labelNumber = fromThisNode.getLabelNumber();
@@ -85,18 +87,21 @@ public Set<String> readySet(){
     this.references = fromThisNode.getReferences();
     this.variables = fromThisNode.getVariables();
     this.quiescent = fromThisNode.quiescent;
+    //System.out.println("to   "+this.myString());
   }
 
-  public AutomatonNode copyNode(){
+  public AutomatonNode copyNode() {
     AutomatonNode nd = new AutomatonNode(this.getId());
     nd.copyProperties(this);
     nd.outgoingEdges = outgoingEdges;
     nd.incomingEdges = incomingEdges;
     return nd;
   }
+
   public boolean equalId(AutomatonNode nd) {
     return this.getId().equals(nd.getId());
   }
+
   public void copyPropertiesFromASTNode(ASTNode fromThisNode) {
     if (fromThisNode.getModelVariables() != null) {
       this.variables = fromThisNode.getModelVariables();
@@ -119,7 +124,6 @@ public Set<String> readySet(){
 
   public AutomatonNode createIntersection(AutomatonNode withThisNode) {
     AutomatonNode newNode = new AutomatonNode("");
-
 
 
     if (this.startNode == withThisNode.isStartNode()) {
@@ -153,17 +157,25 @@ public Set<String> readySet(){
   }
 
   public boolean isTerminal() {
-    return isERROR()|| isSTOP();
+    return isERROR() || isSTOP();
   }
+
   public boolean isSTOP() {
     return this.stopNode;
   }
-  public boolean isERROR() { return this.errorNode;}
-  public boolean isExternal() { return isERROR() || isSTOP() ||isStartNode();}
+
+  public boolean isERROR() {
+    return this.errorNode;
+  }
+
+  public boolean isExternal() {
+    return isERROR() || isSTOP() || isStartNode();
+  }
+
   public boolean isQuiescent() {
     Set<AutomatonEdge> shouting =
-      outgoingEdges.values().stream().filter(x->!x.getLabel().endsWith(Constant.BROADCASTSinput)).collect(Collectors.toSet());
-    return shouting.size() ==0;
+      outgoingEdges.values().stream().filter(x -> !x.getLabel().endsWith(Constant.BROADCASTSinput)).collect(Collectors.toSet());
+    return shouting.size() == 0;
   }
 
   public List<AutomatonEdge> getIncomingEdges() {
@@ -191,9 +203,10 @@ public Set<String> readySet(){
   public List<AutomatonEdge> getOutgoingEdges() {
     return new ArrayList<>(outgoingEdges.values());
   }
-/*
-   ALAS nodes and edges do not have unique keys!
- */
+
+  /*
+     ALAS nodes and edges do not have unique keys!
+   */
   public boolean addOutgoingEdge(AutomatonEdge edge) {
     if (!outgoingEdges.containsKey(edge.getId())) {
       outgoingEdges.put(edge.getId(), edge);
@@ -211,55 +224,57 @@ public Set<String> readySet(){
 
     return false;
   }
+
   public String myString() {
 
-    return "node "+ this.getId()+" col "+ this.colour+" out = "+outgoingEdges.size()+
-           " error "+isERROR() + " quies "+quiescent+" end "+isSTOP()+" start "+isStartNode();
+    return "node " + this.getId() + " labNo " + labelNumber + " col " + this.colour + " out = " + outgoingEdges.size() +
+      " error " + isERROR() + " quies " + quiescent + " end " + isSTOP() + " start " + isStartNode();
   }
+
   public String toString() {
-   StringBuilder builder = new StringBuilder();
-   List<AutomatonEdge> incoming = getIncomingEdges();
+    StringBuilder builder = new StringBuilder();
+    List<AutomatonEdge> incoming = getIncomingEdges();
 
     builder.append("node{\n");
     builder.append("\tid:").append(getId());
 
 
-    if(isStartNode()) {
+    if (isStartNode()) {
       builder.append(" (START)");
     }
     if (isERROR()) {
       builder.append(" ERROR ");
     }
-    builder.append(" g= "+getGuard()+"\n");
-   builder.append("\tincoming:{");
-   for (int i = 0; i < incoming.size(); i++) {
-     builder.append(incoming.get(i).getId());
-       builder.append(", ");
+    builder.append(" g= " + getGuard() + "\n");
+    builder.append("\tincoming:{");
+    for (int i = 0; i < incoming.size(); i++) {
+      builder.append(incoming.get(i).getId());
+      builder.append(", ");
 
     }
     builder.append("}\n");
 
-  builder.append("\toutgoing:{");
-   List<AutomatonEdge> outgoing = getOutgoingEdges();
-   for (int i = 0; i < outgoing.size(); i++) {
-    builder.append(outgoing.get(i).getId());
-    if (i < outgoing.size() - 1) {
-       builder.append(", ");
-     }
-   }
+    builder.append("\toutgoing:{");
+    List<AutomatonEdge> outgoing = getOutgoingEdges();
+    for (int i = 0; i < outgoing.size(); i++) {
+      builder.append(outgoing.get(i).getId());
+      if (i < outgoing.size() - 1) {
+        builder.append(", ");
+      }
+    }
     builder.append("}\n}");
 
-   return builder.toString();
- }
+    return builder.toString();
+  }
 
   public int compareTo(AutomatonNode nd) {
 //System.out.println(this.getId()+" "+nd.getId()+" ** "+
 //                    this.getLabel()+" "+nd.getLabel());
     int xout = this.getId().compareTo(nd.getId());
-    if (xout == 0  && this.getLabel()  != null && nd.getLabel() != null) {
+    if (xout == 0 && this.getLabel() != null && nd.getLabel() != null) {
       xout = this.getLabel().compareTo(nd.getLabel());
     }
-   //System.out.println(" xout = "+xout);
+    //System.out.println(" xout = "+xout);
     return xout;
 
   }

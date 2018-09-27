@@ -51,4 +51,8 @@ public class OperationResult extends Result {
     private String ident;
     private Location location;
   }
+
+  public String myString() {
+    return "OperationResult "+result+" "+res+" extra "+extra+" failures "+failures;
+  }
 }

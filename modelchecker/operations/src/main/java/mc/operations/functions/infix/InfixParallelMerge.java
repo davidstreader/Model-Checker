@@ -3,7 +3,6 @@ package mc.operations.functions.infix;
 import lombok.Value;
 import mc.exceptions.CompilationException;
 import mc.operations.impl.AutomataParallelMerge;
-import mc.processmodels.automata.operations.PetrinetParallelFunction;
 import mc.plugins.IProcessInfixFunction;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.operations.AutomataReachability;
@@ -12,6 +11,7 @@ import mc.processmodels.petrinet.Petrinet;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Set;
 
 @Value
 public class InfixParallelMerge implements IProcessInfixFunction {
@@ -62,10 +62,11 @@ public class InfixParallelMerge implements IProcessInfixFunction {
    * @param id        the id of the resulting petrinet
    * @param petrinet1 the first  petrinet in the function (e.g. {@code A} in {@code A||B})
    * @param petrinet2 the second petrinet in the function (e.g. {@code B} in {@code A||B})
+   * @param flags
    * @return the resulting petrinet of the operation
    */
   @Override
-  public Petrinet compose(String id, Petrinet petrinet1, Petrinet petrinet2) throws CompilationException {
+  public Petrinet compose(String id, Petrinet petrinet1, Petrinet petrinet2, Set<String> flags) throws CompilationException {
     return PetrinetParallelMergeFunction.compose(petrinet1,petrinet2);
   }
 }

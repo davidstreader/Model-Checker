@@ -9,7 +9,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import mc.Constant;
-import mc.TraceType;
 import mc.compiler.Interpreter;
 import mc.compiler.ast.ASTNode;
 import mc.compiler.ast.ChoiceNode;
@@ -701,7 +700,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     //System.out.println("interpretCOMPOSITE "+composite.getOperation());
     interpretProcess(composite.getFirstProcess(), petri.getId() + ".pc1");
     interpretProcess(composite.getSecondProcess(), petri.getId() + ".pc2");
-
+    Set<String> flags = composite.getFlags();
     ProcessModel model2 = processStack.pop();
     ProcessModel model1 = processStack.pop();
 
@@ -714,7 +713,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     Petrinet comp = instantiateClass(infixFunctions.get(composite.getOperation()))
       .compose(model1.getId() + composite.getOperation() + model2.getId(),
         (Petrinet) model1,
-        (Petrinet) model2);
+        (Petrinet) model2, composite.getFlags());
     return comp;
     //addPetrinet( comp, petri);
   }

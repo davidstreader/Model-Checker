@@ -59,11 +59,13 @@ public class CompositeNode extends ASTNode {
     this.firstProcess = firstProcess;
     this.secondProcess = secondProcess;
     this.flags = flags;
+    System.out.println("CompositeNode "+operation+flags);
   }
   public String myString(){
     StringBuilder sb = new StringBuilder();
     sb.append("("+firstProcess.myString());
     sb.append(operation);
+    if (flags.size()>0) sb.append(flags);
     sb.append(secondProcess.myString()+")");
     return sb.toString();
   }

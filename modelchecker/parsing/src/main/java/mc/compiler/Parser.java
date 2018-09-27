@@ -77,6 +77,7 @@ public class Parser {
 
     while (index < this.tokens.size() && !Thread.currentThread().isInterrupted()) {
       Token token = peekToken();
+      //System.out.println("parse "+token.toString());
       if (token instanceof ProcessesDefintionToken) {
         parseProcessesDefinition();
       } else if (token instanceof ConstToken) {
@@ -701,16 +702,18 @@ System.out.println("parseDisplayType "+ token.toString());
     }
 // operators returning processes such as [], ||, =>, ..  dynamicly loaded
     for (String key : infixFunctions.keySet()) {
-      //System.out.println("Parse infixFunction looking for "+ key);
+
       if (peekToken().toString().equals(key)) {
+        //System.out.println("Parse infixFunction "+ key);
         nextToken(); // gobble the '||' token
         Set<String> flags = new HashSet<>();
         if (peekToken() instanceof OpenBraceToken) {
           flags = parseFlags(key);
         }
+        //System.out.println("flags "+flags);
         ASTNode process2 = parseComposite();
         process = new CompositeNode(key, process, process2, constructLocation(start),flags);
-        //System.out.println("***Parse infixFunction "+ key);
+        //System.out.println("***Parse infixFunction "+ ((CompositeNode) process).getFlags());
         break;
       }
     }

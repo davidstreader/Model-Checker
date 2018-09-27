@@ -1,54 +1,50 @@
 processes {     //Oneaa = a->STOP.
-C3 = a->a->C3.
-E3 = a->a->X, X= a->X.
-Onebb = b->STOP|a->Onebb.
-Threeaba = a->b->a->STOP.
-Two = a->b->Two.
-Twoabs = a->b->Twoabs.
+//C3 = a->a->C3.
+//E3 = a->a->X, X= a->X.
 Da  = a->b->Da|a->STOP.
-Dax  = a->b->x->Dax|a->STOP.
-Q = Da ||Onebb.
-P = Twoabs  || Onebb.
+D  = a->(b->D|b->STOP).
+Ia = a->a->Ia|a->STOP.
+Onea = a->STOP.
+Threea = a->a->a->STOP.
+Twoab = a->b->STOP.
+Twobas = b->a->Twobas.
+/*Oneb = b->STOP.
+Fa = b->b->Fa|a->STOP.
+Ia = a->a->Ia|a->STOP.
+Twoaa = a->a->STOP.
+Twoab = a->b->STOP.
+Twoba = b->a->STOP.
+*/
+Twoabs = a->b->Twoabs.
+/*
+Twobas = b->a->Twobas.
+Twobb = b->b->STOP.
+Twoax = a->(a->STOP|b->STOP).
+Twox = a->a->STOP|a->b->STOP.
+Q = Twoabs || Twoab.
+P = Da  || Twoab.
+Q1 = Twoab ||{a,b} Twoaa.
+P1 = Twoax  ||{a,b} Twoaa.
+*/
+Q = Threea ||{a,b} Twoab.
+P = Ia ||{a,b} Twoab.
+Q1 = Onea || Twoab.
+P1 = Da  || Twoab.
 }
 operation {
-Twoabs  <f Da. 
-P <t Q.
+Ia <f{cong} Threea.
+//P <t{cong} Q.
+//Onea <f{cong} Da.
+/*Da <f Onea.
+Onea <f Da.
+
 P <t{cong} Q.
-Da  <f Twoabs. 
-Q <t P.
-Q <t{cong} P.
- 
-Twoabs  <f{cong} Da. 
-P <t{cong} Q.
-Da  <f{cong} Twoabs. 
-Q <t{cong} P.
+P <t Q. */
+//Onea <t Threea .
 
-
-
-//Da <f{cong} Threeaba.  //? FALSE
-//Dax <f{cong} Threeaba.  //? FALSE
-//Twoabs <f{cong} D.  //Correctly FALSE
-//Q <t{cong} P.
-
+//Twox <f Twoax.
+//Twoax !<f Twox.
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

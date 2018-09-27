@@ -11,7 +11,6 @@ import mc.processmodels.petrinet.Petrinet;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 
 @Value
@@ -27,6 +26,7 @@ public class InfixParallelFunction implements IProcessInfixFunction {
     return "Parallel";
   }
   Set<String> valid = Collections.singleton("*");
+  @Override
   public Collection<String> getValidFlags(){return valid;}
   /**
    * The form which the function will appear when composed in the text.
@@ -64,11 +64,12 @@ public class InfixParallelFunction implements IProcessInfixFunction {
    * @param id        the id of the resulting petrinet
    * @param petrinet1 the first  petrinet in the function (e.g. {@code A} in {@code A||B})
    * @param petrinet2 the second petrinet in the function (e.g. {@code B} in {@code A||B})
+   * @param flags
    * @return the resulting petrinet of the operation
    */
   @Override
-  public Petrinet compose(String id, Petrinet petrinet1, Petrinet petrinet2) throws CompilationException {
-    //System.out.println("infixparallel");
-    return PetrinetParallelFunction.compose(petrinet1,petrinet2,valid);
+  public Petrinet compose(String id, Petrinet petrinet1, Petrinet petrinet2, Set<String> flags) throws CompilationException {
+    //System.out.println("infixparallel "+flags);
+    return PetrinetParallelFunction.compose(petrinet1,petrinet2,flags);
   }
 }

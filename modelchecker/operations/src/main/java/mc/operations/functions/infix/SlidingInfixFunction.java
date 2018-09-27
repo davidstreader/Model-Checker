@@ -95,10 +95,11 @@ public class SlidingInfixFunction implements IProcessInfixFunction {
    * @param id        the id of the resulting petrinet
    * @param petrinet1 the first  petrinet in the function (e.g. {@code A} in {@code A||B})
    * @param petrinet2 the second petrinet in the function (e.g. {@code B} in {@code A||B})
+   * @param flags
    * @return the resulting petrinet of the operation
    */
   @Override
-  public Petrinet compose(String id, Petrinet petrinet1, Petrinet petrinet2) throws CompilationException {
+  public Petrinet compose(String id, Petrinet petrinet1, Petrinet petrinet2, Set<String> flags) throws CompilationException {
     return null;
   }
 }

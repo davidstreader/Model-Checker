@@ -5,6 +5,7 @@ import mc.processmodels.automata.Automaton;
 import mc.processmodels.petrinet.Petrinet;
 
 import java.util.Collection;
+import java.util.Set;
 
 /**
  * Classes implementing this type located in the {@code mc.operations} package are loaded at run
@@ -15,7 +16,6 @@ import java.util.Collection;
  * @author Jacob Beal
  * @see IProcessFunction
  * @see IOperationInfixFunction
- * @see mc.plugins.PluginManager
  */
 public interface IProcessInfixFunction {
 
@@ -52,9 +52,10 @@ public interface IProcessInfixFunction {
    * @param id        the id of the resulting petrinet
    * @param petrinet1 the first  petrinet in the function (e.g. {@code A} in {@code A||B})
    * @param petrinet2 the second petrinet in the function (e.g. {@code B} in {@code A||B})
+   * @param flags
    * @return the resulting petrinet of the operation
    */
-  Petrinet compose(String id, Petrinet petrinet1, Petrinet petrinet2)
+  Petrinet compose(String id, Petrinet petrinet1, Petrinet petrinet2, Set<String> flags)
       throws CompilationException;
 
 }

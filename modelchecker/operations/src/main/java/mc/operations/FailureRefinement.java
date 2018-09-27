@@ -78,6 +78,8 @@ public class FailureRefinement implements IOperationInfixFunction {
   @Override
   public boolean evaluate(Set<String> alpha, Set<String> flags, Context context, Collection<ProcessModel> processModels) throws CompilationException {
     boolean cong = flags.contains(Constant.CONGURENT);
+    a1Next = new Nd2NextMap();
+    a2Next = new Nd2NextMap();
   /*  //Switch order of processes
     List<ProcessModel> processModels = new ArrayList<>();
     Object[] temp =  processMs.toArray();

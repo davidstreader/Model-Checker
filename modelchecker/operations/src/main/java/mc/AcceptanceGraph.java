@@ -23,7 +23,7 @@ public class AcceptanceGraph {
   @Getter
   @Setter
   private Map<AutomatonNode, List<Set<String>>> node2AcceptanceSets =
-    new HashMap<AutomatonNode, List<Set<String>>>();
+    new HashMap<>();
 
 
   /**
@@ -37,6 +37,7 @@ public class AcceptanceGraph {
 
   public AcceptanceGraph(String id, Automaton nfain, boolean cong)
     throws CompilationException {
+    node2AcceptanceSets =  new HashMap<>();
     Automaton nfa = nfain.copy();  // must copy
     System.out.println("PRE adding ERROR! " + nfa.myString());
     if (cong) addStartAndSTOP(nfa);
@@ -78,7 +79,7 @@ public class AcceptanceGraph {
     //alphabet.remove(Constant.HIDDEN);
     int cnt = 0;
     boolean processedRoot = false;
-    while (!dfaNodes.isEmpty() && cnt < 30) {
+    while (!dfaNodes.isEmpty() && cnt < 100) {
       AutomatonNode poped = dfaNodes.pop();
       visited.add(poped);
 
@@ -106,23 +107,22 @@ public class AcceptanceGraph {
             break;
           }
         }
+        // set dfa node to STOP/ERROR in one nfa node is STOP/ERROR
+        for (AutomatonNode nd : dfa2nfaSet.get(poped)) {
+          System.out.println("Testing for STOP/ERROR "+ nd.myString());
+          if (nd.isERROR()) {
+            poped.setErrorNode(true);
+            System.out.println("ERROR");
+          }
+          if (nd.isSTOP()) {
+            poped.setStopNode(true);
+            System.out.println("STOP");
+          }
+        }
 // only build new dfa node if it has not already been built
         if (nextdfa == null) {
 
           nextdfa = dfa.addNode();
-          // set dfa node to STOP in one nfa node is STOP
-          boolean allSTOP = true;
-          for (AutomatonNode nd : nextStates) {
-            if (nd.isERROR()) {
-              allSTOP = false;
-              poped.setErrorNode(true);
-              break;
-            }
-            if (!nd.isSTOP()) {
-              allSTOP = false;
-            }
-          }
-          if (allSTOP) poped.setStopNode(true);
           dfa2nfaSet.put(nextdfa, nextStates);
           //Set<String> nextSt =constructClosure(nfa.getRoot(), dfa2nfaSet); //add to dfa2nfaSet
           dfaNodes.push(nextdfa);
@@ -393,28 +393,27 @@ public class AcceptanceGraph {
      set of sets  A>>B  means a > b where b is a set in A  and b in B
    */
   public static boolean AcceptanceSubSet(List<Set<String>> a1, List<Set<String>> a2) {
-    System.out.println(" START AcceptanceSuperSet " + a2 + " a Failure Subset of " + a1 + "  ?");
-    boolean ok = false;
+    System.out.println(" START AcceptanceSuperSet " + a2 + " a Refusal Subset of " + a1 + "  ?");
+    boolean ok = true;
     breakto:
-    for (Set<String> as2 : a2) {       //FOR ALL as1 is in a1 then    (A)
+    for (Set<String> as2 : a2) {       //FOR ALL as2 is in a2 then    (A)
       ok = false;
       System.out.println(" as2= "+as2);
-      for (Set<String> as1 : a1) {     // exists as2 in a2 such that   (B)
-        System.out.println("   is as2 " + as2 + " superset of   as1 " + as1);
+      for (Set<String> as1 : a1) {     // exists as1 in a1 such that   (B)
+          System.out.println("   is as2 " + as2 + " superset of   as1 " + as1);
         if (as2.containsAll(as1)) {    //  as1 is a  subset of as2
           ok = true;
-          System.out.println("   as2 " + as2 + " is superset as1 " + as1);
+          System.out.println("      as2 " + as2 + " is superset as1 " + as1);
           break breakto;
         }
-        System.out.println("   as2 " + as2 + " NOT superset as1 " + as1);
+        System.out.println("   as2 " + as2 + " is NOT superset as1 " + as1);
       }
 
-      // if one true then inner loop true
       if (ok == false) {
         break;
       } //if one inner false then outer false
     }  //outer only true if all inner loops true
-    System.out.println(" a2 " + a2 + " ->>- a1 " + a1 + "  returns " + ok);
+    System.out.println(" a2 " + a2 + " a Refusal Subset of " + a1 + "  returns " + ok);
     return ok;
   }
 

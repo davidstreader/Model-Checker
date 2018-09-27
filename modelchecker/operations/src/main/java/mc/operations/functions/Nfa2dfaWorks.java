@@ -29,7 +29,7 @@ public class Nfa2dfaWorks {
     //BuildAcceptanceGraphs ba = new BuildAcceptanceGraphs();
     //ba.compose(id,flags,context,automata);
     //System.out.println("Pingo2");
-    assert automata.length == 1;
+    assert automata.length == 1;System.out.println("nfa2dfa in "+ automata[0].myString());
     Automaton nfa = automata[0].copy();
     Automaton dfa = new Automaton(id, !Automaton.CONSTRUCT_ROOT);
 
@@ -48,12 +48,14 @@ public class Nfa2dfaWorks {
 
     boolean processedRoot = false;
     while (!toDoList.isEmpty()) {  // starts with the set of root nodes
+      //System.out.println("toDo = "+toDoList);
       Set<String> states = toDoList.pop();
       String idNode = constructNodeId(stateMap.get(states), nfa.getId());
-
+      //System.out.println("idNode = "+idNode+"  states = "+states);
       if (visited.contains(idNode)) { continue;  }  // process dfa node only once
       if (!nodeMap.containsKey(idNode)) { //set up nodeMap and add node to dfa
-        nodeMap.put(idNode, dfa.addNode(idNode));
+        AutomatonNode n = dfa.addNode(idNode);
+        nodeMap.put(idNode, n);
       }
       AutomatonNode node = nodeMap.get(idNode);  //build new dfa node
 
@@ -62,37 +64,33 @@ public class Nfa2dfaWorks {
         dfa.addRoot(node);
         node.setStartNode(true);
         processedRoot = true;
-        //if one root nfa is terminal so is the dfa root
+        //if one root nfa STOPS so is the dfa root
         if (nfa.getRoot().stream().anyMatch(e -> e.isSTOP()) ) {
           dfa.getNode(idNode).setStopNode(true);
         }
+        //if one root nfa is ERROR so is the dfa root
+        if (nfa.getRoot().stream().anyMatch(e ->(e.isERROR() || e.getOutgoingEdges().size()==0)) ) {
+          dfa.getNode(idNode).setErrorNode(true);
+        }
+        System.out.println("Root "+node.myString());
       }
+
 
       for (String action : alphabet) {
         Set<String> nextStates = constructStateSet(stateMap.get(states), action, stateMap);
         if (nextStates.isEmpty()) {  continue;  }
-
         String nextId = constructNodeId(stateMap.get(nextStates), nfa.getId());
-        //stateMap.get(nextStates).stream().forEach(x-> System.out.println("next "+x.myString()));
+    // stateMap.get(nextStates).stream().forEach(x->System.out.println("next "+x.myString()));
         if (!nodeMap.containsKey(nextId)) {
-          nodeMap.put(nextId, dfa.addNode(nextId));
-          //System.out.println("nextId "+nextId);
-
-          if (stateMap.get(nextStates).stream().anyMatch(e -> e.isSTOP()) ) {
-            //System.out.println("STOP "+ nextId);
-            dfa.getNode(nextId).setStopNode(true);
-          }if (stateMap.get(nextStates).stream().anyMatch(e -> e.isERROR()) ) {
-            //System.out.println("STOP "+ nextId);
-            dfa.getNode(nextId).setErrorNode(true);
-          }
-          if (stateMap.get(nextStates).stream().anyMatch(e -> e.isStartNode()) ) {
-            //System.out.println("start "+ nextId);
-            dfa.getNode(nextId).setStartNode(true);
+          AutomatonNode nd = dfa.addNode(nextId);
+          nodeMap.put(nextId, nd);
+          for (AutomatonNode ndn :stateMap.get(nextStates)){
+            if (ndn.isSTOP()) dfa.getNode(nextId).setStopNode(true);
+            if (ndn.isStartNode()) dfa.getNode(nextId).setStartNode(true);
+            if (ndn.isERROR()) dfa.getNode(nextId).setErrorNode(true);
+            if (ndn.isQuiescent()) dfa.getNode(nextId).setQuiescent(true);
           }
 
-          if (stateMap.get(nextStates).stream().anyMatch(e -> e.isQuiescent()) ) {
-            dfa.getNode(nextId).setQuiescent(true);
-          }
         }
         AutomatonNode nextNode = nodeMap.get(nextId);
 
@@ -115,12 +113,12 @@ public class Nfa2dfaWorks {
 
   /**
    *
-   * @param node  root marking
-   * @param stateMap  input output
-   * @return  internal reprentation of new node
+   * @param node  roots
+   * @param stateMap  input output  map from STATE to node
+   * @return  the state OR internal reprentation of set of nfa nodes
    */
-  private Set<String> constructClosure(Collection<AutomatonNode> node, Map<Set<String>,
-    List<AutomatonNode>> stateMap) {
+  private Set<String> constructClosure(Collection<AutomatonNode> node,
+                                       Map<Set<String>,List<AutomatonNode>> stateMap) {
     Set<String> states = new HashSet<>();
     List<AutomatonNode> nodes = new ArrayList<>();
 
@@ -129,9 +127,7 @@ public class Nfa2dfaWorks {
 
     while (!fringe.isEmpty()) {
       AutomatonNode current = fringe.pop();
-      if (states.contains(current.getId())) {
-        continue;
-      }
+      if (states.contains(current.getId())) { continue; }
       states.add(current.getId());
       nodes.add(current);
 
@@ -140,6 +136,7 @@ public class Nfa2dfaWorks {
         .collect(Collectors.toList());
 
       edges.forEach(edge -> fringe.push(edge.getTo()));
+      System.out.println(fringe.size());
     }
 
     if (!stateMap.containsKey(states)) {

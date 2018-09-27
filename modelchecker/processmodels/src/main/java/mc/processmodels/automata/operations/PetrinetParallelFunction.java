@@ -28,7 +28,7 @@ public class PetrinetParallelFunction  {
     Petrinet p2 = pi2.reId("2");
     p1.rebuildAlphabet(); p2.rebuildAlphabet();
 
-   //System.out.println("     PETRINET PARALLELFUNCTION"+"  "+p1.getId()+" || "+p2.getId());
+   System.out.println("     PETRINET PARALLELFUNCTION"+"  "+p1.getId()+" ||"+flags+" "+p2.getId());
 
    //builds synchronisedActions set
     setupActions(p1, p2,flags);
@@ -50,7 +50,7 @@ public class PetrinetParallelFunction  {
     composition.setEndFromNet();
     //System.out.println("half "+composition.myString()+"\nhalf END");
     //System.out.println("  SoFar unsynced \n"+ composition.myString());
-    //System.out.println("  synchronisedActions "+synchronisedActions);
+    System.out.println("  synchronisedActions "+synchronisedActions);
     setupSynchronisedActions(p1, p2, composition);
     //System.out.println("  synced  \n "+ composition.myString());
     //composition = PetrinetReachability.removeUnreachableStates(composition);
@@ -77,16 +77,14 @@ public class PetrinetParallelFunction  {
   Adds actions to synchronisedActions.
    */
   private static void setupActions(Petrinet p1, Petrinet p2,Set<String> flags) {
-    System.out.println("setupActions flags "+ flags);
-    if (flags.size()>0) {
-
-    } else {
+    //System.out.println("setupActions flags "+ flags);
+    if (flags.size()==0) {
       Set<String> actions1 = p1.getAlphabet().keySet();
       Set<String> actions2 = p2.getAlphabet().keySet();
-      //System.out.println("actions1 "+actions1);
-      //System.out.println("actions2 "+actions2);
       actions1.forEach(a -> setupAction(a, actions2));
       actions2.forEach(a -> setupAction(a, actions1));
+    } else {
+      flags.forEach(a -> setupAction(a, flags));
     }
   }
 
@@ -168,7 +166,9 @@ public class PetrinetParallelFunction  {
   throws  CompilationException {
     //optional is only true if one tran is b! and the other b?
     //only synced transitions passed into the method
-    if (p1_.size()==0 || p2_.size() ==0) return; // Must not contiue as deleat transitions at end
+    //if (p1_.size()==0 || p2_.size() ==0) return; // Must continue as delete transitions at end
+
+
     //System.out.println("Replace actions "+ p1_.size()+" "+p2_.size());
     //System.out.println("p1 "+p1_.stream().map(x->x.myString()).reduce("",(x,y)->x+y+" "));
     //System.out.println("p2 "+p2_.stream().map(x->x.myString()).reduce("",(x,y)->x+y+" "));

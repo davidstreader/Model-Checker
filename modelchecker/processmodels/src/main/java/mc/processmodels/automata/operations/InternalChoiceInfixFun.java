@@ -9,7 +9,6 @@ import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * This covers the "internal choice" function.
@@ -108,10 +107,11 @@ public class InternalChoiceInfixFun implements IProcessInfixFunction {
    * @param id        the id of the resulting petrinet
    * @param net1 the first  petrinet in the function (e.g. {@code A} in {@code A||B})
    * @param net2 the second petrinet in the function (e.g. {@code B} in {@code A||B})
+   * @param flags
    * @return the resulting petrinet of the operation
    */
   @Override
-  public Petrinet compose(String id, Petrinet net1, Petrinet net2) throws CompilationException {
+  public Petrinet compose(String id, Petrinet net1, Petrinet net2, Set<String> flags) throws CompilationException {
 
     //System.out.println(id+" +PETRI1 "+net1.myString());
     net1.validatePNet();
