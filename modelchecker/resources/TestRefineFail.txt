@@ -1,0 +1,63 @@
+processes {     //Oneaa = a->STOP.
+Onea = a->STOP.
+Onebb = b->STOP.
+Twoaa = a->a->STOP.
+Twoab = a->b->STOP.
+Twoba = b->a->STOP.
+Twoabs = a->b->Twoabs.
+Twobas = b->a->Twobas.
+Twobb = b->b->STOP.
+Twoax = a->(a->STOP|b->STOP).
+Twobx = b->(a->STOP|b->STOP).
+Threea = a->a->a->STOP .
+Threeb = b->b->b->STOP .
+Threeaab = a->a->b->STOP.
+Threeaba = a->b->a->STOP.
+Threebaa = b->a->a->STOP.
+Threeabb = a->b->b->STOP. 
+Threebba = b->b->a->STOP.
+Threebab = b->a->b->STOP.
+Threeaax = a->a->(a->STOP|b->STOP).
+Threeabx = a->b->(a->STOP|b->STOP).
+Threebax = b->a->(a->STOP|b->STOP).
+Threebbx = b->b->(a->STOP|b->STOP).
+Fouraaab = a->a->a->b->STOP.
+ 
+C  = a->b->C.
+C1 = b->b->C1.
+C2 = b->a->C2.
+C3 = a->a->C3.
+D  = a->(b->D|b->STOP).
+Dr  = a->b->Dr|b->STOP.
+Da  = a->b->Da|a->STOP.
+Dx = a->(b->Dx|a->STOP).
+
+F  = b->(b->F|b->STOP).
+Fr = b->b->Fr|b->STOP.
+Fa = b->b->Fa|a->STOP.
+Fx = b->(b->Fx|a->STOP).
+
+I  = a->(a->I|b->STOP).
+Ir = a->a->Ir|b->STOP.
+Ia = a->a->Ia|a->STOP.
+Ix = a->(a->Ix|a->STOP).
+
+E  = a->b->X, X= a->X.
+E1 = b->b->X, X= a->X.
+E2 = b->a->X, X= a->X.
+E3 = a->a->X, X= a->X.
+
+}
+
+equation {
+Y <f{cong} Z ==> forall{X} (X||{a,b}Y <t{cong} X||{a,b}Z).
+forall{X} (X||{a,b}Y <t{cong} X||{a,b}Z) ==> Y <f{cong} Z.
+}
+
+
+
+
+
+
+
+
