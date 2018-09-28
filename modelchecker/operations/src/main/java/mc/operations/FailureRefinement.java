@@ -91,10 +91,8 @@ public class FailureRefinement implements IOperationInfixFunction {
 
       for (ProcessModel pm : processModels) {
         Automaton a = (Automaton) pm;
-      //add root and STOP events
-
         try {
-          //Automaton temp;
+          //AcceptanceGraph adds root and STOP events
           AcceptanceGraph ag = new AcceptanceGraph("dfa-" + a.getId(), a, cong);
           //temp = nfa2dfaworks.compose(a.getId(), new HashSet<>(), null, TraceType.CompleteTrace, a);
           ;
@@ -159,6 +157,8 @@ public class FailureRefinement implements IOperationInfixFunction {
     /*
        test if acceptance sets are subset
      */
+    // Must strip Start first
+
     boolean accb = AcceptanceGraph.AcceptanceSubSet(ag1.getNode2AcceptanceSets().get(np.first),
       ag2.getNode2AcceptanceSets().get(np.second));
     System.out.println(np.second.getId()+" is a Failure subset of " +np.first.getId() +" = " + accb);
@@ -193,7 +193,7 @@ public class FailureRefinement implements IOperationInfixFunction {
           System.out.println(lab + " ERRORERROR ERRORERROR NOTin  " + large + "  " + np.myString());
           return false;
         } */
-        //if (Constant.external(lab)) continue;
+        //if (Constant.external(lab)) continue;  // ignore trace with Start
         System.out.println("np5 = "+np.myString());
 
         System.out.println("a1N "+ a1N.myString() );
@@ -227,6 +227,7 @@ public class FailureRefinement implements IOperationInfixFunction {
       NextMap as;
       as = new NextMap(n.getOutgoingEdges().stream().
         distinct().
+      //  filter(x->!x.getLabel().equals(Constant.Start)).   //filter out Start from acceptance
         map(x -> new NextComponent(x.getLabel(), x.getTo())).
         collect(Collectors.toSet()));
 
