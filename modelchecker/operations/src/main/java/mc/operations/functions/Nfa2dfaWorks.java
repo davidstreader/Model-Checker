@@ -29,7 +29,8 @@ public class Nfa2dfaWorks {
     //BuildAcceptanceGraphs ba = new BuildAcceptanceGraphs();
     //ba.compose(id,flags,context,automata);
     //System.out.println("Pingo2");
-    assert automata.length == 1;System.out.println("nfa2dfa in "+ automata[0].myString());
+    assert automata.length == 1;
+    //System.out.println("nfa2dfa in "+ automata[0].myString());
     Automaton nfa = automata[0].copy();
     Automaton dfa = new Automaton(id, !Automaton.CONSTRUCT_ROOT);
 
@@ -72,7 +73,7 @@ public class Nfa2dfaWorks {
         if (nfa.getRoot().stream().anyMatch(e ->(e.isERROR() || e.getOutgoingEdges().size()==0)) ) {
           dfa.getNode(idNode).setErrorNode(true);
         }
-        System.out.println("Root "+node.myString());
+        //System.out.println("Root "+node.myString());
       }
 
 
@@ -136,7 +137,7 @@ public class Nfa2dfaWorks {
         .collect(Collectors.toList());
 
       edges.forEach(edge -> fringe.push(edge.getTo()));
-      System.out.println(fringe.size());
+      //System.out.println(fringe.size());
     }
 
     if (!stateMap.containsKey(states)) {

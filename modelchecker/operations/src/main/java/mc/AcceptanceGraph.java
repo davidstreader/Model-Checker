@@ -39,9 +39,9 @@ public class AcceptanceGraph {
     throws CompilationException {
     node2AcceptanceSets =  new HashMap<>();
     Automaton nfa = nfain.copy();  // must copy
-    System.out.println("PRE adding ERROR! " + nfa.myString());
+    //System.out.println("PRE adding ERROR! " + nfa.myString());
     if (cong) addStartAndSTOP(nfa);
-    System.out.println("Starting Accept input " + nfa.myString() + "\n");
+    //System.out.println("Starting Accept input " + nfa.myString() + "\n");
     Map<AutomatonNode, List<Set<String>>> dfaNode2ASet =
       new HashMap<AutomatonNode, List<Set<String>>>();
     //The acceptance sets should contain "STOP" "ROOT"
@@ -109,14 +109,14 @@ public class AcceptanceGraph {
         }
         // set dfa node to STOP/ERROR in one nfa node is STOP/ERROR
         for (AutomatonNode nd : dfa2nfaSet.get(poped)) {
-          System.out.println("Testing for STOP/ERROR "+ nd.myString());
+          //System.out.println("Testing for STOP/ERROR "+ nd.myString());
           if (nd.isERROR()) {
             poped.setErrorNode(true);
-            System.out.println("ERROR");
+            //System.out.println("ERROR");
           }
           if (nd.isSTOP()) {
             poped.setStopNode(true);
-            System.out.println("STOP");
+            //System.out.println("STOP");
           }
         }
 // only build new dfa node if it has not already been built
@@ -158,12 +158,12 @@ public class AcceptanceGraph {
     Guard g = new Guard();
     for (AutomatonNode nd : a.getNodes()) {
       if (nd==ss) continue;
-      System.out.println(nd.getId() + " stop=" + nd.isSTOP() + "  " + nd.getOutgoingEdges().size() + " Err=" + nd.isERROR());
+      //System.out.println(nd.getId() + " stop=" + nd.isSTOP() + "  " + nd.getOutgoingEdges().size() + " Err=" + nd.isERROR());
       if (nd.isSTOP()) {
         a.addEdge("STOP", nd, ss, g, false, false);
       }
       if (!nd.isSTOP() && nd.getOutgoingEdges().size() == 0) {
-        System.out.println("adding ERROR to "+nd.myString());
+        //System.out.println("adding ERROR to "+nd.myString());
         a.addEdge("ERROR", nd, ss, g, false, false);
       }
       if (nd.isStartNode())
@@ -302,20 +302,7 @@ public class AcceptanceGraph {
     return nfanode2ASet;
   }
 
-  private void printnode2AcceptanceSets(
-    Map<AutomatonNode, List<Set<String>>> node2AcceptanceSets,
-    Map<AutomatonNode, Set<String>> nfanode2ASet) {
-    System.out.println("nfa Sets");
-    for (AutomatonNode n : nfanode2ASet.keySet()) {
-      System.out.println(" " + n.getId() + " " + nfanode2ASet.get(n).toString());
-    }
 
-    System.out.println("Acceptance Sets");
-    for (AutomatonNode nd : node2AcceptanceSets.keySet()) {
-      System.out.println(" " + nd.getId() + "  " + node2AcceptanceSets.get(nd));
-    }
-
-  }
 
   /**
    * Colors the nodes of an Acceptance graph
@@ -377,12 +364,7 @@ public class AcceptanceGraph {
   }
 
 
-  private void printnode2AcceptanceSets() {
-    System.out.println("Acceptance Sets");
-    for (AutomatonNode nd : node2AcceptanceSets.keySet()) {
-      System.out.println(" " + nd.getId() + "  " + node2AcceptanceSets.get(nd));
-    }
-  }
+
 
   /*
      B refines into A
@@ -394,29 +376,29 @@ public class AcceptanceGraph {
    */
   public static boolean AcceptanceSubSet(List<Set<String>> a1, List<Set<String>> a2) {
 
-    System.out.println(" START AcceptanceSuperSet " + a2 + " a Refusal Subset of " + a1 + "  ?");
+    //System.out.println(" START AcceptanceSuperSet " + a2 + " a Refusal Subset of " + a1 + "  ?");
     boolean ok = true;
     breakto:
     for (Set<String> as2 : a2) {       //FOR ALL as2 is in a2 then    (A)
       ok = false;
-      System.out.println(" as2= "+as2);
+      //System.out.println(" as2= "+as2);
       for (Set<String> aa1 : a1) {     // exists as1 in a1 such that   (B)
         //strip out external
         Set<String> as1 = aa1.stream().filter(x->!Constant.external(x)).collect(Collectors.toSet());
-          System.out.println("   is as2 " + as2 + " superset of   as1 " + as1);
+          //System.out.println("   is as2 " + as2 + " superset of   as1 " + as1);
         if (as2.containsAll(as1)) {    //  as1 is a  subset of as2
           ok = true;
-          System.out.println("      as2 " + as2 + " is superset as1 " + as1);
+          //System.out.println("      as2 " + as2 + " is superset as1 " + as1);
           break breakto;
         }
-        System.out.println("   as2 " + as2 + " is NOT superset as1 " + as1);
+        //System.out.println("   as2 " + as2 + " is NOT superset as1 " + as1);
       }
 
       if (ok == false) {
         break;
       } //if one inner false then outer false
     }  //outer only true if all inner loops true
-    System.out.println(" a2 " + a2 + " a Refusal Subset of " + a1 + "  returns " + ok);
+    //System.out.println(" a2 " + a2 + " a Refusal Subset of " + a1 + "  returns " + ok);
     return ok;
   }
 

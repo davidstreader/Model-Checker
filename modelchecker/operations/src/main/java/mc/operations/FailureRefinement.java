@@ -105,8 +105,8 @@ public class FailureRefinement implements IOperationInfixFunction {
 
       Automaton a1 = acctgrs.get(0).getA();
       Automaton a2 = acctgrs.get(1).getA();  // Acceptance Graphs built
-      System.out.println("ACC 1 " + acctgrs.get(0).toString());
-      System.out.println("ACC 2 " + acctgrs.get(1).toString());
+      //System.out.println("ACC 1 " + acctgrs.get(0).toString());
+      //System.out.println("ACC 2 " + acctgrs.get(1).toString());
       //System.out.println("Trace Refinement type " + tt + " flags " + flags + " " + a1.getId() + "<<" + a2.getId());
 //Both dfas are built
 
@@ -114,8 +114,8 @@ public class FailureRefinement implements IOperationInfixFunction {
       a1Next = build_readyMap(a1, TraceType.CompleteTrace); //Controls simulation
       a2Next = build_readyMap(a2, TraceType.CompleteTrace);
       //The nfas are anotated with Ready sets
-      System.out.println("a2Next "+a2Next.myString());
-      System.out.println("a1Next "+a1Next.myString());
+      //System.out.println("a2Next "+a2Next.myString());
+      //System.out.println("a1Next "+a1Next.myString());
       // printit(a2Next);
       AutomatonNode r1 = (AutomatonNode) a1.getRoot().toArray()[0];
       AutomatonNode r2 = (AutomatonNode) a2.getRoot().toArray()[0];
@@ -152,8 +152,8 @@ public class FailureRefinement implements IOperationInfixFunction {
                                  List<NodePair> processed,
                                  AcceptanceGraph ag1,
                                  AcceptanceGraph ag2) {
-    System.out.println("np = "+np.myString());
-    System.out.println("IS "+ np.second.getId() + " a failure subset of " + np.first.getId());
+    //System.out.println("np = "+np.myString());
+    //System.out.println("IS "+ np.second.getId() + " a failure subset of " + np.first.getId());
     /*
        test if acceptance sets are subset
      */
@@ -161,7 +161,7 @@ public class FailureRefinement implements IOperationInfixFunction {
 
     boolean accb = AcceptanceGraph.AcceptanceSubSet(ag1.getNode2AcceptanceSets().get(np.first),
       ag2.getNode2AcceptanceSets().get(np.second));
-    System.out.println(np.second.getId()+" is a Failure subset of " +np.first.getId() +" = " + accb);
+    //System.out.println(np.second.getId()+" is a Failure subset of " +np.first.getId() +" = " + accb);
     if (!accb) {
       return false;
     }
@@ -170,7 +170,7 @@ public class FailureRefinement implements IOperationInfixFunction {
     for (NodePair n : processed) {
       if (n.getFirst().getId().equals(np.getFirst().getId()) &&
         n.getSecond().getId().equals(np.getSecond().getId())) {
-        System.out.println("processed " + "  " + np.myString());
+        //System.out.println("processed " + "  " + np.myString());
         return true;
       }
     }
@@ -188,16 +188,13 @@ public class FailureRefinement implements IOperationInfixFunction {
     // b? might not be in in the ready labels but is in the next step label
       for (String lab : small) {
         //   for(String lab: a2N.get(np.second).labels()){
-        System.out.println("lab = "+lab + " ");
+        //System.out.println("lab = "+lab + " ");
         /*if (!large.contains(lab)) {
           System.out.println(lab + " ERRORERROR ERRORERROR NOTin  " + large + "  " + np.myString());
           return false;
         } */
         //if (Constant.external(lab)) continue;  // ignore trace with Start
-        System.out.println("np5 = "+np.myString());
 
-        System.out.println("a1N "+ a1N.myString() );
-        System.out.println("a2N "+ a2N.myString() );
 
         AutomatonNode nd1 = a1N.getMap(). get(np.first).getNcs().get(lab);
         AutomatonNode nd2 = a2N.getMap(). get(np.second).getNcs().get(lab);
@@ -210,7 +207,7 @@ public class FailureRefinement implements IOperationInfixFunction {
       System.out.println(small + " ERRORERROR ERRORERROR NOTsubset " + large + "  " + np.myString());
       return false;
     }*/
-    System.out.println("subSet true " + np.myString());
+    //System.out.println("subSet true " + np.myString());
     return true;
   }
 
@@ -221,7 +218,7 @@ public class FailureRefinement implements IOperationInfixFunction {
    For non congurance STOP is add recursivly in quiescentNext
   */
   private Nd2NextMap build_readyMap(Automaton a, TraceType tt) {
-    System.out.println("Build Ready Map "+tt);
+    //System.out.println("Build Ready Map "+tt);
     Nd2NextMap nfanode2ASet = new Nd2NextMap();
     for (AutomatonNode n : a.getNodes()) {
       NextMap as;
@@ -234,7 +231,7 @@ public class FailureRefinement implements IOperationInfixFunction {
       //System.out.println("Next "+n.getId() + " -> " + as.myString());
       nfanode2ASet.getMap().put(n, as);
     }
-    System.out.println("Build Ready Map returns "+nfanode2ASet.myString());
+    //System.out.println("Build Ready Map returns "+nfanode2ASet.myString());
     return nfanode2ASet;
   }
 }

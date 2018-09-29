@@ -78,7 +78,8 @@ public class AbstractionFunction implements IProcessFunction {
     Set<AutomatonEdge> processesed = new HashSet<>();
     Automaton startA = automata[0].copy();
     String Aname = startA.getId();
-    System.out.println("automata Abs start "+ startA.getId()+ " flags "+flags);
+    //System.out.println("\n***\n"+startA.myString());
+    //System.out.println("automata Abs start "+ startA.getId()+ " flags "+flags);
     boolean cong = flags.contains(Constant.CONGURENT);
     Automaton abstraction = pruneHiddenNodes(context, startA, cong);
 
@@ -93,7 +94,7 @@ public class AbstractionFunction implements IProcessFunction {
     List<AutomatonEdge> hiddenEdges = abstraction.getEdges().stream()
         .filter(AutomatonEdge::isHidden)
         .collect(Collectors.toList());
-
+    hiddenEdges.stream().forEach(x->{System.out.println(x.myString());});
     //Construct  edges to replace the unobservable edges
     while (!hiddenEdges.isEmpty()) {
       AutomatonEdge hiddenEdge = hiddenEdges.get(0);
@@ -341,12 +342,9 @@ public class AbstractionFunction implements IProcessFunction {
 
   private Automaton pruneHiddenNodes(Context context, Automaton autoIN, boolean cong)
       throws CompilationException {
-
-
     Automaton abstraction = autoIN.copy();
 //System.out.println("prune "+ abstraction.myString());
     List<AutomatonNode> nodes = abstraction.getNodes();
-
 
     for (AutomatonNode n : nodes) {
       boolean del = true;
@@ -360,7 +358,6 @@ public class AbstractionFunction implements IProcessFunction {
       if (n.isStartNode() || n.getOutgoingEdges().size() == 0) {
         del = false;
       }
-
       if (del) {
         try {
           for (AutomatonEdge second : n.getOutgoingEdges()) {
@@ -695,7 +692,7 @@ public class AbstractionFunction implements IProcessFunction {
     as[0] = a;
     Automaton out =  this.compose(id, flags, context,  as);
 
-   // System.out.println("GaloisBCabs END "+out.myString());
+    System.out.println("**** GaloisBCabs END \n"+out.myString());
     return out;
   }
 }

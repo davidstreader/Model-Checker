@@ -122,7 +122,6 @@ public class GaloisAP2BC implements IProcessFunction {
 
     }
 
-    System.out.println("AP2BC output "+ petrinet.getId()+" is valid "+petrinet.validatePNet());
     //System.out.println("ap2bc end "+petrinet.myString());
     return   petrinet;
 

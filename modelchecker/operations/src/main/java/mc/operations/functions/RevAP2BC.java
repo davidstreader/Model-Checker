@@ -65,7 +65,6 @@ public class RevAP2BC implements IProcessFunction {
    *
    * @param id       the id of the resulting automaton
    * @param flags    the flags given by the function (e.g. {@code unfair} in {@code abs{unfair}(A)}
-   * @param tt
    * @param automata a variable number of automata taken in by the function
    * @return the resulting automaton of the operation
    */
@@ -75,8 +74,9 @@ public class RevAP2BC implements IProcessFunction {
     return null;
   }
 
-  /*  Add lisening Loops - for events in flags
-      abstract all *.t! and *.t?
+  /*  Add lisening Loops - for events in flags   added when process built OR not?
+      abstraction of  all *.t! and *.t? occurs in QuiescentRefinement
+      but needs to occur before abstraction occurs see
       convert b? to b^ and b! to b
    */
    @Override
@@ -96,7 +96,7 @@ public class RevAP2BC implements IProcessFunction {
    //Petrinet petrinet = petrinets[0].reId("Rev") ;
     System.out.println("RevAP2BC start "+petrinet.getId()+ " flags "+flags);
     Set<String> listeners = flags.stream().filter(x->x.endsWith("?")).collect(Collectors.toSet());
-    buildListeningLoops(markingToNode,listeners,petrinet);
+    buildListeningLoops(markingToNode,listeners,petrinet); //MUST KEEP
 
     for(PetriNetTransition tr : petrinet.getTransitions().values()) {
      String prefix1 = tr.getLabel().substring(0,tr.getLabel().length()-1);

@@ -122,7 +122,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     reset();
     //called by Interpreter and  Returns a ProcessModel that the Interpreter adds to the processMap
     this.alpha = alpha;
-    //System.out.println("Petri interpret "+ processNode.getIdentifier()+" alpha "+this.alpha);
+    System.out.println("Petri interpret "+ processNode.getIdentifier()+" alpha "+this.alpha);
 
     this.context = context;
     variableList = new HashSet<>();
@@ -244,13 +244,15 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
    */
   @Override
   public ProcessModel interpret(ASTNode astNode, String identifier,
-                                Map<String, ProcessModel> processMap, Context context)
+                                Map<String, ProcessModel> processMap,
+                                Context context,
+                                Set<String> alpha )
     throws CompilationException, InterruptedException {
     reset();
     //System.out.println("interpret YY START "+identifier+" pMap "+ processMap.keySet());
     this.context = context;
     this.processMap = processMap;
-
+    this.alpha = alpha;
     interpretProcess(astNode, identifier);
 
     Petrinet petrinet = ((Petrinet) processStack.pop()).copy();
@@ -466,7 +468,8 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     //functions  nfa2dfa, prune, simp, abs,  .... are function on automata!
     else if (currentNode instanceof FunctionNode) {
       info = ((FunctionNode) currentNode).getFunction();
-      petri = interpretFunction((FunctionNode) currentNode, petri,this.alpha);
+      System.out.println("PetriInterp alpha "+alpha);
+      petri = interpretFunction((FunctionNode) currentNode, petri,  alpha);
     }
     // tokenRule and ownersRule
     else if (currentNode instanceof ConversionNode) { //currentPlace -> addpetriNet
@@ -737,6 +740,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
 
     Petrinet[] petris = models.stream().map(Petrinet.class::cast).toArray(Petrinet[]::new);
     Set<String> alphaFlags = new TreeSet<>();
+    System.out.println("PetriInterp "+alpha);
     alphaFlags.addAll(alpha);  // add the listening events for revAP2BC
     alphaFlags.addAll(func.getFlags());
     Petrinet processed = instantiateClass(functions.get(func.getFunction()))
@@ -792,7 +796,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     ProcessType from = ProcessType.valueOf(conv.from.toUpperCase());
 
     ProcessModel pm = new Interpreter().interpret(conv.from, conv.getProcess(),
-      petri.getId() + ".pc" + subProcessCount++, processMap, context);
+      petri.getId() + ".pc" + subProcessCount++, processMap, context, alpha);
 
     Petrinet temp = new Petrinet(petri.getId(), false);
 
@@ -814,7 +818,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     ProcessType from = ProcessType.valueOf(conv.from.toUpperCase());
 
     ProcessModel pm = new Interpreter().interpret(conv.from, conv.getProcess(),
-      id + ".pc" + subProcessCount++, processMap, context);
+      id + ".pc" + subProcessCount++, processMap, context, alpha);
 
     Petrinet temp = new Petrinet(id, false);
 

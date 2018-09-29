@@ -118,7 +118,9 @@ public class Compiler {
     }
     //store alphabet
     Set<String> alpha = ast.getAlphabet().stream().map(x->x.getAction()).collect(Collectors.toSet());
-//builds process and processMap
+    System.out.println("Compiler alph = "+alpha);
+
+    //builds process and processMap
     /*System.out.println("**COMPILER** Entering interpreter with ast for processes -> Types "+
       ast.getProcesses().stream().map(x->"\n"+x.getIdentifier()+"->"+x.getType())
         .reduce("",(x,y)->x+" "+y)); */

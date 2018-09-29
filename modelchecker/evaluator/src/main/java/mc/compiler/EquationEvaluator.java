@@ -327,6 +327,7 @@ public class EquationEvaluator {
         // build the automata from the AST  or look up known automata
         Interpreter interpreter = new Interpreter();
         outerFreeVariabelMap.keySet().stream().forEach(x->processMap.put(x,outerFreeVariabelMap.get(x)));
+        System.out.println("***EquEval 330 "+alpha);
         r = oE.evalOp(operation, processMap, interpreter, context, alpha);
         // r = oE.evalOp(operation, idMap, interpreter, context);
         //System.out.println("Processed operation " + operation.myString() +  " " + r);

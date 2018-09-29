@@ -24,6 +24,7 @@ public interface ProcessModelInterpreter {
     ProcessModel interpret(ASTNode astNode,
                            String identifier,
                            Map<String, ProcessModel> processMap,
-                           Context context)
+                           Context context,
+                           Set<String> alpha)
       throws CompilationException, InterruptedException;
 }

@@ -6,21 +6,11 @@ import static mc.util.Utils.instantiateClass;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.microsoft.z3.Context;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-import java.util.Stack;
+
+import java.util.*;
 
 import com.rits.cloning.Cloner;
 import mc.Constant;
-import mc.TraceType;
 import mc.compiler.Guard;
 import mc.compiler.Interpreter;
 import mc.compiler.ast.ASTNode;
@@ -122,7 +112,8 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
   public ProcessModel interpret(ASTNode astNode,
                                 String identifier,
                                 Map<String, ProcessModel> processMap,
-                                Context context)
+                                Context context,
+                                Set<String> alpha)
     throws CompilationException, InterruptedException {
     //System.out.println("Start Automata interpret "+ identifier);
     reset();
@@ -440,7 +431,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     ProcessType from = ProcessType.valueOf(conv.from.toUpperCase());
 
     ProcessModel pm = new Interpreter().interpret(conv.from,conv.getProcess(),
-            automaton.getId() + ".pc" + subProcessCount++,processMap,context);
+            automaton.getId() + ".pc" + subProcessCount++,processMap,context, new TreeSet<String>());
     addAutomaton(currentNode, automaton, pm.getProcessType().convertTo(to,pm));
   }
 

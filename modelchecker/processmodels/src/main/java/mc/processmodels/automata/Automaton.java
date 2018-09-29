@@ -824,6 +824,16 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     }
     return sb.toString();
   }
+
+  public String readySets2String(){
+    StringBuilder sb = new StringBuilder();
+    sb.append("Ready set of "+this.getId()+"\n");
+    for (AutomatonNode nd: getNodes()){
+      sb.append(nd.getId()+" -> "+nd.readySet()+"\n");
+    }
+
+    return sb.toString();
+  }
   public String toString() {
     String tempto = "";
     String tempfrom = "";

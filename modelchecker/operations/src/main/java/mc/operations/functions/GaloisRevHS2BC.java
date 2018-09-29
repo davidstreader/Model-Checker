@@ -84,7 +84,7 @@ public class GaloisRevHS2BC implements IProcessFunction {
       else if (tr.getLabel().endsWith("!") ) tr.setLabel(prefix1);
 
     }
-    AbstractionFunction ab = new AbstractionFunction();
+    //AbstractionFunction ab = new AbstractionFunction();
     Petrinet[] p = new Petrinet[]{petrinet};
 
     // petrinet = ab.compose(id,flags,context,p);

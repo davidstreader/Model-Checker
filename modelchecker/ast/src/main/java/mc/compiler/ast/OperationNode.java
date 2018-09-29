@@ -89,6 +89,7 @@ public class OperationNode extends ASTNode {
     // if (firstProcess instanceof )
     sb.append("("+firstProcess.myString()  + opOut );
     if (flags != null && flags.size()>0) sb.append( flags );
+    else sb.append(" ");
     sb.append( secondProcess.myString()+")");
 
     return sb.toString();

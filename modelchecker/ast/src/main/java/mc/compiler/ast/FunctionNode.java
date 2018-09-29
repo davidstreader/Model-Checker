@@ -22,8 +22,7 @@ import mc.util.Location;
  * @author Sanjay Govind
  * @author David Sheridan
  * @author Jacob Beal
- * @see mc.plugins.IProcessFunction
- * @see ASTNode
+ *  @see ASTNode
  */
 @Data
 @EqualsAndHashCode(callSuper = true, exclude = {"processes", "flags", "prune", "replacements"})
@@ -32,7 +31,6 @@ public class FunctionNode extends ASTNode {
   /**
    * The name of the function. This is used to lookup te correct function to call on the processes.
    *
-   * @see mc.plugins.IProcessFunction#getFunctionName()
    */
   private String function;
   /**
@@ -43,7 +41,6 @@ public class FunctionNode extends ASTNode {
    * The arguments put into the function curly brace syntax.
    * Currently fixed at Compile Time - this includes the fixed alphabet of listeners
    *
-   * @see mc.plugins.IProcessFunction#getValidFlags()
    */
   private ImmutableSet<String> flags;
 
@@ -69,6 +66,15 @@ public class FunctionNode extends ASTNode {
     super(location,"Function");
     this.function = function;
     this.processes = new ArrayList<>(processes);
+
+  }
+  public String myString(){
+    StringBuilder sb = new StringBuilder();
+    sb.append(function+ "(");
+    processes.stream().forEach(x->sb.append(x.myString()));
+    sb.append(")");
+    if (flags.size()>0) sb.append(flags);
+    return sb.toString();
 
   }
 }
