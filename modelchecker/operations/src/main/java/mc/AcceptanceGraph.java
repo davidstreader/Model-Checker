@@ -113,7 +113,7 @@ public class AcceptanceGraph {
           if (nd.isERROR()) {
             poped.setErrorNode(true);
             //System.out.println("ERROR");
-          }
+          } //CAN be both in a acceptance graph
           if (nd.isSTOP()) {
             poped.setStopNode(true);
             //System.out.println("STOP");

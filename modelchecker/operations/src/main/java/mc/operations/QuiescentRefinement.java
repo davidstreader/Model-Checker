@@ -51,62 +51,61 @@ public class QuiescentRefinement implements IOperationInfixFunction {
   @Override
   public boolean evaluate(Set<String> alpha, Set<String> flags, Context context, Collection<ProcessModel> processModels) throws CompilationException {
     System.out.println("\nQUIESCENT "+alpha);
-
+    boolean cong = flags.contains(Constant.CONGURENT);
     //ProcessModel[] pms =  processModels.toArray();
     Automaton a1 = ((Automaton) processModels.toArray()[0]).copy();
     Automaton a2 = ((Automaton) processModels.toArray()[1]).copy();
-    System.out.println("****Quiescent a1 "+a1.readySets2String());
-    System.out.println("****Quiescent a2 "+a2.readySets2String());
+    System.out.println("****Quiescent a1 "+a1.readySets2String(cong));
+    System.out.println("****Quiescent a2 "+a2.readySets2String(cong));
     //TraceRefinement teo = new TraceRefinement();
 
     AbstractionFunction abs = new AbstractionFunction();
-    SimpFunction simp = new SimpFunction();
     //tw.evaluate(flags,processModels, TraceType.QuiescentTrace);
     //setQuiescentAndAddListeningLoops(alpha,a1);
-    setQuiescent(a1);
-    setQuiescent(a2);
+    setQuiescent(a1,cong);
+    setQuiescent(a2,cong);
     a1 = abs.GaloisBCabs(a1.getId(),flags,context,a1);
-    a2 = abs.GaloisBCabs(a2.getId(),flags,context,a2);
+    a2 = abs.GaloisBCabs(a2.getId(),flags,context,a2); //end states marked
     //a1 = simp.compose(a1.getId(),flags,context,a1);
     //a2 = simp.compose(a2.getId(),flags,context,a2);
-    //AddListeningLoops(alpha,a1);  //PROBLEMS with doing this NOW
-    //AddListeningLoops(alpha,a2);
-    System.out.println("*** Q a1 before traceEval "+a1.readySets2String());
-    System.out.println("*** Q a2 before traceEval "+a2.readySets2String());
+    //AddListeningLoops(alpha,a1,cong);  //PROBLEMS with doing this NOW
+    //AddListeningLoops(alpha,a2,cong);
+    System.out.println("*** Q a1 before traceEval "+a1.readySets2String(cong));
+    System.out.println("*** Q a2 before traceEval "+a2.readySets2String(cong));
 
     ArrayList<ProcessModel> pms = new ArrayList<>();;
     pms.add(a1);
     pms.add(a2);
     //return  teo.evaluate(alpha,flags,context,pms);
-    TraceWork tw = new TraceWork();
+    TraceWork tw = new TraceWork();  // THIS builds a DFA and then trace subset
     return tw.evaluate(flags,pms, TraceType.QuiescentTrace);
   }
 
-  private void setQuiescentAndAddListeningLoops(Set<String> alphbet, Automaton a) throws CompilationException {
+  private void setQuiescentAndAddListeningLoops(Set<String> alphbet, Automaton a,boolean cong) throws CompilationException {
     System.out.println("addQuiescentAndListeningLoops");
     for(AutomatonNode nd : a.getNodes()){
-      Set<String> notListening = nd.readySet().stream().filter(x->!x.endsWith("?")).collect(Collectors.toSet());
+      Set<String> notListening = nd.readySet(cong).stream().filter(x->!x.endsWith("?")).collect(Collectors.toSet());
       nd.setQuiescent(notListening.size()==0);
       for(String lab: alphbet) {
-        if (!nd.readySet().contains(lab)) {
+        if (!nd.readySet(cong).contains(lab)) {
           a.addEdge(lab,nd,nd,nd.getGuard(),false,false);
         }
       }
     }
   }
-  private void setQuiescent( Automaton a) throws CompilationException {
+  private void setQuiescent( Automaton a,boolean cong) throws CompilationException {
     System.out.println("setQuiescent");
     for(AutomatonNode nd : a.getNodes()){
-      Set<String> notListening = nd.readySet().stream().filter(x->!x.endsWith("?")).collect(Collectors.toSet());
+      Set<String> notListening = nd.readySet(cong).stream().filter(x->!x.endsWith("?")).collect(Collectors.toSet());
       nd.setQuiescent(notListening.size()==0);
     }
   }
-  private void AddListeningLoops(Set<String> alphbet, Automaton a) throws CompilationException {
+  private void AddListeningLoops(Set<String> alphbet, Automaton a,boolean cong) throws CompilationException {
     System.out.println("AddListeningLoops");
     for(AutomatonNode nd : a.getNodes()){
-      System.out.println("  "+nd.getId()+"  "+nd.readySet());
+      System.out.println("  "+nd.getId()+"  "+nd.readySet(cong));
       for(String lab: alphbet) {
-        if (!nd.readySet().contains(lab)) {
+        if (!nd.readySet(cong).contains(lab)) {
           a.addEdge(lab,nd,nd,nd.getGuard(),false,false);
           System.out.println("     adding "+lab+" to "+nd.getId());
         } else {

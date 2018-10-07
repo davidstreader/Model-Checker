@@ -70,9 +70,6 @@ public class AutomatonNode extends ProcessModelObject implements Comparable<Auto
     this.colour = 999;
   }
 
-  public Set<String> readySet() {
-    return getOutgoingEdges().stream().map(x -> x.getLabel()).collect(Collectors.toSet());
-  }
 
   public void copyProperties(AutomatonNode fromThisNode) {
     //System.out.println("from "+fromThisNode.myString());
@@ -277,5 +274,27 @@ public class AutomatonNode extends ProcessModelObject implements Comparable<Auto
     //System.out.println(" xout = "+xout);
     return xout;
 
+  }
+  /*
+     Currently only used in QuiescentTrace but could be used elsewhere
+   */
+  public Set<String> readySet(boolean cong) {
+    Set<String> out = getOutgoingEdges().stream().map(x -> x.getLabel()).collect(Collectors.toSet());
+   if (cong) {
+     if (isSTOP()) out.add(Constant.STOP);
+     if (isERROR()||(!isSTOP() && quiescentDeadlock() )) out.add(Constant.ERROR);
+     if (isStartNode())  out.add(Constant.Start);
+   }
+    return out;
+  }
+  /*
+    Strip listening loops from outgoing edges and
+    if nothing left return true.
+   */
+  private boolean  quiescentDeadlock(){
+    Set<AutomatonEdge> next = outgoingEdges.values().stream().
+      filter(x->(!(x.getLabel().endsWith("?")&&x.getTo().getId().equals(getId())))).
+      collect(Collectors.toSet());
+    return next.size()==0;
   }
 }

@@ -56,7 +56,7 @@ public class FailureRefinement implements IOperationInfixFunction {
 
   @Override
   public String getOperationType() {
-    return "automata";
+    return Constant.AUTOMATA;
   }
 
   Nd2NextMap a1Next = new Nd2NextMap();

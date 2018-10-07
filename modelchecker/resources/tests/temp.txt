@@ -1,60 +1,20 @@
 processes {     //Oneaa = a->STOP.
-C3 = a->a->C3.
-E3 = a->X, X= a->X.
-Loop = a->Loop.
-B = b->STOP.
-Cb = C3|a->STOP.
-Eb = E3|a->STOP.
-
-/*Da  = a->b->Da|a->STOP.
-D  = a->(b->D|b->STOP).
-Ia = a->a->Ia|a->STOP.
 Onea = a->STOP.
-Threea = a->a->a->STOP.
-Twoab = a->b->STOP.
-Twobas = b->a->Twobas.
-/*Oneb = b->STOP.
-Fa = b->b->Fa|a->STOP.
-Ia = a->a->Ia|a->STOP.
-Twoaa = a->a->STOP.
-Twoab = a->b->STOP.
-Twoba = b->a->STOP.
 
-Twobas = b->a->Twobas.
-Twobb = b->b->STOP.
-Twoax = a->(a->STOP|b->STOP).
-Twox = a->a->STOP|a->b->STOP.
-Q = Twoabs || Twoab.
-P = Da  || Twoab.
-Q1 = Twoab ||{a,b} Twoaa.
-P1 = Twoax  ||{a,b} Twoaa.
-*/
-P = C3 ||{a,b} C3.
-Q = E3 ||{a,b} C3.
-Pb = C3 [] B.
-Qb = E3 [] B.
+Lasa  = a->Lasa| a->STOP.
+P = Onea ||{a,b} Onea.
+Q = Lasa ||{a,b} Onea.
+
 
 }
 operation {
 //E3 <f{cong} C3.
-C3 <f{cong} E3.
-/*P <t{cong} Q.
+Lasa <f{cong} Onea.
+
 Q <t{cong} P.
-Pb <t{cong} Qb.
-Qb <t{cong} Pb.
-*/
-
-//Onea <f{cong} Da.
-/*Da <f Onea.
-Onea <f Da.
-
-P <t{cong} Q.
-P <t Q. */
-//Onea <t Threea .
-
-//Twox <f Twoax.
-//Twoax !<f Twox.
 }
+
+
 
 
 

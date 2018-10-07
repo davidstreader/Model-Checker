@@ -87,6 +87,17 @@ public class PetriNetTransition extends ProcessModelObject {
     this.label = label;
   }
 
+  public PetriNetPlace preOne() {
+    //System.out.println(incoming.size());
+    if (incoming.size() == 0) return null;
+    for (PetriNetEdge ed : incoming) {
+      //System.out.println("ed "+ed.myString());
+      return (PetriNetPlace) ed.getFrom();
+      //System.out.println(p.getId());
+    }
+    return null;
+  }
+
   public Set<PetriNetPlace> pre() {
     //System.out.println(incoming.size());
     Set<PetriNetPlace> out = new HashSet<>();

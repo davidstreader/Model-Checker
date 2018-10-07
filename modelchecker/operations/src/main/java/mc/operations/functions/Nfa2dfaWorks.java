@@ -32,6 +32,21 @@ public class Nfa2dfaWorks {
     assert automata.length == 1;
     //System.out.println("nfa2dfa in "+ automata[0].myString());
     Automaton nfa = automata[0].copy();
+    for (AutomatonNode ndn :nfa.getNodes()){ // NOT for Galois expaned automata
+      if (ndn.isSTOP()) {
+        nfa.addEdge(Constant.STOP, ndn, nfa.deadNode(), null, true,false);
+        System.out.println("adding STOP to nfa "+ndn.myString());
+      }
+      if (ndn.isStartNode()) {
+        nfa.addEdge(Constant.Start, ndn, nfa.deadNode(), null, true,false);
+      }
+      if (ndn.isERROR()) {
+        nfa.addEdge(Constant.ERROR, ndn, nfa.deadNode(), null, true,false);
+      }
+      if (ndn.isQuiescent()) {
+        nfa.addEdge(Constant.Quiescent, ndn, nfa.deadNode(), null, true,false);
+      }
+    }
     Automaton dfa = new Automaton(id, !Automaton.CONSTRUCT_ROOT);
 
     //  maps internal representation to actual set of nodes
@@ -68,6 +83,7 @@ public class Nfa2dfaWorks {
         //if one root nfa STOPS so is the dfa root
         if (nfa.getRoot().stream().anyMatch(e -> e.isSTOP()) ) {
           dfa.getNode(idNode).setStopNode(true);
+          System.out.println("adding STOP to dfa "+dfa.getNode(idNode).myString());
         }
         //if one root nfa is ERROR so is the dfa root
         if (nfa.getRoot().stream().anyMatch(e ->(e.isERROR() || e.getOutgoingEdges().size()==0)) ) {
@@ -85,18 +101,23 @@ public class Nfa2dfaWorks {
         if (!nodeMap.containsKey(nextId)) {
           AutomatonNode nd = dfa.addNode(nextId);
           nodeMap.put(nextId, nd);
-          for (AutomatonNode ndn :stateMap.get(nextStates)){
-            if (ndn.isSTOP()) dfa.getNode(nextId).setStopNode(true);
-            if (ndn.isStartNode()) dfa.getNode(nextId).setStartNode(true);
-            if (ndn.isERROR()) dfa.getNode(nextId).setErrorNode(true);
-            if (ndn.isQuiescent()) dfa.getNode(nextId).setQuiescent(true);
-          }
-
         }
         AutomatonNode nextNode = nodeMap.get(nextId);
-
-
-
+        /*for (AutomatonNode ndn :nfa.getNodes()){
+          if (ndn.isSTOP()) {
+            dfa.getNode(nextId).setStopNode(true);
+            System.out.println("adding STOP 2 dfa "+dfa.getNode(idNode).myString());
+          }
+          if (ndn.isStartNode()) {
+            dfa.getNode(nextId).setStartNode(true);
+          }
+          if (ndn.isERROR()) {
+            dfa.getNode(nextId).setErrorNode(true);
+          }
+          if (ndn.isQuiescent()) {
+            dfa.getNode(nextId).setQuiescent(true);
+          }
+        }*/
         dfa.addEdge(action, node, nextNode, null, true,false);
 
         toDoList.push(nextStates);

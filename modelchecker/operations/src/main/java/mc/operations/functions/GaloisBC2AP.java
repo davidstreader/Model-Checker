@@ -6,10 +6,9 @@ import com.microsoft.z3.Context;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import mc.TraceType;
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessFunction;
-import mc.processmodels.Mapping;
+import mc.processmodels.MappingNdMarking;
 import mc.processmodels.MultiProcessModel;
 import mc.processmodels.ProcessModel;
 import mc.processmodels.ProcessType;
@@ -62,7 +61,6 @@ public class GaloisBC2AP implements IProcessFunction {
    *
    * @param id       the id of the resulting automaton
    * @param flags    the flags given by the function (e.g. {@code unfair} in {@code abs{unfair}(A)}
-   * @param tt
    * @param automata a variable number of automata taken in by the function
    * @return the resulting automaton of the operation
    */
@@ -99,7 +97,7 @@ public class GaloisBC2AP implements IProcessFunction {
       (Petrinet) model.getProcess(ProcessType.PETRINET), markingToNode, nodeToMarking);
 
     model.addProcess(modelAut);
-    model.addProcessesMapping(new Mapping(nodeToMarking, markingToNode));
+    model.addProcessesMapping(new MappingNdMarking(nodeToMarking, markingToNode));
     return model;
   }
   /**

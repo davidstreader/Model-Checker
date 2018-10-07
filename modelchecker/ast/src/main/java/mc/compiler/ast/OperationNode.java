@@ -3,6 +3,7 @@ package mc.compiler.ast;
 import com.google.common.collect.ImmutableSet;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import mc.Constant;
 import mc.util.Location;
 
 import java.util.*;
@@ -51,9 +52,9 @@ public class OperationNode extends ASTNode {
    */
   private ASTNode secondProcess;
 
-  private String firstProcessType = "petrinet";
-  private String secondProcessType = "petrinet";
-  private String operationType = "petrinet";
+  private String firstProcessType = Constant.PETRINET;
+  private String secondProcessType = Constant.PETRINET;
+  private String operationType = Constant.PETRINET;
 
   /**
    * Instantitate a new Operation Node.

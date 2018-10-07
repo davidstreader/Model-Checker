@@ -5,13 +5,10 @@ import com.google.common.collect.MultimapBuilder;
 import java.util.EnumMap;
 import java.util.Map;
 
-import com.google.common.collect.Multiset;
 import lombok.Getter;
 import mc.exceptions.CompilationException;
 import mc.processmodels.automata.Automaton;
-import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.petrinet.Petrinet;
-import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.util.Location;
 
 public class MultiProcessModel extends ProcessModelObject implements ProcessModel  {
@@ -24,14 +21,14 @@ public class MultiProcessModel extends ProcessModelObject implements ProcessMode
       .build();
 
   @Getter
-  private Mapping processNodesMapping;
+  private MappingNdMarking processNodesMapping;
 
   public MultiProcessModel reId(String tag)  throws  CompilationException{
 
       MultiProcessModel mod = new MultiProcessModel(getId() + tag);
       mod.addProcess(((Petrinet) this.processes.get(ProcessType.PETRINET)).reId(tag));
       mod.addProcess((Automaton) this.processes.get(ProcessType.AUTOMATA));
-      mod.processNodesMapping =  Mapping.reId(this.processNodesMapping,tag);
+      mod.processNodesMapping =  MappingNdMarking.reId(this.processNodesMapping,tag);
 
 
       return mod;
@@ -57,7 +54,7 @@ public class MultiProcessModel extends ProcessModelObject implements ProcessMode
      *  it gives us the mapping of which node
      *  is responsible for what, and visa versa for markings to node.
      */
-  public void addProcessesMapping(Mapping pnm) {
+  public void addProcessesMapping(MappingNdMarking pnm) {
     processNodesMapping = pnm;
   }
 

@@ -8,7 +8,6 @@ import mc.exceptions.CompilationException;
 import mc.operations.functions.Nfa2dfaWorks;
 import mc.processmodels.ProcessModel;
 import mc.processmodels.automata.Automaton;
-import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
 
 import java.util.*;
@@ -19,12 +18,21 @@ public class TraceWork {
   Nd2NextMap a2Next = new Nd2NextMap();
 
   /*
-     Currently these are all complete traces!
-     cong => External state is visable not cong all state invisable
+  ONE convert NFA 2 DFA
+  TWO compute trace subset on DFA
+     HandShake processes never have STOP nor ERROR  as an option they only occur in nodes that
+     have NO outgoing edges (delta being the execption fro defined ERROR)
+     cong => External state is visable
+     not cong ==> start state invisable
+               BUT STOP and ERROR visable but not distinguished
      Equality nfa 2 dfa  and bisim
      Refinement nfa 2 dfa and compute recurseive Simulation
 
-     QuiescentTrace abstract all .t! and .t? - these are introduced by Galois
+  QUIESCENT
+     Complete Quiescent traces may end at any quiescent state
+     Currently these are all complete traces!
+
+     QuiescentTrace abstract all .t! and .t? -  introduced by Galois
 
      ******  MUST drop listening from ready set? ******
      Quiesent Trace equality is stronger than complete trace equality as matching nodes have
@@ -43,11 +51,11 @@ public class TraceWork {
       for (ProcessModel pm : processModels) {
         Automaton a = (Automaton) pm;
         try {
-          Automaton temp;
-          //System.out.println("TraceWorks "+a.myString());
-          temp = nfa2dfaworks.compose(a.getId(), new HashSet<>(), null, TraceType.CompleteTrace, a);
-          System.out.println("DFA " + temp.readySets2String());
-          dfas.add(temp);
+          Automaton newdfa; //BUILD DFA
+          System.out.println("TraceWorks "+a.myString());
+          newdfa = nfa2dfaworks.compose(a.getId(), new HashSet<>(), null, TraceType.CompleteTrace, a);
+          System.out.println("DFA " + newdfa.readySets2String(cong));
+          dfas.add(newdfa);
         } catch (CompilationException e) {
           //System.out.println("PINGO" + e.toString());
         }
@@ -63,7 +71,7 @@ public class TraceWork {
       AutomatonNode r1 = (AutomatonNode) a1.getRoot().toArray()[0];
       AutomatonNode r2 = (AutomatonNode) a2.getRoot().toArray()[0];
 
-      System.out.println("?" + a1.readySets2String() + " \n" + a2.readySets2String());
+      System.out.println("?   " + a1.readySets2String(cong) + " " + a2.readySets2String(cong));
       boolean b;
       b = traceSubset(new NodePair(r2, r1), a2Next.getMap(), a1Next.getMap(), new ArrayList<>(), cong, complete);
       System.out.println("****Trace Refinement type " + tt + " " + a1.getId() + "<<" + a2.getId() + " " + b);
@@ -89,7 +97,8 @@ public class TraceWork {
      Main part of algorithm RECURSIVE on a DFA
       it builds the relation between the nodes of the
      two processes and tests if the ready sets are subsets
-     NOT QUIESCENT  yea yea
+     Handshake has delta events that differentiate STOP from ERROR
+     Quiescent  needs similar!
    */
   private boolean traceSubset(NodePair np, Map<AutomatonNode, NextMap> a1N,
                               Map<AutomatonNode, NextMap> a2N,
@@ -122,14 +131,31 @@ public class TraceWork {
     Set<String> large = a1N.get(np.first).labels().stream().collect(Collectors.toSet());
     //large = large.stream().filter(x->small.contains(x)).collect(Collectors.toSet());
     //Set<String> intersect = large.stream().filter(x->small.contains(x)).collect(Collectors.toSet());
-    System.out.println(" is   " + small + " Subset " + large);
+    System.out.println(" is   " + small + " a Subset of " + large);
+
+    if (cong) {
+      for (String lab : small){
+        if (Constant.external(lab) && !large.contains(lab)) {
+          System.out.println(np.myString() + " returns false " + small + " " + lab + " " + large);
+          return false;
+        }
+      }
+      //equality works for nfa not for dfa!
+     /* for (String lab : large){
+        if (Constant.external(lab) && !small.contains(lab)) {
+          System.out.println(np.myString() + " returns false " + small + " " + lab + " " + large);
+          return false;
+        }
+      } */
+    }
     if (large.containsAll(small)) {
       //if (a1N.get(np.first).labels().containsAll(small)) {
       System.out.println("large contains small");
       processed.add(np);
       // b? might not be in in the ready labels but is in the next step label
       for (String lab : small) {
-        if (Constant.external(lab)) continue;
+           if (Constant.external(lab)) continue;
+
         System.out.println(" from "+np.myString()+ "lab = "+lab);
         AutomatonNode nd1 = a1N.get(np.first).getNcs().get(lab);
         AutomatonNode nd2 = a2N.get(np.second).getNcs().get(lab);
@@ -151,11 +177,11 @@ public class TraceWork {
     For non congurance STOP is add recursivly in quiescentNext
    */
   private Nd2NextMap build_readyMap(Automaton a, TraceType tt, boolean cong) {
-    //System.out.println("Build Ready Map " + tt + " cong= " + cong);
-    //System.out.println(a.myString());
+    System.out.println("Build Ready Map " + tt + " cong= " + cong);
+    System.out.println(a.myString());
     Nd2NextMap nfanode2ASet = new Nd2NextMap();
     for (AutomatonNode n : a.getNodes()) {
-      //System.out.println("node "+n.myString());
+      System.out.println("node "+n.myString());
       NextMap as;
       as = new NextMap(n.getOutgoingEdges().stream().
         distinct().
@@ -167,7 +193,7 @@ public class TraceWork {
       if (tt.equals(TraceType.CompleteTrace)||tt.equals(TraceType.QuiescentTrace)) {
         if (n.isSTOP()) {
           as.ncs.put(Constant.STOP, n);
-          //System.out.println("added "+Constant.STOP);
+          System.out.println("added "+Constant.STOP);
         }
         if (n.isERROR()) {
           as.ncs.put(Constant.ERROR, n);  //needed for failure testing

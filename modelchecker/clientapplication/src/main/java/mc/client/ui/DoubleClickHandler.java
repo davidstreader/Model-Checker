@@ -1,6 +1,5 @@
 package mc.client.ui;
 
-import com.google.common.collect.Collections2;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
 import edu.uci.ics.jung.algorithms.layout.GraphElementAccessor;
@@ -10,8 +9,7 @@ import edu.uci.ics.jung.visualization.picking.PickedState;
 import mc.client.graph.DirectedEdge;
 import mc.client.graph.GraphNode;
 import mc.client.graph.NodeStates;
-import mc.processmodels.Mapping;
-import mc.processmodels.automata.Automaton;
+import mc.processmodels.MappingNdMarking;
 import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
@@ -19,14 +17,13 @@ import mc.processmodels.petrinet.components.PetriNetTransition;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Point2D;
-import java.lang.reflect.Array;
 import java.util.*;
 
 /**
  * Created by smithjord3 on 12/12/17.
  */
 public class DoubleClickHandler implements MouseListener {
-    private Map<String, Mapping> mappings;
+    private Map<String, MappingNdMarking> mappings;
     private Multimap<String, GraphNode> processModelVertexes;
     private VisualizationViewer<GraphNode, DirectedEdge> vv;
 
@@ -34,7 +31,7 @@ public class DoubleClickHandler implements MouseListener {
 
 
     public DoubleClickHandler(Multimap<String, GraphNode> processModelVertexes_, VisualizationViewer<GraphNode, DirectedEdge> vv_,
-                              Map<String, Mapping> nodeAndMarkingMappings) {
+                              Map<String, MappingNdMarking> nodeAndMarkingMappings) {
         processModelVertexes = processModelVertexes_;
         vv = vv_;
         mappings = nodeAndMarkingMappings;
@@ -67,7 +64,7 @@ public class DoubleClickHandler implements MouseListener {
 
                 if (!(currentNodeClicked.getRepresentedFeature() instanceof PetriNetTransition) && mappings.containsKey(currentNodeClicked.getProcessModelId())) {
 
-                    Mapping thisMapping = mappings.get(currentNodeClicked.getProcessModelId());
+                    MappingNdMarking thisMapping = mappings.get(currentNodeClicked.getProcessModelId());
                     if (thisMapping != null) {
                         Collection<GraphNode> vertexes = vv.getGraphLayout().getGraph().getVertices();
 

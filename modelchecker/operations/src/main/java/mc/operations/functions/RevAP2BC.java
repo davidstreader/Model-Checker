@@ -8,14 +8,14 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import mc.Constant;
-import mc.TraceType;
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessFunction;
-import mc.processmodels.Mapping;
+import mc.processmodels.MappingNdMarking;
 import mc.processmodels.MultiProcessModel;
 import mc.processmodels.ProcessModel;
 import mc.processmodels.ProcessType;
 import mc.processmodels.automata.Automaton;
+import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.conversion.TokenRule;
 import mc.processmodels.petrinet.Petrinet;
@@ -61,7 +61,10 @@ public class RevAP2BC implements IProcessFunction {
   }
 
   /**
-   * Execute the function on automata.
+    Add lisening Loops - for events in flags   added when process built OR not?
+   abstraction of  all *.t! and *.t? occurs in QuiescentRefinement
+   but needs to occur before abstraction occurs see
+   convert b? to b and b! to b^
    *
    * @param id       the id of the resulting automaton
    * @param flags    the flags given by the function (e.g. {@code unfair} in {@code abs{unfair}(A)}
@@ -71,7 +74,21 @@ public class RevAP2BC implements IProcessFunction {
   @Override
   public Automaton compose(String id, Set<String> flags, Context context,  Automaton... automata)
     throws CompilationException {
-    return null;
+  Automaton aut = automata[0].copy();
+    System.out.println("RevAP2BC AUTOMATON start "+aut.getId()+ " flags "+flags);
+    Set<String> listeners = flags.stream().filter(x->x.endsWith("?")).collect(Collectors.toSet());
+    buildListeningLoops(listeners,aut); //MUST KEEP
+
+    for(AutomatonEdge ed : aut.getEdges()) {
+      String prefix1 = ed.getLabel().substring(0,ed.getLabel().length()-1);
+      if (ed.getLabel().endsWith(".t?") ||ed.getLabel().endsWith(".r?") ||
+        ed.getLabel().endsWith(".t!")   ||ed.getLabel().endsWith(".r!")   ) ed.setLabel(Constant.HIDDEN);
+      else if (ed.getLabel().endsWith("?") ) ed.setLabel(prefix1);
+      else if (ed.getLabel().endsWith("!") ) ed.setLabel(prefix1+Constant.ACTIVE);
+
+    }
+    System.out.println("RevAP2BC AUTOMATON RETURNS "+aut.myString());
+    return aut;
   }
 
   /*  Add lisening Loops - for events in flags   added when process built OR not?
@@ -90,6 +107,27 @@ public class RevAP2BC implements IProcessFunction {
     return composeM(id,flags,context,markingToNode,x);
   }
 
+  public static  void buildListeningLoops(Set<String> listeners, Automaton aut)
+    throws CompilationException{
+    //  For each marking
+    for (AutomatonNode nd: aut.getNodes()){
+      Set<String> heard =nd.getOutgoingEdges().
+        stream().filter(x->x.getLabel().endsWith("?")).
+        map(x->x.getLabel()).collect(Collectors.toSet());
+      //System.out.println("** trlist "+trlist);
+      // set of listening labels with no transitions enabled
+      Set<String> notHeard = listeners.
+        stream().filter(x->!heard.contains(x)).collect(Collectors.toSet());
+      //find the Places no owned by listening label
+      //System.out.println("** trNotList "+trNotlist);
+      for(String lab: notHeard){
+        AutomatonEdge ed =  aut.addEdge(lab.substring(0,lab.length()-1),nd,nd,
+          null,false,false);
+        System.out.println("**adding** "+ed.myString());
+      }
+    }
+
+  }
   public Petrinet composeM(String id, Set<String> flags, Context context,
                            Map<Multiset<PetriNetPlace>, AutomatonNode> markingToNode,
                            Petrinet petrinet) throws CompilationException {
@@ -101,13 +139,14 @@ public class RevAP2BC implements IProcessFunction {
     for(PetriNetTransition tr : petrinet.getTransitions().values()) {
      String prefix1 = tr.getLabel().substring(0,tr.getLabel().length()-1);
      if (tr.getLabel().endsWith(".t?") ||
-         tr.getLabel().endsWith(".t!")    ) tr.setLabel(Constant.HIDDEN);
-     else if (tr.getLabel().endsWith("?") ) tr.setLabel(prefix1+Constant.ACTIVE);
-     else if (tr.getLabel().endsWith("!") ) tr.setLabel(prefix1);
+         tr.getLabel().endsWith(".t!")  || tr.getLabel().endsWith(".r?") ||
+       tr.getLabel().endsWith(".r!")  ) tr.setLabel(Constant.HIDDEN);
+     else if (tr.getLabel().endsWith("?") ) tr.setLabel(prefix1);
+     else if (tr.getLabel().endsWith("!") ) tr.setLabel(prefix1+Constant.ACTIVE);
 
    }
     // petrinet = ab.compose(id,flags,context,p);
-    System.out.println(petrinet.myString()+ "Rev end ");
+     //System.out.println(petrinet.myString()+ "Rev end ");
     return petrinet;
   }
   public static  void buildListeningLoops(Map<Multiset<PetriNetPlace>, AutomatonNode> markingToNode,
@@ -116,20 +155,20 @@ public class RevAP2BC implements IProcessFunction {
     //  For each marking
     for (Multiset<PetriNetPlace> markM: markingToNode.keySet()){
       Set<PetriNetPlace> mark = markM.elementSet();
-      System.out.println("** Marking "+Petrinet.marking2String(mark));
+       //System.out.println("** Marking "+Petrinet.marking2String(mark));
 //      find set of satisfied listening transitions
       Set<String> trlist =TokenRule.satisfiedTransitions(markM).
         stream().filter(x->!x.getLabel().endsWith("^")).
         map(x->x.getLabel()).collect(Collectors.toSet());
-      System.out.println("** trlist "+trlist);
+       //System.out.println("** trlist "+trlist);
       // set of listening labels with no transitions enabled
       Set<String> trNotlist = listeners.
         stream().filter(x->!trlist.contains(x)).collect(Collectors.toSet());
       //find the Places no owned by listening label
-      System.out.println("** trNotList "+trNotlist);
+       //System.out.println("** trNotList "+trNotlist);
       for(String lab: trNotlist){
           PetriNetTransition t = petrinet.addTransition(mark,lab,mark);
-          System.out.println("**adding** "+t.myString());
+           //System.out.println("**adding** "+t.myString());
       }
     }
 
@@ -148,7 +187,7 @@ public class RevAP2BC implements IProcessFunction {
       (Petrinet) model.getProcess(ProcessType.PETRINET), markingToNode, nodeToMarking);
 
     model.addProcess(modelAut);
-    model.addProcessesMapping(new Mapping(nodeToMarking, markingToNode));
+    model.addProcessesMapping(new MappingNdMarking(nodeToMarking, markingToNode));
     return model;
   }
 

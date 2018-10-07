@@ -5,12 +5,11 @@ import com.google.common.collect.Multimap;
 import com.microsoft.z3.Context;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.Setter;
+import mc.Constant;
 import mc.compiler.Guard;
-import mc.compiler.ast.HidingNode;
 import mc.compiler.ast.RelabelElementNode;
 import mc.exceptions.CompilationException;
 import mc.processmodels.ProcessModel;
@@ -32,7 +31,6 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
    */
   public static final String DEFAULT_OWNER = "_default";
   public static int tagid = 0;
-
 
   private List<AutomatonNode> root;
   public Set<AutomatonNode> getRoot(){
@@ -104,6 +102,13 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
   @Setter
   private List<RelabelElementNode> relabels;
 
+
+  public AutomatonNode deadNode(){
+    if (nodeMap.keySet().contains("_dead"))
+      return nodeMap.get("_dead");
+    else
+      return addNode("_daed");
+  }
   /**
    * needed to prevent size of owner growing
    * @return
@@ -825,11 +830,12 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     return sb.toString();
   }
 
-  public String readySets2String(){
+  public String readySets2String(boolean cong){
     StringBuilder sb = new StringBuilder();
     sb.append("Ready set of "+this.getId()+"\n");
     for (AutomatonNode nd: getNodes()){
-      sb.append(nd.getId()+" -> "+nd.readySet()+"\n");
+      sb.append(nd.getId()+" -> "+nd.readySet(cong)+"\n");
+
     }
 
     return sb.toString();

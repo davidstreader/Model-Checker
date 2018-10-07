@@ -98,9 +98,9 @@ public class AbstractionFunction implements IProcessFunction {
     //Construct  edges to replace the unobservable edges
     while (!hiddenEdges.isEmpty()) {
       AutomatonEdge hiddenEdge = hiddenEdges.get(0);
-      System.out.println("hiddenEdge "+hiddenEdge.myString());
+      //System.out.println("hiddenEdge "+hiddenEdge.myString());
       if (processesed.contains(hiddenEdge)) {
-        //System.out.println("WHY "+ hiddenEdge.myString());
+        //System.out.println("WHY alrady processed"+ hiddenEdge.myString());
         hiddenEdges.remove(hiddenEdge);
         continue;
       }
@@ -112,7 +112,7 @@ public class AbstractionFunction implements IProcessFunction {
              (hiddenEdge.getTo().isSTOP()== hiddenEdge.getFrom().isSTOP()) &&
              (hiddenEdge.getTo().isERROR()== hiddenEdge.getFrom().isERROR()))
           ) {
-        System.out.println("Remove "+ hiddenEdge.myString());
+        //System.out.println("Remove "+ hiddenEdge.myString());
         abstraction.removeEdge(hiddenEdge);
       }
 
@@ -165,7 +165,7 @@ public class AbstractionFunction implements IProcessFunction {
         hiddenEdges = abstraction.getEdges().stream()
             .filter(AutomatonEdge::isHidden)
             .collect(Collectors.toList());
-//    System.out.println("New total taus "+hiddenEdges.size());
+     //System.out.println("New total taus "+hiddenEdges.size());
         //System.in.read(); */
 
       } catch (InterruptedException ignored) {
@@ -180,7 +180,7 @@ public class AbstractionFunction implements IProcessFunction {
         ow.addAll(edge.getOwnerLocation());
     }
     abstraction.setOwners(ow);
-    System.out.println("Abs final "+ abstraction.myString());
+    //System.out.println("Abs final "+ abstraction.myString());
 
     return abstraction;
   }
@@ -231,7 +231,7 @@ public class AbstractionFunction implements IProcessFunction {
         abstraction.addOwnersToEdge(added,edge.getOwnerLocation() );
       } else { // Atomic automaton
         if (edge.isHidden()&& edge.getFrom().getId().equals(edge.getTo().getId())) {
-          System.out.println("ERROR hidden loops should NOT be added!");
+          //System.out.println("ERROR hidden loops should NOT be added!");
           continue;
         }
         //if new edge exists it will not be added by addEdge
@@ -249,15 +249,15 @@ public class AbstractionFunction implements IProcessFunction {
         }
 
       }
- // System.out.println("symb = "+symbolic+" a->tau-> added " + added.myString());
+ //System.out.println("symb = "+symbolic+" a->tau-> added " + added.myString());
       if (added.isHidden()) {
         //System.out.println("\tHidden a->tau-> added " + added.myString());
         hiddenAdded.add(added);
       }
-      System.out.println("Outgoing add "+added.myString());
+      //System.out.println("Outgoing add "+added.myString());
     }
 
- //   System.out.println("endof Outgoing "+hiddenAdded.myString());
+ //System.out.println("endof Outgoing "+hiddenAdded.myString());
     return hiddenAdded;
   }
 
@@ -310,7 +310,7 @@ public class AbstractionFunction implements IProcessFunction {
         abstraction.addOwnersToEdge(added,hiddenEdge.getOwnerLocation() );
         abstraction.addOwnersToEdge(added,edge.getOwnerLocation() );
           added.getOwnerLocation().addAll(hiddenEdge.getOwnerLocation());
-        //  System.out.println("Incoming add "+added.myString());
+        //System.out.println("Incoming add "+added.myString());
         // n->tau->m m-a->n n-tau->m one tau used twice!
           if (from.getId().equals(to.getId()) && !edge.isHidden()) {
             abstraction.addEdge(edge.getLabel(), hiddenEdge.getFrom(), hiddenEdge.getTo(), null, false,edge.getOptionalEdge());
@@ -319,12 +319,12 @@ public class AbstractionFunction implements IProcessFunction {
           }
 
       }
-   //   System.out.println("symb = "+symbolic+" tau->a-> added " + added.myString());
+   //System.out.println("symb = "+symbolic+" tau->a-> added " + added.myString());
       if (added.isHidden()) {
         //System.out.println("\tHidden tau->a-> added "+added.myString());
         hiddenAdded.add(added);
       }
-      System.out.println("Incoming add "+added.myString());
+      //System.out.println("Incoming add "+added.myString());
     }
     //String x = hiddenAdded.stream().map(e->e.myString()).collect(Collectors.joining());
     //System.out.println("endof Incoming "+x);
@@ -390,12 +390,12 @@ public class AbstractionFunction implements IProcessFunction {
    */
   private void mergeloopsOfSize2(Context context, Automaton autoIN)
       throws CompilationException {
-    // System.out.println("start mloops 2");
+    //System.out.println("start mloops 2");
     boolean go = true;
     while (go) {
       go = mergeloop(context, autoIN);
     }
-    // System.out.println("end mloops 2");
+    //System.out.println("end mloops 2");
   }
 
   /**
@@ -410,12 +410,12 @@ public class AbstractionFunction implements IProcessFunction {
     List<AutomatonEdge> edges = autoIN.getEdges();
 
     for (AutomatonEdge edge : edges) {
-      //  System.out.println("edge "+edge.myString());
+      //System.out.println("edge "+edge.myString());
       try {
         if (!edge.getTo().equals(edge.getFrom())) {
           for (AutomatonEdge e : autoIN.getEdges()) {
             //if(e.getFrom().equals(edge.getTo())) {
-            //  System.out.println("try "+ e.myString());
+            //System.out.println("try "+ e.myString());
             //}
             if (e.getLabel().equals(Constant.HIDDEN) &&
                 edge.getLabel().equals(Constant.HIDDEN) &&
@@ -429,14 +429,14 @@ public class AbstractionFunction implements IProcessFunction {
             }
           }
         } else {
-//     System.out.println("Edge loop ignored in mergeloop() "+edge.myString());
+     //System.out.println("Edge loop ignored in mergeloop() "+edge.myString());
         }
       } catch (InterruptedException e) {
         //System.out.println(e);
         throw new CompilationException(this.getClass(), null);
       }
       //catch (IOException e) {
-      //  System.out.println(e);
+        //System.out.println(e);
       //  throw new CompilationException(this.getClass(), null);
       //}
     }
@@ -451,7 +451,7 @@ public class AbstractionFunction implements IProcessFunction {
     Guard fromGuard = from.getGuard();
     Guard toGuard = to.getGuard();
     if (context == null) {
-// System.out.println("Context = null");
+  //System.out.println("Context = null");
       return null;
     }
     if (fromGuard != null && toGuard != null) {
@@ -491,7 +491,7 @@ public class AbstractionFunction implements IProcessFunction {
       Symetric
       remove t
      */
-    System.out.println("\nPetri abstraction! flags "+flags+ "\n");
+    //System.out.println("\nPetri abstraction! flags "+flags+ "\n");
 
     assert petrinets.length == 1;
     Petrinet petri = petrinets[0].reId("");
@@ -658,7 +658,7 @@ public class AbstractionFunction implements IProcessFunction {
       if (!cong ||
          (Petrinet.isMarkingExternal(tr.pre()) == Petrinet.isMarkingExternal(tr.post())))
          {
-           System.out.println("Removing "+tr.myString());
+           //System.out.println("Removing "+tr.myString());
            petri.removeTransition(tr);
       }
     }
@@ -682,17 +682,21 @@ public class AbstractionFunction implements IProcessFunction {
  */
   public Automaton GaloisBCabs (String id, Set<String> flags, Context context, Automaton ain)
      throws CompilationException {
-   // System.out.println("GaloisBCabs "+flags);
+   //System.out.println("GaloisBCabs "+flags);
     Automaton a = ain.copy();
     for(AutomatonEdge ed: a.getEdges()) {
-      if (ed.getLabel().endsWith(".t!") || ed.getLabel().endsWith(".t?"))
+      if (ed.getLabel().endsWith(".t!") || ed.getLabel().endsWith(".t?") ||
+          ed.getLabel().endsWith(".r!") || ed.getLabel().endsWith(".r?")) {
         ed.setLabel(Constant.HIDDEN);
+        ed.getTo().copyProperties(ed.getFrom());  //need to do this here untill STOP with outgoing allowed
+      }
     }
     Automaton[] as = new Automaton[1];
     as[0] = a;
-    Automaton out =  this.compose(id, flags, context,  as);
+    Set<String> newflags = flags.stream().filter(x->!x.equals(Constant.CONGURENT)).collect(Collectors.toSet());
+    Automaton out =  this.compose(id, newflags, context,  as);
 
-    System.out.println("**** GaloisBCabs END \n"+out.myString());
+    //System.out.println("**** GaloisBCabs END \n"+out.myString());
     return out;
   }
 }

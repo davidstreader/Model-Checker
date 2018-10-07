@@ -17,11 +17,10 @@ import mc.processmodels.MultiProcessModel;
  * Classes that implement this interface are automatically loaded into the compiler at run time if
  * located in {@code mc.operations}.
  *
- *          This is for abs,  .....   BUT ~, =f, <q, ....
+ *          This is for abs, simp,  Galois, .....   NOT ~, =f, <q, ....
  * @author Jacob Beal
  * @see IProcessInfixFunction
  * @see IProcessFunction
- * @see mc.plugins.PluginManager
  */
 public interface IProcessFunction {
 
@@ -49,11 +48,12 @@ public interface IProcessFunction {
 
 
   /**
+   * Define function on which ever input best then get other input to convert to that type
+   * Caller must convert back  (stop intermediate conversion with nested calls)
    * Execute the function on automata.
    *
    * @param id       the id of the resulting automaton
-   * @param flags    the flags given by the function (e.g. {@code unfair} in {@code abs{unfair}(A)}
-   * @param tt
+   * @param flags    the flags given by the function (e.g. {@code unfair} in {@code abs{unfair}(A)
    * @param automata a variable number of automata taken in by the function
    * @return the resulting automaton of the operation
    * @throws CompilationException when the function fails

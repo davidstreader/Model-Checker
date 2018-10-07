@@ -8,7 +8,6 @@ import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.graph.DirectedSparseGraph;
 import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
 import edu.uci.ics.jung.graph.Graph;
-import edu.uci.ics.jung.graph.util.EdgeType;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.CrossoverScalingControl;
 import edu.uci.ics.jung.visualization.control.PickingGraphMousePlugin;
@@ -56,18 +55,15 @@ import mc.compiler.CompilationObject;
 import mc.compiler.CompilationObservable;
 //import mc.compiler.ImpliesResult;
 import mc.compiler.OperationResult;
-import mc.processmodels.Mapping;
+import mc.processmodels.MappingNdMarking;
 import mc.processmodels.MultiProcessModel;
 import mc.processmodels.ProcessModel;
 import mc.processmodels.ProcessType;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetEdge;
-import mc.processmodels.petrinet.components.PetriNetPlace;
-import mc.processmodels.petrinet.components.PetriNetTransition;
 
 import java.awt.BasicStroke;
-import java.awt.Stroke;
 
 /**
  * Created by bealjaco on 29/11/17.
@@ -94,7 +90,7 @@ public class ModelView implements Observer {
   private CompilationObject compiledResult;
   private List<String> processesChanged = new ArrayList<>();
 
-  private Map<String, Mapping> mappings = new HashMap<>();
+  private Map<String, MappingNdMarking> mappings = new HashMap<>();
 
 
   private static final Font sourceCodePro;

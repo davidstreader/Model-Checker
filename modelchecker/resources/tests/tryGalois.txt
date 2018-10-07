@@ -22,20 +22,23 @@ A6 = b?->b?->A6.
 //A8 = b?->b?->A8|d!->c?->A8.
 A9 = b?->X|b?->A9, X = c?->d!->X.
 
-X = revap2bc(O).
-Y = revap2bc(O1).
+OO = revap2bc(O).
+OO2 = revap2bc(O2).
+//OOO = fap2bc(OO).
 }
 
 alphabet{b?,c?}
 operation {
-revap2bc(O) <f revap2bc(O1).  
+////O <q O2.
+ //revap2bc(O) <f revap2bc(O2).
+//O <q{cong} O2.
+//// revap2bc(O) <f{cong} revap2bc(O2).
 }
 
 equation{
-//X <q fap2bc(revap2bc(X)).
-//Z <q X ==> revap2bc(Z) <f revap2bc(X). 
+X <q{cong} fap2bc(revap2bc(X)).
+Z <q{cong} X ==> revap2bc(Z) <f{cong} revap2bc(X). 
 } 
-
 
 
 

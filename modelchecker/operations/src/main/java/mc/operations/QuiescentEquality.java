@@ -49,27 +49,27 @@ public class QuiescentEquality implements IOperationInfixFunction {
   @Override
   public boolean evaluate(Set<String> alpha, Set<String> flags, Context context, Collection<ProcessModel> processModels) throws CompilationException {
     System.out.println("QUIESCENT= "+alpha);
-
+    boolean cong = flags.contains(Constant.Quiescent);
     //ProcessModel[] pms =  processModels.toArray();
     Automaton a1 = (Automaton) processModels.toArray()[0]; // reference only
     Automaton a2 = (Automaton) processModels.toArray()[1];
     TraceEquivalentOperation teo = new TraceEquivalentOperation();
     TraceWork tw = new TraceWork();
     //tw.evaluate(flags,processModels, TraceType.QuiescentTrace);
-    addQuiescentAndListeningLoops(alpha,a1);
-    addQuiescentAndListeningLoops(alpha,a2);
+    addQuiescentAndListeningLoops(alpha,a1,cong);
+    addQuiescentAndListeningLoops(alpha,a2,cong);
     System.out.println("Q= a1 "+a1.myString());
     System.out.println("Q= a2 "+a2.myString());
     return  teo.evaluate(alpha,flags,context,processModels);
   }
 
-  private void addQuiescentAndListeningLoops(Set<String> alphbet, Automaton a) throws CompilationException {
+  private void addQuiescentAndListeningLoops(Set<String> alphbet, Automaton a,boolean cong) throws CompilationException {
     System.out.println("addQuiescentAndListeningLoops");
     for(AutomatonNode nd : a.getNodes()){
-      Set<String> notListening = nd.readySet().stream().filter(x->!x.endsWith("?")).collect(Collectors.toSet());
+      Set<String> notListening = nd.readySet(cong).stream().filter(x->!x.endsWith("?")).collect(Collectors.toSet());
       nd.setQuiescent(notListening.size()==0);
       for(String lab: alphbet) {
-        if (!nd.readySet().contains(lab)) {
+        if (!nd.readySet(cong).contains(lab)) {
           a.addEdge(lab,nd,nd,nd.getGuard(),false,false);
         }
       }
