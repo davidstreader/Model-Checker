@@ -17,6 +17,7 @@ import mc.processmodels.ProcessType;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
+import mc.processmodels.conversion.OwnersRule;
 import mc.processmodels.conversion.TokenRule;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetPlace;
@@ -74,12 +75,13 @@ public class RevAP2BC implements IProcessFunction {
   @Override
   public Automaton compose(String id, Set<String> flags, Context context,  Automaton... automata)
     throws CompilationException {
-  Automaton aut = automata[0].copy();
+  Automaton aut = automata[0].reId(automata[0].getId()+"rA2B");
     System.out.println("RevAP2BC AUTOMATON start "+aut.getId()+ " flags "+flags);
-    Set<String> listeners = flags.stream().filter(x->x.endsWith("?")).collect(Collectors.toSet());
-    buildListeningLoops(listeners,aut); //MUST KEEP
+    //Set<String> listeners = flags.stream().filter(x->x.endsWith("?")).collect(Collectors.toSet());
+    //buildListeningLoops(listeners,aut); //MUST KEEP
 
     for(AutomatonEdge ed : aut.getEdges()) {
+      //System.out.println("ed "+ed.myString());
       String prefix1 = ed.getLabel().substring(0,ed.getLabel().length()-1);
       if (ed.getLabel().endsWith(".t?") ||ed.getLabel().endsWith(".r?") ||
         ed.getLabel().endsWith(".t!")   ||ed.getLabel().endsWith(".r!")   ) ed.setLabel(Constant.HIDDEN);
@@ -87,7 +89,7 @@ public class RevAP2BC implements IProcessFunction {
       else if (ed.getLabel().endsWith("!") ) ed.setLabel(prefix1+Constant.ACTIVE);
 
     }
-    System.out.println("RevAP2BC AUTOMATON RETURNS "+aut.myString());
+    //System.out.println("RevAP2BC AUTOMATON RETURNS "+aut.myString());
     return aut;
   }
 
@@ -98,6 +100,14 @@ public class RevAP2BC implements IProcessFunction {
    */
    @Override
   public Petrinet compose(String id, Set<String> flags, Context context, Petrinet... petrinets) throws CompilationException {
+    Automaton a =  TokenRule.tokenRule(petrinets[0]);
+    Automaton[] auts = new Automaton[1];
+    auts[0] = a;
+    Automaton aout =  compose(id,flags,context, auts);
+
+    return OwnersRule.ownersRule(aout);
+  }
+  public Petrinet OLDcompose(String id, Set<String> flags, Context context, Petrinet... petrinets) throws CompilationException {
 
     Petrinet x = petrinets[0].reId("G");
     MultiProcessModel model = buildmpmFromPetri(x);
@@ -123,7 +133,8 @@ public class RevAP2BC implements IProcessFunction {
       for(String lab: notHeard){
         AutomatonEdge ed =  aut.addEdge(lab.substring(0,lab.length()-1),nd,nd,
           null,false,false);
-        System.out.println("**adding** "+ed.myString());
+        ed.setEdgeOwners(ed.getEdgeOwners());
+        //System.out.println("**adding** "+ed.myString());
       }
     }
 

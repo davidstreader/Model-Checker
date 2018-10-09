@@ -28,7 +28,7 @@ public class PetrinetParallelFunction  {
     Petrinet p2 = pi2.reId("2");
     p1.rebuildAlphabet(); p2.rebuildAlphabet();
 
-   System.out.println("     PETRINET PARALLELFUNCTION"+"  "+p1.getId()+" ||"+flags+" "+p2.getId());
+   System.out.println("     PETRINET PARALLELFUNCTION"+"  "+p1.myString()+" ||"+flags+" "+p2.getId());
 
    //builds synchronisedActions set
     setupActions(p1, p2,flags);

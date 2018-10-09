@@ -8,6 +8,7 @@ public class ModelStatus {
 
   int passCount;
   int failCount;
+  int impliesCountAss;
   int id;
   int doneCount;
   long timeStamp;

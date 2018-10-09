@@ -360,9 +360,11 @@ public void rebuildAlphabet(){
 
     return roots.stream().flatMap(Set::stream).map(x->places.get(x)).collect(Collectors.toSet());
   }
+
+  //undo  tagEvents()   on Automaton
   public void deTagTransitions() {
     for(PetriNetTransition tr: getTransitions().values()) {
-      tr.setLabel(tr.getLabel().split("\\.")[0]);
+      tr.setLabel(tr.getLabel().split("\\:")[0]);
     }
   }
   public boolean  rootContains(PetriNetPlace pl){
@@ -791,7 +793,7 @@ if (edin.equals("edge")) {
     PetriNetTransition transition = new PetriNetTransition(id, label);
     transitions.put(id, transition);
     alphabet.put(label, transition);
-  //System.out.println("added "+transition.getId());
+  //System.out.println("added "+transition.myString());
     //System.out.println(" to "+this.getId()+" adding "+transition.myString());
     return transition;
   }

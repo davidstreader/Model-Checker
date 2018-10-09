@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableSet;
 import com.microsoft.z3.Context;
 import mc.Constant;
 import mc.exceptions.CompilationException;
+import mc.operations.functions.AbstractionFunction;
 import mc.plugins.IOperationInfixFunction;
 import mc.processmodels.ProcessModel;
 import mc.processmodels.automata.Automaton;
@@ -59,7 +60,7 @@ import mc.processmodels.automata.util.ColouringUtil;
          */
         @Override
         public boolean evaluate(Set<String> alpha, Set<String> flags, Context context, Collection<ProcessModel> processModels) throws CompilationException {
-            //System.out.println("Bisimulation "+flags+ " on Automaton "+processIds(processModels) );
+            System.out.println("Bisimulation "+flags+ " on Automaton "+processIds(processModels) );
             boolean cong = flags.contains(Constant.CONGURENT);
 
             if (processModels.iterator().next() instanceof Automaton) {
@@ -69,18 +70,27 @@ import mc.processmodels.automata.util.ColouringUtil;
 
                 final int BASE_COLOUR = 1;
                 //System.out.println("Bisim evaluate");
-                int i = 0; String firstId = "";
+                String firstId = "";
+                Automaton[] auts = new Automaton[2];
+                int j = 0;
                 for (ProcessModel pm : processModels) {
-                    //System.out.println("  Bisim "+i+"  "+((Automaton)pm ).myString());
-                    if (i==0) firstId = pm.getId();
+                    if (flags.contains(Constant.FAIR)||flags.contains(Constant.UNFAIR)) {
+                        AbstractionFunction absFun = new AbstractionFunction();
+                        auts[j] = (Automaton)pm;
+                        Automaton atemp = auts[j];
+                        auts[j] = absFun.compose(pm.getId(),flags,context,atemp);
+                    } else {
+                        auts[j] = (Automaton)pm;
+                    }
+                    System.out.println("  Bisim "+j+"  "+auts[j].myString());
+                    if (j==0) firstId = auts[j].getId();
                     else if (firstId.equals(pm.getId())) {
-                        //System.out.println("automata bisim same ids "+firstId);
+                        System.out.println("automata bisim same ids "+firstId);
                         return true;
                     }
-                    Automaton a = (Automaton) pm;
-                    edges.addAll(a.getEdges());
-                    nodes.addAll(a.getNodes());
-                    i++; //Need this check
+                    edges.addAll(auts[j].getEdges());
+                    nodes.addAll(auts[j].getNodes());
+                    j++; //Need this check
                 }
                 Set<Integer> root_colors = new TreeSet<Integer>();
                 Set<Integer> first_colors = new TreeSet<Integer>();
@@ -94,20 +104,23 @@ import mc.processmodels.automata.util.ColouringUtil;
                 colourer.doColouring(nodes,cong); // uses initial colouring on nodes
 
 
-                i = 0;
-                for (ProcessModel pm : processModels) {
-                    Automaton automaton = (Automaton) pm;
+                int i = 0;
+                for (Automaton automaton : auts) {
+                    //for (ProcessModel pm : processModels) {
+                        //Automaton automaton = (Automaton) pm;
                     //System.out.println("bisim ~ "+ automaton.myString());
                     Set<AutomatonNode> root = automaton.getRoot();
 
                     if (i == 0) {
                         for (AutomatonNode n : root) {
                             first_colors.add(n.getColour());
+                            System.out.println(i+" "+n.getId()+" -> "+n.getColour());
                         }
                         i++;
                     } else {
                         for (AutomatonNode n : root) {
                             root_colors.add(n.getColour());
+                            System.out.println(i+" "+n.getId()+" -> "+n.getColour());
                         }
                         boolean result = false;
                         if (root_colors.equals(first_colors)) {   //comparison between this current automaton and the first

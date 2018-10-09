@@ -180,7 +180,11 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     });
   }
 
+  public void removeEdgeDuplicates (){
+     for(AutomatonEdge edge: getEdges()){
 
+     }
+  }
   public boolean isSymbolic() {
     return (hiddenVariables != null && hiddenVariables.size() > 0);
   }
@@ -940,6 +944,79 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     return copy;
   }
 
+
+  public Automaton reId(String tag) throws CompilationException {
+    Automaton reIded = new Automaton(getId()+tag, !CONSTRUCT_ROOT);
+    setId(getId()+tag);
+//New node objects but with same Id causes problems where unique ids assumed!
+    // compute bisim between two automata that nodes with same Id
+  /*  copy.nodeId = 0;
+    copy.edgeId = 0;
+    copy.ownerId = 0; */
+    //System.out.println("Start of reId "+ reIded.myString());
+    //HACK fix the owners as some times global owners not same as owners on edges
+    Set<String > union = new HashSet<>();
+    for(AutomatonEdge ed: getEdges()) {
+      union.addAll(ed.getOwnerLocation());
+    }
+
+    setOwners(union);
+    Map<String,String> ownersMap = new TreeMap<>();
+
+    //System.out.println("COPY "+ this.getId()+" owners "+ owners);
+    for (String s: union){
+      ownerId++;
+      //System.out.println("s "+s+" own "+ ownerId);
+      ownersMap.putIfAbsent(s, "cp"+((Integer) ownerId).toString());
+      //System.out.println("ownersMap "+ s+"->"+ownersMap.get(s));
+    }
+
+    owners =  ownersMap.values().stream().collect(Collectors.toSet());
+
+    //System.out.println("XX " + ownersMap);
+
+    Map<AutomatonNode,AutomatonNode> reNode = new HashMap<>();
+    //System.out.println("Starting copy of "+this.toString());
+    List<AutomatonNode> nodes = getNodes();
+    for (AutomatonNode node : nodes) {
+      AutomatonNode newNode = reIded.addNode();
+      reNode.put(node,newNode);
+      //System.out.println(" reNode "+node.getId()+"->"+newNode.getId());
+      newNode.copyProperties(node);
+      if (newNode.isStartNode()) {
+        reIded.addRoot(newNode);
+      }
+    }
+
+    List<AutomatonEdge> edges = getEdges();
+    for (AutomatonEdge edge : edges) {
+      //System.out.println(" edge "+edge.myString());
+      AutomatonNode from = reNode.get(edge.getFrom());
+      AutomatonNode to = reNode.get(edge.getTo());
+
+      //Change to make copies re id the edge
+      AutomatonEdge xedge =  reIded.addEdge(edge.getLabel(),
+        from, to, edge.getGuard(), false,edge.getOptionalEdge());
+      //System.out.println("  Adding "+xedge.myString());
+      Set<String> os = edge.getOwnerLocation();
+      //System.out.print("os "+os);
+      Set<String> newos = new HashSet<>();
+      //os.stream().map(x->ownersMap.get(x)).collect(Collectors.toSet());
+      for(String s:os) {
+        newos.add(ownersMap.get(s));
+      }
+      //System.out.println(" newos "+ newos);
+      reIded.addOwnersToEdge(xedge,newos);
+      xedge.setOptionalEdge(edge.getOptionalEdge());
+      //System.out.println("End of adding Edge"+xedge.myString());
+    }
+    reIded.copyProperties(this);
+    //System.out.println("reId Ends "+reIded.myString());
+    return reIded;
+  }
+
+
+
   public ProcessType getProcessType() {
     return ProcessType.AUTOMATA;
   }
@@ -973,7 +1050,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
   public void tagEvents() {
     for(AutomatonEdge ed: getEdges()) {
-      ed.setLabel(ed.getLabel()+"."+tagid++);
+      ed.setLabel(ed.getLabel()+":"+tagid++);
     }
   }
 

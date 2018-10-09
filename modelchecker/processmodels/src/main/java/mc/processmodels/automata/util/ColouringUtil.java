@@ -32,7 +32,7 @@ public class ColouringUtil {
    */
   public Map<Integer, ColourPi> doColouring
   (List<AutomatonNode> nodes, boolean cong) throws Error {
-    //System.out.println("doColouring START");
+    //System.out.print("doColouring START ");nodes.stream().forEach(nd-> System.out.println(nd.myString()));
     Map<Integer, ColourPi> col2pi = new TreeMap<>();
     //Map<ColourPi,Integer> revcolpi = new TreeMap< ColourPi,Integer>();
     //DONOT USE THIS IT IS NO IMPLEMETED CORRECTLY
@@ -61,7 +61,7 @@ public class ColouringUtil {
         /*
          */
         if (col2pi.keySet().contains(nd.getColour())) {
-          //System.out.println("col2pi contains key "+nd.getColour());
+          System.out.println("col2pi contains key "+nd.getColour());
           if (!col2pi.get(nd.getColour()).equals(nodeColPi)){
             boolean found = false; Integer foundCol = 0;
             for(Integer revI: col2pi.keySet()){
@@ -70,7 +70,7 @@ public class ColouringUtil {
             }
             if (found) {
               nextCol.put(nd, foundCol);
-              //System.out.println(nodeColPi.myString()+ " Is in revcol");
+              System.out.println(nodeColPi.myString()+ " Is in revcol");
             } else {
               Integer nc = getNextColourId();
               col2pi.put(nc, nodeColPi);
@@ -116,7 +116,7 @@ public class ColouringUtil {
         } else {
           //System.out.println(nd.getId()+" -> "+ nd.getColour());
           reversepi.put(nd.getColour(), buildpi(nd,cong));
-          //System.out.println("Termination Check Add "+nd.getColour()+"->"+ reversepi.get(nd.getColour()).myString());
+          //System.out.println("Termination Check Add "+nd.getId()+" "+nd.getColour()+" -> "+ reversepi.get(nd.getColour()).myString());
         }
       }
       //System.out.println("**** "+go);

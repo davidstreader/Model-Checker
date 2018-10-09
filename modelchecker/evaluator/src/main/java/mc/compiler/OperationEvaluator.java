@@ -214,7 +214,7 @@ public class OperationEvaluator {
                 System.out.println("Function1 "+operation.getFirstProcess().myString());
                 Automaton a = interpreter.getAut(processMap,interpreter,context,alpha, operation.getFirstProcess()) ;
                 processModels.add(a);
-                System.out.println("OpEval Fun1 "+a.myString());
+                System.out.println("\n****OpEval Fun1 "+a.myString());
             } else   if (operation.getFirstProcessType().equals(Constant.PETRINET)) {
                 Petrinet one = (Petrinet) interpreter.interpret(Constant.PETRINET,
                         operation.getFirstProcess(), getNextOperationId(), processMap, context, alpha);
@@ -240,7 +240,7 @@ public class OperationEvaluator {
                 //processModels.add(TokenRule.tokenRule(two));
                 Automaton a = TokenRule.tokenRule(two);
                 processModels.add(a);
-                System.out.println("OpEval 2 "+a.myString());
+                System.out.println("\n***OpEval 2 "+a.myString());
             } else if (operation.getSecondProcessType().equals(Constant.AUTOMATA)) {
                 Automaton two = (Automaton) interpreter.interpret(Constant.AUTOMATA,
                         operation.getSecondProcess(), getNextOperationId(), processMap, context, alpha);
@@ -256,7 +256,7 @@ public class OperationEvaluator {
             System.out.println("Bad operation type "+operation.getOperationType());
         }
         //if (r==false) {
-            //System.out.println("END    evalOp " + operation.myString()+" " + EquationEvaluator.asString(processMap) + " => " + r);
+            System.out.println("END    evalOp " + operation.myString()+" " + EquationEvaluator.asString(processMap) + " => " + r);
        // }
         return r;
     }

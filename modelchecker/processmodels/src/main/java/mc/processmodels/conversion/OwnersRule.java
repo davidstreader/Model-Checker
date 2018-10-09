@@ -55,7 +55,7 @@ public class OwnersRule {
    */
   @SneakyThrows({CompilationException.class})
   public static Petrinet ownersRule(Automaton ain) {
-    System.out.println("OwnersRule initial automata " + ain.getId() + " ");
+    System.out.println("OwnersRule initial automata " + ain.myString() + "*START ");
     //Throwable t = new Throwable(); t.printStackTrace();
     clean();
     // 1. to automata A add initial event S*=>A now only one start state.
@@ -134,7 +134,7 @@ public class OwnersRule {
         processed.add(nd);
 
         for (AutomatonEdge ed : nd.getOutgoingEdges()) {
-          System.out.println("    Start 2 " + ed.myString() + " own " + own);
+          //System.out.println("    Start 2 " + ed.myString() + " own " + own);
           // optional send events May not be needed
           if (ed.getOptionalEdge()) continue;
           toDo.push(ed.getTo());
@@ -170,15 +170,14 @@ public class OwnersRule {
       //  build = subNets.pop();  //for debugging
       //System.out.println("Build " + build.myString());
     }
-    build.deTagTransitions();
-
+    build.deTagTransitions();  //use ":" tonot mess up with Galois  (undo Automaton  tagEvents() )
     //System.out.println("  before reach  "+build.myString());
     build = PetrinetReachability.removeUnreachableStates(build);
     //System.out.println("reach *END "+build.myString());
 
     //3. remove S* to reveal the multiple start states.
     stripStar(build);
-    System.out.println("  OWNERS Rule *END " + build.getId());
+    //System.out.println("  OWNERS Rule *END " + build.myString()+"\n*END");
     //assert(build.validatePNet(): "OwnersRule End");
     return build;
   }

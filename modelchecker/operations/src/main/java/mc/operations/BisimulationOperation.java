@@ -53,7 +53,7 @@ public class BisimulationOperation implements IOperationInfixFunction {
                             Context context, Collection<ProcessModel> processModels) throws CompilationException {
 
         if (processModels.iterator().next() instanceof Petrinet) {
-             //System.out.println("Bisimulation on Petri Nets");
+             System.out.println("\n\nBisimulation on PETRI NETS EXPERIMENTAL\n\n");
             //processModels.stream().forEach(x->{  System.out.println(x.getId());});
             String tag1 = "*P1";
             String tag2 = "*P2";

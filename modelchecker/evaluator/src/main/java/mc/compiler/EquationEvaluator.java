@@ -248,6 +248,7 @@ public class EquationEvaluator {
           if (or2 == true) {
             //System.out.println("Short circuit Implies 2 == true");
             status.failCount = 0; //force success
+            status.impliesCountAss++;
             //status.setPassCount(status2.passCount);
             r = true;
             status.passCount++;

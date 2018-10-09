@@ -90,10 +90,18 @@ public class FailureRefinement implements IOperationInfixFunction {
       ArrayList<AcceptanceGraph> acctgrs = new ArrayList<>();
 
       for (ProcessModel pm : processModels) {
-        Automaton a = (Automaton) pm;
+        Automaton a;
+        if (flags.contains(Constant.FAIR)||flags.contains(Constant.UNFAIR)) {
+          AbstractionFunction absFun = new AbstractionFunction();
+          a = absFun.compose(pm.getId(),flags,context,(Automaton) pm);
+        } else {
+          a = (Automaton) pm;
+        }
         try {
+          System.out.println("FAILURE REF in "+ a.myString());
           //AcceptanceGraph adds root and STOP events
           AcceptanceGraph ag = new AcceptanceGraph("dfa-" + a.getId(), a, cong);
+          System.out.println("FAILURE REF fag "+ ag.toString());
           //temp = nfa2dfaworks.compose(a.getId(), new HashSet<>(), null, TraceType.CompleteTrace, a);
           ;
           acctgrs.add(ag);

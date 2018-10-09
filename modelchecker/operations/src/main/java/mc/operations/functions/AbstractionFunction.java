@@ -75,18 +75,41 @@ public class AbstractionFunction implements IProcessFunction {
     if (automata.length != getNumberArguments()) {
       throw new CompilationException(this.getClass(), null);
     }
-    Set<AutomatonEdge> processesed = new HashSet<>();
     Automaton startA = automata[0].copy();
-    String Aname = startA.getId();
+
     //System.out.println("\n***\n"+startA.myString());
-    //System.out.println("automata Abs start "+ startA.getId()+ " flags "+flags);
     boolean cong = flags.contains(Constant.CONGURENT);
+    System.out.println("\nautomata Abs start "+ startA.myString()+ " flags "+flags+ " cong "+cong);
     Automaton abstraction = pruneHiddenNodes(context, startA, cong);
 
     //System.out.println("Abs pruned "+ abstraction.myString());
 
     mergeloopsOfSize2(context, abstraction);
     //System.out.println("Abs merged "+ abstraction.myString());
+    List<AutomatonEdge> found = new ArrayList<>();
+    List<AutomatonEdge> edges = abstraction.getEdges().stream().collect(Collectors.toList());
+
+    for (AutomatonEdge edge : edges) {
+      //System.out.println("  edge "+edge.myString());
+      boolean f = false;
+      for(AutomatonEdge ed: found) {
+
+        if (edge.equals(ed)) {
+          //System.out.println("    Duplicate " + ed.myString());
+          abstraction.removeEdge(ed.getId());
+          f  = true;
+          break;
+        } else {
+          //System.out.print("    NO "+ed.getId());
+        }
+      }
+      if (!f) {
+        found.add(edge);
+        //System.out.println(" FOUND.add " + edge.myString());
+      }
+
+    }
+    //System.out.println("Abs dup "+ abstraction.myString());
 
     boolean isFair = flags.contains(Constant.FAIR) || !flags.contains(Constant.UNFAIR);
 
@@ -94,11 +117,12 @@ public class AbstractionFunction implements IProcessFunction {
     List<AutomatonEdge> hiddenEdges = abstraction.getEdges().stream()
         .filter(AutomatonEdge::isHidden)
         .collect(Collectors.toList());
-    hiddenEdges.stream().forEach(x->{System.out.println(x.myString());});
+    hiddenEdges.stream().forEach(x->{System.out.println("Hidden "+x.myString());});
     //Construct  edges to replace the unobservable edges
+    Set<AutomatonEdge> processesed = new HashSet<>();
     while (!hiddenEdges.isEmpty()) {
       AutomatonEdge hiddenEdge = hiddenEdges.get(0);
-      //System.out.println("hiddenEdge "+hiddenEdge.myString());
+      //System.out.println("cong " + cong + "  looking at hiddenEdge "+hiddenEdge.myString());
       if (processesed.contains(hiddenEdge)) {
         //System.out.println("WHY alrady processed"+ hiddenEdge.myString());
         hiddenEdges.remove(hiddenEdge);
@@ -106,6 +130,8 @@ public class AbstractionFunction implements IProcessFunction {
       }
       processesed.add(hiddenEdge); // ensures termination
 // for congruence keep taus that bridge internal and external nodes
+      //System.out.println("hiddenEdge "+hiddenEdge.myString());
+      //hiddenEdges.stream().forEach(x-> System.out.println(" in List "+x.myString()));
       hiddenEdges.remove(hiddenEdge);
       if (!cong ||
            ( (hiddenEdge.getTo().isStartNode()== hiddenEdge.getFrom().isStartNode()) &&
@@ -342,7 +368,7 @@ public class AbstractionFunction implements IProcessFunction {
 
   private Automaton pruneHiddenNodes(Context context, Automaton autoIN, boolean cong)
       throws CompilationException {
-    Automaton abstraction = autoIN.copy();
+    Automaton abstraction = autoIN; //.copy();
 //System.out.println("prune "+ abstraction.myString());
     List<AutomatonNode> nodes = abstraction.getNodes();
 

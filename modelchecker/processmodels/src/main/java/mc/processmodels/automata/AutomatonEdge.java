@@ -2,10 +2,12 @@ package mc.processmodels.automata;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 import lombok.Getter;
 import lombok.Setter;
 import mc.Constant;
@@ -17,7 +19,7 @@ import mc.processmodels.petrinet.Petrinet;
 public class AutomatonEdge extends ProcessModelObject {
 
   //private static final String INTERSECTION = "^";
-
+  @Getter
   @Setter
   private Set<String> edgeOwners = new HashSet<>();
 
@@ -56,11 +58,18 @@ public class AutomatonEdge extends ProcessModelObject {
     this.to = to;
   }
 
-  public boolean getOptionalEdge(){return optionalEdge;}
-  public void setOptionalEdge(boolean  b){optionalEdge = b;}
+  public boolean getOptionalEdge() {
+    return optionalEdge;
+  }
+
+  public void setOptionalEdge(boolean b) {
+    optionalEdge = b;
+  }
+
   public boolean isHidden() {
     return label.equals(Constant.HIDDEN);
   }
+
   public boolean isObservableHidden() {
     return label.equals(Constant.HIDDEN) && (getTo().isExternal() == getFrom().isExternal());
   }
@@ -85,10 +94,10 @@ public class AutomatonEdge extends ProcessModelObject {
     String out = "";
     if (guard != null) {
       out = from.getId() + "-" + label + "->" + to.getId() + " " +
-             guard.myString() + " o= "+edgeOwners+ " optional= "+optionalEdge;
+        guard.myString() + " o= " + edgeOwners + " optional= " + optionalEdge;
     } else {
       out = from.getId() + "-" + label + "->" + to.getId() +
-           " guard null "+ " o= "+edgeOwners + " optional= "+optionalEdge;
+        " guard null " + " o= " + edgeOwners + " optional= " + optionalEdge;
     }
     return out;
   }
@@ -96,36 +105,38 @@ public class AutomatonEdge extends ProcessModelObject {
 
   public String toString() {
     String builder = "edge{\n"
-        + "\tid:" + getId() + "\n"
-        + "\tlabel:" + label + "\n"
-        + "\tfrom:" + from.getId() + "\n"
-        + "\tto:" + to.getId() + "\n"
-        + "\tmetadata:" + getGuard() + "\n"
-        + "\t owners: " + getOwnerLocation() + "\n"
-        + "\n"
-        + "}";
+      + "\tid:" + getId() + "\n"
+      + "\tlabel:" + label + "\n"
+      + "\tfrom:" + from.getId() + "\n"
+      + "\tto:" + to.getId() + "\n"
+      + "\tmetadata:" + getGuard() + "\n"
+      + "\t owners: " + getOwnerLocation() + "\n"
+      + "\n"
+      + "}";
 
     return builder;
   }
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
+    AutomatonEdge edge;
+    boolean out;
     if (o == null || getClass() != o.getClass()) {
       return false;
+    } else {
+      edge = (AutomatonEdge) o;
+      if (!label.equals(edge.label)) {
+        //System.out.println("label");
+        out = false;
+      } else if (!from.getId().equals(edge.from.getId())) {
+        out = false;
+        //System.out.println("from");
+      } else {
+        out = to.getId().equals(edge.to.getId());
+      }
     }
-
-    AutomatonEdge edge = (AutomatonEdge) o;
-
-    if (!label.equals(edge.label)) {
-      return false;
-    }
-    if (!from.getId().equals(edge.from.getId())) {
-      return false;
-    }
-    return to.getId().equals(edge.to.getId());
+    //System.out.println(myString() + " EQUAL? " + edge.myString() + " ==>> " + out);
+    return out;
   }
 
   @Override
@@ -145,8 +156,8 @@ public class AutomatonEdge extends ProcessModelObject {
     intersection.retainAll(preowners2);
 
     if (intersection.size() > 0) {
-      relabelOwners(automaton1,"._1");
-      relabelOwners(automaton2,"._2");
+      relabelOwners(automaton1, "._1");
+      relabelOwners(automaton2, "._2");
       preowners1 = automaton1.getOwners();
       preowners2 = automaton2.getOwners();
     }
@@ -165,8 +176,8 @@ public class AutomatonEdge extends ProcessModelObject {
     aut.getEdges().forEach(e -> {
 
       Set<String> owners = e.getOwnerLocation().stream()
-          .map(o -> o + label)
-          .collect(Collectors.toSet());
+        .map(o -> o + label)
+        .collect(Collectors.toSet());
       Set<String> toRemove = new HashSet<>(e.getOwnerLocation());
       toRemove.forEach(o -> aut.removeOwnerFromEdge(e, o));
       try {
