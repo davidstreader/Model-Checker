@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 
 import com.microsoft.z3.Context;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
 import mc.compiler.ast.ForAllNode;
 import mc.compiler.ast.ImpliesNode;
@@ -17,7 +16,6 @@ import mc.plugins.IOperationInfixFunction;
 import mc.processmodels.ProcessModel;
 import mc.processmodels.petrinet.Petrinet;
 import mc.util.LogMessage;
-import mc.compiler.ModelStatus;
 
 public class EquationEvaluator {
 
@@ -129,13 +127,14 @@ public class EquationEvaluator {
     );
 
     // Process the results  DISPLAYED in UserInterfaceController.updateLogText
-    String firstId;
-    String secondId;
+    String shortImplies;
 
-
+    if (status.impliesConclusionTrue >0 || status.impliesAssumptionFalse>0) shortImplies= " (implies conclusion true "+
+                  status.impliesAssumptionFalse+"/"+ status.impliesConclusionTrue +") ";
+    else shortImplies= " ()";
     System.out.println("END - evaluateEquation "+ operation.myString()+" "+failures+ " "+status.myString());
       results.add(new OperationResult(failures, status.passCount == totalPermutations,
-        status.passCount + "/" + totalPermutations, operation));
+          status.passCount + "/" + totalPermutations+shortImplies, operation));
 
 
     return;
@@ -215,7 +214,6 @@ public class EquationEvaluator {
           alpha,     // Only used for broadcast semantics never writen to
           inerFreeVariabelMap, true //call test again with expanded variable map
         );
-
 // must pass
         if (localStatus.failCount > 0) {
           status.setFailCount(localStatus.failCount);  //Fail must return
@@ -248,7 +246,7 @@ public class EquationEvaluator {
           if (or2 == true) {
             //System.out.println("Short circuit Implies 2 == true");
             status.failCount = 0; //force success
-            status.impliesCountAss++;
+            status.impliesConclusionTrue++;
             //status.setPassCount(status2.passCount);
             r = true;
             status.passCount++;
@@ -296,6 +294,7 @@ public class EquationEvaluator {
             r = true;
             status.setFailCount(0);
             status.passCount++;
+            status.impliesAssumptionFalse++;
           } else { //Not short Circuit so evaluate other part of Implies
             OperationNode o2 = (OperationNode) ((ImpliesNode) operation).getSecondOperation();
             //System.out.println("implies now evaluate 2  " + o2.myString());
@@ -463,7 +462,7 @@ public class EquationEvaluator {
   static class EquationReturn {
     List<OperationResult> results;
     //List<ImpliesResult> impResults;
-    Map<String, ProcessModel> toRender;  // I can find no where this is being writen to!
+    Map<String, ProcessModel> toRender;  // Compiler reads to this!
   }
 
 
