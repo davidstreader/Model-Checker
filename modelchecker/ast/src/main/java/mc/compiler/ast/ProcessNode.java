@@ -35,6 +35,11 @@ public class ProcessNode extends ASTNode {
   private String identifier;
 
   /**
+   * Used in equations quantified over Variable:Domain
+   */
+  private String domain = "*";
+
+  /**
    * The process data. P1 = (a->STOP);  processdata = (a->STOP)
    */
   private ASTNode process;
@@ -72,9 +77,9 @@ public class ProcessNode extends ASTNode {
    * @param location       the location this process is within the users code.
    *                       {@link ASTNode#location}
    */
-  public ProcessNode(String identifier, ASTNode process,
+  public ProcessNode(String identifier, String domain, ASTNode process,
                      List<LocalProcessNode> localProcesses, Location location) {
-    this(identifier, process, localProcesses, null, location);
+    this(identifier, domain, process, localProcesses, null, location);
   }
 
   /**
@@ -90,7 +95,7 @@ public class ProcessNode extends ASTNode {
    * @param location       the location this process is within the users code.
    *                       {@link ASTNode#location}
    */
-  public ProcessNode(String identifier, ASTNode process, List<LocalProcessNode> localProcesses,
+  public ProcessNode(String identifier, String domain, ASTNode process, List<LocalProcessNode> localProcesses,
                      HidingNode hiding, Location location) {
     super(location,"Process");
     this.type = new HashSet<>();
@@ -98,6 +103,7 @@ public class ProcessNode extends ASTNode {
     this.process = process;
     this.localProcesses = localProcesses;
     this.hiding = hiding;
+    this.domain = domain;
     variables = null;
     interrupt = null;
   }
@@ -117,4 +123,5 @@ public class ProcessNode extends ASTNode {
   public boolean hasVariableSet() {
     return variables != null;
   }
+  public String getDomain() {return domain;}
 }

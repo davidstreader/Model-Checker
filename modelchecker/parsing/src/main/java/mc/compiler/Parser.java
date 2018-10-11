@@ -46,6 +46,7 @@ public class Parser {
   private int index;
   private int variableId;
   private Context context;
+  private String domain;
 
   private ExpressionEvaluator expressionEvaluator;
 
@@ -75,6 +76,7 @@ public class Parser {
     //System.out.println("Parse "+ tokens);
     this.tokens = tokens;
     this.context = context;
+    domain = "*";
 
     while (index < this.tokens.size() && !Thread.currentThread().isInterrupted()) {
       Token token = peekToken();
@@ -466,18 +468,22 @@ public class Parser {
     constantMap.put(identifier.getIdentifier(), set);
   }
 
+  //parsing the processes  "processes {"
   private void parseProcessesDefinition() throws CompilationException, InterruptedException {
     nextToken();// Eat the ProcessDefintionToken
 
     Token token = peekToken();
     if (token instanceof IdentifierToken) {
-      parseSingleProcessDefinition();
+
+        parseSingleProcessDefinition();
+
     } else if (token instanceof OpenBraceToken) {
       parseProcessDefinitionBlock();
     } else {
       throw constructException("expecting to parse a process definition or a process definition block but received \"" + peekToken().toString() + "\"");
     }
   }
+
 
   /**
    * parsing a single process def " A = a->STOP"
@@ -496,9 +502,7 @@ public class Parser {
     processIdentifiers.add(identifier.getIdentifier());
 
     // check if this process has been marked as not to be rendered *Depericated*.
-    if (peekToken() instanceof MultiplicationToken) {
-      nextToken();
-    }
+    //if (peekToken() instanceof MultiplicationToken) { nextToken(); }
 
     // ensure that the next token is the '=' token
     if (!(peekToken() instanceof AssignToken)) {
@@ -523,7 +527,8 @@ public class Parser {
 
     //Dont set ProcessNode type just yet as that will be done when,
     //or if we encounter a display node that sets it.
-    ProcessNode processNode = new ProcessNode(identifier.getIdentifier(), process, localProcesses,
+    //domain defaults to "*" if not defined explicitly
+    ProcessNode processNode = new ProcessNode(identifier.getIdentifier(), domain, process, localProcesses,
       constructLocation(start));
     // "P = term"  build petrinet  and "P =A term" build  automata
     if (at.getPType().equals(ProcessType.AUTOMATA))  // lexer sets type of AssignToken
@@ -573,15 +578,37 @@ public class Parser {
     }
 
     while (!(peekToken() instanceof CloseBraceToken)) {
-      parseSingleProcessDefinition();
+      Token token = peekToken();
+      Token token2 = peek2Token();
+      if (token instanceof IdentifierToken && token2 instanceof ColonToken) {
+        domain = parseDomain().getIdentifier();
+        parseProcessDefinitionBlock();
+      } else {
+        parseSingleProcessDefinition();
+      }
     }
 
     // ensure that the next token is the '}' token
     if (!(nextToken() instanceof CloseBraceToken)) {
       Token error = tokens.get(index - 1);
       throw constructException("expecting to parse \"}\" but received \"" + error.toString() + "\"", error.getLocation());
+    } else {
+      domain = "*"; // domain defaults to "*" where not defined.
     }
   }
+
+  /**
+   * parsing domain name, Domain:
+   */
+    private IdentifierNode parseDomain() throws CompilationException, InterruptedException {
+      IdentifierNode identifier = parseIdentifier();
+      if (!(nextToken() instanceof  ColonToken)) {
+        Token error = tokens.get(index - 1);
+        throw constructException("expecting to parse \":\" but received \"" + error.toString() + "\"", error.getLocation());
+      }
+      return identifier;
+    }
+
 
   private LocalProcessNode parseLocalProcessDefinition(Set<String> localIdentifiers) throws CompilationException, InterruptedException {
     int start = index;
@@ -1948,7 +1975,10 @@ public class Parser {
     checkNotEOF();
     return tokens.get(index);
   }
-
+  private Token peek2Token() throws CompilationException {
+    check2NotEOF();
+    return tokens.get(index+1);
+  }
   /*
   Parses process event or funcion
    */
@@ -2030,6 +2060,14 @@ public class Parser {
 
   private void checkNotEOF() throws CompilationException {
     if (index >= tokens.size()) {
+      Location last = tokens.get(tokens.size() - 1).getLocation();
+      Location eof = new Location(last.getLineStart(), last.getColStart() + 1, last.getLineEnd(), last.getColEnd() + 2, last.getStartIndex() + 1, last.getEndIndex() + 2);
+      throw constructException("end of file reached", eof);
+
+    }
+  }
+  private void check2NotEOF() throws CompilationException {
+    if (index+1 >= tokens.size()) {
       Location last = tokens.get(tokens.size() - 1).getLocation();
       Location eof = new Location(last.getLineStart(), last.getColStart() + 1, last.getLineEnd(), last.getColEnd() + 2, last.getStartIndex() + 1, last.getEndIndex() + 2);
       throw constructException("end of file reached", eof);

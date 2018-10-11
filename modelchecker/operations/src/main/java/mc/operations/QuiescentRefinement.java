@@ -78,7 +78,7 @@ public class QuiescentRefinement implements IOperationInfixFunction {
     pms.add(a2);
     //return  teo.evaluate(alpha,flags,context,pms);
     TraceWork tw = new TraceWork();  // THIS builds a DFA and then trace subset
-    return tw.evaluate(flags,pms, TraceType.QuiescentTrace);
+    return tw.evaluate(flags,context, pms, TraceType.QuiescentTrace);
   }
 
   private void setQuiescentAndAddListeningLoops(Set<String> alphbet, Automaton a,boolean cong) throws CompilationException {

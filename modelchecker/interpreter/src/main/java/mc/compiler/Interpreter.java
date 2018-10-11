@@ -69,11 +69,14 @@ public class Interpreter {
 // build all  processes including global sub processes
 //    .getType tells us which to build ** .identifier its name  ** .process its definition
     List<ProcessNode> processes = ast.getProcesses();
+    //Collections.sort(processes,(x,y)->{return x.getDomain().compareTo(y.getDomain());});
+    Collections.sort(processes,Comparator.comparing(ProcessNode::getDomain));
     //System.out.println("AST processes "+ processes.stream().map(x->x.getIdentifier()).
     //  reduce("{",(x,y)->x+" "+y)+"}");
     for (ProcessNode process : processes) { //BUILD ALL PROCESSES
 
       System.out.println("++++++Interpreter Building " + process.getIdentifier() + " ... "+ process.getType().toString());
+      System.out.println("Process "+process.myString());
       ProcessModel model = null;
       model = new MultiProcessModel(process.getIdentifier());
       model.setLocation(process.getLocation());  //location on screen

@@ -129,7 +129,7 @@ public class EquationEvaluator {
     // Process the results  DISPLAYED in UserInterfaceController.updateLogText
     String shortImplies;
 
-    if (status.impliesConclusionTrue >0 || status.impliesAssumptionFalse>0) shortImplies= " (implies conclusion true "+
+    if (status.impliesConclusionTrue >0 || status.impliesAssumptionFalse>0) shortImplies= " (implies short circuit ass/conc "+
                   status.impliesAssumptionFalse+"/"+ status.impliesConclusionTrue +") ";
     else shortImplies= " ()";
     System.out.println("END - evaluateEquation "+ operation.myString()+" "+failures+ " "+status.myString());

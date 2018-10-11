@@ -702,7 +702,7 @@ public class AbstractionFunction implements IProcessFunction {
   }
 /*
    Galois connections introduces events with suffix  .t! and .t?  that need to be abstracted away
-   prior to computing quiescent tract refinement.
+   prior to computing quiescent trace refinement.
    This is called from TraceWorks
       TraceWorks has parameter stating which trace refinement to compute
  */

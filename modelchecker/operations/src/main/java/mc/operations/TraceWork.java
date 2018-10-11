@@ -1,10 +1,12 @@
 package mc.operations;
 
+import com.microsoft.z3.Context;
 import lombok.Getter;
 import mc.Constant;
 import mc.TraceType;
 import mc.exceptions.CompilationException;
 //import mc.operations.functions.AbstractionFunction;
+import mc.operations.functions.AbstractionFunction;
 import mc.operations.functions.Nfa2dfaWorks;
 import mc.processmodels.ProcessModel;
 import mc.processmodels.automata.Automaton;
@@ -41,7 +43,7 @@ public class TraceWork {
 
      First add listening loops and Quiescent events then follow the trace subset algorithm
    */
-  public boolean evaluate(Set<String> flags, Collection<ProcessModel> processModels, TraceType tt) throws CompilationException {
+  public boolean evaluate(Set<String> flags, Context context, Collection<ProcessModel> processModels, TraceType tt) throws CompilationException {
 
     boolean cong = flags.contains(Constant.CONGURENT);
     boolean complete = tt.equals(TraceType.CompleteTrace) ||tt.equals(TraceType.QuiescentTrace) ;
@@ -49,7 +51,14 @@ public class TraceWork {
       Nfa2dfaWorks nfa2dfaworks = new Nfa2dfaWorks();
       ArrayList<ProcessModel> dfas = new ArrayList<>();
       for (ProcessModel pm : processModels) {
-        Automaton a = (Automaton) pm;
+        Automaton a;
+        if (flags.contains(Constant.FAIR)||flags.contains(Constant.UNFAIR)) {
+          AbstractionFunction absFun = new AbstractionFunction();
+          a = absFun.compose(pm.getId(),flags,context,(Automaton) pm);
+        } else {
+          a = (Automaton) pm;
+        }
+
         try {
           Automaton newdfa; //BUILD DFA
           System.out.println("TraceWorks "+a.myString());

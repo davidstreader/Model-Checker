@@ -48,7 +48,7 @@ public class TraceRefinement implements IOperationInfixFunction {
     ProcessModel[] pms = processModels.toArray(new ProcessModel[processModels.size()]);
     //System.out.println("TraceRefinement "+ alpha +" "+flags+ " "+ pms[0].getId()+ " "+pms[1].getId());
     TraceWork tw = new TraceWork();
-    return tw.evaluate(flags,processModels, TraceType.CompleteTrace);
+    return tw.evaluate(flags,context, processModels, TraceType.CompleteTrace);
   }
 }
 
