@@ -60,8 +60,8 @@ public class SlidingInfixFunction implements IProcessInfixFunction {
   @Override
   public Automaton compose(String id, Automaton automaton1, Automaton automaton2) throws CompilationException {
 
-    IdentifierNode aut1 = new IdentifierNode("P", null);
-    IdentifierNode aut2 = new IdentifierNode("Q", null);
+    IdentifierNode aut1 = new IdentifierNode("P", "*",null);
+    IdentifierNode aut2 = new IdentifierNode("Q", "*",null);
     TerminalNode stop = new TerminalNode("STOP", null);
 
     CompositeNode nondeterministicChoice = new CompositeNode(

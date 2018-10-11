@@ -119,7 +119,7 @@ public class Parser {
     if (token instanceof IdentifierToken) {
       //System.out.println("parse Identifyer "+((IdentifierToken) token).getIdentifier());
       IdentifierToken identifier = (IdentifierToken) token;
-      return new IdentifierNode(identifier.getIdentifier(), identifier.getLocation());
+      return new IdentifierNode(identifier.getIdentifier(), domain, identifier.getLocation());
     }
 
     throw constructException("expecting to parse an identifier but received \"" + token.toString() + "\"", token.getLocation());

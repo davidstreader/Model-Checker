@@ -6,6 +6,7 @@ import com.microsoft.z3.Context;
 
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
+import java.util.stream.Collectors;
 
 import mc.Constant;
 import mc.compiler.ast.*;
@@ -128,6 +129,7 @@ public class OperationEvaluator {
 //bound variable will have been removed.
         List<String> missing = new ArrayList<>(firstIds);
         missing.addAll(secondIds);  // all process ids
+        //missing.stream().map(x->x+":*").collect(Collectors.toSet());  //adding Domain
         missing.removeAll(processMap.keySet());
         if (!missing.isEmpty()) {
             throw new CompilationException(OperationEvaluator.class, "Identifier " + missing.get(0) + " not found!", operation.getLocation());
@@ -279,6 +281,7 @@ public class OperationEvaluator {
 
     /**
      * A recursive search for finding identifiers in an ast
+     * Must return "Var:Dom"
      *
      * @param process the ast node that has identifiers in it that are to be collected
      * @param ids     the returned collection
@@ -287,7 +290,7 @@ public class OperationEvaluator {
        //System.out.println("collectIds in  "+process.wholeString()+"\n **");
         //System.out.println("collectId "+process.getClass().getSimpleName());
         if (process instanceof IdentifierNode) {
-            String id = ((IdentifierNode) process).getIdentifier();
+            String id = ((IdentifierNode) process).getVarDom();
             if (!ids.contains(id)) ids.add(id);
             //System.out.println("IdentifierNode "+ id);
         } else if (process instanceof ForAllNode){

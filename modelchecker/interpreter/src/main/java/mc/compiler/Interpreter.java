@@ -96,7 +96,7 @@ public class Interpreter {
       }
       //messageQueue.add(new LogAST("Built:", process));
       sb.append(process.getIdentifier()+", ");
-      processMap.put(process.getIdentifier(), model); //SAVE MultiProcess in processMap
+      processMap.put(process.getIdentifier()+":"+process.getDomain(), model); //SAVE MultiProcess in processMap
     }
     System.out.println("*** Interp " + this.alpha);
     //System.out.println("End of inteterpret Y ");

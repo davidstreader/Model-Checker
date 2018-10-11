@@ -283,7 +283,8 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     //System.out.println("iPro " + PetrinetInterpreter.indent + className);
 //  get the petri net from the processMap and push onto the stack
     if (astNode instanceof IdentifierNode) {
-      String reference = ((IdentifierNode) astNode).getIdentifier();
+      String reference = ((IdentifierNode) astNode).getIdentifier() +":"+
+                         ((IdentifierNode) astNode).getDomain() ;
       System.out.println("*** interpretProcess IdentifierNode " + reference);
       if (processMap.get(reference).getProcessType().equals(ProcessType.MULTI_PROCESS)) {
         //System.out.println("interpretProcess GETS *********** MULTI_PROCESS -> PN");
@@ -641,7 +642,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     //System.out.println("interpet Start "+ identifier.getIdentifier());
     //System.out.println("IDENTIFIER  for "+ identifier.getFromReferences() +" get "+ identifier.getIdentifier());
     //  currentPlace = petri.getPlaces().get(currentPlace.getId());//only match on "id"
-    ProcessModel model = processMap.get(identifier.getIdentifier());
+    ProcessModel model = processMap.get(identifier.getIdentifier()+":"+identifier.getDomain());
     Petrinet copy = null;
     if (model instanceof MultiProcessModel) {
       if (((MultiProcessModel) model).hasProcess(ProcessType.PETRINET)) {
@@ -669,7 +670,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
   private Automaton interpretAutIdentifier(IdentifierNode identifier, String id)
     throws CompilationException {
     //System.out.println("AutIdentifier "+ identifier.getIdentifier()+ " id " +id);
-    ProcessModel model = processMap.get(identifier.getIdentifier());
+    ProcessModel model = processMap.get(identifier.getIdentifier()+":"+identifier.getDomain());
     //System.out.println("model "+model.toString());
     Automaton copy = null;
     if (model instanceof MultiProcessModel) {
@@ -905,12 +906,14 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
         //System.out.println(petri.myString()); */
         //First get the net to replace the events
         Petrinet newPet;
-        if (processMap.get(r.getNewProcess().getIdentifier()).getProcessType().
+        IdentifierNode ridNode = r.getNewProcess();
+        String rid = ridNode.getIdentifier()+":"+ridNode.getDomain();
+        if (processMap.get(rid).getProcessType().
           equals(ProcessType.MULTI_PROCESS)) {
-          newPet = (processMap.get(r.getNewProcess().getIdentifier()).getProcessType().
-            convertTo(ProcessType.PETRINET, processMap.get(r.getNewProcess().getIdentifier()))); //What a way to extact  a net
+          newPet = (processMap.get(rid).getProcessType().
+            convertTo(ProcessType.PETRINET, processMap.get(rid))); //What a way to extact  a net
         } else {
-          newPet = ((Petrinet) processMap.get(r.getNewProcess().getIdentifier()));
+          newPet = ((Petrinet) processMap.get(rid));
         }
         //Second  do the refinement
         RefineFun rf = new RefineFun();

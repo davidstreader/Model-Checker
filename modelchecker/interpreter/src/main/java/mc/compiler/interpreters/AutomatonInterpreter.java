@@ -145,7 +145,8 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
    //System.out.println("interpretProcess in AutInt astNode "+astNode.toString());
     if (astNode instanceof IdentifierNode) {
      System.out.println("astNode IdentifierNode");
-      String reference = ((IdentifierNode) astNode).getIdentifier();
+      String reference = ((IdentifierNode) astNode).getIdentifier()+":"+
+                         ((IdentifierNode) astNode).getDomain();
           ProcessModel model = processMap.get(reference);
           processStack.push(cloner.deepClone(model));
 
@@ -385,7 +386,8 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
 
   private void interpretIdentifier(IdentifierNode identifierNode, Automaton automaton, AutomatonNode currentNode) throws CompilationException, InterruptedException {
     // check that the reference is to an automaton
-    ProcessModel model = processMap.get(identifierNode.getIdentifier());
+    ProcessModel model = processMap.get(identifierNode.getIdentifier()+":"+
+                                        identifierNode.getDomain());
     Automaton next = model.getProcessType().convertTo(AUTOMATA, model);
 
     addAutomaton(currentNode, automaton, next);

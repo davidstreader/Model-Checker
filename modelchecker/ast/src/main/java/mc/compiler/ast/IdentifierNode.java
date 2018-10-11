@@ -25,16 +25,23 @@ public class IdentifierNode extends ASTNode {
   private String identifier;
 
   /**
+   * All identifers must be globally unique and domain specific
+   */
+  private String domain = "*";
+
+  /**
    * Initialises a new instance of IdentifierNode.
    *
    * @param identifier the identifier of the process or constant. {@link #identifier}
    * @param location   the location within the users code, where this node is {@link ASTNode#location}
    */
-  public IdentifierNode(String identifier, Location location) {
+  public IdentifierNode(String identifier, String domain, Location location) {
     super(location,"Identifier");
     this.identifier = identifier;
+    this.domain = domain;
   }
   public String myString(){
     return identifier;
   }
+  public String getVarDom(){ return identifier+":"+domain;}
 }

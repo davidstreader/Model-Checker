@@ -142,7 +142,7 @@ public class Compiler {
         processMap, ast.getEquations(),
         code, z3Context, messageQueue, alpha);
 
-    processMap.putAll(eqResults.getToRender());
+    processMap.putAll(eqResults.getToRender()); // think this is redundent!
 
    // printLocations(processMap.values());
 
