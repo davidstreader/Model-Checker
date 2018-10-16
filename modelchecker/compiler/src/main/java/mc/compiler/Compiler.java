@@ -118,7 +118,7 @@ public class Compiler {
     }
     //store alphabet
     Set<String> alpha = ast.getAlphabet().stream().map(x->x.getAction()).collect(Collectors.toSet());
-    System.out.println("Compiler alph = "+alpha);
+    //System.out.println("Compiler alph = "+alpha);
 
     //builds process and processMap
     /*System.out.println("**COMPILER** Entering interpreter with ast for processes -> Types "+
@@ -127,22 +127,20 @@ public class Compiler {
     Map<String, ProcessModel> processMap = interpreter.interpret(ast,
         messageQueue, z3Context,alpha);
 
-    //System.out.println("     **COMPILER** before operation evaluation "+processMap.size());
+    //System.out.println("     **COMPILER** before operation evaluation "+processMap.keySet());
 
     List<OperationResult> opResults = evaluator.evaluateOperations(
       ast.getOperations(), processMap,
         interpreter, code, z3Context, messageQueue, alpha);
-   // List<ImpliesResult> impResults = evaluator.getImpRes();
    //System.out.println("     **COMPILER** before equation evaluation "+processMap.size()+ " op impRes "+impResults.size());
 
-    // system currently has memory hence EE can give different results each time
     // still has memory problem with many permutations
     this.eqEvaluator = new EquationEvaluator(); // need to reset equationEvaluator else !!!!
     EquationEvaluator.EquationReturn eqResults = eqEvaluator.evaluateEquations(
         processMap, ast.getEquations(),
         code, z3Context, messageQueue, alpha);
 
-    processMap.putAll(eqResults.getToRender()); // think this is redundent!
+    //processMap.putAll(eqResults.getToRender()); // think this is redundent!
 
    // printLocations(processMap.values());
 

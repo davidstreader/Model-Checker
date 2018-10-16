@@ -115,10 +115,21 @@ public class Parser {
    * @return -- an @code{IdentifierNode}
    */
   private IdentifierNode parseIdentifier() throws CompilationException {
-    Token token = nextToken();
+    Token token = nextToken(); IdentifierToken identifier;
     if (token instanceof IdentifierToken) {
+      identifier = (IdentifierToken) token;
+      if (peekToken() instanceof ColonToken && !(peek2Token() instanceof OpenBraceToken)){
+        nextToken();
+        if (peekToken() instanceof  IdentifierToken){
+          IdentifierToken dom = (IdentifierToken) nextToken();
+          //String varDom = identifier.getIdentifier()+":"+dom.getIdentifier();
+          return new IdentifierNode(identifier.getIdentifier(), dom.getIdentifier(), identifier.getLocation());
+        } else {
+          throw constructException("expecting to parse an identifier but received \"" + token.toString() + ":"+nextToken().toString()+ "\"", token.getLocation());
+        }
+      }
       //System.out.println("parse Identifyer "+((IdentifierToken) token).getIdentifier());
-      IdentifierToken identifier = (IdentifierToken) token;
+
       return new IdentifierNode(identifier.getIdentifier(), domain, identifier.getLocation());
     }
 
@@ -1622,7 +1633,8 @@ public class Parser {
         Token error = tokens.get(index);
         throw constructException("expecting to parse a word starting with an upper case letter but received \"" + error.toString() + "\"", error.getLocation());
       } else {
-        vars.add(nextToken().toString());
+        vars.add(parseIdentifier().getVarDom());
+       // vars.add(nextToken().toString());
         if (!(peekToken() instanceof CommaToken)) break;
         else nextToken();
       }
@@ -1645,7 +1657,7 @@ public class Parser {
       Token error = tokens.get(index - 1);
       throw constructException("expecting to parse \")\" but received \"" + error.toString() + "\"", error.getLocation());
     }
-    //System.out.println("Parsed "+forAllNode.myString());
+    System.out.println("Parsed "+forAllNode.myString());
     return forAllNode;
   }
 

@@ -122,7 +122,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     reset();
     //called by Interpreter and  Returns a ProcessModel that the Interpreter adds to the processMap
     this.alpha = alpha;
-    System.out.println("Petri interpret "+ processNode.getIdentifier()+" alpha "+this.alpha);
+    //System.out.println("Petri interpret "+ processNode.getIdentifier()+" alpha "+this.alpha);
 
     this.context = context;
     variableList = new HashSet<>();
@@ -135,7 +135,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     if (processNode.getProcess() instanceof ConversionNode) {
       if (((ConversionNode) processNode.getProcess()).to.equals("petrinet")) {
         //  ownersRule(P);
-        System.out.println("\n**Petriinterpret**Calling Owners " + "\n");
+        //System.out.println("\n**Petriinterpret**Calling Owners " + "\n");
         ProcessModel model = new MultiProcessModel(processNode.getIdentifier());
         model.setLocation(processNode.getLocation());
 //1. build petrinet P push to stack
@@ -148,7 +148,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
         HashMap<AutomatonNode, Multiset<PetriNetPlace>> nodeToMarking =
           new HashMap<>();
         HashMap<Multiset<PetriNetPlace>, AutomatonNode> markingToNode = new HashMap<>();
-        System.out.println("interpret Token1 ");
+        //System.out.println("interpret Token1 ");
         modelAut = TokenRule.tokenRule(
           (Petrinet) ((MultiProcessModel) model)
             .getProcess(ProcessType.PETRINET), markingToNode, nodeToMarking);
@@ -159,7 +159,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
         modelPetri = OwnersRule.ownersRule((Automaton) modelAut);
         ((MultiProcessModel) model).addProcess(modelPetri);
 //4. finally build new Automata vis Token Rule
-        System.out.println("interpretPetri Token 1" + ((Petrinet) modelPetri).getId());
+        //System.out.println("interpretPetri Token 1" + ((Petrinet) modelPetri).getId());
         modelAut = TokenRule.tokenRule(
           (Petrinet) ((MultiProcessModel) model)
             .getProcess(ProcessType.PETRINET), markingToNode, nodeToMarking);
@@ -171,7 +171,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
 
         return model;
       } else if (((ConversionNode) processNode.getProcess()).to.equals("automata")) {
-        System.out.println("\n**Petriinterpret**Call Token " +processNode.toString()+"\n");
+        //System.out.println("\n**Petriinterpret**Call Token " +processNode.toString()+"\n");
         ProcessModel model = new MultiProcessModel(processNode.getIdentifier());
         model.setLocation(processNode.getLocation());
 
@@ -186,7 +186,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
       /*
         Token rule works here but can not be called from petrinetInterpreter
        */
-        System.out.println("2 petriIntepret");
+        //System.out.println("2 petriIntepret");
         modelAut = TokenRule.tokenRule(
           (Petrinet) ((MultiProcessModel) model)
             .getProcess(ProcessType.PETRINET), markingToNode, nodeToMarking);
@@ -283,9 +283,12 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     //System.out.println("iPro " + PetrinetInterpreter.indent + className);
 //  get the petri net from the processMap and push onto the stack
     if (astNode instanceof IdentifierNode) {
-      String reference = ((IdentifierNode) astNode).getIdentifier() +":"+
-                         ((IdentifierNode) astNode).getDomain() ;
-      System.out.println("*** interpretProcess IdentifierNode " + reference);
+      String reference = (((IdentifierNode) astNode).getIdentifier());
+      if (!reference.contains(":")) {
+        reference = ((IdentifierNode) astNode).getIdentifier() + ":" +
+          ((IdentifierNode) astNode).getDomain();
+      }
+      //System.out.println("*** interpretProcess IdentifierNode " + reference);
       if (processMap.get(reference).getProcessType().equals(ProcessType.MULTI_PROCESS)) {
         //System.out.println("interpretProcess GETS *********** MULTI_PROCESS -> PN");
         processStack.push(processMap.get(reference).getProcessType().
@@ -293,9 +296,9 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
       } else {
         processStack.push((Petrinet) processMap.get(reference));
       }
-  System.out.println("got Net "+processStack.peek().getId()+" from Map");
+  //System.out.println("got Net "+processStack.peek().getId()+" from Map");
     } else if (astNode instanceof ProcessRootNode) {  //Start of Net building
-      System.out.println("*** interpretProcess ProcessRootNode");
+      //System.out.println("*** interpretProcess ProcessRootNode");
       ProcessRootNode root = (ProcessRootNode) astNode;
       interpretProcess(root.getProcess(), identifier); //RECURSIVE CALL the process is an ASTNode
       // build new petri net and push on the stack
@@ -307,11 +310,11 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
       if (root.hasHiding()) {
         processHiding(petrinet, root.getHiding());
       }
-      System.out.println("  *** ProcessRootNode petri "+petrinet.getId());
+      //System.out.println("  *** ProcessRootNode petri "+petrinet.getId());
       processStack.push(petrinet);
 
     } else {
-      System.out.println("*** interpretProcess ELSE "+ identifier);
+      //System.out.println("*** interpretProcess ELSE "+ identifier);
       Petrinet petrinet = new Petrinet(identifier, true);
       PetriNetPlace currentPlace = petrinet.getPlace(petrinet.getRoots().get(0).iterator().next());
       //PetriNetPlace currentPlace = new ArrayList<>(petrinet.getRoot()).get(0);
@@ -341,7 +344,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
       }
       //System.out.println("\n*** "+petrinet.myString());
       petrinet = tree2net(petrinet);
-      System.out.println("  ***ELSE ***tree2net petri "+petrinet.getId());
+      //System.out.println("  ***ELSE ***tree2net petri "+petrinet.getId());
       processStack.push(petrinet);  // newly built petri net pushed onto stack
     }
     if (astNode.getReferences() == null) {
@@ -731,7 +734,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
    */
   private Petrinet interpretFunction(FunctionNode func, Petrinet petri, Set<String> alpha)
     throws CompilationException, InterruptedException {
-    System.out.println("PetriInterp function "+func.getFunction()+ alpha+ " " + petri.getId());
+    //System.out.println("PetriInterp function "+func.getFunction()+ alpha+ " " + petri.getId());
 
     List<Petrinet> models = new ArrayList<>();
     for (ASTNode p : func.getProcesses()) {
@@ -756,7 +759,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     }
     //   //System.out.println("processed FUNCTION "+processed.myString());
     //addPetrinet( processed, petri);
-    System.out.println("interpret function END "+func.getFunction()+ alpha+ " " + processed.getId());
+    //System.out.println("interpret function END "+func.getFunction()+ alpha+ " " + processed.getId());
     return processed;
   }
 
@@ -957,11 +960,11 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
                                  Context context,
                                  Set<String> alpha,
                                  ASTNode ast) throws CompilationException, InterruptedException {
-    System.out.println("getAutomaton "+ ast.getName());
+    //System.out.println("getAutomaton "+ ast.getName());
     Automaton a;
     if (ast instanceof FunctionNode) {
       FunctionNode func = (FunctionNode) ast;
-      System.out.println("getA Fun "+func.myString());
+      //System.out.println("getA Fun "+func.myString());
       Automaton ain =  getAutomaton (processMap,interpreter,context,alpha, ((FunctionNode) ast).getProcesses().get(0)) ;
 
       Set<String> alphaFlags = new TreeSet<>();
@@ -969,19 +972,19 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
       alphaFlags.addAll(func.getFlags());
       a = instantiateClass(functions.get(func.getFunction()))
         .compose(ain.getId() + ".fn", alphaFlags, context, ain);
-      System.out.println("getA Fun RETURNS \n"+a.myString());
+      //System.out.println("getA Fun RETURNS \n"+a.myString());
     } else if (ast instanceof IdentifierNode) {
-      System.out.println("getA Ident STARTS "+((IdentifierNode)ast).getIdentifier());
+      //System.out.println("getA Ident STARTS "+((IdentifierNode)ast).getIdentifier());
       a = (Automaton) interpreter.interpret(Constant.AUTOMATA,
         ast, ast.myString(), processMap, context, alpha);
       // a = interpretAutIdentifier(((IdentifierNode) ast), "ping");
       //System.out.println("getA Ident RETURNS \n"+a.myString());
     } else {
-      System.out.println("getA  else STARTS");
+      //System.out.println("getA  else STARTS");
       Petrinet petri = (Petrinet) interpreter.interpret(Constant.PETRINET,
         ast, "temp", processMap, context, alpha);
       a = TokenRule.tokenRule(petri);
-      System.out.println("getA Else RETURNS \n"+a.myString());
+      //System.out.println("getA Else RETURNS \n"+a.myString());
     }
     return a;
   }

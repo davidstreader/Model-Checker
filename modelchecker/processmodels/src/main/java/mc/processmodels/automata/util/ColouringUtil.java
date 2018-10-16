@@ -61,7 +61,7 @@ public class ColouringUtil {
         /*
          */
         if (col2pi.keySet().contains(nd.getColour())) {
-          System.out.println("col2pi contains key "+nd.getColour());
+          //System.out.println("col2pi contains key "+nd.getColour());
           if (!col2pi.get(nd.getColour()).equals(nodeColPi)){
             boolean found = false; Integer foundCol = 0;
             for(Integer revI: col2pi.keySet()){
@@ -70,7 +70,7 @@ public class ColouringUtil {
             }
             if (found) {
               nextCol.put(nd, foundCol);
-              System.out.println(nodeColPi.myString()+ " Is in revcol");
+              //System.out.println(nodeColPi.myString()+ " Is in revcol");
             } else {
               Integer nc = getNextColourId();
               col2pi.put(nc, nodeColPi);

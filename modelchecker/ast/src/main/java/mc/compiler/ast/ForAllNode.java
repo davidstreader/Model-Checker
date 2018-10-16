@@ -49,8 +49,7 @@ public class ForAllNode extends OperationNode {
     op = Operation;
     this.vars = Vars;
     //this.setFlags(Collections.singletonList("*"));
-    System.out.println("forAll Location "+vars+ " "+ op.getOperation()+" "+
-                 op.getFlags()+" ");
+    //System.out.println("forAll Location "+vars+ " "+ op.getOperation()+" "+op.getFlags()+" ");
   }
   public String myString(){
     StringBuilder sb = new StringBuilder();

@@ -59,8 +59,9 @@ public class CompositeNode extends ASTNode {
     this.firstProcess = firstProcess;
     this.secondProcess = secondProcess;
     this.flags = flags;
-    System.out.println("CompositeNode "+operation+flags);
+    //System.out.println("CompositeNode "+operation+flags);
   }
+  @Override
   public String myString(){
     StringBuilder sb = new StringBuilder();
     sb.append("("+firstProcess.myString());
@@ -68,5 +69,10 @@ public class CompositeNode extends ASTNode {
     if (flags.size()>0) sb.append(flags);
     sb.append(secondProcess.myString()+")");
     return sb.toString();
+  }
+
+  @Override
+  public CompositeNode instantiate(String from , String to) {
+    return new CompositeNode(operation,firstProcess.instantiate(from,to),secondProcess.instantiate(from,to), getLocation(),flags);
   }
 }

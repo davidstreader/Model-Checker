@@ -35,7 +35,7 @@ public class Nfa2dfaWorks {
     for (AutomatonNode ndn :nfa.getNodes()){ // NOT for Galois expaned automata
       if (ndn.isSTOP()) {
         nfa.addEdge(Constant.STOP, ndn, nfa.deadNode(), null, true,false);
-        System.out.println("adding STOP to nfa "+ndn.myString());
+        //System.out.println("adding STOP to nfa "+ndn.myString());
       }
       if (ndn.isStartNode()) {
         nfa.addEdge(Constant.Start, ndn, nfa.deadNode(), null, true,false);
@@ -83,7 +83,7 @@ public class Nfa2dfaWorks {
         //if one root nfa STOPS so is the dfa root
         if (nfa.getRoot().stream().anyMatch(e -> e.isSTOP()) ) {
           dfa.getNode(idNode).setStopNode(true);
-          System.out.println("adding STOP to dfa "+dfa.getNode(idNode).myString());
+          //System.out.println("adding STOP to dfa "+dfa.getNode(idNode).myString());
         }
         //if one root nfa is ERROR so is the dfa root
         if (nfa.getRoot().stream().anyMatch(e ->(e.isERROR() || e.getOutgoingEdges().size()==0)) ) {

@@ -48,4 +48,8 @@ public class SequenceNode extends ASTNode {
     sb.append(to.myString()+")");
     return sb.toString();
   }
+  @Override
+  public SequenceNode instantiate(String fromI , String toI) {
+    return new SequenceNode(from,to.instantiate(fromI,toI), getLocation());
+  }
 }

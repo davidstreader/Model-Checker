@@ -82,10 +82,10 @@ import mc.processmodels.automata.util.ColouringUtil;
                     } else {
                         auts[j] = (Automaton)pm;
                     }
-                    System.out.println("  Bisim "+j+"  "+auts[j].myString());
+                    //System.out.println("  Bisim "+j+"  "+auts[j].myString());
                     if (j==0) firstId = auts[j].getId();
                     else if (firstId.equals(pm.getId())) {
-                        System.out.println("automata bisim same ids "+firstId);
+                        //System.out.println("automata bisim same ids "+firstId);
                         return true;
                     }
                     edges.addAll(auts[j].getEdges());
@@ -114,13 +114,13 @@ import mc.processmodels.automata.util.ColouringUtil;
                     if (i == 0) {
                         for (AutomatonNode n : root) {
                             first_colors.add(n.getColour());
-                            System.out.println(i+" "+n.getId()+" -> "+n.getColour());
+                            //System.out.println(i+" "+n.getId()+" -> "+n.getColour());
                         }
                         i++;
                     } else {
                         for (AutomatonNode n : root) {
                             root_colors.add(n.getColour());
-                            System.out.println(i+" "+n.getId()+" -> "+n.getColour());
+                            //System.out.println(i+" "+n.getId()+" -> "+n.getColour());
                         }
                         boolean result = false;
                         if (root_colors.equals(first_colors)) {   //comparison between this current automaton and the first

@@ -4,134 +4,170 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Slider;
 import javafx.stage.Window;
 import lombok.Setter;
 import mc.Constant;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.ResourceBundle;
 
 /**
  * Created by smithjord3 on 30/01/18.
  */
-public class SettingsController implements Initializable{
-    private Integer maxNodes = 40;
-    private Integer delay = 2;
-    private Integer repulse = 25;
-    private Integer spring = 50;
-    private Integer step = 150;
-    private boolean showOwners = false;
-    private boolean showColor = false;
-    private boolean Congruance = false;
-    @Setter
-    private Window window;
+public class SettingsController implements Initializable {
+  private Integer maxNodes = 40;
+  private Integer delay = 2;
+  private Integer repulse = 25;
+  private Integer spring = 50;
+  private Integer step = 150;
+  private boolean showOwners = false;
+  private boolean showColor = false;
+  private boolean Congruance = false;
+  Collection<String> disp = new ArrayList<>();
 
-    @FXML
-    private Slider maxNodesSlider;
+  @Setter
+  private Window window;
 
-    @FXML
-    private Slider delaySlider;
+  @FXML
+  private Slider maxNodesSlider;
 
-    @FXML
-    private Slider repulseSlider;
-    @FXML
-    private Slider springSlider;
+  @FXML
+  private Slider delaySlider;
 
-    @FXML
-    private Slider stepSlider;
+  @FXML
+  private Slider repulseSlider;
+  @FXML
+  private Slider springSlider;
 
-
-    @FXML private CheckBox Own = new CheckBox();
-    @FXML private CheckBox Col = new CheckBox();
-    @FXML private CheckBox Cong = new CheckBox();
+  @FXML
+  private Slider stepSlider;
 
 
+  @FXML
+  private CheckBox Own = new CheckBox();
+  @FXML
+  private CheckBox Col = new CheckBox();
+  @FXML
+  private CheckBox Cong = new CheckBox();
 
-    private void handleButtonAction(ActionEvent e) {
+  @FXML
+  private ComboBox<String> displayList = new ComboBox<>();
 
-        showOwners = Own.isSelected();
-        showColor = Col.isSelected();
-        Congruance = Cong.isSelected();
-        //System.out.println("Owners = "+showOwners+"  Col = "+isShowColor());
-    }
+  private void handleButtonAction(ActionEvent e) {
 
-    @FXML
-    private void handleSettingsConfirmation(ActionEvent e) {
-        delay = (int)delaySlider.getValue();
-        maxNodes = (int)maxNodesSlider.getValue();
+    showOwners = Own.isSelected();
+    showColor = Col.isSelected();
+    Congruance = Cong.isSelected();
+    //System.out.println("Owners = "+showOwners+"  Col = "+isShowColor());
+  }
 
-        window.hide();
-    }
+  @FXML
+  private void handleSettingsConfirmation(ActionEvent e) {
+    delay = (int) delaySlider.getValue();
+    maxNodes = (int) maxNodesSlider.getValue();
 
-    @FXML
-    private void handleResetSettings(ActionEvent e) {
-        maxNodesSlider.setValue(40);
-        stepSlider.setValue(150);
-        repulseSlider.setValue(25);
-        springSlider.setValue(50);
-        delaySlider.setValue(2);
+    window.hide();
+  }
 
-    }
+  @FXML
+  private void handleResetSettings(ActionEvent e) {
+    maxNodesSlider.setValue(40);
+    stepSlider.setValue(150);
+    repulseSlider.setValue(25);
+    springSlider.setValue(50);
+    delaySlider.setValue(2);
 
-    public Integer getMaxNodes() {
-        return maxNodes;
-    }
+    //displayList.setItems(disp);
+    initDispType();
 
-    public Integer getDelay() {
-        return delay;
-    }
-    public Integer getRepulse() {
-        return repulse;
-    }
-    public Integer getSpring() {
-        return spring;
-    }
-    public Integer getStep() {
-        return (step);
-    }
+  }
 
-    public boolean isShowColor() {
-        return showColor;
-    }
+  public Integer getMaxNodes() {
+    return maxNodes;
+  }
 
-    public boolean isShowOwners() {
-        return showOwners;
-    }
+  public Integer getDelay() {
+    return delay;
+  }
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        maxNodesSlider.setValue(maxNodes);
-        delaySlider.setValue(delay);
+  public Integer getRepulse() {
+    return repulse;
+  }
 
-        maxNodesSlider.valueProperty().addListener((arg0, arg1, newVal) -> {
-            maxNodes = newVal.intValue();
-        });
+  public Integer getSpring() {
+    return spring;
+  }
+
+  public Integer getStep() {
+    return (step);
+  }
+
+  public boolean isShowColor() {
+    return showColor;
+  }
+
+  public boolean isShowOwners() {
+    return showOwners;
+  }
+
+  public void updateDisplayList(Collection<String> displayType) {
+    disp.clear();
+    disp.add(Constant.AUTOMATA);
+    disp.add(Constant.PETRINET);
+    disp.add("All");
+    displayList.getItems().clear();
+    displayType.forEach(displayList.getItems()::add);
+    displayList.getSelectionModel().selectFirst();
+  }
+
+  public String getDisplayType() {
+    return displayList.getSelectionModel().getSelectedItem();
+  }
+
+  @Override
+  public void initialize(URL location, ResourceBundle resources) {
+    maxNodesSlider.setValue(maxNodes);
+    delaySlider.setValue(delay);
+
+    maxNodesSlider.valueProperty().addListener((arg0, arg1, newVal) -> {
+      maxNodes = newVal.intValue();
+    });
 
 
-        delaySlider.valueProperty().addListener((arg0, arg1, newVal) -> {
-            delay = newVal.intValue();
-        });
-        repulseSlider.valueProperty().addListener((arg0, arg1, newVal) -> {
-            repulse = newVal.intValue();
-            //System.out.printf("Rep set to %1.2f \n",repulse);
-        });
-        springSlider.valueProperty().addListener((arg0, arg1, newVal) -> {
-            spring = newVal.intValue();
+    delaySlider.valueProperty().addListener((arg0, arg1, newVal) -> {
+      delay = newVal.intValue();
+    });
+    repulseSlider.valueProperty().addListener((arg0, arg1, newVal) -> {
+      repulse = newVal.intValue();
+      //System.out.printf("Rep set to %1.2f \n",repulse);
+    });
+    springSlider.valueProperty().addListener((arg0, arg1, newVal) -> {
+      spring = newVal.intValue();
 
-        });
-        stepSlider.valueProperty().addListener((arg0, arg1, newVal) -> {
-            step = newVal.intValue();
+    });
+    stepSlider.valueProperty().addListener((arg0, arg1, newVal) -> {
+      step = newVal.intValue();
 
-        });
-        Own.setOnAction(e -> handleButtonAction(e));
+    });
 
-    }
+    Own.setOnAction(e -> handleButtonAction(e));
+
+    initDispType();
 
 
+  }
 
-    public SettingsController() {
+  private void initDispType() {
+    updateDisplayList(disp);
+  }
 
-    }
+  public SettingsController() {
+    initDispType();
+  }
 
 }

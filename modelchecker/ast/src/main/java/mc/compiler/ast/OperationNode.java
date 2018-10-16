@@ -6,9 +6,6 @@ import lombok.EqualsAndHashCode;
 import mc.Constant;
 import mc.util.Location;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
 
 /**
  * This represents an infix operation, for within the operations.
@@ -81,7 +78,7 @@ public class OperationNode extends ASTNode {
 
     this.flags = ImmutableSet.of("*");
   }
-
+  @Override
   public String myString(){
     String opOut;
     if (negated) opOut="!"+operation;
@@ -96,5 +93,9 @@ public class OperationNode extends ASTNode {
     return sb.toString();
   }
 
-
+  @Override
+  public OperationNode instantiate(String from , String to) {
+    return new OperationNode(operation,isNegated(),flags,
+      firstProcess.instantiate(from,to),secondProcess.instantiate(from,to), getLocation());
+  }
 }

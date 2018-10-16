@@ -19,6 +19,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import lombok.Getter;
+import mc.Constant;
 import mc.client.ModelView;
 import mc.compiler.*;
 import mc.compiler.Compiler;
@@ -106,8 +107,8 @@ public class UserInterfaceController implements Initializable {
 
         settingsController = new SettingsController();
 
-        ModelView.getInstance().setSettings(settingsController);
 
+        ModelView.getInstance().setSettings(settingsController);
         // Have to initialise it or there is a delay between the graph becoming ready and actually displaying things
         SwingUtilities.invokeLater(() -> modelDisplay.setContent(ModelView.getInstance().updateGraph(modelDisplay)));
         // SO the Swing node can be used as a canvas  HOW?

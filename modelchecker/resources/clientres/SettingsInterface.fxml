@@ -14,7 +14,7 @@
     <AnchorPane maxHeight="-1.0" maxWidth="-1.0" prefHeight="335.0" prefWidth="537.0" VBox.vgrow="ALWAYS">
          <children>
             <Slider fx:id="maxNodesSlider" layoutX="224.0" layoutY="31.0" max="200.0" showTickLabels="true" showTickMarks="true" value="40.0" />
-             <Label layoutX="81.0" layoutY="31.0" text="Max number of nodes" />
+             <Label layoutX="224.0" layoutY="10.0" text="Max number of nodes" />
 
              <Slider fx:id="springSlider" layoutX="224.0" layoutY="84.0" max="100" min="1" showTickLabels="true" showTickMarks="true" value="50" />
              <Label layoutX="174.0" layoutY="87.0" text="Spring" />
@@ -28,9 +28,11 @@
             <CheckBox fx:id="Own" layoutX="26.0" layoutY="136.0" mnemonicParsing="false" text="Owners" />
             <CheckBox fx:id="Col" layoutX="26.0" layoutY="166.0" mnemonicParsing="false" text="Color" />
             <CheckBox fx:id="Cong" layoutX="26.0" layoutY="199.0" mnemonicParsing="false" text="Cong" />
+             <ComboBox fx:id="displayList" layoutX="20.0" layoutY="30.0" prefWidth="117.0" prefHeight="18.0" />
+            <Label layoutX="30.0" layoutY="10.0" text="Display" />
 
          </children>
     </AnchorPane>
-      <CheckBox mnemonicParsing="false" text="CheckBox" />
+      <TextArea prefHeight="200.0" prefWidth="200.0" />
   </children>
 </VBox>

@@ -62,7 +62,7 @@ public class Interpreter {
                                              Set<String> alpha)
     throws CompilationException, InterruptedException {
     this.alpha = alpha;
-    System.out.println("*** Interp " + this.alpha);
+    //System.out.println("*** Interp " + this.alpha);
     StringBuilder sb = new StringBuilder();
     //System.out.print("Who calls interpret Y? ");//Throwable t = new Throwable();t.printStackTrace();
     Map<String, ProcessModel> processMap = new LinkedHashMap<>();
@@ -75,8 +75,8 @@ public class Interpreter {
     //  reduce("{",(x,y)->x+" "+y)+"}");
     for (ProcessNode process : processes) { //BUILD ALL PROCESSES
 
-      System.out.println("++++++Interpreter Building " + process.getIdentifier() + " ... "+ process.getType().toString());
-      System.out.println("Process "+process.myString());
+      //System.out.println("++++++Interpreter Building " + process.getIdentifier() + " ... "+ process.getType().toString());
+      //System.out.println("Process "+process.myString());
       ProcessModel model = null;
       model = new MultiProcessModel(process.getIdentifier());
       model.setLocation(process.getLocation());  //location on screen
@@ -97,8 +97,12 @@ public class Interpreter {
       //messageQueue.add(new LogAST("Built:", process));
       sb.append(process.getIdentifier()+", ");
       processMap.put(process.getIdentifier()+":"+process.getDomain(), model); //SAVE MultiProcess in processMap
+ if (!process.getDomain().equals("*")) {
+   processMap.put(process.getIdentifier()+":*", model);  //used in display and unique name
+ }
+
     }
-    System.out.println("*** Interp " + this.alpha);
+    //System.out.println("*** Interp " + this.alpha);
     //System.out.println("End of inteterpret Y ");
     messageQueue.add(new LogMessage("Built: "+ sb.toString(),  true,
       false,
@@ -143,7 +147,7 @@ public class Interpreter {
                                 Context context, Set<String> alpha)
     throws CompilationException, InterruptedException {
 
-    System.out.println(" ****CALLing interpret X  " + processModelType + " " + astNode.toString() + " " + alpha);
+    //System.out.println(" ****CALLing interpret X  " + processModelType + " " + astNode.toString() + " " + alpha);
     //TODO Multy Keep to Petri Interpret!
     ProcessModel model;
     switch (processModelType) {
@@ -153,12 +157,12 @@ public class Interpreter {
 
         //System.out.println("***** interpret automata" );
         model = automatonInterpreter.interpret(astNode, identifer, processMap, context, alpha);
-        System.out.println("***Interpreter.interpret A alpha " + this.alpha + " id " + identifer + " " + astNode.myString());
+        //System.out.println("***Interpreter.interpret A alpha " + this.alpha + " id " + identifer + " " + astNode.myString());
         //System.out.println(model.toString());
         break;
 
       case Constant.PETRINET:  //****
-        System.out.println("***Interpreter.interpret still P alpha " + this.alpha + " id " + identifer + " " + astNode.myString());
+        //System.out.println("***Interpreter.interpret still P alpha " + this.alpha + " id " + identifer + " " + astNode.myString());
         model = petrinetInterpreter.interpret(astNode, identifer, processMap, context, alpha);
 
         break;
@@ -167,7 +171,7 @@ public class Interpreter {
         throw new CompilationException(getClass(), "Unable to find the process type: "
           + processModelType);
     }
-    System.out.println("End of Interpret  "+ model.getId());
+    //System.out.println("End of Interpret  "+ model.getId());
     return model;
   }
 
@@ -176,9 +180,9 @@ public class Interpreter {
                                  Context context,
                                  Set<String> alpha,
                                  ASTNode ast) throws CompilationException, InterruptedException {
-    System.out.println("getAut");
+    //System.out.println("getAut");
     Automaton  a = petrinetInterpreter.getAutomaton (processMap,interpreter,context,alpha, ast);
-    System.out.println("getAut RETURNS "+a.getId());
+    //System.out.println("getAut RETURNS "+a.getId());
   return a;
   }
 }

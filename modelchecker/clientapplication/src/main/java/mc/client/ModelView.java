@@ -41,6 +41,7 @@ import javafx.embed.swing.SwingNode;
 import javafx.geometry.Bounds;
 import lombok.Getter;
 import lombok.Setter;
+import mc.Constant;
 import mc.client.graph.AutomataBorderPaintable;
 import mc.client.graph.DirectedEdge;
 import mc.client.graph.EdgeShape;
@@ -120,6 +121,8 @@ public class ModelView implements Observer {
    */
   @Override
   public void update(Observable o, Object arg) {
+
+
     if (!(arg instanceof CompilationObject)) {
       throw new IllegalArgumentException("arg object was not of type compilationObject");
     }
@@ -153,6 +156,8 @@ public class ModelView implements Observer {
 //  printing (automata) and (petrinet)
     mappings.clear();
     for (Map.Entry<String, MultiProcessModel> mpm : toExpand) {
+      //System.out.println("mpmKey "+ mpm.getKey());
+      if (!mpm.getKey().endsWith(":*")) continue; //Only off processes in Domain * - prevents duplicates
       for (ProcessType pt : ProcessType.values()) {
         if (mpm.getValue().hasProcess(pt)) {
           String name = mpm.getKey() + " (" + pt.name().toLowerCase() + ")";
@@ -164,12 +169,31 @@ public class ModelView implements Observer {
     }
 
     toExpand.stream().map(Map.Entry::getKey).forEach(compiledResult.getProcessMap()::remove);
-    visibleModels = getProcessMap().entrySet().stream()
+
+    /*System.out.print("\nKeys ");
+    getProcessMap().entrySet().stream().forEach(x->{
+      System.out.print(x.getKey()+" ");
+    });*/
+    String dispType = settings.getDisplayType();
+    //System.out.println("\n >>>>>"+dispType+"<<<<<\n");
+    if (dispType.equals("All")) {
+      visibleModels = getProcessMap().entrySet().stream()
         .filter(e -> e.getValue().getProcessType() != ProcessType.AUTOMATA ||
-            ((Automaton) e.getValue()).getNodes().size() <= settings.getMaxNodes())
+          ((Automaton) e.getValue()).getNodes().size() <= settings.getMaxNodes())
         .map(Map.Entry::getKey)
         .collect(Collectors.toCollection(TreeSet::new));
-
+    } else if (dispType.equals(Constant.AUTOMATA)) {
+      visibleModels = getProcessMap().entrySet().stream()
+        .filter(e -> e.getValue().getProcessType() == ProcessType.AUTOMATA &&
+          ((Automaton) e.getValue()).getNodes().size() <= settings.getMaxNodes())
+        .map(Map.Entry::getKey)
+        .collect(Collectors.toCollection(TreeSet::new));
+    } else {
+      visibleModels = getProcessMap().entrySet().stream()
+        .filter(e -> e.getValue().getProcessType() != ProcessType.AUTOMATA)
+        .map(Map.Entry::getKey)
+        .collect(Collectors.toCollection(TreeSet::new));
+    }
     //remove processes marked at skipped and too large models to display
     listOfAutomataUpdater.accept(visibleModels);
 
@@ -510,6 +534,8 @@ public class ModelView implements Observer {
    * Resets all graph varaibles and re-adds default blank state.
    */
   private void initalise() {
+
+
     processModelsToDisplay = new HashSet<>();
 
     layoutInitalizer = new SeededRandomizedLayout();

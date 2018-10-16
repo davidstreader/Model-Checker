@@ -98,10 +98,10 @@ public class FailureRefinement implements IOperationInfixFunction {
           a = (Automaton) pm;
         }
         try {
-          System.out.println("FAILURE REF in "+ a.myString());
+          //System.out.println("FAILURE REF in "+ a.myString());
           //AcceptanceGraph adds root and STOP events
           AcceptanceGraph ag = new AcceptanceGraph("dfa-" + a.getId(), a, cong);
-          System.out.println("FAILURE REF fag "+ ag.toString());
+          //System.out.println("FAILURE REF fag "+ ag.toString());
           //temp = nfa2dfaworks.compose(a.getId(), new HashSet<>(), null, TraceType.CompleteTrace, a);
           ;
           acctgrs.add(ag);

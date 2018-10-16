@@ -376,31 +376,31 @@ public class AcceptanceGraph {
    */
   public static boolean AcceptanceSubSet(List<Set<String>> a1, List<Set<String>> a2) {
 
-    System.out.println(" START AcceptanceSuperSet " + a2 + " a Refusal Subset of " + a1 + "  ?");
+    //System.out.println(" START AcceptanceSuperSet " + a2 + " a Refusal Subset of " + a1 + "  ?");
     boolean ok = true;
 
     for (Set<String> as2 : a2) {       //FOR ALL as2 is in a2 then    (A)
       ok = false;
-      System.out.println(" as2= "+as2);
+      //System.out.println(" as2= "+as2);
       breakto:
       for (Set<String> aa1 : a1) {     // exists as1 in a1 such that   (B)
         //strip out external
         Set<String> as1 = aa1.stream().filter(x->!Constant.external(x)).collect(Collectors.toSet());
-          System.out.println("   is as2 " + as2 + " superset of   as1 " + as1);
+          //System.out.println("   is as2 " + as2 + " superset of   as1 " + as1);
         if (as2.containsAll(as1)) {    //  as1 is a  subset of as2
           ok = true;
-          System.out.println("      as2 " + as2 + " is superset as1 " + as1);
+          //System.out.println("      as2 " + as2 + " is superset as1 " + as1);
           break breakto;
         } else {
           //ok = false;
-          System.out.println("   as2 " + as2 + " is NOT superset as1 " + as1);
+          //System.out.println("   as2 " + as2 + " is NOT superset as1 " + as1);
           //break breakto;
         }
       }
 
       if (ok == false) { break;} //if one inner false then outer false
     }  //outer only true if all inner loops true
-    System.out.println(" a2 " + a2 + " a Refusal Subset of " + a1 + "  returns " + ok);
+    //System.out.println(" a2 " + a2 + " a Refusal Subset of " + a1 + "  returns " + ok);
     return ok;
   }
 

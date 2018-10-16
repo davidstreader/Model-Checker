@@ -5,6 +5,8 @@ import com.microsoft.z3.Expr;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import mc.util.Location;
@@ -68,6 +70,7 @@ public class FunctionNode extends ASTNode {
     this.processes = new ArrayList<>(processes);
 
   }
+  @Override
   public String myString(){
     StringBuilder sb = new StringBuilder();
     sb.append(function+ "(");
@@ -76,5 +79,10 @@ public class FunctionNode extends ASTNode {
     if (flags.size()>0) sb.append(flags);
     return sb.toString();
 
+  }
+  @Override
+  public FunctionNode instantiate(String from , String to) {
+    return new FunctionNode(function,processes.stream().
+           map(x->x.instantiate(from,to)).collect(Collectors.toList()), getLocation());
   }
 }

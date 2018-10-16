@@ -28,7 +28,7 @@ public class PetrinetParallelFunction  {
     Petrinet p2 = pi2.reId("2");
     p1.rebuildAlphabet(); p2.rebuildAlphabet();
 
-   System.out.println("     PETRINET PARALLELFUNCTION"+"  "+p1.myString()+" ||"+flags+" "+p2.getId());
+   //System.out.println("     PETRINET PARALLELFUNCTION"+"  "+p1.myString()+" ||"+flags+" "+p2.getId());
 
    //builds synchronisedActions set
     setupActions(p1, p2,flags);
@@ -50,7 +50,7 @@ public class PetrinetParallelFunction  {
     composition.setEndFromNet();
     //System.out.println("half "+composition.myString()+"\nhalf END");
     //System.out.println("  SoFar unsynced \n"+ composition.myString());
-    System.out.println("  synchronisedActions "+synchronisedActions);
+    //System.out.println("  synchronisedActions "+synchronisedActions);
     setupSynchronisedActions(p1, p2, composition);
     //System.out.println("  synced  \n "+ composition.myString());
     //composition = PetrinetReachability.removeUnreachableStates(composition);
