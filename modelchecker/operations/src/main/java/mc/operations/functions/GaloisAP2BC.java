@@ -120,7 +120,9 @@ public class GaloisAP2BC implements IProcessFunction {
     for (AutomatonEdge edge : todo) {
       //System.out.println("*1* " + edge.myString());
       String lab = edge.getLabel();
-      if (lab.endsWith(".t" + Constant.BROADCASTSinput) || lab.endsWith(".r" + Constant.BROADCASTSoutput)) continue;
+      if (lab.endsWith(".t" + Constant.BROADCASTSinput) ||
+        lab.endsWith(".r" + Constant.BROADCASTSoutput) ||
+        lab.equals(Constant.HIDDEN)) continue;
       //System.out.println("*2* " + edge.myString());
       String prefix = lab;
       AutomatonNode x = aut.addNode();

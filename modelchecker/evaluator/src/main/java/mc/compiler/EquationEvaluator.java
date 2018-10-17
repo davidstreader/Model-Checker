@@ -119,7 +119,7 @@ public class EquationEvaluator {
 
     Instantiate inst = new Instantiate(processMap, globlFreeVariables, globlFreeVariables);
     globalFreeVar2Model = inst.peek();
-    System.out.println("inst "+inst.myString());
+    //System.out.println("inst "+inst.myString());
 
     int totalPermutations = inst.permutationCount();
 
@@ -212,23 +212,36 @@ public class EquationEvaluator {
         Map<String, ProcessModel> inerFreeVariabelMap = new TreeMap<>(); //Only used to expand the variable map
         if (outerFreeVariabelMap.size() > 0) {
           for (String key : outerFreeVariabelMap.keySet()) {
+            //System.out.println("KEY "+key);
+            if (key.endsWith(":*")) {
+              String[] parts = key.split(":");
+              String var = parts[0];
+              if (localBound.stream().filter(x->x.startsWith(var)).collect(Collectors.toList()).size() !=0){
+                //System.out.println("found "+key);
+                if (processMap.containsKey(key)) {
+                  processMap.remove(key);
+                  //System.out.println("after remove "+asString(processMap));
+                  }
+                continue; //skip variables to be instantiated
+              };
+            }
             processMap.put(key, outerFreeVariabelMap.get(key));
             allVariables.add(key);
           }
         }
-        System.out.println("processMap "+asString(processMap));
-     System.out.println("    localBound " + localBound + " allVariables "+allVariables);
+        //System.out.println("AFTER processMap "+asString(processMap));
+     //System.out.println("    localBound " + localBound + " allVariables "+allVariables);
 //Bind the local variables in the term
         for (String local: ((ForAllNode) operation).getBound()){
           if (local.contains(":")) {
             String[] parts = local.split(":");
-            String var = parts[0];
+             String var = parts[0];
             ((ForAllNode)operation).setOp(((ForAllNode) operation).getOp().instantiate(var+":*",local)) ;
           }
         }
-        System.out.println("domain Bound operation "+operation.myString());
+        //System.out.println("domain Bound operation "+operation.myString());
         Instantiate forinst = new Instantiate(processMap, localBound,allVariables);
-        System.out.println("forinst "+forinst.myString());
+        //System.out.println("forinst "+forinst.myString());
         OperationNode localOp = ((ForAllNode) operation).getOp();
         ModelStatus localStatus = new ModelStatus();
 // build freeVar2Model for FIRST evaluation
@@ -249,7 +262,7 @@ public class EquationEvaluator {
           true //call test again with expanded variable map
         );
 // must pass
-       System.out.println("  foall END of testUserDefine"+"  localStatus.passCount "+localStatus.passCount);
+       //System.out.println("  foall END of testUserDefine"+"  localStatus.passCount "+localStatus.passCount);
         if (localStatus.failCount > 0) {
           status.setFailCount(localStatus.failCount);  //Fail must return
           status.setPassCount(localStatus.passCount);
@@ -317,7 +330,7 @@ public class EquationEvaluator {
               return failures2; //Fail must return the failures from 2 NOT 1
             } else status.passCount++;
           }
-        } else {  //short circuit evaluate 1 First
+        } else {  //evaluate 1 First
           OperationNode o1 = (OperationNode) ((ImpliesNode) operation).getFirstOperation();
           //System.out.println("Implies now evaluate 1 first " + o1.myString());
           List<String> failures1 = testUserdefinedModel(processMap,
@@ -395,8 +408,8 @@ public class EquationEvaluator {
           String failOutput = "";
           if (exceptionInformation.length() > 0) {
             failOutput += exceptionInformation + "\n";
-            failOutput += asString(outerFreeVariabelMap);
           }
+          failOutput += asString(outerFreeVariabelMap);
          /* for (String key : outerFreeVariabelMap.keySet()) {
             failOutput += key + "=" + outerFreeVariabelMap.get(key).getId() + ", ";
           }*/
@@ -417,6 +430,7 @@ public class EquationEvaluator {
 
       // Success only fall through so generate new permutation
       //System.out.println("Fallthrough " + status.myString()+" outerFV "+ asString(outerFreeVariabelMap));
+      //System.out.println(inst.peek());
       if (freeVariables.size() == 0) return new ArrayList<>(); // called with a ground term so no looping
       if (updateFreeVariables) { //A ==> B first evaluation (AorB) must not update freevariable map
         if (inst.end()) return new ArrayList<>();
@@ -425,7 +439,7 @@ public class EquationEvaluator {
       } else { // not updating free Vars means do once as part of implies
         return new ArrayList<>();
       }
-      System.out.println(" operation "+ operation.myString()+" passed "+ status.passCount + " next "+ asString(outerFreeVariabelMap));
+      //System.out.println(" operation "+ operation.myString()+" passed "+ status.passCount + " next "+ asString(outerFreeVariabelMap));
 
     }
 
@@ -455,7 +469,9 @@ public class EquationEvaluator {
           if (x.contains(":")) return x;
           else return x+":*";}).collect(Collectors.toList());
       //System.out.println("collect from forall bound " + secondIds + " of vars " + firstIds);
-      firstIds.removeAll(secondIds);
+
+      //firstIds.removeAll(secondIds);
+      firstIds = filterVar(firstIds,secondIds);
       //System.out.println("collect from forall bound " + secondIds + " of free " + firstIds);
       secondIds = new ArrayList<>();
     } else if (operation instanceof ImpliesNode) {
@@ -480,6 +496,24 @@ public class EquationEvaluator {
     return freeVariables;
   }
 
+  private List<String> filterVar(List<String> first, List<String> second) {
+    List<String> ids = new ArrayList<>();
+    for(String one:first) {
+      String[] p1 = one.split(":");
+      String v1 = p1[0];
+      boolean drop = false;
+      for(String two:second){
+        String[] p2 = two.split(":");
+        String v2 = p2[0];
+        if (v1.equals(v2)) {
+          drop = true;
+          break;
+        }
+      }
+      if (!drop) ids.add(one);
+    }
+    return ids;
+  }
   //USED for debugging
   public static String asString(Map<String, ProcessModel> in) {
     String out = "";
@@ -516,7 +550,7 @@ public class EquationEvaluator {
     public Instantiate(Map<String, ProcessModel> processMap, List<String> freeVariables
       , List<String> allVariables) throws CompilationException {
 
-      System.out.println("Instantiate allVars "+allVariables+" free "+freeVariables);
+      //System.out.println("Instantiate allVars "+allVariables+" free "+freeVariables);
 
       if (freeVariables.size() == 0) {
         throw new CompilationException(getClass(), "Empty Variable List");
@@ -570,7 +604,7 @@ public class EquationEvaluator {
           break;
         }
       }
-      System.out.println(asString(peek()));
+      //System.out.println(asString(peek()));
       return peek();
     }
 

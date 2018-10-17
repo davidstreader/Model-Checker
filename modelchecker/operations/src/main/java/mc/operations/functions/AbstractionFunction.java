@@ -15,6 +15,8 @@ import mc.processmodels.MultiProcessModel;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
+import mc.processmodels.conversion.OwnersRule;
+import mc.processmodels.conversion.TokenRule;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
@@ -79,7 +81,7 @@ public class AbstractionFunction implements IProcessFunction {
 
     //System.out.println("\n***\n"+startA.myString());
     boolean cong = flags.contains(Constant.CONGURENT);
-    System.out.println("\nautomata Abs start "+ startA.myString()+ " flags "+flags+ " cong "+cong);
+    //System.out.println("\n\nautomata Abs start "+ startA.myString()+ " flags "+flags+ " cong "+cong);
     Automaton abstraction = pruneHiddenNodes(context, startA, cong);
 
     //System.out.println("Abs pruned "+ abstraction.myString());
@@ -117,7 +119,7 @@ public class AbstractionFunction implements IProcessFunction {
     List<AutomatonEdge> hiddenEdges = abstraction.getEdges().stream()
         .filter(AutomatonEdge::isHidden)
         .collect(Collectors.toList());
-    hiddenEdges.stream().forEach(x->{System.out.println("Hidden "+x.myString());});
+    //hiddenEdges.stream().forEach(x->{ System.out.println("Hidden "+x.myString());});
     //Construct  edges to replace the unobservable edges
     Set<AutomatonEdge> processesed = new HashSet<>();
     while (!hiddenEdges.isEmpty()) {
@@ -433,7 +435,7 @@ public class AbstractionFunction implements IProcessFunction {
    */
   private boolean mergeloop(Context context, Automaton autoIN)
       throws CompilationException {
-    List<AutomatonEdge> edges = autoIN.getEdges();
+    List<AutomatonEdge> edges = autoIN.getEdges(); //copy
 
     for (AutomatonEdge edge : edges) {
       //System.out.println("edge "+edge.myString());
@@ -509,6 +511,16 @@ public class AbstractionFunction implements IProcessFunction {
    */
   @Override
   public Petrinet compose(String id, Set<String> flags, Context context, Petrinet... petrinets) throws CompilationException {
+    assert petrinets.length == 1;
+    Petrinet petri = petrinets[0].reId("");
+    Automaton aut  = TokenRule.tokenRule(petri);
+    Automaton[] as = new Automaton[1];
+    as[0] =aut;
+    Automaton a = compose(id,flags,context,as);
+    return OwnersRule.ownersRule(a);
+  }
+
+  public Petrinet composeX(String id, Set<String> flags, Context context, Petrinet... petrinets) throws CompilationException {
     /*
     For each tau transition t
       For each *t node n
@@ -517,7 +529,7 @@ public class AbstractionFunction implements IProcessFunction {
       Symetric
       remove t
      */
-    //System.out.println("\nPetri abstraction! flags "+flags+ "\n");
+    //System.out.println("\n\nPetri abstraction! flags "+flags+ "\n");
 
     assert petrinets.length == 1;
     Petrinet petri = petrinets[0].reId("");

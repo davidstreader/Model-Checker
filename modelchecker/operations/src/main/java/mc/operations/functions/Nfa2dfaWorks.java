@@ -129,7 +129,7 @@ public class Nfa2dfaWorks {
   /*  dfa.getNodes().stream()
         .filter(node -> node.getOutgoingEdges().isEmpty())
         .forEach(node -> node.setTerminal(Constant.STOP)); */
-    //System.out.println("\n built dfa " +dfa.myString()+"\n");
+    System.out.println("\n built dfa " +dfa.myString()+"\n");
     return dfa;
   }
 

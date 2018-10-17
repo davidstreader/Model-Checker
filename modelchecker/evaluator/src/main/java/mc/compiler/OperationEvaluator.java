@@ -210,6 +210,7 @@ public class OperationEvaluator {
             if (operation.isNegated()) { r = !r; }
 
         } else if (funct.getOperationType().equals(Constant.AUTOMATA)) {
+            //Operations ~ <f <t <q ...
             //System.out.println("Evaluate automaton operation "+operation.getFirstProcessType()+ " "+operation.getSecondProcessType());
             //System.out.println("***evalOpm auto "+alpha+"  "+operation.myString());
             //System.out.println("evOp "+operation.getFirstProcess().myString()+ "  "+operation.getSecondProcess().myString());

@@ -63,7 +63,7 @@ public class TraceWork {
           Automaton newdfa; //BUILD DFA
           //System.out.println("TraceWorks "+a.myString());
           newdfa = nfa2dfaworks.compose(a.getId(), new HashSet<>(), null, TraceType.CompleteTrace, a);
-          //System.out.println("DFA " + newdfa.readySets2String(cong));
+          System.out.println("DFA " + newdfa.readySets2String(cong));
           dfas.add(newdfa);
         } catch (CompilationException e) {
           //System.out.println("PINGO" + e.toString());

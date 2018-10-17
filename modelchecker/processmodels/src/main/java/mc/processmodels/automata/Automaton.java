@@ -431,7 +431,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     //  //System.out.println("combining nodes "+ node1.getId()+" "+node2.getId()+
     //     " in "+this.toString());
 
-    AutomatonNode node = addNode();
+    AutomatonNode node = addNode(); //The new node to replae both old nodes
 
 
     for (AutomatonEdge edge1 : node1.getIncomingEdges()) {
@@ -468,11 +468,14 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
       root.add(node);
       node.setStartNode(true);
     }
-
+    if (node1.isSTOP()||node2.isSTOP()) {
+      node.setStopNode(true);
+    }
 
     removeNode(node1);
     removeNode(node2);
-    // //System.out.println("nodes merged "+this.toString());
+    //System.out.println("new merged Node "+node.myString());
+    //System.out.println("nodes merged in "+this.myString());
     return node;
   }
 

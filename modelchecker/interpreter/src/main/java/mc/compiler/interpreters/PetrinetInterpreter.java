@@ -122,7 +122,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     reset();
     //called by Interpreter and  Returns a ProcessModel that the Interpreter adds to the processMap
     this.alpha = alpha;
-    //System.out.println("Petri interpret "+ processNode.getIdentifier()+" alpha "+this.alpha);
+    System.out.println("Petri interpret "+ processNode.getIdentifier()+" processmap  "+asString(processMap));
 
     this.context = context;
     variableList = new HashSet<>();
@@ -261,6 +261,15 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     return petrinet;
   }
 
+  //USED for debugging
+  public static String asString(Map<String, ProcessModel> in) {
+    String out = " Map cnt "+in.size()+"  ";
+    for (String key : in.keySet()) {
+      out += key + "->" + in.get(key).getId() + ", ";
+    }
+    return out;
+  }
+
   /**
    * Main component called from ALL places
    * Process Identifier and Root node that rest are recursivly processed
@@ -288,7 +297,9 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
         reference = ((IdentifierNode) astNode).getIdentifier() + ":" +
           ((IdentifierNode) astNode).getDomain();
       }
-      //System.out.println("*** interpretProcess IdentifierNode " + reference);
+      System.out.println("*** interpretProcess IdentifierNode " + reference);
+      System.out.println(asString(processMap));
+
       if (processMap.get(reference).getProcessType().equals(ProcessType.MULTI_PROCESS)) {
         //System.out.println("interpretProcess GETS *********** MULTI_PROCESS -> PN");
         processStack.push(processMap.get(reference).getProcessType().
@@ -333,6 +344,8 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
 
       //Interpret Node
       //System.out.println("\n before 236*****Interpret " +petrinet.myString()+"\n");
+      System.out.println(" interpretProcess "+ identifier+ " processmap  "+asString(processMap));
+
       petrinet = interpretASTNode(astNode, petrinet); // PETRI TREE is built and returned
       //System.out.println("236 *****Interpret "+astNode.toString());
       //System.out.println("\n***PetriInterpret " +petrinet.myString()+"\n");

@@ -42,7 +42,7 @@ public class IdentifierNode extends ASTNode {
   }
 
   public String myString() {
-    if (identifier.equals("*"))
+    if (domain.equals("*"))
       return identifier;
     else
       return identifier + ":" + domain;
@@ -58,13 +58,14 @@ public class IdentifierNode extends ASTNode {
       String parts[] = from.split(":");
       String fromVar = parts[0];
       String toparts[] = to.split(":");
-      String toVar = parts[0];
-      String toDom = parts[1];
+      String toVar = toparts[0];
+      String toDom = toparts[1];
       //System.out.println("fromVar "+fromVar+"  =? "+ this.getIdentifier());
       if (this.getIdentifier().equals(fromVar)) {
-        IdentifierNode n = new IdentifierNode(to, toDom, getLocation());
-        //System.out.println("Instant Id "+n.myString()+" from "+from+" to "+to);
-        return n;
+        //System.out.println("toVar "+toVar+"  toDom "+toDom);
+        IdentifierNode nd = new IdentifierNode(toVar, toDom, getLocation());
+        //System.out.println("Instant Id "+nd.getVarDom());
+        return nd;
       }
       else {
         //System.out.println("fromVar "+fromVar+"  != "+ this.getIdentifier());
