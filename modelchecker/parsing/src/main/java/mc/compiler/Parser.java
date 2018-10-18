@@ -997,6 +997,10 @@ public class Parser {
 
       ActionToken token = (ActionToken) nextToken();
       String flag = token.getAction();
+      if (peekToken() instanceof QuestionMarkToken ||peekToken() instanceof NegateToken ) {
+        flag = flag + nextToken().toString();
+      }
+
 
       if (!acceptedFlags.contains(flag) && !wildcard) {
         throw constructException("\"" + flag + "\" is not a correct flag for " + functionType, token.getLocation());

@@ -28,7 +28,7 @@ public class PetrinetParallelFunction  {
     Petrinet p2 = pi2.reId("2");
     p1.rebuildAlphabet(); p2.rebuildAlphabet();
 
-   //System.out.println("     PETRINET PARALLELFUNCTION"+"  "+p1.myString()+" ||"+flags+" "+p2.getId());
+   System.out.println("     PETRINET PARALLELFUNCTION"+"  "+p1.myString()+" ||"+flags+" "+p2.myString());
 
    //builds synchronisedActions set
     setupActions(p1, p2,flags);
@@ -52,7 +52,7 @@ public class PetrinetParallelFunction  {
     //System.out.println("  SoFar unsynced \n"+ composition.myString());
     //System.out.println("  synchronisedActions "+synchronisedActions);
     setupSynchronisedActions(p1, p2, composition);
-    //System.out.println("  synced  \n "+ composition.myString());
+    System.out.println("  synced  \n "+ composition.myString());
     //composition = PetrinetReachability.removeUnreachableStates(composition);
      composition.reId("");
      assert composition.validatePNet():"parallel comp post condition ";
@@ -86,6 +86,7 @@ public class PetrinetParallelFunction  {
     } else {
       flags.forEach(a -> setupAction(a, flags));
     }
+    System.out.println("setupAction "+synchronisedActions);
   }
 
   private static void setupAction(String action, Set<String> otherPetrinetActions) {
@@ -110,25 +111,18 @@ public class PetrinetParallelFunction  {
        }
      }else if (otherPetrinetActions.contains(action)) {
       synchronisedActions.add(action);
-   //System.out.println("Sync "+ action);
+   System.out.println("Sync "+ action+ "with "+ synchronisedActions);
     }
   }
 
   @SneakyThrows(value = {CompilationException.class})
   private static void setupSynchronisedActions(Petrinet p1, Petrinet p2, Petrinet comp) {
-
+    System.out.println("Start setupSynchronisedActions ");
     for (String action : synchronisedActions) {
-      //System.out.println("Sync action "+action);
-      Set<PetriNetTransition> p1Pair = p1.getAlphabet().get(action).stream()
-              .map(t -> petriTransMap.get(t)).collect(Collectors.toSet());
-      Set<PetriNetTransition> p2Pair = p2.getAlphabet().get(action).stream()
-              .map(t -> petriTransMap.get(t)).collect(Collectors.toSet());
-
-      replaceActions(p1Pair, p2Pair, comp, action, false); //handshake on label equality
-
+      System.out.println("  action = "+action);
       if (action.endsWith(Constant.BROADCASTSoutput)) {
         String sync = action.substring(0, action.length() - 1)+Constant.BROADCASTSinput;
-
+        System.out.println("Bcast sync = "+sync);
         Set<PetriNetTransition> p1P = p1.getAlphabet().get(action).stream()
                 .map(t -> petriTransMap.get(t)).collect(Collectors.toSet());
         Set<PetriNetTransition> p2P = p2.getAlphabet().get(sync).stream()
@@ -153,11 +147,28 @@ public class PetrinetParallelFunction  {
         p2P = p2.getAlphabet().get(action).stream()
           .map(t -> petriTransMap.get(t)).collect(Collectors.toSet());
         replaceActions(p1P, p2P, comp, action, true);
+      } else {
+        //do nothing
       }
-      //System.out.println("Sync END "+comp.myString());
+    }
+    System.out.println("Sync END BC"+comp.myString());
+    setupSynchronisedHS(p1,p2,comp);
+    System.out.println("Sync END HS"+comp.myString());
+  }
+  @SneakyThrows(value = {CompilationException.class})
+  private static void setupSynchronisedHS(Petrinet p1, Petrinet p2, Petrinet comp) {
+    System.out.println("Start setupSynchronisedHS ");
+    for (String action : synchronisedActions) {
+      System.out.println("setupSyncHS action " + action);
+      Set<PetriNetTransition> p1Pair = p1.getAlphabet().get(action).stream()
+        .map(t -> petriTransMap.get(t)).collect(Collectors.toSet());
+      Set<PetriNetTransition> p2Pair = p2.getAlphabet().get(action).stream()
+        .map(t -> petriTransMap.get(t)).collect(Collectors.toSet());
+      if (p1Pair.size() > 0 && p2Pair.size() > 0) {
+        replaceActions(p1Pair, p2Pair, comp, action, false); //handshake on label equality
+      }
     }
   }
-
 /*
    Replace each pair of synchronising transitions with their combined transition
  */
@@ -169,14 +180,15 @@ public class PetrinetParallelFunction  {
     //if (p1_.size()==0 || p2_.size() ==0) return; // Must continue as delete transitions at end
 
 
-    //System.out.println("Replace actions "+ p1_.size()+" "+p2_.size());
+    System.out.println("Replace actions "+ p1_.size()+" "+p2_.size());
     //System.out.println("p1 "+p1_.stream().map(x->x.myString()).reduce("",(x,y)->x+y+" "));
     //System.out.println("p2 "+p2_.stream().map(x->x.myString()).reduce("",(x,y)->x+y+" "));
     for (PetriNetTransition t1 : p1_) {
         for (PetriNetTransition t2 : p2_) {
+          System.out.println("  "+t1.myString()+" "+t2.myString());
           if (t1==null) {System.out.println("t1==null");continue;}
           if (t2==null) {System.out.println("t2==null");continue;}
-   //System.out.println("  t1 "+ t1.myString()+ " , t2 "+t2.myString());
+   System.out.println("  t1 "+ t1.myString()+ " , t2 "+t2.myString());
           Set<PetriNetEdge> outgoingEdges = new LinkedHashSet<>();
           outgoingEdges.addAll(t1.getOutgoing());
           outgoingEdges.addAll(t2.getOutgoing());
@@ -189,7 +201,7 @@ public class PetrinetParallelFunction  {
           newTrans.clearOwners();
           newTrans.addOwners(t1.getOwners());
           newTrans.addOwners(t2.getOwners());
-   //System.out.println("size "+incomingEdges.size()+" "+incomingEdges.size());
+   System.out.println("size "+incomingEdges.size()+" "+incomingEdges.size());
           //Set broadcast listening b? edges to optional
           for(PetriNetEdge outE : outgoingEdges) { // outgoing from transition
             //System.out.println("out "+outE.myString());
@@ -197,7 +209,7 @@ public class PetrinetParallelFunction  {
            if (((PetriNetTransition) outE.getFrom()).getLabel().endsWith(Constant.BROADCASTSinput) && optional) {
               ed.setOptional(true);
             }
-            //System.out.println("    adding "+ed.myString());
+            System.out.println("    adding "+ed.myString());
           }
           //System.out.println("  newTran "+newTrans.myString());
           for(PetriNetEdge inE : incomingEdges) { // incoming to transition
@@ -206,9 +218,9 @@ public class PetrinetParallelFunction  {
             if (((PetriNetTransition) inE.getTo()).getLabel().endsWith(Constant.BROADCASTSinput)&& optional) {
               ed.setOptional(true);
             }
-            //System.out.println("    adding "+ed.myString());
+            System.out.println("    adding "+ed.myString());
           }
-          //System.out.println("  newTrans "+newTrans.myString());
+          System.out.println("  newTrans "+newTrans.myString());
 
         }
       }
