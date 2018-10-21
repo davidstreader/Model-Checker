@@ -1,0 +1,15 @@
+processes {
+Aa = a?->b!->STOP |a?->c!->STOP|a?->STOP.
+Ca = a?->b!->STOP |a?->c!->STOP.
+
+}
+
+//alphabet{a?,b?,c?, ab?,ac?}
+
+operation {
+Ca <q{cong} Aa.
+Aa <q{cong} Ca.
+
+} 
+
+

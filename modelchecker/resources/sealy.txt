@@ -1,0 +1,34 @@
+processes { 
+Test: {  
+Onea = a->STOP.
+Oneb = b->STOP.
+Oneab = a->STOP|b->STOP.  
+
+}
+
+Pro: {
+Twoabs = a->b->Twoabs.
+Twobas = b->a->Twobas.
+Twoaas = a->a->Twoaas.
+Twobbs = b->b->Twobbs.
+
+}
+}
+
+equation {
+
+Y:Pro <f{cong} Z:Pro ==> forall{X:Test} (X||{a,b}Y:Pro <t{cong} X||{a,b}Z:Pro).
+//forall{X:Test} (X||{a,b}Y:Pro <t{cong} X||{a,b}Z:Pro) ==> Y:Pro <f{cong} Z:Pro. 
+}
+
+
+
+
+
+
+
+
+
+
+
+

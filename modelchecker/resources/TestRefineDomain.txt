@@ -1,0 +1,97 @@
+processes { 
+Test: {  
+Onea = a->STOP.
+Oneb = b->STOP.
+Oneab = a->STOP|b->STOP.  
+
+Twoaa = a->a->STOP.
+Twoab = a->b->STOP.
+Twoba = b->a->STOP.
+Twobb = b->b->STOP.
+Twoax = a->(a->STOP|b->STOP).
+Twobx = b->(a->STOP|b->STOP).
+
+Threea = a->a->a->STOP .
+Threeb = b->b->b->STOP .
+Threeaab = a->a->b->STOP.
+Threeaba = a->b->a->STOP.
+Threebaa = b->a->a->STOP.
+Threeabb = a->b->b->STOP. 
+Threebba = b->b->a->STOP.
+Threebab = b->a->b->STOP.
+Threeaax = a->a->(a->STOP|b->STOP).
+Threeabx = a->b->(a->STOP|b->STOP).
+Threebax = b->a->(a->STOP|b->STOP).
+Threebbx = b->b->(a->STOP|b->STOP).
+Fouraaab = a->a->a->b->STOP.
+Fourabaa = a->b->a->a->STOP.
+}
+
+Pro: {
+Twoabs = a->b->Twoabs.
+Twobas = b->a->Twobas.
+Twoaas = a->a->Twoaas.
+Twobbs = b->b->Twobbs.
+La = a->La.
+Lb = b->Lb.
+Lasb  = a->Lasb| b->STOP.
+Lasa  = a->Lasa| a->STOP.
+Lbsb  = b->Lbsb| b->STOP.
+Lbsa  = b->Lbsa| a->STOP.
+Labsa  = b->Labsa| a->Labsa| a->STOP.
+Labsab  = b->Labsab| a->Labsab| a->STOP|b->STOP.
+
+D   = a->(b->D|b->STOP).
+Dr  = a->b->Dr|b->STOP.
+Da  = a->b->Da|a->STOP.
+Dx  = a->(b->Dx|a->STOP).
+G  = b->(b->G|b->STOP).
+Gr = b->b->Gr|b->STOP.
+Ga = b->b->Ga|a->STOP.
+Gx = b->(b->Gx|a->STOP).
+I  = a->(a->I|b->STOP).
+Ir = a->a->Ir|b->STOP.
+Ia = a->a->Ia|a->STOP.
+Ix = a->(a->Ix|a->STOP).
+
+E  = a->b->X, X= a->X.
+E1 = b->b->X, X= a->X.
+E2 = b->a->X, X= a->X.
+E3 = a->a->X, X= a->X.
+F  = a->X, X= a->X|b->STOP.
+F1  = b->X, X= a->X|b->STOP.
+F2  = b->X, X= a->X|a->STOP.
+F3  = a->X, X= a->X|a->STOP.
+Ex1 = b->b->X, X= a->X| b->X.
+Ex2 = b->a->X, X= a->X| b->X.
+Ex3 = a->a->X, X= a->X| b->X.
+Fx  = a->X, X= a->X| b->X|b->STOP.
+Fx1  = b->X, X= a->X| b->X|b->STOP.
+Fx2  = b->X, X= a->X| b->X|a->STOP.
+Fx3  = a->X, X= a->X| b->X|a->STOP.
+
+
+}
+//Test1 =  Threea:Test||{a,b}F3:Pro.  // Fail to build
+
+}
+
+operation {
+}
+
+equation {
+Y:Pro <f Z:Pro ==> forall{X:Test} (X||{a,b}Y:Pro <t{cong} X||{a,b}Z:Pro).
+forall{X:Test} (X||{a,b}Y:Pro <t{cong} X||{a,b}Z:Pro) ==> Y:Pro <f Z:Pro.
+}
+
+
+
+
+
+
+
+
+
+
+
+

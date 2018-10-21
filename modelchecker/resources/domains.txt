@@ -1,0 +1,29 @@
+processes {
+As = a->STOP.
+Dam: {
+ A = a->STOP.
+ Ax = a->STOP.
+ Axx =  a->STOP.
+}
+As1 = a->STOP.
+Dbm: {
+ B  = a->STOP.
+ Bx  = a->STOP.
+}
+Dcm: {
+  Cc2 = a->STOP.
+}
+}
+
+operation {
+//A ~ B.
+}
+equation {
+X:Dam ~ Y:Dcm.
+
+//Z:Dbm <f Y:Dam.
+}
+
+
+
+

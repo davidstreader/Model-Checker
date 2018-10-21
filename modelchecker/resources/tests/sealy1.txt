@@ -1,0 +1,12 @@
+processes {
+Co = a?->(b!->STOP |c!->STOP).
+To = a!->b?->STOP.
+Cto = Co ||{a!,b!,c!} To. 
+
+}
+
+
+
+
+
+

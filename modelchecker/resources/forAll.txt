@@ -1,0 +1,30 @@
+processes {
+A = a->STOP.
+//B = a->STOP.
+//Bb = x->STOP.
+C = a->b->(a->STOP|b->STOP).
+D = a->(b->a->STOP|b->b->STOP).
+}
+
+operation {
+
+
+C <f A.
+} 
+equation {
+forall{X} (X||C <t X||A).
+
+X||C <t X||A.
+Z <f Y ==> forall{X} (X||C <t X||D).
+forall{X} (X||Z <t X||Y) ==> Z <f Y.
+}
+
+
+
+
+
+
+
+
+
+

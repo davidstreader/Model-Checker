@@ -82,7 +82,7 @@ public class TraceWork {
 
       //System.out.println("?   " + a1.readySets2String(cong) + " " + a2.readySets2String(cong));
       boolean b;
-      b = traceSubset(new NodePair(r2, r1), a2Next.getMap(), a1Next.getMap(), new ArrayList<>(), cong, complete);
+      b = traceSubset(new NodePair(r2, r1), a2Next.getMap(), a1Next.getMap(), new ArrayList<>(), cong, complete, tt);
 
       return b;
     }
@@ -109,15 +109,16 @@ public class TraceWork {
                               Map<AutomatonNode, NextMap> a2N,
                               List<NodePair> processed,
                               boolean cong,
-                              boolean complete) {
+                              boolean complete,
+                              TraceType tt) {
 
     //System.out.println("traceSubset start " + np.myString());
     //processed only used to stop algorithm running for ever with cyclic automata
     //boolean b = false;
     for (NodePair n : processed) {
       if (n.getFirst().getId().equals(np.getFirst().getId()) &&
-        n.getSecond().getId().equals(np.getSecond().getId())) {
-        //System.out.println(np.myString()+ "  processed Returns true");
+          n.getSecond().getId().equals(np.getSecond().getId())) {
+        System.out.println(np.myString()+ "  Already processed Returns true");
         //b = true;
         return true;
       }
@@ -136,12 +137,11 @@ public class TraceWork {
     Set<String> large = a1N.get(np.first).labels().stream().collect(Collectors.toSet());
     //large = large.stream().filter(x->small.contains(x)).collect(Collectors.toSet());
     //Set<String> intersect = large.stream().filter(x->small.contains(x)).collect(Collectors.toSet());
-    //System.out.println(" is   " + small + " a Subset of " + large);
+    System.out.println(" is   " + small + " a Subset of " + large+ " cong "+cong);
 
-    if (cong) {
-      for (String lab : small){
-        if (Constant.external(lab) && !large.contains(lab)) {
-          //System.out.println(np.myString() + " returns false " + small + " " + lab + " " + large);
+    for (String lab : small){
+        if (cong &&Constant.external(lab) && !large.contains(lab)) {
+          System.out.println(np.myString() + " returns false " + small + " " + lab + " " + large);
           return false;
         }
       }
@@ -152,10 +152,12 @@ public class TraceWork {
           return false;
         }
       } */
-    }
-    if (large.containsAll(small)) {
-      //if (a1N.get(np.first).labels().containsAll(small)) {
-      //System.out.println("large contains small");
+
+    if ((tt.equals(Constant.Quiescent) && containsAllOutput(large ,small) ||
+      (!tt.equals(Constant.Quiescent) && large.containsAll(small) ))) {
+     // if (large.containsAll(small)) {
+        //if (a1N.get(np.first).labels().containsAll(small)) {
+      System.out.println("large contains! small");
       processed.add(np);
       // b? might not be in in the ready labels but is in the next step label
       for (String lab : small) {
@@ -164,16 +166,24 @@ public class TraceWork {
         //System.out.println(" from "+np.myString()+ "lab = "+lab);
         AutomatonNode nd1 = a1N.get(np.first).getNcs().get(lab);
         AutomatonNode nd2 = a2N.get(np.second).getNcs().get(lab);
-        if (traceSubset(new NodePair(nd1, nd2), a1N, a2N, processed, cong, complete) == false) return false;
+        if (traceSubset(new NodePair(nd1, nd2), a1N, a2N, processed, cong, complete,tt) == false) return false;
       }
     } else {
-      //System.out.println(np.myString()+ " returns false " + small + " NOTsubset " + large);
+      System.out.println(np.myString()+ " returns false " + small + " NOTsubset " + large);
       return false;
     }
-    //System.out.println(np.myString()+ " traceSubset " + np.myString() + " returns true");
+    System.out.println(np.myString()+ " traceSubset " + np.myString() + " returns true");
     return true;
   }
+  private boolean containsAllOutput(Set<String> large, Set<String> small){
 
+    for(String smallelm: small) {
+      if (smallelm.endsWith(Constant.BROADCASTSoutput)){
+        if (!large.contains(smallelm)) return false;
+      }
+    }
+    return true;
+  }
 
   /*
     Build the ready set for each node (used as test in recursive traceSubset)
@@ -182,7 +192,8 @@ public class TraceWork {
     For non congurance STOP is add recursivly in quiescentNext
    */
   private Nd2NextMap build_readyMap(Automaton a, TraceType tt, boolean cong) {
-    //System.out.println("Build Ready Map " + tt + " cong= " + cong);
+    System.out.println("Build Ready Map " + tt + " cong= " + cong);
+    System.out.println("Automaton "+a.myString());
     //System.out.println(a.myString());
     Nd2NextMap nfanode2ASet = new Nd2NextMap();
     for (AutomatonNode n : a.getNodes()) {
@@ -190,7 +201,7 @@ public class TraceWork {
       NextMap as;
       as = new NextMap(n.getOutgoingEdges().stream().
         distinct().
-        filter(x->(!(x.getLabel().endsWith("?")&& tt.equals(TraceType.QuiescentTrace)) )).
+      //  filter(x->(!(x.getLabel().endsWith("?")&& tt.equals(TraceType.QuiescentTrace)) )).
         map(x -> new NextComponent(x.getLabel(), x.getTo())).
         collect(Collectors.toSet()));
 //dfa Node could be BOTH STOP and ERROR
@@ -210,11 +221,11 @@ public class TraceWork {
         if (n.isStartNode()) {
           as.ncs.put(Constant.Start, n);
         }
-
-      //System.out.println("Next " + n.getId() + " -> " + as.myString());
+      System.out.println("Using readySet on node " +n.readySet(cong));
+      System.out.println("Next " + n.getId() + " -> " + as.myString());
       nfanode2ASet.getMap().put(n, as);
     }
-    //System.out.println(nfanode2ASet.myString());
+    System.out.println(nfanode2ASet.myString());
     return nfanode2ASet;
   }
 

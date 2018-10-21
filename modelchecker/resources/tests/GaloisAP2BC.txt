@@ -1,0 +1,60 @@
+processes {
+ A= a^->STOP.  
+ A1= b->STOP.
+ A2= b^->STOP|a^->STOP.
+ A3= b^->STOP|a->STOP.
+ A4= b->STOP|a->STOP.
+B= a^->a^->STOP.  
+ B1= a^->b->STOP.
+ B2= a^->b^->STOP|a^->STOP.
+ B3= a->b^->STOP|a->STOP.
+ B4= a->b->STOP|a->STOP.
+
+ L= a^->L.  
+ L1= b->L1.
+ L2= a^->b^->L2|a^->STOP.
+ L3= a->b^->L3|a->STOP. 
+ Lx= a^->a^->Lx.  
+ Lx1= a^->b->Lx1.
+ Lx2= a^->b^->Lx2|a^->STOP.
+ Lx3= a->b^->Lx3|a->STOP. 
+ Llx= a^->a^->Llx|b->Llx.  
+ Llx1= a^->b->Llx1|b->b->Llx1.
+ Llx2= a^->b^->Llx2|a^->Llx2.
+ Llx3= a->b^->Llx3|a->Llx3. 
+
+L2b= b->b^->L2b|a^->STOP.
+ L3b= b^->b^->L3b|a->STOP. 
+ Lxb= b->a^->Lxb.  
+ Lx1b= b->b->Lx1b.
+ Lx2b= b->b^->Lx2b|a^->STOP.
+ Lx3b= b^->b^->Lx3b|a->STOP. 
+ Llxb= b->a^->Llxb|b->Llxb.  
+ Llx1b= b->b->Llx1b|b->b->Llx1b.
+ Llx2b= b->b^->Llx2b|a^->Llx2b.
+ Llx3b= b^->b^->Llx3b|a->Llx3b.
+
+T = fap2bc(A2).
+Ta = revap2bc(fap2bc(A2)).
+Ra = abs{fair}(revap2bc(fap2bc(A2))).
+R = fap2bc(Ra).
+}
+//alphabet{c?} 
+operation {
+R <q{fair} T.
+}
+
+equation {
+//revap2bc(fap2bc(X)) <f{fair} X.
+//X <f Y ==> revap2bc(fap2bc(X)) <f{fair} revap2bc(fap2bc(Y)).
+
+//  fap2bc(revap2bc(fap2bc(X))) <q{fair} fap2bc(X).
+
+
+//fap2bc(X) <q fap2bc(Y) ==> fap2bc(revap2bc(fap2bc(X))) <q{fair} fap2bc(revap2bc(fap2bc(Y))).
+
+}
+
+
+
+

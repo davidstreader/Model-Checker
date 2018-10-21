@@ -1,0 +1,53 @@
+processes {
+Aa = a?->b!->STOP |a?->c!->STOP|a?->STOP.
+Ca = a?->b!->STOP |a?->c!->STOP.
+Ta = a!->(b?->STOP|c?->STOP).
+
+Ata = Aa||{a!,b!,c!}Ta.
+Cta = Ca||{a!,b!,c!}Ta.
+
+A = a?->b?->ab!->STOP |a?->c?->ac!->STOP.
+C = a?->(b?->ab!->STOP |c?->ac!->STOP).
+T = a!->b!->ab?->STOP.
+
+At = A||{a!,b!,c!,ab!,ac!} T.
+Ct = C ||{a!,b!,c!,ab!,ac!} T. 
+
+Ao = a?->b!->STOP |a?->c!->STOP.
+Co = a?->(b!->STOP |c!->STOP).
+To = a!->b?->STOP.
+
+Ato = Ao||{a!,b!,c!} To.
+Cto = Co ||{a!,b!,c!} To.  
+
+}
+
+//alphabet{a?,b?,c?, ab?,ac?}
+
+operation {
+Ca !<q Aa.
+Cta !<q Ata.
+
+Aa <q Ca.
+Ata <q Cta.
+
+A <q C.
+At <q Ct.
+
+C <q A. 
+Ct !<q At.
+
+Ao <q Co.
+Ato <q Cto.
+
+Co <q Ao. 
+Cto <q Ato.
+
+} 
+
+
+
+
+
+
+
