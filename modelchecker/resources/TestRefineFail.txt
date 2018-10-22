@@ -59,21 +59,16 @@ Ex3 = a->a->X, X= a->X| b->X.
 Fx  = a->X, X= a->X| b->X|b->STOP.
 Fx1  = b->X, X= a->X| b->X|b->STOP.
 Fx2  = b->X, X= a->X| b->X|a->STOP.
-Fx3  = a->X, X= a->X| b->X|a->STOP.
-
+Fx3  = a->X, X= a->X| b->X|a->STOP. 
 
 }
-
+operation {
+//Labsab <f Dr.
+//Oneb||{a,b}Labsab <t{cong} Oneb||{a,b}Dr.
+}
 equation {
-Y <f{cong} Z ==> forall{X} (X||{a,b}Y <t{cong} X||{a,b}Z).
-forall{X} (X||{a,b}Y <t{cong} X||{a,b}Z) ==> Y <f{cong} Z.
+// NOTE <f{cong} should fail!
+Y <f Z ==> forall{X} (X||{a,b}Y <t{cong} X||{a,b}Z).
+forall{X} (X||{a,b}Y <t{cong} X||{a,b}Z) ==> Y <f Z.
 }
-
-
-
-
-
-
-
-
 

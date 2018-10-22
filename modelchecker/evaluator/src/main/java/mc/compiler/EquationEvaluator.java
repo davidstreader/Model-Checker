@@ -298,7 +298,7 @@ public class EquationEvaluator {
           //System.out.println("evaluated 2 status = " + status2.myString());
           or2 = status2.failCount == 0;
           if (or2 == true) {
-            //System.out.println("Short circuit Implies 2 == true");
+            System.out.println("  @@@@@@ Short circuit Implies 2 == true");
             status.failCount = 0; //force success
             failedEquations = new ArrayList<>();
             status.impliesConclusionTrue++;
@@ -326,7 +326,7 @@ public class EquationEvaluator {
             // status.setPassCount(status1.passCount); //pass count not passed up tree
             if (!r) {//or1==true and or2==false
               status.setFailCount(status2.failCount);
-              //System.out.println("Failing Implies" + operation.myString() + " " + asString(outerFreeVariabelMap)+" fail "+failures2);
+              System.out.println("  @@@@@@ Failing 1 Implies 2->1 " + operation.myString() + " " + asString(outerFreeVariabelMap)+" fail "+failures2);
               return failures2; //Fail must return the failures from 2 NOT 1
             } else status.passCount++;
           }
@@ -347,7 +347,7 @@ public class EquationEvaluator {
           //System.out.println("Eval Implies 1 Returning " + status1.myString());
           or1 = status1.failCount == 0;
           if (or1 == false) {  //Short Circuit
-            //System.out.println("Short circuit Implies 1 == false hence return true");
+            System.out.println("  @@@@@@ Short circuit Implies 1 == false hence  true");
             r = true;
             status.setFailCount(0);
             failedEquations = new ArrayList<>();
@@ -372,7 +372,7 @@ public class EquationEvaluator {
             status.setFailCount(status2.failCount);
             //status.setPassCount(status2.passCount);  //pass count not passed up term
             if (status2.failCount > 0) {
-              //System.out.println("Failing " + operation.myString() + " " + asString(outerFreeVariabelMap) + " fail " + failures2);
+              System.out.println("  @@@@@@ Failing 2 Implies 1->2" + operation.myString() + " " + asString(outerFreeVariabelMap) + " fail " + failures2);
               return failures2; //Fail must return
             } else status.passCount++;
           }
@@ -419,7 +419,7 @@ public class EquationEvaluator {
 
 //If we've failed too many operation tests;
         if (status.failCount > 0) {
-          //System.out.println("Failing " + operation.myString() + " " + failedEquations);
+          System.out.println("  @@@@@@ Failing " + operation.myString() + " " + failedEquations);
           return failedEquations;
         }  // end by failure
         status.doneCount++;
@@ -429,6 +429,7 @@ public class EquationEvaluator {
       }
 
       // Success only fall through so generate new permutation
+      System.out.println("  @@@@@@ Fallthrough tick "+ operation.myString());
       //System.out.println("Fallthrough " + status.myString()+" outerFV "+ asString(outerFreeVariabelMap));
       //System.out.println(inst.peek());
       if (freeVariables.size() == 0) return new ArrayList<>(); // called with a ground term so no looping

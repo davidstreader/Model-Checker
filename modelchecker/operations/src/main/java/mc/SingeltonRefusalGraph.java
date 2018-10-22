@@ -13,16 +13,16 @@ import java.util.stream.Collectors;
 
 /**
  * Created by dstr on 24/01/18.
- * An acceptance graph should be a dfa plus a Map from nodes to a set of acceptance sets
+ * A singeltonRefusalGraph graph should be a dfa plus a Map from nodes to a set of singelton Refusales
  */
-public class AcceptanceGraph {
+public class SingeltonRefusalGraph {
 
   @Getter
   @Setter
   private Automaton a;
   @Getter
   @Setter
-  private Map<AutomatonNode, List<Set<String>>> node2AcceptanceSets =
+  private Map<AutomatonNode, Set<String>> node2ReadySet =
     new HashMap<>();
 
 
@@ -35,15 +35,15 @@ public class AcceptanceGraph {
    * @throws CompilationException when the function fails
    */
 
-  public AcceptanceGraph(String id, Automaton nfain, boolean cong)
+  public SingeltonRefusalGraph(String id, Automaton nfain, boolean cong)
     throws CompilationException {
-    node2AcceptanceSets =  new HashMap<>();
+    node2ReadySet =  new HashMap<>();
     Automaton nfa = nfain.copy();  // must copy
     //System.out.println("PRE adding ERROR! " + nfa.myString());
     if (cong) addStartAndSTOP(nfa);
     //System.out.println("Starting Accept input " + nfa.myString() + "\n");
-    Map<AutomatonNode, List<Set<String>>> dfaNode2ASet =
-      new HashMap<AutomatonNode, List<Set<String>>>();
+    Map<AutomatonNode, Set<String>> dfaNode2ReadySet =
+      new HashMap<AutomatonNode, Set<String>>();
     //The acceptance sets should contain "STOP" "ROOT"
     // nfa nodes to its acceptance set
     Map<AutomatonNode, Set<String>> nfaNode2A = new HashMap<AutomatonNode, Set<String>>();
@@ -60,40 +60,30 @@ public class AcceptanceGraph {
 //set up root node
     //Set<AutomatonNode> dfaRoot =constructClosure(nfa.getRoot(), dfa2nfaSet); //add to dfa2nfaSet
     //Set<AutomatonNode> dfaRoot =constructClosure(nfa.getRoot());
-    for (AutomatonNode nfaRoot : nfa.getRoot()) { // more than one root from "+"
-      AutomatonNode drt = dfa.addNode();  //I THINK THIS IS WRONG ONLY ONE  DFA ROOT!
-      drt.setStartNode(true);
-      dfa.addRoot(drt);
-      Set<AutomatonNode> nr = new HashSet<AutomatonNode>();
-      nr.add(nfaRoot);  // one dfa root maps to a set of nfa roots
-      dfa2nfaSet.put(drt, nr);
-    }// note this dfa has more than one root node!
-    for (AutomatonNode dfaRoot : dfa.getRoot()) {
-      dfaNodes.push(dfaRoot);
-      dfa2nfaSet.put(dfaRoot, nfa.getRoot());
+    AutomatonNode drt = dfa.addNode();
+    drt.setStartNode(true);
+    dfa.addRoot(drt);
+      dfaNodes.push(drt);
+      dfa2nfaSet.put(drt, nfa.getRoot());
 //System.out.println("pushed");
-    }
+
 
 
     Set<String> alphabet = nfa.getAlphabet();
     //alphabet.remove(Constant.HIDDEN);
     int cnt = 0;
-    boolean processedRoot = false;
     while (!dfaNodes.isEmpty() && cnt < 100) {
       AutomatonNode poped = dfaNodes.pop();
       visited.add(poped);
 
-      List<Set<String>> acceptance = new LinkedList<>();
+      Set<String> ready = new TreeSet<>();
       for (AutomatonNode n : dfa2nfaSet.get(poped)) {// get the nfa nodes making this dfa node
 //System.out.println("nfa node "+n.myString());
-        if (!acceptance.contains(nfaNode2A.get(n))) {
-          acceptance.add(nfaNode2A.get(n));
-        }
-
+          ready.addAll(n.readySet(cong));
       }
 
-      //System.out.println(poped.getId()+" -> "+ acceptance.toString());
-      dfaNode2ASet.put(poped, acceptance);
+      System.out.println(poped.getId()+" -> "+ ready);
+      dfaNode2ReadySet.put(poped, ready);
       //System.out.println("Adding "+ poped.myString()+" "+ acceptance.toString());
       for (String action : alphabet) {
         Set<AutomatonNode> nextStates = constructStateSet(dfa2nfaSet.get(poped), action);
@@ -139,13 +129,14 @@ public class AcceptanceGraph {
       .forEach(nodey -> nodey.setStopNode(true));
     //System.out.println("So far "+dfa.myString());
     //printnode2AcceptanceSets(dfaNode2ASet, nfaNode2A);
-    Map<AutomatonNode, List<Set<String>>> dfaNode2ASetNew = activeActionCorrection(dfaNode2ASet);
+    Map<AutomatonNode, Set<String>> dfaNode2ASetNew = new HashMap<>();
+      //activeActionCorrection(dfaNode2ASet);
     //System.out.println("Next");
     //printnode2AcceptanceSets(dfaNode2ASetNew, nfaNode2A);
 // refactor the acceptance sets adding [a^] where needed
 
     this.setA(dfa);
-    this.setNode2AcceptanceSets(dfaNode2ASetNew);
+    this.setNode2ReadySet(dfaNode2ASetNew);
 
     //System.out.println("Ending AcceptanceGraph Constructor " + dfa.myString());
   }
@@ -357,8 +348,8 @@ public class AcceptanceGraph {
 
   private String node2ac_toString() {
     String outString = "";
-    for (AutomatonNode nd : node2AcceptanceSets.keySet()) {
-      outString = outString + (nd.getId() + "  " + node2AcceptanceSets.get(nd) + "\n ");
+    for (AutomatonNode nd : node2ReadySet.keySet()) {
+      outString = outString + (nd.getId() + "  " + node2ReadySet.get(nd) + "\n ");
     }
     return outString;
   }
@@ -386,7 +377,7 @@ public class AcceptanceGraph {
       for (Set<String> aa1 : a1) {     // exists as1 in a1 such that   (B)
         //strip out external
         Set<String> as1 = aa1.stream().filter(x->!Constant.external(x)).collect(Collectors.toSet());
-          //System.out.println("   is as2 " + as2 + " superset of   as1 " + as1);
+        //System.out.println("   is as2 " + as2 + " superset of   as1 " + as1);
         if (as2.containsAll(as1)) {    //  as1 is a  subset of as2
           ok = true;
           //System.out.println("      as2 " + as2 + " is superset as1 " + as1);
@@ -413,16 +404,16 @@ public class AcceptanceGraph {
   /*
     Constructor
    */
-  AcceptanceGraph(Automaton ain, Map<AutomatonNode, List<Set<String>>> n2as) {
+  SingeltonRefusalGraph(Automaton ain, Map<AutomatonNode, Set<String>> n2as) {
     a = ain;
-    node2AcceptanceSets = n2as;
+    node2ReadySet = n2as;
   }
 
   public String toString() {
     if (this.getA() == null) {
       System.out.println("AcceptanceGraph aut = null");
     }
-    if (this.getNode2AcceptanceSets() == null) {
+    if (this.getNode2ReadySet() == null) {
       System.out.println("AcceptanceGraph n2ac = null");
     }
     return "**Acceptance Graph  \n  " + this.getA().myString() + " " +

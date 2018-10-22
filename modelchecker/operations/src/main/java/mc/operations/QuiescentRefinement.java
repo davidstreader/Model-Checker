@@ -81,6 +81,31 @@ public class QuiescentRefinement implements IOperationInfixFunction {
     return tw.evaluate(flags,context, pms, TraceType.QuiescentTrace);
   }
 
+  /**
+   * sets the boolean quiescent on the nodes.
+   * @param a
+   * @param cong
+   * @throws CompilationException
+   */
+  private void setQuiescent( Automaton a,boolean cong) throws CompilationException {
+    System.out.println("setQuiescent");
+    for(AutomatonNode nd : a.getNodes()){
+      Set<String> notListening = nd.readySet(cong).stream().filter(x->!x.endsWith("?")).collect(Collectors.toSet());
+      nd.setQuiescent(notListening.size()==0);
+    }
+  }
+
+
+
+  /**
+   * OK we could add listening loops to build the augmented automata then
+   * I think trace ref on augmented would be quiestent ref on non aug (may be)?
+   * Find out one day.
+   * @param alphbet
+   * @param a
+   * @param cong
+   * @throws CompilationException
+   */
   private void setQuiescentAndAddListeningLoops(Set<String> alphbet, Automaton a,boolean cong) throws CompilationException {
     System.out.println("addQuiescentAndListeningLoops");
     for(AutomatonNode nd : a.getNodes()){
@@ -93,13 +118,8 @@ public class QuiescentRefinement implements IOperationInfixFunction {
       }
     }
   }
-  private void setQuiescent( Automaton a,boolean cong) throws CompilationException {
-    System.out.println("setQuiescent");
-    for(AutomatonNode nd : a.getNodes()){
-      Set<String> notListening = nd.readySet(cong).stream().filter(x->!x.endsWith("?")).collect(Collectors.toSet());
-      nd.setQuiescent(notListening.size()==0);
-    }
-  }
+
+
   private void AddListeningLoops(Set<String> alphbet, Automaton a,boolean cong) throws CompilationException {
     System.out.println("AddListeningLoops");
     for(AutomatonNode nd : a.getNodes()){

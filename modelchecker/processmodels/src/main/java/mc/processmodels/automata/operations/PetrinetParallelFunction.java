@@ -119,13 +119,15 @@ public class PetrinetParallelFunction  {
   private static void setupSynchronisedActions(Petrinet p1, Petrinet p2, Petrinet comp) {
     System.out.println("Start setupSynchronisedActions ");
     for (String action : synchronisedActions) {
+      Set<PetriNetTransition> p1P = new TreeSet<>();
+      Set<PetriNetTransition> p2P = new TreeSet<>();
       System.out.println("  action = "+action);
       if (action.endsWith(Constant.BROADCASTSoutput)) {
         String sync = action.substring(0, action.length() - 1)+Constant.BROADCASTSinput;
         System.out.println("Bcast sync = "+sync);
-        Set<PetriNetTransition> p1P = p1.getAlphabet().get(action).stream()
+        p1P = p1.getAlphabet().get(action).stream()
                 .map(t -> petriTransMap.get(t)).collect(Collectors.toSet());
-        Set<PetriNetTransition> p2P = p2.getAlphabet().get(sync).stream()
+        p2P = p2.getAlphabet().get(sync).stream()
                 .map(t -> petriTransMap.get(t)).collect(Collectors.toSet());
         replaceActions(p1P, p2P, comp, action, true);  //p1P = out
          p1P = p1.getAlphabet().get(sync).stream()
@@ -137,9 +139,9 @@ public class PetrinetParallelFunction  {
       else if (action.endsWith(Constant.ACTIVE)) {
         String sync = action.substring(0, action.length() - 1);
 
-        Set<PetriNetTransition> p1P = p1.getAlphabet().get(action).stream()
+        p1P = p1.getAlphabet().get(action).stream()
           .map(t -> petriTransMap.get(t)).collect(Collectors.toSet());
-        Set<PetriNetTransition> p2P = p2.getAlphabet().get(sync).stream()
+        p2P = p2.getAlphabet().get(sync).stream()
           .map(t -> petriTransMap.get(t)).collect(Collectors.toSet());
         replaceActions(p1P, p2P, comp, action, true);  //active in p1P
         p1P = p1.getAlphabet().get(sync).stream()
@@ -150,10 +152,16 @@ public class PetrinetParallelFunction  {
       } else {
         //do nothing
       }
+      Set<PetriNetTransition> toGo = p1P.stream().collect(Collectors.toSet());
+      toGo.addAll(p2P.stream().collect(Collectors.toSet()));
+      removeoldTrans(comp,toGo);
+
     }
+
     System.out.println("Sync END BC"+comp.myString());
     setupSynchronisedHS(p1,p2,comp);
-    System.out.println("Sync END HS"+comp.myString());
+    //System.out.println("Sync END HS"+comp.myString());
+
   }
   @SneakyThrows(value = {CompilationException.class})
   private static void setupSynchronisedHS(Petrinet p1, Petrinet p2, Petrinet comp) {
@@ -167,7 +175,16 @@ public class PetrinetParallelFunction  {
       if (p1Pair.size() > 0 && p2Pair.size() > 0) {
         replaceActions(p1Pair, p2Pair, comp, action, false); //handshake on label equality
       }
+      System.out.println("p1Pair "+p1Pair.size());
+      p1Pair.stream().forEach(x->{ System.out.println(x.myString());});
+      System.out.println("p2Pair "+p2Pair.size());
+      p2Pair.stream().forEach(x->{ System.out.println(x.myString());});
+      Set<PetriNetTransition> toGo = p1Pair.stream().collect(Collectors.toSet());
+      toGo.addAll(p2Pair.stream().collect(Collectors.toSet()));
+      removeoldTrans(comp,toGo);
+
     }
+
   }
 /*
    Replace each pair of synchronising transitions with their combined transition
@@ -247,14 +264,19 @@ public class PetrinetParallelFunction  {
         }
       }
     }
-    for (PetriNetTransition oldTrans : Iterables.concat(p1_, p2_)) {
-      if (comp.getTransitions().containsValue(oldTrans))  {
-        //System.out.println("removing "+oldTrans.myString());
-        comp.removeTransition(oldTrans);}
-    }
 
 
   }
+
+  private static void removeoldTrans(Petrinet comp, Set<PetriNetTransition> toGo)
+    throws  CompilationException {
+    for (PetriNetTransition oldTrans : toGo) {
+      if (comp.getTransitions().containsValue(oldTrans))  {
+        System.out.println("removing "+oldTrans.myString());
+        comp.removeTransition(oldTrans);}
+    }
+  }
+
 
   private static boolean containsReceiverOf(String broadcaster, Collection<String> otherPetrinet) {
     for (String reciever : otherPetrinet) {

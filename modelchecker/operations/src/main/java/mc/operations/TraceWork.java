@@ -44,7 +44,7 @@ public class TraceWork {
      First add listening loops and Quiescent events then follow the trace subset algorithm
    */
   public boolean evaluate(Set<String> flags, Context context, Collection<ProcessModel> processModels, TraceType tt) throws CompilationException {
-
+//Called directly from Trace Refinement and with some preprocessing from Quiescent Refinement
     boolean cong = flags.contains(Constant.CONGURENT);
     boolean complete = tt.equals(TraceType.CompleteTrace) ||tt.equals(TraceType.QuiescentTrace) ;
     if (processModels.iterator().next() instanceof Automaton) {
@@ -82,6 +82,8 @@ public class TraceWork {
 
       //System.out.println("?   " + a1.readySets2String(cong) + " " + a2.readySets2String(cong));
       boolean b;
+      //Recursive  Algorithm - a2Next.getMap() is BOTH the readset to be checked and where to go next
+
       b = traceSubset(new NodePair(r2, r1), a2Next.getMap(), a1Next.getMap(), new ArrayList<>(), cong, complete, tt);
 
       return b;
@@ -105,7 +107,8 @@ public class TraceWork {
      Handshake has delta events that differentiate STOP from ERROR
      Quiescent  needs similar!
    */
-  private boolean traceSubset(NodePair np, Map<AutomatonNode, NextMap> a1N,
+  private boolean traceSubset(NodePair np,
+                              Map<AutomatonNode, NextMap> a1N,// BOTH isSubset AND where to go next
                               Map<AutomatonNode, NextMap> a2N,
                               List<NodePair> processed,
                               boolean cong,
