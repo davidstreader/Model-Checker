@@ -19,11 +19,12 @@ public class AcceptanceGraph {
 
   @Getter
   @Setter
-  private Automaton a;
+  private Automaton a;  // A dfa
+
+  //Data built by nfa2dfa  and used in node sub - comparision
   @Getter
   @Setter
-  private Map<AutomatonNode, List<Set<String>>> node2AcceptanceSets =
-    new HashMap<>();
+  private Map<AutomatonNode, List<Set<String>>> node2AcceptanceSets;
 
 
   /**
@@ -85,14 +86,10 @@ public class AcceptanceGraph {
 
       List<Set<String>> acceptance = new LinkedList<>();
       for (AutomatonNode n : dfa2nfaSet.get(poped)) {// get the nfa nodes making this dfa node
-//System.out.println("nfa node "+n.myString());
         if (!acceptance.contains(nfaNode2A.get(n))) {
           acceptance.add(nfaNode2A.get(n));
         }
-
       }
-
-      //System.out.println(poped.getId()+" -> "+ acceptance.toString());
       dfaNode2ASet.put(poped, acceptance);
       //System.out.println("Adding "+ poped.myString()+" "+ acceptance.toString());
       for (String action : alphabet) {
@@ -179,7 +176,8 @@ public class AcceptanceGraph {
   private Map<AutomatonNode, List<Set<String>>> activeActionCorrection(Map<AutomatonNode, List<Set<String>>> nd2Ac) {
     Map<AutomatonNode, List<Set<String>>> out = new HashMap<>();
     for (AutomatonNode nd : nd2Ac.keySet()) {
-      List<Set<String>> asout = new ArrayList<>();
+
+  /*    List<Set<String>> asout = new ArrayList<>();
       for (Set<String> as : nd2Ac.get(nd)) {
         if (as.size() > 1) {
           for (String a : as) {
@@ -191,12 +189,53 @@ public class AcceptanceGraph {
           }
         }
         asout.add(as);
-      }
-      out.put(nd, asout);
+      }*/
+      out.put(nd,correction(nd2Ac.get(nd)));
+     // out.put(nd, asout);
     }
     return out;
   }
 
+  /*
+  built for new Failue Refinement algorithm - parameterised traceWorks
+   */
+  private List<Set<String>>  buildAsets(Set<AutomatonNode> nodes, boolean cong) {
+    List<Set<String>> acceptance = new LinkedList<>();
+    for (AutomatonNode n : nodes) {// get the nfa nodes making this dfa node
+      Set<String> as = n.getOutgoingEdges().stream().
+        distinct().
+        map(AutomatonEdge::getLabel).
+        collect(Collectors.toSet());
+      if (cong) {
+        if (n.isSTOP()) {
+          as.add(Constant.STOP);
+        }
+        if (n.isStartNode()) {
+          as.add(Constant.Start);
+        }
+      }
+      if (!acceptance.contains(as)) {
+        acceptance.add(as);
+      }
+    }
+    return correction(acceptance);
+  }
+  private List<Set<String>> correction(List<Set<String>> in){
+    List<Set<String>> asout = new ArrayList<>();
+    for (Set<String> as : in) {
+      if (as.size() > 1) {
+        for (String a : as) {
+          if (a.endsWith(Constant.ACTIVE)) {
+            Set<String> s = new HashSet<String>();
+            s.add(a);
+            asout.add(s);
+          }
+        }
+      }
+      asout.add(as);
+    }
+    return asout;
+  }
 
   /**
    * @param nodes  set of nfa nodes of curret dfa node
@@ -283,6 +322,7 @@ public class AcceptanceGraph {
     //System.out.println("build_nfanode2ASet");
     Map<AutomatonNode, Set<String>> nfanode2ASet = new HashMap<AutomatonNode, Set<String>>();
     for (AutomatonNode n : a.getNodes()) {
+
       Set<String> as = n.getOutgoingEdges().stream().
         distinct().
         map(AutomatonEdge::getLabel).
@@ -298,6 +338,7 @@ public class AcceptanceGraph {
       nfanode2ASet.put(n, as);
       //System.out.println("nfa ready "+n.getId()+" -> "+as);
     }
+
     //System.out.println("build_nfanode2ASet");
     return nfanode2ASet;
   }

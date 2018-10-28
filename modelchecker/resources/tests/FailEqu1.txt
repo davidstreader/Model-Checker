@@ -21,15 +21,17 @@ Two10 = a->Two3|b->ERROR.
 
 
 equation {
-X[]Y =f Y[]X.
-X[](Y[]Z) =f (X[]Y)[]Z.
+X[]Y <f Y[]X.
+
+X[](Y[]Z) <f (X[]Y)[]Z.
 
 //X|| Y =f Y||X.
 //(X=>Y)| (Z=>Y) * (X|Z)=>Y.  // Tree ONLY
-(a->STOP)=>X =f a->X.
+(a->STOP)=>X <f a->X.
 
- X=>(Y+Z) =f (X=>Y)[](X=>Z).
+ X=>(Y+Z) <f (X=>Y)[](X=>Z).
 }
+
 
 
 

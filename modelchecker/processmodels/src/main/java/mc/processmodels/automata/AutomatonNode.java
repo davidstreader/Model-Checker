@@ -171,7 +171,7 @@ public class AutomatonNode extends ProcessModelObject implements Comparable<Auto
 
   public boolean isQuiescent() {
     Set<AutomatonEdge> shouting =
-      outgoingEdges.values().stream().filter(x -> !x.getLabel().endsWith(Constant.BROADCASTSinput)).collect(Collectors.toSet());
+      outgoingEdges.values().stream().filter(x -> x.getLabel().endsWith(Constant.BROADCASTSoutput)).collect(Collectors.toSet());
     return shouting.size() == 0;
   }
 
@@ -278,22 +278,22 @@ public class AutomatonNode extends ProcessModelObject implements Comparable<Auto
   /*
      Currently only used in QuiescentTrace but could be used elsewhere
    */
-  public Set<String> readySet(boolean cong) {
+  public Set<String> quiescentReadySet(boolean cong) {
     Set<String> out = getOutgoingEdges().stream().map(x -> x.getLabel()).collect(Collectors.toSet());
    if (cong) {
      if (isSTOP()) out.add(Constant.STOP);
-     if (isERROR()||(!isSTOP() && quiescentDeadlock() )) out.add(Constant.ERROR);
+     if (isERROR()) out.add(Constant.ERROR);
+     if (quiescentCheck()) out.add(Constant.Quiescent);
      if (isStartNode())  out.add(Constant.Start);
    }
     return out;
   }
   /*
-    Strip listening loops from outgoing edges and
-    if nothing left return true.
+    if node dose not shout then it is quiescent
    */
-  private boolean  quiescentDeadlock(){
+  private boolean  quiescentCheck(){
     Set<AutomatonEdge> next = outgoingEdges.values().stream().
-      filter(x->(!(x.getLabel().endsWith("?")&&x.getTo().getId().equals(getId())))).
+      filter(x->((x.getLabel().endsWith("!")))).
       collect(Collectors.toSet());
     return next.size()==0;
   }

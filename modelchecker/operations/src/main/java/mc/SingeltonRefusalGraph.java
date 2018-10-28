@@ -79,7 +79,7 @@ public class SingeltonRefusalGraph {
       Set<String> ready = new TreeSet<>();
       for (AutomatonNode n : dfa2nfaSet.get(poped)) {// get the nfa nodes making this dfa node
 //System.out.println("nfa node "+n.myString());
-          ready.addAll(n.readySet(cong));
+          ready.addAll(n.quiescentReadySet(cong));
       }
 
       System.out.println(poped.getId()+" -> "+ ready);

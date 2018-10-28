@@ -1,15 +1,36 @@
 processes {
+One = a!->b?->STOP.
+Two = a!->c?->STOP.
+OOut = a!->b?->x!->STOP.
+TOut = a!->c?->x!->STOP.
+
 Aa = a?->b!->STOP |a?->c!->STOP|a?->STOP.
 Ca = a?->b!->STOP |a?->c!->STOP.
+Ta = a!->(b?->STOP|c?->STOP).
 
+Ata = Aa||{a!,b!,c!}Ta.
+Cta = Ca||{a!,b!,c!}Ta.
 }
 
-//alphabet{a?,b?,c?, ab?,ac?}
+alphabet{a?,b?,c?}
 
 operation {
-Ca <q{cong} Aa.
-Aa <q{cong} Ca.
+//One <q Two.
+//Two <q One.
+//One !<q{cong} Two.
+Two !<q{cong} One.
+/*
+OOut <q TOut.
+TOut <q OOut.
+OOut !<q{cong} TOut.
+TOut !<q{cong} OOut.
 
+Ca <q Aa.
+Cta <q Ata.
+
+Ca !<q{cong} Aa.
+Cta !<q{cong} Ata.
+*/
 } 
 
 

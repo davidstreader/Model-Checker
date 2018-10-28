@@ -1,4 +1,13 @@
 processes {
+One = a!->b?->STOP.  // a?->b!->   STOP
+Two = a!->c?->STOP. //  a? -> b! -> NOT STOP
+
+OOut = a!->b?->x!->STOP.  // a? -> b! -> x!
+TOut = a!->c?->x!->STOP.  // a? -> b!  NOT x!
+Test = a?->b!->STOP. 
+OOtest = OOut||{a!,b!,c!} Test.
+TOtest = TOut||{a!,b!,c!} Test.
+
 Aa = a?->b!->STOP |a?->c!->STOP|a?->STOP.
 Ca = a?->b!->STOP |a?->c!->STOP.
 Ta = a!->(b?->STOP|c?->STOP).
@@ -25,8 +34,24 @@ Cto = Co ||{a!,b!,c!} To.
 //alphabet{a?,b?,c?, ab?,ac?}
 
 operation {
-Ca !<q Aa.
-Cta !<q Ata.
+One <q Two.
+Two <q One.
+One !<q{cong} Two.
+Two !<q{cong} One.
+
+OOut <q TOut.
+TOut <q OOut.
+OOut !<q{cong} TOut.
+TOut !<q{cong} OOut.
+
+OOtest <q TOtest.
+OOtest <q{cong} TOtest.
+
+Ca <q Aa.
+Cta <q Ata.
+
+Ca !<q{cong} Aa.
+Cta !<q{cong} Ata.
 
 Aa <q Ca.
 Ata <q Cta.
@@ -35,7 +60,8 @@ A <q C.
 At <q Ct.
 
 C <q A. 
-Ct !<q At.
+Ct <q At.
+Ct !<q{cong} At.
 
 Ao <q Co.
 Ato <q Cto.
@@ -44,10 +70,6 @@ Co <q Ao.
 Cto <q Ato.
 
 } 
-
-
-
-
 
 
 

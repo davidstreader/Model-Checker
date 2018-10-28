@@ -1,6 +1,6 @@
 package mc;
 
 public enum TraceType {
-   CompleteTrace, Trace , QuiescentTrace;
+   CompleteTrace, Trace , QuiescentTrace, Failure, SingeltonFailure, QuiescentSingeltoFailure;
 }
 

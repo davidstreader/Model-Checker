@@ -67,6 +67,10 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
   @Setter
   private Location location;
 
+  @Setter  // Used to house data for Fail -SingeltonFail, ......
+  @Getter  // Construced in Nfa2DfaWorks  used in TraceWorks
+  private Map<AutomatonNode, List<Set<String>>> node2ReadySets = new TreeMap<>();
+
   /*
   @Getter
   @Setter
@@ -104,10 +108,11 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
 
   public AutomatonNode deadNode(){
-    if (nodeMap.keySet().contains("_dead"))
-      return nodeMap.get("_dead");
+    String dead = "_dead";
+    if (nodeMap.keySet().contains(dead))
+      return nodeMap.get(dead);
     else
-      return addNode("_daed");
+      return addNode(dead);
   }
   /**
    * needed to prevent size of owner growing
@@ -834,6 +839,10 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     for(AutomatonEdge ed: getEdges()){
       sb.append(ed.myString()+"\n");
     }
+    sb.append(" node2ReadySets\n");
+    for(AutomatonNode nd: node2ReadySets.keySet()){
+      sb.append(nd.getId()+"->"+node2ReadySets.get(nd)+"\n");
+    }
     return sb.toString();
   }
 
@@ -841,7 +850,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     StringBuilder sb = new StringBuilder();
     sb.append("Ready set of "+this.getId()+"\n");
     for (AutomatonNode nd: getNodes()){
-      sb.append(nd.getId()+" -> "+nd.readySet(cong)+"\n");
+      sb.append(nd.getId()+" -> "+nd.quiescentReadySet(cong)+"\n");
     }
 
     return sb.toString();
@@ -943,6 +952,9 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     }
     copy.copyProperties(this);
    //System.out.println("copy Ends "+copy.myString());
+    for(AutomatonNode nd: this.node2ReadySets.keySet()){
+      copy.node2ReadySets.put(reNode.get(nd),node2ReadySets.get(nd));
+    }
     return copy;
   }
 
@@ -1102,6 +1114,14 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     //System.out.println("  PAR returns " + this.myString(parallel));
 
     return parallel;
+  }
+
+  public String node2ReadySets2String() {
+    StringBuilder sb = new StringBuilder();
+    for(AutomatonNode nd : node2ReadySets.keySet()){
+      sb.append(nd.getId()+"-> "+node2ReadySets.get(nd)+"\n");
+    }
+    return sb.toString();
   }
 }
 

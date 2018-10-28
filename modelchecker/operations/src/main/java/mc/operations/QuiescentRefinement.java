@@ -9,7 +9,6 @@ import mc.Constant;
 import mc.TraceType;
 import mc.exceptions.CompilationException;
 import mc.operations.functions.AbstractionFunction;
-import mc.operations.functions.SimpFunction;
 import mc.plugins.IOperationInfixFunction;
 import mc.processmodels.ProcessModel;
 import mc.processmodels.automata.Automaton;
@@ -62,8 +61,8 @@ public class QuiescentRefinement implements IOperationInfixFunction {
     AbstractionFunction abs = new AbstractionFunction();
     //tw.evaluate(flags,processModels, TraceType.QuiescentTrace);
     //setQuiescentAndAddListeningLoops(alpha,a1);
-    setQuiescent(a1,cong);
-    setQuiescent(a2,cong);
+    //setQuiescent(a1,cong);
+    //setQuiescent(a2,cong);
     a1 = abs.GaloisBCabs(a1.getId(),flags,context,a1);
     a2 = abs.GaloisBCabs(a2.getId(),flags,context,a2); //end states marked
     //a1 = simp.compose(a1.getId(),flags,context,a1);
@@ -78,7 +77,8 @@ public class QuiescentRefinement implements IOperationInfixFunction {
     pms.add(a2);
     //return  teo.evaluate(alpha,flags,context,pms);
     TraceWork tw = new TraceWork();  // THIS builds a DFA and then trace subset
-    return tw.evaluate(flags,context, pms, TraceType.QuiescentTrace);
+    return tw.evaluate(flags,context, pms, TraceType.QuiescentTrace,
+           this::quiescentWrapped, this::isReadySubset);
   }
 
   /**
@@ -87,53 +87,51 @@ public class QuiescentRefinement implements IOperationInfixFunction {
    * @param cong
    * @throws CompilationException
    */
-  private void setQuiescent( Automaton a,boolean cong) throws CompilationException {
+  public void setQuiescent( Automaton a,boolean cong) throws CompilationException {
     System.out.println("setQuiescent");
     for(AutomatonNode nd : a.getNodes()){
-      Set<String> notListening = nd.readySet(cong).stream().filter(x->!x.endsWith("?")).collect(Collectors.toSet());
+      Set<String> notListening = nd.quiescentReadySet(cong).stream().filter(x->!x.endsWith("?")).collect(Collectors.toSet());
       nd.setQuiescent(notListening.size()==0);
     }
   }
 
 
 
-  /**
-   * OK we could add listening loops to build the augmented automata then
-   * I think trace ref on augmented would be quiestent ref on non aug (may be)?
-   * Find out one day.
-   * @param alphbet
-   * @param a
-   * @param cong
-   * @throws CompilationException
+
+
+  /*
+    function returns the qiescent union of the ready sets to be added to the dfa
+    returns the empty set if not quiescent
+  */
+  public List<Set<String>> quiescentWrapped(Set<AutomatonNode> nds, boolean cong){
+
+    List<Set<String>> readyWrap = new ArrayList<>();
+    Set<String> ready = new TreeSet<>();
+    nds.stream().map(x->x.quiescentReadySet(cong)).forEach(s->ready.addAll(s));
+
+    readyWrap.add(ready.stream().distinct().collect(Collectors.toSet()));
+    System.out.println("quiescentWrapped "+readyWrap);
+    return readyWrap;
+  }
+
+  /*
+    function to be applied to the data output from readyWrapped
+    returns subset
    */
-  private void setQuiescentAndAddListeningLoops(Set<String> alphbet, Automaton a,boolean cong) throws CompilationException {
-    System.out.println("addQuiescentAndListeningLoops");
-    for(AutomatonNode nd : a.getNodes()){
-      Set<String> notListening = nd.readySet(cong).stream().filter(x->!x.endsWith("?")).collect(Collectors.toSet());
-      nd.setQuiescent(notListening.size()==0);
-      for(String lab: alphbet) {
-        if (!nd.readySet(cong).contains(lab)) {
-          a.addEdge(lab,nd,nd,nd.getGuard(),false,false);
+
+  private boolean isReadySubset(List<Set<String>> s1,List<Set<String>> s2, boolean cong) {
+    boolean out = true;
+    if (cong) out =  s2.get(0).containsAll(s1.get(0));
+    else {
+      for (String lab :s1.get(0)) {
+        if (Constant.external(lab)) continue;
+        if (!s2.get(0).contains(lab)) {
+          out = false;
+          break;
         }
       }
     }
+    return out;
   }
-
-
-  private void AddListeningLoops(Set<String> alphbet, Automaton a,boolean cong) throws CompilationException {
-    System.out.println("AddListeningLoops");
-    for(AutomatonNode nd : a.getNodes()){
-      System.out.println("  "+nd.getId()+"  "+nd.readySet(cong));
-      for(String lab: alphbet) {
-        if (!nd.readySet(cong).contains(lab)) {
-          a.addEdge(lab,nd,nd,nd.getGuard(),false,false);
-          System.out.println("     adding "+lab+" to "+nd.getId());
-        } else {
-          System.out.println("  NOTadding "+lab+" to "+nd.getId());
-        }
-      }
-    }
-  }
-
 }
 

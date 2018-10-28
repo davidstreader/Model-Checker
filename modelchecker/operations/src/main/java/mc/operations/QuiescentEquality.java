@@ -66,10 +66,10 @@ public class QuiescentEquality implements IOperationInfixFunction {
   private void addQuiescentAndListeningLoops(Set<String> alphbet, Automaton a,boolean cong) throws CompilationException {
     System.out.println("addQuiescentAndListeningLoops");
     for(AutomatonNode nd : a.getNodes()){
-      Set<String> notListening = nd.readySet(cong).stream().filter(x->!x.endsWith("?")).collect(Collectors.toSet());
+      Set<String> notListening = nd.quiescentReadySet(cong).stream().filter(x->!x.endsWith("?")).collect(Collectors.toSet());
       nd.setQuiescent(notListening.size()==0);
       for(String lab: alphbet) {
-        if (!nd.readySet(cong).contains(lab)) {
+        if (!nd.quiescentReadySet(cong).contains(lab)) {
           a.addEdge(lab,nd,nd,nd.getGuard(),false,false);
         }
       }

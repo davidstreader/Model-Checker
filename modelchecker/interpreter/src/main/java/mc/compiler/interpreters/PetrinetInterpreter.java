@@ -297,8 +297,8 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
         reference = ((IdentifierNode) astNode).getIdentifier() + ":" +
           ((IdentifierNode) astNode).getDomain();
       }
-      System.out.println("*** interpretProcess IdentifierNode " + reference);
-      System.out.println(asString(processMap));
+      //System.out.println("*** interpretProcess IdentifierNode " + reference);
+      //System.out.println(asString(processMap));
 
       if (processMap.get(reference).getProcessType().equals(ProcessType.MULTI_PROCESS)) {
         //System.out.println("interpretProcess GETS *********** MULTI_PROCESS -> PN");
@@ -344,7 +344,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
 
       //Interpret Node
       //System.out.println("\n before 236*****Interpret " +petrinet.myString()+"\n");
-      System.out.println(" interpretProcess "+ identifier+ " processmap  "+asString(processMap));
+      //System.out.println(" interpretProcess "+ identifier+ " processmap  "+asString(processMap));
 
       petrinet = interpretASTNode(astNode, petrinet); // PETRI TREE is built and returned
       //System.out.println("236 *****Interpret "+astNode.toString());
