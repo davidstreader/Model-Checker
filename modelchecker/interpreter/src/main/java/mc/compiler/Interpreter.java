@@ -74,7 +74,6 @@ public class Interpreter {
     //System.out.println("AST processes "+ processes.stream().map(x->x.getIdentifier()).
     //  reduce("{",(x,y)->x+" "+y)+"}");
     for (ProcessNode process : processes) { //BUILD ALL PROCESSES
-
       //System.out.println("++++++Interpreter Building " + process.getIdentifier() + " ... "+ process.getType().toString());
       //System.out.println("Process "+process.myString());
       ProcessModel model = null;
@@ -109,6 +108,7 @@ public class Interpreter {
       null,
       -1,
       Thread.currentThread()));
+    //System.out.println("Interpreter 111 "+ PetrinetInterpreter.asString(processMap));
     return processMap;
 
   }

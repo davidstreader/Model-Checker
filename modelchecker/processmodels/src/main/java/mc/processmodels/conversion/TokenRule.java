@@ -63,10 +63,11 @@ public class TokenRule {
   public static Automaton tokenRule(Petrinet convertFrom,
                                     Map<Multiset<PetriNetPlace>, AutomatonNode> markingToNodeMap,
                                     Map<AutomatonNode, Multiset<PetriNetPlace> > nodeToMarkingMap) {
-
-    Automaton outputAutomaton = new Automaton(convertFrom.getId()  //+ " automata"
-            ,false);
-      //System.out.println("TOKEN RULE  STARTING "+convertFrom.getId());
+ String  nameOnly = convertFrom.getId().replaceAll("[0-9]*$", "");
+ //keeps the id numbers low - op_eval resets Automaton.tagid
+    Automaton outputAutomaton = new Automaton(convertFrom.getId() ,false);
+    //Automaton outputAutomaton = new Automaton(nameOnly+Automaton.tagid  ,false);
+    //System.out.println("TOKEN RULE  STARTING "+convertFrom.getId());
 
       assert convertFrom.validatePNet(): "Token precondition";
    outputAutomaton.setOwners(convertFrom.getOwners());

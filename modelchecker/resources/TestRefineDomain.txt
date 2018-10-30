@@ -80,9 +80,10 @@ operation {
 }
 
 equation {
-Y:Pro <f Z:Pro ==> forall{X:Test} (X||{a,b}Y:Pro <t{cong} X||{a,b}Z:Pro).
-forall{X:Test} (X||{a,b}Y:Pro <t{cong} X||{a,b}Z:Pro) ==> Y:Pro <f Z:Pro.
+Y:Pro <f{cong} Z:Pro ==> forall{X:Test} (X||{a,b}Y:Pro <t{cong} X||{a,b}Z:Pro).
+forall{X:Test} (X||{a,b}Y:Pro <t{cong} X||{a,b}Z:Pro) ==> Y:Pro <f{cong} Z:Pro.
 }
+
 
 
 

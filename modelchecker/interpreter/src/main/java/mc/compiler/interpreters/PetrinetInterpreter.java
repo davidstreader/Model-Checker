@@ -122,7 +122,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     reset();
     //called by Interpreter and  Returns a ProcessModel that the Interpreter adds to the processMap
     this.alpha = alpha;
-    System.out.println("Petri interpret "+ processNode.getIdentifier()+" processmap  "+asString(processMap));
+    //System.out.println("Petri interpret "+ processNode.getIdentifier()+" processmap  "+asString(processMap));
 
     this.context = context;
     variableList = new HashSet<>();
@@ -286,6 +286,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     throws CompilationException, InterruptedException {
     //prity print AST
     //System.out.println("interpretProcess (PN) astNode IS " +astNode.myString());
+    //System.out.println("289 "+asString(processMap));
     //System.out.println("processMap keys "+processMap.keySet());
     PetrinetInterpreter.indent = PetrinetInterpreter.indent.concat("-");
     String className = astNode.getClass().getSimpleName();
@@ -345,7 +346,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
       //Interpret Node
       //System.out.println("\n before 236*****Interpret " +petrinet.myString()+"\n");
       //System.out.println(" interpretProcess "+ identifier+ " processmap  "+asString(processMap));
-
+      //System.out.println("349 "+asString(processMap));
       petrinet = interpretASTNode(astNode, petrinet); // PETRI TREE is built and returned
       //System.out.println("236 *****Interpret "+astNode.toString());
       //System.out.println("\n***PetriInterpret " +petrinet.myString()+"\n");
@@ -475,6 +476,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     }
     //this is for => and || and +
     else if (currentNode instanceof CompositeNode) {
+      //System.out.println("478 "+asString(processMap));
       petri = interpretComposite((CompositeNode) currentNode, petri);
       info = ((CompositeNode) currentNode).getOperation();
     }
@@ -719,6 +721,8 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     throws CompilationException, InterruptedException {
 
     //System.out.println("interpretCOMPOSITE "+composite.getOperation());
+    //System.out.println(asString(processMap));
+
     interpretProcess(composite.getFirstProcess(), petri.getId() + ".pc1");
     interpretProcess(composite.getSecondProcess(), petri.getId() + ".pc2");
     Set<String> flags = composite.getFlags();

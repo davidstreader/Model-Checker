@@ -66,7 +66,7 @@ public class TraceRefinement implements IOperationInfixFunction {
 
     List<Set<String>> readyWrap = new ArrayList<>();
     Set<String> ready = new TreeSet<>();
-    nds.stream().map(x->x.quiescentReadySet(cong)).forEach(s->ready.addAll(s));
+    nds.stream().map(x->x.readySet(cong)).forEach(s->ready.addAll(s));
     //System.out.println("readyWrapped "+ready);
     readyWrap.add(ready.stream().distinct().collect(Collectors.toSet()));
     //System.out.println("readyWrapped "+readyWrap);
@@ -74,18 +74,18 @@ public class TraceRefinement implements IOperationInfixFunction {
     return readyWrap;
   }
 
-  /*
+  /* s2 subset of s1
     function to be applied to the data output from readyWrapped
     returns subset
    */
 
   public boolean isReadySubset(List<Set<String>> s1,List<Set<String>> s2, boolean cong) {
     boolean out = true;
-    if (cong) out =  s2.get(0).containsAll(s1.get(0));
+    if (cong) out =  s1.get(0).containsAll(s2.get(0));
     else {
-      for (String lab :s1.get(0)) {
+      for (String lab :s2.get(0)) {
         if (Constant.external(lab)) continue;
-        if (!s2.get(0).contains(lab)) {
+        if (!s1.get(0).contains(lab)) {
           out = false;
           break;
         }

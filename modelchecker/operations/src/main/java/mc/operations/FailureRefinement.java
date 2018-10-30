@@ -53,9 +53,9 @@ public class FailureRefinement implements IOperationInfixFunction {
     TraceWork tw = new TraceWork();
 
     return tw.evaluate(flags,context, processModels,
-      TraceType.CompleteTrace,
+      TraceType.Failure,
       this::buildAsets,
-      this::AcceptanceSubSet);
+      this::AcceptancePass);
   }
 
   /*
@@ -99,28 +99,30 @@ public class FailureRefinement implements IOperationInfixFunction {
     return asout;
   }
 
-
-  /*
-    function to be applied to the data output from readyWrapped
-    returns subset
-   */
-
-  public boolean isReadySubset(List<Set<String>> s1,List<Set<String>> s2, boolean cong) {
-    boolean out = true;
-    if (cong) out =  s2.get(0).containsAll(s1.get(0));
-    else {
-      for (String lab :s1.get(0)) {
-        if (Constant.external(lab)) continue;
-        if (!s2.get(0).contains(lab)) {
-          out = false;
-          break;
-        }
-      }
+/*
+   a2 subAcceptance a1
+  To carry on their must be a subset of Acceptance sets +
+   The union of the acceptance sets must be subset else the next move will fail!
+ */
+  public  boolean AcceptancePass(List<Set<String>> a1, List<Set<String>> a2, boolean cong) {
+    Set<String> a1Union = new TreeSet<>();
+    for (Set<String> s: a1) {
+      a1Union.addAll(s);
     }
-    return out;
+    a1Union = a1Union.stream().distinct().collect(Collectors.toSet());
+    Set<String> a2Union = new TreeSet<>();
+    for (Set<String> s: a2) {
+      a2Union.addAll(s);
+    }a2Union = a2Union.stream().distinct().collect(Collectors.toSet());
+    //System.out.println("a2U "+a2Union+"  is a sub set of a1U "+a1Union);
+    if (!a1Union.containsAll(a2Union)) {
+      //System.out.println("failing");
+      return false;
+    }
+    return AcceptanceSubSet( a1, a2, cong);
   }
 
-  /*
+  /*  a2 subRefusal a1
    B refines into A
    Failure refinement => fail(A) subset fail(B)
          -> Complement(fail(A)) in Accept(A)

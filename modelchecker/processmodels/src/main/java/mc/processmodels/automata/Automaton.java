@@ -843,6 +843,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     for(AutomatonNode nd: node2ReadySets.keySet()){
       sb.append(nd.getId()+"->"+node2ReadySets.get(nd)+"\n");
     }
+    sb.append("this.nodeId "+this.nodeId);
     return sb.toString();
   }
 

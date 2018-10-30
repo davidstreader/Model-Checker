@@ -1,12 +1,13 @@
 processes {   
 Onea = a->STOP.
 Oneb = b->STOP.
+
 Oneab = a->STOP|b->STOP.  
 La = a->La.
 Lb = b->Lb.
 Lasb  = a->Lasb| b->STOP.
 Lasa  = a->Lasa| a->STOP.
-Lbsb  = b->Lbsb| b->STOP.
+Lbsb  = b->Lbsb| b->STOP. 
 Lbsa  = b->Lbsa| a->STOP.
 Labsa  = b->Labsa| a->Labsa| a->STOP.
 Labsab  = b->Labsab| a->Labsab| a->STOP|b->STOP.
@@ -60,18 +61,23 @@ Fx  = a->X, X= a->X| b->X|b->STOP.
 Fx1  = b->X, X= a->X| b->X|b->STOP.
 Fx2  = b->X, X= a->X| b->X|a->STOP.
 Fx3  = a->X, X= a->X| b->X|a->STOP. 
-
+Oneac = a->c->STOP.
 }
 operation {
-//Labsab <f Dr.
-//Oneb||{a,b}Labsab <t{cong} Oneb||{a,b}Dr.
+
 }
 equation {
 // NOTE <f{cong}  <t should fail!
-Y <f{cong} Z ==> forall{X} (X||{a,b}Y <t{cong} X||{a,b}Z).
+ Y <f{cong} Z ==> forall{X} (X||{a,b}Y <t{cong} X||{a,b}Z).
 forall{X} (X||{a,b}Y <t{cong} X||{a,b}Z) ==> Y <f{cong} Z.
-Y <f Z ==> forall{X} (X||{a,b}Y <t X||{a,b}Z).
+
+Y <f Z ==> forall{X} (X||{a,b}Y <t X||{a,b}Z).  
 forall{X} (X||{a,b}Y <t X||{a,b}Z) ==> Y <f Z.
 }
+
+
+
+
+
 
 

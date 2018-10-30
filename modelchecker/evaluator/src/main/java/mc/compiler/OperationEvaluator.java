@@ -159,7 +159,7 @@ public class OperationEvaluator {
                           Context context,
                           Set<String> alpha)
             throws CompilationException, InterruptedException {
-
+        Automaton.tagid =0; Petrinet.netId =0;
         List<ProcessModel> processModels = new ArrayList<>();
         Set<String> flags = operation.getFlags();
         boolean r = false;
