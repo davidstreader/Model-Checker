@@ -50,7 +50,9 @@ public class BisimulationOperation implements IOperationInfixFunction {
      */
     @Override
     public boolean evaluate(Set<String> alpha, Set<String> flags,
-                            Context context, Collection<ProcessModel> processModels) throws CompilationException {
+                            Context context,
+                            Stack<String> trace,
+                            Collection<ProcessModel> processModels) throws CompilationException {
 
         if (processModels.iterator().next() instanceof Petrinet) {
              System.out.println("\n\nBisimulation on PETRI NETS EXPERIMENTAL\n\n");

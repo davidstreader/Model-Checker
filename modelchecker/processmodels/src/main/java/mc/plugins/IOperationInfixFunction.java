@@ -2,6 +2,8 @@ package mc.plugins;
 
 import java.util.Collection;
 import java.util.Set;
+import java.util.Stack;
+
 import com.microsoft.z3.Context;
 import mc.exceptions.CompilationException;
 import mc.processmodels.ProcessModel;
@@ -42,7 +44,9 @@ public interface IOperationInfixFunction {
    * @return whether or not the automata provided pass the testing semantics.
    */
   boolean  evaluate(Set<String> alpha, Set<String> flags,
-                    Context context, Collection<ProcessModel> thing/*automata*/) throws CompilationException;
+                    Context context,
+                    Stack<String> trace,
+                    Collection<ProcessModel> thing/*automata*/) throws CompilationException;
 
   // boolean evaluate(Collection<Petrinet> petrinets) throws CompilationException;
 }

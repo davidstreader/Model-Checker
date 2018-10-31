@@ -59,7 +59,9 @@ import mc.processmodels.automata.util.ColouringUtil;
          * @return the resulting automaton of the operation
          */
         @Override
-        public boolean evaluate(Set<String> alpha, Set<String> flags, Context context, Collection<ProcessModel> processModels) throws CompilationException {
+        public boolean evaluate(Set<String> alpha, Set<String> flags, Context context,
+                                Stack<String> trace,
+                                Collection<ProcessModel> processModels) throws CompilationException {
             System.out.println("Bisimulation "+flags+ " on Automaton "+processIds(processModels) );
             boolean cong = flags.contains(Constant.CONGURENT);
 

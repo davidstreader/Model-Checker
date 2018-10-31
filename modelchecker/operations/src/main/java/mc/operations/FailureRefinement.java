@@ -47,13 +47,13 @@ public class FailureRefinement implements IOperationInfixFunction {
    * @return the resulting automaton of the operation
    */
   @Override
-  public boolean evaluate(Set<String> alpha, Set<String> flags, Context context, Collection<ProcessModel> processModels) throws CompilationException {
+  public boolean evaluate(Set<String> alpha, Set<String> flags,    Context context, Stack<String> trace, Collection<ProcessModel> processModels) throws CompilationException {
     ProcessModel[] pms = processModels.toArray(new ProcessModel[processModels.size()]);
     //System.out.println("TraceRefinement "+ alpha +" "+flags+ " "+ pms[0].getId()+ " "+pms[1].getId());
     TraceWork tw = new TraceWork();
-
     return tw.evaluate(flags,context, processModels,
       TraceType.Failure,
+       trace,
       this::buildAsets,
       this::AcceptancePass);
   }
@@ -64,23 +64,12 @@ public class FailureRefinement implements IOperationInfixFunction {
   public List<Set<String>>  buildAsets(Set<AutomatonNode> nodes, boolean cong) {
     List<Set<String>> acceptance = new LinkedList<>();
     for (AutomatonNode n : nodes) {// get the nfa nodes making this dfa node
-      Set<String> as = n.getOutgoingEdges().stream().
-        distinct().
-        map(AutomatonEdge::getLabel).
-        collect(Collectors.toSet());
-      if (cong) {
-        if (n.isSTOP()) {
-          as.add(Constant.STOP);
-        }
-        if (n.isStartNode()) {
-          as.add(Constant.Start);
-        }
-      }
+      Set<String> as = n.readySet(cong);
       if (!acceptance.contains(as)) {
         acceptance.add(as);
       }
     }
-    return correction(acceptance);
+    return acceptance; //correction(acceptance);
   }
   private List<Set<String>> correction(List<Set<String>> in){
     List<Set<String>> asout = new ArrayList<>();
@@ -99,12 +88,26 @@ public class FailureRefinement implements IOperationInfixFunction {
     return asout;
   }
 
+  /*
+    for failure subset you need trace equality + AcceptanceSubSet
+    all that need to be tested is refusal subset in reverse direction + AcceptanceSubSet
+   */
+  private  boolean AcceptancePass(List<Set<String>> a1, List<Set<String>> a2, boolean cong) {
+    if (refusalSubSet( a1, a2, cong))
+       return AcceptanceSubSet( a1, a2, cong);
+    else return false;
+  }
+
+  private  boolean equivExternal(Set<String> s1,Set<String> s2) {
+    Set<String> ex1 =  s1.stream().filter(Constant::observable).collect(Collectors.toSet());
+    Set<String> ex2 =  s2.stream().filter(Constant::observable).collect(Collectors.toSet());
+    return ex1.containsAll(ex2)&& ex2.containsAll(ex1);
+  }
 /*
-   a2 subAcceptance a1
-  To carry on their must be a subset of Acceptance sets +
-   The union of the acceptance sets must be subset else the next move will fail!
+  trace subset - takes the union of the ready sets as the dfa ready set
+  needed to compute trace equality
  */
-  public  boolean AcceptancePass(List<Set<String>> a1, List<Set<String>> a2, boolean cong) {
+  private  boolean refusalSubSet(List<Set<String>> a1, List<Set<String>> a2, boolean cong) {
     Set<String> a1Union = new TreeSet<>();
     for (Set<String> s: a1) {
       a1Union.addAll(s);
@@ -119,7 +122,8 @@ public class FailureRefinement implements IOperationInfixFunction {
       //System.out.println("failing");
       return false;
     }
-    return AcceptanceSubSet( a1, a2, cong);
+    if (cong && !equivExternal(a1Union,a2Union)) return false;
+    return true;
   }
 
   /*  a2 subRefusal a1
@@ -130,7 +134,7 @@ public class FailureRefinement implements IOperationInfixFunction {
 
    set of sets  A>>B  means a > b where b is a set in A  and b in B
  */
-  public  boolean AcceptanceSubSet(List<Set<String>> a1, List<Set<String>> a2, boolean cong) {
+  private  boolean AcceptanceSubSet(List<Set<String>> a1, List<Set<String>> a2, boolean cong) {
 
     //System.out.println(" START AcceptanceSuperSet " + a2 + " a Refusal Subset of " + a1 + "  ?");
     boolean ok = true;

@@ -47,7 +47,9 @@ public class QuiescentEquality implements IOperationInfixFunction {
    * @return the resulting automaton of the operation
    */
   @Override
-  public boolean evaluate(Set<String> alpha, Set<String> flags, Context context, Collection<ProcessModel> processModels) throws CompilationException {
+  public boolean evaluate(Set<String> alpha, Set<String> flags, Context context,
+                          Stack<String> trace,
+                          Collection<ProcessModel> processModels) throws CompilationException {
     System.out.println("QUIESCENT= "+alpha);
     boolean cong = flags.contains(Constant.Quiescent);
     //ProcessModel[] pms =  processModels.toArray();
@@ -60,7 +62,8 @@ public class QuiescentEquality implements IOperationInfixFunction {
     addQuiescentAndListeningLoops(alpha,a2,cong);
     System.out.println("Q= a1 "+a1.myString());
     System.out.println("Q= a2 "+a2.myString());
-    return  teo.evaluate(alpha,flags,context,processModels);
+    return  teo.evaluate(alpha,flags,context,trace,
+      processModels);
   }
 
   private void addQuiescentAndListeningLoops(Set<String> alphbet, Automaton a,boolean cong) throws CompilationException {

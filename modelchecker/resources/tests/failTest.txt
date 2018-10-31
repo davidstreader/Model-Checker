@@ -1,0 +1,30 @@
+
+processes {
+One1 = a->One1.
+One2 = a->STOP.
+
+
+Two5 = a->STOP|b->STOP.
+
+Two8 = a->STOP|b->STOP.
+
+T = Two8[]One1.
+R = One1[]Two8.
+}
+
+operation{
+T<f R.
+R <f T.
+}
+
+equation {
+//X[]Y =f Y[]X.
+//X[](Y[]Z) =f (X[]Y)[]Z.
+
+//X|| Y =f Y||X.
+//(X=>Y)| (Z=>Y) * (X|Z)=>Y.  // Tree ONLY
+//(a->STOP)=>X =f a->X.
+
+// X=>(Y+Z) =f (X=>Y)[](X=>Z). //X:*->Two1, Y:*->One2, Z:*->One1,
+}
+

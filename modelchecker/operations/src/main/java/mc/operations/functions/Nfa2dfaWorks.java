@@ -53,7 +53,7 @@ public class Nfa2dfaWorks {
         }
 
       } else
-        if (tt.equals(TraceType.CompleteTrace) && (ndn.isSTOP() || ndn.isERROR())) {
+        if (!tt.equals(TraceType.Trace) && (ndn.isSTOP() || ndn.isERROR())) {
         nfa.addEdge(Constant.END, ndn, nfa.deadNode(), null, true, false);
       }  //END is dummy edge to enforce complete traces
 
@@ -62,7 +62,7 @@ public class Nfa2dfaWorks {
         //System.out.println("adding "+Constant.Quiescent+ "  to "+nfa.getId());
       }
 // add empty trace
-      if (tt.equals(TraceType.CompleteTrace) &&
+      if (!tt.equals(TraceType.Trace) &&
           ndn.isStartNode() &&
           (ndn.isSTOP() || ndn.isERROR())) {
         nfa.addEdge(Constant.EPSILON, ndn, nfa.deadNode(), null, true, false);

@@ -46,15 +46,19 @@ public class TraceRefinement implements IOperationInfixFunction {
    * @return the resulting automaton of the operation
    */
   @Override
-  public boolean evaluate(Set<String> alpha, Set<String> flags, Context context, Collection<ProcessModel> processModels) throws CompilationException {
+  public boolean evaluate(Set<String> alpha, Set<String> flags, Context context,
+                          Stack<String> trace,
+                          Collection<ProcessModel> processModels) throws CompilationException {
     ProcessModel[] pms = processModels.toArray(new ProcessModel[processModels.size()]);
     //System.out.println("TraceRefinement "+ alpha +" "+flags+ " "+ pms[0].getId()+ " "+pms[1].getId());
     TraceWork tw = new TraceWork();
     //Void parameters used elsewhere to build Failure,Singelton Fail, ....
     //SubSetDataConstructor doNothing = (x,y) -> new ArrayList<>();
     //SubSetEval yes = (x,y,z) -> true;
+
     return tw.evaluate(flags,context, processModels,
       TraceType.CompleteTrace,
+      trace,
       this::readyWrapped,
       this::isReadySubset);
   }
@@ -79,9 +83,17 @@ public class TraceRefinement implements IOperationInfixFunction {
     returns subset
    */
 
-  public boolean isReadySubset(List<Set<String>> s1,List<Set<String>> s2, boolean cong) {
+  private  boolean equivExternal(List<Set<String>> s1,List<Set<String>> s2) {
+    Set<String> ex1 =  s1.get(0).stream().filter(Constant::observable).collect(Collectors.toSet());
+    Set<String> ex2 =  s2.get(0).stream().filter(Constant::observable).collect(Collectors.toSet());
+    return ex1.containsAll(ex2)&& ex2.containsAll(ex1);
+  }
+
+  private boolean isReadySubset(List<Set<String>> s1,List<Set<String>> s2, boolean cong) {
     boolean out = true;
-    if (cong) out =  s1.get(0).containsAll(s2.get(0));
+    if (cong) {
+      out = s1.get(0).containsAll(s2.get(0)) && equivExternal(s1,s2);
+    }
     else {
       for (String lab :s2.get(0)) {
         if (Constant.external(lab)) continue;

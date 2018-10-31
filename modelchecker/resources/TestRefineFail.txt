@@ -71,9 +71,13 @@ equation {
  Y <f{cong} Z ==> forall{X} (X||{a,b}Y <t{cong} X||{a,b}Z).
 forall{X} (X||{a,b}Y <t{cong} X||{a,b}Z) ==> Y <f{cong} Z.
 
+//BELOW working
+/*
 Y <f Z ==> forall{X} (X||{a,b}Y <t X||{a,b}Z).  
 forall{X} (X||{a,b}Y <t X||{a,b}Z) ==> Y <f Z.
+*/
 }
+
 
 
 

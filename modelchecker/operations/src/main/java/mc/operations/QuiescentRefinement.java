@@ -48,7 +48,8 @@ public class QuiescentRefinement implements IOperationInfixFunction {
    * @return the resulting automaton of the operation
    */
   @Override
-  public boolean evaluate(Set<String> alpha, Set<String> flags, Context context, Collection<ProcessModel> processModels) throws CompilationException {
+  public boolean evaluate(Set<String> alpha, Set<String> flags, Context context,
+                          Stack<String> trace, Collection<ProcessModel> processModels) throws CompilationException {
     System.out.println("\nQUIESCENT "+alpha);
     boolean cong = flags.contains(Constant.CONGURENT);
     //ProcessModel[] pms =  processModels.toArray();
@@ -77,7 +78,9 @@ public class QuiescentRefinement implements IOperationInfixFunction {
     pms.add(a2);
     //return  teo.evaluate(alpha,flags,context,pms);
     TraceWork tw = new TraceWork();  // THIS builds a DFA and then trace subset
-    return tw.evaluate(flags,context, pms, TraceType.QuiescentTrace,
+    return tw.evaluate(flags,context, pms,
+      TraceType.QuiescentTrace,
+      trace,
            this::quiescentWrapped, this::isReadySubset);
   }
 

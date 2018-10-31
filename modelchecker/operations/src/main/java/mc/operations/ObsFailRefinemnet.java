@@ -57,7 +57,9 @@ import mc.processmodels.automata.Automaton;
      * initialise bisimulation coloring with the newly built coloring
      */
     @Override
-    public boolean evaluate(Set<String> alpha, Set<String> flags, Context context, Collection<ProcessModel> processModels) throws CompilationException {
+    public boolean evaluate(Set<String> alpha, Set<String> flags, Context context,
+                            Stack<String> trace,
+                            Collection<ProcessModel> processModels) throws CompilationException {
       boolean cong = flags.contains(Constant.CONGURENT);
 
       FailureEquivalence fe = new FailureEquivalence();

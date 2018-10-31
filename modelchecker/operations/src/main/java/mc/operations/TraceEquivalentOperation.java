@@ -45,7 +45,9 @@ public class TraceEquivalentOperation implements IOperationInfixFunction {
    * @return the resulting automaton of the operation
    */
   @Override
-  public boolean evaluate(Set<String> alpha, Set<String> flags, Context context, Collection<ProcessModel> processModels) throws CompilationException {
+  public boolean evaluate(Set<String> alpha, Set<String> flags, Context context,
+                          Stack<String> trace,
+                          Collection<ProcessModel> processModels) throws CompilationException {
     int ii = 0; String firstId = "";
     for (ProcessModel pm : processModels) {
       //System.out.println("  Trace "+ii+"  "+pm.getId());
@@ -72,7 +74,7 @@ public class TraceEquivalentOperation implements IOperationInfixFunction {
         }
       }
       BisimulationAutomata bo = new BisimulationAutomata();
-      boolean r = bo.evaluate(new TreeSet<>(), flags,context,  nfas);
+      boolean r = bo.evaluate(new TreeSet<>(), flags,context, trace, nfas);
 
    /*
     return new BisimulationOperation().evaluate(automata.stream().map(a -> {

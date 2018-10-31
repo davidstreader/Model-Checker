@@ -76,7 +76,8 @@ public class FailureRefinementX implements IOperationInfixFunction {
    * initialise bisimulation coloring with the newly built coloring
    */
   @Override
-  public boolean evaluate(Set<String> alpha, Set<String> flags, Context context, Collection<ProcessModel> processModels) throws CompilationException {
+  public boolean evaluate(Set<String> alpha, Set<String> flags, Context context,
+                          Stack<String> trace,Collection<ProcessModel> processModels) throws CompilationException {
     boolean cong = flags.contains(Constant.CONGURENT);
     a1Next = new Nd2NextMap();
     a2Next = new Nd2NextMap();

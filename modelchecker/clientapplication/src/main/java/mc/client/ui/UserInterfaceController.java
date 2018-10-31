@@ -732,7 +732,7 @@ public class UserInterfaceController implements Initializable {
         if (opRes.size() > 0)
             compilerOutputDisplay.appendText("\n##Operation Results##\n");
 
-        opRes.forEach(o -> compilerOutputDisplay.appendText(o.getOp().myString() + " = " + o.getResult() + "\n"));
+        opRes.forEach(o -> compilerOutputDisplay.appendText(o.getOp().myString() + " = " + o.getResult() +"  "+  o.getExtra()+ "\n"));
 
 
         if (eqRes.size() > 0) {

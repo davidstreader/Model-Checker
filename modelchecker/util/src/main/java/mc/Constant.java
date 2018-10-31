@@ -28,6 +28,12 @@ public class Constant {
           lab.equals(Constant.Start) ||
           lab.equals(Constant.ERROR);
     }
+    public static boolean observable(String lab) {
+
+        return
+          lab.equals(Constant.STOP) ||
+          lab.equals(Constant.Start) ;
+    }
     public static boolean terminal(String lab) {
         return lab.equals(Constant.DEADLOCK) ||
           lab.equals(Constant.STOP) ||

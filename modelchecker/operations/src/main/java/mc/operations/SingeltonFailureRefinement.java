@@ -76,7 +76,10 @@ public class SingeltonFailureRefinement implements IOperationInfixFunction {
    * initialise bisimulation coloring with the newly built coloring
    */
   @Override
-  public boolean evaluate(Set<String> alpha, Set<String> flags, Context context, Collection<ProcessModel> processModels) throws CompilationException {
+  public boolean evaluate(Set<String> alpha, Set<String> flags,
+                          Context context,
+                          Stack<String> trace,
+                          Collection<ProcessModel> processModels) throws CompilationException {
     ProcessModel[] pms = processModels.toArray(new ProcessModel[processModels.size()]);
     //System.out.println("TraceRefinement "+ alpha +" "+flags+ " "+ pms[0].getId()+ " "+pms[1].getId());
     TraceWork tw = new TraceWork();
@@ -84,36 +87,64 @@ public class SingeltonFailureRefinement implements IOperationInfixFunction {
     //SubSetDataConstructor doNothing = (x,y) -> new ArrayList<>();
     //SubSetEval yes = (x,y,z) -> true;
     return tw.evaluate(flags,context, processModels,
-      TraceType.CompleteTrace,
-      this::readyWrapped,
-      this::isSFSubset);
+      TraceType.SingeltonFailure,
+      trace,
+      this::refusalWrapped,
+      this::singeltonPass);
   }
 
   /*
-     A ready set is the complement of the flatened singelton failures
-      fc(R) = SF
-     function returns complement of the union of the failure sets  from the individual ready sets
-      fc(R cup T) = fc(R) cap fc(T)
+     You can flatten a set of singleton failures, SF, into a single set. Then its complement is the
+     ready set R.  The ogiginal SF can be rebuilt fc(R) = SF.
+     Given two nodes ndR and ndT with ready sets R and T they have sf's fc(R) and fc(T). To compute
+     the sf's of a dfa node from the set of nfa nodes we need to combine sf's:
+     The sf's from either ndR or ndT is fc(R) cup fc(T). To compute this from R and T we note
+                fc(R cap T) = fc(R) cup fc(T)
    */
-  private List<Set<String>> readyWrapped(Set<AutomatonNode> nds, boolean cong){
+  private List<Set<String>> refusalWrapped(Set<AutomatonNode> nds, boolean cong){
 
-    List<Set<String>> readyWrap = new ArrayList<>();
+    List<Set<String>> refusalWrap = new ArrayList<>();
+    Set<String> refusal = new TreeSet<>();
     Set<String> ready = new TreeSet<>();
     boolean first = true;
     for (AutomatonNode nd: nds){
       if (first) {
         first = false;
-        ready = nd.readySet(cong);
+        refusal = nd.readySet(cong);
       }
-      else ready.retainAll(nd.readySet(cong));
-
+      else refusal.retainAll(nd.readySet(cong));
     }
+    nds.stream().map(x->x.readySet(cong)).forEach(s->ready.addAll(s));
+    //Wrap set in first element of Lis
+    refusalWrap.add(refusal.stream().distinct().collect(Collectors.toSet()));
+    refusalWrap.add(ready.stream().distinct().collect(Collectors.toSet()));
+    System.out.println("refusalWrapped "+refusalWrap);
 
-    //System.out.println("readyWrapped "+ready);
-    readyWrap.add(ready.stream().distinct().collect(Collectors.toSet()));
-    System.out.println("readyWrapped "+readyWrap);
+    return refusalWrap;
+  }
+/*
+  inputs are the intersection of the ready sets - their complement being the
+  flatened singleton Refusals
+ */
+  private  boolean singeltonPass(List<Set<String>> a1, List<Set<String>> a2, boolean cong) {
+    if (dfaReadySubset( a1, a2, cong))
+      return isSFSubset( a1, a2, cong);
+    else return false;
+  }
 
-    return readyWrap;
+  /*
+  trace subset - takes flatened singelton failures use
+  sub to compute trace sub
+ */
+  private  boolean equivExternal(Set<String> s1,Set<String> s2) {
+    Set<String> ex1 =  s1.stream().filter(Constant::observable).collect(Collectors.toSet());
+    Set<String> ex2 =  s2.stream().filter(Constant::observable).collect(Collectors.toSet());
+    return ex1.containsAll(ex2)&& ex2.containsAll(ex1);
+  }
+  private  boolean dfaReadySubset(List<Set<String>> a1, List<Set<String>> a2, boolean cong) {
+    boolean b =  a1.get(1).containsAll(a2.get(1));
+    System.out.println(a2.get(1)+ " is dfaRedySubset of  "+a1.get(1) +" = " + b);
+    return b;
   }
 
   /*
@@ -122,19 +153,18 @@ public class SingeltonFailureRefinement implements IOperationInfixFunction {
    */
 
   private boolean isSFSubset(List<Set<String>> s2, List<Set<String>> s1, boolean cong) {
-    System.out.print("isSFSubset  s2 "+s2+"  s1 "+s1);
     boolean out = true;
-    if (cong) out =  s2.get(0).containsAll(s1.get(0));
+    if (cong) out =  (s1.get(0).containsAll(s2.get(0))&& equivExternal(s1.get(1),s2.get(1)));
     else {
-      for (String lab :s1.get(0)) {
+      for (String lab :s2.get(0)) {
         if (Constant.external(lab)) continue;
-        if (!s2.get(0).contains(lab)) {
+        if (!s1.get(0).contains(lab)) {
           out = false;
           break;
         }
       }
     }
-    System.out.println(" "+out);
+    System.out.println("can  s2 "+s2+" refuse more than s1 "+s1+" "+out);
     return out;
   }
 }

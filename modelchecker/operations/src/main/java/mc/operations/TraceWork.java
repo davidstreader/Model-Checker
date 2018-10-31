@@ -45,21 +45,17 @@ public class TraceWork {
 
      PARAMETERISED subSetParam
    */
-  public boolean evaluateOLD(Set<String> flags, Context context, Collection<ProcessModel> processModels, TraceType tt) throws CompilationException {
-    SubSetDataConstructor op = (x, y) -> new ArrayList<>();
-    SubSetEval yes = (x, y, z) -> true;
-    return evaluate(flags, context, processModels, tt, op, yes);
-  }
+
 
   public boolean evaluate(Set<String> flags,
                           Context context,
                           Collection<ProcessModel> processModels,
                           TraceType tt,
+                          Stack<String> trace,
                           SubSetDataConstructor buildData,
                           SubSetEval eval) throws CompilationException {
 //Called directly from Trace Refinement and with some preprocessing from Quiescent Refinement
     boolean cong = flags.contains(Constant.CONGURENT);
-    boolean complete = tt.equals(TraceType.CompleteTrace) || tt.equals(TraceType.QuiescentTrace);
     if (processModels.iterator().next() instanceof Automaton) {
       Nfa2dfaWorks nfa2dfaworks = new Nfa2dfaWorks();
       ArrayList<ProcessModel> dfas = new ArrayList<>();
@@ -107,11 +103,11 @@ public class TraceWork {
 
       //System.out.println("a1N\n" + ready2String(a2Next.getMap()));
       //System.out.println("a2N\n" + ready2String(a1Next.getMap()));
-      Stack<String> trace = new Stack<>();
+
       //Recursive  Algorithm - a2Next.getMap() is BOTH the readset to be checked and where to go next
       b = traceSubset(a2, a1, new NodePair(r2, r1), a2Next.getMap(), a1Next.getMap(),
         new ArrayList<>(), cong, trace, tt, eval);
-      //System.out.println("top traceSubset returns "+b);
+      //System.out.println("top traceSubset returns "+b+ "  trace "+trace);
       return b;
     }
     System.out.print("\nTrace semantics not defined for type " + processModels.iterator().next().getClass() + "\n");
@@ -200,6 +196,7 @@ public class TraceWork {
         if (ok){
           System.out.println("next nd1 = " + nd1.getId() + " nd2 = " + nd2.getId());
         ok = traceSubset(dfa1, dfa2, new NodePair(nd1, nd2), a1N, a2N, processed, cong, trace, tt, evalSubset);
+          System.out.println("Tw 200 trace "+trace);
       }
       }
     } else {
@@ -225,14 +222,22 @@ public class TraceWork {
     //System.out.println(a.myString());
     Nd2NextMap nfanode2ASet = new Nd2NextMap();
     for (AutomatonNode n : a.getNodes()) {
-      //System.out.println("node "+n.myString());
+      NextMap nm = new NextMap(n.getOutgoingEdges().stream().
+         distinct().
+         map(x -> new NextComponent(x.getLabel(), x.getTo())).
+          collect(Collectors.toSet()));
+      nfanode2ASet.getMap().put(n, nm);
+    }
+    /*  ALL the STOP,Start, ... now handeled in Nfa2dfaWorks
+      for (AutomatonNode n : a.getNodes()) {
+        //System.out.println("node "+n.myString());
       NextMap as;
       as = new NextMap(n.getOutgoingEdges().stream().
         distinct().
         //  filter(x->(!(x.getLabel().endsWith("?")&& tt.equals(TraceType.QuiescentTrace)) )).
           map(x -> new NextComponent(x.getLabel(), x.getTo())).
           collect(Collectors.toSet()));
-//dfa Node could be BOTH STOP and ERROR
+// STOP and ERROR
       //System.out.println(n.myString());
       if (tt.equals(TraceType.CompleteTrace) || tt.equals(TraceType.QuiescentTrace)) {
         if (n.isSTOP()) {
@@ -253,6 +258,7 @@ public class TraceWork {
       //System.out.println("Next " + n.getId() + " -> " + as.myString());
       nfanode2ASet.getMap().put(n, as);
     }
+    */
     //System.out.println(nfanode2ASet.myString());
     return nfanode2ASet;
   }
@@ -363,21 +369,11 @@ public class TraceWork {
       ncs = out;
     }
 
-    public void addSTOP(AutomatonNode nd) {
-      ncs.put(Constant.STOP, nd);
-    }
 
     public Set<String> labels() {
       return this.ncs.keySet();
     }
 
-    public boolean equalLabels(NextMap ns) {
-      return this.labels().equals(ns.labels());
-    }
-
-    public boolean subsetLabels(NextMap ns) {
-      return ns.labels().containsAll(this.labels());
-    }
 
     public String myString() {
       StringBuilder sb = new StringBuilder();

@@ -136,12 +136,14 @@ public class OperationEvaluator {
             throw new CompilationException(OperationEvaluator.class, "Identifier " + missing.get(0) + " not found!", operation.getLocation());
         }
 //******
-        r = evalOp(operation,processMap,interpreter,context,alpha);
-  //System.out.println("evaluateOp "+ firstId+" "+operation.getOperation()+" "+secondId+" "+r);
+        Stack<String> trace = new Stack<>();
+        r = evalOp(operation,processMap,interpreter,context,alpha,trace);
+  //System.out.println("evaluateOp "+ operation.myString()+ " trace "+trace);
+        String ex;
+        if (trace.isEmpty()) ex = ""; else ex = "trace = "+trace.toString();
         OperationResult result = new OperationResult(
-
-          null,  r, "",operation);
-
+          null,  r, "  "+ex,operation);
+        //System.out.println("evaluateOp "+ result.myString());
         return result;
     }
 
@@ -157,11 +159,13 @@ public class OperationEvaluator {
                           Map<String, ProcessModel> processMap,
                           Interpreter interpreter,
                           Context context,
-                          Set<String> alpha)
+                          Set<String> alpha,
+                          Stack<String> trace)
             throws CompilationException, InterruptedException {
         Automaton.tagid =0; Petrinet.netId =0;
         List<ProcessModel> processModels = new ArrayList<>();
         Set<String> flags = operation.getFlags();
+        //trace = new Stack<>();
         boolean r = false;
         //System.out.print("***evalOp "+alpha+"  "+operation.myString());
         /*System.out.println("evalOp "+operation.myString());
@@ -206,7 +210,7 @@ public class OperationEvaluator {
                 processModels.add(OwnersRule.ownersRule( two));
             }
 
-            r = funct.evaluate(new TreeSet<>(), flags,context,processModels);  //actually evaluating the operation
+            r = funct.evaluate(new TreeSet<>(), flags,context,trace,processModels);  //actually evaluating the operation
             if (operation.isNegated()) { r = !r; }
 
         } else if (funct.getOperationType().equals(Constant.AUTOMATA)) {
@@ -253,7 +257,7 @@ public class OperationEvaluator {
             }
             //System.out.println("processModels *2*"+((Automaton) processModels.get(1)).myString());
             //System.out.println("oper "+ operation.getOperation().toLowerCase());
-            r = funct.evaluate(alpha, flags,context,processModels);
+            r = funct.evaluate(alpha, flags,context,trace,processModels);
             if (operation.isNegated()) { r = !r; }
 
         } else {
@@ -262,7 +266,10 @@ public class OperationEvaluator {
         //if (r==false) {
             //System.out.println("END    evalOp " + operation.myString()+" " + EquationEvaluator.asString(processMap) + " => " + r);
        // }
-        //System.out.println(" returns "+r);
+        //System.out.println(" op Eval returns "+r+"  negated "+ operation.isNegated()+" trace "+trace);
+        if (operation.isNegated() !=r) trace.clear();
+        //System.out.println(" op Eval returns "+r+"  trace "+trace);
+
         //System.out.println("***evalOp with processMap  "+processMap.keySet().stream().map(x->x+"->"+processMap.get(x).getId()).reduce((x,y)->x+" "+y)+" returns "+r);
 
         return r;
