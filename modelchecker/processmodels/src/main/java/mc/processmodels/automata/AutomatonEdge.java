@@ -102,7 +102,15 @@ public class AutomatonEdge extends ProcessModelObject {
     return out;
   }
 
-
+  public String myString(String simple) {
+    String out = "";
+    if (simple.equals("simple")) {
+      out = from.getId() + "-" + label + "->" + to.getId() ;
+    } else {
+      out = myString();
+    }
+    return out;
+  }
   public String toString() {
     String builder = "edge{\n"
       + "\tid:" + getId() + "\n"

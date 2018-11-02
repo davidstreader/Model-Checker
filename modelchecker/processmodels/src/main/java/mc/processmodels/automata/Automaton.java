@@ -109,10 +109,18 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
   public AutomatonNode deadNode(){
     String dead = "_dead";
-    if (nodeMap.keySet().contains(dead))
-      return nodeMap.get(dead);
-    else
-      return addNode(dead);
+    AutomatonNode nd;
+    if (nodeMap.keySet().contains(dead)) {
+      nd = nodeMap.get(dead);
+      nd.setLabelNumber(getNodes().size()+2); // Crappy way to make unique
+      System.out.println("OLD zombie " + nd.myString());
+    }
+    else {
+      nd = addNode(dead);
+      nd.setLabelNumber(nodeId++);
+      System.out.println("Adding zombie " + nd.myString());
+    }
+    return nd;
   }
   /**
    * needed to prevent size of owner growing
@@ -298,16 +306,13 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
   public AutomatonNode addNode() {
     String id = getNextNodeId();
-    while (nodeMap.containsKey(id)) {
-      id = getNextNodeId();
-    }
-
     return addNode(id);
   }
 
   //  As  public  two nodes with the same id can be added
   public AutomatonNode addNode(String id) {
     AutomatonNode node = new AutomatonNode(id);
+
     nodeMap.put(id, node);
     //System.out.println("adding "+ node.myString());
     return node;

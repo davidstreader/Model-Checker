@@ -21,7 +21,10 @@ public class Constant {
     public static final String AUTOMATA = "automata";
     public static final String PETRINET = "petrinet";
 
-    public static boolean external(String lab) {
+    public static boolean externalOrEND(String lab) {
+        return external(lab) || lab.equals(Constant.END);
+    }
+        public static boolean external(String lab) {
 
         return lab.equals(Constant.DEADLOCK) ||
           lab.equals(Constant.STOP) ||

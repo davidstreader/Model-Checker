@@ -9,13 +9,16 @@ Nb = a->a->N|b->STOP.
 }
 operation {
 
-Aa  !<t{cong} Xxa.
-Xxa <t{cong} Aa.
+Aa  <t{cong} Xxa.
+Xxa !<t{cong} Aa.
 
-Ab  !<t{cong} Xxb.
+Ab  <t{cong} Xxb.
 Xxb <t{cong} Ab.
 
 }
+
+
+
 
 
 

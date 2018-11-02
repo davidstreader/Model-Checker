@@ -206,7 +206,7 @@ if(j++> stateSizeBound) {System.out.println("\n\nTokenRule Failure Looping = "+j
         nd.setErrorNode(true);
      }
    }
-   //System.out.println("Token Rule END"); //Out "+outputAutomaton.myString());
+   System.out.println("Token Rule END "+outputAutomaton.myString());
     return outputAutomaton;
   }
 

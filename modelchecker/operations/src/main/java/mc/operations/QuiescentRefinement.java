@@ -7,11 +7,13 @@ import com.google.common.collect.ImmutableSet;
 import com.microsoft.z3.Context;
 import mc.Constant;
 import mc.TraceType;
+import mc.compiler.Guard;
 import mc.exceptions.CompilationException;
 import mc.operations.functions.AbstractionFunction;
 import mc.plugins.IOperationInfixFunction;
 import mc.processmodels.ProcessModel;
 import mc.processmodels.automata.Automaton;
+import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
 
 public class QuiescentRefinement implements IOperationInfixFunction {
@@ -41,7 +43,14 @@ public class QuiescentRefinement implements IOperationInfixFunction {
   return ImmutableSet.of(Constant.UNFAIR, Constant.FAIR, Constant.CONGURENT);
   }
   /**
-   * Evaluate the quescten refinement function.
+   * Evaluate the quiescent trace  refinement function.
+   * OPTIONS 1. apply algorithm directly to what is displayed
+   *         2. augment automaton with listening loops and apply complete trace refinement
+   * option 1 has proven very hard to implement - after several attempts am forced to
+   * acknowledge that I can not define this algorithm
+   *
+   *
+   *
    *
    * @param alpha
    * @param processModels automaton in the function (e.g. {@code A} in {@code A ~ B})
@@ -50,51 +59,77 @@ public class QuiescentRefinement implements IOperationInfixFunction {
   @Override
   public boolean evaluate(Set<String> alpha, Set<String> flags, Context context,
                           Stack<String> trace, Collection<ProcessModel> processModels) throws CompilationException {
-    System.out.println("\nQUIESCENT "+alpha);
+    System.out.println("\nQUIESCENT " + alpha);
     boolean cong = flags.contains(Constant.CONGURENT);
     //ProcessModel[] pms =  processModels.toArray();
     Automaton a1 = ((Automaton) processModels.toArray()[0]).copy();
     Automaton a2 = ((Automaton) processModels.toArray()[1]).copy();
-    System.out.println("****Quiescent a1 "+a1.readySets2String(cong));
-    System.out.println("****Quiescent a2 "+a2.readySets2String(cong));
-    //TraceRefinement teo = new TraceRefinement();
+    //System.out.println("****Quiescent a1 "+a1.readySets2String(cong));
+    //System.out.println("****Quiescent a2 "+a2.readySets2String(cong));
 
     AbstractionFunction abs = new AbstractionFunction();
-    //tw.evaluate(flags,processModels, TraceType.QuiescentTrace);
-    //setQuiescentAndAddListeningLoops(alpha,a1);
-    //setQuiescent(a1,cong);
-    //setQuiescent(a2,cong);
-    a1 = abs.GaloisBCabs(a1.getId(),flags,context,a1);
-    a2 = abs.GaloisBCabs(a2.getId(),flags,context,a2); //end states marked
-    //a1 = simp.compose(a1.getId(),flags,context,a1);
-    //a2 = simp.compose(a2.getId(),flags,context,a2);
-    //AddListeningLoops(alpha,a1,cong);  //PROBLEMS with doing this NOW
-    //AddListeningLoops(alpha,a2,cong);
-    System.out.println("*** Q a1 before traceEval "+a1.readySets2String(cong));
-    System.out.println("*** Q a2 before traceEval "+a2.readySets2String(cong));
+    a1 = abs.GaloisBCabs(a1.getId(), flags, context, a1);
+    a2 = abs.GaloisBCabs(a2.getId(), flags, context, a2); //end states marked
+    //System.out.println("*** Q a1  " + a1.readySets2String(cong));
+    //System.out.println("*** Q a2  " + a2.readySets2String(cong));
 
-    ArrayList<ProcessModel> pms = new ArrayList<>();;
+    //Build set of all listening events in both automata
+    Set<String> alphabet = a1.getAlphabet().stream().collect(Collectors.toSet());
+    alphabet.addAll(a2.getAlphabet().stream().collect(Collectors.toSet()));
+    Set<String>  listeningAlphabet = alphabet.stream().distinct().
+      filter(x->x.endsWith(Constant.BROADCASTSinput)).
+      collect(Collectors.toSet());
+    System.out.println("\n new QUIESCENT " + listeningAlphabet);
+
+    ArrayList<ProcessModel> pms = new ArrayList<>();
+    addListeningLoops(a1, listeningAlphabet);
+    addListeningLoops(a2, listeningAlphabet);
+    System.out.println(a1.myString());
+    System.out.println(a2.myString());
     pms.add(a1);
     pms.add(a2);
-    //return  teo.evaluate(alpha,flags,context,pms);
-    TraceWork tw = new TraceWork();  // THIS builds a DFA and then trace subset
+
+    TraceRefinement tr = new TraceRefinement();
+    TraceWork tw = new TraceWork();
+    //return tr.evaluate(alpha, flags, context, trace, processModels);
     return tw.evaluate(flags,context, pms,
       TraceType.QuiescentTrace,
       trace,
-           this::quiescentWrapped, this::isReadySubset);
-  }
+      tr::readyWrapped,
+      (s1, s2, cong1, error) -> {boolean b =tr.isReadySubset(s1, s2, cong1, error);
+        System.out.println("Q "+error.error); return b;}
+        );
 
-  /**
-   * sets the boolean quiescent on the nodes.
-   * @param a
-   * @param cong
-   * @throws CompilationException
+  /*  This is the failed Option 1
+  TraceWork tw = new TraceWork();  // THIS builds a DFA and then trace subset
+    return tw.evaluate(flags,context, pms,
+      TraceType.QuiescentTrace,
+      trace,
+      this::quiescentWrapped,
+      this::isReadySubset);
+  }
    */
-  public void setQuiescent( Automaton a,boolean cong) throws CompilationException {
-    System.out.println("setQuiescent");
-    for(AutomatonNode nd : a.getNodes()){
-      Set<String> notListening = nd.quiescentReadySet(cong).stream().filter(x->!x.endsWith("?")).collect(Collectors.toSet());
-      nd.setQuiescent(notListening.size()==0);
+  }
+/*
+  alpha  set of input events
+  for each node add loop if not already part of ready set.
+ */
+  public void addListeningLoops(Automaton ain,  Set<String> alpha )
+    throws CompilationException {
+
+    System.out.println("LL alphabet = "+alpha);
+
+
+    for(AutomatonNode nd : ain.getNodes()) {
+       Set<String> ready = nd.readySet(false);
+      System.out.println("  "+nd.getId()+"->"+ready);
+       for(String al:alpha) {
+         System.out.println("  al "+al);
+         if (!ready.contains(al))  {
+           AutomatonEdge ed =  ain.addEdge(al,nd,nd,new Guard(),false,false);
+           System.out.println("  adding "+ed.myString("smiple"));
+         }
+       }
     }
   }
 
@@ -121,15 +156,27 @@ public class QuiescentRefinement implements IOperationInfixFunction {
     function to be applied to the data output from readyWrapped
     returns subset
    */
-
-  private boolean isReadySubset(List<Set<String>> s1,List<Set<String>> s2, boolean cong) {
+  private  boolean equivExternal(List<Set<String>> s1,List<Set<String>> s2) {
+    Set<String> ex1 =  s1.get(0).stream().filter(Constant::observable).collect(Collectors.toSet());
+    Set<String> ex2 =  s2.get(0).stream().filter(Constant::observable).collect(Collectors.toSet());
+    return ex1.containsAll(ex2)&& ex2.containsAll(ex1);
+  }
+/*
+  To enforce complete traces we need to know we are at the END
+  to check if at the end we need to look down a listening chain of events.
+  checking A <q B  if B_trace->END then for some chain A_trace->END
+ */
+  private boolean isReadySubset(List<Set<String>> s1,List<Set<String>> s2, boolean cong, ErrorMessage error) {
     boolean out = true;
-    if (cong) out =  s2.get(0).containsAll(s1.get(0));
+    if (cong) out =  (s1.get(0).containsAll(s2.get(0)) );
     else {
-      for (String lab :s1.get(0)) {
+      for (String lab :s2.get(0)) {
         if (Constant.external(lab)) continue;
-        if (!s2.get(0).contains(lab)) {
+        if (lab.endsWith(Constant.BROADCASTSinput))  continue;  //implicit inputs
+        if (!s1.get(0).contains(lab)) {
+          error = new ErrorMessage("? "+lab);
           out = false;
+          System.out.println("inQ error "+error.error);
           break;
         }
       }

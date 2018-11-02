@@ -90,7 +90,7 @@ public class SingeltonFailureRefinement implements IOperationInfixFunction {
       TraceType.SingeltonFailure,
       trace,
       this::refusalWrapped,
-      this::singeltonPass);
+      (a1, a2, cong, error) -> singeltonPass(a1, a2, cong, error));
   }
 
   /*
@@ -101,7 +101,7 @@ public class SingeltonFailureRefinement implements IOperationInfixFunction {
      The sf's from either ndR or ndT is fc(R) cup fc(T). To compute this from R and T we note
                 fc(R cap T) = fc(R) cup fc(T)
    */
-  private List<Set<String>> refusalWrapped(Set<AutomatonNode> nds, boolean cong){
+  public List<Set<String>> refusalWrapped(Set<AutomatonNode> nds, boolean cong){
 
     List<Set<String>> refusalWrap = new ArrayList<>();
     Set<String> refusal = new TreeSet<>();
@@ -126,9 +126,9 @@ public class SingeltonFailureRefinement implements IOperationInfixFunction {
   inputs are the intersection of the ready sets - their complement being the
   flatened singleton Refusals
  */
-  private  boolean singeltonPass(List<Set<String>> a1, List<Set<String>> a2, boolean cong) {
+  public  boolean singeltonPass(List<Set<String>> a1, List<Set<String>> a2, boolean cong,ErrorMessage error) {
     if (dfaReadySubset( a1, a2, cong))
-      return isSFSubset( a1, a2, cong);
+      return isSFSubset( a1, a2, cong, error);
     else return false;
   }
 
@@ -152,13 +152,14 @@ public class SingeltonFailureRefinement implements IOperationInfixFunction {
     returns superset  of Ready as equal to subset of fc(Ready)
    */
 
-  private boolean isSFSubset(List<Set<String>> s2, List<Set<String>> s1, boolean cong) {
+  private boolean isSFSubset(List<Set<String>> s2, List<Set<String>> s1, boolean cong,ErrorMessage error) {
     boolean out = true;
-    if (cong) out =  (s1.get(0).containsAll(s2.get(0))&& equivExternal(s1.get(1),s2.get(1)));
+    if (cong) out =  (s1.get(0).containsAll(s2.get(0))); //&& equivExternal(s1.get(1),s2.get(1))
     else {
       for (String lab :s2.get(0)) {
         if (Constant.external(lab)) continue;
         if (!s1.get(0).contains(lab)) {
+          error.error = "{"+lab+"}";
           out = false;
           break;
         }

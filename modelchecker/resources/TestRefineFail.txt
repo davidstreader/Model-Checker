@@ -62,21 +62,27 @@ Fx1  = b->X, X= a->X| b->X|b->STOP.
 Fx2  = b->X, X= a->X| b->X|a->STOP.
 Fx3  = a->X, X= a->X| b->X|a->STOP. 
 Oneac = a->c->STOP.
+AA = Labsab||{a,b} Twoaa.
+AA2 = Dr||{a,b} Twoaa.
 }
 operation {
-
+//Labsab||{a,b} Twoaa <t Dr||{a,b} Twoaa.
+//Labsab <f Dr.
 }
 equation {
 // NOTE <f{cong}  <t should fail!
- Y <f{cong} Z ==> forall{X} (X||{a,b}Y <t{cong} X||{a,b}Z).
-forall{X} (X||{a,b}Y <t{cong} X||{a,b}Z) ==> Y <f{cong} Z.
+// Y <f{cong} Z ==> forall{X} (X||{a,b}Y <t{cong} X||{a,b}Z).
+//forall{X} (X||{a,b}Y <t{cong} X||{a,b}Z) ==> Y <f{cong} Z.
 
 //BELOW working
-/*
-Y <f Z ==> forall{X} (X||{a,b}Y <t X||{a,b}Z).  
+
+//Y <f Z ==> forall{X} (X||{a,b}Y <t X||{a,b}Z).  
 forall{X} (X||{a,b}Y <t X||{a,b}Z) ==> Y <f Z.
-*/
+
 }
+
+
+
 
 
 

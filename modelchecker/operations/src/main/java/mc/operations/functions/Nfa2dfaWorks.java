@@ -35,8 +35,8 @@ public class Nfa2dfaWorks {
     //ba.compose(id,flags,context,automata);
     //System.out.println("Pingo2");
     assert automata.length == 1;
-    //System.out.println("nfa2dfa in "+ automata[0].myString());
-    Automaton nfa = automata[0].copy();
+    Automaton nfa = automata[0].copy();// copies nodeId
+
     //System.out.println("FIRST "+nfa.myString());
     for (AutomatonNode ndn : nfa.getNodes()) { // NOT for Galois expaned automata
       if (cong) {
@@ -53,13 +53,14 @@ public class Nfa2dfaWorks {
         }
 
       } else
-        if (!tt.equals(TraceType.Trace) && (ndn.isSTOP() || ndn.isERROR())) {
-        nfa.addEdge(Constant.END, ndn, nfa.deadNode(), null, true, false);
+        if (tt.equals(TraceType.CompleteTrace) && (ndn.isSTOP() || ndn.isERROR())) {
+        AutomatonEdge ed = nfa.addEdge(Constant.END, ndn, nfa.deadNode(), null, true, false);
+       //System.out.println("adding edge to nfa "+ed.myString());
       }  //END is dummy edge to enforce complete traces
 
       if (tt.equals(TraceType.QuiescentTrace) && ndn.isQuiescent()) {
-        nfa.addEdge(Constant.Quiescent, ndn, nfa.deadNode(), null, true, false);
-        //System.out.println("adding "+Constant.Quiescent+ "  to "+nfa.getId());
+        AutomatonEdge ed = nfa.addEdge(Constant.Quiescent, ndn, nfa.deadNode(), null, true, false);
+        //System.out.println("adding edge to nfa "+ed.myString());
       }
 // add empty trace
       if (!tt.equals(TraceType.Trace) &&
@@ -68,7 +69,7 @@ public class Nfa2dfaWorks {
         nfa.addEdge(Constant.EPSILON, ndn, nfa.deadNode(), null, true, false);
       }
     }
-    //System.out.println("SECOND "+nfa.myString());
+    //System.out.println("ANOTATED nfa  "+nfa.myString());
 
     Automaton dfa = new Automaton(id + "_dfa", !Automaton.CONSTRUCT_ROOT);
 
@@ -84,16 +85,17 @@ public class Nfa2dfaWorks {
 
     Set<String> alphabet = nfa.getAlphabet();
     //alphabet.remove(Constant.HIDDEN);
-
+    //System.out.println("dfa alphabet "+alphabet);
     boolean processedRoot = false;
     while (!toDoList.isEmpty()) {  // starts with the set of nfa root node ids
       //System.out.println("toDo = "+toDoList);
       Set<String> states = toDoList.pop();
+      //System.out.println("stateMap.get("+states+")"+" , "+nfa.getId());
       String idNode = constructNodeId(stateMap.get(states), nfa.getId());
-      //System.out.println("idNode = "+idNode+"  states = "+states);
-      if (visited.contains(idNode)) {
-        continue;
-      }  // process dfa node only once
+      //System.out.println(" output from constructNodeId, idNode = "+idNode+"  states = "+states);
+      if (visited.contains(idNode))  continue;
+      //System.out.println("Processing "+idNode);
+        // process dfa node only once
       if (!nodeMap.containsKey(idNode)) { //set up nodeMap and add node to dfa
         AutomatonNode n = dfa.addNode(idNode);
         nodeMap.put(idNode, n);
@@ -126,6 +128,7 @@ public class Nfa2dfaWorks {
         //System.out.println("action "+action);
         Set<String> nextStates = constructStateSet(stateMap.get(states), action, stateMap);
         if (nextStates.isEmpty()) {
+          //System.out.println("Empty -"+ action+"->  not added");
           continue;
         }
         String nextId = constructNodeId(stateMap.get(nextStates), nfa.getId());
@@ -146,7 +149,7 @@ public class Nfa2dfaWorks {
 
         dfa.addEdge(action, node, nextNode, null, true, false);
 
-        toDoList.push(nextStates);
+        if (!toDoList.contains(nextStates)) toDoList.push(nextStates);
       }
 
       visited.add(idNode);
@@ -168,80 +171,76 @@ public class Nfa2dfaWorks {
                                        Map<Set<String>, List<AutomatonNode>> stateMap) {
     Set<String> states = new HashSet<>();
     List<AutomatonNode> nodes = new ArrayList<>();
-
     Stack<AutomatonNode> fringe = new Stack<>();
-    node.forEach(fringe::push);
+    node.forEach(fringe::push);  // the fringe has all the root nodes
 
     while (!fringe.isEmpty()) {
       AutomatonNode current = fringe.pop();
-      if (states.contains(current.getId())) {
-        continue;
-      }
+      //System.out.println("Root  "+current.getId());
+      if (states.contains(current.getId()))  continue;
       states.add(current.getId());
       nodes.add(current);
+     }
 
-      List<AutomatonEdge> edges = current.getOutgoingEdges().stream()
-        .filter(AutomatonEdge::isHidden)
-        .collect(Collectors.toList());
-
-      edges.forEach(edge -> fringe.push(edge.getTo()));
-      //System.out.println(fringe.size());
-    }
-
-    if (!stateMap.containsKey(states)) {
+    if (!stateMap.containsKey(states))  {
       stateMap.put(states, nodes);
+      //System.out.println("ADDING 2 StateMap "+ states + "->"+nodes.stream().map(AutomatonNode::getId).collect(Collectors.joining()));
     }
-
+    //System.out.println("construct Root "+states);
     return states;
   }
 
   /**
-   * @param nodes    set of nodes that become new node
-   * @param action   action of events leaving set of nodes and new node
+   * @param nodes    input ONL set of initial nodes
+   * @param action   action of events leaving a node in nodes
    * @param stateMap input output
-   * @return set of node ids that represent the  new node
+   * @return set of node ids that represent the  new node  after  nodes-action->
    */
-  private Set<String> constructStateSet(List<AutomatonNode> nodes, String action, Map<Set<String>,
-    List<AutomatonNode>> stateMap) {
+  private Set<String> constructStateSet(List<AutomatonNode> nodes,
+                                        String action,
+                                        Map<Set<String>,List<AutomatonNode>> stateMap) {
+    //System.out.println("construct "+ nodes.stream().map(AutomatonNode::getId).collect(Collectors.joining())+ "->"+action+"  to?");
+
     Set<String> states = new HashSet<>();
     List<AutomatonNode> nextNodes = new ArrayList<>();
     Set<String> visited = new HashSet<>();
 
     Stack<AutomatonNode> fringe = new Stack<>();
-    nodes.forEach(fringe::push);
+    nodes.forEach(fringe::push); // put the nodes onto the stact
+    //System.out.println("built fringe "+ fringe.stream().map(AutomatonNode::getId).collect(Collectors.joining()));
 
     while (!fringe.isEmpty()) {
       AutomatonNode current = fringe.pop();
+      //System.out.println("  current "+current.getId());
+      if (visited.contains(current.getId()))  continue;
 
-      if (visited.contains(current.getId())) {
-        continue;
-      }
-
-      List<AutomatonEdge> edges = current.getOutgoingEdges();
-      for (AutomatonEdge edge : edges) {
+      for (AutomatonEdge edge : current.getOutgoingEdges()) {
+        //System.out.println("    edge "+edge.myString("simple"));
         if (action.equals(edge.getLabel())) {
           states.add(edge.getTo().getId());
           nextNodes.add(edge.getTo());
         }
       }
-
       visited.add(current.getId());
     }
-
-    if (!stateMap.containsKey(states)) {
+// nextNodes.size()>0 ADDED if == 0 then this event is not
+    if (nextNodes.size()>0 &&!stateMap.containsKey(states)) {
       stateMap.put(states, nextNodes);
+      //System.out.println("ADDING 2 StateMap "+ states + "->"+nextNodes.stream().map(AutomatonNode::getId).collect(Collectors.joining()));
     }
-
+    //if (nextNodes.size()>0)
+      //System.out.println("constructStateSet of new node after "+action+" ->"+states);
     return states;
   }
 
-  /**
+  /** Build the nodeId from set of nodes
    * @param nodes      input
    * @param identifier input
    * @return
    */
   private String constructNodeId(List<AutomatonNode> nodes, String identifier) {
-    return identifier + constructLabel(nodes);
+    String out = identifier + constructLabel(nodes);
+    return  out;
   }
 
   /**

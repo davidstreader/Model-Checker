@@ -400,6 +400,7 @@ public class EquationEvaluator {
           or1 = status1.failCount == 0;
           if (or1 == false) {  //Short Circuit
             //System.out.println("  @@@@@@ Short circuit Implies 1 == false hence  true");
+
             r = true;
             status.setFailCount(0);
             failedEquations = new ArrayList<>();

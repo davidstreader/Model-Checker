@@ -10,7 +10,6 @@ import mc.TraceType;
 import mc.exceptions.CompilationException;
 import mc.plugins.IOperationInfixFunction;
 import mc.processmodels.ProcessModel;
-import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
 
 public class FailureRefinement implements IOperationInfixFunction {
@@ -55,7 +54,7 @@ public class FailureRefinement implements IOperationInfixFunction {
       TraceType.Failure,
        trace,
       this::buildAsets,
-      this::AcceptancePass);
+      (a1, a2, cong, error) -> AcceptancePass(a1, a2, cong, error));
   }
 
   /*
@@ -92,9 +91,9 @@ public class FailureRefinement implements IOperationInfixFunction {
     for failure subset you need trace equality + AcceptanceSubSet
     all that need to be tested is refusal subset in reverse direction + AcceptanceSubSet
    */
-  private  boolean AcceptancePass(List<Set<String>> a1, List<Set<String>> a2, boolean cong) {
-    if (refusalSubSet( a1, a2, cong))
-       return AcceptanceSubSet( a1, a2, cong);
+  private  boolean AcceptancePass(List<Set<String>> a1, List<Set<String>> a2, boolean cong, ErrorMessage error) {
+    if (refusalSubSet( a1, a2, cong, error))
+       return AcceptanceSubSet( a1, a2, cong,  error);
     else return false;
   }
 
@@ -105,9 +104,9 @@ public class FailureRefinement implements IOperationInfixFunction {
   }
 /*
   trace subset - takes the union of the ready sets as the dfa ready set
-  needed to compute trace equality
+  needed to compute trace equality  2 a subset of 1
  */
-  private  boolean refusalSubSet(List<Set<String>> a1, List<Set<String>> a2, boolean cong) {
+  private  boolean refusalSubSet(List<Set<String>> a1, List<Set<String>> a2, boolean cong, ErrorMessage error) {
     Set<String> a1Union = new TreeSet<>();
     for (Set<String> s: a1) {
       a1Union.addAll(s);
@@ -119,10 +118,12 @@ public class FailureRefinement implements IOperationInfixFunction {
     }a2Union = a2Union.stream().distinct().collect(Collectors.toSet());
     //System.out.println("a2U "+a2Union+"  is a sub set of a1U "+a1Union);
     if (!a1Union.containsAll(a2Union)) {
+      a2Union.removeAll(a1Union);
+      error.error = a2Union.toString();
       //System.out.println("failing");
       return false;
     }
-    if (cong && !equivExternal(a1Union,a2Union)) return false;
+   // if (cong && !equivExternal(a1Union,a2Union)) return false;
     return true;
   }
 
@@ -134,7 +135,7 @@ public class FailureRefinement implements IOperationInfixFunction {
 
    set of sets  A>>B  means a > b where b is a set in A  and b in B
  */
-  private  boolean AcceptanceSubSet(List<Set<String>> a1, List<Set<String>> a2, boolean cong) {
+  private  boolean AcceptanceSubSet(List<Set<String>> a1, List<Set<String>> a2, boolean cong, ErrorMessage error) {
 
     //System.out.println(" START AcceptanceSuperSet " + a2 + " a Refusal Subset of " + a1 + "  ?");
     boolean ok = true;
@@ -144,21 +145,26 @@ public class FailureRefinement implements IOperationInfixFunction {
       //System.out.println(" as2= "+as2);
       breakto:
       for (Set<String> aa1 : a1) {     // exists as1 in a1 such that   (B)
-        //strip out external
-        Set<String> as1 = aa1.stream().filter(x->!Constant.external(x)).collect(Collectors.toSet());
+        //strip out END as only used to enforce complete Trace
+        // strip out external when not cong
+        Set<String> as1;
+        if (!cong) {
+          as1 = aa1.stream().filter(x->!Constant.externalOrEND(x)).collect(Collectors.toSet());
+        } else{
+          as1 = aa1;
+        }
         //System.out.println("   is as2 " + as2 + " superset of   as1 " + as1);
         if (as2.containsAll(as1)) {    //  as1 is a  subset of as2
           ok = true;
           //System.out.println("      as2 " + as2 + " is superset as1 " + as1);
           break breakto;
-        } else {
-          //ok = false;
-          //System.out.println("   as2 " + as2 + " is NOT superset as1 " + as1);
-          //break breakto;
         }
       }
 
-      if (ok == false) { break;} //if one inner false then outer false
+      if (ok == false) {
+        error.error = as2.toString();
+        break;
+      } //if one inner false then outer false
     }  //outer only true if all inner loops true
     //System.out.println(" a2 " + a2 + " a Refusal Subset of " + a1 + "  returns " + ok);
     return ok;
