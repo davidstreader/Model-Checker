@@ -127,9 +127,9 @@ public class SingeltonFailureRefinement implements IOperationInfixFunction {
   flatened singleton Refusals
  */
   public  boolean singeltonPass(List<Set<String>> a1, List<Set<String>> a2, boolean cong,ErrorMessage error) {
-    if (dfaReadySubset( a1, a2, cong))
+    //if (dfaReadySubset( a1, a2, cong, error))
       return isSFSubset( a1, a2, cong, error);
-    else return false;
+   // else return false;
   }
 
   /*
@@ -141,9 +141,11 @@ public class SingeltonFailureRefinement implements IOperationInfixFunction {
     Set<String> ex2 =  s2.stream().filter(Constant::observable).collect(Collectors.toSet());
     return ex1.containsAll(ex2)&& ex2.containsAll(ex1);
   }
-  private  boolean dfaReadySubset(List<Set<String>> a1, List<Set<String>> a2, boolean cong) {
+  private  boolean dfaReadySubset(List<Set<String>> a1, List<Set<String>> a2, boolean cong,ErrorMessage error) {
     boolean b =  a1.get(1).containsAll(a2.get(1));
     System.out.println(a2.get(1)+ " is dfaRedySubset of  "+a1.get(1) +" = " + b);
+    a2.get(1).removeAll(a1.get(1));
+    if (!b) error.error = "Rs{"+a2.get(1)+"}";
     return b;
   }
 
@@ -159,7 +161,7 @@ public class SingeltonFailureRefinement implements IOperationInfixFunction {
       for (String lab :s2.get(0)) {
         if (Constant.external(lab)) continue;
         if (!s1.get(0).contains(lab)) {
-          error.error = "{"+lab+"}";
+          error.error = "Ref{"+lab+"}";
           out = false;
           break;
         }

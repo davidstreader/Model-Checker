@@ -1,0 +1,183 @@
+processes {   
+Test: {
+Onea = a!->x?->STOP.
+Oneb = b!->x?->STOP.
+Oneab = b!->x?->STOP|a!->x?->STOP.
+Onexy = a!->(x?->STOP|y?->STOP).
+
+Twoaa = a!->a!->(x?->STOP|y?->STOP).
+Twoaa2 = a!->(a!->x?->STOP|a!->y?->STOP).
+Twoaa3 = a!->(a!->x?->STOP|b!->y?->STOP).
+Twoaa4 = a!->(a!->x?->STOP|a!->x?->STOP).
+
+Twoa = a!->a!->x?->STOP.
+Twoab = a!->b!->x?->STOP.
+Twoab2 = a!->(b!->x?->STOP|a!->x?->STOP)|a!->x?->STOP.
+Twoab3 = a!->(b!->x?->STOP|a!->x?->STOP).
+
+Twoba = b!->a!->x?->STOP.
+Twobb = b!->b!->x?->STOP.
+
+Threea = a!->a!->a!->x?->STOP .
+Threea2 = a!->a!->a!->x?->STOP|a!->a!->a!->y?->STOP .
+Threea3 = a!->(a!->a!->x?->STOP|a!->a!->y?->STOP) .
+Threea4 = a!->a!->a!->x?->STOP|a!->a!->a!->STOP .
+Threea5 = a!->a!->a!->(x?->STOP|y?->b!->STOP) .
+
+Threeb = b!->b!->b!->x?->STOP .
+Threeaab = a!->a!->b!->x?->STOP.
+Threeaba = a!->b!->a!->x?->STOP.
+Threebaa = b!->a!->a!->x?->STOP.
+Threeabb = a!->b!->b!->x?->STOP. 
+Threebba = b!->b!->a!->x?->STOP.
+Threebab = b!->a!->b!->x?->STOP.
+Fouraaaa  = a!->a!->a!->a!->x?->STOP.
+Fouraaab  = a!->a!->a!->b!->x?->STOP.
+Four1  = a!->a!->b!->a!->x?->STOP.
+Four2  = a!->b!->a!->a!->x?->STOP.
+Four3  = b!->a!->a!->a!->x?->STOP.
+
+Four4  = b!->a!->a!->b!->x?->STOP.
+Four5  = b!->a!->b!->a!->x?->STOP.
+Four6  = a!->b!->b!->a!->x?->STOP.
+Four7  = b!->a!->a!->b!->x?->STOP.
+
+Fiveababa = a!->b!->a!->b!->a!->x?->STOP.
+Fivebbaab = b!->b!->a!->a!->b!->x?->STOP.
+}
+
+Pro:{
+Oab = a?->STOP|b?->x!->STOP.     
+Oab2 = a?->x!->STOP|b?->STOP.  
+Oab3 = a?->STOP|b?->STOP|x!->STOP.  
+La = a?->La|x!->STOP.
+Lb = b?->Lb|x!->STOP.
+La2 = a?->x!->La2.
+Lb2 = b?->x!->Lb2.
+
+
+Lasb  = a?->Lasb| b?->x!->STOP.
+Lasa  = a?->Lasa| a?->x!->STOP.
+Lbsb  = b?->Lbsb| b?->x!->STOP.
+Lbsa  = b?->Lbsa| a?->x!->STOP.
+
+Lasb2  = a?->x!->Lasb2| b?->STOP.
+Lasa2  = a?->x!->Lasa2| a?->STOP.
+Lbsb2  = b?->x!->Lbsb2| b?->STOP.
+Lbsa2  = b?->x!->Lbsa2| a?->STOP.
+
+Labsa  = b?->Labsa| a?->Labsa| a?->x!->STOP.
+Labsab  = b?->Labsab| a?->Labsab| a?->x!->STOP|b?->STOP.
+Labsa2  = b?->x!->Labsa2| a?->Labsa2| a?->STOP.
+Labsab2  = b?->x!->Labsab2| a?->Labsab2| a?->STOP|b?->STOP.
+Labsa3  = b?->Labsa3| a?->Labsa3| a?->STOP|x!->STOP.
+Labsab3  = b?->Labsab3| a?->Labsab3| a?->STOP|b?->STOP|x!->STOP.
+Labsa4  = b?->Labsa4| x!->a?->Labsa4| a?->STOP.
+Labsab4  = b?->Labsab4| x!->a?->Labsab4| a?->STOP|b?->STOP.
+
+Twoax = a?->(a?->x!->STOP|b?->STOP).
+Twobx = b?->(a?->x!->STOP|b?->STOP).
+Twoabs = a?->b?->x!->Twoabs.
+Twobas = b?->a?->x!->Twobas.
+Twoaas = a?->a?->x!->Twoaas.
+Twobbs = b?->b?->x!->Twobbs.
+
+Twoq = a?->(a?->x!->STOP|b?->x!->STOP).
+Twoq2 = a?->(a?->x!->STOP|b?->a?->x!->STOP)|a?->STOP.
+Twoq3 = a?->a?->x!->STOP|a?->b?->x!->STOP|a?->STOP.
+Twoq2y = a?->(a?->x!->STOP|b?->a?->y!->STOP)|a?->STOP.
+Twoq3y = a?->a?->x!->STOP|a?->b?->y!->STOP|a?->STOP.
+
+
+Twobx2 = b?->(a?->STOP|b?->STOP|x!->STOP).
+Twoabs2 = a?->(b?->Twoabs2|x!->STOP).
+Twobas2 = b?->(a?->Twobas2|x!->STOP).
+Twoaas2 = a?->(a?->Twoaas2|x!->STOP).
+Twobbs2 = b?->(b?->Twobbs2|x!->STOP).
+
+Twoax3 = a?->(a?->x!->STOP|b?->x!->STOP).
+Twobx3 = b?->(a?->x!->STOP|b?->x!->STOP).
+Twoabs3 = a?->b?->x!->Twoabs3|x!->STOP.
+Twobas3 = b?->a?->x!->Twobas3|x!->STOP.
+Twoaas3 = a?->a?->x!->Twoaas3|x!->STOP.
+Twobbs3 = b?->b?->x!->Twobbs3|x!->STOP.
+
+D   = a?->(b?->D|b?->STOP).
+Dr  = a?->b?->Dr|b?->STOP.
+Da  = a?->b?->Da|a?->STOP.
+Dx  = a?->(b?->Dx|a?->STOP).
+G  = b?->(b?->G|b?->STOP).
+Gr = b?->b?->Gr|b?->STOP.
+Ga = b?->b?->Ga|a?->STOP.
+Gx = b?->(b?->Gx|a?->STOP).
+I  = a?->(a?->I|b?->STOP).
+Ir = a?->a?->Ir|b?->STOP.
+Ia = a?->a?->Ia|a?->STOP.
+Ix = a?->(a?->Ix|a?->STOP).
+
+
+D2   = a?->(b?->D2|x!->b?->STOP|x!->a?->STOP).
+Dr2  = a?->b?->Dr2|x!->(b?->STOP|a?->STOP).
+Da2  = a?->b?->x!->Da2|a?->STOP.
+Dx2  = a?->x!->(b?->Dx2|a?->STOP).
+G2  = b?->x!->(b?->G2|b?->STOP).
+Gr2 = b?->x!->b?->Gr2|x!->b?->STOP.
+Ga2 = b?->b?->x!->Ga|a?->x!->STOP.
+Gx2 = b?->x!->(b?->Gx2|x!->a?->STOP).
+I2  = a?->(x!->a?->I2|b?->STOP).
+Ir2 = a?->a?->x!->Ir2|b?->STOP.
+Ia2 = x!->a?->a?->Ia2|x!->a?->STOP.
+Ix2 = a?->(a?->x!->Ix2|a?->STOP).
+
+/*Threeaax = a?->a?->(a?->STOP|b?->STOP).
+Threeabx = a?->b?->(a?->STOP|b?->STOP).
+Threebax = b?->a?->(a?->STOP|b?->STOP).
+Threebbx = b?->b?->(a?->STOP|b?->STOP).
+E  = a?->b?->X, X= a?->X.
+E1 = b?->b?->X, X= a?->X.
+E2 = b?->a?->X, X= a?->X.
+E3 = a?->a?->X, X= a?->X.
+F  = a?->X, X= a?->X|b?->STOP.
+F1  = >b->X, X= a?->X|b?->STOP.
+F2  = b->X, X= a?->X|a?->STOP.
+F3  = a?->X, X= a?->X|a?->STOP.
+Ex1 = b?->b?->X, X= a?->X| b?->X.
+Ex2 = b?->a?->X, X= a?->X| b?->X.
+Ex3 = a?->a?->X, X= a?->X| b?->X.
+Fx  = a?->X, X= a?->X| b?->X|b?->STOP.
+Fx1  = b?->X, X= a?->X| b?->X|b?->STOP.
+Fx2  = b?->X, X= a?->X| b?->X|a?->STOP.
+Fx3  = a?->X, X= a?->X| b?->X|a?->STOP. 
+*/
+}
+}
+
+operation{
+//La:Pro <f{cong} Twoaas:Pro ==> La:Pro <sf{cong} Twoaas:Pro.
+
+}
+equation {
+
+/*  This should and dose fail
+ forall{X:Test} (X||{a,b}Y:Pro <q{cong} X||{a,b}Z:Pro) ==> Y:Pro <qsf{cong} Z:Pro.
+*/
+// BELOW Working  
+
+/*Y:Pro <qsf Z:Pro ==>Y:Pro <q Z:Pro. 
+Y:Pro <qsf{cong} Z:Pro ==>Y:Pro <qsf Z:Pro.
+
+
+Y:Pro <qsf{cong} Z:Pro ==>Y:Pro <q{cong} Z:Pro. 
+
+ Y:Pro <qsf{cong} Z:Pro ==> forall{X:Test} (X||{a,b}Y:Pro <q{cong} X||{a,b}Z:Pro). 
+ */
+//Y:Pro <qsf Z:Pro ==> forall{X:Test} (X||{a,b,x,y}Y:Pro <q X||{a,b,x,y}Z:Pro).
+//forall{X:Test} (X||{a,b,x,y}Y:Pro <q X||{a,b,x,y}Z:Pro) ==> Y:Pro <qsf Z:Pro.
+
+X <qsf Y ==> X<qf Y.
+} 
+
+
+
+
+

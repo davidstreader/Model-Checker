@@ -1,0 +1,48 @@
+processes {   
+
+Onea = a->STOP.
+Ob = b->STOP.
+Oneaa = a->STOP.
+Oneb = a->STOP|b->STOP.
+Onebb = a->STOP|b->STOP.
+
+Two = c->a->STOP|c->b->STOP.
+Twox = c->(a->STOP|b->STOP)|c->a->STOP|c->b->STOP.
+
+Twos = c->a->STOP|c->b->STOP|c->STOP.
+
+X = c->(a->STOP|b->STOP).
+
+TwoX = Two||{a,b,c}X.
+TwosX = Twos||{a,b,c}X.
+//
+}
+operation {
+Onea !<sf{cong} Ob.
+Ob !<sf{cong} Onea.
+Onea !<sf{cong} Oneb.
+Oneb !<sf{cong} Onea.
+
+Onea <sf{cong} Oneaa.
+Onebb <sf{cong} Oneb.
+
+Two <sf{cong} Twox. 
+Two <sf{cong} Twos. 
+Twos <sf{cong} Two. 
+Two !<f{cong} Twos.
+Twos <f{cong} Two. 
+Two !<f Twos.
+Twos <f Two.
+
+//TwoX !<t{cong} TwosX. 
+}
+
+
+
+
+
+
+
+
+
+

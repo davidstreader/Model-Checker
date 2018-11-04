@@ -1,0 +1,72 @@
+processes {
+ //Singelton Failure Refinement  (a){a,c} is short for (a){a}, (a){c}
+A = a->b->STOP.                   //Sf (a){a,c}, (a,b){X}
+Adet = a->(b->STOP|c->STOP).     //Sf (a){a}, (a,b){X}, (a,c){X}
+Andet = a->b->STOP|a->c->STOP.   //Sf (a){a,c,b}, (a,b){X}, (a,c){X}  
+                                 // F (a){b}, (a){c}    
+Asf = a->b->STOP|a->c->STOP|a->STOP. //Sf (a){a,c,b}, (a,b){X}, (a,c){X} 
+                                     //F (a){b}, (a){c}, (a){b,c}
+
+Adsf = a->(b->STOP|c->STOP)|a->STOP. //Sf (a){a,c,b}, (a,b){X}, (a,c){X} 
+
+Twoax = a->a->STOP|a->b->STOP.
+Twoax2 = a->a->STOP|a->b->STOP|a->STOP.
+
+Onea = a->STOP.
+
+T1 = Twoax ||{a,b} Onea.
+T2 = Twoax2 ||{a,b} Onea.
+}
+//alphabet {a!,b!,c!}
+operation {
+/*
+Andet <f  A. 
+Andet <sf  A. 
+Adet !<sf  A. 
+Andet <sf Adet.
+Adet !<sf Andet.
+Andet <sf Asf.
+Asf <sf Andet.
+
+Adsf <t Andet.
+Adsf <sf Andet.
+Adsf <f Andet.
+
+Andet !<t Adsf. 
+Andet <sf Adsf.
+Andet !<f Adsf.
+
+Andet !<t{cong} Adsf.
+Andet <sf{cong} Adsf.
+Andet !<f{cong}  Adsf.
+
+
+Twoax !<t Twoax2.
+Twoax <sf Twoax2.
+Twoax !<f Twoax2.
+
+Twoax !<t{cong} Twoax2.
+Twoax !<f{cong} Twoax2.
+*/
+Twoax <sf{cong} Twoax2.
+
+Twoax ||{a,b} Onea <t{cong} Twoax2 ||{a,b} Onea.
+T1 <t{cong} T2.
+T2 <t{cong} T1.
+
+/*
+Asf <sf Andet.
+Andet <sf Asf.
+
+Asf <f Andet.
+Andet !<f Asf.
+*/
+}
+
+
+
+
+
+
+
+

@@ -91,7 +91,7 @@ public class TraceRefinement implements IOperationInfixFunction {
 
   public boolean isReadySubset(List<Set<String>> s1,List<Set<String>> s2, boolean cong, ErrorMessage error) {
     boolean out = true;
-    System.out.println("tr isReadySubset");
+    //System.out.println("tr isReadySubset");
     if (cong) {
       out = s1.get(0).containsAll(s2.get(0)) ; //&& equivExternal(s1,s2);
     }
@@ -108,7 +108,7 @@ public class TraceRefinement implements IOperationInfixFunction {
       error.error = s2.get(0).stream().
         filter(x->!s1.get(0).contains(x)).collect(Collectors.toSet()).toString();
 
-      System.out.println("error " + error.error);
+      //System.out.println("error " + error.error);
     }
     return out;
   }

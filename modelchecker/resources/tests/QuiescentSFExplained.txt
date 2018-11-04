@@ -1,0 +1,22 @@
+processes {
+ //Quiescent traces for any x can ALL have x?* appended 
+//      or added in any unlistening state
+A = a!->STOP.                  //Qsf (){b!}, (a!){a!}, (a!){b!}
+Ab = a!->STOP|b!->STOP.        //Qsf (){}, (a!){a!}, (a!){b!} , (b!){a!}, (b!){b!}
+Aa = a!->b?->STOP|a!->c?->STOP.     //    
+Aaa = a!->(b?->STOP|c?->STOP).      // 
+}
+//alphabet {a!,b!,c!}
+operation {
+Ab !<qsf  A. 
+A !<qsf Ab.
+
+Aa <qsf  A. 
+A <qsf Aa.   //NOT <q{cong}
+A <qsf  Aaa.
+Aaa <qsf A.
+
+}
+
+
+

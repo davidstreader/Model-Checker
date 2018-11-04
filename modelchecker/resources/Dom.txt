@@ -1,0 +1,38 @@
+processes {   
+Twoaas = a->a->Twoaas| b->STOP.
+La = a->La| b->STOP.
+//Lb = b->Lb.
+//Lasb  = a->Lasb| b->STOP.
+//Lasa  = a->Lasa| a->STOP.
+
+//Oneab = a->STOP|b->STOP.  
+//Lasb  = a->Lasb| b->STOP.
+//Labsab  = b->Labsab| a->Labsab| a->STOP|b->STOP.
+
+//Tt = La ||{a,b}Oneab.
+//Tl = La||{a,b}Labsab.
+}
+operation {
+Twoaas <f{cong} La.
+Twoaas <sf{cong} La.
+Twoaas <t{cong} La.
+
+La <f{cong} Twoaas.
+La <sf{cong} Twoaas.
+La <t{cong} Twoaas.
+
+La <f{cong} Twoaas ==> La <sf{cong} Twoaas.
+Twoaas <f{cong} La  ==> Twoaas <sf{cong} La.
+//Labsab <f{cong} Oneab.
+//Tl <t{cong} Tt.
+//Tt <t{cong} Tl.
+}
+
+
+
+
+
+
+
+
+

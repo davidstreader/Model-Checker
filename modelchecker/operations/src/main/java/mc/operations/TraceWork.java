@@ -76,7 +76,7 @@ public class TraceWork {
             tt,
             buildData,  //lambda to build data for later comparision
             a);
-          System.out.println("DFA " + i++ + " " + newdfa.myString());
+          //System.out.println("DFA " + i++ + " " + newdfa.myString());
 
           dfas.add(newdfa);
         } catch (CompilationException e) {
@@ -85,7 +85,7 @@ public class TraceWork {
       }
       Automaton a1 = (Automaton) dfas.get(0);
       Automaton a2 = (Automaton) dfas.get(1);
-      System.out.println("Q Refinement type " + tt + " flags " + flags + " 1 = " + a1.getId() + " 2 = " + a2.getId());
+      //System.out.println("Q Refinement type " + tt + " flags " + flags + " 1 = " + a1.getId() + " 2 = " + a2.getId());
 //Both dfas are built
       a1Next = build_readyMap(a1, tt, cong); //needed to control the simulation
       a2Next = build_readyMap(a2, tt, cong);
@@ -138,19 +138,19 @@ public class TraceWork {
                               TraceType tt,
                               SubSetEval evalSubset) {
     boolean ok = true;
-    System.out.println("traceSubset start with nodePair " + np.myString() + "  tt " + tt);
+    //System.out.println("traceSubset start with nodePair " + np.myString() + "  tt " + tt);
     for (NodePair n : processed) {
       if (n.getFirst().getId().equals(np.getFirst().getId()) &&
         n.getSecond().getId().equals(np.getSecond().getId())) {
-        System.out.println(np.myString() + "  Already processed Returns true");
+        //System.out.println(np.myString() + "  Already processed Returns true");
         return true;
       }
     }
     //System.out.println(a2N.get(np.second).labels() + " in " + a1N.get(np.first).labels());
     // List<Set<String>> sm = dfa2.getNode2ReadySets().get(np.second);
 
-    System.out.println(np.second.getId() + " small= " + dfa2.getNode2ReadySets().get(np.second) + " AND " + np.first.getId() + " large= " +
-      dfa1.getNode2ReadySets().get(np.first) + " ");
+    //System.out.println(np.second.getId() + " small= " + dfa2.getNode2ReadySets().get(np.second) + " AND " + np.first.getId() + " large= " +
+    //  dfa1.getNode2ReadySets().get(np.first) + " ");
     /*System.out.println(evalSubset.op(dfa2.getNode2ReadySets().get(np.second),
       dfa1.getNode2ReadySets().get(np.first), cong));*/
     //2 a sub(tract,failure,..) of 1
@@ -161,7 +161,7 @@ public class TraceWork {
       //System.out.println("Trace Works TRUE next " + a1N.get(np.first).labels());
       processed.add(np);
       for (String lab : a2N.get(np.second).labels()) {  // not small
-        System.out.println("with " +np.first.getId() + " exploring  " + np.second.getId() + "->" + lab);
+        //System.out.println("with " +np.first.getId() + " exploring  " + np.second.getId() + "->" + lab);
         if (Constant.external(lab) || lab.equals(Constant.Quiescent)) continue;  // dose not include Quiescent
         //System.out.println(" starting " + np.myString() + " lab = " + lab);
 
@@ -177,26 +177,26 @@ public class TraceWork {
           t.printStackTrace();
           return false;
         } else if (nd1 == null) {
-          System.out.println(dfa1.getId() + " 1 cannot match event " + lab + " that " + dfa2.getId() + " 2 performs");
+          //System.out.println(dfa1.getId() + " 1 cannot match event " + lab + " that " + dfa2.getId() + " 2 performs");
           ok = false;
           break;
           //return false; // 1 cannot match an event from 2! hence 2 not SUB 1
         }
 
         if (ok) {
-          System.out.println("next nd1 = " + nd1.getId() + " nd2 = " + nd2.getId());
+          //System.out.println("next nd1 = " + nd1.getId() + " nd2 = " + nd2.getId());
           ok = traceSubset(dfa1, dfa2, new NodePair(nd1, nd2), a1N, a2N, processed, cong, trace, tt, evalSubset);
           if (!ok)  trace.push(lab);
-          System.out.println("Tw 200 trace " + trace);
+          //System.out.println("Tw 200 trace " + trace);
         }
       }
     } else {
-      System.out.println(np.myString() + " returns false " + dfa2.getNode2ReadySets().get(np.second) +
-        " NOTsubset " + dfa1.getNode2ReadySets().get(np.first)+"  error "+error.error);
+      //System.out.println(np.myString() + " returns false " + dfa2.getNode2ReadySets().get(np.second) +
+       // " NOTsubset " + dfa1.getNode2ReadySets().get(np.first)+"  error "+error.error);
       trace.push(error.error);
       ok = false;
     }
-    System.out.println(np.myString() + " traceSubset " + np.myString() + " trace " + trace + " returns " + ok);
+    //System.out.println(np.myString() + " traceSubset " + np.myString() + " trace " + trace + " returns " + ok);
     return ok;
   }
 

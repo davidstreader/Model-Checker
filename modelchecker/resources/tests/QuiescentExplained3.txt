@@ -1,0 +1,20 @@
+processes {
+ //Quiescent traces for any x can ALL have x?* appended 
+//      or added in any unlistening state
+A = a!->STOP.                       //Qt  (a!)
+Ab = a!->STOP|b!->STOP.             //Qt  (a!),(b!)
+Aa = a!->b?->STOP|a!->c?->STOP.     // (a!)   
+Aaa = a!->(b?->STOP|c?->STOP).      // (a!) 
+}
+alphabet {a!,b!,c!,e!}
+operation {
+Ab <q  A. 
+A !<q Ab.
+Aa <q  A. 
+A <q Aa.   //NOT <q{cong}
+A <q  Aaa.
+Aaa <q A.
+
+}
+
+

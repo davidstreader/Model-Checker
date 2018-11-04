@@ -54,7 +54,9 @@ public class FailureRefinement implements IOperationInfixFunction {
       TraceType.Failure,
        trace,
       this::buildAsets,
-      (a1, a2, cong, error) -> AcceptancePass(a1, a2, cong, error));
+      this::AcceptancePass
+     // (a1, a2, cong, error) -> AcceptancePass(a1, a2, cong, error)
+    );
   }
 
   /*
@@ -91,7 +93,7 @@ public class FailureRefinement implements IOperationInfixFunction {
     for failure subset you need trace equality + AcceptanceSubSet
     all that need to be tested is refusal subset in reverse direction + AcceptanceSubSet
    */
-  private  boolean AcceptancePass(List<Set<String>> a1, List<Set<String>> a2, boolean cong, ErrorMessage error) {
+  public  boolean AcceptancePass(List<Set<String>> a1, List<Set<String>> a2, boolean cong, ErrorMessage error) {
     if (refusalSubSet( a1, a2, cong, error))
        return AcceptanceSubSet( a1, a2, cong,  error);
     else return false;
@@ -107,6 +109,9 @@ public class FailureRefinement implements IOperationInfixFunction {
   needed to compute trace equality  2 a subset of 1
  */
   private  boolean refusalSubSet(List<Set<String>> a1, List<Set<String>> a2, boolean cong, ErrorMessage error) {
+
+    System.out.println("\nrefusalSubSet");
+
     Set<String> a1Union = new TreeSet<>();
     for (Set<String> s: a1) {
       a1Union.addAll(s);
@@ -115,12 +120,19 @@ public class FailureRefinement implements IOperationInfixFunction {
     Set<String> a2Union = new TreeSet<>();
     for (Set<String> s: a2) {
       a2Union.addAll(s);
-    }a2Union = a2Union.stream().distinct().collect(Collectors.toSet());
-    //System.out.println("a2U "+a2Union+"  is a sub set of a1U "+a1Union);
+    }
+    a1Union = a1Union.stream().distinct().collect(Collectors.toSet());
+    a2Union = a2Union.stream().distinct().collect(Collectors.toSet());
+    Set<String> alpha = new TreeSet<>();
+    alpha.addAll(a1Union);
+    alpha.addAll(a2Union);
+
+    System.out.println("is a2U "+a2Union+"  a sub set of a1U "+a1Union);
     if (!a1Union.containsAll(a2Union)) {
-      a2Union.removeAll(a1Union);
-      error.error = a2Union.toString();
-      //System.out.println("failing");
+      a2Union.removeAll(a1Union);    //the problem Acceptance set
+      alpha.removeAll(a2Union);      //the problem Refusal set
+      error.error = "S"+alpha.toString();
+      System.out.println("failing "+alpha);
       return false;
     }
    // if (cong && !equivExternal(a1Union,a2Union)) return false;
@@ -137,36 +149,39 @@ public class FailureRefinement implements IOperationInfixFunction {
  */
   private  boolean AcceptanceSubSet(List<Set<String>> a1, List<Set<String>> a2, boolean cong, ErrorMessage error) {
 
-    //System.out.println(" START AcceptanceSuperSet " + a2 + " a Refusal Subset of " + a1 + "  ?");
+    System.out.println(" START AcceptanceSuperSet " + a2 + " a Refusal Subset of " + a1 + "  ?");
     boolean ok = true;
-
+    Set<String> unionA12 = new TreeSet<>(); // used in error message
     for (Set<String> as2 : a2) {       //FOR ALL as2 is in a2 then    (A)
+      unionA12.addAll(as2);
       ok = false;
-      //System.out.println(" as2= "+as2);
+      System.out.println(" as2= "+as2);
+      Set<String> as1 = new TreeSet<>();
       breakto:
       for (Set<String> aa1 : a1) {     // exists as1 in a1 such that   (B)
-        //strip out END as only used to enforce complete Trace
-        // strip out external when not cong
-        Set<String> as1;
+
         if (!cong) {
           as1 = aa1.stream().filter(x->!Constant.externalOrEND(x)).collect(Collectors.toSet());
         } else{
           as1 = aa1;
         }
-        //System.out.println("   is as2 " + as2 + " superset of   as1 " + as1);
+        unionA12.addAll(as1);
+        System.out.println("   is as2 " + as2 + " superset of   as1 " + as1);
         if (as2.containsAll(as1)) {    //  as1 is a  subset of as2
-          ok = true;
-          //System.out.println("      as2 " + as2 + " is superset as1 " + as1);
+          ok = true;                   // Ref(as2)subset Ref(as1)
+          System.out.println("      as2 " + as2 + " is superset as1 " + as1);
           break breakto;
         }
       }
 
-      if (ok == false) {
-        error.error = as2.toString();
+      if (ok == false) {           // as2 not subset any as1
+        unionA12 = unionA12.stream().distinct().collect(Collectors.toSet());
+        unionA12.removeAll(as2);
+        error.error = "Ref"+unionA12.toString(); // complement of acceptance set as1
         break;
       } //if one inner false then outer false
     }  //outer only true if all inner loops true
-    //System.out.println(" a2 " + a2 + " a Refusal Subset of " + a1 + "  returns " + ok);
+    System.out.println(" a2 " + a2 + " a Refusal Subset of " + a1 + "  returns " + ok);
     return ok;
   }
 

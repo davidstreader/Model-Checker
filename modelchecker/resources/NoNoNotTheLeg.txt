@@ -1,0 +1,41 @@
+processes {
+//Oneab = a->STOP|b->STOP.  
+Twoab = a->b->STOP.
+//Labsab  = b->Labsab| a->Labsab| a->STOP|b->STOP.
+
+F  = a->X, X= a->X|b->STOP.
+
+Fx  = a->X, X= a->X| b->X|b->STOP.
+
+T = F||{a,b}Twoab .
+Tx = Fx||{a,b}Twoab .
+
+}
+
+operation{
+Fx <f{cong} F ==> F||{a,b}Twoab <t{cong} Fx||{a,b}Twoab.
+
+Fx <sf{cong} F.
+Tx <t{cong} T.
+
+//La <f Twoaas ==> La <sf Twoaas.
+//La <f{cong} Twoaas ==> La <sf{cong} Twoaas.
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

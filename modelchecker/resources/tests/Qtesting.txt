@@ -1,0 +1,45 @@
+processes {
+ //Singelton Failure Refinement  (a){a,c} is short for (a){a}, (a){c}
+Qf1ok = a!->b!->STOP|a!->a!->STOP|a!->STOP. 
+
+Qf1 = a!->(b!->STOP|a!->STOP)|a!->STOP. 
+Qf2 = a!->a!->STOP|a!->b!->STOP.
+
+Qsf1 = a?->b?->bb!->STOP|a?->c?->cc!->STOP|a?->STOP. // [a!, [a!, b!]]
+Qsf2 = a?->b?->bb!->STOP|a?->c?->cc!->STOP.         // 
+ 
+//Tester = a!->b!->bb?->STOP.
+TestF = a!->(b!->bb?->STOP|c!->cc?->STOP).
+
+QT1 = Qsf1||{a!,b!,bb!,c!,cc!}TestF.
+QT2 = Qsf2||{a!,b!,bb!,c!,cc!}TestF.
+
+}
+alphabet {a!,b!,bb!,c!,cc!}
+operation {
+
+//Qf1ok <qf Qf2. 
+Qf1 !<qf Qf2. 
+Qf2 !<qf Qf1. 
+
+Qf1 <qsf Qf2. 
+Qf2 <qsf Qf1. 
+
+/*
+Qsf1 <qf Qsf2.
+Qsf1 <qsf Qsf2.
+
+// Qsf2 !<f Qsf1  but Qsf2 <sf Qsf1
+QT1 <q QT2.
+QT2 <q QT1.
+
+Qsf1 <qf Qsf2.
+Qsf2 <qf Qsf1.
+*/
+}
+
+
+
+
+
+

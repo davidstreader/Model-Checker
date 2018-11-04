@@ -144,14 +144,14 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     Cloner cloner=new Cloner();
    //System.out.println("interpretProcess in AutInt astNode "+astNode.toString());
     if (astNode instanceof IdentifierNode) {
-     System.out.println("astNode IdentifierNode");
+     //System.out.println("astNode IdentifierNode");
       String reference = ((IdentifierNode) astNode).getIdentifier()+":"+
                          ((IdentifierNode) astNode).getDomain();
           ProcessModel model = processMap.get(reference);
           processStack.push(cloner.deepClone(model));
 
     } else if (astNode instanceof ProcessRootNode) {
-     System.out.println("astNode ProcessRootNode");
+     //System.out.println("astNode ProcessRootNode");
 
 
       // automata already on stact so pop it off  relabel and push back on stack
@@ -208,7 +208,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     String info = "";
     AutomatonInterpreter.indent = AutomatonInterpreter.indent.concat("-");
     String className = astNode.getClass().getSimpleName();
-    System.out.println("Aut " + PetrinetInterpreter.indent + className );
+    //System.out.println("Aut " + PetrinetInterpreter.indent + className );
 
     //System.out.println("WHAT "+className);
     // check if the current ast node has a reference attached

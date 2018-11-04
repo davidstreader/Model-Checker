@@ -147,6 +147,9 @@ public class OperationEvaluator {
         return result;
     }
 
+    public  void reverse(Stack<Integer> arr){
+        arr.sort(Collections.reverseOrder());
+    }
 /*
  Finally finally evaluating the dynamically loaded operation  func
  Called from EquationEvaluator as well as OperationEvaluator
@@ -167,7 +170,7 @@ public class OperationEvaluator {
         Set<String> flags = operation.getFlags();
         //trace = new Stack<>();
         boolean r = false;
-        System.out.print("***evalOp "+alpha+"  "+operation.myString());
+        //System.out.print("***evalOp "+alpha+"  "+operation.myString());
         /*System.out.println("evalOp "+operation.myString());
         for(String key: processMap.keySet()){
             System.out.println(key+"->"+processMap.get(key).getId());
@@ -268,6 +271,9 @@ public class OperationEvaluator {
        // }
         //System.out.println(" op Eval returns "+r+"  negated "+ operation.isNegated()+" trace "+trace);
         if (operation.isNegated() !=r) trace.clear();
+        else {
+            trace.sort(Collections.reverseOrder());
+        }
         //System.out.println(" op Eval returns "+r+"  trace "+trace);
 
         //System.out.println("***evalOp with processMap  "+processMap.keySet().stream().map(x->x+"->"+processMap.get(x).getId()).reduce((x,y)->x+" "+y)+" returns "+r);

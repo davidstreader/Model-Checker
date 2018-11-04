@@ -59,19 +59,16 @@ public class QuiescentRefinement implements IOperationInfixFunction {
   @Override
   public boolean evaluate(Set<String> alpha, Set<String> flags, Context context,
                           Stack<String> trace, Collection<ProcessModel> processModels) throws CompilationException {
-    System.out.println("\nQUIESCENT " + alpha);
+    //System.out.println("\nQUIESCENT " + alpha);
     boolean cong = flags.contains(Constant.CONGURENT);
     //ProcessModel[] pms =  processModels.toArray();
     Automaton a1 = ((Automaton) processModels.toArray()[0]).copy();
     Automaton a2 = ((Automaton) processModels.toArray()[1]).copy();
     //System.out.println("****Quiescent a1 "+a1.readySets2String(cong));
-    //System.out.println("****Quiescent a2 "+a2.readySets2String(cong));
-
     AbstractionFunction abs = new AbstractionFunction();
     a1 = abs.GaloisBCabs(a1.getId(), flags, context, a1);
     a2 = abs.GaloisBCabs(a2.getId(), flags, context, a2); //end states marked
     //System.out.println("*** Q a1  " + a1.readySets2String(cong));
-    //System.out.println("*** Q a2  " + a2.readySets2String(cong));
 
     //Build set of all listening events in both automata
     Set<String> alphabet = a1.getAlphabet().stream().collect(Collectors.toSet());
@@ -79,13 +76,13 @@ public class QuiescentRefinement implements IOperationInfixFunction {
     Set<String>  listeningAlphabet = alphabet.stream().distinct().
       filter(x->x.endsWith(Constant.BROADCASTSinput)).
       collect(Collectors.toSet());
-    System.out.println("\n new QUIESCENT " + listeningAlphabet);
+    //System.out.println("\n new QUIESCENT " + listeningAlphabet);
 
     ArrayList<ProcessModel> pms = new ArrayList<>();
     addListeningLoops(a1, listeningAlphabet);
     addListeningLoops(a2, listeningAlphabet);
-    System.out.println(a1.myString());
-    System.out.println(a2.myString());
+    //System.out.println(a1.myString());
+    //System.out.println(a2.myString());
     pms.add(a1);
     pms.add(a2);
 
@@ -97,7 +94,8 @@ public class QuiescentRefinement implements IOperationInfixFunction {
       trace,
       tr::readyWrapped,
       (s1, s2, cong1, error) -> {boolean b =tr.isReadySubset(s1, s2, cong1, error);
-        System.out.println("Q "+error.error); return b;}
+        //System.out.println("Q "+error.error);
+        return b;}
         );
 
   /*  This is the failed Option 1
@@ -117,17 +115,17 @@ public class QuiescentRefinement implements IOperationInfixFunction {
   public void addListeningLoops(Automaton ain,  Set<String> alpha )
     throws CompilationException {
 
-    System.out.println("LL alphabet = "+alpha);
+    //System.out.println("LL alphabet = "+alpha);
 
 
     for(AutomatonNode nd : ain.getNodes()) {
        Set<String> ready = nd.readySet(false);
-      System.out.println("  "+nd.getId()+"->"+ready);
+      //System.out.println("  "+nd.getId()+"->"+ready);
        for(String al:alpha) {
-         System.out.println("  al "+al);
+         //System.out.println("  al "+al);
          if (!ready.contains(al))  {
            AutomatonEdge ed =  ain.addEdge(al,nd,nd,new Guard(),false,false);
-           System.out.println("  adding "+ed.myString("smiple"));
+           //System.out.println("  adding "+ed.myString("smiple"));
          }
        }
     }
@@ -148,7 +146,7 @@ public class QuiescentRefinement implements IOperationInfixFunction {
     nds.stream().map(x->x.quiescentReadySet(cong)).forEach(s->ready.addAll(s));
 
     readyWrap.add(ready.stream().distinct().collect(Collectors.toSet()));
-    System.out.println("quiescentWrapped "+readyWrap);
+    //System.out.println("quiescentWrapped "+readyWrap);
     return readyWrap;
   }
 
@@ -176,7 +174,7 @@ public class QuiescentRefinement implements IOperationInfixFunction {
         if (!s1.get(0).contains(lab)) {
           error = new ErrorMessage("? "+lab);
           out = false;
-          System.out.println("inQ error "+error.error);
+          //System.out.println("inQ error "+error.error);
           break;
         }
       }

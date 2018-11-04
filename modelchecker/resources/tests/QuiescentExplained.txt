@@ -1,0 +1,36 @@
+processes {
+ //Quiescent traces can ALL have x?* appended for any x
+A = a!->STOP|b?->STOP.          //Qt  (a!),(b?)
+Ab = a!->b?->STOP|b?->STOP.     //Qt  (a!),(b?)
+B = a!->STOP.                   //Qt = (a!), (b?,a!)
+Abc = a!->b?->c?->STOP|b?->STOP. //Qt  (a!), (b?), 
+}
+//NOTE removing c! makes Ab !<q Abc.
+alphabet {a!,b!,c!}
+
+operation {
+
+A !<q  B. 
+B !<q A.
+Ab !<q  B. 
+B !<q Ab.
+
+Ab <q A.
+A <q Ab.
+
+Abc <q Ab.
+
+Ab <q Abc.
+
+}
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,32 @@
+processes {
+ //Quiescent traces for any x can ALL have x?* appended 
+//      or added in any unlistening state
+A = a!->c!->STOP|b?->STOP.             //Qt  (a!c!),(b?)
+Abc = a!->b?->c!->STOP|b?->STOP.       //Qt  (a!),(a!,b?,c!),(b?)
+B = a!->c!->STOP.                      //Qt  (a!,c!), (b?,a!,c!), (a!,b?,c!), ..
+Abc2 = a!->b?->c!->STOP|b?->c!->STOP.  //Qt  (a!),(a!,b?,c!), (b?,c!), 
+C = a!->(c!->STOP|b?->STOP).             //Qt  (a!c!),(a!,b?) (a!,e?,c!)
+D = a!->(c!->STOP|b?->STOP|a!->STOP). //Qt   (a!,b?),(a!,a!),(a!c!)
+E = a!->(c!->STOP|b?->STOP|e?->STOP). //Qt   (a!,b?),(a!,e?),(a!,a!)
+}
+alphabet {a!,b!,c!,e!}
+operation {
+A !<q  B. 
+B !<q A.
+Abc !<q  B. 
+B !<q Abc.
+
+Abc !<q A.
+A !<q Abc.
+Abc2 !<q Abc.
+Abc !<q Abc2.
+
+D <q  C.
+C !<q D.
+
+D !<q  A.
+A !<q D.
+
+E !<q  C.
+C !<q E.
+}

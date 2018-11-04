@@ -403,7 +403,7 @@ public class EquationEvaluator {
 
             r = true;
             status.setFailCount(0);
-            failedEquations = new ArrayList<>();
+            failedEquations.clear();
             status.passCount++;
             status.impliesAssumptionFalse++;
           } else { //Not short Circuit so evaluate other part of Implies

@@ -1,0 +1,35 @@
+processes {   
+Labsab  = b->Labsab| a->Labsab| a->STOP|b->STOP.
+Dr  = a->b->Dr|b->STOP.
+//Twoaa = a->a->STOP.
+//Tlt = Labsab||{a,b}Twoaa.
+//Tdt = Dr||{a,b}Twoaa.
+/*
+Onea = a->STOP.
+La = a->La.
+//Twoaas = a->a->Twoaas.
+
+Twoaab = a->a->STOP|b->STOP.
+
+Tlt = La||{a,b}Twoaa.
+Tot = Onea||{a,b}Twoaa. */
+}
+operation {
+
+//Labsab <t Dr.
+Labsab <f Dr.
+Dr <f Labsab.
+//Tlt <t Tdt.
+
+// La <f Onea.
+//Onea <f La.
+
+//Twoaa <t Onea.
+//Twoaab <t Onea.
+//Tlt <t Tot.
+//Tot <t Tlt.
+}
+
+
+
+

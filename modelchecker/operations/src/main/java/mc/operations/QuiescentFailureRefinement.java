@@ -13,14 +13,14 @@ import mc.plugins.IOperationInfixFunction;
 import mc.processmodels.ProcessModel;
 import mc.processmodels.automata.Automaton;
 
-public class QuiescentSingeltonFailureRefinement implements IOperationInfixFunction {
+public class QuiescentFailureRefinement implements IOperationInfixFunction {
   /**
    * A method of tracking the function.
    * @return The Human-Readable form of the function name
    */
   @Override
   public String getFunctionName() {
-    return "QuiescentSingeltonFailureRefinement";
+    return "QuiescentFailureRefinement";
   }
   /**
    * The form which the function will appear when composed in the text.
@@ -28,7 +28,7 @@ public class QuiescentSingeltonFailureRefinement implements IOperationInfixFunct
    */
   @Override
   public String getNotation() {
-    return "<qsf";
+    return "<qf";
   }
   @Override
   public String getOperationType(){return "automata";}
@@ -74,15 +74,15 @@ public class QuiescentSingeltonFailureRefinement implements IOperationInfixFunct
     pms.add(a1);
     pms.add(a2);
 
-    SingeltonFailureRefinement sf = new SingeltonFailureRefinement();
+    FailureRefinement fr = new FailureRefinement();
     TraceWork tw = new TraceWork();
     //return tr.evaluate(alpha, flags, context, trace, processModels);
     return tw.evaluate(flags,context, pms,
       TraceType.QuiescentTrace,
       trace,
-      sf::refusalWrapped,
-      (a11, a21, cong1, error) -> sf.singeltonPass(a11, a21, cong1, error));
-
+      fr::buildAsets,
+      fr::AcceptancePass
+    );
   }
 
   private void addListeningLoops(Automaton ain,  Set<String> alphain )

@@ -113,12 +113,12 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     if (nodeMap.keySet().contains(dead)) {
       nd = nodeMap.get(dead);
       nd.setLabelNumber(getNodes().size()+2); // Crappy way to make unique
-      System.out.println("OLD zombie " + nd.myString());
+      //System.out.println("OLD zombie " + nd.myString());
     }
     else {
       nd = addNode(dead);
       nd.setLabelNumber(nodeId++);
-      System.out.println("Adding zombie " + nd.myString());
+      //System.out.println("Adding zombie " + nd.myString());
     }
     return nd;
   }

@@ -1,0 +1,126 @@
+processes {   
+Test: {
+Onea = a->STOP.
+Oneb = b->STOP.
+Twoaa = a->a->STOP.
+Twoab = a->b->STOP.
+Twoba = b->a->STOP.
+Twobb = b->b->STOP.
+Threea = a->a->a->STOP .
+Threeb = b->b->b->STOP .
+Threeaab = a->a->b->STOP.
+Threeaba = a->b->a->STOP.
+Threebaa = b->a->a->STOP.
+Threeabb = a->b->b->STOP. 
+Threebba = b->b->a->STOP.
+Threebab = b->a->b->STOP.
+Fouraaaa  = a->a->a->a->STOP.
+Fouraaab  = a->a->a->b->STOP.
+Four1  = a->a->b->a->STOP.
+Four2  = a->b->a->a->STOP.
+Four3  = b->a->a->a->STOP.
+
+Four4  = b->a->a->b->STOP.
+Four5  = b->a->b->a->STOP.
+Four6  = a->b->b->a->STOP.
+Four7  = b->a->a->b->STOP.
+
+Fiveababa = a->b->a->b->a->STOP.
+Fivebbaab = b->b->a->a->b->STOP.
+}
+
+Pro:{
+Oneab = a->STOP|b->STOP.  
+La = a->La.
+Lb = b->Lb.
+Lasb  = a->Lasb| b->STOP.
+Lasa  = a->Lasa| a->STOP.
+Lbsb  = b->Lbsb| b->STOP.
+Lbsa  = b->Lbsa| a->STOP.
+Labsa  = b->Labsa| a->Labsa| a->STOP.
+Labsab  = b->Labsab| a->Labsab| a->STOP|b->STOP.
+
+Twoax = a->a->STOP|a->b->STOP.
+Twoax2 = a->a->STOP|a->b->STOP|a->STOP.
+Twoaxx = a->(a->STOP|b->STOP)|a->STOP.
+Twobx = b->(a->STOP|b->STOP).
+Twoabs = a->b->Twoabs.
+Twobas = b->a->Twobas.
+Twoaas = a->a->Twoaas.
+Twobbs = b->b->Twobbs.
+D   = a->(b->D|b->STOP).
+Dr  = a->b->Dr|b->STOP.
+Da  = a->b->Da|a->STOP.
+Dx  = a->(b->Dx|a->STOP).
+G  = b->(b->G|b->STOP).
+Gr = b->b->Gr|b->STOP.
+Ga = b->b->Ga|a->STOP.
+Gx = b->(b->Gx|a->STOP).
+I  = a->(a->I|b->STOP).
+Ir = a->a->Ir|b->STOP.
+Ia = a->a->Ia|a->STOP.
+Ix = a->(a->Ix|a->STOP).
+
+Threeaax = a->a->(a->STOP|b->STOP).
+Threeabx = a->b->(a->STOP|b->STOP).
+Threebax = b->a->(a->STOP|b->STOP).
+Threebbx = b->b->(a->STOP|b->STOP).
+E  = a->b->X, X= a->X.
+E1 = b->b->X, X= a->X.
+E2 = b->a->X, X= a->X.
+E3 = a->a->X, X= a->X.
+F  = a->X, X= a->X|b->STOP.
+F1  = b->X, X= a->X|b->STOP.
+F2  = b->X, X= a->X|a->STOP.
+F3  = a->X, X= a->X|a->STOP.
+Ex1 = b->b->X, X= a->X| b->X.
+Ex2 = b->a->X, X= a->X| b->X.
+Ex3 = a->a->X, X= a->X| b->X.
+Fx  = a->X, X= a->X| b->X|b->STOP.
+Fx1  = b->X, X= a->X| b->X|b->STOP.
+Fx2  = b->X, X= a->X| b->X|a->STOP.
+Fx3  = a->X, X= a->X| b->X|a->STOP. 
+
+//Test1 = Twoax||{a,b,c}Onea.
+//Test2 = Twoax2||{a,b,c}Onea.
+}
+}
+
+operation{
+Twoax <sf Twoax2.
+Twoax||{a,b}Onea <t Twoax2||{a,b}Onea.
+
+
+}
+
+equation {
+
+/*  This should (cong urance requires contexts _[]X and _=>X) and it dose fail
+ forall{X:Test} (X||{a,b}Y:Pro <t{cong} X||{a,b}Z:Pro) ==> Y:Pro <sf{cong} Z:Pro.
+
+  Opps below Fails and  should see example in cribsheet!
+Y:Pro <sf Z:Pro ==>Y:Pro <t Z:Pro.  
+Y:Pro <sf{cong} Z:Pro ==>Y:Pro <t{cong} Z:Pro. 
+*/
+
+// BELOW Working  
+Y:Pro <sf Z:Pro ==> forall{X:Test} (X||{a,b}Y:Pro <t X||{a,b}Z:Pro).
+forall{X:Test} (X||{a,b}Y:Pro <t X||{a,b}Z:Pro) ==> Y:Pro <sf Z:Pro.
+Y:Pro <sf{cong} Z:Pro ==> forall{X:Test} (X||{a,b}Y:Pro <t{cong} X||{a,b}Z:Pro). 
+
+
+Y:Pro <f Z:Pro ==>Y:Pro <sf Z:Pro.
+Y:Pro <f{cong} Z:Pro ==>Y:Pro <sf{cong} Z:Pro.
+Y:Pro <sf{cong} Z:Pro ==>Y:Pro <sf Z:Pro.
+ 
+Y:Pro <sf Z:Pro ==> forall{X:Test} (X||{a,b}Y:Pro <t X||{a,b}Z:Pro).
+forall{X:Test} (X||{a,b}Y:Pro <t X||{a,b}Z:Pro) ==> Y:Pro <sf Z:Pro.
+
+}
+
+
+
+
+
+
+
