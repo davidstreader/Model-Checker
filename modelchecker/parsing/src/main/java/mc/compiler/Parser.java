@@ -565,7 +565,7 @@ public class Parser {
 
     // check if a variable set has been defined
     if (peekToken() instanceof DollarToken) {
-      processNode.setVariables(parseVariables());
+      processNode.setSymbolicVariables(parseVariables());
     }
 
     // ensure that the next token is the '.' token

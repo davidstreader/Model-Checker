@@ -81,7 +81,7 @@ public class SlidingInfixFunction implements IProcessInfixFunction {
          process,
          processesDefined,
         null,
-        null);
+        null,false);
     } catch (InterruptedException e) {
       throw new CompilationException(getClass(), "Interrupted in compilation!");
     }

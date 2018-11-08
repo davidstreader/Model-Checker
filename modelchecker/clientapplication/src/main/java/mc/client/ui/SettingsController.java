@@ -28,6 +28,7 @@ public class SettingsController implements Initializable {
   private boolean showOwners = false;
   private boolean showColor = false;
   private boolean Congruance = false;
+  private boolean Symbolic = true;
   Collection<String> disp = new ArrayList<>();
 
   @Setter
@@ -54,6 +55,8 @@ public class SettingsController implements Initializable {
   private CheckBox Col = new CheckBox();
   @FXML
   private CheckBox Cong = new CheckBox();
+  @FXML
+  private CheckBox Symb = new CheckBox();
 
   @FXML
   private ComboBox<String> displayList = new ComboBox<>();
@@ -63,7 +66,8 @@ public class SettingsController implements Initializable {
     showOwners = Own.isSelected();
     showColor = Col.isSelected();
     Congruance = Cong.isSelected();
-    //System.out.println("Owners = "+showOwners+"  Col = "+isShowColor());
+    Symbolic = Symb.isSelected();
+    System.out.println("Symbolic = "+isSymbolic());
   }
 
   @FXML
@@ -76,17 +80,19 @@ public class SettingsController implements Initializable {
 
   @FXML
   private void handleResetSettings(ActionEvent e) {
+    myReset();
+  }
+
+  private void myReset(){
     maxNodesSlider.setValue(40);
     stepSlider.setValue(150);
     repulseSlider.setValue(25);
     springSlider.setValue(50);
     delaySlider.setValue(2);
-
+     Symb.setSelected(true);
     //displayList.setItems(disp);
     initDispType();
-
   }
-
   public Integer getMaxNodes() {
     return maxNodes;
   }
@@ -114,12 +120,15 @@ public class SettingsController implements Initializable {
   public boolean isShowOwners() {
     return showOwners;
   }
+  public boolean isSymbolic() {
+    return Symbolic;
+  }
 
   public void updateDisplayList(Collection<String> displayType) {
     disp.clear();
+    disp.add("All");
     disp.add(Constant.AUTOMATA);
     disp.add(Constant.PETRINET);
-    disp.add("All");
     displayList.getItems().clear();
     displayType.forEach(displayList.getItems()::add);
     displayList.getSelectionModel().selectFirst();
@@ -156,6 +165,7 @@ public class SettingsController implements Initializable {
     });
 
     Own.setOnAction(e -> handleButtonAction(e));
+    Symb.setOnAction(e -> handleButtonAction(e));
 
     initDispType();
 

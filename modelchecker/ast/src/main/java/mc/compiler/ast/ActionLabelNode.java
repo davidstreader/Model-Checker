@@ -12,7 +12,6 @@ import mc.util.Location;
  * This node is only used within other nodes, and is rarely accessed outside of the AST itself
  *
  * @author Jacob Beal
- * @see mc.compiler.Expander
  * @see InterruptNode
  * @see SequenceNode
  */
@@ -31,5 +30,8 @@ public class ActionLabelNode extends ASTNode {
   public ActionLabelNode(String action, Location location) {
     super(location,"Label");
     this.action = action;
+  }
+  public String myString() {
+    return action;
   }
 }

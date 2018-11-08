@@ -3,11 +3,11 @@
 processes {
     If = C[0],
         C[i:0..3] = (if i < 3 then coin -> C[i + 1] else coin -> C[0]).
-  X = If${i}.
+ // X = If${i}.
 
+
+    A = a->X, X = x->b->X|x->a->A.
 }
-
-automata If,X.
 
 
 

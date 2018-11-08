@@ -1,6 +1,7 @@
 package mc.client.ui;
 
 import com.google.common.base.Charsets;
+import com.google.common.base.Function;
 import com.google.common.io.Files;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
@@ -38,7 +39,7 @@ import java.net.URL;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.*;
-
+import java.util.function.Supplier;
 import static mc.client.ui.SyntaxHighlighting.computeHighlighting;
 
 public class UserInterfaceController implements Initializable {
@@ -106,6 +107,7 @@ public class UserInterfaceController implements Initializable {
         }
 
         settingsController = new SettingsController();
+
 
 
         ModelView.getInstance().setSettings(settingsController);
@@ -644,6 +646,7 @@ public class UserInterfaceController implements Initializable {
 
                 modelsList.getItems().clear();
 
+
                 buildThread = new Thread(() -> {
                     BlockingQueue<Object> messageLog = new LinkedBlockingQueue<>();
                     try {
@@ -668,9 +671,10 @@ public class UserInterfaceController implements Initializable {
                         logThread.setDaemon(true); // Means the thread doesnt hang the appication on close
                         logThread.start();
 
-
+                        Supplier<Boolean> getSymb = ()->settingsController.isSymbolic();
                         //Keep the actual compilition outside the javafx thread otherwise we get hanging
-                        CompilationObject compilerOutput = codeCompiler.compile(userCode, Expression.mkCtx(), messageLog);
+                        boolean s = settingsController.isSymbolic();
+                        CompilationObject compilerOutput = codeCompiler.compile(userCode, Expression.mkCtx(), messageLog,getSymb);
 
                         Platform.runLater(() -> {
                             CompilationObservable.getInstance().updateClient(compilerOutput);

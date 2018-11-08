@@ -1,5 +1,6 @@
 package mc.compiler.ast;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -48,7 +49,7 @@ public class ProcessNode extends ASTNode {
    * The sub-processes data. One for each of the local processes
    * Only one for an indexed process after Parsing
    */
-  private List<LocalProcessNode> localProcesses;
+  private List<LocalProcessNode> localProcesses = new ArrayList<>();
 
   /**
    * The relabeling information, to be executed on the process.
@@ -61,9 +62,9 @@ public class ProcessNode extends ASTNode {
   private HidingNode hiding;
 
   /**
-   * TODO:.
+   * Process House${x,n}   has symbolicVariables x and n
    */
-  private VariableSetNode variables;
+  private VariableSetNode symbolicVariables;
   private InterruptNode interrupt;
 
   /**
@@ -100,11 +101,11 @@ public class ProcessNode extends ASTNode {
     super(location,"Process");
     this.type = new HashSet<>();
     this.identifier = identifier;
-    this.process = process;
+    this.process =  process;
     this.localProcesses = localProcesses;
     this.hiding = hiding;
     this.domain = domain;
-    variables = null;
+    symbolicVariables = null;
     interrupt = null;
   }
 
@@ -120,8 +121,25 @@ public class ProcessNode extends ASTNode {
     return hiding != null;
   }
 
-  public boolean hasVariableSet() {
-    return variables != null;
+  public boolean hasSymbolicVariableSet() {
+    return symbolicVariables != null;
   }
   public String getDomain() {return domain;}
+
+
+  public String wholeString(){
+    return identifier+" -> "+ process.wholeString();
+
+  }
+  @Override
+  public String myString(){
+    StringBuilder sb = new StringBuilder();
+    sb.append("Pn "+identifier+" process "+process.myString() +" Local:");
+    if ( localProcesses.size()>0) sb.append("\n ");
+    for(LocalProcessNode lpn: localProcesses){
+      sb.append(lpn.myString()+"\n ");
+    }
+   if (symbolicVariables != null) sb.append(" Hidden var "+symbolicVariables.myString());
+    return sb.toString();
+  }
 }

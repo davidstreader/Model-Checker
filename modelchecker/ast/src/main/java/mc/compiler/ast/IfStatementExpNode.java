@@ -4,6 +4,7 @@ import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import java.util.Objects;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 import mc.util.Location;
 
@@ -26,11 +27,13 @@ import mc.util.Location;
  */
 @ToString
 public class IfStatementExpNode extends ASTNode {
-
+  @Setter
   @Getter
   private BoolExpr condition;
+  @Setter
   @Getter
   private ASTNode trueBranch;
+  @Setter
   @Getter
   private ASTNode falseBranch;
   private Context z3Context;
@@ -117,5 +120,20 @@ public class IfStatementExpNode extends ASTNode {
     }
 
     return false;
+  }
+
+  @Override
+  public String myString(){
+    StringBuilder sb = new StringBuilder();
+    sb.append("If ");
+    if (condition != null)
+      sb.append("("+condition.toString()+")");
+    if (trueBranch != null)
+      sb.append(trueBranch.myString());
+    sb.append(" else ");
+    if (falseBranch != null)
+      sb.append(falseBranch.myString());
+
+    return sb.toString();
   }
 }

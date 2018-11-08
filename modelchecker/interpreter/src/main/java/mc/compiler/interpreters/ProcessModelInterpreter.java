@@ -18,7 +18,8 @@ public interface ProcessModelInterpreter {
                            Map<String, ProcessModel> processMap,
                          // LocalCompiler localCompiler,
                            Context context,
-                           Set<String> alpha)
+                           Set<String> alpha,
+                           boolean symb)
       throws CompilationException, InterruptedException;
 
     ProcessModel interpret(ASTNode astNode,

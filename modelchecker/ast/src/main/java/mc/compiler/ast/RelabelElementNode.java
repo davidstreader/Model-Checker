@@ -51,4 +51,11 @@ public class RelabelElementNode extends ASTNode {
   public boolean hasRanges() {
     return ranges != null;
   }
+
+  public String myString(){
+    StringBuilder sb = new StringBuilder();
+    sb.append("Rel "+ newLabel+" "+newProcess.myString()+" "+oldLabel);
+    sb.append(" "+ranges.myString());
+    return sb.toString();
+  }
 }

@@ -58,4 +58,11 @@ public class SetNode extends ASTNode {
     this.set = set;
     this.rangeMap = new HashMap<>();
   }
+
+  public String myString(){
+    StringBuilder sb = new StringBuilder();
+    sb.append("Set "+ set);
+    rangeMap.forEach((k,v)->sb.append(k+"->"+v.myString()+", "));
+    return sb.toString();
+  }
 }

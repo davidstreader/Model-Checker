@@ -59,13 +59,14 @@ public class Interpreter {
                                              // LocalCompiler localCompiler,
                                              BlockingQueue<Object> messageQueue,
                                              Context context,
-                                             Set<String> alpha)
+                                             Set<String> alpha,
+                                             boolean symb)
     throws CompilationException, InterruptedException {
     this.alpha = alpha;
-    //System.out.println("*** Interp " + this.alpha);
+    System.out.println("*** Interp " + this.alpha);
     StringBuilder sb = new StringBuilder();
     //System.out.print("Who calls interpret Y? ");//Throwable t = new Throwable();t.printStackTrace();
-    Map<String, ProcessModel> processMap = new LinkedHashMap<>();
+    Map<String, ProcessModel> processMap = new LinkedHashMap<>();  //already built proceesses
 // build all  processes including global sub processes
 //    .getType tells us which to build ** .identifier its name  ** .process its definition
     List<ProcessNode> processes = ast.getProcesses();
@@ -74,7 +75,7 @@ public class Interpreter {
     //System.out.println("AST processes "+ processes.stream().map(x->x.getIdentifier()).
     //  reduce("{",(x,y)->x+" "+y)+"}");
     for (ProcessNode process : processes) { //BUILD ALL PROCESSES
-      //System.out.println("++++++Interpreter Building " + process.getIdentifier() + " ... "+ process.getType().toString());
+      System.out.println("++++++Interpreter Building " + process.myString()); // + " ... "+ process.getType().toString());
       //System.out.println("Process "+process.myString());
       ProcessModel model = null;
       model = new MultiProcessModel(process.getIdentifier());
@@ -86,9 +87,9 @@ public class Interpreter {
       //System.out.println("className "+className);
       ProcessModel modelPetri = null;
       if (process.getType().contains("petrinet")) { //interpretASTAutNode
-        modelPetri = petrinetInterpreter.interpret(process, processMap, context, alpha);
+        modelPetri = petrinetInterpreter.interpret(process, processMap, context, alpha,symb);
 
-        //System.out.println("Interpreter Built Petri "+ modelPetri.getId());
+        System.out.println("++++++Interpreter Built Petri "+ modelPetri.getId());
         model = buildmpmFromPetri((Petrinet) modelPetri);
       } else if (process.getType().contains("automata")) { //interpretASTAutNode
         System.out.println("\n\nWARNING INTERPRETING AUTOMATA (should not occur)\n");

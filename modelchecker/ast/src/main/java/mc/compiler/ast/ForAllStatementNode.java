@@ -63,13 +63,13 @@ public class ForAllStatementNode extends ASTNode {
   }
 
   public String myString(){
-    String out;
+   StringBuilder sb = new StringBuilder();
     if (process !=null) {
-      out = process.getName();
-    } else {
-      out = "";
+      sb.append(process.getName()+" ");
     }
-    return "forall "+variables+ " "+out;
+    if (variables!=null) sb.append("variables "+variables);
+    if (ranges!=null) sb.append("ranges "+ranges.myString());
+    return "forall "+sb.toString();
   }
 
 }

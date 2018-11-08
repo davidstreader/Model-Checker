@@ -119,6 +119,7 @@ public abstract class ASTNode implements Serializable {
   public String wholeString(){//Nice idea but NOT WORKING
     return myString("","");
   }
+
   private String myString(String ofset,String sofar) {
     String offset = ofset+">";
     if (this instanceof IdentifierNode) {
@@ -195,8 +196,8 @@ public abstract class ASTNode implements Serializable {
     }  else {
       sofar+=(offset+" " + this.getName()+"\n");
       System.out.println(" DO NOT KNOW Node "+ this.getName());
-      Throwable t = new Throwable();
-      t.printStackTrace();
+      //Throwable t = new Throwable();
+      //t.printStackTrace();
     }
 return sofar;
   }

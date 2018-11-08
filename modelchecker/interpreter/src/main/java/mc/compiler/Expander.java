@@ -3,14 +3,8 @@ package mc.compiler;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
+
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -23,15 +17,18 @@ import mc.util.expr.Expression;
 import mc.util.expr.ExpressionEvaluator;
 import mc.util.expr.ExpressionPrinter;
 import mc.util.expr.VariableCollector;
+import com.rits.cloning.Cloner;
 
 public class Expander {
 
   private final Pattern VAR_PATTERN = Pattern.compile("\\$[a-z][a-zA-Z0-9_]*");
 /*
   Expanding replaces varaibles over  ranges with atomic processes
-  Sets Guards on AST
+  Also performs validation.
+  Varibles occur:
+    1. in a LocalProcessNode->RangesNode->IEN scope local process = State indexing
+    2. in an IEN stored as a process, IEN->RangesNode  scope the IEN = event indexing
  */
-
 
   /*  $v1 ->  $i = 1 , $v2 -> $i=2 , $v3 -> $j < 0 ,
    Only seen booleans. And are used temporarliy in IndentifyerNode.identifyer  C[$v2][$v3]
@@ -39,20 +36,25 @@ public class Expander {
     */
   private Map<String, Expr> globalVariableMap;
 
-
   private ExpressionEvaluator evaluator = new ExpressionEvaluator();
-  private Map<String, List<String>> identMap = new HashMap<>();
-  private Set<String> hiddenVariables = new HashSet<>();  // C${i,k} symbolic variables i and k
+  private Map<String, List<String>> identMap = new HashMap<>();  // LocalId -> $i,$s
+
+  //set at top level may remove shortly
+  private Set<String> symbolicVariables = new HashSet<>();  // C${i,k} symbolic variables i and k
+
+  //private Map<String,ProcessNode> symbolicStore = new TreeMap<>();
 
   public AbstractSyntaxTree expand(AbstractSyntaxTree ast, BlockingQueue<Object> messageQueue, Context context)
     throws CompilationException, InterruptedException {
     globalVariableMap = ast.getVariableMap();
-
+//expand each process
     List<ProcessNode> processes = ast.getProcesses();
+    System.out.println("processes cnt "+processes.size());
     for (ProcessNode process : processes) {
       expand(process, messageQueue, context);
     }
 
+//expand each operation  ?? may be redundent as inedx definitions should not be used here
     List<OperationNode> operations = ast.getOperations();
     for (OperationNode operation : operations) {
       if (operation instanceof ImpliesNode) {
@@ -72,6 +74,7 @@ public class Expander {
 
   /**
    * Expand ProcessNode (AST for one process)
+   * processNode is being overwriten hence not available for subsequent symbolic expansion!
    * @param process
    * @param messageQueue
    * @param context
@@ -81,14 +84,20 @@ public class Expander {
    */
   private ProcessNode expand(ProcessNode process, BlockingQueue<Object> messageQueue, Context context)
     throws CompilationException, InterruptedException {
+   // symbolicStore.put(process.getIdentifier(), (ProcessNode) process.copy()); // deep clone!
+   // System.out.println("symbolic "+ process.getIdentifier()+"->"+  symbolicStore.get(process.getIdentifier()).myString());
+
    // messageQueue.add(new LogAST("Expanding:", process));
+    //System.out.println("\nexpanding process " + process.myString());
     identMap.clear();
-    if (process.hasVariableSet()) {
-      hiddenVariables = process.getVariables().getVariables();
+    if (process.hasSymbolicVariableSet()) {
+      symbolicVariables = process.getSymbolicVariables().getVariables();
     } else {
-      hiddenVariables = new HashSet<>();
+      symbolicVariables = new HashSet<>();
     }
-    Map<String, Object> variableMap = new HashMap<>();  // appear to be $i  defined for symbolic processes
+    //No Scope of variables considered!
+    Map<String, Object> variableMap = new HashMap<>();   //Store from variables->values
+
     for (LocalProcessNode node : process.getLocalProcesses()) {
       identMap.put(node.getIdentifier(), new ArrayList<>());
       if (node.getRanges() != null) {
@@ -97,17 +106,34 @@ public class Expander {
         }
       }
     }
-    ASTNode root = expand(process.getProcess(), variableMap, context);
+    System.out.println("hidden "+symbolicVariables);
+    System.out.println("idMap  "+ identMap.keySet().stream().map(x->x+"->"+identMap.get(x)).collect(Collectors.joining()));
+    ASTNode root;
+  //  if (symbolicVariables.size()==0)
+      root = expand(process.getProcess(), variableMap, context);
+ /*   else {
+      System.out.println(process.getIdentifier()+" -holds- "+ ((IdentifierNode) process.getProcess()).getIdentifier());
+      ProcessNode symb = symbolicStore.get(((IdentifierNode) process.getProcess()).getIdentifier());
+//symb.getProcess().getName()
+      System.out.println("symbolic "+((ProcessNode) symb).myString());
+      root = symb;  //expand(symb, variableMap, context);
+    } */
+    //System.out.println("root "+root.myString());
     process.setProcess(root);
     List<LocalProcessNode> localProcesses = expandLocalProcesses(process.getLocalProcesses(), variableMap, context);
     process.setLocalProcesses(localProcesses);
+    System.out.println("Ending Expand "+process.myString());
     return process;
   }
 
+  /*
+  expand local process
+   */
   private List<LocalProcessNode> expandLocalProcesses(List<LocalProcessNode> localProcesses,
                                                       Map<String, Object> variableMap,
                                                       Context context)
     throws CompilationException, InterruptedException {
+    //System.out.println("expand Locals ");
     List<LocalProcessNode> newLocalProcesses = new ArrayList<>();
     for (LocalProcessNode localProcess : localProcesses) {
       if (localProcess.getRanges() == null) {
@@ -115,7 +141,7 @@ public class Expander {
         localProcess.setProcess(root);
         newLocalProcesses.add(localProcess);
       } else {
-        newLocalProcesses.addAll(expandLocalProcesses(localProcess, variableMap, localProcess.getRanges().getRanges(), 0, context));
+        newLocalProcesses.addAll(expandLocalProcesse(localProcess, variableMap, localProcess.getRanges().getRanges(), 0, context));
       }
     }
 
@@ -123,31 +149,33 @@ public class Expander {
   }
 
   /* const M = 2.
-    This expands C[i:0..M][j:0..M]  using ranges List<IndexNode> =
-              [ ($i, start=0, end=2),($j, start=0, end=2)]
+    This expands C[i:0..M][j:0..M]  using ranges
+    List<IndexNode> = [ ($i, start=0, end=2),($j, start=0, end=2)]
     Atomic processes have no hidden variables and
     LocaProcess identifyer all leteral C[0][3]
     Symbolic processes
    */
-  private List<LocalProcessNode> expandLocalProcesses(LocalProcessNode localProcess,
-                                                      Map<String, Object> variableMap,
-                                                      List<IndexExpNode> ranges, int index,
-                                                      Context context)
+  private List<LocalProcessNode> expandLocalProcesse(LocalProcessNode localProcess,
+                                                     Map<String, Object> variableMap,
+                                                     List<IndexExpNode> ranges, int index,
+                                                     Context context)
     throws CompilationException, InterruptedException {
+    //System.out.println("expand Local "+localProcess.myString()+ " index " + index);
+
     List<LocalProcessNode> newLocalProcesses = new ArrayList<>();
     if (index < ranges.size()) {
       IndexExpNode range = ranges.get(index);
       IndexIterator iterator = IndexIterator.construct(expand(range, context));
       String variable = range.getVariable();
-      if (!hiddenVariables.contains(variable.substring(1))) {
+      if (!symbolicVariables.contains(variable.substring(1))) {
         localProcess.setIdentifier(localProcess.getIdentifier() + "[" + variable + "]");
         while (iterator.hasNext()) {
-          variableMap.put(variable, iterator.next());
-          newLocalProcesses.addAll(expandLocalProcesses((LocalProcessNode) localProcess.copy(), variableMap, ranges, index + 1, context));
+          variableMap.put(variable, iterator.next()); // variable->Value
+          newLocalProcesses.addAll(expandLocalProcesse((LocalProcessNode) localProcess.copy(), variableMap, ranges, index + 1, context));
         }
       } else { // $i is a hidden variable in  C${i}.
         localProcess.setIdentifier(localProcess.getIdentifier() + "[" + variable + "]");
-        newLocalProcesses.addAll(expandLocalProcesses((LocalProcessNode) localProcess.copy(), variableMap, ranges, index + 1, context));
+        newLocalProcesses.addAll(expandLocalProcesse((LocalProcessNode) localProcess.copy(), variableMap, ranges, index + 1, context));
       }
     } else {
       LocalProcessNode clone = (LocalProcessNode) localProcess.copy();
@@ -156,12 +184,17 @@ public class Expander {
       clone.setProcess(root);
       newLocalProcesses.add(clone);
     }
-
+    //System.out.println("newLocal "+newLocalProcesses.stream().map(x->x.myString()+" ").collect(Collectors.joining()));
     return newLocalProcesses;
   }
 
+
+  /*
+    Recursive WORK HORSE
+   */
   private ASTNode expand(ASTNode astNode, Map<String, Object> variableMap, Context context)
     throws CompilationException, InterruptedException {
+ //System.out.println("epanding ASTNode "+astNode.myString()+" "+astNode.getClass().getSimpleName());
     if (Thread.currentThread().isInterrupted()) {
       throw new InterruptedException();
     }
@@ -188,7 +221,7 @@ public class Expander {
     }
     //Create a temporary variable map that does not contain hidden variables and store it.
     HashMap<String, Object> tmpVarMap = new HashMap<>(variableMap);
-    tmpVarMap.keySet().removeIf(s -> hiddenVariables.contains(s.substring(1)));
+    tmpVarMap.keySet().removeIf(s -> symbolicVariables.contains(s.substring(1)));
     astNode.setModelVariables(tmpVarMap);
 
     return astNode;
@@ -219,7 +252,10 @@ public class Expander {
     astNode.setAction(action);
     return astNode;
   }
-
+/*
+  Building many copies of process in IEN
+  change to variableMap  alters error detection! (local scope)
+ */
   private ASTNode expand(IndexExpNode astNode, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException {
     IndexIterator iterator = IndexIterator.construct(expand(astNode, context));
     Stack<ASTNode> iterations = new Stack<>();
@@ -317,8 +353,8 @@ public class Expander {
   private ASTNode expand(IfStatementExpNode astNode, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException {
     VariableCollector collector = new VariableCollector();
     Map<String, Integer> vars = collector.getVariables(astNode.getCondition(), variableMap);
-    Guard trueGuard = new Guard(astNode.getCondition(), vars, hiddenVariables);
-    Guard falseGuard = new Guard(astNode.getCondition(), vars, hiddenVariables);
+    Guard trueGuard =  new Guard(astNode.getCondition(), vars, symbolicVariables);
+    Guard falseGuard = new Guard(astNode.getCondition(), vars, symbolicVariables);
     ASTNode trueBranch = expand(astNode.getTrueBranch(), variableMap, context);
     if (trueBranch.getGuard() != null) {
       trueGuard.mergeWith((Guard) trueBranch.getGuard());
@@ -335,7 +371,7 @@ public class Expander {
       falseBranch.setGuard(falseGuard);
     }
     //Check if there are any hidden variables inside both the variableMap and the expression
-    if (vars.keySet().stream().map(s -> s.substring(1)).anyMatch(s -> hiddenVariables.contains(s))) {
+    if (vars.keySet().stream().map(s -> s.substring(1)).anyMatch(s -> symbolicVariables.contains(s))) {
       if (astNode.hasFalseBranch()) {
         return new ChoiceNode(trueBranch, falseBranch, astNode.getLocation());
       } else {
@@ -343,16 +379,16 @@ public class Expander {
       }
     }
     //Collect all hidden variables, including variables that aren't in variableMap.
-    vars = collector.getVariables(astNode.getCondition(), hiddenVariables.stream().collect(Collectors.toMap(s -> "$" + s, s -> 0)));
-    boolean hiddenVariableFound = vars.keySet().stream().map(s -> s.substring(1)).anyMatch(s -> hiddenVariables.contains(s));
+    vars = collector.getVariables(astNode.getCondition(), symbolicVariables.stream().collect(Collectors.toMap(s -> "$" + s, s -> 0)));
+    boolean hiddenVariableFound = vars.keySet().stream().map(s -> s.substring(1)).anyMatch(s -> symbolicVariables.contains(s));
     if (evaluateCondition(astNode.getCondition(), variableMap, context)) {
       //If a hidden variable is found in the current expression
       if (astNode.hasFalseBranch() && hiddenVariableFound) {
         ASTNode falseBranch2 = astNode.getFalseBranch();
         //See if we can find an else with no if tied to it
         while (falseBranch2 instanceof IfStatementExpNode) {
-          vars = collector.getVariables(((IfStatementExpNode) falseBranch2).getCondition(), hiddenVariables.stream().collect(Collectors.toMap(s -> "$" + s, s -> 0)));
-          if (vars.keySet().stream().map(s -> s.substring(1)).anyMatch(s -> hiddenVariables.contains(s))) {
+          vars = collector.getVariables(((IfStatementExpNode) falseBranch2).getCondition(), symbolicVariables.stream().collect(Collectors.toMap(s -> "$" + s, s -> 0)));
+          if (vars.keySet().stream().map(s -> s.substring(1)).anyMatch(s -> symbolicVariables.contains(s))) {
             break;
           }
           falseBranch2 = ((IfStatementExpNode) falseBranch2).getFalseBranch();
@@ -371,21 +407,24 @@ public class Expander {
 
   private FunctionNode expand(FunctionNode astNode, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException {
     List<ASTNode> processes = astNode.getProcesses();
-
+    //System.out.println("expand function "+ astNode.myString());
     for (int i = 0; i < processes.size(); i++) {
       ASTNode process = processes.get(i);
       process = expand(process, variableMap, context);
       if (astNode.getReferences() != null) {
         Set<String> unReplacements = (Set<String>) astNode.getReplacements();
+        //System.out.println("unR "+unReplacements);
         HashMap<String, Expr> replacements = new HashMap<>();
         for (String str : unReplacements) {
           String var = str.substring(0, str.indexOf('='));
           String exp = str.substring(str.indexOf('=') + 1);
           Expr expression;
+          //System.out.println("global "+ globalVariableMap.keySet().stream().map(x->x+"->"+globalVariableMap.get(x).toString()).collect(Collectors.joining()));
           if (globalVariableMap.containsKey(exp)) {
             expression = globalVariableMap.get(exp);
           } else {
             expression = Expression.constructExpression(exp, astNode.getLocation(), context);
+            //System.out.println("z3 "+expression.toString());
           }
           replacements.put("$" + var, expression);
         }
@@ -450,7 +489,10 @@ public class Expander {
     return new RelabelNode(relabels, relabel.getLocation());
   }
 
-  private List<RelabelElementNode> expand(RelabelElementNode element, Map<String, Object> variableMap, List<IndexExpNode> ranges, int index, Context context) throws CompilationException, InterruptedException {
+  private List<RelabelElementNode> expand(RelabelElementNode element,
+                                          Map<String, Object> variableMap, List<IndexExpNode> ranges,
+                                          int index, Context context)
+    throws CompilationException, InterruptedException {
     List<RelabelElementNode> elements = new ArrayList<>();
 
     if (index < ranges.size()) {
@@ -491,8 +533,11 @@ public class Expander {
 
     return new SetNode(newActions, set.getLocation());
   }
-
-  private List<String> expand(String action, Map<String, Object> variableMap, List<IndexExpNode> ranges, int index, Context context) throws CompilationException, InterruptedException {
+/*
+   Processes multiple ranges!
+ */
+  private List<String> expand(String action, Map<String, Object> variableMap, List<IndexExpNode> ranges, int index, Context context)
+    throws CompilationException, InterruptedException {
     List<String> actions = new ArrayList<>();
     if (index < ranges.size()) {
       IndexExpNode node = ranges.get(index);
@@ -506,7 +551,7 @@ public class Expander {
     } else {
       actions.add(processVariables(action, variableMap, getFullRangeLocation(ranges), context));
     }
-
+    System.out.println("expanding "+action+" into "+actions);
     return actions;
   }
 
@@ -522,21 +567,31 @@ public class Expander {
     for (Map.Entry<String, Object> entry : variableMap.entrySet()) {
       if (entry.getValue() instanceof Integer) {
         variables.put(entry.getKey(), (Integer) entry.getValue());
+                             //Hard codeing restriction to Integers
       }
     }
-    return Expression.isSolvable(condition, variables, context);
+    boolean b = Expression.isSolvable(condition, variables, context);
+    //System.out.println("z3 "+condition.toString()+" "+ variableMap.entrySet()+" returns "+b);
+    return b;
   }
-
+/*
+  called when expanding Identifier  and an event name
+ */
   private String processVariables(String string, Map<String, Object> variableMap, Location location, Context context) throws CompilationException, InterruptedException {
     Map<String, Integer> integerMap = constructIntegerMap(variableMap);
+    System.out.println("integer Map "+integerMap.entrySet().stream().map(x->x.getKey()+"->"+x.getValue()+", ").collect(Collectors.joining()));
     //Construct a pattern with all hidden variables removed.
-    Pattern pattern = Pattern.compile(VAR_PATTERN + hiddenVariables.stream().map(s -> "(?<!\\$" + s + ")").collect(Collectors.joining()) + "\\b");
+    String d = string;
+    Pattern pattern = Pattern.compile(VAR_PATTERN + symbolicVariables.stream().map(s -> "(?<!\\$" + s + ")").collect(Collectors.joining()) + "\\b");
+    //System.out.println("string "+ string+ " pattern "+pattern.pattern());
     while (true) {
       Matcher matcher = pattern.matcher(string);
       if (matcher.find()) {
         String variable = matcher.group();
+        System.out.println("FOUND "+variable);
         // check if the variable is a global variable
         if (globalVariableMap.containsKey(variable)) {
+          System.out.println(" in globalVariableMap");
           Expr expression = globalVariableMap.get(variable);
           if (containsHidden(expression)) {
             string = string.replaceAll(Pattern.quote(variable) + "\\b", "" + ExpressionPrinter.printExpression(expression).replace("$", ""));
@@ -545,17 +600,20 @@ public class Expander {
             string = string.replaceAll(Pattern.quote(variable) + "\\b", "" + result);
           }
         } else if (integerMap.containsKey(variable)) {
+          System.out.println(" in variableMap");
           string = string.replaceAll(Pattern.quote(variable) + "\\b", "" + integerMap.get(variable));
         } else if (variableMap.containsKey(variable)) {
+          System.out.println(" Not integer in variableMap");
           string = string.replaceAll(Pattern.quote("[" + variable + "]"), "" + variableMap.get(variable));
         } else {
           throw new CompilationException(Expander.class, "Unable to find a variable replacement for: " + variable, location);
         }
       } else {
+        //System.out.println("NOT FOUND ");
         break;
       }
     }
-
+    System.out.println("processVariables "+ d+" -> "+string);
     return string;
   }
 
@@ -565,7 +623,7 @@ public class Expander {
       return false;
     }
     if (ex.isConst()) {
-      return hiddenVariables.contains(ex.toString().substring(1));
+      return symbolicVariables.contains(ex.toString().substring(1));
     }
     for (Expr expr : ex.getArgs()) {
       if (containsHidden(expr)) {

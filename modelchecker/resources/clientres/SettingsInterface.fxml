@@ -28,7 +28,9 @@
             <CheckBox fx:id="Own" layoutX="26.0" layoutY="136.0" mnemonicParsing="false" text="Owners" />
             <CheckBox fx:id="Col" layoutX="26.0" layoutY="166.0" mnemonicParsing="false" text="Color" />
             <CheckBox fx:id="Cong" layoutX="26.0" layoutY="199.0" mnemonicParsing="false" text="Cong" />
-             <ComboBox fx:id="displayList" layoutX="20.0" layoutY="30.0" prefWidth="117.0" prefHeight="18.0" />
+            <CheckBox fx:id="Symb" layoutX="26.0" layoutY="234.0" mnemonicParsing="false" text="Symbolic" />
+
+             <ComboBox fx:id="displayList" layoutX="20.0" layoutY="30.0" prefHeight="18.0" prefWidth="117.0" />
             <Label layoutX="30.0" layoutY="10.0" text="Display" />
 
          </children>

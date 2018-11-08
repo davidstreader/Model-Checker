@@ -17,8 +17,6 @@ import mc.util.Location;
  * @author Jacob Beal
  * @see ASTNode
  * @see ProcessNode
- * @see mc.compiler.Expander
- * @see mc.compiler.ReferenceReplacer
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -53,5 +51,14 @@ public class LocalProcessNode extends ASTNode {
     this.identifier = identifier;
     this.ranges = ranges;
     this.process = process;
+  }
+  @Override
+  public String myString(){
+    StringBuilder sb = new StringBuilder();
+    sb.append(identifier+" ");
+    if (process!=null) sb.append(process.myString());
+    sb.append(" ranges ");
+    if (ranges!=null) sb.append(ranges.myString());
+    return sb.toString();
   }
 }

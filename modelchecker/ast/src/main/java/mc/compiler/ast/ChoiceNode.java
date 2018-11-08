@@ -45,4 +45,12 @@ public class ChoiceNode extends ASTNode {
     this.firstProcess = firstProcess;
     this.secondProcess = secondProcess;
   }
+
+  @Override
+  public String myString(){
+     StringBuilder sb = new StringBuilder();
+    sb.append("("+firstProcess.myString()  +"|");
+    sb.append( secondProcess.myString()+")");
+    return sb.toString();
+  }
 }

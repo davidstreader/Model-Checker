@@ -552,6 +552,7 @@ public class ModelView implements Observer {
             x -> settings.getDelay(),
             x -> settings.isShowOwners(),
             x->settings.isShowColor()
+
     );
 
 

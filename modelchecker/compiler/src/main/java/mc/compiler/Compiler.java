@@ -3,13 +3,15 @@ package mc.compiler;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.stream.Collectors;
-
+import java.util.function.Supplier;
+import com.google.common.base.Function;
 import mc.compiler.ast.AbstractSyntaxTree;
 import mc.compiler.ast.ProcessNode;
 import mc.compiler.token.Token;
 import mc.exceptions.CompilationException;
 import mc.processmodels.ProcessModel;
 import mc.processmodels.automata.Automaton;
+import mc.util.LogMessage;
 
 public class Compiler {
   // fields
@@ -20,6 +22,7 @@ public class Compiler {
   private OperationEvaluator evaluator;
   private EquationEvaluator eqEvaluator;
   private Parser parser;
+  private Function<Object, Boolean> symbFunction;
 
 
   public Compiler() throws InterruptedException {
@@ -47,13 +50,13 @@ public class Compiler {
 
   public CompilationObject compile(String code,
                                    com.microsoft.z3.Context z3Context,
-                                   BlockingQueue<Object> messageQueue)
+                                   BlockingQueue<Object> messageQueue, Supplier<Boolean> symb)
     throws CompilationException, InterruptedException {
     //LEX ->PARSE->COMPILE
     List<Token> codeInput = lexer.tokenise(code);
     AbstractSyntaxTree ast = parser.parse(codeInput, z3Context);
-
-    return compile(ast, code,  z3Context, messageQueue);
+    messageQueue.add(new LogMessage("Compile  starting ??"));
+    return compile(ast, code,  z3Context, messageQueue,symb);
   }
 
   /**
@@ -69,63 +72,48 @@ public class Compiler {
 
   private CompilationObject compile(AbstractSyntaxTree ast, String code,
                                     com.microsoft.z3.Context z3Context,
-                                    BlockingQueue<Object> messageQueue)
+                                    BlockingQueue<Object> messageQueue,
+                                    Supplier< Boolean> symb)
     throws CompilationException, InterruptedException {
     HashMap<String, ProcessNode> processNodeMap = new HashMap<>();
-    HashMap<String, ProcessNode> dependencyMap = new HashMap<>();
+  //  HashMap<String, ProcessNode> dependencyMap = new HashMap<>();
 
+    System.out.println("\nCOMPILER "+ast.myString()+" symb "+symb.get()+"\n");
     for (ProcessNode node : ast.getProcesses()) {
-      //System.out.println("**COMPILER** Compiler Start node = "+ node.getIdentifier());
+      messageQueue.add(new LogMessage("Compile  starting "+node.getIdentifier()+" s "+symb.get()));
+      System.out.println("**COMPILER** Compiler Start node = "+ node.myString());
       processNodeMap.put(node.getIdentifier(), (ProcessNode) node.copy());
-      dependencyMap.put(node.getIdentifier(), node);
+   //   dependencyMap.put(node.getIdentifier(), node);
     }
 
-    //System.out.println("Before Expanding "+ast.toString());
-/*
-   Expand the non hidden variables (indexes) and return an ast
-   NOTE changes the ast in undefined way BUT this is required for the replacer to work
- */
-    ast = expander.expand(ast, messageQueue, z3Context);
-    /* replacer.replaceReferences
-     * Expands references i.e Initally we are now at: P1 = a->P2.
-     *                                                P2 = b->c->x.
-     *  Then it expands it to, P1 = a->b->c->x. If it needs it
-     *  BEWARE expanding an prune events that are not needed for the finite state
-     *  size chosen  hence symbolic processes must eb built prior to expansion!
-     *
-     *  This is not needed in the petrinet interpreter Hence when we ditch the automata
-     *  interprter we may be able to ditch the ref replacer
-     */
+    AbstractSyntaxTree  symbAST = ast.copy();  // to be used to build symbolic models
+    //??????
 
-    //System.out.println("After Expanding "+ast.toString());
-    ast = replacer.replaceReferences(ast, messageQueue);
+    System.out.println("symb "+symb.get());
+    if (!symb.get()) {
+      ast = processAtomicAST(ast, z3Context, messageQueue);
+    } else {
+      //expander.expand(ast, messageQueue, z3Context); // use for error detection
+      ast = symbAST;
+      //ast = expander.expand(ast, messageQueue, z3Context);
+      System.out.println(" COMPILER Before ReferenceReplacer "+ast.processes2String());
+      ast = replacer.replaceReferences(ast, messageQueue);
+      System.out.println(" COMPILER After ReferenceReplacer "+ast.processes2String());
 
-
-    System.out.println("**COMPILER** Hierarchy of processes: " + ast.getProcessHierarchy().getDependencies());
-
-    List<String> processesToRemoveFromDisplay = new ArrayList<>();
-    for (String processesName : processNodeMap.keySet()) {
-      // Find if the dependencies have all been set correctly
-      Set<String> dependencies = ast.getProcessHierarchy().getDependencies(processesName); // Dependencies for the current process
-      ProcessNode currentProcess = dependencyMap.get(processesName);
-      for (String currentDependencyName : dependencies) {
-        ProcessNode currentDependency = dependencyMap.get(currentDependencyName);
-        if (currentDependency.getType().size() == 0) {
-          currentDependency.getType().addAll(currentProcess.getType());
-          processesToRemoveFromDisplay.add(currentDependencyName);
-        }
-      }
     }
-    //store alphabet
+    //
+    //
+    // ??????
+     //store alphabet
     Set<String> alpha = ast.getAlphabet().stream().map(x->x.getAction()).collect(Collectors.toSet());
     //System.out.println("Compiler alph = "+alpha);
 
     //builds process and processMap
-    /*System.out.println("**COMPILER** Entering interpreter with ast for processes -> Types "+
+    System.out.println("**COMPILER** Entering interpreter with ast for processes -> Types "+
       ast.getProcesses().stream().map(x->"\n"+x.getIdentifier()+"->"+x.getType())
-        .reduce("",(x,y)->x+" "+y)); */
+        .reduce("",(x,y)->x+" "+y));
     Map<String, ProcessModel> processMap = interpreter.interpret(ast,
-        messageQueue, z3Context,alpha);
+        messageQueue, z3Context,alpha,symb.get());
 
     //System.out.println("     **COMPILER** before operation evaluation "+processMap.keySet());
 
@@ -144,12 +132,54 @@ public class Compiler {
 
    // printLocations(processMap.values());
 
-    processesToRemoveFromDisplay.stream()
+  /*  processesToRemoveFromDisplay.stream()
         .filter(processMap::containsKey)
-        .forEach(processMap::remove);
+        .forEach(processMap::remove); */
 
     return new CompilationObject(processMap, opResults, eqResults.getResults());
   }
+
+private AbstractSyntaxTree processAtomicAST(AbstractSyntaxTree ast,
+                                            com.microsoft.z3.Context z3Context,
+                                            BlockingQueue<Object> messageQueue )
+  throws CompilationException, InterruptedException {
+    /*
+   Expand the non hidden variables (indexes) and return an ast
+   NOTE changes the ast in undefined way BUT this is required for the replacer to work
+ */
+  //System.out.println("lib "+ System.getProperty("java.library.path"));
+  //System.out.println("class "+System.getProperty("java.class.path"));
+
+  System.out.println(" COMPILER Before Expanding "+ast.myString());
+  ast = expander.expand(ast, messageQueue, z3Context);
+  /* replacer.replaceReferences  replaces references to local processes (P2)
+   * Expands references i.e Initally we have: P1 = a->P2.
+   *                                             P2 = b->c->x.
+   *  With references replaced we have,       P1 = a->b->c->x.
+   */
+  System.out.println(" COMPILER After Expanding "+ast.processes2String());
+  ast = replacer.replaceReferences(ast, messageQueue);
+  System.out.println(" COMPILER After ReferenceReplacer "+ast.processes2String());
+
+
+  System.out.println("**COMPILER** Hierarchy of processes: " + ast.getProcessHierarchy().getDependencies());
+
+/*    List<String> processesToRemoveFromDisplay = new ArrayList<>();
+    for (String processesName : processNodeMap.keySet()) {
+      // Find if the dependencies have all been set correctly
+      Set<String> dependencies = ast.getProcessHierarchy().getDependencies(processesName); // Dependencies for the current process
+      ProcessNode currentProcess = dependencyMap.get(processesName);
+      for (String currentDependencyName : dependencies) {
+        ProcessNode currentDependency = dependencyMap.get(currentDependencyName);
+        if (currentDependency.getType().size() == 0) {
+          currentDependency.getType().addAll(currentProcess.getType());
+          processesToRemoveFromDisplay.add(currentDependencyName);
+          System.out.println("Removal list "+currentProcess.myString());
+        }
+      }
+    } */
+ return ast;
+}
 
 
   /**

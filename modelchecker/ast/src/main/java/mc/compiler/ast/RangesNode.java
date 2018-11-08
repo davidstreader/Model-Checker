@@ -37,4 +37,13 @@ public class RangesNode extends ASTNode {
     super(location,"Ranges");
     this.ranges = ranges;
   }
+  @Override
+  public String myString(){
+    StringBuilder sb = new StringBuilder();
+    if (ranges != null)
+      for(IndexExpNode ien: ranges){
+      sb.append(ien.myString()+"; ");
+      }
+    return sb.toString();
+  }
 }

@@ -14,8 +14,6 @@ import mc.util.Location;
  * @author Jacob Beal
  * @see ASTNode
  * @see RangesNode
- * @see mc.compiler.Expander
- * @see mc.compiler.Parser
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -50,5 +48,15 @@ public class IndexExpNode extends ASTNode {
     this.variable = variable;
     this.range = range;
     this.process = process;
+  }
+  @Override
+  public String myString(){
+    StringBuilder sb = new StringBuilder();
+    sb.append("IEN "+variable+" process ");
+    if (process!=null) sb.append(process.myString() );
+    //sb.append(" range ");
+    if (range!=null) sb.append( range.toString());  // not sure what type this ASTNode is?
+     sb.append("end of IEN");
+    return sb.toString();
   }
 }

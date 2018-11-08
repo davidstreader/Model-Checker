@@ -7,7 +7,8 @@ import mc.util.Location;
 
 
 /**
- * ProcessRootNode contains a composite process within an existing process.
+ * ProcessRootNode is an optional wrapper used iff
+ *         labeling processes, renameing events ot hiding events have been applied.
  * (i.e. {@code B} in {@code A=B\{c}})
  *
  * @author David Sheridan
@@ -96,5 +97,14 @@ public class ProcessRootNode extends ASTNode {
    */
   public boolean hasHiding() {
     return hiding != null;
+  }
+
+  @Override
+  public String myString(){
+    StringBuilder sb = new StringBuilder();
+    sb.append("Root"+label+" "+process.myString() );
+    if (hiding!=null) sb.append(" h "+hiding.myString() );
+    if (relabelSet!=null) sb.append(" r "+relabelSet.myString() );
+    return sb.toString();
   }
 }

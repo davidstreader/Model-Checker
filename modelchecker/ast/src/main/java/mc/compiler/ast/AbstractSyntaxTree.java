@@ -1,8 +1,14 @@
 package mc.compiler.ast;
 
+import com.microsoft.z3.BoolExpr;
+import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
+import com.microsoft.z3.Z3Object;
+import com.rits.cloning.Cloner;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -71,5 +77,43 @@ public class AbstractSyntaxTree {
        out = out + pn.toString()+ " ";
      }
      return out;
+  }
+
+  public String processes2String() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("AST \n");
+    for(ProcessNode pn: processes) {
+      sb.append(pn.myString()+"\n");
+    }
+    if (variableMap!=null) {
+      sb .append("variableMap ");
+      for(String key: variableMap.keySet()){
+        sb.append(key+"->"+variableMap.get(key).toString()+", ");
+      }
+    }
+    return sb.toString();
+
+    }
+  public String myString() {
+    StringBuilder sb = new StringBuilder();
+    sb .append("AST \n");
+    sb.append( processes.stream().map(x->x.myString()+"\n").collect(Collectors.joining()) );
+    return sb.toString();
+  }
+
+
+  /**
+   * Clone the current Node.
+   *
+   * @return a deep copy of the current node.
+   * @see Cloner
+   */
+  public AbstractSyntaxTree copy() {
+    Cloner cloner = new Cloner();
+    cloner.dontClone(Context.class);
+    cloner.dontClone(Z3Object.class);
+    cloner.dontClone(Expr.class);
+    cloner.dontClone(BoolExpr.class);
+    return cloner.deepClone(this);
   }
 }

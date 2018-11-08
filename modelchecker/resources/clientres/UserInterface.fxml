@@ -115,7 +115,7 @@
                 </TabPane>
                 <Button layoutX="890.0" layoutY="2.0" mnemonicParsing="false" onAction="#handleOptions" prefHeight="38.0" prefWidth="89.0" text="Options" AnchorPane.rightAnchor="21.0" />
                 <Button fx:id="compileButton" layoutX="782.0" layoutY="2.0" mnemonicParsing="false" onAction="#handleCompileRequest" prefHeight="38.0" prefWidth="89.0" text="Compile" AnchorPane.rightAnchor="129.0" />
-                <Label layoutX="3.0" layoutY="2.0" prefHeight="38.0" prefWidth="283.0" text="Process Modelling Tool" AnchorPane.leftAnchor="3.0">
+                <Label layoutX="3.0" layoutY="2.0" prefHeight="38.0" prefWidth="283.0" text="Process Modelling and Finite State Analysis" AnchorPane.leftAnchor="3.0">
                     <font>
                         <Font size="24.0" />
                     </font>

@@ -31,5 +31,8 @@ public class AutomataNode extends ASTNode {
         this.process = process;
 
     }
+    public String myString(){
+        return "Automata "+process.myString();
+    }
 }
 

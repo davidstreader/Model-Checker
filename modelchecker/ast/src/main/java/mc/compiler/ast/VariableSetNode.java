@@ -31,4 +31,8 @@ public class VariableSetNode extends ASTNode {
     super(location,"Variable");
     this.variables = variables;
   }
+  @Override
+  public String myString(){
+    return variables.toString();
+  }
 }

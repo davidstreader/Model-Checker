@@ -32,4 +32,7 @@ public class ConstParseOnlyNode extends ASTNode {
     super(location,"ConstParse");
     this.value = value;
   }
+  public String myString(){
+    return " "+value;
+  }
 }

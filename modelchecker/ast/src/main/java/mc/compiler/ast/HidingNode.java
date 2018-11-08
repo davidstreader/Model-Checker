@@ -44,4 +44,7 @@ public class HidingNode extends ASTNode {
     this.type = type;
     this.set = set;
   }
+  public String myString(){
+    return "Hidding "+type+" "+set.myString();
+  }
 }

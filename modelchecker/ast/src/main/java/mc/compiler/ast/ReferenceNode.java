@@ -5,6 +5,8 @@ import lombok.EqualsAndHashCode;
 import mc.util.Location;
 
 /**
+ * The Expander  builds a Process node for each Global
+ *  and places Localy defined processes in a list
  * The ReferenceNode refers to a location within the same process
  * (i.e. local processes or self-references)
  *
@@ -32,5 +34,11 @@ public class ReferenceNode extends ASTNode {
   public ReferenceNode(String reference, Location location) {
     super(location,"Reference");
     this.reference = reference;
+  }
+  @Override
+  public String myString(){
+    StringBuilder sb = new StringBuilder();
+    sb.append("Ref_"+reference);
+    return sb.toString();
   }
 }

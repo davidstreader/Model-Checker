@@ -69,7 +69,8 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
   public ProcessModel interpret(ProcessNode processNode,
                                 Map<String, ProcessModel> processMap,
                                 Context context,
-                                Set<String> alpha)
+                                Set<String> alpha,
+                                boolean symb)
     throws CompilationException, InterruptedException {
    //System.out.println("START interp ");
     reset();
@@ -78,7 +79,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     this.variableList = new HashSet<>();
     this.processMap = processMap;
     String identifier = processNode.getIdentifier();
-    this.variables = processNode.getVariables();
+    this.variables = processNode.getSymbolicVariables();
 
     interpretProcess(processNode.getProcess(), identifier);
 
