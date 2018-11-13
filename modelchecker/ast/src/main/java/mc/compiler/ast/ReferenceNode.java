@@ -4,6 +4,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import mc.util.Location;
 
+import java.util.ArrayList;
+import java.util.List;
 /**
  * The Expander  builds a Process node for each Global
  *  and places Localy defined processes in a list
@@ -25,6 +27,8 @@ public class ReferenceNode extends ASTNode {
    */
   private String reference;
 
+  private List<String> symbolicBits = new ArrayList<>();
+
   /**
    * Instantiate a new Reference Node.
    *
@@ -39,6 +43,7 @@ public class ReferenceNode extends ASTNode {
   public String myString(){
     StringBuilder sb = new StringBuilder();
     sb.append("Ref_"+reference);
+    sb.append(" sbits "+symbolicBits);
     return sb.toString();
   }
 }

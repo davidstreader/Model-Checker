@@ -16,13 +16,13 @@ public interface ProcessModelInterpreter {
 
     ProcessModel interpret(ProcessNode processNode,
                            Map<String, ProcessModel> processMap,
-                         // LocalCompiler localCompiler,
+                           // LocalCompiler localCompiler,
                            Context context,
                            Set<String> alpha,
                            boolean symb)
       throws CompilationException, InterruptedException;
 
-    ProcessModel interpret(ASTNode astNode,
+    ProcessModel interpretEvalOp(ASTNode astNode,
                            String identifier,
                            Map<String, ProcessModel> processMap,
                            Context context,

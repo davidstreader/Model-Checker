@@ -110,7 +110,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     return automaton;
   }
 
-  public ProcessModel interpret(ASTNode astNode,
+  public ProcessModel interpretEvalOp(ASTNode astNode,
                                 String identifier,
                                 Map<String, ProcessModel> processMap,
                                 Context context,

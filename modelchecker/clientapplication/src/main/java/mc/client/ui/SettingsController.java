@@ -83,7 +83,7 @@ public class SettingsController implements Initializable {
     myReset();
   }
 
-  private void myReset(){
+  public void myReset(){
     maxNodesSlider.setValue(40);
     stepSlider.setValue(150);
     repulseSlider.setValue(25);
@@ -132,6 +132,7 @@ public class SettingsController implements Initializable {
     displayList.getItems().clear();
     displayType.forEach(displayList.getItems()::add);
     displayList.getSelectionModel().selectFirst();
+    Symb.setSelected(true);
   }
 
   public String getDisplayType() {
@@ -179,5 +180,8 @@ public class SettingsController implements Initializable {
   public SettingsController() {
     initDispType();
   }
-
+  @FXML
+  public void initialize() {
+    Symb.setSelected(true);
+  }
 }

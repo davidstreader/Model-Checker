@@ -19,7 +19,7 @@ T2 = Twoax2 ||{a,b} Onea.
 }
 //alphabet {a!,b!,c!}
 operation {
-/*
+
 Andet <f  A. 
 Andet <sf  A. 
 Adet !<sf  A. 
@@ -47,11 +47,12 @@ Twoax !<f Twoax2.
 
 Twoax !<t{cong} Twoax2.
 Twoax !<f{cong} Twoax2.
-*/
-Twoax <sf{cong} Twoax2.
 
-Twoax ||{a,b} Onea <t{cong} Twoax2 ||{a,b} Onea.
-T1 <t{cong} T2.
+Twoax <sf{cong} Twoax2.
+Twoax !<t{cong} Twoax2.
+
+Twoax ||{a,b} Onea !<t{cong} Twoax2 ||{a,b} Onea.
+T1 !<t{cong} T2.
 T2 <t{cong} T1.
 
 /*
@@ -62,6 +63,7 @@ Asf <f Andet.
 Andet !<f Asf.
 */
 }
+
 
 
 

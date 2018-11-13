@@ -7,7 +7,9 @@ import lombok.Setter;
 import java.io.Serializable;
 
 /**
- * dose not add to semantics of model but is used as map to source code
+ * dose not add to semantics of model
+ *
+ * used as map to source code
  *  helpful with error reporting
  */
 @Getter

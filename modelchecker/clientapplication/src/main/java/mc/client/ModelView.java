@@ -332,8 +332,16 @@ public class ModelView implements Observer {
       GraphNode to = nodeMap.get(e.getTo().getId());
       GraphNode from = nodeMap.get(e.getFrom().getId());
       String label = e.getLabel();
+      String bool; String ass;
+      if (e.getGuard()!=null) {
+        bool = e.getGuard().getGuardStr();
+        ass = e.getGuard().getAssStr();
+      } else {
+        bool=""; ass="";
+      }
 
-      graph.addEdge(new DirectedEdge(label + "" , UUID.randomUUID().toString()), from, to);
+
+      graph.addEdge(new DirectedEdge(bool,label + "" ,ass, UUID.randomUUID().toString()), from, to);
     });
 
     this.processModels.replaceValues(automaton.getId(), nodeMap.values());
@@ -437,7 +445,21 @@ public class ModelView implements Observer {
         // et = EdgeType.UNDIRECTED;//NICE try but fails
          lab = "Opt";
        }
-       DirectedEdge nodeEdge = new DirectedEdge(lab, UUID.randomUUID().toString());
+       String b ; String a;
+       if (edge.getGuard()!=null) {
+         b = edge.getGuard().getGuardStr();
+         a = edge.getGuard().getAssStr();
+         //System.out.println("ModelView "+edge.getGuard().myString());
+         //System.out.println("ModelView b "+b+" a "+a);
+       } else {
+         b = "";
+         a = "";
+       }
+
+       DirectedEdge nodeEdge = new DirectedEdge(b,
+                   lab,
+                   a,
+                   UUID.randomUUID().toString());
 
        graph.addEdge(nodeEdge, nodeMap.get(edge.getFrom().getId()),
                nodeMap.get(edge.getTo().getId()));
@@ -581,7 +603,7 @@ public class ModelView implements Observer {
 
     //label the nodes
     vv.getRenderContext().setVertexLabelTransformer(GraphNode::getLabel);
-    vv.getRenderContext().setEdgeLabelTransformer(DirectedEdge::getLabel);
+    vv.getRenderContext().setEdgeLabelTransformer(DirectedEdge::getAll);
     //vv.getRenderContext().setEdgeArrowStrokeTransformer(edgeStroke);
     //vv.getRenderContext().setEdgeStrokeTransformer(e->edgeStroke);
     //set the shape

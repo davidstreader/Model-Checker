@@ -55,7 +55,7 @@ public class Compiler {
     //LEX ->PARSE->COMPILE
     List<Token> codeInput = lexer.tokenise(code);
     AbstractSyntaxTree ast = parser.parse(codeInput, z3Context);
-    messageQueue.add(new LogMessage("Compile  starting ??"));
+    messageQueue.add(new LogMessage("Compile  starting ?? "+symb.get()));
     return compile(ast, code,  z3Context, messageQueue,symb);
   }
 
@@ -64,7 +64,7 @@ public class Compiler {
    * @param ast           The abstract syntax tree returned by the parser
    * @param code          The users code as a non-formatted string
    * @param z3Context     z3 Context for evaluating
-   * @param messageQueue  thread safe blocking queue for logging
+   * @param messageQueue  ctx safe blocking queue for logging
    * @return              Returns a compilation object which is comprised of the results of any tests and the constructed models for display
    * @throws CompilationException
    * @throws InterruptedException
@@ -97,8 +97,9 @@ public class Compiler {
       ast = symbAST;
       //ast = expander.expand(ast, messageQueue, z3Context);
       System.out.println(" COMPILER Before ReferenceReplacer "+ast.processes2String());
-      ast = replacer.replaceReferences(ast, messageQueue);
-      System.out.println(" COMPILER After ReferenceReplacer "+ast.processes2String());
+      //ast = replacer.replaceReferences(ast, messageQueue);
+      // If we replace the references then we lose the assignment information
+      //System.out.println(" COMPILER After ReferenceReplacer "+ast.processes2String());
 
     }
     //
@@ -150,19 +151,19 @@ private AbstractSyntaxTree processAtomicAST(AbstractSyntaxTree ast,
   //System.out.println("lib "+ System.getProperty("java.library.path"));
   //System.out.println("class "+System.getProperty("java.class.path"));
 
-  System.out.println(" COMPILER Before Expanding "+ast.myString());
+  System.out.println(" AtomicCOMPILER Before Expanding "+ast.myString());
   ast = expander.expand(ast, messageQueue, z3Context);
   /* replacer.replaceReferences  replaces references to local processes (P2)
    * Expands references i.e Initally we have: P1 = a->P2.
    *                                             P2 = b->c->x.
    *  With references replaced we have,       P1 = a->b->c->x.
    */
-  System.out.println(" COMPILER After Expanding "+ast.processes2String());
+  System.out.println(" AtomicCOMPILER After Expanding "+ast.processes2String());
   ast = replacer.replaceReferences(ast, messageQueue);
-  System.out.println(" COMPILER After ReferenceReplacer "+ast.processes2String());
+  System.out.println(" AtomicCOMPILER After ReferenceReplacer "+ast.processes2String());
 
 
-  System.out.println("**COMPILER** Hierarchy of processes: " + ast.getProcessHierarchy().getDependencies());
+  System.out.println("**AtomicCOMPILER** Hierarchy of processes: " + ast.getProcessHierarchy().getDependencies());
 
 /*    List<String> processesToRemoveFromDisplay = new ArrayList<>();
     for (String processesName : processNodeMap.keySet()) {

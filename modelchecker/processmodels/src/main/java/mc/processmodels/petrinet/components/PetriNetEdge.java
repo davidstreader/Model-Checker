@@ -4,19 +4,33 @@ package mc.processmodels.petrinet.components;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.Setter;
 import mc.processmodels.ProcessModelObject;
+import mc.compiler.Guard;
 import mc.processmodels.petrinet.Petrinet;
 
 import java.util.*;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class PetriNetEdge extends ProcessModelObject {
+public class PetriNetEdge extends ProcessModelObject implements Comparable {
 
-
+  public int compareTo(Object ed){
+    if (ed instanceof PetriNetEdge)
+      return getId().compareTo(((PetriNetEdge) ed).getId());
+    else
+      return -1;
+  }
   private ProcessModelObject from;
 
   private ProcessModelObject to;
+
+  private Guard guard;
+
+  private Set<String> variables = new HashSet<>();
+  // for all Edges in a Sequential Net have the same variables  the PetriNet
+  // Parallel composition dose not change the Edge variables
+  // but the Net variables are the union of the Net variables
 
   /*
     Optional is when a transition is the result of broadcast synchronisation
@@ -52,8 +66,12 @@ public class PetriNetEdge extends ProcessModelObject {
 
   }
   public String myString(){
-    String out =  "Edge "+this.getId()+" from "+from.getId()+" -> "+to.getId()+" optional= "+optional;
-    //for (String o: owners){out = out +o+" ";}
-    return out;
+    StringBuilder sb = new StringBuilder();
+    sb.append("Edge "+this.getId()+" from "+from.getId()+" - ");
+    if (guard!=null) sb.append(guard.myString());
+    sb.append(" -> "+to.getId()+" optional= "+optional);
+
+     //for (String o: owners){out = out +o+" ";}
+    return sb.toString();
   }
 }

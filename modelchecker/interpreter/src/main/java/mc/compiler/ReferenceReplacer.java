@@ -1,11 +1,6 @@
 package mc.compiler;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.regex.Pattern;
 
@@ -22,6 +17,8 @@ public class ReferenceReplacer {
   private Set<String> globalReferences;
   private Set<String> references;
   private Set<String> globalRequirements;
+
+  private List<String> bits = new ArrayList<>();  // store newly replaced bits for addition to edge
 
   /**
    * The expander places Global processes in a ProcessNode and all
@@ -175,6 +172,7 @@ public class ReferenceReplacer {
   private ASTNode replaceReferences(IdentifierNode astNode, String identifier,
                                     Map<String, LocalProcessNode> localReferences) throws CompilationException, InterruptedException {
     System.out.println("RR IdentifierNode "+ astNode.myString()+" references "+references);
+      bits =  astNode.getBits();
     String reference = astNode.getIdentifier();
     String localReference = findLocalReference(identifier + "." + reference, localReferences);
     System.out.println("RR localReference "+localReference);
@@ -184,9 +182,11 @@ public class ReferenceReplacer {
       if (references.contains(localReference)) {
         //this is where identifier is used
         ReferenceNode rn = new ReferenceNode(localReference, astNode.getLocation());
+        rn.setSymbolicBits(astNode.getBits());
         System.out.println("  RR  new local"+rn.myString());
         return rn;
       } else {
+        // add astNode as a localReference
         ASTNode node = localReferences.get(localReference).getProcess();
         addReference(node, localReference);
 
@@ -203,18 +203,31 @@ public class ReferenceReplacer {
     // check if the identifier is referencing itself
     else if (reference.equals(identifier)) {
       astNode.addFromReference(identifier);
-      System.out.println("Self referance? "+identifier);
-      return new ReferenceNode(identifier, astNode.getLocation());
+      ReferenceNode rn = new ReferenceNode(identifier, astNode.getLocation());
+      rn.setSymbolicBits(astNode.getBits());
+      System.out.println("Self referance? "+identifier +" "+rn.myString());
+      return rn;
     }
     // check if the identifier is referencing a global process
     else if (globalReferences.contains(reference)) {
-      globalRequirements.add(reference);
+      //globalRequirements.add(reference);
       astNode.addFromReference(identifier);
+      System.out.println("??? Identifier "+ identifier+" RR referencing global process "+ astNode.getBits());
       return astNode;
     }
     throw new CompilationException(getClass(), "Unable to find reference for node: " + reference, astNode.getLocation());
   }
 
+  public List<String> getBits(String id) {
+
+    //System.out.println("rr1 "+id);
+    String name  = id.replaceAll("(\\[|\\])+", " ");
+    //System.out.println("rr2 "+name);
+    List<String> out = Arrays.asList(name.split(" "));
+    //System.out.println("rr3 "+out.size()+"  "+out);
+
+    return out;
+  }
   /**
    * Search for a reference, swapping any undefined variables for regexps that match anything.
    *
@@ -224,9 +237,10 @@ public class ReferenceReplacer {
    */
   private String findLocalReference(String identifier, Map<String, LocalProcessNode> localReferences) {
     for (String key : localReferences.keySet()) {
-      System.out.println("Local "+identifier+" find in "+key);
+      System.out.println("RR findLocalReference "+identifier+" bits "+ getBits(identifier)+" find in "+key);
       String name;
       if (identifier.contains("["))
+
         name = identifier.substring(0,identifier.indexOf("["));
       else
         name = identifier;
@@ -239,6 +253,9 @@ public class ReferenceReplacer {
         return key;
       }
     }
+    System.out.println("findLocalReference null" );
+    Throwable t = new Throwable();
+    t.printStackTrace();
     return null;
   }
 

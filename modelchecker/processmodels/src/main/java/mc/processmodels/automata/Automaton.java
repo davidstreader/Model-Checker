@@ -488,7 +488,9 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     //System.out.println("nodes merged in "+this.myString());
     return node;
   }
+/*
 
+ */
   private void processGuards(AutomatonEdge edge1, AutomatonEdge edge2, Context context) throws CompilationException, InterruptedException {
     if (edge1.getLabel().equals(edge2.getLabel()) && edge1.getGuard() != null && edge2.getGuard() != null) {
       Guard guard1 = edge1.getGuard();
@@ -498,7 +500,8 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
       }
       //Since assignment should be the same (same colour) we can just copy most data from either guard.
       Guard combined = guard1.copy();
-      //By putting both equations equal to eachother, if we have multiple or operations, then if one matches then it will be solveable.
+      //By putting both equations equal to eachother,
+      // if we have multiple or operations, then if one matches then it will be solveable.
       if (!guard1.getVariables().isEmpty() && !Expression.equate(guard1, guard2, context))
       //We could take either path
       {

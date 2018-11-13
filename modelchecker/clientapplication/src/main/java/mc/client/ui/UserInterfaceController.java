@@ -45,7 +45,7 @@ import static mc.client.ui.SyntaxHighlighting.computeHighlighting;
 public class UserInterfaceController implements Initializable {
     private boolean holdHighlighting = false; // If there is an compiler issue, highlight the area. Dont keep applying highlighting it wipes it out
     private javafx.stage.Popup autocompleteBox = new javafx.stage.Popup();
-    private ExecutorService executor; // Runs the highlighting in separate thread
+    private ExecutorService executor; // Runs the highlighting in separate ctx
     private TrieNode<String> completionDictionary;
     private SettingsController settingsController;
 
@@ -107,7 +107,7 @@ public class UserInterfaceController implements Initializable {
         }
 
         settingsController = new SettingsController();
-
+        settingsController.initialize();
 
 
         ModelView.getInstance().setSettings(settingsController);
@@ -173,7 +173,7 @@ public class UserInterfaceController implements Initializable {
             autocompleteBox.hide();
         });
 
-        userCodeInput.richChanges() // Set up syntax highlighting in another thread as regex finding can take a while.
+        userCodeInput.richChanges() // Set up syntax highlighting in another ctx as regex finding can take a while.
                 .filter(ch -> !ch.getInserted().equals(ch.getRemoved()) && !holdHighlighting) // Hold highlighting if we have an issue and have highlighted it, otherwise it gets wiped.
                 .successionEnds(Duration.ofMillis(20))
                 .supplyTask(this::computeHighlightingAsync)
@@ -659,7 +659,7 @@ public class UserInterfaceController implements Initializable {
 
                                 if (!messageLog.isEmpty()) {
                                     LogMessage t = ((LogMessage) messageLog.poll());
-                                    Platform.runLater(() -> compilerOutputDisplay.appendText(t.getMessage() + "\n"));
+                                    Platform.runLater(() -> compilerOutputDisplay.appendText("** "+t.getMessage() + "\n"));
                                 }
                                 try {
                                     Thread.sleep(10); // To stop free spinning eating cpu
@@ -668,17 +668,17 @@ public class UserInterfaceController implements Initializable {
                             }
                         });
 
-                        logThread.setDaemon(true); // Means the thread doesnt hang the appication on close
+                        logThread.setDaemon(true); // Means the ctx doesnt hang the appication on close
                         logThread.start();
 
                         Supplier<Boolean> getSymb = ()->settingsController.isSymbolic();
-                        //Keep the actual compilition outside the javafx thread otherwise we get hanging
+                        //Keep the actual compilition outside the javafx ctx otherwise we get hanging
                         boolean s = settingsController.isSymbolic();
                         CompilationObject compilerOutput = codeCompiler.compile(userCode, Expression.mkCtx(), messageLog,getSymb);
 
                         Platform.runLater(() -> {
                             CompilationObservable.getInstance().updateClient(compilerOutput);
-                            // If this is run outside the fx thread then exceptions occur and weirdness with threads updating combox box and whatnot
+                            // If this is run outside the fx ctx then exceptions occur and weirdness with threads updating combox box and whatnot
                             compilerOutputDisplay.appendText("Compiling completed!\n" + new Date().toString());
                         });
                         logThread.stop();
@@ -687,7 +687,7 @@ public class UserInterfaceController implements Initializable {
                         e.printStackTrace();
                     } catch (CompilationException e) {
 
-                        Platform.runLater(() -> { // Update anything that goes wrong on the main fx thread.
+                        Platform.runLater(() -> { // Update anything that goes wrong on the main fx ctx.
 
                             holdHighlighting = true;
                             compilerOutputDisplay.appendText(e.toString());

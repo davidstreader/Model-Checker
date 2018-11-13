@@ -26,7 +26,7 @@ import java.util.ArrayList;
 
 
 /**
- * ??? CAN this be used to give a different line for optional edges ???
+ * CAN this be used to give a different line for optional edges ? NO
  * An interface for decorators that return a
  * <code>Shape</code> for a specified edge.
  * <p>

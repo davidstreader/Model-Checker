@@ -4,6 +4,10 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import mc.util.Location;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.regex.Pattern;
+
 
 /**
  * Stores a reference to a constant, a process or a subprocess.
@@ -75,5 +79,16 @@ public class IdentifierNode extends ASTNode {
       System.out.println("ERROR instainting variable with NO domain! " + from);
       return this;
     }
+  }
+
+  public List<String> getBits() {
+
+    //System.out.println("1 "+this.identifier);
+    String name  = this.identifier.replaceAll("(\\[|\\])+", " ");
+    //System.out.println("2 "+name);
+    List<String> out = Arrays.asList(name.split(" "));
+    //System.out.println("3 "+out.size()+"  "+out);
+
+    return out;
   }
 }

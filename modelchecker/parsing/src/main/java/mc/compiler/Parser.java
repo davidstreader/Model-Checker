@@ -740,6 +740,7 @@ public class Parser {
     // wrap the parsed process as a process root if either a label, relabel or hiding has been defined
     if (label != null || relabel != null || hiding != null) {
       process = new ProcessRootNode(process, label, relabel, hiding, process.getLocation());
+      System.out.println("\n\n         ProcessRootNode"+ process.myString()+"\n\n");
     }
 // operators returning processes such as [], ||, =>, ..  dynamicly loaded
     for (String key : infixFunctions.keySet()) {

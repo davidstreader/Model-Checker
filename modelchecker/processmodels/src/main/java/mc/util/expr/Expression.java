@@ -11,9 +11,7 @@ import com.microsoft.z3.Solver;
 import com.microsoft.z3.Status;
 import com.microsoft.z3.Z3Object;
 import java.lang.reflect.Field;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -31,33 +29,81 @@ import mc.util.Location;
  * Makes use of Google cashing  see https://github.com/google/guava/wiki/CachesExplained
  */
 public class Expression {
+    /*
+      Input  expresion "expr" + evaluation "variables"
+      Will need to have typed variables  and Substitute to call the appropriate Z3 substitution
+     */
     @Data
     @AllArgsConstructor
     private static class Substitute {
-        Context thread;
+        Context ctx;
         Map<String,Integer> variables;
         Expr expr;
     }
     @Data
     @AllArgsConstructor
     private static class And {
-        Context thread;
+        Context ctx;
         Expr expr1;
         Map<String,Integer> variables1;
         Expr expr2;
         Map<String,Integer> variables2;
     }
+    @Data
+    @AllArgsConstructor
+    private static class myExp {
+        Context ctx;
+        Expr expr;
+        Map<String,Integer> variables;
+
+    }
+    @Data
+    @AllArgsConstructor
+    private static class AndAll {
+        Context ctx;
+        List<myExp> andall;
+    }
+    /*
+    LoadingCache
+    equated.get(key, b ) will first use "key" to lookup any cashed result
+    else will compute the result by executing "load", cash it and return it
+
+    This computation takes two BoolExpr A, B and solves the conjunction A/\B
+     */
     private static LoadingCache<And, Boolean> equated = CacheBuilder.newBuilder()
         .maximumSize(1000)
         .expireAfterWrite(1, TimeUnit.SECONDS)
         .build(
             new CacheLoader<And, Boolean>() {
                 public Boolean load(And key) throws InterruptedException, CompilationException {
-                    BoolExpr expr = key.thread.mkAnd((BoolExpr)substituteInts(key.expr1,key.variables1,key.thread),(BoolExpr)substituteInts(key.expr2,key.variables2,key.thread));
-                    return solve(expr,key.thread);
+                    BoolExpr expr = key.ctx.mkAnd((BoolExpr)substituteInts(key.expr1,key.variables1,key.ctx),
+                                                  (BoolExpr)substituteInts(key.expr2,key.variables2,key.ctx));
+                    return solve(expr,key.ctx);
                 }
             });
 
+    private static LoadingCache<AndAll, Boolean> andAll = CacheBuilder.newBuilder()
+      .maximumSize(1000)
+      .expireAfterWrite(1, TimeUnit.SECONDS)
+      .build(
+        new CacheLoader<AndAll, Boolean>() {
+            public Boolean load(AndAll key) throws InterruptedException, CompilationException {
+                boolean b =
+                  solve((BoolExpr)substituteInts(key.andall.get(0).expr,key.andall.get(0).variables,key.ctx),key.ctx);
+                if (key.andall.size() == 1) {
+                    for (int i = 1; i < key.andall.size() - 1; i++) {
+                        boolean nb = solve((BoolExpr) substituteInts(key.andall.get(i).expr, key.andall.get(i).variables, key.ctx), key.ctx);
+                        b = b && nb;
+                    }
+                }
+                return b;
+            }
+        });
+
+/*
+   apply the evaluation to the expression (both in Substitute)
+   return  true iff "the expression is satisfiable"
+ */
     private static LoadingCache<Substitute, Boolean> solved = CacheBuilder.newBuilder()
         .maximumSize(1000)
         .expireAfterWrite(1, TimeUnit.SECONDS)
@@ -68,7 +114,7 @@ public class Expression {
                     if (simpl.isConst()) {
                         return simpl.getBoolValue().toInt()==1;
                     }
-                    Solver solver = key.thread.mkSolver();
+                    Solver solver = key.ctx.mkSolver();
                     solver.add((BoolExpr) key.expr);
                     if (Thread.currentThread().isInterrupted()) {
                         throw new InterruptedException();
@@ -76,6 +122,7 @@ public class Expression {
                     return solver.check() == Status.SATISFIABLE;
                 }
             });
+
     private static LoadingCache<Substitute, Expr> substitutions = CacheBuilder.newBuilder()
         .maximumSize(1000)
         .expireAfterWrite(1, TimeUnit.SECONDS)
@@ -88,8 +135,8 @@ public class Expression {
                     Expr[] replacements = new Expr[subMap.size()];
                     int i =0;
                     for (Map.Entry<String,Integer> c : subMap.entrySet()) {
-                        consts[i] = key.thread.mkBVConst(c.getKey(),32);
-                        replacements[i++] = key.thread.mkBV(c.getValue(),32);
+                        consts[i] = key.ctx.mkBVConst(c.getKey(),32);
+                        replacements[i++] = key.ctx.mkBV(c.getValue(),32);
                     }
                     Expr t = expr.substitute(consts,replacements);
                     if (Thread.currentThread().isInterrupted()) {

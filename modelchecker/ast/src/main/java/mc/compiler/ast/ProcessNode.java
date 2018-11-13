@@ -41,7 +41,7 @@ public class ProcessNode extends ASTNode {
   private String domain = "*";
 
   /**
-   * The process data. P1 = (a->STOP);  processdata = (a->STOP)
+   * P1 = (a->STOP); has identifier P1 and  process = (a->STOP)
    */
   private ASTNode process;
 
@@ -84,7 +84,9 @@ public class ProcessNode extends ASTNode {
   }
 
   /**
-   * Instantiate a new instance of process node.
+   * Instantiate a NEW INSTANCE of a process.
+   *     LocalProcessNode for new local process
+   *     Idnetifier for referances
    * <p>
    * This is for use with a hiding node.
    *
@@ -134,7 +136,7 @@ public class ProcessNode extends ASTNode {
   @Override
   public String myString(){
     StringBuilder sb = new StringBuilder();
-    sb.append("Pn "+identifier+" process "+process.myString() +" Local:");
+    sb.append("ProcessNode "+identifier+" process "+process.myString() +" Local:");
     if ( localProcesses.size()>0) sb.append("\n ");
     for(LocalProcessNode lpn: localProcesses){
       sb.append(lpn.myString()+"\n ");

@@ -58,9 +58,9 @@ public class ChoiceFun {
 
     Petrinet net2 = n2.reId("2");
     Set<String> own2 = net2.getOwners();
-    //System.out.println("[]PETRI1 "+net1.myString());
+    System.out.println("[]PETRI1 "+net1.myString("edge"));
     assert net1.validatePNet():"choice precondition net1";
-    //System.out.println("[]PETRI2 "+net2.myString());
+    System.out.println("[]PETRI2 "+net2.myString("edge"));
     assert net2.validatePNet():"choice precondition net2";
     List<Set<String>> twoRoots =  new ArrayList<>();
      for(Set<String> rs: net2.getRoots()) {
@@ -70,12 +70,12 @@ public class ChoiceFun {
        }
        twoRoots.add(newrs);
      }
-    //System.out.println("twoRoot "+twoRoots);
+    System.out.println("twoRoot "+twoRoots);
     List<Set<String>> twoEnd = net2.getEnds();
 
     //System.out.println("twoEnd "+twoEnd);
 
-    net2.joinNet(net1);  // concats end2 and end1
+    net2.joinNet(net1);  // concats end2 and end1 DO NOT concat variable2Owner
     net2.setEndFromNet();
 
     List<Set<String>> oneRoots =  new ArrayList<>();
@@ -85,11 +85,13 @@ public class ChoiceFun {
         newrs.add(r);
       }
       oneRoots.add(newrs);
-    } //System.out.println("oneRoot " +oneRoots);
+    }
+    System.out.println("CHOICE function oneRoot " +oneRoots);
 
 
+    net2.setUpv2o(net1,net2);
     net2.glueOwners(own1,own2);
-
+    System.out.println("[]after Glueing Owners  " + net2.myString("edge") + "\n");
     //for each pair of roots Ri, Rj build a Ri[]Rj root and copy the root post transition
     List<Set<String>> newRoots = new ArrayList<>();
     for (Set<String> r1: oneRoots) {
@@ -117,7 +119,7 @@ public class ChoiceFun {
 
         net2.setRoots(newRoots);
         net2.setStartFromRoot();
-        //System.out.println("[]after Glueing start  " + net2.myString() + "\n");
+        System.out.println("[]after Glueing start  " + net2.myString("edge") + "\n");
     }
     List<Set<String>> newList = new ArrayList<Set<String>>(twoRoots);
     newList.addAll(oneRoots);
@@ -127,23 +129,24 @@ public class ChoiceFun {
         toGo.add(r);
       }
     }
-    //System.out.println(net2.myString());
-    //System.out.println("Removing "+toGo);
+    System.out.println("before removing p1Roots "+net2.myString("edge"));
+    System.out.println("Removing "+toGo);
     for(String pl: toGo) {
       PetriNetPlace place = net2.getPlace(pl);
       Set<PetriNetTransition> goaway = place.pre();
-      goaway.addAll(place.post());
+        goaway.addAll(place.post());
         net2.removePlace(place);
         for(PetriNetTransition t: goaway){
           net2.removeTransition(t);
         }
 
     }
+    System.out.println("after removing p1Roots "+net2.myString("edge"));
 
 
-    //System.out.println("[]Add OUT "+ net2.myString("edges")+"\n");
+    System.out.println("[]before reachability "+ net2.myString("edge")+"\n");
     net2 = PetrinetReachability.removeUnreachableStates(net2);
-    //System.out.println("\n[] OUT "+ net2.myString()+"\n");
+    System.out.println("[] OUT "+ net2.myString("edge")+"\n");
     //net2.reId("");
     assert net2.validatePNet(): "choice post condition";
     return net2;

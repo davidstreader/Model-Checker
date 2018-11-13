@@ -23,8 +23,6 @@ import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.util.LogMessage;
 
-import static mc.util.Utils.instantiateClass;
-
 /**
  * Compiler applies Interpreter  to processes {...} and seperatly
  * applies OperationEvaluator to operation {...} that calls Interpreter
@@ -75,7 +73,7 @@ public class Interpreter {
     //System.out.println("AST processes "+ processes.stream().map(x->x.getIdentifier()).
     //  reduce("{",(x,y)->x+" "+y)+"}");
     for (ProcessNode process : processes) { //BUILD ALL PROCESSES
-      System.out.println("++++++Interpreter Building " + process.myString()); // + " ... "+ process.getType().toString());
+      System.out.println("\n\n++++++Interpreter Building " + process.myString()+"\n\n"); // + " ... "+ process.getType().toString());
       //System.out.println("Process "+process.myString());
       ProcessModel model = null;
       model = new MultiProcessModel(process.getIdentifier());
@@ -152,19 +150,19 @@ public class Interpreter {
     //TODO Multy Keep to Petri Interpret!
     ProcessModel model;
     switch (processModelType) {
-      case "forcedautomata":
+      //case "forcedautomata":
       case Constant.AUTOMATA:
         //System.out.println("TO REMOVE interpret type SWITCH to "+processModelType);
 
         //System.out.println("***** interpret automata" );
-        model = automatonInterpreter.interpret(astNode, identifer, processMap, context, alpha);
+        model = automatonInterpreter.interpretEvalOp(astNode, identifer, processMap, context, alpha);
         //System.out.println("***Interpreter.interpret A alpha " + this.alpha + " id " + identifer + " " + astNode.myString());
         //System.out.println(model.toString());
         break;
 
       case Constant.PETRINET:  //****
         //System.out.println("***Interpreter.interpret still P alpha " + this.alpha + " id " + identifer + " " + astNode.myString());
-        model = petrinetInterpreter.interpret(astNode, identifer, processMap, context, alpha);
+        model = petrinetInterpreter.interpretEvalOp(astNode, identifer, processMap, context, alpha);
 
         break;
 

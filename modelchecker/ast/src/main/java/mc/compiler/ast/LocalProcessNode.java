@@ -55,7 +55,7 @@ public class LocalProcessNode extends ASTNode {
   @Override
   public String myString(){
     StringBuilder sb = new StringBuilder();
-    sb.append(identifier+" ");
+    sb.append(" id "+identifier+" process ");
     if (process!=null) sb.append(process.myString());
     sb.append(" ranges ");
     if (ranges!=null) sb.append(ranges.myString());

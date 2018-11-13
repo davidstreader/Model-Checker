@@ -11,21 +11,15 @@ import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
 import com.rits.cloning.Cloner;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import mc.compiler.NodeUtils;
 import mc.exceptions.CompilationException;
 import mc.processmodels.automata.AutomatonNode;
 import mc.util.Location;
@@ -45,12 +39,12 @@ public class Guard implements Serializable {
 
   /**
    * the field variables is actually an evaluation, a variable 2 literal mapping
-   * only used for variables that are not hidden
+   * used for variables that are not symbolic (root evaluation held on Petrinet)
    */
   @Getter
   Map<String, Integer> variables = new HashMap<>();
 
-  // next Assignment "i:=2"  Only needed for hidden variables
+  // next Assignment "i:=2"  Only needed for symbolic variables
   @Getter
   List<String> next = new ArrayList<>();
 
@@ -60,7 +54,7 @@ public class Guard implements Serializable {
 
   @Getter
   private boolean shouldDisplay = false;
-  private Set<String> hiddenVariables = new HashSet<>();
+  private Set<String> symbolicVariables = new HashSet<>();
 
   /**
    * Get the guard as a string, used for serialization.
@@ -68,24 +62,47 @@ public class Guard implements Serializable {
    * @return The guard as a string, or an empty string if none exists.
    */
   public String getGuardStr() {
-    if (guard == null || hiddenVariables.isEmpty()) {
+    if (guard == null ){ //|| symbolicVariables.isEmpty()) {
       return "";
     }
     return rmPrefix(ExpressionPrinter.printExpression(guard, Collections.emptyMap()));
 
   }
+  public String getAssStr() {
+    String out;
+    if (nextMap.size()==0) {
+      out = "";
+    } else{
+      out = nextMap.keySet().stream().map(x->x+":="+nextMap.get(x)+", ").collect(Collectors.joining());
+    }
+    return out;
 
+  }
+
+
+  public String myShortString() {
+    return getGuardStr()+" "+ getAssStr();
+  }
   public String myString() {
-    String var = "var = ";
-    for (String s : variables.keySet()) {
-      var = var + s + "=" + variables.get(s).toString();
+    StringBuilder sb = new StringBuilder();
+
+    sb.append( getGuardStr()+" "+ getAssStr());
+    if (variables.size()>0) {
+      sb.append(" var = ");
+      for (String s : variables.keySet()) {
+        sb.append(s + "=" + variables.get(s).toString());
+      }
     }
-    String nxt = next.stream().reduce("", (x, y) -> x + " " + y + " ");
-    String nm = "nextMap = ";
-    for (String s : nextMap.keySet()) {
-      nm = nm + s + " " + nextMap.get(s) + " ";
+    if (next.size()>0) {
+      sb.append(next.stream().reduce("", (x, y) -> x + " " + y + " "));
     }
-    return " guard " + guard + " " + var + nxt + nm;
+    if (nextMap.size()>0) {
+      sb.append(" nextMap = ");
+      for (String s : nextMap.keySet()) {
+        sb.append( s + " " + nextMap.get(s) + " ");
+      }
+    }
+    return sb.toString();
   }
 
   /**
@@ -95,8 +112,8 @@ public class Guard implements Serializable {
    * @throws CompilationException
    * @throws InterruptedException
    */
-  public String getHiddenGuardStr() throws CompilationException, InterruptedException {
-    if (guard == null || hiddenVariables.isEmpty()) {
+  public String getSymbolicGuardStr() throws CompilationException, InterruptedException {
+    if (guard == null || symbolicVariables.isEmpty()) {
       return "";
     }
     List<BoolExpr> andList = new ArrayList<>();
@@ -133,7 +150,7 @@ public class Guard implements Serializable {
       return false;
     }
     if (ex.isConst()) {
-      return hiddenVariables.contains(ex.toString().substring(1));
+      return symbolicVariables.contains(ex.toString().substring(1));
     }
     for (Expr expr : ex.getArgs()) {
       if (containsHidden(expr)) {
@@ -155,10 +172,10 @@ public class Guard implements Serializable {
     }
     Set<String> vars = new VariableCollector().getVariables(guard, null).keySet();
     variables.keySet().removeIf(s -> !vars.contains(s.substring(1)));
-    if (variables.isEmpty() || hiddenVariables.isEmpty()) {
+    if (variables.isEmpty() || symbolicVariables.isEmpty()) {
       return "";
     }
-    variables.keySet().removeAll(hiddenVariables);
+    variables.keySet().removeAll(symbolicVariables);
     StringBuilder builder = new StringBuilder();
     for (Map.Entry<String, Integer> entry : variables.entrySet()) {
       builder.append(entry.getKey()).append("=").append(entry.getValue()).append(",");
@@ -173,7 +190,7 @@ public class Guard implements Serializable {
    * @return The next variable list as a string, or an empty string if none exists.
    */
   public String getNextStr() {
-    if (next.isEmpty() || hiddenVariables.isEmpty()) {
+    if (next.isEmpty() || symbolicVariables.isEmpty()) {
       return "";
     }
 
@@ -247,27 +264,21 @@ System.out.print("parseNext "+ myString()+"\n"); */
     if (guard.guard != null) {
       this.guard = guard.guard;
     }
-    this.variables.putAll(guard.variables);
-    //Remove any existing variables
-    this.next.removeIf(t -> next.stream()
+      this.variables.putAll(guard.variables);
+      //Remove any existing variables
+      this.next.removeIf(t -> next.stream()
         .anyMatch(s -> Pattern.compile(s.split("\\W")[0] + "\\W").matcher(t).find()));
-    this.next.addAll(guard.next);
-    this.nextMap.putAll(guard.getNextMap());
-    this.hiddenVariables.addAll(guard.hiddenVariables);
-    hiddenVariables.removeAll(variables.keySet());
-  }
+      this.next.addAll(guard.next);
+      this.nextMap.putAll(guard.getNextMap());
+      this.symbolicVariables.addAll(guard.symbolicVariables);
+      symbolicVariables.removeAll(variables.keySet());
 
+  }
   public boolean hasData() {
     return guard != null || !variables.isEmpty() || !next.isEmpty();
   }
 
 
-  /* Worrying OLD copy was Shallow copy!
-  public Guard shalowcopy() {
-    return new Guard(guard, variables,
-                     next, nextMap,
-                     shouldDisplay, hiddenVariables);
-  } */
 
   /**
    *  Assume BoolExpr is immutable
@@ -280,10 +291,10 @@ System.out.print("parseNext "+ myString()+"\n"); */
 
   }
 
-  public Guard(BoolExpr guard, Map<String, Integer> variables, Set<String> hiddenVariables) {
+  public Guard(BoolExpr guard, Map<String, Integer> variables, Set<String> symbolicVariables) {
     setGuard(guard);
     setVariables(variables);
-    setHiddenVariables(hiddenVariables);
+    setSymbolicVariables(symbolicVariables);
   }
 
   public boolean equals(Object o, Map<String, Expr> replacements, AutomatonNode first,
@@ -295,7 +306,7 @@ System.out.print("parseNext "+ myString()+"\n"); */
       return false;
     }
     Guard guard1 = (Guard) o;
-    if (hiddenVariables.isEmpty() && guard1.hiddenVariables.isEmpty()) {
+    if (symbolicVariables.isEmpty() && guard1.symbolicVariables.isEmpty()) {
       return true;
     }
     Expr exp1 = substitute(guard, replacements, context);
@@ -313,6 +324,6 @@ System.out.print("parseNext "+ myString()+"\n"); */
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(variables, next, nextMap, shouldDisplay, hiddenVariables);
+    return Objects.hashCode(variables, next, nextMap, shouldDisplay, symbolicVariables);
   }
 }

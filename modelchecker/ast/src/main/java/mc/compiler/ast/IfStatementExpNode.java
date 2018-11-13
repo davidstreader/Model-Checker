@@ -23,7 +23,6 @@ import mc.util.Location;
  * @author Sanjay Govind
  * @author Jacob Beal
  * @see ASTNode
- * @see mc.compiler.Parser
  */
 @ToString
 public class IfStatementExpNode extends ASTNode {

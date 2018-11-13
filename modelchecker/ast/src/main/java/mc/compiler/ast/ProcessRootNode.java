@@ -45,6 +45,8 @@ public class ProcessRootNode extends ASTNode {
 
   /**
    * Instantiate a new instance of ProcessRootNode
+   * The ProcessRootNode  is optional but appears under a ProcessNode and
+   *       holds the rewriting and hiding data
    *
    * @param process  the process that this node represents. {@link #process}
    * @param label    the label that this process is labelled by. {@link #label}
