@@ -22,7 +22,7 @@ public class PetriNetPlace extends ProcessModelObject implements Comparable<Petr
   //Used by interpretor to convert Petri Tree into Cyclic Net
   // Place with ref "X" will be glued to other Place with "X" fromRef
   private Set<String> references = new LinkedHashSet<>();      // where leaf is to be glued to
-  private Set<String> fromReferences = new LinkedHashSet<>();  // prior to gluing only on Leaf
+  private Set<String> leafRef = new LinkedHashSet<>();  // prior to gluing only on Leaf
   private Set<String> owners = new HashSet<>();  // this is needed in event Refinement and broadcast events
 
 
@@ -103,7 +103,7 @@ public class PetriNetPlace extends ProcessModelObject implements Comparable<Petr
     references.addAll(inrefs);
   }
   public void addFromRefefances(Set<String> inrefs){
-    fromReferences.addAll(inrefs);
+    leafRef.addAll(inrefs);
   }
   public void removeEdge(PetriNetEdge ed){
     //this seems clumsy but many shorter version failed
@@ -161,7 +161,7 @@ public class PetriNetPlace extends ProcessModelObject implements Comparable<Petr
     start = toCopy.start;
     terminal = toCopy.terminal;
     references = toCopy.references;
-    fromReferences = toCopy.fromReferences;
+    leafRef = toCopy.leafRef;
     startNos = toCopy.copyStartNos();
     endNos = toCopy.copyEndNos();
     owners = toCopy.copyOwners();
@@ -216,7 +216,7 @@ public class PetriNetPlace extends ProcessModelObject implements Comparable<Petr
   }
 
   public String myString(){
-    return "Place "+this.getId()+ " ref "+references.toString()+" fromref "+fromReferences.toString()+
+    return "Place "+this.getId()+ " ref "+references.toString()+" leafRef "+ leafRef.toString()+
       this.getIncoming().stream().map(ed->ed.getId()).reduce(" in  ",(x,y)->x+" "+y)+
       this.getOutgoing().stream().map(ed->ed.getId()).reduce(" out ",(x,y)->x+" "+y) +
       " End "+this.getTerminal()+  " endnos "+ this.endNos +

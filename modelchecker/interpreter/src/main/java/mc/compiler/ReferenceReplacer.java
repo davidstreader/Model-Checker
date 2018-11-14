@@ -91,7 +91,7 @@ public class ReferenceReplacer {
 /*   ReferenceReplacer.indent = ReferenceReplacer.indent.concat("-");
     String className = astNode.getClass().getSimpleName();
       System.out.println("RRast "+ ReferenceReplacer.indent + className+
-      " refs "+astNode.getReferences()+" from "+astNode.getFromReferences());
+      " refs "+astNode.getReferences()+" from "+astNode.getLeafRef());
 */
     if (astNode instanceof ProcessRootNode) {
       astNode = replaceReferences((ProcessRootNode) astNode, identifier, localReferences);

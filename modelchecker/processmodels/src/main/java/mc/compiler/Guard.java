@@ -55,7 +55,9 @@ public class Guard implements Serializable {
   @Getter
   private boolean shouldDisplay = false;
   private Set<String> symbolicVariables = new HashSet<>();
-
+  @Setter
+  @Getter
+  private Map<String, Expr> globalVariableMap = new HashMap<>();
   /**
    * Get the guard as a string, used for serialization.
    *
@@ -73,7 +75,7 @@ public class Guard implements Serializable {
     if (nextMap.size()==0) {
       out = "";
     } else{
-      out = nextMap.keySet().stream().map(x->x+":="+nextMap.get(x)+", ").collect(Collectors.joining());
+      out = nextMap.keySet().stream().map(x->x+":="+nextMap.get(x)+",").collect(Collectors.joining());
     }
     return out;
 
@@ -201,9 +203,9 @@ public class Guard implements Serializable {
    * Parse an identifier and turn it into a list of variable assignments.
    *
    * @param identifier        The identifier  Could be "C[$i][j+1][4]"
-   * @param globalVariableMap The global variable map
+   * @param globalVariableMap   $v0->$y+1,  $v1->3,
    * @param identMap          A map from identifiers to a list of the variables in them
-   *                          (L[$i] = L -> [$i])
+   *                          (L[$i][1][$j] = L -> [$i,$j])
    * Method changes state of Guard .nextMap  and .next
    */
   public void parseNext(String identifier, Map<String, Expr> globalVariableMap,

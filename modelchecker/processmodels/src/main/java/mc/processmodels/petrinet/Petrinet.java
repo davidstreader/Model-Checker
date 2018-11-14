@@ -7,7 +7,6 @@ import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
 
 import java.util.*;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import lombok.*;
@@ -327,7 +326,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     Set<String> ownTr = new HashSet<>();
     Set<PetriNetTransition> endTr = new HashSet<>();
     for (PetriNetPlace pl : places.values()) {
-      if (pl.isSTOP() && pl.getReferences().size() == 0 && pl.getFromReferences().size() == 0) {
+      if (pl.isSTOP() && pl.getReferences().size() == 0 && pl.getLeafRef().size() == 0) {
         endTr.addAll(pl.pre());
         ownTr.addAll(pl.pre().stream().map(x -> x.getOwners()).
           flatMap(Set::stream).collect(Collectors.toSet()));
@@ -390,7 +389,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     //System.out.println("assumes ");
      //Set<PetriNetPlace> ends = new TreeSet<>();
     //places.values().stream().filter(x->x.isSTOP()).collect(Collectors.toSet());
-    System.out.println("ends "+ends+" should all be in places "+ places.keySet());
+    //System.out.println("ends "+ends+" should all be in places "+ places.keySet());
     return ends.stream().flatMap(Set::stream).map(x -> places.get(x)).collect(Collectors.toSet());
   }
   public Set<PetriNetEdge> getFirstEdges() {
@@ -676,6 +675,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
       map(tr -> "\n" + tr.myString()).
       reduce("", (x, y) -> x + " " + y));
     if (edge.equals("edge")) {
+      sb.append("\n"+edges.size()+" edges");
       sb.append(this.getEdges().values().stream().map(ed -> "\n" + ed.myString()).
         reduce("", (x, y) -> x + " " + y));
     } else {
@@ -1430,10 +1430,10 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
   public Map<String, String> gluePlaces
   (Set<PetriNetPlace> set1, Set<PetriNetPlace> set2, boolean keep)
     throws CompilationException {
-    //System.out.println("\n "+keep+" Glueing starting \n"+myString());
+    //System.out.println("\n "+keep+" Glueing starting \n"+myString("edge"));
 
-    //System.out.println("s1 "+ Petrinet.marking2String(set1));
-    //System.out.println("s2 "+ Petrinet.marking2String(set2));
+    //System.out.println("glue s1 "+ Petrinet.marking2String(set1));
+    //System.out.println("glue s2 "+ Petrinet.marking2String(set2));
 
     for (PetriNetPlace pl : set1) {
       if (!places.containsValue(pl)) {
@@ -1488,8 +1488,8 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
         }
         newPlace.addRefefances(place1.getReferences());
         newPlace.addRefefances(place2.getReferences());
-        newPlace.addFromRefefances(place1.getFromReferences());
-        newPlace.addFromRefefances(place2.getFromReferences());
+        newPlace.addFromRefefances(place1.getLeafRef());
+        newPlace.addFromRefefances(place2.getLeafRef());
         if ((place1.getTerminal() != null) && place1.getTerminal().equals("STOP") ||
           (place2.getTerminal() != null) && place2.getTerminal().equals("STOP")) {
           newPlace.setTerminal("STOP"); // endNos is case dependent
@@ -1510,39 +1510,43 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     // How do we cope with second glueing??
     //System.out.println(myString());
     //System.out.println("places  "+places.keySet());
+    //System.out.println("prod "+products.toString());
     StringBuilder sb = new StringBuilder();
     sb.append(" products ");
     for (PetriNetPlace pl : products.keySet()) {
-      sb.append(pl.getId() + " " + products.get(pl).size() + " ");
+      sb.append(pl.getId() + "." + products.get(pl).size() + ".");
       for (PetriNetPlace pi : products.get(pl)) {
-        sb.append(pi.getId() + ",");
+        sb.append(pi.getId() + " , ");
       }
     }
-    //System.out.println(sb.toString());
+    System.out.println(sb.toString());
+    Set<PetriNetPlace> con =  new TreeSet<>();
+    con.addAll(set1);
+    con.addAll(set2);
 
-    for (PetriNetPlace place : Iterables.concat(set1, set2)) {
-      for (PetriNetPlace product : products.get(place)) { // the new palces built from the old
-        //System.out.println("place  "+place.getId()+"   prod " +product.getId());
+    for (PetriNetPlace place : con) { //Iterables.concat(set1, set2 )) {
+      for (PetriNetPlace newProductPlace : products.get(place)) { // the new palces built from the old
+        //System.out.println("place  "+place.getId()+"   prod " +newProductPlace.getId());
         for (PetriNetEdge edge : place.getIncoming()) {  //assignmnet
           /* Need Incoming/Outgoing to be a set */
           //System.out.println("X " + edge.myString());
           PetriNetTransition from = (PetriNetTransition) edge.getFrom();
-          if (!product.hasIncoming(from)) {
-            PetriNetEdge e = addEdge(product, from, edge.getOptional());
+          if (!newProductPlace.hasIncoming(from)) {
+            PetriNetEdge e = addEdge(newProductPlace, from, edge.getOptional());
             if (edge.getGuard() != null )
               e.setGuard(edge.getGuard());
-            product.getIncoming().add(e);
+            //newProductPlace.getIncoming().add(e);  already done in addEdge
             //System.out.println("X added "+e.myString());
           }
         }
         for (PetriNetEdge edge : place.getOutgoing()) {  //boolean guard
           //System.out.println("Y " + edge.myString());
           PetriNetTransition to = (PetriNetTransition) edge.getTo();
-          if (!product.hasOutgoing(to)) {
-            PetriNetEdge e = addEdge(to, product, edge.getOptional());
+          if (!newProductPlace.hasOutgoing(to)) {
+            PetriNetEdge e = addEdge(to, newProductPlace, edge.getOptional());
             if (edge.getGuard() != null )
               e.setGuard(edge.getGuard());
-            product.getOutgoing().add(e);
+           // newProductPlace.getOutgoing().add(e);
             //System.out.println("Y added "+e.myString());
           }
         }
@@ -1566,15 +1570,13 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
 
 
     //System.out.println( "  Glueing finished "+ this.myString("edge"));
-    //System.out.println("PROD "+ prodNames);
-    //System.out.println("GLUE END\n\n");
-    return prodNames;
+     return prodNames;
   }
 
   public void setUpv2o(Petrinet n1, Petrinet n2) {
-    System.out.println("setUpv2o");
-    System.out.println(n1.getId() + " " + n1.getVariable2Owner().toString());
-    System.out.println(n2.getId() + " " + n2.getVariable2Owner().toString());
+    //System.out.println("setUpv2o");
+    //System.out.println(n1.getId() + " " + n1.getVariable2Owner().toString());
+    //System.out.println(n2.getId() + " " + n2.getVariable2Owner().toString());
     setVariable2Owner(n1.v2o(n2));
 
   }

@@ -61,7 +61,8 @@ public class Interpreter {
                                              boolean symb)
     throws CompilationException, InterruptedException {
     this.alpha = alpha;
-    System.out.println("*** Interp " + this.alpha);
+    System.out.println("*** Interp \n" + ast.myString());
+    System.out.println("*** Interp " );
     StringBuilder sb = new StringBuilder();
     //System.out.print("Who calls interpret Y? ");//Throwable t = new Throwable();t.printStackTrace();
     Map<String, ProcessModel> processMap = new LinkedHashMap<>();  //already built proceesses
@@ -85,7 +86,8 @@ public class Interpreter {
       //System.out.println("className "+className);
       ProcessModel modelPetri = null;
       if (process.getType().contains("petrinet")) { //interpretASTAutNode
-        modelPetri = petrinetInterpreter.interpret(process, processMap, context, alpha,symb);
+        modelPetri = petrinetInterpreter.interpret(process, processMap,
+                      context, alpha,ast.getVariableMap(),symb);
 
         System.out.println("++++++Interpreter Built Petri "+ modelPetri.getId());
         model = buildmpmFromPetri((Petrinet) modelPetri);

@@ -2,6 +2,7 @@ package mc.operations.functions.infix;
 
 import java.util.*;
 
+import com.microsoft.z3.Expr;
 import mc.compiler.ast.ChoiceNode;
 import mc.compiler.ast.CompositeNode;
 import mc.compiler.ast.IdentifierNode;
@@ -81,7 +82,9 @@ public class SlidingInfixFunction implements IProcessInfixFunction {
          process,
          processesDefined,
         null,
-        null,false);
+        null,
+        null,
+        false);
     } catch (InterruptedException e) {
       throw new CompilationException(getClass(), "Interrupted in compilation!");
     }

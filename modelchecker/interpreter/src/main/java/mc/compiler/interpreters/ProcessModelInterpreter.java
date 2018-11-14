@@ -1,6 +1,7 @@
 package mc.compiler.interpreters;
 
 import com.microsoft.z3.Context;
+import com.microsoft.z3.Expr;
 import mc.compiler.ast.ASTNode;
 import mc.compiler.ast.ProcessNode;
 import mc.exceptions.CompilationException;
@@ -19,6 +20,7 @@ public interface ProcessModelInterpreter {
                            // LocalCompiler localCompiler,
                            Context context,
                            Set<String> alpha,
+                           Map<String,Expr> globalVarMap,
                            boolean symb)
       throws CompilationException, InterruptedException;
 

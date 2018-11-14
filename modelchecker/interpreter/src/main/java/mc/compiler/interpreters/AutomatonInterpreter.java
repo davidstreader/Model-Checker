@@ -9,6 +9,7 @@ import com.microsoft.z3.Context;
 
 import java.util.*;
 
+import com.microsoft.z3.Expr;
 import com.rits.cloning.Cloner;
 import mc.Constant;
 import mc.compiler.Guard;
@@ -66,10 +67,12 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     reset();
   }
 
+  @Override
   public ProcessModel interpret(ProcessNode processNode,
                                 Map<String, ProcessModel> processMap,
                                 Context context,
                                 Set<String> alpha,
+                                Map<String,Expr> globalVarMap,
                                 boolean symb)
     throws CompilationException, InterruptedException {
    //System.out.println("START interp ");

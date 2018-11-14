@@ -98,6 +98,9 @@ public class AbstractSyntaxTree {
     StringBuilder sb = new StringBuilder();
     sb .append("AST \n");
     sb.append( processes.stream().map(x->x.myString()+"\n").collect(Collectors.joining()) );
+
+    if(variableMap!=null) sb.append(variableMap.keySet().stream().
+         map(x->x+"->"+variableMap.get(x).toString()+" ").collect(Collectors.joining()));
     return sb.toString();
   }
 

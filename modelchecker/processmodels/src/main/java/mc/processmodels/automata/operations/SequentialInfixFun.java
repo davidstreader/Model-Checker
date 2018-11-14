@@ -161,8 +161,8 @@ public class SequentialInfixFun {
 
     Petrinet net1 = n1.reId("1");
     Petrinet net2 = n2.reId("2"); // the tag "2" ensures unique ids in nets
-    System.out.println("=>PETRI1 " + id + " " + net1.myString("edge"));
-    System.out.println("=>PETRI2 " + id + " " + net2.myString("edge"));
+    //System.out.println("=>PETRI1 " + id + " " + net1.myString("edge"));
+    //System.out.println("=>PETRI2 " + id + " " + net2.myString("edge"));
 
     Set<String> own1 = new HashSet<>();
     Set<String> own2 = new HashSet<>();
@@ -215,7 +215,7 @@ public class SequentialInfixFun {
         }
 
 
-        System.out.println("SEQUENTIAL function");
+        //System.out.println("SEQUENTIAL function");
         composition.setUpv2o(n1, n2);
         composition.glueOwners(own1, own2);
         composition.gluePlaces(newroot, newend);
@@ -249,13 +249,13 @@ public class SequentialInfixFun {
     sequential.setEndFromPlace();
 //*** must come after setEndFromPlace()
     Map<String, String> eval = n2.getRootEvaluation();
-    System.out.println("eval " + eval.toString());
+    //System.out.println("eval " + eval.toString());
     if (eval.size() > 0) {
       for (PetriNetEdge edge : sequential.getLastEdges()) {
-        System.out.println("Last edge " + edge.myString());
+        //System.out.println("Last edge " + edge.myString());
         if (edge.getGuard() == null) edge.setGuard(new Guard());
         edge.getGuard().setNextMap(eval);
-        System.out.println("Last edge " + edge.myString());
+        //System.out.println("Last edge " + edge.myString());
       }
     }
     //****
@@ -264,7 +264,7 @@ public class SequentialInfixFun {
     //System.out.println("FINAL " +sequential.myString());
 
     sequential.validatePNet();
-    System.out.println("=> END " + sequential.myString("edge"));
+    //System.out.println("=> END " + sequential.myString("edge"));
     return sequential;
 
 
