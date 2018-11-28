@@ -1,5 +1,8 @@
 processes {   
 Test: {
+Loa = a->Loa. //needed because of Return to Root (see cribsheet)
+Lob = b->Lob.
+Loab = a->b->Loab. // required when Tababs  was added
 Onea = a->STOP.
 Oneb = b->STOP.
 Twoaa = a->a->STOP.
@@ -45,13 +48,15 @@ Twoax2 = a->a->STOP|a->b->STOP|a->STOP.
 Twoaxx = a->(a->STOP|b->STOP)|a->STOP.
 Twobx = b->(a->STOP|b->STOP).
 Twoabs = a->b->Twoabs.
+Dx  = a->(b->Dx|a->STOP).
+Tababs = a->b->a->b->Tababs.
 Twobas = b->a->Twobas.
 Twoaas = a->a->Twoaas.
 Twobbs = b->b->Twobbs.
 D   = a->(b->D|b->STOP).
 Dr  = a->b->Dr|b->STOP.
 Da  = a->b->Da|a->STOP.
-Dx  = a->(b->Dx|a->STOP).
+
 G  = b->(b->G|b->STOP).
 Gr = b->b->Gr|b->STOP.
 Ga = b->b->Ga|a->STOP.
@@ -81,46 +86,62 @@ Fx1  = b->X, X= a->X| b->X|b->STOP.
 Fx2  = b->X, X= a->X| b->X|a->STOP.
 Fx3  = a->X, X= a->X| b->X|a->STOP. 
 
-//Test1 = Twoax||{a,b,c}Onea.
-//Test2 = Twoax2||{a,b,c}Onea.
 }
 }
 
 operation{
-Twoax <sf Twoax2.
-Twoax||{a,b}Onea <t Twoax2||{a,b}Onea.
 
-
+Twoaas <sf{cong} La.
+Twoaas <t{cong} La.
+Twoaas||{a,b}La <t{cong} La||{a,b}La.
 }
 
 equation {
 
-/*  This should (cong urance requires contexts _[]X and _=>X) and it dose fail
- forall{X:Test} (X||{a,b}Y:Pro <t{cong} X||{a,b}Z:Pro) ==> Y:Pro <sf{cong} Z:Pro.
 
-  Opps below Fails and  should see example in cribsheet!
-Y:Pro <sf Z:Pro ==>Y:Pro <t Z:Pro.  
+
+/* BELOW Working  */
+
+//Y:Pro <sf{cong} Z:Pro ==> forall{X:Test} (X||{a,b}Y:Pro <t{cong} X||{a,b}Z:Pro). 
+
+forall{X:Test} (X||{a,b}Y:Pro <t{cong} X||{a,b}Z:Pro) ==> Y:Pro<sf{cong}Z:Pro.
+
+
+/*Y:Pro <f{cong} Z:Pro ==>Y:Pro <sf{cong} Z:Pro.     
 Y:Pro <sf{cong} Z:Pro ==>Y:Pro <t{cong} Z:Pro. 
-*/
-
-// BELOW Working  
-Y:Pro <sf Z:Pro ==> forall{X:Test} (X||{a,b}Y:Pro <t X||{a,b}Z:Pro).
-forall{X:Test} (X||{a,b}Y:Pro <t X||{a,b}Z:Pro) ==> Y:Pro <sf Z:Pro.
-Y:Pro <sf{cong} Z:Pro ==> forall{X:Test} (X||{a,b}Y:Pro <t{cong} X||{a,b}Z:Pro). 
-
-
-Y:Pro <f Z:Pro ==>Y:Pro <sf Z:Pro.
-Y:Pro <f{cong} Z:Pro ==>Y:Pro <sf{cong} Z:Pro.
 Y:Pro <sf{cong} Z:Pro ==>Y:Pro <sf Z:Pro.
  
 Y:Pro <sf Z:Pro ==> forall{X:Test} (X||{a,b}Y:Pro <t X||{a,b}Z:Pro).
 forall{X:Test} (X||{a,b}Y:Pro <t X||{a,b}Z:Pro) ==> Y:Pro <sf Z:Pro.
+*/
+//Y:Pro <sf Z:Pro ==>Y:Pro <t Z:Pro.  //Fail Towax Twoax2
+//Y:Pro <f Z:Pro ==>Y:Pro <sf Z:Pro.
+
 
 }
-
-
-
-
+/*##Equation Results##
+((Y:Pro<sf[cong]Z:Pro) ==> forAll[X:Test]((X:Test||[a, b]Y:Pro)<t[cong](X:Test||[a, b]Z:Pro)))
+	Simulations passed: 2401/2401 (implies short circuit ass/conc 2311/0) 
+(forAll[X:Test]((X:Test||[a, b]Y:Pro)<t[cong](X:Test||[a, b]Z:Pro)) ==> (Y:Pro<sf[cong]Z:Pro))
+	Simulations passed: 2401/2401 (implies short circuit ass/conc 0/90) 
+((Y:Pro<f[cong]Z:Pro) ==> (Y:Pro<sf[cong]Z:Pro))
+	Simulations passed: 2401/2401 (implies short circuit ass/conc 2311/0) 
+((Y:Pro<sf[cong]Z:Pro) ==> (Y:Pro<t[cong]Z:Pro))
+	Simulations passed: 2401/2401 (implies short circuit ass/conc 2311/0) 
+((Y:Pro<sf[cong]Z:Pro) ==> (Y:Pro<sf Z:Pro))
+	Simulations passed: 2401/2401 (implies short circuit ass/conc 2311/0) 
+((Y:Pro<sf Z:Pro) ==> forAll[X:Test]((X:Test||[a, b]Y:Pro)<t (X:Test||[a, b]Z:Pro)))
+	Simulations passed: 2401/2401 (implies short circuit ass/conc 2297/0) 
+(forAll[X:Test]((X:Test||[a, b]Y:Pro)<t (X:Test||[a, b]Z:Pro)) ==> (Y:Pro<sf Z:Pro))
+	Simulations passed: 2401/2401 (implies short circuit ass/conc 0/104) 
+((Y:Pro<sf Z:Pro) ==> (Y:Pro<t Z:Pro))
+	Failing Combinations:  [a, [END]]
+Y:Pro->Twoax, Z:Pro->Twoax2, 
+	Simulations passed: 499/2401 (implies short circuit ass/conc 472/0) 
+((Y:Pro<f Z:Pro) ==> (Y:Pro<sf Z:Pro))
+	Simulations passed: 2401/2401 (implies short circuit ass/conc 2299/0) 
+Compiling completed!
+Sun Nov 25 08:55:30 NZDT 2018*/
 
 
 

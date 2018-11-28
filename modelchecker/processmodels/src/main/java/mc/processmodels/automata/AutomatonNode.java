@@ -282,7 +282,7 @@ public class AutomatonNode extends ProcessModelObject implements Comparable<Auto
     Set<String> out = getOutgoingEdges().stream().map(x -> x.getLabel()).collect(Collectors.toSet());
    if (cong) {
      if (isSTOP()) out.add(Constant.STOP);
-     if (isERROR()) out.add(Constant.ERROR);
+   //  if (isERROR()) out.add(Constant.ERROR);
      if (isStartNode())  out.add(Constant.Start);
    }
     if (quiescentCheck()) out.add(Constant.Quiescent);
@@ -296,7 +296,7 @@ public class AutomatonNode extends ProcessModelObject implements Comparable<Auto
       collect(Collectors.toSet());
     if (cong) {
       if (isSTOP()) out.add(Constant.STOP);
-      if (isERROR()) out.add(Constant.ERROR);
+    //  if (isERROR()) out.add(Constant.ERROR);
       if (isStartNode())  out.add(Constant.Start);
     }
     if (quiescentCheck()) out.add(Constant.Quiescent);
@@ -310,7 +310,7 @@ public class AutomatonNode extends ProcessModelObject implements Comparable<Auto
       collect(Collectors.toSet());
     if (cong) {
       if (isSTOP()) out.add(Constant.STOP);
-      if (isERROR()) out.add(Constant.ERROR);
+     // if (isERROR()) out.add(Constant.ERROR);
       if (isStartNode())  out.add(Constant.Start);
     }
     if (quiescentCheck()) out.add(Constant.Quiescent);
@@ -322,7 +322,7 @@ public class AutomatonNode extends ProcessModelObject implements Comparable<Auto
     Set<String> out = getOutgoingEdges().stream().map(x -> x.getLabel()).collect(Collectors.toSet());
     if (cong) {
       if (isSTOP()) out.add(Constant.STOP);
-      if (isERROR()) out.add(Constant.ERROR);
+    //  if (isERROR()) out.add(Constant.ERROR);  is Quiescent or empty
     //  if (quiescentCheck()) out.add(Constant.Quiescent);
       if (isStartNode())  out.add(Constant.Start);
     }
@@ -335,6 +335,7 @@ public class AutomatonNode extends ProcessModelObject implements Comparable<Auto
     Set<AutomatonEdge> next = outgoingEdges.values().stream().
       filter(x->((x.getLabel().endsWith("!")))).
       collect(Collectors.toSet());
-    return next.size()==0;
+    return next.size()==0 && !this.isSTOP();
+    //ERROR node Quiescent not STOP Node as stop used to model can do something with =>
   }
 }

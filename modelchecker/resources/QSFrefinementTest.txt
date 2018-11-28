@@ -1,7 +1,35 @@
 processes {   
 Test: {
-Onea = a!->x?->STOP.
-Oneb = b!->x?->STOP.
+Lopa = a!->Lopa.
+Lopb = b!->Lopb.
+Lopab = a!->b!->Lopab.
+Lopba = b!->a!->Lopba.
+Lopbab = b!->a!->b!->Lopbab.
+Lopaba = a!->b!->a!->Lopaba.
+Lopabb = a!->b!->b!->Lopabb.
+Lopbba = b!->b!->a!->Lopbba.
+
+
+Tab = a!->b!->STOP.
+Tba = b!->a!->STOP.
+Taa = a!->a!->STOP.
+Tbb = b!->b!->STOP.
+
+Oneya = y?->a!->STOP.
+Oneyb = y?->b!->STOP.  
+Oneay = a!->y?->STOP.
+Oneby = b!->y?->STOP.  
+
+Onex = x?->STOP.
+Oney = y?->STOP.
+Onea = a!->STOP.
+Oneb = b!->STOP.
+
+Oneax = a!->x?->STOP.
+Onebx = b!->x?->STOP.
+Onexa = x?->a!->STOP.
+Onexb = x?->b!->STOP.
+
 Oneab = b!->x?->STOP|a!->x?->STOP.
 Onexy = a!->(x?->STOP|y?->STOP).
 
@@ -44,6 +72,7 @@ Four7  = b!->a!->a!->b!->x?->STOP.
 
 Fiveababa = a!->b!->a!->b!->a!->x?->STOP.
 Fivebbaab = b!->b!->a!->a!->b!->x?->STOP.
+
 }
 
 Pro:{
@@ -53,16 +82,20 @@ Oab3 = a?->STOP|b?->STOP|x!->STOP.
 La = a?->La|x!->STOP.
 Lb = b?->Lb|x!->STOP.
 La2 = a?->x!->La2.
-Lb2 = b?->x!->Lb2.
+Lb2 = b?->x!->Lb2. 
 
 
 Lasb  = a?->Lasb| b?->x!->STOP.
+
 Lasa  = a?->Lasa| a?->x!->STOP.
+
 Lbsb  = b?->Lbsb| b?->x!->STOP.
 Lbsa  = b?->Lbsa| a?->x!->STOP.
 
 Lasb2  = a?->x!->Lasb2| b?->STOP.
 Lasa2  = a?->x!->Lasa2| a?->STOP.
+D2   = a?->(b?->D2|x!->b?->STOP|x!->a?->STOP).
+
 Lbsb2  = b?->x!->Lbsb2| b?->STOP.
 Lbsa2  = b?->x!->Lbsa2| a?->STOP.
 
@@ -116,7 +149,6 @@ Ia = a?->a?->Ia|a?->STOP.
 Ix = a?->(a?->Ix|a?->STOP).
 
 
-D2   = a?->(b?->D2|x!->b?->STOP|x!->a?->STOP).
 Dr2  = a?->b?->Dr2|x!->(b?->STOP|a?->STOP).
 Da2  = a?->b?->x!->Da2|a?->STOP.
 Dx2  = a?->x!->(b?->Dx2|a?->STOP).
@@ -128,6 +160,7 @@ I2  = a?->(x!->a?->I2|b?->STOP).
 Ir2 = a?->a?->x!->Ir2|b?->STOP.
 Ia2 = x!->a?->a?->Ia2|x!->a?->STOP.
 Ix2 = a?->(a?->x!->Ix2|a?->STOP).
+
 
 /*Threeaax = a?->a?->(a?->STOP|b?->STOP).
 Threeabx = a?->b?->(a?->STOP|b?->STOP).
@@ -148,36 +181,52 @@ Fx  = a?->X, X= a?->X| b?->X|b?->STOP.
 Fx1  = b?->X, X= a?->X| b?->X|b?->STOP.
 Fx2  = b?->X, X= a?->X| b?->X|a?->STOP.
 Fx3  = a?->X, X= a?->X| b?->X|a?->STOP. 
+// Y:Pro->Lasa, Z:Pro->D2, 
 */
+
 }
+
 }
 
 operation{
-//La:Pro <f{cong} Twoaas:Pro ==> La:Pro <sf{cong} Twoaas:Pro.
 
 }
 equation {
 
-/*  This should and dose fail
- forall{X:Test} (X||{a,b}Y:Pro <q{cong} X||{a,b}Z:Pro) ==> Y:Pro <qsf{cong} Z:Pro.
-*/
 // BELOW Working  
 
-/*Y:Pro <qsf Z:Pro ==>Y:Pro <q Z:Pro. 
+Y:Pro <qsf Z:Pro ==>Y:Pro <q Z:Pro. 
 Y:Pro <qsf{cong} Z:Pro ==>Y:Pro <qsf Z:Pro.
-
-
 Y:Pro <qsf{cong} Z:Pro ==>Y:Pro <q{cong} Z:Pro. 
+Y:Pro <qsf{cong} Z:Pro ==> forall{X:Test} (X||{a!,b!,x!,y!}Y:Pro <q{cong} X||{a!,b!,x!,y!}Z:Pro). 
+ 
+forall{X:Test} (X||{a!,b!,x!,y!}Y:Pro <q{cong} X||{a!,b!,x!,y!}Z:Pro) ==> Y:Pro<qsf{cong}Z:Pro.
 
- Y:Pro <qsf{cong} Z:Pro ==> forall{X:Test} (X||{a,b}Y:Pro <q{cong} X||{a,b}Z:Pro). 
- */
-//Y:Pro <qsf Z:Pro ==> forall{X:Test} (X||{a,b,x,y}Y:Pro <q X||{a,b,x,y}Z:Pro).
-//forall{X:Test} (X||{a,b,x,y}Y:Pro <q X||{a,b,x,y}Z:Pro) ==> Y:Pro <qsf Z:Pro.
+Y:Pro <qsf Z:Pro ==> forall{X:Test} (X||{a!,b!,x!,y!}Y:Pro <q X||{a!,b!,x!,y!}Z:Pro).
+forall{X:Test} (X||{a!,b!,x!,y!}Y:Pro <q X||{a!,b!,x!,y!}Z:Pro) ==> Y:Pro <qsf Z:Pro.
 
-X <qsf Y ==> X<qf Y.
+
 } 
 
-
+/*
+##Equation Results##
+((Y:Pro<qsf Z:Pro) ==> (Y:Pro<q Z:Pro))
+	Simulations passed: 4761/4761 (implies short circuit ass/conc 4266/0) 
+((Y:Pro<qsf[cong]Z:Pro) ==> (Y:Pro<qsf Z:Pro))
+	Simulations passed: 4761/4761 (implies short circuit ass/conc 4607/0) 
+((Y:Pro<qsf[cong]Z:Pro) ==> (Y:Pro<q[cong]Z:Pro))
+	Simulations passed: 4761/4761 (implies short circuit ass/conc 4607/0) 
+((Y:Pro<qsf[cong]Z:Pro) ==> forAll[X:Test]((X:Test||[a!, y!, x!, b!]Y:Pro)<q[cong](X:Test||[a!, y!, x!, b!]Z:Pro)))
+	Simulations passed: 4761/4761 (implies short circuit ass/conc 4607/0) 
+(forAll[X:Test]((X:Test||[a!, y!, x!, b!]Y:Pro)<q[cong](X:Test||[a!, y!, x!, b!]Z:Pro)) ==> (Y:Pro<qsf[cong]Z:Pro))
+	Simulations passed: 4761/4761 (implies short circuit ass/conc 0/154) 
+((Y:Pro<qsf Z:Pro) ==> forAll[X:Test]((X:Test||[a!, y!, x!, b!]Y:Pro)<q (X:Test||[a!, y!, x!, b!]Z:Pro)))
+	Simulations passed: 4761/4761 (implies short circuit ass/conc 4266/0) 
+(forAll[X:Test]((X:Test||[a!, y!, x!, b!]Y:Pro)<q (X:Test||[a!, y!, x!, b!]Z:Pro)) ==> (Y:Pro<qsf Z:Pro))
+	Simulations passed: 4761/4761 (implies short circuit ass/conc 0/495) 
+Compiling completed!
+Wed Nov 28 19:26:43 NZDT 2018
+*/
 
 
 

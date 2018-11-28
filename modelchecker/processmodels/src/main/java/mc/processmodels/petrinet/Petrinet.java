@@ -48,6 +48,29 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
   @Setter
   private List<Set<String>> roots = new ArrayList<>();
 
+  public List<Set<PetriNetPlace>> getRootsPl(){
+    List<Set<PetriNetPlace>> out = new ArrayList<>();
+    for(Set<String> root: roots) {
+      Set<PetriNetPlace> rootOut = new HashSet<>();
+      for(String pl: root) {
+        rootOut.add(places.get(pl));
+      }
+      out.add(rootOut);
+    }
+    return out;
+  }
+
+  public void setRootsPl(List<Set<PetriNetPlace>> roots) {
+    List<Set<String>> out = new ArrayList<>();
+    for(Set<PetriNetPlace> root: roots) {
+      Set<String> rootOut = new HashSet<>();
+      for(PetriNetPlace pl: root) {
+        rootOut.add(pl.getId());
+      }
+      out.add(rootOut);
+    }
+    setRoots(out);
+  }
   @Getter
   @Setter
   private Map<String,String> rootEvaluation = new TreeMap<>();
@@ -216,7 +239,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
 
     Set<PetriNetTransition> newTrans = preTransitions(pl);
 
-    newTrans.addAll(postTransitions(pl));
+    newTrans.addAll(Petrinet.postTransitions(pl));
     int i = 0;
     for (PetriNetTransition tr : newTrans) {
       i++;
@@ -616,11 +639,18 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     return pre;
   }
 
-  public Set<PetriNetTransition> postTransitions(PetriNetPlace pl) {
+  public static Set<PetriNetTransition> postTransitions(PetriNetPlace pl) {
     Set<PetriNetTransition> post = new HashSet<>();
     for (PetriNetEdge edge : pl.getOutgoing()) {
       post.add((PetriNetTransition) edge.getTo());
     }
+    return post;
+  }
+
+  public static Set<PetriNetTransition> postTransitions(Set<PetriNetPlace> pls) {
+    Set<PetriNetTransition> post = new HashSet<>();
+    post = pls.stream().flatMap(x->postTransitions(x).stream()).distinct().collect(Collectors.toSet());
+
     return post;
   }
 
@@ -825,8 +855,6 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
       origin.addOwner(DEFAULT_OWNER);
       roots.add(Collections.singleton(origin.getId()));
 
-    } else {
-      this.setOwners(new HashSet<>());
     }
   }
 
@@ -1162,7 +1190,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     Map<String, String> nameMap = new HashMap<>();
     Map<PetriNetTransition, PetriNetTransition> transitionMap = new HashMap<>();
     //System.out.println(owners.getClass());
-    owners.addAll(petriToAdd.getOwners());
+    //owners.addAll(petriToAdd.getOwners());
     for (String o : petriToAdd.getOwners()) {
       addOwner(o);
     }

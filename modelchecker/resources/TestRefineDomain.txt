@@ -1,5 +1,8 @@
 processes { 
 Test: {  
+Loa = a->Loa.
+Lob = b->Lob.
+Loab = a->b->Loab.
 Onea = a->STOP.
 Oneb = b->STOP.
 Oneab = a->STOP|b->STOP.  
@@ -72,27 +75,35 @@ Fx3  = a->X, X= a->X| b->X|a->STOP.
 
 
 }
-//Test1 =  Threea:Test||{a,b}F3:Pro.  // Fail to build
 
 }
 
 operation {
+
 }
 
 equation {
 Y:Pro <f{cong} Z:Pro ==> forall{X:Test} (X||{a,b}Y:Pro <t{cong} X||{a,b}Z:Pro).
 forall{X:Test} (X||{a,b}Y:Pro <t{cong} X||{a,b}Z:Pro) ==> Y:Pro <f{cong} Z:Pro.
+
+Y:Pro <f Z:Pro ==> forall{X:Test} (X||{a,b}Y:Pro <t X||{a,b}Z:Pro).
+forall{X:Test} (X||{a,b}Y:Pro <t X||{a,b}Z:Pro) ==> Y:Pro <f Z:Pro.
 }
 
 
-
-
-
-
-
-
-
-
+/*
+##Equation Results##
+((Y:Pro<f[cong]Z:Pro) ==> forAll[X:Test]((X:Test||[a, b]Y:Pro)<t[cong](X:Test||[a, b]Z:Pro)))
+	Simulations passed: 1521/1521 (implies short circuit ass/conc 1449/0) 
+(forAll[X:Test]((X:Test||[a, b]Y:Pro)<t[cong](X:Test||[a, b]Z:Pro)) ==> (Y:Pro<f[cong]Z:Pro))
+	Simulations passed: 1521/1521 (implies short circuit ass/conc 0/72) 
+((Y:Pro<f Z:Pro) ==> forAll[X:Test]((X:Test||[a, b]Y:Pro)<t (X:Test||[a, b]Z:Pro)))
+	Simulations passed: 1521/1521 (implies short circuit ass/conc 1438/0) 
+(forAll[X:Test]((X:Test||[a, b]Y:Pro)<t (X:Test||[a, b]Z:Pro)) ==> (Y:Pro<f Z:Pro))
+	Simulations passed: 1521/1521 (implies short circuit ass/conc 0/83) 
+Compiling completed!
+Sat Nov 24 21:08:00 NZDT 2018
+*/
 
 
 

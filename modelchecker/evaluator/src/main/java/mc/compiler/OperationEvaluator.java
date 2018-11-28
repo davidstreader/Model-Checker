@@ -52,6 +52,7 @@ public class OperationEvaluator {
         reset();
         List<OperationResult> results = new ArrayList<>();
         //input  from AST
+        System.out.println("evaluateOperations processMap "+processMap.keySet());
         for (OperationNode operation : operations) {
             Result r = evaluateOperation(operation,processMap,
               interpreter,code, context,messageQueue,alpha);
@@ -85,6 +86,7 @@ public class OperationEvaluator {
                                     BlockingQueue<Object> messageQueue,
                                      Set<String> alpha) throws CompilationException, InterruptedException {
 
+        System.out.println("evaluateOperation op"+operation.myString() + " processMap "+processMap.keySet());
         Result or;
         //Galois Connection needs implication
         if (operation instanceof ImpliesNode) {

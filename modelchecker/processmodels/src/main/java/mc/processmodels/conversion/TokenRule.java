@@ -31,6 +31,8 @@ import mc.processmodels.petrinet.components.PetriNetTransition;
  *    Thus Let *t = {1,2} where edge 2->t is optional and  t* = {3,4} where edge t->4 is optional behaves:
  *       If {1,2} is marked then after t is fired {3,4} is marked.
  *       Elseif {1} is marked then after t is fired {3} is marked.
+ *  BEWARE  two transitions can have same name and (non-optional pre and post) but different onpional pre!
+ *  In this situation if either optional pre is marked ONLY the transition with the marked optional pre can fire!
  *
  * @author Jordan Smith
  * @author David Streader
@@ -116,8 +118,8 @@ if(j++> stateSizeBound) {System.out.println("\n\nTokenRule Failure Looping = "+j
 
         //System.out.println("currentMarking "+currentMarking);
       Set<PetriNetTransition> satisfiedPostTransitions = satisfiedTransitions(currentMarking); //88
-      //System.out.println("Processing "+Petrinet.marking2String(currentMarking)+
-      //" trans "+satisfiedPostTransitions.size());
+      System.out.println("Processing "+Petrinet.marking2String(currentMarking)+
+      " trans "+satisfiedPostTransitions.size());
           if (currentMarking.stream().map(x->x.isSTOP()).reduce(true,(x,y)->x&&y)) {
             markingToNodeMap.get(currentMarking).setStopNode(true);
             //System.out.println("Mark as STOP "+markingToNodeMap.get(currentMarking).getId());
@@ -131,6 +133,18 @@ if(j++> stateSizeBound) {System.out.println("\n\nTokenRule Failure Looping = "+j
 
       //System.out.println("satisfiedPostTransitions "+ satisfiedPostTransitions.size());
       for (PetriNetTransition transition : satisfiedPostTransitions) {
+  /*
+    If more than one transition is equal except for optional places
+      then if the optional places of one of them is marked  then
+           ONLY that transition can be fired!
+  */
+     Set<PetriNetTransition>  equNB =  satisfiedPostTransitions.stream().filter(x->transition.NonBlockingEqu(x)).collect(Collectors.toSet());
+     if (equNB.size() >1) {
+       if (equNB.stream().filter(tr->tr.markedBy(currentMarking)).collect(Collectors.toSet()).size() >0) {
+         if (!transition.markedBy(currentMarking))
+           continue;
+       }
+     }
         //System.out.println("  Satisfied transition "+transition.myString());
           //System.out.println("outgoing "+transition.getOutgoing().size());
          Multiset<PetriNetPlace> newMarking = HashMultiset.create(currentMarking);

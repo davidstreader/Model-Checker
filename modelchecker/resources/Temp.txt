@@ -1,27 +1,18 @@
-processes {
+processes {   
 
-C = a->b->C.
-D = a->(b->D|b->STOP).
+Test = a->a->STOP.
+Twoabs = a->b->Twoabs.
+Dx  = a->(b->Dx|a->STOP).
 
-E = a->E.
-F = a->X,X = a->X.
-
+XT = Twoabs||{a,b} Test.
+XD = Dx||{a,b} Test.
 }
 
-operation {
-//D <t C.
-//C <t D.
-//C =t D.
-D <t{cong} C.
-C !<t{cong} D.
-E <t{cong} F.
-F !<t{cong} E.
-//D <f C.
-// P <t{cong} Q.
-//Q <t{cong} P.
-} 
-equation {
+operation{
+Dx <sf{cong} Twoabs . 
+XD <t{cong}  XT.
 }
+
 
 
 

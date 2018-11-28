@@ -127,7 +127,7 @@ public class SingeltonFailureRefinement implements IOperationInfixFunction {
   flatened singleton Refusals
  */
   public  boolean singeltonPass(List<Set<String>> a1, List<Set<String>> a2, boolean cong,ErrorMessage error) {
-    //if (dfaReadySubset( a1, a2, cong, error))
+    //if (dfaReadySubset( a1, a2, cong, error))  //Not sure about this but is in Failure Refinement
       return isSFSubset( a1, a2, cong, error);
    // else return false;
   }
@@ -142,7 +142,9 @@ public class SingeltonFailureRefinement implements IOperationInfixFunction {
     return ex1.containsAll(ex2)&& ex2.containsAll(ex1);
   }
   private  boolean dfaReadySubset(List<Set<String>> a1, List<Set<String>> a2, boolean cong,ErrorMessage error) {
-    boolean b =  a1.get(1).containsAll(a2.get(1));
+    Set<String> small = a2.get(1).stream().filter(x->!Constant.externalOrEND(x)).collect(Collectors.toSet());
+
+    boolean b =  a1.get(1).containsAll(small);
     System.out.println(a2.get(1)+ " is dfaRedySubset of  "+a1.get(1) +" = " + b);
     a2.get(1).removeAll(a1.get(1));
     if (!b) error.error = "Rs{"+a2.get(1)+"}";
@@ -156,9 +158,13 @@ public class SingeltonFailureRefinement implements IOperationInfixFunction {
 
   private boolean isSFSubset(List<Set<String>> s2, List<Set<String>> s1, boolean cong,ErrorMessage error) {
     boolean out = true;
-    if (cong) out =  (s1.get(0).containsAll(s2.get(0))); //&& equivExternal(s1.get(1),s2.get(1))
+    //see returning to root in cribsheet
+    Set<String> small = s2.get(0).stream().filter(x->!Constant.external(x)).collect(Collectors.toSet());
+
+    System.out.println("small "+small);
+    if (cong) out =  (s1.get(0).containsAll(small)); //&& equivExternal(s1.get(1),s2.get(1))
     else {
-      for (String lab :s2.get(0)) {
+      for (String lab :small) {
         if (Constant.external(lab)) continue;
         if (!s1.get(0).contains(lab)) {
           error.error = "Ref{"+lab+"}";

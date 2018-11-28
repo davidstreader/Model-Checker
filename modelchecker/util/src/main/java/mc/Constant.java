@@ -9,7 +9,7 @@ public class Constant {
     public static final String ACTIVE = "^";
     public static final String EPSILON  = "\u03B5";  // empty trace
     public static final String STOP = "STOP";
-    public static final String END = "END";
+    public static final String END = "END";  // only for non cong but completeTrace
     public static final String ERROR = "ERROR";
     public static final String Start = "Start";
     public static final String Quiescent = "Quiescent";
@@ -24,12 +24,14 @@ public class Constant {
     public static boolean externalOrEND(String lab) {
         return external(lab) || lab.equals(Constant.END);
     }
-        public static boolean external(String lab) {
+
+    public static boolean external(String lab) {
 
         return lab.equals(Constant.DEADLOCK) ||
           lab.equals(Constant.STOP) ||
           lab.equals(Constant.Start) ||
-          lab.equals(Constant.ERROR);
+          lab.equals(Constant.ERROR)||
+          lab.equals(Constant.END);
     }
     public static boolean observable(String lab) {
 

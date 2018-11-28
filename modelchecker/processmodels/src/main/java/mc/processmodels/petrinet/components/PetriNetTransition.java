@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.google.common.collect.Multiset;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -98,6 +99,9 @@ public class PetriNetTransition extends ProcessModelObject {
     return null;
   }
 
+  public boolean markedBy(Multiset<PetriNetPlace> mark){
+    return mark.containsAll(pre());
+  }
   public Set<PetriNetPlace> pre() {
     //System.out.println(incoming.size());
     Set<PetriNetPlace> out = new HashSet<>();
@@ -120,12 +124,38 @@ public class PetriNetTransition extends ProcessModelObject {
     return incoming.stream()
             .filter(ed->!ed.getOptional())
             .map(PetriNetEdge::getFrom)
-
             .map(PetriNetPlace.class::cast)
             .distinct()
             .collect(Collectors.toSet());
+  }
+  public Set<PetriNetPlace> postNonBlocking() {
+    return outgoing.stream()
+      .filter(ed->!ed.getOptional())
+      .map(PetriNetEdge::getTo)
+      .map(PetriNetPlace.class::cast)
+      .distinct()
+      .collect(Collectors.toSet());
+  }
+  public boolean NonBlockingEqu(PetriNetTransition tr) {
+    Set<String> pre = preNonBlocking().stream().
+      map(PetriNetPlace::getId).
+      collect(Collectors.toSet());
+    Set<String> trPre = tr.preNonBlocking().stream().
+      map(PetriNetPlace::getId).
+      collect(Collectors.toSet());
 
-  }public Set<String> optionalOwners() {  //TokenRule
+    Set<String> post = postNonBlocking().stream().
+      map(PetriNetPlace::getId).
+      collect(Collectors.toSet());
+    Set<String> trPost = tr.postNonBlocking().stream().
+      map(PetriNetPlace::getId).
+      collect(Collectors.toSet());
+
+    return pre.equals(trPre) && post.equals(trPost) && getLabel().equals(tr.getLabel());
+  }
+
+
+  public Set<String> optionalOwners() {  //TokenRule
     return incoming.stream()
             .filter(ed->ed.getOptional())
             .map(PetriNetEdge::getFrom)

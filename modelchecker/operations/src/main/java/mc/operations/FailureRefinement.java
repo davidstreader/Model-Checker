@@ -107,8 +107,9 @@ public class FailureRefinement implements IOperationInfixFunction {
 /*
   trace subset - takes the union of the ready sets as the dfa ready set
   needed to compute trace equality  2 a subset of 1
+  Used again in Singelton Failure?
  */
-  private  boolean refusalSubSet(List<Set<String>> a1, List<Set<String>> a2, boolean cong, ErrorMessage error) {
+  public  boolean refusalSubSet(List<Set<String>> a1, List<Set<String>> a2, boolean cong, ErrorMessage error) {
 
     System.out.println("\nrefusalSubSet");
 
@@ -126,6 +127,8 @@ public class FailureRefinement implements IOperationInfixFunction {
     Set<String> alpha = new TreeSet<>();
     alpha.addAll(a1Union);
     alpha.addAll(a2Union);
+    //See Return to Root in Cribsheet
+    a2Union = a2Union.stream().filter(x->!Constant.externalOrEND(x)).collect(Collectors.toSet());
 
     System.out.println("is a2U "+a2Union+"  a sub set of a1U "+a1Union);
     if (!a1Union.containsAll(a2Union)) {
@@ -160,11 +163,11 @@ public class FailureRefinement implements IOperationInfixFunction {
       breakto:
       for (Set<String> aa1 : a1) {     // exists as1 in a1 such that   (B)
 
-        if (!cong) {
+        //if (!cong) { // Note look at Return to Root in Cribsheet
           as1 = aa1.stream().filter(x->!Constant.externalOrEND(x)).collect(Collectors.toSet());
-        } else{
-          as1 = aa1;
-        }
+        //} else{
+        //  as1 = aa1;
+        //}
         unionA12.addAll(as1);
         System.out.println("   is as2 " + as2 + " superset of   as1 " + as1);
         if (as2.containsAll(as1)) {    //  as1 is a  subset of as2

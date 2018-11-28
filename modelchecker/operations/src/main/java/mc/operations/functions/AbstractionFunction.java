@@ -7,7 +7,6 @@ import com.microsoft.z3.Context;
 import java.util.*;
 import java.util.stream.Collectors;
 import mc.Constant;
-import mc.TraceType;
 import mc.compiler.Guard;
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessFunction;
@@ -248,7 +247,7 @@ public class AbstractionFunction implements IProcessFunction {
       if (symbolic) {
         Guard newAbstractionEdgeGuard;
         if (fromGuard != null && hiddenGuard != null) {
-          outGuard = Expression.combineGuards(fromGuard, hiddenGuard, context);
+          outGuard = Expression.automataPreConditionHoareLogic(fromGuard, hiddenGuard, context);
         } else if (fromGuard != null) {
           outGuard = fromGuard;
         } else {
@@ -319,7 +318,7 @@ public class AbstractionFunction implements IProcessFunction {
       if (symbolic) {
         Guard newAbstractionEdgeGuard;
         if (toGuard != null && hiddenGuard != null) {
-          newAbstractionEdgeGuard = Expression.combineGuards(hiddenGuard, toGuard, context);
+          newAbstractionEdgeGuard = Expression.automataPreConditionHoareLogic(hiddenGuard, toGuard, context);
         } else if (toGuard != null) {
           newAbstractionEdgeGuard = toGuard;
         } else {
@@ -483,7 +482,7 @@ public class AbstractionFunction implements IProcessFunction {
       return null;
     }
     if (fromGuard != null && toGuard != null) {
-      outGuard = Expression.combineGuards(toGuard, fromGuard, context);
+      outGuard = Expression.automataPreConditionHoareLogic(toGuard, fromGuard, context);
     } else if (toGuard != null) {
       outGuard = toGuard;
     } else {

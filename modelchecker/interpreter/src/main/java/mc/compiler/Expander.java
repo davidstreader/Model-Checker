@@ -49,7 +49,7 @@ public class Expander {
     globalVariableMap = ast.getVariableMap();
 //expand each process
     List<ProcessNode> processes = ast.getProcesses();
-    System.out.println("processes cnt "+processes.size());
+    //System.out.println("processes cnt "+processes.size());
     for (ProcessNode process : processes) {
       expand(process, messageQueue, context);
     }
@@ -106,8 +106,8 @@ public class Expander {
         }
       }
     }
-    System.out.println("hidden "+symbolicVariables);
-    System.out.println("idMap  "+ identMap.keySet().stream().map(x->x+"->"+identMap.get(x)).collect(Collectors.joining()));
+    //System.out.println("hidden "+symbolicVariables);
+    //System.out.println("idMap  "+ identMap.keySet().stream().map(x->x+"->"+identMap.get(x)).collect(Collectors.joining()));
     ASTNode root;
   //  if (symbolicVariables.size()==0)
       root = expand(process.getProcess(), variableMap, context);
@@ -122,7 +122,7 @@ public class Expander {
     process.setProcess(root);
     List<LocalProcessNode> localProcesses = expandLocalProcesses(process.getLocalProcesses(), variableMap, context);
     process.setLocalProcesses(localProcesses);
-    System.out.println("Ending Expand "+process.myString());
+    //System.out.println("Ending Expand "+process.myString());
     return process;
   }
 
@@ -551,7 +551,7 @@ public class Expander {
     } else {
       actions.add(processVariables(action, variableMap, getFullRangeLocation(ranges), context));
     }
-    System.out.println("expanding "+action+" into "+actions);
+    //System.out.println("expanding "+action+" into "+actions);
     return actions;
   }
 
@@ -579,7 +579,7 @@ public class Expander {
  */
   private String processVariables(String string, Map<String, Object> variableMap, Location location, Context context) throws CompilationException, InterruptedException {
     Map<String, Integer> integerMap = constructIntegerMap(variableMap);
-    System.out.println("integer Map "+integerMap.entrySet().stream().map(x->x.getKey()+"->"+x.getValue()+", ").collect(Collectors.joining()));
+    //System.out.println("integer Map "+integerMap.entrySet().stream().map(x->x.getKey()+"->"+x.getValue()+", ").collect(Collectors.joining()));
     //Construct a pattern with all hidden variables removed.
     String d = string;
     Pattern pattern = Pattern.compile(VAR_PATTERN + symbolicVariables.stream().map(s -> "(?<!\\$" + s + ")").collect(Collectors.joining()) + "\\b");
@@ -588,10 +588,10 @@ public class Expander {
       Matcher matcher = pattern.matcher(string);
       if (matcher.find()) {
         String variable = matcher.group();
-        System.out.println("FOUND "+variable);
+        //System.out.println("FOUND "+variable);
         // check if the variable is a global variable
         if (globalVariableMap.containsKey(variable)) {
-          System.out.println(" in globalVariableMap");
+          //System.out.println(" in globalVariableMap");
           Expr expression = globalVariableMap.get(variable);
           if (containsHidden(expression)) {
             string = string.replaceAll(Pattern.quote(variable) + "\\b", "" + ExpressionPrinter.printExpression(expression).replace("$", ""));
@@ -600,10 +600,10 @@ public class Expander {
             string = string.replaceAll(Pattern.quote(variable) + "\\b", "" + result);
           }
         } else if (integerMap.containsKey(variable)) {
-          System.out.println(" in variableMap");
+          //System.out.println(" in variableMap");
           string = string.replaceAll(Pattern.quote(variable) + "\\b", "" + integerMap.get(variable));
         } else if (variableMap.containsKey(variable)) {
-          System.out.println(" Not integer in variableMap");
+          //System.out.println(" Not integer in variableMap");
           string = string.replaceAll(Pattern.quote("[" + variable + "]"), "" + variableMap.get(variable));
         } else {
           throw new CompilationException(Expander.class, "Unable to find a variable replacement for: " + variable, location);
@@ -613,7 +613,7 @@ public class Expander {
         break;
       }
     }
-    System.out.println("processVariables "+ d+" -> "+string);
+    //System.out.println("processVariables "+ d+" -> "+string);
     return string;
   }
 

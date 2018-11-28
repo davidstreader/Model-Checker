@@ -61,21 +61,18 @@ public class Interpreter {
                                              boolean symb)
     throws CompilationException, InterruptedException {
     this.alpha = alpha;
-    System.out.println("*** Interp \n" + ast.myString());
-    System.out.println("*** Interp " );
+    System.out.println("*** Interp START " + ast.myString());
     StringBuilder sb = new StringBuilder();
     //System.out.print("Who calls interpret Y? ");//Throwable t = new Throwable();t.printStackTrace();
     Map<String, ProcessModel> processMap = new LinkedHashMap<>();  //already built proceesses
 // build all  processes including global sub processes
 //    .getType tells us which to build ** .identifier its name  ** .process its definition
     List<ProcessNode> processes = ast.getProcesses();
-    //Collections.sort(processes,(x,y)->{return x.getDomain().compareTo(y.getDomain());});
-    Collections.sort(processes,Comparator.comparing(ProcessNode::getDomain));
+    //Collections.sort(processes,Comparator.comparing(ProcessNode::getDomain));
     //System.out.println("AST processes "+ processes.stream().map(x->x.getIdentifier()).
     //  reduce("{",(x,y)->x+" "+y)+"}");
     for (ProcessNode process : processes) { //BUILD ALL PROCESSES
-      System.out.println("\n\n++++++Interpreter Building " + process.myString()+"\n\n"); // + " ... "+ process.getType().toString());
-      //System.out.println("Process "+process.myString());
+      System.out.println("++++++Interpreter Building " + process.myString()+"\n"); // + " ... "+ process.getType().toString());
       ProcessModel model = null;
       model = new MultiProcessModel(process.getIdentifier());
       model.setLocation(process.getLocation());  //location on screen
@@ -103,7 +100,7 @@ public class Interpreter {
 
     }
     //System.out.println("*** Interp " + this.alpha);
-    //System.out.println("End of inteterpret Y ");
+    System.out.println("End of inteterpret  "+ processMap.keySet());
     messageQueue.add(new LogMessage("Built: "+ sb.toString(),  true,
       false,
       null,

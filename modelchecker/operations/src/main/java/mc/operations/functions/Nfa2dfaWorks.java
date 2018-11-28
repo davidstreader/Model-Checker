@@ -43,23 +43,25 @@ public class Nfa2dfaWorks {
         nfa.deadNode();
         if (ndn.isSTOP()) {
           nfa.addEdge(Constant.STOP, ndn, nfa.deadNode(), null, true, false);
+        //  nfa.addEdge(Constant.END, ndn, nfa.deadNode(), null, true, false);
           //System.out.println("adding STOP to nfa "+ndn.myString());
         }
         if (ndn.isStartNode()) {
           nfa.addEdge(Constant.Start, ndn, nfa.deadNode(), null, true, false);
         }
-        if (ndn.isERROR()) {
+        if (tt.equals(TraceType.CompleteTrace) && ndn.isERROR()) {
           nfa.addEdge(Constant.ERROR, ndn, nfa.deadNode(), null, true, false);
+      //  //  nfa.addEdge(Constant.END, ndn, nfa.deadNode(), null, true, false);
         }
 
       } else
         if (tt.equals(TraceType.CompleteTrace) && (ndn.isSTOP() || ndn.isERROR())) {
-        AutomatonEdge ed = nfa.addEdge(Constant.END, ndn, nfa.deadNode(), null, true, false);
+        nfa.addEdge(Constant.END, ndn, nfa.deadNode(), null, true, false);
        //System.out.println("adding edge to nfa "+ed.myString());
       }  //END is dummy edge to enforce complete traces
 
       if (tt.equals(TraceType.QuiescentTrace) && ndn.isQuiescent()) {
-        AutomatonEdge ed = nfa.addEdge(Constant.Quiescent, ndn, nfa.deadNode(), null, true, false);
+        nfa.addEdge(Constant.Quiescent, ndn, nfa.deadNode(), null, true, false);
         //System.out.println("adding edge to nfa "+ed.myString());
       }
 // add empty trace

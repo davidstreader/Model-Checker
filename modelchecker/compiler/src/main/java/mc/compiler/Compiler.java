@@ -116,12 +116,12 @@ public class Compiler {
     Map<String, ProcessModel> processMap = interpreter.interpret(ast,
         messageQueue, z3Context,alpha,symb.get());
 
-    //System.out.println("     **COMPILER** before operation evaluation "+processMap.keySet());
+    System.out.println("     **COMPILER** before operation evaluation "+processMap.keySet());
 
     List<OperationResult> opResults = evaluator.evaluateOperations(
       ast.getOperations(), processMap,
         interpreter, code, z3Context, messageQueue, alpha);
-   //System.out.println("     **COMPILER** before equation evaluation "+processMap.size()+ " op impRes "+impResults.size());
+    System.out.println("     **COMPILER** before equation evaluation "+processMap.keySet());
 
     // still has memory problem with many permutations
     this.eqEvaluator = new EquationEvaluator(); // need to reset equationEvaluator else !!!!

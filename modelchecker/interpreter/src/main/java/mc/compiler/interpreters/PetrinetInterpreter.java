@@ -117,7 +117,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     this.globalVarMap = globalVarMap;
     //called by Interpreter and  Returns a ProcessModel that the Interpreter adds to the processMap
     this.alpha = alpha;
-    System.out.println("Petri interpret " + processNode.getIdentifier() + " processmap  " + asString(processMap));
+    System.out.println(">>> PetriInterpret " + processNode.getIdentifier() + " processmap  " + asString(processMap));
 
     this.context = context;
     variableList = new HashSet<>();
@@ -131,8 +131,8 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     //ABOVE NOT USED
 //below pushes a petri net onto the process stack
     String what = processNode.getProcess().myString();
-    System.out.println("**Petriinterpret**Calling  " +
-      processNode.getIdentifier() + " " + what + " localP " + localProcessesToCome + "\n");
+   /* System.out.println("**Petriinterpret**Calling  " +
+      processNode.getIdentifier() + " " + what + " localP " + localProcessesToCome + "\n");*/
 //Needed for Gluing
     //interpretProcess(processNode.getProcess(), identifier);
     //Petrinet petrinet = processStack.pop().reId("");
@@ -144,12 +144,12 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     if (symb) {
       List<String> bits = getBits(what);
       for (LocalProcessNode lpn : ((ProcessNode) processNode).getLocalProcesses()) {
-        System.out.println("\n  ***LP " + lpn.myString());
+        System.out.println("  ***LP " + lpn.myString());
         System.out.println("bits " + bits.toString()+" id "+lpn.getIdentifier());
         vars = lpn.getRanges().getRanges().stream().map(x -> x.getVariable()).collect(Collectors.toList());
         Petrinet pn = interpretASTNode(lpn.getProcess(), "fake");
         pn.getAllRoots().stream().forEach(x -> x.getReferences().add(lpn.getIdentifier()));
-        System.out.println("\nLocalProcess "+pn.myString("edge"));
+        System.out.println("    LocalProcess "+pn.myString("edge"));
         int i = 1;
         for (String var : vars) {
           eval.put(var, bits.get(i++));
@@ -159,8 +159,6 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     } else {
       localProcesses = new TreeMap<>();
     }
-    System.out.println("\n**Petriinterpret**Calling  " +
-      processNode.getIdentifier() + " " + processNode.getProcess().myString() + " localP " + localProcesses.keySet() + "\n");
 
     Petrinet petrinet = interpretProcess(processNode.getProcess(), identifier, symb, localProcesses);
     petrinet.setRootEvaluation(eval);
@@ -185,7 +183,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     if (processNode.hasHiding()) {
       processHiding(petrinet, processNode.getHiding());
     }
-    System.out.println("\nXinterpreting " + processNode.myString() + " Xreturns  " + petrinet.myString("edge"));
+    System.out.println("<<<   End of PetriNetInterpreting " + processNode.myString());// + "\n returns  " + petrinet.myString("edge"));
 
     return petrinet;
   }
@@ -301,6 +299,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
         //System.out.println("prior to tree2net "+pn.myString("edge"));
         //tree2net should link them
         pn = tree2net(pn);
+        processMap.put(pn.getId(),pn);
         return pn;
       }
       //System.out.println("got Net "+processStack.peek().getId()+" from Map");
@@ -381,7 +380,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
    */
   private Petrinet tree2net(Petrinet petri) throws CompilationException {
     // filter ref or fromRef places
-    System.out.println("\nTree2Net START"+petri.myString("edge"));
+    //System.out.println("\nTree2Net START"+petri.myString("edge"));
     Set<PetriNetPlace> plsRef =
       petri.getPlaces().values().stream().
         filter(x -> x.getReferences().size() > 0).collect(Collectors.toSet());
@@ -398,7 +397,10 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
       for (PetriNetPlace plFrom : plsFrom) {
         //System.out.println("From "+plFrom.myString()+" "+plFrom.getIncoming().size()+" "+plFrom.getOutgoing().size());
         for (String from : plFrom.getLeafRef()) {
-          String frm = from.substring(0,from.indexOf(":"));
+          String frm = from;
+          if(from.contains(":"))
+           frm = from.substring(0,from.indexOf(":"));
+
           //System.out.println("from "+from+"  frm "+frm);
           if (pl1.getReferences().contains(from)||pl1.getReferences().contains(frm)) {
             //System.out.println("Joining "+pl1.getId()+" "+plFrom.getId());
@@ -420,7 +422,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     petri.getPlaces().values().stream().
       filter(x -> x.getLeafRef().size() > 0).forEach(x -> x.setLeafRef(new LinkedHashSet<>()));
     //System.out.println("Tree2Net "+petri.myString()+"\n");
-    System.out.println("Tree2Net END"+petri.myString("edge"));
+    //System.out.println("Tree2Net END"+petri.myString("edge"));
     return petri;
   }
 
@@ -490,7 +492,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     //functions  nfa2dfa, prune, simp, abs,  .... are function on automata!
     else if (currentNode instanceof FunctionNode) {
       info = ((FunctionNode) currentNode).getFunction();
-      //System.out.println("PetriInterp alpha "+alpha);
+      System.out.println("PetriInterp Fun "+((FunctionNode) currentNode).myString());
       petri = interpretFunction((FunctionNode) currentNode, petriId, alpha);
     }
     // tokenRule and ownersRule
@@ -709,32 +711,37 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     throws CompilationException, InterruptedException {
     String id = identifier.getIdentifier();
     String pid = id + ":" + identifier.getDomain();
-    System.out.println("interpet Start " + id);
+   //System.out.println("interpretIdentifier Start " + pid);
+    Map<String, String> eval = new TreeMap<>();
+    Petrinet pn;
     if (symb) {
       List<String> bits = identifier.getBits();
-      if (bits.size() > 0) {
+      if (bits.size() > 1) {
         //  a->B[x+1] the value "x+1" is an assignment on incoming edge OR Root
         id = bits.get(0);
+        int i = 1;
+        for (String var : vars) {
+          String next = bits.get(i++);
+          if (globalVarMap.containsKey(next))
+            next = ExpressionPrinter.printExpression(globalVarMap.get(next));
+          eval.put(var, next);
+        }
+        pn = Petrinet.stopNet(pid);
+        pn.setRootEvaluation(eval);
+      } else {
+        //System.out.println("processMap "+processMap.keySet());
+        if (processMap.containsKey(identifier))
+           pn = (Petrinet) processMap.get(identifier);
+        else {
+          System.out.println(identifier+ " not found in processMap");
+          Throwable t = new Throwable();
+          t.printStackTrace();
+          pn = null;
+        }
       }
-      Map<String, String> eval = new TreeMap<>();
-      int i = 1;
-      for (String var : vars) {
-        String next = bits.get(i++);
-        if (globalVarMap.containsKey(next))
-             next = ExpressionPrinter.printExpression(globalVarMap.get(next));
-        eval.put(var,next );
-      }
-      //System.out.println("eval " + eval.toString());
-      pid = id + ":" + identifier.getDomain();
-      //System.out.println("interpet Start " + pid);
-
-      //System.out.println("returning stop " + pid);
-      Petrinet pn = Petrinet.stopNet(pid);
-      pn.setRootEvaluation(eval);
       return pn;
-
-    }
-
+    }  // not symbolic
+    //System.out.println("pid "+pid+" processMap "+processMap.keySet());
     ProcessModel model = processMap.get(pid);
     Petrinet copy = null;
     if (model instanceof MultiProcessModel) {
@@ -823,39 +830,46 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
 
   /*
   The application of some dynamically loaded functions have access to Z3 contex
-  May be automata to automata but with PetriNet input --
-       when stacked   simp(abs(-))  ap2bc(bc2ap(-)) will best have automata input
+  most functions ar defined as automata to automata and not processed here
+    Currently on expand  is a Net function (symbolicNet-> less symbolicNet)
 
    */
   private Petrinet interpretFunction(FunctionNode func, String petriId, Set<String> alpha)
     throws CompilationException, InterruptedException {
-    //System.out.println("PetriInterp function "+func.getFunction()+ alpha+ " " + petri.getId());
+    Petrinet processed;
+    //System.out.println(func.myString());
+    if (func.getProcesses().get(0) instanceof IdentifierNode) {
+      String pId = ((IdentifierNode) func.getProcesses().get(0)).getIdentifier();
+      //System.out.println("PetriInterp function " + func.getFunction() + " " + pId);
 
-    List<Petrinet> models = new ArrayList<>();
-    for (ASTNode p : func.getProcesses()) {
-      //interpretProcess(p, petriId + ".fn");
-      //models.add(processStack.pop());
-      //replaced by  line below*/
+      List<Petrinet> models = new ArrayList<>();
+   /* for (ASTNode p : func.getProcesses()) {
       models.add(interpretASTNode(p)); //RECURSIVE CALL the process is an ASTNode
+    } */
+      if (!pId.contains(":")) pId = pId + ":*";
+      //System.out.println("pm "+processMap.keySet()+" pid "+pId);
 
-    }
+      models.add((Petrinet) ((MultiProcessModel)processMap.get(pId)).getProcess(ProcessType.PETRINET));
+      if (models.isEmpty()) {
+        throw new CompilationException(getClass(),
+          "Expecting a petrinet, received an undefined process.", func.getLocation());
+      }
 
-    if (models.isEmpty()) {
-      throw new CompilationException(getClass(),
-        "Expecting a petrinet, received an undefined process.", func.getLocation());
+      Petrinet[] petris = models.stream().map(Petrinet.class::cast).toArray(Petrinet[]::new);
+      //System.out.println(petris.length);
+      Set<String> alphaFlags = new TreeSet<>();
+      alphaFlags.addAll(alpha);  // add the listening events for revAP2BC
+      alphaFlags.addAll(func.getFlags());
+      processed = instantiateClass(functions.get(func.getFunction()))
+        .compose(pId , alphaFlags, context, petris);
+      if (processed == null) {
+        throw new CompilationException(getClass(),
+          "Returned null. Check if this function should only be used in operations and equations!", func.getLocation());
+      }
+    } else {
+      processed = null;
     }
-
-    Petrinet[] petris = models.stream().map(Petrinet.class::cast).toArray(Petrinet[]::new);
-    Set<String> alphaFlags = new TreeSet<>();
-    alphaFlags.addAll(alpha);  // add the listening events for revAP2BC
-    alphaFlags.addAll(func.getFlags());
-    Petrinet processed = instantiateClass(functions.get(func.getFunction()))
-      .compose(petriId + ".fn", alphaFlags, context, petris);
-    if (processed == null) {
-      throw new CompilationException(getClass(),
-        "Returned null. Check if this function should only be used in operations and equations!", func.getLocation());
-    }
-    //   //System.out.println("processed FUNCTION "+processed.myString());
+    //System.out.println("PROCESSED FUNCTION returns "+processed.myString("edge"));
     //addPetrinet( processed, petri);
     //System.out.println("interpret function END "+func.getFunction()+ alpha+ " " + processed.getId());
     return processed;
