@@ -37,7 +37,7 @@ public class QuiescentRefinement implements IOperationInfixFunction {
     return "<q";
   }
   @Override
-  public String getOperationType(){return "automata";}
+  public String getOperationType(){return Constant.AUTOMATA;}
   @Override
   public Collection<String> getValidFlags(){
   return ImmutableSet.of(Constant.UNFAIR, Constant.FAIR, Constant.CONGURENT);
@@ -59,12 +59,13 @@ public class QuiescentRefinement implements IOperationInfixFunction {
   @Override
   public boolean evaluate(Set<String> alpha, Set<String> flags, Context context,
                           Stack<String> trace, Collection<ProcessModel> processModels) throws CompilationException {
-    //System.out.println("\nQUIESCENT " + alpha);
+    //System.out.println("\nQUIESCENT " +getNotation() +"  "+ alpha);
     boolean cong = flags.contains(Constant.CONGURENT);
     //ProcessModel[] pms =  processModels.toArray();
     Automaton a1 = ((Automaton) processModels.toArray()[0]).copy();
     Automaton a2 = ((Automaton) processModels.toArray()[1]).copy();
-    //System.out.println("****Quiescent a1 "+a1.readySets2String(cong));
+   //System.out.println("****Quiescent input a1 "+a1.myString());
+   //System.out.println("****Quiescent input a2 "+a2.myString());
     AbstractionFunction abs = new AbstractionFunction();
     a1 = abs.GaloisBCabs(a1.getId(), flags, context, a1);
     a2 = abs.GaloisBCabs(a2.getId(), flags, context, a2); //end states marked

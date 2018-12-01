@@ -72,25 +72,26 @@ public class GaloisAP2BC implements IProcessFunction {
   @Override
   public Automaton compose(String id, Set<String> flags, Context context, Automaton... automata)
     throws CompilationException {
-    Automaton aut = automata[0].reId("fA2B");
+    Automaton aut = automata[0].copy();
+    int newLabelNode = aut.getNodeCount()+1;
     Set<String> owns = aut.getOwners();
     if (owns.size() != 1) {
-      System.out.println("Warning GALOIS on automata with owners " + owns);
+      System.out.println("Warning GALOIS on automata with owners " + owns+" newNode "+newLabelNode);
     }
     //aut.reId("fA2B");
     //aut = aut.copy();
-    System.out.println("\n\n******** ap2bc AUTOMATON " + aut.myString());
+    //System.out.println("\n ******** AP2BC input " + aut.myString());
 
 
     Set<String> alph = aut.getAlphabet().stream().filter(x -> x.endsWith(Constant.ACTIVE)).collect(Collectors.toSet());
 
     for (AutomatonNode nd : aut.getNodes()) {
       for (String lab : alph) {
-        System.out.println("node  "+nd.getId()+" "+nd.getOutgoingEdges().size()+  " lab "+lab);
+        //System.out.println("node  "+nd.getId()+" "+nd.getOutgoingEdges().size()+  " lab "+lab);
         //String prefix = lab.substring(0,lab.length()-1);
         boolean found = false;
         for (AutomatonEdge ed : nd.getOutgoingEdges()) {
-          System.out.println("  edge "+ed.myString());
+          //System.out.println("  edge "+ed.myString());
           if (ed.getLabel().equals(lab)) {
             found = true;
             break;
@@ -101,6 +102,7 @@ public class GaloisAP2BC implements IProcessFunction {
           String prefix = lab.substring(0, lab.length() - 1);
           //System.out.println("Pingo");
           AutomatonNode x = aut.addNode();
+          x.setLabelNumber(newLabelNode++);
           AutomatonEdge edt =
             aut.addEdge(prefix + ".t" + Constant.BROADCASTSinput, nd, x, new Guard(), false, false);
           edt.setEdgeOwners(owns);
@@ -114,8 +116,8 @@ public class GaloisAP2BC implements IProcessFunction {
     //System.out.println("HALF WAY " + aut.myString() + "\n");
 
     Set<AutomatonEdge> todo = aut.getEdges().stream().collect(Collectors.toSet());
-    System.out.println(todo.
-      stream().map(x -> x.myString()).reduce("", (x, y) -> x + y + "\n"));
+    /*System.out.println(todo.
+      stream().map(x -> x.myString()).reduce("", (x, y) -> x + y + "\n")); */
 
     for (AutomatonEdge edge : todo) {
       //System.out.println("*1* " + edge.myString());
@@ -126,6 +128,7 @@ public class GaloisAP2BC implements IProcessFunction {
       //System.out.println("*2* " + edge.myString());
       String prefix = lab;
       AutomatonNode x = aut.addNode();
+      x.setLabelNumber(newLabelNode++);
       if (lab.endsWith(Constant.ACTIVE)) { //Active
         //x.copyProperties(tr.preOne());
         prefix = lab.substring(0, lab.length() - 1);
@@ -152,13 +155,14 @@ public class GaloisAP2BC implements IProcessFunction {
       }
 
     }
-    System.out.println("GaloisAP2BC Returns " + aut.getId());
+    aut.cleanNodeLables();
+    //System.out.println("GaloisAP2BC Returns " + aut.myString());
     return aut;
   }
 
   @Override
   public Petrinet compose(String id, Set<String> flags, Context context, Petrinet... petrinets) throws CompilationException {
-    System.out.println("GaloisAP2BC Petriten2Automata");
+    //System.out.println("GaloisAP2BC Petriten2Automata");
     Automaton a = TokenRule.tokenRule(petrinets[0]);
     Automaton[] auts = new Automaton[1];
     auts[0] = a;
@@ -167,76 +171,6 @@ public class GaloisAP2BC implements IProcessFunction {
     return OwnersRule.ownersRule(aout);
   }
 
-  public Petrinet OLDcompose(String id, Set<String> flags, Context context, Petrinet... petrinets) throws CompilationException {
-    System.out.println("GaloisAP2BC PETRINET");
-
-    //Automaton a = TokenRule.tokenRule(petrinets[0]); // IN buildFromPetri
-    Petrinet p = petrinets[0].reId("");
-    MultiProcessModel model = buildmpmFromPetri(p);
-    Map<Multiset<PetriNetPlace>, AutomatonNode> markingToNode = model.getProcessNodesMapping().getMarkingToNode();
-
-    return composeM(id, flags, context, markingToNode, ((Petrinet) model.getProcess(ProcessType.PETRINET)));
-  }
-
-  /**
-   * Automata
-   * Replace b with  R-b.t!->x,  x-b?->E,
-   * Replace R-b^->E  with  R-b.t?->y,y-b.r!->R, y-b!->E
-   * If N-/b^-> then    Add N-b.t?->x, x-b.r!->N
-   * so b.t? always enabled
-   *
-   * @param id        the id of the resulting petrinet
-   * @param flags     the flags given by the function (e.g. {@code unfair} in {@code abs{unfair}(A)}
-   * @param context
-   * @param petrinets the variable number of petrinets taken in by the function
-   * @return the resulting petrinet of the operation
-   * @throws CompilationException when the function fails
-   */
-
-  public Petrinet composeM(String id, Set<String> flags, Context context, Map<Multiset<PetriNetPlace>, AutomatonNode> markingToNode, Petrinet... petrinets) throws CompilationException {
-    Petrinet petrinet = petrinets[0];
-    System.out.println("******** ap2bc PETRI " + petrinet.myString());
-    for (PetriNetPlace pl : petrinet.getPlaces().values()) {
-      // only for
-    }
-
-    Set<PetriNetTransition> todo = petrinet.getTransitions().values().stream().collect(Collectors.toSet());
-    System.out.println(todo.
-      stream().map(x -> x.myString()).reduce("", (x, y) -> x + y + "\n"));
-
-    for (PetriNetTransition tr : todo) {
-      //System.out.println("*2* "+tr.myString());
-      String lab = tr.getLabel();
-      if (lab.endsWith(Constant.ACTIVE)) {                //Active
-        String prefix = lab.substring(0, lab.length() - 1);
-        PetriNetPlace x = petrinet.addPlace();
-        Set<PetriNetPlace> xset = new HashSet<>();
-        xset.add(x);
-        //x.copyProperties(tr.preOne());
-        petrinet.addTransition(tr.pre(), prefix + ".t" + Constant.BROADCASTSinput, xset);
-        petrinet.addTransition(xset, prefix + ".r" + Constant.BROADCASTSoutput, tr.pre());
-        //petrinet.addTransition(xset, prefix + ".r?", tr.pre() );
-        petrinet.addTransition(xset, prefix + Constant.BROADCASTSoutput, tr.post());
-        petrinet.removeTransition(tr);
-        //System.out.println("1."+petrinet.myString());
-      } else if (!(lab.endsWith("!") || lab.endsWith("?"))) {  //Passive
-        //String prefix = lab.substring(0,lab.length()-1);
-        PetriNetPlace y = petrinet.addPlace();
-        Set<PetriNetPlace> yset = new HashSet<>();
-        yset.add(y);
-        //y.copyProperties(tr.preOne());
-        petrinet.addTransition(tr.pre(), lab + ".t" + Constant.BROADCASTSoutput, yset);
-        petrinet.addTransition(yset, lab + Constant.BROADCASTSinput, tr.post());
-        petrinet.removeTransition(tr);
-        //System.out.println("2."+petrinet.myString());
-      }
-
-    }
-
-    //System.out.println("ap2bc end "+petrinet.myString());
-    return petrinet;
-
-  }
 
   @Override
   public MultiProcessModel compose(String id, Set<String> flags, Context context, MultiProcessModel... multiProcess) throws CompilationException {
@@ -244,7 +178,7 @@ public class GaloisAP2BC implements IProcessFunction {
     Petrinet petrinet = (Petrinet) multiProcess[0].getProcess(ProcessType.PETRINET);
     Map<Multiset<PetriNetPlace>, AutomatonNode> markingToNode =
       multiProcess[0].getProcessNodesMapping().getMarkingToNode();
-    this.composeM(id, flags, context, markingToNode, petrinet);
+  //  this.composeM(id, flags, context, markingToNode, petrinet);
     return model;
   }
 

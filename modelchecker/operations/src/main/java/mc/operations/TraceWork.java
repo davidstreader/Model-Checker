@@ -52,11 +52,12 @@ public class TraceWork {
                           SubSetEval eval) throws CompilationException {
 //Called directly from Trace Refinement and with some preprocessing from Quiescent Refinement
     boolean cong = flags.contains(Constant.CONGURENT);
+    //System.out.println("TraceWorks START");
     if (processModels.iterator().next() instanceof Automaton) {
       Nfa2dfaWorks nfa2dfaworks = new Nfa2dfaWorks();
       ArrayList<ProcessModel> dfas = new ArrayList<>();
       int i = 1;
-      for (ProcessModel pm : processModels) {
+      for (ProcessModel pm : processModels) { i++;//display only
         Automaton a;
         if (flags.contains(Constant.FAIR) || flags.contains(Constant.UNFAIR)) {
           AbstractionFunction absFun = new AbstractionFunction();
@@ -68,17 +69,11 @@ public class TraceWork {
         try {
           //System.out.println("TraceWorks nfa "+a.myString());
           Automaton newdfa; //BUILD DFA
-
-          newdfa = nfa2dfaworks.compose(
-            a.getId(),
-            flags,
-            context,
-            tt,
+          newdfa = nfa2dfaworks.compose(  a.getId(),  flags,  context,  tt,
             buildData,  //lambda to build data for later comparision
             a);
-          System.out.println("DFA "+flags+" "+tt.toString());
-          System.out.println("DFA " + i++ + " " + newdfa.myString());
-
+          //System.out.println("DFA " + i + " " +flags+" "+tt.toString());
+          //System.out.println("DFA " + i + " " + newdfa.myString());
           dfas.add(newdfa);
         } catch (CompilationException e) {
           //System.out.println("PINGO" + e.toString());
@@ -97,17 +92,15 @@ public class TraceWork {
 
       //System.out.println("?   " + a1.readySets2String(cong) + " " + a2.readySets2String(cong));
       boolean b;
-
       //System.out.println("a1N\n" + ready2String(a2Next.getMap()));
       //System.out.println("a2N\n" + ready2String(a1Next.getMap()));
-
       //Recursive  Algorithm - a2Next.getMap() is BOTH the readset to be checked and where to go next
       b = traceSubset(a1, a2, new NodePair(r1, r2), a1Next.getMap(), a2Next.getMap(),
         new ArrayList<>(), cong, trace, tt, eval);
       //System.out.println("top traceSubset returns "+b+ "  trace "+trace);
       return b;
     }
-    System.out.print("\nTrace semantics not defined for type " + processModels.iterator().next().getClass() + "\n");
+    //System.out.print("\nTrace semantics not defined for type " + processModels.iterator().next().getClass() + "\n");
     return false;
   }
 
@@ -140,7 +133,7 @@ public class TraceWork {
                               SubSetEval evalSubset  //look at TraceRefinment, QuiescentRefinement
      ) {
     boolean ok = true;
-    System.out.println("traceSubset start with nodePair " + np.myString() + "  tt " + tt);
+    //System.out.println("traceSubset start with nodePair " + np.myString() + "  tt " + tt);
     for (NodePair n : processed) {
       if (n.getFirst().getId().equals(np.getFirst().getId()) &&
         n.getSecond().getId().equals(np.getSecond().getId())) {
@@ -181,7 +174,7 @@ public class TraceWork {
           t.printStackTrace();
           return false;
         } else if (nd1 == null) {
-          System.out.println(dfa1.getId() + " 1 cannot match event " + lab + " that " + dfa2.getId() + " 2 performs");
+          //System.out.println(dfa1.getId() + " 1 cannot match event " + lab + " that " + dfa2.getId() + " 2 performs");
           ok = false;
           break;
           //return false; // 1 cannot match an event from 2! hence 2 not SUB 1
@@ -191,16 +184,16 @@ public class TraceWork {
           //System.out.println("next nd1 = " + nd1.getId() + " nd2 = " + nd2.getId());
           ok = traceSubset(dfa1, dfa2, new NodePair(nd1, nd2), a1N, a2N, processed, cong, trace, tt, evalSubset);
           if (!ok)  trace.push(lab);
-          System.out.println("Tw 200 ok "+ok+"  trace " + trace);
+          //System.out.println("Tw 200 ok "+ok+"  trace " + trace);
         }
       }
     } else {
-      System.out.println(np.myString() + " returns false " + dfa2.getNode2ReadySets().get(np.second) +
-        " NOTsubset " + dfa1.getNode2ReadySets().get(np.first)+"  error "+error.error);
+      //System.out.println(np.myString() + " returns false " + dfa2.getNode2ReadySets().get(np.second) +
+      //  " NOTsubset " + dfa1.getNode2ReadySets().get(np.first)+"  error "+error.error);
       trace.push(error.error);
       ok = false;
     }
-    System.out.println(np.myString() + " traceSubset " + np.myString() + " trace " + trace + " returns " + ok);
+    //System.out.println(np.myString() + " traceSubset " + np.myString() + " trace " + trace + " returns " + ok);
     return ok;
   }
 
@@ -224,7 +217,7 @@ public class TraceWork {
       nfanode2ASet.getMap().put(n, nm);
     }
 
-    System.out.println("nfanode2ASet "+ nfanode2ASet.myString());
+    //System.out.println("nfanode2ASet "+ nfanode2ASet.myString());
     return nfanode2ASet;
   }
 

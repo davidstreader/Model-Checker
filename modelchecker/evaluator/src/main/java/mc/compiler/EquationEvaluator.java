@@ -14,6 +14,7 @@ import mc.compiler.ast.IdentifierNode;
 import mc.compiler.ast.ImpliesNode;
 import mc.compiler.ast.OperationNode;
 //import mc.compiler.interpreters.PetrinetInterpreter;
+import mc.compiler.interpreters.PetrinetInterpreter;
 import mc.exceptions.CompilationException;
 import mc.plugins.IOperationInfixFunction;
 import mc.processmodels.ProcessModel;
@@ -72,6 +73,7 @@ public class EquationEvaluator {
    * @throws CompilationException
    */
   public EquationReturn evaluateEquations(Map<String, ProcessModel> processMap,
+                                          PetrinetInterpreter petrinetInterpreter,
                                           List<OperationNode> operations,
                                           String code, Context z3Context,
                                           BlockingQueue<Object> messageQueue, Set<String> alpha)
@@ -82,7 +84,7 @@ public class EquationEvaluator {
    Uses processes in all domains?
  */
     processes = processMap.values().stream().collect(Collectors.toList());
-    System.out.println("evaluateEquations processMap "+processMap.keySet());
+    //System.out.println("evaluateEquations processMap "+processMap.keySet());
 //processMap will have Var:Dom -> currentProcesses set
     buildDomains(processMap);
 
@@ -100,12 +102,12 @@ public class EquationEvaluator {
  */
 
     for (OperationNode operation : operations) {
-      /*if (operation == null) System.out.println("XX operation==null in evaluateEquations");
+      /*if (operation == null)System.out.println("XX operation==null in evaluateEquations");
       else System.out.println("XX "+operation.myString()); */
       Map<String, ProcessModel> pMap = new TreeMap<>();// MUST make copy as changed by call
       processMap.keySet().stream().forEach(x -> pMap.put(x, processMap.get(x)));
 
-      evaluateEquation(pMap, operation, code, z3Context, messageQueue, alpha);
+      evaluateEquation(pMap, petrinetInterpreter, operation, code, z3Context, messageQueue, alpha);
     }
 
     return new EquationReturn(results, toRender);
@@ -122,13 +124,14 @@ public class EquationEvaluator {
     Evaluate a single equation. - Many operations - Many ground equations
      */
   private void evaluateEquation(Map<String, ProcessModel> processMap,
+                                PetrinetInterpreter petrinetInterpreter,
                                 OperationNode operation,
                                 String code, com.microsoft.z3.Context z3Context,
                                 BlockingQueue<Object> messageQueue,
                                 Set<String> alpha)
     throws CompilationException, InterruptedException {
 
-    System.out.println("evaluateEquation processMap "+processMap.keySet());
+    //System.out.println("evaluateEquation processMap "+processMap.keySet());
     // ONCE per equation! NOTE the state space needs to be clean
     Petrinet.netId = 0;  // hard to debug with long numbers and nothing stored
     ModelStatus status = new ModelStatus();
@@ -154,6 +157,7 @@ public class EquationEvaluator {
     //WORK Done here once per equation many ground equations evaluated
     List<String> failures = testUserdefinedModel(
       processMap,   // id + var  2 process map
+      petrinetInterpreter,
       status,
       operation,
       inst,
@@ -199,6 +203,7 @@ public class EquationEvaluator {
    * @throws CompilationException
    */
   private List<String> testUserdefinedModel(Map<String, ProcessModel> processMap,
+                                            PetrinetInterpreter petrinetInterpreter,
                                             ModelStatus status,  //used to RETURN results
                                             OperationNode operation,
                                             Instantiate inst,
@@ -297,6 +302,7 @@ public class EquationEvaluator {
 
         List<String> failures = testUserdefinedModel(processMap,  //Global variable will be in here
           //models,
+          petrinetInterpreter,
           localStatus,
           localOp,
           forinst,
@@ -334,6 +340,7 @@ public class EquationEvaluator {
           //System.out.println("implies evaluate 2 first " + o2.myString());
           List<String> failures2 = testUserdefinedModel(processMap,
             //models,
+            petrinetInterpreter,
             status2,
             o2,
             inst,
@@ -358,6 +365,7 @@ public class EquationEvaluator {
             //System.out.println("implies now evaluate 1 " + o1.myString());
             List<String> failures1 = testUserdefinedModel(processMap,
               //models,
+              petrinetInterpreter,
               status1,
               o1,
               inst,
@@ -384,6 +392,7 @@ public class EquationEvaluator {
           //System.out.println("Implies now evaluate 1 first " + o1.myString());
           List<String> failures1 = testUserdefinedModel(processMap,
             //models,
+            petrinetInterpreter,
             status1,
             o1,
             inst,
@@ -410,6 +419,7 @@ public class EquationEvaluator {
             //System.out.println("implies now evaluate 2  " + o2.myString());
             List<String> failures2 = testUserdefinedModel(processMap,
               //models,
+              petrinetInterpreter,
               status2,
               o2,
               inst,
@@ -437,7 +447,7 @@ public class EquationEvaluator {
         //System.out.println("\nStaring operation " + operation.myString() );
 
         // build the automata from the AST  or look up known automata
-        Interpreter interpreter = new Interpreter();
+        //PetrinetInterpreter interpreter = new PetrinetInterpreter();
         //outerFreeVariabelMap.keySet().stream().forEach(x -> processMap.put(x, outerFreeVariabelMap.get(x)));
         for (String key : outerFreeVariabelMap.keySet()) {
           //System.out.println("adding "+key+"->"+outerFreeVariabelMap.get(key).getId());
@@ -445,7 +455,7 @@ public class EquationEvaluator {
         }
 
         //System.out.println("*** evalop  "+processMap.keySet().stream().map(x->x+"->"+processMap.get(x).getId()).reduce((x,y)->x+" "+y));
-        r = oE.evalOp(operation, processMap, interpreter, context, alpha, trace);
+        r = oE.evalOp(operation, processMap, petrinetInterpreter, context, alpha, trace);
         // r = oE.evalOp(operation, idMap, interpreter, context);
         //System.out.println(asString(processMap));
         //System.out.println("Processed operation " + operation.myString() +  " " + r);

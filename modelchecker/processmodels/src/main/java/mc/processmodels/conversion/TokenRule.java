@@ -118,8 +118,8 @@ if(j++> stateSizeBound) {System.out.println("\n\nTokenRule Failure Looping = "+j
 
         //System.out.println("currentMarking "+currentMarking);
       Set<PetriNetTransition> satisfiedPostTransitions = satisfiedTransitions(currentMarking); //88
-      System.out.println("Processing "+Petrinet.marking2String(currentMarking)+
-      " trans "+satisfiedPostTransitions.size());
+      //System.out.println("Processing "+Petrinet.marking2String(currentMarking)+
+      //" trans "+satisfiedPostTransitions.size());
           if (currentMarking.stream().map(x->x.isSTOP()).reduce(true,(x,y)->x&&y)) {
             markingToNodeMap.get(currentMarking).setStopNode(true);
             //System.out.println("Mark as STOP "+markingToNodeMap.get(currentMarking).getId());

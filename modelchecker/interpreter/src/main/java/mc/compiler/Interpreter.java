@@ -26,8 +26,9 @@ import mc.util.LogMessage;
 /**
  * Compiler applies Interpreter  to processes {...} and seperatly
  * applies OperationEvaluator to operation {...} that calls Interpreter
- * BUILDS Processes and stores them in Map<String, ProcessModel>.
+ * Incrementally BUILDS Processes and stores them in Map<String, ProcessModel>.
  * Both petriNets and Automata are built and a MultiProcessModel is stored in processMap
+ *
  * MultiProcessModel = (Pp,Pa,mapping) with a mapping between nodes and places
  * <p>
  * MuitiProcess(P) = (Pp,Pa)
@@ -47,12 +48,14 @@ public class Interpreter {
 
   // fields
   private AutomatonInterpreter automatonInterpreter = new AutomatonInterpreter();
+
   private PetrinetInterpreter petrinetInterpreter = new PetrinetInterpreter();
+  public PetrinetInterpreter getpetrinetInterpreter(){ return petrinetInterpreter;}
   private Set<String> alpha;
 
   //TODO  Document
   // This is called once from the compiler and builds all proesses
-  // ONLY called from compiler
+  // RETURNS Map to  models with both PetriNets, Automata + mapping between them!
   public Map<String, ProcessModel> interpret(AbstractSyntaxTree ast,
                                              // LocalCompiler localCompiler,
                                              BlockingQueue<Object> messageQueue,
@@ -72,13 +75,13 @@ public class Interpreter {
     //System.out.println("AST processes "+ processes.stream().map(x->x.getIdentifier()).
     //  reduce("{",(x,y)->x+" "+y)+"}");
     for (ProcessNode process : processes) { //BUILD ALL PROCESSES
-      System.out.println("++++++Interpreter Building " + process.myString()+"\n"); // + " ... "+ process.getType().toString());
+      System.out.println("  Interpreter Building " + process.myString()); // + " ... "+ process.getType().toString());
       ProcessModel model = null;
       model = new MultiProcessModel(process.getIdentifier());
       model.setLocation(process.getLocation());  //location on screen
 
       //Either build petri first OR build automata FIRST
-// Build petrinets (then build automata)
+      // Build petrinets (then build automata)
       String className = process.getProcess().getClass().getSimpleName();
       //System.out.println("className "+className);
       ProcessModel modelPetri = null;
@@ -86,7 +89,7 @@ public class Interpreter {
         modelPetri = petrinetInterpreter.interpret(process, processMap,
                       context, alpha,ast.getVariableMap(),symb);
 
-        System.out.println("++++++Interpreter Built Petri "+ modelPetri.getId());
+        //System.out.println("++++++Interpreter Built Petri "+ modelPetri.getId());
         model = buildmpmFromPetri((Petrinet) modelPetri);
       } else if (process.getType().contains("automata")) { //interpretASTAutNode
         System.out.println("\n\nWARNING INTERPRETING AUTOMATA (should not occur)\n");
@@ -94,9 +97,9 @@ public class Interpreter {
       //messageQueue.add(new LogAST("Built:", process));
       sb.append(process.getIdentifier()+", ");
       processMap.put(process.getIdentifier()+":"+process.getDomain(), model); //SAVE MultiProcess in processMap
- if (!process.getDomain().equals("*")) {
-   processMap.put(process.getIdentifier()+":*", model);  //used in display and unique name
- }
+      if (!process.getDomain().equals("*")) {
+        processMap.put(process.getIdentifier()+":*", model);  //used in display and unique name
+      }
 
     }
     //System.out.println("*** Interp " + this.alpha);
@@ -173,14 +176,16 @@ public class Interpreter {
     return model;
   }
 
-  public Automaton getAut (Map<String, ProcessModel> processMap,
+  /*public Automaton getAut (Map<String, ProcessModel> processMap,
                                  Interpreter interpreter,
                                  Context context,
                                  Set<String> alpha,
                                  ASTNode ast) throws CompilationException, InterruptedException {
     //System.out.println("getAut");
-    Automaton  a = petrinetInterpreter.getAutomaton (processMap,interpreter,context,alpha, ast);
+    //Automaton  a = petrinetInterpreter.getAutomaton (processMap,interpreter,context,alpha, ast);
+    Automaton a = petrinetInterpreter.getLocalAutomaton(context,alpha, ast);
     //System.out.println("getAut RETURNS "+a.getId());
   return a;
-  }
+  } */
+
 }

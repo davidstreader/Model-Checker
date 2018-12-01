@@ -3,6 +3,7 @@ package mc.processmodels.automata;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -20,9 +21,13 @@ public class AutomatonEdge extends ProcessModelObject {
 
   //private static final String INTERSECTION = "^";
   @Getter
-  @Setter
+  //@Setter  Must not set to a singleton
   private Set<String> edgeOwners = new HashSet<>();
-
+  public void setEdgeOwners(Collection<String> os) {
+    Set<String> eos = new HashSet<>();
+    os.forEach(o-> eos.add(o));
+    edgeOwners = eos;
+  }
   @Getter
   @Setter
   private String label;

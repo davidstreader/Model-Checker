@@ -77,8 +77,10 @@ public class AbstractionFunction implements IProcessFunction {
       throw new CompilationException(this.getClass(), null);
     }
     Automaton startA = automata[0].copy();
+//int nodeLable
+    //System.out.println("\n***Abs "+ startA.getId() );
 
-    //System.out.println("\n***\n"+startA.myString());
+
     boolean cong = flags.contains(Constant.CONGURENT);
     //System.out.println("\n\nautomata Abs start "+ startA.myString()+ " flags "+flags+ " cong "+cong);
     Automaton abstraction = pruneHiddenNodes(context, startA, cong);
@@ -87,6 +89,7 @@ public class AbstractionFunction implements IProcessFunction {
 
     mergeloopsOfSize2(context, abstraction);
     //System.out.println("Abs merged "+ abstraction.myString());
+
     List<AutomatonEdge> found = new ArrayList<>();
     List<AutomatonEdge> edges = abstraction.getEdges().stream().collect(Collectors.toList());
 
@@ -207,8 +210,8 @@ public class AbstractionFunction implements IProcessFunction {
         ow.addAll(edge.getOwnerLocation());
     }
     abstraction.setOwners(ow);
+    abstraction.cleanNodeLables();
     //System.out.println("Abs final "+ abstraction.myString());
-
     return abstraction;
   }
 
@@ -334,6 +337,8 @@ public class AbstractionFunction implements IProcessFunction {
         }
         // if edge already in automaton  add edge willnot add it!
           added = abstraction.addEdge(edge.getLabel(), from, to, null, false,edge.getOptionalEdge());
+
+        //System.out.println("added "+ added.myString()+"\nhidden "+hiddenEdge.myString());
         abstraction.addOwnersToEdge(added,hiddenEdge.getOwnerLocation() );
         abstraction.addOwnersToEdge(added,edge.getOwnerLocation() );
           added.getOwnerLocation().addAll(hiddenEdge.getOwnerLocation());
@@ -449,6 +454,10 @@ public class AbstractionFunction implements IProcessFunction {
                 e.getFrom().equals(edge.getTo()) &&
                 e.getTo().equals(edge.getFrom())) {
               //System.out.println("Combining " + edge.getFrom() + " " + edge.getTo());
+              if (edge.getFrom().isExternal() && edge.getTo().isExternal()) {
+                //System.out.println("WARNING abs merging2loop "+edge.getFrom().getId()+" TO "+edge.getTo().getId());
+
+              }
               autoIN.combineNodes(edge.getFrom(), edge.getTo(), context);
               //System.out.print("merging ");
               //System.in.read();
@@ -719,17 +728,19 @@ public class AbstractionFunction implements IProcessFunction {
  */
   public Automaton GaloisBCabs (String id, Set<String> flags, Context context, Automaton ain)
      throws CompilationException {
-   //System.out.println("GaloisBCabs "+flags);
+   //System.out.println("GaloisBCabs START "+ain.myString());
     Automaton a = ain.copy();
+    //System.out.println("GaloisBCabs COPY "+ain.myString());
     for(AutomatonEdge ed: a.getEdges()) {
       if (ed.getLabel().endsWith(".t!") || ed.getLabel().endsWith(".t?") ||
           ed.getLabel().endsWith(".r!") || ed.getLabel().endsWith(".r?")) {
         ed.setLabel(Constant.HIDDEN);
-        ed.getTo().copyProperties(ed.getFrom());  //need to do this here untill STOP with outgoing allowed
+      //  ed.getTo().copyProperties(ed.getFrom());  //need to do this here untill STOP with outgoing allowed
       }
     }
     Automaton[] as = new Automaton[1];
     as[0] = a;
+    //System.out.println("GaloisBCabs NEXT "+a.myString());
     Set<String> newflags = flags.stream().filter(x->!x.equals(Constant.CONGURENT)).collect(Collectors.toSet());
     Automaton out =  this.compose(id, newflags, context,  as);
 

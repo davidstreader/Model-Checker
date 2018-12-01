@@ -1539,15 +1539,14 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     //System.out.println(myString());
     //System.out.println("places  "+places.keySet());
     //System.out.println("prod "+products.toString());
-    StringBuilder sb = new StringBuilder();
+/*    StringBuilder sb = new StringBuilder();
     sb.append(" products ");
     for (PetriNetPlace pl : products.keySet()) {
       sb.append(pl.getId() + "." + products.get(pl).size() + ".");
       for (PetriNetPlace pi : products.get(pl)) {
         sb.append(pi.getId() + " , ");
       }
-    }
-    System.out.println(sb.toString());
+    }System.out.println(sb.toString()); */
     Set<PetriNetPlace> con =  new TreeSet<>();
     con.addAll(set1);
     con.addAll(set2);

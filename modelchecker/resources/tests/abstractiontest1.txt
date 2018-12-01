@@ -1,17 +1,29 @@
 processes {
+Test:{
 Z = (a->l->Z|b->(r->x->STOP|y->STOP)).
-Yl = abs(Z\{l}).
+A = pingo->STOP.
+B = sealy->B.
+
+C = cc->A.
+D =A.
+Yl = simp(abs(Z\{l})).
+/*
 Ylr = abs(Yl\{r}).
 
 Yr = abs(Z\{r}).
 Yrl = abs(Yl\{r}).
 Y = abs(Z\{r,l}).
+*/
+}
 }
 
 
 operation {
-Y~Yrl.
-Y~Ylr.
-Ylr~Yrl. 
+Z~abs(Z\{l}).
+ 
 }
+
+
+
+
 

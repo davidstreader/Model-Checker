@@ -35,10 +35,12 @@ public class Nfa2dfaWorks {
     //ba.compose(id,flags,context,automata);
     //System.out.println("Pingo2");
     assert automata.length == 1;
+    int dfaNodeLabel = 0;
     Automaton nfa = automata[0].copy();// copies nodeId
-
-    //System.out.println("FIRST "+nfa.myString());
-    for (AutomatonNode ndn : nfa.getNodes()) { // NOT for Galois expaned automata
+    nfa = nfa.reId("p");
+    //System.out.println("nfa2dfa START "+nfa.myString());
+    for (AutomatonNode ndn : nfa.getNodes()) {
+      // NOT for Galois expaned automata  OK SMART ASS why?
       if (cong) {
         nfa.deadNode();
         if (ndn.isSTOP()) {
@@ -100,6 +102,7 @@ public class Nfa2dfaWorks {
         // process dfa node only once
       if (!nodeMap.containsKey(idNode)) { //set up nodeMap and add node to dfa
         AutomatonNode n = dfa.addNode(idNode);
+        n.setLabelNumber(dfaNodeLabel++);
         nodeMap.put(idNode, n);
       }
       AutomatonNode node = nodeMap.get(idNode);  //build new dfa node
@@ -134,10 +137,11 @@ public class Nfa2dfaWorks {
           continue;
         }
         String nextId = constructNodeId(stateMap.get(nextStates), nfa.getId());
-        // stateMap.get(nextStates).stream().forEach(x->System.out.println("next "+x.myString()));
+         //stateMap.get(nextStates).stream().forEach(x-> System.out.println("next "+x.myString()));
         if (!nodeMap.containsKey(nextId)) {
           //System.out.println(" nextId "+nextId);
           AutomatonNode nd = dfa.addNode(nextId);
+          nd.setLabelNumber(dfaNodeLabel++);
           nodeMap.put(nextId, nd);
           //Apply function to add data (Fail -> set of acceptance sets,...)
           //System.out.println();

@@ -118,7 +118,7 @@ public class SingeltonFailureRefinement implements IOperationInfixFunction {
     //Wrap set in first element of Lis
     refusalWrap.add(refusal.stream().distinct().collect(Collectors.toSet()));
     refusalWrap.add(ready.stream().distinct().collect(Collectors.toSet()));
-    System.out.println("refusalWrapped "+refusalWrap);
+    //System.out.println("refusalWrapped "+refusalWrap);
 
     return refusalWrap;
   }
@@ -145,7 +145,7 @@ public class SingeltonFailureRefinement implements IOperationInfixFunction {
     Set<String> small = a2.get(1).stream().filter(x->!Constant.externalOrEND(x)).collect(Collectors.toSet());
 
     boolean b =  a1.get(1).containsAll(small);
-    System.out.println(a2.get(1)+ " is dfaRedySubset of  "+a1.get(1) +" = " + b);
+    //System.out.println(a2.get(1)+ " is dfaRedySubset of  "+a1.get(1) +" = " + b);
     a2.get(1).removeAll(a1.get(1));
     if (!b) error.error = "Rs{"+a2.get(1)+"}";
     return b;
@@ -161,7 +161,7 @@ public class SingeltonFailureRefinement implements IOperationInfixFunction {
     //see returning to root in cribsheet
     Set<String> small = s2.get(0).stream().filter(x->!Constant.external(x)).collect(Collectors.toSet());
 
-    System.out.println("small "+small);
+    //System.out.println("small "+small);
     if (cong) out =  (s1.get(0).containsAll(small)); //&& equivExternal(s1.get(1),s2.get(1))
     else {
       for (String lab :small) {
@@ -173,7 +173,7 @@ public class SingeltonFailureRefinement implements IOperationInfixFunction {
         }
       }
     }
-    System.out.println("can  s2 "+s2+" refuse more than s1 "+s1+" "+out);
+    //System.out.println("can  s2 "+s2+" refuse more than s1 "+s1+" "+out);
     return out;
   }
 }

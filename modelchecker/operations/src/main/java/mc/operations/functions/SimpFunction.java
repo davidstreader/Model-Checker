@@ -68,8 +68,11 @@ public class SimpFunction implements IProcessFunction {
     boolean cong = flags.contains(Constant.CONGURENT);
     //Clone
     Automaton automaton = automata[0].copy();
+    //System.out.println("\nSIMP corrects data !");
+    //System.out.println(automaton.myString());
+    //System.out.println("SIMP corrects data !");
 
-   ArrayList<AutomatonEdge> edges = new ArrayList<>();
+    ArrayList<AutomatonEdge> edges = new ArrayList<>();
    ArrayList<AutomatonNode> nodes = new ArrayList<>();
 
     edges.addAll(automaton.getEdges());
@@ -113,7 +116,10 @@ public class SimpFunction implements IProcessFunction {
 
       value.forEach(automaton::removeNode);
     }
-      //System.out.println("Simp out "+automaton.myString()+"\n");
+    automaton.cleanNodeLables();
+    //System.out.println(automaton.myString());
+    //System.out.println("SIMP corrects data !\n");
+    //System.out.println("Simp out "+automaton.myString()+"\n");
     return automaton;
   }
 

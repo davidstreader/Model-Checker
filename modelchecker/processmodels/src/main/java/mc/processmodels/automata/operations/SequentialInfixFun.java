@@ -149,14 +149,14 @@ public class SequentialInfixFun {
    */
   public Petrinet compose(String id, Petrinet n1, Petrinet n2)
     throws CompilationException {
-    if (n1==null) System.out.println("compose n1 null");
-    if (n2==null) System.out.println("compose n2 null");
+    //if (n1==null) System.out.println("compose n1 null");
+    //if (n2==null) System.out.println("compose n2 null");
     return compose(id, n1, n2, null);
   }
 
   public Petrinet compose(String id, Petrinet n1, Petrinet n2, Guard guard)
     throws CompilationException {
-    System.out.println("=>PETRI1 "+ id+" "+n1.getId()+"=>"+n2.getId());
+    //System.out.println("=>PETRI1 "+ id+" "+n1.getId()+"=>"+n2.getId());
     n1.validatePNet();
     n2.validatePNet();
 

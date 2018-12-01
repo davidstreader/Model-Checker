@@ -80,8 +80,8 @@ public class Compiler {
 
     System.out.println("\nCOMPILER "+ast.myString()+" symb "+symb.get()+"\n");
     for (ProcessNode node : ast.getProcesses()) {
-      messageQueue.add(new LogMessage("Compile  starting "+node.getIdentifier()+" s "+symb.get()));
-      System.out.println("**COMPILER** Compiler Start node = "+ node.myString());
+      //messageQueue.add(new LogMessage("Compile  starting "+node.getIdentifier()+" s "+symb.get()));
+      //System.out.println("**COMPILER** Compiler Start node = "+ node.myString());
       processNodeMap.put(node.getIdentifier(), (ProcessNode) node.copy());
    //   dependencyMap.put(node.getIdentifier(), node);
     }
@@ -89,14 +89,14 @@ public class Compiler {
     AbstractSyntaxTree  symbAST = ast.copy();  // to be used to build symbolic models
     //??????
 
-    System.out.println("symb "+symb.get());
+    //System.out.println("symb "+symb.get());
     if (!symb.get()) {
       ast = processAtomicAST(ast, z3Context, messageQueue);
     } else {
       //expander.expand(ast, messageQueue, z3Context); // use for error detection
       ast = symbAST;
       //ast = expander.expand(ast, messageQueue, z3Context);
-      System.out.println(" COMPILER Before ReferenceReplacer "+ast.processes2String());
+      //System.out.println(" COMPILER Before ReferenceReplacer "+ast.processes2String());
       //ast = replacer.replaceReferences(ast, messageQueue);
       // If we replace the references then we lose the assignment information
       //System.out.println(" COMPILER After ReferenceReplacer "+ast.processes2String());
@@ -110,23 +110,23 @@ public class Compiler {
     //System.out.println("Compiler alph = "+alpha);
 
     //builds process and processMap
-    System.out.println("**COMPILER** Entering interpreter with ast for processes -> Types "+
+    /*System.out.println("**COMPILER** Entering interpreter with ast for processes -> Types "+
       ast.getProcesses().stream().map(x->"\n"+x.getIdentifier()+"->"+x.getType())
-        .reduce("",(x,y)->x+" "+y));
+        .reduce("",(x,y)->x+" "+y)); */
     Map<String, ProcessModel> processMap = interpreter.interpret(ast,
         messageQueue, z3Context,alpha,symb.get());
 
-    System.out.println("     **COMPILER** before operation evaluation "+processMap.keySet());
+    //System.out.println("     **COMPILER** before operation evaluation "+processMap.keySet());
 
     List<OperationResult> opResults = evaluator.evaluateOperations(
       ast.getOperations(), processMap,
-        interpreter, code, z3Context, messageQueue, alpha);
-    System.out.println("     **COMPILER** before equation evaluation "+processMap.keySet());
+        interpreter.getpetrinetInterpreter(), code, z3Context, messageQueue, alpha);
+    //System.out.println("     **COMPILER** before equation evaluation "+processMap.keySet());
 
     // still has memory problem with many permutations
     this.eqEvaluator = new EquationEvaluator(); // need to reset equationEvaluator else !!!!
     EquationEvaluator.EquationReturn eqResults = eqEvaluator.evaluateEquations(
-        processMap, ast.getEquations(),
+        processMap, interpreter.getpetrinetInterpreter(), ast.getEquations(),
         code, z3Context, messageQueue, alpha);
 
     //processMap.putAll(eqResults.getToRender()); // think this is redundent!
@@ -151,19 +151,19 @@ private AbstractSyntaxTree processAtomicAST(AbstractSyntaxTree ast,
   //System.out.println("lib "+ System.getProperty("java.library.path"));
   //System.out.println("class "+System.getProperty("java.class.path"));
 
-  System.out.println(" AtomicCOMPILER Before Expanding "+ast.myString());
+  //System.out.println(" AtomicCOMPILER Before Expanding "+ast.myString());
   ast = expander.expand(ast, messageQueue, z3Context);
   /* replacer.replaceReferences  replaces references to local processes (P2)
    * Expands references i.e Initally we have: P1 = a->P2.
    *                                             P2 = b->c->x.
    *  With references replaced we have,       P1 = a->b->c->x.
    */
-  System.out.println(" AtomicCOMPILER After Expanding "+ast.processes2String());
+  //System.out.println(" AtomicCOMPILER After Expanding "+ast.processes2String());
   ast = replacer.replaceReferences(ast, messageQueue);
-  System.out.println(" AtomicCOMPILER After ReferenceReplacer "+ast.processes2String());
+  //System.out.println(" AtomicCOMPILER After ReferenceReplacer "+ast.processes2String());
 
 
-  System.out.println("**AtomicCOMPILER** Hierarchy of processes: " + ast.getProcessHierarchy().getDependencies());
+  //System.out.println("**AtomicCOMPILER** Hierarchy of processes: " + ast.getProcessHierarchy().getDependencies());
 
 /*    List<String> processesToRemoveFromDisplay = new ArrayList<>();
     for (String processesName : processNodeMap.keySet()) {

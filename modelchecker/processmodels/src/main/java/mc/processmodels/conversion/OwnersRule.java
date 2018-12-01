@@ -55,7 +55,7 @@ public class OwnersRule {
    */
   @SneakyThrows({CompilationException.class})
   public static Petrinet ownersRule(Automaton ain) {
-    System.out.println("OwnersRule initial automata " + ain.myString() + "*START ");
+    //System.out.println("OwnersRule initial automata " + ain.myString() + "*START ");
     //Throwable t = new Throwable(); t.printStackTrace();
     clean();
     // 1. to automata A add initial event S*=>A now only one start state.
@@ -309,7 +309,7 @@ public class OwnersRule {
 
     public void todoPush(AutomatonNode nd) {
       if (stackit.contains(nd)) {
-        System.out.println("stackit Duplicate " + nd.myString());
+        //System.out.println("stackit Duplicate " + nd.myString());
         return;
       } else {
         stackit.push(nd);

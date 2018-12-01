@@ -10,6 +10,8 @@ import java.util.stream.Collectors;
 
 import mc.Constant;
 import mc.compiler.ast.*;
+import mc.compiler.interpreters.AutomatonInterpreter;
+import mc.compiler.interpreters.PetrinetInterpreter;
 import mc.exceptions.CompilationException;
 import mc.plugins.IOperationInfixFunction;
 import mc.processmodels.ProcessModel;
@@ -27,7 +29,8 @@ import mc.Constant;
 public class OperationEvaluator {
 
     private int operationId;
-
+    private AutomatonInterpreter automatonInterpreter = new AutomatonInterpreter();
+    //private PetrinetInterpreter petrinetInterpreter = new PetrinetInterpreter();
     static Map<String, Class<? extends IOperationInfixFunction>> operationsMap = new HashMap<>();
     //private List<ImpliesResult>  impRes = new ArrayList<>();
     //List<ImpliesResult> getImpRes() {return  impRes;}
@@ -45,14 +48,14 @@ public class OperationEvaluator {
      */
     public List<OperationResult> evaluateOperations(List<OperationNode> operations,
                                                     Map<String, ProcessModel> processMap,
-                                                    Interpreter interpreter,
+                                                    PetrinetInterpreter interpreter,
                                                     String code, Context context,
                                                     BlockingQueue<Object> messageQueue, Set<String> alpha)
             throws CompilationException, InterruptedException {
         reset();
         List<OperationResult> results = new ArrayList<>();
         //input  from AST
-        System.out.println("evaluateOperations processMap "+processMap.keySet());
+        //System.out.println("evaluateOperations processMap "+processMap.keySet());
         for (OperationNode operation : operations) {
             Result r = evaluateOperation(operation,processMap,
               interpreter,code, context,messageQueue,alpha);
@@ -80,13 +83,13 @@ public class OperationEvaluator {
      */
     private Result evaluateOperation(OperationNode operation,
                                     Map<String, ProcessModel> processMap,
-                                    Interpreter interpreter,
+                                     PetrinetInterpreter interpreter,
                                     String code,
                                     Context context,
                                     BlockingQueue<Object> messageQueue,
                                      Set<String> alpha) throws CompilationException, InterruptedException {
 
-        System.out.println("evaluateOperation op"+operation.myString() + " processMap "+processMap.keySet());
+        //System.out.println("evaluateOperation op"+operation.myString() + " processMap "+processMap.keySet());
         Result or;
         //Galois Connection needs implication
         if (operation instanceof ImpliesNode) {
@@ -113,7 +116,7 @@ public class OperationEvaluator {
  */
     private OperationResult evaluateOp(OperationNode operation,
                                       Map<String, ProcessModel> processMap,
-                                      Interpreter interpreter,
+                                       PetrinetInterpreter interpreter,
                                       String code,
                                       Context context,
                                       BlockingQueue<Object> messageQueue,
@@ -162,11 +165,12 @@ public class OperationEvaluator {
  */
     public boolean evalOp(OperationNode operation,
                           Map<String, ProcessModel> processMap,
-                          Interpreter interpreter,
+                          PetrinetInterpreter interpreter,
                           Context context,
                           Set<String> alpha,
                           Stack<String> trace)
             throws CompilationException, InterruptedException {
+        interpreter.setProcessMap(processMap);  //need Variable from EquationExpander
         Automaton.tagid =0; Petrinet.netId =0;
         List<ProcessModel> processModels = new ArrayList<>();
         Set<String> flags = operation.getFlags();
@@ -195,78 +199,77 @@ public class OperationEvaluator {
         if (funct.getOperationType().equals(Constant.PETRINET)) {
             //String ps = processMap.values().stream().map(x->x.getId()).collect(Collectors.joining(" "));
             //System.out.println("Evaluate petrinet operation "+funct.getFunctionName());
-// Convert operands to PetriNets were needed and store in processModels
-            if (operation.getFirstProcessType().equals(Constant.PETRINET)) {
-                Petrinet one = (Petrinet) interpreter.interpret(Constant.PETRINET,
-                        operation.getFirstProcess(), getNextOperationId(), processMap, context, alpha);
-                processModels.add(one);
-            } else if (operation.getFirstProcessType().equals(Constant.AUTOMATA)) {
-                Automaton one = (Automaton) interpreter.interpret(Constant.AUTOMATA,
-                        operation.getFirstProcess(), getNextOperationId(), processMap, context, alpha);
-                processModels.add(OwnersRule.ownersRule( one));
-            }
-            if (operation.getSecondProcessType().equals(Constant.PETRINET)) {
-                Petrinet two = (Petrinet) interpreter.interpret(Constant.PETRINET,
-                        operation.getSecondProcess(), getNextOperationId(), processMap, context, alpha);
-                processModels.add(two);
-            } else if (operation.getSecondProcessType().equals(Constant.AUTOMATA)) {
-                Automaton two = (Automaton) interpreter.interpret(Constant.AUTOMATA,
-                        operation.getFirstProcess(), getNextOperationId(), processMap, context, alpha);
-                processModels.add(OwnersRule.ownersRule( two));
-            }
-
-            r = funct.evaluate(new TreeSet<>(), flags,context,trace,processModels);  //actually evaluating the operation
-            if (operation.isNegated()) { r = !r; }
+         throw new CompilationException(this.getClass(),"Need to implement Petrinet semantics",operation.getLocation() );
 
         } else if (funct.getOperationType().equals(Constant.AUTOMATA)) {
+            Automaton a = null;
+            Automaton b = null;
             //Operations ~ <f <t <q ...
             //System.out.println("Evaluate automaton operation "+operation.getFirstProcessType()+ " "+operation.getSecondProcessType());
             //System.out.println("***evalOpm auto "+alpha+"  "+operation.myString());
             //System.out.println("evOp "+operation.getFirstProcess().myString()+ "  "+operation.getSecondProcess().myString());
-            if (operation.getFirstProcess()instanceof  FunctionNode) {
-                //System.out.println("Function1 "+operation.getFirstProcess().myString());
-                Automaton a = interpreter.getAut(processMap,interpreter,context,alpha, operation.getFirstProcess()) ;
+            if (operation.getFirstProcess()instanceof  FunctionNode  ||
+                operation.getFirstProcess()instanceof  IdentifierNode) {
+                //System.out.println("\nOpeval Function1 "+operation.getFirstProcess().myString());
+                //Automaton a = interpreter.getAut(processMap,interpreter,context,alpha, operation.getFirstProcess()).copy() ;
+                 a = interpreter.getLocalAutomaton(context,alpha, operation.getFirstProcess());
                 processModels.add(a);
                 //System.out.println("\n****OpEval Fun1 "+a.myString());
             } else   if (operation.getFirstProcessType().equals(Constant.PETRINET)) {
-                Petrinet one = (Petrinet) interpreter.interpret(Constant.PETRINET,
-                        operation.getFirstProcess(), getNextOperationId(), processMap, context, alpha);
-                Automaton a = TokenRule.tokenRule(one);
+                //System.out.println("\nOpEval TYPE NET 1 "+operation.toString());
+              /*  Petrinet one = (Petrinet) interpreter.interpret(Constant.PETRINET,
+                  operation.getFirstProcess(), getNextOperationId(), processMap, context, alpha); */
+                Petrinet one = (Petrinet) interpreter.interpretEvalOp(operation.getFirstProcess(),
+                         getNextOperationId(), processMap, context, alpha);
+
+                 a = TokenRule.tokenRule(one);
                 processModels.add(a);
-                //System.out.println("OpEval 1 "+a.myString());
+                //System.out.println("OpEval TYPE NET 1 "+a.myString());
             } else if (operation.getFirstProcessType().equals(Constant.AUTOMATA)) {
-                Automaton one = (Automaton) interpreter.interpret(Constant.AUTOMATA,
-                        operation.getFirstProcess(), getNextOperationId(), processMap, context, alpha);
-                processModels.add(one);
-                //System.out.println("OpEval one "+one.myString());
-            }
-   //System.out.println("***processModels *1* "+ alpha); //+((Automaton) processModels.get(0)).myString());
-            if (operation.getSecondProcess()instanceof  FunctionNode) {
-                //System.out.println("Function2");
-                Automaton a = interpreter.getAut(processMap,interpreter,context,alpha, operation.getSecondProcess()) ;
+                //System.out.println("\nOpEval TYPE Aut 1 "+operation.toString());
+               /* Automaton one = (Automaton) interpreter.interpret(Constant.AUTOMATA,
+                        operation.getFirstProcess(), getNextOperationId(), processMap, context, alpha); */
+                a = (Automaton)  automatonInterpreter.interpretEvalOp(operation.getFirstProcess(), getNextOperationId(), processMap, context, alpha);
+
+
                 processModels.add(a);
-                //System.out.println("OpEval Fun2 "+a.myString());
+                //System.out.println("OpEval Aut one "+one.myString());
+            }
+   //System.out.println("\nOpEval ***processModels *1* "+ a.myString()); //+((Automaton) processModels.get(0)).myString());
+            if (operation.getSecondProcess()instanceof  FunctionNode ||
+                operation.getSecondProcess()instanceof  IdentifierNode) {
+                //System.out.println("\nOpeval Function2");
+               // Automaton a = interpreter.getAut(processMap,interpreter,context,alpha, operation.getSecondProcess()).copy() ;
+                b = interpreter.getLocalAutomaton(context,alpha, operation.getSecondProcess());
+                processModels.add(b);
+               //System.out.println("****OpEval Fun2 "+a.myString());
             } else  if (operation.getSecondProcessType().equals(Constant.PETRINET)) {
-                Petrinet two = (Petrinet) interpreter.interpret(Constant.PETRINET,
-                        operation.getSecondProcess(), getNextOperationId(), processMap, context, alpha);
+                //System.out.println("\nOpEval TYPE NET 2 "+operation.toString());
+               /* Petrinet two = (Petrinet) interpreter.interpret(Constant.PETRINET,
+                  operation.getSecondProcess(), getNextOperationId(), processMap, context, alpha); */
+                Petrinet two = (Petrinet) interpreter.interpretEvalOp(operation.getSecondProcess(),
+                  getNextOperationId(), processMap, context, alpha);
 
                 //processModels.add(TokenRule.tokenRule(two));
-                Automaton a = TokenRule.tokenRule(two);
-                processModels.add(a);
-                //System.out.println("\n***OpEval 2 "+a.myString());
+                b = TokenRule.tokenRule(two);
+                processModels.add(b);
+                //System.out.println("OpEval Net 2 "+a.myString());
             } else if (operation.getSecondProcessType().equals(Constant.AUTOMATA)) {
-                Automaton two = (Automaton) interpreter.interpret(Constant.AUTOMATA,
-                        operation.getSecondProcess(), getNextOperationId(), processMap, context, alpha);
-                processModels.add(two);
-                //System.out.println("OpEval two "+two.myString());
+                //System.out.println("\nOpEval TYPE Aut 2 "+operation.toString());
+                /* Automaton two = (Automaton) interpreter.interpret(Constant.AUTOMATA,
+                        operation.getSecondProcess(), getNextOperationId(), processMap, context, alpha); */
+                b = (Automaton)  automatonInterpreter.interpretEvalOp(operation.getSecondProcess(), getNextOperationId(), processMap, context, alpha);
+                processModels.add(b);
+                //System.out.println("OpEval two Aut "+two.myString());
             }
+            //System.out.println("\nOpEval ***processModels *2* "+ b.myString()); //+((Automaton) processModels.get(0)).myString());
             //System.out.println("processModels *2*"+((Automaton) processModels.get(1)).myString());
             //System.out.println("oper "+ operation.getOperation().toLowerCase());
             r = funct.evaluate(alpha, flags,context,trace,processModels);
             if (operation.isNegated()) { r = !r; }
 
         } else {
-            System.out.println("Bad operation type "+operation.getOperationType());
+            //System.out.println("Bad operation type "+operation.getOperationType());
         }
         //if (r==false) {
             //System.out.println("END    evalOp " + operation.myString()+" " + EquationEvaluator.asString(processMap) + " => " + r);

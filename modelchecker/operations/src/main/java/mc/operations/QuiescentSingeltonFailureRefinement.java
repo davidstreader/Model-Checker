@@ -66,7 +66,7 @@ public class QuiescentSingeltonFailureRefinement implements IOperationInfixFunct
     Set<String>  listeningAlphabet = alphabet.stream().distinct().
       filter(x->x.endsWith(Constant.BROADCASTSinput)).
       collect(Collectors.toSet());
-    System.out.println("\n new listeningAlphabet " + listeningAlphabet);
+    //System.out.println("\n new listeningAlphabet " + listeningAlphabet);
 
     ArrayList<ProcessModel> pms = new ArrayList<>();
     addListeningLoops(a1, listeningAlphabet);
@@ -75,8 +75,8 @@ public class QuiescentSingeltonFailureRefinement implements IOperationInfixFunct
     //System.out.println(a2.myString());
     pms.add(a1);
     pms.add(a2);
-    System.out.println("Q1 "+ ((Automaton)pms.get(0)).myString());
-    System.out.println("Q2 "+ ((Automaton)pms.get(1)).myString());
+    //System.out.println("Q1 "+ ((Automaton)pms.get(0)).myString());
+    //System.out.println("Q2 "+ ((Automaton)pms.get(1)).myString());
 
 
     SingeltonFailureRefinement sf = new SingeltonFailureRefinement();
@@ -121,7 +121,7 @@ public class QuiescentSingeltonFailureRefinement implements IOperationInfixFunct
     //Wrap set in first element of Lis
     refusalWrap.add(refusal.stream().distinct().collect(Collectors.toSet()));
     refusalWrap.add(ready.stream().distinct().collect(Collectors.toSet()));
-    System.out.println("refusalWrapped "+refusalWrap);
+    //System.out.println("refusalWrapped "+refusalWrap);
 
     return refusalWrap;
   }

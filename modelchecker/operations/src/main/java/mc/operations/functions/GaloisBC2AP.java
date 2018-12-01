@@ -32,7 +32,7 @@ public class GaloisBC2AP implements IProcessFunction {
    */
   @Override
   public String getFunctionName() {
-    return "fbc2ap";
+    return "bc2ap";
   }
 
   /**
@@ -116,7 +116,7 @@ public class GaloisBC2AP implements IProcessFunction {
    */
 
     public Petrinet composeM(String id, Set<String> flags, Context context, Map<Multiset<PetriNetPlace>, AutomatonNode> markingToNode, Petrinet petrinet) throws CompilationException {
-      System.out.println("GaloisBC2AP "+ petrinet.getId());
+      System.out.println("Galois BC2AP "+ petrinet.getId());
 
 
     for(PetriNetTransition tr: petrinet.getTransitions().values()){

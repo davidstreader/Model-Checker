@@ -46,10 +46,11 @@ public class IdentifierNode extends ASTNode {
   }
 
   public String myString() {
-    if (domain.equals("*"))
-      return identifier;
-    else
-      return identifier + ":" + domain;
+    return identifier + ":" + domain;
+  }
+
+  public String trueString() {
+    return "id "+ identifier + " dom " + domain;
   }
 
   public String getVarDom() {

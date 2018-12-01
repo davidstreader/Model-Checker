@@ -75,8 +75,8 @@ public class RevAP2BC implements IProcessFunction {
   @Override
   public Automaton compose(String id, Set<String> flags, Context context,  Automaton... automata)
     throws CompilationException {
-  Automaton aut = automata[0].reId(automata[0].getId()+"rA2B");
-    System.out.println("RevAP2BC AUTOMATON start "+aut.getId()+ " flags "+flags);
+  Automaton aut = automata[0].reId(automata[0].getId()+"Rap2bc");
+    //System.out.println("RevAP2BC AUTOMATON start "+aut.myString()+ " flags "+flags);
     //Set<String> listeners = flags.stream().filter(x->x.endsWith("?")).collect(Collectors.toSet());
     //buildListeningLoops(listeners,aut); //MUST KEEP
 
@@ -89,6 +89,7 @@ public class RevAP2BC implements IProcessFunction {
       else if (ed.getLabel().endsWith("!") ) ed.setLabel(prefix1+Constant.ACTIVE);
 
     }
+    aut.cleanNodeLables();
     //System.out.println("RevAP2BC AUTOMATON RETURNS "+aut.myString());
     return aut;
   }
@@ -143,7 +144,7 @@ public class RevAP2BC implements IProcessFunction {
                            Map<Multiset<PetriNetPlace>, AutomatonNode> markingToNode,
                            Petrinet petrinet) throws CompilationException {
    //Petrinet petrinet = petrinets[0].reId("Rev") ;
-    System.out.println("RevAP2BC start "+petrinet.getId()+ " flags "+flags);
+    //System.out.println("RevAP2BC start "+petrinet.getId()+ " flags "+flags);
     Set<String> listeners = flags.stream().filter(x->x.endsWith("?")).collect(Collectors.toSet());
     buildListeningLoops(markingToNode,listeners,petrinet); //MUST KEEP
 
