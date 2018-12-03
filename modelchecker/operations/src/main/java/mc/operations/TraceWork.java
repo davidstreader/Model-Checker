@@ -52,7 +52,7 @@ public class TraceWork {
                           SubSetEval eval) throws CompilationException {
 //Called directly from Trace Refinement and with some preprocessing from Quiescent Refinement
     boolean cong = flags.contains(Constant.CONGURENT);
-    //System.out.println("TraceWorks START");
+    System.out.println("TraceWorks START");
     if (processModels.iterator().next() instanceof Automaton) {
       Nfa2dfaWorks nfa2dfaworks = new Nfa2dfaWorks();
       ArrayList<ProcessModel> dfas = new ArrayList<>();
@@ -67,7 +67,7 @@ public class TraceWork {
         }
 
         try {
-          //System.out.println("TraceWorks nfa "+a.myString());
+          System.out.println("TraceWorks nfa "+a.myString());
           Automaton newdfa; //BUILD DFA
           newdfa = nfa2dfaworks.compose(  a.getId(),  flags,  context,  tt,
             buildData,  //lambda to build data for later comparision

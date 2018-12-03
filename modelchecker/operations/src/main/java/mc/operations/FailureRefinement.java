@@ -70,8 +70,11 @@ public class FailureRefinement implements IOperationInfixFunction {
         acceptance.add(as);
       }
     }
-    return acceptance; //correction(acceptance);
+    List<Set<String>> tmp = correction(acceptance);
+    System.out.println("Active correction "+tmp);
+    return tmp;
   }
+  //copied from Acceptance Graph
   private List<Set<String>> correction(List<Set<String>> in){
     List<Set<String>> asout = new ArrayList<>();
     for (Set<String> as : in) {

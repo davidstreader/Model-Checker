@@ -45,10 +45,76 @@ Test:{ //Like broadcast must have only one of  a^ OR a
  Ll6= b^-> X, X = (a->c^->Ll6|b^->a->X|b^->Ll6). 
 
 }
-Zoo:{ }
+BC:{
+  Abc= a?->STOP.  
+ A1bc= b!->STOP.
+ A2bc= b!->STOP|c!->STOP.
+ A3bc= b!->STOP|a?->STOP.
+ A4bc= c!->STOP|a?->STOP.
+ A5bc= d?->STOP|a?->STOP.
+
+ Bbc= a?->a?->STOP.  
+ B1bc= a?->b!->STOP.
+ B11bc= a?->d?->STOP. 
+ B12bc= b!->c!->STOP.
+ B13bc= c!->d?->STOP.
+ B2bc= a?->b!->STOP|a?->STOP.
+ B21bc= a?->b!->STOP|d?->STOP.
+ B3bc= a?->b!->STOP|a?->c!->STOP.
+ B4bc= a?->(b!->STOP|c!->STOP). 
+ B5bc= b!->b!->STOP|b!->STOP.
+ B6bc= c!->b!->STOP|b!->STOP.
+ B7bc= c!->b!->STOP|a?->c!->STOP.
+ B8bc= c!->(a?->STOP|d?->STOP). 
+
+ Lbc= a?->Lbc.  
+ L1bc= b!->L1bc.
+ L2bc= a?->b!->L2bc|a?->STOP.
+ L3bc= b!->a?->L3bc|a?->STOP. 
+ L4bc= b!->a?->L4bc|b!->STOP. 
+ L5bc= b!->a?->L5bc|c!->STOP. 
+ 
+ Lxbc= b!->b!->Lxbc.  
+ Lybc= a?->b!->Lybc.
+ Lzbc= a?->d?->Lzbc.
+ Lx2bc= a?->b!->Lx2bc|b!->STOP.
+ Lx3bc= a?->b!->Lx3bc|a?->STOP. 
+ Lx4bc= a?->b!->Lx4bc|d?->STOP. 
+ Llxbc= a?->a?->Llxbc|a?->Llxbc.  
+ Llx1bc= a?->b!->Llx1bc|b!->b!->Llx1bc.
+ Llx2bc= b!->a?->Llx2bc|b!->Llx2bc.
+ Llx3bc= b!->a?->Llx3bc|c!->d?->Llx3bc. 
+
+ LlSbc= b!->a?->c->STOP|b!->a?->STOP|b!->STOP. 
+ Ll4bc= b!->a?->c->Ll4bc|b!->a?->Ll4bc|b!->Ll4bc. 
+ Ll5bc= b!->(a?->c!->a?->Ll5bc|a?->c!->Ll5bc|a?->Ll5bc). 
+ Ll6bc= b!-> X, X = (a?->c!->Ll6bc|b!->a?->X|b!->Ll6bc).  
+}
+
+/*
+Lopa = a!->Lopa.
+Lopb = b!->Lopb.
+Lopab = a!->b!->Lopab.
+Lopba = b!->a!->Lopba.
+Lopbab = b!->a!->b!->Lopbab.
+Lopaba = a!->b!->a!->Lopaba.
+Lopabb = a!->b!->b!->Lopabb.
+Lopbba = b!->b!->a!->Lopbba.
+
+*/
+
 }
 
 equation {
+/*
+Nice idea but defining Y:BC Broadcast processes of interest is VERY problematic
+fap2bc(X:Test) <qsf Y:BC ==> X:Test <f revap2bc(Y:BC)
+*/
+
+fap2bc(X:Test) <qsf{cong} Y:BC ==> X:Test <f{cong} revap2bc(Y:BC).
+
+(X:BC) <qsf{cong} (Y:BC) ==> fap2bc(revap2bc(X:BC)) <qsf{cong} fap2bc(revap2bc(Y:BC)).
+
 /*
 fap2bc(X:Test) <qsf fap2bc(Y:Test) ==> fap2bc(revap2bc(fap2bc(X:Test))) <qsf fap2bc(revap2bc(fap2bc(Y:Test))).
 
@@ -60,8 +126,8 @@ X:Test <f Y:Test ==> simp(abs(revap2bc(fap2bc(X:Test)))) <f simp(abs(revap2bc(fa
 simp(abs(revap2bc(fap2bc(X:Test)))) <f X:Test.
 simp(abs(revap2bc(fap2bc(X:Test[]Y:Test)))) <f X:Test[]Y:Test.
 
+//    NOW the CONG 
 fap2bc(revap2bc(fap2bc(X:Test))) <qsf{cong} fap2bc(X:Test).
-
 fap2bc(revap2bc(fap2bc(X:Test[]Y:Test))) <qsf{cong} fap2bc(X:Test[]Y:Test).
 
 X:Test <f{cong} Y:Test ==> simp(abs(revap2bc(fap2bc(X:Test)))) <f simp(abs(revap2bc(fap2bc(Y:Test)))). 
@@ -69,10 +135,13 @@ X:Test <f{cong} Y:Test ==> simp(abs(revap2bc(fap2bc(X:Test)))) <f simp(abs(revap
 simp(abs(revap2bc(fap2bc(X:Test)))) <f{cong} X:Test.
 simp(abs(revap2bc(fap2bc(X:Test[]Y:Test)))) <f{cong} X:Test[]Y:Test.
 
+fap2bc(X:Test) <qsf{cong} fap2bc(Y:Test) ==> fap2bc(revap2bc(fap2bc(X:Test))) <qsf{cong} fap2bc(revap2bc(fap2bc(Y:Test))).
 */
-fap2bc(X:Test) <qsf fap2bc(Y:Test) ==> fap2bc(revap2bc(fap2bc(X:Test))) <qsf{cong} fap2bc(revap2bc(fap2bc(Y:Test))).
-
-
 }
+
+
+
+
+
 
 

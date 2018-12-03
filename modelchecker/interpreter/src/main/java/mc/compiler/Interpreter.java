@@ -64,7 +64,7 @@ public class Interpreter {
                                              boolean symb)
     throws CompilationException, InterruptedException {
     this.alpha = alpha;
-    System.out.println("*** Interp START " + ast.myString());
+    System.out.println("*** Interp START ");
     StringBuilder sb = new StringBuilder();
     //System.out.print("Who calls interpret Y? ");//Throwable t = new Throwable();t.printStackTrace();
     Map<String, ProcessModel> processMap = new LinkedHashMap<>();  //already built proceesses
@@ -75,7 +75,7 @@ public class Interpreter {
     //System.out.println("AST processes "+ processes.stream().map(x->x.getIdentifier()).
     //  reduce("{",(x,y)->x+" "+y)+"}");
     for (ProcessNode process : processes) { //BUILD ALL PROCESSES
-      System.out.println("  Interpreter Building " + process.myString()); // + " ... "+ process.getType().toString());
+      //System.out.println("  Interpreter Building " + process.myString()); // + " ... "+ process.getType().toString());
       ProcessModel model = null;
       model = new MultiProcessModel(process.getIdentifier());
       model.setLocation(process.getLocation());  //location on screen

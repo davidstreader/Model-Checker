@@ -55,7 +55,7 @@ public class Compiler {
     //LEX ->PARSE->COMPILE
     List<Token> codeInput = lexer.tokenise(code);
     AbstractSyntaxTree ast = parser.parse(codeInput, z3Context);
-    messageQueue.add(new LogMessage("Compile  starting ?? "+symb.get()));
+    messageQueue.add(new LogMessage("Compile  starting  symbolic "+symb.get()));
     return compile(ast, code,  z3Context, messageQueue,symb);
   }
 
@@ -78,7 +78,7 @@ public class Compiler {
     HashMap<String, ProcessNode> processNodeMap = new HashMap<>();
   //  HashMap<String, ProcessNode> dependencyMap = new HashMap<>();
 
-    System.out.println("\nCOMPILER "+ast.myString()+" symb "+symb.get()+"\n");
+    //System.out.println("\nCOMPILER "+ast.myString()+" symb "+symb.get()+"\n");
     for (ProcessNode node : ast.getProcesses()) {
       //messageQueue.add(new LogMessage("Compile  starting "+node.getIdentifier()+" s "+symb.get()));
       //System.out.println("**COMPILER** Compiler Start node = "+ node.myString());

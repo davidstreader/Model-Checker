@@ -1,17 +1,13 @@
 processes {   
+Active  = a^->STOP.
+Passive = a->STOP.
+Abc = fap2bc(Active).
+Pbc = fap2bc(Passive).
 
-Test = a->a->STOP.
-Twoabs = a->b->Twoabs.
-Dx  = a->(b->Dx|a->STOP).
-
-XT = Twoabs||{a,b} Test.
-XD = Dx||{a,b} Test.
+X = a^->b->STOP.
+Xbc = fap2bc(X).
 }
 
-operation{
-Dx <sf{cong} Twoabs . 
-XD <t{cong}  XT.
-}
 
 
 
@@ -20,3 +16,4 @@ XD <t{cong}  XT.
 
 
  
+
