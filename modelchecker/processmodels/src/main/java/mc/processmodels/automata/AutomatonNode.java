@@ -276,44 +276,15 @@ public class AutomatonNode extends ProcessModelObject implements Comparable<Auto
 
   }
   /*
-     Currently only used in QuiescentTrace but could be used elsewhere
+     Currently only used in QuiescentTrace
+     flag events previously added
    */
   public Set<String> quiescentReadySet(boolean cong) {
-    Set<String> out = getOutgoingEdges().stream().map(x -> x.getLabel()).collect(Collectors.toSet());
-   if (cong) {
-     if (isSTOP()) out.add(Constant.STOP);
-   //  if (isERROR()) out.add(Constant.ERROR);
-     if (isStartNode())  out.add(Constant.Start);
-   }
-    if (quiescentCheck()) out.add(Constant.Quiescent);
-    return out;
-  }
-
-  public Set<String> quiescentOutReadySet(boolean cong) {
     Set<String> out = getOutgoingEdges().stream().
-      map(x -> x.getLabel()).
-      filter(x->x.endsWith(Constant.BROADCASTSoutput)).
-      collect(Collectors.toSet());
-    if (cong) {
-      if (isSTOP()) out.add(Constant.STOP);
-    //  if (isERROR()) out.add(Constant.ERROR);
-      if (isStartNode())  out.add(Constant.Start);
-    }
-    if (quiescentCheck()) out.add(Constant.Quiescent);
-    return out;
-  }
+         map(x -> x.getLabel()).
+         filter(x->!x.equals(Constant.Quiescent)).
+         collect(Collectors.toSet());
 
-  public Set<String> quiescentInReadySet(boolean cong) {
-    Set<String> out = getOutgoingEdges().stream().
-      map(x -> x.getLabel()).
-      filter(x->x.endsWith(Constant.BROADCASTSinput)).
-      collect(Collectors.toSet());
-    if (cong) {
-      if (isSTOP()) out.add(Constant.STOP);
-     // if (isERROR()) out.add(Constant.ERROR);
-      if (isStartNode())  out.add(Constant.Start);
-    }
-    if (quiescentCheck()) out.add(Constant.Quiescent);
     return out;
   }
 

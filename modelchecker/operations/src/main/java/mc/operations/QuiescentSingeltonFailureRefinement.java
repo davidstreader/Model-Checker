@@ -49,16 +49,19 @@ public class QuiescentSingeltonFailureRefinement implements IOperationInfixFunct
   @Override
   public boolean evaluate(Set<String> alpha, Set<String> flags, Context context,
                           Stack<String> trace, Collection<ProcessModel> processModels) throws CompilationException {
-    //System.out.println("\nQUIESCENT " + alpha);
+    System.out.println("\nQUIESCENT " + alpha+" "+flags+" ");
     boolean cong = flags.contains(Constant.CONGURENT);
     //ProcessModel[] pms =  processModels.toArray();
     Automaton a1 = ((Automaton) processModels.toArray()[0]).copy();
     Automaton a2 = ((Automaton) processModels.toArray()[1]).copy();
-    //System.out.println("****Quiescent a1 "+a1.readySets2String(cong));
+    System.out.println("****Quiescent a1 "+a1.myString());
+    System.out.println("****Quiescent a2 "+a2.myString());
     AbstractionFunction abs = new AbstractionFunction();
     a1 = abs.GaloisBCabs(a1.getId(), flags, context, a1);
     a2 = abs.GaloisBCabs(a2.getId(), flags, context, a2); //end states marked
     //System.out.println("*** Q a1  " + a1.readySets2String(cong));
+    System.out.println("Gabs "+a1.myString());
+    System.out.println("Gabs "+a2.myString());
 
     //Build set of all listening events in both automata
     Set<String> alphabet = a1.getAlphabet().stream().collect(Collectors.toSet());
@@ -66,17 +69,17 @@ public class QuiescentSingeltonFailureRefinement implements IOperationInfixFunct
     Set<String>  listeningAlphabet = alphabet.stream().distinct().
       filter(x->x.endsWith(Constant.BROADCASTSinput)).
       collect(Collectors.toSet());
-    //System.out.println("\n new listeningAlphabet " + listeningAlphabet);
+    System.out.println("\n new listeningAlphabet " + listeningAlphabet);
 
     ArrayList<ProcessModel> pms = new ArrayList<>();
     addListeningLoops(a1, listeningAlphabet);
     addListeningLoops(a2, listeningAlphabet);
-    //System.out.println(a1.myString());
-    //System.out.println(a2.myString());
+    //System.out.println("+LLoops "+a1.myString());
+    //System.out.println("+LLoops "+a2.myString());
     pms.add(a1);
     pms.add(a2);
-    //System.out.println("Q1 "+ ((Automaton)pms.get(0)).myString());
-    //System.out.println("Q2 "+ ((Automaton)pms.get(1)).myString());
+    System.out.println("Q1 GalAbs+LL "+ ((Automaton)pms.get(0)).myString());
+    System.out.println("Q2 GalAbs+LL "+ ((Automaton)pms.get(1)).myString());
 
 
     SingeltonFailureRefinement sf = new SingeltonFailureRefinement();
@@ -85,10 +88,33 @@ public class QuiescentSingeltonFailureRefinement implements IOperationInfixFunct
     return tw.evaluate(flags,context, pms,
       TraceType.QuiescentTrace,
       trace,
-      sf::refusalWrapped,
+      this::refusalWrapped,
       (a11, a21, cong1, error) -> sf.singeltonPass(a11, a21, cong1, error));
 
   }
+
+  private List<Set<String>> refusalWrapped(Set<AutomatonNode> nds, boolean cong){
+
+    List<Set<String>> refusalWrap = new ArrayList<>();
+    Set<String> refusal = new TreeSet<>();
+    Set<String> ready = new TreeSet<>();
+    boolean first = true;
+    for (AutomatonNode nd: nds){
+      if (first) {
+        first = false;
+        refusal = nd.quiescentReadySet(cong);
+      }
+      else refusal.retainAll(nd.quiescentReadySet(cong));
+    }
+    nds.stream().map(x->x.readySet(cong)).forEach(s->ready.addAll(s));
+    //Wrap set in first element of Lis
+    refusalWrap.add(refusal.stream().distinct().collect(Collectors.toSet()));
+    refusalWrap.add(ready.stream().distinct().collect(Collectors.toSet()));
+    System.out.println("QSF refusalWrapped "+refusalWrap);
+
+    return refusalWrap;
+  }
+
 
   private void addListeningLoops(Automaton ain,  Set<String> alphain )
     throws CompilationException {
@@ -107,7 +133,7 @@ public class QuiescentSingeltonFailureRefinement implements IOperationInfixFunct
   public List<Set<String>> refusalQWrapped(Set<AutomatonNode> nds, boolean cong){
 
     List<Set<String>> refusalWrap = new ArrayList<>();
-    Set<String> refusal = new TreeSet<>();
+    Set<String> refusal = new TreeSet<>();  // the intersection of all the ready sets
     Set<String> ready = new TreeSet<>();
     boolean first = true;
     for (AutomatonNode nd: nds){

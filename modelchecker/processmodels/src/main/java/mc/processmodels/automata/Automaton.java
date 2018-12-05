@@ -2,11 +2,14 @@ package mc.processmodels.automata;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 
+import java.lang.reflect.Array;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.rits.cloning.Cloner;
 import lombok.Getter;
@@ -129,16 +132,40 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
   }
 
+  public Map<String, Set<String>> eventNames2Owner(){
+    Map<String, Set<String>> a2o = new TreeMap<>();
+    for (AutomatonEdge e: this.getEdges()){
+      for(String o:e.getEdgeOwners()) {
+        Set<String> os = a2o.get(e.getLabel());
+        if (a2o.containsKey(e.getLabel())){
+          os.add(o);
+        } else {
+          Set<String> ol = Stream.of(o).collect(Collectors.toSet());
+          a2o.put(e.getLabel(), ol);
+        }
+      }
+    }
+      return a2o;
+  }
+  /* ONLY called from Nfa2dfaWorks and after ReId  that forces
+      nodeId and labelNumber to be the same and Unique for each node
+   */
   public AutomatonNode deadNode() {
-    String dead = "_dead";
+    return getDeadNode("_dead");
+  }
+
+  public AutomatonNode zombieNode() {
+    return getDeadNode("_zombie");
+  }
+
+  public AutomatonNode getDeadNode(String dead) {
     AutomatonNode nd;
     if (nodeMap.keySet().contains(dead)) {
       nd = nodeMap.get(dead);
-      nd.setLabelNumber(getNodes().size() + 2); // Crappy way to make unique
       //System.out.println("OLD zombie " + nd.myString());
     } else {
       nd = addNode(dead);
-      nd.setLabelNumber(nodeId++);
+      nd.setLabelNumber(nodeId++); //  works
       //System.out.println("Adding zombie " + nd.myString());
     }
     return nd;

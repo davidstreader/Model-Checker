@@ -67,8 +67,8 @@ public class QuiescentRefinement implements IOperationInfixFunction {
    //System.out.println("****Quiescent input a1 "+a1.myString());
    //System.out.println("****Quiescent input a2 "+a2.myString());
     AbstractionFunction abs = new AbstractionFunction();
-    a1 = abs.GaloisBCabs(a1.getId(), flags, context, a1);
-    a2 = abs.GaloisBCabs(a2.getId(), flags, context, a2); //end states marked
+  //  a1 = abs.GaloisBCabs(a1.getId(), flags, context, a1);
+  //  a2 = abs.GaloisBCabs(a2.getId(), flags, context, a2); //end states marked
     //System.out.println("*** Q a1  " + a1.readySets2String(cong));
 
     //Build set of all listening events in both automata
@@ -77,7 +77,7 @@ public class QuiescentRefinement implements IOperationInfixFunction {
     Set<String>  listeningAlphabet = alphabet.stream().distinct().
       filter(x->x.endsWith(Constant.BROADCASTSinput)).
       collect(Collectors.toSet());
-    //System.out.println("\n new QUIESCENT " + listeningAlphabet);
+    System.out.println("\n new QUIESCENT " + listeningAlphabet);
 
     ArrayList<ProcessModel> pms = new ArrayList<>();
     addListeningLoops(a1, listeningAlphabet);
@@ -112,21 +112,28 @@ public class QuiescentRefinement implements IOperationInfixFunction {
 /*
   alpha  set of input events
   for each node add loop if not already part of ready set.
+  Ownership !!!
  */
   public void addListeningLoops(Automaton ain,  Set<String> alpha )
     throws CompilationException {
 
-    //System.out.println("LL alphabet = "+alpha);
+    System.out.println("LL alphabet = "+alpha);
 
+    Map<String,Set<String>> a2o = ain.eventNames2Owner();
 
     for(AutomatonNode nd : ain.getNodes()) {
        Set<String> ready = nd.readySet(false);
-      //System.out.println("  "+nd.getId()+"->"+ready);
+      System.out.println("  "+nd.getId()+"->"+ready);
        for(String al:alpha) {
-         //System.out.println("  al "+al);
+         System.out.println("  al "+al);
          if (!ready.contains(al))  {
            AutomatonEdge ed =  ain.addEdge(al,nd,nd,new Guard(),false,false);
-           //System.out.println("  adding "+ed.myString("smiple"));
+           if (a2o.containsKey(al)) {
+             ed.setEdgeOwners(a2o.get(al));
+           } else {
+             ed.setEdgeOwners(ain.getOwners());
+           }
+           System.out.println("  adding "+ed.myString("smiple"));
          }
        }
     }

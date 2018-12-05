@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import mc.Constant;
 import mc.exceptions.CompilationException;
+import mc.operations.QuiescentRefinement;
 import mc.plugins.IProcessFunction;
 import mc.processmodels.MappingNdMarking;
 import mc.processmodels.MultiProcessModel;
@@ -48,7 +49,7 @@ public class RevAP2BC implements IProcessFunction {
    */
   @Override
   public Collection<String> getValidFlags() {
-    return ImmutableSet.of(Constant.UNFAIR, Constant.FAIR, Constant.CONGURENT);
+    return ImmutableSet.of("*");
   }
 
   /**
@@ -76,9 +77,16 @@ public class RevAP2BC implements IProcessFunction {
   public Automaton compose(String id, Set<String> flags, Context context,  Automaton... automata)
     throws CompilationException {
   Automaton aut = automata[0].reId(automata[0].getId()+"Rap2bc");
+
     //System.out.println("RevAP2BC AUTOMATON start "+aut.myString()+ " flags "+flags);
-    //Set<String> listeners = flags.stream().filter(x->x.endsWith("?")).collect(Collectors.toSet());
+    Set<String> listeners = flags.stream().filter(x->x.endsWith("?")).collect(Collectors.toSet());
     //buildListeningLoops(listeners,aut); //MUST KEEP
+    System.out.println("revAp2bc listeners "+listeners);
+    //System.out.println("revAp2bc BEFORE "+aut.myString());
+    QuiescentRefinement qr = new QuiescentRefinement();
+    qr.addListeningLoops(aut,listeners);
+
+    System.out.println("revAp2bc AFTER XX ownership XX "+aut.myString());
 
     for(AutomatonEdge ed : aut.getEdges()) {
       //System.out.println("ed "+ed.myString());
@@ -90,7 +98,7 @@ public class RevAP2BC implements IProcessFunction {
 
     }
     aut.cleanNodeLables();
-    //System.out.println("RevAP2BC AUTOMATON RETURNS "+aut.myString());
+    System.out.println("RevAP2BC AUTOMATON RETURNS "+aut.myString());
     return aut;
   }
 

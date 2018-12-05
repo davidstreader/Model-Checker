@@ -1,6 +1,7 @@
 processes {
 Test:{ //Like broadcast must have only one of  a^ OR a
- A= a->STOP.  
+ 
+A= a->STOP.  
  A1= b^->STOP.
  A2= b^->STOP|c^->STOP.
  A3= b^->STOP|a->STOP.
@@ -34,8 +35,10 @@ Test:{ //Like broadcast must have only one of  a^ OR a
  Lx2= a->b^->Lx2|b^->STOP.
  Lx3= a->b^->Lx3|a->STOP. 
  Lx4= a->b^->Lx4|d->STOP. 
+
  Llx= a->a->Llx|a->Llx.  
- Llx1= a->b^->Llx1|b^->b^->Llx1.
+ /*
+Llx1= a->b^->Llx1|b^->b^->Llx1.
  Llx2= b^->a->Llx2|b^->Llx2.
  Llx3= b^->a->Llx3|c^->d->Llx3. 
 
@@ -43,10 +46,11 @@ Test:{ //Like broadcast must have only one of  a^ OR a
  Ll4= b^->a->c->Ll4|b^->a->Ll4|b^->Ll4. 
  Ll5= b^->(a->c^->a->Ll4|a->c^->Ll5|a->Ll5). 
  Ll6= b^-> X, X = (a->c^->Ll6|b^->a->X|b^->Ll6). 
-
+*/
 }
 BC:{
-  Abc= a?->STOP.  
+
+ Abc= a?->STOP.  
  A1bc= b!->STOP.
  A2bc= b!->STOP|c!->STOP.
  A3bc= b!->STOP|a?->STOP.
@@ -76,7 +80,10 @@ BC:{
  
  Lxbc= b!->b!->Lxbc.  
  Lybc= a?->b!->Lybc.
+
  Lzbc= a?->d?->Lzbc.
+
+/*
  Lx2bc= a?->b!->Lx2bc|b!->STOP.
  Lx3bc= a?->b!->Lx3bc|a?->STOP. 
  Lx4bc= a?->b!->Lx4bc|d?->STOP. 
@@ -88,7 +95,7 @@ BC:{
  LlSbc= b!->a?->c->STOP|b!->a?->STOP|b!->STOP. 
  Ll4bc= b!->a?->c->Ll4bc|b!->a?->Ll4bc|b!->Ll4bc. 
  Ll5bc= b!->(a?->c!->a?->Ll5bc|a?->c!->Ll5bc|a?->Ll5bc). 
- Ll6bc= b!-> X, X = (a?->c!->Ll6bc|b!->a?->X|b!->Ll6bc).  
+ Ll6bc= b!-> X, X = (a?->c!->Ll6bc|b!->a?->X|b!->Ll6bc).  */
 }
 
 /*
@@ -102,18 +109,60 @@ Lopabb = a!->b!->b!->Lopabb.
 Lopbba = b!->b!->a!->Lopbba.
 
 */
+Zoo:{ 
+
+Z1 = fap2bc{a}(A1:Test).
+Z3 = fap2bc{a}(A3:Test).
+}
+}
+operation{ 
+
+A3 <f A1.
+Z3 <qsf Z1.
+
+A1 <f A3.
+Z1 <qsf Z3.
+//CHECK which way we want the refinements!
+// Example, with only listening,  fails for non congruence
+//Z1 <qsf{cong} Z2. //true
+//R1 <f{cong} R2.   //false
+ // alphabet subset problem both in failure and trace semantics 
+
+//Z2 <qsf Z1.
+//R2 <t R1.
+//R2 <f R1.
+
+
+//Example works for congruence (both fail)
+//Z2 <qsf{cong} Z1.
+//R2 <f{cong} R1.
+//fap2bc(B2:Test) <qsf{cong} Bbc:BC.
+//B2:Test <f{cong} revap2bc(Bbc:BC).
 
 }
 
 equation {
+//X:Test <f Y:Test ==> fap2bc(X:Test) <qsf fap2bc(Y:Test).
+
 /*
 Nice idea but defining Y:BC Broadcast processes of interest is VERY problematic
 fap2bc(X:Test) <qsf Y:BC ==> X:Test <f revap2bc(Y:BC)
 */
 
-fap2bc(X:Test) <qsf{cong} Y:BC ==> X:Test <f{cong} revap2bc(Y:BC).
+//fap2bc(X:Test) <qsf{cong} Y:BC ==> X:Test <f{cong} revap2bc(Y:BC).
+// Y:BC <qsf{cong} fap2bc(X:Test)  ==> revap2bc(Y:BC) <f{cong}  X:Test.
 
-(X:BC) <qsf{cong} (Y:BC) ==> fap2bc(revap2bc(X:BC)) <qsf{cong} fap2bc(revap2bc(Y:BC)).
+//  simp(abs(revap2bc(fap2bc(X:Test))))<f{cong} X:Test. 
+//X:Test <f{cong}   simp(abs(revap2bc(fap2bc(X:Test)))). 
+
+//fap2bc(revap2bc(Y:BC)) <qsf{cong} Y:BC. 
+
+
+//fap2bc(Y:Test) <qsf{cong} fap2bc(X:Test) ==>  simp(abs(revap2bc(fap2bc(Y:Test))))<f{cong} X:Test .
+
+//fap2bc(X:Test) <qsf{cong} fap2bc(Y:Test) ==>  X:Test <f{cong} simp(abs(revap2bc(fap2bc(Y:Test)))) .
+
+//(X:BC) <qsf{cong} (Y:BC) ==> fap2bc(revap2bc(X:BC)) <qsf{cong} fap2bc(revap2bc(Y:BC)).
 
 /*
 fap2bc(X:Test) <qsf fap2bc(Y:Test) ==> fap2bc(revap2bc(fap2bc(X:Test))) <qsf fap2bc(revap2bc(fap2bc(Y:Test))).
@@ -138,6 +187,23 @@ simp(abs(revap2bc(fap2bc(X:Test[]Y:Test)))) <f{cong} X:Test[]Y:Test.
 fap2bc(X:Test) <qsf{cong} fap2bc(Y:Test) ==> fap2bc(revap2bc(fap2bc(X:Test))) <qsf{cong} fap2bc(revap2bc(fap2bc(Y:Test))).
 */
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

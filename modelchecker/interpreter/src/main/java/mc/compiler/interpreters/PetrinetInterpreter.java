@@ -193,8 +193,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     if (processNode.hasHiding()) {
       processHiding(petrinet, processNode.getHiding());
     }
-    //System.out.println("<<<   End of PetriNetInterpreting " + processNode.myString());// + "\n returns  " + petrinet.myString("edge"));
-
+    System.out.println("<<<   End of PetriNetInterpreting " + processNode.myString() + "\n returns  " + petrinet.myString("edge"));
     return petrinet;  //to be added to ProcessMap along with Aut (by Interpreter)
   }
 
@@ -350,7 +349,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
       //System.out.println(" interpretProcess " + identifier + " processmap  " + asString(processMap));
       //System.out.println("349 " + astNode.myString());
       petrinet = interpretASTNode(astNode, identifier); // PETRI TREE is built and returned
-      //System.out.println("236 *****Interpret "+astNode.toString());
+      System.out.println("236 *****Interpret "+astNode.toString());
       //System.out.println("\n***PetriInterpret LocalProcessNode ");
 
       if (astNode.getReferences() != null) {
@@ -361,7 +360,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
       }
       //System.out.println("\n*X* " + petrinet.myString());
       petrinet = tree2net(petrinet);
-      //System.out.println("  ***ELSE ***tree2net petri "+petrinet.getId());
+      System.out.println("  ***ELSE ***tree2net petri "+petrinet.myString());
       //processStack.push(petrinet);  // newly built petri net pushed onto stack
       return petrinet;
     }
@@ -560,8 +559,8 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
       //System.out.println(petri.myString());
     } //else
 
-    //System.out.println("AST<" + PetrinetInterpreter.indent + className + " info " + info);
-    //+ "\n" + petri.myString("edge"));
+    System.out.println("AST<" + PetrinetInterpreter.indent + className + " info " + info
+    + "\n" + petri.myString("edge"));
 //    if (PetrinetInterpreter.indent.length() > 1)
 //      PetrinetInterpreter.indent = PetrinetInterpreter.indent.substring(1);
     return petri;
@@ -871,6 +870,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     throws CompilationException, InterruptedException {
     Petrinet processed;
     Automaton a = getLocalAutomaton(context, alpha, func);
+    System.out.println("function "+func.myString()+ " -> "+a.myString());
     processed = OwnersRule.ownersRule(a);
     return processed;
   }

@@ -1525,6 +1525,12 @@ public class Parser {
       OperationNode secondOperation = parseSOperation(isEq); // may return an implies node!
 
       operation = new ImpliesNode(firstOperation, secondOperation, this.constructLocation(start));
+    } else if ((peekToken() instanceof AndToken)) {
+      //System.out.println("implies "+peekToken().toString());
+      nextToken();
+      OperationNode secondOperation = parseSOperation(isEq); // may return an implies node!
+
+      operation = new AndNode(firstOperation, secondOperation, this.constructLocation(start));
     } else {
       operation = firstOperation;
     }

@@ -48,7 +48,7 @@ public class FailureRefinement implements IOperationInfixFunction {
   @Override
   public boolean evaluate(Set<String> alpha, Set<String> flags,    Context context, Stack<String> trace, Collection<ProcessModel> processModels) throws CompilationException {
     ProcessModel[] pms = processModels.toArray(new ProcessModel[processModels.size()]);
-    //System.out.println("TraceRefinement "+ alpha +" "+flags+ " "+ pms[0].getId()+ " "+pms[1].getId());
+    //System.out.println("FailureRefinement "+ alpha +" "+flags+ " "+ pms[0].getId()+ " "+pms[1].getId());
     TraceWork tw = new TraceWork();
     return tw.evaluate(flags,context, processModels,
       TraceType.Failure,
@@ -71,7 +71,7 @@ public class FailureRefinement implements IOperationInfixFunction {
       }
     }
     List<Set<String>> tmp = correction(acceptance);
-    System.out.println("Active correction "+tmp);
+    //System.out.println("Active correction "+tmp);
     return tmp;
   }
   //copied from Acceptance Graph
@@ -166,11 +166,11 @@ public class FailureRefinement implements IOperationInfixFunction {
       breakto:
       for (Set<String> aa1 : a1) {     // exists as1 in a1 such that   (B)
 
-        //if (!cong) { // Note look at Return to Root in Cribsheet
+        if (!cong) { // Note look at Return to Root in Cribsheet
           as1 = aa1.stream().filter(x->!Constant.externalOrEND(x)).collect(Collectors.toSet());
-        //} else{
-        //  as1 = aa1;
-        //}
+        } else{
+          as1 = aa1;
+        }
         unionA12.addAll(as1);
         //System.out.println("   is as2 " + as2 + " superset of   as1 " + as1);
         if (as2.containsAll(as1)) {    //  as1 is a  subset of as2

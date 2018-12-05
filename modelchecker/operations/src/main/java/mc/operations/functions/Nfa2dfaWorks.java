@@ -31,9 +31,8 @@ public class Nfa2dfaWorks {
                            TraceType tt, SubSetDataConstructor dataConstructor, Automaton... automata)
     throws CompilationException {
     boolean cong = flags.contains(Constant.CONGURENT);
-    //BuildAcceptanceGraphs ba = new BuildAcceptanceGraphs();
-    //ba.compose(id,flags,context,automata);
-    //System.out.println("Pingo2");
+
+    System.out.println("Nfa2dfa " + id + " " + flags + " " + tt);
     assert automata.length == 1;
     int dfaNodeLabel = 0;
     Automaton nfa = automata[0].copy();// copies nodeId
@@ -41,26 +40,40 @@ public class Nfa2dfaWorks {
     //System.out.println("nfa2dfa START "+nfa.myString());
     for (AutomatonNode ndn : nfa.getNodes()) {
       // NOT for Galois expaned automata  OK SMART ASS why?
+
       if (cong) {
-        nfa.deadNode();
-        if (ndn.isSTOP()) {
-          nfa.addEdge(Constant.STOP, ndn, nfa.deadNode(), null, true, false);
-        //  nfa.addEdge(Constant.END, ndn, nfa.deadNode(), null, true, false);
-          //System.out.println("adding STOP to nfa "+ndn.myString());
-        }
-        if (ndn.isStartNode()) {
-          nfa.addEdge(Constant.Start, ndn, nfa.deadNode(), null, true, false);
-        }
-        if (tt.equals(TraceType.CompleteTrace) && ndn.isERROR()) {
-          nfa.addEdge(Constant.ERROR, ndn, nfa.deadNode(), null, true, false);
-      //  //  nfa.addEdge(Constant.END, ndn, nfa.deadNode(), null, true, false);
+        AutomatonNode deadNd = nfa.deadNode();
+        if (tt.equals(TraceType.QuiescentTrace)) {
+          if (ndn.isSTOP()) {
+            AutomatonNode zomNd1 = nfa.getDeadNode("_zom1");
+            nfa.addEdge(Constant.STOP + "?", ndn, zomNd1, null, true, false);
+            nfa.addEdge(Constant.STOP + "!", zomNd1, deadNd, null, true, false);
+          }
+          if (ndn.isStartNode()) {
+            AutomatonNode zomNd2 = nfa.getDeadNode("_zom2");
+            nfa.addEdge(Constant.Start + "?", ndn, zomNd2, null, true, false);
+            nfa.addEdge(Constant.Start + "!", zomNd2, deadNd, null, true, false);
+            //System.out.println("pingo " + nfa.myString());
+          }
+        } else {  //NOT Quiescent
+          if (ndn.isSTOP()) {
+            nfa.addEdge(Constant.STOP, ndn, deadNd, null, true, false);
+          }
+          if (ndn.isSTOP()) {
+            nfa.addEdge(Constant.STOP, ndn, deadNd, null, true, false);
+          }
         }
 
-      } else
+        //if (tt.equals(TraceType.CompleteTrace) && ndn.isERROR()) {
+        //  nfa.addEdge(Constant.ERROR, ndn, nfa.deadNode(), null, true, false);
+          //  //  nfa.addEdge(Constant.END, ndn, nfa.deadNode(), null, true, false);
+        //}
+
+      } else //NOT cong
         if (tt.equals(TraceType.CompleteTrace) && (ndn.isSTOP() || ndn.isERROR())) {
-        nfa.addEdge(Constant.END, ndn, nfa.deadNode(), null, true, false);
-       //System.out.println("adding edge to nfa "+ed.myString());
-      }  //END is dummy edge to enforce complete traces
+          nfa.addEdge(Constant.END, ndn, nfa.deadNode(), null, true, false);
+          //System.out.println("adding edge to nfa "+ed.myString());
+        }  //END is dummy edge to enforce complete traces
 
       if (tt.equals(TraceType.QuiescentTrace) && ndn.isQuiescent()) {
         nfa.addEdge(Constant.Quiescent, ndn, nfa.deadNode(), null, true, false);
@@ -68,12 +81,12 @@ public class Nfa2dfaWorks {
       }
 // add empty trace
       if (!tt.equals(TraceType.Trace) &&
-          ndn.isStartNode() &&
-          (ndn.isSTOP() || ndn.isERROR())) {
+        ndn.isStartNode() &&
+        (ndn.isSTOP() || ndn.isERROR())) {
         nfa.addEdge(Constant.EPSILON, ndn, nfa.deadNode(), null, true, false);
       }
     }
-    //System.out.println("ANOTATED nfa  "+nfa.myString());
+    System.out.println("ANOTATED nfa  " + nfa.myString());
 
     Automaton dfa = new Automaton(id + "_dfa", !Automaton.CONSTRUCT_ROOT);
 
@@ -97,9 +110,9 @@ public class Nfa2dfaWorks {
       //System.out.println("stateMap.get("+states+")"+" , "+nfa.getId());
       String idNode = constructNodeId(stateMap.get(states), nfa.getId());
       //System.out.println(" output from constructNodeId, idNode = "+idNode+"  states = "+states);
-      if (visited.contains(idNode))  continue;
+      if (visited.contains(idNode)) continue;
       //System.out.println("Processing "+idNode);
-        // process dfa node only once
+      // process dfa node only once
       if (!nodeMap.containsKey(idNode)) { //set up nodeMap and add node to dfa
         AutomatonNode n = dfa.addNode(idNode);
         n.setLabelNumber(dfaNodeLabel++);
@@ -137,7 +150,7 @@ public class Nfa2dfaWorks {
           continue;
         }
         String nextId = constructNodeId(stateMap.get(nextStates), nfa.getId());
-         //stateMap.get(nextStates).stream().forEach(x-> System.out.println("next "+x.myString()));
+        //stateMap.get(nextStates).stream().forEach(x-> System.out.println("next "+x.myString()));
         if (!nodeMap.containsKey(nextId)) {
           //System.out.println(" nextId "+nextId);
           AutomatonNode nd = dfa.addNode(nextId);
@@ -164,7 +177,7 @@ public class Nfa2dfaWorks {
   /*  dfa.getNodes().stream()
         .filter(node -> node.getOutgoingEdges().isEmpty())
         .forEach(node -> node.setTerminal(Constant.STOP)); */
-    //System.out.println("\n built dfa " +dfa.myString()+"\n");
+    System.out.println("\n built dfa " + dfa.myString() + "\n");
     return dfa;
   }
 
@@ -183,12 +196,12 @@ public class Nfa2dfaWorks {
     while (!fringe.isEmpty()) {
       AutomatonNode current = fringe.pop();
       //System.out.println("Root  "+current.getId());
-      if (states.contains(current.getId()))  continue;
+      if (states.contains(current.getId())) continue;
       states.add(current.getId());
       nodes.add(current);
-     }
+    }
 
-    if (!stateMap.containsKey(states))  {
+    if (!stateMap.containsKey(states)) {
       stateMap.put(states, nodes);
       //System.out.println("ADDING 2 StateMap "+ states + "->"+nodes.stream().map(AutomatonNode::getId).collect(Collectors.joining()));
     }
@@ -204,7 +217,7 @@ public class Nfa2dfaWorks {
    */
   private Set<String> constructStateSet(List<AutomatonNode> nodes,
                                         String action,
-                                        Map<Set<String>,List<AutomatonNode>> stateMap) {
+                                        Map<Set<String>, List<AutomatonNode>> stateMap) {
     //System.out.println("construct "+ nodes.stream().map(AutomatonNode::getId).collect(Collectors.joining())+ "->"+action+"  to?");
 
     Set<String> states = new HashSet<>();
@@ -218,7 +231,7 @@ public class Nfa2dfaWorks {
     while (!fringe.isEmpty()) {
       AutomatonNode current = fringe.pop();
       //System.out.println("  current "+current.getId());
-      if (visited.contains(current.getId()))  continue;
+      if (visited.contains(current.getId())) continue;
 
       for (AutomatonEdge edge : current.getOutgoingEdges()) {
         //System.out.println("    edge "+edge.myString("simple"));
@@ -230,23 +243,25 @@ public class Nfa2dfaWorks {
       visited.add(current.getId());
     }
 // nextNodes.size()>0 ADDED if == 0 then this event is not
-    if (nextNodes.size()>0 &&!stateMap.containsKey(states)) {
+    if (nextNodes.size() > 0 && !stateMap.containsKey(states)) {
       stateMap.put(states, nextNodes);
       //System.out.println("ADDING 2 StateMap "+ states + "->"+nextNodes.stream().map(AutomatonNode::getId).collect(Collectors.joining()));
     }
     //if (nextNodes.size()>0)
-      //System.out.println("constructStateSet of new node after "+action+" ->"+states);
+    //System.out.println("constructStateSet of new node after "+action+" ->"+states);
     return states;
   }
 
-  /** Build the nodeId from set of nodes
+  /**
+   * Build the nodeId from set of nodes
+   *
    * @param nodes      input
    * @param identifier input
    * @return
    */
   private String constructNodeId(List<AutomatonNode> nodes, String identifier) {
     String out = identifier + constructLabel(nodes);
-    return  out;
+    return out;
   }
 
   /**

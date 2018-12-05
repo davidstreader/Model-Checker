@@ -10,6 +10,7 @@ import mc.Constant;
 import mc.TraceType;
 import mc.compiler.Guard;
 import mc.exceptions.CompilationException;
+import mc.operations.QuiescentRefinement;
 import mc.plugins.IProcessFunction;
 import mc.processmodels.MappingNdMarking;
 import mc.processmodels.MultiProcessModel;
@@ -86,7 +87,7 @@ public class GaloisAP2BC implements IProcessFunction {
     Set<String> alph = aut.getAlphabet().stream().filter(x -> x.endsWith(Constant.ACTIVE)).collect(Collectors.toSet());
 
     for (AutomatonNode nd : aut.getNodes()) {
-      for (String lab : alph) {
+      for (String lab : flags) {
         //System.out.println("node  "+nd.getId()+" "+nd.getOutgoingEdges().size()+  " lab "+lab);
         //String prefix = lab.substring(0,lab.length()-1);
         boolean found = false;
@@ -99,7 +100,7 @@ public class GaloisAP2BC implements IProcessFunction {
         }
         //System.out.println("found = "+found);
         if (!found) {
-          String prefix = lab.substring(0, lab.length() - 1);
+          String prefix = lab; //lab.substring(0, lab.length() - 1);
           //System.out.println("Pingo");
           AutomatonNode x = aut.addNode();
           x.setLabelNumber(newLabelNode++);

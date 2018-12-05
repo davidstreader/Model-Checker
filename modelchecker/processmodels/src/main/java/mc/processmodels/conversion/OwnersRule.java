@@ -55,7 +55,7 @@ public class OwnersRule {
    */
   @SneakyThrows({CompilationException.class})
   public static Petrinet ownersRule(Automaton ain) {
-    //System.out.println("OwnersRule initial automata " + ain.myString() + "*START ");
+    System.out.println("OwnersRule initial automata " + ain.myString() + "*START ");
     //Throwable t = new Throwable(); t.printStackTrace();
     clean();
     // 1. to automata A add initial event S*=>A now only one start state.
@@ -66,7 +66,7 @@ public class OwnersRule {
     // 2. proceed as before
     Automaton a = ai.copy(); // smaller Ids make debugging easier
     a.tagEvents();
-    //System.out.println("\nOWNERS Stared Rule " + a.myString());
+    System.out.println("\nOWNERS Stared Rule " + a.myString());
 
     AutomatonNode root = null;
 
@@ -126,7 +126,7 @@ public class OwnersRule {
       toDo.clear();
       processed.clear();
       toDo.push(root);
-      //System.out.println("Half way "+petri.myString());
+      System.out.println("Half way "+petri.myString());
       while (!toDo.isEmpty()) {
         AutomatonNode nd = toDo.pop();
         //System.out.println("Start 2 nd " + nd.getId());
@@ -177,7 +177,7 @@ public class OwnersRule {
 
     //3. remove S* to reveal the multiple start states.
     stripStar(build);
-    //System.out.println("  OWNERS Rule *END " + build.myString()+"\n*END");
+    System.out.println("  OWNERS Rule *END " + build.myString()+"\n*END");
     //assert(build.validatePNet(): "OwnersRule End");
     return build;
   }

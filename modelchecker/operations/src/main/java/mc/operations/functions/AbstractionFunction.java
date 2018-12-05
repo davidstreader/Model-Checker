@@ -63,6 +63,10 @@ public class AbstractionFunction implements IProcessFunction {
    *
    * Abstraction for cong ==> keep taus that bridge the gap between internal and external nodes
    *  not cong ==> remove all taus
+   *    PROBLEM root-tau->1-a->STOP|root-tau->1-b->STOP becomes root-a->STOP|root-b->STOP
+   *    Solution  only use abs{cong}
+   *             2. use mutiple root (better)
+   *    Both need to upgrade all process relations)
    *
    * @param id       the id of the resulting automaton
    * @param flags    the flags given by the function (e.g. {@code unfair} in {@code abs{unfair}(A)}
@@ -721,30 +725,30 @@ public class AbstractionFunction implements IProcessFunction {
     return null;
   }
 /*
-   Galois connections introduces events with suffix  .t! and .t?  that need to be abstracted away
+   Galois connections renames events with suffix  .t! and .t?  as tau that need to be abstracted away
    prior to computing quiescent trace refinement.
    This is called from TraceWorks
       TraceWorks has parameter stating which trace refinement to compute
  */
   public Automaton GaloisBCabs (String id, Set<String> flags, Context context, Automaton ain)
      throws CompilationException {
-   //System.out.println("GaloisBCabs START "+ain.myString());
+   System.out.println("GaloisBCabs START "+ain.myString());
     Automaton a = ain.copy();
     //System.out.println("GaloisBCabs COPY "+ain.myString());
     for(AutomatonEdge ed: a.getEdges()) {
       if (ed.getLabel().endsWith(".t!") || ed.getLabel().endsWith(".t?") ||
           ed.getLabel().endsWith(".r!") || ed.getLabel().endsWith(".r?")) {
         ed.setLabel(Constant.HIDDEN);
-      //  ed.getTo().copyProperties(ed.getFrom());  //need to do this here untill STOP with outgoing allowed
+        System.out.println("GalAbs renamed "+ed.myString());
       }
     }
     Automaton[] as = new Automaton[1];
     as[0] = a;
-    //System.out.println("GaloisBCabs NEXT "+a.myString());
+    //NOT sure this is a good idea!!
     Set<String> newflags = flags.stream().filter(x->!x.equals(Constant.CONGURENT)).collect(Collectors.toSet());
     Automaton out =  this.compose(id, newflags, context,  as);
 
-    //System.out.println("**** GaloisBCabs END \n"+out.myString());
+    System.out.println("**** GaloisBCabs END \n"+out.myString());
     return out;
   }
 }

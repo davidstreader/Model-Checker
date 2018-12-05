@@ -130,7 +130,7 @@ public class OperationEvaluator {
 
         List<String> firstIds = collectIdentifiers(operation.getFirstProcess());
         List<String> secondIds = collectIdentifiers(operation.getSecondProcess());
-        //System.out.println("evaluateOp " +operation.getOperation()+ " firstId " +firstIds+ " second "+secondIds);
+        System.out.println("evaluateOp " +operation.myString()+ " firstId " +firstIds+ " second "+secondIds);
 //bound variable will have been removed.
         List<String> missing = new ArrayList<>(firstIds);
         missing.addAll(secondIds);  // all process ids
@@ -176,7 +176,7 @@ public class OperationEvaluator {
         Set<String> flags = operation.getFlags();
         //trace = new Stack<>();
         boolean r = false;
-        //System.out.print("***evalOp "+alpha+"  "+operation.myString());
+        System.out.print("***evalOp "+alpha+"  "+operation.myString());
         /*System.out.println("evalOp "+operation.myString());
         for(String key: processMap.keySet()){
             System.out.println(key+"->"+processMap.get(key).getId());
@@ -262,8 +262,9 @@ public class OperationEvaluator {
                 processModels.add(b);
                 //System.out.println("OpEval two Aut "+two.myString());
             }
-            //System.out.println("\nOpEval ***processModels *2* "+ b.myString()); //+((Automaton) processModels.get(0)).myString());
-            //System.out.println("processModels *2*"+((Automaton) processModels.get(1)).myString());
+            System.out.println("\nOpEval "+operation.myString());
+            System.out.println("***processModels *1* "+((Automaton) processModels.get(0)).myString());
+            System.out.println("***processModels *2* "+((Automaton) processModels.get(1)).myString());
             //System.out.println("oper "+ operation.getOperation().toLowerCase());
             r = funct.evaluate(alpha, flags,context,trace,processModels);
             if (operation.isNegated()) { r = !r; }
@@ -329,6 +330,10 @@ public class OperationEvaluator {
             //System.out.println("ForAllNode bound " +bound +  " temp "+temp);
             ids.addAll(temp);
 
+        } else if (process instanceof AndNode){
+            //System.out.println(" ImpliesNode");
+            collectIdentifiers(((AndNode) process).getFirstOperation(), ids);
+            collectIdentifiers(((AndNode) process).getSecondOperation(), ids);
         } else if (process instanceof ImpliesNode){
             //System.out.println(" ImpliesNode");
             collectIdentifiers(((ImpliesNode) process).getFirstOperation(), ids);

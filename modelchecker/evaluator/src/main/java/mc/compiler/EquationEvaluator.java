@@ -9,10 +9,7 @@ import com.microsoft.z3.Context;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.var;
-import mc.compiler.ast.ForAllNode;
-import mc.compiler.ast.IdentifierNode;
-import mc.compiler.ast.ImpliesNode;
-import mc.compiler.ast.OperationNode;
+import mc.compiler.ast.*;
 //import mc.compiler.interpreters.PetrinetInterpreter;
 import mc.compiler.interpreters.PetrinetInterpreter;
 import mc.exceptions.CompilationException;
@@ -102,7 +99,7 @@ public class EquationEvaluator {
  */
 
     for (OperationNode operation : operations) {
-      /*if (operation == null)System.out.println("XX operation==null in evaluateEquations");
+      /*if (operation == null) System.out.println("XX operation==null in evaluateEquations");
       else System.out.println("XX "+operation.myString()); */
       Map<String, ProcessModel> pMap = new TreeMap<>();// MUST make copy as changed by call
       processMap.keySet().stream().forEach(x -> pMap.put(x, processMap.get(x)));
@@ -140,7 +137,7 @@ public class EquationEvaluator {
     //collect the free variables
     //System.out.println("START - evaluateEquation " + operation.myString()+ " "+processMap.keySet());
     List<String> globlFreeVariables = collectFreeVariables(operation, processMap.keySet());
-    //System.out.println("globalFreeVariables " + globlFreeVariables);  //Var:Dom
+    System.out.println("globalFreeVariables " + globlFreeVariables);  //Var:Dom
 
     if (globlFreeVariables.size() > 3) {
       messageQueue.add(new LogMessage("\nWith this many variables you'll be waiting the rest of your life for this to complete\n.... good luck"));
@@ -150,7 +147,7 @@ public class EquationEvaluator {
     //sets up the domains or use in looping
     Instantiate inst = new Instantiate(processMap, globlFreeVariables, globlFreeVariables);
     globalFreeVar2Model = inst.peek();
-    //System.out.println("new inst "+inst.myString());
+    System.out.println("new inst "+inst.myString());
 
     int totalPermutations = inst.permutationCount();
 
@@ -217,10 +214,12 @@ public class EquationEvaluator {
     throws CompilationException, InterruptedException {
     List<String> freeVariables = outerFreeVariabelMap.keySet().stream().collect(Collectors.toList());    // free variables
 
-    /*System.out.println("Satrting testUserDefinedModel id " + status.getId() + " " + operation.myString() +
-      "\n   processMap " + processMap.keySet() +
-      "\n   outer " + asString(outerFreeVariabelMap) + " pass " + status.passCount+
-      "\n   inst"+inst.myString()); */
+    System.out.println("Satrting testUserDefinedModel id "+status.getId()+" "+operation.myString()
+    + " outer " + asString(outerFreeVariabelMap)
+    ); //+
+     // "\n   processMap " + processMap.keySet() +
+     // "\n   outer " + asString(outerFreeVariabelMap) + " pass " + status.passCount+
+     // "\n   inst"+inst.myString());
 
     boolean r = false;
     ArrayList<String> failedEquations = new ArrayList<>();
@@ -237,6 +236,7 @@ public class EquationEvaluator {
       //System.out.println("    while loop " + i++ +" "+ asString(outerFreeVariabelMap)+"  status.passCount "+status.passCount);
 
       if (operation instanceof ForAllNode) {    //  FORALL
+        System.out.println("-- ForAll " + operation.myString() +" with "+ asString(outerFreeVariabelMap));
         // add outer free Vars to Process model
         // build inner free Vars
         List<String> localBound = ((ForAllNode) operation).getBound();
@@ -314,7 +314,7 @@ public class EquationEvaluator {
           true //call test again with expanded variable map
         );
 // must pass
-        //System.out.println("  foall END of testUserDefine"+"  localStatus.passCount "+localStatus.passCount);
+        System.out.println("  forall END of testUserDefine"+"  localStatus "+localStatus.myString());
         if (localStatus.failCount > 0) {
           status.setFailCount(localStatus.failCount);  //Fail must return
           status.setPassCount(localStatus.passCount);
@@ -327,17 +327,19 @@ public class EquationEvaluator {
           status.passCount++;
 
         }
+/*  *******************************  IMPLIES IMPLIES */
         //System.out.println("  status.passCount "+status.passCount);
       } else if (operation instanceof ImpliesNode) {    //IMPLIES
-        //System.out.println("Implies " + operation.myString()+" with "+ asString(outerFreeVariabelMap));
+        System.out.println("-- Implies " + operation.myString() +" with "+ asString(outerFreeVariabelMap));
         ModelStatus status1 = new ModelStatus();
         ModelStatus status2 = new ModelStatus();
         boolean or1 = false;
         boolean or2 = false;
+        System.out.println("First" + ((ImpliesNode) operation).getFirstOperation().myString());
         if (((ImpliesNode) operation).getFirstOperation() instanceof ForAllNode) {
           //to asses short circuit evaluate 2 First
           OperationNode o2 = (OperationNode) ((ImpliesNode) operation).getSecondOperation();
-          //System.out.println("implies evaluate 2 first " + o2.myString());
+          System.out.println("implies evaluate 2 first " + o2.myString());
           List<String> failures2 = testUserdefinedModel(processMap,
             //models,
             petrinetInterpreter,
@@ -350,19 +352,18 @@ public class EquationEvaluator {
             alpha,     // Only used for broadcast semantics
             outerFreeVariabelMap, false  // will update free var map  BUT needed in second call
           );
-          //System.out.println("evaluated 2 status = " + status2.myString());
+          System.out.println("evaluated 2 status = " + status2.myString());
           or2 = status2.failCount == 0;
           if (or2 == true) {
-            //System.out.println("  @@@@@@ Short circuit Implies 2 == true");
+            System.out.println("  @@@@@@ Short circuit XXX ==> true is true");
             status.failCount = 0; //force success
             failedEquations = new ArrayList<>();
             status.impliesConclusionTrue++;
             //status.setPassCount(status2.passCount);
-            r = true;
             status.passCount++;
-          } else {
+          } else {  //  XX ==> false
             OperationNode o1 = (OperationNode) ((ImpliesNode) operation).getFirstOperation();
-            //System.out.println("implies now evaluate 1 " + o1.myString());
+            System.out.println("implies now evaluate 1 " + o1.myString());
             List<String> failures1 = testUserdefinedModel(processMap,
               //models,
               petrinetInterpreter,
@@ -375,17 +376,17 @@ public class EquationEvaluator {
               alpha,     // Only used for broadcast semantics
               outerFreeVariabelMap, false
             );
-            //System.out.println("Return of status1 = " + status1.myString());
-            or1 = status1.failCount == 0;
-            r = (!or1);  // A -> B  EQUIV  not A OR B and B==false
+            System.out.println("evaluated  status1 = " + status1.myString());
 
             //System.out.println(" "+ r + " "+ status.myString());
             // status.setPassCount(status1.passCount); //pass count not passed up tree
-            if (!r) {//or1==true and or2==false
+            if (status1.failCount == 0) {// true ==> false   is false
               status.setFailCount(status2.failCount);
-              //System.out.println("  @@@@@@ Failing 1 Implies 2->1 " + operation.myString() + " " + asString(outerFreeVariabelMap)+" fail "+failures2);
+              System.out.println("  @@@@@@ Failing 1 Implies 2->1 " + operation.myString() + " " + asString(outerFreeVariabelMap)+" fail "+failures2);
               return failures2; //Fail must return the failures from 2 NOT 1
-            } else status.passCount++;
+            } else {  // true ==>  true is true
+              status.passCount++;
+            }
           }
         } else {  //evaluate 1 First
           OperationNode o1 = (OperationNode) ((ImpliesNode) operation).getFirstOperation();
@@ -405,11 +406,9 @@ public class EquationEvaluator {
 
           //System.out.println("Eval Implies 1 "+((ImpliesNode) operation).myString() +" Returning " + status1.myString());
           //System.out.println("XXXXEval Implies 1 "+o1.myString() +" Returning " + status1.myString());
-          or1 = status1.failCount == 0;
-          if (or1 == false) {  //Short Circuit
+          if (status1.failCount != 0) {  //Short Circuit
             //System.out.println("  @@@@@@ Short circuit Implies 1 == false hence  true");
 
-            r = true;
             status.setFailCount(0);
             failedEquations.clear();
             status.passCount++;
@@ -430,21 +429,76 @@ public class EquationEvaluator {
               outerFreeVariabelMap, false
             );
             //System.out.println("XXXXEval Implies 2 "+o2.myString() +" Returning " + status1.myString());
-            or2 = status2.failCount == 0;
-            r = or2;  // A -> B  EQUIV  not A OR B and A==true
             status.setFailCount(status2.failCount);
             //status.setPassCount(status2.passCount);  //pass count not passed up term
             if (status2.failCount > 0) {
-              //System.out.println("  @@@@@@ Failing 2 Implies 1->2" + operation.myString() + " " + asString(outerFreeVariabelMap) + " fail " + failures2);
+              status.failCount = status2.failCount;
+              System.out.println("  @@@@@@ Failing 2 Implies 1->2" + operation.myString() + " " + asString(outerFreeVariabelMap) + " fail " + failures2);
+              return failures2; //Fail must return
+            } else {
+              status.passCount++;
+            }
+          }
+        }
+/*  ******************************* AND AND */
+
+        //System.out.println("  status.passCount "+status.passCount);
+      } else if (operation instanceof AndNode) {    //AND   AND
+        System.out.println("-- And " + operation.myString()+" with "+ asString(outerFreeVariabelMap));
+        ModelStatus status1 = new ModelStatus();
+        ModelStatus status2 = new ModelStatus();
+           //evaluate 1 First
+          OperationNode o1 = (OperationNode) ((AndNode) operation).getFirstOperation();
+          //System.out.println("Implies now evaluate 1 first " + o1.myString());
+          List<String> failures1 = testUserdefinedModel(processMap,
+            //models,
+            petrinetInterpreter,
+            status1,
+            o1,
+            inst,
+            context,
+            trace,
+            messageQueue,
+            alpha,     // Only used for broadcast semantics
+            outerFreeVariabelMap, false
+          );
+
+          System.out.println("XXXXEval And 1 "+o1.myString() +" Returning " + status1.myString());
+          if (status1.failCount > 0) {  // Short Circuit  false AND XX is false
+            System.out.println("  @@@@@@ Short circuit And 1 == false hence  false");
+            status.failCount = status1.failCount;
+            return failures1;
+          } else { //Not short Circuit so evaluate other part of And
+            OperationNode o2 = (OperationNode) ((AndNode) operation).getSecondOperation();
+            System.out.println("and now evaluate 2  " + o2.myString());
+            List<String> failures2 = testUserdefinedModel(processMap,
+              //models,
+              petrinetInterpreter,
+              status2,
+              o2,
+              inst,
+              context,
+              trace,
+              messageQueue,
+              alpha,     // Only used for broadcast semantics
+              outerFreeVariabelMap, false
+            );
+            System.out.println("XXXXEval And 2 "+o2.myString() +" Returning " + status2.myString());
+            status.setFailCount(status2.failCount);
+            //status.setPassCount(status2.passCount);  //pass count not passed up term
+            if (status2.failCount > 0) {   // true && false is false
+              System.out.println("  @@@@@@ Failing 2 And 1->2" + o2.myString() + " " + asString(outerFreeVariabelMap) + " fail " + failures2);
+              status.failCount = status2.failCount;
               return failures2; //Fail must return
             } else status.passCount++;
           }
-        }
 
-        //System.out.println("implies result " + r + " " + status.myString());
 
+        System.out.println("And  passed " + operation.myString()+"  "+ status.myString());
+
+/*  WORK   ************************   WORK   */
       } else {  //DO THE WORK and evaluate an OPERATION
-        //System.out.println("\nStaring operation " + operation.myString() );
+        System.out.println("-- EVAL " + operation.myString()+" with "+ asString(outerFreeVariabelMap));
 
         // build the automata from the AST  or look up known automata
         //PetrinetInterpreter interpreter = new PetrinetInterpreter();
@@ -457,8 +511,7 @@ public class EquationEvaluator {
         //System.out.println("*** evalop  "+processMap.keySet().stream().map(x->x+"->"+processMap.get(x).getId()).reduce((x,y)->x+" "+y));
         r = oE.evalOp(operation, processMap, petrinetInterpreter, context, alpha, trace);
         // r = oE.evalOp(operation, idMap, interpreter, context);
-        //System.out.println(asString(processMap));
-        //System.out.println("Processed operation " + operation.myString() +  " " + r);
+        System.out.println("Operation " + operation.myString() +  " result " + r);
 
         if (operation.isNegated()) {
           r = !r;
@@ -479,7 +532,7 @@ public class EquationEvaluator {
             failOutput += key + "=" + outerFreeVariabelMap.get(key).getId() + ", ";
           }*/
           failedEquations.add(failOutput);
-          //System.out.println("failOutput " + failOutput);
+          System.out.println("failOutput " + failOutput);
         }
 
 //If we've failed too many operation tests;
@@ -541,10 +594,15 @@ public class EquationEvaluator {
       firstIds = filterVar(firstIds, secondIds);
       //System.out.println("collect from forall bound " + secondIds + " of free " + firstIds);
       secondIds = new ArrayList<>();
-    } else if (operation instanceof ImpliesNode) {
+    } else if (operation instanceof ImpliesNode ) {
       //System.out.println(operation.myString());
       firstIds = collectFreeVariables((OperationNode) (((ImpliesNode) operation).getFirstOperation()), processes);
       secondIds = collectFreeVariables((OperationNode) (((ImpliesNode) operation).getSecondOperation()), processes);
+      //   secondIds = OperationEvaluator.collectIdentifiers(((ImpliesNode) operation).getSecondOperation());
+    } else if (operation instanceof AndNode ) {
+      //System.out.println(operation.myString());
+      firstIds = collectFreeVariables((OperationNode) (((AndNode) operation).getFirstOperation()), processes);
+      secondIds = collectFreeVariables((OperationNode) (((AndNode) operation).getSecondOperation()), processes);
       //   secondIds = OperationEvaluator.collectIdentifiers(((ImpliesNode) operation).getSecondOperation());
     } else {
       firstIds = OperationEvaluator.collectIdentifiers(operation.getFirstProcess());

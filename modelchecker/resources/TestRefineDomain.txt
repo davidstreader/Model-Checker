@@ -1,8 +1,16 @@
 processes { 
 Test: {  
+Tas = a->(start->STOP[]stop->STOP).
+Tbs = b->(start->STOP[]stop->STOP).
+Taas = a->a->(start->STOP[]stop->STOP).
+Tbas = b->a->(start->STOP[]stop->STOP).
+Tabs = a->b->(start->STOP[]stop->STOP).
+Tbbs = b->b->(start->STOP[]stop->STOP).
+
 Loa = a->Loa.
 Lob = b->Lob.
 Loab = a->b->Loab.
+
 Onea = a->STOP.
 Oneb = b->STOP.
 Oneab = a->STOP|b->STOP.  
@@ -75,16 +83,26 @@ Fx3  = a->X, X= a->X| b->X|a->STOP.
 
 
 }
-
+Flags:{
+Stop = stop->STOP.
+Start = start->STOP.
+}
+Zoo:{
+}
 }
 
 operation {
-
 }
 
 equation {
-Y:Pro <f{cong} Z:Pro ==> forall{X:Test} (X||{a,b}Y:Pro <t{cong} X||{a,b}Z:Pro).
-forall{X:Test} (X||{a,b}Y:Pro <t{cong} X||{a,b}Z:Pro) ==> Y:Pro <f{cong} Z:Pro.
+Y:Pro <f{cong} Z:Pro ==> forall{X:Test} ( 
+    ((Y:Pro=>Stop:Flags)[]Start:Flags)||{a,b,stop,start}X <t{cong}
+    ((Z:Pro=>Stop:Flags)[]Start:Flags)||{a,b,stop,start}X  
+                ).
+ forall{X:Test} ( 
+    ((Y:Pro=>Stop:Flags)[]Start:Flags)||{a,b,stop,start}X <t{cong}
+    ((Z:Pro=>Stop:Flags)[]Start:Flags)||{a,b,stop,start}X  
+                )  ==> Y:Pro <f{cong} Z:Pro. 
 
 Y:Pro <f Z:Pro ==> forall{X:Test} (X||{a,b}Y:Pro <t X||{a,b}Z:Pro).
 forall{X:Test} (X||{a,b}Y:Pro <t X||{a,b}Z:Pro) ==> Y:Pro <f Z:Pro.
@@ -93,17 +111,22 @@ forall{X:Test} (X||{a,b}Y:Pro <t X||{a,b}Z:Pro) ==> Y:Pro <f Z:Pro.
 
 /*
 ##Equation Results##
-((Y:Pro<f[cong]Z:Pro) ==> forAll[X:Test]((X:Test||[a, b]Y:Pro)<t[cong](X:Test||[a, b]Z:Pro)))
-	Simulations passed: 1521/1521 (implies short circuit ass/conc 1449/0) 
-(forAll[X:Test]((X:Test||[a, b]Y:Pro)<t[cong](X:Test||[a, b]Z:Pro)) ==> (Y:Pro<f[cong]Z:Pro))
-	Simulations passed: 1521/1521 (implies short circuit ass/conc 0/72) 
+((Y:Pro<f[cong]Z:Pro) ==> forAll[X:Test]((((Y:Pro=>Stop:Flags)[]Start:Flags)||[a, b, stop, start]X:Test)<t[cong](((Z:Pro=>Stop:Flags)[]Start:Flags)||[a, b, stop, start]X:Test)))
+	Simulations passed: 1521/1521 (implies short circuit ass/conc 1466/0) 
+(forAll[X:Test]((((Y:Pro=>Stop:Flags)[]Start:Flags)||[a, b, stop, start]X:Test)<t[cong](((Z:Pro=>Stop:Flags)[]Start:Flags)||[a, b, stop, start]X:Test)) ==> (Y:Pro<f[cong]Z:Pro))
+	Simulations passed: 1521/1521 (implies short circuit ass/conc 0/55) 
 ((Y:Pro<f Z:Pro) ==> forAll[X:Test]((X:Test||[a, b]Y:Pro)<t (X:Test||[a, b]Z:Pro)))
 	Simulations passed: 1521/1521 (implies short circuit ass/conc 1438/0) 
 (forAll[X:Test]((X:Test||[a, b]Y:Pro)<t (X:Test||[a, b]Z:Pro)) ==> (Y:Pro<f Z:Pro))
 	Simulations passed: 1521/1521 (implies short circuit ass/conc 0/83) 
 Compiling completed!
-Sat Nov 24 21:08:00 NZDT 2018
+Tue Dec 04 09:00:34 NZDT 2018
 */
+
+
+
+
+
 
 
 
