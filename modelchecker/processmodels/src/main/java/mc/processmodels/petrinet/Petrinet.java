@@ -325,15 +325,29 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     owners.add(o);
   }
 
+  /*
+     This is to rebuild the key to valure relation after reIding
+   */
 
   public void rebuildAlphabet() {
     Multimap<String, PetriNetTransition> alpha = ArrayListMultimap.create();
     Set<String> a = this.getTransitions().values().stream().map(x -> x.getLabel()).collect(Collectors.toSet());
+
     for (String s : a) {
-      for (PetriNetTransition tr : alphabet.get(s)) {
-        alpha.put(s, tr);
-      }
+        for (PetriNetTransition tr : alphabet.get(s)) {
+          alpha.put(s, tr);
+        }
     }
+    alphabet = alpha;
+  }
+  public void buildAlphabetFromTrans() {
+    Multimap<String, PetriNetTransition> alpha = ArrayListMultimap.create();
+
+   for (PetriNetTransition tr: this.getTransitions().values()) {
+      alpha.put(tr.getLabel(),tr);
+     System.out.println("AfromT Adding "+tr.getLabel()+" -> "+tr.myString());
+    }
+
     alphabet = alpha;
   }
 
@@ -432,11 +446,21 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
 
   //undo  tagEvents()   on Automaton
   public void deTagTransitions() {
+    Multimap<String, PetriNetTransition> alph = ArrayListMultimap.create();
     for (PetriNetTransition tr : getTransitions().values()) {
       tr.setLabel(tr.getLabel().split("\\:")[0]);
+      alph.put(tr.getLabel(), tr);
     }
+    alphabet = alph;
   }
 
+  public void buildAlpahbetFromTransiations() {
+    Multimap<String, PetriNetTransition> alph = ArrayListMultimap.create();
+    for (PetriNetTransition tr : getTransitions().values()) {
+      alph.put(tr.getLabel(), tr);
+    }
+    alphabet = alph;
+  }
   public boolean rootContains(PetriNetPlace pl) {
     boolean b = roots.stream().flatMap(Set::stream).
       filter(x -> x.equals(pl.getId())).
@@ -578,7 +602,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
 
   //Set end data on PetriNetPlace -- from Petrinet
   public void setEndFromNet() {
-    //System.out.println("setEndFromNet()\n"+this.myString());
+    System.out.println("setEndFromNet()\n"+this.myString());
     int rNo = 1;
     places.values().stream().forEach(pl -> pl.setEndNos(new HashSet<>()));
     for (Set<String> m : ends) {
@@ -752,11 +776,14 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
 
   // called from interpretor
   public static Petrinet stopNet() throws CompilationException {
-    return Petrinet.stopNet("");
+    return Petrinet.stopNet("","S");
+  }
+  public static Petrinet endNet() throws CompilationException {
+    return Petrinet.stopNet("","E");
   }
 
   // called from interpretor when local reference needs to be used
-  public static Petrinet stopNet(String ref) throws CompilationException {
+  public static Petrinet stopNet(String ref, String SorE) throws CompilationException {
     Petrinet stop = new Petrinet("stop");
     stop.setOwners(new HashSet<>());
     stop.addOwner(DEFAULT_OWNER);
@@ -764,7 +791,8 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
 //?? when are the places added??
     PetriNetPlace p = stop.getPlaces().values().iterator().next();
     if (ref != "") p.addFromRefefances(new HashSet(Collections.singleton(ref)));
-    p.setTerminal("STOP");
+    if (SorE.equals("S")) p.setTerminal(Constant.STOP);
+    else p.setTerminal(Constant.END);
     p.addEndNo(1);
     p.setStart(true);
     p.setOwners(new HashSet<>());
@@ -777,6 +805,26 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     stop.reId("");
     //System.out.println("\nstopNet "+stop.myString());
     return stop;
+  }
+
+  public static Petrinet startNet() throws CompilationException {
+    Petrinet start = new Petrinet("start");
+    start.setOwners(new HashSet<>());
+    start.addOwner(DEFAULT_OWNER);
+
+//?? when are the places added??
+    PetriNetPlace p = start.getPlaces().values().iterator().next();
+    p.setTerminal("");
+
+    p.setStart(true);
+    p.setOwners(new HashSet<>());
+    p.addOwner(DEFAULT_OWNER);
+    p.setStartNos(new HashSet<>());
+    p.addStartNo(1);
+    start.setRootPlace(p);
+    start.reId("");
+    System.out.println("\nstartNet "+start.myString());
+    return start;
   }
 
   public static Petrinet errorNet() throws CompilationException {
@@ -910,7 +958,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     transitions.put(id, transition);
     alphabet.put(label, transition);
     //System.out.println("added "+transition.myString());
-    //System.out.println(" to "+this.getId()+" adding "+transition.myString());
+    //System.out.println(" alpha "+alphabet.keySet());
     return transition;
   }
 
@@ -1518,6 +1566,8 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
         newPlace.addRefefances(place2.getReferences());
         newPlace.addFromRefefances(place1.getLeafRef());
         newPlace.addFromRefefances(place2.getLeafRef());
+
+
         if ((place1.getTerminal() != null) && place1.getTerminal().equals("STOP") ||
           (place2.getTerminal() != null) && place2.getTerminal().equals("STOP")) {
           newPlace.setTerminal("STOP"); // endNos is case dependent

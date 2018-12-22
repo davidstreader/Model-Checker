@@ -63,10 +63,7 @@ public class RevAP2BC implements IProcessFunction {
   }
 
   /**
-    Add lisening Loops - for events in flags   added when process built OR not?
-   abstraction of  all *.t! and *.t? occurs in QuiescentRefinement
-   but needs to occur before abstraction occurs see
-   convert b? to b and b! to b^
+
    *
    * @param id       the id of the resulting automaton
    * @param flags    the flags given by the function (e.g. {@code unfair} in {@code abs{unfair}(A)}
@@ -78,25 +75,18 @@ public class RevAP2BC implements IProcessFunction {
     throws CompilationException {
   Automaton aut = automata[0].reId(automata[0].getId()+"Rap2bc");
 
-    //System.out.println("RevAP2BC AUTOMATON start "+aut.myString()+ " flags "+flags);
-    Set<String> listeners = flags.stream().filter(x->x.endsWith("?")).collect(Collectors.toSet());
-    //buildListeningLoops(listeners,aut); //MUST KEEP
-    System.out.println("revAp2bc listeners "+listeners);
+    System.out.println("RevAP2BC AUTOMATON start "+aut.myString()+ " flags "+flags);
+  /*  Set<String> listeners = flags.stream().filter(x->x.endsWith("?")).collect(Collectors.toSet());
     //System.out.println("revAp2bc BEFORE "+aut.myString());
     QuiescentRefinement qr = new QuiescentRefinement();
-    qr.addListeningLoops(aut,listeners);
+    qr.addListeningLoops(aut,listeners); */
 
-    System.out.println("revAp2bc AFTER XX ownership XX "+aut.myString());
+    replaceListeningSequence(aut);
+    replaceSendingSequence(aut);
+    // should be no events ending ".t!", ".t?" , ".r!", ".r?" ,".a!", ".a?" in aut
+    // and "!" and "?" events must be preserved in mixed AP+BC process
+    System.out.println("RevAP2BC after replaceing "+aut.myString());
 
-    for(AutomatonEdge ed : aut.getEdges()) {
-      //System.out.println("ed "+ed.myString());
-      String prefix1 = ed.getLabel().substring(0,ed.getLabel().length()-1);
-      if (ed.getLabel().endsWith(".t?") ||ed.getLabel().endsWith(".r?") ||
-        ed.getLabel().endsWith(".t!")   ||ed.getLabel().endsWith(".r!")   ) ed.setLabel(Constant.HIDDEN);
-      else if (ed.getLabel().endsWith("?") ) ed.setLabel(prefix1);
-      else if (ed.getLabel().endsWith("!") ) ed.setLabel(prefix1+Constant.ACTIVE);
-
-    }
     aut.cleanNodeLables();
     System.out.println("RevAP2BC AUTOMATON RETURNS "+aut.myString());
     return aut;
@@ -129,11 +119,13 @@ public class RevAP2BC implements IProcessFunction {
   public static  void buildListeningLoops(Set<String> listeners, Automaton aut)
     throws CompilationException{
     //  For each marking
+
     for (AutomatonNode nd: aut.getNodes()){
-      Set<String> heard =nd.getOutgoingEdges().
+        Set<AutomatonEdge> hearded =nd.getOutgoingEdges().
         stream().filter(x->x.getLabel().endsWith("?")).
-        map(x->x.getLabel()).collect(Collectors.toSet());
-      //System.out.println("** trlist "+trlist);
+        collect(Collectors.toSet());
+        Set<String> heard =hearded.stream().map(x->x.getLabel()).collect(Collectors.toSet());
+        //System.out.println("** trlist "+trlist);
       // set of listening labels with no transitions enabled
       Set<String> notHeard = listeners.
         stream().filter(x->!heard.contains(x)).collect(Collectors.toSet());
@@ -142,12 +134,103 @@ public class RevAP2BC implements IProcessFunction {
       for(String lab: notHeard){
         AutomatonEdge ed =  aut.addEdge(lab.substring(0,lab.length()-1),nd,nd,
           null,false,false);
-        ed.setEdgeOwners(ed.getEdgeOwners());
+        if (aut.getOwners().size() == 1)
+           ed.setEdgeOwners(aut.getOwners());  // should be only one owner
+        else
+          throw new CompilationException(aut.getClass(),"Owners too large in RevAP2BC ",null);
         //System.out.println("**adding** "+ed.myString());
       }
     }
 
   }
+
+  /*
+
+   */
+  private void replaceListeningSequence(Automaton aut) throws CompilationException {
+    // add the n-a->m edges where n-a.t!->a?->m
+    System.out.println("replaceListeningSequence START");
+     for(AutomatonNode nd : aut.getNodes()){
+       System.out.println("Node nd "+nd.getId());
+       Set<AutomatonEdge> firsts =
+        nd.getOutgoingEdges().stream().
+           filter(ed->ed.getLabel().endsWith(".t"+Constant.BROADCASTSoutput)).
+           collect(Collectors.toSet());
+       for(AutomatonEdge first: firsts) {
+         System.out.println("from "+nd.getId()+"-"+first.getLabel());
+         String prefix = first.getLabel().substring(0,first.getLabel().length()-3);
+         boolean matched = false;
+         for(AutomatonEdge edx: first.getTo().getOutgoingEdges().stream().
+           filter(ed->ed.getLabel().equals(prefix+".a"+Constant.BROADCASTSinput)).collect(Collectors.toSet())) {
+           System.out.println("Edge edx "+edx.myString());
+           AutomatonEdge ned =
+           aut.addEdge(prefix,nd,edx.getTo(),null,false,false);
+           aut.addOwnersToEdge(ned,edx.getEdgeOwners());
+           System.out.println("adding "+ned.myString());
+           aut.removeEdge(edx);
+           matched = true;
+         }
+         if (matched) {
+           for(AutomatonEdge ed: nd.getIncomingEdges().stream().
+             filter(ed->(ed.getLabel().equals(prefix+".r"+Constant.BROADCASTSoutput)&& ed.getFrom().equalId(first.getTo()))).
+             collect(Collectors.toSet())){
+             aut.removeEdge(ed);
+           }
+           aut.removeEdge(first);
+         }
+       }
+     }
+     aut.setAlphabetFromEdges();
+    System.out.println("replaceListeningSequence END");
+
+
+  }
+
+  /*
+     replaces the sending sequence + removes the reject sequence
+   */
+  private void replaceSendingSequence(Automaton aut) throws CompilationException {
+    // add the n-a^->m edges where n-a.t?->a!->m
+    System.out.println("replaceSendingSequence START");
+    for(AutomatonNode nd : aut.getNodes()){
+      System.out.println("Node nd "+nd.getId());
+      Set<AutomatonEdge> firsts =
+        nd.getOutgoingEdges().stream().filter(ed->ed.getLabel().endsWith(".t?")).
+          collect(Collectors.toSet());
+      for(AutomatonEdge first: firsts) {
+        System.out.println("from "+nd.getId()+"-"+first.getLabel());
+        String prefix = first.getLabel().substring(0,first.getLabel().length()-3);
+        boolean matched = false;
+        for(AutomatonEdge edx: first.getTo().getOutgoingEdges().stream().
+          filter(ed->ed.getLabel().equals(prefix+".a"+Constant.BROADCASTSoutput)).collect(Collectors.toSet()))
+        {
+          System.out.println("Edge edx "+edx.myString());
+          AutomatonEdge ned =
+            aut.addEdge(prefix+Constant.ACTIVE,nd,edx.getTo(),null,false,false);
+          aut.addOwnersToEdge(ned,edx.getEdgeOwners());
+          System.out.println("adding "+ned.myString());
+          aut.removeEdge(edx);
+          matched = true;
+        }
+        if (matched) {  // first nd start of active event
+          aut.removeEdge(first);
+        } else {       // first nd reject node should have only one exiting event
+          for(AutomatonEdge edx: first.getTo().getOutgoingEdges().stream().
+            filter(ed->ed.getLabel().equals(prefix+".r"+Constant.BROADCASTSoutput)).collect(Collectors.toSet()))
+          {
+            aut.removeEdge(edx);
+            aut.removeEdge(first);
+          }
+        }
+      }
+    }
+    aut.setAlphabetFromEdges();
+    System.out.println("replaceSendingSequence END");
+
+
+  }
+
+
   public Petrinet composeM(String id, Set<String> flags, Context context,
                            Map<Multiset<PetriNetPlace>, AutomatonNode> markingToNode,
                            Petrinet petrinet) throws CompilationException {

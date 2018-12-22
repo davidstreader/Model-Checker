@@ -138,6 +138,8 @@ public class EquationEvaluator {
     //System.out.println("START - evaluateEquation " + operation.myString()+ " "+processMap.keySet());
     List<String> globlFreeVariables = collectFreeVariables(operation, processMap.keySet());
     System.out.println("globalFreeVariables " + globlFreeVariables);  //Var:Dom
+    if (!validateDomains(globlFreeVariables))
+      throw new CompilationException(this.getClass(),"Variable with Domain not defined ",operation.getLocation());
 
     if (globlFreeVariables.size() > 3) {
       messageQueue.add(new LogMessage("\nWith this many variables you'll be waiting the rest of your life for this to complete\n.... good luck"));
@@ -181,7 +183,14 @@ public class EquationEvaluator {
     return;
   }
 
-
+  public boolean validateDomains(List<String> globlFreeVariables){
+    for(String varDom: globlFreeVariables) {
+      String[] parts = StringUtils.split(varDom, ':');
+      String dom = parts[1];
+      if (!domains.containsKey(dom)) return false;
+    }
+    return true;
+  }
   /**
    * Called onece per equation with globalFreeVarMap
    * Iterate over model space
@@ -516,7 +525,8 @@ public class EquationEvaluator {
         if (operation.isNegated()) {
           r = !r;
         }
-        //Adding to results  NOTE must use the outerFreeVar2Model
+        //Adding to results  NOTE must use the outerFreeVar2Modelelse {
+        //trace.sort(Collections.reverseOrder());
         String exceptionInformation = trace.toString();
         if (r) {
           status.passCount++;
@@ -697,10 +707,13 @@ private class Instantiate {
 
   public Map<String, ProcessModel> peek() {
     Map<String, ProcessModel> currentInstantiation = new TreeMap<>();
-    //System.out.print("PEEK ");
+    System.out.print("PEEK ");
+    System.out.println("  domains "+domains.keySet());
     for (String key : indexes.keySet()) {
+      System.out.println("key "+key);
       String[] parts = StringUtils.split(key, ':');
       String dom = parts[1];
+      System.out.println("dom "+dom);
       currentInstantiation.put(key, domains.get(dom).get(indexes.get(key)));
       //System.out.print("_"+key+"->"+currentInstantiation.get(key).getId()+", ");
     }
@@ -758,6 +771,8 @@ private class Instantiate {
       sb.append("  " + x + "->" + indexes.get(x));
 
     });
+
+
     Map<String, ProcessModel> currentInstantiation = peek();
     sb.append("\n  currentInstantiation ");
     currentInstantiation.keySet().stream().forEach(x -> {

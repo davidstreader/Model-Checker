@@ -32,7 +32,7 @@ public class Nfa2dfaWorks {
     throws CompilationException {
     boolean cong = flags.contains(Constant.CONGURENT);
 
-    System.out.println("Nfa2dfa " + id + " " + flags + " " + tt);
+    //System.out.println("Nfa2dfa " + id + " " + flags + " " + tt);
     assert automata.length == 1;
     int dfaNodeLabel = 0;
     Automaton nfa = automata[0].copy();// copies nodeId
@@ -46,13 +46,13 @@ public class Nfa2dfaWorks {
         if (tt.equals(TraceType.QuiescentTrace)) {
           if (ndn.isSTOP()) {
             AutomatonNode zomNd1 = nfa.getDeadNode("_zom1");
-            nfa.addEdge(Constant.STOP + "?", ndn, zomNd1, null, true, false);
-            nfa.addEdge(Constant.STOP + "!", zomNd1, deadNd, null, true, false);
+            nfa.addEdge(Constant.STOP, ndn, zomNd1, null, true, false);
+         //   nfa.addEdge(Constant.STOP + "!", zomNd1, deadNd, null, true, false);
           }
           if (ndn.isStartNode()) {
             AutomatonNode zomNd2 = nfa.getDeadNode("_zom2");
-            nfa.addEdge(Constant.Start + "?", ndn, zomNd2, null, true, false);
-            nfa.addEdge(Constant.Start + "!", zomNd2, deadNd, null, true, false);
+            nfa.addEdge(Constant.Start, ndn, zomNd2, null, true, false);
+        //    nfa.addEdge(Constant.Start + "!", zomNd2, deadNd, null, true, false);
             //System.out.println("pingo " + nfa.myString());
           }
         } else {  //NOT Quiescent
@@ -86,7 +86,7 @@ public class Nfa2dfaWorks {
         nfa.addEdge(Constant.EPSILON, ndn, nfa.deadNode(), null, true, false);
       }
     }
-    System.out.println("ANOTATED nfa  " + nfa.myString());
+     //System.out.println("ANOTATED nfa  " + nfa.myString());
 
     Automaton dfa = new Automaton(id + "_dfa", !Automaton.CONSTRUCT_ROOT);
 
@@ -99,7 +99,8 @@ public class Nfa2dfaWorks {
 
 //build set of nfa nodes used to constuct a the single dfa root node
     toDoList.push(constructClosure(nfa.getRoot(), stateMap));
-
+     //System.out.println("nfa Root "+nfa.getRoot().stream().map(x->x.getId()).collect(Collectors.joining()));
+     //System.out.println("dfa Root "+ toDoList.peek());
     Set<String> alphabet = nfa.getAlphabet();
     //alphabet.remove(Constant.HIDDEN);
     //System.out.println("dfa alphabet "+alphabet);
@@ -150,7 +151,7 @@ public class Nfa2dfaWorks {
           continue;
         }
         String nextId = constructNodeId(stateMap.get(nextStates), nfa.getId());
-        //stateMap.get(nextStates).stream().forEach(x-> System.out.println("next "+x.myString()));
+        //stateMap.get(nextStates).stream().forEach(x->System.out.println("next "+x.myString()));
         if (!nodeMap.containsKey(nextId)) {
           //System.out.println(" nextId "+nextId);
           AutomatonNode nd = dfa.addNode(nextId);
@@ -177,7 +178,7 @@ public class Nfa2dfaWorks {
   /*  dfa.getNodes().stream()
         .filter(node -> node.getOutgoingEdges().isEmpty())
         .forEach(node -> node.setTerminal(Constant.STOP)); */
-    System.out.println("\n built dfa " + dfa.myString() + "\n");
+    //System.out.println("\n built dfa " + dfa.myString() + "\n");
     return dfa;
   }
 

@@ -4,6 +4,7 @@ import static mc.util.Utils.instantiateClass;
 
 import com.microsoft.z3.Context;
 
+import java.lang.reflect.Array;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.stream.Collectors;
@@ -145,16 +146,19 @@ public class OperationEvaluator {
         r = evalOp(operation,processMap,interpreter,context,alpha,trace);
   //System.out.println("evaluateOp "+ operation.myString()+ " trace "+trace);
         String ex;
-        if (trace.isEmpty()) ex = ""; else ex = "trace = "+trace.toString();
+        if (trace.isEmpty()) ex = ""; else {
+           // List list = new ArrayList(trace);
+           // ex = "trace "+list.size()+" = "+list.toString();
+            Collections.reverse(trace);
+            ex = " trace = "+trace.toString();
+        }
         OperationResult result = new OperationResult(
           null,  r, "  "+ex,operation);
         //System.out.println("evaluateOp "+ result.myString());
         return result;
     }
 
-    public  void reverse(Stack<Integer> arr){
-        arr.sort(Collections.reverseOrder());
-    }
+
 /*
  Finally finally evaluating the dynamically loaded operation  func
  Called from EquationEvaluator as well as OperationEvaluator
@@ -277,9 +281,7 @@ public class OperationEvaluator {
        // }
         //System.out.println(" op Eval returns "+r+"  negated "+ operation.isNegated()+" trace "+trace);
         if (operation.isNegated() !=r) trace.clear();
-        else {
-            trace.sort(Collections.reverseOrder());
-        }
+
         //System.out.println(" op Eval returns "+r+"  trace "+trace);
 
         //System.out.println("***evalOp with processMap  "+processMap.keySet().stream().map(x->x+"->"+processMap.get(x).getId()).reduce((x,y)->x+" "+y)+" returns "+r);

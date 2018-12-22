@@ -69,7 +69,7 @@ public class TokenRule {
  //keeps the id numbers low - op_eval resets Automaton.tagid
     Automaton outputAutomaton = new Automaton(convertFrom.getId() ,false);
     //Automaton outputAutomaton = new Automaton(nameOnly+Automaton.tagid  ,false);
-    //System.out.println("TOKEN RULE  STARTING "+convertFrom.getId());
+    //System.out.println("TOKEN RULE  STARTING "+convertFrom.myString());
 
       assert convertFrom.validatePNet(): "Token precondition";
    outputAutomaton.setOwners(convertFrom.getOwners());
@@ -126,6 +126,7 @@ if(j++> stateSizeBound) {System.out.println("\n\nTokenRule Failure Looping = "+j
            // outputAutomaton.getEndList().add(markingToNodeMap.get(currentMarking).getId());
           }
           else if (currentMarking.stream().map(x->x.isERROR()).reduce(false,(x,y)->x || y)) {
+            //System.out.println("Mark as ERROR "+markingToNodeMap.get(currentMarking).getId());
             markingToNodeMap.get(currentMarking).setErrorNode(true);
           }
 
@@ -216,8 +217,10 @@ if(j++> stateSizeBound) {System.out.println("\n\nTokenRule Failure Looping = "+j
   }
   //added 20Sept 2018 for Failure Testing
    for (AutomatonNode nd : outputAutomaton.getNodes()) {
+     //System.out.println("SETERROR node "+nd.myString());
       if (nd.getOutgoingEdges().size()==0 && !nd.isSTOP()) {
         nd.setErrorNode(true);
+        //System.out.println("SETERROR node "+nd.myString());
      }
    }
    //System.out.println("Token Rule END "+outputAutomaton.myString());

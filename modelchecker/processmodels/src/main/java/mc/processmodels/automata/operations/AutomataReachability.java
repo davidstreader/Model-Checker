@@ -43,7 +43,7 @@ public class AutomataReachability {
       // Also remove any edges that point to objects not in this automaton
       List<AutomatonEdge> edgesToRemove = new ArrayList<>();
       for (AutomatonEdge e : current.getOutgoingEdges()) {
-        if (e.getLabel().equals(Constant.DEADLOCK)) continue;
+        // if (e.getLabel().equals(Constant.DEADLOCK)) continue;
         if (!automaton.getNodes().contains(e.getTo())) {
           edgesToRemove.add(e);
           continue;

@@ -25,7 +25,14 @@ public class PetriNetPlace extends ProcessModelObject implements Comparable<Petr
   private Set<String> leafRef = new LinkedHashSet<>();  // prior to gluing only on Leaf
   private Set<String> owners = new HashSet<>();  // this is needed in event Refinement and broadcast events
 
-
+  public String getTerminal() {
+    String x;
+    if (terminal == null || terminal.equals(""))
+        x= "____";
+    else
+        x = terminal;
+    return x;
+  }
   public Set<Integer> copyStartNos() {
     Set<Integer> out = new HashSet<>();
     for(Integer i: startNos) {
@@ -216,13 +223,14 @@ public class PetriNetPlace extends ProcessModelObject implements Comparable<Petr
   }
 
   public String myString(){
-    return "Place "+this.getId()+ " ref "+references.toString()+" leafRef "+ leafRef.toString()+
-      this.getIncoming().stream().map(ed->ed.getId()).reduce(" in  ",(x,y)->x+" "+y)+
-      this.getOutgoing().stream().map(ed->ed.getId()).reduce(" out ",(x,y)->x+" "+y) +
-      " End "+this.getTerminal()+  " endnos "+ this.endNos +
+    return "Place "+this.getId()+
+       " End "+this.getTerminal()+  " endnos "+ this.endNos +
       " Start "+ this.isStart()+ " "+this.startNos +
       " Own="+ this.owners +
-      " col="+ this.getColour()
-      ;
+      " col="+ this.getColour() +
+      " ref "+references.toString()+" leafRef "+ leafRef.toString()+
+      this.getIncoming().stream().map(ed->ed.getId()).reduce(" in  ",(x,y)->x+" "+y)+
+      this.getOutgoing().stream().map(ed->ed.getId()).reduce(" out ",(x,y)->x+" "+y)
+    ;
   }
 }

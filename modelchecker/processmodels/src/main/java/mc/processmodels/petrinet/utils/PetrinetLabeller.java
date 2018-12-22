@@ -36,7 +36,8 @@ public final class PetrinetLabeller {
       }
     });
 
-    petri.getTransitions().values().forEach(t -> labelled.addTransition(label + ":" + t.getId(),
+    petri.getTransitions().values().forEach(t -> labelled.addTransition(
+         label + ":" + t.getId(),
         label + "." + t.getLabel()));
 
 

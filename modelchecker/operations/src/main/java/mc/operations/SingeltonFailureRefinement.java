@@ -86,6 +86,7 @@ public class SingeltonFailureRefinement implements IOperationInfixFunction {
     //Void parameters used elsewhere to build Failure,Singelton Fail, ....
     //SubSetDataConstructor doNothing = (x,y) -> new ArrayList<>();
     //SubSetEval yes = (x,y,z) -> true;
+
     return tw.evaluate(flags,context, processModels,
       TraceType.SingeltonFailure,
       trace,
@@ -152,28 +153,42 @@ public class SingeltonFailureRefinement implements IOperationInfixFunction {
   }
 
   /*
+     RETURN Can s2 refues more than s1?
+     get(0) contains the intersection of the ready sets.
+     x\in Not.get(0) ==> singelton fail {x}
     function to be applied to the data output from readyWrapped
     returns superset  of Ready as equal to subset of fc(Ready)
+    nfa node Quiecsent \notin Ready
+    For all non Quiescent nodes intersection <=> emptyset
+        some Quiescent nodes => Quiescent \in intersection
    */
 
   private boolean isSFSubset(List<Set<String>> s2, List<Set<String>> s1, boolean cong,ErrorMessage error) {
     boolean out = true;
-    //see returning to root in cribsheet
+    System.out.println("isSF s1 "+s1.get(0)+" s2 "+s2.get(0));
     //Set<String> small = s2.get(0).stream().filter(x->!Constant.external(x)).collect(Collectors.toSet());
-
-    //System.out.println("small "+small);
-    if (cong) out =  (s1.get(0).containsAll(s2.get(0)));
-    else {
-      for (String lab :s2.get(0)) {
-        if (Constant.external(lab)) continue;
-        if (!s1.get(0).contains(lab)) {
-          error.error = "Ref{"+lab+"}";
-          out = false;
-          break;
+    if (!s1.get(0).contains(Constant.Quiescent)) {
+      System.out.println("FRIG  true");
+      out = true;
+    } else if (s1.get(0).contains(Constant.Quiescent)&&
+      !s2.get(0).contains(Constant.Quiescent)) {
+      System.out.println("FRIG false");
+      out = false;
+    } else {
+      //System.out.println("small "+small);
+      if (cong) out = (s1.get(0).containsAll(s2.get(0)));
+      else {
+        for (String lab : s2.get(0)) {
+          if (Constant.external(lab)) continue;
+          if (!s1.get(0).contains(lab)) {
+            error.error = "Ref{" + lab + "}";
+            out = false;
+            break;
+          }
         }
       }
     }
-    System.out.println("can  s2 "+s2+" refuse more than s1 "+s1+" "+out);
+    System.out.println("can  s2 "+s2.get(0)+" refuse more than s1 "+s1.get(0)+" "+out);
     return out;
   }
 }

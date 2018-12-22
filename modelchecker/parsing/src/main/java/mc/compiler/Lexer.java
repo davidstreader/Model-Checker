@@ -117,6 +117,8 @@ public class Lexer {
 
       case Constant.STOP:
         return new StopToken(location);
+      case Constant.END:
+        return new IdentifierToken(Constant.END,location);
 
       case Constant.ERROR:
         return new ErrorToken(location);

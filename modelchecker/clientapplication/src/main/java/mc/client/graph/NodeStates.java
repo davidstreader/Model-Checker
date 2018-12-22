@@ -25,7 +25,13 @@ public enum NodeStates {
     STOP3    (new Color(0,10,255,120)),
     STOP4    (new Color(0,50,220,120)),
     STOP5    (new Color(20,0,200,120)),
-    ERROR   (Color.RED),
+    STOPSTART (new Color(250,0,220,255)),
+    STOPSTART1 (new Color(220,0,150,245)),
+    STOPSTART2 (new Color(180,0,150,235)),
+    STOPSTART3 (new Color(200,100,150,225)),
+    STOPSTART4 (new Color(250,150,50,215)),
+    STOPSTART5 (new Color(250,180,0,255)),
+    ERROR   (Color.DARK_GRAY),
     NOMINAL (Color.LIGHT_GRAY),
 
     SELECT  (Color.CYAN);

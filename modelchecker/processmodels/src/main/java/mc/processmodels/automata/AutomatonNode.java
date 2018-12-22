@@ -98,6 +98,11 @@ public class AutomatonNode extends ProcessModelObject implements Comparable<Auto
   public boolean equalId(AutomatonNode nd) {
     return this.getId().equals(nd.getId());
   }
+  public boolean observeDistinct(AutomatonNode nd) {
+    boolean obsSame = (this.isStartNode()==nd.isStartNode() &&
+                       this.isSTOP()==nd.isSTOP());
+    return !obsSame;
+  }
 
   public void copyPropertiesFromASTNode(ASTNode fromThisNode) {
     if (fromThisNode.getModelVariables() != null) {
@@ -225,7 +230,7 @@ public class AutomatonNode extends ProcessModelObject implements Comparable<Auto
   public String myString() {
 
     return "node " + this.getId() + " labNo " + labelNumber + " col " + this.colour + " out = " + outgoingEdges.size() +
-      " error " + isERROR() + " quies " + quiescent + " end " + isSTOP() + " start " + isStartNode();
+      " quies " + quiescent+ " error " + isERROR()  + " end " + isSTOP() + " start " + isStartNode();
   }
 
   public String toString() {

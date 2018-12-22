@@ -1,5 +1,5 @@
 processes {
-Test:{ //Like broadcast must have only one of  a^ OR a
+AP:{ //Like broadcast must have only one of  a^ OR a
  
 A= a->STOP.  
  A1= b^->STOP.
@@ -7,9 +7,9 @@ A= a->STOP.
  A3= b^->STOP|a->STOP.
  A4= c^->STOP|a->STOP.
  A5= d->STOP|a->STOP.
-
+ 
  B= a->a->STOP.  
- B1= a->b^->STOP.
+ B1= a->b^->STOP. 
  B11 = a->d->STOP.
  B12 = b^->c^->STOP.
  B13 = c^->d->STOP.
@@ -37,25 +37,28 @@ A= a->STOP.
  Lx4= a->b^->Lx4|d->STOP. 
 
  Llx= a->a->Llx|a->Llx.  
- /*
+ 
 Llx1= a->b^->Llx1|b^->b^->Llx1.
  Llx2= b^->a->Llx2|b^->Llx2.
  Llx3= b^->a->Llx3|c^->d->Llx3. 
 
  LlS= b^->a->c->STOP|b^->a->STOP|b^->STOP. 
  Ll4= b^->a->c->Ll4|b^->a->Ll4|b^->Ll4. 
- Ll5= b^->(a->c^->a->Ll4|a->c^->Ll5|a->Ll5). 
+ Ll5= b^->(a->c^->a->Ll5|a->c^->Ll5|a->Ll5). 
  Ll6= b^-> X, X = (a->c^->Ll6|b^->a->X|b^->Ll6). 
-*/
+
 }
 BC:{
 
- Abc= a?->STOP.  
- A1bc= b!->STOP.
- A2bc= b!->STOP|c!->STOP.
+ Abc=  fap2bc{b,c}(a->STOP).  
+A5bc= d?->STOP|a?->STOP.
+ A1bc= fap2bc{b,c}(a->STOP|b!->STOP).
+//Lzbc= a?->d?->Lzbc.
+ A2bc= fap2bc{b,c}(b^->STOP|c^->STOP).
  A3bc= b!->STOP|a?->STOP.
  A4bc= c!->STOP|a?->STOP.
- A5bc= d?->STOP|a?->STOP.
+ //A4btc= (t->c!->STOP|a?->STOP)\{t}.
+ 
 
  Bbc= a?->a?->STOP.  
  B1bc= a?->b!->STOP.
@@ -71,7 +74,7 @@ BC:{
  B7bc= c!->b!->STOP|a?->c!->STOP.
  B8bc= c!->(a?->STOP|d?->STOP). 
 
- Lbc= a?->Lbc.  
+ //Lbc= a?->Lbc.  
  L1bc= b!->L1bc.
  L2bc= a?->b!->L2bc|a?->STOP.
  L3bc= b!->a?->L3bc|a?->STOP. 
@@ -97,96 +100,126 @@ BC:{
  Ll5bc= b!->(a?->c!->a?->Ll5bc|a?->c!->Ll5bc|a?->Ll5bc). 
  Ll6bc= b!-> X, X = (a?->c!->Ll6bc|b!->a?->X|b!->Ll6bc).  */
 }
+Mx:{ //Mixed AP and BC
+//  Bc  a?, d?, c!, b!  Ap  e,f,g^,h^
+ Ma=  (a?->STOP).  
+ Mb=  b!->STOP.  
+ Me=  (e->STOP).  
+ Mg=  (g^->STOP).  
+ Mad= d?->STOP|a?->STOP.
+ Mab= (a?->STOP|b!->STOP).
+ Mag= g^->STOP|a?->STOP.
+ Maf= f->STOP|a?->STOP.
+ Mbc= (b!->STOP|c!->STOP).
+ Mbg= g^->STOP|b!->STOP.
+ Mbf= f->STOP|b!->STOP.
+Mef = e->STOP|f->STOP.
+Meg = e->STOP|g^->STOP.
+Mhg = h^->STOP|g^->STOP.
+ Mla=  (a?->Mla).  
+ Mlb=  b!->Mlb.  
+ Mle=  (e->Mle).  
+ Mlg=  (g^->Mlg).  
 
-/*
-Lopa = a!->Lopa.
-Lopb = b!->Lopb.
-Lopab = a!->b!->Lopab.
-Lopba = b!->a!->Lopba.
-Lopbab = b!->a!->b!->Lopbab.
-Lopaba = a!->b!->a!->Lopaba.
-Lopabb = a!->b!->b!->Lopabb.
-Lopbba = b!->b!->a!->Lopbba.
+ Mlad= d?->Mlad|a?->STOP.
+ Mlab= (a?->Mlab|b!->STOP).
+ Mlag= g^->STOP|a?->Mlag.
+ Mlaf= f->STOP|a?->Mlaf.
+ Mlbc= (b!->Mlbc|c!->STOP).
+ Mlbg= g^->STOP|b!->Mlbg.
+ Mlbf= f->STOP|b!->Mlbf.
+Mlef = e->Mlef|f->STOP.
+Mleg = e->Mleg|g^->STOP.
+Mlhg = h^->Mlbg|g^->STOP.
 
-*/
+ Mald= d?->Mald|a?->STOP.
+ Malb= (a?->STOP|b!->Malb).
+ Malg= g^->Malg|a?->STOP.
+ Malf= f->Malf|a?->STOP.
+ Mblg= g^->Mblg|b!->STOP.
+ Mblf= f->Mblf|b!->STOP.
+Melg = e->STOP|g^->Melg.
+}
+
 Zoo:{ 
+TFA1 = fap2bc{b,c}(A1:AP).
+TFA3 = fap2bc{b,c}(A3:AP).
+TA1 = fap2bc(A1:AP).
+TA3 = fap2bc(A3:AP).
 
-Z1 = fap2bc{a}(A1:Test).
-Z3 = fap2bc{a}(A3:Test).
 }
 }
-operation{ 
+operation{
 
-A3 <f A1.
-Z3 <qsf Z1.
-
-A1 <f A3.
-Z1 <qsf Z3.
-//CHECK which way we want the refinements!
-// Example, with only listening,  fails for non congruence
-//Z1 <qsf{cong} Z2. //true
-//R1 <f{cong} R2.   //false
- // alphabet subset problem both in failure and trace semantics 
-
-//Z2 <qsf Z1.
-//R2 <t R1.
-//R2 <f R1.
-
-
-//Example works for congruence (both fail)
-//Z2 <qsf{cong} Z1.
-//R2 <f{cong} R1.
-//fap2bc(B2:Test) <qsf{cong} Bbc:BC.
-//B2:Test <f{cong} revap2bc(Bbc:BC).
 
 }
 
 equation {
-//X:Test <f Y:Test ==> fap2bc(X:Test) <qsf fap2bc(Y:Test).
 
 /*
 Nice idea but defining Y:BC Broadcast processes of interest is VERY problematic
 fap2bc(X:Test) <qsf Y:BC ==> X:Test <f revap2bc(Y:BC)
 */
 
-//fap2bc(X:Test) <qsf{cong} Y:BC ==> X:Test <f{cong} revap2bc(Y:BC).
-// Y:BC <qsf{cong} fap2bc(X:Test)  ==> revap2bc(Y:BC) <f{cong}  X:Test.
+ X:AP ~   simp(abs(revap2bc(fap2bc{b,c}(X:AP)))). 
 
-//  simp(abs(revap2bc(fap2bc(X:Test))))<f{cong} X:Test. 
-//X:Test <f{cong}   simp(abs(revap2bc(fap2bc(X:Test)))). 
+fap2bc{b,c}(X:AP) ~   simp(abs(fap2bc{b,c}(revap2bc(fap2bc{b,c}(X:AP))))). 
 
-//fap2bc(revap2bc(Y:BC)) <qsf{cong} Y:BC. 
+ X:Mx ~   simp(abs(revap2bc(fap2bc{g,h}(X:Mx)))). 
+fap2bc{g,h}(X:Mx) ~   simp(abs(fap2bc{g,h}(revap2bc(fap2bc{g,h}(X:Mx))))). 
+
+fap2bc{b,c}(X:AP) <qsf fap2bc{b,c}(Y:AP) ==> fap2bc{b,c}(revap2bc(fap2bc{b,c}(X:AP))) <qsf fap2bc{b,c}(revap2bc(fap2bc{b,c}(Y:AP))).
+
+fap2bc{g,h}(X:Mx) <qsf fap2bc{g,h}(Y:Mx) ==> fap2bc{g,h}(revap2bc(fap2bc{g,h}(X:Mx))) <qsf fap2bc{g,h}(revap2bc(fap2bc{g,h}(Y:Mx))).
+
+X:AP <f Y:AP ==> 
+simp(abs(revap2bc(fap2bc{b,c}(X:AP)))) <f simp(abs(revap2bc(fap2bc{b,c}(Y:AP)))). 
+
+X:Mx <f Y:Mx ==> 
+simp(abs(revap2bc(fap2bc{g,h}(X:Mx)))) <f simp(abs(revap2bc(fap2bc{g,h}(Y:Mx)))). 
 
 
-//fap2bc(Y:Test) <qsf{cong} fap2bc(X:Test) ==>  simp(abs(revap2bc(fap2bc(Y:Test))))<f{cong} X:Test .
+ /*
 
-//fap2bc(X:Test) <qsf{cong} fap2bc(Y:Test) ==>  X:Test <f{cong} simp(abs(revap2bc(fap2bc(Y:Test)))) .
+ X:AP <f{cong}   simp(abs(revap2bc(fap2bc{b,c}(X:AP)))). 
+ simp(abs(revap2bc(fap2bc{b,c}(X:AP)))) <f{cong}  X:AP . 
 
-//(X:BC) <qsf{cong} (Y:BC) ==> fap2bc(revap2bc(X:BC)) <qsf{cong} fap2bc(revap2bc(Y:BC)).
+
+abs(fap2bc{b,c}(revap2bc(Y:BC))) <qsf Y:BC. 
+abs(fap2bc{b,c}(revap2bc(Y:BC))) <qsf{cong} Y:BC. 
+
+X:AP <f  simp(abs(revap2bc(fap2bc{b,c}(X:AP)))).
+X:AP <f{cong}  simp(abs(revap2bc(fap2bc{b,c}(X:AP)))).
+X:AP <f Y:AP ==> fap2bc{b,c}(X:AP) <qsf fap2bc{b,c}(Y:AP).  
+
+
+Y:BC <qsf{cong} X:BC ==>  simp(abs(revap2bc(Y:BC)))<f{cong} simp(abs(revap2bc(X:BC))) .
+
+*/
 
 /*
-fap2bc(X:Test) <qsf fap2bc(Y:Test) ==> fap2bc(revap2bc(fap2bc(X:Test))) <qsf fap2bc(revap2bc(fap2bc(Y:Test))).
+fap2bc(X:AP) <qsf fap2bc(Y:AP) ==> fap2bc(revap2bc(fap2bc(X:AP))) <qsf fap2bc(revap2bc(fap2bc(Y:AP))).
 
-fap2bc(revap2bc(fap2bc(X:Test))) <qsf fap2bc(X:Test).
-fap2bc(revap2bc(fap2bc(X:Test[]Y:Test))) <qsf fap2bc(X:Test[]Y:Test).
+fap2bc(revap2bc(fap2bc(X:AP))) <qsf fap2bc(X:AP).
+fap2bc(revap2bc(fap2bc(X:AP[]Y:AP))) <qsf fap2bc(X:AP[]Y:AP).
 
-X:Test <f Y:Test ==> simp(abs(revap2bc(fap2bc(X:Test)))) <f simp(abs(revap2bc(fap2bc(Y:Test)))). 
+X:AP <f Y:AP ==> simp(abs(revap2bc(fap2bc(X:AP)))) <f simp{cong}(abs(revap2bc(fap2bc(Y:AP)))). 
 
-simp(abs(revap2bc(fap2bc(X:Test)))) <f X:Test.
-simp(abs(revap2bc(fap2bc(X:Test[]Y:Test)))) <f X:Test[]Y:Test.
+simp{cong}(abs(revap2bc(fap2bc(X:AP)))) <f X:AP.
+simp{cong}(abs(revap2bc(fap2bc(X:AP[]Y:AP)))) <f X:AP[]Y:AP.
 
-//    NOW the CONG 
-fap2bc(revap2bc(fap2bc(X:Test))) <qsf{cong} fap2bc(X:Test).
-fap2bc(revap2bc(fap2bc(X:Test[]Y:Test))) <qsf{cong} fap2bc(X:Test[]Y:Test).
 
-X:Test <f{cong} Y:Test ==> simp(abs(revap2bc(fap2bc(X:Test)))) <f simp(abs(revap2bc(fap2bc(Y:Test)))). 
-
-simp(abs(revap2bc(fap2bc(X:Test)))) <f{cong} X:Test.
-simp(abs(revap2bc(fap2bc(X:Test[]Y:Test)))) <f{cong} X:Test[]Y:Test.
-
-fap2bc(X:Test) <qsf{cong} fap2bc(Y:Test) ==> fap2bc(revap2bc(fap2bc(X:Test))) <qsf{cong} fap2bc(revap2bc(fap2bc(Y:Test))).
 */
 }
+
+
+/*
+
+
+
+
+
+
 
 
 

@@ -73,10 +73,11 @@ public class FunctionNode extends ASTNode {
   @Override
   public String myString(){
     StringBuilder sb = new StringBuilder();
-    sb.append(function+ "(");
+    sb.append(function);
+    if (flags.size()>0) sb.append(flags);
+    sb.append("(");
     processes.stream().forEach(x->sb.append(x.myString()));
     sb.append(")");
-    if (flags.size()>0) sb.append(flags);
     return sb.toString();
 
   }

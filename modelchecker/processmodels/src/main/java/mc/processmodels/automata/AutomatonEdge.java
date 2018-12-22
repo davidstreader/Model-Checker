@@ -23,10 +23,22 @@ public class AutomatonEdge extends ProcessModelObject {
   @Getter
   //@Setter  Must not set to a singleton
   private Set<String> edgeOwners = new HashSet<>();
+
   public void setEdgeOwners(Collection<String> os) {
     Set<String> eos = new HashSet<>();
     os.forEach(o-> eos.add(o));
     edgeOwners = eos;
+  }
+  public Set<String> getOwnerLocation() {
+    return new HashSet<>(edgeOwners);
+  }
+
+  boolean addOwnerLocation(String owner) {
+    return edgeOwners.add(owner);
+  }
+
+  boolean removeOwnerLocation(String owner) {
+    return edgeOwners.remove(owner);
   }
   @Getter
   @Setter
@@ -75,25 +87,27 @@ public class AutomatonEdge extends ProcessModelObject {
     return label.equals(Constant.HIDDEN);
   }
 
-  public boolean isObservableHidden() {
-    return label.equals(Constant.HIDDEN) && (getTo().isExternal() == getFrom().isExternal());
+  /**
+   * if edge is a tau But  bridges the gap between external and
+   * internal nodes.
+   * @return
+   */
+  public boolean stateObservable() {
+    return getTo().observeDistinct(getFrom());
+    /*  !((getTo().isSTOP() == getFrom().isSTOP()) &&
+      (getTo().isStartNode() == getFrom().isStartNode())); */
   }
+ /* public boolean isObservableHidden() {
+    return label.equals(Constant.HIDDEN) &&
+      !((getTo().isSTOP() == getFrom().isSTOP()) &&
+        (getTo().isStartNode() == getFrom().isStartNode()));
+  } */
 
   public boolean isDeadlocked() {
     return label.equals(Constant.DEADLOCK);
   }
 
-  public Set<String> getOwnerLocation() {
-    return new HashSet<>(edgeOwners);
-  }
 
-  boolean addOwnerLocation(String owner) {
-    return edgeOwners.add(owner);
-  }
-
-  boolean removeOwnerLocation(String owner) {
-    return edgeOwners.remove(owner);
-  }
 
   public String myString() {
     String out = "";

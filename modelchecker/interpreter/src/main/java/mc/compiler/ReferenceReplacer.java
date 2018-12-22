@@ -52,7 +52,7 @@ public class ReferenceReplacer {
       ast.getProcessHierarchy().getDependencies().
         putAll(process.getIdentifier(), globalRequirements);
     }
-
+    System.out.println("Ref Rep "+ast.myString());
     return ast;
   }
 
@@ -171,7 +171,7 @@ public class ReferenceReplacer {
 
   private ASTNode replaceReferences(IdentifierNode astNode, String identifier,
                                     Map<String, LocalProcessNode> localReferences) throws CompilationException, InterruptedException {
-    //System.out.println("RR IdentifierNode "+ astNode.myString()+" references "+references);
+    System.out.println("RR IdentifierNode "+ astNode.myString()+" references "+references);
       bits =  astNode.getBits();
     String reference = astNode.getIdentifier();
     String localReference = findLocalReference(identifier + "." + reference, localReferences);

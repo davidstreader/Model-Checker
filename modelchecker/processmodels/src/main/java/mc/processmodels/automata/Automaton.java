@@ -43,6 +43,13 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
   public Set<AutomatonNode> getRoot() {
     return root.stream().collect(Collectors.toSet());
   }
+  public void setRoot(Set<AutomatonNode> rt) {
+    List<AutomatonNode> r = new ArrayList<>();
+    for(AutomatonNode nd: rt) {
+      r.add(nd);
+    }
+    root = r;
+  }
 
   public List<AutomatonNode> getRootList() {
     return root.stream().collect(Collectors.toList());
@@ -316,12 +323,22 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     }
     // check that the new root is part of this automaton
     if (!nodeMap.containsKey(newRootNode.getId())) {
+      System.out.println("ERROR \n"+this.myString()+"ERROR");
+      Throwable t = new Throwable(); t.printStackTrace();
       throw new CompilationException(getClass(), "Unable to set the root node to "
         + newRootNode.getId() + ", as the root is not a part of this automaton",
         this.getLocation());
+
     }
 
     this.root.add(newRootNode);
+  }
+  public void setEndFromNodes(){
+    List<String> newEnd = new ArrayList<>();
+    for(AutomatonNode nd: this.getNodes()){
+      if (nd.isSTOP()) newEnd.add(nd.getId());
+    }
+    this.setEndList(newEnd);
   }
 
   public void addEnd(String newEndNode) throws CompilationException {
@@ -383,6 +400,8 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
       .map(ProcessModelObject::getId)
       .forEach(this::removeEdge);
     nodeMap.remove(node.getId());
+    this.getRoot().remove(node);
+    this.getEndList().remove(node);
     return true;
   }
 
@@ -482,8 +501,38 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     }
   }
 
+  public void removeDuplicateEdges() {
+    List<AutomatonEdge> found = new ArrayList<>();
+    List<AutomatonEdge> edges = this.getEdges().stream().collect(Collectors.toList());
+    for (AutomatonEdge edge : edges) {
+      //System.out.println("  edge "+edge.myString());
+      boolean f = false;
+      for(AutomatonEdge ed: found) {
+        if (edge.equals(ed)) {
+          //System.out.println("    Duplicate " + ed.myString());
+          this.removeEdge(ed.getId());
+          f  = true;
+          break;
+        } else {
+          //System.out.print("    NO "+ed.getId());
+        }
+      }
+      if (!f) {
+        found.add(edge);
+        //System.out.println(" FOUND.add " + edge.myString());
+      }
+    }
+  }
+
+  /*
+     Never call with observably distinct nodes!
+     Adds a distinct new node and replaces the two original nodes
+   */
   public AutomatonNode combineNodes(AutomatonNode node1, AutomatonNode node2, Context context) throws CompilationException, InterruptedException {
-    if (!nodeMap.containsKey(node1.getId())) {
+   return combineNodes(node1,node2,context,false);
+  }
+    public AutomatonNode combineNodes(AutomatonNode node1, AutomatonNode node2, Context context,boolean  force) throws CompilationException, InterruptedException {
+      if (!nodeMap.containsKey(node1.getId())) {
       throw new CompilationException(getClass(), node1.getId() + "test3 was not found in the automaton " + getId(), this.getLocation());
     }
     if (!nodeMap.containsKey(node2.getId())) {
@@ -491,6 +540,9 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
       throw new CompilationException(getClass(), node2.getId() + "test4 was not found in the automaton " + getId(), this.getLocation());
     }
 
+  /*  if (!force && node1.observeDistinct(node2)) {
+      throw new CompilationException(getClass(), node2.getId() +" and "+ node1.getId()+ "can not be merged as observably distinct " + getId(), this.getLocation());
+    } */
     //  //System.out.println("combining nodes "+ node1.getId()+" "+node2.getId()+
     //     " in "+this.toString());
 
@@ -515,11 +567,8 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     processOutgoingEdges(node, node1);
     processOutgoingEdges(node, node2);
     // create a union of the metadata from both nodes
-    if (node1.isExternal()) {
       node.copyProperties(node1);
-    } else {
-      node.copyProperties(node2);
-    }
+
     node.setVariables(null); // Remove the variables
     if (node1.getVariables() != null && node2.getVariables() != null) {
       if (node1.getVariables().equals(node2.getVariables())) {
@@ -532,15 +581,17 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
       root.removeAll(Arrays.asList(node1, node2));
       root.add(node);
       node.setStartNode(true);
-      //System.out.println("root "+root);
+      System.out.println("Combie root "+root.stream().map(x->x.myString()+"\n").collect(Collectors.joining()));
     }
     if (node1.isSTOP() || node2.isSTOP()) {
       node.setStopNode(true);
+      this.addEnd(node.getId());
     }
 
     removeNode(node1);
     removeNode(node2);
-    //System.out.println("new merged Node "+node.myString());
+    //this.setEndList();
+    System.out.println("new merged Node "+node.myString());
     //System.out.println("nodes merged in "+this.myString());
     return node;
   }
@@ -650,6 +701,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
                                Guard currentEdgesGuard, boolean addDefaultOwner, boolean opt)
     throws CompilationException {
     String id = getNextEdgeId();
+
     return addEdge(id, label, from, to, currentEdgesGuard, addDefaultOwner, opt);
   }
 
@@ -748,7 +800,6 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
         return edge;
       }
     }
-
     return null;
   }
 
@@ -792,7 +843,6 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     if (!edgeMap.containsKey(edge.getId())) {
       return false;
     }
-
     // remove references to this edge
     edge.getFrom().removeOutgoingEdge(edge);
     edge.getTo().removeIncomingEdge(edge);
@@ -831,6 +881,18 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     //return alphabet.keySet();
   }
 
+  public void setAlphabetFromEdges(){
+    alphabet = new TreeMap<>();
+    for(AutomatonEdge ed: getEdges()) {
+      String label = ed.getLabel();
+      if (alphabet.containsKey(label)) {
+        alphabet.get(label).add(ed);
+      }
+      List<AutomatonEdge> neds = new ArrayList<>();
+      neds.add(ed);
+      alphabet.put(label, neds);
+    }
+  }
   /**
    * @param automaton input data  to be added to this automaton
    * @return
@@ -1146,6 +1208,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
   public void tagEvents() {
     for (AutomatonEdge ed : getEdges()) {
       ed.setLabel(ed.getLabel() + ":" + tagid++);
+      System.out.println("tag "+ed.myString());
     }
   }
 

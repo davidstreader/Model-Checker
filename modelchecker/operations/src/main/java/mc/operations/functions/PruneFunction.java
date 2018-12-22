@@ -49,6 +49,7 @@ public class PruneFunction implements IProcessFunction {
   }
 
   /**
+   * MAKES NO SENCE
    * Execute the function on automata.
    *
    * @param id       the id of the resulting automaton
@@ -59,8 +60,12 @@ public class PruneFunction implements IProcessFunction {
    * @throws CompilationException when the function fails
    */
   @Override
+  public Automaton compose(String id, Set<String> flags, Context context,  Automaton... automata) {
+    return null;
+  }
+ /* @Override
   public Automaton compose(String id, Set<String> flags, Context context,  Automaton... automata)
-      throws CompilationException {
+  throws CompilationException {
     // find the hidden edges within the automaton
     Automaton automaton = automata[0];
     List<AutomatonEdge> hiddenEdges = automaton.getEdges().stream()
@@ -105,7 +110,7 @@ public class PruneFunction implements IProcessFunction {
 
     return AutomataReachability.removeUnreachableNodes(automaton);
   }
-
+*/
   /**
    * TODO:
    * Execute the function on one or more petrinet.

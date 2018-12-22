@@ -2,6 +2,7 @@ package mc.compiler.token;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import mc.Constant;
 import mc.util.Location;
 
 @Data
@@ -14,6 +15,6 @@ public class StopToken extends TerminalToken {
 
 	@Override
 	public String toString(){
-		return "STOP";
+		return Constant.STOP;
 	}
 }

@@ -15,6 +15,7 @@ public class Constant {
     public static final String Quiescent = "Quiescent";
 
     public static final String CONGURENT = "cong";
+    public static final String OBSEVATIONAL = "obs";
     public static final String FAIR = "fair";
     public static final String UNFAIR = "unfair";
 

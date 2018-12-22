@@ -740,7 +740,7 @@ public class Parser {
     // wrap the parsed process as a process root if either a label, relabel or hiding has been defined
     if (label != null || relabel != null || hiding != null) {
       process = new ProcessRootNode(process, label, relabel, hiding, process.getLocation());
-      System.out.println("\n\n         ProcessRootNode"+ process.myString()+"\n\n");
+      //System.out.println("\n\n         ProcessRootNode"+ process.myString()+"\n\n");
     }
 // operators returning processes such as [], ||, =>, ..  dynamicly loaded
     for (String key : infixFunctions.keySet()) {
@@ -965,7 +965,7 @@ public class Parser {
   }
 
   private Set<String> parseFlags(String functionType) throws CompilationException, InterruptedException {
-
+    //System.out.println("parsing flags");
     if (!(nextToken() instanceof OpenBraceToken)) {
       Token error = tokens.get(index - 1);
       throw constructException("expecting to parse \"{\" but received \"" + error.toString() + "\"", error.getLocation());
@@ -1008,13 +1008,13 @@ public class Parser {
       }
 
       //TODO: remove this somehow
-      if (Objects.equals(functionType, "simp")) {
+  /*    if (Objects.equals(functionType, "simp")) {
         if (!(peekToken() instanceof AssignToken)) {
           throw constructException("Expecting to parse '=' but received \"" + peekToken().toString() + "\"");
         }
         nextToken();
         flag += "=" + parseExpression();
-      }
+      } */
       flags.add(flag);
 
       if (peekToken() instanceof CommaToken) {
@@ -1145,9 +1145,8 @@ public class Parser {
     if (token instanceof TerminalToken) {
       if (token instanceof StopToken) {
         return new TerminalNode(Constant.STOP, token.getLocation());
-      }
-
-      return new TerminalNode(Constant.ERROR, token.getLocation());
+      } else
+        return new TerminalNode(Constant.ERROR, token.getLocation());
     }
 
     throw constructException("expecting to parse a terminal but received \"" + token.toString() + "\"", token.getLocation());
@@ -1668,7 +1667,7 @@ public class Parser {
       Token error = tokens.get(index - 1);
       throw constructException("expecting to parse \")\" but received \"" + error.toString() + "\"", error.getLocation());
     }
-    System.out.println("Parsed "+forAllNode.myString());
+    //System.out.println("Parsed "+forAllNode.myString());
     return forAllNode;
   }
 
@@ -2083,6 +2082,7 @@ public class Parser {
 
   private void checkNotEOF() throws CompilationException {
     if (index >= tokens.size()) {
+      System.out.println("END OF FILE");
       Location last = tokens.get(tokens.size() - 1).getLocation();
       Location eof = new Location(last.getLineStart(), last.getColStart() + 1, last.getLineEnd(), last.getColEnd() + 2, last.getStartIndex() + 1, last.getEndIndex() + 2);
       throw constructException("end of file reached", eof);

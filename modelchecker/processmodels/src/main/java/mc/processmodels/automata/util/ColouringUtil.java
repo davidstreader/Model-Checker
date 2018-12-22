@@ -30,8 +30,8 @@ public class ColouringUtil {
    *  @param nodes
    *
    */
-  public Map<Integer, ColourPi> doColouring
-  (List<AutomatonNode> nodes, boolean cong) throws Error {
+  public Map<Integer, ColourPi> doColouring (List<AutomatonNode> nodes, boolean cong)
+  { //throws Error {
     //System.out.print("doColouring START ");nodes.stream().forEach(nd-> System.out.println(nd.myString()));
     Map<Integer, ColourPi> col2pi = new TreeMap<>();
     //Map<ColourPi,Integer> revcolpi = new TreeMap< ColourPi,Integer>();
@@ -45,11 +45,12 @@ public class ColouringUtil {
        col2pi = new TreeMap<>();  // NEW color to a colorPi
       //System.out.println("Start");
       //nodes.stream().forEach(x->System.out.println(x.getId() + " " + x.getColour() ));
-      if (test > 50) {
+      int colSize = 500;
+      if (test > colSize) {
         System.out.println("ERROR COLOURING automaton");
         Throwable t = new Throwable();
         t.printStackTrace();
-        throw (new Error("Automata Too Big"));
+        throw (new Error("Automata Too Big "+colSize));
       }
       test++;
       // build fresh pi each iteration

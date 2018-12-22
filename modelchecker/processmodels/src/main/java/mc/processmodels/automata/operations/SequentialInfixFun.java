@@ -31,9 +31,9 @@ public class SequentialInfixFun {
    * @return the resulting automaton of the operation
    */
   public Automaton compose(String id, Automaton a1, Automaton a2) throws CompilationException {
-    //System.out.println("\n *********************");
-    //System.out.println("a1 "+automaton1.myString());
-    //System.out.println("a2 "+automaton2.myString());
+    System.out.println("\n *********************");
+    System.out.println("a1 "+a1.myString());
+    System.out.println("a2 "+a2.myString());
     Automaton sequence = new Automaton(id, !Automaton.CONSTRUCT_ROOT);
     Cloner cloner = new Cloner();
     Automaton automaton1 = cloner.deepClone(a1);
@@ -121,7 +121,7 @@ public class SequentialInfixFun {
 
     copyAutomataEdges(sequence, automaton2, automata2nodes, setOfOwners);
 
-    //System.out.println("End Seq   "+sequence.myString());
+    System.out.println("End Seq   "+sequence.myString());
     return sequence;
   }
 
@@ -198,7 +198,7 @@ public class SequentialInfixFun {
     composition.getOwners().addAll(own2);
     Petrinet sequential;
     //System.out.println("\n ***Seq "+ net1.getEnds() +"  "+net2.getRoots());
-    //System.out.println("comp "+composition.myString());
+    //System.out.println("comp1 "+composition.myString());
     for (Set<String> ed : oneEnd) {
       for (Set<String> rt : net2.getRoots()) {
         //System.out.println("***SEQ   START " + i++ + " end "+ed+ " root = " + rt);
@@ -214,18 +214,15 @@ public class SequentialInfixFun {
         for (String e : ed) {
           newend.add(composition.copyRootOrEnd(composition.getPlaces().get(e), ""));
         }
-
-
         //System.out.println("SEQUENTIAL function");
         composition.setUpv2o(n1, n2);
         composition.glueOwners(own1, own2);
         composition.gluePlaces(newroot, newend);
-
         //System.out.println("\n ***SEQ Glue places OVER \n" + composition.myString("edge") + "\n");
-
-
       }
     }
+    //System.out.println("comp2 "+composition.myString());
+
     //remove old ends
     for (Set<String> eds : oneEnd) {
       //System.out.println("ed " + eds);
@@ -240,6 +237,8 @@ public class SequentialInfixFun {
         }
       }
     }
+    //System.out.println("comp3 "+composition.myString());
+
     composition.setRootFromStart();
     //System.out.println("Sequential composition "+composition.myString());
     composition = PetrinetReachability.removeUnreachableStates(composition);

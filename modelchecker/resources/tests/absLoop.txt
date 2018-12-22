@@ -3,6 +3,8 @@ processes {
 A1o = a->b->a->A1o. 
 A1 = a->b->a->A1. 
 A1b = simp(abs(A1\{a})).
+A1a = abs(A1\{a}).
+A1as = simp(A1a).
 
 A1os = s->X, X= a->b->a->X. 
 A1s   = s->X, X= a->b->a->X. 
@@ -29,7 +31,7 @@ Gls   = s->Y, Y= b->Y|b->X, X = b->X|b->Y.
 }
 
 operation {
-
+A1a ~ A1as. //failed as owners were wrong and conversion to PETRINET failed
 Goals ~ A1bs.
 Goal ~ A1b.
 
@@ -37,6 +39,7 @@ Goal ~ Ab.
 Goal ~ A2b.
 Goal ~ A3b. 
 }
+
 
 
 

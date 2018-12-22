@@ -43,7 +43,7 @@ import mc.processmodels.automata.util.ColouringUtil;
         }
         @Override
         public Collection<String> getValidFlags(){
-            return ImmutableSet.of(Constant.UNFAIR, Constant.FAIR, Constant.CONGURENT);
+            return ImmutableSet.of( Constant.CONGURENT);
         }
         @Override
         public String getOperationType(){
@@ -62,6 +62,7 @@ import mc.processmodels.automata.util.ColouringUtil;
         public boolean evaluate(Set<String> alpha, Set<String> flags, Context context,
                                 Stack<String> trace,
                                 Collection<ProcessModel> processModels) throws CompilationException {
+
             System.out.println("Bisimulation "+flags+ " on Automaton "+processIds(processModels) );
             boolean cong = flags.contains(Constant.CONGURENT);
 
@@ -70,7 +71,6 @@ import mc.processmodels.automata.util.ColouringUtil;
                 ArrayList<AutomatonEdge> edges = new ArrayList<>();
                 ArrayList<AutomatonNode> nodes = new ArrayList<>();
 
-                final int BASE_COLOUR = 1;
                 //System.out.println("Bisim evaluate");
                 String firstId = "";
                 Automaton[] auts = new Automaton[2];

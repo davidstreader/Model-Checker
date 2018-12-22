@@ -144,6 +144,8 @@ public class ChoiceFun {
 
     //System.out.println("[]before reachability "+ net2.myString("edge")+"\n");
     net2 = PetrinetReachability.removeUnreachableStates(net2);
+    //System.out.println("\n[] OUT "+ net2.myString("edge"));
+    net2.buildAlphabetFromTrans();
     //System.out.println("[] OUT "+ net2.myString("edge")+"\n");
     //net2.reId("");
     assert net2.validatePNet(): "choice post condition";

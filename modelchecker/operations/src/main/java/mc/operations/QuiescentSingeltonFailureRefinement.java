@@ -38,6 +38,14 @@ public class QuiescentSingeltonFailureRefinement implements IOperationInfixFunct
     return ImmutableSet.of(Constant.UNFAIR, Constant.FAIR, Constant.CONGURENT);
   }
   /**
+   *
+   * You can flatten a set of singleton failures, SF, into a single set. Then its complement is the
+   * ready set R.  The ogiginal SF can be rebuilt fc(R) = SF.
+   * Given two nodes ndR and ndT with ready sets R and T they have sf's fc(R) and fc(T). To compute
+   * the sf's of a dfa node from the set of nfa nodes we need to combine sf's:
+   * The sf's from either ndR or ndT is fc(R) cup fc(T). To compute this from R and T we note
+   *                 fc(R cap T) = fc(R) cup fc(T)
+   *
    * Evaluate the quiescent singeltonFailure  refinement function.
    *  we stick to OPTIONS  2. (see quiescent trace refinement)
    *     1.  augment automaton with listening loops and Quiescent events (like STOP events)
@@ -56,30 +64,22 @@ public class QuiescentSingeltonFailureRefinement implements IOperationInfixFunct
     Automaton a2 = ((Automaton) processModels.toArray()[1]).copy();
     System.out.println("****Quiescent a1 "+a1.myString());
     System.out.println("****Quiescent a2 "+a2.myString());
-    AbstractionFunction abs = new AbstractionFunction();
+    /*
+     mapping from bc to ap to bc addes try reject loops
+     */
+   AbstractionFunction abs = new AbstractionFunction();
     a1 = abs.GaloisBCabs(a1.getId(), flags, context, a1);
     a2 = abs.GaloisBCabs(a2.getId(), flags, context, a2); //end states marked
     //System.out.println("*** Q a1  " + a1.readySets2String(cong));
     System.out.println("Gabs "+a1.myString());
     System.out.println("Gabs "+a2.myString());
 
-    //Build set of all listening events in both automata
-    Set<String> alphabet = a1.getAlphabet().stream().collect(Collectors.toSet());
-    alphabet.addAll(a2.getAlphabet().stream().collect(Collectors.toSet()));
-    Set<String>  listeningAlphabet = alphabet.stream().distinct().
-      filter(x->x.endsWith(Constant.BROADCASTSinput)).
-      collect(Collectors.toSet());
-    System.out.println("\n new listeningAlphabet " + listeningAlphabet);
-
     ArrayList<ProcessModel> pms = new ArrayList<>();
-    addListeningLoops(a1, listeningAlphabet);
-    addListeningLoops(a2, listeningAlphabet);
-    //System.out.println("+LLoops "+a1.myString());
-    //System.out.println("+LLoops "+a2.myString());
+
     pms.add(a1);
     pms.add(a2);
-    System.out.println("Q1 GalAbs+LL "+ ((Automaton)pms.get(0)).myString());
-    System.out.println("Q2 GalAbs+LL "+ ((Automaton)pms.get(1)).myString());
+  //  System.out.println("Q1 GalAbs+LL "+ ((Automaton)pms.get(0)).myString());
+  //  System.out.println("Q2 GalAbs+LL "+ ((Automaton)pms.get(1)).myString());
 
 
     SingeltonFailureRefinement sf = new SingeltonFailureRefinement();
@@ -93,18 +93,39 @@ public class QuiescentSingeltonFailureRefinement implements IOperationInfixFunct
 
   }
 
+/*
+  Build the intersection of the ready sets from the nfa
+     the singelton refusals can be infered.
+  First filter out any non Quiescent nfa node
+   if some Quiesctent  nodes the intersection will have Quiescent event
+   and the nonQuiescent nodes will have been ignored.
+   if all NonQuiescent then empth set will be empty.
+ */
+
   private List<Set<String>> refusalWrapped(Set<AutomatonNode> nds, boolean cong){
 
     List<Set<String>> refusalWrap = new ArrayList<>();
     Set<String> refusal = new TreeSet<>();
     Set<String> ready = new TreeSet<>();
+    Set<String> rQ = new TreeSet<>();
+    rQ.add("!"+Constant.Quiescent);
     boolean first = true;
     for (AutomatonNode nd: nds){
+      System.out.println(nd.getId()+"->"+ nd.getOutgoingEdges().stream().map(ed->ed.getLabel()+" ").collect(Collectors.joining()));
+      // if node not Quiescent skip
+      if (nd.getOutgoingEdges().stream().
+        filter(e->e.getLabel().equals(Constant.Quiescent)).
+        collect(Collectors.toSet()).size()==0) {
+        //refusal = rQ;
+        System.out.println("not Q");
+        continue;  //if not quiescent do not build intersection
+      }
       if (first) {
         first = false;
-        refusal = nd.quiescentReadySet(cong);
+        refusal = nd.readySet(cong);
       }
-      else refusal.retainAll(nd.quiescentReadySet(cong));
+      else refusal.retainAll(nd.readySet(cong));  //build intersection
+      System.out.println("refusal = "+refusal);
     }
     nds.stream().map(x->x.readySet(cong)).forEach(s->ready.addAll(s));
     //Wrap set in first element of Lis
@@ -116,11 +137,7 @@ public class QuiescentSingeltonFailureRefinement implements IOperationInfixFunct
   }
 
 
-  private void addListeningLoops(Automaton ain,  Set<String> alphain )
-    throws CompilationException {
-    QuiescentRefinement qr = new QuiescentRefinement();
-    qr.addListeningLoops(ain,alphain);
-  }
+
 
   /*
      You can flatten a set of singleton failures, SF, into a single set. Then its complement is the
