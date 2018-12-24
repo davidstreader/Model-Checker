@@ -19,20 +19,26 @@ public class SCCTarjan {
   Map<AutomatonNode,Integer> lowlink = new TreeMap<>();
   List<List<AutomatonNode>> components;
 
-  public List<List<AutomatonNode>> scc(Multimap<AutomatonNode,AutomatonNode> graph) {
-    int n = graph.size();
+  /**
+   * Used in tau abstraction on graphs
+   * @param graph
+   * @return a partion of the strongly tau-connected nodes.
+   */
+  public List<List<String>> scc(Multimap<AutomatonNode,AutomatonNode> graph) {
     this.graph = graph;
-    //visited = new boolean[n];
     stack = new Stack<>();
     time = 0;
-   // lowlink = new int[n];
     components = new ArrayList<>();
 
     for (AutomatonNode u : graph.keySet())
       if (!visited.containsKey(u)|| !visited.get(u))
         dfs(u);
- printCSS(components);
-    return components;
+   //printCSS(components);
+    List<List<String>> out = new ArrayList<>();
+    for(List<AutomatonNode> nds: components){
+      out.add(nds.stream().map(x->x.getId()).collect(Collectors.toList()));
+    }
+    return out;
   }
 
   void dfs(AutomatonNode u) {
@@ -68,19 +74,5 @@ public class SCCTarjan {
       System.out.println("CCS "+c.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
     }
   }
-  /* Usage example
-  public static void main(String[] args) {
-    List<Integer>[] g = new List[3];
-    for (int i = 0; i < g.length; i++)
-      g[i] = new ArrayList<>();
 
-    g[2].add(0);
-    g[2].add(1);
-    g[0].add(1);
-    g[1].add(0);
-
-    List<List<Integer>> components = new SCCTarjan().scc(g);
-    System.out.println(components);
-  }
-  */
 }

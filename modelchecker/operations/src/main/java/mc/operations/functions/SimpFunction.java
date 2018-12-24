@@ -1,13 +1,12 @@
 package mc.operations.functions;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import com.microsoft.z3.Context;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import mc.Constant;
-import mc.TraceType;
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessFunction;
 import mc.processmodels.MultiProcessModel;
@@ -55,7 +54,15 @@ public class SimpFunction implements IProcessFunction {
   }
 
   /**
-   * Execute the function on automata.
+   * Execute the simp function on automata.
+   *
+   * flag contains obs
+   *     1. reduce state space from abstraction
+   *     2. copy result to Copy
+   *     3. saturate by abstraction
+   *     4. colour
+   *     5. apply color to Copy
+   *     6. simplify copy
    *
    * @param id       the id of the resulting automaton
    * @param flags    the flags given by the function (e.g. {@code unfair} in {@code abs{unfair}(A)}
@@ -69,30 +76,53 @@ public class SimpFunction implements IProcessFunction {
     throws CompilationException {
 
     assert automata.length == 1;
-    //boolean cong = flags.contains(Constant.CONGURENT);
-    boolean cong = true; // AVOID merging a observable distinct nodes OR masive refactor
-    //Clone
     Automaton automaton = automata[0].copy(); // Deep Clone  as automata changed
     //System.out.println("\nSIMP corrects data !");
-    //System.out.println(automaton.myString());
-    //System.out.println("SIMP corrects data !");
+    if (flags.contains(Constant.OBSEVATIONAL)) {
+      automaton.validateAutomaton();
+      AbstractionFunction af = new AbstractionFunction();
+      automaton =  af.absMerge(flags,context, automaton); //1. reduce state space
+      Automaton copySmall = automaton.copy();             //2. copy
+      copySmall.validateAutomaton();
+      af.observationalSemantics(flags, automaton, context); //3. saturate
+      copySmall.validateAutomaton();
+      System.out.println("\nOBSSem "+automaton.myString());
+      List<List<String>> partition = buildPartition(flags, automaton); //4. color
+      //Applipcation of coloring to unsaturated automata
 
+      copySmall.validateAutomaton();
+      mergeNodes(copySmall, partition, context);  //5. apply color and 6. simlify
+      boolean isFair = flags.contains(Constant.FAIR) || !flags.contains(Constant.UNFAIR);
+      af.divergence(copySmall,isFair);  //7. tidy up
+      copySmall.validateAutomaton();
+      System.out.println("\ncopySmall "+copySmall.myString());
+      automaton = copySmall;
+    } else {
+      List<List<String>> partition = buildPartition(flags, automaton);
+      //the automaton is changed
+      mergeNodes(automaton, partition, context);
+    }
+ System.out.println("Simp out "+automaton.myString()+"\n");
+    return automaton;
+  }
+
+  public List<List<String>> buildPartition(Set<String> flags, Automaton automaton){
+    boolean cong = flags.contains(Constant.CONGURENT);
+    //the Nodes are connected to the Edges  are connected to the Nodes
+    // have the nodes you have the automaton
     ArrayList<AutomatonEdge> edges = new ArrayList<>();
     ArrayList<AutomatonNode> nodes = new ArrayList<>();
-
     edges.addAll(automaton.getEdges());
     nodes.addAll(automaton.getNodes());
-
     ColouringUtil colourer = new ColouringUtil();
     Map<Integer, List<ColouringUtil.ColourComponent>> colourMap = new HashMap<>();
 
     colourer.performInitialColouring(nodes, cong);
     colourer.doColouring(nodes, cong);
     //System.out.println("SIMP colour "+ automaton.getId());
-
     Map<Integer, List<AutomatonNode>> colour2nodes = new HashMap<>();
 
-//System.out.println("SIMP merge "+ automaton.getId());
+    System.out.println("SIMP colored "+ automaton.getId());
     for (AutomatonNode nd : nodes) {
       if (colour2nodes.containsKey(nd.getColour())) {
         colour2nodes.get(nd.getColour()).add(nd);
@@ -100,66 +130,51 @@ public class SimpFunction implements IProcessFunction {
         colour2nodes.put(nd.getColour(), new ArrayList<AutomatonNode>(Arrays.asList(nd)));
       }
     }
-    mergeNodes(automaton,
-      colour2nodes.values(),
-       context);
-/*
-    for (Collection<AutomatonNode> nodesWithSameColor : colour2nodes.values()) {
-      if (nodesWithSameColor.size() < 2) {
-        continue;
-      }
-//System.out.println("Simp "+ automaton.getId());
-      //AutomatonNode mergedNode = Iterables.get(nodesWithSameColor, 0);
-      boolean first = true;
-      AutomatonNode mergedNode = null;
-      for (AutomatonNode automatonNode : nodesWithSameColor) {
-        if (first) {
-          mergedNode = automatonNode;
-          first = false;
-          continue;
-        } else {
-           try {
-            //System.out.println("Merging "+mergedNode.getId()+" " + automatonNode.getId());
-            //combineNodes will remove mergedNode and return  new merged node
-            mergedNode = automaton.combineNodes(mergedNode, automatonNode, context);
-          } catch (InterruptedException ignored) {
-            throw new CompilationException(getClass(), "INTERRUPTED EXCEPTION");
-          }
-        }
-      }
-      nodesWithSameColor.forEach(automaton::removeNode);
+    List<List<String>> out = new ArrayList<>();
+    for(List<AutomatonNode> nds: colour2nodes.values()){
+      out.add(nds.stream().map(x->x.getId()).collect(Collectors.toList()));
     }
 
-    automaton.cleanNodeLables();
-    */
-    //System.out.println(automaton.myString());
-    //System.out.println("SIMP corrects data !\n");
-    //System.out.println("Simp out "+automaton.myString()+"\n");
-    return automaton;
+   return  out;
   }
 
-  public void mergeNodes(Automaton automaton,
-                          Collection<List<AutomatonNode>> part,
+
+  /**
+   * This method glues together nodes in the same partition
+   * Used here in simplification and in abstraction
+   * @param ain   input output
+   * @param partition  input
+   * @param context
+   * @throws CompilationException
+   */
+  public Automaton mergeNodes(Automaton ain,
+                          Collection<List<String>> partition,
                           Context context)
     throws CompilationException {
-    for (Collection<AutomatonNode> nodesWithSameColor : part) {
+    for (Collection<String> nodesWithSameColor : partition) {
       if (nodesWithSameColor.size() < 2) {
         continue;
       }
-//System.out.println("Simp "+ automaton.getId());
+System.out.println("Merge "+ ain.getId());
+      ain.validateAutomaton("simp 1");
+      System.out.println("    partition "+partition);
+
       //AutomatonNode mergedNode = Iterables.get(nodesWithSameColor, 0);
       boolean first = true;
-      AutomatonNode mergedNode = null;
-      for (AutomatonNode automatonNode : nodesWithSameColor) {
+      AutomatonNode selectedNode = null;
+      for (String nodeName : nodesWithSameColor) {
+        AutomatonNode automatonNode = ain.getNode(nodeName);
         if (first) {
-          mergedNode = automatonNode;
+          selectedNode = automatonNode;
           first = false;
           continue;
         } else {
           try {
-            System.out.println("Merging "+mergedNode.getId()+" " + automatonNode.getId());
+            System.out.println("Merging "+selectedNode.getId()+" " + automatonNode.getId());
             //combineNodes will remove mergedNode and return  new merged node
-            mergedNode = automaton.combineNodes(mergedNode, automatonNode, context);
+            ain = ain.mergeAutNodes(ain, selectedNode, automatonNode, context);
+            System.out.println("   Merged result \n");
+            ain.validateAutomaton("simp 2");
           } catch (InterruptedException ignored) {
             throw new CompilationException(getClass(), "INTERRUPTED EXCEPTION");
           }
@@ -167,10 +182,12 @@ public class SimpFunction implements IProcessFunction {
       }
       //nodesWithSameColor.forEach(automaton::removeNode);
     }
-
-    automaton.cleanNodeLables();
+    ain.cleanNodeLables();
+    return ain;
   }
+ 
 
+  
   /**
    * TODO:
    * Execute the function on one or more petrinet.

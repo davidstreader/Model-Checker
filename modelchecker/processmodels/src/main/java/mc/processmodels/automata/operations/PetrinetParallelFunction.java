@@ -28,7 +28,7 @@ public class PetrinetParallelFunction  {
     Petrinet p2 = pi2.reId("2");
     p1.rebuildAlphabet(); p2.rebuildAlphabet();
 
-   //System.out.println("     PETRINET PARALLELFUNCTION"+"  "+p1.myString("edges")+" ||"+flags+" \n"+p2.myString("edges"));
+   System.out.println("     PETRINET PARALLELFUNCTION"+"  "+p1.myString("edges")+" ||"+flags+" \n"+p2.myString("edges"));
 
    //builds synchronisedActions set
     setupActions(p1, p2,flags);
@@ -53,7 +53,7 @@ public class PetrinetParallelFunction  {
     //composition = PetrinetReachability.removeUnreachableStates(composition);
      composition.reId("");
      assert composition.validatePNet():"parallel comp post condition ";
-   //System.out.println("\n   PAR end "+composition.myString());
+   System.out.println("\n   PAR end "+composition.myString());
     return composition;
   }
   private static List<Set<String>> buildEnds(List<Set<String>> p1, List<Set<String>> p2){

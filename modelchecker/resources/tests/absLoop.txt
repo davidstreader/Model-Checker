@@ -2,28 +2,34 @@ processes {
 //KEEP all of these they sorted out subtle bugs
 A1o = a->b->a->A1o. 
 A1 = a->b->a->A1. 
-A1b = simp(abs(A1\{a})).
+A1b = simp{obs}(A1\{a}).
 A1a = abs(A1\{a}).
 A1as = simp(A1a).
 
+
 A1os = s->X, X= a->b->a->X. 
 A1s   = s->X, X= a->b->a->X. 
-A1bs = simp(abs(A1s\{a})).
+A1bs = simp{obs}(A1s\{a}).
+A1bc = simp{obs,cong}(A1s\{a}).
 
 
 
 A = a->b->a->a->A. 
-Ab = simp(abs(A\{a})).
+Ab = simp{obs}(A\{a}).
+Abc = simp{obs,cong}(A\{a}).
+G = a->b->a->G. 
+Gbc = G\{a}.
 
 A3 = a->a->b->A3.  //True
-A3b = simp(abs(A3\{a})).
+A3b = simp{obs}(A3\{a}).
 
 A2 = b->a->a->A2.  //True
-A2b = simp(abs(A2\{a})).
+A2b = simp{obs}(A2\{a}).
 
 // NOTE initially no special concern was placed on  the START state
 //OLDGoal = b->OLDGoal.
 Goal = b->Goal|b->X, X = b->X|b->Goal.
+
 Gl = b->Gl|b->X, X = b->X|b->Gl.
 
 Goals = s->Y, Y= b->Y|b->X, X = b->X|b->Y.
@@ -38,7 +44,11 @@ Goal ~ A1b.
 Goal ~ Ab.
 Goal ~ A2b.
 Goal ~ A3b. 
+
+Gbc ~ Abc.
 }
+
+
 
 
 

@@ -167,14 +167,7 @@ public class SingeltonFailureRefinement implements IOperationInfixFunction {
     boolean out = true;
     System.out.println("isSF s1 "+s1.get(0)+" s2 "+s2.get(0));
     //Set<String> small = s2.get(0).stream().filter(x->!Constant.external(x)).collect(Collectors.toSet());
-    if (!s1.get(0).contains(Constant.Quiescent)) {
-      System.out.println("FRIG  true");
-      out = true;
-    } else if (s1.get(0).contains(Constant.Quiescent)&&
-      !s2.get(0).contains(Constant.Quiescent)) {
-      System.out.println("FRIG false");
-      out = false;
-    } else {
+
       //System.out.println("small "+small);
       if (cong) out = (s1.get(0).containsAll(s2.get(0)));
       else {
@@ -187,7 +180,7 @@ public class SingeltonFailureRefinement implements IOperationInfixFunction {
           }
         }
       }
-    }
+
     System.out.println("can  s2 "+s2.get(0)+" refuse more than s1 "+s1.get(0)+" "+out);
     return out;
   }

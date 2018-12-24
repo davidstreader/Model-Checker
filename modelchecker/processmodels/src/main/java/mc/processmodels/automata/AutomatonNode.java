@@ -226,11 +226,23 @@ public class AutomatonNode extends ProcessModelObject implements Comparable<Auto
 
     return false;
   }
-
+  public String stringString(){
+    StringBuilder sb = new StringBuilder();
+    sb.append("Node "+getId()+" in "+incomingEdges.size()+" out "+outgoingEdges.size()+"\n");
+    for (AutomatonEdge ed: incomingEdges.values()){
+      sb.append(ed.myString()+"\n");
+    }
+    for (AutomatonEdge ed: outgoingEdges.values()){
+      sb.append(ed.myString()+"\n");
+    }
+    sb.append(myString());
+    return sb.toString();
+  }
   public String myString() {
 
-    return "node " + this.getId() + " labNo " + labelNumber + " col " + this.colour + " out = " + outgoingEdges.size() +
-      " quies " + quiescent+ " error " + isERROR()  + " end " + isSTOP() + " start " + isStartNode();
+    return "node " + this.getId() + " labNo " + labelNumber + " col " + this.colour +
+      "   quies " + quiescent+ " error " + isERROR()  + " end " + isSTOP() + " start " + isStartNode()+"\n   " +
+      "         out = " + outgoingEdges.keySet() + " in "+incomingEdges.keySet();
   }
 
   public String toString() {

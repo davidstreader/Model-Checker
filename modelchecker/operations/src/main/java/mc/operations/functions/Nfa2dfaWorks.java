@@ -47,18 +47,21 @@ public class Nfa2dfaWorks {
           if (ndn.isSTOP()) {
             AutomatonNode zomNd1 = nfa.getDeadNode("_zom1");
             nfa.addEdge(Constant.STOP, ndn, zomNd1, null, true, false);
-         //   nfa.addEdge(Constant.STOP + "!", zomNd1, deadNd, null, true, false);
+            //   nfa.addEdge(Constant.STOP + "!", zomNd1, deadNd, null, true, false);
           }
           if (ndn.isStartNode()) {
             AutomatonNode zomNd2 = nfa.getDeadNode("_zom2");
             nfa.addEdge(Constant.Start, ndn, zomNd2, null, true, false);
-        //    nfa.addEdge(Constant.Start + "!", zomNd2, deadNd, null, true, false);
+            //    nfa.addEdge(Constant.Start + "!", zomNd2, deadNd, null, true, false);
             //System.out.println("pingo " + nfa.myString());
           }
-        } else {  //NOT Quiescent
-          if (ndn.isSTOP()) {
-            nfa.addEdge(Constant.STOP, ndn, deadNd, null, true, false);
+          if (tt.equals(TraceType.QuiescentTrace) && ndn.isQuiescent()
+           // && !ndn.isSTOP() && !ndn.isStartNode()  need Quiescent to build the refusal sets
+            ) { // not Start or stop necessary
+            nfa.addEdge(Constant.Quiescent, ndn, nfa.deadNode(), null, true, false);
+            //System.out.println("adding edge to nfa "+ed.myString());
           }
+        } else {  //NOT Quiescent
           if (ndn.isSTOP()) {
             nfa.addEdge(Constant.STOP, ndn, deadNd, null, true, false);
           }
@@ -66,27 +69,27 @@ public class Nfa2dfaWorks {
 
         //if (tt.equals(TraceType.CompleteTrace) && ndn.isERROR()) {
         //  nfa.addEdge(Constant.ERROR, ndn, nfa.deadNode(), null, true, false);
-          //  //  nfa.addEdge(Constant.END, ndn, nfa.deadNode(), null, true, false);
+        //  //  nfa.addEdge(Constant.END, ndn, nfa.deadNode(), null, true, false);
         //}
 
-      } else //NOT cong
+      } else { //NOT cong
         if (tt.equals(TraceType.CompleteTrace) && (ndn.isSTOP() || ndn.isERROR())) {
           nfa.addEdge(Constant.END, ndn, nfa.deadNode(), null, true, false);
           //System.out.println("adding edge to nfa "+ed.myString());
         }  //END is dummy edge to enforce complete traces
-
-      if (tt.equals(TraceType.QuiescentTrace) && ndn.isQuiescent()) {
-        nfa.addEdge(Constant.Quiescent, ndn, nfa.deadNode(), null, true, false);
-        //System.out.println("adding edge to nfa "+ed.myString());
+        if (tt.equals(TraceType.QuiescentTrace) && ndn.isQuiescent()) {
+          nfa.addEdge(Constant.Quiescent, ndn, nfa.deadNode(), null, true, false);
+          //System.out.println("adding edge to nfa "+ed.myString());
+        }
       }
 // add empty trace
-      if (!tt.equals(TraceType.Trace) &&
+  /*    if (!tt.equals(TraceType.Trace) &&
         ndn.isStartNode() &&
         (ndn.isSTOP() || ndn.isERROR())) {
         nfa.addEdge(Constant.EPSILON, ndn, nfa.deadNode(), null, true, false);
-      }
+      } */
     }
-     //System.out.println("ANOTATED nfa  " + nfa.myString());
+    //System.out.println("ANOTATED nfa  " + nfa.myString());
 
     Automaton dfa = new Automaton(id + "_dfa", !Automaton.CONSTRUCT_ROOT);
 
@@ -99,8 +102,8 @@ public class Nfa2dfaWorks {
 
 //build set of nfa nodes used to constuct a the single dfa root node
     toDoList.push(constructClosure(nfa.getRoot(), stateMap));
-     //System.out.println("nfa Root "+nfa.getRoot().stream().map(x->x.getId()).collect(Collectors.joining()));
-     //System.out.println("dfa Root "+ toDoList.peek());
+    //System.out.println("nfa Root "+nfa.getRoot().stream().map(x->x.getId()).collect(Collectors.joining()));
+    //System.out.println("dfa Root "+ toDoList.peek());
     Set<String> alphabet = nfa.getAlphabet();
     //alphabet.remove(Constant.HIDDEN);
     //System.out.println("dfa alphabet "+alphabet);

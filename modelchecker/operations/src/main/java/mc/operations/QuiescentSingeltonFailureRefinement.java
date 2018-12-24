@@ -9,6 +9,7 @@ import mc.Constant;
 import mc.TraceType;
 import mc.exceptions.CompilationException;
 import mc.operations.functions.AbstractionFunction;
+import mc.operations.functions.SimpFunction;
 import mc.plugins.IOperationInfixFunction;
 import mc.processmodels.ProcessModel;
 import mc.processmodels.automata.Automaton;
@@ -35,7 +36,7 @@ public class QuiescentSingeltonFailureRefinement implements IOperationInfixFunct
   public String getOperationType(){return "automata";}
   @Override
   public Collection<String> getValidFlags(){
-    return ImmutableSet.of(Constant.UNFAIR, Constant.FAIR, Constant.CONGURENT);
+    return ImmutableSet.of(Constant.UNFAIR, Constant.FAIR, Constant.CONGURENT, Constant.OBSEVATIONAL);
   }
   /**
    *
@@ -50,14 +51,14 @@ public class QuiescentSingeltonFailureRefinement implements IOperationInfixFunct
    *  we stick to OPTIONS  2. (see quiescent trace refinement)
    *     1.  augment automaton with listening loops and Quiescent events (like STOP events)
    *     2.  apply singelton failure refinement
-   * @param alpha
+   * @param alph
    * @param processModels automaton in the function (e.g. {@code A} in {@code A ~ B})
    * @return the resulting automaton of the operation
    */
   @Override
-  public boolean evaluate(Set<String> alpha, Set<String> flags, Context context,
+  public boolean evaluate(Set<String> alph, Set<String> flags, Context context,
                           Stack<String> trace, Collection<ProcessModel> processModels) throws CompilationException {
-    System.out.println("\nQUIESCENT " + alpha+" "+flags+" ");
+    System.out.println("\nQUIESCENT " + alph+" "+flags+" ");
     boolean cong = flags.contains(Constant.CONGURENT);
     //ProcessModel[] pms =  processModels.toArray();
     Automaton a1 = ((Automaton) processModels.toArray()[0]).copy();
@@ -74,13 +75,33 @@ public class QuiescentSingeltonFailureRefinement implements IOperationInfixFunct
     System.out.println("Gabs "+a1.myString());
     System.out.println("Gabs "+a2.myString());
 
-    ArrayList<ProcessModel> pms = new ArrayList<>();
+  /*
+        a?->b!->c?->STOP
+    the a? event can be detected using contexts b?-STOP, a!->STOP
+    The final c? event can never be detected! WITHOUT {cong}
+    To remove all such c?  add listening loops and simp{}
+    safe to to even with {cong} but should change nothing
+*/
+    Set<String> alpha = a1.getAlphabetFromEdges();
+    alpha.addAll(a2.getAlphabetFromEdges());
+    alpha = alpha.stream().filter(x->x.endsWith(Constant.BROADCASTSinput)).collect(Collectors.toSet());
 
+    SimpFunction simpf = new SimpFunction();
+    addListeningLoops(a1,alpha);
+    List<List<String>> partition = simpf.buildPartition(flags, a1);
+    simpf.mergeNodes(a1, partition, context);
+    addListeningLoops(a2,alpha);
+    partition = simpf.buildPartition(flags, a2);
+    simpf.mergeNodes(a2, partition, context);
+
+    System.out.println("a1 "+a1.myString());
+    System.out.println("a2 "+a2.myString());
+  /*
+     Finally build dfa and evaluate
+   */
+    ArrayList<ProcessModel> pms = new ArrayList<>();
     pms.add(a1);
     pms.add(a2);
-  //  System.out.println("Q1 GalAbs+LL "+ ((Automaton)pms.get(0)).myString());
-  //  System.out.println("Q2 GalAbs+LL "+ ((Automaton)pms.get(1)).myString());
-
 
     SingeltonFailureRefinement sf = new SingeltonFailureRefinement();
     TraceWork tw = new TraceWork();
@@ -89,7 +110,21 @@ public class QuiescentSingeltonFailureRefinement implements IOperationInfixFunct
       TraceType.QuiescentTrace,
       trace,
       this::refusalWrapped,
-      (a11, a21, cong1, error) -> sf.singeltonPass(a11, a21, cong1, error));
+      (a11, a21, cong1, error) -> singeltonQPass(a11, a21, cong1, error));
+
+  }
+
+  private void addListeningLoops(Automaton ain,Set<String> listen)
+    throws CompilationException {
+    for(AutomatonNode nd: ain.getNodes()){
+      Set<String> found = nd.getOutgoingEdges().stream().map(x->x.getLabel()).
+        collect(Collectors.toSet());
+      for (String lab: listen){
+        if (!found.contains(lab)){
+          ain.addEdge(lab, nd,nd, null, false,false);
+        }
+      }
+    }
 
   }
 
@@ -136,6 +171,61 @@ public class QuiescentSingeltonFailureRefinement implements IOperationInfixFunct
     return refusalWrap;
   }
 
+  public  boolean singeltonQPass(List<Set<String>> a1, List<Set<String>> a2, boolean cong,ErrorMessage error) {
+    return isQSFSubset( a1, a2, cong, error);
+
+  }
+  /**  this computes SF subset OR =
+   * A state that is not Quiescent cannot refuse anything hene the FRIGs
+   * for {cong} A STOP or Start state must take the worst options for Quiescence
+   *
+   * @param s2  Acceptance set
+   * @param s1  Acceptance set
+   *            s1 subset s2 => s2 refuses more that s1
+   * @param cong
+   * @param error
+   * @return
+   */
+  private boolean isQSFSubset(List<Set<String>> s2, List<Set<String>> s1, boolean cong,ErrorMessage error) {
+    boolean out = true;
+    System.out.println("isSF s1 "+s1.get(0)+" s2 "+s2.get(0));
+    //Set<String> small = s2.get(0).stream().filter(x->!Constant.external(x)).collect(Collectors.toSet());
+    if (!s1.get(0).contains(Constant.Quiescent)) {  //s1 can refuse nothing
+      System.out.println(" Quiescent FRIG  true");
+      out = true;
+    } else if (s1.get(0).contains(Constant.Quiescent) &&
+      !s2.get(0).contains(Constant.Quiescent)) {  //s2 can refuse nothing
+      System.out.println(" Quiescent FRIG false");
+      out = false;
+    } else {
+      //System.out.println("small "+small);
+      if (cong) {
+        if ((s1.contains(Constant.STOP) && !s2.contains(Constant.STOP))
+          ||(s1.contains(Constant.Start)&& !s2.contains(Constant.Start))  ) {
+          s1.remove(Constant.Quiescent);  //worst interpretation
+        }
+        //out = (s1.get(0).containsAll(s2.get(0)));
+        for (String lab : s2.get(0)) {
+          if (!s1.get(0).contains(lab)) {
+            error.error = "Ref{" + lab + "}";
+            out = false;
+            break;
+          }
+        }
+      } else {
+        for (String lab : s2.get(0)) {
+          if (Constant.external(lab)) continue;
+          if (!s1.get(0).contains(lab)) {
+            error.error = "Ref{" + lab + "}";
+            out = false;
+            break;
+          }
+        }
+      }
+    }
+    System.out.println("can  s2 "+s2.get(0)+" refuse more than (or =) s1 "+s1.get(0)+" "+out);
+    return out;
+  }
 
 
 

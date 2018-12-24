@@ -2,11 +2,8 @@ package mc.processmodels.automata;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
-import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 
-import java.lang.reflect.Array;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -14,7 +11,6 @@ import java.util.stream.Stream;
 import com.rits.cloning.Cloner;
 import lombok.Getter;
 import lombok.Setter;
-import mc.Constant;
 import mc.compiler.Guard;
 import mc.compiler.ast.RelabelElementNode;
 import mc.exceptions.CompilationException;
@@ -139,6 +135,67 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
   }
 
+
+
+  public boolean validateAutomaton(String ping) {
+    System.out.println(ping);
+    return  validateAutomaton();
+
+  }
+    public boolean validateAutomaton() {
+      System.out.println("              Validate "+getId());
+    boolean ok = true;
+    for(AutomatonNode nd : getNodes()) {
+      for(AutomatonEdge ed: nd.getIncomingEdges()) {
+        if (!edgeMap.containsValue(ed)){
+          System.out.println(nd.getId()+ " <- NO in edge "+ ed.getId());
+          ok = false;
+        }
+        if (!ed.getTo().equalId(nd)) {
+          System.out.println(ed.getId()+ " -> "+nd.getId()+" nd ERROR");
+          ok = false;
+        }
+      }
+      for(AutomatonEdge ed: nd.getOutgoingEdges()) {
+        if (!edgeMap.containsValue(ed)){
+          System.out.println(nd.getId()+ " -> NO out edge "+ ed.getId());
+          ok = false;
+        }
+        if (!ed.getFrom().equalId(nd)) {
+          System.out.println(nd.getId()+ " -> "+ed.getId()+" nd ERROR");
+          ok = false;
+        }
+      }
+    }
+    for(AutomatonEdge ed: getEdges()) {
+      //System.out.println("EDGE "+ed.myString());
+      if (!nodeMap.containsValue(ed.getFrom()))  {
+        System.out.println(ed.getId()+ " <- "+ ed.getFrom().getId()+ " NO From");
+        ok = false;
+      }
+      if (!nodeMap.containsValue(ed.getTo()))  {
+        System.out.println(ed.getId()+ " -> "+ ed.getTo().getId()+ " NO To");
+        ok = false;
+      }
+      if (!ed.getTo().getIncomingEdges().contains(ed)){
+        System.out.println(ed.getId()+ " -> "+ ed.getTo().getId()+ " ed ERROR");
+        ok = false;
+      }
+      if (!ed.getFrom().getOutgoingEdges().contains(ed)){
+        System.out.println(ed.getFrom().getId()+ " -> "+ ed.getId()+ " ed ERROR");
+        ok = false;
+      }
+    }
+    if (!ok) {
+      Throwable t = new Throwable(); t.printStackTrace();
+      System.out.println("                  Vaidate "+getId()+" "+ok +"\n"+myString());
+    } else {
+      System.out.println("                  Vaidate "+getId()+" "+ok);
+    }
+    return ok;
+  }
+
+
   public Map<String, Set<String>> eventNames2Owner(){
     Map<String, Set<String>> a2o = new TreeMap<>();
     for (AutomatonEdge e: this.getEdges()){
@@ -251,11 +308,6 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     });
   }
 
-  public void removeEdgeDuplicates() {
-    for (AutomatonEdge edge : getEdges()) {
-
-    }
-  }
 
   public boolean isSymbolic() {
     return (hiddenVariables != null && hiddenVariables.size() > 0);
@@ -524,37 +576,34 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     }
   }
 
-  /*
-     Never call with observably distinct nodes!
-     Adds a distinct new node and replaces the two original nodes
+
+  /**
+   *  merges second node into the first keeping the firsts id
+   * @param node1
+   * @param node2
+   * @param context
+   * @return
+   * @throws CompilationException
+   * @throws InterruptedException
    */
-  public AutomatonNode combineNodes(AutomatonNode node1, AutomatonNode node2, Context context) throws CompilationException, InterruptedException {
-   return combineNodes(node1,node2,context,false);
+  public Automaton mergeAutNodes(Automaton ain, AutomatonNode node1, AutomatonNode node2, Context context) throws CompilationException, InterruptedException {
+    return mergeAutNodes(ain,node1,node2,context,false);
   }
-    public AutomatonNode combineNodes(AutomatonNode node1, AutomatonNode node2, Context context,boolean  force) throws CompilationException, InterruptedException {
-      if (!nodeMap.containsKey(node1.getId())) {
+  public Automaton mergeAutNodes(Automaton ain, AutomatonNode node1, AutomatonNode node2, Context context, boolean  force) throws CompilationException, InterruptedException {
+    if (!nodeMap.containsKey(node1.getId())) {
       throw new CompilationException(getClass(), node1.getId() + "test3 was not found in the automaton " + getId(), this.getLocation());
     }
     if (!nodeMap.containsKey(node2.getId())) {
 
       throw new CompilationException(getClass(), node2.getId() + "test4 was not found in the automaton " + getId(), this.getLocation());
     }
-
-  /*  if (!force && node1.observeDistinct(node2)) {
-      throw new CompilationException(getClass(), node2.getId() +" and "+ node1.getId()+ "can not be merged as observably distinct " + getId(), this.getLocation());
-    } */
-    //  //System.out.println("combining nodes "+ node1.getId()+" "+node2.getId()+
-    //     " in "+this.toString());
-
-    AutomatonNode node = addNode(); //The new node to replae both old nodes
-
-
+    System.out.println("Merging "+node1.getId()+"\n <= "+node2.getId());
+// for symbilic TOBE reviewed
     for (AutomatonEdge edge1 : node1.getIncomingEdges()) {
       for (AutomatonEdge edge2 : node2.getIncomingEdges()) {
         processGuards(edge1, edge2, context);
       }
     }
-
     for (AutomatonEdge edge1 : node1.getOutgoingEdges()) {
       for (AutomatonEdge edge2 : node2.getOutgoingEdges()) {
         processGuards(edge1, edge2, context);
@@ -562,39 +611,27 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     }
     // add the incoming and outgoing edges from both nodes to the combined nodes
 
-    processIncomingEdges(node, node1);
-    processIncomingEdges(node, node2);
-    processOutgoingEdges(node, node1);
-    processOutgoingEdges(node, node2);
-    // create a union of the metadata from both nodes
-      node.copyProperties(node1);
+    processIncomingEdges(ain,node1, node2);
+    processOutgoingEdges(ain,node1, node2);
 
-    node.setVariables(null); // Remove the variables
-    if (node1.getVariables() != null && node2.getVariables() != null) {
-      if (node1.getVariables().equals(node2.getVariables())) {
-        node.setVariables(node1.getVariables());
-      }
+    if (!node1.isStartNode() && node2.isStartNode()) {
+      root.add(node1);
+      node1.setStartNode(true);
+    }
+    if (!node1.isSTOP() && node2.isSTOP()) {
+      node1.setStopNode(true);
+      this.addEnd(node1.getId());
     }
 
-
-    if (node1.isStartNode() || node2.isStartNode()) {
-      root.removeAll(Arrays.asList(node1, node2));
-      root.add(node);
-      node.setStartNode(true);
-      System.out.println("Combie root "+root.stream().map(x->x.myString()+"\n").collect(Collectors.joining()));
-    }
-    if (node1.isSTOP() || node2.isSTOP()) {
-      node.setStopNode(true);
-      this.addEnd(node.getId());
-    }
-
-    removeNode(node1);
-    removeNode(node2);
+    nodeMap.remove(node2.getId());
+    //removeNode(node2);
     //this.setEndList();
-    System.out.println("new merged Node "+node.myString());
+    System.out.println("new merged Node "+node1.myString());
     //System.out.println("nodes merged in "+this.myString());
-    return node;
+    return ain;
   }
+
+
 
   /*
 
@@ -624,46 +661,66 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
   // used to add  incoming edges when merging nodes
   // should only add edges if not already there  code in Automaton
-  private void processIncomingEdges(AutomatonNode node, AutomatonNode oldNode) {
+  private void processIncomingEdges(Automaton ain,AutomatonNode node, AutomatonNode oldNode) {
     List<AutomatonEdge> edges = oldNode.getIncomingEdges();
+    System.out.println("processIncomingEdges "+node.getId()+" <- "+oldNode.getId());
     for (AutomatonEdge edge : edges) {
+      System.out.println("processesing "+edge.myString());
       // Only add edges if not already there  code in Automaton
       boolean found = false;
       for (AutomatonEdge oldEdge : node.getIncomingEdges()) {
         if (oldEdge.getLabel().equals(edge.getLabel()) &&
           oldEdge.getFrom().equals(edge.getFrom())) {
           found = true;
+          System.out.println("found "+oldEdge.myString());
           break;
         }
       }
       if (found == false) {
-//System.out.println("1 adding " + edge.getFrom().getId()+"-" + edge.getLabel() +"->" + node.getId());
+  System.out.println("1 adding " + edge.getFrom().getId()+"-" + edge.getLabel() +"->" + node.getId());
         node.addIncomingEdge(edge);
         edge.setTo(node);
-        oldNode.removeIncomingEdge(edge);
+        ain.nodeMap.put(node.getId(),node);
+        ain.edgeMap.put(edge.getId(),edge);
+        System.out.println(ain.myString());
+        //oldNode.removeIncomingEdge(edge);
+      } else {
+        System.out.println("In not needed "+edge.myString());
+        ain.edgeMap.remove(edge.getId());
+        edge.getFrom().removeOutgoingEdge(edge);
+        System.out.println(" edge gone!  "+ edge.getFrom().myString());
       }
     }
   }
 
-  private void processOutgoingEdges(AutomatonNode node, AutomatonNode oldNode) {
+  private void processOutgoingEdges(Automaton ain,AutomatonNode node, AutomatonNode oldNode) {
     List<AutomatonEdge> edges = oldNode.getOutgoingEdges();
+    System.out.println("processOutgoingEdges "+node.getId()+" <- "+oldNode.getId());
     for (AutomatonEdge edge : edges) {
+   System.out.println("processesing "+edge.myString());
       // Only add edges if not already there  code in Automaton
-      AutomatonEdge e = this.getEdge(edge.getLabel(), node, edge.getTo());
       boolean found = false;
       for (AutomatonEdge oldEdge : node.getOutgoingEdges()) {
         if (oldEdge.getLabel().equals(edge.getLabel()) &&
           oldEdge.getTo().equals(edge.getTo())) {
           found = true;
+          System.out.println("found "+oldEdge.myString());
           break;
         }
       }
       if (found == false) {
-        ////System.out.println("2 adding "+node.getId()+"-" + edge.getLabel() +"->" +edge.getTo().getId());
-
+  System.out.println("2 adding "+node.getId()+"-" + edge.getLabel() +"->" +edge.getTo().getId());
         node.addOutgoingEdge(edge);
         edge.setFrom(node);
-        oldNode.removeOutgoingEdge(edge);
+        ain.nodeMap.put(node.getId(),node);
+        ain.edgeMap.put(edge.getId(),edge);
+        System.out.println(ain.myString());
+        //  oldNode.removeOutgoingEdge(edge);
+      } else {
+  System.out.println("Out not needed "+edge.myString());
+        ain.edgeMap.remove(edge.getId());
+        edge.getTo().removeIncomingEdge(edge);
+   System.out.println(" edge gone!  "+ edge.getTo().myString());
       }
     }
   }
@@ -711,7 +768,8 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
     // check that the nodes have been defined
     if (from == null) {
-
+      Throwable t = new Throwable();
+      t.printStackTrace();
       //System.out.println("id = "+id+" label "+label+ " to "+to);
       throw new CompilationException(getClass(),
         "Unable to add the specified edge as the source was null.\n" + this.toString() + "\n",
@@ -719,19 +777,16 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     }
 
     if (to == null) {
-    /*
-      System.out.println("id = "+id+" label "+label+ " from "+from);
-      System.out.println("Stack trace:");
-      StackTraceElement[] stackTraces = Thread.currentThread().getStackTrace();
-      for (int i = 1; i < stackTraces.length; i++) {
-        System.out.println(stackTraces[i]);
-      } */
+      Throwable t = new Throwable();
+      t.printStackTrace();
       throw new CompilationException(getClass(),
         "Unable to add the specified edge as the destination was null.\n" + this.toString() + "\n",
         this.getLocation());
     }
     // check that the nodes are part of this automaton
     if (!nodeMap.containsKey(from.getId())) {
+      Throwable t = new Throwable();
+      t.printStackTrace();
       throw new CompilationException(getClass(),
         "Unable to add the specified edge as " + from.getId() + " is not a part of "
           + this.getId() + " automaton. \n"
@@ -740,6 +795,8 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     }
 
     if (!nodeMap.containsKey(to.getId())) {
+      Throwable t = new Throwable();
+      t.printStackTrace();
       throw new CompilationException(getClass(),
         "Unable to add the specified edge as " + to.getId() + " is not a part of "
           + this.getId() + " automaton.  \n"
@@ -752,23 +809,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     if (e != null) {
       return e;
     }
-    /* Must be redundent  for atomic abutomaon see above
-    //Not identical edge but other edges with same from to and label?
-    List<AutomatonEdge> edges = from.getOutgoingEdges().stream()
-        .filter(edge -> edge.getLabel().equals(label) &&
-                        edge.getTo().getId().equals(to.getId()))
-        .collect(Collectors.toList());
 
-    if (edges.size() > 0) {
-      for (AutomatonEdge edge : edges) {
-        if (edge.getGuard() == null && currentEdgesGuard == null) {
-          return edge;
-        }
-        if (edge.getGuard() != null && edge.getGuard().equals(currentEdgesGuard)) {
-          return edge;
-        }
-      }
-    } */
 
 //OK this edge is to be built and added
     AutomatonEdge edge = new AutomatonEdge(id, label, from, to);
@@ -893,6 +934,17 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
       alphabet.put(label, neds);
     }
   }
+  public Set<String> getAlphabetFromEdges(){
+    Set<String> alph = new TreeSet<>();
+    for(AutomatonEdge ed: getEdges()) {
+      String label = ed.getLabel();
+      if (!alph.contains(label)) {
+        alph.add(label);
+      }
+    }
+    System.out.println("alphabet in "+getId()+" is "+alph);
+    return alph;
+  }
   /**
    * @param automaton input data  to be added to this automaton
    * @return
@@ -965,16 +1017,19 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     sb.append("alpa " + this.alphabet.keySet() + " ");
     sb.append(" own" + owners + "nodes " + getNodes().size() + " edges " + getEdges().size() + "\n");
     for (AutomatonNode nd : getNodes()) {
-      sb.append(nd.myString() + "\n");
+      sb.append("in "+ nd.getIncomingEdges().size()+
+        " out "+ nd.getOutgoingEdges().size()+" " +nd.myString() + "\n");
     }
     for (AutomatonEdge ed : getEdges()) {
       sb.append(ed.myString() + "\n");
     }
-    sb.append(" node2ReadySets\n");
+    sb.append(" node2ReadySets "+node2ReadySets.size()+"\n");
     for (AutomatonNode nd : node2ReadySets.keySet()) {
       sb.append(nd.getId() + "->" + node2ReadySets.get(nd) + "\n");
     }
+
     sb.append("this.nodeId " + this.nodeId);
+
     return sb.toString();
   }
 
@@ -1025,77 +1080,6 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     return cloner.deepClone(this);
 
   }
-/*
-  public Automaton copy() throws CompilationException {
-    Automaton copy = new Automaton(getId(), !CONSTRUCT_ROOT);
-//New node objects but with same Id causes problems where unique ids assumed!
-    // compute bisim between two automata that nodes with same Id
-
-   //System.out.println("Start of Copy "+ myString());
-    //HACK fix the owners as some times global owners not same as owners on edges
-    Set<String > union = new HashSet<>();
-    for(AutomatonEdge ed: getEdges()) {
-      union.addAll(ed.getOwnerLocation());
-    }
-
-    setOwners(union);
-    Map<String,String> ownersMap = new TreeMap<>();
-
-   //System.out.println("COPY "+ this.getId()+" owners "+ owners);
-    for (String s: union){
-      ownerId++;
-     //System.out.println("s "+s+" own "+ ownerId);
-      ownersMap.putIfAbsent(s, "cp"+((Integer) ownerId).toString());
-     //System.out.println("ownersMap "+ s+"->"+ownersMap.get(s));
-    }
-
-    owners =  ownersMap.values().stream().collect(Collectors.toSet());
-
-   //System.out.println("XX " + ownersMap);
-
-    Map<AutomatonNode,AutomatonNode> reNode = new HashMap<>();
- //System.out.println("Starting copy of "+this.toString());
-    List<AutomatonNode> nodes = getNodes();
-    for (AutomatonNode node : nodes) {
-      AutomatonNode newNode = copy.addNode();
-      reNode.put(node,newNode);
-  //System.out.println(" reNode "+node.getId()+"->"+newNode.getId());
-      newNode.copyProperties(node);
-      if (newNode.isStartNode()) {
-        copy.addRoot(newNode);
-      }
-    }
-
-    List<AutomatonEdge> edges = getEdges();
-    for (AutomatonEdge edge : edges) {
-      //System.out.println(" edge "+edge.myString());
-      AutomatonNode from = reNode.get(edge.getFrom());
-      AutomatonNode to = reNode.get(edge.getTo());
-
-      //Change to make copies re id the edge
-      AutomatonEdge xedge =  copy.addEdge(edge.getLabel(),
-        from, to, edge.getGuard(), false,edge.getOptionalEdge());
-   //System.out.println("  Adding "+xedge.myString());
-      Set<String> os = edge.getOwnerLocation();
- //System.out.print("os "+os);
-      Set<String> newos = new HashSet<>();
-        //os.stream().map(x->ownersMap.get(x)).collect(Collectors.toSet());
-      for(String s:os) {
-        newos.add(ownersMap.get(s));
-      }
-     //System.out.println(" newos "+ newos);
-      copy.addOwnersToEdge(xedge,newos);
-      xedge.setOptionalEdge(edge.getOptionalEdge());
-      //System.out.println("End of adding Edge"+xedge.myString());
-    }
-    copy.copyProperties(this);
-   //System.out.println("copy Ends "+copy.myString());
-    for(AutomatonNode nd: this.node2ReadySets.keySet()){
-      copy.node2ReadySets.put(reNode.get(nd),node2ReadySets.get(nd));
-    }
-    return copy;
-  }
-*/
 
   public Automaton reId(String tag) throws CompilationException {
     //System.out.println("Start reId "+this.myString());

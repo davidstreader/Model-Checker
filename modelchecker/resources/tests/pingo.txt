@@ -1,19 +1,11 @@
 processes {
-    X = a->STOP.
-    A = b->X.
 
-  //  Test = b->a->STOP.
+A = a?->b!->c?->STOP.
+B = a?->b!->STOP.
+C = b!->c?->STOP.
 }
 
-//operation Test ~ A.
-/*
-processes {
-	A2 = a->STOP.
-	B2 = b->STOP.
-	C2 = A2|B2.
-    Test2 = (a->STOP)|(b->STOP).
+operation {
+ A <qsf B.
+A !<qsf C.
 }
-
-operation Test2 ~ C2.
-*/
-

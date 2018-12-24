@@ -121,7 +121,7 @@ public class SequentialInfixFun {
 
     copyAutomataEdges(sequence, automaton2, automata2nodes, setOfOwners);
 
-    System.out.println("End Seq   "+sequence.myString());
+    //System.out.println("End Seq   "+sequence.myString());
     return sequence;
   }
 

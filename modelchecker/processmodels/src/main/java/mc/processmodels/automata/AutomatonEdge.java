@@ -112,10 +112,10 @@ public class AutomatonEdge extends ProcessModelObject {
   public String myString() {
     String out = "";
     if (guard != null) {
-      out = from.getId() + "-" + label + "->" + to.getId() + " " +
+      out = getId()+ "  "+ from.getId() + "-" + label + "->" + to.getId() + " " +
         guard.myString() + " o= " + edgeOwners + " optional= " + optionalEdge;
     } else {
-      out = from.getId() + "-" + label + "->" + to.getId() +
+      out = getId()+ "  "+ from.getId() + "-" + label + "->" + to.getId() +
         " guard null " + " o= " + edgeOwners + " optional= " + optionalEdge;
     }
     return out;

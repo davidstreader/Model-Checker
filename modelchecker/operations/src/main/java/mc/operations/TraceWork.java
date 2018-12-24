@@ -165,13 +165,9 @@ public class TraceWork {
         if (lab.equals(Constant.Quiescent)) continue;  // dose not include Quiescent
         //see returning to root in cribsheet
         //System.out.println(" starting " + np.myString() + " lab = " + lab);
-
         AutomatonNode nd1 = a1N.get(np.first).getNcs().get(lab);
-
         AutomatonNode nd2 = a2N.get(np.second).getNcs().get(lab);
-
         //System.out.println();
-
         if (nd2 == null) {
           //System.out.println("ERROR ERROR ");
           Throwable t = new Throwable();
@@ -184,7 +180,6 @@ public class TraceWork {
           break;
           //return false; // 1 cannot match an event from 2! hence 2 not SUB 1
         }
-
         if (ok) {
           System.out.println("next nd1 = " + nd1.getId() + " nd2 = " + nd2.getId());
           ok = traceSubset(dfa1, dfa2, new NodePair(nd1, nd2), a1N, a2N, processed, cong, trace, tt, evalSubset);

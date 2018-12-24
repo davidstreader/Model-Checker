@@ -223,6 +223,7 @@ if(j++> stateSizeBound) {System.out.println("\n\nTokenRule Failure Looping = "+j
         //System.out.println("SETERROR node "+nd.myString());
      }
    }
+   outputAutomaton.removeDuplicateEdges();  // may occur with broadcast
    //System.out.println("Token Rule END "+outputAutomaton.myString());
     return outputAutomaton;
   }

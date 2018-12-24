@@ -57,9 +57,9 @@ public class QuiescentRefinement implements IOperationInfixFunction {
    * @return the resulting automaton of the operation
    */
   @Override
-  public boolean evaluate(Set<String> alpha, Set<String> flags, Context context,
+  public boolean evaluate(Set<String> aXX, Set<String> flags, Context context,
                           Stack<String> trace, Collection<ProcessModel> processModels) throws CompilationException {
-    //System.out.println("\nQUIESCENT " +getNotation() +"  "+ alpha);
+    System.out.println("\nQUIESCENT " +flags );
     boolean cong = flags.contains(Constant.CONGURENT);
     //ProcessModel[] pms =  processModels.toArray();
     Automaton a1 = ((Automaton) processModels.toArray()[0]).copy();
@@ -67,23 +67,33 @@ public class QuiescentRefinement implements IOperationInfixFunction {
    //System.out.println("****Quiescent input a1 "+a1.myString());
    //System.out.println("****Quiescent input a2 "+a2.myString());
     AbstractionFunction abs = new AbstractionFunction();
-  //  a1 = abs.GaloisBCabs(a1.getId(), flags, context, a1);
-  //  a2 = abs.GaloisBCabs(a2.getId(), flags, context, a2); //end states marked
-    //System.out.println("*** Q a1  " + a1.readySets2String(cong));
+    // redundent if not automata built from AP2BC
+    a1 = abs.GaloisBCabs(a1.getId(), flags, context, a1);
+    a2 = abs.GaloisBCabs(a2.getId(), flags, context, a2); //end states marked
+    //System.out.println("*** Q a1  " + a1.myString());
+    //System.out.println("*** Q a2  " + a2.myString());
 
     //Build set of all listening events in both automata
-    Set<String> alphabet = a1.getAlphabet().stream().collect(Collectors.toSet());
-    alphabet.addAll(a2.getAlphabet().stream().collect(Collectors.toSet()));
-    Set<String>  listeningAlphabet = alphabet.stream().distinct().
+    Set<String> listeningAlphabet = a1.getAlphabet().stream().
+      filter(x->x.endsWith(Constant.BROADCASTSinput)).collect(Collectors.toSet());
+    listeningAlphabet.addAll(a2.getAlphabet().stream().
+      filter(x->x.endsWith(Constant.BROADCASTSinput)).collect(Collectors.toSet()));
+
+   /* Set<String>  listeningAlphabet = alphabet.stream().distinct().
       filter(x->x.endsWith(Constant.BROADCASTSinput)).
       collect(Collectors.toSet());
+      */
     System.out.println("\n new QUIESCENT " + listeningAlphabet);
+
+    System.out.println("*** Q a1  " + a1.myString());
+    System.out.println("*** Q a2  " + a2.myString());
 
     ArrayList<ProcessModel> pms = new ArrayList<>();
     addListeningLoops(a1, listeningAlphabet);
     addListeningLoops(a2, listeningAlphabet);
-    //System.out.println(a1.myString());
-    //System.out.println(a2.myString());
+    System.out.println("*** Qx a1  " + a1.myString());
+    System.out.println("*** Qx a2  " + a2.myString());
+
     pms.add(a1);
     pms.add(a2);
 
@@ -94,20 +104,11 @@ public class QuiescentRefinement implements IOperationInfixFunction {
       TraceType.QuiescentTrace,
       trace,
       tr::readyWrapped,
-      (s1, s2, cong1, error) -> {boolean b =tr.isReadySubset(s1, s2, cong1, error);
+      (s1, s2, cong1, error) -> tr.isReadySubset(s1, s2, cong1, error)
+     //(s1, s2, cong, error) -> isReadySubset(s1, s2, cong, error));
         //System.out.println("Q "+error.error);
-        return b;}
-        );
 
-  /*  This is the failed Option 1
-  TraceWork tw = new TraceWork();  // THIS builds a DFA and then trace subset
-    return tw.evaluate(flags,context, pms,
-      TraceType.QuiescentTrace,
-      trace,
-      this::quiescentWrapped,
-      this::isReadySubset);
-  }
-   */
+        );
   }
 /*
   alpha  set of input events
@@ -123,7 +124,11 @@ public class QuiescentRefinement implements IOperationInfixFunction {
 
     for(AutomatonNode nd : ain.getNodes()) {
        Set<String> ready = nd.readySet(false);
-      System.out.println("  "+nd.getId()+"->"+ready);
+    /*   Set<String> notListening = ready.stream().filter(x->!x.endsWith(Constant.BROADCASTSinput)).collect(Collectors.toSet());
+      if (notListening.size()==0) {
+        AutomatonEdge ed =  ain.addEdge(Constant.Quiescent,nd,nd,new Guard(),false,false);
+      } */
+       System.out.println("  "+nd.getId()+"->"+ready);
        for(String al:alpha) {
          System.out.println("  al "+al);
          if (!ready.contains(al))  {

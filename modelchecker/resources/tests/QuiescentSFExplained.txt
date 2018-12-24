@@ -4,19 +4,35 @@ processes {
 A = a!->STOP.                  //Qsf (){b!}, (a!){a!}, (a!){b!}
 Ab = a!->STOP|b!->STOP.        //Qsf (){}, (a!){a!}, (a!){b!} , (b!){a!}, (b!){b!}
 Aa = a!->b?->STOP|a!->c?->STOP.     //    
-Aaa = a!->(b?->STOP|c?->STOP).      // 
+Ba = a!->b?->d!->STOP|a!->c?->d!->STOP.     //    
+B  = a!->b?->d!->STOP|a!->c?->d!->STOP|a!->STOP.
+Abb  = a!->b?->STOP|a!->c?->STOP|a!->STOP.
+Aaa = a!->(b?->STOP|c?->STOP).      // = 
+
 }
 //alphabet {a!,b!,c!}
 operation {
-Ab !<qsf  A. 
-A !<qsf Ab.
+Ab <qsf  A. 
+A !<qsf Ab.      // trace = [b!]    
 
 Aa <qsf  A. 
-A <qsf Aa.   //NOT <q{cong}
+A <qsf Aa. 
+A !<qsf{cong} Aa.    // trace = [a!, ]
+Aa !<qsf{cong} A.    // trace = [a!, STOP]
+
+Abb <qsf{cong} Aa.
+Abb <qsf Aa.
+Aa !<qsf{cong} Abb.  // trace = [a!, STOP]
+Aa <qsf Abb.
+B <qsf Ba.
+Ba !<qsf B.        // trace = [a!, b?, c?, ]
+B <qsf{cong} Ba.
+Ba !<qsf{cong} B.  // trace = [a!, STOP]
 A <qsf  Aaa.
 Aaa <qsf A.
 
 }
+
 
 
 
