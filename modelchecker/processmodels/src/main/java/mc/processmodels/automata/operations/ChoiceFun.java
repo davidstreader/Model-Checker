@@ -9,6 +9,7 @@ import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
 import mc.processmodels.petrinet.operations.PetrinetReachability;
+import mc.util.MyAssert;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -49,7 +50,7 @@ public class ChoiceFun {
 
   public Petrinet compose(String id, Petrinet n1, Petrinet n2)
     throws CompilationException {
-    //System.out.println("[] n1 = "+n1.myString());
+    System.out.println("[] n1 = "+n1.myString());
     Petrinet net1 = n1.reId("1");
     Set<String> own1 = net1.getOwners();
     List<Set<String>> oneEnd = net1.getEnds();
@@ -59,9 +60,9 @@ public class ChoiceFun {
     Petrinet net2 = n2.reId("2");
     Set<String> own2 = net2.getOwners();
     //System.out.println("[]PETRI1 "+net1.myString("edge"));
-    assert net1.validatePNet():"choice precondition net1";
-    //System.out.println("[]PETRI2 "+net2.myString("edge"));
-    assert net2.validatePNet():"choice precondition net2";
+    MyAssert.myAssert(net1.validatePNet("Choice => input "+net1.getId()+ " valid ="), "[] precondition");
+    MyAssert.myAssert(net2.validatePNet("Choice => input "+net2.getId()+ " valid ="), "[] precondition");
+
     List<Set<String>> twoRoots =  new ArrayList<>();
      for(Set<String> rs: net2.getRoots()) {
        Set<String > newrs = new HashSet<>();
@@ -146,9 +147,10 @@ public class ChoiceFun {
     net2 = PetrinetReachability.removeUnreachableStates(net2);
     //System.out.println("\n[] OUT "+ net2.myString("edge"));
     net2.buildAlphabetFromTrans();
-    //System.out.println("[] OUT "+ net2.myString("edge")+"\n");
+    System.out.println("[] OUT "+ net2.getId()+"\n");
     //net2.reId("");
-    assert net2.validatePNet(): "choice post condition";
+    MyAssert.myAssert(net2.validatePNet("Choice [] output "+net2.getId()+ " valid ="), "[] output Failure");
+
     return net2;
   }
 

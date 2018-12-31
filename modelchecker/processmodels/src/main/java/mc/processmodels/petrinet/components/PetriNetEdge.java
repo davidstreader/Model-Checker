@@ -40,7 +40,7 @@ public class PetriNetEdge extends ProcessModelObject implements Comparable {
   private boolean  optional = false;
   public void setOptional(boolean b){ optional = b;}
   public boolean getOptional(){return optional;}
-
+  public boolean notOptional(){return !optional; }
   public PetriNetEdge(String id, PetriNetPlace to, PetriNetTransition from) {
     super(id, "petrinetEdge");
     this.from = from;

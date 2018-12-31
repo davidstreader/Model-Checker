@@ -45,7 +45,7 @@ Twoab3 = a!->(b!->x?->STOP|a!->x?->STOP).
 
 Twoba = b!->a!->x?->STOP.
 Twobb = b!->b!->x?->STOP.
-
+/*
 Threea = a!->a!->a!->x?->STOP .
 Threea2 = a!->a!->a!->x?->STOP|a!->a!->a!->y?->STOP .
 Threea3 = a!->(a!->a!->x?->STOP|a!->a!->y?->STOP) .
@@ -72,7 +72,7 @@ Four7  = b!->a!->a!->b!->x?->STOP.
 
 Fiveababa = a!->b!->a!->b!->a!->x?->STOP.
 Fivebbaab = b!->b!->a!->a!->b!->x?->STOP.
-
+*/
 }
 
 Pro:{
@@ -88,13 +88,13 @@ Lb2 = b?->x!->Lb2.
 Lasb  = a?->Lasb| b?->x!->STOP.
 
 Lasa  = a?->Lasa| a?->x!->STOP.
+D2   = a?->(b?->D2|x!->b?->STOP|x!->a?->STOP).
 
 Lbsb  = b?->Lbsb| b?->x!->STOP.
 Lbsa  = b?->Lbsa| a?->x!->STOP.
 
 Lasb2  = a?->x!->Lasb2| b?->STOP.
 Lasa2  = a?->x!->Lasa2| a?->STOP.
-D2   = a?->(b?->D2|x!->b?->STOP|x!->a?->STOP).
 
 Lbsb2  = b?->x!->Lbsb2| b?->STOP.
 Lbsa2  = b?->x!->Lbsa2| a?->STOP.
@@ -114,7 +114,7 @@ Twoabs = a?->b?->x!->Twoabs.
 Twobas = b?->a?->x!->Twobas.
 Twoaas = a?->a?->x!->Twoaas.
 Twobbs = b?->b?->x!->Twobbs.
-
+/*
 Twoq = a?->(a?->x!->STOP|b?->x!->STOP).
 Twoq2 = a?->(a?->x!->STOP|b?->a?->x!->STOP)|a?->STOP.
 Twoq3 = a?->a?->x!->STOP|a?->b?->x!->STOP|a?->STOP.
@@ -160,7 +160,7 @@ I2  = a?->(x!->a?->I2|b?->STOP).
 Ir2 = a?->a?->x!->Ir2|b?->STOP.
 Ia2 = x!->a?->a?->Ia2|x!->a?->STOP.
 Ix2 = a?->(a?->x!->Ix2|a?->STOP).
-
+*/
 
 /*Threeaax = a?->a?->(a?->STOP|b?->STOP).
 Threeabx = a?->b?->(a?->STOP|b?->STOP).
@@ -186,29 +186,50 @@ Fx3  = a?->X, X= a?->X| b?->X|a?->STOP.
 
 }
 
-Z00:{
+Zoo:{
 Next = next!->STOP.
+Other = other!->STOP.
+
+Y = Lopa:Test[]Other:Zoo.
+W = (Lopa:Test[]Other:Zoo)=>Next:Zoo.
+Wl1 = ((Lopa:Test[]Other:Zoo)=>Next:Zoo)||{a!, y!, x!, b!}Oab:Pro.
+
+Ww = Wl1=>(w->STOP).
+Zl1 = ((Lopa:Test[]Other:Zoo)||{a!, y!, x!, b!}Oab:Pro)=>Next:Zoo.
+
+Zl2 = ((Lopa:Test[]Other:Zoo)||{a!, y!, x!, b!}Oab:Pro)=>Next:Zoo. 
+
+Zr = Oab:Pro.  
 }
 }
 
 operation{
+ ((Lopa:Test[]Other:Zoo)||{a!, y!, x!, b!}Oab:Pro)=>Next:Zoo <q{cong}((Lopa:Test[]Other:Zoo)||{a!, y!, x!, b!}Oab:Pro)=>Next:Zoo.
 
+Oab:Pro<qsf{cong}Oab:Pro.
+
+Next <f Other.
 }
 equation {
 
 // BELOW Working  
 
-/*Y:Pro <qsf Z:Pro ==>Y:Pro <q Z:Pro. 
-Y:Pro <qsf{cong} Z:Pro ==>Y:Pro <qsf Z:Pro.
-Y:Pro <qsf{cong} Z:Pro ==>Y:Pro <q{cong} Z:Pro. 
-Y:Pro <qsf{cong} Z:Pro ==> forall{X:Test} (X||{a!,b!,x!,y!}Y:Pro <q{cong} X||{a!,b!,x!,y!}Z:Pro). 
- */
-forall{X:Test} ((X||{a!,b!,x!,y!}Y:Pro)=>Next:Zoo <q{cong} (X||{a!,b!,x!,y!}Z:Pro)=>Next:Zoo) ==> Y:Pro<qsf{cong}Z:Pro.
+//Y:Pro <qsf Z:Pro ==>Y:Pro <q Z:Pro.  
 
-//Y:Pro <qsf Z:Pro ==> forall{X:Test} (X||{a!,b!,x!,y!}Y:Pro <q X||{a!,b!,x!,y!}Z:Pro).
+// Y:Pro <qsf{cong} Z:Pro ==>Y:Pro <qsf Z:Pro.
+//Y:Pro <qsf{cong} Z:Pro ==>Y:Pro <q{cong} Z:Pro. 
+ 
+/*
+forall{X:Test} ((((X[]Other:Zoo)||{a!,b!,x!,y!}Y:Pro)=>Next:Zoo) <q{cong} (((X[]Other:Zoo)||{a!,b!,x!,y!}Z:Pro)=>Next:Zoo)) ==> Y:Pro<qsf{cong}Z:Pro.
+
+Y:Pro<qsf{cong}Z:Pro  ==>  forall{X:Test} (((X=>Next:Zoo)[]Other:Zoo)||{a!,b!,x!,y!}Y:Pro <q{cong} ((X=>Next:Zoo)[]Other:Zoo)||{a!,b!,x!,y!}Z:Pro).
+
+forall{X:Test} ((X||{a!,b!,x!,y!}Y:Pro) <q (X||{a!,b!,x!,y!}Z:Pro)) ==> Y:Pro<qsf Z:Pro.
+
+Y:Pro <qsf Z:Pro ==> forall{X:Test} (X||{a!,b!,x!,y!}Y:Pro <q X||{a!,b!,x!,y!}Z:Pro).
 //forall{X:Test} (X||{a!,b!,x!,y!}Y:Pro <q X||{a!,b!,x!,y!}Z:Pro) ==> Y:Pro <qsf Z:Pro.
 
-
+*/
 } 
 
 /*
@@ -230,6 +251,22 @@ forall{X:Test} ((X||{a!,b!,x!,y!}Y:Pro)=>Next:Zoo <q{cong} (X||{a!,b!,x!,y!}Z:Pr
 Compiling completed!
 Wed Nov 28 19:26:43 NZDT 2018
 */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

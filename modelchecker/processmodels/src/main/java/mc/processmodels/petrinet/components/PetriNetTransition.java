@@ -120,6 +120,7 @@ public class PetriNetTransition extends ProcessModelObject {
         .distinct()
         .collect(Collectors.toSet()); */
   }
+  
   public Set<PetriNetPlace> preNonBlocking() {
     return incoming.stream()
             .filter(ed->!ed.getOptional())
@@ -128,7 +129,7 @@ public class PetriNetTransition extends ProcessModelObject {
             .distinct()
             .collect(Collectors.toSet());
   }
-  public Set<PetriNetPlace> postNonBlocking() {
+  public Set<PetriNetPlace> postNotOptional() {
     return outgoing.stream()
       .filter(ed->!ed.getOptional())
       .map(PetriNetEdge::getTo)
@@ -144,10 +145,10 @@ public class PetriNetTransition extends ProcessModelObject {
       map(PetriNetPlace::getId).
       collect(Collectors.toSet());
 
-    Set<String> post = postNonBlocking().stream().
+    Set<String> post = postNotOptional().stream().
       map(PetriNetPlace::getId).
       collect(Collectors.toSet());
-    Set<String> trPost = tr.postNonBlocking().stream().
+    Set<String> trPost = tr.postNotOptional().stream().
       map(PetriNetPlace::getId).
       collect(Collectors.toSet());
 
@@ -198,17 +199,17 @@ public class PetriNetTransition extends ProcessModelObject {
 
   public String myString(){
     StringBuilder builder = new StringBuilder();
-    builder.append(getId()+" ");
+    builder.append(getId()+", ");
     for (PetriNetEdge edge : getIncoming()) {
-      builder.append(edge.getFrom().getId()+"-");
+      builder.append(edge.getFrom().getId()+"+");
       if (edge.getGuard()!=null) builder.append(edge.getGuard().getGuardStr());
     }
-    builder.append("-"+label+"-");
+    builder.append("-"+label+"->");
     for (PetriNetEdge edge : getOutgoing()) {
       if (edge.getGuard()!=null) builder.append(edge.getGuard().getAssStr());
-      builder.append("->"+edge.getTo().getId()+" ");
+      builder.append("+"+edge.getTo().getId());
     }
-    builder.append(" own "+this.getOwners());
+    builder.append(", own "+this.getOwners());
      return builder.toString();
   }
 }

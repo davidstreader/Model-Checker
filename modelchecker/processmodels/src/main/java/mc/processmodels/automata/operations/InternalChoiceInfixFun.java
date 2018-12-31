@@ -113,9 +113,9 @@ public class InternalChoiceInfixFun implements IProcessInfixFunction {
   @Override
   public Petrinet compose(String id, Petrinet net1, Petrinet net2, Set<String> flags) throws CompilationException {
 
-    //System.out.println(id+" +PETRI1 "+net1.myString());
+    System.out.println(id+" +[]PETRI1 "+net1.myString());
     net1.validatePNet();
-    //System.out.println(id+" +PETRI2 "+net2.myString());
+    System.out.println(id+" +[]PETRI2 "+net2.myString());
     net2.validatePNet();
     //System.out.println("ok");
     Petrinet petrinet1 = net1.reId("1");
@@ -158,6 +158,7 @@ public class InternalChoiceInfixFun implements IProcessInfixFunction {
 
     choice.setStartFromRoot();
     choice.setEndFromNet();
+    choice.validatePNet();
     System.out.println("**choice + RETURNS "+choice.myString());
     return choice;
   }

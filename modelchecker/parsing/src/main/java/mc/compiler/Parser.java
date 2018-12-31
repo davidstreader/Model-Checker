@@ -115,17 +115,18 @@ public class Parser {
    * @return -- an @code{IdentifierNode}
    */
   private IdentifierNode parseIdentifier() throws CompilationException {
-    Token token = nextToken(); IdentifierToken identifier;
+    Token token = nextToken();
+    IdentifierToken identifier;
     if (token instanceof IdentifierToken) {
       identifier = (IdentifierToken) token;
-      if (peekToken() instanceof ColonToken && !(peek2Token() instanceof OpenBraceToken)){
+      if (peekToken() instanceof ColonToken && !(peek2Token() instanceof OpenBraceToken)) {
         nextToken();
-        if (peekToken() instanceof  IdentifierToken){
+        if (peekToken() instanceof IdentifierToken) {
           IdentifierToken dom = (IdentifierToken) nextToken();
           //String varDom = identifier.getIdentifier()+":"+dom.getIdentifier();
           return new IdentifierNode(identifier.getIdentifier(), dom.getIdentifier(), identifier.getLocation());
         } else {
-          throw constructException("expecting to parse an identifier but received \"" + token.toString() + ":"+nextToken().toString()+ "\"", token.getLocation());
+          throw constructException("expecting to parse an identifier but received \"" + token.toString() + ":" + nextToken().toString() + "\"", token.getLocation());
         }
       }
       //System.out.println("parse Identifyer "+((IdentifierToken) token).getIdentifier());
@@ -486,7 +487,7 @@ public class Parser {
     Token token = peekToken();
     if (token instanceof IdentifierToken) {
 
-        parseSingleProcessDefinition();
+      parseSingleProcessDefinition();
 
     } else if (token instanceof OpenBraceToken) {
       parseProcessDefinitionBlock();
@@ -611,14 +612,14 @@ public class Parser {
   /**
    * parsing domain name, Domain:
    */
-    private IdentifierNode parseDomain() throws CompilationException, InterruptedException {
-      IdentifierNode identifier = parseIdentifier();
-      if (!(nextToken() instanceof  ColonToken)) {
-        Token error = tokens.get(index - 1);
-        throw constructException("expecting to parse \":\" but received \"" + error.toString() + "\"", error.getLocation());
-      }
-      return identifier;
+  private IdentifierNode parseDomain() throws CompilationException, InterruptedException {
+    IdentifierNode identifier = parseIdentifier();
+    if (!(nextToken() instanceof ColonToken)) {
+      Token error = tokens.get(index - 1);
+      throw constructException("expecting to parse \":\" but received \"" + error.toString() + "\"", error.getLocation());
     }
+    return identifier;
+  }
 
 
   private LocalProcessNode parseLocalProcessDefinition(Set<String> localIdentifiers) throws CompilationException, InterruptedException {
@@ -713,11 +714,44 @@ public class Parser {
     return ((CastToken) token).getCastType();
   }
 
-  /*
+  private ASTNode parseComposit() throws CompilationException, InterruptedException {
+    if (peekToken() instanceof OpenParenToken) {
+      nextToken();
+      ASTNode process = parseComposit();
+      if (!(nextToken() instanceof CloseParenToken)) {
+        Token error = tokens.get(index - 1);
+        throw constructException("expecting to parse \")\" but received \"" + error.toString() + "\"", error.getLocation());
+      }
+      return process;
+    }
+    return parseComposit();
+  }
+
+    /*
+    this just unrwraps ( )  allowing ((X[]Y)=>Z)  hopefully
+
+
+  private ASTNode parseComposite() throws CompilationException, InterruptedException {
+    if (peekToken() instanceof OpenParenToken) {
+      nextToken();
+      ASTNode process = parseComposite();
+      if (!(nextToken() instanceof CloseParenToken)) {
+        Token error = tokens.get(index - 1);
+        throw constructException("expecting to parse \")\" but received \"" + error.toString() + "\"", error.getLocation());
+      }
+      return process;
+    } else {
+      return parseComp();
+    }
+  }
+  */
+
+     /*
     this returns a whole process AST
    */
+
   private ASTNode parseComposite() throws CompilationException, InterruptedException {
-    int start = index;
+      int start = index;
     //System.out.println("parsing Composite ");
     String label = null;
     if (hasProcessLabel()) {
@@ -755,7 +789,7 @@ public class Parser {
         //System.out.println("flags "+flags);
         ASTNode process2 = parseComposite();
         process = new CompositeNode(key, process, process2, constructLocation(start), flags);
-        //System.out.println("***Parse infixFunction "+ ((CompositeNode) process).getFlags());
+    //System.out.println("***Parse infixFunction "+ ((CompositeNode) process).getFlags());
         break;
       }
     }
@@ -771,7 +805,7 @@ public class Parser {
     if (peekToken() instanceof BitOrToken) {
       nextToken(); // gobble the '|' token
       ASTNode process2 = parseComposite();
-      process =  new ChoiceNode(process, process2, constructLocation(start));
+      process = new ChoiceNode(process, process2, constructLocation(start));
     }
     //System.out.println("parseeChoice returns "+process.myString());
     return process;
@@ -781,14 +815,12 @@ public class Parser {
 
   private ASTNode parseLocalProcess() throws CompilationException, InterruptedException {
     if (peekToken() instanceof OpenParenToken) {
-
       nextToken();
       ASTNode process = parseComposite();
       if (!(nextToken() instanceof CloseParenToken)) {
         Token error = tokens.get(index - 1);
         throw constructException("expecting to parse \")\" but received \"" + error.toString() + "\"", error.getLocation());
       }
-
       return process;
     } else if (peekToken() instanceof ActionToken || peekToken() instanceof OpenBracketToken) {
       return parseSequence();
@@ -843,11 +875,9 @@ public class Parser {
       return parseTerminal();
     } else if (peekToken() instanceof IdentifierToken) {
       IdentifierNode identifier = parseIdentifier();
-
       if (peekToken() instanceof OpenBracketToken) {
         identifier.setIdentifier(identifier.getIdentifier() + parseIndices());
       }
-
       return identifier;
     } else if (peekToken() instanceof OwnersRuleToken || peekToken() instanceof TokenRuleToken) {
       return parseConversion();
@@ -998,7 +1028,7 @@ public class Parser {
 
       ActionToken token = (ActionToken) nextToken();
       String flag = token.getAction();
-      if (peekToken() instanceof QuestionMarkToken ||peekToken() instanceof NegateToken ) {
+      if (peekToken() instanceof QuestionMarkToken || peekToken() instanceof NegateToken) {
         flag = flag + nextToken().toString();
       }
 
@@ -1129,6 +1159,7 @@ public class Parser {
     }
 
     ASTNode process = parseComposite();
+    //ASTNode process = parseLocalProcess();  // ( parseComposite )
 
     if (!(nextToken() instanceof CloseParenToken)) {
       Token error = tokens.get(index - 1);
@@ -1502,7 +1533,7 @@ public class Parser {
 */
   private void parseAndStoreSingleOperation(boolean isEq) throws CompilationException, InterruptedException {
     OperationNode operation = parseSingleOperation(isEq, false);
-    //System.out.println("OKOK");
+    //System.out.println("parseAndStoreSingleOperation "+ operation.myString());
     //if (operation == null)System.out.println("op = null");
     if (isEq) {
       equations.add(operation);
@@ -1511,6 +1542,10 @@ public class Parser {
     }
   }
 
+
+  /*
+      Parsing  "A ~ B"  or X <qsf Y"  or "A~B ==> A<fB" or "A~B && A<tB ==> A<fB"
+   */
   private OperationNode parseSingleOperation(boolean isEq, boolean forall) throws CompilationException, InterruptedException {
     //System.out.println("parseSingleOperation "+ peekToken().toString());
 
@@ -1544,7 +1579,7 @@ public class Parser {
     } else {
       if (!(peekToken() instanceof CloseParenToken)) {
         Token error = tokens.get(index - 1);
-        throw constructException("expecting to parse \")\" but received \"" + error.toString() + "\"", error.getLocation());
+        throw constructException("pSO expecting to parse \")\" but received \"" + error.toString() + "\"", error.getLocation());
       }
     }
 
@@ -1576,8 +1611,8 @@ public class Parser {
         return op;
       }
     }
-
     ASTNode process1 = parseComposite();
+    //ASTNode process1 = parseLocalProcess();  // ( parseComposite )
 
    /* if(process1==null)System.out.println("process1==null");
     else System.out.println("process 1 "+process1.getName()); */
@@ -1598,6 +1633,8 @@ public class Parser {
       nextToken();
     }
     ASTNode process2 = parseComposite();
+    //ASTNode process2 = parseLocalProcess();  // ( parseComposite )
+
    /* if(process1==null)System.out.println("process2==null");
     else System.out.println("process 2 "+process2.getName()); */
 
@@ -1644,7 +1681,7 @@ public class Parser {
         throw constructException("expecting to parse a word starting with an upper case letter but received \"" + error.toString() + "\"", error.getLocation());
       } else {
         vars.add(parseIdentifier().getVarDom());
-       // vars.add(nextToken().toString());
+        // vars.add(nextToken().toString());
         if (!(peekToken() instanceof CommaToken)) break;
         else nextToken();
       }
@@ -1997,10 +2034,12 @@ public class Parser {
     checkNotEOF();
     return tokens.get(index);
   }
+
   private Token peek2Token() throws CompilationException {
     check2NotEOF();
-    return tokens.get(index+1);
+    return tokens.get(index + 1);
   }
+
   /*
   Parses process event or funcion
    */
@@ -2089,8 +2128,9 @@ public class Parser {
 
     }
   }
+
   private void check2NotEOF() throws CompilationException {
-    if (index+1 >= tokens.size()) {
+    if (index + 1 >= tokens.size()) {
       Location last = tokens.get(tokens.size() - 1).getLocation();
       Location eof = new Location(last.getLineStart(), last.getColStart() + 1, last.getLineEnd(), last.getColEnd() + 2, last.getStartIndex() + 1, last.getEndIndex() + 2);
       throw constructException("end of file reached", eof);

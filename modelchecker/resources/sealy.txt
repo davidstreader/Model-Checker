@@ -1,31 +1,25 @@
-processes { 
-Test: {  
-Onea = a->STOP.
-Oneb = b->STOP.
-Oneab = a->STOP|b->STOP.  
-
+processes {   
+Test: {
+Lopa = a!->Lopa.
+X = aaaaaa->STOP.
 }
 
-Pro: {
-Twoabs = a->b->Twoabs.
-Twobas = b->a->Twobas.
-Twoaas = a->a->Twoaas.
-Twobbs = b->b->Twobbs.
-
-}
+Pro:{
+Oab = a?->STOP|b?->x!->STOP.     
 }
 
-equation {
+Zoo:{
+Next = next!->STOP.
+Other = other!->STOP.
 
-Y:Pro <f{cong} Z:Pro ==> forall{X:Test} (X||{a,b}Y:Pro <t{cong} X||{a,b}Z:Pro).
-//forall{X:Test} (X||{a,b}Y:Pro <t{cong} X||{a,b}Z:Pro) ==> Y:Pro <f{cong} Z:Pro. 
+Y = Lopa:Test[]Other:Zoo.
+W = (Lopa:Test[]Other:Zoo)=>Next:Zoo.
+Wl1 = W||{a!, y!, x!, b!}Oab:Pro.
+
+//Ww = Wl1=>(w->STOP).
+ 
 }
-
-
-
-
-
-
+} 
 
 
 

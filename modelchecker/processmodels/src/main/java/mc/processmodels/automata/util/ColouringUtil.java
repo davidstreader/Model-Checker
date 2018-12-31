@@ -128,6 +128,9 @@ public class ColouringUtil {
     return col2pi;
   }
 
+  /*
+      adjust to ignore delta transitions + all delta => Error  Dec18
+   */
   private ColourPi buildpi(AutomatonNode nd,boolean cong) {
     ArrayList<ColourComponent> ccs = new ArrayList<ColourComponent>();
     if (cong) {
@@ -143,6 +146,7 @@ public class ColouringUtil {
 
     for (AutomatonEdge ed : nd.getOutgoingEdges()) {
       if (ed.getFrom().equals(nd)) {
+        if (ed.getLabel().equals(Constant.DEADLOCK)) continue; //Dec18
         ColourComponent cc = new ColourComponent(ed.getLabel(), ed.getTo().getColour());
         boolean add = true;
         for (ColourComponent c : ccs) { //Make a Set not a list
@@ -154,6 +158,7 @@ public class ColouringUtil {
         if (add) ccs.add(cc);
       }
     }
+    if (ccs.size()==0) ccs.add(new ColourComponent(Constant.ERROR, ERROR_COLOUR));//Dec18
 
     Collections.sort(ccs);
    // //System.out.println("buildpi "+ nd.getId()+" "+  CCSString(ccs));

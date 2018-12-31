@@ -119,7 +119,7 @@ public class SingeltonFailureRefinement implements IOperationInfixFunction {
     //Wrap set in first element of Lis
     refusalWrap.add(refusal.stream().distinct().collect(Collectors.toSet()));
     refusalWrap.add(ready.stream().distinct().collect(Collectors.toSet()));
-    System.out.println("SF refusalWrapped "+refusalWrap);
+    //System.out.println("SF refusalWrapped "+refusalWrap);
 
     return refusalWrap;
   }
@@ -165,7 +165,7 @@ public class SingeltonFailureRefinement implements IOperationInfixFunction {
 
   private boolean isSFSubset(List<Set<String>> s2, List<Set<String>> s1, boolean cong,ErrorMessage error) {
     boolean out = true;
-    System.out.println("isSF s1 "+s1.get(0)+" s2 "+s2.get(0));
+    //System.out.println("isSF s1 "+s1.get(0)+" s2 "+s2.get(0));
     //Set<String> small = s2.get(0).stream().filter(x->!Constant.external(x)).collect(Collectors.toSet());
 
       //System.out.println("small "+small);
@@ -181,7 +181,7 @@ public class SingeltonFailureRefinement implements IOperationInfixFunction {
         }
       }
 
-    System.out.println("can  s2 "+s2.get(0)+" refuse more than s1 "+s1.get(0)+" "+out);
+    //System.out.println("can  s2 "+s2.get(0)+" refuse more than s1 "+s1.get(0)+" "+out);
     return out;
   }
 }

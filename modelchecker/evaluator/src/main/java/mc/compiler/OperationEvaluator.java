@@ -23,6 +23,8 @@ import mc.processmodels.conversion.TokenRule;
 import mc.processmodels.conversion.OwnersRule;
 import mc.processmodels.petrinet.Petrinet;
 import mc.Constant;
+import mc.util.LogMessage;
+
 /**
  * Created by sheriddavi on 27/01/17.
  * Interpreter for Operations and Equations
@@ -54,6 +56,11 @@ public class OperationEvaluator {
                                                     BlockingQueue<Object> messageQueue, Set<String> alpha)
             throws CompilationException, InterruptedException {
         reset();
+        messageQueue.add(new LogMessage("     ##Operations  Starting##",  true,
+          false,
+          null,
+          -1,
+          Thread.currentThread()));
         List<OperationResult> results = new ArrayList<>();
         //input  from AST
         //System.out.println("evaluateOperations processMap "+processMap.keySet());
@@ -93,6 +100,7 @@ public class OperationEvaluator {
         //System.out.println("evaluateOperation op"+operation.myString() + " processMap "+processMap.keySet());
         Result or;
         //Galois Connection needs implication
+        String extra;
         if (operation instanceof ImpliesNode) {
 
             OperationNode o1 =  (OperationNode) ((ImpliesNode) operation).getFirstOperation();
@@ -101,7 +109,8 @@ public class OperationEvaluator {
             OperationResult  or2 = evaluateOp(o2,processMap, interpreter,code, context,messageQueue,alpha);
 
            boolean r = !or1.isRes() || or2.isRes();
-            or = new OperationResult(new ArrayList<>(),r,"("+or1.isRes()+"->"+or2.isRes()+")",operation);
+           extra = "("+or1.isRes()+"->"+or2.isRes()+")";
+            or = new OperationResult(new ArrayList<>(),r,extra,operation);
             //System.out.println("implies op eval or1 res "+or1.isRes()+"or2 res "+or2.isRes());
        } else {
 
@@ -110,7 +119,13 @@ public class OperationEvaluator {
              interpreter,
              code, context,messageQueue,alpha);
        }
-       return or;
+
+        String logged = "   "+operation.myString() + " "+ ((OperationResult) or).getResult()
+          +" "+ ((OperationResult) or).getExtra();
+        messageQueue.add(new LogMessage(logged,  true,
+          false,null,-1, Thread.currentThread()));
+
+        return or;
     }
 /*
    wrapper to evaluation that sets up error location and storing of results
@@ -180,10 +195,10 @@ public class OperationEvaluator {
         Set<String> flags = operation.getFlags();
         //trace = new Stack<>();
         boolean r = false;
-        System.out.print("***evalOp "+alpha+"  "+operation.myString());
+        //System.out.print("***evalOp "+alpha+"  "+operation.myString());
         /*System.out.println("evalOp "+operation.myString());
         for(String key: processMap.keySet()){
-            System.out.println(key+"->"+processMap.get(key).getId());
+            //System.out.println(key+"->"+processMap.get(key).getId());
         } */
 
 //  infix operations ~ <f <q ....  could be petrinet of automata
@@ -266,9 +281,9 @@ public class OperationEvaluator {
                 processModels.add(b);
                 //System.out.println("OpEval two Aut "+two.myString());
             }
-            System.out.println("\nOpEval "+operation.myString());
-            System.out.println("***processModels *1* "+((Automaton) processModels.get(0)).myString());
-            System.out.println("***processModels *2* "+((Automaton) processModels.get(1)).myString());
+            //System.out.println("\nOpEval "+operation.myString());
+            //System.out.println("***processModels *1* "+((Automaton) processModels.get(0)).myString());
+            //System.out.println("***processModels *2* "+((Automaton) processModels.get(1)).myString());
             //System.out.println("oper "+ operation.getOperation().toLowerCase());
             r = funct.evaluate(alpha, flags,context,trace,processModels);
             if (operation.isNegated()) { r = !r; }

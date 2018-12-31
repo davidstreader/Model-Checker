@@ -9,14 +9,22 @@ import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetEdge;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
+import mc.util.MyAssert;
 
 public final class PetrinetReachability {
 
   public static Petrinet removeUnreachableStates(Petrinet pet) throws CompilationException {
+    return removeUnreachableStates(pet,true);
+  }
+/*
+  Needs to be updated for Broadcast optional edges!
+  remove Unreachable and all END called from Parallel Comp with merge==false
+ */
+  public static Petrinet removeUnreachableStates(Petrinet pet, boolean merge) throws CompilationException {
    //System.out.println("\n UNREACH " + petri.myString());
 
     Petrinet petri = pet.copy();
-
+    System.out.println("removeUnreach CHECK END " +petri.getEnds());
     Stack<Set<PetriNetPlace>> toDo = new Stack<>();
 
     for (Set<String> rt : petri.getRoots()) {
@@ -35,7 +43,7 @@ public final class PetrinetReachability {
 
     //Stack<Set<PetriNetPlace>> toDo = new Stack<>();
 
-    Set<Set<PetriNetPlace>> previouslyVisitedPlaces = new HashSet<>();
+    Set<Set<PetriNetPlace>> previouslyVisitedMarking = new HashSet<>();
     Set<PetriNetPlace> visitedPlaces = new HashSet<>();
     Set<PetriNetTransition> visitedTransitions = new HashSet<>();
 
@@ -44,7 +52,7 @@ public final class PetrinetReachability {
      //System.out.println("Visited " + currentMarking.stream().map(x -> x.getId() + " ").collect(Collectors.joining()));
       visitedPlaces.addAll(currentMarking);
 
-      if (previouslyVisitedPlaces.contains(currentMarking)) {
+      if (previouslyVisitedMarking.contains(currentMarking)) {
         continue;
       }
 /*if (currentMarking==null) System.out.println("currentMarking == null");
@@ -65,47 +73,63 @@ public final class PetrinetReachability {
         newMarking.removeAll(transition.pre());
         newMarking.addAll(transition.post());
        //System.out.println("New Marking " + newMarking.stream().map(x -> x.getId() + " ").collect(Collectors.joining()));
-        if (!previouslyVisitedPlaces.contains(newMarking)) {
+        if (!previouslyVisitedMarking.contains(newMarking)) {
           toDo.add(newMarking);
         }
       }
-      previouslyVisitedPlaces.add(currentMarking);
+      previouslyVisitedMarking.add(currentMarking);
     }
+
     Set<PetriNetPlace> placesToRemove = new HashSet<>(petri.getPlaces().values());
     placesToRemove.removeAll(visitedPlaces);
     //System.out.println("All Vis "+Petrinet.marking2String(visitedPlaces));
     //System.out.println("All Rem "+Petrinet.marking2String(placesToRemove));
     Set<PetriNetTransition> transitionsToRemove = new HashSet<>(petri.getTransitions().values());
     transitionsToRemove.removeAll(visitedTransitions);
-
+    System.out.println("removeAll CHECK END " +petri.getEnds());
     for (PetriNetPlace p : placesToRemove) {
-      petri.removePlace(p);
+      System.out.println("removeing "+p.myString());
+      petri.removePlace(p, merge);  // parallel comp will remove all End
     }
 
     //System.out.println("Trans to Go "+ transitionsToRemove.stream().map(x->x.getId()) .collect(Collectors.toSet()));
     for (PetriNetTransition t : transitionsToRemove) {
       petri.removeTransition(t);
     }
-/*
-  If two places have  incoming and outgoing edges to the same Transitions then they can be merged
+    System.out.println("removeUnreach CHECK END " +petri.getEnds());
+    // PROBLEM with optional edges
+    if (merge) mergePlaces(petri);  //paralle comp will not merge Places
+    System.out.println("removeUnreach CHECK END " +petri.getEnds());
+    MyAssert.myAssert(petri.validatePNet("PetriNet reachability "+petri.getId()+ " valid ="), "Net reachability Failure");
+
+    return petri;
+  }
+
+  private static Petrinet mergePlaces(Petrinet petri) throws CompilationException {
+    /*
+  If two places have  incoming and outgoing edges to the same Transitions
+     and no edge is optional!
+  then they can be merged
   This means that the owners must be merged.
  */
     Set<PetriNetPlace> togo = new HashSet<>();
     for (PetriNetPlace pl : petri.getPlaces().values()) {
-      for (PetriNetPlace pl1 : peer(pl)) {
+      for (PetriNetPlace pl1 : peerNonBlocking(pl)) {   //Do NOT merge optional places
 
         if (!pl.getId().equals(pl1.getId()) &&
           pl.post().equals(pl1.post()) && pl.pre().equals(pl1.pre())) {
           //System.out.println("Merge "+pl.getId()+" with "+pl1.getId());
           if (!togo.contains(pl) && !togo.contains(pl1)) {
             togo.add(pl1);
+            pl.getOwners().addAll(pl1.getOwners());
           }
 
         }
       }
     }
     for (PetriNetPlace p : togo) {
-      petri.removePlace(p);
+      //System.out.println("togo "+p.getId());
+      petri.removePlace(p,false);
     }
 
    /*
@@ -123,6 +147,7 @@ public final class PetrinetReachability {
           pl.getLabel().equals(pl1.getLabel())) {
           //System.out.println("Merge "+pl.getId()+" with "+pl1.getId());
           if (!togoT.contains(pl) && !togoT.contains(pl1)) {
+            //System.out.println("togoT "+pl1.getId()+" "+pl1.getLabel());
             togoT.add(pl1);
           }
 
@@ -132,10 +157,8 @@ public final class PetrinetReachability {
     for (PetriNetTransition p : togoT) {
       petri.removeTransition(p);
     }
-   //System.out.println("REACH  end \n" + petri.myString() + "\nREACH END");
-    return petri;
+  return petri;
   }
-
   private static Set<PetriNetTransition> satisfiedTransitions(Set<PetriNetPlace> currentMarking) {
     Set<PetriNetTransition> out = new HashSet<>();
     for(PetriNetTransition tr: post(currentMarking)){
@@ -164,16 +187,19 @@ public final class PetrinetReachability {
       .distinct()
       .collect(Collectors.toSet());
   }
+/*
+  Used in the check for place merging
+ */
+  private static Set<PetriNetPlace> peerNonBlocking(PetriNetPlace current) {
 
-  private static Set<PetriNetPlace> peer(PetriNetPlace current) {
-
-    Set<PetriNetPlace> union = new HashSet<>(current.post().stream()
-      .map(PetriNetTransition::pre).flatMap(Set::stream)
+    Set<PetriNetPlace> union = new HashSet<>(current.postNotOpt().stream()
+      .map(PetriNetTransition::preNonBlocking).flatMap(Set::stream)
       .distinct().collect(Collectors.toSet()));
-
+    //System.out.println("peer "+Petrinet.marking2String(union));
     union.addAll(current.pre().stream()
-      .map(PetriNetTransition::post).flatMap(Set::stream)
+      .map(PetriNetTransition::postNotOptional).flatMap(Set::stream)
       .distinct().collect(Collectors.toSet()));
+    //System.out.println("peer "+Petrinet.marking2String(union));
     return union;
   }
 

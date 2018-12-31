@@ -12,6 +12,7 @@ import mc.processmodels.petrinet.components.PetriNetEdge;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
 import mc.processmodels.petrinet.operations.PetrinetReachability;
+import mc.util.MyAssert;
 
 public class PetrinetParallelFunction  {
 
@@ -26,9 +27,12 @@ public class PetrinetParallelFunction  {
     clear();
     Petrinet p1 = pi1.reId("1");
     Petrinet p2 = pi2.reId("2");
+    List<Set<String>> newEnds = buildEnds(p1.getEnds(),p2.getEnds());
     p1.rebuildAlphabet(); p2.rebuildAlphabet();
+    MyAssert.myAssert(p1.validatePNet("Parallel || input "+p1.getId()+ " valid ="), "|| precondition Failure");
+    MyAssert.myAssert(p2.validatePNet("Parallel || input "+p2.getId()+ " valid ="), "|| precondition Failure");
 
-   System.out.println("     PETRINET PARALLELFUNCTION"+"  "+p1.myString("edges")+" ||"+flags+" \n"+p2.myString("edges"));
+    System.out.println("     PETRINET PARALLELFUNCTION"+"  \n"+p1.myString()+"\n ||"+flags+" \n"+p2.myString());
 
    //builds synchronisedActions set
     setupActions(p1, p2,flags);
@@ -43,30 +47,57 @@ public class PetrinetParallelFunction  {
     petriTransMap.putAll(composition.addPetrinetNoOwner(p1,""));  //Tag not needed as reId dose this
     //System.out.println("par "+ composition.myString());
     petriTransMap.putAll(composition.addPetrinetNoOwner(p2,"")); //adds unsynchronised transitions
+    //System.out.println("newEnds "+newEnds);
     composition.setRoots(roots);
-    composition.setEnds(buildEnds(p1.getEnds(),p2.getEnds()));
-    //System.out.println("half "+composition.myString()+"\nhalf END");
+    composition.setEnds(newEnds);
     composition.setStartFromRoot();
     composition.setEndFromNet();
+    System.out.println("BeforeSYNC END " +composition.myString());
+    //do not merge places?
      setupSynchronisedActions(p1, p2, composition);
+    System.out.println("AfterSYNC END " +composition.myString());
+
+
+    composition = PetrinetReachability.removeUnreachableStates(composition, false);
     //System.out.println("  synced  \n "+ composition.myString("edges"));
-    //composition = PetrinetReachability.removeUnreachableStates(composition);
+
      composition.reId("");
-     assert composition.validatePNet():"parallel comp post condition ";
-   System.out.println("\n   PAR end "+composition.myString());
+    MyAssert.myAssert(composition.validatePNet("Parallel || output "+composition.getId()+ " valid ="), "||  Failure");
+
+    //System.out.println("\n   PAR end "+composition.myString());
     return composition;
   }
+
+  /**
+   *
+   * @param net1
+   * @param net2
+   * @return the multiRoot for parallel composition of the nets
+   */
+  private static List<Set<String>> buildRoots(Petrinet net1,Petrinet net2) {
+    //System.out.println("Building Roots");
+    List<Set<String>> out = new ArrayList<>();
+    for(Set<String> m1: net1.getRoots()) {
+      for(Set<String> m2: net2.getRoots()) {
+        out.add(buildMark(m1,m2));
+      }
+    }
+    //System.out.println("New buildRoots "+out);
+    return out;
+  }
   private static List<Set<String>> buildEnds(List<Set<String>> p1, List<Set<String>> p2){
+    System.out.println("Build Ends input "+p1+" "+p2);
     List<Set<String>> out = new ArrayList<>();
     for(Set<String> e1: p1){
       for(Set<String> e2: p2){
         Set<String> o = new HashSet<>() ;
         o.addAll(e1);
         o.addAll(e2);
-        o = o.stream().sorted().collect(Collectors.toSet());
+        o = o.stream().distinct().sorted().collect(Collectors.toSet());
         out.add( o );
       }
     }
+    System.out.println("Build Ends returns  "+out);
     return out;
   }
 
@@ -127,7 +158,7 @@ public class PetrinetParallelFunction  {
                 .map(t -> petriTransMap.get(t)).collect(Collectors.toSet());
         p2P = p2.getAlphabet().get(sync).stream()
                 .map(t -> petriTransMap.get(t)).collect(Collectors.toSet());
-        toGo.addAll(p2P.stream().collect(Collectors.toList()));
+        toGo.addAll(p2P.stream().collect(Collectors.toSet()));
         toGo.addAll(p1P.stream().collect(Collectors.toSet()));
         replaceActions(p1P, p2P, comp, action, true);  //p1P = out
          p1P = p1.getAlphabet().get(sync).stream()
@@ -137,6 +168,7 @@ public class PetrinetParallelFunction  {
         toGo.addAll(p2P.stream().collect(Collectors.toSet()));
         toGo.addAll(p1P.stream().collect(Collectors.toSet()));
         replaceActions(p2P, p1P, comp, action, true); //p2P = out
+        //System.out.println("Sync CHECK END " +comp.getEnds());
       }
       else if (action.endsWith(Constant.ACTIVE)) {
         String sync = action.substring(0, action.length() - 1);
@@ -159,10 +191,9 @@ public class PetrinetParallelFunction  {
         //do nothing
       }
 
-
-      //System.out.println("REMOVE "+toGo.stream().map(x->x.getId()).reduce((x,y)-> x+" "+y) );
+      System.out.println("REMOVE "+toGo.stream().map(x->x.getId()).reduce((x,y)-> x+" "+y) );
       removeoldTrans(comp,toGo.stream().distinct().collect(Collectors.toSet()));
-
+      //System.out.println("Sync2 CHECK END " +comp.getEnds());
     }
 
     //System.out.println("Sync END BC"+comp.myString());
@@ -183,9 +214,9 @@ public class PetrinetParallelFunction  {
         replaceActions(p1Pair, p2Pair, comp, action, false); //handshake on label equality
       }
       //System.out.println("p1Pair "+p1Pair.size());
-      //p1Pair.stream().forEach(x->{ System.out.println(x.myString());});
+      //p1Pair.stream().forEach(x->{System.out.println(x.myString());});
       //System.out.println("p2Pair "+p2Pair.size());
-      //p2Pair.stream().forEach(x->{ System.out.println(x.myString());});
+      //p2Pair.stream().forEach(x->{System.out.println(x.myString());});
       Set<PetriNetTransition> toGo = p1Pair.stream().collect(Collectors.toSet());
       toGo.addAll(p2Pair.stream().collect(Collectors.toSet()));
       removeoldTrans(comp,toGo);
@@ -210,7 +241,7 @@ public class PetrinetParallelFunction  {
     //System.out.println("p2 "+p2_.stream().map(x->x.getLabel()).reduce("",(x,y)->x+y+" "));
     for (PetriNetTransition t1 : p1_) {
         for (PetriNetTransition t2 : p2_) {
-          //System.out.println("  "+t1.myString()+" "+t2.myString());
+          System.out.println("Replaceing   "+t1.myString()+" "+t2.myString());
           if (t1==null) {System.out.println("t1==null");continue;}
           if (t2==null) {System.out.println("t2==null");continue;}
    //System.out.println("  t1 "+ t1.myString()+ " , t2 "+t2.myString());
@@ -249,7 +280,8 @@ public class PetrinetParallelFunction  {
           //System.out.println("  newTrans "+newTrans.myString());
 
         }
-      }
+    }
+
   //need to add output when listening is implicit
     if (p2_.size()==0) {
       for (PetriNetTransition t1 : p1_) {
@@ -273,17 +305,20 @@ public class PetrinetParallelFunction  {
       }
     }
 
-
+    //System.out.println("RepAct CHECK END " +comp.getEnds());
   }
 
   private static void removeoldTrans(Petrinet comp, Set<PetriNetTransition> toGo)
     throws  CompilationException {
-    //System.out.println("Removing ");
+    System.out.println("Removing ");
     for (PetriNetTransition oldTrans : toGo) {
-      //System.out.print(" id "+oldTrans.getId()+" ");
+      System.out.print(" id "+oldTrans.getId()+" ");
       if (comp.getTransitions().containsValue(oldTrans))  {
-        //System.out.println("removing "+oldTrans.myString());
-        comp.removeTransition(oldTrans);}
+        System.out.println("removing "+oldTrans.myString());
+        comp.removeTransition(oldTrans);
+      } else {
+        System.out.println("SKIPPING");
+      }
     }
   }
 
@@ -371,23 +406,7 @@ public class PetrinetParallelFunction  {
     return roots;
   }
 
-  /**
-   *
-   * @param net1
-   * @param net2
-   * @return the multiRoot for parallel composition of the nets
-   */
-  private static List<Set<String>> buildRoots(Petrinet net1,Petrinet net2) {
-   //System.out.println("Building Roots");
-    List<Set<String>> out = new ArrayList<>();
-    for(Set<String> m1: net1.getRoots()) {
-      for(Set<String> m2: net2.getRoots()) {
-        out.add(buildMark(m1,m2));
-      }
-    }
-  //System.out.println("New buildRoots "+out);
-    return out;
-  }
+
 
   private static Set<String> buildMark(Set<String> m1, Set<String> m2){
     Set<String> out = new HashSet<>();

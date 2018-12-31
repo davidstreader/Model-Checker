@@ -1,70 +1,15 @@
 processes {   
-Test: {
-//Lopb = b!->Lopb.
-Lopb = b!->STOP.
 
-S = next!->STOP.
-}
-
-Pro:{
-
-Lasa  = a?->Lasa| a?->x!->STOP.
 
 D2   = a?->(b?->D2|x!->b?->STOP|x!->a?->STOP).
+D1   = a?->(b?->D1).
+D0   = a?->(b?->D0|x!->ERROR).
 
+Next = next!->STOP.
+//Other = other!->STOP.
 
-
-}
-Zoo:{
-Z1 = Lopb:Test||{a!,b!,x!,y!}D2:Pro.
-Z2 = Lopb:Test||{a!,b!,x!,y!}Lasa:Pro.
-}
-}
-
-operation{
-Lasa:Pro <qsf{cong} D2:Pro.
-
-(Lopb:Test||{a!,b!,x!,y!}Lasa:Pro)=>S <q{cong} (Lopb:Test||{a!,b!,x!,y!}D2:Pro)=>S. 
-}
-
-
-equation { 
-
-forall{X:Test} ((X||{a!,b!,x!,y!}Y:Pro)=>S <q{cong} (X||{a!,b!,x!,y!}Z:Pro)=>S).
-
-
-
-forall{X:Test} ((X||{a!,b!,x!,y!}Y:Pro)=>S <q{cong} (X||{a!,b!,x!,y!}Z:Pro)=>S) ==> Y:Pro <qsf{cong} Z:Pro.
-
-
+ X0 = D0=>Next.
+ X1 = D1=>Next.
+ X2 = D2=>Next.
 } 
-
-
-
-/*
-##Equation Results##
-((Y:Pro<qsf Z:Pro) ==> (Y:Pro<q Z:Pro))
-	Simulations passed: 4761/4761 (implies short circuit ass/conc 4266/0) 
-((Y:Pro<qsf[cong]Z:Pro) ==> (Y:Pro<qsf Z:Pro))
-	Simulations passed: 4761/4761 (implies short circuit ass/conc 4635/0) 
-((Y:Pro<qsf[cong]Z:Pro) ==> (Y:Pro<q[cong]Z:Pro))
-	Simulations passed: 4761/4761 (implies short circuit ass/conc 4635/0) 
-((Y:Pro<qsf[cong]Z:Pro) ==> forAll[X:Test]((X:Test||[a!, y!, x!, b!]Y:Pro)<q[cong](X:Test||[a!, y!, x!, b!]Z:Pro)))
-	Simulations passed: 4761/4761 (implies short circuit ass/conc 4635/0) 
-(forAll[X:Test]((X:Test||[a!, y!, x!, b!]Y:Pro)<q[cong](X:Test||[a!, y!, x!, b!]Z:Pro)) ==> (Y:Pro<qsf[cong]Z:Pro))
-	Failing Combinations:  [Start, b!, a!, , b?, x!, a?, [x!], a!, , b?, x!, a?, [x!], a!, Ref{STOP}, x!, a?]
-Y:Pro->Lasa, Z:Pro->D2, 
-	Simulations passed: 905/4761 (implies short circuit ass/conc 0/31) 
-((Y:Pro<qsf Z:Pro) ==> forAll[X:Test]((X:Test||[a!, y!, x!, b!]Y:Pro)<q (X:Test||[a!, y!, x!, b!]Z:Pro)))
-	Simulations passed: 4761/4761 (implies short circuit ass/conc 4266/0) 
-(forAll[X:Test]((X:Test||[a!, y!, x!, b!]Y:Pro)<q (X:Test||[a!, y!, x!, b!]Z:Pro)) ==> (Y:Pro<qsf Z:Pro))
-	Simulations passed: 4761/4761 (implies short circuit ass/conc 0/495) 
-Compiling completed!
-Mon Dec 24 20:48:28 NZDT 2018
-*/
-
-
-
-
-
 

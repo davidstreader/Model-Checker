@@ -77,7 +77,7 @@ public class SimpFunction implements IProcessFunction {
 
     assert automata.length == 1;
     Automaton automaton = automata[0].copy(); // Deep Clone  as automata changed
-    //System.out.println("\nSIMP corrects data !");
+    System.out.println("\nSIMP start !"+automaton.myString());
     if (flags.contains(Constant.OBSEVATIONAL)) {
       automaton.validateAutomaton();
       AbstractionFunction af = new AbstractionFunction();
@@ -86,7 +86,7 @@ public class SimpFunction implements IProcessFunction {
       copySmall.validateAutomaton();
       af.observationalSemantics(flags, automaton, context); //3. saturate
       copySmall.validateAutomaton();
-      System.out.println("\nOBSSem "+automaton.myString());
+      //System.out.println("\nOBSSem "+automaton.myString());
       List<List<String>> partition = buildPartition(flags, automaton); //4. color
       //Applipcation of coloring to unsaturated automata
 
@@ -95,17 +95,26 @@ public class SimpFunction implements IProcessFunction {
       boolean isFair = flags.contains(Constant.FAIR) || !flags.contains(Constant.UNFAIR);
       af.divergence(copySmall,isFair);  //7. tidy up
       copySmall.validateAutomaton();
-      System.out.println("\ncopySmall "+copySmall.myString());
+      //System.out.println("\ncopySmall "+copySmall.myString());
       automaton = copySmall;
     } else {
       List<List<String>> partition = buildPartition(flags, automaton);
       //the automaton is changed
       mergeNodes(automaton, partition, context);
     }
+    pruneDeltaLoop(automaton);
+    automaton.validateAutomaton();
  System.out.println("Simp out "+automaton.myString()+"\n");
     return automaton;
   }
-
+public void pruneDeltaLoop(Automaton automaton){
+  List<AutomatonEdge> deltaEdges = automaton.getEdges().stream()
+    .filter(x->x.getLabel().equals(Constant.DEADLOCK))
+    .collect(Collectors.toList());
+  for(AutomatonEdge ed: deltaEdges) {
+    automaton.removeEdge(ed);
+  }
+}
   public List<List<String>> buildPartition(Set<String> flags, Automaton automaton){
     boolean cong = flags.contains(Constant.CONGURENT);
     //the Nodes are connected to the Edges  are connected to the Nodes
@@ -122,7 +131,7 @@ public class SimpFunction implements IProcessFunction {
     //System.out.println("SIMP colour "+ automaton.getId());
     Map<Integer, List<AutomatonNode>> colour2nodes = new HashMap<>();
 
-    System.out.println("SIMP colored "+ automaton.getId());
+    //System.out.println("SIMP colored "+ automaton.getId());
     for (AutomatonNode nd : nodes) {
       if (colour2nodes.containsKey(nd.getColour())) {
         colour2nodes.get(nd.getColour()).add(nd);
@@ -155,9 +164,9 @@ public class SimpFunction implements IProcessFunction {
       if (nodesWithSameColor.size() < 2) {
         continue;
       }
-System.out.println("Merge "+ ain.getId());
-      ain.validateAutomaton("simp 1");
-      System.out.println("    partition "+partition);
+  //System.out.println("Merge "+ ain.getId());
+      ain.validateAutomaton("");
+      //System.out.println("    partition "+partition);
 
       //AutomatonNode mergedNode = Iterables.get(nodesWithSameColor, 0);
       boolean first = true;
@@ -170,11 +179,11 @@ System.out.println("Merge "+ ain.getId());
           continue;
         } else {
           try {
-            System.out.println("Merging "+selectedNode.getId()+" " + automatonNode.getId());
+            //System.out.println("Merging "+selectedNode.getId()+" " + automatonNode.getId());
             //combineNodes will remove mergedNode and return  new merged node
             ain = ain.mergeAutNodes(ain, selectedNode, automatonNode, context);
-            System.out.println("   Merged result \n");
-            ain.validateAutomaton("simp 2");
+            //System.out.println("   Merged result \n");
+            ain.validateAutomaton("");
           } catch (InterruptedException ignored) {
             throw new CompilationException(getClass(), "INTERRUPTED EXCEPTION");
           }
@@ -183,6 +192,7 @@ System.out.println("Merge "+ ain.getId());
       //nodesWithSameColor.forEach(automaton::removeNode);
     }
     ain.cleanNodeLables();
+
     return ain;
   }
  

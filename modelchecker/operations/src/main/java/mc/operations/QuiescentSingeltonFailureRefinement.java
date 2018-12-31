@@ -58,13 +58,13 @@ public class QuiescentSingeltonFailureRefinement implements IOperationInfixFunct
   @Override
   public boolean evaluate(Set<String> alph, Set<String> flags, Context context,
                           Stack<String> trace, Collection<ProcessModel> processModels) throws CompilationException {
-    System.out.println("\nQUIESCENT " + alph+" "+flags+" ");
+    //System.out.println("\nQUIESCENT " + alph+" "+flags+" ");
     boolean cong = flags.contains(Constant.CONGURENT);
     //ProcessModel[] pms =  processModels.toArray();
     Automaton a1 = ((Automaton) processModels.toArray()[0]).copy();
     Automaton a2 = ((Automaton) processModels.toArray()[1]).copy();
-    System.out.println("****Quiescent a1 "+a1.myString());
-    System.out.println("****Quiescent a2 "+a2.myString());
+    //System.out.println("****Quiescent a1 "+a1.myString());
+    //System.out.println("****Quiescent a2 "+a2.myString());
     /*
      mapping from bc to ap to bc addes try reject loops
      */
@@ -72,8 +72,8 @@ public class QuiescentSingeltonFailureRefinement implements IOperationInfixFunct
     a1 = abs.GaloisBCabs(a1.getId(), flags, context, a1);
     a2 = abs.GaloisBCabs(a2.getId(), flags, context, a2); //end states marked
     //System.out.println("*** Q a1  " + a1.readySets2String(cong));
-    System.out.println("Gabs "+a1.myString());
-    System.out.println("Gabs "+a2.myString());
+    //System.out.println("Gabs "+a1.myString());
+    //System.out.println("Gabs "+a2.myString());
 
   /*
         a?->b!->c?->STOP
@@ -94,8 +94,8 @@ public class QuiescentSingeltonFailureRefinement implements IOperationInfixFunct
     partition = simpf.buildPartition(flags, a2);
     simpf.mergeNodes(a2, partition, context);
 
-    System.out.println("a1 "+a1.myString());
-    System.out.println("a2 "+a2.myString());
+    //System.out.println("a1 "+a1.myString());
+    //System.out.println("a2 "+a2.myString());
   /*
      Finally build dfa and evaluate
    */
@@ -146,13 +146,13 @@ public class QuiescentSingeltonFailureRefinement implements IOperationInfixFunct
     rQ.add("!"+Constant.Quiescent);
     boolean first = true;
     for (AutomatonNode nd: nds){
-      System.out.println(nd.getId()+"->"+ nd.getOutgoingEdges().stream().map(ed->ed.getLabel()+" ").collect(Collectors.joining()));
+      //System.out.println(nd.getId()+"->"+ nd.getOutgoingEdges().stream().map(ed->ed.getLabel()+" ").collect(Collectors.joining()));
       // if node not Quiescent skip
       if (nd.getOutgoingEdges().stream().
         filter(e->e.getLabel().equals(Constant.Quiescent)).
         collect(Collectors.toSet()).size()==0) {
         //refusal = rQ;
-        System.out.println("not Q");
+        //System.out.println("not Q");
         continue;  //if not quiescent do not build intersection
       }
       if (first) {
@@ -160,13 +160,13 @@ public class QuiescentSingeltonFailureRefinement implements IOperationInfixFunct
         refusal = nd.readySet(cong);
       }
       else refusal.retainAll(nd.readySet(cong));  //build intersection
-      System.out.println("refusal = "+refusal);
+      //System.out.println("refusal = "+refusal);
     }
     nds.stream().map(x->x.readySet(cong)).forEach(s->ready.addAll(s));
     //Wrap set in first element of Lis
     refusalWrap.add(refusal.stream().distinct().collect(Collectors.toSet()));
     refusalWrap.add(ready.stream().distinct().collect(Collectors.toSet()));
-    System.out.println("QSF refusalWrapped "+refusalWrap);
+    //System.out.println("QSF refusalWrapped "+refusalWrap);
 
     return refusalWrap;
   }
@@ -188,14 +188,14 @@ public class QuiescentSingeltonFailureRefinement implements IOperationInfixFunct
    */
   private boolean isQSFSubset(List<Set<String>> s2, List<Set<String>> s1, boolean cong,ErrorMessage error) {
     boolean out = true;
-    System.out.println("isSF s1 "+s1.get(0)+" s2 "+s2.get(0));
+    //System.out.println("isSF s1 "+s1.get(0)+" s2 "+s2.get(0));
     //Set<String> small = s2.get(0).stream().filter(x->!Constant.external(x)).collect(Collectors.toSet());
     if (!s1.get(0).contains(Constant.Quiescent)) {  //s1 can refuse nothing
-      System.out.println(" Quiescent FRIG  true");
+      //System.out.println(" Quiescent FRIG  true");
       out = true;
     } else if (s1.get(0).contains(Constant.Quiescent) &&
       !s2.get(0).contains(Constant.Quiescent)) {  //s2 can refuse nothing
-      System.out.println(" Quiescent FRIG false");
+      //System.out.println(" Quiescent FRIG false");
       out = false;
     } else {
       //System.out.println("small "+small);
@@ -223,7 +223,7 @@ public class QuiescentSingeltonFailureRefinement implements IOperationInfixFunct
         }
       }
     }
-    System.out.println("can  s2 "+s2.get(0)+" refuse more than (or =) s1 "+s1.get(0)+" "+out);
+    //System.out.println("can  s2 "+s2.get(0)+" refuse more than (or =) s1 "+s1.get(0)+" "+out);
     return out;
   }
 

@@ -24,7 +24,8 @@ public class PetriNetPlace extends ProcessModelObject implements Comparable<Petr
   private Set<String> references = new LinkedHashSet<>();      // where leaf is to be glued to
   private Set<String> leafRef = new LinkedHashSet<>();  // prior to gluing only on Leaf
   private Set<String> owners = new HashSet<>();  // this is needed in event Refinement and broadcast events
-
+  public void cleanStart(){startNos = new LinkedHashSet<>();}
+  public void cleanSTOP(){endNos = new LinkedHashSet<>();}
   public String getTerminal() {
     String x;
     if (terminal == null || terminal.equals(""))
@@ -190,6 +191,14 @@ public class PetriNetPlace extends ProcessModelObject implements Comparable<Petr
         .map(PetriNetTransition.class::cast)
         .distinct()
         .collect(Collectors.toSet());
+  }
+  public Set<PetriNetTransition> postNotOpt() {
+    return outgoing.stream()
+      .filter(PetriNetEdge::notOptional)
+      .map(PetriNetEdge::getTo)
+      .map(PetriNetTransition.class::cast)
+      .distinct()
+      .collect(Collectors.toSet());
   }
 
   public String toString() {

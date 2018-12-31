@@ -52,14 +52,14 @@ public class QuiescentRefinement implements IOperationInfixFunction {
    *
    *
    *
-   * @param alpha
+   * @param aXX
    * @param processModels automaton in the function (e.g. {@code A} in {@code A ~ B})
    * @return the resulting automaton of the operation
    */
   @Override
   public boolean evaluate(Set<String> aXX, Set<String> flags, Context context,
                           Stack<String> trace, Collection<ProcessModel> processModels) throws CompilationException {
-    System.out.println("\nQUIESCENT " +flags );
+    //System.out.println("\nQUIESCENT " +flags );
     boolean cong = flags.contains(Constant.CONGURENT);
     //ProcessModel[] pms =  processModels.toArray();
     Automaton a1 = ((Automaton) processModels.toArray()[0]).copy();
@@ -83,16 +83,16 @@ public class QuiescentRefinement implements IOperationInfixFunction {
       filter(x->x.endsWith(Constant.BROADCASTSinput)).
       collect(Collectors.toSet());
       */
-    System.out.println("\n new QUIESCENT " + listeningAlphabet);
+    //System.out.println("\n new QUIESCENT " + listeningAlphabet);
 
-    System.out.println("*** Q a1  " + a1.myString());
-    System.out.println("*** Q a2  " + a2.myString());
+    //System.out.println("*** Q a1  " + a1.myString());
+    //System.out.println("*** Q a2  " + a2.myString());
 
     ArrayList<ProcessModel> pms = new ArrayList<>();
     addListeningLoops(a1, listeningAlphabet);
     addListeningLoops(a2, listeningAlphabet);
-    System.out.println("*** Qx a1  " + a1.myString());
-    System.out.println("*** Qx a2  " + a2.myString());
+    //System.out.println("*** Qx a1  " + a1.myString());
+    //System.out.println("*** Qx a2  " + a2.myString());
 
     pms.add(a1);
     pms.add(a2);
@@ -118,7 +118,7 @@ public class QuiescentRefinement implements IOperationInfixFunction {
   public void addListeningLoops(Automaton ain,  Set<String> alpha )
     throws CompilationException {
 
-    System.out.println("LL alphabet = "+alpha);
+    //System.out.println("LL alphabet = "+alpha);
 
     Map<String,Set<String>> a2o = ain.eventNames2Owner();
 
@@ -128,9 +128,9 @@ public class QuiescentRefinement implements IOperationInfixFunction {
       if (notListening.size()==0) {
         AutomatonEdge ed =  ain.addEdge(Constant.Quiescent,nd,nd,new Guard(),false,false);
       } */
-       System.out.println("  "+nd.getId()+"->"+ready);
+       //System.out.println("  "+nd.getId()+"->"+ready);
        for(String al:alpha) {
-         System.out.println("  al "+al);
+         //System.out.println("  al "+al);
          if (!ready.contains(al))  {
            AutomatonEdge ed =  ain.addEdge(al,nd,nd,new Guard(),false,false);
            if (a2o.containsKey(al)) {
@@ -138,7 +138,7 @@ public class QuiescentRefinement implements IOperationInfixFunction {
            } else {
              ed.setEdgeOwners(ain.getOwners());
            }
-           System.out.println("  adding "+ed.myString("smiple"));
+           //System.out.println("  adding "+ed.myString("smiple"));
          }
        }
     }

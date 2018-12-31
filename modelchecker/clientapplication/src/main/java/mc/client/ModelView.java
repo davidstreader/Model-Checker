@@ -198,7 +198,7 @@ public class ModelView implements Observer {
     listOfAutomataUpdater.accept(visibleModels);
 
     //Calls the function(Consumer) attached to the updateLog
-    updateLog.accept(compiledResult.getOperationResults(), compiledResult.getEquationResults());
+    //updateLog.accept(compiledResult.getOperationResults(), compiledResult.getEquationResults());
   //  updateImpLog.accept(compiledResult.getImpliesResults(), compiledResult.getImpliesResults());
   }
 

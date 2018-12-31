@@ -9,11 +9,12 @@ import javafx.scene.control.Slider;
 import javafx.stage.Window;
 import lombok.Setter;
 import mc.Constant;
+import mc.util.MyAssert;
+
 
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.ResourceBundle;
 
 /**
@@ -26,9 +27,9 @@ public class SettingsController implements Initializable {
   private Integer spring = 50;
   private Integer step = 150;
   private boolean showOwners = false;
-  private boolean showColor = false;
+  private boolean showColor = true;
   private boolean Congruance = false;
-  private boolean Symbolic = true;
+  private boolean Symbolic = false;
   Collection<String> disp = new ArrayList<>();
 
   @Setter
@@ -65,6 +66,7 @@ public class SettingsController implements Initializable {
 
     showOwners = Own.isSelected();
     showColor = Col.isSelected();
+    MyAssert.setApply(showColor);
     Congruance = Cong.isSelected();
     Symbolic = Symb.isSelected();
     System.out.println("Symbolic = "+isSymbolic());
@@ -182,6 +184,6 @@ public class SettingsController implements Initializable {
   }
   @FXML
   public void initialize() {
-    Symb.setSelected(true);
+    Symb.setSelected(false);
   }
 }

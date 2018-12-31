@@ -71,7 +71,8 @@ public class InternalChoiceInfixFunction implements IProcessInfixFunction {
   @Override
   public Automaton compose(String id, Automaton automaton1, Automaton automaton2)
       throws CompilationException {
-   // System.out.println("COMPOSE +");//Never get clled with STOP+P
+   System.out.println("\n\nCOMPOSE on AUTOMATON\n\n");//Never get clled with STOP+P
+
     Automaton choice = new Automaton(id, !Automaton.CONSTRUCT_ROOT);
 
     choice.addAutomaton(automaton1);
@@ -94,8 +95,8 @@ public class InternalChoiceInfixFunction implements IProcessInfixFunction {
           automaton2NodeMap.get(e.getTo()), e.getGuard() == null ? null : e.getGuard().copy(), false,e.getOptionalEdge());
     }
 
-
-    return choice;
+    throw new CompilationException(this.getClass(),"CHOICE ");
+    //return choice;
   }
 
   /**

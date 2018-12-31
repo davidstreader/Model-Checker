@@ -118,9 +118,9 @@ public class UserInterfaceController implements Initializable {
         //register a callback for whenever the list of automata is changed
         ModelView.getInstance().setListOfAutomataUpdater(this::updateModelsList);
         //register a callback for the output of the log
+        /*  Now displaied as results are found -- stops long lag
         ModelView.getInstance().setUpdateLog(this::updateLogText);
-        //ModelView.getInstance().setUpdateImpLog(this::updateImpLogText);
-
+        */
         //Add the key combinations
         newMenuItem.setAccelerator(KeyCombination.keyCombination("Ctrl+N"));
         saveMenuItem.setAccelerator(KeyCombination.keyCombination("Ctrl+S"));
@@ -635,7 +635,7 @@ public class UserInterfaceController implements Initializable {
         if (!userCode.isEmpty()) {
 
             if(buildThread.isAlive()) {
-                buildThread.stop();
+                //buildThread.stop();
                 compilerOutputDisplay.appendText("Build cancelled" + "\n");
                 compileButton.setText("Compile");
 
@@ -659,7 +659,10 @@ public class UserInterfaceController implements Initializable {
 
                                 if (!messageLog.isEmpty()) {
                                     LogMessage t = ((LogMessage) messageLog.poll());
-                                    Platform.runLater(() -> compilerOutputDisplay.appendText("** "+t.getMessage() + "\n"));
+                     System.out.println("Userinterface messageLog "+t.getMessage());
+                                    Platform.runLater(() -> {
+                                        compilerOutputDisplay.appendText("** "+t.getMessage() + "\n");
+                                    });
                                 }
                                 try {
                                     Thread.sleep(10); // To stop free spinning eating cpu
@@ -681,7 +684,7 @@ public class UserInterfaceController implements Initializable {
                             // If this is run outside the fx ctx then exceptions occur and weirdness with threads updating combox box and whatnot
                             compilerOutputDisplay.appendText("Compiling completed!\n" + new Date().toString());
                         });
-                        logThread.stop();
+                        //logThread.stop();
 
                     } catch (InterruptedException e) {
                         e.printStackTrace();

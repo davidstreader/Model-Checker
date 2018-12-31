@@ -18,6 +18,7 @@ import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
 import mc.processmodels.petrinet.operations.PetrinetReachability;
 import mc.compiler.Guard;
+import mc.util.MyAssert;
 
 public class SequentialInfixFun {
 
@@ -31,9 +32,9 @@ public class SequentialInfixFun {
    * @return the resulting automaton of the operation
    */
   public Automaton compose(String id, Automaton a1, Automaton a2) throws CompilationException {
-    System.out.println("\n *********************");
-    System.out.println("a1 "+a1.myString());
-    System.out.println("a2 "+a2.myString());
+    //System.out.println("\n *********seqInfixFun***********");
+    //System.out.println("a1 "+a1.myString());
+    //System.out.println("a2 "+a2.myString());
     Automaton sequence = new Automaton(id, !Automaton.CONSTRUCT_ROOT);
     Cloner cloner = new Cloner();
     Automaton automaton1 = cloner.deepClone(a1);
@@ -156,9 +157,10 @@ public class SequentialInfixFun {
 
   public Petrinet compose(String id, Petrinet n1, Petrinet n2, Guard guard)
     throws CompilationException {
-    //System.out.println("=>PETRI1 "+ id+" "+n1.getId()+"=>"+n2.getId());
-    n1.validatePNet();
-    n2.validatePNet();
+    System.out.println("\n=>PETRI1 "+ id+" \n"+n1.myString()+"\n=>\n"+n2.myString());
+    MyAssert.myAssert(n1.validatePNet("Sequential => input "+n1.getId()+ " valid ="), "=> precondition");
+    MyAssert.myAssert(n2.validatePNet("Sequential => input "+n2.getId()+ " valid ="), "=> precondition");
+
 
     Petrinet net1 = n1.reId("1");
     Petrinet net2 = n2.reId("2"); // the tag "2" ensures unique ids in nets
@@ -198,55 +200,60 @@ public class SequentialInfixFun {
     composition.getOwners().addAll(own2);
     Petrinet sequential;
     //System.out.println("\n ***Seq "+ net1.getEnds() +"  "+net2.getRoots());
-    //System.out.println("comp1 "+composition.myString());
-    for (Set<String> ed : oneEnd) {
+    System.out.println("comp1 "+composition.myString());
+    System.out.println("Ends = "+oneEnd);
+    for (Set<String> ends : oneEnd) {
       for (Set<String> rt : net2.getRoots()) {
-        //System.out.println("***SEQ   START " + i++ + " end "+ed+ " root = " + rt);
+        System.out.println("\n *******SEQ   START " + i++ + " end "+ends+ " root = " + rt);
         composition.setOwners(new HashSet<>());
 
         net1.getPlaces().values().stream().forEach(x -> x.setTerminal(""));
         composition.setRootFromStart();
-        Set<PetriNetPlace> newroot = new HashSet<>();
+        Set<PetriNetPlace> newroot = new HashSet<>();//new root for each End
         for (String r : rt) {
           newroot.add(composition.copyRootOrEnd(composition.getPlaces().get(r), ""));
         }
         Set<PetriNetPlace> newend = new HashSet<>();
-        for (String e : ed) {
+        for (String e : ends) {
           newend.add(composition.copyRootOrEnd(composition.getPlaces().get(e), ""));
         }
-        //System.out.println("SEQUENTIAL function");
+        //System.out.println("SEQUENTIAL start "+ composition.myString("edge") + "\n");
         composition.setUpv2o(n1, n2);
-        composition.glueOwners(own1, own2);
+        composition.glueOwners(own1, own2); //must only be done once
         composition.gluePlaces(newroot, newend);
-        //System.out.println("\n ***SEQ Glue places OVER \n" + composition.myString("edge") + "\n");
+        System.out.println("\n ***SEQ Glue places OVER \n" + composition.myString() + "\n");
       }
     }
-    //System.out.println("comp2 "+composition.myString());
+    composition.glueOwners(own1, own2);
+    System.out.println("\ncomp2 "+composition.myString());
 
     //remove old ends
     for (Set<String> eds : oneEnd) {
-      //System.out.println("ed " + eds);
+      System.out.println("ends for removal " + eds);
       for (String ed : eds) {
         PetriNetPlace pl = composition.getPlaces().get(ed);
-        //System.out.println(pl.myString());
+        System.out.println("Place "+pl.myString());
         Set<PetriNetTransition> trs = pl.pre();
-        //System.out.println("trs " + trs.size());
+        System.out.println("trs " + trs.size());
         for (PetriNetTransition tr : trs) {
-          //System.out.println("tr " + tr.getId());
-          composition.removeTransition(tr);
+          System.out.println("tr for Removal " + tr.getId());
+          if (composition.getTransitions().containsKey(tr.getId())) {
+            composition.removeTransition(tr);
+          }
+        }
+        if (composition.getPlaces().containsKey(pl.getId())) {
+          composition.removePlace(pl);
         }
       }
     }
     //System.out.println("comp3 "+composition.myString());
 
     composition.setRootFromStart();
-    //System.out.println("Sequential composition "+composition.myString());
-    composition = PetrinetReachability.removeUnreachableStates(composition);
-
-    //System.out.println("=> part "+composition.myString());
+    composition.setEndFromPlace();
     sequential = PetrinetReachability.removeUnreachableStates(composition);
-    sequential.setRootFromStart();
-    sequential.setEndFromPlace();
+    System.out.println("\n=> near end "+sequential.myString());
+
+
 //*** must come after setEndFromPlace()
     Map<String, String> eval = n2.getRootEvaluation();
     //System.out.println("eval " + eval.toString());
@@ -261,10 +268,11 @@ public class SequentialInfixFun {
     //****
     //Petrinet seq = new Petrinet(id, false);
     //seq.addPetrinet(sequential);  // renumbers the ids
-    //System.out.println("FINAL " +sequential.myString());
+    System.out.println("FINAL => " +sequential.myString());
 
-    sequential.validatePNet();
-    //System.out.println("=> END " + sequential.myString("edge"));
+    //MyAssert.myAssert(sequential.validatePNet("Sequential => input "+sequential.getId()+ " valid ="), "=> precondition");
+
+    //System.out.println("=> END " + sequential.myString());
     return sequential;
 
 

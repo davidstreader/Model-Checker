@@ -16,6 +16,7 @@ import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
 import mc.processmodels.petrinet.operations.PetrinetReachability;
+import mc.util.MyAssert;
 
 //import mc.operations.impl.PetrinetParallelFunction;
 public class OwnersRule {
@@ -58,6 +59,9 @@ public class OwnersRule {
     //System.out.println("OwnersRule initial automata " + ain.myString() + "*START ");
     //Throwable t = new Throwable(); t.printStackTrace();
     clean();
+    MyAssert.myAssert(ain.validateAutomaton("Owners Rule input "+ain.getId()+" vlaid = "), "Owners Rule Failure");
+
+    //assert ain.validateAutomaton("Owners Automaton"): "Owners Rule precondition";
     // 1. to automata A add initial event S*=>A now only one start state.
     Automaton star = Automaton.singleEventAutomata("single", "S*");
     SequentialInfixFun sif = new SequentialInfixFun();
@@ -79,7 +83,7 @@ public class OwnersRule {
     */
     //System.out.println("Owners START " + a.myString() + "\n");
     for (String own : a.getOwners()) {
-      //System.out.println("\n >>Owner "+ own);
+      //System.out.println(" >>>>>>>Owner "+ own);
       if (own.equals("_default"))
         throw new CompilationException(ain.getClass(),"Owners Failure in Owners Rule "+ain.myString());
       Petrinet petri = new Petrinet(a.getId(), false);
@@ -93,11 +97,14 @@ public class OwnersRule {
       boolean first = true;
       while (!toDo.isEmpty()) {
         AutomatonNode nd = toDo.pop();
-        //System.out.println("OWNStart nd " + nd.myString());
+    //System.out.println("   >>>>>>>>>OWNStart nd " + nd.myString());
         if (processed.contains(nd)) continue;
         processed.add(nd);
         if (!nd2Pl.containsKey(nd)) {
           PetriNetPlace added = petri.addPlace();
+          Set<String> owns = new TreeSet<>();
+          owns.add(own);
+          added.setOwners(owns);
           if (nd.isStopNode()) {
             added.addEndNo(endcnt++);
           }
@@ -136,7 +143,10 @@ public class OwnersRule {
       while (!toDo.isEmpty()) {
         AutomatonNode nd = toDo.pop();
         //System.out.println("Start 2 nd " + nd.getId());
-        if (processed.contains(nd)) continue;
+        if (processed.contains(nd)) {
+          //System.out.println("Skipped");
+          continue;
+        }
         processed.add(nd);
 
         for (AutomatonEdge ed : nd.getOutgoingEdges()) {
@@ -165,7 +175,7 @@ public class OwnersRule {
       petri.setEndFromPlace();
       //System.out.println("PING "+petri.myString());
       subNets.push(petri);  // Clones
-      //System.out.println(subNets.size()+ " Slice Net ");
+      //System.out.println(" SLICE Net \n"+petri.myString()+ "\n SLICE Net ");
 
     }
     Petrinet build;
@@ -179,11 +189,12 @@ public class OwnersRule {
         //  build = subNets.pop();  //for debugging
         //System.out.println("Build " + build.myString());
       }
+
       build.deTagTransitions();  //use ":" tonot mess up with Galois  (undo Automaton  tagEvents() )
 
 
       //System.out.println("  before reach  "+build.myString());
-      build = PetrinetReachability.removeUnreachableStates(build);
+      build = PetrinetReachability.removeUnreachableStates(build);//, false);
       //System.out.println("reach *END "+build.myString());
 
       //3. remove S* to reveal the multiple start states.
@@ -193,7 +204,10 @@ public class OwnersRule {
     } else {
       build = Petrinet.startNet();
     }
-    //System.out.println("Owners end with "+build.myString());
+    //build.validatePNet();
+    MyAssert.myAssert(ain.validateAutomaton("Owners Rule output "+build.getId()+" vlaid = "), "Owners Rule Failure");
+    //assert build.validatePNet("Owners Net"): "Owners Rule Failure";
+    //System.out.println("Owners end with "+build.getId());
     return build;
   }
 

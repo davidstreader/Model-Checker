@@ -137,13 +137,14 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
 
 
-  public boolean validateAutomaton(String ping) {
-    System.out.println(ping);
-    return  validateAutomaton();
+  public boolean validateAutomaton(String ping) throws CompilationException {
+    boolean r = validateAutomaton();
+     System.out.println(ping +" "+ r);
+    return  r;
 
   }
-    public boolean validateAutomaton() {
-      System.out.println("              Validate "+getId());
+    public boolean validateAutomaton() throws CompilationException {
+      //System.out.println("              Validate "+getId());
     boolean ok = true;
     for(AutomatonNode nd : getNodes()) {
       for(AutomatonEdge ed: nd.getIncomingEdges()) {
@@ -186,12 +187,13 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
         ok = false;
       }
     }
-    if (!ok) {
-      Throwable t = new Throwable(); t.printStackTrace();
-      System.out.println("                  Vaidate "+getId()+" "+ok +"\n"+myString());
-    } else {
-      System.out.println("                  Vaidate "+getId()+" "+ok);
-    }
+      if (!ok) {//KEEP BOTH  as Exception passed on up to gain info but call stack needed
+        Throwable t = new Throwable();
+        t.printStackTrace();
+        System.out.println("SORT the Automaton OUT \n" + this.myString() + "\nSORT OUT AUT ABOVE\n");
+        throw new CompilationException(getClass()," invalid Automaton "+ this.getId());
+      }
+     // System.out.println(this.getId()+ " is valid = "+ok);
     return ok;
   }
 
@@ -597,7 +599,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
       throw new CompilationException(getClass(), node2.getId() + "test4 was not found in the automaton " + getId(), this.getLocation());
     }
-    System.out.println("Merging "+node1.getId()+"\n <= "+node2.getId());
+    //System.out.println("Merging "+node1.getId()+"\n <= "+node2.getId());
 // for symbilic TOBE reviewed
     for (AutomatonEdge edge1 : node1.getIncomingEdges()) {
       for (AutomatonEdge edge2 : node2.getIncomingEdges()) {
@@ -626,7 +628,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     nodeMap.remove(node2.getId());
     //removeNode(node2);
     //this.setEndList();
-    System.out.println("new merged Node "+node1.myString());
+    //System.out.println("new merged Node "+node1.myString());
     //System.out.println("nodes merged in "+this.myString());
     return ain;
   }
@@ -663,64 +665,65 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
   // should only add edges if not already there  code in Automaton
   private void processIncomingEdges(Automaton ain,AutomatonNode node, AutomatonNode oldNode) {
     List<AutomatonEdge> edges = oldNode.getIncomingEdges();
-    System.out.println("processIncomingEdges "+node.getId()+" <- "+oldNode.getId());
+    //System.out.println("processIncomingEdges "+node.getId()+" <- "+oldNode.getId());
     for (AutomatonEdge edge : edges) {
-      System.out.println("processesing "+edge.myString());
+      //System.out.println("processesing "+edge.myString());
       // Only add edges if not already there  code in Automaton
+      Set<String> own = edge.getEdgeOwners();
       boolean found = false;
       for (AutomatonEdge oldEdge : node.getIncomingEdges()) {
         if (oldEdge.getLabel().equals(edge.getLabel()) &&
           oldEdge.getFrom().equals(edge.getFrom())) {
           found = true;
-          System.out.println("found "+oldEdge.myString());
+          //System.out.println("found "+oldEdge.myString());
           break;
         }
       }
       if (found == false) {
-  System.out.println("1 adding " + edge.getFrom().getId()+"-" + edge.getLabel() +"->" + node.getId());
+  //System.out.println("1 adding " + edge.getFrom().getId()+"-" + edge.getLabel() +"->" + node.getId());
         node.addIncomingEdge(edge);
         edge.setTo(node);
         ain.nodeMap.put(node.getId(),node);
         ain.edgeMap.put(edge.getId(),edge);
-        System.out.println(ain.myString());
+        //System.out.println(ain.myString());
         //oldNode.removeIncomingEdge(edge);
       } else {
-        System.out.println("In not needed "+edge.myString());
+        //System.out.println("In not needed "+edge.myString());
         ain.edgeMap.remove(edge.getId());
         edge.getFrom().removeOutgoingEdge(edge);
-        System.out.println(" edge gone!  "+ edge.getFrom().myString());
+        //System.out.println(" edge gone!  "+ edge.getFrom().myString());
       }
     }
   }
 
   private void processOutgoingEdges(Automaton ain,AutomatonNode node, AutomatonNode oldNode) {
     List<AutomatonEdge> edges = oldNode.getOutgoingEdges();
-    System.out.println("processOutgoingEdges "+node.getId()+" <- "+oldNode.getId());
+    //System.out.println("processOutgoingEdges "+node.getId()+" <- "+oldNode.getId());
     for (AutomatonEdge edge : edges) {
-   System.out.println("processesing "+edge.myString());
+   //System.out.println("processesing "+edge.myString());
       // Only add edges if not already there  code in Automaton
       boolean found = false;
       for (AutomatonEdge oldEdge : node.getOutgoingEdges()) {
         if (oldEdge.getLabel().equals(edge.getLabel()) &&
           oldEdge.getTo().equals(edge.getTo())) {
           found = true;
-          System.out.println("found "+oldEdge.myString());
+          //System.out.println("found "+oldEdge.myString());
           break;
         }
       }
       if (found == false) {
-  System.out.println("2 adding "+node.getId()+"-" + edge.getLabel() +"->" +edge.getTo().getId());
+  //System.out.println("2 adding "+node.getId()+"-" + edge.getLabel() +"->" +edge.getTo().getId());
         node.addOutgoingEdge(edge);
         edge.setFrom(node);
         ain.nodeMap.put(node.getId(),node);
         ain.edgeMap.put(edge.getId(),edge);
-        System.out.println(ain.myString());
+        //System.out.println(ain.myString());
         //  oldNode.removeOutgoingEdge(edge);
       } else {
-  System.out.println("Out not needed "+edge.myString());
+  //System.out.println("Out not needed "+edge.myString());
         ain.edgeMap.remove(edge.getId());
         edge.getTo().removeIncomingEdge(edge);
-   System.out.println(" edge gone!  "+ edge.getTo().myString());
+   //System.out.println(" edge gone!  "+ edge.getTo().myString());
       }
     }
   }
@@ -942,7 +945,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
         alph.add(label);
       }
     }
-    System.out.println("alphabet in "+getId()+" is "+alph);
+    //System.out.println("alphabet in "+getId()+" is "+alph);
     return alph;
   }
   /**
@@ -1192,7 +1195,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
   public void tagEvents() {
     for (AutomatonEdge ed : getEdges()) {
       ed.setLabel(ed.getLabel() + ":" + tagid++);
-      System.out.println("tag "+ed.myString());
+      //System.out.println("tag "+ed.myString());
     }
   }
 
