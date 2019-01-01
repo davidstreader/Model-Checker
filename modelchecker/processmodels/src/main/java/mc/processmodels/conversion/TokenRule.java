@@ -70,8 +70,8 @@ public class TokenRule {
     String nameOnly = convertFrom.getId().replaceAll("[0-9]*$", "");
     //keeps the id numbers low - op_eval resets Automaton.tagid
     Automaton outputAutomaton = new Automaton(convertFrom.getId(), false);
-    System.out.println("TOKEN RULE  STARTING " + convertFrom.getId());
-    MyAssert.myAssert(convertFrom.validatePNet("Token Rule input "+convertFrom.getId()+ " valid ="), "Token Rule precondition");
+    //System.out.println("TOKEN RULE  STARTING " + convertFrom.getId());
+    MyAssert.myAssert(convertFrom.validatePNet("Token Rule input "+convertFrom.getId()+ " VALID ="), "Token Rule precondition");
     //assert convertFrom.validatePNet("GOT YOU"): "Token Rule precondition";
 
     outputAutomaton.setOwners(convertFrom.getOwners());
@@ -184,7 +184,7 @@ public class TokenRule {
           .map(PetriNetEdge::getTo)
           .map(PetriNetPlace.class::cast)
           .collect(Collectors.toList()));
-        System.out.println("newMarking "+newMarking.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
+        //System.out.println("newMarking "+newMarking.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
 
         if (!markingToNodeMap.containsKey(newMarking)) {
           AutomatonNode newNode = outputAutomaton.addNode();
@@ -239,9 +239,10 @@ public class TokenRule {
       }
     }
     outputAutomaton.removeDuplicateEdges();  // may occur with broadcast
-    MyAssert.myAssert(outputAutomaton.validateAutomaton("Token Rule output "+outputAutomaton.getId()+" vlaid = "), "Token Rule Failure");
+    outputAutomaton.setEndFromNodes();
+    MyAssert.myAssert(outputAutomaton.validateAutomaton("Token Rule output "+outputAutomaton.getId()+" VALID = "), "Token Rule Failure");
     // assert outputAutomaton.validateAutomaton():"Token Rule Failure";
-    System.out.println("Token Rule END ");
+    //System.out.println("Token Rule END "+outputAutomaton.myString());
     return outputAutomaton;
   }
 

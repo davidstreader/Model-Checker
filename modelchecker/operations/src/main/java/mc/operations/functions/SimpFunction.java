@@ -16,6 +16,7 @@ import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.automata.util.ColouringUtil;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.operations.PetrinetSimp;
+import mc.util.MyAssert;
 
 public class SimpFunction implements IProcessFunction {
   private static final int BASE_COLOUR = 1;
@@ -77,13 +78,13 @@ public class SimpFunction implements IProcessFunction {
 
     assert automata.length == 1;
     Automaton automaton = automata[0].copy(); // Deep Clone  as automata changed
-    System.out.println("\nSIMP start !"+automaton.myString());
+    System.out.println("SIMP start !"+automaton.getId());
+    MyAssert.myAssert(automaton.validateAutomaton("Simp input "+automaton.getId()+" vlaid = "), "Simp input Failure");
+
     if (flags.contains(Constant.OBSEVATIONAL)) {
-      automaton.validateAutomaton();
       AbstractionFunction af = new AbstractionFunction();
       automaton =  af.absMerge(flags,context, automaton); //1. reduce state space
       Automaton copySmall = automaton.copy();             //2. copy
-      copySmall.validateAutomaton();
       af.observationalSemantics(flags, automaton, context); //3. saturate
       copySmall.validateAutomaton();
       //System.out.println("\nOBSSem "+automaton.myString());
@@ -94,19 +95,25 @@ public class SimpFunction implements IProcessFunction {
       mergeNodes(copySmall, partition, context);  //5. apply color and 6. simlify
       boolean isFair = flags.contains(Constant.FAIR) || !flags.contains(Constant.UNFAIR);
       af.divergence(copySmall,isFair);  //7. tidy up
-      copySmall.validateAutomaton();
       //System.out.println("\ncopySmall "+copySmall.myString());
       automaton = copySmall;
     } else {
       List<List<String>> partition = buildPartition(flags, automaton);
+      //System.out.println("partition "+ partition);
       //the automaton is changed
       mergeNodes(automaton, partition, context);
     }
+    //System.out.println("near !"+automaton.myString());
     pruneDeltaLoop(automaton);
-    automaton.validateAutomaton();
- System.out.println("Simp out "+automaton.myString()+"\n");
+    //System.out.println("near !"+automaton.myString());
+
+    automaton.setEndFromNodes();
+    MyAssert.myAssert(automaton.validateAutomaton("Simp output "+automaton.getId()+" vlaid = "), "Simp input Failure");
+
+    //System.out.println("Simp out "+automaton.getId()+"\n");
     return automaton;
   }
+
 public void pruneDeltaLoop(Automaton automaton){
   List<AutomatonEdge> deltaEdges = automaton.getEdges().stream()
     .filter(x->x.getLabel().equals(Constant.DEADLOCK))
@@ -165,7 +172,6 @@ public void pruneDeltaLoop(Automaton automaton){
         continue;
       }
   //System.out.println("Merge "+ ain.getId());
-      ain.validateAutomaton("");
       //System.out.println("    partition "+partition);
 
       //AutomatonNode mergedNode = Iterables.get(nodesWithSameColor, 0);
@@ -183,7 +189,6 @@ public void pruneDeltaLoop(Automaton automaton){
             //combineNodes will remove mergedNode and return  new merged node
             ain = ain.mergeAutNodes(ain, selectedNode, automatonNode, context);
             //System.out.println("   Merged result \n");
-            ain.validateAutomaton("");
           } catch (InterruptedException ignored) {
             throw new CompilationException(getClass(), "INTERRUPTED EXCEPTION");
           }

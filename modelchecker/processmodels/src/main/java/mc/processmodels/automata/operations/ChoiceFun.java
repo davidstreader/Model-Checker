@@ -50,7 +50,7 @@ public class ChoiceFun {
 
   public Petrinet compose(String id, Petrinet n1, Petrinet n2)
     throws CompilationException {
-    System.out.println("[] n1 = "+n1.myString());
+    System.out.println(n1.getId()+" []  "+n2.getId());
     Petrinet net1 = n1.reId("1");
     Set<String> own1 = net1.getOwners();
     List<Set<String>> oneEnd = net1.getEnds();
@@ -147,7 +147,7 @@ public class ChoiceFun {
     net2 = PetrinetReachability.removeUnreachableStates(net2);
     //System.out.println("\n[] OUT "+ net2.myString("edge"));
     net2.buildAlphabetFromTrans();
-    System.out.println("[] OUT "+ net2.getId()+"\n");
+    //System.out.println("[] OUT "+ net2.getId()+"\n");
     //net2.reId("");
     MyAssert.myAssert(net2.validatePNet("Choice [] output "+net2.getId()+ " valid ="), "[] output Failure");
 

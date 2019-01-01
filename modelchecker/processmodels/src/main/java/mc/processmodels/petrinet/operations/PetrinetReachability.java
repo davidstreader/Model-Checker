@@ -24,7 +24,7 @@ public final class PetrinetReachability {
    //System.out.println("\n UNREACH " + petri.myString());
 
     Petrinet petri = pet.copy();
-    System.out.println("removeUnreach CHECK END " +petri.getEnds());
+    //System.out.println("removeUnreach CHECK END " +petri.getEnds());
     Stack<Set<PetriNetPlace>> toDo = new Stack<>();
 
     for (Set<String> rt : petri.getRoots()) {
@@ -86,9 +86,9 @@ public final class PetrinetReachability {
     //System.out.println("All Rem "+Petrinet.marking2String(placesToRemove));
     Set<PetriNetTransition> transitionsToRemove = new HashSet<>(petri.getTransitions().values());
     transitionsToRemove.removeAll(visitedTransitions);
-    System.out.println("removeAll CHECK END " +petri.getEnds());
+    //System.out.println("removeAll CHECK END " +petri.getEnds());
     for (PetriNetPlace p : placesToRemove) {
-      System.out.println("removeing "+p.myString());
+      //System.out.println("removeing "+p.myString());
       petri.removePlace(p, merge);  // parallel comp will remove all End
     }
 
@@ -96,10 +96,10 @@ public final class PetrinetReachability {
     for (PetriNetTransition t : transitionsToRemove) {
       petri.removeTransition(t);
     }
-    System.out.println("removeUnreach CHECK END " +petri.getEnds());
+    //System.out.println("removeUnreach CHECK END " +petri.getEnds());
     // PROBLEM with optional edges
     if (merge) mergePlaces(petri);  //paralle comp will not merge Places
-    System.out.println("removeUnreach CHECK END " +petri.getEnds());
+    //System.out.println("removeUnreach CHECK END " +petri.getEnds());
     MyAssert.myAssert(petri.validatePNet("PetriNet reachability "+petri.getId()+ " valid ="), "Net reachability Failure");
 
     return petri;

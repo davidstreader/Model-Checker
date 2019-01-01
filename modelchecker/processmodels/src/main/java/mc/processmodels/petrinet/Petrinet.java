@@ -659,7 +659,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
   }
 
   public boolean validatePNet() throws CompilationException {
-    System.out.println("Validate ==>>" + myString());
+    //System.out.println("Validate ==>>" + myString());
     boolean ok = true;
     Set<String> netOwners = getOwners();
 //Validate root and End on Places
@@ -693,7 +693,6 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
         ok = false;
       }
     }
-    System.out.println("? ends ? " + ends);
     for (Set<String> end : ends) {
       Set<String> endOwn = new TreeSet<>();
       for (String e : end) {
@@ -726,7 +725,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
       }
       for (Set<String> rts : getRoots()) {
         for (String key : rts) {
-          System.out.println("root " + key + " -> " + places.get(key).myString());
+          //System.out.println("root " + key + " -> " + places.get(key).myString());
           places.get(key).getStartNos().add(rint);
         }
         rint++;
@@ -734,7 +733,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
       rint = 1;
       for (Set<String> ends : getEnds()) {
         for (String key : ends) {
-          System.out.println("end " + key + " -> " + places.get(key).myString());
+          //System.out.println("end " + key + " -> " + places.get(key).myString());
           places.get(key).getEndNos().add(rint);
         }
         rint++;
@@ -916,8 +915,10 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     Multimap<Integer, String> endBuilder = LinkedHashMultimap.create();
     Set<String> endids = getPlaces().values().stream().
       filter(x -> x.isSTOP()).map(x -> x.getId()).collect(Collectors.toSet());
+
     //System.out.println("setEndFromPlace() "+ endids);
     for (String pl : endids) {
+      //System.out.println("pl "+places.get(pl).myString());
       for (Integer i : places.get(pl).getEndNos()) {
         endBuilder.put(i, pl);
         //System.out.println("endBuilder "+i+"->"+pl);
@@ -926,7 +927,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
 
     List<Set<String>> eout = new ArrayList<>();
     for (Integer i : endBuilder.keySet().stream().sorted().collect(Collectors.toSet())) {
-      eout.add((Set<String>) endBuilder.get(i));
+      eout.add((Set<String>) endBuilder.asMap().get(i));
       //System.out.println("ends "+ i +" "+eout);
     }
 
@@ -1228,11 +1229,11 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
       }
       setRoots(Nroots);
     }
-    System.out.println("Remove "+place.getId()+ " simp "+simple);
+    //System.out.println("Remove "+place.getId()+ " simp "+simple);
     if (simple) {
       if (place.isSTOP() || getAllEnds().contains(place)) {
         List<Set<String>> Nends = new ArrayList<>();
-        System.out.println("Ends "+ends);
+        //System.out.println("Ends "+ends);
         for (Set<String> rs : ends) {
           Set<String> Nrts = new HashSet<>();
           for (String r : rs) {
@@ -1243,18 +1244,18 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
           Nends.add(Nrts);
         }
         setEnds(Nends);
-        System.out.println("Ends "+ends);
+        //System.out.println("Ends "+ends);
       }
     } else { // unreachABILTY  needs this
       if (place.isSTOP() || getAllEnds().contains(place)) {
-        System.out.println("NOT Ends " + ends);
+        //System.out.println("NOT Ends " + ends);
         List<Set<String>> Nends = new ArrayList<>();
         for (Set<String> rs : ends) {
           if (!rs.contains(place.getId()))  //One place not reached the End is not an End
             Nends.add(rs);
         }
         setEnds(Nends);
-        System.out.println("NOT Ends " + ends);
+        //System.out.println("NOT Ends " + ends);
       }
     }
 

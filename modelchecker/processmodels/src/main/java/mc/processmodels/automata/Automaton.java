@@ -58,6 +58,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
   }
 
   public void setEndList(List<String> e) {
+    end = new ArrayList<>();
     for (String nd : e) {
       end.add(nd);
     }
@@ -138,15 +139,54 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
 
   public boolean validateAutomaton(String ping) throws CompilationException {
-    boolean r = validateAutomaton();
-     System.out.println(ping +" "+ r);
-    return  r;
+    boolean r = true;
 
+    try {
+       r = validateAutomaton();  // throw error on failure
+      System.out.println(ping+ " true");
+    } catch (CompilationException e) {
+      System.out.println(ping + " false " );
+      throw e;
+    }
+    return  r;
   }
     public boolean validateAutomaton() throws CompilationException {
       //System.out.println("              Validate "+getId());
     boolean ok = true;
+
+    List<String> endList = getEndList();
+    for(String key: endList) {
+      if (!nodeMap.containsKey(key)) {
+        System.out.println("End "+endList+" but "+key+ " not found");
+        ok = false;
+      } else if (!nodeMap.get(key).isSTOP()){
+        System.out.println("End "+endList+" but "+nodeMap.get(key).myString());
+        ok = false;
+      }
+    }
+
+
+    Set<AutomatonNode> root =  getRoot();
+    Set<String> rootS = root.stream().map(AutomatonNode::getId).collect(Collectors.toSet());
+      for(String key: rootS) {
+        if (!nodeMap.containsKey(key)) {
+          System.out.println("root "+rootS+" but "+key+ " not found");
+          ok = false;
+        } else if (!nodeMap.get(key).isStartNode()){
+          System.out.println("Root "+rootS+" but "+nodeMap.get(key).myString());
+          ok = false;
+        }
+      }
+
     for(AutomatonNode nd : getNodes()) {
+      if (nd.isSTOP() && !endList.contains(nd.getId())) {
+        System.out.println("End "+endList+" but "+nd.myString());
+        ok = false;
+      }
+      if (nd.isStartNode()&& !rootS.contains(nd.getId())){
+        System.out.println("Root "+root+" but "+nd.myString());
+        ok = false;
+      }
       for(AutomatonEdge ed: nd.getIncomingEdges()) {
         if (!edgeMap.containsValue(ed)){
           System.out.println(nd.getId()+ " <- NO in edge "+ ed.getId());
@@ -192,6 +232,8 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
         t.printStackTrace();
         System.out.println("SORT the Automaton OUT \n" + this.myString() + "\nSORT OUT AUT ABOVE\n");
         throw new CompilationException(getClass()," invalid Automaton "+ this.getId());
+      } else {
+        System.out.println(this.getId()+ " is valid");
       }
      // System.out.println(this.getId()+ " is valid = "+ok);
     return ok;
@@ -377,7 +419,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     }
     // check that the new root is part of this automaton
     if (!nodeMap.containsKey(newRootNode.getId())) {
-      System.out.println("ERROR \n"+this.myString()+"ERROR");
+      //System.out.println("ERROR \n"+this.myString()+"ERROR");
       Throwable t = new Throwable(); t.printStackTrace();
       throw new CompilationException(getClass(), "Unable to set the root node to "
         + newRootNode.getId() + ", as the root is not a part of this automaton",
@@ -388,13 +430,19 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     this.root.add(newRootNode);
   }
   public void setEndFromNodes(){
-    List<String> newEnd = new ArrayList<>();
-    for(AutomatonNode nd: this.getNodes()){
-      if (nd.isSTOP()) newEnd.add(nd.getId());
+    List<String> endL = new ArrayList<>();
+    for(AutomatonNode nd: nodeMap.values()){
+      //System.out.println("Nd "+nd.myString());
+      if (nd.isSTOP()) {
+        endL.add(nd.getId());
+        //System.out.println("newEnd"+endL);
+      }
     }
-    this.setEndList(newEnd);
+    this.end = endL;
   }
-
+  public void removeEnd(String key) {
+    end.remove(key);
+  }
   public void addEnd(String newEndNode) throws CompilationException {
     // check the the new root is defined
     if (newEndNode == null) {
@@ -455,7 +503,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
       .forEach(this::removeEdge);
     nodeMap.remove(node.getId());
     this.getRoot().remove(node);
-    this.getEndList().remove(node);
+    this.end.remove(node.getId());
     return true;
   }
 
@@ -581,6 +629,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
   /**
    *  merges second node into the first keeping the firsts id
+   *  ONLY used in SIMP
    * @param node1
    * @param node2
    * @param context
@@ -618,11 +667,14 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
     if (!node1.isStartNode() && node2.isStartNode()) {
       root.add(node1);
+      root.remove(node2);
       node1.setStartNode(true);
     }
     if (!node1.isSTOP() && node2.isSTOP()) {
       node1.setStopNode(true);
       this.addEnd(node1.getId());
+      end.remove(node2.getId());
+
     }
 
     nodeMap.remove(node2.getId());
@@ -1125,10 +1177,8 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
       newNode.copyProperties(node);
       newNode.setLabelNumber(newLabelNumber++);
       //System.out.println("   reNode " + node.getId() + "->" + newNode.myString());
-
-      if (newNode.isStartNode()) {
-        reIded.addRoot(newNode);
-      }
+      if (newNode.isStartNode()) { reIded.addRoot(newNode); }
+      if (newNode.isSTOP()) { reIded.addEnd(newNode.getId()); }
     }
     //System.out.println("1 " + reIded.myString());
     List<AutomatonEdge> edges = getEdges();
@@ -1154,6 +1204,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
       //System.out.println("End of adding Edge"+xedge.myString());
     }
     //System.out.println("2 "+ reIded.myString());
+
     reIded.copyProperties(this);
     //System.out.println("       reId Ends \n" + reIded.myString());
     return reIded;

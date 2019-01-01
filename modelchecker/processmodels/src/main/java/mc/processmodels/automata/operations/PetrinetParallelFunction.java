@@ -32,7 +32,7 @@ public class PetrinetParallelFunction  {
     MyAssert.myAssert(p1.validatePNet("Parallel || input "+p1.getId()+ " valid ="), "|| precondition Failure");
     MyAssert.myAssert(p2.validatePNet("Parallel || input "+p2.getId()+ " valid ="), "|| precondition Failure");
 
-    System.out.println("     PETRINET PARALLELFUNCTION"+"  \n"+p1.myString()+"\n ||"+flags+" \n"+p2.myString());
+    System.out.println("     PETRINET PARALLELFUNCTION"+" "+p1.getId()+" ||"+flags+" "+p2.getId());
 
    //builds synchronisedActions set
     setupActions(p1, p2,flags);
@@ -52,10 +52,10 @@ public class PetrinetParallelFunction  {
     composition.setEnds(newEnds);
     composition.setStartFromRoot();
     composition.setEndFromNet();
-    System.out.println("BeforeSYNC END " +composition.myString());
+    //System.out.println("BeforeSYNC END " +composition.myString());
     //do not merge places?
      setupSynchronisedActions(p1, p2, composition);
-    System.out.println("AfterSYNC END " +composition.myString());
+    //System.out.println("AfterSYNC END " +composition.myString());
 
 
     composition = PetrinetReachability.removeUnreachableStates(composition, false);
@@ -86,7 +86,7 @@ public class PetrinetParallelFunction  {
     return out;
   }
   private static List<Set<String>> buildEnds(List<Set<String>> p1, List<Set<String>> p2){
-    System.out.println("Build Ends input "+p1+" "+p2);
+    //System.out.println("Build Ends input "+p1+" "+p2);
     List<Set<String>> out = new ArrayList<>();
     for(Set<String> e1: p1){
       for(Set<String> e2: p2){
@@ -97,7 +97,7 @@ public class PetrinetParallelFunction  {
         out.add( o );
       }
     }
-    System.out.println("Build Ends returns  "+out);
+    //System.out.println("Build Ends returns  "+out);
     return out;
   }
 
@@ -191,7 +191,7 @@ public class PetrinetParallelFunction  {
         //do nothing
       }
 
-      System.out.println("REMOVE "+toGo.stream().map(x->x.getId()).reduce((x,y)-> x+" "+y) );
+      //System.out.println("REMOVE "+toGo.stream().map(x->x.getId()).reduce((x,y)-> x+" "+y) );
       removeoldTrans(comp,toGo.stream().distinct().collect(Collectors.toSet()));
       //System.out.println("Sync2 CHECK END " +comp.getEnds());
     }
@@ -241,7 +241,7 @@ public class PetrinetParallelFunction  {
     //System.out.println("p2 "+p2_.stream().map(x->x.getLabel()).reduce("",(x,y)->x+y+" "));
     for (PetriNetTransition t1 : p1_) {
         for (PetriNetTransition t2 : p2_) {
-          System.out.println("Replaceing   "+t1.myString()+" "+t2.myString());
+          //System.out.println("Replaceing   "+t1.myString()+" "+t2.myString());
           if (t1==null) {System.out.println("t1==null");continue;}
           if (t2==null) {System.out.println("t2==null");continue;}
    //System.out.println("  t1 "+ t1.myString()+ " , t2 "+t2.myString());
@@ -310,14 +310,14 @@ public class PetrinetParallelFunction  {
 
   private static void removeoldTrans(Petrinet comp, Set<PetriNetTransition> toGo)
     throws  CompilationException {
-    System.out.println("Removing ");
+    //System.out.println("Removing ");
     for (PetriNetTransition oldTrans : toGo) {
-      System.out.print(" id "+oldTrans.getId()+" ");
+      //System.out.print(" id "+oldTrans.getId()+" ");
       if (comp.getTransitions().containsValue(oldTrans))  {
-        System.out.println("removing "+oldTrans.myString());
+        //System.out.println("removing "+oldTrans.myString());
         comp.removeTransition(oldTrans);
       } else {
-        System.out.println("SKIPPING");
+        //System.out.println("SKIPPING");
       }
     }
   }

@@ -56,7 +56,7 @@ public class OwnersRule {
    */
   @SneakyThrows({CompilationException.class})
   public static Petrinet ownersRule(Automaton ain) {
-    //System.out.println("OwnersRule initial automata " + ain.myString() + "*START ");
+    System.out.println("OwnersRule initial automata " + ain.getId() + "*START ");
     //Throwable t = new Throwable(); t.printStackTrace();
     clean();
     MyAssert.myAssert(ain.validateAutomaton("Owners Rule input "+ain.getId()+" vlaid = "), "Owners Rule Failure");
@@ -124,7 +124,7 @@ public class OwnersRule {
             if (!nd2Pl.containsKey(n)) nd2Pl.put(n, added);
             if (n.isTerminal() && n.isSTOP()) {
               added.setTerminal("STOP");
-              //added.setEndNos(n.getE);
+              if (added.getEndNos().size() == 0) added.addEndNo(endcnt++);
             }
             //System.out.println("added "+added.myString());
           }
@@ -173,7 +173,6 @@ public class OwnersRule {
       //petri = PetrinetReachability.removeUnreachableStates(petri).copy();
       //System.out.println("\npushing "+petri.myString());
       petri.setEndFromPlace();
-      //System.out.println("PING "+petri.myString());
       subNets.push(petri);  // Clones
       //System.out.println(" SLICE Net \n"+petri.myString()+ "\n SLICE Net ");
 

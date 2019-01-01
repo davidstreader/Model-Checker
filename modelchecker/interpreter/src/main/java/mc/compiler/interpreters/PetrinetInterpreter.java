@@ -520,7 +520,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     //functions  nfa2dfa, prune, simp, abs,  .... are function on automata!
     else if (currentNode instanceof FunctionNode) {
       info = ((FunctionNode) currentNode).getFunction();
-      System.out.println("XXXXPetriInterp Fun "+((FunctionNode) currentNode).myString());
+      //System.out.println("XXXXPetriInterp Fun "+((FunctionNode) currentNode).myString());
       petri = interpretFunction((FunctionNode) currentNode, petriId, alpha);
       //System.out.println("PetriInterpFun returns "+petri.myString());
     }
@@ -633,7 +633,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
       }
       //pn.getVariables().addAll(vars);
     } else {
-      System.out.println("           No Owner in If");
+      //System.out.println("           No Owner in If");
     }
     //System.out.println("IEN net CHECK VARIABLES in " + pn.myString("edge"));
     return pn;
@@ -889,7 +889,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     // Net not From TREE
     selfRef = false;
     Automaton a = getLocalAutomaton(context, alpha, func);
-    System.out.println("interpretFunction "+a.myString());
+    //.out.println("interpretFunction "+a.myString());
     selfRef = true;
     //System.out.println("function "+func.myString()+ " -> "+a.myString());
     processed = OwnersRule.ownersRule(a);
@@ -1108,7 +1108,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     Automaton a;
     if (ast instanceof FunctionNode) {  //first time allways true
       FunctionNode func = (FunctionNode) ast;
-      System.out.println("XXXXXgetLocalA Fun "+func.myString());
+      //System.out.println("XXXXXgetLocalA Fun "+func.myString());
       Automaton ain = getLocalAutomaton(context, alpha, ((FunctionNode) ast).getProcesses().get(0));
 
       Set<String> alphaFlags = new TreeSet<>();
@@ -1118,7 +1118,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
         .compose(ain.getId() + ".fn", alphaFlags, context, ain);
       //System.out.println("getA Fun RETURNS \n"+a.myString());
     } else if (ast instanceof IdentifierNode) {
-      System.out.println("XXXXXgetLocalA Ident STARTS "+((IdentifierNode)ast).getIdentifier());
+      //System.out.println("XXXXXgetLocalA Ident STARTS "+((IdentifierNode)ast).getIdentifier());
       a = interpretAutIdentifier((IdentifierNode) ast);
     } else {
       //System.out.println("getLocalA  else STARTS");
