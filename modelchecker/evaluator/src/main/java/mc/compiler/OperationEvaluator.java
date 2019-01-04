@@ -208,16 +208,10 @@ public class OperationEvaluator {
             throw new CompilationException(getClass(), "The given operation is invaid: "
                     + operation.getOperation(), operation.getLocation());
         }
-        /*System.out.println("*********starting Operation " + operation.getFirstProcessType() + " (" +
-                operation.getOperation() + "  of type " +
-                funct.getOperationType() + ")  " + operation.getSecondProcessType()); */
-
 
         //System.out.println("***evalOp "+alpha+"  "+operation.myString()+" "+operation.getOperationType());
 
         if (funct.getOperationType().equals(Constant.PETRINET)) {
-            //String ps = processMap.values().stream().map(x->x.getId()).collect(Collectors.joining(" "));
-            //System.out.println("Evaluate petrinet operation "+funct.getFunctionName());
          throw new CompilationException(this.getClass(),"Need to implement Petrinet semantics",operation.getLocation() );
 
         } else if (funct.getOperationType().equals(Constant.AUTOMATA)) {
@@ -225,8 +219,6 @@ public class OperationEvaluator {
             Automaton b = null;
             //Operations ~ <f <t <q ...
             //System.out.println("Evaluate automaton operation "+operation.getFirstProcessType()+ " "+operation.getSecondProcessType());
-            //System.out.println("***evalOpm auto "+alpha+"  "+operation.myString());
-            //System.out.println("evOp "+operation.getFirstProcess().myString()+ "  "+operation.getSecondProcess().myString());
             if (operation.getFirstProcess()instanceof  FunctionNode  ||
                 operation.getFirstProcess()instanceof  IdentifierNode) {
                 //System.out.println("\nOpeval Function1 "+operation.getFirstProcess().myString());
@@ -236,8 +228,6 @@ public class OperationEvaluator {
                 //System.out.println("\n****OpEval Fun1 "+a.myString());
             } else   if (operation.getFirstProcessType().equals(Constant.PETRINET)) {
                 //System.out.println("\nOpEval TYPE NET 1 "+operation.toString());
-              /*  Petrinet one = (Petrinet) interpreter.interpret(Constant.PETRINET,
-                  operation.getFirstProcess(), getNextOperationId(), processMap, context, alpha); */
                 Petrinet one = (Petrinet) interpreter.interpretEvalOp(operation.getFirstProcess(),
                          getNextOperationId(), processMap, context, alpha);
 
@@ -246,11 +236,7 @@ public class OperationEvaluator {
                 //System.out.println("OpEval TYPE NET 1 "+a.myString());
             } else if (operation.getFirstProcessType().equals(Constant.AUTOMATA)) {
                 //System.out.println("\nOpEval TYPE Aut 1 "+operation.toString());
-               /* Automaton one = (Automaton) interpreter.interpret(Constant.AUTOMATA,
-                        operation.getFirstProcess(), getNextOperationId(), processMap, context, alpha); */
                 a = (Automaton)  automatonInterpreter.interpretEvalOp(operation.getFirstProcess(), getNextOperationId(), processMap, context, alpha);
-
-
                 processModels.add(a);
                 //System.out.println("OpEval Aut one "+one.myString());
             }
@@ -289,25 +275,23 @@ public class OperationEvaluator {
             if (operation.isNegated()) { r = !r; }
 
         } else {
-            //System.out.println("Bad operation type "+operation.getOperationType());
+            System.out.println("Bad operation type "+operation.getOperationType());
+            throw new CompilationException(getClass(), "Bad operation type "
+              + operation.getOperation(), operation.getLocation());
         }
-        //if (r==false) {
-            //System.out.println("END    evalOp " + operation.myString()+" " + EquationEvaluator.asString(processMap) + " => " + r);
-       // }
+
         //System.out.println(" op Eval returns "+r+"  negated "+ operation.isNegated()+" trace "+trace);
         if (operation.isNegated() !=r) trace.clear();
 
-        //System.out.println(" op Eval returns "+r+"  trace "+trace);
-
         //System.out.println("***evalOp with processMap  "+processMap.keySet().stream().map(x->x+"->"+processMap.get(x).getId()).reduce((x,y)->x+" "+y)+" returns "+r);
-
+        //System.out.println("***evalOp returns "+r);
         return r;
     }
 
     //Automaton ain =  getAutomaton (processMap,interpreter,context,alpha, ((FunctionNode) ast).getProcesses().get(0)) ;
     //
 
-    static List<String> collectIdentifiers(ASTNode process) {
+    static List<String> collectIdentifiers(ASTNode process) throws CompilationException {
         List<String> ids = new ArrayList<>();
         if (process==null){
             //System.out.println("process =- null");
@@ -327,7 +311,8 @@ public class OperationEvaluator {
      * @param process the ast node that has identifiers in it that are to be collected
      * @param ids     the returned collection
      */
-    private static void collectIdentifiers(ASTNode process, List<String> ids) {
+    private static void collectIdentifiers(ASTNode process, List<String> ids)
+    throws CompilationException {
        //System.out.println("collectIdentifiers in  "+process.myString()+"\n **");
         //System.out.println("collectId "+process.getClass().getSimpleName());
         if (process instanceof IdentifierNode) {
@@ -378,7 +363,10 @@ public class OperationEvaluator {
 //        //System.out.println("NUmber null" + numberNull);
         } else  if (process instanceof FunctionNode) {
             //System.out.println(" FunctionNode");
-            ((FunctionNode) process).getProcesses().forEach(p -> collectIdentifiers(p, ids));
+            for (ASTNode ast: ((FunctionNode) process).getProcesses()){
+                collectIdentifiers(ast,ids);
+            }
+          //  ((FunctionNode) process).getProcesses().forEach(p -> collectIdentifiers(p, ids));
         } else if(process instanceof ProcessRootNode) {
             //System.out.println(" ProcessRootNode");
             collectIdentifiers(((ProcessRootNode)process).getProcess(), ids);
@@ -393,11 +381,13 @@ public class OperationEvaluator {
             collectIdentifiers(((SequenceNode) process).getTo(), ids);
         }  else {
             if (process==null) {
-                System.out.println("collectId operation = null");
+                System.out.println(" collectIdentifiers  process = null");
                 Throwable t = new Throwable();
                 t.printStackTrace();
+                throw new CompilationException(null, "collectIdentifiers  process null "
+                  + ids, null);
             } else {
-                System.out.println(" DO NOT KNOW Node " + process.getName());
+                //System.out.println(" DO NOT KNOW Node " + process.getName());
             }
         }
         //System.out.println("collectIdentifiers " + process.getClass().getSimpleName()+" "+ ids);

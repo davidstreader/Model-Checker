@@ -1,13 +1,11 @@
 package mc.processmodels.automata.operations;
 
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.rits.cloning.Cloner;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-import mc.TraceType;
 import mc.exceptions.CompilationException;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
@@ -18,7 +16,7 @@ import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
 import mc.processmodels.petrinet.operations.PetrinetReachability;
 import mc.compiler.Guard;
-import mc.util.MyAssert;
+import mc.util.expr.MyAssert;
 
 public class SequentialInfixFun {
 
@@ -158,9 +156,14 @@ public class SequentialInfixFun {
   public Petrinet compose(String id, Petrinet n1, Petrinet n2, Guard guard)
     throws CompilationException {
     System.out.println("=>PETRI1 "+ id+" "+n1.getId()+" => "+n2.getId());
-    MyAssert.myAssert(n1.validatePNet("Sequential => input "+n1.getId()+ " valid ="), "=> precondition");
-    MyAssert.myAssert(n2.validatePNet("Sequential => input "+n2.getId()+ " valid ="), "=> precondition");
+    //MyAssert.validate(n1, "Sequential => input "+n1.getId());
+    //MyAssert.validate(n2, "Sequential => input "+n2.getId());
+    MyAssert.validate(n1,"n1 ==> precondition ");
+    MyAssert.validate(n1," ==> n2 precondition ");
 
+ /*     myAssert(n1.validatePNet("Sequential => input "+n1.myString()+ " valid ="), "=> precondition");
+    MyAssert.myAssert(n2.validatePNet("Sequential => input "+n2.myString()+ " valid ="), "=> precondition");
+*/
 
     Petrinet net1 = n1.reId("1");
     Petrinet net2 = n2.reId("2"); // the tag "2" ensures unique ids in nets
@@ -217,24 +220,26 @@ public class SequentialInfixFun {
         for (String e : ends) {
           newend.add(composition.copyRootOrEnd(composition.getPlaces().get(e), ""));
         }
-        //System.out.println("SEQUENTIAL start "+ composition.myString("edge") + "\n");
+        //System.out.println("SEQUENTIAL start "+ composition.myString() + "\n");
         composition.setUpv2o(n1, n2);
         composition.glueOwners(own1, own2); //must only be done once
         composition.gluePlaces(newroot, newend);
-        //System.out.println("\n ***SEQ Glue places OVER \n" + composition.myString() + "\n");
+        //.out.println("\n ***SEQ Glue places OVER \n" + composition.myString() + "\n");
       }
     }
     composition.glueOwners(own1, own2);
     //System.out.println("\ncomp2 "+composition.myString());
 
-    //remove old ends
+    //remove old ends  -- overlapping end sets!
     for (Set<String> eds : oneEnd) {
       //System.out.println("ends for removal " + eds);
+      eds.retainAll(composition.getPlaces().keySet());  //Overlapping
       for (String ed : eds) {
         PetriNetPlace pl = composition.getPlaces().get(ed);
         //System.out.println("Place "+pl.myString());
         Set<PetriNetTransition> trs = pl.pre();
         //System.out.println("trs " + trs.size());
+        trs.retainAll(composition.getTransitions().values()); //Overlapping
         for (PetriNetTransition tr : trs) {
           //System.out.println("tr for Removal " + tr.getId());
           if (composition.getTransitions().containsKey(tr.getId())) {
@@ -250,6 +255,7 @@ public class SequentialInfixFun {
 
     composition.setRootFromStart();
     composition.setEndFromPlace();
+    //System.out.println("comp3 "+composition.myString());
     sequential = PetrinetReachability.removeUnreachableStates(composition);
     //System.out.println("\n=> near end "+sequential.myString());
 
@@ -271,7 +277,7 @@ public class SequentialInfixFun {
     //System.out.println("FINAL => " +sequential.myString());
 
     //MyAssert.myAssert(sequential.validatePNet("Sequential => input "+sequential.getId()+ " valid ="), "=> precondition");
-
+    MyAssert.validate(sequential, "Sequential => output ");
     //System.out.println("=> END " + sequential.myString());
     return sequential;
 

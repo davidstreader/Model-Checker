@@ -24,6 +24,7 @@ import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
 import mc.util.expr.Expression;
+import mc.util.expr.MyAssert;
 
 
 public class AbstractionFunction implements IProcessFunction {
@@ -103,15 +104,16 @@ public class AbstractionFunction implements IProcessFunction {
     boolean cong = flags.contains(Constant.CONGURENT);
     //System.out.println("\n***ABSTRACTION flags " + flags+ "\n"+ startA.myString());
     //System.out.println("\n\nautomata Abs start "+ startA.myString()+ " flags "+flags+ " cong "+cong);
-    startA.validateAutomaton("");
+    //startA.validateAutomaton("");
+    MyAssert.validate(startA,"Abstraction input " );
     //reduce the statspace and remove all loops
     Automaton abstraction =  absMerge(flags,context, startA);
-    abstraction.validateAutomaton("");
+
 
     //System.out.println("\n******\nABS no DUP no Loop\n" + abstraction.myString()+"\n******\n");
 
     observationalSemantics(flags, abstraction, context);
-    abstraction.validateAutomaton("");
+    MyAssert.validate(abstraction,"Abstraction output " );
     //System.out.println("\n*****Abs final \n*****Abs final\n" + abstraction.myString()+"\n");
     return abstraction;
   }
@@ -123,6 +125,8 @@ public class AbstractionFunction implements IProcessFunction {
     List<AutomatonEdge> hiddenEdges = abstraction.getEdges().stream()
       .filter(ed->ed.isHidden() && !ed.getFrom().equalId(ed.getTo()))
       .collect(Collectors.toList());
+    //System.out.println("hiddenEdges "+hiddenEdges.size());
+    //System.out.println("hiddenEdges = "+hiddenEdges.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
     //Construct  edges to replace the unobservable edges
     Set<AutomatonEdge> processesed = new HashSet<>();
     while (!hiddenEdges.isEmpty()) {
@@ -200,6 +204,7 @@ public class AbstractionFunction implements IProcessFunction {
     }
     abstraction.setOwners(ow);
     abstraction.cleanNodeLables();
+    //System.out.println("abs end "+abstraction.myString());
     return abstraction;
   }
 

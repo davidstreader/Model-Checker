@@ -16,7 +16,7 @@ import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
 import mc.processmodels.petrinet.operations.PetrinetReachability;
-import mc.util.MyAssert;
+import mc.util.expr.MyAssert;
 
 //import mc.operations.impl.PetrinetParallelFunction;
 public class OwnersRule {
@@ -56,11 +56,12 @@ public class OwnersRule {
    */
   @SneakyThrows({CompilationException.class})
   public static Petrinet ownersRule(Automaton ain) {
+    if (ain==null) System.out.println("Owners null");
     System.out.println("OwnersRule initial automata " + ain.getId() + "*START ");
     //Throwable t = new Throwable(); t.printStackTrace();
     clean();
-    MyAssert.myAssert(ain.validateAutomaton("Owners Rule input "+ain.getId()+" vlaid = "), "Owners Rule Failure");
-
+    //MyAssert.myAssert(ain.validateAutomaton("Owners Rule input "+ain.getId()+" vlaid = "), "Owners Rule Failure");
+    MyAssert.validate(ain,"Owners Rule input ");
     //assert ain.validateAutomaton("Owners Automaton"): "Owners Rule precondition";
     // 1. to automata A add initial event S*=>A now only one start state.
     Automaton star = Automaton.singleEventAutomata("single", "S*");
@@ -204,7 +205,7 @@ public class OwnersRule {
       build = Petrinet.startNet();
     }
     //build.validatePNet();
-    MyAssert.myAssert(ain.validateAutomaton("Owners Rule output "+build.getId()+" vlaid = "), "Owners Rule Failure");
+    MyAssert.validate(build,"Owners Rule output ");
     //assert build.validatePNet("Owners Net"): "Owners Rule Failure";
     //System.out.println("Owners end with "+build.getId());
     return build;

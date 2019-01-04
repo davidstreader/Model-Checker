@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import lombok.SneakyThrows;
-import mc.Constant;
 import mc.exceptions.CompilationException;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
@@ -16,7 +15,7 @@ import mc.processmodels.petrinet.components.PetriNetEdge;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
 
-import mc.util.MyAssert;
+import mc.util.expr.MyAssert;
 
 /**
  * This holds static methods related to the generation of automata from petrinets.
@@ -71,7 +70,8 @@ public class TokenRule {
     //keeps the id numbers low - op_eval resets Automaton.tagid
     Automaton outputAutomaton = new Automaton(convertFrom.getId(), false);
     //System.out.println("TOKEN RULE  STARTING " + convertFrom.getId());
-    MyAssert.myAssert(convertFrom.validatePNet("Token Rule input "+convertFrom.getId()+ " VALID ="), "Token Rule precondition");
+    //MyAssert.myAssert(convertFrom.validatePNet("Token Rule input "+convertFrom.getId()+ " VALID ="), "Token Rule precondition");
+    MyAssert.validate(convertFrom,"Token Rule precondition Failure");
     //assert convertFrom.validatePNet("GOT YOU"): "Token Rule precondition";
 
     outputAutomaton.setOwners(convertFrom.getOwners());
@@ -104,10 +104,10 @@ public class TokenRule {
     int j = 0; //without these 2 LofC loop never terminates!
     while (!toDo.isEmpty()) {
       if (j++ > stateSizeBound) {
-        System.out.println("\nTokenRule Failure " + convertFrom.myString() + "\nLooping = " + j + "\n");
+        System.out.println("\nTokenRule Failure " + convertFrom.getId() + "\nLooping = " + j + "\n");
         convertFrom.validatePNet();
         outputAutomaton.validateAutomaton();
-        System.out.println("TokenRule Failure " + outputAutomaton.myString() + "tf tf tf \n");
+        //System.out.println("TokenRule Failure " + outputAutomaton.myString() + "tf tf tf \n");
         throw new CompilationException(convertFrom.getClass(), "Token Rule Failure");
 
       } // second LofC  NEVER Called - looks redundent!
@@ -240,7 +240,8 @@ public class TokenRule {
     }
     outputAutomaton.removeDuplicateEdges();  // may occur with broadcast
     outputAutomaton.setEndFromNodes();
-    MyAssert.myAssert(outputAutomaton.validateAutomaton("Token Rule output "+outputAutomaton.getId()+" VALID = "), "Token Rule Failure");
+    //MyAssert.myAssert(outputAutomaton.validateAutomaton("Token Rule output "+outputAutomaton.getId()+" VALID = "), "Token Rule Failure");
+    MyAssert.validate(outputAutomaton,"Token Rule output ");
     // assert outputAutomaton.validateAutomaton():"Token Rule Failure";
     //System.out.println("Token Rule END "+outputAutomaton.myString());
     return outputAutomaton;
@@ -250,7 +251,7 @@ public class TokenRule {
   public static Set<PetriNetTransition> satisfiedTransitions(Multiset<PetriNetPlace> currentMarking) {
     Set<PetriNetTransition> out = post(currentMarking).stream() //88
       //  .filter(transition -> currentMarking.containsAll(transition.pre()))
-      .filter(transition -> currentMarking.containsAll(transition.preNonBlocking())) // drops the optional preplaces
+      .filter(transition -> currentMarking.containsAll(transition.preNotOptional())) // drops the optional preplaces
       .distinct()
       .collect(Collectors.toSet());
     //System.out.println(out.stream().map(x->x.getId()).reduce("satisfied ",(x,y)->x+y+" "));

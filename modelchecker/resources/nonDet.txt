@@ -1,5 +1,5 @@
 processes {
-Z = STOP.
+//Z = STOP.
 //Z1 = ERROR.
 A = a->STOP.
 B = b ->STOP.
@@ -23,17 +23,18 @@ Ala2 = b->a->Ala2| a->STOP.  //Problem Child
 
 }
 
-automata  E, A,B,Al, Bl,  A2,A2l, Ax, Ax1,Ax2, A2c,Ala, Ala1, Ala2.
-//automata Z, A,B,Al,Bl, E,Z, A2,A2l, Ax, Ax1,Ax2, A2c,Ala, Ala1,Ala2.
-
-
-
+operation {
+A ~ A.
+(A[]A) ~ (A[]A).
+ (A[]A)=>A ~ (A[]A)=>A.
+}
 
 equation {
- ((X||Y)=>Z) ~ a2p2a((X||Y)=>Z).
- ((X||Y)[]Z) ~ a2p2a((X||Y)[]Z).
-((X=>Y)[]Z) ~ a2p2a((X=>Y)[]Z).
+(X[]Y)=>Z ~ (Y[]X)=>Z.
 }
+
+
+
 
 
 

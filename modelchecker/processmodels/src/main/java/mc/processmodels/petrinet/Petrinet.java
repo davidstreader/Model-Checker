@@ -212,11 +212,13 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
    */
 
   public static Petrinet endNet() throws CompilationException {
+    //System.out.println("WHY END?");
     return Petrinet.stopNet("", "E");
   }
 
   // called from interpretor when local reference needs to be used
   public static Petrinet stopNet(String ref, String SorE) throws CompilationException {
+    //System.out.println("stopNet "+SorE);
     Petrinet stop = new Petrinet("stop");
     stop.setOwners(new HashSet<>());
     stop.addOwner(DEFAULT_OWNER);
@@ -224,15 +226,17 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
 //?? when are the places added??
     PetriNetPlace p = stop.getPlaces().values().iterator().next();
     if (ref != "") p.addFromRefefances(new HashSet(Collections.singleton(ref)));
-    if (SorE.equals("S")) p.setTerminal(Constant.STOP);
+    if (SorE.equals("S")) {
+      p.setTerminal(Constant.STOP);
+      p.addEndNo(1);
+    }
     else p.setTerminal(Constant.END);
-    p.addEndNo(1);
+
     p.setStart(true);
     p.setOwners(new HashSet<>());
     p.addOwner(DEFAULT_OWNER);
     p.setStartNos(new HashSet<>());
     p.addStartNo(1);
-    p.addEndNo(1);
     stop.setRootPlace(p);
     stop.setEndFromPlace();
     stop.reId("");
@@ -594,11 +598,13 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
   }
 
   public Set<PetriNetPlace> getAllEnds() {
-    //System.out.println("assumes ");
+    //System.out.println("getAllEnds "+ends);
     //Set<PetriNetPlace> ends = new TreeSet<>();
     //places.values().stream().filter(x->x.isSTOP()).collect(Collectors.toSet());
     //System.out.println("ends "+ends+" should all be in places "+ places.keySet());
-    return ends.stream().flatMap(Set::stream).map(x -> places.get(x)).collect(Collectors.toSet());
+    Set<PetriNetPlace> out = ends.stream().flatMap(Set::stream).map(x -> places.get(x)).collect(Collectors.toSet());
+    //System.out.println(out.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
+    return out;
   }
 
   public Set<PetriNetEdge> getFirstEdges() {
@@ -658,66 +664,9 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     return r;
   }
 
-  public boolean validatePNet() throws CompilationException {
-    //System.out.println("Validate ==>>" + myString());
-    boolean ok = true;
-    Set<String> netOwners = getOwners();
-//Validate root and End on Places
-    Set<PetriNetPlace> rtPlaces = places.values().stream().filter(x -> x.isStart()).collect(Collectors.toSet());
-    if (rtPlaces.size() != getAllRoots().size()) {
-      System.out.println("Roots MisMatch");
-      ok = false;
-    }
-    Set<PetriNetPlace> endPlaces = places.values().stream().filter(x -> x.isSTOP()).collect(Collectors.toSet());
-    if (endPlaces.size() != getAllEnds().size()) {
-      System.out.println("Ends MisMatch");
-      ok = false;
-    }
-    for (PetriNetPlace r : getAllRoots()) {
-      if (r == null) {
-        System.out.println("Root null ");
-        ok = false;
-      } else if (!r.isStart()) {
-        System.out.println(r.myString());
-        System.out.println("Root " + r.getId() + " not Start ");
-        ok = false;
-      }
-    }
-    for (PetriNetPlace r : getAllEnds()) {
-      if ((r == null)) {
-        System.out.println("End null ");
-        ok = false;
-      } else if (!r.isSTOP()) {
-        System.out.println(r.myString());
-        System.out.println("End " + r.getId() + " not STOP ");
-        ok = false;
-      }
-    }
-    for (Set<String> end : ends) {
-      Set<String> endOwn = new TreeSet<>();
-      for (String e : end) {
-        Set<String> owns = places.get(e).getOwners();
-        System.out.println(places.get(e).getId() + " -> " + owns);
-        endOwn.addAll(owns);
-      }
-
-      if (!endOwn.equals(netOwners)) {
-        System.out.println("End " + end + " with owners " + endOwn + " BUT netOwn " + netOwners);
-        ok = false;
-      }
-    }
-    for (Set<String> root : roots) {
-      Set<String> endOwn = root.stream().
-        map(x -> places.get(x).getOwners().stream()).
-        flatMap(str -> str).collect(Collectors.toSet());
-      if (!endOwn.equals(netOwners)) {
-        System.out.println("Root " + root + " with owners " + endOwn + " BUT netOwn " + netOwners);
-        ok = false;
-      }
-    }
-
+  public void tidyUpRootAndEndOnPlaces() {
     //Tidy up root and End nos on Places
-    if (ok) {
+
       int rint = 1;
       for (PetriNetPlace pl : places.values()) {
         pl.cleanStart();
@@ -726,6 +675,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
       for (Set<String> rts : getRoots()) {
         for (String key : rts) {
           //System.out.println("root " + key + " -> " + places.get(key).myString());
+          places.get(key).setStart(true);
           places.get(key).getStartNos().add(rint);
         }
         rint++;
@@ -734,100 +684,165 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
       for (Set<String> ends : getEnds()) {
         for (String key : ends) {
           //System.out.println("end " + key + " -> " + places.get(key).myString());
+          places.get(key).setTerminal(Constant.STOP);
           places.get(key).getEndNos().add(rint);
         }
         rint++;
       }
-    }
-    //Back to verifying
-    for (PetriNetPlace p : this.getPlaces().values()) {
-      if (p.isStart() && !rootContains(p)) {
-        //System.out.println(p.getId()+ " StartNos "+ p.getStartNos());
-        Set<Integer> failed = p.getStartNos().stream().
-          filter(x -> (roots.size() < x) || !roots.get(x - 1).contains(p)).collect(Collectors.toSet());
-        if (failed.size() > 0) {
-          System.out.println("**Start " + p.getId() + " is not Root " + failed);
-          ok = false;
-        }
-      }
-    }
-    for (int i = 0; i < roots.size(); i++) {
-      Set<String> fail = roots.get(i);
-      for (String pl : fail) {
-        if (places.get(pl) == null ||
-          !places.get(pl).isStart() ||
-          !places.get(pl).getStartNos().contains(i + 1)) {
-          System.out.println("**Not Start " + places.get(pl).myString() + " index " + (i + 1));
-          ok = false;
-        }
-      }
-    }
 
-
-    for (String k : transitions.keySet()) {
-      PetriNetTransition tr = transitions.get(k);
-      String id = tr.getId();
-      Set<String> trOwn = tr.getOwners();
-      Set<String> inOwn = new TreeSet<>();
-      Set<String> outOwn = new TreeSet<>();
-      if (!id.equals(k)) {
-        System.out.println("transition key " + k + " not trasitionid " + id);
+  }
+  public boolean validatePNet() throws CompilationException {
+    //System.out.println("Validate ==>>" + myString());
+    boolean ok = true;
+    try {
+      Set<String> netOwners = owners; //getOwners();
+//Validate root and End on Places
+      Set<PetriNetPlace> rtPlaces = places.values().stream().filter(x -> x.isStart()).collect(Collectors.toSet());
+      if (rtPlaces.size() != getAllRoots().size()) {
+        System.out.println("Roots MisMatch");
         ok = false;
       }
-      boolean match = true;
-      for (PetriNetEdge ed : tr.getIncoming()) {
-        if (!ed.getTo().getId().equals(id)) {
-          match = false;
-        } else {
-          PetriNetPlace pl = ((PetriNetPlace) ed.getFrom());
-          //System.out.println("in Place " + pl.myString());
-          inOwn.addAll(pl.getOwners());
-          //System.out.println("PreOwn "+pl.getOwners()+" added to "+inOwn);
+      Set<PetriNetPlace> endPlaces = places.values().stream().filter(x -> x.isSTOP()).collect(Collectors.toSet());
+      if (endPlaces.size() != getAllEnds().size()) {
+        System.out.println("Ends MisMatch");
+        ok = false;
+      }
+      for (PetriNetPlace r : getAllRoots()) {
+        if (r == null) {
+          System.out.println("Root null ");
+          ok = false;
+        } else if (!r.isStart()) {
+          System.out.println(r.myString());
+          System.out.println("Root " + r.getId() + " not Start ");
+          ok = false;
         }
       }
-      ok = ok && match;
-      if (!tr.getLabel().equals(Constant.DEADLOCK)) {
-        for (PetriNetEdge ed : tr.getOutgoing()) {
-          if (!ed.getFrom().getId().equals(id)) {
-            System.out.println(" Outgoing transition edge " + ed.myString() + " not matched " + id);
-            match = false;
+      for (PetriNetPlace r : getAllEnds()) {
+        if ((r == null)) {
+          System.out.println("End null ");
+          ok = false;
+        } else if (!r.isSTOP()) {
+          System.out.println(r.myString());
+          System.out.println("End " + r.getId() + " not STOP ");
+          ok = false;
+        }
+      }
+      for (Set<String> end : ends) {
+        System.out.println("ends " + ends);
+        Set<String> endOwn = new TreeSet<>();
+        for (String e : end) {
+          Set<String> owns = places.get(e).getOwners();
+          System.out.println(places.get(e).getId() + " -> " + owns);
+          endOwn.addAll(owns);
+        }
 
-          } else {
-            PetriNetPlace pl = ((PetriNetPlace) ed.getTo());
-            //System.out.println("outPlace "+pl.myString());
-            outOwn.addAll(pl.getOwners());
+        if (!endOwn.equals(netOwners)) {
+          System.out.println("End " + end + " with owners " + endOwn + " BUT netOwn " + netOwners);
+          ok = false;
+        }
+      }
+      for (Set<String> root : roots) {
+        Set<String> endOwn = root.stream().
+          map(x -> places.get(x).getOwners().stream()).
+          flatMap(str -> str).collect(Collectors.toSet());
+        if (!endOwn.equals(netOwners)) {
+          System.out.println("Root " + root + " with owners " + endOwn + " BUT netOwn " + netOwners);
+          ok = false;
+        }
+      }
+
+
+      //Back to verifying
+      for (PetriNetPlace p : this.getPlaces().values()) {
+        if (p.isStart() && !rootContains(p)) {
+          //System.out.println(p.getId()+ " StartNos "+ p.getStartNos());
+          Set<Integer> failed = p.getStartNos().stream().
+            filter(x -> (roots.size() < x) || !roots.get(x - 1).contains(p)).collect(Collectors.toSet());
+          if (failed.size() > 0) {
+            System.out.println("**Start " + p.getId() + " is not Root " + failed);
+            ok = false;
           }
         }
-        if (!isEqual(trOwn, outOwn)) {
-
-          System.out.println("Mismatch Outgoing Owners " + outOwn + " tr " + tr.myString());
-          ok = false;
+      }
+      for (int i = 0; i < roots.size(); i++) {
+        Set<String> fail = roots.get(i);
+        for (String pl : fail) {
+          if (places.get(pl) == null ||
+            !places.get(pl).isStart() ||
+            !places.get(pl).getStartNos().contains(i + 1)) {
+            System.out.println("**Not Start " + places.get(pl).myString() + " index " + (i + 1));
+            ok = false;
+          }
         }
       }
-      ok = ok && match;
-      if (!isEqual(trOwn, inOwn)) {
-        System.out.println("Mismatch Incoming Owners  " + inOwn + " tr " + tr.myString());
-        ok = false;
-      }
-      if (!netOwners.containsAll(trOwn)) {
-        System.out.println("netOwners = " + netOwners + " BUT tr = " + tr.myString());
-        ok = false;
+
+
+      for (String k : transitions.keySet()) {
+        PetriNetTransition tr = transitions.get(k);
+        String id = tr.getId();
+        Set<String> trOwn = tr.getOwners();
+        Set<String> inOwn = new TreeSet<>();
+        Set<String> outOwn = new TreeSet<>();
+        if (!id.equals(k)) {
+          System.out.println("transition key " + k + " not trasitionid " + id);
+          ok = false;
+        }
+        boolean match = true;
+        for (PetriNetEdge ed : tr.getIncoming()) {
+          if (!ed.getTo().getId().equals(id)) {
+            match = false;
+          } else {
+            PetriNetPlace pl = ((PetriNetPlace) ed.getFrom());
+            //System.out.println("in Place " + pl.myString());
+            inOwn.addAll(pl.getOwners());
+            //System.out.println("PreOwn "+pl.getOwners()+" added to "+inOwn);
+          }
+        }
+        ok = ok && match;
+        if (!tr.getLabel().equals(Constant.DEADLOCK)) {
+          for (PetriNetEdge ed : tr.getOutgoing()) {
+            if (!ed.getFrom().getId().equals(id)) {
+              System.out.println(" Outgoing transition edge " + ed.myString() + " not matched " + id);
+              match = false;
+
+            } else {
+              PetriNetPlace pl = ((PetriNetPlace) ed.getTo());
+              //System.out.println("outPlace "+pl.myString());
+              outOwn.addAll(pl.getOwners());
+            }
+          }
+          if (!isEqual(trOwn, outOwn)) {
+
+            System.out.println("Mismatch Outgoing Owners " + outOwn + " tr " + tr.myString());
+            ok = false;
+          }
+        }
+        ok = ok && match;
+        if (!isEqual(trOwn, inOwn)) {
+          System.out.println("Mismatch Incoming Owners  " + inOwn + " tr " + tr.myString());
+          ok = false;
+        }
+        if (!netOwners.containsAll(trOwn)) {
+          System.out.println("netOwners = " + netOwners + " BUT tr = " + tr.myString());
+          ok = false;
+        }
+
       }
 
+
+      for (String s : places.keySet()) {
+        if (!places.get(s).getId().equals(s)) {
+          System.out.println(" Invalid places " + s + " -> " + places.get(s));
+          ok = false;
+          break;
+        }
+      }
+    } catch (Exception e) {
+      System.out.println(e.getMessage()+ " Exception");
+      ok = false;
     }
-
-
-    for (String s : places.keySet()) {
-      if (!places.get(s).getId().equals(s)) {
-        System.out.println(" Invalid places " + s + " -> " + places.get(s));
-        ok = false;
-        break;
-      }
-    }
-
     if (!ok) {//KEEP BOTH  as Exception passed on up to gain info but call stack needed
-      Throwable t = new Throwable();
-      t.printStackTrace();
+      Throwable t = new Throwable();  t.printStackTrace();
       System.out.println("SORT the Petrinet OUT \n" + this.myString() + "\nSORT OUT Pn ABOVE\n");
       throw new CompilationException(getClass(), " invalid petriNet " + this.getId());
     }
@@ -1197,7 +1212,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
   }
 
   public void removePlace(PetriNetPlace place, boolean simple) throws CompilationException {
-
+    //System.out.println("Removing "+place.getId());
     if (!places.containsKey(place.getId())) {
       System.out.println("Cannot remove a place " + place.getId() + " that is not part of the petrinet");
       Throwable t = new Throwable();
@@ -1225,7 +1240,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
             Nrts.add(r);
           }
         }
-        Nroots.add(Nrts);
+        if (Nrts.size()>0) Nroots.add(Nrts);
       }
       setRoots(Nroots);
     }
@@ -1241,7 +1256,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
               Nrts.add(r);
             }
           }
-          Nends.add(Nrts);
+          if (Nrts.size()>0) Nends.add(Nrts);
         }
         setEnds(Nends);
         //System.out.println("Ends "+ends);

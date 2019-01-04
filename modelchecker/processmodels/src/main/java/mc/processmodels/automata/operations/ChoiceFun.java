@@ -9,7 +9,7 @@ import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
 import mc.processmodels.petrinet.operations.PetrinetReachability;
-import mc.util.MyAssert;
+import mc.util.expr.MyAssert;
 
 import java.util.*;
 import java.util.stream.Collectors;

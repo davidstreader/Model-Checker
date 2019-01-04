@@ -37,7 +37,7 @@ public class Nfa2dfaWorks {
     int dfaNodeLabel = 0;
     Automaton nfa = automata[0].copy();// copies nodeId
     nfa = nfa.reId("p");
-    //System.out.println("nfa2dfa START "+nfa.myString());
+    //System.out.println("nfa2dfa START with nfa "+nfa.myString());
     for (AutomatonNode ndn : nfa.getNodes()) {
       // NOT for Galois expaned automata  OK SMART ASS why?
 

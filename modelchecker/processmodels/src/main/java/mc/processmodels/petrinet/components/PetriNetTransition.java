@@ -6,7 +6,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Multiset;
-import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -121,7 +120,7 @@ public class PetriNetTransition extends ProcessModelObject {
         .collect(Collectors.toSet()); */
   }
   
-  public Set<PetriNetPlace> preNonBlocking() {
+  public Set<PetriNetPlace> preNotOptional() {
     return incoming.stream()
             .filter(ed->!ed.getOptional())
             .map(PetriNetEdge::getFrom)
@@ -138,10 +137,10 @@ public class PetriNetTransition extends ProcessModelObject {
       .collect(Collectors.toSet());
   }
   public boolean NonBlockingEqu(PetriNetTransition tr) {
-    Set<String> pre = preNonBlocking().stream().
+    Set<String> pre = preNotOptional().stream().
       map(PetriNetPlace::getId).
       collect(Collectors.toSet());
-    Set<String> trPre = tr.preNonBlocking().stream().
+    Set<String> trPre = tr.preNotOptional().stream().
       map(PetriNetPlace::getId).
       collect(Collectors.toSet());
 

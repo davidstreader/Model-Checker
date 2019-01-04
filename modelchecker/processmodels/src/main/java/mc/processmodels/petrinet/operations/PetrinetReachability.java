@@ -9,7 +9,7 @@ import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetEdge;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
-import mc.util.MyAssert;
+import mc.util.expr.MyAssert;
 
 public final class PetrinetReachability {
 
@@ -19,9 +19,14 @@ public final class PetrinetReachability {
 /*
   Needs to be updated for Broadcast optional edges!
   remove Unreachable and all END called from Parallel Comp with merge==false
+
+  1. First select places to be removed
+  2. then select transitions to be removed
+  3. if a place selected to be removed is a pre place of a required transition
+  do NOT remove it
  */
   public static Petrinet removeUnreachableStates(Petrinet pet, boolean merge) throws CompilationException {
-   //System.out.println("\n UNREACH " + petri.myString());
+   //System.out.println("\n UNREACH " + pet.myString());
 
     Petrinet petri = pet.copy();
     //System.out.println("removeUnreach CHECK END " +petri.getEnds());
@@ -51,7 +56,7 @@ public final class PetrinetReachability {
       Set<PetriNetPlace> currentMarking = toDo.pop();
      //System.out.println("Visited " + currentMarking.stream().map(x -> x.getId() + " ").collect(Collectors.joining()));
       visitedPlaces.addAll(currentMarking);
-
+    //System.out.println("Visited = "+visitedPlaces.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
       if (previouslyVisitedMarking.contains(currentMarking)) {
         continue;
       }
@@ -59,8 +64,7 @@ public final class PetrinetReachability {
       else
       System.out.println("MARKING: "+Petrinet.marking2String(currentMarking)); */
       //System.out.println("Post "+Petrinet.trans2String(post(currentMarking)));
-      Set<PetriNetTransition> satisfiedPostTransitions = satisfiedTransitions(currentMarking); //**
-
+      Set<PetriNetTransition> satisfiedPostTransitions = satisfiedTransitions(currentMarking);
       for (PetriNetTransition transition : satisfiedPostTransitions) {
         //System.out.println(transition.myString()+"  Marking "+Petrinet.marking2String(currentMarking));
         visitedTransitions.add(transition);
@@ -82,23 +86,33 @@ public final class PetrinetReachability {
 
     Set<PetriNetPlace> placesToRemove = new HashSet<>(petri.getPlaces().values());
     placesToRemove.removeAll(visitedPlaces);
-    //System.out.println("All Vis "+Petrinet.marking2String(visitedPlaces));
-    //System.out.println("All Rem "+Petrinet.marking2String(placesToRemove));
     Set<PetriNetTransition> transitionsToRemove = new HashSet<>(petri.getTransitions().values());
     transitionsToRemove.removeAll(visitedTransitions);
+    //3. keep prePlaces that are optional (keeps ownership consistent)
+    Set<PetriNetPlace> keepOpt = new TreeSet<>();
+     for(PetriNetTransition tr : visitedTransitions){
+       for(PetriNetEdge ed: tr.getIncoming()) {
+         if (ed.getOptional()) {
+           keepOpt.add((PetriNetPlace) ed.getFrom());
+         }
+       }
+     }
+    placesToRemove.removeAll(keepOpt);
+
     //System.out.println("removeAll CHECK END " +petri.getEnds());
     for (PetriNetPlace p : placesToRemove) {
       //System.out.println("removeing "+p.myString());
       petri.removePlace(p, merge);  // parallel comp will remove all End
     }
 
-    //System.out.println("Trans to Go "+ transitionsToRemove.stream().map(x->x.getId()) .collect(Collectors.toSet()));
+    //System.out.println("Trans to Go "+ transitionsToRemove.stream().map(x->x.getId()+", ") .collect(Collectors.toSet()));
     for (PetriNetTransition t : transitionsToRemove) {
       petri.removeTransition(t);
     }
     //System.out.println("removeUnreach CHECK END " +petri.getEnds());
     // PROBLEM with optional edges
     if (merge) mergePlaces(petri);  //paralle comp will not merge Places
+    petri.tidyUpRootAndEndOnPlaces();
     //System.out.println("removeUnreach CHECK END " +petri.getEnds());
     MyAssert.myAssert(petri.validatePNet("PetriNet reachability "+petri.getId()+ " valid ="), "Net reachability Failure");
 
@@ -159,16 +173,18 @@ public final class PetrinetReachability {
     }
   return petri;
   }
+  /*
+      look at every transition connected to the input Marking
+        return every transition those transitions that are able to be executed
+   */
   private static Set<PetriNetTransition> satisfiedTransitions(Set<PetriNetPlace> currentMarking) {
     Set<PetriNetTransition> out = new HashSet<>();
     for(PetriNetTransition tr: post(currentMarking)){
-      if (currentMarking.containsAll(tr.pre())) out.add(tr);
+      //System.out.println("tr"+tr.getId()+" preNO "+tr.preNotOptional().stream().map(x->x.getId()+" ").collect(Collectors.joining()));
+      if (currentMarking.containsAll(tr.preNotOptional())) out.add(tr);
     }
+    //System.out.println("Satisfied "+out.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
     return out;
- /*   return post(currentMarking).stream() //**
-      .filter(transition -> currentMarking.containsAll(transition.pre()))
-      .distinct()
-      .collect(Collectors.toSet());*/
   }
 
 
@@ -193,7 +209,7 @@ public final class PetrinetReachability {
   private static Set<PetriNetPlace> peerNonBlocking(PetriNetPlace current) {
 
     Set<PetriNetPlace> union = new HashSet<>(current.postNotOpt().stream()
-      .map(PetriNetTransition::preNonBlocking).flatMap(Set::stream)
+      .map(PetriNetTransition::preNotOptional).flatMap(Set::stream)
       .distinct().collect(Collectors.toSet()));
     //System.out.println("peer "+Petrinet.marking2String(union));
     union.addAll(current.pre().stream()

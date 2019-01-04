@@ -86,16 +86,51 @@ public class QuiescentSingeltonFailureRefinement implements IOperationInfixFunct
     alpha.addAll(a2.getAlphabetFromEdges());
     alpha = alpha.stream().filter(x->x.endsWith(Constant.BROADCASTSinput)).collect(Collectors.toSet());
 
+  /*   WARNING bisim equ dose NOT imply Quiescent trace equality
+       see Twoq2
+       But simplification needed to compress last listeners!
+       hence filter partition to the parts containing and end node
+       and only end node that do not have x!  evelns leaving them
+   */
+    Set<String> labout1 = a1.endNodes().stream().flatMap(x->x.getOutgoingEdges().stream())
+      .map(x->x.getLabel()).filter(x->x.endsWith(Constant.BROADCASTSoutput))
+      .collect(Collectors.toSet());
+    //System.out.println("labout1 = "+labout1+" "+labout1.size());
     SimpFunction simpf = new SimpFunction();
-    addListeningLoops(a1,alpha);
-    List<List<String>> partition = simpf.buildPartition(flags, a1);
-    simpf.mergeNodes(a1, partition, context);
-    addListeningLoops(a2,alpha);
-    partition = simpf.buildPartition(flags, a2);
-    simpf.mergeNodes(a2, partition, context);
-
+  //  if (labout1.size()==0) {
+      addListeningLoops(a1, alpha);
+      List<List<String>> partition = simpf.buildPartition(flags, a1);
+      //System.out.println("partition 1 " + partition);
+/*
+      List<List<String>> parts = new ArrayList<>();
+      for (List<String> part : partition) {
+        part.retainAll(a1.endNodes());
+        if (part.size() > 0) parts.add(part);
+      }
+      //System.out.println("parts 1 " + parts);
+*/
+      simpf.mergeNodes(a1, partition, context);
+  //  }
+    Set<String> labout2 = a2.endNodes().stream().flatMap(x->x.getOutgoingEdges().stream())
+      .map(x->x.getLabel()).filter(x->x.endsWith(Constant.BROADCASTSoutput))
+      .collect(Collectors.toSet());
+    //System.out.println("labout2 = "+labout2+" "+labout2.size());
+  //  if (labout2.size()==0) {
+      addListeningLoops(a2, alpha);
+      List<List<String>> partition2 = simpf.buildPartition(flags, a2);
+      //System.out.println("partition 2 " + partition2);
+/*      List<List<String>> parts2 = new ArrayList<>();
+      for (List<String> part : partition2) {
+        part.retainAll(a2.endNodes());
+        if (part.size() > 0) parts2.add(part);
+      }
+      //System.out.println("parts 2 " + parts2);
+*/
+      simpf.mergeNodes(a2, partition2, context);
+   // }
     //System.out.println("a1 "+a1.myString());
     //System.out.println("a2 "+a2.myString());
+
   /*
      Finally build dfa and evaluate
    */
@@ -134,7 +169,7 @@ public class QuiescentSingeltonFailureRefinement implements IOperationInfixFunct
   First filter out any non Quiescent nfa node
    if some Quiesctent  nodes the intersection will have Quiescent event
    and the nonQuiescent nodes will have been ignored.
-   if all NonQuiescent then empth set will be empty.
+   if all NonQuiescent then the set will be empty.
  */
 
   private List<Set<String>> refusalWrapped(Set<AutomatonNode> nds, boolean cong){
@@ -194,8 +229,10 @@ public class QuiescentSingeltonFailureRefinement implements IOperationInfixFunct
       //System.out.println(" Quiescent FRIG  true");
       out = true;
     } else if (s1.get(0).contains(Constant.Quiescent) &&
-      !s2.get(0).contains(Constant.Quiescent)) {  //s2 can refuse nothing
+      !s2.get(0).contains(Constant.Quiescent)) {  //NEEDED ns2 can refuse nothing
       //System.out.println(" Quiescent FRIG false");
+      Set<String> err = s2.get(1).stream().filter(x->x.endsWith(Constant.BROADCASTSoutput)).collect(Collectors.toSet());
+      error.error = Constant.Quiescent +" or "+ err;
       out = false;
     } else {
       //System.out.println("small "+small);
@@ -212,7 +249,7 @@ public class QuiescentSingeltonFailureRefinement implements IOperationInfixFunct
             break;
           }
         }
-      } else {
+      } else { //not cong
         for (String lab : s2.get(0)) {
           if (Constant.external(lab)) continue;
           if (!s1.get(0).contains(lab)) {

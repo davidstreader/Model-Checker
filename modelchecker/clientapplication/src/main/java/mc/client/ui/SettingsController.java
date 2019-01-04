@@ -9,7 +9,7 @@ import javafx.scene.control.Slider;
 import javafx.stage.Window;
 import lombok.Setter;
 import mc.Constant;
-import mc.util.MyAssert;
+import mc.util.expr.MyAssert;
 
 
 import java.net.URL;

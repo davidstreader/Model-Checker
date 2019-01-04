@@ -81,6 +81,7 @@ public class TraceWork {
           dfas.add(newdfa);
         } catch (CompilationException e) {
           System.out.println("PINGO" + e.toString());
+          throw e;
         }
       }
       Automaton a1 = (Automaton) dfas.get(0);
@@ -99,6 +100,8 @@ public class TraceWork {
       //System.out.println("a1N\n" + ready2String(a2Next.getMap()));
       //System.out.println("a2N\n" + ready2String(a1Next.getMap()));
       //Recursive  Algorithm - a2Next.getMap() is BOTH the readset to be checked and where to go next
+      Stack<String> tr = new Stack<>();
+
       b = traceSubset(a1, a2, new NodePair(r1, r2), a1Next.getMap(), a2Next.getMap(),
         new ArrayList<>(), cong, trace, tt, eval);
       //System.out.println("top traceSubset returns "+b+ "  trace "+trace);
@@ -135,13 +138,13 @@ public class TraceWork {
                               Stack<String> trace,  //output trace investigating for error messges
                               TraceType tt,
                               SubSetEval evalSubset  //look at TraceRefinment, QuiescentRefinement
-     ) {
+     ) throws CompilationException {
     boolean ok = true;
     //System.out.println("traceSubset start with nodePair " + np.myString() + "  tt " + tt);
     for (NodePair n : processed) {
       if (n.getFirst().getId().equals(np.getFirst().getId()) &&
         n.getSecond().getId().equals(np.getSecond().getId())) {
-        //System.out.println(np.myString() + "  Already processed Returns true");
+        //System.out.println(" Already processed but trace = "+trace);
         return true;
       }
     }
@@ -173,11 +176,13 @@ public class TraceWork {
           //System.out.println("ERROR ERROR ");
           Throwable t = new Throwable();
           t.printStackTrace();
-          return false;
+          throw new CompilationException(this.getClass(),"ERROR in TRACEWORKS");
+          //return false;
         } else if (nd1 == null) {
           //System.out.println(dfa1.getId() + " 1 cannot match event " + lab + " that " + dfa2.getId() + " 2 performs");
           trace.push(lab);
           ok = false;
+          //System.out.println("Tw 183 ok "+ok+"  trace " + trace);
           break;
           //return false; // 1 cannot match an event from 2! hence 2 not SUB 1
         }
@@ -191,13 +196,13 @@ public class TraceWork {
       } //END of for loop
       //System.out.println("2ok "+ok);
     } else {
-      /*System.out.println(np.myString() + " returns false " + dfa2.getNode2ReadySets().get(np.second) +
-        " NOTsubset " + dfa1.getNode2ReadySets().get(np.first)+"  error "+error.error); */
       trace.push(error.error);
+      //System.out.println(np.myString() + " TRACEWORKS 2 \\subseteq 1 is  false 2 " + dfa2.getNode2ReadySets().get(np.second) +
+      //  " NOTsubset 1 " + dfa1.getNode2ReadySets().get(np.first)+"  trace "+trace);
       ok = false;
       //System.out.println("3ok "+ok);
     }
-    //System.out.println(np.myString() + "Tw 200 traceSubset " + np.myString() + " trace " + trace + " returns ok " + ok);
+    //System.out.println(np.myString() + "traceSubset end with trace = " + trace + " ok = " + ok);
     return ok;
   }
 

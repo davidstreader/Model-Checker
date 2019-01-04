@@ -161,7 +161,7 @@ public class ColouringUtil {
     if (ccs.size()==0) ccs.add(new ColourComponent(Constant.ERROR, ERROR_COLOUR));//Dec18
 
     Collections.sort(ccs);
-   // //System.out.println("buildpi "+ nd.getId()+" "+  CCSString(ccs));
+   //System.out.println("buildpi "+ nd.getId()+" "+  CCSString(ccs));
     return new ColourPi(ccs);
   }
 

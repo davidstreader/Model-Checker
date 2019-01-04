@@ -1,7 +1,5 @@
 package mc.processmodels.automata.operations;
 
-import com.google.common.collect.Iterables;
-
 import java.util.*;
 import java.util.stream.Collectors;
 import lombok.SneakyThrows;
@@ -12,7 +10,7 @@ import mc.processmodels.petrinet.components.PetriNetEdge;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
 import mc.processmodels.petrinet.operations.PetrinetReachability;
-import mc.util.MyAssert;
+import mc.util.expr.MyAssert;
 
 public class PetrinetParallelFunction  {
 
@@ -29,9 +27,10 @@ public class PetrinetParallelFunction  {
     Petrinet p2 = pi2.reId("2");
     List<Set<String>> newEnds = buildEnds(p1.getEnds(),p2.getEnds());
     p1.rebuildAlphabet(); p2.rebuildAlphabet();
-    MyAssert.myAssert(p1.validatePNet("Parallel || input "+p1.getId()+ " valid ="), "|| precondition Failure");
-    MyAssert.myAssert(p2.validatePNet("Parallel || input "+p2.getId()+ " valid ="), "|| precondition Failure");
-
+    //MyAssert.myAssert(p1.validatePNet("Parallel || input "+p1.getId()+ " valid ="), "|| precondition Failure");
+    //MyAssert.myAssert(p2.validatePNet("Parallel || input "+p2.getId()+ " valid ="), "|| precondition Failure");
+    MyAssert.validate(p1,"|| precondition Failure");
+    MyAssert.validate(p2,"|| precondition Failure");
     System.out.println("     PETRINET PARALLELFUNCTION"+" "+p1.getId()+" ||"+flags+" "+p2.getId());
 
    //builds synchronisedActions set
@@ -60,9 +59,10 @@ public class PetrinetParallelFunction  {
 
     composition = PetrinetReachability.removeUnreachableStates(composition, false);
     //System.out.println("  synced  \n "+ composition.myString("edges"));
-
+    // One end of a pair removed
      composition.reId("");
-    MyAssert.myAssert(composition.validatePNet("Parallel || output "+composition.getId()+ " valid ="), "||  Failure");
+    //MyAssert.myAssert(composition.validatePNet("Parallel || output "+composition.getId()+ " valid ="), "||  Failure");
+    MyAssert.validate(composition,"|| output Failure");
 
     //System.out.println("\n   PAR end "+composition.myString());
     return composition;

@@ -17,6 +17,7 @@ import mc.exceptions.CompilationException;
 import mc.processmodels.ProcessModel;
 import mc.processmodels.ProcessModelObject;
 import mc.processmodels.ProcessType;
+import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.util.Location;
 import mc.util.expr.Expression;
 
@@ -62,6 +63,9 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     for (String nd : e) {
       end.add(nd);
     }
+  }
+  public Set<AutomatonNode> endNodes() {
+    return end.stream().map(x->nodeMap.get(x)).collect(Collectors.toSet());
   }
 
   private Map<String, AutomatonNode> nodeMap;
@@ -233,7 +237,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
         System.out.println("SORT the Automaton OUT \n" + this.myString() + "\nSORT OUT AUT ABOVE\n");
         throw new CompilationException(getClass()," invalid Automaton "+ this.getId());
       } else {
-        System.out.println(this.getId()+ " is valid");
+        //System.out.println(this.getId()+ " is valid");
       }
      // System.out.println(this.getId()+ " is valid = "+ok);
     return ok;

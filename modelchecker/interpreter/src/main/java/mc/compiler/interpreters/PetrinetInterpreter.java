@@ -653,6 +653,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
 
   // current place is in petri Just set it as terminal
   private Petrinet interpretTerminal(TerminalNode term) throws CompilationException {
+    System.out.println("Terminal"+term.myString());
     if (term.getTerminal().equals(Constant.STOP))
       return Petrinet.stopNet();
     else if (term.getTerminal().equals(Constant.END))
