@@ -86,10 +86,15 @@ public class TraceWork {
       }
       Automaton a1 = (Automaton) dfas.get(0);
       Automaton a2 = (Automaton) dfas.get(1);
+      System.out.println("TwX dfa a1 "+a1.myString());
+      System.out.println("TwX dfa a2 "+a2.myString());
+
       //System.out.println("Q Refinement type " + tt + " flags " + flags + " 1 = " + a1.getId() + " 2 = " + a2.getId());
 //Both dfas are built
       a1Next = build_readyMap(a1, tt, cong); //needed to control the simulation
       a2Next = build_readyMap(a2, tt, cong);
+      System.out.println("a1Next "+a1Next.myString());
+      System.out.println("a2Next "+a2Next.myString());
       //The nfas are anotated with Ready sets
       //System.out.println(a2.myString());
       AutomatonNode r1 = (AutomatonNode) a1.getRoot().toArray()[0];
@@ -102,9 +107,11 @@ public class TraceWork {
       //Recursive  Algorithm - a2Next.getMap() is BOTH the readset to be checked and where to go next
       Stack<String> tr = new Stack<>();
 
+        System.out.println("Tw dfa a1 "+a1.myString());
+        System.out.println("Tw dfa a2 "+a2.myString());
       b = traceSubset(a1, a2, new NodePair(r1, r2), a1Next.getMap(), a2Next.getMap(),
         new ArrayList<>(), cong, trace, tt, eval);
-      //System.out.println("top traceSubset returns "+b+ "  trace "+trace);
+      System.out.println("top traceSubset returns "+b+ "  trace "+trace);
       return b;
     }
     //System.out.print("\nTrace semantics not defined for type " + processModels.iterator().next().getClass() + "\n");
@@ -140,7 +147,7 @@ public class TraceWork {
                               SubSetEval evalSubset  //look at TraceRefinment, QuiescentRefinement
      ) throws CompilationException {
     boolean ok = true;
-    //System.out.println("traceSubset start with nodePair " + np.myString() + "  tt " + tt);
+    System.out.println("traceSubset start with nodePair " + np.myString() + "  tt " + tt);
     for (NodePair n : processed) {
       if (n.getFirst().getId().equals(np.getFirst().getId()) &&
         n.getSecond().getId().equals(np.getSecond().getId())) {

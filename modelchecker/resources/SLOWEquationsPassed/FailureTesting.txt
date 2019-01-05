@@ -7,6 +7,8 @@ Tbas = b->a->(start->STOP[]stop->STOP).
 Tabs = a->b->(start->STOP[]stop->STOP).
 Tbbs = b->b->(start->STOP[]stop->STOP).
 
+A = a->STOP.
+B = b->STOP.
 Loa = a->Loa.
 Lob = b->Lob.
 Loab = a->b->Loab.
@@ -88,10 +90,21 @@ Stop = stop->STOP.
 Start = start->STOP.
 }
 Zoo:{
+
+ZL = ((Dx:Pro=>Stop:Flags)[]Start:Flags)||{a,b,stop,start}Twoaa:Test.
+ZR =((Twoabs:Pro=>Stop:Flags)[]Start:Flags)||{a,b,stop,start}Twoaa:Test.
 }
 }
 
 operation {
+ZL <t{cong} ZR.  
+//ZR <t{cong} ZL.
+
+ZL <t ZR.
+//Dx:Pro <f{cong} Twoabs:Pro.
+
+//((E3:Pro=>Stop:Flags)[]Start:Flags)||{a,b,stop,start}Taas <t{cong}
+ //   ((Twoaas:Pro=>Stop:Flags)[]Start:Flags)||{a,b,stop,start}Taas . 
 }
 
 equation {
@@ -104,24 +117,29 @@ Y:Pro <f{cong} Z:Pro ==> forall{X:Test} (
     ((Z:Pro=>Stop:Flags)[]Start:Flags)||{a,b,stop,start}X  
                 )  ==> Y:Pro <f{cong} Z:Pro. 
 
-Y:Pro <f Z:Pro ==> forall{X:Test} (X||{a,b}Y:Pro <t X||{a,b}Z:Pro).
-forall{X:Test} (X||{a,b}Y:Pro <t X||{a,b}Z:Pro) ==> Y:Pro <f Z:Pro.
+
+//Y:Pro <f Z:Pro ==> forall{X:Test} (X||{a,b}Y:Pro <t X||{a,b}Z:Pro).
+//forall{X:Test} (X||{a,b}Y:Pro <t X||{a,b}Z:Pro) ==> Y:Pro <f Z:Pro.
 }
 
 
-/*
-##Equation Results##
-((Y:Pro<f[cong]Z:Pro) ==> forAll[X:Test]((((Y:Pro=>Stop:Flags)[]Start:Flags)||[a, b, stop, start]X:Test)<t[cong](((Z:Pro=>Stop:Flags)[]Start:Flags)||[a, b, stop, start]X:Test)))
-	Simulations passed: 1521/1521 (implies short circuit ass/conc 1466/0) 
-(forAll[X:Test]((((Y:Pro=>Stop:Flags)[]Start:Flags)||[a, b, stop, start]X:Test)<t[cong](((Z:Pro=>Stop:Flags)[]Start:Flags)||[a, b, stop, start]X:Test)) ==> (Y:Pro<f[cong]Z:Pro))
-	Simulations passed: 1521/1521 (implies short circuit ass/conc 0/55) 
-((Y:Pro<f Z:Pro) ==> forAll[X:Test]((X:Test||[a, b]Y:Pro)<t (X:Test||[a, b]Z:Pro)))
-	Simulations passed: 1521/1521 (implies short circuit ass/conc 1438/0) 
-(forAll[X:Test]((X:Test||[a, b]Y:Pro)<t (X:Test||[a, b]Z:Pro)) ==> (Y:Pro<f Z:Pro))
-	Simulations passed: 1521/1521 (implies short circuit ass/conc 0/83) 
+/***  ((Y:Pro<f[cong]Z:Pro) ==> forAll[X:Test]((((Y:Pro=>Stop:Flags)[]Start:Flags)||[a, b, stop, start]X:Test)<t[cong](((Z:Pro=>Stop:Flags)[]Start:Flags)||[a, b, stop, start]X:Test)))
+        Simulations Passed  105/1521 (implies short circuit ass/conc 98/0)   [true ==> false, Forall fail, ((((Y:Pro=>Stop:Flags)[]Start:Flags)||[a, b, stop, start]X:Test)<t[cong](((Z:Pro=>Stop:Flags)[]Start:Flags)||[a, b, stop, start]X:Test)) trace = [[start], a, a], var X:Test->Taas, ,  free Y:Pro->E3, Z:Pro->Twoaas, ]
+**  (forAll[X:Test]((((Y:Pro=>Stop:Flags)[]Start:Flags)||[a, b, stop, start]X:Test)<t[cong](((Z:Pro=>Stop:Flags)[]Start:Flags)||[a, b, stop, start]X:Test)) ==> (Y:Pro<f[cong]Z:Pro))
+        Simulations Passed  10/1521 (implies short circuit ass/conc 0/1)   [true ==> false, (Y:Pro<f[cong]Z:Pro) trace = [Ref[b]], var Y:Pro->Labsa, Z:Pro->Twoabs, ]
+**  ((Y:Pro<f Z:Pro) ==> forAll[X:Test]((X:Test||[a, b]Y:Pro)<t (X:Test||[a, b]Z:Pro)))
+        Simulations Passed  1521/1521 (implies short circuit ass/conc 1438/0) 
 Compiling completed!
-Tue Dec 04 09:00:34 NZDT 2018
+Sat Jan 05 08:20:53 NZDT 2019**  (forAll[X:Test]((X:Test||[a, b]Y:Pro)<t (X:Test||[a, b]Z:Pro)) ==> (Y:Pro<f Z:Pro))
+        Simulations Passed  1521/1521 (implies short circuit ass/conc 0/83) 
+**     ##Equations## 3157/6084
 */
+
+
+
+
+
+
 
 
 

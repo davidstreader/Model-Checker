@@ -765,7 +765,9 @@ public class AbstractionFunction implements IProcessFunction {
    */
   public Automaton GaloisBCabs(String id, Set<String> flags, Context context, Automaton ain)
     throws CompilationException {
-    //System.out.println("GaloisBCabs START "+ain.myString());
+    System.out.println("GaloisBCabs START "+flags);
+    flags = new TreeSet<>();
+    System.out.println("GaloisBCabs START "+flags);
     Automaton a = ain.copy();
     int newLabelNode = a.getNodeCount() + 1;
     //System.out.println("GaloisBCabs COPY "+ain.myString());

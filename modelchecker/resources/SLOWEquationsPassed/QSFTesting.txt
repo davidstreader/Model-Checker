@@ -227,16 +227,16 @@ Twoq2 <qsf{cong} Twoax.
 equation {
 
 // BELOW Working  
-/*
+
 Y:Pro <qsf Z:Pro ==>Y:Pro <q Z:Pro.  
 
 Y:Pro <qsf{cong} Z:Pro ==>Y:Pro <qsf Z:Pro.
 Y:Pro <qsf{cong} Z:Pro ==>Y:Pro <q{cong} Z:Pro. 
  
-*/
+
 forall{X:Test} ((((Y:Pro[]Other:Zoo)=>Next:Zoo)||{a!,b!,x!,y!,other!,next!}X) <q{cong} (((Z:Pro[]Other:Zoo)=>Next:Zoo)||{a!,b!,x!,y!,other!,next!} X)) ==> Y:Pro<qsf{cong}Z:Pro.
 
-/*
+
 Y:Pro<qsf{cong}Z:Pro  ==>  forall{X:Test} ((((Y:Pro[]Other:Zoo)=>Next:Zoo)||{a!,b!,x!,y!,other!,next!}X) <q{cong} (((Z:Pro[]Other:Zoo)=>Next:Zoo)||{a!,b!,x!,y!,other!,next!} X)).
 
 forall{X:Test} ((X||{a!,b!,x!,y!}Y:Pro) <q (X||{a!,b!,x!,y!}Z:Pro)) ==> Y:Pro<qsf Z:Pro.
@@ -244,15 +244,32 @@ forall{X:Test} ((X||{a!,b!,x!,y!}Y:Pro) <q (X||{a!,b!,x!,y!}Z:Pro)) ==> Y:Pro<qs
 Y:Pro <qsf Z:Pro ==> forall{X:Test} (X||{a!,b!,x!,y!}Y:Pro <q X||{a!,b!,x!,y!}Z:Pro).
 
 
-*/
+
 } 
 
 /*
-mc.exceptions.CompilationException: PetrinetException: PetrinetException: PetrinetException:  invalid petriNet Other23569Zr781011 bound X:Test Lopa, 
- globalOp (forAll[X 
-:Test]((((X:Test[]Other:Zoo)||[a!, y!, x!, b!]Y:Pro)=>Next:Zoo)<q[cong](((X:Test[]Other:Zoo)||[a!, y!, x!, b!]Z:Pro)=>Next:Zoo)) ==> (Y:Pro<qsf[cong]Z:Pro))
- free Y:Pro Oab, Z:Pro Oab, 
+**      ##Operations  Starting##
+**    (Twoq2:*<qsf[cong]Twoax:*) true   
+**    ((((Twoq2:Pro[]Other:Zoo)=>Next:Zoo)||[a!, next!, y!, x!, other!, b!]Aab:Test)<q[cong](((Twoax:Pro[]Other:Zoo)=>Next:Zoo)||[a!, next!, y!, x!, other!, b!]Aab:Test)) true   
+**     ##Equations  Starting##
+**  ((Y:Pro<qsf Z:Pro) ==> (Y:Pro<q Z:Pro))
+        Simulations Passed  7744/7744 (implies short circuit ass/conc 6185/0) 
+**  ((Y:Pro<qsf[cong]Z:Pro) ==> (Y:Pro<qsf Z:Pro))
+        Simulations Passed  7744/7744 (implies short circuit ass/conc 7488/0) 
+**  ((Y:Pro<qsf[cong]Z:Pro) ==> (Y:Pro<q[cong]Z:Pro))
+        Simulations Passed  7744/7744 (implies short circuit ass/conc 7488/0) 
+**  (forAll[X:Test]((((Y:Pro[]Other:Zoo)=>Next:Zoo)||[a!, next!, y!, x!, other!, b!]X:Test)<q[cong](((Z:Pro[]Other:Zoo)=>Next:Zoo)||[a!, next!, y!, x!, other!, b!]X:Test)) ==> (Y:Pro<qsf[cong]Z:Pro))
+        Simulations Passed  7744/7744 (implies short circuit ass/conc 0/256) 
+**  ((Y:Pro<qsf[cong]Z:Pro) ==> forAll[X:Test]((((Y:Pro[]Other:Zoo)=>Next:Zoo)||[a!, next!, y!, x!, other!, b!]X:Test)<q[cong](((Z:Pro[]Other:Zoo)=>Next:Zoo)||[a!, next!, y!, x!, other!, b!]X:Test)))
+        Simulations Passed  7744/7744 (implies short circuit ass/conc 7488/0) 
+**  (forAll[X:Test]((X:Test||[a!, y!, x!, b!]Y:Pro)<q (X:Test||[a!, y!, x!, b!]Z:Pro)) ==> (Y:Pro<qsf Z:Pro))
+        Simulations Passed  7744/7744 (implies short circuit ass/conc 0/1559) 
+Compiling completed!
+Sat Jan 05 11:30:30 NZDT 2019**  ((Y:Pro<qsf Z:Pro) ==> forAll[X:Test]((X:Test||[a!, y!, x!, b!]Y:Pro)<q (X:Test||[a!, y!, x!, b!]Z:Pro)))
+        Simulations Passed  7744/7744 (implies short circuit ass/conc 6185/0) 
+**     ##Equations## 54208/54208 
 */
+
 
 
 

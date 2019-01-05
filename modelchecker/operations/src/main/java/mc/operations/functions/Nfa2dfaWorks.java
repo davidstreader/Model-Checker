@@ -36,6 +36,15 @@ public class Nfa2dfaWorks {
     assert automata.length == 1;
     int dfaNodeLabel = 0;
     Automaton nfa = automata[0].copy();// copies nodeId
+    //empty traces needed to trace semantics  NOT sure of effect on other semantics
+    //  END added for complete trace
+    for (AutomatonNode rt :nfa.getRoot()){
+      if (rt.getOutgoingEdges().size()==0){
+        AutomatonNode zomNd1 = nfa.getDeadNode("_zom1");
+        nfa.addEdge(Constant.EPSILON, rt, zomNd1, null, true, false);
+      }
+    }
+
     nfa = nfa.reId("p");
     //System.out.println("nfa2dfa START with nfa "+nfa.myString());
     for (AutomatonNode ndn : nfa.getNodes()) {
@@ -65,12 +74,17 @@ public class Nfa2dfaWorks {
           if (ndn.isSTOP()) {
             nfa.addEdge(Constant.STOP, ndn, deadNd, null, true, false);
           }
+          if (ndn.isStartNode()) {
+            AutomatonNode zomNd2 = nfa.getDeadNode("_zom2");
+            nfa.addEdge(Constant.Start, ndn, zomNd2, null, true, false);
+          }
+
         }
 
-        //if (tt.equals(TraceType.CompleteTrace) && ndn.isERROR()) {
-        //  nfa.addEdge(Constant.ERROR, ndn, nfa.deadNode(), null, true, false);
-        //  //  nfa.addEdge(Constant.END, ndn, nfa.deadNode(), null, true, false);
-        //}
+        if (tt.equals(TraceType.CompleteTrace) && ndn.isEND()) {
+          //nfa.addEdge(Constant.ERROR, ndn, nfa.deadNode(), null, true, false);
+          nfa.addEdge(Constant.END, ndn, nfa.deadNode(), null, true, false);
+        }
 
       } else { //NOT cong
         if (tt.equals(TraceType.CompleteTrace) && (ndn.isSTOP() || ndn.isERROR())) {

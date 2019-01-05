@@ -169,6 +169,10 @@ public class AutomatonNode extends ProcessModelObject implements Comparable<Auto
   public boolean isERROR() {
     return this.errorNode;
   }
+  public boolean isEND() {
+    if (getOutgoingEdges().size()==0 && !isSTOP()) return true;
+    else  return false;
+  }
 
   public boolean isExternal() {
     return isERROR() || isSTOP() || isStartNode();

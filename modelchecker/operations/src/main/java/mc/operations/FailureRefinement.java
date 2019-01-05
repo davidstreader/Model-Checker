@@ -71,7 +71,7 @@ public class FailureRefinement implements IOperationInfixFunction {
       }
     }
     List<Set<String>> tmp = correction(acceptance);
-    //System.out.println("Active correction "+tmp);
+    //System.out.println("buildAsets output "+ nodes.stream().map(x->x.getId()+" ").collect(Collectors.joining()) +" -> "+tmp);
     return tmp;
   }
   //copied from Acceptance Graph
@@ -114,7 +114,7 @@ public class FailureRefinement implements IOperationInfixFunction {
  */
   public  boolean refusalSubSet(List<Set<String>> a1, List<Set<String>> a2, boolean cong, ErrorMessage error) {
 
-    //System.out.println("\nrefusalSubSet");
+    boolean b = true;
 
     Set<String> a1Union = new TreeSet<>();
     for (Set<String> s: a1) {
@@ -128,21 +128,23 @@ public class FailureRefinement implements IOperationInfixFunction {
     a1Union = a1Union.stream().distinct().collect(Collectors.toSet());
     a2Union = a2Union.stream().distinct().collect(Collectors.toSet());
     Set<String> alpha = new TreeSet<>();
-    alpha.addAll(a1Union);
-    alpha.addAll(a2Union);
+    //alpha.addAll(a1Union);
+    //alpha.addAll(a2Union);
     //See Return to Root in Cribsheet
-    a2Union = a2Union.stream().filter(x->!Constant.externalOrEND(x)).collect(Collectors.toSet());
-
+    if (!cong) {
+      a2Union = a2Union.stream().filter(x -> !Constant.externalOrEND(x)).collect(Collectors.toSet());
+    }
     //System.out.println("is a2U "+a2Union+"  a sub set of a1U "+a1Union);
     if (!a1Union.containsAll(a2Union)) {
       a2Union.removeAll(a1Union);    //the problem Acceptance set
-      alpha.removeAll(a2Union);      //the problem Refusal set
-      error.error = "S"+alpha.toString();
+      //alpha.removeAll(a2Union);      //the problem Refusal set
+      error.error = "Acpt"+a2Union; //"R"+alpha.toString()+;
       //System.out.println("failing "+alpha);
-      return false;
+      b =  false;
     }
    // if (cong && !equivExternal(a1Union,a2Union)) return false;
-    return true;
+    //System.out.println(a1+" subset "+a2+"  "+b);
+    return b;
   }
 
   /*  a2 subRefusal a1

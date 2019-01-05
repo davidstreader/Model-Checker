@@ -142,16 +142,23 @@ Melg = e->STOP|g^->Melg.
 }
 
 Zoo:{ 
-TFA1 = fap2bc{b,c}(A1:AP).
-TFA3 = fap2bc{b,c}(A3:AP).
-TA1 = fap2bc(A1:AP).
-TA3 = fap2bc(A3:AP).
+Z3 = A3:AP.
+Z1 = A1:AP.
+Y3 = simp(abs(fap2bc{a,b,c}(A3:AP))).
+Y1 = simp(abs(fap2bc{a,b,c}(A1:AP))). 
+
+X3 = fap2bc{a,b,c}(A3:AP).
+X1 = fap2bc{a,b,c}(A1:AP). 
 
 }
 }
 operation{
-
-
+A3:AP <f{cong}A1:AP.
+//A1:AP <f{cong}A3:AP.
+simp{cong}(abs{cong}(fap2bc{a,b,c}(A3:AP))) <qsf{cong} simp{cong}(abs{cong}(fap2bc{a,b,c}(A1:AP))). 
+simp{cong}(abs(fap2bc{a,b,c}(A3:AP))) <qsf{cong} simp{cong}(abs(fap2bc{a,b,c}(A1:AP))). 
+simp(abs(fap2bc{a,b,c}(A3:AP))) <qsf{cong} simp(abs(fap2bc{a,b,c}(A1:AP))). 
+//simp{cong}(abs(fap2bc{a,b,c}(A1:AP))) <qsf{cong} simp{cong}(abs(fap2bc{a,b,c}(A3:AP))). 
 }
 
 equation {
@@ -160,6 +167,8 @@ equation {
 Nice idea but defining Y:BC Broadcast processes of interest is VERY problematic
 fap2bc(X:Test) <qsf Y:BC ==> X:Test <f revap2bc(Y:BC)
 */
+
+ // Non Cong
 
  X:AP ~   simp(abs(revap2bc(fap2bc{b,c}(X:AP)))). 
 
@@ -179,65 +188,33 @@ X:Mx <f Y:Mx ==>
 simp(abs(revap2bc(fap2bc{g,h}(X:Mx)))) <f simp(abs(revap2bc(fap2bc{g,h}(Y:Mx)))). 
 
 
- /*
+ 
 
- X:AP <f{cong}   simp(abs(revap2bc(fap2bc{b,c}(X:AP)))). 
- simp(abs(revap2bc(fap2bc{b,c}(X:AP)))) <f{cong}  X:AP . 
+ X:AP <f{cong}   simp{cong}(abs(revap2bc(fap2bc{b,c}(X:AP)))). 
 
-
-abs(fap2bc{b,c}(revap2bc(Y:BC))) <qsf Y:BC. 
-abs(fap2bc{b,c}(revap2bc(Y:BC))) <qsf{cong} Y:BC. 
-
-X:AP <f  simp(abs(revap2bc(fap2bc{b,c}(X:AP)))).
-X:AP <f{cong}  simp(abs(revap2bc(fap2bc{b,c}(X:AP)))).
-X:AP <f Y:AP ==> fap2bc{b,c}(X:AP) <qsf fap2bc{b,c}(Y:AP).  
+ simp{cong}(abs(revap2bc(fap2bc{b,c}(X:AP)))) <f{cong}  X:AP . 
 
 
-Y:BC <qsf{cong} X:BC ==>  simp(abs(revap2bc(Y:BC)))<f{cong} simp(abs(revap2bc(X:BC))) .
-
-*/
-
-/*
-fap2bc(X:AP) <qsf fap2bc(Y:AP) ==> fap2bc(revap2bc(fap2bc(X:AP))) <qsf fap2bc(revap2bc(fap2bc(Y:AP))).
-
-fap2bc(revap2bc(fap2bc(X:AP))) <qsf fap2bc(X:AP).
-fap2bc(revap2bc(fap2bc(X:AP[]Y:AP))) <qsf fap2bc(X:AP[]Y:AP).
-
-X:AP <f Y:AP ==> simp(abs(revap2bc(fap2bc(X:AP)))) <f simp{cong}(abs(revap2bc(fap2bc(Y:AP)))). 
-
-simp{cong}(abs(revap2bc(fap2bc(X:AP)))) <f X:AP.
-simp{cong}(abs(revap2bc(fap2bc(X:AP[]Y:AP)))) <f X:AP[]Y:AP.
+abs(fap2bc{b,c}(revap2bc(fap2bc{b,c}(Y:BC)))) <qsf Y:BC. 
+abs(fap2bc{b,c}(revap2bc(fap2bc{b,c}(Y:BC)))) <qsf{cong} Y:BC. 
 
 
-*/
+X:AP <f{cong}Y:AP ==> fap2bc{a,b,c}(X:AP) <qsf{cong} fap2bc{a,b,c}(Y:AP).  
+
+
+fap2bc(X:AP) <qsf{cong} fap2bc(Y:AP) ==> fap2bc(revap2bc(fap2bc(X:AP))) <qsf{cong} fap2bc(revap2bc(fap2bc(Y:AP))).
+
+fap2bc(revap2bc(fap2bc(X:AP))) <qsf{cong} fap2bc(X:AP).
+fap2bc(revap2bc(fap2bc(X:AP[]Y:AP))) <qsf{cong} fap2bc(X:AP[]Y:AP).
+
+X:AP <f{cong} Y:AP ==> simp{cong}(abs(revap2bc(fap2bc(X:AP)))) <f{cong} simp{cong}(abs(revap2bc(fap2bc(Y:AP)))). 
+
+simp{cong}(abs(revap2bc(fap2bc(X:AP)))) <f{cong} X:AP.
+simp{cong}(abs(revap2bc(fap2bc(X:AP[]Y:AP)))) <f{cong} X:AP[]Y:AP.
+
+
+
 }
-
-
-/*
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

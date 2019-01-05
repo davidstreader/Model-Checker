@@ -158,7 +158,7 @@ public class GaloisAP2BC implements IProcessFunction {
 
     }
     aut.cleanNodeLables();
-    //System.out.println("GaloisAP2BC Returns " + aut.myString());
+    System.out.println("GaloisAP2BC Returns " + aut.myString());
     return aut;
   }
 
