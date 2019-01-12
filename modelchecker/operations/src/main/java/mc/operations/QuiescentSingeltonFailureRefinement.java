@@ -58,7 +58,7 @@ public class QuiescentSingeltonFailureRefinement implements IOperationInfixFunct
   @Override
   public boolean evaluate(Set<String> alph, Set<String> flags, Context context,
                           Stack<String> trace, Collection<ProcessModel> processModels) throws CompilationException {
-    System.out.println("\nQUIESCENT " + alph+" "+flags+" ");
+    //System.out.println("\nQUIESCENT " + alph+" "+flags+" ");
     boolean cong = flags.contains(Constant.CONGURENT);
     //ProcessModel[] pms =  processModels.toArray();
     Automaton a1 = ((Automaton) processModels.toArray()[0]).copy();
@@ -72,8 +72,8 @@ public class QuiescentSingeltonFailureRefinement implements IOperationInfixFunct
     a1 = abs.GaloisBCabs(a1.getId(), flags, context, a1);
     a2 = abs.GaloisBCabs(a2.getId(), flags, context, a2); //end states marked
     //System.out.println("*** Q a1  " + a1.readySets2String(cong));
-    System.out.println("Gabs "+a1.myString());
-    System.out.println("Gabs "+a2.myString());
+    //System.out.println("Gabs "+a1.myString());
+    //System.out.println("Gabs "+a2.myString());
 
   /*
         a?->b!->c?->STOP
@@ -88,7 +88,7 @@ public class QuiescentSingeltonFailureRefinement implements IOperationInfixFunct
      // .filter(x->!x.endsWith(".a"+Constant.BROADCASTSinput))
       .filter(x->x.endsWith(Constant.BROADCASTSinput))
       .collect(Collectors.toSet());
-    System.out.println("alpha = "+alpha);
+    //System.out.println("alpha = "+alpha);
   /*
        But simplification needed to compress last listeners!
        hence filter partition to the parts containing and end node
@@ -103,7 +103,7 @@ public class QuiescentSingeltonFailureRefinement implements IOperationInfixFunct
   //  if (labout1.size()==0) {
     //System.out.println("a1 " + a1.myString());
     addListeningLoops(a1, alpha);
-    System.out.println("A1 + LL " + a1.myString());
+    //System.out.println("A1 + LL " + a1.myString());
     List<List<String>> partition = simpf.buildPartition(flags, a1);
       //System.out.println("partition 1 " + partition);
 /*
@@ -124,7 +124,7 @@ public class QuiescentSingeltonFailureRefinement implements IOperationInfixFunct
   //  if (labout2.size()==0) {
     //System.out.println("a2 " + a2.myString());
       addListeningLoops(a2, alpha);
-    System.out.println("A2 + LL " + a2.myString());
+    //System.out.println("A2 + LL " + a2.myString());
       List<List<String>> partition2 = simpf.buildPartition(flags, a2);
       //System.out.println("partition 2 " + partition2);
 /*      List<List<String>> parts2 = new ArrayList<>();
@@ -162,7 +162,7 @@ public class QuiescentSingeltonFailureRefinement implements IOperationInfixFunct
    */
   private void addListeningLoops(Automaton ain,Set<String> listen)
     throws CompilationException {
-    System.out.println("LL alpha = "+listen);
+    //System.out.println("LL alpha = "+listen);
     for(AutomatonNode nd: ain.getNodes()){
       Set<String> found = nd.getOutgoingEdges().stream().map(x->x.getLabel()).
         collect(Collectors.toSet());

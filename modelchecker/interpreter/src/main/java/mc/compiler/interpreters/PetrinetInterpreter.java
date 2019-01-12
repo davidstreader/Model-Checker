@@ -175,9 +175,9 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
       localProcesses = new TreeMap<>();
     }
 
-    Petrinet petrinet = interpretProcess(processNode.getProcess(), identifier, symb, localProcesses);
+    Petrinet pet = interpretProcess(processNode.getProcess(), identifier, symb, localProcesses);
     //System.out.println("\nPetriInterp  " + petrinet.myString());
-
+    Petrinet petrinet =  pet.copy(); //must be copied as equati
     petrinet.setRootEvaluation(eval);
 
     //replaced by single line below
@@ -348,6 +348,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
       petrinet = processLabellingAndRelabelling(petrinet, root); //888888
       //System.out.println("TO stack petri " + petrinet.getId());
       if (root.hasHiding()) {
+        //should be COPY  see above
         processHiding(petrinet, root.getHiding());
       }
       petrinet = tree2net(petrinet);
@@ -699,6 +700,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     model = processLabellingAndRelabelling(model, processRoot);
 
     if (processRoot.hasHiding()) {
+      //should be copy seee ABOVE
       processHiding(model, processRoot.getHiding());
     }
 
@@ -1020,8 +1022,8 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
         if (petri.getAlphabet().keySet().contains(hidden)) {
           petri.relabelTransitions(hidden, Constant.HIDDEN);
         } else {
-          //System.out.println(petri.myString());
-          throw new CompilationException(getClass(), "Could not find " + hidden + " action to hide",
+          System.out.println("LOST EVENT "+ hidden+"  "+ petri.myString());
+          throw new CompilationException(getClass(), "Could not find " + hidden + " action to hide in "+petri.getId(),
             hiding.getLocation());
         }
 

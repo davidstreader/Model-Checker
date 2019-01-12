@@ -728,11 +728,11 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
         }
       }
       for (Set<String> end : ends) {
-        System.out.println("ends " + ends);
+        //System.out.println("ends " + ends);
         Set<String> endOwn = new TreeSet<>();
         for (String e : end) {
           Set<String> owns = places.get(e).getOwners();
-          System.out.println(places.get(e).getId() + " -> " + owns);
+          //System.out.println(places.get(e).getId() + " -> " + owns);
           endOwn.addAll(owns);
         }
 

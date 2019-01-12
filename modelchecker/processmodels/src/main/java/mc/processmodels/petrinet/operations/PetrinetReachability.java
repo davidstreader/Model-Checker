@@ -114,8 +114,7 @@ public final class PetrinetReachability {
     if (merge) mergePlaces(petri);  //paralle comp will not merge Places
     petri.tidyUpRootAndEndOnPlaces();
     //System.out.println("removeUnreach CHECK END " +petri.getEnds());
-    MyAssert.myAssert(petri.validatePNet("PetriNet reachability "+petri.getId()+ " valid ="), "Net reachability Failure");
-
+   // MyAssert.validate(petri, "Valid PetriNet reachability "+petri.getId()+ " ");
     return petri;
   }
 

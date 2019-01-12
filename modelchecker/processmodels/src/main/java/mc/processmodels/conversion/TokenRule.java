@@ -71,7 +71,7 @@ public class TokenRule {
     Automaton outputAutomaton = new Automaton(convertFrom.getId(), false);
     //System.out.println("TOKEN RULE  STARTING " + convertFrom.getId());
     //MyAssert.myAssert(convertFrom.validatePNet("Token Rule input "+convertFrom.getId()+ " VALID ="), "Token Rule precondition");
-    MyAssert.validate(convertFrom,"Token Rule precondition Failure");
+    MyAssert.validate(convertFrom,"Token Rule precondition ");
     //assert convertFrom.validatePNet("GOT YOU"): "Token Rule precondition";
 
     outputAutomaton.setOwners(convertFrom.getOwners());

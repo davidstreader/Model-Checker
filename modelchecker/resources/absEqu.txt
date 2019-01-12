@@ -1,4 +1,12 @@
 processes {
+Pro:{
+L = l->r->L.
+Ll = l->Ll|r->Ll.
+L3  = l->l->l->L3|r->STOP.
+L31 = l->l->r->L31.
+L3a  = l->l->l->a->L3|r->STOP.
+L31a = l->l->r->a->L31.
+
 Z = (a->l->Z|b->(r->x->STOP|y->STOP)).
 Z1 = (a->l->l->Z|b->(r->x->STOP|y->STOP)).
 Z2 = (l->l->a->Z|b->(r->x->STOP|y->STOP)).
@@ -7,20 +15,47 @@ Z3 = (l->a->Z|b->(r->r->x->STOP|y->STOP)).
 Z4 = a->l->Z4|b->r->STOP.
 
 Z5 = a->l->Z5|r->b->STOP.
+
 Z6 = a->l->r->Z6|r->b->STOP|l->c->Z6.
-Z7 = r->l->Z7|r->b->STOP.
+
+Z7 = r->l->Z7|r->b->STOP. 
 Z8 = l->Z8|r->b->STOP.
+
 Z9 = l->l->Z9|r->b->STOP.
+
+} 
+SD:{
+S =  s->STOP.
+S1 = s ->s->STOP.
+S2 = s->s->S2.
+S3 = s->S3.
+S4 = p->q->S4.
+S5 = p->STOP|q->S5.
 }
-automata Z, Z1,Z2,Z3,Z4,Z5,Z6,Z7,Z8,Z9.
+Zoo:{
+Zoo1 = abs(Z:Pro\{r,l})||S:SD.
+Zoo2 = abs((Z:Pro||S:SD)\{r,l}).
+}
+}
 
+operation { 
 
+}
 equation  {
 
-abs(X\{r,l}) ~ abs(abs(X\{l})\{r}).
-abs(X\{r,l}) ~ abs(abs(X\{r})\{l}).
+abs(X:Pro\{r,l}) ~ abs(abs(X:Pro\{l})\{r}).
+abs(X:Pro\{r,l})||Y:SD <f abs((X:Pro||Y:SD)\{r,l}).
+
+
+//simp(abs{}(XX\{r,l})) ~ simp(abs{}(abs{}(XX\{r})\{l})).
 
 }
  
+//
+
+
+
+
+
 
 

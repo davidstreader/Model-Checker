@@ -155,7 +155,7 @@ public class SequentialInfixFun {
 
   public Petrinet compose(String id, Petrinet n1, Petrinet n2, Guard guard)
     throws CompilationException {
-    System.out.println("=>PETRI1 "+ id+" "+n1.getId()+" => "+n2.getId());
+    //System.out.println("=>PETRI1 "+ id+" "+n1.getId()+" => "+n2.getId());
     //MyAssert.validate(n1, "Sequential => input "+n1.getId());
     //MyAssert.validate(n2, "Sequential => input "+n2.getId());
     MyAssert.validate(n1,"n1 ==> precondition ");

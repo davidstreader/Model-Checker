@@ -70,7 +70,10 @@ public class AbstractionFunction implements IProcessFunction {
     return graph;
   }
   /**
-   * Execute the abstraction on automata.  tau loops in input expected and removed
+   * Execute the abstraction on automata.
+   *
+   * First ALL Tau loops in input are removed  Uses Tarjen  algorithm to compute
+   * Strongly Conectd Components, SCC
    * CCS style keep n-tau->m where TauEnd(m)
    * TauEnd(x) <=> x-/-tau-> OR
    * x-tau->y and y in TauLoop and all n in TauLoop n-a->m => n-a->m in TauLoop
@@ -155,6 +158,8 @@ public class AbstractionFunction implements IProcessFunction {
       try {
         if (hiddenEdge.getTo().isSTOP()) {
           hiddenEdge.getFrom().setStopNode(true);
+          abstraction.addEnd(hiddenEdge.getTo().getId());
+          //System.out.println("setting stop "+hiddenEdge.getFrom());
         } // else hiddenEdge.getFrom().setStopNode(false);
         if (hiddenEdge.getTo().isERROR()) {
           hiddenEdge.getFrom().setErrorNode(true);
@@ -223,7 +228,7 @@ public class AbstractionFunction implements IProcessFunction {
           AutomatonNode deadlockNode = abstraction.addNode();
           deadlockNode.setErrorNode(true);
 
-          AutomatonEdge added = abstraction.addEdge(Constant.DEADLOCK, hiddenEdge.getFrom(),
+          AutomatonEdge added = abstraction.addEdge(Constant.HIDDEN, hiddenEdge.getFrom(),
             deadlockNode, null, false, false);
           added.setEdgeOwners(hiddenEdge.getOwnerLocation());
         }
@@ -267,9 +272,10 @@ public class AbstractionFunction implements IProcessFunction {
     //pruning is well defined on failure semantics not bisimulation
     Automaton abstraction = pruneHiddenNodes(context, startA, cong);
     //System.out.println("ABS PRUNED " + abstraction.myString());
-    startA.validateAutomaton("");
     abstraction.removeDuplicateEdges();
     abstraction.setEndFromNodes();
+    abstraction.setRootFromNodes();
+    startA.validateAutomaton("");
     return abstraction;
   }
   /**
@@ -765,9 +771,9 @@ public class AbstractionFunction implements IProcessFunction {
    */
   public Automaton GaloisBCabs(String id, Set<String> flags, Context context, Automaton ain)
     throws CompilationException {
-    System.out.println("GaloisBCabs START "+flags);
+    //System.out.println("GaloisBCabs START "+flags);
     flags = new TreeSet<>();
-    System.out.println("GaloisBCabs START "+flags);
+    //System.out.println("GaloisBCabs START "+flags);
     Automaton a = ain.copy();
     int newLabelNode = a.getNodeCount() + 1;
     //System.out.println("GaloisBCabs COPY "+ain.myString());

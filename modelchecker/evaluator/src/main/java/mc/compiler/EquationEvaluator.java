@@ -557,13 +557,11 @@ public class EquationEvaluator {
 
         /*  WORK   ************************   WORK   */
       } else {  //DO THE WORK and evaluate an OPERATION
-        //System.out.println("-- EVAL " + operation.myString()+" with "+ asString(outerFreeVariabelMap));
-
+        System.out.println("-- EVAL " + operation.myString()+" with "+ asString(outerFreeVariabelMap));
         for (String key : outerFreeVariabelMap.keySet()) {
           //System.out.println("adding "+key+"->"+outerFreeVariabelMap.get(key).getId());
           processMap.put(key, outerFreeVariabelMap.get(key));
         }
-
         //System.out.println("*** evalop  "+processMap.keySet().stream().map(x->x+"->"+processMap.get(x).getId()).reduce((x,y)->x+" "+y));
         r = oE.evalOp(operation, processMap, petrinetInterpreter, context, alpha, trace);
         // r = oE.evalOp(operation, idMap, interpreter, context);

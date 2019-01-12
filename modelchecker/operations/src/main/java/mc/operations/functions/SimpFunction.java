@@ -108,6 +108,7 @@ public class SimpFunction implements IProcessFunction {
     //System.out.println("near !"+automaton.myString());
 
     automaton.setEndFromNodes();
+    automaton.setRootFromNodes();
     //MyAssert.myAssert(automaton.validateAutomaton("Simp output "+automaton.getId()+" vlaid = "), "Simp input Failure");
     MyAssert.validate(automaton, "Simp output ");
     //System.out.println("Simp out "+automaton.getId()+"\n");
@@ -171,7 +172,20 @@ public class SimpFunction implements IProcessFunction {
                               Collection<List<String>> partition,
                               Context context)
     throws CompilationException {
-    for (Collection<String> nodesWithSameColor : partition) {
+    return mergeTauLoops(ain,partition,context, false);
+
+  }
+
+  /*
+      Fair mergeTauLoops ignores the tau loops
+      Unfair introduces deadlock states.
+   */
+  public Automaton mergeTauLoops(Automaton ain,
+                              Collection<List<String>> partition,
+                              Context context, boolean fair)
+    throws CompilationException {
+
+      for (Collection<String> nodesWithSameColor : partition) {
       if (nodesWithSameColor.size() < 2) {
         continue;
       }
