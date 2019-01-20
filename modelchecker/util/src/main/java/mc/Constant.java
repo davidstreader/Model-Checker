@@ -18,6 +18,7 @@ public class Constant {
     public static final String OBSEVATIONAL = "obs";
     public static final String FAIR = "fair";
     public static final String UNFAIR = "unfair";
+    public static final String OWNED = "owned";
 
     public static final String AUTOMATA = "automata";
     public static final String PETRINET = "petrinet";

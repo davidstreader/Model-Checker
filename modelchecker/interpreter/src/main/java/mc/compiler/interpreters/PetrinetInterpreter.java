@@ -2,6 +2,7 @@ package mc.compiler.interpreters;
 
 import static mc.util.Utils.instantiateClass;
 
+import com.google.common.collect.Multimap;
 import com.microsoft.z3.Context;
 
 import java.util.*;
@@ -329,9 +330,10 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
             pn.joinNet(localProcesses.get(key));
           }
         }
-        //System.out.println("prior to tree2net "+pn.myString("edge"));
+        System.out.println("SYMBOLIC prior to tree2net "+pn.myString("edge"));
         //tree2net should link them
-        pn = tree2net(pn);
+        pn = tree2net(pn);  // SYMBOLIC
+        System.out.println("SYMBOLICafter to tree2net "+pn.myString("edge"));
         // processMap.put(pn.getId(),pn);  This is done in Interpreter NOT here?
         return pn;
       }
@@ -351,7 +353,9 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
         //should be COPY  see above
         processHiding(petrinet, root.getHiding());
       }
+      System.out.println("prior to tree2net "+petrinet.myString("edge"));
       petrinet = tree2net(petrinet);
+      System.out.println("after to tree2net "+petrinet.myString("edge"));
       //System.out.println("  *** ProcessRootNode petri "+petrinet.getId());
       //processStack.push(petrinet);
       return petrinet;
@@ -372,7 +376,9 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
 
       //System.out.println("  ***ELSE  petri "+petrinet.myString());
 
-      petrinet = tree2net(petrinet);
+      System.out.println("ELSE prior to tree2net "+petrinet.myString("edge"));
+      petrinet = tree2net(petrinet);  //ELSE
+      System.out.println("ELSE after to tree2net "+petrinet.myString("edge"));
       //System.out.println("  ***ELSE ***tree2net petri "+petrinet.myString());
       return petrinet;
     }
@@ -420,7 +426,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
             //Petrinet pn = localProcesses.get(from);
 
 
-            Map<String, String> prodNames =  // need to get new pl1 Place
+            Multimap<String, String> prodNames =  // need to get new pl1 Place
               petri.gluePlaces(Collections.singleton(pl1), Collections.singleton(placeOnLeaf));
             //System.out.println("tree2net Petri "+petri.myString("edge"));
             String spl1 = prodNames.values().iterator().next();
@@ -721,11 +727,13 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     String lab = seq.getFrom().getAction(); // Now unique see Petrinet.netId
     Petrinet start = Petrinet.oneEventNet(lab);
     Petrinet petri = interpretASTNode(seq.getTo());  //initially the STOP net
-    //System.out.println("SEQUENCE INPUT petri "+petri.myString()+"\n");
+    System.out.println("SEQUENCE INPUT one   "+start.myString());
+    System.out.println("SEQUENCE INPUT petri "+petri.myString());
     //System.out.println("SEQUENCE INPUT ev "+ev.myString()+"\n");
     SequentialInfixFun sif = new SequentialInfixFun();
     Petrinet ret = sif.compose(lab, start, petri);
-    //System.out.println("SEQUENCE end " + ret.myString() + "\n");
+    System.out.println("SEQUENCE end " + ret.myString() + "\n");
+
     return ret;
   }
 
@@ -941,7 +949,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     if (withRoot) master.validatePNet();
 
     List<Set<String>> oldRoot = master.getRoots();
-    master.addPetrinet(petrinetToAdd, withRoot);
+    master.addPetrinet(petrinetToAdd, withRoot, true);
     //System.out.println("====masterPetrinet======== "+ master.getId());
     if (withRoot) master.validatePNet();
     //System.out.println("master = "+master.myString());

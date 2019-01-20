@@ -69,7 +69,13 @@ public class HideFunction implements IProcessFunction {
             + " for hiding.", null);
       }
     }
-    return new   AbstractionFunction().compose(id, new HashSet<>(), context,  automaton);
+    Set<String> newFlags = new TreeSet<>();
+    if (flags.contains(Constant.OWNED)) newFlags.add(Constant.OWNED);
+    if (flags.contains(Constant.FAIR)) newFlags.add(Constant.FAIR);
+    if (flags.contains(Constant.UNFAIR)) newFlags.add(Constant.UNFAIR);
+    if (flags.contains(Constant.CONGURENT)) newFlags.add(Constant.CONGURENT);
+
+    return new   AbstractionFunction().compose(id, newFlags, context,  automaton);
   }
 
   /**

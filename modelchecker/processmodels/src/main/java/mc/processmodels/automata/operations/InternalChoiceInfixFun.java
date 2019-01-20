@@ -101,8 +101,9 @@ public class InternalChoiceInfixFun implements IProcessInfixFunction {
   }
 
   /**
-   * TODO:
-   * Execute the function.
+   *
+   * The Roots and Ends have  got to be the union of  the roots/ends  in both Nets
+   * A Plae can be both Root and End
    *
    * @param id        the id of the resulting petrinet
    * @param net1 the first  petrinet in the function (e.g. {@code A} in {@code A||B})
@@ -113,13 +114,15 @@ public class InternalChoiceInfixFun implements IProcessInfixFunction {
   @Override
   public Petrinet compose(String id, Petrinet net1, Petrinet net2, Set<String> flags) throws CompilationException {
 
-    System.out.println(id+" +[]PETRI1 "+net1.myString());
+
     net1.validatePNet();
-    System.out.println(id+" +[]PETRI2 "+net2.myString());
+
     net2.validatePNet();
     //System.out.println("ok");
-    Petrinet petrinet1 = net1.reId("1");
-    Petrinet petrinet2 = net2.reId("2");
+    Petrinet petrinet1 = net1.copy().reId("1"); // calls reOwn
+    Petrinet petrinet2 = net2.copy().reId("2");
+    System.out.println("\n"+id+" + PETRI1 "+net1.myString());
+    System.out.println(id+" + PETRI2 "+net2.myString());
     Set<String> o1 = new HashSet<>();
     for(String el: petrinet1.getOwners()){
       o1.add(el);
@@ -130,6 +133,8 @@ public class InternalChoiceInfixFun implements IProcessInfixFunction {
     }
     List<Set<PetriNetPlace>> root1 = petrinet1.getRootPlacess();
     List<Set<PetriNetPlace>> root2 = petrinet2.getRootPlacess();
+    List<Set<String>> ends1 = petrinet1.getEnds();
+    List<Set<String>> ends2 = petrinet2.getEnds();
     //System.out.println("+PETRI1 "+petrinet1.myString());
     //System.out.println("+PETRI2 "+petrinet2.myString());
     if (petrinet1 == petrinet2) {
@@ -142,21 +147,23 @@ public class InternalChoiceInfixFun implements IProcessInfixFunction {
     }
 
     //Petrinet choice = new Petrinet(id, false);
-    //petrinet2.joinPetrinet(petrinet1);
+    //adding the Places and transitions
     petrinet2.addPetrinetNoOwner(petrinet1,"");
     System.out.println("Internal "+petrinet2.myString());
 
 
     //The root is now that of external choice
     Petrinet choice = petrinet2;
-    choice.getRootPlacess().clear();
-    choice.getRootPlacess().addAll(root1);
-    choice.getRootPlacess().addAll(root2);
+    choice.clearRoots();
+    System.out.println("Internal Root cleared "+petrinet2.myString());
+    choice.addRootsPl(root1);
+    choice.addRootsPl(root2);
+    choice.setEnds(ends2);
+    choice.getEnds().addAll(ends1);
+    System.out.println("Internal check Rootand End on Net "+petrinet2.myString());
+    choice.glueOwners(o1,o2); //NEEDED IN INTERNAL CHOICE
 
-
-    choice.glueOwners(o1,o2); //Need to identify the owners prior to glueing the Places
-
-    choice.setStartFromRoot();
+    choice.setRootFromNet();
     choice.setEndFromNet();
     choice.validatePNet();
     System.out.println("**choice + RETURNS "+choice.myString());

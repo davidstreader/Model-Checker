@@ -66,10 +66,12 @@ public class SettingsController implements Initializable {
 
     showOwners = Own.isSelected();
     showColor = Col.isSelected();
-    MyAssert.setApply(showColor);
+
     Congruance = Cong.isSelected();
     Symbolic = Symb.isSelected();
+    System.out.println(Runtime.class.getPackage().toString() + "\n"+ Runtime.class.getPackage().getImplementationVersion());
     System.out.println("Symbolic = "+isSymbolic());
+
   }
 
   @FXML
@@ -91,7 +93,7 @@ public class SettingsController implements Initializable {
     repulseSlider.setValue(25);
     springSlider.setValue(50);
     delaySlider.setValue(2);
-     Symb.setSelected(true);
+     //Symb.setSelected(true);
     //displayList.setItems(disp);
     initDispType();
   }
@@ -134,7 +136,7 @@ public class SettingsController implements Initializable {
     displayList.getItems().clear();
     displayType.forEach(displayList.getItems()::add);
     displayList.getSelectionModel().selectFirst();
-    Symb.setSelected(true);
+   // Symb.setSelected(true);
   }
 
   public String getDisplayType() {
@@ -143,6 +145,9 @@ public class SettingsController implements Initializable {
 
   @Override
   public void initialize(URL location, ResourceBundle resources) {
+    System.out.println("initialise Settings "+Symbolic +"  and "+isSymbolic());
+    Symb.setSelected(isSymbolic());
+    Col.setSelected(isShowColor());
     maxNodesSlider.setValue(maxNodes);
     delaySlider.setValue(delay);
 
@@ -172,6 +177,7 @@ public class SettingsController implements Initializable {
 
     initDispType();
 
+    System.out.println("initialise Settings "+Symbolic +"  and "+isSymbolic());
 
   }
 
@@ -184,6 +190,5 @@ public class SettingsController implements Initializable {
   }
   @FXML
   public void initialize() {
-    Symb.setSelected(false);
   }
 }

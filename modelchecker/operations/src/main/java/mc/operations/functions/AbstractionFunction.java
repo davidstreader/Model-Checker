@@ -18,11 +18,13 @@ import mc.processmodels.MultiProcessModel;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
+import mc.processmodels.automata.operations.AutomataReachability;
 import mc.processmodels.conversion.OwnersRule;
 import mc.processmodels.conversion.TokenRule;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
+import mc.processmodels.petrinet.operations.PetrinetReachability;
 import mc.util.expr.Expression;
 import mc.util.expr.MyAssert;
 
@@ -47,7 +49,7 @@ public class AbstractionFunction implements IProcessFunction {
    */
   @Override
   public Collection<String> getValidFlags() {
-    return ImmutableSet.of(Constant.UNFAIR, Constant.FAIR, Constant.CONGURENT);
+    return ImmutableSet.of(Constant.UNFAIR, Constant.FAIR, Constant.CONGURENT,Constant.OWNED);
   }
 
   /**
@@ -88,6 +90,8 @@ public class AbstractionFunction implements IProcessFunction {
    * for simplicity only 2 cycles are computed  hence saturation may introduce 2 cycles and
    *  a second round of removing 2 cycles is performed
    *  This makes it dificult to lift the node removal to the unsturated automata
+   *  owner \in  flag   means to preserve the ownership of events (and hence the true concurrancy)
+   *  keep some taus
    *
    * @param id       the id of the resulting automaton
    * @param flags    the flags given by the function (e.g. {@code unfair} in {@code abs{unfair}(A)}
@@ -103,9 +107,8 @@ public class AbstractionFunction implements IProcessFunction {
     }
     Automaton startA = automata[0].copy(); //Deep Clone
 //int nodeLable
-    boolean isFair = flags.contains(Constant.FAIR) || !flags.contains(Constant.UNFAIR);
-    boolean cong = flags.contains(Constant.CONGURENT);
-    //System.out.println("\n***ABSTRACTION flags " + flags+ "\n"+ startA.myString());
+     boolean owned = flags.contains(Constant.OWNED);
+    System.out.println("\n***ABSTRACTION flags " + flags+ "\n"+ startA.myString());
     //System.out.println("\n\nautomata Abs start "+ startA.myString()+ " flags "+flags+ " cong "+cong);
     //startA.validateAutomaton("");
     MyAssert.validate(startA,"Abstraction input " );
@@ -113,18 +116,24 @@ public class AbstractionFunction implements IProcessFunction {
     Automaton abstraction =  absMerge(flags,context, startA);
 
 
-    //System.out.println("\n******\nABS no DUP no Loop\n" + abstraction.myString()+"\n******\n");
-
-    observationalSemantics(flags, abstraction, context);
+    //System.out.println("\n******\nABS no DUP no Loop\n" + abstraction.myString());
+    if (!owned)
+       observationalSemantics(flags, abstraction, context);
+      //System.out.println("\n******\nABS no DUP no Loop\n" + abstraction.myString());
+    //abstraction =  AutomataReachability.removeUnreachableNodes(abstraction);
     MyAssert.validate(abstraction,"Abstraction output " );
-    //System.out.println("\n*****Abs final \n*****Abs final\n" + abstraction.myString()+"\n");
+    System.out.println("\n*****Abs final \n*****Abs final\n" + abstraction.myString()+"\n");
     return abstraction;
   }
 
+  /*
+      Saturates the automata building the obervational semantics for Failures
+   */
   public Automaton observationalSemantics(Set<String> flags, Automaton abstraction, Context context) throws CompilationException {
     // retrieve the unobservable edges from the specified automaton
     boolean isFair = flags.contains(Constant.FAIR) || !flags.contains(Constant.UNFAIR);
     boolean cong = flags.contains(Constant.CONGURENT);
+      //System.out.println(" obs "+abstraction.myString());
     List<AutomatonEdge> hiddenEdges = abstraction.getEdges().stream()
       .filter(ed->ed.isHidden() && !ed.getFrom().equalId(ed.getTo()))
       .collect(Collectors.toList());
@@ -150,16 +159,15 @@ public class AbstractionFunction implements IProcessFunction {
         //System.out.println("SKIP");
         continue; //Do not remove these taus
       }
-      //System.out.println(abstraction.myString());
-      List<AutomatonEdge> temp = new ArrayList<AutomatonEdge>();
+        List<AutomatonEdge> temp = new ArrayList<AutomatonEdge>();
 
       //FALL through only straight taus and no loops in graph!
-
+       // System.out.println(" obs "+abstraction.myString());
       try {
         if (hiddenEdge.getTo().isSTOP()) {
           hiddenEdge.getFrom().setStopNode(true);
-          abstraction.addEnd(hiddenEdge.getTo().getId());
-          //System.out.println("setting stop "+hiddenEdge.getFrom());
+          abstraction.addEnd(hiddenEdge.getFrom().getId());
+          //System.out.println("setting stop "+hiddenEdge.getFrom().myString());
         } // else hiddenEdge.getFrom().setStopNode(false);
         if (hiddenEdge.getTo().isERROR()) {
           hiddenEdge.getFrom().setErrorNode(true);
@@ -171,10 +179,8 @@ public class AbstractionFunction implements IProcessFunction {
           abstraction.addRoot(hiddenEdge.getTo());
           //System.out.println("r2 " + abstraction.getRoot().stream().map(x -> x.getId() + " ").collect(Collectors.joining()));
         }
-        //System.out.println("tau = " + hiddenEdge.myString());
-        //System.out.println("tauTo   = " + hiddenEdge.getTo().myString());
-        //System.out.println("tauFrom = " + hiddenEdge.getFrom().myString());
-        //abstraction is both In and OUT
+         //abstraction is both In and OUT
+          //System.out.println("\n   abs 111 "+abstraction.myString());
         temp.addAll(
           constructOutgoingEdges(abstraction, hiddenEdge, context));
         temp.addAll(
@@ -199,6 +205,7 @@ public class AbstractionFunction implements IProcessFunction {
       }
       //System.out.println("finished with " + hiddenEdge.myString());
     }
+      //System.out.println("\n abs 222 "+abstraction.myString());
     // 1  loops may have been added.
     divergence(abstraction, isFair);
     //System.out.println("hidden cnt "+processesed.size());
@@ -207,13 +214,14 @@ public class AbstractionFunction implements IProcessFunction {
     for (AutomatonEdge edge : abstraction.getEdges()) {
       ow.addAll(edge.getOwnerLocation());
     }
+    if (ow.size()==0) ow.add("s1");  //  when out put is stopSTOP
+      //System.out.println("abs end XXX "+abstraction.myString());
     abstraction.setOwners(ow);
     abstraction.cleanNodeLables();
+
     //System.out.println("abs end "+abstraction.myString());
     return abstraction;
   }
-
-
 
   public void divergence(Automaton abstraction, boolean isFair) throws CompilationException {
     //System.out.println("Divergence fair "+isFair);
@@ -244,6 +252,8 @@ public class AbstractionFunction implements IProcessFunction {
 
   /**
    * This method reduces the state space of the input automata
+   * Both compressing all tau Loops AND
+   * removing nodes only connected to tau events
    * @param flags
    * @param context
    * @param startA input AND output
@@ -275,7 +285,8 @@ public class AbstractionFunction implements IProcessFunction {
     abstraction.removeDuplicateEdges();
     abstraction.setEndFromNodes();
     abstraction.setRootFromNodes();
-    startA.validateAutomaton("");
+
+
     return abstraction;
   }
   /**

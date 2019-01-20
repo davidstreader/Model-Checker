@@ -156,8 +156,6 @@ public class SequentialInfixFun {
   public Petrinet compose(String id, Petrinet n1, Petrinet n2, Guard guard)
     throws CompilationException {
     //System.out.println("=>PETRI1 "+ id+" "+n1.getId()+" => "+n2.getId());
-    //MyAssert.validate(n1, "Sequential => input "+n1.getId());
-    //MyAssert.validate(n2, "Sequential => input "+n2.getId());
     MyAssert.validate(n1,"n1 ==> precondition ");
     MyAssert.validate(n1," ==> n2 precondition ");
 
@@ -167,8 +165,8 @@ public class SequentialInfixFun {
 
     Petrinet net1 = n1.reId("1");
     Petrinet net2 = n2.reId("2"); // the tag "2" ensures unique ids in nets
-    //System.out.println("=>PETRI1 " + id + " " + net1.myString("edge"));
-    //System.out.println("=>PETRI2 " + id + " " + net2.myString("edge"));
+    //System.out.println("n1 =>  PETRI1 " + id + " " + net1.myString());
+    //System.out.println("=> n2  PETRI2 " + id + " " + net2.myString());
 
     Set<String> own1 = new HashSet<>();
     Set<String> own2 = new HashSet<>();
@@ -189,6 +187,7 @@ public class SequentialInfixFun {
     //System.out.println("ROOTS " + i);
     for (PetriNetPlace pl : net2.getPlaces().values()) {
       pl.setStart(false);
+      pl.setStartNos(new HashSet<>());
     }
     for (PetriNetPlace pl : net1.getPlaces().values()) {
       pl.setEndNos(new HashSet<>());
@@ -196,39 +195,44 @@ public class SequentialInfixFun {
     }
     List<Set<String>> oneEnd = net1.copyEnds();
     int i = 1;
-    //net2.clearRoots();
+    //Adding neet 1 and 2 ONCE  - later change root end bridge
     composition.addPetrinetNoOwner(net2, ""); // OLD worked but now need the owners
     composition.addPetrinetNoOwner(net1, "");
     composition.getOwners().addAll(own1);
     composition.getOwners().addAll(own2);
     Petrinet sequential;
     //System.out.println("\n ***Seq "+ net1.getEnds() +"  "+net2.getRoots());
-    //System.out.println("comp1 "+composition.myString());
+    //System.out.println("\n  => comp1 \n"+composition.myString());
     //System.out.println("Ends = "+oneEnd);
     for (Set<String> ends : oneEnd) {
       for (Set<String> rt : net2.getRoots()) {
+        // FOR EACH PAIR BUILD A NEW END-ROOT NODE THEN FICK IN PLACE
         //System.out.println("\n *******SEQ   START " + i++ + " end "+ends+ " root = " + rt);
         composition.setOwners(new HashSet<>());
 
         net1.getPlaces().values().stream().forEach(x -> x.setTerminal(""));
         composition.setRootFromStart();
         Set<PetriNetPlace> newroot = new HashSet<>();//new root for each End
+        //System.out.println("******     SEQUENTIAL beforCopy \n"+ composition.myString() );
         for (String r : rt) {
-          newroot.add(composition.copyRootOrEnd(composition.getPlaces().get(r), ""));
+          newroot.add(composition.copyRootOrEnd(composition.getPlaces().get(r), "", true));
         }
         Set<PetriNetPlace> newend = new HashSet<>();
         for (String e : ends) {
-          newend.add(composition.copyRootOrEnd(composition.getPlaces().get(e), ""));
+          newend.add(composition.copyRootOrEnd(composition.getPlaces().get(e), "",false));
         }
-        //System.out.println("SEQUENTIAL start "+ composition.myString() + "\n");
+        //System.out.println("******     SEQUENTIAL afterCopy \n"+ composition.myString() );
         composition.setUpv2o(n1, n2);
         composition.glueOwners(own1, own2); //must only be done once
-        composition.gluePlaces(newroot, newend);
-        //.out.println("\n ***SEQ Glue places OVER \n" + composition.myString() + "\n");
+        Multimap<String, String> s2s = composition.gluePlaces(newroot, newend);
+        //Repair Root and End markers  useing s2s
+        //composition.repairRootEnd(s2s);
+
+        //System.out.println(" ***SEQ Glue places OVER \n" + composition.myString() + "\n");
       }
     }
-    composition.glueOwners(own1, own2);
-    //System.out.println("\ncomp2 "+composition.myString());
+    //composition.glueOwners(own1, own2);
+    //System.out.println("\n  => comp2 \n"+composition.myString());
 
     //remove old ends  -- overlapping end sets!
     for (Set<String> eds : oneEnd) {
@@ -251,7 +255,7 @@ public class SequentialInfixFun {
         }
       }
     }
-    //System.out.println("comp3 "+composition.myString());
+    //System.out.println("\n  =>  comp3 \n"+composition.myString());
 
     composition.setRootFromStart();
     composition.setEndFromPlace();

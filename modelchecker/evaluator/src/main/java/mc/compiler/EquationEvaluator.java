@@ -143,7 +143,7 @@ public class EquationEvaluator {
     Stack<String> trace = new Stack<>();
 
     //collect the free variables
-    //System.out.println("START - evaluateEquation " + operation.myString()+ " "+processMap.keySet());
+    System.out.println("\nSTART - evaluateEquation " + operation.myString()+ " "+processMap.keySet());
     List<String> globlFreeVariables = collectFreeVariables(operation, processMap.keySet());
     //System.out.println("globalFreeVariables " + globlFreeVariables);  //Var:Dom
     if (!validateDomains(globlFreeVariables))

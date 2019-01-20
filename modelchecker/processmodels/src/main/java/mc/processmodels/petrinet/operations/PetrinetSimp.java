@@ -26,8 +26,7 @@ public class PetrinetSimp {
       col2Place.put(pl.getColour(),pl);
     }
     //System.out.println(c2PtoString(col2Place));
-    String base = null;
-    Map<String,String> prodNames =  null;
+
     for(Integer c : col2Place.keySet()){
       Collection<PetriNetPlace> cPl = col2Place.get(c);
       if (cPl.size()<= 1) continue;
@@ -37,10 +36,9 @@ public class PetrinetSimp {
       while(itColPl.hasNext()){
         PetriNetPlace  g = itColPl.next();
         //System.out.println("Gluing "+ basePnP.getId()+ " - "+g.getId());
-        prodNames =
+        Multimap<String,String>  s2s =
            petri.gluePlaces(Collections.singleton(g), Collections.singleton(basePnP));
-        base = prodNames.values().iterator().next();
-        basePnP = petri.getPlace(base);
+        petri.repairRootEnd(s2s);;
       }
 
     }

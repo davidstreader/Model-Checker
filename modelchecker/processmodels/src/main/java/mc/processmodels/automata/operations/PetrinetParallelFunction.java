@@ -49,7 +49,7 @@ public class PetrinetParallelFunction  {
     //System.out.println("newEnds "+newEnds);
     composition.setRoots(roots);
     composition.setEnds(newEnds);
-    composition.setStartFromRoot();
+    composition.setRootFromNet();
     composition.setEndFromNet();
     //System.out.println("BeforeSYNC END " +composition.myString());
     //do not merge places?

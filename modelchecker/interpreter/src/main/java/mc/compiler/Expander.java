@@ -17,7 +17,6 @@ import mc.util.expr.Expression;
 import mc.util.expr.ExpressionEvaluator;
 import mc.util.expr.ExpressionPrinter;
 import mc.util.expr.VariableCollector;
-import com.rits.cloning.Cloner;
 
 public class Expander {
 
@@ -596,7 +595,7 @@ public class Expander {
           if (containsHidden(expression)) {
             string = string.replaceAll(Pattern.quote(variable) + "\\b", "" + ExpressionPrinter.printExpression(expression).replace("$", ""));
           } else {
-            int result = evaluator.evaluateExpression(expression, integerMap, context);
+            int result = evaluator.evaluateIntExpression(expression, integerMap, context);
             string = string.replaceAll(Pattern.quote(variable) + "\\b", "" + result);
           }
         } else if (integerMap.containsKey(variable)) {

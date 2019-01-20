@@ -7,7 +7,6 @@ import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetPlace;
-import mc.processmodels.petrinet.components.PetriNetTransition;
 import mc.processmodels.petrinet.operations.PetrinetReachability;
 import mc.util.expr.MyAssert;
 
@@ -50,108 +49,77 @@ public class ChoiceFun {
 
   public Petrinet compose(String id, Petrinet n1, Petrinet n2)
     throws CompilationException {
-    System.out.println(n1.getId()+" []  "+n2.getId());
-    Petrinet net1 = n1.reId("1");
+    SequentialInfixFun sf = new SequentialInfixFun();
+    //System.out.println("XXX   XXX   XXX   XXX   XXX\n\n  []   ********************** \n "+ n1.myString()+" \n []  "+n2.myString());
+    Petrinet nt1 = n1.copy().reId("1");
+    // Need to add end event simply to remove later  as computing the End proved difficult with a->STOP[]STOP
+    Petrinet  E =  Petrinet.oneEventNet("*E","e1");
+    Petrinet net1 = sf.compose("n1",nt1,E);
+    net1.reown("1");
     Set<String> own1 = net1.getOwners();
-    List<Set<String>> oneEnd = net1.getEnds();
-    //System.out.println("[] function Start");
-    //System.out.println("oneEnd "+oneEnd);
 
-    Petrinet net2 = n2.reId("2");
+    Petrinet nt2 = n2.copy().reId("2");
+    Petrinet F = Petrinet.oneEventNet("*E","e2");
+    Petrinet net2 = sf.compose("n2",nt2, F);
+    net2.reown("2");
     Set<String> own2 = net2.getOwners();
+    //System.out.println("YYY   YYY   YYY   YYY   YYY\n\n     *********[]********[]*****\n  "+ net1.myString()+" \n  "+net2.myString());
+
     //System.out.println("[]PETRI1 "+net1.myString("edge"));
-    MyAssert.myAssert(net1.validatePNet("Choice => input "+net1.getId()+ " valid ="), "[] precondition");
-    MyAssert.myAssert(net2.validatePNet("Choice => input "+net2.getId()+ " valid ="), "[] precondition");
+    MyAssert.validate(net1,"Choice n1 []  Rule PRE condition ");
+    MyAssert.validate(net2,"Choice [] n2  Rule PRE condition ");
 
-    List<Set<String>> twoRoots =  new ArrayList<>();
-     for(Set<String> rs: net2.getRoots()) {
-       Set<String > newrs = new HashSet<>();
-       for(String r:rs) {
-         newrs.add(r);
-       }
-       twoRoots.add(newrs);
-     }
-    //System.out.println("twoRoot "+twoRoots);
-    List<Set<String>> twoEnd = net2.getEnds();
+    List<Set<String>> tRoots =  net2.copyRoots();
+    List<Set<String>> oRoots =  net1.copyRoots();
+    System.out.println("twoRoots "+tRoots+"  oneRoots "+oRoots);
 
-    //System.out.println("twoEnd "+twoEnd);
+    Petrinet choice = new Petrinet(id, false);
+    choice.addPetrinet(net1, true, true); //adds net1 + root and end but changes Ids
+    List<Set<String>>  oneRoots =  choice.reName(oRoots);
 
-    net2.joinNet(net1);  // concats end2 and end1 DO NOT concat variable2Owner
-    net2.setEndFromNet();
+    choice.addPetrinet(net2, false, true);  //adds net2 + end but changes Ids
+    List<Set<String>>  twoRoots =  choice.reName(tRoots);  // have to rename the roots
 
-    List<Set<String>> oneRoots =  new ArrayList<>();
-    for(Set<String> rs: net1.getRoots()) {
-      Set<String > newrs = new HashSet<>();
-      for(String r:rs) {
-        newrs.add(r);
-      }
-      oneRoots.add(newrs);
-    }
-    //System.out.println("CHOICE function oneRoot " +oneRoots);
+    System.out.println("twoRoots "+twoRoots+"  oneRoots "+oneRoots);
 
 
-    net2.setUpv2o(net1,net2);
-    net2.glueOwners(own1,own2);
-    //System.out.println("[]after Glueing Owners  " + net2.myString("edge") + "\n");
+    //net2.setUpv2o(net1,net2);
+
+
+    //System.out.println("Befor Glue O  \n"+choice.myString());
+    choice.glueOwners(own1,own2);
+    choice.reown("c");
+
     //for each pair of roots Ri, Rj build a Ri[]Rj root and copy the root post transition
     List<Set<String>> newRoots = new ArrayList<>();
     for (Set<String> r1: oneRoots) {
-      for (Set<String> r2: twoRoots) {
+       for (Set<String> r2: twoRoots) {
         //Copy both roots and then Glue
-        //composition.glueOwners(own1,own2);
+        System.out.println("    GLUE ROOT  "+r1+ " with "+r2);
+         //The Root2 must be copied prior to Gluing as they may be needed later (next iteration)
         Set<PetriNetPlace> newr2 = new HashSet<PetriNetPlace>();
-        for(String rt2: r2) {
-          //Copy the root and post root transitions
-          //System.out.println("*************to Copy "+net2.getPlace(rt2).myString());
-          newr2.add(net2.copyRootOrEnd(net2.getPlace(rt2),"X"));
+        for(String rt2: r2) { newr2.add(choice.copyRootOrEnd(choice.getPlace(rt2),"None",false));
         }
         Set<PetriNetPlace> newr1 = new HashSet<PetriNetPlace>();
-        for(String rt1: r1) {
-          newr1.add(net2.copyRootOrEnd(net2.getPlace(rt1),"X"));
+        for(String rt1: r1) { newr1.add(choice.copyRootOrEnd(choice.getPlace(rt1),"None",false));
         }
-        Map<String, String> s2s =net2.gluePlaces(newr1, newr2, false);
 
-        /*System.out.println("\n glueMapping \n" +
-          s2s.keySet().stream().map(x -> x + "->" + s2s.get(x) + "\n").collect(Collectors.joining())); */
-        Set<String> newr = s2s.values().stream().collect(Collectors.toSet());
-        newRoots.add(newr);
-        //System.out.println("newRoots "+newRoots);
+        Multimap<String, String> s2s =choice.gluePlaces(newr1, newr2, false);
+        System.out.println("After Gluing  \n"+choice.myString());
       }
-
-        net2.setRoots(newRoots);
-        net2.setStartFromRoot();
         //System.out.println("[]after Glueing start  " + net2.myString("edge") + "\n");
     }
-    List<Set<String>> newList = new ArrayList<Set<String>>(twoRoots);
-    newList.addAll(oneRoots);
-    Set<String> toGo = new HashSet<>();
-    for(Set<String> rs: newList){
-      for(String r:rs){
-        toGo.add(r);
-      }
-    }
-    //System.out.println("before removing p1Roots "+net2.myString("edge"));
-    //System.out.println("Removing "+toGo);
-    for(String pl: toGo) {
-      PetriNetPlace place = net2.getPlace(pl);
-      Set<PetriNetTransition> goaway = place.pre();
-        goaway.addAll(place.post());
-        net2.removePlace(place);
-        for(PetriNetTransition t: goaway){
-          net2.removeTransition(t);
-        }
+    choice.removeStarE();
+    System.out.println("FINAL After Gluing  \n"+choice.myString());
 
-    }
-
-    //System.out.println("[]before reachability "+ net2.myString("edge")+"\n");
-    net2 = PetrinetReachability.removeUnreachableStates(net2);
-    //System.out.println("\n[] OUT "+ net2.myString("edge"));
-    net2.buildAlphabetFromTrans();
-    //System.out.println("[] OUT "+ net2.getId()+"\n");
-    //net2.reId("");
-    MyAssert.myAssert(net2.validatePNet("Choice [] output "+net2.getId()+ " valid ="), "[] output Failure");
-
-    return net2;
+    choice = PetrinetReachability.removeUnreachableStates(choice);
+    System.out.println("\n[] OUT "+ choice.myString(""));
+    choice.buildAlphabetFromTrans();
+    //System.out.println("[] OUT "+ choice.getId()+"\n");
+    //choice.reId("");
+   // MyAssert.setApply(true);
+    MyAssert.validate(choice,"Choice []  Rule post condition ");
+    return choice;
   }
 
 

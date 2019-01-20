@@ -57,19 +57,20 @@ public class TokenRule {
    * This method statically converts from a Petrinet to an Automaton visualisation of a given
    * process.
    *
-   * @param convertFrom      the petrinet that is converted from.
+   * @param cFrom      the petrinet that is converted from.
    * @param markingToNodeMap the mapping from the marking to an automaton node, used for display
    * @param nodeToMarkingMap the mapping from node to marking
    * @return The automaton that is equivalent to {@code convertFrom} petrinet.
    */
   @SneakyThrows(value = {CompilationException.class})
-  public static Automaton tokenRule(Petrinet convertFrom,
+  public static Automaton tokenRule(Petrinet cFrom,
                                     Map<Multiset<PetriNetPlace>, AutomatonNode> markingToNodeMap,
                                     Map<AutomatonNode, Multiset<PetriNetPlace>> nodeToMarkingMap) {
-    String nameOnly = convertFrom.getId().replaceAll("[0-9]*$", "");
+    //String nameOnly = convertFrom.getId().replaceAll("[0-9]*$", "");
     //keeps the id numbers low - op_eval resets Automaton.tagid
+    Petrinet convertFrom = cFrom.copy();
     Automaton outputAutomaton = new Automaton(convertFrom.getId(), false);
-    //System.out.println("TOKEN RULE  STARTING " + convertFrom.getId());
+    //System.out.println("TOKEN RULE  STARTING \n    " + convertFrom.myString());
     //MyAssert.myAssert(convertFrom.validatePNet("Token Rule input "+convertFrom.getId()+ " VALID ="), "Token Rule precondition");
     MyAssert.validate(convertFrom,"Token Rule precondition ");
     //assert convertFrom.validatePNet("GOT YOU"): "Token Rule precondition";
@@ -93,7 +94,7 @@ public class TokenRule {
       //System.out.println("root "+root.myString());
     }
 
-    //System.out.println("rootsPlaces "+ rootsPlaces);
+    //System.out.println("rootsPlaces "+ rootsPlaces.stream().map(y->y.stream().map(x->x.getId()+" ").collect(Collectors.joining())+" * ").collect(Collectors.joining()));
     Stack<Multiset<PetriNetPlace>> toDo = new Stack<>();
     for (Set<PetriNetPlace> rs : rootsPlaces) {
       toDo.add(HashMultiset.create(rs));
@@ -196,8 +197,9 @@ public class TokenRule {
             toDo.add(newMarking);
             //System.out.println("   Add Marking "+newMarking.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
             if (newMarking.size() > ownCnt) {
-              System.out.println("Net Owners = "+convertFrom.getOwners());
-              System.out.println(convertFrom.myString());
+              System.out.println("Token Rule Makring to large Net Owners = "+convertFrom.getOwners());
+              System.out.println("Token Rule Makring to large "+ convertFrom.myString());
+              System.out.println("newMarking "+newMarking.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
               throw new CompilationException(convertFrom.getClass(), "Token Rule Makring to large ");
             } //+ newMarking.toString());
           }

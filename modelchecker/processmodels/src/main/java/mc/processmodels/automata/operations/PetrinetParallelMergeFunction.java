@@ -1,11 +1,7 @@
 package mc.processmodels.automata.operations;
 
-import com.google.common.collect.Iterables;
-import lombok.SneakyThrows;
-import mc.Constant;
 import mc.exceptions.CompilationException;
 import mc.processmodels.petrinet.Petrinet;
-import mc.processmodels.petrinet.components.PetriNetEdge;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
 import mc.processmodels.petrinet.operations.PetrinetReachability;
@@ -46,7 +42,7 @@ public class PetrinetParallelMergeFunction {
     composition.addPetrinetNoOwner(p1,tag1);
     composition.addPetrinetNoOwner(p2,tag2);
     composition.setRoots(roots);
-    composition.setStartFromRoot();
+    composition.setRootFromNet();
 
 
 

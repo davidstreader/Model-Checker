@@ -195,7 +195,7 @@ public class OperationEvaluator {
         Set<String> flags = operation.getFlags();
         //trace = new Stack<>();
         boolean r = false;
-        System.out.print("***evalOp "+alpha+"  "+operation.myString());
+        System.out.println("***evalOp "+alpha+"  "+operation.myString());
         /*System.out.println("evalOp "+operation.myString());
         for(String key: processMap.keySet()){
             //System.out.println(key+"->"+processMap.get(key).getId());
