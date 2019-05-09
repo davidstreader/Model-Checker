@@ -35,7 +35,7 @@ public  class  MyAssert {
     if (apply) {
       try {
         petri.validatePNet();
-        System.out.println(mess+" Valid");
+        //System.out.println(mess+" Valid");
       } catch (Exception e){
         System.out.println(mess+" INVALID");
         throw e;
@@ -47,7 +47,7 @@ public  class  MyAssert {
     if (apply) {
       try {
         aut.validateAutomaton();
-        System.out.println(mess+" Valid");
+        //System.out.println(mess+" Valid");
       } catch (Exception e){
         System.out.println(mess+" INVALID");
         throw e;

@@ -14,8 +14,8 @@ import java.util.stream.Collectors;
 
 public class Nfa2dfaWorks {
   /**
-   * Build a dfa from a nfa  Add Quiescent loop edge to the dfa where needed
-   *
+   * Build a dfa from a nfa  Add Quiescent,STOP and START edges where needed
+   *      treat a! a? a and a^  in the same way
    * @param id       the id of the resulting automaton
    * @param flags    the flags given by the function (e.g. {@code unfair} in {@code abs{unfair}(A)}
    * @param context  the z3 context
@@ -28,7 +28,9 @@ public class Nfa2dfaWorks {
 
 
   public Automaton compose(String id, Set<String> flags, Context context,
-                           TraceType tt, SubSetDataConstructor dataConstructor, Automaton... automata)
+                           TraceType tt,
+                           SubSetDataConstructor dataConstructor, // passed in from TraceWorks
+                           Automaton... automata)
     throws CompilationException {
     boolean cong = flags.contains(Constant.CONGURENT);
 

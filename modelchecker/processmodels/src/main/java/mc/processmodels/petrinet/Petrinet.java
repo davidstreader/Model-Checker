@@ -663,7 +663,9 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     System.out.println(ping + " " + r);
     return r;
   }
-
+/*
+  Assumes that petri net data is correct
+ */
   public void tidyUpRootAndEndOnPlaces() {
     //Tidy up root and End nos on Places
 
@@ -1051,7 +1053,11 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
   public void addRoot(Set<String> r) {
     roots.add(r);
   }
-
+  public void addRoots(List<Set<String>> rts) {
+    for(Set<String> r: rts) {
+      roots.add(r);
+    }
+  }
   public PetriNetPlace addPlace() {
     // return addPlace(this.id +":p:" + placeId++);
     PetriNetPlace pl = this.addPlace("p:" + placeId++);

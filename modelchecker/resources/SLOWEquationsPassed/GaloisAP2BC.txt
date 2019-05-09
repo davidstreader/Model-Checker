@@ -153,10 +153,15 @@ X1 = fap2bc{a,b,c}(A1:AP).
 }
 }
 operation{
-A3:AP <f{cong}A1:AP.
-//A1:AP <f{cong}A3:AP.
-simp{cong}(abs{cong}(fap2bc{a,b,c}(A3:AP))) <qsf{cong} simp{cong}(abs{cong}(fap2bc{a,b,c}(A1:AP))). 
-simp{cong}(abs(fap2bc{a,b,c}(A3:AP))) <qsf{cong} simp{cong}(abs(fap2bc{a,b,c}(A1:AP))). 
+A3:AP <f  A1:AP.
+Y3:Zoo <q Y1:Zoo.
+X3:Zoo <q X1:Zoo.
+
+simp{cong}(abs{cong}(fap2bc{a,b,c}(A3:AP))) <q simp{cong}(abs{cong}(fap2bc{a,b,c}(A1:AP))). 
+
+simp{cong}(abs(fap2bc{a,b,c}(A3:AP))) <q
+ simp{cong}(abs(fap2bc{a,b,c}(A1:AP))). 
+
 simp(abs(fap2bc{a,b,c}(A3:AP))) <qsf{cong} simp(abs(fap2bc{a,b,c}(A1:AP))). 
 //simp{cong}(abs(fap2bc{a,b,c}(A1:AP))) <qsf{cong} simp{cong}(abs(fap2bc{a,b,c}(A3:AP))). 
 }
@@ -187,9 +192,14 @@ simp(abs(revap2bc(fap2bc{b,c}(X:AP)))) <f simp(abs(revap2bc(fap2bc{b,c}(Y:AP))))
 X:Mx <f Y:Mx ==> 
 simp(abs(revap2bc(fap2bc{g,h}(X:Mx)))) <f simp(abs(revap2bc(fap2bc{g,h}(Y:Mx)))). 
 
-
+// need to strip trailing listening
+X:AP <f Y:AP ==> fap2bc{a,b,c}(X:AP) <qsf fap2bc{a,b,c}(Y:AP). 
+ 
+// reverse works
+fap2bc(X:AP) <qsf fap2bc(Y:AP) ==> fap2bc(revap2bc(fap2bc(X:AP))) <qsf fap2bc(revap2bc(fap2bc(Y:AP))).
  
 
+/*
  X:AP <f{cong}   simp{cong}(abs(revap2bc(fap2bc{b,c}(X:AP)))). 
 
  simp{cong}(abs(revap2bc(fap2bc{b,c}(X:AP)))) <f{cong}  X:AP . 
@@ -212,9 +222,11 @@ X:AP <f{cong} Y:AP ==> simp{cong}(abs(revap2bc(fap2bc(X:AP)))) <f{cong} simp{con
 simp{cong}(abs(revap2bc(fap2bc(X:AP)))) <f{cong} X:AP.
 simp{cong}(abs(revap2bc(fap2bc(X:AP[]Y:AP)))) <f{cong} X:AP[]Y:AP.
 
-
+*/
 
 }
+
+
 
 
 

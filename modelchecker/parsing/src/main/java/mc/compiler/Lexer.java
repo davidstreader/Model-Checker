@@ -169,6 +169,7 @@ public class Lexer {
     Location start = new Location(line, column, line, column + 2, index, index + 2);
     tokens:
     for (String infixToken : Iterables.concat(infixFunctions,operationFunctions)) {
+   System.out.println("Lexer "+infixToken);
       for (int i = 0; i < infixToken.length(); i++) {
         if (index + i >= characters.length || characters[index + i] != infixToken.charAt(i)) {
           continue tokens;

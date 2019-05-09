@@ -97,6 +97,11 @@ public class AutomatonEdge extends ProcessModelObject {
     /*  !((getTo().isSTOP() == getFrom().isSTOP()) &&
       (getTo().isStartNode() == getFrom().isStartNode())); */
   }
+
+  public boolean externalNodes(){
+   return ((getTo().isStartNode()&& getFrom().isSTOP()) ||
+           (getFrom().isStartNode()&& getTo().isSTOP())) ;
+  }
  /* public boolean isObservableHidden() {
     return label.equals(Constant.HIDDEN) &&
       !((getTo().isSTOP() == getFrom().isSTOP()) &&

@@ -78,7 +78,7 @@ public class SimpFunction implements IProcessFunction {
 
     assert automata.length == 1;
     Automaton automaton = automata[0].copy(); // Deep Clone  as automata changed
-    //System.out.println("SIMP start !" + automaton.getId());
+    System.out.println("SIMP flags "+ flags+"  " + automaton.getId());
     //MyAssert.myAssert(automaton.validateAutomaton("Simp input "+automaton.getId()+" vlaid = "), "Simp input Failure");
     MyAssert.validate(automaton, "Simp input ");
     if (flags.contains(Constant.OBSEVATIONAL)) {
@@ -124,7 +124,7 @@ public class SimpFunction implements IProcessFunction {
     }
   }
 /*
-  build a
+  build a colouring and return the colour equivalent partition
  */
   public List<List<String>> buildPartition(Set<String> flags, Automaton automaton) {
     boolean cong = flags.contains(Constant.CONGURENT);
@@ -135,8 +135,8 @@ public class SimpFunction implements IProcessFunction {
     edges.addAll(automaton.getEdges());
     nodes.addAll(automaton.getNodes());
     ColouringUtil colourer = new ColouringUtil();
-    Map<Integer, List<ColouringUtil.ColourComponent>> colourMap = new HashMap<>();
 
+    //Colour the nodes
     colourer.performInitialColouring(nodes, cong);
     colourer.doColouring(nodes, cong);
     //System.out.println("SIMP colour "+ automaton.getId());

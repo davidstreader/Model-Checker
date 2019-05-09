@@ -28,19 +28,22 @@ public class SCCTarjan {
     this.graph = graph;
     stack = new Stack<>();
     time = 0;
-    components = new ArrayList<>();
+    components = new ArrayList<>(); // a lists of nodes or component
 
     for (AutomatonNode u : graph.keySet())
       if (!visited.containsKey(u)|| !visited.get(u))
         dfs(u);
-   //printCSS(components);
+   //work done for node u now result in components reformate for output
     List<List<String>> out = new ArrayList<>();
     for(List<AutomatonNode> nds: components){
       out.add(nds.stream().map(x->x.getId()).collect(Collectors.toList()));
     }
     return out;
   }
-
+/*
+    A depth first search starting at node u
+    returns the strongly connected component to u in components
+ */
   void dfs(AutomatonNode u) {
     lowlink.put(u,time++);
     visited.put(u,true);

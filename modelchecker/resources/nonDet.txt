@@ -1,10 +1,11 @@
 processes {
-//Z = STOP.
+ Az = STOP.
 //Z1 = ERROR.
 A = a->STOP.
 B = b ->STOP.
  Al = a->Al.
-Bl = b-> Bl.
+
+/*Bl = b-> Bl.
 
  E = a->ERROR.  //Problem Child
 
@@ -20,18 +21,25 @@ A2c = a->STOP | b->STOP.
 Ala = b->Ala| a->STOP.
 Ala1 = a->Ala1| c->STOP.
 Ala2 = b->a->Ala2| a->STOP.  //Problem Child
+*/
 
+Out1 = Az=>A.
+Out11 = Az[]Az.
+//Out2 = (Az[]Az) => Al.
 }
 
 operation {
-A ~ A.
-(A[]A) ~ (A[]A).
- (A[]A)=>A ~ (A[]A)=>A.
-}
 
-equation {
-(X[]Y)=>Z ~ (Y[]X)=>Z.
 }
+/*
+equation {
+X <f X.
+(X[]Y) <f (Y[]X).
+(X[]Y)=>Z <f (Y=>Z)[](X=>Z).
+(Y=>Z)[](X=>Z)  <f (X[]Y)=>Z.
+}
+*/
+
 
 
 

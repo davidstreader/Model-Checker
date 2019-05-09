@@ -104,9 +104,9 @@ public class ProcessRootNode extends ASTNode {
   @Override
   public String myString(){
     StringBuilder sb = new StringBuilder();
-    sb.append("Root"+label+" "+process.myString() );
-    if (hiding!=null) sb.append(" h "+hiding.myString() );
-    if (relabelSet!=null) sb.append(" r "+relabelSet.myString() );
+    sb.append(process.myString() );
+    if (hiding!=null) sb.append(hiding.myString() );
+    if (relabelSet!=null) sb.append(relabelSet.myString() );
     return sb.toString();
   }
 }

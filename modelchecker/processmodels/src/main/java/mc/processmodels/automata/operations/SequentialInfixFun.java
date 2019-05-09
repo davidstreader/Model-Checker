@@ -155,9 +155,10 @@ public class SequentialInfixFun {
 
   public Petrinet compose(String id, Petrinet n1, Petrinet n2, Guard guard)
     throws CompilationException {
-    //System.out.println("=>PETRI1 "+ id+" "+n1.getId()+" => "+n2.getId());
+    System.out.println("=>PETRI1 "+ id+" "+n1.getId()+" => "+n2.getId());
     //MyAssert.validate(n1, "Sequential => input "+n1.getId());
     //MyAssert.validate(n2, "Sequential => input "+n2.getId());
+
     MyAssert.validate(n1,"n1 ==> precondition ");
     MyAssert.validate(n1," ==> n2 precondition ");
 
@@ -180,7 +181,7 @@ public class SequentialInfixFun {
     if (net1.getId().equals(net2.getId())) {
       System.out.println("\n SAME NETS PROBLEM\n");
     }
-    Petrinet composition = new Petrinet(id, false);
+    Petrinet composition = new Petrinet("SEQ", false);
     if (n2.getRootEvaluation() != null && n2.getRootEvaluation().size() > 0) {
       composition.setRootEvaluation(n2.getRootEvaluation());
     }
@@ -278,7 +279,7 @@ public class SequentialInfixFun {
 
     //MyAssert.myAssert(sequential.validatePNet("Sequential => input "+sequential.getId()+ " valid ="), "=> precondition");
     MyAssert.validate(sequential, "Sequential => output ");
-    //System.out.println("=> END " + sequential.myString());
+    System.out.println("=> END " + sequential.getId());
     return sequential;
 
 

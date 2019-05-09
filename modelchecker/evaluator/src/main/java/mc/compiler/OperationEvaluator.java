@@ -218,7 +218,7 @@ public class OperationEvaluator {
             Automaton a = null;
             Automaton b = null;
             //Operations ~ <f <t <q ...
-            //System.out.println("Evaluate automaton operation "+operation.getFirstProcessType()+ " "+operation.getSecondProcessType());
+            System.out.println("Evaluate automaton operation "+operation.myString()+ " on "+operation.getFirstProcessType()+ " "+operation.getSecondProcessType());
             if (operation.getFirstProcess()instanceof  FunctionNode  ||
                 operation.getFirstProcess()instanceof  IdentifierNode) {
                 //System.out.println("\nOpeval Function1 "+operation.getFirstProcess().myString());

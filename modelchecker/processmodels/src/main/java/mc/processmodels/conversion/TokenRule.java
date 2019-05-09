@@ -197,8 +197,9 @@ public class TokenRule {
             //System.out.println("   Add Marking "+newMarking.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
             if (newMarking.size() > ownCnt) {
               System.out.println("Net Owners = "+convertFrom.getOwners());
+              System.out.println("Token Rule Makring to large");
               System.out.println(convertFrom.myString());
-              throw new CompilationException(convertFrom.getClass(), "Token Rule Makring to large ");
+          //    throw new CompilationException(convertFrom.getClass(), "Token Rule Makring to large ");
             } //+ newMarking.toString());
           }
         }

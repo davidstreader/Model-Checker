@@ -57,7 +57,7 @@ public class OwnersRule {
   @SneakyThrows({CompilationException.class})
   public static Petrinet ownersRule(Automaton ain) {
     if (ain==null) System.out.println("Owners null");
-    System.out.println("OwnersRule initial automata " + ain.getId() + "*START ");
+    //System.out.println("OwnersRule initial automata " + ain.getId() + "*START ");
     //Throwable t = new Throwable(); t.printStackTrace();
     clean();
     //MyAssert.myAssert(ain.validateAutomaton("Owners Rule input "+ain.getId()+" vlaid = "), "Owners Rule Failure");

@@ -688,6 +688,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
   /**
    * merges second node into the first keeping the firsts id
    * ONLY used in SIMP
+   * do not add tau loops for stateObservable taus
    *
    * @param node1
    * @param node2

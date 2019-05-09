@@ -34,7 +34,8 @@ public class QuiescentFailureRefinement implements IOperationInfixFunction {
   public String getOperationType(){return "automata";}
   @Override
   public Collection<String> getValidFlags(){
-    return ImmutableSet.of(Constant.UNFAIR, Constant.FAIR, Constant.CONGURENT);
+    return ImmutableSet.of(Constant.UNFAIR, Constant.FAIR,
+             Constant.CONGURENT,Constant.NOListeningLoops);
   }
   /**
    * Evaluate the quiescent singeltonFailure  refinement function.
@@ -49,6 +50,7 @@ public class QuiescentFailureRefinement implements IOperationInfixFunction {
                           Stack<String> trace, Collection<ProcessModel> processModels) throws CompilationException {
     //System.out.println("\nQUIESCENT " + alpha);
     boolean cong = flags.contains(Constant.CONGURENT);
+    boolean noLL = flags.contains(Constant.NOListeningLoops);
     //ProcessModel[] pms =  processModels.toArray();
     Automaton a1 = ((Automaton) processModels.toArray()[0]).copy();
     Automaton a2 = ((Automaton) processModels.toArray()[1]).copy();
@@ -67,8 +69,10 @@ public class QuiescentFailureRefinement implements IOperationInfixFunction {
     //System.out.println("\n new listeningAlphabet " + listeningAlphabet);
 
     ArrayList<ProcessModel> pms = new ArrayList<>();
-    addListeningLoops(a1, listeningAlphabet);
-    addListeningLoops(a2, listeningAlphabet);
+    if (! noLL) {
+      addListeningLoops(a1, listeningAlphabet);
+      addListeningLoops(a2, listeningAlphabet);
+    }
     //System.out.println(a1.myString());
     //System.out.println(a2.myString());
     pms.add(a1);

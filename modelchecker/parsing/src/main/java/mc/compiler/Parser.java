@@ -556,7 +556,9 @@ public class Parser {
 
     // check if a hiding set has been defined
     if (peekToken() instanceof HideToken || peekToken() instanceof AtToken) {
+
       processNode.setHiding(parseHiding());
+      //System.out.println("parsing setting Hide "+processNode.myString());
     }
 
     // check if an interrupt process has been defined
@@ -967,6 +969,10 @@ public class Parser {
       {
         function.getReplacements().put(simpReplacements, null);
       }
+    }
+    if (type.equals("abs") ) {
+      Throwable t = new Throwable();
+      System.out.println("Parsing abs function "+ function.myString());
     }
     return function;
   }

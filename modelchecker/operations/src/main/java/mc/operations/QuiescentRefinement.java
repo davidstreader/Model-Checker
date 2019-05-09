@@ -40,7 +40,7 @@ public class QuiescentRefinement implements IOperationInfixFunction {
   public String getOperationType(){return Constant.AUTOMATA;}
   @Override
   public Collection<String> getValidFlags(){
-  return ImmutableSet.of(Constant.UNFAIR, Constant.FAIR, Constant.CONGURENT);
+  return ImmutableSet.of(Constant.UNFAIR, Constant.FAIR, Constant.CONGURENT, Constant.NOListeningLoops);
   }
   /**
    * Evaluate the quiescent trace  refinement function.
@@ -49,8 +49,10 @@ public class QuiescentRefinement implements IOperationInfixFunction {
    * option 1 has proven very hard to implement - after several attempts am forced to
    * acknowledge that I can not define this algorithm
    *
-   *
-   *
+   * B = a?->(b?->bb!->STOP |c?->cc!->STOP).
+   * A = a?->b?->bb!->STOP|a?->c?->cc!->STOP.
+   * B !<q A.      with listening loops they are not Quiescent trace equivalent
+   * B <q{noLL} A.  without listening loops they are Quiescent trace equivalent
    *
    * @param aXX
    * @param processModels automaton in the function (e.g. {@code A} in {@code A ~ B})
@@ -61,6 +63,7 @@ public class QuiescentRefinement implements IOperationInfixFunction {
                           Stack<String> trace, Collection<ProcessModel> processModels) throws CompilationException {
     //System.out.println("\nQUIESCENT " +flags );
     boolean cong = flags.contains(Constant.CONGURENT);
+    boolean noLL = flags.contains(Constant.NOListeningLoops);
     //ProcessModel[] pms =  processModels.toArray();
     Automaton a1 = ((Automaton) processModels.toArray()[0]).copy();
     Automaton a2 = ((Automaton) processModels.toArray()[1]).copy();
@@ -89,8 +92,10 @@ public class QuiescentRefinement implements IOperationInfixFunction {
     //System.out.println("*** Q a2  " + a2.myString());
 
     ArrayList<ProcessModel> pms = new ArrayList<>();
-    addListeningLoops(a1, listeningAlphabet);
-    addListeningLoops(a2, listeningAlphabet);
+    if (! noLL) {
+      addListeningLoops(a1, listeningAlphabet);
+      addListeningLoops(a2, listeningAlphabet);
+    }
     //System.out.println("*** Qx a1  " + a1.myString());
     //System.out.println("*** Qx a2  " + a2.myString());
 
@@ -103,9 +108,10 @@ public class QuiescentRefinement implements IOperationInfixFunction {
     return tw.evaluate(flags,context, pms,
       TraceType.QuiescentTrace,
       trace,
-      tr::readyWrapped,
+      // ready wrapped has no quiescent code
+      tr::readyWrapped, // used in nfa2dfa to build the 'acceptance sets'
       (s1, s2, cong1, error) -> tr.isReadySubset(s1, s2, cong1, error)
-     //(s1, s2, cong, error) -> isReadySubset(s1, s2, cong, error));
+     //also has no quiescent code
         //System.out.println("Q "+error.error);
 
         );

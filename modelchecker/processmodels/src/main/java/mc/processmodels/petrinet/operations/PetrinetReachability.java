@@ -24,9 +24,11 @@ public final class PetrinetReachability {
   2. then select transitions to be removed
   3. if a place selected to be removed is a pre place of a required transition
   do NOT remove it
+
+  Assumes that PetriNet data on End and Root is correct
  */
   public static Petrinet removeUnreachableStates(Petrinet pet, boolean merge) throws CompilationException {
-   //System.out.println("\n UNREACH " + pet.myString());
+   //System.out.println("\n UNREACH merge = " +merge+" "+ pet.myString());
 
     Petrinet petri = pet.copy();
     //System.out.println("removeUnreach CHECK END " +petri.getEnds());
@@ -40,8 +42,8 @@ public final class PetrinetReachability {
         PetriNetPlace pl = petri.getPlaces().get(name);
         rtP.add(pl);
       }
-//System.out.println("pushing root size " + rtP.size() +" "+
-    //   rtP.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
+  //System.out.println("pushing root size " + rtP.size() +" "+
+  //     rtP.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
       toDo.push(rtP);
     }
 
@@ -60,9 +62,9 @@ public final class PetrinetReachability {
       if (previouslyVisitedMarking.contains(currentMarking)) {
         continue;
       }
-/*if (currentMarking==null) System.out.println("currentMarking == null");
+/*if (currentMarking==null)System.out.println("currentMarking == null");
       else
-      System.out.println("MARKING: "+Petrinet.marking2String(currentMarking)); */
+      //System.out.println("MARKING: "+Petrinet.marking2String(currentMarking)); */
       //System.out.println("Post "+Petrinet.trans2String(post(currentMarking)));
       Set<PetriNetTransition> satisfiedPostTransitions = satisfiedTransitions(currentMarking);
       for (PetriNetTransition transition : satisfiedPostTransitions) {

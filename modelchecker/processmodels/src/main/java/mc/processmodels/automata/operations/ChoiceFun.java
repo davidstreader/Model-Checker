@@ -50,7 +50,7 @@ public class ChoiceFun {
 
   public Petrinet compose(String id, Petrinet n1, Petrinet n2)
     throws CompilationException {
-    System.out.println(n1.getId()+" []  "+n2.getId());
+    //System.out.println(n1.getId()+" []  "+n2.getId());
     Petrinet net1 = n1.reId("1");
     Set<String> own1 = net1.getOwners();
     List<Set<String>> oneEnd = net1.getEnds();
@@ -60,8 +60,8 @@ public class ChoiceFun {
     Petrinet net2 = n2.reId("2");
     Set<String> own2 = net2.getOwners();
     //System.out.println("[]PETRI1 "+net1.myString("edge"));
-    MyAssert.myAssert(net1.validatePNet("Choice => input "+net1.getId()+ " valid ="), "[] precondition");
-    MyAssert.myAssert(net2.validatePNet("Choice => input "+net2.getId()+ " valid ="), "[] precondition");
+    MyAssert.validate(net1," n1 [] precondition ");
+    MyAssert.validate(net2," [] n2  precondition ");
 
     List<Set<String>> twoRoots =  new ArrayList<>();
      for(Set<String> rs: net2.getRoots()) {
@@ -120,6 +120,7 @@ public class ChoiceFun {
 
         net2.setRoots(newRoots);
         net2.setStartFromRoot();
+        net2.setEndFromPlace();
         //System.out.println("[]after Glueing start  " + net2.myString("edge") + "\n");
     }
     List<Set<String>> newList = new ArrayList<Set<String>>(twoRoots);
@@ -142,15 +143,17 @@ public class ChoiceFun {
         }
 
     }
+    // need to sort out End data on Petri Nets before reachability
 
-    //System.out.println("[]before reachability "+ net2.myString("edge")+"\n");
+    //System.out.println("[]before reachability "+ net2.myString("edge"));
     net2 = PetrinetReachability.removeUnreachableStates(net2);
-    //System.out.println("\n[] OUT "+ net2.myString("edge"));
+    //System.out.println("\n[] after Reachability "+ net2.myString("edge"));
+    net2.setEndFromPlace();
     net2.buildAlphabetFromTrans();
     //System.out.println("[] OUT "+ net2.getId()+"\n");
     //net2.reId("");
-    MyAssert.myAssert(net2.validatePNet("Choice [] output "+net2.getId()+ " valid ="), "[] output Failure");
-
+   // MyAssert.myAssert(net2.validatePNet("Choice [] output "+net2.getId()+ " valid ="), "[] output Failure");
+    MyAssert.validate(net2,"Choice [] output "+net2.getId());
     return net2;
   }
 
