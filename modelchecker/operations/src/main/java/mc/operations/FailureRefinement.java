@@ -131,14 +131,14 @@ public class FailureRefinement implements IOperationInfixFunction {
     //alpha.addAll(a1Union);
     //alpha.addAll(a2Union);
     //See Return to Root in Cribsheet
-    if (!cong) {
+  /*  if (!cong) {
       a2Union = a2Union.stream().filter(x -> !Constant.externalOrEND(x)).collect(Collectors.toSet());
-    }
+    } */
     //System.out.println("is a2U "+a2Union+"  a sub set of a1U "+a1Union);
     if (!a1Union.containsAll(a2Union)) {
       a2Union.removeAll(a1Union);    //the problem Acceptance set
       //alpha.removeAll(a2Union);      //the problem Refusal set
-      error.error = "Acpt"+a2Union; //"R"+alpha.toString()+;
+      error.error = "Acpt"+a2Union+" from " +a2+" - "+a1; //"R"+alpha.toString()+;
       //System.out.println("failing "+alpha);
       b =  false;
     }

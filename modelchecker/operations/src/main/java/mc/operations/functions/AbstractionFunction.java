@@ -108,7 +108,7 @@ public class AbstractionFunction implements IProcessFunction {
     Automaton startA = automata[0].copy(); //Deep Clone
 //int nodeLable
      boolean owned = flags.contains(Constant.OWNED);
-    System.out.println("\n***ABSTRACTION flags " + flags+ "\n"+ startA.myString());
+    //System.out.println("\n***ABSTRACTION flags " + flags+ "\n"+ startA.myString());
     //System.out.println("\n\nautomata Abs start "+ startA.myString()+ " flags "+flags+ " cong "+cong);
     //startA.validateAutomaton("");
     MyAssert.validate(startA,"Abstraction input " );
@@ -122,7 +122,7 @@ public class AbstractionFunction implements IProcessFunction {
       //System.out.println("\n******\nABS no DUP no Loop\n" + abstraction.myString());
     //abstraction =  AutomataReachability.removeUnreachableNodes(abstraction);
     MyAssert.validate(abstraction,"Abstraction output " );
-    System.out.println("\n*****Abs final \n*****Abs final\n" + abstraction.myString()+"\n");
+    //System.out.println("\n*****Abs final \n*****Abs final\n" + abstraction.myString()+"\n");
     return abstraction;
   }
 
@@ -162,7 +162,7 @@ public class AbstractionFunction implements IProcessFunction {
         List<AutomatonEdge> temp = new ArrayList<AutomatonEdge>();
 
       //FALL through only straight taus and no loops in graph!
-       // System.out.println(" obs "+abstraction.myString());
+       // //System.out.println(" obs "+abstraction.myString());
       try {
         if (hiddenEdge.getTo().isSTOP()) {
           hiddenEdge.getFrom().setStopNode(true);

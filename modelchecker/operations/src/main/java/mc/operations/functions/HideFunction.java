@@ -65,8 +65,9 @@ public class HideFunction implements IProcessFunction {
       if (alphabet.contains(action)) {
         automaton.relabelEdges(action, Constant.HIDDEN);
       } else {
-        throw new CompilationException(getClass(), "Unable to find action " + action
-            + " for hiding.", null);
+        System.out.println("Unable to find action " + action+ " for hiding in "+automaton.getId());
+       /* throw new CompilationException(getClass(), "Unable to find action " + action
+            + " for hiding.", null); */
       }
     }
     Set<String> newFlags = new TreeSet<>();

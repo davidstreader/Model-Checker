@@ -502,7 +502,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
   }
 
   public void addEnd(String newEndNode) throws CompilationException {
-    System.out.println("addEnd "+this.getEndList() + "  add "+newEndNode);
+    //System.out.println("addEnd "+this.getEndList() + "  add "+newEndNode);
     // check the the new root is defined
     if (newEndNode == null) {
       throw new CompilationException(getClass(), "Unable to add null to end",
@@ -516,7 +516,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     }
     if (!end.contains(newEndNode))
       this.end.add(newEndNode);
-    System.out.println("addEnd "+this.getEndList());
+    //System.out.println("addEnd "+this.getEndList());
   }
 
   public Set<String> getRootId() {

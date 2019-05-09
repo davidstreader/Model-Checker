@@ -5,7 +5,7 @@ import mc.processmodels.automata.Automaton;
 import mc.processmodels.petrinet.Petrinet;
 
 public  class  MyAssert {
-  private static boolean apply = true;  // KEEP SET TO TRUE --  only use false for certain debugging
+  private static boolean apply = false;  // KEEP SET TO TRUE --  only use false for certain debugging
 
 /*  public static void myAssert(Automaton, String mess) throws CompilationException {
     boolean b = true;
@@ -27,9 +27,9 @@ public  class  MyAssert {
   public static void validate(Petrinet petri,String mess) throws CompilationException {
     if (apply) {
       try {
-        System.out.println("APPLY = "+apply);
+        //System.out.println("APPLY = "+apply);
         petri.validatePNet();
-        System.out.println(mess+" Valid");
+        //System.out.println(mess+" Valid");
       } catch (Exception e){
         System.out.println(mess+" INVALID");
         throw e;
@@ -40,7 +40,7 @@ public  class  MyAssert {
     if (apply) {
       try {
         aut.validateAutomaton();
-        System.out.println(mess+" Valid");
+        //System.out.println(mess+" Valid");
       } catch (Exception e){
         System.out.println(mess+" INVALID");
         throw e;

@@ -8,6 +8,8 @@ public class Constant {
     public static final String BROADCASTSinput = "?";
     public static final String ACTIVE = "^";
     public static final String EPSILON  = "\u03B5";  // empty trace
+    public static final String EPSILONr  = "\u03B5r";  // empty trace
+    public static final String EPSILONe  = "\u03B5e";  // empty trace
     public static final String STOP = "STOP";
     public static final String END = "END";  // only for non cong but completeTrace
     public static final String ERROR = "ERROR";

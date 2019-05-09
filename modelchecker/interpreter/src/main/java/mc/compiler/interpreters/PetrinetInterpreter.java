@@ -330,10 +330,10 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
             pn.joinNet(localProcesses.get(key));
           }
         }
-        System.out.println("SYMBOLIC prior to tree2net "+pn.myString("edge"));
+        //System.out.println("SYMBOLIC prior to tree2net "+pn.myString("edge"));
         //tree2net should link them
         pn = tree2net(pn);  // SYMBOLIC
-        System.out.println("SYMBOLICafter to tree2net "+pn.myString("edge"));
+        //System.out.println("SYMBOLICafter to tree2net "+pn.myString("edge"));
         // processMap.put(pn.getId(),pn);  This is done in Interpreter NOT here?
         return pn;
       }
@@ -353,9 +353,9 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
         //should be COPY  see above
         processHiding(petrinet, root.getHiding());
       }
-      System.out.println("prior to tree2net "+petrinet.myString("edge"));
+      //System.out.println("prior to tree2net "+petrinet.myString("edge"));
       petrinet = tree2net(petrinet);
-      System.out.println("after to tree2net "+petrinet.myString("edge"));
+      //System.out.println("after to tree2net "+petrinet.myString("edge"));
       //System.out.println("  *** ProcessRootNode petri "+petrinet.getId());
       //processStack.push(petrinet);
       return petrinet;
@@ -376,9 +376,9 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
 
       //System.out.println("  ***ELSE  petri "+petrinet.myString());
 
-      System.out.println("ELSE prior to tree2net "+petrinet.myString("edge"));
+      //System.out.println("ELSE prior to tree2net "+petrinet.myString("edge"));
       petrinet = tree2net(petrinet);  //ELSE
-      System.out.println("ELSE after to tree2net "+petrinet.myString("edge"));
+      //System.out.println("ELSE after to tree2net "+petrinet.myString("edge"));
       //System.out.println("  ***ELSE ***tree2net petri "+petrinet.myString());
       return petrinet;
     }
@@ -660,7 +660,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
 
   // current place is in petri Just set it as terminal
   private Petrinet interpretTerminal(TerminalNode term) throws CompilationException {
-    System.out.println("Terminal"+term.myString());
+    //System.out.println("Terminal"+term.myString());
     if (term.getTerminal().equals(Constant.STOP))
       return Petrinet.stopNet();
     else if (term.getTerminal().equals(Constant.END))
@@ -727,12 +727,12 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     String lab = seq.getFrom().getAction(); // Now unique see Petrinet.netId
     Petrinet start = Petrinet.oneEventNet(lab);
     Petrinet petri = interpretASTNode(seq.getTo());  //initially the STOP net
-    System.out.println("SEQUENCE INPUT one   "+start.myString());
-    System.out.println("SEQUENCE INPUT petri "+petri.myString());
+    //System.out.println("SEQUENCE INPUT one   "+start.myString());
+    //System.out.println("SEQUENCE INPUT petri "+petri.myString());
     //System.out.println("SEQUENCE INPUT ev "+ev.myString()+"\n");
     SequentialInfixFun sif = new SequentialInfixFun();
     Petrinet ret = sif.compose(lab, start, petri);
-    System.out.println("SEQUENCE end " + ret.myString() + "\n");
+    //System.out.println("SEQUENCE end " + ret.myString() + "\n");
 
     return ret;
   }

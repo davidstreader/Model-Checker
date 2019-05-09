@@ -9,7 +9,6 @@ import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetEdge;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
-import mc.util.expr.MyAssert;
 
 public final class PetrinetReachability {
 
@@ -102,7 +101,7 @@ public final class PetrinetReachability {
     //System.out.println("removeAll CHECK END " +petri.getEnds());
     for (PetriNetPlace p : placesToRemove) {
       //System.out.println("removeing "+p.myString());
-      petri.removePlace(p, merge);  // parallel comp will remove all End
+      petri.removePlace(p, merge, false);  // parallel comp will remove all End
     }
 
     //System.out.println("Trans to Go "+ transitionsToRemove.stream().map(x->x.getId()+", ") .collect(Collectors.toSet()));
@@ -142,7 +141,7 @@ public final class PetrinetReachability {
     }
     for (PetriNetPlace p : togo) {
       //System.out.println("togo "+p.getId());
-      petri.removePlace(p,false);
+      petri.removePlace(p,false, false);
     }
 
    /*

@@ -146,7 +146,7 @@ public class OperationEvaluator {
 
         List<String> firstIds = collectIdentifiers(operation.getFirstProcess());
         List<String> secondIds = collectIdentifiers(operation.getSecondProcess());
-        System.out.println("evaluateOp " +operation.myString()+ " firstId " +firstIds+ " second "+secondIds);
+        //System.out.println("evaluateOp " +operation.myString()+ " firstId " +firstIds+ " second "+secondIds);
 //bound variable will have been removed.
         List<String> missing = new ArrayList<>(firstIds);
         missing.addAll(secondIds);  // all process ids
@@ -195,7 +195,7 @@ public class OperationEvaluator {
         Set<String> flags = operation.getFlags();
         //trace = new Stack<>();
         boolean r = false;
-        System.out.println("***evalOp "+alpha+"  "+operation.myString());
+        //System.out.println("***evalOp "+alpha+"  "+operation.myString());
         /*System.out.println("evalOp "+operation.myString());
         for(String key: processMap.keySet()){
             //System.out.println(key+"->"+processMap.get(key).getId());
