@@ -56,8 +56,8 @@ public class OwnersRule {
    */
   @SneakyThrows({CompilationException.class})
   public static Petrinet ownersRule(Automaton ain) {
-    if (ain==null) System.out.println("Owners null");
-    //System.out.println("OwnersRule initial automata " + ain.getId() + "*START ");
+    //if (ain==null) System.out.println("Owners null");
+    //System.out.println("*********\n OwnersRule initial automata " + ain.myString() + "*START ");
     //Throwable t = new Throwable(); t.printStackTrace();
     clean();
     //MyAssert.myAssert(ain.validateAutomaton("Owners Rule input "+ain.getId()+" vlaid = "), "Owners Rule Failure");
@@ -198,16 +198,18 @@ public class OwnersRule {
       //System.out.println("reach *END "+build.myString());
 
       //3. remove S* to reveal the multiple start states.
+      //System.out.println("  OWNERS Rule Strip* start" + build.myString()+"\n*start");
       stripStar(build);
-      //System.out.println("  OWNERS Rule *END " + build.myString()+"\n*END");
+      //System.out.println("  OWNERS Rule Strip* END  " + build.myString()+"\n*END");
       //assert(build.validatePNet(): "OwnersRule End");
     } else {
       build = Petrinet.startNet();
     }
+    build.reown("");
     //build.validatePNet();
     MyAssert.validate(build,"Owners Rule output ");
     //assert build.validatePNet("Owners Net"): "Owners Rule Failure";
-    //System.out.println("Owners end with "+build.getId());
+    //System.out.println("Owners end with "+build.myString());
     return build;
   }
 
@@ -232,7 +234,8 @@ public class OwnersRule {
     } else {
       rs = roots.iterator().next();
       toStrip = pout.getPlaces().get(rs).post();
-      //System.out.println("toStrip "+toStrip.size()+ " " +toStrip.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
+      //System.out.println("OR Post S* "+toStrip.size()+ " \n " +toStrip.stream().
+              //       map(x->x.post().stream().map(x1->x1.myString()+"\n ").collect(Collectors.joining())).collect(Collectors.joining()));
     }
     //System.out.println("rs = "+rs);
     List<Set<String>> newRoots = new ArrayList<>();
@@ -244,6 +247,7 @@ public class OwnersRule {
       pout.removeTransition(tr);
       for (String plname : rtpost) {
         PetriNetPlace pl = pout.getPlaces().get(plname);
+        //System.out.println("OR new Root "+pl.myString());
         pl.addStartNo(rindx);
         pl.setStart(true);
       }
@@ -252,7 +256,7 @@ public class OwnersRule {
     //System.out.println("rs = "+rs);
     if (pout.getPlaces().keySet().contains(rs)) pout.removePlace(pout.getPlaces().get(rs));
     pout.setRoots(newRoots);
-    //pout.setStartFromRoot();
+    //pout.setRootFromNet();
     //System.out.println("StripStar OUT"+pout.myString()+"\n");
     return pout;
   }

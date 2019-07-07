@@ -8,6 +8,8 @@ public class Constant {
     public static final String BROADCASTSinput = "?";
     public static final String ACTIVE = "^";
     public static final String EPSILON  = "\u03B5";  // empty trace
+    public static final String EPSILONr  = "\u03B5r";  // empty trace
+    public static final String EPSILONe  = "\u03B5e";  // empty trace
     public static final String STOP = "STOP";
     public static final String END = "END";  // only for non cong but completeTrace
     public static final String ERROR = "ERROR";
@@ -16,10 +18,9 @@ public class Constant {
 
     public static final String CONGURENT = "cong";
     public static final String OBSEVATIONAL = "obs";
-    public static final String OWNED = "owned";
     public static final String FAIR = "fair";
     public static final String UNFAIR = "unfair";
-    public static final String NOListeningLoops = "noLL";
+    public static final String OWNED = "owned";
 
     public static final String AUTOMATA = "automata";
     public static final String PETRINET = "petrinet";

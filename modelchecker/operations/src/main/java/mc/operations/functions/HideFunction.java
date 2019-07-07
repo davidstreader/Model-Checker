@@ -65,11 +65,18 @@ public class HideFunction implements IProcessFunction {
       if (alphabet.contains(action)) {
         automaton.relabelEdges(action, Constant.HIDDEN);
       } else {
-        throw new CompilationException(getClass(), "Unable to find action " + action
-            + " for hiding.", null);
+        System.out.println("Unable to find action " + action+ " for hiding in "+automaton.getId());
+       /* throw new CompilationException(getClass(), "Unable to find action " + action
+            + " for hiding.", null); */
       }
     }
-    return new   AbstractionFunction().compose(id, new HashSet<>(), context,  automaton);
+    Set<String> newFlags = new TreeSet<>();
+    if (flags.contains(Constant.OWNED)) newFlags.add(Constant.OWNED);
+    if (flags.contains(Constant.FAIR)) newFlags.add(Constant.FAIR);
+    if (flags.contains(Constant.UNFAIR)) newFlags.add(Constant.UNFAIR);
+    if (flags.contains(Constant.CONGURENT)) newFlags.add(Constant.CONGURENT);
+
+    return new   AbstractionFunction().compose(id, newFlags, context,  automaton);
   }
 
   /**

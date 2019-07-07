@@ -61,11 +61,7 @@ public class SetNode extends ASTNode {
 
   public String myString(){
     StringBuilder sb = new StringBuilder();
-    //sb.append("Set "+ set);
-    for(int i = 0; i < set.size() ; i++) {
-      sb.append(set.get(i));
-      if (i< set.size() -1) sb.append(",");
-    }
+    sb.append("Set "+ set);
     rangeMap.forEach((k,v)->sb.append(k+"->"+v.myString()+", "));
     return sb.toString();
   }

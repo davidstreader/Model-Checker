@@ -129,24 +129,20 @@ Fx3  = a?->X, X= a?->X| b?->X|a?->STOP.
 }
 }
 
-/*operation{
+operation{
 la2:Pro <qsf{cong} La:Pro.
 la2:Pro <q{cong} La:Pro.
 
-} */
+}
 equation {
-X:Pro <q Y:Pro ==>  X:Pro <qsf Y:Pro .
-X:Pro <qsf Y:Pro ==>  X:Pro <q Y:Pro .
-
-//X:Pro <q Y:Pro ==>  X:Pro ||{a!,b!,x!} T:Test <q  Y:Pro ||{a!,b!} T:Test.
 
 /*  This should and dose fail
  forall{X:Test} (X||{a,b}Y:Pro <q{cong} X||{a,b}Z:Pro) ==> Y:Pro <qsf{cong} Z:Pro.
 */
 // BELOW Working  
 
-// Y:Pro <qsf Z:Pro ==>Y:Pro <q Z:Pro. 
-// Y:Pro <qsf{cong} Z:Pro ==>Y:Pro <qsf Z:Pro.
+Y:Pro <qsf Z:Pro ==>Y:Pro <q Z:Pro. 
+Y:Pro <qsf{cong} Z:Pro ==>Y:Pro <qsf Z:Pro.
 
 
 /* Remember sf< dose not imply t< and as you might expect
@@ -155,13 +151,12 @@ X:Pro <qsf Y:Pro ==>  X:Pro <q Y:Pro .
 */
 //Y:Pro <qsf{cong} Z:Pro ==>Y:Pro <q{cong} Z:Pro. 
 
-// Y:Pro <qsf{cong} Z:Pro ==> forall{X:Test} (X||{a!,b!,x!}Y:Pro <q{cong} X||{a!,b!,x!}Z:Pro). 
+// Y:Pro <qsf{cong} Z:Pro ==> forall{X:Test} (X||{a,b}Y:Pro <q{cong} X||{a,b}Z:Pro). 
  
-// Y:Pro <qsf Z:Pro ==> forall{X:Test} (X||{a!,b!,x!}Y:Pro <q X||{a!,b!,x!}Z:Pro).
-// forall{X:Test} (X||{a!,b!,x!}Y:Pro <q X||{a!,b!,x!}Z:Pro) ==> Y:Pro <qsf Z:Pro.
+Y:Pro <qsf Z:Pro ==> forall{X:Test} (X||{a,b,x}Y:Pro <q X||{a,b,x}Z:Pro).
+forall{X:Test} (X||{a,b,x}Y:Pro <q X||{a,b,x}Z:Pro) ==> Y:Pro <qsf Z:Pro.
 
 } 
-
 
 
 

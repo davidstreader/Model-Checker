@@ -1,12 +1,6 @@
 package mc.processmodels.petrinet.operations;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
-
 import mc.exceptions.CompilationException;
-import mc.processmodels.automata.Automaton;
-import mc.processmodels.automata.AutomatonEdge;
-import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
@@ -79,7 +73,7 @@ public class RefineFun {
 
 
       String tag = "Ref";
-        composition.addPetrinet(petrinet2,true);  // The ids have changed
+        composition.addPetrinet(petrinet2,true, true);  // The ids have changed
      // composition.addPetrinetNoOwner(petrinet2, tag);
       System.out.println("composition = " + composition.myString());
 

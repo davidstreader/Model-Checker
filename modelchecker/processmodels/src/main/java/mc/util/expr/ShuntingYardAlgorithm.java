@@ -1,9 +1,7 @@
 package mc.util.expr;
 
-import com.microsoft.z3.BitVecExpr;
-import com.microsoft.z3.BoolExpr;
-import com.microsoft.z3.Context;
-import com.microsoft.z3.Expr;
+import com.microsoft.z3.*;
+
 import java.util.Arrays;
 import java.util.EmptyStackException;
 import java.util.HashMap;
@@ -67,19 +65,29 @@ public class ShuntingYardAlgorithm {
     index = 0;
   }
 
+
+  /*
+     The output,  Expr ia a Z3 AST
+   */
   public Expr convert(String expression, Location location) throws InterruptedException, CompilationException {
     try {
       reset();
       char[] characters = expression.toCharArray();
-
+    //  Throwable t = new Throwable();t.printStackTrace();
+  //System.out.println("convert shunting Yard "+expression);
       while (index < expression.length()) {
         String result = parse(characters);
+    //System.out.println("   res = "+result+ "  current "+current);
         if (Objects.equals(result, "boolean")) {
           BoolExpr op = context.mkBool(Boolean.parseBoolean(current));
           output.push(op);
         } else if (Objects.equals(result, "integer")) {
           BitVecExpr op = Expression.mkBV(Integer.parseInt(current), context);
           output.push(op);
+        } else if (Objects.equals(result, "real")) {
+          FPNum op = Expression.mkNum(Double.parseDouble(current), context);
+          output.push(op);
+          //System.out.println("sY real Pushed "+op.getSExpr());
         } else if (Objects.equals(result, "variable")) {
           BitVecExpr op = context.mkBVConst(current, 32);
           output.push(op);
@@ -108,11 +116,16 @@ public class ShuntingYardAlgorithm {
             processStack(operator);
           }
         }
+        //System.out.println("sY  convert half way "+ output.peek().toString());
       }
 
       while (!operatorStack.isEmpty()) {
         processStack(operatorStack.pop());
       }
+      //System.out.println("sY  convert output size "+output.toString());
+
+     // if (!output.empty()) System.out.println("sY  convert output peek "+output.peek().toString());
+
 
       return output.pop();
     } catch (EmptyStackException | ClassCastException ex) {
@@ -191,10 +204,13 @@ public class ShuntingYardAlgorithm {
 
     return null;
   }
-
+/*
+  Sets current
+ */
   private String parse(char[] expression) {
     gobbleWhitespace(expression);
     String string = new String(expression).substring(index);
+ //System.out.println("sY parse "+string);
     if (string.toLowerCase().startsWith("true")) {
       current = "true";
       index += 4;
@@ -216,8 +232,15 @@ public class ShuntingYardAlgorithm {
       return "boolean";
     }
     if (Character.isDigit(expression[index])) {
-      parseInteger(expression);
-      return "integer";
+      //System.out.println("sY exp = "+ string+ " "+ string.contains("."));
+      if (string.contains(".")) {
+        parseReal(expression);
+        return "real";
+      } else {
+        parseInteger(expression);
+        return "integer";
+      }
+
     } else if (expression[index] == '$') {
       parseVariable(expression);
       return "variable";
@@ -236,6 +259,14 @@ public class ShuntingYardAlgorithm {
   private void parseInteger(char[] expression) {
     StringBuilder builder = new StringBuilder();
     while (index < expression.length && Character.isDigit(expression[index])) {
+      builder.append(expression[index++]);
+    }
+    current = builder.toString();
+  }
+  private void parseReal(char[] expression) {
+    StringBuilder builder = new StringBuilder();
+
+    while (index < expression.length && (Character.isDigit(expression[index]) || (expression[index] == '.'))) {
       builder.append(expression[index++]);
     }
 

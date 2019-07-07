@@ -39,12 +39,17 @@ public class IdentifierNode extends ASTNode {
    * @param identifier the identifier of the process or constant. {@link #identifier}
    * @param location   the location within the users code, where this node is {@link ASTNode#location}
    */
+
   public IdentifierNode(String identifier, String domain, Location location) {
-    super(location, "Identifier");
+      super(location, "Identifier");
     this.identifier = identifier;
     this.domain = domain;
   }
+  public IdentifierNode(String identifier,  Location location) {
+    super(location, "Identifier");
+    this.identifier = identifier;
 
+  }
   public String myString() {
     return identifier + ":" + domain;
   }

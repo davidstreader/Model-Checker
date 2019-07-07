@@ -1,7 +1,6 @@
 package mc.compiler;
 
 import com.microsoft.z3.Context;
-import mc.TraceType;
 import mc.exceptions.CompilationException;
 import mc.plugins.IProcessFunction;
 import mc.processmodels.MultiProcessModel;
@@ -69,7 +68,7 @@ public class A2P2A implements IProcessFunction {
 
  //   pn = PetrinetReachability.removeUnreachableStates( OwnersRule.ownersRule(inputA));
     //System.out.println("A2p2a input "+ inputA.myString());
-    pn.addPetrinet(OwnersRule.ownersRule(inputA), true); //root needed
+    pn.addPetrinet(OwnersRule.ownersRule(inputA), true, true); //root needed
     //System.out.println("\n p in a2P2a "+pn.myString());
     Automaton   aut = TokenRule.tokenRule(pn) ;
     //System.out.println("\n End a in a2p2A "+aut.myString());

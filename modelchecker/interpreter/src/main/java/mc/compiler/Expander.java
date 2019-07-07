@@ -9,6 +9,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
 import mc.compiler.ast.*;
 import mc.compiler.iterator.IndexIterator;
 import mc.exceptions.CompilationException;
@@ -17,7 +18,6 @@ import mc.util.expr.Expression;
 import mc.util.expr.ExpressionEvaluator;
 import mc.util.expr.ExpressionPrinter;
 import mc.util.expr.VariableCollector;
-import com.rits.cloning.Cloner;
 
 public class Expander {
 
@@ -34,14 +34,15 @@ public class Expander {
    Only seen booleans. And are used temporarliy in IndentifyerNode.identifyer  C[$v2][$v3]
    until expanded to C[2][$k]  where k is a hidden variable
     */
-  private Map<String, Expr> globalVariableMap;
+  private Map<String, Expr> globalVariableMap;  // symbolic variables
 
   private ExpressionEvaluator evaluator = new ExpressionEvaluator();
   private Map<String, List<String>> identMap = new HashMap<>();  // LocalId -> $i,$s
 
   //set at top level may remove shortly
   private Set<String> symbolicVariables = new HashSet<>();  // C${i,k} symbolic variables i and k
-
+  private String forAllId = null;
+  private List<LocalProcessNode> forAllLocalProcesses = new ArrayList<>();
   //private Map<String,ProcessNode> symbolicStore = new TreeMap<>();
 
   public AbstractSyntaxTree expand(AbstractSyntaxTree ast, BlockingQueue<Object> messageQueue, Context context)
@@ -60,6 +61,9 @@ public class Expander {
       if (operation instanceof ImpliesNode) {
         System.out.println("expander ==>");
       } else {
+        /*
+           maps indexes to Integer and ??
+         */
         Map<String, Object> variableMap = new HashMap<>();
         ASTNode process1 = expand(operation.getFirstProcess(), variableMap, context);
         ASTNode process2 = expand(operation.getSecondProcess(), variableMap, context);
@@ -68,13 +72,17 @@ public class Expander {
         operation.setSecondProcess(process2);
       }
     }
-
+    System.out.println("\n Expander ends with ");
+    System.out.println("   " + ast.myString());
+    System.out.println("   " + ast.toString());
     return ast;
   }
 
   /**
    * Expand ProcessNode (AST for one process)
+   * index-> Int variableMap reInitialised
    * processNode is being overwriten hence not available for subsequent symbolic expansion!
+   *
    * @param process
    * @param messageQueue
    * @param context
@@ -84,11 +92,18 @@ public class Expander {
    */
   private ProcessNode expand(ProcessNode process, BlockingQueue<Object> messageQueue, Context context)
     throws CompilationException, InterruptedException {
-   // symbolicStore.put(process.getIdentifier(), (ProcessNode) process.copy()); // deep clone!
-   // System.out.println("symbolic "+ process.getIdentifier()+"->"+  symbolicStore.get(process.getIdentifier()).myString());
-
-   // messageQueue.add(new LogAST("Expanding:", process));
-    //System.out.println("\nexpanding process " + process.myString());
+    // symbolicStore.put(process.getIdentifier(), (ProcessNode) process.copy()); // deep clone!
+    //System.out.println("symbolic "+ process.getIdentifier()+"->"+  symbolicStore.get(process.getIdentifier()).myString());
+    boolean forAll = false;
+    // messageQueue.add(new LogAST("Expanding:", process));
+    System.out.println("\nexpanding process " + process.myString());
+    if (process.getProcess() instanceof ForAllStatementNode) {
+      System.out.println("ping " + process.getIdentifier());
+      forAll = true;
+      forAllId = process.getIdentifier();
+    } else {
+      forAllId = "";
+    }
     identMap.clear();
     if (process.hasSymbolicVariableSet()) {
       symbolicVariables = process.getSymbolicVariables().getVariables();
@@ -109,25 +124,34 @@ public class Expander {
     //System.out.println("hidden "+symbolicVariables);
     //System.out.println("idMap  "+ identMap.keySet().stream().map(x->x+"->"+identMap.get(x)).collect(Collectors.joining()));
     ASTNode root;
-  //  if (symbolicVariables.size()==0)
-      root = expand(process.getProcess(), variableMap, context);
+    //  if (symbolicVariables.size()==0)
+    root = expand(process.getProcess(), variableMap, context);
  /*   else {
-      System.out.println(process.getIdentifier()+" -holds- "+ ((IdentifierNode) process.getProcess()).getIdentifier());
+      //System.out.println(process.getIdentifier()+" -holds- "+ ((IdentifierNode) process.getProcess()).getIdentifier());
       ProcessNode symb = symbolicStore.get(((IdentifierNode) process.getProcess()).getIdentifier());
 //symb.getProcess().getName()
-      System.out.println("symbolic "+((ProcessNode) symb).myString());
+      //System.out.println("symbolic "+((ProcessNode) symb).myString());
       root = symb;  //expand(symb, variableMap, context);
     } */
     //System.out.println("root "+root.myString());
     process.setProcess(root);
     List<LocalProcessNode> localProcesses = expandLocalProcesses(process.getLocalProcesses(), variableMap, context);
     process.setLocalProcesses(localProcesses);
-    //System.out.println("Ending Expand "+process.myString());
+    if (forAll) {
+      System.out.println("pong " + process.getIdentifier());
+      process.setLocalProcesses(forAllLocalProcesses);
+    } else {
+      forAllLocalProcesses.clear();
+    }
+
+    System.out.println("Ending Expand " + process.myString());
     return process;
   }
 
   /*
-  expand local process
+  expand local process  -
+      indexes to be expanded only on LocalProcesses
+      a one -> many expansion of local processes
    */
   private List<LocalProcessNode> expandLocalProcesses(List<LocalProcessNode> localProcesses,
                                                       Map<String, Object> variableMap,
@@ -194,7 +218,7 @@ public class Expander {
    */
   private ASTNode expand(ASTNode astNode, Map<String, Object> variableMap, Context context)
     throws CompilationException, InterruptedException {
- //System.out.println("epanding ASTNode "+astNode.myString()+" "+astNode.getClass().getSimpleName());
+    //System.out.println("**** epanding ASTNode "+astNode.myString()+" "+astNode.getClass().getSimpleName());
     if (Thread.currentThread().isInterrupted()) {
       throw new InterruptedException();
     }
@@ -205,6 +229,7 @@ public class Expander {
     } else if (astNode instanceof IndexExpNode) {
       astNode = expand((IndexExpNode) astNode, variableMap, context);
     } else if (astNode instanceof SequenceNode) {
+      astNode = expand((SequenceNode) astNode, variableMap, context);
       astNode = expand((SequenceNode) astNode, variableMap, context);
     } else if (astNode instanceof ChoiceNode) {
       astNode = expand((ChoiceNode) astNode, variableMap, context);
@@ -223,7 +248,9 @@ public class Expander {
     HashMap<String, Object> tmpVarMap = new HashMap<>(variableMap);
     tmpVarMap.keySet().removeIf(s -> symbolicVariables.contains(s.substring(1)));
     astNode.setModelVariables(tmpVarMap);
-
+    //System.out.println("**** ending expand next "+astNode.myString());
+    //System.out.println("var map "+variableMap.keySet());
+    //System.out.println("global Var map ");
     return astNode;
   }
 
@@ -252,10 +279,11 @@ public class Expander {
     astNode.setAction(action);
     return astNode;
   }
-/*
-  Building many copies of process in IEN
-  change to variableMap  alters error detection! (local scope)
- */
+
+  /*
+    Building many copies of process in IEN
+    change to variableMap  alters error detection! (local scope)
+   */
   private ASTNode expand(IndexExpNode astNode, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException {
     IndexIterator iterator = IndexIterator.construct(expand(astNode, context));
     Stack<ASTNode> iterations = new Stack<>();
@@ -294,14 +322,21 @@ public class Expander {
                               Context context)
     throws CompilationException, InterruptedException {
     //add a guard to every sequenceNode. This will only contain next data.
+    //System.out.println("Sequence getTo "+astNode.getTo().myString());
+
 
     Guard guard = new Guard();
     if (astNode.getTo() instanceof IdentifierNode) {
-      //Parse the next values from this IdentifierNode Set up guard on astNode
-      guard.parseNext(((IdentifierNode) astNode.getTo()).getIdentifier(), globalVariableMap, identMap, astNode.getTo().getLocation());
-      //There were next values, so assign to the metadata
-      if (guard.hasData()) {
-        astNode.setGuard(guard);
+      if (symbolicVariables.isEmpty()) {
+        //System.out.println("astNode "+astNode.myString()+ " globVar "+ globalVariableMap.keySet().toString());
+      } else { // process symbolic ID
+        //Parse the next values from this IdentifierNode Set up guard on astNode
+
+        guard.parseNext(((IdentifierNode) astNode.getTo()).getIdentifier(), globalVariableMap, identMap, astNode.getTo().getLocation());
+        //There were next values, so assign to the metadata
+        if (guard.hasData()) {
+          astNode.setGuard(guard);
+        }
       }
     }
     //nextMap and next is set on astNode Guard!
@@ -353,7 +388,7 @@ public class Expander {
   private ASTNode expand(IfStatementExpNode astNode, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException {
     VariableCollector collector = new VariableCollector();
     Map<String, Integer> vars = collector.getVariables(astNode.getCondition(), variableMap);
-    Guard trueGuard =  new Guard(astNode.getCondition(), vars, symbolicVariables);
+    Guard trueGuard = new Guard(astNode.getCondition(), vars, symbolicVariables);
     Guard falseGuard = new Guard(astNode.getCondition(), vars, symbolicVariables);
     ASTNode trueBranch = expand(astNode.getTrueBranch(), variableMap, context);
     if (trueBranch.getGuard() != null) {
@@ -442,38 +477,158 @@ public class Expander {
     return astNode;
   }
 
-  private ASTNode expand(ForAllStatementNode astNode, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException {
-    Stack<ASTNode> nodes = expand(astNode.getProcess(), variableMap, astNode.getRanges().getRanges(), 0, context);
-
-    ASTNode node = nodes.pop();
-    while (!nodes.isEmpty()) {
-      ASTNode nextNode = nodes.pop();
-      node = new CompositeNode("||", nextNode, node, astNode.getLocation(), new HashSet<String>());
-    }
-
-    return node;
+  private String l2s(List<ASTNode> lt) {
+    return lt.stream().map(n -> n.myString()).collect(Collectors.joining(", "));
   }
 
-  private Stack<ASTNode> expand(ASTNode process, Map<String, Object> variableMap, List<IndexExpNode> ranges, int index, Context context) throws CompilationException, InterruptedException {
-    Stack<ASTNode> nodes = new Stack<>();
+  private ASTNode expand(ForAllStatementNode astNode, Map<String, Object> variableMap, Context context) throws CompilationException, InterruptedException {
+    System.out.println("EXPANDER Z0 ForAllStatementNode " + forAllId + "\n   " + astNode.myString());
+    CompositeNode out = null;
+    IdentifierNode idn = null;
+    List<LocalProcessNode> localProcesses = new ArrayList<>();
 
-    if (index < ranges.size()) {
-      IndexExpNode node = ranges.get(index);
+    Map<Integer, ASTNode> nodes = expand(astNode.getProcess(), variableMap, astNode.getRanges().getRanges(), context);
+    String o = nodes.values().stream().map(n -> n.myString()).collect(Collectors.joining(", "));
+    RangesNode rEmpty = new RangesNode(new ArrayList<>(),astNode.getLocation());
+    int i = 1;
+    String nextPr = "";
+      for (int imap : nodes.keySet()) {
+        LocalProcessNode lpn = null;
+        IdentifierNode idn2 = new IdentifierNode("FAKE", astNode.getLocation());
+        nextPr = forAllId + "[" + imap + "]";
+        if (i == 1) {
+          ASTNode node = nodes.get(imap);
+          idn = new IdentifierNode(nextPr, node.getLocation());
+          System.out.println("EXPANDER Z1 ForAllStatementNode First Process \n" + node.myString());
+          System.out.println("         pn " + idn.myString());
+          lpn = new LocalProcessNode(nextPr, rEmpty, node, astNode.getLocation());
+          System.out.println("LPN1 " + lpn.myString());
+          localProcesses.add(lpn);
+        } else if (i == 2) {
+          ASTNode n2 = nodes.get(imap);
+          System.out.println("EXPANDER Z2 ForAllStatementNode First Process \n" + n2.myString());
+          idn2 = new IdentifierNode(nextPr, n2.getLocation());
+          LocalProcessNode lpn2 =
+            new LocalProcessNode(nextPr, rEmpty, n2, astNode.getLocation());
+          System.out.println("LPN2 " + lpn2.myString());
+          localProcesses.add(lpn2);
+          out = new CompositeNode("||", idn, idn2, astNode.getLocation(), new HashSet<String>());
+          System.out.println("For 2 out "+ out.myString());
+        } else {
+          ASTNode nextNode = nodes.get(imap);
+          lpn = new LocalProcessNode(nextPr, rEmpty, nextNode, astNode.getLocation());
+          System.out.println("Lpn " + lpn.myString());
+          localProcesses.add(lpn);
+          IdentifierNode idni = new IdentifierNode(nextPr, astNode.getLocation());
+          out = new CompositeNode("||", idni, out, astNode.getLocation(), new HashSet<String>());
+          System.out.println("For "+i+" out "+ out.myString());
+        }
+        i++;
+      }
+
+    forAllLocalProcesses = localProcesses;
+
+      if (out==null) {
+        if (idn==null) {
+          throw new CompilationException(Expander.class, "forall to small: ", astNode.getLocation());
+        } else {
+          return idn;
+        }
+      }
+    System.out.println("EXPANDER end " + forAllLocalProcesses.size() + " " + out.myString());
+    return out;
+  }
+
+  /*
+      ONLY call from forAllStatementNode
+       builds  a stack of indexed processes  one for each index value
+           later to be expanded
+   */
+  private Map<Integer, ASTNode> expand(ASTNode process, Map<String, Object> variableMap,
+                                       List<IndexExpNode> ranges, Context context) throws CompilationException, InterruptedException {
+    Map<Integer, ASTNode> nodes = new TreeMap<>();
+    ASTNode ps = process.copy();
+    System.out.println("EXPAND 4all  process " + process.myString());
+    int ir = 1;
+    for (int ix = 0; ix < ranges.size(); ix++) {// more than one range
+
+      IndexExpNode node = ranges.get(ix);
       IndexIterator iterator = IndexIterator.construct(expand(node, context));
       String variable = node.getVariable();
-
+      System.out.println("Expander var " + variable + " ix = " + ix + " ir = " + ir);
       while (iterator.hasNext()) {
-        variableMap.put(variable, iterator.next());
-        nodes.addAll(expand(process, variableMap, ranges, index + 1, context));
+        System.out.println("EXPAND process nodes " + nodes.size());
+        iterator.next();
+        variableMap.put(variable, ir);
+        ASTNode psNew = expand(ps.copy(), variableMap, context);
+        System.out.println(" while ir = " + ir + " ps " + psNew.myString());
+        nodes.put(ir, psNew);
+        ir++;
       }
-    } else {
-      process = expand(process.copy(), variableMap, context);
-      nodes.add(process);
     }
-
+    String o = nodes.values().stream().map(n -> n.myString()).collect(Collectors.joining(", "));
+    System.out.println("   EXPAND 4all returns stack \n    " + o);
     return nodes;
+
   }
 
+  /*
+    private Stack<ASTNode> expand(ASTNode process, Map<String, Object> variableMap,
+                                  List<IndexExpNode> ranges, int index, Context context) throws CompilationException, InterruptedException {
+      Stack<ASTNode> nodes = new Stack<>();
+      ASTNode ps = process.copy();
+      System.out.println("EXPAND 4all  process "+process.myString());
+      if (index < ranges.size()) {
+        IndexExpNode node = ranges.get(index);
+        IndexIterator iterator = IndexIterator.construct(expand(node, context));
+        String variable = node.getVariable();
+        System.out.println("Expander var "+variable+" index = "+index);
+        while (iterator.hasNext()) {
+          //System.out.println("EXPAND process nodes "+nodes.size());
+          variableMap.put(variable, iterator.next());
+          nodes.addAll(expand(ps, variableMap, ranges, index + 1, context));
+
+        }
+      } else {
+        System.out.println(" else "+ ps.getName());
+        process = expand(process.copy(), variableMap, context);
+        ProcessNode pn = new ProcessNode(forAllId, process,process.getLocation());
+        System.out.println(" else "+ pn.myString());
+        nodes.add(process);
+      }
+      String o = nodes.stream().map(n->n.myString()).collect( Collectors.joining( ", " ));
+      System.out.println("EXPAND 4all process returns stack \n    "+o);
+      return nodes;
+    }
+
+
+
+    private Stack<ASTNode> expandXX(ASTNode process, Map<String, Object> variableMap,
+                                  List<IndexExpNode> ranges, int index, Context context) throws CompilationException, InterruptedException {
+      Stack<ASTNode> nodes = new Stack<>();
+      System.out.println("EXPAND  process "+process.myString());
+      if (index < ranges.size()) {
+        IndexExpNode node = ranges.get(index);
+        IndexIterator iterator = IndexIterator.construct(expand(node, context));
+        String variable = node.getVariable();
+        System.out.println("Expander var "+variable+" index = "+index);
+        while (iterator.hasNext()) {
+          //System.out.println("EXPAND process nodes "+nodes.size());
+          variableMap.put(variable, iterator.next());
+          nodes.addAll(expand(process, variableMap, ranges, index + 1, context));
+
+        }
+      } else {
+        System.out.println(" else "+ process.getName());
+        process = expand(process.copy(), variableMap, context);
+        nodes.add(process);
+      }
+      String o = nodes.stream().map(n->n.myString()).collect( Collectors.joining( "," ));
+      System.out.println("EXPAND process returns"+o);
+      return nodes;
+    }
+
+  */
   private RelabelNode expand(RelabelNode relabel, Context context) throws CompilationException, InterruptedException {
     List<RelabelElementNode> relabels = new ArrayList<>();
 
@@ -533,9 +688,10 @@ public class Expander {
 
     return new SetNode(newActions, set.getLocation());
   }
-/*
-   Processes multiple ranges!
- */
+
+  /*
+     Processes multiple ranges!
+   */
   private List<String> expand(String action, Map<String, Object> variableMap, List<IndexExpNode> ranges, int index, Context context)
     throws CompilationException, InterruptedException {
     List<String> actions = new ArrayList<>();
@@ -567,16 +723,17 @@ public class Expander {
     for (Map.Entry<String, Object> entry : variableMap.entrySet()) {
       if (entry.getValue() instanceof Integer) {
         variables.put(entry.getKey(), (Integer) entry.getValue());
-                             //Hard codeing restriction to Integers
+        //Hard codeing restriction to Integers
       }
     }
     boolean b = Expression.isSolvable(condition, variables, context);
     //System.out.println("z3 "+condition.toString()+" "+ variableMap.entrySet()+" returns "+b);
     return b;
   }
-/*
-  called when expanding Identifier  and an event name
- */
+
+  /*
+    called when expanding Identifier  and an event name v$ -> i$ < 2
+   */
   private String processVariables(String string, Map<String, Object> variableMap, Location location, Context context) throws CompilationException, InterruptedException {
     Map<String, Integer> integerMap = constructIntegerMap(variableMap);
     //System.out.println("integer Map "+integerMap.entrySet().stream().map(x->x.getKey()+"->"+x.getValue()+", ").collect(Collectors.joining()));
@@ -596,7 +753,7 @@ public class Expander {
           if (containsHidden(expression)) {
             string = string.replaceAll(Pattern.quote(variable) + "\\b", "" + ExpressionPrinter.printExpression(expression).replace("$", ""));
           } else {
-            int result = evaluator.evaluateExpression(expression, integerMap, context);
+            int result = evaluator.evaluateIntExpression(expression, integerMap, context);
             string = string.replaceAll(Pattern.quote(variable) + "\\b", "" + result);
           }
         } else if (integerMap.containsKey(variable)) {

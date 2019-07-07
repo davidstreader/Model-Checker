@@ -110,7 +110,17 @@ public class ProcessNode extends ASTNode {
     symbolicVariables = null;
     interrupt = null;
   }
-
+  /*
+     Used parsing FT forall [i:0..N](p)
+   */
+  public ProcessNode(String identifier,  ASTNode process,  Location location) {
+    super(location,"Process");
+    this.type = new HashSet<>();
+    this.identifier = identifier;
+    this.process =  process;
+    symbolicVariables = null;
+    interrupt = null;
+  }
   public boolean addType(String type) {
     return this.type.add(type);
   }
@@ -136,7 +146,7 @@ public class ProcessNode extends ASTNode {
   @Override
   public String myString(){
     StringBuilder sb = new StringBuilder();
-    sb.append("ProcessNode "+identifier+" process "+process.myString() +" Local:");
+    sb.append("ProcessNode "+identifier+" process "+process.myString() +" Local: "+localProcesses.size());
     if ( localProcesses.size()>0) sb.append("\n ");
     for(LocalProcessNode lpn: localProcesses){
       sb.append(lpn.myString()+"\n ");

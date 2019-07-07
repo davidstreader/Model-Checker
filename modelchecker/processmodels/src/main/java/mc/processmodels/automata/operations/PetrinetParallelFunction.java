@@ -49,7 +49,7 @@ public class PetrinetParallelFunction  {
     //System.out.println("newEnds "+newEnds);
     composition.setRoots(roots);
     composition.setEnds(newEnds);
-    composition.setStartFromRoot();
+    composition.setRootFromNet();
     composition.setEndFromNet();
     //System.out.println("BeforeSYNC END " +composition.myString());
     //do not merge places?
@@ -109,8 +109,8 @@ public class PetrinetParallelFunction  {
     if (flags.size()==0) {
       Set<String> actions1 = p1.getAlphabet().keySet();
       Set<String> actions2 = p2.getAlphabet().keySet();
-      actions1.stream().filter(x->!x.equals(Constant.HIDDEN)).forEach(a -> setupAction(a, actions2));
-      actions2.stream().filter(x->!x.equals(Constant.HIDDEN)).forEach(a -> setupAction(a, actions1));
+      actions1.forEach(a -> setupAction(a, actions2));
+      actions2.forEach(a -> setupAction(a, actions1));
     } else {
       flags.forEach(a -> setupAction(a, flags));
     }

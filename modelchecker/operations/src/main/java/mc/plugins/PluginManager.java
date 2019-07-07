@@ -71,7 +71,7 @@ public class PluginManager {
       sb.append(f+",");
     }
     Logger.getLogger(InterpreterFunctionRegister.class.getSimpleName())
-      .info("PluginLanager LOADED " + sb.toString() + " FUNCTION PLUGIN");
+      .info("**LOADED " + sb.toString() + " FUNCTION PLUGIN");
     getFunctions().forEach(InterpreterFunctionRegister::registerFunction);
     getFunctions().forEach(ParserFunctionRegister::registerFunction);
 
@@ -80,7 +80,7 @@ public class PluginManager {
       sb.append(f+",");
     }
     Logger.getLogger(InterpreterFunctionRegister.class.getSimpleName())
-      .info("PluginLanager LOADED " + sb.toString() + " InfixFUNCTION PLUGIN");
+      .info("**LOADED " + sb.toString() + " InfixFUNCTION PLUGIN");
     //register the {@code X||Y} style functions to the interpreter
     getInfixFunctions().forEach(InterpreterFunctionRegister::registerInfixFunction);
     getInfixFunctions().forEach(ParserFunctionRegister::registerInfixFunction);
@@ -94,7 +94,6 @@ public class PluginManager {
     }
     Logger.getLogger(InterpreterFunctionRegister.class.getSimpleName())
       .info("**LOADED " + sb.toString() + " InfixOPERATION PLUGIN evaluator");
-
     getInfixOperations().forEach(EvaluatorFunctionRegister::registerOperation);
   }
 

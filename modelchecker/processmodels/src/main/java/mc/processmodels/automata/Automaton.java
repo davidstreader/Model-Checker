@@ -502,6 +502,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
   }
 
   public void addEnd(String newEndNode) throws CompilationException {
+    //System.out.println("addEnd "+this.getEndList() + "  add "+newEndNode);
     // check the the new root is defined
     if (newEndNode == null) {
       throw new CompilationException(getClass(), "Unable to add null to end",
@@ -515,6 +516,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     }
     if (!end.contains(newEndNode))
       this.end.add(newEndNode);
+    //System.out.println("addEnd "+this.getEndList());
   }
 
   public Set<String> getRootId() {
@@ -688,7 +690,6 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
   /**
    * merges second node into the first keeping the firsts id
    * ONLY used in SIMP
-   * do not add tau loops for stateObservable taus
    *
    * @param node1
    * @param node2
@@ -1130,12 +1131,12 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     for (AutomatonNode r : root) {
       sb.append(r.getId() + " ");
     }
-    sb.append("end " + end);
-    sb.append("alpa " + this.alphabet.keySet() + " ");
-    sb.append(" own" + owners + "nodes " + getNodes().size() + " edges " + getEdges().size() + "\n");
+    sb.append(" end " + end);
+    sb.append(" alpa " + this.alphabet.keySet() + " ");
+    sb.append(" own " + owners + " nodes " + getNodes().size() + " edges " + getEdges().size() + "\n");
     for (AutomatonNode nd : getNodes()) {
-      sb.append("in " + nd.getIncomingEdges().size() +
-        " out " + nd.getOutgoingEdges().size() + " " + nd.myString() + "\n");
+      sb.append( nd.myString() + "   in " + nd.getIncomingEdges().size() +
+        " out " + nd.getOutgoingEdges().size() + "\n");
     }
     for (AutomatonEdge ed : getEdges()) {
       sb.append(ed.myString() + "\n");

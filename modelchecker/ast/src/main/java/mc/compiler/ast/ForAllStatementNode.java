@@ -65,7 +65,7 @@ public class ForAllStatementNode extends ASTNode {
   public String myString(){
    StringBuilder sb = new StringBuilder();
     if (process !=null) {
-      sb.append(process.getName()+" ");
+      sb.append(process.myString()+" ");
     }
     if (variables!=null) sb.append("variables "+variables);
     if (ranges!=null) sb.append("ranges "+ranges.myString());

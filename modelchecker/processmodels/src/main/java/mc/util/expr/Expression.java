@@ -3,13 +3,8 @@ package mc.util.expr;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.microsoft.z3.BitVecExpr;
-import com.microsoft.z3.BoolExpr;
-import com.microsoft.z3.Context;
-import com.microsoft.z3.Expr;
-import com.microsoft.z3.Solver;
-import com.microsoft.z3.Status;
-import com.microsoft.z3.Z3Object;
+import com.microsoft.z3.*;
+
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -45,6 +40,13 @@ public class Expression {
     private static class Substitute {
         Context ctx;
         Map<String,Integer> variables;
+        Expr expr;
+    }
+    @Data
+    @AllArgsConstructor
+    private static class SubstituteReals {
+        Context ctx;
+        Map<String,Double> variables;
         Expr expr;
     }
     @Data
@@ -157,6 +159,34 @@ public class Expression {
                     return t;
                 }
             });
+
+    /*
+      Below was HACKED from above turning Integer 2 Double  etc
+     */
+    private static LoadingCache<SubstituteReals, Expr> substitutionsReals = CacheBuilder.newBuilder()
+            .maximumSize(1000)
+            .expireAfterWrite(1, TimeUnit.SECONDS)
+            .build(
+                    new CacheLoader<SubstituteReals, Expr>() {
+                        public Expr load(SubstituteReals key) throws InterruptedException {
+                            Map<String,Double> subMap = key.variables;
+                            Expr expr = key.expr;
+                            Expr[] consts = new Expr[subMap.size()];
+                            Expr[] replacements = new Expr[subMap.size()];
+                            int i =0;
+                            for (Map.Entry<String,Double> c : subMap.entrySet()) {
+                                consts[i] = key.ctx.mkBVConst(c.getKey(),32);
+                                FPSort d_sort = key.ctx.mkFPSort(11, 53);
+                                replacements[i++] = key.ctx.mkFP(c.getValue(),d_sort);
+                            }
+                            Expr t = expr.substitute(consts,replacements);
+                            if (Thread.currentThread().isInterrupted()) {
+                                throw new InterruptedException("Interrupted!");
+                            }
+                            return t;
+                        }
+                    });
+
     /**
      * Combine two guards together  -b1--a1->-b2--a2-> ==> -b-a->  b== b1/\ b2@a1
      *    Hoare Logic b2@a1 is the precondition of program a1 with post condition b2
@@ -246,6 +276,10 @@ public class Expression {
     public static Expr substituteInts(Expr expr, Map<String, Integer> subMap, Context ctx) {
         return substitutions.get(new Substitute(ctx,subMap, expr));
     }
+    @SneakyThrows
+    public static Expr substituteReals(Expr expr, Map<String, Double> subMap, Context ctx) {
+       return substitutionsReals.get(new SubstituteReals(ctx,subMap, expr));
+    }
 
     @SneakyThrows
     @SuppressWarnings("unchecked")
@@ -292,6 +326,12 @@ public class Expression {
         }
     }
 
+    /*
+       Called in parse and expander  so could have complexe format!
+     */
+    public static Expr constructExpression(String s, Location location, Context context) throws InterruptedException, CompilationException {
+        return constructExpression(s, Collections.emptyMap(), location, context);
+    }
     /**
      *
      * @param expression        The logical expression as a string to construct
@@ -314,18 +354,28 @@ public class Expression {
             expression = expression.replace(matcher.group(0),variableMap.get(matcher.group(0)));
             matcher = regex.matcher(expression);
         }
+
+        /* OK not sure if this is worth the effort BUT.
+              constant is reparsed converted into an AST using z#Context?
+         */
         // parsing infixed maths to postfixed or AST -- Expr extends AST
+        //System.out.println("expression "+expression+ " parsed into sYard");
         ShuntingYardAlgorithm sya = new ShuntingYardAlgorithm(z3Context);
         return sya.convert(expression, location);
     }
 
-    public static Expr constructExpression(String s, Location location, Context context) throws InterruptedException, CompilationException {
-        return constructExpression(s, Collections.emptyMap(), location, context);
-    }
+
 
     static BitVecExpr mkBV(int i, Context ctx) throws InterruptedException {
+        //  FPSort double_sort = ctx.mkFPSort(11, 53); ctx.mkFP()
         return ctx.mkBV(i,32);
     }
+
+    static FPNum mkNum(Double d, Context ctx) throws InterruptedException {
+        FPSort d_sort = ctx.mkFPSort(11, 53);
+        return ctx.mkFP(d,d_sort);
+    }
+
     private static Field m_ctx;
     static {
         try {

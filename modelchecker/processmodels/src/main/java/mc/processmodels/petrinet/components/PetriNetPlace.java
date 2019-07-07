@@ -181,7 +181,10 @@ public class PetriNetPlace extends ProcessModelObject implements Comparable<Petr
     owners = toCopy.copyOwners();
   }
 
-
+  public void copyRefs(PetriNetPlace toCopy) {
+    references = toCopy.references;
+    leafRef = toCopy.leafRef;
+  }
 
   public Set<PetriNetTransition> pre() {
     return incoming.stream()

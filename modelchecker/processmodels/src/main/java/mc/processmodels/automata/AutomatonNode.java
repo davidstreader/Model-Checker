@@ -245,8 +245,8 @@ public class AutomatonNode extends ProcessModelObject implements Comparable<Auto
   public String myString() {
 
     return "node " + this.getId() + " labNo " + labelNumber + " col " + this.colour +
-      "   quies " + quiescent+ " error " + isERROR()  + " end " + isSTOP() + " start " + isStartNode(); //+"\n   " +
-    //  "         out = " + outgoingEdges.keySet() + " in "+incomingEdges.keySet();
+      "   quies " + quiescent+ " error " + isERROR()  + " end " + isSTOP() + " start " + isStartNode()+"\n   " +
+      "         out = " + outgoingEdges.keySet() + " in "+incomingEdges.keySet();
   }
 
   public String toString() {

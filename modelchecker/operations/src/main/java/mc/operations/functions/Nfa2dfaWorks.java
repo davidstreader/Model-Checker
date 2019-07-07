@@ -14,8 +14,8 @@ import java.util.stream.Collectors;
 
 public class Nfa2dfaWorks {
   /**
-   * Build a dfa from a nfa  Add Quiescent,STOP and START edges where needed
-   *      treat a! a? a and a^  in the same way
+   * Build a dfa from a nfa  Add Quiescent loop edge to the dfa where needed
+   *
    * @param id       the id of the resulting automaton
    * @param flags    the flags given by the function (e.g. {@code unfair} in {@code abs{unfair}(A)}
    * @param context  the z3 context
@@ -28,9 +28,7 @@ public class Nfa2dfaWorks {
 
 
   public Automaton compose(String id, Set<String> flags, Context context,
-                           TraceType tt,
-                           SubSetDataConstructor dataConstructor, // passed in from TraceWorks
-                           Automaton... automata)
+                           TraceType tt, SubSetDataConstructor dataConstructor, Automaton... automata)
     throws CompilationException {
     boolean cong = flags.contains(Constant.CONGURENT);
 
@@ -40,17 +38,19 @@ public class Nfa2dfaWorks {
     Automaton nfa = automata[0].copy();// copies nodeId
     //empty traces needed to trace semantics  NOT sure of effect on other semantics
     //  END added for complete trace
-    for (AutomatonNode rt :nfa.getRoot()){
-      if (rt.getOutgoingEdges().size()==0){
+  /*  for (AutomatonNode rt :nfa.getRoot()){
+      if (rt.isSTOP()){
         AutomatonNode zomNd1 = nfa.getDeadNode("_zom1");
-        nfa.addEdge(Constant.EPSILON, rt, zomNd1, null, true, false);
+        nfa.addEdge(Constant.EPSILONr, rt, zomNd1, null, true, false);
       }
-    }
+    } */
 
     nfa = nfa.reId("p");
     //System.out.println("nfa2dfa START with nfa "+nfa.myString());
     for (AutomatonNode ndn : nfa.getNodes()) {
       // NOT for Galois expaned automata  OK SMART ASS why?
+
+
 
       if (cong) {
         AutomatonNode deadNd = nfa.deadNode();
@@ -105,7 +105,7 @@ public class Nfa2dfaWorks {
         nfa.addEdge(Constant.EPSILON, ndn, nfa.deadNode(), null, true, false);
       } */
     }
-    //System.out.println("ANOTATED nfa  " + nfa.myString());
+    System.out.println("ANOTATED nfa  " + nfa.myString());
 
     Automaton dfa = new Automaton(id + "_dfa", !Automaton.CONSTRUCT_ROOT);
 
@@ -197,7 +197,7 @@ public class Nfa2dfaWorks {
   /*  dfa.getNodes().stream()
         .filter(node -> node.getOutgoingEdges().isEmpty())
         .forEach(node -> node.setTerminal(Constant.STOP)); */
-    //System.out.println("\n built dfa " + dfa.myString() + "\n");
+    System.out.println("\n built dfa " + dfa.myString() + "\n");
     return dfa;
   }
 

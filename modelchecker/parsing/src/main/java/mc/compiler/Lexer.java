@@ -50,11 +50,16 @@ public class Lexer {
         tokens.add(token);
         column += value.length();
       } else if (Character.isDigit(characters[index])) {
-        String integer = parseInteger(characters);
-        Location location = new Location(line, column, line, column + integer.length(), index, index + integer.length());
-        Token token = new IntegerToken(Integer.parseInt(integer), location);
+        String number = parseNumber(characters);
+        Location location = new Location(line, column, line, column + number.length(), index, index + number.length());
+        Token token = null;
+        if (!number.contains(".")) {
+          token = new IntegerToken(Integer.parseInt(number), location);
+        } else {
+          token = new DecimalToken(Double.parseDouble(number), location);
+        }
         tokens.add(token);
-        column += integer.length();
+        column += number.length();
       } else {
         Token token = constructSymbolToken(characters);
         tokens.add(token);
@@ -84,6 +89,20 @@ public class Lexer {
     StringBuilder builder = new StringBuilder();
     while (index < characters.length) {
       if (Character.isDigit(characters[index])) {
+        builder.append(characters[index++]);
+      } else {
+        break;
+      }
+    }
+
+    return builder.toString();
+  }
+
+  private String parseNumber(char[] characters) {
+    StringBuilder builder = new StringBuilder();
+    while (index < characters.length) {
+      if (Character.isDigit(characters[index]) ||
+           (index +1 < characters.length && characters[index]=='.' && Character.isDigit(characters[index+1]))) {
         builder.append(characters[index++]);
       } else {
         break;
@@ -169,7 +188,6 @@ public class Lexer {
     Location start = new Location(line, column, line, column + 2, index, index + 2);
     tokens:
     for (String infixToken : Iterables.concat(infixFunctions,operationFunctions)) {
-   System.out.println("Lexer "+infixToken);
       for (int i = 0; i < infixToken.length(); i++) {
         if (index + i >= characters.length || characters[index + i] != infixToken.charAt(i)) {
           continue tokens;

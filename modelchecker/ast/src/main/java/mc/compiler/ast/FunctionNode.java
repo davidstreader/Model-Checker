@@ -74,15 +74,7 @@ public class FunctionNode extends ASTNode {
   public String myString(){
     StringBuilder sb = new StringBuilder();
     sb.append(function);
-    //String[] flg = flags.toArray();
-    if (flags.size()>0) {
-      sb.append("{");
-      for (int i = 0; i < flags.size(); i++) {
-        sb.append(flags.toArray()[i]);
-        if (i < flags.size() - 1) sb.append(",");
-        else sb.append("}");
-      }
-    }
+    if (flags.size()>0) sb.append(flags);
     sb.append("(");
     processes.stream().forEach(x->sb.append(x.myString()));
     sb.append(")");

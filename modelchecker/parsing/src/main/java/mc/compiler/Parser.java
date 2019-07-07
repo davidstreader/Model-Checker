@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableSet;
 import com.microsoft.z3.*;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import mc.Constant;
 import mc.compiler.ast.*;
@@ -16,7 +15,6 @@ import mc.plugins.IOperationInfixFunction;
 import mc.plugins.IProcessFunction;
 import mc.plugins.IProcessInfixFunction;
 import mc.processmodels.ProcessType;
-import mc.processmodels.automata.AutomatonNode;
 import mc.util.Location;
 import mc.util.expr.Expression;
 import mc.util.expr.ExpressionEvaluator;
@@ -66,24 +64,23 @@ public class Parser {
   }
 
   private static CompilationException constructException(String message, Location location) {
-    Throwable t = new Throwable();
-    t.printStackTrace();
+    //Throwable t = new Throwable(); t.printStackTrace();
     return new CompilationException(Parser.class, message, location);
   }
 
   public AbstractSyntaxTree parse(List<Token> tokens, Context context) throws CompilationException, InterruptedException {
     reset();
-    //System.out.println("Parse "+ tokens);
+    System.out.println("Parse "+ tokens);
     this.tokens = tokens;
     this.context = context;
     domain = "*";
 
     while (index < this.tokens.size() && !Thread.currentThread().isInterrupted()) {
       Token token = peekToken();
-      //System.out.println("parse "+token.toString());
+      System.out.println("parse "+token.toString());
       if (token instanceof ProcessesDefintionToken) {
         parseProcessesDefinition();
-      } else if (token instanceof ConstToken) {
+      } else if (token instanceof ConstToken) {   // "const"
         parseConstDefinition();
       } else if (token instanceof DisplayTypeToken) {  //might be dead code
         parseDisplayType();
@@ -104,8 +101,10 @@ public class Parser {
     System.out.println("Loaded  \n funs " + functions.keySet() +
       "\n infuns " + infixFunctions.keySet() +
       "\n ops " + operationFunctions.keySet());
-
-    return new AbstractSyntaxTree(processes, alphabet, operations, equations, variableMap);
+    AbstractSyntaxTree out =
+       new AbstractSyntaxTree(processes, alphabet, operations, equations, variableMap);
+    System.out.println("parse output "+out.myString());
+    return out;
   }
 
   /**
@@ -283,7 +282,7 @@ public class Parser {
     int startValue;
     if (variableMap.containsKey(expression)) {
       // in this case, 'expression' is an internal variable reference to an expression
-      startValue = expressionEvaluator.evaluateExpression(variableMap.get(expression), new HashMap<>(), context);
+      startValue = expressionEvaluator.evaluateIntExpression(variableMap.get(expression), new HashMap<>(), context);
     } else {
       try {
         // otherwise the expression is an integer that we can parse
@@ -305,7 +304,7 @@ public class Parser {
     int endValue;
     if (variableMap.containsKey(expression)) {
       // in this case, 'expression' is an internal variable reference to an expression
-      endValue = expressionEvaluator.evaluateExpression(variableMap.get(expression), new HashMap<>(), context);
+      endValue = expressionEvaluator.evaluateIntExpression(variableMap.get(expression), new HashMap<>(), context);
     } else {
       // otherwise the expression is an integer that we can parse
       try {
@@ -373,7 +372,7 @@ public class Parser {
     return new SetNode(set, rangeMap, constructLocation(start));
   }
 
-  // PROCESS DEFINITIONS
+  // "const"  Constant definitions
 
   private void parseConstDefinition() throws CompilationException, InterruptedException {
     // ensure that the next token is the 'const' token
@@ -395,17 +394,31 @@ public class Parser {
       Token error = tokens.get(index - 1);
       throw constructException("expecting to parse \"=\" but received \"" + error.toString() + "\"", error.getLocation());
     }
-
+    boolean isInt = true;
+    int intValue = 0;
+    double realValue = 0;
     int start = index;
-    int value = parseSimpleExpression();
+    try {
+      intValue = parseSimpleIntExpression();
+    } catch (CompilationException e) {
+      isInt = false;
+      index = start;
+      realValue = parseSimpleRealExpression();
+    }
 
     if (!(nextToken() instanceof DotToken)) {
       Token error = tokens.get(index - 1);
       throw constructException("expecting to parse \".\" but received \"" + error.toString() + "\"", error.getLocation());
     }
-
-    ConstParseOnlyNode node = new ConstParseOnlyNode(value, constructLocation(start));
-    constantMap.put(identifier.getIdentifier(), node);
+    if (isInt) {
+      ConstParseOnlyNode node = new ConstParseOnlyNode(intValue, constructLocation(start));
+      constantMap.put(identifier.getIdentifier(), node);
+    } else {
+      System.out.println("realValue"+ realValue);
+      ConstParseOnlyNode node = new ConstParseOnlyNode(realValue, constructLocation(start));
+      constantMap.put(identifier.getIdentifier(), node);
+      System.out.println("constantMap "+identifier.getIdentifier()+"->"+node.myString());
+    }
   }
 
   private void parseRangeDefinition() throws CompilationException, InterruptedException {
@@ -430,7 +443,7 @@ public class Parser {
     }
 
     int start = index;
-    int startValue = parseSimpleExpression();
+    int startValue = parseSimpleIntExpression();
 
     // ensure the next token is the '..' token
     if (!(nextToken() instanceof RangeSeparatorToken)) {
@@ -438,7 +451,7 @@ public class Parser {
       throw constructException("expecting to parse \"..\" but received \"" + error.toString() + "\"", error.getLocation());
     }
 
-    int endValue = parseSimpleExpression();
+    int endValue = parseSimpleIntExpression();
 
     if (!(nextToken() instanceof DotToken)) {
       Token error = tokens.get(index - 1);
@@ -505,6 +518,7 @@ public class Parser {
    */
   private void parseSingleProcessDefinition() throws CompilationException, InterruptedException {
     int start = index;
+    System.out.println("parseSingleProcessDefinition() "+peekToken().toString());
     IdentifierNode identifier = parseIdentifier();
     // check if a process with this identifier has already been defined
     if (processIdentifiers.contains(identifier.getIdentifier())) {
@@ -556,9 +570,7 @@ public class Parser {
 
     // check if a hiding set has been defined
     if (peekToken() instanceof HideToken || peekToken() instanceof AtToken) {
-
       processNode.setHiding(parseHiding());
-      //System.out.println("parsing setting Hide "+processNode.myString());
     }
 
     // check if an interrupt process has been defined
@@ -577,8 +589,7 @@ public class Parser {
       throw constructException("expecting to parse \".\" but received \"" + error.toString() + "\"", error.getLocation());
     }
     if (processNode == null) {
-      Throwable t = new Throwable();
-      t.printStackTrace();
+      Throwable t = new Throwable(); t.printStackTrace();
       System.out.println("\n\nERROR  processNode == null \n\n");
     }
     processes.add(processNode);
@@ -754,7 +765,7 @@ public class Parser {
 
   private ASTNode parseComposite() throws CompilationException, InterruptedException {
       int start = index;
-    //System.out.println("parsing Composite ");
+    System.out.println("parsing Composite "+peekToken().toString());
     String label = null;
     if (hasProcessLabel()) {
       label = parseProcessLabel();
@@ -791,11 +802,11 @@ public class Parser {
         //System.out.println("flags "+flags);
         ASTNode process2 = parseComposite();
         process = new CompositeNode(key, process, process2, constructLocation(start), flags);
-    //System.out.println("***Parse infixFunction "+ ((CompositeNode) process).getFlags());
+    System.out.println("***Parse infixFunction "+ ((CompositeNode) process).getFlags());
         break;
       }
     }
-    //System.out.println( "parseComposite returns "+process.myString());
+    System.out.println( "parseComposite returns "+process.myString());
     return process;
   }
 
@@ -902,7 +913,7 @@ public class Parser {
         Token error = tokens.get(index - 1);
         throw constructException("expecting to parse \")\" but received \"" + error.toString() + "\"", error.getLocation());
       }
-
+      System.out.println("parseBaseLocalProcess() returns "+ process.myString());
       return process;
     }
 
@@ -970,10 +981,6 @@ public class Parser {
         function.getReplacements().put(simpReplacements, null);
       }
     }
-    if (type.equals("abs") ) {
-      Throwable t = new Throwable();
-      System.out.println("Parsing abs function "+ function.myString());
-    }
     return function;
   }
 
@@ -1025,6 +1032,10 @@ public class Parser {
     Set<String> flags = new HashSet<>();
 
     boolean wildcard = acceptedFlags.contains("*");
+    boolean decimal = acceptedFlags.contains("*d");
+    if (wildcard && decimal) {
+         throw constructException("Parseing a flags but  both * and *d are not allowed");
+    }
 
     while (!(peekToken() instanceof CloseBraceToken)) {
 
@@ -1038,19 +1049,9 @@ public class Parser {
         flag = flag + nextToken().toString();
       }
 
-
       if (!acceptedFlags.contains(flag) && !wildcard) {
         throw constructException("\"" + flag + "\" is not a correct flag for " + functionType, token.getLocation());
       }
-
-      //TODO: remove this somehow
-  /*    if (Objects.equals(functionType, "simp")) {
-        if (!(peekToken() instanceof AssignToken)) {
-          throw constructException("Expecting to parse '=' but received \"" + peekToken().toString() + "\"");
-        }
-        nextToken();
-        flag += "=" + parseExpression();
-      } */
       flags.add(flag);
 
       if (peekToken() instanceof CommaToken) {
@@ -1163,7 +1164,7 @@ public class Parser {
       Token error = tokens.get(index - 1);
       throw constructException("expecting to parse \"(\" but received \"" + error.toString() + "\"", error.getLocation());
     }
-
+    System.out.println("parse ForAll 2 parseComposite");
     ASTNode process = parseComposite();
     //ASTNode process = parseLocalProcess();  // ( parseComposite )
 
@@ -1171,7 +1172,7 @@ public class Parser {
       Token error = tokens.get(index - 1);
       throw constructException("expecting to parse \")\" but received \"" + error.toString() + "\"", error.getLocation());
     }
-
+    System.out.println("parse ForAll )");
     return new ForAllStatementNode(ranges, process, constructLocation(start));
   }
 
@@ -1219,7 +1220,7 @@ public class Parser {
 
   private RangesNode parseRanges() throws CompilationException, InterruptedException {
     int start = index;
-
+    System.out.println("parse Range start ");
     if (!(peekToken() instanceof OpenBracketToken)) {
       throw constructException("expecting to parse \"[\" but received \"" + peekToken().toString() + "\"");
     }
@@ -1239,7 +1240,7 @@ public class Parser {
 
     List<IndexExpNode> ranges = new ArrayList<>(actionRanges.subList(rangeStart, actionRanges.size()));
     actionRanges = new ArrayList<>(actionRanges.subList(0, rangeStart));
-
+    System.out.println("parse Range end ");
     return new RangesNode(ranges, constructLocation(start));
   }
 
@@ -1251,7 +1252,7 @@ public class Parser {
 
     while (true) {
       Token token = nextToken();
-      //System.out.println("parseProcessLabel() consumes token "+token.toString());
+      System.out.println("parseProcessLabel() consumes token "+token.toString());
       if (token instanceof ActionToken) {
         builder.append(((ActionToken) token).getAction());
       } else if (token instanceof OpenBracketToken) {
@@ -1884,27 +1885,50 @@ public class Parser {
       throw constructException("received an incorrect operator \"" + token.toString() + "\"", token.getLocation());
     }
   }
-
-  private int parseSimpleExpression() throws CompilationException, InterruptedException {
+  /*
+      THIS is both parsing AND evaluating!  but fixes evaluation output to be int
+      Seperate parsing from evaluating allow double to be returned whe needed
+   */
+// const and range
+  private int parseSimpleIntExpression() throws CompilationException, InterruptedException {
     List<String> exprTokens = new ArrayList<>();
     int start = index;
-    parseSimpleExpression(exprTokens);
+    parseSimpleExpression(exprTokens, true);
 
     Expr expression = Expression.constructExpression(String.join(" ", exprTokens), constructLocation(start), context);
-    return expressionEvaluator.evaluateExpression(expression, new HashMap<>(), context);
+    return expressionEvaluator.evaluateIntExpression(expression, new HashMap<>(), context);
   }
 
-  private void parseSimpleExpression(List<String> expression) throws CompilationException {
-    parseBaseSimpleExpression(expression);
+
+  private double parseSimpleRealExpression() throws CompilationException, InterruptedException {
+    System.out.println("parseSimpleRealExpression");
+    List<String> exprTokens = new ArrayList<>();
+    int start = index;
+    parseSimpleExpression(exprTokens, false);
+
+    Expr expression = Expression.constructExpression(String.join(" ", exprTokens), constructLocation(start), context);
+    //System.out.println("parseSimpleRealExpression "+expression.getString());
+    System.out.println("parseSimpleRealExpression "+expression.toString());
+    return expressionEvaluator.evaluateRealExpression(expression, new HashMap<>(), context);
+  }
+  /*
+  input via mextToken()  result in expression
+   */
+  private void parseSimpleExpression(List<String> expression, boolean isInt) throws CompilationException {
+    parseBaseSimpleExpression(expression,isInt);
     while (hasExpressionToken()) {
       parseSimpleOperator(expression);
-      parseBaseSimpleExpression(expression);
+      parseBaseSimpleExpression(expression,isInt);
     }
   }
 
-  private void parseBaseSimpleExpression(List<String> expression) throws CompilationException {
+  /*
+     parse eithe int or decimal
+     result is in expression
+   */
+  private void parseBaseSimpleExpression(List<String> expression, boolean isInt) throws CompilationException {
     Token token = nextToken();
-
+    System.out.println("ParseBase "+ token.toString()+" isInt = "+isInt);
     // check if a unary operation can be parsed
     if (token instanceof OperatorToken) {
       if (token instanceof AdditionToken) {
@@ -1922,9 +1946,14 @@ public class Parser {
     }
 
     // check if either a integer, constant or parenthesised expression can be parsed
-    if (token instanceof IntegerToken) {
+    if (isInt && token instanceof IntegerToken) {
       int integer = ((IntegerToken) token).getInteger();
       expression.add("" + integer);
+  System.out.println("ex int "+expression);
+    } else  if (!isInt && token instanceof DecimalToken) {
+      Double d = ((DecimalToken) token).getReal();
+      expression.add("" + d);
+  System.out.println("ex real "+expression);
     } else if (token instanceof IdentifierToken) {
       String identifier = ((IdentifierToken) token).getIdentifier();
 
@@ -1955,6 +1984,7 @@ public class Parser {
 
       expression.add(")");
     }
+    System.out.println("ParseBase end "+expression);
   }
 
   private void parseSimpleOperator(List<String> expression) throws CompilationException {

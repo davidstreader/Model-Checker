@@ -187,7 +187,7 @@ public class ColouringUtil {
     }
     for (AutomatonNode node : nodes) {
       initialColour.put(node, node.getColour());
-  System.out.println("initialCol "+node.myString());
+  //System.out.println("initialCol "+node.myString());
     }
     return initialColour;
   }

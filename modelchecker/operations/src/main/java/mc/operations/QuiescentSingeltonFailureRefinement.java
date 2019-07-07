@@ -36,8 +36,7 @@ public class QuiescentSingeltonFailureRefinement implements IOperationInfixFunct
   public String getOperationType(){return "automata";}
   @Override
   public Collection<String> getValidFlags(){
-    return ImmutableSet.of(Constant.UNFAIR, Constant.FAIR, Constant.CONGURENT,
-               Constant.OBSEVATIONAL,Constant.NOListeningLoops);
+    return ImmutableSet.of(Constant.UNFAIR, Constant.FAIR, Constant.CONGURENT, Constant.OBSEVATIONAL);
   }
   /**
    *
@@ -61,7 +60,6 @@ public class QuiescentSingeltonFailureRefinement implements IOperationInfixFunct
                           Stack<String> trace, Collection<ProcessModel> processModels) throws CompilationException {
     //System.out.println("\nQUIESCENT " + alph+" "+flags+" ");
     boolean cong = flags.contains(Constant.CONGURENT);
-    boolean noLL = flags.contains(Constant.NOListeningLoops);
     //ProcessModel[] pms =  processModels.toArray();
     Automaton a1 = ((Automaton) processModels.toArray()[0]).copy();
     Automaton a2 = ((Automaton) processModels.toArray()[1]).copy();
@@ -101,26 +99,32 @@ public class QuiescentSingeltonFailureRefinement implements IOperationInfixFunct
       .filter(x->x.endsWith(Constant.BROADCASTSoutput))
       .collect(Collectors.toSet());
     //System.out.println("labout1 = "+labout1+" "+labout1.size());
+    SimpFunction simpf = new SimpFunction();
+  //  if (labout1.size()==0) {
+    //System.out.println("a1 " + a1.myString());
+    addListeningLoops(a1, alpha);
+    //System.out.println("A1 + LL " + a1.myString());
+    List<List<String>> partition = simpf.buildPartition(flags, a1);
+      //System.out.println("partition 1 " + partition);
+/*
+      List<List<String>> parts = new ArrayList<>();
+      for (List<String> part : partition) {
+        part.retainAll(a1.endNodes());
+        if (part.size() > 0) parts.add(part);
+      }
+      //System.out.println("parts 1 " + parts);
+*/
+      simpf.mergeNodes(a1, partition, context);
+  //  }
     Set<String> labout2 = a2.endNodes().stream().flatMap(x->x.getOutgoingEdges().stream())
       .map(x->x.getLabel())
       .filter(x->x.endsWith(Constant.BROADCASTSoutput))
       .collect(Collectors.toSet());
     //System.out.println("labout2 = "+labout2+" "+labout2.size());
-    SimpFunction simpf = new SimpFunction();
-  //  if (labout1.size()==0) {
-    //System.out.println("a1 " + a1.myString());
-    //System.out.println("a2 " + a2.myString());
-    if (! noLL) {
-      addListeningLoops(a1, alpha);
-      addListeningLoops(a2, alpha);
-    }
-    //System.out.println("A2 + LL " + a2.myString());
-    //System.out.println("A1 + LL " + a1.myString());
-    List<List<String>> partition = simpf.buildPartition(flags, a1);
-      //System.out.println("parts 1 " + parts);
-      simpf.mergeNodes(a1, partition, context);
-  //  }
   //  if (labout2.size()==0) {
+    //System.out.println("a2 " + a2.myString());
+      addListeningLoops(a2, alpha);
+    //System.out.println("A2 + LL " + a2.myString());
       List<List<String>> partition2 = simpf.buildPartition(flags, a2);
       //System.out.println("partition 2 " + partition2);
 /*      List<List<String>> parts2 = new ArrayList<>();
@@ -219,7 +223,7 @@ public class QuiescentSingeltonFailureRefinement implements IOperationInfixFunct
 
   }
   /**  this computes SF subset OR =
-   * A state that is not Quiescent cannot refuse anything hence the FRIGs
+   * A state that is not Quiescent cannot refuse anything hene the FRIGs
    * for {cong} A STOP or Start state must take the worst options for Quiescence
    *
    * @param s2  Acceptance set

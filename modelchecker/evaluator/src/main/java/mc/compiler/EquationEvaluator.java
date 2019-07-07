@@ -3,6 +3,7 @@ package mc.compiler;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.microsoft.z3.Context;
@@ -82,7 +83,9 @@ public class EquationEvaluator {
 /*
    Uses processes in all domains?
  */
-    messageQueue.add(new LogMessage("    ##Equations  Starting##", true,
+    //System.currentTimeMillis();
+    Date start = new Date();
+    messageQueue.add(new LogMessage("    ##Equations  Starting##  "+start.toString(), true,
       false, null, -1, Thread.currentThread()));
     processes = processMap.values().stream().collect(Collectors.toList());
     //System.out.println("evaluateEquations processMap "+processMap.keySet());
@@ -110,7 +113,9 @@ public class EquationEvaluator {
 
       evaluateEquation(pMap, petrinetInterpreter, operation, code, z3Context, messageQueue, alpha);
     }
-    String log = "    ##Equations## " + totalPassed + "/" + totalTests;
+    Date stop = new Date();
+
+    String log = "    ##Equations## " + totalPassed + "/" + totalTests+ "  "+getDifferenceDays(start,stop)+ "\n"+stop;
     messageQueue.add(new LogMessage(log, true,
       false, null, -1, Thread.currentThread()));
 
@@ -118,6 +123,14 @@ public class EquationEvaluator {
     return new EquationReturn(results, toRender);
   }
 
+  public static String getDifferenceDays(Date d1, Date d2) {
+    long diff = d2.getTime() - d1.getTime();
+    long diffSeconds = diff / 1000 % 60;
+    long diffMinutes = diff / (60 * 1000) % 60;
+    long diffHours = diff / (60 * 60 * 1000);
+
+    return  diffHours+":"+diffMinutes+":"+diffSeconds;
+  }
   /*  forall{X} (P(X,Y,Z))  ==> Q(Y,Z)       forall{X} (Q(Y,Z)  ==> P(X,Y,Z))
                 ==>                                     forall{X}
       forall{X}      Q(Y,Z)                                ==>
@@ -143,7 +156,7 @@ public class EquationEvaluator {
     Stack<String> trace = new Stack<>();
 
     //collect the free variables
-    //System.out.println("START - evaluateEquation " + operation.myString()+ " "+processMap.keySet());
+    System.out.println("\nSTART - evaluateEquation " + operation.myString()+ " "+processMap.keySet());
     List<String> globlFreeVariables = collectFreeVariables(operation, processMap.keySet());
     //System.out.println("globalFreeVariables " + globlFreeVariables);  //Var:Dom
     if (!validateDomains(globlFreeVariables))
@@ -557,7 +570,7 @@ public class EquationEvaluator {
 
         /*  WORK   ************************   WORK   */
       } else {  //DO THE WORK and evaluate an OPERATION
-        System.out.println("-- EVAL " + operation.myString()+" with "+ asString(outerFreeVariabelMap));
+        //System.out.println("-- EVAL " + operation.myString()+" with "+ asString(outerFreeVariabelMap));
         for (String key : outerFreeVariabelMap.keySet()) {
           //System.out.println("adding "+key+"->"+outerFreeVariabelMap.get(key).getId());
           processMap.put(key, outerFreeVariabelMap.get(key));

@@ -1,35 +1,16 @@
 processes {
 Pro:{
-Ls = l->r->STOP.
-Lsa = l->r->a->STOP.
-Las = a->l->r->STOP.
-Lsas = l->a->r->Lsas.
-
+L = l->r->L.
 Ll = l->Ll|r->Ll.
-
 L3  = l->l->l->L3|r->STOP.
-
 L31 = l->l->r->L31.
-
 L3a  = l->l->l->a->L3|r->STOP.
-
-
 L31a = l->l->r->a->L31.
 
 Z = (a->l->Z|b->(r->x->STOP|y->STOP)).
-Z1 = (a->l->l->Z1|b->(r->x->STOP|y->STOP)).
-Z2 = (l->l->a->Z2|b->(r->x->STOP|y->STOP)).
-Z3 = (l->a->Z3|b->(r->r->x->STOP|y->STOP)).
-
-Zp = (a->l->Zp|b->(r->x->STOP|l->STOP)).
-Z1p = (a->l->l->Z1p|b->(r->x->STOP|l->STOP)).
-Z2p = (l->l->a->Z2p|b->(r->x->STOP|l->STOP)).
-Z3p = (l->a->Z3p|b->(r->r->x->STOP|l->STOP)).
-
-Zpr = (a->l->Zpr|b->(r->x->STOP|r->STOP)).
-Z1pr = (a->l->l->Z1pr|b->(r->x->STOP|r->STOP)).
-Z2pr = (l->l->a->Z2pr|b->(r->x->STOP|r->STOP)).
-Z3pr = (l->a->Z3pr|b->(r->r->x->STOP|r->STOP)).
+Z1 = (a->l->l->Z|b->(r->x->STOP|y->STOP)).
+Z2 = (l->l->a->Z|b->(r->x->STOP|y->STOP)).
+Z3 = (l->a->Z|b->(r->r->x->STOP|y->STOP)).
 
 Z4 = a->l->Z4|b->r->STOP.
 
@@ -46,59 +27,35 @@ Z9 = l->l->Z9|r->b->STOP.
 SD:{
 S =  s->STOP.
 S1 = s ->s->STOP.
-
 S2 = s->s->S2.
 S3 = s->S3.
 S4 = p->q->S4.
 S5 = p->STOP|q->S5.
-
 }
 Zoo:{
-L = l->STOP.
-A = r->a->STOP.
-
-Z21 = L:Zoo\{l}.
-Z22 = A:Zoo\{r}.
-Z23 = Z21||Z22.
-Z24 = simp{cong}(abs{cong}(Z23)).
-Zo1 = (L:Zoo||A:Zoo)\{r,l}.
-Zo2 = abs{cong}(Zo1).
-Zoo1 = simp{cong}(abs{cong}(abs{cong}((L:Zoo||A:Zoo)\{r,l}))).
-//Zoo2 = simp{cong}(abs{cong}((abs{cong}(L:Zoo\{r}))||abs{cong}(A:Zoo\{r}))).
-//Zo2 = simp{cong}(Zoo2).
-
+Zoo1 = abs(Z:Pro\{r,l})||S:SD.
+Zoo2 = abs((Z:Pro||S:SD)\{r,l}).
 }
 }
 
 operation { 
 
-/*
-simp{cong}(abs{cong}((abs{cong}(L:Zoo\{r}))||abs{cong}(A:Zoo\{r}))) <f Zoo1.
-Zoo2 <f simp{cong}(abs{cong}((L:Zoo||A:Zoo)\{r})).
-Zoo2 <f Zoo1.
-
-simp{cong}(abs{cong}((abs{cong}(L:Zoo\{r}))||abs{cong}(A:Zoo\{r}))) <f  simp{cong}(abs{cong}((L:Zoo||A:Zoo)\{r})).
-simp{cong}(abs{cong}((abs{cong}(L:Zoo\{r}))||abs{cong}(A:Zoo\{r}))) <f  simp{cong}(abs{cong}((L:Zoo||A:Zoo)\{r})).
-
-*/
 }
 equation  {
 
-abs{cong}(X:Pro\{r,l}) ~ abs{cong}(abs{cong}(X:Pro\{l})\{r}).
-
-abs{cong}( abs{cong}((X:Pro\{r,l})||Y:SD)) <f abs{cong}((X:Pro||Y:SD)\{r,l}).
-
 abs(X:Pro\{r,l}) ~ abs(abs(X:Pro\{l})\{r}).
+abs(X:Pro\{r,l})||Y:SD <f abs((X:Pro||Y:SD)\{r,l}).
 
 
-abs{cong}( abs{cong}(X:Pro\{r,l})[]abs{cong}(Y:Pro\{r,l})) <f abs{cong}((X:Pro[]Y:Pro)\{r,l}).
-abs{cong}( abs{cong}(X:Pro\{r,l})=>abs{cong}(Y:Pro\{r,l})) <f abs{cong}((X:Pro=>Y:Pro)\{r,l}).
-
-
-  abs{cong}((X:Pro=>Y:Pro)\{r,l}) <f 
-abs{cong}( abs{cong}(X:Pro\{r,l})=>abs{cong}(Y:Pro\{r,l})).
+//simp(abs{}(XX\{r,l})) ~ simp(abs{}(abs{}(XX\{r})\{l})).
 
 }
  
 //
+
+
+
+
+
+
 

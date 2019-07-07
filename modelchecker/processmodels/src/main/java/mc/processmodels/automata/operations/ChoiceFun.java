@@ -7,7 +7,6 @@ import mc.processmodels.automata.AutomatonEdge;
 import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetPlace;
-import mc.processmodels.petrinet.components.PetriNetTransition;
 import mc.processmodels.petrinet.operations.PetrinetReachability;
 import mc.util.expr.MyAssert;
 
@@ -16,205 +15,183 @@ import java.util.stream.Collectors;
 
 public class ChoiceFun {
 
-  public static final String MAPLET = "^";
-  /**
-   * Execute the function.
-   *
-   * @param id         the id of the resulting automaton
-   * @param automaton1 the first  automaton in the function (e.g. {@code A} in {@code A||B})
-   * @param automaton2 the second automaton in the function (e.g. {@code B} in {@code A||B})
-   * @return the resulting automaton of the operation
-   */
-  public Automaton compose(String id, Automaton automaton1, Automaton automaton2) throws CompilationException {
+    public static final String MAPLET = "^";
 
-    return null;
-  }
-
-  /**
-   * * Multi Roots changes the high level structure!
-   * Let Roots = List of Set of Places Ra = Sa1,Sa2,...
-   * Ra [] Rb = Sa1Sb1, Sa2Sb1, ...;  Sa2Sb1,Sa2Sb2, ...; ..... where
-   *   SaiSbj  =  Sai TIMES Sbj
-   * When A and B have only one root   RA [] RB =  Sa1 TIMES Sb1
-   *  Sai and Saj are not always disjoint when i!=j see  a||(x+y)
-      for each pair of roots Ri, Rj build a Ri[]Rj processes
-   *  (x+y)[]c has two c events one offered with an x evnent the other with the y event
-   *  (x+y)[](a+b) had four root nodes and 8 events 2 of each x,y,a,b
-   *
-   * @param id        the id of the resulting petrinet
-   * @param n1 the first  petrinet in the function (e.g. {@code A} in {@code A||B})
-   * @param n2 the second petrinet in the function (e.g. {@code B} in {@code A||B})
-   * @return the resulting petrinet of the operation
-   */
-
-
-  public Petrinet compose(String id, Petrinet n1, Petrinet n2)
-    throws CompilationException {
-    //System.out.println(n1.getId()+" []  "+n2.getId());
-    Petrinet net1 = n1.reId("1");
-    Set<String> own1 = net1.getOwners();
-    List<Set<String>> oneEnd = net1.getEnds();
-    //System.out.println("[] function Start");
-    //System.out.println("oneEnd "+oneEnd);
-
-    Petrinet net2 = n2.reId("2");
-    Set<String> own2 = net2.getOwners();
-    //System.out.println("[]PETRI1 "+net1.myString("edge"));
-    MyAssert.validate(net1," n1 [] precondition ");
-    MyAssert.validate(net2," [] n2  precondition ");
-
-    List<Set<String>> twoRoots =  new ArrayList<>();
-     for(Set<String> rs: net2.getRoots()) {
-       Set<String > newrs = new HashSet<>();
-       for(String r:rs) {
-         newrs.add(r);
-       }
-       twoRoots.add(newrs);
-     }
-    //System.out.println("twoRoot "+twoRoots);
-    List<Set<String>> twoEnd = net2.getEnds();
-
-    //System.out.println("twoEnd "+twoEnd);
-
-    net2.joinNet(net1);  // concats end2 and end1 DO NOT concat variable2Owner
-    net2.setEndFromNet();
-
-    List<Set<String>> oneRoots =  new ArrayList<>();
-    for(Set<String> rs: net1.getRoots()) {
-      Set<String > newrs = new HashSet<>();
-      for(String r:rs) {
-        newrs.add(r);
-      }
-      oneRoots.add(newrs);
-    }
-    //System.out.println("CHOICE function oneRoot " +oneRoots);
-
-
-    net2.setUpv2o(net1,net2);
-    net2.glueOwners(own1,own2);
-    //System.out.println("[]after Glueing Owners  " + net2.myString("edge") + "\n");
-    //for each pair of roots Ri, Rj build a Ri[]Rj root and copy the root post transition
-    List<Set<String>> newRoots = new ArrayList<>();
-    for (Set<String> r1: oneRoots) {
-      for (Set<String> r2: twoRoots) {
-        //Copy both roots and then Glue
-        //composition.glueOwners(own1,own2);
-        Set<PetriNetPlace> newr2 = new HashSet<PetriNetPlace>();
-        for(String rt2: r2) {
-          //Copy the root and post root transitions
-          //System.out.println("*************to Copy "+net2.getPlace(rt2).myString());
-          newr2.add(net2.copyRootOrEnd(net2.getPlace(rt2),"X"));
+    /**
+     * @param net1
+     * @param net2
+     * @return the multiRoot for parallel composition of the nets
+     */
+    private static List<Set<String>> buildRoots(Petrinet net1, Petrinet net2) {
+        //System.out.println("Building Roots");
+        List<Set<String>> out = new ArrayList<>();
+        for (Set<String> m1 : net1.getRoots()) {
+            for (Set<String> m2 : net2.getRoots()) {
+                out.add(buildMark(m1, m2));
+            }
         }
-        Set<PetriNetPlace> newr1 = new HashSet<PetriNetPlace>();
-        for(String rt1: r1) {
-          newr1.add(net2.copyRootOrEnd(net2.getPlace(rt1),"X"));
+        //System.out.println("New Roots "+out);
+        return out;
+    }
+
+    private static Set<String> buildMark(Set<String> m1, Set<String> m2) {
+        //System.out.println("buildMark " +m1+" "+m2);
+        Set<String> out = new HashSet<>();
+        for (String s1 : m1) {
+            for (String s2 : m2) {
+                out.add(s1 + MAPLET + s2);
+            }
         }
-        Map<String, String> s2s =net2.gluePlaces(newr1, newr2, false);
-
-        /*System.out.println("\n glueMapping \n" +
-          s2s.keySet().stream().map(x -> x + "->" + s2s.get(x) + "\n").collect(Collectors.joining())); */
-        Set<String> newr = s2s.values().stream().collect(Collectors.toSet());
-        newRoots.add(newr);
-        //System.out.println("newRoots "+newRoots);
-      }
-
-        net2.setRoots(newRoots);
-        net2.setStartFromRoot();
-        net2.setEndFromPlace();
-        //System.out.println("[]after Glueing start  " + net2.myString("edge") + "\n");
+        //System.out.println("Next root "+out);
+        return out;
     }
-    List<Set<String>> newList = new ArrayList<Set<String>>(twoRoots);
-    newList.addAll(oneRoots);
-    Set<String> toGo = new HashSet<>();
-    for(Set<String> rs: newList){
-      for(String r:rs){
-        toGo.add(r);
-      }
+
+    /**
+     * Execute the function.
+     *
+     * @param id         the id of the resulting automaton
+     * @param automaton1 the first  automaton in the function (e.g. {@code A} in {@code A||B})
+     * @param automaton2 the second automaton in the function (e.g. {@code B} in {@code A||B})
+     * @return the resulting automaton of the operation
+     */
+    public Automaton compose(String id, Automaton automaton1, Automaton automaton2) throws CompilationException {
+
+        return null;
     }
-    //System.out.println("before removing p1Roots "+net2.myString("edge"));
-    //System.out.println("Removing "+toGo);
-    for(String pl: toGo) {
-      PetriNetPlace place = net2.getPlace(pl);
-      Set<PetriNetTransition> goaway = place.pre();
-        goaway.addAll(place.post());
-        net2.removePlace(place);
-        for(PetriNetTransition t: goaway){
-          net2.removeTransition(t);
+
+    /**
+     * * Multi Roots changes the high level structure!
+     * When  A and B has one root node A[] B can be built by just building a new root node
+     *  When A has more that one root node (Non Det) then B must be copied
+     *
+     * @param id the id of the resulting petrinet
+     * @param n1 the first  petrinet in the function (e.g. {@code A} in {@code A||B})
+     * @param n2 the second petrinet in the function (e.g. {@code B} in {@code A||B})
+     * @return the resulting petrinet of the operation
+     */
+
+
+    public Petrinet compose(String id, Petrinet n1, Petrinet n2)
+            throws CompilationException {
+        SequentialInfixFun sf = new SequentialInfixFun();
+        //System.out.println("XXX   XXX   XXX   XXX   XXX\n\n  []   ********************** \n " + n1.myString() + " \n []  " + n2.myString());
+        Petrinet nt1 = n1.copy().reId("1");
+        // Need to add end event simply to remove later  as computing the End proved difficult with a->STOP[]STOP
+        Petrinet E = Petrinet.oneEventNet("*E", "e1");
+        Petrinet net1 = sf.compose("n1", nt1, E);
+        net1.reown("1");
+        Set<String> own1 = net1.getOwners();
+
+        Petrinet nt2 = n2.copy().reId("2");
+        Petrinet F = Petrinet.oneEventNet("*E", "e2");
+        Petrinet net2 = sf.compose("n2", nt2, F);
+        net2.reown("2");
+        Set<String> own2 = net2.getOwners();
+        //System.out.println("YYY   YYY   YYY   YYY   YYY\n\n     *********[]********[]*****\n  "+ net1.myString()+" \n  "+net2.myString());
+
+        //System.out.println("[]PETRI1 "+net1.myString("edge"));
+        MyAssert.validate(net1, "Choice n1 []  Rule PRE condition ");
+        MyAssert.validate(net2, "Choice [] n2  Rule PRE condition ");
+
+        List<Set<String>> tRoots = net2.copyRoots();
+        List<Set<String>> oRoots = net1.copyRoots();
+        //System.out.println("twoRoots "+tRoots+"  oneRoots "+oRoots);
+
+        Petrinet choice = new Petrinet(id, false);
+        choice.addPetrinet(net1, true, true); //adds net1 + root and end but changes Ids
+        List<Set<String>> oneRoots = choice.reName(oRoots);
+        //System.out.println("new choice Root "+choice.getRoots());
+        choice.addPetrinet(net2, true, true);  //adds net2 + end but changes Ids
+        List<Set<String>> twoRoots = choice.reName(tRoots);  // have to rename the roots
+        //System.out.println("new choice Root "+choice.getRoots());
+        //System.out.println("  oneRoots " + oneRoots + "   twoRoots " + twoRoots);
+        //net2.setUpv2o(net1,net2);
+
+        //System.out.println("Befor Glue O  \n"+choice.myString());
+        choice.glueOwners(own1, own2);
+        choice.reown("c");
+
+        //for each pair of roots Ri, Rj build a Ri[]Rj root and copy the root post transition
+        List<Set<String>> newRoots = new ArrayList<>();
+        for (Set<String> r1 : twoRoots) {
+            for (Set<String> r2 : oneRoots) {
+                //Copy both roots and then Glue
+                //The Root2 must be copied prior to Gluing as they may be needed later (next iteration)
+                Set<PetriNetPlace> newr1 = new HashSet<PetriNetPlace>();
+                for (String rt1 : r1) {
+                    newr1.add(choice.copyRootOrEnd(choice.getPlace(rt1), "None", false));
+                }
+
+                Set<PetriNetPlace> newr2 = new HashSet<PetriNetPlace>();
+                for (String rt2 : r2) {
+                    newr2.add(choice.copyRootOrEnd(choice.getPlace(rt2), "None", false));
+                }
+
+                Multimap<String, String> s2s = choice.gluePlaces(newr1, newr2, false);
+               //System.out.println("   XXX After Gluing " + r1 + " with " + r2 + " \n" + choice.myString());
+            }
+
+            //System.out.println("XXX End r1 "+r1+"\n  " + choice.myString() + "\n");
+        }
+        choice.removeRoots(twoRoots);
+        choice.removeRoots(oneRoots); // had to keep roots
+
+        choice.removeStarE();
+        oneRoots.addAll(twoRoots);
+        List<String> tokeep = choice.getRootNames().stream().flatMap(x -> x.stream()).collect(Collectors.toList());
+        //System.out.println("tokeep " + tokeep);
+        List<String> togo = oneRoots.stream().flatMap(x -> x.stream()).collect(Collectors.toList());
+        togo.removeAll(tokeep);
+        //System.out.println("togo " + togo);
+
+        //System.out.println("Net Roots "+choice.getRootNames()+ "   one "+oneRoots);
+// These old root would be removed by unreachable except for processes that retuen to root
+        for (String oleR : togo) {
+            //System.out.println("Tidying OLD root away " + oleR + " from " + choice.getPlaces().keySet());
+            if (choice.getPlaces().keySet().contains(oleR)) {
+                //System.out.println("Found and removing!");
+                choice.removePlaceAndPreTransitions(choice.getPlaces().get(oleR));
+            }
         }
 
+        //System.out.println("FINAL After Gluing  \n"+choice.myString());
+
+        choice = PetrinetReachability.removeUnreachableStates(choice);
+        //System.out.println("\n[] OUT "+ choice.myString(""));
+        choice.buildAlphabetFromTrans();
+        //System.out.println("[] OUT " + choice.myString() + "\n");
+        //choice.reId("");
+        // MyAssert.setApply(true);
+        MyAssert.validate(choice, "Choice []  Rule post condition ");
+        return choice;
     }
-    // need to sort out End data on Petri Nets before reachability
 
-    //System.out.println("[]before reachability "+ net2.myString("edge"));
-    net2 = PetrinetReachability.removeUnreachableStates(net2);
-    //System.out.println("\n[] after Reachability "+ net2.myString("edge"));
-    net2.setEndFromPlace();
-    net2.buildAlphabetFromTrans();
-    //System.out.println("[] OUT "+ net2.getId()+"\n");
-    //net2.reId("");
-   // MyAssert.myAssert(net2.validatePNet("Choice [] output "+net2.getId()+ " valid ="), "[] output Failure");
-    MyAssert.validate(net2,"Choice [] output "+net2.getId());
-    return net2;
-  }
+    /**
+     * Copies the edges from one automata to another.
+     *
+     * @param writeAutomaton the automata that will have the edges copied to it
+     * @param readAutomaton  the automata that will have the edges copied from it
+     * @param nodeMap        the mapping of the ids to AutomatonNodes
+     */
+    private void copyAutomataEdges(Automaton writeAutomaton, Automaton readAutomaton,
+                                   Map<String, AutomatonNode> nodeMap,
+                                   Multimap<String, String> edgeOwnersMap) throws CompilationException {
 
 
-
-  /**
-   * Copies the edges from one automata to another.
-   *
-   * @param writeAutomaton the automata that will have the edges copied to it
-   * @param readAutomaton  the automata that will have the edges copied from it
-   * @param nodeMap        the mapping of the ids to AutomatonNodes
-   */
-  private void copyAutomataEdges(Automaton writeAutomaton, Automaton readAutomaton,
-                                 Map<String, AutomatonNode> nodeMap,
-                                 Multimap<String,String> edgeOwnersMap) throws CompilationException{
-
-
-    for(AutomatonEdge readEdge : readAutomaton.getEdges()) {
-      AutomatonNode fromNode = nodeMap.get(readEdge.getFrom().getId());
-      AutomatonNode toNode = nodeMap.get(readEdge.getTo().getId());
-        writeAutomaton.addOwnersToEdge(
-                writeAutomaton.addEdge(readEdge.getLabel(), fromNode, toNode, readEdge.getGuard(), false,readEdge.getOptionalEdge()),
-                getEdgeOwnersFromProduct(readEdge.getOwnerLocation(), edgeOwnersMap)
-        );
+        for (AutomatonEdge readEdge : readAutomaton.getEdges()) {
+            AutomatonNode fromNode = nodeMap.get(readEdge.getFrom().getId());
+            AutomatonNode toNode = nodeMap.get(readEdge.getTo().getId());
+            writeAutomaton.addOwnersToEdge(
+                    writeAutomaton.addEdge(readEdge.getLabel(), fromNode, toNode, readEdge.getGuard(), false, readEdge.getOptionalEdge()),
+                    getEdgeOwnersFromProduct(readEdge.getOwnerLocation(), edgeOwnersMap)
+            );
+        }
     }
-  }
 
-  private Set<String> getEdgeOwnersFromProduct(Set<String> edgeOwners,
-                                               Multimap<String,String> productSpace) {
-    return edgeOwners.stream().map(productSpace::get)
-        .flatMap(Collection::stream)
-        .collect(Collectors.toSet());
-  }
-
-  /**
-   *
-   * @param net1
-   * @param net2
-   * @return the multiRoot for parallel composition of the nets
-   */
-  private static List<Set<String>> buildRoots(Petrinet net1,Petrinet net2) {
-    //System.out.println("Building Roots");
-    List<Set<String>> out = new ArrayList<>();
-    for(Set<String> m1: net1.getRoots()) {
-      for(Set<String> m2: net2.getRoots()) {
-        out.add(buildMark(m1,m2));
-      }
+    private Set<String> getEdgeOwnersFromProduct(Set<String> edgeOwners,
+                                                 Multimap<String, String> productSpace) {
+        return edgeOwners.stream().map(productSpace::get)
+                .flatMap(Collection::stream)
+                .collect(Collectors.toSet());
     }
-    //System.out.println("New Roots "+out);
-    return out;
-  }
-
-  private static Set<String> buildMark(Set<String> m1, Set<String> m2){
-    //System.out.println("buildMark " +m1+" "+m2);
-    Set<String> out = new HashSet<>();
-    for(String s1:m1){
-      for(String s2:m2){
-        out.add(s1+MAPLET+s2);
-      }
-    }
-    //System.out.println("Next root "+out);
-    return out;
-  }
 }
