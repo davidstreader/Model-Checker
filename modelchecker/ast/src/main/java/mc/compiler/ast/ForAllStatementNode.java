@@ -29,7 +29,8 @@ import java.util.stream.Collectors;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class ForAllStatementNode extends ASTNode {
-
+   private     List<LocalProcessNode> localProcesses;
+   // used to pass any localprocesses up the parse chain to the ProcessNode
   /**
    * The ranges upon which the ForAll statement will apply.
    */

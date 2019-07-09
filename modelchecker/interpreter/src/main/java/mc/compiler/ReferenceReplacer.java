@@ -40,7 +40,7 @@ public class ReferenceReplacer {
   public AbstractSyntaxTree replaceReferences(AbstractSyntaxTree ast, BlockingQueue<Object> messageQueue)
     throws CompilationException, InterruptedException {
     reset();
-    System.out.println("Ref Rep input "+ast.myString());
+    //System.out.println("Ref Rep input "+ast.myString());
     List<ProcessNode> processes = ast.getProcesses();
     if (ast.getProcessHierarchy() == null) {
       ast.setProcessHierarchy(new ProcessHierarchy());
@@ -172,11 +172,11 @@ public class ReferenceReplacer {
 
   private ASTNode replaceReferences(IdentifierNode astNode, String identifier,
                                     Map<String, LocalProcessNode> localReferences) throws CompilationException, InterruptedException {
-    System.out.println("RR IdentifierNode "+ astNode.myString()+" identifyier "+ identifier+ " references "+references);
+    //System.out.println("RR IdentifierNode "+ astNode.myString()+" identifyier "+ identifier+ " references "+references);
       bits =  astNode.getBits();
     String reference = astNode.getIdentifier();
     String localReference = findLocalReference(identifier + "." + reference, localReferences);
-    System.out.println("RR localReference "+localReference);
+    //System.out.println("RR localReference "+localReference);
     // check if the identifier is referencing a local process
     if (localReference != null && localReference.length()>0) {
       // check if this local process has been referenced before
@@ -206,7 +206,7 @@ public class ReferenceReplacer {
       astNode.addFromReference(reference);
       ReferenceNode rn = new ReferenceNode(reference, astNode.getLocation());
       rn.setSymbolicBits(astNode.getBits());
-      System.out.println("RR Indexed referance? "+identifier +" "+rn.myString());
+      //System.out.println("RR Indexed referance? "+identifier +" "+rn.myString());
       return rn;
     }
     // check if the identifier is referencing itself
@@ -214,14 +214,14 @@ public class ReferenceReplacer {
       astNode.addFromReference(identifier);
       ReferenceNode rn = new ReferenceNode(identifier, astNode.getLocation());
       rn.setSymbolicBits(astNode.getBits());
-      System.out.println("Self referance? "+identifier +" "+rn.myString());
+      //System.out.println("Self referance? "+identifier +" "+rn.myString());
       return rn;
     }
     // check if the identifier is referencing a global process
     else if (globalReferences.contains(reference)) {
       //globalRequirements.add(reference);
       astNode.addFromReference(identifier);
-      System.out.println("RR Identifier "+ identifier+" RR referencing global process "+ astNode.getBits());
+      //System.out.println("RR Identifier "+ identifier+" RR referencing global process "+ astNode.getBits());
       return astNode;
     }
     throw new CompilationException(getClass(), "Unable to find reference for node: " + reference, astNode.getLocation());

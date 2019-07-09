@@ -550,6 +550,12 @@ public class Parser {
       nextToken(); // gobble the comma
       localProcesses.add(parseLocalProcessDefinition(localIdentifiers));
     }
+//Add local proceses that are built in ForAll
+    if (process instanceof ForAllStatementNode) {
+      for(LocalProcessNode lpn: ((ForAllStatementNode) process).getLocalProcesses()) {
+        localProcesses.add(lpn);
+      }
+    }
 
     //Dont set ProcessNode type just yet as that will be done when,
     //or if we encounter a display node that sets it.
@@ -635,6 +641,7 @@ public class Parser {
   }
 
 
+
   private LocalProcessNode parseLocalProcessDefinition(Set<String> localIdentifiers) throws CompilationException, InterruptedException {
     int start = index;
     IdentifierNode identifier = parseIdentifier();
@@ -662,6 +669,42 @@ public class Parser {
       process = parseComposite();
     }
 
+    return new LocalProcessNode(identifier.getIdentifier(), ranges, process, constructLocation(start));
+  }
+
+  private LocalProcessNode parseLocalProcessDef4All(Set<String> localIdentifiers) throws CompilationException, InterruptedException {
+    int start = index;
+    IdentifierNode identifier = parseIdentifier();
+
+    // index should be added to identifier
+    String idx;
+    if (peekToken() instanceof OpenBracketToken) {
+      nextToken();
+      idx = "[$"+nextToken().toString()+"]";
+      identifier.setIdentifier(identifier.getIdentifier()+ idx);
+      if (!(nextToken() instanceof CloseBracketToken)){
+        Token error = tokens.get(index - 1);
+        throw constructException("expecting to parse \"]\" but received \"" + error.toString() + "\"", error.getLocation());
+      }
+    }
+
+    // check if a local process with this identifier has already been defined
+    if (localIdentifiers.contains(identifier.getIdentifier())) {
+      throw constructException("The identifier \"" + identifier.getIdentifier() + "\" has already been defined", identifier.getLocation());
+    }
+    localIdentifiers.add(identifier.getIdentifier());
+
+    if (!(nextToken() instanceof AssignToken)) {
+      Token error = tokens.get(index - 1);
+      throw constructException("expecting to parse \"=\" but received \"" + error.toString() + "\"", error.getLocation());
+    }
+    ASTNode process;
+    if (peekToken() instanceof OpenParenToken) {
+      process = parseLocalProcess();
+    } else {
+      process = parseComposite();
+    }
+    RangesNode ranges = new RangesNode(new ArrayList<>(),constructLocation(start));
     return new LocalProcessNode(identifier.getIdentifier(), ranges, process, constructLocation(start));
   }
 
@@ -1167,13 +1210,22 @@ public class Parser {
     System.out.println("parse ForAll 2 parseComposite");
     ASTNode process = parseComposite();
     //ASTNode process = parseLocalProcess();  // ( parseComposite )
-
+// dstr
+    Set<String> localIdentifiers = new HashSet<>();
+    List<LocalProcessNode> localProcesses = new ArrayList<>();
+    if (peekToken() instanceof CommaToken) {
+     nextToken();
+      localProcesses.add(parseLocalProcessDef4All(localIdentifiers));  // add  indexed
+    }
     if (!(nextToken() instanceof CloseParenToken)) {
       Token error = tokens.get(index - 1);
       throw constructException("expecting to parse \")\" but received \"" + error.toString() + "\"", error.getLocation());
     }
     System.out.println("parse ForAll )");
-    return new ForAllStatementNode(ranges, process, constructLocation(start));
+
+    ForAllStatementNode fASN = new ForAllStatementNode(ranges, process, constructLocation(start));
+    fASN.setLocalProcesses(localProcesses);
+    return fASN;
   }
 
   // RELABELLING AND HIDING
