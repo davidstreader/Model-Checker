@@ -92,6 +92,7 @@ public class Interpreter {
         //System.out.println("++++++Interpreter Built Petri "+ modelPetri.getId());
         ((Petrinet) modelPetri).reown("");
         model = buildmpmFromPetri((Petrinet) modelPetri);
+        System.out.println(((MultiProcessModel) model).getProcessNodesMapping());
       } else if (process.getType().contains("automata")) { //interpretASTAutNode
         System.out.println("\n\nWARNING INTERPRETING AUTOMATA (should not occur)\n");
       }

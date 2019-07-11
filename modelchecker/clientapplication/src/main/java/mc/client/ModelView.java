@@ -290,7 +290,6 @@ public class ModelView implements Observer {
 
       NodeStates nodeTermination = NodeStates.NOMINAL;
 
-
       if (n.isStartNode()) {
         if (!n.isSTOP()) {
           nodeTermination = NodeStates.START;
@@ -600,7 +599,7 @@ public class ModelView implements Observer {
             x -> settings.getStep(),
             x -> settings.getDelay(),
             x -> settings.isShowOwners(),
-            x->settings.isShowColor()
+            x->  settings.isShowColor()
 
     );
 
@@ -626,7 +625,7 @@ public class ModelView implements Observer {
 
     massSelect = new DoubleClickHandler(processModels, vv, mappings);
     vv.addMouseListener(massSelect);
-
+    System.out.println();
 
     //label the nodes
     vv.getRenderContext().setVertexLabelTransformer(GraphNode::getLabel);

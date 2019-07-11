@@ -10,6 +10,7 @@ import mc.client.graph.DirectedEdge;
 import mc.client.graph.GraphNode;
 import mc.client.graph.NodeStates;
 import mc.processmodels.MappingNdMarking;
+import mc.processmodels.ProcessModelObject;
 import mc.processmodels.automata.AutomatonNode;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
@@ -18,6 +19,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Point2D;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by smithjord3 on 12/12/17.
@@ -35,7 +37,7 @@ public class DoubleClickHandler implements MouseListener {
         processModelVertexes = processModelVertexes_;
         vv = vv_;
         mappings = nodeAndMarkingMappings;
-    }
+   }
 
     public void updateProcessModelList(Multimap<String, GraphNode> processModels) {
         processModelVertexes = processModels;
@@ -47,7 +49,10 @@ public class DoubleClickHandler implements MouseListener {
      */
     @Override
     public void mouseClicked(MouseEvent e) {
-        GraphNode currentNodeClicked = getVertex(e.getPoint());
+      System.out.println("mouseClick");
+      System.out.println(mappings.keySet().stream().map(x->x+"-- "+mappings.get(x).toString()).collect(Collectors.joining(", ")));
+
+      GraphNode currentNodeClicked = getVertex(e.getPoint());
         if (currentNodeClicked != null) {
             //System.out.println("Clicked on "+ currentNodeClicked.getNodeId());
             if (!currentlyColored.containsKey(currentNodeClicked)) { // If we've clicked on a new node
@@ -60,37 +65,54 @@ public class DoubleClickHandler implements MouseListener {
                 currentNodeClicked.setNodeColor(NodeStates.SELECT); // Before setting it with the selected state
 
                 //If this node/place has a mapping associated with it select those also.
+                MappingNdMarking thisMapping = mappings.get(currentNodeClicked.getProcessModelId());
+                ProcessModelObject clk = currentNodeClicked.getRepresentedFeature();
+              System.out.println("Id "+currentNodeClicked.getProcessModelId());
+                System.out.println( "\n clk "+ clk.getId());
+                System.out.println( thisMapping.toString());
 
+                if (!(clk instanceof PetriNetTransition) &&
+                       mappings.containsKey(currentNodeClicked.getProcessModelId())) {
 
-                if (!(currentNodeClicked.getRepresentedFeature() instanceof PetriNetTransition) && mappings.containsKey(currentNodeClicked.getProcessModelId())) {
-
-                    MappingNdMarking thisMapping = mappings.get(currentNodeClicked.getProcessModelId());
                     if (thisMapping != null) {
                         Collection<GraphNode> vertexes = vv.getGraphLayout().getGraph().getVertices();
-
-                        if (currentNodeClicked.getRepresentedFeature() instanceof AutomatonNode) {
+                        if (clk instanceof AutomatonNode) {
                             Map<AutomatonNode, Multiset<PetriNetPlace>> mapping = thisMapping.getNodeToMarking();
-
-                            for (PetriNetPlace place : mapping.get(currentNodeClicked.getRepresentedFeature())) {
+                      System.out.println("A->P "+ MappingNdMarking.n2m2String(mapping));
+                            for (PetriNetPlace place : mapping.get(clk)) {
                                 // N^2, might be a problem for larger displays
-                                for (GraphNode g : vertexes)
-                                    if (place == g.getRepresentedFeature()) {
-                                        currentlyColored.put(g, g.getNodeColor());
-                                        g.setNodeColor(NodeStates.SELECT);
-                                        break;
-                                    }
+                      System.out.println("place "+place.getId());
+                                for (GraphNode g : vertexes) {
+                                  //System.out.println("Vertex " +g.getRepresentedFeature().getId());
+                                  if (place.getId() == g.getRepresentedFeature().getId()) {
+                                    System.out.println("A " + g.getNodeId());
+                                    currentlyColored.put(g, g.getNodeColor());
+                                    g.setNodeColor(NodeStates.SELECT);
+                                    break;
+                                  }
+                                }
                             }
-                        } else if (currentNodeClicked.getRepresentedFeature() instanceof PetriNetPlace) {
+                        } else if (clk instanceof PetriNetPlace) {
                             Map<Multiset<PetriNetPlace>, AutomatonNode> mapping = thisMapping.getMarkingToNode();
-
+                            String out =
+                              mapping.keySet().stream().map(x->"{"+ x.stream().map(y->y.getId()).
+                                collect(Collectors.joining(", ")  )+"} ->" +
+                                mapping.get(x).getId()).collect(Collectors.joining("\n"));
+                        System.out.println("P->A \n"+ out);
                             for (Multiset<PetriNetPlace> marking : mapping.keySet()) {
-                                if (marking.contains(currentNodeClicked.getRepresentedFeature()))
-                                    for (GraphNode g : vertexes)
-                                        if (mapping.get(marking) == g.getRepresentedFeature()) {
-                                            currentlyColored.put(g, g.getNodeColor());
-                                            g.setNodeColor(NodeStates.SELECT);
-                                            break;
-                                        }
+                    Set<String> markingId = marking.stream().map(x->x.getId()).collect(Collectors.toSet());
+                    System.out.println("marking "+ marking.stream().map(x->x.getId()).collect(Collectors.joining(", ")));
+                                if (markingId.contains(clk.getId())) {
+                                  System.out.println("found " + clk.getId());
+                                  for (GraphNode g : vertexes) {
+                                    if (mapping.get(marking) == g.getRepresentedFeature()) {
+                                      System.out.println("g " + g.getNodeId());
+                                      currentlyColored.put(g, g.getNodeColor());
+                                      g.setNodeColor(NodeStates.SELECT);
+                                      break;
+                                    }
+                                  }
+                                }
                             }
                         }
                     }
@@ -117,6 +139,10 @@ public class DoubleClickHandler implements MouseListener {
 
             currentlyColored.clear();
         }
+
+        System.out.println("DoubleClickHandler");
+        System.out.println(mappings.keySet().stream().map(x->x+"-- "+mappings.get(x).toString()).collect(Collectors.joining(", ")));
+
     }
 
     /**
