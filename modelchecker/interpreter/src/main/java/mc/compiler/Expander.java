@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import mc.compiler.ast.*;
 import mc.compiler.iterator.IndexIterator;
+import mc.compiler.iterator.RangeIterator;
 import mc.exceptions.CompilationException;
 import mc.util.Location;
 import mc.util.expr.Expression;
@@ -127,7 +128,7 @@ public class Expander {
         }
       }
     }
-    //System.out.println("hidden "+symbolicVariables);
+    System.out.println("\nSTARTING "+process.getProcess().myString());
     //System.out.println("idMap  "+ identMap.keySet().stream().map(x->x+"->"+identMap.get(x)).collect(Collectors.joining()));
     ASTNode root;
     //  if (symbolicVariables.size()==0)
@@ -145,10 +146,14 @@ public class Expander {
     process.setLocalProcesses(localProcesses);
     if (forAll) {
       //System.out.println("pong " + process.getIdentifier());
-      process.setLocalProcesses(forAllLocalProcesses);
-    } else {
-      forAllLocalProcesses.clear();
+      List<LocalProcessNode> lpns = new ArrayList<>();
+      for(LocalProcessNode x: forAllLocalProcesses ){ //Object reference
+        lpns.add(x);
+      }
+      process.setLocalProcesses(lpns);
     }
+    forAllLocalProcesses.clear();
+
 
     //System.out.println("Ending Expand " + process.myString());
     return process;
@@ -255,7 +260,7 @@ public class Expander {
     HashMap<String, Object> tmpVarMap = new HashMap<>(variableMap);
     tmpVarMap.keySet().removeIf(s -> symbolicVariables.contains(s.substring(1)));
     astNode.setModelVariables(tmpVarMap);
-    //System.out.println("**** ending expand next "+astNode.myString());
+    System.out.println("   XXX "+ astNode.getName()+" ending expand next "+astNode.myString());
     //System.out.println("var map "+variableMap.keySet());
     //System.out.println("global Var map ");
     return astNode;
@@ -497,8 +502,14 @@ public class Expander {
     //System.out.println("iexs "+iexs.stream().map(x->x.myString()).collect(Collectors.joining(" ,")));
     List<LocalProcessNode> localProcesses = new ArrayList<>();
 /// the Integer is the value  the variable has been instntiated to
+    String vm = variableMap.keySet().stream().map(n -> n+"->"+variableMap.get(n).toString()).collect(Collectors.joining(", "));
+    System.out.println("ForAll 1  vm = "+vm);
+
     Map<Integer, ASTNode> nodes = expand(astNode.getProcess(), variableMap, astNode.getRanges().getRanges(), context);
+    vm = variableMap.keySet().stream().map(n -> n+"->"+variableMap.get(n).toString()).collect(Collectors.joining(", "));
     String o = nodes.values().stream().map(n -> n.myString()).collect(Collectors.joining(", "));
+    System.out.println("ForAll 1 "+o+ "  \n vm = "+vm);
+
     RangesNode rEmpty = new RangesNode(new ArrayList<>(),astNode.getLocation());
     int i = 1;
     String nextPr = "";
@@ -568,7 +579,41 @@ public class Expander {
     Map<Integer, ASTNode> nodes = new TreeMap<>();
     ASTNode ps = process.copy();
     //System.out.println("EXPAND 4all  process " + process.myString());
-    int ir = 1;
+    int ir = 0;
+    for (int ix = 0; ix < ranges.size(); ix++) {// more than one range
+
+      IndexExpNode node = ranges.get(ix);
+      IndexIterator iterator = IndexIterator.construct(expand(node, context));
+      String variable = node.getVariable();
+      //System.out.println("Expander var " + variable + " ix = " + ix + " ir = " + ir);
+      while (iterator.hasNext()) {
+
+        if (iterator instanceof RangeIterator) {
+         ir =  ((RangeIterator) iterator).next() ;
+        } else {
+          iterator.next();
+        }
+        variableMap.put(variable, ir);
+        //System.out.println(variableMap.keySet().stream().map(x->x+"->"+variableMap.get(x).toString()).collect(Collectors.joining(", ")));
+
+        ASTNode psNew = expand(ps.copy(), variableMap, context);
+        System.out.println(" while ir = " + ir + " expanded into ps " + psNew.myString());
+        nodes.put(ir, psNew);
+        ir++;
+      }
+    }
+    String o = nodes.values().stream().map(n -> n.myString()).collect(Collectors.joining(", "));
+    System.out.println(" EXPAND 4all RETURNS map \n    " + o);
+    return nodes;
+
+  }
+/*  HOLD
+  private Map<Integer, ASTNode> expand(ASTNode process, Map<String, Object> variableMap,
+                                       List<IndexExpNode> ranges, Context context) throws CompilationException, InterruptedException {
+    Map<Integer, ASTNode> nodes = new TreeMap<>();
+    ASTNode ps = process.copy();
+    //System.out.println("EXPAND 4all  process " + process.myString());
+    int ir = 0;
     for (int ix = 0; ix < ranges.size(); ix++) {// more than one range
 
       IndexExpNode node = ranges.get(ix);
@@ -591,7 +636,7 @@ public class Expander {
     return nodes;
 
   }
-
+*/
 
   private RelabelNode expand(RelabelNode relabel, Context context) throws CompilationException, InterruptedException {
     List<RelabelElementNode> relabels = new ArrayList<>();

@@ -47,7 +47,7 @@ import mc.util.expr.MyAssert;
  */
 public class TokenRule {
 
-  private static int stateSizeBound = 100;
+  private static int stateSizeBound = 1000;
 
   public static Automaton tokenRule(Petrinet convertFrom) {
     return tokenRule(convertFrom, new HashMap<>(), new HashMap<>());
@@ -109,7 +109,7 @@ public class TokenRule {
         convertFrom.validatePNet();
         outputAutomaton.validateAutomaton();
         //System.out.println("TokenRule Failure " + outputAutomaton.myString() + "tf tf tf \n");
-        throw new CompilationException(convertFrom.getClass(), "Token Rule Failure");
+        throw new CompilationException(convertFrom.getClass(), "Token Rule Failure exceeds size bound "+stateSizeBound);
 
       } // second LofC  NEVER Called - looks redundent!
       Multiset<PetriNetPlace> currentMarking = toDo.pop();

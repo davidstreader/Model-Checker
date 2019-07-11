@@ -378,6 +378,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
   /*  To help debugging the ids are only unique within a PetriNet
       reId CLONES the Petri Net and recomputes ad ids prefixing the id with the tag
       It is essential when composing two Nets to use different tags
+      reOwns  using tag hence can be used to build disjoint set of owners
    */
   public Petrinet reId(String tag) throws CompilationException {
     //System.out.println("\nreId " + tag + ": " + this.myString("edge") + "\n");
