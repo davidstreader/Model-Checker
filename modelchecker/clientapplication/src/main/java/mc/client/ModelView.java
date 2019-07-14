@@ -1,8 +1,10 @@
 package mc.client;
 
 
+import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
+import com.google.common.collect.Multiset;
 import edu.uci.ics.jung.algorithms.layout.DAGLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.graph.DirectedSparseGraph;
@@ -21,19 +23,7 @@ import java.awt.FontFormatException;
 import java.awt.RenderingHints;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Observable;
-import java.util.Observer;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -42,14 +32,8 @@ import javafx.geometry.Bounds;
 import lombok.Getter;
 import lombok.Setter;
 import mc.Constant;
-import mc.client.graph.AutomataBorderPaintable;
-import mc.client.graph.DirectedEdge;
-import mc.client.graph.EdgeShape;
-import mc.client.graph.GraphNode;
-import mc.client.graph.NodeStates;
-import mc.client.graph.NodeType;
-import mc.client.graph.SeededRandomizedLayout;
-import mc.client.graph.SpringlayoutBase;
+import mc.client.graph.*;
+import mc.client.ui.CanvasMouseMotionListener;
 import mc.client.ui.DoubleClickHandler;
 import mc.client.ui.SettingsController;
 import mc.compiler.CompilationObject;
@@ -63,6 +47,7 @@ import mc.processmodels.ProcessType;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetEdge;
+import mc.processmodels.petrinet.components.PetriNetPlace;
 
 import java.awt.BasicStroke;
 
@@ -83,10 +68,14 @@ public class ModelView implements Observer {
   private Bounds windowSize;
 
   private DoubleClickHandler massSelect;
-
+  private CanvasMouseMotionListener cml;
   private Set<String> processModelsToDisplay;
   private SortedSet<String> visibleModels; // Processes that are in the modelsList combox
-  private Multimap<String, GraphNode> processModels;
+  private Multimap<String, GraphNode> processModels; //in the list
+  // Play places token on current Marking
+  private Map<String, Multiset<PetriNetPlace>> currentMarking = new TreeMap<>();
+  // from PetriNetPlace find Graph visualisation
+  private Map<String,GraphNode> placeId2GraphNode = new TreeMap<>();
 
   private CompilationObject compiledResult;
   private List<String> processesChanged = new ArrayList<>();
@@ -121,7 +110,6 @@ public class ModelView implements Observer {
    */
   @Override
   public void update(Observable o, Object arg) {
-
 
     if (!(arg instanceof CompilationObject)) {
       throw new IllegalArgumentException("arg object was not of type compilationObject");
@@ -172,7 +160,7 @@ public class ModelView implements Observer {
 
     /*System.out.print("\nKeys ");
     getProcessMap().entrySet().stream().forEach(x->{
-      System.out.print(x.getKey()+" ");
+      //System.out.print(x.getKey()+" ");
     });*/
     String dispType = settings.getDisplayType();
     //System.out.println("\n >>>>>"+dispType+"<<<<<\n");
@@ -250,7 +238,7 @@ public class ModelView implements Observer {
 
     //This draws the boxes around the automata
     vv.addPreRenderPaintable(new AutomataBorderPaintable(vv, this.processModels));
-
+    vv.addPostRenderPaintable(new PetriMarkingPaintable(vv,this.processModels, this.currentMarking));
     processesChanged.clear();
     return vv;
   }
@@ -371,11 +359,13 @@ public class ModelView implements Observer {
    * @param petri
    */
   private void addPetrinet(Petrinet petri) {
+
     //make a new "parent" object for the children to be parents of
     if (processModels.containsKey(petri.getId())) {
       // If the automaton is already displayed, but modified.
       // Remove all vertexes that are part of it
       for (GraphNode n : processModels.get(petri.getId())) {
+        placeId2GraphNode.remove(n.getNodeId());
         graph.removeVertex(n);
       }
 
@@ -384,13 +374,16 @@ public class ModelView implements Observer {
 
     Map<String, GraphNode> nodeMap = new HashMap<>();
 
+    Multiset<PetriNetPlace> rts = HashMultiset.create(); // .create(rts);
     petri.getPlaces().values().forEach(place -> {
       NodeStates nodeTermination = NodeStates.NOMINAL;
       if (place.isTerminal()) {
         nodeTermination = NodeStates.valueOf(place.getTerminal().toUpperCase());
       }
       if (place.isStart()) {
+        //System.out.println("Root "+ place.getId());
         if (!place.isSTOP()) {
+          rts.add(place);
           nodeTermination = NodeStates.START;
         if (place.getMaxStartNo() == 2)
           nodeTermination = NodeStates.START1;
@@ -431,7 +424,6 @@ public class ModelView implements Observer {
         nodeTermination = NodeStates.ERROR;
       }
 
-
       //System.out.println("Owners setting "+ settings.isShowOwners());
       String lab="." ;
       if (settings.isShowOwners()) {
@@ -440,12 +432,14 @@ public class ModelView implements Observer {
       } else {
         lab = "";
       }
-      //System.out.println("lab = "+lab);
+
       GraphNode node = new GraphNode(petri.getId(), place.getId(),
           nodeTermination, NodeType.PETRINET_PLACE, lab, place);
-      nodeMap.put(place.getId(), node);
+      placeId2GraphNode.put(place.getId(), node);
       graph.addVertex(node);
+      nodeMap.put(place.getId(), node);
     });
+    currentMarking.put(petri.getId(),rts);
 
     petri.getTransitions().values().forEach(transition -> {
       String lab=transition.getLabel()+".";
@@ -459,12 +453,12 @@ public class ModelView implements Observer {
       nodeMap.put(transition.getId(), node);
 
     });
-
     float dash[] = { 10.0f };
      for (PetriNetEdge edge: petri.getEdges().values()) {
-
-         vv.getRenderContext().setEdgeStrokeTransformer(e -> new BasicStroke(2.0f, BasicStroke.CAP_BUTT,
-                 BasicStroke.JOIN_MITER, 10.0f, dash, 0.0f));
+       //System.out.println(edge.myString());
+      // dstr commented out below 13/7/19
+      //   vv.getRenderContext().setEdgeStrokeTransformer(e -> new BasicStroke(2.0f, BasicStroke.CAP_BUTT,
+      //           BasicStroke.JOIN_MITER, 10.0f, dash, 0.0f));
       // EdgeType et = EdgeType.DIRECTED;
        String lab = "";
        if (edge.getOptional()) {
@@ -481,12 +475,16 @@ public class ModelView implements Observer {
          b = "";
          a = "";
        }
-
        DirectedEdge nodeEdge = new DirectedEdge(b,
                    lab,
                    a,
                    UUID.randomUUID().toString());
-
+       //System.out.println("Nodes in Map "+ nodeMap.keySet());
+       //System.out.println("  toId "+edge.getTo().getId());
+       //System.out.println("fromId "+edge.getFrom().getId());
+       //System.out.println("Before addEdge" +nodeEdge.getAll());
+       //System.out.println("from "+nodeMap.get(edge.getFrom().getId()));
+       //System.out.println("to   "+nodeMap.get(edge.getTo().getId()));
        graph.addEdge(nodeEdge, nodeMap.get(edge.getFrom().getId()),
                nodeMap.get(edge.getTo().getId()));
      }
@@ -623,9 +621,11 @@ public class ModelView implements Observer {
 
     vv.setGraphMouse(gm);
 
-    massSelect = new DoubleClickHandler(processModels, vv, mappings);
+    massSelect = new DoubleClickHandler(processModels, vv, mappings,currentMarking);
+    cml = new CanvasMouseMotionListener(vv,currentMarking);
     vv.addMouseListener(massSelect);
-    System.out.println();
+    vv.addMouseMotionListener(cml);
+    //System.out.println();
 
     //label the nodes
     vv.getRenderContext().setVertexLabelTransformer(GraphNode::getLabel);

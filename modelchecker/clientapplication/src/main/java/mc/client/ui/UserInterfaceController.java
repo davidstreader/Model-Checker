@@ -69,6 +69,8 @@ public class UserInterfaceController implements Initializable {
     private Menu openRecentTab;
     @FXML
     private Button compileButton;
+    @FXML
+    private boolean showPlay = false;
 
 
     // for keep updating the file that has already been saved.
@@ -399,6 +401,7 @@ public class UserInterfaceController implements Initializable {
 
     @FXML
     private void handleCreateNew(ActionEvent event) {
+
         if (saveUserChanges()) {
             currentOpenFile = null;
             userCodeInput.clear();
@@ -556,11 +559,19 @@ public class UserInterfaceController implements Initializable {
     }
 
     @FXML
+    private CheckBox Play = new CheckBox();
+
+
+    @FXML
     private void handleClearGraph(ActionEvent event) {
         ModelView.getInstance().clearDisplayed();
         SwingUtilities.invokeLater(() -> modelDisplay.setContent(ModelView.getInstance().updateGraph(modelDisplay)));
     }
-
+    @FXML
+    private void handlePlay(ActionEvent event) {
+        showPlay = Play.isSelected();
+        System.out.println("Play pressed "+showPlay);
+   }
     @FXML
     private void handleFreeze(ActionEvent event) {
         String selecteditem = modelsList.getSelectionModel().getSelectedItem();

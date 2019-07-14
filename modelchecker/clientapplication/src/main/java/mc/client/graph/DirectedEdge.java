@@ -14,14 +14,14 @@ public class DirectedEdge {
   public final String assignment;
   public final String uuid;
   public String getAll(){
-    String out;
+    StringBuilder sb = new StringBuilder();
     if (boolGuard!=null && boolGuard.length()>0)
-      out = boolGuard+" "+label;
-    else if (assignment!=null && assignment.length()>0)
-      out = assignment+" "+label;
-    else
-      out = label;
+      sb.append("edge "+ boolGuard);
+    sb.append(" "+label);
+    if (assignment!=null && assignment.length()>0)
+      sb.append(" "+assignment);
+
     //System.out.println("DirectedEdge "+out);
-    return out;
+    return sb.toString();
   }
 }

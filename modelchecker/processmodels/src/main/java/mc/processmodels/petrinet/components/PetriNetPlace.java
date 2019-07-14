@@ -3,15 +3,20 @@ package mc.processmodels.petrinet.components;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.microsoft.z3.BoolExpr;
+import com.microsoft.z3.Context;
+import com.microsoft.z3.Expr;
+import com.microsoft.z3.Z3Object;
+import com.rits.cloning.Cloner;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import mc.Constant;
+import mc.exceptions.CompilationException;
 import mc.processmodels.ProcessModelObject;
 
 @EqualsAndHashCode(callSuper = true, exclude = {"incoming", "outgoing"})
 @Data
 public class PetriNetPlace extends ProcessModelObject implements Comparable<PetriNetPlace> {
-  private static int sid = 0;
   private Set<PetriNetEdge> incoming = new HashSet<>();
   private Set<PetriNetEdge> outgoing = new HashSet<>();
   private boolean start;
@@ -79,6 +84,16 @@ public class PetriNetPlace extends ProcessModelObject implements Comparable<Petr
     }
   }
     return false;
+  }
+  public boolean equals(Object o) {
+    if (!(o instanceof PetriNetPlace)) {
+      return false;
+    } else {
+      if ( ((PetriNetPlace)o).getId().equals(getId()) )
+        return true;
+      else
+        return false;
+    }
   }
   public int compareTo(PetriNetPlace p){
     return getId().compareTo(p.getId());
@@ -250,5 +265,13 @@ public class PetriNetPlace extends ProcessModelObject implements Comparable<Petr
       this.getIncoming().stream().map(ed->ed.getId()).reduce(" in  ",(x,y)->x+" "+y)+
       this.getOutgoing().stream().map(ed->ed.getId()).reduce(" out ",(x,y)->x+" "+y)
     ;
+  }
+  public ProcessModelObject copy() throws CompilationException {
+    Cloner cloner = new Cloner();
+    cloner.dontClone(Context.class);
+    cloner.dontClone(Z3Object.class);
+    cloner.dontClone(Expr.class);
+    cloner.dontClone(BoolExpr.class);
+    return cloner.deepClone(this);
   }
 }

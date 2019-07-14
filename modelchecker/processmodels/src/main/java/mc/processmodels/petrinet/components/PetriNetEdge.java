@@ -67,8 +67,8 @@ public class PetriNetEdge extends ProcessModelObject implements Comparable {
   }
   public String myString(){
     StringBuilder sb = new StringBuilder();
-    sb.append("Edge "+this.getId()+" from "+from.getId()+" - ");
-    if (guard!=null) sb.append(guard.myString());
+    sb.append("Edge "+this.getId()+" from "+from.getId());
+    if (guard!=null) sb.append(" - "+guard.myString());
     sb.append(" -> "+to.getId()+" optional= "+optional);
 
      //for (String o: owners){out = out +o+" ";}
