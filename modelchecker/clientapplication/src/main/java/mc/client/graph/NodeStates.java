@@ -36,4 +36,8 @@ public enum NodeStates {
 
     SELECT  (Color.CYAN);
     private final Color colorNodes;
+
+   /* public NodeStates(Color c) {
+        colorNodes = c;
+    } */
 }

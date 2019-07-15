@@ -94,6 +94,8 @@ public class Parser {
         parseAlphabet();
       } else if (token instanceof EquationToken) {
         parseEquation();
+      } else if (token instanceof HidingToken) {
+        parseEquation();
       } else {
         throw constructException("expecting to parse a process, operation or const definition but received \"" + token.toString() + "\"", token.getLocation());
       }
@@ -512,12 +514,13 @@ public class Parser {
 
   /**
    * parsing a single process def " A = a->STOP"
-   *
+   *  output - add a processHode to processes
    * @throws CompilationException
    * @throws InterruptedException
    */
   private void parseSingleProcessDefinition() throws CompilationException, InterruptedException {
     int start = index;
+
     System.out.println("parseSingleProcessDefinition() "+peekToken().toString());
     IdentifierNode identifier = parseIdentifier();
     // check if a process with this identifier has already been defined
@@ -536,16 +539,25 @@ public class Parser {
       throw constructException("expecting to parse \"=\" but received \"" + error.toString() + "\"", error.getLocation());
     }
 
+
+
     AssignToken at = (AssignToken) nextToken();
     if (peekToken() instanceof AutomatonToken) {
       at.setPType(ProcessType.AUTOMATA);
       nextToken();
     }
+// Now ready to parse a process
+    if (peekToken() instanceof HidingToken) {
+
+    }
+
     ASTNode process = parseComposite();
 
     List<LocalProcessNode> localProcesses = new ArrayList<>();
     Set<String> localIdentifiers = new HashSet<>();
 
+
+    // optionaly may parse Local processes
     while (peekToken() instanceof CommaToken && !Thread.currentThread().isInterrupted()) {
       nextToken(); // gobble the comma
       localProcesses.add(parseLocalProcessDefinition(localIdentifiers));
@@ -574,7 +586,10 @@ public class Parser {
       processNode.setRelabels(parseRelabel());
     }
 
-    // check if a hiding set has been defined
+    /*
+        check if a hiding set has been defined  THIS is "\"
+        The "hide" function is defined as a plugin function
+    */
     if (peekToken() instanceof HideToken || peekToken() instanceof AtToken) {
       processNode.setHiding(parseHiding());
     }
@@ -802,7 +817,7 @@ public class Parser {
   }
   */
 
-     /*
+  /*
     this returns a whole process AST
    */
 
@@ -1361,7 +1376,9 @@ public class Parser {
     }
     return label;
   }
-
+/*
+   Relabeling ?  what about tau?
+ */
   private RelabelNode parseRelabel() throws CompilationException, InterruptedException {
     int start = index;
     if (!(nextToken() instanceof DivisionToken)) {
@@ -1440,7 +1457,10 @@ public class Parser {
     //System.out.println("parseRelabelElement() end "+rel.getOldLabel()+"->"+rel.getNewProcess());
     return rel;
   }
-
+/*
+    "P\{a,b,...}" OR P\{[i;0..N], ..}"
+   FOR  "hide { a,b} P"  OR "hide {[i;0..N], ..} P" see plugin function
+ */
   private HidingNode parseHiding() throws CompilationException, InterruptedException {
     int start = index;
     if (!(peekToken() instanceof HideToken) && !(peekToken() instanceof AtToken)) {
@@ -1457,6 +1477,7 @@ public class Parser {
 //    if(peekToken() instanceof IdentifierToken) {
 //      set = nextToken();
 //    } else {
+    //set = parseActionRange();
     set = parseSet();
 //    }
 

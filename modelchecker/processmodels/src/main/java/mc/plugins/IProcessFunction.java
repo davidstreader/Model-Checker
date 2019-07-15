@@ -11,6 +11,8 @@ import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.MultiProcessModel;
 
 /**
+ * Currently only simple parameteriseation of parser
+ *           +  no parameterisation of Expander
  * This interface describes a "function" in the LTS language variant in the use.
  * The function has the syntax of: @code{functionName{flag(s)}(Automaton(s))}
  * <p>

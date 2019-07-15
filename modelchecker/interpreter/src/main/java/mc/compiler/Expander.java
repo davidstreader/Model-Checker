@@ -276,7 +276,9 @@ public class Expander {
     if (astNode.hasRelabelSet()) {
       astNode.setRelabelSet(expand(astNode.getRelabelSet(), context));
     }
-
+/*
+  The HidingNode.getSet may contain ranges that are now expanded
+ */
     if (astNode.hasHiding()) {
       HidingNode hiding = astNode.getHiding();
       hiding.setSet(expand(hiding.getSet(), context));

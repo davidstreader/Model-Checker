@@ -173,6 +173,8 @@ public class Lexer {
         return new OwnersRuleToken(location);
       case "aut":
         return new AutomatonToken(location);
+      case "hiding":
+        return new HidingToken(location);
     }
 
     if (Character.isUpperCase(stringToToken.charAt(0))) {

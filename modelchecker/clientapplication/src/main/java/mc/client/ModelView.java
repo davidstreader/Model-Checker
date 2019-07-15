@@ -34,7 +34,7 @@ import lombok.Setter;
 import mc.Constant;
 import mc.client.graph.*;
 import mc.client.ui.CanvasMouseMotionListener;
-import mc.client.ui.DoubleClickHandler;
+import mc.client.ui.CanvasMouseListener;
 import mc.client.ui.SettingsController;
 import mc.compiler.CompilationObject;
 import mc.compiler.CompilationObservable;
@@ -48,8 +48,6 @@ import mc.processmodels.automata.Automaton;
 import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetEdge;
 import mc.processmodels.petrinet.components.PetriNetPlace;
-
-import java.awt.BasicStroke;
 
 /**
  * Created by bealjaco on 29/11/17.
@@ -67,7 +65,7 @@ public class ModelView implements Observer {
 
   private Bounds windowSize;
 
-  private DoubleClickHandler massSelect;
+  private CanvasMouseListener massSelect;
   private CanvasMouseMotionListener cml;
   private Set<String> processModelsToDisplay;
   private SortedSet<String> visibleModels; // Processes that are in the modelsList combox
@@ -621,7 +619,7 @@ public class ModelView implements Observer {
 
     vv.setGraphMouse(gm);
 
-    massSelect = new DoubleClickHandler(processModels, vv, mappings,currentMarking);
+    massSelect = new CanvasMouseListener(processModels, vv, mappings,currentMarking);
     cml = new CanvasMouseMotionListener(vv,currentMarking);
     vv.addMouseListener(massSelect);
     vv.addMouseMotionListener(cml);

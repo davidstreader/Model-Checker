@@ -35,11 +35,13 @@ S5 = p->STOP|q->S5.
 Zoo:{
 Zoo1 = abs(Z:Pro\{r,l})||S:SD.
 Zoo2 = abs((Z:Pro||S:SD)\{r,l}).
+
 }
 }
 
 operation { 
-
+Zoo1 <f Zoo2.
+Zoo2 <f Zoo1.
 }
 equation  {
 
@@ -52,6 +54,7 @@ abs(X:Pro\{r,l})||Y:SD <f abs((X:Pro||Y:SD)\{r,l}).
 }
  
 //
+
 
 
 
