@@ -13,7 +13,6 @@ import mc.processmodels.petrinet.Petrinet;
 import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.processmodels.petrinet.components.PetriNetTransition;
 
-import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Point2D;
@@ -22,12 +21,11 @@ import java.util.Map;
 
 public class CanvasMouseMotionListener implements MouseMotionListener {
   private VisualizationViewer<GraphNode, DirectedEdge> vv;
-  private Map<String, Multiset<PetriNetPlace>> currentMarking;
+ // private Map<String, Multiset<PetriNetPlace>> currentMarkingsSeen;
 
-  public CanvasMouseMotionListener(VisualizationViewer<GraphNode, DirectedEdge> vv_,
-                                   Map<String, Multiset<PetriNetPlace>> currentMarking_) {
+  public CanvasMouseMotionListener(VisualizationViewer<GraphNode, DirectedEdge> vv_) {
     vv = vv_;
-    currentMarking = currentMarking_;
+
 
   }
 
@@ -41,34 +39,17 @@ public class CanvasMouseMotionListener implements MouseMotionListener {
       return;
     }
     //  only PetriNetTransitions  reset all to Nominal
-    String pid = "";
-    if (currentNode != null) {
-      pid = currentNode.getProcessModelId();
-      if (currentNode.getType().equals(NodeType.PETRINET_TRANSITION)) {
-        Collection<GraphNode> vertexes = vv.getGraphLayout().getGraph().getVertices();
-        vertexes.stream().filter(x-> (!x.equals(currentNode) )).
-        filter(z->z.getType().equals(NodeType.PETRINET_TRANSITION)).
-          forEach(x->x.setNodeColor(NodeStates.NOMINAL));
-      }
-      //System.out.println("Current  " + currentNode.toString());
-    }
 
-
-
-    if (currentNode != null) {
-      //System.out.println(currentNode.getType());
-      if (currentNode.getType().equals(NodeType.PETRINET_TRANSITION)) {
-
-
-        if (TokenRule.isSatisfied(currentMarking.get(pid),
+    //System.out.println(" mListener " + CurrentMarkingsSeen.currentMarkingsSeen.keySet());
+    String pid = currentNode.getProcessModelId();
+    //System.out.println(" mListener " +pid) ;
+        if (TokenRule.isSatisfied(CurrentMarkingsSeen.currentMarkingsSeen.get(pid),
           ((PetriNetTransition) currentNode.getRepresentedFeature()))) {
           currentNode.setNodeColor(NodeStates.SELECT);
         } else {
           currentNode.setNodeColor(NodeStates.STOPSTART5);
         }
-      }
 
-    }
   }
 
   public void mouseDragged(MouseEvent e) {

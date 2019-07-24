@@ -64,7 +64,7 @@ public class Interpreter {
                                              boolean symb)
     throws CompilationException, InterruptedException {
     this.alpha = alpha;
-    System.out.println("*** Interp START ");
+    //System.out.println("*** Interp START ");
     StringBuilder sb = new StringBuilder();
     //System.out.print("Who calls interpret Y? ");//Throwable t = new Throwable();t.printStackTrace();
     Map<String, ProcessModel> processMap = new LinkedHashMap<>();  //already built proceesses
@@ -92,11 +92,12 @@ public class Interpreter {
         //System.out.println("++++++Interpreter Built Petri "+ modelPetri.getId());
         ((Petrinet) modelPetri).reown("");
         model = buildmpmFromPetri((Petrinet) modelPetri);
-        System.out.println(((MultiProcessModel) model).getProcessNodesMapping());
+        //System.out.println(((MultiProcessModel) model).getProcessNodesMapping());
       } else if (process.getType().contains("automata")) { //interpretASTAutNode
         System.out.println("\n\nWARNING INTERPRETING AUTOMATA (should not occur)\n");
       }
       //messageQueue.add(new LogAST("Built:", process));
+
       sb.append(process.getIdentifier()+", ");
       processMap.put(process.getIdentifier()+":"+process.getDomain(), model); //SAVE MultiProcess in processMap
       if (!process.getDomain().equals("*")) {
@@ -105,7 +106,7 @@ public class Interpreter {
 
     }
     //System.out.println("*** Interp " + this.alpha);
-    System.out.println("End of inteterpret  "+ processMap.keySet());
+    //System.out.println("End of inteterpret  "+ processMap.keySet());
     messageQueue.add(new LogMessage("Built: "+ sb.toString(),  true,
       false,
       null,
@@ -120,14 +121,14 @@ public class Interpreter {
   public MultiProcessModel buildmpmFromPetri(Petrinet pet) {
 
     MultiProcessModel model = new MultiProcessModel(pet.getId());
-    //System.out.println("Interpreter Built Petri "+ modelPetri.getId());
+    //System.out.println("Interpreter buildmpmFromPetri "+ pet.myString());
     model.addProcess(pet);
     HashMap<AutomatonNode, Multiset<PetriNetPlace>> nodeToMarking = new HashMap<>();
     HashMap<Multiset<PetriNetPlace>, AutomatonNode> markingToNode = new HashMap<>();
 
     ProcessModel modelAut = TokenRule.tokenRule(
       (Petrinet) model.getProcess(ProcessType.PETRINET), markingToNode, nodeToMarking);
-
+    //System.out.println("Interpreter buildmpmFromPetri "+ ((Automaton) modelAut).myString());
     model.addProcess(modelAut);
     model.addProcessesMapping(new MappingNdMarking(nodeToMarking, markingToNode));
     return model;

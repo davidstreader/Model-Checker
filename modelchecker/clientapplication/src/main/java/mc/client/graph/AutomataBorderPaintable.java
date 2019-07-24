@@ -6,20 +6,47 @@ import edu.uci.ics.jung.visualization.MultiLayerTransformer;
 import edu.uci.ics.jung.visualization.VisualizationServer;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import lombok.RequiredArgsConstructor;
+import mc.compiler.CompilationObject;
+import mc.processmodels.MultiProcessModel;
+import mc.processmodels.ProcessModel;
+import mc.processmodels.ProcessModelObject;
+import mc.processmodels.ProcessType;
+import mc.processmodels.automata.Automaton;
 
 import java.awt.*;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
-import java.util.Collection;
+import java.util.*;
+import java.util.stream.Collectors;
 
-@RequiredArgsConstructor
+
 public class AutomataBorderPaintable implements VisualizationServer.Paintable{
 
     private final VisualizationViewer<GraphNode, DirectedEdge> vv;
     private final Multimap<String,GraphNode> automata;
+    private final CompilationObject compiledResult;
 
-    @Override
+    private static AutomataBorderPaintable single;
+
+    final Color  CONCURRENT = (new Color(15,15 ,15, 50));
+    final Color  SEQUENTIAL=  (new Color(50,0 ,0, 50));
+
+
+    public AutomataBorderPaintable (VisualizationViewer<GraphNode, DirectedEdge> vv_,
+                                    Multimap<String,GraphNode> automata_,
+                                    CompilationObject compiledResult_) {
+    vv=vv_;
+    automata = automata_;
+    compiledResult = compiledResult_;
+
+    }
+    public static AutomataBorderPaintable getAutomataBorderPaintable
+             (VisualizationViewer<GraphNode, DirectedEdge> vv_,
+              Multimap<String,GraphNode> automata_,
+              CompilationObject compiledResult_) {
+      return single;
+    }
     public void paint(Graphics g_) {
         Graphics2D g = (Graphics2D) g_;
 
@@ -30,26 +57,65 @@ public class AutomataBorderPaintable implements VisualizationServer.Paintable{
                 .getRenderContext()
                 .getMultiLayerTransformer();
 
+         if (automata == null)  {
+             System.out.println("AutomataBorderPaintable  automata = null ");
+             return;
+         }
+         for (String s: automata.keySet()) {
+             if (s==null) {
+                 System.out.println("AutomataBorderPaintable  key = null");
+                 return;
+             } else if (automata.get(s)==null){
+                 System.out.println("AutomataBorderPaintable  key = "+s+" value =null");
+                 return;
+             }
+          /*   System.out.println(s+"->"+
+                automata.get(s).stream().map(x->x.getNodeId()).collect(Collectors.joining(", ")));
+         */
+         }
+         // automata.asMap().forEach((key, value) -> {
+         // BEWARE can throw null pointer exception
+        for (String key: automata.keySet()) {
+            Collection<GraphNode> value = automata.get(key);
+            Iterator<GraphNode> i = value.iterator();
+            ProcessModel pmo;
+            //Color fillColor = Color.decode("#808080");
+            Color fillColor = CONCURRENT;
+            if (i.hasNext()) {
+                pmo = compiledResult.getProcessMap().get(i.next().getProcessModelId());
+             /*   if (pmo.isSequential()) {
+                    fillColor = NodeStates.SEQUENTIAL.getColorNodes();
+                } */
+                if (pmo != null && pmo instanceof MultiProcessModel) {
+                    if (((MultiProcessModel) pmo).hasProcess(ProcessType.AUTOMATA)) {
+                     Automaton a = ((Automaton) ((MultiProcessModel) pmo). getProcess(ProcessType.AUTOMATA));
+                       if ( a.isSequential()) {
+                           fillColor = SEQUENTIAL;
+                       }
+                    }
+                }
+            }
 
-        automata.asMap().forEach((key, value) -> {
             Rectangle2D boundingBox = computeBoundingBox(value, layout, transform);
 
-            double d = 20;
+            double d = 30;
             Shape rect = new RoundRectangle2D.Double(
                     boundingBox.getMinX() - d,
-                    boundingBox.getMinY() - d,
+                    boundingBox.getMinY() - (d+20),
                     boundingBox.getWidth() + 2 * d,
-                    boundingBox.getHeight() + 2 * d,
+                    boundingBox.getHeight() + (2 * d) + 20,
                     d, d);
-            g.setColor(Color.decode("#808080"));
+
+            g.setColor(fillColor);
             g.fill(rect);
+            //System.out.println("c = "+fillColor.toString());
             g.setColor(Color.BLACK);
             g.draw(rect);
 
 
             g.drawString(key, (int) (rect.getBounds2D().getX()+rect.getBounds2D().getWidth()/2-(key.length()/2)),
                               (int) rect.getBounds2D().getY()+20);
-        });
+        };
 
     }
 

@@ -157,7 +157,7 @@ public class OwnersRule {
           toDo.push(ed.getTo());
           //System.out.println("    Start 2 " + ed.myString() + " own " + own);
 
-          if (ed.getOwnerLocation().contains(own)) {
+          if (ed.getEdgeOwners().contains(own)) {
       //System.out.println("Own adding " + ed.getId()+" "+ed.getLabel());
             PetriNetTransition tran = petri.addTransition(ed.getLabel());
             petri.addEdge(tran, nd2Pl.get(ed.getFrom()), ed.getOptionalEdge());
@@ -206,6 +206,7 @@ public class OwnersRule {
       build = Petrinet.startNet();
     }
     build.reown("");
+    build.setSequential(ain.isSequential());
     //build.validatePNet();
     MyAssert.validate(build,"Owners Rule output ");
     //assert build.validatePNet("Owners Net"): "Owners Rule Failure";
@@ -322,11 +323,11 @@ public class OwnersRule {
       processed.add(nd);
 
       Set<AutomatonNode> oneStep = new HashSet<>(nd.getOutgoingEdges().stream().
-        filter(ed -> !ed.getOwnerLocation().contains(own)).
+        filter(ed -> !ed.getEdgeOwners().contains(own)).
         map(e -> e.getTo()).collect(Collectors.toSet()));
 
       oneStep.addAll(nd.getIncomingEdges().stream().
-        filter(ed -> !ed.getOwnerLocation().contains(own)).
+        filter(ed -> !ed.getEdgeOwners().contains(own)).
         map(e -> e.getFrom()).collect(Collectors.toSet()));
 
       //System.out.println("All "+ union.stream().map(x->x.getId()+", ").collect(Collectors.joining()));

@@ -272,10 +272,10 @@ private void processUnsyncedActions(List<AutomatonEdge> edges1, List<AutomatonEd
             guard, false,false);
           //setup the optional Owners for broadcast events - non blocking send USED in Owners Rule
           if (edge1.getLabel().endsWith("?") && edge2.getLabel().endsWith("!")) {
-            newEdge.getOptionalOwners().addAll(edge1.getOwnerLocation());
+            newEdge.getOptionalOwners().addAll(edge1.getEdgeOwners());
           }
            else if (edge2.getLabel().endsWith("?") && edge1.getLabel().endsWith("!")) {
-            newEdge.getOptionalOwners().addAll(edge2.getOwnerLocation());
+            newEdge.getOptionalOwners().addAll(edge2.getEdgeOwners());
           }
           Set<String> ownersToAdd = new HashSet<>();
           ownersToAdd.addAll(getOwners(edge1,automaton1));
@@ -290,11 +290,11 @@ private void processUnsyncedActions(List<AutomatonEdge> edges1, List<AutomatonEd
 
   private static Set<String> getOwners(AutomatonEdge edge, Automaton owner) {
     Set<String> ownersToAdd = new HashSet<>();
-    if (edge.getOwnerLocation().contains(Automaton.DEFAULT_OWNER)) {
+    if (edge.getEdgeOwners().contains(Automaton.DEFAULT_OWNER)) {
       ownersToAdd.add(owner.getId());
 
     } else {
-      ownersToAdd.addAll(edge.getOwnerLocation());
+      ownersToAdd.addAll(edge.getEdgeOwners());
     }
     return ownersToAdd;
   }

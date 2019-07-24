@@ -13,4 +13,5 @@ public interface ProcessModel {
   Location getLocation();
 
   void setLocation(Location toThis);
+   boolean isSequential();
 }

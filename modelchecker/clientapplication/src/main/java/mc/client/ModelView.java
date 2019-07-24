@@ -10,9 +10,10 @@ import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.graph.DirectedSparseGraph;
 import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
 import edu.uci.ics.jung.graph.Graph;
+import edu.uci.ics.jung.visualization.VisualizationServer;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.CrossoverScalingControl;
-import edu.uci.ics.jung.visualization.control.PickingGraphMousePlugin;
+//import edu.uci.ics.jung.visualization.control.PickingGraphMousePlugin;
 import edu.uci.ics.jung.visualization.control.PluggableGraphMouse;
 import edu.uci.ics.jung.visualization.control.ScalingGraphMousePlugin;
 import edu.uci.ics.jung.visualization.control.TranslatingGraphMousePlugin;
@@ -33,9 +34,7 @@ import lombok.Getter;
 import lombok.Setter;
 import mc.Constant;
 import mc.client.graph.*;
-import mc.client.ui.CanvasMouseMotionListener;
-import mc.client.ui.CanvasMouseListener;
-import mc.client.ui.SettingsController;
+import mc.client.ui.*;
 import mc.compiler.CompilationObject;
 import mc.compiler.CompilationObservable;
 //import mc.compiler.ImpliesResult;
@@ -71,7 +70,7 @@ public class ModelView implements Observer {
   private SortedSet<String> visibleModels; // Processes that are in the modelsList combox
   private Multimap<String, GraphNode> processModels; //in the list
   // Play places token on current Marking
-  private Map<String, Multiset<PetriNetPlace>> currentMarking = new TreeMap<>();
+  //private CurrentMarkingsSeen currentMarkingsSeen = new CurrentMarkingsSeen();
   // from PetriNetPlace find Graph visualisation
   private Map<String,GraphNode> placeId2GraphNode = new TreeMap<>();
 
@@ -80,7 +79,7 @@ public class ModelView implements Observer {
 
   private Map<String, MappingNdMarking> mappings = new HashMap<>();
 
-
+ private VisualizationServer.Paintable boarder;
   private static final Font sourceCodePro;
 
   @Setter
@@ -234,9 +233,13 @@ public class ModelView implements Observer {
     //autoscale the graph to fit in the display port
     vv.setPreferredSize(new Dimension((int) windowSize.getWidth(), (int) windowSize.getHeight()));
 
+    if (boarder != null) { // must remove old background
+      vv.removePreRenderPaintable(boarder);
+    }
+    boarder = new AutomataBorderPaintable(vv, this.processModels,compiledResult);
     //This draws the boxes around the automata
-    vv.addPreRenderPaintable(new AutomataBorderPaintable(vv, this.processModels));
-    vv.addPostRenderPaintable(new PetriMarkingPaintable(vv,this.processModels, this.currentMarking));
+    vv.addPreRenderPaintable(boarder);
+    vv.addPostRenderPaintable(new PetriMarkingPaintable(vv,this.processModels));
     processesChanged.clear();
     return vv;
   }
@@ -341,7 +344,9 @@ public class ModelView implements Observer {
       } else {
         bool=""; ass="";
       }
-
+        if (settings.isShowOwners()) {
+         label += " "+e.getEdgeOwners();
+        }
 
       graph.addEdge(new DirectedEdge(bool,label + "" ,ass, UUID.randomUUID().toString()), from, to);
     });
@@ -379,9 +384,10 @@ public class ModelView implements Observer {
         nodeTermination = NodeStates.valueOf(place.getTerminal().toUpperCase());
       }
       if (place.isStart()) {
+        rts.add(place);
         //System.out.println("Root "+ place.getId());
         if (!place.isSTOP()) {
-          rts.add(place);
+
           nodeTermination = NodeStates.START;
         if (place.getMaxStartNo() == 2)
           nodeTermination = NodeStates.START1;
@@ -437,7 +443,8 @@ public class ModelView implements Observer {
       graph.addVertex(node);
       nodeMap.put(place.getId(), node);
     });
-    currentMarking.put(petri.getId(),rts);
+    CurrentMarkingsSeen.
+    currentMarkingsSeen.put(petri.getId(),rts);
 
     petri.getTransitions().values().forEach(transition -> {
       String lab=transition.getLabel()+".";
@@ -615,12 +622,12 @@ public class ModelView implements Observer {
     gm.add(new TranslatingGraphMousePlugin(MouseEvent.BUTTON2_MASK));
     gm.add(new TranslatingGraphMousePlugin(MouseEvent.BUTTON3_MASK));
     gm.add(new ScalingGraphMousePlugin(new CrossoverScalingControl(), 0, 1.1f, 0.9f));
-    gm.add(new PickingGraphMousePlugin<>());
+    gm.add(new MyPickingGraphMousePlugin<>());
 
     vv.setGraphMouse(gm);
 
-    massSelect = new CanvasMouseListener(processModels, vv, mappings,currentMarking);
-    cml = new CanvasMouseMotionListener(vv,currentMarking);
+    massSelect = new CanvasMouseListener(processModels, vv, mappings);
+    cml = new CanvasMouseMotionListener(vv);
     vv.addMouseListener(massSelect);
     vv.addMouseMotionListener(cml);
     //System.out.println();

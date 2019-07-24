@@ -130,7 +130,7 @@ public class AutomatonInterpreter implements ProcessModelInterpreter {
     //System.out.println("Convert  P->A");
     Automaton auto = ((Automaton) pm.getProcessType().convertTo(AUTOMATA, pm));
     Automaton automaton = auto.copy();
-    //automaton.getEdges().forEach(e -> System.out.println("owners of " + e.getId() + " are " + e.getOwnerLocation()));
+    //automaton.getEdges().forEach(e -> System.out.println("owners of " + e.getId() + " are " + e.getEdgeOwners()));
     //System.out.println("AutomatonInterperter");
     //System.out.println(automaton.toString());
     return labelAutomaton(automaton);

@@ -78,7 +78,7 @@ public class SimpFunction implements IProcessFunction {
 
     assert automata.length == 1;
     Automaton automaton = automata[0].copy(); // Deep Clone  as automata changed
-    //System.out.println("SIMP start !" + automaton.getId());
+    //System.out.println("\nSIMP start !" + automaton.getId());
     //MyAssert.myAssert(automaton.validateAutomaton("Simp input "+automaton.getId()+" vlaid = "), "Simp input Failure");
     MyAssert.validate(automaton, "Simp input ");
     if (flags.contains(Constant.OBSEVATIONAL)) {
@@ -100,6 +100,7 @@ public class SimpFunction implements IProcessFunction {
     } else {
       List<List<String>> partition = buildPartition(flags, automaton);
       //System.out.println("partition "+ partition);
+      //System.out.println(automaton.myString());
       //the automaton is changed
       mergeNodes(automaton, partition, context);
     }
@@ -111,7 +112,7 @@ public class SimpFunction implements IProcessFunction {
     automaton.setRootFromNodes();
     //MyAssert.myAssert(automaton.validateAutomaton("Simp output "+automaton.getId()+" vlaid = "), "Simp input Failure");
     MyAssert.validate(automaton, "Simp output ");
-    //System.out.println("Simp out "+automaton.getId()+"\n");
+    System.out.println("Simp out " + automaton.myString() + "\n");
     return automaton;
   }
 
@@ -123,9 +124,10 @@ public class SimpFunction implements IProcessFunction {
       automaton.removeEdge(ed);
     }
   }
-/*
-  build a
- */
+
+  /*
+    build a
+   */
   public List<List<String>> buildPartition(Set<String> flags, Automaton automaton) {
     boolean cong = flags.contains(Constant.CONGURENT);
     //the Nodes are connected to the Edges  are connected to the Nodes
@@ -172,30 +174,30 @@ public class SimpFunction implements IProcessFunction {
                               Collection<List<String>> partition,
                               Context context)
     throws CompilationException {
-    return mergeTauLoops(ain,partition,context, false);
+    return mergePartition(ain, partition, context, true);
 
   }
 
   /*
-      Fair mergeTauLoops ignores the tau loops
+      Fair mergePartitin ignores the tau loops
       Unfair introduces deadlock states.
    */
-  public Automaton mergeTauLoops(Automaton ain,
-                              Collection<List<String>> partition,
-                              Context context, boolean fair)
+  public Automaton mergePartition(Automaton ain,
+                                  Collection<List<String>> partition,
+                                  Context context, boolean fair)
     throws CompilationException {
 
-      for (Collection<String> nodesWithSameColor : partition) {
-      if (nodesWithSameColor.size() < 2) {
+    for (Collection<String> nodesToMerge : partition) {
+      if (nodesToMerge.size() < 2) {
         continue;
       }
       //System.out.println("Merge "+ ain.getId());
       //System.out.println("    partition "+partition);
 
-      //AutomatonNode mergedNode = Iterables.get(nodesWithSameColor, 0);
+      //AutomatonNode mergedNode = Iterables.get(nodesToMerge, 0);
       boolean first = true;
       AutomatonNode selectedNode = null;
-      for (String nodeName : nodesWithSameColor) {
+      for (String nodeName : nodesToMerge) {
         AutomatonNode automatonNode = ain.getNode(nodeName);
         if (first) {
           selectedNode = automatonNode;
@@ -203,19 +205,20 @@ public class SimpFunction implements IProcessFunction {
           continue;
         } else {
           try {
-            //System.out.println("Merging "+selectedNode.getId()+" " + automatonNode.getId());
+            System.out.println("Merging " + selectedNode.getId() + " " + automatonNode.getId());
             //combineNodes will remove mergedNode and return  new merged node
-            ain = ain.mergeAutNodes(ain, selectedNode, automatonNode, context);
-            //System.out.println("   Merged result \n");
+            ain.mergeAutNodes(selectedNode, automatonNode, context);
+            System.out.println("   Merged result " + ain.myString());
           } catch (InterruptedException ignored) {
             throw new CompilationException(getClass(), "INTERRUPTED EXCEPTION");
           }
         }
       }
-      //nodesWithSameColor.forEach(automaton::removeNode);
+      //nodesToMerge.forEach(automaton::removeNode);
     }
+    //System.out.println("   Merged Final result "+ain.myString());
     ain.cleanNodeLables();
-
+    //System.out.println("   Merged clean result "+ain.myString());
     return ain;
   }
 

@@ -103,7 +103,7 @@ public class SequentialInfixFun {
               sequence.addOwnersToEdge(
                 sequence.addEdge(edge.getLabel(), origin, newNode,
                   edge.getGuard() == null ? null : edge.getGuard().copy(),
-                  false, edge.getOptionalEdge()), edge.getOwnerLocation());
+                  false, edge.getOptionalEdge()), edge.getEdgeOwners());
             } catch (CompilationException e) {
               e.printStackTrace();
             }
@@ -310,7 +310,7 @@ public class SequentialInfixFun {
       AutomatonNode toNode = nodeMap.get(readEdge.getTo().getId());
       writeAutomaton.addOwnersToEdge(
         writeAutomaton.addEdge(readEdge.getLabel(), fromNode, toNode, readEdge.getGuard(), false, readEdge.getOptionalEdge()),
-        getEdgeOwnersFromProduct(readEdge.getOwnerLocation(), edgeOwnersMap)
+        getEdgeOwnersFromProduct(readEdge.getEdgeOwners(), edgeOwnersMap)
       );
     }
   }

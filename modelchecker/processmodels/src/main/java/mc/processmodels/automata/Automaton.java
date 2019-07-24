@@ -18,7 +18,6 @@ import mc.exceptions.CompilationException;
 import mc.processmodels.ProcessModel;
 import mc.processmodels.ProcessModelObject;
 import mc.processmodels.ProcessType;
-import mc.processmodels.petrinet.components.PetriNetPlace;
 import mc.util.Location;
 import mc.util.expr.Expression;
 
@@ -50,6 +49,11 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
   private int edgeId = 0;
   @Getter
   private int ownerId = 0;
+  @Setter
+  @Getter
+  private boolean sequential = false;
+  public boolean isSequential(){return sequential;}
+  // abstraction can muck up concurrancy hence set this flag
   @Getter
   @Setter
   private Location location;
@@ -127,13 +131,16 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     return table;
   }
 
+  /*
+
+   */
   public static void relabelOwners(Automaton aut, String label) {
     aut.getEdges().forEach(e -> {
 
-      Set<String> owners = e.getOwnerLocation().stream()
+      Set<String> owners = e.getEdgeOwners().stream()
         .map(o -> o + label)
         .collect(Collectors.toSet());
-      Set<String> toRemove = new HashSet<>(e.getOwnerLocation());
+      Set<String> toRemove = new HashSet<>(e.getEdgeOwners());
       toRemove.forEach(o -> aut.removeOwnerFromEdge(e, o));
       try {
         aut.addOwnersToEdge(e, owners);
@@ -189,8 +196,21 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     return end.stream().map(x -> nodeMap.get(x)).collect(Collectors.toSet());
   }
 
+  /*
+     When Abstraction saturated the graph it may destroy concurrancy and
+      Hence the OwnersRule will give spurious results SO set automata to sequential
+   */
+  public void setAllOwnerstoSeq(){
+    this.setSequential(true);
+    Set<String> o = new TreeSet<>();
+    o.add("seq");
+    setOwners(o);
+    for(AutomatonEdge ed: this.getEdges()){
+      ed.setEdgeOwners(o);
+    }
+  }
   public void setOwners(Collection<String> os) {
-    Set<String> eos = new HashSet<>();
+    Set<String> eos = new TreeSet<>();
     os.forEach(o -> eos.add(o));
     owners = eos;
   }
@@ -407,7 +427,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     // Some data coupted not all edge owners in automata
     Set<String> validate = new HashSet<>(getOwners());
     for (AutomatonEdge edge : getEdges()) {
-      if (edge.getOwnerLocation() != null) validate.addAll(edge.getOwnerLocation());
+      if (edge.getEdgeOwners() != null) validate.addAll(edge.getEdgeOwners());
     }
 
     Map<String, String> ownersMap = new TreeMap<>();
@@ -420,7 +440,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     for (AutomatonEdge edge : getEdges()) {
       //   //System.out.println(" edge "+edge.myString());
       edge.setEdgeOwners(
-        edge.getOwnerLocation().stream().map(x -> ownersMap.get(x)).collect(Collectors.toSet()));
+        edge.getEdgeOwners().stream().map(x -> ownersMap.get(x)).collect(Collectors.toSet()));
 
     }
     //System.out.println("Reowned "+myString());
@@ -442,6 +462,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
     this.alphabetBeforeHiding = fromThisautomata.getAlphabetBeforeHiding();
     this.relabels = fromThisautomata.getRelabels();
+    this.sequential = fromThisautomata.isSequential();
   }
 
   private void setupAutomaton() {
@@ -641,7 +662,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
       } else { // If the node links to itself
         ed = addEdge(e.getLabel(), newNode, newNode, newGuard, false, e.getOptionalEdge());
       }
-      addOwnersToEdge(ed, e.getOwnerLocation());
+      addOwnersToEdge(ed, e.getEdgeOwners());
       ed.setOptionalEdge(e.getOptionalEdge());
     }
 
@@ -657,7 +678,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
       } else { // If the node links to itself
         ed = addEdge(e.getLabel(), newNode, newNode, newGuard, false, e.getOptionalEdge());
       }
-      addOwnersToEdge(ed, e.getOwnerLocation());
+      addOwnersToEdge(ed, e.getEdgeOwners());
       ed.setOptionalEdge(e.getOptionalEdge());
 
     }
@@ -698,11 +719,13 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
    * @throws CompilationException
    * @throws InterruptedException
    */
-  public Automaton mergeAutNodes(Automaton ain, AutomatonNode node1, AutomatonNode node2, Context context) throws CompilationException, InterruptedException {
-    return mergeAutNodes(ain, node1, node2, context, false);
+  public void mergeAutNodes( AutomatonNode node1, AutomatonNode node2, Context context) throws CompilationException, InterruptedException {
+     mergeAutNodes( node1, node2, context, false);
+     return;
   }
 
-  public Automaton mergeAutNodes(Automaton ain, AutomatonNode node1, AutomatonNode node2, Context context, boolean force) throws CompilationException, InterruptedException {
+  public void mergeAutNodes( AutomatonNode node1, AutomatonNode node2, Context context, boolean force) throws CompilationException, InterruptedException {
+    Automaton ain = this;
     if (!nodeMap.containsKey(node1.getId())) {
       throw new CompilationException(getClass(), node1.getId() + "test3 was not found in the automaton " + getId(), this.getLocation());
     }
@@ -743,8 +766,8 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     //removeNode(node2);
     //this.setEndList();
     //System.out.println("new merged Node "+node1.myString());
-    //System.out.println("nodes merged in "+this.myString());
-    return ain;
+    //System.out.println("Automaton.java nodes merged in "+ain.myString());
+    return;
   }
 
 
@@ -965,7 +988,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
       throw new CompilationException(getClass(), "Cannot add an owner to an edge not in this automaton");
     }
     owners.add(owner);
-    edge.addOwnerLocation(owner);
+    edge.addOwner(owner);
   }
 
   public void addOwnersToEdge(AutomatonEdge edge, Collection<String> owner)
@@ -976,7 +999,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     //System.out.println("owner "+owner+ " "+ owner.getClass().getName());
     //System.out.println("owners "+owners.getClass().getName());
     owners.addAll(owner);
-    owner.forEach(edge::addOwnerLocation);
+    owner.forEach(edge::addOwner);
   }
 
   public void removeOwnerFromEdge(AutomatonEdge edge, String ownerToRemove) {
@@ -986,7 +1009,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     edge.removeOwnerLocation(ownerToRemove);
 
     boolean shouldDelete = edgeMap.values().stream()
-      .map(AutomatonEdge::getOwnerLocation)
+      .map(AutomatonEdge::getEdgeOwners)
       .flatMap(Set::stream)
       .noneMatch(ownerToRemove::equals);
 
@@ -1107,12 +1130,13 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
       AutomatonNode to = reNode.get(edge.getTo());
       addOwnersToEdge(
         addEdge(edge.getLabel(), from, to, edge.getGuard(), false, edge.getOptionalEdge()),
-        edge.getOwnerLocation());
+        edge.getEdgeOwners());
     }
     if (thisAutomataRoot.isEmpty()) {
       throw new CompilationException(getClass(),
         "There was no root found while trying to add an automaton");
     }
+
     return thisAutomataRoot;
   }
 
@@ -1127,7 +1151,11 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
   public String myString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("Aut " + this.getId() + " root ");
+    if (this.sequential) {
+      sb.append("Aut " + this.getId() + " sequential root ");
+    } else {
+      sb.append("Aut " + this.getId() + " root ");
+    }
     for (AutomatonNode r : root) {
       sb.append(r.getId() + " ");
     }
@@ -1213,7 +1241,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     //HACK fix the owners as some times global owners not same as owners on edges
     Set<String> union = new HashSet<>();
     for (AutomatonEdge ed : getEdges()) {
-      union.addAll(ed.getOwnerLocation());
+      union.addAll(ed.getEdgeOwners());
     }
 
     setOwners(union);
@@ -1258,7 +1286,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
       AutomatonEdge xedge = reIded.addEdge(edge.getLabel(),
         from, to, edge.getGuard(), false, edge.getOptionalEdge());
       //System.out.println("  Adding "+xedge.myString());
-      Set<String> os = edge.getOwnerLocation();
+      Set<String> os = edge.getEdgeOwners();
       //System.out.print("os "+os);
       Set<String> newos = new HashSet<>();
       //os.stream().map(x->ownersMap.get(x)).collect(Collectors.toSet());
@@ -1289,10 +1317,10 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
     }
     for (AutomatonEdge par : e.getTo().getOutgoingEdges()) {
       if (!par.getLabel().equals(ed.getLabel())) continue;
-      if (!par.getOwnerLocation().equals(ed.getOwnerLocation())) continue;
+      if (!par.getEdgeOwners().equals(ed.getEdgeOwners())) continue;
       for (AutomatonEdge par2 : ed.getTo().getOutgoingEdges()) {
         if (!par2.getLabel().equals(e.getLabel())) continue;
-        if (!par2.getOwnerLocation().equals(e.getOwnerLocation())) continue;
+        if (!par2.getEdgeOwners().equals(e.getEdgeOwners())) continue;
         if (par2.getTo().equals(par.getTo())) {
           //System.out.println("Square "+par.myString());
           return par;
@@ -1322,7 +1350,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
    * @return the edges parallel to ed
    */
   public Set<AutomatonEdge> parallelSet(AutomatonEdge ed) {
-    Set<String> edOwn = ed.getOwnerLocation();
+    Set<String> edOwn = ed.getEdgeOwners();
     //AutomatonEdge ed
     Set<AutomatonNode> visited = new HashSet<>();
     Set<AutomatonEdge> parallel = new HashSet<>();
@@ -1343,7 +1371,7 @@ public class Automaton extends ProcessModelObject implements ProcessModel {
 
         //System.out.println(" PAR latest " + ed.myString() + " test " + edge.myString());
 //if not parallel continue
-        for (String own : edge.getOwnerLocation()) {
+        for (String own : edge.getEdgeOwners()) {
           if (edOwn.contains(own)) continue;
         }
 //if not square continue

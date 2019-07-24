@@ -181,10 +181,9 @@ public class TokenRule {
             toDo.add(newMarking);
             //System.out.println("   Add Marking "+newMarking.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
             if (newMarking.size() > ownCnt) {
-              System.out.println("Token Rule Makring to large Net Owners = "+convertFrom.getOwners());
-              System.out.println("Token Rule Makring to large "+ convertFrom.myString());
-              System.out.println("newMarking "+newMarking.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
-              throw new CompilationException(convertFrom.getClass(), "Token Rule Makring to large ");
+              System.out.println("Token Rule Makring not 1 Safe = "+convertFrom.getOwners()+ " "+cFrom.getId());
+              System.out.println("           newMarking "+newMarking.stream().map(x->x.getId()+" ").collect(Collectors.joining()));
+            //  throw new CompilationException(convertFrom.getClass(), "Token Rule Makring to large ");
             } //+ newMarking.toString());
           }
         }
@@ -234,6 +233,7 @@ public class TokenRule {
     }
     outputAutomaton.removeDuplicateEdges();  // may occur with broadcast
     outputAutomaton.setEndFromNodes();
+    outputAutomaton.setSequential(cFrom.isSequential());
     //MyAssert.myAssert(outputAutomaton.validateAutomaton("Token Rule output "+outputAutomaton.getId()+" VALID = "), "Token Rule Failure");
     MyAssert.validate(outputAutomaton,"Token Rule output ");
     // assert outputAutomaton.validateAutomaton():"Token Rule Failure";

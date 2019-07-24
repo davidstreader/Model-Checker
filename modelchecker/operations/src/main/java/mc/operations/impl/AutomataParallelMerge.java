@@ -2,8 +2,6 @@ package mc.operations.impl;
 
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
-import mc.Constant;
-import mc.compiler.Guard;
 import mc.exceptions.CompilationException;
 import mc.processmodels.automata.Automaton;
 import mc.processmodels.automata.AutomatonEdge;
@@ -137,11 +135,11 @@ public class AutomataParallelMerge {
 
   private static Set<String> getOwners(AutomatonEdge edge, Automaton owner) {
     Set<String> ownersToAdd = new HashSet<>();
-    if (edge.getOwnerLocation().contains(Automaton.DEFAULT_OWNER)) {
+    if (edge.getEdgeOwners().contains(Automaton.DEFAULT_OWNER)) {
       ownersToAdd.add(owner.getId());
 
     } else {
-      ownersToAdd.addAll(edge.getOwnerLocation());
+      ownersToAdd.addAll(edge.getEdgeOwners());
     }
     return ownersToAdd;
   }

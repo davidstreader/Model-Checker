@@ -15,12 +15,11 @@ import mc.Constant;
 import mc.compiler.Guard;
 import mc.exceptions.CompilationException;
 import mc.processmodels.ProcessModelObject;
-import mc.processmodels.petrinet.Petrinet;
 
 public class AutomatonEdge extends ProcessModelObject {
 
   //private static final String INTERSECTION = "^";
-  @Getter
+  //@Getter
   //@Setter  Must not set to a singleton
   private Set<String> edgeOwners = new HashSet<>();
 
@@ -29,12 +28,22 @@ public class AutomatonEdge extends ProcessModelObject {
     os.forEach(o-> eos.add(o));
     edgeOwners = eos;
   }
-  public Set<String> getOwnerLocation() {
+  public Set<String> getEdgeOwners() {
     return new HashSet<>(edgeOwners);
   }
 
-  boolean addOwnerLocation(String owner) {
+  boolean addOwner(String owner) {
     return edgeOwners.add(owner);
+  }
+  public boolean isOrthoganal(Set<String> owners) {
+    boolean orth = true;
+    for (String s :this.edgeOwners) {
+      if (owners.contains(s)) {
+        orth = false;
+        break;
+      }
+    }
+    return orth;
   }
 
   boolean removeOwnerLocation(String owner) {
@@ -137,7 +146,7 @@ public class AutomatonEdge extends ProcessModelObject {
       + "\tfrom:" + from.getId() + "\n"
       + "\tto:" + to.getId() + "\n"
       + "\tmetadata:" + getGuard() + "\n"
-      + "\t owners: " + getOwnerLocation() + "\n"
+      + "\t owners: " + getEdgeOwners() + "\n"
       + "\n"
       + "}";
 
@@ -202,10 +211,10 @@ public class AutomatonEdge extends ProcessModelObject {
   private static void relabelOwners(Automaton aut, String label) {
     aut.getEdges().forEach(e -> {
 
-      Set<String> owners = e.getOwnerLocation().stream()
+      Set<String> owners = e.getEdgeOwners().stream()
         .map(o -> o + label)
         .collect(Collectors.toSet());
-      Set<String> toRemove = new HashSet<>(e.getOwnerLocation());
+      Set<String> toRemove = new HashSet<>(e.getEdgeOwners());
       toRemove.forEach(o -> aut.removeOwnerFromEdge(e, o));
       try {
         aut.addOwnersToEdge(e, owners);

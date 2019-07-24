@@ -20,6 +20,8 @@ public class MultiProcessModel extends ProcessModelObject implements ProcessMode
       .arrayListValues()
       .build();
 
+  private boolean sequential = false;
+  public boolean isSequential() {return sequential;}
   @Getter
   private MappingNdMarking processNodesMapping;
 
@@ -46,6 +48,7 @@ public class MultiProcessModel extends ProcessModelObject implements ProcessMode
       return;
     }
     processes.put(pm.getProcessType(),pm);
+    sequential = pm.isSequential();
   }
 
 

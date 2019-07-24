@@ -183,7 +183,7 @@ public class ChoiceFun {
             AutomatonNode toNode = nodeMap.get(readEdge.getTo().getId());
             writeAutomaton.addOwnersToEdge(
                     writeAutomaton.addEdge(readEdge.getLabel(), fromNode, toNode, readEdge.getGuard(), false, readEdge.getOptionalEdge()),
-                    getEdgeOwnersFromProduct(readEdge.getOwnerLocation(), edgeOwnersMap)
+                    getEdgeOwnersFromProduct(readEdge.getEdgeOwners(), edgeOwnersMap)
             );
         }
     }

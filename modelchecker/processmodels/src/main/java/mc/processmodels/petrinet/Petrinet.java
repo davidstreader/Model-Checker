@@ -47,7 +47,11 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
   @Getter
   @Setter
   private List<Set<String>> roots = new ArrayList<>();
-  public void clearRoots() { setRoots(new ArrayList<>());}
+
+  public void clearRoots() {
+    setRoots(new ArrayList<>());
+  }
+
   /*
   Symbolic data
    */
@@ -80,6 +84,12 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
   @Getter
   @Setter
   private Set<String> owners = new HashSet<>();  // for nd nets should be List<Set<String>>
+
+  @Setter
+  private boolean sequential = false;
+
+  public boolean isSequential() { return sequential;}
+
   /*
   Needed when gluingPlaces
      must be set in GlueOwners  (think event Refinement)
@@ -137,6 +147,26 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     }
   }
 
+  /*
+     used in PetriNetAbstraction
+   */
+  public void prePostabstraction(PetriNetTransition trIn) throws CompilationException {
+    if (!trIn.isHidden()) return;
+    boolean merge = true;
+    for (PetriNetTransition tr : this.getTransitions().values()) {
+      for (PetriNetPlace p : tr.pre()) {
+        if (trIn.pre().contains(p)) {
+          merge = false;
+          break;
+        }
+      }
+    }
+    if (merge) {
+      this.gluePlaces(trIn.pre(), trIn.post());
+      this.removeTransition(trIn);
+    }
+  }
+
   /**
    * Build the product of two sets of owners
    *
@@ -172,19 +202,20 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
   }
 
   public static Petrinet oneEventNet(String event) throws CompilationException {
-   return  oneEventNet(event,"");
+    return oneEventNet(event, "");
   }
-    public static Petrinet oneEventNet(String event,String tag) throws CompilationException {
-      Petrinet eventNet = new Petrinet(event, false);
-      String nid = "n"+Petrinet.netId++;
-    PetriNetPlace start = eventNet.addPlace(nid+"s");
+
+  public static Petrinet oneEventNet(String event, String tag) throws CompilationException {
+    Petrinet eventNet = new Petrinet(event, false);
+    String nid = "n" + Petrinet.netId++;
+    PetriNetPlace start = eventNet.addPlace(nid + "s");
     start.setOwners(new HashSet<>());
     start.addOwner(DEFAULT_OWNER);
     start.setStart(true);
     start.setStartNos(new HashSet<>());
     start.addStartNo(1);
     eventNet.setRootPlace(start);
-    PetriNetPlace end = eventNet.addPlace(nid+"e");
+    PetriNetPlace end = eventNet.addPlace(nid + "e");
     end.setOwners(new HashSet<>());
     end.addOwner(DEFAULT_OWNER);
     PetriNetTransition tr = eventNet.addTransition(event);
@@ -237,8 +268,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     if (SorE.equals("S")) {
       p.setTerminal(Constant.STOP);
       p.addEndNo(1);
-    }
-    else p.setTerminal(Constant.END);
+    } else p.setTerminal(Constant.END);
 
     p.setStart(true);
     p.setOwners(new HashSet<>());
@@ -442,14 +472,14 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     return petri;
   }
 
-  public void addRoot(PetriNetPlace from, PetriNetPlace to){
+  public void addRoot(PetriNetPlace from, PetriNetPlace to) {
     //System.out.println("add roots "+roots +" from "+from.getId()+"  to "+to.getId());
     List<Set<String>> newRoots = new ArrayList<>();
-    for(Set<String> root:roots) {
+    for (Set<String> root : roots) {
       Set<String> newRoot = new TreeSet<>();
       boolean n = false;
-      for(String r:root) {
-        if (r.equals(from.getId())){
+      for (String r : root) {
+        if (r.equals(from.getId())) {
           newRoot.add(to.getId());
           to.setStart(true);
           n = true;
@@ -466,13 +496,14 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     roots = newRoots;
     //System.out.println("add newRoots "+newRoots +" from "+from.getId()+"  to "+to.getId());
   }
-  public void addEnd(PetriNetPlace from, PetriNetPlace to){
+
+  public void addEnd(PetriNetPlace from, PetriNetPlace to) {
     //System.out.println("radd ends "+ends +" from "+from.getId()+"  to "+to.getId());
     List<Set<String>> newEnds = new ArrayList<>();
-    for(Set<String> end:ends) {
+    for (Set<String> end : ends) {
       Set<String> newEnd = new TreeSet<>();
-      for(String e:end) {
-        if (e.equals(from.getId())){
+      for (String e : end) {
+        if (e.equals(from.getId())) {
           newEnd.add(to.getId());
           to.setTerminal(Constant.STOP);
           newEnd.add(e);
@@ -485,20 +516,21 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     ends = newEnds;
     //System.out.println("add newEnds "+newEnds +" from "+from.getId()+"  to "+to.getId());
   }
-/*
-   Used in both => and []  to build a copy of the root/end places prior to Gluing
- */
-  public PetriNetPlace copyRootOrEnd(PetriNetPlace pl, String t,boolean root) throws CompilationException {
+
+  /*
+     Used in both => and []  to build a copy of the root/end places prior to Gluing
+   */
+  public PetriNetPlace copyRootOrEnd(PetriNetPlace pl, String t, boolean root) throws CompilationException {
     //System.out.println("copyRootOrEnd "+root);
-    PetriNetPlace newpl = this.addPlaceWithTag("cpy" );
+    PetriNetPlace newpl = this.addPlaceWithTag("cpy");
     newpl.setOwners(pl.getOwners());
     ////// Fix the root and End on the net as that is KEY
-    if (root||!t.equals("None")) {
-       addEnd(pl,newpl);  // cannot just replace as might be needed for second time round (non deterministic processes)
-                          // but each time round is a different root  (not larger root )
+    if (root || !t.equals("None")) {
+      addEnd(pl, newpl);  // cannot just replace as might be needed for second time round (non deterministic processes)
+      // but each time round is a different root  (not larger root )
     }
-    if (!root||!t.equals("None")) {
-      addRoot(pl,newpl);
+    if (!root || !t.equals("None")) {
+      addRoot(pl, newpl);
     }
     ////////
     newpl.copyRefs(pl);  // copies only the refs for tree2net
@@ -654,7 +686,6 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
   }
 
 
-
   public PetriNetPlace getPlace(String id) {
     return places.get(id);
   }
@@ -733,35 +764,36 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
   public void tidyUpRootAndEndOnPlaces() {
     //Tidy up root and End nos on Places
 
-      int rint = 1;
-      for (PetriNetPlace pl : places.values()) {
-        pl.cleanStart();
-        pl.cleanSTOP();
+    int rint = 1;
+    for (PetriNetPlace pl : places.values()) {
+      pl.cleanStart();
+      pl.cleanSTOP();
+    }
+    Set<String> netOwners = new TreeSet<>();
+    for (Set<String> rts : getRoots()) {
+      for (String key : rts) {
+        //System.out.println("root " + key + " -> " + places.get(key).myString());
+        PetriNetPlace pl = places.get(key);
+        pl.setStart(true);
+        pl.getStartNos().add(rint);
+        netOwners.addAll(pl.getOwners());
       }
-      Set<String> netOwners = new TreeSet<>();
-      for (Set<String> rts : getRoots()) {
-        for (String key : rts) {
-          //System.out.println("root " + key + " -> " + places.get(key).myString());
-          PetriNetPlace pl = places.get(key);
-          pl.setStart(true);
-          pl.getStartNos().add(rint);
-          netOwners.addAll(pl.getOwners());
-        }
-        rint++;
-      }
-      owners = netOwners; //reachability could have removed all Places of a given owner
+      rint++;
+    }
+    owners = netOwners; //reachability could have removed all Places of a given owner
 
-      rint = 1;
-      for (Set<String> ends : getEnds()) {
-        for (String key : ends) {
-          //System.out.println("end " + key + " -> " + places.get(key).myString());
-          places.get(key).setTerminal(Constant.STOP);
-          places.get(key).getEndNos().add(rint);
-        }
-        rint++;
+    rint = 1;
+    for (Set<String> ends : getEnds()) {
+      for (String key : ends) {
+        //System.out.println("end " + key + " -> " + places.get(key).myString());
+        places.get(key).setTerminal(Constant.STOP);
+        places.get(key).getEndNos().add(rint);
       }
+      rint++;
+    }
 
   }
+
   public boolean validatePNet() throws CompilationException {
     //System.out.println("Validate ==>>" + myString());
     boolean ok = true;
@@ -821,7 +853,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
         }
         endAll.addAll(endOwn);
       }
-      if (endAll.size()>0 && !owners.equals(endAll)) {
+      if (endAll.size() > 0 && !owners.equals(endAll)) {
         System.out.println("XX all End with owners " + endAll + " BUT netOwn " + netOwners);
         ok = false;
       }
@@ -857,8 +889,6 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
       }
 
 
-
-
       //Back to verifying
       for (PetriNetPlace p : this.getPlaces().values()) {
         if (p.isStart() && !rootContains(p)) {
@@ -886,7 +916,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
 
       for (String k : transitions.keySet()) {
         PetriNetTransition tr = transitions.get(k);
-     //System.out.println("tr "+tr.myString());
+        //System.out.println("tr "+tr.myString());
         String id = tr.getId();
         Set<String> trOwn = tr.getOwners();
         Set<String> inOwn = new TreeSet<>();
@@ -915,13 +945,13 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
 
             } else {
               PetriNetPlace pl = ((PetriNetPlace) ed.getTo());
-       //System.out.println("outPlace "+pl.myString());
+              //System.out.println("outPlace "+pl.myString());
               outOwn.addAll(pl.getOwners());
             }
           }
           ok = ok && match;
           if (!isEqual(trOwn, outOwn)) {
-            System.out.println("XXMismatch Outgoing Owners " + outOwn + " " + trOwn+"    tr " + tr.myString());
+            System.out.println("XXMismatch Outgoing Owners " + outOwn + " " + trOwn + "    tr " + tr.myString());
             ok = false;
           }
         }
@@ -946,11 +976,12 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
         }
       }
     } catch (Exception e) {
-      System.out.println(e.getMessage()+ " Exception");
+      System.out.println(e.getMessage() + " Exception");
       ok = false;
     }
     if (!ok) {//KEEP BOTH  as Exception passed on up to gain info but call stack needed
-      Throwable t = new Throwable();  t.printStackTrace();
+      Throwable t = new Throwable();
+      t.printStackTrace();
       System.out.println("SORT the Petrinet OUT \n" + this.myString() + "\nSORT OUT Pn ABOVE\n");
       throw new CompilationException(getClass(), " invalid petriNet " + this.getId());
     }
@@ -1159,31 +1190,32 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
   public void addRoot(Set<String> r) {
     roots.add(r);
   }
+
   public void addRootsPl(List<Set<PetriNetPlace>> rts) {
-    for(Set<PetriNetPlace> rt:rts ){
-      roots.add(rt.stream().map(x->x.getId()).collect(Collectors.toSet()));
+    for (Set<PetriNetPlace> rt : rts) {
+      roots.add(rt.stream().map(x -> x.getId()).collect(Collectors.toSet()));
     }
 
   }
+
   public void addRoots(List<Set<String>> rts) {
-    for(Set<String> rt:rts ){
+    for (Set<String> rt : rts) {
       roots.add(rt);
     }
   }
+
   public void removeRoots(List<Set<String>> togol) {
-    Set<String> togo = togol.stream().flatMap(x->x.stream()).collect(Collectors.toSet());
+    Set<String> togo = togol.stream().flatMap(x -> x.stream()).collect(Collectors.toSet());
     //System.out.println("remove "+togo+" from root "+roots);
     List<Set<String>> newR = new ArrayList<>();
-    for(Set<String> rt:roots){
+    for (Set<String> rt : roots) {
       Set<String> nr = new TreeSet<>();
-      for(String r:rt) {
-        if (togo.stream().map(x -> x.equals(r)).reduce(false, (x, y) -> x || y))
-        {
+      for (String r : rt) {
+        if (togo.stream().map(x -> x.equals(r)).reduce(false, (x, y) -> x || y)) {
           //System.out.println(r + " is in " + togo);
-        }
-        else nr.add(r);
+        } else nr.add(r);
       }
-      if (nr.size()>0) {
+      if (nr.size() > 0) {
         newR.add(nr);
         //System.out.println("new root " + newR);
       }
@@ -1191,11 +1223,13 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     roots = newR;
     //System.out.println("removed "+togo+" returns "+roots);
   }
+
   public void addEnds(List<Set<String>> eds) {
-    for(Set<String> e:eds ){
+    for (Set<String> e : eds) {
       ends.add(e);
     }
   }
+
   public PetriNetPlace addPlace() {
     // return addPlace(this.id +":p:" + placeId++);
     PetriNetPlace pl = this.addPlace("p:" + placeId++);
@@ -1354,15 +1388,17 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
   public void removePlace(PetriNetPlace place) throws CompilationException {
     removePlace(place, true, false);
   }
+
   public void removePlaceAndPreTransitions(PetriNetPlace place) throws CompilationException {
     removePlaceAndPreTransitions(place, true);
   }
 
   public void removePlaceAndPreTransitions(PetriNetPlace place, boolean simple) throws CompilationException {
-    removePlace(place,simple,true);
+    removePlace(place, simple, true);
 
   }
-    public void removePlace(PetriNetPlace place, boolean simple, boolean andPreTransitions) throws CompilationException {
+
+  public void removePlace(PetriNetPlace place, boolean simple, boolean andPreTransitions) throws CompilationException {
     //System.out.println("Removing "+place.getId());
     if (!places.containsKey(place.getId())) {
       System.out.println("Cannot remove a place " + place.getId() + " that is not part of the petrinet");
@@ -1373,18 +1409,18 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     }
     //System.out.println("Removing "+place.getId());
     Set<PetriNetEdge> toRemove = new HashSet<>();
-   // toRemove.addAll(place.getIncoming());
-   // toRemove.addAll(place.getOutgoing());
-   // toRemove = toRemove.stream().filter(edges::containsValue).collect(Collectors.toSet());
-      for (PetriNetEdge edge : place.getIncoming()) {
-        //System.out.println("remove  "+ edge.myString());
-        if (andPreTransitions) removeTransition((PetriNetTransition) edge.getFrom());
-        else removeEdge(edge);
-      }
-      for (PetriNetEdge edge : place.getOutgoing()) {
-        //System.out.println("remove  "+ edge.myString());
-        removeEdge(edge);
-      }
+    // toRemove.addAll(place.getIncoming());
+    // toRemove.addAll(place.getOutgoing());
+    // toRemove = toRemove.stream().filter(edges::containsValue).collect(Collectors.toSet());
+    for (PetriNetEdge edge : place.getIncoming()) {
+      //System.out.println("remove  "+ edge.myString());
+      if (andPreTransitions) removeTransition((PetriNetTransition) edge.getFrom());
+      else removeEdge(edge);
+    }
+    for (PetriNetEdge edge : place.getOutgoing()) {
+      //System.out.println("remove  "+ edge.myString());
+      removeEdge(edge);
+    }
 
     if (place.isStart() || getAllRoots().contains(place)) {
 
@@ -1396,7 +1432,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
             Nrts.add(r);
           }
         }
-        if (Nrts.size()>0) Nroots.add(Nrts);
+        if (Nrts.size() > 0) Nroots.add(Nrts);
       }
       setRoots(Nroots);
     }
@@ -1412,7 +1448,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
               Nrts.add(r);
             }
           }
-          if (Nrts.size()>0) Nends.add(Nrts);
+          if (Nrts.size() > 0) Nends.add(Nrts);
         }
         setEnds(Nends);
         //System.out.println("Ends "+ends);
@@ -1444,33 +1480,36 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     toRemove.addAll(transition.getOutgoing());
 
     for (PetriNetEdge edge : toRemove) {
-      if(edges.values().contains(edge)) removeEdge(edge);
+      if (edges.values().contains(edge)) removeEdge(edge);
     }
     transitions.remove(transition.getId());
     // Opps alphabet.remove(transition.getLabel(), transition);
   }
+
   /*ONLY use in [] */
   public void removeStarE() throws CompilationException {
     //System.out.println(" E* ");
     List<Set<String>> eds = new ArrayList<>();
-    List<PetriNetTransition> trStar = transitions.values().stream().filter(x->x.getLabel().equals("*E")).collect(Collectors.toList());
-   for(PetriNetTransition tr: trStar ){
-     //System.out.println(tr.myString());
-     Set<String> ed = new TreeSet<>();
-     for(PetriNetPlace pl: tr.pre()){
-       ed.add(pl.getId());
-       //System.out.println("pl "+pl.getId()+" -> "+pl.getOwners());
-     }
-     if (ed.size()>0) eds.add(ed);
-     removeTransition(tr);
-   }
+    List<PetriNetTransition> trStar = transitions.values().stream().filter(x -> x.getLabel().equals("*E")).collect(Collectors.toList());
+    for (PetriNetTransition tr : trStar) {
+      //System.out.println(tr.myString());
+      Set<String> ed = new TreeSet<>();
+      for (PetriNetPlace pl : tr.pre()) {
+        ed.add(pl.getId());
+        //System.out.println("pl "+pl.getId()+" -> "+pl.getOwners());
+      }
+      if (ed.size() > 0) eds.add(ed);
+      removeTransition(tr);
+    }
     //System.out.println("eds "+eds);
-   setEnds(eds);
-   setEndFromNet();
+    setEnds(eds);
+    setEndFromNet();
   }
+
   public void removeEdge(PetriNetEdge edge) throws CompilationException {
     if (!edges.values().contains(edge)) {
-      Throwable t = new Throwable(); t.printStackTrace();
+      Throwable t = new Throwable();
+      t.printStackTrace();
       throw new CompilationException(getClass(), "Cannot remove an edge that is not part of"
         + "the petrinet");
     }
@@ -1497,24 +1536,27 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
 
   public Set<String> reName(Set<String> in) throws CompilationException {
     Set<String> out = new TreeSet<>();
-    for(String i:in){
+    for (String i : in) {
       if (nameMap.containsKey(i)) out.add(nameMap.get(i));
       else {
-        Throwable t = new Throwable(); t.printStackTrace();
+        Throwable t = new Throwable();
+        t.printStackTrace();
         throw new CompilationException(getClass(), "reName Failure");
       }
     }
     return out;
   }
+
   public List<Set<String>> reName(List<Set<String>> in) throws CompilationException {
     //System.out.println("nameMap = "+nameMap);
     //System.out.println("     in = "+in);
     List<Set<String>> out = new ArrayList<>();
-    for(Set<String> s:in) {
+    for (Set<String> s : in) {
       out.add(reName(s));
     }
-   return out;
+    return out;
   }
+
   /**
    * To keep all id unique in a Petri Net  the combination of two nets requires the
    * the ids are changed
@@ -1523,7 +1565,7 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
    * @param petriToAdd
    * @param setEnd
    * @return the mapping from the old to new Transitioins +
-   *   SETS nameMap  from old to new Places  Needed to adjust root & end afterwards
+   * SETS nameMap  from old to new Places  Needed to adjust root & end afterwards
    */
   @SneakyThrows(value = {CompilationException.class})
   public Map<PetriNetTransition, PetriNetTransition> addPetrinet(Petrinet petriToAdd, boolean withRoot, boolean setEnd) {
@@ -1583,9 +1625,13 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
 
     //if (setEnd) setEndFromNet();
     List<Set<String>> e = reName(petriToAdd.copyEnds());  //concurrent Modification
-    if (setEnd) {addEnds(e);}
-    List<Set<String>> r =reName(petriToAdd.copyRoots());
-    if (withRoot) { addRoots(r);}
+    if (setEnd) {
+      addEnds(e);
+    }
+    List<Set<String>> r = reName(petriToAdd.copyRoots());
+    if (withRoot) {
+      addRoots(r);
+    }
     //System.out.println("addPetri nameMap "+ nameMap);
     //  if (withRoot) this.validatePNet();  //cannot do this when root not finished NOR for "+"
     //System.out.println("addPetrinet END "+ this.myString()+"\n");
@@ -1593,13 +1639,12 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
   }
 
 
-
   /*
     Beware
    */
   @SneakyThrows(value = {CompilationException.class})
   public Map<PetriNetTransition, PetriNetTransition>
-        addPetrinetNoOwner(Petrinet petriToAdd, String tag) { // DO NOT USE need place2 place mapping
+  addPetrinetNoOwner(Petrinet petriToAdd, String tag) { // DO NOT USE need place2 place mapping
     //System.out.println("Start of add petriToAdd "+petriToAdd.myString());
     //System.out.println("Start of add this "+this.myString());
     Map<PetriNetPlace, PetriNetPlace> placeMap = new HashMap<>();
@@ -1702,6 +1747,68 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     return plMapping.values().stream().map(x -> x.getId()).collect(Collectors.toSet());
   }
 
+  /*
+     Inout  - 2 sets of owners, owns1 and owns2
+     Output - a Multimap from old to new owners
+
+     Input-Output the first parameter is the set of owners of the model
+        be it a Petri Net or an Automata
+        (subsequently use on Automata  failed!)
+   */
+   public static Map.Entry<Set<String>,Multimap<String, String>>
+        buildGluedOwners(Set<String> owners,Set<String> owns1, Set<String> owns2) {
+     Multimap<String, String> ownersMap = ArrayListMultimap.create();
+//Java optises away final writing to owners
+
+
+     String setAsString;
+     for (String o1 : owns1) {
+       for (String o2 : owns2) {
+         if (o1.compareTo(o2) > 0)
+           setAsString = o1 + MAPLET + o2;
+         else
+           setAsString = o2 + MAPLET + o1;
+         boolean found = false;
+         for (String el : ownersMap.get(o1)) {
+           if (el.equals(setAsString)) found = true;
+         }
+         if (!found) ownersMap.put(o1, setAsString);
+
+         found = false;
+         for (String el : ownersMap.get(o2)) {
+           if (el.equals(setAsString)) found = true;
+         }
+         if (!found) ownersMap.put(o2, setAsString);
+       }
+     }
+   /*System.out.println("GlueOwners Table "+ " \n"+ ownersMap.keySet().stream().
+     map(x->x+"->"+ownersMap.get(x)+", \n").
+     collect(Collectors.joining())+ " "); */
+     //System.out.println("ownersMap " + ownersMap.toString());
+
+     Set<String> temp = new TreeSet<>();
+     if (owners.size() > 0) temp.addAll(owners);  // event Refinement
+     else temp.addAll(owns1);                   // all others
+     //temp.addAll(owns2);
+     //System.out.println("owners = " + temp);
+     Set<String> newOwners = new HashSet<>();
+     for (String o : temp) {
+       if (ownersMap.keySet().contains(o)) {
+         newOwners.addAll(ownersMap.get(o));
+       } else {
+         newOwners.add(o);
+       }
+     }
+     owners = new TreeSet<>();
+     owners.addAll(newOwners);
+
+     //System.out.println("newOwners = " + newOwners);
+     //this the best way I can find to return a pair;
+     Map.Entry<Set<String>,Multimap<String, String>> pair
+       =new AbstractMap.SimpleEntry<>(owners,ownersMap);
+     //System.out.println("pair = "+pair.toString());
+     return pair;
+   }
   /**
    * The consturuction of owners when two sets of places are glued together
    * is constructed independently of the places.
@@ -1711,50 +1818,19 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
    * @param owns1
    * @param owns2
    */
+
   public void glueOwners(Set<String> owns1, Set<String> owns2) {
     //System.out.println("\n** glueOwners Start o1 " + owns1 + " o2 " + owns2);
     //System.out.println("** glueOwners Start " + myString("edge"));
 
-    combinationsTable = ArrayListMultimap.create();
-    String setAsString;
-    for (String o1 : owns1) {
-      for (String o2 : owns2) {
-        if (o1.compareTo(o2) > 0)
-          setAsString = o1 + MAPLET + o2;
-        else
-          setAsString = o2 + MAPLET + o1;
-        boolean found = false;
-        for (String el : combinationsTable.get(o1)) {
-          if (el.equals(setAsString)) found = true;
-        }
-        if (!found) combinationsTable.put(o1, setAsString);
-
-        found = false;
-        for (String el : combinationsTable.get(o2)) {
-          if (el.equals(setAsString)) found = true;
-        }
-        if (!found) combinationsTable.put(o2, setAsString);
-      }
-    }
-   /*System.out.println("GlueOwners Table "+ " \n"+ combinationsTable.keySet().stream().
-     map(x->x+"->"+combinationsTable.get(x)+", \n").
-     collect(Collectors.joining())+ " "); */
+    // resets owners and returns Table
+    Map.Entry<Set<String>,Multimap<String, String>> pair = buildGluedOwners(owners,owns1,owns2);
+    combinationsTable = pair.getValue();
+    owners = pair.getKey();
+    //System.out.println("owners = " + owners);
     //System.out.println("combinationsTable " + combinationsTable.toString());
 
-    Set<String> temp = new TreeSet<>();
-    if (owners.size() > 0) temp.addAll(owners);  // event Refinement
-    else temp.addAll(owns1);                   // all others
-    //temp.addAll(owns2);
-    //System.out.println("owners = " + temp);
-    Set<String> newOwners = new HashSet<>();
-    for (String o : temp) {
-      if (combinationsTable.keySet().contains(o)) {
-        newOwners.addAll(combinationsTable.get(o));
-      } else {
-        newOwners.add(o);
-      }
-    }
-    owners = newOwners;
+
 
     //System.out.println("newOwner = " + owners);
     //System.out.println("combinationsTable " + combinationsTable.toString());
@@ -1787,6 +1863,8 @@ public class Petrinet extends ProcessModelObject implements ProcessModel {
     }
     //System.out.println("**glueOwners END " + myString("edge") + "\n");
   }
+
+
 
   public void repairRootEnd(Multimap<String, String> s2s) {
     //System.out.println("repairRootEnd "+s2s);

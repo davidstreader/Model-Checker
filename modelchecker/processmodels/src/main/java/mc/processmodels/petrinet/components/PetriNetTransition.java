@@ -9,6 +9,7 @@ import com.google.common.collect.Multiset;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import mc.Constant;
 import mc.processmodels.ProcessModelObject;
 
 @EqualsAndHashCode(callSuper = true, exclude = {"incoming", "outgoing"})
@@ -50,6 +51,10 @@ public class PetriNetTransition extends ProcessModelObject {
       return false;
     else
     return this.getId().equals(((PetriNetTransition)tr).getId());
+  }
+
+  public boolean isHidden() {
+    return this.label.equals(Constant.HIDDEN);
   }
   public void addOwner(String ownerName) {
     //System.out.println("addOwner "+ownerName);

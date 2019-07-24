@@ -70,14 +70,14 @@ public class Parser {
 
   public AbstractSyntaxTree parse(List<Token> tokens, Context context) throws CompilationException, InterruptedException {
     reset();
-    System.out.println("Parse "+ tokens);
+    System.out.println("Parse " + tokens);
     this.tokens = tokens;
     this.context = context;
     domain = "*";
 
     while (index < this.tokens.size() && !Thread.currentThread().isInterrupted()) {
       Token token = peekToken();
-      System.out.println("parse "+token.toString());
+      //System.out.println("parse "+token.toString());
       if (token instanceof ProcessesDefintionToken) {
         parseProcessesDefinition();
       } else if (token instanceof ConstToken) {   // "const"
@@ -104,8 +104,8 @@ public class Parser {
       "\n infuns " + infixFunctions.keySet() +
       "\n ops " + operationFunctions.keySet());
     AbstractSyntaxTree out =
-       new AbstractSyntaxTree(processes, alphabet, operations, equations, variableMap);
-    System.out.println("parse output "+out.myString());
+      new AbstractSyntaxTree(processes, alphabet, operations, equations, variableMap);
+    System.out.println("parse output " + out.myString());
     return out;
   }
 
@@ -317,7 +317,9 @@ public class Parser {
       }
     }
 
-    return new RangeNode(startValue, endValue, constructLocation(start));
+    RangeNode rn = new RangeNode(startValue, endValue, constructLocation(start));
+    System.out.println("parse Range ends " + rn.myString());
+    return rn;
   }
 
   /**
@@ -416,10 +418,10 @@ public class Parser {
       ConstParseOnlyNode node = new ConstParseOnlyNode(intValue, constructLocation(start));
       constantMap.put(identifier.getIdentifier(), node);
     } else {
-      System.out.println("realValue"+ realValue);
+      //System.out.println("realValue"+ realValue);
       ConstParseOnlyNode node = new ConstParseOnlyNode(realValue, constructLocation(start));
       constantMap.put(identifier.getIdentifier(), node);
-      System.out.println("constantMap "+identifier.getIdentifier()+"->"+node.myString());
+      //System.out.println("constantMap "+identifier.getIdentifier()+"->"+node.myString());
     }
   }
 
@@ -461,6 +463,7 @@ public class Parser {
     }
 
     RangeNode range = new RangeNode(startValue, endValue, constructLocation(start));
+    System.out.println("parseRangeDefinition ends " + range.myString());
     constantMap.put(identifier.getIdentifier(), range);
   }
 
@@ -514,14 +517,15 @@ public class Parser {
 
   /**
    * parsing a single process def " A = a->STOP"
-   *  output - add a processHode to processes
+   * output - add a processHode to processes
+   *
    * @throws CompilationException
    * @throws InterruptedException
    */
   private void parseSingleProcessDefinition() throws CompilationException, InterruptedException {
     int start = index;
 
-    System.out.println("parseSingleProcessDefinition() "+peekToken().toString());
+    System.out.println("parseSingleProcessDefinition() " + peekToken().toString());
     IdentifierNode identifier = parseIdentifier();
     // check if a process with this identifier has already been defined
     if (processIdentifiers.contains(identifier.getIdentifier())) {
@@ -538,7 +542,6 @@ public class Parser {
       Token error = tokens.get(index - 1);
       throw constructException("expecting to parse \"=\" but received \"" + error.toString() + "\"", error.getLocation());
     }
-
 
 
     AssignToken at = (AssignToken) nextToken();
@@ -564,7 +567,7 @@ public class Parser {
     }
 //Add local proceses that are built in ForAll
     if (process instanceof ForAllStatementNode) {
-      for(LocalProcessNode lpn: ((ForAllStatementNode) process).getLocalProcesses()) {
+      for (LocalProcessNode lpn : ((ForAllStatementNode) process).getLocalProcesses()) {
         localProcesses.add(lpn);
       }
     }
@@ -610,7 +613,8 @@ public class Parser {
       throw constructException("expecting to parse \".\" but received \"" + error.toString() + "\"", error.getLocation());
     }
     if (processNode == null) {
-      Throwable t = new Throwable(); t.printStackTrace();
+      Throwable t = new Throwable();
+      t.printStackTrace();
       System.out.println("\n\nERROR  processNode == null \n\n");
     }
     processes.add(processNode);
@@ -656,7 +660,6 @@ public class Parser {
   }
 
 
-
   private LocalProcessNode parseLocalProcessDefinition(Set<String> localIdentifiers) throws CompilationException, InterruptedException {
     int start = index;
     IdentifierNode identifier = parseIdentifier();
@@ -687,22 +690,23 @@ public class Parser {
     return new LocalProcessNode(identifier.getIdentifier(), ranges, process, constructLocation(start));
   }
 
+  /*
+     Only call for Process definition
+   */
   private LocalProcessNode parseLocalProcessDef4All(Set<String> localIdentifiers) throws CompilationException, InterruptedException {
     int start = index;
     IdentifierNode identifier = parseIdentifier();
-
+    System.out.println("parseLocalProcessDef4All identifier " + identifier);
+    System.out.println("parseLocalProcessDef4All identifier " + identifier);
+    System.out.println("localIdentifiers" + localIdentifiers);
     // index should be added to identifier
     String idx;
-    if (peekToken() instanceof OpenBracketToken) {
-      nextToken();
-      idx = "[$"+nextToken().toString()+"]";
-      identifier.setIdentifier(identifier.getIdentifier()+ idx);
-      if (!(nextToken() instanceof CloseBracketToken)){
-        Token error = tokens.get(index - 1);
-        throw constructException("expecting to parse \"]\" but received \"" + error.toString() + "\"", error.getLocation());
-      }
+    RangesNode localRanges = null;
+    if (peekToken() instanceof OpenBracketToken && peekXToken(3) instanceof ColonToken) {
+      localRanges = parseRanges();
     }
-
+    parseAllIndex(identifier);
+    System.out.println("localIdentifiers" + localIdentifiers);
     // check if a local process with this identifier has already been defined
     if (localIdentifiers.contains(identifier.getIdentifier())) {
       throw constructException("The identifier \"" + identifier.getIdentifier() + "\" has already been defined", identifier.getLocation());
@@ -719,9 +723,64 @@ public class Parser {
     } else {
       process = parseComposite();
     }
-    RangesNode ranges = new RangesNode(new ArrayList<>(),constructLocation(start));
-    return new LocalProcessNode(identifier.getIdentifier(), ranges, process, constructLocation(start));
+    RangesNode ranges;
+    if (localRanges == null) {
+      ranges = new RangesNode(new ArrayList<>(), constructLocation(start));
+    } else {
+      ranges = new RangesNode(localRanges.getRanges(), constructLocation(start));
+    }
+
+    LocalProcessNode lpn = new LocalProcessNode(identifier.getIdentifier(), ranges, process, constructLocation(start));
+    System.out.println("parseLocalProcessDef4All ends " + lpn.myString());
+    return lpn;
   }
+  /*
+  if (peekToken() instanceof OpenBracketToken) {
+      nextToken();
+      idx = "[$"+nextToken().toString()+"]";
+  //    identifier.setIdentifier(identifier.getIdentifier()+ idx);
+  // forall index may be second index?
+      if (peekToken() instanceof  ColonToken) {
+         nextToken();
+          localRanges = parseRanges();
+    System.out.println("post Range  Next = "+peekToken().toString());
+        if (!(nextToken() instanceof CloseBracketToken)){
+          Token error = tokens.get(index - 1);
+          throw constructException("expecting to parse \"]\" but received \"" + error.toString() + "\"", error.getLocation());
+        }
+        if (!(nextToken() instanceof OpenBracketToken)){
+          Token error = tokens.get(index - 1);
+          throw constructException("expecting to parse \"[\" but received \"" + error.toString() + "\"", error.getLocation());
+        }
+    System.out.println("post Range][  Next = "+peekToken().toString());
+        idx += "[$"+nextToken().toString()+"]";
+      }
+      identifier.setIdentifier(identifier.getIdentifier()+ idx);
+      System.out.println("identifier " + identifier);
+      // This is needed !
+      if (!(nextToken() instanceof CloseBracketToken)){
+    Token error = tokens.get(index - 1);
+    throw constructException("expecting to parse \"]\" but received \"" + error.toString() + "\"", error.getLocation());
+  }
+ */
+
+  private void parseAllIndex(IdentifierNode identifier) throws CompilationException, InterruptedException {
+    if (!(nextToken() instanceof OpenBracketToken)) {
+      Token error = tokens.get(index - 1);
+      throw constructException("expecting to parse \"[\" but received \"" + error.toString() + "\"", error.getLocation());
+    }
+    System.out.println("post Range][  Next = " + peekToken().toString());
+    String idx = "[$" + nextToken().toString() + "]";
+
+    identifier.setIdentifier(identifier.getIdentifier() + idx);
+    System.out.println("identifier " + identifier);
+    // This is needed !
+    if (!(nextToken() instanceof CloseBracketToken)) {
+      Token error = tokens.get(index - 1);
+      throw constructException("expecting to parse \"]\" but received \"" + error.toString() + "\"", error.getLocation());
+    }
+  }
+
 
   private void parseDisplayType() throws CompilationException {
     Token token = nextToken();
@@ -822,8 +881,8 @@ public class Parser {
    */
 
   private ASTNode parseComposite() throws CompilationException, InterruptedException {
-      int start = index;
-    System.out.println("parsing Composite "+peekToken().toString());
+    int start = index;
+    System.out.println("parsing Composite " + peekToken().toString());
     String label = null;
     if (hasProcessLabel()) {
       label = parseProcessLabel();
@@ -860,11 +919,11 @@ public class Parser {
         //System.out.println("flags "+flags);
         ASTNode process2 = parseComposite();
         process = new CompositeNode(key, process, process2, constructLocation(start), flags);
-    System.out.println("***Parse infixFunction "+ ((CompositeNode) process).getFlags());
+        System.out.println("***Parse infixFunction " + ((CompositeNode) process).getFlags());
         break;
       }
     }
-    System.out.println( "parseComposite returns "+process.myString());
+    System.out.println("parseComposite returns " + process.myString());
     return process;
   }
 
@@ -971,7 +1030,7 @@ public class Parser {
         Token error = tokens.get(index - 1);
         throw constructException("expecting to parse \")\" but received \"" + error.toString() + "\"", error.getLocation());
       }
-      System.out.println("parseBaseLocalProcess() returns "+ process.myString());
+      System.out.println("parseBaseLocalProcess() returns " + process.myString());
       return process;
     }
 
@@ -1092,7 +1151,7 @@ public class Parser {
     boolean wildcard = acceptedFlags.contains("*");
     boolean decimal = acceptedFlags.contains("*d");
     if (wildcard && decimal) {
-         throw constructException("Parseing a flags but  both * and *d are not allowed");
+      throw constructException("Parseing a flags but  both * and *d are not allowed");
     }
 
     while (!(peekToken() instanceof CloseBraceToken)) {
@@ -1208,6 +1267,10 @@ public class Parser {
     return new IfStatementExpNode((BoolExpr) expression, trueBranch, constructLocation(start), context);
   }
 
+  /*
+    This is called only in Process Definition NOT in Equations
+    forall [n:1..N] (  )
+   */
   private ForAllStatementNode parseForAllStatement() throws CompilationException, InterruptedException {
     int start = index;
     // ensure that the next token is a 'forall' token
@@ -1215,8 +1278,9 @@ public class Parser {
       Token error = tokens.get(index - 1);
       throw constructException("expecting to parse \"forall\" but received \"" + error.toString() + "\"", error.getLocation());
     }
-
+    System.out.println("\n    parseForAllStatement");
     RangesNode ranges = parseRanges();
+    System.out.println("ranges " + ranges.myString());
 
     if (!(nextToken() instanceof OpenParenToken)) {
       Token error = tokens.get(index - 1);
@@ -1229,7 +1293,7 @@ public class Parser {
     Set<String> localIdentifiers = new HashSet<>();
     List<LocalProcessNode> localProcesses = new ArrayList<>();
     if (peekToken() instanceof CommaToken) {
-     nextToken();
+      nextToken();
       localProcesses.add(parseLocalProcessDef4All(localIdentifiers));  // add  indexed
     }
     if (!(nextToken() instanceof CloseParenToken)) {
@@ -1240,6 +1304,8 @@ public class Parser {
 
     ForAllStatementNode fASN = new ForAllStatementNode(ranges, process, constructLocation(start));
     fASN.setLocalProcesses(localProcesses);
+
+    System.out.println(fASN.myString() + "   parseForAllStatement end\n");
     return fASN;
   }
 
@@ -1290,11 +1356,13 @@ public class Parser {
     System.out.println("parse Range start ");
     if (!(peekToken() instanceof OpenBracketToken)) {
       throw constructException("expecting to parse \"[\" but received \"" + peekToken().toString() + "\"");
+    }if (!(peekXToken(3) instanceof ColonToken )) {
+      throw constructException("expecting to parse \":\" but received \"" + peekXToken(3).toString() + "\"");
     }
 
     int rangeStart = actionRanges.size();
 
-    while (peekToken() instanceof OpenBracketToken) {
+    while (peekToken() instanceof OpenBracketToken && peekXToken(3) instanceof ColonToken) {
       // gobble the open bracket
       nextToken();
       parseActionRange();
@@ -1319,7 +1387,7 @@ public class Parser {
 
     while (true) {
       Token token = nextToken();
-      System.out.println("parseProcessLabel() consumes token "+token.toString());
+      System.out.println("parseProcessLabel() consumes token " + token.toString());
       if (token instanceof ActionToken) {
         builder.append(((ActionToken) token).getAction());
       } else if (token instanceof OpenBracketToken) {
@@ -1376,9 +1444,10 @@ public class Parser {
     }
     return label;
   }
-/*
-   Relabeling ?  what about tau?
- */
+
+  /*
+     Relabeling ?  what about tau?
+   */
   private RelabelNode parseRelabel() throws CompilationException, InterruptedException {
     int start = index;
     if (!(nextToken() instanceof DivisionToken)) {
@@ -1457,10 +1526,11 @@ public class Parser {
     //System.out.println("parseRelabelElement() end "+rel.getOldLabel()+"->"+rel.getNewProcess());
     return rel;
   }
-/*
-    "P\{a,b,...}" OR P\{[i;0..N], ..}"
-   FOR  "hide { a,b} P"  OR "hide {[i;0..N], ..} P" see plugin function
- */
+
+  /*
+      "P\{a,b,...}" OR P\{[i;0..N], ..}"
+     FOR  "hide { a,b} P"  OR "hide {[i;0..N], ..} P" see plugin function
+   */
   private HidingNode parseHiding() throws CompilationException, InterruptedException {
     int start = index;
     if (!(peekToken() instanceof HideToken) && !(peekToken() instanceof AtToken)) {
@@ -1958,6 +2028,7 @@ public class Parser {
       throw constructException("received an incorrect operator \"" + token.toString() + "\"", token.getLocation());
     }
   }
+
   /*
       THIS is both parsing AND evaluating!  but fixes evaluation output to be int
       Seperate parsing from evaluating allow double to be returned whe needed
@@ -1981,17 +2052,18 @@ public class Parser {
 
     Expr expression = Expression.constructExpression(String.join(" ", exprTokens), constructLocation(start), context);
     //System.out.println("parseSimpleRealExpression "+expression.getString());
-    System.out.println("parseSimpleRealExpression "+expression.toString());
+    System.out.println("parseSimpleRealExpression " + expression.toString());
     return expressionEvaluator.evaluateRealExpression(expression, new HashMap<>(), context);
   }
+
   /*
   input via mextToken()  result in expression
    */
   private void parseSimpleExpression(List<String> expression, boolean isInt) throws CompilationException {
-    parseBaseSimpleExpression(expression,isInt);
+    parseBaseSimpleExpression(expression, isInt);
     while (hasExpressionToken()) {
       parseSimpleOperator(expression);
-      parseBaseSimpleExpression(expression,isInt);
+      parseBaseSimpleExpression(expression, isInt);
     }
   }
 
@@ -2001,7 +2073,7 @@ public class Parser {
    */
   private void parseBaseSimpleExpression(List<String> expression, boolean isInt) throws CompilationException {
     Token token = nextToken();
-    System.out.println("ParseBase "+ token.toString()+" isInt = "+isInt);
+    //System.out.println("ParseBase "+ token.toString()+" isInt = "+isInt);
     // check if a unary operation can be parsed
     if (token instanceof OperatorToken) {
       if (token instanceof AdditionToken) {
@@ -2022,11 +2094,11 @@ public class Parser {
     if (isInt && token instanceof IntegerToken) {
       int integer = ((IntegerToken) token).getInteger();
       expression.add("" + integer);
-  System.out.println("ex int "+expression);
-    } else  if (!isInt && token instanceof DecimalToken) {
+      //System.out.println("ex int "+expression);
+    } else if (!isInt && token instanceof DecimalToken) {
       Double d = ((DecimalToken) token).getReal();
       expression.add("" + d);
-  System.out.println("ex real "+expression);
+      //System.out.println("ex real "+expression);
     } else if (token instanceof IdentifierToken) {
       String identifier = ((IdentifierToken) token).getIdentifier();
 
@@ -2057,7 +2129,7 @@ public class Parser {
 
       expression.add(")");
     }
-    System.out.println("ParseBase end "+expression);
+    //System.out.println("ParseBase end "+expression);
   }
 
   private void parseSimpleOperator(List<String> expression) throws CompilationException {
@@ -2147,6 +2219,11 @@ public class Parser {
   private Token peek2Token() throws CompilationException {
     check2NotEOF();
     return tokens.get(index + 1);
+  }
+
+  private Token peekXToken(int x) throws CompilationException {
+    checkXNotEOF(x);
+    return tokens.get(index + (x - 1));
   }
 
   /*
@@ -2240,6 +2317,15 @@ public class Parser {
 
   private void check2NotEOF() throws CompilationException {
     if (index + 1 >= tokens.size()) {
+      Location last = tokens.get(tokens.size() - 1).getLocation();
+      Location eof = new Location(last.getLineStart(), last.getColStart() + 1, last.getLineEnd(), last.getColEnd() + 2, last.getStartIndex() + 1, last.getEndIndex() + 2);
+      throw constructException("end of file reached", eof);
+
+    }
+  }
+
+  private void checkXNotEOF(int x) throws CompilationException {
+    if (index + (x - 1) >= tokens.size()) {
       Location last = tokens.get(tokens.size() - 1).getLocation();
       Location eof = new Location(last.getLineStart(), last.getColStart() + 1, last.getLineEnd(), last.getColEnd() + 2, last.getStartIndex() + 1, last.getEndIndex() + 2);
       throw constructException("end of file reached", eof);

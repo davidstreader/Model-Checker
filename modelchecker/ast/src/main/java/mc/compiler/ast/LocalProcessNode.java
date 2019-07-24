@@ -4,6 +4,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import mc.util.Location;
 
+import java.util.stream.Collectors;
+
 /**
  * The LocalProcessNode covers "local processes", a processes defined as a child of a parent
  * process.
@@ -28,6 +30,19 @@ public class LocalProcessNode extends ASTNode {
    *     variable j is expanded for automata node where j=2
    */
   private String identifier;
+  public void setIdentifierOnce(String var) {
+    if (identifier.contains(var)) return;
+    else {
+      String name = identifier.subSequence(0,identifier.indexOf("[")).toString();
+      String end =  identifier.subSequence(identifier.indexOf("["), identifier.length()).toString();
+      System.out.println("name "+ name + "  end "+end);
+      identifier = name + "[" + var + "]"+end;
+  /*
+      ranges.setRanges( ranges.getRanges().stream()
+            .filter(x-> !x.getVariable().equals(var))
+            .collect(Collectors.toList())); */
+    }
+  }
   /**
    * The valid indexes this LocalProcess may have.
    */

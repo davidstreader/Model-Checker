@@ -133,7 +133,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     this.globalVarMap = globalVarMap;
     //called by Interpreter and  Returns a ProcessModel that the Interpreter adds to the processMap
     this.alpha = alpha;
-    System.out.println(">>> PetriInterpret " + processNode.myString() + " \n   processmap  " + asString(processMap));
+    //System.out.println(">>> PetriInterpret " + processNode.myString() + " \n   processmap  " + asString(processMap));
 
     this.context = context;
     variableList = new HashSet<>();
@@ -147,7 +147,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     //ABOVE NOT USED
 //below pushes a petri net onto the process stack
     String what = processNode.getProcess().myString();
-   /* System.out.println("**Petriinterpret**Calling  " +
+   /* //System.out.println("**Petriinterpret**Calling  " +
       processNode.getIdentifier() + " " + what + " localP " + localProcessesToCome + "\n");*/
 //Needed for Gluing
     //interpretProcess(processNode.getProcess(), identifier);
@@ -177,7 +177,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     }
 
     Petrinet pet = interpretProcess(processNode.getProcess(), identifier, symb, localProcesses);
-    System.out.println("\nPetriInterp  " + pet.myString());
+    //System.out.println("\nPetriInterp  " + pet.myString());
     Petrinet petrinet =  pet.copy(); //must be copied as equati
     petrinet.setRootEvaluation(eval);
 
@@ -271,7 +271,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     //System.out.println("processMap keys " + processMap.keySet());
     PetrinetInterpreter.indent = PetrinetInterpreter.indent.concat("-");
     String className = astNode.getClass().getSimpleName();
-    System.out.println("interpret Pro " + PetrinetInterpreter.indent + " className "+className+ " identifier "+ identifier);
+    //System.out.println("interpret Pro " + PetrinetInterpreter.indent + " className "+className+ " identifier "+ identifier);
 //  get the petri net from the processMap and push onto the stack
     if (astNode instanceof IdentifierNode) {  // ONLY for D = A.
 // If Atomic THEN must have been defined
@@ -488,12 +488,12 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     PetrinetInterpreter.indent = PetrinetInterpreter.indent.concat("-");
     String className = currentNode.getClass().getSimpleName();
   /*  if (currentNode.getReferences() != null) {
-      System.out.println(">AST " + PetrinetInterpreter.indent + className +
+      //System.out.println(">AST " + PetrinetInterpreter.indent + className +
         " refs " + currentNode.getReferences());
     } else {
-      System.out.println(">AST " + PetrinetInterpreter.indent + className);
+      //System.out.println(">AST " + PetrinetInterpreter.indent + className);
     }
-    System.out.println(currentNode.myString());*/
+    //System.out.println(currentNode.myString());*/
 //
 //UNprefixed use of Global Processes W in Z = W/{w}  NOT in Z = a->W;
     if (currentNode instanceof ProcessRootNode) { //currentPlace -> addpetriNet
@@ -570,9 +570,9 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     if (PetrinetInterpreter.indent.length() > 0)
       PetrinetInterpreter.indent = PetrinetInterpreter.indent.substring(1);
     if (currentNode.getReferences() != null) {
- /*     System.out.println("AST<" + PetrinetInterpreter.indent + className + " ref " +
+ /*     //System.out.println("AST<" + PetrinetInterpreter.indent + className + " ref " +
         currentNode.getReferences().toString() + " info " + info);
- */     // System.out.println(petri.myString());
+ */     //System.out.println(petri.myString());
 
       for (PetriNetPlace pl : petri.getAllRoots()) {
         if (currentNode.getReferences().size() > 0) {
@@ -743,14 +743,14 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
   private Petrinet interpretIdentifier(IdentifierNode identifier)
     throws CompilationException, InterruptedException {
 
-    System.out.println("interp IdNode "+ identifier.myString());
-    System.out.println("processMap "+processMap.keySet());
+    // System.out.println("interp IdNode "+ identifier.myString());
+    //System.out.println("processMap "+processMap.keySet());
 
     String id = identifier.getIdentifier();
     String pid = id;
     if (!id.contains(":")) pid = id + ":" + identifier.getDomain();
 
-    System.out.println("interpretIdentifier Start " + pid);
+    //System.out.println("interpretIdentifier Start " + pid);
     Map<String, String> eval = new TreeMap<>();
     Petrinet pn;
     if (symb) {
@@ -803,7 +803,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
       throw new CompilationException(getClass(), "Expecting a multiProcess in composite "
         , identifier.getLocation());
     }
-    System.out.println("IndetifierNode returns "+copy.myString());
+    //System.out.println("IndetifierNode returns "+copy.myString());
     return copy;
   }
 
@@ -901,6 +901,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
     selfRef = false;
     Automaton a = getLocalAutomaton(context, alpha, func);
     //.out.println("interpretFunction "+a.myString());
+    //processMap.put("DEBUGing", a);
     selfRef = true;
     //System.out.println("function "+func.myString()+ " -> "+a.myString());
     processed = OwnersRule.ownersRule(a);
@@ -1079,7 +1080,7 @@ public class PetrinetInterpreter implements ProcessModelInterpreter {
       alphaFlags.addAll(func.getFlags());
       a = instantiateClass(functions.get(func.getFunction()))
         .compose(ain.getId() + ".fn", alphaFlags, context, ain);
-      //System.out.println("getA Fun RETURNS \n"+a.myString());
+       // System.out.println("getA Fun RETURNS \n"+a.myString());
     } else if (ast instanceof IdentifierNode) { //may be true first time
       String id = ((IdentifierNode) ast).getIdentifier();
       //System.out.println("getA Ident STARTS " + id);
