@@ -159,7 +159,7 @@ public class CanvasMouseListener implements MouseListener {
                                     }
                                 }
 
-                                colorOwenedNodes((PetriNetPlace) clk);
+                                colorOwenedNodes((PetriNetPlace) clk, pid);
                             }
                         }
 
@@ -191,7 +191,7 @@ public class CanvasMouseListener implements MouseListener {
                 // Reset the previous to unselected Place
                 currentlyColored.clear();
                 refreshtransitionColor();
-                removeColorOwenedNodes();
+                removeColorOwenedNodes("");
             }
             // needs to be here for Transitions
             //System.out.println("DoubleClickHandler  mappings");
@@ -216,44 +216,53 @@ public class CanvasMouseListener implements MouseListener {
             }
         }
     }
-
-    private void colorOwenedNodes(PetriNetPlace pl) {
-        removeColorOwenedNodes();
+/*
+   This marks a "track"  all places with same ownership" and stores the old colors when needed
+ */
+    private void colorOwenedNodes(PetriNetPlace pl, String pid) {
+        removeColorOwenedNodes(pid);
         Set<String> plOwners = pl.getOwners();
         for (GraphNode gn : processModelVertexes.values()) {
             if (gn.getRepresentedFeature() instanceof PetriNetPlace) {
-                PetriNetPlace p = ((PetriNetPlace) gn.getRepresentedFeature());
-                Set<String> owners = p.getOwners();
-                if (owners.equals(plOwners)) {
-                    if (p.isStart() || p.isSTOP()){
-                        gn.setOldColor(gn.getNodeColor());
-                        gn.setNodeColor(NodeStates.TEMP);
-                    } else {
-                        gn.setOldColor(NodeStates.NOSTATE);
-                        if (pl == p)
-                            gn.setNodeColor(NodeStates.TEMP2);
-                        else
+                if (gn.getProcessModelId().equals(pid)) {
+                    PetriNetPlace p = ((PetriNetPlace) gn.getRepresentedFeature());
+
+                    Set<String> owners = p.getOwners();
+                    if (owners.equals(plOwners)) {
+                        if (p.isStart() || p.isSTOP()) {
+                            gn.setOldColor(gn.getNodeColor());
                             gn.setNodeColor(NodeStates.TEMP);
+                        } else {
+                            gn.setOldColor(NodeStates.NOSTATE);
+                            if (pl == p)
+                                gn.setNodeColor(NodeStates.TEMP2);
+                            else
+                                gn.setNodeColor(NodeStates.TEMP);
+                        }
                     }
                 }
             }
         }
     }
-
-    private void removeColorOwenedNodes() {
+/*
+   remove "track" color and reinstate saved color
+ */
+    private void removeColorOwenedNodes(String pid) {
         for (GraphNode gn : processModelVertexes.values()) {
             if (gn.getRepresentedFeature() instanceof PetriNetPlace) {
-                PetriNetPlace p = ((PetriNetPlace) gn.getRepresentedFeature());
-                if (gn.getOldColor().equals(NodeStates.NOSTATE)) {
-                    if (gn.getNodeColor().equals(NodeStates.TEMP) ||
-                        gn.getNodeColor().equals(NodeStates.TEMP2)) {
-                        gn.setNodeColor(NodeStates.NOMINAL);
+                if (pid.equals("") || gn.getProcessModelId().equals(pid)) {
+                    PetriNetPlace p = ((PetriNetPlace) gn.getRepresentedFeature());
+                    if (gn.getOldColor().equals(NodeStates.NOSTATE)) {
+                        if (gn.getNodeColor().equals(NodeStates.TEMP) ||
+                            gn.getNodeColor().equals(NodeStates.TEMP2)) {
+                            gn.setNodeColor(NodeStates.NOMINAL);
+                        }
+                    } else {
+                        gn.setNodeColor(gn.getOldColor());
+                        gn.setOldColor(NodeStates.NOSTATE);
                     }
-                } else {
-                    gn.setNodeColor(gn.getOldColor());
-                    gn.setOldColor(NodeStates.NOSTATE);
-                }
 
+                }
             }
         }
     }
