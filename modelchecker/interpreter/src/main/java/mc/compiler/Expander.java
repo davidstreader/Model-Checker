@@ -526,7 +526,7 @@ public class Expander {
 
     String vm = variableMap.keySet().stream().map(n -> n+"->"+variableMap.get(n).toString()).collect(Collectors.joining(", "));
     String o = nodes.values().stream().map(n -> n.myString()).collect(Collectors.joining(", "));
-    //System.out.println("ForAll expanded nodes = "+o+ "  \n vm = "+vm);
+    System.out.println("ForAll expanded nodes = "+o+ "  \n vm = "+vm);
 
     // Build local processes and Process that is their Parallel conp
     RangesNode rEmpty = new RangesNode(new ArrayList<>(),astNode.getLocation());
@@ -554,14 +554,14 @@ public class Expander {
           localProcesses.add(lpn);
           IdentifierNode idni = new IdentifierNode(nextPr, astNode.getLocation());
           out = new CompositeNode("||", idni, out, astNode.getLocation(), new HashSet<String>());
-          //System.out.println("For "+i+" out "+ out.myString());
+          System.out.println("For "+i+" out "+ out.myString());
         }
         i++;
         // we need to instantiate the variable in the Local processes
 
           for (IndexExpNode iex : iexs) {
             String variable = iex.getVariable();
-            //System.out.println("variable " + variable + " Lcnt " + astNode.getLocalProcesses().size());
+            System.out.println("variable " + variable + " Lcnt " + astNode.getLocalProcesses().size());
             variableMap.put(variable, imap);
             break;
           }
@@ -572,8 +572,8 @@ public class Expander {
             expandLocalProcesses(astNode.getLocalProcesses(), variableMap, context);
           forAllLocalProcesses.addAll(localExpanded);
           if (forAllLocalProcesses.size() > 0) {
-            //System.out.println("Expanded ForAll LOCAL local processes");
-            //System.out.println(forAllLocalProcesses.stream().map(x -> "  " + x.myString()).collect(Collectors.joining(" ,")));
+            System.out.println("Expanded ForAll LOCAL local processes");
+            System.out.println(forAllLocalProcesses.stream().map(x -> "  " + x.myString()).collect(Collectors.joining(" ,")));
           }
        // }
       }
@@ -592,13 +592,15 @@ public class Expander {
            the global process
        */
      String ls = forAllLocalProcesses.stream().map(x->"  "+x.myString()+"\n").collect(Collectors.joining());
-    //System.out.println("forAll EXPANDER ENDs with "+ " " + out.myString()+"\n" + ls );
+    System.out.println("forAll EXPANDER ENDs with "+ " " + out.myString()+"\n" + ls );
     return out;
   }
 
   /*
       ONLY call from forAllStatementNode
        builds  a map of indexed processes  one for each index value
+       with the "when" clause some processes will be EmptyTestOnlyNode
+       so drop them
            later to be expanded
    */
   private Map<Integer, ASTNode> expand(ASTNode process, Map<String, Object> variableMap,
@@ -625,8 +627,10 @@ public class Expander {
           //System.out.println("    iterating input " + ps.myString());
         ASTNode psNew = expand(ps.copy(), variableMap, context);
         //System.out.println( "   iterating output ps " + psNew.myString() +" while ir = " + ir );
-        nodes.put(ir, psNew);
-        ir++;
+        if (!(psNew instanceof EmptyTestOnlyNode)) {
+            nodes.put(ir, psNew);
+            ir++;
+        }
       }
     }
     String o = nodes.values().stream().map(n -> n.myString()).collect(Collectors.joining(", "));
